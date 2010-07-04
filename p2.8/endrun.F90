@@ -1,0 +1,179 @@
+! ****************************************************************
+subroutine endrun
+  !-----------------------------------------------
+  !   M o d u l e s
+  !-----------------------------------------------
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+  use tab_imm_m
+#if(PARA)
+  use mod_mpi
+#endif
+  use posana
+  USE cfg_module
+  !       version MPI du 07 f if (associated(eatom)) eatom(:)=0
+
+  ! ****************************************************************
+
+  implicit none
+  !-----------------------------------------------
+  !   G l o b a l   P a r a m e t e r s
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !   D u m m y   A r g u m e n t s
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !   L o c a l   P a r a m e t e r s
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !   L o c a l   V a r i a b l e s
+  !-----------------------------------------------
+
+  integer :: i,j
+  CHARACTER(len=100) :: out_file
+  REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
+  CHARACTER(len=20), dimension(:), allocatable :: aux_title
+#if(PARA)
+  integer :: iproc
+  real(double), allocatable :: xp_loc(:,:),eatom_loc(:)
+  integer, allocatable      :: ityp_loc(:)
+  integer, allocatable      :: num_at_glob_loc(:)
+  integer :: im_loc
+  integer :: proc_source
+#endif
+  !-----------------------------------------------
+  !
+  !
+  !
+
+
+  ! MPI
+  if (rang==0) then
+     if (lprtfat)then
+        open(unit=10, file='xifi.dat', status='unknown')
+        write(10,'(i0)') im
+        write (10, '(6g20.8)') (xp(1:3,i)*angst,fp(1:3,i)*erg2eV/angst,i=1,im)
+        close(10)
+     end if
+  end if
+  if (lprteat)then
+     if (rang==0)open(unit=10, file='xiei.dat', status='unknown')
+#if(PARA)
+     ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
+     if (myid==0) then
+        ! Copie des tableaux xp,num_at_glob et ityp locaux 
+        allocate(xp_loc(3,imm))
+        allocate(ityp_loc(imm))
+        allocate(num_at_glob_loc(imm))
+        allocate(eatom_loc(imm))
+        xp_loc = xp
+        ityp_loc = ityp
+        num_at_glob_loc = num_at_glob
+        im_loc = im
+        eatom_loc=eatom
+        ! Boucle sur les processeurs
+        do iproc=0,nprocs-1
+           ! Pour le processeur maitre il n'y a rien a faire
+           ! reception des donnees des autres processeurs
+           if (iproc.ne.0) then
+              call MPI_RECV(im,               1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_WORLD, status, ierr)
+              proc_source = status(MPI_SOURCE)
+              call MPI_RECV(xp(1:3,1:im),     3*im, NDM_MPI_REAL_DOUBLE, proc_source, 10002, MPI_COMM_WORLD, status, ierr)
+              call MPI_RECV(ityp(1:im),       im,   MPI_INTEGER,         proc_source, 10003, MPI_COMM_WORLD, status, ierr)
+              call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_WORLD, status, ierr)
+              call MPI_RECV(eatom(1:im),       im,  NDM_MPI_REAL_DOUBLE ,proc_source, 10005, MPI_COMM_WORLD, status, ierr)
+           endif
+           write (10, '(i6,i3,4g20.8)') (num_at_glob(i),ityp(i),(xp(j,i)*angst,j=1,3),eatom(i)*erg2eV,i=1,im)
+           write(6,*)'ZERO',iproc
+        enddo  ! fin de boucle sur les processeurs
+        ! Le processeur maitre recupere ses donnees locales
+        xp = xp_loc
+        ityp = ityp_loc
+        num_at_glob = num_at_glob_loc
+        im = im_loc
+        eatom=eatom_loc
+        deallocate(xp_loc)
+        deallocate(ityp_loc)
+        deallocate(eatom_loc)
+
+     else ! Les autres processeurs envoient leurs donnees locales
+        call MPI_SEND(im,               1,   MPI_INTEGER,        0,10001,MPI_COMM_WORLD,ierr)
+        call MPI_SEND(xp(1:3,1:im),     3*im,NDM_MPI_REAL_DOUBLE,0,10002,MPI_COMM_WORLD,ierr)
+        call MPI_SEND(ityp(1:im),       im,  MPI_INTEGER,        0,10003,MPI_COMM_WORLD,ierr)
+        call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_WORLD,ierr)
+        call MPI_SEND(eatom(1:im),im,  NDM_MPI_REAL_DOUBLE ,     0,10005,MPI_COMM_WORLD,ierr)
+        write(6,*)'NZ',myid
+     endif
+
+#else
+     if (lprteattotm.EQV..true.) then
+
+        if (associated(free))then
+           do i=1,im
+              if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatomtotm(i)*erg2eV
+           end do
+        else
+           do i=1,im
+              write (10,'(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatomtotm(i)*erg2eV
+           end do
+        end if
+
+     else
+        if (associated(free))then
+           do i=1,im
+              if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatom(i)*erg2eV
+           end do
+        else
+           do i=1,im
+              write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatom(i)*erg2eV
+           end do
+        end if
+     end if
+#endif
+
+
+     close(10)
+  end if
+  if (rang==0) then
+     write (6, *)
+     write (6, *)
+
+     write (6, *) '####### END OF RUN  ######## = ', it, '  time = ', timel
+  endif
+#if(PARA)
+  temps_dmloop=MPI_Wtime() - temps_dmloop_deb
+#endif
+  call sauvegarde
+  if (.not.linstantrdf) then
+     if (iterdf>=0) call rdf
+  endif
+  if (.not.linstantfda) then
+     if (iteangle>=0) call adf
+  endif
+  call analyse
+  if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
+  if (iterasmol>=0) call rasmol (it)
+  if (iteanapos>=0) call anapos (it)
+  if (itecfg>0) then
+     WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.cfg'
+     OPEN(file=out_file, unit=60, action='write')
+     IF (lprteat) THEN       ! Energy per atom
+        IF (Allocated(aux_real)) DeAllocate(aux_real)
+        Allocate(aux_real(1,1:im))
+        IF (Allocated(aux_title)) DeAllocate(aux_title)
+        Allocate(aux_title(2))
+        aux_title(1)="Energy per atom (eV)"
+        aux_real(1,1:im)=Eatom(1:im)*erg2eV
+        CALL WriteCfg(xp, ityp, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
+        DEALLOCATE(aux_real, aux_title)
+     ELSE
+        CALL WriteCfg(xp, ityp, 60)
+     END IF
+     CLOSE(60)
+  endif
+  call arret_ndm
+
+
+  stop
+  return
+end subroutine endrun

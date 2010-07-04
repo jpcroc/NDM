@@ -1,0 +1,8 @@
+#!/bin/csh
+foreach temp (`ls -1 *90 *f Makefil*`)
+	echo $temp
+	rm -f rd
+	diff   $temp ../p2.5/$temp > rd
+	if  ( -s  rd )    kompare ../p2.5/$temp  $temp 
+
+end

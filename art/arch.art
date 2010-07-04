@@ -1,0 +1,35 @@
+call art90(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, ielastsm)
+USE T_kind_param_m, ONLY:  double
+use gen_com_m
+use DEFS
+use random_art
+use lanczos_defs
+use art_in_ndm_module
+|
+|
+call initialize()  --- call init_potential() 
+use defs               use potential_eam
+|	               use defs
+|		   --- |
+		       |if (new_event)
+		       |
+                       call min_converge()       ----   call calcforce(NATOMS,type,pos,boxl,force,total_energy)  ----- NDM depencies (to be developped)
+                       use defs                         use potential_type  
+                       use minimization                 use potential_eam
+		                                        |
+						        |
+		       |			 ----  call displacement(posref, pos, delr,npart)
+							use defs
+                       | 
+		       |
+		       call write_refconfig()
+		       use defs
+		       |
+		       |
+		   --- call store(fname)
+		       use defs
+|
+|
+|
+call find_saddle( success )
+ 

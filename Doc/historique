@@ -1,0 +1,192 @@
+janvier 2008
+version p2art
+version Wp2.2 (voir ci-dessous)+ ART
+
+version Wp2.2
+contient la relaxation en trempe rapide (dmtype=2) avec lpr=.true. 
+et des developpement pour SiC
+distribuée uniquement à Lisa Ventelon
+
+Octobre 2007 : ndm_p2
+parallelisation de Parrinello-Rahman, Nose, Nose-Hoover
+modification du calcul de l'optimum de la repartition de domaines
+remise a niveau de watanabe
+calcul en fonction de Green des dep des atomes de bord de boite 
+Correction de bugs,
+suppression de ltriclin, lpcon, lfissure.
+
+Septembre 2007: ndm_p1
+premiere version parallele !
+integration des developpements de Olivier Bertrand de CS
+
+aout 07 ndm90-37
+Dernière version séquentielle ?
+correction des bugs de lperiod
+ecriture sigat dans eam
+modifcation ltranche, lcdp
+
+février 07 ndm90-36
+Ecriture des positions au format "cfg" (cad AtomEye) directement dans le code. Piloté par ITECFG dans *.din
+Calcul des cols par NEB ou DRAG. Voir HELPNEB ou HELP
+Calcul des défauts dans les fcc et affichage (en .cfg)  directement dans le code. Piloté par itefcc dans *.din
+Correction de bugs...
+En particulier l'option LPERIOD=.FALSE. fonctyionne désormais sans problème et peut être utilisée sans soucis.
+
+
+
+septembre 2006 : ndm90-35
+ngrid :
+la taille des tableaux de spline du potentiel est désormais lue dans .din (était un paramètre)
+
+calfoeamtabvois :
+calcul par demi-somme (à la FW) gain en temps entre 20% et 40%.
+
+Conditions periodiques 
+lperiod indique si on applique ou non les conditions periodiques 
+par défaut lperiod=.true.
+lperiod =.false. est à manier avec précaution. (à mon avis ca ne fonctionne pas(JPC)).
+
+Algorithme NPH :
+lpr=.true. active Parrinnello Rahman
+
+Algorithme NPT
+avec lpr=.true., est implémenté::
+lTHoover=.true., algorithme de Nose-Hoover
+
+(si vous voulez utiliser Nose sans Hovver ou des chaines, contacter Emmanuel Clouet ou Jean-Paul Crocombette)
+
+Plus les habituelles corrections de bugs...
+
+
+avril 2006 : ndm90-33 puis 34
+démontage de parinello rahman LVB remontage PR "de base" i.e. subtil
+programmation de thermostat de Langevin
+
+mars 2006 : ndm90-32
+DEMONTAGE DE SURF
+implementation de calcul de tranche (avec une couche gelée sur les bords en +/-Z)
+
+16 février 2006: ndm90-31
+correction de nose-hoover-parinnelo-rahman
+correction de gradient conjugué
+
+ndm90-30
+plusieurs modifs dont NEMD, initspeed pilotable
+
+ndm90-29
+calcul des phonons
+petite modification de scalebox (plus de chgt de noxsm)
+
+ndm90-28:été 2005
+modfication de compcr
+programmation de Brenner
+introduction à 2 francs des dislos
+
+fin mars 2005
+correction de eamtab
+passage à ndm90-27
+
+mars 2005
+menage general (suppression des dummy variables inutiles)
+bond valence
+contrainte atomique
+creation de défauts ponctuels
+passage à ndm90-26
+
+novembre 2004 
+implémentation du potentiel de Tersoff par Nguyen Quoc Hoang (stage DEA) ; passage à 
+ndm90-25
+
+février 2004 correction de petits bugs passage à ndm90-24
+
+decembre 2003d
+correction de petits bugs
+
+octobre 2003 ndm90-23
+version de retour du MIT
+flux de chaleur, phonons, potentiel de Ju Li
+
+novembre 2002 ndm90-20
+programmation de EAM et seconds moments :ipotentiel >9
+
+octobre 2002
+interdiction terme à 3 corps +ltabvois (pas programmé précédemment non détecté)
+correction d'un bug : si nox<=2 passage en table des voisins !
+
+octobre 2002
+dans la boucle de force à 2corps en cellules on ne calcule que j>i (division du temps de calcul par presque2)
+
+septembre 2002 passage à ndm90-10
+mise au net...
+allocation des tableaux dependant de ntyp et de ceux dépendant de la taille des celulles.
+calcul propres des angles et des RDF
+
+juin 2002
+
+lpotrep répulsion polynomiale ou Ziegler
+ipotentiel=4 potentiel U-O2 spline spécial pour O-O peut à priori fonctionner pour tout types d'atomes
+version para de la pme
+moment angulaire et dérive mise à 0 dans initspeed
+velocity Verlet
+algorithme de Nose pour la temperature
+
+janvier 2002 PME seq. plus namelist dans .potin ; choix des paramètres (param_det.f90)
+
+septembre 2001
+ajout du potentiel de waranabe, paralellisation du terme a trois corps, sommation d'Ewald pour systemes tricliniques, amelioration de calfo
+passage a ndm90-4
+
+juillet 2001
+passage en fortran 90 avec l'outil trans90 de PSuite sur NEC SX5 de l'IDRIS
+version NDM90-1
+
+juin 2001
+interversion des indices ds XP (voir 21 mai 99) effet nul sur NEC, -40% sur DEC...
+
+fevrier-mars 2001
+paralellisation de la boucle des forces des termes a 2corps (L. Veiller)
+creation de fichiers *.F avec des #ifdef para
+version para-seq
+
+2 mars 2000
+boite quelconque passage a NDM3.1
+
+31 janvier 2000
+essai d'ajout de la correction de l'impulsion (au lieu de la derive) en cas de cascade.
+
+juilet 99 relecture et passage a NDM2.4
+
+25 juin 99 conditions periodiques dans calfo et calfo3c : le test sur 
+XP(i)-Xp(j) est remplace par l'ajout d'un vecteur ne dependant que des celulles 
+deltadist. amelioration du temps de calcul entre 3 et 20% selon la machine
+
+
+21 mai 99 essai d'inversion des tableaux XP :effet faible (tjs inf a 5%)
+abandonne car risque de bugs
+
+avril 99 compilation sur Fuji passage a NDM2.3
+
+12 fevrier 99 passage a NDM2.2
+algorithme a pression constante
+
+22 janvier 99 passage a NDM2:
+surface et fracture
+termes a trois corps
+
+6 janvier grille en R (et non R2)
+
+15 novembre 98 passage au spline 
+
+4 septembre  modification du GC -> pas encore parfait. instabilite numerique ou 
+trop d'atomes ?
+
+3 septembre eguess dans GC dans readdm; correction d'un bug dans config
+
+28 aout : calcul de derfc par polynome ; routine derfc egalement utilisee dans 
+pwscf
+
+vers le 28 juillet 98:
+paralellisation 
+grande chasse au bugs
+utilisation de tableaux automatiques pour le nombre d'atomes
+les forces et les potentiels sont mis sur un seul tableau au lieu de deux.

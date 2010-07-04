@@ -1,0 +1,53 @@
+*****TOOLS***********
+Plein de jolis scripts de transformation et d'analyse sont dans Tools
+
+**
+SERIE DES GREP-QQCH
+grep-dm*  fait plein de fichiers et de graphes sur la température, pression, etc..
+ "grep-dm toto" lit toto.out 
+ "grep-dm" lit toto.out si dans name.in il y a toto 
+  
+
+LES AUTRES SONT UTILSABLES UNIQUEMENT pièce 201 (9285), ask for Croc
+grep-gradient* 
+grep-trempe*
+grep-trp*
+jcolcfg*
+jdef*
+jml*
+jmlup*
+jndm2ateye*
+**
+
+
+SERIE des TOTO2TATA (les executables sont dans Tools/bin)
+Ils s'utilisent en mettant les noms de fichiers d'entrée sortie sur la ligne de commande
+toto2tata entree.toto sortie.tata
+
+toto= gin, cout, cin 
+
+sauve==.cout ou cin
+
+gin2gin*  applique une déformation
+gin2sauve* gin vers cin 
+sauve2gin* cin vers gin
+
+
+Les autres sont basiquement inutilisables sauf pièce 112 (ask for Clouet and/or Marinica)
+please call 66 63....
+
+gin2cfg* INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE
+
+sauve2cfgDEFcubic*  INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE (ou le fer qu'on
+appelle le cuivre ) et qu'en plus c'est bcc.
+
+sauve2cfg*  INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE
+
+gin2xyz*  INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE
+
+strain*  INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE en deformation et encore pas
+toutes enfin c'est pas sur...
+
+postNDM* PAS BEAU !!
+
+cfg2gin* PAS BEAU !!!
