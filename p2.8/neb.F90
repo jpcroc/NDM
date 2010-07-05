@@ -164,7 +164,7 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
   reaction_coord(1)=0
   reaction_coord(npath)=1
-  a_local=SQRT(SUM((xp_n(:,:,npath)-xp_n(:,:,1))**2)) 
+  a_local=SUM((xp_n(:,:,npath)-xp_n(:,:,1))**2) 
   ! 
   do ii=1,npath      
      call into_path      (ii,2,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
@@ -172,7 +172,7 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      call rasmol(ii)
      if (iteanaposneb.gt.0) call anapos(ii)
      !	 
-     reaction_coord(ii) = SQRT(SUM((xp_n(:,:,ii)-xp_n(:,:,1))**2))/a_local 
+     reaction_coord(ii) = SUM((xp_n(:,:,ii)-xp_n(:,:,1))*(xp_n(:,:,npath)-xp_n(:,:,1)))/a_local 
      !
   end do
 
