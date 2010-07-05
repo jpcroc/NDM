@@ -39,9 +39,9 @@ program ndm
 #endif
 
 #if(ART)
-  if (rang==0) write(6,*)'*** NDMP-2.4 + ART ***'
+  if (rang==0) write(6,*)'*** NDMP-2.8 + ART ***'
 #else
-  if (rang==0) write(6,*)'*** NDMP-2.4 ***'
+  if (rang==0) write(6,*)'*** NDMP-2.8 ***'
 #endif
 
   !     read(5,*)a1
