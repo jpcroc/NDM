@@ -124,15 +124,12 @@ subroutine initspeed
         if (iseed==0)  iseed=1
 
 
-        if (iseed==0)  call system_clock (iseed) 
+!        if (iseed==0)  call system_clock (iseed) 
 
-        !        write(6,*)''proc,' myid', iseed pour tirage des vitesses',iseed
-                 write(6,*)'iseed pour tirage des vitesses',iseed
+!        write(6,*)''proc', myid, iseed pour tirage des vitesses',iseed
 
         iseedt(1)=iseed
-        call    random_seed (iseedt(1))
-!       call    random_seed (size=2,put=iseedt)
-!       call    random_seed (put=iseedt)
+        call    random_seed (put=iseedt)
 
         v0 = sqrt(2.D0*bk*tinit)
         vt1(:)=0.0
