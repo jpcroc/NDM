@@ -236,9 +236,10 @@ subroutine input_pair
               else
                  read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
               end if
+              cm(i)=cm(i)*umass
               if (rang/=0) cycle
               write (6, '(I4,2F9.3,A5)') i,cm(i),catom(i),ty(i)
-!              cm(i)=cm(i)*umass
+
            end do
            rue_pair(:)=rue*1d-8
         end if
