@@ -55,7 +55,7 @@ subroutine config
   !      integer , dimension(imm,ntyp) :: fv
   !         integer , dimension(6000,10) :: fv    !Truc_bizarre_jmd
   real(double), dimension(3) :: rr
-  real(double) :: tirax, tiray, tiraz, x1, x2, x3, a1, a2, a3, c1, c2, c3, r2
+  real(double) :: tirax, tiray, tiraz, x1, x2, x3, a1, a2, a3, c1, c2, c3, r2,xpici,cpp
   real(double) :: rsep2
   character :: fnamcin*80, fnamgin*80
   !              real(double) drand
@@ -570,6 +570,19 @@ subroutine config
                     xp(1,i) = (xc(icell,1)+float(ia-1))/float(la)
                     xp(2,i) = (xc(icell,2)+float(ib-1))/float(lb)
                     xp(3,i) = (xc(icell,3)+float(ic-1))/float(lc)
+#if(PARA)
+                    do k=1,3
+                       xpici=xp(k,i)
+                       if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
+                          if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
+                             xp(k,i)=zero
+                          else
+                             cpp  = Dble(Floor(xp(ic,i)))
+                             xp (k,i) = xpici     - cpp
+                          end if
+                       end if
+                    end do
+#endif
 		    if (lsuivinonpbc) then
                      xpnonpbc(1,i) = (tmpxc(icell,1)+float(ia-1))/float(la)
                      xpnonpbc(2,i) = (tmpxc(icell,2)+float(ib-1))/float(lb)
@@ -621,7 +634,7 @@ subroutine config
 	 axinit(:,:) = ax(:,:)
 	end if
 
-        ! génération de verre
+        ! gÃ©nÃ©ration de verre
      else if ( lalea) then
         ! Cas ou on tire les positions aleatoires
 
