@@ -147,8 +147,8 @@ subroutine readdm
   fdislo=0.0     ! force appliquee aux atomes de bords 
   lnemd=.false.  ! Kth par la methode NEMD Evans, P7229
   fnemd=0
-  fpstop =0.05 ! critere de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
-  fsumstop =0.1 ! critere de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
+  fpstop =-0.05 ! critere de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
+  fsumstop =-0.1 ! critere de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
   lcontr=.false. ! dynamique contrainte (routine contrainte)
   iseed=0 ! si <>0 controle le tirage aleatoire des vitesses
 
@@ -700,9 +700,7 @@ subroutine readdm
      if (rang==0) write (6,*) '      ANALYSE DES POSITIONS EN FIN DE CASCADE '
   case (9)
      if (rang==0) write (6,*) '      DRAG OR NEB DYNAMICS '	 
-     lperiod=.false.  ! pas de conditions periodiques
      itesauvposition=-1
-     fsumstop=-1
      itetemp=-1;itesigma=-1
   case (10)
      if (rang==0) write (6,*) '      TREMPE FIRE '
@@ -785,8 +783,29 @@ subroutine readdm
 
   endif
 
+  if ( (dmtype==2).or.(dmtype==3).or.(dmtype==9).or.(dmtype==10) ) then    
+    if ( (fpstop<0).and.(fsumstop<0)) then
+      if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
+      if (rang==0) write(6,*) 'Stop in readdm'
+      stop
+    end if    
+    if ( (fpstop < 0) .and. (dmtype==9) ) then
+      if (rang==0) write(6,*) 'NEB and DRAG implementation only for positive fpstop'
+      if (rang==0) write(6,*) 'Stop in readdm'
+      stop 
+    end if 
+    if  ( (fpstop>0).and.(fsumstop>0) ) then
+    if (rang==0) write(6,*) 'DANGER - WARNING - ACHTUNG:  both fpstop and fsumstop are positive !!!'
+    end if  
+  end if
   
-    if ( (.not.lperiod).and.(itesauvposition>0).and.lsuivinonpbc) then  
+   if ( (.not.lperiod) .and. (dmtype==9) )then
+      if (rang==0)  write(6,*) 'There is NEB and DRAG implementation for lperiod true'
+      if (rang==0)  write(6,*) 'trun lperiod to false in din file and restart'
+      stop
+   end if
+   
+   if ( (.not.lperiod).and.(itesauvposition>0).and.lsuivinonpbc) then  
         if (rang==0) write(6,*)' lsuivinonpbc will be turn to FALSE'
         lsuivinonpbc=.false.
      end if
