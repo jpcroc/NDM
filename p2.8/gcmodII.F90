@@ -127,14 +127,14 @@
 !                                                                       
 !-----------------------------------------------------------------------
 !                   G                                                    
-SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,DFPRED,X,G,F,W,IER,criterion,NCALLS, &
+SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS, &
      xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   !                                  SPECIFICATIONS FOR ARGUMENTS         
 
   INTEGER            N,MAXFN,IER                                    
-  DOUBLE PRECISION   ACC,DFPRED,X(N),G(N),F,W(6*N)                    
+  DOUBLE PRECISION   ACC,X(N),G(N),F,W(6*N)                    
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
@@ -200,9 +200,27 @@ SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,DFPRED,X,G,F,W,IER,criterion,NCALLS, &
 
   do_print=.true.      
 
-5 NCALLS = NCALLS+1                                                 
-  CALL FUNCT (N,X,F,G,ncalls,                       &
+          IF (3*imm.NE.N) THEN
+                  WRITE(0,'(a,i0)') "3*imm = ", 3*imm
+                  WRITE(0,'(a,i0)') "N     = ", N
+                  STOP "< ZXCGRII >"
+          END IF
+
+
+5 NCALLS = NCALLS+1 
+     
+     
+!debugGC     do i=1,5
+!debugGC      write(*,'(".......gcmodII bF xp(*,1) ",3f15.8)')xp(1,i)/at(1,1),xp(2,i)/at(1,1),xp(3,i)/at(1,1)
+!debugGC     end do
+!debugGC        write(*,'(".......GCMOD II X6 ",i6,3f15.8)')  NCALLS, X(6)/at(1,1)/angst                                      
+  CALL FUNCT (N,X,F,G,NCALLS,                       &
        xp, xpp, vp, ax, fp,  ielat, iwmax, ityp)                                
+!debugGC     do i=1,5
+!debugGC      write(*,'(".......gcmodII aF xp(*,1) ",3f15.8)')xp(1,i)/at(1,1),xp(2,i)/at(1,1),xp(3,i)/at(1,1)
+!debugGC     end do
+
+
   if (NCALLS .eq. 1) then
      !cos	if (do_print) print 3000, F
      !cos 3000    FORMAT ("ZXCGR Starting energy = ", F20.10)
@@ -260,8 +278,8 @@ SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,DFPRED,X,G,F,W,IER,criterion,NCALLS, &
            !                                    STEP-LENGTH OF THE MOST RECENT     
            !                                    LINE SEARCH THAT GIVES THE LEAST   
            !                                    CALCULATED VALUE OF F.             
-           DFPR = DFPRED                                                     
-           STMIN = DFPRED/GSQRD                                              
+           DFPR = dfpred                                                    
+           STMIN = dfpred/GSQRD                                              
            !      if (do_print) print *, "DFPR, STMIN = ", DFPR, STMIN
            !                                  BEGIN THE ITERATION                  
 80         ITERC = ITERC+1                                                   
@@ -450,4 +468,4 @@ SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,DFPRED,X,G,F,W,IER,criterion,NCALLS, &
 9005                            if (do_print) print 3030,NCALLS
 3030                            FORMAT ("NCALLS",I5)
                                 RETURN                                                            
-                             END DO
+                             END 

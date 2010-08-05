@@ -63,7 +63,6 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
   allocate (X(NGC),G(NGC),W(6*NGC))
 
-!????  xp(1:3,1:im) = ax(1:3,1:im)
 
   IF (lFrozen) THEN
           iGC=0
@@ -95,11 +94,22 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
   ! X into from internal units to Ang
 
+!debugGC     do i=1,5
+!debugGC      write(*,'("gcII ax(*,1) ",3f15.8)')ax(1,i)/at(1,1),ax(2,i)/at(1,1),ax(3,i)/at(1,1)
+!debugGC     end do
+!debugGC            write(*,*) '                   '
+!debugGC
+!debugGC     do i=1,5
+!debugGC      write(*,'("gcII xp(*,1) ",3f15.8)')xp(1,i)/at(1,1),xp(2,i)/at(1,1),xp(3,i)/at(1,1)
+!debugGC     end do
+
   X=X*angst
-  CALL ZXCGRII(FUNCT,NGC,ACC,itmax,dfpred,X,G,F,W,IER,criterion,NCALLS, &
+  CALL ZXCGRII(FUNCT,NGC,ACC,itmax,X,G,F,W,IER,criterion,NCALLS, &
        xp, xpp, vp, ax, fp,  ielat, iwmax, ityp)       
 
   deallocate (X,G,W)
+  
+  write(*,*) 'DEBUG after GCII ... just SAY HALLO'
 
 
 #ifdef ART

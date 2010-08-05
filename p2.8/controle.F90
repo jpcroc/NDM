@@ -555,6 +555,8 @@ subroutine controle
      end if
 
 
+      write(*,*) 'DEBUG ALL IT IN CONTROLE',it
+      
      IF (it.GE.1) THEN
         IF (lFrozen) THEN
            forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
@@ -579,14 +581,16 @@ subroutine controle
               if (formax.le.fpstop) then
                  write(6,*)'force par atome  max  ev/Ang ', formax
                  write (6, *) 'energie ', potist*erg2eV
-                 call endrun
+                 if (it.le.1) xp(:,:)=ax(:,:)
+		 call endrun
               end if
            end if
            if (fsumstop>0) then   
               if (forctot.le.fsumstop) then
                  write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
                  write (6, *) 'energie ', potist*erg2eV
-                 call endrun
+                 if (it.le.1) xp(:,:)=ax(:,:)
+		 call endrun
               end if
            end if
 
@@ -596,7 +600,7 @@ subroutine controle
               if (formax.le.fpstop) then
                  write(6,*)'force par atome  max cgs ',formax
                  write (6, *) 'energie ', potist
-
+                 if (it.le.1) xp(:,:)=ax(:,:)
                  call endrun
 
               end if
@@ -606,12 +610,13 @@ subroutine controle
               if (forctot.le.fsumstop) then
                  write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
                  write (6, *) 'energie ', potist
+                 if (it.le.1) xp(:,:)=ax(:,:)
                  call endrun
               end if
            end if
 
         end if
-     end if
+     end if ! it .ge.1
 
   case default
   end select

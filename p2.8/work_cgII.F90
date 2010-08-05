@@ -10,7 +10,7 @@ contains
   subroutine FUNCT(N,X,F,G,NCALLS,                      &
        xp, xpp, vp, ax, fp,  ielat, iwmax, ityp)
     double precision X(N),G(N),F,forctot,formax  
-    integer i,N,ncalls
+    integer i,N,NCALLS
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
@@ -23,11 +23,9 @@ contains
     real(double)  :: ax(3,imm)
     real(double)  :: fp(3,imm)
     !-----------------------------------------------
-    REAL(double) :: inv_angst
-    INTEGER :: igc
+    INTEGER :: IGC
 
-
-    inv_angst = 1.d0/angst
+    
 
     IF (lFrozen) THEN   ! Some atoms are fixed
           iGC=0
@@ -47,50 +45,44 @@ contains
                   WRITE(0,'(a,i0)') "N     = ", N
                   STOP "< work_cgII >"
           END IF
-            do i=1,N/3
+            do i=1,imm
                xp(1:3,i)=X(3*i-2:3*i)*inv_angst
             end do
     END IF
 
-!    write(*,*) im,N/3,imm,N
-!    stop
     !back to internal units and JP world.......................................
 
     it=NCALLS-1
+
     if (lperiod)          call period 
-   
+
     call controle 
-    
     call calfo
     call analyse 
+   
     
+    if (it.ne.0) then
     if (rang==0) then
-       !     write(6,*)'analyse -> sauvegarde'
+!           write(6,*)'work_cg_II analyse -> sauvegarde',it
        if (itesauv/=0) then
           if (mod(it,itesauv)==0) call sauvegarde 
        endif
 
-       !     write(6,*)'analyse -> sauveposition'
+!            write(6,*)'work_cg_II analyse -> sauveposition',it
        if (itesauvposition/=0) then
           if (mod(it,itesauvposition)==0) call sauveposition ( it)
        endif
-       !     write(6,*)'sauvposition -> control'
+!            write(6,*)'work_cg_II sauvposition -> control',it
     endif                                   ! fin rang=0
-
+    end if
     !go to into eV, ang and GC world............................................      
 
+    
     F=potist*erg2eV
     do i=1,N/3
-      !some contraintes
-       !if ((i.eq.1).or.(i.eq.117)) then
-       !G(3*i-2)= 0
-       !G(3*i-1)= 0
-       !G(3*i)  = 0
-       !else 
        G(3*i-2)=-fp(1,i)*erg2eV/angst
        G(3*i-1)=-fp(2,i)*erg2eV/angst     
        G(3*i)  =-fp(3,i)*erg2eV/angst
-       !end if       
     end do
     
 
