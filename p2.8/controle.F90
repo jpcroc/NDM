@@ -555,7 +555,7 @@ subroutine controle
      end if
 
 
-      write(*,*) 'DEBUG ALL IT IN CONTROLE',it
+ !debug     write(*,*) 'DEBUG ALL IT IN CONTROLE',it
       
      IF (it.GE.1) THEN
         IF (lFrozen) THEN
