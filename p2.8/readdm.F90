@@ -786,12 +786,12 @@ subroutine readdm
   if ( (dmtype==2).or.(dmtype==3).or.(dmtype==9).or.(dmtype==10) ) then    
     if ( (fpstop<0).and.(fsumstop<0)) then
       if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
-      if (rang==0) write(6,*) 'Stop in readdm'
+      if (rang==0) write(6,*) 'STOP in readdm'
       stop
     end if    
     if ( (fpstop < 0) .and. (dmtype==9) ) then
       if (rang==0) write(6,*) 'NEB and DRAG implementation only for positive fpstop'
-      if (rang==0) write(6,*) 'Stop in readdm'
+      if (rang==0) write(6,*) 'STOP in readdm'
       stop 
     end if 
     if  ( (fpstop>0).and.(fsumstop>0) ) then
@@ -799,10 +799,12 @@ subroutine readdm
     end if  
   end if
   
-   if ( (.not.lperiod) .and. (dmtype==9) )then
-      if (rang==0)  write(6,*) 'There is NEB and DRAG implementation for lperiod true'
-      if (rang==0)  write(6,*) 'trun lperiod to false in din file and restart'
-      stop
+   if  (dmtype==9) then
+      if (lperiod) then
+       if (rang==0)  write(6,*) 'There is no NEB and DRAG implementation for lperiod true'
+       if (rang==0)  write(6,*) 'put your lperiod to false in din file and restart.'
+       stop
+      end if 
    end if
    
    if ( (.not.lperiod).and.(itesauvposition>0).and.lsuivinonpbc) then  
