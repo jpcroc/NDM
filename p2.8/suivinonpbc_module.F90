@@ -28,17 +28,6 @@ integer ::i
   tmpsuivi(1:3,i) = zero
   xpnonpbc(1:3,i)=axnonpbc(1:3,i)
  END DO
- if (rang==0) then
- 
- write(*,*) '===0=======',imd 
- write(*,*)  axnonpbc(1:3,1)
- write(*,*)  xp(1:3,1)
- write(*,*)  tmpsuivi(1:3,3)
- write(*,*)  axnonpbc(1:3,3)
- write(*,*)  xp(1:3,3)
-end if
-
-
 !
 end subroutine  init_suivinonpbc
 

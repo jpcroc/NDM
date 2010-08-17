@@ -627,16 +627,6 @@ subroutine config
 	if ((lperiod).and.(lsuivinonpbc)) then
          call cryst_to_cart (imm, xpnonpbc, at, 1)  !cryst vers cart
 	 axnonpbc(:,:im) = xpnonpbc (:,:im)
- if (rang==0) then
- 
- write(*,*) '===1=======',imd 
- write(*,*)  axnonpbc(1:3,1)
- write(*,*)  xp(1:3,1)
- write(*,*)  tmpsuivi(1:3,3)
- write(*,*)  axnonpbc(1:3,3)
- write(*,*)  ax(1:3,1)
-end if
-
 	end if
 
         ! génération de verre
