@@ -1,6 +1,7 @@
 module tab_imm_m
   !
   USE T_kind_param_m
+  USE gen_com_m, ONLY: lsuivinonpbc
   ! 
   ! Module contenant les tableaux dimmensionnes sur le
   ! nombre d'atomes de la simulation
@@ -13,6 +14,9 @@ module tab_imm_m
   real(double),dimension(:,:), pointer :: vp     ! vitesses
   real(double),dimension(:,:), pointer :: ax     ! positions d'origine
   real(double),dimension(:,:), pointer :: fp     ! forces 
+  real(double),dimension(:,:), pointer :: xpnonpbc    ! only in the case, lsuivinonpbc  
+  real(double),dimension(:,:), pointer :: axnonpbc    ! only in the case, lsuivinonpbc  
+  real(double),dimension(:,:), pointer :: tmpsuivi    ! only in the case, lsuivinonpbc  
 
   integer, dimension(:), pointer       :: num_at_glob ! numero global d'un atome
 
@@ -44,6 +48,16 @@ contains
     ityp  = 0
     allocate(num_at_glob(nb_imm))
     num_at_glob  = 0
+
+    if (lsuivinonpbc) then
+      allocate(xpnonpbc(3,nb_imm))
+      xpnonpbc = 0.0
+      allocate(axnonpbc(3,nb_imm))
+      axnonpbc = 0.0
+      allocate(tmpsuivi(3,nb_imm))
+      tmpsuivi = 0.0
+    end if  
+    
 
   end subroutine alloc_all_tab_imm
 
@@ -96,6 +110,28 @@ contains
        ax = 0
        ax(:,1:old_nb_imm) = rbuff
 
+       if (lsuivinonpbc) then
+       ! 
+	rbuff = xpnonpbc
+        deallocate(xpnonpbc)
+        allocate(xpnonpbc(3,new_nb_imm))
+        xpnonpbc = 0
+        xpnonpbc(:,1:old_nb_imm) = rbuff
+       ! 
+	rbuff = axnonpbc
+        deallocate(axnonpbc)
+        allocate(axnonpbc(3,new_nb_imm))
+        axnonpbc = 0
+        axnonpbc(:,1:old_nb_imm) = rbuff
+        !
+        rbuff = tmpsuivi
+        deallocate(tmpsuivi)
+        allocate(tmpsuivi(3,new_nb_imm))
+        tmpsuivi = 0
+        tmpsuivi(:,1:old_nb_imm) = rbuff
+       !
+       end if
+       
        rbuff = fp
        deallocate(fp)
        allocate(fp(3,new_nb_imm))
@@ -155,6 +191,8 @@ contains
     deallocate(iwmax)
     deallocate(ityp)
     deallocate(num_at_glob)
-
+    if (lsuivinonpbc) deallocate(xpnonpbc)
+    if (lsuivinonpbc) deallocate(axnonpbc)
+    if (lsuivinonpbc) deallocate(tmpsuivi)
   end subroutine dealloc_all_tab_imm
 end module tab_imm_m

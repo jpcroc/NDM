@@ -9,8 +9,10 @@ module suivinonpbc
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
+#if(PARA)
+  use mod_mpi
+#endif
 
-real(double), dimension(:,:), allocatable :: xpnonpbc, tmpsuivi,axinit
   
   
 
@@ -19,74 +21,39 @@ real(double), dimension(:,:), allocatable :: xpnonpbc, tmpsuivi,axinit
 CONTAINS
   
 subroutine init_suivinonpbc
-#if(PARA)
-  use mod_mpi
-#endif
-
 implicit none
-
-#if(PARA)
-  integer,dimension(:),pointer     :: ibuffer
-  real(double), dimension(:,:),pointer   :: buffer
-  integer,      dimension(0:nprocs-1)   :: im_loc
-  integer,      dimension(0:nprocs-1)   :: pt_im
-  integer :: next_pt
-  integer :: i_proc
-  integer :: proc_source
-  integer :: im_temp
-
-  allocate (buffer(3,imm_glob))
-
-#endif
-
-
-ALLOCATE ( xpnonpbc(3,imm),tmpsuivi(3,imm) ) 
+integer ::i
+!
+ DO i=1,imd
+  tmpsuivi(1:3,i) = zero
+  xpnonpbc(1:3,i)=axnonpbc(1:3,i)
+ END DO
+ if (rang==0) then
  
-tmpsuivi(:,:) = zero
+ write(*,*) '===0=======',imd 
+ write(*,*)  axnonpbc(1:3,1)
+ write(*,*)  xp(1:3,1)
+ write(*,*)  tmpsuivi(1:3,3)
+ write(*,*)  axnonpbc(1:3,3)
+ write(*,*)  xp(1:3,3)
+end if
 
 
-!old #if(PARA)
-!old 
-!old	 buffer=0
-!old	 buffer(:,1:im) = xp(:,1:im)
-!old	 pt_im(0)=1
-!old	 next_pt = pt_im(0) + im_loc(0)
-!old	 do i_proc=1,nprocs-1
-!old	    call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 12011, MPI_COMM_WORLD, status, ierr)
-!old	    proc_source = status(MPI_SOURCE)
-!old	    im_loc(proc_source)=im_temp
-!old	    pt_im(proc_source)=next_pt
-!old	    next_pt = pt_im(proc_source) + im_loc(proc_source)
-!old	    call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
-!old		 NDM_MPI_REAL_DOUBLE, proc_source, 12012, MPI_COMM_WORLD, status, ierr)
-!old	 enddo
-!old
-!old	 xpnonpbc(:,1:im)=buffer(:,1:im)
-!old	 
-!old	 call MPI_SEND(im,	    1,   MPI_INTEGER,	     0,12011,MPI_COMM_WORLD,ierr)
-!old	 call MPI_SEND(ax(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,12012,MPI_COMM_WORLD,ierr)
-!old
-!old
-!old#else
-!old
- xpnonpbc(:,1:imm)=axinit(:,1:imm)
-!old
-!old#endif
-
+!
 end subroutine  init_suivinonpbc
 
 subroutine reset_suivinonpbc
-
-xpnonpbc(:,:)= xpnonpbc(:,:) + tmpsuivi(:,:)
-tmpsuivi(:,:) = zero 
-
+implicit none
+integer :: i 
+!
+ DO i=1,imd  
+ xpnonpbc(1:3,i)= xpnonpbc(1:3,i) + tmpsuivi(1:3,i)
+ tmpsuivi(1:3,i) = zero 
+ END DO
+!
 end subroutine 
  
 subroutine sauvepositionnonpbc(itapp)
-
-#if(PARA)
-  use mod_mpi
-#endif
 
   implicit none
   integer :: itapp ! iteration apparente
@@ -105,6 +72,7 @@ subroutine sauvepositionnonpbc(itapp)
   integer :: im_temp
 
   allocate (buffer(3,imm_glob))
+  allocate (ibuffer(imm_glob))
 
 #endif
 
@@ -190,6 +158,8 @@ subroutine sauvepositionnonpbc(itapp)
      im_loc(0)=im
      ibuffer=0
      ibuffer(1:im)  = ityp(1:im)
+     buffer=0
+     buffer(:,1:im) = xpnonpbc(:,1:im)
      pt_im(0)=1
      next_pt = pt_im(0) + im_loc(0)
      do i_proc=1,nprocs-1
@@ -200,14 +170,11 @@ subroutine sauvepositionnonpbc(itapp)
         next_pt = pt_im(proc_source) + im_loc(proc_source)
         call MPI_RECV(ibuffer(pt_im(proc_source):pt_im(proc_source)+im_temp-1),    im_loc(proc_source),   &
              MPI_INTEGER,         proc_source, 12022, MPI_COMM_WORLD, status, ierr)
+        call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
+             NDM_MPI_REAL_DOUBLE, proc_source, 12023, MPI_COMM_WORLD, status, ierr)
      enddo
-     
-!debug if (rang==0) write(*,*) 'Preparation ecriture ityp'
       write (lucoutnonpbcxp) ibuffer  ! Ecriture ityp
-!debug     if (rang==0) write(*,*) 'Preparation ecriture ityp'
-      write (lucoutnonpbcxp) xpnonpbc   ! Ecriture xp
-!debug     if (rang==0) write(*,*) 'Ecriture xp'
-
+      write (lucoutnonpbcxp) buffer   ! Ecriture xpnonpbc
 
      ibuffer(1:im) = num_at_glob(1:im)
      do i_proc=1,nprocs-1
@@ -232,9 +199,12 @@ subroutine sauvepositionnonpbc(itapp)
     endif
 
 #if(PARA)
-     call MPI_SEND(im,          1,   MPI_INTEGER,        0,12021,MPI_COMM_WORLD,ierr)
-     call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,12022,MPI_COMM_WORLD,ierr)
-     call MPI_SEND(num_at_glob(1:im), im,    MPI_INTEGER,0,12024,MPI_COMM_WORLD,ierr)
+     call MPI_SEND(im,          1,   MPI_INTEGER,              0,12021,MPI_COMM_WORLD,ierr)
+     call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,              0,12022,MPI_COMM_WORLD,ierr)
+     call MPI_SEND(xpnonpbc(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,12023,MPI_COMM_WORLD,ierr)
+     call MPI_SEND(num_at_glob(1:im), im,    MPI_INTEGER,      0,12024,MPI_COMM_WORLD,ierr)
+     deallocate (buffer)
+     deallocate(ibuffer)
 #endif
 
   end if

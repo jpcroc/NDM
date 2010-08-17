@@ -73,9 +73,6 @@ subroutine config
   allocate (ibuffer(imm_glob))
   allocate (buffer(3,imm_glob))
 
-           if (lsuivinonpbc) then
-	    ALLOCATE(xpnonpbc(3,imm_glob), axinit (3,imm_glob))
-           end if
   if (rang==0) then
      write(6,*)
      write(6,*)' CONSTRUCTION DE LA BOITE'
@@ -391,12 +388,12 @@ subroutine config
         !  alors les positions d'origine ax deviennent les xp du fichier .cin
         if (.not.lrestart) then
            ax(:,:im) = xp(:,:im)
-	   if (lsuivinonpbc) axinit(:,:im)=ax(:,:im)
+	   if (lsuivinonpbc) axnonpbc(:,:im)=ax(:,:im)
         endif
 
      else                                    ! si icintypemod=0
         ax(:,:im) = xp(:,:im)
-	 if (lsuivinonpbc) axinit(:,:im)=ax(:,:im)
+	 if (lsuivinonpbc) axnonpbc(:,:im)=ax(:,:im)
         lvpread=.false.
      endif
 
@@ -546,7 +543,9 @@ subroutine config
 !           end do
 ! This sequence is coorect:
            if (lsuivinonpbc) then
-	    tmpxc (1:imcell,1:3) = xc(1:imcell,1:3)
+	    do i=1,imcell
+	     tmpsuivi (1:3,i) = xc(i,1:3)
+	    end do 
 	   end if 
            do i=1,imcell
 	     WHERE ( (xc(i,:).LT.0.d0).OR.(xc(i,:).GE.1.d0) )
@@ -584,9 +583,9 @@ subroutine config
                     end do
 #endif
 		    if (lsuivinonpbc) then
-                     xpnonpbc(1,i) = (tmpxc(icell,1)+float(ia-1))/float(la)
-                     xpnonpbc(2,i) = (tmpxc(icell,2)+float(ib-1))/float(lb)
-                     xpnonpbc(3,i) = (tmpxc(icell,3)+float(ic-1))/float(lc)
+                     xpnonpbc(1,i) = (tmpsuivi(1,icell)+float(ia-1))/float(la)
+                     xpnonpbc(2,i) = (tmpsuivi(2,icell)+float(ib-1))/float(lb)
+                     xpnonpbc(3,i) = (tmpsuivi(3,icell)+float(ic-1))/float(lc)
 		    end if
                     ityp(i) = itypc(icell)
 #if(PARA)
@@ -627,11 +626,17 @@ subroutine config
         ax(:,:im) = xp(:,:im)
 	if ((lperiod).and.(lsuivinonpbc)) then
          call cryst_to_cart (imm, xpnonpbc, at, 1)  !cryst vers cart
-	 axinit(:,:im) = xpnonpbc (:,:im)
-	 DEALLOCATE (xpnonpbc)
-	 DEALLOCATE (tmpxc)
-	 else 
-	 axinit(:,:) = ax(:,:)
+	 axnonpbc(:,:im) = xpnonpbc (:,:im)
+ if (rang==0) then
+ 
+ write(*,*) '===1=======',imd 
+ write(*,*)  axnonpbc(1:3,1)
+ write(*,*)  xp(1:3,1)
+ write(*,*)  tmpsuivi(1:3,3)
+ write(*,*)  axnonpbc(1:3,3)
+ write(*,*)  ax(1:3,1)
+end if
+
 	end if
 
         ! génération de verre
@@ -761,7 +766,7 @@ subroutine config
            enddo
 
            ax(:,:im) = xp(:,:im)
-           if(lsuivinonpbc) axinit(:,:) = ax(:,:)
+           if(lsuivinonpbc) axnonpbc(:,:) = ax(:,:)
 
         endif      !Fin du if general pour  lalea
 
