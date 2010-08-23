@@ -4,11 +4,11 @@ module SMjuli
   implicit none
 
 
-  type :: EamTjl  ! liste les paramètres des fonctions glue
+  type :: EamTjl  ! liste les paramÃ¨tres des fonctions glue
      real(double)::ksi
   end type EamTjl
 
-  type :: RepTjl ! liste les paramètres des fonctions répulsions
+  type :: RepTjl ! liste les paramÃ¨tres des fonctions rÃ©pulsions
      real(double)::A
      real(double)::B
      real(double)::K
@@ -16,7 +16,7 @@ module SMjuli
   end type RepTjl
 
 
-  type :: DensityTjl ! liste les paramètres des fonctions densités
+  type :: DensityTjl ! liste les paramÃ¨tres des fonctions densitÃ©s
      real(double)::C
      real(double)::D
      real(double)::K
@@ -38,7 +38,7 @@ contains
 
 
   !---------------------------------------------------------------------------
-  subroutine inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2)
+  subroutine inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,ipotentiel,typ_pot_pair)
 
     !
 
@@ -51,9 +51,9 @@ contains
     real(double), intent(out) :: rue,rumax,r3cm
     integer, intent(out) :: iewald
     logical, intent(out) :: l3c
-    integer , intent(in) ::rang
-
-
+    integer , intent(in) ::rang,ipotentiel,npotmax
+    logical, pointer :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
+    integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
     !local variables
     integer:: i
     integer :: lupotin=95
@@ -74,6 +74,9 @@ contains
     allocate(rhotypjl(npair)) 
     allocate(embtypjl(ntyp)) 
     allocate(reppairjl(npair)) 
+    allocate (typ_and_pot(1:ntyp,npotmax))
+    typ_and_pot=.false. ; typ_and_pot(:,ipotentiel)=.true.
+    allocate (typ_pot_pair(1:npair)) ; typ_pot_pair=ipotentiel
 
     embtypjl%ksi=1.0
 
@@ -175,11 +178,11 @@ contains
        end if
     end IF
     IF (present(drho)) then
-       write(6,*) 'pas programmé!'
+       write(6,*) 'pas programmÃ©!'
        stop
     end IF
     IF (present(ddrho))then
-       write(6,*) 'pas programmé!'
+       write(6,*) 'pas programmÃ©!'
        stop
     end IF
 
@@ -235,11 +238,11 @@ contains
 
     end IF
     IF (present(dErep))  then
-       write(6,*) 'pas programmé!'
+       write(6,*) 'pas programmÃ©!'
        stop
     end IF
     IF (present(ddErep)) then
-       write(6,*) 'pas programmé!'
+       write(6,*) 'pas programmÃ©!'
        stop
     end IF
     RETURN

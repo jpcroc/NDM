@@ -14,10 +14,6 @@ SHELL=/bin/sh
 
 include ./linux.arch
 
-#EAM= SMjuli
-#EAM= SMeam
-#EAM= eamerco
-EAM =eamtab
 MODULS =
 
 
@@ -27,7 +23,7 @@ OBJS_MOD=   T_kind_param_m.o\
         pos_com_m.o \
         fft_com_m.o \
 	SMjuli.o \
-	${EAM}.o \
+	eamtab.o \
         contrainte.o \
         neb_module.o \
         jqmod.o \
@@ -192,7 +188,7 @@ ${BIN}/rundm90 : ${DEP}
 $(LIBART): 
 	(cp -rp ../art ./ ; cd art	; make ; cp *.o *.a ../../art)
 
-clean : clean_seq clean_para clean_art
+clean : clean_seq clean_para
 
 clean_seq :
 	@rm -f  *.o *.tmp.f90 *.mod rundm90_seq*  *.l *_genmod.f90

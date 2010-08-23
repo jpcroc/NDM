@@ -48,6 +48,7 @@ c     fichiers .cin
 c     open(unit=9,file=fnamcout,form='unformatted')
       lucin=9
       read(lucin)icintype
+      write(6,*)'icintype',icintype
       if ((icintype.gt.3).or.(icintype.lt.0)) then
          write(6,*)'wrong icintype'
          stop
@@ -57,6 +58,7 @@ c     open(unit=9,file=fnamcout,form='unformatted')
       if (icintype.ge.2) then
          ltriclin=.true.
          read(lucin) at
+      write(6,*)'at',at
          call recips(at(1,1),at(1,2),at(1,3),bg(1,1),bg(1,2),bg(1,3))
          do ic=1,3
             normat(ic)=0
@@ -79,13 +81,14 @@ c     enddo
       endif                     !icintype=2
 
       read(lucin)im             !number of atoms in the box
-c     write(6,*)'im =',im
+      write(6,*)'im =',im
       if (im.gt.imM) then
          write (6,*) 'stop'
          stop
       endif
 
       read(lucin)ityp		!types 
+      write(6,*)'ityp'
       do i=1,ntyp
          na(i)=0
       enddo

@@ -21,6 +21,8 @@ subroutine calpoeam
   !      write(6,*) 'rue ngrid ktor ', rue,ngrid,ktor
   !repulsion
   do l=1,npair
+     write(6,*)'pair pot', l,typ_pot_pair(l)
+     if (typ_pot_pair(l).ne.ipotentiel) cycle
      if (rang==0) write(6,*)'paire ',l
      do k=1,ngrid            
         rk=(k*ktor) ; rk2=rk**2
@@ -28,7 +30,6 @@ subroutine calpoeam
         !            write(6,*)k,rk
         select case(ipotentiel)
         case(10)
-
            call extrapolateRep(reppair(l),rk2,Erep=ysp(k))
         case(12)
            call extrapolateRepjl(reppairjl(l),rk2,Erep=ysp(k))
@@ -43,7 +44,7 @@ subroutine calpoeam
      !         if (l.eq.3) eamrep(:,l,:)=0.0
      if (roff1(l).le.0) cycle
      if (lu_roff_pair(l).EQV..false.)cycle
-     call zieg2(eamrep,csive,ngrid,ntyp,npair,catom,roff1,roff2)
+     call zieg2(eamrep,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair)
      !re-spline
      ysp(1:ngrid)=eamrep(1,l,1:ngrid)
      call cspline (ngrid,xsp,ysp,bsp,csp,dsp)
@@ -66,6 +67,7 @@ subroutine calpoeam
   select case (ipotentiel)
   case(10)
      do iti=1,ntyp
+        if (typ_and_pot(iti,ipotentiel).eqv..false.) cycle
         if (rang==0) write(6,*)'type ',iti
         do k=1,ngrid
            rk=(k*ktor) ; rk2=rk**2
@@ -116,6 +118,7 @@ subroutine calpoeam
 
   ktorho=(rhomax-rhomin)/ngrid
   do iti=1,ntyp
+     if (typ_and_pot(iti,ipotentiel).eqv..false.) cycle
      if (rang==0) write(6,*)'type ',iti
      do k=1,ngrid
         rhok=(k*ktorho) +rhomin

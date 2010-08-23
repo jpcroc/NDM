@@ -40,7 +40,10 @@ subroutine calfo
 #endif
   !  if (rang==0) write(6,*) 'PARA-T entree calfo'
   sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
-  potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potist=0.
+  potist=0.
+  potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potisP=0.
+  potisTersoff=0.
+  potisrep=0.; potisglue=0.; potiseam=0.
   if(lsigat) sigat(:,:,:)=0. ; 
 
 
@@ -75,11 +78,8 @@ subroutine calfo
               if (iewald.ge.1) call calfoew
 
               ! Potentiel total
-              potist = potis0+potis1+potis2+potis3
-
-              ! Potentiel total
-              potist = potis0+potis1+potis2+potis3
-
+              potisP = potis0+potis1+potis2+potis3
+              potist=potist+potisP
 
            case(2)
               ! !!! le cas parallele n'est pas pris en compte !!!
@@ -106,14 +106,15 @@ subroutine calfo
               else
                  call force_tersoff_cel
               endif
-           case default
+              potist=potist+potisTersoff
+           case (10)
               if (ltabvois) then
                  ! !!! le cas parallele n'est pas pris en compte !!!
                  if (.not.parallele) call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
               else
                  call calfoeamcel
               endif
-
+              potist=potist+potiseam
 
            end select
         end if

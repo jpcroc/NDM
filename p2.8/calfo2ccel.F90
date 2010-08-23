@@ -87,6 +87,7 @@ subroutine calfo2ccel
 
 
   do i = 1, im
+     if(typ_and_pot(ityp(i),ipotentiel).eqv..false.) cycle
      koo = ielat(i)                          ! Numero de la cellule
      iti = ityp(i)
      ! --- Calcul du second potentiel de la somme d'Ewald ---

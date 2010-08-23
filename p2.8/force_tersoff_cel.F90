@@ -48,7 +48,7 @@ subroutine force_tersoff_cel
 #if(PARA)
   real(double) :: potist_tot, ER1_tot, ER2_tot, ER3_tot 
   real(double), dimension(3)   :: jq_tot
-  real(double), dimension(3,3) :: sig_tot
+  real(double), dimension(3,3) :: sig_tot,potisTersoff_tot
 #endif
   real(double):: coupR(npair)
 
@@ -65,7 +65,6 @@ subroutine force_tersoff_cel
 
   !-----------------------------------------------
   !INIALISATION
-  !  potist = 0
   moi =0
   !  do i=1,im
   !     fp(1,i)=0; fp(2,i)=0; fp(3,i)=0
@@ -79,6 +78,7 @@ subroutine force_tersoff_cel
   !  write(6,*)sig
   !  write(6,*)
   do i=1,im
+     if(typ_and_pot(ityp(i),ipotentiel).eqv..false.) cycle
      v_ij = 0
 
      icelnumber = ielat(i)
@@ -343,9 +343,9 @@ subroutine force_tersoff_cel
         end do
      end do
      if (associated (free)) then
-        if (free(i).EQV..true.)potist = potist + 0.5*v_ij
+        if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
      else
-        potist = potist + 0.5*v_ij
+        potisTersoff = potisTersoff + 0.5*v_ij
      end if
      if (associated (free)) then
         if ((associated(eatom)).and.(free(i).EQV..true.)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
@@ -358,8 +358,8 @@ subroutine force_tersoff_cel
   call cryst_to_cart(imm,xp,at,1)
 
 #if(PARA)
-  call MPI_ALLREDUCE(potist,potist_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-  potist=potist_tot
+  call MPI_ALLREDUCE(potisTersoff,potisTersoff_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  potisTersoff=potisTersoff_tot
   !     call MPI_ALLREDUCE(jq,    jq_tot,    3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   !     jq=jq_tot
   call MPI_ALLREDUCE(sig,   sig_tot,   9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)

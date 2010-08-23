@@ -33,7 +33,7 @@ subroutine divid (appel)
   call param_det
 
 
-
+  write(6,*)rumax,rue_pair,maxval(rue_pair)
   rumax = max(rumax,maxval(rue_pair))
   csive=rumax/float(ngrid)
 

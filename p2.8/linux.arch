@@ -1,5 +1,5 @@
-#BIN=.
-BIN=~/NDM/bin
+BIN=.
+#BIN=~/NDM/bin
 
 
 
@@ -18,24 +18,17 @@ ifdef PARA
 else
  # Version sequentielle
  #
-#version tantale
-# F90 = pgf90#
-#version platine
-# F90 = /export/TMP/openmpi-1.1.4/bin/mpif90
-F90 = ifort
-#F90 = f95
-# CPPFLAGS = -C -P -traditional
-# EXT      = _5
-#version SRMP
+ F90=ifort
  CPPFLAGS = -C -E -P -traditional
 
 
-#F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all	# Debuggage pas pour de rire
-# F90FLAGS = -ffixed-line-length-0
-#EXT = _check
+#F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all  -convert big_endian	# Debuggage pas pour de rire
+#F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all 	# Debuggage pas pour de rire
+#EXT = _check_8
 
- EXT      = 
+EXT      =_8
 F90FLAGS = -O3 -convert big_endian
+#F90FLAGS = -O3
 
 endif
 

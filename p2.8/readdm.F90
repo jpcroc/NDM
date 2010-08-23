@@ -556,7 +556,7 @@ subroutine readdm
   do ipotcont=0,npotmax
      if (lpotentiel(ipotcont).EQV..true.) npotentiel =npotentiel+1
   end do
-  if ((lpotentiel(0).EQV..true.).and.(npotentiel.gt.1))then
+  if ((lpotentiel(0).EQV..true.).and.(npotentiel.gt.1)) then
      if (rang==0) write(6,*)'npotentiel>1 et lpotentiel(0)=T'
      stop
   end if
@@ -564,6 +564,9 @@ subroutine readdm
   if ((ntyp==-1).and.(npotentiel.gt.1))then
      if (rang==0) write(6,*)'npotentiel>1 et ntyp=-1'
      stop
+  end if
+  if ((npotentiel.gt.1).and.(lpotentiel(10).eqv..true.)) then
+     if (rang==0)write(6,*)'**** npotentiel >1 ET EAM ==> EAM TAB only!'
   end if
 
 

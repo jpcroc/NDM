@@ -44,6 +44,7 @@ subroutine analyse
   CHARACTER(len=20), dimension(:), allocatable :: aux_title
   CHARACTER(len=100) :: out_file
   integer,save::ncalceattotm=0
+  integer::ipot
   !-----------------------------------------------
   !
   !
@@ -93,18 +94,21 @@ subroutine analyse
 
 
            write (6, '(I10,D10.3,A,D21.12,A)') it, timel, '*Epot = ', potist*unitE, cunitE
-           select case (ipotentiel)
-           case (1:9)
-              write(6,'(A,D21.12,A)')'    *energie pot 2 corps = ',(potis1+potis2)*unitE, cunitE
-              if(l3c) write(6,'(A,D21.12,A)')'    *energie pot 3 corps = ',potcp*unitE, cunitE
-              if(iewald.gT.0) write (6, '(A,D21.12,A)') '    *energie pot coul recip = ', potis3*unitE, cunitE
-           case(10:12)
-              if( ipotentiel.ge.10) then
-                 write(6,'(A,D21.12,A)')'    *energie PAIRE = ',potisrep*unitE, cunitE
-                 write(6,'(A,D21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
+           do ipot=1,npotmax
+              if (lpotentiel(ipot).eqv..true.) then
+                 select case (ipot)
+                 case (1:9)
+                    write(6,'(A,D21.12,A)')'    *energie paire 2 corps = ',(potis1+potis2)*unitE, cunitE
+                    if(l3c) write(6,'(A,D21.12,A)')'    *energie pot 3 corps = ',potcp*unitE, cunitE
+                    if(iewald.gT.0) write (6, '(A,D21.12,A)') '    *energie pot coul recip = ', potis3*unitE, cunitE
+                 case(10:12)
+                    write(6,'(A,D21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
+                    write(6,'(A,D21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
+                 case(13)
+                    write(6,'(A,D21.12,A)')'    *energie Tersoff = ',potisTersoff*unitE, cunitE
+                 end select
               end if
-           case(13)
-           end select
+           end do
            write (6,'(I10,D10.3,A,D21.12,A,a,f0.3,a)') it,timel,'*Ec = ',kine*unitE, cunitE, &
                 '  (', 2.d0*kine/(3.d0*float(im_glob)*bk), ' K)'
            write (6,'(I10,D10.3,A,D21.12,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE

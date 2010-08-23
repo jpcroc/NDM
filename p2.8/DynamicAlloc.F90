@@ -81,22 +81,24 @@ subroutine alloc_typ
   end if
 
 
-
-  if (ipotentiel==0) then
+  ipotentiel=0
+  if (lpotentiel(ipotentiel).eqv..true.) then
      allocate(ray(ntyp)) ;allocate(bm(ntyp)) ; allocate(shel(ntyp))
   endif
 
-  if (ipotentiel==5) then
+  ipotentiel=5
+  if (lpotentiel(ipotentiel).eqv..true.) then
      allocate(Dmorse(npair)) ;allocate(amorse(npair)) ; allocate(Remorse(npair))
   endif
 
-  if (ipotentiel==6) then
+  ipotentiel=6
+  if (lpotentiel(ipotentiel).eqv..true.) then
      allocate(ietaij(npair)) ;allocate(capHij(npair))
      allocate(capDij(npair));allocate(capWij(npair))
   endif
 
-
-  if (ipotentiel==2) then
+  ipotentiel=2
+  if (lpotentiel(ipotentiel).eqv..true.) then
      allocate(Awat(npair));allocate(Bwat(npair));allocate(pwat(npair))
      allocate(qwat(npair));allocate(rawat(npair)) ; allocate(rawat2(npair))
      allocate(potw(npair,0:ngrid+1))
@@ -115,36 +117,36 @@ subroutine alloc_typ
 
   endif
 
-
-  if (ipotentiel .ge.10) then
-     allocate(eamrep(4,npair,0:ngrid+1))
-     if (ipotentiel==12) then
-        allocate(eamrho(4,npair,0:ngrid+1))
-     else
-        allocate(eamrho(4,ntyp,0:ngrid+1))
+  do ipotentiel=10,12
+     if (lpotentiel(ipotentiel).eqv..true.) then
+        allocate(eamrep(4,npair,0:ngrid+1))
+        if (ipotentiel==12) then
+           allocate(eamrho(4,npair,0:ngrid+1))
+        else
+           allocate(eamrho(4,ntyp,0:ngrid+1))
+        end if
+        allocate(eamglue(4,ntyp,0:ngrid+1))
      end if
-     allocate(eamglue(4,ntyp,0:ngrid+1))
-  end if
-
-!  if (l3c) then
-     allocate(lamb(ntrip)) ; allocate(cangle(ntrip))
-     allocate(gam(ntrip,npair)) ; allocate(coup3c(ntrip,npair))
-     allocate(coup3c2(ntrip,npair))
-     allocate(ipo3c(ntyp,ntyp,ntyp));allocate(l3ctyp(ntyp))
-     allocate(l3cpair(ntyp))
-     allocate(c3c(ntrip))
-     k=0
-     do ic=1,ntyp
-        do i=1,ntyp
-           do j=i,ntyp
-              k=k+1
-              ipo3c(ic,i,j)=k
-              ipo3c(ic,j,i)=k
-           enddo
+  end do
+  !  if (l3c) then
+  allocate(lamb(ntrip)) ; allocate(cangle(ntrip))
+  allocate(gam(ntrip,npair)) ; allocate(coup3c(ntrip,npair))
+  allocate(coup3c2(ntrip,npair))
+  allocate(ipo3c(ntyp,ntyp,ntyp));allocate(l3ctyp(ntyp))
+  allocate(l3cpair(ntyp))
+  allocate(c3c(ntrip))
+  k=0
+  do ic=1,ntyp
+     do i=1,ntyp
+        do j=i,ntyp
+           k=k+1
+           ipo3c(ic,i,j)=k
+           ipo3c(ic,j,i)=k
         enddo
      enddo
+  enddo
 
-!  endif
+  !  endif
 
 
 

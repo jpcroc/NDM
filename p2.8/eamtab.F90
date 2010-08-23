@@ -49,7 +49,7 @@ contains
 
 
   !---------------------------------------------------------------------------
-  subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2)
+  subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,npotentiel,ipo)
 
     !
 
@@ -62,15 +62,21 @@ contains
     real(double), intent(out) :: rue,rumax,r3cm
     integer, intent(out) :: iewald
     logical, intent(out) :: l3c
-    integer , intent(in) ::rang
-
-
+    integer , intent(in) ::rang,ipotentiel,npotmax,npotentiel
+    logical, pointer :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
+    integer,pointer:: typ_pot_pair(:)
+    integer, dimension(:,:), pointer  :: ipo			! indice des paires d'atomes
 
     !local variables
-    integer:: i,l,k,iti,n,npt
+    integer:: i,l,k,iti,n,npt,ipr
     integer :: lupotin=95
     character ::  fnampotin*80
-    real(double) :: xmin,xmax,xdum
+    real(double) :: xmin,xmax,xdum,ruelu,cmr,catomr
+    integer,pointer :: typtyp(:),ind_pair(:)
+    integer::itir,npair_r,ipair,ntypr,j,itj
+    logical,pointer::lue_typ(:),lue_paire(:),lu_roff_pair(:)
+    character :: tyr*3
+
     !    real(double):: deltaEAM, deltaRHO,deltaREP
 
     fnampotin = 'eamtab.potin'
@@ -80,27 +86,92 @@ contains
 
     iewald=0; l3c=.false.; r3cm=0.
 
-    read(lupotin,*)ntyp
-    npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
-    call  alloc_typ
+    if (npotentiel.gt.1) then
+       read(lupotin,*)ntypr
+       allocate (typtyp(ntypr))
+       npair_r=  ntypr*(ntypr+1)/2 
+       allocate (ind_pair(npair_r))
+       write(6,*)'ntypr pour ce pot',ntypr
+       read(lupotin,*) rue
+       rue=rue*1.0d-8
+       if (rang==0)    write(6,*) 'Types d_atomes pour ce potentiel:'
+       do i = 1, ntypr
+          read (lupotin,*) cmr,catomr,tyr,iti
+          typtyp(i)=iti
+          if (lue_typ(iti).eqv..true.) then 
+             if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
+             if (cmr*umass.ne.cm(iti))then
+                if (rang==0)write(6,*) 'pb avec cm'
+                stop
+             end if
+             if (tyr.ne.ty(iti))then
+                if (rang==0)write(6,*) 'pb avec ty'
+                stop
+             end if
+          else
+             cm(iti)=cmr*umass;ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.
+          endif
 
-    read(lupotin,*) rue
-    rue=rue*1.0d-8
-    rumax=max(rue,rumax)
-	if (rang==0)    write(6,*) 'Types d_atomes :'
-    do i = 1, ntyp
-       read (lupotin,*) cm(i),catom(i),ty(i)
-       if (rang/=0) cycle
-       write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
-    end do
-    do i = 1, npair
-       read (lupotin,*) roff1(i),roff2(i)
-       if (rang/=0) cycle
-       write (6, '(2F9.3)') roff1(i),roff2(i)
-    end do
-    roff1=roff1*1.0d-8
-    roff2=roff2*1.0d-8
-    cm(:ntyp) = cm(:ntyp)*umass
+          if (rang/=0) cycle
+          write(6,*)'type        cm      catom    ty'
+          write (6, '(I4,E12.3,F9.3,A5)') iti,cm(iti),catom(iti),ty(iti)
+          typ_and_pot(iti,ipotentiel)=.true.
+       end do
+       !lecture des roff des paires EAM
+       ipair=0
+       do i=1,ntypr
+          iti=typtyp(i)
+          do j=i,ntypr       
+             itj=typtyp(j)
+             ipr=ipo(iti,itj)
+             ipair=ipair+1
+             ind_pair(ipair)=ipr
+             if (rang==0) write(6,*)'paire l active ipotentiel: ',ipr, ipotentiel
+             if(lue_paire(ipr).eqv..true.) then
+                write(6,*) rang,'paire l lue deux fois ', ipr,iti,itj
+                stop
+             end if
+             read (lupotin,*) roff1(ipr),roff2(ipr)
+             if (rang==0) write(6,*)'roff1 et 2 pour cette paire',ipair,ipr,roff1(ipr),roff2(ipr)
+             lu_roff_pair(ipr)=.true.;typ_pot_pair(ipr)=ipotentiel
+          end do
+       end do
+
+    else
+       read(lupotin,*)ntyp
+       ntypr=ntyp
+       allocate (typtyp(ntypr))     
+       npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
+       npair_r=npair
+       allocate (ind_pair(npair_r))
+       call  alloc_typ
+       read(lupotin,*) rue
+       rue=rue*1.0d-8
+       if (rang==0)    write(6,*) 'Types d_atomes :'
+       do i = 1, ntyp
+          typtyp(i)=i
+          read (lupotin,*) cm(i),catom(i),ty(i)
+          if (rang/=0) cycle
+          write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
+       end do
+       do i = 1, npair
+          ind_pair(i)=i
+          read (lupotin,*) roff1(i),roff2(i)
+          if (rang/=0) cycle
+          write (6, '(2F9.3)') roff1(i),roff2(i)
+       end do
+
+       roff1=roff1*1.0d-8
+       roff2=roff2*1.0d-8
+       lu_roff_pair(1:npair)=.true. ;typ_pot_pair(:)=ipotentiel
+
+       cm(:ntyp) = cm(:ntyp)*umass
+       allocate (typ_and_pot(ntyp,npotmax))
+       typ_and_pot(:,:)=.false.
+       typ_and_pot(1:ntyp,ipotentiel)=.true.
+
+    end if
+
 
     read(lupotin,*)nptmax
     if (rang==0) write(6,*)'nptmax',nptmax
@@ -114,16 +185,17 @@ contains
     !  reppair(:,:)%potr=0.;  reppair(:,:)%dpotr=0.;  reppair(:,:)%xr=0.
 
 
-    do iti=1,ntyp
+    do itir=1,ntypr
+       iti=typtyp(itir)
        !lecture de Glue
        read(lupotin,*)n
-       if (rang==0) write(6,*)'eam',n
-       if(n.ne.iti)then
+       if (rang==0) write(6,*)'eam',n,iti
+       if(n.ne.itir)then
           write(6,*) rang,' ordre de lecture de EAM stop'
           call arret_ndm
        end if
        read(lupotin,*)npt,embtyp(iti)%deltaEAM
-       if (rang==0) write(6,*)'npt',npt    
+!       if (rang==0) write(6,*)'npt',npt    
        if(npt.gt.nptmax)then
           write(6,*) rang,'nb de points de grille  EAM stop'
           call arret_ndm
@@ -131,8 +203,6 @@ contains
        allocate(embtyp(iti)%feam(nptmax)) 
        allocate(embtyp(iti)%dfeam(nptmax)) 
        allocate(embtyp(iti)%xg(nptmax)) 
-
-
        do i=1,nptmax
           if(i.le.npt) then
              read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),xdum
@@ -153,8 +223,8 @@ contains
 
        !lecture de dens
        read(lupotin,*)n
-       if (rang==0) write(6,*)'dens',n
-       if(n.ne.iti)then
+       if (rang==0) write(6,*)'dens',n,iti
+       if(n.ne.itir)then
           write(6,*) rang,' ordre de lecture de EAM densstop'
           call arret_ndm
        end if
@@ -187,40 +257,48 @@ contains
        rhotyp(iti)%drho(nptmax)=0.
     end do
 
-    do iti=1,npair
+    do ipair=1,npair_r
        read(lupotin,*)n
-       if (rang==0) write(6,*)n
-       if (rang==0) write(6,*)'rep'
-       if(n.ne.iti)then
+       if(n.ne.ipair)then
           write(6,*) rang, ' ordre de lecture de EAM rep stop'
           call arret_ndm
        end if
-       read(lupotin,*)npt,reppair(iti)%deltaREP
+       ipr=ind_pair(ipair)
+       if (rang==0) write(6,*)'paire eam ; paire complete',n,ipr
+       if (rang==0) write(6,*)'rep'
+
+       read(lupotin,*)npt,reppair(ipr)%deltaREP
        if(npt.gt.nptmax)then
           write(6,*) rang,'nb de points de grille  EAM stop'
           call arret_ndm
        end if
-       allocate(reppair(iti)%potr(nptmax)) 
-       allocate(reppair(iti)%dpotr(nptmax)) 
-       allocate(reppair(iti)%xr(nptmax)) 
+       allocate(reppair(ipr)%potr(nptmax)) 
+       allocate(reppair(ipr)%dpotr(nptmax)) 
+       allocate(reppair(ipr)%xr(nptmax)) 
 
        do i=1,nptmax
           if(i.le.npt) then
-             read(lupotin,*)reppair(iti)%xr(i),reppair(iti)%potr(i),xdum
-             !          write(6,*)i,reppair(iti)%xr(i),reppair(iti)%potr(i),xdum
+             read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),xdum
+             !          write(6,*)i,reppair(ipr)%xr(i),reppair(ipr)%potr(i),xdum
           else
-             reppair(iti)%xr(i)=(i-npt)*reppair(iti)%deltaREP+ reppair(iti)%xr(i)
-             reppair(iti)%potr(i)=reppair(iti)%potr(npt)
+             reppair(ipr)%xr(i)=(i-npt)*reppair(ipr)%deltaREP+ reppair(ipr)%xr(i)
+             reppair(ipr)%potr(i)=reppair(ipr)%potr(npt)
           end if
        end do
        do i=1,nptmax-1
-          reppair(iti)%dpotr(i)=reppair(iti)%potr(i+1)-reppair(iti)%potr(i)
-          !        write(6,*)'rep',iti,i,reppair(iti)%xr(i),reppair(iti)%potr(i),reppair(iti)%dpotr(i)
+          reppair(ipr)%dpotr(i)=reppair(ipr)%potr(i+1)-reppair(ipr)%potr(i)
+          !        write(6,*)'rep',ipr,i,reppair(ipr)%xr(i),reppair(ipr)%potr(i),reppair(ipr)%dpotr(i)
        end do
-       reppair(iti)%dpotr(nptmax)=0.
+       reppair(ipr)%dpotr(nptmax)=0.
     end do
 
     close(lupotin)
+!if(associated* (typ_and_pot).eqv..false.), i.e. if npotentiel==1 
+    if(associated (typ_and_pot).eqv..false.) then
+       allocate (typ_and_pot(ntyp,npotmax))
+       typ_and_pot(:,:)=.false.
+       typ_and_pot(1:ntyp,ipotentiel)=.true.
+    end if
 
     return
 

@@ -78,7 +78,6 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
      test_sigma=.false.
   end if
 
-!  potist = 0
   moi =0
 !  do i=1,im
 !     fp(1,i)=0; fp(2,i)=0; fp(3,i)=0
@@ -340,7 +339,7 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
 !                       ! spline
 !                       dr = rij-float(kk)*csive
 !!                       write(6,*)'rij roff',rij,roff2(ij),pot(1,l,kk)
-!                       if (free(i)==.true)potist = potist+pot(1,l,kk)+ rij*(dr*(pot(2,l,kk)+dr*(pot(3,l,kk) +dr*(pot(4,l,kk)))))                       
+!                       if (free(i)==.true)potisTersoff = potisTersoff+pot(1,l,kk)+ rij*(dr*(pot(2,l,kk)+dr*(pot(3,l,kk) +dr*(pot(4,l,kk)))))                       
 !                       phu = -1.0*(pot(2,l,kk)+dr*(2.0*pot(3,l,kk)+dr*(3.0*pot(4,l,kk))))
 !                       fp(:,i)=fp(:,i)+phu*cvij(1,:)
 !                       fp(:,j)=fp(:,j)-phu*cvij(1,:)
@@ -352,9 +351,9 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
 
         end do Tloop1at2
         if (associated (free)) then
-           if (free(i).EQV..true.)potist = potist + 0.5*v_ij
+           if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
         else
-           potist = potist + 0.5*v_ij
+           potisTersoff = potisTersoff + 0.5*v_ij
         end if
 
 
@@ -376,10 +375,10 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
      !      fp(:,1:im)=fpTemp(:,1:im)
      fp=fpTemp
 
-     CALL MPI_ALLREDUCE(potist,potistTemp,1,MPI_DOUBLE_PRECISION,&
+     CALL MPI_ALLREDUCE(potisTersoff,potisTersoffTemp,1,MPI_DOUBLE_PRECISION,&
           MPI_SUM,MPI_COMM_WORLD,code)
 
-     potist=potistTemp
+     potisTersoff=potisTersoffTemp
 
      ! MPI : collecte generale et somme des contraintes calcules par les process
      if(test_sigma)then

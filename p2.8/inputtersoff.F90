@@ -30,11 +30,6 @@ subroutine inputtersoff
      ntypr=ntyp
   end if
 
-  !  read(lupotin,*)ntyp,psilu
-  !  npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2  
-  !  call  alloc_typ
-
-
   allocate(lambda1lu(ntyp));allocate(lambda2lu(ntyp));allocate(lambda3lu(ntyp))
   allocate(Aterlu(ntyp));allocate(Bterlu(ntyp));allocate(Rterlu(ntyp))
   allocate(Sterlu(ntyp))
@@ -57,7 +52,7 @@ subroutine inputtersoff
      end if
      typtyp(i)=iti
      if(lue_typ(iti).EQV..true.)then
-        if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
+        if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohÃ©rence'
         if (cmr*umass.ne.cm(iti))then
            if (rang==0)write(6,*) 'pb avec cm'
            stop
@@ -67,6 +62,7 @@ subroutine inputtersoff
            stop
         end if
      end if
+     if (associated(typ_and_pot))typ_and_pot(iti,ipotentiel)=.true.
 
      cm(iti)=cmr*umass;ty(iti)=tyr
      read(lupotin,*) lambda1lu(iti),lambda2lu(iti),lambda3lu(iti),Aterlu(iti),Bterlu(iti)
@@ -143,6 +139,12 @@ subroutine inputtersoff
 
   ldemitab =.false.
 
+!if(allocated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 
+  if(associated(typ_and_pot).eqv..false.) then
+     allocate (typ_and_pot(ntyp,npotmax))
+     typ_and_pot(:,:)=.false.
+     typ_and_pot(1:ntyp,ipotentiel)=.true.
+  end if
 
 
 end subroutine inputtersoff

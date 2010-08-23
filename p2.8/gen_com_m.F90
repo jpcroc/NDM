@@ -80,9 +80,9 @@ module gen_com_m
   real(double), dimension(3) :: normat ! norme de at
   integer :: ipotentiel,npotentiel    ! type du potentiel COURANT 1=BMH, 2=buckingham 3=watanabe,4=UO2; etc...
   logical :: lpotentiel (0:npotmax)
-  integer::npotm ! vraie valeur de npotmax
+  logical, pointer :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
   !  integer::lupotin=95
-  integer, pointer:: typ_pot_pair(:)
+  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
   logical, pointer::lu_roff_pair(:)
   logical,pointer::lue_typ(:),lue_trip(:)
   logical :: lpotrep ! repulsion courte distance
@@ -175,7 +175,9 @@ module gen_com_m
   real(double), dimension(:), pointer :: ro, dip, pm, roff1, roff2, a_factor,r8p ! potentiel
   real(double), dimension(:,:), pointer :: bspw, cspw, dspw ! spline
   real(double) :: alpha
-  real(double) :: potist, potis1, potis2, potis3, potis0, potcp ! energie potentielle
+  real(double) :: potist ! energie potentielle totale
+  real(double):: potisP,potis1, potis2, potis3, potis0, potcp ! energie potentielle de paire
+  real(double) :: potisTersoff ! energie potentielle de tersoff
 
 
   !6 Stillinger Weber Vashista JAP 101, 103515 (07)
@@ -185,7 +187,7 @@ module gen_com_m
 
 
   ! EAM
-  real(double) :: potisrep, potisglue ! energie potentielle EAM
+  real(double) :: potisrep, potisglue,potiseam ! energie potentielle EAM
   real(double),dimension(:,:,:),pointer :: eamrep,eamrho,eamglue ! tableaux des splines du pot EAM 
   real(double) :: rhomin,rhomax
 

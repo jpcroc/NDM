@@ -473,7 +473,7 @@ subroutine calpo
      enddo
 
   else
-     write(6,*)'npair = ',npair
+
      do l = 1, npair
         if (typ_pot_pair(l)==ipotentiel)then
            potpart(1:ngrid) = pot(1,l,1:ngrid)

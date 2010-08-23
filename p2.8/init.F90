@@ -54,6 +54,8 @@ subroutine init
   if (npotentiel.gt.1)then
      ipotentiel=-1
      npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
+     allocate(typ_and_pot(ntyp,npotmax))
+     typ_and_pot(:,:)=.false.
      call  alloc_typ
   end if
 
@@ -80,15 +82,17 @@ subroutine init
               write(6,*)'POTENTIEL EAM'
               write(6,*)
            end if
-           call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2)
-           rue_pair(:)=rue
+           call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,npotentiel,ipo)
+           do i=1,npair
+              if (typ_pot_pair(i)==ipotentiel) rue_pair(i)=rue
+           end do
         case(12)
            if (rang.eq.0) then
               write(6,*)
               write(6,*)'POTENTIEL Ju Li'
               write(6,*)
            end if
-           call inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2)
+           call inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,ipotentiel,typ_pot_pair)
            rue_pair(:)=rue
         case(13,14,15)
            !nguyen mettre input tersoff
@@ -110,10 +114,11 @@ subroutine init
            call inputtersoff
 
         end select
-!        h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
-!        usdh = 1/(two*tstep)         
+        !        h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
+        !        usdh = 1/(two*tstep)         
      endif
   end do
+  write(6,*)'cm',cm
   h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
   usdh = 1/(two*tstep)         
   !endif
@@ -174,7 +179,7 @@ subroutine init
      else
         cycle
      end if
-     
+
      select case(ipotentiel) 
      case(0:9)
         call calpo 
@@ -182,22 +187,22 @@ subroutine init
         call calpoeam
      case(13,14,15)
         if (.not.parallele) then
-        if (maxval(roff1).gt.0) call tersoff_zbl
-     end if
+           if (maxval(roff1).gt.0) call tersoff_zbl
+        end if
      end select
   end do
   if (npotentiel.gt.1) then
-!     write(6,*)
-!     write(6,*)'BILAN DES POTENTIELS'
-!     do i=1,ntyp
-!        do j=1,ntyp
-!           l=ipo(i,j)
-!           write(6,*)
-!           write(6,*)'paire i-j l',i,j,l
-!           write(6,*)'lue paire typ_pot_pair coupure'
-!           write(6,*)lue_paire(l),typ_pot_pair(l),rue_pair(l)*1d8
-!        end do
-!     end do
+     !     write(6,*)
+     !     write(6,*)'BILAN DES POTENTIELS'
+     !     do i=1,ntyp
+     !        do j=1,ntyp
+     !           l=ipo(i,j)
+     !           write(6,*)
+     !           write(6,*)'paire i-j l',i,j,l
+     !           write(6,*)'lue paire typ_pot_pair coupure'
+     !           write(6,*)lue_paire(l),typ_pot_pair(l),rue_pair(l)*1d8
+     !        end do
+     !     end do
      if (rang==0) then
         write(6,*)
         write(6,*)'decoupage en cellule suivant'
@@ -237,12 +242,12 @@ subroutine init
 
   !  if (itmax>0) then
   call caltabt
-! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
+  ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
   if (ltabvois) call caltabi 
-! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
+  ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
   !  end if
   if (.not.lrestart) then
-!    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
+     !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
 #if(PARA)
      temps_initspeed_deb = MPI_Wtime()
 #endif
@@ -322,7 +327,7 @@ subroutine init
      call anapos(it) 
      call arret_ndm
   end if
-!  call sauvegarde 
+  !  call sauvegarde 
   if (itmax==0) call arret_ndm
 
   if(iteanapos>0)then
@@ -347,7 +352,7 @@ subroutine init
      vpchup=vp
      xpchdeb=xp
      vpchdeb=vp
-     
+
 #if(PARA)
      allocate(itichup(imm))
      allocate(itichdn(imm))

@@ -43,7 +43,7 @@ SUBROUTINE calfoeamcel
 
 #if(PARA)
   ! declarations supplementaires pour MPI
-  real(double) ::  potist_tot,potisglue_tot
+  real(double) ::  potisglue_tot
   real(double) ::  potisrep_tot
   real(double), dimension(3,3) :: sig_tot
 #endif
@@ -63,8 +63,6 @@ SUBROUTINE calfoeamcel
   inv_ktorho = 1.d0/ktorho
 
   tabdensity(:)=0.
-  !  sig(:,:)=0.
-  !  fp(:,:) = 0.0
   potisrep=0.
   potisglue=0.
   rue2=rue**2
@@ -80,7 +78,7 @@ SUBROUTINE calfoeamcel
 
 
   loop1at1: do i=1,im
-
+     if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
 
      ! --- Calcul de la densite sur i ---    
 
@@ -96,6 +94,8 @@ SUBROUTINE calfoeamcel
         ! pour chaque atome ds la cel. voisine
         loop1at2: do i2 = 1, nato(ko1)
            j = last(i2,ko1)
+           if (typ_pot_pair(ipo(ityp(i),ityp(j))).ne.ipotentiel) cycle
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
            !CRC             if(i.eq.j) cycle
 #if(PARA)
@@ -197,9 +197,9 @@ SUBROUTINE calfoeamcel
 
            if (test_sigma) then        
 	      if (num_at_glob(i).lt.num_at_glob(j)) then          
-                 sig(1:3,1) = sig(1:3,1)-dErep*gradij(1:3)*dxp(1)
-                 sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)
-                 sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)
+                 sig(1:3,1) = sig(1:3,1)-dErep*gradij(1:3)*dxp(1)/volu
+                 sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)/volu
+                 sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)/volu
 	      endif
            end if
 
@@ -211,6 +211,7 @@ SUBROUTINE calfoeamcel
 
   ! calcul et stockage de Eembi et dEembi
   loop2at1: do i=1,im
+     if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
      iti=ityp(i)
      k=Int((tabdensity(i)-rhomin)*inv_ktorho)
      if(k.gt.ngrid) then
@@ -242,7 +243,7 @@ SUBROUTINE calfoeamcel
   !boucle des forces
 
   loop3at1: do i=1,im
-
+     if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
 
      ! --- Calcul de la densite sur i ---    
 
@@ -256,6 +257,8 @@ SUBROUTINE calfoeamcel
         ! pour chaque atome ds la cel. voisine
         loop2at2: do i2 = 1, nato(ko1)
            j = last(i2,ko1)
+           if (typ_pot_pair(ipo(ityp(i),ityp(j))).ne.ipotentiel) cycle
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
            !CRC             if(i.eq.j) cycle
 #if(PARA)
@@ -324,9 +327,9 @@ SUBROUTINE calfoeamcel
 
            if (test_sigma) then                   
               if (num_at_glob(i).lt.num_at_glob(j)) then
-                 sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)
-                 sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)
-                 sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)
+                 sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)/volu
+                 sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)/volu
+                 sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)/volu
 	      endif
            end if
 
@@ -335,13 +338,9 @@ SUBROUTINE calfoeamcel
   end do loop3at1
 
 
-  potist = potisglue + potisrep
-
-  if (test_sigma) sig(1:3,1:3) = sig(1:3,1:3)/volu
+!  if (test_sigma) sig(1:3,1:3) = sig(1:3,1:3)/volu
 
 #if(PARA)
-  call MPI_ALLREDUCE(potist,   potist_tot,   1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-  potist=potist_tot
   CALL MPI_ALLREDUCE(potisrep, potisrep_tot, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   potisrep=potisrep_tot
   CALL MPI_ALLREDUCE(potisglue,potisglue_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -349,6 +348,8 @@ SUBROUTINE calfoeamcel
   call MPI_ALLREDUCE(sig,      sig_tot,      9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   sig=sig_tot
 #endif
+
+  potiseam=potisglue+potisrep
 
   return
 end SUBROUTINE calfoeamcel

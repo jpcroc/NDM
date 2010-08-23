@@ -214,14 +214,16 @@ subroutine input_pair
                     end if
                  end if
               endif
+              if (associated(typ_and_pot))typ_and_pot(iti,ipotentiel)=.true.
+              write(6,*)cmr,umass
               cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
               if(iewald.ne.0) q(iti)=qr
               lue_typ(iti)=.true.
               if (rang/=0) cycle
               if (iewald==0)then
-                 write (6, '(2F9.3,A5,I4)') cm(iti),catom(iti),ty(iti),iti
+                 write (6, '(E12.3,F9.3,A5,I4)') cm(iti),catom(iti),ty(iti),iti
               else
-                 write (6, '(3F9.3,A5,I4)') q(iti),cm(iti),catom(iti),ty(iti),iti
+                 write (6, '(2E12.3,F9.3,A5,I4)') q(iti),cm(iti),catom(iti),ty(iti),iti
               end if
            end do
         else
@@ -805,7 +807,13 @@ subroutine input_pair
      write (6, *) rang, 'Bienvenue dans le cote obscur de la force :pas de potentiel ?'
      call arret_ndm
   end select
-
+!if(associated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 
+  if(associated (typ_and_pot).eqv..false.) then
+     allocate (typ_and_pot(ntyp,npotmax))
+     typ_and_pot(:,:)=.false.
+     typ_and_pot(1:ntyp,ipotentiel)=.true.
+  end if
+     
 
   ! ********** Fin de lecture des donnees du fichier potentiel.potin ********
   close(lupotin)
