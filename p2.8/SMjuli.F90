@@ -4,11 +4,11 @@ module SMjuli
   implicit none
 
 
-  type :: EamTjl  ! liste les paramètres des fonctions glue
+  type :: EamTjl  ! liste les param�tres des fonctions glue
      real(double)::ksi
   end type EamTjl
 
-  type :: RepTjl ! liste les paramètres des fonctions répulsions
+  type :: RepTjl ! liste les param�tres des fonctions r�pulsions
      real(double)::A
      real(double)::B
      real(double)::K
@@ -16,7 +16,7 @@ module SMjuli
   end type RepTjl
 
 
-  type :: DensityTjl ! liste les paramètres des fonctions densités
+  type :: DensityTjl ! liste les param�tres des fonctions densit�s
      real(double)::C
      real(double)::D
      real(double)::K
@@ -178,11 +178,11 @@ contains
        end if
     end IF
     IF (present(drho)) then
-       write(6,*) 'pas programmé!'
+       write(6,*) 'pas programm�!'
        stop
     end IF
     IF (present(ddrho))then
-       write(6,*) 'pas programmé!'
+       write(6,*) 'pas programm�!'
        stop
     end IF
 
@@ -238,11 +238,11 @@ contains
 
     end IF
     IF (present(dErep))  then
-       write(6,*) 'pas programmé!'
+       write(6,*) 'pas programm�!'
        stop
     end IF
     IF (present(ddErep)) then
-       write(6,*) 'pas programmé!'
+       write(6,*) 'pas programm�!'
        stop
     end IF
     RETURN

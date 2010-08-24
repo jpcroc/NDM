@@ -2,7 +2,7 @@
 foreach temp (`ls -1 *90 *f Makefil*`)
 	echo $temp
 	rm -f rd
-	diff   $temp ../p2.5/$temp > rd
-	if  ( -s  rd )    kompare ../p2.5/$temp  $temp 
+	diff   $temp ../SVN/NDM/p2.8/$temp > rd
+	if  ( -s  rd )    kompare $temp ../SVN/NDM/p2.8/$temp 
 
 end

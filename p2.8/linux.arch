@@ -22,12 +22,12 @@ else
  CPPFLAGS = -C -E -P -traditional
 
 
-#F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all  -convert big_endian	# Debuggage pas pour de rire
+F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all  -convert big_endian	# Debuggage pas pour de rire
 #F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all 	# Debuggage pas pour de rire
 #EXT = _check_8
 
-EXT      =_8
-F90FLAGS = -O3 -convert big_endian
+#EXT      =
+#F90FLAGS = -O3 -convert big_endian
 #F90FLAGS = -O3
 
 endif

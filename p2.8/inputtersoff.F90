@@ -52,7 +52,7 @@ subroutine inputtersoff
      end if
      typtyp(i)=iti
      if(lue_typ(iti).EQV..true.)then
-        if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
+        if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la coh�rence'
         if (cmr*umass.ne.cm(iti))then
            if (rang==0)write(6,*) 'pb avec cm'
            stop
