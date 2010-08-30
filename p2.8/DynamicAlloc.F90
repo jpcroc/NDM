@@ -25,6 +25,7 @@ subroutine alloc_typ
   implicit none
   integer::i,j,k ,ic
   integer,save ::ncall=0
+  integer :: ipot_loc
 
   ncall=ncall+1
   if (ncall==1) then
@@ -81,24 +82,24 @@ subroutine alloc_typ
   end if
 
 
-  ipotentiel=0
-  if (lpotentiel(ipotentiel).eqv..true.) then
+  ipot_loc=0
+  if (lpotentiel(ipot_loc).eqv..true.) then
      allocate(ray(ntyp)) ;allocate(bm(ntyp)) ; allocate(shel(ntyp))
   endif
 
-  ipotentiel=5
-  if (lpotentiel(ipotentiel).eqv..true.) then
+  ipot_loc=5
+  if (lpotentiel(ipot_loc).eqv..true.) then
      allocate(Dmorse(npair)) ;allocate(amorse(npair)) ; allocate(Remorse(npair))
   endif
 
-  ipotentiel=6
-  if (lpotentiel(ipotentiel).eqv..true.) then
+  ipot_loc=6
+  if (lpotentiel(ipot_loc).eqv..true.) then
      allocate(ietaij(npair)) ;allocate(capHij(npair))
      allocate(capDij(npair));allocate(capWij(npair))
   endif
 
-  ipotentiel=2
-  if (lpotentiel(ipotentiel).eqv..true.) then
+  ipot_loc=2
+  if (lpotentiel(ipot_loc).eqv..true.) then
      allocate(Awat(npair));allocate(Bwat(npair));allocate(pwat(npair))
      allocate(qwat(npair));allocate(rawat(npair)) ; allocate(rawat2(npair))
      allocate(potw(npair,0:ngrid+1))
@@ -117,10 +118,10 @@ subroutine alloc_typ
 
   endif
 
-  do ipotentiel=10,12
-     if (lpotentiel(ipotentiel).eqv..true.) then
+  do ipot_loc=10,12
+     if (lpotentiel(ipot_loc).eqv..true.) then
         allocate(eamrep(4,npair,0:ngrid+1))
-        if (ipotentiel==12) then
+        if (ipot_loc==12) then
            allocate(eamrho(4,npair,0:ngrid+1))
         else
            allocate(eamrho(4,ntyp,0:ngrid+1))
