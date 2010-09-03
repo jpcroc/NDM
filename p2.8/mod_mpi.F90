@@ -509,7 +509,8 @@ contains
 
     ! On verifie qu'il n'y a plus d'atomes a l'exterieur du domaine local
     do koo=1,noxyz
-       if (proc_cell(koo).ne.myid .and. nato(koo).ne.0) print *,'ERREUR !!!',myid,'possede encore',nato(koo),'at. dans la cellule',koo
+       if (proc_cell(koo).ne.myid .and. nato(koo).ne.0) print *,'ERREUR !!!',&
+            myid,'possede encore',nato(koo),'at. dans la cellule',koo
     enddo
 
   end subroutine elimine_atomes_fantomes

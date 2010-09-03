@@ -202,7 +202,8 @@ contains
     integer :: koo,iti,i,ko1,i1,i2,lenfn2,lenfn,j
     integer :: natvi(20),natvityp(20,20),iatvi,latvi,ncelvois
     real(double):: c1,c2,c3,r2,xp1,xp2,xp3
-    character*9 :: extension,extension2
+    character*9 :: extension
+    character(len=2) :: extension2
     integer, save:: lurasmol
 
     integer :: maxvois ,nana,itj,i5,iwr
@@ -221,7 +222,6 @@ contains
     if (lsic) then
        maxvois=8
     end if
-
 
 
     allocate (rccar(ntyp))
@@ -427,68 +427,12 @@ contains
 
 
 
-    open(unit=17, file='tampon', form='formatted', status='unknown')
-    if (itapp<=9) then
-       write (17, '(I1)') itapp
-       rewind 17
-       read (17, 101) extension
-       write(6,*)extension
-    end if
-    if (itapp<=99.and.itapp>9) then
-       write (17, 200) itapp
-       rewind 17
-       read (17, 201) extension
-       write(6,*)extension
-    end if
-    if (itapp<=999.and.itapp>99) then
-       write (17, 300) itapp
-       rewind 17
-       read (17, 301) extension
-    end if
-    if (itapp<=9999.and.itapp>999) then
-       write (17, 400) itapp
-       rewind 17
-       read (17, 401) extension
-    end if
+    lenfn = 9
+    write(extension,'(i9.9)') itapp
 
-    if (itapp<=99999.and.itapp>9999) then
-       write (17, 500) itapp
-       rewind 17
-       read (17, 501) extension
-    end if
-    if (itapp<=999999.and.itapp>99999)  then
-       write (17, 600) itapp
-       rewind 17
-       read (17, 601) extension
-    end if
-    if (itapp<=9999999.and.itapp>999999)  then
-       write (17, 700) itapp
-       rewind 17
-       read (17, 701) extension
-    end if
-    if (itapp<=99999999.and.itapp>9999999)  then
-       write (17, 800) itapp
-       rewind 17
-       read (17, 801) extension
-    end if
-    if (itapp<=999999999.and.itapp>99999999)  then
-       write (17, 900) itapp
-       rewind 17
-       read (17, 901) extension
-    end if
-    if (itapp>999999999) then
-       write (6, *) 'probleme de format dans rasmol.f'
-       stop
-    endif
-
-
-    lenfn=index(extension,' ')-1
-    write(6,*)'extension = ',extension,lenfn
 134 format(i6)
 135 format(A,3f10.4,I7)
 136 format(A,3f10.4,D14.5,I7)
-
-    close(17)
 
 200 format(i2)
 300 format(i3)
@@ -525,23 +469,10 @@ contains
           if(natvi(iatvi).ne.0) then
              !          write(6,*)it,'Nb d_at. avec',iatvi,'vois. =',natvi(iatvi)!
 
-
-             open(unit=17, file='tampon', form='formatted', status='unknown')
-
-             if (iatvi<=9) then
-                write (17, '(I1)') iatvi
-                rewind 17
-                read (17,'(a1)' ) extension2
-
-             end if
-             if (iatvi<=99.and.iatvi>9) then
-                write (17, '(I2)') iatvi
-                rewind 17
-                read (17, '(a2)') extension2
-             end if
-             close(17)
+             lenfn2 = 2
+             write(extension2,'(i2.2)') iatvi
+             
              latvi=840+iatvi
-             lenfn2=index(extension2,' ')-1
              !	write(6,*)fnam,extension2
              open(latvi, file=fnam(1:lenfnam)//'.'//extension(1:lenfn)//'.NVI.'//extension2(1:lenfn2)//'.mol', form='formatted', &
                   status='unknown')
@@ -868,7 +799,9 @@ contains
     !----------------------------------------------
     if (lpdep) then
 
-       write(71,'(I5,9F11.5)')ndep+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),1d8*at(3,3)     
+       write(71,'(I5,9F11.5)')ndep+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
        write(71,*)'IT = ',it,' atomes deplaces de + de ', tdep*1.0d8
        write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
        write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
@@ -880,7 +813,9 @@ contains
     end if
     if (lpdef) then
        !     if (nvac.ne.0) then
-       write(71,'(I5,9F11.5)')nvac+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),1d8*at(3,3)     
+       write(71,'(I5,9F11.5)')nvac+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
        write(71,*)'IT = ',it,' lacunes'
        write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
        write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
@@ -891,7 +826,9 @@ contains
        !     end if
 
        !     if (nint.ne.0) then
-       write(71,'(I5,9F11.5)')nint+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),1d8*at(3,3)     
+       write(71,'(I5,9F11.5)')nint+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
        write(71,*)'IT = ',it,' interstitiels'
        write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
        write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
@@ -901,8 +838,9 @@ contains
        end do
        !     end if
        !     if (nanti.ne.0) then
-       write(71,'(I5,9F11.5)')nanti+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), & 
-     & 1d8*at(2,3),1d8*at(3,3)             
+       write(71,'(I5,9F11.5)')nanti+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), & 
+            & 1d8*at(2,3),1d8*at(3,3)             
        write(71,*)'IT = ',it,' antisites'
        write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
        write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
@@ -913,8 +851,9 @@ contains
        !     end if
 
        if(lpdep) then
-          write(71,'(I5,9F11.5)')nremp+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), &
-    & 1d8*at(2,3),1d8*at(3,3)             
+          write(71,'(I5,9F11.5)')nremp+2,1d8*at(1,1),1d8*at(2,1),&
+               1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), &
+               1d8*at(2,3),1d8*at(3,3)             
           write(71,*)'IT = ',it,' remplacements'
           write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
           write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
@@ -927,7 +866,9 @@ contains
 
     end if
     if(lpstruct) then
-       write(71,'(I5,9F11.5)')nplt+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),1d8*at(3,3)             
+       write(71,'(I5,9F11.5)')nplt+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)             
 
        write(72,*)'IT = ',it,' structure finale'
        write(72,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)

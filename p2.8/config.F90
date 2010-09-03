@@ -802,7 +802,8 @@ subroutine config
 
      return
 
-456  print *,'Erreur dans la lecture du fichier .cin, verifier son format et fmt_cin ATTENTION A BIG_ENDIAN !! SI COMMPILE BIG_ENDIAN NE LIT PLUS QUE CA'
+456  print *,'Erreur dans la lecture du fichier .cin, verifier son format&
+          & et fmt_cin ATTENTION A BIG_ENDIAN !! SI COMMPILE BIG_ENDIAN NE LIT PLUS QUE CA'
 
 
    end subroutine config

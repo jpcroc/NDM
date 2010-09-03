@@ -34,11 +34,10 @@ subroutine jqbh (xp,xpp,vp,ityp)
   integer,pointer::nattr_tot(:)
 
 #endif
-  character*15:: extension,fnamtr
+  character*15:: fnamtr
+  character(len=2) :: extension
   logical :: loc(imm)
   real(double):: dTtot,tempact,dTloc,tempinst
-
-
 
   if(it.eq.1) then
      if(rang==0) write(6,*)'condutivité thermique méthode directe'
@@ -62,24 +61,8 @@ subroutine jqbh (xp,xpp,vp,ityp)
 #endif
      temptr(:)=0. ; nattr(:)=0 ; temptra(:)=0
      if (rang==0) then
-        open(unit=17, file='tampon', form='formatted', status='unknown')
         do i=1,ntr
-           if (i<=9) then
-              open(unit=17, file='tampon', form='formatted', status='unknown')
-              write (17, '(I1)') i
-              rewind 17
-              read (17, 101) extension
-              !           write(6,*)extension
-              close(17)
-           end if
-           if (i<=99.and.i>9) then
-              open(unit=17, file='tampon', form='formatted', status='unknown')
-              write (17, 200) i
-              rewind 17
-              read (17, 201) extension
-              !           write(6,*)extension
-              close(17)
-           end if
+          write(extension,'(i2.2)') i
 
 200        format(i2)
 101        format(a1)
@@ -159,7 +142,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
 #if (PARA) 
      do i = 1, im
-        if(free(i)==.true.)then
+        if(free(i))then
            if (xp(1,i)<cinf) then
               nacou1 = nacou1+1
               ecou1 = ecou1+0.5*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(&
@@ -211,7 +194,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
 #if(PARA)
      do i = 1, im
-        if (free(i)==.true.)then
+        if (free(i))then
            if (xp(1,i).gt.csup)then
               nacou2 = nacou2+1
               ecou2 = ecou2+(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(&
@@ -260,7 +243,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      temptra(:)=0.
      nattr(:)=0
      do i=1,imd
-	        if(free(i)==.true.)then	
+	        if(free(i))then	
         indtr=1+Int(ntr*(xp(1,i)-crul)/(1-2*crul))
         !          write(6,*)i,indtr,xp(1,i), (xp(1,i)-crul)/(1-2*crul)
         nattr(indtr)=nattr(indtr)+1

@@ -41,30 +41,9 @@ subroutine prtplz(xp,ityp)
      end if
      if (mod(it,iteplz)==0) then
         natz=natz/min(nplz,iteplz)
-        open(unit=17, file='tampon', form='formatted', status='unknown')
-        if (it<=9) write (17, '(I1)') it
-        if (it<=99.and.it>9) write (17, '(I2)') it
-        if (it<=999.and.it>99) write (17, '(I3)') it
-        if (it<=9999.and.it>999) write (17, '(I4)') it
-        if (it<=99999.and.it>9999) write (17, '(I5)') it
-        if (it<=999999.and.it>99999) write (17, '(I6)') it
-        if (it<=9999999.and.it>99999) write (17, '(I7)') it
-        if (it<=99999999.and.it>999999) write (17, '(I8)') it
-        if (it<=999999999.and.it>9999999) write (17, '(I9)') it
-!       if (it<=9999999999.and.it>99999999) write (17, '(I10)') it
-!       if (it>=9999999999) then
-        if (it>=999999999) then
-           write (6, *) 'probleme de format dans prtplz.f'
-           stop
-        endif
-        !        stop
-        rewind(17)
-        !        close(17)
-        !        open(unit=17, file='tampon', form='formatted', status='unknown')
-        read (17, '(A10)') extension
-        !        write(6,*)'extension',extension
-        !        stop
-        close(17)
+        
+        write(extension,'(i10.10)') it
+        
         fnamfilm2it = 'prtplz.'//extension
         open(unit=941, file=fnamfilm2it, form='formatted')
         do itr=1,ntrl

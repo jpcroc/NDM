@@ -8,10 +8,11 @@ program tranchecol
 
 
   real*8,pointer::xi(:,:),xf(:,:),dx(:,:),xtr(:,:)
-  character :: extension*3,fnam*15
+  character :: fnam*15
+  character(len=2) :: extension
   !  write(6,*)'nb d atomes'
 
-
+ 
   open(unit=14, file='init_final', status='old')
   open(unit=15, file='contrainte', status='unknown')
   read(14,*)rep(:)
@@ -45,20 +46,7 @@ program tranchecol
   ntr=ntr+1
   do itr=1,ntr
      deltr=float(itr)/float(ntr)
-     open(unit=17,file='tampon')
-     if (itr<=9) then
-        write (17, '(I1)') itr
-        rewind 17
-        read (17, '(a1)') extension
-        write(6,*)extension
-     end if
-     if (itr<=99.and.itr>9) then
-        write (17, '(I2)') itr
-        rewind 17
-        read (17, '(a2)') extension
-        write(6,*)extension
-     end if
-     close(17)
+     write(extension,'(i2.2)') itr
      fnam='tranche'//extension
      open(unit=16, file=fnam)
 

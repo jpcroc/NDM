@@ -164,25 +164,7 @@ subroutine calcdepla2
   lutampon = 17
   fnamtampon = 'tampon'
   if (rang==0)then
-     open(unit=lutampon, file=fnamtampon, form='formatted', status='unknown')
-     if (it<=9) write (17, '(I1)') it
-     if (it<=99.and.it>9) write (17, '(I2)') it
-     if (it<=999.and.it>99) write (17, '(I3)') it
-     if (it<=9999.and.it>999) write (17, '(I4)') it
-     if (it<=99999.and.it>9999) write (17, '(I5)') it
-     if (it<=999999.and.it>99999) write (17, '(I6)') it
-     if (it<=9999999.and.it>99999) write (17, '(I7)') it
-     if (it<=99999999.and.it>999999) write (17, '(I8)') it
-     if (it<=999999999.and.it>9999999) write (17, '(I9)') it
-!    if (it<=9999999999.and.it>99999999) write (17, '(I10)') it
-!    if (it>=9999999999) then
-     if (it>=999999999) then
-        write (6, *) 'probleme de format dans calcdepla2.f'
-        stop
-     endif
-     rewind 17
-     read (17, '(A10)') extension
-
+    write(extension,'(i10.10)') it
 
      !    ouverture d'un fichier film2it.(iteration) pour sauvegarde
      !    des positions toutes les itedepla iterations.
@@ -220,9 +202,6 @@ subroutine calcdepla2
 #endif
      close(lufilm2it)
 
-
-
-     close(17)
   end if
   ! ***** Fin ecriture positions dans plusieurs fichiers *****
 

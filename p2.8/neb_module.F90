@@ -447,21 +447,12 @@ contains
           !          fnam='fin.cout'
           !          goto 1
           !       end if
-          if (ip<=9) then
-             write (17, '(I1)') ip
-             rewind 17
-             read (17, 101) extension
-          end if
-          if (ip<=99.and.ip>9) then
-             write (17, 200) ip
-             rewind 17
-             read (17, 201) extension
-          end if
-          if (ip.ge.100) then
-             write (6,*) 'ip >99 stop'
-             stop 
-          end if
-          close (17)
+         if (ip.ge.100) then
+           write (6,*) 'ip >99 stop'
+           stop 
+         end if
+         write(extension,'(i2.2)') ip
+
 101       format(a1)
 201       format(a2)
 200       format(i2)

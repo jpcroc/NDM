@@ -48,7 +48,8 @@ subroutine force_tersoff_cel
 #if(PARA)
   real(double) :: potist_tot, ER1_tot, ER2_tot, ER3_tot 
   real(double), dimension(3)   :: jq_tot
-  real(double), dimension(3,3) :: sig_tot,potisTersoff_tot
+  real(double), dimension(3,3) :: sig_tot
+  real(double) :: potisTersoff_tot
 #endif
   real(double):: coupR(npair)
 

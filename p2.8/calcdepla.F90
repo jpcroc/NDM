@@ -211,7 +211,7 @@ subroutine calcdepla
         if (est_present==1.and.myid==0) then
            xp_iko(:) = xp(:,i)
            ityp_iko = ityp(i)
-        else if (est_present) then
+        else if (est_present==1) then
            call MPI_SEND(xp(:,i),3,NDM_MPI_REAL_DOUBLE,0,13006,MPI_COMM_WORLD,ierr)
            call MPI_SEND(ityp(i),1,MPI_INTEGER,0,13007,MPI_COMM_WORLD,ierr)
         else if (myid==0) then
@@ -243,25 +243,7 @@ subroutine calcdepla
      lutampon = 17
      fnamtampon = 'tampon'
      if(rang==0)then
-        open(unit=lutampon, file=fnamtampon, form='formatted', status=&
-             'unknown')
-        if (it<=9) write (17, '(I1)') it
-        if (it<=99.and.it>9) write (17, '(I2)') it
-        if (it<=999.and.it>99) write (17, '(I3)') it
-        if (it<=9999.and.it>999) write (17, '(I4)') it
-        if (it<=99999.and.it>9999) write (17, '(I5)') it
-        if (it<=999999.and.it>99999) write (17, '(I6)') it
-        if (it<=9999999.and.it>999999) write (17, '(I7)') it
-        if (it<=99999999.and.it>999999) write (17, '(I8)') it
-        if (it<=999999999.and.it>9999999) write (17, '(I9)') it
-!       if (it<=9999999999.and.it>99999999) write (17, '(I10)') it
-!       if (it>=9999999999) then
-        if (it>=999999999) then
-           write (6, *) 'probleme de format dans calcdepla.f'
-           stop
-        endif
-        rewind 17
-        read (17, '(A10)') extension
+        write(extension,'(i10.10)') it        
 
 
         !    ouverture d'un fichier filmext.(iteration) pour sauvegarde
@@ -304,7 +286,6 @@ subroutine calcdepla
         end do
 #endif
         close(lufilmext)
-        close(17)
      endif                                      ! lfilmext=TRUE
 
      ! ***** Fin ecriture positions dans plusieurs fichiers *****

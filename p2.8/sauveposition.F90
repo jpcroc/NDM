@@ -49,65 +49,21 @@ subroutine sauveposition(itapp)
   !-----------------------------------------------
   !
 
+
   ! conversion entier-->alphanumerique par transfert du nombre
   ! de l'iteration vers fichier tampon relu sous format caractere.
 
   lucoutxp = 97
   if(rang==0) then
-     open(unit=17, file='tampon', form='formatted', status='unknown')
      if (itapp==0) then
        inquire (file=fnam(1:lenfnam)//'.crcin',EXIST=lcrcin)
        if (lcrcin.EQV..false.)  open(lucoutxp, file=fnam(1:lenfnam)//'.crcin', form='unformatted', &
           status='unknown')
      else
+       
+        write(extension,'(i9.9)') itapp
+        lenfn2 = 9
 
-        if (itapp<=9) then
-           write (17, '(I1)') itapp
-           rewind 17
-           read (17, 101) extension
-           write(6,*)extension
-        end if
-        if (itapp<=99.and.itapp>9) then
-           write (17, 200) itapp
-           rewind 17
-           read (17, 201) extension
-           write(6,*)extension
-        end if
-        if (itapp<=999.and.itapp>99) then
-           write (17, 300) itapp
-           rewind 17
-           read (17, 301) extension
-        end if
-        if (itapp<=9999.and.itapp>999) then
-           write (17, 400) itapp
-           rewind 17
-           read (17, 401) extension
-        end if
-        if (itapp<=99999.and.itapp>9999) then
-           write (17, 500) itapp
-           rewind 17
-           read (17, 501) extension
-        end if
-        if (itapp<=999999.and.itapp>99999)  then
-           write (17, 600) itapp
-           rewind 17
-           read (17, 601) extension
-        end if
-        if (itapp<=9999999.and.itapp>999999)  then
-           write (17, 700) itapp
-           rewind 17
-           read (17, 701) extension
-        end if
-        if (itapp<=99999999.and.itapp>9999999)  then
-           write (17, 800) itapp
-           rewind 17
-           read (17, 801) extension
-        end if
-        if (itapp>=99999999) then
-           write (6, *) 'probleme de format dans sauveposition'
-           call arret_ndm
-        endif
-        lenfn2=index(extension,' ')-1
         ! -------------------------------------------------------------
         ! -------------------------------------------------------------
 
@@ -210,7 +166,6 @@ subroutine sauveposition(itapp)
 701 format(a7)
 801 format(a8)
 
-  if(rang==0)      close(17)
   if(rang==0)      close(lucoutxp)
   return
 end subroutine sauveposition

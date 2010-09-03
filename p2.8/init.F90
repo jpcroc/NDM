@@ -82,7 +82,10 @@ subroutine init
               write(6,*)'POTENTIEL EAM'
               write(6,*)
            end if
-           call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,npotentiel,ipo)
+           call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,&
+                iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,&
+                ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
+                npotentiel,ipo)
            do i=1,npair
               if (typ_pot_pair(i)==ipotentiel) rue_pair(i)=rue
            end do
@@ -92,7 +95,9 @@ subroutine init
               write(6,*)'POTENTIEL Ju Li'
               write(6,*)
            end if
-           call inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,ipotentiel,typ_pot_pair)
+           call inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue,&
+                rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,&
+                npotmax,ipotentiel,typ_pot_pair)
            rue_pair(:)=rue
         case(13,14,15)
            !nguyen mettre input tersoff

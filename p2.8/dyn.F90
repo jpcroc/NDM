@@ -120,7 +120,7 @@ subroutine dyn
 
 
         deltaE=(tmoy-Text)*3*bk*unitE
-        write(6,'(A,I,D21.12,A)')'IT   modification d_energie par atome ',it,deltaE,&
+        write(6,'(A,I0,D21.12,A)')'IT   modification d_energie par atome ',it,deltaE,&
      &cunitE
 !       write(6,'(A,I,D21.12,A)')'IT , modification d_energie par atome ',IT,deltaE, cunitE
         write(6,*)

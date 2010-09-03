@@ -26,7 +26,7 @@ subroutine initspeed
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   integer :: i, ic, ia, ib
-  integer, dimension(2) :: iseedt
+  integer, dimension(:), allocatable :: iseedt
   real(double), dimension(ntyp) :: temptyp
   ! ym      real(double), dimension(nce) :: tempc
   real(double), dimension(noxyz) :: tempc
@@ -42,6 +42,7 @@ subroutine initspeed
   real(double), dimension(3,noxyz) :: sigkinec
   integer  :: i_glob
   integer  :: est_local
+  integer :: seed_size
 #if(PARA)
   real(double) :: kinx_glob
   real(double), dimension(3)   :: scom_glob, pav_glob
@@ -122,7 +123,11 @@ subroutine initspeed
              'K'
 
         if (iseed==0)  iseed=1
-
+        
+        call random_seed(size=seed_size)
+        allocate(iseedt(seed_size))
+        iseedt = 0
+        
 
 !        if (iseed==0)  call system_clock (iseed) 
 
@@ -130,6 +135,7 @@ subroutine initspeed
 
         iseedt(1)=iseed
         call    random_seed (put=iseedt)
+        deallocate(iseedt)
 
         v0 = sqrt(2.D0*bk*tinit)
         vt1(:)=0.0
@@ -340,14 +346,13 @@ subroutine initspeed
 
            !      Initialisation of the previous position for Verlet
 
-        end if
+         end if
 
         xpp(1,:im) = xp(1,:im)-vp(1,:im)*tstep
         xpp(2,:im) = xp(2,:im)-vp(2,:im)*tstep
         xpp(3,:im) = xp(3,:im)-vp(3,:im)*tstep
 
-
-     endif
+      endif
 
   endif
   !     write(6,*)'sortie initspeed'

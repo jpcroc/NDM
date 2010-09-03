@@ -395,7 +395,7 @@ subroutine controle
 
   ! *** correction de la derive ***
   if (itederive>0) then
-   if (lperiod==.false.) then
+   if (.not.lperiod) then
     write(*,*) '----------------WARNING-----------------------------'
     write(*,*) 'there is no implemantation for itederive > 0 and lperiod=.false.'
     write(*,*) 'However, you are free to implement that'

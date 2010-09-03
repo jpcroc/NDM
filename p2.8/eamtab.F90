@@ -49,7 +49,10 @@ contains
 
 
   !---------------------------------------------------------------------------
-  subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,npotentiel,ipo)
+  subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,&
+       rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,&
+       npotmax,ipotentiel,typ_pot_pair,lue_typ,lue_paire,&
+       lu_roff_pair,npotentiel,ipo)
 
     !
 
@@ -66,6 +69,7 @@ contains
     logical, pointer :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
     integer,pointer:: typ_pot_pair(:)
     integer, dimension(:,:), pointer  :: ipo			! indice des paires d'atomes
+    logical,pointer::lue_typ(:),lue_paire(:),lu_roff_pair(:)
 
     !local variables
     integer:: i,l,k,iti,n,npt,ipr
@@ -74,7 +78,6 @@ contains
     real(double) :: xmin,xmax,xdum,ruelu,cmr,catomr
     integer,pointer :: typtyp(:),ind_pair(:)
     integer::itir,npair_r,ipair,ntypr,j,itj
-    logical,pointer::lue_typ(:),lue_paire(:),lu_roff_pair(:)
     character :: tyr*3
 
     !    real(double):: deltaEAM, deltaRHO,deltaREP
@@ -100,7 +103,8 @@ contains
           typtyp(i)=iti
           if (lue_typ(iti).eqv..true.) then 
              if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
-             if (cmr*umass.ne.cm(iti))then
+             !if (cmr*umass.ne.cm(iti))then 
+             if (abs(cmr*umass-cm(iti)) > 100.d0*spacing(cm(iti))) then
                 if (rang==0)write(6,*) 'pb avec cm'
                 stop
              end if
@@ -164,7 +168,6 @@ contains
        roff1=roff1*1.0d-8
        roff2=roff2*1.0d-8
        lu_roff_pair(1:npair)=.true. ;typ_pot_pair(:)=ipotentiel
-
        cm(:ntyp) = cm(:ntyp)*umass
        allocate (typ_and_pot(ntyp,npotmax))
        typ_and_pot(:,:)=.false.
@@ -299,6 +302,7 @@ contains
        typ_and_pot(:,:)=.false.
        typ_and_pot(1:ntyp,ipotentiel)=.true.
     end if
+
 
     return
 

@@ -38,7 +38,9 @@ contains
 
 
   !---------------------------------------------------------------------------
-  subroutine inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,ipotentiel,typ_pot_pair)
+  subroutine inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue,&
+rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,&
+ipotentiel,typ_pot_pair)
 
     !
 

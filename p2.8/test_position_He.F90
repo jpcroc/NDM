@@ -38,7 +38,7 @@ subroutine test_position_He (xp, at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,ns
   
 
   icall=icall+1
-  tt=3
+  tt=0
 !  if (nstepdes.gt.0) then
 !     nprt=nstepdes
 !  else
@@ -46,7 +46,7 @@ subroutine test_position_He (xp, at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,ns
 !end if
   if (icall==1)then
      open(unit=2121,file='bulle.in')
-     read(2121,*) X,Y,Z,Rmin,nprt,ntrm
+     read(2121,*) X,Y,Z,Rmin,nprt,ntrm,tt
 
      write(6,*) 'bulle.in', X,Y,Z,Rmin,nprt,ntrm
 !     stop

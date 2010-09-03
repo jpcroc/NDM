@@ -53,7 +53,8 @@ subroutine divid (appel)
         if((rang==0).and.(appel==0)) write (6, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
         call arret_ndm
      else
-        if((rang==0).and.(appel==0)) write (6,'(A,2F12.2)') ' rumax devient rvois pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
+        if((rang==0).and.(appel==0)) write (6,'(A,2F12.2)') ' rumax devient rvois&
+             & pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
         rumax=rvois
      end if
 

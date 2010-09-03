@@ -52,7 +52,7 @@ subroutine layer
   imd=im
   nfr=0
   do i=1,im
-     if (free(i).eq..false.) then
+     if (.not.free(i)) then
         vp(:,i)=0.d0
         nfr=nfr+1
 !        write(6,'(A,I3,A,I3,A,I7)')'it ',it,' Rg ',rang,' ng ',num_at_glob(i)

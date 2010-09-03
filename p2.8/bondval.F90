@@ -24,60 +24,9 @@ subroutine bondval
   allocate(xpnp(3,imm))
 
   if(rang==0) then
-     open(unit=17, file='tampon', form='formatted', status='unknown')
-     if (it<=9) then
-        write (17, '(I1)') it
-        rewind 17
-        read (17, 101) extension
-        !        write(6,*)extension
-     end if
-     if (it<=99.and.it>9) then
-        write (17, 200) it
-        rewind 17
-        read (17, 201) extension
-        !        write(6,*)extension
-     end if
-     if (it<=999.and.it>99) then
-        write (17, 300) it
-        rewind 17
-        read (17, 301) extension
-     end if
-     if (it<=9999.and.it>999) then
-        write (17, 400) it
-        rewind 17
-        read (17, 401) extension
-     end if
 
-     if (it<=99999.and.it>9999) then
-        write (17, 500) it
-        rewind 17
-        read (17, 501) extension
-     end if
-     if (it<=999999.and.it>99999)  then
-        write (17, 600) it
-        rewind 17
-        read (17, 601) extension
-     end if
-     if (it<=9999999.and.it>999999)  then
-        write (17, 700) it
-        rewind 17
-        read (17, 701) extension
-     end if
-     if (it<=99999999.and.it>9999999)  then
-        write (17, 800) it
-        rewind 17
-        read (17, 801) extension
-     end if
-     if (it<=999999999.and.it>99999999)  then
-        write (17, 900) it
-        rewind 17
-        read (17, 901) extension
-     end if
-     if (it>=999999999) then
-        write (6, *) 'probleme de format dans rasmol.f'
-        stop
-     endif
-     lenfn2=index(extension,' ')-1
+     lenfn2 = 9
+     write(extension,'(i9.9)') it
 
      ! -------------------------------------------------------------
      !     creation du  fichier positions pour Rasmol
@@ -315,7 +264,6 @@ subroutine bondval
            write(365,'(2I6,I3,F12.2)')j,i,iti,bdv(i)
         end do
      end do
-     close(17)
      close(65)
   end if
 

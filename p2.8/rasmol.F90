@@ -33,9 +33,14 @@ subroutine rasmol(itapp)
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: i, lurasmol, iti,lenfn2
+  integer :: i, luvisu, luvisu2, iti,lenfn2
   real(double) :: xp1, xp2, xp3,pat
   character :: extension*9
+  integer, parameter :: visu = 1 ! 1 = rasmol, 2 = v_sim
+  ! Notes about V_sim:
+  ! * works if at(:,:) "encompasses" all the system (no duplication of lattice cells)
+  ! * at(:,1) must be along x and at(:,2) must have no component along z.
+  !   Otherwise a rotation matrix should be coded.
   !-----------------------------------------------
   !
   !
@@ -43,91 +48,63 @@ subroutine rasmol(itapp)
   iksp=-1
   if (lcasca) iksp=iko
   if (ldesinteg)iksp=1
-  lurasmol = 86
+  luvisu = 86
+  luvisu2 = 87
   !      write (*, *) 'entree dans rasmol.f',im
 
   ! ****ouverture fichier sortie pour traitement images rasmol****
-  !if(rang==0)       OPEN(lurasmol,file='donnrasmol',form='formatted', &
+  !if(rang==0)       OPEN(luvisu,file='donnrasmol',form='formatted', &
   !       status='unknown')
   !   la fonction char ne marche que pour de faibles valeurs de it!!!!
-  !     open(lurasmol,file='donn_rasmolit.'//char(48+it),form='formatted',status='unknown')
+  !     open(luvisu,file='donn_rasmolit.'//char(48+it),form='formatted',status='unknown')
 
   ! conversion entier-->alphanumerique par transfert du nombre
   ! de l'iteration vers fichier tampon relu sous format caractere.
 
   if(rang==0) then
-     open(unit=17, file='tampon', form='formatted', status='unknown')
-     if (itapp<=9) then
-        write (17, '(I1)') itapp
-        rewind 17
-        read (17, 101) extension
-!        write(6,*)extension
-     end if
-     if (itapp<=99.and.itapp>9) then
-        write (17, 200) itapp
-        rewind 17
-        read (17, 201) extension
-!        write(6,*)extension
-     end if
-     if (itapp<=999.and.itapp>99) then
-        write (17, 300) itapp
-        rewind 17
-        read (17, 301) extension
-     end if
-     if (itapp<=9999.and.itapp>999) then
-        write (17, 400) itapp
-        rewind 17
-        read (17, 401) extension
-     end if
 
-     if (itapp<=99999.and.itapp>9999) then
-        write (17, 500) itapp
-        rewind 17
-        read (17, 501) extension
-     end if
-     if (itapp<=999999.and.itapp>99999)  then
-        write (17, 600) itapp
-        rewind 17
-        read (17, 601) extension
-     end if
-     if (itapp<=9999999.and.itapp>999999)  then
-        write (17, 700) itapp
-        rewind 17
-        read (17, 701) extension
-     end if
-     if (itapp<=99999999.and.itapp>9999999)  then
-        write (17, 800) itapp
-        rewind 17
-        read (17, 801) extension
-     end if
-     if (itapp<=999999999.and.itapp>99999999)  then
-        write (17, 900) itapp
-        rewind 17
-        read (17, 901) extension
-     end if
-     if (itapp>999999999) then
-        write (6, *) 'probleme de format dans rasmol.f'
-        stop
-     endif
-     lenfn2=index(extension,' ')-1
+     ! TJ: change the formatting so that files are well listed.
+     lenfn2 = 9
+     write(extension,'(i9.9)') itapp
 
      ! -------------------------------------------------------------
-     !     creation du  fichier positions pour Rasmol
+     !     creation du  fichier positions pour le logiciel de visulation
      ! -------------------------------------------------------------
-     open(lurasmol, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.mol', form='formatted', &
-          status='unknown')
-
-     write (lurasmol, '(I9,A,I7,A,F12.6)') im_glob, ' IT =', itapp, ' Time = ', timel
-     at=at*1.d8
-     write (lurasmol,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
-     at=at/1.d8 
-
-
+     select case (visu)
+     case (1)
+       open(luvisu, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.mol', form='formatted', &
+            status='unknown')
+       write (luvisu, '(I9,A,I7,A,F12.6)') im_glob, ' IT =', itapp, ' Time = ', timel
+       at=at*1.d8
+       write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
+       at=at/1.d8
+     case (2)
+       open(luvisu, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.ascii', form='formatted', &
+            status='unknown')
+       write (luvisu, '(A,I9,A,I7,A,F12.6)') '#',im_glob, ' IT =', itapp, ' Time = ', timel
+       if (abs(at(2,1)) > 1e-13 .or.abs(at(3,1)) >1e-13) then
+         write(*,*) "Error, at(:,1) should only have a component along x with V_Sim"
+         write(*,*) at(:,1)
+       end if
+       if (abs(at(3,2)) > 1e-13) then
+         write(*,*) "Error, at(:,2) should have no component along z with V_Sim"
+         write(*,*) at(:,2)
+       end if
+       at=at*1.d8
+       write (luvisu,'(3F12.6)') at(1,1), at(1,2), at(2,2)
+       write (luvisu,'(3F12.6)') at(1,3), at(2,3), at(3,3)
+       at=at/1.d8
+       open(luvisu2,file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.dat', form='formatted', &
+            status='unknown')
+       write(luvisu2,'(a)') '# Data file associated with an ascii file (V_Sim)'
+     end select
+     
+     
      !if(itapp==0) open (file='filmtot.mol',unit=47)
      !if(itapp==0) open (file='filmtot.mol',unit=47)
      !      write (47, 134) im
      !      write (47, *) 'IT =', itapp, '    Time = ', timel
-  end if
+   end if
 
 #if(PARA)
   ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
@@ -163,19 +140,50 @@ subroutine rasmol(itapp)
               else
                  pat=(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
               end if
-              write (lurasmol, 136) ty(ityp(i)),xp1, xp2, xp3,pat,num_at_glob(i)
+              select case (visu)
+              case (1)
+                write (luvisu, 136) ty(ityp(i)),xp1, xp2, xp3,pat,num_at_glob(i)
+              case (2)                
+                write (luvisu,'(3es15.6,2x,a)') xp1, xp2, xp3, ty(ityp(i))
+                write (luvisu2,'(es15.6)') pat
+              end select
            else if ((lprteat).and.(it.ne.0)) then
-              
-              write (lurasmol, 136) ty(ityp(i)),xp1, xp2, xp3,eatom(i)*erg2eV ,num_at_glob(i)
+              select case (visu)
+              case (1)
+                write (luvisu, 136) ty(ityp(i)),xp1, xp2, xp3,eatom(i)*erg2eV ,num_at_glob(i)
+              case (2)
+                ! cubic case
+!!$                xp1 = xp1 + 0.5
+!!$                xp2 = xp2 + 0.5
+!!$                xp3 = xp3 + 0.5
+!!$                if (xp1 > at(1,1)*1e8) xp1 = xp1 - at(1,1)*1e8
+!!$                if (xp2 > at(2,2)*1e8) xp2 = xp2 - at(2,2)*1e8
+!!$                if (xp3 > at(3,3)*1e8) xp3 = xp3 - at(3,3)*1e8
+                write (luvisu,'(3es15.6,2x,a)') xp1, xp2, xp3, ty(ityp(i))
+                write (luvisu2,'(es15.6)') eatom(i)*erg2eV
+              end select
            else  
               if (num_at_glob(i)==iksp) then
 #if(PARA)
-                 write (lurasmol, 138) xp1, xp2, xp3,num_at_glob(i)
+                 write (luvisu, 138) xp1, xp2, xp3,num_at_glob(i)
 #else
-                 write (lurasmol, 138) xp1, xp2, xp3,i
+                 write (luvisu, 138) xp1, xp2, xp3,i
 #endif
-              else
-                 write (lurasmol, 135) ty(ityp(i)),xp1, xp2, xp3
+               else
+                 !write (luvisu, 135) ty(ityp(i)),xp1, xp2, xp3
+                 select case (visu)
+                 case (1)
+                   write (luvisu, 135) ty(ityp(i)),xp1, xp2, xp3
+                 case (2)
+                   ! cubic case
+!!$                   xp1 = xp1 + 0.5
+!!$                   xp2 = xp2 + 0.5
+!!$                   xp3 = xp3 + 0.5
+!!$                   if (xp1 > at(1,1)*1e8) xp1 = xp1 - at(1,1)*1e8
+!!$                   if (xp2 > at(2,2)*1e8) xp2 = xp2 - at(2,2)*1e8
+!!$                   if (xp3 > at(3,3)*1e8) xp3 = xp3 - at(3,3)*1e8
+                   write (luvisu,'(3es15.6,2x,a)') xp1, xp2, xp3, ty(ityp(i))
+                 end select
                  !               write (47, 135) ty(ityp(i)),xp1, xp2, xp3
               end if
            end if
@@ -225,8 +233,10 @@ subroutine rasmol(itapp)
 801 format(a8)
 901 format(a9)
 
-  if(rang==0)      close(lurasmol)
-  if(rang==0)      close(17, status='DELETE')
+  if(rang==0)      close(luvisu)
+  if ((rang == 0).and.(visu == 2)) then
+    close(luvisu2)
+  end if
 
   return
 end subroutine rasmol
