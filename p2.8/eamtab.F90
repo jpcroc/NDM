@@ -116,10 +116,10 @@ contains
              cm(iti)=cmr*umass;ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.
           endif
 
+          typ_and_pot(iti,ipotentiel)=.true.
           if (rang/=0) cycle
           write(6,*)'type        cm      catom    ty'
           write (6, '(I4,E12.3,F9.3,A5)') iti,cm(iti),catom(iti),ty(iti)
-          typ_and_pot(iti,ipotentiel)=.true.
        end do
        !lecture des roff des paires EAM
        ipair=0
