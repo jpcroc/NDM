@@ -45,6 +45,12 @@ subroutine endrun
   !
   !
   !
+  
+
+  ! Un dernier calcul des forces pour la route
+  IF (iteTemp.GE.0) iteTemp=1
+  IF (iteSigma.GE.0) iteSigma=1
+  CALL calfo
 
 
   ! MPI
@@ -143,7 +149,7 @@ subroutine endrun
 #if(PARA)
   temps_dmloop=MPI_Wtime() - temps_dmloop_deb
 #endif
-  call sauvegarde
+  IF (iteSauv.GE.0) call sauvegarde     ! Modif E. Clouet: sauvegarde seulement si voulu
   if (.not.linstantrdf) then
      if (iterdf>=0) call rdf
   endif
