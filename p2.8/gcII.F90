@@ -69,7 +69,13 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
           do i=1 ,im
              IF (.Not.Free(i)) Cycle
              iGC=iGC+1
-             X(3*iGC-2:3*iGC)=ax(1:3,i)
+             IF (dmtype.EQ.30) THEN
+                     ! Variables = reduced coordinates
+                     X(3*iGC-2:3*iGC) = MatMul( ax(1:3,i), bg )       
+             ELSE
+                     ! Variables = cartesian coordinates (in A)
+                     X(3*iGC-2:3*iGC) = ax(1:3,i)*angst
+             END IF
           end do
           IF (3*iGC.NE.nGC) THEN
                   WRITE(0,'(a,i0)') "3*iGC = ", 3*iGC
@@ -77,9 +83,16 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
                   STOP "< gcII >"
           END IF
   ELSE
-          do i=1,imm
-             X(3*i-2:3*i)=ax(1:3,i)
+          do i=1,im
+             IF (dmtype.EQ.30) THEN
+                     ! Variables = reduced coordinates
+                     X(3*i-2:3*i) = MatMul( ax(1:3,i), bg)
+             ELSE
+                     ! Variables = cartesian coordinates (in A)
+                     X(3*i-2:3*i) = ax(1:3,i)*angst
+             END IF
           end do
+          X(3*im+1:3*imm)=0.d0
   END IF
 
   ! internal units
@@ -92,18 +105,6 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   it = 0
   efinal = 0.0
 
-  ! X into from internal units to Ang
-
-!debugGC     do i=1,5
-!debugGC      write(*,'("gcII ax(*,1) ",3f15.8)')ax(1,i)/at(1,1),ax(2,i)/at(1,1),ax(3,i)/at(1,1)
-!debugGC     end do
-!debugGC            write(*,*) '                   '
-!debugGC
-!debugGC     do i=1,5
-!debugGC      write(*,'("gcII xp(*,1) ",3f15.8)')xp(1,i)/at(1,1),xp(2,i)/at(1,1),xp(3,i)/at(1,1)
-!debugGC     end do
-
-  X=X*angst
   CALL ZXCGRII(FUNCT,NGC,ACC,itmax,X,G,F,W,IER,criterion,NCALLS, &
        xp, xpp, vp, ax, fp,  ielat, iwmax, ityp)       
 

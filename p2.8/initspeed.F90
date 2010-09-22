@@ -59,7 +59,7 @@ subroutine initspeed
 
   !  if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed
   select case (dmtype)
-  case(3,5,11,7)
+  case(3,30,5,11,7)
      vp = 0.0
      return
   case(2)

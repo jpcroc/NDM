@@ -1,8 +1,3 @@
-BIN=.
-#BIN=~/NDM/bin
-
-
-
 # link library
 LIBRARY =
 
@@ -13,23 +8,30 @@ ifdef PARA
  F90      = mpif90
  CPPFLAGS = -C -P -traditional -DPARA
  EXT      = _para
- F90FLAGS = -O3 -fconvert=big-endian #-fbounds-check -fbacktrace #-O3 
+#F90FLAGS = -O0 -g -C
+#F90FLAGS = -O3 
 
 else
  # Version sequentielle
  #
- F90=gfortran#ifort
+#version tantale
+# F90 = pgf90#
+#version platine
+# F90 = /export/TMP/openmpi-1.1.4/bin/mpif90
+F90 = ifort
+#F90 = f95
+# CPPFLAGS = -C -P -traditional
+# EXT      = _5
+#version SRMP
  CPPFLAGS = -C -E -P -traditional
 
 
-#F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all  -convert big_endian	# Debuggage pas pour de rire
-#F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all 	# Debuggage pas pour de rire
-#EXT = _check_8
+#F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all	# Debuggage pas pour de rire
+# F90FLAGS = -ffixed-line-length-0
+#EXT = _check
 
-EXT      =
-#F90FLAGS = -O3 -convert big_endian
-F90FLAGS = -O3 -fconvert=big-endian
-F90FLAGS = -O2 -fconvert=big-endian# -fbacktrace -fbounds-check
+ EXT      = 
+F90FLAGS = -O3 -convert big_endian
 
 endif
 

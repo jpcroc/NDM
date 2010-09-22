@@ -29,11 +29,19 @@ contains
 
     IF (lFrozen) THEN   ! Some atoms are fixed
           iGC=0
-          do i=1 ,im
-             IF (.Not.Free(i)) Cycle
-             iGC=iGC+1
-             xp(1:3,i) = X(3*iGC-2:3*iGC)*inv_angst
-          end do
+          IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
+                  do i=1 ,im
+                     IF (.Not.Free(i)) Cycle
+                     iGC=iGC+1
+                     xp(1:3,i) = MatMul( at, X(3*iGC-2:3*iGC) )
+                  end do
+          ELSE ! Variables = cartesian coordinates (in A)
+                  do i=1 ,im
+                     IF (.Not.Free(i)) Cycle
+                     iGC=iGC+1
+                     xp(1:3,i) = X(3*iGC-2:3*iGC)*inv_angst
+                  end do
+          END IF
           IF (3*iGC.NE.N) THEN
                   WRITE(0,'(a,i0)') "3*iGC = ", 3*iGC
                   WRITE(0,'(a,i0)') "N     = ", N
@@ -45,9 +53,15 @@ contains
                   WRITE(0,'(a,i0)') "N     = ", N
                   STOP "< work_cgII >"
           END IF
-            do i=1,imm
-               xp(1:3,i)=X(3*i-2:3*i)*inv_angst
-            end do
+          IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
+                  do i=1,im
+                     xp(1:3,i) = MatMul( at, X(3*i-2:3*i) )
+                  end do
+          ELSE ! Variables = cartesian coordinates (in A)
+                  do i=1,im
+                     xp(1:3,i)=X(3*i-2:3*i)*inv_angst
+                  end do
+          END IF
     END IF
 
     !back to internal units and JP world.......................................
@@ -64,12 +78,12 @@ contains
     if (it.ne.0) then
     if (rang==0) then
 !           write(6,*)'work_cg_II analyse -> sauvegarde',it
-       if (itesauv/=0) then
+       if (itesauv.GT.0) then
           if (mod(it,itesauv)==0) call sauvegarde 
        endif
 
 !            write(6,*)'work_cg_II analyse -> sauveposition',it
-       if (itesauvposition/=0) then
+       if (itesauvposition.GT.0) then
           if (mod(it,itesauvposition)==0) call sauveposition ( it)
        endif
 !            write(6,*)'work_cg_II sauvposition -> control',it
@@ -79,11 +93,33 @@ contains
 
     
     F=potist*erg2eV
-    do i=1,N/3
-       G(3*i-2)=-fp(1,i)*erg2eV/angst
-       G(3*i-1)=-fp(2,i)*erg2eV/angst     
-       G(3*i)  =-fp(3,i)*erg2eV/angst
-    end do
+    IF (lFrozen) THEN   ! Some atoms are fixed
+            iGC=0
+            IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
+                    do i=1,im
+                       IF (.Not.Free(i)) Cycle
+                       iGC=iGC+1
+                       G(3*iGC-2:3*iGC)=-MatMul(fp(:,i), at)*erg2eV
+                    end do
+            ELSE ! Variables = cartesian coordinates (in A)
+                    do i=1,im
+                       IF (.Not.Free(i)) Cycle
+                       iGC=iGC+1
+                       G(3*iGC-2:3*iGC)=-fp(1:3,i)*erg2eV/angst
+                    end do
+            END IF
+    ELSE ! Variables = cartesian coordinates (in A)
+            IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
+                    do i=1,im
+                       G(3*i-2:3*i)=-MatMul(fp(:,i), at)*erg2eV
+                    end do
+            ELSE ! Variables = cartesian coordinates (in A)
+                    do i=1,im
+                       G(3*i-2:3*i)=-fp(1:3,i)*erg2eV/angst
+                    end do
+            END IF
+            G(3*im+1:N)=0.d0
+    END IF
     
 
     return

@@ -105,10 +105,10 @@ subroutine dmloop_lpr
   call analyse 
 
 
-     if (itesauv/=0) then
+     if (itesauv.GT.0) then
         if (mod(it,itesauv)==0) call sauvegarde
      endif
-     if (itesauvposition/=0) then
+     if (itesauvposition.GT.0) then
         if (mod(it,itesauvposition)==0) call sauveposition (it)
      endif
  

@@ -108,7 +108,7 @@ subroutine controle
       write(*,*) 'WARNING .... Not implemented for lperiod  FALSE nad lcdp TRUE'
       write(*,*) 'FIX THAT! Until there the program will stop'
       stop      
-     end if 	
+     end if
   end if
 
 
@@ -130,9 +130,9 @@ subroutine controle
   if (dmtype==1) then
 
       if (lperiod) then
-	 xpnp(:,:)=xp(:,:)
-       else	  
-	 call notperiod(xp,xpnp)
+         xpnp(:,:)=xp(:,:)
+       else
+         call notperiod(xp,xpnp)
       end if     
 
      ! Scaling temperature if intolerable ?
@@ -540,7 +540,7 @@ subroutine controle
      end if
 123  continue
            if (rang==0) write (6, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
-  case(3) 
+  case(3,30) ! Gradient conjugue sur coordonnee cartesiennes (3) ou reduites (30)
 
 
      if (it==1) then
@@ -582,7 +582,7 @@ subroutine controle
                  write(6,*)'force par atome  max  ev/Ang ', formax
                  write (6, *) 'energie ', potist*erg2eV
                  if (it.le.1) xp(:,:)=ax(:,:)
-		 call endrun
+                 call endrun
               end if
            end if
            if (fsumstop>0) then   
@@ -590,7 +590,7 @@ subroutine controle
                  write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
                  write (6, *) 'energie ', potist*erg2eV
                  if (it.le.1) xp(:,:)=ax(:,:)
-		 call endrun
+                 call endrun
               end if
            end if
 

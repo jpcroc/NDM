@@ -69,12 +69,11 @@ subroutine prog
   case (2)
      if (.not.parallele)  then
        call dmloop
-   else	
-	if(rang==0) write (6,*)'DMTYPE+PARA=DMLOOP_VVERLET_+OPTION'
+   else
+      if(rang==0) write (6,*)'DMTYPE+PARA=DMLOOP_VVERLET_+OPTION'
       call dmloop_vverlet (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
    endif
-  case (3) 
-write(6,*)'preGC'
+  case (3,30) 
     if (.not.parallele)   call gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   case (9)
      if (.not.parallele)   call neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)

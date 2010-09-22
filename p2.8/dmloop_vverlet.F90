@@ -96,12 +96,12 @@ real(double) sigkine_tot(3,3)
   call analyse 
   ! MPI
      !     write(6,*)'analyse -> sauvegarde'XS
-     if (itesauv/=0) then
+     if (itesauv.GT.0) then
         if (mod(it,itesauv)==0) call sauvegarde
      endif
 
      !     write(6,*)'analyse -> sauveposition'
-     if (itesauvposition/=0) then
+     if (itesauvposition.GT.0) then
         if (mod(it,itesauvposition)==0) then
          call sauveposition (it)
 	 if (lsuivinonpbc) then

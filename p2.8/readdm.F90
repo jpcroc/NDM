@@ -36,8 +36,8 @@ subroutine readdm
        tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax, itean, &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
        lrestart, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
-       ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, tbox&
-       ,  iteangle, ipotentiel, lpotentiel, itesauvposition, lfilmext, tdepla2, &
+       ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, tbox, &
+       iteangle, ipotentiel, lpotentiel, itesauvposition, lfilmext, tdepla2, &
        lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon,  &
        maxorder,  lalea, rsep, &
        h0, sigext,lpotrep,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
@@ -63,7 +63,19 @@ subroutine readdm
   itetabvois = 10             !periode de calcul de la table des voisins
   tempstop = -1.0             !temperature of run stop
   dmtype = 0                  
-  !dmtype = type of calculation : 1 -> MD; 2-> quench (trempe); 4-> Velocity Verlet ; 5 test des forces ; 6 analyse des positions en fin de cascade ; 7calcul des phonons, 8=PR;9= NEB, 10 PARIN RAHMAN , 11 UN SEUL CALCUL DE FORCES, 12 ART
+  !dmtype = type of calculation : 1 -> MD
+  !                               2 -> quench (trempe)
+  !                               3 -> gradient conjugue sur les coordonnes cartesiennes
+  !                              30 -> gradient conjugue sur les coordonnes reduites
+  !                               4 -> Velocity Verlet 
+  !                               5 -> test des forces 
+  !                               6 -> analyse des positions en fin de cascade 
+  !                               7 -> calcul des phonons
+  !                               8 -> PR
+  !                               9 -> NEB
+  !                              10 -> PARIN RAHMAN 
+  !                              11 -> UN SEUL CALCUL DE FORCES
+  !                              12 -> ART
   ttol = 0.0                  !max tolerance for temperature in %
   tfroi = -1.0                !imposed temperature
   tstep = 1.0                 !timestep in 10^-15 sec unit
@@ -534,7 +546,7 @@ subroutine readdm
   endif
 
 
-  if((lTberendsen).and.((dmtype.ge.2).and.(dmtype.le.3))) stop
+  if((lTberendsen).and.( (dmtype.EQ.2).OR.(dmtype.EQ.3).OR.(dmtype.EQ.30) ) ) stop
   if (ipotentiel==-1) then
      tpot=.false.
      lpt:     do i=1,npotmax
@@ -586,12 +598,12 @@ subroutine readdm
 
    if (itetimestep>0)  then
        if ((dmtype.eq.1).or.(dmtype.eq.2).or.(dmtype.eq.4)) then
-         if (rang==0) write(6,*) 'The time step changed each', itetimestep,' steps'	
-	else 
+         if (rang==0) write(6,*) 'The time step changed each', itetimestep,' steps'
+       else 
          if (rang==0) write(6,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
          if (rang==0) write(6,*) 'STOP in readdm'
          stop
-       end if	 
+       end if 
    end if
 
 
@@ -682,49 +694,51 @@ subroutine readdm
   ! MPI
 
   if (rang==0) write (6, *)
-  if (rang==0) write (6, *) ' -------- caracteristiques du run DM--------'
+  if (rang==0) write (6, '(a)') ' -------- caracteristiques du run DM--------'
 
   select case (dmtype)
   case (1)
-     if (rang==0) write (6, *) '      DYNAMIQUE MOLECULAIRE VERLET STANDARD'
+     if (rang==0) write (6, '(a)') '     DYNAMIQUE MOLECULAIRE VERLET STANDARD'
   case (2)
-     if (rang==0) write (6, *) '      TREMPE RAPIDE'
+     if (rang==0) write (6, '(a)') '     TREMPE RAPIDE'
   case (3)
-     if (rang==0) write (6, *) '      GRADIENT CONJUGUE'
+     if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE sur les coordonnees CARTESIENNES'
+  case (30)
+     if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE sur les coordonnees REDUITES'
   case (4)
-     if (rang==0) write (6,*) '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
+     if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
   case (5)
-     if (rang==0) write (6,*) '      TEST DES FORCES '
+     if (rang==0) write (6,'(a)') '      TEST DES FORCES '
   case (7)
-     if (rang==0) write (6,*) '      CALCUL DES PHONONS A PARTIR DE POSITIONS DE FORCES NULLES '
+     if (rang==0) write (6,'(a)') '      CALCUL DES PHONONS A PARTIR DE POSITIONS DE FORCES NULLES '
   case (8)
-     if (rang==0) write (6,*) '      PARRINELLO RAHMAN AUTOCOHERENT '
+     if (rang==0) write (6,'(a)') '      PARRINELLO RAHMAN AUTOCOHERENT '
   case (6)
-     if (rang==0) write (6,*) '      ANALYSE DES POSITIONS EN FIN DE CASCADE '
+     if (rang==0) write (6,'(a)') '      ANALYSE DES POSITIONS EN FIN DE CASCADE '
   case (9)
-     if (rang==0) write (6,*) '      DRAG OR NEB DYNAMICS '	 
+     if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS ' 
      itesauvposition=-1
      itetemp=-1;itesigma=-1
   case (10)
-     if (rang==0) write (6,*) '      TREMPE FIRE '
-     if (rang==0) write (6,*) '  !!!  Attention les masses atomiques sont toutes celle du type 1!!! '
+     if (rang==0) write (6,'(a)') '      TREMPE FIRE '
+     if (rang==0) write (6,'(a)') '  !!!  Attention les masses atomiques sont toutes celle du type 1!!! '
      if (rang==0) write (6,*)
   case (11)
-     if (rang==0) write (6,*) '      UN CALCUL DE FORCES '
+     if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
      if (rang==0) write (6,*)
 #if(ART)    
   case (12)
-     if (rang==0) write (6,*) '|=========NDM ENTERTAINMENTS presents:===============|'
-     if (rang==0) write (6,*) '|---------ART nouveau by N MOUSSEAU.---------------|'
-     if (rang==0) write (6,*) '|======== colored by Cosmin Marinica!==============|'
+     if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
+     if (rang==0) write (6,'(a)') '|---------ART nouveau by N MOUSSEAU.---------------|'
+     if (rang==0) write (6,'(a)') '|======== colored by Cosmin Marinica!==============|'
 #endif
   case default
-     if (rang==0) write (6, *) 'mauvais type de calcul dmtype=', dmtype
+     if (rang==0) write (6, '(a)') 'mauvais type de calcul dmtype=', dmtype
      stop
   end select
 
   if (ltranche) then
-     if (rang==0) write (6, *) '******************* TRANCHE GELEE !!! *****'
+     if (rang==0) write (6, '(a)') '******************* TRANCHE GELEE !!! *****'
      rulayer=rulayer*1.0d-8
 
      lfrozen=.true.
@@ -734,7 +748,7 @@ subroutine readdm
   end if
 
 
-  if (lcontr)  write (6, *) '******************* CONTRAINTE !!! *****'
+  if (lcontr)  write (6, '(a)') '******************* CONTRAINTE !!! *****'
 
 
   if (lTcon) then
@@ -786,7 +800,7 @@ subroutine readdm
 
   endif
 
-  if ( (dmtype==2).or.(dmtype==3).or.(dmtype==9).or.(dmtype==10) ) then    
+  if ( (dmtype==2).or.(dmtype==3).or.(dmtype==30).or.(dmtype==9).or.(dmtype==10) ) then    
     if ( (fpstop<0).and.(fsumstop<0)) then
       if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
       if (rang==0) write(6,*) 'STOP in readdm'
@@ -824,11 +838,11 @@ subroutine readdm
 
        if (itesauvposition<=0) then
           if (rang==0) write(6,*) 'itesauvpostion MUST be positive if you want lsuivinonpbc TRUE'
-	  if (rang==0) write(6,*) 'STOP in readdm'
-	  stop
+          if (rang==0) write(6,*) 'STOP in readdm'
+          stop
        end if
     end if
-     	 
+
 
   if (rang==0) write(6,*)
   if (rang==0) write (6, *) '     ANALYSES '
@@ -901,11 +915,11 @@ subroutine readdm
   end if
 
 
-  if ((dmtype == 3).and.(fpstop.le.0.0).and.&
-       (fsumstop.le.0.0)) then
-     if (rang==0) write(6,*) rang,'critÃ£Â£Ã¢Â¨re de conv. sur la force par atome max negative' 
+  if ( ( (dmtype==3).OR.(dmtype==30) ) &
+        .and.(fpstop.le.0.0).and.(fsumstop.le.0.0)) then
+     if (rang==0) write(6,*) rang,'critere de conv. sur la force par atome max negative' 
      if (rang==0) write(6,*) rang,'fpstop', fpstop
-     if (rang==0) write(6,*) rang,'critÃ£Â£Ã¢Â¨re de conv. sur la force sqrt ( sum_f F_i^2 ) negative' 
+     if (rang==0) write(6,*) rang,'critere de conv. sur la force sqrt ( sum_f F_i^2 ) negative' 
      if (rang==0) write(6,*) rang,'fsumstop', fsumstop
      if (rang==0) write(6,*) rang,'un de deux doit etre > 0. Exemple:'
      if (rang==0) write(6,*) rang,'fpstop = 0.05, fsumstop=0.1 les unites sont eV/A'      

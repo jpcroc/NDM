@@ -432,7 +432,7 @@ contains
     real(double)  :: ax(3,imm)
     real(double)  :: fp(3,imm)
 
-    integer :: ip,lucin,icintype,typmax,i,typmin
+    integer :: ic, ip,lucin,icintype,typmax,i,typmin
     character :: extension*2
     character :: fnamneb*80
     call allocate_neb()
