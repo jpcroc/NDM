@@ -43,7 +43,7 @@ subroutine analyse
   REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
   CHARACTER(len=20), dimension(:), allocatable :: aux_title
   CHARACTER(len=100) :: out_file
-  integer,save::ncalceattotm=0
+  integer,save::ncalceattotm=0, nposmoy=0
   integer::ipot
   !-----------------------------------------------
   !
@@ -488,6 +488,12 @@ subroutine analyse
   if(iteplz>0.and.(.not.parallele)) then
      call prtplz(xp,ityp)
   end if
+  if (lposmoy.eqv..true.) then
+     nposmoy=nposmoy+1
+     do i=1,im
+        posmoyx(1:3,i)=(xp(1:3,i)+(nposmoy-1)*posmoyx(1:3,i))/nposmoy
+     end do
+  end if
 
   if (lprteattotm.EQV..true.) then
      if (ncalceattotm==0)eatomtotm(:)=0.
@@ -495,7 +501,7 @@ subroutine analyse
      do i=1,im
         eatomtotm(i)=(eatom(i)+(ncalceattotm-1)*eatomtotm(i))/ncalceattotm
      end do
-     write(912,*)ncalceattotm,eatomtotm(1)*erg2eV,eatom(1)*erg2eV
+!     write(912,*)ncalceattotm,eatomtotm(1)*erg2eV,eatom(1)*erg2eV
   end if
 
   if (lbulle) then

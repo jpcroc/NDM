@@ -116,11 +116,11 @@ subroutine endrun
 
         if (associated(free))then
            do i=1,im
-              if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatomtotm(i)*erg2eV
+              if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatomtotm(i)*erg2eV-eatref(ityp(i))
            end do
         else
            do i=1,im
-              write (10,'(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatomtotm(i)*erg2eV
+              write (10,'(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatomtotm(i)*erg2eV-eatref(ityp(i))
            end do
         end if
 
@@ -139,6 +139,22 @@ subroutine endrun
 
 
      close(10)
+
+     if (lposmoy.eqv..true.) then
+       open(919, file=fnam(1:lenfnam)//'.MOY.mol', form='formatted', &
+            status='unknown')
+       write (919, '(I9,A)') im_glob, ' POSMOY et ENERGIES '
+       at=at*1.d8
+       write (919,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
+       at=at/1.d8
+
+       do i=1,im
+          write (919, 136) ty(ityp(i)),posmoyx(1,i)*1D+08,posmoyx(2,i)*1D+08,posmoyx(3,i)*1D+08,eatomtotm(i)*erg2eV-eatref(ityp(i)) ,num_at_glob(i)
+       end do
+    end if
+
+136 format(A,3f10.4,D14.5,I9)
+
   end if
   if (rang==0) then
      write (6, *)

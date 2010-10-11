@@ -31,7 +31,7 @@ F90 = ifort
 #EXT = _check
 
  EXT      = 
-F90FLAGS = -O3 -convert big_endian
+F90FLAGS = -O3 
 
 endif
 

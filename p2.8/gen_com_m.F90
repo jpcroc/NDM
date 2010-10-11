@@ -51,7 +51,7 @@ module gen_com_m
   integer, dimension(:), pointer  :: na			! nb d'atomes par type
   integer, dimension(:,:), pointer  :: ipo			! indice des paires d'atomes
   real(double), dimension(:), pointer :: cm, catom, q, rc	! masse, numero atomique, charge ionique, rayon de coup.
-  real(double)::rclu(20)
+  real(double)::rclu(20), eatref(20)   ! rayon et energie des types d'atomes
   character , dimension(:), pointer  :: ty*3
 
   real(double), dimension(3) :: zl, zls2,nzl    ! largeur de la boite et largeur sur 2
@@ -218,6 +218,7 @@ module gen_com_m
   real(double),pointer::eatom(:) ! energie par atome
   real(double),pointer::eatomtotm(:) ! energie par atome
   logical :: lprteat, lprtfat,lprteattotm  ! calcul et ecriture de l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
+  logical :: lposmoy ! ecrit à la fin la position moyenne des atomes
   real(double) :: tdepla, tdepla2 ! seuils de deplacement
   logical :: lfilm, linstantrdf,linstantfda, lrestart, ltpcel, lfilmext !film, RDF, restart, moyenne par cel
 

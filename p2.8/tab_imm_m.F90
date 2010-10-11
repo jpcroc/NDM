@@ -1,7 +1,7 @@
 module tab_imm_m
   !
   USE T_kind_param_m
-  USE gen_com_m, ONLY: lsuivinonpbc
+  USE gen_com_m, ONLY: lsuivinonpbc,lposmoy
   ! 
   ! Module contenant les tableaux dimmensionnes sur le
   ! nombre d'atomes de la simulation
@@ -13,6 +13,7 @@ module tab_imm_m
   real(double),dimension(:,:), pointer :: xpp    ! positions precedentes
   real(double),dimension(:,:), pointer :: vp     ! vitesses
   real(double),dimension(:,:), pointer :: ax     ! positions d'origine
+  real(double),dimension(:,:), pointer :: posmoyx     ! positions moyennes
   real(double),dimension(:,:), pointer :: fp     ! forces 
   real(double),dimension(:,:), pointer :: xpnonpbc    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), pointer :: axnonpbc    ! only in the case, lsuivinonpbc  
@@ -38,6 +39,10 @@ contains
     vp = 0.0
     allocate(ax(3,nb_imm))
     ax = 0.0
+    if (lposmoy.eqv..true.) then
+       allocate(posmoyx(3,nb_imm))
+       posmoyx = 0.0
+    end if
     allocate(fp(3,nb_imm))
     fp = 0.0
     allocate(ielat(nb_imm))

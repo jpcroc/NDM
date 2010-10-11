@@ -46,7 +46,7 @@ subroutine readdm
        fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
        lprteat,lprteattotm,lprtfat,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
        rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat,lfrozen,imFree,natperc,iteanaposneb,ntyp,&
-       lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc
+       lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,eatref
 
 
   !
@@ -254,7 +254,9 @@ subroutine readdm
   typspr=0
   tempdes=-1.0
   lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep. 
-  
+  lposmoy=.false.       ! writes the average position and energy of the atoms in a .mol file
+  eatref(:)=0.
+
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -461,7 +463,14 @@ subroutine readdm
 
   if(dmtype==9) lprteat=.true.
   if(dmtype==12) lprteat=.true.
-  if (lprteattotm.EQV..true.) lprteat=.true.
+  if (lposmoy.EQV..true.) then 
+     lprteattotm=.true.
+     write(6,*)'LPOSMOY, stocke les positions moyennes dans posmoyx et les ecrit a la fin avec les energies moyennes'
+  end if
+  if (lprteattotm.EQV..true.) then
+     lprteat=.true.
+     write(6,*)'LPRTEATTOTM calcule les energies moyenne de chaque atome et les ecrit en retranchant eatref en eV (=0 par defaut)'
+  end if
   if ((lprteattotm.EQV..true.).and.(parallele.EQV..true.))then
      write(6,*)'eattotm et PARA pas prog'
      stop
