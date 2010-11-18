@@ -257,6 +257,16 @@ subroutine init
      temps_initspeed_deb = MPI_Wtime()
 #endif
      call initspeed 
+     if (lcorrelvp) then
+        ax=vp
+        write(6,*)'AX DEVIENT VP0'
+        write(6,*)'AX DEVIENT VP0'
+        write(6,*)'AX DEVIENT VP0'
+        write(6,*)'AX DEVIENT VP0'
+        write(6,*)'AX DEVIENT VP0'
+        
+        call correlvp(xp,xpp,vp,ax,fp,ityp)
+     end if
 
      if (lHcyl) then
         call Hcyl

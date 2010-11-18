@@ -115,14 +115,14 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
         if ((ldesinteg).and.(i==1)) then
            if (pm1des==-1) then
               lambdades=1.-itdes/float(nstepdes)           
-              deltaF=deltaF-deltaepot*1./float(nstepdes)
+              deltaF=deltaF+2*deltaepot*1./float(nstepdes)
               !              lambdades=1.-it/float(nstepdes)           
               phu=phu*lambdades
               deltaepot=deltaepot*lambdades
               
            else
               lambdades=itdes/float(nstepdes)           
-              deltaF=deltaF-deltaepot*1./float(nstepdes)
+              deltaF=deltaF+2*deltaepot*1./float(nstepdes)
               !              lambdades=1.-it/float(nstepdes)           
               phu=phu*lambdades
               deltaepot=deltaepot*lambdades

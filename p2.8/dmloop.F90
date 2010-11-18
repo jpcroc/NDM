@@ -32,16 +32,6 @@ subroutine dmloop
   if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 
   !      write(6,*)'im',im
-  if (lcorrelvp) then
-     ax=vp
-     write(6,*)'AX DEVIENT VP0'
-     write(6,*)'AX DEVIENT VP0'
-     write(6,*)'AX DEVIENT VP0'
-     write(6,*)'AX DEVIENT VP0'
-     write(6,*)'AX DEVIENT VP0'
-
-     call correlvp(xp,xpp,vp,ax,fp,ityp)
-  end if
 1 continue
   it = it+1
 

@@ -178,9 +178,9 @@ subroutine calfo2ccel
            if ((ldesinteg).and.(num_at_glob(i)==1)) then
 
 #if(PARA)
-	deltafcomp=deltafcomp-deltaepot*1./float(nstepdes)
+	deltafcomp=deltafcomp+2*deltaepot*1./float(nstepdes)
 #else
-                 deltaF=deltaF-deltaepot*1./float(nstepdes)
+                 deltaF=deltaF+2*deltaepot*1./float(nstepdes)
 #endif
                  phu=phu*lambdades
                  deltaepot=deltaepot*lambdades

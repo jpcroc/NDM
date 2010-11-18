@@ -15,18 +15,17 @@ subroutine correlvp(xp, xpp, vp, ax, fp, ityp)
   integer :: i,j,k,l,ic,m,n,iti,unitch
   real(double) :: cmat
   character :: chit*2,fch*80
-
   if (it==0) then
      if(rang==0) then
         open(unit=64,file='autocor')
-        !        do iti=1,ntyp
-        !           if(na(iti).ne.0) then
-        !              unitch=12+iti
-        !              write(6,*)'corvp',ty(iti)
-        !              fch='autocor.'//ty(iti)
-        !              open(unit=unitch,file=fch)
-        !           end if
-        !        end do
+                do iti=1,ntyp
+                   if(na(iti).ne.0) then
+                      unitch=12+iti
+                      write(6,*)'corvp',ty(iti)
+                      fch='autocor.'//ty(iti)
+                      open(unit=unitch,file=fch)
+                   end if
+                end do
      end if
 
      !     vp0(:,:)=vp(:,:)
@@ -44,7 +43,7 @@ subroutine correlvp(xp, xpp, vp, ax, fp, ityp)
      end do
 
      ratiocor=1.0
-     if(rang==0)     write(64,'(I8,F11.7)')it,ratiocor
+     if(rang==0)     write(64,'(I8,D12.5,F11.7)')it,timel, ratiocor
      return
   else
      mvptvp0=0. ; vptvp0(:)=0.0
@@ -64,7 +63,7 @@ subroutine correlvp(xp, xpp, vp, ax, fp, ityp)
         if(na(iti).ne.0) then
            unitch=12+iti
            ratiocortyp(iti)=vptvp0(iti)/vp0vp0(iti)
-           !          if(rang==0) write(unitch,'(I7,F11.7)')it,ratiocortyp(iti)
+                     if(rang==0) write(unitch,'(I7,D12.5,F11.7)')it,timel,ratiocortyp(iti)
         end if
      end do
 

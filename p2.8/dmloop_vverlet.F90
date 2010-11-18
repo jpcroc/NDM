@@ -94,6 +94,7 @@ real(double) sigkine_tot(3,3)
   sigtot = sigkine+sig
 
   call analyse 
+  if (lcorrelvp) call correlvp(xp,xpp,vp,ax,fp,ityp)
   ! MPI
      !     write(6,*)'analyse -> sauvegarde'XS
      if (itesauv.GT.0) then
