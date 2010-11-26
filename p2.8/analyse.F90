@@ -367,16 +367,19 @@ subroutine analyse
   if ((mod(it,itesigma)==0).and.(lsigtyp)) then
 
      write(6,*)
-     pmc=0.
-     do ic =1,3
-        pmc=pmc+sigtyp(ic,ic,3)/3.0 
+
+     do iti=1,ntyp
+        pmc=0.
+        do ic =1,3
+           pmc=pmc+sigtyp(ic,ic,iti)/3.0 
+        end do
+        if (rang==0) write(6,'(A,D14.5)')'sigtyp ',iti,' = ',pmc
+        pmc=0.
+        do ic =1,3
+           pmc=pmc+sigtyptyp(ic,ic,iti,iti)/3.0 
+        end do
+        if (rang==0) write(6,'(A,D14.5)')'sigtyptyp ',iti,iti,' = ',pmc
      end do
-     if (rang==0) write(6,'(A,D14.5)')'sigtyp 3 = ',pmc
-     pmc=0.
-     do ic =1,3
-        pmc=pmc+sigtyptyp(ic,ic,3,3)/3.0 
-     end do
-     if (rang==0) write(6,'(A,D14.5)')'sigtyptyp 3 3 = ',pmc
   end if
 
   
