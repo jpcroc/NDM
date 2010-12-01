@@ -271,18 +271,39 @@ subroutine calfo2ccel
 
            if (itesigma>0) then
               if (mod(it,itesigma)==0) then
-
-                 if (num_at_glob(i).lt.num_at_glob(j)) then
-                    sig(1,1) = sig(1,1)+phu*c1*c1/volu
-                    sig(1,2) = sig(1,2)+phu*c1*c2/volu
-                    sig(1,3) = sig(1,3)+phu*c1*c3/volu
-                    sig(2,1) = sig(2,1)+phu*c2*c1/volu
-                    sig(2,2) = sig(2,2)+phu*c2*c2/volu
-                    sig(2,3) = sig(2,3)+phu*c2*c3/volu
-                    sig(3,1) = sig(3,1)+phu*c3*c1/volu
-                    sig(3,2) = sig(3,2)+phu*c3*c2/volu
-                    sig(3,3) = sig(3,3)+phu*c3*c3/volu
-                 endif
+#if(PARA)
+                if (j.le.im) then
+                  sig(1,1) = sig(1,1)+phu*c1*c1/volu
+                  sig(1,2) = sig(1,2)+phu*c1*c2/volu
+                  sig(1,3) = sig(1,3)+phu*c1*c3/volu
+                  sig(2,1) = sig(2,1)+phu*c2*c1/volu
+                  sig(2,2) = sig(2,2)+phu*c2*c2/volu
+                  sig(2,3) = sig(2,3)+phu*c2*c3/volu
+                  sig(3,1) = sig(3,1)+phu*c3*c1/volu
+                  sig(3,2) = sig(3,2)+phu*c3*c2/volu
+                  sig(3,3) = sig(3,3)+phu*c3*c3/volu                  
+                else                  
+                  sig(1,1) = sig(1,1)+phu*c1*c1/volu*0.5
+                  sig(1,2) = sig(1,2)+phu*c1*c2/volu*0.5
+                  sig(1,3) = sig(1,3)+phu*c1*c3/volu*0.5
+                  sig(2,1) = sig(2,1)+phu*c2*c1/volu*0.5
+                  sig(2,2) = sig(2,2)+phu*c2*c2/volu*0.5
+                  sig(2,3) = sig(2,3)+phu*c2*c3/volu*0.5
+                  sig(3,1) = sig(3,1)+phu*c3*c1/volu*0.5
+                  sig(3,2) = sig(3,2)+phu*c3*c2/volu*0.5
+                  sig(3,3) = sig(3,3)+phu*c3*c3/volu*0.5
+                end if
+#else
+                  sig(1,1) = sig(1,1)+phu*c1*c1/volu
+                  sig(1,2) = sig(1,2)+phu*c1*c2/volu
+                  sig(1,3) = sig(1,3)+phu*c1*c3/volu
+                  sig(2,1) = sig(2,1)+phu*c2*c1/volu
+                  sig(2,2) = sig(2,2)+phu*c2*c2/volu
+                  sig(2,3) = sig(2,3)+phu*c2*c3/volu
+                  sig(3,1) = sig(3,1)+phu*c3*c1/volu
+                  sig(3,2) = sig(3,2)+phu*c3*c2/volu
+                  sig(3,3) = sig(3,3)+phu*c3*c3/volu                                    
+#endif
                  if (lTPcel.EQV..true.) then
                     sigc(1,1,koo) = sigc(1,1,koo)+phu*c1*c1*noxyz/volu
                     sigc(1,2,koo) = sigc(1,2,koo)+phu*c1*c2*noxyz/volu
@@ -294,36 +315,101 @@ subroutine calfo2ccel
                     sigc(3,2,koo) = sigc(3,2,koo)+phu*c3*c2*noxyz/volu
                     sigc(3,3,koo) = sigc(3,3,koo)+phu*c3*c3*noxyz/volu
                  end if
-                 if (lsigtyp.EQV..true.) then
-                    sigtyp(1,1,ityp(i)) = sigtyp(1,1,ityp(i))+phu*c1*c1*0.5
-                    sigtyp(1,2,ityp(i)) = sigtyp(1,2,ityp(i))+phu*c1*c2*0.5
-                    sigtyp(1,3,ityp(i)) = sigtyp(1,3,ityp(i))+phu*c1*c3*0.5
-                    sigtyp(2,1,ityp(i)) = sigtyp(2,1,ityp(i))+phu*c2*c1*0.5
-                    sigtyp(2,2,ityp(i)) = sigtyp(2,2,ityp(i))+phu*c2*c2*0.5
-                    sigtyp(2,3,ityp(i)) = sigtyp(2,3,ityp(i))+phu*c2*c3*0.5
-                    sigtyp(3,1,ityp(i)) = sigtyp(3,1,ityp(i))+phu*c3*c1*0.5
-                    sigtyp(3,2,ityp(i)) = sigtyp(3,2,ityp(i))+phu*c3*c2*0.5
-                    sigtyp(3,3,ityp(i)) = sigtyp(3,3,ityp(i))+phu*c3*c3*0.5
-                    sigtyp(1,1,ityp(j)) = sigtyp(1,1,ityp(j))+phu*c1*c1*0.5
-                    sigtyp(1,2,ityp(j)) = sigtyp(1,2,ityp(j))+phu*c1*c2*0.5
-                    sigtyp(1,3,ityp(j)) = sigtyp(1,3,ityp(j))+phu*c1*c3*0.5
-                    sigtyp(2,1,ityp(j)) = sigtyp(2,1,ityp(j))+phu*c2*c1*0.5
-                    sigtyp(2,2,ityp(j)) = sigtyp(2,2,ityp(j))+phu*c2*c2*0.5
-                    sigtyp(2,3,ityp(j)) = sigtyp(2,3,ityp(j))+phu*c2*c3*0.5
-                    sigtyp(3,1,ityp(j)) = sigtyp(3,1,ityp(j))+phu*c3*c1*0.5
-                    sigtyp(3,2,ityp(j)) = sigtyp(3,2,ityp(j))+phu*c3*c2*0.5
-                    sigtyp(3,3,ityp(j)) = sigtyp(3,3,ityp(j))+phu*c3*c3*0.5
-                    itimin=min(ityp(i),ityp(j))
-                    itimax=max(ityp(i),ityp(j))
-                    sigtyptyp(1,1,itimin,itimax) = sigtyptyp(1,1,itimin,itimax)+phu*c1*c1
-                    sigtyptyp(1,2,itimin,itimax) = sigtyptyp(1,2,itimin,itimax)+phu*c1*c2
-                    sigtyptyp(1,3,itimin,itimax) = sigtyptyp(1,3,itimin,itimax)+phu*c1*c3
-                    sigtyptyp(2,1,itimin,itimax) = sigtyptyp(2,1,itimin,itimax)+phu*c2*c1
-                    sigtyptyp(2,2,itimin,itimax) = sigtyptyp(2,2,itimin,itimax)+phu*c2*c2
-                    sigtyptyp(2,3,itimin,itimax) = sigtyptyp(2,3,itimin,itimax)+phu*c2*c3
-                    sigtyptyp(3,1,itimin,itimax) = sigtyptyp(3,1,itimin,itimax)+phu*c3*c1
-                    sigtyptyp(3,2,itimin,itimax) = sigtyptyp(3,2,itimin,itimax)+phu*c3*c2
-                    sigtyptyp(3,3,itimin,itimax) = sigtyptyp(3,3,itimin,itimax)+phu*c3*c3
+                 if (lsigtyp.EQV..true.) then                  
+#if(PARA)
+                   if (j.le.im) then
+                     sigtyp(1,1,ityp(i)) = sigtyp(1,1,ityp(i))+phu*c1*c1*0.5
+                     sigtyp(1,2,ityp(i)) = sigtyp(1,2,ityp(i))+phu*c1*c2*0.5
+                     sigtyp(1,3,ityp(i)) = sigtyp(1,3,ityp(i))+phu*c1*c3*0.5
+                     sigtyp(2,1,ityp(i)) = sigtyp(2,1,ityp(i))+phu*c2*c1*0.5
+                     sigtyp(2,2,ityp(i)) = sigtyp(2,2,ityp(i))+phu*c2*c2*0.5
+                     sigtyp(2,3,ityp(i)) = sigtyp(2,3,ityp(i))+phu*c2*c3*0.5
+                     sigtyp(3,1,ityp(i)) = sigtyp(3,1,ityp(i))+phu*c3*c1*0.5
+                     sigtyp(3,2,ityp(i)) = sigtyp(3,2,ityp(i))+phu*c3*c2*0.5
+                     sigtyp(3,3,ityp(i)) = sigtyp(3,3,ityp(i))+phu*c3*c3*0.5
+                     sigtyp(1,1,ityp(j)) = sigtyp(1,1,ityp(j))+phu*c1*c1*0.5
+                     sigtyp(1,2,ityp(j)) = sigtyp(1,2,ityp(j))+phu*c1*c2*0.5
+                     sigtyp(1,3,ityp(j)) = sigtyp(1,3,ityp(j))+phu*c1*c3*0.5
+                     sigtyp(2,1,ityp(j)) = sigtyp(2,1,ityp(j))+phu*c2*c1*0.5
+                     sigtyp(2,2,ityp(j)) = sigtyp(2,2,ityp(j))+phu*c2*c2*0.5
+                     sigtyp(2,3,ityp(j)) = sigtyp(2,3,ityp(j))+phu*c2*c3*0.5
+                     sigtyp(3,1,ityp(j)) = sigtyp(3,1,ityp(j))+phu*c3*c1*0.5
+                     sigtyp(3,2,ityp(j)) = sigtyp(3,2,ityp(j))+phu*c3*c2*0.5
+                     sigtyp(3,3,ityp(j)) = sigtyp(3,3,ityp(j))+phu*c3*c3*0.5
+                     itimin=min(ityp(i),ityp(j))
+                     itimax=max(ityp(i),ityp(j))
+                     sigtyptyp(1,1,itimin,itimax) = sigtyptyp(1,1,itimin,itimax)+phu*c1*c1
+                     sigtyptyp(1,2,itimin,itimax) = sigtyptyp(1,2,itimin,itimax)+phu*c1*c2
+                     sigtyptyp(1,3,itimin,itimax) = sigtyptyp(1,3,itimin,itimax)+phu*c1*c3
+                     sigtyptyp(2,1,itimin,itimax) = sigtyptyp(2,1,itimin,itimax)+phu*c2*c1
+                     sigtyptyp(2,2,itimin,itimax) = sigtyptyp(2,2,itimin,itimax)+phu*c2*c2
+                     sigtyptyp(2,3,itimin,itimax) = sigtyptyp(2,3,itimin,itimax)+phu*c2*c3
+                     sigtyptyp(3,1,itimin,itimax) = sigtyptyp(3,1,itimin,itimax)+phu*c3*c1
+                     sigtyptyp(3,2,itimin,itimax) = sigtyptyp(3,2,itimin,itimax)+phu*c3*c2
+                     sigtyptyp(3,3,itimin,itimax) = sigtyptyp(3,3,itimin,itimax)+phu*c3*c3
+                   else
+                     sigtyp(1,1,ityp(i)) = sigtyp(1,1,ityp(i))+phu*c1*c1*0.25
+                     sigtyp(1,2,ityp(i)) = sigtyp(1,2,ityp(i))+phu*c1*c2*0.25
+                     sigtyp(1,3,ityp(i)) = sigtyp(1,3,ityp(i))+phu*c1*c3*0.25
+                     sigtyp(2,1,ityp(i)) = sigtyp(2,1,ityp(i))+phu*c2*c1*0.25
+                     sigtyp(2,2,ityp(i)) = sigtyp(2,2,ityp(i))+phu*c2*c2*0.25
+                     sigtyp(2,3,ityp(i)) = sigtyp(2,3,ityp(i))+phu*c2*c3*0.25
+                     sigtyp(3,1,ityp(i)) = sigtyp(3,1,ityp(i))+phu*c3*c1*0.25
+                     sigtyp(3,2,ityp(i)) = sigtyp(3,2,ityp(i))+phu*c3*c2*0.25
+                     sigtyp(3,3,ityp(i)) = sigtyp(3,3,ityp(i))+phu*c3*c3*0.25
+                     sigtyp(1,1,ityp(j)) = sigtyp(1,1,ityp(j))+phu*c1*c1*0.25
+                     sigtyp(1,2,ityp(j)) = sigtyp(1,2,ityp(j))+phu*c1*c2*0.25
+                     sigtyp(1,3,ityp(j)) = sigtyp(1,3,ityp(j))+phu*c1*c3*0.25
+                     sigtyp(2,1,ityp(j)) = sigtyp(2,1,ityp(j))+phu*c2*c1*0.25
+                     sigtyp(2,2,ityp(j)) = sigtyp(2,2,ityp(j))+phu*c2*c2*0.25
+                     sigtyp(2,3,ityp(j)) = sigtyp(2,3,ityp(j))+phu*c2*c3*0.25
+                     sigtyp(3,1,ityp(j)) = sigtyp(3,1,ityp(j))+phu*c3*c1*0.25
+                     sigtyp(3,2,ityp(j)) = sigtyp(3,2,ityp(j))+phu*c3*c2*0.25
+                     sigtyp(3,3,ityp(j)) = sigtyp(3,3,ityp(j))+phu*c3*c3*0.25
+                     itimin=min(ityp(i),ityp(j))
+                     itimax=max(ityp(i),ityp(j))
+                     sigtyptyp(1,1,itimin,itimax) = sigtyptyp(1,1,itimin,itimax)+phu*c1*c1*0.5
+                     sigtyptyp(1,2,itimin,itimax) = sigtyptyp(1,2,itimin,itimax)+phu*c1*c2*0.5
+                     sigtyptyp(1,3,itimin,itimax) = sigtyptyp(1,3,itimin,itimax)+phu*c1*c3*0.5
+                     sigtyptyp(2,1,itimin,itimax) = sigtyptyp(2,1,itimin,itimax)+phu*c2*c1*0.5
+                     sigtyptyp(2,2,itimin,itimax) = sigtyptyp(2,2,itimin,itimax)+phu*c2*c2*0.5
+                     sigtyptyp(2,3,itimin,itimax) = sigtyptyp(2,3,itimin,itimax)+phu*c2*c3*0.5
+                     sigtyptyp(3,1,itimin,itimax) = sigtyptyp(3,1,itimin,itimax)+phu*c3*c1*0.5
+                     sigtyptyp(3,2,itimin,itimax) = sigtyptyp(3,2,itimin,itimax)+phu*c3*c2*0.5
+                     sigtyptyp(3,3,itimin,itimax) = sigtyptyp(3,3,itimin,itimax)+phu*c3*c3*0.5
+                   end if
+#else
+                   sigtyp(1,1,ityp(i)) = sigtyp(1,1,ityp(i))+phu*c1*c1*0.5
+                   sigtyp(1,2,ityp(i)) = sigtyp(1,2,ityp(i))+phu*c1*c2*0.5
+                   sigtyp(1,3,ityp(i)) = sigtyp(1,3,ityp(i))+phu*c1*c3*0.5
+                   sigtyp(2,1,ityp(i)) = sigtyp(2,1,ityp(i))+phu*c2*c1*0.5
+                   sigtyp(2,2,ityp(i)) = sigtyp(2,2,ityp(i))+phu*c2*c2*0.5
+                   sigtyp(2,3,ityp(i)) = sigtyp(2,3,ityp(i))+phu*c2*c3*0.5
+                   sigtyp(3,1,ityp(i)) = sigtyp(3,1,ityp(i))+phu*c3*c1*0.5
+                   sigtyp(3,2,ityp(i)) = sigtyp(3,2,ityp(i))+phu*c3*c2*0.5
+                   sigtyp(3,3,ityp(i)) = sigtyp(3,3,ityp(i))+phu*c3*c3*0.5
+                   sigtyp(1,1,ityp(j)) = sigtyp(1,1,ityp(j))+phu*c1*c1*0.5
+                   sigtyp(1,2,ityp(j)) = sigtyp(1,2,ityp(j))+phu*c1*c2*0.5
+                   sigtyp(1,3,ityp(j)) = sigtyp(1,3,ityp(j))+phu*c1*c3*0.5
+                   sigtyp(2,1,ityp(j)) = sigtyp(2,1,ityp(j))+phu*c2*c1*0.5
+                   sigtyp(2,2,ityp(j)) = sigtyp(2,2,ityp(j))+phu*c2*c2*0.5
+                   sigtyp(2,3,ityp(j)) = sigtyp(2,3,ityp(j))+phu*c2*c3*0.5
+                   sigtyp(3,1,ityp(j)) = sigtyp(3,1,ityp(j))+phu*c3*c1*0.5
+                   sigtyp(3,2,ityp(j)) = sigtyp(3,2,ityp(j))+phu*c3*c2*0.5
+                   sigtyp(3,3,ityp(j)) = sigtyp(3,3,ityp(j))+phu*c3*c3*0.5
+                   itimin=min(ityp(i),ityp(j))
+                   itimax=max(ityp(i),ityp(j))
+                   sigtyptyp(1,1,itimin,itimax) = sigtyptyp(1,1,itimin,itimax)+phu*c1*c1
+                   sigtyptyp(1,2,itimin,itimax) = sigtyptyp(1,2,itimin,itimax)+phu*c1*c2
+                   sigtyptyp(1,3,itimin,itimax) = sigtyptyp(1,3,itimin,itimax)+phu*c1*c3
+                   sigtyptyp(2,1,itimin,itimax) = sigtyptyp(2,1,itimin,itimax)+phu*c2*c1
+                   sigtyptyp(2,2,itimin,itimax) = sigtyptyp(2,2,itimin,itimax)+phu*c2*c2
+                   sigtyptyp(2,3,itimin,itimax) = sigtyptyp(2,3,itimin,itimax)+phu*c2*c3
+                   sigtyptyp(3,1,itimin,itimax) = sigtyptyp(3,1,itimin,itimax)+phu*c3*c1
+                   sigtyptyp(3,2,itimin,itimax) = sigtyptyp(3,2,itimin,itimax)+phu*c3*c2
+                   sigtyptyp(3,3,itimin,itimax) = sigtyptyp(3,3,itimin,itimax)+phu*c3*c3
+
+#endif
                  end if
               endif
            endif
