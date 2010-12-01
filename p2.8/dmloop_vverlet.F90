@@ -84,10 +84,10 @@ real(double) sigkine_tot(3,3)
 !  sig=sig_tot
   call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   sigkine=sigkine_tot
-  if (lsigtyp) then
+  if (lsigtyp.and.mod(it,itesigma) == 0) then
      call MPI_ALLREDUCE(sigtyp,sigtyp_loc,9*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      sigtyp=sigtyp_loc
-     call MPI_ALLREDUCE(sigtyptyp,sigtyp_loc,9*ntyp*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(sigtyptyp,sigtyptyp_loc,9*ntyp*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      sigtyptyp=sigtyptyp_loc
   end if
 #endif
