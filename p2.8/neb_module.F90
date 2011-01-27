@@ -79,8 +79,8 @@ contains
        ityp_n    (:,iph) = ityp    (:)
        xp_n (:,:,iph)    = xp (:,:)
        xpp_n(:,:,iph)    = xpp(:,:)
-       vp_n (:,:,iph)    = vp (:,:)
-       !       vp_n (:,:,iph)    = 0.d0
+       !vp_n (:,:,iph)    = vp (:,:)
+       vp_n (:,:,iph)    = 0.d0
        ax_n (:,:,iph)    = ax (:,:)
        fp_n (:,:,iph)    = fp (:,:)
     else 
@@ -89,9 +89,11 @@ contains
        ityp    (:)      = ityp_n    (:,iph)
        xp (1:3,:)	      = xp_n (1:3,:,iph)   
        xpp(1:3,:)	      = xpp_n(1:3,:,iph)   
-       vp (1:3,:)	      = vp_n (1:3,:,iph)   
+       !vp (1:3,:)	      = vp_n (1:3,:,iph)   
+       vp(1:3,:) = 0.d0
        ax (1:3,:)	      = ax_n (1:3,:,iph)   
        fp (1:3,:)	      = fp_n (1:3,:,iph)   
+       !fp (1:3,:)	      = 0.d0   
     end if
 
     return
@@ -267,23 +269,20 @@ contains
     !-----------------------------------------------
     integer  :: ityp(imm)
     integer  :: iph,ia,ic
-    real(double)  :: dxx(3,imm),rcm_loc(3),masstot_contr
+    real(double)  :: dxx(3,imm),rcm_loc(3)
 
 
     dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
 
 
-
     s_path(:,:,:)=0.d0
     rcm_loc(:)=0.d0
-    masstot_contr=0.d0
 
 
     do ic=1,3
        do ia=1,im
           if (icontrainte(ia).eq.1) then
              rcm_loc(ic) = rcm_loc(ic) + dxx(ic,ia)
-             masstot_contr=masstot_contr+cm(ityp(ia))
           end if
        end do
     end do
@@ -291,9 +290,9 @@ contains
     do iph=2,npath-1
        do ia=1,im
           if (icontrainte(ia).eq.1) then
-             s_path(1,ia,iph)= dxx(1,ia) -  rcm_loc(1)*cm(ityp(ia))/masstot_contr 
-             s_path(2,ia,iph)= dxx(2,ia) -  rcm_loc(2)*cm(ityp(ia))/masstot_contr
-             s_path(3,ia,iph)= dxx(3,ia) -  rcm_loc(3)*cm(ityp(ia))/masstot_contr
+             s_path(1,ia,iph)= dxx(1,ia) -  rcm_loc(1)*cm(ityp(ia))/masstot 
+             s_path(2,ia,iph)= dxx(2,ia) -  rcm_loc(2)*cm(ityp(ia))/masstot
+             s_path(3,ia,iph)= dxx(3,ia) -  rcm_loc(3)*cm(ityp(ia))/masstot
           end if
        end do
        norms(iph) = SUM(s_path(:,:,iph)**2)
