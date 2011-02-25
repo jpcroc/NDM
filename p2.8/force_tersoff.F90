@@ -79,12 +79,13 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
   end if
 
   moi =0
-!  do i=1,im
-!     fp(1,i)=0; fp(2,i)=0; fp(3,i)=0
-!  end do
-!  jq(:)=0; sig(:,:)=0
+  !  do i=1,im
+  !     fp(1,i)=0; fp(2,i)=0; fp(3,i)=0
+  !  end do
+  !  jq(:)=0; sig(:,:)=0
 
-  fpnemdmoy(:)=0
+  if (lnemd) fpnemdmoy(:)=0
+
   ER1=0. ;  ER2=0. ;  ER3=0.
   call cryst_to_cart(imm,xp,bg,-1)
 
@@ -105,6 +106,7 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
 #endif
 ! Sequentiel
 
+        if (lnemd) fpnemd(:)=0.
         v_ij = 0
 
         ipv = idv+1
@@ -134,6 +136,8 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
                  !if (rij2>(Rter(ij)+CoupR(ij))**2) then   !borne sup de Tersoff 88
                  cycle
               else
+                 !CRC ortho seulement
+                 if(lnemd) XijdotF=Xij(1)*Fnemd*zl(1)
                  n=nter(ityp(i))
                  rij=sqrt(rij2)
                  sui_ij = 0
@@ -204,7 +208,7 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
 
                        fp(l,i) = fp(l,i) + paire_ij
                        fp(l,j) = fp(l,j) - paire_ij
-
+                       if(lnemd) fpnemd(l)=fpnemd(l)+paire_ij*XijdotF
                        if (lcalcjq) then
                           Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
                        end if
@@ -264,6 +268,7 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
                        call facteur_angulaire (cos_theta, ityp(i), dg= dg_cos)
                        Scal_FijVi=0. ; Scal_FijVj=0. ; Scal_FikVi=0. ; Scal_FikVk=0.
                        cvik(1,:)=tmp1(nk,:)
+                       if(lnemd) XikdotF=tmp1(nk,1)*Fnemd*zl(1)
                        do l=1,3
 !                          cvik(1,l) = tmp1(nk,l)
 !                          write(6,*)'cvik l',cvik(1,l),l
@@ -300,6 +305,8 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
                           fp(l,j) = fp(l,j) - triplet_ij
                           fp(l,i) = fp(l,i) + triplet_ik
                           fp(l,k) = fp(l,k) - triplet_ik
+                          if(lnemd) fpnemd(l)=fpnemd(l)+triplet_ij*XijdotF
+                          if(lnemd) fpnemd(l)=fpnemd(l)+triplet_ik*XikdotF
 
                           !Flux
                           if (lcalcjq) then
@@ -364,7 +371,25 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
            if (lprteat.or.lcalcjq.or.lnemd)eatom(i) = eatom(i)+0.5*v_ij
         end if
 
+
+        if (lnemd) then
+           do l=1,3
+              fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l)/float(imd)
+              fp(l,i)=fp(l,i)+fpnemd(l)
+           enddo
+        end if
+
      end do Tloop1at1
+     
+     if (lnemd) then
+        do i=1,imd
+           do l=1,3
+              fp(l,i)=fp(l,i)-fpnemdmoy(l)
+           enddo
+        end do
+     end if
+
+
 
 
 #ifdef paraTersoff
