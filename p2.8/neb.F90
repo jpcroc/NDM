@@ -60,7 +60,7 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      call neb_controle    (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
      enePATH(ii)=potist
      enePATHev(ii)=potist*erg2ev
-     write(*,'(i5,3f15.8)') ii, enePATHev(ii),enePATHev(ii)-enePATHev(1)
+     write(*,'(i5,3(g20.8,1x))') ii, enePATHev(ii),enePATHev(ii)-enePATHev(1)
      call into_path(ii,1,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
   end do
@@ -188,9 +188,9 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
   print*,'-------------------------------------------'
   write(*,'("          Min .. et .. Max")')
-  print '("E:",2f14.7)',minval(enePATHev), maxval(enePATHev)
+  print '("E:",2g14.7)',minval(enePATHev), maxval(enePATHev)
   write(*,'("          1 .. et .. NPATH")')
-  print '("B:",2f14.7)',enePATHev(1), enePATHev(npath)
+  print '("B:",2g14.7)',enePATHev(1), enePATHev(npath)
   write(*,'("les diffs")')
   print*,'1-NPATH    :',enePATHev(1)-enePATHev(npath)
   print*,'-------------------------------------------'
