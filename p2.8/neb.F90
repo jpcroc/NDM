@@ -179,9 +179,9 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   print'("NEB:--IMAGE-----REACT-COORD------ENERGY------ENERGY-ENERGY(1)")'
   do ii=1,npath
      !
-     write(*,'(i5,3f15.8)')  ii, reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1)
-     write(55,'(3f15.8)') dble(ii-1)/dble(npath-1), enePATHev(ii),enePATHev(ii)-enePATHev(1)
-     write(56,'(3f15.8)') reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1)
+     write(*,'(i5,3(g20.8,1x))')  ii, reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1)
+     write(55,'(3(g20.8,1x))') dble(ii-1)/dble(npath-1), enePATHev(ii),enePATHev(ii)-enePATHev(1)
+     write(56,'(3(g20.8,1x))') reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1)
      !       
   end do
 
