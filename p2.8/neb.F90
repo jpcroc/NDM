@@ -129,6 +129,13 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
               !
            end do
 
+           ! Backup image ii
+           if (itesauv.GT.0) then
+                   if (mod(ineb,itesauv)==0) call sauveposition(ii)
+           else if (itesauvposition.GT.0) then
+                   if (mod(ineb,itesauvposition)==0) call sauveposition ( ii)
+           endif
+
            !debug          print'("NEB: ",2i5,3E14.5,E20.10,i3)', ineb, ii,  formax,       &
            !debug	            formaxperp, formaxparl, potist*erg2eV,nebtest(ii)
            forneb = SQRT(MAXVAL(force_neb(1,:,ii)**2 + force_neb(2,:,ii)**2         &
