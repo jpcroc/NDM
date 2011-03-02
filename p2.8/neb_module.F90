@@ -143,21 +143,24 @@ contains
 
     do iph=1,npath
 
-       xp_n(:,:,iph) = xp_n(:,:,1) +                               &
-            ( dxx(:,:) ) * dble(iph -1) / dble(npath-1)
+       IF (lrestart) THEN
+               ! NEB image load from previous run
+               CALL Load_NEB_Image(iph)
+       ELSE
+               ! Construction of NEB image
+               xp_n(:,:,iph) = xp_n(:,:,1) +                               &
+                    ( dxx(:,:) ) * dble(iph -1) / dble(npath-1)
+               ityp_n    (:,iph) = ityp    (:)
 
+       END IF
        ielat_n   (:,iph) = ielat   (:) 
        iwmax_n   (:,iph) = iwmax   (:)
-       ityp_n    (:,iph) = ityp    (:)
        xpp_n(:,:,iph)    = xp_n(:,:,iph)
        vp_n (:,:,iph)    = 0.d0
        ax_n (:,:,iph)    = xp_n(:,:,iph)
        fp_n (:,:,iph)    = 0.d0
-
     end do
-   ! 	write(6,*)'toto'
-!	write(6,*)cm
-!	write(6,*)ityp
+
     masstot=SUM(cm(ityp(1:im)))
     if  (nebtype>=2) then
        write(*,'(" NEB: The kspring is in the eV/A^2                          :", f12.5)')  kspring
@@ -188,6 +191,48 @@ contains
     return
 
   end subroutine init_neb
+
+  !-------------------------------------------------------
+
+  SUBROUTINE Load_NEB_Image(ip)
+    ! Load NEB image ip in file *.coutposition.*
+    USE gen_com_m, ONLY : lenfnam, fnam, imm
+    IMPLICIT NONE
+
+    INTEGER, intent(in) :: ip
+
+    CHARACTER(len=9) :: extension
+    CHARACTER(len=89) :: fnamneb
+    INTEGER :: lucin, icintype, im
+    REAL(double), dimension(3:3) :: at
+    REAL(double), dimension(3) :: zl
+
+    write(extension,'(i9.9)') ip
+    fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
+    write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(fnamneb)
+    lucin = 93
+    open(unit=lucin, file=fnamneb, form='unformatted', status='old', action='read')
+    read (lucin) icintype
+    if (icintype>=2) then
+            read (lucin) at
+    else
+            read (lucin) zl
+    endif
+
+    read (lucin) im
+    if (im>imm) then
+            if(rang==0) write (6, *) 'im > imM', im, imm
+            stop
+    endif
+
+    read (lucin) ityp_n(:,ip)
+    read (lucin) xp_n(:,:,ip)
+
+    CLOSE(lucin)
+
+  END SUBROUTINE Load_NEB_Image
+
+  !-------------------------------------------------------
 
   subroutine build_s_path_neb(ityp)
     !-----------------------------------------------
@@ -432,36 +477,16 @@ contains
     real(double)  :: fp(3,imm)
 
     integer :: ic, ip,lucin,icintype,typmax,i,typmin
-    character :: extension*2
+    character :: extension*9
     character :: fnamneb*80
     call allocate_neb()
     if (lrestart) then
-       do ip=1,npath
-          !          open(unit=17, file='tampon', form='formatted', status='unknown')
-          !          if (ip==1) then
-          !          fnamneb='deb.cout'
-          !          goto 1
-          !       end if
-          !          if (ip==npath) then
-          !          fnam='fin.cout'
-          !          goto 1
-          !       end if
-         if (ip.ge.100) then
-           write (6,*) 'ip >99 stop'
-           stop 
-         end if
-         write(extension,'(i2.2)') ip
-
-101       format(a1)
-201       format(a2)
-200       format(i2)
-
+       do ip=1, npath, npath-1
+          write(extension,'(i9.9)') ip
           fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
-1         continue
-          write(6,*)'image = ',fnam
+          write(6,'(2a)')'image = ',fnamneb
           lucin = 93
-          open(unit=lucin, file=fnamneb, form='unformatted', status='unknown')
-
+          open(unit=lucin, file=fnamneb, form='unformatted', status='old')
           read (lucin) icintype
           if (icintype>=2) then
              read (lucin) at
@@ -521,14 +546,6 @@ contains
              na(ityp(i))=na(ityp(i))+1
           enddo
           read (lucin) xp
-          write(6,*)'xp NEB image',ip
-
-          !        xp_n (:,:,ip)    = xp (:,:)
-          !        ityp_n    (:,ip) = ityp    (:)
-          !        xpp_n(:,:,ip)    = 0.0
-          !        vp_n (:,:,ip)    = 0.0
-          !        ax_n (:,:,ip)    = 0.0
-          !        fp_n (:,:,ip)    = 0.0
 
           ielat_n   (:,ip) = ielat   (:) 
           iwmax_n   (:,ip) = iwmax   (:)

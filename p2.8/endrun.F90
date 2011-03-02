@@ -174,9 +174,9 @@ subroutine endrun
   endif
   call analyse
   if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
-  if (iterasmol>=0) call rasmol (it)
+  if (iterasmol.GE.0) call rasmol (it)
   if (iteanapos>=0) call anapos (it)
-  if (itecfg>0) then
+  if (itecfg.GE.0) then
      WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.cfg'
      OPEN(file=out_file, unit=60, action='write')
      IF (lprteat) THEN       ! Energy per atom
