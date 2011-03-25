@@ -26,6 +26,7 @@ use suivinonpbc
   real(double), save :: tmoyinst, imesureT
   !-----------------------------------------------
   real(double), external :: tempinst
+  real(double)::eatommoy
 #if(PARA)
   real(double)::jq_tot(3)
 #endif
@@ -110,7 +111,20 @@ use suivinonpbc
 
   ! Force calculation
 
-  call calfo   ! F(t)
+  call calfo   ! F(t+dt)
+
+  if (lnemd) then
+     eatommoy=0.
+     do i=1,imd
+        eatommoy=eatommoy+eatom(i)/float(imd)
+     end do
+     do i=1,imd
+        fp(1,i)=fp(1,i)+(eatom(i)-eatommoy)*Fnemd
+     end do
+  end if
+
+
+
 
   ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
   IF (lFrozen) THEN     ! Some atoms are frozen
