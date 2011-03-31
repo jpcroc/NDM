@@ -234,7 +234,7 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
 
                        fp(l,i) = fp(l,i) + paire_ij
                        fp(l,j) = fp(l,j) - paire_ij
-
+                       if(lnemd) fpnemd(l)=fpnemd(l)+paire_ij*XijdotF
                        if (lcalcjq) then
                           Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
                        end if
