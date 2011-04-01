@@ -13,7 +13,7 @@ subroutine controle
 #if(PARA)
   use mod_mpi
 #endif
-
+  use defcdp, ONLY :itecdp
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -52,13 +52,14 @@ subroutine controle
   !
   !
 
-  !     write(6,*) 'entree controle'
+!  write(6,*) 'entree controle',it,im
+
 
   ! last iteration ?
 
 
-    !dewrite(*,*) 'IN CONTROLE: dmtype,  tfcou, idorcou', dmtype, tfcou, ibordcou
-    !stop
+  !dewrite(*,*) 'IN CONTROLE: dmtype,  tfcou, idorcou', dmtype, tfcou, ibordcou
+  !stop
 
 
   if (it>=itmax) then
@@ -101,16 +102,24 @@ subroutine controle
 
 
   if (lcdp) then 
-     call creadp (xp,xpp,ityp)
-     if (lperiod) then 
-        call period
-     else 
-      write(*,*) 'WARNING .... Not implemented for lperiod  FALSE nad lcdp TRUE'
-      write(*,*) 'FIX THAT! Until there the program will stop'
-      stop      
+     !     write(6,*)'it',it
+     if(itecdp.gt.0) then
+        if (mod(it,itecdp).ne.0) goto 666
+
+
+        call creadp (xp, xpp, ityp,vp,num_at_glob)
+        call caltabt
+        if (ltabvois) call caltabi
+        if (lperiod) then 
+           call period
+        else 
+           write(*,*) 'WARNING .... Not implemented for lperiod  FALSE nad lcdp TRUE'
+           write(*,*) 'FIX THAT! Until there the program will stop'
+           stop      
+        end if
      end if
   end if
-
+666 continue
 
 
   ! cell dispatching
@@ -129,11 +138,11 @@ subroutine controle
 
   if (dmtype==1) then
 
-      if (lperiod) then
-         xpnp(:,:)=xp(:,:)
-       else
-         call notperiod(xp,xpnp)
-      end if     
+     if (lperiod) then
+        xpnp(:,:)=xp(:,:)
+     else
+        call notperiod(xp,xpnp)
+     end if
 
      ! Scaling temperature if intolerable ?
      if (itetemp/=0) then
@@ -153,13 +162,13 @@ subroutine controle
         endif !end mod(it,itetemp)==0
      endif ! end itetemp/=0
 
-    ! change in time step ? itetimestep >0
+     ! change in time step ? itetimestep >0
      if (itetimestep>0) then
         if (mod(it,itetimestep)==0) call deftimestep 
      endif
 
 
-    ! controle temperature en bord de boite ?  tcou >0
+     ! controle temperature en bord de boite ?  tcou >0
 
      if (tfcou > 0.0) then
         if (itetemp/=0) then
@@ -174,7 +183,7 @@ subroutine controle
               nacou = 0
               tcou = 0.d0
 
-          
+
 
               select case(ibordcou)
               case(0)
@@ -238,18 +247,18 @@ subroutine controle
 
   endif                                      !dmtype=1 end here
 
-  
-  
-  
+
+
+
   if (ljqbh) then
-   if (lperiod) then
-      call jqbh(xp,xpp,vp,ityp)
-    else 
-      write(*,*) 'No implementation for ljqbh .true. and lperiod .false.'
-      write(*,*) 'Stop in controle'
-      stop        
-   end if
-  end if    
+     if (lperiod) then
+        call jqbh(xp,xpp,vp,ityp)
+     else 
+        write(*,*) 'No implementation for ljqbh .true. and lperiod .false.'
+        write(*,*) 'Stop in controle'
+        stop        
+     end if
+  end if
 
   ! change in time step ? itetimestep >0
   if (itetimestep>0) then
@@ -258,17 +267,17 @@ subroutine controle
 
 
   if (dmtype==4) then
-  
- !debug    write(*,*) 'IN CONTROLE: dmtype,  tfcou, idorcou, landerscou', dmtype, tfcou, ibordcou, landerscou
 
-   if (lperiod) then
-      xpnp(:,:)=xp(:,:)
-    else       
-      call notperiod(xp,xpnp)
-   end if     
+     !debug    write(*,*) 'IN CONTROLE: dmtype,  tfcou, idorcou, landerscou', dmtype, tfcou, ibordcou, landerscou
+
+     if (lperiod) then
+        xpnp(:,:)=xp(:,:)
+     else       
+        call notperiod(xp,xpnp)
+     end if
 
 
-     ! Temperature constante a  la Andersen
+     ! Temperature constante aÂ  la Andersen
      if (LTandersen) then
         do i=1,im
            massa=cm(ityp(i))
@@ -352,7 +361,7 @@ subroutine controle
         nacou = 0
         tcou = 0.d0
         do i = 1, im
-          if (.not.(xpnp(1,i)<epc1.or.xpnp(1,i)>1.0-epc1.or.xpnp(2,i)<&
+           if (.not.(xpnp(1,i)<epc1.or.xpnp(1,i)>1.0-epc1.or.xpnp(2,i)<&
                 epc2.or.xpnp(2,i)>1.0-epc2.or.xpnp(3,i)<epc3.or.xpnp(3,i)>&
                 1.0-epc3)) cycle
            massa=cm(ityp(i))
@@ -395,12 +404,12 @@ subroutine controle
 
   ! *** correction de la derive ***
   if (itederive>0) then
-   if (.not.lperiod) then
-    write(*,*) '----------------WARNING-----------------------------'
-    write(*,*) 'there is no implemantation for itederive > 0 and lperiod=.false.'
-    write(*,*) 'However, you are free to implement that'
-    write(*,*) 'After that please call 2 9185 and/or ask for Jean-Paul in Bat. 520'
-   end if
+     if (.not.lperiod) then
+        write(*,*) '----------------WARNING-----------------------------'
+        write(*,*) 'there is no implemantation for itederive > 0 and lperiod=.false.'
+        write(*,*) 'However, you are free to implement that'
+        write(*,*) 'After that please call 2 9185 and/or ask for Jean-Paul in Bat. 520'
+     end if
      if (mod(it,itederive)==0) then
 
         aux(1,:) = 0.0                        ! initialisation du sommateur de delta X
@@ -472,15 +481,15 @@ subroutine controle
         potiststock(:)=0.
         potistmean=potist
         potiststock(it)=potist
-      elseif (it<nbmoye) then
+     elseif (it<nbmoye) then
 
         potiststock(it)=potist
         potistmean=SUM(potiststock)/it
-      else
+     else
         potiststock(mod(it,nbmoye))=potist
         potistmean=SUM(potiststock)/nbmoye
-    end if
-     
+     end if
+
      potistdif=0
 
 
@@ -514,7 +523,7 @@ subroutine controle
 
         fpn=fpmax*erg2eV/angst
         if (rang==0)     write(6,*)
-        if (rang==0)     write(6,*)'force par atome  max cgs  ev/Ang ',fpmax, fpn
+        if (rang==0)     write(6,*)'force max cgs  ev/Ang ',fpmax, fpn
         if (fpn.le.fpstop)         call endrun
         if (rang==0)      write(6,*)
      end if
@@ -539,7 +548,7 @@ subroutine controle
         if (rang==0)      write(6,*)
      end if
 123  continue
-           if (rang==0) write (6, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
+     if (rang==0) write (6, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
   case(3,30) ! Gradient conjugue sur coordonnee cartesiennes (3) ou reduites (30)
 
 
@@ -555,8 +564,8 @@ subroutine controle
      end if
 
 
- !debug     write(*,*) 'DEBUG ALL IT IN CONTROLE',it
-      
+     !debug     write(*,*) 'DEBUG ALL IT IN CONTROLE',it
+
      IF (it.GE.1) THEN
         IF (lFrozen) THEN
            forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
