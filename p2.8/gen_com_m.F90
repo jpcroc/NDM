@@ -214,6 +214,7 @@ module gen_com_m
 
   real(double)::fnemd
   real(double):: fpstop ! critere de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
+  real(double):: sigstop ! critere de conv. sur les composantes de contraintes  pour les trempes UNITE = kbar
   real(double):: fsumstop ! critere de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
   real(double),pointer::eatom(:) ! energie par atome
   real(double),pointer::eatomtotm(:) ! energie par atome

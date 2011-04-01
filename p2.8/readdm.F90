@@ -24,7 +24,7 @@ subroutine readdm
   integer :: ludin, lufilm, lufilmpaf, iti, i,itean,j, itj,ic, iThermo,itecompcr,ipotcont
   character :: fnamdin*80, fnamrdfout*80
   logical :: lginread,ltriclin,lpcon,lfissure,tpot
-!  integer :: imFree     ! nb d'atomes libres
+  !  integer :: imFree     ! nb d'atomes libres
   !-----------------------------------------------
   !
   !
@@ -43,7 +43,7 @@ subroutine readdm
        h0, sigext,lpotrep,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
        lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlang,ilangevin,&
        lcdp,lsigat,lsigtyp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
-       fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
+       fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
        lprteat,lprteattotm,lprtfat,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
        rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat,lfrozen,imFree,natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,eatref
@@ -160,6 +160,7 @@ subroutine readdm
   lnemd=.false.  ! Kth par la methode NEMD Evans, P7229
   fnemd=0
   fpstop =-0.05 ! critere de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
+  sigstop =-0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
   fsumstop =-0.1 ! critere de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
   lcontr=.false. ! dynamique contrainte (routine contrainte)
   iseed=0 ! si <>0 controle le tirage aleatoire des vitesses
@@ -225,9 +226,9 @@ subroutine readdm
   kspring = 1.0    ! the default value for the spring
   deltaRmax=1.d-2
   neb_noise_scale=0.001      ! this will affect the 4th digit
-	                     ! x + x*neb_noise_scale*random,
-			     ! where "random" is a random number between 
-			     ! 0 and 1  
+  ! x + x*neb_noise_scale*random,
+  ! where "random" is a random number between 
+  ! 0 and 1  
   neb_noise=0                ! 0 without noise, 1 with noise
   !      	lperiod=.false.  ! pas de conditions periodiques
 
@@ -382,10 +383,10 @@ subroutine readdm
         if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
      end if
      if (dmtype.ne.4) then
-      if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=4'
-      if (rang==0) write(*,*) 'Stop in readdm'
-      call arret_ndm
-     end if 
+        if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=4'
+        if (rang==0) write(*,*) 'Stop in readdm'
+        call arret_ndm
+     end if
   end if
 
 
@@ -605,15 +606,15 @@ subroutine readdm
      !         open(unit=66,file=fnamjqbis)
   end if
 
-   if (itetimestep>0)  then
-       if ((dmtype.eq.1).or.(dmtype.eq.2).or.(dmtype.eq.4)) then
-         if (rang==0) write(6,*) 'The time step changed each', itetimestep,' steps'
-       else 
-         if (rang==0) write(6,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
-         if (rang==0) write(6,*) 'STOP in readdm'
-         stop
-       end if 
-   end if
+  if (itetimestep>0)  then
+     if ((dmtype.eq.1).or.(dmtype.eq.2).or.(dmtype.eq.4)) then
+        if (rang==0) write(6,*) 'The time step changed each', itetimestep,' steps'
+     else 
+        if (rang==0) write(6,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
+        if (rang==0) write(6,*) 'STOP in readdm'
+        stop
+     end if
+  end if
 
 
   if(lLangevin.and.(Text.le.0.0)) then
@@ -751,7 +752,9 @@ subroutine readdm
      rulayer=rulayer*1.0d-8
 
      lfrozen=.true.
-
+     if (lcdp==.true.) then
+        write(6,*)'TRANCHE +DP = PAS POSSIBLE' ; stop
+     end if
 
 
   end if
@@ -809,48 +812,51 @@ subroutine readdm
 
   endif
 
-  if ( (dmtype==2).or.(dmtype==3).or.(dmtype==30).or.(dmtype==9).or.(dmtype==10) ) then    
-    if ( (fpstop<0).and.(fsumstop<0)) then
-      if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
-      if (rang==0) write(6,*) 'STOP in readdm'
-      stop
-    end if    
-    if ( (fpstop < 0) .and. (dmtype==9) ) then
-      if (rang==0) write(6,*) 'NEB and DRAG implementation only for positive fpstop'
-      if (rang==0) write(6,*) 'STOP in readdm'
-      stop 
-    end if 
-    if  ( (fpstop>0).and.(fsumstop>0) ) then
-    if (rang==0) write(6,*) 'DANGER - WARNING - ACHTUNG:  both fpstop and fsumstop are positive !!!'
-    end if  
-  end if
-  
-   if  (dmtype==9) then
-      if (lperiod) then
-       if (rang==0)  write(6,*) 'There is no NEB and DRAG implementation for lperiod true'
-       if (rang==0)  write(6,*) 'put your lperiod to false in din file and restart.'
-       stop
-      end if 
-   end if
-   
-   if ( (.not.lperiod).and.(itesauvposition>0).and.lsuivinonpbc) then  
-        if (rang==0) write(6,*)' lsuivinonpbc will be turn to FALSE'
-        lsuivinonpbc=.false.
+  if ( (dmtype==2).or.(dmtype==3).or.(dmtype==30).or.(dmtype==9).or.(dmtype==8).or.(dmtype==10) ) then    
+     if ( (fpstop<0).and.(fsumstop<0)) then
+        if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
+        if (rang==0) write(6,*) 'STOP in readdm'
+        stop
      end if
-    if (lsuivinonpbc) then
+     if ( (fpstop < 0) .and. (dmtype==9) ) then
+        if (rang==0) write(6,*) 'NEB and DRAG implementation only for positive fpstop'
+        if (rang==0) write(6,*) 'STOP in readdm'
+        stop 
+     end if
+     if  ( (fpstop>0).and.(fsumstop>0) ) then
+        if (rang==0) write(6,*) 'DANGER - WARNING - ACHTUNG:  both fpstop and fsumstop are positive !!!'
+     end if
+     if ((dmtype==8).and.(sigstop.LT.0)) then
+        write(6,*)'trempe PR + sigstop <0 ; stop'; stop
+     end if
+  end if
 
-       if (dmtype.ne.4) then
+  if  (dmtype==9) then
+     if (lperiod) then
+        if (rang==0)  write(6,*) 'There is no NEB and DRAG implementation for lperiod true'
+        if (rang==0)  write(6,*) 'put your lperiod to false in din file and restart.'
+        stop
+     end if
+  end if
+
+  if ( (.not.lperiod).and.(itesauvposition>0).and.lsuivinonpbc) then  
+     if (rang==0) write(6,*)' lsuivinonpbc will be turn to FALSE'
+     lsuivinonpbc=.false.
+  end if
+  if (lsuivinonpbc) then
+
+     if (dmtype.ne.4) then
         if (rang==0) write(6,*) 'lsuivinonpbc is implemented only with velocity verlet'
         if (rang==0) write(6,*) 'Or dmtype=4. Change and restart until there I will stop for you.'
         stop 
-       end if
+     end if
 
-       if (itesauvposition<=0) then
-          if (rang==0) write(6,*) 'itesauvpostion MUST be positive if you want lsuivinonpbc TRUE'
-          if (rang==0) write(6,*) 'STOP in readdm'
-          stop
-       end if
-    end if
+     if (itesauvposition<=0) then
+        if (rang==0) write(6,*) 'itesauvpostion MUST be positive if you want lsuivinonpbc TRUE'
+        if (rang==0) write(6,*) 'STOP in readdm'
+        stop
+     end if
+  end if
 
 
   if (rang==0) write(6,*)
@@ -925,7 +931,7 @@ subroutine readdm
 
 
   if ( ( (dmtype==3).OR.(dmtype==30) ) &
-        .and.(fpstop.le.0.0).and.(fsumstop.le.0.0)) then
+       .and.(fpstop.le.0.0).and.(fsumstop.le.0.0)) then
      if (rang==0) write(6,*) rang,'critere de conv. sur la force par atome max negative' 
      if (rang==0) write(6,*) rang,'fpstop', fpstop
      if (rang==0) write(6,*) rang,'critere de conv. sur la force sqrt ( sum_f F_i^2 ) negative' 
@@ -966,7 +972,7 @@ subroutine readdm
                 imFree, " bougent"
         end IF
      END IF
-     
+
      if (rulayer.gt.0.0)then
         free(:)=.true.
         IF (rang==0)write(6,*)'atomes immobiles fixÃ©s par rulayer ', rulayer*1d8
@@ -999,7 +1005,7 @@ subroutine readdm
   write(6,*)'fmt_cin',fmt_cin
 
   if (ldesinteg)then
-!     itmax=nstepdes
+     !     itmax=nstepdes
      itesauv=0.
      if (dmtype.ne.4) then
         write(6,*) 'dmtype <> 4 et linsert'
@@ -1009,9 +1015,9 @@ subroutine readdm
         write(6,*) 'desinteg et nstepdes<1'
         stop
      end if
-     
-    if(tempdes==-1)tempdes=Text
-     
+
+     if(tempdes==-1)tempdes=Text
+
      if (rang==0)write(6,*)
      if (rang==0)write(6,*)'desintegration de l atome ',ides, 'mis à 1'
      if (rang==0)write(6,*) 'desinteg NE FONCTIONNE QUE AVEC DES POT DE PAIRES !!!'
@@ -1023,12 +1029,12 @@ subroutine readdm
 
 
 
-        if (xpspr(1)==-1000) then 
-           if (rang==0)  write(6,*) 'position du ressort sur la position de l_atome ides'
-        else
-           if (rang==0) write(6,*) 'position du ressort',xpspr,'Ang'
-           xpspr=xpspr*1d-8
-        end if
+     if (xpspr(1)==-1000) then 
+        if (rang==0)  write(6,*) 'position du ressort sur la position de l_atome ides'
+     else
+        if (rang==0) write(6,*) 'position du ressort',xpspr,'Ang'
+        xpspr=xpspr*1d-8
+     end if
 
      if (rang==0)write(6,*)        
      lambdades=1.0 ; pm1des=-1
