@@ -30,7 +30,6 @@ subroutine calfo
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer  :: ii,jj
   real(double), dimension(3) :: fptot
   integer :: i,ilocal,ipot
 #if(PARA)

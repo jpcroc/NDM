@@ -70,7 +70,7 @@ subroutine analyse
   if (itetemp2>0) then
      if (mod(it,itetemp2)==0) then
         temp2=tempinst(vp,ityp)
-        write(112,'(I10,D15.6,F12.2)')it,timel,temp2
+        write(112,'(I10,G15.6,F12.2)')it,timel,temp2
      end if
   end if
 
@@ -85,7 +85,7 @@ subroutine analyse
         if (rang==0) then
            write (6, *)
            write (6, *)
-           write (6, '(A,I7,A,D10.3)') '<<<<<<<<  ITERATION =', it, &
+           write (6, '(A,I7,A,G10.3)') '<<<<<<<<  ITERATION =', it, &
                 '  time = ', timel
            write (6, *)
            write (6, *)
@@ -93,45 +93,45 @@ subroutine analyse
            write (6, *) '----------valeurs instantanees------------'
 
 
-           write (6, '(I10,D10.3,A,D21.12,A)') it, timel, '*Epot = ', potist*unitE, cunitE
+           write (6, '(I10,G10.3,A,G21.12,A)') it, timel, '*Epot = ', potist*unitE, cunitE
            do ipot=1,npotmax
               if (lpotentiel(ipot).eqv..true.) then
                  select case (ipot)
                  case (1:9)
-                    write(6,'(A,D21.12,A)')'    *energie paire 2 corps = ',(potis1+potis2)*unitE, cunitE
-                    if(l3c) write(6,'(A,D21.12,A)')'    *energie pot 3 corps = ',potcp*unitE, cunitE
-                    if(iewald.gT.0) write (6, '(A,D21.12,A)') '    *energie pot coul recip = ', potis3*unitE, cunitE
+                    write(6,'(A,G21.12,A)')'    *energie paire 2 corps = ',(potis1+potis2)*unitE, cunitE
+                    if(l3c) write(6,'(A,G21.12,A)')'    *energie pot 3 corps = ',potcp*unitE, cunitE
+                    if(iewald.gT.0) write (6, '(A,G21.12,A)') '    *energie pot coul recip = ', potis3*unitE, cunitE
                  case(10:12)
-                    write(6,'(A,D21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
-                    write(6,'(A,D21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
+                    write(6,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
+                    write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
                  case(13)
-                    write(6,'(A,D21.12,A)')'    *energie Tersoff = ',potisTersoff*unitE, cunitE
+                    write(6,'(A,G21.12,A)')'    *energie Tersoff = ',potisTersoff*unitE, cunitE
                  end select
               end if
            end do
-           write (6,'(I10,D10.3,A,D21.12,A,a,f0.3,a)') it,timel,'*Ec = ',kine*unitE, cunitE, &
+           write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel,'*Ec = ',kine*unitE, cunitE, &
                 '  (', 2.d0*kine/(3.d0*float(im_glob)*bk), ' K)'
-           write (6,'(I10,D10.3,A,D21.12,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
+           write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
            write (6, *)
 
            if (lEparat) then
-              write (6, '(I10,D10.3,A,D21.12,A)') it, timel, '*Epot/at = ', potist*unitE/im, cunitE
+              write (6, '(I10,G10.3,A,G21.12,A)') it, timel, '*Epot/at = ', potist*unitE/im, cunitE
               write(6,*)
            end if
 
-           write (6, '(I10,D10.3,A,F12.2)') it,timel, &
+           write (6, '(I10,G10.3,A,F12.2)') it,timel, &
                 '*Temp instantanee = ',temp
 
            if (tfcou>0.0) write (6, '(A,F12.2)') '*temperature externe = ', tcou
 
            IF (lpr) THEN
               write(6,*) 'NPT With Parrinello-Rahman'
-              write(6,'(I10,D10.3,A,D21.12,A,a,f0.3,a)') it,timel,'*Kcell = ',Kcell*unitE,cunitE, &
+              write(6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel,'*Kcell = ',Kcell*unitE,cunitE, &
                    '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
               IF (lUcell) THEN
-                 write(6,'(I10,D10.3,A,D21.12,A)') it,timel,'*Ucell = ',Ucell*unitE,cunitE
-                 write(6,'(I10,D10.3,A,D21.12,A)') it,timel,'*Ecell = ',Ecell*unitE,cunitE
-                 write(6,'(I10,D10.3,A,D21.12,A)') it,timel,'*Htot_PR = ', &
+                 write(6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Ucell = ',Ucell*unitE,cunitE
+                 write(6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Ecell = ',Ecell*unitE,cunitE
+                 write(6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Htot_PR = ', &
                       (potist+kine+Ecell)*unitE,cunitE
               END IF
               write(6,*) 'Box tensor'
@@ -188,29 +188,29 @@ subroutine analyse
                  tbcmean=(tbcmean*(it/itetemp-1)+tbc)/(it/itetemp)
                  tabmean=(tabmean*(it/itetemp-1)+tab)/(it/itetemp)
               end if
-              write(6,'(I10,D10.3,A,2D18.9)') it,timel,'*l_a,m  ',amod,amodmean
-              write(6,'(I10,D10.3,A,2D18.9)') it,timel,'*l_b,m  ',bmod,bmodmean
-              write(6,'(I10,D10.3,A,2D18.9)') it,timel,'*l_c,m  ',cmod,cmodmean
-              write(6,'(I10,D10.3,A,2F11.4)') it,timel,'*ang_bc,m  ',tbc,tbcmean
-              write(6,'(I10,D10.3,A,2F11.4)') it,timel,'*ang_ca,m  ',tca,tcamean
-              write(6,'(I10,D10.3,A,2F11.4)') it,timel,'*ang_ab,m  ',tab,tabmean
-              write(6,'(I10,D10.3,A,2D21.12)') it,timel,'*volume  ',volu*1d24,volumean*1d24
+              write(6,'(I10,G10.3,A,2G18.9)') it,timel,'*l_a,m  ',amod,amodmean
+              write(6,'(I10,G10.3,A,2G18.9)') it,timel,'*l_b,m  ',bmod,bmodmean
+              write(6,'(I10,G10.3,A,2G18.9)') it,timel,'*l_c,m  ',cmod,cmodmean
+              write(6,'(I10,G10.3,A,2F11.4)') it,timel,'*ang_bc,m  ',tbc,tbcmean
+              write(6,'(I10,G10.3,A,2F11.4)') it,timel,'*ang_ca,m  ',tca,tcamean
+              write(6,'(I10,G10.3,A,2F11.4)') it,timel,'*ang_ab,m  ',tab,tabmean
+              write(6,'(I10,G10.3,A,2G21.12)') it,timel,'*volume  ',volu*1d24,volumean*1d24
 
            endif    ! if (lpr)
 
            IF (lTNose) THEN
-              WRITE(6,'(a)') 'Thermostat de NosÃ£Â£Ã¢Â©'
-              WRITE(6,'(I10,D10.3,A,D21.12,A,a,f0.3,a)') it,timel, &
+              WRITE(6,'(a)') 'Thermostat de Nose'
+              WRITE(6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel, &
                    '*KNose = ',KNose*unitE,cunitE, '  (', 2.d0*KNose/(bk), ' K)'
-              WRITE(6,'(i7,D10.3,a,g22.12)') it,timel,'*fNose = ', fNose
-              WRITE(6,'(i7,D10.3,a,g22.12,a)') it,timel,'*Htot_Nose = ', (kine+potist+Ecell+KNose+UNose)*unitE,cunitE
+              WRITE(6,'(i7,G10.3,a,g22.12)') it,timel,'*fNose = ', fNose
+              WRITE(6,'(i7,G10.3,a,g22.12,a)') it,timel,'*Htot_Nose = ', (kine+potist+Ecell+KNose+UNose)*unitE,cunitE
 
            ELSEIF (lTHoover) THEN
-              WRITE(6,'(a)') 'Thermostat de NosÃ£Â£Ã¢Â©-Hoover'
-              WRITE(6,'(I10,D10.3,A,D21.12,A,a,f0.3,a)') it,timel, &
+              WRITE(6,'(a)') 'Thermostat de Nose-Hoover'
+              WRITE(6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel, &
                    '*KNose = ',KNose*unitE,cunitE, '  (', 2.d0*KNose/(bk), ' K)'
-              WRITE(6,'(i7,D10.3,a,g22.12)') it,timel,'*zHoover(1) = ', zHoover(1)
-              !WRITE(6,'(i7,D10.3,a,g22.12,a)') it,timel,'*Htot_Hoover = ', (kine+potist+Ecell+KNose+UNose)*unitE,cunitE
+              WRITE(6,'(i7,G10.3,a,g22.12)') it,timel,'*zHoover(1) = ', zHoover(1)
+              !WRITE(6,'(i7,G10.3,a,g22.12,a)') it,timel,'*Htot_Hoover = ', (kine+potist+Ecell+KNose+UNose)*unitE,cunitE
 
            END IF   ! if lTNose / lTHoover
 
@@ -242,19 +242,19 @@ subroutine analyse
                  ppot = 0.0
                  pkin = 0.0
                  do ic = 1, 3
-                    write (6, '(I1,3(A,I1),A,3D12.4)') ic,' sigma potentiel (1,', ic, ') (2,', ic, &
+                    write (6, '(I1,3(A,I1),A,3G12.4)') ic,' sigma potentiel (1,', ic, ') (2,', ic, &
                          ') (3,', ic, ') =',sig(1:3,ic)*unitP
                     ppot = ppot+1.0/3.0*sig(ic,ic)
                  end do
                  write (6, *)
                  do ic = 1, 3
-                    write (6, '(I1,3(A,I1),A,3D12.4)') ic,' sigma cinetique (1,', ic, ') (2,', ic, &
+                    write (6, '(I1,3(A,I1),A,3G12.4)') ic,' sigma cinetique (1,', ic, ') (2,', ic, &
                          ') (3,', ic, ') =',sigkine(1:3,ic)*unitP
                     pkin = pkin+1.0/3.0*sigkine(ic,ic)
                  end do
                  write (6, *)
                  do ic = 1, 3
-                    write (6, '(I1,3(A,I1),A,3D12.4)') ic,' sigma total (1,', ic, ') (2,', ic, &
+                    write (6, '(I1,3(A,I1),A,3G12.4)') ic,' sigma total (1,', ic, ') (2,', ic, &
                          ') (3,', ic, ') =',sigtot(1:3,ic)*unitP
                  end do
 
@@ -262,7 +262,7 @@ subroutine analyse
 
 
                  pist = ppot+pkin
-                 write (6, '(I10,D10.3,A,D14.5)') it, timel, '*Pression = '&
+                 write (6, '(I10,G10.3,A,G14.5)') it, timel, '*Pression = '&
                       , pist*unitP
                  if(it<=1) then
                     pmean = pist
@@ -270,13 +270,11 @@ subroutine analyse
                     pmean = (pmean*(it/itesigma-1)+pist)/(it/itesigma)
                  end if
                  write (6, *) 'pression totale  potentiel = cinetique ='
-                 write (6, 482) pist*unitP, ppot*unitP, pkin*unitP
+                 write (6, '(3g14.5)') pist*unitP, ppot*unitP, pkin*unitP
 
 
 
 
-182              format(d14.5)
-482              format(3d14.5)
 
               endif
            endif                             !  itesigma>0
@@ -309,10 +307,10 @@ subroutine analyse
            !               write (6, *)
            write (6, *) '----------valeurs moyennes------------'
            write (6, '(A,F12.2)') '*temperature moyenne = ', tmean
-           !               write (6, '(A,D21.12,A)') '*energie cinetique moyenne = ', &
+           !               write (6, '(A,G21.12,A)') '*energie cinetique moyenne = ', &
            !                  kinemean*unitE, cunitE
            if (itesigma>0) then
-              if (mod(it,itesigma)==0) write (6, '(A,D14.5)') &
+              if (mod(it,itesigma)==0) write (6, '(A,G14.5)') &
                    '*pression moyenne = ', pmean*unitP
            endif
            write (6, *) '--------------------------------------'
@@ -339,11 +337,11 @@ subroutine analyse
 !                             write(6,*)'dans la celulle ',ko,' sigma  '
                              do ic =1,3
                                 pmc=pmc+sigc(ic,ic,ko)/3.0
-!                                write(6,482)sigc(1,ic,ko),sigc(2,ic,ko),sigc(3,ic,ko)
-!                                write(6,'(A,I2,I2,I2,I2,D14.5,D14.5,D14.5)')'CEL-SIG ',ic,kx,ky&
+!                                write(6,'(3g14.5)')sigc(1,ic,ko),sigc(2,ic,ko),sigc(3,ic,ko)
+!                                write(6,'(A,I2,I2,I2,I2,G14.5,G14.5,G14.5)')'CEL-SIG ',ic,kx,ky&
 !                                     &,kz,sigc(1,ic,ko),sigc(2,ic,ko),sigc(3,ic,ko)
                              enddo
-                             write(6,'(A,I5,3I4,D14.5,A,A,I4)')'CEL-PRESS ', ko,kx,ky,kz,pmc*unitP, '  ',cunitP,nato(ko)
+                             write(6,'(A,I5,3I4,G14.5,A,A,I4)')'CEL-PRESS ', ko,kx,ky,kz,pmc*unitP, '  ',cunitP,nato(ko)
 
 
                           endif
@@ -356,8 +354,8 @@ subroutine analyse
   if (ldesinteg)then
      if (rang==0) then
         
-        write(6,'(A,3D21.12)')'lambda, deltaF',lambdades,deltaF,deltaF*erg2eV
-        write(6,'(A,3D21.12)')'deltaEspr, Espr', lambdades,deltaEspr*erg2eV,Espr*erg2eV
+        write(6,'(A,3G21.12)')'lambda, deltaF',lambdades,deltaF,deltaF*erg2eV
+        write(6,'(A,3G21.12)')'deltaEspr, Espr', lambdades,deltaEspr*erg2eV,Espr*erg2eV
      end if
   end if
 
@@ -373,12 +371,12 @@ subroutine analyse
         do ic =1,3
            pmc=pmc+sigtyp(ic,ic,iti)/3.0 
         end do
-        if (rang==0) write(6,'(A,D14.5)')'sigtyp ',iti,' = ',pmc
+        if (rang==0) write(6,'(A,G14.5)')'sigtyp ',iti,' = ',pmc
         pmc=0.
         do ic =1,3
            pmc=pmc+sigtyptyp(ic,ic,iti,iti)/3.0 
         end do
-        if (rang==0) write(6,'(A,D14.5)')'sigtyptyp ',iti,iti,' = ',pmc
+        if (rang==0) write(6,'(A,G14.5)')'sigtyptyp ',iti,iti,' = ',pmc
      end do
   end if
 
