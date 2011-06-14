@@ -812,7 +812,7 @@ subroutine readdm
 
   endif
 
-  if ( (dmtype==2).or.(dmtype==3).or.(dmtype==30).or.(dmtype==9).or.(dmtype==8).or.(dmtype==10) ) then    
+  if ( (dmtype==2).or.(dmtype==3).or.(dmtype==30).or.(dmtype==9).or.(dmtype==10) ) then    
      if ( (fpstop<0).and.(fsumstop<0)) then
         if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
         if (rang==0) write(6,*) 'STOP in readdm'
