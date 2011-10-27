@@ -24,6 +24,7 @@ subroutine readdm
   integer :: ludin, lufilm, lufilmpaf, iti, i,itean,j, itj,ic, iThermo,itecompcr,ipotcont
   character :: fnamdin*80, fnamrdfout*80
   logical :: lginread,ltriclin,lpcon,lfissure,tpot
+  logical :: lxFrozen,lyFrozen,lzFrozen, lxyFrozen, lxzFrozen, lyzFrozen, lxyzFrozen
   !  integer :: imFree     ! nb d'atomes libres
   !-----------------------------------------------
   !
@@ -45,7 +46,9 @@ subroutine readdm
        lcdp,lsigat,lsigtyp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
        fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
        lprteat,lprteattotm,lprtfat,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
-       rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat,lfrozen,imFree,natperc,iteanaposneb,ntyp,&
+       rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat, &
+       lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,&
+       natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,eatref
 
 
@@ -241,8 +244,16 @@ subroutine readdm
   ltriclin=.true.
   lprtfat=.false.
 
-  lfrozen=.FALSE.             ! .true.: certains atomes sont bloquÃ£Â©Ã¢Â§Ã¢Â¸ (pas de dynamique)
+  lFrozen=.FALSE.
+  lxfrozen=.FALSE.             ! .true.: certains atomes sont bloque¸ (pas de dynamique)
+  lyfrozen=.FALSE.             
+  lzfrozen=.FALSE.             
+  lxyfrozen=.FALSE.             
+  lxzfrozen=.FALSE.             
+  lyzfrozen=.FALSE.             
+  lxyzfrozen=.FALSE.             
   imFree=-1                   ! nb d'atomes libres
+
   nvperat=-1                  ! nb moyen de voisins par atomes
   natperc=-1   
   iteanaposneb=0
@@ -943,40 +954,65 @@ subroutine readdm
 
 
   ! Gestion des atomes bloques
-  IF (lfrozen) THEN
-     IF (imFree.gt.0) then
-        IF (parallele) THEN
+  IF (lFrozen.OR.lxyzFrozen) THEN
+          lxFrozen=.true. ; lyFrozen=.true. ; lzFrozen=.true.
+  END IF
+  IF (lxyFrozen) THEN
+          lxFrozen=.true. ; lyFrozen=.true.
+  END IF
+  IF (lxzFrozen) THEN
+          lxFrozen=.true. ; lzFrozen=.true.
+  END IF
+  IF (lyzFrozen) THEN
+          lyFrozen=.true. ; lzFrozen=.true.
+  END IF
+
+  IF (lxfrozen.OR.lyfrozen.OR.lzfrozen) THEN
+
+     IF ( (imFree.gt.0) .AND. (parallele) ) THEN
            WRITE(0,'(a)') 'Initialisation du tableau free(:) pour&
                 & determiner les atomes bloques non implementes en&
                 & parallele'
            STOP '< ReadDm >'
-        END IF
      end IF
+
      IF (dmType.EQ.8) THEN
         IF (RANG==0) WRITE(0,'(a)') 'Vous ne pouvez pas utiliser&
              & Parrinello-Rahman tout en maintenant fixes certains&
              & atomes'
         STOP '< ReadDm >'
      END IF
-     Allocate(Free(1:imm))
+
      if ((imfree==-1).and.(rulayer==0.0))then
         if(rang==0) write(6,*)'LFROZEN+IMFREE=-1 et RULAYER=0==stop'
         stop
      end if
+
+     ! Le tableau free controle quels atomes participent a l'energie (utilise par JP a priori)
+     ! Le tableau frozen controle quelles coordonnees de quels atomes sont libres de relaxer
+     !    i.e. quelles forces doivent être annulees
+     Allocate(Free(1:imm))
+     free(:)=.true.
+     Allocate(Frozen(1:3,1:imm))
+     frozen(:,:)=.false.
+
      if (imfree.ne.-1) then
-        Free(1:imFree)=.true.
-        Free(1+imFree:imm)=.false.
-        IF ((rang==0).and.(imfree.ne.imm)) THEN
-           WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
-           WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
-                imFree, " bougent"
-        end IF
+             IF (lxFrozen) Frozen(1,1+imFree:imm)=.true.
+             IF (lyFrozen) Frozen(2,1+imFree:imm)=.true.
+             IF (lzFrozen) Frozen(3,1+imFree:imm)=.true.
+             IF ((rang==0).and.(imfree.ne.imm)) THEN
+                     WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
+                     WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
+                        imFree, " bougent"
+             end IF
      END IF
 
      if (rulayer.gt.0.0)then
-        free(:)=.true.
-        IF (rang==0)write(6,*)'atomes immobiles fixÃ©s par rulayer ', rulayer*1d8
+        IF (rang==0)write(6,*)'atomes immobiles fixes par rulayer ', rulayer*1d8
      end if
+
+     lfrozen=.true.
+
   end IF
 
 

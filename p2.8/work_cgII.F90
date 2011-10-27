@@ -27,27 +27,6 @@ contains
 
     
 
-    IF (lFrozen) THEN   ! Some atoms are fixed
-          iGC=0
-          IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
-                  do i=1 ,im
-                     IF (.Not.Free(i)) Cycle
-                     iGC=iGC+1
-                     xp(1:3,i) = MatMul( at, X(3*iGC-2:3*iGC) )
-                  end do
-          ELSE ! Variables = cartesian coordinates (in A)
-                  do i=1 ,im
-                     IF (.Not.Free(i)) Cycle
-                     iGC=iGC+1
-                     xp(1:3,i) = X(3*iGC-2:3*iGC)*inv_angst
-                  end do
-          END IF
-          IF (3*iGC.NE.N) THEN
-                  WRITE(0,'(a,i0)') "3*iGC = ", 3*iGC
-                  WRITE(0,'(a,i0)') "N     = ", N
-                  STOP "< work_cgII >"
-          END IF
-    ELSE                ! All atoms are free to relax
           IF (3*imm.NE.N) THEN
                   WRITE(0,'(a,i0)') "3*imm = ", 3*imm
                   WRITE(0,'(a,i0)') "N     = ", N
@@ -62,7 +41,6 @@ contains
                      xp(1:3,i)=X(3*i-2:3*i)*inv_angst
                   end do
           END IF
-    END IF
 
     !back to internal units and JP world.......................................
 
@@ -93,22 +71,6 @@ contains
 
     
     F=potist*erg2eV
-    IF (lFrozen) THEN   ! Some atoms are fixed
-            iGC=0
-            IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
-                    do i=1,im
-                       IF (.Not.Free(i)) Cycle
-                       iGC=iGC+1
-                       G(3*iGC-2:3*iGC)=-MatMul(fp(:,i), at)*erg2eV
-                    end do
-            ELSE ! Variables = cartesian coordinates (in A)
-                    do i=1,im
-                       IF (.Not.Free(i)) Cycle
-                       iGC=iGC+1
-                       G(3*iGC-2:3*iGC)=-fp(1:3,i)*erg2eV/angst
-                    end do
-            END IF
-    ELSE ! Variables = cartesian coordinates (in A)
             IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
                     do i=1,im
                        G(3*i-2:3*i)=-MatMul(fp(:,i), at)*erg2eV
@@ -119,7 +81,6 @@ contains
                     end do
             END IF
             G(3*im+1:N)=0.d0
-    END IF
     
 
     return

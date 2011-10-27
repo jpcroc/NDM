@@ -62,21 +62,6 @@ subroutine dyn
   !      write(6,*)'aux ',aux
 
 
-  IF (lFrozen) THEN     ! Some atoms are frozen
-          do i = 1, imd
-             IF (Free(i)) THEN  ! This atom is free to move
-                     do ic = 1, 3
-                        xprov = (xp(ic,i)-xpp(ic,i))+xp(ic,i)+aux(ityp(i))*fp(ic,i)
-                        vp(ic,i) = (xprov-xpp(ic,i))*usdh
-                        xpp(ic,i) = xp(ic,i)
-                        xp(ic,i) = xprov
-                     end do
-             ELSE       ! This atom is frozen
-                     vp(1:3,i) = aux(ityp(i))*fp(1:3,i)*usdh
-                     xpp(1:3,i) = xp(1:3,i)
-             END IF
-          end do
-  ELSE                  ! All atoms can move
           do i = 1, imd
              do ic = 1, 3
                 xprov = (xp(ic,i)-xpp(ic,i))+xp(ic,i)+aux(ityp(i))*fp(ic,i)
@@ -85,7 +70,6 @@ subroutine dyn
                 xp(ic,i) = xprov
              end do
           end do
-  END IF
 
   if (lcalcjq) then
      eatommoy=0.

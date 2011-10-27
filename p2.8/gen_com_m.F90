@@ -62,7 +62,7 @@ module gen_com_m
   logical :: lUcell                 ! affiche l'energie potentielle de la boite
   ! (cela suppose que h0 corresponde a l'etat de reference pour lequelle la contrainte est nulle)     
 
-  logical :: lfrozen    ! .true.: certains atomes sont bloquÃ©s (pas de dynamique)
+  logical :: lfrozen    ! .true.: certains atomes sont bloques (pas de dynamique)
   logical :: lbulle    ! .true.: bulle
   logical :: ldesinteg    ! .true.: insertion appelle init_insert
   integer:: nstepdes,ides, pm1des,itdes,imdesup,imdesdeb,imdesdn
@@ -74,7 +74,8 @@ module gen_com_m
   integer:: typspr
 
 
-  logical, dimension(:), pointer :: free ! free(i)=.true. si l'atome i est libre
+  logical, dimension(:), pointer :: free ! free(i)=.true. si l'atome i compte dans l'energie 
+  logical, dimension(:,:), pointer :: frozen ! frozen(ix,i)=.true. si la coordonnee ix de l'atome i est libre de relaxer
   integer::imfree ! nb d'atoems libres
 
   real(double), dimension(3) :: normat ! norme de at

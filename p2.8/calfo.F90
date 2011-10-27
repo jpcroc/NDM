@@ -162,9 +162,7 @@ subroutine calfo
   end if
 
   if (lfrozen.EQV..true.) then
-     do i=1,im
-       if (free(i).EQV..false.) fp(:,i)=0
-     end do
+          WHERE (frozen(:,1:im)) fp(:,1:im)=0.d0
   endif
 
 
@@ -180,7 +178,7 @@ if (ldesinteg) then
      fptot=fptot/im_glob
      do i=1,im
         fp(:,i)=fp(:,i)-fptot(:)
-     enddo	
+     enddo
 endif
 
   !stop

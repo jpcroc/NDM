@@ -52,15 +52,9 @@ use suivinonpbc
 
 
 
-  IF (lFrozen) THEN     ! Some atoms are frozen
-     DO i=1, imd
-        IF (Free(i)) vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
-     END DO
-  ELSE                  ! All atoms can move
      DO i=1, imd
         vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
      END DO
-  END IF
 
 
 
@@ -69,15 +63,9 @@ use suivinonpbc
 
 !step 2  Coordinate update, x(t)-> x(t+dt)
 
-!  IF (lFrozen) THEN     ! Some atoms are frozen
-!          DO i=1, imd
-!             IF (Free(i)) xp(1:3,i) = xp(1:3,i) + tstep*vp(1:3,i)
-!          END DO
-!  ELSE                  ! All atoms can move
   DO i=1, imd
      xp(1:3,i) = xp(1:3,i) + tstep*vp(1:3,i)
   END DO
-!  END IF
 
 
   !conditions periodiques
@@ -127,15 +115,9 @@ use suivinonpbc
 
 
   ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
-  IF (lFrozen) THEN     ! Some atoms are frozen
-     DO i=1, imd
-        IF (Free(i)) vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
-     END DO
-  ELSE                  ! All atoms can move
      DO i=1, imd
         vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
      END DO
-  END IF
 
   if (associated(eatom))  eatom(1:im)=eatom(1:im)+0.5*cm(ityp(1:im))*(vp(1,1:im)**2+vp(2,1:im)**2+vp(3,1:im)**2)
 

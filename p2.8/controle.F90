@@ -512,9 +512,11 @@ subroutine controle
      if ((lprtrp.EQV..false.).and.(dmtype==10)) goto 123
      if ((fpstop>0.0).AND.(it.GE.1)) then 
         IF (lFrozen) THEN
-           fpmax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
+           !fpmax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
+           fpmax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) )
         ELSE
-           fpmax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
+           !fpmax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
+           fpmax = MaxVal( Abs(fp(:,1:im)) )
         END IF
 #if (PARA)
         call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
@@ -538,9 +540,10 @@ subroutine controle
 
      if ((fsumstop>0.0).AND.(it.GE.1)) then 
         IF (lFrozen) THEN
-           fpmax=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
+           !fpmax=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
+           fpmax=sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
         ELSE
-           fpmax=sqrt( SUM(fp(1:3,1:im)**2) )
+           fpmax=sqrt( SUM(fp(:,1:im)**2) )
         END IF
 #if (PARA)
         fpmax=fpmax**2
@@ -583,11 +586,14 @@ subroutine controle
 
         IF (it.GE.1) THEN
            IF (lFrozen) THEN
-              forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
-              formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
+              !forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
+              !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
+              forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
+              formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) ) 
            ELSE
               forctot=sqrt( SUM(fp(1:3,1:im)**2) )
-              formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
+              !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
+              formax = MaxVal( Abs(fp(:,1:im)) )
            END IF
 #if (PARA)
            call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)

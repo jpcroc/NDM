@@ -497,7 +497,6 @@ contains
                 normat(ic) = sqrt(normat(ic))
                 zl(ic) = normat(ic)
              end do
-             !                    write(6,*)at
              zls2 = zl/2.0
 
           else
@@ -518,8 +517,10 @@ contains
           endif
 
           read (lucin) im                         !number of atoms in the box
-          if (im>imm) then
-             if(rang==0)                    write (6, *) 'im > imM', im, imm
+
+          if ( (im>imm).OR.(im.LE.0) ) then
+             if (rang==0) WRITE(6,'(2a)') 'File: ', Trim(fnamneb)
+             if (rang==0) write (6, '(2(a,i0,1x))') 'im = ', im, ' - imm = ', imm
              stop
           endif
 

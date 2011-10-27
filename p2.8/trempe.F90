@@ -35,25 +35,6 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 !  if (rang==0) write(6,*) 'PARA-T entree trempe'
   aux(:ntyp) = tstep**2/cm(:ntyp)
-  IF (lFrozen) THEN     ! Some atoms are frozen
-          do i = 1, im
-             IF (Free(i)) THEN    ! This atom is free to move
-                     do ic = 1, 3
-                        if (vp(ic,i)*fp(ic,i)>0) then
-                           xprov = xp(ic,i)-xpp(ic,i)+xp(ic,i)+aux(ityp(i))*fp(ic,i)
-                        else
-                           xprov = xp(ic,i)+fp(ic,i)*aux(ityp(i))
-                        endif
-                        vp(ic,i) = (xprov-xpp(ic,i))*usdh
-                        xpp(ic,i) = xp(ic,i)
-                        xp(ic,i) = xprov
-                     end do
-             ELSE
-                     vp(1:3,i) = fp(1:3,i)*aux(ityp(i))*usdh
-                     xpp(1:3,i) = xp(1:3,i)
-             END IF
-          end do
-  ELSE                  ! All atoms can move
           do i = 1, im
              do ic = 1, 3
                 if (vp(ic,i)*fp(ic,i)>0) then
@@ -66,7 +47,6 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
                 xp(ic,i) = xprov
              end do
           end do
-  END IF
 
   IF (lperiod) call period
 

@@ -361,12 +361,10 @@ subroutine initspeed
   if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
 
   if (lfrozen.EQV..true.) then
-     do i=1,im
-        if (free(i).EQV..false.) then
-           vp(:,i)=0.0
-           xpp(:,i)=xp(:,i)
-        end if
-     end do
+          WHERE (frozen(:,1:im))
+                  vp(:,1:im) = 0.d0
+                  xpp(:,1:im) = xp(:,1:im)
+          END WHERE
   end if
 
   return

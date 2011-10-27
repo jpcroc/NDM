@@ -45,9 +45,19 @@ subroutine layer
 
 #if(PARA)
   free(:)=.true.
+  frozen(:,:)=.false.
   call cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
-  where (xp(1,:im)>csup) free(:im) = .false.
-  where (xp(1,:im)<cinf) free(:im) = .false.
+  where (xp(1,:im)>csup) 
+          free(:im) = .false.
+          frozen(1,:im)=.true.
+          frozen(2,:im)=.true.
+          frozen(3,:im)=.true.
+  elsewhere (xp(1,:im)<cinf)
+          free(:im) = .false.
+          frozen(1,:im)=.true.
+          frozen(2,:im)=.true.
+          frozen(3,:im)=.true.
+  end where
   call cryst_to_cart (imm, xp, at, 1)  !cryst vers cart
   imd=im
   nfr=0
@@ -86,6 +96,7 @@ subroutine layer
         typtemp(i1)=ityp(i)
         xppdyn(:,i1)=xpp(:,i) ;  vpdyn(:,i1)=vp(:,i) ; ax(:,i1)=0.
         free(i1)=.true.
+        frozen(:,i1)=.false.
      endif
   end do
   imd=i1
@@ -95,6 +106,7 @@ subroutine layer
         i2 = i2+1
         i1=i1+1
         free(i1)=.false.
+        frozen(:,i1)=.true.
         xpdyn(1,i1) = xp(1,i)
         xpdyn(2,i1) = xp(2,i)
         xpdyn(3,i1) = xp(3,i)
@@ -112,6 +124,7 @@ subroutine layer
         typtemp(i1)=ityp(i)
         xppdyn(:,i1)=xp(:,i) ;  vpdyn(:,i1)=0. ; ax(:,i1)=xpp(:,i)
         free(i1)=.false.
+        frozen(:,i1)=.true.
      endif
   end do
 

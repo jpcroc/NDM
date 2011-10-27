@@ -54,35 +54,11 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 
   !New GC settings ....:
-  !!$NGC=3*imm
-  IF (lFrozen) THEN
-          NGC = 3*Count(Free(1:im))
-  ELSE
-          NGC = 3*imm
-  END IF
+  NGC=3*imm
 
   allocate (X(NGC),G(NGC),W(6*NGC))
 
 
-  IF (lFrozen) THEN
-          iGC=0
-          do i=1 ,im
-             IF (.Not.Free(i)) Cycle
-             iGC=iGC+1
-             IF (dmtype.EQ.30) THEN
-                     ! Variables = reduced coordinates
-                     X(3*iGC-2:3*iGC) = MatMul( ax(1:3,i), bg )       
-             ELSE
-                     ! Variables = cartesian coordinates (in A)
-                     X(3*iGC-2:3*iGC) = ax(1:3,i)*angst
-             END IF
-          end do
-          IF (3*iGC.NE.nGC) THEN
-                  WRITE(0,'(a,i0)') "3*iGC = ", 3*iGC
-                  WRITE(0,'(a,i0)') "nGC   = ", nGC
-                  STOP "< gcII >"
-          END IF
-  ELSE
           do i=1,im
              IF (dmtype.EQ.30) THEN
                      ! Variables = reduced coordinates
@@ -93,7 +69,6 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              END IF
           end do
           X(3*im+1:3*imm)=0.d0
-  END IF
 
   ! internal units
   !      epsilon_force=epsilon_force/6.251d3
