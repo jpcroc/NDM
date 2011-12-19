@@ -38,7 +38,8 @@ subroutine dyn
      unitE=1.0
      cunitE=' erg '
   end if
-  if (associated(eatom))  eatom(:)=eatom(:)+0.5*cm(ityp(:))*(vp(1,:)**2+vp(2,:)**2+vp(3,:)**2)
+  
+  if (associated(eatom))  eatom(1:im)=eatom(1:im)+0.5*cm(ityp(1:im))*(vp(1,1:im)**2+vp(2,1:im)**2+vp(3,1:im)**2)
 
   if (lnemd) then
      eatommoy=0.

@@ -169,14 +169,16 @@ ipotentiel,typ_pot_pair)
 
 
     IF (present(rho))then 
-       aux1=density%K/(r-density%rc)
-       if(aux1.le.50.0)then
-          rho=exp(density%C*(density%D-r)+density%K/(r-density%rc))
-       else
-          rho=0.0
-       end if
        if (r.ge.density%rc) then
           rho=0.
+       else
+          
+          aux1=density%K/(r-density%rc)
+          if(aux1.le.50.0)then
+             rho=exp(density%C*(density%D-r)+density%K/(r-density%rc))
+          else
+             rho=0.0
+          end if
        end if
     end IF
     IF (present(drho)) then
@@ -228,17 +230,20 @@ ipotentiel,typ_pot_pair)
     r=sqrt(r2)/A2cm
 
     IF (present(Erep)) then
-       aux1=rep%K/(r-rep%rc)
-       if(aux1.le.50.0)then
-          Erep=exp(rep%A*(rep%B-r)+rep%K/(r-rep%rc))*ev2erg
-       else
-          Erep=0.0
-       end if
-       if (r.ge.rep%rc) then
-          Erep=0.
-       end if
+          if (r.ge.rep%rc) then
+             Erep=0.
+          else
+             
+             aux1=abs(rep%K/(r-rep%rc))
+             if(aux1.le.50.0)then
+!                write(6,*)r-rep%rc,aux1
+                Erep=exp(rep%A*(rep%B-r)+rep%K/(r-rep%rc))*ev2erg
+             else
+                Erep=0.0
+             end if
+          end if
 
-    end IF
+       end IF
     IF (present(dErep))  then
        write(6,*) 'pas programm�!'
        stop

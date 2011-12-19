@@ -31,7 +31,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 
   real(double) :: rue2 !coupure**2
   real(double) :: Erep,dErep ! potentiel et gradient de la repulsion de paire ij
-  real(double) :: dDensityi,dDensityj,gradDensityi(3) ! gradient de la densité sur i et j
+  real(double) :: dDensityi,dDensityj,gradDensityi(3) ! gradient de la densitÃ© sur i et j
   real(double) :: dEembi,dEembj,Eembi ! potentiel et gradient de l'immersion
   real(double) :: rhoi,rhoj,drhoj,rho ! densite de i sur j et j sur i
   real(double) :: rholsi,drholsi,rholsj,drholsj! densite de i sur j et j sur i
@@ -42,10 +42,10 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   integer, dimension(nvat) :: jvi   !indices j des voisins de i
   real(double), dimension (nvat) ::Vrij, & !distances 
        Vc1ij,Vc2ij,Vc3ij,& ! xpi-xpj
-       rhojsi,drhojsi,& ! rho de j sur i et dérivée
-       sij,&            ! fonction intermédiaire dans d'écrantage
-       ecrsij,&         !écrantage 
-       rhotildjsi        ! rho écrantée
+       rhojsi,drhojsi,& ! rho de j sur i et dÃ©rivÃ©e
+       sij,&            ! fonction intermÃ©diaire dans d'Ã©crantage
+       ecrsij,&         !Ã©crantage 
+       rhotildjsi        ! rho Ã©crantÃ©e
 
 
   real(double) :: a1i,a2i,a3i,a1j,a2j,a3j !delta x y z
@@ -67,17 +67,12 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   real(double) :: tdepcos
 
   real(double)::rue
+  real(double), dimension(:,:), allocatable :: xpnp
+
+
   rue=rue_pair(1)
 
-  !    real(double) :: azz,bzz,czz,dzz,kzz,rczz
-  !    real(double) :: azc,bzc,czc,dzc,kzc,rczc
-  !    real(double) :: trh, trep,auxt,auxt1,auxt2
 
-  !    azz=2.92968 ; bzz=2.58787395 ; czz=1.3230846 ; dzz=4.367246 ; kzz=0.1 ; rczz=7.0
-  !    azc=3.245893 ; bzc=2.0567980 ; czc=0.8230381 ; dzc=4.154822 ; kzc=0.1 ; rczc=3.5
-
-
-  !    write(6,*)'nvat',nvat
   do l=1,npair
      rcut2(l)=(reppairjl(l)%rc*1.0d-8)**2
      !       write(6,*)l,sqrt(rcut2(l))
@@ -88,19 +83,28 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   fp(:,:) = 0.0
 
   jq(:)=0.
-!  if (associated(eatom)) eatom(:)=0.
+  !  if (associated(eatom)) eatom(:)=0.
 
 
   potist = zero
   potisrep=0.;potisglue=0.
   rue2=rue**2
   !    iw2=0
-      if (any(free).NEQV..true.)then
-         write(6,*)'free +SW =pas code'
-         stop
-      end if
+  if (associated (free)) then
+     if (any(free).NEQV..true.)then
+        write(6,*)' free +SMJL =pas code'
+        stop
+     end if
+  endif
 
-
+  ALLOCATE(xpnp(3,imm))
+  if (lperiod) then
+   xpnp(:,:)=xp(:,:)
+  else
+   call notperiod(xp,xpnp)
+  end if
+   
+  call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
 
   loop1at1: do i=1,im
@@ -109,7 +113,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
      nvi=0.
      rhoitot=0.
      iti = ityp(i)
-     !       write(6,*)'i iti = ',i,iti
+!            write(6,*)'i iti = ',i,iti
      densityi=0.0 ;Eembi=0.0; dEembi=0.0
      if (i==1) then
         iw1 = 1
@@ -122,23 +126,23 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
         itj=ityp(j)
 
 
-        c1ij = xp(1,i)-xp(1,j)
-        c2ij = xp(2,i)-xp(2,j)
-        c3ij = xp(3,i)-xp(3,j)
-           if (c1ij>0.5) c1ij = c1ij-1.
-           if (c1ij<(-0.5)) c1ij = c1ij+1.
-           if (c2ij>0.5) c2ij = c2ij-1.
-           if (c2ij<(-0.5)) c2ij = c2ij+1.
-           if (c3ij>0.5) c3ij = c3ij-1.
-           if (c3ij<(-0.5)) c3ij = c3ij+1.
-           cv(1,1) = c1ij
-           cv(1,2) = c2ij
-           cv(1,3) = c3ij
-           call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-           r2ij = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-           c1ij= cv(1,1) 
-           c2ij =cv(1,2) 
-           c3ij =cv(1,3) 
+        c1ij = xpnp(1,i)-xpnp(1,j)
+        c2ij = xpnp(2,i)-xpnp(2,j)
+        c3ij = xpnp(3,i)-xpnp(3,j)
+        if (c1ij>0.5) c1ij = c1ij-1.
+        if (c1ij<(-0.5)) c1ij = c1ij+1.
+        if (c2ij>0.5) c2ij = c2ij-1.
+        if (c2ij<(-0.5)) c2ij = c2ij+1.
+        if (c3ij>0.5) c3ij = c3ij-1.
+        if (c3ij<(-0.5)) c3ij = c3ij+1.
+        cv(1,1) = c1ij
+        cv(1,2) = c2ij
+        cv(1,3) = c3ij
+        call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+        r2ij = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
+        c1ij= cv(1,1) 
+        c2ij =cv(1,2) 
+        c3ij =cv(1,3) 
 
         itj=ityp(j)
         if (r2ij>rcut2(ipo(iti,itj))) cycle
@@ -229,23 +233,23 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
               IF (L==I)cycle
               !
 
-              c1jl = xp(1,j)-xp(1,l)
-              c2jl = xp(2,j)-xp(2,l)
-              c3jl = xp(3,j)-xp(3,l)
-                 if (c1jl>0.5) c1jl = c1jl-1.
-                 if (c1jl<(-0.5)) c1jl = c1jl+1.
-                 if (c2jl>0.5) c2jl = c2jl-1.
-                 if (c2jl<(-0.5)) c2jl = c2jl+1.
-                 if (c3jl>0.5) c3jl = c3jl-1.
-                 if (c3jl<(-0.5)) c3jl = c3jl+1.
-                 cv(1,1) = c1jl
-                 cv(1,2) = c2jl
-                 cv(1,3) = c3jl
-                 call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-                 r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-                 c1jl=cv(1,1)
-                 c2jl=cv(1,2) 
-                 c3jl=cv(1,3)
+              c1jl = xpnp(1,j)-xpnp(1,l)
+              c2jl = xpnp(2,j)-xpnp(2,l)
+              c3jl = xpnp(3,j)-xpnp(3,l)
+              if (c1jl>0.5) c1jl = c1jl-1.
+              if (c1jl<(-0.5)) c1jl = c1jl+1.
+              if (c2jl>0.5) c2jl = c2jl-1.
+              if (c2jl<(-0.5)) c2jl = c2jl+1.
+              if (c3jl>0.5) c3jl = c3jl-1.
+              if (c3jl<(-0.5)) c3jl = c3jl+1.
+              cv(1,1) = c1jl
+              cv(1,2) = c2jl
+              cv(1,3) = c3jl
+              call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+              r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
+              c1jl=cv(1,1)
+              c2jl=cv(1,2) 
+              c3jl=cv(1,3)
 
 
 
@@ -300,7 +304,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
      !       if(i==344)write(6,*)'dembi ', dEembi,k,drk,eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
      !             write(6,*)'i Eembi', i ,Eembi
      !       call extrapolateEam(embtyp(iti),density(i),Embf=Eembi, dembF=dEembi)
-     !densityi, Eembi et dEembi sont des scalaires associés au i courant
+     !densityi, Eembi et dEembi sont des scalaires associÃ©s au i courant
 
      !******************************************************************************************************************
 
@@ -318,7 +322,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
         k=Int(rij/ktor)
         drk=rij-k*ktor
 
-        if (i.gt.j) then  !terme de repulsion deja calculé
+        if (i.gt.j) then  !terme de repulsion deja calculÃ©
            ll = ipo(iti,itj)
            !             Erep=0. ; dErep=0.
            Erep=2.0*eamrep(1,ll,k)+eamrep(2,ll,k)*drk+eamrep(3,ll,k)*drk**2+eamrep(4,ll,k)*drk**3
@@ -405,7 +409,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
         if (ecrsij(iw)==0) cycle
         !       
         !          if(i==344) write(6,*)'i iw j sij(iw) ',i,iw,j,sij(iw)
-        aux1=-1.0*dEembi*ecrsij(iw)*sqrt(rhoj/sij(iw))/alphaPbeta  !chgt de signe par rapport à d(E)-> force
+        aux1=-1.0*dEembi*ecrsij(iw)*sqrt(rhoj/sij(iw))/alphaPbeta  !chgt de signe par rapport Ã  d(E)-> force
         !          if(i==344) write(6,*)'aux1',aux1,dEembi,ecrsij(iw),rhoj,sij(iw)
         !calcul terme l voisins de i
         !voisins l de i de type itj
@@ -466,23 +470,23 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            itl=ityp(l)
            IF (L==I)cycle
            if(itl==itj) cycle                 
-           c1jl = xp(1,j)-xp(1,l)
-           c2jl = xp(2,j)-xp(2,l)
-           c3jl = xp(3,j)-xp(3,l)
-              if (c1jl>0.5) c1jl = c1jl-1.
-              if (c1jl<(-0.5)) c1jl = c1jl+1.
-              if (c2jl>0.5) c2jl = c2jl-1.
-              if (c2jl<(-0.5)) c2jl = c2jl+1.
-              if (c3jl>0.5) c3jl = c3jl-1.
-              if (c3jl<(-0.5)) c3jl = c3jl+1.
-              cv(1,1) = c1jl
-              cv(1,2) = c2jl
-              cv(1,3) = c3jl
-              call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-              r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-              c1jl=cv(1,1)
-              c2jl=cv(1,2) 
-              c3jl=cv(1,3)                   
+           c1jl = xpnp(1,j)-xpnp(1,l)
+           c2jl = xpnp(2,j)-xpnp(2,l)
+           c3jl = xpnp(3,j)-xpnp(3,l)
+           if (c1jl>0.5) c1jl = c1jl-1.
+           if (c1jl<(-0.5)) c1jl = c1jl+1.
+           if (c2jl>0.5) c2jl = c2jl-1.
+           if (c2jl<(-0.5)) c2jl = c2jl+1.
+           if (c3jl>0.5) c3jl = c3jl-1.
+           if (c3jl<(-0.5)) c3jl = c3jl+1.
+           cv(1,1) = c1jl
+           cv(1,2) = c2jl
+           cv(1,3) = c3jl
+           call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+           r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
+           c1jl=cv(1,1)
+           c2jl=cv(1,2) 
+           c3jl=cv(1,3)                   
 
            if (r2jl>rcut2(ipo(itj,itl))) cycle               
            !                if (r2jl>rue2) cycle

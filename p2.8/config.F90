@@ -615,6 +615,7 @@ subroutine config
         na=0
         do i=1,im
            na(ityp(i))=na(ityp(i))+1
+           ax(:,i)=xp(:,i)
         enddo
 #ifdef PARA
         ! On somme les valeurs locales
@@ -623,7 +624,9 @@ subroutine config
 #endif
 
         call cryst_to_cart (imm, xp, at, 1)  !cryst vers cart
-        ax(:,:im) = xp(:,:im)
+
+!        ax(:,:im) = xp(:,:im)
+! stop
 	if ((lperiod).and.(lsuivinonpbc)) then
          call cryst_to_cart (imm, xpnonpbc, at, 1)  !cryst vers cart
 	 axnonpbc(:,:im) = xpnonpbc (:,:im)
