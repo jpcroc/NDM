@@ -15,7 +15,11 @@ module posana
          ldefcat, &        ! defauts sur les cations seulement
          distordflag    ! analyse des angles dans le cristal si flag==.true.
     integer::         idistord,iprtnvi        ! analyse des diff angulaires
+    integer :: imcr ! nb d'atomes dans le cristal de reference
     real(double)::pstmax(20)
+    real(double),pointer:: xpcr(:,:)
+    integer, pointer :: itypcr(:)
+
   ! **************************************************************
 contains
 
@@ -43,7 +47,7 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     integer :: i, ic,j,k,l,m,n,itapp,nbvoisparf(20,20)
-    real(double)  :: xpc(3,imm),decal(3),xpcr(3,imm)
+    real(double)  :: decal(3)
     real(double) :: tdep ! seuil de deplacement
     real(double) :: plmin(3),plmax(3) ! bords de la portion afichÃ©e de la boite
     integer :: idecal    ! alignement des posistions sur l'atome idecal
@@ -51,10 +55,11 @@ contains
 
     real(double) :: tvac ,tint ! distance pour les lacunes et les int
     real (double) :: plmin1,plmin2,plmin3, plmax1,plmax2,plmax3 ! bord de plot lu dans la namelist
-
     namelist /analyse/ldecal,ldesord,idistord,idecal,tdep,lvac,tvac,tint,lcomp,plmin1, &
          plmin2,plmin3, plmax1,plmax2,plmax3,ldetdec,lrescale,lpstruct,lpdef,lpdep, &
          ldefcat,rclu, lnbvois,lsic,nbvoisparf,pstmax,iprtnvi
+
+
 
 
     !
@@ -87,8 +92,8 @@ contains
     ldefcat=.false.
     nbvoisparf(:,:)=0
     write(6,*)'*** analyse du crystal'
-    open(75, file='analyse.in')
-    read(75,nml=analyse)
+    open(175, file='analyse.in')
+    read(175,nml=analyse)
     if(.not.(lnbvois).and.(ldesord))lnbvois=.true.
     if(lsic)lnbvois=.true.
     ! rc(ntyp) est par defaut 2.0 Ang OU vaut rclu dans readdm OU est reprecise ici
@@ -117,10 +122,16 @@ contains
     icall=icall+1
     if(icall==1)then
        open(file='defauts', unit=71)
+       open(file='vac', unit=73)
+       open(file='int', unit=74)
+       open(file='as', unit=75)
+       open(file='remp', unit=77)
+       open(file='depla', unit=76)
        open(file='structure', unit=72)
     end if
 
     if (lcomp) then
+       allocate (xpcr(3,imm)) ; allocate (itypcr(imm))
        write(6,*)
        write(6,*)'COMPARAISON crystal it = ' ,itapp
        write(6,*)
@@ -143,7 +154,7 @@ contains
     end if
     if (lcomp) then 
        if (lperiod) call period
-       call configcr (xpcr,ityp,lrescale)
+       call configcr (xpcr,ityp,lrescale,itypcr)
 
        !     write(6,*)'apres configcr'
 
@@ -173,7 +184,8 @@ contains
 
 
 
-       call depcr (xpcr,tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep)  
+       call depcr (tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep)  
+       deallocate (xpcr) ; deallocate (itypcr)
     end if
 
     if (lnbvois)  call nbvois(xp,ityp,ielat,icall,nbvoisparf,itapp)
@@ -537,7 +549,7 @@ contains
   !  ------------------------------------------------------------
   !**********************************************************
   !**********************************************************
-  subroutine depcr(xpcr,tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep)
+  subroutine depcr(tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep)
     USE T_kind_param_m
     use gen_com_m
     use tab_imm_m
@@ -546,7 +558,7 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    real(double)  :: xpcr(3,imm),tdep, plmin(3),plmax(3),tvac,tint
+    real(double)  :: tdep, plmin(3),plmax(3),tvac,tint
     logical :: lvac,lpstruct,lpdep,lpdef
 
     !Local variables
@@ -564,10 +576,12 @@ contains
     real(double) :: r2min
 
     real(double) :: c3p,c2p,c1p,c1abs,c2abs,c3abs,r
-    integer:: koo,i2,i1,ncelvois,ko1
+    integer:: koo,i2,i1,ncelvois,ko1,immin,immax
     !  integer,pointer :: lastcr (:,:),natocr(:),ielatcr(:)
 
-
+    immin=min(im,imcr)
+    immax=max(im,imcr)
+    write(6,*)'im imcr ', im,imcr,immin,immax
     ncelvois = min(noxyz,27)-1
 
     allocate(indplt(imm))
@@ -579,7 +593,7 @@ contains
     natocr(:noxyz) = 0
     lastcr(natperc,:noxyz) = 0
 
-    call caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
+    call caltabtcr (natperc,nox,noy,noz,xpcr,imcr,imm,bg,at)
     tdep2=tdep*tdep
     ndep=0
     plmin=1000.0 ; plmax=-1000.0
@@ -600,7 +614,7 @@ contains
        call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
        call cryst_to_cart (imm, xpcr, bg, -1)    !cart vers cryst
 
-       do i=1,im
+       do i=1,immin
           !     if(ityp(i)==2) cycle
           c1 = xp(1,i)-xpcr(1,i)
           c2 = xp(2,i)-xpcr(2,i)
@@ -616,13 +630,19 @@ contains
           cv(1,3) = c3
           call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
           r2 = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)
-
           if(r2.gt.tdep2) then
              ndep=ndep+1
              inddep(ndep)=i
           end if
 
        end do  !boucle i
+       if (immin.lt.immax)then
+          do i=immin,immax
+             ndep=ndep+1
+             inddep(ndep)=i
+          end do
+       end if
+       
        call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
        call cryst_to_cart (imm, xpcr, at, 1)     !cryst vers cart
 
@@ -636,17 +656,17 @@ contains
        end do
 
        plmin=plmin-1.0d-8 ; plmax=plmax+1.0d-8
-       if (ndep.gt.0) then
+!       if (ndep.gt.0) then
           write(6,*)
           write(6,*)'nombres d atomes deplaces de plus de ',tdep*1.0d8,' = ',ndep
-       end if
+!       end if
 
 
     else
-       do i=1,im
+       do i=1,immax
           inddep(i)=i
        end do
-       ndep=im
+       ndep=immax
     end if
 
     !determination des atomes plottes
@@ -654,7 +674,7 @@ contains
 
 
     if(lvac) then      ! calcul des lacunes et interstitiels
-       !ATTENTION CE CALCUL EST LIMITE AU ATOMES DEPLACES CHOISIR TDEP EN CONSEQUENCE
+       !ATTENTION CE CALCUL EST LIMITE AU ATOMES DEPLACES si lpdep=.true. CHOISIR TDEP EN CONSEQUENCE
 
 
        allocate(indint(imm))
@@ -672,6 +692,7 @@ contains
        iloop0:do idp=1,ndep
           r2min =10.0
           i=inddep(idp)
+          if (i.gt.im)cycle
           if(ldefcat.and.ityp(i)==2) cycle iloop0
           koo = ielat(i)                          ! Numero de la cellule
           !write(6,*)i,idp,koo
@@ -698,7 +719,7 @@ contains
                 r = sqrt(cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3))
                 if(r.lt.tint) then ! i est sur le site d'un atome du crystal de depart
                    !                 write(852,*)'remp',i,j,r
-                   if(ityp(j)==ityp(i)) then ! simple remplacement
+                   if(itypcr(j)==ityp(i)) then ! simple remplacement
                       if(lpdep.and.(i.ne.j))then
                          nremp=nremp+1
                          indremp(nremp)=i
@@ -722,6 +743,7 @@ contains
        iloop20:  do idp=1,ndep
           r2min =10.0
           i=inddep(idp)
+          if (i.gt.imcr)cycle
           if(ldefcat.and.ityp(i)==2) cycle iloop20
           koo = ielatcr(i)                          ! Numero de la cellule
           !         write(6,*)idp,i,koo
@@ -799,66 +821,131 @@ contains
     !----------------------------------------------
     if (lpdep) then
 
-       write(71,'(I5,9F11.5)')ndep+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+       write(71,*)ndep+2,'IT = ',it,' atomes deplaces de + de ', tdep*1.0d8
+       write(71,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
             1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
             1d8*at(3,3)     
-       write(71,*)'IT = ',it,' atomes deplaces de + de ', tdep*1.0d8
-       write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
-       write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
+
+       write(71,113)'H', 0. ,0. ,0. 
+       write(71,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
 
        do idp=1,ndep
           write(71, 113) ty(ityp(inddep(idp))), xp(1,inddep(idp))*1D+8, xp(2,&
                inddep(idp))*1D+8, xp(3,inddep(idp))*1D+8, inddep(idp)
        end do
+       write(76,*)ndep+2,'IT = ',it,' atomes deplaces de + de ', tdep*1.0d8
+       write(76,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
+
+       write(76,113)'H', 0. ,0. ,0. 
+       write(76,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+
+       do idp=1,ndep
+          write(76, 113) ty(ityp(inddep(idp))), xp(1,inddep(idp))*1D+8, xp(2,&
+               inddep(idp))*1D+8, xp(3,inddep(idp))*1D+8, inddep(idp)
+       end do
     end if
     if (lpdef) then
        !     if (nvac.ne.0) then
-       write(71,'(I5,9F11.5)')nvac+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+       write(71,*)nvac+2,'IT = ',it,' lacunes'
+       write(71,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
             1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
             1d8*at(3,3)     
-       write(71,*)'IT = ',it,' lacunes'
-       write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
-       write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
+
+       write(71,113)'H', 0. ,0. ,0. 
+       write(71,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
        do ivac=1,nvac
           write(71, 113) ty(ityp(indvac(ivac))), xpcr(1,indvac(ivac))*1D+8, xpcr(2,&
+               indvac(ivac))*1D+8, xpcr(3,indvac(ivac))*1D+8, indvac(ivac)
+       end do
+       write(73,*)nvac+2,'IT = ',it,' lacunes'
+       write(73,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
+
+       write(73,113)'H', 0. ,0. ,0. 
+       write(73,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+       do ivac=1,nvac
+          write(73, 113) ty(ityp(indvac(ivac))), xpcr(1,indvac(ivac))*1D+8, xpcr(2,&
                indvac(ivac))*1D+8, xpcr(3,indvac(ivac))*1D+8, indvac(ivac)
        end do
        !     end if
 
        !     if (nint.ne.0) then
-       write(71,'(I5,9F11.5)')nint+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+       write(71,*)nint+2,'IT = ',it,' interstitiels'
+       write(71,'(9F11.5)'),1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
             1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
             1d8*at(3,3)     
-       write(71,*)'IT = ',it,' interstitiels'
-       write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
-       write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
+
+       write(71,113)'H', 0. ,0. ,0. 
+       write(71,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
        do iint=1,nint
           write(71, 113) ty(ityp(indint(iint))), xp(1,indint(iint))*1D+8, xp(2,&
                indint(iint))*1D+8, xp(3,indint(iint))*1D+8, indint(iint)
        end do
+       write(74,*)nint+2,'IT = ',it,' interstitiels'
+       write(74,'(9F11.5)'),1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
+
+       write(74,113)'H', 0. ,0. ,0. 
+       write(74,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+       do iint=1,nint
+          write(74, 113) ty(ityp(indint(iint))), xp(1,indint(iint))*1D+8, xp(2,&
+               indint(iint))*1D+8, xp(3,indint(iint))*1D+8, indint(iint)
+       end do
        !     end if
        !     if (nanti.ne.0) then
-       write(71,'(I5,9F11.5)')nanti+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+       write(71,*)nanti+2,'IT = ',it,' antisites'
+       write(71,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
             1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), & 
             & 1d8*at(2,3),1d8*at(3,3)             
-       write(71,*)'IT = ',it,' antisites'
-       write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
-       write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
+
+       write(71,113)'H', 0. ,0. ,0. 
+       write(71,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+
        do ias=1,nanti
           write(71, 113) ty(ityp(indas(ias))), xp(1,indas(ias))*1D+8, xp(2,&
+               indas(ias))*1D+8, xp(3,indas(ias))*1D+8, indas(ias)
+       end do
+       write(75,*)nanti+2,'IT = ',it,' antisites'
+       write(75,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), & 
+            & 1d8*at(2,3),1d8*at(3,3)             
+
+       write(75,113)'H', 0. ,0. ,0. 
+       write(75,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+
+       do ias=1,nanti
+          write(75, 113) ty(ityp(indas(ias))), xp(1,indas(ias))*1D+8, xp(2,&
                indas(ias))*1D+8, xp(3,indas(ias))*1D+8, indas(ias)
        end do
        !     end if
 
        if(lpdep) then
-          write(71,'(I5,9F11.5)')nremp+2,1d8*at(1,1),1d8*at(2,1),&
+          write(71,*)nremp+2,'IT = ',it,' remplacements'
+          write(71,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),&
                1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), &
                1d8*at(2,3),1d8*at(3,3)             
-          write(71,*)'IT = ',it,' remplacements'
-          write(71,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
-          write(71,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
+          
+          write(71,113)'H', 0. ,0. ,0. 
+          write(71,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+          
           do iremp=1,nremp
              write(71, 113) ty(ityp(indremp(iremp))), xp(1,indremp(iremp))*1D+8, xp(2,&
+                  indremp(iremp))*1D+8, xp(3,indremp(iremp))*1D+8, indremp(iremp)
+          end do
+          write(77,*)nremp+2,'IT = ',it,' remplacements'
+          write(77,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),&
+               1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), &
+               1d8*at(2,3),1d8*at(3,3)             
+
+       write(77,113)'H', 0. ,0. ,0. 
+       write(77,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+
+          do iremp=1,nremp
+             write(77, 113) ty(ityp(indremp(iremp))), xp(1,indremp(iremp))*1D+8, xp(2,&
                   indremp(iremp))*1D+8, xp(3,indremp(iremp))*1D+8, indremp(iremp)
           end do
        end if
@@ -866,13 +953,14 @@ contains
 
     end if
     if(lpstruct) then
-       write(71,'(I5,9F11.5)')nplt+2,1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+       write(72,*)nplt+2,'IT = ',it,' structure finale'
+       write(72,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
             1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
             1d8*at(3,3)             
 
-       write(72,*)'IT = ',it,' structure finale'
-       write(72,113)'H', -0.5d8*zl(1),-0.5d8*zl(2),-0.5d8*zl(3)
-       write(72,113)'H', 0.5d8*zl(1),0.5d8*zl(2),0.5d8*zl(3)
+       write(72,113)'H', 0. ,0. ,0. 
+       write(72,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+
        do iplt=1,nplt
           write(72, 113) ty(ityp(indplt(iplt))), xp(1,indplt(iplt))*1D+8, xp(2,&
                indplt(iplt))*1D+8, xp(3,indplt(iplt))*1D+8, indplt(iplt)

@@ -2,13 +2,13 @@
 !             CONSTRUCTION DE LA BOITE DE SIMULATION
 !********************************************************************
 
-subroutine configcr(xpcr,ityp,lrescale)
+subroutine configcr(xpcr,ityp,lrescale,itypcr)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
-
+  use posana, ONLY : imcr
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -23,10 +23,10 @@ subroutine configcr(xpcr,ityp,lrescale)
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   integer :: i, j, k, ia, ib, ic, icell, iti, icintype, icintypemod&
-       , lucin, lugin, imcell, la, lb, lc, typmax, typmin, npoin, natyp, typ&
-       , imcr
+       , lucin, lugin, imcell, la, lb, lc, typmax, typmin, npoin, natyp, typ
+       
 
-  integer , dimension(imm) :: itypc
+  integer :: itypcr(imm)
 
   real(double), dimension(3) :: rr
   real(double), dimension(imm,3) :: xc
@@ -82,17 +82,17 @@ subroutine configcr(xpcr,ityp,lrescale)
 
   read (lucin) imcr                         !number of atoms in the box
   if (im.ne.imcr) then
-     if(rang==0)                    write (6, *) 'im <> imcr', im, imcr
-     stop
+     if(rang==0)                    write (6, *) 'ATTENTION im <> imcr', im, imcr
+    ! stop
   endif
 
-  read (lucin) itypc                       !types
-  do i=1,im
-     if (ityp(i).ne.itypc(i)) write(6,*)i,ityp(i),itypc(i)
+  read (lucin) itypcr                       !types
+  do i=1,min(im,imcr)
+     if (ityp(i).ne.itypcr(i)) write(6,*)i,ityp(i),itypcr(i)
   end do
-  if (any(ityp.ne.itypc)) then
-     if(rang==0)                    write (6, *) 'ityp <> itypc'
-     stop
+  if (any(ityp.ne.itypcr)) then
+     if(rang==0)                    write (6, *) 'ityp <> itypcr'
+!     stop
   endif
 
   read (lucin) xpcr
@@ -101,21 +101,21 @@ subroutine configcr(xpcr,ityp,lrescale)
      if (lrescale) then
         call recips (atcr(1,1), atcr(1,2), atcr(1,3), bgcr(1,1), bgcr(1,2), bgcr(1,3))           
         call cryst_to_cart (imm, xpcr, bgcr, -1)    !cart vers cryst           
-        where (xpcr(:,:im)<0.0)
-           xpcr(:,:im) = xpcr(:,:im)+1.
+        where (xpcr(:,:imcr)<0.0)
+           xpcr(:,:imcr) = xpcr(:,:imcr)+1.
         end where
-        where (xpcr(:,:im)>=1.0)
-           xpcr(:,:im) = xpcr(:,:im)-1.0
+        where (xpcr(:,:imcr)>=1.0)
+           xpcr(:,:imcr) = xpcr(:,:imcr)-1.0
         end where
         call cryst_to_cart (imm, xpcr, at, 1)    !cryst vers cart
 
      else
         call cryst_to_cart (imm, xpcr, bg, -1)    !cart vers cryst           
-        where (xpcr(:,:im)<0.0)
-           xpcr(:,:im) = xpcr(:,:im)+1.
+        where (xpcr(:,:imcr)<0.0)
+           xpcr(:,:imcr) = xpcr(:,:imcr)+1.
         end where
-        where (xpcr(:,:im)>=1.0)
-           xpcr(:,:im) = xpcr(:,:im)-1.0
+        where (xpcr(:,:imcr)>=1.0)
+           xpcr(:,:imcr) = xpcr(:,:imcr)-1.0
         end where
         call cryst_to_cart (imm, xpcr, at, 1)    !cryst vers cart
 
@@ -128,7 +128,7 @@ subroutine configcr(xpcr,ityp,lrescale)
 
   else
      if (lrescale) then
-        do i=1,im
+        do i=1,imcr
            do ic=1,3
               xpcr(ic,i)=xpcr(ic,i)*zl(ic)/zlcr(ic)
            end do

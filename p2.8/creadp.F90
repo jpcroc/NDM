@@ -293,7 +293,7 @@ subroutine creadp(xp, xpp, ityp,vp)
   
   itapp=it
   write(6,*)'outcdp'
-im_glob=im
+  im_glob=im
   
   return
 end subroutine creadp
