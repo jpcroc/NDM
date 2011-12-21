@@ -17,11 +17,12 @@ subroutine initcdp
   !-----------------------------------------------
   integer :: i,itapp
   !-----------------------------------------------
-  namelist /inputcdp/itecdp,nintrodp,imin,imax,nposI,iseed,dminins,typint,ioxdef,Ed
+  namelist /inputcdp/itecdp,nintrodp,imin,imax,nposI,iseed,dminins,typint,ioxdef,Ed,ideftyp,rsphdef,centresphdef
 
 
 
-  itecdp=0      ! introduction de DP tout les itecdp pas
+  itecdp=-1      ! introduction de DP tout les itecdp pas
+  ideftyp=0      ! type de def ; 0=PF; 1=int
   nintrodp=1    ! nombre de DP intrduit à chaque fois
   imin=1        ! indice minimal possible pour les atomes déplacés
   imax=im       ! indice maximal possible pour les atomes déplacés
@@ -31,15 +32,22 @@ subroutine initcdp
   typint=0     ! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
   ioxdef=0
   Ed(:)=0.
+  rsphdef=0.
+  centresphdef(:)=0.5
 
   open(unit=73, file='creaDPin', status='unknown')
   read (73, nml=inputcdp)
   dminins=dminins*1d-8
+  rsphdef=rsphdef*1d-8
 
 
   if((typint.lt.0).or.(typint.GT.1)) then
      write(6,*)'mauvaise introduction des interstitiels stop'
      call arret_ndm
+  end if
+
+  if(ideftyp==1) then
+     write(6,*)'introduction d interstitiels de type 1'
   end if
 
   if (typint==0) then

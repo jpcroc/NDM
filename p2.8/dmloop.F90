@@ -62,16 +62,16 @@ subroutine dmloop
   call analyse 
   ! MPI
   if (rang==0) then
-     !     write(6,*)'analyse -> sauvegarde'
+!          write(6,*)'analyse -> sauvegarde'
      if (itesauv.GT.0) then
         if (mod(it,itesauv)==0) call sauvegarde 
      endif
 
-     !     write(6,*)'analyse -> sauveposition'
+!          write(6,*)'analyse -> sauveposition'
      if (itesauvposition.GT.0) then
         if (mod(it,itesauvposition)==0) call sauveposition ( it)
      endif
-     !     write(6,*)'sauvposition -> control'
+!          write(6,*)'sauvposition -> control'
   endif                                   ! fin rang=0
 
   call controle 

@@ -52,7 +52,7 @@ subroutine controle
   !
   !
 
-  !  write(6,*) 'entree controle',it,im
+!    write(6,*) 'entree controle',it,im
 
 
   ! last iteration ?
@@ -107,7 +107,7 @@ subroutine controle
         if (mod(it,itecdp).ne.0) goto 666
 
 
-        call creadp (xp, xpp, ityp,vp,num_at_glob)
+        call creadp (xp, xpp, ityp,vp)
         call caltabt
         if (ltabvois) call caltabi
         if (lperiod) then 
@@ -402,6 +402,9 @@ subroutine controle
 
 
 
+
+
+
   ! *** correction de la derive ***
   if (itederive>0) then
      if (.not.lperiod) then
@@ -503,13 +506,13 @@ subroutine controle
      end if
      write(823,*)potist*erg2ev,potistmean*erg2ev,potistdif
   end if   !end of deltaestop.ne.0
-
+!  write(6,* )'dmtype',dmtype
 
 
   select case (dmtype)
 
   case(2,10,8)
-     if ((lprtrp.EQV..false.).and.(dmtype==10)) goto 123
+     if ((lprtrp.EQV..false.).and.((dmtype==10).or.(dmtype==8))) goto 123
      if ((fpstop>0.0).AND.(it.GE.1)) then 
         IF (lFrozen) THEN
            !fpmax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
@@ -565,97 +568,100 @@ subroutine controle
            if (rang==0)      write(6,*)
         end if
      end if
-123     continue
-        if (rang==0) write (6, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
-     case(3,30) ! Gradient conjugue sur coordonnee cartesiennes (3) ou reduites (30)
+!     if (rang==0) write (6, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
+123  continue
+
+  case(3,30) ! Gradient conjugue sur coordonnee cartesiennes (3) ou reduites (30)
 
 
-        if (it==1) then
-           if (lEev.EQV..true.) then 
-              write(6,*)'Resultats en eV, Ang'
-           else
-              write(6,*)'Resultats en cgs'
-           end if
-           if (rang==0)      write(*,'(70("="))')
-           if (rang==0)      write(*,'("CG:     ","iter",10(" "),"epsi",14(" "),"Fmax",14(" "), "Energy")')
-           if (rang==0)      write(*,'(70("="))')
+     if (it==1) then
+        if (lEev.EQV..true.) then 
+           write(6,*)'Resultats en eV, Ang'
+        else
+           write(6,*)'Resultats en cgs'
         end if
+        if (rang==0)      write(*,'(70("="))')
+        if (rang==0)      write(*,'("CG:     ","iter",10(" "),"epsi",14(" "),"Fmax",14(" "), "Energy")')
+        if (rang==0)      write(*,'(70("="))')
+     end if
 
 
-        !debug     write(*,*) 'DEBUG ALL IT IN CONTROLE',it
+     !debug     write(*,*) 'DEBUG ALL IT IN CONTROLE',it
 
-        IF (it.GE.1) THEN
-           IF (lFrozen) THEN
-              !forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
-              !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
-              forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
-              formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) ) 
-           ELSE
-              forctot=sqrt( SUM(fp(1:3,1:im)**2) )
-              !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
-              formax = MaxVal( Abs(fp(:,1:im)) )
-           END IF
+     IF (it.GE.1) THEN
+        IF (lFrozen) THEN
+           !forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
+           !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
+           forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
+           formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) ) 
+        ELSE
+           forctot=sqrt( SUM(fp(1:3,1:im)**2) )
+           !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
+           formax = MaxVal( Abs(fp(:,1:im)) )
+        END IF
 #if (PARA)
-           call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
-           formax=fpmax_glob
-           forctot=forctot**2
-           call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-           forctot=sqrt(fpmax_glob)
+        call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
+        formax=fpmax_glob
+        forctot=forctot**2
+        call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+        forctot=sqrt(fpmax_glob)
 #endif
 
-           if (lEev.EQV..true.) then 
-              forctot = forctot*erg2eV/angst
-              formax  = formax*erg2eV/angst
-              write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
-              if (fpstop>0) then   
-                 if (formax.le.fpstop) then
-                    write(6,*)'force par atome  max  ev/Ang ', formax
-                    write (6, *) 'energie ', potist*erg2eV
-                    if (it.le.1) xp(:,:)=ax(:,:)
-                    call endrun
-                 end if
+        if (lEev.EQV..true.) then 
+           forctot = forctot*erg2eV/angst
+           formax  = formax*erg2eV/angst
+           write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
+           if (fpstop>0) then   
+              if (formax.le.fpstop) then
+                 write(6,*)'force par atome  max  ev/Ang ', formax
+                 write (6, *) 'energie ', potist*erg2eV
+                 if (it.le.1) xp(:,:)=ax(:,:)
+                 call endrun
               end if
-              if (fsumstop>0) then   
-                 if (forctot.le.fsumstop) then
-                    write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
-                    write (6, *) 'energie ', potist*erg2eV
-                    if (it.le.1) xp(:,:)=ax(:,:)
-                    call endrun
-                 end if
-              end if
-
-           else
-              write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
-              if (fpstop>0) then   
-                 if (formax.le.fpstop) then
-                    write(6,*)'force par atome  max cgs ',formax
-                    write (6, *) 'energie ', potist
-                    if (it.le.1) xp(:,:)=ax(:,:)
-                    call endrun
-
-                 end if
-              end if
-
-              if (fsumstop>0) then   
-                 if (forctot.le.fsumstop) then
-                    write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
-                    write (6, *) 'energie ', potist
-                    if (it.le.1) xp(:,:)=ax(:,:)
-                    call endrun
-                 end if
-              end if
-
            end if
-        end if ! it .ge.1
+           if (fsumstop>0) then   
+              if (forctot.le.fsumstop) then
+                 write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
+                 write (6, *) 'energie ', potist*erg2eV
+                 if (it.le.1) xp(:,:)=ax(:,:)
+                 call endrun
+              end if
+           end if
 
-     case default
-     end select
+        else
+           write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
+           if (fpstop>0) then   
+              if (formax.le.fpstop) then
+                 write(6,*)'force par atome  max cgs ',formax
+                 write (6, *) 'energie ', potist
+                 if (it.le.1) xp(:,:)=ax(:,:)
+                 call endrun
+
+              end if
+           end if
+
+           if (fsumstop>0) then   
+              if (forctot.le.fsumstop) then
+                 write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
+                 write (6, *) 'energie ', potist
+                 if (it.le.1) xp(:,:)=ax(:,:)
+                 call endrun
+              end if
+           end if
+
+        end if
+     end if ! it .ge.1
+
+  case default
+  end select
 
 
 
-     if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
+  if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
+
+  if ((lheat.EQV..true.).and.(mod(it,iteheat)==0))call heat
 
 
-
-     return
-   end subroutine controle
+!
+  return
+end subroutine controle

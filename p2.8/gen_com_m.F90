@@ -229,6 +229,9 @@ module gen_com_m
   logical :: lcalcjq
 
   logical :: lcdp ! algorithme d'accumulation de defauts ponctuels
+  logical :: lheat ! algorithme de chauffage local
+  real(double)::rheat,theat
+  integer :: iteheat
 
 
   real(double) :: tinit !temp initiale

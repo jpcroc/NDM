@@ -49,7 +49,8 @@ subroutine readdm
        rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat, &
        lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,&
        natperc,iteanaposneb,ntyp,&
-       lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,eatref
+       lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
+       eatref,lheat,rheat,iteheat,theat
 
 
   !
@@ -268,6 +269,10 @@ subroutine readdm
   lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep. 
   lposmoy=.false.       ! writes the average position and energy of the atoms in a .mol file
   eatref(:)=0.
+
+  lheat=.false.
+  rheat=0.
+  Theat=0.0
 
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -1076,6 +1081,14 @@ subroutine readdm
      lambdades=1.0 ; pm1des=-1
 
   end if
+
+  rheat=rheat*1d-8
+  if (lheat.eqv..true.) dmtype=4
+  if ((lheat.eqv..true.).and.(rheat.le.0))then
+     write(6,*)'heat et rheat<=0 stop'
+     stop
+  end if
+
   return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
 end subroutine readdm

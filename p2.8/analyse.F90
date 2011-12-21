@@ -49,7 +49,7 @@ subroutine analyse
   !
   !
   !      logical:: lEev=.false., lPkbar=.false.
-  !      write(6,*)'analyse',itetemp,it
+!        write(6,*)'analyse',itetemp,it
   if(lEev) then
      unitE=erg2eV
      cunitE='  eV'
@@ -513,6 +513,6 @@ subroutine analyse
      
      call test_position_He(xp,at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,nstepdes,itmax)
   end if
-
+!  write(6,*) 'sortie canalyse',it,im
   return
 end subroutine analyse

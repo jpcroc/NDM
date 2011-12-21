@@ -37,7 +37,7 @@ subroutine calfo
   real(double),dimension (3):: fptot_tot
 
 #endif
-  !  if (rang==0) write(6,*) 'PARA-T entree calfo'
+!  if (rang==0) write(6,*) 'PARA-T entree calfo'
   sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
   potist=0.
   potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potisP=0.

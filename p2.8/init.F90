@@ -12,6 +12,7 @@ subroutine init
   use jqmod
   use neb_module
   use posana
+  use defcdp, ONLY :itecdp
 
 #if(PARA)
   use mod_mpi
@@ -264,7 +265,7 @@ subroutine init
         write(6,*)'AX DEVIENT VP0'
         write(6,*)'AX DEVIENT VP0'
         write(6,*)'AX DEVIENT VP0'
-        
+
         call correlvp(xp,xpp,vp,ax,fp,ityp)
      end if
 
@@ -331,10 +332,26 @@ subroutine init
      allocate (sigtyptyp_loc(3,3,ntyp,ntyp))
 #endif 
   end if
+
   if (lcdp) then
      call initcdp
+     if (itecdp==0)then
+        call creadp (xp, xpp, ityp,vp)
+        call caltabt
+        if (ltabvois) call caltabi
+        
+        if (lperiod) then 
+           call period
+        else 
+           write(*,*) 'WARNING .... Not implemented for lperiod  FALSE nad lcdp TRUE'
+           write(*,*) 'FIX THAT! Until there the program will stop'
+           stop      
+        end if
+        write(6,*)'im',im
+     end if
   end if
 
+  
   if(iteplz>0)  call prtplz(xp,ityp)
 
 
