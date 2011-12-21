@@ -546,7 +546,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 
   end do loop1at1
 
-
+  deALLOCATE(xpnp)
 
   !  write(6,*)'f8 ',fp(1,1),fp(2,1),fp(3,1)
   return

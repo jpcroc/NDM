@@ -4,15 +4,16 @@ module defcdp
 
   integer :: &
        itecdp, &     ! introduction de DP tout les itecdp pas
-       nintrodp, &   ! nombre de DP intrduit ‡ chaque fois
-       imin, &       ! indice minimal possible pour les atomes dÈplacÈs
-       imax, &       ! indice maximal possible pour les atomes dÈplacÈs
+       nintrodp, &   ! nombre de DP intrduit √† chaque fois
+       imin, &       ! indice minimal possible pour les atomes d√©plac√©s
+       imax, &       ! indice maximal possible pour les atomes d√©plac√©s
        nposI,&        ! nombre de positions interstitielles
-       iseed, &      ! racine des nombres alÈatoires
-       typint        ! type d'introduction des Intestitiels : 0 dans les sites prÈdÈfinis, 1 alÈatoirement
+       iseed, &      ! racine des nombres al√©atoires
+       ideftyp, &      ! racine des nombres al√©atoires
+       typint        ! type d'introduction des Intestitiels : 0 dans les sites pr√©d√©finis, 1 al√©atoirement
 
   real(double), dimension(:,:), pointer :: xposint ! positions des interstitiels
   real(double), dimension(20) :: Ed ! Energies de seuils
-  real (double) :: dminins
+  real (double) :: dminins,rsphdef,centresphdef(3)
   integer:: ioxdef
 end module defcdp
