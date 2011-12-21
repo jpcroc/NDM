@@ -190,7 +190,7 @@ contains
 
     if (lnbvois)  call nbvois(xp,ityp,ielat,icall,nbvoisparf,itapp)
 
-    close(75)     
+    close(175)     
 
     !  if (dmtype==6)   stop
     !    write(6,*)'fin compcr'
