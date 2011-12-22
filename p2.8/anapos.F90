@@ -6,6 +6,7 @@ module posana
          ldecal, & ! decalage en tre boite cr et boite ana
          ldesord, &      ! vielle variable historique
          lnbvois, &      ! analyse des nombres de voisins
+         lc15, &      ! lacunes et int ensembles
          lvac, &           ! analyse en lacune
          ldetdec,&          !determination du decalage
          lrescale ,&          ! rescale des posistions de dÃ©part sur la boite d'arrivÃ©e
@@ -57,7 +58,7 @@ contains
     real (double) :: plmin1,plmin2,plmin3, plmax1,plmax2,plmax3 ! bord de plot lu dans la namelist
     namelist /analyse/ldecal,ldesord,idistord,idecal,tdep,lvac,tvac,tint,lcomp,plmin1, &
          plmin2,plmin3, plmax1,plmax2,plmax3,ldetdec,lrescale,lpstruct,lpdef,lpdep, &
-         ldefcat,rclu, lnbvois,lsic,nbvoisparf,pstmax,iprtnvi
+         ldefcat,rclu, lnbvois,lsic,nbvoisparf,pstmax,iprtnvi,lc15
 
 
 
@@ -83,6 +84,7 @@ contains
     lpdef=.true.
     lvac=.false.
     lsic=.false.
+    lc15=.false.
     tdep=2.0
     tvac=1.1
     tint=1.1
@@ -128,6 +130,7 @@ contains
        open(file='remp', unit=77)
        open(file='depla', unit=76)
        open(file='structure', unit=72)
+       if (lc15)       open(file='vac_et_int', unit=172)
     end if
 
     if (lcomp) then
@@ -642,7 +645,7 @@ contains
              inddep(ndep)=i
           end do
        end if
-       
+
        call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
        call cryst_to_cart (imm, xpcr, at, 1)     !cryst vers cart
 
@@ -656,10 +659,10 @@ contains
        end do
 
        plmin=plmin-1.0d-8 ; plmax=plmax+1.0d-8
-!       if (ndep.gt.0) then
-          write(6,*)
-          write(6,*)'nombres d atomes deplaces de plus de ',tdep*1.0d8,' = ',ndep
-!       end if
+       !       if (ndep.gt.0) then
+       write(6,*)
+       write(6,*)'nombres d atomes deplaces de plus de ',tdep*1.0d8,' = ',ndep
+       !       end if
 
 
     else
@@ -895,6 +898,28 @@ contains
           write(74, 113) ty(ityp(indint(iint))), xp(1,indint(iint))*1D+8, xp(2,&
                indint(iint))*1D+8, xp(3,indint(iint))*1D+8, indint(iint)
        end do
+
+       if (lc15) then
+
+          write(172,*)nint+nvac+2,'IT = ',it,' lacunes et int'
+          write(172,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+               1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+               1d8*at(3,3)     
+
+          write(172,113)'H', 0. ,0. ,0. 
+          write(172,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+          do ivac=1,nvac
+             write(172, 113) 'V ', xpcr(1,indvac(ivac))*1D+8, xpcr(2,&
+                  indvac(ivac))*1D+8, xpcr(3,indvac(ivac))*1D+8, indvac(ivac)
+          end do
+          do iint=1,nint
+             write(172, 113) 'I ', xp(1,indint(iint))*1D+8, xp(2,&
+                  indint(iint))*1D+8, xp(3,indint(iint))*1D+8, indint(iint)
+          end do
+       end if
+
+
+
        !     end if
        !     if (nanti.ne.0) then
        write(71,*)nanti+2,'IT = ',it,' antisites'
@@ -928,10 +953,10 @@ contains
           write(71,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),&
                1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), &
                1d8*at(2,3),1d8*at(3,3)             
-          
+
           write(71,113)'H', 0. ,0. ,0. 
           write(71,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
-          
+
           do iremp=1,nremp
              write(71, 113) ty(ityp(indremp(iremp))), xp(1,indremp(iremp))*1D+8, xp(2,&
                   indremp(iremp))*1D+8, xp(3,indremp(iremp))*1D+8, indremp(iremp)
@@ -941,8 +966,8 @@ contains
                1d8*at(3,1),1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), &
                1d8*at(2,3),1d8*at(3,3)             
 
-       write(77,113)'H', 0. ,0. ,0. 
-       write(77,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+          write(77,113)'H', 0. ,0. ,0. 
+          write(77,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
 
           do iremp=1,nremp
              write(77, 113) ty(ityp(indremp(iremp))), xp(1,indremp(iremp))*1D+8, xp(2,&
