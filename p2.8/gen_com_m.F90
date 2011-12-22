@@ -230,7 +230,7 @@ module gen_com_m
 
   logical :: lcdp ! algorithme d'accumulation de defauts ponctuels
   logical :: lheat ! algorithme de chauffage local
-  real(double)::rheat,theat
+  real(double)::rheat,theat,Eheat
   integer :: iteheat
 
 

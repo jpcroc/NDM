@@ -351,6 +351,7 @@ subroutine init
      end if
   end if
 
+  if ((lheat.EQV..true.).and.(iteheat==0))call heat
   
   if(iteplz>0)  call prtplz(xp,ityp)
 

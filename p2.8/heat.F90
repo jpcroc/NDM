@@ -59,13 +59,14 @@ subroutine heat
      end if
   end do
   tsph=tsph/float(natheat)
-!  write(6,*)'Tsphere Theat', tsph,theat,natheat
+  if (Eheat.ne.0) Theat=2*Eheat/(3*bk*natheat)
+  write(6,*)'Tsphere Theat natheat', tsph,theat,natheat
 
   do j=1,natheat
      i=iatheat(j)
 !     xtr(:) = xp(:,i)
 !     xpp(:,i)=xp(:,i)-(xp(1,:)-xpp(:,i))*sqrt(theat/tsph)
-     vp(:,i) = vp(:,i)*sqrt(theat/tsph)
+     vp(:,i) = vp(:,i)*sqrt((theat+tsph)/tsph)
   end do
   deallocate(xpnp)
   deallocate(iatheat)

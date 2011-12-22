@@ -50,7 +50,7 @@ subroutine readdm
        lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,&
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
-       eatref,lheat,rheat,iteheat,theat
+       eatref,lheat,rheat,iteheat,theat,Eheat
 
 
   !
@@ -273,7 +273,7 @@ subroutine readdm
   lheat=.false.
   rheat=0.
   Theat=0.0
-
+  Eheat=0.
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -1083,10 +1083,21 @@ subroutine readdm
   end if
 
   rheat=rheat*1d-8
-  if (lheat.eqv..true.) dmtype=4
-  if ((lheat.eqv..true.).and.(rheat.le.0))then
-     write(6,*)'heat et rheat<=0 stop'
-     stop
+  if (lheat.eqv..true.)then
+     Eheat=Eheat*ev2erg
+     dmtype=4
+     if (rheat.le.0)then
+        write(6,*)'heat et rheat<=0 stop'
+        stop
+     end if
+     if((Eheat==0).and.(Theat==0)) then
+        write(6,*)'heat et Eheat=0 Theat=0 stop'
+        stop
+     end if
+     if((Eheat.ne.0).and.(Theat.ne.0)) then
+        write(6,*)'heat et Eheat<>0 Theat<>0 stop'
+        stop
+     end if
   end if
 
   return

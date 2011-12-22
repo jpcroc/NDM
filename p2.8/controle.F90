@@ -658,8 +658,9 @@ subroutine controle
 
 
   if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
+  if ((iteheat.gt.0).and.(mod(it,iteheat)==0))call heat
 
-  if ((lheat.EQV..true.).and.(mod(it,iteheat)==0))call heat
+
 
 
 !
