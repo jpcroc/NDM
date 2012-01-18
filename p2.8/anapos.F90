@@ -12,6 +12,7 @@ module posana
          lrescale ,&          ! rescale des posistions de dÃ©part sur la boite d'arrivÃ©e
          lpstruct ,&          
          lpdep ,&          
+         ldeptest ,&          
          lpdef, &
          ldefcat, &        ! defauts sur les cations seulement
          distordflag    ! analyse des angles dans le cristal si flag==.true.
@@ -57,7 +58,7 @@ contains
     real(double) :: tvac ,tint ! distance pour les lacunes et les int
     real (double) :: plmin1,plmin2,plmin3, plmax1,plmax2,plmax3 ! bord de plot lu dans la namelist
     namelist /analyse/ldecal,ldesord,idistord,idecal,tdep,lvac,tvac,tint,lcomp,plmin1, &
-         plmin2,plmin3, plmax1,plmax2,plmax3,ldetdec,lrescale,lpstruct,lpdef,lpdep, &
+         plmin2,plmin3, plmax1,plmax2,plmax3,ldetdec,lrescale,lpstruct,lpdef,lpdep,ldeptest, &
          ldefcat,rclu, lnbvois,lsic,nbvoisparf,pstmax,iprtnvi,lc15
 
 
@@ -79,7 +80,8 @@ contains
     ldesord=.false.
     lnbvois=.false.
     idistord=0
-    lpdep=.true.
+    ldeptest=.true.
+    lpdep=.false.
     lpstruct=.true.
     lpdef=.true.
     lvac=.false.
@@ -139,7 +141,8 @@ contains
        write(6,*)'COMPARAISON crystal it = ' ,itapp
        write(6,*)
 
-       if(lpdep) write(6,'(A,F6.1)') 'seuil deplacement ',tdep 
+       if(ldeptest) write(6,'(A,F6.1)') 'seuil deplacement pour detection de defauts ',tdep 
+       if(lpdep) write(6,'(A,F6.1)') 'ecriture des deplacés ',tdep 
        write(6,'(A,F6.1)') 'seuil lacune ',tvac 
        write(6,'(A,F6.1)') 'seuil interstitiel ',tint 
        tdep=tdep*1.0d-8
@@ -187,7 +190,7 @@ contains
 
 
 
-       call depcr (tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep)  
+       call depcr (tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep, ldeptest)  
        deallocate (xpcr) ; deallocate (itypcr)
     end if
 
@@ -552,7 +555,7 @@ contains
   !  ------------------------------------------------------------
   !**********************************************************
   !**********************************************************
-  subroutine depcr(tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep)
+  subroutine depcr(tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep,ldeptest)
     USE T_kind_param_m
     use gen_com_m
     use tab_imm_m
@@ -562,7 +565,7 @@ contains
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     real(double)  :: tdep, plmin(3),plmax(3),tvac,tint
-    logical :: lvac,lpstruct,lpdep,lpdef
+    logical :: lvac,lpstruct,lpdep,lpdef,ldeptest
 
     !Local variables
     integer :: i,j,k,ndep,ic,nplt,idp,iplt
@@ -612,7 +615,7 @@ contains
     !    enddo
 
     allocate(inddep(imm))
-    if (lpdep.EQV..true.) then
+    if (ldeptest.EQV..true.) then
 
        call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
        call cryst_to_cart (imm, xpcr, bg, -1)    !cart vers cryst
