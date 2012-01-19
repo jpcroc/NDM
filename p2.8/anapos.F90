@@ -13,6 +13,7 @@ module posana
          lpstruct ,&          
          lpdep ,&          
          ldeptest ,&          
+         lws ,&          ! Wigner-Seitz pour INT et VAC
          lpdef, &
          ldefcat, &        ! defauts sur les cations seulement
          distordflag    ! analyse des angles dans le cristal si flag==.true.
@@ -55,11 +56,11 @@ contains
     integer :: idecal    ! alignement des posistions sur l'atome idecal
     integer, save:: icall=0
 
-    real(double) :: tvac ,tint ! distance pour les lacunes et les int
+    real(double) :: tvac ,tint,deltx,delty,deltz ! distance pour les lacunes et les int
     real (double) :: plmin1,plmin2,plmin3, plmax1,plmax2,plmax3 ! bord de plot lu dans la namelist
     namelist /analyse/ldecal,ldesord,idistord,idecal,tdep,lvac,tvac,tint,lcomp,plmin1, &
          plmin2,plmin3, plmax1,plmax2,plmax3,ldetdec,lrescale,lpstruct,lpdef,lpdep,ldeptest, &
-         ldefcat,rclu, lnbvois,lsic,nbvoisparf,pstmax,iprtnvi,lc15
+         ldefcat,rclu, lnbvois,lsic,nbvoisparf,pstmax,iprtnvi,lc15,lws,deltx,delty,deltz
 
 
 
@@ -74,7 +75,7 @@ contains
     lcomp=.false.
 !   iprtnvi=.false.
     iprtnvi=0      
-    ldecal=.false.
+    lws=.false.
     ldetdec=.false.
     idecal= -1
     ldesord=.false.
@@ -94,11 +95,16 @@ contains
     plmax1=0.;plmax2=0.;plmax3=0.
     lrescale=.true.
     ldefcat=.false.
+    deltx=0. ; delty=0.0; deltz=0.0
     nbvoisparf(:,:)=0
     write(6,*)'*** analyse du crystal'
     open(175, file='analyse.in')
     read(175,nml=analyse)
     if(.not.(lnbvois).and.(ldesord))lnbvois=.true.
+    if(lws) then
+       lcomp=.true.
+       lvac=.true.
+    end if
     if(lsic)lnbvois=.true.
     ! rc(ntyp) est par defaut 2.0 Ang OU vaut rclu dans readdm OU est reprecise ici
 
@@ -141,13 +147,17 @@ contains
        write(6,*)'COMPARAISON crystal it = ' ,itapp
        write(6,*)
 
-       if(ldeptest) write(6,'(A,F6.1)') 'seuil deplacement pour detection de defauts ',tdep 
-       if(lpdep) write(6,'(A,F6.1)') 'ecriture des deplacés ',tdep 
-       write(6,'(A,F6.1)') 'seuil lacune ',tvac 
-       write(6,'(A,F6.1)') 'seuil interstitiel ',tint 
-       tdep=tdep*1.0d-8
-       tvac=(tvac*1.0d-8)
-       tint=(tint*1.0d-8)
+       if (lws) then
+          write(6,*)'analyse de Wigner-Seitz'
+       else
+          if(ldeptest) write(6,'(A,F6.1)') 'seuil deplacement pour detection de defauts ',tdep 
+          if(lpdep) write(6,'(A,F6.1)') 'ecriture des deplacés ',tdep 
+          write(6,'(A,F6.1)') 'seuil lacune ',tvac 
+          write(6,'(A,F6.1)') 'seuil interstitiel ',tint 
+          tdep=tdep*1.0d-8
+          tvac=(tvac*1.0d-8)
+          tint=(tint*1.0d-8)
+       end if
 
     end if
 
@@ -166,31 +176,47 @@ contains
 
 
        if (ldecal) then
-          do ic=1,3
-             decal(ic)=xpcr(ic,idecal)-xp(ic,idecal)
-          end do
-          do i=1,im
+          if (idecal.gt.0) then
              do ic=1,3
-                xp(ic,i)=xp(ic,i)+decal(ic)
+                decal(ic)=xpcr(ic,idecal)-xp(ic,idecal)
              end do
-          end do
+             do i=1,im
+                do ic=1,3
+                   xpcr(ic,i)=xpcr(ic,i)-decal(ic)
+                end do
+             end do
+          else
+             do i=1,im
+                xpcr(1,i)=xpcr(1,i)-deltx
+                xpcr(2,i)=xpcr(2,i)-delty
+                xpcr(3,i)=xpcr(3,i)-deltz
+             end do
+          end if
           if (lperiod)         call period
+          
        end if
-
        if(ldetdec) then
+        
           do i=1,im
-             write(490,'(I5,3E16.5)')i,xpcr(1,i)-xp(1,i),xpcr(2,i)-xp(2,i),xpcr(3,i)-xp(3,i)
+             write(490,'(I8,3E16.5)')i,xpcr(1,i)-xp(1,i),xpcr(2,i)-xp(2,i),xpcr(3,i)-xp(3,i)
              write(487,*)i,xp(1,i),xpcr(1,i)
              write(488,*)i,xp(2,i),xpcr(2,i)
              write(489,*)i,xp(3,i),xpcr(3,i)
+             deltx=deltx+(xpcr(1,i)-xp(1,i))/im
+             delty=delty+(xpcr(2,i)-xp(2,i))/im
+             deltz=deltz+(xpcr(3,i)-xp(3,i))/im
           end do
+          write(6,*)deltx,delty,deltz
           stop
        end if
 
 
 
-
-       call depcr (tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep, ldeptest)  
+       if (lws) then
+          call ws
+       else
+          call depcr (tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep, ldeptest)  
+       end if
        deallocate (xpcr) ; deallocate (itypcr)
     end if
 
@@ -1060,5 +1086,263 @@ contains
     close(72)
 113 format(a2,1x,3(f10.4,1x),1x,1x,i6)
   end subroutine plotpart
+
+
+
+  subroutine ws
+    USE T_kind_param_m
+    use gen_com_m
+    use tab_imm_m
+    use tabcr
+    implicit none
+    !-----------------------------------------------
+    !   D u m m y   A r g u m e n t s
+    !-----------------------------------------------
+
+
+    !Local variables
+    integer :: i,j,k,ndep,ic,nplt,idp,iplt
+    integer, dimension(:), pointer:: indws(:),indatsit(:,:),natsit(:),indint(:),indvac(:),indas(:) ! indices des atomes deplaces et plottes
+
+    real(double) :: a1,a2,a3,c1,c2,c3,r2
+    real(double), dimension(1,3) :: cv
+
+    integer :: nvac,nint,nremp,nanti,ivac,iint,iremp,ias
+    logical :: vacfl
+
+    real(double) :: r2min
+
+    real(double) :: c3p,c2p,c1p,c1abs,c2abs,c3abs,r
+    integer:: koo,i2,i1,ncelvois,ko1,immin,immax
+    !  integer,pointer :: lastcr (:,:),natocr(:),ielatcr(:)
+
+    immin=min(im,imcr)
+    immax=max(im,imcr)
+    write(6,*)'im imcr ', im,imcr,immin,immax
+    ncelvois = min(noxyz,27)-1
+
+    allocate(indint(imm))
+    allocate(indvac(imm))
+    allocate(indas(imm))
+
+    allocate(indws(imm))
+
+    allocate (lastcr(natperc,0:noxyz))
+    allocate(ielatcr(imm))
+    allocate(natocr(0:noxyz))
+
+    natocr(:noxyz) = 0
+    lastcr(natperc,:noxyz) = 0
+
+    call caltabtcr (natperc,nox,noy,noz,xpcr,imcr,imm,bg,at)
+    ndep=0;nvac=0;nanti=0;nint=0;nas=0; 
+
+
+    allocate(indws(imm)) ! inddep note le site j le plus proche de i
+
+    allocate(natsit(imm))
+    allocate(indatsit(imm,10))
+    natsit=0 ; indws=0 ; indatsit=0
+
+    call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
+    call cryst_to_cart (imm, xpcr, bg, -1)    !cart vers cryst
+    iloop0:do i=1,im 
+       r2min =100.0
+       koo = ielat(i)                          ! Numero de la cellule
+       ! pour chaque cel. voisine
+       do i1 = 0, ncelvois
+          ko1=ncel(koo,i1)
+          !              write(6,*)i,idp,koo,i1,ko1,natocr(ko1)
+          do i2 = 1, natocr(ko1) !atomes dans la cel dans la conf. init.
+             j = lastcr(i2,ko1)
+
+             c1 = xp(1,i)-xpcr(1,j)
+             c2 = xp(2,i)-xpcr(2,j)
+             c3 = xp(3,i)-xpcr(3,j)
+             if (c1>0.5) c1 = c1-1.
+             if (c1<(-0.5)) c1 = c1+1.
+             if (c2>0.5) c2 = c2-1.
+             if (c2<(-0.5)) c2 = c2+1.
+             if (c3>0.5) c3 = c3-1.
+             if (c3<(-0.5)) c3 = c3+1.
+             cv(1,1) = c1
+             cv(1,2) = c2
+             cv(1,3) = c3
+             call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+             r = sqrt(cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3))
+             if(r.lt.r2min) then ! j est pour l'instant le site le plus proche de i
+!                write(6,*)r,i,j
+                r2min=r
+                indws(i)=j
+             end if
+          end do
+       end do
+
+!       if (i.ne.indws(i))write(6,*)'WS',i,indws(i),r2min
+       j=indws(i)
+       natsit(j)=natsit(j)+1
+       indatsit(j,natsit(j))=i
+
+
+    end do iloop0
+
+    iloop20:  do j=1,imcr
+       write(6,*)j,natsit(j)
+       if (natsit(j).eq.0)then
+          nvac=nvac+1
+          indvac(nvac)=j
+       elseif(natsit(j).gt.1) then
+          do i=1,natsit(j)
+             nint=nint+1
+             indint(nint)=indatsit(j,i)
+          end do
+       else
+          if (ityp(j).ne.ityp(indatsit(j,1))) then
+             nas=nas+1
+             indas(nas)=indatsit(j,i)
+          end if
+       end if
+    end do iloop20
+
+    call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
+    call cryst_to_cart (imm, xpcr, at, 1)     !cryst vers cart
+
+
+    write(6,*)'IT = ',it,' nombres de lacunes ',nvac
+    write(6,*)'IT = ',it,'nombres d_interstitiels ',nint
+    write(6,*)'IT = ',it,'nombres d_antisites ',nanti
+
+
+
+    !----------------------------------------------
+    if (lpdef) then
+       !     if (nvac.ne.0) then
+       write(71,*)nvac+2,'IT = ',it,' lacunes'
+       write(71,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
+
+       write(71,113)'H', 0. ,0. ,0. 
+       write(71,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+       do ivac=1,nvac
+          write(71, 113) ty(ityp(indvac(ivac))), xpcr(1,indvac(ivac))*1D+8, xpcr(2,&
+               indvac(ivac))*1D+8, xpcr(3,indvac(ivac))*1D+8, indvac(ivac)
+       end do
+       write(73,*)nvac+2,'IT = ',it,' lacunes'
+       write(73,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
+
+       write(73,113)'H', 0. ,0. ,0. 
+       write(73,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+       do ivac=1,nvac
+          write(73, 113) ty(ityp(indvac(ivac))), xpcr(1,indvac(ivac))*1D+8, xpcr(2,&
+               indvac(ivac))*1D+8, xpcr(3,indvac(ivac))*1D+8, indvac(ivac)
+       end do
+       !     end if
+
+       !     if (nint.ne.0) then
+       write(71,*)nint+2,'IT = ',it,' interstitiels'
+       write(71,'(9F11.5)'),1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
+
+       write(71,113)'H', 0. ,0. ,0. 
+       write(71,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+       do iint=1,nint
+          write(71, 113) ty(ityp(indint(iint))), xp(1,indint(iint))*1D+8, xp(2,&
+               indint(iint))*1D+8, xp(3,indint(iint))*1D+8, indint(iint)
+       end do
+       write(74,*)nint+2,'IT = ',it,' interstitiels'
+       write(74,'(9F11.5)'),1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+            1d8*at(3,3)     
+
+       write(74,113)'H', 0. ,0. ,0. 
+       write(74,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+       do iint=1,nint
+          write(74, 113) ty(ityp(indint(iint))), xp(1,indint(iint))*1D+8, xp(2,&
+               indint(iint))*1D+8, xp(3,indint(iint))*1D+8, indint(iint)
+       end do
+
+       if (lc15) then
+
+          write(172,*)nint+nvac+2,'IT = ',it,' lacunes et int'
+          write(172,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+               1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
+               1d8*at(3,3)     
+
+          write(172,113)'H', 0. ,0. ,0. 
+          write(172,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+          do ivac=1,nvac
+             write(172, 113) 'V ', xpcr(1,indvac(ivac))*1D+8, xpcr(2,&
+                  indvac(ivac))*1D+8, xpcr(3,indvac(ivac))*1D+8, indvac(ivac)
+          end do
+          do iint=1,nint
+             write(172, 113) 'I ', xp(1,indint(iint))*1D+8, xp(2,&
+                  indint(iint))*1D+8, xp(3,indint(iint))*1D+8, indint(iint)
+          end do
+       end if
+
+
+
+       !     end if
+       !     if (nanti.ne.0) then
+       write(71,*)nanti+2,'IT = ',it,' antisites'
+       write(71,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), & 
+            & 1d8*at(2,3),1d8*at(3,3)             
+
+       write(71,113)'H', 0. ,0. ,0. 
+       write(71,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+
+       do ias=1,nanti
+          write(71, 113) ty(ityp(indas(ias))), xp(1,indas(ias))*1D+8, xp(2,&
+               indas(ias))*1D+8, xp(3,indas(ias))*1D+8, indas(ias)
+       end do
+       write(75,*)nanti+2,'IT = ',it,' antisites'
+       write(75,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+            1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3), & 
+            & 1d8*at(2,3),1d8*at(3,3)             
+
+       write(75,113)'H', 0. ,0. ,0. 
+       write(75,113)'H', 1d8*zl(1),1d8*zl(2),1d8*zl(3)
+
+       do ias=1,nanti
+          write(75, 113) ty(ityp(indas(ias))), xp(1,indas(ias))*1D+8, xp(2,&
+               indas(ias))*1D+8, xp(3,indas(ias))*1D+8, indas(ias)
+       end do
+       !     end if
+
+
+
+    end if
+    if(lvac) then
+       deallocate (indvac) ; deallocate (indint) ; deallocate (indas) 
+    end if
+
+    !  if (nvac==0) then
+    !     write(6,*)'plus de lacunes : STOP'
+    !     write(6,*)'it = ', it, ' timel= ', timel
+    !     stop
+    !  end if
+
+    close(2000); close(2001)
+
+113 format(a2,1x,3(f10.4,1x),1x,1x,i6)
+
+    deallocate (lastcr)
+    deallocate(ielatcr)
+    deallocate(natocr)
+
+
+
+  end subroutine ws
+
+
+
+
+
+
 
 end module posana
