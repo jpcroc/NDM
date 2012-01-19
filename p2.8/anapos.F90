@@ -1187,7 +1187,7 @@ contains
     end do iloop0
 
     iloop20:  do j=1,imcr
-       write(6,*)j,natsit(j)
+!       write(6,*)j,natsit(j)
        if (natsit(j).eq.0)then
           nvac=nvac+1
           indvac(nvac)=j
