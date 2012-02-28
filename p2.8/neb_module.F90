@@ -13,7 +13,8 @@ module neb_module
   integer,dimension(:,:),allocatable,save        :: ielat_n, iwmax_n, ityp_n
   real(double),dimension(:,:,:),allocatable,save ::  xp_n, xpp_n, vp_n, ax_n, fp_n
   real(double),dimension(:,:),allocatable        :: fp_par,fp_perp
-  real(double), dimension(:),allocatable, save   :: enePATH,enePATHev,norms,reaction_coord 
+  real(double), dimension(:),allocatable, save   :: enePATH,enePATHev,norms,reaction_coord
+  real(double), dimension(:,:,:), allocatable, save :: sigPATH  ! Stress tensor
   real(double), dimension(:,:,:),allocatable,save:: s_path,force_neb,bruitneb 
   real(double)                                   :: forctot,formax,formaxperp, &
        formaxparl,masstot
@@ -35,6 +36,7 @@ contains
          fp_n(3,imm,npath),                      &
          reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
+    allocate(sigPATH(3,3,npath))    ! Stress tensor for each image
     allocate  (fp_par(3,imm),fp_perp(3,imm))
     allocate  (s_path(3,imm,npath),force_neb(3,imm,npath))
     allocate   (bruitneb(3,imm,npath))
@@ -220,6 +222,7 @@ contains
     endif
 
     read (lucin) im
+    im_glob=im
     if (im>imm) then
             if(rang==0) write (6, *) 'im > imM', im, imm
             stop
@@ -517,6 +520,7 @@ contains
           endif
 
           read (lucin) im                         !number of atoms in the box
+          im_glob=im
 
           if ( (im>imm).OR.(im.LE.0) ) then
              if (rang==0) WRITE(6,'(2a)') 'File: ', Trim(fnamneb)

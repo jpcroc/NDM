@@ -26,9 +26,37 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   real(double)  :: fp(3,imm)
   integer :: ineb,ii,it_neb_inter
   real(double)  :: a_local,forneb
+  real(double) :: unitP
+  character*5 :: cunitP
+
+  if(lPkbar) then
+     unitP=1.0d-9
+     cunitP='kbar'
+  else
+     unitP=1.0
+     cunitP='d/cm2'
+  endif
 
   open(unit=55,file='image_col_relax.out')
+  WRITE(55,'(a)')  '#  1: (i-1)/(nPath-1)'
+  WRITE(55,'(a)')  '#  2: energy E(i) (eV)'
+  WRITE(55,'(a)')  '#  3: energy difference E(i)-E(1) (eV)'
+  WRITE(55,'(3a)') '#  4: stess s(1,1) (', cUnitP, ')'
+  WRITE(55,'(a)')  '#  5:       s(2,2)'
+  WRITE(55,'(a)')  '#  6:       s(3,3)'
+  WRITE(55,'(a)')  '#  7:       s(2,3)'
+  WRITE(55,'(a)')  '#  8:       s(1,3)'
+  WRITE(55,'(a)')  '#  9:       s(1,2)'
   open(unit=56,file='react_col_relax.out')
+  WRITE(56,'(a)')  '#  1: reaction coordinate z(i)'
+  WRITE(56,'(a)')  '#  2: energy E(i) (eV)'
+  WRITE(56,'(a)')  '#  3: energy difference E(i)-E(1) (eV)'
+  WRITE(56,'(3a)') '#  4: stess s(1,1) (', cUnitP, ')'
+  WRITE(56,'(a)')  '#  5:       s(2,2)'
+  WRITE(56,'(a)')  '#  6:       s(3,3)'
+  WRITE(56,'(a)')  '#  7:       s(2,3)'
+  WRITE(56,'(a)')  '#  8:       s(1,3)'
+  WRITE(56,'(a)')  '#  9:       s(1,2)'
 
 
   call init_neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
@@ -60,6 +88,7 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      call neb_controle    (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
      enePATH(ii)=potist
      enePATHev(ii)=potist*erg2ev
+     sigPATH(:,:,ii) = sigtot(:,:)      ! Contrainte
      write(*,'(i5,3(g20.8,1x))') ii, enePATHev(ii),enePATHev(ii)-enePATHev(1)
      call into_path(ii,1,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
@@ -91,14 +120,20 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
         enePATH(ii)=potist
         enePATHev(ii)=potist*erg2ev
+        sigPATH(:,:,ii) = sigtot(:,:)      ! Contrainte
         write(*,*) 'NEB: THIS IS THE DRAG IMAGE=====================', ii
         write(*,*) 'NEB: THE NUMBER OF ITERATIONS===================', it
         write(*,*) 'NEB: THE ENERGY OF THIS IMAGE===================', enePATHev(ii)
+        WRITE(6,'(3a)') 'NEB: stress tensor in Voigt notation (units: ', cunitP,' ):'
+        WRITE(6,'(a,6g20.8)') unitP*sigPATH(1,1,ii), unitP*sigPATH(2,2,ii), unitP*sigPATH(3,3,ii), &
+                0.5*unitP*(sigPath(2,3,ii)+sigPath(3,2,ii)), &
+                0.5*unitP*(sigPath(1,3,ii)+sigPath(3,1,ii)), &
+                0.5*unitP*(sigPath(1,2,ii)+sigPath(2,1,ii))
         call into_path(ii,1,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      end do      !end ii,npath
 
 
-  case(2)	
+  case(2)
      write(6,*)'NEB: -------this is NEB--V2-------'
      write(6,*)'NEB: The MAX steps in NEB        :',maxneb
      nebtest(:)=0
@@ -140,11 +175,12 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
            !debug	            formaxperp, formaxparl, potist*erg2eV,nebtest(ii)
            forneb = SQRT(MAXVAL(force_neb(1,:,ii)**2 + force_neb(2,:,ii)**2         &
                 + force_neb(3,:,ii)**2))*erg2eV/angst 
-           print'("NEB: ",2i5, 2E14.5,E20.10,i3,F15.8)', ineb, ii,  formax, forneb,       &
+           print'("NEB: ",2i5, 2g14.5,g20.10,i3,g15.8)', ineb, ii,  formax, forneb,       &
                 potist*erg2eV,nebtest(ii),potist*erg2eV-enepathev(1)
            ! 
            enePATH(ii)=potist
            enePATHev(ii)=potist*erg2eV       
+           sigPATH(:,:,ii) = sigtot(:,:)      ! Contrainte
            call into_path       (ii,1, xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
            !
         end do      ! end ii,path
@@ -183,12 +219,25 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      !
   end do
 
-  print'("NEB:--IMAGE-----REACT-COORD------ENERGY------ENERGY-ENERGY(1)")'
+  WRITE(*,'(3a)') "NEB:--IMAGE-----REACT-COORD------ENERGY------ENERGY-ENERGY(1)&
+        &-------------STRESS-sVoigt(1:6)-(units:-", cunitP, ")"
   do ii=1,npath
      !
-     write(*,'(i5,3(g20.8,1x))')  ii, reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1)
-     write(55,'(3(g20.8,1x))') dble(ii-1)/dble(npath-1), enePATHev(ii),enePATHev(ii)-enePATHev(1)
-     write(56,'(3(g20.8,1x))') reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1)
+     write(*,'(i5,9(g20.8,1x))')  ii, reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1), &
+                unitP*sigPATH(1,1,ii), unitP*sigPATH(2,2,ii), unitP*sigPATH(3,3,ii), &
+                0.5*unitP*(sigPath(2,3,ii)+sigPath(3,2,ii)), &
+                0.5*unitP*(sigPath(1,3,ii)+sigPath(3,1,ii)), &
+                0.5*unitP*(sigPath(1,2,ii)+sigPath(2,1,ii))
+     write(55,'(9(g20.8,1x))') dble(ii-1)/dble(npath-1), enePATHev(ii),enePATHev(ii)-enePATHev(1), &
+                unitP*sigPATH(1,1,ii), unitP*sigPATH(2,2,ii), unitP*sigPATH(3,3,ii), &
+                0.5*unitP*(sigPath(2,3,ii)+sigPath(3,2,ii)), &
+                0.5*unitP*(sigPath(1,3,ii)+sigPath(3,1,ii)), &
+                0.5*unitP*(sigPath(1,2,ii)+sigPath(2,1,ii))
+     write(56,'(9(g20.8,1x))') reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1), &
+                unitP*sigPATH(1,1,ii), unitP*sigPATH(2,2,ii), unitP*sigPATH(3,3,ii), &
+                0.5*unitP*(sigPath(2,3,ii)+sigPath(3,2,ii)), &
+                0.5*unitP*(sigPath(1,3,ii)+sigPath(3,1,ii)), &
+                0.5*unitP*(sigPath(1,2,ii)+sigPath(2,1,ii))
      !       
   end do
 
