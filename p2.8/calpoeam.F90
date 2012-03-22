@@ -104,13 +104,15 @@ subroutine calpoeam
   end select
 
   if (rang==0) then 
-     if(rhomin.lt.0.0)  write(6,*) '******** RHOMIN <0 ****** ??????'
-
-     if(rhomin.lt.0.0)  write(6,*) 'RHOMIN MIS A ZERO'
-     if(rhomin.lt.0.0)  write(6,*) '******** RHOMIN <0 ****** ??????'
-  endif
-  if (rhomin.le.0)rhomin=0.
-  if(rang==0)       write(6,*)'Rhomin Rhomax ',rhomin,rhomax
+     if (rhominzero.eqv..true.) then
+        if(rhomin.lt.0.0)  write(6,*) '******** RHOMIN <0 ****** ??????'
+        
+        if(rhomin.lt.0.0)  write(6,*) 'RHOMIN MIS A ZERO'
+        if(rhomin.lt.0.0)  write(6,*) '******** RHOMIN <0 ****** ??????'
+     endif
+     if (rhomin.le.0)rhomin=0.
+     if(rang==0)       write(6,*)'Rhomin Rhomax ',rhomin,rhomax
+  end if
   rhomax=rhomax*14
   if(rang==0)       write(6,*)'Rhomin Rhomax ',rhomin,rhomax
   !glue

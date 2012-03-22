@@ -274,6 +274,9 @@ subroutine readdm
   rheat=0.
   Theat=0.0
   Eheat=0.
+
+
+
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -632,7 +635,11 @@ subroutine readdm
      end if
   end if
 
-
+  if(lLangevin) then
+     dmtype=4
+     write(6,*)'langevin buggué voir Cosmin fabien'
+     stop
+  end if
   if(lLangevin.and.(Text.le.0.0)) then
      if (rang==0) write(6,*)'Langevin avec Text pas defini : stop'
      stop

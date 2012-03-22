@@ -64,6 +64,7 @@ end subroutine calfoberend
 
       do i=1,im
          fact=cm(ityp(i))*gamlang
+            if (i==1) write(76,*)it,fp(1,i),-fact*vp(1,i)/(2*tstep)+bruit(1,i)*sqrt(6.0*fact*kbtemp)/tstep
          do ic=1,3
             call random_number(u1)
             select case (ilangevin)
@@ -72,7 +73,8 @@ end subroutine calfoberend
                case(2)
                   fp(ic,i)=fp(ic,i)-fact*vp(ic,i)/(2*tstep)+bruit(ic,i)*sqrt(6.0*fact*kbtemp*(1-gamlang*0.5))/tstep
                end select
-         end do
+            end do
+
       end do
 
 

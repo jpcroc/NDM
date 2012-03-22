@@ -191,7 +191,7 @@ module gen_com_m
   real(double) :: potisrep, potisglue,potiseam ! energie potentielle EAM
   real(double),dimension(:,:,:),pointer :: eamrep,eamrho,eamglue ! tableaux des splines du pot EAM 
   real(double) :: rhomin,rhomax
-
+  logical ::rhominzero=.true.
   real(double), dimension(:), pointer :: h2sm ! delta t carre sur 2 m
   real(double) :: tstep, oldtstep, usdh, timel  
   integer :: itetemp, itesigma, itedepla, itecoordo, iterdf, nrdf, & 

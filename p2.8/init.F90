@@ -86,7 +86,7 @@ subroutine init
            call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,&
                 iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,&
                 ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
-                npotentiel,ipo)
+                npotentiel,ipo,rhominzero)
            do i=1,npair
               if (typ_pot_pair(i)==ipotentiel) rue_pair(i)=rue
            end do
