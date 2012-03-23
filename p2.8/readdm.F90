@@ -114,7 +114,7 @@ subroutine readdm
   ltranche = .FALSE.          ! existence d'une trache gelee
   rulayer=0.0                 ! largeur de la tranche gelee par 
   ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
-  lpr=.false.                 ! parinnelo rahman Ã£Â£Ã¢Â£Ã£Â¢Ã¢Â£Ã£Â£Ã¢Â¢Ã£Â¢Ã¢Â  contrainte constante
+  lpr=.false.                 ! parinnelo rahman � contrainte constante
   sigext = 0.0                ! Symetric tensor related to the external stress
   !=== Modif Emmanuel Clouet ================
   h0(1:3,1:3) = 0.d0          ! Vecteurs de base de la bite de reference en A (Parrinello, Rahman)
@@ -936,7 +936,7 @@ subroutine readdm
      write(6,*)
   end if
   if(lsigat.and.(.not.ltabvois)) then
-     write(6,*)rang,'sigat programme en table des voisins terme Ã£Â£Ã¢Â  deux corps seulement'
+     write(6,*)rang,'sigat programme en table des voisins terme a deux corps seulement'
      call arret_ndm
   end if
 

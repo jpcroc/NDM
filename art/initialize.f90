@@ -92,17 +92,17 @@ subroutine initialize()
    write(*,*) 'initialize():  art boxref:', boxref(1),boxref(2), boxref(3)
  
     
-   tmp_local = dabs( SUM(at(:,:)**2) - SUM(boxref(:)**2)/angst**2 )
+!   tmp_local = dabs( SUM(at(:,:)**2) - SUM(boxref(:)**2)/angst**2 )
 !debug_art   write(*,*) 'initialize(): tmp_local:', tmp_local
-   if (tmp_local  > low_limit ) then
-   !
-    write(*,*) 'initialize(): the box is not rectangular'
-     do i=1,3
-      write(*,'(3f18.7)') at(:,i)*angst
-     end do
-    stop
-   !
-   end if  
+!   if (tmp_local  > low_limit ) then
+!   !
+!    write(*,*) 'initialize(): the box is not rectangular'
+!     do i=1,3
+!      write(*,'(3f18.7)') at(:,i)*angst
+!     end do
+!    stop
+!   !
+!   end if  
    
 
 ! the xp from the NDM go into pos,posref of the ART

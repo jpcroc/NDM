@@ -187,8 +187,9 @@ subroutine read_parameters()
        (TYPE_EVENTS .ne. 'local' ) .and.&
        (TYPE_EVENTS .ne. 'energy' ) .and.&
        (TYPE_EVENTS .ne. 'lenergy' ) .and.&
+       (TYPE_EVENTS .ne. 'oenergy' ) .and.&
        (TYPE_EVENTS .ne. 'defect') ) then
-     write(*,*) 'Error : only global or local or defect type of events are accepted - provided: ', TYPE_EVENTS
+     write(*,*) 'Error : only global/ local /defect/energy/lenergy/oenergy type of events are accepted - provided: ', TYPE_EVENTS
      stop
   endif
 
