@@ -22,6 +22,7 @@ end subroutine DynamicalAllocationCell
 
 subroutine Deallocatecel
   use gen_com_m
+  use var_pot,only : iewald
   implicit none
   deallocate(ncel)
   deallocate(nato)

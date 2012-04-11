@@ -34,7 +34,7 @@ subroutine input_pair
   real(double)::qr,cmr,catomr,ecrue,x,rmd,rm2d,xd,fcd
   character :: tyr*3
   integer  :: nb_paire_a_lire, lect_paire,tt1,tt2,igr
-
+  integer::num_paire
   ! lecture des termes a trois corps
   !  logical, dimension (:),pointer :: lue_trip
   integer  :: n3c,npg,npd

@@ -25,7 +25,7 @@ module gen_com_m
   integer :: natperc                        ! nb d'atome par cel
   integer :: nvperat    ! Nombre moyen de voisins par atome
 
-  integer :: imm, num_paire                 !imm taille des tableaux dependant du nombre d'atome
+  integer :: imm                 !imm taille des tableaux dependant du nombre d'atome
   integer :: imm_glob
 
 
@@ -91,7 +91,7 @@ module gen_com_m
   integer :: it, itmax, igen ! iteration courante, finale , type de generation
   integer :: lenfnam
   integer :: fmt_cin
-  integer :: iewald
+
   character :: fnam*80, fnamout*80, fnamcout*80, fnamcoutxp*80,fnamcoutnonpbcxp*80
   logical :: ltranche ! surface
   integer:: iteplz,nplz ! distribution suivant des tranches en z
@@ -108,7 +108,8 @@ module gen_com_m
 
 
 
-  real(double) :: tstep, oldtstep, usdh, timel  
+  real(double) :: oldtstep  
+  real(double) :: tstep, usdh, timel  
   integer :: itetemp, itesigma, itedepla, itecoordo, iterdf, nrdf, & 
        iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc,itecfg
   real(double)::rcangle,rcrdf
