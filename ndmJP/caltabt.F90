@@ -1,0 +1,113 @@
+! ******************************************************************
+subroutine caltabt
+  !-----------------------------------------------
+  !   M o d u l e s
+  !-----------------------------------------------
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+  use tab_imm_m
+#if(PARA)
+  use mod_mpi
+#endif      
+  !          Version du 01 fevrier 2001
+  ! ******************************************************************
+
+  implicit none
+  !-----------------------------------------------
+  !   G l o b a l   P a r a m e t e r s
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !   D u m m y   A r g u m e n t s
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !   L o c a l   P a r a m e t e r s
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !   L o c a l   V a r i a b l e s
+  !-----------------------------------------------
+  integer :: i, ic, icell, kx, ky, kz, koo
+  real(double) :: aux, auy, auz
+  
+  real(double), dimension(:,:), allocatable :: xpnp !
+  !
+  ! --------- Initialisation --------------
+  !
+  nato(:noxyz) = 0
+  last(natperc,:noxyz) = 0
+
+
+
+  !  -------- cas sans cellule  -----------
+  if (noxyz==1) then
+          nato(1) = im
+          do i = 1, im
+             ielat(i) = 1
+             last(i,1) = i
+          end do
+  else
+
+          ALLOCATE(xpnp(3,imm))        
+          if (lperiod) then            
+             xpnp(:,:)=xp(:,:)         
+          else                         
+             call notperiod(xp,xpnp)   
+          end if                       
+     !  -------- Initialisations  -----------
+     nato(0:noxyz) = 0
+     last(natperc,:noxyz) = 0
+
+     ! -------------------------------------------
+     !   1. loop: lattice-coordinates of all atoms
+     ! - - - - - - - - - - - - - - - - - - - - - -
+
+     !debug       write (*,*) 'sub caltabt 1',it,xp(1,1)
+     call cryst_to_cart (imm, xpnp, bg, -1) !cart vers cryst
+     !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
+
+
+     do i = 1, im
+        aux = xpnp(1,i)*nox
+        auy = xpnp(2,i)*noy
+        auz = xpnp(3,i)*noz
+        kx = int(aux)
+        ky = int(auy)
+        kz = int(auz)
+
+        kx = Modulo(kx,nox)
+        ky = Modulo(ky,noy)
+        kz = Modulo(kz,noz)
+        !==============================================================
+        koo = 1+kx+nox*(ky+noy*kz)
+
+        IF ( (koo.GT.noxyz).OR.(koo.LT.0) ) THEN
+           WRITE(0,'(a,i0,a,3g20.12)') &
+                'Problem with atom ', i, ', x,y,z = ', xp(1:3,i)
+           WRITE(0,'(2(a,i0))') ' koo = ', koo, ' - noxyz = ', noxyz
+           STOP
+        END IF
+        ielat(i) = koo
+        nato(koo) = nato(koo)+1
+        !!$write(*,*) MAXVAL(nato(:)),koo,i        ! DEBUG
+        ! ==== MODIF Clouet =====================
+        IF (nato(koo).GT.natperc) THEN
+                WRITE(0,'(a)') 'You need to increase the maximal number of atoms per cell'
+                WRITE(0,'(a,i0)') 'current value: natperc=', natperc
+                STOP '< Caltabt >'
+        END IF
+        ! ==== Fin MODIF Clouet =================
+        last(nato(koo),koo) = i
+     end do
+     !debug            call cryst_to_cart (imm, xpnp, at, 1)  !cryst vers cart
+
+
+
+     !         do i=1,noxyz
+     !            write(6,*) i, nato(i) 
+     !         end do
+     DEALLOCATE(xpnp)   ! MODIF CLOUET
+  endif
+
+  !!$write(6,*)'sortie caltabt'     ! DEBUG
+
+  return
+end subroutine caltabt
