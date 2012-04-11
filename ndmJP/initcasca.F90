@@ -178,7 +178,7 @@ if (parallele)  return
      write (6, *) 'Nouveau tstep : ', tstep, '   Ancien tstep :',oldtstep
   endif                                ! rang=0
 
-  h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
+
   usdh = 1/(two*tstep)
 
   ! redefinition des positions atomiques suite au changement de pas de temps

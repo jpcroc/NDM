@@ -316,7 +316,6 @@ subroutine input_pair
         cm(:ntyp) = cm(:ntyp)*umass
 
         ! initialisations
-        h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
         usdh = 1/(two*tstep)
 
         if (rang==0) write (6, *) 'type ;charge ; rayon ; bm ; shell ; type'
@@ -647,8 +646,7 @@ subroutine input_pair
      cm(:ntyp) = cm(:ntyp)*umass
 
      ! initialisations
-     !     where(cm.ne.0.0)  h2sm = tstep**2/cm/two
-     !     usdh = 1/(two*tstep)
+
 
 
      read(lupotin,*) epswat   ! lu directement en ergs
@@ -757,7 +755,6 @@ subroutine input_pair
 
      ! initialisations
      cm(:ntyp) = cm(:ntyp)*umass
-     !     h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
      !     usdh = 1/(two*tstep)
 
      read(lupotin,*)rue, lambda,xsi

@@ -34,6 +34,8 @@ subroutine deftimestep
   real(double), dimension(3) :: max_loc,max_glob,max_typ
   integer :: ityp_max
 #endif
+
+
   !-----------------------------------------------
 
   ! changement de pas en temps.
@@ -170,13 +172,12 @@ subroutine deftimestep
               write (6, *) ' iteration ', it, 'ancien pas en temps', oldtstep
               write (6, *) 'nouveau tstep ', tstep
            endif                                ! rang=0
-           h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
            usdh = 1/(two*tstep)
            if (it==0) then
               fp(:,:im) = 0.D0
            endif
            do i = 1, im
-              xp(:,i) = xpp(:,i)+tstep*vp(:,i)+h2sm(ityp(i))*fp(:,i)
+              xp(:,i) = xpp(:,i)+tstep*vp(:,i)+tstep**2/cm(ityp(i))/two*fp(:,i)
            end do
            if (lperiod) call period
         endif
@@ -193,13 +194,12 @@ subroutine deftimestep
            write (6, *) ' iteration ', it, 'ancien pas en temps', oldtstep
            write (6, *) 'nouveau tstep ', tstep
         endif                                ! rang=0
-        h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
         usdh = 1/(two*tstep)
         if (it==0) then
            fp(:,:im) = 0.D0
         endif
         do i = 1, im
-           xp(:,i) = xpp(:,i)+tstep*vp(:,i)+h2sm(ityp(i))*fp(:,i)
+           xp(:,i) = xpp(:,i)+tstep*vp(:,i)+tstep**2/cm(ityp(i))/two*fp(:,i)
         end do
          if (lperiod) call period
 

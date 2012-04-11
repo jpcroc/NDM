@@ -28,8 +28,12 @@ module gen_com_m
   integer :: imm, num_paire                 !imm taille des tableaux dependant du nombre d'atome
   integer :: imm_glob
 
-
+!var_pot
   integer,parameter::npotmax=100
+  integer, parameter :: nkmax = 4000
+  integer, parameter :: contmax = 2000
+!fin_var_pot
+
   real(double),parameter :: pi=3.141592654D0, bk= 1.380622D-16, &
        ecgs=1.6021892D-12, utemps= 1.0D-15, angst= 1.0D08, umass= 1.660056D-24, &
        inv_angst=1.d0/angst
@@ -45,14 +49,21 @@ module gen_com_m
 
   integer :: im						! nb local d'atomes (=global en sequentiel)
   integer :: im_glob					! nb global d'atomes
+
+!var_pot
   integer :: ntyp						! nb de type
   integer :: npair						! = ntyp*(ntyp+1)/2
   integer :: ntrip						! = ntyp*ntyp *(ntyp+1)/2
+
+
+
   integer, dimension(:), pointer  :: na			! nb d'atomes par type
   integer, dimension(:,:), pointer  :: ipo			! indice des paires d'atomes
   real(double), dimension(:), pointer :: cm, catom, q, rc	! masse, numero atomique, charge ionique, rayon de coup.
-  real(double)::rclu(20), eatref(20)   ! rayon et energie des types d'atomes
   character , dimension(:), pointer  :: ty*3
+
+  real(double)::rclu(20), eatref(20)   ! rayon et energie des types d'atomes
+!fin_var_pot
 
   real(double), dimension(3) :: zl, zls2,nzl    ! largeur de la boite et largeur sur 2
   real(double) :: volu      ! volume
@@ -79,6 +90,9 @@ module gen_com_m
   integer::imfree ! nb d'atoems libres
 
   real(double), dimension(3) :: normat ! norme de at
+
+
+!var_pot
   integer :: ipotentiel,npotentiel    ! type du potentiel COURANT 1=BMH, 2=buckingham 3=watanabe,4=UO2; etc...
   logical :: lpotentiel (0:npotmax)
   logical, pointer :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
@@ -92,6 +106,11 @@ module gen_com_m
   integer,pointer:: ipo_2_pair_tab(:)
   real(double),pointer::pot_pair_tab(:,:,:)
   integer::ngr
+
+  real(double), pointer, dimension(:,:,:) :: digr, coord
+  integer, dimension(:), pointer :: nad, nas, nai  ! fracture
+  real(double),pointer, dimension(:,:,:,:) :: fda
+!fin_var_pot
 
   integer, dimension(:,:), pointer :: ncel  ! ncel(i,j) indice de la jeme cel voisines de la cel i
 
@@ -115,9 +134,14 @@ module gen_com_m
   logical :: ltranche ! surface
   integer:: iteplz,nplz ! distribution suivant des tranches en z
   real(double):: rulayer
-  integer, dimension(:), pointer :: nad, nas, nai  ! fracture
+
   integer :: imgs, imgi, imd, itefrac !fracture IMD nombre d'atomes sur lesquels on fait la dynamique normale
   real(double) :: cougel, zincr !fracture
+
+
+
+
+!var_pot
 
   logical :: l3c ! somme d'Ewald terme a trois corps
 
@@ -192,7 +216,13 @@ module gen_com_m
   real(double),dimension(:,:,:),pointer :: eamrep,eamrho,eamglue ! tableaux des splines du pot EAM 
   real(double) :: rhomin,rhomax
   logical ::rhominzero=.true.
-  real(double), dimension(:), pointer :: h2sm ! delta t carre sur 2 m
+
+
+
+!fin_var_pot
+
+
+
   real(double) :: tstep, oldtstep, usdh, timel  
   integer :: itetemp, itesigma, itedepla, itecoordo, iterdf, nrdf, & 
        iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc,itecfg
@@ -309,19 +339,20 @@ module gen_com_m
 
   real(double), parameter :: rmin = 0.5d-8
   integer, parameter :: kmax = 3000
-  integer, parameter :: nkmax = 4000
+
   real(double), parameter :: qmax=12
   real(double), parameter :: qmin=0.7
   real(double), parameter :: increq=0.1d+8
   !      real(double), dimension(ntyp,ntyp,nkmax) :: digr, coord,strucfact
-  real(double), pointer, dimension(:,:,:) :: digr, coord,strucfact
+
+  real(double)::strucfact
   real(double), dimension(nkmax) :: gdertot,strucfactot,strucfactneu
   integer, dimension(:,:), pointer :: voisins
   real(double), parameter :: rcut=12e-8    !cutoff pour le calcul de S(q)
 
   integer, parameter :: cont = 1000
-  integer, parameter :: contmax = 2000
-  real(double),pointer, dimension(:,:,:,:) :: fda
+
+
   real(double), parameter :: thetamin = 1.0D-7
   real(double), parameter :: thetamax = 6.2
 
@@ -342,12 +373,12 @@ module gen_com_m
 
 
 
-  integer :: imf     ! forces normales depuis 1 jusqu'Ã£Â£Ã¢Â£Ã£Â¢Ã¢Â£Ã£Â£Ã¢Â¢Ã£Â¢Ã¢Â£Ã£Â£Ã¢Â£Ã£Â¢Ã¢Â¢Ã£Â£Ã¢Â¢Ã£Â¢Ã¢Â  imf
-  integer :: imana     ! configurations analysÃ£Â£Ã¢Â£Ã£Â¢Ã¢Â£Ã£Â£Ã¢Â¢Ã£Â¢Ã¢Â£Ã£Â£Ã¢Â£Ã£Â¢Ã¢Â¢Ã£Â£Ã¢Â¢Ã£Â¢Ã¢Â©es d
+  integer :: imf     ! 
+  integer :: imana     ! 
 
   logical :: ldislo  ! calcul de dislocation
   real(double) :: epcoudis,& !epaisseur de la couche avec ajout de force pour dislo
-       &fdislo ! force appliquÃ£Â£Ã¢Â£Ã£Â¢Ã¢Â£Ã£Â£Ã¢Â¢Ã£Â¢Ã¢Â£Ã£Â£Ã¢Â£Ã£Â¢Ã¢Â¢Ã£Â£Ã¢Â¢Ã£Â¢Ã¢Â©e aux atomes de bords 
+       &fdislo ! force appliqu
   integer, pointer :: latdebord(:)
 
   logical :: lcontr    ! dynamique contrainte (routine contrainte)
