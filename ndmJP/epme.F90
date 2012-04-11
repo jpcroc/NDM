@@ -6,6 +6,7 @@ subroutine epme (Deb,Fin,sige)
   !-----------------------------------------------
   USE T_kind_param_m
   use gen_com_m
+  use var_pot
   use fft_com_m
   use tab_imm_m
   implicit none

@@ -39,7 +39,7 @@ module Parrinello_Rahman
 
   USE T_kind_param_m
   use gen_com_m    
-
+  use var_pot
 #if(PARA)
   use mod_mpi
 #endif

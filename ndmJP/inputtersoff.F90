@@ -1,6 +1,7 @@
 subroutine inputtersoff
   ! NE PAS FAIRE DE MOYENNE POUR LES n,c ... etc
   use gen_com_m
+  use var_pot
   USE T_kind_param_m, ONLY:  double
   use force_tersoff_facteurs
   implicit none

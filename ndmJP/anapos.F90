@@ -1,6 +1,7 @@
 module posana
     USE T_kind_param_m
   use sic
+  use var_pot
   logical :: lsic
     logical :: lcomp, & ! comparaison ou non avec un cristal de dÃ©part
          ldecal, & ! decalage en tre boite cr et boite ana

@@ -9,6 +9,7 @@ subroutine caltabi
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   use tab_imm_m
   !           version du 4 juin 2010, 14h38 - last chaged by MCM
   ! *****************************************************************

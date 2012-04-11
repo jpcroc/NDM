@@ -4,7 +4,7 @@ subroutine param_det
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
-
+  use var_pot
 
   implicit none
 

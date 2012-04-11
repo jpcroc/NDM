@@ -6,6 +6,7 @@
 
        USE T_kind_param_m 
        use gen_com_m 
+  use var_pot
 !      include 'gen.com'
 !      include 'pos.com'
 

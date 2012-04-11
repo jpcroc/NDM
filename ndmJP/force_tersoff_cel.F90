@@ -5,6 +5,7 @@ subroutine force_tersoff_cel
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   use tab_imm_m
   use jqmod
   use force_tersoff_facteurs

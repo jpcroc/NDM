@@ -5,6 +5,7 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   use jqmod
   use force_tersoff_facteurs
   ! **************************************************************

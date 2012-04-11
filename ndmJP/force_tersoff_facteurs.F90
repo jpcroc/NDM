@@ -1,6 +1,6 @@
 module force_tersoff_facteurs
   USE T_kind_param_m
-  use gen_com_m, ONLY:  ipotentiel
+  use var_pot, ONLY:  ipotentiel
 
   implicit none
   !  real(double) :: ev2erg=1.602d-12, & !conversion eV ->erg

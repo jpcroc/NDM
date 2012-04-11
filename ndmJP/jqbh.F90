@@ -2,6 +2,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
 #if(PARA)
   use mod_mpi
 #endif
@@ -40,9 +41,9 @@ subroutine jqbh (xp,xpp,vp,ityp)
   real(double):: dTtot,tempact,dTloc,tempinst
 
   if(it.eq.1) then
-     if(rang==0) write(6,*)'condutivité thermique méthode directe'
+     if(rang==0) write(6,*)'condutivitÃ© thermique mÃ©thode directe'
 
-     if(rang==0) write(6,*)'METHODE n° ',njqbh
+     if(rang==0) write(6,*)'METHODE nÂ° ',njqbh
      if(rang==0) write(6,*)'epaisseur', epcoud
      if(rang==0) write(6,*)'flux au bord ', epsil, ' erg',epsil*erg2joule,' joules', epsil*erg2eV,' eV' 
      if ((njqbh==5).and.(rang==0)) write(6,*)'kthg ', kthg
@@ -125,7 +126,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      !write(6,*)'RRRRRRRRRRRRRR',xp(1,38603)
      nacou1 = 0 ; nacou2=0
      if (it==1)then 
-        if(rang==0) write(6,*)'boite non périodique, flux de - à + (ZL/2 -rumax)'
+        if(rang==0) write(6,*)'boite non pÃ©riodique, flux de - Ã  + (ZL/2 -rumax)'
         epcoud=epcoud+rulayer           
      end if
 
@@ -347,7 +348,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
         temptr(:)=0
      end if
 
-     ! autres cas : imposition de l etmperature te mesure du flux ! methode abandonnée
+     ! autres cas : imposition de l etmperature te mesure du flux ! methode abandonnÃ©e
 
 
   case(1)

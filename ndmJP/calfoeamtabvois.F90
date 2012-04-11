@@ -3,6 +3,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   !tentative de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
   use gen_com_m
+  use var_pot
   !      use eam
   implicit none
 

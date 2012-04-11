@@ -5,6 +5,7 @@ subroutine Hcyl
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   !     Version  du 12 avril 2007
   ! *********************************************************************
   use tab_imm_m

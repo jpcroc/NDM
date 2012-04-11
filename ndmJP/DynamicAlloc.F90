@@ -1,6 +1,7 @@
 subroutine DynamicalAllocationCell
 
   use gen_com_m
+  use var_pot
   implicit none
 
   allocate(ncel(0:noxyz,0:26))
@@ -37,6 +38,7 @@ end subroutine Deallocatecel
 subroutine DeallocateAll
 
   use gen_com_m
+  use var_pot
   implicit none
 
   deallocate(ncel)

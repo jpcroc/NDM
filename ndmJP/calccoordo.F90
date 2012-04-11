@@ -8,6 +8,7 @@ subroutine calccoordo
   use mod_mpi
 #endif
   use gen_com_m
+  use var_pot
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s

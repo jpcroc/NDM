@@ -4,7 +4,7 @@ subroutine tersoff_zbl
   !-----------------------------------------------
   USE T_kind_param_m
   use gen_com_m
-
+  use var_pot
 
   integer :: i,j,k,l,m,n,iti
   real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)

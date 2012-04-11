@@ -65,7 +65,7 @@ subroutine maxVBEEST(rrep,csive,l,auxe,alpha,ngrid,ntyp, &
   !   M o d u l e s
   !-----------------------------------------------------------
   USE T_kind_param_m, ONLY:  double, extended
-  USE gen_com_m, ONLY: ipo
+  USE var_pot, ONLY: ipo
   implicit none
   !-----------------------------------------------------------
   !   D u m m y   A r g u m e n t s

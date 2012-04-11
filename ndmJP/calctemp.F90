@@ -5,6 +5,7 @@ subroutine calctemp(temptyp)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
+  use var_pot
   use gen_com_m
   use tab_imm_m
 #if(PARA)
