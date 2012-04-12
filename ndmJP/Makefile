@@ -20,6 +20,7 @@ MODULS =
                 
 OBJS_MOD=   T_kind_param_m.o\
 	gen_com_m.o \
+	var_pot.o \
         pos_com_m.o \
         fft_com_m.o \
 	SMjuli.o \
@@ -29,6 +30,7 @@ OBJS_MOD=   T_kind_param_m.o\
         jqmod.o \
         tab_imm_m.o\
         caltabtcr.o \
+        calpo_ew.o \
         anasic.o 
 
 
@@ -42,6 +44,7 @@ OBJS_PARA=   T_kind_param_mpi_m.o\
 
 OBJS_SEQ=	anapos.o \
 	work_cgII.o \
+	alloc_typ.o \
         defcdp.o \
         fcc.o \
         cfg.o \

@@ -9,6 +9,7 @@ subroutine moduli
   !----------------------------------------------
   USE T_kind_param_m
   use gen_com_m
+  use var_pot
   implicit none
   integer i
   real(double) w,bsarray(kpme)

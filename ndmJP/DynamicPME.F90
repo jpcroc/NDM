@@ -1,6 +1,7 @@
 subroutine DynamicalAllocationPME
 
   use gen_com_m
+  use var_pot
   implicit none
 
   allocate(bsmod1(kpmex))
