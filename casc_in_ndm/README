@@ -1,0 +1,936 @@
+**************************************
+AIDE du code de dynamique moleculaire
+Version du VENDREDI 18 septembre 2001
+**************************************
+
+@Copyright CEA
+Code ecrit et maintenu par J.P Crocombette, Cosmin Marinica, Emmanuel Clouet (CEA Saclay,SRMP) et L. Van Brutzel (CEA Valrho)
+contributeurs :  L. Veiller et J. Dallatorre (CEA Saclay, SRMP) , Y. Meursdesoif (CS), 
+a partir de codes de N.V. Doan et Jean-Marc Delaye (CEA Saclay,SRMP)  et d'autres codes de SRMP
+Ne pas redistribuer sans contacter Jean-Paul Crocombette au préalable (jpcrocombette@cea.fr)
+
+***************************************************************************
+
+Ce code fait principalement de la dynamique moleculaire dans différents ensembles
+mais également de la tempe rapide, du gradient conjugue, du calcul de phonons (en Gamma), du calcul de cols entre deux configurations.
+il fonctionne en conditions triperiodiques.
+On peut cependant geler les atomes sur deux surfaces (+x/-x).
+
+**********
+Potentiels :
+gérés par "ipotentiel"
+
+1/de BMH/Buckingham
+avec ou sans terme a trois corps
+avec ou sans sommation d'Ewald. Deux methodes de sommations d'Ewald :
+standard ou Particle Mesh Ewald (PME)
+Pour SiO2 le potentiel de watanabe est inclus
+Un potentiel specifique a UO2 est aussi present.
+
+2/type EAM 
+en EAM standard (Aluminium de Ercolesi)
+en second moment (Cleri-Rossato PRB 48, 22(1993))
+en EAM tabulé
+de Ju Li pour ZrC
+
+Pour les POTENTIELS EAM 
+ipotentiel EAM=10
+EAM standard Edei=SUM(Erepij)+Eglue(Rhosuri) ; Rhosuri=SUM(Rhodej-voisins-de-de-i)
+Pour chaque type de potentiel EAM (ex:second moment ou spline) il existe un module "eam" différent.
+Avant compilation il faut éditer le makefile pour choisir le module EAm qui sera compilé.
+Ces modules sont stockés dans des fichiers de noms différents (SMeam ou eamerco) mais s'appellent tous eam
+A chaque chaque type de potentiel correspond en effet une construction et un calcul different
+
+Potentiel de JuLi, ipotentiel=12, le choix du module eam est sans importance, le potentiel de Ju Li est dans des modules indépendants.
+Le code est toujours compilé avec le potentiel Ju Li.
+
+**********
+
+Ensembles :
+ (NVE), (NPH) (NPT) (NVT)
+
+NPH
+lpr=.true. =  Parinello-Rahman à contrainte constante. 
+(lpcon2=.true. on ajoute un terme de friction sur la vitesse de déformation de la boite, utile pour la stabilité, 
+mais basé sur rien au niveau théorique. Utilisation à vos riques et périls...)
+
+Algorithmes de température constante:
+
+Pour ensembles NPT
+lNose algoritme de Nose
+lHoover alogorithme de Nose-Hoover
+Ces deux algorithmes  fonctionnent uniquement avec lpr 
+
+ensembles (NVT)
+lTcon=.true. : un algorithme T=cst maison de J-P C qui ne respecte pas vraiment les fluctuations de T autour de l'équilibre, mais permet d'atteindre rapidement une température cible avant de poursuivre en NVE. Utilisation lTcon=.true., Text=Température cible, iteTconst= periode de rescaling. Le rescaling est basée sur l'écart de la température moyenne (depuis le dernier rescaling) à la température cible, et non sur l'écart de la température instantanée à la température cible. Pour obtenir des oscillations réalistes prendre itetconst grand (>1000)
+
+lTberendsen=.true. algorithme de berendsen, dépend de tauTcon (=200.0 par défaut)
+
+lTandersen=.true. algorithme d'Andersen. dépend de nuandersen fréquence de retirage aléatoire des vitesses (en sec-1)
+
+lLangevin algorithme à la  Langevin dépend de gamlang
+
+Pour générer une boite NVE représentative d'une température et dune pression donnée:
+1/ faire un run lpr=true (éventuellement lpcon2=.true.), lTHoover=.true. pendant qq 10**4 pas
+2/ La valeur moyenne des ZL1 (ZL2,ZL3) (qui oscillent) donnent la dimension de la boite pour cette température et cette pression
+3/Faire un run NVT () à ces valeurs de ZL (qq 10**4 pas)
+4/repartir en NVE du fichiers.cout obtenu à la fin de 3/
+
+
+*****************
+CALCULS ET CONTROLES POSSIBLES EN DM
+
+
+calcul du flux de chaleur (lcalcjq=.true) et de la DOS de fonction d'autocorrélation des vitesses (lcorrelvp)
+Le calcul du flux de chaleur est installé dans dyn (dmtype=1), pour la force de JuLi et pour les termes à 2 corps calffo2ctabvois.f90. 
+Il est commenté par défaut dans dyn et dans les termes à 2 corps pour ne pas perdre de temps dans le calcul des forces. 
+Le calcul de la fonction d'autocorrélation des vitesses est installé dans correlvp
+
+calcul de phonons, dmtype=7
+
+calcul de cols (voir plus loin)
+
+Calculs de la conductivité thermique:
+*/méthode NEMD (EVans) ; (lnemd=.true., fnemd)
+*/diverses methodes directes ljqbh=.true.
+njqbh=4 :: 'boite non périodique, flux de - à + (ZL/2 -rumax)'; chauffages aux deux bords
+njqbh=3 :: boite périodique, flux des brods vers le centre; chauffages au bord et au centre
+njqbh<=2  boite périodique, flux des brods vers le centre; temperature constante au bord et au centre (plutot pas beau comme méthode)
+
+Accumulation de défauts ponctuels
+lcdp=.true.
+*****************************************************************************
+UNITES
+
+Ce programme est ecrit  en CGS :
+Les distances entrent et sortent en Angstrom mais en interne sont en
+centimetres.
+
+les energies sont en "erg" dans le programme mais entrent en eV.
+1erg =10^-7 joules ; 1.6*10^-19 Joules = 1 eV
+1 erg = 6.2510^11ev
+
+les forces en "dyn" (1 dyn = 10^-5 Newton = 6.25 10^3ev/Ang)
+
+les pressions sont en dyn/cm^2 (10^12 dyn/cm^2 = 10^3 kbar =100GPa).
+
+La boite peut etre neutre ou chargee (suppression de G=0 dans Ewald)
+
+k = Boltzmann constant = 1.38066 x 10-23 J/K = 1.38066 x 10-16 erg/K = 8.617385 x 10-5 eV/K
+
+*****************************************************************************
+
+Code ecrit en fortran90
+
+
+COMPILATION
+par Makefile
+
+
+Version mixte sequentielle ou parallele de la boucle des forces
+code commun par fichiers *.F90 qui sont passe au preprocesseur c (cpp)
+definition a la compilation par
+CPPFLAGS = -C -P -Dpara -Dpara2c -Dpara3c -Dparaew (parallele)  para2c, para3c et paraew controlent la parallelisation des termes a 2 et 3  corps et de la sommation d'Ewald standard resp.
+(la parallelisation de la PME est inefficace, utilisez plutot la méthode Ewald standard)
+ou
+CPPFLAGS = -C -P (sequentiel)
+
+
+******************************************************************************
+EXECUTION
+
+dans le fichier name.in, donner le 'NOM' du run
+'NOM' est associé à NOM.din, NOM.gin et NOM.cin qui sont les fichiers d'entrées principaux
+lancer avec la commande "rundm90 " et rediriger par > NOM.out
+ou, pour affichage ecran par page
+
+rundm  | more
+
+voire pour les pervers :
+
+rundm  | tee NOM.out
+
+********************************************************************
+fichiers d'entrées  (voir description détaillée ci-dessous)
+data_file_name.in : contient le nom du job
+NOM.din : options de dynamique
+NOM.GIN ou NOM.CIN : descrition de la boite, positions et types des atomes
+'potentiel'.potin : description du potentiel
+
+******************************************************************************
+ANALYSES
+attention : certaines analyses sont couteuses en temps de calcul !
+*/tout les ITETEMP :
+température, totale (éventuellement celulle par celulle), type par type et moyenne
+énergie totale, cinétique, potentielle
+
+*/tout les ITESIGMA :
+pression, contrainte totale (éventuellement celulle par celulle),  moyenne, potentielle et cinétique
+
+*/tout les itedepla:
+calcul du nombre et de la position des atomes déplacés
+
+*/tout les ITECOORDO, calcul des coordinences
+
+*/calcul de la fonction de distribution radiale:
+soit à intervalle régulier (iterdf>0 linstantrdf=true), soit par moyenne d' échantillonages tout les ITERDF (iterdf>0 linstantrdf=false), soit lors des nrdf itérations avec moyenne (linstantrdf=false) ou non (linstantrdf=true
+
+*/calcul de la distribution angulaire :
+comme la RDF avec comme controle iteangle, linstantfda et nfda
+
+*/écriture de toutes les positions dans un fichier rasmol : tout les ITERASMOL et/ou dans un fichier .cfg tout les itecfg
+
+*/calcul des défauts fcc tous les itefcc
+
+*/calcul des défauts par rapport à un cristal de référence (NOM.crcin) tous les itecompcr + fichier analyse.in
+
+*/ RDF tranche par tranche (interface solide liquide)
+
+CONTROLES
+
+en dehors des algorithmes de NOSE pour T=cst, on peut
+
+*/ramener  la température à TFROI si elle s'écarte de plus de TTOL (en %)
+
+*/ controle de la temperature en bord de boite (EPCOU, TFCOU)
+
+*/ refroidissement régulier (TCOOLING)
+
+*/ ajouter des paires de Frenkel (itecdp + fichier creaDPin)
+
+************
+Résultats
+fichier principal sortie standard à appeler NOM.out
+
+Tri automatique des donnees des fichiers resultats NOM.out :
+
+si dmtype=1 (DM), tri avec executable grep-dm
+ --> 1 seul argument : grep-dm NOM.out
+ --> donne fichiers temperature, pression, energies (potentielle, totale, cinetique) et les graphes
+
+si dmtype=3 (gradient conjugue), tri avec executable grep-gradient
+ --> 2 arguments : grep-gradient NOM.out nom_fichier_sortie
+ --> donne fichier avec energie potentiel et force
+
+si dmtype=2 (trempe rapide), tri avec grep-trempe
+ --> 2 arguments : 'grep-trempe NOM.out nom_fichier_sortie'
+ --> donne fichier avec iterations et energie totale (erg)
+Voir aussi VOIR HELP_TOOLS (plus loin)
+
+OUTILS DE TRANSFORMATIONS VOIR HELP_TOOLS 
+
+
+
+******************************************************************************
+Structure des fichiers input/output
+
+NUMERO 		NOM DU FICHIER
+
+
+94		fichier .din
+
+6 		NOM.out
+13		résultat ADF
+17 		tampon
+29		data_file_name.in
+31 		tampon ADF
+32 		tampon ADF
+33		RDF
+34		ADF
+35		rdf
+55		NEB résultat du calcul du col col relax.out
+***58 	conductibité thermique directe : les bords
+***58   jqbh deltaE
+59	conductibité thermique directe : température tranche par tranche
+64		correl
+65    flux de chaleur
+lufilmext=69    fichiers du film des atomes deplaces (1 fichier par appel)
+file='defauts', unit=71   ! dans compcr
+file='structure', unit=72  ! dans compcr
+73  'creaDPin'  dans inicdppour la création de DP              
+75 		analyse.in (dddéfauts par comparaison cristal)
+lufilmpaf=79    fichier du film avec seulement positions du premier atome frappe paf
+lurasmol=86	fichier rasmol
+lucout=87	fichier de sauvegarde en binaire (positions, vitesse...) (1 seul fichier actualise)
+lurdfout=88	fichier RDF
+lufilm=89	fichier du film des atomes deplaces (1 seul fichier)
+lugin=92	NOM.gin
+lucin =93	NOM.cin
+ludin=94	NOM.din
+lupotin=95	potentiel.potin  (soit bmh.potin ou buckingham.potin soit watanabe.potin)
+lucoutxp=97     fichier de sauvegarde en binaire des positions (1 fichier par appel)
+98    fichier de lecture des contraintes
+lucoutnonpbcxp=110     fichier de sauvegarde en binaire des positions non pbc
+                       meme si la dynamique est pbc. Twisted ... very usefull in
+                       cascades.
+111             cyl.mol
+112		température seule (itetemp2)
+169		déplacement film2
+365 		bond valence
+877 		ZLM écriture de la RDF tranche par tranche
+941		ZLM nb d'atomes tranche par tranche (solide vs liquide)
+******** fichier NOM.din *******
+exemple :*-----------------
+
+ &input
+	igen=1
+	tinit=100.0,tinit=100.0
+	dmtype=1
+	itmax=3
+	itedepla=1
+	iterdf=-1
+	itecoordo=1
+	itetemp=1
+	itab=100
+	lfilm=.true.,tdepla=0.02
+	itesauv=1
+ &end
+fin ex :*-------
+
+c'est le fichier qui donne les options du calculs de dynamique moleculaire.
+Il est constitue d'une "name list". Une name list est un ensemble de donnees
+ lues par le code.
+L'ordre de ces donnes n'est pas important, une donnee peut apparaitre ou non
+dans la liste.
+Pour la plupart des donnes des valeurs par defauts sont incluses dans le
+programme.
+Cependant certaines donnes DOIVENT etre precisees.
+
+Liste des donnees avec leur valeur par defaut. Quand il y a **** , la donnee
+en question DOIT apparaitre dans la liste
+! variables de dynamique
+
+****  imm = 0                     !dimensionnement des tableaux atomiques
+      itab = 10                   !period of cell repartition
+      itetabvois = 10             !periode de calcul de la table des voisins
+      tempstop = -1.0             !temperature of run stop
+**** dmtype = 0 type of calculation : 1 -> MD; 2-> quench (trempe); 4-> Velocity Verlet ; 5 test des forces ; 6 analyse des positions en fin de cascade ; 7calcul des phonons, 8=PR;9= NEB
+      ttol = 0.0                  !max tolerance for temperature in %
+      tfroi = -1.0                !imposed temperature
+      tstep = 1.0                 !timestep in 10^-15 sec unit
+      itetimestep = -1            !period of check in timestep
+      tsfact = 10.0               !change in time step factor
+      tinit = -1.0                !initial temperature
+      tcooling = -1.0             !cooling rate
+      tfcou = -1.0                !temperature of the border of the box
+      epcou = -1.0                !width of the border of the box
+      lcasca = .FALSE.            !cascade Y/N
+      lfissure = .FALSE.          !crack Y/N
+****  itmax = -1                  !maximum number of iterations
+      itederive = -1              !"derive" correction
+****  igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 modification de cin puis stop
+      lrestart = .FALSE.          !if T : restarting from an interrupt job
+      tgc = 0.0                   ! threshold for CG calculation
+      ltabvois = .FALSE.          ! methode de la table des voisins
+      lconstrtot=.TRUE.           !!construction de la table des voisins T=double boucle F=via cel.
+      rvois = 0.0                 ! rayon de la table des voisins
+      ltpcel = .FALSE.            ! output of temperature and stress in each cell
+
+
+
+      itesauv = 100               !period for saving
+      itesauvposition = 0         !periode pour sauvegarde des positions en binaire
+      formatsauv = 3              !format of saving 0 MCortho; 1 DMortho ; 2 MC triclin; 1 DM triclin
+      dfpred = 1.0D-11            ! eguess for GC calculations and quenching
+      nox = -1
+      noy = -1
+      noz = -1
+      noxsm = -1
+      noysm = -1
+      nozsm = -1
+      ltranche = .FALSE.          ! existence d'une trache gelée
+      rulayer=0.0                 ! largeur de la tranche gelée par 
+      ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
+      lpr=.false.                 ! parinnelo rahman à contrainte constante
+      sigext = 0.0                ! Symetric tensor related to the external stress
+      h0(1:3,1:3) = 0.d0          ! Vecteurs de base de la boîte de référence en A (Parrinello, Rahman)
+      lUcell=.false.              ! affiche l'énergie potentielle de la boîte
+                                  ! (celà suppose que h0 correspond à l'état de
+                                  ! référence, ie état pour laquelle la
+                                  ! contrainte est nulle)
+      lpcon = .FALSE.             !algorithm a pression constante à la hache
+      lpcon2 = .FALSE.            !amortissement de la deformation de la boite
+
+      pext = 0.0                  !pression  par defaut
+      wbox = 0.0                  !masse de la boite (par defaut egale a 0.5*masse totale
+      wNose = 0.0                 ! masse de la boite pour thermostat de Nose (par defaut egale a wbox)
+      tbox = 1000.0                !"temps" de la boite
+      lTcon=.false.               !algorithme a temperature constante
+      lTberendsen=.false.               !algorithme a temperature constante
+      tauTcon=200.0
+      Text=-1.
+      lTNose=.false.              ! algorithme à température constante de Nosé
+      lTHoover=.false.            ! algorithme à température constante de Hoover
+      nHoover=1
+      iteTconst =itetemp
+      ltriclin = .FALSE.          ! reseau quelconque
+      lginread = .TRUE.           ! creation du reseau par lecture de coordonnes reduites
+      lalea = .FALSE.             ! structure initiale aleatoire
+      rsep = 1.0               !Distance de separation pour le tirage aleatoire
+      ipotentiel = 1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2 ; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff Nguyen, 10 eam
+
+! PME
+      maxorder=10                                ! Ordre du developpement maximal de la PME
+      lpotrep=.false.           ! dans calpo brache une repulsion de Ziegler (lpotrep=false) ou  polynomiale (lpotrep=.TRUE.)
+      lvpread=.true.
+      dilat(:)=0.0
+      lderive=.false.
+      lTandersen=.false.       ! température constante à la Andersen
+      nuandersen=1.0d14        !fréquence de tirage aléatoire des vitesses en Hz (valeur élevée = pour cascades)
+      landerscou=.false.       ! Andersen seulement sur les bords
+      lLangevin=.false.        ! Langevin MD
+      gamlang =-1.0            ! Gamma de Langevin
+      iko=-1
+      lcdp=.false.             ! algorithme d'accumulation de défauts ponctuels
+      ldislo=.false. ! calcul de dislocation
+      epcoudis= 0.0 !epaisseur de la couche avec ajout de force pour dislo
+      fdislo=0.0     ! force appliquée aux atomes de bords 
+      lnemd=.false.  ! Kth par la méthode NEMD Evans, P7229
+      fnemd=0
+      fpstop =-1.0 ! critère de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
+      fsumstop =-1.0 ! critère de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
+      lcontr=.false. ! dynamique contrainte (routine contrainte)
+      iseed=0 ! si <>0 controle le tirage aléatoire des vitesses
+
+
+!variables d'analyse
+
+      itetemp = 20                !period of temperature calculation
+      itesigma = -1               !period of stress calculation
+      itedepla = -100              !period of displacement cal.
+      tdepla = 1.0                !threshold for displacement
+      tdepla2 = -1.0              !second seuil pour calcul des atomes deplaces
+      lfilm = .FALSE.             !film making of displaced atoms
+      lfilmext = .FALSE.          !film par iteration des atomes deplaces
+      itecoordo = -100             !period of coordination calculation
+      itean = -1                  !general control for analysis
+      iterdf = -1                 !period of RDF calc. : -1 never ; 0 : nrdf last iterations; +iterdf every iterdf iterations
+      linstantrdf = .FALSE.       !F: calculates and prints the average of the RDF, T : calculent RDFrdf iterations
+      linstantfda = .FALSE.       !F: calculates and prints the average of the RDF, T : calcuatent RDFrdf iterations
+      nrdf = 0
+      nfda=0
+
+      lprtzlm = .FALSE.           ! plot du nombres d'atomes par tranche suivant z
+      lEev=.false.
+      lPkbar=.false.
+! definition des rayons de coupure pour le calcul des coordinences autour de chaque type atomique
+      deltax=0.0
+      rclu(:)=2.0
+      
+
+      iterasmol = -1                             ! <0 --> genere aucun fichier positions pour logiciel rasmol
+      iteangle = -1                              ! pilote creation de fichier positions pour
+                            ! >=0 debut et fin d'execution
+
+      lufilm = 89
+      lufilmpaf = 79
+      ludin = 94
+      lcorrelvp=.false.
+      lcalcjq=.false.
+      lsigat=.false.             ! calul et affichage de la contrainte atomique
+      lEparat=.false.             ! calul et affichage de l'energie par atom
+      itebdv=-1  ! frequence de calcul des bond valence
+      itetemp2=-1   ! frequence d'ecriture de la température dans fichier séparé
+      itecompcr=-1  ! fréquence de comparaison avec cristal de référence
+
+      lperiod=.true. ! conditions periodiques
+      lprteat=.false. ! conditions periodiques
+      ngrid = 50000  ! taille de la grille des potentiels
+      itecfg=-1   ! écriture de fichiers .cfg pour AtomEye
+  !---inNEB
+  nebtype=2        ! drag methos is the default     
+  nebrelaxation=2  ! We relax all the atoms if nebrelaxation==1 only
+  ! the most "deplaced" atoms      
+  npath = 15       ! 15 images of the neb is the default
+  maxneb = 700     ! the MAX of NEB steps
+  kspring = 1.0    ! the default value for the spring
+  deltaRmax=1.d-2
+  neb_noise_scale=0.001      ! this will affect the 4th digit
+	                     ! x + x*neb_noise_scale*random,
+			     ! where "random" is a random number between 
+			     ! 0 and 1  
+  neb_noise=0                ! 0 without noise, 1 with noise
+  !      	lperiod=.false.  ! pas de conditions periodiques
+
+  !...inNEB
+  rcangle=3.0
+  rcrdf=5.0
+  deltaestop=0.0
+  nbmoye=100
+  lHcyl=.false.
+  ltriclin=.true.
+  lprtfat=.false.
+
+  lfrozen=.FALSE.             ! .true.: certains atomes sont bloquÃƒÂ£Ã‚Â©ÃƒÂ¢Ã‚Â§ÃƒÂ¢Ã‚Â¸ (pas de dynamique)
+  imFree=-1                   ! nb d'atomes libres
+  nvperat=-1                  ! nb moyen de voisins par atomes
+  natperc=-1   
+  iteanaposneb=0
+  lbulle=.false.
+  ldesinteg=.false.    ! calcul du delta F de la desintegration d'un atome
+  nstepdes=-1
+  ides=1
+  kspr=10.0
+  xpspr(:)=-1000.
+  typspr=0
+  tempdes=-1.0
+  lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep. 
+
+
+******** potentiel.POTIN *******
+POUR LES OXYDES (IPOTENTIEL > 10):
+
+Ce fichier indique les caracteristiques du potentiel utilise.
+Pour buckingham (ipotentiel =1):
+
+On indique dans l'ordre :
+quel type de potentiel on veut : avec ou sans ewald,...
+	Le parametre precisant le type de sommation d'Ewald peut prendre trois valeurs : 0, 1 ou 2.
+	0 correspond a une sommation d'Ewald uniquement dans l'espace reel, 1 a une sommation d'Ewald complete calculee classiquement, 2 a  une sommation d'Ewald complete calculee par la methode Particle Mesh Ewald.
+	La methode PME est largement expliquee dans la reference : Essmann & al., J. Chem. Phys. 103 (1995) 8577.
+une namelist donnant les rayons de coupure et paramètres de la sommation d'Ewald (voir ci-dessous)
+
+Le nombre de types d'atomes
+les caracteristiques des especes:
+charge masse numero atomique symbole
+Le nombre de paires a considerer dans le potentiel
+Pour chaque paire les caracteristiques des paires d'atomes construites comme ceci:
+indice 1 indice 2 , Aij, ROij, Cij, (rep8 (dans buck2.potin uniquement)) , roff1, roff2)
+
+Si il y a des termes a trois corps
+Le nombre de triplets
+indice du centre, indice de gauche, indice de droite, lambr,gamgr (a gauche) ,gamdr,(a droite) agcr (a g.) ,adcr (a d.),cangler (cosinus de l'anglefavorise)
+
+Exemple  de fichier buckingham .potin :
+1 .false.				! integer input for Ewald summation and three-body terms
+ &ewald                                 !namelist pour lka gestion des rayons de coupure A PRECISER
+   rue=11.2319
+   alpha=0.229347
+   ncouc3=5
+ &end
+10
+4.0  47.9    22.0 'Ti'   ! Q (Si) --> (Ti type 2) ;  CM (masse);  numero atomique ; symbole
+-2.0 15.9994 8.0  'O '   ! Q (O)
+4.0  47.9    22.0 'Ti'   ! Q (B)  --> (Ti type 3)
+1.0  22.9898 11.0 'Na'   ! Q (Na)
+4.0  91.22   40.0 'Zr'   ! Q (Zr)
+3.0  26.9815 13.0 'Al'   ! Q (Al)
+2.0  40.078  20.0 'Ca'   ! Q (Ca)
+4.0  238.03  92.0 'U '   ! Q (U)
+1.0  39.0983 19.0 'K '   ! Q (K)
+4.0  47.90   22.0 'Ti'   ! Q (Ti) --> (Ti type 1)
+7  !  nb de paires a lire   (indices de i et j , Aij, ROij, Cij, roff1, roff2)
+1 2  942.2 0.3479 0.0 0.9 1.0	! Si-O  --> (Ti type 2)
+2 2 22764.0 0.149 32.8 1.1 1.3  	! O-O
+2 3  942.2 0.3479 0.0 0.9 1.0	! O-B  --> Ti type 3
+2 5  1936.9 0.3440 0.0 0.9 1.0	! O-Zr
+2 7  1412.0 0.3382 0.0 0.9 1.0   	! O-Ca
+2 8 895.5898 0.42512 65.4 1.1 1.3      ! O-U  (Karakasidis 1994)
+2 10 942.2 0.3479 0.0 0.9 1.0	! O-Ti  --> Ti type 1
+2 ! nb de triplets actifs
+1 2 2 149.8  2.6 2.6 3.0 3.0 -0.33572 !centre gauche droite lambda gamG gamD rcG rcD
+2 1 1 6.2413 2.0 2.0 2.6 2.6 -0.93969
+
+
+**
+La nameliste ewald:
+          namelist /ewald/ rue, alpha, precis, ncouc3, ncoucx, ncoucy, ncoucz,&
+          kpmex, kpmey, kpmez, lopt
+
+!EWALD
+          rue = 12.0      	!valeur du rayon de coupure pour les termes de paires dans l'espace réel          (en Angstroms)
+          alpha = 0.0		! paramètre alpha de la sommation d'Ewald   (en Angstroms)
+          precis = 10-3	!cision demandée  =delta(E)/E-
+          ncouc3 = 0              ! nombre de couches de vecteurs du Réseau Réciproque pour la sommation d'Ewald
+          ncoucx = 0              ! nombre de couches de vecteurs du Réseau Réciproque pour la sommation d'Ewald  suivant X Kx dans [-(ncouc3*2*Pi)/ZL(1)),(ncouc3*2*Pi)/ZL(2)]
+          ncoucy = 0               ! nombre de couches de vecteurs du Réseau Réciproque pour la sommation d'Ewald  suivant Y
+          ncoucz = 0               ! nombre de couches de vecteurs du Réseau Réciproque pour la sommation d'Ewald  suivant Z
+          kpmex = int(2.5*(2*ncoucx+1))0                ! taille de grille pour la PME
+          kpmey = 0
+          kpmez = 0
+
+On peut préciser de 0 à 3 valeurs parmi rue, alpha,precis et ncouc3. Le programme se débrouille pour déterminer les autres à partir soit des valeurs par défaut soit des valeurs indiquée dans .potin à l'aide des équations :
+                 alpha=dsqrt(-log(precis))/rue
+                 ncoucx=int(2.d0*-log(precis)/rue/k00x)+1
+
+ **
+Le format bmh (ipotentiel=0) est a eviter et subsiste pour des raisons de compatibilités historiques 
+le format watanabe (ipotentiel=2) est specifique a SiO2.
+le format buck8 (ipotentiel=3) est identique à buckingham avec un terme en -1/r**8 en plus pour toutes les paires
+le format UO2 (ipotentiel=4) est specifique à UO2
+
+********************************************************
+POUR LES POTENTIELS EAM :
+pour ercollessi le potentiel est codé en dur dans aluerco.f
+Alerco.potin
+1 ! ntyp
+5.5580544182181 ! rayon de coupure en Ang.
+26.9815 13.0 'Al' ! CM(Masse) , numéro atomique, symbole
+0.9 2.2 roff1 roff2
+
+Pour le second moment les paramètres sont lus dans SM.potin
+SM.potin
+1 !ntyp
+ 6.561 !rue 
+26.9815 13.0 'Al' ! CM(Masse) , numéro atomique, symbole
+2.86416 0.1221 1.316 8.612 2.516 0.9 1.2 ! r0 A ksi p q roff1 roff2
+
+Pour les potentiels tabulés
+1 ! nb de types
+5.3 ! rayon de coupure en Ang
+55.84700 26 'Fe'   ! masse symbole
+-0.1 -0.2  ! raccordement Ziegler (en Ang)
+5000 ! nombre de points dans les grilles
+1 ! type 1 GLUE/EAM  
+        5000   1.99999995529652D-002
+   0.000000E+00   0.000000E+00 0.0
+   1.99999995529652D-002 -0.141421374076801       -3.53553588744531
+   3.99999991059303D-002 -0.200000075444820       -2.50000391193948
+.
+.
+.
+1 ! type 1 densité
+5000 1.06199998855591D-003
+   0.0 431.0 0.
+   1.06199998855591D-003   430.943722327823       -530.685947630993
+   2.12399997711182D-003   430.380381190450       -530.220194758219
+   3.18599996566772D-003   429.817534573633       -529.754647137105
+.
+.
+1 ! paire 1 répulsion
+5000  1.06199998855591D-003
+   0.0 9064697.28402947 0.
+   1.06199998855591D-003   9064697.28402947       -8630468893.48960
+
+
+Si plusieurs types d'atomes:
+glue1
+dens1
+glue2
+dens2
+glue3
+dens3
+paire1-1
+paire 1-2
+paire 1-3
+paire 2-2
+paire 2-3
+paire 3-3.
+
+********************************************************
+POUR LES POTENTIELS TERSOFF/BRENNER :
+voir tersoff.potin
+
+POUR GENERER LA BOITE ON UTILISE .CIN OU .GIN ou
+********NOM.cin *******
+fichier de rémarrage du code NOM.cout renomé en NOM.cin
+
+ex :*-----------------
+fichier "unformatted"
+contenant
+
+icintype	=0 ou 1. 0 pour fichier type MC 1 pour fichiers type DM
+zl		zl(3) est la taille de la boite dans les trois directions
+(((zt dans le cas d'une surface largeur de la tranche de matiere au depart)))
+im		nombre d'atomes dans la boite
+ityp		ityp(imM) tableau des types d'atomes
+xp		xp(im,3) positions des atomes en centimetres
+IF icintype ==1
+xpp		xpp(imM,3) positions precendentes
+vp		vp(imM,3) vitesses
+ax		ax(imM,3) positions de depart
+oldtstep        valeur du pas en temps
+tmean,pmean,it,timel	valeur moyenne de la temperature et a pression,
+ iteration courante et temps courant
+ENDIF
+
+********NOM.gin *******
+fichier de generation du cristal a partir d'une cellule "unite" ou d'une structure aléatoire (lalea=.true.)
+Ne fonctionne pas pour les surfaces.
+
+Boite lginread=.true. ( A PRIVILEGIER)
+le fichier NOM.gin doit contenir. Les vecteurs a, b et c decrivent la maille elementaire.
+ 10 10  10  		    !nombre de repetitions de la maille elementaire suivant a b et c.
+ 39.64200000000000  0. 0.   !coordonnees dans une BOND de a b et c
+ 1. 39.64200000000000  0.
+ 1. 2. 35.89200000000000
+ 5184 			    !nombre d'atomes dans la base
+  -0.34437883603084  -0.42682193289016  -0.46855305802227  1 !coordonnees reduites dans le repere a b c
+  -0.42736245909341  -0.34396836130803  -0.38557050287899  1 !cad coordonnees cristallographiques
+.
+.
+.
+
+boite lginread=false
+ex :*-----------------
+2 2 2		!la lb lc :nombre de repetition de la maille dans les trois directions
+12.0 12.0 11.0 	!a b c:taille de la celulle unite dans les trois directions
+24		!nombre d'atomes par mailles
+0.0000000  0.0000000  0.0000000  5 ! x y z (orthonorme) ityp.
+0.0000000  0.5000000  0.2267180  5 ! Les positiions atomiques
+0.0000000  0.0000000  0.4534360  1 ! sont donnes dans la base
+0.0000000  0.5000000  0.6801540  1 ! ORTHONORMEE directe construite
+0.0000000  0.1848591  0.2881553  2 ! a partir de a (standard pwscf)
+0.0000000 -0.1848591  0.2881553  2
+0.1848591  0.0000000 -0.2881553  2
+-0.1848591  0.0000000 -0.2881553  2
+0.0000000  0.6848591 -0.0614337  2
+0.0000000  0.3151409 -0.0614337  2
+-0.1848591  0.5000000  0.5148768  2
+0.1848591  0.5000000  0.5148768  2
+   .5 .5 .453436 5
+   .5 1.0 .680154 5
+   .5 .5 .906872 1
+   .5 1.0 1.13359 1
+   .5 .6848590999999999 .7415913 2
+   .5 .3151409 .7415913 2
+   .6848590999999999 .5 .1652807 2
+   .3151409 .5 .1652807 2
+   .5 1.1848591 .3920023 2
+   .5 .8151409 .3920023 2
+   .3151409 1.0 .9683128 2
+   .6848590999999999 1.0 .9683128 2
+fin ex :*-------
+
+
+génération de verre lalea=.true.
+la, lb, lc           !number of cells in 3 directions
+rr(1), rr(2), rr(3)  !size of the unit cell en Angstroms
+imcell               !nombre d'atomes dans la cellule unité
+na(i),i=1,ntyp   !nombre d'atomes dans la boite COMPLETE
+
+en interne les vecteurs de base a b c sont comme ca:
+                write(6,*)'a',at(1,1),at(2,1),at(3,1)
+                write(6,*)'b',at(1,2),at(2,2),at(3,2)
+                write(6,*)'c',at(1,3),at(2,3),at(3,3)
+
+------------------------------------------------------------------------
+gestion des tailles de tableaux
+les tableaux sont dimensionnes a la compilations sauf
+1/ceux dependant du nombre d'atomes:
+      integer ielat(imM),   !indexes the cell of the atom
+     +      iwmax(imM),		!indice du dernier voisin de chaque atome
+     dans la table des voisins
+     +      ityp(imM)		!tableau des types
+      real*8
+     + xp(imM,3)		! positions des atomes
+
+      real*8
+     + xpp(imM,3),		!previous positions
+     + vp(imM,3),		!velocities
+     + ax(imM,3),		!starting positions
+     + fp(imM,3)		!forces
+
+Ceux-ci sont des tableaux automatiques. leur taille est lue dans .gin (imM)
+Cette taille n'a pas a etre EGALE au nombre effectif d'atomes.
+Elle doit etre superieure au nombre d'atomes.
+Si on lit les positions dans un fichier .cin imM doit etre egale a la taille
+des tableaux dans le fichiers .cin.
+
+Ces tableux "automatiques" ne peuvent pas etre places dans des common.
+Ils doivent etre passes en argument dans les appels de subroutine.
+
+2/ceux dependant du nombre de celulles ou petites celulles, ceux dépendant du nombre d'atomes par celulle et ceux de ewald  :
+ sont des pointeurs f90 alloues dynamiquement a l'execution (utilisation transparente ...)
+
+
+***********************************************************************
+
+*-*-*-*-*-*-*-*-*-*-* ORGANIGRAMME *-*-*-*-*-*-*-*-*-*-
+PAS A JOUR!!!!!!
+<> signifie ebventuellement
+main ->
+	-> readdm
+	->prog
+		->init 				!initialisations diverses
+			/-> input		!lecture de .potin
+			/-> inputeam		!lecture de .potin
+			-> config		!construction de la boite a partir de .cin ou .gin
+			<> -> rasmol		! ecriture d'un fichier rasmol
+			<> -> angle             ! ecriture d'un fichier donn_angle pour post-traitement des angles
+			->divid 		!determination des tailels de cel. et param Ewald
+			-> DynamicalAllocationCell !allocationns dynamiques
+			->calpo			!tabulation des potentiels
+				->zieg2		!tabulation de Ziegler
+			->calpoeam			!tabulation des potentiels
+				->zieg2		!tabulation de Ziegler
+			->neigcel		!tabulations des voisinages de grandes  celulles
+			->neigcelsm		!tabulations des voisinages de petites celulles
+			<> ->layer		!gestion de la fracture
+			->caltabt		!repartition des atomes entre les grandes celulles
+			->caltabtsm		!repartition des atomes entre les petites celulles
+			<> -> caltabi		!construction de la table des voisins
+			-> initspeed 		!initialisations des vitesses
+			<> -> initcasca		!initialisation de l'eventuelle cascade
+			<> -> deftimestep 	!determination du pas en temps optimal
+		<> ->dmloop
+			boucle
+			->calfo	! routeur pour le calcul des forces		
+				!calcul des forces des termes de paire
+				<> -> calfoeamctabvois      ! table des voisins
+				<> -> calfoeamccel          ! methode des celulles
+				<> -> calfo2ctabvois      ! table des voisins
+				<> -> calfo2ccel          ! methode des celulles
+				<> -> calfoew		!terme d'Ewald
+					<>-> epme       !particle Mesh Ewald
+				<> -> calfo3c		!forces a trois corps
+				<> -> calfobox		
+				!forces sur la boite et les atomes en P constante
+			->dyn ou trempe ou CG	!deplacement des atomes
+			<>-> scalebox		! deformation de la boite en pression constante
+			-> analyse		!analyse de l'etat du systame
+				-> calctemp	!calcul de la temperature et la pression
+				-> calccoordo	!calcul de la coordinence de chaque atome
+				-> calcdepla	!calcul du deplacement de chaque atome pour 1er seuil
+                                -> calcdepla2   !calcul du deplacement de chaque atome pour 2nd seuil>1er seuil
+				-> calcrdf	!calcul de la RDF
+			-> controle		!controle (cad modification du systeme)
+				->caltabt	!repartition des atomes entre grandes cellules
+				->caltabtsm	!repartition des atomes entre petites cellules
+				<> -> caltabi	!construction de la table des voisins
+				<> -> deform	! deformation par la fissure
+				controle du pas en temps, temperature(tmax,tcou,tcooling),
+	        	        "arret avant la fin", correction de la derive
+			->sauvegardes		!ecriture du fichier .cout(structure==.cin)
+                        <>->sauvegarde.f        ! stocke positions+temperature+pression+vitesse dans fichier binaire .cout
+                        <>->sauveposition.f     ! stocke toutes les positions atomiques en binaire dans fichier .coutposition
+			fin de la boucle
+		<> ->dmloop_vverlet
+			<>->nhcint(vp,ityp) 	! initialisation pour Nose
+			<>->init_nhcp 		! initialisation pour Nose-Parrinnello-Rahman
+			boucle
+			<>-> nhcint(vp,ityp) 
+			<>->calpext(symten,hpext) ! Calculate Pext = P + at*symten*h^t/V
+			<>->nhcpint(vp,ityp)
+			->dyn_vverlet ou trempe ou CG	!deplacement des atomes
+				1/2update velocities
+				update positions
+				->period
+				<> -> scalebox
+				->caltabt(sm)
+				->calfo
+				1/2update velocities
+			-> analyse		!analyse de l'etat du systame
+			-> controle		!controle (cad modification du systeme)
+			->sauvegardes		!ecriture du fichier .cout(structure==.cin)
+
+
+		->endrun
+                <> -> rasmol    ! ecriture fichier rasmol
+                <> -> angle     ! ecriture fichier donn_angle 
+
+*************************************************************************************
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*************************************************************************************
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+HELP_NEB
+HELP_NEB
+HELP_NEB
+HELP_NEB
+
+****Calcul de col:
+deux méthodes DRAG et NEB
+
+***Configurations de départ
+Les deux méthodes utilisent plusieurs images qui sont construites par
+interpolation linéaire entre deux configurations ("initiales" et "finales")
+Configuration initiale = "deb_toto.gin" 
+Configuration finale = "fin_toto.gin"
+où toto est le nom de la simualtion (toto.din)
+
+Génération de ces configurations de départ
+Elles doivent être générées par ndm en forçant LPERIOD=.FALSE.  !!!!
+Les résultats des relaxations (tata.cout et tutu.cout) doivent être transformés
+en.gin par "sauve2gin" (voir ailleurs dans HELP)
+
+** en sortie on obtient la courbe d'énergie du col (fichier colrelax.out) ainsi qu'une série de fichiers *.coutpositions.n où n est le numéro de l'image.
+Ces fichiers peuvent être traduits par sauve2cfg par exemple.
+Pour l'instant il n'y a pas de procédure de sauvegarde-redémmarage pour les calculs de cols.
+
+
+***Variables pour les calculs de col dans toto.din
+DMTYPE Calcul de col :dmtype =9
+
+NPATH Nombres d'images : npath  (par défaut npath=14)
+
+NEBRELAXATION nebrelaxation=1 ou 2
+controle si 
+-tous les atomes de la boite sont relaxés avec la contrainte neb ou
+drag (nebrelaxation=2, défaut) ou si 
+-seulement ceux sont déplacés de plus de deltaRmax entre les configurations
+initailes et finales sont relaxés avec la contraintes. Les autres sont relaxés
+sans contrainte
+
+DELTARMAX : voir ci-dessus (par défaut 0.2 Ang)
+
+MAXNEB maxneb (=700 par défaut) nombre de pas de relxation de chacune des images
+
+FPSTOP (fpstop =0.05) ! critÃ¨re de conv. sur la force par atome max  pour les
+trempes UNITE = EV/ANG)
+
+NEBTYPE : choisit entre NEB et DRAG (par défaut NEB)
+
+DRAG: nebtype=1 (pas d'autres variables)
+NEB : nebtype=2
+ variable associée : KSPRING( 0.2 ev/Ang2 par défaut) raideur du ressort entre
+ configuration. A introduire en ev/Ang2
+ 
+************
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+************
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+*****TOOLS***********
+Plein de jolis scripts de transformation et d'analyse sont dans Tools
+
+**
+SERIE DES GREP-QQCH
+grep-dm*  fait plein de fichiers et de graphes sur la température, pression, etc..
+ "grep-dm toto" lit toto.out 
+ "grep-dm" lit toto.out si dans name.in il y a toto 
+  
+
+LES AUTRES SONT UTILSABLES UNIQUEMENT pièce 201 (9285), ask for Croc
+grep-gradient* 
+grep-trempe*
+grep-trp*
+jcolcfg*
+jdef*
+jml*
+jmlup*
+jndm2ateye*
+**
+
+
+SERIE des TOTO2TATA (les executables sont dans Tools/bin)
+Ils s'utilisent en mettant les noms de fichiers d'entrée sortie sur la ligne de commande
+toto2tata entree.toto sortie.tata
+
+toto= gin, cout, cin 
+
+sauve==.cout ou cin
+
+gin2gin*  applique une déformation
+gin2sauve* gin vers cin 
+sauve2gin* cin vers gin
+
+
+Les autres sont basiquement inutilisables sauf pièce 112 (ask for Clouet and/or Marinica)
+please call 66 63....
+
+gin2cfg* INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE
+
+sauve2cfgDEFcubic*  INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE (ou le fer qu'on
+appelle le cuivre ) et qu'en plus c'est bcc.
+
+sauve2cfg*  INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE
+
+gin2xyz*  INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE
+
+strain*  INUTILISABLE PAR QUICONQUE S'INTERRESSE A AUTRE CHOSE QUE LE CUIVRE en deformation et encore pas
+toutes enfin c'est pas sur...
+
+postNDM* PAS BEAU !!
+
+cfg2gin* PAS BEAU !!!

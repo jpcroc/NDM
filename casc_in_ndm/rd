@@ -1,0 +1,8 @@
+55c55
+<         if(lu_roff_pair(l).EQV..false.) cycle
+---
+>         if(lu_roff_pair(l)==.false.) cycle
+150c150
+<         if(lu_roff_pair(l).EQV..false.) cycle
+---
+>         if(lu_roff_pair(l)==.false.) cycle

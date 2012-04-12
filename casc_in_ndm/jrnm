@@ -1,0 +1,11 @@
+#!/bin/csh
+foreach temp (`ls -1 *.f90 `)
+	echo $temp > lf90
+sed -e /90/s/\.f90/\.F90/ <lf90 > lF90
+    paste mvc lf90 lF90 > lc1
+chmod u+x lc1
+./lc1
+
+end
+ls 
+

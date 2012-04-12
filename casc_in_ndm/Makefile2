@@ -1,0 +1,185 @@
+#
+BIN=.
+#BIN=../bin
+
+SHELL=/bin/sh
+
+# Suffixes rule
+.SUFFIXES :
+.SUFFIXES : .o .f90 .F90 .f
+
+# F90 compiler
+F90 = ifort  
+# option debug ddd
+#F90FLAGS =   -no-ipo  -g -check all -debug-parameters all 
+F90FLAGS =   -no-ipo -O3
+#F90FLAGS =    -static -O3 
+# OPTIONS CLOUET 
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all
+
+
+
+#F90 = pgf90
+#F90FLAGS = -O0 -C -g
+
+#F90 = pathf90
+#F90FLAGS = -O0 -C -g 
+
+#definition du preprocesseur
+CPP = /usr/bin/cpp
+CPPFLAGS = -C -P -traditional
+
+#lien
+LD = ${F90}
+
+
+# link library
+LIBRARY =
+
+AOUT = ${BIN}/rundm90
+
+
+
+#EAM= SMjuli
+#EAM= SMeam
+#EAM= eamerco
+#EAM=eamCuMishin
+EAM =eamtab
+
+MODULS =
+OBJS=   T_kind_param_m.o \
+        gen_com_m.o \
+        contrainte.o \
+	neb_module.o\
+	neb_controle.o\
+	fcc.o \
+	cfg.o \
+	work_cgII.o \
+	prNose2.o \
+	pr2.o \
+	fft_com_m.o \
+        defcdp.o \
+        jqmod.o \
+	SMjuli.o \
+	${EAM}.o \
+	DynamicPME.o\
+        epme.o\
+        transf.o\
+        moduli.o\
+        param_det.o\
+	aluerco.o \
+	correl.o \
+        calccoordo.o \
+        calcangle.o \
+	calfoeamcel.o \
+	calfoeamtabvois.o \
+	julitabvois.o \
+	calpoeam.o \
+	adf.o\
+        endrun.o \
+        controle.o \
+        period.o \
+        trempe.o \
+        input.o \
+        sauvegarde.o \
+        neigcel.o \
+        neigcelsm.o \
+        analyse.o \
+	gcII.o \
+	gcmodII.o \
+        init.o \
+        calcdigr.o \
+        initspeed.o \
+        layer.o \
+        recips.o \
+        calcdepla2.o \
+        zieg2.o \
+        erf.o \
+        rdf.o \
+        calctemp.o \
+        tempinst.o \
+        dmloop.o \
+        scalebox.o \
+        calfo.o\
+        initcasca.o \
+        prog.o \
+        caltabi.o \
+        cryst_to_car.o \
+        calpo.o \
+        rasmol.o \
+        spline.o \
+        caltabt.o \
+        deftimestep.o \
+        calfo2ctabvois.o \
+        calfo2ccel.o \
+        calfoew.o \
+        caltabtsm.o \
+        sauveposition.o \
+        calfo3c.o \
+        calfobox.o \
+        dyn.o \
+        main.o \
+        calcdepla.o \
+        config.o \
+        readdm.o \
+        DynamicAlloc.o\
+        calfow.o\
+        dmloop_vverlet.o\
+        dmloop_lpr.o\
+        dyn_vverlet.o\
+        Mat_util.o\
+        divid.o\
+        vanbeest.o\
+        potrep.o\
+        loopforcetest.o\
+        inttersoff.o\
+        Tersoff.o\
+        calfoberend.o\
+        configcr.o\
+        compcr.o\
+        fft_inter.o\
+        force_tersoff_facteurs.o\
+        inputtersoff.o\
+        force_tersoff.o\
+        force_tersoff_cel.o\
+        initcdp.o\
+        creadp.o\
+        jqbh.o\
+        bondval.o\
+        dislo.o\
+        prtplz.o\
+        tr_fire.o\
+	neb.o\
+        loopcalcphonon.o	
+
+
+.f.o :
+	${F90} -c  ${F90FLAGS} $<
+
+.f90.o :
+	${F90} -c  ${F90FLAGS} $<
+
+.F90.o :
+	$(CPP) $(CPPFLAGS) $< > $*.tmp.f90
+	$(F90) -c  $(F90FLAGS) $*.tmp.f90
+	mv $*.tmp.o $*.o
+
+
+
+${AOUT} : ${OBJS}
+	${LD} -o ${AOUT}  ${F90FLAGS} ${LDFLAGS} ${OBJS}
+
+
+#${OBJS} : ${MODULS}
+
+
+clean :
+	@rm -f  ${OBJS} *.tmp.f90 *.mod ${AOUT} *.l
+
+
+
+fft_inter.o : fft_inter.F90
+	$(CPP) $(CPPFLAGS) fft_inter.F90 > fft_inter.tmp.f90
+	$(F90) -c  -O0   fft_inter.tmp.f90
+	mv fft_inter.tmp.o fft_inter.o
+

@@ -1,0 +1,83 @@
+# link library
+LIBRARY =
+
+ 
+ifdef PARA
+ # Version Parallele
+ #
+ F90      = mpif90
+ CPPFLAGS = -C -P -traditional -DPARA
+ EXT      = _para
+#F90FLAGS = -O0 -g -C
+#F90FLAGS = -O3 
+
+else
+ # Version sequentielle
+ #
+#version tantale
+# F90 = pgf90#
+#version platine
+# F90 = /export/TMP/openmpi-1.1.4/bin/mpif90
+F90 = ifort
+#F90 = f95
+# CPPFLAGS = -C -P -traditional
+# EXT      = _5
+#version SRMP
+ CPPFLAGS = -C -E -P -traditional
+
+
+#F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all	# Debuggage pas pour de rire
+# F90FLAGS = -ffixed-line-length-0
+#EXT = _check
+
+ EXT      = 
+F90FLAGS = -O3 
+
+endif
+
+ifdef DECOUP
+ # Code sequentiel pour evaluer le decoupage en sous-domaines
+ #
+ CPPFLAGS+= -DDECOUP
+ ifdef PARA
+  EXT = _para_decoup
+ else
+  EXT = _seq_decoup
+ endif
+endif
+ 
+CPP = /usr/bin/cpp
+#CPP = /export/TMP/openmpi-1.1.4/bin/mpic++
+LD = ${F90}
+
+
+
+# ART ART ART ART ART ART
+
+ifdef ART
+ F90 = ifort
+ CPPFLAGS = -C -P -traditional -DART
+ EXT      = _ART
+#F90FLAGS =  -static -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS = -static -O3 
+
+#FLAGS and LIBS for ART
+FLAGS_ART =  -DNOIBM 
+#debug
+#F90FLAGS_ART = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_ART = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_ART =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_ART =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_ART = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_ART =${mkkl_definitions}
+# link library
+LIBRARY_ART = art/libart.a
+
+
+# link library
+LIBRARY =${LIBRARY_ART} ${LLIBS_ART}  
+
+endif
