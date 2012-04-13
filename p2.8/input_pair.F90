@@ -52,7 +52,7 @@ subroutine input_pair
   !-----------------------------------------------
   !      real(double) , external :: distmin, calcvol
   !-----------------------------------------------
-
+  integer,pointer :: ityplu(:)
 
   namelist /ewald/ rue, alpha, precis, ncouc3, ncoucx, ncoucy, ncoucz,&
        kpmex, kpmey, kpmez, lopt,ecrue
@@ -178,6 +178,7 @@ subroutine input_pair
         if (npotentiel .gt.1)then
            read(lupotin,*) ntypr
            write(6,*)'ntypr pour ce pot',ntypr
+           allocate(ityplu(ntypr))
         else
            read(lupotin,*) ntyp
            npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
@@ -197,6 +198,7 @@ subroutine input_pair
               else
                  read (lupotin,  *) qr,cmr,catomr,tyr,iti
               end if
+              ityplu(i)=iti
               if(lue_typ(iti).EQV..true.)then
                  if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
                  if (cmr*umass.ne.cm(iti))then
@@ -226,6 +228,12 @@ subroutine input_pair
                  write (6, '(2E12.3,F9.3,A5,I4)') q(iti),cm(iti),catom(iti),ty(iti),iti
               end if
            end do
+           do i=1,ntypr
+              do j=1,ntypr
+                 typ_pot_pair(ipo(ityplu(i),ityplu(j)))=ipotentiel
+              end do
+           end do
+           
         else
            if (iewald==0) then
               if (rang==0) write (6, *) 'CM, masse,type'
@@ -243,6 +251,12 @@ subroutine input_pair
               write (6, '(I4,2F9.3,A5)') i,cm(i),catom(i),ty(i)
 
            end do
+           do i=1,ntyp
+              do j=1,ntyp
+                 typ_pot_pair(ipo(i,j))=ipotentiel
+              end do
+           end do
+
            rue_pair(:)=rue*1d-8
         end if
         
@@ -322,9 +336,15 @@ subroutine input_pair
         if (rang==0) write (6, *) 'type ;charge ; rayon ; bm ; shell ; type'
         do i = 1, ntyp
            read (lupotin, *) q(i), ray(i), bm(i), shel(i),ty(i)
+           
            if (rang/=0) cycle
            write (6, '(I2,4F8.4,a4)') i, q(i), ray(i), bm(i), shel(i),ty(i)
         end do
+           do i=1,ntyp
+              do j=1,ntyp
+                 typ_pot_pair(ipo(i,j))=ipotentiel
+              end do
+           end do
 
 
         ! lecture des caracteristiques des paires
@@ -366,16 +386,18 @@ subroutine input_pair
         ! MPI
         if (npotentiel .gt.1)then
            read(lupotin,*) ntypr
-
+           allocate(ityplu(ntypr))
         else
            read(lupotin,*) ntyp
            npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
+
            call  alloc_typ
         end if
         if (npotentiel .gt.1)then
            if (rang==0) write (6, *) 'numero, charge, CM, masse,type, NUMERO DU TYPE D ATOME'
            do i = 1, ntypr
               read (lupotin,  *) qr,cmr,catomr,tyr,iti
+              ityplu(i)=iti
               if(lue_typ(iti).EQV..true.)then
                  if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
                  if (cmr*umass.ne.cm(iti))then
@@ -392,6 +414,11 @@ subroutine input_pair
               if (rang/=0) cycle
               write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
            end do
+           do i=1,ntypr
+              do j=1,ntypr
+                 typ_pot_pair(ipo(ityplu(i),ityplu(j)))=ipotentiel
+              end do
+           end do
 
 
         else
@@ -403,6 +430,12 @@ subroutine input_pair
               cm(i)=cm(i)*umass
            end do
            rue_pair(:)=rue*1d-8
+           do i=1,ntyp
+              do j=1,ntyp
+                 typ_pot_pair(ipo(i,j))=ipotentiel
+              end do
+           end do
+
         end if
 
         ! initialisations
@@ -471,7 +504,7 @@ subroutine input_pair
 
         if (npotentiel .gt.1)then
            read(lupotin,*) ntypr
-
+           allocate(ityplu(ntypr))
         else
            read(lupotin,*) ntyp
            npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
@@ -481,6 +514,7 @@ subroutine input_pair
            if (rang==0) write (6, *) 'numero, charge, CM, masse,type, NUMERO DU TYPE D ATOME'
            do i = 1, ntypr
               read (lupotin,  *) qr,cmr,catomr,tyr,iti
+              ityplu(i)=iti
               if(lue_typ(iti).EQV..true.)then
                  if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
                  call arret_ndm
@@ -498,6 +532,11 @@ subroutine input_pair
               if (rang/=0) cycle
               write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
            end do
+           do i=1,ntypr
+              do j=1,ntypr
+                 typ_pot_pair(ipo(ityplu(i),ityplu(j)))=ipotentiel
+              end do
+           end do
 
         else
            if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
@@ -506,6 +545,11 @@ subroutine input_pair
               cm(i)=cm(i)*umass
               if (rang/=0) cycle
               write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
+           end do
+           do i=1,ntyp
+              do j=1,ntyp
+                 typ_pot_pair(ipo(i,j))=ipotentiel
+              end do
            end do
 
         end if
