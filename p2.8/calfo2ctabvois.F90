@@ -49,7 +49,7 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
   aux = 23.06134575D-20
   alp = alpha/sqrt(pi)*aux
   iw2 = 0
-  do i = 1, im-1
+  do i = 1, im
 
      iti = ityp(i)
      l = ipo(iti,iti)
