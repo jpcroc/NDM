@@ -1049,6 +1049,10 @@ subroutine readdm
         do ipotcont=1,npotmax
            if (lpotentiel(ipotcont).EQV..true.)write(6,*)'potentiel actif', ipotcont
         end do
+        if (lcasca.eqv..true.) then
+           if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
+           stop
+        end if
      end if
   end if
   write(6,*)'fmt_cin',fmt_cin
