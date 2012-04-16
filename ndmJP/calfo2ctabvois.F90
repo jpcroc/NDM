@@ -50,7 +50,13 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
   aux = 23.06134575D-20
   alp = alpha/sqrt(pi)*aux
   iw2 = 0
+  do i = 1, im
 
+     iti = ityp(i)
+     l = ipo(iti,iti)
+     ! --- Calcul du second potentiel de la somme d'Ewald ---
+     potis2 = potis2-zz(l)*alp
+  end do
 
   ! --------------------------
   !   OUVERTURE BOUCLE SUR I
@@ -59,12 +65,6 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
   do i = 1, im-1
 
      iti = ityp(i)
-     f1 = fp(1,i)
-     f2 = fp(2,i)
-     f3 = fp(3,i)
-     l = ipo(iti,iti)
-     ! --- Calcul du second potentiel de la somme d'Ewald ---
-     potis2 = potis2-zz(l)*alp
      iw1 = iw2+1
      iw2 = iwmax(i)
      do iw = iw1, iw2

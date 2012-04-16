@@ -138,7 +138,13 @@ subroutine calpo
            r4 = r2*r2
            r5 = r4*r
            r6 = r3*r3
-           pot(1,:npair,k) = pau(:npair)*exp((-r)/ro(:npair))-dip(:npair)/r6
+           do l=1,npair
+              if((typ_pot_pair(l)==4).and.(lue_paire(l).eq..true.)) then
+                 pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 
+              end if
+           end do
+
+!           pot(1,:npair,k) = pau(:npair)*exp((-r)/ro(:npair))-dip(:npair)/r6
            ! cas particulier de l'interaction O-O
            l=ipo(2,2)
 
@@ -171,15 +177,35 @@ subroutine calpo
            r8 = r6*r2                           ! utile ????
            !                                                ! erg
            if (ipotentiel==3) then
-              where (typ_pot_pair==3) &
-                   &     pot(1,:,k) = pau(:)*exp((-r)/ro(:))-dip(:)/r6 +r8p(:)/r8
+              do l=1,npair
+                 if((typ_pot_pair(l)==3).and.(lue_paire(l).eq..true.)) then
+                    pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 +r8p(l)/r8
+                 end if
+              end do
            else
-              where ((typ_pot_pair==5).or.(typ_pot_pair==1)) &
-                   &          pot(1,:,k) = pau(:)*exp((-r)/ro(:))-dip(:)/r6
+              do l=1,npair
+                 if((typ_pot_pair(l)==5).and.(lue_paire(l).eq..true.)) then
+                    pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 
+                 end if
+              end do
+              do l=1,npair
+                 if((typ_pot_pair(l)==1).and.(lue_paire(l).eq..true.)) then
+                    pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6
+                 end if
+              end do
+
+!              where ((typ_pot_pair==5).or.(typ_pot_pair==1)) &
+!                   &          pot(1,:,k) = pau(:)*exp((-r)/ro(:))-dip(:)/r6
            endif
            if (ipotentiel==5) then
-              where (typ_pot_pair==5)& 
-                   &              pot(1,:,k)=pot(1,:,k)+dmorse(:)*((1.-exp(-1.*amorse(:)*(r-remorse(:))))**2 -1.)
+              do l=1,npair
+                 if((typ_pot_pair(l)==5).and.(lue_paire(l).eq..true.)) then
+                    pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 
+                 end if
+              end do
+
+!              where (typ_pot_pair==5)& 
+!                   &              pot(1,:,k)=pot(1,:,k)+dmorse(:)*((1.-exp(-1.*amorse(:)*(r-remorse(:))))**2 -1.)
            end if
 
         end do
@@ -347,7 +373,7 @@ subroutine calpo
               lpt=ipo_2_pair_tab(l)
               if (r.gt.pot_pair_tab(ngr,0,lpt)) then
                  if (rang==0) write(6,*)'pot tab pair trop court',r,k,pot_pair_tab(ngr,0,lpt),l,lpt
-                 call endrun
+                 call arret_ndm
               end if
               !              if (r.lt.pot_pair_tab(1,0,lpt)) cycle loopk
 
