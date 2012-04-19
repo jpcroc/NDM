@@ -75,7 +75,7 @@ subroutine inputtersoff
   read(lupotin,*,end=456)nprns
   if (npotentiel.gt.1) then
      if (rang==0) write(6,*)'lecture supplement potin pas possible avec npotentiel >1'
-     call endrun
+     call arret_ndm
   end if
   do i=1,ntypr
      read(lupotin,*)catom(i)

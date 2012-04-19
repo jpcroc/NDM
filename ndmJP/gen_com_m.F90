@@ -190,23 +190,6 @@ module gen_com_m
   real(double), dimension(:,:,:),pointer :: tabv3
   real(double), dimension(:,:,:,:),pointer :: tabf3
 
-  !PME
-  integer :: kpmex, kpmey, kpmez   !taille de grille de PME
-  integer :: kpme                  ! max des precedants
-  integer :: maxorder, iorder  !ordre de la PME (bspline)
-  integer :: npoint != kpmex*kpmey*kpmez
-  integer :: nfft1, nfft2, nfft3  ! ~kpmex
-  integer :: nff, nf1, nf2, nf3
-  integer :: ntable      ! pour fftfront
-  real(double) :: pterm, volterm, auxe ! constantes pour PME
-  real(double), dimension(:),pointer :: bsmod1   !bspline
-  real(double), dimension(:),pointer :: bsmod2
-  real(double), dimension(:),pointer :: bsmod3
-  real(double), dimension(:,:),pointer :: table  !pour fftfront
-  integer, dimension(:,:),pointer :: iiim,ijim,ikim  !calcul de qgrid
-  real(double), dimension(:),pointer :: fr1,fr2,fr3  !calcul de qgrid
-  real(double), dimension(:),pointer :: de1,de2,de3  !calcul de fp
-  !jm       real(double), dimension(:),pointer :: w1pme,w2pme,w3pme
 
   logical :: lalea  ! preparation d'une configuration aleatoire
   logical :: lopt   ! optimisation de Ewald par PME si TRUE
