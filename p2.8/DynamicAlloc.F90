@@ -1,6 +1,7 @@
 subroutine DynamicalAllocationCell
 
   use gen_com_m
+  use var_pot
   implicit none
 
   allocate(ncel(0:noxyz,0:26))
@@ -19,144 +20,9 @@ subroutine DynamicalAllocationCell
 
 end subroutine DynamicalAllocationCell
 
-subroutine alloc_typ
-
-  use gen_com_m
-  implicit none
-  integer::i,j,k ,ic
-  integer,save ::ncall=0
-  integer :: ipot_loc
-
-  ncall=ncall+1
-  if (ncall==1) then
-     rumax=0.
-     allocate(na(ntyp))
-     allocate(ipo(ntyp,ntyp))
-     ! initialisation de ipo
-     k = 0
-     do i = 1, ntyp
-        do j = i, ntyp
-           k = k+1
-           ipo(i,j) = k
-           ipo(j,i) = k
-        end do
-     end do
-     allocate(cm(ntyp)) ; allocate(catom(ntyp))
-
-     allocate(ty(ntyp))
-     allocate(pot(4,npair,0:ngrid+1))
-
-     allocate(q(ntyp))
-     q(:)=0
-     allocate(rc(ntyp))
-     rc(1:ntyp)=rclu(1:ntyp)*1.d-8
-     allocate(zz(npair))
-     allocate(lue_paire(npair))
-     allocate(lu_roff_pair(npair))
-     lu_roff_pair(:)=.false.
-
-     allocate(rue_pair(npair))
-     rue_pair(:)=0.
-
-
-     allocate(lue_typ(npair))
-     allocate(typ_pot_pair(npair))
-     allocate(lue_trip(ntrip))
-     lue_trip(:)=.false.;lue_paire(:)=.false.; lue_typ(:)=.false.
-     allocate(ro(npair)); allocate(dip(npair));allocate(pm(npair))
-     allocate(roff1(npair));allocate(roff2(npair))
-     allocate(a_factor(npair));allocate(r8p(npair))
-     allocate(h2sm(ntyp))
-     if(iterdf.ge.0) then
-        allocate(coord(ntyp,ntyp,nkmax))
-        allocate(digr(ntyp,ntyp,nkmax))
-        digr=0.d0
-        !     allocate(coorpart(contmax,ntyp))
-     endif
-     if(iteangle.ge.0) then
-        allocate(fda(ntyp,ntyp,ntyp,contmax))
-     endif
-
-     allocate(nad(ntyp)) ; allocate(nas(ntyp)) ; allocate(nai(ntyp))
-
-  end if
-
-
-  ipot_loc=0
-  if (lpotentiel(ipot_loc).eqv..true.) then
-     allocate(ray(ntyp)) ;allocate(bm(ntyp)) ; allocate(shel(ntyp))
-  endif
-
-  ipot_loc=5
-  if (lpotentiel(ipot_loc).eqv..true.) then
-     allocate(Dmorse(npair)) ;allocate(amorse(npair)) ; allocate(Remorse(npair))
-  endif
-
-  ipot_loc=6
-  if (lpotentiel(ipot_loc).eqv..true.) then
-     allocate(ietaij(npair)) ;allocate(capHij(npair))
-     allocate(capDij(npair));allocate(capWij(npair))
-  endif
-
-  ipot_loc=2
-  if (lpotentiel(ipot_loc).eqv..true.) then
-     allocate(Awat(npair));allocate(Bwat(npair));allocate(pwat(npair))
-     allocate(qwat(npair));allocate(rawat(npair)) ; allocate(rawat2(npair))
-     allocate(potw(npair,0:ngrid+1))
-     allocate(bspw(npair,0:ngrid+1));allocate(cspw(npair,0:ngrid+1))
-     allocate(dspw(npair,0:ngrid+1))
-     allocate (gz(0:ngrid+1))
-     allocate(fcr(0:ngrid+1))
-
-     allocate(bspg(0:ngrid+1))
-     allocate(cspg(0:ngrid+1))
-     allocate(dspg(0:ngrid+1))
-     allocate(cspf(0:ngrid+1))
-     allocate(bspf(0:ngrid+1))
-     allocate(dspf(0:ngrid+1))
-
-
-  endif
-
-  do ipot_loc=10,12
-     if (lpotentiel(ipot_loc).eqv..true.) then
-        allocate(eamrep(4,npair,0:ngrid+1))
-        if (ipot_loc==12) then
-           allocate(eamrho(4,npair,0:ngrid+1))
-        else
-           allocate(eamrho(4,ntyp,0:ngrid+1))
-        end if
-        allocate(eamglue(4,ntyp,0:ngrid+1))
-     end if
-  end do
-  !  if (l3c) then
-  allocate(lamb(ntrip)) ; allocate(cangle(ntrip))
-  allocate(gam(ntrip,npair)) ; allocate(coup3c(ntrip,npair))
-  allocate(coup3c2(ntrip,npair))
-  allocate(ipo3c(ntyp,ntyp,ntyp));allocate(l3ctyp(ntyp))
-  allocate(l3cpair(ntyp))
-  allocate(c3c(ntrip))
-  k=0
-  do ic=1,ntyp
-     do i=1,ntyp
-        do j=i,ntyp
-           k=k+1
-           ipo3c(ic,i,j)=k
-           ipo3c(ic,j,i)=k
-        enddo
-     enddo
-  enddo
-
-  !  endif
-
-
-
-
-  return
-end subroutine alloc_typ
-
 subroutine Deallocatecel
   use gen_com_m
+  use var_pot,only : iewald
   implicit none
   deallocate(ncel)
   deallocate(nato)
@@ -173,6 +39,7 @@ end subroutine Deallocatecel
 subroutine DeallocateAll
 
   use gen_com_m
+  use var_pot
   implicit none
 
   deallocate(ncel)
@@ -222,7 +89,6 @@ subroutine DeallocateAll
   if(associated(coup3c2))deallocate(coup3c2)
   if(associated(l3ctyp))deallocate(l3ctyp)
   if(associated(l3cpair))deallocate(l3cpair)
-  deallocate(h2sm)
   if(associated(coord))deallocate(coord)
   if(associated(digr))deallocate(digr)
   if(associated(fda))deallocate(fda)

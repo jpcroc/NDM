@@ -7,6 +7,7 @@ function tempinstcyl(vp,ityp)     !calcul de la T instant.
   !-----------------------------------------------
   USE T_kind_param_m
   use gen_com_m
+  use var_pot
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------

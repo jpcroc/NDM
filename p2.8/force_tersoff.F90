@@ -5,6 +5,7 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   use jqmod
   use force_tersoff_facteurs
   ! **************************************************************
@@ -340,18 +341,18 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
                     end do Tloop2at3
                  end if
 !                 write(6,*)'rij roff',rij,roff2(ij)
-!                 if (rij.le.roff2(ij)) then
-!                       sk = rij/csive
-!                       kk = sk
-!                       ! spline
-!                       dr = rij-float(kk)*csive
-!!                       write(6,*)'rij roff',rij,roff2(ij),pot(1,l,kk)
-!                       if (free(i)==.true)potisTersoff = potisTersoff+pot(1,l,kk)+ rij*(dr*(pot(2,l,kk)+dr*(pot(3,l,kk) +dr*(pot(4,l,kk)))))                       
-!                       phu = -1.0*(pot(2,l,kk)+dr*(2.0*pot(3,l,kk)+dr*(3.0*pot(4,l,kk))))
-!                       fp(:,i)=fp(:,i)+phu*cvij(1,:)
-!                       fp(:,j)=fp(:,j)-phu*cvij(1,:)
+                 if (rij.le.roff2(ij)) then
+                       sk = rij/csive
+                       kk = sk
+                       ! spline
+                       dr = rij-float(kk)*csive
+!                       write(6,*)'rij roff',rij,roff2(ij),pot(1,l,kk)
+                       potisTersoff = potisTersoff+pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk)))))                       
+                       phu = -1.0*(pot(2,ij,kk)+dr*(2.0*pot(3,ij,kk)+dr*(3.0*pot(4,ij,kk))))
+                       fp(:,i)=fp(:,i)+phu*cvij(1,:)
+                       fp(:,j)=fp(:,j)-phu*cvij(1,:)
 !
-!                 end if
+                    end if
 
               end if
            end if

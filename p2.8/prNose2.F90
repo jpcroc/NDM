@@ -1,21 +1,21 @@
 module Parrinello_Rahman_Nose
 
-  ! Algorithme de Parrinello-Rahman [1] combinÈ ‡ un thermostat de NosÈ [4]
-  ! basÈ sur les article de Ray et Rahman [2,3]
+  ! Algorithme de Parrinello-Rahman [1] combin√© √† un thermostat de Nos√© [4]
+  ! bas√© sur les article de Ray et Rahman [2,3]
   !
   ! Quelques remarques
-  ! * La vitesse des particules ne tient pas compte de la dÈrivÈe du tenseur h:
-  ! * On impose une tension thermodynamique plutÙt qu'une contrainte constante:
+  ! * La vitesse des particules ne tient pas compte de la d√©riv√©e du tenseur h:
+  ! * On impose une tension thermodynamique plut√¥t qu'une contrainte constante:
   !   eq. (2.22) de [2]
-  !   Du coup, la matrice h0 dÈfinissant l'Ètat de rÈfÈrence n'apparaÓt plus
-  !   nulle part dans l'algorithme. Cette matrice est nÈcessaire seulement si ‡
-  !   un instant donnÈ on souhaite calculer la dÈformation epsilon de la boÓte
-  !   et Ègalement son Ènergie potentielle Ucell, mais ces 2 quantitÈs ne sont
-  !   pas nÈcessaires ‡ l'algorithme.
-  ! * Le thermostat est imposÈ sur l'Ènergie cinÈtique des atomes et de la
+  !   Du coup, la matrice h0 d√©finissant l'√©tat de r√©f√©rence n'appara√Æt plus
+  !   nulle part dans l'algorithme. Cette matrice est n√©cessaire seulement si √†
+  !   un instant donn√© on souhaite calculer la d√©formation epsilon de la bo√Æte
+  !   et √©galement son √©nergie potentielle Ucell, mais ces 2 quantit√©s ne sont
+  !   pas n√©cessaires √† l'algorithme.
+  ! * Le thermostat est impos√© sur l'√©nergie cin√©tique des atomes et de la
   !   cellule.
   !
-  ! En rÈsumÈ, l'algorithme est basÈ sur les Èquations (3.2), (3.3) et (3.4) de [3]
+  ! En r√©sum√©, l'algorithme est bas√© sur les √©quations (3.2), (3.3) et (3.4) de [3]
   !
   ! [1] Parrinello, M. & Rahman, 
   !     A. Polymorphic Transitions in Single rcystals: A New Molecular Dynamics Method
@@ -26,14 +26,14 @@ module Parrinello_Rahman_Nose
   ! [3] Ray, J.R. & Rahman, A. 
   !     Statistical Ensembles and Molecular Dynamics Studies of Anisotropic Solids. II 
   !     J. Chem. Phys., 1985, 82, 4243-4247
-  ! [4] NosÈ, S. 
+  ! [4] Nos√©, S. 
   !     A Molecular Dynamics Method for Simulations in the Canonical Ensemble
   !     Mol. Phys., 1984, 52, 255-268
 
 
   USE T_kind_param_m
   use gen_com_m   
-
+  use var_pot
 
 #if(PARA)
   use mod_mpi
@@ -45,16 +45,16 @@ module Parrinello_Rahman_Nose
   real(double), dimension(3,3), save , private ::hpoint, h2point, whpointpoint, Gpoint
   real(double), pointer, save, private :: sp(:,:),sold(:,:),snew(:,:),sdot(:,:)
 
-  ! Variables uniquement nÈcessaires au calcul de l'Ènergie potentielle de la
-  ! boÓte
+  ! Variables uniquement n√©cessaires au calcul de l'√©nergie potentielle de la
+  ! bo√Æte
   real(double), dimension(3,3), save , private ::trh0,invh0,invtrh0,epsi, tension
   real(double), save , private ::volu0, invVolu0
 
-  ! Variable associÈe au thermostat de NosÈ
-  !  (fNose est dÈfini dans gen_com_m.F90)
+  ! Variable associ√©e au thermostat de Nos√©
+  !  (fNose est d√©fini dans gen_com_m.F90)
   REAL(double), save, private :: fnew, flast, fold, fpoint, f2point
 
-  ! Nombre de degrÈs de libertÈ
+  ! Nombre de degr√©s de libert√©
   REAL(double), save, private :: gNose
 
 contains
@@ -74,16 +74,16 @@ contains
 
 #endif
 
-    ! Calcul de la tempÈrature initiale
+    ! Calcul de la temp√©rature initiale
     temp0=tempinst(vp,ityp)
 
     if (rang==0) WRITE(6,*)
-    if (rang==0) WRITE(6,'(a)') 'Algorithme de Parrinello-Rahman couplÈ au thermostat de NosÈ (V2)'
-    if (rang==0) WRITE(6,'(a)') '  -> la vitesse de la boÓte ne prend pas en compte la dÈrivÈe du tenseur h'
-    if (rang==0) WRITE(6,'(a)') "  -> l'Ènergie cinÈtique des atomes et de la boÓte est thermalisÈe"
+    if (rang==0) WRITE(6,'(a)') 'Algorithme de Parrinello-Rahman coupl√© au thermostat de Nos√© (V2)'
+    if (rang==0) WRITE(6,'(a)') '  -> la vitesse de la bo√Æte ne prend pas en compte la d√©riv√©e du tenseur h'
+    if (rang==0) WRITE(6,'(a)') "  -> l'√©nergie cin√©tique des atomes et de la bo√Æte est thermalis√©e"
     if (rang==0) WRITE(6,*)
     IF (lUcell) THEN
-       if (rang==0) WRITE(6,'(a)') "RepËre de rÈfÈrence pour Parrinello-Rahman  (A):"
+       if (rang==0) WRITE(6,'(a)') "Rep√®re de r√©f√©rence pour Parrinello-Rahman  (A):"
        if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
        if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0(1:3,2)
        if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0(1:3,3)
@@ -91,53 +91,53 @@ contains
     ELSE
        h0 = at
     END IF
-    if (rang==0) WRITE(6,'(a)') "RepËre actuel  (A):"
+    if (rang==0) WRITE(6,'(a)') "Rep√®re actuel  (A):"
     if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*at(1:3,1)
     if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*at(1:3,2)
     if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*at(1:3,3)
     IF (wbox==0.0) THEN
-       wbox = sum(0.5*cm(ityp(:im)))       ! La moitiÈ de la masse totale des atomes
+       wbox = sum(0.5*cm(ityp(:im)))       ! La moiti√© de la masse totale des atomes
 #if(PARA)
   call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   wbox=wbox_tot
 #endif
     END IF
-    if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la boÓte pour Parrinello-Rahman: wbox=',wbox
+    if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la bo√Æte pour Parrinello-Rahman: wbox=',wbox
 
-    ! Nombre de degrÈs de libertÈ pour le thermostat de NosÈ
+    ! Nombre de degr√©s de libert√© pour le thermostat de Nos√©
     gNose = dble(3*im_glob+1)
 
     IF (wNose.EQ.0) THEN
-       ! On suppose que la frÈquence de vibration typique du solide est
-       !  1 THz = 1e-12 sØπ
+       ! On suppose que la fr√©quence de vibration typique du solide est
+       !  1 THz = 1e-12 s¬Ø¬π
        ! wNose = bk*Text*dble(2*(3*imana+1))/(2.d0*pi*1d-12)**2        ! Eq. 2.30 Ref.[4]
-       !  => Áa ne marche pas
-       ! On veut qu'une variation de la tempÈrature de 10K corresponde ‡
+       !  => √ßa ne marche pas
+       ! On veut qu'une variation de la temp√©rature de 10K corresponde √†
        ! une variation de f de 1% avec f~1
        wNose = gNose*bk*10.d0*tstep**2/1.d-2**2
     END IF
-    if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la boÓte pour thermostat de NosÈ: wNose=',wNose
-    if (rang==0) WRITE(6,'(a,g20.12)')'Nombre de degrÈs de libertÈ: gNose=',gNose              
+    if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la bo√Æte pour thermostat de Nos√©: wNose=',wNose
+    if (rang==0) WRITE(6,'(a,g20.12)')'Nombre de degr√©s de libert√©: gNose=',gNose              
 
 
-    ! …tat de rÈfÈrence dÈfini par la matrice h0
-    !   Cet Ètat de rÈfÈrence doit correspondre ‡ un tenseur de contrainte nul.
-    !   Il n'est utile que pour calculer la dÈformation et l'Ènergie potentielle
-    !   de la boÓte.
+    ! √âtat de r√©f√©rence d√©fini par la matrice h0
+    !   Cet √©tat de r√©f√©rence doit correspondre √† un tenseur de contrainte nul.
+    !   Il n'est utile que pour calculer la d√©formation et l'√©nergie potentielle
+    !   de la bo√Æte.
     volu0 = calcvol(h0(1:3,1),h0(1:3,2),h0(1:3,3))
     invVolu0 = 1.d0/volu0
     trh0=Transpose(h0)
     CALL MatInv(h0,invh0)
     invtrh0=Transpose(invh0)
 
-    ! Vecteurs de la boÓte et matrice inverse
+    ! Vecteurs de la bo√Æte et matrice inverse
     h = at 
 
-    ! CoordonnÈes rÈduites des atomes
+    ! Coordonn√©es r√©duites des atomes
     allocate(sp(3,imm),sdot(3,imm),sold(3,imm),snew(3,imm))
 
-    ! Initialisation de la vitesse de la boÓte
-    !if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boÓte pour la tempÈrature ', temp0, ' K'
+    ! Initialisation de la vitesse de la bo√Æte
+    !if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la bo√Æte pour la temp√©rature ', temp0, ' K'
     !do i=1,3
     !do j=1,3
     !call random_number(z1)
@@ -146,7 +146,7 @@ contains
     !hpoint(i,j)=sqrt(2*bk*temp0/wbox)*sqrt(-log(z1))*(1.-2*z2)
     !end do
     !end do
-    if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boÓte pour la tempÈrature ', 0.d0, ' K'
+    if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la bo√Æte pour la temp√©rature ', 0.d0, ' K'
     hpoint(:,:) = 0.d0
     hold(:,:) = h(:,:) - tstep*hpoint(:,:)
     ! Kinetic energy of the cell (Eq. 2.14 of Ref. [2])
@@ -162,7 +162,7 @@ contains
     write(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
          '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
 
-    ! Kinetic and potential energies of NosÈ thermostat (Eq. 3.1 Ref. [3])
+    ! Kinetic and potential energies of Nos√© thermostat (Eq. 3.1 Ref. [3])
     !KNose = 0.5d0*bk*temp0
     KNose = 0.d0
     fpoint = Sqrt(2.d0*KNose/wNose)
@@ -171,9 +171,9 @@ contains
     fNose=1.d0
     fold = fNose - fpoint*tstep
     if (rang==0) WRITE(6,'(3(a,g22.12))') 'fNose = ', fNose, '  fold = ', fold, '  fpoint = ', fpoint  
-    if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de NosÈ pour la tempÈrature ', &
+    if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de Nos√© pour la temp√©rature ', &
          0.d0, ' K'
-    !if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de NosÈ pour la tempÈrature ', &
+    !if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de Nos√© pour la temp√©rature ', &
     !temp0, ' K'
     if (rang==0) WRITE(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') it,timel,'*KNose = ',KNose*unitE,cunitE, &
          '  (', 2.d0*KNose/bk, ' K)'
@@ -207,13 +207,13 @@ contains
     real(double) sigkine_tot(3,3)
 #endif
 
-    ! ParamËtres du thermostat
+    ! Param√®tres du thermostat
     fNose2=fNose*fNose
 
-    ! Vecteurs de la boÓte
+    ! Vecteurs de la bo√Æte
     h(:,:)=at(:,:)
     trh=Transpose(h)
-    ! MÈtrique de la boÓte
+    ! M√©trique de la bo√Æte
     Gmat = MatMul(trh,h)
     call MatInv(Gmat,invGmat)
     call MatInv(h,invh)
@@ -221,11 +221,11 @@ contains
     invtrh = Transpose(invh)
     volu = calcvol(h(1:3,1),h(1:3,2),h(1:3,3))
     invVolu = 1.d0/volu
-    Area(:,:)=volu*invtrh(:,:)    ! Correspond ‡ sigma dans l'article de Parrinello Rahman
+    Area(:,:)=volu*invtrh(:,:)    ! Correspond √† sigma dans l'article de Parrinello Rahman
 
-    ! DÈduit de la tension thermodynamique correspondant ‡ la contrainte imposÈe
+    ! D√©duit de la tension thermodynamique correspondant √† la contrainte impos√©e
     ! la matrice grsig
-    ! Èq. 2.22 et 2.26 dans l'article de Ray et Rahman
+    ! √©q. 2.22 et 2.26 dans l'article de Ray et Rahman
     grsig = volu * MatMul(invh, MatMul( sigext, invtrh) )
 
     ! Strain tensor (Eq. 2.16)
@@ -241,28 +241,28 @@ contains
     maux1 = MatMul( tension, epsi )
     Ucell = volu0*( maux1(1,1) + maux1(2,2) + maux1(3,3) )
 
-    ! CoordonnÈes rÈduites des atomes
+    ! Coordonn√©es r√©duites des atomes
     sp(1:3,1:imm) = MatMul(invh(1:3,1:3), xp(1:3,1:imm) )
     sold(1:3,1:imm) = MatMul( invhold(1:3,1:3), xpp(1:3,1:imm) )
-    ! snew est le propagÈ de s avec seulement fp unc==uncorrected
+    ! snew est le propag√© de s avec seulement fp unc==uncorrected
     do ia = 1,imm
        snew(1:3,ia) = -sold(1:3,ia) + 2.d0*sp(1:3,ia) & 
             + tstep**2/(fNose2*cm(ityp(ia)))*MatMul( invH(1:3,1:3), fp(1:3,ia))
     enddo
 
-    ! Compute initial guess for Parrinello-Rahman and NosÈ
+    ! Compute initial guess for Parrinello-Rahman and Nos√©
     !   variables at next time step ...........................................
-    ! ce hnew est le premier h(in) de la boucle autocohÈrente (‡ noter pas de force sur h)
+    ! ce hnew est le premier h(in) de la boucle autocoh√©rente (√† noter pas de force sur h)
     hnew = 2.d0*h - hold
     fnew = 2.d0*fNose - fold
     iter = 0
 
-    ! Start selfconsistency loop to calculate P-R and NosÈ variables ..........
+    ! Start selfconsistency loop to calculate P-R and Nos√© variables ..........
 10  continue
     iter = iter + 1
 
 !!$    if (rang==0) WRITE(6,*)                                                          ! DEBUG
-!!$    if (rang==0) WRITE(6,'(a)') 'Parrinello-Rahman / NosÈ self consistent loop'      ! DEBUG
+!!$    if (rang==0) WRITE(6,'(a)') 'Parrinello-Rahman / Nos√© self consistent loop'      ! DEBUG
 !!$    if (rang==0) WRITE(6,'(a,i0)') '  iter = ', iter                                 ! DEBUG
 !!$    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h(1:3,1) = ', 1e8*hnew(1:3,1)           ! DEBUG
 !!$    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h(1:3,2) = ', 1e8*hnew(1:3,2)           ! DEBUG
@@ -273,7 +273,7 @@ contains
 
     IF (iter.GT.Max_Iter) THEN
        WRITE(0,'(a,i0,a)') 'Maximal number of iterations (', Max_Iter, &
-            ') in Parrinello-Rahman / NosÈ self consistency loop has been reached'
+            ') in Parrinello-Rahman / Nos√© self consistency loop has been reached'
        WRITE(0,*)
        WRITE(0,'(a)') 'Last h proposed:'
        WRITE(0,'(a,3(f0.5,1x))') ' h(1:3,1) = ', 1e8*hlast(1:3,1)
@@ -290,7 +290,7 @@ contains
        STOP '< PRNose >'
     END IF
 
-    ! Valeurs de la derniËre itÈration du cycle d'autocohÈrence
+    ! Valeurs de la derni√®re it√©ration du cycle d'autocoh√©rence
     hlast = hnew
     flast = fnew
 
@@ -307,7 +307,7 @@ contains
     END DO
     fpoint = (fnew - fold)/(2.d0*tstep)
 
-    ! RÈsolution de l'Èquation 3.2 de la Ref. [3]
+    ! R√©solution de l'√©quation 3.2 de la Ref. [3]
     mf = 0.5d0*tstep*MatMul(invGmat,Gpoint)
     do i = 1,3
        mf(i,i) = mf(i,i) + 1.d0 + tstep*fpoint/fNose
@@ -318,7 +318,7 @@ contains
 
     ! avec ce sdot on peut calculer la vitesse des particules
     vp(1:3,1:imm) = fNose*MatMul(h(1:3,1:3),sdot(1:3,1:imm)) 
-    !  ... la contrainte thermique associÈe
+    !  ... la contrainte thermique associ√©e
     sigkine(:,:)=0.d0
     do ia = 1, im
        do j = 1,3
@@ -332,13 +332,13 @@ contains
 
 #endif
 
-    ! ... et l'Ènergie cinÈtique
+    ! ... et l'√©nergie cin√©tique
     kine = 0.5d0*volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
 
     ! Contrainte totale
     sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
 
-    ! RÈsolution de l'Èquation (3.3) de la Ref. [3]
+    ! R√©solution de l'√©quation (3.3) de la Ref. [3]
     if(lpcon2.EQV..true.)then
        whpointpoint(:,:) = MatMul(sigtot,Area)- MatMul(h, grsig) &
             - 2.d0*wbox*fNose*fpoint*hpoint(:,:) &
@@ -349,11 +349,11 @@ contains
     end if
     hnew(:,:) = 2.d0*h(:,:) - hold(:,:) + whpointpoint(:,:)*tstep**2/(fNose2*wbox)
 
-    ! RÈsolution de l'Èquation (3.4) de la RÈf. [3]
+    ! R√©solution de l'√©quation (3.4) de la R√©f. [3]
     f2point = (2.d0*(kine+Kcell) - gNose*bk*Text)/(fNose*wNose)
     fnew = 2.d0*fNose - fold + f2point*tstep**2
 
-    ! VÈrifie l'autocohÈrence
+    ! V√©rifie l'autocoh√©rence
     ! --- de h
     diff = Sum( abs( hnew(1:3,1:3) - hlast(1:3,1:3) ) )
     tdiff = Sum( abs( hlast(1:3,1:3) ) )
@@ -371,7 +371,7 @@ contains
        if (diff/tdiff .gt. tol) goto 10
     endif
 
-    ! Ici hnew et fnew sont convergÈs
+    ! Ici hnew et fnew sont converg√©s
 !!$  if (rang==0) WRITE(6,'(a,i0)') 'PR: iter = ', iter
     snew(1:3,1:imm) = sold(1:3,1:imm) + 2.d0*tstep*sdot(1:3,1:imm)
 
@@ -397,7 +397,7 @@ contains
     ! Total energy of the cell
     Ecell = Kcell + Ucell
 
-    ! Kinetic and potential energies of NosÈ thermostat (Eq. 3.1 Ref. [3])
+    ! Kinetic and potential energies of Nos√© thermostat (Eq. 3.1 Ref. [3])
     KNose = 0.5d0*wNose*fpoint**2
     UNose = gNose*bk*Text*log(fNose)
     ENose = KNose + UNose

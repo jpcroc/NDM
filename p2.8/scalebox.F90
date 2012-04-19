@@ -4,6 +4,7 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
+  use var_pot
   use gen_com_m
   !           (version du 09 juin 2000)
   ! ******************************************************************

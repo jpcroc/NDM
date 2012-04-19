@@ -1,5 +1,6 @@
 subroutine calfoberend(xp, vp, fp,ityp)
   use gen_com_m
+  use var_pot
   real(double)  :: xp(3,imm)
   real(double)  :: vp(3,imm)
   real(double)  :: fp(3,imm)
@@ -27,6 +28,7 @@ end subroutine calfoberend
 
       subroutine calfolangevin(xp, vp, fp,ityp)
       use gen_com_m
+  use var_pot
 #if(PARA)
   use mod_mpi
 #endif

@@ -3,6 +3,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   !tentaive de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
   use gen_com_m
+  use var_pot
   use SMjuli
   use jqmod
   implicit none

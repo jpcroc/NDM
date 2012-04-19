@@ -1,5 +1,6 @@
 subroutine correlvp(xp, xpp, vp, ax, fp, ityp)
   use gen_com_m
+  use var_pot
   integer , intent(in)  :: ityp(imm)
   real(double) , intent(in)  :: xp(3,imm)
   real(double) , intent(in)  :: xpp(3,imm)

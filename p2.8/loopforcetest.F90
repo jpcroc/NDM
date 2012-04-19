@@ -9,6 +9,7 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -63,7 +64,7 @@ test_force=2
      !      write(6,*)'***** ITERATION  ****', it
 
      ! appel de la routine generale des forces
-     !position de départ
+     !position de dÃ©part
      vp=0.0
      do i=1,im
         write(6,*)i,xp(1,i),xp(2,i),xp(3,i)

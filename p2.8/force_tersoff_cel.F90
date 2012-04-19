@@ -5,6 +5,7 @@ subroutine force_tersoff_cel
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   use tab_imm_m
   use jqmod
   use force_tersoff_facteurs
@@ -327,16 +328,17 @@ subroutine force_tersoff_cel
                        end if
                     end do
                  end if
-!                 if (rij.le.roff2(ij)) then
-!                    sk = rij/csive
-!                    kk = sk
+                 if (rij.le.roff2(ij)) then
+!                    write(6,*)'BINGO'
+                    sk = rij/csive
+                    kk = sk
 !                    ! spline
-!                    dr = rij-float(kk)*csive
-!                    potis1 = potis1+pot(1,l,kk)+ rij*(dr*(pot(2,l,kk)+dr*(pot(3,l,kk) +dr*(pot(4,l,kk)))))                       
-!                    phu = -1.0*(pot(2,l,kk)+dr*(2.0*pot(3,l,kk)+dr*(3.0*pot(4,l,kk))))
-!                    fp(:,i)=fp(:,i)+phu*cvij(1,:)
-!                    fp(:,j)=fp(:,j)-phu*cvij(1,:)
-!                 end if
+                    dr = rij-float(kk)*csive
+                    potisTersoff = potisTersoff+pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk)))))                       
+                    phu = -1.0*(pot(2,ij,kk)+dr*(2.0*pot(3,ij,kk)+dr*(3.0*pot(4,ij,kk))))
+                    fp(:,i)=fp(:,i)+phu*cvij(1,:)
+                    fp(:,j)=fp(:,j)-phu*cvij(1,:)
+                 end if
 
               end if
 

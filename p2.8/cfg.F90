@@ -17,6 +17,7 @@ CONTAINS
     ! aux_title(1:nAux_int+nAux_real) : nom des propriÃ©tÃ©s correspondantes
 
     USE gen_com_m
+    use var_pot
     IMPLICIT NONE
     REAL(double), intent(in)  :: xp(3,imm)
     INTEGER, intent(in) :: ityp(imm)

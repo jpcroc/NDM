@@ -6,6 +6,7 @@ subroutine input_pair
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   !   Version du 3dec. 2001
   ! **********************************************************************
   implicit none
@@ -33,7 +34,7 @@ subroutine input_pair
   real(double)::qr,cmr,catomr,ecrue,x,rmd,rm2d,xd,fcd
   character :: tyr*3
   integer  :: nb_paire_a_lire, lect_paire,tt1,tt2,igr
-
+  integer::num_paire
   ! lecture des termes a trois corps
   !  logical, dimension (:),pointer :: lue_trip
   integer  :: n3c,npg,npd
@@ -203,16 +204,16 @@ subroutine input_pair
                  if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
                  if (cmr*umass.ne.cm(iti))then
                     if (rang==0)write(6,*) 'pb avec cm'
-                    call endrun
+                    call arret_ndm
                  end if
                  if (tyr.ne.ty(iti))then
                     if (rang==0)write(6,*) 'pb avec ty'
-                    call endrun
+                    call arret_ndm
                  end if
                  if(iewald.ne.0)then
                     if (tyr.ne.ty(iti))then
                        if (rang==0)write(6,*) 'pb avec ty'
-                       call endrun
+                       call arret_ndm
                     end if
                  end if
               endif
@@ -330,7 +331,6 @@ subroutine input_pair
         cm(:ntyp) = cm(:ntyp)*umass
 
         ! initialisations
-        h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
         usdh = 1/(two*tstep)
 
         if (rang==0) write (6, *) 'type ;charge ; rayon ; bm ; shell ; type'
@@ -402,11 +402,11 @@ subroutine input_pair
                  if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
                  if (cmr*umass.ne.cm(iti))then
                     if (rang==0)write(6,*) 'pb avec cm'
-                    call endrun
+                    call arret_ndm
                  end if
                  if (tyr.ne.ty(iti))then
                     if (rang==0)write(6,*) 'pb avec ty'
-                    call endrun
+                    call arret_ndm
                  end if
               endif
               q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
@@ -666,7 +666,7 @@ subroutine input_pair
 
      if (npotentiel .gt.1)then
         write(6,*)'ipotentiel==2 et Npotentiel> 1 stop'
-        call endrun
+        call arret_ndm
 
      else
         read(lupotin,*) ntyp
@@ -691,8 +691,7 @@ subroutine input_pair
      cm(:ntyp) = cm(:ntyp)*umass
 
      ! initialisations
-     !     where(cm.ne.0.0)  h2sm = tstep**2/cm/two
-     !     usdh = 1/(two*tstep)
+
 
 
      read(lupotin,*) epswat   ! lu directement en ergs
@@ -784,7 +783,7 @@ subroutine input_pair
 
      if (npotentiel .gt.1)then
         write(6,*)'ipotentiel==2 et Npotentiel> 1 stop'
-        call endrun
+        call arret_ndm
      end if
      iewald=0
      l3c=.true.
@@ -801,7 +800,6 @@ subroutine input_pair
 
      ! initialisations
      cm(:ntyp) = cm(:ntyp)*umass
-     !     h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
      !     usdh = 1/(two*tstep)
 
      read(lupotin,*)rue, lambda,xsi

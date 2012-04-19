@@ -120,12 +120,9 @@ subroutine init
            call inputtersoff
 
         end select
-        !        h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
-        !        usdh = 1/(two*tstep)         
      endif
   end do
   write(6,*)'cm',cm
-  h2sm(:ntyp) = tstep**2/cm(:ntyp)/two
   usdh = 1/(two*tstep)         
   !endif
 

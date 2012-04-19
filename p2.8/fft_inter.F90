@@ -7,6 +7,7 @@ subroutine fft_inter (char1)
   !-----------------------------------------------
   USE T_kind_param_m
   use gen_com_m
+  use var_pot
   use fft_com_m
   implicit none
 #ifdef para2c

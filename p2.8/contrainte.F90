@@ -2,6 +2,7 @@ module contrainte
 
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   implicit none
 
   ! Constraint
@@ -23,7 +24,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m, ONLY : imm, im, cm, at, dmtype
+
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s

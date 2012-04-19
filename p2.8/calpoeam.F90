@@ -5,6 +5,7 @@ subroutine calpoeam
   USE T_kind_param_m
   use gen_com_m
   use eam
+  use var_pot
   use SMjuli
   implicit none
   

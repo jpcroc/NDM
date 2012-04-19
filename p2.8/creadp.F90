@@ -7,6 +7,7 @@ subroutine creadp(xp, xpp, ityp,vp)
   USE T_kind_param_m, ONLY:  double
   use defcdp
   use gen_com_m
+  use var_pot
   implicit none
 
   !-----------------------------------------------

@@ -7,6 +7,7 @@ subroutine transf
   !-----------------------------------------------
   USE T_kind_param_m
   use gen_com_m
+  use var_pot
   use tab_imm_m
   implicit none
   !-----------------------------------------------

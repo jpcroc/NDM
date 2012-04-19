@@ -5,6 +5,7 @@ subroutine readdm
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
+  use var_pot
   use jqmod
 #if(PARA)
   use mod_mpi
@@ -114,7 +115,7 @@ subroutine readdm
   ltranche = .FALSE.          ! existence d'une trache gelee
   rulayer=0.0                 ! largeur de la tranche gelee par 
   ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
-  lpr=.false.                 ! parinnelo rahman � contrainte constante
+  lpr=.false.                 ! parinnelo rahman   contrainte constante
   sigext = 0.0                ! Symetric tensor related to the external stress
   !=== Modif Emmanuel Clouet ================
   h0(1:3,1:3) = 0.d0          ! Vecteurs de base de la bite de reference en A (Parrinello, Rahman)
@@ -140,10 +141,10 @@ subroutine readdm
   iteTconst =itetemp
   lalea = .FALSE.             ! structure initiale aleatoire
   rsep = 1.0               !Distance de separation pour le tirage aleatoire
-  ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW Ã  la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original)
+  ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW ÃÂ  la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original)
   npotentiel = 1              ! nb de potentiels
   lpotentiel(:)=.false.
-  ntyp=-1                    ! le nombre de type DOIT etre specifie si le nombre de potentiel est superieur Ã  1
+  ntyp=-1                    ! le nombre de type DOIT etre specifie si le nombre de potentiel est superieur ÃÂ  1
   ! PME
   maxorder=10                                ! Ordre du developpement maximal de la PME
   lpotrep=.false.           ! dans calpo brache une repulsion de Ziegler (lpotrep=false) ou  polynomiale (lpotrep=.TRUE.)
@@ -246,7 +247,7 @@ subroutine readdm
   lprtfat=.false.
 
   lFrozen=.FALSE.
-  lxfrozen=.FALSE.             ! .true.: certains atomes sont bloque¸ (pas de dynamique)
+  lxfrozen=.FALSE.             ! .true.: certains atomes sont bloqueÂ¸ (pas de dynamique)
   lyfrozen=.FALSE.             
   lzfrozen=.FALSE.             
   lxyfrozen=.FALSE.             
@@ -637,7 +638,7 @@ subroutine readdm
 
   if(lLangevin) then
      dmtype=4
-     write(6,*)'langevin buggué voir Cosmin fabien'
+     write(6,*)'langevin bugguÃ© voir Cosmin fabien'
      stop
   end if
   if(lLangevin.and.(Text.le.0.0)) then
@@ -809,7 +810,7 @@ subroutine readdm
 
   if (ltabvois) then
      if (npotentiel.gt.1) then
-        if (rang==0) write(6,*)'ltabvois avec plusieurs potentiels= pas programmÃ© (demi table ou table complete =prise de tete'
+        if (rang==0) write(6,*)'ltabvois avec plusieurs potentiels= pas programmÃÂ© (demi table ou table complete =prise de tete'
         stop
      end if
 
@@ -1002,7 +1003,7 @@ subroutine readdm
 
      ! Le tableau free controle quels atomes participent a l'energie (utilise par JP a priori)
      ! Le tableau frozen controle quelles coordonnees de quels atomes sont libres de relaxer
-     !    i.e. quelles forces doivent être annulees
+     !    i.e. quelles forces doivent Ãªtre annulees
      Allocate(Free(1:imm))
      free(:)=.true.
      Allocate(Frozen(1:3,1:imm))
@@ -1048,6 +1049,10 @@ subroutine readdm
         do ipotcont=1,npotmax
            if (lpotentiel(ipotcont).EQV..true.)write(6,*)'potentiel actif', ipotcont
         end do
+        if (lcasca.eqv..true.) then
+           if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
+           stop
+        end if
      end if
   end if
   write(6,*)'fmt_cin',fmt_cin
@@ -1067,13 +1072,13 @@ subroutine readdm
      if(tempdes==-1)tempdes=Text
 
      if (rang==0)write(6,*)
-     if (rang==0)write(6,*)'desintegration de l atome ',ides, 'mis à 1'
+     if (rang==0)write(6,*)'desintegration de l atome ',ides, 'mis Ã  1'
      if (rang==0)write(6,*) 'desinteg NE FONCTIONNE QUE AVEC DES POT DE PAIRES !!!'
      if (rang==0)write(6,'(A,D12.5,A)')' kspr=',kspr,'eV/Ang**2'
      kspr=kspr*1d16/erg2eV
      if (rang==0)write(6,*)
      if (rang==0)write(6,*)'ATTENTION EN PARA LES ATOMES NE DOIVENT PAS TROP VOYAGER PENDANT LES CHEMINS'
-     if (rang==0)write(6,*)'ATTENTION EN PARA un atome ne doit pas aller d-un proc. à un proc non voisin'
+     if (rang==0)write(6,*)'ATTENTION EN PARA un atome ne doit pas aller d-un proc. Ã  un proc non voisin'
 
 
 

@@ -5,6 +5,7 @@ subroutine adf
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m
+  use var_pot
   use tab_imm_m
 
 
