@@ -158,15 +158,26 @@ endif
 
  DEP=${OBJS}
  CLEANART=clean_art
+ CLEANPHONDY=clean_phondy
 
 ifdef ART
  # Version ART
  OBJS = ${OBJS_MOD} ${OBJS_SEQ}
  DEP=${OBJS}  ${LIBART}
  CLEANART=clean_art
+ DIREXT=art
 
 endif
- 
+ifdef PHONDY
+ # Version PHONDY
+ OBJS = ${OBJS_MOD} ${OBJS_SEQ}
+ DEP=${OBJS}  ${LIBPHONDY}
+ CLEANPHONDY=clean_phondy
+ DIREXT=phondy
+
+endif
+
+
 .f.o :
 	${F90} -c  ${F90FLAGS} $<
 
@@ -180,17 +191,19 @@ endif
 
 
 LIBART = libart.a
-
+LIBPHONDY=libphondy.a
 
 
 
 ${BIN}/rundm90 : ${DEP} 
 	${LD} -o ${BIN}/rundm90${EXT}  ${F90FLAGS} ${LDFLAGS} ${OBJS} ${LIBRARY}
-	rm -rf art
+	rm -rf ${DIREXT}
 
 
 $(LIBART): 
 	(cp -rp ../art ./ ; cd art	; make ; cp *.o *.a ../../art)
+$(LIBPHONDY): 
+	(cp -rp ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
 
 clean : clean_seq clean_para
 
@@ -215,4 +228,6 @@ fft_inter.o : fft_inter.F90
 
 clean_art:
 	rm -rf art ; cd ../art ; make clean   
+clean_phondy:
+	rm -rf phondy ; cd ../phondy ; make clean   
 #

@@ -51,7 +51,7 @@ subroutine readdm
        lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,&
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
-       eatref,lheat,rheat,iteheat,theat,Eheat
+       eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder
 
 
   !
@@ -504,7 +504,18 @@ subroutine readdm
      call arret_ndm
   endif
   if (dmtype==7.and.deltax.le.0) then
-     write(6,*) rang,'dmtype 7 deltax 0'
+          if (.not.lEev) then
+              write(6,*)  'PHONDY: lEev should be set on .true.'
+              write(6,*)  'PHONDY: Change accordingly and try again!'
+              stop
+          end if    
+     write(6,*) rang,'For dmtype 7 deltax must be grater than zero 0'
+     write(6,*) rang,'Change deltax!'
+        if ((HessianOrder.ne.1).or.(HessianOrder.ne.2).or.(HessianOrder.ne.4)) then
+        write (6,*) ' PHONDY: HessianOrder can have only the values 1, 2 or 4'
+        write (6,*)  'PHONDY: stop'
+        end if
+
      call arret_ndm
   endif
 

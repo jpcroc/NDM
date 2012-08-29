@@ -89,6 +89,12 @@ subroutine prog
           call art90
 #endif
 
+#if(PHONDY)    
+     case (7) 
+          call phondy
+#endif
+
+
   end select
 
 

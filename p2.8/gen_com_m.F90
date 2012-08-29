@@ -260,7 +260,9 @@ module gen_com_m
   REAL(double) :: kspring,deltaRmax,neb_noise_scale
   !...inNEB
 
-
+  !...inPHONDY
+  integer  :: HessianOrder
+  !...inPHONDY
   ! chauffage cylindre
   logical :: lHcyl ! variable de type logique representant le chauffage du cylindre
   real(double) :: Ecyl ! energie totale des atomes dans le cylindre
