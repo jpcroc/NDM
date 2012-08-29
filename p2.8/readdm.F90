@@ -498,7 +498,7 @@ subroutine readdm
   end if
 
 
-  deltax=deltax*1.0d-8
+  deltax=deltax*ang2cm
   if (dmtype==5.and.deltax.le.0) then
      write(6,*) rang,'dmtype 5 deltax 0'
      call arret_ndm
@@ -511,13 +511,18 @@ subroutine readdm
           end if    
      write(6,*) rang,'For dmtype 7 deltax must be grater than zero 0'
      write(6,*) rang,'Change deltax!'
-        if ((HessianOrder.ne.1).or.(HessianOrder.ne.2).or.(HessianOrder.ne.4)) then
-        write (6,*) ' PHONDY: HessianOrder can have only the values 1, 2 or 4'
-        write (6,*)  'PHONDY: stop'
-        end if
-
      call arret_ndm
   endif
+
+  if (dmtype==7) then
+        if (.not.(HessianOrder.eq.1).or.(HessianOrder.eq.2).or.(HessianOrder.eq.4)) then
+        write (6,*) ' PHONDY: HessianOrder can have only the values 1, 2 or 4'
+        write (6,*) ' PHONDY: which corresponds to Hessian on 2,3 or 5 points' 
+        write (6,*) ' PHONDY: HessianOrder.........: ', HessianOrder  
+        write (6,*) ' PHONDY: stop'
+        stop
+        end if
+  end if       
 
 
 
