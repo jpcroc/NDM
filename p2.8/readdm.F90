@@ -515,12 +515,12 @@ subroutine readdm
   endif
 
   if (dmtype==7) then
-        if (.not.(HessianOrder.eq.1).or.(HessianOrder.eq.2).or.(HessianOrder.eq.4)) then
-        write (6,*) ' PHONDY: HessianOrder can have only the values 1, 2 or 4'
-        write (6,*) ' PHONDY: which corresponds to Hessian on 2,3 or 5 points' 
-        write (6,*) ' PHONDY: HessianOrder.........: ', HessianOrder  
-        write (6,*) ' PHONDY: stop'
-        stop
+        if (.not.((HessianOrder.eq.1).or.(HessianOrder.eq.2).or.(HessianOrder.eq.4))) then
+         write (6,*) ' PHONDY: HessianOrder can have only the values 1, 2 or 4  '
+         write (6,*) ' PHONDY: which corresponds to a Hessian on 2,3 or 5 points' 
+         write (6,*) ' PHONDY: HessianOrder.........: ', HessianOrder  
+         write (6,*) ' PHONDY: stop'
+         stop
         end if
   end if       
 
