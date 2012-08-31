@@ -44,6 +44,13 @@ program ndm
   if (rang==0) write(6,*)'*** NDMP-2.8 ***'
 #endif
 
+#if(PHONDY)
+  if (rang==0) write(6,*)'*** NDMP-2.8 + PHONDY ***'
+#else
+  if (rang==0) write(6,*)'*** NDMP-2.8 ***'
+#endif
+
+
   !     read(5,*)a1
   ! modif pour compaq
 
