@@ -1,11 +1,7 @@
 module force_tersoff_facteurs
   USE T_kind_param_m
   use var_pot, ONLY:  ipotentiel
-
   implicit none
-  !  real(double) :: ev2erg=1.602d-12, & !conversion eV ->erg
-  !      evA2dyn=1.602d-4 ,& ! conversion ev/A -> dyn
-  !       A2cm =1.0d-8     !conversion A->cm
 
   real(double),dimension (:), pointer :: lambda1,lambda2,lambda3,Ater,Bter,psi
   real(double),dimension (:), pointer :: Rter,Ster, beta,nter,cter, dter, hter,deltater
@@ -21,7 +17,7 @@ contains
     real(double), intent(in) :: r
     real(double), intent(out), optional :: fc, dfc
     integer, intent(in) :: ptyp
-    real(double)::x,t,rms,rps,fact
+    real(double)::x,rms,rps,fact
     ! Nouveau fc(r) de Lisa Porter & Ju Li de 89
 !    write(6,*)'entree',ipotentiel
     select case (ipotentiel)

@@ -1,6 +1,6 @@
 module eam
   USE T_kind_param_m
-
+  USE gen_com_m , ONLY: ev2erg,A2cm
   implicit none
 
   !Eamtype, Reptype et DensityType definissent les éléments dont sont censés dépendre 
@@ -40,9 +40,8 @@ module eam
 
   public ::  extrapolateRho, extrapolateRep, extrapolateEam,inputeam
 
-  real(double) :: ev2erg=1.602d-12, & !conversion eV ->erg
-       evA2dyn=1.602d-4 ,& ! conversion ev/A -> dyn
-       A2cm =1.0d-8     !conversion A->cm
+  real(double) :: evA2dyn=1.602d-4  ! conversion ev/A -> dyn
+       
 
   !  real(double) :: deltaEAM,deltaREP,deltaRHO
 contains

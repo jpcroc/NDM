@@ -30,16 +30,18 @@ module gen_com_m
 
 
   real(double),parameter :: pi=3.141592654D0, bk= 1.380622D-16, &
-       ecgs=1.6021892D-12, utemps= 1.0D-15, angst= 1.0D08, umass= 1.660056D-24, &
+       ecgs=1.6021764631580d-12, &  !debugCOS 1.6021892D-12, &
+       utemps= 1.0D-15, angst= 1.0D08, umass= 1.660056D-24, &
        inv_angst=1.d0/angst
   real(double),parameter :: zero=0d0, one=1.0d0, two=2.0d0, thr=3.0d0, five=5.0d0&
        , six=6.0d0, half=0.5d0
   real(double), parameter :: precexp =0.004   ! induit une precision de exp 10^-100
-  real(double), parameter :: ev2erg=1.602d-12, erg2eV=1.d0/eV2erg   
+  real(double), parameter :: ev2erg=1.6021764631580d-12, erg2eV=1.d0/eV2erg   
   real(double), parameter :: erg2joule=1.d-7, joule2erg=1.d7        
   real(double), parameter :: low_limit=10.d0*epsilon(1.d0)
   real(double), parameter :: ang2cm=1d-8
   real(double), parameter :: e2on4pieps0= 23.06134575D-20
+  real(double) :: A2cm =1.0d-8     !conversion A->cm
 
 
   integer :: im						! nb local d'atomes (=global en sequentiel)

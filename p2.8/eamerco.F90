@@ -1,6 +1,6 @@
 module eam
   USE T_kind_param_m
-
+  USE gen_com_m, ONLY: ev2erg,A2cm
   implicit none
 
   !Eamtype, Reptype et DensityType definissent les éléments dont sont censés dépendre les fonctions eam, répulsion et densité. Dans un cas d'alliage on peut avoir la meme forme analytique mais des valeurs différentes des coefficients pour les différents types. La liste des coefficients est definie dans les types. la valeur des coefficients pour ces dfférents types sont définis dans les routines generRho, generEAm, generRep. Ils sont ensuite utilisé dans les routines extrapolate
@@ -25,9 +25,8 @@ module eam
 
   public ::  extrapolateRho, extrapolateRep, extrapolateEam,inputeam
 
-  real(double) :: ev2erg=1.602d-12, & !conversion eV ->erg
-       evA2dyn=1.602d-4 ,& ! conversion ev/A -> dyn
-       A2cm =1.0d-8     !conversion A->cm
+  real(double) :: evA2dyn=1.602d-4  ! conversion ev/A -> dyn
+       
 contains
 
 

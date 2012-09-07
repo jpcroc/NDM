@@ -9,7 +9,7 @@ subroutine calpoeam
   use SMjuli
   implicit none
   
-  integer :: i,j,k,l,m,n,iti
+  integer :: k,l,iti
   real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
   real(double):: ktor,ktorho
   real(double) :: rk,rhok,rk2,rue
@@ -32,6 +32,14 @@ subroutine calpoeam
         select case(ipotentiel)
         case(10)
            call extrapolateRep(reppair(l),rk2,Erep=ysp(k))
+          !if (k.lt.10) then 
+          ! write(*, '(i6,"(",2d14.7,") )",2D15.7," )")') k,xsp(k),reppair(l)%potr(k)*ev2erg, rk,ysp(k)
+          !end if
+          !  if (k.gt.(ngrid-10)) then
+          !   write(*,*)k, xsp(k), rk
+          !  end if 
+          !if (k.eq.ngrid) stop
+
         case(12)
            call extrapolateRepjl(reppairjl(l),rk2,Erep=ysp(k))
            !            write(6,*)'REP k,repk ',l, k,ysp(k)

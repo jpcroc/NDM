@@ -1,6 +1,6 @@
 module SMjuli
   USE T_kind_param_m
-
+  USE gen_com_m, ONLY: ev2erg,A2cm
   implicit none
 
 
@@ -31,9 +31,8 @@ module SMjuli
 
   public ::  extrapolateRhojl, extrapolateRepjl, extrapolateEamjl,inputeamjl
 
-  real(double) :: ev2erg=1.602d-12, & !conversion eV ->erg
-       evA2dyn=1.602d-4 ,& ! conversion ev/A -> dyn
-       A2cm =1.0d-8     !conversion A->cm
+  real(double) :: evA2dyn=1.602d-4  ! conversion ev/A -> dyn
+       
 contains
 
 
