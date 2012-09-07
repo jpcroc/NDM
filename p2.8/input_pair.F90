@@ -30,8 +30,8 @@ subroutine input_pair
   real(double)::rue
   integer :: ntypr ! nb detype de ce potentiel
   ! lecture des paires
-  integer::iti,itp,itt,lw,lw2
-  real(double)::qr,cmr,catomr,ecrue,x,rmd,rm2d,xd,fcd
+  integer::iti
+  real(double)::qr,cmr,catomr,ecrue,rmd,rm2d,xd,fcd
   character :: tyr*3
   integer  :: nb_paire_a_lire, lect_paire,tt1,tt2,igr
   integer::num_paire
@@ -258,7 +258,7 @@ subroutine input_pair
               end do
            end do
 
-           rue_pair(:)=rue*1d-8
+           rue_pair(:)=rue*A2cm
         end if
         
         !paires
@@ -276,7 +276,7 @@ subroutine input_pair
               call arret_ndm
            endif
            lue_paire(l)=.TRUE. ; typ_pot_pair(l)=ipotentiel       
-           rue_pair(l)=rue*1d-8
+           rue_pair(l)=rue*A2cm
            if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
            do igr=1,ngr
               read(lupotin,*)pot_pair_tab(igr,0,lect_paire),pot_pair_tab(igr,1,lect_paire)
@@ -297,7 +297,7 @@ subroutine input_pair
            end if
            pot_pair_tab(0,0,lect_paire)=0.
            pot_pair_tab(0,1,lect_paire)=pot_pair_tab(1,1,lect_paire)
-           pot_pair_tab(:,0,lect_paire)=pot_pair_tab(:,0,lect_paire)*1d-8
+           pot_pair_tab(:,0,lect_paire)=pot_pair_tab(:,0,lect_paire)*A2cm
            pot_pair_tab(:,1,lect_paire)=pot_pair_tab(:,1,lect_paire)*ev2erg
 
 !           do igr=1,ngr
@@ -325,7 +325,7 @@ subroutine input_pair
         ntyp=10 ; npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
 
         call  alloc_typ
-        rue_pair(:)=rue*1d-8
+        rue_pair(:)=rue*A2cm
         read (lupotin, *) (cm(i),i=1,ntyp)         ! masses
         read (lupotin, *) (catom(i),i=1,ntyp)      ! numeros atomiques
         cm(:ntyp) = cm(:ntyp)*umass
@@ -350,10 +350,10 @@ subroutine input_pair
         ! lecture des caracteristiques des paires
         ! 1. paires standards
         read (lupotin, *) rom, dipm, pmm, rof1m, rof2m
-        rom = rom*1.0D-8                        ! conversion A --> cm
-        dipm = dipm*1.6021892D-60               ! conversion eV.A^6 --> erg.cm^6
-        rof1m = rof1m*1.0D-8                    ! conversion A --> cm
-        rof2m = rof2m*1.0D-8                    ! conversion A --> cm
+        rom = rom*A2cm                        ! conversion A --> cm
+        dipm = dipm*evA62ergcm6                 ! conversion eV.A^6 --> erg.cm^6
+        rof1m = rof1m*A2cm                    ! conversion A --> cm
+        rof2m = rof2m*A2cm                    ! conversion A --> cm
         ro(:npair) = rom
         dip(:npair) = dipm
         pm(:npair) = pmm
@@ -366,10 +366,10 @@ subroutine input_pair
         do i = 1, nprns
            !            if (rang==0) write(6,*) i
            read (lupotin, *) l, ror, dipr, pmr, rof1m, rof2m
-           ror = ror*1.0D-8                     ! conversion A --> cm
-           dipr = dipr*1.6021892D-60            ! conversion eV.A^6 --> erg.cm^6
-           rof1m = rof1m*1.0D-8                 ! conversion A --> cm
-           rof2m = rof2m*1.0D-8                 ! conversion A --> cm
+           ror = ror*A2cm                     ! conversion A --> cm
+           dipr = dipr*evA62ergcm6              ! conversion eV.A^6 --> erg.cm^6
+           rof1m = rof1m*A2cm                 ! conversion A --> cm
+           rof2m = rof2m*A2cm                 ! conversion A --> cm
            ro(l) = ror
            dip(l) = dipr
            pm(l) = pmr
@@ -429,7 +429,7 @@ subroutine input_pair
               write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
               cm(i)=cm(i)*umass
            end do
-           rue_pair(:)=rue*1d-8
+           rue_pair(:)=rue*A2cm
            do i=1,ntyp
               do j=1,ntyp
                  typ_pot_pair(ipo(i,j))=ipotentiel
@@ -454,15 +454,15 @@ subroutine input_pair
                  call arret_ndm
               endif
               lue_paire(l)=.TRUE. ; typ_pot_pair(l)=ipotentiel       
-              rue_pair(l)=rue*1d-8
+              rue_pair(l)=rue*A2cm
               if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
 
               !        conversions d'unites
               a_factorm = a_factorm*ecgs           ! conversion eV --> erg
-              rom = rom*1.0D-8                     ! conversion A --> cm
-              dipm = dipm*1.6021892D-60            ! conversion eV.A^6 --> erg.cm^6
-              rof1m = rof1m*1.0D-8                 ! conversion A --> cm
-              rof2m = rof2m*1.0D-8                 ! conversion A --> cm
+              rom = rom*A2cm                     ! conversion A --> cm
+              dipm = dipm*evA62ergcm6              ! conversion eV.A^6 --> erg.cm^6
+              rof1m = rof1m*A2cm                 ! conversion A --> cm
+              rof2m = rof2m*A2cm                 ! conversion A --> cm
 
               a_factor(l) = a_factorm
               ro(l) = rom
@@ -471,7 +471,7 @@ subroutine input_pair
               roff2(l) = rof2m
               lu_roff_pair(l)=.true.
               if (ipotentiel==3) then
-                 r8m=r8m*1.6021892D-60*1.0D-16
+                 r8m=r8m*evA62ergcm6*A2cm*A2cm
                  r8p(l)=r8m
               endif
            end do
@@ -488,10 +488,10 @@ subroutine input_pair
                  call arret_ndm
               endif
               lue_paire(l)=.TRUE. ; typ_pot_pair(l)=ipotentiel           
-              rue_pair(l)=rue*1d-8
+              rue_pair(l)=rue*A2cm
               dmorse(l)=dmr*ecgs
-              amorse(l)=amr*1.0d8
-              remorse(l)=rmr*1.0d-8
+              amorse(l)=amr*A2cm
+              remorse(l)=rmr*A2cm
               if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
            end do
         end if
@@ -568,15 +568,15 @@ subroutine input_pair
               call arret_ndm
            endif
            lue_paire(l)=.TRUE.
-           rue_pair(l)=rue *1d-8   
+           rue_pair(l)=rue *A2cm   
            !            if (rang==0) write(6,*)'paire l active  : ',l
 
            !        conversions d'unites
            a_factorm = a_factorm*ecgs    ! conversion eV --> erg
-           rom = rom*1.0D-8              ! conversion A --> cm
-           dipm = dipm*1.6021892D-60     ! conversion eV.A^6 --> erg.cm^6
-           rof1m = rof1m*1.0D-8          ! conversion A --> cm
-           rof2m = rof2m*1.0D-8          ! conversion A --> cm
+           rom = rom*A2cm                ! conversion A --> cm
+           dipm = dipm*evA62ergcm6       ! conversion eV.A^6 --> erg.cm^6
+           rof1m = rof1m*A2cm            ! conversion A --> cm
+           rof2m = rof2m*A2cm            ! conversion A --> cm
 
            a_factor(l) = a_factorm
            ro(l) = rom
@@ -600,9 +600,9 @@ subroutine input_pair
         enddo
 
         read(lupotin,*) rbp5, rp5p3, rp3c
-        rbp5   = rbp5*1.0D-8     ! conversion A --> cm
-        rp5p3 = rp5p3*1.0D-8     ! conversion A --> cm
-        rp3c   = rp3c*1.0D-8     ! conversion A --> cm
+        rbp5   = rbp5*A2cm     ! conversion A --> cm
+        rp5p3 = rp5p3*A2cm     ! conversion A --> cm
+        rp3c   = rp3c*A2cm     ! conversion A --> cm
 
 
 
@@ -624,8 +624,8 @@ subroutine input_pair
         do l=1,n3c
            read(lupotin,*)ic,i,j, lambr,gamgr,gamdr,agcr,adcr,cangler
            if (rang==0) write(6,*)l
-           gamgr=gamgr*1.0d-8 ; gamdr=gamdr*1.0d-8 ! A -> cm
-           adcr=adcr*1.0d-8 ; agcr=agcr*1.0d-8 ! A -> cm
+           gamgr=gamgr*A2cm ; gamdr=gamdr*A2cm ! A -> cm
+           adcr=adcr*A2cm ; agcr=agcr*A2cm ! A -> cm
            lambr=lambr*ecgs                    ! eV -> erg
            k=ipo3c(ic,i,j)
            if (rang==0) write(6,*)'k ntrp ', k,ntrip
@@ -698,7 +698,7 @@ subroutine input_pair
      read(lupotin,*) sigmawat ! lu en A
      read(lupotin,*) nprns,n3c    ! nbre de paires/triplets effectifs
      !        conversions d'unites
-     sigmawat=sigmawat*1.0d-8  ! conversion A --> cm
+     sigmawat=sigmawat*A2cm  ! conversion A --> cm
 
      ! initialisation des paires
      do l=1,npair
@@ -804,7 +804,7 @@ subroutine input_pair
 
      read(lupotin,*)rue, lambda,xsi
      write(6,'(A,3F12.5)')'rue, lambda,xsi',rue, lambda,xsi
-     rue=rue*1d-8; lambda=lambda*1d-8; xsi=xsi*1d-8
+     rue=rue*A2cm; lambda=lambda*A2cm; xsi=xsi*A2cm
 
      rue_pair(:)=rue
      lue_paire(:npair)=.false.
@@ -829,8 +829,8 @@ subroutine input_pair
      end do
 
      read(lupotin,*) lambr,gamgr,agcr,cangler,c3cr
-     gamgr=gamgr*1.0d-8  ! A -> cm
-     agcr=agcr*1.0d-8 ! A -> cm
+     gamgr=gamgr*A2cm  ! A -> cm
+     agcr=agcr*A2cm ! A -> cm
      lambr=lambr*ecgs                    ! eV -> erg
 
      lamb(:)=lambr

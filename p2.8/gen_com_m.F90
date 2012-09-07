@@ -39,6 +39,8 @@ module gen_com_m
   real(double), parameter :: precexp =0.004   ! induit une precision de exp 10^-100
   real(double), parameter :: ev2erg=1.6021764631580d-12, erg2eV=1.d0/eV2erg   !eV -> erg and in inverse
   real(double), parameter :: evA2dyn=1.6021764631580d-4  ! eV/A -> dyn conversion
+  real(double),parameter  :: evA62ergcm6=1.6021892D-60   ! conversion eV.A^6 --> erg.cm^6
+
   real(double), parameter :: erg2joule=1.d-7, joule2erg=1.d7        
   real(double), parameter :: low_limit=10.d0*epsilon(1.d0)
   real(double), parameter :: ang2cm=1d-8

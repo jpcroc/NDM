@@ -21,7 +21,7 @@ subroutine calpo
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
 
-  integer :: i, l, k,  nb1, nb2, nb3,j,lw
+  integer :: i, l, k, j
   real(double) :: auxpi
   real(double), dimension(npair) :: sigp
   real(double) :: bmh, r, r2, r3, r4, r5, r6, r8
@@ -33,7 +33,6 @@ subroutine calpo
   real(double), dimension (ngrid) ::potpartw
   real(double), dimension(ngrid) :: bsppart, csppart, dsppart
 
-  real(double) :: pi2, fact, fact1, fact2, hk2, ex, ex1, ex2 ,hbv(3)
 
   real(double),external  :: derfc
 
@@ -50,7 +49,7 @@ subroutine calpo
   integer :: i1,i2
 
   integer, dimension(npair) :: irrep
-  integer :: convrep,unitp
+  integer :: convrep
   real(double), dimension(npair) :: r0rep, V0rep
   real(double) :: rrep, potV0
 
