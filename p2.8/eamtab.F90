@@ -40,7 +40,6 @@ module eam
 
   public ::  extrapolateRho, extrapolateRep, extrapolateEam,inputeam
 
-  real(double) :: evA2dyn=1.602d-4  ! conversion ev/A -> dyn
        
 
   !  real(double) :: deltaEAM,deltaREP,deltaRHO

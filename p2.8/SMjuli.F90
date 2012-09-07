@@ -31,7 +31,6 @@ module SMjuli
 
   public ::  extrapolateRhojl, extrapolateRepjl, extrapolateEamjl,inputeamjl
 
-  real(double) :: evA2dyn=1.602d-4  ! conversion ev/A -> dyn
        
 contains
 
