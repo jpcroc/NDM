@@ -6,6 +6,7 @@
       use gen_com_m
       use tab_imm_m
       use random_art
+      use var_pot
       implicit none
 
 

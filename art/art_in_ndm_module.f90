@@ -5,6 +5,7 @@ module art_in_ndm_module
       USE T_kind_param_m, ONLY:  double
       use gen_com_m
       use jqmod
+      use var_pot
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------

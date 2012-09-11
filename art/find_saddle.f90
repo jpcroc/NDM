@@ -436,7 +436,6 @@ subroutine organized_selected_move()
    if (dr2 < 0.25d0 ) exit  ! Ensure that the random displacement is isotropic
   end do
 
-  end do
   do i=1,selected_atoms_max
       j=selected_atoms(i)
       atom_displaced(j)=1
