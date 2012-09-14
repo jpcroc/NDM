@@ -34,8 +34,7 @@ subroutine init
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: i, lufilmpaf,itapp,ipotcont,j,l
-  integer :: partiel=0    ! flag d'appel a divid : partiel : juste pour connaitre nox/y/z
+  integer :: i, lufilmpaf,itapp,ipotcont
   integer :: complet=1    ! flag d'appel a divid : complet : exec de la routine complete
   !-----------------------------------------------
   real(double)::rue
@@ -86,7 +85,7 @@ subroutine init
            call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,&
                 iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,&
                 ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
-                npotentiel,ipo,rhominzero)
+                npotentiel,ipo)
            do i=1,npair
               if (typ_pot_pair(i)==ipotentiel) rue_pair(i)=rue
            end do

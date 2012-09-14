@@ -34,7 +34,7 @@ contains
                 iewald,l3c,rang,r3cm,roff1,roff2,&
                 &typ_and_pot,npotmax,&
                 ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
-                npotentiel,ipo,rhominzero)
+                npotentiel,ipo)
 
 !  subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2)
 
@@ -56,14 +56,12 @@ contains
     integer,pointer:: typ_pot_pair(:)
     integer, dimension(:,:), pointer  :: ipo			! indice des paires d'atomes
     logical,pointer::lue_typ(:),lue_paire(:),lu_roff_pair(:)
-    logical :: rhominzero
 
 
     !local variables
     integer:: i,l
     integer :: lupotin=95
     character ::  fnampotin*80
-    rhominzero=.false.
     fnampotin = 'alerco.potin'
 
     lupotin = 95

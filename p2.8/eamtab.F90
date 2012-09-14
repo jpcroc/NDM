@@ -1,6 +1,7 @@
 module eam
   USE T_kind_param_m
-  USE gen_com_m , ONLY: ev2erg,A2cm
+  USE gen_com_m, ONLY: A2cm
+
   implicit none
 
   !Eamtype, Reptype et DensityType definissent les éléments dont sont censés dépendre 
@@ -40,7 +41,6 @@ module eam
 
   public ::  extrapolateRho, extrapolateRep, extrapolateEam,inputeam
 
-       
 
   !  real(double) :: deltaEAM,deltaREP,deltaRHO
 contains
@@ -50,7 +50,7 @@ contains
   subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,&
        rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,&
        npotmax,ipotentiel,typ_pot_pair,lue_typ,lue_paire,&
-       lu_roff_pair,npotentiel,ipo,rhominzero)
+       lu_roff_pair,npotentiel,ipo)
 
     !
 
@@ -68,14 +68,13 @@ contains
     integer,pointer:: typ_pot_pair(:)
     integer, dimension(:,:), pointer  :: ipo			! indice des paires d'atomes
     logical,pointer::lue_typ(:),lue_paire(:),lu_roff_pair(:)
-    logical :: rhominzero
 
 
     !local variables
-    integer:: i,l,k,iti,n,npt,ipr
+    integer:: i,iti,n,npt,ipr
     integer :: lupotin=95
     character ::  fnampotin*80
-    real(double) :: xmin,xmax,xdum,ruelu,cmr,catomr
+    real(double) :: xdum,cmr,catomr
     integer,pointer :: typtyp(:),ind_pair(:)
     integer::itir,npair_r,ipair,ntypr,j,itj
     character :: tyr*3
@@ -89,6 +88,8 @@ contains
 
     iewald=0; l3c=.false.; r3cm=0.
 
+
+!PAIR PART 
     if (npotentiel.gt.1) then
        read(lupotin,*)ntypr
        allocate (typtyp(ntypr))
@@ -96,7 +97,7 @@ contains
        allocate (ind_pair(npair_r))
        write(6,*)'ntypr pour ce pot',ntypr
        read(lupotin,*) rue
-       rue=rue*1.0d-8
+       rue=rue*A2cm
        if (rang==0)    write(6,*) 'Types d_atomes pour ce potentiel:'
        do i = 1, ntypr
           read (lupotin,*) cmr,catomr,tyr,iti
@@ -150,7 +151,7 @@ contains
        allocate (ind_pair(npair_r))
        call  alloc_typ
        read(lupotin,*) rue
-       rue=rue*1.0d-8
+       rue=rue*A2cm
        if (rang==0)    write(6,*) 'Types d_atomes :'
        do i = 1, ntyp
           typtyp(i)=i
@@ -165,8 +166,8 @@ contains
           write (6, '(2F9.3)') roff1(i),roff2(i)
        end do
 
-       roff1=roff1*1.0d-8
-       roff2=roff2*1.0d-8
+       roff1=roff1*A2cm
+       roff2=roff2*A2cm
        lu_roff_pair(1:npair)=.true. ;typ_pot_pair(:)=ipotentiel
        cm(:ntyp) = cm(:ntyp)*umass
        allocate (typ_and_pot(ntyp,npotmax))
@@ -187,7 +188,7 @@ contains
     !  embtyp(:,:)%eam=0.;  embtyp(:,:)%dfeam=0.;  embtyp(:,:)%xg=0.
     !  reppair(:,:)%potr=0.;  reppair(:,:)%dpotr=0.;  reppair(:,:)%xr=0.
 
-
+!EMBD EAM PART
     do itir=1,ntypr
        iti=typtyp(itir)
        !lecture de Glue
@@ -209,6 +210,7 @@ contains
        do i=1,nptmax
           if(i.le.npt) then
              read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),xdum
+             !read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),embtyp(iti)%dfeam(i)
              !           write(6,*)i,embtyp(iti)%xg(i),embtyp(iti)%feam(i),xdum
           else
              embtyp(iti)%xg(i)=(i-npt)*embtyp(iti)%deltaEAM+ embtyp(iti)%xg(i)
@@ -223,7 +225,7 @@ contains
        embtyp(iti)%dfeam(nptmax)=0.
 
 
-
+!DENS PART
        !lecture de dens
        read(lupotin,*)n
        if (rang==0) write(6,*)'dens',n,iti
@@ -245,6 +247,7 @@ contains
        do i=1,nptmax
           if(i.le.npt) then
              read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),xdum
+             !read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(iti),rhotyp(iti)%drho(i)
              !           write(6,*)i,rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),xdum
           else
              rhotyp(iti)%xd(i)=(i-npt)*rhotyp(iti)%deltaRHO+ rhotyp(iti)%xd(npt)
@@ -259,6 +262,8 @@ contains
        end do
        rhotyp(iti)%drho(nptmax)=0.
     end do
+
+!PAIR PART 
 
     do ipair=1,npair_r
        read(lupotin,*)n
@@ -282,6 +287,7 @@ contains
        do i=1,nptmax
           if(i.le.npt) then
              read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),xdum
+             !read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),reppair(ipr)%dpotr(i)
              !          write(6,*)i,reppair(ipr)%xr(i),reppair(ipr)%potr(i),xdum
           else
              reppair(ipr)%xr(i)=(i-npt)*reppair(ipr)%deltaREP+ reppair(ipr)%xr(i)
@@ -289,7 +295,7 @@ contains
           end if
        end do
        do i=1,nptmax-1
-          reppair(ipr)%dpotr(i)=reppair(ipr)%potr(i+1)-reppair(ipr)%potr(i)
+           reppair(ipr)%dpotr(i)=reppair(ipr)%potr(i+1)-reppair(ipr)%potr(i)
           !        write(6,*)'rep',ipr,i,reppair(ipr)%xr(i),reppair(ipr)%potr(i),reppair(ipr)%dpotr(i)
        end do
        reppair(ipr)%dpotr(nptmax)=0.
@@ -314,14 +320,15 @@ contains
     ! calculate electronic density at distance sqrt(r)
     ! or its first and second derivatives
 
+    USE gen_com_m, ONLY:  ev2erg
     implicit none
 
     type(DensityT), intent(in) :: density 
     real(kind(0.d0)), intent(in) :: r2
     real(kind(0.d0)), intent(out), optional :: rho, drho, ddrho
-    !local 
-    integer :: iti,n,k
-    real(double) :: xmax,xmin,ktor,r,drk
+    !local
+    integer :: k 
+    real(double) :: xmax,r,drk
 
     xmax=density%xd(nptmax)
     r=sqrt(r2)/A2cm
@@ -332,8 +339,9 @@ contains
        k=Int(r/density%deltaRHO)+1
        drk=r/density%deltaRHO+1-k
        Rho=density%rho(k)+drk*density%drho(k)
+       !Rho=density%rho(k)
     end if
-    !    write(6,*)'rho',r,k,drk,rho
+    if (k==5)    write(6,'("rho ",i8,3d20.10)')k,drk,density%rho(k),Rho-density%rho(k) 
 
     RETURN
 
@@ -349,6 +357,8 @@ contains
     !   or its first and second derivatives
     !   err= 0 if everyting ok
     !       -1 if density too large for extrapolation
+
+    USE gen_com_m, ONLY:  ev2erg
     implicit none
 
     type(EamT), intent(in) :: eam
@@ -358,8 +368,8 @@ contains
     integer, intent(out), optional :: err
 
     !local 
-    integer :: iti,n,k
-    real(double) :: xmax,xmin,ktor,drk
+    integer :: k
+    real(double) :: xmax,drk
 
     xmax=eam%xg(nptmax)
 
@@ -373,10 +383,11 @@ contains
     else
        k=Int(rho/eam%deltaEAM)+1
        drk=rho/eam%deltaEAM +1 -k
-       embf=  ev2erg*(eam%feam(k)+drk*eam%dfeam(k))
+        embf=  ev2erg*(eam%feam(k)+drk*eam%dfeam(k))
+      ! embf=  ev2erg*(eam%feam(k))
 
     end if
-    !    write(6,*)'eam',rho,k,drk,embf/ev2erg
+        write(6,*)'eam',rho,k,drk,embf/ev2erg
 
 
     RETURN
@@ -389,6 +400,7 @@ contains
     ! calculate repulsive potential at distance sqrt(r2)
     ! or its first and second derivatives
 
+    USE gen_com_m, ONLY:  ev2erg
     implicit none
 
     type(RepT), intent(in) :: rep
@@ -412,6 +424,7 @@ contains
        k=Int(r/rep%deltaREP)+1
        drk=r/rep%deltaREP+1-k
        Erep=ev2erg*(rep%potr(k)+drk*rep%dpotr(k))
+       !Erep=ev2erg*(rep%potr(k))    
     end if
     !    write(6,*)'rep',r,k,drk,Erep/ev2erg
 
