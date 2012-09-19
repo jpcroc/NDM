@@ -27,7 +27,7 @@ subroutine caltabi
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: iw, i, ip, j, maxvoi, ic,nvij,iwo
+  integer :: iw, i, ip, j, maxvoi, nvij,iwo
   integer :: itj,ll
   REAL(double) :: r2
   real(double), dimension(1:npair) :: rvois2
@@ -164,6 +164,9 @@ subroutine caltabi
 
      end do ! fin i
      maxvoi=iw
+
+
+
 
 
   endif ! lconstrtot 

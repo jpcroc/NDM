@@ -95,7 +95,7 @@ contains
        allocate (typtyp(ntypr))
        npair_r=  ntypr*(ntypr+1)/2 
        allocate (ind_pair(npair_r))
-       write(6,*)'ntypr pour ce pot',ntypr
+       write(6,*)'ntypr for this pot',ntypr
        read(lupotin,*) rue
        rue=rue*A2cm
        if (rang==0)    write(6,*) 'Types d_atomes pour ce potentiel:'
@@ -178,7 +178,7 @@ contains
 
 
     read(lupotin,*)nptmax
-    if (rang==0) write(6,*)'nptmax',nptmax
+    if (rang==0) write(6,*)'nptmax in the max number of points on grid  ',nptmax
     allocate(rhotyp(ntyp)) 
     allocate(embtyp(ntyp)) 
     allocate(reppair(npair)) 
@@ -193,13 +193,13 @@ contains
        iti=typtyp(itir)
        !lecture de Glue
        read(lupotin,*)n
-       if (rang==0) write(6,*)'eam',n,iti
+       if (rang==0) write(6,*)'EAM',n,iti
        if(n.ne.itir)then
           write(6,*) rang,' ordre de lecture de EAM stop'
           call arret_ndm
        end if
        read(lupotin,*)npt,embtyp(iti)%deltaEAM
-!       if (rang==0) write(6,*)'npt',npt    
+       if (rang==0) write(6,*)'EAM number of points in potin and the step',npt,embtyp(iti)%deltaEAM     
        if(npt.gt.nptmax)then
           write(6,*) rang,'nb de points de grille  EAM stop'
           call arret_ndm
@@ -235,7 +235,7 @@ contains
        end if
        !     rhotyp(iti)%toto=iti
        read(lupotin,*)npt,rhotyp(iti)%deltaRHO
-       if (rang==0) write(6,*)npt,rhotyp(iti)%deltaRHO
+       if (rang==0) write(6,*)'RHO potin points and the step: ', npt,rhotyp(iti)%deltaRHO
        if(npt.ne.nptmax)then
           write(6,*) rang,'nb de points de grille  EAM stop'
           call arret_ndm
@@ -327,22 +327,26 @@ contains
     real(kind(0.d0)), intent(in) :: r2
     real(kind(0.d0)), intent(out), optional :: rho, drho, ddrho
     !local
-    integer :: k 
+    integer:: kr 
     real(double) :: xmax,r,drk
-
+    
+    kr=0
     xmax=density%xd(nptmax)
     r=sqrt(r2)/A2cm
 
     if(r.gt.xmax) then
        Rho=0.0
     else
-       k=Int(r/density%deltaRHO)+1
-       drk=r/density%deltaRHO+1-k
-       Rho=density%rho(k)+drk*density%drho(k)
+       kr=Int(r/density%deltaRHO)+1
+       drk=r/density%deltaRHO+1-kr
+ !      write(*,*) 'Rho1', kr
+       Rho=density%rho(kr)+drk*density%drho(kr)
        !Rho=density%rho(k)
+  !     write(*,*) 'Rho2', kr
     end if
-    if (k==5)    write(6,'("rho ",i8,3d20.10)')k,drk,density%rho(k),Rho-density%rho(k) 
-
+   ! if (kr==5)    write(6,'("rho ",i8,3d20.10)')kr,drk,density%rho(kr),Rho-density%rho(kr) 
+    
+   !    write(*,*) 'Rho3', kr
     RETURN
 
 
@@ -372,7 +376,7 @@ contains
     real(double) :: xmax,drk
 
     xmax=eam%xg(nptmax)
-
+    k=0
     if (rho.lt.0.) then 
        embf=0
        return
@@ -386,8 +390,8 @@ contains
         embf=  ev2erg*(eam%feam(k)+drk*eam%dfeam(k))
       ! embf=  ev2erg*(eam%feam(k))
 
+!        write(6,*)'eam',rho,k,drk,embf/ev2erg
     end if
-        write(6,*)'eam',rho,k,drk,embf/ev2erg
 
 
     RETURN

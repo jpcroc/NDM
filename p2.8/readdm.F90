@@ -22,8 +22,8 @@ subroutine readdm
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: ludin, lufilm, lufilmpaf, iti, i,itean,j, itj,ic, iThermo,itecompcr,ipotcont
-  character :: fnamdin*80, fnamrdfout*80
+  integer :: ludin, lufilm, lufilmpaf,  i,itean, ic, iThermo,itecompcr,ipotcont
+  character :: fnamdin*80
   logical :: lginread,ltriclin,lpcon,lfissure,tpot
   logical :: lxFrozen,lyFrozen,lzFrozen, lxyFrozen, lxzFrozen, lyzFrozen, lxyzFrozen
   !  integer :: imFree     ! nb d'atomes libres
@@ -515,6 +515,7 @@ subroutine readdm
   endif
 
   if (dmtype==7) then
+        ldemitab=.false.
         if (.not.((HessianOrder.eq.1).or.(HessianOrder.eq.2).or.(HessianOrder.eq.4))) then
          write (6,*) ' PHONDY: HessianOrder can have only the values 1, 2 or 4  '
          write (6,*) ' PHONDY: which corresponds to a Hessian on 2,3 or 5 points' 
@@ -833,9 +834,17 @@ subroutine readdm
      if (ltpcel) write (6, *) '   -> -> pas de contrainte par celulles'
 
 
-     if(ipotentiel.le.10) then 
-        ldemitab=.TRUE.
-        if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+     if((ipotentiel.lt.10)) then 
+         ldemitab=.TRUE.
+         if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+     else
+        ldemitab=.false.
+        if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
+     end if
+
+     if((ipotentiel.eq.10).and.(dmtype/=7)) then 
+         ldemitab=.TRUE.
+         if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
      else
         ldemitab=.false.
         if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois

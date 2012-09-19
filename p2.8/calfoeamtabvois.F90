@@ -136,23 +136,23 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         if(lprteat.EQV..true.)then
            if (associated (free)) then
               if( free(i).EQV..true.)           eatom(i)=eatom(i)+Erep/2.d0
-              if( free(j).EQV..true.)           eatom(j)=eatom(j)+Erep/2.d0
+              if ((free(j).EQV..true.).and.ldemitab)           eatom(j)=eatom(j)+Erep/2.d0
            else
-              eatom(i)=eatom(i)+Erep/2.d0
-              eatom(j)=eatom(j)+Erep/2.d0
+                           eatom(i)=eatom(i)+Erep/2.d0
+            if (ldemitab)  eatom(j)=eatom(j)+Erep/2.d0
            end if
         end if
         dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
            if (associated (free)) then
               if( free(i).EQV..true.)potisrep = potisrep+0.5*Erep
-              if( free(j).EQV..true.)potisrep = potisrep+0.5*Erep
+              if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep+0.5*Erep
            else
               potisrep = potisrep+0.5*Erep
-              potisrep = potisrep+0.5*Erep
+              if (ldemitab) potisrep = potisrep+0.5*Erep
            end if
 
         fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
-        fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
+        if (ldemitab) fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
 
         if (test_sigma) then                   
            sig(1:3,1) = sig(1:3,1)-dErep*gradij(1:3)*dxp(1)
@@ -166,7 +166,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
 
 
   iw2=0
-
+  if (.not.ldemitab) tabdensity(:)=tabdensity(:)/2.d0
   ! calcul et stockage de Eembi et dEembi
   loop2at1: do i=1,im
      iti=ityp(i)
@@ -207,14 +207,6 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
 
         dxp = MatMul(at,dxp)
 
-
-        !              if (i==8) then    
-        !		  if (sqrt(r2)*angst<1.2) write(*,'("in calfoeamtabvois: i j dist",2i6,d19.12)') i,j,sqrt(r2)*angst
-        !		  if (sqrt(r2)*angst<1.2) write(*,'("in calfoeamtabvois:i x1 x2 x3",i6,3d19.12)') i,xp(1,i),xp(2,i),xp(3,i)
-        !		  if (sqrt(r2)*angst<1.2) write(*,'("in calfoeamtabvois:j x1 x2 x3",i6,3d19.12)') j,xp(1,j),xp(2,j),xp(3,j)
-        !              end if
-
-        ! Calcul du carrÃ© de la distance
         do izero=1,3
 	   if (dabs(dxp(izero)).lt.low_limit) then
               dxp(izero) = zero
@@ -238,21 +230,13 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         Femb = ( eamrho(2,itj,k) + drk*( 2.0*eamrho(3,itj,k) + 3.0*drk*eamrho(4,itj,k) ) )*tabdensity(i) &
              + ( eamrho(2,iti,k) + drk*( 2.0*eamrho(3,iti,k) + 3.0*drk*eamrho(4,iti,k) ) )*tabdensity(j)
         fp(1:3,i) = fp(1:3,i) - Femb*gradij(1:3)
-        fp(1:3,j) = fp(1:3,j) + Femb*gradij(1:3)
+        if (ldemitab) fp(1:3,j) = fp(1:3,j) + Femb*gradij(1:3)
 
         if (test_sigma) then                   
            sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)
            sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)
            sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)
         end if
-
-        !          if (test_sigma) then                   
-        !             sigtmp(1:3,1) = sigtmp(1:3,1) - Femb*gradij(1:3)*dxp(1)
-        !             sigtmp(1:3,2) = sigtmp(1:3,2) - Femb*gradij(1:3)*dxp(2)
-        !             sigtmp(1:3,3) = sigtmp(1:3,3) - Femb*gradij(1:3)*dxp(3)
-        !          end if
-
-
      end do loopvois2
 
 
