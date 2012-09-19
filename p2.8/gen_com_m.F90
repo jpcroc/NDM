@@ -186,6 +186,7 @@ module gen_com_m
 
   integer :: nvois   ! nb de voisins max dans toute la boite = nb d'atome * nb de voisins (/2)
   integer, pointer,dimension(:) :: indi ! table des voisins
+  integer, pointer, dimension(:) :: indi2 ! table de voision pour les constantes de force
   real(double) :: rvois ! rayon de la table des voisins
   logical :: ltabvois ! table des voisins ?
   logical :: lconstrtot ! construction par double boucle (T) ou par cel (F)

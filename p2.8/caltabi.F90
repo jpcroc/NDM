@@ -27,7 +27,7 @@ subroutine caltabi
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: iw, i, ip, j, maxvoi, nvij,iwo
+  integer :: iw, iwph, i, ip, j, maxvoi, nvij,iwo
   integer :: itj,ll
   REAL(double) :: r2
   real(double), dimension(1:npair) :: rvois2
@@ -47,6 +47,7 @@ subroutine caltabi
   !   OUVERTURE BOUCLE SUR I
   ! --------------------------
   iw = 0
+  iwph = 0
 
   if (ipotentiel==12) then
      rvois2(1)=(7.0d-8)**2
@@ -117,9 +118,7 @@ subroutine caltabi
      maxvoi = iw           
 
   !*************construction par celulle ****************
-  else   
-
-
+  else  
      do i = 1, im
         iwo=iw
         koo = ielat(i)                          ! Numero de la cellule
@@ -136,11 +135,16 @@ subroutine caltabi
               j = last(i2,ko1)
               !                  write(6,*)'j ',j
 
-              if(ldemitab) then
-                 if(j.le.i) cycle !terme deja calcule
-              else
-                 if(j.eq.i) cycle
-              end if
+               if(ldemitab) then
+                   if(j.le.i) cycle !terme deja calcule
+                else
+                 if(j.eq.i) then
+                   iwph=iwph+1
+                   indi2(iwph) = j
+                   cycle
+                 end if
+               end if
+
               itj=ityp(j) ; ll=ipo(iti,itj)
 
               dx(:) = xpi(:) - xpnp(:,j)
@@ -153,20 +157,20 @@ subroutine caltabi
 
               if (r2>rvois2(ll)) cycle
               iw = iw+1
+              iwph = iwph+1
               !                  write(6,*)i,koo,ko1,j,iw
               indi(iw) = j
+              indi2(iwph) = j
            end do loop_j !i2
 
         end do !ncelvois
         iwmax(i) = iw
+        iwmax2(i)= iwph
         nvij=iw-iwo
         !         write(449,*)'NVIJ',i,nvij,iw       
 
      end do ! fin i
      maxvoi=iw
-
-
-
 
 
   endif ! lconstrtot 

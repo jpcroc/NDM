@@ -289,6 +289,7 @@ subroutine divid (appel)
 
      if(rang==0)         write (6, *) 'Nvois= ', nvois
      allocate(indi(nvois))
+     allocate(indi2(nvois))
   else
 
   end if
