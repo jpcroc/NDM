@@ -118,7 +118,7 @@ subroutine caltabi
      maxvoi = iw           
 
   !*************construction par celulle ****************
-  else  
+  else 
      do i = 1, im
         iwo=iw
         koo = ielat(i)                          ! Numero de la cellule

@@ -844,10 +844,10 @@ subroutine readdm
       case(10)
          
          if(dmtype==7) then 
-            ldemitab=.TRUE.
+            ldemitab=.FALSE.
             if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
          else
-            ldemitab=.false.
+            ldemitab=.TRUE.
             if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
          end if
       end select
