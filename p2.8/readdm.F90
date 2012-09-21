@@ -833,23 +833,24 @@ subroutine readdm
 
      if (ltpcel) write (6, *) '   -> -> pas de contrainte par celulles'
 
-
-     if((ipotentiel.lt.10)) then 
+     write(6,*)'IPOTENTIEL',ipotentiel
+     select case (ipotentiel)
+     case(:9)
          ldemitab=.TRUE.
          if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
-     else
-        ldemitab=.false.
-        if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
-     end if
-
-     if((ipotentiel.eq.10).and.(dmtype/=7)) then 
-         ldemitab=.TRUE.
+      case(11:)
+         ldemitab=.false.
          if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
-     else
-        ldemitab=.false.
-        if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
-     end if
-
+      case(10)
+         
+         if(dmtype==7) then 
+            ldemitab=.TRUE.
+            if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+         else
+            ldemitab=.false.
+            if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
+         end if
+      end select
 
      !     if(ipotentiel.le.10) then 
      !        ldemitab=.TRUE.

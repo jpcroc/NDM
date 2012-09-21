@@ -9,7 +9,7 @@ subroutine tersoff_zbl
   integer :: i,j,k,l,m,n,iti
   real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
   real(double):: ktor,ktorho
-  real(double) :: rk,rhok,rk2,rueBOF
+  real(double) :: rk,rhok,rk2
 
   ktor=(maxval(roff2)+1.)/ngrid
 !C'est ça qui va pas !!! POT=0

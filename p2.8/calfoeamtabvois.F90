@@ -51,7 +51,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
 
 
 !  write(6,*)'eamtabvois'
-  rue=rue_pair(1)
+  rue=rue_pot(ipotentiel)
 !  if (lprteat.EQV..true.) then
 !     eatom(:)=0.
 !  end if

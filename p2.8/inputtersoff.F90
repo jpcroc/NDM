@@ -18,7 +18,7 @@ subroutine inputtersoff
 
  
   fnampotin = 'tersoff.potin'
-
+!RUE_POT IS NOT DEFINED FOR TERSOFF!
   open(unit=lupotin, file=fnampotin, status='old')
 
   if (npotentiel .gt.1)then

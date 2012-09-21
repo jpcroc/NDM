@@ -168,14 +168,12 @@ subroutine config
 
         endif                                   !icintype=2
 
-	! Il est important de conserver rue et alpha identique a
+	! Il est important de conserver rumax et alpha identique a
  	! chaque appel a la routine divid, on sauvegarde donc la valeur
  	! initiale pour la remettre en sortie
-!	rue_init=rue
 	rumax_init=rumax
 	alpha_init=alpha
         call divid(0)
-!	rue = rue_init
 	rumax=rumax_init
 	alpha = alpha_init
 
@@ -472,7 +470,6 @@ subroutine config
 	! Il est important de conserver rue et alpha identique a
  	! chaque appel a la routine divid, on sauvegarde donc la valeur
  	! initiale pour la remettre en sortie
-!	rue_init=rue
 	rumax_init=rumax
 	alpha_init=alpha
         call recips (at(1,1), at(1,2), at(1,3), bg(1,1), bg(1,2), bg(1,3))
@@ -484,7 +481,6 @@ subroutine config
         enddo
 
         call divid(0)
-!	rue = rue_init
 	rumax = rumax_init
 	alpha = alpha_init
 
@@ -660,11 +656,9 @@ subroutine config
         ! Il est important de conserver rue et alpha identique a
         ! chaque appel a la routine divid, on sauvegarde donc la valeur
         ! initiale pour la remettre en sortie
-!        rue_init=rue
         rumax_init=rumax
         alpha_init=alpha
         call divid(0)
-!        rue = rue_init
         rumax=rumax_init
         alpha = alpha_init
 

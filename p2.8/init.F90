@@ -13,7 +13,7 @@ subroutine init
   use neb_module
   use posana
   use defcdp, ONLY :itecdp
-
+!  use var_pot
 #if(PARA)
   use mod_mpi
 #endif 
@@ -37,7 +37,6 @@ subroutine init
   integer :: i, lufilmpaf,itapp,ipotcont
   integer :: complet=1    ! flag d'appel a divid : complet : exec de la routine complete
   !-----------------------------------------------
-  real(double)::rue
 
   tmean = 0.0
   pmean = 0.0
@@ -58,6 +57,9 @@ subroutine init
      typ_and_pot(:,:)=.false.
      call  alloc_typ
   end if
+  allocate(rue_pot(npotmax))
+  rue_pot(:)=0.
+
 
   do ipotcont=0,npotmax
      if(lpotentiel(ipotcont).EQV..true.) then 
@@ -82,12 +84,12 @@ subroutine init
               write(6,*)'POTENTIEL EAM'
               write(6,*)
            end if
-           call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,&
+           call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue_pot(ipotentiel),rumax,&
                 iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,&
                 ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
                 npotentiel,ipo)
            do i=1,npair
-              if (typ_pot_pair(i)==ipotentiel) rue_pair(i)=rue
+              if (typ_pot_pair(i)==ipotentiel) rue_pair(i)=rue_pot(ipotentiel)
            end do
         case(12)
            if (rang.eq.0) then
@@ -95,10 +97,10 @@ subroutine init
               write(6,*)'POTENTIEL Ju Li'
               write(6,*)
            end if
-           call inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue,&
+           call inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue_pot(ipotentiel),&
                 rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,&
                 npotmax,ipotentiel,typ_pot_pair)
-           rue_pair(:)=rue
+           rue_pair(:)=rue_pot(ipotentiel)
         case(13,14,15)
            !nguyen mettre input tersoff
            !        if (rang.eq.0) then

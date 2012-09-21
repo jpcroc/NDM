@@ -112,7 +112,9 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
         deltaepot=0.5*(pot(1,l,k)+r*dr*(pot(2,l,k)+dr*(pot(3,l,k)+dr*pot(4,l,k))))
         phu = -1.0*(pot(2,l,k)+dr*(2.0*pot(3,l,k)+dr*(3.0*pot(4,l,k))))
 
-
+!        write(6,*)'i,j,r,sk,k'
+!        write(6,*)i,j,r,sk,k
+!        write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
         if ((ldesinteg).and.(i==1)) then
            if (pm1des==-1) then
               lambdades=1.-itdes/float(nstepdes)           
@@ -233,9 +235,9 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
 
   end do
 
-  !      do i=1,im,100
-  !         write(6,*)i,fp(1,i),fp(2,i),fp(3,i)
-  !      end do
+!        do i=1,im,100
+!           write(6,*)i,fp(1,i),fp(2,i),fp(3,i)
+!        end do
 
 
   call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart

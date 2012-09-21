@@ -8,7 +8,7 @@ subroutine calpoeam
   use var_pot
   use SMjuli
   implicit none
-  
+
   integer :: k,l,iti
   real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
   real(double):: ktor,ktorho
@@ -17,7 +17,7 @@ subroutine calpoeam
   eamrep(:,:,:)=0.0
   eamrho(:,:,:)=0.0
   eamglue(:,:,:)=0.0
-  rue=rue_pair(1)
+  rue=rue_pot(ipotentiel)
   ktor=rue/ngrid
   !      write(6,*) 'rue ngrid ktor ', rue,ngrid,ktor
   !repulsion
@@ -32,13 +32,13 @@ subroutine calpoeam
         select case(ipotentiel)
         case(10)
            call extrapolateRep(reppair(l),rk2,Erep=ysp(k))
-          !if (k.lt.10) then 
-          ! write(*, '(i6,"(",2d14.7,") )",2D15.7," )")') k,xsp(k),reppair(l)%potr(k)*ev2erg, rk,ysp(k)
-          !end if
-          !  if (k.gt.(ngrid-10)) then
-          !   write(*,*)k, xsp(k), rk
-          !  end if 
-          !if (k.eq.ngrid) stop
+           !if (k.lt.10) then 
+           ! write(*, '(i6,"(",2d14.7,") )",2D15.7," )")') k,xsp(k),reppair(l)%potr(k)*ev2erg, rk,ysp(k)
+           !end if
+           !  if (k.gt.(ngrid-10)) then
+           !   write(*,*)k, xsp(k), rk
+           !  end if 
+           !if (k.eq.ngrid) stop
 
         case(12)
            call extrapolateRepjl(reppairjl(l),rk2,Erep=ysp(k))
@@ -115,7 +115,7 @@ subroutine calpoeam
   if (rang==0) then 
      if (rhominzero.eqv..true.) then
         if(rhomin.lt.0.0)  write(6,*) '******** RHOMIN <0 ****** ??????'
-        
+
         if(rhomin.lt.0.0)  write(6,*) 'RHOMIN MIS A ZERO'
         if(rhomin.lt.0.0)  write(6,*) '******** RHOMIN <0 ****** ??????'
      endif

@@ -275,7 +275,6 @@
       R=sqrt(C1*C1+C2*C2+C3*C3)
       ITJ=ITYP(J)
       L=IPO(ITI,ITJ)
-!      if(r.gt.rue) goto 62
       if(r.gt.rawat(l)) goto 62
       SK=R/csive
       K=SK

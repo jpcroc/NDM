@@ -746,7 +746,7 @@ main ->
 			-> initspeed 		!initialisations des vitesses
 			<> -> initcasca		!initialisation de l'eventuelle cascade
 			<> -> deftimestep 	!determination du pas en temps optimal
-		<> ->dmloop_vverlet
+		<> ->dmloop
 			boucle
 			->calfo	! routeur pour le calcul des forces		
 				!calcul des forces des termes de paire

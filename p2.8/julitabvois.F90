@@ -71,7 +71,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   real(double), dimension(:,:), allocatable :: xpnp
 
 
-  rue=rue_pair(1)
+  rue=rue_pot(ipotentiel)
 
 
   do l=1,npair

@@ -39,15 +39,15 @@ program ndm
 #endif
 
 #if(ART)
-  if (rang==0) write(6,*)'*** NDMP-2.8 + ART ***'
+  if (rang==0) write(6,*)'*** NDM116 + ART ***'
 #else
-  if (rang==0) write(6,*)'*** NDMP-2.8 ***'
+  if (rang==0) write(6,*)'*** NDM116 ***'
 #endif
 
 #if(PHONDY)
-  if (rang==0) write(6,*)'*** NDMP-2.8 + PHONDY ***'
+  if (rang==0) write(6,*)'*** NDMP116 + PHONDY ***'
 #else
-  if (rang==0) write(6,*)'*** NDMP-2.8 ***'
+  if (rang==0) write(6,*)'*** NDMP116 ***'
 #endif
 
 

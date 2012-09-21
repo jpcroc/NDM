@@ -50,6 +50,7 @@ module var_pot
   real(double) :: eta ! rayon de coupure et amortissement d'Ewald
   real(double) ::  rumax,csive ! rayonde coupure ; pas de la grille d'interpolation du potentiel
   real(double),pointer::rue_pair(:)
+  real(double),pointer::rue_pot(:)
   integer :: ncouc3 ! nombre de couche dans la sommation d'Ewald
   integer :: n2max  ! valeur de ncouc3 au carre
   integer :: ncoucx, ncoucy, ncoucz,nvecttot !couches en x y et z de la sommation d'Ewald

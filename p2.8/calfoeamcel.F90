@@ -51,7 +51,7 @@ SUBROUTINE calfoeamcel
 
   real(double) :: xpnp(3,imm)
   real(double)::rue
-  rue=rue_pair(1)
+  rue=rue_pot(ipotentiel)
   test_sigma=(mod(it,itesigma)==0)
   !  if (it.le.1)   write(6,*)'ROUTINE CALFOEAMCEL :boucle (i,j) complete et non j>i car parallelise *'
 
