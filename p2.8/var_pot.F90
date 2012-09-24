@@ -105,8 +105,7 @@ module var_pot
   ! EAM
   real(double) :: potisrep, potisglue,potiseam ! energie potentielle EAM
   real(double),dimension(:,:,:),pointer :: eamrep,eamrho,eamglue ! tableaux des splines du pot EAM 
-  real(double) :: rhomin,rhomax
-  logical ::rhominzero=.true.
+  real(double) :: rhomin=1d30,rhomax=0
 
   real(double), pointer, dimension(:,:,:) :: digr, coord
   integer, dimension(:), pointer :: nad, nas, nai  ! fracture

@@ -59,8 +59,11 @@ subroutine init
   end if
   allocate(rue_pot(npotmax))
   rue_pot(:)=0.
-
-
+  if (rang.eq.0) then
+     write(6,*)
+     write(6,*)'-*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-'
+     write(6,*)
+  END if
   do ipotcont=0,npotmax
      if(lpotentiel(ipotcont).EQV..true.) then 
         ipotentiel=ipotcont
@@ -81,6 +84,7 @@ subroutine init
         case(10)
            if (rang.eq.0) then
               write(6,*)
+
               write(6,*)'POTENTIEL EAM'
               write(6,*)
            end if

@@ -76,7 +76,7 @@ subroutine config
 
   if (rang==0) then
      write(6,*)
-     write(6,*)' CONSTRUCTION DE LA BOITE'
+     write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-'
      write(6,*)
   endif
 
@@ -172,7 +172,8 @@ subroutine config
  	! chaque appel a la routine divid, on sauvegarde donc la valeur
  	! initiale pour la remettre en sortie
 	rumax_init=rumax
-	alpha_init=alpha
+        alpha_init=alpha
+        write(6,*)'call divid 0'
         call divid(0)
 	rumax=rumax_init
 	alpha = alpha_init

@@ -1,6 +1,7 @@
 module eam
   USE T_kind_param_m
   USE gen_com_m, ONLY: A2cm
+  use var_pot,ONLY:rhomin,rhomax
 
   implicit none
 
@@ -12,26 +13,40 @@ module eam
   ! routines generRho, generEAm, generRep. Ils sont ensuite utilisé dans les routines extrapolate
 
   type :: EamT
-     real(double),dimension (:),pointer :: feam,dfeam,xg
+     real(double),dimension (:),pointer :: feam,xg
      real(double)::deltaEAM
      !     integer :: typ
   end type EamT
 
+  type :: EamTsp
+     real(double),dimension (:),pointer :: beam,ceam,deam
+  end type EamTsp
+
   type :: RepT
-     real(double),dimension (:),pointer :: potr,dpotr,xr
+     real(double),dimension (:),pointer :: potr,xr
      real(double)::deltaREP
-     !     integer :: pair
   end type Rept
 
+  type :: RepTsp
+     real(double),dimension (:),pointer :: bpotr,cpotr,dpotr
+  end type RepTsp
+
   type :: DensityT
-     real(double),dimension (:),pointer::rho,drho,xd
+     real(double),dimension (:),pointer::rho,xd
      real(double)::deltaRHO
-     !     integer :: typ
   end type DensityT
+
+  type :: DensityTsp
+     real(double),dimension (:),pointer::brho,crho,drho
+  end type DensityTsp
 
   type(DensityT),dimension(:), pointer :: rhotyp
   type(EamT),dimension(:), pointer :: embtyp
   type(repT),dimension(:), pointer :: reppair
+
+  type(DensityTsp),dimension(:), pointer :: SPrhotyp
+  type(EamTsp),dimension(:), pointer :: SPembtyp
+  type(repTsp),dimension(:), pointer :: SPreppair
 
 
   !  real(double),pointer, dimension(:,:):: xg,xr,xd ! tablezau construit à partir de la grille lue
@@ -74,15 +89,15 @@ contains
     integer:: i,iti,n,npt,ipr
     integer :: lupotin=95
     character ::  fnampotin*80
-    real(double) :: xdum,cmr,catomr
+    real(double) :: xdum,cmr,catomr,drk,erep
     integer,pointer :: typtyp(:),ind_pair(:)
-    integer::itir,npair_r,ipair,ntypr,j,itj
+    integer::itir,npair_r,ipair,ntypr,j,itj,k
     character :: tyr*3
 
     !    real(double):: deltaEAM, deltaRHO,deltaREP
 
     fnampotin = 'eamtab.potin'
-
+    rhomin=1d30;rhomax=0
     lupotin = 95
     open(unit=lupotin, file=fnampotin, status='old')
 
@@ -182,11 +197,11 @@ contains
     allocate(rhotyp(ntyp)) 
     allocate(embtyp(ntyp)) 
     allocate(reppair(npair)) 
+    allocate(SPrhotyp(ntyp)) 
+    allocate(SPembtyp(ntyp)) 
+    allocate(SPreppair(npair)) 
 
 
-    !  rhotyp(:,:)%rho=0.;  rhotyp(:,:)%drho=0.;  rhotyp(:,:)%xr=0.
-    !  embtyp(:,:)%eam=0.;  embtyp(:,:)%dfeam=0.;  embtyp(:,:)%xg=0.
-    !  reppair(:,:)%potr=0.;  reppair(:,:)%dpotr=0.;  reppair(:,:)%xr=0.
 
 !EMBD EAM PART
     do itir=1,ntypr
@@ -205,24 +220,28 @@ contains
           call arret_ndm
        end if
        allocate(embtyp(iti)%feam(nptmax)) 
-       allocate(embtyp(iti)%dfeam(nptmax)) 
        allocate(embtyp(iti)%xg(nptmax)) 
+       allocate(SPembtyp(iti)%beam(nptmax)) 
+       allocate(SPembtyp(iti)%ceam(nptmax)) 
+       allocate(SPembtyp(iti)%deam(nptmax)) 
+
        do i=1,nptmax
           if(i.le.npt) then
              read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),xdum
-             !read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),embtyp(iti)%dfeam(i)
-             !           write(6,*)i,embtyp(iti)%xg(i),embtyp(iti)%feam(i),xdum
           else
              embtyp(iti)%xg(i)=(i-npt)*embtyp(iti)%deltaEAM+ embtyp(iti)%xg(i)
              embtyp(iti)%feam(i)=embtyp(iti)%feam(npt)
           end if
 
        end do
-       do i=1,nptmax-1
-          embtyp(iti)%dfeam(i)=embtyp(iti)%feam(i+1)-embtyp(iti)%feam(i)
-          !        write(6,*)'eam',iti,i,embtyp(iti)%xg(i),embtyp(iti)%feam(i),embtyp(iti)%dfeam(i)
-       end do
-       embtyp(iti)%dfeam(nptmax)=0.
+       rhomin=min(rhomin,embtyp(iti)%xg(1))
+       rhomax=max(rhomax,embtyp(iti)%xg(npt))
+!       write(6,*)'rhomin rhomax',rhomin,rhomax
+
+       call cspline (nptmax,embtyp(iti)%xg,embtyp(iti)%feam,SPembtyp(iti)%beam,SPembtyp(iti)%ceam,SPembtyp(iti)%deam)
+
+
+
 
 
 !DENS PART
@@ -241,26 +260,21 @@ contains
           call arret_ndm
        end if
        allocate(rhotyp(iti)%rho(nptmax)) 
-       allocate(rhotyp(iti)%drho(nptmax)) 
        allocate(rhotyp(iti)%xd(nptmax)) 
+       allocate(SPrhotyp(iti)%brho(nptmax)) 
+       allocate(SPrhotyp(iti)%crho(nptmax)) 
+       allocate(SPrhotyp(iti)%drho(nptmax)) 
 
        do i=1,nptmax
           if(i.le.npt) then
              read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),xdum
-             !read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(iti),rhotyp(iti)%drho(i)
-             !           write(6,*)i,rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),xdum
           else
              rhotyp(iti)%xd(i)=(i-npt)*rhotyp(iti)%deltaRHO+ rhotyp(iti)%xd(npt)
              rhotyp(iti)%rho(i)=rhotyp(iti)%rho(npt)
-             rhotyp(iti)%drho(i)=0.
           end if
 
        end do
-       do i=1,nptmax-1
-          rhotyp(iti)%drho(i)=rhotyp(iti)%rho(i+1)-rhotyp(iti)%rho(i)
-          !        write(6,*)'rho',iti,i,rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),rhotyp(iti)%drho(i)
-       end do
-       rhotyp(iti)%drho(nptmax)=0.
+       call cspline (nptmax,rhotyp(iti)%xd,rhotyp(iti)%rho,SPrhotyp(iti)%brho,SPrhotyp(iti)%crho,SPrhotyp(iti)%drho)
     end do
 
 !PAIR PART 
@@ -281,24 +295,21 @@ contains
           call arret_ndm
        end if
        allocate(reppair(ipr)%potr(nptmax)) 
-       allocate(reppair(ipr)%dpotr(nptmax)) 
        allocate(reppair(ipr)%xr(nptmax)) 
-
+       allocate(SPreppair(ipr)%bpotr(nptmax)) 
+       allocate(SPreppair(ipr)%cpotr(nptmax)) 
+       allocate(SPreppair(ipr)%dpotr(nptmax)) 
        do i=1,nptmax
           if(i.le.npt) then
              read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),xdum
-             !read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),reppair(ipr)%dpotr(i)
-             !          write(6,*)i,reppair(ipr)%xr(i),reppair(ipr)%potr(i),xdum
           else
              reppair(ipr)%xr(i)=(i-npt)*reppair(ipr)%deltaREP+ reppair(ipr)%xr(i)
              reppair(ipr)%potr(i)=reppair(ipr)%potr(npt)
           end if
        end do
-       do i=1,nptmax-1
-           reppair(ipr)%dpotr(i)=reppair(ipr)%potr(i+1)-reppair(ipr)%potr(i)
-          !        write(6,*)'rep',ipr,i,reppair(ipr)%xr(i),reppair(ipr)%potr(i),reppair(ipr)%dpotr(i)
-       end do
-       reppair(ipr)%dpotr(nptmax)=0.
+       call cspline (nptmax,reppair(ipr)%xr,reppair(ipr)%potr,SPreppair(ipr)%bpotr,SPreppair(ipr)%cpotr,SPreppair(ipr)%dpotr)
+     
+
     end do
 
     close(lupotin)
@@ -308,6 +319,7 @@ contains
        typ_and_pot(:,:)=.false.
        typ_and_pot(1:ntyp,ipotentiel)=.true.
     end if
+    rumax=max(rue,rumax)
 
 
     return
@@ -316,7 +328,7 @@ contains
 
   !-------------------------------------------
 
-  subroutine extrapolateRho(density, r2, rho, drho, ddrho)
+  subroutine extrapolateRho(density,SPdensity, r2, rho)
     ! calculate electronic density at distance sqrt(r)
     ! or its first and second derivatives
 
@@ -324,8 +336,9 @@ contains
     implicit none
 
     type(DensityT), intent(in) :: density 
+    type(DensityTsp), intent(in) :: SPdensity 
     real(kind(0.d0)), intent(in) :: r2
-    real(kind(0.d0)), intent(out), optional :: rho, drho, ddrho
+    real(kind(0.d0)), intent(out), optional :: rho
     !local
     integer:: kr 
     real(double) :: xmax,r,drk
@@ -338,15 +351,10 @@ contains
        Rho=0.0
     else
        kr=Int(r/density%deltaRHO)+1
-       drk=r/density%deltaRHO+1-kr
- !      write(*,*) 'Rho1', kr
-       Rho=density%rho(kr)+drk*density%drho(kr)
-       !Rho=density%rho(k)
-  !     write(*,*) 'Rho2', kr
+       drk=r+(1-kr)*density%deltaRHO
+       rho = density%rho(kr)+drk*(SPdensity%brho(kr)+drk*(SPdensity%crho(kr)+drk*SPdensity%drho(kr)))
+
     end if
-   ! if (kr==5)    write(6,'("rho ",i8,3d20.10)')kr,drk,density%rho(kr),Rho-density%rho(kr) 
-    
-   !    write(*,*) 'Rho3', kr
     RETURN
 
 
@@ -356,20 +364,16 @@ contains
   !---------------------------------------------------------------------------
 
 
-  subroutine extrapolateEam(eam, rho, embF, dembF, ddembF, err)
-    ! calculate eam function for electronic density rho
-    !   or its first and second derivatives
-    !   err= 0 if everyting ok
-    !       -1 if density too large for extrapolation
+  subroutine extrapolateEam(eam, SPeam,rho, embF)
 
     USE gen_com_m, ONLY:  ev2erg
     implicit none
 
     type(EamT), intent(in) :: eam
+    type(EamTsp), intent(in) :: SPeam
 
     real(double), intent(in) :: rho
-    real(double), intent(out), optional :: embF, dembF, ddembF
-    integer, intent(out), optional :: err
+    real(double), intent(out), optional :: embF
 
     !local 
     integer :: k
@@ -386,11 +390,8 @@ contains
 
     else
        k=Int(rho/eam%deltaEAM)+1
-       drk=rho/eam%deltaEAM +1 -k
-        embf=  ev2erg*(eam%feam(k)+drk*eam%dfeam(k))
-      ! embf=  ev2erg*(eam%feam(k))
-
-!        write(6,*)'eam',rho,k,drk,embf/ev2erg
+       drk=rho +(1 -k)*eam%deltaEAM
+       Embf = ev2erg*(eam%feam(k)+drk*(SPeam%beam(k)+drk*(SPeam%ceam(k)+drk*SPeam%deam(k))))
     end if
 
 
@@ -400,7 +401,7 @@ contains
 
   !----------------------------------------------
 
-  subroutine extrapolateRep(rep, r2, Erep, dErep, ddErep)
+  subroutine extrapolateRep(rep, SPrep,r2,Erep)
     ! calculate repulsive potential at distance sqrt(r2)
     ! or its first and second derivatives
 
@@ -408,8 +409,9 @@ contains
     implicit none
 
     type(RepT), intent(in) :: rep
+    type(RepTsp), intent(in) :: SPrep
     real(kind(0.d0)), intent(in) :: r2
-    real(kind(0.d0)), intent(out), optional :: Erep, dErep, ddErep
+    real(kind(0.d0)), intent(out), optional :: Erep
 
 
     !-----------------------------------
@@ -426,11 +428,10 @@ contains
        return
     else
        k=Int(r/rep%deltaREP)+1
-       drk=r/rep%deltaREP+1-k
-       Erep=ev2erg*(rep%potr(k)+drk*rep%dpotr(k))
-       !Erep=ev2erg*(rep%potr(k))    
+       drk=r+(1-k)*rep%deltaREP
+       Erep = ev2erg*(rep%potr(k) +drk*(SPrep%bpotr(k) +drk*(SPrep%cpotr(k) +drk*SPrep%dpotr(k))))
+
     end if
-    !    write(6,*)'rep',r,k,drk,Erep/ev2erg
 
 
 
