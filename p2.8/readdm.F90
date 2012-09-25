@@ -51,7 +51,7 @@ subroutine readdm
        lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,&
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
-       eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration
+       eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step
 
 
   !
@@ -277,6 +277,9 @@ subroutine readdm
 !.... in SUNDAE
   kappa = 1e6
   niteration=10000
+  lanczos_step=1.0d-3
+!.... in SUNDAE 
+
 
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 

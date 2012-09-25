@@ -1597,7 +1597,7 @@ subroutine lanczos(N,maxvec,q1s2,new_projection,projection) !!!!!!!!!!!!! SERVE 
 
 
 
-  lanczos_step =0.001 ! in Angstroems  mettre en parametre d'entree.
+  !lanczos_step =0.001 ! in Angstroems  mettre en parametre d'entree.
   !boxl(:) = box(:) * scala
   increment = lanczos_step  ! Increment, convert in box units
   overlap=0.0
