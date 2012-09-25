@@ -23,11 +23,9 @@ subroutine sundae
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       implicit none
-! This is the main program for TELEDYN nouveau version 2010-11
+! This is the main program for SUNDAE nouveau version 2012
 ! 
 ! Copyleft M. Athenes & M.-C. Marinica 
-! last french  touch 03.03.2008, 15h20m 
-! last italian touch: 
 !
 !  integer :: i, ierror
   integer ic

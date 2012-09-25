@@ -1,14 +1,57 @@
 ! This file contains the following functions or subroutines:
-!  genrand, FACT and timestamp      
+!  genere_bruit2, genrand, FACT and timestamp      
+
+
+subroutine genere_bruit2 (sig,gau)
+   use T_kind_param_m, ONLY : double
+   use gen_com_m,      ONLY : pi,im 
+   implicit none
+
+   real(double), dimension(6,im+1)::gau
+   real(double), dimension(3,im)::sig
+   real(double) :: u1,u2,b1
+   real(double):: deriv(6)
+   integer   :: ic,i
+ 
+   gau(:,:)=0   
+
+!write(*,*) 'sig' ,sig(:,1)
+
+   do i=1,im+1
+      do ic=1,6
+         call random_number(u1)
+         call random_number(u2)
+         b1=sqrt(-2.*log(u1))*cos(2.*pi*u2)
+         gau(ic,i) = b1
+      enddo
+   enddo
+
+ 
+!write(*,*) 'gau', gau(:,:)
+
+
+   gau(1:3,1:im) = gau(1:3,1:im)*sig(1:3,1:im)
+   gau(4:6,1:im) = gau(4:6,1:im)*sig(1:3,1:im)
+!write(*,*) 'gau2', gau(1:3,:)
+
+   do ic=1,6
+      deriv(ic)    = sum(gau(ic,1:im))/dble(im)
+      !write(*,*) deriv(ic)
+      gau(ic,1:im) = gau(ic,1:im)-deriv(ic)
+   enddo
+
+  end subroutine genere_bruit2
+
 
 real(8) Function ran3()
-      use random_art
+     use T_kind_param_m, ONLY : double 
+     use random_art
       implicit none
 
       integer, parameter :: mbig  = 1000000000
       integer, parameter :: mseed = 161803398
       integer, parameter :: mz=0
-      real(8), parameter :: fac=1./mbig
+      real(double), parameter :: fac=1./mbig
 
       integer :: i,mj, mk, ii, k
 
