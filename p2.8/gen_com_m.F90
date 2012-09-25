@@ -283,4 +283,9 @@ module gen_com_m
   ! selection des atomes distordus
   integer :: natdistordusvraiment
 
+  real(double)  :: kappa,text_teledyn
+  integer       :: niteration,nchemin_teledyn
+  
+
+
 end module gen_com_m

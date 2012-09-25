@@ -89,6 +89,12 @@ subroutine prog
           call art90
 #endif
 
+#if(SUNDAE)    
+     case (16) 
+          call sundae
+#endif
+
+
 #if(PHONDY)    
      case (7) 
           call phondy

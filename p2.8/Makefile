@@ -176,7 +176,14 @@ ifdef PHONDY
  DIREXT=phondy
 
 endif
+ifdef SUNDAE
+ # Version SUNDAE
+ OBJS = ${OBJS_MOD} ${OBJS_SEQ}
+ DEP=${OBJS}  ${LIBSUNDAE}
+ CLEANPHONDY=clean_sundae
+ DIREXT=sundae
 
+endif
 
 .f.o :
 	${F90} -c  ${F90FLAGS} $<
@@ -190,9 +197,10 @@ endif
 	mv $*.tmp.o $*.o
 
 
+
 LIBART = libart.a
 LIBPHONDY=libphondy.a
-
+LIBSUNDAE=libsundae.a
 
 
 ${BIN}/rundm90 : ${DEP} 
@@ -204,7 +212,8 @@ $(LIBART):
 	(cp -rp ../art ./ ; cd art	; make ; cp *.o *.a ../../art)
 $(LIBPHONDY): 
 	(cp -rp ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
-
+$(LIBSUNDAE): 
+	(cp -rp ../sundae ./ ; cd sundae	; make ; cp *.o *.a ../../sundae)
 clean : clean_seq clean_para
 
 clean_seq :
@@ -230,4 +239,6 @@ clean_art:
 	rm -rf art ; cd ../art ; make clean   
 clean_phondy:
 	rm -rf phondy ; cd ../phondy ; make clean   
+clean_sundae:
+	rm -rf sundae ; cd ../sundae ; make clean   
 #

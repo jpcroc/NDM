@@ -51,7 +51,7 @@ subroutine readdm
        lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,&
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
-       eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder
+       eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration
 
 
   !
@@ -169,8 +169,6 @@ subroutine readdm
   fsumstop =-0.1 ! critere de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
   lcontr=.false. ! dynamique contrainte (routine contrainte)
   iseed=0 ! si <>0 controle le tirage aleatoire des vitesses
-
-
   !variables d'analyse
 
   itetemp = 20                !period of temperature calculation
@@ -276,7 +274,9 @@ subroutine readdm
   Theat=0.0
   Eheat=0.
 
-
+!.... in SUNDAE
+  kappa = 1e6
+  niteration=10000
 
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -484,6 +484,7 @@ subroutine readdm
 
   if(dmtype==9) lprteat=.true.
   if(dmtype==12) lprteat=.true.
+  if(dmtype==16) lprteat=.true.
   if (lposmoy.EQV..true.) then 
      lprteattotm=.true.
      write(6,*)'LPOSMOY, stocke les positions moyennes dans posmoyx et les ecrit a la fin avec les energies moyennes'
@@ -782,6 +783,12 @@ subroutine readdm
      if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
      if (rang==0) write (6,'(a)') '|---------ART nouveau by N MOUSSEAU.---------------|'
      if (rang==0) write (6,'(a)') '|======== colored by Cosmin Marinica!==============|'
+#endif
+#if(SUNDAE)    
+  case (16)
+     if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
+     if (rang==0) write (6,'(a)') '|---------..........................---------------|'
+     if (rang==0) write (6,'(a)') '|==================================================|'
 #endif
   case default
      if (rang==0) write (6, '(a)') 'mauvais type de calcul dmtype=', dmtype

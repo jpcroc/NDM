@@ -26,12 +26,12 @@ F90 = ifort
  CPPFLAGS = -C -E -P -traditional
 
 
-#F90FLAGS =  -O0 -fpe0 -g -C -traceback -warn all -u -fpstkchk -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 # F90FLAGS = -ffixed-line-length-0
 #EXT = _check
 
  EXT      = 
-F90FLAGS = -O3  -convert big_endian
+#F90FLAGS = -O3  -convert big_endian
 
 endif
 
@@ -109,5 +109,34 @@ LIBRARY_PHONDY = phondy/libphondy.a
 
 # link library
 LIBRARY =${LIBRARY_PHONDY} ${LLIBS_PHONDY}  
+
+endif
+
+
+ifdef SUNDAE
+ F90 = ifort
+ CPPFLAGS = -C -P -traditional -DSUNDAE
+ EXT      = _SUNDAE
+#F90FLAGS =  -O0 -fpe0 -C -traceback  -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS =  -O3 -convert big_endian 
+
+#FLAGS and LIBS for SUNDAE
+FLAGS_SUNDAE =  -DNOIBM 
+#debug
+#F90FLAGS_SUNDAE = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_SUNDAE = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_SUNDAE =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_SUNDAE =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_SUNDAE = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_SUNDAE =${mkkl_definitions}
+# link library
+LIBRARY_SUNDAE = sundae/libsundae.a
+
+
+# link library
+LIBRARY =${LIBRARY_SUNDAE} ${LLIBS_SUNDAE}  
 
 endif
