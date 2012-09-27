@@ -1,3 +1,48 @@
+
+! *********************************************************************
+subroutine bruit_xp 
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+  use var_pot
+  use tab_imm_m
+  !-----------------------------------------------
+  !   M o d u l e s
+  !-----------------------------------------------
+ implicit none
+   integer    :: ia, ip
+   integer, dimension(2) :: iseedt
+   real(double)  :: zr1,zr2,zr3,zr4,totalbruit
+ 
+  call system_clock (iseed)
+   iseedt(1)=iseed
+ 
+  call random_seed(iseedt(1))
+ totalbruit=0.d0
+ bruitmd(1:3,1:im)=0.d0
+  do ia=1,im
+   call random_number(zr1)
+   call random_number(zr2)
+   call random_number(zr3)
+   call random_number(zr4)
+    if(zr1.eq.0.d0) zr1=0.000000001d0
+    if(zr2.eq.0.d0) zr2=0.000000001d0
+    if(zr3.eq.0.d0) zr3=0.000000001d0
+    if(zr4.eq.0.d0) zr4=0.000000001d0
+    
+    bruitmd(1,ia)=sqrt((-log(zr1)))*cos(2.0*pi*zr3)
+    bruitmd(2,ia)=sqrt((-log(zr1)))*sin(2.0*pi*zr3)
+    bruitmd(3,ia)=sqrt((-log(zr2)))*cos(2.0*pi*zr4)
+    totalbruit=totalbruit + bruitmd(1,ia)**2 + bruitmd(2,ia)**2 + bruitmd(3,ia)**2
+   end do
+  
+  if (rang==0)  write(6,*) 'ISEED for MD, NORM of the noise ',iseed, neb_noise_scale, totalbruit
+  bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale * xp(1:3,1:im) / (sqrt(totalbruit))
+  
+  end subroutine bruit_xp
+
+
+
+
 ! *********************************************************************
 subroutine initspeed
   !-----------------------------------------------
@@ -62,13 +107,20 @@ subroutine initspeed
   select case (dmtype)
   case(3,30,5,11,7)
      vp = 0.0
-     return
+      return
   case(2)
      if (lvpread) then 
         return
      else
-        vp=0.0
-        return
+       if (mdcg_noise==0) then 
+         vp=0.0
+         return
+       else
+         vp=0.0 
+         call bruit_xp
+         xp(1:3,1:im) = xp(1:3,1:im) + bruitmd(1:3,1:im)
+       return
+       end if
      end if
   end select
 1 continue
@@ -370,3 +422,5 @@ subroutine initspeed
 
   return
 end subroutine initspeed
+
+

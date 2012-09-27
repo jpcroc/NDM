@@ -135,6 +135,7 @@ subroutine init
 
   it=0 
 
+
   !---inNEB
   if (dmtype.ne.9) then
 #if(PARA)

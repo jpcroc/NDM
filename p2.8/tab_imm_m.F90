@@ -1,7 +1,7 @@
 module tab_imm_m
   !
   USE T_kind_param_m
-  USE gen_com_m, ONLY: lsuivinonpbc,lposmoy
+  USE gen_com_m, ONLY: lsuivinonpbc,lposmoy,mdcg_noise
   ! 
   ! Module contenant les tableaux dimmensionnes sur le
   ! nombre d'atomes de la simulation
@@ -16,6 +16,7 @@ module tab_imm_m
   real(double),dimension(:,:), pointer :: ax     ! positions d'origine
   real(double),dimension(:,:), pointer :: posmoyx     ! positions moyennes
   real(double),dimension(:,:), pointer :: fp     ! forces 
+  real(double),dimension(:,:), pointer :: bruitmd     ! bruitmd 
   real(double),dimension(:,:), pointer :: xpnonpbc    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), pointer :: axnonpbc    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), pointer :: tmpsuivi    ! only in the case, lsuivinonpbc  
@@ -44,6 +45,12 @@ contains
        allocate(posmoyx(3,nb_imm))
        posmoyx = 0.0
     end if
+
+    if (mdcg_noise/=0) then
+     allocate (bruitmd(3,nb_imm))
+     bruitmd=0.0
+    end if 
+
     allocate(fp(3,nb_imm))
     fp = 0.0
     allocate(ielat(nb_imm))
@@ -146,8 +153,16 @@ contains
        fp(:,1:old_nb_imm) = rbuff
 
        deallocate(rbuff)
+       if (mdcg_noise/=0) then
+        rbuff = bruitmd
+        deallocate(bruitmd)
+        allocate(bruitmd(3,new_nb_imm))
+        bruitmd = 0
+        bruitmd(:,1:old_nb_imm) = rbuff
+       end if
 
-       ! Tableaux d'entiers
+       deallocate(rbuff)
+     ! Tableaux d'entiers
 
        allocate(ibuff(old_nb_imm))
 
@@ -196,6 +211,7 @@ contains
     deallocate(vp)
     deallocate(ax)
     deallocate(fp)
+    deallocate(bruitmd)
     deallocate(ielat)
     deallocate(iwmax)
     deallocate(iwmax2)

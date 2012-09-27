@@ -51,7 +51,8 @@ subroutine readdm
        lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,&
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
-       eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step
+       eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
+       mdcg_noise
 
 
   !
@@ -229,10 +230,12 @@ subroutine readdm
   kspring = 1.0    ! the default value for the spring
   deltaRmax=1.d-2
   neb_noise_scale=0.001      ! this will affect the 4th digit
+  mdcg_noise_scale=0.001      ! this will affect the 4th digit
   ! x + x*neb_noise_scale*random,
   ! where "random" is a random number between 
   ! 0 and 1  
-  neb_noise=0                ! 0 without noise, 1 with noise
+  neb_noise=0                 ! 0 without noise, 1 with noise
+  mdcg_noise=0                ! 0 without noise, 1 with noise
   !      	lperiod=.false.  ! pas de conditions periodiques
 
   !...inNEB

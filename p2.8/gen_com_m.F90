@@ -263,8 +263,8 @@ module gen_com_m
 
   !---inNEB
   integer  :: ipath, npath,nebtype,nebrelaxation,maxneb,iteanaposneb, &
-              neb_noise
-  REAL(double) :: kspring,deltaRmax,neb_noise_scale
+              neb_noise,mdcg_noise
+  REAL(double) :: kspring,deltaRmax,neb_noise_scale,mdcg_noise_scale
   !...inNEB
 
   !...inPHONDY

@@ -7,6 +7,7 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   use gen_com_m
   use var_pot
   use work_cgII
+  use tab_imm_m, ONLY : bruitmd
   ! *************************************************************
   ! xp positions des atomes
   ! xpp previous positions
@@ -52,6 +53,9 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      imd = im
      nad(:ntyp) = na(:ntyp)
 
+   if (mdcg_noise /= 0 ) then
+     call bruit_xp
+   end if 
 
 
   !New GC settings ....:
@@ -63,10 +67,20 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
           do i=1,im
              IF (dmtype.EQ.30) THEN
                      ! Variables = reduced coordinates
+                   if (mdcg_noise==0) then
+                     
                      X(3*i-2:3*i) = MatMul( ax(1:3,i), bg)
+                   else
+                     xp(1:3,i)= ax(1:3,i)+bruitmd(1:3,i)
+                     X(3*i-2:3*i) = MatMul( xp(1:3,i), bg)
+                   end if
              ELSE
                      ! Variables = cartesian coordinates (in A)
-                     X(3*i-2:3*i) = ax(1:3,i)*angst
+                     if (mdcg_noise==0) then
+                      X(3*i-2:3*i) = ax(1:3,i)*angst
+                     else
+                      X(3*i-2:3*i) = (ax(1:3,i)+bruitmd(1:3,i))*angst
+                     end if
              END IF
           end do
           X(3*im+1:3*imm)=0.d0
