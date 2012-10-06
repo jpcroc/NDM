@@ -123,7 +123,6 @@ contains
        allocate(ax(3,new_nb_imm))
        ax = 0
        ax(:,1:old_nb_imm) = rbuff
-
        if (lsuivinonpbc) then
        ! 
 	rbuff = xpnonpbc
@@ -145,14 +144,13 @@ contains
         tmpsuivi(:,1:old_nb_imm) = rbuff
        !
        end if
-       
        rbuff = fp
        deallocate(fp)
        allocate(fp(3,new_nb_imm))
        fp = 0
        fp(:,1:old_nb_imm) = rbuff
-
-       deallocate(rbuff)
+     
+ 
        if (mdcg_noise/=0) then
         rbuff = bruitmd
         deallocate(bruitmd)
@@ -171,7 +169,6 @@ contains
        allocate(ielat(new_nb_imm))
        ielat = 0
        ielat(1:old_nb_imm) = ibuff
-
        ibuff = iwmax
        deallocate(iwmax)
        deallocate(iwmax2)

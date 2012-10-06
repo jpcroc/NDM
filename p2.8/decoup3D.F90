@@ -5,7 +5,8 @@ subroutine decoupage(nbr_cpu)
   use tab_imm_m
 #endif
   use gen_com_m
-
+  use var_pot
+  
   implicit none
 
   !------------------
@@ -235,15 +236,14 @@ subroutine decoupage(nbr_cpu)
      print *,'locmin/fantomax :',nbr_cpu,specifs(solution,4)/specifs(solution,7)
 
 
-
-
+     
 #ifndef DECOUP
      ldecoup=1023
      open (unit=1023,file='decoup_out')
 #else
      ldecoup=6
 #endif
-
+    
      write(ldecoup,*),'Taille des decoupages'
      do ii=0,nbr_cpu-1
         write(ldecoup,*),'Decoupage',ii,':',res_cpu(ii,1:3)
@@ -256,14 +256,19 @@ subroutine decoupage(nbr_cpu)
         write(ldecoup,*)
      enddo
      write(ldecoup,*),'-----------------------------------------------'
+
+
 #if(PARA)
   endif
 #endif
+  
 
 #ifndef DECOUP
 #if(PARA)
   ! On est dans le code de calcul NDM, on realloue les tableaux sur le
   ! nombre d'atomes en tenant compte des cellules fantomes
+
+ 
   cellules_max=0
   do ii = 0,nbr_cpu-1
      cellules_max = max(cellules_max,(res_cpu(ii,1)+2) * (res_cpu(ii,2)+2)* (res_cpu(ii,3)+2))
@@ -276,8 +281,10 @@ subroutine decoupage(nbr_cpu)
   imm = imm_loc
   call MPI_REDUCE(imm_loc,imm,1,MPI_INTEGER,MPI_MAX,0,MPI_COMM_WORLD,ierr)
 
+     print *,'test4' 
   call realloc_all_tab_imm(imm)
 
+     print *,'test4' 
   ! Initialisation des donnees geometriques qui serviront pour le reste du code :
   cell_debx= coord_min(myid,1)
   cell_finx= coord_max(myid,1)
@@ -291,4 +298,5 @@ subroutine decoupage(nbr_cpu)
 #endif
 #endif
 
+ 
 end subroutine decoupage

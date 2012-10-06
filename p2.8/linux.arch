@@ -8,8 +8,9 @@ ifdef PARA
  F90      = mpif90
  CPPFLAGS = -C -P -traditional -DPARA
  EXT      = _para
-#F90FLAGS = -O0 -g -C
-#F90FLAGS = -O3 
+ #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+ #F90FLAGS = -O0 -g -C
+  F90FLAGS = -O3 
 
 else
  # Version sequentielle
