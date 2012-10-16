@@ -11,12 +11,16 @@ subroutine calpoeam
 
   integer :: k,l,iti
   real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
+  real(double) ::ysp_d(ngrid),bsp_d(ngrid),csp_d(ngrid),dsp_d(ngrid)
   real(double):: ktor,ktorho
   real(double) :: rk,rhok,rk2,rue,minrho,maxrho
 
-  eamrep(:,:,:)=0.0
+   eamrep(:,:,:)=0.0
   eamrho(:,:,:)=0.0
   eamglue(:,:,:)=0.0
+  eamrep_d(:,:,:)=0.0
+  eamrho_d(:,:,:)=0.0
+  eamglue_d(:,:,:)=0.0
   rue=rue_pot(ipotentiel)
   ktor=rue/ngrid
   !      write(6,*) 'rue ngrid ktor ', rue,ngrid,ktor
@@ -32,6 +36,9 @@ subroutine calpoeam
         select case(ipotentiel)
         case(10)
            call extrapolateRep(reppair(l),SPreppair(l),rk2,Erep=ysp(k))
+           if (lforcetabulate) then
+            call extrapolateRep(reppair_d(l),SPreppair_d(l),rk2,Erep=ysp_d(k))
+           end if
 
         case(12)
            call extrapolateRepjl(reppairjl(l),rk2,Erep=ysp(k))
@@ -43,6 +50,13 @@ subroutine calpoeam
      eamrep(2,l,1:ngrid)=bsp(1:ngrid)
      eamrep(3,l,1:ngrid)=csp(1:ngrid)
      eamrep(4,l,1:ngrid)=dsp(1:ngrid)
+     if (lforcetabulate) then
+     call cspline (ngrid,xsp,ysp_d,bsp_d,csp_d,dsp_d)
+      eamrep_d(1,l,1:ngrid)=ysp_d(1:ngrid)/A2cm
+      eamrep_d(2,l,1:ngrid)=bsp_d(1:ngrid)/A2cm
+      eamrep_d(3,l,1:ngrid)=csp_d(1:ngrid)/A2cm
+      eamrep_d(4,l,1:ngrid)=dsp_d(1:ngrid)/A2cm
+     end if 
      !         if (l.eq.3) eamrep(:,l,:)=0.0
 !              do k=1,ngrid 
 !                 write(612,*)xsp(k),eamrep(1,l,k),eamrep(2,l,k)
@@ -50,7 +64,7 @@ subroutine calpoeam
 
      if (roff1(l).le.0) cycle
      if (lu_roff_pair(l).EQV..false.)cycle
-     call zieg2(eamrep,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair)
+     call zieg2(eamrep,eamrep_d,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair)
      !re-spline
      ysp(1:ngrid)=eamrep(1,l,1:ngrid)
      call cspline (ngrid,xsp,ysp,bsp,csp,dsp)
@@ -59,7 +73,18 @@ subroutine calpoeam
      eamrep(3,l,1:ngrid)=csp(1:ngrid)
      eamrep(4,l,1:ngrid)=dsp(1:ngrid)
 
-
+    if (lforcetabulate) then
+     write(*,*) 'There is no implemantation for the Ziegler ON and ltforcetabulate TRUE '
+     write(*,*) 'Switch OFF Ziegler or put lforcetabulate to FALSE'
+     write(*,*) 'Hopefully you know what you are doing!'
+     stop
+     ysp_d(1:ngrid)=eamrep_d(1,l,1:ngrid) 
+     call cspline (ngrid,xsp,ysp_d,bsp_d,csp_d,dsp_d)
+     eamrep_d(1,l,1:ngrid)=ysp_d(1:ngrid)
+     eamrep_d(2,l,1:ngrid)=bsp_d(1:ngrid)
+     eamrep_d(3,l,1:ngrid)=csp_d(1:ngrid)
+     eamrep_d(4,l,1:ngrid)=dsp_d(1:ngrid)
+    end if
 
   end do
   !stop
@@ -76,6 +101,9 @@ subroutine calpoeam
            rk=(k*ktor) ; rk2=rk**2
            xsp(k)=rk
            call extrapolateRho(rhotyp(iti),SPrhotyp(iti),rk2,rho=ysp(k))
+           if (lforcetabulate) then
+            call extrapolateRho(rhotyp_d(iti),SPrhotyp_d(iti),rk2,rho=ysp_d(k))
+           end if
         end do
         minrho=min(minrho,minval(ysp))
         maxrho=max(maxrho,maxval(ysp))
@@ -84,6 +112,15 @@ subroutine calpoeam
         eamrho(2,iti,1:ngrid)=bsp(1:ngrid)
         eamrho(3,iti,1:ngrid)=csp(1:ngrid)
         eamrho(4,iti,1:ngrid)=dsp(1:ngrid)
+
+       if (lforcetabulate) then
+        call cspline (ngrid,xsp,ysp_d,bsp_d,csp_d,dsp_d)
+         eamrho_d(1,iti,1:ngrid)=ysp_d(1:ngrid)/A2cm
+         eamrho_d(2,iti,1:ngrid)=bsp_d(1:ngrid)/A2cm
+         eamrho_d(3,iti,1:ngrid)=csp_d(1:ngrid)/A2cm
+         eamrho_d(4,iti,1:ngrid)=dsp_d(1:ngrid)/A2cm
+        end if
+
 !        do k=1,ngrid 
 !           write(712,*)xsp(k),eamrho(1,iti,k),eamrho(2,iti,k)
 !        end do
@@ -129,17 +166,29 @@ subroutine calpoeam
         select case(ipotentiel)
         case(10)
            call extrapolateEam(embtyp(iti),SPembtyp(iti),rhok,Embf=ysp(k))
+           if (lforcetabulate) then
+            call extrapolateEam(embtyp_d(iti),SPembtyp_d(iti),rhok,Embf=ysp_d(k))
+           end if
         case(12)
            call extrapolateEamjl(embtypjl(iti),rhok,Embf=ysp(k))
            !            write(6,*)'GLUE k,gluek ', iti, k,ysp(k)
         end select
 
      end do
+
      call cspline (ngrid,xsp,ysp,bsp,csp,dsp)
      eamglue(1,iti,1:ngrid)=ysp(1:ngrid)
      eamglue(2,iti,1:ngrid)=bsp(1:ngrid)
      eamglue(3,iti,1:ngrid)=csp(1:ngrid)
      eamglue(4,iti,1:ngrid)=dsp(1:ngrid)
+     if (lforcetabulate) then
+     call cspline (ngrid,xsp,ysp_d,bsp_d,csp_d,dsp_d)
+      eamglue_d(1,iti,1:ngrid)=ysp_d(1:ngrid)
+      eamglue_d(2,iti,1:ngrid)=bsp_d(1:ngrid)
+      eamglue_d(3,iti,1:ngrid)=csp_d(1:ngrid)
+      eamglue_d(4,iti,1:ngrid)=dsp_d(1:ngrid)
+     end if
+
 !        do k=1,ngrid 
 !           write(812,*)xsp(k),eamglue(1,iti,k),eamglue(2,iti,k)
 !        end do

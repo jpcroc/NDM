@@ -43,6 +43,7 @@ module var_pot
 
 
   real(double), dimension(:,:,:), pointer :: pot ! table des pot splines
+  real(double), dimension(:,:,:), pointer :: pot_d ! table des pot splines
   real(double), dimension(:,:), pointer :: potw ! table des pot a spliner
   real(double), dimension(:), pointer :: ray, shel, bm !parametres du pot
   real(double), dimension(:), pointer :: Dmorse, amorse, remorse !parametres du pot Morse
@@ -104,7 +105,8 @@ module var_pot
 
   ! EAM
   real(double) :: potisrep, potisglue,potiseam ! energie potentielle EAM
-  real(double),dimension(:,:,:),pointer :: eamrep,eamrho,eamglue ! tableaux des splines du pot EAM 
+  real(double),dimension(:,:,:),pointer :: eamrep,eamrho,eamglue       ! tableaux des splines du pot EAM 
+  real(double),dimension(:,:,:),pointer :: eamrep_d,eamrho_d,eamglue_d ! tableaux des splines du pot_d EAM 
   real(double) :: rhomin=1d30,rhomax=0
 
   real(double), pointer, dimension(:,:,:) :: digr, coord

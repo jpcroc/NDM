@@ -42,7 +42,7 @@ module gen_com_m
   real(double),parameter  :: evA62ergcm6=1.6021892D-60   ! conversion eV.A^6 --> erg.cm^6
 
   real(double), parameter :: erg2joule=1.d-7, joule2erg=1.d7        
-  real(double), parameter :: low_limit=10.d0*epsilon(1.d0)
+  real(double), parameter :: low_limit=10.d0*epsilon(1.d0)/10000000000000000000000000000000000000000000.d0
   real(double), parameter :: ang2cm=1d-8
   real(double), parameter :: e2on4pieps0= 23.06134575D-20
   real(double) :: A2cm =1.0d-8     !conversion A->cm
@@ -188,7 +188,8 @@ module gen_com_m
   integer, pointer,dimension(:) :: indi ! table des voisins
   integer, pointer, dimension(:) :: indi2 ! table de voision pour les constantes de force
   real(double) :: rvois ! rayon de la table des voisins
-  logical :: ltabvois ! table des voisins ?
+  logical :: lforcetabulate ! if the first derivative is tabulate.
+  logical :: ltabvois      ! table des voisins ?
   logical :: lconstrtot ! construction par double boucle (T) ou par cel (F)
   logical :: ldemitab ! construction d'une demi-table (T) ou d'une table complete (F)
   character :: nature*6 ! element chimique

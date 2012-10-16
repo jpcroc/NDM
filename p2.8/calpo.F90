@@ -298,7 +298,7 @@ subroutine calpo
         ! **** terme de Ziegler *******
 
 
-        call zieg2 (pot,csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair)
+        call zieg2 (pot,pot_d, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair)
 
      endif      !(lpotrep)
 

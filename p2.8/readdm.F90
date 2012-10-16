@@ -52,7 +52,7 @@ subroutine readdm
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
-       mdcg_noise
+       mdcg_noise, lforcetabulate
 
 
   !
@@ -102,7 +102,7 @@ subroutine readdm
   lconstrtot=.FALSE.           !!construction de la table des voisins T=double boucle F=via cel.
   rvois = 0.0                 ! rayon de la table des voisins
   ltpcel = .FALSE.            ! output of temperature and stress in each cell
-
+  lforcetabulate = .FALSE.    ! The derivative of the enerby is NOT tabulated. TRUE if it is.
 
 
   itesauv = 100               !period for saving
@@ -516,7 +516,7 @@ subroutine readdm
               write(6,*)  'PHONDY: Change accordingly and try again!'
               stop
           end if    
-     write(6,*) rang,'For dmtype 7 deltax must be grater than zero 0'
+     write(6,*) rang,'For dmtype 7 deltax must be deltax > 0'
      write(6,*) rang,'Change deltax!'
      call arret_ndm
   endif
@@ -919,6 +919,20 @@ subroutine readdm
         if (rang==0) write(6,*) 'STOP in readdm'
         stop
      end if
+  end if
+  if (lforcetabulate) then
+    if (ipotentiel/=10) then
+     write(*,*) 'There is no implementation for lforcetabulate TRUE and ipotentiel ', ipotentiel
+     write(*,*) 'Change lforcetabulate of FALSE or ipotential to EAM (10) '
+     write(*,*) 'stop in readdm'
+     stop
+    end if
+    if (lcasca) then
+     write(*,*) 'There is no implementation for lforcetabulate TRUE and lcasc TRUE'
+     write(*,*) 'Change lforcetabulate of FALSE or lcasc on FALSE'
+     write(*,*) 'stop in readdm'
+     stop
+    end if
   end if
 
 

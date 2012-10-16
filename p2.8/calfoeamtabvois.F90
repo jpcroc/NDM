@@ -142,7 +142,11 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
             if (ldemitab)  eatom(j)=eatom(j)+Erep/2.d0
            end if
         end if
-        dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
+        if (lforcetabulate) then
+          dErep = eamrep_d(1,l,k) + drk*( eamrep_d(2,l,k) + drk*( eamrep_d(3,l,k) + drk*eamrep_d(4,l,k) ) )
+        else
+          dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
+        end if
            if (associated (free)) then
               if( free(i).EQV..true.)potisrep = potisrep+0.5*Erep
               if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep+0.5*Erep
@@ -185,9 +189,12 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         if(lprteat.EQV..true.) eatom(i)=eatom(i)+Eembi
         potisglue = potisglue+Eembi
      end if
+    if (lforcetabulate) then
+     tabdensity(i)= eamglue_d(1,iti,k) + drk*( eamglue_d(2,iti,k) + drk*( eamglue_d(3,iti,k) + drk*eamglue_d(4,iti,k) ) )
+    else 
      tabdensity(i) = eamglue(2,iti,k) + drk*( 2.0*eamglue(3,iti,k) + 3.0*drk*eamglue(4,iti,k) )
-  end do loop2at1
-
+    end if 
+ end do loop2at1
 
 
   !boucle des forces
@@ -208,14 +215,15 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         dxp = MatMul(at,dxp)
 
         do izero=1,3
+          if (dxp(izero).eq.zero) cycle
 	   if (dabs(dxp(izero)).lt.low_limit) then
-              dxp(izero) = zero
+               write(*,*) 'WARNING low_limit'
+               dxp(izero) = zero
 	   end if
         end do
         r2 = Sum( dxp(1:3)**2 )
 
         if (r2>rue2) cycle
-
 
         itj=ityp(j)
         r=sqrt(r2)	      
@@ -226,9 +234,16 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         gradij(1:3) = dxp(1:3)/r
         k=Int(r*inv_ktor)
         drk=r-k*ktor
+        if (lforcetabulate) then
+         rhoj = eamrho_d(1,itj,k) + drk*( eamrho_d(2,itj,k) + drk*( eamrho_d(3,itj,k) + drk*eamrho_d(4,itj,k) ) )  !rho_d de j sur i
+         rhoi = eamrho_d(1,iti,k) + drk*( eamrho_d(2,iti,k) + drk*( eamrho_d(3,iti,k) + drk*eamrho_d(4,itj,k) ) )  !rho_d de j sur i
+         !Femb = ( tabdensity(i) + tabdensity(j))*rhoj
+         Femb = tabdensity(i)*rhoj + tabdensity(j)*rhoi  ! THIS is WRONG in my SENSE
+        else
+         Femb = ( eamrho(2,itj,k) + drk*( 2.0*eamrho(3,itj,k) + 3.0*drk*eamrho(4,itj,k) ) )*tabdensity(i) &
+              + ( eamrho(2,iti,k) + drk*( 2.0*eamrho(3,iti,k) + 3.0*drk*eamrho(4,iti,k) ) )*tabdensity(j)
+        end if
 
-        Femb = ( eamrho(2,itj,k) + drk*( 2.0*eamrho(3,itj,k) + 3.0*drk*eamrho(4,itj,k) ) )*tabdensity(i) &
-             + ( eamrho(2,iti,k) + drk*( 2.0*eamrho(3,iti,k) + 3.0*drk*eamrho(4,iti,k) ) )*tabdensity(j)
         fp(1:3,i) = fp(1:3,i) - Femb*gradij(1:3)
         if (ldemitab) fp(1:3,j) = fp(1:3,j) + Femb*gradij(1:3)
 

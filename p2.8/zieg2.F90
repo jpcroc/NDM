@@ -4,7 +4,7 @@
 !  **********************************************************
 
 
-subroutine zieg2(pot, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair)
+subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -19,7 +19,7 @@ subroutine zieg2(pot, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair)
   integer  :: npair
   real(double) , intent(in) :: csive
   real(double)  :: auxe= 23.06134575D-20 
-  real(double) , intent(inout) :: pot(4,npair,0:ngrid+1)
+  real(double) , intent(inout) :: pot(4,npair,0:ngrid+1),pot_d(4,npair,0:ngrid+1)
   real(double)  :: catom(ntyp)
   real(double)  :: roff1(npair)
   real(double)  :: roff2(npair)
@@ -29,7 +29,7 @@ subroutine zieg2(pot, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair)
   !-----------------------------------------------
   integer :: j1, l, i1, i2,k
   real(double) :: aux1, aux2, aux3, r, r3, a0, b1, b2, b3, b4, som, r4, r5&
-       , rbohr, r2, c1, c2, c3, c4
+       , rbohr, r2, c1, c2, c3, c4, som1
   real(double), dimension(npair,0:5) :: zie
   real(double), dimension(npair) :: decal
   !-----------------------------------------------
@@ -71,7 +71,10 @@ subroutine zieg2(pot, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair)
               aux2 = auxe*catom(i1)*catom(i2)
               som = c1*exp((-b1*r))+c2*exp((-b2*r))+c3*exp((-b3*r))+c4*&
                    exp((-b4*r))
+              som1 = -c1*b1*exp((-b1*r))-c2*b2*exp((-b2*r))-c3*b3*exp((-b3*r))+c4*&
+                    b4*((-b4*r))
               pot(1,l,j1+1) = aux2/r*som+decal(l)
+              pot_d(1,l,j1+1) = -aux2/r2*som + aux2/r*som1
            else                              !Potentiel polynomiale de raccord entre ROFF1 et ROFF2
               if (r<roff2(l)) then
                  r3 = r2*r
@@ -79,6 +82,7 @@ subroutine zieg2(pot, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair)
                  r5 = r4*r
                  pot(1,l,j1) = (zie(l,5)*r5+zie(l,4)*r4+zie(l,3)*r3+zie&
                       (l,2)*r2+zie(l,1)*r+zie(l,0))
+                 pot_d(1,l,j1) = 5.d0*zie(l,5)*r3*r+4.d0*zie(l,4)*r3+3.d0*zie(l,3)*r2+2.d0*zie(l,2)*r+zie(l,1)
               endif
            endif
         end do

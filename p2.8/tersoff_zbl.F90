@@ -18,7 +18,7 @@ subroutine tersoff_zbl
 !     write(6,*)'tersoff + ziegler = probablement plante voir force_tersiff_cel commente et initialisation de pot '
 !     stop
 
-     call zieg2(pot,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair)
+     call zieg2(pot,pot_d,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair)
 !    write(6,*)pot
 
   do l=1,npair

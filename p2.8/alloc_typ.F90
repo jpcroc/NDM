@@ -101,12 +101,16 @@ subroutine alloc_typ
   do ipot_loc=10,12
      if (lpotentiel(ipot_loc).eqv..true.) then
         allocate(eamrep(4,npair,0:ngrid+1))
+        allocate(eamrep_d(4,npair,0:ngrid+1))
         if (ipot_loc==12) then
            allocate(eamrho(4,npair,0:ngrid+1))
+           allocate(eamrho_d(4,npair,0:ngrid+1))
         else
            allocate(eamrho(4,ntyp,0:ngrid+1))
+           allocate(eamrho_d(4,ntyp,0:ngrid+1))
         end if
         allocate(eamglue(4,ntyp,0:ngrid+1))
+        allocate(eamglue_d(4,ntyp,0:ngrid+1))
      end if
   end do
   !  if (l3c) then

@@ -1,6 +1,6 @@
 module eam
   USE T_kind_param_m
-  USE gen_com_m, ONLY: A2cm
+  USE gen_com_m, ONLY: A2cm,lforcetabulate
   use var_pot,ONLY:rhomin,rhomax
 
   implicit none
@@ -48,7 +48,13 @@ module eam
   type(EamTsp),dimension(:), pointer :: SPembtyp
   type(repTsp),dimension(:), pointer :: SPreppair
 
+  type(DensityT),dimension(:), pointer :: rhotyp_d
+  type(EamT),dimension(:), pointer :: embtyp_d
+  type(repT),dimension(:), pointer :: reppair_d
 
+  type(DensityTsp),dimension(:), pointer :: SPrhotyp_d
+  type(EamTsp),dimension(:), pointer :: SPembtyp_d
+  type(repTsp),dimension(:), pointer :: SPreppair_d
   !  real(double),pointer, dimension(:,:):: xg,xr,xd ! tablezau construit à partir de la grille lue
   !  real(double),pointer, dimension(:,:,:):: eg,vr,dd ! tablezau construit à partir de la grille lue
   !  real(double),pointer, dimension(:):: xspb,yspb,bspb,cspb,dspb
@@ -201,7 +207,14 @@ contains
     allocate(SPembtyp(ntyp)) 
     allocate(SPreppair(npair)) 
 
-
+   if (lforcetabulate) then
+    allocate(rhotyp_d(ntyp)) 
+    allocate(embtyp_d(ntyp)) 
+    allocate(reppair_d(npair)) 
+    allocate(SPrhotyp_d(ntyp)) 
+    allocate(SPembtyp_d(ntyp)) 
+    allocate(SPreppair_d(npair))
+  end if 
 
 !EMBD EAM PART
     do itir=1,ntypr
@@ -214,23 +227,42 @@ contains
           call arret_ndm
        end if
        read(lupotin,*)npt,embtyp(iti)%deltaEAM
+       if (lforcetabulate) embtyp_d(iti)%deltaEAM=embtyp(iti)%deltaEAM
        if (rang==0) write(6,*)'EAM number of points in potin and the step',npt,embtyp(iti)%deltaEAM     
        if(npt.gt.nptmax)then
           write(6,*) rang,'nb de points de grille  EAM stop'
           call arret_ndm
        end if
-       allocate(embtyp(iti)%feam(nptmax)) 
+     
        allocate(embtyp(iti)%xg(nptmax)) 
+       allocate(embtyp(iti)%feam(nptmax)) 
        allocate(SPembtyp(iti)%beam(nptmax)) 
        allocate(SPembtyp(iti)%ceam(nptmax)) 
        allocate(SPembtyp(iti)%deam(nptmax)) 
 
+      if (lforcetabulate) then
+       allocate(embtyp_d(iti)%xg(nptmax)) 
+       allocate(embtyp_d(iti)%feam(nptmax)) 
+       allocate(SPembtyp_d(iti)%beam(nptmax)) 
+       allocate(SPembtyp_d(iti)%ceam(nptmax)) 
+       allocate(SPembtyp_d(iti)%deam(nptmax))
+      end if
+ 
        do i=1,nptmax
           if(i.le.npt) then
+             !newCOS
+            if (lforcetabulate) then
+             read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),embtyp_d(iti)%feam(i)
+            else 
              read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),xdum
+            end if
           else
              embtyp(iti)%xg(i)=(i-npt)*embtyp(iti)%deltaEAM+ embtyp(iti)%xg(i)
              embtyp(iti)%feam(i)=embtyp(iti)%feam(npt)
+             !newCOS
+             if (lforcetabulate) then
+                embtyp_d(iti)%feam(i)=embtyp_d(iti)%feam(npt)
+             end if
           end if
 
        end do
@@ -239,7 +271,10 @@ contains
 !       write(6,*)'rhomin rhomax',rhomin,rhomax
 
        call cspline (nptmax,embtyp(iti)%xg,embtyp(iti)%feam,SPembtyp(iti)%beam,SPembtyp(iti)%ceam,SPembtyp(iti)%deam)
-
+       if (lforcetabulate) then
+        embtyp_d(iti)%xg=embtyp(iti)%xg
+        call cspline (nptmax,embtyp_d(iti)%xg,embtyp_d(iti)%feam,SPembtyp_d(iti)%beam,SPembtyp_d(iti)%ceam,SPembtyp_d(iti)%deam)
+       end if
 
 
 
@@ -254,27 +289,48 @@ contains
        end if
        !     rhotyp(iti)%toto=iti
        read(lupotin,*)npt,rhotyp(iti)%deltaRHO
+       if (lforcetabulate) rhotyp_d(iti)%deltaRHO=rhotyp(iti)%deltaRHO
+
        if (rang==0) write(6,*)'RHO potin points and the step: ', npt,rhotyp(iti)%deltaRHO
        if(npt.ne.nptmax)then
           write(6,*) rang,'nb de points de grille  EAM stop'
           call arret_ndm
        end if
-       allocate(rhotyp(iti)%rho(nptmax)) 
+     
        allocate(rhotyp(iti)%xd(nptmax)) 
+       allocate(rhotyp(iti)%rho(nptmax)) 
        allocate(SPrhotyp(iti)%brho(nptmax)) 
        allocate(SPrhotyp(iti)%crho(nptmax)) 
        allocate(SPrhotyp(iti)%drho(nptmax)) 
-
-       do i=1,nptmax
+      
+      if (lforcetabulate) then
+       allocate(rhotyp_d(iti)%xd(nptmax)) 
+       allocate(rhotyp_d(iti)%rho(nptmax)) 
+       allocate(SPrhotyp_d(iti)%brho(nptmax)) 
+       allocate(SPrhotyp_d(iti)%crho(nptmax)) 
+       allocate(SPrhotyp_d(iti)%drho(nptmax)) 
+      end if
+     do i=1,nptmax
           if(i.le.npt) then
+            if (lforcetabulate) then
+             read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),rhotyp_d(iti)%rho(i)
+            else 
              read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),xdum
-          else
+            end if
+           else
              rhotyp(iti)%xd(i)=(i-npt)*rhotyp(iti)%deltaRHO+ rhotyp(iti)%xd(npt)
              rhotyp(iti)%rho(i)=rhotyp(iti)%rho(npt)
+            if (lforcetabulate) then
+              rhotyp_d(iti)%rho(i)=rhotyp_d(iti)%rho(npt)
+            end if 
           end if
 
        end do
-       call cspline (nptmax,rhotyp(iti)%xd,rhotyp(iti)%rho,SPrhotyp(iti)%brho,SPrhotyp(iti)%crho,SPrhotyp(iti)%drho)
+        call cspline (nptmax,rhotyp(iti)%xd,rhotyp(iti)%rho,  SPrhotyp(iti)%brho,  SPrhotyp(iti)%crho,  SPrhotyp(iti)%drho  )
+       if (lforcetabulate) then
+        rhotyp_d(iti)%xd=rhotyp(iti)%xd
+        call cspline (nptmax,rhotyp_d(iti)%xd,rhotyp_d(iti)%rho,SPrhotyp_d(iti)%brho,SPrhotyp_d(iti)%crho,SPrhotyp_d(iti)%drho)
+       end if
     end do
 
 !PAIR PART 
@@ -290,25 +346,48 @@ contains
        if (rang==0) write(6,*)'rep'
 
        read(lupotin,*)npt,reppair(ipr)%deltaREP
+       if (lforcetabulate) reppair_d(ipr)%deltaREP=reppair(ipr)%deltaREP
+
        if(npt.gt.nptmax)then
           write(6,*) rang,'nb de points de grille  EAM stop'
           call arret_ndm
        end if
-       allocate(reppair(ipr)%potr(nptmax)) 
        allocate(reppair(ipr)%xr(nptmax)) 
+       allocate(reppair(ipr)%potr(nptmax)) 
        allocate(SPreppair(ipr)%bpotr(nptmax)) 
        allocate(SPreppair(ipr)%cpotr(nptmax)) 
        allocate(SPreppair(ipr)%dpotr(nptmax)) 
+       
+  
+      if (lforcetabulate) then
+       allocate(reppair_d(ipr)%xr(nptmax)) 
+       allocate(reppair_d(ipr)%potr(nptmax)) 
+       allocate(SPreppair_d(ipr)%bpotr(nptmax)) 
+       allocate(SPreppair_d(ipr)%cpotr(nptmax)) 
+       allocate(SPreppair_d(ipr)%dpotr(nptmax)) 
+      end if
+
        do i=1,nptmax
           if(i.le.npt) then
+           if (lforcetabulate) then        
+             read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),reppair_d(ipr)%potr(i)
+           else
              read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),xdum
+           end if
           else
              reppair(ipr)%xr(i)=(i-npt)*reppair(ipr)%deltaREP+ reppair(ipr)%xr(i)
              reppair(ipr)%potr(i)=reppair(ipr)%potr(npt)
+             if (lforcetabulate) then
+              reppair_d(ipr)%potr(i)=reppair_d(ipr)%potr(npt)
+             end if
+
           end if
        end do
        call cspline (nptmax,reppair(ipr)%xr,reppair(ipr)%potr,SPreppair(ipr)%bpotr,SPreppair(ipr)%cpotr,SPreppair(ipr)%dpotr)
-     
+       if (lforcetabulate) then
+        reppair_d(ipr)%xr=reppair(ipr)%xr
+        call cspline (nptmax,reppair_d(ipr)%xr,reppair_d(ipr)%potr,SPreppair_d(ipr)%bpotr,SPreppair_d(ipr)%cpotr,SPreppair_d(ipr)%dpotr)
+       end if
 
     end do
 
