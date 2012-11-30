@@ -2,7 +2,7 @@
 # VOIR CE FICHIER
 
 
- BIN=.
+BIN=../bin
 #BIN=../../bin
 
 SHELL=/bin/sh
@@ -71,6 +71,7 @@ OBJS_SEQ=	anapos.o \
         period.o \
 	notperiod.o \
         trempe.o \
+        tr_fire.o\
         input_pair.o \
         sauvegarde.o \
         neigcel.o \
@@ -137,7 +138,6 @@ OBJS_SEQ=	anapos.o \
         decoup3D.o \
         coord_to_cell.o\
         prtplz.o\
-        tr_fire.o\
         neb.o\
         extension.o\
         tersoff_zbl.o\

@@ -528,8 +528,9 @@ subroutine controle
 #endif
 
         fpn=fpmax*erg2eV/angst
-        if (rang==0)     write(6,*)
-        if (rang==0)     write(6,*)'force max cgs  ev/Ang ',fpmax, fpn
+        !if (rang==0)     write(6,*)
+        if (rang==0)     write(6,'("TR: force max, energy",i6,3E20.10)') it,fpn, potist*erg2eV
+        !if (rang==0)     write(6,'(a,2g20.12)')'force max cgs  ev/Ang ',fpmax, fpn
         if((rang==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot))
         if (fpn.le.fpstop)then
            if (sigstop.ge.0) then

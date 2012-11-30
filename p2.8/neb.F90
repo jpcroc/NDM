@@ -5,6 +5,7 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   use neb_module
   use posana
+  USE FireModule
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -15,7 +16,7 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer  :: iph,i_dir_path
+  !integer  :: iph,i_dir_path
   integer  :: ielat(imm)
   integer  :: iwmax(imm)
   integer  :: ityp(imm)
@@ -28,6 +29,10 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   real(double)  :: a_local,forneb
   real(double) :: unitP
   character*5 :: cunitP
+
+  ! Variables for Fire quench algorithm
+  REAL(double), dimension(:), allocatable :: fire_dt, fire_alph
+  INTEGER, dimension(:), allocatable :: fire_nstep
 
   if(lPkbar) then
      unitP=1.0d-9
@@ -60,6 +65,17 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 
   call init_neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+
+  ! Initialization of fire quench algorithm
+  IF (lFire) THEN
+          ALLOCATE(fire_dt(1:npath))
+          ALLOCATE(fire_nstep(1:npath))
+          ALLOCATE(fire_alph(1:npath))
+          do ii=1,npath
+             CALL init_trempe_fire(fire_dt(ii), fire_nstep(ii), fire_alph(ii))
+          END DO
+  END IF
+
 
   if (nebrelaxation==1) then
      write(6,*)'NEB: nebrelaxation == 1'
@@ -113,7 +129,12 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
            call scalebox           (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
            call calfo
            call force_projection(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-           call trempe             (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+           IF (lFire) THEN
+                   call trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
+                     fire_dt(ii), fire_nstep(ii), fire_alph(ii))
+           ELSE
+                   call trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+           ENDIF
            call analyse  
            call neb_controle    (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
         end do   ! end do for a while
@@ -158,7 +179,13 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
               call scalebox               (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
               call calfo
               call force_projection_neb(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-              call trempe                 (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+              IF (lFire) THEN
+                      call trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
+                        fire_dt(ii), fire_nstep(ii), fire_alph(ii))
+              ELSE
+                      call trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+              ENDIF
+
               call analyse 
               call neb_controle        (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp) 
               !
@@ -204,6 +231,12 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
   end select
 
+  ! Initialization of fire quench algorithm
+  IF (lFire) THEN
+          DEALLOCATE(fire_dt)
+          DEALLOCATE(fire_nstep)
+          DEALLOCATE(fire_alph)
+  END IF
 
   reaction_coord(1)=0
   reaction_coord(npath)=1

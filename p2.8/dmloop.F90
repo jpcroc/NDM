@@ -10,6 +10,7 @@ subroutine dmloop
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
+  USE FireModule
 #if(PARA)
   use mod_mpi
 #endif
@@ -25,11 +26,18 @@ subroutine dmloop
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   integer :: i, iti
+  REAL(double) :: fire_dt, fire_alph
+  INTEGER :: fire_nstep
   !-----------------------------------------------
   !
 
   ! MPI
   if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
+
+  ! Initialization
+  IF ((dmtype.EQ.2).AND.lFire) THEN
+          CALL init_trempe_fire(fire_dt, fire_nstep, fire_alph)
+  END IF
 
   !      write(6,*)'im',im
 1 continue
@@ -49,9 +57,12 @@ subroutine dmloop
      if (lcorrelvp) call correlvp(xp,xpp,vp,ax,fp,ityp)
 
   case (2) 
-     call trempe (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-     !         case(10)
-     !            call tr_fire(vp,fp,xpp,xp)
+          IF (lFire) THEN
+                  call trempe_fire (xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
+                        fire_dt, fire_nstep, fire_alph)
+          ELSE
+                  call trempe (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+          END IF
 
   case default
      write (6, *) 'ne sait pas quoi faire stop'

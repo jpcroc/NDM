@@ -305,6 +305,7 @@ en question DOIT apparaitre dans la liste
       itetabvois = 10             !periode de calcul de la table des voisins
       tempstop = -1.0             !temperature of run stop
 **** dmtype = 0 type of calculation : 1 -> MD; 2-> quench (trempe); 4-> Velocity Verlet ; 5 test des forces ; 6 analyse des positions en fin de cascade ; 7calcul des phonons, 8=PR;9= NEB
+      lFire = .true.              ! Fire algorithm is used for quenching (cf tr_fire.F90)
       ttol = 0.0                  !max tolerance for temperature in %
       tfroi = -1.0                !imposed temperature
       tstep = 1.0                 !timestep in 10^-15 sec unit

@@ -135,6 +135,7 @@ module gen_com_m
   real(double) :: epsil,epcoud,kthg
 
 
+  logical :: lFire      ! If true (default), fire algorithm is used for quenching
   real(double)::fnemd
   real(double):: fpstop ! critere de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
   real(double):: sigstop ! critere de conv. sur les composantes de contraintes  pour les trempes UNITE = kbar

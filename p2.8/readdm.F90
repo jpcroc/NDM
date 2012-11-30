@@ -70,7 +70,7 @@ subroutine readdm
   tempstop = -1.0             !temperature of run stop
   dmtype = 0                  
   !dmtype = type of calculation : 1 -> MD
-  !                               2 -> quench (trempe)
+  !                               2 -> quench (trempe) or fire quench
   !                               3 -> gradient conjugue sur les coordonnes cartesiennes
   !                              30 -> gradient conjugue sur les coordonnes reduites
   !                               4 -> Velocity Verlet 
@@ -82,6 +82,7 @@ subroutine readdm
   !                              10 -> PARIN RAHMAN 
   !                              11 -> UN SEUL CALCUL DE FORCES
   !                              12 -> ART
+  lFire = .true.              ! Fire algorithm is used for quenching (cf tr_fire.F90)
   ttol = 0.0                  !max tolerance for temperature in %
   tfroi = -1.0                !imposed temperature
   tstep = 1.0                 !timestep in 10^-15 sec unit
