@@ -34,7 +34,7 @@ subroutine readdm
   !
 
   namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
-       tempstop, dmtype, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
+       tempstop, dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
        tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax, itean, &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
        lrestart, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
