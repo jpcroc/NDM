@@ -5,6 +5,7 @@ subroutine calpoeam
   USE T_kind_param_m
   use gen_com_m
   use eam
+  use eamerco
   use var_pot
   use SMjuli
   implicit none
@@ -39,6 +40,8 @@ subroutine calpoeam
            if (lforcetabulate) then
             call extrapolateRep(reppair_d(l),SPreppair_d(l),rk2,Erep=ysp_d(k))
            end if
+        case(11)
+           call extrapolateReperco(rk2,ysp(k))
 
         case(12)
            call extrapolateRepjl(reppairjl(l),rk2,Erep=ysp(k))
@@ -103,7 +106,7 @@ subroutine calpoeam
            call extrapolateRho(rhotyp(iti),SPrhotyp(iti),rk2,rho=ysp(k))
            if (lforcetabulate) then
             call extrapolateRho(rhotyp_d(iti),SPrhotyp_d(iti),rk2,rho=ysp_d(k))
-           end if
+         end if
         end do
         minrho=min(minrho,minval(ysp))
         maxrho=max(maxrho,maxval(ysp))
@@ -126,6 +129,23 @@ subroutine calpoeam
 !        end do
 
      end do
+  case(11)
+     do iti=1,ntyp
+        if (typ_and_pot(iti,ipotentiel).eqv..false.) cycle
+        do k=1,ngrid
+           rk=(k*ktor) ; rk2=rk**2
+           xsp(k)=rk
+           call extrapolateRhoerco(rk2,ysp(k))
+        end do
+        minrho=min(minrho,minval(ysp))
+        maxrho=max(maxrho,maxval(ysp))
+        call cspline (ngrid,xsp,ysp,bsp,csp,dsp)
+        eamrho(1,iti,1:ngrid)=ysp(1:ngrid)
+        eamrho(2,iti,1:ngrid)=bsp(1:ngrid)
+        eamrho(3,iti,1:ngrid)=csp(1:ngrid)
+        eamrho(4,iti,1:ngrid)=dsp(1:ngrid)
+     end do
+
   case(12) !Juli
      do l=1,npair
         do k=1,ngrid
@@ -169,6 +189,8 @@ subroutine calpoeam
            if (lforcetabulate) then
             call extrapolateEam(embtyp_d(iti),SPembtyp_d(iti),rhok,Embf=ysp_d(k))
            end if
+        case(11)
+           call extrapolateEamerco(rhok,ysp(k))
         case(12)
            call extrapolateEamjl(embtypjl(iti),rhok,Embf=ysp(k))
            !            write(6,*)'GLUE k,gluek ', iti, k,ysp(k)

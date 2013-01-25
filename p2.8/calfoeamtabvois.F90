@@ -4,7 +4,6 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   USE T_kind_param_m
   use gen_com_m
   use var_pot
-  !      use eam
   implicit none
 
   !           version du 4 juin 2010, 15h20 - last chaged by MCM (xpnp sa mere)

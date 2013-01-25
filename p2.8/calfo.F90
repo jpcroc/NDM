@@ -106,7 +106,7 @@ subroutine calfo
                  call force_tersoff_cel
               endif
               potist=potist+potisTersoff
-           case (10)
+           case (10,11)
               if (ltabvois) then
                  ! !!! le cas parallele n'est pas pris en compte !!!
                  if (.not.parallele) call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)

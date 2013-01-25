@@ -1,42 +1,23 @@
-module eam
+module eamerco
   USE T_kind_param_m
   USE gen_com_m, ONLY: ev2erg,A2cm
   implicit none
 
-  !Eamtype, Reptype et DensityType definissent les éléments dont sont censés dépendre les fonctions eam, répulsion et densité. Dans un cas d'alliage on peut avoir la meme forme analytique mais des valeurs différentes des coefficients pour les différents types. La liste des coefficients est definie dans les types. la valeur des coefficients pour ces dfférents types sont définis dans les routines generRho, generEAm, generRep. Ils sont ensuite utilisé dans les routines extrapolate
 
-  type :: EamT
-     integer :: toto
-  end type EamT
-
-  type :: Rept
-     integer :: toto
-  end type Rept
-
-
-  type :: DensityT
-     integer::toto
-  end type DensityT
-
-  type(DensityT),dimension(:), pointer :: rhotyp
-  type(EamT),dimension(:), pointer :: embtyp
-  type(repT),dimension(:), pointer :: reppair
-
-
-  public ::  extrapolateRho, extrapolateRep, extrapolateEam,inputeam
+  public ::  extrapolateRhoerco, extrapolateReperco, extrapolateEamerco,inputeamerco
 
        
 contains
 
 
   !---------------------------------------------------------------------------
-  subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,&
+  subroutine inputeamerco(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,&
                 iewald,l3c,rang,r3cm,roff1,roff2,&
                 &typ_and_pot,npotmax,&
                 ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
                 npotentiel,ipo)
 
-!  subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2)
+
 
     !
 
@@ -72,9 +53,9 @@ contains
     read(lupotin,*)ntyp
     npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
     call  alloc_typ
-    allocate(rhotyp(ntyp)) 
-    allocate(embtyp(ntyp)) 
-    allocate(reppair(npair)) 
+!    allocate(rhotyp(ntyp)) 
+!    allocate(embtyp(ntyp)) 
+!    allocate(reppair(npair)) 
 
 
     allocate (typ_and_pot(1,npotmax))
@@ -107,75 +88,71 @@ contains
 
     return
 
-  end subroutine inputeam
+  end subroutine inputeamerco
 
   !-------------------------------------------
 
-  subroutine extrapolateRho(density, r2, rho, drho, ddrho)
+  subroutine extrapolateRhoerco(r2, rho)
     ! calculate electronic density at distance sqrt(r)
     ! or its first and second derivatives
 
     implicit none
 
-    type(DensityT), intent(in) :: density
     real(kind(0.d0)), intent(in) :: r2
-    real(kind(0.d0)), intent(out), optional :: rho, drho, ddrho
+    real(kind(0.d0)), intent(out) :: rho
 
     !  Ercolessi potential
     REAL(kind(0.d0)) :: r, func, dfunc, d2func
     r=sqrt(r2)/A2cm
 
     CALL rh(r,func,dfunc,d2func)
-    IF (present(rho)) rho=func
-    IF (present(drho)) drho=dfunc/A2cm
-    IF (present(ddrho)) ddrho=d2func/(A2cm**2)
+     rho=func
+!    IF (present(drho)) drho=dfunc/A2cm
+!    IF (present(ddrho)) ddrho=d2func/(A2cm**2)
 
     RETURN
 
 
-  end subroutine extrapolateRho
+  end subroutine extrapolateRhoerco
 
 
   !---------------------------------------------------------------------------
 
 
-  subroutine extrapolateEam(eam, rho, embF, dembF, ddembF, err)
+  subroutine extrapolateEamerco(rho, embF)
     ! calculate eam function for electronic density rho
     !   or its first and second derivatives
     !   err= 0 if everyting ok
     !       -1 if density too large for extrapolation
     implicit none
 
-    type(EamT), intent(in) :: eam
 
     real(double), intent(in) :: rho
-    real(double), intent(out), optional :: embF, dembF, ddembF
-    integer, intent(out), optional :: err
+    real(double), intent(out) :: embF
 
 
 
     ! Debugging with Ercolessi potential
     REAL(kind(0.d0)) :: func, dfunc, d2func
     CALL uu(rho, func, dfunc, d2func)
-    IF (present(embF)) embF=func*ev2erg
-    IF (present(dembF)) dembF=dfunc*ev2erg
-    IF (present(ddembF)) ddembF=d2func*ev2erg
-    IF (present(err)) err=0
+     embF=func*ev2erg
+!    IF (present(dembF)) dembF=dfunc*ev2erg
+!    IF (present(ddembF)) ddembF=d2func*ev2erg
+!    IF (present(err)) err=0
     RETURN
 
-  end subroutine extrapolateEam
+  end subroutine extrapolateEamerco
 
   !----------------------------------------------
 
-  subroutine extrapolateRep(rep, r2, Erep, dErep, ddErep)
+  subroutine extrapolateReperco(r2, Erep)
     ! calculate repulsive potential at distance sqrt(r2)
     ! or its first and second derivatives
 
     implicit none
 
-    type(RepT), intent(in) :: rep
     real(kind(0.d0)), intent(in) :: r2
-    real(kind(0.d0)), intent(out), optional :: Erep, dErep, ddErep
+    real(kind(0.d0)), intent(out) :: Erep
 
 
     !-----------------------------------
@@ -183,10 +160,10 @@ contains
     REAL(kind(0.d0)) :: r, func, dfunc, d2func
     r=sqrt(r2)/A2cm
     CALL v2(r, func, dfunc, d2func)
-    IF (present(Erep)) Erep=func*ev2erg
-    IF (present(dErep)) dErep=dfunc*ev2erg/A2cm
-    IF (present(ddErep)) ddErep=d2func*ev2erg/(A2cm**2)
+     Erep=func*ev2erg
+!    IF (present(dErep)) dErep=dfunc*ev2erg/A2cm
+!    IF (present(ddErep)) ddErep=d2func*ev2erg/(A2cm**2)
     RETURN
     !-----------------------------------
-  end subroutine extrapolateRep
-end module eam
+  end subroutine extrapolateReperco
+end module eamerco

@@ -4,7 +4,6 @@ SUBROUTINE calfoeamcel
   use gen_com_m
   use var_pot
   use tab_imm_m
-  !      use eam
 #if(PARA)
   use mod_mpi
 #endif

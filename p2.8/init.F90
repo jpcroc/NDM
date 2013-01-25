@@ -8,6 +8,7 @@ subroutine init
   use gen_com_m
   use tab_imm_m
   use eam
+  use eamerco
   use SMjuli
   use jqmod
   use neb_module
@@ -18,7 +19,6 @@ subroutine init
   use mod_mpi
 #endif 
 
-  !      use eam
   ! **************************************************************
 
   implicit none
@@ -89,6 +89,20 @@ subroutine init
               write(6,*)
            end if
            call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue_pot(ipotentiel),rumax,&
+                iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,&
+                ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
+                npotentiel,ipo)
+           do i=1,npair
+              if (typ_pot_pair(i)==ipotentiel) rue_pair(i)=rue_pot(ipotentiel)
+           end do
+        case(11)
+           if (rang.eq.0) then
+              write(6,*)
+
+              write(6,*)'POTENTIEL EAM ERCOLESI'
+              write(6,*)
+           end if
+           call inputeamerco(ntyp,npair,ntrip,cm,catom,ty,umass,rue_pot(ipotentiel),rumax,&
                 iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,&
                 ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
                 npotentiel,ipo)
