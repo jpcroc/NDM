@@ -52,7 +52,7 @@ subroutine readdm
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
-       mdcg_noise, lforcetabulate
+       mdcg_noise, lforcetabulate,ivisu
 
 
   !
@@ -277,7 +277,7 @@ subroutine readdm
   rheat=0.
   Theat=0.0
   Eheat=0.
-
+  ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codé, ivisu=2=xred
 !.... in SUNDAE
   kappa = 1e6
   niteration=10000

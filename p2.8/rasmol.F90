@@ -37,7 +37,6 @@ subroutine rasmol(itapp)
   integer :: i, luvisu, luvisu2, iti,lenfn2
   real(double) :: xp1, xp2, xp3,pat
   character :: extension*9
-  integer, parameter :: visu = 1 ! 1 = rasmol, 2 = v_sim
   ! Notes about V_sim:
   ! * works if at(:,:) "encompasses" all the system (no duplication of lattice cells)
   ! * at(:,1) must be along x and at(:,2) must have no component along z.
@@ -71,7 +70,7 @@ subroutine rasmol(itapp)
      ! -------------------------------------------------------------
      !     creation du  fichier positions pour le logiciel de visulation
      ! -------------------------------------------------------------
-     select case (visu)
+     select case (ivisu)
      case (1)
        open(luvisu, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.mol', form='formatted', &
             status='unknown')
@@ -98,6 +97,12 @@ subroutine rasmol(itapp)
        open(luvisu2,file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.dat', form='formatted', &
             status='unknown')
        write(luvisu2,'(a)') '# Data file associated with an ascii file (V_Sim)'
+    case(3) 
+       open(luvisu, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.xred', form='formatted', &
+            status='unknown')
+       at=at*1.d8
+       write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
+       at=at/1.d8
      end select
      
      
@@ -106,9 +111,12 @@ subroutine rasmol(itapp)
      !      write (47, 134) im
      !      write (47, *) 'IT =', itapp, '    Time = ', timel
    end if
-
+   if (ivisu==3)  call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
 #if(PARA)
   ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
+
+  
+
   if (myid==0) then
      ! Copie des tableaux xp,num_at_glob et ityp locaux 
      allocate(xp_loc(3,imm))
@@ -141,7 +149,7 @@ subroutine rasmol(itapp)
               else
                  pat=(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
               end if
-              select case (visu)
+              select case (ivisu)
               case (1)
                 write (luvisu, 136) ty(ityp(i)),xp1, xp2, xp3,pat,num_at_glob(i)
               case (2)                
@@ -149,7 +157,7 @@ subroutine rasmol(itapp)
                 write (luvisu2,'(es15.6)') pat
               end select
            else if ((lprteat).and.(it.ne.0)) then
-              select case (visu)
+              select case (ivisu)
               case (1)
                 write (luvisu, 136) ty(ityp(i)),xp1, xp2, xp3,eatom(i)*erg2eV ,num_at_glob(i)
               case (2)
@@ -172,7 +180,7 @@ subroutine rasmol(itapp)
 #endif
                else
                  !write (luvisu, 135) ty(ityp(i)),xp1, xp2, xp3
-                 select case (visu)
+                 select case (ivisu)
                  case (1)
                    write (luvisu, 135) ty(ityp(i)),xp1, xp2, xp3
                  case (2)
@@ -184,7 +192,9 @@ subroutine rasmol(itapp)
 !!$                   if (xp2 > at(2,2)*1e8) xp2 = xp2 - at(2,2)*1e8
 !!$                   if (xp3 > at(3,3)*1e8) xp3 = xp3 - at(3,3)*1e8
                    write (luvisu,'(3es15.6,2x,a)') xp1, xp2, xp3, ty(ityp(i))
-                 end select
+                case(3)                    
+                   write (luvisu,'(3es15.6,2x,2a)') xp1/1d8, xp2/1d8, xp3/1d8, ' ! ', ty(ityp(i))
+                end select
                  !               write (47, 135) ty(ityp(i)),xp1, xp2, xp3
               end if
            end if
@@ -207,6 +217,7 @@ subroutine rasmol(itapp)
      call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_WORLD,ierr)
   endif
 #endif
+if (ivisu==3)    call cryst_to_cart (imm, xp , at,  1)  !cryst vers cart
 
   ! -------------------------------------------------------------
   !                          formats
@@ -235,7 +246,7 @@ subroutine rasmol(itapp)
 901 format(a9)
 
   if(rang==0)      close(luvisu)
-  if ((rang == 0).and.(visu == 2)) then
+  if ((rang == 0).and.(ivisu == 2)) then
     close(luvisu2)
   end if
 

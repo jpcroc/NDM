@@ -118,6 +118,7 @@ module gen_com_m
   real(double) :: tstep, usdh, timel  
   integer :: itetemp, itesigma, itedepla, itecoordo, iterdf, nrdf, & 
        iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc,itecfg
+  integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codé, ivisu=2=xred
   real(double)::rcangle,rcrdf
 
   real(double), dimension(3,3) :: sig ! contrainte
@@ -127,7 +128,7 @@ module gen_com_m
   real(double), dimension(:,:,:),pointer :: sigc ! contrainte par cel
   real(double), dimension(:,:,:),pointer :: sigat,sigtyp,sigtyp_loc ! contrainte par atome
   real(double), dimension(:,:,:,:),pointer :: sigtyptyp,sigtyptyp_loc ! contrainte par atome
-  logical :: lsigat,lEparat,lsigtyp  ! calcul et affichage dans rasmol de la contrainte atomique; affichage Ã£Â£Ã¢Â£Ã£Â¢Ã¢Â£Ã£Â£Ã¢Â¢Ã£Â¢Ã¢Â©nergie par atome,calcul bond valence
+  logical :: lsigat,lEparat,lsigtyp  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ©nergie par atome,calcul bond valence
   integer:: itebdv ! frequence de calcul des bond valence
   logical :: ljqbh ! calcul de la conductivitÃ© thermique par la mÃ©thode directe
   logical :: lnemd  ! calcul de la conductivitÃ© thermique par NEMD
