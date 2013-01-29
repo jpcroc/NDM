@@ -1,7 +1,7 @@
 module eam
   USE T_kind_param_m
-  USE gen_com_m, ONLY: A2cm,lforcetabulate
-  use var_pot,ONLY:rhomin,rhomax
+  USE gen_com_m, ONLY: A2cm
+  use var_pot,ONLY:rhomin,rhomax,lforcetabulate
 
   implicit none
 

@@ -91,7 +91,7 @@ module var_pot
 
   real(double),pointer, dimension (:) :: bspg,cspg,dspg,bspf,cspf,dspf ! spline de watanabe
 
-
+  real(double),parameter  :: evA62ergcm6=1.6021892D-60   ! conversion eV.A^6 --> erg.cm^6
   real(double), dimension(:), pointer :: ro, dip, pm, roff1, roff2, a_factor,r8p ! potentiel
   real(double), dimension(:,:), pointer :: bspw, cspw, dspw ! spline
   real(double) :: alpha
@@ -104,6 +104,7 @@ module var_pot
 
 
   ! EAM
+  logical :: lforcetabulate ! if the first derivative is tabulate.
   real(double) :: potisrep, potisglue,potiseam ! energie potentielle EAM
   real(double),dimension(:,:,:),pointer :: eamrep,eamrho,eamglue       ! tableaux des splines du pot EAM 
   real(double),dimension(:,:,:),pointer :: eamrep_d,eamrho_d,eamglue_d ! tableaux des splines du pot_d EAM 
