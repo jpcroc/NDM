@@ -822,9 +822,9 @@ subroutine input_pair
 
         !conversions
         ietaij(l)=ietaijlu
-        capHij(l)=capHijlu*ev2erg*ang2cm**ietaijlu
-        capDij(l)=capDijlu*e2on4pieps0*ang2cm**3
-        capWij(l)=capWijlu*ev2erg*ang2cm**6
+        capHij(l)=capHijlu*ev2erg*A2cm**ietaijlu
+        capDij(l)=capDijlu*e2on4pieps0*A2cm**3
+        capWij(l)=capWijlu*ev2erg*A2cm**6
 
      end do
 

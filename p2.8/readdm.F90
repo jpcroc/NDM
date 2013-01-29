@@ -506,7 +506,7 @@ subroutine readdm
   end if
 
 
-  deltax=deltax*ang2cm
+  deltax=deltax*A2cm
   if (dmtype==5.and.deltax.le.0) then
      write(6,*) rang,'dmtype 5 deltax 0'
      call arret_ndm

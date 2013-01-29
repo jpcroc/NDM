@@ -43,7 +43,6 @@ module gen_com_m
 
   real(double), parameter :: erg2joule=1.d-7, joule2erg=1.d7        
   real(double), parameter :: low_limit=10.d0*epsilon(1.d0)/10000000000000000000000000000000000000000000.d0
-  real(double), parameter :: ang2cm=1d-8
   real(double), parameter :: e2on4pieps0= 23.06134575D-20
   real(double) :: A2cm =1.0d-8     !conversion A->cm
 
