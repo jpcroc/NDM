@@ -50,6 +50,10 @@ subroutine endrun
   ! Un dernier calcul des forces pour la route
   IF (iteTemp.GE.0) iteTemp=1
   IF (iteSigma.GE.0) iteSigma=1
+
+  !flag_fin = .true. !*!
+  if(ibound.ne.0) Call spebc_fin (.true.) !*!
+
   CALL calfo
 
 

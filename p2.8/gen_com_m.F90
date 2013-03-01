@@ -286,6 +286,53 @@ module gen_com_m
 
   real(double)  :: kappa,text_teledyn,lanczos_step
   integer       :: niteration,nchemin_teledyn
+
+
+  ! ------------- c o n d.   a u x   l i m i t e s   s p e c i f i q u e s ----------
+  integer :: ibound         !*utilisat0 of specific bound condit0 (free or rigid)  !*!
+  real(double) :: thickness	    ! epaisseur de la surface (ibound = 1, 2 ou 3)
+  real(double) :: gap		    ! gap entre surface sup et surface inf
+  real(double) :: thick_cryst       ! epaisseur de la surface (en coord. cristallines)
+  real(double) :: layer_surf        ! aire de la surface XZ
+  real(double) :: Lx_cm
+  real(double) :: Lz_cm
+  integer      :: i_surfINF
+  integer      :: i_surfSUP
+  integer      :: i_surfMAX
+  integer      :: i_surfMIN
+  real(double) :: y_max
+  real(double) :: y_min
+  real(double) :: y_2nd_max
+  integer, dimension(:), pointer  :: b2sINF ! appartenance à la surface inférieure !*!
+  integer, dimension(:), pointer  :: b2sSUP ! appartenance à la surface supérieure !*!
+  logical      :: flag_fin
+  real(double) :: ef_strain
+  logical      :: ldecal_bc
+  real(double) :: decal_bc		! pour les dislocations vis - decalage selon X
+				! pour des potentiels EAM (implementé pour calfoeamtabvois)
+  integer      :: itespebcout   ! frequence a laquelle on genere des .cfg (films mvt de dislo)
+  real(double) :: inXMdis1
+  real(double) :: inXMdis2
+  logical      :: ldyn2D        ! .true. ->  dynamique 2D   ;    .false. ->  bords libres (par défaut)
+
+! cas ibound = 1 :
+  real(double):: user_strainrate   !*strain rate choosen by the user	     !*!
+  real(double):: speed_user 	   ! surface atom speed (depends on user_strainrate)!*!
+
+! cas ibound = 2 :
+  real(double):: user_stress_yz	   !*stress applied on the cryst. surface	     !*!
+
+! cas ibound = 3 : 
+ !real(double):: user_strainrate   !*est aussi nécessaire		     !*!
+ !real(double):: user_strainrate   !*est aussi nécessaire		     !*!
+  real(double):: currentstress     ! stress applied - corrected at each time step !*!
+  real(double):: fdbkcoef	   !*coef de la boucle de feedback de correct0 de currentstress
+  real(double):: forceatsup        ! force on sup. surface atom (stress controlled) !*!
+  real(double):: forceatinf        ! force on inf. surface atom (stress controlled) !*!
+
+!      RQ:  les parametres comportant une * devant leur description doivent etre
+!      definis dans le fichier .din
+! ----------------------------------------------------------------------------------
   
 
 

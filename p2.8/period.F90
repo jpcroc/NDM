@@ -39,17 +39,15 @@ subroutine period
   !      iperiod=iperiod+1
 
   !      write(*,*) 'PBC PBC PBC capitala tarii e ....             period',iperiod
- 
 
-     call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
-     call cryst_to_cart (imm, xpp, bg,  -1)
-     call cryst_to_cart (imm, ax,  bg,  -1)
+      IF (ldecal_bc==.FALSE.) THEN
 
-
-     do i=1,im
-        do ic=1,3
+      call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
+      call cryst_to_cart (imm, xpp, bg,  -1)
+      call cryst_to_cart (imm, ax,  bg,  -1)
+      do i=1,imm
+         do ic=1,3
 	   xpici=xp(ic,i)
-
 	   if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
               if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
                  xp(ic,i)=zero
@@ -60,13 +58,31 @@ subroutine period
                  xp (ic,i) = xpici     - cpp
               end if
 	   end if
+         end do
+      end do
+      call cryst_to_cart (imm, xp , at,  1)  !cryst vers cart
+      call cryst_to_cart (imm, xpp, at,  1)
+      call cryst_to_cart (imm, ax , at,  1)
 
-        end do
-     end do
+     ELSE IF (ldecal_bc==.TRUE.) THEN
 
-     call cryst_to_cart (imm, xp , at,  1)  !cryst vers cart
-     call cryst_to_cart (imm, xpp, at,  1)
-     call cryst_to_cart (imm, ax , at,  1)
+         call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
+         call cryst_to_cart (imm, xpp, bg,  -1)
+         do i=1,imm
+		XP(3,i)  = XP(3,i)  - DECAL_bc*int(XP(1,i))
+
+		XPP(1,i) = XPP(1,i) - int(XP(1,i))
+		XP(1,i) = XP(1,i) - int(XP(1,i))
+
+		XPP(2,i) = XPP(2,i) - int(XP(2,i))
+		XP(2,i) = XP(2,i) - int(XP(2,i))
+
+		XPP(3,i) = XPP(3,i) - int(XP(3,i))
+		XP(3,i) = XP(3,i) - int(XP(3,i))
+	 end do
+         call cryst_to_cart (imm, xp , at,  1)  !cryst vers cart
+       call cryst_to_cart (imm, xpp, at,  1)
+      END IF
 
 
 !  if (rang==0) write(6,*)'PARA-T sortie period'

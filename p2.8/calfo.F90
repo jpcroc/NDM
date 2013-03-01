@@ -109,7 +109,13 @@ subroutine calfo
            case (10,11)
               if (ltabvois) then
                  ! !!! le cas parallele n'est pas pris en compte !!!
-                 if (.not.parallele) call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
+                 if (.not.parallele) then
+		 	IF(ldecal_bc==.FALSE.) THEN
+				call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
+  			ELSE IF (ldecal_bc==.TRUE.) THEN !*!
+				call calfo_decalage(xp,  vp,  fp, ielat, iwmax, ityp)
+  			END IF
+		 end if
               else
                  call calfoeamcel
               endif
@@ -180,6 +186,10 @@ if (ldesinteg) then
         fp(:,i)=fp(:,i)-fptot(:)
      enddo
 endif
+
+  !If (ibound==1 .OR. ibound==2 .OR. ibound==3) call surf_calc	!*!
+  If (ibound == 1)                             call strain_bc	!*!
+  If (ibound == 2 .OR. ibound == 3)            call stress_bc	!*!
 
   !stop
 

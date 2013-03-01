@@ -419,7 +419,7 @@ subroutine init
 #endif
   end if
 
-
+  if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
 
 
   return

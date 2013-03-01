@@ -76,9 +76,12 @@ OBJS_SEQ=	anapos.o \
         sauvegarde.o \
         neigcel.o \
         analyse.o \
+	 spebc_fin.o\
 	gcII.o \
 	gcmodII.o \
         init.o \
+	init_spebc.o \
+	writing.o \
         calcdigr.o \
         tempinstcyl.o \
 	Hcyl.o \
@@ -92,8 +95,11 @@ OBJS_SEQ=	anapos.o \
         calctemp.o \
         tempinst.o \
         dmloop.o \
+	strain_bc.o \
+	stress_bc.o \
         scalebox.o \
         calfo.o\
+	calfo_decalage.o\
         initcasca.o \
         prog.o \
         caltabi.o \

@@ -309,6 +309,17 @@ contains
              c1 = xpnp(1,i)-xpnp(1,j)
              c2 = xpnp(2,i)-xpnp(2,j)
              c3 = xpnp(3,i)-xpnp(3,j)
+
+             if (ldecal_bc==.true.) then
+                if (ibound.gt.1) then		
+                   IF (c1>0.5) THEN
+                      c3 = c3 - decal_bc
+                   ELSE IF (c1 < -0.5) THEN
+                      c3 = C3 + decal_bc
+                   END IF
+                end if
+             end if
+
              c1 = c1+sum(at(1,:)*deltadist(:,i1,koo))
              c2 = c2+sum(at(2,:)*deltadist(:,i1,koo))
              c3 = c3+sum(at(3,:)*deltadist(:,i1,koo))

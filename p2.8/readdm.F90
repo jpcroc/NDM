@@ -35,12 +35,12 @@ subroutine readdm
 
   namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
        tempstop, dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
-       tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax, itean, &
+       tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax, itean, itespebcout,  &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
        lrestart, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
        ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, tbox, &
        iteangle, ipotentiel, lpotentiel, itesauvposition, lfilmext, tdepla2, &
-       lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon,  &
+       lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
        maxorder,  lalea, rsep, &
        h0, sigext,lpotrep,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
        lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlang,ilangevin,&
@@ -52,7 +52,7 @@ subroutine readdm
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
-       mdcg_noise, lforcetabulate,ivisu
+       mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc
 
 
   !
@@ -278,6 +278,18 @@ subroutine readdm
   Theat=0.0
   Eheat=0.
   ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codé, ivisu=2=xred
+
+ ! management of the specific boundary conditions (free or rigid)  ---------------------------   !*!
+  ibound = 0	! ( ibound = 0 <=> no spe BoundC, ibound = 1 <=> strain controlled BoundC, ibound = 2 <=> stress controlled BoundC)		!*!
+  user_strainrate = 0.	! crystal strainrate (ibound=1)			!*!
+  user_stress_yz  = 0.	! stress on the surface (ibound=2)		!*!
+  fdbkcoef	  = 0.  ! feedback coefficient for the correction of applied stress (ibound=3)   !*! 
+  decal_bc = 0.
+  ldecal_bc = .false.
+  itespebcout = -1      ! on n'écrit pas de .cfg pour le film
+  ldyn2D = .false.      ! par défaut : bords libres selon Y
+ !   ----------------------------------------------------------------------------------------    !*!
+
 !.... in SUNDAE
   kappa = 1e6
   niteration=10000

@@ -114,6 +114,22 @@ subroutine analyse
            write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
            write (6, *)
 
+!	IF(it==1) Open(unit=774, file='energie_it.dat', status='unknown', action='write')
+!	IF(modulo(it,10)==0) WRITE(774,'(i6, f)') it, (kine+potist)*unitE  ! controle .. !*!
+
+	   !*! ---------------------------------- APPEL DE LA ROUTINE D'ECRITURE -------------
+	   ! ------------------------------------ DES FICHIERS DE SORTIE, DANS LE ------------
+	   ! ------------------------------------ CAS DES CL CONTROLEES EN CONTRAINTE --------
+	   IF (ibound==2 .OR. ibound==3) THEN
+		IF(flag_fin==.true.) THEN
+			Call spebc_fin (.true.)
+		ELSE IF(itespebcout > 0. .AND. (mod(it,itespebcout)==0 .OR. it==1)) THEN
+			Call spebc_fin (.false.)
+		END IF
+	   END IF
+	   !*!
+	
+
            if (lEparat) then
               write (6, '(I10,G10.3,A,G21.12,A)') it, timel, '*Epot/at = ', potist*unitE/im, cunitE
               write(6,*)
