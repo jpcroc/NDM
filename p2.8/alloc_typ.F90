@@ -25,6 +25,7 @@ subroutine alloc_typ
 
      allocate(ty(ntyp))
      allocate(pot(4,npair,0:ngrid+1))
+     allocate(pot_d(4,npair,0:ngrid+1))
 
      allocate(q(ntyp))
      q(:)=0
