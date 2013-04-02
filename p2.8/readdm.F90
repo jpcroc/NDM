@@ -277,7 +277,7 @@ subroutine readdm
   rheat=0.
   Theat=0.0
   Eheat=0.
-  ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codé, ivisu=2=xred
+  ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codé, ivisu=3=xred
 
  ! management of the specific boundary conditions (free or rigid)  ---------------------------   !*!
   ibound = 0	! ( ibound = 0 <=> no spe BoundC, ibound = 1 <=> strain controlled BoundC, ibound = 2 <=> stress controlled BoundC)		!*!

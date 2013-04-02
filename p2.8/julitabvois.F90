@@ -345,6 +345,12 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
            fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
 
+           sig(1:3,1) = sig(1:3,1) -dErep*gradij(1:3)*c1ij/volu
+           sig(1:3,2) = sig(1:3,2) -dErep*gradij(1:3)*c2ij/volu
+           sig(1:3,3) = sig(1:3,3) -dErep*gradij(1:3)*c3ij/volu
+     
+
+
            ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
            if (lcalcjq) then
               jqf=0.0
@@ -371,6 +377,11 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            fp(1:3,i)=fp(1:3,i)-dEembi*drhoj*gradij(1:3)
            fp(1:3,j)=fp(1:3,j)+dEembi*drhoj*gradij(1:3)
 
+           sig(1:3,1) = sig(1:3,1) -dEembi*drhoj*gradij(1:3)*c1ij/volu
+           sig(1:3,2) = sig(1:3,2) -dEembi*drhoj*gradij(1:3)*c2ij/volu
+           sig(1:3,3) = sig(1:3,3) -dEembi*drhoj*gradij(1:3)*c3ij/volu
+
+
            if(lcalcjq) then
               jqf=0.0
               do ic=1,3
@@ -390,6 +401,11 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
               aux1=ecrsij(iw)*(1.0+sqrt(sij(iw)/rhoj))
               fp(1:3,i)=fp(1:3,i)-dEembi*aux1*drhoj*gradij(1:3)
               fp(1:3,j)=fp(1:3,j)+dEembi*aux1*drhoj*gradij(1:3)
+
+              sig(1:3,1) = sig(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/volu
+              sig(1:3,2) = sig(1:3,2) -dEembi*aux1*drhoj*gradij(1:3)*c2ij/volu
+              sig(1:3,3) = sig(1:3,3) -dEembi*aux1*drhoj*gradij(1:3)*c3ij/volu
+
 
               if(lcalcjq) then
                  jqf=0.0
@@ -437,6 +453,16 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/ril
            fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
            fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
+
+           
+           sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c1il/volu
+           sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c2il/volu
+           sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c3il/volu
+           
+           sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/volu
+           sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
+           sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
+
 
            if(lcalcjq) then
               jqf=0.0
@@ -514,6 +540,16 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/rjl
            fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
            fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
+
+           sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/volu
+           sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/volu
+           sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/volu
+
+
+           sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/volu
+           sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
+           sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
+
 
            if(lcalcjq) then
               jqf=0.0

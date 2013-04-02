@@ -83,7 +83,7 @@ subroutine divid (appel)
   volu = calcvol(at(1,1),at(1,2),at(1,3))
 
   if ((rang==0).and.(appel==0)) then 
-     write (6, '(A,D10.3,A,D10.3,A)') 'volume=', volu,' cm3 ',volu*1d24,' Ang3'
+     write (6, '(A,D15.8,A,D15.8,A)') 'volume=', volu,' cm3 ',volu*1d24,' Ang3'
   end if
 
 
