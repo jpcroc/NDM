@@ -94,6 +94,10 @@ subroutine prog
           call sundae
 #endif
 
+#if(MAB)    
+     case (17) 
+          call mab
+#endif
 
 #if(PHONDY)    
      case (7) 

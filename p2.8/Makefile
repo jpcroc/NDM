@@ -151,6 +151,7 @@ OBJS_SEQ=	anapos.o \
         desinteg_insert.o\
         dislo.o\
         heat.o\
+	spline.o \
         arret_ndm.o \
 
 ifdef PARA
@@ -190,7 +191,14 @@ ifdef SUNDAE
  DIREXT=sundae
 
 endif
+ifdef  MAB
+ # Version MAB
+ OBJS = ${OBJS_MOD} ${OBJS_SEQ}
+ DEP=${OBJS}  ${LIBMAB}
+ CLEANMAB=clean_mab
+ DIREXT=mab
 
+endif
 .f.o :
 	${F90} -c  ${F90FLAGS} $<
 
@@ -207,6 +215,7 @@ endif
 LIBART = libart.a
 LIBPHONDY=libphondy.a
 LIBSUNDAE=libsundae.a
+LIBMAB=libmab.a
 
 
 ${BIN}/rundm90 : ${DEP} 
@@ -220,6 +229,8 @@ $(LIBPHONDY):
 	(cp -rp ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
 $(LIBSUNDAE): 
 	(cp -rp ../sundae ./ ; cd sundae	; make ; cp *.o *.a ../../sundae)
+$(LIBMAB): 
+	(cp -rp ../mab ./ ; cd mab	; make ; cp *.o *.a ../../mab)
 clean : clean_seq clean_para
 
 clean_seq :
