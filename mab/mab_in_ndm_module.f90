@@ -15,10 +15,9 @@ module mab_in_ndm_module
       implicit none
 
        
-      integer                                       :: it_phondy
+      integer                                       :: it_mab
       integer :: nmat
       real(double),dimension(:),allocatable,save    :: tmass_mab
-      real(double) ::  convert_phondy
       real(double),save :: epot0
       real(double),dimension(:),allocatable, save:: w
       real(double)   :: avogadro, electron,two_pi,unit_nu
@@ -71,7 +70,7 @@ end   subroutine allocate_mab
     integer   :: ic_local,iatom
      
 
-   it_phondy=0
+   it_mab=0
    
    
    

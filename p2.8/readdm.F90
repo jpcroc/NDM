@@ -82,6 +82,8 @@ subroutine readdm
   !                              10 -> PARIN RAHMAN 
   !                              11 -> UN SEUL CALCUL DE FORCES
   !                              12 -> ART
+  !                              16 -> SUNDAE
+  !                              17 -> MAB
   lFire = .true.              ! Fire algorithm is used for quenching (cf tr_fire.F90)
   ttol = 0.0                  !max tolerance for temperature in %
   tfroi = -1.0                !imposed temperature
@@ -683,10 +685,19 @@ subroutine readdm
      stop
   end if
 
+  if (lpr) then
+    if (.not.((dmtype==2).or.(dmtype==8))) then
+     write(*,*) 'lpr=.true. is not implemented with this dmtype=', dmtype
+     write(*,*) 'lpr=.true. can by associated only with dmtype=2 or 8'
+     write(*,*) 'change the values of dmtype or lpr'
+    stop
+   end if
+  end if 
+
   ! end check
 
   if (lpr) then
-     if (dmtype==2) lprtrp=.true.
+     if (dmtype==2) lprtrp=.true. 
      dmtype=8
      itesigma=1
      if (pext.ne.0.) then
@@ -806,6 +817,12 @@ subroutine readdm
 #if(SUNDAE)    
   case (16)
      if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
+     if (rang==0) write (6,'(a)') '|---------..........................---------------|'
+     if (rang==0) write (6,'(a)') '|==================================================|'
+#endif
+#if(MAB)    
+  case (17)
+     if (rang==0) write (6,'(a)') '|=========       NDM + MAB          ===============|'
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
      if (rang==0) write (6,'(a)') '|==================================================|'
 #endif

@@ -1,4 +1,5 @@
 OBJ   = mab_in_ndm_module.o\
+        tools.o\
 	mab.o 
 
 

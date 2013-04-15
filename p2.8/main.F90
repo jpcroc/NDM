@@ -40,14 +40,14 @@ program ndm
 
 #if(ART)
   if (rang==0) write(6,*)'*** NDM116 + ART ***'
-#else
-  if (rang==0) write(6,*)'*** NDM116 ***'
 #endif
 
 #if(PHONDY)
   if (rang==0) write(6,*)'*** NDMP116 + PHONDY ***'
-#else
-  if (rang==0) write(6,*)'*** NDMP116 ***'
+#endif
+
+#if(MAB)
+  if (rang==0) write(6,*)'*** NDMP116 + MAB ***'
 #endif
 
 
