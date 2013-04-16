@@ -137,13 +137,12 @@ subroutine allocate_tele_vac ! ****
     real(double)  :: vp(3,imm)
 !   real(double)  :: ax(3,imm)
     real(double)  :: fp(3,imm)
-    real(double)  :: gamma, text_teledyn
+    real(double)  :: gamma
 
    !-----------------------------------------------
      integer   :: ic_local,iatom
    !-----------------------------------------------
 
-   text_teledyn=0.19
    it_tele_vac=0
    tstep_tele_vac=tstep / utemps
    convert_tele_vac=9.6485d0/10000.d0
@@ -165,11 +164,8 @@ subroutine allocate_tele_vac ! ****
    m_i(1:3,1:im) = cm(1)
 
    rga_i(:,:) = exp(-gamma*tstep/two)
-   sig_i(:,:) = sqrt(m_i(:,:)*text_teledyn*bk*(one-exp(-gamma*tstep)))
 
    write(6,*) ' rga_i  ', rga_i(:,1:1)
-   write(6,*) ' sig_i ', sig_i(:,1:1)
-   write(6,*) ' bk text_teledyn',bk,text_teledyn,one-exp(-gamma*tstep/two)
 !   write(6,*) ' cm ',m_i(1,1:im)
 !   stop
 

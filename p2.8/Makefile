@@ -151,7 +151,6 @@ OBJS_SEQ=	anapos.o \
         desinteg_insert.o\
         dislo.o\
         heat.o\
-	spline.o \
         arret_ndm.o \
 
 ifdef PARA
