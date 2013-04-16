@@ -14,13 +14,15 @@ module mab_in_ndm_module
 !-----------------------------------------------
       implicit none
 
-       
+      real(double), dimension(:,:), allocatable :: sig_i,rga_i,m_i
+    
       integer                                       :: it_mab
       integer :: nmat
       real(double),dimension(:),allocatable,save    :: tmass_mab
       real(double),save :: epot0
       real(double),dimension(:),allocatable, save:: w
       real(double)   :: avogadro, electron,two_pi,unit_nu
+   
  contains
  
 
@@ -36,7 +38,8 @@ subroutine allocate_mab()
    electron=1.60217733
    !hplanck=6.62618
    unit_nu=dsqrt(avogadro*electron/1.D3)
-   unit_nu=unit_nu/two_pi         
+   unit_nu=unit_nu/two_pi        
+   allocate (sig_i(3,imm),rga_i(3,imm),m_i(3,imm)) 
 
 
 

@@ -36,6 +36,7 @@ subroutine mab
   write(6,*)
   write(6,*)
   call allocate_mab()
+  call prepare_langevin()
   !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 

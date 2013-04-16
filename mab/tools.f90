@@ -1,6 +1,18 @@
 ! This file contains the following functions or subroutines:
 !  genere_bruit2, genrand, FACT and timestamp      
+MODULE random_mab
 
+  ! Random number generator (from "Numerical Recipes").
+  ! Returns a uniform random deviate between 0.0 and 1.0.
+  ! Set idum to any negative value to initialize or  
+  ! reinitialize the sequence.                      
+
+  ! Shared variables
+  save
+  integer :: idum, inext, inextp
+  integer :: iff = 0
+  integer, dimension(55) :: ma
+end module random_mab
 
 subroutine genere_bruit2 (sig,gau)
    use T_kind_param_m, ONLY : double
@@ -43,15 +55,15 @@ subroutine genere_bruit2 (sig,gau)
   end subroutine genere_bruit2
 
 
-real(8) Function ran3()
+real(8) function ran3()
      use T_kind_param_m, ONLY : double 
-     use random_art
+     use random_mab
       implicit none
 
       integer, parameter :: mbig  = 1000000000
       integer, parameter :: mseed = 161803398
       integer, parameter :: mz=0
-      real(double), parameter :: fac=1./mbig
+      real(double), parameter :: fac=1.d0/mbig
 
       integer :: i,mj, mk, ii, k
 
@@ -89,12 +101,12 @@ real(8) Function ran3()
       if(mj.lt.mz)mj=mj+mbig
       ma(inext)=mj
       ran3=mj*fac
-   end function ran3
+end function ran3
 
 
 
 
-Function genrand()
+function genrand()
   use T_kind_param_m, ONLY : double 
  real (double) :: genrand 
   real (double) :: x

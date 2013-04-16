@@ -1,10 +1,15 @@
  subroutine prepare_langevin
- implicit none
- use gen_com_m, only:one,two
+ use gen_com_m, only:one,two,im,imm,tstep
  use var_pot
  use tab_imm_m
+ use mab_in_ndm_module, only: sig_i,rga_i,m_i
+ implicit none
+ integer ic
+ real(double) :: gamma,temperature
 
-  m_i(1:3,1:im) = cm(ityp(i))
+  do ic=1,3
+   m_i(ic,1:im) = cm(ityp(1:im))
+  end do
   
   gamma=one/(tstep*1d2)
 
@@ -15,10 +20,10 @@
 
 
 
- end subroutine prepare_lagevin
+ end subroutine prepare_langevin
 
 
- subroutine langevin(dt,temperature,rga_i,sig_i)!,ielat,iwmax, ityp)!)!(xp, vp, fp,dt)!, ielat,iwmax, ityp)
+ subroutine langevin(dt)
     !On input ... the parameters 
     !dt -        integration step size (units, internal units ndm ?)
     !temperature (units ? )
@@ -30,18 +35,20 @@
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
+    USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab
 
     implicit none
-    integer ic
-    real(double),intent(in) :: dt,temperature
-    real(double), dimension (3,N),intent(in) ::sig_i,rga_i
+    integer ic,it_langevin
+    real(double),intent(in) :: dt
     real(double) :: xbar(3)
     real(double) :: pp(3,im)
-    real(double) :: Ecin4
+    real(double) :: Ecin4,Ecinetique
     real(double) :: vbar(3)
-    real(double), dimension(6,N+1)::gau
-    
-    call genere_bruit2(sig_i,gau_i)
+    real(double), dimension(6,im+1)::gau
+   
+    it_langevin=it_mab 
+   
+    call genere_bruit2(sig_i,gau)
     !sig_i(:,:)=sig(:,:)
     !rga_i(:,:)=rga
 

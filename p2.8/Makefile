@@ -257,4 +257,6 @@ clean_phondy:
 	rm -rf phondy ; cd ../phondy ; make clean   
 clean_sundae:
 	rm -rf sundae ; cd ../sundae ; make clean   
+clean_mab:
+	rm -rf mab ; cd ../mab ; make clean   
 #
