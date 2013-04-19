@@ -35,8 +35,21 @@ subroutine mab
   write(6,*)'************ DEBUT DE MAB ****************'
   write(6,*)
   write(6,*)
+
+  
+  call read_mab_file()
   call allocate_mab()
+  write(*,*) 'temperature ',temperature/KtoERG 
   call prepare_langevin()
+  
+
+  do it_mab=1,nlangevin
+    call langevin()
+    if (mod(it_mab,200)==0) then 
+     write(*,*) it_mab
+     write(35,*) it_mab,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
+    end if
+  end do
   !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 

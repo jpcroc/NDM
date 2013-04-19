@@ -1,4 +1,5 @@
 OBJ   = mab_in_ndm_module.o\
+        read_mab_file.o\
         tools.o\
         langevin.o\
 	mab.o 

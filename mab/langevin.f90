@@ -2,10 +2,10 @@
  use gen_com_m, only:one,two,im,imm,tstep
  use var_pot
  use tab_imm_m
- use mab_in_ndm_module, only: sig_i,rga_i,m_i
+ use mab_in_ndm_module, only: sig_i,rga_i,m_i,temperature
  implicit none
  integer ic
- real(double) :: gamma,temperature
+ real(double) :: gamma
 
   do ic=1,3
    m_i(ic,1:im) = cm(ityp(1:im))
@@ -14,16 +14,14 @@
   gamma=one/(tstep*1d2)
 
   rga_i(1:3,1:im) = exp(-gamma*tstep/two)
+
+
   sig_i(1:3,1:im) = sqrt(m_i(1:3,1:im)*temperature*(one-rga_i(1:3,1:im)**2))
-
-
-
-
 
  end subroutine prepare_langevin
 
 
- subroutine langevin(dt)
+ subroutine langevin()
     !On input ... the parameters 
     !dt -        integration step size (units, internal units ndm ?)
     !temperature (units ? )
@@ -35,14 +33,13 @@
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
-    USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab
+    USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique
 
     implicit none
     integer ic,it_langevin
-    real(double),intent(in) :: dt
     real(double) :: xbar(3)
     real(double) :: pp(3,im)
-    real(double) :: Ecin4,Ecinetique
+    real(double) :: Ecin4
     real(double) :: vbar(3)
     real(double), dimension(6,im+1)::gau
    
@@ -54,13 +51,13 @@
 
     Ecin4 = zero
 
-    write(*,*) im 
  
     pp(1:3,1:im)=vp(1:3,1:im)*m_i(1:3,1:im)
 
     do ic=1,3
-       vbar(ic)=sum(vp(ic,1:im))/dble(im) ! barycentre sur les particules
+       vbar(ic)=sum(pp(ic,1:im))/dble(im) ! barycentre sur les particules
     enddo
+! one force calculation ....
 
          if (itab/=0) then
           if (mod(it_langevin,itab)==0) then
@@ -80,13 +77,13 @@
     vp(1:3,1:im)=pp(1:3,1:im)/m_i(1:3,1:im)
 
     !step2: from p(1+1/4) -> p(1+1/2)
-    pp(1:3,1:im) =  pp(1:3,1:im) + (fp(1:3,1:im))*dt/two
+    pp(1:3,1:im) =  pp(1:3,1:im) + (fp(1:3,1:im))*dtlang/two
     
     do ic=1,3
        xbar(ic)    = sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules
     enddo
     !step3: from x(1) -> x(1+1)
-    xp(1:3,1:im)=  xp(1:3,1:im) + pp(1:3,1:im)*dt/m_i(1:3,1:im)
+    xp(1:3,1:im)=  xp(1:3,1:im) + pp(1:3,1:im)*dtlang/m_i(1:3,1:im)
     
 
     do ic=1,3
@@ -104,7 +101,7 @@
     call calfo
   
     !step4: p(1+1/2) -> p(1+3/4) 
-    pp(1:3,1:im) = pp(1:3,1:im) + (fp(1:3,1:im))*dt/two
+    pp(1:3,1:im) = pp(1:3,1:im) + (fp(1:3,1:im))*dtlang/two
     vp(1:3,1:im) = pp(1:3,1:im) / m_i(1:3,1:im)
     
     
