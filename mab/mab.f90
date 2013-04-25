@@ -17,14 +17,6 @@ subroutine mab
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       implicit none
-!      integer  :: ielat(imm)
-!      integer  :: iwmax(imm)
-!      integer  :: ityp(imm)
-!      real(double)  :: xp(3,imm)
-!      real(double)  :: xpp(3,imm)
-!      real(double)  :: vp(3,imm)
-!      real(double)  :: ax(3,imm)
-
 
 
 ! 
@@ -36,17 +28,27 @@ subroutine mab
   write(6,*)
   write(6,*)
 
-  
+  write(6,*)'......READING.....' 
   call read_mab_file()
+
+  write(6,*)'......ALLOCATE....' 
   call allocate_mab()
-  write(*,*) 'temperature ',temperature/KtoERG 
+  write(6,*)'.......INIT.......' 
+  !debug .... write(*,*) 'temperature ',temperature/KtoERG 
+  call init_mab_in_ndm_module()
+  write(6,*)'......PREPARE.....' 
+
+
   call prepare_langevin()
   
 
+  write(6,*)'......LANGEVIN.....' 
   do it_mab=1,nlangevin
     call langevin()
-    if (mod(it_mab,200)==0) then 
+    call reaction()
+    if (mod(it_mab,40)==0) then 
      write(*,*) it_mab
+     write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
      write(35,*) it_mab,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
     end if
   end do

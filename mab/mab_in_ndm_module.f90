@@ -14,17 +14,18 @@ module mab_in_ndm_module
 !-----------------------------------------------
       implicit none
 
-      real(double), dimension(:,:), allocatable :: sig_i,rga_i,m_i
-      real(double)  :: dtlang,temperature,Ecinetique
+      real(double), dimension(:,:), allocatable :: sig_i,rga_i,xp0,m_i
+      real(double)  :: dtlang,temperature,Ecinetique,m_tot,a0bcc
+      
 
       real(double), parameter :: KtoERG=1.3791946308724831d-16 
       integer :: nlangevin 
       integer                                       :: it_mab,it_langevin
-      integer :: nmat
-      real(double),dimension(:),allocatable,save    :: tmass_mab
       real(double),save :: epot0
       real(double),dimension(:),allocatable, save:: w
-      real(double)   :: avogadro, electron,two_pi,unit_nu
+      real(double)   :: pinumber,dcsi,normxlac,deltasph,radiussph
+      real(double),dimension(3) :: xbar,xbarini,xlaci,xlacf,rfilac 
+
  contains
  
 
@@ -32,63 +33,41 @@ subroutine allocate_mab()
 
    implicit none
    
-   nmat=3*im   
-   allocate( tmass_mab(nmat))
-!  pi=4*datan(1.D0)
-   two_pi=2.0d0*4.d0*datan(1.d0)
-   avogadro=6.0221367
-   electron=1.60217733
-   !hplanck=6.62618
-   unit_nu=dsqrt(avogadro*electron/1.D3)
-   unit_nu=unit_nu/two_pi        
-   allocate (sig_i(3,imm),rga_i(3,imm),m_i(3,imm)) 
-   
-
-
+   allocate (sig_i(3,imm),rga_i(3,imm),m_i(3,imm),xp0(3,imm)) 
+  
 
 return
 end   subroutine allocate_mab
 
 
- subroutine  init_mab_in_ndm_module               &
-             (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-!
-    !-----------------------------------------------
-    !   M o d u l e s
-    !-----------------------------------------------
+ subroutine  init_mab_in_ndm_module()
+    use tab_imm_m
     implicit none
-    !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    integer  :: ielat(imm)
-    integer  :: iwmax(imm)
-    integer  :: ityp(imm)
-    real(double)  :: xp(3,imm)
-    real(double)  :: xpp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: ax(3,imm)
-    real(double)  :: fp(3,imm)
- !
-    integer   :: ic_local,iatom
-     
+    integer :: ic
 
-   it_mab=0
-   
-   
-   
-   do ic_local=1,3*im
-      iatom = MOD(ic_local,im)
-      if (iatom==0) iatom=im       
-      tmass_mab(ic_local) = (cm(ityp(iatom))/umass)
-   end do
-   
+     do ic=1,3
+      m_i(ic,1:im) = cm(ityp(1:im))
+     end do
+     m_tot=SUM(m_i(1,1:im))
+    
+     do ic=1,3
+       xbarini(ic)  = sum(xp(ic,1:im)*m_i(ic,1:im))/m_tot
+     enddo
+ 
+     pinumber=4.d0*datan(1.D0)
+    
+    xp0(:,:)=xp(:,:)
+    
+    xlaci(1:3)=(/a0bcc,a0bcc,a0bcc/)/angst
+    xlacf(1:3)=(/a0bcc/2.d0,a0bcc/2.d0,a0bcc/2.d0 /)/angst
+    rfilac(1:3)=xlacf(1:3)-xlaci(1:3)
+    normxlac=sqrt(SUM((rfilac(:)**2)))
+
+    
+
 
  return
 !
 end subroutine init_mab_in_ndm_module 
- 
 
 end module mab_in_ndm_module

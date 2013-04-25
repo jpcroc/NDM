@@ -132,6 +132,40 @@ end function genrand
  100	CONTINUE
 	RETURN
 	END
+
+
+! Fermi-Dirac function
+  function FerDir (x,R,delta)
+  use T_kind_param_m, ONLY : double
+  real(double) :: FerDir  
+  real(double) :: R, delta
+  real(double) :: x,y,x1
+  
+  x1=(x-R)/delta
+  y=1.d0/(1.d0+dexp(x1))
+
+  FerDir=y
+return
+end
+
+! derivative of the function 1-FD(x) which is:  d(1-FD(x))/dx=-d(FD(x))/dx, where FD is the Fermi-Dirac function
+  function dFerDir(x,R,delta)
+  use T_kind_param_m, ONLY : double
+  real(double) :: dFerDir 
+  real(double) :: R, delta
+  real(double) :: x,y,x1
+  
+  x1=(x-R)/delta
+  if (dabs(x1)>=500.d0) then
+    y = 0.d0 
+   else 
+    y=dexp(x1)/(1.d0+dexp(x1))**2
+  end if 
+
+  dFerDir=-y/delta
+return
+end
+
  
  subroutine timestamp ( )
 

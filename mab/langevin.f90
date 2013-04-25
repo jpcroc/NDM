@@ -4,13 +4,9 @@
  use tab_imm_m
  use mab_in_ndm_module, only: sig_i,rga_i,m_i,temperature
  implicit none
- integer ic
  real(double) :: gamma
 
-  do ic=1,3
-   m_i(ic,1:im) = cm(ityp(1:im))
-  end do
-  
+ 
   gamma=one/(tstep*1d2)
 
   rga_i(1:3,1:im) = exp(-gamma*tstep/two)
@@ -36,7 +32,7 @@
     USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique
 
     implicit none
-    integer ic,it_langevin
+    integer     :: ic,it_langevin
     real(double) :: xbar(3)
     real(double) :: pp(3,im)
     real(double) :: Ecin4
@@ -66,6 +62,7 @@
          endif
          if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
         call calfo
+        call calfoblock
     
     !step1: from p(1) -> p(1+1/4)
     pp(1:3,1:im)=pp(1:3,1:im)*rga_i(1:3,1:im) + gau(1:3,1:im)
@@ -99,6 +96,7 @@
     endif
     if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
     call calfo
+    call calfoblock
   
     !step4: p(1+1/2) -> p(1+3/4) 
     pp(1:3,1:im) = pp(1:3,1:im) + (fp(1:3,1:im))*dtlang/two
