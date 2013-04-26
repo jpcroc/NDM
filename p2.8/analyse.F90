@@ -465,10 +465,22 @@ subroutine analyse
            Allocate(aux_title(2))
            aux_title(1)="Energy per atom (eV)"
            aux_real(1,1:im)=Eatom(1:im)*erg2eV
+           if (dmtype==17) then
+            CALL redefine_ty()
+            CALL WriteCfg(xp, ityp, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
+            CALL refix_ty()
+           else        
            CALL WriteCfg(xp, ityp, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
+           end if
            DEALLOCATE(aux_real, aux_title)
         ELSE
-           CALL WriteCfg(xp, ityp, 60)
+            if (dmtype==17) then
+             CALL redefine_ty()       
+             CALL WriteCfg(xp, ityp, 60)
+             CALL refix_ty()
+            else
+             CALL WriteCfg(xp, ityp, 60)
+            end if 
         END IF
         CLOSE(60)
      endif
@@ -479,8 +491,16 @@ subroutine analyse
 
   ! ecriture de rasmol
 
-  if (iterasmol>0) then
-     if (mod(it,iterasmol)==0) call rasmol (it)
+  if (iterasmol>0) then     
+              if (mod(it,iterasmol)==0) then
+                      if (dmtype==17) then 
+                      call redefine_ty() 
+                      call rasmol (it)
+                      call refix_ty()
+                    else
+                      call rasmol (it)
+                     end if
+             end if        
   endif
 
 

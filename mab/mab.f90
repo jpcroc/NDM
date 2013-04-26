@@ -47,10 +47,13 @@ subroutine mab
     call langevin()
     call reaction()
     if (mod(it_mab,40)==0) then 
-     write(*,*) it_mab
+     !write(*,*) it_mab
      write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
      write(35,*) it_mab,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
     end if
+    it=it_mab
+    call analyse 
+    call controle
   end do
   !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 

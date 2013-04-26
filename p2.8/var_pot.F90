@@ -9,15 +9,16 @@ module var_pot
 
 
 
-  integer :: ntyp						! nb de type
+  integer :: ntyp, ntyp_buffer					! nb de type
   integer :: npair						! = ntyp*(ntyp+1)/2
   integer :: ntrip						! = ntyp*ntyp *(ntyp+1)/2
 
 
   integer, dimension(:), pointer  :: na			! nb d'atomes par type
   integer, dimension(:,:), pointer  :: ipo			! indice des paires d'atomes
-  real(double), dimension(:), pointer :: cm, catom, q, rc	! masse, numero atomique, charge ionique, rayon de coup.
+  real(double), dimension(:), pointer :: cm, cm_buffer, catom, q, rc	! masse, numero atomique, charge ionique, rayon de coup.
   character , dimension(:), pointer  :: ty*3
+  character , dimension(:), pointer  :: ty_buffer*3
 
   real(double)::rclu(20), eatref(20)   ! rayon et energie des types d'atomes
 

@@ -252,3 +252,65 @@ if (ivisu==3)    call cryst_to_cart (imm, xp , at,  1)  !cryst vers cart
 
   return
 end subroutine rasmol
+
+
+ subroutine redefine_ty
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+  use var_pot
+  use tab_imm_m
+#if(PARA)
+  use mod_mpi
+#endif
+implicit none
+ntyp_buffer=ntyp
+allocate(ityp_buffer(imm),ty_buffer(ntyp),cm_buffer(ntyp))
+ ityp_buffer(:)=ityp(:)
+ ty_buffer(:)=ty(:)
+ cm_buffer(:)=cm(:)
+ 
+ ntyp=3
+ ityp(1:6)=2
+ ityp(8:15)=2
+ ityp(7)=3
+ 
+ 
+ deallocate(ty,cm)
+ allocate(ty(ntyp),cm(ntyp))
+
+ ty(1)='Fe' 
+ ty(2)='Cu'
+ ty(3)='Be' 
+
+ cm(1:ntyp)=cm(1)
+
+ return
+ end subroutine redefine_ty
+
+
+ subroutine refix_ty
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+  use var_pot
+  use tab_imm_m
+#if(PARA)
+  use mod_mpi
+#endif
+implicit none 
+
+ ntyp=ntyp_buffer
+ deallocate(ty,ityp)
+ allocate(ty(ntyp),cm(ntyp),ityp(imm))
+ ityp(:)=ityp_buffer(:)
+ ty(:)=ty_buffer(:)
+ cm(:)=cm_buffer(:)
+
+ return
+ end subroutine refix_ty
+
+
+
+
+
+
+
