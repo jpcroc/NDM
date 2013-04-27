@@ -280,7 +280,7 @@ allocate(ityp_buffer(imm),ty_buffer(ntyp),cm_buffer(ntyp))
 
  ty(1)='Fe' 
  ty(2)='Cu'
- ty(3)='Be' 
+ ty(3)='O ' 
 
  cm(1:ntyp)=cm(1)
 

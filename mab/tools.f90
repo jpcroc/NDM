@@ -156,8 +156,8 @@ end
   real(double) :: x,y,x1
   
   x1=(x-R)/delta
-  if (dabs(x1)>=500.d0) then
-    y = 0.d0 
+  if (dabs(x)>=R) then
+    y=0.25d0
    else 
     y=dexp(x1)/(1.d0+dexp(x1))**2
   end if 

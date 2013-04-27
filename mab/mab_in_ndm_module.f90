@@ -57,7 +57,7 @@ end   subroutine allocate_mab
      pinumber=4.d0*datan(1.D0)
     
     xp0(:,:)=xp(:,:)
-    
+ 
     xlaci(1:3)=(/a0bcc,a0bcc,a0bcc/)/angst
     xlacf(1:3)=(/a0bcc/2.d0,a0bcc/2.d0,a0bcc/2.d0 /)/angst
     rfilac(1:3)=xlacf(1:3)-xlaci(1:3)

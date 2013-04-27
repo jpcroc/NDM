@@ -29,14 +29,14 @@
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
-    USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique
+    USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique,xbar
 
     implicit none
     integer     :: ic,it_langevin
-    real(double) :: xbar(3)
     real(double) :: pp(3,im)
     real(double) :: Ecin4
     real(double) :: vbar(3)
+    real(double) :: xbari(3),xbarc(3)
     real(double), dimension(6,im+1)::gau
    
     it_langevin=it_mab 
@@ -52,6 +52,8 @@
 
     do ic=1,3
        vbar(ic)=sum(pp(ic,1:im))/dble(im) ! barycentre sur les particules
+       xbar(ic)=sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules
+       xbari(ic)=xbar(ic)
     enddo
 ! one force calculation ....
 
@@ -76,16 +78,14 @@
     !step2: from p(1+1/4) -> p(1+1/2)
     pp(1:3,1:im) =  pp(1:3,1:im) + (fp(1:3,1:im))*dtlang/two
     
-    do ic=1,3
-       xbar(ic)    = sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules
-    enddo
     !step3: from x(1) -> x(1+1)
     xp(1:3,1:im)=  xp(1:3,1:im) + pp(1:3,1:im)*dtlang/m_i(1:3,1:im)
     
 
     do ic=1,3
-       xbar(ic)    = sum(xp(ic,1:im))/dble(im)-xbar(ic) ! déplacement du barycentre 
-       xp(ic,1:im) = xp(ic,1:im) - xbar(ic)  ! on recentre tout le systeme
+       xbar(ic)    = sum(xp(ic,1:im))/dble(im)
+       xbarc(ic)   = xbar(ic) - xbari(ic) ! déplacement du barycentre 
+       xp(ic,1:im) = xp(ic,1:im) - xbarc(ic)  ! on recentre tout le systeme
     enddo
 
      !recompute the forces
