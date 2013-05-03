@@ -29,7 +29,8 @@
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
-    USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique,xbar
+    USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique,xbar,  &
+                                 abf_type,block
 
     implicit none
     integer     :: ic,it_langevin
@@ -64,7 +65,21 @@
          endif
          if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
         call calfo
-        call calfoblock
+        if (block) call calfoblock()
+
+        call fill_histo()
+        
+        select case (abf_type)
+           case (1)
+                  continue
+           case (2)  
+                  call calfo_ABF_BIN
+          ! case (3) 
+          !        call calfo_ABF_GAUSSIAN ! ABF Gaussian
+          ! case (4) 
+          !        call calfo_ABF_EE
+        end select 
+        
     
     !step1: from p(1) -> p(1+1/4)
     pp(1:3,1:im)=pp(1:3,1:im)*rga_i(1:3,1:im) + gau(1:3,1:im)
@@ -89,15 +104,30 @@
     enddo
 
      !recompute the forces
-     if (itab/=0) then
+
+      if (itab/=0) then
        if (mod(it_langevin,itab)==0) then
         call caltabt
-     endif
-    endif
-    if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
-    call calfo
-    call calfoblock
-  
+       endif
+      endif
+      if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
+     call calfo
+     if (block) call calfoblock()
+
+     call fill_histo()
+     
+     select case (abf_type)
+        case (1)
+               continue
+        case (2)  
+               call calfo_ABF_BIN
+       ! case (3) 
+       !        call calfo_ABF_GAUSSIAN ! ABF Gaussian
+       ! case (4) 
+       !        call calfo_ABF_EE
+     end select 
+
+
     !step4: p(1+1/2) -> p(1+3/4) 
     pp(1:3,1:im) = pp(1:3,1:im) + (fp(1:3,1:im))*dtlang/two
     vp(1:3,1:im) = pp(1:3,1:im) / m_i(1:3,1:im)

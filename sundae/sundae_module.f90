@@ -228,7 +228,7 @@ subroutine allocate_tele_vac ! ****
     pp(1:3,1:im)=vp(1:3,1:im)*m_i(1:3,1:im)
 
     do ic=1,3
-       vbar(ic)=sum(vp(ic,1:im))/dble(im) ! barycentre sur les particules
+       vbar(ic)=sum(pp(ic,1:im))/dble(im) ! barycentre sur les particules
     enddo
 
 	  if (itab/=0) then

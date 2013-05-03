@@ -3,6 +3,8 @@ OBJ   = mab_in_ndm_module.o\
         tools.o\
         langevin.o\
 	reaction.o\
+        histo.o\
+        calfo_ABF.o\
 	mab.o 
 
 

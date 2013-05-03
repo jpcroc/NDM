@@ -54,6 +54,18 @@ subroutine mab
     it=it_mab
     call analyse 
     call controle
+     select case (sim_mode)
+      case (1) 
+           call test_vacancy_position
+           
+           if (test_end) then
+             write(6,*) 'First passage time (step)....:',it_mab 
+             write(6,*) 'First passage time (ps)....:',it_mab*dtlang*1.d12 
+             stop
+           end if
+      case (2) 
+           continue
+     end select 
   end do
   !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 

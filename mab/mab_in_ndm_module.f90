@@ -19,12 +19,19 @@ module mab_in_ndm_module
       
 
       real(double), parameter :: KtoERG=1.3791946308724831d-16 
-      integer :: nlangevin 
+      integer :: nlangevin,abf_type,sim_mode 
       integer                                       :: it_mab,it_langevin
-      real(double),save :: epot0
+      real(double),save :: epot0,cumul_force
       real(double),dimension(:),allocatable, save:: w
-      real(double)   :: pinumber,dcsi,normxlac,deltasph,radiussph
+      real(double)   :: pinumber,dcsi,normxlac,deltasph,radiussph,rtestlac
       real(double),dimension(3) :: xbar,xbarini,xlaci,xlacf,rfilac 
+      real(double)  :: deltar1,deltar2,delta_z
+      integer       :: nhisto,nhisto1,nhisto2,icsi
+      integer,dimension(:), allocatable :: histo,histo1,histo2,histo_temp,histo_temp1
+      real(double),dimension(:), allocatable :: mean_force,mean_force1
+       
+      
+      logical :: block,test_end
 
  contains
  
@@ -60,11 +67,25 @@ end   subroutine allocate_mab
  
     xlaci(1:3)=(/a0bcc,a0bcc,a0bcc/)/angst
     xlacf(1:3)=(/a0bcc/2.d0,a0bcc/2.d0,a0bcc/2.d0 /)/angst
-    rfilac(1:3)=xlacf(1:3)-xlaci(1:3)
-    normxlac=sqrt(SUM((rfilac(:)**2)))
-
+   
+    normxlac=sqrt(SUM((xlacf(1:3)-xlaci(1:3))**2))
+    rfilac(1:3)=(xlacf(1:3)-xlaci(1:3))/normxlac
     
-
+    delta_z=normxlac/dble(nhisto)
+    nhisto1=deltar1/dble(delta_z)
+    nhisto2=deltar2/dble(delta_z)
+    allocate(histo(nhisto),histo1(-nhisto1:nhisto+nhisto1),histo2(-nhisto2:nhisto+nhisto2),& 
+             histo_temp(nhisto),histo_temp1(-nhisto1:nhisto+nhisto1))
+    allocate(mean_force(nhisto),mean_force1(-nhisto1:nhisto+nhisto1))
+    
+    cumul_force=0.d0 
+    histo(1:nhisto)=0
+    histo_temp(1:nhisto)=0
+    histo1(-nhisto1:nhisto+nhisto1)=0
+    histo2(-nhisto2:nhisto+nhisto2)=0
+   
+    
+    
 
  return
 !

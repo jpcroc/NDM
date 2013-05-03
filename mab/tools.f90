@@ -166,6 +166,30 @@ end
 return
 end
 
+
+
+subroutine test_vacancy_position
+
+ USE T_kind_param_m, ONLY:  double
+ USE gen_com_m, ONLY: im,imm
+ USE tab_imm_m
+ USE mab_in_ndm_module, ONLY: normxlac, xlacf,xbarini,xbar,test_end,rtestlac
+ implicit none
+ real(double) :: rtemp
+
+  test_end=.false.
+  rtemp=dsqrt(DOT_PRODUCT(xp(:,7)-xlacf(:)-xbar(:)+xbarini(:),xp(:,7)-xlacf(:)-xbar(:)+xbarini(:)))
+
+  !write(6,*) xp(:,7)
+  !write(6,*)  rtemp, rtestlac
+
+  if (rtemp <= rtestlac) test_end=.true.
+
+
+return
+
+end subroutine test_vacancy_position
+
  
  subroutine timestamp ( )
 
