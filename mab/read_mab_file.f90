@@ -5,11 +5,11 @@ subroutine read_mab_file()
  !use tab_imm_m
  USE mab_in_ndm_module, ONLY: dtlang,nlangevin,temperature,KtoERG,a0bcc,deltasph,  &
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
-                              sim_mode,rtestlac,langevin_type,damp_coef
+                              sim_mode,rtestlac,langevin_type,gamma
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
-                      langevin_type,damp_coef
+                      langevin_type,gamma
 
  character(len=128) :: fnamtin
  integer :: lumab
@@ -65,7 +65,7 @@ write(*,'("a0 of the cubic unit cell....................:",D15.4)') a0bcc
 write(*,'("Langevin time step in s......................:",D15.4)') dtlang 
 write(*,'("Total number of steps .......................:",I9)')  nlangevin
 write(*,'("Langevin temperature in K....................:",F8.1)') temperature
-write(*,'("Langevin dumping coefficient (overdamped)....:",D15.4)') damp_coef
+write(*,'("Langevin dumping coefficient ................:",D15.4)') gamma
 write(*,'("Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
 write(*,'("Width of the FD function in A................:",D15.4)') deltasph
 write(*,'("Number of the bins of histo..................:",i7)') nhisto

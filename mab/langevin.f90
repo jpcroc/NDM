@@ -2,15 +2,20 @@
  use gen_com_m, only:one,two,im,imm,tstep
  use var_pot
  use tab_imm_m
- use mab_in_ndm_module, only: sig_i,sig_ll, rga_i,m_i,temperature,damp_coef,langevin_type,dtlang
+ use mab_in_ndm_module, only: sig_i,sig_ll, rga_i,m_i,temperature,gamma,langevin_type,dtlang
  implicit none
- real(double) :: gamma
+  
+  if (gamma < 0.d0) then
+    gamma = one/(tstep*1.d2)
+   if (langevin_type==1) then
+    gamma=100.d0*gamma
+   end if 
+  end if 
 
   select case (langevin_type)
     case (1)
-     sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(damp_coef*m_i(1:3,1:im)))
+     sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))
     case (2) 
-     gamma=one/(tstep*1d2)
      rga_i(1:3,1:im) = exp(-gamma*tstep/two)
      sig_i(1:3,1:im) = sqrt(m_i(1:3,1:im)*temperature*(one-rga_i(1:3,1:im)**2))
   end select
@@ -87,7 +92,7 @@
        vbar(ic)=sum(pp(ic,1:im))/dble(im) ! vit barycentre sur les particules
        pp(ic,1:im)=pp(ic,1:im)-vbar(ic)
     enddo
-    !call control_angular_momenta(pp,xp)
+    call control_angular_momenta(pp,xp)
     vp(1:3,1:im)=pp(1:3,1:im)/m_i(1:3,1:im)
 
     !step2: from p(1+1/4) -> p(1+1/2)
@@ -140,7 +145,7 @@
        vbar(ic)=sum(pp(ic,1:im))/dble(im) ! vit barycentre sur les particules
        pp(ic,1:im)=pp(ic,1:im)-vbar(ic)
     enddo
-    !call control_angular_momenta(pp,xp)
+    call control_angular_momenta(pp,xp)
     vp(1:3,1:im) = pp(1:3,1:im)/m_i(1:3,1:im)
 
     do ic=1,3

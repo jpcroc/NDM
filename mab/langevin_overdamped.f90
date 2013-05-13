@@ -13,7 +13,7 @@
     use gen_com_m
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_ll,m_i,it_mab,dtlang,Ecinetique,xbar,  &
-                                 abf_type,block,damp_coef
+                                 abf_type,block,gamma
 
     implicit none
     integer     :: ic,it_langevin
@@ -56,13 +56,17 @@
         end select 
         
     
-      xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(damp_coef*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
+      xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
+
+    ! call control_angular_momenta(pp,xp)
+
     do ic=1,3
        xbar(ic)    = sum(xp(ic,1:im))/dble(im)
        xbarc(ic)   = xbar(ic) - xbari(ic) ! déplacement du barycentre 
        xp(ic,1:im) = xp(ic,1:im) - xbarc(ic)  ! on recentre tout le systeme
     enddo
-  
+
+ 
    
     return
  end subroutine langevin_overdamped

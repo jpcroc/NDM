@@ -296,7 +296,97 @@ end subroutine test_vacancy_position
     d, trim ( month(m) ), y, h, ':', n, ':', s, '.', mm, trim ( ampm )
 
   return
-end
+end subroutine timestamp 
 
 
+Subroutine control_angular_momenta(p,q)
+
+USE T_kind_param_m, ONLY:  double
+USE mab_in_ndm_module, only: m_i  
+use gen_com_m, only:im 
+
+
+implicit none
+real(double) :: rx, ry, rz, r2x, r2y, r2z, r2
+real(double) :: prx, pry, prz, px, py, pz, vrx, vry, vrz
+real(double) :: omegax, omegay, omegaz
+real(double), dimension(3) ::   scom
+real(double), dimension(3,3) :: ainer, aineri
+real(double), dimension(3,im) :: p,q
+integer ::         i,ic,ib,rang
+
+ainer = 0.d0
+prx = 0.d0
+pry = 0.d0
+prz = 0.d0
+
+
+! provisoire: doit tenir compte des masses
+
+do ic=1,3
+ scom(ic) = sum(q(ic,1:im))/dble(im)
+enddo
+
+!write(*,*) 'p : ', p(1:3,1:im) 
+
+do i = 1, im
+                           
+ rx = q(1,i)-scom(1)
+ ry = q(2,i)-scom(2)
+ rz = q(3,i)-scom(3)
+             
+ r2x = rx*rx
+ r2y = ry*ry
+ r2z = rz*rz
+ r2  = r2x+r2y+r2z
+ 
+ ainer(1,1) = ainer(1,1)+m_i(1,i)*(r2-r2x)
+ ainer(2,2) = ainer(2,2)+m_i(1,i)*(r2-r2y)
+ ainer(3,3) = ainer(3,3)+m_i(1,i)*(r2-r2z)
+ ainer(2,3) = ainer(2,3)-m_i(1,i)*ry*rz
+ ainer(3,1) = ainer(3,1)-m_i(1,i)*rz*rx
+ ainer(1,2) = ainer(1,2)-m_i(1,i)*rx*ry
+ px  = p(1,i)
+ py  = p(2,i)
+ pz  = p(3,i)
+ prx = prx+ry*pz-rz*py
+ pry = pry+rz*px-rx*pz
+ prz = prz+rx*py-ry*px
+enddo
+
+ainer(3,2) = ainer(2,3)
+ainer(1,3) = ainer(3,1)
+ainer(2,1) = ainer(1,2)
+
+rang=1
+if (rang==0) then
+       write(6,*) 
+       write(6,997) (ainer(1,ib),ib=1,3),prx
+       write(6,997) (ainer(2,ib),ib=1,3),pry
+       write(6,997) (ainer(3,ib),ib=1,3),prz
+endif
+997    format('Inertia/anglm = ',3e15.6,4x,e14.6e3)
+
+     !     calculate  angular velocity
+
+call matinv(ainer,aineri)
+omegax = aineri(1,1)*prx+aineri(1,2)*pry+aineri(1,3)*prz
+omegay = aineri(2,1)*prx+aineri(2,2)*pry+aineri(2,3)*prz
+omegaz = aineri(3,1)*prx+aineri(3,2)*pry+aineri(3,3)*prz
+
+           !         shift velocities to make the angular momentum zero
+do i = 1, im
+ rx = q(1,i)-scom(1)
+ ry = q(2,i)-scom(2)
+ rz = q(3,i)-scom(3)
+ vrx = omegay*rz-omegaz*ry
+ vry = omegaz*rx-omegax*rz
+ vrz = omegax*ry-omegay*rx
+
+ p(1,i) = p(1,i)-vrx*m_i(1,i)
+ p(2,i) = p(2,i)-vry*m_i(1,i)
+ p(3,i) = p(3,i)-vrz*m_i(1,i)
+enddo
+
+end subroutine control_angular_momenta
 
