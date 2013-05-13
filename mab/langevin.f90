@@ -45,8 +45,6 @@
     it_langevin=it_mab 
    
     call genere_bruit2(sig_i,gau)
-    !sig_i(:,:)=sig(:,:)
-    !rga_i(:,:)=rga
 
     Ecin4 = zero
 
