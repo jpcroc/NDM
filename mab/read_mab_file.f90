@@ -5,10 +5,11 @@ subroutine read_mab_file()
  !use tab_imm_m
  USE mab_in_ndm_module, ONLY: dtlang,nlangevin,temperature,KtoERG,a0bcc,deltasph,  &
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
-                              sim_mode,rtestlac
+                              sim_mode,rtestlac,langevin_type,damp_coef
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
-                      nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac
+                      nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
+                      langevin_type,damp_coef
 
  character(len=128) :: fnamtin
  integer :: lumab
@@ -23,7 +24,7 @@ open(unit=lumab, file=fnamtin, status='unknown')
 read (lumab, nml=input_mab)
 
 if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
-
+      if (langevin_type==2) then
         select case (abf_type)
            case (1)
                   write(6,*) ' Dumped Langevin dynamics'
@@ -34,7 +35,21 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
            case (4) 
                   write(6,*) ' Dumped Langevin + ABF EE dynamics'
         end select 
- 
+      end if
+
+      if (langevin_type==1) then
+        select case (abf_type)
+           case (1)
+                  write(6,*) ' Overdumped Langevin dynamics'
+           case (2)  
+                  write(6,*) ' Overdumped Langevin + ABF BIN dynamics'
+           case (3) 
+                  write(6,*) ' Overdumped Langevin + ABF GAUSSIAN dynamics'
+           case (4) 
+                  write(6,*) ' Overdumped Langevin + ABF EE dynamics'
+        end select 
+      end if
+
      select case (sim_mode)
       case (1) 
            write(6,*) 'The simulatuion check the first passage time and '
@@ -50,6 +65,7 @@ write(*,'("a0 of the cubic unit cell....................:",D15.4)') a0bcc
 write(*,'("Langevin time step in s......................:",D15.4)') dtlang 
 write(*,'("Total number of steps .......................:",I9)')  nlangevin
 write(*,'("Langevin temperature in K....................:",F8.1)') temperature
+write(*,'("Langevin dumping coefficient (overdamped)....:",D15.4)') damp_coef
 write(*,'("Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
 write(*,'("Width of the FD function in A................:",D15.4)') deltasph
 write(*,'("Number of the bins of histo..................:",i7)') nhisto

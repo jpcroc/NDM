@@ -2,18 +2,20 @@
  use gen_com_m, only:one,two,im,imm,tstep
  use var_pot
  use tab_imm_m
- use mab_in_ndm_module, only: sig_i,rga_i,m_i,temperature
+ use mab_in_ndm_module, only: sig_i,sig_ll, rga_i,m_i,temperature,damp_coef,langevin_type,dtlang
  implicit none
  real(double) :: gamma
 
- 
-  gamma=one/(tstep*1d2)
+  select case (langevin_type)
+    case (1)
+     sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(damp_coef*m_i(1:3,1:im)))
+    case (2) 
+     gamma=one/(tstep*1d2)
+     rga_i(1:3,1:im) = exp(-gamma*tstep/two)
+     sig_i(1:3,1:im) = sqrt(m_i(1:3,1:im)*temperature*(one-rga_i(1:3,1:im)**2))
+  end select
 
-  rga_i(1:3,1:im) = exp(-gamma*tstep/two)
-
-
-  sig_i(1:3,1:im) = sqrt(m_i(1:3,1:im)*temperature*(one-rga_i(1:3,1:im)**2))
-
+ return  
  end subroutine prepare_langevin
 
 

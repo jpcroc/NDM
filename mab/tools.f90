@@ -55,6 +55,32 @@ subroutine genere_bruit2 (sig,gau)
   end subroutine genere_bruit2
 
 
+subroutine genere_bruit(gau)! bruit gaussien
+
+   use T_kind_param_m, ONLY : double
+   use gen_com_m,      ONLY : pi,im 
+   implicit none
+
+   real(double), dimension(6,im+1)::gau
+   real(double) :: u1,u2,b1
+
+   integer   :: ic,i!,iatom,i
+   
+   gau(:,:)=0 
+
+     do i=1,im+1
+      do ic=1,6
+         call random_number(u1)
+         call random_number(u2)
+         b1=sqrt(-2.*log(u1))*cos(2.*pi*u2)
+         gau(ic,i) = b1
+      enddo
+    enddo
+      
+ 
+end subroutine genere_bruit
+
+
 real(8) function ran3()
      use T_kind_param_m, ONLY : double 
      use random_mab
@@ -186,7 +212,7 @@ subroutine test_vacancy_position
   if (rtemp <= rtestlac) test_end=.true.
 
 
-return
+
 
 end subroutine test_vacancy_position
 

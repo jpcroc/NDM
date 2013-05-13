@@ -18,9 +18,11 @@ subroutine mab
 !-----------------------------------------------
       implicit none
 
-
+  
 ! 
 ! Copyright LL Cao and all NDM band, April- 2013
+  
+  integer:: i_iter
 
   write(6,*)
   write(6,*)
@@ -38,14 +40,19 @@ subroutine mab
   call init_mab_in_ndm_module()
   write(6,*)'......PREPARE.....' 
 
-
-  call prepare_langevin()
-  
+ call prepare_langevin()
 
   write(6,*)'......LANGEVIN.....' 
   do it_mab=1,nlangevin
-    call langevin()
-    call reaction()
+
+   select case (langevin_type)
+    case (1)
+      call langevin_overdamped ()
+    case (2)
+      call langevin()
+    end select 
+    
+   call reaction()
     if (mod(it_mab,40)==0) then 
      !write(*,*) it_mab
      write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
@@ -60,14 +67,21 @@ subroutine mab
            
            if (test_end) then
              write(6,*) 'First passage time (step)....:',it_mab 
-             write(6,*) 'First passage time (ps)....:',it_mab*dtlang*1.d12 
-             stop
+             write(6,*) 'First passage time (ps)......:',it_mab*dtlang*1.d12 
+             stop 
            end if
       case (2) 
            continue
      end select 
   end do
   !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+
+
+ open(unit=989,file='histogram',status='unknown')
+ do i_iter=-nhisto1,nhisto+nhisto1
+  write(989,*),i_iter, histo1(i_iter)
+ enddo
+
 
 
   write(6,*)

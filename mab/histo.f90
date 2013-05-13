@@ -8,14 +8,14 @@ subroutine fill_histo()
  
 histo_temp(:)=0
 histo_temp1(:)=0
-
+ !The border zone. Over this border the mean force is zero
  if ((icsi > -nhisto2).and.(icsi<nhisto+nhisto2)) then
    histo2(icsi)=histo2(icsi) + 1
-   
+  ! The intermediate region 
    if ((icsi > -nhisto1).and.(icsi<nhisto+nhisto1)) then
     histo1(icsi)=histo1(icsi) + 1
     histo_temp1(icsi)=histo_temp1(icsi) + 1
- 
+    ! The inner regin  
      if ((icsi > 0).and.(icsi<=nhisto)) then
        histo(icsi)=histo(icsi) + 1
        histo_temp(icsi)=histo_temp(icsi) + 1
