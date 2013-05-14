@@ -12,15 +12,14 @@
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
-    USE mab_in_ndm_module, only: sig_ll,m_i,it_mab,dtlang,Ecinetique,xbar,  &
+    USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,Ecinetique,xbar,  &
                                  abf_type,block,gamma
 
     implicit none
-    integer     :: ic,it_langevin
+    integer     :: ic
     real(double) :: xbari(3),xbarc(3)
     real(double), dimension(6,im+1)::gau
    
-    it_langevin=it_mab 
    
     call genere_bruit(gau)
 
@@ -32,29 +31,7 @@
 
  
  !one force calculation ....
-
-         if (itab/=0) then
-          if (mod(it_langevin,itab)==0) then
-           call caltabt
-          endif
-         endif
-         if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
-        call calfo
-        if (block) call calfoblock()
-
-        call fill_histo()
-        
-        select case (abf_type)
-           case (1)
-                  continue
-           case (2)  
-                  call calfo_ABF_BIN
-          ! case (3) 
-          !        call calfo_ABF_GAUSSIAN ! ABF Gaussian
-          ! case (4) 
-          !        call calfo_ABF_EE
-        end select 
-        
+      call calfo_mab()         
     
       xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
 

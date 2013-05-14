@@ -40,14 +40,13 @@
                                  abf_type,block
 
     implicit none
-    integer     :: ic,it_langevin
+    integer     :: ic
     real(double) :: pp(3,im)
     real(double) :: Ecin4
     real(double) :: vbar(3)
     real(double) :: xbari(3),xbarc(3)
     real(double), dimension(6,im+1)::gau
    
-    it_langevin=it_mab 
    
     call genere_bruit2(sig_i,gau)
 
@@ -62,29 +61,9 @@
        xbari(ic)=xbar(ic)
     enddo
 ! one force calculation ....
-
-         if (itab/=0) then
-          if (mod(it_langevin,itab)==0) then
-           call caltabt
-          endif
-         endif
-         if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
-        call calfo
-        if (block) call calfoblock()
-
-        call fill_histo()
-        
-        select case (abf_type)
-           case (1)
-                  continue
-           case (2)  
-                  call calfo_ABF_BIN
-          ! case (3) 
-          !        call calfo_ABF_GAUSSIAN ! ABF Gaussian
-          ! case (4) 
-          !        call calfo_ABF_EE
-        end select 
-        
+    
+    call calfo_mab()
+    
     
     !step1: from p(1) -> p(1+1/4)
     pp(1:3,1:im)=pp(1:3,1:im)*rga_i(1:3,1:im) + gau(1:3,1:im)
@@ -109,29 +88,7 @@
     enddo
 
      !recompute the forces
-
-      if (itab/=0) then
-       if (mod(it_langevin,itab)==0) then
-        call caltabt
-       endif
-      endif
-      if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
-     call calfo
-     if (block) call calfoblock()
-
-     call fill_histo()
-     
-     select case (abf_type)
-        case (1)
-               continue
-        case (2)  
-               call calfo_ABF_BIN
-       ! case (3) 
-       !        call calfo_ABF_GAUSSIAN ! ABF Gaussian
-       ! case (4) 
-       !        call calfo_ABF_EE
-     end select 
-
+    call calfo_mab()
 
     !step4: p(1+1/2) -> p(1+3/4) 
     pp(1:3,1:im) = pp(1:3,1:im) + (fp(1:3,1:im))*dtlang/two

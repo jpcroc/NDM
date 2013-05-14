@@ -5,18 +5,21 @@ subroutine read_mab_file()
  !use tab_imm_m
  USE mab_in_ndm_module, ONLY: dtlang,nlangevin,temperature,KtoERG,a0bcc,deltasph,  &
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
-                              sim_mode,rtestlac,langevin_type,gamma
+                              sim_mode,rtestlac,langevin_type,gamma,omega_abf,     & 
+                              nwrite_histo
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
-                      langevin_type,gamma
+                      langevin_type,gamma,omega_abf,nwrite_histo
 
  character(len=128) :: fnamtin
  integer :: lumab
 
 
  rtestlac=0.1d0
-
+ nwrite_histo=1000000
+ omega_abf=1.d0
+ 
  fnamtin = fnam(1:lenfnam)//'.mab'
  write(*,*) 'file name', fnamtin
  lumab = 778
@@ -66,9 +69,17 @@ write(*,'("Langevin time step in s......................:",D15.4)') dtlang
 write(*,'("Total number of steps .......................:",I9)')  nlangevin
 write(*,'("Langevin temperature in K....................:",F8.1)') temperature
 write(*,'("Langevin dumping coefficient ................:",D15.4)') gamma
+
+
+if (abf_type==3) then
+ write(*,'("Omega ABF BIN............... ................:",D15.4)') omega_abf
+end if
+
+
 write(*,'("Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
 write(*,'("Width of the FD function in A................:",D15.4)') deltasph
 write(*,'("Number of the bins of histo..................:",i7)') nhisto
+write(*,'("The frequency of writing histo...............:",i7)') nwrite_histo
 write(*,'("The first shell of the histo (1nn units).....:",D15.4)') deltar1
 write(*,'("The second shell of the histo (1nn units)....:",D15.4)') deltar2
 write(*,'("The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac

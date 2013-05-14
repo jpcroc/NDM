@@ -43,6 +43,7 @@ subroutine mab
  call prepare_langevin()
 
   write(6,*)'......LANGEVIN.....' 
+  
   do it_mab=1,nlangevin
 
    select case (langevin_type)
@@ -73,16 +74,33 @@ subroutine mab
       case (2) 
            continue
      end select 
+
+  if (mod(it_mab,nwrite_histo)==0) then
+   open(unit=989,file='histogram1',status='unknown')
+   open(unit=990,file='histogram',status='unknown')
+   do i_iter=-nhisto1,nhisto+nhisto1
+    write(989,'(2i6)'),i_iter, histo1(i_iter)
+   enddo
+    do i_iter=1,nhisto
+    write(990,'(2i6)'),i_iter, histo(i_iter)
+   enddo
+  close(989)
+  close(990)
+  end if 
+
   end do
   !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
-
- open(unit=989,file='histogram',status='unknown')
- do i_iter=-nhisto1,nhisto+nhisto1
-  write(989,*),i_iter, histo1(i_iter)
- enddo
-
-
+   open(unit=989,file='histogram1',status='unknown')
+   open(unit=990,file='histogram',status='unknown')
+   do i_iter=-nhisto1,nhisto+nhisto1
+    write(989,'(2i6)'),i_iter, histo1(i_iter)
+   enddo
+    do i_iter=1,nhisto
+    write(990,'(2i6)'),i_iter, histo(i_iter)
+   enddo
+  close(989)
+  close(990)
 
   write(6,*)
   write(6,*)

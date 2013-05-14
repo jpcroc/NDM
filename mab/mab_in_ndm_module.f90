@@ -15,18 +15,18 @@ module mab_in_ndm_module
       implicit none
 
       real(double), dimension(:,:), allocatable :: sig_i,sig_ll,rga_i,xp0,m_i
-      real(double)  :: dtlang,temperature,Ecinetique,m_tot,a0bcc
+      real(double)  :: dtlang,temperature,Ecinetique,m_tot,a0bcc,omega_abf
       
 
       real(double), parameter :: KtoERG=1.3791946308724831d-16 
       integer :: nlangevin,abf_type,sim_mode,langevin_type 
-      integer                                       :: it_mab,it_langevin
+      integer                                       :: it_mab
       real(double),save :: epot0,cumul_force,gamma
       real(double),dimension(:),allocatable, save:: w
       real(double)   :: pinumber,dcsi,normxlac,deltasph,radiussph,rtestlac
       real(double),dimension(3) :: xbar,xbarini,xlaci,xlacf,rfilac 
       real(double)  :: deltar1,deltar2,delta_z
-      integer       :: nhisto,nhisto1,nhisto2,icsi
+      integer       :: nhisto,nhisto1,nhisto2,icsi,nwrite_histo
       integer,dimension(:), allocatable :: histo,histo1,histo2,histo_temp,histo_temp1
       real(double),dimension(:), allocatable :: mean_force,mean_force1
        
