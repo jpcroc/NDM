@@ -71,8 +71,10 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   real(double), dimension(:,:), allocatable :: xpnp
 
 
-  rue=rue_pot(ipotentiel)
+  real(double):: fpnemd(3,imm),fpnemdmoy(3), XijdotF,XildotF,XjldotF
 
+  rue=rue_pot(ipotentiel)
+  fpnemd=0
 
   do l=1,npair
      rcut2(l)=(reppairjl(l)%rc*1.0d-8)**2
@@ -344,6 +346,13 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            potisrep=potisrep+Erep
            fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
            fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
+           if (lnemd) then
+              XijdotF=c1ij*Fnemd
+              do ic=1,3
+                 fpnemd(ic,i)=fpnemd(ic,i)-0.5*dErep*gradij(ic)*XijdotF
+                 fpnemd(ic,j)=fpnemd(ic,j)-0.5*dErep*gradij(ic)*XijdotF
+              end do
+           end if
 
            sig(1:3,1) = sig(1:3,1) -dErep*gradij(1:3)*c1ij/volu
            sig(1:3,2) = sig(1:3,2) -dErep*gradij(1:3)*c2ij/volu
@@ -381,6 +390,14 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            sig(1:3,2) = sig(1:3,2) -dEembi*drhoj*gradij(1:3)*c2ij/volu
            sig(1:3,3) = sig(1:3,3) -dEembi*drhoj*gradij(1:3)*c3ij/volu
 
+           if (lnemd) then
+              XijdotF=c1ij*Fnemd
+              do ic=1,3
+                 fpnemd(ic,i)=fpnemd(ic,i) -0.5*dEembi*drhoj*gradij(ic)*XijdotF
+                 fpnemd(ic,j)=fpnemd(ic,j) -0.5*dEembi*drhoj*gradij(ic)*XijdotF
+              end do
+           end if
+
 
            if(lcalcjq) then
               jqf=0.0
@@ -405,6 +422,14 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
               sig(1:3,1) = sig(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/volu
               sig(1:3,2) = sig(1:3,2) -dEembi*aux1*drhoj*gradij(1:3)*c2ij/volu
               sig(1:3,3) = sig(1:3,3) -dEembi*aux1*drhoj*gradij(1:3)*c3ij/volu
+
+              if (lnemd) then
+                 XijdotF=c1ij*Fnemd
+                 do ic=1,3
+                    fpnemd(ic,i)=fpnemd(ic,i) -0.5*dEembi*aux1*drhoj*gradij(ic)*XijdotF
+                    fpnemd(ic,j)=fpnemd(ic,j) -0.5*dEembi*aux1*drhoj*gradij(ic)*XijdotF
+                 end do
+              end if
 
 
               if(lcalcjq) then
@@ -453,6 +478,22 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/ril
            fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
            fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
+
+
+
+           if (lnemd) then
+              XijdotF=c1ij*Fnemd
+              XildotF=c1il*Fnemd
+              do ic=1,3
+                 fpnemd(ic,i)=fpnemd(ic,i)-0.5*(aux1*aux4(ic)/rij)*XijdotF
+                 fpnemd(ic,j)=fpnemd(ic,j)-0.5*(aux1*aux4(ic)/rij)*XijdotF
+                 fpnemd(ic,i)=fpnemd(ic,i)-0.5*(aux1*(aux2(ic)+aux3(ic))/ril)*XildotF
+                 fpnemd(ic,l)=fpnemd(ic,l)-0.5*(aux1*(aux2(ic)+aux3(ic))/ril)*XildotF
+
+              end do
+           end if
+
+
 
            
            sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c1il/volu
@@ -541,6 +582,21 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
            fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
 
+           if (lnemd) then
+              XijdotF=c1ij*Fnemd
+              XjldotF=c1jl*Fnemd
+              do ic=1,3
+                 fpnemd(ic,j)=fpnemd(ic,j)-0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
+                 fpnemd(ic,l)=fpnemd(ic,l)-0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
+                 fpnemd(ic,i)=fpnemd(ic,i)-0.5*(aux1*aux4(ic)/rij)*XijdotF
+                 fpnemd(ic,j)=fpnemd(ic,j)-0.5*(aux1*aux4(ic)/rij)*XijdotF
+
+              end do
+           end if
+
+
+
+
            sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/volu
            sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/volu
            sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/volu
@@ -582,6 +638,28 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 
 
   end do loop1at1
+  if (lnemd) then
+     fpnemdmoy=0
+     do i=1,imd   
+        do l=1,3
+           fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(imd)
+        enddo
+     end do
+
+     do i=1,imd
+!        write(6,*)'A',i,fp(:,i)
+        do l=1,3
+           fp(l,i)=fp(l,i)-fpnemdmoy(l)
+           fp(l,i)=fp(l,i)+fpnemd(l,i)
+        enddo
+!        write(6,*)'B',i,fp(:,i)
+     end do
+  end if
+
+
+
+
+
 
   deALLOCATE(xpnp)
 
