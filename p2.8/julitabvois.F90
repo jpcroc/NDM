@@ -349,8 +349,8 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            if (lnemd) then
               XijdotF=c1ij*Fnemd
               do ic=1,3
-                 fpnemd(ic,i)=fpnemd(ic,i)-0.5*dErep*gradij(ic)*XijdotF
-                 fpnemd(ic,j)=fpnemd(ic,j)-0.5*dErep*gradij(ic)*XijdotF
+                 fpnemd(ic,i)=fpnemd(ic,i)+0.5*dErep*gradij(ic)*XijdotF
+                 fpnemd(ic,j)=fpnemd(ic,j)+0.5*dErep*gradij(ic)*XijdotF
               end do
            end if
 
@@ -393,8 +393,8 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            if (lnemd) then
               XijdotF=c1ij*Fnemd
               do ic=1,3
-                 fpnemd(ic,i)=fpnemd(ic,i) -0.5*dEembi*drhoj*gradij(ic)*XijdotF
-                 fpnemd(ic,j)=fpnemd(ic,j) -0.5*dEembi*drhoj*gradij(ic)*XijdotF
+                 fpnemd(ic,i)=fpnemd(ic,i) +0.5*dEembi*drhoj*gradij(ic)*XijdotF
+                 fpnemd(ic,j)=fpnemd(ic,j) +0.5*dEembi*drhoj*gradij(ic)*XijdotF
               end do
            end if
 
@@ -426,8 +426,8 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
               if (lnemd) then
                  XijdotF=c1ij*Fnemd
                  do ic=1,3
-                    fpnemd(ic,i)=fpnemd(ic,i) -0.5*dEembi*aux1*drhoj*gradij(ic)*XijdotF
-                    fpnemd(ic,j)=fpnemd(ic,j) -0.5*dEembi*aux1*drhoj*gradij(ic)*XijdotF
+                    fpnemd(ic,i)=fpnemd(ic,i) +0.5*dEembi*aux1*drhoj*gradij(ic)*XijdotF
+                    fpnemd(ic,j)=fpnemd(ic,j) +0.5*dEembi*aux1*drhoj*gradij(ic)*XijdotF
                  end do
               end if
 
@@ -485,10 +485,10 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
               XijdotF=c1ij*Fnemd
               XildotF=c1il*Fnemd
               do ic=1,3
-                 fpnemd(ic,i)=fpnemd(ic,i)-0.5*(aux1*aux4(ic)/rij)*XijdotF
-                 fpnemd(ic,j)=fpnemd(ic,j)-0.5*(aux1*aux4(ic)/rij)*XijdotF
-                 fpnemd(ic,i)=fpnemd(ic,i)-0.5*(aux1*(aux2(ic)+aux3(ic))/ril)*XildotF
-                 fpnemd(ic,l)=fpnemd(ic,l)-0.5*(aux1*(aux2(ic)+aux3(ic))/ril)*XildotF
+                 fpnemd(ic,i)=fpnemd(ic,i)+0.5*(aux1*aux4(ic)/rij)*XijdotF
+                 fpnemd(ic,j)=fpnemd(ic,j)+0.5*(aux1*aux4(ic)/rij)*XijdotF
+                 fpnemd(ic,i)=fpnemd(ic,i)+0.5*(aux1*(aux2(ic)+aux3(ic))/ril)*XildotF
+                 fpnemd(ic,l)=fpnemd(ic,l)+0.5*(aux1*(aux2(ic)+aux3(ic))/ril)*XildotF
 
               end do
            end if
@@ -586,10 +586,10 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
               XijdotF=c1ij*Fnemd
               XjldotF=c1jl*Fnemd
               do ic=1,3
-                 fpnemd(ic,j)=fpnemd(ic,j)-0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
-                 fpnemd(ic,l)=fpnemd(ic,l)-0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
-                 fpnemd(ic,i)=fpnemd(ic,i)-0.5*(aux1*aux4(ic)/rij)*XijdotF
-                 fpnemd(ic,j)=fpnemd(ic,j)-0.5*(aux1*aux4(ic)/rij)*XijdotF
+                 fpnemd(ic,j)=fpnemd(ic,j)+0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
+                 fpnemd(ic,l)=fpnemd(ic,l)+0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
+                 fpnemd(ic,i)=fpnemd(ic,i)+0.5*(aux1*aux4(ic)/rij)*XijdotF
+                 fpnemd(ic,j)=fpnemd(ic,j)+0.5*(aux1*aux4(ic)/rij)*XijdotF
 
               end do
            end if
