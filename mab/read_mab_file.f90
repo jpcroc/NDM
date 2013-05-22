@@ -6,11 +6,13 @@ subroutine read_mab_file()
  USE mab_in_ndm_module, ONLY: dtlang,nlangevin,temperature,KtoERG,a0bcc,deltasph,  &
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
                               sim_mode,rtestlac,langevin_type,gamma,omega_abf,     & 
-                              nwrite_histo
+                              nwrite_histo,Fermi_percent,a_Fermi,sigma_eta,ecart_eta, &
+                              eta_mab
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
-                      langevin_type,gamma,omega_abf,nwrite_histo
+                      langevin_type,gamma,omega_abf,nwrite_histo,Fermi_percent,    &
+                      a_Fermi,eta_mab
 
  character(len=128) :: fnamtin
  integer :: lumab
@@ -34,8 +36,10 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
            case (2)  
                   write(6,*) ' Dumped Langevin + ABF BIN dynamics'
            case (3) 
-                  write(6,*) ' Dumped Langevin + ABF GAUSSIAN dynamics'
+                  write(6,*) ' Dumped Langevin + ABF BIN dynamics with Omega'
            case (4) 
+                  write(6,*) ' Dumped Langevin + ABF GAUSSIAN dynamics'
+           case (5) 
                   write(6,*) ' Dumped Langevin + ABF EE dynamics'
         end select 
       end if
@@ -47,9 +51,11 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
            case (2)  
                   write(6,*) ' Overdumped Langevin + ABF BIN dynamics'
            case (3) 
-                  write(6,*) ' Overdumped Langevin + ABF GAUSSIAN dynamics'
+                  write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega'
            case (4) 
-                  write(6,*) ' Overdumped Langevin + ABF EE dynamics'
+                  write(6,*) ' Dumped Langevin + ABF GAUSSIAN dynamics'
+           case (5) 
+                  write(6,*) ' Dumped Langevin + ABF EE dynamics'
         end select 
       end if
 

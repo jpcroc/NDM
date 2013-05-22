@@ -55,6 +55,8 @@ subroutine genere_bruit2 (sig,gau)
   end subroutine genere_bruit2
 
 
+
+
 subroutine genere_bruit(gau)! bruit gaussien
 
    use T_kind_param_m, ONLY : double
@@ -191,6 +193,21 @@ end
   dFerDir=-y/delta
 return
 end
+
+function Fermi_manuel(x,a,b_min,b_max)
+ use T_kind_param_m, ONLY : double
+real(double):: Fermi_manuel
+real(double):: x,b_min,b_max,a
+Fermi_manuel=1.d0/(1.d0+dexp(-a*(x-b_min)))+1.d0/(1.d0+dexp(-a*(b_max-x)))-1.d0
+
+end function
+
+Function gaussien_pdf(x,mu,sigma_gaussien)
+use T_kind_param_m, ONLY : double
+real(double):: gaussien_pdf,mu,sigma_gaussien,x,var
+var=sigma_gaussien**2
+gaussien_pdf=1.d0/dsqrt(2.d0*pi*var)*dexp(-(x-mu)**2/(2.d0*var))
+end function
 
 
 

@@ -54,11 +54,10 @@ subroutine mab
     end select 
     
    call reaction()
-    if (mod(it_mab,40)==0) then 
-     !write(*,*) it_mab
-     write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
-     write(35,*) it_mab,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
-    end if
+   !debug  if (mod(it_mab,40)==0) then 
+   !debug   write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
+   !debug  write(35,*) it_mab,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
+   !debub  end if
     it=it_mab
     call analyse 
     call controle
@@ -84,8 +83,14 @@ subroutine mab
     do i_iter=1,nhisto
     write(990,'(2i6)'),i_iter, histo(i_iter)
    enddo
+
+  do i_iter=-nhisto1,nhisto+nhisto1
+  write(991,*), i_iter,mean_force1(i_iter)
+  enddo
+
   close(989)
   close(990)
+  close(991)
   end if 
 
   end do
@@ -93,14 +98,22 @@ subroutine mab
 
    open(unit=989,file='histogram1',status='unknown')
    open(unit=990,file='histogram',status='unknown')
+   open(unit=991,file='meanforce',status='unknown')
    do i_iter=-nhisto1,nhisto+nhisto1
     write(989,'(2i6)'),i_iter, histo1(i_iter)
    enddo
     do i_iter=1,nhisto
     write(990,'(2i6)'),i_iter, histo(i_iter)
    enddo
+    do i_iter=-nhisto1,nhisto+nhisto1
+    write(991,*), i_iter,mean_force1(i_iter)
+    enddo
+ 
   close(989)
   close(990)
+  close(991)
+
+call Free_energy_ABF
 
   write(6,*)
   write(6,*)

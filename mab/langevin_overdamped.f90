@@ -19,10 +19,12 @@
     integer     :: ic
     real(double) :: xbari(3),xbarc(3)
     real(double), dimension(6,im+1)::gau
-   
-   
+    real(double):: pp(3,im)
+    real(double) :: psum(3)
+    real(double):: sig_mass(3,im) 
     call genere_bruit(gau)
-
+     
+    sig_mass(1:3,1:im)=sig_ll(1:3,1:im)*gau(1:3,1:im)
 
     do ic=1,3
        xbar(ic)=sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules
@@ -33,9 +35,18 @@
  !one force calculation ....
       call calfo_mab()         
     
-      xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
+     ! xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
 
-    ! call control_angular_momenta(pp,xp)
+      pp(1:3,1:im)= fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_mass(1:3,1:im)
+
+      do ic=1,3
+      psum(ic)=sum(pp(ic,1:im))/dble(im)
+      pp(ic,1:im) = pp(ic,1:im) -psum(ic)
+      enddo
+
+    call control_angular_momenta(pp,xp)
+
+    xp(1:3,1:im)=pp(1:3,1:im)+xp(1:3,1:im)
 
     do ic=1,3
        xbar(ic)    = sum(xp(ic,1:im))/dble(im)
