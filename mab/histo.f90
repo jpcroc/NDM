@@ -34,71 +34,68 @@ end subroutine fill_histo
 
 subroutine Free_energy_ABF()
  USE T_kind_param_m, ONLY:  double
- USE gen_com_m, ONLY: 
+ USE gen_com_m, ONLY: erg2eV,A2cm
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY: delta_z,nhisto,nhisto1,nhisto2,& 
                               histo,histo1,histo2,Free_energy,&
-                              mean_force1,abf_type,x_mol
+                              mean_force1,abf_type,x_mol,temperature
+implicit none
 integer::i_loop
 real(double)::Free_temp(-nhisto1:nhisto+nhisto1)
-real(double)::renorm_f
+real(double)::renorm_f,minfreeval
+
+ Free_energy(-nhisto1)=0.d0
+ do i_loop=-nhisto1+1,nhisto+nhisto1
+  Free_energy(i_loop)=Free_energy(i_loop-1)+0.5d0*delta_z*(mean_force1(i_loop-1)+mean_force1(i_loop))
+ enddo
 
 
-Free_energy(-nhisto1)=0.d0
-do i_loop=-nhisto1+1,nhisto+nhisto1
+ forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-free_energy(i_loop)/temperature)
+ renorm_f=temperature*log(sum(Free_temp)*delta_z)
+ forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
 
-Free_energy(i_loop)=Free_energy(i_loop-1)+0.5d0*delta_z*(mean_force1(i_loop-1)+mean_force1(i_loop))
+ minfreeval=minval(Free_energy(:))
 
-enddo
+ select case (abf_type)
+ case(1)
+  write(*,*),'Free energy computation....Langevin Dynamics'
+  open(unit=992,file='Free_energy_Langevin',status='unknown')
+   do i_loop=-nhisto1+1,nhisto+nhisto1
+    write(992,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
+   enddo
+  close(992)
 
+ case(2)
+  write(*,*),'Free energy computation....ABF BIN'
+  open(unit=993,file='Free_energy_ABFBIN',status='unknown')
+   do i_loop=-nhisto1+1,nhisto+nhisto1
+    write(993,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
+   enddo
+  close(993)
 
-forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-free_energy(i_loop)/temperature)
+ case(3)
+  write(*,*),'Free energy computation....ABF BIN OMEGA'
+  open(unit=994,file='Free_energy_ABFBIN_OMEGA',status='unknown')
+   do i_loop=-nhisto1+1,nhisto+nhisto1
+    write(994,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
+   enddo
+  close(994)
 
-renorm_f=temperature*log(sum(Free_temp)*delta_z)
-
-forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
-
-
-select case (abf_type)
-case(1)
-write(*,*),'Free energy computation....Langevin Dynamics'
-open(unit=992,file='Free_energy_Langevin',status='unknown')
-do i_loop=-nhisto1+1,nhisto+nhisto1
-write(992,*), x_mol(i_loop),Free_energy(i_loop)
-enddo
- close(992)
-
-case(2)
-write(*,*),'Free energy computation....ABF BIN'
-open(unit=993,file='Free_energy_ABFBIN',status='unknown')
-do i_loop=-nhisto1+1,nhisto+nhisto1
-write(993,*), x_mol(i_loop),Free_energy(i_loop)
-enddo
- close(993)
-
-case(3)
-write(*,*),'Free energy computation....ABF BIN OMEGA'
-open(unit=994,file='Free_energy_ABFBIN_OMEGA',status='unknown')
-do i_loop=-nhisto1+1,nhisto+nhisto1
-write(994,*), x_mol(i_loop),Free_energy(i_loop)
-enddo
- close(994)
-
-case(4)
-write(*,*),'Free energy computation....ABF Gaussian'
-open(unit=995,file='Free_energy_ABFGaussian',status='unknown')
-do i_loop=-nhisto1+1,nhisto+nhisto1
-write(995,*), x_mol(i_loop),Free_energy(i_loop)
-enddo
+ case(4)
+  write(*,*),'Free energy computation....ABF Gaussian'
+  open(unit=995,file='Free_energy_ABFGaussian',status='unknown')
+   do i_loop=-nhisto1+1,nhisto+nhisto1
+    write(995,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
+   enddo
  close(995)
 
-case(5)
-write(*,*),'Free energy computation....ABF ee'
-open(unit=996,file='Free_energy_ABFee',status='unknown')
-do i_loop=-nhisto1+1,nhisto+nhisto1
-write(996,*), x_mol(i_loop),Free_energy(i_loop)
-enddo
- close(996)
+ case(5)
+  write(*,*),'Free energy computation....ABF ee'
+  open(unit=996,file='Free_energy_ABFee',status='unknown')
+   do i_loop=-nhisto1+1,nhisto+nhisto1
+    write(996,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
+   enddo
+  close(996)
 
 end select
 

@@ -99,21 +99,24 @@ subroutine mab
    open(unit=989,file='histogram1',status='unknown')
    open(unit=990,file='histogram',status='unknown')
    open(unit=991,file='meanforce',status='unknown')
+   
    do i_iter=-nhisto1,nhisto+nhisto1
     write(989,'(2i6)'),i_iter, histo1(i_iter)
    enddo
-    do i_iter=1,nhisto
+   
+   do i_iter=1,nhisto
     write(990,'(2i6)'),i_iter, histo(i_iter)
    enddo
-    do i_iter=-nhisto1,nhisto+nhisto1
+   
+   do i_iter=-nhisto1,nhisto+nhisto1
     write(991,*), i_iter,mean_force1(i_iter)
-    enddo
+   enddo
  
   close(989)
   close(990)
   close(991)
 
-call Free_energy_ABF
+  call Free_energy_ABF
 
   write(6,*)
   write(6,*)

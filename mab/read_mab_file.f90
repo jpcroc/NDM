@@ -81,6 +81,9 @@ if (abf_type==3) then
  write(*,'("Omega ABF BIN............... ................:",D15.4)') omega_abf
 end if
 
+if (abf_type==4) then
+ write(*,'("eta_mab the width of the Gaussian in bins.....:",D15.4)') eta_mab 
+end if
 
 write(*,'("Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
 write(*,'("Width of the FD function in A................:",D15.4)') deltasph
