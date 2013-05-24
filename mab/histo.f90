@@ -9,7 +9,7 @@ subroutine fill_histo()
  USE mab_in_ndm_module, ONLY: dcsi,icsi, delta_z,nhisto,nhisto1,nhisto2,& 
                               histo,histo1,histo2, &
                               histo_temp,histo_temp1
- 
+implicit none
 histo_temp(:)=0
 histo_temp1(:)=0
  !The border zone. Over this border the mean force is zero
@@ -38,12 +38,15 @@ subroutine Free_energy_ABF()
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY: delta_z,nhisto,nhisto1,nhisto2,& 
                               histo,histo1,histo2,Free_energy,&
-                              mean_force1,abf_type,x_mol,temperature
+                              mean_force1,abf_type,x_mol,temperature,&
+                              A_ee,A_dev_ee
 implicit none
 integer::i_loop
-real(double)::Free_temp(-nhisto1:nhisto+nhisto1)
+real(double)::Free_temp(-nhisto2:nhisto+nhisto2)
 real(double)::renorm_f,minfreeval
+Free_temp(:)=0
 
+if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'énergie libre 
  Free_energy(-nhisto1)=0.d0
  do i_loop=-nhisto1+1,nhisto+nhisto1
   Free_energy(i_loop)=Free_energy(i_loop-1)+0.5d0*delta_z*(mean_force1(i_loop-1)+mean_force1(i_loop))
@@ -55,6 +58,9 @@ real(double)::renorm_f,minfreeval
  forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
 
  minfreeval=minval(Free_energy(:))
+
+endif
+
 
  select case (abf_type)
  case(1)
@@ -91,8 +97,17 @@ real(double)::renorm_f,minfreeval
 
  case(5)
   write(*,*),'Free energy computation....ABF ee'
-  open(unit=996,file='Free_energy_ABFee',status='unknown')
-   do i_loop=-nhisto1+1,nhisto+nhisto1
+  !--------Pour ABFee, on a besoin des A_ee pour calculer l'énergie libre.
+ forall(i_loop=-nhisto2:nhisto+nhisto2) Free_temp(i_loop)=exp(-A_ee(i_loop)/temperature)
+ 
+ renorm_f=temperature*log(sum(Free_temp)*delta_z)
+
+ forall(i_loop=-nhisto2:nhisto+nhisto2) Free_energy(i_loop)=A_ee(i_loop)+renorm_f
+
+ minfreeval=minval(Free_energy(:))
+ 
+open(unit=996,file='Free_energy_ABFee',status='unknown')
+   do i_loop=-nhisto2+1,nhisto+nhisto2
     write(996,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
    enddo
   close(996)

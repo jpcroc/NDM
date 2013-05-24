@@ -7,12 +7,12 @@ subroutine read_mab_file()
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
                               sim_mode,rtestlac,langevin_type,gamma,omega_abf,     & 
                               nwrite_histo,Fermi_percent,a_Fermi,sigma_eta,ecart_eta, &
-                              eta_mab
+                              eta_mab,eta_ABFee
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
                       langevin_type,gamma,omega_abf,nwrite_histo,Fermi_percent,    &
-                      a_Fermi,eta_mab
+                      a_Fermi,eta_mab,eta_ABFee
 
  character(len=128) :: fnamtin
  integer :: lumab

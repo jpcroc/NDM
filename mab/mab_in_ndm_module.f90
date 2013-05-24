@@ -32,7 +32,8 @@ module mab_in_ndm_module
       real(double),dimension(:), allocatable :: mean_force,mean_force1
       real(double),dimension(:),allocatable::x_mol,cumul_force_denom1,cumul_force1
       real(double),dimension(:),allocatable::Free_energy
-      real(double)::sigma_eta
+      real(double),dimension(:),allocatable::A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom ! These are for ABFee only!!
+      real(double)::sigma_eta,sigma_carre,eta_ABFee
       integer::ecart_eta
       real(double)::eta_mab
        
@@ -86,7 +87,7 @@ end   subroutine allocate_mab
 
     !sigma_eta=sqrt(eta_mab)
     sigma_eta=eta_mab*delta_z ! choisir largeur de gaussienne
-    
+    sigma_carre=sigma_eta**2
     ecart_eta=nint(3.d0*sigma_eta/delta_z)
     write(*,*),'ecart_eta,delta_z,sigma_eta',ecart_eta,delta_z,sigma_eta
     nhisto1=deltar1/dble(delta_z)
@@ -95,18 +96,25 @@ end   subroutine allocate_mab
              histo_temp(nhisto),histo_temp1(-nhisto1:nhisto+nhisto1))
     allocate(mean_force(nhisto),mean_force1(-nhisto1:nhisto+nhisto1))
     allocate(cumul_force1(-nhisto1:nhisto+nhisto1),cumul_force_denom1(-nhisto1:nhisto+nhisto1))
-    allocate(x_mol(-nhisto1:nhisto+nhisto1))
-    allocate(Free_energy(-nhisto1:nhisto+nhisto1))
-    forall(ic=-nhisto1:nhisto+nhisto1) x_mol(ic)=ic*delta_z 
+    allocate(x_mol(-nhisto2:nhisto+nhisto2))
+    allocate(Free_energy(-nhisto2:nhisto+nhisto2))
+    forall(ic=-nhisto2:nhisto+nhisto2) x_mol(ic)=ic*delta_z 
     cumul_force1(:)=0.d0 
     cumul_force_denom1(:)=0.d0
     histo(1:nhisto)=0
     histo_temp(1:nhisto)=0
     histo1(-nhisto1:nhisto+nhisto1)=0
     histo2(-nhisto2:nhisto+nhisto2)=0
-   
-    
-    
+    Free_energy(:)=0
+
+    allocate(A_ee(-nhisto2:nhisto+nhisto2),A_dev_ee(-nhisto2:nhisto+nhisto2),&
+            P_ee(-nhisto2:nhisto+nhisto2),P_ee_num(-nhisto2:nhisto+nhisto2),&
+            P_ee_denom(-nhisto2:nhisto+nhisto2))
+  A_ee(:)=0
+  A_dev_ee(:)=0
+  P_ee(:)=0
+  P_ee_num(:)=0
+  P_ee_denom(:)=0    
 
  return
 !
