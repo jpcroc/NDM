@@ -42,7 +42,7 @@ program ndm
   if (rang==0) write(6,*)'*** NDM116 + ART ***'
 #endif
 
-#if(PHONDY)
+#if(PHONDY || PARAPH)
   if (rang==0) write(6,*)'*** NDMP116 + PHONDY ***'
 #endif
 
@@ -53,6 +53,7 @@ program ndm
 
   !     read(5,*)a1
   ! modif pour compaq
+
 
 
      

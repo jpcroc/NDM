@@ -32,6 +32,8 @@ subroutine calfo
   !-----------------------------------------------
   real(double), dimension(3) :: fptot
   integer :: i,ilocal,ipot
+
+
 #if(PARA)
   real(double), dimension(3,3) :: sig_tot,sigkine_tot
   real(double),dimension (3):: fptot_tot

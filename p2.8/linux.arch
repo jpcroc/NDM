@@ -86,10 +86,40 @@ endif
 # PHONDY PHONDY PHONDY PHONDY PHONDY PHONDY
 
 ifdef PHONDY
+ifdef PARAPH
+ F90 = mpif90
+ CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH
+ EXT      = _PHONDY_PARAPH
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS =  -O3 -convert big_endian 
+#F90FLAGS =  -O3  
+
+#FLAGS and LIBS for PHONDY
+FLAGS_PHONDY =  -DNOIBM 
+#debug
+#F90FLAGS_PHONDY = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_PHONDY = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_PHONDY =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_PHONDY =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_PHONDY = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_PHONDY =${mkkl_definitions}
+# link library
+LIBRARY_PHONDY = phondy/libphondy.a
+
+
+# link library
+LIBRARY =${LIBRARY_PHONDY} ${LLIBS_PHONDY} 
+
+ 
+else
+
  F90 = ifort
- CPPFLAGS = -C -P -traditional -DPHONDY
+ CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY
  EXT      = _PHONDY
-F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
 #F90FLAGS =  -O3 -convert big_endian 
 #F90FLAGS =  -O3  
@@ -112,6 +142,8 @@ LIBRARY_PHONDY = phondy/libphondy.a
 # link library
 LIBRARY =${LIBRARY_PHONDY} ${LLIBS_PHONDY}  
 endif
+endif
+
 
 ifdef MAB
  F90 = ifort

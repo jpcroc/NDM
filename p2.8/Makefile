@@ -31,7 +31,8 @@ OBJS_MOD=   T_kind_param_m.o\
         tab_imm_m.o\
         caltabtcr.o \
         calpo_ew.o \
-        anasic.o 
+        anasic.o \
+        modules.o 
 
 
 
@@ -178,6 +179,7 @@ ifdef PHONDY
  # Version PHONDY
  OBJS = ${OBJS_MOD} ${OBJS_SEQ}
  DEP=${OBJS}  ${LIBPHONDY}
+ CPPFLAGS=${CPPFLAGS_PHONDY}
  CLEANPHONDY=clean_phondy
  DIREXT=phondy
 

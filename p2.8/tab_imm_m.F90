@@ -2,6 +2,7 @@ module tab_imm_m
   !
   USE T_kind_param_m
   USE gen_com_m, ONLY: lsuivinonpbc,lposmoy,mdcg_noise
+  !$ use OMP_LIB
   ! 
   ! Module contenant les tableaux dimmensionnes sur le
   ! nombre d'atomes de la simulation
@@ -24,7 +25,6 @@ module tab_imm_m
   real(double),dimension(:,:), pointer :: tmpsuivi    ! only in the case, lsuivinonpbc  
 
   integer, dimension(:), pointer       :: num_at_glob ! numero global d'un atome
-
 contains
 
   !--------------------------------------------------------------------------!

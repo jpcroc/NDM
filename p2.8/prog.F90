@@ -100,7 +100,7 @@ subroutine prog
           call mab
 #endif
 
-#if(PHONDY)    
+#if(PHONDY | PARAPH)    
      case (7) 
           call phondy
 #endif
