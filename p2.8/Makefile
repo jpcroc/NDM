@@ -40,7 +40,11 @@ OBJS_MOD=   T_kind_param_m.o\
 OBJS_PARA=   T_kind_param_mpi_m.o\
 	mod_mpi.o\
 	init_voisinage.o\
-	init_MPI.o \
+	init_MPI.o 
+
+
+OBJS_PARAPH=   init_MPI_phondy.o
+
 
 
 OBJS_SEQ=	anapos.o \
@@ -177,7 +181,11 @@ ifdef ART
 endif
 ifdef PHONDY
  # Version PHONDY
- OBJS = ${OBJS_MOD} ${OBJS_SEQ}
+ifdef PARAPH
+ OBJS = ${OBJS_MOD} ${OBJS_PARAPH} ${OBJS_SEQ} 
+else
+ OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
+endif
  DEP=${OBJS}  ${LIBPHONDY}
  CPPFLAGS=${CPPFLAGS_PHONDY}
  CLEANPHONDY=clean_phondy

@@ -46,9 +46,6 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   
   real(double), dimension(:,:), allocatable :: xpnp
 
-
-
-
 !  write(6,*)'eamtabvois'
   rue=rue_pot(ipotentiel)
 !  if (lprteat.EQV..true.) then
@@ -58,7 +55,6 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   inv_ktor=1.d0/ktor
   ktorho=(rhomax-rhomin)/ngrid
   inv_ktorho = 1.d0/ktorho
-
   tabdensity(:)=0.
 !  fp(:,:) = 0.0
 !  sig(:,:)=0.
@@ -66,10 +62,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   potisrep=0.
   potisglue=0.
   rue2=rue**2
-
   test_sigma=(mod(it,itesigma)==0)
-
-
 
   iw2=0
   ALLOCATE(xpnp(3,imm))
@@ -106,7 +99,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
 
         ! Calcul du carrÃ© de la distance
         do izero=1,3
-	   if (dabs(dxp(izero)).lt.low_limit) then
+           if (dabs(dxp(izero)).lt.low_limit) then
               dxp(izero) = zero
 	   end if
         end do

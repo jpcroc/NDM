@@ -13,6 +13,10 @@ program ndm
   use mod_mpi
 #endif
 
+#if(PHONDY && PARAPH)
+ use mod_mpi_phondy
+#endif
+
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -43,6 +47,11 @@ program ndm
 #endif
 
 #if(PHONDY || PARAPH)
+rangph=0
+#if(PHONDY && PARAPH)
+  call init_mpi_phondy()
+  rang=rangph
+#endif
   if (rang==0) write(6,*)'*** NDMP116 + PHONDY ***'
 #endif
 

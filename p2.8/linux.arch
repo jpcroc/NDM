@@ -88,12 +88,12 @@ endif
 ifdef PHONDY
 ifdef PARAPH
  F90 = mpif90
- CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH
+ CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH 
  EXT      = _PHONDY_PARAPH
 #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-F90FLAGS =  -O3 -convert big_endian 
-#F90FLAGS =  -O3  
+#F90FLAGS =  -O3 -convert big_endian 
+F90FLAGS =  -O3  
 
 #FLAGS and LIBS for PHONDY
 FLAGS_PHONDY =  -DNOIBM 
@@ -105,7 +105,8 @@ F77FLAGS_PHONDY =   $(F90FLAGS) $(FLAGS)
 FFLAGS =  
 
 #LLIBS_PHONDY = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
-LLIBS_PHONDY =${mkkl_definitions}
+#LLIBS_PHONDY =${mkkl_definitions}
+LLIBS_PHONDY=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
 # link library
 LIBRARY_PHONDY = phondy/libphondy.a
 
