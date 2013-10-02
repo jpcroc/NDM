@@ -52,7 +52,8 @@ subroutine readdm
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
-       mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc
+       mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
+       tempdeplainit,ldeplainit,debyetemp
 
 
   !
@@ -82,8 +83,6 @@ subroutine readdm
   !                              10 -> PARIN RAHMAN 
   !                              11 -> UN SEUL CALCUL DE FORCES
   !                              12 -> ART
-  !                              16 -> SUNDAE
-  !                              17 -> MAB
   lFire = .true.              ! Fire algorithm is used for quenching (cf tr_fire.F90)
   ttol = 0.0                  !max tolerance for temperature in %
   tfroi = -1.0                !imposed temperature
@@ -298,7 +297,9 @@ subroutine readdm
   lanczos_step=1.0d-3
 !.... in SUNDAE 
 
-
+  ldeplainit=.false.
+  tempdeplainit=-1
+  debyetemp=-1
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -685,19 +686,10 @@ subroutine readdm
      stop
   end if
 
-  if (lpr) then
-    if (.not.((dmtype==2).or.(dmtype==8))) then
-     write(*,*) 'lpr=.true. is not implemented with this dmtype=', dmtype
-     write(*,*) 'lpr=.true. can by associated only with dmtype=2 or 8'
-     write(*,*) 'change the values of dmtype or lpr'
-    stop
-   end if
-  end if 
-
   ! end check
 
   if (lpr) then
-     if (dmtype==2) lprtrp=.true. 
+     if (dmtype==2) lprtrp=.true.
      dmtype=8
      itesigma=1
      if (pext.ne.0.) then
@@ -817,12 +809,6 @@ subroutine readdm
 #if(SUNDAE)    
   case (16)
      if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
-     if (rang==0) write (6,'(a)') '|---------..........................---------------|'
-     if (rang==0) write (6,'(a)') '|==================================================|'
-#endif
-#if(MAB)    
-  case (17)
-     if (rang==0) write (6,'(a)') '|=========       NDM + MAB          ===============|'
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
      if (rang==0) write (6,'(a)') '|==================================================|'
 #endif
@@ -990,6 +976,20 @@ subroutine readdm
        itetimestep
   if (itederive>0)  write(6,*) ' itederive=', itederive
   if (rang==0) write (6, '(A,F10.1,A,F10.1,A,F10.1,A,F10.1)') 'tinit=', tinit
+  if (ldeplainit==.true.)then
+     if (tempdeplainit==-1) then
+        if (tinit==-1) then
+           write (6,*)"Tinit et Tdempeplainit non definies mais ldeplainit =true" ; stop 
+        else
+           tempdeplainit=tinit
+        end if
+     end if
+     if (debyetemp==-1) then
+        write (6,*)"debyetemp  non definie mais ldeplainit =true" ; stop 
+     end if
+     if (rang==0) write (6, '(A,F10.1)') 'tempdeplainit=', tempdeplainit
+  end if
+
 
   if (ttol>0.)  write(6,*) ' ttol=', ttol
   if (tfroi>0.) write(6,*) ' tfroi=' ,tfroi

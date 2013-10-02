@@ -34,16 +34,16 @@ program ndm
 #if(PARA)
   call init_MPI()
 
-!  PRINT *, 'Process ', myid, ' of ', nprocs, ' is alive'
+ PRINT *, 'Process ', myid, ' of ', nprocs, ' is alive'
   rang = myid
   parallele = .true.
 #else
   rang = 0
   parallele = .false.
 #endif
-
+  if (rang==0) write(6,*)'*** NDM167 ***'
 #if(ART)
-  if (rang==0) write(6,*)'*** NDM116 + ART ***'
+  if (rang==0) write(6,*)'*** NDM167 + ART ***'
 #endif
 
 #if(PHONDY || PARAPH)
@@ -52,11 +52,11 @@ rangph=0
   call init_mpi_phondy()
   rang=rangph
 #endif
-  if (rang==0) write(6,*)'*** NDMP116 + PHONDY ***'
+  if (rang==0) write(6,*)'*** NDMP167 + PHONDY ***'
 #endif
 
 #if(MAB)
-  if (rang==0) write(6,*)'*** NDMP116 + MAB ***'
+  if (rang==0) write(6,*)'*** NDMP167 + MAB ***'
 #endif
 
 

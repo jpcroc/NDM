@@ -89,6 +89,9 @@ subroutine initspeed
   integer  :: i_glob
   integer  :: est_local
   integer :: seed_size
+  integer::iti
+  real(double)::sd,grnd
+
 #if(PARA)
   real(double) :: kinx_glob
   real(double), dimension(3)   :: scom_glob, pav_glob
@@ -407,7 +410,7 @@ subroutine initspeed
 
       endif
 
-  endif
+   endif
   !     write(6,*)'sortie initspeed'
 
   tempsauv=tempinst(vp,ityp)
@@ -420,7 +423,51 @@ subroutine initspeed
           END WHERE
   end if
 
+
+  if (ldeplainit==.true.)then
+
+     if (rang==0) then
+        write(6,*)
+        write(6,*)'-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'
+        write(6,*)'depla init Tempdeplainit',tempdeplainit,'debyetemp= ',debyetemp
+        
+        do iti=1,ntyp
+           sd=sqrt((3*tempdeplainit*hbar**2)/(bk*cm(iti)*debyetemp**2))
+           write(6,*)'sd de iti',sd,iti
+        end do
+     end if
+     do i=1,im
+        sd= sqrt((3*tempdeplainit*hbar**2)/(bk*cm(ityp(i))*debyetemp**2))
+        
+        do ic=1,3
+           call gaussianrand(grnd)
+!           write(6,*)grnd
+           xp(ic,i)=xp(ic,i)+sd*grnd
+        end do
+     end do
+     if (lperiod==.true.) call period
+  end if
+
+
   return
+
+
+    
+
 end subroutine initspeed
 
+subroutine gaussianrand(gr)
+  USE T_kind_param_m
+  use gen_com_m,only:pi
+  implicit none
+  real(double),intent(out)::gr
+  
+  real(double):: v1,v2,r,fac,z1,z2
 
+1 continue
+  call random_number(z1)  
+  call random_number(z2)  
+  gr=sqrt(-2*log(z1))*cos(2*pi*z2)
+
+  
+end subroutine  gaussianrand

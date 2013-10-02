@@ -19,7 +19,7 @@ module gen_com_m
 
 
 
-  integer :: rang,rangph
+  integer :: rang
   logical :: parallele
 
   integer :: natperc                        ! nb d'atome par cel
@@ -29,16 +29,17 @@ module gen_com_m
   integer :: imm_glob
 
 
-  real(double),parameter :: pi=3.141592654D0, bk= 1.380622D-16, & ! \pi and Boltzmann cosntant in erg*K-1
+  real(double),parameter :: pi=3.141592654D0, bk= 1.380622D-16, &
        ecgs=1.6021764631580d-12, &  !debugCOS 1.6021892D-12, &
        utemps= 1.0D-15, angst= 1.0D08, umass= 1.660056D-24, &
        inv_angst=1.d0/angst 
        
-  real(double),parameter :: zero=0.d0, one=1.0d0, two=2.0d0, thr=3.0d0, five=5.0d0&
+  real(double),parameter :: zero=0d0, one=1.0d0, two=2.0d0, thr=3.0d0, five=5.0d0&
        , six=6.0d0, half=0.5d0
   real(double), parameter :: precexp =0.004   ! induit une precision de exp 10^-100
   real(double), parameter :: ev2erg=1.6021764631580d-12, erg2eV=1.d0/eV2erg   !eV -> erg and in inverse
   real(double), parameter :: evA2dyn=1.6021764631580d-4  ! eV/A -> dyn conversion
+  real(double), parameter :: hbar=1.05457266d-27  ! hbar
 
 
   real(double), parameter :: erg2joule=1.d-7, joule2erg=1.d7        
@@ -158,6 +159,8 @@ module gen_com_m
 
 
   real(double) :: tinit !temp initiale
+  logical::ldeplainit
+  real(double)::tempdeplainit,debyetemp
   logical :: lvpread  ! vitesse lue dans le fichier .cin
   integer:: iseed ! graine du gerateur aleatoire des vitesses
   integer :: dmtype, itab, itetabvois, itetimestep, itederive ! type dynamique, periode de repartition entre cel, periode de calc. tab des voisins, periode de chgt du pas en temps, poeriode de correction de la derive
