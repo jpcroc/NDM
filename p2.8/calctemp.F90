@@ -73,7 +73,7 @@ endif
            v2(ityp(i)) = v2(ityp(i))+vpn2
 
            vx2(ityp(i),:) = vx2(ityp(i),:)+vp(:,i)**2
-	   if (ltpcel)     tempc(ko)=tempc(ko)+0.5*vpn2*cm(ityp(i))/(3.0*bk*nato(ko))
+	   if (ltpcel)     tempc(ko)=tempc(ko)+vpn2*cm(ityp(i))/(3.0*bk*nato(ko))
         end do
 
      end do
