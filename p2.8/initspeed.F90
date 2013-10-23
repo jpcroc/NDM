@@ -228,8 +228,8 @@ subroutine initspeed
 !              vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
               theta=acos(1-2*z3)
               fhi=2*pi*z4
-              vp(1,i) = v1*v0*sqrt((-log(z1)))*sin(theta)*cos(phi)
-              vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(theta*sin(phi)
+              vp(1,i) = v1*v0*sqrt((-log(z1)))*sin(theta)*cos(fhi)
+              vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(theta*sin(fhi)
               vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(theta)
               
 
