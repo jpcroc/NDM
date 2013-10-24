@@ -200,6 +200,12 @@ SUBROUTINE calfoeamcel
                  sig(1:3,1) = sig(1:3,1)-dErep*gradij(1:3)*dxp(1)/volu
                  sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)/volu
                  sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)/volu
+                 if (lTPcel.EQV..true.) then
+                    sigc(1:3,1,koo) =sigc(1:3,1,koo) -dErep*gradij(1:3)*dxp(1)*nox*noy*noz/volu
+                    sigc(1:3,2,koo) =sigc(1:3,2,koo) -dErep*gradij(1:3)*dxp(2)*nox*noy*noz/volu
+                    sigc(1:3,3,koo) =sigc(1:3,3,koo) -dErep*gradij(1:3)*dxp(3)*nox*noy*noz/volu
+                 end if
+
 	      endif
            end if
 
@@ -330,6 +336,12 @@ SUBROUTINE calfoeamcel
                  sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)/volu
                  sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)/volu
                  sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)/volu
+                 if (lTPcel.EQV..true.) then
+                    sigc(1:3,1,koo) =sigc(1:3,1,koo) - Femb*gradij(1:3)*dxp(1)*nox*noy*noz/volu
+                    sigc(1:3,2,koo) =sigc(1:3,2,koo) - Femb*gradij(1:3)*dxp(2)*nox*noy*noz/volu
+                    sigc(1:3,3,koo) =sigc(1:3,3,koo) - Femb*gradij(1:3)*dxp(3)*nox*noy*noz/volu
+                 end if
+
 	      endif
            end if
 

@@ -90,7 +90,7 @@ subroutine initspeed
   integer  :: est_local
   integer :: seed_size
   integer::iti
-  real(double)::sd,grnd,theta,phi
+  real(double)::sd,grnd,theta,fhi
 
 #if(PARA)
   real(double) :: kinx_glob
@@ -229,7 +229,7 @@ subroutine initspeed
               theta=acos(1-2*z3)
               fhi=2*pi*z4
               vp(1,i) = v1*v0*sqrt((-log(z1)))*sin(theta)*cos(fhi)
-              vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(theta*sin(fhi)
+              vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(theta)*sin(fhi)
               vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(theta)
               
 
