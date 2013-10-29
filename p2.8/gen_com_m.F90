@@ -72,9 +72,9 @@ module gen_com_m
   integer:: typspr
 
 
-  logical, dimension(:), pointer :: free ! free(i)=.true. si l'atome i compte dans l'energie 
-  logical, dimension(:,:), pointer :: frozen ! frozen(ix,i)=.true. si la coordonnee ix de l'atome i est libre de relaxer
-  integer::imfree ! nb d'atoems libres
+  logical, dimension(:), pointer :: Free ! free(i)=.true. si l'atome i compte dans l'energie 
+  logical, dimension(:,:), pointer :: Frozen ! Frozen(ix,i)=.true. si la coordonnee ix de l'atome i est gelee
+  integer::imFree,imFirstFrozen ! nb d'atoems libres
 
   real(double), dimension(3) :: normat ! norme de at
 

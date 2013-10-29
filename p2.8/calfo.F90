@@ -169,8 +169,8 @@ subroutine calfo
      if(ltranche) fp(:,imd+1:im)=0.0
   end if
 
-  if (lfrozen.EQV..true.) then
-          WHERE (frozen(:,1:im)) fp(:,1:im)=0.d0
+  if (lFrozen.EQV..true.) then
+          WHERE (Frozen(:,1:im)) fp(:,1:im)=0.d0
   endif
 
 

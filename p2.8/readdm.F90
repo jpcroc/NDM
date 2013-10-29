@@ -48,7 +48,7 @@ subroutine readdm
        fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
        lprteat,lprteattotm,lprtfat,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
        rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat, &
-       lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,&
+       lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,imFirstFrozen,&
        natperc,iteanaposneb,ntyp,&
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
@@ -257,8 +257,12 @@ subroutine readdm
   lxzfrozen=.FALSE.             
   lyzfrozen=.FALSE.             
   lxyzfrozen=.FALSE.             
-  imFree=-1                   ! nb d'atomes libres
-
+  imFree=-1                   ! The index from which all the atoms with the index i >  imFree   are frozen.
+                              !                          or with                  i <= imFree   are free
+  imFirstFrozen=0             ! The index from which all the atoms with the index i <= imFirstFrozen are frozen
+                              !                                         the index i >  imFirstFrozen are free
+                              ! imFirstFree can be used in the same time with imFree
+ 
   nvperat=-1                  ! nb moyen de voisins par atomes
   natperc=-1   
   iteanaposneb=0
@@ -1062,10 +1066,10 @@ subroutine readdm
   IF (lyzFrozen) THEN
           lyFrozen=.true. ; lzFrozen=.true.
   END IF
+  
+  IF (lxFrozen.OR.lyFrozen.OR.lzFrozen) THEN
 
-  IF (lxfrozen.OR.lyfrozen.OR.lzfrozen) THEN
-
-     IF ( (imFree.gt.0) .AND. (parallele) ) THEN
+     IF ( ( (imFree.gt.0) .AND. (parallele) ).OR. ( (imFirstFrozen/=0) .AND. (parallele) ) ) THEN
            WRITE(0,'(a)') 'Initialisation du tableau free(:) pour&
                 & determiner les atomes bloques non implementes en&
                 & parallele'
@@ -1079,8 +1083,8 @@ subroutine readdm
         STOP '< ReadDm >'
      END IF
 
-     if ((imfree==-1).and.(rulayer==0.0))then
-        if(rang==0) write(6,*)'LFROZEN+IMFREE=-1 et RULAYER=0==stop'
+     if ((imFree==-1).and.(rulayer==0.0).and.(imFirstFrozen==0))then
+        if(rang==0) write(6,*)'LFROZEN+IMFREE=-1 et RULAYER=0 et imFirstFrozen==0 == stop'
         stop
      end if
 
@@ -1088,28 +1092,44 @@ subroutine readdm
      ! Le tableau frozen controle quelles coordonnees de quels atomes sont libres de relaxer
      !    i.e. quelles forces doivent Ãªtre annulees
      Allocate(Free(1:imm))
-     free(:)=.true.
+     Free(:)=.true.
      Allocate(Frozen(1:3,1:imm))
-     frozen(:,:)=.false.
+     Frozen(:,:)=.false.   ! Tout le monde bouge ... ...
 
-     if (imfree.ne.-1) then
-             IF (lxFrozen) Frozen(1,1+imFree:imm)=.true.
-             IF (lyFrozen) Frozen(2,1+imFree:imm)=.true.
-             IF (lzFrozen) Frozen(3,1+imFree:imm)=.true.
-             IF ((rang==0).and.(imfree.ne.imm)) THEN
+     if (imFree.ne.-1) then
+             IF (lxFrozen) Frozen(1,1+imFree:imm)=.true.   !x of i>imFree is frozen  
+             IF (lyFrozen) Frozen(2,1+imFree:imm)=.true.   !y of i>imFree is frozen  
+             IF (lzFrozen) Frozen(3,1+imFree:imm)=.true.   !z of i>imFree is frozen  
+             IF ((rang==0).and.(imFree.ne.imm)) THEN
                      WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
-                     WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
+                     if(imFirstFrozen==0) then
+                      WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
                         imFree, " bougent"
+                     else 
+                      WRITE(6,'(a,i0,a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
+                        imFree, " et superieur et egal a ", imFirstFrozen+1, "bougent"
+                     end if 
              end IF
-     END IF
+     end if
+
+     if (imFirstFrozen > 0) then
+             IF (lxFrozen) Frozen(1,1:imFirstFrozen)=.true. ! x of i<=imFirstFrozen is frozen
+             IF (lyFrozen) Frozen(2,1:imFirstFrozen)=.true. ! y of i<=imFirstFrozen is frozen
+             IF (lzFrozen) Frozen(3,1:imFirstFrozen)=.true. ! z of i<=imFirstFrozen is frozen
+            if (imFree == -1) WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
+            if (imFree == -1) WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice superior ou egal a ", &
+                        imFirstFrozen+1, " bougent"
+     end if 
+
+
 
      if (rulayer.gt.0.0)then
         IF (rang==0)write(6,*)'atomes immobiles fixes par rulayer ', rulayer*1d8
      end if
 
-     lfrozen=.true.
+     lFrozen=.true.
 
-  end IF
+  end IF   !lxFrozen,lyFrozen,lzFrozen
 
 
   !  if (rang==0) write(6,*) 'sortie readdm'

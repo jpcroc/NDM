@@ -1,12 +1,13 @@
 module lanczos_defs
   use defs
+  use gen_com_m , ONLY: lanczos_step
   implicit none
   save
 
   logical :: first_time = .true., reject= .false., self_consistent= .false.
   integer :: lanczos_iter
   real(8) :: eigenvalue, old_eigenvalue
-  real(8) :: lanczos_step, overlap
+  real(8) :: overlap
   real(8), dimension(10) :: eigenvals
 
   ! Projection direction based on lanczos computations of lowest eigenvalues
@@ -243,7 +244,7 @@ subroutine lanczos(maxvec,new_projection)
    lanczos_failed=.false.
    nl_iter=nl_iter+1
    nl_failed=nl_failed+1
-   if (nl_failed.gt.30) then
+   if (nl_failed.gt.40) then
       nl_failed=0
       lanczos_failed=.true.
       write(*,*) 'WARNING: LANCZOS FAILED ... we start with new random Krylov space'

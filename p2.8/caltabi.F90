@@ -129,6 +129,7 @@ subroutine caltabi
 
   !*************construction par celulle ****************
   else 
+     !write(*,*) 'THE fist passage .........'
      do i = 1, im
         iwo=iw
         koo = ielat(i)                          ! Numero de la cellule

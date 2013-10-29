@@ -1,12 +1,13 @@
 module lanczos_defs
   use defs
+  use gen_com_m, ONLY: lanczos_step
   implicit none
   save
 
   logical :: first_time = .true., reject= .false., self_consistent= .false.
   integer :: lanczos_iter
   real(8) :: eigenvalue, old_eigenvalue
-  real(8) :: lanczos_step, overlap
+  real(8) :: overlap
   real(8), dimension(10) :: eigenvals
 
   ! Projection direction based on lanczos computations of lowest eigenvalues
@@ -33,17 +34,19 @@ subroutine lanczos(maxvec,new_projection)
   ! Vectors used to build the matrix for Lanzcos algorithm 
   real(8), dimension(:), pointer :: z0, z1, z2
  
-  integer :: i,j,k, i_err, scratcha_size,ivec,nl_iter,nl_failed
+  integer :: i,j,k, i_err, scratcha_size,ivec, nl_iter,nl_failed
 
   real(8) :: a1,a0,b2,b1,increment
   real(8) :: boxl(3), excited_energy,c1,norm
   real(8) :: xsum, ysum, zsum, sum2, invsum
   real(8), dimension(VECSIZE) :: newpos,newforce,ref_force
+  real(8), dimension(VECSIZE) :: newforce1,newforce2
   real(8) :: ran3
 
   boxl(:) = box(:) * scala
   increment = lanczos_step  ! Increment, convert in box units
-
+  
+  
   nl_iter=0
   nl_failed=0
 
@@ -51,12 +54,11 @@ subroutine lanczos(maxvec,new_projection)
   if(.not. new_projection ) then
     old_before_sc_projection = projection ! Vectorial operation
   end if
-
   ! We now take the current position as the reference point and will make 
   ! a displacement in a random direction or using the previous direction as
   ! the starting point.
-  it_art=0
   34 continue
+  it_art=0
   call calcforce(NATOMS,type,pos,boxl,ref_force,total_energy)
   evalf_number = evalf_number + 1
   z0 => lanc(:,1)
@@ -70,7 +72,7 @@ subroutine lanczos(maxvec,new_projection)
       z0(i) = 0.5d0 - ran3()
     end do
 
-!    z1 => lanc(1,:)
+    z1 => lanc(1,:)
 
     xsum = 0.0d0
     ysum = 0.0d0
@@ -93,7 +95,7 @@ subroutine lanczos(maxvec,new_projection)
       old_projection = z0   ! Vectorial operation
       first_time = .false.
     else
-      old_projection = old_before_sc_projection
+      old_projection = projection
     endif 
   endif
   ! We normalize the displacement to 1 total
@@ -104,12 +106,15 @@ subroutine lanczos(maxvec,new_projection)
   invsum = 1.0/sqrt(sum2)
   z0 = z0 * invsum
 
-  newpos = pos + z0 * increment   ! Vectorial operation
-  call calcforce(NATOMS,type,newpos,boxl,newforce,excited_energy)
-  evalf_number = evalf_number + 1
+    newpos = pos + z0 * increment
+    call calcforce(NATOMS,type,newpos,boxl,newforce1,excited_energy)
+    evalf_number = evalf_number + 1
+    newpos = pos - z0 * increment
+    call calcforce(NATOMS,type,newpos,boxl,newforce2,excited_energy)
+    evalf_number = evalf_number + 1
+    newforce = (newforce1 - newforce2)/2.d0  
   
   ! We extract lanczos(1)
-  newforce = newforce - ref_force  
 
   ! We get a0
   a0 = 0.0d0
@@ -134,9 +139,12 @@ subroutine lanczos(maxvec,new_projection)
   do ivec = 2, maxvec-1
     z1 => lanc(:,ivec)
     newpos = pos + z1 * increment
-    call calcforce(NATOMS,type,newpos,boxl,newforce,excited_energy)
+    call calcforce(NATOMS,type,newpos,boxl,newforce1,excited_energy)
     evalf_number = evalf_number + 1
-    newforce = newforce - ref_force  
+    newpos = pos - z1 * increment
+    call calcforce(NATOMS,type,newpos,boxl,newforce2,excited_energy)
+    evalf_number = evalf_number + 1
+    newforce = (newforce1 - newforce2)/2.d0  
 
     a1 = 0.0d0
     do i=1, VECSIZE
@@ -163,16 +171,31 @@ subroutine lanczos(maxvec,new_projection)
   ! We now consider the last line of our matrix
   ivec = maxvec
   z1 => lanc(:,maxvec)
-  newpos = pos + z1 * increment    ! Vectorial operation
-  call calcforce(NATOMS,type,newpos,boxl,newforce,excited_energy)
-  evalf_number = evalf_number + 1
-  newforce = newforce - ref_force
- 
+    newpos = pos + z1 * increment
+    call calcforce(NATOMS,type,newpos,boxl,newforce1,excited_energy)
+    evalf_number = evalf_number + 1
+    newpos = pos - z1 * increment
+    call calcforce(NATOMS,type,newpos,boxl,newforce2,excited_energy)
+    evalf_number = evalf_number + 1
+    newforce = (newforce1 - newforce2)/2.d0  
+    sum_force = 0.0 
+    sum_forcenew = 0.0
+
+    do i = 1 , VECSIZE
+       sum_force = sum_force + ref_force(i)
+       sum_forcenew =  sum_forcenew + newforce(i) 
+   end do
+!   write(*,*) 'the sum of the forces before the move', sum_force
+
+!   write(*,*) 'the sum of the forces After the move', sum_forcenew
+! newforce = newforce - ref_force
+  sum_forcenew = 0.0
   a1 = 0.0d0
   do i=1, VECSIZE
     a1 = a1 + z1(i) * newforce(i)
+    sum_forcenew =  sum_forcenew + newforce(i)
   end do
-!denug  write(*,*) 'IN LACZOS: the difference between the forces ' , sum_forcenew
+!  write(*,*) 'the difference between the forces ' , sum_forcenew
 !  write(*,*)
   diag(maxvec) = a1
 
@@ -207,10 +230,10 @@ subroutine lanczos(maxvec,new_projection)
      projection = projection *norm 
 
   ! The following lines are probably not needed.
-!  newpos = pos + projection * increment   ! Vectorial operation
-!  call calcforce(NATOMS,type,newpos,boxl,newforce,excited_energy)
-!  evalf_number = evalf_number + 1
-!  newforce = newforce - ref_force
+  !newpos = pos + projection * increment   ! Vectorial operation
+  !call calcforce(NATOMS,type,newpos,boxl,newforce,excited_energy)
+  !evalf_number = evalf_number + 1
+  !newforce = newforce - ref_force
 
   eigenvalue=diag(1)/increment
   do i=1, 4
@@ -232,26 +255,27 @@ subroutine lanczos(maxvec,new_projection)
 !ooo
  if(a1<0.0d0) then
     projection = -1.0d0 * projection
+    overlap=-overlap
  end if    
 !ooo
 !ooo  
   call center(projection,VECSIZE)
   
-!debug write(*,'(f18.7,2f12.3,f7.3)')  old_eigenvalue-eigenvalue, eigenvalue, old_eigenvalue, a1 
+!debug write(*,'(2f18.7)')  old_eigenvalue-eigenvalue, 1.d-2 
  if ( dabs((old_eigenvalue-eigenvalue)) .gt. 1.d-1) then
    self_consistent=.true.
    lanczos_failed=.false.
    nl_iter=nl_iter+1
    nl_failed=nl_failed+1
-   if (nl_failed.gt.40) then
+   if (nl_failed.gt.30) then
       nl_failed=0
       lanczos_failed=.true.
       write(*,*) 'WARNING: LANCZOS FAILED ... we start with new random Krylov space'
-      go to 35
+   go to 35
    end if
    go to 34
  end if
-35  continue
+35 continue 
  self_consistent=.false.
  
   a1=0.0d0
@@ -268,6 +292,7 @@ subroutine lanczos(maxvec,new_projection)
  overlap=a1
  if(a1<0.0d0) then
     projection = -1.0d0 * projection
+    !overlap=-overlap
  end if    
 
  call center(projection,VECSIZE)

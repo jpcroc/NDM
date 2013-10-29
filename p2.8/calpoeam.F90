@@ -127,7 +127,8 @@ subroutine calpoeam
 !        do k=1,ngrid 
 !           write(712,*)xsp(k),eamrho(1,iti,k),eamrho(2,iti,k)
 !        end do
-
+        if (rang==0) write(*,*) 'calpoeam RHO MIN: ', minrho
+        if (rang==0) write(*,*) 'calpoeam RHO MAX: ', maxrho
      end do
   case(11)
      do iti=1,ntyp
@@ -168,14 +169,14 @@ subroutine calpoeam
      call arret_ndm
   end select
   if (rhomax==0.)then
-     if(rang==0)       write(6,*)'Minrho Maxrho ',minrho,maxrho
+     if(rang==0)       write(6,*)'calpoeam Minrho Maxrho ',minrho,maxrho
      rhomax=maxrho*14 ; rhomin=minrho*14
   end if
 
 
   !glue
 
-  if(rang==0)       write(6,*)'Rhomin Rhomax ',rhomin,rhomax
+  if(rang==0)       write(6,*)'calpoeam Rhomin Rhomax ',rhomin,rhomax
   ktorho=(rhomax-rhomin)/ngrid
   do iti=1,ntyp
      if (typ_and_pot(iti,ipotentiel).eqv..false.) cycle
@@ -214,6 +215,7 @@ subroutine calpoeam
 !        do k=1,ngrid 
 !           write(812,*)xsp(k),eamglue(1,iti,k),eamglue(2,iti,k)
 !        end do
+     if (rang==0) write(6,*) 'calpoeam ktorho and the inverse: ',ktorho,1.d0/ktorho
 
   end do
 

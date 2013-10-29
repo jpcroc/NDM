@@ -69,8 +69,8 @@ subroutine layer
      endif
   end do
   if (it.le.20) write(6,*)'rang nfr',rang,nfr
-  call MPI_ALLREDUCE(nfr,imfree,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
- if ((rang==0).and.(it.le.20)) write(6,*)'nb d atomes libres IMFREE ',imfree
+  call MPI_ALLREDUCE(nfr,imFree,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+ if ((rang==0).and.(it.le.20)) write(6,*)'nb d atomes libres IMFREE ',imFree
 #else
   allocate(xpdyn(3,imm))
   allocate(xppdyn(3,imm))

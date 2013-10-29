@@ -169,7 +169,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
      k=Int((tabdensity(i)-rhomin)*inv_ktorho)
      if(k.gt.ngrid) then
         write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
-        write(6,*)'densityi',k,ngrid,densityi
+        write(6,*)'densityi',k,ngrid,tabdensity(i), rhomin, inv_ktorho, densityi
         stop
      end if
      drk=tabdensity(i)-(rhomin+k*ktorho)
