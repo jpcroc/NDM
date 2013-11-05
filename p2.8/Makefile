@@ -1,8 +1,9 @@
 # LES OPTIONS DE COMPILATIONS SONT DANS LINUX.ARCH
 # VOIR CE FICHIER
 
-#BIN=../bin
-BIN=./
+
+BIN=../bin
+
 
 SHELL=/bin/sh
 
@@ -26,6 +27,8 @@ OBJS_MOD=   T_kind_param_m.o\
 	eamerco.o \
 	eamtab.o \
         contrainte.o \
+        cfg.o \
+	gin.o \
         neb_module.o \
         jqmod.o \
         tab_imm_m.o\
@@ -52,7 +55,6 @@ OBJS_SEQ=	anapos.o \
 	alloc_typ.o \
         defcdp.o \
         fcc.o \
-        cfg.o \
         suivinonpbc_module.o \
         neb_controle.o \
         pr2.o \

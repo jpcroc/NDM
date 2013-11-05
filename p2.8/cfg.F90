@@ -3,30 +3,38 @@ MODULE cfg_module
 
 CONTAINS
 
-  SUBROUTINE WriteCfg(xp, ityp, out, mask, nAux_int, aux_int, nAux_real, aux_real, aux_title)
-    ! permet d'Ã©crire les configurations au format cfg directement compris par atomeye.
-    ! xp(1:3,:) : coordonnÃ©es cartÃ©siennes des atomes 
+  SUBROUTINE WriteCfg(xp, ityp, im, at, out, mask, nAux_int, aux_int, nAux_real, aux_real, aux_title)
+    ! permet d'ecrire les configurations au format cfg directement compris par atomeye.
+    ! 
+    ! Parametres d'entree obligatoires:
+    ! xp(1:3,:) : coordonnees cartesiennes des atomes 
     ! ityp(:) : type des atomes
-    ! out : numÃ©ro de l'unitÃ© connectÃ© au fichier de sortie
+    ! im : nombre d'atomes
+    ! at(1:3,i) : vecteur de periodicite i
+    ! out : numero de l'unite connecte au fichier de sortie
+    !
+    ! Parametres d'entree optionnels:
     ! mask(:) : .true.  => l'atome correspondant est inclu dans le fichier cfg
-    !           .false. => ------------------------- ignorÃ©
-    ! nAux_int : nombre de propriÃ©tÃ©s auxiliaires au format INTEGER
-    ! aux_int(1:nAux_int,:) : propriÃ©tÃ©s auxiliaires au format INTEGER
-    ! nAux_real : nombre de propriÃ©tÃ©s auxiliaires au format REAL
-    ! aux_real(1:nAux_real,:) : propriÃ©tÃ©s auxiliaires au format REAL
-    ! aux_title(1:nAux_int+nAux_real) : nom des propriÃ©tÃ©s correspondantes
+    !           .false. => ------------------------- ignore
+    ! nAux_int : nombre de proprietes auxiliaires au format INTEGER
+    ! aux_int(1:nAux_int,:) : proprietes auxiliaires au format INTEGER
+    ! nAux_real : nombre de proprietes auxiliaires au format REAL
+    ! aux_real(1:nAux_real,:) : proprietes auxiliaires au format REAL
+    ! aux_title(1:nAux_int+nAux_real) : nom des proprietes correspondantes
 
-    USE gen_com_m
+    USE gen_com_m, ONLY : imm, umass
     use var_pot
     IMPLICIT NONE
-    REAL(double), intent(in)  :: xp(3,imm)
-    INTEGER, intent(in) :: ityp(imm)
+    REAL(double),                 intent(in) :: xp(3,imm)
+    INTEGER,                      intent(in) :: ityp(imm)
+    INTEGER,                      intent(in) :: im
+    REAL(double), dimension(3,3), intent(in) :: at
+    INTEGER,                      intent(in) :: out
 
-    INTEGER, intent(in) :: out
-    LOGICAL, dimension(:), intent(in), optional :: mask
-    INTEGER, intent(in), optional :: nAux_int, nAux_real
-    INTEGER, dimension(:,:), optional :: aux_int
-    REAL(double), dimension(:,:), optional :: aux_real
+    LOGICAL, dimension(:),           intent(in), optional :: mask
+    INTEGER,                         intent(in), optional :: nAux_int, nAux_real
+    INTEGER, dimension(:,:),         intent(in), optional :: aux_int
+    REAL(double), dimension(:,:),    intent(in), optional :: aux_real
     CHARACTER(len=20), dimension(:), intent(in), optional :: aux_title
 
     INTEGER :: n, i, ic, j

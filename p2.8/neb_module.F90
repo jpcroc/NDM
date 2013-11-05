@@ -148,6 +148,9 @@ contains
        IF (lrestart) THEN
                ! NEB image load from previous run
                CALL Load_NEB_Image(iph)
+       ELSE IF (lPathFromGin) THEN
+               ! read initial path in gin files *.1.gin, *.2.gin, ...
+               CALL Load_NEB_Image_Gin(iph)
        ELSE
                ! Construction of NEB image
                xp_n(:,:,iph) = xp_n(:,:,1) +                               &
@@ -198,7 +201,9 @@ contains
 
   SUBROUTINE Load_NEB_Image(ip)
     ! Load NEB image ip in file *.coutposition.*
+    
     USE gen_com_m, ONLY : lenfnam, fnam, imm
+    USE gin_module
     IMPLICIT NONE
 
     INTEGER, intent(in) :: ip
@@ -206,34 +211,118 @@ contains
     CHARACTER(len=9) :: extension
     CHARACTER(len=89) :: fnamneb
     INTEGER :: lucin, icintype, im
-    REAL(double), dimension(3:3) :: at
+    REAL(double), dimension(3,3) :: at
     REAL(double), dimension(3) :: zl
 
+    LOGICAL :: ok
+
+    ! Try to read binary file
     write(extension,'(i9.9)') ip
     fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
-    write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(fnamneb)
-    lucin = 93
-    open(unit=lucin, file=fnamneb, form='unformatted', status='old', action='read')
-    read (lucin) icintype
-    if (icintype>=2) then
-            read (lucin) at
-    else
-            read (lucin) zl
-    endif
+    INQUIRE(file=fnamneb, exist=ok)
+    IF (ok ) THEN
+            ! Load NEB image ip in file *.coutposition.*
+            write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(fnamneb)
+            lucin = 93
+            open(unit=lucin, file=fnamneb, form='unformatted', status='old', action='read')
+            read (lucin) icintype
+            if (icintype>=2) then
+                    read (lucin) at
+            else
+                    read (lucin) zl
+            endif
 
-    read (lucin) im
-    im_glob=im
-    if (im>imm) then
-            if(rang==0) write (6, *) 'im > imM', im, imm
-            stop
-    endif
+            read (lucin) im
+            im_glob=im
+            if (im>imm) then
+                    if(rang==0) write (6, *) 'im > imM', im, imm
+                    stop
+            endif
+            read (lucin) ityp_n(:,ip)
+            read (lucin) xp_n(:,:,ip)
+            CLOSE(lucin)
+            RETURN
+    END IF
 
-    read (lucin) ityp_n(:,ip)
-    read (lucin) xp_n(:,:,ip)
-
-    CLOSE(lucin)
+    WRITE(0,'(a,i0)') 'Does not manage to find a backup file for image ', ip
+    WRITE(0,'(3a)') 'File ', Trim(fnamneb), ' does not exist'
+    STOP '< Load_NEB_Image >'
 
   END SUBROUTINE Load_NEB_Image
+
+  SUBROUTINE Load_NEB_Image_Gin(ip)
+    ! Load NEB image ip in file *.<ip>.gin like *.1.gin, *.2.gin, ...
+    
+    USE gen_com_m, ONLY : fnam, imm, nPath
+    USE gin_module
+    IMPLICIT NONE
+
+    INTEGER, intent(in) :: ip
+
+    CHARACTER(len=89) :: ginFile
+    !CHARACTER(len=89) :: cfgFile        ! DEBUG 
+    INTEGER :: im
+    REAL(double), dimension(3,3) :: at
+
+    LOGICAL :: ok
+
+    ! Try to read *.gin file 
+    WRITE(ginFile, '(2a,i0,a)') Trim(fnam), '.', ip, '.gin'
+    INQUIRE(file=ginFile, exist=ok)
+    IF ((.NOT.ok).AND.(ip.LE.999999999)) THEN
+            WRITE(ginFile, '(2a,i9.9,a)') Trim(fnam), '.', ip, '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+    IF ( (.NOT.ok).AND.(ip.LE.99999999)) THEN
+            WRITE(ginFile, '(2a,i8.8,a)') Trim(fnam), '.', ip, '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+    IF ( (.NOT.ok).AND.(ip.LE.9999999)) THEN
+            WRITE(ginFile, '(2a,i7.7,a)') Trim(fnam), '.', ip, '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+    IF ( (.NOT.ok).AND.(ip.LE.999999)) THEN
+            WRITE(ginFile, '(2a,i6.6,a)') Trim(fnam), '.', ip, '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+    IF ( (.NOT.ok).AND.(ip.LE.99999)) THEN
+            WRITE(ginFile, '(2a,i5.5,a)') Trim(fnam), '.', ip, '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+    IF ( (.NOT.ok).AND.(ip.LE.9999)) THEN
+            WRITE(ginFile, '(2a,i4.4,a)') Trim(fnam), '.', ip, '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+    IF ( (.NOT.ok).AND.(ip.LE.999)) THEN
+            WRITE(ginFile, '(2a,i3.3,a)') Trim(fnam), '.', ip, '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+    IF ( (.NOT.ok).AND.(ip.LE.99)) THEN
+            WRITE(ginFile, '(2a,i2.2,a)') Trim(fnam), '.', ip, '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+    IF ( (.NOT.ok).AND. (ip.EQ.1) ) THEN
+            WRITE(ginFile, '(3a)') 'deb_', Trim(fnam), '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+    IF ( (.NOT.ok).AND. (ip.EQ.nPath) ) THEN
+            WRITE(ginFile, '(3a)') 'fin_', Trim(fnam), '.gin'
+            INQUIRE(file=ginFile, exist=ok)
+    END IF
+
+    IF (ok ) THEN
+            ! Load NEB image ip in file *.<ip>.gin
+            write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(ginFile)
+            OPEN(unit=93, file=ginFile, status='old', action='read')
+            CALL ReadGin(xp_n(:,:,ip), iTyp_n(:,ip), im, at, 93)
+            CLOSE(93)
+    ELSE
+            WRITE(0,'(a,i0)') 'Does not manage to find a backup file for image ', ip
+            WRITE(0,'(3a)') 'File ', Trim(ginFile), ' does not exist'
+            STOP '< Load_NEB_Image_Gin >'
+    END IF
+
+  END SUBROUTINE Load_NEB_Image_Gin
 
   !-------------------------------------------------------
 
@@ -638,6 +727,5 @@ contains
   !debug stop
   
   end subroutine bruit_neb
-
 
 end module neb_module

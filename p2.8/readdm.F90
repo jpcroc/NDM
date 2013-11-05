@@ -37,7 +37,7 @@ subroutine readdm
        tempstop, dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
        tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax, itean, itespebcout,  &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
-       lrestart, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
+       lrestart, lPathFromGin, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
        ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, tbox, &
        iteangle, ipotentiel, lpotentiel, itesauvposition, lfilmext, tdepla2, &
        lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
@@ -99,6 +99,7 @@ subroutine readdm
   itederive = -1              !"derive" correction
   igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 modification de cin puis stop
   lrestart = .FALSE.          !if T : restarting from an interrupt job
+  lPathFromGin = .FALSE.      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
   tgc = 0.0                   ! threshold for CG calculation
   ltabvois = .FALSE.          ! methode de la table des voisins
   lconstrtot=.FALSE.           !!construction de la table des voisins T=double boucle F=via cel.

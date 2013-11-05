@@ -312,7 +312,7 @@ subroutine analyse
                  Deallocate(fcc_cluster)
                  WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.fcc.cfg'
                  OPEN(file=out_file, unit=60, action='write')
-                 CALL WriteCfg(xp, ityp, 60, fcc_nVoisins(1:im).NE.12, 2, aux_int, aux_title=aux_title)
+                 CALL WriteCfg(xp, ityp, im, at, 60, fcc_nVoisins(1:im).NE.12, 2, aux_int, aux_title=aux_title)
                  CLOSE(60)
                  Deallocate(fcc_nVoisins)
                  Deallocate(aux_int, aux_title)
@@ -467,19 +467,19 @@ subroutine analyse
            aux_real(1,1:im)=Eatom(1:im)*erg2eV
            if (dmtype==17) then
             CALL redefine_ty()
-            CALL WriteCfg(xp, ityp, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
+            CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
             CALL refix_ty()
            else        
-           CALL WriteCfg(xp, ityp, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
+           CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
            end if
            DEALLOCATE(aux_real, aux_title)
         ELSE
             if (dmtype==17) then
              CALL redefine_ty()       
-             CALL WriteCfg(xp, ityp, 60)
+             CALL WriteCfg(xp, ityp, im, at, 60)
              CALL refix_ty()
             else
-             CALL WriteCfg(xp, ityp, 60)
+             CALL WriteCfg(xp, ityp, im, at, 60)
             end if 
         END IF
         CLOSE(60)

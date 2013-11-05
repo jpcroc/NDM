@@ -269,6 +269,7 @@ module gen_com_m
   integer  :: ipath, npath,nebtype,nebrelaxation,maxneb,iteanaposneb, &
               neb_noise,mdcg_noise
   REAL(double) :: kspring,deltaRmax,neb_noise_scale,mdcg_noise_scale
+  LOGICAL :: lPathFromGin      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
   !...inNEB
 
   !...inPHONDY

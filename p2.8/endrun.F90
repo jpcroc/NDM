@@ -190,10 +190,10 @@ subroutine endrun
         Allocate(aux_title(2))
         aux_title(1)="Energy per atom (eV)"
         aux_real(1,1:im)=Eatom(1:im)*erg2eV
-        CALL WriteCfg(xp, ityp, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
+        CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
         DEALLOCATE(aux_real, aux_title)
      ELSE
-        CALL WriteCfg(xp, ityp, 60)
+        CALL WriteCfg(xp, ityp, im, at, 60)
      END IF
      CLOSE(60)
   endif

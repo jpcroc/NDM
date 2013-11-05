@@ -473,6 +473,7 @@ en question DOIT apparaitre dans la liste
   ! 0 and 1  
   neb_noise=0                 ! 0 without noise, 1 with noise
   mdcg_noise=0                ! 0 without noise, 1 with noise
+  lPathFromGin=.FALSE.        ! Images of initial path are read in *.gin files
   !      	lperiod=.false.  ! pas de conditions periodiques
 
   !...inNEB
@@ -907,6 +908,12 @@ Génération de ces configurations de départ
 Elles doivent être générées par ndm en forçant LPERIOD=.FALSE.  !!!!
 Les résultats des relaxations (tata.cout et tutu.cout) doivent être transformés
 en.gin par "sauve2gin" (voir ailleurs dans HELP)
+
+Il est également possible d'entrer soit même les configurations de départ 
+pour chaque image afin d'avoir un chemin initial différent d'une interpolation 
+linéaire. 
+Il faut alors positioner la variable lPathFromGin à .true. dans le fichier toto.din. 
+Chaque image <i> est alors lue dans le fichier toto.<i>.gin
 
 ** en sortie on obtient la courbe d'énergie du col (fichier colrelax.out) ainsi qu'une série de fichiers *.coutpositions.n où n est le numéro de l'image.
 Ces fichiers peuvent être traduits par sauve2cfg par exemple.
