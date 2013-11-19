@@ -185,6 +185,12 @@ module gen_com_m
   real(double) :: eko, xko, yko, zko ! energie et direction du PAF
   real(double) :: xx0, yy0, zz0 ! position initiale du projectile
   logical :: lcasca,lderive ! cascade,correction derive ?
+  integer::ibrake   ! electronic slowing in cascades
+  real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
+  real(double),pointer::elstopforce(:,:,:)
+
+
+
   real(double) :: pist, temp, pmean, tmean, kine, kinemean ! pression temp et moyennes associees
 
 

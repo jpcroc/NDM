@@ -32,14 +32,15 @@ subroutine calfo
   !-----------------------------------------------
   real(double), dimension(3) :: fptot
   integer :: i,ilocal,ipot
-
+  real(double)::vn,ic,v1,f1
+  integer::nv1
 
 #if(PARA)
   real(double), dimension(3,3) :: sig_tot,sigkine_tot
   real(double),dimension (3):: fptot_tot
-
+  real(double)::elosselectot,elosselec1tot
 #endif
-!  if (rang==0) write(6,*) 'PARA-T entree calfo'
+  !  if (rang==0) write(6,*) 'PARA-T entree calfo'
   sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
   potist=0.
   potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potisP=0.
@@ -59,7 +60,7 @@ subroutine calfo
 
   fp(:,:) = zero
   jq=0.0 
- if (associated(eatom)) eatom(:)=0
+  if (associated(eatom)) eatom(:)=0
 
 
   do ipot=0,npotmax
@@ -112,11 +113,11 @@ subroutine calfo
               if (ltabvois) then
                  ! !!! le cas parallele n'est pas pris en compte !!!
                  if (.not.parallele) then
-		 	IF(ldecal_bc==.FALSE.) THEN
-				call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
-  			ELSE IF (ldecal_bc==.TRUE.) THEN !*!
-				call calfo_decalage(xp,  vp,  fp, ielat, iwmax, ityp)
-  			END IF
+                    IF(ldecal_bc==.FALSE.) THEN
+                       call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
+                    ELSE IF (ldecal_bc==.TRUE.) THEN !*!
+                       call calfo_decalage(xp,  vp,  fp, ielat, iwmax, ityp)
+                    END IF
 		 end if
               else
                  call calfoeamcel
@@ -170,15 +171,15 @@ subroutine calfo
   end if
 
   if (lFrozen.EQV..true.) then
-          WHERE (Frozen(:,1:im)) fp(:,1:im)=0.d0
+     WHERE (Frozen(:,1:im)) fp(:,1:im)=0.d0
   endif
 
 
-if (ldesinteg) then
-        fptot=0
-        do i=1,im
-                fptot(:)=fptot+fp(:,i)
-        enddo
+  if (ldesinteg) then
+     fptot=0
+     do i=1,im
+        fptot(:)=fptot+fp(:,i)
+     enddo
 #if(PARA)
      call MPI_ALLREDUCE(fptot,fptot_tot,3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      fptot=fptot_tot
@@ -187,13 +188,63 @@ if (ldesinteg) then
      do i=1,im
         fp(:,i)=fp(:,i)-fptot(:)
      enddo
-endif
+  endif
 
   !If (ibound==1 .OR. ibound==2 .OR. ibound==3) call surf_calc	!*!
   If (ibound == 1)                             call strain_bc	!*!
   If (ibound == 2 .OR. ibound == 3)            call stress_bc	!*!
 
   !stop
+
+  if(ibrake.gt.0) then
+     do i=1,im
+
+        vn= vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
+        if (vn.ne.0) then
+           vn=sqrt(vn)
+           v1=elstopforce(ityp(i),1,1)
+           nv1=1+INT(vn/v1)
+           if (nv1.gt.49) then
+              write(6,*)'elstop velocity > 49, rebuild elstop.in'
+              stop
+           end if
+           f1=elstopforce(ityp(i),2,nv1)-(elstopforce(ityp(i),2,nv1)-elstopforce(ityp(i),2,nv1-1))*(nv1-vn/v1)
+           !                 write (6,*)'felstop',f1,vn, vn/v1
+           if (f1.le.0) then
+              write(6,*)'f1<0 ?', f1
+              stop
+           end if
+           do ic=1,3
+              fp(ic,i)=fp(ic,i)-vp(ic,i)*f1/vn
+              Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(xp(ic,i)-xpp(ic,i))*erg2ev
+              if (i==iko)then 
+!                 write (6,*)'felstop',f1,vn,vp(ic,i)*f1/vn,fp(ic,i)                        
+!                write(6,*)'elfp',fp(ic,i)
+                 Elosselec1=Elosselec1+(vp(ic,i)*f1/vn)*(xp(ic,i)-xpp(ic,i))*erg2ev
+              end if
+           end do
+        end if
+     end do
+#if(PARA)
+     call MPI_ALLREDUCE(elosselectot,elosselec,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     elosselec=elosselectot
+     call MPI_ALLREDUCE(elosselec1tot,elosselec1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     elosselec1=elosselec1tot
+#endif
+
+
+
+  end if
+
+
+
+
+
+
+
+
+
+
 
   return
 end subroutine calfo

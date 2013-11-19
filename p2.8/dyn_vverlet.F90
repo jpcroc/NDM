@@ -64,6 +64,7 @@ use suivinonpbc
 !step 2  Coordinate update, x(t)-> x(t+dt)
 
   DO i=1, imd
+     xpp(1:3,i)=xp(1:3,i)
      xp(1:3,i) = xp(1:3,i) + tstep*vp(1:3,i)
   END DO
 

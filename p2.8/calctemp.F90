@@ -11,7 +11,7 @@ subroutine calctemp(temptyp)
 #if(PARA)
   use mod_mpi
 #endif
-  !       Version du 12 juillet 2000
+
   ! *************************************************************
 
   implicit none
@@ -30,10 +30,10 @@ subroutine calctemp(temptyp)
   !-----------------------------------------------
   integer :: ic, i, iti, ko, i2,kx,ky,kz,koo
   real(double), dimension(ntyp) :: v2
-  real(double) :: vpn2,pmc
+  real(double) :: vpn2,pmc,tat
   real(double), dimension(ntyp,3) :: vx2
   ! ym      real(double), dimension(ntyp,nce) :: v2c
-  real(double), dimension (:),allocatable ::tempc
+  real(double), dimension (:),allocatable ::tempc,tempcm
 #if(PARA)
   real(double), dimension(ntyp) :: v2_glob
   real(double), dimension(ntyp,3) :: vx2_glob
@@ -46,8 +46,10 @@ subroutine calctemp(temptyp)
   ! local variables
   if (ltpcel) then
      allocate (tempc(noxyz))
-       tempc(:)=0.
-endif
+     allocate (tempcm(noxyz))
+     tempc(:)=0.
+     tempcm(:)=0.
+  endif
   temp = 0.0
   kine = 0.0
   temptyp(:ntyp) = 0.0
@@ -55,26 +57,30 @@ endif
   vx2(:ntyp,:) = 0.0
 
 
-     do ko = 1, noxyz
+  do ko = 1, noxyz
 
-        if (nato(ko)==0) cycle
+     if (nato(ko)==0) cycle
 
 #if(PARA)
-	if (proc_cell(ko).ne.myid) cycle
+     if (proc_cell(ko).ne.myid) cycle
 #endif
 
-        do i2 = 1, nato(ko)
+     do i2 = 1, nato(ko)
 
-           i = last(i2,ko)
-           if (num_at_glob(i).gt.im_glob) cycle
-
-           vpn2 = vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
-           !       write(6,'(I4,D21.12)')i,vpn2
-           v2(ityp(i)) = v2(ityp(i))+vpn2
-
-           vx2(ityp(i),:) = vx2(ityp(i),:)+vp(:,i)**2
-	   if (ltpcel)     tempc(ko)=tempc(ko)+vpn2*cm(ityp(i))/(3.0*bk*nato(ko))
-        end do
+        i = last(i2,ko)
+        if (num_at_glob(i).gt.im_glob) cycle
+        
+        vpn2 = vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
+        !       write(6,'(I4,D21.12)')i,vpn2
+        v2(ityp(i)) = v2(ityp(i))+vpn2
+        
+        vx2(ityp(i),:) = vx2(ityp(i),:)+vp(:,i)**2
+        if (ltpcel==.true.) then
+           tat=vpn2*cm(ityp(i))/(3.0*bk)
+           tempc(ko)=tempc(ko)+tat/nato(ko)
+           if(tat.gt.tempcm(ko))tempcm(ko)=tat
+        end if
+     end do
 
      end do
 
@@ -107,26 +113,26 @@ endif
      temp = temp/float(imd)
 #endif
 
-        if (ltpcel) then
+     if (ltpcel) then
 
-           write (6, *)
-           write (6, *) '----------valeurs par cellules------------'
+        write (6, *)
+        write (6, *) '----------valeurs par cellules------------'
 
-           do kx=0,nox-1
-              do ky=0,noy-1
-                 do kz=0,noz-1
-                    ko=1+kx+nox*(ky+noy*kz)
-                    pmc=0.0
-                    !                              write(6,*)'dans la celulle ',ko
-                    write(6,'(A,I5,3I4,F12.2)')'CEL-TEMP ', ko,kx,ky,kz,tempc(ko)
-                    !                              write (6, '(A11,I4,A15,F12.2)') 'Cellule: ', ko, &
-                    !                                   'Temperature: ', tempc(ko)
-                 enddo
-              end do
+        do kx=0,nox-1
+           do ky=0,noy-1
+              do kz=0,noz-1
+                 ko=1+kx+nox*(ky+noy*kz)
+                 pmc=0.0
+                 !                              write(6,*)'dans la celulle ',ko
+                 write(6,'(A,I5,3I4,2F12.2)')'CEL-TEMP ', ko,kx,ky,kz,tempc(ko),tempcm(ko)
+                 !                              write (6, '(A11,I4,A15,F12.2)') 'Cellule: ', ko, &
+                 !                                   'Temperature: ', tempc(ko)
+              enddo
            end do
-           deallocate (tempc)
-        endif
+        end do
+        deallocate (tempc)
+     endif
 
- 
-  return
-end subroutine calctemp
+
+     return
+   end subroutine calctemp

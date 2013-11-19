@@ -53,7 +53,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,ldeplainit,debyetemp
+       tempdeplainit,ldeplainit,debyetemp,ibrake
 
 
   !
@@ -305,6 +305,9 @@ subroutine readdm
   ldeplainit=.false.
   tempdeplainit=-1
   debyetemp=-1
+
+  ibrake =0   ! if =1 electronic slowing for cascades (acting on all atoms)
+
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -725,7 +728,15 @@ subroutine readdm
      !     xx0=xx0*1.D-8
      !     yy0=yy0*1.D-8
      !     zz0=zz0*1.D-8
+     if (ibrake.gt.0) then
+        write(6,*)'electronic stopping according to elstop.in from MDrange'
+     end if
   endif
+
+  if ((ibrake.gt.0).and.(lcasca==.false.)) then
+     write(6,*)'electronic slowing for cascade only, no ?'
+     stop
+  end if
 
   if (lHcyl) then
      read (ludin,*) Ecyl, pc(1), pc(2), pc(3), vdc(1), vdc(2), vdc(3), rayonc, lgc 

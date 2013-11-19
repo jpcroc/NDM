@@ -83,6 +83,9 @@ subroutine analyse
         ! MPI
         !remarque 1erg = 6.24d11 eV
         if (rang==0) then
+
+           if (ibrake.GT.0)  write(6,*)'electronic losses ', elosselec, elosselec1
+
            write (6, *)
            write (6, *)
            write (6, '(A,I7,A,G10.3)') '<<<<<<<<  ITERATION =', it, &
