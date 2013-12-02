@@ -107,7 +107,7 @@ module gen_com_m
   real(double) :: cougel, zincr !fracture
 
 
-
+  logical ::lprtpot
   real(double) :: potist ! energie potentielle totale
   real(double):: potisP,potis1, potis2, potis3, potis0, potcp ! energie potentielle de paire
   real(double) :: potisTersoff ! energie potentielle de tersoff
@@ -164,8 +164,9 @@ module gen_com_m
   logical :: lvpread  ! vitesse lue dans le fichier .cin
   integer:: iseed ! graine du gerateur aleatoire des vitesses
   integer :: dmtype, itab, itetabvois, itetimestep, itederive ! type dynamique, periode de repartition entre cel, periode de calc. tab des voisins, periode de chgt du pas en temps, poeriode de correction de la derive
-  real(double) :: tempstop, ttol, tfroi, tcooling, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
+  real(double) :: tempstop, tempstopcel,ttol, tfroi, tcooling, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
        tsfact, vmax, tgc, dfpred ! gestion du pas en temps
+  real(double)::maxtcel
   real(double) :: deltaestop ! decroissance de la temperature moyenne
   integer :: nbmoye
   integer :: ibordcou

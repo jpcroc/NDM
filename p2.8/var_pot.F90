@@ -29,7 +29,7 @@ module var_pot
   integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
   logical, pointer::lu_roff_pair(:)
   logical,pointer::lue_typ(:),lue_trip(:)
-  logical :: lpotrep ! repulsion courte distance
+  integer :: ipotrep ! repulsion courte distance 0 = rien, 1 =polynom ; 2 =ziegler
   logical, pointer, dimension (:) :: lue_paire
 
   integer,pointer:: ipo_2_pair_tab(:)

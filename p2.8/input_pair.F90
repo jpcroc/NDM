@@ -25,7 +25,7 @@ subroutine input_pair
   integer :: i, j, k, ic, l,  nprns
   integer::lupotin=95
   real(double) :: ror, pmr, dipr, rof1m, &
-       rof2m, rom, dipm, pmm, a_factorm,r8m
+       rof2m, rom, dipm, pmm, a_factorm,r8m,rof1b,rof2b
   character ::  fnampotin*80
   real(double)::rue
   integer :: ntypr ! nb detype de ce potentiel
@@ -56,7 +56,8 @@ subroutine input_pair
   integer,pointer :: ityplu(:)
 
   namelist /ewald/ rue, alpha, precis, ncouc3, ncoucx, ncoucy, ncoucz,&
-       kpmex, kpmey, kpmez, lopt,ecrue
+       kpmex, kpmey, kpmez, lopt,ecrue,ipotrep
+
 
   !EWALD
   !  rumax=0.0
@@ -162,7 +163,12 @@ subroutine input_pair
      endif
 
      ! initialisations de ipo3c
-
+     select case(ipotentiel)
+     case(7,2,6)
+        ipotrep=0
+     case(0,1,3,5,4)
+        ipotrep=2
+     end select
      read (lupotin, nml=ewald)            ! lecture de la namelist ewald
 
      ! MPI
@@ -268,9 +274,20 @@ subroutine input_pair
         allocate (ipo_2_pair_tab(npair))
         if (rang==0) write(6,*)'nb de paires grille',  nb_paire_a_lire, ngr
         do lect_paire=1,nb_paire_a_lire
-           read(lupotin,*) tt1,tt2
+           if(ipotrep==2) then
+              read(lupotin,*) tt1,tt2,rof1b,rof2b
+              lu_roff_pair(ipo(tt1,tt2))=.true.
+           else
+              read(lupotin,*) tt1,tt2
+           end if
+
            l=ipo(tt1,tt2)
+           if(ipotrep==2) then
+              roff1(l) = rof1b*1d-8
+              roff2(l) = rof2b*1d-8
+           end if
            ipo_2_pair_tab(l)=lect_paire
+           
            if(lue_paire(l)) then
               write(6,*) rang,'paire l lue deux fois ', l,tt1,tt2
               call arret_ndm
@@ -340,15 +357,16 @@ subroutine input_pair
            if (rang/=0) cycle
            write (6, '(I2,4F8.4,a4)') i, q(i), ray(i), bm(i), shel(i),ty(i)
         end do
-           do i=1,ntyp
-              do j=1,ntyp
-                 typ_pot_pair(ipo(i,j))=ipotentiel
-              end do
+        do i=1,ntyp
+           do j=1,ntyp
+              typ_pot_pair(ipo(i,j))=ipotentiel
            end do
-
-
+        end do
+        
+        
         ! lecture des caracteristiques des paires
         ! 1. paires standards
+
         read (lupotin, *) rom, dipm, pmm, rof1m, rof2m
         rom = rom*A2cm                        ! conversion A --> cm
         dipm = dipm*evA62ergcm6                 ! conversion eV.A^6 --> erg.cm^6

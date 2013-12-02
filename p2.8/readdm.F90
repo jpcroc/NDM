@@ -34,7 +34,7 @@ subroutine readdm
   !
 
   namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
-       tempstop, dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
+       tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
        tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax, itean, itespebcout,  &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
        lrestart, lPathFromGin, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
@@ -42,7 +42,7 @@ subroutine readdm
        iteangle, ipotentiel, lpotentiel, itesauvposition, lfilmext, tdepla2, &
        lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
        maxorder,  lalea, rsep, &
-       h0, sigext,lpotrep,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
+       h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
        lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlang,ilangevin,&
        lcdp,lsigat,lsigtyp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
        fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
@@ -53,7 +53,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,ldeplainit,debyetemp,ibrake
+       tempdeplainit,ldeplainit,debyetemp,ibrake,lprtpot
 
 
   !
@@ -69,6 +69,7 @@ subroutine readdm
   itab = 10                   !period of cell repartition
   itetabvois = 10             !periode de calcul de la table des voisins
   tempstop = -1.0             !temperature of run stop
+  tempstopcel = -1.0             !temperature of run stop
   dmtype = 0                  
   !dmtype = type of calculation : 1 -> MD
   !                               2 -> quench (trempe) or fire quench
@@ -151,7 +152,6 @@ subroutine readdm
   ntyp=-1                    ! le nombre de type DOIT etre specifie si le nombre de potentiel est superieur ÃÂ  1
   ! PME
   maxorder=10                                ! Ordre du developpement maximal de la PME
-  lpotrep=.false.           ! dans calpo brache une repulsion de Ziegler (lpotrep=false) ou  polynomiale (lpotrep=.TRUE.)
   lvpread=.true.
   dilat(:)=0.0
   lderive=.false.
@@ -305,7 +305,7 @@ subroutine readdm
   ldeplainit=.false.
   tempdeplainit=-1
   debyetemp=-1
-
+  lprtpot=.false.
   ibrake =0   ! if =1 electronic slowing for cascades (acting on all atoms)
 
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
@@ -876,6 +876,7 @@ subroutine readdm
         stop
      end if
 
+     if (tempstopcel.gt.0) ltpcel=.true.
      if (ltpcel) write (6, *) '   -> -> pas de contrainte par celulles'
 
      write(6,*)'IPOTENTIEL',ipotentiel

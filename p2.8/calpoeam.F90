@@ -10,7 +10,7 @@ subroutine calpoeam
   use SMjuli
   implicit none
 
-  integer :: k,l,iti
+  integer :: k,l,iti,lw
   real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
   real(double) ::ysp_d(ngrid),bsp_d(ngrid),csp_d(ngrid),dsp_d(ngrid)
   real(double):: ktor,ktorho
@@ -61,13 +61,15 @@ subroutine calpoeam
       eamrep_d(4,l,1:ngrid)=dsp_d(1:ngrid)/A2cm
      end if 
      !         if (l.eq.3) eamrep(:,l,:)=0.0
-!              do k=1,ngrid 
-!                 write(612,*)xsp(k),eamrep(1,l,k),eamrep(2,l,k)
-!              end do
-
+     if (lprtpot)then
+        lw=320+l
+        do k=1,ngrid 
+           write(lw,*)xsp(k),eamrep(1,l,k),eamrep(2,l,k)
+        end do
+     end if
      if (roff1(l).le.0) cycle
      if (lu_roff_pair(l).EQV..false.)cycle
-     call zieg2(eamrep,eamrep_d,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair)
+     call zieg2(eamrep,eamrep_d,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair,typ_pot_pair,ipo)
      !re-spline
      ysp(1:ngrid)=eamrep(1,l,1:ngrid)
      call cspline (ngrid,xsp,ysp,bsp,csp,dsp)
@@ -123,6 +125,12 @@ subroutine calpoeam
          eamrho_d(3,iti,1:ngrid)=csp_d(1:ngrid)/A2cm
          eamrho_d(4,iti,1:ngrid)=dsp_d(1:ngrid)/A2cm
         end if
+     if (lprtpot)then
+        lw=620+iti
+        do k=1,ngrid 
+           write(lw,*)xsp(k),eamrho(1,iti,k),eamrho(2,iti,k)
+        end do
+     end if
 
 !        do k=1,ngrid 
 !           write(712,*)xsp(k),eamrho(1,iti,k),eamrho(2,iti,k)
@@ -210,6 +218,12 @@ subroutine calpoeam
       eamglue_d(2,iti,1:ngrid)=bsp_d(1:ngrid)
       eamglue_d(3,iti,1:ngrid)=csp_d(1:ngrid)
       eamglue_d(4,iti,1:ngrid)=dsp_d(1:ngrid)
+     end if
+     if (lprtpot)then
+        lw=920+iti
+        do k=1,ngrid 
+           write(lw,*)xsp(k),eamglue(1,iti,k),eamglue(2,iti,k)
+        end do
      end if
 
 !        do k=1,ngrid 

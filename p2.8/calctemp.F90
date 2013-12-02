@@ -114,7 +114,7 @@ subroutine calctemp(temptyp)
 #endif
 
      if (ltpcel) then
-
+        maxTcel=0.
         write (6, *)
         write (6, *) '----------valeurs par cellules------------'
 
@@ -124,12 +124,15 @@ subroutine calctemp(temptyp)
                  ko=1+kx+nox*(ky+noy*kz)
                  pmc=0.0
                  !                              write(6,*)'dans la celulle ',ko
-                 write(6,'(A,I5,3I4,2F12.2)')'CEL-TEMP ', ko,kx,ky,kz,tempc(ko),tempcm(ko)
+                 write(6,'(A,I7,I5,3I4,2F12.2)')'CEL-TEMP ', it,ko,kx,ky,kz,tempc(ko),tempcm(ko)
+                 maxTcel=max(maxTcel,tempc(ko))
+                 
                  !                              write (6, '(A11,I4,A15,F12.2)') 'Cellule: ', ko, &
                  !                                   'Temperature: ', tempc(ko)
               enddo
            end do
         end do
+        write(6,*)'CEL-TEMPM',maxTcel
         deallocate (tempc)
      endif
 

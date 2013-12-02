@@ -46,7 +46,7 @@ subroutine calpo
   real(double), parameter:: maxSiO=8.0       ! 8 c'est deja beaucoup
   ! repulsion polynomiale
 
-  integer :: i1,i2
+  integer :: i1,i2,lw
 
   integer, dimension(npair) :: irrep
   integer :: convrep
@@ -259,7 +259,8 @@ subroutine calpo
 
 
      !*********************************cas : rpulsion par Pot polynomial******************************
-     if (lpotrep) then
+     select case (ipotrep)
+     case(1)
         ! Calcul du premier maximum local
 
         if (rang==0) write(6,*)'calcul du max loc du pot VBEEST'
@@ -291,16 +292,17 @@ subroutine calpo
         !***********************************************************************************
 
 
-     else      !(lpotrep)
+     case(2)  !(lpotrep)
 
         ! ********************************Cas : Pot  de Ziegler ****************************
 
         ! **** terme de Ziegler *******
 
 
-        call zieg2 (pot,pot_d, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair)
+        call zieg2 (pot,pot_d, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
 
-     endif      !(lpotrep)
+     case default    !(lpotrep)
+     end select
 
 
      ! affichage potentiel de chaque paire
@@ -432,8 +434,9 @@ subroutine calpo
         end do
      end if
 
-
-
+     if (ipotrep==2) then
+        call zieg2 (pot,pot_d, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
+     end if
 
 
   case(6)
@@ -521,18 +524,18 @@ subroutine calpo
      enddo
   endif
 
-
-  !          do l=1,npair
-  !        if (typ_pot_pair(l)==ipotentiel)then
-  !                write(6,*)'l,k,r,pot(1,l,k)'
-  !                do k=1,ngrid
-  !                   r=float(k)*csive*1.0D8
-  !                   lw=320+l
-  !                   write(lw,'(2I6,5D15.6)')l,k,r,pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
-  !                enddo
-  !            end if
-  !         enddo
-
+  if (lprtpot==.true.) then
+     do l=1,npair
+        if (typ_pot_pair(l)==ipotentiel)then
+           write(6,*)'l,k,r,pot(1,l,k)'
+           do k=1,ngrid
+              r=float(k)*csive*1.0D8
+              lw=320+l
+              write(lw,'(2I6,5D15.6)')l,k,r,pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
+           enddo
+        end if
+     enddo
+  end if
 
 
 

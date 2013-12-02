@@ -4,7 +4,7 @@
 !  **********************************************************
 
 
-subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair)
+subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -14,7 +14,9 @@ subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_rof
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer , intent(in) :: ngrid
+  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
+  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+  integer , intent(in) :: ngrid,ipotentiel
   integer  :: ntyp
   integer  :: npair
   real(double) , intent(in) :: csive
@@ -41,7 +43,7 @@ subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_rof
   !         roff2(l)=csive*Int(roff2(l)/csive)
   !      end do
   ! calcul du polynome de reccordement
-  call zieg (zie,decal,catom,roff1,roff2, auxe,ntyp,npair,pot,ngrid,csive,lu_roff_pair)
+  call zieg (zie,decal,catom,roff1,roff2, auxe,ntyp,npair,pot,ngrid,csive,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
 
 
   c1 = 0.1818
@@ -51,7 +53,8 @@ subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_rof
   l = 0
   do i1 = 1, ntyp
      do i2 = i1, ntyp
-        l = l+1
+        l = ipo(i1,i2)
+        if(typ_pot_pair(l).ne.ipotentiel)cycle
         if(lu_roff_pair(l).EQV..false.) cycle
 
         !            k = 0.D0
@@ -97,7 +100,7 @@ end subroutine zieg2
 
 
 ! --- Potentiel de Ziegler calcul du polynome de raccordement ---
-subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,lu_roff_pair)
+subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -106,7 +109,10 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer , intent(in) :: ntyp
+  integer , intent(in) :: ntyp,ipotentiel
+  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
+
   integer , intent(in) :: npair
   real(double)  :: auxe
   real(double) , intent(inout) :: zie(npair,0:5)
@@ -150,7 +156,8 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
   l = 0
   do i1 = 1, ntyp
      do i2 = i1, ntyp
-        l = l+1
+        l = ipo(i1,i2)
+        if(typ_pot_pair(l).ne.ipotentiel)cycle
         if(lu_roff_pair(l).EQV..false.) cycle
         roff12 = roff1(l)**2
         roff13 = roff1(l)**3
