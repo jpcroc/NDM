@@ -146,18 +146,7 @@ subroutine init
   !endif
 
   if (ibrake.gt.0) then
-     allocate (elstopforce(ntyp,2,0:49))
-     elosselec=0 ; elosselec1=0
-     open (unit=99,file='elstop.in')
-     do i=1,ntyp
-        write(6,*)'electronic losses for type ',i
-        do j=0,49
-           read(99,*)elstopforce(i,1,j),elstopforce(i,2,j)
-           elstopforce(i,1,j)=1e2*elstopforce(i,1,j)  ! vitesse en cm.s-1
-           elstopforce(i,2,j)=elstopforce(i,2,j)*ev2erg*1e8  ! energies en erg
-           write(6,*)i,j,elstopforce(i,1,j),elstopforce(i,2,j)
-        end do
-     end do
+     call initeloss
   end if
 
 

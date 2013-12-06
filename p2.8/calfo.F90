@@ -204,7 +204,7 @@ subroutine calfo
            vn=sqrt(vn)
            v1=elstopforce(ityp(i),1,1)
            nv1=1+INT(vn/v1)
-           if (nv1.gt.49) then
+           if (nv1.gt.ngrdel) then
               write(6,*)'elstop velocity > 49, rebuild elstop.in'
               stop
            end if

@@ -7,7 +7,7 @@ module var_pot
   integer, parameter :: contmax = 2000
 
 
-
+  logical ::lprtpot
 
   integer :: ntyp, ntyp_buffer					! nb de type
   integer :: npair						! = ntyp*(ntyp+1)/2

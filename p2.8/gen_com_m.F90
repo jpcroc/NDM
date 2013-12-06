@@ -19,7 +19,7 @@ module gen_com_m
 
 
 
-  integer :: rang,rangph
+  integer :: rang
   logical :: parallele
 
   integer :: natperc                        ! nb d'atome par cel
@@ -107,7 +107,7 @@ module gen_com_m
   real(double) :: cougel, zincr !fracture
 
 
-  logical ::lprtpot
+
   real(double) :: potist ! energie potentielle totale
   real(double):: potisP,potis1, potis2, potis3, potis0, potcp ! energie potentielle de paire
   real(double) :: potisTersoff ! energie potentielle de tersoff
@@ -187,6 +187,7 @@ module gen_com_m
   real(double) :: xx0, yy0, zz0 ! position initiale du projectile
   logical :: lcasca,lderive ! cascade,correction derive ?
   integer::ibrake   ! electronic slowing in cascades
+  integer::ngrdel
   real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
   real(double),pointer::elstopforce(:,:,:)
 

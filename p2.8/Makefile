@@ -2,7 +2,7 @@
 # VOIR CE FICHIER
 
 
-BIN=../bin
+BIN=./
 
 
 SHELL=/bin/sh
@@ -35,6 +35,7 @@ OBJS_MOD=   T_kind_param_m.o\
         caltabtcr.o \
         calpo_ew.o \
         anasic.o \
+        initeloss.o \
         modules.o 
 
 
