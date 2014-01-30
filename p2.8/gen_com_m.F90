@@ -19,7 +19,7 @@ module gen_com_m
 
 
 
-  integer :: rang
+  integer :: rang, rangph
   logical :: parallele
 
   integer :: natperc                        ! nb d'atome par cel

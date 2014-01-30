@@ -17,14 +17,16 @@ subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_rof
   integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
   integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
   integer , intent(in) :: ngrid,ipotentiel
-  integer  :: ntyp
-  integer  :: npair
-  real(double) , intent(in) :: csive
+  integer,intent(in)  :: ntyp
+  integer,intent(in)  :: npair
   real(double)  :: auxe= 23.06134575D-20 
+  real(double)  :: zie(npair,0:5)
+  real(double)  :: decal (npair)
+  real(double), intent(in)  :: catom(ntyp)
+  real(double), intent(in)  :: roff1(npair)
+  real(double), intent(in)  :: roff2(npair)
   real(double) , intent(inout) :: pot(4,npair,0:ngrid+1),pot_d(4,npair,0:ngrid+1)
-  real(double)  :: catom(ntyp)
-  real(double)  :: roff1(npair)
-  real(double)  :: roff2(npair)
+  real(double) , intent(in) :: csive
   logical :: lu_roff_pair(npair)
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
@@ -32,8 +34,6 @@ subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_rof
   integer :: j1, l, i1, i2,k
   real(double) :: aux1, aux2, aux3, r, r3, a0, b1, b2, b3, b4, som, r4, r5&
        , rbohr, r2, c1, c2, c3, c4, som1
-  real(double), dimension(npair,0:5) :: zie
-  real(double), dimension(npair) :: decal
   !-----------------------------------------------
   data rbohr/ 0.529D-8/
   !      stop
@@ -109,10 +109,10 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer , intent(in) :: ntyp,ipotentiel
-  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
   integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
-
+  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+  integer , intent(in) :: ngrid,ipotentiel 
+  integer , intent(in) :: ntyp
   integer , intent(in) :: npair
   real(double)  :: auxe
   real(double) , intent(inout) :: zie(npair,0:5)
@@ -120,11 +120,10 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
   real(double) , intent(in) :: catom(ntyp)
   real(double) , intent(in) :: roff1(npair)
   real(double) , intent(in) :: roff2(npair)
-  integer :: ngrid
   real(double) , intent(inout) :: pot(4,npair,0:ngrid+1)
+  real(double), intent(in) ::csive
   logical :: lu_roff_pair(npair)
 
-  real(double)::csive
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------

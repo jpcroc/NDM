@@ -89,11 +89,11 @@ ifdef PHONDY
 ifdef PARAPH
  F90 = mpif90
  CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH 
- EXT      = _PHONDY_PARAPH
-#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+# EXT      = _PHONDY_PARAPH
+F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-#F90FLAGS =  -O3 -convert big_endian 
-F90FLAGS =  -O3  
+F90FLAGS =  -O3 -convert big_endian 
+#F90FLAGS =  -O3  
 
 #FLAGS and LIBS for PHONDY
 FLAGS_PHONDY =  -DNOIBM 
