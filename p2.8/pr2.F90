@@ -145,6 +145,7 @@ contains
     ! Time derivative of the metric tensor Gmat
     DO i=1, 3
        DO j=1, 3
+          hdot(1:3,1:3)=hdot(1:3,1:3)*ihbox0(1:3,1:3)
           Gdot(i,j) = Sum( h(1:3,i)*hdot(1:3,j) + hdot(1:3,i)*h(1:3,j) )
        END DO
     END DO
@@ -265,6 +266,7 @@ contains
 
     implicit none
     ! Variables utiles
+   
     integer, intent(in)  :: ityp(imm)
     real(double), intent(inout)  :: xp(3,imm), xpp(3,imm), vp(3,imm), fp(3,imm)
     ! Variables inutiles
@@ -331,18 +333,18 @@ contains
 
     ! Dérivée du tenseur h à l'instant t+dt/2
     IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
-       hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) - 0.5d0/tbox )* hdot(:,:) &
-            + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )
+       hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) - 0.5d0/tbox )* hdot(:,:)*ihbox0(:,:) &
+            + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )*ihbox0(:,:)
     ELSE        ! Équation sans force de friction supplémentaire
-       hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) )* hdot(:,:) &
-            + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )
+       hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) )* hdot(:,:)*ihbox0(:,:) &
+            + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )*ihbox0(:,:)
     END IF
 
     ! Coordonnées réduites des atomes à l'instant t+dt
     sp(:,1:im) = sp(:,1:im) + sdot(:,1:im)*tstep
 
     ! Tenseur h à l'instant t+dt
-    h(:,:) = h(:,:) + hdot(:,:)*tstep
+    h(:,:) = h(:,:) + hdot(:,:)*tstep*ihbox0(:,:)
 
     ! Coordonnées réelles à l'instant t+dt
     xpp(:,1:im) = xp(:,1:im)
@@ -424,11 +426,11 @@ contains
 
     ! Estimation de la dérivée du tenseur h à l'instant t+dt
     IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
-       hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) + 0.5d0/tbox )*( hdot(:,:) &
-            + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) ) )
+       hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) + 0.5d0/tbox )*( hdot(:,:)*ihbox0(:,:) &
+            + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) ) )*ihbox0(:,:)
     ELSE        ! Équation sans force de friction supplémentaire
-       hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) )*( hdot(:,:) &
-            + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) ) )
+       hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) )*( hdot(:,:)*ihbox0(:,:) &
+            + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) ) )*ihbox0(:,:)
     END IF
 
     ! Estimation de la dérivée du tenseur Gmat à l'instant t+dt
@@ -442,7 +444,7 @@ contains
     DO iter=1, Max_Iter
 
        ! Valeurs de la dernière itération du cycle d'autocohérence
-       hdot_last = hdot_new
+       hdot_last(:,:) = hdot_new(:,:)*ihbox0(:,:)
 
        ! Dérivée des coordonnées réduites des atomes à l'instant t+dt
        mf(:,:) = 0.5d0*tstep*MatMul(invGmat,Gdot)
@@ -475,11 +477,11 @@ contains
 
        ! Dérivée du tenseur h à l'instant t+dt
        IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
-          hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) + 0.5d0/tbox )*( hdot(:,:) &
-               + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) ) )
+          hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) + 0.5d0/tbox )*( hdot(:,:)*ihbox0(:,:) &
+               + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) ) )*ihbox0(:,:)
        ELSE        ! Équation sans force de friction supplémentaire
           hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) )*( hdot(:,:) &
-               + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) ) )
+               + tstep/(2.d0*wBox)*volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) ) )*ihbox0(:,:)
        END IF
 
        ! Dérivée du tenseur Gmat à l'instant t+dt
@@ -501,7 +503,7 @@ contains
     END DO
 
     ! Valeurs convergées de hdot et sdot à l'instant t+dt
-    hdot(:,:) = hdot_new(:,:)
+    hdot(:,:) = hdot_new(:,:)*ihbox0(:,:)
     sdot(:,:) = sdot_new(:,:)
 
     IF (iter.GE.Max_Iter) THEN

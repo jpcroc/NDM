@@ -38,7 +38,7 @@ subroutine readdm
        tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax, itean, itespebcout,  &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
        lrestart, lPathFromGin, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
-       ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, tbox, &
+       ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
        iteangle, ipotentiel, lpotentiel, itesauvposition, lfilmext, tdepla2, &
        lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
        maxorder,  lalea, rsep, &
@@ -131,6 +131,8 @@ subroutine readdm
   !=== Fin des modifications ================
   lpcon = .FALSE.             !algorithm a pression constante a la hache
   lpcon2 = .FALSE.            !amortissement de la deformation de la boite
+  lpconxyz = .FALSE.          !the relaxation are allowed only along the X, Y and Z axis
+
 
   pext = 0.0                  !pression  par defaut
   wbox = 0.0                  ! masse de la boite pour Parrinello-Rahman (par defaut egale a 0.5*masse totale
@@ -141,7 +143,7 @@ subroutine readdm
   lTNose=.false.              ! algorithme a temperature constante de Nose
   lTHoover=.false.            ! algorithme a temperature constante de Hoover
   nHoover=1
-  tauTcon=200.0
+  tauTcon=200.0               ! The rescales "time" for the Berendsen algorithm
   Text=-1.
   iteTconst =itetemp
   lalea = .FALSE.             ! structure initiale aleatoire
@@ -695,7 +697,17 @@ subroutine readdm
   end if
 
   ! end check
-
+  if (lpconxyz) then
+   if (.NOT.lpr) then
+    if (rang==0) then
+       write(6,*) 'lpconxyz can be used only is with PR dynamics or lpr=.true'
+       write(6,*) 'stop in <readdm>'
+    end if
+     stop
+ end if 
+end if       
+   
+   
   if (lpr) then
      if (dmtype==2) lprtrp=.true.
      dmtype=8
@@ -713,9 +725,17 @@ subroutine readdm
      ! Verifie si un etat de reference a ete donne
      IF (Sum(h0(1:3,1:3)**2).GE.1.d-30) lUcell=.TRUE.
      ! Transformation A => cm pour le repere de reference
-     h0(1:3,1:3) = 1e-8*h0(1:3,1:3)
      Pext = (sigext(1,1)+sigext(2,2)+sigext(3,3))/3.d0
      !=== Fin des modifications ================
+     h0(1:3,1:3) = 1e-8*h0(1:3,1:3)
+     ihbox0(:,:) = 1.d0   ! all the dimension of the box can change
+     if (lpconxyz) then
+      ihbox0(:,:)=0.d0   ! ALL the dimension are blockef except ...
+      ihbox0(1,1)=1.d0   ! X ...
+      ihbox0(2,2)=1.d0   ! Y ...
+      ihbox0(3,3)=1.d0   ! and Z.
+     end if 
+
   end if
   ! read for cascade
   if (lcasca) then

@@ -121,7 +121,7 @@ subroutine art90
     mincounter = mincounter+1
     write(6,*)'DIFF ENERGIE FINAL-INITIAL ', total_energy - ref_energy
     ! Now, we accept or reject this move based on a Boltzmann weight
-    if(  (total_energy - ref_energy) < -temperature * log(ran3()) ) then
+    if(  (total_energy - ref_energy) < 0 ) then ! -temperature * log(ran3()) ) then
       write(*,*) 'New configuration accepted, mincounter was : ', mincounter-1
       write(FLOG,*) 'New configuration accepted, mincounter was : ', mincounter-1
 
