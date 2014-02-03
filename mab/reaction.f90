@@ -34,7 +34,7 @@ subroutine calfoblock()
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: zero,im,imm,low_limit,angst,ev2erg,erg2ev
  USE tab_imm_m
- USE mab_in_ndm_module, ONLY:radiussph,deltasph,xbar,xbarini,xp0 
+ USE mab_in_ndm_module, ONLY:radiussph,deltasph,xbar,xbarini,xp0,maxforce
  
  real(double), dimension(3,imm) :: fpblock
  integer :: ic
@@ -48,8 +48,8 @@ subroutine calfoblock()
    
    rp1=dsqrt(SUM((xp(:,ic)-xp0(:,ic)-xbar(:)+xbarini(:))**2))
     if (dabs(rp1).gt.low_limit) then
-     fpblock(:,ic)=(xp(:,ic)-xp0(:,ic)-xbar(:)+xbarini(:))*ev2erg*dFerDir(rp1,radiussph,deltasph)/rp1
-    else
+     fpblock(:,ic)=(xp(:,ic)-xp0(:,ic)-xbar(:)+xbarini(:))*maxforce*ev2erg*dFerDir(rp1,radiussph,deltasph)/rp1
+     else
      fpblock(:,ic)=zero
     end if
     if (rp1 > (radiussph+deltasph)) then

@@ -15,11 +15,11 @@ module mab_in_ndm_module
       implicit none
 
       real(double), dimension(:,:), allocatable :: sig_i,sig_ll,rga_i,xp0,m_i
-      real(double)  :: dtlang,temperature,Ecinetique,m_tot,a0bcc,omega_abf
+      real(double)  :: dtlang,temperature,Ecinetique,m_tot,a0bcc,omega_abf,maxforce
       
 
       real(double), parameter :: KtoERG=1.3791946308724831d-16 
-      integer :: nlangevin,abf_type,sim_mode,langevin_type 
+      integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre
       integer                                       :: it_mab
       real(double),save :: epot0,gamma
       real(double),dimension(:),allocatable, save:: w
@@ -28,17 +28,21 @@ module mab_in_ndm_module
       real(double)  :: deltar1,deltar2,delta_z
       real(double)  :: xi_min,xi_max,a_Fermi,Fermi_percent
       integer       :: nhisto,nhisto1,nhisto2,icsi,nwrite_histo
-      integer,dimension(:), allocatable :: histo,histo1,histo2,histo_temp,histo_temp1
-      real(double),dimension(:), allocatable :: mean_force,mean_force1
+      real(double),dimension(:), allocatable :: histo,histo1,histo2,histo_temp,histo_temp1,histo_xi
+      real(double),dimension(:),allocatable::histo_zeta
+      real(double),dimension(:), allocatable :: mean_force,mean_force1,mean_force2,mean_force_ABFee
       real(double),dimension(:),allocatable::x_mol,cumul_force_denom1,cumul_force1
       real(double),dimension(:),allocatable::Free_energy
-      real(double),dimension(:),allocatable::A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom ! These are for ABFee only!!
-      real(double)::sigma_eta,sigma_carre,eta_ABFee
-      integer::ecart_eta
+      real(double),dimension(:),allocatable::A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom,A_bar_ee
+      real(double),dimension(:),allocatable::exp_A_bar
+      real(double),dimension(:),allocatable::A_theo,error_A,error_A_bar
+      real(double)::sigma_eta,sigma_carre,eta_ABFee,sum_error_A,sum_error_A_bar
+      integer::ecart_eta,nom_deconvo
       real(double)::eta_mab
-       
+      integer::compute_mode,error_step
       
-      logical :: block,test_end
+      logical :: block,test_end,histo_equi
+
 
  contains
  
@@ -94,10 +98,14 @@ end   subroutine allocate_mab
     nhisto2=deltar2/dble(delta_z)
     allocate(histo(nhisto),histo1(-nhisto1:nhisto+nhisto1),histo2(-nhisto2:nhisto+nhisto2),& 
              histo_temp(nhisto),histo_temp1(-nhisto1:nhisto+nhisto1))
-    allocate(mean_force(nhisto),mean_force1(-nhisto1:nhisto+nhisto1))
+    allocate(histo_xi(-nhisto1:nhisto+nhisto1),histo_zeta(-nhisto1:nhisto+nhisto1))
+    allocate(mean_force(nhisto),mean_force1(-nhisto1:nhisto+nhisto1),mean_force2(-nhisto2:nhisto+nhisto2))
+    allocate(mean_force_ABFee(-nhisto2:nhisto+nhisto2))
     allocate(cumul_force1(-nhisto1:nhisto+nhisto1),cumul_force_denom1(-nhisto1:nhisto+nhisto1))
     allocate(x_mol(-nhisto2:nhisto+nhisto2))
     allocate(Free_energy(-nhisto2:nhisto+nhisto2))
+    allocate(A_theo(-nhisto1:nhisto+nhisto1),error_A(-nhisto1:nhisto+nhisto1))
+    allocate(error_A_bar(-nhisto1:nhisto+nhisto1))
     forall(ic=-nhisto2:nhisto+nhisto2) x_mol(ic)=ic*delta_z 
     cumul_force1(:)=0.d0 
     cumul_force_denom1(:)=0.d0
@@ -105,16 +113,27 @@ end   subroutine allocate_mab
     histo_temp(1:nhisto)=0
     histo1(-nhisto1:nhisto+nhisto1)=0
     histo2(-nhisto2:nhisto+nhisto2)=0
+    histo_xi(-nhisto1:nhisto+nhisto1)=0
+    histo_zeta(-nhisto1:nhisto+nhisto1)=0.d0
     Free_energy(:)=0
-
+    mean_force(:)=0
+    mean_force1(:)=0
+    mean_force2(:)=0
+    mean_force_ABFee(:)=0
     allocate(A_ee(-nhisto2:nhisto+nhisto2),A_dev_ee(-nhisto2:nhisto+nhisto2),&
             P_ee(-nhisto2:nhisto+nhisto2),P_ee_num(-nhisto2:nhisto+nhisto2),&
-            P_ee_denom(-nhisto2:nhisto+nhisto2))
-  A_ee(:)=0
-  A_dev_ee(:)=0
-  P_ee(:)=0
-  P_ee_num(:)=0
-  P_ee_denom(:)=0    
+            P_ee_denom(-nhisto2:nhisto+nhisto2),A_bar_ee(-nhisto2:nhisto+nhisto2),&
+            exp_A_bar(-nhisto2:nhisto+nhisto2))
+  A_ee(:)=0.d0
+  A_theo(:)=0.d0
+  error_A(:)=0.d0
+  error_A_bar(:)=0.d0
+  A_dev_ee(:)=0.d0
+  P_ee(:)=0.d0
+  P_ee_num(:)=0.d0
+  P_ee_denom(:)=0.d0    
+  A_bar_ee(:)=0.d0
+  exp_A_bar(:)=1.d0 
 
  return
 !

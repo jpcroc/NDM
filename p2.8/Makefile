@@ -164,6 +164,7 @@ OBJS_SEQ=	anapos.o \
 ifdef PARA
  # Version Parallele
  OBJS =  ${OBJS_MOD} ${OBJS_PARA} ${OBJS_SEQ} 
+ EXT=_para
 else
  # Version Sequentielle
  OBJS = ${OBJS_MOD} ${OBJS_SEQ}
@@ -180,14 +181,17 @@ ifdef ART
  DEP=${OBJS}  ${LIBART}
  CLEANART=clean_art
  DIREXT=art
+ EXT=_art
 
 endif
 ifdef PHONDY
  # Version PHONDY
 ifdef PARAPH
- OBJS = ${OBJS_MOD} ${OBJS_PARAPH} ${OBJS_SEQ} 
+ OBJS = ${OBJS_MOD} ${OBJS_PARAPH} ${OBJS_SEQ}
+ EXT=_phondy_para 
 else
  OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
+ EXT=_phondy
 endif
  DEP=${OBJS}  ${LIBPHONDY}
  CPPFLAGS=${CPPFLAGS_PHONDY}
@@ -201,6 +205,7 @@ ifdef SUNDAE
  DEP=${OBJS}  ${LIBSUNDAE}
  CLEANPHONDY=clean_sundae
  DIREXT=sundae
+ EXT=_sundae
 
 endif
 ifdef  MAB
@@ -209,6 +214,7 @@ ifdef  MAB
  DEP=${OBJS}  ${LIBMAB}
  CLEANMAB=clean_mab
  DIREXT=mab
+ EXT=_mab
 
 endif
 .f.o :
@@ -232,7 +238,7 @@ LIBMAB=libmab.a
 
 ${BIN}/rundm90 : ${DEP} 
 	${LD} -o ${BIN}/rundm90${EXT}  ${F90FLAGS} ${LDFLAGS} ${OBJS} ${LIBRARY}
-#	rm -rf ${DIREXT}
+	rm -rf ${DIREXT}
 
 
 $(LIBART): 

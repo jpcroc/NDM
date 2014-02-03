@@ -1,5 +1,5 @@
 !--------------------------------------------------------------------------------------------------
-!------Subroutines for histograms and reconstruction of free energy from meanforce observed. 
+!------Subroutines for histograms. 
 !--------------------------------------------------------------------------------------------------
 
 subroutine fill_histo()
@@ -7,113 +7,141 @@ subroutine fill_histo()
  USE gen_com_m, ONLY: 
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY: dcsi,icsi, delta_z,nhisto,nhisto1,nhisto2,& 
-                              histo,histo1,histo2, &
-                              histo_temp,histo_temp1
+                              histo,histo1,histo2
 implicit none
-histo_temp(:)=0
-histo_temp1(:)=0
+
  !The border zone. Over this border the mean force is zero
- if ((icsi > -nhisto2).and.(icsi<nhisto+nhisto2)) then
+ if ((icsi >= -nhisto2).and.(icsi <= nhisto+nhisto2)) then
    histo2(icsi)=histo2(icsi) + 1
   ! The intermediate region 
-   if ((icsi > -nhisto1).and.(icsi<nhisto+nhisto1)) then
+   if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then
     histo1(icsi)=histo1(icsi) + 1
-    histo_temp1(icsi)=histo_temp1(icsi) + 1
     ! The inner regin  
-     if ((icsi > 0).and.(icsi<=nhisto)) then
+     if ((icsi > 0).and.(icsi <= nhisto)) then
        histo(icsi)=histo(icsi) + 1
-       histo_temp(icsi)=histo_temp(icsi) + 1
      end if
    end if  
 
  end if
-
 return
 end subroutine fill_histo
 
+subroutine fill_histo_equilibre()! we fill histogram only if it is after n_equilibre steps ( the biais is considered stable) 
+ USE T_kind_param_m, ONLY:  double
+ USE gen_com_m, ONLY: 
+ USE tab_imm_m
+ USE mab_in_ndm_module, ONLY: icsi,nhisto,nhisto1,nhisto2,& 
+                              histo_equi,histo_xi
+                   
+implicit none
+  
+! The intermediate region 
+   if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then
+    histo_xi(icsi)=histo_xi(icsi) + 1
+   end if  
+return
+end subroutine fill_histo_equilibre
 
-subroutine Free_energy_ABF()
+
+subroutine fill_final_histo()!To create the final histogram for the simulation
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: erg2eV,A2cm
  USE tab_imm_m
- USE mab_in_ndm_module, ONLY: delta_z,nhisto,nhisto1,nhisto2,& 
-                              histo,histo1,histo2,Free_energy,&
-                              mean_force1,abf_type,x_mol,temperature,&
-                              A_ee,A_dev_ee
+ USE mab_in_ndm_module, ONLY: nhisto,nhisto1,nhisto2,& 
+                              histo,histo1,histo2,delta_z,&
+                              histo_xi,histo_equi,abf_type,histo_zeta,&
+                              x_mol
+
 implicit none
-integer::i_loop
-real(double)::Free_temp(-nhisto2:nhisto+nhisto2)
-real(double)::renorm_f,minfreeval
-Free_temp(:)=0
+integer::i_iter
+real(double)::sum_histo1,sum_histo,sum_histo_xi,sum_histo_zeta
 
-if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'énergie libre 
- Free_energy(-nhisto1)=0.d0
- do i_loop=-nhisto1+1,nhisto+nhisto1
-  Free_energy(i_loop)=Free_energy(i_loop-1)+0.5d0*delta_z*(mean_force1(i_loop-1)+mean_force1(i_loop))
- enddo
+if ((abf_type .ne. 6) .and. (abf_type .ne. 7)) then ! when the biais is updated 
 
+ open(unit=989,file='histogram1',status='unknown')
+ open(unit=990,file='histogram',status='unknown')
 
- forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-free_energy(i_loop)/temperature)
- renorm_f=temperature*log(sum(Free_temp)*delta_z)
- forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
+  sum_histo1=sum(histo1)
+ sum_histo=sum(histo)
 
- minfreeval=minval(Free_energy(:))
+   do i_iter=-nhisto1,nhisto+nhisto1
+    write(989,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo1
+   enddo
+   
+   do i_iter=1,nhisto
+    write(990,*),x_mol(i_iter)/A2cm, histo(i_iter)/sum_histo
+   enddo
+
+  close(989)
+  close(990)
+
+ if (histo_equi == .True.) then
+ open(unit=970,file='histogram_xi',status='unknown')  ! this file is available only if we only fill histogram after n_equilibre. 
+ sum_histo_xi=sum(histo_xi)
+
+    do i_iter=-nhisto1,nhisto+nhisto1
+     write(970,*),x_mol(i_iter)/A2cm, histo_xi(i_iter)/sum_histo_xi
+    enddo
+
+  close(970)
+ endif
+
 
 endif
 
 
- select case (abf_type)
- case(1)
-  write(*,*),'Free energy computation....Langevin Dynamics'
-  open(unit=992,file='Free_energy_Langevin',status='unknown')
-   do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(992,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
-   enddo
-  close(992)
+if (abf_type == 5 .or. abf_type == 8 ) then ! if it is ABFee, we need to fill histogram on zeta, for the case when the biais is updated or fixed
 
- case(2)
-  write(*,*),'Free energy computation....ABF BIN'
-  open(unit=993,file='Free_energy_ABFBIN',status='unknown')
-   do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(993,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
-   enddo
-  close(993)
+open(unit=969,file='histogram_zeta',status='unknown')
 
- case(3)
-  write(*,*),'Free energy computation....ABF BIN OMEGA'
-  open(unit=994,file='Free_energy_ABFBIN_OMEGA',status='unknown')
-   do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(994,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
-   enddo
-  close(994)
+sum_histo_zeta=sum(histo_zeta)
+  
+ do i_iter=-nhisto1,nhisto+nhisto1
+    write(969,*),x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
+ enddo
 
- case(4)
-  write(*,*),'Free energy computation....ABF Gaussian'
-  open(unit=995,file='Free_energy_ABFGaussian',status='unknown')
-   do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(995,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
-   enddo
- close(995)
 
- case(5)
-  write(*,*),'Free energy computation....ABF ee'
-  !--------Pour ABFee, on a besoin des A_ee pour calculer l'énergie libre.
- forall(i_loop=-nhisto2:nhisto+nhisto2) Free_temp(i_loop)=exp(-A_ee(i_loop)/temperature)
+ close(969)
+
+endif
+
+
+if (abf_type== 6) then
+open(unit=1105,file='histogram_zeta_const_biais',status='unknown')
+open(unit=1106,file='histogram_xi_const_biais',status='unknown')
+  sum_histo_xi=sum(histo1)
+ sum_histo_zeta=sum(histo_zeta)
+  
+ do i_iter=-nhisto1,nhisto+nhisto1
+    write(1105,*),x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
+    write(1106,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo_xi
+ enddo
+
+
+
+ close(1105)
+ close(1106)
+endif
+
+
+if (abf_type == 7) then
+
+ open(unit=1107,file='histogram_ABFbin_const_biais',status='unknown')
  
- renorm_f=temperature*log(sum(Free_temp)*delta_z)
+ sum_histo_xi=sum(histo1)
+  
+ do i_iter=-nhisto1,nhisto+nhisto1
+    write(1107,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo_xi
+ enddo
 
- forall(i_loop=-nhisto2:nhisto+nhisto2) Free_energy(i_loop)=A_ee(i_loop)+renorm_f
 
- minfreeval=minval(Free_energy(:))
+
+ close(1107)
  
-open(unit=996,file='Free_energy_ABFee',status='unknown')
-   do i_loop=-nhisto2+1,nhisto+nhisto2
-    write(996,*), x_mol(i_loop)/A2cm,(Free_energy(i_loop)-minfreeval)*erg2eV
-   enddo
-  close(996)
 
-end select
+endif
 
-end subroutine Free_energy_ABF
+end subroutine fill_final_histo
+
 
 

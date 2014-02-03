@@ -70,8 +70,8 @@ subroutine readdm
   itetabvois = 10             !periode de calcul de la table des voisins
   tempstop = -1.0             !temperature of run stop
   tempstopcel = -1.0             !temperature of run stop
-  dmtype = 0                  
-  !dmtype = type of calculation : 1 -> MD
+  dmtype = 0  
+ !dmtype = type of calculation : 1 -> MD
   !                               2 -> quench (trempe) or fire quench
   !                               3 -> gradient conjugue sur les coordonnes cartesiennes
   !                              30 -> gradient conjugue sur les coordonnes reduites
@@ -84,6 +84,8 @@ subroutine readdm
   !                              10 -> PARIN RAHMAN 
   !                              11 -> UN SEUL CALCUL DE FORCES
   !                              12 -> ART
+  !                              16 -> SUNDAE
+  !                              17 -> MAB
   lFire = .true.              ! Fire algorithm is used for quenching (cf tr_fire.F90)
   ttol = 0.0                  !max tolerance for temperature in %
   tfroi = -1.0                !imposed temperature
@@ -845,6 +847,12 @@ end if
 #if(SUNDAE)    
   case (16)
      if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
+     if (rang==0) write (6,'(a)') '|---------..........................---------------|'
+     if (rang==0) write (6,'(a)') '|==================================================|'
+#endif
+#if(MAB)    
+  case (17)
+     if (rang==0) write (6,'(a)') '|=========       NDM + MAB          ===============|'
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
      if (rang==0) write (6,'(a)') '|==================================================|'
 #endif

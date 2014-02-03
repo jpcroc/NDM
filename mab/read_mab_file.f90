@@ -7,12 +7,14 @@ subroutine read_mab_file()
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
                               sim_mode,rtestlac,langevin_type,gamma,omega_abf,     & 
                               nwrite_histo,Fermi_percent,a_Fermi,sigma_eta,ecart_eta, &
-                              eta_mab,eta_ABFee
+                              eta_mab,eta_ABFee,histo_equi,n_equilibre,           & 
+                              maxforce,compute_mode,error_step,nom_deconvo
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
                       langevin_type,gamma,omega_abf,nwrite_histo,Fermi_percent,    &
-                      a_Fermi,eta_mab,eta_ABFee
+                      a_Fermi,eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
+                      maxforce,compute_mode,error_step,nom_deconvo
 
  character(len=128) :: fnamtin
  integer :: lumab
@@ -21,7 +23,9 @@ subroutine read_mab_file()
  rtestlac=0.1d0
  nwrite_histo=1000000
  omega_abf=1.d0
- 
+ maxforce=2.d0   ! in order to enhance the max force on the protective domains 
+ nom_deconvo=10
+
  fnamtin = fnam(1:lenfnam)//'.mab'
  write(*,*) 'file name', fnamtin
  lumab = 778

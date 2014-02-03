@@ -6,6 +6,8 @@ OBJ   = mab_in_ndm_module.o\
 	reaction.o\
         histo.o\
         calfo_ABF.o\
+	data_processing.o\
+	error_stat.o\
 	mab.o 
 
 
