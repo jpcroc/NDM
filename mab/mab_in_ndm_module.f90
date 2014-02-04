@@ -106,6 +106,10 @@ end   subroutine allocate_mab
      nhisto1=deltar1/dble(delta_z)
      nhisto2=deltar2/dble(delta_z)
    
+    if (abf_mode==2) then
+        omega_veinstein(:,:)=omega_einstein
+        !instead that I will a file with all the einstein  frequencies 
+    end if 
 
 
    

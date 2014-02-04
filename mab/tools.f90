@@ -226,6 +226,7 @@ end function
 
 Function gaussien_pdf(x,mu,sigma_gaussien)
 use T_kind_param_m, ONLY : double
+use gen_com_m, ONLY: pi
 real(double):: gaussien_pdf,mu,sigma_gaussien,x,var
 var=sigma_gaussien**2
 gaussien_pdf=1.d0/dsqrt(2.d0*pi*var)*dexp(-(x-mu)**2/(2.d0*var))

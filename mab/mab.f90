@@ -23,8 +23,7 @@ subroutine mab
 ! Copyright LL Cao and all NDM band, April- 2013
   
   integer:: i_iter
-  integer:: i_compute_mode,temp_i_compute
-  real(double)::temp_read,temp_read1
+  real(double)::temp_read
   logical :: dir_e
 
   write(6,*)

@@ -89,10 +89,8 @@ if (abf_mode==2) then
   mean_force1 (icsi) = cumul_force1(icsi)/histo1(icsi)
  end if
 end if 
- 
 
-
-
+write(*,'("deb",i7,3D15.4,2D15.1)') icsi,dcsi, potist*erg2ev, ene_einstein*erg2ev,fpeinstein(1,1),fp(1,1)
 ! Updating the forces ...
 !write (41,*) fp(1,7),fpabf(1,7)
 !write (42,*) fp(2,7),fpabf(2,7)
@@ -144,9 +142,9 @@ subroutine calfo_ABF_BIN_OMEGA()
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              mean_force1,histo1,omega_abf,&
                              xi_min,xi_max
-  
+ implicit none 
  real(double), dimension(3,imm) :: fpabf
- real(double) :: force,omega
+ real(double) :: force
 
  
  fpabf(:,:) = zero
@@ -179,9 +177,9 @@ subroutine calfo_ABF_Gaussien()
                              mean_force1,histo1,omega_abf,&
                              xi_min,xi_max,ecart_eta,eta_mab,&
                              cumul_force_denom1,x_mol,sigma_carre
-
+ implicit none
  real(double), dimension(3,imm) :: fpabf
- real(double) :: force,omega
+ real(double) :: force
  integer:: indice_gaussian
 
  
@@ -189,7 +187,7 @@ subroutine calfo_ABF_Gaussien()
  ! Computing the forces from the ABF bins ...
  force = - DOT_PRODUCT(fp(:,7),rfilac(:))
 do indice_gaussian=icsi-ecart_eta,icsi+ecart_eta
- if ((indice_gaussian >=-nhisto1).and.(indice_gaussien <= nhisto+nhisto1)) then 
+ if ((indice_gaussian >=-nhisto1).and.(indice_gaussian <= nhisto+nhisto1)) then 
   cumul_force1(indice_gaussian)=cumul_force1(indice_gaussian) +force*dexp(-(dcsi-x_mol(indice_gaussian))**2/2.d0*sigma_carre)
 
   cumul_force_denom1(indice_gaussian)=cumul_force_denom1(indice_gaussian)+dexp(-(dcsi-x_mol(indice_gaussian))**2/2.d0*sigma_carre)

@@ -84,7 +84,6 @@ subroutine calfo_einstein_solid ()
 
  fpeinstein (:,:) = zero
 ! Computing the forces on the protevtives spheres...
-
  ene_einstein=0.d0
  do ic=1,im
   fpeinstein(:,ic)=-omega_veinstein(:,ic)**2*unit_omega_to_erg*cm(ityp(ic))*(xp(:,ic)-xp0(:,ic)-xbar(:)-xbarini(:))

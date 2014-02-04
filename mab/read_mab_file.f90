@@ -6,15 +6,15 @@ subroutine read_mab_file()
  USE mab_in_ndm_module, ONLY: dtlang,nlangevin,temperature,KtoERG,a0bcc,deltasph,  &
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
                               sim_mode,rtestlac,langevin_type,gamma,omega_abf,     &
-                              omega_einstein,omega_veinstein,                       & 
+                              omega_einstein,abf_mode,            & 
                               nwrite_histo,sigma_eta,ecart_eta, &
                               eta_mab,eta_ABFee,histo_equi,n_equilibre,           & 
                               maxforce,compute_mode,error_step,nom_deconvo
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
-                      langevin_type,gamma,omega_abf,omega_einstein, nwrite_histo,Fermi_percent,    &
-                      a_Fermi,eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
+                      langevin_type,gamma,omega_abf,omega_einstein, nwrite_histo,  &
+                      eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
                       maxforce,compute_mode,abf_mode, error_step,nom_deconvo
 
  character(len=128) :: fnamtin
@@ -38,6 +38,12 @@ read (lumab, nml=input_mab)
 
 if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
       if (langevin_type==2) then
+        if (abf_mode==2) then
+           write(6,*) 'Alchemical transition not yet implemented with the underdamped Langevin'
+           write(6,*) 'put langevin_type = 1 and restart'
+           write(6,*) 'stop in <read_mab_file>'
+           stop 
+        end if 
         select case (abf_type)
            case (1)
                   write(6,*) ' Dumped Langevin dynamics'
@@ -92,8 +98,7 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
     end if 
 
     if (abf_mode==2) then
-        omega_veinstein(:,:)=omega_einstein
-    write(*,'("Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
+     write(*,'("Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
         !instead that I will a file with all the einstein  frequencies 
     end if 
 

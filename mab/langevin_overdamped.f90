@@ -21,7 +21,7 @@
     integer     :: ic
     real(double) :: xbari(3),xbarc(3)
     real(double), dimension(6,im+1)::gau
-    real(double)             :: noise,tmp_dcsi
+    real(double)             :: noise,tmp_dcsi,tmp_force
     real(double):: pp(3,im)
     real(double) :: psum(3)
     real(double):: sig_mass(3,im) 
@@ -61,8 +61,13 @@
 
     if (abf_mode==2) then 
      call genere_bruit_one_value(noise)
-     tmp_dcsi = -(potist-ene_einstein - mean_force1(icsi))*dtlang/(gamma*umass) + noise*sqrt(2.d0*temperature*dtlang/(gamma*umass)) 
-     dcsi=tmp_dcsi*angst + dcsi
+     if ((dcsi<=1).and.(dcsi>=0)) then
+       tmp_force=mean_force1(icsi)
+      else 
+       tmp_force=0.d0
+     end if 
+     tmp_dcsi = -(potist-ene_einstein - tmp_force )*dtlang/(gamma*umass) + noise*sqrt(2.d0*temperature*dtlang/(gamma*umass))      
+     dcsi=tmp_dcsi  + dcsi
     end if  
    
     return
