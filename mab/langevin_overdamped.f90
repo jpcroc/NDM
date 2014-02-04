@@ -13,15 +13,20 @@
     use gen_com_m
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,Ecinetique,xbar,  &
-                                 abf_type,block,gamma
+                                 abf_type,abf_mode,block,gamma,dcsi, &
+                                 ene_einstein,temperature,mean_force1,icsi
+
 
     implicit none
     integer     :: ic
     real(double) :: xbari(3),xbarc(3)
     real(double), dimension(6,im+1)::gau
+    real(double)             :: noise,tmp_dcsi
     real(double):: pp(3,im)
     real(double) :: psum(3)
     real(double):: sig_mass(3,im) 
+
+
     call genere_bruit(gau)
      
     sig_mass(1:3,1:im)=sig_ll(1:3,1:im)*gau(1:3,1:im)
@@ -54,9 +59,15 @@
        xp(ic,1:im) = xp(ic,1:im) - xbarc(ic)  ! on recentre tout le systeme
     enddo
 
- 
+    if (abf_mode==2) then 
+     call genere_bruit_one_value(noise)
+     tmp_dcsi = -(potist-ene_einstein - mean_force1(icsi))*dtlang/(gamma*umass) + noise*sqrt(2.d0*temperature*dtlang/(gamma*umass)) 
+     dcsi=tmp_dcsi*angst + dcsi
+    end if  
    
     return
  end subroutine langevin_overdamped
+
+
 
 

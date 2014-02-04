@@ -5,16 +5,17 @@ subroutine read_mab_file()
  !use tab_imm_m
  USE mab_in_ndm_module, ONLY: dtlang,nlangevin,temperature,KtoERG,a0bcc,deltasph,  &
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
-                              sim_mode,rtestlac,langevin_type,gamma,omega_abf,     & 
-                              nwrite_histo,Fermi_percent,a_Fermi,sigma_eta,ecart_eta, &
+                              sim_mode,rtestlac,langevin_type,gamma,omega_abf,     &
+                              omega_einstein,omega_veinstein,                       & 
+                              nwrite_histo,sigma_eta,ecart_eta, &
                               eta_mab,eta_ABFee,histo_equi,n_equilibre,           & 
                               maxforce,compute_mode,error_step,nom_deconvo
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
-                      langevin_type,gamma,omega_abf,nwrite_histo,Fermi_percent,    &
+                      langevin_type,gamma,omega_abf,omega_einstein, nwrite_histo,Fermi_percent,    &
                       a_Fermi,eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
-                      maxforce,compute_mode,error_step,nom_deconvo
+                      maxforce,compute_mode,abf_mode, error_step,nom_deconvo
 
  character(len=128) :: fnamtin
  integer :: lumab
@@ -25,6 +26,9 @@ subroutine read_mab_file()
  omega_abf=1.d0
  maxforce=2.d0   ! in order to enhance the max force on the protective domains 
  nom_deconvo=10
+ abf_mode = 1
+ abf_type = 1
+ omega_einstein=5.d0 ! einstein frequecy in THz
 
  fnamtin = fnam(1:lenfnam)//'.mab'
  write(*,*) 'file name', fnamtin
@@ -38,13 +42,20 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
            case (1)
                   write(6,*) ' Dumped Langevin dynamics'
            case (2)  
-                  write(6,*) ' Dumped Langevin + ABF BIN dynamics'
+                  if (abf_mode==1) write(6,*) ' Dumped Langevin + ABF BIN dynamics'
+                  if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'
            case (3) 
                   write(6,*) ' Dumped Langevin + ABF BIN dynamics with Omega'
            case (4) 
                   write(6,*) ' Dumped Langevin + ABF GAUSSIAN dynamics'
            case (5) 
                   write(6,*) ' Dumped Langevin + ABF EE dynamics'
+           case (6) 
+                  write(6,*) ' Dumped Langevin + ABF EE dynamics + constant biais'
+           case (7) 
+                  write(6,*) ' Dumped Langevin + ABF BIN dynamics + constant biais'
+           case (8) 
+                  write(6,*) ' Dumped Langevin + ABF EE dynamics + iterative'
         end select 
       end if
 
@@ -52,16 +63,39 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
         select case (abf_type)
            case (1)
                   write(6,*) ' Overdumped Langevin dynamics'
-           case (2)  
-                  write(6,*) ' Overdumped Langevin + ABF BIN dynamics'
+           case (2)
+                  if (abf_mode==1) write(6,*) ' Dumped Langevin + ABF BIN dynamics'
+                  if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'
            case (3) 
                   write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega'
            case (4) 
-                  write(6,*) ' Dumped Langevin + ABF GAUSSIAN dynamics'
+                  write(6,*) ' Overdumped Langevin + ABF GAUSSIAN dynamics'
            case (5) 
-                  write(6,*) ' Dumped Langevin + ABF EE dynamics'
+                  write(6,*) ' OverDumped Langevin + ABF EE dynamics'
+           case (6) 
+                  write(6,*) ' OverDumped Langevin + ABF EE dynamics + constant biais'
+           case (7) 
+                  write(6,*) ' OverDumped Langevin + ABF BIN dynamics + constant biais'
+           case (8) 
+                  write(6,*) ' OverDumped Langevin + ABF EE dynamics + iterative'
         end select 
       end if
+
+     if ((abf_mode==2) .and. ((abf_type==1).or.(abf_type==3).or.(abf_type==4).or. &
+                             (abf_type==5).or.(abf_type==6).or.(abf_type==7).or. &
+                             (abf_type==9) ) ) then
+         write(6,*) 'The is no ABF implementation for this mode'
+         write(6,*) 'abf_type .....',abf_type
+         write(6,*) 'abf_mode .....',abf_mode
+         write(6,*) '<stop in read_mab_file>'
+         stop
+    end if 
+
+    if (abf_mode==2) then
+        omega_veinstein(:,:)=omega_einstein
+    write(*,'("Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
+        !instead that I will a file with all the einstein  frequencies 
+    end if 
 
      select case (sim_mode)
       case (1) 
@@ -89,8 +123,11 @@ if (abf_type==4) then
  write(*,'("eta_mab the width of the Gaussian in bins.....:",D15.4)') eta_mab 
 end if
 
-write(*,'("Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
-write(*,'("Width of the FD function in A................:",D15.4)') deltasph
+if (block) then
+  write(*,'("Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
+  write(*,'("Width of the FD function in A................:",D15.4)') deltasph
+end if
+
 write(*,'("Number of the bins of histo..................:",i7)') nhisto
 write(*,'("The frequency of writing histo...............:",i7)') nwrite_histo
 write(*,'("The first shell of the histo (1nn units).....:",D15.4)') deltar1
@@ -110,10 +147,6 @@ write(*,'("The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac
  deltar1=dsqrt(3.d0)*a0bcc*deltar1/(angst*2.d0)
  deltar2=dsqrt(3.d0)*a0bcc*deltar2/(angst*2.d0)
  rtestlac=dsqrt(3.d0)*a0bcc*rtestlac/(angst*2.d0)
- 
-
-
- 
 
 
 

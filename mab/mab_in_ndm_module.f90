@@ -19,14 +19,16 @@ module mab_in_ndm_module
       
 
       real(double), parameter :: KtoERG=1.3791946308724831d-16 
-      integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre
+      real(double), parameter :: unit_omega_to_erg=umass*1.d+24*(2.d0*pi)**2 
+
+      integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre,abf_mode
       integer                                       :: it_mab
       real(double),save :: epot0,gamma
       real(double),dimension(:),allocatable, save:: w
       real(double)   :: pinumber,dcsi,normxlac,deltasph,radiussph,rtestlac
       real(double),dimension(3) :: xbar,xbarini,xlaci,xlacf,rfilac 
       real(double)  :: deltar1,deltar2,delta_z
-      real(double)  :: xi_min,xi_max,a_Fermi,Fermi_percent
+      real(double)  :: xi_min,xi_max
       integer       :: nhisto,nhisto1,nhisto2,icsi,nwrite_histo
       real(double),dimension(:), allocatable :: histo,histo1,histo2,histo_temp,histo_temp1,histo_xi
       real(double),dimension(:),allocatable::histo_zeta
@@ -36,6 +38,10 @@ module mab_in_ndm_module
       real(double),dimension(:),allocatable::A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom,A_bar_ee
       real(double),dimension(:),allocatable::exp_A_bar
       real(double),dimension(:),allocatable::A_theo,error_A,error_A_bar
+
+      real(double) :: omega_einstein,ene_einstein
+      real(double), dimension(:,:), allocatable :: omega_veinstein,fpeinstein
+
       real(double)::sigma_eta,sigma_carre,eta_ABFee,sum_error_A,sum_error_A_bar
       integer::ecart_eta,nom_deconvo
       real(double)::eta_mab
@@ -52,7 +58,7 @@ subroutine allocate_mab()
    implicit none
    
    allocate (sig_i(3,imm),sig_ll(3,imm),rga_i(3,imm),m_i(3,imm),xp0(3,imm)) 
-  
+   allocate (omega_veinstein(3,imm),fpeinstein(3,imm))  
 
 return
 end   subroutine allocate_mab
@@ -62,7 +68,7 @@ end   subroutine allocate_mab
     use tab_imm_m
     implicit none
     integer :: ic
-
+     
      do ic=1,3
       m_i(ic,1:im) = cm(ityp(1:im))
      end do
@@ -75,27 +81,34 @@ end   subroutine allocate_mab
      pinumber=4.d0*datan(1.D0)
     
     xp0(:,:)=xp(:,:)
- 
-    xlaci(1:3)=(/a0bcc,a0bcc,a0bcc/)/angst
-    xlacf(1:3)=(/a0bcc/2.d0,a0bcc/2.d0,a0bcc/2.d0 /)/angst
-   
-    normxlac=sqrt(SUM((xlacf(1:3)-xlaci(1:3))**2))
-    rfilac(1:3)=(xlacf(1:3)-xlaci(1:3))/normxlac
-  
-        
-    a_Fermi=a_Fermi/normxlac 
-    xi_min=-normxlac*Fermi_percent
-    xi_max=(1.d0+Fermi_percent)*normxlac
+! set-up the reaction coordinate case
+   if (abf_mode==1) then
+     xlaci(1:3)=(/a0bcc,a0bcc,a0bcc/)/angst
+     xlacf(1:3)=(/a0bcc/2.d0,a0bcc/2.d0,a0bcc/2.d0 /)/angst
+     normxlac=sqrt(SUM((xlacf(1:3)-xlaci(1:3))**2))
+     rfilac(1:3)=(xlacf(1:3)-xlaci(1:3))/normxlac
+     delta_z=normxlac/dble(nhisto)
+   end if 
+!set-up the alchemical case ...
 
+   if (abf_mode==2) then
+    xi_min=0.d0
+    xi_max=1.d0
+    normxlac=xi_max-xi_min
     delta_z=normxlac/dble(nhisto)
+   end if 
 
     !sigma_eta=sqrt(eta_mab)
-    sigma_eta=eta_mab*delta_z ! choisir largeur de gaussienne
-    sigma_carre=sigma_eta**2
-    ecart_eta=nint(3.d0*sigma_eta/delta_z)
-    write(*,*),'ecart_eta,delta_z,sigma_eta',ecart_eta,delta_z,sigma_eta
-    nhisto1=deltar1/dble(delta_z)
-    nhisto2=deltar2/dble(delta_z)
+     sigma_eta=eta_mab*delta_z ! choisir largeur de gaussienne
+     sigma_carre=sigma_eta**2
+     ecart_eta=nint(3.d0*sigma_eta/delta_z)
+      write(*,*),'ecart_eta,delta_z,sigma_eta',ecart_eta,delta_z,sigma_eta
+     nhisto1=deltar1/dble(delta_z)
+     nhisto2=deltar2/dble(delta_z)
+   
+
+
+   
     allocate(histo(nhisto),histo1(-nhisto1:nhisto+nhisto1),histo2(-nhisto2:nhisto+nhisto2),& 
              histo_temp(nhisto),histo_temp1(-nhisto1:nhisto+nhisto1))
     allocate(histo_xi(-nhisto1:nhisto+nhisto1),histo_zeta(-nhisto1:nhisto+nhisto1))

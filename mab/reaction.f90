@@ -10,7 +10,7 @@ subroutine reaction ()
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: lenfnam,fnam,im,imm,ev2erg
  USE tab_imm_m
- USE mab_in_ndm_module, ONLY: m_i,m_tot,normxlac, rfilac,xlaci,xbarini,xbar,dcsi,icsi,delta_z
+ USE mab_in_ndm_module, ONLY: m_i,m_tot,normxlac, rfilac,xlaci,xbarini,xbar,dcsi,icsi,delta_z,abf_mode
  implicit none
 
 !  local variables ...
@@ -20,10 +20,11 @@ subroutine reaction ()
     xbar(ic)  = sum(xp(ic,1:im)*m_i(ic,1:im))/m_tot
  enddo
  ! In this case the vacancy in the atom no 7 ...
-   
+  if (abf_mode==1) then 
     dcsi=DOT_PRODUCT(rfilac(:),xp(:,7)-xlaci(:)-xbar(:)+xbarini(:))
     !write (*,*) dcsi ,delta_z
     !stop
+  end if 
     icsi=nint(dcsi/delta_z)
  
  return
@@ -67,6 +68,29 @@ subroutine calfoblock()
   end if
  end do
 
-
-
 end subroutine calfoblock
+
+
+subroutine calfo_einstein_solid ()
+ USE T_kind_param_m, ONLY:  double
+ USE gen_com_m, ONLY: zero,im,imm,low_limit,angst,ev2erg,erg2ev
+ USE tab_imm_m
+ USE var_pot, ONLY : cm
+ USE mab_in_ndm_module, ONLY:xbar,xbarini,xp0,maxforce,unit_omega_to_erg,ene_einstein, &
+                             omega_veinstein,fpeinstein
+                             
+ 
+ integer :: ic
+
+ fpeinstein (:,:) = zero
+! Computing the forces on the protevtives spheres...
+
+ ene_einstein=0.d0
+ do ic=1,im
+  fpeinstein(:,ic)=-omega_veinstein(:,ic)**2*unit_omega_to_erg*cm(ityp(ic))*(xp(:,ic)-xp0(:,ic)-xbar(:)-xbarini(:))
+  ene_einstein=ene_einstein-SUM(fpeinstein(:,ic)*(xp(:,ic)-xp0(:,ic)-xbar(:)-xbarini(:)))
+ end do
+ ene_einstein=0.5d0*ene_einstein
+
+
+end subroutine calfo_einstein_solid

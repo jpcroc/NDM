@@ -63,7 +63,7 @@ subroutine genere_bruit(gau)! bruit gaussien
    use gen_com_m,      ONLY : pi,im 
    implicit none
 
-   real(double), dimension(6,im+1)::gau
+   real(double), dimension(6,im+1), intent(out)::gau
    real(double) :: u1,u2,b1
 
    integer   :: ic,i!,iatom,i
@@ -78,9 +78,31 @@ subroutine genere_bruit(gau)! bruit gaussien
          gau(ic,i) = b1
       enddo
     enddo
-      
+  return      
  
 end subroutine genere_bruit
+
+
+
+subroutine genere_bruit_one_value(value)! bruit gaussien
+
+   use T_kind_param_m, ONLY : double
+   use gen_com_m,      ONLY : pi,im 
+   implicit none
+
+   real(double),intent(out) :: value
+   real(double) :: u1,u2,b1
+   
+   value=0 
+
+         call random_number(u1)
+         call random_number(u2)
+         b1=sqrt(-2.*log(u1))*cos(2.*pi*u2)
+         value = b1
+   return
+ 
+end subroutine genere_bruit_one_value
+
 
 
 real(8) function ran3()

@@ -13,7 +13,7 @@
   end if 
 
   select case (langevin_type)
-    case (1)
+    case (1)  
      sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))
     case (2) 
      rga_i(1:3,1:im) = exp(-gamma*tstep/two)
