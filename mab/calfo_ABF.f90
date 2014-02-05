@@ -2,7 +2,7 @@ subroutine calfo_mab()
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-  USE mab_in_ndm_module, only: it_mab,abf_type,abf_mode, block,histo_equi,n_equilibre
+  USE mab_in_ndm_module, only: it_mab,abf_type,abf_mode, block,histo_equi,n_equilibre,ene0
   implicit none
   integer :: it_langevin
  
@@ -18,6 +18,7 @@ subroutine calfo_mab()
          endif
          if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
         call calfo
+        if (it_langevin==1) ene0 = potist
         if (block) call calfoblock()
 
 !ABF part ...
@@ -62,7 +63,7 @@ subroutine calfo_ABF_BIN() ! this concerns only the force applied on atoms
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY:dcsi,icsi,rfilac,histo,     &
                              mean_force,cumul_force1,nhisto,nhisto1, &
-                             mean_force1,histo1,ene_einstein,abf_mode,fpeinstein
+                             mean_force1,histo1,ene_einstein,abf_mode,fpeinstein,ene0
  implicit none
 
  real(double), dimension(3,imm) :: fpabf
@@ -81,7 +82,7 @@ if (abf_mode==1) then
 end if 
 
 if (abf_mode==2) then
-  force = potist - ene_einstein ! -d U(dcsi,q)/d csi  
+  force = potist - ene_einstein - ene0 ! -d U(dcsi,q)/d csi  
   fpabf(:,:) = (1.d0-dcsi)*fpeinstein(:,:) + dcsi*fp(:,:)
   fp(:,:)=fpabf(:,:)
  if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 

@@ -84,7 +84,7 @@ end subroutine genere_bruit
 
 
 
-subroutine genere_bruit_one_value(value)! bruit gaussien
+subroutine genere_bruit_one_value(value)! bruit gaussien between -1 and 1 
 
    use T_kind_param_m, ONLY : double
    use gen_com_m,      ONLY : pi,im 

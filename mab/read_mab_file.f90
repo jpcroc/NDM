@@ -107,7 +107,7 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
            write(6,*) 'The simulatuion check the first passage time and '
            write(6,*) 'will stop once the vacacy reach the final postion'
       case (2) 
-           write(6,*) ' The simulation stops after nlangevin steps =',nlangevin
+       write(6,'("The simulation stops after nlangevin steps....:",i9)')  nlangevin
      end select 
 
 

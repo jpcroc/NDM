@@ -14,7 +14,7 @@
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,Ecinetique,xbar,  &
                                  abf_type,abf_mode,block,gamma,dcsi, &
-                                 ene_einstein,temperature,mean_force1,icsi
+                                 ene_einstein,ene0, temperature,mean_force1,icsi
 
 
     implicit none
@@ -25,12 +25,10 @@
     real(double):: pp(3,im)
     real(double) :: psum(3)
     real(double):: sig_mass(3,im) 
-
+    real(double) :: dcsi_ini
 
     call genere_bruit(gau)
-     
     sig_mass(1:3,1:im)=sig_ll(1:3,1:im)*gau(1:3,1:im)
-
     do ic=1,3
        xbar(ic)=sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules
        xbari(ic)=xbar(ic)
@@ -60,14 +58,20 @@
     enddo
 
     if (abf_mode==2) then 
-     call genere_bruit_one_value(noise)
      if ((dcsi<=1).and.(dcsi>=0)) then
        tmp_force=mean_force1(icsi)
       else 
        tmp_force=0.d0
-     end if 
-     tmp_dcsi = -(potist-ene_einstein - tmp_force )*dtlang/(gamma*umass) + noise*sqrt(2.d0*temperature*dtlang/(gamma*umass))      
-     dcsi=tmp_dcsi  + dcsi
+     end if
+     dcsi_ini=dcsi
+     tmp_dcsi=0.d0
+     noise=0
+10 continue
+     call genere_bruit_one_value(noise)
+      tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*dtlang/(gamma) + noise*sqrt(2.d0*temperature*dtlang/(gamma))      
+       dcsi=tmp_dcsi  + dcsi_ini
+      if (dcsi< 0.d0) go to 10
+     write(*,'("lang  ",2E16.2, 5D23.7)') dcsi,tmp_dcsi, potist, ene_einstein,noise,temperature,dtlang 
     end if  
    
     return
