@@ -19,7 +19,10 @@ module mab_in_ndm_module
       
 
       real(double), parameter :: KtoERG=1.3791946308724831d-16 
-      real(double), parameter :: unit_omega_to_erg=umass*1.d+24*(2.d0*pi)**2 
+      real(double), parameter :: THZtoK=47.99407332506204d0
+      real(double), parameter :: unit_omega_to_erg=1.d+24*(2.d0*pi)**2!*umass, umass is not included because the 
+                                                                      !cm are already in  multiplied by 
+                                                                      ! umass (in g) in the main NDM program. 
 
       integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre,abf_mode
       integer                                       :: it_mab
@@ -41,7 +44,7 @@ module mab_in_ndm_module
 
       real(double) :: omega_einstein,ene_einstein,ene0
       real(double), dimension(:,:), allocatable :: omega_veinstein,fpeinstein
-
+      integer :: it_en
       real(double)::sigma_eta,sigma_carre,eta_ABFee,sum_error_A,sum_error_A_bar
       integer::ecart_eta,nom_deconvo
       real(double)::eta_mab
@@ -74,13 +77,15 @@ end   subroutine allocate_mab
      end do
      m_tot=SUM(m_i(1,1:im))
     
+     xp0(:,:) = xp(:,:)
      do ic=1,3
        xbarini(ic)  = sum(xp(ic,1:im)*m_i(ic,1:im))/m_tot
      enddo
  
      pinumber=4.d0*datan(1.D0)
+
+    it_en=-1
     
-    xp0(:,:)=xp(:,:)
 ! set-up the reaction coordinate case
    if (abf_mode==1) then
      xlaci(1:3)=(/a0bcc,a0bcc,a0bcc/)/angst

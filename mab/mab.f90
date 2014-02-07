@@ -31,7 +31,6 @@ subroutine mab
   write(6,*)'************ DEBUT DE MAB ****************'
   write(6,*)
   write(6,*)
-
   write(6,*)'......READING.....' 
   call read_mab_file()
 
@@ -43,10 +42,21 @@ subroutine mab
   write(6,*)'......PREPARE.....' 
 
  call prepare_langevin()
+if (abf_mode==2) then
+ call test_minimum_abf () 
+ call init_einstein_solid  ()
+ call calfo_einstein_solid ()
+ fp(:,:) = fpeinstein(:,:)
+  do it_en=1,2000
+   call langevin_overdamped  ()
+   !write(23,'(i7,2D13.5,3f12.5)') it_en, ene_einstein*erg2ev,xp(1,1)*angst,xp(1,1)*angst,fpeinstein(1,1)*erg2eV/angst
+  end do
+ it_en=-1
+end if 
+
+
 
   write(6,*)'......LANGEVIN.....' 
- 
-
 select case(compute_mode)
 
 case(1)!--------one simulation
@@ -74,6 +84,7 @@ do it_mab=1,nlangevin
    select case (langevin_type)
     case (1)
       call langevin_overdamped ()
+     if (abf_mode==2) call langevin_overdamped_csi()
     case (2)
       call langevin()
     end select 

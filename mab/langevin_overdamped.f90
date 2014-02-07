@@ -12,20 +12,17 @@
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
-    USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,Ecinetique,xbar,  &
-                                 abf_type,abf_mode,block,gamma,dcsi, &
-                                 ene_einstein,ene0, temperature,mean_force1,icsi
+    USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,xbar,  &
+                                 abf_type,block,gamma,fpeinstein,it_en 
 
 
     implicit none
     integer     :: ic
     real(double) :: xbari(3),xbarc(3)
     real(double), dimension(6,im+1)::gau
-    real(double)             :: noise,tmp_dcsi,tmp_force
     real(double):: pp(3,im)
     real(double) :: psum(3)
     real(double):: sig_mass(3,im) 
-    real(double) :: dcsi_ini
 
     call genere_bruit(gau)
     sig_mass(1:3,1:im)=sig_ll(1:3,1:im)*gau(1:3,1:im)
@@ -36,7 +33,12 @@
 
  
  !one force calculation ....
-      call calfo_mab()         
+   if (it_en > 0) then
+     call calfo_einstein_solid ()
+     fp(:,:) = fpeinstein (:,:)
+    else 
+      call calfo_mab()
+    end if          
     
      ! xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
 
@@ -57,22 +59,6 @@
        xp(ic,1:im) = xp(ic,1:im) - xbarc(ic)  ! on recentre tout le systeme
     enddo
 
-    if (abf_mode==2) then 
-     if ((dcsi<=1).and.(dcsi>=0)) then
-       tmp_force=mean_force1(icsi)
-      else 
-       tmp_force=0.d0
-     end if
-     dcsi_ini=dcsi
-     tmp_dcsi=0.d0
-     noise=0
-10 continue
-     call genere_bruit_one_value(noise)
-      tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*dtlang/(gamma) + noise*sqrt(2.d0*temperature*dtlang/(gamma))      
-       dcsi=tmp_dcsi  + dcsi_ini
-      if (dcsi< 0.d0) go to 10
-     write(*,'("lang  ",2E16.2, 5D23.7)') dcsi,tmp_dcsi, potist, ene_einstein,noise,temperature,dtlang 
-    end if  
    
     return
  end subroutine langevin_overdamped

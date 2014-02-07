@@ -10,12 +10,13 @@ subroutine Free_energy_ABF()
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY: delta_z,nhisto,nhisto1,nhisto2, & 
                               histo,histo1,histo2,Free_energy,&
-                              mean_force1,abf_type,x_mol,temperature,&
+                              mean_force1,abf_type,abf_mode,x_mol,temperature,&
                               A_ee,A_dev_ee,exp_A_bar,A_bar_ee,eta_ABFee
 
 implicit none
 integer::i_loop,i_iter
 real(double)::Free_temp(-nhisto2:nhisto+nhisto2)
+real(double) :: unit_histo2(-nhisto2:nhisto+nhisto2)
 real(double)::renorm_f,sum_histo
 Free_temp(:)=0
 
@@ -29,13 +30,19 @@ if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'énergie libr
   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f! renormalise par rapport à l'aire
 endif
 
+  if (abf_mode==1) unit_histo2(:)=x_mol(:)/A2cm
+  if (abf_mode==2) then 
+     do i_loop=-nhisto2, nhisto+nhisto2
+      unit_histo2(i_loop)=delta_z*dble(i_loop)
+     end do
+  end if 
 
  select case (abf_type)
  case(1)
   write(*,*),'Free energy computation....Langevin Dynamics'
   open(unit=992,file='Free_energy_Langevin',status='unknown')
    do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(992,*), x_mol(i_loop)/A2cm,Free_energy(i_loop)*erg2eV
+    write(992,*), unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
    enddo
   close(992)
 
@@ -43,7 +50,7 @@ endif
   write(*,*),'Free energy computation....ABF BIN'
   open(unit=993,file='Free_energy_ABFBIN',status='unknown')
    do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(993,*), x_mol(i_loop)/A2cm, Free_energy(i_loop)*erg2eV
+    write(993,*),  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
    enddo
   close(993)
 
@@ -51,7 +58,7 @@ endif
   write(*,*),'Free energy computation....ABF BIN OMEGA'
   open(unit=994,file='Free_energy_ABFBIN_OMEGA',status='unknown')
    do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(994,*), x_mol(i_loop)/A2cm, Free_energy(i_loop)*erg2eV
+    write(994,*),  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
    enddo
   close(994)
 
@@ -59,7 +66,7 @@ endif
   write(*,*),'Free energy computation....ABF Gaussian'
   open(unit=995,file='Free_energy_ABFGaussian',status='unknown')
    do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(995,*), x_mol(i_loop)/A2cm, Free_energy(i_loop)*erg2eV
+    write(995,*),  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
    enddo
  close(995)
 

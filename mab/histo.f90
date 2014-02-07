@@ -50,7 +50,7 @@ subroutine fill_final_histo()!To create the final histogram for the simulation
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY: nhisto,nhisto1,nhisto2,& 
                               histo,histo1,histo2,delta_z,&
-                              histo_xi,histo_equi,abf_type,histo_zeta,&
+                              histo_xi,histo_equi,abf_type,abf_mode, histo_zeta,&
                               x_mol
 
 implicit none
@@ -66,11 +66,13 @@ if ((abf_type .ne. 6) .and. (abf_type .ne. 7)) then ! when the biais is updated
  sum_histo=sum(histo)
 
    do i_iter=-nhisto1,nhisto+nhisto1
-    write(989,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo1
+    if (abf_mode==1) write(989,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo1
+    if (abf_mode==2) write(989,*),dble(i_iter)*delta_z, histo1(i_iter)/sum_histo1
    enddo
    
    do i_iter=1,nhisto
-    write(990,*),x_mol(i_iter)/A2cm, histo(i_iter)/sum_histo
+    if (abf_mode==1) write(990,*),x_mol(i_iter)/A2cm, histo(i_iter)/sum_histo
+    if (abf_mode==2) write(990,*),dble(i_iter)*delta_z, histo(i_iter)/sum_histo
    enddo
 
   close(989)
@@ -81,7 +83,8 @@ if ((abf_type .ne. 6) .and. (abf_type .ne. 7)) then ! when the biais is updated
  sum_histo_xi=sum(histo_xi)
 
     do i_iter=-nhisto1,nhisto+nhisto1
-     write(970,*),x_mol(i_iter)/A2cm, histo_xi(i_iter)/sum_histo_xi
+     if (abf_mode==1) write(970,*),x_mol(i_iter)/A2cm, histo_xi(i_iter)/sum_histo_xi
+     if (abf_mode==2) write(970,*),dble(i_iter)*delta_z, histo_xi(i_iter)/sum_histo_xi
     enddo
 
   close(970)
@@ -98,7 +101,8 @@ open(unit=969,file='histogram_zeta',status='unknown')
 sum_histo_zeta=sum(histo_zeta)
   
  do i_iter=-nhisto1,nhisto+nhisto1
-    write(969,*),x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
+    if (abf_mode==1) write(969,*),x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
+    if (abf_mode==2) write(969,*),dble(i_iter)*delta_z, histo_zeta(i_iter)/sum_histo_zeta
  enddo
 
 
@@ -114,8 +118,10 @@ open(unit=1106,file='histogram_xi_const_biais',status='unknown')
  sum_histo_zeta=sum(histo_zeta)
   
  do i_iter=-nhisto1,nhisto+nhisto1
-    write(1105,*),x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
-    write(1106,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo_xi
+    if (abf_mode==1) write(1105,*),x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
+    if (abf_mode==2) write(1105,*),dble(i_iter)*delta_z, histo_zeta(i_iter)/sum_histo_zeta
+    if (abf_mode==1) write(1106,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo_xi
+    if (abf_mode==2) write(1106,*),dble(i_iter)*delta_z, histo1(i_iter)/sum_histo_xi
  enddo
 
 
@@ -132,7 +138,8 @@ if (abf_type == 7) then
  sum_histo_xi=sum(histo1)
   
  do i_iter=-nhisto1,nhisto+nhisto1
-    write(1107,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo_xi
+   if (abf_mode==1)  write(1107,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo_xi
+   if (abf_mode==2)  write(1107,*),dble(i_iter)*delta_z, histo1(i_iter)/sum_histo_xi
  enddo
 
 

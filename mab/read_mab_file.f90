@@ -73,7 +73,8 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
                   if (abf_mode==1) write(6,*) ' Dumped Langevin + ABF BIN dynamics'
                   if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'
            case (3) 
-                  write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega'
+                  if (abf_mode==1) write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega'
+                  if (abf_mode==2) write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega + External parameter'
            case (4) 
                   write(6,*) ' Overdumped Langevin + ABF GAUSSIAN dynamics'
            case (5) 
@@ -87,7 +88,7 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
         end select 
       end if
 
-     if ((abf_mode==2) .and. ((abf_type==1).or.(abf_type==3).or.(abf_type==4).or. &
+     if ((abf_mode==2) .and. ((abf_type==1).or.(abf_type==4).or. &
                              (abf_type==5).or.(abf_type==6).or.(abf_type==7).or. &
                              (abf_type==9) ) ) then
          write(6,*) 'The is no ABF implementation for this mode'
