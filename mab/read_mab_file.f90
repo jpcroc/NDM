@@ -150,10 +150,6 @@ write(*,'("The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac
      stop
     end if 
 
- deltar1=dsqrt(3.d0)*a0bcc*deltar1/(angst*2.d0)
- deltar2=dsqrt(3.d0)*a0bcc*deltar2/(angst*2.d0)
- rtestlac=dsqrt(3.d0)*a0bcc*rtestlac/(angst*2.d0)
-
 
 
 close (lumab)

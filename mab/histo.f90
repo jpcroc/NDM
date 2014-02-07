@@ -11,7 +11,7 @@ subroutine fill_histo()
 implicit none
 ! ....-nhisto2......-nhisto1....0.........nhisto....nhisto+nhisto1......nhisto+nhisto2......
 
- !The border zone. Over this border the mean force is zero
+!The border zone. Over this border the mean force is zero
  if ((icsi >= -nhisto2).and.(icsi <= nhisto+nhisto2)) then
    histo2(icsi)=histo2(icsi) + 1
   ! The intermediate region 

@@ -19,7 +19,6 @@ real(double)::Free_temp(-nhisto2:nhisto+nhisto2)
 real(double) :: unit_histo2(-nhisto2:nhisto+nhisto2)
 real(double)::renorm_f,sum_histo
 Free_temp(:)=0
-
 if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'énergie libre 
  Free_energy(-nhisto1)=0.d0
   do i_loop=-nhisto1+1,nhisto+nhisto1

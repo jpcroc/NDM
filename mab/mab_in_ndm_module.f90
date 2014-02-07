@@ -93,6 +93,9 @@ end   subroutine allocate_mab
      normxlac=sqrt(SUM((xlacf(1:3)-xlaci(1:3))**2))
      rfilac(1:3)=(xlacf(1:3)-xlaci(1:3))/normxlac
      delta_z=normxlac/dble(nhisto)
+     deltar1=dsqrt(3.d0)*a0bcc*deltar1/(angst*2.d0)
+     deltar2=dsqrt(3.d0)*a0bcc*deltar2/(angst*2.d0)
+     rtestlac=dsqrt(3.d0)*a0bcc*rtestlac/(angst*2.d0)
    end if 
 !set-up the alchemical case ...
 
@@ -110,7 +113,7 @@ end   subroutine allocate_mab
       write(*,*),'ecart_eta,delta_z,sigma_eta',ecart_eta,delta_z,sigma_eta
      nhisto1=deltar1/dble(delta_z)
      nhisto2=deltar2/dble(delta_z)
-   
+ 
     if (abf_mode==2) then
         omega_veinstein(:,:)=omega_einstein
         !instead that I will a file with all the einstein  frequencies 
