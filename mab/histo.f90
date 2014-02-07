@@ -9,7 +9,7 @@ subroutine fill_histo()
  USE mab_in_ndm_module, ONLY: dcsi,icsi, delta_z,nhisto,nhisto1,nhisto2,& 
                               histo,histo1,histo2
 implicit none
-! ....-nhisto2......-nhisto1....0.........nhisto....nhisto1......nhisto2......
+! ....-nhisto2......-nhisto1....0.........nhisto....nhisto+nhisto1......nhisto+nhisto2......
 
  !The border zone. Over this border the mean force is zero
  if ((icsi >= -nhisto2).and.(icsi <= nhisto+nhisto2)) then

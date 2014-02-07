@@ -23,7 +23,7 @@ subroutine mab
 ! Copyright LL Cao and all NDM band, April- 2013
   
   integer:: i_iter
-  real(double)::temp_read
+  real(double)::temp_read,tmp1, tmp2,tmp3,tmp4
   logical :: dir_e
 
   write(6,*)
@@ -135,6 +135,20 @@ end do
  
   call create_files()! Create files needed
 
+ if (abf_mode==2) then
+  write (*,*) temperature, temperature/KtoERG, omega_einstein*47.99407332506204
+  tmp4= - temperature*erg2ev*dble(3*im-6)*log((temperature/KtoERG)/(omega_einstein*47.99407332506204))
+  tmp1= - temperature*erg2ev*dble(3*im-3)*log((temperature/KtoERG)/(omega_einstein*47.99407332506204))
+  tmp3= - temperature*erg2ev*dble(3*im)*log((temperature/KtoERG)/(omega_einstein*47.99407332506204))
+  tmp2= (Free_energy(0)-Free_energy(nhisto))*erg2ev
+
+  write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
+  write(6,'("F(Einstein)            (eV) ............:  ", E15.7)') tmp1
+  write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", E15.7)') tmp2
+  write(6,'("F(Full3N-6)            (eV) ............:  ", E15.7)') tmp4-tmp2 
+  write(6,'("F(Full3N-3)            (eV) ............:  ", E15.7)') tmp1-tmp2 
+  write(6,'("F(Full3N)              (eV) ............:  ", E15.7)') tmp3-tmp2 
+ end if 
 
 
 
