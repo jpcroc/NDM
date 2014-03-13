@@ -49,7 +49,7 @@
       pp(ic,1:im) = pp(ic,1:im) -psum(ic)
       enddo
 
-    call control_angular_momenta(pp,xp)
+    !call control_angular_momenta(pp,xp)
 
     xp(1:3,1:im)=pp(1:3,1:im)+xp(1:3,1:im)
 

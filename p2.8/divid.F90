@@ -52,7 +52,7 @@ subroutine divid (appel)
   if (ltabvois) then
      if (rumax>rvois) then
         if((rang==0).and.(appel==0)) write (6, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
-        call arret_ndm
+      !cosdebug call arret_ndm
      else
         if((rang==0).and.(appel==0)) write (6,'(A,2F12.2)') ' rumax devient rvois&
              & pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
@@ -75,6 +75,7 @@ subroutine divid (appel)
   if ((rang==0).and.(appel==0)) write (6, *) 'izonr,zlmin,rumax', izonr, zlmin*1d8, rumax*1d8
   if (izonr<1) then
      write (6, *) 'trop petite boite !!!'
+   !cosboite  stop
      stop
   endif
   ! calcul du volume
@@ -271,6 +272,7 @@ subroutine divid (appel)
      izonr2 = int(zlmin/rm2)
      if (izonr2<1) then
         write (6, *) rang,'trop petite boite pour rvois !!!'
+     !cosboite   call arret_ndm
         call arret_ndm
      endif
      if(.not.lconstrtot)rumax=rvois

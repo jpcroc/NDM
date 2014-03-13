@@ -42,7 +42,7 @@ module mab_in_ndm_module
       real(double),dimension(:),allocatable::exp_A_bar
       real(double),dimension(:),allocatable::A_theo,error_A,error_A_bar
 
-      real(double) :: omega_einstein,ene_einstein,ene0
+      real(double) :: omega_einstein,ene_einstein,ene0,einstein_free_3N, einstein_correction, pbc_correction
       real(double), dimension(:,:), allocatable :: omega_veinstein,fpeinstein
       integer :: it_en
       real(double)::sigma_eta,sigma_carre,eta_ABFee,sum_error_A,sum_error_A_bar

@@ -50,7 +50,7 @@ subroutine calfo_mab()
                   call calfo_ABF_BIN_const_biais
           case (8)
                   call calfo_ABFee_iter
-        end select 
+   end select 
 !here we have fp(:,)+fpabf(:,:)
 return
 end subroutine calfo_mab

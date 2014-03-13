@@ -141,13 +141,27 @@ end do
   tmp1= - temperature*erg2ev*dble(3*im-3)*log((temperature/KtoERG)/(omega_einstein*47.99407332506204))
   tmp3= - temperature*erg2ev*dble(3*im)*log((temperature/KtoERG)/(omega_einstein*47.99407332506204))
   tmp2= (Free_energy(0)-Free_energy(nhisto))*erg2ev
+  call free_and_correction_einstein()
 
   write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
-  write(6,'("F(Einstein)            (eV) ............:  ", E15.7)') tmp1
-  write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", E15.7)') tmp2
-  write(6,'("F(Full3N-6)            (eV) ............:  ", E15.7)') tmp4-tmp2 
-  write(6,'("F(Full3N-3)            (eV) ............:  ", E15.7)') tmp1-tmp2 
-  write(6,'("F(Full3N)              (eV) ............:  ", E15.7)') tmp3-tmp2 
+  write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') tmp1
+  write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", F15.7)') tmp2
+  write(6,'("F(Full3N-6)            (eV) ............:  ", F15.7)') tmp4-tmp2 
+  write(6,'("F(Full3N-3)            (eV) ............:  ", F15.7)') tmp1-tmp2 
+  write(6,'("F(Full3Nm)             (eV) ............:  ", F15.7)') tmp3-tmp2 
+!  write(6,'("F(Full3Np)             (eV) ............:  ", F15.7)') tmp3+tmp2 
+
+  write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
+  write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') einstein_free_3N
+  write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", F15.7)') tmp2
+  !asta pare sa mearga cel mai bine. In mod normal l-as vedea cu +pbc_correction
+  write(6,'("F(FullM)               (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction - pbc_correction - tmp2 
+  write(6,'("F(FullP)               (eV) ............:  ", F15.7)') einstein_free_3N- pbc_correction - tmp2 
+  write(6,'("PBC correction         (eV) ............:  ", F15.7)') pbc_correction 
+  write(6,'("Einstein correction    (eV) ............:  ", F15.7)') einstein_correction
+ 
+
+
  end if 
 
 

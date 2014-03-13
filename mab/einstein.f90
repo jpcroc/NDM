@@ -54,3 +54,38 @@ subroutine calfo_einstein_solid ()
 
 
 end subroutine calfo_einstein_solid
+
+subroutine free_and_correction_einstein()
+USE T_kind_param_m, ONLY :double
+use gen_com_m, ONLY: im, imm, erg2ev,pi,hbar,volu
+use mab_in_ndm_module, ONLY : m_i,THZtoK, KtoERG,omega_einstein,     &
+                              einstein_free_3N, einstein_correction, &
+                              pbc_correction,temperature
+implicit none
+real(double) :: oerg, hval,mtot,m2tot
+
+ oerg=omega_einstein*THZtoK*KtoERG
+ hval=2.d0*hbar*pi
+ mtot=SUM(m_i(1,1:im))
+ m2tot=SUM(m_i(1,1:im)**2)
+
+  einstein_free_3N= -temperature*erg2ev*dble(3.d0*im)*log(temperature/oerg)
+  ! This is not general formula
+  ! We should replace m_i(1,1) with the appropiate factor. 
+!  einstein_correction = - temperature*erg2ev*1.5d0*   &
+!   log(m_i(1,1)*oerg**2*hval**2*mtot/(4.d0*temperature**2*pi**2*m2tot) ) 
+   einstein_correction = - 3.d0*temperature*erg2ev*log(oerg/temperature)  
+ 
+
+
+  if (volu==0.d0) then
+  write(*,*) 'MALHEUUUUUUR volume NUL! '
+  end if 
+!Frenkel PBC
+!  pbc_correction=temperature*erg2ev*log(dble(im)/volu*sqrt((hval**2/(2.d0*pi*mtot*temperature))**3) )
+!Almarza Correction
+pbc_correction=temperature*erg2ev*log(dble(im)/volu*sqrt((2.d0*pi*temperature/(m_i(1,1)*omega_einstein**2*1.d+24)**3)))
+
+
+end subroutine free_and_correction_einstein
+
