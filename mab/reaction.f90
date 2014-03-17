@@ -27,7 +27,7 @@ subroutine reaction ()
   end if
     icsi=nint(dcsi/delta_z)
     
- !   write (*,*) 'icsi...', dcsi,delta_z,icsi 
+    !write (*,*) 'icsi.(reaction) ...', dcsi,delta_z,icsi 
  
  return
   end subroutine reaction

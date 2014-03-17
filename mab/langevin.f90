@@ -2,7 +2,7 @@
  use gen_com_m, only:one,two,im,imm,tstep
  use var_pot
  use tab_imm_m
- use mab_in_ndm_module, only: sig_i,sig_ll, rga_i,m_i,temperature,gamma,langevin_type,dtlang
+ use mab_in_ndm_module, only: sig_i,sig_ll, rga_i,m_i,temperature,gamma,langevin_type,dtlang,Ecinetique
  implicit none
   
   if (gamma < 0.d0) then
@@ -37,7 +37,7 @@
     use gen_com_m
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique,xbar,  &
-                                 abf_type,block
+                                 abf_type,block,it_en,fpeinstein
 
     implicit none
     integer     :: ic
@@ -61,8 +61,13 @@
        xbari(ic)=xbar(ic)
     enddo
 ! one force calculation ....
-    
-    call calfo_mab()
+ !one force calculation ....
+   if (it_en > 0) then
+     call calfo_einstein_solid ()
+     fp(:,:) = fpeinstein (:,:)
+    else 
+      call calfo_mab()
+    end if          
     
     
     !step1: from p(1) -> p(1+1/4)
@@ -71,7 +76,7 @@
        vbar(ic)=sum(pp(ic,1:im))/dble(im) ! vit barycentre sur les particules
        pp(ic,1:im)=pp(ic,1:im)-vbar(ic)
     enddo
-    call control_angular_momenta(pp,xp)
+    !!!! call control_angular_momenta(pp,xp)
     vp(1:3,1:im)=pp(1:3,1:im)/m_i(1:3,1:im)
 
     !step2: from p(1+1/4) -> p(1+1/2)
@@ -88,7 +93,14 @@
     enddo
 
      !recompute the forces
-    call calfo_mab()
+   if (it_en > 0) then
+     call calfo_einstein_solid ()
+     fp(:,:) = fpeinstein (:,:)
+    else 
+      call calfo_mab()
+    end if      
+
+
 
     !step4: p(1+1/2) -> p(1+3/4) 
     pp(1:3,1:im) = pp(1:3,1:im) + (fp(1:3,1:im))*dtlang/two
@@ -102,7 +114,7 @@
        vbar(ic)=sum(pp(ic,1:im))/dble(im) ! vit barycentre sur les particules
        pp(ic,1:im)=pp(ic,1:im)-vbar(ic)
     enddo
-    call control_angular_momenta(pp,xp)
+    !!!! call control_angular_momenta(pp,xp)
     vp(1:3,1:im) = pp(1:3,1:im)/m_i(1:3,1:im)
 
     do ic=1,3

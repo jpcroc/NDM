@@ -38,15 +38,16 @@ read (lumab, nml=input_mab)
 
 if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
       if (langevin_type==2) then
-        if (abf_mode==2) then
-           write(6,*) 'Alchemical transition not yet implemented with the underdamped Langevin'
-           write(6,*) 'put langevin_type = 1 and restart'
-           write(6,*) 'stop in <read_mab_file>'
-           stop 
-        end if 
+        !if (abf_mode==2) then
+        !   write(6,*) 'Alchemical transition not yet implemented with the underdamped Langevin'
+        !   write(6,*) 'put langevin_type = 1 and restart'
+        !   write(6,*) 'stop in <read_mab_file>'
+        !   stop 
+        !end if 
         select case (abf_type)
            case (1)
                   write(6,*) ' Dumped Langevin dynamics'
+                  if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'
            case (2)  
                   if (abf_mode==1) write(6,*) ' Dumped Langevin + ABF BIN dynamics'
                   if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'

@@ -84,16 +84,18 @@ do it_mab=1,nlangevin
    select case (langevin_type)
     case (1)
       call langevin_overdamped ()
-     if (abf_mode==2) call langevin_overdamped_csi()
     case (2)
       call langevin()
     end select 
-    
+   if (abf_mode==2) then
+         call langevin_overdamped_csi()
+   end if
+
    call reaction()
-   !debug  if (mod(it_mab,40)==0) then 
-   !debug   write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
-   !debug  write(35,*) it_mab,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
-   !debub  end if
+    if (mod(it_mab,40)==0) then 
+     write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
+     write(35,*) it_mab,it_en,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
+    end if
     it=it_mab
     call analyse 
     call controle

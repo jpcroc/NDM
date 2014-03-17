@@ -13,16 +13,18 @@
     use gen_com_m
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,xbar,  &
-                                 abf_type,block,gamma,fpeinstein,it_en 
+                             Ecinetique,abf_type,block,gamma,fpeinstein,it_en 
 
 
     implicit none
     integer     :: ic
     real(double) :: xbari(3),xbarc(3)
     real(double), dimension(6,im+1)::gau
-    real(double):: pp(3,im)
+    real(double):: pp(3,im),vc(3,im)
     real(double) :: psum(3)
     real(double):: sig_mass(3,im) 
+    real(double) :: Ecin4
+
 
     call genere_bruit(gau)
     sig_mass(1:3,1:im)=sig_ll(1:3,1:im)*gau(1:3,1:im)
@@ -59,6 +61,18 @@
        xp(ic,1:im) = xp(ic,1:im) - xbarc(ic)  ! on recentre tout le systeme
     enddo
 
+    Ecin4=0.d0
+    do ic=1,3
+      !write(*,*) dtlang,m_i(1,1),gamma
+      vc(ic,1:im)=pp(ic,1:im)*sqrt(m_i(ic,1:im))/dtlang  ! cm/dtlang
+      !write(*,*)  DOT_PRODUCT(vc(ic,:),vc(ic,:))/two
+      Ecin4 = Ecin4 + DOT_PRODUCT(vc(ic,1:im),vc(ic,1:im))/two
+    enddo
+
+    Ecinetique = Ecin4
+
+
+     !write(35,*) it_mab,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
    
     return
  end subroutine langevin_overdamped
