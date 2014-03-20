@@ -11,12 +11,13 @@ subroutine calfo_mab()
 
 ! NDM part ...
 
-         if (itab/=0) then
-          if (mod(it_langevin,itab)==0) then
+       !  if (itab/=0) then
+       !   if (mod(it_langevin,itab)==0) then
            call caltabt
-          endif
-         endif
-         if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
+        !  endif
+        ! endif
+         !if (ltabvois.and.mod(it_langevin,itetabvois)==0) 
+     call caltabi
         call calfo
         if (block) call calfoblock()
 

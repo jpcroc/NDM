@@ -23,7 +23,7 @@ subroutine mab
 ! Copyright LL Cao and all NDM band, April- 2013
   
   integer:: i_iter
-  real(double)::temp_read,tmp1, tmp2,tmp3,tmp4
+  real(double)::temp_read,tmp1, tmp2,tmp3,tmp4,oerg
   logical :: dir_e
 
   write(6,*)
@@ -97,6 +97,7 @@ do it_mab=1,nlangevin
      write(35,*) it_mab,it_en,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
     end if
     it=it_mab
+    if (mod(it_mab,1000)==0)  call test_displacement ()
     call analyse 
     call controle
      select case (sim_mode)
@@ -138,15 +139,16 @@ end do
   call create_files()! Create files needed
 
  if (abf_mode==2) then
-  write (*,*) temperature, temperature/KtoERG, omega_einstein*47.99407332506204
-  tmp4= - temperature*erg2ev*dble(3*im-6)*log((temperature/KtoERG)/(omega_einstein*47.99407332506204))
-  tmp1= - temperature*erg2ev*dble(3*im-3)*log((temperature/KtoERG)/(omega_einstein*47.99407332506204))
-  tmp3= - temperature*erg2ev*dble(3*im)*log((temperature/KtoERG)/(omega_einstein*47.99407332506204))
+  oerg=omega_einstein*hbar*2.d0*pi*1.d+12
+  !write (*,*) temperature, temperature/KtoERG, omega_einstein*47.99407332506204
+  tmp4= - temperature*erg2ev*dble(3*im-6)*log(temperature/oerg)
+  tmp1= - temperature*erg2ev*dble(3*im-3)*log(temperature/oerg)
+  tmp3= - temperature*erg2ev*dble(3*im)*log(temperature/oerg)
   tmp2= (Free_energy(0)-Free_energy(nhisto))*erg2ev
   call free_and_correction_einstein()
 
   write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
-  write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') tmp1
+  write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') tmp3
   write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", F15.7)') tmp2
   write(6,'("F(Full3N-6)            (eV) ............:  ", F15.7)') tmp4-tmp2 
   write(6,'("F(Full3N-3)            (eV) ............:  ", F15.7)') tmp1-tmp2 

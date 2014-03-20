@@ -256,6 +256,37 @@ subroutine test_vacancy_position
 
 end subroutine test_vacancy_position
 
+subroutine test_displacement
+
+ USE T_kind_param_m, ONLY:  double
+ USE gen_com_m, ONLY: im,imm,angst
+ USE tab_imm_m
+ USE mab_in_ndm_module, ONLY: xbarini,xbar,xp,xp0
+ implicit none
+ real(double) :: rtemp(imm),RRMAX,ddepla(3)
+ integer,dimension(1) :: iimax
+ integer :: ii
+
+ do ii=1,im
+  ddepla(:)=xp(:,ii) -xp0(:,ii)-xbar(:)+xbarini(:)
+  rtemp(ii)=dsqrt(DOT_PRODUCT(ddepla(:),ddepla(:)))
+ end do
+
+  rrmax=MAXVAL(rtemp(1:im))
+  iimax=MAXLOC(rtemp(1:im))
+
+  !write(*,*) xp(1,iimax),xp0(1,iimax),xbar(1),xbarini(1)
+  !write(*,*) xp(2,iimax),xp0(2,iimax),xbar(2),xbarini(2)
+  !write(*,*) xp(3,iimax),xp0(3,iimax),xbar(3),xbarini(3)
+  write(*,*) 'The MAXXX displacement is for atom ',iimax, ' with ',rrmax*angst, 'Ang'
+  if ((rrmax*angst) >= 2.47d0) then
+   write(*,*) 'WWARNING you have at least one 1NN jump.!!! '
+  end if 
+  !stop
+
+end subroutine test_displacement
+
+
  
  subroutine timestamp ( )
 

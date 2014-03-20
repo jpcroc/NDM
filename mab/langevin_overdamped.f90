@@ -44,7 +44,8 @@
     
      ! xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
 
-      pp(1:3,1:im)= fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_mass(1:3,1:im)
+      !pp(1:3,1:im)= fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_mass(1:3,1:im)
+      pp(1:3,1:im)= fp(1:3,1:im)/(m_i(1:3,1:im)*gamma)*dtlang + sig_mass(1:3,1:im)
 
       do ic=1,3
       psum(ic)=sum(pp(ic,1:im))/dble(im)
@@ -64,7 +65,7 @@
     Ecin4=0.d0
     do ic=1,3
       !write(*,*) dtlang,m_i(1,1),gamma
-      vc(ic,1:im)=pp(ic,1:im)*sqrt(m_i(ic,1:im))/dtlang  ! cm/dtlang
+      vc(ic,1:im)=pp(ic,1:im)*sqrt(m_i(ic,1:im))/(sqrt(dtlang/gamma)*sqrt(2.d0))  ! cm/dtlang
       !write(*,*)  DOT_PRODUCT(vc(ic,:),vc(ic,:))/two
       Ecin4 = Ecin4 + DOT_PRODUCT(vc(ic,1:im),vc(ic,1:im))/two
     enddo

@@ -37,6 +37,7 @@ subroutine calfo_einstein_solid ()
  implicit none                             
  
  integer :: ic
+ real(double) :: ddepla_temp(3)
 
     do ic=1,3
        xbar(ic)=sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules
@@ -47,8 +48,9 @@ subroutine calfo_einstein_solid ()
 ! Computing the forces on the protevtives spheres...
  ene_einstein=0.d0
  do ic=1,im
-  fpeinstein(:,ic)=-omega_veinstein(:,ic)**2*unit_omega_to_erg*cm(ityp(ic))*(xp(:,ic)-xp0(:,ic)-xbar(:)+xbarini(:))
-  ene_einstein=ene_einstein-SUM(fpeinstein(:,ic)*(xp(:,ic)-xp0(:,ic)-xbar(:)+xbarini(:)))
+  ddepla_temp(:)=xp(:,ic)-xp0(:,ic)-xbar(:)+xbarini(:)
+  fpeinstein(:,ic)=-omega_veinstein(:,ic)**2*unit_omega_to_erg*cm(ityp(ic))*ddepla_temp(:)
+  ene_einstein=ene_einstein-DOT_PRODUCT(fpeinstein(:,ic),ddepla_temp(:))
  end do
  ene_einstein=0.5d0*ene_einstein
 
@@ -58,14 +60,15 @@ end subroutine calfo_einstein_solid
 subroutine free_and_correction_einstein()
 USE T_kind_param_m, ONLY :double
 use gen_com_m, ONLY: im, imm, erg2ev,pi,hbar,volu
-use mab_in_ndm_module, ONLY : m_i,THZtoK, KtoERG,omega_einstein,     &
+use mab_in_ndm_module, ONLY : m_i,omega_einstein,     &
                               einstein_free_3N, einstein_correction, &
                               pbc_correction,temperature
 implicit none
 real(double) :: oerg, hval,mtot,m2tot
 
- oerg=omega_einstein*THZtoK*KtoERG
+! oerg=omega_einstein*THZtoK*KtoERG
  hval=2.d0*hbar*pi
+ oerg=omega_einstein*hval*1.d+12
  mtot=SUM(m_i(1,1:im))
  m2tot=SUM(m_i(1,1:im)**2)
 
