@@ -93,8 +93,8 @@ do it_mab=1,nlangevin
 
    call reaction()
     if (mod(it_mab,40)==0) then 
-     write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
-     write(35,*) it_mab,it_en,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
+   !debug   write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
+   !debug   write(35,*) it_mab,it_en,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
     end if
     it=it_mab
     if (mod(it_mab,1000)==0)  call test_displacement ()
