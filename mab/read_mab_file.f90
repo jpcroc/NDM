@@ -9,13 +9,13 @@ subroutine read_mab_file()
                               omega_einstein,abf_mode,            & 
                               nwrite_histo,sigma_eta,ecart_eta, &
                               eta_mab,eta_ABFee,histo_equi,n_equilibre,           & 
-                              maxforce,compute_mode,error_step,nom_deconvo
+                              maxforce,compute_mode,error_step,nom_deconvo,lang_factor
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
                       langevin_type,gamma,omega_abf,omega_einstein, nwrite_histo,  &
                       eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
-                      maxforce,compute_mode,abf_mode, error_step,nom_deconvo
+                      maxforce,compute_mode,abf_mode, error_step,nom_deconvo,lang_factor
 
  character(len=128) :: fnamtin
  integer :: lumab
@@ -29,6 +29,7 @@ subroutine read_mab_file()
  abf_mode = 1
  abf_type = 1
  omega_einstein=5.d0 ! einstein frequecy in THz
+ lang_factor=1.d0
 
  fnamtin = fnam(1:lenfnam)//'.mab'
  write(*,*) 'file name', fnamtin
@@ -120,6 +121,7 @@ write(*,'("Langevin time step in s......................:",D15.4)') dtlang
 write(*,'("Total number of steps .......................:",I9)')  nlangevin
 write(*,'("Langevin temperature in K....................:",F8.1)') temperature
 write(*,'("Langevin dumping coefficient ................:",D15.4)') gamma
+write(*,'("Factor for Langevin coefficient ................:",D15.4)') lang_factor
 
 
 if (abf_type==3) then

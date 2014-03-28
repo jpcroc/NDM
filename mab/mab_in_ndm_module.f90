@@ -15,7 +15,7 @@ module mab_in_ndm_module
       implicit none
 
       real(double), dimension(:,:), allocatable :: sig_i,sig_ll,rga_i,xp0,m_i
-      real(double)  :: dtlang,temperature,Ecinetique,m_tot,a0bcc,omega_abf,maxforce
+      real(double)  :: dtlang,temperature,Ecinetique,m_tot,a0bcc,omega_abf,maxforce,lang_factor
       
 
       real(double), parameter :: KtoERG=1.3791946308724831d-16 
