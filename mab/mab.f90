@@ -127,8 +127,8 @@ do it_mab=1,nlangevin
   close(990)
 
   end if 
-
-end do
+  if (it_stop==1) exit
+ end do
   !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 
@@ -146,7 +146,7 @@ end do
   tmp3= - temperature*erg2ev*dble(3*im)*log(temperature/oerg)
   tmp2= (Free_energy(0)-Free_energy(nhisto))*erg2ev
   call free_and_correction_einstein()
-
+  if (it_stop==1) write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
   write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
   write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') tmp3
   write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", F15.7)') tmp2

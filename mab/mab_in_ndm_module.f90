@@ -24,14 +24,14 @@ module mab_in_ndm_module
                                                                       !cm are already in  multiplied by 
                                                                       ! umass (in g) in the main NDM program. 
 
-      integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre,abf_mode
-      integer                                       :: it_mab
+      integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre,abf_mode,mode_csi_potential
+      integer                                       :: it_mab,it_stop
       real(double),save :: epot0,gamma
       real(double),dimension(:),allocatable, save:: w
       real(double)   :: pinumber,dcsi,normxlac,deltasph,radiussph,rtestlac
       real(double),dimension(3) :: xbar,xbarini,xlaci,xlacf,rfilac 
       real(double)  :: deltar1,deltar2,delta_z
-      real(double)  :: xi_min,xi_max
+      real(double)  :: xi_min,xi_max,alpha_csi
       integer       :: nhisto,nhisto1,nhisto2,icsi,nwrite_histo
       real(double),dimension(:), allocatable :: histo,histo1,histo2,histo_temp,histo_temp1,histo_xi
       real(double),dimension(:),allocatable::histo_zeta
@@ -41,6 +41,7 @@ module mab_in_ndm_module
       real(double),dimension(:),allocatable::A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom,A_bar_ee
       real(double),dimension(:),allocatable::exp_A_bar
       real(double),dimension(:),allocatable::A_theo,error_A,error_A_bar
+      real(double) :: limit1m, limit1p, limit2m, limit2p,limit1,limit2
 
       real(double) :: omega_einstein,ene_einstein,ene0,einstein_free_3N, einstein_correction, pbc_correction
       real(double), dimension(:,:), allocatable :: omega_veinstein,fpeinstein
@@ -85,7 +86,8 @@ end   subroutine allocate_mab
      pinumber=4.d0*datan(1.D0)
 
     it_en=-1
-    
+    it_stop=0
+ 
 ! set-up the reaction coordinate case
    if (abf_mode==1) then
      xlaci(1:3)=(/a0bcc,a0bcc,a0bcc/)/angst
@@ -118,6 +120,20 @@ end   subroutine allocate_mab
         omega_veinstein(:,:)=omega_einstein
         !instead that I will a file with all the einstein  frequencies 
     end if 
+
+
+   limit1m=0.d0-deltar1
+   limit1p=1.d0+deltar1
+   limit2m=0.d0-deltar2
+   limit2p=1.d0+deltar2
+       if (mode_csi_potential==0) then
+         limit1=limit1m
+         limit2=limit1p
+        else if (mode_csi_potential==1) then 
+         limit1=limit2m
+         limit2=limit2p
+       end if 
+
 
 
    
