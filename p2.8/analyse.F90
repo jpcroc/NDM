@@ -45,6 +45,10 @@ subroutine analyse
   CHARACTER(len=100) :: out_file
   integer,save::ncalceattotm=0, nposmoy=0
   integer::ipot
+
+  integer::luvisuc=888,lenfn2
+  character :: extension*9
+  real(double)::xb(3),minp,maxp,mint,maxt
   !-----------------------------------------------
   !
   !
@@ -339,29 +343,49 @@ subroutine analyse
 
         endif                                ! fin rang=0
         if (ltpcel) then
-
+           minp=100000
+           maxp=-100000
+           mint=100000
+           maxt=-100000
+           write(extension,'(i9.9)') it
+           lenfn2 = 9
+          open(luvisuc, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.CEL.mol', form='formatted', &
+                status='unknown')
+           write (luvisuc, '(I9,A,I7,A,F12.6)') noxyz , ' IT =', it, ' Time = ', timel
+           at=at*1.d8
+           write (luvisuc,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
+           at=at/1.d8
+           
            write (6, *)
            write (6, *) '----------valeurs par cellules------------'
-
+           
            do kx=0,nox-1
               do ky=0,noy-1
                  do kz=0,noz-1
                     ko=1+kx+nox*(ky+noy*kz)
+                    xb(1)=float(kx)/float(nox)*at(1,1)+float(ky)/float(noy)*at(1,2)+float(kz)/float(noz)*at(1,3)
+                    xb(2)=float(kx)/float(nox)*at(2,1)+float(ky)/float(noy)*at(2,2)+float(kz)/float(noz)*at(2,3)
+                    xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
+                    xb=xb*1d8
                     pmc=0.0
                     if (itesigma.gt.0) then
                        if (mod(it,itesigma).eq.0) then
                           if (ltabvois) then
                              continue
                           else
-!                             write(6,*)'dans la celulle ',ko,' sigma  '
+                             !                             write(6,*)'dans la celulle ',ko,' sigma  '
                              do ic =1,3
                                 pmc=pmc+sigc(ic,ic,ko)/3.0
 !                                write(6,'(3g14.5)')sigc(1,ic,ko),sigc(2,ic,ko),sigc(3,ic,ko)
 !                                write(6,'(A,I2,I2,I2,I2,G14.5,G14.5,G14.5)')'CEL-SIG ',ic,kx,ky&
 !                                     &,kz,sigc(1,ic,ko),sigc(2,ic,ko),sigc(3,ic,ko)
                              enddo
-                             write(6,'(A,I5,3I4,G14.5,A,A,I4)')'CEL-PRESS ', ko,kx,ky,kz,pmc*unitP, '  ',cunitP,nato(ko)
-
+!                             write(6,'(A,I5,3I4,G14.5,A,A,I4)')'CEL-PRESS ', ko,kx,ky,kz,pmc*unitP, '  ',cunitP,nato(ko)
+                             write (luvisuc, 136) 'Au',xb(1), xb(2), xb(3),tempc(ko),pmc*unitP
+                             minp=min(minp,pmc)
+                             maxp=max(maxp,pmc)
+                             mint=min(mint,tempc(ko))
+                             maxt=max(maxt,tempc(ko))
 
                           endif
                        endif
@@ -369,7 +393,11 @@ subroutine analyse
                  enddo
               end do
            end do
+           close (luvisuc)
+           write(6,'(A,4G20.10)')'minmaxp', minp*unitp,maxp*unitp,mint,maxt
         endif
+136     format(A,3f10.4,2D14.5)
+
   if (ldesinteg)then
      if (rang==0) then
         

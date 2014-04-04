@@ -75,7 +75,7 @@ subroutine initspeed
   integer, dimension(:), allocatable :: iseedt
   real(double), dimension(ntyp) :: temptyp
   ! ym      real(double), dimension(nce) :: tempc
-  real(double), dimension(noxyz) :: tempc
+!  real(double), dimension(noxyz) :: tempc
   real(double) :: vv, v0, v1, z1, z2, z3, z4
   real(double) :: tempsauv ,totmass
   real(double) :: rx, ry, rz, r2x, r2y, r2z, r2

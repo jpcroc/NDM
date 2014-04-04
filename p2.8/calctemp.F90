@@ -33,7 +33,7 @@ subroutine calctemp(temptyp)
   real(double) :: vpn2,pmc,tat
   real(double), dimension(ntyp,3) :: vx2
   ! ym      real(double), dimension(ntyp,nce) :: v2c
-  real(double), dimension (:),allocatable ::tempc,tempcm
+
 #if(PARA)
   real(double), dimension(ntyp) :: v2_glob
   real(double), dimension(ntyp,3) :: vx2_glob
@@ -45,8 +45,8 @@ subroutine calctemp(temptyp)
   !
   ! local variables
   if (ltpcel) then
-     allocate (tempc(noxyz))
-     allocate (tempcm(noxyz))
+!     allocate (tempc(noxyz))
+!     allocate (tempcm(noxyz))
      tempc(:)=0.
      tempcm(:)=0.
   endif
@@ -124,7 +124,7 @@ subroutine calctemp(temptyp)
                  ko=1+kx+nox*(ky+noy*kz)
                  pmc=0.0
                  !                              write(6,*)'dans la celulle ',ko
-                 write(6,'(A,I7,I5,3I4,2F12.2)')'CEL-TEMP ', it,ko,kx,ky,kz,tempc(ko),tempcm(ko)
+!                 write(6,'(A,I7,I5,3I4,2F12.2)')'CEL-TEMP ', it,ko,kx,ky,kz,tempc(ko),tempcm(ko)
                  maxTcel=max(maxTcel,tempc(ko))
                  
                  !                              write (6, '(A11,I4,A15,F12.2)') 'Cellule: ', ko, &
@@ -133,7 +133,7 @@ subroutine calctemp(temptyp)
            end do
         end do
         write(6,*)'CEL-TEMPM',maxTcel
-        deallocate (tempc)
+!        deallocate (tempc)
      endif
 
 

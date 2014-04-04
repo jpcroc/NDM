@@ -350,6 +350,6 @@ module gen_com_m
 !      definis dans le fichier .din
 ! ----------------------------------------------------------------------------------
   
-
+  real(double), dimension (:),allocatable ::tempc,tempcm
 
 end module gen_com_m

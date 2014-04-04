@@ -18,6 +18,10 @@ subroutine DynamicalAllocationCell
  
   ncel(:noxyz,:26) = zero                 ! et petite initialisation
 
+  if(ltpcel==.true.) then
+     allocate (tempc(noxyz))
+     allocate (tempcm(noxyz))
+  end if
 end subroutine DynamicalAllocationCell
 
 subroutine Deallocatecel
@@ -106,6 +110,9 @@ subroutine DeallocateAll
   if(associated(typ_pot_pair))deallocate (typ_pot_pair)
   if(associated(lue_trip))deallocate (lue_trip)
   if(associated(rue_pair))deallocate (rue_pair)
+
+  if(allocated(tempc))deallocate (tempc)
+  if(allocated(tempcm))deallocate (tempcm)
 
 
 
