@@ -203,6 +203,7 @@ subroutine calfo
         if (vn.ne.0) then
            vn=sqrt(vn)
            v1=elstopforce(ityp(i),1,1)
+!           write(6,*)v1,vn
            nv1=1+INT(vn/v1)
            if (nv1.gt.ngrdel) then
               write(6,*)'elstop velocity > 49, rebuild elstop.in'
@@ -217,14 +218,16 @@ subroutine calfo
            do ic=1,3
               fp(ic,i)=fp(ic,i)-vp(ic,i)*f1/vn
               Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(xp(ic,i)-xpp(ic,i))*erg2ev
-              if (i==iko)then 
-!                 write (6,*)'felstop',f1,vn,vp(ic,i)*f1/vn,fp(ic,i)                        
+!              if (i==iko)then 
+
 !                write(6,*)'elfp',fp(ic,i)
                  Elosselec1=Elosselec1+(vp(ic,i)*f1/vn)*(xp(ic,i)-xpp(ic,i))*erg2ev
-              end if
-           end do
-        end if
-     end do
+!              end if
+              end do
+!                 write (6,*)'felstop',f1,vn                
+           end if
+
+        end do
 #if(PARA)
      call MPI_ALLREDUCE(elosselectot,elosselec,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      elosselec=elosselectot

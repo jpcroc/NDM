@@ -138,10 +138,10 @@ subroutine analyse
               write(6,*)
            end if
 
-           write (6, '(I10,G10.3,A,F12.2)') it,timel, &
+           write (6, '(I10,G10.3,A,G12.2)') it,timel, &
                 '*Temp instantanee = ',temp
 
-           if (tfcou>0.0) write (6, '(A,F12.2)') '*temperature externe = ', tcou
+           if (tfcou>0.0) write (6, '(A,G15.4)') '*temperature externe = ', tcou
 
            IF (lpr) THEN
               write(6,*) 'NPT With Parrinello-Rahman'
