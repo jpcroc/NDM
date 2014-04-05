@@ -115,7 +115,12 @@ end   subroutine allocate_mab
       write(*,*),'ecart_eta,delta_z,sigma_eta',ecart_eta,delta_z,sigma_eta
      nhisto1=deltar1/dble(delta_z)
      nhisto2=deltar2/dble(delta_z)
- 
+    write(*,'("The distribution over the histogram............:")')
+
+    write(*,'("...-nhisto2=",i6,"...-nhisto1=",i6,"..0.....nhisto=",i6,"......nhisto+nhisto1=",i6, &
+          "....nhisto+nhisto2=",i6,"...")') -nhisto2, -nhisto1,nhisto,nhisto+nhisto1,nhisto+nhisto2
+     write(*,'("...-nhisto2=",f6.2,"...-nhisto1=",f6.2,"..0.....nhisto=",f6.2,"......nhisto+nhisto1=",f6.2, &
+          "....nhisto+nhisto2=",f6.2,"...")') -deltar2, -deltar1,1.0,1.0+deltar1,1.0+deltar2
     if (abf_mode==2) then
         omega_veinstein(:,:)=omega_einstein
         !instead that I will a file with all the einstein  frequencies 

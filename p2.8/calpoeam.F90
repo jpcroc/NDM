@@ -69,7 +69,7 @@ subroutine calpoeam
      end if
      if (roff1(l).le.0) cycle
      if (lu_roff_pair(l).EQV..false.)cycle
-     call zieg2(eamrep,eamrep_d,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair,typ_pot_pair,ipo)
+     call zieg2(eamrep,eamrep_d,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
      !re-spline
      ysp(1:ngrid)=eamrep(1,l,1:ngrid)
      call cspline (ngrid,xsp,ysp,bsp,csp,dsp)

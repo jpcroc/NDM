@@ -14,7 +14,7 @@ subroutine langevin_overdamped_csi()
     USE mab_in_ndm_module, only: dtlang,abf_mode,block,gamma,dcsi, &
                                  ene_einstein,ene0, temperature,mean_force1,icsi, &
                                  limit1,limit2,langevin_type,m_i,it_mab,delta_z,nhisto,nhisto1, &
-                                 lang_factor,it_mab,it_stop
+                                 lang_factor,it_mab,it_stop,limit1m, limit1p
 
 
     implicit none
@@ -26,11 +26,11 @@ subroutine langevin_overdamped_csi()
      
 
      !ddd ffactor=5.d+8
-     if ((dcsi>=limit1).and.(dcsi<=limit2)) then
+     if ((dcsi>=limit1m).and.(dcsi<=limit1p)) then
        tmp_force=mean_force1(icsi)
       else 
-       !debug if (dcsi<=limit1) tmp_force=mean_force1(-nhisto1)
-       !debug if (dcsi>=limit2) tmp_force=mean_force1(nhisto+nhisto1)
+       if (dcsi<limit1m) tmp_force=mean_force1(-nhisto1)
+       if (dcsi>limit1p) tmp_force=mean_force1(nhisto+nhisto1)
        !tmp_force=0.d0
      end if
      dcsi_ini=dcsi
@@ -53,7 +53,8 @@ subroutine langevin_overdamped_csi()
 !dtlang * angst * ffactor / gamma (for ffactor=5.d+8 gamma=1.d+14 and dtlag=2*1d-15) is nothing else than 25* dtlan*dtlang * angst * angst  !!!!! 
  
      dcsi=tmp_dcsi  + dcsi_ini
-       write(747,'("  ",i6, 2E16.2, i6, 4D23.7)') it_mab, dcsi,tmp_dcsi, nint(dcsi/delta_z), potist-ene0, ene_einstein, force_csi, tmp_force
+    if (it_count==0)    write(747,'("  ",i6, 2E16.2, i8, 4D23.7)') it_mab, dcsi,tmp_dcsi, nint(dcsi/delta_z), potist-ene0, ene_einstein, force_csi, tmp_force
+    if (it_count/=0)    write(767,'("  ",i6, 2E16.2, i8, 5D23.7)') it_mab, dcsi,tmp_dcsi, nint(dcsi/delta_z), potist-ene0, ene_einstein, force_csi, tmp_force,noise
 
        average_temp=average_temp+ dabs(tmp_dcsi)
 
@@ -102,7 +103,7 @@ if (mode_csi_potential==1) then
     force_csi=alpha_csi*(limit2p-limit1p)
  end if 
 end if 
-force_csi=-force_csi
-write(*,'("csi potential", 5d11.2,2D23.7)')  limit2m,limit1m,limit1p,limit2p, x, force_csi, alpha_csi
+!force_csi=-force_csi
+!write(*,'("csi potential", 5d11.2,2D23.7)')  limit2m,limit1m,limit1p,limit2p, x, force_csi, alpha_csi
 return
 end subroutine csi_potential
