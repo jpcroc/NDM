@@ -88,7 +88,7 @@ do it_mab=1,nlangevin
       call langevin()
     end select 
    if (abf_mode==2) then
-         call langevin_overdamped_csi()
+         if (.NOT.(abf_type==5)) call langevin_overdamped_zeta()
    end if
 
    call reaction()

@@ -10,14 +10,14 @@ subroutine read_mab_file()
                               nwrite_histo,sigma_eta,ecart_eta, &
                               eta_mab,eta_ABFee,histo_equi,n_equilibre,           & 
                               maxforce,compute_mode,error_step,nom_deconvo,lang_factor, &
-                              mode_csi_potential, alpha_csi
+                              mode_zeta_potential, alpha_zeta
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
                       langevin_type,gamma,omega_abf,omega_einstein, nwrite_histo,  &
                       eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
                       maxforce,compute_mode,abf_mode, error_step,nom_deconvo,lang_factor, &
-                      mode_csi_potential, alpha_csi
+                      mode_zeta_potential, alpha_zeta
 
  character(len=128) :: fnamtin
  integer :: lumab
@@ -32,8 +32,8 @@ subroutine read_mab_file()
  abf_type = 1
  omega_einstein=5.d0 ! einstein frequecy in THz
  lang_factor=1.d0
- mode_csi_potential=0
- alpha_csi=2.d0
+ mode_zeta_potential=0
+ alpha_zeta=2.d0
 
  fnamtin = fnam(1:lenfnam)//'.mab'
  write(*,*) 'file name', fnamtin
@@ -95,7 +95,7 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
       end if
 
      if ((abf_mode==2) .and. ((abf_type==1).or.(abf_type==4).or. &
-                             (abf_type==5).or.(abf_type==6).or.(abf_type==7).or. &
+                             (abf_type==6).or.(abf_type==7).or. &
                              (abf_type==9) ) ) then
          write(6,*) 'The is no ABF implementation for this mode'
          write(6,*) 'abf_type .....',abf_type
@@ -146,10 +146,10 @@ write(*,'("The frequency of writing histo...............:",i7)') nwrite_histo
 write(*,'("The first shell of the histo (1nn units).....:",D15.4)') deltar1
 write(*,'("The second shell of the histo (1nn units)....:",D15.4)') deltar2
 if (abf_mode==2) then
- if (mode_csi_potential==1) then
-  write(*,'("===============THERE IS AN EXTRA POTETIAL FOR CSI===========")') 
-  write(*,'("The prefactor of csi potential...............:",D15.4)') alpha_csi
-  alpha_csi=alpha_csi*ev2erg
+ if (mode_zeta_potential==1) then
+  write(*,'("===============THERE IS AN EXTRA POTETIAL FOR ZETA===========")') 
+  write(*,'("The prefactor of zeta potential...............:",D15.4)') alpha_zeta
+  alpha_zeta=alpha_zeta*ev2erg
  end if 
 end if 
 write(*,'("The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac

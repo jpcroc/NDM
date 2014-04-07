@@ -5,9 +5,11 @@ OBJ   = mab_in_ndm_module.o\
         test_minimum_abf.o\
         langevin.o\
         langevin_overdamped.o\
-        langevin_overdamped_csi.o\
+        langevin_overdamped_zeta.o\
 	reaction.o\
         histo.o\
+        calfo_BIN_OMEGA_GAUSSIEN.o\
+        calfo_ABFee.o\
         calfo_ABF.o\
 	data_processing.o\
 	error_stat.o\
