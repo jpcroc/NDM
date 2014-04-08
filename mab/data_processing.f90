@@ -21,17 +21,16 @@ real(double)::renorm_f,sum_histo
 Free_temp(:)=0
 if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'energie libre 
   Free_energy(-nhisto1)=0.d0
+
    do i_loop=-nhisto1+1,nhisto+nhisto1
     Free_energy(i_loop)=Free_energy(i_loop-1)+0.5d0*delta_z*(mean_force1(i_loop-1)+mean_force1(i_loop))
    enddo
 
-  if (abf_mode==1)  then
     forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-Free_energy(i_loop)/temperature)
     renorm_f=temperature*log(sum(Free_temp)*delta_z)
     !renormalise par rapport a l'aire
     forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
   endif
-end if
  
   if (abf_mode==1) unit_histo2(:)=x_mol(:)/A2cm
   if (abf_mode==2) then 
@@ -74,7 +73,6 @@ end if
  close(995)
 
  case(5,8)
- if (abf_mode==1) then 
   write(*,*),'Free energy computation....ABF ee'
   !--------Pour ABFee, on a besoin des A_ee pour calculer l'energie libre.
   !-----------------------A_tilde-------------------------------
@@ -82,87 +80,68 @@ end if
 
   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-A_ee(i_loop)/temperature)
                     renorm_f=temperature*log(sum(Free_temp(-nhisto1:nhisto+nhisto1))*delta_z)
-
   forall(i_loop=-nhisto1:nhisto+nhisto1) A_ee(i_loop)=A_ee(i_loop)+renorm_f
-
-      !minfreeval=minval(A_ee(-nhisto1:nhisto+nhisto1))
- 
-      !forall(i_loop=-nhisto1:nhisto+nhisto1) A_ee(i_loop)=A_ee(i_loop)-minfreeval
-
-      open(unit=996,file='Free_energy_mollifiee_ABFee',status='unknown')!A_tilde
-
-      forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-free_energy(i_loop)/temperature)
- 
+  forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=A_ee(i_loop)
+  !minfreeval=minval(A_ee(-nhisto1:nhisto+nhisto1))
+  !forall(i_loop=-nhisto1:nhisto+nhisto1) A_ee(i_loop)=A_ee(i_loop)-minfreeval
+   open(unit=996,file='Free_energy_mollifiee_ABFee',status='unknown')!A_tilde
+    ! 
+    do i_loop=-nhisto1, nhisto+nhisto1
+       write(996,*), unit_histo2(i_loop),A_ee(i_loop)*erg2eV
+    enddo
+    !
+    close(996)
+   if (abf_mode==1) then 
+    ! THOSE LINES ARE OBSOLTE: mcmCHECK
+      forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-Free_energy(i_loop)/temperature)
       renorm_f=temperature*log(sum(Free_temp)*delta_z)
- 
-   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f!:u
-     do i_loop=-nhisto1, nhisto+nhisto1
-       write(996,*), x_mol(i_loop)/A2cm,A_ee(i_loop)*erg2eV
-     enddo
-   close(996)
+      forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
+    !END OF OBSOLETE LINES
 !-----------------------------------------------------------------------------------
 !--------------------------A_bar----------------------------------------------------
 !------------------------------------------------------------------------------------ 
 
-   open(unit=998,file='Free_energy_biais_ABFee',status='unknown')
-   !
-    do i_loop=-nhisto1,nhisto+nhisto1
-     exp_A_bar(i_loop)=0.d0
-      do i_iter=-nhisto1,nhisto+nhisto1
+      open(unit=998,file='Free_energy_biais_ABFee',status='unknown')
+      !
+      do i_loop=-nhisto1,nhisto+nhisto1
+        exp_A_bar(i_loop)=0.d0
+       do i_iter=-nhisto1,nhisto+nhisto1
          exp_A_bar(i_loop)=exp_A_bar(i_loop)  +  &
          exp(-(x_mol(i_loop)-x_mol(i_iter))**2/   &
         (2.d0*eta_ABFee*temperature)+A_ee(i_iter)/temperature)*delta_z
+       enddo
       enddo
-    enddo
-   renorm_f=sum(exp_A_bar(-nhisto1:nhisto+nhisto1))*delta_z
-   forall(i_loop=-nhisto1:nhisto+nhisto1) A_bar_ee(i_loop)=log(exp_A_bar(i_loop)/renorm_f)*temperature
-   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-A_bar_ee(i_loop)/temperature)
-   renorm_f=temperature*log(sum(Free_temp)*delta_z)
-   A_bar_ee(:)=A_bar_ee(:)+renorm_f
+      renorm_f=sum(exp_A_bar(-nhisto1:nhisto+nhisto1))*delta_z
+      forall(i_loop=-nhisto1:nhisto+nhisto1) A_bar_ee(i_loop)=log(exp_A_bar(i_loop)/renorm_f)*temperature
+      forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-A_bar_ee(i_loop)/temperature)
+      renorm_f=temperature*log(sum(Free_temp)*delta_z)
+      A_bar_ee(:)=A_bar_ee(:)+renorm_f
 !forall(i_loop=-nhisto1:nhisto+nhisto1) A_bar_ee(i_loop)=A_bar_ee(i_loop)-minfreeval
 
 
 
-    do i_loop=-nhisto1,nhisto+nhisto1
-     write(998,*), x_mol(i_loop)/A2cm,A_bar_ee(i_loop)*erg2eV
-    enddo
-   close(998)
+      do i_loop=-nhisto1,nhisto+nhisto1
+        write(998,*), x_mol(i_loop)/A2cm,A_bar_ee(i_loop)*erg2eV
+      enddo
+      close(998)
 
 !-----------------------------------------------------------------------
 !-----------------------Free_energy!!!!---------------------------------
 !-----------------------------------------------------------------------
  
-   sum_histo=sum(histo1)*delta_z
-   open(unit=999,file='Free_energy_ABFee',status='unknown')
-   forall(i_loop=-nhisto1:nhisto+nhisto1)  Free_energy(i_loop)=A_bar_ee(i_loop)-temperature*log(histo1(i_loop)/sum_histo)
-
-
-   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-Free_energy(i_loop)/temperature)
- 
-   renorm_f=temperature*log(sum(Free_temp)*delta_z)
-
-   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
+     sum_histo=sum(histo1)*delta_z
+     forall(i_loop=-nhisto1:nhisto+nhisto1)  Free_energy(i_loop)=A_bar_ee(i_loop)-temperature*log(histo1(i_loop)/sum_histo)
+     forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-Free_energy(i_loop)/temperature)
+     renorm_f=temperature*log(sum(Free_temp)*delta_z)
+     forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
  end if  !abf_mode==1
 
- if (abf_mode==2) then
-     Free_energy(-nhisto1)=0.d0
-    do i_loop=-nhisto1+1,nhisto+nhisto1
-     Free_energy(i_loop)=Free_energy(i_loop-1)+0.5d0*delta_z*(A_dev_ee(i_loop-1)+A_dev_ee(i_loop))
-    enddo
- end if !abf_mode==2
-
-  if (abf_mode==1) unit_histo2(:)=x_mol(:)/A2cm
-  if (abf_mode==2) then 
-     do i_loop=-nhisto2, nhisto+nhisto2
-      unit_histo2(i_loop)=delta_z*dble(i_loop)
-     end do
-  end if 
 
 
-
+   open(unit=999,file='Free_energy_ABFee',status='unknown')
 
    do i_loop=-nhisto1,nhisto+nhisto1
-     write(999,*),unit_histo2(i_loop)/A2cm,Free_energy(i_loop)*erg2eV
+     write(999,*),unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
    enddo
    close(999)
 

@@ -144,7 +144,10 @@ do it_mab=1,nlangevin
   tmp4= - temperature*erg2ev*dble(3*im-6)*log(temperature/oerg)
   tmp1= - temperature*erg2ev*dble(3*im-3)*log(temperature/oerg)
   tmp3= - temperature*erg2ev*dble(3*im)*log(temperature/oerg)
-  tmp2= (Free_energy(0)-Free_energy(nhisto))*erg2ev
+  ! Why should be - ???
+  tmp2=  (Free_energy(0)-Free_energy(nhisto))*erg2ev
+
+
   call free_and_correction_einstein()
   if (it_stop==1) write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
   write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 

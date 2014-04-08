@@ -21,12 +21,15 @@ subroutine calfo_ABFee()
 integer::iter,ia,jx
 real(double), dimension(3,imm) :: fpabf
 real(double),dimension(:),allocatable::temp_log
-real(double),dimension(:),allocatable::temp_exp
+real(double),dimension(:),allocatable::temp_exp,U_Aee
 real(double),dimension(:),allocatable::temp_num_f
 real(double)::temp_log_max,force,tmp_num
 real(double)::denom,num_f,mean_force_ABF
 
-allocate(temp_log(-nhisto2:nhisto+nhisto2),temp_exp(-nhisto2:nhisto+nhisto2),temp_num_f(-nhisto2:nhisto+nhisto2))
+allocate(temp_log(-nhisto2:nhisto+nhisto2),  &
+         temp_exp(-nhisto2:nhisto+nhisto2),  &
+         temp_num_f(-nhisto2:nhisto+nhisto2),&
+         U_Aee(-nhisto2:nhisto+nhisto2)   )
  
 !write(*,*),nhisto2,nhisto,nhisto1
 temp_log(:)=0
@@ -92,15 +95,19 @@ if (abf_mode==2) then
  ! U(zeta, q) = zeta*potist + (1-zeta)*(ene_einstein + ene0) 
  !--2. compute the  pi_A_ee(\zeta) = \exp{U(zeta,q) / int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
  !--2.a num \exp{U(zeta,q)
-  do iter=-nhisto2,nhisto+nhisto2
-     temp_log(iter)= ((1-x_mol(iter))*(ene_einstein+ene0)+ x_mol(iter)*potist )/temperature &
-                    +  A_ee(iter)/temperature
+  do iter=-nhisto1,nhisto+nhisto1
+     U_Aee(iter) = (1.d0-x_mol(iter))*(ene_einstein) + x_mol(iter)*(potist-ene0)
+     temp_log(iter)=-(U_Aee(iter)-A_ee(iter))/temperature
+     temp_exp(iter)=exp(temp_log(iter))!
+      if ((temp_exp(iter)+1.0).eq.temp_exp(iter)) then
+        write(*,'(2i5,7D21.8)') 'WARNING:  NaN detected look in fort.333 file'
+        write(333,'(2i5,7D21.8)') it_mab, iter, U_Aee(iter),A_ee(iter), temp_log(iter),temp_exp(iter),potist,ene0,ene_einstein
+      end if  
   end do
 
-  temp_exp(-nhisto2:nhisto+nhisto2)=exp(temp_log(nhisto2:nhisto+nhisto2))! 
  !--2.b denom: int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
   denom=0.d0
-  do iter=-nhisto2+1,nhisto+nhisto2
+  do iter=-nhisto1+1,nhisto+nhisto1
    denom=denom + 0.5d0*(temp_exp(iter-1)+temp_exp(iter) )*delta_z
   end do
  
@@ -109,15 +116,20 @@ if (abf_mode==2) then
  !We should just remind that \grad_q U^HA(q) = -fpeinstein (q) ; \grad_q U(q) = - fp(q)
  do ia=1,im
   do jx=1,3
-   do iter=-nhisto2,nhisto+nhisto2
+   do iter=-nhisto1,nhisto+nhisto1
     temp_num_f(iter)=-((1.d0-x_mol(iter))*fpeinstein(jx,ia)+x_mol(iter)*fp(jx,ia))*temp_exp(iter)
    end do
    tmp_num=0.d0
-   do iter=-nhisto2+1,nhisto+nhisto2
+   do iter=-nhisto1+1,nhisto+nhisto1
     tmp_num=tmp_num  + 0.5d0*(temp_num_f(iter-1)+temp_num_f(iter) )*delta_z
    end do
-  
-  fp(jx,ia)=-tmp_num/denom
+   if ((jx==1).and.(ia==7)) then
+   
+   !write(*,*) -tmp_num/denom, fp(jx,ia)
+   end if 
+  if ((histo_equi == .true.) .And. (it_mab >= n_equilibre)) then
+    fp(jx,ia)=-tmp_num/denom
+  end if 
  end do
 end do
 
@@ -140,7 +152,7 @@ end if
 
 
 if (abf_mode==2) then
- do iter=-nhisto2, nhisto+nhisto2
+ do iter=-nhisto1, nhisto+nhisto1
   P_ee(iter)=temp_exp(iter)/denom
   P_ee_denom(iter)=P_ee_denom(iter)+P_ee(iter)
   P_ee_num(iter)=P_ee_num(iter)+(potist-ene_einstein-ene0)*P_ee(iter)
@@ -176,9 +188,18 @@ endif
  !enddo
 
  ! from where comes this nhisto !!!! mcmCHECK
+ if (abf_mode==1) then
  do iter=-nhisto1,nhisto+nhisto1
      A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+1.d0/(omega_abf*dble(nhisto)))
  enddo
+end if 
+
+ if (abf_mode==2) then
+ do iter=-nhisto1,nhisto+nhisto1
+     A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+1.d0/omega_abf)
+ enddo
+end if 
+
 
 
 return
