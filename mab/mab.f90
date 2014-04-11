@@ -23,7 +23,7 @@ subroutine mab
 ! Copyright LL Cao and all NDM band, April- 2013
   
   integer:: i_iter
-  real(double)::temp_read,tmp1, tmp2,tmp3,tmp4,oerg
+  real(double)::temp_read,tmp1, tmp2,tmp3,tmp4,oerg,corr3N,corr3Nm3
   logical :: dir_e
 
   write(6,*)
@@ -42,6 +42,7 @@ subroutine mab
   write(6,*)'......PREPARE.....' 
 
  call prepare_langevin()
+if (abf_type==1) call test_minimum_abf()
 if (abf_mode==2) then
  call test_minimum_abf () 
  call init_einstein_solid  ()
@@ -91,13 +92,13 @@ do it_mab=1,nlangevin
          if (.NOT.(abf_type==5)) call langevin_overdamped_zeta()
    end if
 
-   call reaction()
-    if (mod(it_mab,40)==0) then 
+   if (.NOT.(abf_type==1))  call reaction()
+   ! if (mod(it_mab,40)==0) then 
    !debug   write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
    !debug   write(35,*) it_mab,it_en,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
-    end if
+   ! end if
     it=it_mab
-    if (mod(it_mab,1000)==0)  call test_displacement ()
+    if (mod(it_mab,ntestvacancyjump)==0)  call test_displacement ()
     call analyse 
     call controle
      select case (sim_mode)
@@ -112,6 +113,13 @@ do it_mab=1,nlangevin
       case (2) 
            continue
      end select 
+  if (abf_type==1) then
+    call brute_force_free_energy (itest_stop)
+    if (itest_stop==1) then
+     write(6,*) 'An unwanted hop happens the simulation will stop'
+     write(6,*) ' it_mab   ', it_mab
+    end if  
+  end if 
 
   if (mod(it_mab,nwrite_histo)==0) then
    open(unit=989,file='histogram1',status='unknown')
@@ -128,6 +136,7 @@ do it_mab=1,nlangevin
 
   end if 
   if (it_stop==1) exit
+  if (itest_stop==1) exit
  end do
   !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
@@ -137,6 +146,21 @@ do it_mab=1,nlangevin
   call Free_energy_ABF()! Calculate energy landscape for ABF
  
   call create_files()! Create files needed
+
+ if (abf_type==1) then
+ 
+ if (itest_stop==1)   write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
+  call correct_free_energy_brute(corr3N,corr3Nm3)
+  write(*,*) 'outsub', corr3N, corr3Nm3,corr3N*erg2ev
+  write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
+  write(6,'("DeltaFree     (eV) ................:  ", F15.7)') Free_energy_brute*erg2ev
+  write(6,'("FreeTOT3N     (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3N)*erg2ev
+  write(6,'("FreeTOT(3N-3) (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3Nm3)*erg2ev
+  write(6,'("Average_over N steps ..................:  ", i7)') it_calc_brute
+  write(*,*)  (Free_energy_brute+corr3N)*erg2ev, (Free_energy_brute+corr3Nm3)*erg2ev
+
+
+ end if 
 
  if (abf_mode==2) then
   oerg=omega_einstein*hbar*2.d0*pi*1.d+12
@@ -166,10 +190,7 @@ do it_mab=1,nlangevin
   write(6,'("F(FullP)               (eV) ............:  ", F15.7)') einstein_free_3N- pbc_correction - tmp2 
   write(6,'("PBC correction         (eV) ............:  ", F15.7)') pbc_correction 
   write(6,'("Einstein correction    (eV) ............:  ", F15.7)') einstein_correction
- 
-
-
- end if 
+ end if  !abf_mode==2
 
 
 

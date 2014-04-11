@@ -25,7 +25,8 @@ module mab_in_ndm_module
                                                                       ! umass (in g) in the main NDM program. 
 
       integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre,abf_mode,mode_zeta_potential
-      integer                                       :: it_mab,it_stop
+      integer :: it_mab,it_stop,itest_stop,it_calc_brute
+      integer :: ntestvacancyjump
       real(double),save :: epot0,gamma
       real(double),dimension(:),allocatable, save:: w
       real(double)   :: pinumber,dcsi,normxlac,deltasph,radiussph,rtestlac
@@ -42,7 +43,7 @@ module mab_in_ndm_module
       real(double),dimension(:),allocatable::exp_A_bar
       real(double),dimension(:),allocatable::A_theo,error_A,error_A_bar
       real(double) :: limit1m, limit1p, limit2m, limit2p,limit1,limit2
-
+      real(double) :: Free_energy_brute
       real(double) :: omega_einstein,ene_einstein,ene0,einstein_free_3N, einstein_correction, pbc_correction
       real(double), dimension(:,:), allocatable :: omega_veinstein,fpeinstein
       integer :: it_en
@@ -87,6 +88,7 @@ end   subroutine allocate_mab
 
     it_en=-1
     it_stop=0
+    itest_stop=0
  
 ! set-up the reaction coordinate case
    if (abf_mode==1) then

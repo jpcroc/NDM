@@ -35,7 +35,7 @@
     use gen_com_m
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique,xbar,  &
-                                 abf_type,block,it_en,fpeinstein
+                                 abf_type,block,it_en,fpeinstein,abf_mode
 
     implicit none
     integer     :: ic
@@ -60,13 +60,14 @@
     enddo
 ! one force calculation ....
  !one force calculation ....
+  if (abf_mode==2) then
    if (it_en > 0) then
      call calfo_einstein_solid ()
      fp(:,:) = fpeinstein (:,:)
     else 
       call calfo_mab()
     end if          
-    
+   end if   
     
     !step1: from p(1) -> p(1+1/4)
     pp(1:3,1:im)=pp(1:3,1:im)*rga_i(1:3,1:im) + gau(1:3,1:im)
@@ -91,13 +92,14 @@
     enddo
 
      !recompute the forces
+  if (abf_mode==2) then
    if (it_en > 0) then
      call calfo_einstein_solid ()
      fp(:,:) = fpeinstein (:,:)
     else 
       call calfo_mab()
     end if      
-
+  end if 
 
 
     !step4: p(1+1/2) -> p(1+3/4) 

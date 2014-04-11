@@ -261,7 +261,7 @@ subroutine test_displacement
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: im,imm,angst
  USE tab_imm_m
- USE mab_in_ndm_module, ONLY: xbarini,xbar,xp,xp0
+ USE mab_in_ndm_module, ONLY: xbarini,xbar,xp,xp0,itest_stop,a0bcc
  implicit none
  real(double) :: rtemp(imm),RRMAX,ddepla(3)
  integer,dimension(1) :: iimax
@@ -279,14 +279,82 @@ subroutine test_displacement
   !write(*,*) xp(2,iimax),xp0(2,iimax),xbar(2),xbarini(2)
   !write(*,*) xp(3,iimax),xp0(3,iimax),xbar(3),xbarini(3)
   write(*,*) 'The MAXXX displacement is for atom ',iimax, ' with ',rrmax*angst, 'Ang'
-  if ((rrmax*angst) >= 2.47d0) then
+  if ((rrmax*angst) >= sqrt(3.d0)*a0bcc/2.d0) then
+   write(*,*) a0bcc
    write(*,*) 'WWARNING you have at least one 1NN jump.!!! '
+   itest_stop=1
   end if 
   !stop
 
 end subroutine test_displacement
 
+subroutine brute_force_free_energy(itest_stop)
 
+ USE T_kind_param_m, ONLY:  double
+ USE mab_in_ndm_module, ONLY: potist,ene0,n_equilibre,it_calc_brute, &
+                              temperature,  Free_energy_brute,it_mab
+
+implicit none
+integer, intent(in) :: itest_stop
+real(double),save :: free_temp=0.d0
+real(double), save :: free_history=-777.d0
+integer, save :: it_history
+
+ if (it_mab > n_equilibre) then 
+  free_temp = free_temp+exp(-(potist-ene0)/temperature)
+ end if 
+ if ((free_temp+1.0)==free_temp) then 
+  write(6,*) 'WARNING: NaN detected in brute_force_free_energy  calculations'
+ end if 
+
+ Free_energy_brute=-temperature*log(free_temp/dble(it_mab-n_equilibre))
+
+if (itest_stop==0) then  
+   free_history=Free_energy_brute
+   it_history=it_mab-n_equilibre
+   it_calc_brute=it_history
+end if 
+
+if (itest_stop==1) then
+  if (free_history==777.d0) then
+    write(6,*) 'The hop is to fast. Probably  your problem id not well defined. Change things'
+    write(6,*) 'stop in <brute_force_free_energy>'
+    stop
+   end if 
+ Free_energy_brute=free_history
+ it_calc_brute=it_history
+end if 
+
+return
+end subroutine brute_force_free_energy
+
+subroutine correct_free_energy_brute(corr3N,corr3Nm3)
+
+
+ USE T_kind_param_m, ONLY:  double
+ USE gen_com_m,      ONLY : pi,im,hbar 
+ USE mab_in_ndm_module, ONLY: temperature,m_i
+
+ implicit none
+ real(double), intent (out) ::  corr3N, corr3Nm3 
+ real(double) :: hval,mtot
+ integer :: jx, ia
+
+ corr3N=0.d0
+ hval=2.d0*pi*hbar
+ do ia=1,im
+  do jx=1,3
+    corr3N= corr3N -temperature*0.5d0*log(2.d0*pi*m_i(jx,ia)*temperature/hval**2)
+  end do
+ end do
+ write(*,*) 'subroutine', temperature, log(2.d0*pi*m_i(1,1)*temperature/hval**2)
+ mtot=SUM(m_i(1,1:im))/3.d0
+
+ corr3Nm3=corr3N - temperature*1.5d0*log(hval**2/(temperature*2.d0*pi*mtot))
+
+ write(*,*) 'subroutine', temperature, temperature*1.5d0*log(hval**2/(temperature*2.d0*pi*mtot))
+return
+end subroutine  correct_free_energy_brute
  
  subroutine timestamp ( )
 
