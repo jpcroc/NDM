@@ -31,7 +31,7 @@ module mab_in_ndm_module
       real(double),dimension(:),allocatable, save:: w
       real(double)   :: pinumber,dcsi,normxlac,deltasph,radiussph,rtestlac
       real(double),dimension(3) :: xbar,xbarini,xlaci,xlacf,rfilac 
-      real(double)  :: deltar1,deltar2,delta_z
+      real(double)  :: deltar1,deltar2,delta_z,rests
       real(double)  :: xi_min,xi_max,alpha_zeta
       integer       :: nhisto,nhisto1,nhisto2,icsi,nwrite_histo
       real(double),dimension(:), allocatable :: histo,histo1,histo2,histo_temp,histo_temp1,histo_xi

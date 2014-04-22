@@ -62,24 +62,34 @@ USE T_kind_param_m, ONLY :double
 use gen_com_m, ONLY: im, imm, erg2ev,pi,hbar,volu
 use mab_in_ndm_module, ONLY : m_i,omega_einstein,     &
                               einstein_free_3N, einstein_correction, &
-                              pbc_correction,temperature
+                              pbc_correction,temperature,omega_veinstein,rests
 implicit none
 real(double) :: oerg, hval,mtot,m2tot
+integer :: ia,jx
 
 ! oerg=omega_einstein*THZtoK*KtoERG
  hval=2.d0*hbar*pi
- oerg=omega_einstein*hval*1.d+12
+ oerg=omega_einstein*hbar*1.d+12
  mtot=SUM(m_i(1,1:im))
- m2tot=SUM(m_i(1,1:im)**2)
 
-  einstein_free_3N= -temperature*erg2ev*dble(3.d0*im)*log(temperature/oerg)
+ m2tot=0.d0
+ do ia=1,im
+  m2tot=m2tot+m_i(1,ia)/(mtot*(omega_veinstein(1,ia)*2.d0*pi*1.d+12)**2)
+ end do
+
+ einstein_free_3N=0.d0
+ do ia=1,im
+   do jx=1,3
+     einstein_free_3N= einstein_free_3N -temperature*erg2ev*log(temperature/(omega_veinstein(jx,ia)*hbar*2.d0*pi*1.d+12))
+   end do 
+ end do
   ! This is not general formula
   ! We should replace m_i(1,1) with the appropiate factor. 
 !  einstein_correction = - temperature*erg2ev*1.5d0*   &
 !   log(m_i(1,1)*oerg**2*hval**2*mtot/(4.d0*temperature**2*pi**2*m2tot) ) 
-   einstein_correction = - 3.d0*temperature*erg2ev*log(oerg/temperature)  
+   einstein_correction = - 3.d0/2.d0*temperature*erg2ev*log(hbar**2/(temperature**2*m2tot))  
  
-
+  rests= -temperature*erg2ev*(im-1)*log(volu)
 
   if (volu==0.d0) then
   write(*,*) 'MALHEUUUUUUR volume NUL! '

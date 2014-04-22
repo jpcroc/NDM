@@ -69,6 +69,10 @@
     end if          
    end if   
     
+  if (abf_mode==1) then
+      call calfo_mab()
+    end if          
+
     !step1: from p(1) -> p(1+1/4)
     pp(1:3,1:im)=pp(1:3,1:im)*rga_i(1:3,1:im) + gau(1:3,1:im)
     do ic=1,3
@@ -100,6 +104,11 @@
       call calfo_mab()
     end if      
   end if 
+    
+  if (abf_mode==1) then
+      call calfo_mab()
+    end if          
+
 
 
     !step4: p(1+1/2) -> p(1+3/4) 

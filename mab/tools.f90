@@ -291,25 +291,33 @@ end subroutine test_displacement
 subroutine brute_force_free_energy(itest_stop)
 
  USE T_kind_param_m, ONLY:  double
+ USE gen_com_m, ONLY : erg2ev
  USE mab_in_ndm_module, ONLY: potist,ene0,n_equilibre,it_calc_brute, &
-                              temperature,  Free_energy_brute,it_mab
+                              temperature,  Free_energy_brute,it_mab,&
+                              Ecinetique
 
 implicit none
 integer, intent(in) :: itest_stop
-real(double),save :: free_temp=0.d0
+real(double),save :: free_temp=0.d0,free_kinetic=0.d0,average_kinetic=0.d0
 real(double), save :: free_history=-777.d0
+real(double) :: Free_kinetic_brute
 integer, save :: it_history
 
  if (it_mab > n_equilibre) then 
   free_temp = free_temp+exp(-(potist-ene0)/temperature)
+  free_kinetic=free_kinetic+exp(-Ecinetique/temperature)
+  average_kinetic=average_kinetic+Ecinetique
+  write(41,*) it_mab-n_equilibre, potist*erg2ev
+  write(42,*) it_mab-n_equilibre, ene0*erg2ev,temperature*erg2ev*dble(3.0*127.0-3.0)/2.d0
  end if 
  if ((free_temp+1.0)==free_temp) then 
   write(6,*) 'WARNING: NaN detected in brute_force_free_energy  calculations'
  end if 
-
+ !write(*,*) free_temp,potist, ene0
  Free_energy_brute=-temperature*log(free_temp/dble(it_mab-n_equilibre))
-
-if (itest_stop==0) then  
+ Free_kinetic_brute=-temperature*log(free_kinetic/dble(it_mab-n_equilibre))
+ if (mod(it_mab,2000)==0) write(*,*) 'free brute kinetic',Free_energy_brute*erg2ev,FRee_kinetic_brute*erg2ev
+if (itest_stop==0) then 
    free_history=Free_energy_brute
    it_history=it_mab-n_equilibre
    it_calc_brute=it_history
@@ -332,27 +340,44 @@ subroutine correct_free_energy_brute(corr3N,corr3Nm3)
 
 
  USE T_kind_param_m, ONLY:  double
- USE gen_com_m,      ONLY : pi,im,hbar 
+ USE gen_com_m,      ONLY : pi,im,hbar,erg2ev,volu,umass,angst 
  USE mab_in_ndm_module, ONLY: temperature,m_i
 
  implicit none
  real(double), intent (out) ::  corr3N, corr3Nm3 
- real(double) :: hval,mtot
+ real(double) :: hval,mtot,logn, corr
  integer :: jx, ia
 
+ ! for 1/N! term in the partition function
+ logn=dble(im)*log(dble(im))-dble(im)+log(2.d0*pi*dble(im))/dble(im)
+ ! contribution from the kinetic part of the unconstrained system ...
  corr3N=0.d0
+ corr=0.d0
  hval=2.d0*pi*hbar
  do ia=1,im
   do jx=1,3
     corr3N= corr3N -temperature*0.5d0*log(2.d0*pi*m_i(jx,ia)*temperature/hval**2)
+    corr = corr - temperature*log(temperature/(hval*6.0*1.d+12))
   end do
  end do
- write(*,*) 'subroutine', temperature, log(2.d0*pi*m_i(1,1)*temperature/hval**2)
+
  mtot=SUM(m_i(1,1:im))/3.d0
+ write(*,'("sub 2", 4F14.7)') corr3N*erg2ev !, -temperature*erg2ev*logn,  -temperature*log(volu/dble(im))*erg2ev,temperature*erg2ev*dble(im)*log(volu)
+ !write(*,'("sub 3", f14.7)')    corr3n*erg2ev - temperature*erg2ev*logn - temperature*log(volu/dble(im))*erg2ev + temperature*erg2ev*dble(im)*log(volu)
+ write(*,'("sub4", 5g14.7)')  corr*erg2ev ,   corr3n*erg2ev - temperature*erg2ev*dble(im)*log(volu), - temperature*erg2ev*logn,- temperature*erg2ev*log(volu),  - temperature*erg2ev*1.5d0*log(hval**2/(temperature*2.d0*pi*mtot)) 
 
- corr3Nm3=corr3N - temperature*1.5d0*log(hval**2/(temperature*2.d0*pi*mtot))
+ corr3Nm3=corr3N                              &
+          - temperature*1.5d0*log(hval**2/(temperature*2.d0*pi*mtot)) &
+          +  temperature*logn   &
+          -temperature*dble(im-1)*log(volu)
+ corr3N= corr3N    &
+         + temperature*logn  &
+         - temperature*dble(im-1)*log(volu)
 
- write(*,*) 'subroutine', temperature, temperature*1.5d0*log(hval**2/(temperature*2.d0*pi*mtot))
+! write(*,*) 'subroutine', corr3Nm3*erg2ev+temperature*erg2ev*logn-temperature*erg2ev*(dble(im-1))*log(volu)
+ write(*,*) 'subroutine1', -temperature*(3.d0*dble(im)-3.d0)*log(2.0*pi*m_i(1,1)*temperature/hval**2)*erg2ev/2.d0-temperature*erg2ev*log(dble(im))
+
+ write(*,*) 'subroutine2', -temperature*(3.d0*dble(im)-3.d0)*log(2.0*pi*m_i(1,1)*temperature/hval**2)*erg2ev/2.d0-temperature*erg2ev*log(dble(im))-temperature*erg2ev*(dble(im-1))*log(volu)
 return
 end subroutine  correct_free_energy_brute
  

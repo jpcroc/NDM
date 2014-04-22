@@ -153,18 +153,22 @@ do it_mab=1,nlangevin
   call correct_free_energy_brute(corr3N,corr3Nm3)
   write(*,*) 'outsub', corr3N, corr3Nm3,corr3N*erg2ev
   write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
-  write(6,'("DeltaFree     (eV) ................:  ", F15.7)') Free_energy_brute*erg2ev
-  write(6,'("FreeTOT3N     (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3N)*erg2ev
-  write(6,'("FreeTOT(3N-3) (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3Nm3)*erg2ev
+  write(6,'("DeltaFreeMD     (eV) ................:  ", F15.7)') Free_energy_brute*erg2ev
+  write(6,*) ' '
+  write(6,'("DeltaFree3N     (eV) ................:  ", F15.7)') (Free_energy_brute+corr3N)*erg2ev
+  write(6,'("FreeTOT3N       (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3N)*erg2ev
+  write(6,*) ' '
+  write(6,'("DeltaFree(3N-3) (eV) ................:  ", F15.7)') (Free_energy_brute+corr3Nm3)*erg2ev
+  write(6,'("FreeTOT(3N-3)   (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3Nm3)*erg2ev
+
   write(6,'("Average_over N steps ..................:  ", i7)') it_calc_brute
-  write(*,*)  (Free_energy_brute+corr3N)*erg2ev, (Free_energy_brute+corr3Nm3)*erg2ev
 
 
  end if 
 
  if (abf_mode==2) then
   oerg=omega_einstein*hbar*2.d0*pi*1.d+12
-  !write (*,*) temperature, temperature/KtoERG, omega_einstein*47.99407332506204
+  write (*,*) 'temp', temperature, temperature/KtoERG, omega_einstein
   tmp4= - temperature*erg2ev*dble(3*im-6)*log(temperature/oerg)
   tmp1= - temperature*erg2ev*dble(3*im-3)*log(temperature/oerg)
   tmp3= - temperature*erg2ev*dble(3*im)*log(temperature/oerg)
@@ -186,10 +190,10 @@ do it_mab=1,nlangevin
   write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') einstein_free_3N
   write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", F15.7)') tmp2
   !asta pare sa mearga cel mai bine. In mod normal l-as vedea cu +pbc_correction
-  write(6,'("F(FullM)               (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction - pbc_correction - tmp2 
-  write(6,'("F(FullP)               (eV) ............:  ", F15.7)') einstein_free_3N- pbc_correction - tmp2 
+  write(6,'("F(Full3N-3)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction -  tmp2 
+  write(6,'("F(Full3N-3)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction 
   write(6,'("PBC correction         (eV) ............:  ", F15.7)') pbc_correction 
-  write(6,'("Einstein correction    (eV) ............:  ", F15.7)') einstein_correction
+  write(6,'("Einstein correction    (eV) ............:  ", F15.7)') rests
  end if  !abf_mode==2
 
 
