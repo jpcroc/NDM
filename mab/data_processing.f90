@@ -26,14 +26,14 @@ if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'energie libre
     Free_energy(i_loop)=Free_energy(i_loop-1)+0.5d0*delta_z*(mean_force1(i_loop-1)+mean_force1(i_loop))
    enddo
 
-    forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-Free_energy(i_loop)/temperature)
+   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-Free_energy(i_loop)/temperature)
     renorm_f=temperature*log(sum(Free_temp)*delta_z)
-    !renormalise par rapport a l'aire
-    forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
-  endif
+   !renormalise par rapport a l'aire
+   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
+endif
  
   if (abf_mode==1) unit_histo2(:)=x_mol(:)/A2cm
-  if (abf_mode==2) then 
+  if ((abf_mode==2).or.(abf_mode==22)) then 
      do i_loop=-nhisto2, nhisto+nhisto2
       unit_histo2(i_loop)=delta_z*dble(i_loop)
      end do
@@ -79,9 +79,15 @@ if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'energie libre
   !-----------------------------------------------------------------
 
   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-A_ee(i_loop)/temperature)
-                    renorm_f=temperature*log(sum(Free_temp(-nhisto1:nhisto+nhisto1))*delta_z)
+  renorm_f=temperature*log(sum(Free_temp(-nhisto1:nhisto+nhisto1))*delta_z)
   forall(i_loop=-nhisto1:nhisto+nhisto1) A_ee(i_loop)=A_ee(i_loop)+renorm_f
   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=A_ee(i_loop)
+  if (abf_mode==22) then
+   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=A_ee(i_loop)/unit_histo2(i_loop)
+     do i_loop=-nhisto1,nhisto+nhisto1
+      write(776,*) unit_histo2(i_loop), 500.0/unit_histo2(i_loop)
+     end do
+  end if 
   !minfreeval=minval(A_ee(-nhisto1:nhisto+nhisto1))
   !forall(i_loop=-nhisto1:nhisto+nhisto1) A_ee(i_loop)=A_ee(i_loop)-minfreeval
    open(unit=996,file='Free_energy_mollifiee_ABFee',status='unknown')!A_tilde
@@ -144,6 +150,16 @@ if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'energie libre
      write(999,*),unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
    enddo
    close(999)
+
+
+  if (abf_mode==22) then
+   do i_loop=nhisto+nhisto1,-nhisto1,-1
+     write(999,*) 500.0/unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
+   enddo
+   close(999)
+  end if 
+
+
 
 
 

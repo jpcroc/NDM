@@ -49,7 +49,7 @@ module mab_in_ndm_module
       integer :: it_en
       real(double)::sigma_eta,sigma_carre,eta_ABFee,sum_error_A,sum_error_A_bar
       integer::ecart_eta,nom_deconvo
-      real(double)::eta_mab
+      real(double)::eta_mab,ha_mix
       integer::compute_mode,error_step
       
       logical :: block,test_end,histo_equi
@@ -100,6 +100,8 @@ end   subroutine allocate_mab
      deltar1=dsqrt(3.d0)*a0bcc*deltar1/(angst*2.d0)
      deltar2=dsqrt(3.d0)*a0bcc*deltar2/(angst*2.d0)
      rtestlac=dsqrt(3.d0)*a0bcc*rtestlac/(angst*2.d0)
+     nhisto1=deltar1/dble(delta_z)
+     nhisto2=deltar2/dble(delta_z)
    end if 
 !set-up the alchemical case ...
 
@@ -110,36 +112,56 @@ end   subroutine allocate_mab
     delta_z=normxlac/dble(nhisto)
    end if 
 
+
+
+   if (abf_mode==22) then
+                           ! 500 is the temperature in orderto made the simulation
+    xi_max=500.0/100.0     ! this is xi_max in order to have 100K at the reference temperature 500 K 
+    xi_min=500.0/1808.0    ! this is xi_min in order to have melting temperature;  500 K is the reference temperature
+    normxlac=xi_max-xi_min
+    delta_z=normxlac/dble(nhisto)
+   end if 
+   !
+   if ((abf_mode==2).or.(abf_mode==22)) then
+    deltar1=deltar1*normxlac  
+    deltar2=deltar2*normxlac  
+    !
+    nhisto1=deltar1/dble(delta_z)
+    nhisto2=deltar2/dble(delta_z)
+    !
+    limit1m=xi_min-deltar1
+    limit1p=xi_max+deltar1
+    limit2m=xi_min-deltar2
+    limit2p=xi_max+deltar2
+    !
+     if (mode_zeta_potential==0) then
+      limit1=limit1m
+      limit2=limit1p
+     else if (mode_zeta_potential==1) then 
+      limit1=limit2m
+      limit2=limit2p
+    end if 
+   !
+   end if 
+
+
     !sigma_eta=sqrt(eta_mab)
      sigma_eta=eta_mab*delta_z ! choisir largeur de gaussienne
      sigma_carre=sigma_eta**2
      ecart_eta=nint(3.d0*sigma_eta/delta_z)
       write(*,*),'ecart_eta,delta_z,sigma_eta',ecart_eta,delta_z,sigma_eta
-     nhisto1=deltar1/dble(delta_z)
-     nhisto2=deltar2/dble(delta_z)
     write(*,'("The distribution over the histogram............:")')
 
-    write(*,'("...-nhisto2=",i6,"...-nhisto1=",i6,"..0.....nhisto=",i6,"......nhisto+nhisto1=",i6, &
+    write(*,'("...-nhisto2=",i6,"...-nhisto1=",i6,"..0..........nhisto=",i6,"......nhisto+nhisto1=",i6, &
           "....nhisto+nhisto2=",i6,"...")') -nhisto2, -nhisto1,nhisto,nhisto+nhisto1,nhisto+nhisto2
-     write(*,'("...-nhisto2=",f6.2,"...-nhisto1=",f6.2,"..0.....nhisto=",f6.2,"......nhisto+nhisto1=",f6.2, &
-          "....nhisto+nhisto2=",f6.2,"...")') -deltar2, -deltar1,1.0,1.0+deltar1,1.0+deltar2
+     write(*,'("...-nhisto2=",f6.2,"...-nhisto1=",f6.2,"..",f6.2,".....nhisto=",f6.2,"......nhisto+nhisto1=",f6.2, &
+          "....nhisto+nhisto2=",f6.2,"...")') -deltar2, -deltar1,xi_min,xi_max,xi_max+deltar1,xi_max+deltar2
     if (abf_mode==2) then
         omega_veinstein(:,:)=omega_einstein
         !instead that I will a file with all the einstein  frequencies 
     end if 
 
 
-   limit1m=0.d0-deltar1
-   limit1p=1.d0+deltar1
-   limit2m=0.d0-deltar2
-   limit2p=1.d0+deltar2
-       if (mode_zeta_potential==0) then
-         limit1=limit1m
-         limit2=limit1p
-        else if (mode_zeta_potential==1) then 
-         limit1=limit2m
-         limit2=limit2p
-       end if 
 
 
 

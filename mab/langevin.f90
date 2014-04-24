@@ -35,7 +35,7 @@
     use gen_com_m
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique,xbar,  &
-                                 abf_type,block,it_en,fpeinstein,abf_mode
+                                 abf_type,block,it_en,fpeinstein,abf_mode,ha_mix
 
     implicit none
     integer     :: ic
@@ -44,7 +44,7 @@
     real(double) :: vbar(3)
     real(double) :: xbari(3),xbarc(3)
     real(double), dimension(6,im+1)::gau
-   
+    real(double) :: fplocal(3,imm) 
    
     call genere_bruit2(sig_i,gau)
 
@@ -63,15 +63,23 @@
   if (abf_mode==2) then
    if (it_en > 0) then
      call calfo_einstein_solid ()
-     fp(:,:) = fpeinstein (:,:)
+     fplocal(:,:) = fpeinstein (:,:)
     else 
       call calfo_mab()
+     fplocal(:,:) = fp(:,:)
     end if          
    end if   
     
   if (abf_mode==1) then
       call calfo_mab()
-    end if          
+      fplocal(:,:) = fp(:,:)
+  end if          
+  
+  if (abf_mode==22) then
+       call calfo_mab()
+       fplocal(:,:)=fp(:,:)
+  end if 
+
 
     !step1: from p(1) -> p(1+1/4)
     pp(1:3,1:im)=pp(1:3,1:im)*rga_i(1:3,1:im) + gau(1:3,1:im)
@@ -83,7 +91,7 @@
     vp(1:3,1:im)=pp(1:3,1:im)/m_i(1:3,1:im)
 
     !step2: from p(1+1/4) -> p(1+1/2)
-    pp(1:3,1:im) =  pp(1:3,1:im) + (fp(1:3,1:im))*dtlang/two
+    pp(1:3,1:im) =  pp(1:3,1:im) + (fplocal(1:3,1:im))*dtlang/two
     
     !step3: from x(1) -> x(1+1)
     xp(1:3,1:im)=  xp(1:3,1:im) + pp(1:3,1:im)*dtlang/m_i(1:3,1:im)
@@ -99,20 +107,25 @@
   if (abf_mode==2) then
    if (it_en > 0) then
      call calfo_einstein_solid ()
-     fp(:,:) = fpeinstein (:,:)
+     fplocal(:,:) = fpeinstein (:,:)
     else 
       call calfo_mab()
+      fplocal(:,:) = fp(:,:)
     end if      
   end if 
     
   if (abf_mode==1) then
       call calfo_mab()
+      fplocal(:,:) = fp(:,:)
     end if          
 
-
+  if (abf_mode==22) then
+       call calfo_mab()
+       fplocal(:,:)=fp(:,:)
+  end if 
 
     !step4: p(1+1/2) -> p(1+3/4) 
-    pp(1:3,1:im) = pp(1:3,1:im) + (fp(1:3,1:im))*dtlang/two
+    pp(1:3,1:im) = pp(1:3,1:im) + (fplocal(1:3,1:im))*dtlang/two
     vp(1:3,1:im) = pp(1:3,1:im) / m_i(1:3,1:im)
     
     

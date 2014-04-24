@@ -15,10 +15,12 @@ subroutine calfo_ABFee()
                              A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom,delta_z,&
                              x_mol,eta_ABFee,temperature,omega_abf,exp_A_bar,&
                              mean_force2,it_mab,histo_zeta,n_equilibre,histo_equi,&
-                             it_mab,abf_mode,potist,ene_einstein,ene0,fpeinstein
+                             it_mab,abf_mode,potist,ene_einstein,ene0,fpeinstein, &
+                             ha_mix
 
  implicit none
 integer::iter,ia,jx
+integer, save :: itcount=0
 real(double), dimension(3,imm) :: fpabf
 real(double),dimension(:),allocatable::temp_log
 real(double),dimension(:),allocatable::temp_exp,U_Aee
@@ -135,12 +137,64 @@ end do
 
 end if !abf_mode==2 
 
+if (abf_mode==22) then
+ ! LOOK TO NHISTO1 HOW IS DEFINED IN THIS CASE !!!!!!!!!!!!!!!!!!
+ ! xmol is zeta
+ ! U(zeta, q) = zeta*(potist-ene0 - ha_mix*U_HA)
+ !--3. compute the  pi_A_ee(\zeta | q ) = \exp{U(zeta,q) / int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
+ !--3.a num \exp{U(zeta,q)
+  do iter=-nhisto1,nhisto+nhisto1
+     U_Aee(iter) = x_mol(iter)*(potist-ene0+ha_mix*ene_einstein)
+     temp_log(iter)=-(U_Aee(iter)-A_ee(iter))/temperature
+     temp_exp(iter)=exp(temp_log(iter))!
+      if ((temp_exp(iter)+1.0).eq.temp_exp(iter)) then
+       itcount=itcount+1
+        write(*,*) 'WARNING:  NaN detected look in fort.333 file'
+        write(333,'(2i5,7D21.8)') it_mab, iter, U_Aee(iter),A_ee(iter), temp_log(iter),temp_exp(iter),potist,ene0,ene_einstein
+        if (itcount==5) stop
+      end if  
+  end do
+
+ !--3.b denom: int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
+  denom=0.d0
+  do iter=-nhisto1+1,nhisto+nhisto1
+   denom=denom + 0.5d0*(temp_exp(iter-1)+temp_exp(iter) )*delta_z
+  end do
+ 
+ !--4. Compute the E(\grad_q U(.,q)|q)
+ !In this case E[\grad_q U(.,q)|q]=E[ \zeta \grad_q U(q) ]
+ !We should just remind that  \grad_q U(q) = - fp(q)
+ do ia=1,im
+  do jx=1,3
+   do iter=-nhisto1,nhisto+nhisto1
+    temp_num_f(iter)=-x_mol(iter)*(fp(jx,ia)+ha_mix*fpeinstein(jx,ia))*temp_exp(iter)
+   end do
+   tmp_num=0.d0
+   do iter=-nhisto1+1,nhisto+nhisto1
+    tmp_num=tmp_num  + 0.5d0*(temp_num_f(iter-1)+temp_num_f(iter) )*delta_z
+   end do
+!debug<
+   if ((jx==1).and.(ia==7)) then
+   !write(*,*) -tmp_num/denom, fp(jx,ia)
+   end if
+!>debug 
+  if ((histo_equi == .true.) .And. (it_mab >= n_equilibre)) then
+    fp(jx,ia)=-tmp_num/denom
+  end if 
+ end do
+end do
+
+end if !abf_mode==22 
 
 
 !write (41,*) fp(1,7),fpabf(1,7)
 !write (42,*) fp(2,7),fpabf(2,7)
 !write (43,*) fp(3,7),fpabf(3,7)
-
+! 1. The computationb of the mean force A_dev_ee (\zeta)
+  
+!1a We prepa denom and num  in order to compute A_dev_ee (\zeta}
+! num= \sum_{all_md_steps) \grad_\zeta U(\zeta,q)*pi_A_ee(\zeta | q )
+! denom = \tau + \sum_{all_md_steps} pi_A_ee(\zeta | q ) (below the pi_A_ee si denoted by is P_ee) 
 if (abf_mode==1) then
  do iter=-nhisto2, nhisto+nhisto2
   P_ee(iter)=temp_exp(iter)/denom
@@ -159,6 +213,14 @@ if (abf_mode==2) then
  enddo
 end if 
 
+
+if (abf_mode==22) then
+ do iter=-nhisto1, nhisto+nhisto1
+  P_ee(iter)=temp_exp(iter)/denom
+  P_ee_denom(iter)=P_ee_denom(iter)+P_ee(iter)
+  P_ee_num(iter)=P_ee_num(iter)+(potist-ene0+ha_mix*ene_einstein)*P_ee(iter)
+ enddo
+end if 
 
 
 !----------If histo_equi is true when it_mab > n_equilibre, or histo_equi is false, we fill the histogram of zeta
@@ -182,11 +244,11 @@ endif
  endif
 
 
-!---------Calcule A_dev if necessaire
- !do iter=-nhisto1,nhisto+nhisto1
- !    A_dev_ee(iter)=1.d0/eta_ABFee*(P_ee_num(iter))/(P_ee_denom(iter)+1.d0/(omega_abf*dble(nhisto)))
- !enddo
+!1b Final step to have  A_dev_ee (\zeta} = num/denom)
+! num= \sum_{all_md_steps) \grad_\zeta U(\zeta,q)*pi_A_ee(\zeta | q )
+! denom = \tau + \sum_{all_md_steps} pi_A_ee(\zeta | q ) (below the pi_A_ee si denoted by is P_ee) 
 
+ ! 
  ! from where comes this nhisto !!!! mcmCHECK
  if (abf_mode==1) then
  do iter=-nhisto1,nhisto+nhisto1
@@ -200,7 +262,11 @@ end if
  enddo
 end if 
 
-
+ if (abf_mode==22) then
+ do iter=-nhisto1,nhisto+nhisto1
+     A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+1.d0/omega_abf)
+ enddo
+end if 
 
 return
 

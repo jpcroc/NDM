@@ -336,13 +336,13 @@ integer, save :: it_history
                                       (ave4-4.d0*ave3*ave1-3.d0*ave2**2+12.d0*ave2*ave1**2-6.d0*ave1**4)/temperature**4/24.d0) &
                        +  equit
 
+!debug
+if (it_mab > n_equilibre+500)  write(41,*) it_mab-n_equilibre,  Free_energy_brute*erg2ev ,  Free_energy_brute*erg2ev-equit*erg2ev
+if (it_mab > n_equilibre+500)  write(42,*) it_mab-n_equilibre,  Free_energy_brute2*erg2ev,  Free_energy_brute2*erg2ev-equit*erg2ev
+if (it_mab > n_equilibre+500)  write(43,*) it_mab-n_equilibre,  Free_energy_brute4*erg2ev,  Free_energy_brute4*erg2ev- equit*erg2ev
 
-if (it_mab > n_equilibre+100)  write(41,*) it_mab-n_equilibre,  Free_energy_brute*erg2ev , Free_energy_brute*erg2ev-equit*erg2ev
-if (it_mab > n_equilibre+100)  write(42,*) it_mab-n_equilibre,  Free_energy_brute2*erg2ev,  Free_energy_brute2*erg2ev-equit*erg2ev
-if (it_mab > n_equilibre+100)  write(43,*) it_mab-n_equilibre,  Free_energy_brute4*erg2ev,  Free_energy_brute4*erg2ev- equit*erg2ev
 
-
- if (it_mab > n_equilibre+100)  write(45,*) it_mab-n_equilibre, Free_energy_brute2*erg2ev, (Free_energy_brute4)*erg2ev
+ if (it_mab > n_equilibre+500)  write(45,*) it_mab-n_equilibre, Free_energy_brute2*erg2ev, (Free_energy_brute4)*erg2ev
  Free_kinetic_brute=-temperature*log(free_kinetic/dble(it_mab-n_equilibre))
  if (mod(it_mab,2000)==0) write(*,*) 'free energy brute O2 O4',Free_energy_brute*erg2ev,Free_energy_brute2*erg2ev, Free_energy_brute4*erg2ev
 
@@ -376,12 +376,11 @@ subroutine correct_free_energy_brute(corr3N,corr3Nm3)
 
  implicit none
  real(double), intent (out) ::  corr3N, corr3Nm3 
- real(double) :: hval,mtot,logn, corr, lengthvolu,lengthvolu2,Fk,Fc
+ real(double) :: hval,mtot,logn, corr, lengthvolu
  integer :: jx, ia
  real(double) :: t1,t2,t3,t4
 
  lengthvolu =(volu)**(1.d0/3.d0)
- lengthvolu2=(volu)**(2.d0/3.d0)
  ! for 1/N! term in the partition function
  logn=dble(im)*log(dble(im))-dble(im)+log(2.d0*pi*dble(im))/dble(im)
  ! contribution from the kinetic part of the unconstrained system ...
@@ -397,12 +396,19 @@ subroutine correct_free_energy_brute(corr3N,corr3Nm3)
  end do
 
  mtot=SUM(m_i(1,1:im))
+!debug<
  t1 = -temperature*erg2ev*1.5d0*log(hval**2/(temperature*2.d0*pi*mtot))
- t2 = corr3N*erg2ev
+ t2 =  corr3N*erg2ev
  t3 = -temperature * erg2ev *dble(im-1)*log(volu)
- t4 = temperature*erg2ev*logn 
+ t4 =  temperature*erg2ev*logn 
  write(*,'("sub4", 6f16.4)')  t1,t2,t3,t4, t1+t2+t3, t1+t2+t3+t4
- 
+ t1 = -temperature*erg2ev*1.5d0*log(dble(im))
+ write(*,'("sub5", f16.4)')  t1
+t1 = -temperature*erg2ev*1.5*dble(im-1)*log(2.0*pi*m_i(1,1)*temperature/hval**2)
+t2 = -temperature*erg2ev*1.5*dble(im-1)*log(2.0*pi*temperature/(m_i(1,1)*6.0**2*4.0*pi**2*1.d+24))
+
+ write(*,'("partitia la un osc_ha kin pot si ceea ce ar trebuie sa am", 3f16.4)')  t1,t2,t2-t3
+!>debug 
  corr3Nm3=corr3N                              &
           - temperature*1.5d0*log(hval**2/(temperature*2.d0*pi*mtot)) &
           +  temperature*logn   &

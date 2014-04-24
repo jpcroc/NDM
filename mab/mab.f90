@@ -32,6 +32,8 @@ subroutine mab
   write(6,*)
   write(6,*)
   write(6,*)'......READING.....' 
+
+!  call random_seed()
   call read_mab_file()
 
   write(6,*)'......ALLOCATE....' 
@@ -42,7 +44,11 @@ subroutine mab
   write(6,*)'......PREPARE.....' 
 
  call prepare_langevin()
-if (abf_type==1) call test_minimum_abf()
+if (abf_type==1)  call test_minimum_abf()
+if (abf_mode==22) then
+     call test_minimum_abf()
+     it_en=-1
+end if 
 if (abf_mode==2) then
  call test_minimum_abf () 
  call init_einstein_solid  ()
@@ -88,7 +94,7 @@ do it_mab=1,nlangevin
     case (2)
       call langevin()
     end select 
-   if (abf_mode==2) then
+   if ((abf_mode==2).or.(abf_mode==22)) then
          if (.NOT.(abf_type==5)) call langevin_overdamped_zeta()
    end if
 

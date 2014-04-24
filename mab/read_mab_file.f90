@@ -10,14 +10,14 @@ subroutine read_mab_file()
                               nwrite_histo,sigma_eta,ecart_eta, &
                               eta_mab,eta_ABFee,histo_equi,n_equilibre,           & 
                               maxforce,compute_mode,error_step,nom_deconvo,lang_factor, &
-                              mode_zeta_potential, alpha_zeta,ntestvacancyjump
+                              mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
                       langevin_type,gamma,omega_abf,omega_einstein, nwrite_histo,  &
                       eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
                       maxforce,compute_mode,abf_mode, error_step,nom_deconvo,lang_factor, &
-                      mode_zeta_potential, alpha_zeta,ntestvacancyjump
+                      mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix
 
  character(len=128) :: fnamtin
  integer :: lumab
@@ -35,6 +35,7 @@ subroutine read_mab_file()
  mode_zeta_potential=0
  alpha_zeta=2.d0
  ntestvacancyjump=200
+ ha_mix=0.d0
 
  fnamtin = fnam(1:lenfnam)//'.mab'
  write(*,*) 'file name', fnamtin
@@ -95,7 +96,20 @@ if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
         end select 
       end if
 
-     if ((abf_mode==2) .and. ((abf_type==1).or.(abf_type==4).or. &
+     if  ((abf_mode==2) .and. ((abf_type==1).or.(abf_type==4).or. &
+                             (abf_type==6).or.(abf_type==7).or.  &
+                             (abf_type==9))) then
+         write(6,*) 'The is no ABF implementation for this mode'
+         write(6,*) 'abf_type .....',abf_type
+         write(6,*) 'abf_mode .....',abf_mode
+         if (abf_type==1) write(6,*) 'MESSAGE: You cannot use Langevin dynamics having abf_mode in the input file.' 
+         if (abf_type==1) write(6,*) 'MESSAGE: Put abf_mode=1 and restart the calcultations' 
+         write(6,*) '<stop in read_mab_file>'
+         stop
+    end if 
+
+
+     if ((abf_mode==22) .and. ((abf_type==1).or.(abf_type==4).or. &
                              (abf_type==6).or.(abf_type==7).or.  &
                              (abf_type==9))) then
          write(6,*) 'The is no ABF implementation for this mode'
@@ -148,13 +162,18 @@ write(*,'("Number of the bins of histo..................:",i7)') nhisto
 write(*,'("The frequency of writing histo...............:",i7)') nwrite_histo
 write(*,'("The first shell of the histo (1nn units).....:",D15.4)') deltar1
 write(*,'("The second shell of the histo (1nn units)....:",D15.4)') deltar2
-if (abf_mode==2) then
+if ((abf_mode==2).or.(abf_mode==22)) then
  if (mode_zeta_potential==1) then
-  write(*,'("===============THERE IS AN EXTRA POTETIAL FOR ZETA===========")') 
+  write(*,'("===============THERE IS AN EXTRA POTENTIAL FOR ZETA===========")') 
   write(*,'("The prefactor of zeta potential...............:",D15.4)') alpha_zeta
   alpha_zeta=alpha_zeta*ev2erg
  end if 
+end if
+
+if (abf_mode==22) then
+write(*,'("ha_mix, U(\zeta,q)=\zeta*[U(q)+ha_mix*U_HA(q))]....:",D15.4)') ha_mix
 end if 
+ 
 write(*,'("The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac
 
  temperature=temperature*KtoERG

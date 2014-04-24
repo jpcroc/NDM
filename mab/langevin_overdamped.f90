@@ -13,7 +13,7 @@
     use gen_com_m
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,xbar,  &
-                             Ecinetique,abf_type,block,gamma,fpeinstein,it_en 
+                             Ecinetique,abf_type,abf_mode,block,gamma,fpeinstein,it_en 
 
 
     implicit none
@@ -24,7 +24,7 @@
     real(double) :: psum(3)
     real(double):: sig_mass(3,im) 
     real(double) :: Ecin4
-
+    real(double) :: fplocal(3,imm)
 
     call genere_bruit(gau)
     sig_mass(1:3,1:im)=sig_ll(1:3,1:im)*gau(1:3,1:im)
@@ -35,17 +35,32 @@
 
  
  !one force calculation ....
+
+  if (abf_mode==2) then
    if (it_en > 0) then
      call calfo_einstein_solid ()
-     fp(:,:) = fpeinstein (:,:)
+     fplocal(:,:) = fpeinstein (:,:)
     else 
       call calfo_mab()
+     fplocal=fp(:,:)
     end if          
+   end if   
+    
+  if (abf_mode==1) then
+      call calfo_mab()
+      fplocal(:,:) = fp(:,:)
+  end if          
+  
+  if (abf_mode==22) then
+       call calfo_mab()
+       fplocal(:,:)=fp(:,:)
+  end if 
+
     
      ! xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
 
       !pp(1:3,1:im)= fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_mass(1:3,1:im)
-      pp(1:3,1:im)= fp(1:3,1:im)/(m_i(1:3,1:im)*gamma)*dtlang + sig_mass(1:3,1:im)
+      pp(1:3,1:im)= fplocal(1:3,1:im)/(m_i(1:3,1:im)*gamma)*dtlang + sig_mass(1:3,1:im)
 
       do ic=1,3
       psum(ic)=sum(pp(ic,1:im))/dble(im)

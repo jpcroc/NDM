@@ -22,7 +22,7 @@ subroutine calfo_mab()
 
 !ABF part ...
 
-      if (abf_mode==2) call calfo_einstein_solid ()
+      if ((abf_mode==2).or.(abf_mode==22)) call calfo_einstein_solid ()
         call fill_histo()
 
 !---if we only want to fill histogram after n_equilibre steps-------------

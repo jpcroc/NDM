@@ -14,7 +14,7 @@ subroutine langevin_overdamped_zeta()
     USE mab_in_ndm_module, only: dtlang,abf_mode,block,gamma,dcsi, &
                                  ene_einstein,ene0, temperature,mean_force1,icsi, &
                                  limit1,limit2,langevin_type,m_i,it_mab,delta_z,nhisto,nhisto1, &
-                                 lang_factor,it_mab,it_stop,limit1m, limit1p
+                                 lang_factor,it_mab,it_stop,limit1m, limit1p,ha_mix,abf_type
 
 
     implicit none
@@ -46,7 +46,16 @@ subroutine langevin_overdamped_zeta()
     ! end if 
     ! if (langevin_type==1) then  !overdamped
      !ddd tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*dtlang*angst*ffactor/(gamma*m_i(1,1)) + noise*sqrt(2.d0*temperature*dtlang*angst*ffactor/(gamma*m_i(1,1)))      
+
+    if (abf_mode==2) then
      tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*lang_factor*dtlang*angst*angst/(gamma*m_i(1,1)) + noise*sqrt(2.d0*lang_factor*temperature*dtlang*angst*angst/(gamma*m_i(1,1))) -force_zeta* lang_factor*dtlang*angst*angst/(gamma*m_i(1,1))     
+    end if 
+
+    if (abf_mode==22) then
+     tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - tmp_force )*lang_factor*dtlang*angst*angst/(gamma*m_i(1,1)) + &
+                noise*sqrt(2.d0*lang_factor*temperature*dtlang*angst*angst/(gamma*m_i(1,1))) - &
+                 force_zeta* lang_factor*dtlang*angst*angst/(gamma*m_i(1,1))     
+    end if 
    !  end if
 
 ! the best choise is factor = 5*d+8. actually for this value the 
