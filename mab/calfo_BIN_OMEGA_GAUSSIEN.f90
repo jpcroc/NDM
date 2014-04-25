@@ -13,7 +13,7 @@ subroutine calfo_ABF_BIN() ! this concerns only the force applied on atoms
  USE mab_in_ndm_module, ONLY:dcsi,icsi,rfilac,histo,     &
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              mean_force1,histo1,ene_einstein,abf_mode,fpeinstein,ene0, &
-                             ha_mix
+                             ha_mix,equit
  implicit none
 
  real(double), dimension(3,imm) :: fpabf
@@ -47,7 +47,7 @@ end if
 
 
 if (abf_mode==22) then              
-  force = potist + ha_mix*ene_einstein - ene0 !  d U(zeta,q)/d zeta  
+  force = potist + ha_mix*ene_einstein - ene0 - equit !  d U(zeta,q)/d zeta  
   fpabf(:,:) = dcsi*ha_mix*fpeinstein(:,:) + dcsi*fp(:,:) ! -d U(zeta,q)/d q
   fp(:,:)=fpabf(:,:)
   !
@@ -79,7 +79,7 @@ subroutine calfo_ABF_BIN_OMEGA()
  USE mab_in_ndm_module, ONLY:dcsi,icsi,rfilac,histo,     &
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              mean_force1,histo1,omega_abf,&
-                             abf_mode,ene_einstein,ene0,fpeinstein,ha_mix
+                             abf_mode,ene_einstein,ene0,fpeinstein,ha_mix,equit
  implicit none 
  real(double), dimension(3,imm) :: fpabf
  real(double) :: force
@@ -111,7 +111,7 @@ end if
 
 
 if (abf_mode==22) then              
-  force = potist + ha_mix*ene_einstein - ene0 !  d U(zeta,q)/d zeta  
+  force = potist + ha_mix*ene_einstein - ene0 - equit !  d U(zeta,q)/d zeta  
   fpabf(:,:) = dcsi*ha_mix*fpeinstein(:,:) + dcsi*fp(:,:) ! -d U(zeta,q)/d q
   fp(:,:)=fpabf(:,:)
   !

@@ -10,7 +10,8 @@ subroutine reaction ()
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: lenfnam,fnam,im,imm,ev2erg
  USE tab_imm_m
- USE mab_in_ndm_module, ONLY: m_i,m_tot,normxlac, rfilac,xlaci,xbarini,xbar,dcsi,icsi,delta_z,abf_mode
+ USE mab_in_ndm_module, ONLY: m_i,m_tot,normxlac, rfilac,xlaci,xbarini,xbar,& 
+                              xi_min,dcsi,icsi,delta_z,abf_mode
  implicit none
 
 !  local variables ...
@@ -25,7 +26,7 @@ subroutine reaction ()
     !write (*,*) dcsi ,delta_z
     !stop
   end if
-    icsi=nint(dcsi/delta_z)
+    icsi=nint((dcsi-xi_min)/delta_z)
     
     !write (*,*) 'icsi.(reaction) ...', dcsi,delta_z,icsi 
  

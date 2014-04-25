@@ -33,7 +33,7 @@ subroutine calfo_einstein_solid ()
  USE tab_imm_m
  USE var_pot, ONLY : cm
  USE mab_in_ndm_module, ONLY:xbar,xbarini,xp0,maxforce,unit_omega_to_erg,ene_einstein, &
-                             omega_veinstein,fpeinstein
+                             omega_veinstein,fpeinstein,it_mab,n_equilibre
  implicit none                             
  
  integer :: ic

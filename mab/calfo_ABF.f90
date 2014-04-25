@@ -2,7 +2,7 @@ subroutine calfo_mab()
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-  USE mab_in_ndm_module, only: it_mab,abf_type,abf_mode, block,histo_equi,n_equilibre,ene0
+  USE mab_in_ndm_module, only: it_mab,abf_type,abf_mode, block,histo_equi,n_equilibre,ene0,fp,fpeinstein,ene_einstein
   implicit none
   integer :: it_langevin
  
@@ -22,8 +22,9 @@ subroutine calfo_mab()
 
 !ABF part ...
 
+
       if ((abf_mode==2).or.(abf_mode==22)) call calfo_einstein_solid ()
-        call fill_histo()
+      call fill_histo()
 
 !---if we only want to fill histogram after n_equilibre steps-------------
         if ((histo_equi == .true.) .And. (it_mab >= n_equilibre)) then

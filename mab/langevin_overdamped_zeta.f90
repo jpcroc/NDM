@@ -14,7 +14,7 @@ subroutine langevin_overdamped_zeta()
     USE mab_in_ndm_module, only: dtlang,abf_mode,block,gamma,dcsi, &
                                  ene_einstein,ene0, temperature,mean_force1,icsi, &
                                  limit1,limit2,langevin_type,m_i,it_mab,delta_z,nhisto,nhisto1, &
-                                 lang_factor,it_mab,it_stop,limit1m, limit1p,ha_mix,abf_type
+                                 lang_factor,it_mab,it_stop,limit1m, limit1p,ha_mix,abf_type,equit
 
 
     implicit none
@@ -52,7 +52,7 @@ subroutine langevin_overdamped_zeta()
     end if 
 
     if (abf_mode==22) then
-     tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - tmp_force )*lang_factor*dtlang*angst*angst/(gamma*m_i(1,1)) + &
+     tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*lang_factor*dtlang*angst*angst/(gamma*m_i(1,1)) + &
                 noise*sqrt(2.d0*lang_factor*temperature*dtlang*angst*angst/(gamma*m_i(1,1))) - &
                  force_zeta* lang_factor*dtlang*angst*angst/(gamma*m_i(1,1))     
     end if 

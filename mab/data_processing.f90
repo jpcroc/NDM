@@ -11,7 +11,8 @@ subroutine Free_energy_ABF()
  USE mab_in_ndm_module, ONLY: delta_z,nhisto,nhisto1,nhisto2, & 
                               histo,histo1,histo2,Free_energy,&
                               mean_force1,abf_type,abf_mode,x_mol,temperature,&
-                              A_ee,A_dev_ee,exp_A_bar,A_bar_ee,eta_ABFee
+                              A_ee,A_dev_ee,exp_A_bar,A_bar_ee,eta_ABFee,xi_min, &
+                              KtoERG,equit
 
 implicit none
 integer::i_loop,i_iter
@@ -35,7 +36,7 @@ endif
   if (abf_mode==1) unit_histo2(:)=x_mol(:)/A2cm
   if ((abf_mode==2).or.(abf_mode==22)) then 
      do i_loop=-nhisto2, nhisto+nhisto2
-      unit_histo2(i_loop)=delta_z*dble(i_loop)
+      unit_histo2(i_loop)=xi_min+delta_z*dble(i_loop)
      end do
   end if 
 
@@ -84,9 +85,6 @@ endif
   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=A_ee(i_loop)
   if (abf_mode==22) then
    forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=A_ee(i_loop)/unit_histo2(i_loop)
-     do i_loop=-nhisto1,nhisto+nhisto1
-      write(776,*) unit_histo2(i_loop), 500.0/unit_histo2(i_loop)
-     end do
   end if 
   !minfreeval=minval(A_ee(-nhisto1:nhisto+nhisto1))
   !forall(i_loop=-nhisto1:nhisto+nhisto1) A_ee(i_loop)=A_ee(i_loop)-minfreeval
@@ -145,16 +143,17 @@ endif
 
 
    open(unit=999,file='Free_energy_ABFee',status='unknown')
-
+   if (.NOT.(abf_mode==22)) then
    do i_loop=-nhisto1,nhisto+nhisto1
      write(999,*),unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
    enddo
    close(999)
+   end if 
 
 
   if (abf_mode==22) then
    do i_loop=nhisto+nhisto1,-nhisto1,-1
-     write(999,*) 500.0/unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
+     write(999,*) temperature/KtoERG/unit_histo2(i_loop),Free_energy(i_loop)*erg2eV+equit*erg2ev
    enddo
    close(999)
   end if 

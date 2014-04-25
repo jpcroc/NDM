@@ -49,7 +49,7 @@ module mab_in_ndm_module
       integer :: it_en
       real(double)::sigma_eta,sigma_carre,eta_ABFee,sum_error_A,sum_error_A_bar
       integer::ecart_eta,nom_deconvo
-      real(double)::eta_mab,ha_mix
+      real(double)::eta_mab,ha_mix,temperature_zeta_min,temperature_zeta_max,equit
       integer::compute_mode,error_step
       
       logical :: block,test_end,histo_equi
@@ -116,8 +116,8 @@ end   subroutine allocate_mab
 
    if (abf_mode==22) then
                            ! 500 is the temperature in orderto made the simulation
-    xi_max=500.0/100.0     ! this is xi_max in order to have 100K at the reference temperature 500 K 
-    xi_min=500.0/1808.0    ! this is xi_min in order to have melting temperature;  500 K is the reference temperature
+    xi_max=temperature/temperature_zeta_min     ! this is xi_max in order to have 100K at the reference temperature 500 K 
+    xi_min=temperature/temperature_zeta_max    ! this is xi_min in order to have melting temperature;  500 K is the reference temperature
     normxlac=xi_max-xi_min
     delta_z=normxlac/dble(nhisto)
    end if 
@@ -142,9 +142,15 @@ end   subroutine allocate_mab
       limit2=limit2p
     end if 
    !
+   omega_veinstein(:,:)=omega_einstein
+   !instead that I will a file with all the einstein  frequencies 
    end if 
+ 
+    equit=temperature*3.d0*dble(im-1)/2.d0
+    equit = temperature*dble(3*im-3)*log(temperature/(omega_einstein*hbar*2.d0*pi*1.d+12))
+    equit=0
 
-
+    write(*,*) 'Equit correction ', equit*erg2ev
     !sigma_eta=sqrt(eta_mab)
      sigma_eta=eta_mab*delta_z ! choisir largeur de gaussienne
      sigma_carre=sigma_eta**2
@@ -156,11 +162,6 @@ end   subroutine allocate_mab
           "....nhisto+nhisto2=",i6,"...")') -nhisto2, -nhisto1,nhisto,nhisto+nhisto1,nhisto+nhisto2
      write(*,'("...-nhisto2=",f6.2,"...-nhisto1=",f6.2,"..",f6.2,".....nhisto=",f6.2,"......nhisto+nhisto1=",f6.2, &
           "....nhisto+nhisto2=",f6.2,"...")') -deltar2, -deltar1,xi_min,xi_max,xi_max+deltar1,xi_max+deltar2
-    if (abf_mode==2) then
-        omega_veinstein(:,:)=omega_einstein
-        !instead that I will a file with all the einstein  frequencies 
-    end if 
-
 
 
 
@@ -176,7 +177,7 @@ end   subroutine allocate_mab
     allocate(Free_energy(-nhisto2:nhisto+nhisto2))
     allocate(A_theo(-nhisto1:nhisto+nhisto1),error_A(-nhisto1:nhisto+nhisto1))
     allocate(error_A_bar(-nhisto1:nhisto+nhisto1))
-    forall(ic=-nhisto2:nhisto+nhisto2) x_mol(ic)=ic*delta_z 
+    forall(ic=-nhisto2:nhisto+nhisto2) x_mol(ic)=xi_min+ic*delta_z 
     cumul_force1(:)=0.d0 
     cumul_force_denom1(:)=0.d0
     histo(1:nhisto)=0

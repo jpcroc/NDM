@@ -47,9 +47,9 @@ subroutine mab
 if (abf_type==1)  call test_minimum_abf()
 if (abf_mode==22) then
      call test_minimum_abf()
-     it_en=-1
+     !it_en=-1
 end if 
-if (abf_mode==2) then
+if ((abf_mode==2).or.(abf_mode==22)) then
  call test_minimum_abf () 
  call init_einstein_solid  ()
  call calfo_einstein_solid ()

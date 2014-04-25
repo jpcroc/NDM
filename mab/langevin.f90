@@ -35,7 +35,7 @@
     use gen_com_m
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique,xbar,  &
-                                 abf_type,block,it_en,fpeinstein,abf_mode,ha_mix
+                                 abf_type,block,it_en,fpeinstein,abf_mode
 
     implicit none
     integer     :: ic

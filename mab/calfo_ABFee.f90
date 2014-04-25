@@ -16,7 +16,7 @@ subroutine calfo_ABFee()
                              x_mol,eta_ABFee,temperature,omega_abf,exp_A_bar,&
                              mean_force2,it_mab,histo_zeta,n_equilibre,histo_equi,&
                              it_mab,abf_mode,potist,ene_einstein,ene0,fpeinstein, &
-                             ha_mix
+                             ha_mix,equit
 
  implicit none
 integer::iter,ia,jx
@@ -62,6 +62,7 @@ A_ee(-nhisto2)=0.d0
 do iter=-nhisto2+1,nhisto+nhisto2
 A_ee(iter)=A_ee(iter-1)+delta_z*0.5d0*(A_dev_ee(iter-1)+A_dev_ee(iter))
 end do
+if (it_mab<10) A_ee=0.d0
 
 if (abf_mode==1) then
  !--2. Compute pi_A_ee (csi,q)
@@ -102,7 +103,7 @@ if (abf_mode==2) then
      temp_log(iter)=-(U_Aee(iter)-A_ee(iter))/temperature
      temp_exp(iter)=exp(temp_log(iter))!
       if ((temp_exp(iter)+1.0).eq.temp_exp(iter)) then
-        write(*,'(2i5,7D21.8)') 'WARNING:  NaN detected look in fort.333 file'
+        write(*,*) 'WARNING:  NaN detected look in fort.333 file'
         write(333,'(2i5,7D21.8)') it_mab, iter, U_Aee(iter),A_ee(iter), temp_log(iter),temp_exp(iter),potist,ene0,ene_einstein
       end if  
   end do
@@ -112,7 +113,7 @@ if (abf_mode==2) then
   do iter=-nhisto1+1,nhisto+nhisto1
    denom=denom + 0.5d0*(temp_exp(iter-1)+temp_exp(iter) )*delta_z
   end do
- 
+
  !--3. Compute the E(\grad_q U(.,q)|q)
  !In this case E[\grad_q U(.,q)|q]=E[ (1-\zeta) \grad_q U^HA(q) + \zeta \grad_q U(q) ]
  !We should just remind that \grad_q U^HA(q) = -fpeinstein (q) ; \grad_q U(q) = - fp(q)
@@ -143,14 +144,17 @@ if (abf_mode==22) then
  ! U(zeta, q) = zeta*(potist-ene0 - ha_mix*U_HA)
  !--3. compute the  pi_A_ee(\zeta | q ) = \exp{U(zeta,q) / int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
  !--3.a num \exp{U(zeta,q)
+
+
   do iter=-nhisto1,nhisto+nhisto1
-     U_Aee(iter) = x_mol(iter)*(potist-ene0+ha_mix*ene_einstein)
+     U_Aee(iter) = x_mol(iter)*(potist-ene0+ha_mix*ene_einstein-equit)
      temp_log(iter)=-(U_Aee(iter)-A_ee(iter))/temperature
      temp_exp(iter)=exp(temp_log(iter))!
       if ((temp_exp(iter)+1.0).eq.temp_exp(iter)) then
        itcount=itcount+1
         write(*,*) 'WARNING:  NaN detected look in fort.333 file'
-        write(333,'(2i5,7D21.8)') it_mab, iter, U_Aee(iter),A_ee(iter), temp_log(iter),temp_exp(iter),potist,ene0,ene_einstein
+        write(333,'(2i5,9D21.8)') it_mab, iter, U_Aee(iter),A_ee(iter), temp_log(iter),temp_exp(iter),potist,&
+               ene0,ene_einstein,equit, (potist-ene0+ha_mix*ene_einstein-equit)*erg2ev
         if (itcount==5) stop
       end if  
   end do
@@ -161,6 +165,7 @@ if (abf_mode==22) then
    denom=denom + 0.5d0*(temp_exp(iter-1)+temp_exp(iter) )*delta_z
   end do
  
+ ! if (it_mab > n_equilibre+100) write(*,'("calfo_ABFee",3g15.4)') ene_einstein, fp(1,7),fpeinstein(1,7) 
  !--4. Compute the E(\grad_q U(.,q)|q)
  !In this case E[\grad_q U(.,q)|q]=E[ \zeta \grad_q U(q) ]
  !We should just remind that  \grad_q U(q) = - fp(q)
@@ -218,7 +223,7 @@ if (abf_mode==22) then
  do iter=-nhisto1, nhisto+nhisto1
   P_ee(iter)=temp_exp(iter)/denom
   P_ee_denom(iter)=P_ee_denom(iter)+P_ee(iter)
-  P_ee_num(iter)=P_ee_num(iter)+(potist-ene0+ha_mix*ene_einstein)*P_ee(iter)
+  P_ee_num(iter)=P_ee_num(iter)+(potist-ene0+ha_mix*ene_einstein-equit)*P_ee(iter)
  enddo
 end if 
 
