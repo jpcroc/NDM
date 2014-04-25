@@ -904,7 +904,7 @@ end if
         stop
      end if
 
-     if (tempstopcel.gt.0) ltpcel=.true.
+!     if (tempstopcel.gt.0) ltpcel=.true.
      if (ltpcel) write (6, *) '   -> -> pas de contrainte par celulles'
 
      write(6,*)'IPOTENTIEL',ipotentiel

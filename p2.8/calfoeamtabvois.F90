@@ -4,6 +4,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   USE T_kind_param_m
   use gen_com_m
   use var_pot
+  use jqmod
   implicit none
 
   !           version du 4 juin 2010, 15h20 - last chaged by MCM (xpnp sa mere)
@@ -25,7 +26,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   integer :: i,j !atomes
   integer ::iti,itj !types
   integer :: l !paires
-  integer::  iw1,iw2, iw,k,izero,icccc!vois
+  integer::  iw1,iw2, iw,k,izero,icccc,ic!vois
 
 
 
@@ -36,7 +37,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   real(double) :: dEembi, Eembi ! potentiel et gradient de l'immersion
   real(double) :: rhoi,rhoj ! densite de i sur j et j sur i
   REAL(double) :: Femb
-
+  real(double):: fpnemd(3,imm),fpnemdmoy(3), XijdotF
   real(double) :: drk, ktor, inv_ktor, ktorho, inv_ktorho
 
   real(double) :: densityi,tabdensity(imm)
@@ -45,7 +46,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   real(double)::rue,rue2
   
   real(double), dimension(:,:), allocatable :: xpnp
-
+ 
 !  write(6,*)'eamtabvois'
   rue=rue_pot(ipotentiel)
 !  if (lprteat.EQV..true.) then
@@ -63,6 +64,8 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   potisglue=0.
   rue2=rue**2
   test_sigma=(mod(it,itesigma)==0)
+  jq=0.
+  fpnemd(:,:)=0.
 
   iw2=0
   ALLOCATE(xpnp(3,imm))
@@ -125,13 +128,13 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         !terme de repulsion 
         l = ipo(iti,itj)
         Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
-        if(lprteat.EQV..true.)then
+        if((lprteat.EQV..true.).or.(lcalcjq==.true.))then
            if (associated (free)) then
               if( free(i).EQV..true.)           eatom(i)=eatom(i)+Erep/2.d0
               if ((free(j).EQV..true.).and.ldemitab)           eatom(j)=eatom(j)+Erep/2.d0
            else
-                           eatom(i)=eatom(i)+Erep/2.d0
-            if (ldemitab)  eatom(j)=eatom(j)+Erep/2.d0
+              eatom(i)=eatom(i)+Erep/2.d0
+              if (ldemitab)  eatom(j)=eatom(j)+Erep/2.d0
            end if
         end if
         if (lforcetabulate) then
@@ -139,13 +142,22 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         else
           dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
         end if
-           if (associated (free)) then
-              if( free(i).EQV..true.)potisrep = potisrep+0.5*Erep
-              if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep+0.5*Erep
-           else
-              potisrep = potisrep+0.5*Erep
-              if (ldemitab) potisrep = potisrep+0.5*Erep
-           end if
+        if (associated (free)) then
+           if( free(i).EQV..true.)potisrep = potisrep+0.5*Erep
+           if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep+0.5*Erep
+        else
+           potisrep = potisrep+0.5*Erep
+           if (ldemitab) potisrep = potisrep+0.5*Erep
+        end if
+        
+        if (lnemd) then
+           XijdotF=dxp(1)*Fnemd
+           do ic=1,3
+              fpnemd(ic,i)=fpnemd(ic,i)+0.5*dErep*gradij(ic)*XijdotF
+              fpnemd(ic,j)=fpnemd(ic,j)+0.5*dErep*gradij(ic)*XijdotF
+           end do
+        end if
+        
 
         fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
         if (ldemitab) fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
@@ -155,6 +167,17 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
            sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)
            sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)
         end if
+
+        if (lcalcjq) then
+           jqf=0.0
+           do ic=1,3
+              jqf=jqf-0.5*(dErep*gradij(ic)*(vp(ic,i)+vp(ic,j)))
+           end do
+           do ic=1,3
+              jq(ic)=jq(ic)+jqf*gradij(ic)*r
+           end do
+        end if
+
 
      end do loopvois
      !       tabdensity(i)=densityi
@@ -178,7 +201,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
         if( free(i).EQV..true.)potisglue = potisglue+Eembi
      else
-        if(lprteat.EQV..true.) eatom(i)=eatom(i)+Eembi
+        if((lprteat.EQV..true.).or.(lcalcjq==.true.)) eatom(i)=eatom(i)+Eembi
         potisglue = potisglue+Eembi
      end if
     if (lforcetabulate) then
@@ -239,6 +262,23 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         fp(1:3,i) = fp(1:3,i) - Femb*gradij(1:3)
         if (ldemitab) fp(1:3,j) = fp(1:3,j) + Femb*gradij(1:3)
 
+        if (lnemd) then
+           XijdotF=dxp(1)*Fnemd
+           do ic=1,3
+              fpnemd(ic,i)=fpnemd(ic,i) +0.5*Femb*gradij(ic)*XijdotF
+              fpnemd(ic,j)=fpnemd(ic,j) +0.5*Femb*gradij(ic)*XijdotF
+           end do
+        end if
+        if(lcalcjq) then
+           jqf=0.0
+           do ic=1,3
+              jqf=jqf+Femb*gradij(ic)*vp(ic,j)
+           end do
+           do ic=1,3
+              jq(ic)=jq(ic)-jqf*gradij(ic)*r
+           end do
+           end if
+
         if (test_sigma) then                   
            sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)
            sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)
@@ -253,6 +293,25 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
 
   ! Ã©nergie potentielle totale
   potist = potisglue + potisrep
+
+  if (lnemd) then
+     fpnemdmoy=0
+     do i=1,imd   
+        do l=1,3
+           fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(imd)
+        enddo
+     end do
+
+     do i=1,imd
+!        write(6,*)'A',i,fp(:,i)
+        do l=1,3
+           fp(l,i)=fp(l,i)-fpnemdmoy(l)
+           fp(l,i)=fp(l,i)+fpnemd(l,i)
+        enddo
+!        write(6,*)'B',i,fp(:,i)
+     end do
+  end if
+
 
   !call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
    DEALLOCATE (xpnp)

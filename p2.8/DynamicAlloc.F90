@@ -18,7 +18,7 @@ subroutine DynamicalAllocationCell
  
   ncel(:noxyz,:26) = zero                 ! et petite initialisation
 
-  if(ltpcel==.true.) then
+  if((ltpcel==.true.).or.(tempstopcel.gt.0)) then
      allocate (tempc(noxyz))
      allocate (tempcm(noxyz))
   end if

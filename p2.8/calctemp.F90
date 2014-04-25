@@ -33,7 +33,7 @@ subroutine calctemp(temptyp)
   real(double) :: vpn2,pmc,tat
   real(double), dimension(ntyp,3) :: vx2
   ! ym      real(double), dimension(ntyp,nce) :: v2c
-
+!  real(double), dimension (:),allocatable ::tempc,tempcm
 #if(PARA)
   real(double), dimension(ntyp) :: v2_glob
   real(double), dimension(ntyp,3) :: vx2_glob
@@ -113,10 +113,12 @@ subroutine calctemp(temptyp)
      temp = temp/float(imd)
 #endif
 
-     if (ltpcel) then
+     if ((ltpcel).or.(tempstopcel.gt.0)) then
         maxTcel=0.
-        write (6, *)
-        write (6, *) '----------valeurs par cellules------------'
+     	if (ltpcel) then
+           write (6, *)
+           write (6, *) '----------valeurs par cellules------------'
+        endif
 
         do kx=0,nox-1
            do ky=0,noy-1
@@ -124,7 +126,7 @@ subroutine calctemp(temptyp)
                  ko=1+kx+nox*(ky+noy*kz)
                  pmc=0.0
                  !                              write(6,*)'dans la celulle ',ko
-!                 write(6,'(A,I7,I5,3I4,2F12.2)')'CEL-TEMP ', it,ko,kx,ky,kz,tempc(ko),tempcm(ko)
+     	if (ltpcel)  write(6,'(A,I7,I5,3I4,2F12.2)')'CEL-TEMP ', it,ko,kx,ky,kz,tempc(ko),tempcm(ko)
                  maxTcel=max(maxTcel,tempc(ko))
                  
                  !                              write (6, '(A11,I4,A15,F12.2)') 'Cellule: ', ko, &
