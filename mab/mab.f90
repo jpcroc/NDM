@@ -20,7 +20,7 @@ subroutine mab
 
   
 ! 
-! Copyright LL Cao and all NDM band, April- 2013
+! Copyright MCM, LLC and all NDM band, April-2014
   
   integer:: i_iter
   real(double)::temp_read,tmp1, tmp2,tmp3,tmp4,oerg,corr3N,corr3Nm3
