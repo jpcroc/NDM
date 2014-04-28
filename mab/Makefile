@@ -10,6 +10,7 @@ OBJ   = mab_in_ndm_module.o\
         histo.o\
         calfo_BIN_OMEGA_GAUSSIEN.o\
         calfo_ABFee.o\
+        calfo_ABFee_const_iter.o\
         calfo_ABF.o\
 	data_processing.o\
 	error_stat.o\

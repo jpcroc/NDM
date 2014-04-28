@@ -20,7 +20,7 @@ subroutine mab
 
   
 ! 
-! Copyright MCM, LLC and all NDM band, April-2014
+! Copyright LL Cao and all NDM band, April- 2013
   
   integer:: i_iter
   real(double)::temp_read,tmp1, tmp2,tmp3,tmp4,oerg,corr3N,corr3Nm3
@@ -54,8 +54,9 @@ if ((abf_mode==2).or.(abf_mode==22)) then
  call init_einstein_solid  ()
  call calfo_einstein_solid ()
  fp(:,:) = fpeinstein(:,:)
-  do it_en=1,2000
-   call langevin_overdamped  ()
+  do it_en=1,200
+   if (langevin_type==1) call langevin_overdamped ()
+   if (langevin_type==2) call langevin()
    !write(23,'(i7,2D13.5,3f12.5)') it_en, ene_einstein*erg2ev,xp(1,1)*angst,xp(1,1)*angst,fpeinstein(1,1)*erg2eV/angst
   end do
  it_en=-1
