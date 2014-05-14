@@ -1,9 +1,11 @@
 OBJ   = lanczosdef.o\
 	tools.o \
 	sundae_module.o\
+        calfo_sundae.o\
+        langevin.o\
+        lanczos.o\
 	index_voisins.o\
 	sundae.o
-#	lanczos.o
 
 
 PREPROC=-fpp -DV2
