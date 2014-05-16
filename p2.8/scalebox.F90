@@ -43,7 +43,6 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 
 
-
   !debug      write (*,*) 'sub scalebox',it,xp(1,1)
   ! -------------------------------------------------------------
   ! Rescaling des positions
@@ -103,7 +102,7 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
   call caltabt 
 
-  if (ltabvois.and.(dmtype==9).and.(it==1).or.(mod(it,itetabvois)==0)) then
+  if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
      call caltabi 
   end if
 

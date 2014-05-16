@@ -41,9 +41,9 @@ program ndm
   rang = 0
   parallele = .false.
 #endif
-  if (rang==0) write(6,*)'*** NDM174 ***'
+  if (rang==0) write(6,*)'*** NDM237+1 ***'
 #if(ART)
-  if (rang==0) write(6,*)'*** NDM174 + ART ***'
+  if (rang==0) write(6,*)'*** NDM237+1 + ART ***'
 #endif
 
 #if(PHONDY || PARAPH)

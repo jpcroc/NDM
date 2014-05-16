@@ -44,7 +44,7 @@ subroutine calctemp(temptyp)
   !
   !
   ! local variables
-  if (ltpcel) then
+     if ((ltpcel).or.(tempstopcel.gt.0)) then
 !     allocate (tempc(noxyz))
 !     allocate (tempcm(noxyz))
      tempc(:)=0.
@@ -75,7 +75,7 @@ subroutine calctemp(temptyp)
         v2(ityp(i)) = v2(ityp(i))+vpn2
         
         vx2(ityp(i),:) = vx2(ityp(i),:)+vp(:,i)**2
-        if (ltpcel==.true.) then
+     if ((ltpcel).or.(tempstopcel.gt.0)) then
            tat=vpn2*cm(ityp(i))/(3.0*bk)
            tempc(ko)=tempc(ko)+tat/nato(ko)
            if(tat.gt.tempcm(ko))tempcm(ko)=tat
