@@ -1,107 +1,118 @@
 module sundae_module
-  !-----------------------------------------------
-  USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use jqmod
-  use random_art
-  use lanczos_defs
-  !-----------------------------------------------
-  ! test
-  !   _c -> courant
-  !   _s -> selection
-  !   _d -> depart
+	!-----------------------------------------------
+	USE T_kind_param_m, ONLY: double
+	use gen_com_m
+	use var_pot
+	use jqmod
+	use random_art
+	use lanczos_defs
+	!-----------------------------------------------
+	! test
+	!   _c -> courant
+	!   _s -> selection
+	!   _d -> depart
 
-      integer,parameter :: dpkind=selected_real_kind(13)
-      real(double) :: t0,t1,elaps_1,tbuffer1,tbuffer2,t_lanczos,t_propag
-      integer,     dimension(:),allocatable,save  :: ipovois
+		integer,parameter :: dpkind=selected_real_kind(13)
+		real(double) :: t0,t1,elaps_1,tbuffer1,tbuffer2,t_lanczos,t_propag
+		integer,     dimension(:),allocatable,save  :: ipovois
+		
+		
+		integer :: continue_sundae, maxvec, tprimo, totiter
+		integer :: Totalmcmoves, Nbclones, Nbclones_mbar, depart_boucle_nbclones
+		real(double) :: h_A_max, h_ba_max, h_ba_min, h_ba, h_ba_I, h_temp
+		real(double) :: dt, TotalTime, gamma_sundae, Temperature
+		real(double) :: alpha_max, teq, delta_x, a_sto, kapa
+		character(len=128) :: sortie
+		character(len=128) :: fnamtin
+		real(double), parameter :: KtoERG=1.3791946308724831d-16
 
-      real(double),dimension(:,:),allocatable,save  :: m_i
-      real(double),dimension(:,:),allocatable,save  :: gau
-      real(double),dimension(:,:),allocatable,save  :: sig_i
-      real(double),dimension(:,:),allocatable,save  :: rga_i
-      real(double),dimension(:,:),allocatable,save  :: fadd
-      real(double),dimension(:),allocatable,save    :: xbarini
-      real(double),dimension(:),allocatable,save    :: d2vois
-      real(double),dimension(:,:),allocatable,save  :: xpvois
-      real(double),dimension(:,:),allocatable,save  :: xpvoisini
-      real(double),dimension(:),allocatable,save    :: xtransla
+		real(double),dimension(:,:),allocatable,save  :: m_i
+		real(double),dimension(:,:),allocatable,save  :: gau
+		real(double),dimension(:,:),allocatable,save  :: sig_i
+		real(double),dimension(:,:),allocatable,save  :: rga_i
+		real(double),dimension(:,:),allocatable,save  :: fadd
+		real(double),dimension(:),allocatable,save    :: xbarini
+		real(double),dimension(:),allocatable,save    :: d2vois
+		real(double),dimension(:,:),allocatable,save  :: xpvois
+		real(double),dimension(:,:),allocatable,save  :: xpvoisini
+		real(double),dimension(:),allocatable,save    :: xtransla
 
-      integer                                       :: it_tele_vac
-      integer                                       :: lupout 
-      integer                                       :: luwout
-      integer                                       :: lufout 
-      integer                                       :: lusout
-      integer                                       :: luvout
-      integer                                       :: luhout
-      integer                                       :: ncomptinter
-      integer                                       :: idistance
-      integer :: iteration
-      integer :: iloop
-      integer :: icheck
-!      integer :: nchemin
-      integer :: nfrequence,im1!,it_art
+		integer                                       :: it_tele_vac
+		integer                                       :: lupout 
+		integer                                       :: luwout
+		integer                                       :: lufout 
+		integer                                       :: lusout
+		integer                                       :: luvout
+		integer                                       :: luhout
+		integer                                       :: ncomptinter
+		integer                                       :: idistance
+		integer :: iteration
+		integer :: iloop
+		integer :: icheck
+		!      integer :: nchemin
+		integer :: nfrequence,im1!,it_art
 
-      real(double),dimension(:),allocatable,save    :: tmass_tele_vac
-      real(double) ::  tstep_tele_vac,usdh_tele_vac, convert_tele_vac
-      real(double) :: sigma
-      real(double) :: xdist0
-      real(double) :: xdist1
-      real(double) :: kappas2 , potistadd
-      real(double) :: barbetaq
-      real(double) :: barbeta,barbetaE
-      real(double) :: betaweff
-      real(double) :: Ecinetique
-      real(double) :: Ecinetique0
-      real(double) :: dlambda
-      real(double) :: lambdax
-      real(double) :: lambday
-      real(double) :: lambdaz
-      real(double) :: deltawork
-      real(double) :: xbar0
-      real(double) :: m_tot
-      real(double) :: T,Tav
-      real(double) :: potist0
-      real(double) :: dlambdai,dlambdaf
-      real(double) :: rdist,rdist2
-      real(double) :: x111
-      real(double) :: dis2protect
-      character*80 :: fnampout
-      character*80 :: fnamwout
-      character*80 :: fnamfout
-      character*80 :: fnamsout
-      character*80 :: fnamvout
-      character*80 :: fnamhout
-      logical      :: ldeter
-      logical      :: ldistance
-      logical      :: lta
-!     parametre du lennard-jones
-      character*80 :: fnamfin
-      character*80 :: fnamhin
+		real(double),dimension(:),allocatable,save    :: tmass_tele_vac
+		real(double) ::  tstep_tele_vac,usdh_tele_vac, convert_tele_vac
+		real(double) :: sigma
+		real(double) :: xdist0
+		real(double) :: xdist1
+		real(double) :: kappas2 , potistadd
+		real(double) :: barbetaq
+		real(double) :: barbeta,barbetaE
+		real(double) :: betaweff
+		real(double) :: Ecinetique
+		real(double) :: Ecinetique0
+		real(double) :: dlambda
+		real(double) :: lambdax
+		real(double) :: lambday
+		real(double) :: lambdaz
+		real(double) :: deltawork
+		real(double) :: xbar0
+		real(double) :: m_tot
+		real(double) :: T,Tav
+		real(double) :: potist0
+		real(double) :: dlambdai,dlambdaf
+		real(double) :: rdist,rdist2
+		real(double) :: x111
+		real(double) :: dis2protect
+		character*80 :: fnampout
+		character*80 :: fnamwout
+		character*80 :: fnamfout
+		character*80 :: fnamsout
+		character*80 :: fnamvout
+		character*80 :: fnamhout
+		logical      :: ldeter
+		logical      :: ldistance
+		logical      :: lta
+		!     parametre du lennard-jones
+		character*80 :: fnamfin
+		character*80 :: fnamhin
 
-      integer N
-      PARAMETER(N=127)   !1023  ! 127
-      integer NHZ
-      PARAMETER(NHZ=60)
-      integer nfenetre,lufin,luhin
-      parameter(nfenetre=100)
-      real(double) :: rsig_lj      
-      real(double) :: sig_lj    
-      real(double) :: eps_4lj
-      real(double) :: xp4
-      real(double) :: pot_auxi(-10:nfenetre+10)
-      real(double) :: pot_auxiliary
-      real(double) :: contour_auxiliary
-      real(double) :: kappaE,kappaEs2
-      real(double) :: potistaddE
-      real(double) :: alphadd(2)
-      real(double) :: pot_contour(-10:nfenetre+10,0:nfenetre)
-      real(double) :: energie_min,energie_max
-      integer :: nl_iter
+		integer N
+		PARAMETER(N=127)   !1023  ! 127
+		integer NHZ
+		PARAMETER(NHZ=60)
+		integer nfenetre,lufin,luhin
+		parameter(nfenetre=100)
+		real(double) :: rsig_lj      
+		real(double) :: sig_lj    
+		real(double) :: eps_4lj
+		real(double) :: xp4
+		real(double) :: pot_auxi(-10:nfenetre+10)
+		real(double) :: pot_auxiliary
+		real(double) :: contour_auxiliary
+		real(double) :: kappaE,kappaEs2
+		real(double) :: potistaddE
+		real(double) :: alphadd(2)
+		real(double) :: pot_contour(-10:nfenetre+10,0:nfenetre)
+		real(double) :: energie_min,energie_max
+		integer :: nl_iter
 
-! cosmin added:
-      integer    :: it_langevin_deter=0, it_langevin=0,it_trajectory     
-contains
+		! cosmin added:
+		integer    :: it_langevin_deter=0, it_langevin=0,it_trajectory     
+		
+CONTAINS
 
 subroutine allocate_tele_vac ! ****
   implicit none
@@ -128,7 +139,7 @@ subroutine allocate_tele_vac ! ****
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     integer       :: ityp(imm)
-    real(double)  :: gamma
+    real(double)  :: gamma_sundae
 
    !-----------------------------------------------
      integer   :: ic_local,iatom
@@ -151,10 +162,10 @@ subroutine allocate_tele_vac ! ****
    kappas2 = kappa/two
 
    ! initialisation des parametres du langevin
-   gamma=one/(tstep*1d2)
+   gamma_sundae=one/(tstep*1d2)
    m_i(1:3,1:im) = cm(1)
 
-   rga_i(:,:) = exp(-gamma*tstep/two)
+   rga_i(:,:) = exp(-gamma_sundae*tstep/two)
 
    write(6,*) ' rga_i  ', rga_i(:,1:1)
 !   write(6,*) ' cm ',m_i(1,1:im)
@@ -234,14 +245,14 @@ type (Trajectoire), dimension (:,:), allocatable :: Pshift
 
 type (Trajectoire) :: Pcourant
 
-real (double) ::mcconf,ranf, l0, alpha,tempo,teq,z, a_sto, p3
 real (double) :: kinetotdt
 real(double)::fftot, fftotdt,laputot,laputotdt,uproject
-real (double) ::dt,TotalTime,gamma, Temperature ! Lyapunov=0,LyapunovAv=0,mu=0,
-integer :: nbClones, j,l,k,a,i, nq4, ltot,mcmoves,totalmcmoves, newtraj, it_art
+
+real (double) ::mcconf,ranf, l0,tempo, z, p3
+integer :: j,l,k,a,i, nq4, ltot,mcmoves, newtraj, it_art
 logical ::  new_projection
 logical ::  waste_recycling
-character(len=128) :: sortie
+
 character(len=128) :: posfinal
 character(len=128) :: data_mbar
 character(len=128) :: dada_mbar
@@ -251,12 +262,12 @@ character(len=128) :: moyennes_mbar_denom
 
 character(len=128) :: kappaF
 character(len=128) :: kappaFd
-character(len=128) :: fnamtin
+
 
 real (double)::rga,rien,kine,kinetot, pi
-real (double) ::ss,delta_x, kapa, p1,p2
+real (double) ::ss, p1,p2
 integer, parameter::nfenetre=100
-integer ::  iter,kappa,ix, scrivi, continue,maxvec
+integer ::  iter,kappa,ix, scrivi
 
 real (double):: stat(0:nfenetre, 0:nfenetre)
 real (double):: stat6(0:nfenetre, 0:nfenetre)
@@ -274,7 +285,7 @@ real (double):: tequilib, e,timefsh
 real (double) :: ekin,epot
 real (double) absdmax_current
 integer  :: pix,lanczos_iter
-integer:: iterfw, iterbw,nmax,totiter,   tprim, Nbclones_mbar, depart_boucle_nbclones, atom_bouge_abs, tprimo,lutin
+integer:: iterfw, iterbw,nmax, tprim,  atom_bouge_abs
 
 real (double) ,dimension(:),   allocatable::poids,alpha_bias,dist,absdist
 real (double) ,dimension(:),   allocatable:: ener0 
@@ -308,66 +319,14 @@ real (double) ,dimension(:), allocatable::h_FI
 real (double) ,dimension(:), allocatable::react_FI
 !#real (double) ,dimension(:), allocatable::react_FCC_col
 real (double) :: tempiter,tempvar,eigenvalue_old
-real(double), parameter :: KtoERG=1.3791946308724831d-16
-real(double) ::  h_A_max,h_ba_max,h_ba_min,h_ba,h_ba_I,h_temp
+
+
 real(double) :: pav(3)
 real(double) :: genrand
 
-namelist /input_sundae/Totalmcmoves,TotalTime,dt,NbClones,temperature,gamma,sortie,alpha, teq, delta_x, a_sto, kapa, continue, Nbclones_mbar, depart_boucle_nbclones,tprimo,maxvec,h_A_max,h_ba_min,h_ba_max,h_ba,h_ba_I
-
-
+!!!!!!!!!!!!!! modif 20.05.14
  call read_sundae()
- h_A_max  = 7.d-1
- h_ba_max = 1.8d0
- h_ba_min = 0.8d0
- h_ba     = 1.3d0
-
- h_A_max  = 4.5d-1
- h_ba_max = 1.6d0
- h_ba_min = 1.0d0
- h_ba     = 1.3d0
- h_ba_I   = 1.8d0
-
-fnamtin = fnam(1:lenfnam)//'.tin'
-  ! variables de dynamique
-  write(*,*) 'file name', fnamtin
-  lutin = 777
-  open(unit=lutin, file=fnamtin, status='unknown')
-  read (lutin, nml=input_sundae)
-
-
-
-write(6,*)'usage %s:\n'
-
-!    Initialisation of the variables
-write(6,*)'TotalMcmoves = ', Totalmcmoves ! Total duration of the simulation 
-
-write(6,*)'No of steps = ',  TotalTime      ! Total duration of the simulation 
-
-write(6,*)'dt = ', dt ! Time step
-totiter = int(TotalTime)
-TotalTime=real(TotalTime)*dt
-
-write(6,*)'NbClones = le numero du canal : ' , NbClones    ! Number of the clone (channel)
-write(6,*)'temperature = '  , temperature  ! temperature (kT)
-!   
-temperature=temperature*KtoERG
-!
-write(6,*)'friction*dt = '  , gamma  ! friction*dt
-! interval between 2 data records
-write(6,*)'sortie data_mbar = ',sortie  ! Name of the file where data are stored
-write(6,*)'alpha max = ', alpha 
-write(6,*)'t_equilib', teq
-write(6,*)'delta_X = ', delta_x
-a_sto = 1.d0-2.d0*((1.d1**(-2.d0-2.d0*dble(nbclones)/dble(nbclones_mbar))))
-write(6,*)'a_sto = ', a_sto
-write(6,*)'k ressort = ', kapa
-write(6,*)'continue = ', continue
-write(6,*)'nbclones_mbar = ', Nbclones_mbar
-write(6,*)'cluster? 0 no, nbclones yes'
-write (*,*) ' depart_boucle_nbclones',depart_boucle_nbclones
-write(6,*)'tprimo = ', tprimo
-write(*,*) 'maxvec for Lanczos = ', maxvec
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ss=sqrt(temperature*1.66*1e-24*55.845)
 write(*,*) 'ss  = ', ss
@@ -406,7 +365,7 @@ open(unit=24, file=data_mbar, action='write', status='replace')
 open(unit=244, file=dada_mbar, action='write', status='replace')
 !open(unit=44, file=data_mbar_std, action='write', status='replace')
 
-write(244,'(i,i,i)') Nbclones_mbar+1,Nbclones_mbar+1,totalmcmoves
+write(244,'(i,i,i)') Nbclones_mbar+1,Nbclones_mbar+1,Totalmcmoves
 
 !open(unit=25, file=moyennes_mbar, action='write', status='replace')
 !open(unit=23, file=moyennes_mbar_denom, action='write', status='replace')
@@ -431,12 +390,12 @@ allocate(norm0(0:nmax))
 
 kappa=1
 scrivi=0
-ltot=int(totaltime/real(kappa*dt))
+ltot=int(TotalTime/real(kappa*dt))
 !totiter=nint(totaltime/dt)
 
 write(*,*)'totiter', totiter
-gamma=gamma/(dt)
-write(*,*)'gamma' , gamma, gamma*dt,ltot
+gamma_sundae=gamma_sundae/(dt)
+write(*,*)'gamma_sundae' , gamma_sundae, gamma_sundae*dt,ltot
 waste_recycling=.true.
 !waste_recycling=.false.
 write(*,*) 'waste_recycling?',  waste_recycling
@@ -543,24 +502,24 @@ Q=0
 uproject=0
 kappa=1
 pi=4*atan(1._dpkind)
-if ((gamma*dt).le.100000) then
-    rga = exp(-gamma*dt/two)
+if ((gamma_sundae*dt).le.100000) then
+    rga = exp(-gamma_sundae*dt/two)
 else 
   rga=0
 endif
 sig(:,:) = sqrt(temperature*(one-rga**2))
-write(*,*) 'rga',gamma, gamma*dt, rga, sig(1,1)
+write(*,*) 'rga',gamma_sundae, gamma_sundae*dt, rga, sig(1,1)
 write(*,*) 'temp', temperature*erg2eV, erg2eV
 
 dh(:,:)=0
 acc(:)=0
 !! initialisation paramètres de bias alfa pour reconstruction
 do j= 0, Nbclones_mbar
- alpha_bias(j)=1.d12*(real(j*(alpha/real(Nbclones_mbar))))
- write(*,*)'bias', alpha_bias(j)  ! ,real(j*(alpha/real(Nbclones_mbar)))
+ alpha_bias(j)=1.d12*(real(j*(alpha_max/real(Nbclones_mbar))))
+ write(*,*)'bias', alpha_bias(j)  
 enddo
 
-!write(*,*)'bias', alpha_bias(:),real(j*(alpha/real(nbclones_mbar)))
+
 
 
 xref(1:n)=xp(1,1:n)
@@ -572,7 +531,7 @@ qref(1:3,1:im)=xp(1:3,1:im)
  rang = 1 
 tempo=0.0
 
- if (continue.ne.2) then 
+ if (continue_sundae.ne.2) then 
    j = depart_boucle_nbclones
    absdmax(j,:)=-9999.0
    atom_bouge_abs=0
@@ -667,14 +626,14 @@ tempo=0.0
    endif
   enddo
 
- endif  ! continue.ne.2 
+ endif  ! continue_sundae.ne.2 
 
   write(*,*) 'initialisation faite: go with Lanczos'
   write(*,*) 'itab', itab
   write(*,*) 'itetabvois', itetabvois
   write(*,*) 'ltabvois', ltabvois
 
-if (continue.eq.2) then
+if (continue_sundae.eq.2) then
    write(*,*) 'posfinal ',posfinal
   open(unit=27, file=posfinal, status='old')
   do j=depart_boucle_nbclones,NbClones
@@ -779,7 +738,7 @@ if (continue.eq.2) then
 
   enddo
 
- endif ! block with continue == 2
+ endif ! block with continue_sundae == 2
 ! test du moment angulaire de la force
  call caltabt
  call caltabi
@@ -808,7 +767,7 @@ if (continue.eq.2) then
  write(*,*) 'température ',temp/dble(i)/KtoERG,i,alpha_bias(j)
  enddo
  !stop
- write (*,'("1st traj before shooting ........:",i5)') nint(Totaltime/dt)
+ write (*,'("1st traj before shooting ........:",i5)') nint(TotalTime/dt)
  rang=1
  j=depart_boucle_nbclones
 
@@ -1389,7 +1348,7 @@ enddo !! mcmoves avec incrément + 1 clones
 !write(*,*)'tau',  real(acc)/real(mcmoves)
 
 do j=depart_boucle_nbclones, NbClones
-  write(*,*) 'tau',j,alpha_bias(j),real(acc(j))/real(totalmcmoves)
+  write(*,*) 'tau',j,alpha_bias(j),real(acc(j))/real(Totalmcmoves)
   !write(*,*) 'acceptance ratio',j,alpha_bias(j),real(acc(j))/real(totalmcmoves)
 enddo
 
