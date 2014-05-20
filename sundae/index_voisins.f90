@@ -1,16 +1,17 @@
-  subroutine index_premier_voisin (xp)
+  subroutine index_premier_voisin ()
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
+    use gen_com_m, ONLY: im,imm,at,bg
+    use tab_imm_m, ONLY: xp
     USE sundae_module , ONLY: ipovois,xpvois,xtransla,xpvoisini
   implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     integer ic,ivois
-    real(double)  :: xp(3,imm),xp_d(3,imm)
+    real(double)  :: xp_d(3,imm)
     real(double)  :: xpdist(1:im)
    !-----------------------------------------------
     
@@ -54,19 +55,19 @@
 
   end subroutine index_premier_voisin
 
-  subroutine distance_premier_voisin (xp)
+  subroutine distance_premier_voisin ()
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
-      USE T_kind_param_m, ONLY:  double
-      USE gen_com_m
-      USE sundae_module, ONLY : iteration,ipovois,xpvois,xpvoisini,d2vois,xtransla
+    USE T_kind_param_m, ONLY:  double
+    use gen_com_m, ONLY: im,imm,at,bg,niteration
+    use tab_imm_m, ONLY: xp
+    USE sundae_module, ONLY : iteration,ipovois,xpvois,xpvoisini,d2vois,xtransla
    implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     integer ivois
-    real(double)  :: xp(3,imm)
     real(double)  :: xpvoiscentre(3,15)
    !-----------------------------------------------
     !-----------------------------------------------
@@ -96,14 +97,6 @@
     
     d2vois(1:15) = (xpvois(1,1:15)-xpvoiscentre(1,1:15))**2+(xpvois(2,1:15)-xpvoiscentre(2,1:15))**2+(xpvois(3,1:15)-xpvoiscentre(3,1:15))**2
 
-!    write(*,*) 'xpvoiscentre '
-!    write(*,*) xpvoiscentre 
-!    write(*,*) 'xpvois '
-!    write(*,*)  xpvois
-!    write(*,*)
-!    write(*,*) 'dis2protect ',dis2protect
-!    write(*,*) 'd2vois(1:15) ',d2vois
-!    write(*,*) dble(iteration)/dble(niteration)
     return
 
   end subroutine distance_premier_voisin

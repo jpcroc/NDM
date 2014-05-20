@@ -8,22 +8,17 @@ subroutine calcforce_lanc(N,pos,nforce,ene_out, it_art) !calcul des forces POUR 
   implicit none
   integer, intent(in):: N,it_art
   real(double), intent(out) :: ene_out
-  real(double), dimension(3*N), target, intent(in) :: pos
-  real(double), dimension(:), pointer :: x , y , z
+  real(double), dimension(3*N),  intent(in) :: pos
   real(double), intent(out)  :: nforce(3*N)
   integer  :: i,ic
   real(double), parameter:: cmTOang=1.d8
 
 
-    x => pos(1:N)
-    y => pos(N+1:2*N)
-    z => pos(2*N+1:3*N)
+  xp(1,1:N) = pos(1:N)
+  xp(2,1:N) = pos(N+1:2*N)
+  xp(3,1:N) = pos(2*N+1:3*N)
  
-do i=1,N
-  xp(1,i)=x(i)/cmTOang
-  xp(2,i)=y(i)/cmTOang
-  xp(3,i)=z(i)/cmTOang
-enddo
+  xp(1:3,1:N)=xp(1:3,1:N)/cmTOang
 
 !write(*,*) 'force:itart', it_art
 

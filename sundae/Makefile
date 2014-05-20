@@ -1,7 +1,7 @@
 OBJ   = lanczosdef.o\
-	tools.o \
 	sundae_module.o\
         calfo_sundae.o\
+	tools.o \
         langevin.o\
         lanczos.o\
 	index_voisins.o\

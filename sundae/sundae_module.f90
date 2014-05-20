@@ -119,7 +119,7 @@ subroutine allocate_tele_vac ! ****
 
   end subroutine allocate_tele_vac
 
-  subroutine init_tele_vac (xp, vp, fp, ielat, iwmax, ityp)
+  subroutine init_tele_vac (ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -127,14 +127,7 @@ subroutine allocate_tele_vac ! ****
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer       :: ielat(imm)
-    integer       :: iwmax(imm)
     integer       :: ityp(imm)
-    real(double)  :: xp(3,imm)
-!    real(double)  :: xpp(3,imm)
-    real(double)  :: vp(3,imm)
-!   real(double)  :: ax(3,imm)
-    real(double)  :: fp(3,imm)
     real(double)  :: gamma
 
    !-----------------------------------------------

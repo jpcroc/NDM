@@ -361,18 +361,18 @@ end subroutine lanczos
 
 subroutine center(vector,VECSIZE)
   integer, intent(IN) :: VECSIZE
-  real(8), dimension(VECSIZE),intent(inout), target :: vector
+  real(8), dimension(VECSIZE),intent(inout) :: vector
 
   integer :: i, natoms
-  real(8), dimension(:), pointer :: x, y, z     ! Pointers for coordinates
+  real(8), dimension(VECSIZE/3) :: x, y, z     ! Pointers for coordinates
   real(8) :: xtotal, ytotal, ztotal
 
   natoms = VECSIZE / 3
 
   ! We first set-up pointers for the x, y, z components 
-  x => vector(1:natoms)
-  y => vector(natoms+1:2*natoms)
-  z => vector(2*natoms+1:3*natoms)
+  x(1:natoms)= vector(1:natoms)
+  y(1:natoms)= vector(natoms+1:2*natoms)
+  z(1:natoms)= vector(2*natoms+1:3*natoms)
 
   xtotal = 0.0d0
   ytotal = 0.0d0
