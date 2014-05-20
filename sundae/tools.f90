@@ -1,5 +1,49 @@
 ! This file contains the following functions or subroutines:
-!  genere_bruit2,control_angular_momenta, genrand, FACT and timestamp      
+!  OU_controle, genere_bruit2,control_angular_momenta, genrand, FACT and timestamp      
+
+
+Subroutine OU_control(p,q,a_sto,v0)
+ USE T_kind_param_m, ONLY:  double 
+ use gen_com_m, ONLY : im
+real(double), dimension(3,im) :: p,q,a
+real(double):: z1,z2,z3,z4,v0,a_sto,r
+integer:: i,ic
+
+do i=1,im 
+ do ic=1,3
+ r=2.d0
+ do while (r.ge.1.d0)
+   call random_number(z1)
+   call random_number(z2)
+   z3=2.0*z1-1.0
+   z4=2.0*z2-1.0
+   r=z3**2+z4**2
+ enddo
+ a(ic,i)=z3*sqrt(-2.0*log(r)/(r))
+ enddo
+enddo
+
+
+a(1,1:im) = a(1,1:im) - sum(a(1,1:im))/dble(im)
+a(2,1:im) = a(2,1:im) - sum(a(2,1:im))/dble(im)
+a(3,1:im) = a(3,1:im) - sum(a(3,1:im))/dble(im)
+
+call control_angular_momenta(a,q)
+
+
+p(1,1:im) = p(1,1:im) - sum(p(1,1:im))/dble(im)
+p(2,1:im) = p(2,1:im) - sum(p(2,1:im))/dble(im)
+p(3,1:im) = p(3,1:im) - sum(p(3,1:im))/dble(im)
+call control_angular_momenta(p,q)
+
+!p = p*a_sto + a*v0*sqrt(2.d0-2.d0*a_sto**2)  pour van brutzel 
+p = p*a_sto + a*v0*sqrt(1.d0-1.d0*a_sto**2)
+
+
+end subroutine OU_control
+
+
+
 
 
 subroutine genere_bruit2 (sig,gau)

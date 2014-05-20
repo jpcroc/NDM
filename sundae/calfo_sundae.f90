@@ -10,7 +10,7 @@ subroutine calcforce_lanc(N,pos,nforce,ene_out, it_art) !calcul des forces POUR 
   real(double), intent(out) :: ene_out
   real(double), dimension(3*N),  intent(in) :: pos
   real(double), intent(out)  :: nforce(3*N)
-  integer  :: i,ic
+  integer  :: i
   real(double), parameter:: cmTOang=1.d8
 
 

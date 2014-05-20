@@ -315,6 +315,8 @@ real(double) :: genrand
 
 namelist /input_sundae/Totalmcmoves,TotalTime,dt,NbClones,temperature,gamma,sortie,alpha, teq, delta_x, a_sto, kapa, continue, Nbclones_mbar, depart_boucle_nbclones,tprimo,maxvec,h_A_max,h_ba_min,h_ba_max,h_ba,h_ba_I
 
+
+ call read_sundae()
  h_A_max  = 7.d-1
  h_ba_max = 1.8d0
  h_ba_min = 0.8d0
@@ -1421,68 +1423,6 @@ close(27)
 stop
 
 end subroutine LyapLanczos_vac
-
-
-
-Subroutine gauss(ss, l0,l)
-real (double) :: ss
-real (double) :: l0
-real (double) :: l
-real (double) :: r,v1,v2
-real (double) :: x1,x2
-
-r=2
-do while (r.ge.1)
-   call random_number(x1)
-   call random_number(x2)
-   v1=2.0*x1-1.0
-   v2=2.0*x2-1.0
-   r=v1**2+v2**2
-enddo
-
-l=v1*sqrt(-2.0*log(r)/(r))
-l=l0+ss*l
-return
-end subroutine
-
-Subroutine OU_control(p,q,a_sto,v0)
-real(double), dimension(3,im) :: p,q,a
-real(double):: z1,z2,z3,z4,v0,a_sto,r
-integer:: i,ic
-
-do i=1,im 
- do ic=1,3
- r=2.d0
- do while (r.ge.1.d0)
-   call random_number(z1)
-   call random_number(z2)
-   z3=2.0*z1-1.0
-   z4=2.0*z2-1.0
-   r=z3**2+z4**2
- enddo
- a(ic,i)=z3*sqrt(-2.0*log(r)/(r))
- enddo
-enddo
-
-
-a(1,1:im) = a(1,1:im) - sum(a(1,1:im))/dble(im)
-a(2,1:im) = a(2,1:im) - sum(a(2,1:im))/dble(im)
-a(3,1:im) = a(3,1:im) - sum(a(3,1:im))/dble(im)
-
-call control_angular_momenta(a,q)
-
-
-p(1,1:im) = p(1,1:im) - sum(p(1,1:im))/dble(im)
-p(2,1:im) = p(2,1:im) - sum(p(2,1:im))/dble(im)
-p(3,1:im) = p(3,1:im) - sum(p(3,1:im))/dble(im)
-call control_angular_momenta(p,q)
-
-!p = p*a_sto + a*v0*sqrt(2.d0-2.d0*a_sto**2)  pour van brutzel 
-p = p*a_sto + a*v0*sqrt(1.d0-1.d0*a_sto**2)
-
-
-end subroutine OU_control
-
 
 
 

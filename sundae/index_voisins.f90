@@ -29,7 +29,7 @@
     ivois=0
     do ic =1,im
        if (xpdist(ic).le.7e-16)  then 
-          write(*,*) 'voisin',ic,' de la lacune ' , xpdist(ic)
+          write(*,'("(ic, xpdist) voisin",i6," de la lacune ",d20.10)')  ic, xpdist(ic)
           ivois=ivois+1
           ipovois(ivois)=ic
           xpvois(1:3,ivois) = xp(1:3,ic)
@@ -39,14 +39,14 @@
     xpdist(1:im) = (xp_d(1,1:im)-xp_d(1,1))**2+(xp_d(2,1:im)-xp_d(2,1))**2+(xp_d(3,1:im)-xp_d(3,1))**2
     do ic =1,im
        if ((xpdist(ic).le.7e-16).and.(xpdist(ic).ne.0))  then 
-          write(*,*) 'voisin',ic,' de la lacune ' , xpdist(ic)
+          write(*,'("(ic, xpdist) voisin",i6," de la lacune ",d20.10)')  ic, xpdist(ic)
           ivois=ivois+1
           ipovois(ivois)=ic
           xpvois(1:3,ivois) = xp(1:3,ic)
        endif
     enddo
     do ic =1,15
-       write(*,*) 'voisin',ic,' de la lacune ' , xpvois(1:3,ic)
+       write(*,'("(ic, xpvois) voisin",i6," de la lacune ",3d20.10)')  ic, xpvois(1:3,ic)
     enddo
     write(*,*)
     ! calcul de la translation du centre de masse relativement à la  lacune
