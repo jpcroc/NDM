@@ -13,43 +13,45 @@ subroutine sundae
 ! 
 ! Copyleft M. Athenes & M.-C. Marinica 
 !
-  real(double) :: xalea
-  !character (len=80) :: fnamtin
 
- write(6,*)'************ DEBUT DE tele_vacancy ****************'
- write(6,*)
- write(6,*)
- write(6,*)
- write(6,*)
- write(6,*) 'im imm',im,imm
-  lta=.true.
-  
-  
- ! lutin=54
-  fnamtin = fnam(1:lenfnam)//'.tin'
-  ! variables de dynamique
-  write(*,*) 'file name', fnamtin
+	real(double) :: xalea
+	!character (len=80) :: fnamtin
 
-itab=10
- text_teledyn=0.0
-  !open(unit=lutin, file=fnamtin, status='unknown', err=567)
- ! read (lutin, nml=input_teledyn)
- 
-    call random_number(xalea)
-  write(6,*) ' xalea ', xalea
+	write(6,*)'************ DEBUT DE tele_vacancy ****************'
+	write(6,*)
+	write(6,*)
+	write(6,*)
+	write(6,*)
+	write(6,*) 'im imm',im,imm
+	lta=.true.
 
 
- call allocate_tele_vac
- 
- call index_premier_voisin()
- call distance_premier_voisin()
+	fnamtin = fnam(1:lenfnam)//'.tin'
+	! variables de dynamique
+	write(*,*) 'file name', fnamtin
 
- call init_tele_vac  (ityp)
+	itab=10
+	text_teledyn=0.0
+	!open(unit=lutin, file=fnamtin, status='unknown', err=567)
+	! read (lutin, nml=input_teledyn)
 
- call distance_premier_voisin () 
+	call random_number(xalea)
+	write(6,*) ' xalea ', xalea
 
- call LyapLanczos_vac 
-stop
+
+	call allocate_tele_vac
+
+	call index_premier_voisin()
+	call distance_premier_voisin()
+
+	call init_tele_vac  (ityp)
+
+	call distance_premier_voisin () 
+
+	call LyapLanczos_vac 
+
+
+	stop
 
 
 end subroutine  sundae

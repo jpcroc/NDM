@@ -38,12 +38,6 @@ module sundae_module
 		real(double),dimension(:),allocatable,save    :: xtransla
 
 		integer                                       :: it_tele_vac
-		integer                                       :: lupout 
-		integer                                       :: luwout
-		integer                                       :: lufout 
-		integer                                       :: lusout
-		integer                                       :: luvout
-		integer                                       :: luhout
 		integer                                       :: ncomptinter
 		integer                                       :: idistance
 		integer :: iteration
@@ -114,219 +108,143 @@ module sundae_module
 		
 CONTAINS
 
-subroutine allocate_tele_vac ! ****
-  implicit none
-!    allocate ( ielat_c(imm),iwmax_c(imm), ityp_c(imm),xp_c(3,imm),  xpp_c(3,imm), &
-!               vp_c(3,imm), ax_c(3,imm), fp_c(3,imm),                             &
-!               ielat_s(imm),iwmax_s(imm), ityp_s(imm),xp_s(3,imm),  xpp_s(3,imm), &
-!               vp_s(3,imm), ax_s(3,imm), fp_s(3,imm),                             &
-!  	       ielat_d(imm),iwmax_d(imm), ityp_d(imm),xp_d(3,imm),  xpp_d(3,imm), &
-!               vp_d(3,imm), ax_d(3,imm), fp_d(3,imm),                             &
-    allocate ( m_i(3,imm),gau(6,imm),sig_i(3,imm),rga_i(3,imm),fadd(3,imm),       &
-               xbarini(3))
 
-  allocate ( tmass_tele_vac(imm) )
-  allocate (ipovois(15), d2vois(15),xpvois(3,15),xpvoisini(3,15),xtransla(3))
-
-  end subroutine allocate_tele_vac
-
-  subroutine init_tele_vac (ityp)
-    !-----------------------------------------------
-    !   M o d u l e s
-    !-----------------------------------------------
-    implicit none
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    integer       :: ityp(imm)
-    real(double)  :: gamma_sundae
-
-   !-----------------------------------------------
-     integer   :: ic_local,iatom
-   !-----------------------------------------------
-
-   it_tele_vac=0
-   tstep_tele_vac=tstep / utemps
-   convert_tele_vac=9.6485d0/10000.d0
-   im1=im+1
-   do ic_local=1,im
-      iatom = ic_local
-      if (iatom==0) iatom=im     
-      tmass_tele_vac(ic_local) = tstep_tele_vac**2*convert_tele_vac/(cm(ityp(iatom))/umass)
-   enddo
-   
-   usdh_tele_vac= 1.d0/(2.d0*tstep_tele_vac)
-
-   sigma=1.d-2 
-   write(6,*) ' kappa ',kappa 
-   kappas2 = kappa/two
-
-   ! initialisation des parametres du langevin
-   gamma_sundae=one/(tstep*1d2)
-   m_i(1:3,1:im) = cm(1)
-
-   rga_i(:,:) = exp(-gamma_sundae*tstep/two)
-
-   write(6,*) ' rga_i  ', rga_i(:,1:1)
-!   write(6,*) ' cm ',m_i(1,1:im)
-!   stop
-
-!   parametres additionnels
-
-   m_tot = sum(m_i(1,1:im))
-
-   fnampout = fnam(1:lenfnam)//'.pout'
-   fnamwout = fnam(1:lenfnam)//'.wout'
-   fnamfout = fnam(1:lenfnam)//'.fout'
-   fnamsout = fnam(1:lenfnam)//'.sout'
-   fnamvout = fnam(1:lenfnam)//'.vout'
-
-   write(6,*) ' fnampout',fnampout
-   lupout  = 17
-   luwout  = 18
-   lufout  = 19
-   lusout  = 20
-   luvout  = 21
-
-   write(6,*) ' xbarini =',xbarini, im
-   
-!   x111        = sum(xp(1:3,1))
-!  ldeter    = .true.
-   return
-
- end subroutine init_tele_vac
+!!!!!!!!!!!!!!!!!!! 21.05.14
+!
+! allocate_tele_vac()
+!
+! init_tele_vac(ityp)
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
 
 
 
 Subroutine LyapLanczos_vac! (xp)
 
-  use lanczos_defs!, only: eigenvalue
- !USE T_kind_param_m, ONLY:  double
-    !use jqmod
-    use tab_imm_m
-implicit none
+	use lanczos_defs
+	use tab_imm_m
+	implicit none
 
-integer, dimension (:), allocatable :: Nb
-integer, dimension (:), allocatable :: Number
-integer, parameter ::N=127 ! 127  !1023  numero atomes du cluster
-integer :: jl 
-real (double) ::eta    !paramètre d'énergie du potentiel
-real (double) ::sigma ! dist. éq. pour le potentiel LJ 
+	integer, dimension (:), allocatable :: Nb
+	integer, dimension (:), allocatable :: Number
+	integer, parameter ::N=127 ! 127  !1023  numero atomes du cluster
+	integer :: jl 
+	real (double) ::eta    !paramètre d'énergie du potentiel
+	real (double) ::sigma ! dist. éq. pour le potentiel LJ 
 
-real (double),dimension (:,:),allocatable::absdmax,xpq6,ener
-integer:: kl 
+	real (double),dimension (:,:),allocatable::absdmax,xpq6,ener
+	integer:: kl 
 
-real (double), dimension (3,N):: xppro
-real (double), dimension(1:N):: xref
-real (double), dimension(1:N):: yref
-real (double), dimension(1:N):: zref
-real (double), dimension(1:3,1:N):: qref,qrot,prot
+	real (double), dimension (3,N):: xppro
+	real (double), dimension(1:N):: xref
+	real (double), dimension(1:N):: yref
+	real (double), dimension(1:N):: zref
+	real (double), dimension(1:3,1:N):: qref,qrot,prot
 
-real (double), dimension(3,1:im):: q,p
-real (double), dimension(1:N,6):: qtemp 
+	real (double), dimension(3,1:im):: q,p
+	real (double), dimension(1:N,6):: qtemp 
 
 
-real (double), dimension(1:3,1:N):: q1s2
-real (double), dimension(1:3):: xbar
+	real (double), dimension(1:3,1:N):: q1s2
+	real (double), dimension(1:3):: xbar
 
-real (double) ::   xalea,xcumul
+	real (double) ::   xalea,xcumul
 
-type Trajectoire
-    real (double), dimension(1:3,1:N):: q  ! vector of position
-    real (double), dimension(1:3,1:N):: p  ! vector of impulsion
-    real(double), dimension(3*N) :: project
-    real (double)  Lyap
-    real (double)  eigenvalue
- endtype
+	type Trajectoire
+		real (double), dimension(1:3,1:N):: q  ! vector of position
+		real (double), dimension(1:3,1:N):: p  ! vector of impulsion
+		real(double), dimension(3*N) :: project
+		real (double)  Lyap
+		real (double)  eigenvalue
+	endtype
 
-type (Trajectoire), dimension (:,:), allocatable :: Path
-type (Trajectoire), dimension (:,:), allocatable :: Pshoot
-type (Trajectoire), dimension (:,:), allocatable :: Pshift
+	type (Trajectoire), dimension (:,:), allocatable :: Path
+	type (Trajectoire), dimension (:,:), allocatable :: Pshoot
+	type (Trajectoire), dimension (:,:), allocatable :: Pshift
 
-type (Trajectoire) :: Pcourant
+	type (Trajectoire) :: Pcourant
 
-real (double) :: kinetotdt
-real(double)::fftot, fftotdt,laputot,laputotdt,uproject
+	real (double) :: kinetotdt
+	real(double)::fftot, fftotdt,laputot,laputotdt,uproject
 
-real (double) ::mcconf,ranf, l0,tempo, z, p3
-integer :: j,l,k,a,i, nq4, ltot,mcmoves, newtraj, it_art
-logical ::  new_projection
-logical ::  waste_recycling
+	real (double) ::mcconf,ranf, l0,tempo, z, p3
+	integer :: j,l,k,a,i, nq4, ltot,mcmoves, newtraj, it_art
+	logical ::  new_projection
+	logical ::  waste_recycling
 
-character(len=128) :: posfinal
-character(len=128) :: data_mbar
-character(len=128) :: dada_mbar
-character(len=128) :: data_mbar_std
-character(len=128) :: moyennes_mbar
-character(len=128) :: moyennes_mbar_denom
+	character(len=128) :: posfinal
+	character(len=128) :: data_mbar
+	character(len=128) :: dada_mbar
+	character(len=128) :: data_mbar_std
+	character(len=128) :: moyennes_mbar
+	character(len=128) :: moyennes_mbar_denom
 
-character(len=128) :: kappaF
-character(len=128) :: kappaFd
-
-
-real (double)::rga,rien,kine,kinetot, pi
-real (double) ::ss, p1,p2
-integer, parameter::nfenetre=100
-integer ::  iter,kappa,ix, scrivi
-
-real (double):: stat(0:nfenetre, 0:nfenetre)
-real (double):: stat6(0:nfenetre, 0:nfenetre)
-real(double)::  enprmoy
-
-real(double) :: tab_contour(-10:nfenetre+10,0:nfenetre)
-real(double) :: tab_contour_q6(-10:nfenetre+10,0:nfenetre)
-real(double) :: tab_cont_q4q6(-10:nfenetre+10,-10:nfenetre+10)
-real(double) :: cumul_contour(-10:nfenetre+10,0:nfenetre)
-real(double) :: cumul_contour_q6(-10:nfenetre+10,0:nfenetre)
-real(double) :: cumul_contour_q4q6(-10:nfenetre+10,-10:nfenetre+10)
-real (double), dimension (:), allocatable::norm0
-
-real (double):: tequilib, e,timefsh
-real (double) :: ekin,epot
-real (double) absdmax_current
-integer  :: pix,lanczos_iter
-integer:: iterfw, iterbw,nmax, tprim,  atom_bouge_abs
-
-real (double) ,dimension(:),   allocatable::poids,alpha_bias,dist,absdist
-real (double) ,dimension(:),   allocatable:: ener0 
-real (double) ,dimension(:),   allocatable:: enerK
-real (double) ,dimension(:),   allocatable::triallyap
-real (double) ,dimension(:),   allocatable::oldlyap 
-real (double) ,dimension(:),   allocatable::rapport
-real (double) ,dimension(:),   allocatable::h_A
-real (double) ,dimension(:),   allocatable::tau
-real (double) ,dimension(:),   allocatable:: hamilt
-real (double) ,dimension(:,:), allocatable:: dh
-real (double) ,dimension(:,:), allocatable:: dhx
-real (double) ,dimension(:,:), allocatable:: Psel
-real (double) ,dimension(:,:), allocatable:: S
-real (double) ,dimension(:,:,:), allocatable:: u_kln
-real (double) ,dimension(:,:,:), allocatable:: ustd_kln
-real (double) ,dimension(:,:,:), allocatable:: umoy_kln
-real (double) ,dimension(:,:,:), allocatable:: u2moy_kln
-
-integer ,dimension(:), allocatable::acc
-
-real (double) ,dimension(:), allocatable::h_F
-real (double) ,dimension(:), allocatable::react_F
-real (double) ,dimension(:), allocatable::h_Fd
-real (double) ,dimension(:), allocatable::react_Fd
-real (double) ,dimension(:), allocatable::h_dI
-real (double) ,dimension(:), allocatable::react_dI
-real (double) ,dimension(:), allocatable::h_Fg
-real (double) ,dimension(:), allocatable::react_Fg
-real (double) ,dimension(:), allocatable::h_FI
-real (double) ,dimension(:), allocatable::react_FI
-!#real (double) ,dimension(:), allocatable::react_FCC_col
-real (double) :: tempiter,tempvar,eigenvalue_old
+	character(len=128) :: kappaF
+	character(len=128) :: kappaFd
 
 
-real(double) :: pav(3)
-real(double) :: genrand
+	real (double)::rga,rien,kine,kinetot, pi
+	real (double) ::ss, p1,p2
+	integer, parameter::nfenetre=100
+	integer ::  iter,kappa,ix, scrivi
 
-!!!!!!!!!!!!!! modif 20.05.14
- call read_sundae()
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	real (double):: stat(0:nfenetre, 0:nfenetre)
+	real (double):: stat6(0:nfenetre, 0:nfenetre)
+	real(double)::  enprmoy
+
+	real(double) :: tab_contour(-10:nfenetre+10,0:nfenetre)
+	real(double) :: tab_contour_q6(-10:nfenetre+10,0:nfenetre)
+	real(double) :: tab_cont_q4q6(-10:nfenetre+10,-10:nfenetre+10)
+	real(double) :: cumul_contour(-10:nfenetre+10,0:nfenetre)
+	real(double) :: cumul_contour_q6(-10:nfenetre+10,0:nfenetre)
+	real(double) :: cumul_contour_q4q6(-10:nfenetre+10,-10:nfenetre+10)
+	real (double), dimension (:), allocatable::norm0
+
+	real (double):: tequilib, e,timefsh
+	real (double) :: ekin,epot
+	real (double) absdmax_current
+	integer  :: pix,lanczos_iter
+	integer:: iterfw, iterbw,nmax, tprim,  atom_bouge_abs
+
+	real (double) ,dimension(:),   allocatable::poids,alpha_bias,dist,absdist
+	real (double) ,dimension(:),   allocatable:: ener0 
+	real (double) ,dimension(:),   allocatable:: enerK
+	real (double) ,dimension(:),   allocatable::triallyap
+	real (double) ,dimension(:),   allocatable::oldlyap 
+	real (double) ,dimension(:),   allocatable::rapport
+	real (double) ,dimension(:),   allocatable::h_A
+	real (double) ,dimension(:),   allocatable::tau
+	real (double) ,dimension(:),   allocatable:: hamilt
+	real (double) ,dimension(:,:), allocatable:: dh
+	real (double) ,dimension(:,:), allocatable:: dhx
+	real (double) ,dimension(:,:), allocatable:: Psel
+	real (double) ,dimension(:,:), allocatable:: S
+	real (double) ,dimension(:,:,:), allocatable:: u_kln
+	real (double) ,dimension(:,:,:), allocatable:: ustd_kln
+	real (double) ,dimension(:,:,:), allocatable:: umoy_kln
+	real (double) ,dimension(:,:,:), allocatable:: u2moy_kln
+
+	integer ,dimension(:), allocatable::acc
+
+	real (double) ,dimension(:), allocatable::h_F
+	real (double) ,dimension(:), allocatable::react_F
+	real (double) ,dimension(:), allocatable::h_Fd
+	real (double) ,dimension(:), allocatable::react_Fd
+	real (double) ,dimension(:), allocatable::h_dI
+	real (double) ,dimension(:), allocatable::react_dI
+	real (double) ,dimension(:), allocatable::h_Fg
+	real (double) ,dimension(:), allocatable::react_Fg
+	real (double) ,dimension(:), allocatable::h_FI
+	real (double) ,dimension(:), allocatable::react_FI
+	real (double) :: tempiter,tempvar,eigenvalue_old
+
+
+	real(double) :: pav(3)
+	real(double) :: genrand
+
+	!!!!!!!!!!!!!! modif 20.05.14
+	 call read_sundae()
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ss=sqrt(temperature*1.66*1e-24*55.845)
 write(*,*) 'ss  = ', ss
@@ -513,7 +431,7 @@ write(*,*) 'temp', temperature*erg2eV, erg2eV
 
 dh(:,:)=0
 acc(:)=0
-!! initialisation paramètres de bias alfa pour reconstruction
+!! initialisation paramètres de bias alpha pour reconstruction
 do j= 0, Nbclones_mbar
  alpha_bias(j)=1.d12*(real(j*(alpha_max/real(Nbclones_mbar))))
  write(*,*)'bias', alpha_bias(j)  
