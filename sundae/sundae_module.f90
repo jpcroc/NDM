@@ -13,7 +13,7 @@ module sundae_module
 	!   _d -> depart
 
 		integer,parameter :: dpkind=selected_real_kind(13)
-		real(double) :: t0,t1,elaps_1,tbuffer1,tbuffer2,t_lanczos,t_propag
+		real(double) :: t0,t1,elaps_1,tbuffer1,tbuffer2,t_lanczos
 		integer,     dimension(:),allocatable,save  :: ipovois
 		
 		
@@ -21,86 +21,38 @@ module sundae_module
 		integer :: Totalmcmoves, Nbclones, Nbclones_mbar, depart_boucle_nbclones
 		real(double) :: h_A_max, h_ba_max, h_ba_min, h_ba, h_ba_I, h_temp
 		real(double) :: dt, TotalTime, gamma_sundae, Temperature
-		real(double) :: alpha_max, teq, delta_x, a_sto, kapa
+		real(double) :: alpha_max, teq, delta_x, a_sto, kapa, ss, tequilib
 		character(len=128) :: sortie
 		character(len=128) :: fnamtin
+		character(len=128) :: posfinal
+		character(len=128) :: data_mbar
+		character(len=128) :: dada_mbar
+		character(len=128) :: data_mbar_std
+		character(len=128) :: moyennes_mbar
+		character(len=128) :: moyennes_mbar_denom
+		character(len=128) :: kappaF
+		character(len=128) :: kappaFd
+	
 		real(double), parameter :: KtoERG=1.3791946308724831d-16
 
 		real(double),dimension(:,:),allocatable,save  :: m_i
 		real(double),dimension(:,:),allocatable,save  :: gau
-		real(double),dimension(:,:),allocatable,save  :: sig_i
 		real(double),dimension(:,:),allocatable,save  :: rga_i
-		real(double),dimension(:,:),allocatable,save  :: fadd
-		real(double),dimension(:),allocatable,save    :: xbarini
+
+
 		real(double),dimension(:),allocatable,save    :: d2vois
 		real(double),dimension(:,:),allocatable,save  :: xpvois
 		real(double),dimension(:,:),allocatable,save  :: xpvoisini
 		real(double),dimension(:),allocatable,save    :: xtransla
 
-		integer                                       :: it_tele_vac
-		integer                                       :: ncomptinter
-		integer                                       :: idistance
-		integer :: iteration
-		integer :: iloop
-		integer :: icheck
-		!      integer :: nchemin
-		integer :: nfrequence,im1!,it_art
 
-		real(double),dimension(:),allocatable,save    :: tmass_tele_vac
-		real(double) ::  tstep_tele_vac,usdh_tele_vac, convert_tele_vac
-		real(double) :: sigma
-		real(double) :: xdist0
-		real(double) :: xdist1
-		real(double) :: kappas2 , potistadd
-		real(double) :: barbetaq
-		real(double) :: barbeta,barbetaE
-		real(double) :: betaweff
-		real(double) :: Ecinetique
-		real(double) :: Ecinetique0
-		real(double) :: dlambda
-		real(double) :: lambdax
-		real(double) :: lambday
-		real(double) :: lambdaz
-		real(double) :: deltawork
-		real(double) :: xbar0
-		real(double) :: m_tot
-		real(double) :: T,Tav
-		real(double) :: potist0
-		real(double) :: dlambdai,dlambdaf
-		real(double) :: rdist,rdist2
-		real(double) :: x111
-		real(double) :: dis2protect
-		character*80 :: fnampout
-		character*80 :: fnamwout
-		character*80 :: fnamfout
-		character*80 :: fnamsout
-		character*80 :: fnamvout
-		character*80 :: fnamhout
-		logical      :: ldeter
-		logical      :: ldistance
-		logical      :: lta
-		!     parametre du lennard-jones
-		character*80 :: fnamfin
-		character*80 :: fnamhin
+		integer :: iteration
+		integer :: icheck
 
 		integer N
-		PARAMETER(N=127)   !1023  ! 127
-		integer NHZ
-		PARAMETER(NHZ=60)
-		integer nfenetre,lufin,luhin
+		PARAMETER(N=127)   !1023 
+		integer nfenetre
 		parameter(nfenetre=100)
-		real(double) :: rsig_lj      
-		real(double) :: sig_lj    
-		real(double) :: eps_4lj
-		real(double) :: xp4
-		real(double) :: pot_auxi(-10:nfenetre+10)
-		real(double) :: pot_auxiliary
-		real(double) :: contour_auxiliary
-		real(double) :: kappaE,kappaEs2
-		real(double) :: potistaddE
-		real(double) :: alphadd(2)
-		real(double) :: pot_contour(-10:nfenetre+10,0:nfenetre)
-		real(double) :: energie_min,energie_max
 		integer :: nl_iter
 
 		! cosmin added:
@@ -125,35 +77,26 @@ Subroutine LyapLanczos_vac! (xp)
 	use tab_imm_m
 	implicit none
 
-	integer, dimension (:), allocatable :: Nb
-	integer, dimension (:), allocatable :: Number
-	integer, parameter ::N=127 ! 127  !1023  numero atomes du cluster
-	integer :: jl 
-	real (double) ::eta    !paramètre d'énergie du potentiel
-	real (double) ::sigma ! dist. éq. pour le potentiel LJ 
+	integer :: jl, kl
 
-	real (double),dimension (:,:),allocatable::absdmax,xpq6,ener
-	integer:: kl 
+	real (double),dimension (:,:),allocatable::absdmax
 
-	real (double), dimension (3,N):: xppro
+
 	real (double), dimension(1:N):: xref
 	real (double), dimension(1:N):: yref
 	real (double), dimension(1:N):: zref
-	real (double), dimension(1:3,1:N):: qref,qrot,prot
-
 	real (double), dimension(3,1:im):: q,p
+	real (double), dimension(1:3,1:N):: qref,qrot,prot
 	real (double), dimension(1:N,6):: qtemp 
-
-
 	real (double), dimension(1:3,1:N):: q1s2
 	real (double), dimension(1:3):: xbar
 
-	real (double) ::   xalea,xcumul
+	real (double) :: xalea,xcumul
 
 	type Trajectoire
 		real (double), dimension(1:3,1:N):: q  ! vector of position
 		real (double), dimension(1:3,1:N):: p  ! vector of impulsion
-		real(double), dimension(3*N) :: project
+		real (double), dimension(3*N) :: project
 		real (double)  Lyap
 		real (double)  eigenvalue
 	endtype
@@ -161,62 +104,31 @@ Subroutine LyapLanczos_vac! (xp)
 	type (Trajectoire), dimension (:,:), allocatable :: Path
 	type (Trajectoire), dimension (:,:), allocatable :: Pshoot
 	type (Trajectoire), dimension (:,:), allocatable :: Pshift
-
 	type (Trajectoire) :: Pcourant
 
-	real (double) :: kinetotdt
-	real(double)::fftot, fftotdt,laputot,laputotdt,uproject
 
-	real (double) ::mcconf,ranf, l0,tempo, z, p3
-	integer :: j,l,k,a,i, nq4, ltot,mcmoves, newtraj, it_art
+	real (double) ::mcconf,ranf, z
+	integer :: j,l,k,a,i, ltot,mcmoves, newtraj, it_art
 	logical ::  new_projection
 	logical ::  waste_recycling
 
-	character(len=128) :: posfinal
-	character(len=128) :: data_mbar
-	character(len=128) :: dada_mbar
-	character(len=128) :: data_mbar_std
-	character(len=128) :: moyennes_mbar
-	character(len=128) :: moyennes_mbar_denom
-
-	character(len=128) :: kappaF
-	character(len=128) :: kappaFd
+	real(double) :: rga, pi
+	integer :: iter, ix
 
 
-	real (double)::rga,rien,kine,kinetot, pi
-	real (double) ::ss, p1,p2
-	integer, parameter::nfenetre=100
-	integer ::  iter,kappa,ix, scrivi
-
-	real (double):: stat(0:nfenetre, 0:nfenetre)
-	real (double):: stat6(0:nfenetre, 0:nfenetre)
-	real(double)::  enprmoy
-
-	real(double) :: tab_contour(-10:nfenetre+10,0:nfenetre)
-	real(double) :: tab_contour_q6(-10:nfenetre+10,0:nfenetre)
-	real(double) :: tab_cont_q4q6(-10:nfenetre+10,-10:nfenetre+10)
-	real(double) :: cumul_contour(-10:nfenetre+10,0:nfenetre)
-	real(double) :: cumul_contour_q6(-10:nfenetre+10,0:nfenetre)
-	real(double) :: cumul_contour_q4q6(-10:nfenetre+10,-10:nfenetre+10)
-	real (double), dimension (:), allocatable::norm0
-
-	real (double):: tequilib, e,timefsh
-	real (double) :: ekin,epot
-	real (double) absdmax_current
+	real(double):: e, timefsh
+	real(double) :: ekin,epot
+	real(double) absdmax_current
 	integer  :: pix,lanczos_iter
-	integer:: iterfw, iterbw,nmax, tprim,  atom_bouge_abs
+	integer:: iterfw, iterbw,nmax, tprim, atom_bouge_abs
 
-	real (double) ,dimension(:),   allocatable::poids,alpha_bias,dist,absdist
+	real (double) ,dimension(:),   allocatable:: alpha_bias,absdist
 	real (double) ,dimension(:),   allocatable:: ener0 
 	real (double) ,dimension(:),   allocatable:: enerK
 	real (double) ,dimension(:),   allocatable::triallyap
 	real (double) ,dimension(:),   allocatable::oldlyap 
 	real (double) ,dimension(:),   allocatable::rapport
-	real (double) ,dimension(:),   allocatable::h_A
-	real (double) ,dimension(:),   allocatable::tau
 	real (double) ,dimension(:),   allocatable:: hamilt
-	real (double) ,dimension(:,:), allocatable:: dh
-	real (double) ,dimension(:,:), allocatable:: dhx
 	real (double) ,dimension(:,:), allocatable:: Psel
 	real (double) ,dimension(:,:), allocatable:: S
 	real (double) ,dimension(:,:,:), allocatable:: u_kln
@@ -236,573 +148,490 @@ Subroutine LyapLanczos_vac! (xp)
 	real (double) ,dimension(:), allocatable::react_Fg
 	real (double) ,dimension(:), allocatable::h_FI
 	real (double) ,dimension(:), allocatable::react_FI
-	real (double) :: tempiter,tempvar,eigenvalue_old
+	real (double) :: tempiter,tempvar
 
 
 	real(double) :: pav(3)
 	real(double) :: genrand
 
-	!!!!!!!!!!!!!! modif 20.05.14
-	 call read_sundae()
+
+	!!!!!!!!!!!!!!!    INITIALISATION DES ARGUMENTS   !!!!!!!!!!!!!!!!!!!!
+
+	call read_sundae()   	!!!!!!!!!!!!!! modif 20.05.14
+	
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-ss=sqrt(temperature*1.66*1e-24*55.845)
-write(*,*) 'ss  = ', ss
 
-lenfnam   = index(sortie,' ')-1
-!open (unit=11, FILE=sortie, action='write', status='replace')
-!open (unit=31, action='write', status='replace')
-moyennes_mbar  =sortie(1:lenfnam)//'.data_moy'
-moyennes_mbar_denom  =sortie(1:lenfnam)//'.data_moy2'
-data_mbar      = sortie(1:lenfnam)//'.data'
-dada_mbar      = sortie(1:lenfnam)//'.dada'
-data_mbar_std  = sortie(1:lenfnam)//'.data_std'
 
-!histotot  =sortie(1:lenfnam)//'.thout'
-!histopart =sortie(1:lenfnam)// '.phout'
-posfinal = sortie(1:lenfnam)//'.cin'
+	open(unit=30, file=kappaF,  action='write', status='replace')
+	open(unit=31, file=kappaFd,  action='write', status='replace')
 
-kappaF = sortie(1:lenfnam)//'.corfunc_WR'
-kappaFd = sortie(1:lenfnam)//'.corfunc_ST'
-!kappadI = sortie(1:lenfnam)//'.kappadI'
-!kappaFI= sortie(1:lenfnam)//'.kappaFI'
-!kappaFg= sortie(1:lenfnam)//'.kappaFg'
-!corbias= sortie(1:lenfnam)//'.corbias'
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	open(unit=24, file=data_mbar, action='write', status='replace')
+	open(unit=244, file=dada_mbar, action='write', status='replace')
 
-!!!!!!!!!! output per calcolo correl function reactivity
-open(unit=30, file=kappaF,  action='write', status='replace')
-open(unit=31, file=kappaFd,  action='write', status='replace')
-!open(unit=32, file=kappadI,  action='write', status='replace')
-!open(unit=33, file=kappaFI,  action='write', status='replace')
-!open(unit=34, file=kappaFg,  action='write', status='replace')
-!open(unit=333,file=corbias,  action='write', status='replace')
+	write(244,'(i,i,i)') Nbclones_mbar+1,Nbclones_mbar+1,Totalmcmoves
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!open(unit=27, file=data_mbar, action='write', status='replace')
-open(unit=24, file=data_mbar, action='write', status='replace')
-open(unit=244, file=dada_mbar, action='write', status='replace')
-!open(unit=44, file=data_mbar_std, action='write', status='replace')
 
-write(244,'(i,i,i)') Nbclones_mbar+1,Nbclones_mbar+1,Totalmcmoves
+	nmax=NbClones_mbar
 
-!open(unit=25, file=moyennes_mbar, action='write', status='replace')
-!open(unit=23, file=moyennes_mbar_denom, action='write', status='replace')
-!nmax=NbClones*3.0+1    ! Max number of clones
-!TimeStore = TotalTime-AverageTime ! Next time at which data will be stored 
+	write(*,*) ' nmax ', nmax
+	 
+	! Array where the weight of every clone is stored
+	allocate (acc(0:nmax))
+	allocate (ener0(0:nmax))
+	allocate (enerK(0:nmax))
+	allocate(hamilt(0:nmax))
+	! Array which contains the numbers from 1 to nmax
 
-nmax=NbClones_mbar
+	ltot=int(TotalTime/real(dt))
 
-write(*,*) ' nmax ', nmax
+	write(*,*)'totiter', totiter
+	gamma_sundae=gamma_sundae/(dt)
+	write(*,*)'gamma_sundae' , gamma_sundae, gamma_sundae*dt,ltot
+	waste_recycling=.true.
+	!waste_recycling=.false.
+	write(*,*) 'waste_recycling ?',  waste_recycling
+
+	allocate(absdmax(0:nmax,0:2*totiter+10))
+	allocate(S(0:nmax,0:2*totiter+10))
+	allocate(u_kln(0:nmax,0:nmax,0:Totalmcmoves))
+	allocate(ustd_kln(0:nmax,0:nmax,0:Totalmcmoves))
+	allocate(umoy_kln(0:nmax,0:nmax,0:Totalmcmoves))
+	allocate(u2moy_kln(0:nmax,0:nmax,0:Totalmcmoves))
+
+	allocate(old_projection(3*N))
+	allocate(first_projection(3*N))
+	allocate(old_before_sc_projection(3*N))
+
+	allocate (h_F(0:2*totiter+10))
+	allocate (react_F(0:nmax))
+	allocate (h_Fd(0:2*totiter+10))
+	allocate (react_Fd(0:nmax))
+	allocate (h_Fg(0:2*totiter+10))
+	allocate (react_Fg(0:nmax))
+	allocate (h_dI(0:2*totiter+10))
+	allocate (react_dI(0:nmax))
+	allocate (h_FI(0:2*totiter+10))
+	allocate (react_FI(0:nmax))
+
+
+	absdmax(:,:)=0
+	hamilt(:)=0
+	mcmoves=0
+	it_art=0
+	e=0.000001
+	eigenvalue=0
+	acc(:)=0
+
+	if (maxvec.lt.4) maxvec=4
+	write(*,*) 'The maxvec in lanczos is set to .........:', maxvec
+
+
+
+	allocate(Path(0:nmax,0:totiter+10)) 
+	allocate(Pshoot(0:nmax,0:totiter+10))
+	allocate(Pshift(0:nmax,0:2*totiter+10))
+
+	allocate(oldLyap(0:nmax))
+	allocate(triallyap(0:nmax))
+	allocate(rapport(0:nmax))
+	allocate(absdist(0:N))
+	allocate(Psel(0:nbclones_mbar,0:totiter))
+	allocate (alpha_bias(0:Nbclones_mbar))!!EQUILIBRAGE
+	rapport(:)=0
+	iter=0
+	Q=0
+	pi=4*atan(1._dpkind)
+	
+	if ((gamma_sundae*dt).le.100000) then
+		rga = exp(-gamma_sundae*dt/two)
+	else 
+		rga=0
+	endif
+	
+	sig(:,:) = sqrt(temperature*(one-rga**2))
+	write(*,*) 'rga',gamma_sundae, gamma_sundae*dt, rga, sig(1,1)
+	write(*,*) 'temp', temperature*erg2eV, erg2eV
+
+	acc(:)=0
+	!! initialisation paramètres de bias alpha pour reconstruction
+	do j= 0, Nbclones_mbar
+	 alpha_bias(j)=1.d12*(real(j*(alpha_max/real(Nbclones_mbar))))
+	 write(*,*)'bias', alpha_bias(j)  
+	enddo
+
+
+
+	xref(1:n)=xp(1,1:n)
+	yref(1:n)=xp(2,1:n)
+	zref(1:n)=xp(3,1:n)
+
+	qref(1:3,1:im)=xp(1:3,1:im)
+
+	rang = 1 
+
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+	if (continue_sundae.ne.2) then 
+	
+		j = depart_boucle_nbclones
+		absdmax(j,:)=-9999.0
+		atom_bouge_abs=0
+		iter=0
+		do i=1,N
+			absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
+			if (absdist(i).gt.absdmax(j,iter)) then
+				absdmax(j,iter) = absdist(i)
+				atom_bouge_abs  = i
+			endif
+		enddo
+		absdmax_current = absdmax(j,iter)*1.d8
+		write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
+		write(*,*) ' atom_bouge_abs ',atom_bouge_abs
+
+		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! INITIALISATION !!!!!!!!!!!!!!!!!!!!!!
+		write(*,*) 'conditions initiales pour traj de reference avc distrib stoch à temperature T=',temperature
+		write(*,*) 'temps equilibrage', Tequilib
+		write (*,'("Equilibrage on ..................:",i5)') nint(Tequilib/dt) 
+		!!!!!!!!!!!!!!!!!!!!!!!! EQUILIBRAGE initial (STOCH DYN)!!!!!!!!!!!!!!!!!!
+
+		do it_langevin = 0,int(Tequilib/dt)
+			call langevin(dt,temperature, rga)
+			absdmax(j,:)=-9999.0
+			atom_bouge_abs=0
+			iter=0
+			do i=1,N
+				absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
+				if (absdist(i).gt.absdmax(j,iter)) then
+					absdmax(j,iter) = absdist(i)
+					atom_bouge_abs  = i
+				endif
+			enddo
+			absdmax_current = absdmax(j,iter)*1.d8
+			write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
+			write(*,*) ' atom_bouge_abs ',atom_bouge_abs
+		end do
+
+		absdmax(j,:)=-9999.0
+		atom_bouge_abs=0
+		iter=0
+		do i=1,N
+			absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
+			if (absdist(i).gt.absdmax(j,iter)) then
+				absdmax(j,iter) = absdist(i)
+				atom_bouge_abs  = i
+			endif
+		enddo
+		absdmax_current = absdmax(j,iter)*1.d8
+		write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
+		write(*,*) ' atom_bouge_abs ',atom_bouge_abs
+
+
+		write(*,*) 'point de depart traj de reference deterministe' 
+		! NbClones the index number of bias
+		! The starting-point in the bias series
+
+		do  jl = 0,NbClones 
+			Path(jl,0)%q=xp(1:3,1:N)
+			Path(jl,0)%p=vp(1:3,1:N)*m_i(1:3,1:N)
+		enddo
+		!!!!!!!!!!!!!! mettre a zero le reste avant ??
+		Path(:,:)%Lyap = 0.d0
+
+		iter=0
+		it_trajectory=0
+		new_projection=.true.
+		it_art=1
+		lanczos_iter=0
+		eigenvalue = 0.0
+
+		do icheck=1,10
+			Pcourant=Path(j,iter)
+			call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
+			call lanczos(N,maxvec,q1s2,new_projection,Path(j,iter)%project) !!!positions avant propagation
+			Path(j,iter)%eigenvalue = eigenvalue
+			write(*,*) 'eigenvalue ',eigenvalue
+			new_projection=.false.  
+			if (eigenvalue.lt.0.0) then 
+				Path(j,iter)%Lyap =  asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 
+			else 
+				Path(j,iter)%Lyap = 0.d0  ! 
+			endif
+		enddo
+
+	endif  ! continue_sundae.ne.2 
+
+	write(*,*) 'initialisation faite: go with Lanczos'
+	write(*,*) 'itab', itab
+	write(*,*) 'itetabvois', itetabvois
+	write(*,*) 'ltabvois', ltabvois
+  
+  
+  
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	if (continue_sundae.eq.2) then
+		write(*,*) 'posfinal ',posfinal
+		open(unit=27, file=posfinal, status='old')
+		do j=depart_boucle_nbclones,NbClones
+			write(*,*) 'j depart_boucle_nbclones NbClones  ', j ,depart_boucle_nbclones,NbClones
+			do i=0, totiter-1                      ! attention i=totiter doit etre pris en compte
+				read (27,*) qtemp(1:N,1)
+				read (27,*) qtemp(1:N,2)
+				read (27,*) qtemp(1:N,3)
+				read (27,*) 
+				read (27,*) qtemp(1:N,4)
+				read (27,*) qtemp(1:N,5)
+				read (27,*) qtemp(1:N,6)
+				read (27,*)
+				read (27,*) Path(j,i)%Lyap
+				read (27,*)
+				read (27,*) Path(j,i)%project
+
+				Path(j,i)%q(1,1:N)=qtemp(1:N,1)
+				Path(j,i)%q(2,1:N)=qtemp(1:N,2)
+				Path(j,i)%q(3,1:N)=qtemp(1:N,3)
+				Path(j,i)%p(1,1:N)=qtemp(1:N,4)
+				Path(j,i)%p(2,1:N)=qtemp(1:N,5)
+				Path(j,i)%p(3,1:N)=qtemp(1:N,6)
+				!Path(j,i)%p
+			enddo
+			close(27)
+			Path(j,totiter) =  Path(j,totiter-1) 
+			oldLyap(j)=sum(Path(j,0:totiter-1)%Lyap)/real(totiter)
+			!   oldLyap(j)=sum(Path(j,:)%Lyap)/real(totiter)
+			write(*,*) 'oldLyap(',j,') = ', oldLyap(j)
+
+
+			q=Path(j,0)%q
+			do i=1,3
+				write(*,*) 'i       ',i
+				write(*,*) 'bary    ',sum(q(i,1:im))/dble(im)
+				write(*,*) 'bary ref',sum(qref(i,1:im))/dble(im)
+			enddo
+
+
+			rang=0
+			do i=0,totiter
+				!write(*,*) 'i  ',i
+
+				q    = Path(j,i)%q
+				prot = Path(j,i)%p
+
+				pav(1)=sum(prot(1,1:im))/dble(im)
+				pav(2)=sum(prot(2,1:im))/dble(im)
+				pav(3)=sum(prot(3,1:im))/dble(im)
+
+				!   write(*,*) 'prot(:,1):', prot
+
+				!   write(*,*) 'pav',pav
+
+				prot(1,1:im)= prot(1,1:im)-pav(1)
+				prot(2,1:im)= prot(2,1:im)-pav(2)
+				prot(3,1:im)= prot(3,1:im)-pav(3)
+
+				pav(1)=sum(prot(1,1:im))/dble(im)
+				pav(2)=sum(prot(2,1:im))/dble(im)
+				pav(3)=sum(prot(3,1:im))/dble(im)
+				!   write(*,*) 'pav',pav
+
+				call control_angular_momenta(prot,q)
+
+				!   write(*,*) 'q en 1 ',q(1,1)
+				!   write(*,*) 'somme de q(1,:) ',sum(q(1,1:im))
+
+				qrot=q-qref
+				call control_angular_momenta(qrot,qref)
+				call control_angular_momenta(qrot,qref)
+				q = qrot + qref
+				rang=1
+				call control_angular_momenta(qrot,qref)
+				rang=1
+
+				Path(j,i)%q=q
+
+				call control_angular_momenta(prot,q)
+
+				Path(j,i)%p=prot
+
+			enddo
+
+			absdmax(j,:)=-9999.0
+			atom_bouge_abs=0
+			iter=0
+			do i=1,N
+				pav(1:3)=(Path(j,iter)%q(1:3,i)-qref(1:3,i))**2
+				!write(*,*) 'pav ',pav
+				absdist(i)=sqrt(sum(pav(1:3)))
+				if (absdist(i).gt.absdmax(j,iter)) then
+					absdmax(j,iter) = absdist(i)
+					atom_bouge_abs  = i
+				endif
+				!   write(*,*) ' absdist(i) ' ,   absdist(i)*1.d8
+			enddo
+			absdmax_current = absdmax(j,iter)*1.d8
+			write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
+			write(*,*) ' atom_bouge_abs ',atom_bouge_abs
+
+		enddo
+
+	endif ! block with continue_sundae == 2
  
-! Array where the weight of every clone is stored
-allocate (acc(0:nmax))
-allocate (tau(0:nmax))
-!allocate (betaq(0:nmax))
-allocate (ener0(0:nmax))
-allocate (enerK(0:nmax))
-!allocate(enerpro(0:nmax-1))
-allocate(hamilt(0:nmax))
-! Array which contains the numbers from 1 to nmax
-allocate(Nb(0:nmax)) 
-allocate(norm0(0:nmax)) 
-
-kappa=1
-scrivi=0
-ltot=int(TotalTime/real(kappa*dt))
-!totiter=nint(totaltime/dt)
-
-write(*,*)'totiter', totiter
-gamma_sundae=gamma_sundae/(dt)
-write(*,*)'gamma_sundae' , gamma_sundae, gamma_sundae*dt,ltot
-waste_recycling=.true.
-!waste_recycling=.false.
-write(*,*) 'waste_recycling?',  waste_recycling
-allocate (h_A(0:2*totiter+10))
-allocate (absdmax(0:nmax,0:2*totiter+10))
-allocate (xpq6(0:nmax,0:2*totiter+10))
-allocate(ener(0:nmax,0:totiter+10))
-allocate(S(0:nmax,0:2*totiter+10))
-allocate(u_kln(0:nmax,0:nmax,0:Totalmcmoves))
-allocate(ustd_kln(0:nmax,0:nmax,0:Totalmcmoves))
-allocate(umoy_kln(0:nmax,0:nmax,0:Totalmcmoves))
-allocate(u2moy_kln(0:nmax,0:nmax,0:Totalmcmoves))
-
-allocate(old_projection(3*N))
-!allocate(projection(3*N))
-allocate(first_projection(3*N))
-allocate(old_before_sc_projection(3*N))
-!allocate(project(0:totiter+10,3*N))
-
-allocate (h_F(0:2*totiter+10))
-allocate (react_F(0:nmax))
-allocate (h_Fd(0:2*totiter+10))
-allocate (react_Fd(0:nmax))
-allocate (h_Fg(0:2*totiter+10))
-allocate (react_Fg(0:nmax))
-allocate (h_dI(0:2*totiter+10))
-allocate (react_dI(0:nmax))
-allocate (h_FI(0:2*totiter+10))
-allocate (react_FI(0:nmax))
-
-!#allocate (react_FCC_col(0:nbclones_MBAR))
-
-ener(:,:)=0
-stat(:,:)=0
-stat6(:,:)=0
-sigma=1
-eta=1
-!enerpro(:)=0
-absdmax(:,:)=0
-xpq6(:,:)=0
-!statneg(:,:)=0
-!statpos(:,:)=0
-hamilt(:)=0
-kine=0
-laputot=0
-fftot=0
-laputotdt=0
-fftotdt=0
-kinetotdt=0
-kinetot=0
-mcmoves=0
-it_art=0
-tau(:)=0
-enprmoy=0
-nq4=0
-e=0.000001
-eigenvalue=0
-!ss=0.05
-l0=0.0
-acc(:)=0
-p1=0
-p2=0
-p3=0
-
-  if (maxvec.lt.4) maxvec=4
-  write(*,*) 'The maxvec in lanczos is set to .........:', maxvec
-
-     tab_contour(-10:nfenetre+10,0:nfenetre)=zero
-     tab_contour_q6(-10:nfenetre+10,0:nfenetre)=zero
-     tab_cont_q4q6(-10:nfenetre+10,-10:nfenetre+10)=zero
-     cumul_contour_q4q6(-10:nfenetre+10,-10:nfenetre+10)=0
-     cumul_contour(-10:nfenetre+10,0:nfenetre)=0
-     cumul_contour_q6(-10:nfenetre+10,0:nfenetre)=0
-
-allocate(Number(0:NbClones-1)) 
-
-!!!!!!!!!!!!T EQUILIBRAGE
-tequilib=(dt)*teq
-write(*,*) 'No of teq steps', teq
-write(*,*) 'tquilib',tequilib
-!!!!!!!!!!!! T EQUILIBRAGE
-  
-write(*,*) 'sortie affichee', 0.6*ev2erg
-
-allocate(Path(0:nmax,0:totiter+10)) 
-allocate(Pshoot(0:nmax,0:totiter+10))
-allocate(Pshift(0:nmax,0:2*totiter+10))
-
-allocate (dh(0:nmax,0:2*totiter+10))
-allocate(oldLyap(0:nmax))
-allocate(triallyap(0:nmax))
-allocate(rapport(0:nmax))
-allocate(dist(0:N))
-allocate(absdist(0:N))
-allocate (dhx(0:nmax,0:2*totiter+10))
-allocate(poids(1:totiter))
-allocate(Psel(0:nbclones_mbar,0:totiter))
-allocate (alpha_bias(0:Nbclones_mbar))!!EQUILIBRAGE
-xppro(:,:)=0
-rapport(:)=0
-iter=0
-rien=0
-Q=0
-uproject=0
-kappa=1
-pi=4*atan(1._dpkind)
-if ((gamma_sundae*dt).le.100000) then
-    rga = exp(-gamma_sundae*dt/two)
-else 
-  rga=0
-endif
-sig(:,:) = sqrt(temperature*(one-rga**2))
-write(*,*) 'rga',gamma_sundae, gamma_sundae*dt, rga, sig(1,1)
-write(*,*) 'temp', temperature*erg2eV, erg2eV
-
-dh(:,:)=0
-acc(:)=0
-!! initialisation paramètres de bias alpha pour reconstruction
-do j= 0, Nbclones_mbar
- alpha_bias(j)=1.d12*(real(j*(alpha_max/real(Nbclones_mbar))))
- write(*,*)'bias', alpha_bias(j)  
-enddo
-
-
-
-
-xref(1:n)=xp(1,1:n)
-yref(1:n)=xp(2,1:n)
-zref(1:n)=xp(3,1:n)
-
-qref(1:3,1:im)=xp(1:3,1:im)
-
- rang = 1 
-tempo=0.0
-
- if (continue_sundae.ne.2) then 
-   j = depart_boucle_nbclones
-   absdmax(j,:)=-9999.0
-   atom_bouge_abs=0
-   iter=0
-   do i=1,N
-     absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
-      if (absdist(i).gt.absdmax(j,iter)) then
-       absdmax(j,iter) = absdist(i)
-       atom_bouge_abs  = i
-      endif
-!   write(*,*) ' absdist(i) ' ,   absdist(i)*1.d8
-   enddo
-   absdmax_current = absdmax(j,iter)*1.d8
-   write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
-   write(*,*) ' atom_bouge_abs ',atom_bouge_abs
-
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! INITIALISATION !!!!!!!!!!!!!!!!!!!!!!
-  write(*,*) 'conditions initiales pour traj de reference avc distrib stoch à temperature T=',temperature
-  write(*,*) 'temps equilibrage', Tequilib, tempo
-  !!!!!!!!!!!!!!!!!!!!!!!! EQUILIBRAGE initial (STOCH DYN)!!!!!!!!!!!!!!!!!!
-  write (*,'("Equilibrage on ..................:",i5)') nint(Tequilib/dt) 
-  
-   do it_langevin = 0,int(Tequilib/dt)
-    call langevin(dt,temperature, rga)
-    !debugC	write(*,*) 'Lyaplanc.................:', it_langevin
-
-    absdmax(j,:)=-9999.0
-    atom_bouge_abs=0
-    iter=0
-    do i=1,N
-      absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
-      if (absdist(i).gt.absdmax(j,iter)) then
-       absdmax(j,iter) = absdist(i)
-       atom_bouge_abs  = i
-      endif
-    !write(*,*) ' absdist(i) ' ,   absdist(i)*1.d8
-    enddo
-    absdmax_current = absdmax(j,iter)*1.d8
-    write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
-    write(*,*) ' atom_bouge_abs ',atom_bouge_abs
-   end do
-
-   absdmax(j,:)=-9999.0
-   atom_bouge_abs=0
-   iter=0
-   do i=1,N
-     absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
-      if (absdist(i).gt.absdmax(j,iter)) then
-       absdmax(j,iter) = absdist(i)
-       atom_bouge_abs  = i
-      endif
-!   write(*,*) ' absdist(i) ' ,   absdist(i)*1.d8
-   enddo
-   absdmax_current = absdmax(j,iter)*1.d8
-   write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
-   write(*,*) ' atom_bouge_abs ',atom_bouge_abs
-
-
-  write(*,*) 'point de depart traj de reference deterministe' 
-  ! NbClones the index number of bias
-  ! The startingpoint in the bias series
-
-   do  jl = 0,NbClones 
-     Path(jl,0)%q=xp(1:3,1:N)
-     Path(jl,0)%p=vp(1:3,1:N)*m_i(1:3,1:N)
-   enddo
-  !!!!!!!!!!!!!! mettre a zero le reste avant ??
-  Path(:,:)%Lyap = 0.d0
-
-  iter=0
-  it_trajectory=0
-  new_projection=.true.
-  it_art=1
-  lanczos_iter=0
-  eigenvalue = 0.0
-
-  do icheck=1,10
-
-  Pcourant=Path(j,iter)
-
-  call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
-
-  call lanczos(N,maxvec,q1s2,new_projection,Path(j,iter)%project)!!!positions avant propagation
-
-  Path(j,iter)%eigenvalue = eigenvalue
-  write(*,*) 'eigenvalue ',eigenvalue
-  new_projection=.false.  
-   if (eigenvalue.lt.0.0) then 
-                   Path(j,iter)%Lyap =  asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 
-   else 
-                   Path(j,iter)%Lyap = 0.d0  ! 
-   endif
-  enddo
-
- endif  ! continue_sundae.ne.2 
-
-  write(*,*) 'initialisation faite: go with Lanczos'
-  write(*,*) 'itab', itab
-  write(*,*) 'itetabvois', itetabvois
-  write(*,*) 'ltabvois', ltabvois
-
-if (continue_sundae.eq.2) then
-   write(*,*) 'posfinal ',posfinal
-  open(unit=27, file=posfinal, status='old')
-  do j=depart_boucle_nbclones,NbClones
-   write(*,*) 'j depart_boucle_nbclones NbClones  ', j ,depart_boucle_nbclones,NbClones
-   do i=0, totiter-1                      ! attention i=totiter doit etre pris en compte
-    read (27,*) qtemp(1:N,1)
-    read (27,*) qtemp(1:N,2)
-    read (27,*) qtemp(1:N,3)
-    read (27,*) 
-    read (27,*) qtemp(1:N,4)
-    read (27,*) qtemp(1:N,5)
-    read (27,*) qtemp(1:N,6)
-    read (27,*)
-    read (27,*) Path(j,i)%Lyap
-    read (27,*)
-    read (27,*) Path(j,i)%project
-
-    Path(j,i)%q(1,1:N)=qtemp(1:N,1)
-    Path(j,i)%q(2,1:N)=qtemp(1:N,2)
-    Path(j,i)%q(3,1:N)=qtemp(1:N,3)
-    Path(j,i)%p(1,1:N)=qtemp(1:N,4)
-    Path(j,i)%p(2,1:N)=qtemp(1:N,5)
-    Path(j,i)%p(3,1:N)=qtemp(1:N,6)
-    !Path(j,i)%p
-   enddo
-   close(27)
-   Path(j,totiter) =  Path(j,totiter-1) 
-   oldLyap(j)=sum(Path(j,0:totiter-1)%Lyap)/real(totiter)
-!   oldLyap(j)=sum(Path(j,:)%Lyap)/real(totiter)
-   write(*,*) 'oldLyap(',j,') = ', oldLyap(j)
-
-
-   q=Path(j,0)%q
-   do i=1,3
-   write(*,*) 'i       ',i
-   write(*,*) 'bary    ',sum(q(i,1:im))/dble(im)
-   write(*,*) 'bary ref',sum(qref(i,1:im))/dble(im)
-   enddo
-
-
-   rang=0
-   do i=0,totiter
-   !write(*,*) 'i  ',i
-   
-   q    = Path(j,i)%q
-   prot = Path(j,i)%p
-
-   pav(1)=sum(prot(1,1:im))/dble(im)
-   pav(2)=sum(prot(2,1:im))/dble(im)
-   pav(3)=sum(prot(3,1:im))/dble(im)
-
-!   write(*,*) 'prot(:,1):', prot
-
-!   write(*,*) 'pav',pav
-
-   prot(1,1:im)= prot(1,1:im)-pav(1)
-   prot(2,1:im)= prot(2,1:im)-pav(2)
-   prot(3,1:im)= prot(3,1:im)-pav(3)
-
-   pav(1)=sum(prot(1,1:im))/dble(im)
-   pav(2)=sum(prot(2,1:im))/dble(im)
-   pav(3)=sum(prot(3,1:im))/dble(im)
-!   write(*,*) 'pav',pav
-
-   call control_angular_momenta(prot,q)
-
-!   write(*,*) 'q en 1 ',q(1,1)
-!   write(*,*) 'somme de q(1,:) ',sum(q(1,1:im))
-  
-   qrot=q-qref
-   call control_angular_momenta(qrot,qref)
-   call control_angular_momenta(qrot,qref)
-   q = qrot + qref
-   rang=1
-   call control_angular_momenta(qrot,qref)
-   rang=1
-
-   Path(j,i)%q=q
-
-   call control_angular_momenta(prot,q)
-
-   Path(j,i)%p=prot
-
-   enddo
-
-   absdmax(j,:)=-9999.0
-   atom_bouge_abs=0
-   iter=0
-   do i=1,N
-     pav(1:3)=(Path(j,iter)%q(1:3,i)-qref(1:3,i))**2
-     !write(*,*) 'pav ',pav
-     absdist(i)=sqrt(sum(pav(1:3)))
-      if (absdist(i).gt.absdmax(j,iter)) then
-       absdmax(j,iter) = absdist(i)
-       atom_bouge_abs  = i
-      endif
-!   write(*,*) ' absdist(i) ' ,   absdist(i)*1.d8
-   enddo
-   absdmax_current = absdmax(j,iter)*1.d8
-   write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
-   write(*,*) ' atom_bouge_abs ',atom_bouge_abs
-
-  enddo
-
- endif ! block with continue_sundae == 2
-! test du moment angulaire de la force
- call caltabt
- call caltabi
- call calfo
-
- p(1:3,1:im) = fp(1:3,1:im)
- q (1:3,1:im) = xp(1:3,1:im)
- rang=0
- call control_angular_momenta(p,q)
- call control_angular_momenta(p,q)
- call control_angular_momenta(p,q)
- ! stop
-
-! test de la subroutine de controle angulaire
- j=depart_boucle_nbclones
-
- q= Path(j,0)%q
- p= Path(j,0)%p
-
- temp=0.d0
- do i=1,20
- call OU_control(p,q,a_sto,ss)
- call mapping_P_Verlet(q,p,dt,N,q1s2)
-
- temp = temp + (sum(p(1,1:im)**2)+sum(p(2,1:im)**2)+sum(p(3,1:im)**2))/dble(3*im-6)/m_i(1,1)
- write(*,*) 'température ',temp/dble(i)/KtoERG,i,alpha_bias(j)
- enddo
- !stop
- write (*,'("1st traj before shooting ........:",i5)') nint(TotalTime/dt)
- rang=1
- j=depart_boucle_nbclones
-
- call cpu_time(t0)
- lanczos_iter=0
- eigenvalue_old = eigenvalue
- do icheck=1,1
-   Pcourant = Path(j,0)
-   temp=0.d0
-   eigenvalue = Pcourant%eigenvalue
-   do iter=0,totiter-1
-     call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
-     call cpu_time(tbuffer1)
-     lanczos_iter=lanczos_iter+nl_iter
-     call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)!!!
-     call cpu_time(tbuffer2)
-     t_lanczos=t_lanczos + (tbuffer2-tbuffer1)
-     Pcourant%Lyap = 0.d0  
-     if (eigenvalue.lt.0.d0) then
-           Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0
-     endif
-     Path(j,iter+1)    = Pcourant
-     Path(j,iter)%Lyap = Pcourant%Lyap
-     temp = temp +  Pcourant%Lyap
-     new_projection = .false.
-   enddo  !!!!!
-   oldLyap(j)=sum(Path(j,0:totiter-1)%Lyap)/real(totiter)
-   write(*,*) " oldLyap(j)= ", oldLyap(j),temp/real(totiter)
- enddo
-
-  pav(1)=sum(Path(j,totiter)%p(1,1:im))/dble(im)
-  pav(2)=sum(Path(j,totiter)%p(2,1:im))/dble(im)
-  pav(3)=sum(Path(j,totiter)%p(3,1:im))/dble(im)
-
-  write(*,*) 'pav',pav
-
- call cpu_time(t1)
- elaps_1=t1-t0
-
- write(*,*) 'The first trajectory..:', elaps_1
- write(*,*) 'The Lanczos time .....:', t_lanczos
- write(*,*) 'The Propag time.......:', elaps_1-t_lanczos
- write(*,*) 'Lanczos interations...:', lanczos_iter
- write(*,*) '            forces....:', lanczos_iter*maxvec*2
-
-!   write(*,*) 'pos fin du shooting', Path(j,totiter)%q(0), Path(j,totiter)%q(0), Path(j,totiter)%q(0)
-!   write(*,*) 'mom fin du shooting', Path(j,totiter)%p(0), Path(j,totiter)%p(0), Path(j,totiter)%p(0)
-!   write(*,*) 'pos fin du shooting', Path(j,0)%q(10), Path(j,0)%q(10), Path(j,0)%q(10)
-!   write(*,*) 'mom fin du shooting', Path(j,0)%p(10), Path(j,0)%p(10), Path(j,0)%p(10)
- absdmax(j,:)=-9999.d0
-  do iter=0,totiter-1
-    atom_bouge_abs=0
-    do i=1,N
-      pav(1:3) = (Path(j,iter)%q(1:3,i)-qref(1:3,i))**2
-      absdist(i)=sqrt(sum(pav(1:3)))
-       if (absdist(i).gt.absdmax(j,iter)) then
-        absdmax(j,iter) = absdist(i)
-        atom_bouge_abs  = i
-       endif
-    enddo
- enddo
-
-  temp=0.0000
-  tempvar=temp
-  j= depart_boucle_nbclones
-
-  do iterbw=0,totiter
-  tempiter = SUM((Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2))/m_i(1,1)/3.000/dble(im-2)/KtoERG ! *2/3 /2
-   !debugC write(*,*) 'tempiter ',iterbw,tempiter
-   temp=temp+tempiter
-   tempvar=tempvar+tempiter**2
-  enddo
-  temp=temp/real(totiter+1)
-  tempvar=sqrt(tempvar/real(totiter+1)-temp**2)
-  write(*,*) 'temp cin traject, std et cible ',temp,tempvar,temperature/KtoERG
-! calcul de la position initiale 
-
-  call cal_hamilton(Path(j,0)%q,Path(j,0)%p,N,ekin,epot)
-  hamilt(j)=(ekin+epot)/temperature
-  ener0(j) = epot/temperature
-
-! vérification de la dérive 
- xbar(1) = SUM(Path(j,0)%q(1,1:N))/dble(N)
- xbar(2) = SUM(Path(j,0)%q(2,1:N))/dble(N)
- xbar(3) = SUM(Path(j,0)%q(3,1:N))/dble(N)
-
- write(*,*) ' centre de masse référence ', xbar(1:3)
-
- xbar(1) = SUM(qref(1,1:N))/dble(N)
- xbar(2) = SUM(qref(2,1:N))/dble(N)
- xbar(3) = SUM(qref(3,1:N))/dble(N)
-
- write(*,*) ' centre de masse pos 0     ', xbar(1:3)
-
- xbar(1) = SUM(Path(j,0)%p(1,1:N))/dble(N)
- xbar(2) = SUM(Path(j,0)%p(2,1:N))/dble(N)
- xbar(3) = SUM(Path(j,0)%p(3,1:N))/dble(N)
-
- write(*,*) ' moments translationnels ',   xbar(1:3)
- do i=1,3
-  write(*,*) ' temperature translation ',  xbar(i)**2/m_i(1,1)/dble(im)/KtoERG*dble(N)
- enddo
- iterbw = 0
- tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
- write(*,*) 'temp avant ',iterbw,tempiter
- enerK(j) =tempiter
- do iterfw=0,totiter
- Path(j,iterfw)%p(1,1:N)=Path(j,iterfw)%p(1,1:N)-xbar(1)
- Path(j,iterfw)%p(2,1:N)=Path(j,iterfw)%p(2,1:N)-xbar(2)
- Path(j,iterfw)%p(3,1:N)=Path(j,iterfw)%p(3,1:N)-xbar(3)
- enddo
-
- tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
- write(*,*) 'tempiter après ',iterbw,tempiter
- write(*,*) 'diff ',tempiter-enerK(j) 
-! stop
-
+ 
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	
+	
+	! test du moment angulaire de la force
+	call caltabt
+	call caltabi
+	call calfo
+
+	p(1:3,1:im) = fp(1:3,1:im)
+	q(1:3,1:im) = xp(1:3,1:im)
+	rang=0
+	call control_angular_momenta(p,q)
+	call control_angular_momenta(p,q)
+	call control_angular_momenta(p,q)
+	! stop
+
+
+	! test de la subroutine de controle angulaire
+	j=depart_boucle_nbclones
+
+	q= Path(j,0)%q
+	p= Path(j,0)%p
+
+	temp=0.d0
+	do i=1,20
+	call OU_control(p,q,a_sto,ss)
+	call mapping_P_Verlet(q,p,dt,N,q1s2)
+
+	temp = temp + (sum(p(1,1:im)**2)+sum(p(2,1:im)**2)+sum(p(3,1:im)**2))/dble(3*im-6)/m_i(1,1)
+	write(*,*) 'température ',temp/dble(i)/KtoERG,i,alpha_bias(j)
+	enddo
+	!stop
+	
+	
+	write (*,'("1st traj before shooting ........:",i5)') nint(TotalTime/dt)
+	rang=1
+	j=depart_boucle_nbclones
+
+	call cpu_time(t0)
+	lanczos_iter=0
+
+	do icheck=1,1
+		Pcourant = Path(j,0)
+		temp=0.d0
+		eigenvalue = Pcourant%eigenvalue
+		do iter=0,totiter-1
+			call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
+			call cpu_time(tbuffer1)
+			lanczos_iter=lanczos_iter+nl_iter
+			call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)!!!
+			call cpu_time(tbuffer2)
+			t_lanczos=t_lanczos + (tbuffer2-tbuffer1)
+			Pcourant%Lyap = 0.d0  
+			if (eigenvalue.lt.0.d0) then
+				Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0
+			endif
+			Path(j,iter+1)    = Pcourant
+			Path(j,iter)%Lyap = Pcourant%Lyap
+			temp = temp +  Pcourant%Lyap
+			new_projection = .false.
+		enddo  !!!!!
+		oldLyap(j)=sum(Path(j,0:totiter-1)%Lyap)/real(totiter)
+		write(*,*) " oldLyap(j)= ", oldLyap(j),temp/real(totiter)
+	enddo
+
+	pav(1)=sum(Path(j,totiter)%p(1,1:im))/dble(im)
+	pav(2)=sum(Path(j,totiter)%p(2,1:im))/dble(im)
+	pav(3)=sum(Path(j,totiter)%p(3,1:im))/dble(im)
+
+	write(*,*) 'pav',pav
+
+	call cpu_time(t1)
+	elaps_1=t1-t0
+
+	write(*,*) 'The first trajectory..:', elaps_1
+	write(*,*) 'The Lanczos time .....:', t_lanczos
+	write(*,*) 'The Propag time.......:', elaps_1-t_lanczos
+	write(*,*) 'Lanczos interations...:', lanczos_iter
+	write(*,*) '            forces....:', lanczos_iter*maxvec*2
+
+
+	absdmax(j,:)=-9999.d0
+	do iter=0,totiter-1
+		atom_bouge_abs=0
+		do i=1,N
+			pav(1:3) = (Path(j,iter)%q(1:3,i)-qref(1:3,i))**2
+			absdist(i)=sqrt(sum(pav(1:3)))
+			if (absdist(i).gt.absdmax(j,iter)) then
+				absdmax(j,iter) = absdist(i)
+				atom_bouge_abs  = i
+			endif
+		enddo
+	enddo
+
+	temp=0.0000
+	tempvar=temp
+	j= depart_boucle_nbclones
+
+	do iterbw=0,totiter
+		tempiter = SUM((Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2))/m_i(1,1)/3.000/dble(im-2)/KtoERG ! *2/3 /2
+		!debugC write(*,*) 'tempiter ',iterbw,tempiter
+		temp=temp+tempiter
+		tempvar=tempvar+tempiter**2
+	enddo
+	temp=temp/real(totiter+1)
+	tempvar=sqrt(tempvar/real(totiter+1)-temp**2)
+	write(*,*) 'temp cin traject, std et cible ',temp,tempvar,temperature/KtoERG
+	! calcul de la position initiale 
+
+	call cal_hamilton(Path(j,0)%q,Path(j,0)%p,N,ekin,epot)
+	hamilt(j)=(ekin+epot)/temperature
+	ener0(j) = epot/temperature
+
+	! vérification de la dérive 
+	xbar(1) = SUM(Path(j,0)%q(1,1:N))/dble(N)
+	xbar(2) = SUM(Path(j,0)%q(2,1:N))/dble(N)
+	xbar(3) = SUM(Path(j,0)%q(3,1:N))/dble(N)
+
+	write(*,*) ' centre de masse référence ', xbar(1:3)
+
+	xbar(1) = SUM(qref(1,1:N))/dble(N)
+	xbar(2) = SUM(qref(2,1:N))/dble(N)
+	xbar(3) = SUM(qref(3,1:N))/dble(N)
+
+	write(*,*) ' centre de masse pos 0     ', xbar(1:3)
+
+	xbar(1) = SUM(Path(j,0)%p(1,1:N))/dble(N)
+	xbar(2) = SUM(Path(j,0)%p(2,1:N))/dble(N)
+	xbar(3) = SUM(Path(j,0)%p(3,1:N))/dble(N)
+
+	write(*,*) ' moments translationnels ',   xbar(1:3)
+	do i=1,3
+		write(*,*) ' temperature translation ',  xbar(i)**2/m_i(1,1)/dble(im)/KtoERG*dble(N)
+	enddo
+	iterbw = 0
+	tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
+	write(*,*) 'temp avant ',iterbw,tempiter
+	enerK(j) =tempiter
+	do iterfw=0,totiter
+		Path(j,iterfw)%p(1,1:N)=Path(j,iterfw)%p(1,1:N)-xbar(1)
+		Path(j,iterfw)%p(2,1:N)=Path(j,iterfw)%p(2,1:N)-xbar(2)
+		Path(j,iterfw)%p(3,1:N)=Path(j,iterfw)%p(3,1:N)-xbar(3)
+	enddo
+
+	tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
+	write(*,*) 'tempiter après ',iterbw,tempiter
+	write(*,*) 'diff ',tempiter-enerK(j) 
+	! stop
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
  do mcmoves = 1 , Totalmcmoves                       !mcmoves = 1,M in the paper

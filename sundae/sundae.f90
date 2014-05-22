@@ -23,7 +23,6 @@ subroutine sundae
 	write(6,*)
 	write(6,*)
 	write(6,*) 'im imm',im,imm
-	lta=.true.
 
 
 	fnamtin = fnam(1:lenfnam)//'.tin'
@@ -44,7 +43,7 @@ subroutine sundae
 	call index_premier_voisin()
 	call distance_premier_voisin()
 
-	call init_tele_vac  (ityp)
+	call init_tele_vac()
 
 	call distance_premier_voisin () 
 

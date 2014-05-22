@@ -32,11 +32,11 @@ end subroutine cal_hamilton
 
 
 
-subroutine langevin(dt,temperature,rga)!,ielat,iwmax, ityp)!)!(xp, vp, fp,dt)!, ielat,iwmax, ityp)
+subroutine langevin(dt,temperature,rga)
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
-    use sundae_module, ONLY:N, m_i, Ecinetique,sig_i,rga_i,gau, it_langevin
+    use sundae_module, ONLY:N, m_i,rga_i,gau, it_langevin
 
     implicit none
     integer ic
@@ -51,7 +51,6 @@ subroutine langevin(dt,temperature,rga)!,ielat,iwmax, ityp)!)!(xp, vp, fp,dt)!, 
 
     siglocal(:,:) = sqrt(m_i(:,:)*temperature*(one-rga**2))
     call genere_bruit2(siglocal,gau)
-    sig_i(:,:)=siglocal(:,:)
     rga_i(:,:)=rga
 
     Ecin0 = zero
@@ -68,13 +67,7 @@ subroutine langevin(dt,temperature,rga)!,ielat,iwmax, ityp)!)!(xp, vp, fp,dt)!, 
     enddo
 
     call calfo_teledyn(it_langevin)
-!deb	  if (itab/=0) then
-!deb	    if (mod(it_langevin,itab)==0) then
-!deb	       call caltabt
-!deb	    endif
-!deb	 endif
-!deb	 if (ltabvois.and.mod(it_langevin,itetabvois)==0) call caltabi
-!deb	 call calfo
+
 
      
      do ic =1,3
@@ -143,7 +136,6 @@ subroutine langevin(dt,temperature,rga)!,ielat,iwmax, ityp)!)!(xp, vp, fp,dt)!, 
       Ecin4 = Ecin4 + DOT_PRODUCT(pp(ic,1:im),vp(ic,1:im))/two
     enddo
 
-    Ecinetique = Ecin4
    
     return
 
