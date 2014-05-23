@@ -1,8 +1,8 @@
 OBJ =	lanczosdef.o\
+		tools.o \
 		sundae_module.o\
         calfo_sundae.o\
         init_sundae.o\
-		tools.o \
         read_sundae.o\
         langevin.o\
         lanczos.o\

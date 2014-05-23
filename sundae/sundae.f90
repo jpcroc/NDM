@@ -14,7 +14,6 @@ subroutine sundae
 ! Copyleft M. Athenes & M.-C. Marinica 
 !
 
-	real(double) :: xalea
 	!character (len=80) :: fnamtin
 
 	write(6,*)'************ DEBUT DE tele_vacancy ****************'

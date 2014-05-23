@@ -84,7 +84,9 @@ subroutine genere_bruit2 (sig,gau)
       gau(ic,1:im) = gau(ic,1:im)-deriv(ic)
    enddo
 
-  end subroutine genere_bruit2
+end subroutine genere_bruit2
+
+
 
 Subroutine control_angular_momenta(p,q)
 use T_kind_param_m, ONLY:  double
@@ -226,13 +228,14 @@ real(8) Function ran3()
 
 
 
-Function genrand()
-  use T_kind_param_m, ONLY : double 
- real (double) :: genrand 
-  real (double) :: x
-  call random_number(x)
-  if (x.eq.1.0) x=0.99999999999
-  genrand=x
+function genrand()
+
+	use T_kind_param_m, ONLY : double 
+	real (double) :: genrand 
+	real (double) :: x
+	call random_number(x)
+	if (x.eq.1.0) x=0.99999999999
+	genrand=x
 
 end function genrand
 
@@ -241,7 +244,7 @@ end function genrand
 
 
 !double precision 
-        FUNCTION FACT(N)
+	FUNCTION FACT(N)
 
 	INTEGER I, N
         real*8 FACT
@@ -252,6 +255,9 @@ end function genrand
  100	CONTINUE
 	RETURN
 	END
+ 
+ 
+ 
  
  subroutine timestamp ( )
 

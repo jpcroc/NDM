@@ -2,7 +2,7 @@ module sundae_module
 	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
 	use gen_com_m
-	use var_pot
+	use var_pot, ONLY: cm
 	use jqmod
 	use random_art
 	use lanczos_defs
@@ -56,8 +56,99 @@ module sundae_module
 		integer :: nl_iter
 
 		! cosmin added:
-		integer    :: it_langevin_deter=0, it_langevin=0,it_trajectory     
+		integer    :: it_langevin_deter=0, it_langevin=0,it_trajectory    
 		
+		!
+		!real (double), dimension(3,1:im):: q,p 
+		real (double), dimension(:,:), allocatable, save :: q,p 
+		type Trajectoire
+			real (double), dimension(1:3,1:N):: q  ! vector of position
+			real (double), dimension(1:3,1:N):: p  ! vector of impulsion
+			real (double), dimension(3*N) :: project
+			real (double)  Lyap
+			real (double)  eigenvalue
+		endtype
+
+		type (Trajectoire), dimension (:,:), allocatable :: Path
+		type (Trajectoire), dimension (:,:), allocatable :: Pshoot
+		type (Trajectoire), dimension (:,:), allocatable :: Pshift
+		type (Trajectoire) :: Pcourant
+		
+		real (double), dimension(1:3,1:N):: qref,qrot,prot
+		
+		integer :: i,j,l,k,iter, atom_bouge_abs
+		real (double), dimension(1:3,1:N):: q1s2
+		real (double), dimension(:), allocatable:: alpha_bias
+		logical :: new_projection
+		real(double) :: pav(3)
+		real (double), dimension(:),   allocatable :: oldLyap 
+		real (double), dimension(:,:), allocatable :: absdmax
+		
+		
+		integer :: jl, kl
+
+
+		real (double), dimension(1:N):: xref
+		real (double), dimension(1:N):: yref
+		real (double), dimension(1:N):: zref
+
+		real (double), dimension(1:N,6):: qtemp 
+
+		real (double), dimension(1:3):: xbar
+
+		real (double) :: xalea,xcumul
+
+	
+
+		real (double) ::mcconf,ranf, z
+		integer :: a, ltot,mcmoves, newtraj, it_art
+
+		logical :: waste_recycling
+
+		real(double) :: rga
+		!real(double) :: pi
+		integer :: ix
+
+
+		real(double) :: e, timefsh
+		real(double) :: ekin,epot
+		real(double) :: absdmax_current
+		integer :: pix
+		integer :: iterfw, iterbw,nmax, tprim
+
+		real (double) ,dimension(:),   allocatable:: absdist
+		real (double) ,dimension(:),   allocatable:: ener0 
+		real (double) ,dimension(:),   allocatable:: enerK
+		real (double) ,dimension(:),   allocatable::triallyap
+		real (double) ,dimension(:),   allocatable::rapport
+		real (double) ,dimension(:),   allocatable:: hamilt
+		real (double) ,dimension(:,:), allocatable:: Psel
+		real (double) ,dimension(:,:), allocatable:: S
+		real (double) ,dimension(:,:,:), allocatable:: u_kln
+		real (double) ,dimension(:,:,:), allocatable:: ustd_kln
+		real (double) ,dimension(:,:,:), allocatable:: umoy_kln
+		real (double) ,dimension(:,:,:), allocatable:: u2moy_kln
+
+		integer ,dimension(:), allocatable::acc
+
+		real (double) ,dimension(:), allocatable::h_F
+		real (double) ,dimension(:), allocatable::react_F
+		real (double) ,dimension(:), allocatable::h_Fd
+		real (double) ,dimension(:), allocatable::react_Fd
+		real (double) ,dimension(:), allocatable::h_dI
+		real (double) ,dimension(:), allocatable::react_dI
+		real (double) ,dimension(:), allocatable::h_Fg
+		real (double) ,dimension(:), allocatable::react_Fg
+		real (double) ,dimension(:), allocatable::h_FI
+		real (double) ,dimension(:), allocatable::react_FI
+		real (double) :: tempiter,tempvar
+
+
+
+		!real(double) :: genrand
+
+
+
 CONTAINS
 
 
@@ -65,9 +156,166 @@ CONTAINS
 !
 ! allocate_tele_vac()
 !
-! init_tele_vac(ityp)
+! init_tele_vac()
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+
+
+subroutine LyapLanczos_init_tests
+
+	use lanczos_defs
+	use tab_imm_m
+	implicit none
+
+! test du moment angulaire de la force
+	call caltabt
+	call caltabi
+	call calfo
+
+	p(1:3,1:im) = fp(1:3,1:im)
+	q(1:3,1:im) = xp(1:3,1:im)
+	rang=0
+	call control_angular_momenta(p,q)
+	call control_angular_momenta(p,q)
+	call control_angular_momenta(p,q)
+	! stop
+
+
+	! test de la subroutine de controle angulaire
+	j=depart_boucle_nbclones
+
+	q= Path(j,0)%q
+	p= Path(j,0)%p
+
+	temp=0.d0
+	do i=1,20
+	call OU_control(p,q,a_sto,ss)
+	call mapping_P_Verlet(q,p,dt,N,q1s2)
+
+	temp = temp + (sum(p(1,1:im)**2)+sum(p(2,1:im)**2)+sum(p(3,1:im)**2))/dble(3*im-6)/m_i(1,1)
+	write(*,*) 'température ',temp/dble(i)/KtoERG,i,alpha_bias(j)
+	enddo
+	!stop
+	
+	
+	write (*,'("1st traj before shooting ........:",i5)') nint(TotalTime/dt)
+	rang=1
+	j=depart_boucle_nbclones
+
+	call cpu_time(t0)
+	lanczos_iter=0
+
+	do icheck=1,1
+		Pcourant = Path(j,0)
+		temp=0.d0
+		eigenvalue = Pcourant%eigenvalue
+		do iter=0,totiter-1
+			call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
+			call cpu_time(tbuffer1)
+			lanczos_iter=lanczos_iter+nl_iter
+			call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)!!!
+			call cpu_time(tbuffer2)
+			t_lanczos=t_lanczos + (tbuffer2-tbuffer1)
+			Pcourant%Lyap = 0.d0  
+			if (eigenvalue.lt.0.d0) then
+				Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0
+			endif
+			Path(j,iter+1)    = Pcourant
+			Path(j,iter)%Lyap = Pcourant%Lyap
+			temp = temp +  Pcourant%Lyap
+			new_projection = .false.
+		enddo  !!!!!
+		oldLyap(j)=sum(Path(j,0:totiter-1)%Lyap)/real(totiter)
+		write(*,*) " oldLyap(j)= ", oldLyap(j),temp/real(totiter)
+	enddo
+
+	pav(1)=sum(Path(j,totiter)%p(1,1:im))/dble(im)
+	pav(2)=sum(Path(j,totiter)%p(2,1:im))/dble(im)
+	pav(3)=sum(Path(j,totiter)%p(3,1:im))/dble(im)
+
+	write(*,*) 'pav',pav
+
+	call cpu_time(t1)
+	elaps_1=t1-t0
+
+	write(*,*) 'The first trajectory..:', elaps_1
+	write(*,*) 'The Lanczos time .....:', t_lanczos
+	write(*,*) 'The Propag time.......:', elaps_1-t_lanczos
+	write(*,*) 'Lanczos interations...:', lanczos_iter
+	write(*,*) '            forces....:', lanczos_iter*maxvec*2
+
+
+	absdmax(j,:)=-9999.d0
+	do iter=0,totiter-1
+		atom_bouge_abs=0
+		do i=1,N
+			pav(1:3) = (Path(j,iter)%q(1:3,i)-qref(1:3,i))**2
+			absdist(i)=sqrt(sum(pav(1:3)))
+			if (absdist(i).gt.absdmax(j,iter)) then
+				absdmax(j,iter) = absdist(i)
+				atom_bouge_abs  = i
+			endif
+		enddo
+	enddo
+
+	temp=0.0000
+	tempvar=temp
+	j= depart_boucle_nbclones
+
+	do iterbw=0,totiter
+		tempiter = SUM((Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2))/m_i(1,1)/3.000/dble(im-2)/KtoERG ! *2/3 /2
+		!debugC write(*,*) 'tempiter ',iterbw,tempiter
+		temp=temp+tempiter
+		tempvar=tempvar+tempiter**2
+	enddo
+	temp=temp/real(totiter+1)
+	tempvar=sqrt(tempvar/real(totiter+1)-temp**2)
+	write(*,*) 'temp cin traject, std et cible ',temp,tempvar,temperature/KtoERG
+	! calcul de la position initiale 
+
+	call cal_hamilton(Path(j,0)%q,Path(j,0)%p,N,ekin,epot)
+	hamilt(j)=(ekin+epot)/temperature
+	ener0(j) = epot/temperature
+
+	! vérification de la dérive 
+	xbar(1) = SUM(Path(j,0)%q(1,1:N))/dble(N)
+	xbar(2) = SUM(Path(j,0)%q(2,1:N))/dble(N)
+	xbar(3) = SUM(Path(j,0)%q(3,1:N))/dble(N)
+
+	write(*,*) ' centre de masse référence ', xbar(1:3)
+
+	xbar(1) = SUM(qref(1,1:N))/dble(N)
+	xbar(2) = SUM(qref(2,1:N))/dble(N)
+	xbar(3) = SUM(qref(3,1:N))/dble(N)
+
+	write(*,*) ' centre de masse pos 0     ', xbar(1:3)
+
+	xbar(1) = SUM(Path(j,0)%p(1,1:N))/dble(N)
+	xbar(2) = SUM(Path(j,0)%p(2,1:N))/dble(N)
+	xbar(3) = SUM(Path(j,0)%p(3,1:N))/dble(N)
+
+	write(*,*) ' moments translationnels ',   xbar(1:3)
+	do i=1,3
+		write(*,*) ' temperature translation ',  xbar(i)**2/m_i(1,1)/dble(im)/KtoERG*dble(N)
+	enddo
+	iterbw = 0
+	tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
+	write(*,*) 'temp avant ',iterbw,tempiter
+	enerK(j) =tempiter
+	do iterfw=0,totiter
+		Path(j,iterfw)%p(1,1:N)=Path(j,iterfw)%p(1,1:N)-xbar(1)
+		Path(j,iterfw)%p(2,1:N)=Path(j,iterfw)%p(2,1:N)-xbar(2)
+		Path(j,iterfw)%p(3,1:N)=Path(j,iterfw)%p(3,1:N)-xbar(3)
+	enddo
+
+	tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
+	write(*,*) 'tempiter après ',iterbw,tempiter
+	write(*,*) 'diff ',tempiter-enerK(j) 
+	! stop
+
+end subroutine LyapLanczos_init_tests
+
+
 
 
 
@@ -75,89 +323,15 @@ Subroutine LyapLanczos_vac! (xp)
 
 	use lanczos_defs
 	use tab_imm_m
+
 	implicit none
 
-	integer :: jl, kl
-
-	real (double),dimension (:,:),allocatable::absdmax
-
-
-	real (double), dimension(1:N):: xref
-	real (double), dimension(1:N):: yref
-	real (double), dimension(1:N):: zref
-	real (double), dimension(3,1:im):: q,p
-	real (double), dimension(1:3,1:N):: qref,qrot,prot
-	real (double), dimension(1:N,6):: qtemp 
-	real (double), dimension(1:3,1:N):: q1s2
-	real (double), dimension(1:3):: xbar
-
-	real (double) :: xalea,xcumul
-
-	type Trajectoire
-		real (double), dimension(1:3,1:N):: q  ! vector of position
-		real (double), dimension(1:3,1:N):: p  ! vector of impulsion
-		real (double), dimension(3*N) :: project
-		real (double)  Lyap
-		real (double)  eigenvalue
-	endtype
-
-	type (Trajectoire), dimension (:,:), allocatable :: Path
-	type (Trajectoire), dimension (:,:), allocatable :: Pshoot
-	type (Trajectoire), dimension (:,:), allocatable :: Pshift
-	type (Trajectoire) :: Pcourant
-
-
-	real (double) ::mcconf,ranf, z
-	integer :: j,l,k,a,i, ltot,mcmoves, newtraj, it_art
-	logical ::  new_projection
-	logical ::  waste_recycling
-
-	real(double) :: rga, pi
-	integer :: iter, ix
-
-
-	real(double):: e, timefsh
-	real(double) :: ekin,epot
-	real(double) absdmax_current
-	integer  :: pix,lanczos_iter
-	integer:: iterfw, iterbw,nmax, tprim, atom_bouge_abs
-
-	real (double) ,dimension(:),   allocatable:: alpha_bias,absdist
-	real (double) ,dimension(:),   allocatable:: ener0 
-	real (double) ,dimension(:),   allocatable:: enerK
-	real (double) ,dimension(:),   allocatable::triallyap
-	real (double) ,dimension(:),   allocatable::oldlyap 
-	real (double) ,dimension(:),   allocatable::rapport
-	real (double) ,dimension(:),   allocatable:: hamilt
-	real (double) ,dimension(:,:), allocatable:: Psel
-	real (double) ,dimension(:,:), allocatable:: S
-	real (double) ,dimension(:,:,:), allocatable:: u_kln
-	real (double) ,dimension(:,:,:), allocatable:: ustd_kln
-	real (double) ,dimension(:,:,:), allocatable:: umoy_kln
-	real (double) ,dimension(:,:,:), allocatable:: u2moy_kln
-
-	integer ,dimension(:), allocatable::acc
-
-	real (double) ,dimension(:), allocatable::h_F
-	real (double) ,dimension(:), allocatable::react_F
-	real (double) ,dimension(:), allocatable::h_Fd
-	real (double) ,dimension(:), allocatable::react_Fd
-	real (double) ,dimension(:), allocatable::h_dI
-	real (double) ,dimension(:), allocatable::react_dI
-	real (double) ,dimension(:), allocatable::h_Fg
-	real (double) ,dimension(:), allocatable::react_Fg
-	real (double) ,dimension(:), allocatable::h_FI
-	real (double) ,dimension(:), allocatable::react_FI
-	real (double) :: tempiter,tempvar
-
-
-	real(double) :: pav(3)
 	real(double) :: genrand
-
+	
 
 	!!!!!!!!!!!!!!!    INITIALISATION DES ARGUMENTS   !!!!!!!!!!!!!!!!!!!!
 
-	call read_sundae()   	!!!!!!!!!!!!!! modif 20.05.14
+	call read_sundae()   	!!!!!!!!!!!!!! modif 21.05.14
 	
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -242,7 +416,7 @@ Subroutine LyapLanczos_vac! (xp)
 	rapport(:)=0
 	iter=0
 	Q=0
-	pi=4*atan(1._dpkind)
+	!pi=4*atan(1._dpkind)
 	
 	if ((gamma_sundae*dt).le.100000) then
 		rga = exp(-gamma_sundae*dt/two)
@@ -483,152 +657,11 @@ Subroutine LyapLanczos_vac! (xp)
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	
 	
-	! test du moment angulaire de la force
-	call caltabt
-	call caltabi
-	call calfo
+	!!!!!!!!!!!!!!!!!!! QUELQUES TESTS 
 
-	p(1:3,1:im) = fp(1:3,1:im)
-	q(1:3,1:im) = xp(1:3,1:im)
-	rang=0
-	call control_angular_momenta(p,q)
-	call control_angular_momenta(p,q)
-	call control_angular_momenta(p,q)
-	! stop
-
-
-	! test de la subroutine de controle angulaire
-	j=depart_boucle_nbclones
-
-	q= Path(j,0)%q
-	p= Path(j,0)%p
-
-	temp=0.d0
-	do i=1,20
-	call OU_control(p,q,a_sto,ss)
-	call mapping_P_Verlet(q,p,dt,N,q1s2)
-
-	temp = temp + (sum(p(1,1:im)**2)+sum(p(2,1:im)**2)+sum(p(3,1:im)**2))/dble(3*im-6)/m_i(1,1)
-	write(*,*) 'température ',temp/dble(i)/KtoERG,i,alpha_bias(j)
-	enddo
-	!stop
+	call LyapLanczos_init_tests !!!!!!!!!!!!! Modif 23.05.14
 	
-	
-	write (*,'("1st traj before shooting ........:",i5)') nint(TotalTime/dt)
-	rang=1
-	j=depart_boucle_nbclones
-
-	call cpu_time(t0)
-	lanczos_iter=0
-
-	do icheck=1,1
-		Pcourant = Path(j,0)
-		temp=0.d0
-		eigenvalue = Pcourant%eigenvalue
-		do iter=0,totiter-1
-			call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
-			call cpu_time(tbuffer1)
-			lanczos_iter=lanczos_iter+nl_iter
-			call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)!!!
-			call cpu_time(tbuffer2)
-			t_lanczos=t_lanczos + (tbuffer2-tbuffer1)
-			Pcourant%Lyap = 0.d0  
-			if (eigenvalue.lt.0.d0) then
-				Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0
-			endif
-			Path(j,iter+1)    = Pcourant
-			Path(j,iter)%Lyap = Pcourant%Lyap
-			temp = temp +  Pcourant%Lyap
-			new_projection = .false.
-		enddo  !!!!!
-		oldLyap(j)=sum(Path(j,0:totiter-1)%Lyap)/real(totiter)
-		write(*,*) " oldLyap(j)= ", oldLyap(j),temp/real(totiter)
-	enddo
-
-	pav(1)=sum(Path(j,totiter)%p(1,1:im))/dble(im)
-	pav(2)=sum(Path(j,totiter)%p(2,1:im))/dble(im)
-	pav(3)=sum(Path(j,totiter)%p(3,1:im))/dble(im)
-
-	write(*,*) 'pav',pav
-
-	call cpu_time(t1)
-	elaps_1=t1-t0
-
-	write(*,*) 'The first trajectory..:', elaps_1
-	write(*,*) 'The Lanczos time .....:', t_lanczos
-	write(*,*) 'The Propag time.......:', elaps_1-t_lanczos
-	write(*,*) 'Lanczos interations...:', lanczos_iter
-	write(*,*) '            forces....:', lanczos_iter*maxvec*2
-
-
-	absdmax(j,:)=-9999.d0
-	do iter=0,totiter-1
-		atom_bouge_abs=0
-		do i=1,N
-			pav(1:3) = (Path(j,iter)%q(1:3,i)-qref(1:3,i))**2
-			absdist(i)=sqrt(sum(pav(1:3)))
-			if (absdist(i).gt.absdmax(j,iter)) then
-				absdmax(j,iter) = absdist(i)
-				atom_bouge_abs  = i
-			endif
-		enddo
-	enddo
-
-	temp=0.0000
-	tempvar=temp
-	j= depart_boucle_nbclones
-
-	do iterbw=0,totiter
-		tempiter = SUM((Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2))/m_i(1,1)/3.000/dble(im-2)/KtoERG ! *2/3 /2
-		!debugC write(*,*) 'tempiter ',iterbw,tempiter
-		temp=temp+tempiter
-		tempvar=tempvar+tempiter**2
-	enddo
-	temp=temp/real(totiter+1)
-	tempvar=sqrt(tempvar/real(totiter+1)-temp**2)
-	write(*,*) 'temp cin traject, std et cible ',temp,tempvar,temperature/KtoERG
-	! calcul de la position initiale 
-
-	call cal_hamilton(Path(j,0)%q,Path(j,0)%p,N,ekin,epot)
-	hamilt(j)=(ekin+epot)/temperature
-	ener0(j) = epot/temperature
-
-	! vérification de la dérive 
-	xbar(1) = SUM(Path(j,0)%q(1,1:N))/dble(N)
-	xbar(2) = SUM(Path(j,0)%q(2,1:N))/dble(N)
-	xbar(3) = SUM(Path(j,0)%q(3,1:N))/dble(N)
-
-	write(*,*) ' centre de masse référence ', xbar(1:3)
-
-	xbar(1) = SUM(qref(1,1:N))/dble(N)
-	xbar(2) = SUM(qref(2,1:N))/dble(N)
-	xbar(3) = SUM(qref(3,1:N))/dble(N)
-
-	write(*,*) ' centre de masse pos 0     ', xbar(1:3)
-
-	xbar(1) = SUM(Path(j,0)%p(1,1:N))/dble(N)
-	xbar(2) = SUM(Path(j,0)%p(2,1:N))/dble(N)
-	xbar(3) = SUM(Path(j,0)%p(3,1:N))/dble(N)
-
-	write(*,*) ' moments translationnels ',   xbar(1:3)
-	do i=1,3
-		write(*,*) ' temperature translation ',  xbar(i)**2/m_i(1,1)/dble(im)/KtoERG*dble(N)
-	enddo
-	iterbw = 0
-	tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
-	write(*,*) 'temp avant ',iterbw,tempiter
-	enerK(j) =tempiter
-	do iterfw=0,totiter
-		Path(j,iterfw)%p(1,1:N)=Path(j,iterfw)%p(1,1:N)-xbar(1)
-		Path(j,iterfw)%p(2,1:N)=Path(j,iterfw)%p(2,1:N)-xbar(2)
-		Path(j,iterfw)%p(3,1:N)=Path(j,iterfw)%p(3,1:N)-xbar(3)
-	enddo
-
-	tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
-	write(*,*) 'tempiter après ',iterbw,tempiter
-	write(*,*) 'diff ',tempiter-enerK(j) 
-	! stop
-
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
