@@ -982,7 +982,9 @@ subroutine LyapLanczos_allocate
 	allocate(rapport(0:nmax))
 	allocate(absdist(0:N))
 	allocate(Psel(0:nbclones_mbar,0:totiter))
-	allocate (alpha_bias(0:Nbclones_mbar))!!EQUILIBRAGE
+	allocate(alpha_bias(0:Nbclones_mbar))!!EQUILIBRAGE
+	allocate(q(1:3,1:im))
+	allocate(p(1:3,1:im))
 	rapport(:)=0
 	iter=0
 	Q=0
