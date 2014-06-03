@@ -1,5 +1,11 @@
 subroutine read_sundae()
-	use T_kind_param_m, ONLY : double
+!
+! This subroutine reads initials paramaters
+!
+
+	!-----------------------------------------------
+	!   M o d u l e s
+	!-----------------------------------------------
 	use gen_com_m,      ONLY : fnam, lenfnam
 	use sundae_module,  ONLY : h_A_max, h_ba_min, h_ba_max, h_ba, h_ba_I, fnamtin, totiter, ss,          &
 							 dt, Totalmcmoves, TotalTime, gamma_sundae, Temperature, alpha_max,          &
