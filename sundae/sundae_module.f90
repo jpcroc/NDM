@@ -432,6 +432,45 @@ subroutine LyapLanczos_shifting
 		write(*,*) absdmax(j,0) 
 		
 		
+		z=0.d0
+		do l=0,totiter ! boucles sur les chemins proposés possibles
+			! Here is P_sel from the paper
+			if (absdmax(j,l).lt.h_A_max) then  ! on a correspondance maintenant entre absdmax et Pshift
+				Psel(j,l) = exp(alpha_bias(j)*S(j,l))
+			else
+				Psel(j,l)= 0.d0
+			endif
+			z = z +  Psel(j,l)
+		enddo
+
+		Psel(j,0:totiter)  =  Psel(j,0:totiter)/z
+
+		! selection de la trajectoire indiciée newtraj
+
+		xalea    = genrand()
+		xcumul=0.d0
+
+		do k=0,totiter !  boucle sur les "proposals"
+			xcumul=xcumul+Psel(j,k)
+			if (xalea.lt.xcumul) goto 234
+		enddo
+		234 continue
+		newtraj=k
+		write(*,*) 'xalea, Psel, poids cumulé et newtraj = ',xalea,Psel(j,k), xcumul ,newtraj
+		write(*,*) ' absdmax(j,newtraj)', absdmax(j,newtraj)
+		write(*,*) 'oldlyap(j)  = ', oldLyap(j)
+
+		!!!!!!!! on copie la trajectoire selectionnée avec le shifting
+		if (absdmax(j,newtraj).le.h_A_max) then 
+			Path(j,0:totiter-1) = Pshift(j,newtraj:totiter+newtraj-1) ! on a Path(j,0) = Pshift(j,0) pour newtraj=0
+			oldLyap(j)       = SUM(Path(j,0:totiter-1)%Lyap)/real(totiter)
+		else
+			write(*,*) " Problème avec le shifting "
+		endif
+
+		write(*,*) 'newlyap(j)  = ', oldLyap(j)
+		
+		
 		!!!!!!!!!!!! ESSAY POUR MBAR: calcul des divers poids u_kln avec waste recycling 
 		
 		!
@@ -1023,11 +1062,11 @@ end subroutine LyapLanczos_allocate
 
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!                                               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!              OLD FUNCTIONS (MBAR)             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!                                               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!                                               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!              OLD FUNCTIONS (MBAR)             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!                                               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 subroutine essai_mbar
