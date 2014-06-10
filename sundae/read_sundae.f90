@@ -8,12 +8,13 @@ subroutine read_sundae()
 	!-----------------------------------------------
 	use gen_com_m,      ONLY : fnam, lenfnam
 	use sundae_module,  ONLY : h_A_max, h_ba_min, h_ba_max, h_ba, h_ba_I, fnamtin, totiter, ss,          &
-							 dt, Totalmcmoves, TotalTime, gamma_sundae, Temperature, alpha_max,          &
+							 dt, Totalmcmoves, TotalTime, gamma_sundae, Temperature, alpha_max, theta,    &
 							 teq, delta_x, a_sto, kapa, Nbclones, KtoERG, sortie, continue_sundae,       &
 							 maxvec, tprimo, Nbclones_mbar, depart_boucle_nbclones, posfinal, tequilib,  &
 							 data_mbar, dada_mbar, data_mbar_std, moyennes_mbar, moyennes_mbar_denom, kappaF, kappaFd
 
 	implicit none
+
 
 	namelist /input_sundae/ Totalmcmoves,TotalTime,dt,Nbclones,Temperature,gamma_sundae,sortie,alpha_max, teq, delta_x, a_sto, kapa, continue_sundae, Nbclones_mbar, depart_boucle_nbclones,tprimo,maxvec,h_A_max,h_ba_min,h_ba_max,h_ba,h_ba_I
 
@@ -87,6 +88,7 @@ subroutine read_sundae()
 	tequilib=(dt)*teq
 	write(*,*) 'No of teq steps', teq
 	write(*,*) 'tquilib',tequilib
+	
 
 
 end subroutine read_sundae

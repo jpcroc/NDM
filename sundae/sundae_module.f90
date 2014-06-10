@@ -143,9 +143,22 @@ module sundae_module
 		real (double) ,dimension(:), allocatable::react_FI
 		real (double) :: tempiter,tempvar
 
-
-
-		!real(double) :: genrand
+		! Declarations ABF
+		
+		real(double) :: delta, delta_bin_theta_s2
+		real(double) :: AR_MH
+		real(double) :: theta_n, theta_temp
+		integer      :: itheta_n, itheta_temp, theta_tilde, N_extra
+		real(double) :: somme
+		real(double) :: Lyap, gmax, gmin, P_n, pi_n, pi_n1, sum_A
+		real(double), dimension(:), allocatable, save :: theta
+		real(double), dimension(:), allocatable, save :: u_A
+		real(double), dimension(:), allocatable, save :: A_n
+		real(double), dimension(:), allocatable, save :: P_A
+		real(double), dimension(:), allocatable, save :: sum_P_A
+		real(double), dimension(:), allocatable, save :: A_prime
+		real(double), dimension(:), allocatable, save :: A_prime_num
+		real(double) ,dimension(:), allocatable, save :: histo_theta	
 
 
 
@@ -265,8 +278,8 @@ subroutine LyapLanczos_shooting
 		write(*,*) '           forces....:',lanczos_iter*maxvec*2
 
 		triallyap(j)=SUM(Pshoot(j,0:totiter-1)%Lyap)/real(totiter)
-		write(*,*) 'oldlyap(j)   = ', oldLyap(j)
-		write(*,*) 'triallyap(j) = ', triallyap(j)
+		write(*,*) 'oldlyap(j)   = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
+		write(*,*) 'triallyap(j) = ', triallyap(j)*300.0/sqrt(9.270914743200000e-023)
 		
 		!!!!!!! fonction heaviside pour maintenir le point initial de la trajectoire dans 
 		!!!!!!! le bassin de depart: calcul dist max pour le point x(0) de la trajectoire
@@ -457,8 +470,8 @@ subroutine LyapLanczos_shifting
 		234 continue
 		newtraj=k
 		write(*,*) 'xalea, Psel, poids cumulé et newtraj = ',xalea,Psel(j,k), xcumul ,newtraj
-		write(*,*) ' absdmax(j,newtraj)', absdmax(j,newtraj)
-		write(*,*) 'oldlyap(j)  = ', oldLyap(j)
+		write(*,*) 'absdmax(j,newtraj)', absdmax(j,newtraj)
+		write(*,*) 'oldlyap(j)  = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
 
 		!!!!!!!! on copie la trajectoire selectionnée avec le shifting
 		if (absdmax(j,newtraj).le.h_A_max) then 
@@ -468,7 +481,7 @@ subroutine LyapLanczos_shifting
 			write(*,*) " Problème avec le shifting "
 		endif
 
-		write(*,*) 'newlyap(j)  = ', oldLyap(j)
+		write(*,*) 'newlyap(j)  = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
 		
 		
 		!!!!!!!!!!!! ESSAY POUR MBAR: calcul des divers poids u_kln avec waste recycling 
@@ -487,6 +500,83 @@ subroutine LyapLanczos_shifting
 
 end subroutine LyapLanczos_shifting
 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+subroutine LyapLanczos_ABF
+
+	use lanczos_defs
+	use tab_imm_m
+
+	implicit none
+
+	real(double) :: genrand
+	
+
+	! Proposition du nouveau theta 
+	
+	xalea = genrand()
+	theta_temp = theta_n + delta*(xalea-0.5d0)
+	
+	
+	itheta_n = nint((theta_n)/(alpha_max)*real(Nbclones_mbar))
+	itheta_temp = nint((theta_temp)/(alpha_max)*real(Nbclones_mbar))
+	
+
+	! Acceptation/rejet 
+	
+	AR_MH = max( 1.0d0 , exp( -(theta_temp-theta_n)*Lyap - (A_n(itheta_temp) - A_n(itheta_n)) ) )
+	ranf = genrand()
+	if ( (ranf.lt.AR_MH) .and. (theta_temp.gt.0.0d0) .and. (theta_temp.lt.alpha_max) ) then
+		theta_n = theta_temp
+		itheta_n = nint((theta_n)/(alpha_max)*real(Nbclones_mbar))
+	endif
+
+	if ((itheta_n.ge.0.0d0).and.(itheta_n.le.Nbclones_mbar)) then
+		histo_theta(itheta_n) = histo_theta(itheta_n) + 1.0d0
+	endif
+
+	! Calcul du nouveau biais
+	Lyap          = oldLyap(itheta_n)
+	u_A(:)        = Lyap*theta(:) + A_n(:)     
+	gmax          = maxval(u_A)
+	u_A(:)        = u_A(:) - gmax
+	P_A(:)        = exp(u_A(:))
+	somme         = sum(P_A(-N_extra:Nbclones_mbar+N_extra))
+	P_A           = P_A/somme
+
+	do theta_tilde=-N_extra,Nbclones_mbar+N_extra
+		P_n        = P_A(theta_tilde)
+		pi_n       = sum_P_A(theta_tilde)
+		pi_n1      = pi_n + P_n
+
+		if (pi_n1.eq.0.d0) then 
+			pi_n1 = 1.0d-10
+		endif
+
+		A_prime_num(theta_tilde)   =   P_n * Lyap + A_prime_num(theta_tilde)
+		sum_P_A(theta_tilde)       =   pi_n1
+		A_prime(theta_tilde)       =   A_prime_num(theta_tilde) / pi_n1
+	enddo
+
+
+	A_n = 0.d0
+	A_n(-N_extra) = 0.d0
+	do theta_tilde  = -N_extra+1,Nbclones_mbar + N_extra
+		A_n(theta_tilde) = A_n(theta_tilde-1)  + (A_prime(theta_tilde-1) + A_prime(theta_tilde))*delta_bin_theta_s2
+	enddo
+
+	gmin=minval(A_n)
+	A_n = A_n - gmin
+
+	! normalisation du generateur biaisant
+
+	sum_A = log(sum(exp(-A_n(-N_extra:Nbclones_mbar+N_extra))))
+	A_n = A_n + sum_A
+
+
+end subroutine LyapLanczos_ABF
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1042,8 +1132,8 @@ subroutine LyapLanczos_allocate
 	acc(:)=0
 	!! initialisation paramètres de bias alpha pour reconstruction
 	do j= 0, Nbclones_mbar
-	 alpha_bias(j)=1.d12*(real(j*(alpha_max/real(Nbclones_mbar))))
-	 write(*,*)'bias', alpha_bias(j)  
+		alpha_bias(j)=1.d12*(real(j*(alpha_max/real(Nbclones_mbar))))!*sqrt(9.270914743200000e-023)/300.0
+		write(*,*)'bias', alpha_bias(j)  
 	enddo
 
 
@@ -1055,6 +1145,27 @@ subroutine LyapLanczos_allocate
 	qref(1:3,1:im)=xp(1:3,1:im)
 
 	rang = 1 
+	
+	! Allocation ABF
+	
+	delta = 0.2d0
+	delta_bin_theta_s2 = 0.5d0*alpha_max/real(Nbclones_mbar)
+	theta_n = 0.0d0
+	N_extra = 10
+
+	allocate(theta(-N_extra:nmax+N_extra))
+	allocate(u_A(-N_extra:nmax+N_extra))
+	allocate(A_n(-N_extra:nmax+N_extra))
+	allocate(P_A(-N_extra:nmax+N_extra))
+	allocate(sum_P_A(-N_extra:nmax+N_extra))
+	allocate(A_prime(-N_extra:nmax+N_extra))
+	allocate(A_prime_num(-N_extra:nmax+N_extra))
+	allocate(histo_theta(0:nmax))
+	
+	theta = 0.d0
+	do i=0,Nbclones_mbar
+		theta(i) = alpha_bias(i)
+	enddo
 
 
 
@@ -1126,7 +1237,7 @@ subroutine essai_mbar
 		newtraj=k
 		write(*,*) 'xalea, Psel, poids cumulé et newtraj = ',xalea,Psel(j,k), xcumul ,newtraj
 		write(*,*) ' absdmax(j,newtraj)', absdmax(j,newtraj)
-		write(*,*) 'oldlyap(j)  = ', oldLyap(j)
+		write(*,*) 'oldlyap(j)  = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
 
 		!!!!!!!! on copie la trajectoire selectionnée avec le shifting
 		if (absdmax(j,newtraj).le.h_A_max) then 
@@ -1136,7 +1247,7 @@ subroutine essai_mbar
 			write(*,*) " Problème avec le shifting "
 		endif
 
-		write(*,*) 'newlyap(j)  = ', oldLyap(j)
+		write(*,*) 'newlyap(j)  = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
 
 		!  calcul des fonctions indicatrices pour l'etat B qui correspond a la barriere dans le cas lacune 
 
