@@ -6,6 +6,9 @@ module sundae_module
 	use jqmod
 	use random_art
 	use lanczos_defs
+#if(PARASUN) 
+	use mpi
+#endif(PARASUN)
 	!-----------------------------------------------
 	! test
 	!   _c -> courant
@@ -25,6 +28,7 @@ module sundae_module
 		character(len=128) :: sortie
 		character(len=128) :: fnamtin
 		character(len=128) :: posfinal
+		character(len=128) :: data_abf
 		character(len=128) :: data_mbar
 		character(len=128) :: dada_mbar
 		character(len=128) :: data_mbar_std
@@ -161,7 +165,16 @@ module sundae_module
 		real(double) ,dimension(:), allocatable, save :: histo_theta	
 
 
-
+		! Complements MPI
+		
+#if(PARASUN)
+		integer rank, numproc, ierror
+		real(double) ,dimension(:), allocatable, save :: MPI_histo_theta
+		real(double) ,dimension(:), allocatable, save :: MPI_sum_P_A 
+		real(double) ,dimension(:), allocatable, save :: MPI_A_prime 
+		real(double) ,dimension(:), allocatable, save :: MPI_A_prime_num
+#endif(PARASUN)
+		
 CONTAINS
 
 
@@ -187,142 +200,139 @@ subroutine LyapLanczos_shooting
 	
 	real(double) :: genrand
 
-	do j=depart_boucle_nbclones,NbClones
+	j = itheta_n
+	write(*,*) 'indice theta', itheta_n
+	!!!!! initialization backward
 
-		!!!!! initialization backward
+	!  verif : Massimiliano avait oublie de mettre a jour la variable oldlyap
+	!  oldLyapunov=SUM(Path(j,0:totiter-1)%Lyap)/real(totiter)
+	!  write(*,*) ' verif oldLyap',oldLyapunov,oldLyap(j)
 
-		!  verif : Massimiliano avait oublie de mettre a jour la variable oldlyap
-		!  oldLyapunov=SUM(Path(j,0:totiter-1)%Lyap)/real(totiter)
-		!  write(*,*) ' verif oldLyap',oldLyapunov,oldLyap(j)
+	! modif manuel
 
-		! modif manuel
+	Pshoot(j,ix) = Path(j,ix)
 
-		Pshoot(j,ix) = Path(j,ix)
+	eigenvalue = Path(j,ix)%eigenvalue
 
-		eigenvalue = Path(j,ix)%eigenvalue
+	temp = SUM((Path(j,ix)%p(1,1:N)**2+Path(j,ix)%p(2,1:N)**2+Path(j,ix)%p(3,1:N)**2))/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
+	write(*,*) 'temp cin et temperature cible',temp,temperature/KtoERG
 
-		temp = SUM((Path(j,ix)%p(1,1:N)**2+Path(j,ix)%p(2,1:N)**2+Path(j,ix)%p(3,1:N)**2))/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
-		write(*,*) 'temp cin et temperature cible',temp,temperature/KtoERG
+	!!!! shooting  time "a la Stoltz"
 
-		!!!! shooting  time "a la Stoltz"
+	p(1:3,1:im) = Pshoot(j,ix)%p(1:3,1:im)
+	q(1:3,1:im) = Pshoot(j,ix)%q(1:3,1:im)
 
-		p(1:3,1:im) = Pshoot(j,ix)%p(1:3,1:im)
-		q(1:3,1:im) = Pshoot(j,ix)%q(1:3,1:im)
+	call OU_control(p,q,a_sto,ss)  ! d'amplitude a_sto 
 
-		call OU_control(p,q,a_sto,ss)  ! d'amplitude a_sto 
+	Pshoot(j,ix)%p(1:3,1:N)= p(1:3,1:N)
 
-		Pshoot(j,ix)%p(1:3,1:N)= p(1:3,1:N)
+	temp = SUM((Pshoot(j,ix)%p(1,1:N)**2+Pshoot(j,ix)%p(2,1:N)**2+Pshoot(j,ix)%p(3,1:N)**2))/m_i(1,1)/dble(3*im-6)/KtoERG ! *2/3 /2
+	write(*,*) 'temp cin apres perturb et temp cible ',temp,temperature/KtoERG
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! propagation BACKWARD a partir du point de shooting (sans lyapunov)
 
-		temp = SUM((Pshoot(j,ix)%p(1,1:N)**2+Pshoot(j,ix)%p(2,1:N)**2+Pshoot(j,ix)%p(3,1:N)**2))/m_i(1,1)/dble(3*im-6)/KtoERG ! *2/3 /2
-		write(*,*) 'temp cin apres perturb et temp cible ',temp,temperature/KtoERG
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! propagation BACKWARD a partir du point de shooting (sans lyapunov)
+	write(*,*) 'shooting ..ix->0...........bw ',ix,' -> ', 0
+	new_projection=.false.
+	it_trajectory=0
+	Pcourant =  Pshoot(j,ix)
 
-		write(*,*) 'shooting ..ix->0...........bw ',ix,' -> ', 0
-		new_projection=.false.
-		it_trajectory=0
-		Pcourant =  Pshoot(j,ix)
-
-		if (ix.gt.0) then 
-			Pcourant%project     = Path(j,ix)%project
-			Pcourant%eigenvalue  = Path(j,ix)%eigenvalue
-		else
-			Pcourant%project     = Path(j,0)%project
-			Pcourant%eigenvalue  = Path(j,0)%eigenvalue
+	if (ix.gt.0) then 
+		Pcourant%project     = Path(j,ix)%project
+		Pcourant%eigenvalue  = Path(j,ix)%eigenvalue
+	else
+		Pcourant%project     = Path(j,0)%project
+		Pcourant%eigenvalue  = Path(j,0)%eigenvalue
+	endif
+	lanczos_iter=0
+	do iterbw=ix,1,-1 ! on stocke  en iterbw-1 la valeur propre calculée à iterbw-1/2
+		call mapping_P_Verlet(Pcourant%q,Pcourant%p,-dt,N,q1s2) !! on met -dt pour le backward !!!
+		call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)
+		lanczos_iter=lanczos_iter+nl_iter
+		Pcourant%eigenvalue = eigenvalue 
+		if (eigenvalue.lt.0.0) then 
+			Pcourant%Lyap=asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 !
+		else 
+			Pcourant%Lyap=0.d0
 		endif
-		lanczos_iter=0
-		do iterbw=ix,1,-1 ! on stocke  en iterbw-1 la valeur propre calculée à iterbw-1/2
-			call mapping_P_Verlet(Pcourant%q,Pcourant%p,-dt,N,q1s2) !! on met -dt pour le backward !!!
-			call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)
-			lanczos_iter=lanczos_iter+nl_iter
-			Pcourant%eigenvalue = eigenvalue 
-			if (eigenvalue.lt.0.0) then 
-				Pcourant%Lyap=asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 !
-			else 
-				Pcourant%Lyap=0.d0
-			endif
-			Pshoot(j,iterbw-1)=Pcourant
-			it_trajectory = it_trajectory + 1
-			new_projection = .false.
-		enddo  
-		!!!!!!!!!!!!!!!!!!!!!  la trajectoire bw est arrivee au temps t=0
-		
-		!!!!!!!!!!!!           trajectoire forward        
+		Pshoot(j,iterbw-1)=Pcourant
+		it_trajectory = it_trajectory + 1
+		new_projection = .false.
+	enddo  
+	!!!!!!!!!!!!!!!!!!!!!  la trajectoire bw est arrivee au temps t=0
+	
+	!!!!!!!!!!!!           trajectoire forward        
 
-		write(*,*) 'shooting ..ix->totiter-1...fw ',ix,' -> ', totiter-1
-		Pcourant       = Pshoot(j,ix)
-		new_projection =.false. ! Question Manuel: on doit recalculer?
-		it_trajectory=0
-		eigenvalue = Pshoot(j,ix)%eigenvalue
+	write(*,*) 'shooting ..ix->totiter-1...fw ',ix,' -> ', totiter-1
+	Pcourant       = Pshoot(j,ix)
+	new_projection =.false. ! Question Manuel: on doit recalculer?
+	it_trajectory=0
+	eigenvalue = Pshoot(j,ix)%eigenvalue
 
-		! Manuel : avec mapping_P_Verlet on calcule les forces en iterfw+1/2 et on stocke positions et moments en iterfw+1 
-		!                 mais on stocke le lyapunov avant en iterfw 
-		do iterfw = ix,totiter-1  ! on recalcule en ix car la position en ix+1/2 est modifiée
-			!    modif Manuel (texte+commentaires) 
-			call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
-			call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)
-			lanczos_iter=lanczos_iter+nl_iter
-			Pcourant%eigenvalue = eigenvalue
-			if (eigenvalue.le.0.0) then 
-				Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0  ! on stocke avant !!!
-			else 
-				Pcourant%Lyap = 0.d0      ! on stocke toujours le lyapunov avant !!!
-			endif
-			Pshoot(j,iterfw)%Project=Pcourant%Project
-			Pshoot(j,iterfw)%eigenvalue=Pcourant%eigenvalue
-			Pshoot(j,iterfw)%Lyap=Pcourant%Lyap
-			Pshoot(j,iterfw+1)   = Pcourant
-			it_trajectory  = it_trajectory + 1
-			new_projection = .false.
-		enddo
-		write(*,*) 'Lanczos iterations...:',lanczos_iter
-		write(*,*) '           forces....:',lanczos_iter*maxvec*2
-
-		triallyap(j)=SUM(Pshoot(j,0:totiter-1)%Lyap)/real(totiter)
-		write(*,*) 'oldlyap(j)   = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
-		write(*,*) 'triallyap(j) = ', triallyap(j)*300.0/sqrt(9.270914743200000e-023)
-		
-		!!!!!!! fonction heaviside pour maintenir le point initial de la trajectoire dans 
-		!!!!!!! le bassin de depart: calcul dist max pour le point x(0) de la trajectoire
-		absdmax(j,iterbw)=-9999.0
-		atom_bouge_abs=0
-		do i=1,N
-			absdist(i)=sqrt((Pshoot(j,iterbw)%q(1,i)-qref(1,i))**2 + &
-			(Pshoot(j,iterbw)%q(2,i)-qref(2,i))**2 + &
-			(Pshoot(j,iterbw)%q(3,i)-qref(3,i))**2)
-			if (absdist(i).gt.absdmax(j,iterbw)) then
-				absdmax(j,iterbw) = absdist(i)
-				atom_bouge_abs    = i
-			endif
-		enddo
-		absdmax(j,iterbw)      = absdmax(j,iterbw)*1.0d8
-		write(*,*) 'iterbw absdmax ',iterbw,absdmax(j,iterbw)
-		!!!!!!!!!!!! ATTENTION AUX RELATIONS DU BILAN DETAILLE
-
-		if (absdmax(j,iterbw).lt.h_A_max) then
-			rapport(j)=exp(alpha_bias(j)*(triallyap(j)-oldLyap(j)))
-		else
-			rapport(j)=0.d0
+	! Manuel : avec mapping_P_Verlet on calcule les forces en iterfw+1/2 et on stocke positions et moments en iterfw+1 
+	!                 mais on stocke le lyapunov avant en iterfw 
+	do iterfw = ix,totiter-1  ! on recalcule en ix car la position en ix+1/2 est modifiée
+		!    modif Manuel (texte+commentaires) 
+		call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
+		call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)
+		lanczos_iter=lanczos_iter+nl_iter
+		Pcourant%eigenvalue = eigenvalue
+		if (eigenvalue.le.0.0) then 
+			Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0  ! on stocke avant !!!
+		else 
+			Pcourant%Lyap = 0.d0      ! on stocke toujours le lyapunov avant !!!
 		endif
+		Pshoot(j,iterfw)%Project=Pcourant%Project
+		Pshoot(j,iterfw)%eigenvalue=Pcourant%eigenvalue
+		Pshoot(j,iterfw)%Lyap=Pcourant%Lyap
+		Pshoot(j,iterfw+1)   = Pcourant
+		it_trajectory  = it_trajectory + 1
+		new_projection = .false.
+	enddo
+	write(*,*) 'Lanczos iterations...:',lanczos_iter
+	write(*,*) '           forces....:',lanczos_iter*maxvec*2
 
-		ranf=genrand()
-		mcconf=min(1.d0,rapport(j))
-		if (ranf.lt.mcconf) then
-			acc(j)=acc(j)+1
-			Path(j,0:totiter) = Pshoot(j,0:totiter)
-			oldLyap(j)=triallyap(j)
-
-			write(*,*) 'traj. acceptée',mcmoves,'rapport =',rapport(j)
-			absdmax_current = absdmax(j,iterbw)  
-			write(*,*) 'absdmax_current', absdmax_current
-		else
-			write(*,*) 'traj. refusée ',mcmoves,'rapport =',rapport(j)
+	triallyap(j)=SUM(Pshoot(j,0:totiter-1)%Lyap)/real(totiter)
+	write(*,*) 'oldlyap(j)   = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
+	write(*,*) 'triallyap(j) = ', triallyap(j)*300.0/sqrt(9.270914743200000e-023)
+	
+	!!!!!!! fonction heaviside pour maintenir le point initial de la trajectoire dans 
+	!!!!!!! le bassin de depart: calcul dist max pour le point x(0) de la trajectoire
+	absdmax(j,iterbw)=-9999.0
+	atom_bouge_abs=0
+	do i=1,N
+		absdist(i)=sqrt((Pshoot(j,iterbw)%q(1,i)-qref(1,i))**2 + &
+		(Pshoot(j,iterbw)%q(2,i)-qref(2,i))**2 + &
+		(Pshoot(j,iterbw)%q(3,i)-qref(3,i))**2)
+		if (absdist(i).gt.absdmax(j,iterbw)) then
+			absdmax(j,iterbw) = absdist(i)
+			atom_bouge_abs    = i
 		endif
-		write (*,*) 'Shooting ....taux d''acceptation',real(acc(j))/real(mcmoves) 
-		write (*,*) 
+	enddo
+	absdmax(j,iterbw)      = absdmax(j,iterbw)*1.0d8
+	write(*,*) 'iterbw absdmax ',iterbw,absdmax(j,iterbw)
+	!!!!!!!!!!!! ATTENTION AUX RELATIONS DU BILAN DETAILLE
 
+	if (absdmax(j,iterbw).lt.h_A_max) then
+		rapport(j)=exp(alpha_bias(j)*(triallyap(j)-oldLyap(j)))
+	else
+		rapport(j)=0.d0
+	endif
 
+	ranf=genrand()
+	mcconf=min(1.d0,rapport(j))
+	if (ranf.lt.mcconf) then
+		acc(j)=acc(j)+1
+		Path(j,0:totiter) = Pshoot(j,0:totiter)
+		oldLyap(j)=triallyap(j)
 
-	enddo 
+		write(*,*) 'traj. acceptée',mcmoves,'rapport =',rapport(j)
+		absdmax_current = absdmax(j,iterbw)  
+		write(*,*) 'absdmax_current', absdmax_current
+	else
+		write(*,*) 'traj. refusée ',mcmoves,'rapport =',rapport(j)
+	endif
+	write (*,*) 'Shooting ....taux d''acceptation',real(acc(j))/real(mcmoves) 
+	write (*,*) 
+
 	!! fin du shooting
 
 end subroutine LyapLanczos_shooting
@@ -338,163 +348,159 @@ subroutine LyapLanczos_shifting
 	real(double) :: genrand
 	
 	
-	do j=depart_boucle_nbclones,Nbclones
+	j = itheta_n
 
-		pix = int(genrand()*(totiter+1))  ! le cas pix=totiter+1 est impossible par construction
-				    			          ! car genrand < 1
-				          				  ! pix est compris entre 0 et L soit L+1 valeur possibles 
-		write(*,'(" Shifting............................:",3i5)') mcmoves,totiter,pix
+	pix = int(genrand()*(totiter+1))  ! le cas pix=totiter+1 est impossible par construction
+			    			          ! car genrand < 1
+			          				  ! pix est compris entre 0 et L soit L+1 valeur possibles 
+	write(*,'(" Shifting............................:",3i5)') mcmoves,totiter,pix
 
-		write(*,'(" Shift.rec...pix+1->pix+totinter....:",i5," to ",i5)') pix+1,pix+totiter
-		! we recycle the pix,pix+1, pix+2, ...., pix+totiter because there are totiter+1 points 
-		do k=0,totiter
-			Pshift(j,pix+k) = Path(j,k)
-		enddo
+	write(*,'(" Shift.rec...pix+1->pix+totinter....:",i5," to ",i5)') pix+1,pix+totiter
+	! we recycle the pix,pix+1, pix+2, ...., pix+totiter because there are totiter+1 points 
+	do k=0,totiter
+		Pshift(j,pix+k) = Path(j,k)
+	enddo
 
-		write(*,'(" shift.bw ......pix->0..............:",i5," to 0")') pix
-		! we calculate the pix-1,....,0
+	write(*,'(" shift.bw ......pix->0..............:",i5," to 0")') pix
+	! we calculate the pix-1,....,0
+	new_projection=.false.
+	it_trajectory=0
+
+	Pcourant   = Pshift(j,pix)
+	eigenvalue = Pcourant%eigenvalue
+
+	do iterbw=pix,1,-1
+		call mapping_P_Verlet(Pcourant%q,Pcourant%p,-dt,N,q1s2)  ! -dt car backward en position verlet
+		call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)
+
+		Pcourant%eigenvalue = eigenvalue
+
+		if (eigenvalue.lt.0.0) then
+			Pcourant%Lyap= asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 ! on stocke Lyap en 1/2 avant
+		else 
+			Pcourant%Lyap=0.d0  !! autoval max del Lanczos
+		endif
+		Pshift(j,iterbw-1)=Pcourant
+		it_trajectory=it_trajectory+1 
 		new_projection=.false.
-		it_trajectory=0
+	enddo
 
-		Pcourant   = Pshift(j,pix)
-		eigenvalue = Pcourant%eigenvalue
+	write(*,'(" shift.fw..pix+totiter->2*totinter..:" ,i5, " to ", i5)') pix+totiter,2*totiter
+	! we calculate the pix+toiter+1, pix+2, ...., 2*toiter
+	! Check: there are two points 2*toiter-1 and 2*toiter which
+	!         are computed for nothing. Never used after !
 
-		do iterbw=pix,1,-1
-			call mapping_P_Verlet(Pcourant%q,Pcourant%p,-dt,N,q1s2)  ! -dt car backward en position verlet
-			call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)
+	timefsh=dt*real(totiter+pix)
+	new_projection=.true.
+	iterfw=nint(timefsh/dt)
+	it_trajectory=0
 
-			Pcourant%eigenvalue = eigenvalue
+	Pcourant = Pshift(j,totiter+pix)
+	eigenvalue = Pcourant%eigenvalue
 
-			if (eigenvalue.lt.0.0) then
-				Pcourant%Lyap= asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 ! on stocke Lyap en 1/2 avant
-			else 
-				Pcourant%Lyap=0.d0  !! autoval max del Lanczos
-			endif
-			Pshift(j,iterbw-1)=Pcourant
-			it_trajectory=it_trajectory+1 
-			new_projection=.false.
-		enddo
+	do iterfw=totiter+pix,2*totiter-1
+		call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
+		call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)!!!!!
+		Pcourant%eigenvalue = eigenvalue 
 
-		write(*,'(" shift.fw..pix+totiter->2*totinter..:" ,i5, " to ", i5)') pix+totiter,2*totiter
-		! we calculate the pix+toiter+1, pix+2, ...., 2*toiter
-		! Check: there are two points 2*toiter-1 and 2*toiter which
-		!         are computed for nothing. Never used after !
-
-		timefsh=dt*real(totiter+pix)
-		new_projection=.true.
-		iterfw=nint(timefsh/dt)
-		it_trajectory=0
-
-		Pcourant = Pshift(j,totiter+pix)
-		eigenvalue = Pcourant%eigenvalue
-
-		do iterfw=totiter+pix,2*totiter-1
-			call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
-			call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)!!!!!
-			Pcourant%eigenvalue = eigenvalue 
-
-			if (eigenvalue.le.0.d0) then 
-				Pcourant%Lyap=asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0  ! Lyapunov en 1/2 stocké avant 
-			else 
-				Pcourant%Lyap=0.d0 ! Pshift(j,iterfw-1)%Lyap ! Lyapunov en 1/2 stocké avant 
-			endif
-
-			Pshift(j,iterfw)%Lyap       = Pcourant%Lyap
-			Pshift(j,iterfw)%Project    = Pcourant%Project
-			Pshift(j,iterfw)%eigenvalue = eigenvalue
-
-			Pshift(j,iterfw+1)=Pcourant
-
-			it_trajectory=it_trajectory+1 
-			new_projection=.false.
-
-		enddo
-
-		hamilt(j)=ener0(j)
-
-		S(j,:)=0
-		do l=0,totiter  ! sommation sur les 1+L "path proposals" possibles
-			do a=l,l+totiter-1  ! dans une action S il y a bien totiter=L Lyap stockes de 0 à totiter-1 
-				S(j,l) = S(j,l)+Pshift(j,a)%Lyap
-			enddo
-		enddo
-		S(j,:)=S(j,:)/(real(totiter))
-
-		!!!!!!!!!!!! calcul de la fonction echelon pour le point de départ 
-		!!!!!!!!!!!! de la trajectoire N sui 2N passi della traj shiftata
-
-		absdmax(j,:)=-9999.0
-		atom_bouge_abs=0
-
-		do l=0,2*totiter ! il y a 1+L (1+totiter) proposals + totiter positions décalée en totiter
-			do i=1,N
-				absdist(i)=sqrt((Pshift(j,l)%q(1,i)-xref(i))**2 + & 
-					 (Pshift(j,l)%q(2,i)-yref(i))**2 + & 
-					 (Pshift(j,l)%q(3,i)-zref(i))**2) 
-				if (absdist(i).gt.absdmax(j,l)) then 
-					absdmax(j,l)=absdist(i) 
-				endif 
-
-				! Manuel : les coordonnées dans Pshift(j,l) sont celles avant l'application du mapping P_Verlet dans le sens forward
-				! on a donc maintenant correspondance entre Pshift(j,l) et absdmax(j,l) contrairement à auparavant
-
-			enddo
-		enddo
-		absdmax(j,:)=absdmax(j,:)*1.0e8
-		write(*,*) 'absdmax : '
-		write(*,*) absdmax(j,0) 
-		
-		
-		z=0.d0
-		do l=0,totiter ! boucles sur les chemins proposés possibles
-			! Here is P_sel from the paper
-			if (absdmax(j,l).lt.h_A_max) then  ! on a correspondance maintenant entre absdmax et Pshift
-				Psel(j,l) = exp(alpha_bias(j)*S(j,l))
-			else
-				Psel(j,l)= 0.d0
-			endif
-			z = z +  Psel(j,l)
-		enddo
-
-		Psel(j,0:totiter)  =  Psel(j,0:totiter)/z
-
-		! selection de la trajectoire indiciée newtraj
-
-		xalea    = genrand()
-		xcumul=0.d0
-
-		do k=0,totiter !  boucle sur les "proposals"
-			xcumul=xcumul+Psel(j,k)
-			if (xalea.lt.xcumul) goto 234
-		enddo
-		234 continue
-		newtraj=k
-		write(*,*) 'xalea, Psel, poids cumulé et newtraj = ',xalea,Psel(j,k), xcumul ,newtraj
-		write(*,*) 'absdmax(j,newtraj)', absdmax(j,newtraj)
-		write(*,*) 'oldlyap(j)  = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
-
-		!!!!!!!! on copie la trajectoire selectionnée avec le shifting
-		if (absdmax(j,newtraj).le.h_A_max) then 
-			Path(j,0:totiter-1) = Pshift(j,newtraj:totiter+newtraj-1) ! on a Path(j,0) = Pshift(j,0) pour newtraj=0
-			oldLyap(j)       = SUM(Path(j,0:totiter-1)%Lyap)/real(totiter)
-		else
-			write(*,*) " Problème avec le shifting "
+		if (eigenvalue.le.0.d0) then 
+			Pcourant%Lyap=asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0  ! Lyapunov en 1/2 stocké avant 
+		else 
+			Pcourant%Lyap=0.d0 ! Pshift(j,iterfw-1)%Lyap ! Lyapunov en 1/2 stocké avant 
 		endif
 
-		write(*,*) 'newlyap(j)  = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
-		
-		
-		!!!!!!!!!!!! ESSAY POUR MBAR: calcul des divers poids u_kln avec waste recycling 
-		
-		!
-		!  call essai_mbar
-		!
-		
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		
-		
+		Pshift(j,iterfw)%Lyap       = Pcourant%Lyap
+		Pshift(j,iterfw)%Project    = Pcourant%Project
+		Pshift(j,iterfw)%eigenvalue = eigenvalue
 
-	enddo ! boucle sur le clone
+		Pshift(j,iterfw+1)=Pcourant
+
+		it_trajectory=it_trajectory+1 
+		new_projection=.false.
+
+	enddo
+
+	hamilt(j)=ener0(j)
+
+	S(j,:)=0
+	do l=0,totiter  ! sommation sur les 1+L "path proposals" possibles
+		do a=l,l+totiter-1  ! dans une action S il y a bien totiter=L Lyap stockes de 0 à totiter-1 
+			S(j,l) = S(j,l)+Pshift(j,a)%Lyap
+		enddo
+	enddo
+	S(j,:)=S(j,:)/(real(totiter))
+
+	!!!!!!!!!!!! calcul de la fonction echelon pour le point de départ 
+	!!!!!!!!!!!! de la trajectoire N sui 2N passi della traj shiftata
+
+	absdmax(j,:)=-9999.0
+	atom_bouge_abs=0
+
+	do l=0,2*totiter ! il y a 1+L (1+totiter) proposals + totiter positions décalée en totiter
+		do i=1,N
+			absdist(i)=sqrt((Pshift(j,l)%q(1,i)-xref(i))**2 + & 
+				 (Pshift(j,l)%q(2,i)-yref(i))**2 + & 
+				 (Pshift(j,l)%q(3,i)-zref(i))**2) 
+			if (absdist(i).gt.absdmax(j,l)) then 
+				absdmax(j,l)=absdist(i) 
+			endif 
+
+			! Manuel : les coordonnées dans Pshift(j,l) sont celles avant l'application du mapping P_Verlet dans le sens forward
+			! on a donc maintenant correspondance entre Pshift(j,l) et absdmax(j,l) contrairement à auparavant
+
+		enddo
+	enddo
+	absdmax(j,:)=absdmax(j,:)*1.0e8
+	write(*,*) 'absdmax : '
+	write(*,*) absdmax(j,0) 
+	
+	
+	z=0.d0
+	do l=0,totiter ! boucles sur les chemins proposés possibles
+		! Here is P_sel from the paper
+		if (absdmax(j,l).lt.h_A_max) then  ! on a correspondance maintenant entre absdmax et Pshift
+			Psel(j,l) = exp(alpha_bias(j)*S(j,l))
+		else
+			Psel(j,l)= 0.d0
+		endif
+		z = z +  Psel(j,l)
+	enddo
+
+	Psel(j,0:totiter)  =  Psel(j,0:totiter)/z
+
+	! selection de la trajectoire indiciée newtraj
+
+	xalea    = genrand()
+	xcumul=0.d0
+
+	do k=0,totiter !  boucle sur les "proposals"
+		xcumul=xcumul+Psel(j,k)
+		if (xalea.lt.xcumul) goto 234
+	enddo
+	234 continue
+	newtraj=k
+	write(*,*) 'xalea, Psel, poids cumulé et newtraj = ',xalea,Psel(j,k), xcumul ,newtraj
+	write(*,*) 'absdmax(j,newtraj)', absdmax(j,newtraj)
+	write(*,*) 'oldlyap(j)  = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
+
+	!!!!!!!! on copie la trajectoire selectionnée avec le shifting
+	if (absdmax(j,newtraj).le.h_A_max) then 
+		Path(j,0:totiter-1) = Pshift(j,newtraj:totiter+newtraj-1) ! on a Path(j,0) = Pshift(j,0) pour newtraj=0
+		oldLyap(j)       = SUM(Path(j,0:totiter-1)%Lyap)/real(totiter)
+	else
+		write(*,*) " Problème avec le shifting "
+	endif
+
+	write(*,*) 'newlyap(j)  = ', oldLyap(j)*300.0/sqrt(9.270914743200000e-023)
+	
+	
+	!!!!!!!!!!!! ESSAY POUR MBAR: calcul des divers poids u_kln avec waste recycling 
+	
+	!
+	!  call essai_mbar
+	!
+	
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	
 	
 
@@ -517,7 +523,7 @@ subroutine LyapLanczos_ABF
 	! Proposition du nouveau theta 
 	
 	xalea = genrand()
-	theta_temp = theta_n + delta*(xalea-0.5d0)
+	theta_temp = theta_n + 2.*delta*(xalea-0.5d0)
 	
 	
 	itheta_n = nint((theta_n)/(alpha_max)*real(Nbclones_mbar))
@@ -537,7 +543,18 @@ subroutine LyapLanczos_ABF
 		histo_theta(itheta_n) = histo_theta(itheta_n) + 1.0d0
 	endif
 
+	! Mise en commun parallele ---- 1/2 !
+#if(PARASUN)
+	
+	call MPI_REDUCE(histo_theta,MPI_histo_theta,Nbclones_mbar+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
+	call MPI_BCAST(MPI_histo_theta,Nbclones_mbar+1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
+		
+#endif(PARASUN)
+	! Mise en commun parallele ---- 1/2 !
+	
+	
 	! Calcul du nouveau biais
+	
 	Lyap          = oldLyap(itheta_n)
 	u_A(:)        = Lyap*theta(:) + A_n(:)     
 	gmax          = maxval(u_A)
@@ -561,11 +578,34 @@ subroutine LyapLanczos_ABF
 	enddo
 
 
+#if(PARASUN)
+	! Mise en commun parallele ---- 2/2 !
+	call MPI_REDUCE(A_prime_num,MPI_A_prime_num,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
+	call MPI_REDUCE(sum_P_A,MPI_sum_P_A,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
+
+	MPI_A_prime = MPI_A_prime_num/MPI_sum_P_A
+
+	if (N_extra.gt.0) then 
+		MPI_A_prime(-N_extra:0) = 0.d0
+		MPI_A_prime(Nbclones_mbar:Nbclones_mbar+N_extra) = 0.d0
+	endif
+
+	call MPI_BCAST(MPI_A_prime,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
+	! Mise en commun parallele ---- 2/2 !
+
+	A_n = 0.d0
+	A_n(-N_extra) = 0.d0
+	do theta_tilde  = -N_extra+1,Nbclones_mbar + N_extra
+		A_n(theta_tilde) = A_n(theta_tilde-1)  + (MPI_A_prime(theta_tilde-1) + MPI_A_prime(theta_tilde))*delta_bin_theta_s2
+	enddo
+#else
 	A_n = 0.d0
 	A_n(-N_extra) = 0.d0
 	do theta_tilde  = -N_extra+1,Nbclones_mbar + N_extra
 		A_n(theta_tilde) = A_n(theta_tilde-1)  + (A_prime(theta_tilde-1) + A_prime(theta_tilde))*delta_bin_theta_s2
 	enddo
+#endif(PARASUN)
+
 
 	gmin=minval(A_n)
 	A_n = A_n - gmin
@@ -574,6 +614,8 @@ subroutine LyapLanczos_ABF
 
 	sum_A = log(sum(exp(-A_n(-N_extra:Nbclones_mbar+N_extra))))
 	A_n = A_n + sum_A
+	
+	write(*,*) 'theta_n  = ', theta_n*sqrt(9.270914743200000e-023)/300.0
 
 
 end subroutine LyapLanczos_ABF
@@ -593,6 +635,18 @@ subroutine LyapLanczos_vac! (xp)
 
 	real(double) :: genrand
 	
+	
+
+#if(PARASUN) 
+	
+	call MPI_INIT(ierror)     !! On initialise MPI
+
+	call MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierror) !! Attribue a rank le numero de processeur
+
+	call MPI_COMM_SIZE(MPI_COMM_WORLD,numproc,ierror)  !! Attribue a numproc le nombre de processeur
+
+#endif(PARASUN)
+
 
 	!!!!!!!!!!!!!!!!!!!!!!      Phase d'initialisation       !!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -606,8 +660,13 @@ subroutine LyapLanczos_vac! (xp)
 	
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+	
 
 	do mcmoves = 1 , Totalmcmoves                       !mcmoves = 1,M in the paper
+	
+		
+		!write(*,'(" Proc number ", i5, "says hello")'), rank
+	
 	
 		it_art=mcmoves
 
@@ -629,12 +688,20 @@ subroutine LyapLanczos_vac! (xp)
 	
 		call LyapLanczos_shifting              !!! Modif 03.06.14
 	
+	
+		call LyapLanczos_ABF				   !!! Modif 10.06.14
+		
 		!
 		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
+#if(PARASUN) 
+	call MPI_FINALIZE(ierror)	 !! Pour finir l'appel MPI
+#endif(PARASUN) 
+
 	enddo !! mcmoves avec incrément + 1 clones
 
+	write(111,*) histo_theta
 
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -692,133 +759,134 @@ subroutine LyapLanczos_init_tests
 
 
 	! test de la subroutine de controle angulaire
-	j=depart_boucle_nbclones
-
-	q= Path(j,0)%q
-	p= Path(j,0)%p
-
-	temp=0.d0
-	do i=1,20
-	call OU_control(p,q,a_sto,ss)
-	call mapping_P_Verlet(q,p,dt,N,q1s2)
-
-	temp = temp + (sum(p(1,1:im)**2)+sum(p(2,1:im)**2)+sum(p(3,1:im)**2))/dble(3*im-6)/m_i(1,1)
-	write(*,*) 'température ',temp/dble(i)/KtoERG,i,alpha_bias(j)
-	enddo
+	!do j=Nbclones_mbar,Nbclones_mbar
+	do j = itheta_n, itheta_n
 	
-	
-	write (*,'("1st traj before shooting ........:",i5)') nint(TotalTime/dt)
-	rang=1
-	j=depart_boucle_nbclones
+		q= Path(j,0)%q
+		p= Path(j,0)%p
 
-	call cpu_time(t0)
-	lanczos_iter=0
-
-	do icheck=1,1
-		Pcourant = Path(j,0)
 		temp=0.d0
-		eigenvalue = Pcourant%eigenvalue
-		do iter=0,totiter-1
-			call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
-			call cpu_time(tbuffer1)
-			lanczos_iter=lanczos_iter+nl_iter
-			call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)!!!
-			call cpu_time(tbuffer2)
-			t_lanczos=t_lanczos + (tbuffer2-tbuffer1)
-			Pcourant%Lyap = 0.d0  
-			if (eigenvalue.lt.0.d0) then
-				Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0
-			endif
-			Path(j,iter+1)    = Pcourant
-			Path(j,iter)%Lyap = Pcourant%Lyap
-			temp = temp +  Pcourant%Lyap
-			new_projection = .false.
-		enddo  !!!!!
-		oldLyap(j)=sum(Path(j,0:totiter-1)%Lyap)/real(totiter)
-		write(*,*) " oldLyap(j)= ", oldLyap(j),temp/real(totiter)
-	enddo
+		do i=1,20
+		call OU_control(p,q,a_sto,ss)
+		call mapping_P_Verlet(q,p,dt,N,q1s2)
 
-	pav(1)=sum(Path(j,totiter)%p(1,1:im))/dble(im)
-	pav(2)=sum(Path(j,totiter)%p(2,1:im))/dble(im)
-	pav(3)=sum(Path(j,totiter)%p(3,1:im))/dble(im)
-
-	write(*,*) 'pav',pav
-
-	call cpu_time(t1)
-	elaps_1=t1-t0
-
-	write(*,*) 'The first trajectory..:', elaps_1
-	write(*,*) 'The Lanczos time .....:', t_lanczos
-	write(*,*) 'The Propag time.......:', elaps_1-t_lanczos
-	write(*,*) 'Lanczos interations...:', lanczos_iter
-	write(*,*) '            forces....:', lanczos_iter*maxvec*2
-
-
-	absdmax(j,:)=-9999.d0
-	do iter=0,totiter-1
-		atom_bouge_abs=0
-		do i=1,N
-			pav(1:3) = (Path(j,iter)%q(1:3,i)-qref(1:3,i))**2
-			absdist(i)=sqrt(sum(pav(1:3)))
-			if (absdist(i).gt.absdmax(j,iter)) then
-				absdmax(j,iter) = absdist(i)
-				atom_bouge_abs  = i
-			endif
+		temp = temp + (sum(p(1,1:im)**2)+sum(p(2,1:im)**2)+sum(p(3,1:im)**2))/dble(3*im-6)/m_i(1,1)
+		write(*,*) 'température ',temp/dble(i)/KtoERG,i,alpha_bias(j)
 		enddo
+	
+	
+		write (*,'("1st traj before shooting ........:",i5)') nint(TotalTime/dt)
+		rang=1
+
+		call cpu_time(t0)
+		lanczos_iter=0
+
+		do icheck=1,1
+			Pcourant = Path(j,0)
+			temp=0.d0
+			eigenvalue = Pcourant%eigenvalue
+			do iter=0,totiter-1
+				call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
+				call cpu_time(tbuffer1)
+				lanczos_iter=lanczos_iter+nl_iter
+				call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)!!!
+				call cpu_time(tbuffer2)
+				t_lanczos=t_lanczos + (tbuffer2-tbuffer1)
+				Pcourant%Lyap = 0.d0  
+				if (eigenvalue.lt.0.d0) then
+					Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0
+				endif
+				Path(j,iter+1)    = Pcourant
+				Path(j,iter)%Lyap = Pcourant%Lyap
+				temp = temp +  Pcourant%Lyap
+				new_projection = .false.
+			enddo  !!!!!
+			oldLyap(j)=sum(Path(j,0:totiter-1)%Lyap)/real(totiter)
+			write(*,*) " oldLyap(j)= ", oldLyap(j),temp/real(totiter)
+		enddo
+
+		pav(1)=sum(Path(j,totiter)%p(1,1:im))/dble(im)
+		pav(2)=sum(Path(j,totiter)%p(2,1:im))/dble(im)
+		pav(3)=sum(Path(j,totiter)%p(3,1:im))/dble(im)
+
+		write(*,*) 'pav',pav
+
+		call cpu_time(t1)
+		elaps_1=t1-t0
+
+		write(*,*) 'The first trajectory..:', elaps_1
+		write(*,*) 'The Lanczos time .....:', t_lanczos
+		write(*,*) 'The Propag time.......:', elaps_1-t_lanczos
+		write(*,*) 'Lanczos interations...:', lanczos_iter
+		write(*,*) '            forces....:', lanczos_iter*maxvec*2
+
+
+		absdmax(j,:)=-9999.d0
+		do iter=0,totiter-1
+			atom_bouge_abs=0
+			do i=1,N
+				pav(1:3) = (Path(j,iter)%q(1:3,i)-qref(1:3,i))**2
+				absdist(i)=sqrt(sum(pav(1:3)))
+				if (absdist(i).gt.absdmax(j,iter)) then
+					absdmax(j,iter) = absdist(i)
+					atom_bouge_abs  = i
+				endif
+			enddo
+		enddo
+
+		temp=0.0000
+		tempvar=temp
+
+		do iterbw=0,totiter
+			tempiter = SUM((Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2))/m_i(1,1)/3.000/dble(im-2)/KtoERG ! *2/3 /2
+			temp=temp+tempiter
+			tempvar=tempvar+tempiter**2
+		enddo
+		temp=temp/real(totiter+1)
+		tempvar=sqrt(tempvar/real(totiter+1)-temp**2)
+		write(*,*) 'temp cin traject, std et cible ',temp,tempvar,temperature/KtoERG
+		! calcul de la position initiale 
+
+		call cal_hamilton(Path(j,0)%q,Path(j,0)%p,N,ekin,epot)
+		hamilt(j)=(ekin+epot)/temperature
+		ener0(j) = epot/temperature
+
+		! vérification de la dérive 
+		xbar(1) = SUM(Path(j,0)%q(1,1:N))/dble(N)
+		xbar(2) = SUM(Path(j,0)%q(2,1:N))/dble(N)
+		xbar(3) = SUM(Path(j,0)%q(3,1:N))/dble(N)
+
+		write(*,*) ' centre de masse référence ', xbar(1:3)
+
+		xbar(1) = SUM(qref(1,1:N))/dble(N)
+		xbar(2) = SUM(qref(2,1:N))/dble(N)
+		xbar(3) = SUM(qref(3,1:N))/dble(N)
+
+		write(*,*) ' centre de masse pos 0     ', xbar(1:3)
+
+		xbar(1) = SUM(Path(j,0)%p(1,1:N))/dble(N)
+		xbar(2) = SUM(Path(j,0)%p(2,1:N))/dble(N)
+		xbar(3) = SUM(Path(j,0)%p(3,1:N))/dble(N)
+
+		write(*,*) ' moments translationnels ',   xbar(1:3)
+		do i=1,3
+			write(*,*) ' temperature translation ',  xbar(i)**2/m_i(1,1)/dble(im)/KtoERG*dble(N)
+		enddo
+		iterbw = 0
+		tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
+		write(*,*) 'temp avant ',iterbw,tempiter
+		enerK(j) =tempiter
+		do iterfw=0,totiter
+			Path(j,iterfw)%p(1,1:N)=Path(j,iterfw)%p(1,1:N)-xbar(1)
+			Path(j,iterfw)%p(2,1:N)=Path(j,iterfw)%p(2,1:N)-xbar(2)
+			Path(j,iterfw)%p(3,1:N)=Path(j,iterfw)%p(3,1:N)-xbar(3)
+		enddo
+
+		tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
+		write(*,*) 'tempiter après ',iterbw,tempiter
+		write(*,*) 'diff ',tempiter-enerK(j) 
+	
 	enddo
-
-	temp=0.0000
-	tempvar=temp
-	j= depart_boucle_nbclones
-
-	do iterbw=0,totiter
-		tempiter = SUM((Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2))/m_i(1,1)/3.000/dble(im-2)/KtoERG ! *2/3 /2
-		temp=temp+tempiter
-		tempvar=tempvar+tempiter**2
-	enddo
-	temp=temp/real(totiter+1)
-	tempvar=sqrt(tempvar/real(totiter+1)-temp**2)
-	write(*,*) 'temp cin traject, std et cible ',temp,tempvar,temperature/KtoERG
-	! calcul de la position initiale 
-
-	call cal_hamilton(Path(j,0)%q,Path(j,0)%p,N,ekin,epot)
-	hamilt(j)=(ekin+epot)/temperature
-	ener0(j) = epot/temperature
-
-	! vérification de la dérive 
-	xbar(1) = SUM(Path(j,0)%q(1,1:N))/dble(N)
-	xbar(2) = SUM(Path(j,0)%q(2,1:N))/dble(N)
-	xbar(3) = SUM(Path(j,0)%q(3,1:N))/dble(N)
-
-	write(*,*) ' centre de masse référence ', xbar(1:3)
-
-	xbar(1) = SUM(qref(1,1:N))/dble(N)
-	xbar(2) = SUM(qref(2,1:N))/dble(N)
-	xbar(3) = SUM(qref(3,1:N))/dble(N)
-
-	write(*,*) ' centre de masse pos 0     ', xbar(1:3)
-
-	xbar(1) = SUM(Path(j,0)%p(1,1:N))/dble(N)
-	xbar(2) = SUM(Path(j,0)%p(2,1:N))/dble(N)
-	xbar(3) = SUM(Path(j,0)%p(3,1:N))/dble(N)
-
-	write(*,*) ' moments translationnels ',   xbar(1:3)
-	do i=1,3
-		write(*,*) ' temperature translation ',  xbar(i)**2/m_i(1,1)/dble(im)/KtoERG*dble(N)
-	enddo
-	iterbw = 0
-	tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
-	write(*,*) 'temp avant ',iterbw,tempiter
-	enerK(j) =tempiter
-	do iterfw=0,totiter
-		Path(j,iterfw)%p(1,1:N)=Path(j,iterfw)%p(1,1:N)-xbar(1)
-		Path(j,iterfw)%p(2,1:N)=Path(j,iterfw)%p(2,1:N)-xbar(2)
-		Path(j,iterfw)%p(3,1:N)=Path(j,iterfw)%p(3,1:N)-xbar(3)
-	enddo
-
-	tempiter = SUM(Path(j,iterbw)%p(1,1:N)**2+Path(j,iterbw)%p(2,1:N)**2+Path(j,iterbw)%p(3,1:N)**2)/m_i(1,1)/3.000/dble(im)/KtoERG ! *2/3 /2
-	write(*,*) 'tempiter après ',iterbw,tempiter
-	write(*,*) 'diff ',tempiter-enerK(j) 
 
 end subroutine LyapLanczos_init_tests
 
@@ -834,29 +902,7 @@ subroutine LyapLanczos_equilibrage
 	
 	if (continue_sundae.ne.2) then 
 	
-		j = depart_boucle_nbclones
-		absdmax(j,:)=-9999.0
-		atom_bouge_abs=0
-		iter=0
-		do i=1,N
-			absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
-			if (absdist(i).gt.absdmax(j,iter)) then
-				absdmax(j,iter) = absdist(i)
-				atom_bouge_abs  = i
-			endif
-		enddo
-		absdmax_current = absdmax(j,iter)*1.d8
-		write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
-		write(*,*) ' atom_bouge_abs ',atom_bouge_abs
-
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! INITIALISATION !!!!!!!!!!!!!!!!!!!!!!
-		write(*,*) 'conditions initiales pour traj de reference avc distrib stoch à temperature T=',temperature
-		write(*,*) 'temps equilibrage', Tequilib
-		write (*,'("Equilibrage on ..................:",i5)') nint(Tequilib/dt) 
-		!!!!!!!!!!!!!!!!!!!!!!!! EQUILIBRAGE initial (STOCH DYN)!!!!!!!!!!!!!!!!!!
-
-		do it_langevin = 0,int(Tequilib/dt)
-			call langevin(dt,temperature, rga)
+		do j = 0, Nbclones_mbar
 			absdmax(j,:)=-9999.0
 			atom_bouge_abs=0
 			iter=0
@@ -870,55 +916,78 @@ subroutine LyapLanczos_equilibrage
 			absdmax_current = absdmax(j,iter)*1.d8
 			write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
 			write(*,*) ' atom_bouge_abs ',atom_bouge_abs
-		end do
 
-		absdmax(j,:)=-9999.0
-		atom_bouge_abs=0
-		iter=0
-		do i=1,N
-			absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
-			if (absdist(i).gt.absdmax(j,iter)) then
-				absdmax(j,iter) = absdist(i)
-				atom_bouge_abs  = i
-			endif
+			!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! INITIALISATION !!!!!!!!!!!!!!!!!!!!!!
+			write(*,*) 'conditions initiales pour traj de reference avc distrib stoch à temperature T=',temperature
+			write(*,*) 'temps equilibrage', Tequilib
+			write (*,'("Equilibrage on ..................:",i5)') nint(Tequilib/dt) 
+			!!!!!!!!!!!!!!!!!!!!!!!! EQUILIBRAGE initial (STOCH DYN)!!!!!!!!!!!!!!!!!!
+
+			do it_langevin = 0,int(Tequilib/dt)
+				call langevin(dt,temperature, rga)
+				absdmax(j,:)=-9999.0
+				atom_bouge_abs=0
+				iter=0
+				do i=1,N
+					absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
+					if (absdist(i).gt.absdmax(j,iter)) then
+						absdmax(j,iter) = absdist(i)
+						atom_bouge_abs  = i
+					endif
+				enddo
+				absdmax_current = absdmax(j,iter)*1.d8
+				write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
+				write(*,*) ' atom_bouge_abs ',atom_bouge_abs
+			end do
+
+			absdmax(j,:)=-9999.0
+			atom_bouge_abs=0
+			iter=0
+			do i=1,N
+				absdist(i)=sqrt((xp(1,i)-qref(1,i))**2+(xp(2,i)-qref(2,i))**2+(xp(3,i)-qref(3,i))**2)
+				if (absdist(i).gt.absdmax(j,iter)) then
+					absdmax(j,iter) = absdist(i)
+					atom_bouge_abs  = i
+				endif
+			enddo
+			absdmax_current = absdmax(j,iter)*1.d8
+			write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
+			write(*,*) ' atom_bouge_abs ',atom_bouge_abs
+
+
+			write(*,*) 'point de depart traj de reference deterministe' 
+			! NbClones the index number of bias
+			! The starting-point in the bias series
+
+			do  jl = 0,NbClones 
+				Path(jl,0)%q=xp(1:3,1:N)
+				Path(jl,0)%p=vp(1:3,1:N)*m_i(1:3,1:N)
+			enddo
+			!!!!!!!!!!!!!! mettre a zero le reste avant ??
+			Path(:,:)%Lyap = 0.d0
+
+			iter=0
+			it_trajectory=0
+			new_projection=.true.
+			it_art=1
+			lanczos_iter=0
+			eigenvalue = 0.0
+
+			do icheck=1,10
+				Pcourant=Path(j,iter)
+				call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
+				call lanczos(N,maxvec,q1s2,new_projection,Path(j,iter)%project) !!!positions avant propagation
+				Path(j,iter)%eigenvalue = eigenvalue
+				write(*,*) 'eigenvalue ',eigenvalue
+				new_projection=.false.  
+				if (eigenvalue.lt.0.0) then 
+					Path(j,iter)%Lyap =  asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 
+				else 
+					Path(j,iter)%Lyap = 0.d0  ! 
+				endif
+			enddo
+		
 		enddo
-		absdmax_current = absdmax(j,iter)*1.d8
-		write(*,*) ' absdmax(1,0)   ',absdmax(j,iter)*1.d8
-		write(*,*) ' atom_bouge_abs ',atom_bouge_abs
-
-
-		write(*,*) 'point de depart traj de reference deterministe' 
-		! NbClones the index number of bias
-		! The starting-point in the bias series
-
-		do  jl = 0,NbClones 
-			Path(jl,0)%q=xp(1:3,1:N)
-			Path(jl,0)%p=vp(1:3,1:N)*m_i(1:3,1:N)
-		enddo
-		!!!!!!!!!!!!!! mettre a zero le reste avant ??
-		Path(:,:)%Lyap = 0.d0
-
-		iter=0
-		it_trajectory=0
-		new_projection=.true.
-		it_art=1
-		lanczos_iter=0
-		eigenvalue = 0.0
-
-		do icheck=1,10
-			Pcourant=Path(j,iter)
-			call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
-			call lanczos(N,maxvec,q1s2,new_projection,Path(j,iter)%project) !!!positions avant propagation
-			Path(j,iter)%eigenvalue = eigenvalue
-			write(*,*) 'eigenvalue ',eigenvalue
-			new_projection=.false.  
-			if (eigenvalue.lt.0.0) then 
-				Path(j,iter)%Lyap =  asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 
-			else 
-				Path(j,iter)%Lyap = 0.d0  ! 
-			endif
-		enddo
-
 	endif  ! continue_sundae.ne.2 
 
 	write(*,*) 'initialisation faite: go with Lanczos'
@@ -931,10 +1000,13 @@ subroutine LyapLanczos_equilibrage
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	if (continue_sundae.eq.2) then
-		write(*,*) 'posfinal ',posfinal
-		open(unit=27, file=posfinal, status='old')
-		do j=depart_boucle_nbclones,NbClones
+		
+		do j = 0, Nbclones_mbar
+		
+			write(*,*) 'posfinal ',posfinal
+			open(unit=27, file=posfinal, status='old')
 			write(*,*) 'j depart_boucle_nbclones NbClones  ', j ,depart_boucle_nbclones,NbClones
+			
 			do i=0, totiter-1                      ! attention i=totiter doit etre pris en compte
 				read (27,*) qtemp(1:N,1)
 				read (27,*) qtemp(1:N,2)
@@ -1040,6 +1112,7 @@ subroutine LyapLanczos_allocate
 	open(unit=30, file=kappaF,  action='write', status='replace')
 	open(unit=31, file=kappaFd,  action='write', status='replace')
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	open(unit=111, file=data_abf, action='write', status='replace')
 	open(unit=24, file=data_mbar, action='write', status='replace')
 	open(unit=244, file=dada_mbar, action='write', status='replace')
 
@@ -1132,7 +1205,7 @@ subroutine LyapLanczos_allocate
 	acc(:)=0
 	!! initialisation paramètres de bias alpha pour reconstruction
 	do j= 0, Nbclones_mbar
-		alpha_bias(j)=1.d12*(real(j*(alpha_max/real(Nbclones_mbar))))!*sqrt(9.270914743200000e-023)/300.0
+		alpha_bias(j)=(real(j*(alpha_max/real(Nbclones_mbar))))!*sqrt(9.270914743200000e-023)/300.0
 		write(*,*)'bias', alpha_bias(j)  
 	enddo
 
@@ -1148,9 +1221,10 @@ subroutine LyapLanczos_allocate
 	
 	! Allocation ABF
 	
-	delta = 0.2d0
-	delta_bin_theta_s2 = 0.5d0*alpha_max/real(Nbclones_mbar)
-	theta_n = 0.0d0
+	delta = 5.d12
+	delta_bin_theta_s2 = 0.5d0*real(alpha_max/real(Nbclones_mbar))
+	theta_n = 50.0d12
+	itheta_n = nint((theta_n)/(alpha_max)*real(Nbclones_mbar))
 	N_extra = 10
 
 	allocate(theta(-N_extra:nmax+N_extra))
@@ -1161,6 +1235,13 @@ subroutine LyapLanczos_allocate
 	allocate(A_prime(-N_extra:nmax+N_extra))
 	allocate(A_prime_num(-N_extra:nmax+N_extra))
 	allocate(histo_theta(0:nmax))
+	
+#if(PARASUN)
+	allocate(MPI_histo_theta(0:nmax))
+	allocate(MPI_sum_P_A(-N_extra:nmax+N_extra))
+	allocate(MPI_A_prime(-N_extra:nmax+N_extra))
+	allocate(MPI_A_prime_num(-N_extra:nmax+N_extra))
+#endif(PARASUN)
 	
 	theta = 0.d0
 	do i=0,Nbclones_mbar

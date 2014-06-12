@@ -10,7 +10,7 @@ OBJ =	lanczosdef.o\
 		sundae.o
 
 
-PREPROC=-fpp -DV2
+PREPROC = -fpp -DPARASUN
 
 include ../linux.arch
 
@@ -25,7 +25,7 @@ $(EXEC) :$(OBJ) $(SW_pot)
 
 .PRECIOUS: libsundae.a
 
-.SUFFIXES: .f .f90 .o .a
+.SUFFIXES: .f .f90 .F90 .o .a
 
 .f.o:
 	$(F77) $(F77FLAGS_SUNDAE) -c $<
@@ -42,6 +42,16 @@ $(EXEC) :$(OBJ) $(SW_pot)
 	$(F90) $(F90FLAGS_SUNDAE) -c $<
 	ar rv $@ $%
 	rm -f $%
+.F90.o :
+	$(CPP) $(CPPFLAGS_SUNDAE) $< > $*.tmp.f90
+	$(F90) -c  $(F90FLAGS_SUNDAE) -I${MKLINCLUDE}  -mkl  $*.tmp.f90
+	mv $*.tmp.o $*.o
+.F90.a :
+	$(CPP) $(CPPFLAGS_SUNDAE) $< > $*.tmp.f90
+	$(F90) -c  $(F90FLAGS_SUNDAE) $*.tmp.f90
+	mv $*.tmp.o $*.o
+	ar rv $@ $%
+	rm -rf $%
 
 
 clean:

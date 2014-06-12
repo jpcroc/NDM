@@ -8,10 +8,11 @@ subroutine read_sundae()
 	!-----------------------------------------------
 	use gen_com_m,      ONLY : fnam, lenfnam
 	use sundae_module,  ONLY : h_A_max, h_ba_min, h_ba_max, h_ba, h_ba_I, fnamtin, totiter, ss,          &
-							 dt, Totalmcmoves, TotalTime, gamma_sundae, Temperature, alpha_max, theta,    &
+							 dt, Totalmcmoves, TotalTime, gamma_sundae, Temperature, alpha_max, theta,   &
 							 teq, delta_x, a_sto, kapa, Nbclones, KtoERG, sortie, continue_sundae,       &
 							 maxvec, tprimo, Nbclones_mbar, depart_boucle_nbclones, posfinal, tequilib,  &
-							 data_mbar, dada_mbar, data_mbar_std, moyennes_mbar, moyennes_mbar_denom, kappaF, kappaFd
+							 data_mbar, dada_mbar, data_mbar_std, data_abf, moyennes_mbar,               &
+							 moyennes_mbar_denom, kappaF, kappaFd
 
 	implicit none
 
@@ -52,6 +53,7 @@ subroutine read_sundae()
 	write(6,*)'friction*dt = '  , gamma_sundae  ! friction*dt
 	! interval between 2 data records
 	write(6,*)'sortie data_mbar = ',sortie  ! Name of the file where data are stored
+	alpha_max = alpha_max*1.d12
 	write(6,*)'alpha max = ', alpha_max 
 	write(6,*)'t_equilib', teq
 	write(6,*)'delta_X = ', delta_x
@@ -76,6 +78,7 @@ subroutine read_sundae()
 
 	moyennes_mbar  =sortie(1:lenfnam)//'.data_moy'
 	moyennes_mbar_denom  =sortie(1:lenfnam)//'.data_moy2'
+	data_abf       = sortie(1:lenfnam)//'.data_abf'
 	data_mbar      = sortie(1:lenfnam)//'.data'
 	dada_mbar      = sortie(1:lenfnam)//'.dada'
 	data_mbar_std  = sortie(1:lenfnam)//'.data_std'

@@ -246,7 +246,7 @@ $(LIBART):
 $(LIBPHONDY): 
 	(cp -rp ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
 $(LIBSUNDAE): 
-	(cp -rp ../sundae ./ ; cd sundae	; make ; cp *.o *.a ../../sundae)
+	(cp -rp ../sundae ./ ; cd sundae	; make ; cp *.o *.a *.tmp.f90 ../../sundae)
 $(LIBMAB): 
 	(cp -rp ../mab ./ ; cd mab	; make ; cp *.o *.a ../../mab)
 clean : clean_seq clean_para

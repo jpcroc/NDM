@@ -83,7 +83,11 @@ LIBRARY =${LIBRARY_ART} ${LLIBS_ART}
 
 endif
 
-# PHONDY PHONDY PHONDY PHONDY PHONDY PHONDY
+
+
+#################   PHONDY    #####################
+
+
 
 ifdef PHONDY
 ifdef PARAPH
@@ -146,6 +150,9 @@ endif
 endif
 
 
+#############   MAB   ################
+
+
 ifdef MAB
  F90 = ifort
  CPPFLAGS = -C -P -traditional -DMAB
@@ -174,9 +181,48 @@ LIBRARY =${LIBRARY_MAB} ${LLIBS_MAB}
 endif
 
 
+
+
+#############   SUNDAE   #############
+
+
 ifdef SUNDAE
+ifdef PARASUN
+
+
+ F90 = mpif90
+ CPPFLAGS_SUNDAE = -C -P -traditional -DSUNDAE -DPARASUN 
+# EXT      = _SUNDAE_PARASUN
+F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+#F90FLAGS =  -O3 -convert big_endian 
+#F90FLAGS =  -O3  
+
+
+#FLAGS and LIBS for SUNDAE
+FLAGS_SUNDAE =  -DNOIBM 
+#debug
+#F90FLAGS_SUNDAE = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_SUNDAE = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_SUNDAE =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_SUNDAE =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_SUNDAE = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_SUNDAE =${mkkl_definitions}
+# link library
+LIBRARY_SUNDAE = sundae/libsundae.a
+
+
+# link library
+LIBRARY =${LIBRARY_SUNDAE} ${LLIBS_SUNDAE}  
+
+ 
+else
+
+
  F90 = ifort
- CPPFLAGS = -C -P -traditional -DSUNDAE
+ CPPFLAGS_SUNDAE = -C -P -traditional -DSUNDAE
  EXT      = _SUNDAE
 F90FLAGS =  -O0 -fpe0 -C -traceback  -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
@@ -200,4 +246,6 @@ LIBRARY_SUNDAE = sundae/libsundae.a
 # link library
 LIBRARY =${LIBRARY_SUNDAE} ${LLIBS_SUNDAE}  
 
+
+endif
 endif
