@@ -37,6 +37,8 @@ subroutine dmloop
   ! Initialization
   IF ((dmtype.EQ.2).AND.lFire) THEN
           CALL init_trempe_fire(fire_dt, fire_nstep, fire_alph)
+          vp=0.d0
+          xpp=xp
   END IF
 
   !      write(6,*)'im',im
