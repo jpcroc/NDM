@@ -1,5 +1,20 @@
 ! This file contains the following functions or subroutines:
-!  OU_controle, genere_bruit2,control_angular_momenta, genrand, FACT and timestamp      
+!  OU_controle, genere_bruit2,control_angular_momenta, genrand, FACT and timestamp, init_random_seed
+     
+SUBROUTINE init_random_seed(k)
+ INTEGER :: i, k, n, clock
+ INTEGER, DIMENSION(:), ALLOCATABLE :: seed
+
+ CALL RANDOM_SEED(size = n)
+ ALLOCATE(seed(n))
+        
+ CALL SYSTEM_CLOCK(COUNT=clock)
+         
+ seed = k + clock + 37 * (/ (i - 1, i = 1, n) /)
+ CALL RANDOM_SEED(PUT = seed)
+        
+ DEALLOCATE(seed)
+END SUBROUTINE
 
 
 Subroutine OU_control(p,q,a_sto,v0)

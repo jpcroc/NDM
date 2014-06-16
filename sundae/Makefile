@@ -1,6 +1,6 @@
 OBJ =	lanczosdef.o\
-		tools.o \
 		sundae_module.o\
+		tools.o \
         calfo_sundae.o\
         init_sundae.o\
         read_sundae.o\

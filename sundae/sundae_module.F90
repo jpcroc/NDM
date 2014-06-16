@@ -162,6 +162,9 @@ module sundae_module
 		real(double), dimension(:), allocatable, save :: sum_P_A
 		real(double), dimension(:), allocatable, save :: A_prime
 		real(double), dimension(:), allocatable, save :: A_prime_num
+		real(double), dimension(:), allocatable, save :: O_moy_num
+		real(double), dimension(:), allocatable, save :: O_moy_estim
+		real(double), dimension(:), allocatable, save :: O_estim
 		real(double) ,dimension(:), allocatable, save :: histo_theta	
 
 
@@ -170,9 +173,13 @@ module sundae_module
 #if(PARASUN)
 		integer rank, numproc, ierror
 		real(double) ,dimension(:), allocatable, save :: MPI_histo_theta
+		real(double) ,dimension(:), allocatable, save :: MPI_P_A
 		real(double) ,dimension(:), allocatable, save :: MPI_sum_P_A 
 		real(double) ,dimension(:), allocatable, save :: MPI_A_prime 
 		real(double) ,dimension(:), allocatable, save :: MPI_A_prime_num
+		real(double), dimension(:), allocatable, save :: MPI_O_moy_num
+		real(double), dimension(:), allocatable, save :: MPI_O_moy_estim
+		real(double), dimension(:), allocatable, save :: MPI_O_estim
 #endif(PARASUN)
 		
 CONTAINS
@@ -531,28 +538,21 @@ subroutine LyapLanczos_ABF
 	
 
 	! Acceptation/rejet 
-	
-	AR_MH = max( 1.0d0 , exp( -(theta_temp-theta_n)*Lyap - (A_n(itheta_temp) - A_n(itheta_n)) ) )
+	if ( (itheta_temp.ge.0) .and. (itheta_temp.le.Nbclones_mbar) ) then
+		AR_MH = max( 1.0d0 , exp( -(theta_temp-theta_n)*Lyap - (A_n(itheta_temp) - A_n(itheta_n)) ) )
+	endif
 	ranf = genrand()
 	if ( (ranf.lt.AR_MH) .and. (theta_temp.gt.0.0d0) .and. (theta_temp.lt.alpha_max) ) then
 		theta_n = theta_temp
 		itheta_n = nint((theta_n)/(alpha_max)*real(Nbclones_mbar))
 	endif
 
+	!!!!!! CORRIGER !!!!!!!
 	if ((itheta_n.ge.0.0d0).and.(itheta_n.le.Nbclones_mbar)) then
 		histo_theta(itheta_n) = histo_theta(itheta_n) + 1.0d0
 	endif
 
-	! Mise en commun parallele ---- 1/2 !
-#if(PARASUN)
-	
-	call MPI_REDUCE(histo_theta,MPI_histo_theta,Nbclones_mbar+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
-	call MPI_BCAST(MPI_histo_theta,Nbclones_mbar+1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
-		
-#endif(PARASUN)
-	! Mise en commun parallele ---- 1/2 !
-	
-	
+
 	! Calcul du nouveau biais
 	
 	Lyap          = oldLyap(itheta_n)
@@ -563,6 +563,21 @@ subroutine LyapLanczos_ABF
 	somme         = sum(P_A(-N_extra:Nbclones_mbar+N_extra))
 	P_A           = P_A/somme
 
+
+#if(PARASUN)
+	! Mise en commun parallele ---- 1/2 !	
+	call MPI_REDUCE(P_A,MPI_P_A,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
+
+	MPI_P_A = MPI_P_A/dble(numproc)
+	if (rank.eq.0) then
+		MPI_histo_theta(0:Nbclones_mbar) = MPI_histo_theta(0:Nbclones_mbar) + MPI_P_A(0:Nbclones_mbar)
+	end if
+
+	call MPI_BCAST(MPI_P_A,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
+	! Mise en commun parallele ---- 1/2 !
+#endif(PARASUN)
+	
+	
 	do theta_tilde=-N_extra,Nbclones_mbar+N_extra
 		P_n        = P_A(theta_tilde)
 		pi_n       = sum_P_A(theta_tilde)
@@ -571,20 +586,30 @@ subroutine LyapLanczos_ABF
 		if (pi_n1.eq.0.d0) then 
 			pi_n1 = 1.0d-10
 		endif
+		
+		sum_P_A(theta_tilde)       =   pi_n1
 
 		A_prime_num(theta_tilde)   =   P_n * Lyap + A_prime_num(theta_tilde)
-		sum_P_A(theta_tilde)       =   pi_n1
-		A_prime(theta_tilde)       =   A_prime_num(theta_tilde) / pi_n1
+		!A_prime(theta_tilde)       =   A_prime_num(theta_tilde) / pi_n1
 	enddo
-
+	
+	do k = 0,totiter 
+		O_moy_num(k)     =   P_A(0) * O_estim(k) + O_moy_num(k)
+	enddo
+	
 
 #if(PARASUN)
 	! Mise en commun parallele ---- 2/2 !
 	call MPI_REDUCE(A_prime_num,MPI_A_prime_num,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
+	call MPI_REDUCE(O_moy_num,MPI_O_moy_num,totiter,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 	call MPI_REDUCE(sum_P_A,MPI_sum_P_A,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 
-	MPI_A_prime = MPI_A_prime_num/MPI_sum_P_A
-
+	MPI_A_prime = MPI_A_prime_num/ (MPI_sum_P_A + 1.d-6)
+	
+	do k = 0,totiter 
+		O_moy_estim(k)  =   MPI_O_moy_num(k) / (MPI_sum_P_A(0) + 1.d-6)
+	enddo
+	
 	if (N_extra.gt.0) then 
 		MPI_A_prime(-N_extra:0) = 0.d0
 		MPI_A_prime(Nbclones_mbar:Nbclones_mbar+N_extra) = 0.d0
@@ -599,6 +624,12 @@ subroutine LyapLanczos_ABF
 		A_n(theta_tilde) = A_n(theta_tilde-1)  + (MPI_A_prime(theta_tilde-1) + MPI_A_prime(theta_tilde))*delta_bin_theta_s2
 	enddo
 #else
+	do theta_tilde=-N_extra,Nbclones_mbar+N_extra
+		A_prime(theta_tilde)  =  A_prime_num(theta_tilde) / (pi_n1 + 1.d-6)
+	enddo
+	do k = 0,totiter 
+		O_moy_estim(k)  =  O_moy_num(k) / (sum_P_A(0) + 1.d-6)
+	enddo
 	A_n = 0.d0
 	A_n(-N_extra) = 0.d0
 	do theta_tilde  = -N_extra+1,Nbclones_mbar + N_extra
@@ -621,6 +652,45 @@ subroutine LyapLanczos_ABF
 end subroutine LyapLanczos_ABF
 
 
+
+subroutine LyapLanczos_Obs
+
+	use lanczos_defs
+	use tab_imm_m
+
+	implicit none
+
+	!  calcul des fonctions indicatrices pour l'etat B qui correspond a la barriere dans le cas lacune 
+	h_F(:)      = 0
+	h_Fg(:)     = 0
+	h_Fd(:)     = 0
+	h_FI(:)     = 0
+	h_dI(:)     = 0
+
+	do k = 0,totiter 
+		!passagge F-d et F-I
+		if ((absdmax(j,k).ge.h_ba_min).and.(absdmax(j,k).lt.h_ba)) then
+			h_Fg(k) = 1.0
+		endif
+		if ((absdmax(j,k).ge.h_ba).and.(absdmax(j,k).lt.h_ba_max) ) then   !!!FCC -> DEFAULT FCC
+			h_Fd(k) = 1.0
+		endif
+		if ((absdmax(j,k).ge.h_ba_max).and.(absdmax(j,k).lt.h_ba_I)) then !!FCC -> FCC 
+			h_F(k)  = 1.0
+		endif
+		if (absdmax(j,k).ge.h_ba_I ) then 
+			h_FI(k) = 1.0
+		endif
+	enddo !k
+	
+	do k = 0,totiter
+		O_estim(k) = h_Fd(k)
+	enddo
+	
+
+end subroutine LyapLanczos_Obs
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -636,18 +706,6 @@ subroutine LyapLanczos_vac! (xp)
 	real(double) :: genrand
 	
 	
-
-#if(PARASUN) 
-	
-	call MPI_INIT(ierror)     !! On initialise MPI
-
-	call MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierror) !! Attribue a rank le numero de processeur
-
-	call MPI_COMM_SIZE(MPI_COMM_WORLD,numproc,ierror)  !! Attribue a numproc le nombre de processeur
-
-#endif(PARASUN)
-
-
 	!!!!!!!!!!!!!!!!!!!!!!      Phase d'initialisation       !!!!!!!!!!!!!!!!!!!!!!!!
 
 	call read_sundae                         !!! Modif 21.05.14
@@ -660,7 +718,22 @@ subroutine LyapLanczos_vac! (xp)
 	
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#if(PARASUN) 
 	
+	call MPI_INIT(ierror)     !! On initialise MPI
+
+	call MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierror) !! Attribue a rank le numero de processeur
+
+	call MPI_COMM_SIZE(MPI_COMM_WORLD,numproc,ierror)  !! Attribue a numproc le nombre de processeur
+	
+	call init_random_seed(100000*(rank+1))
+	
+#else
+
+	call init_random_seed(100000)
+
+#endif(PARASUN)
+
 
 	do mcmoves = 1 , Totalmcmoves                       !mcmoves = 1,M in the paper
 	
@@ -689,19 +762,36 @@ subroutine LyapLanczos_vac! (xp)
 		call LyapLanczos_shifting              !!! Modif 03.06.14
 	
 	
+		call LyapLanczos_Obs				   !!! Modif 13.06.14
+	
+	
 		call LyapLanczos_ABF				   !!! Modif 10.06.14
 		
 		!
 		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-#if(PARASUN) 
-	call MPI_FINALIZE(ierror)	 !! Pour finir l'appel MPI
-#endif(PARASUN) 
-
 	enddo !! mcmoves avec incrément + 1 clones
 
-	write(111,*) histo_theta
+
+
+
+#if(PARASUN) 
+
+	do j=0,Nbclones_mbar
+		write(111,*) histo_theta(j), MPI_A_prime(j), O_moy_estim(j)
+	enddo
+
+	call MPI_FINALIZE(ierror)	 !! Pour finir l'appel MPI
+	
+#else
+
+	do j=0,Nbclones_mbar
+		write(111,*) histo_theta(j), A_prime(j), O_moy_estim(j)
+	enddo
+
+#endif(PARASUN) 
+
 
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -1234,13 +1324,20 @@ subroutine LyapLanczos_allocate
 	allocate(sum_P_A(-N_extra:nmax+N_extra))
 	allocate(A_prime(-N_extra:nmax+N_extra))
 	allocate(A_prime_num(-N_extra:nmax+N_extra))
+	allocate(O_moy_num(0:totiter))
+	allocate(O_moy_estim(0:totiter))
+	allocate(O_estim(0:totiter))
 	allocate(histo_theta(0:nmax))
 	
 #if(PARASUN)
 	allocate(MPI_histo_theta(0:nmax))
+	allocate(MPI_P_A(-N_extra:nmax+N_extra))
 	allocate(MPI_sum_P_A(-N_extra:nmax+N_extra))
 	allocate(MPI_A_prime(-N_extra:nmax+N_extra))
 	allocate(MPI_A_prime_num(-N_extra:nmax+N_extra))
+	allocate(MPI_O_moy_num(0:totiter))
+	allocate(MPI_O_moy_estim(0:totiter))
+	allocate(MPI_O_estim(0:totiter))
 #endif(PARASUN)
 	
 	theta = 0.d0
