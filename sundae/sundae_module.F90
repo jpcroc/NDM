@@ -547,16 +547,10 @@ subroutine LyapLanczos_ABF
 		itheta_n = nint((theta_n)/(alpha_max)*real(Nbclones_mbar))
 	endif
 
-	!!!!!! CORRIGER !!!!!!!
-	if ((itheta_n.ge.0.0d0).and.(itheta_n.le.Nbclones_mbar)) then
-		histo_theta(itheta_n) = histo_theta(itheta_n) + 1.0d0
-	endif
-
-
 	! Calcul du nouveau biais
 	
 	Lyap          = oldLyap(itheta_n)
-	u_A(:)        = Lyap*theta(:) + A_n(:)     
+	u_A(:)        = Lyap*theta(:) - A_n(:)     
 	gmax          = maxval(u_A)
 	u_A(:)        = u_A(:) - gmax
 	P_A(:)        = exp(u_A(:))
@@ -575,6 +569,8 @@ subroutine LyapLanczos_ABF
 
 	call MPI_BCAST(MPI_P_A,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
 	! Mise en commun parallele ---- 1/2 !
+#else
+	histo_theta(0:Nbclones_mbar) = histo_theta(0:Nbclones_mbar) + P_A(0:Nbclones_mbar)
 #endif(PARASUN)
 	
 	
@@ -660,6 +656,8 @@ subroutine LyapLanczos_Obs
 
 	implicit none
 
+	j = itheta_n
+
 	!  calcul des fonctions indicatrices pour l'etat B qui correspond a la barriere dans le cas lacune 
 	h_F(:)      = 0
 	h_Fg(:)     = 0
@@ -674,6 +672,11 @@ subroutine LyapLanczos_Obs
 		endif
 		if ((absdmax(j,k).ge.h_ba).and.(absdmax(j,k).lt.h_ba_max) ) then   !!!FCC -> DEFAULT FCC
 			h_Fd(k) = 1.0
+			write(*,*) "*************************************************"
+			write(*,*) "************                         ************"
+			write(*,*) "************  passage dans l'etat B  ************"
+			write(*,*) "************                         ************"
+			write(*,*) "*************************************************"
 		endif
 		if ((absdmax(j,k).ge.h_ba_max).and.(absdmax(j,k).lt.h_ba_I)) then !!FCC -> FCC 
 			h_F(k)  = 1.0
@@ -774,14 +777,13 @@ subroutine LyapLanczos_vac! (xp)
 	enddo !! mcmoves avec incrément + 1 clones
 
 
-
-
 #if(PARASUN) 
 
-	do j=0,Nbclones_mbar
-		write(111,*) histo_theta(j), MPI_A_prime(j), O_moy_estim(j)
-	enddo
-
+	if (rank.eq.0) then
+		do j=0,Nbclones_mbar
+			write(111,*) MPI_histo_theta(j), MPI_A_prime(j), O_moy_estim(j)
+		enddo
+	endif
 	call MPI_FINALIZE(ierror)	 !! Pour finir l'appel MPI
 	
 #else

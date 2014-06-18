@@ -182,8 +182,8 @@ ifdef ART
  CLEANART=clean_art
  DIREXT=art
  EXT=_art
-
 endif
+
 ifdef PHONDY
  # Version PHONDY
 ifdef PARAPH
@@ -197,17 +197,25 @@ endif
  CPPFLAGS=${CPPFLAGS_PHONDY}
  CLEANPHONDY=clean_phondy
  DIREXT=phondy
-
 endif
+
 ifdef SUNDAE
  # Version SUNDAE
+ifdef PARASUN
+OBJS = ${OBJS_MOD} ${OBJS_SEQ}
+ EXT=_sundae_para
+else
+OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
+ EXT=_sundae
+endif
  OBJS = ${OBJS_MOD} ${OBJS_SEQ}
  DEP=${OBJS}  ${LIBSUNDAE}
- CLEANPHONDY=clean_sundae
+ CPPFLAGS=${CPPFLAGS_SUNDAE}
+ CLEANSUNDAE=clean_sundae
  DIREXT=sundae
  EXT=_sundae
-
 endif
+
 ifdef  MAB
  # Version MAB
  OBJS = ${OBJS_MOD} ${OBJS_SEQ}
@@ -215,8 +223,8 @@ ifdef  MAB
  CLEANMAB=clean_mab
  DIREXT=mab
  EXT=_mab
-
 endif
+
 .f.o :
 	${F90} -c  ${F90FLAGS} $<
 
