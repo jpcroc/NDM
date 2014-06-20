@@ -12,12 +12,12 @@ subroutine read_sundae()
 							 teq, delta_x, a_sto, kapa, Nbclones, KtoERG, sortie, continue_sundae,       &
 							 maxvec, tprimo, Nbclones_mbar, depart_boucle_nbclones, posfinal, tequilib,  &
 							 data_mbar, dada_mbar, data_mbar_std, data_abf, moyennes_mbar,               &
-							 moyennes_mbar_denom, kappaF, kappaFd
+							 moyennes_mbar_denom, kappaF, kappaFd, reprise_A
 
 	implicit none
 
 
-	namelist /input_sundae/ Totalmcmoves,TotalTime,dt,Nbclones,Temperature,gamma_sundae,sortie,alpha_max, teq, delta_x, a_sto, kapa, continue_sundae, Nbclones_mbar, depart_boucle_nbclones,tprimo,maxvec,h_A_max,h_ba_min,h_ba_max,h_ba,h_ba_I
+	namelist /input_sundae/ Totalmcmoves,TotalTime,dt,Nbclones,Temperature,gamma_sundae,sortie,alpha_max, teq, delta_x, a_sto, kapa, continue_sundae, reprise_A, Nbclones_mbar, depart_boucle_nbclones,tprimo,maxvec,h_A_max,h_ba_min,h_ba_max,h_ba,h_ba_I
 
 
 
