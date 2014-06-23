@@ -25,7 +25,6 @@ module sundae_module
 	real(double) :: h_A_max, h_ba_max, h_ba_min, h_ba, h_ba_I, h_temp
 	real(double) :: dt, TotalTime, gamma_sundae, Temperature
 	real(double) :: alpha_max, teq, delta_x, a_sto, kapa, ss, tequilib
-	character(len=128) :: fic
 	character(len=128) :: recup
 	character(len=128) :: srank
 	character(len=128) :: sortie
@@ -171,9 +170,9 @@ module sundae_module
 	
 
 	! Complements MPI
-	integer :: rank = 0
+	integer :: rank = 0, numproc = 1
 #if(PARASUN)
-	integer numproc, ierror
+	integer :: ierror
 	real(double) ,dimension(:), allocatable, save :: MPI_histo_theta
 	real(double) ,dimension(:), allocatable, save :: MPI_histo_Lyap
 	real(double) ,dimension(:), allocatable, save :: MPI_P_A
@@ -423,7 +422,6 @@ subroutine LyapLanczos_shifting
 
 		it_trajectory=it_trajectory+1 
 		new_projection=.false.
-
 	enddo
 
 	hamilt=ener0
@@ -514,11 +512,12 @@ subroutine LyapLanczos_ABF
 	implicit none
 
 	real(double) :: genrand
-	
+	integer :: grid
 
 	! Proposition du nouveau theta 
 	xalea = genrand()
-	theta_temp = theta_n + 2.*delta*(xalea-0.5d0)
+	grid = nint(10*(xalea-0.5d0))
+	theta_temp = theta_n + delta*grid
 	
 	itheta_n = nint((theta_n)/(alpha_max)*real(Nbclones_mbar))
 	itheta_temp = nint((theta_temp)/(alpha_max)*real(Nbclones_mbar))
@@ -605,7 +604,7 @@ subroutine LyapLanczos_ABF
 	! Mise en commun parallele ---- 2/2 !
 
 	! Calcul du biais A
-	if ( (continue_sundae.ne.1) .or. (reprise_A.ne.1) )then
+	if ( (continue_sundae.ne.1) .or. (reprise_A.ne.1) ) then
 		A_n = 0.d0
 		A_n(-N_extra) = 0.d0
 		do theta_tilde  = -N_extra+1,Nbclones_mbar + N_extra
@@ -627,7 +626,7 @@ subroutine LyapLanczos_ABF
 #endif
 
 	! normalisation du generateur biaisant
-	if ( (continue_sundae.ne.1) .or. (reprise_A.ne.1) )then
+	if ( (continue_sundae.ne.1) .or. (reprise_A.ne.1) ) then
 		gmin=minval(A_n)
 		A_n = A_n - gmin
 		sum_A = log(sum(exp(-A_n(-N_extra:Nbclones_mbar+N_extra))))
@@ -649,7 +648,8 @@ subroutine LyapLanczos_output
 	use tab_imm_m
 
 	implicit none
-	real(double) theta_f, A_prime_f, L2_f
+	real(double) theta_f, A_prime_f, L2_f, somme
+	character(len=128) :: fic1, fic2
 	
 	! ----------- Sortie des observables ----------- !
 #if(PARASUN)
@@ -662,21 +662,28 @@ subroutine LyapLanczos_output
 	! Mise en commun parallele !
 #endif
 	
-	fic = trim(data_abf)//'_obs'
+	fic1 = trim(data_abf)//'_histo'
+	fic2 = trim(data_abf)//'_obs'
 	open(unit=111, file=data_abf, action='write', status='replace')
-	open(unit=1110, file=fic, action='write', status='replace')
+	open(unit=1110, file=fic1, action='write', status='replace')
+	open(unit=1111, file=fic2, action='write', status='replace')
 #if(PARASUN) 
 	if (rank.eq.0) then
+		somme = sum(MPI_histo_theta)
+		MPI_histo_theta = MPI_histo_theta/somme*real(Nbclones_mbar)
+		somme = sum(MPI_histo_Lyap)
+		MPI_histo_Lyap = MPI_histo_Lyap/somme*real(Nbclones_mbar)
 		do j=-N_extra,Nbclones_mbar+N_extra
 			! Renormalisation des variables pour les sorties fichier
 			theta_f = theta(j)*sqrt(9.270914743200000e-023)/300.0
 			A_prime_f = MPI_A_prime(j)*300/sqrt(9.270914743200000e-023)
 			L2_f = MPI_L2(j)*300/sqrt(9.270914743200000e-023)*300/sqrt(9.270914743200000e-023)
 			! Sortie fichier : theta, histo_theta, Lyap_moyen (A_prime)
-			write(111,*) theta_f, MPI_histo_theta(j), A_prime_f, L2_f, MPI_histo_Lyap(j)
+			write(111,*) theta_f, A_prime_f, L2_f
+			write(1110,*) MPI_histo_theta(j), MPI_histo_Lyap(j)
 		enddo
 		do j=0,totiter
-			write(1110,*) O_moy_estim(j)
+			write(1111,*) O_moy_estim(j), MPI_O_moy_num(j), MPI_sum_P_A(0)
 		enddo
 	endif	
 #else
@@ -693,6 +700,7 @@ subroutine LyapLanczos_output
 #endif
 	close(111)
 	close(1110)
+	close(1111)
 	! ----------- Sortie des observables ----------- !
 	
 	
@@ -702,7 +710,7 @@ subroutine LyapLanczos_output
 	if (continue_sundae.eq.1) then
 		open(unit=112,file=recup,status='replace')		
 	else if (continue_sundae.eq.2) then
-		open(unit=112,file=recup,status='new')
+		open(unit=112,file=recup,status='replace')
 	endif
 	
 	write(*,*) 'recup', recup
@@ -856,6 +864,8 @@ subroutine LyapLanczos_Obs
 	h_FI(:)     = 0
 	h_dI(:)     = 0
 
+	! Estimation simple sur la partie [0,L] de la trajectoire
+	if (.true.) then
 	do k = 0,totiter 
 		!passagge F-d et F-I
 		if ((absdmax(k).ge.h_ba_min).and.(absdmax(k).lt.h_ba)) then
@@ -880,6 +890,27 @@ subroutine LyapLanczos_Obs
 	do k = 0,totiter
 		O_estim(k) = h_Fd(k)
 	enddo
+	endif
+	
+	! Estimation en moyenne glissante sur [0,2L] trajectoire shiftee
+	if (.false.) then
+	do k = 0,totiter 
+		do j = 0,totiter 
+			if ((absdmax(j+k).ge.h_ba) .and. (absdmax(j+k).lt.h_ba_max) .and. (absdmax(j).lt.h_A_max)) then 
+				h_Fd(k) = h_Fd(k) + 1.0
+				write(*,*) "*************************************************"
+				write(*,*) "************                         ************"
+				write(*,*) "************  passage dans l'etat B  ************"
+				write(*,*) "************                         ************"
+				write(*,*) "*************************************************"
+			endif
+		enddo !j
+	enddo !k
+	
+	do k = 0,totiter
+		O_estim(k) = h_Fd(k)/(real(totiter+1))
+	enddo
+	endif
 	
 	! -------- Histogramme du Lyap --------- !
 	iLyap = nint((Lyap*300/sqrt(9.270914743200000e-023))/Lyap_max*real(Nbclones_mbar))
@@ -1463,9 +1494,9 @@ subroutine LyapLanczos_allocate
 	
 	! Allocation ABF
 	
-	delta = 5.d12
+	delta = real(alpha_max/real(Nbclones_mbar))
 	delta_bin_theta_s2 = 0.5d0*real(alpha_max/real(Nbclones_mbar))
-	theta_n = 50.0d12
+	theta_n = real(rank+1)/real(numproc+1)*alpha_max
 	itheta_n = nint((theta_n)/(alpha_max)*real(Nbclones_mbar))
 	N_extra = 10
 
@@ -1485,7 +1516,7 @@ subroutine LyapLanczos_allocate
 	
 #if(PARASUN)
 	allocate(MPI_histo_theta(-N_extra:nmax+N_extra))
-	allocate(MPI_histo_theta(-N_extra:nmax+N_extra))
+	allocate(MPI_histo_Lyap(-N_extra:nmax+N_extra))
 	allocate(MPI_P_A(-N_extra:nmax+N_extra))
 	allocate(MPI_sum_P_A(-N_extra:nmax+N_extra))
 	allocate(MPI_A_prime(-N_extra:nmax+N_extra))
