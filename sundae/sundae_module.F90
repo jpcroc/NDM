@@ -545,8 +545,8 @@ subroutine LyapLanczos_ABF
 	! Mise en commun parallele ---- 1/2 !	
 	call MPI_REDUCE(P_A,MPI_P_A,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 
-	MPI_P_A = MPI_P_A/dble(numproc)
 	if (rank.eq.0) then
+		MPI_P_A = MPI_P_A/dble(numproc)
 		MPI_histo_theta(0:Nbclones_mbar) = MPI_histo_theta(0:Nbclones_mbar) + MPI_P_A(0:Nbclones_mbar)
 	end if
 
@@ -581,7 +581,7 @@ subroutine LyapLanczos_ABF
 #if(PARASUN)
 	! Mise en commun parallele ---- 2/2 !
 	call MPI_REDUCE(A_prime_num,MPI_A_prime_num,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
-	call MPI_REDUCE(O_moy_num,MPI_O_moy_num,totiter,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
+	call MPI_REDUCE(O_moy_num,MPI_O_moy_num,totiter+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 	call MPI_REDUCE(L2_moy_num,MPI_L2_moy_num,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 	call MPI_REDUCE(sum_P_A,MPI_sum_P_A,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 
@@ -662,6 +662,9 @@ subroutine LyapLanczos_output
 	! Mise en commun parallele !
 #endif
 	
+	close(111)
+	close(1110)
+	close(1111)
 	fic1 = trim(data_abf)//'_histo'
 	fic2 = trim(data_abf)//'_obs'
 	open(unit=111, file=data_abf, action='write', status='replace')
@@ -679,11 +682,11 @@ subroutine LyapLanczos_output
 			A_prime_f = MPI_A_prime(j)*300/sqrt(9.270914743200000e-023)
 			L2_f = MPI_L2(j)*300/sqrt(9.270914743200000e-023)*300/sqrt(9.270914743200000e-023)
 			! Sortie fichier : theta, histo_theta, Lyap_moyen (A_prime)
-			write(111,*) theta_f, A_prime_f, L2_f
-			write(1110,*) MPI_histo_theta(j), MPI_histo_Lyap(j)
+			write(111,'(3(E15.6E3))') theta_f, A_prime_f, L2_f
+			write(1110,'(2(E15.6E3))') MPI_histo_theta(j), MPI_histo_Lyap(j)
 		enddo
 		do j=0,totiter
-			write(1111,*) O_moy_estim(j), MPI_O_moy_num(j), MPI_sum_P_A(0)
+			write(1111,'(3(E15.6E3))') O_moy_estim(j), MPI_O_moy_num(j), MPI_sum_P_A(0)
 		enddo
 	endif	
 #else

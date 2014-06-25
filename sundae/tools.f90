@@ -12,6 +12,8 @@ SUBROUTINE init_random_seed(k)
          
  seed = k + 37 * (/ (i - 1, i = 1, n) /) !+ clock
  CALL RANDOM_SEED(PUT = seed)
+ 
+ WRITE(*,*) "La graine : SEED = ", seed
         
  DEALLOCATE(seed)
 END SUBROUTINE
