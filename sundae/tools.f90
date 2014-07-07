@@ -10,7 +10,7 @@ SUBROUTINE init_random_seed(k)
         
  CALL SYSTEM_CLOCK(COUNT=clock)
          
- seed = k + 37 * (/ (i - 1, i = 1, n) /) !+ clock
+ seed = k + 37 * (/ (i - 1, i = 1, n) /) + clock
  CALL RANDOM_SEED(PUT = seed)
  
  WRITE(*,*) "La graine : SEED = ", seed

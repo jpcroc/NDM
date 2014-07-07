@@ -162,12 +162,13 @@ module sundae_module
 	real(double), dimension(:), allocatable, save :: A_prime
 	real(double), dimension(:), allocatable, save :: A_prime_num
 	real(double), dimension(:), allocatable, save :: L2_moy_num
-	real(double), dimension(:,:), allocatable, save :: O_moy_num
-	real(double), dimension(:,:), allocatable, save :: O_moy_estim
-	real(double), dimension(:,:), allocatable, save :: O_estim
+	real(double), dimension(:,:,:), allocatable, save :: O_moy_num
+	real(double), dimension(:,:,:), allocatable, save :: O_moy_estim
+	real(double), dimension(:,:,:), allocatable, save :: O_estim
 	real(double) ,dimension(:), allocatable, save :: histo_theta	
 	real(double), dimension(:), allocatable, save :: histo_Lyap
-	
+	real(double), dimension(:), allocatable, save :: Lyap_traj
+	real(double), dimension(:), allocatable, save :: ha_hb_traj
 
 	! Complements MPI
 	integer :: rank = 0, numproc = 1
@@ -181,8 +182,8 @@ module sundae_module
 	real(double) ,dimension(:), allocatable, save :: MPI_L2_moy_num
 	real(double) ,dimension(:), allocatable, save :: MPI_A_prime 
 	real(double) ,dimension(:), allocatable, save :: MPI_A_prime_num
-	real(double), dimension(:,:), allocatable, save :: MPI_O_moy_num
-	real(double), dimension(:,:), allocatable, save :: MPI_O_moy_estim
+	real(double), dimension(:,:,:), allocatable, save :: MPI_O_moy_num
+	real(double), dimension(:,:,:), allocatable, save :: MPI_O_moy_estim
 #endif
 
 		
@@ -495,7 +496,7 @@ subroutine LyapLanczos_shifting
 	endif
 
 	!!write(*,*) 'newlyap = ', oldLyap*300.0/sqrt(9.270914743200000e-023)	
-	
+	Lyap_traj(mcmoves) = oldLyap*300.0/sqrt(9.270914743200000e-023)	
 
 end subroutine LyapLanczos_shifting
 
@@ -573,14 +574,14 @@ subroutine LyapLanczos_ABF
 	enddo
 	
 	do k = 0,totiter 
-		O_moy_num(k,1:3)    =   P_A(0) * O_estim(k,1:3) + O_moy_num(k,1:3)
+		O_moy_num(k,1:3,1:4)    =   P_A(0) * O_estim(k,1:3,1:4) + O_moy_num(k,1:3,1:4)
 	enddo
 
 
 #if(PARASUN)
 	! Mise en commun parallele ---- 2/2 !
 	call MPI_REDUCE(A_prime_num,MPI_A_prime_num,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
-	call MPI_REDUCE(O_moy_num,MPI_O_moy_num,3*(totiter+1),MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
+	call MPI_REDUCE(O_moy_num,MPI_O_moy_num,4*3*(totiter+1),MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 	call MPI_REDUCE(L2_moy_num,MPI_L2_moy_num,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 	call MPI_REDUCE(sum_P_A,MPI_sum_P_A,Nbclones_mbar+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 
@@ -588,7 +589,7 @@ subroutine LyapLanczos_ABF
 	MPI_L2  = MPI_L2_moy_num / (MPI_sum_P_A + 1.d-6)
 	
 	do k = 0,totiter 
-		O_moy_estim(k,1:3)  =   MPI_O_moy_num(k,1:3) / (MPI_sum_P_A(0) + 1.d-6)
+		O_moy_estim(k,1:3,1:4)  =   MPI_O_moy_num(k,1:3,1:4) / (MPI_sum_P_A(0) + 1.d-6)
 	enddo
 	
 	if (N_extra.gt.0) then 
@@ -615,7 +616,7 @@ subroutine LyapLanczos_ABF
 		A_prime(theta_tilde)  =  A_prime_num(theta_tilde) / (pi_n1 + 1.d-6)
 	enddo
 	do k = 0,totiter 
-		O_moy_estim(k,1:3)  =  O_moy_num(k,1:3) / (sum_P_A(0) + 1.d-6)
+		O_moy_estim(k,1:3,1:4)  =  O_moy_num(k,1:3,1:4) / (sum_P_A(0) + 1.d-6)
 	enddo
 	A_n = 0.d0
 	A_n(-N_extra) = 0.d0
@@ -648,7 +649,7 @@ subroutine LyapLanczos_output
 
 	implicit none
 	real(double) theta_f, A_prime_f, L2_f, somme
-	character(len=128) :: fic1, fic2
+	character(len=128) :: fic1, fic2, fic3, smcmoves
 	
 	! ----------- Sortie des observables ----------- !
 #if(PARASUN)
@@ -662,14 +663,14 @@ subroutine LyapLanczos_output
 #endif
 	
 	if (rank.eq.0) then
-		close(111)
-		close(1110)
-		close(1111)
+		write( smcmoves, '(i6)' )  mcmoves
 		fic1 = trim(data_abf)//'_histo'
-		fic2 = trim(data_abf)//'_obs'
+		fic2 = trim(data_abf)//'_obs_1_'//trim(adjustl(smcmoves))
+		fic3 = trim(data_abf)//'_obs_2_'//trim(adjustl(smcmoves))
 		open(unit=111, file=data_abf, action='write', status='replace')
 		open(unit=1110, file=fic1, action='write', status='replace')
 		open(unit=1111, file=fic2, action='write', status='replace')
+		open(unit=1112, file=fic3, action='write', status='replace')
 	endif
 #if(PARASUN) 
 	if (rank.eq.0) then
@@ -687,7 +688,8 @@ subroutine LyapLanczos_output
 			write(1110,'(2(E15.6E3))') MPI_histo_theta(j), MPI_histo_Lyap(j)
 		enddo
 		do j=0,totiter
-			write(1111,'(4(E15.6E3))') O_moy_estim(j,1), O_moy_estim(j,2), O_moy_estim(j,3), MPI_sum_P_A(0)
+			write(1111,'(5(E15.6E3))') O_moy_estim(j,1,1), O_moy_estim(j,1,2), O_moy_estim(j,1,3), O_moy_estim(j,1,4), MPI_sum_P_A(0)
+			write(1112,'(5(E15.6E3))') O_moy_estim(j,2,1), O_moy_estim(j,2,2), O_moy_estim(j,2,3), O_moy_estim(j,2,4), MPI_sum_P_A(0)
 		enddo
 	endif	
 #else
@@ -699,12 +701,15 @@ subroutine LyapLanczos_output
 		write(111,*) theta_f, histo_theta(j), A_prime_f, histo_Lyap(j)
 	enddo
 	do j=0,totiter
-		write(1110,'(3(E15.6E3))') O_moy_estim(j,1), O_moy_estim(j,2), O_moy_estim(j,3)
+		write(1110,'(3(E15.6E3))') O_moy_estim(j,1,1), O_moy_estim(j,1,1), O_moy_estim(j,1,1)
 	enddo
 #endif
-	close(111)
-	close(1110)
-	close(1111)
+	if (rank.eq.0) then
+		close(111)
+		close(1110)
+		close(1111)
+		close(1112)
+	endif
 	! ----------- Sortie des observables ----------- !
 	
 	
@@ -820,7 +825,7 @@ subroutine LyapLanczos_vac! (xp)
 		call LyapLanczos_ABF				   !!! Modif 10.06.14
 		
 		
-		if (1.eq.mod(mcmoves,10)) then 
+		if (1.eq.mod(mcmoves,500)) then 
 			call LyapLanczos_output
 		endif
 		
@@ -859,59 +864,81 @@ subroutine LyapLanczos_Obs
 
 	implicit none
 
-	j = itheta_n
+	real(double) :: num
 
 	!  calcul des fonctions indicatrices pour l'etat B qui correspond a la barriere dans le cas lacune 
-	h_F(:)      = 0
 	h_Fg(:)     = 0
 	h_Fd(:)     = 0
+	h_F(:)      = 0
 	h_FI(:)     = 0
 	h_dI(:)     = 0
-
+	num = 0
+	
+	
 	! Estimation simple sur la partie [0,L] de la trajectoire
 	do k = 0,totiter 
 		!passagge F-d et F-I
-		if ((absdmax(k).ge.h_ba_min).and.(absdmax(k).lt.h_ba)) then
+		if ((absdmax(newtraj+k).ge.h_ba_min) .and. (absdmax(newtraj+k).lt.h_ba) .and. (absdmax(newtraj).lt.h_A_max)) then
 			h_Fg(k) = 1.0
 		endif
-		if ((absdmax(k).ge.h_ba).and.(absdmax(k).lt.h_ba_max) ) then   !!!FCC -> DEFAULT FCC
+		if ((absdmax(newtraj+k).ge.h_ba) .and. (absdmax(newtraj+k).lt.h_ba_max) .and. (absdmax(newtraj).lt.h_A_max)) then   
+		!!!FCC -> DEFAULT FCC
 			h_Fd(k) = 1.0
-			!!!write(*,*) "*************************************************"
-			!!!write(*,*) "************                         ************"
-			!!!write(*,*) "************  passage dans l'etat B  ************"
-			!!!write(*,*) "************                         ************"
-			!!!write(*,*) "*************************************************"
 		endif
-		if ((absdmax(k).ge.h_ba_max).and.(absdmax(k).lt.h_ba_I)) then !!FCC -> FCC 
+		if ((absdmax(newtraj+k).ge.h_ba_max) .and. (absdmax(newtraj+k).lt.h_ba_I) .and. (absdmax(newtraj).lt.h_A_max)) then 
+		!!FCC -> FCC 
 			h_F(k)  = 1.0
 		endif
-		if (absdmax(k).ge.h_ba_I ) then 
+		if ((absdmax(newtraj+k).ge.h_ba_I) .and. (absdmax(newtraj).lt.h_A_max)) then 
 			h_FI(k) = 1.0
 		endif
 	enddo !k
 	
 	do k = 0,totiter
-		O_estim(k,1) = h_Fd(k)
+		O_estim(k,1,1) = h_Fg(k)
+		O_estim(k,1,2) = h_Fd(k)
+		O_estim(k,1,3) = h_F(k)
+		O_estim(k,1,4) = h_FI(k)
 	enddo
+	ha_hb_traj(mcmoves) = h_Fd(totiter)+h_F(totiter)+h_FI(totiter)
 	
 	! Estimation en moyenne glissante sur [0,2L] trajectoire shiftee
+	h_Fg(:) = 0
 	h_Fd(:) = 0
+	h_F(:)  = 0
+	h_FI(:) = 0
 	do k = 0,totiter 
 		do j = 0,totiter 
+			if ((absdmax(j+k).ge.h_ba_min) .and. (absdmax(j+k).lt.h_ba) .and. (absdmax(j).lt.h_A_max)) then 
+				h_Fg(k) = h_Fg(k) + 1.0
+			endif
 			if ((absdmax(j+k).ge.h_ba) .and. (absdmax(j+k).lt.h_ba_max) .and. (absdmax(j).lt.h_A_max)) then 
 				h_Fd(k) = h_Fd(k) + 1.0
-				!!!write(*,*) "*************************************************"
-				!!!write(*,*) "************                         ************"
-				!!!write(*,*) "************  passage dans l'etat B  ************"
-				!!!write(*,*) "************                         ************"
-				!!!write(*,*) "*************************************************"
+			endif
+			if ((absdmax(j+k).ge.h_ba_max) .and. (absdmax(j+k).lt.h_ba_I) .and. (absdmax(j).lt.h_A_max)) then 
+				h_F(k) = h_F(k) + 1.0
+			endif
+			if ((absdmax(j+k).ge.h_ba_I) .and. (absdmax(j).lt.h_A_max)) then 
+				h_FI(k) = h_FI(k) + 1.0
+			endif
+			if (absdmax(j).lt.h_A_max) then 
+				num = num + 1.0
 			endif
 		enddo !j
+		if (num.eq.0) then
+			O_estim(k,2,1) = 0.
+			O_estim(k,2,2) = 0.
+			O_estim(k,2,3) = 0.
+			O_estim(k,2,4) = 0.
+		else
+			O_estim(k,2,1) = h_Fg(k)/num
+			O_estim(k,2,2) = h_Fd(k)/num
+			O_estim(k,2,3) = h_F(k)/num
+			O_estim(k,2,4) = h_FI(k)/num
+		endif
+		num = 0
 	enddo !k
 	
-	do k = 0,totiter
-		O_estim(k,2) = h_Fd(k)/(real(totiter+1))
-	enddo
 	
 	! Estimation en moyenne glissante avec Waste Recycling sur [0,2L] trajectoire shiftee
 	h_Fd(:) = 0
@@ -929,7 +956,10 @@ subroutine LyapLanczos_Obs
 	enddo !k
 	
 	do k = 0,totiter
-		O_estim(k,3) = h_Fd(k)
+		O_estim(k,3,1) = h_Fd(k)
+		O_estim(k,3,2) = h_Fd(k)
+		O_estim(k,3,3) = h_Fd(k)
+		O_estim(k,3,4) = h_Fd(k)
 	enddo
 	
 	! -------- Histogramme du Lyap --------- !
@@ -1528,17 +1558,21 @@ subroutine LyapLanczos_allocate
 	allocate(A_prime(-N_extra:nmax+N_extra))
 	allocate(A_prime_num(-N_extra:nmax+N_extra))
 	allocate(L2_moy_num(-N_extra:nmax+N_extra))
-	allocate(O_moy_num(0:totiter,1:3))
-	allocate(O_moy_estim(0:totiter,1:3))
-	allocate(O_estim(0:totiter,1:3))
+	allocate(O_moy_num(0:totiter,1:3,1:4))
+	allocate(O_moy_estim(0:totiter,1:3,1:4))
+	allocate(O_estim(0:totiter,1:3,1:4))
 	allocate(histo_theta(-N_extra:nmax+N_extra))
 	allocate(histo_Lyap(-N_extra:nmax+N_extra))
+	allocate(Lyap_traj(1:Totalmcmoves))
+	allocate(ha_hb_traj(1:Totalmcmoves))
 	
 	A_prime_num = 0
 	L2_moy_num  = 0
 	O_moy_num   = 0
 	histo_theta = 0.d0
-	histo_Lyap = 0.d0
+	histo_Lyap  = 0.d0
+	Lyap_traj   = 0.d0
+	ha_hb_traj  = 0.d0
 	
 #if(PARASUN)
 	allocate(MPI_histo_theta(-N_extra:nmax+N_extra))
@@ -1549,8 +1583,8 @@ subroutine LyapLanczos_allocate
 	allocate(MPI_A_prime_num(-N_extra:nmax+N_extra))
 	allocate(MPI_L2(-N_extra:nmax+N_extra))
 	allocate(MPI_L2_moy_num(-N_extra:nmax+N_extra))
-	allocate(MPI_O_moy_num(0:totiter,1:3))
-	allocate(MPI_O_moy_estim(0:totiter,1:3))
+	allocate(MPI_O_moy_num(0:totiter,1:3,1:4))
+	allocate(MPI_O_moy_estim(0:totiter,1:3,1:4))
 	
 	MPI_histo_theta = 0.d0
 	MPI_histo_Lyap = 0.d0
