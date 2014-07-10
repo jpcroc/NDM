@@ -743,6 +743,21 @@ subroutine LyapLanczos_output
 		write(112,*) theta_n 
 	close(112)
 	! ----------- Sortie fichier de recuperation ----------- !
+	
+	
+	! ----------- Sortie fichier Lyapunov-trajectoire ----------- !
+	write( srank, '(i2)' )  rank
+	recup = sortie(1:lenfnam)//trim(adjustl(srank))//'.Lyapunov'
+	open(unit=rank,file=recup,status='replace')		
+		
+	do k = 1, mcmoves
+		write(rank,'(2(E15.6E3))') Lyap_traj(k), ha_hb_traj(k)
+	enddo
+
+	close(rank)
+	! ----------- Sortie fichier Lyapunov-trajectoire ----------- !
+	
+	
 
 end subroutine LyapLanczos_output
 
@@ -825,7 +840,7 @@ subroutine LyapLanczos_vac! (xp)
 		call LyapLanczos_ABF				   !!! Modif 10.06.14
 		
 		
-		if (1.eq.mod(mcmoves,500)) then 
+		if (1.eq.mod(mcmoves,5)) then 
 			call LyapLanczos_output
 		endif
 		
