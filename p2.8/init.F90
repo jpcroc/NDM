@@ -17,7 +17,7 @@ subroutine init
 !  use var_pot
 #if(PARA)
   use mod_mpi
-#endif 
+#endif
 
   ! **************************************************************
 
@@ -46,6 +46,10 @@ subroutine init
 
   !     write(6,*)'entree dans init.f'
   !potentiel BKS
+#if(PARAPH)
+rang=rangph
+#endif 
+
 
 #if(PARA)
   temps_input_deb = MPI_Wtime()
@@ -141,7 +145,7 @@ subroutine init
         end select
      endif
   end do
-  write(6,*)'cm',cm
+  if (rang == 0)  write(6,*)'cm',cm
   usdh = 1/(two*tstep)         
   !endif
 

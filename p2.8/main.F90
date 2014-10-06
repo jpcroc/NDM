@@ -41,10 +41,6 @@ program ndm
   rang = 0
   parallele = .false.
 #endif
-  if (rang==0) write(6,*)'*** NDM237+1 ***'
-#if(ART)
-  if (rang==0) write(6,*)'*** NDM237+1 + ART ***'
-#endif
 
 #if(PHONDY || PARAPH)
 rangph=0
@@ -52,11 +48,19 @@ rangph=0
   call init_mpi_phondy()
   rang=rangph
 #endif
-  if (rang==0) write(6,*)'*** NDMP174 + PHONDY ***'
+
+
+
+  if (rang==0) write(6,*)'*** NDM237+1 ***'
+#if(ART)
+  if (rang==0) write(6,*)'*** NDM237+1 + ART ***'
+#endif
+
+  if (rang==0) write(6,*)'*** NDMP237+1 + PHONDY ***'
 #endif
 
 #if(MAB)
-  if (rang==0) write(6,*)'*** NDMP174 + MAB ***'
+  if (rang==0) write(6,*)'*** NDMP237 + MAB ***'
 #endif
 
 

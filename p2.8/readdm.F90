@@ -907,7 +907,7 @@ end if
 !     if (tempstopcel.gt.0) ltpcel=.true.
      if (ltpcel) write (6, *) '   -> -> pas de contrainte par celulles'
 
-     write(6,*)'IPOTENTIEL',ipotentiel
+     if (rang==0) write(6,*)'IPOTENTIEL',ipotentiel
      select case (ipotentiel)
      case(:9)
          ldemitab=.TRUE.
@@ -1199,7 +1199,7 @@ end if
         end if
      end if
   end if
-  write(6,*)'fmt_cin',fmt_cin
+  if (rang==0) write(6,*)'fmt_cin',fmt_cin
 
   if (ldesinteg)then
      !     itmax=nstepdes

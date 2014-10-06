@@ -94,7 +94,7 @@ ifdef PARAPH
  F90 = mpif90
  CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH 
 # EXT      = _PHONDY_PARAPH
-#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
 F90FLAGS =  -O3 -convert big_endian 
 #F90FLAGS =  -O3  
@@ -193,9 +193,9 @@ ifdef PARASUN
  F90 = mpif90
  CPPFLAGS_SUNDAE = -C -P -traditional -DSUNDAE -DPARASUN 
 # EXT      = _SUNDAE_PARASUN
-#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-F90FLAGS =  -O3 -convert big_endian 
+#F90FLAGS =  -O3 -convert big_endian 
 #F90FLAGS =  -O3  
 
 
