@@ -162,7 +162,7 @@ ainer(3,2) = ainer(2,3)
 ainer(1,3) = ainer(3,1)
 ainer(2,1) = ainer(1,2)
 
-if (rang==0) then
+if (rang==-1) then
        write(6,*) 
        write(6,997) (ainer(1,ib),ib=1,3),prx
        write(6,997) (ainer(2,ib),ib=1,3),pry

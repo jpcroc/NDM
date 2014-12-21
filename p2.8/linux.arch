@@ -190,13 +190,13 @@ ifdef SUNDAE
 ifdef PARASUN
 
 
- F90 = mpif90
- CPPFLAGS_SUNDAE = -C -P -traditional -DSUNDAE -DPARASUN 
+F90 = mpif90
+CPPFLAGS_SUNDAE = -C -P -traditional -DSUNDAE -DPARASUN 
 # EXT      = _SUNDAE_PARASUN
-F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
 #F90FLAGS =  -O3 -convert big_endian 
-#F90FLAGS =  -O3  
+F90FLAGS =  -O3  
 
 
 #FLAGS and LIBS for SUNDAE
@@ -224,9 +224,9 @@ else
  F90 = ifort
  CPPFLAGS_SUNDAE = -C -P -traditional -DSUNDAE
  EXT      = _SUNDAE
-#F90FLAGS =  -O0 -fpe0 -C -traceback  -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+F90FLAGS =  -O0 -fpe0 -C -traceback  -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-F90FLAGS =  -O3 -convert big_endian 
+#F90FLAGS =  -O3 -convert big_endian 
 
 #FLAGS and LIBS for SUNDAE
 FLAGS_SUNDAE =  -DNOIBM 
