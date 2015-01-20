@@ -180,7 +180,10 @@ rang=rangph
   end if
   !...inNEB
 
-  if (iterasmol>=0) call rasmol (it)
+  if (iterasmol>=0) then 
+     itapp=-1
+     call rasmol (itapp)
+  end if
 
   if (igen==(-1)) then
      formatsauv = 2
@@ -282,6 +285,11 @@ rang=rangph
      temps_initspeed_deb = MPI_Wtime()
 #endif
      call initspeed 
+       if (iterasmol>=0) then 
+     itapp=0
+     call rasmol (itapp)
+  end if
+  
      if (lcorrelvp) then
         ax=vp
         write(6,*)'AX DEVIENT VP0'

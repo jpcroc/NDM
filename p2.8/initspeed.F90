@@ -431,7 +431,7 @@ subroutine initspeed
   end if
 
 
-  if (ldeplainit==.true.)then
+  if (tempdeplainit.gt.0)then
 
      if (rang==0) then
         write(6,*)

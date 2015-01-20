@@ -117,7 +117,7 @@ subroutine analyse
               end if
            end do
            write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel,'*Ec = ',kine*unitE, cunitE, &
-                '  (', 2.d0*kine/(3.d0*float(im_glob)*bk), ' K)'
+                '  (', temp, ' K)'
            write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
            write (6, *)
 
@@ -142,7 +142,7 @@ subroutine analyse
               write(6,*)
            end if
 
-           write (6, '(I10,G10.3,A,G12.2)') it,timel, &
+           write (6, '(I10,G10.3,A,f0.3)') it,timel, &
                 '*Temp instantanee = ',temp
 
            if (tfcou>0.0) write (6, '(A,G15.4)') '*temperature externe = ', tcou

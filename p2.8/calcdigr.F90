@@ -41,7 +41,7 @@ subroutine calcdigr
 
 
 
-!  if (rang==0) write(6,*) 'PARA-T entree calcdigr'
+
 
   rmax=rcrdf*1.0d-8
   if (rmax.gt.minval(celsize)) then
@@ -50,9 +50,9 @@ subroutine calcdigr
   end if
   !      write(6,*)'rmax ',rmax
   rmax2 = rmax**2
-  incre = rmax/kmax
+  incre = rmax/nkmax
   invincre = 1/incre
-
+  if (rang==0) write(6,*) 'nkmax incre',nkmax,incre
 
   if (lperiod) then
      xpnp(:,:)=xp(:,:)
@@ -100,7 +100,7 @@ subroutine calcdigr
            
 
            k= int(rij*invincre)
-!           write(6,*) i,j,rij,k
+           write(16,'(2I4,G15.7,2I4)') i,j,rij*1d8,ityp(i),ityp(j)
            m=k+1
            digr(ityp(i),ityp(j),m) = digr(ityp(i),ityp(j),m)+1.
            !                 write(6,*)' digr ', digr(ityp(i),ityp(j),m)
@@ -115,7 +115,7 @@ subroutine calcdigr
      if(nad(iti1)==0) cycle
      do iti2=1,ntyp
         if(nad(iti2)==0) cycle
-        do m=1,kmax
+        do m=1,nkmax
            gdertot(m)=gdertot(m)+digr(iti1,iti2,m)/(nad(iti1)*nad(iti2))
         enddo
 

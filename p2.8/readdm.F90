@@ -53,7 +53,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,ldeplainit,debyetemp,ibrake,lprtpot,ngrdel
+       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel
 
 
   !
@@ -306,7 +306,6 @@ subroutine readdm
   lanczos_step=1.0d-3
 !.... in SUNDAE 
 
-  ldeplainit=.false.
   tempdeplainit=-1
   debyetemp=-1
   lprtpot=.false.
@@ -863,7 +862,7 @@ end if
 
   if (ltranche) then
      if (rang==0) write (6, '(a)') '******************* TRANCHE GELEE !!! *****'
-     rulayer=rulayer*1.0d-8
+!     rulayer=rulayer*1.0d-8
 
      lfrozen=.true.
      if (lcdp==.true.) then
@@ -1021,19 +1020,14 @@ end if
        itetimestep
   if (itederive>0)  write(6,*) ' itederive=', itederive
   if (rang==0) write (6, '(A,F10.1,A,F10.1,A,F10.1,A,F10.1)') 'tinit=', tinit
-  if (ldeplainit==.true.)then
-     if (tempdeplainit==-1) then
-        if (tinit==-1) then
-           write (6,*)"Tinit et Tdempeplainit non definies mais ldeplainit =true" ; stop 
-        else
-           tempdeplainit=tinit
-        end if
-     end if
+  if (tempdeplainit.GT.0) then
      if (debyetemp==-1) then
-        write (6,*)"debyetemp  non definie mais ldeplainit =true" ; stop 
+        write (6,*)"debyetemp  non definie mais tempdeplainit> 0" ; stop 
      end if
-     if (rang==0) write (6, '(A,F10.1)') 'tempdeplainit=', tempdeplainit
   end if
+  if (rang==0) write (6, '(A,F10.1)') 'tempdeplainit=', tempdeplainit
+  if (rang==0) write (6, '(A,F10.1)') 'debyetemp=', debyetemp
+
 
 
   if (ttol>0.)  write(6,*) ' ttol=', ttol
@@ -1164,13 +1158,15 @@ end if
 
 
 
-     if (rulayer.gt.0.0)then
-        IF (rang==0)write(6,*)'atomes immobiles fixes par rulayer ', rulayer*1d8
-     end if
 
      lFrozen=.true.
 
   end IF   !lxFrozen,lyFrozen,lzFrozen
+  if (rulayer.gt.0.0)then
+     rulayer=rulayer*1.0d-8
+     
+     IF (rang==0)write(6,*)'atomes immobiles fixes par rulayer ', rulayer*1d8
+  end if
 
 
   !  if (rang==0) write(6,*) 'sortie readdm'

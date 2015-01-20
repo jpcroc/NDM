@@ -26,19 +26,19 @@ subroutine jqbh (xp,xpp,vp,ityp)
   real(double):: tcou1,tcou2,dec1,dec2,delt,ecou1,ecou2,alph1,alph2,xdec
   real(double), save ::tfcou1,tfcou2,tmcou1,tmcou2,csup,cinf,crul
   real(double),pointer,save :: temptr(:)
-  real(double),pointer :: temptra(:)
-  integer,pointer::nattr(:)
+  real(double),pointer,save :: temptra(:)
+  integer,pointer,save::nattr(:)
 #if(PARA) 
   real(double) :: ecou1_tot,ecou2_tot
   integer::nacou1_tot,nacou2_tot
-  real(double),pointer :: temptra_tot(:)
-  integer,pointer::nattr_tot(:)
+  real(double),pointer,save :: temptra_tot(:)
+  integer,pointer,save::nattr_tot(:)
 
 #endif
   character*15:: fnamtr
   character(len=2) :: extension
   logical :: loc(imm)
-  real(double):: dTtot,tempact,dTloc,tempinst
+  real(double):: dTtot,tempact,dTloc,tempinst,crulinv
 
   if(it.eq.1) then
      if(rang==0) write(6,*)'condutivité thermique méthode directe'
@@ -76,7 +76,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
      if (njqbh==5) then
         if(rang==0) write(6,*)'tempinst',tempinst(vp,ityp)
-        dTtot=epsil*nzl(1)/(nzl(2)*nzl(3)*kthg*tstep)
+        dTtot=epsil*(nzl(1)-2*rulayer)/(nzl(2)*nzl(3)*kthg*tstep)
         if(rang==0) write(6,*)'dTtot', dTtot
         tempact=tempinst(vp,ityp)
         temptra(:)=0.
@@ -90,13 +90,15 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
            call cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
            crul=rulayer/nzl(1)           
-
+           crulinv=1-crul
+!           write(6,*)'rulayer, nzl,crul',rulayer, nzl(1),crul
            do i=1,imd
+              if((xp(1,i).lt.crul).or.(xp(1,i).gt.crulinv))cycle
               indtr=1+Int(ntr*(xp(1,i)-crul)/(1-2*crul))
               if (indtr==itr) then
                  loc(i)=.true.
                  nattr(indtr)=nattr(indtr)+1
-                 temptra(indtr)=temptra(indtr)+ (vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(i))/(3.*bk*ittherm)
+                 temptra(indtr)=temptra(indtr)+ (vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(i))/(3.*bk)
               end if
            end do
 
@@ -138,6 +140,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      csup = 1-epcoud/nzl(1)
      cinf = epcoud/nzl(1)
      crul=rulayer/nzl(1)
+!           write(6,*)'rulayer, nzl,crul',rulayer, nzl,crul
      if ((it==1).and.(rang==0)) write(6,*)'cinf,csup crul',cinf,csup,crul
 
 
@@ -179,7 +182,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
      tcou1=ecou1*2./(3.*bk*nacou1)
      alph1=sqrt(1+epsil/ecou1)
-     !                 if(rang==0) write(6,*)'nacou1 alph1 tcou1', nacou1,alph1,tcou1
+!     if(rang==0) write(6,*)'nacou1 alph1 tcou1', nacou1,alph1,tcou1
      do i = 1, imd
         if (loc(i)) then
            xpp(:,i) = xp(:,i)-(xp(:,i)-xpp(:,i))*alph1
@@ -227,7 +230,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      call cryst_to_cart (imm, xp, at, 1)  !cryst vers cart
      tcou2=ecou2*2./(3.*bk*nacou2)
      alph2=sqrt(1-epsil/ecou2)
-     !                 write(6,*)'nacou2 alph2 tcou2', nacou2,alph2,tcou2
+!                      write(6,*)'nacou2 alph2 tcou2', nacou2,alph2,tcou2
 
      do i = 1, imd
         if (loc(i))then
@@ -261,9 +264,11 @@ subroutine jqbh (xp,xpp,vp,ityp)
 #else
      temptra(:)=0.
      nattr(:)=0
+     crulinv=1-crul
      do i=1,imd
+        if((xp(1,i).lt.crul).or.(xp(1,i).gt.crulinv))cycle
         indtr=1+Int(ntr*(xp(1,i)-crul)/(1-2*crul))
-        !          write(6,*)i,indtr,xp(1,i), (xp(1,i)-crul)/(1-2*crul)
+!              write(6,*)i,indtr,xp(1,i), (xp(1,i)-crul)/(1-2*crul)
         nattr(indtr)=nattr(indtr)+1
         temptra(indtr)=temptra(indtr)+ (vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(i))/(3.*bk*ittherm)
      end do
@@ -384,7 +389,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      end do
      tcou2 = tcou2/float(nacou2)
      dec2=1.5*bk*(tcou2-tfcou2)
-     if(rang==0) write(6,*)'nacou2 tcou2 ', nacou2,tcou2
+!     if(rang==0) write(6,*)'nacou2 tcou2 ', nacou2,tcou2
      do i = 1, im
         if (abs(xp(1,i)).lt.epcoud) &
              &          xpp(:,i) = xp(:,i)-(xp(:,i)-xpp(:,i))*sqrt(tfcou2/tcou2)

@@ -159,7 +159,6 @@ module gen_com_m
 
 
   real(double) :: tinit !temp initiale
-  logical::ldeplainit
   real(double)::tempdeplainit,debyetemp
   logical :: lvpread  ! vitesse lue dans le fichier .cin
   integer:: iseed ! graine du gerateur aleatoire des vitesses
@@ -230,7 +229,6 @@ module gen_com_m
 
 
   real(double), parameter :: rmin = 0.5d-8
-  integer, parameter :: kmax = 3000
 
   real(double), parameter :: qmax=12
   real(double), parameter :: qmin=0.7

@@ -28,7 +28,7 @@ subroutine rdf
   real(double) :: rij, c1, c2, c3, x1, x2, x3, rmax, incre
   real(double) :: rspace2,invincre
   real(double) :: aaa,bbb,ccc,ddd
-  real(double) :: digrt(kmax),digrt2(kmax)
+  real(double) :: digrt(nkmax),digrt2(nkmax)
 
   character :: paire1*20,paire2*20,paire3*20
   character :: fpaire1*80, fpaire2*80,fpaire3*80
@@ -46,7 +46,7 @@ subroutine rdf
 !  rmax=minval(celsize)
   rmax=rcrdf*1.0d-8
   !       write(6,*)'rmax ',rmax
-  incre = rmax/kmax
+  incre = rmax/nkmax
   invincre = 1/incre
   if(rang==0) then
      write(6,*)
@@ -75,7 +75,7 @@ subroutine rdf
                 '_'//fpaire2(1:lenfpaire2)//'.coord'
            if(rang==0)               open(lucoord, file = fpairecoord, status = 'unknown')
 
-           do m1=1,kmax
+           do m1=1,nkmax
               !                  write(6,*)i1,i2,n,digr(i1,i2,n)
               m = m1+1
 
@@ -105,7 +105,7 @@ subroutine rdf
              '.coord'
         if(rang==0) then
            open(lucoord, file = fpairecoord, status = 'unknown')
-           do m1=1,kmax
+           do m1=1,nkmax
               aaa=m1*incre
               write(lucoord,*)aaa,digrt(m1),digrt2(m1)
            end do
@@ -120,7 +120,7 @@ subroutine rdf
      !         if(lrdftot) then
      if(rang==0)         open(35,file='rdftot.moy',status='unknown')
 
-     do m1=1,kmax
+     do m1=1,nkmax
         m = m1+1
         rspace2 = (m1*incre)**2
         ddd=gdertot(m)*volu/(4*pi*incre*rspace2)
@@ -171,7 +171,7 @@ subroutine rdf
                 '_'//fpaire2(1:lenfpaire2)//'.'//charsauvrfdc
            if(rang==0)   open(lusauvrdf, file = fpairecoord, status = 'unknown')
 
-           do m1=1,kmax
+           do m1=1,nkmax-1
               m = m1+1
               do k = 1, m1
                  coord(i1,i2,m1)=coord(i1,i2,m1)+digr(i1,i2,k)
@@ -196,7 +196,7 @@ subroutine rdf
              '.coord.'//charsauvrfdc
         if(rang==0) then
            open(lucoord, file = fpairecoord, status = 'unknown')
-           do m1=1,kmax
+           do m1=1,nkmax
               aaa=m1*incre
               write(lucoord,*)aaa,digrt(m1),digrt2(m1)
            end do
@@ -210,8 +210,8 @@ subroutine rdf
      if(rang==0)            write(6,*) ' sauvegarde RDF totale it=',it
      if(rang==0)            write(6,*)
      if(rang==0)            open(35,file='rdftot.'//charsauvrfdc,status='unknown')
-     do m1=1,kmax
-        m = m1+1
+     do m1=1,nkmax
+        m = m1
         rspace2 = (m1*incre)**2
         ddd=gdertot(m)*volu/(4*pi*incre*rspace2)
         if(rang==0)             write(35,*) m1*incre,ddd
