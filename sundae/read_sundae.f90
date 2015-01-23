@@ -9,16 +9,13 @@ subroutine read_sundae()
 	use gen_com_m,      ONLY : fnam, lenfnam
 	use sundae_module,  ONLY : h_A_max, h_ba_min, h_ba_max, h_ba, h_ba_I, fnamtin, totiter, ss,          &
 							 dt, Totalmcmoves, TotalTime, gamma_sundae, Temperature, alpha_max, theta,   &
-							 teq, delta_x, a_sto, isauvegarde, KtoERG, sortie, continue_sundae,       &
+							 teq, delta_x, a_sto, isauvegarde, KtoERG, entree, sortie, continue_sundae,  &
 							 maxvec, nmax, depart_boucle_nbclones, posfinal, tequilib,  &
 							 data_abf, reprise_A
 
 	implicit none
 
-
-	namelist /input_sundae/ Totalmcmoves,TotalTime,dt,isauvegarde,Temperature,gamma_sundae,sortie,alpha_max, teq, delta_x, continue_sundae, reprise_A, nmax,maxvec,h_A_max,h_ba_min,h_ba_max,h_ba,h_ba_I
-
-
+	namelist /input_sundae/ Totalmcmoves,TotalTime,dt,isauvegarde,Temperature,gamma_sundae,sortie,entree,alpha_max, teq, delta_x, continue_sundae, reprise_A, nmax,maxvec,h_A_max,h_ba_min,h_ba_max,h_ba,h_ba_I
 
 	h_A_max  = 4.5d-1
 	h_ba_max = 1.6d0
@@ -52,7 +49,7 @@ subroutine read_sundae()
 	!
 	write(6,*)'friction*dt = '  , gamma_sundae  ! friction*dt
 	! interval between 2 data records
-	write(6,*)'sortie data_mbar = ',sortie  ! Name of the file where data are stored
+	write(6,*)'entree sortie  = ',entree,sortie  ! Name of the files where data are stored
 !m	alpha_max = alpha_max*1.d12
 	write(6,*)'alpha max = ', alpha_max 
 	write(6,*)'t_equilib', teq
@@ -67,8 +64,7 @@ subroutine read_sundae()
 
 	ss=sqrt(temperature*1.66*1e-24*55.845)
 	write(*,*) 'ss  = ', ss
-	
-	
+		
 	lenfnam   = index(sortie,' ')-1
 
 !m	moyennes_mbar  =sortie(1:lenfnam)//'.data_moy'
@@ -87,6 +83,4 @@ subroutine read_sundae()
 	write(*,*) 'No of teq steps', teq
 	write(*,*) 'tquilib',tequilib
 	
-
-
 end subroutine read_sundae

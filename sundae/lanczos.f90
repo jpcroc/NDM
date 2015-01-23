@@ -336,6 +336,9 @@ if ( dabs((old_eigenvalue-eigenvalue)) .gt. 1.d-3) then  ! mettre lanczos_thresh
   end do
 
   eigenvalue=eigenvalue*ev2erg*cmTOang*cmTOang
+
+  eigenvals = eigenvals*ev2erg*cmTOang*cmTOang
+
   projection=projection/(cmTOang*cmTOang)
   overlap=a1 
   lanczos_iter=nl_iter*maxvec

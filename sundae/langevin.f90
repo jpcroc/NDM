@@ -135,8 +135,7 @@ subroutine langevin(dt,temperature,rga)
     do ic=1,3
       Ecin4 = Ecin4 + DOT_PRODUCT(pp(ic,1:im),vp(ic,1:im))/two
     enddo
-
-   
+ 
     return
 
 end subroutine langevin

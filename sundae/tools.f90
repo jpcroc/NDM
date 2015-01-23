@@ -59,10 +59,6 @@ p = p*a_sto + a*v0*sqrt(1.d0-1.d0*a_sto**2)
 
 end subroutine OU_control
 
-
-
-
-
 subroutine genere_bruit2 (sig,gau)
    use T_kind_param_m, ONLY : double
    use gen_com_m,      ONLY : pi,im 
@@ -86,10 +82,8 @@ subroutine genere_bruit2 (sig,gau)
          gau(ic,i) = b1
       enddo
    enddo
-
  
 !write(*,*) 'gau', gau(:,:)
-
 
    gau(1:3,1:im) = gau(1:3,1:im)*sig(1:3,1:im)
    gau(4:6,1:im) = gau(4:6,1:im)*sig(1:3,1:im)
@@ -170,14 +164,14 @@ if (rang==-1) then
 endif
 997    format('Inertia/anglm = ',3e15.6,4x,e14.6e3)
 
-     !     calculate  angular velocity
+!     calculate  angular velocity
 
 call matinv(ainer,aineri)
 omegax = aineri(1,1)*prx+aineri(1,2)*pry+aineri(1,3)*prz
 omegay = aineri(2,1)*prx+aineri(2,2)*pry+aineri(2,3)*prz
 omegaz = aineri(3,1)*prx+aineri(3,2)*pry+aineri(3,3)*prz
 
-           !         shift velocities to make the angular momentum zero
+!         shift velocities to make the angular momentum zero
 do i = 1, im
  rx = q(1,i)-scom(1)
  ry = q(2,i)-scom(2)
@@ -192,6 +186,18 @@ do i = 1, im
 enddo
 
 end subroutine control_angular_momenta
+
+real(double) Function asinhsqrt(x)
+
+use T_kind_param_m, ONLY:  double
+use sundae_module, ONLY: dts2racinem
+real(double) , intent(in) :: x 
+
+asinhsqrt = 0.d0
+if (x.lt.0.d0) asinhsqrt = asinh(dts2racinem*sqrt(-x))*2.d0 
+
+end function asinhsqrt
+
 
 
 real(8) Function ran3()
