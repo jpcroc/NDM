@@ -35,7 +35,7 @@ module sundae_module
 	real(double) :: h_A_max, h_ba_max, h_ba_min, h_ba, h_ba_I, h_temp
 	real(double) :: dt, TotalTime, gamma_sundae, Temperature
 	real(double) :: alpha_max, teq, delta_x,ss, tequilib
-	real(double) :: drift,dts2racinem !,omegadts2
+	real(double) :: drift,dts2racinem ,ra1
 !        real(double) :: asinhsqrt
 
 	character(len=128) :: recup
@@ -105,11 +105,6 @@ module sundae_module
 	
 	integer :: jl, kl
 
-
-	real (double), dimension(1:N):: xref
-	real (double), dimension(1:N):: yref
-	real (double), dimension(1:N):: zref
-
 	real (double), dimension(1:N,6):: qtemp 
 
 	real (double), dimension(1:3):: xbar
@@ -141,6 +136,7 @@ module sundae_module
 	real (double) :: hamilt
 	real (double) ,dimension(:), allocatable:: absdist
 	real (double) ,dimension(:), allocatable:: Psel
+	real (double) ,dimension(:), allocatable:: PaPsel
 	real (double) ,dimension(:), allocatable:: S
 
 	integer :: acc
@@ -157,16 +153,16 @@ module sundae_module
 	real (double) :: tempiter,tempvar
 
 	! Declarations ABF
-	
+
 	real(double) :: delta, delta_bin_theta_s2
 	real(double) :: AR_MH
 	real(double) :: theta_n, theta_temp
 	integer      :: itheta_n, itheta_temp, theta_tilde, N_extra
-	real(double) :: Lyap_max = 20.d0
+	real(double) :: Lyap_max = 20.d0  ! anciennement 20.0
 	integer :: iLyap
 	real(double) :: somme
-	real(double) :: Lyap, gmax, gmin, P_n, pi_n, pi_n1, sum_A
-
+	real(double) :: Lyap, gmin, P_n, pi_n, pi_n1, sum_A
+	real(double) biais,oldbiais
       	real(double),dimension(:),  allocatable,save  :: accept_theta
       	real(double),dimension(:),  allocatable,save  :: MPI_accept_theta
 
@@ -190,20 +186,21 @@ module sundae_module
 	real(double), dimension(:), allocatable, save :: theta_traj
 	real(double), dimension(:,:), allocatable, save :: Lyap_traj
 	real(double), dimension(:), allocatable, save :: ha_hb_traj
+	real(double), dimension(:), allocatable, save :: eigmax_traj
+	real(double), dimension(:), allocatable, save :: Lyapmax_traj
 
 	! Complements MPI
 	integer :: rank = 0, numproc = 1
 	integer :: ificout
         character*120 :: ficout	
-
-
+	real(double) :: estim_deno,cumul_deno=0.d0,MPI_cumul_deno
 
 #if(PARASUN)
 	integer :: ierror
 	real(double) ,dimension(:), allocatable, save :: MPI_histo_theta
 	real(double) ,dimension(:), allocatable, save :: MPI_histo_Lyap
 	real(double) ,dimension(:), allocatable, save :: MPI_P_A
-	real(double) ,dimension(:), allocatable, save :: MPI_sum_P_A 
+	real(double) ,dimension(:), allocatable, save :: MPI_sum_P_A
 	real(double) ,dimension(:), allocatable, save :: MPI_L2
 	real(double) ,dimension(:), allocatable, save :: MPI_L2_moy_num
 	real(double) ,dimension(:), allocatable, save :: MPI_A_prime 
@@ -229,7 +226,7 @@ subroutine LyapLanczos_shooting
 	implicit none
 	
 	real(double) :: genrand,asto
-        real(double) :: asinhsqrt
+        real(double) :: miasinhsqrt
 
 	j = itheta_n
 	!!write(*,*) 'indice theta', itheta_n
@@ -274,10 +271,11 @@ subroutine LyapLanczos_shooting
 		call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)
 		lanczos_iter=lanczos_iter+nl_iter
 		Pcourant%eigenvalue = eigenvalue
-		Pcourant%Lyap       = asinhsqrt(eigenvalue)
+		Pcourant%Lyap       = miasinhsqrt(eigenvalue)
 	        do i=1,4 
-		  eigenvalue=asinhsqrt(eigenvals(i))
-		  Pcourant%Lyapu(i)=eigenvalue
+!		  eigenvalue=asinhsqrt(eigenvals(i))
+		  Pcourant%Lyapu(i)= miasinhsqrt(eigenvals(i))
+                  Pcourant%eigenvals(i)=eigenvals(i)
                 enddo
 !		if (eigenvalue.lt.0.0) then
 !                        omegadts2 = dts2racinem*sqrt(-eigenvalue)
@@ -307,9 +305,9 @@ subroutine LyapLanczos_shooting
 		call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)
 		lanczos_iter=lanczos_iter+nl_iter
 		Pcourant%eigenvalue = eigenvalue
-	        Pcourant%Lyap=asinhsqrt(eigenvalue)
+	        Pcourant%Lyap=miasinhsqrt(eigenvalue)
 	        do i=1,4 
-		 Pcourant%Lyapu(i)=asinhsqrt(eigenvals(i))
+		 Pcourant%Lyapu(i)=miasinhsqrt(eigenvals(i))
 		enddo
 !		if (eigenvalue.le.0.0) then 
 !m	 	Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0  ! on stocke avant !!
@@ -323,6 +321,10 @@ subroutine LyapLanczos_shooting
 		Pshoot(iterfw)%Project=Pcourant%Project
 		Pshoot(iterfw)%eigenvalue=Pcourant%eigenvalue
 		Pshoot(iterfw)%Lyap=Pcourant%Lyap
+               	Pshoot(iterfw)%Lyapu=Pcourant%Lyapu
+               	Pshoot(iterfw)%eigenvals(1:4)=Pcourant%eigenvals(1:4)
+
+
 		Pshoot(iterfw+1)   = Pcourant
 		it_trajectory  = it_trajectory + 1
 		new_projection = .false.
@@ -336,23 +338,28 @@ subroutine LyapLanczos_shooting
 	
 	!!!!!!! fonction heaviside pour maintenir le point initial de la trajectoire dans 
 	!!!!!!! le bassin de depart: calcul dist max pour le point x(0) de la trajectoire
-	absdmax(iterbw)=-9999.0
+	absdmax(0)=-9999.0
 	atom_bouge_abs=0
 	do i=1,N
-		absdist(i)=sqrt((Pshoot(iterbw)%q(1,i)-qref(1,i))**2 + &
-		(Pshoot(iterbw)%q(2,i)-qref(2,i))**2 + &
-		(Pshoot(iterbw)%q(3,i)-qref(3,i))**2)
-		if (absdist(i).gt.absdmax(iterbw)) then
+		absdist(i)=sqrt((Pshoot(0)%q(1,i)-qref(1,i))**2 + &
+		(Pshoot(0)%q(2,i)-qref(2,i))**2 + &
+		(Pshoot(0)%q(3,i)-qref(3,i))**2)
+		if (absdist(i).gt.absdmax(0)) then
 			absdmax(iterbw) = absdist(i)
 			atom_bouge_abs    = i
 		endif
 	enddo
-	absdmax(iterbw)      = absdmax(iterbw)*1.0d8
+!        write(*,*) ' iterbw ', iterbw 
+!        stop
+	absdmax(0)      = absdmax(0)*1.0d8
 	!!write(*,*) 'iterbw absdmax ',iterbw,absdmax(iterbw)
 	!!!!!!!!!!!! ATTENTION AUX RELATIONS DU BILAN DETAILLE
 
-	if (absdmax(iterbw).lt.h_A_max) then
-		rapport=exp(theta(j)*(triallyap-oldLyap))
+	if (absdmax(0).lt.h_A_max) then
+		ra1=exp(theta(j)*(-triallyap+oldLyap))
+                call marginal_calcul(triallyap)
+		rapport=exp(biais-oldbiais)
+                write(*,*) rank,'rapports ',ra1,rapport
 	else
 		rapport=0.d0
 	endif
@@ -367,65 +374,42 @@ subroutine LyapLanczos_shooting
 		acc=acc+1
 		Path(0:totiter) = Pshoot(0:totiter)
 		oldLyap=triallyap
-
+		oldbiais= biais
 		write(ificout,*) 'traj. acceptée',mcmoves,'rapport =',rapport
-		absdmax_current = absdmax(iterbw)  
+		absdmax_current = absdmax(0)  
 		!!write(ificout,*) 'absdmax_current', absdmax_current
 	else
-                refus_theta(j/10) = refus_theta(j/10) +1
+                refus_theta(j/10) = refus_theta(j/10) + 1
 		write(ificout,*) 'traj. refusée ',mcmoves,'rapport =',rapport
 	endif
 	write (ificout,*) 'Shooting ....taux d''acceptation',real(acc)/real(mcmoves) 
-	write (ificout,*) 
+        call marginal_calcul(oldLyap)
+       	write (ificout,*) 'theta moyen ', sum(P_A(0:totiter)*theta(0:totiter))
 
-	!! fin du shooting
+!! fin du shooting
 
 end subroutine LyapLanczos_shooting
 
+subroutine marginal_calcul(L)
+	implicit none
+	real(double) :: L
+
+	u_A(:)        = L*theta(:) - A_n(:)     
+	gmin          = minval(u_A)
+	u_A(:)        = u_A(:) - gmin
+	P_A(:)        = exp(-u_A(:))
+	somme         = sum(P_A(0:nmax))
+	P_A           = P_A/somme
+        biais         = log (somme)-gmin
+	
+end subroutine marginal_calcul
 
 subroutine LyapLanczos_theta
-
-	use lanczos_defs
-	use tab_imm_m
-
 	implicit none
-
-!	real(double) :: genrand,theta_o
-!	integer :: grid
-
-	! Proposition du nouveau theta 
-!	xalea = genrand()
-!	grid = nint(10*(xalea-0.5d0))
-!	theta_temp = theta_n + delta*real(grid)
-!	theta_o    = theta_n 
-!
-!        write(*,*) ' theta_n ' , theta_n
-!	itheta_n = nint(theta_n/alpha_max*real(nmax))
-!	itheta_temp = nint((theta_temp)/(alpha_max)*real(nmax))
-	
-	! Acceptation/rejet 
-!	if ( (itheta_temp.ge.0) .and. (itheta_temp.le.nmax) ) then
-!		AR_MH = min( 1.0d0 , exp((theta_temp-theta_n)*oldLyap - A_n(itheta_temp) + A_n(itheta_n)))
-!	endif
-!	ranf = genrand()
-!	if ( (ranf.lt.AR_MH) .and. (theta_temp.gt.0.0d0) .and. (theta_temp.lt.alpha_max) ) then
-!		theta_n = theta_temp
-!		itheta_n = itheta_temp
-!	endif
-
 	real(double) :: genrand,theta_o, cumul 
 	integer :: i
 
         theta_o = theta_n
-
-! Calcul de la distribution 
-	Lyap          = oldLyap
-	u_A(:)        = Lyap*theta(:) - A_n(:)     
-	gmax          = maxval(u_A)
-	u_A(:)        = u_A(:) - gmax
-	P_A(:)        = exp(u_A(:))
-	somme         = sum(P_A(0:nmax))
-	P_A           = P_A/somme
 
 	ranf = genrand()
 !        write(*,*) 'ranf ',ranf
@@ -439,10 +423,12 @@ subroutine LyapLanczos_theta
          endif
         enddo
 !        write(*,*) 'cumul ',cumul
-	theta_n = dble(itheta_n)*alpha_max/dble(nmax)
-!        write(*,*) ' P_A =',P_A 
-	write(ificout,*) 'theta n / o ' ,theta_n , theta_o
-	theta_traj(mcmoves) =  theta_n
+!	theta_n = dble(itheta_n)*alpha_max/dble(nmax)
+       
+!        write(*,*) ' P_A =',P_A
+ 	theta_n = theta(itheta_n) 
+	write(ificout,*) 'theta n / o ' ,theta(itheta_n) , theta_o
+	theta_traj(mcmoves) =  theta(itheta_n)
 
 end subroutine LyapLanczos_theta
 
@@ -453,7 +439,7 @@ subroutine LyapLanczos_shifting
 
 	implicit none
 	
-	real(double) :: genrand,asinhsqrt
+	real(double) :: genrand,miasinhsqrt,Ly
 	
 	
 	j = itheta_n
@@ -480,10 +466,11 @@ subroutine LyapLanczos_shifting
 	do iterbw=pix,1,-1
 		call mapping_P_Verlet(Pcourant%q,Pcourant%p,-dt,N,q1s2)  ! -dt car backward en position verlet
 		call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)
-		Pcourant%eigenvalue = eigenvalue
-	        Pcourant%Lyap=asinhsqrt(eigenvalue)
+		Pcourant%eigenvalue     = eigenvalue
+		Pcourant%eigenvals(1:4) = eigenvals(1:4)
+	        Pcourant%Lyap=miasinhsqrt(eigenvalue)
 	        do i=1,4 
-		  Pcourant%Lyapu(i)=asinhsqrt(eigenvals(i))
+		  Pcourant%Lyapu(i)=miasinhsqrt(eigenvals(i))
 		enddo
 !		if (eigenvalue.lt.0.0) then
 !m		 Pcourant%Lyap= asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 ! on stocke Lyap en 1/2 avant
@@ -513,11 +500,12 @@ subroutine LyapLanczos_shifting
 	do iterfw=totiter+pix,2*totiter-1
 		call mapping_P_Verlet(Pcourant%q,Pcourant%p,dt,N,q1s2)
 		call lanczos(N,maxvec,q1s2,new_projection,Pcourant%project)!!!!!
-		Pcourant%eigenvalue = eigenvalue 
-	        Pcourant%Lyap=asinhsqrt(eigenvalue)
+		Pcourant%eigenvalue = eigenvalue
+	        Pcourant%Lyap=miasinhsqrt(eigenvalue)
 	        do i=1,4 
-		 Pcourant%Lyapu(i)=asinhsqrt(eigenvals(i))
+		 Pcourant%Lyapu(i)=miasinhsqrt(eigenvals(i))
 		enddo
+
 !		if (eigenvalue.le.0.d0) then 
 !m			Pcourant%Lyap=asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0  ! Lyapunov en 1/2 stocké avant
 !                 omegadts2 = dts2racinem*sqrt(-eigenvalue)
@@ -526,9 +514,11 @@ subroutine LyapLanczos_shifting
 !		 Pcourant%Lyap=0.d0 ! Pshift(iterfw-1)%Lyap ! Lyapunov en 1/2 stocké avant 
 !		endif
 
-		Pshift(iterfw)%Lyap       = Pcourant%Lyap
-		Pshift(iterfw)%Project    = Pcourant%Project
-		Pshift(iterfw)%eigenvalue = eigenvalue
+		Pshift(iterfw)%Lyap            = Pcourant%Lyap
+		Pshift(iterfw)%Lyapu           = Pcourant%Lyapu
+		Pshift(iterfw)%Project         = Pcourant%Project
+		Pshift(iterfw)%eigenvalue      = eigenvalue
+		Pshift(iterfw)%eigenvals(1:4)  = eigenvals(1:4)
 
 		Pshift(iterfw+1)=Pcourant
 
@@ -540,11 +530,10 @@ subroutine LyapLanczos_shifting
 
 	S(:)=0
 	do l=0,totiter  ! sommation sur les 1+L "path proposals" possibles
-		do a=l,l+totiter-1  ! dans une action S il y a bien totiter=L Lyap stockes de 0 à totiter-1 
-			S(l) = S(l)+Pshift(a)%Lyap
-		enddo
+            Ly = sum(Pshift(l:l+totiter-1)%Lyap)
+            call marginal_calcul(Ly)
+            S(l) = Biais
 	enddo
-!m  	S(:)=S(:)/(real(totiter))
 
 	!!!!!!!!!!!! calcul de la fonction echelon pour le point de départ 
 	!!!!!!!!!!!! de la trajectoire N sui 2N passi della traj shiftata
@@ -554,35 +543,33 @@ subroutine LyapLanczos_shifting
 
 	do l=0,2*totiter ! il y a 1+L (1+totiter) proposals + totiter positions décalée en totiter
 		do i=1,N
-			absdist(i)=sqrt((Pshift(l)%q(1,i)-xref(i))**2 + & 
-				 (Pshift(l)%q(2,i)-yref(i))**2 + & 
-				 (Pshift(l)%q(3,i)-zref(i))**2) 
+			absdist(i)=sqrt((Pshift(l)%q(1,i)-qref(1,i))**2 + & 
+				 (Pshift(l)%q(2,i)-qref(2,i))**2 + & 
+				 (Pshift(l)%q(3,i)-qref(3,i))**2) 
 			if (absdist(i).gt.absdmax(l)) then 
 				absdmax(l)=absdist(i) 
 			endif 
-
-			! Manuel : les coordonnées dans Pshift(l) sont celles avant l'application du mapping P_Verlet dans le sens forward
-			! on a donc maintenant correspondance entre Pshift(l) et absdmax(l) contrairement à auparavant
-
 		enddo
 	enddo
 	absdmax(:)=absdmax(:)*1.0e8
 	!!write(*,*) 'absdmax : '
 	!!write(*,*) absdmax(0) 
 	
-	
 	z=0.d0
 	do l=0,totiter ! boucles sur les chemins proposés possibles
 		! Here is P_sel from the paper
 		if (absdmax(l).lt.h_A_max) then  ! on a correspondance maintenant entre absdmax et Pshift
-			Psel(l) = exp(theta(j)*S(l))
+!			Psel(l) = exp(theta(j)*S(l))
+                    	Psel(l) = exp(S(l))
+                        PaPsel(l) =exp(A_n(0))
 		else
-			Psel(l)= 0.d0
+			PaPsel(l) = 0.d0
+			Psel(l)   = 0.d0
 		endif
 		z = z +  Psel(l)
 	enddo
-
-	Psel(0:totiter)  =  Psel(0:totiter)/z
+        PaPsel(0:totiter) = PaPsel(0:totiter)/z
+	Psel(0:totiter)   = Psel(0:totiter)/z
 
 	! selection de la trajectoire indiciée newtraj
 
@@ -603,15 +590,28 @@ subroutine LyapLanczos_shifting
 	if (absdmax(newtraj).le.h_A_max) then 
 		Path(0:totiter-1) = Pshift(newtraj:totiter+newtraj-1) ! on a Path(0) = Pshift(0) pour newtraj=0
 		oldLyap       = SUM(Path(0:totiter-1)%Lyap)       !m /real(totiter)
+	        call marginal_calcul(oldLyap)
+                oldbiais = biais
 	else
 		write(*,*) " Problème avec le shifting "
                 stop
 	endif
 
-	!!write(*,*) 'newlyap = ', oldLyap*300.0/sqrt(9.270914743200000e-023)
+        write(ificout,*) 'shift  lyap = ', newtraj-pix, oldLyap,oldbiais
+        write(ificout,*) 
 !	Lyap_traj(mcmoves) = oldLyap  !  *300.0/sqrt(9.270914743200000e-023)
 	
         forall (i=1:4) Lyap_traj(mcmoves,i) =  SUM(Path(0:totiter-1)%Lyapu(i))
+
+        eigmax_traj(mcmoves)  = minval(Path(0:totiter-1)%eigenvalue)
+        Lyapmax_traj(mcmoves) = maxval(Path(0:totiter-1)%Lyap)
+
+!	write(*,*) 'min val',rank, eigmax_traj(mcmoves),Lyapmax_traj(mcmoves) 
+
+!        do i = 0,totiter-1
+! 	 write(*,*) 'eigen ', i, Path(i)%eigenvalue,  Path(i)%Lyap
+!        enddo
+	
 
 end subroutine LyapLanczos_shifting
 
@@ -629,10 +629,10 @@ subroutine LyapLanczos_ABF
 	! Calcul du nouveau biais
 	Lyap          = oldLyap
 	u_A(:)        = Lyap*theta(:) - A_n(:)     
-	gmax          = maxval(u_A)
-	u_A(:)        = u_A(:) - gmax
-	P_A(:)        = exp(u_A(:))
-	somme         = sum(P_A(-N_extra:nmax+N_extra))
+	gmin          = minval(u_A)
+	u_A(:)        = u_A(:) - gmin
+	P_A(:)        = exp(-u_A(:))
+	somme         = sum(P_A(0:nmax))
 	P_A           = P_A/somme
 
 #if(PARASUN)
@@ -662,29 +662,23 @@ subroutine LyapLanczos_ABF
 		
 		sum_P_A(theta_tilde)       =   pi_n1
 
-		A_prime_num(theta_tilde)   =   P_n * Lyap + A_prime_num(theta_tilde)
+		A_prime_num(theta_tilde)   =   P_n * Lyap      + A_prime_num(theta_tilde)
 		L2_moy_num(theta_tilde)    =   P_n * Lyap*Lyap + L2_moy_num(theta_tilde)
-		!A_prime(theta_tilde)       =   A_prime_num(theta_tilde) / pi_n1
 	enddo
 	
-	do k = 0,totiter 
-		O_moy_num(k,1:3,1:4)    =   P_A(0) * O_estim(k,1:3,1:4) + O_moy_num(k,1:3,1:4)
-	enddo
-
-
 #if(PARASUN)
 	! Mise en commun parallele ---- 2/2 !
+
 	call MPI_REDUCE(A_prime_num,MPI_A_prime_num,nmax+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
-	call MPI_REDUCE(O_moy_num,MPI_O_moy_num,4*3*(totiter+1),MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 	call MPI_REDUCE(L2_moy_num,MPI_L2_moy_num,nmax+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 	call MPI_REDUCE(sum_P_A,MPI_sum_P_A,nmax+2*N_extra+1,MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
 
 	MPI_A_prime = MPI_A_prime_num / (MPI_sum_P_A + 1.d-6)
 	MPI_L2  = MPI_L2_moy_num / (MPI_sum_P_A + 1.d-6)
 	
-	do k = 0,totiter 
-		O_moy_estim(k,1:3,1:4)  =   MPI_O_moy_num(k,1:3,1:4) / (MPI_sum_P_A(0) + 1.d-6)
-	enddo
+!	do k = 0,totiter 
+!		O_moy_estim(k,1:3,1:4)  =   MPI_O_moy_num(k,1:3,1:4) / (MPI_sum_P_A(0) + 1.d-6)
+!	enddo
 	
 	if (N_extra.gt.0) then 
 		MPI_A_prime(-N_extra:-1) = 0.d0
@@ -706,6 +700,8 @@ subroutine LyapLanczos_ABF
 		enddo
 	endif
 #else
+	write(*,*) 'pas fini '
+	stop
 	do theta_tilde=-N_extra,nmax+N_extra
 		A_prime(theta_tilde)  =  A_prime_num(theta_tilde) / (pi_n1 + 1.d-6)
 	enddo
@@ -770,9 +766,10 @@ subroutine LyapLanczos_input
 			write(*,*) 'theta ', theta(j), theta_f
 			MPI_A_prime(j) = A_prime_f
 	       enddo
-               do i = - N_extra , nmax + N_extra
-                read (774,*) theta(i), A_n(i)
-               enddo
+         
+            !   do i = - N_extra , nmax + N_extra
+            !    read (774,*) theta(i), A_n(i)
+            !   enddo
 	endif	
 
 #endif
@@ -897,45 +894,46 @@ subroutine LyapLanczos_output
 		open(unit=ific5, file=fic5, action='write', status='replace')
 		open(unit=ific7, file=fic7, action='write', status='replace')
 
-#if(PARASUN) 
+#if(PARASUN)
+
+	call MPI_REDUCE(O_moy_num,MPI_O_moy_num,4*3*(totiter+1),MPI_DOUBLE_PRECISION,MPI_SUM,0, MPI_COMM_WORLD,ierror)
+	call MPI_REDUCE(cumul_deno,MPI_cumul_deno,1,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,ierror)
+
 	if (rank.eq.0) then
 		somme = sum(MPI_histo_theta)
 		MPI_histo_theta = MPI_histo_theta/somme*real(nmax)
 		somme = sum(MPI_histo_Lyap)
-		MPI_histo_Lyap = MPI_histo_Lyap/somme*real(nmax)
+		MPI_histo_Lyap = MPI_histo_Lyap/somme
 		do j=-N_extra,nmax+N_extra
 			! Renormalisation des variables pour les sorties fichier
 			theta_f = theta(j)           !  *sqrt(9.270914743200000e-023)/300.0
 			A_prime_f = MPI_A_prime(j)   !  *300/sqrt(9.270914743200000e-023)
 			L2_f = MPI_L2(j)             !   *300/sqrt(9.270914743200000e-023)*300/sqrt(9.270914743200000e-023)
 			! Sortie fichier : theta, histo_theta, Lyap_moyen (A_prime)
-			write(111,'(3(E15.6E3))') theta_f, A_prime_f, L2_f
-			write(1110,'(2(E15.6E3))') MPI_histo_theta(j), MPI_histo_Lyap(j)
+			write(111,'(4(E15.6E3))') theta_f, A_prime_f, L2_f,MPI_histo_theta(j)
+			write(1110,'(2(E15.6E3))') - dble(j)/dble(nmax)*Lyap_max, MPI_histo_Lyap(j)
 		enddo
                 do j=0,nthetamax
                         somme = MPI_accept_theta(j)+MPI_refus_theta(j)
 		 	write(1113,*) theta(j*10),MPI_accept_theta(j)/somme,somme
                 enddo
+
+		O_moy_estim(0:totiter,2,1:4) = MPI_O_moy_num(0:totiter,2,1:4)/MPI_cumul_deno
+		O_moy_estim(0:totiter,1,1:4) = MPI_O_moy_num(0:totiter,1,1:4)/MPI_sum_P_A(0)
+
+
 		do j=0,totiter
-			write(1111,'(5(E15.6E3))') O_moy_estim(j,1,1), O_moy_estim(j,1,2), O_moy_estim(j,1,3), O_moy_estim(j,1,4), MPI_sum_P_A(0)
-			write(1112,'(5(E15.6E3))') O_moy_estim(j,2,1), O_moy_estim(j,2,2), O_moy_estim(j,2,3), O_moy_estim(j,2,4), MPI_sum_P_A(0)
+			write(1111,'(5(E15.6E3))') O_moy_estim(j,1,1), O_moy_estim(j,1,2) , O_moy_estim(j,1,3), sum(O_moy_estim(j,1,1:4)), MPI_sum_P_A(0)
+			write(1112,'(5(E15.6E3))') O_moy_estim(j,2,1), O_moy_estim(j,2,2) , O_moy_estim(j,2,3), sum(O_moy_estim(j,2,1:4)), MPI_cumul_deno
 		enddo
-               do i = -N_extra, nmax+N_extra
-                write (774,*) theta(i), A_n(i)
-               enddo
+                do i = -N_extra, nmax+N_extra
+                 write (774,*) theta(i), A_n(i)
+                enddo
 
 	endif	
 #else
-	do j=-N_extra,nmax+N_extra
-		! Renormalisation des variables pour les sorties fichier
-		theta_f = theta(j)          !        *sqrt(9.270914743200000e-023)/300.0
-		A_prime_f = A_prime(j)      !        *300/sqrt(9.270914743200000e-023)
-		! Sortie fichier : theta, histo_theta, Lyap_moyen (A_prime)
-		write(111,*) theta_f, histo_theta(j), A_prime_f, histo_Lyap(j)
-	enddo
-	do j=0,totiter
-		write(1110,'(3(E15.6E3))') O_moy_estim(j,1,1), O_moy_estim(j,1,1), O_moy_estim(j,1,1)
-	enddo
+        write(*,*) ' Programme séquentiel non terminé '
+	stop
 #endif
 	if (rank.eq.0) then
 		close(111)
@@ -973,7 +971,7 @@ subroutine LyapLanczos_output
 	open(unit=300+rank,file=recup,status='replace')		
 		
 	do k = 1, mcmoves
-		write(300+rank,'(6(E15.6E3))') ha_hb_traj(k),theta_traj(k),Lyap_traj(k,1),Lyap_traj(k,2),Lyap_traj(k,3),Lyap_traj(k,4)
+		write(300+rank,'(5(E15.6E3))') ha_hb_traj(k),theta_traj(k),Lyap_traj(k,1),Lyap_traj(k,2),eigmax_traj(k)
 	enddo
 
 	close(300+rank)
@@ -1082,8 +1080,8 @@ subroutine LyapLanczos_vac! (xp)
 
 	        call LyapLanczos_theta	               !!! Modif 09.01.15
 	
-		call LyapLanczos_shifting              !!! Modif 03.06.14
-	
+		call LyapLanczos_shifting              !!! Modif 29.01.15
+
 		call LyapLanczos_Obs		  !!! Modif 13.06.14
 	
 		call LyapLanczos_ABF		  !!! Modif 10.06.14
@@ -1167,67 +1165,39 @@ subroutine LyapLanczos_Obs
 	ha_hb_traj(mcmoves) =  h_Fg(totiter)+h_Fd(totiter)+h_F(totiter)+h_FI(totiter)
 	
 	! Estimation en moyenne glissante sur [0,2L] trajectoire shiftee
-	h_Fg(:) = 0
-	h_Fd(:) = 0
-	h_F(:)  = 0
-	h_FI(:) = 0
+	h_Fg(:) = 0.d0
+	h_Fd(:) = 0.d0
+	h_F(:)  = 0.d0
+	h_FI(:) = 0.d0
+	O_estim(0:totiter,2,1:4) = 0.d0
+
+
 	do k = 0,totiter 
 		do j = 0,totiter 
 			if ((absdmax(j+k).ge.h_ba_min) .and. (absdmax(j+k).lt.h_ba) .and. (absdmax(j).lt.h_A_max)) then 
-				h_Fg(k) = h_Fg(k) + 1.0
+				h_Fg(k) = h_Fg(k) + PaPsel(j) ! + 1.0
 			endif
 			if ((absdmax(j+k).ge.h_ba) .and. (absdmax(j+k).lt.h_ba_max) .and. (absdmax(j).lt.h_A_max)) then 
-				h_Fd(k) = h_Fd(k) + 1.0
+				h_Fd(k) = h_Fd(k) + PaPsel(j) ! + 1.0
 			endif
 			if ((absdmax(j+k).ge.h_ba_max) .and. (absdmax(j+k).lt.h_ba_I) .and. (absdmax(j).lt.h_A_max)) then 
-				h_F(k) = h_F(k) + 1.0
+				h_F(k) = h_F(k)   + PaPsel(j) ! + 1.0
 			endif
 			if ((absdmax(j+k).ge.h_ba_I) .and. (absdmax(j).lt.h_A_max)) then 
-				h_FI(k) = h_FI(k) + 1.0
-			endif
-			if (absdmax(j).lt.h_A_max) then 
-				num = num + 1.0
+				h_FI(k) = h_FI(k) + PaPsel(j) ! + 1.0
 			endif
 		enddo !j
-		if (num.eq.0) then
-			O_estim(k,2,1) = 0.
-			O_estim(k,2,2) = 0.
-			O_estim(k,2,3) = 0.
-			O_estim(k,2,4) = 0.
-		else
-			O_estim(k,2,1) = h_Fg(k)/num
-			O_estim(k,2,2) = h_Fd(k)/num
-			O_estim(k,2,3) = h_F(k)/num
-			O_estim(k,2,4) = h_FI(k)/num
-		endif
-		num = 0
+		O_estim(k,2,1) = h_Fg(k) 
+		O_estim(k,2,2) = h_Fd(k)
+		O_estim(k,2,3) = h_F(k)
+		O_estim(k,2,4) = h_FI(k)
 	enddo !k
-	
-	
-	! Estimation en moyenne glissante avec Waste Recycling sur [0,2L] trajectoire shiftee
-	h_Fd(:) = 0
-	do k = 0,totiter 
-		do j = 0,totiter 
-			if ((absdmax(j+k).ge.h_ba) .and. (absdmax(j+k).lt.h_ba_max) .and. (absdmax(j).lt.h_A_max)) then 
-				h_Fd(k) = h_Fd(k) + Psel(j) 
-				!!!write(*,*) "*************************************************"
-				!!!write(*,*) "************                         ************"
-				!!!write(*,*) "************  passage dans l'etat B  ************"
-				!!!write(*,*) "************                         ************"
-				!!!write(*,*) "*************************************************"
-			endif
-		enddo !j
-	enddo !k
-	
-	do k = 0,totiter
-		O_estim(k,3,1) = h_Fd(k)
-		O_estim(k,3,2) = h_Fd(k)
-		O_estim(k,3,3) = h_Fd(k)
-		O_estim(k,3,4) = h_Fd(k)
-	enddo
+
+	cumul_deno                   = cumul_deno + sum(PaPsel(0:totiter))
+	O_moy_num(0:totiter,1:3,1:4) = O_estim(0:totiter,1:3,1:4) + O_moy_num(0:totiter,1:3,1:4)
 	
 	! -------- Histogramme du Lyap --------- !
-	iLyap = nint(Lyap/Lyap_max*real(nmax))
+	iLyap = nint(-Lyap/Lyap_max*real(nmax))
 	if ((iLyap.ge.0).and.(iLyap.le.nmax)) then
 		histo_Lyap(iLyap) = histo_Lyap(iLyap) + 1.0d0
 	endif
@@ -1242,7 +1212,7 @@ subroutine LyapLanczos_init_tests
 	!use lanczos_defs
 	use tab_imm_m
 	implicit none
-        real(double) :: asinhsqrt
+        real(double) :: miasinhsqrt
 	
 	write (*,'("1st traj before shooting ........:",i6)') nint(TotalTime/dt)
 	rang=1
@@ -1261,9 +1231,9 @@ subroutine LyapLanczos_init_tests
 		call cpu_time(tbuffer2)
 		t_lanczos=t_lanczos + (tbuffer2-tbuffer1)
 		Pcourant%Lyap = 0.d0 
- 	        Pcourant%Lyap=asinhsqrt(eigenvalue)
+ 	        Pcourant%Lyap=miasinhsqrt(eigenvalue)
 	        do i=1,4 
-		  Pcourant%Lyapu(i)=asinhsqrt(eigenvals(i))
+		  Pcourant%Lyapu(i)=miasinhsqrt(eigenvals(i))
 		enddo
 !		if (eigenvalue.lt.0.d0) then
 !                           omegadts2 = dts2racinem*sqrt(-eigenvalue)
@@ -1370,7 +1340,7 @@ subroutine LyapLanczos_equilibrage
 	use tab_imm_m
 	implicit none
 
-	real(double) asinhsqrt
+	real(double) miasinhsqrt
 		
         SELECT CASE (continue_sundae)
         CASE (1)
@@ -1645,9 +1615,9 @@ subroutine LyapLanczos_equilibrage
 			Path(iter)%eigenvalue = eigenvalue
 			!!write(*,*) 'eigenvalue ',eigenvalue
 			new_projection      = .false.  
-		        Pcourant%Lyap       = asinhsqrt(eigenvalue)
+		        Pcourant%Lyap       = miasinhsqrt(eigenvalue)
 		        do i=1,4 
-			  Pcourant%Lyapu(i)=asinhsqrt(eigenvals(i))
+			  Pcourant%Lyapu(i)=miasinhsqrt(eigenvals(i))
 			enddo
 !			if (eigenvalue.lt.0.0) then 
 !		!m	Path(iter)%Lyap =  asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0
@@ -1746,6 +1716,7 @@ subroutine LyapLanczos_allocate
 
 	allocate(absdist(0:N))
 	allocate(Psel(0:totiter))
+	allocate(PaPsel(0:totiter))
 	allocate(q(1:3,1:im))
 	allocate(p(1:3,1:im))
 	iter=0
@@ -1761,10 +1732,6 @@ subroutine LyapLanczos_allocate
 	sig(:,:) = sqrt(temperature*(one-rga**2))
 	!!write(*,*) 'rga',gamma_sundae, gamma_sundae*dt, rga, sig(1,1)
 	!!write(*,*) 'temp', temperature*erg2eV, erg2eV
-
-	xref(1:n)=xp(1,1:n)
-	yref(1:n)=xp(2,1:n)
-	zref(1:n)=xp(3,1:n)
 
 	qref(1:3,1:im)=xp(1:3,1:im)
 
@@ -1796,6 +1763,9 @@ subroutine LyapLanczos_allocate
 	allocate(theta_traj(1:Totalmcmoves))
 	allocate(Lyap_traj(1:Totalmcmoves,1:4))
 	allocate(ha_hb_traj(1:Totalmcmoves))
+	allocate(eigmax_traj(1:Totalmcmoves))
+	allocate(Lyapmax_traj(1:Totalmcmoves))
+
 
 	allocate(accept_theta(0:nthetamax))
 	allocate(refus_theta(0:nthetamax))
@@ -1807,7 +1777,9 @@ subroutine LyapLanczos_allocate
 	histo_Lyap  = 0.d0
 	Lyap_traj   = 0.d0
 	ha_hb_traj  = 0.d0
-	
+        eigmax_traj = 0.d0
+        Lyapmax_traj = 0.d0
+
 #if(PARASUN)
 	allocate(MPI_histo_theta(-N_extra:nmax+N_extra))
 	allocate(MPI_histo_Lyap(-N_extra:nmax+N_extra))
@@ -1818,7 +1790,7 @@ subroutine LyapLanczos_allocate
 	allocate(MPI_L2(-N_extra:nmax+N_extra))
 	allocate(MPI_L2_moy_num(-N_extra:nmax+N_extra))
 	allocate(MPI_O_moy_num(0:totiter,1:3,1:4))
-	allocate(MPI_O_moy_estim(0:totiter,1:3,1:4))
+!	allocate(MPI_O_moy_estim(0:totiter,1:3,1:4))
 	allocate(MPI_accept_theta(0:nthetamax))
 	allocate(MPI_refus_theta(0:nthetamax))	
 
@@ -1841,8 +1813,8 @@ subroutine LyapLanczos_allocate
 !	a_sto(i) = 1.d0-1.d0*((1.d1**(-2.d0-2.5d0*dble(i)/dble(nmax))))
 !	a_sto(i) = 1.d0-4.d0*((1.d1**(-2.d0-4.0d0*dble(i)/dble(nmax))))
 !	a_sto(i) = 1.d0-1.d1**(-1.d0-5.0d0*dble(i)/dble(nmax))  ! bon parametrage pour alpha_max  = 2.d0
-	a_sto(i) = 1.d0-1.d1**(-1.d0-2.5d0*alpha_max*dble(i)/dble(nmax))  ! parametrage test pour alpha_max = 1.5d0
-
+!	a_sto(i) = 1.d0-1.d1**(-1.d0-2.5d0*alpha_max*dble(i)/dble(nmax))  ! parametrage test pour alpha_max = 1.5d0
+	a_sto = 0.99d0
 
 
         enddo

@@ -187,16 +187,21 @@ enddo
 
 end subroutine control_angular_momenta
 
-real(double) Function asinhsqrt(x)
+real(double) Function miasinhsqrt(x)
 
 use T_kind_param_m, ONLY:  double
 use sundae_module, ONLY: dts2racinem
-real(double) , intent(in) :: x 
+real(double) , intent(in) :: x
+real(double) :: xm
 
-asinhsqrt = 0.d0
-if (x.lt.0.d0) asinhsqrt = asinh(dts2racinem*sqrt(-x))*2.d0 
+!24032.648487553175 =  1.5/(6.24150934e11*1e-16)  ! coupure à 1.5 eV /Ang^2
 
-end function asinhsqrt
+!xm = max(-2.4d4,x) 
+
+miasinhsqrt = 0.d0
+if (x.lt.0.d0) miasinhsqrt = -asinh(dts2racinem*sqrt(-x))*2.d0 
+
+end function miasinhsqrt
 
 
 
