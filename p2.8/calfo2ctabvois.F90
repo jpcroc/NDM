@@ -196,7 +196,7 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
            sig(3,1) = sig(3,1)+partsig*dxp(3)*dxp(1)
            sig(3,2) = sig(3,2)+partsig*dxp(3)*dxp(2)
            sig(3,3) = sig(3,3)+partsig*dxp(3)*dxp(3)
-           if(lsigat)then
+           if(lPrtSigat)then
               sigat(1,1,i) = sigat(1,1,i)+partsig*dxp(1)*dxp(1)
               sigat(1,2,i) = sigat(1,2,i)+partsig*dxp(1)*dxp(2)
               sigat(1,3,i) = sigat(1,3,i)+partsig*dxp(1)*dxp(3)

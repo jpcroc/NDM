@@ -44,9 +44,9 @@ subroutine readdm
        maxorder,  lalea, rsep, &
        h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
        lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlang,ilangevin,&
-       lcdp,lsigat,lsigtyp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
+       lcdp,lsigtyp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
        fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
-       lprteat,lprteattotm,lprtfat,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
+       lprteat,lprteattotm,lprtfat,lprtsigat,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
        rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat, &
        lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,imFirstFrozen,&
        natperc,iteanaposneb,ntyp,&
@@ -212,7 +212,6 @@ subroutine readdm
   ludin = 94
   lcorrelvp=.false.
   lcalcjq=.false.
-  lsigat=.false.             ! calul et affichage de la contrainte atomique
   lsigtyp=.false.             ! calul et affichage de la contrainte atomique
   lEparat=.false.             ! calul et affichage de l'energie par atom
   itebdv=-1  ! frequence de calcul des bond valence
@@ -224,6 +223,7 @@ subroutine readdm
 
   lperiod=.true.    ! conditions periodiques
   lprteat=.false.   ! if you want to print the energy on atom
+  lprtsigat=.false. ! calul et affichage de la contrainte sur chaque atome
   lprteattotm=.false.   ! energie par atome totale (pot+cin) moyenne
   ngrid = 20000  ! taille de la grille des potentiels
   itecfg=-1   ! ecriture de fichiers .cfg pour AtomEye
@@ -899,7 +899,7 @@ end if
 
   if (ltabvois) then
      if (npotentiel.gt.1) then
-        if (rang==0) write(6,*)'ltabvois avec plusieurs potentiels= pas programmÃÂ© (demi table ou table complete =prise de tete'
+        if (rang==0) write(6,*)'ltabvois avec plusieurs potentiels= pas programmee (demi table ou table complete = prise de tete'
         stop
      end if
 
@@ -914,14 +914,14 @@ end if
       case(11:)
          ldemitab=.false.
          if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
-      case(10)
-         
+
+      case(10)  ! Potentiel EAM
          if(dmtype==7) then 
             ldemitab=.FALSE.
-            if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+            if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
          else
             ldemitab=.TRUE.
-            if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
+            if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
          end if
       end select
 
@@ -1058,8 +1058,9 @@ end if
      write(6,*)'PRESSION A DIVISER PAR LES VOLUMES !!!!!!!!!'
      write(6,*)
   end if
-  if(lsigat.and.(.not.ltabvois)) then
-     write(6,*)rang,'sigat programme en table des voisins terme a deux corps seulement'
+  if(lPrtSigat.and.(.not.ltabvois)) then
+     write(6,'(a)')rang,'contrainte atomique programme en table des voisins&
+                & avec un potentiel EAM ou un terme a deux corps seulement'
      call arret_ndm
   end if
 

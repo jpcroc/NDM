@@ -179,6 +179,9 @@ soit à intervalle régulier (iterdf>0 linstantrdf=true), soit par moyenne d' écha
 comme la RDF avec comme controle iteangle, linstantfda et nfda
 
 */écriture de toutes les positions dans un fichier rasmol : tout les ITERASMOL et/ou dans un fichier .cfg tout les itecfg
+si lprteat=.true. l'énergie de chaque atome est également écrite dans le fichier .cfg
+si lprtsigat=.true. la contrainte atomique est également écrite dans le fichier .cfg (6 composantes)
+Le calcul de la contrainte atomique n'est implémentée que dans un potentiel à deux corps ou un EAM avec table des voisins
 
 */calcul des défauts fcc tous les itefcc
 
@@ -442,7 +445,6 @@ en question DOIT apparaitre dans la liste
   ludin = 94
   lcorrelvp=.false.
   lcalcjq=.false.
-  lsigat=.false.             ! calul et affichage de la contrainte atomique
   lsigtyp=.false.             ! calul et affichage de la contrainte atomique
   lEparat=.false.             ! calul et affichage de l'energie par atom
   itebdv=-1  ! frequence de calcul des bond valence
@@ -453,7 +455,8 @@ en question DOIT apparaitre dans la liste
   iteanapos=-1  ! frequence de comparaison avec cristal de reference
 
   lperiod=.true.    ! conditions periodiques
-  lprteat=.false.   ! if you want to print the energy on atom
+  lprteat=.false.   ! calcul de l'energie de chaque atome (et sauvegarde dans fichier cfg)
+  lPrtSigat=.false. ! calul de la contrainte atomique (et sauvegarde dans fichier cfg)
   lprteattotm=.false.   ! energie par atome totale (pot+cin) moyenne
   ngrid = 20000  ! taille de la grille des potentiels
   itecfg=-1   ! ecriture de fichiers .cfg pour AtomEye

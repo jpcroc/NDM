@@ -355,7 +355,7 @@ rang=rangph
   if (lprteattotm) allocate(eatomtotm(imm))
 
 
-  if(lsigat) allocate(sigat(3,3,imm))
+  if(lPrtSigat) allocate(sigat(3,3,imm))
   if(lsigtyp) then
      allocate(sigtyp(3,3,ntyp))
      allocate(sigtyptyp(3,3,ntyp,ntyp))

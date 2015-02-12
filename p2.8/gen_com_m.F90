@@ -128,7 +128,7 @@ module gen_com_m
   real(double), dimension(:,:,:),pointer :: sigc ! contrainte par cel
   real(double), dimension(:,:,:),pointer :: sigat,sigtyp,sigtyp_loc ! contrainte par atome
   real(double), dimension(:,:,:,:),pointer :: sigtyptyp,sigtyptyp_loc ! contrainte par atome
-  logical :: lsigat,lEparat,lsigtyp  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ©nergie par atome,calcul bond valence
+  logical :: lEparat,lsigtyp  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ©nergie par atome,calcul bond valence
   integer:: itebdv ! frequence de calcul des bond valence
   logical :: ljqbh ! calcul de la conductivitÃ© thermique par la mÃ©thode directe
   logical :: lnemd  ! calcul de la conductivitÃ© thermique par NEMD
@@ -143,7 +143,7 @@ module gen_com_m
   real(double):: fsumstop ! critere de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
   real(double),pointer::eatom(:) ! energie par atome
   real(double),pointer::eatomtotm(:) ! energie par atome
-  logical :: lprteat, lprtfat,lprteattotm  ! calcul et ecriture de l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
+  logical :: lPrtSigat, lprteat, lprtfat,lprteattotm  ! calcul et ecriture de la contrainte, l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
   logical :: lposmoy ! ecrit à la fin la position moyenne des atomes
   real(double) :: tdepla, tdepla2 ! seuils de deplacement
   logical :: lfilm, linstantrdf,linstantfda, lrestart, ltpcel, lfilmext !film, RDF, restart, moyenne par cel

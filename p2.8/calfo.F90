@@ -46,7 +46,7 @@ subroutine calfo
   potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potisP=0.
   potisTersoff=0.
   potisrep=0.; potisglue=0.; potiseam=0.
-  if(lsigat) sigat(:,:,:)=0. ; 
+  if(lPrtSigat) sigat(:,:,:)=0. ; 
 
 
   if (lsigtyp) then

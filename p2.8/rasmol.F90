@@ -143,7 +143,7 @@ subroutine rasmol(itapp)
            xp1 = xp(1,i)*1D+08
            xp2 = xp(2,i)*1D+08
            xp3 = xp(3,i)*1D+08
-           if (lsigat) then
+           if (lPrtSigat) then
               if(it.eq.0)then
                  pat=0.0
               else

@@ -44,7 +44,7 @@ subroutine analyse
   CHARACTER(len=20), dimension(:), allocatable :: aux_title
   CHARACTER(len=100) :: out_file
   integer,save::ncalceattotm=0, nposmoy=0
-  integer::ipot
+  integer::ipot, nAux_real, n
 
   integer::luvisuc=888,lenfn2
   character :: extension*9
@@ -265,19 +265,19 @@ subroutine analyse
                  ppot = 0.0
                  pkin = 0.0
                  do ic = 1, 3
-                    write (6, '(I1,3(A,I1),A,3G12.4)') ic,' sigma potentiel (1,', ic, ') (2,', ic, &
+                    write (6, '(I1,3(A,I1),A,3G18.10)') ic,' sigma potentiel (1,', ic, ') (2,', ic, &
                          ') (3,', ic, ') =',sig(1:3,ic)*unitP
                     ppot = ppot+1.0/3.0*sig(ic,ic)
                  end do
                  write (6, *)
                  do ic = 1, 3
-                    write (6, '(I1,3(A,I1),A,3G12.4)') ic,' sigma cinetique (1,', ic, ') (2,', ic, &
+                    write (6, '(I1,3(A,I1),A,3G18.10)') ic,' sigma cinetique (1,', ic, ') (2,', ic, &
                          ') (3,', ic, ') =',sigkine(1:3,ic)*unitP
                     pkin = pkin+1.0/3.0*sigkine(ic,ic)
                  end do
                  write (6, *)
                  do ic = 1, 3
-                    write (6, '(I1,3(A,I1),A,3G12.4)') ic,' sigma total (1,', ic, ') (2,', ic, &
+                    write (6, '(I1,3(A,I1),A,3G18.10)') ic,' sigma total (1,', ic, ') (2,', ic, &
                          ') (3,', ic, ') =',sigtot(1:3,ic)*unitP
                  end do
 
@@ -489,32 +489,46 @@ subroutine analyse
 
         WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.cfg'
         OPEN(file=out_file, unit=60, action='write')
-        IF (lprteat) THEN       ! Energy per atom
-           IF (Allocated(aux_real)) DeAllocate(aux_real)
-           Allocate(aux_real(1,1:im))
-           IF (Allocated(aux_title)) DeAllocate(aux_title)
-           Allocate(aux_title(2))
-           aux_title(1)="Energy per atom (eV)"
-           aux_real(1,1:im)=Eatom(1:im)*erg2eV
-           if (dmtype==17) then
-            CALL redefine_ty()
-            CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
-            CALL refix_ty()
-           else        
-           CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
-           end if
-           DEALLOCATE(aux_real, aux_title)
+
+        if (dmtype==17)  CALL redefine_ty()
+
+        IF (lPrtEat.OR.lPrtSigat) THEN       ! Energy and/or stress per atom
+                nAux_real=0
+                IF (lPrtEat)   nAux_real = nAux_real + 1
+                IF (lPrtSigat) nAux_real = nAux_real + 6
+                IF (Allocated(aux_real)) DeAllocate(aux_real)
+                Allocate(aux_real(nAux_real,1:im))
+                IF (Allocated(aux_title)) DeAllocate(aux_title)
+                Allocate(aux_title(nAux_real))
+                n=0
+                IF (lPrtEat) THEN
+                        aux_title(n+1)="Energy per atom (eV)"
+                        aux_real(n+1,1:im)=Eatom(1:im)*erg2eV
+                        n = n+1
+                END IF
+                IF (lPrtSigat) THEN
+                        aux_title(n+1) = 'Stress Sxx (' // cunitP // ')'
+                        aux_title(n+2) = 'Stress Syy (' // cunitP // ')'
+                        aux_title(n+3) = 'Stress Szz (' // cunitP // ')'
+                        aux_title(n+4) = 'Stress Syz (' // cunitP // ')'
+                        aux_title(n+5) = 'Stress Sxz (' // cunitP // ')'
+                        aux_title(n+6) = 'Stress Sxy (' // cunitP // ')'
+                        aux_real(n+1,1:im) = sigat(1,1,1:im)*unitP
+                        aux_real(n+2,1:im) = sigat(2,2,1:im)*unitP
+                        aux_real(n+3,1:im) = sigat(3,3,1:im)*unitP
+                        aux_real(n+4,1:im) = 0.5d0*( sigat(2,3,1:im) + sigat(3,2,1:im) )*unitP
+                        aux_real(n+5,1:im) = 0.5d0*( sigat(1,3,1:im) + sigat(3,1,1:im) )*unitP
+                        aux_real(n+6,1:im) = 0.5d0*( sigat(1,2,1:im) + sigat(2,1,1:im) )*unitP
+                END IF
+                CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=nAux_real, aux_real=aux_real, aux_title=aux_title)
+                DEALLOCATE(aux_real, aux_title)
         ELSE
-            if (dmtype==17) then
-             CALL redefine_ty()       
-             CALL WriteCfg(xp, ityp, im, at, 60)
-             CALL refix_ty()
-            else
-             CALL WriteCfg(xp, ityp, im, at, 60)
-            end if 
+                CALL WriteCfg(xp, ityp, im, at, 60)
         END IF
         CLOSE(60)
      endif
+
+     if (dmtype==17) CALL refix_ty()
 
   endif                                      ! fin rang=0
 

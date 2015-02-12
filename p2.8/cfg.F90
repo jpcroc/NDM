@@ -92,28 +92,28 @@ CONTAINS
     end do
     write(out,'(A)')'.NO_VELOCITY.'
     IF (test_aux_int.AND.test_aux_real) THEN
-       write(out,'(A,I1)')'entry_count = ', 3+nAux_int+nAux_real
+       write(out,'(A,I0)')'entry_count = ', 3+nAux_int+nAux_real
        DO i=1, nAux_int+nAux_real
           WRITE(out,'(a,i0,2a)') 'auxiliary[',i-1,'] = ', aux_title(i)
        END DO
        WRITE(out_format,'(a,3(i0,a))') &
             '(',3,'(g24.16,1x),',nAux_int,'(1x,i0),',nAux_real,'(1x,g24.16))'
     ELSEIF (test_aux_int) THEN
-       write(out,'(A,I1)')'entry_count = ', 3+nAux_int
+       write(out,'(A,I0)')'entry_count = ', 3+nAux_int
        DO i=1, nAux_int
           WRITE(out,'(a,i0,2a)') 'auxiliary[',i-1,'] = ', aux_title(i)
        END DO
        WRITE(out_format,'(a,2(i0,a))') &
             '(',3,'(g24.16,1x),',nAux_int,'(1x,i0)),'
     ELSEIF (test_aux_real) THEN
-       write(out,'(A,I1)')'entry_count = ', 3+nAux_real
+       write(out,'(A,I0)')'entry_count = ', 3+nAux_real
        DO i=1, nAux_real
           WRITE(out,'(a,i0,2a)') 'auxiliary[',i-1,'] = ', aux_title(i)
        END DO
        WRITE(out_format,'(a,2(i0,a))') &
             '(',3,'(g24.16,1x),',nAux_real,'(1x,g24.16))'
     ELSE
-       write(out,'(A,I1)')'entry_count = ', 3
+       write(out,'(A,I0)')'entry_count = ', 3
        WRITE(out_format,'(a,i0,a)') '(',3,'(g24.16,1x))'
     ENDIF
 

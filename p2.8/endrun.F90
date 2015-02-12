@@ -29,10 +29,12 @@ subroutine endrun
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
 
-  integer :: i,j
+  integer :: i,j, n, nAux_real
   CHARACTER(len=100) :: out_file
   REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
   CHARACTER(len=20), dimension(:), allocatable :: aux_title
+  real(double) :: unitE,unitP
+  character*5 :: cunitE, cunitP
 #if(PARA)
   integer :: iproc
   real(double), allocatable :: xp_loc(:,:),eatom_loc(:)
@@ -46,6 +48,13 @@ subroutine endrun
   !
   !
   
+  if(lPkbar) then
+     unitP=1.0d-9
+     cunitP='kbar'
+  else
+     unitP=1.0
+     cunitP='d/cm2'
+  endif
 
   ! Un dernier calcul des forces pour la route
   IF (iteTemp.GE.0) iteTemp=1
@@ -180,22 +189,49 @@ subroutine endrun
   if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
   if (iterasmol.GE.0) call rasmol (it)
   if (iteanapos>=0) call anapos (it)
+
+  ! Ecriture d'un fichier atomeye
   if (itecfg.GE.0) then
-     WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.cfg'
-     OPEN(file=out_file, unit=60, action='write')
-     IF (lprteat) THEN       ! Energy per atom
-        IF (Allocated(aux_real)) DeAllocate(aux_real)
-        Allocate(aux_real(1,1:im))
-        IF (Allocated(aux_title)) DeAllocate(aux_title)
-        Allocate(aux_title(2))
-        aux_title(1)="Energy per atom (eV)"
-        aux_real(1,1:im)=Eatom(1:im)*erg2eV
-        CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=1, aux_real=aux_real, aux_title=aux_title)
-        DEALLOCATE(aux_real, aux_title)
-     ELSE
-        CALL WriteCfg(xp, ityp, im, at, 60)
-     END IF
-     CLOSE(60)
+
+        WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.cfg'
+        OPEN(file=out_file, unit=60, action='write')
+
+        if (dmtype==17)  CALL redefine_ty()
+
+        IF (lPrtEat.OR.lPrtSigat) THEN       ! Energy and/or stress per atom
+                nAux_real=0
+                IF (lPrtEat)   nAux_real = nAux_real + 1
+                IF (lPrtSigat) nAux_real = nAux_real + 6
+                IF (Allocated(aux_real)) DeAllocate(aux_real)
+                Allocate(aux_real(nAux_real,1:im))
+                IF (Allocated(aux_title)) DeAllocate(aux_title)
+                Allocate(aux_title(nAux_real))
+                n=0
+                IF (lPrtEat) THEN
+                        aux_title(n+1)="Energy per atom (eV)"
+                        aux_real(n+1,1:im)=Eatom(1:im)*erg2eV
+                        n = n+1
+                END IF
+                IF (lPrtSigat) THEN
+                        aux_title(n+1) = 'Stress Sxx'
+                        aux_title(n+2) = '       Syy'
+                        aux_title(n+3) = '       Szz'
+                        aux_title(n+4) = '       Syz'
+                        aux_title(n+5) = '       Sxz'
+                        aux_title(n+6) = '       Sxy (' // cunitP // ')'
+                        aux_real(n+1,1:im) = sigat(1,1,1:im)*unitP
+                        aux_real(n+2,1:im) = sigat(2,2,1:im)*unitP
+                        aux_real(n+3,1:im) = sigat(3,3,1:im)*unitP
+                        aux_real(n+4,1:im) = 0.5d0*( sigat(2,3,1:im) + sigat(3,2,1:im) )*unitP
+                        aux_real(n+5,1:im) = 0.5d0*( sigat(1,3,1:im) + sigat(3,1,1:im) )*unitP
+                        aux_real(n+6,1:im) = 0.5d0*( sigat(1,2,1:im) + sigat(2,1,1:im) )*unitP
+                END IF
+                CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=nAux_real, aux_real=aux_real, aux_title=aux_title)
+                DEALLOCATE(aux_real, aux_title)
+        ELSE
+                CALL WriteCfg(xp, ityp, im, at, 60)
+        END IF
+        CLOSE(60)
   endif
   call arret_ndm
 
