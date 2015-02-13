@@ -11,18 +11,18 @@ subroutine read_sundae()
 							 dt, Totalmcmoves, TotalTime, gamma_sundae, Temperature, alpha_max, theta,   &
 							 teq, delta_x, a_sto, isauvegarde, KtoERG, entree, sortie, continue_sundae,  &
 							 maxvec, nmax, depart_boucle_nbclones, posfinal, tequilib,  &
-							 data_abf, reprise_A
+							 data_abf, reprise_A,a_stol
 
 	implicit none
 
-	namelist /input_sundae/ Totalmcmoves,TotalTime,dt,isauvegarde,Temperature,gamma_sundae,sortie,entree,alpha_max, teq, delta_x, continue_sundae, reprise_A, nmax,maxvec,h_A_max,h_ba_min,h_ba_max,h_ba,h_ba_I
+	namelist /input_sundae/ Totalmcmoves,TotalTime,dt,isauvegarde,Temperature,gamma_sundae,sortie,entree,alpha_max, teq, delta_x, continue_sundae, reprise_A, nmax,maxvec,h_A_max,h_ba_min,h_ba_max,h_ba,h_ba_I,a_stol
 
-	h_A_max  = 4.5d-1
-	h_ba_max = 1.6d0
-	h_ba_min = 1.0d0
-	h_ba     = 1.3d0
-	h_ba_I   = 1.8d0
-
+	h_A_max     = 4.5d-1
+	h_ba_max    = 1.6d0
+	h_ba_min    = 1.0d0
+	h_ba        = 1.3d0
+	h_ba_I      = 1.8d0
+	a_stol      = 0.99d0
         isauvegarde = 100
 
 	fnamtin = fnam(1:lenfnam)//'.tin'
@@ -30,8 +30,6 @@ subroutine read_sundae()
 	write(*,*) 'file name', fnamtin
 	open(unit=777, file=fnamtin, status='unknown')
 	read (777, nml=input_sundae)
-
-
 
 	write(6,*)'usage %s:\n'
 

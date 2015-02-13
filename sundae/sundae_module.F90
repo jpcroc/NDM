@@ -15,8 +15,6 @@ module sundae_module
 	!   _s -> selection
 	!   _d -> depart
 
-
-
 !INTERFACE 
 !   FUNCTION asinhsqrt (x)
 !     use T_kind_param_m, ONLY:  double
@@ -158,11 +156,13 @@ module sundae_module
 	real(double) :: AR_MH
 	real(double) :: theta_n, theta_temp
 	integer      :: itheta_n, itheta_temp, theta_tilde, N_extra
-	real(double) :: Lyap_max = 20.d0  ! anciennement 20.0
+	real(double) :: Lyap_max = 9.d0  ! anciennement 20.0
+        real(double) :: Lyap_min = -9.d0
 	integer :: iLyap
 	real(double) :: somme
 	real(double) :: Lyap, gmin, P_n, pi_n, pi_n1, sum_A
 	real(double) biais,oldbiais
+	real(double) a_stol
       	real(double),dimension(:),  allocatable,save  :: accept_theta
       	real(double),dimension(:),  allocatable,save  :: MPI_accept_theta
 
@@ -273,16 +273,9 @@ subroutine LyapLanczos_shooting
 		Pcourant%eigenvalue = eigenvalue
 		Pcourant%Lyap       = miasinhsqrt(eigenvalue)
 	        do i=1,4 
-!		  eigenvalue=asinhsqrt(eigenvals(i))
 		  Pcourant%Lyapu(i)= miasinhsqrt(eigenvals(i))
                   Pcourant%eigenvals(i)=eigenvals(i)
                 enddo
-!		if (eigenvalue.lt.0.0) then
-!                        omegadts2 = dts2racinem*sqrt(-eigenvalue)
-!			Pcourant%Lyap=asinh(omegadts2)*2.d0 !
-!		else 
-!			Pcourant%Lyap=0.d0
-!		endif
 		Pshoot(iterbw-1)=Pcourant
 		it_trajectory = it_trajectory + 1
 		new_projection = .false.
@@ -309,15 +302,6 @@ subroutine LyapLanczos_shooting
 	        do i=1,4 
 		 Pcourant%Lyapu(i)=miasinhsqrt(eigenvals(i))
 		enddo
-!		if (eigenvalue.le.0.0) then 
-!m	 	Pcourant%Lyap = asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0  ! on stocke avant !!
-!                omegadts2 = dts2racinem*sqrt(-eigenvalue)
-!	        Pcourant%Lyap=asinh(omegadts2)*2.d0
-!                write(*,*) ' ' ,Pcourant%Lyap, asinhsqrt(eigenvalue)
-!
-!		else 
-!			Pcourant%Lyap = 0.d0      ! on stocke toujours le lyapunov avant !!!
-!		endif
 		Pshoot(iterfw)%Project=Pcourant%Project
 		Pshoot(iterfw)%eigenvalue=Pcourant%eigenvalue
 		Pshoot(iterfw)%Lyap=Pcourant%Lyap
@@ -332,9 +316,7 @@ subroutine LyapLanczos_shooting
 	!!write(*,*) 'Lanczos iterations...:',lanczos_iter
 	!!write(*,*) '           forces....:',lanczos_iter*maxvec*2
 
-	triallyap=SUM(Pshoot(0:totiter-1)%Lyap)       !m    /real(totiter)
-	!!write(*,*) 'oldLyap   = ', oldLyap*300.0/sqrt(9.270914743200000e-023)
-	!!write(*,*) 'triallyap = ', triallyap*300.0/sqrt(9.270914743200000e-023)
+	triallyap=max(Lyap_min,SUM(Pshoot(0:totiter-1)%Lyap))       !m    /real(totiter)
 	
 	!!!!!!! fonction heaviside pour maintenir le point initial de la trajectoire dans 
 	!!!!!!! le bassin de depart: calcul dist max pour le point x(0) de la trajectoire
@@ -472,13 +454,6 @@ subroutine LyapLanczos_shifting
 	        do i=1,4 
 		  Pcourant%Lyapu(i)=miasinhsqrt(eigenvals(i))
 		enddo
-!		if (eigenvalue.lt.0.0) then
-!m		 Pcourant%Lyap= asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0 ! on stocke Lyap en 1/2 avant
-!                 omegadts2 = dts2racinem*sqrt(-eigenvalue)
-!	         Pcourant%Lyap=asinh(omegadts2)*2.d0 !
-!		else 
-!		 Pcourant%Lyap=0.d0  !! autoval max del Lanczos
-!		endif
 		Pshift(iterbw-1)=Pcourant
 		it_trajectory=it_trajectory+1 
 		new_projection=.false.
@@ -530,7 +505,7 @@ subroutine LyapLanczos_shifting
 
 	S(:)=0
 	do l=0,totiter  ! sommation sur les 1+L "path proposals" possibles
-            Ly = sum(Pshift(l:l+totiter-1)%Lyap)
+            Ly = max(Lyap_min,sum(Pshift(l:l+totiter-1)%Lyap))
             call marginal_calcul(Ly)
             S(l) = Biais
 	enddo
@@ -582,14 +557,15 @@ subroutine LyapLanczos_shifting
 	enddo
 	234 continue
 	newtraj=k
+
 	!!write(*,*) 'xalea, Psel, poids cumulé et newtraj = ',xalea,Psel(k), xcumul ,newtraj
 	!!write(*,*) 'absdmax(newtraj)', absdmax(newtraj)
 	!!write(*,*) 'oldLyap  = ', oldLyap*300.0/sqrt(9.270914743200000e-023)
 
 	!!!!!!!! on copie la trajectoire selectionnée avec le shifting
-	if (absdmax(newtraj).le.h_A_max) then 
+	if (absdmax(newtraj).le.h_A_max) then
 		Path(0:totiter-1) = Pshift(newtraj:totiter+newtraj-1) ! on a Path(0) = Pshift(0) pour newtraj=0
-		oldLyap       = SUM(Path(0:totiter-1)%Lyap)       !m /real(totiter)
+		oldLyap       = max(Lyap_min,SUM(Path(0:totiter-1)%Lyap))
 	        call marginal_calcul(oldLyap)
                 oldbiais = biais
 	else
@@ -915,6 +891,7 @@ subroutine LyapLanczos_output
 		enddo
                 do j=0,nthetamax
                         somme = MPI_accept_theta(j)+MPI_refus_theta(j)
+			if (somme.eq.0.d0) somme = 1.d-5
 		 	write(1113,*) theta(j*10),MPI_accept_theta(j)/somme,somme
                 enddo
 
@@ -1235,12 +1212,6 @@ subroutine LyapLanczos_init_tests
 	        do i=1,4 
 		  Pcourant%Lyapu(i)=miasinhsqrt(eigenvals(i))
 		enddo
-!		if (eigenvalue.lt.0.d0) then
-!                           omegadts2 = dts2racinem*sqrt(-eigenvalue)
-!	                   Pcourant%Lyap=asinh(omegadts2)*2.d0 
-!		  	   temp = temp +  asin(dt*sqrt(-eigenvalue)/2.d0)*2.d0/sqrt(9.270914743200000e-023)
-!		endif
-
 		Path(iter+1)    = Pcourant
 		Path(iter)%Lyap = Pcourant%Lyap
 		new_projection = .false.
@@ -1471,7 +1442,7 @@ subroutine LyapLanczos_equilibrage
 		enddo
 		close(27)
 		Path(totiter) =  Path(totiter-1) 
-		oldLyap=sum(Path(0:totiter-1)%Lyap)      !m /real(totiter)
+		oldLyap=max(Lyap_min,sum(Path(0:totiter-1)%Lyap))      !m /real(totiter)
 		write(*,*) 'oldLyap = ', oldLyap
 
 		q=Path(0)%q
@@ -1815,6 +1786,7 @@ subroutine LyapLanczos_allocate
 !	a_sto(i) = 1.d0-1.d1**(-1.d0-5.0d0*dble(i)/dble(nmax))  ! bon parametrage pour alpha_max  = 2.d0
 !	a_sto(i) = 1.d0-1.d1**(-1.d0-2.5d0*alpha_max*dble(i)/dble(nmax))  ! parametrage test pour alpha_max = 1.5d0
 	a_sto = 0.99d0
+	a_sto = a_stol
 
 
         enddo
