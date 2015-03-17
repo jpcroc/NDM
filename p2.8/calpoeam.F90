@@ -16,6 +16,39 @@ subroutine calpoeam
   real(double):: ktor,ktorho
   real(double) :: rk,rhok,rk2,rue,minrho,maxrho
 
+
+
+interface
+
+subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
+  !-----------------------------------------------
+  !   M o d u l e s
+  !-----------------------------------------------
+  USE T_kind_param_m, ONLY:  double
+
+  implicit none
+  !-----------------------------------------------
+  !   D u m m y   A r g u m e n t s
+  !-----------------------------------------------
+  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
+  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+  integer , intent(in) :: ngrid,ipotentiel
+  integer  :: ntyp
+  integer  :: npair
+  real(double) , intent(in) :: csive
+  real(double)  :: auxe= 23.06134575D-20 
+  real(double) , intent(inout) :: pot(4,npair,0:ngrid+1),pot_d(4,npair,0:ngrid+1)
+  real(double)  :: catom(ntyp)
+  real(double)  :: roff1(npair)
+  real(double)  :: roff2(npair)
+  logical :: lu_roff_pair(npair)
+
+end subroutine zieg2
+end interface
+
+
+
+
    eamrep(:,:,:)=0.0
   eamrho(:,:,:)=0.0
   eamglue(:,:,:)=0.0

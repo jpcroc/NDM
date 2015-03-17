@@ -227,7 +227,7 @@ subroutine calcdepla
            write (lufilmpaf, *) '   1'
            write (lufilmpaf, *) ' IT', it, ' time ', timel
            write (lufilmpaf, 113) ty(ityp_iko), xp_iko(1)*1D+8, xp_iko(2)*1D+8, &
-                xp_iko(3)*1D+8, iko
+                xp_iko(3)*1D+8, iko,distdepl(iko)
         end if
      endif
   endif
@@ -292,7 +292,7 @@ subroutine calcdepla
      ! ***** Fin ecriture positions dans plusieurs fichiers *****
   end if
 112 format(a2,1x,3(f10.4,1x),1x,1x,i6,' PKA')
-113 format(a2,1x,3(f10.4,1x),1x,1x,i6,f10.4)
+113 format(a2,1x,3(f10.4,1x),1x,1x,i6,G10.4)
 
 #if(PARA)
   ! liberation des tableaux

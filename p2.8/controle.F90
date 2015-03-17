@@ -71,6 +71,15 @@ subroutine controle
      call arret_ndm
 
   endif
+  
+  if (timel>=timemax) then
+     if (rang==0) write (6, *) '*******max time reached **** '
+     call endrun
+     call DeallocateAll
+
+     call arret_ndm
+
+  endif
   if(lEev) then
      unitE=erg2eV
      cunitE='  eV'

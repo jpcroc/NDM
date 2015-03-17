@@ -42,6 +42,7 @@ subroutine initcasca
   endif                                      ! rang=0
 
   call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
+  call cryst_to_cart (imm, ax, bg, -1)    !cart vers cryst
   !debug write(6,*)xp(1,iko),xx0
   if (ltranche) then
      t1 = 0.
@@ -65,6 +66,7 @@ subroutine initcasca
   ax(3,:im) = ax(3,:im)-t3
 
   call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
+  call cryst_to_cart (imm, ax, at, 1)     !cryst vers cart
   write(6,*)xp(1,iko)
   !                                                !Conditions periodiques
   if (lperiod)       call period 

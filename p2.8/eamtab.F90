@@ -184,7 +184,7 @@ contains
           ind_pair(i)=i
           read (lupotin,*) roff1(i),roff2(i)
           if (rang/=0) cycle
-          write (6, '(2F9.3)') roff1(i),roff2(i)
+          write (6, '(A,2F9.3)') 'ROFF1_2', roff1(i),roff2(i)
        end do
 
        roff1=roff1*A2cm
@@ -247,14 +247,14 @@ contains
        allocate(SPembtyp_d(iti)%ceam(nptmax)) 
        allocate(SPembtyp_d(iti)%deam(nptmax))
       end if
- 
+! write(6,*)'NPT NPTMAX',npt,nptmax
        do i=1,nptmax
           if(i.le.npt) then
              !newCOS
             if (lforcetabulate) then
              read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),embtyp_d(iti)%feam(i)
             else 
-             read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),xdum
+             read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i)
             end if
           else
              embtyp(iti)%xg(i)=(i-npt)*embtyp(iti)%deltaEAM+ embtyp(iti)%xg(i)
@@ -315,7 +315,7 @@ contains
             if (lforcetabulate) then
              read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),rhotyp_d(iti)%rho(i)
             else 
-             read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),xdum
+             read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i)
             end if
            else
              rhotyp(iti)%xd(i)=(i-npt)*rhotyp(iti)%deltaRHO+ rhotyp(iti)%xd(npt)
@@ -372,7 +372,7 @@ contains
            if (lforcetabulate) then        
              read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),reppair_d(ipr)%potr(i)
            else
-             read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),xdum
+             read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i)
            end if
           else
              reppair(ipr)%xr(i)=(i-npt)*reppair(ipr)%deltaREP+ reppair(ipr)%xr(i)
@@ -468,7 +468,9 @@ contains
        embF=eam%feam(nptmax)*ev2erg
 
     else
-       k=Int(rho/eam%deltaEAM)+1
+!       write(6,*)
+       k=Int((rho-eam%deltaEAM/1d10)/eam%deltaEAM)+1
+!       write(6,*) k,rho,rho/eam%deltaEAM
        drk=rho +(1 -k)*eam%deltaEAM
        Embf = ev2erg*(eam%feam(k)+drk*(SPeam%beam(k)+drk*(SPeam%ceam(k)+drk*SPeam%deam(k))))
     end if

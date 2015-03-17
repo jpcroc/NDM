@@ -3,7 +3,7 @@ module var_pot
   implicit none
 
   integer,parameter::npotmax=100
-  integer, parameter :: nkmax = 4000
+  integer, parameter :: nkmax = 10000
   integer, parameter :: contmax = 2000
 
 

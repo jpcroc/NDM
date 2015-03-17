@@ -95,6 +95,7 @@ module gen_com_m
 
 
   integer :: it, itmax, igen ! iteration courante, finale , type de generation
+  real(double)::timemax ! temps max simul�
   integer :: lenfnam
   integer :: fmt_cin
 

@@ -53,7 +53,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel
+       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax
 
 
   !
@@ -311,6 +311,10 @@ subroutine readdm
   lprtpot=.false.
   ibrake =0   ! if =1 electronic slowing for cascades (acting on all atoms)
   ngrdel=500
+
+  timemax=-1
+
+
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)

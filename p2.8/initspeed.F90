@@ -90,7 +90,7 @@ subroutine bruit_xp
     integer  :: est_local
     integer :: seed_size
     integer::iti
-    real(double)::sd,grnd,theta,fhi
+    real(double)::sd,grnd,theta,fhi ! ,decx(2)
 
 #if(PARA)
     real(double) :: kinx_glob
@@ -441,19 +441,23 @@ subroutine bruit_xp
           write(6,*)'depla init Tempdeplainit',tempdeplainit,'debyetemp= ',debyetemp
 
           do iti=1,ntyp
-             sd=sqrt((3*tempdeplainit*hbar**2)/(bk*cm(iti)*debyetemp**2))
-             write(6,*)'sd de iti',sd,iti
+             sd=sqrt((tempdeplainit*hbar**2)/(bk*cm(iti)*debyetemp**2))
+             write(6,*)'sd2 de iti',sd*sd,iti
           end do
        end if
+!       decx=0
        do i=1,im
-          sd= sqrt((3*tempdeplainit*hbar**2)/(bk*cm(ityp(i))*debyetemp**2))
+          sd= sqrt((tempdeplainit*hbar**2)/(bk*cm(ityp(i))*debyetemp**2))
 
           do ic=1,3
              call gaussianrand(grnd)
-             !           write(6,*)grnd
+!                        write(6,*)grnd
              xp(ic,i)=xp(ic,i)+sd*grnd
+             xpp(ic,i)=xpp(ic,i)+sd*grnd
+!             decx(ityp(i))=decx(ityp(i))+(sd*grnd)**2
           end do
        end do
+!       write(6,*)'decx',decx(1)/na(1),decx(2)/na(2)
        if (lperiod==.true.) call period
     end if
 
