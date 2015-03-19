@@ -200,9 +200,9 @@ contains
         
           do i=1,im
              write(490,'(I8,3E16.5)')i,xpcr(1,i)-xp(1,i),xpcr(2,i)-xp(2,i),xpcr(3,i)-xp(3,i)
-             write(487,*)i,xp(1,i),xpcr(1,i)
-             write(488,*)i,xp(2,i),xpcr(2,i)
-             write(489,*)i,xp(3,i),xpcr(3,i)
+             write(487,'(I8,3E16.5)')i,xp(1,i),xpcr(1,i),xpcr(1,i)-xp(1,i)
+             write(488,'(I8,3E16.5)')i,xp(2,i),xpcr(2,i),xpcr(2,i)-xp(2,i)
+             write(489,'(I8,3E16.5)')i,xp(3,i),xpcr(3,i),xpcr(3,i)-xp(3,i)
              deltx=deltx+(xpcr(1,i)-xp(1,i))/im
              delty=delty+(xpcr(2,i)-xp(2,i))/im
              deltz=deltz+(xpcr(3,i)-xp(3,i))/im
@@ -739,7 +739,7 @@ contains
           if (i.gt.im)cycle
           if(ldefcat.and.ityp(i)==2) cycle iloop0
           koo = ielat(i)                          ! Numero de la cellule
-          !write(6,*)i,idp,koo
+!          write(6,*)'i idp ',i,idp
           ! pour chaque cel. voisine
           do i1 = 0, ncelvois
              ko1=ncel(koo,i1)
@@ -761,6 +761,7 @@ contains
                 cv(1,3) = c3
                 call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
                 r = sqrt(cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3))
+!                write(6,*)'j', j,r
                 if(r.lt.tint) then ! i est sur le site d'un atome du crystal de depart
                    !                 write(852,*)'remp',i,j,r
                    if(itypcr(j)==ityp(i)) then ! simple remplacement
@@ -1211,7 +1212,7 @@ contains
        else
           if (ityp(j).ne.ityp(indatsit(j,1))) then
              nas=nas+1
-             indas(nas)=indatsit(j,i)
+             indas(nas)=indatsit(j,1)
           end if
        end if
     end do iloop20

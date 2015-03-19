@@ -111,13 +111,13 @@ subroutine configcr(xpcr,ityp,lrescale,itypcr)
 
      else
         call cryst_to_cart (imm, xpcr, bg, -1)    !cart vers cryst           
-        where (xpcr(:,:imcr)<0.0)
-           xpcr(:,:imcr) = xpcr(:,:imcr)+1.
-        end where
-        where (xpcr(:,:imcr)>=1.0)
-           xpcr(:,:imcr) = xpcr(:,:imcr)-1.0
-        end where
-        call cryst_to_cart (imm, xpcr, at, 1)    !cryst vers cart
+!        where (xpcr(:,:imcr)<0.0)
+!           xpcr(:,:imcr) = xpcr(:,:imcr)+1.
+!        end where
+!        where (xpcr(:,:imcr)>=1.0)
+!           xpcr(:,:imcr) = xpcr(:,:imcr)-1.0
+!        end where
+!        call cryst_to_cart (imm, xpcr, at, 1)    !cryst vers cart
 
      end if
      !        write(6,*)at

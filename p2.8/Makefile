@@ -277,6 +277,11 @@ fft_inter.o : fft_inter.F90
 	$(F90) -c  -O0   fft_inter.tmp.f90
 	mv fft_inter.tmp.o fft_inter.o
 
+configcr.o : configcr.F90
+	$(CPP) $(CPPFLAGS) configcr.F90 > configcr.tmp.f90
+	$(F90) -c  -O0   configcr.tmp.f90
+	mv configcr.tmp.o configcr.o
+
 
 clean_art:
 	rm -rf art ; cd ../art ; make clean   

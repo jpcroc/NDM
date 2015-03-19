@@ -35,6 +35,7 @@ subroutine initcasca
   ! --- Translation de l'atome IKO au centre de la boite de simulation ---
   if (rang==0) then
      write (6, *) 'initialisation de la cascade'
+     write(6,*)'ATOME ',iko, '  TYPE ',ityp(iko)
      if (iko>im) then
         write (6, *) 'wrong input cascade iko eko ', iko, eko
         stop

@@ -329,6 +329,10 @@ rang=rangph
                 ,iko)*1D+8, iko
         endif
 114     format(a3,1x,3(f10.4,1x),i5)
+        if(iteanapos>0)then
+           itapp=0
+           call sauveposition (itapp)
+        end if
 
      end if                                  !  fin rang=0 
 
