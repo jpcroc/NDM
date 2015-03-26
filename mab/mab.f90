@@ -20,7 +20,7 @@ subroutine mab
 
   
 ! 
-! Copyright LL Cao and all NDM band, April- 2013
+! Copyleft NDM Dec-2014
   
   integer:: i_iter
   real(double)::temp_read,tmp1, tmp2,tmp3,tmp4,oerg,corr3N,corr3Nm3
@@ -47,7 +47,6 @@ subroutine mab
 if (abf_type==1)  call test_minimum_abf()
 if (abf_mode==22) then
      call test_minimum_abf()
-     !it_en=-1
 end if 
 if ((abf_mode==2).or.(abf_mode==22)) then
  call test_minimum_abf () 

@@ -99,6 +99,12 @@ if (abf_mode==2) then
   do iter=-nhisto1,nhisto+nhisto1
      U_Aee(iter) = (1.d0-x_mol(iter))*(ene_einstein) + x_mol(iter)*(potist-ene0)
      temp_log(iter)=-(U_Aee(iter)-A_ee(iter))/temperature
+  end do
+  temp_log_max=MAXVAL(temp_log(:) )
+  temp_log(:)=temp_log(:)-temp_log_max
+
+     
+  do iter=-nhisto1,nhisto+nhisto1
      temp_exp(iter)=exp(temp_log(iter))!
       if ((temp_exp(iter)+1.0).eq.temp_exp(iter)) then
         write(*,*) 'WARNING:  NaN detected look in fort.333 file'
@@ -109,6 +115,7 @@ if (abf_mode==2) then
  !--2.b denom: int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
   denom=0.d0
   do iter=-nhisto1+1,nhisto+nhisto1
+   !C_n in my notes
    denom=denom + 0.5d0*(temp_exp(iter-1)+temp_exp(iter) )*delta_z
   end do
 

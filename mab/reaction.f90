@@ -45,7 +45,7 @@ subroutine calfoblock()
  real(double) :: rp1,dFerDir
 
  fpblock(:,:) = zero
-! Computing the forces on the protevtives spheres...
+! Computing the forces on the protectives spheres...
  
  do ic=1,15
   if (ic/=7) then

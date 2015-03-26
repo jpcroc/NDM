@@ -35,7 +35,6 @@
 
  
  !one force calculation ....
-
   if (abf_mode==2) then
    if (it_en > 0) then
      call calfo_einstein_solid ()
@@ -61,6 +60,7 @@
 
       !pp(1:3,1:im)= fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_mass(1:3,1:im)
       pp(1:3,1:im)= fplocal(1:3,1:im)/(m_i(1:3,1:im)*gamma)*dtlang + sig_mass(1:3,1:im)
+
 
       do ic=1,3
       psum(ic)=sum(pp(ic,1:im))/dble(im)

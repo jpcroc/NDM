@@ -71,7 +71,7 @@ subroutine langevin_overdamped_zeta()
             it_temp=it_temp+1
             it_count = it_count+1
             if (it_temp==100000) then
-              write(*,*) 'WLANGEVIN <lagevin_overdamped_csi>: Too much rejection, the program will stop'
+              write(*,*) 'WLANGEVIN <langevin_overdamped_csi>: Too much rejection, the program will stop'
               it_stop=1
               dcsi=dcsi_ini
               go to 11

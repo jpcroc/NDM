@@ -6,8 +6,8 @@
  implicit none
   
   if (gamma < 0.d0) then
-   if (langevin_type==2) gamma=one/(tstep*1.d2)
-   if (langevin_type==1) gamma=one/dtlang
+   if (langevin_type==2) gamma=one/(tstep*1.d2)  !under
+   if (langevin_type==1) gamma=one/dtlang        !over
   end if 
 
   select case (langevin_type)
