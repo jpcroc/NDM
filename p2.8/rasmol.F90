@@ -65,8 +65,8 @@ subroutine rasmol(itapp)
 
      ! TJ: change the formatting so that files are well listed.
      lenfn2 = 9
-     if (itapp >= 0 ) write(extension,'(i9.9)') itapp
-     
+     if (itapp < 0  )   extension='iiiiiiiii' 
+     if (itapp >= 0 )   write(extension,'(i9.9)') itapp
      ! -------------------------------------------------------------
      !     creation du  fichier positions pour le logiciel de visulation
      ! -------------------------------------------------------------
