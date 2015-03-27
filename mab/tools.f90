@@ -313,7 +313,6 @@ integer, save :: it_history
 
   free_kinetic=free_kinetic+exp(-Ecinetique/temperature)
   average_kinetic=average_kinetic+Ecinetique
- end if 
 
  ave1=free_temp1/dble(it_mab-n_equilibre)
  ave2=free_temp2/dble(it_mab-n_equilibre)
@@ -323,7 +322,6 @@ integer, save :: it_history
  if ((free_temp+1.0)==free_temp) then 
   write(6,*) 'WARNING: NaN detected in brute_force_free_energy  calculations'
  end if 
-
  Free_energy_brute=temperature*log(free_temp/dble(it_mab-n_equilibre)) + equit
  Free_energy_brute2= temperature*(ave1/temperature+                          &
                                       (ave2-ave1**2)/temperature**2/2.d0 )   &
@@ -335,6 +333,7 @@ integer, save :: it_history
                                       (ave3-3.d0*ave2*ave1+2.d0*ave1**3)/temperature**3/6.d0 + &
                                       (ave4-4.d0*ave3*ave1-3.d0*ave2**2+12.d0*ave2*ave1**2-6.d0*ave1**4)/temperature**4/24.d0) &
                        +  equit
+
 
 !debug
 if (it_mab > n_equilibre+500)  write(41,*) it_mab-n_equilibre,  Free_energy_brute*erg2ev ,  Free_energy_brute*erg2ev-equit*erg2ev
@@ -364,6 +363,7 @@ if (itest_stop==1) then
  it_calc_brute=it_history
 end if 
 
+ end if  ! it_mab > n_equilibre 
 return
 end subroutine brute_force_free_energy
 

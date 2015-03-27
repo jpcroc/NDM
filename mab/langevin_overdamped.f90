@@ -12,6 +12,7 @@
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
+    use var_pot
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,xbar,  &
                              Ecinetique,abf_type,abf_mode,block,gamma,fpeinstein,it_en 
 

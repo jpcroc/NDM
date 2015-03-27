@@ -490,7 +490,7 @@ subroutine analyse
         WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.cfg'
         OPEN(file=out_file, unit=60, action='write')
 
-        if (dmtype==17)  CALL redefine_ty()
+!WHAT_THE_HACK_IS_THAT        if (dmtype==17)  CALL redefine_ty()
 
         IF (lPrtEat.OR.lPrtSigat) THEN       ! Energy and/or stress per atom
                 nAux_real=0
@@ -528,7 +528,7 @@ subroutine analyse
         CLOSE(60)
      endif
 
-     if (dmtype==17) CALL refix_ty()
+!WHAT_THE_HACK_IS_THAT     if (dmtype==17) CALL refix_ty()
 
   endif                                      ! fin rang=0
 

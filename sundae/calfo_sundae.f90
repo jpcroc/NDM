@@ -4,6 +4,7 @@ subroutine calcforce_lanc(N,pos,nforce,ene_out, it_art) !calcul des forces POUR 
 	use gen_com_m
 	!use art_in_ndm_module
 	use tab_imm_m
+        use var_pot
 
 	implicit none
 	integer, intent(in):: N,it_art
@@ -50,6 +51,7 @@ subroutine calfo_teledyn(it_counter)
 	use gen_com_m
 	!use art_in_ndm_module
 	use tab_imm_m
+        use var_pot
 	integer , intent(in) :: it_counter
 
 	!write(*,*) ltabvois,it_counter ,itab,itetabvois

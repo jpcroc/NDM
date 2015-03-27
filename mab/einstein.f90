@@ -14,7 +14,7 @@ tempdeplainit=tinit
 debyetemp=omega_einstein*THZtoK
 tmp_dmtype=dmtype
 dmtype=1 
-ldeplainit=.true.
+!NOTworkingNOW... ldeplainit=.true.
 
 call initspeed ()
 

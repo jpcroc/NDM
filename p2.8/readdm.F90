@@ -320,6 +320,10 @@ subroutine readdm
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
   read (ludin, nml=input)
 
+  if ((dmtype==16).or.(dmtype==17)) then
+   timemax=1d+20
+  end if 
+
 
 
   imm_glob = imm

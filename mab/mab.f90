@@ -146,15 +146,16 @@ do it_mab=1,nlangevin
  end do
   !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
-
+ if (abf_type /= 1) then
   call fill_final_histo()! Attention!! pour ABFee il faut l'histogramme pour calculer l'énergie libre
 
   call Free_energy_ABF()! Calculate energy landscape for ABF
  
   call create_files()! Create files needed
+ end if 
 
  if (abf_type==1) then
- 
+
  if (itest_stop==1)   write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
   call correct_free_energy_brute(corr3N,corr3Nm3)
   write(*,*) 'outsub', corr3N, corr3Nm3,corr3N*erg2ev

@@ -2,7 +2,8 @@ subroutine calfo_mab()
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-  USE mab_in_ndm_module, only: it_mab,abf_type,abf_mode, block,histo_equi,n_equilibre,ene0,fp,fpeinstein,ene_einstein
+  use var_pot
+  USE mab_in_ndm_module, only: it_mab,abf_type,abf_mode, block,histo_equi,n_equilibre,ene0,fpeinstein,ene_einstein
   implicit none
   integer :: it_langevin
  
