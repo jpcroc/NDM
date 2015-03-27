@@ -34,9 +34,10 @@ if (abf_mode==1) then
 end if 
 
 if (abf_mode==2) then              
-  force = potist - ene_einstein - ene0 !  d U(zeta,q)/d zeta  
+  force = potist - ene_einstein - ene0 !  - d U(zeta,q)/d zeta  
   fpabf(:,:) = (1.d0-dcsi)*fpeinstein(:,:) + dcsi*fp(:,:) ! -d U(zeta,q)/d q
   fp(:,:)=fpabf(:,:)
+  ! write(*,*) 'fpabf', fp(:,1)
   !
   if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
   cumul_force1(icsi) =  cumul_force1(icsi) + force
@@ -98,7 +99,7 @@ if (abf_mode==1) then
 end if
 
 if (abf_mode==2) then
-  !  d_zeta U(zeta,q)
+  !the mean force is - force = - [ - d U(zeta,q)/d zeta ] 
   force = potist - ene_einstein - ene0 !  d U(zeta,q)/d zeta  
   !  - d_q U(csi,q) 
   fpabf(:,:) = (1.d0-dcsi)*fpeinstein(:,:) + dcsi*fp(:,:)

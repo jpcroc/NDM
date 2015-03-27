@@ -11,6 +11,7 @@ subroutine langevin_overdamped_zeta()
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
+    use var_pot
     USE mab_in_ndm_module, only: dtlang,abf_mode,block,gamma,dcsi, &
                                  ene_einstein,ene0, temperature,mean_force1,icsi, &
                                  limit1,limit2,langevin_type,m_i,it_mab,delta_z,nhisto,nhisto1, &
@@ -19,7 +20,7 @@ subroutine langevin_overdamped_zeta()
 
     implicit none
     real(double)             :: noise,tmp_dcsi,tmp_force
-    real(double) :: dcsi_ini, force_zeta
+    real(double) :: dcsi_ini, force_zeta, tmp_factor,the_moise
     real(double), save :: average_temp=0.d0
     integer, save :: it_temp = 0
     integer :: it_count 
@@ -31,12 +32,12 @@ subroutine langevin_overdamped_zeta()
       else 
        if (dcsi<limit1m) tmp_force=mean_force1(-nhisto1)
        if (dcsi>limit1p) tmp_force=mean_force1(nhisto+nhisto1)
-       !tmp_force=0.d0
      end if
      dcsi_ini=dcsi
      tmp_dcsi=0.d0
      noise=0
      it_count=0
+     it_temp=0
 10 continue
       call genere_bruit_one_value(noise)
       call zeta_potential (dcsi,force_zeta)
@@ -46,31 +47,37 @@ subroutine langevin_overdamped_zeta()
     ! end if 
     ! if (langevin_type==1) then  !overdamped
      !ddd tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*dtlang*angst*ffactor/(gamma*m_i(1,1)) + noise*sqrt(2.d0*temperature*dtlang*angst*ffactor/(gamma*m_i(1,1)))      
+    !write(*,*) potist,force_zeta
 
+    tmp_factor=lang_factor*dtlang*angst*angst/(gamma*m_i(1,1))
     if (abf_mode==2) then
-     tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*lang_factor*dtlang*angst*angst/(gamma*m_i(1,1)) + noise*sqrt(2.d0*lang_factor*temperature*dtlang*angst*angst/(gamma*m_i(1,1))) -force_zeta* lang_factor*dtlang*angst*angst/(gamma*m_i(1,1))     
+     tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*tmp_factor     &
+                  + noise*sqrt(2.d0*temperature*tmp_factor)              &
+                  + force_zeta*tmp_factor*10.d0  
+                  ! *100 for lang with mass under
+                  ! * 10 for   over
     end if 
 
     if (abf_mode==22) then
-     tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*lang_factor*dtlang*angst*angst/(gamma*m_i(1,1)) + &
-                noise*sqrt(2.d0*lang_factor*temperature*dtlang*angst*angst/(gamma*m_i(1,1))) - &
-                 force_zeta* lang_factor*dtlang*angst*angst/(gamma*m_i(1,1))     
+     tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*tmp_factor  &
+                + noise*sqrt(2.d0*temperature*tmp_factor)  &
+                + force_zeta* tmp_factor
     end if 
    !  end if
-
+    the_moise=noise*sqrt(2.d0*lang_factor*temperature*dtlang*angst*angst/(gamma*m_i(1,1)))
 ! the best choise is factor = 5*d+8. actually for this value the 
 !dtlang * angst * ffactor / gamma (for ffactor=5.d+8 gamma=1.d+14 and dtlag=2*1d-15) is nothing else than 25* dtlan*dtlang * angst * angst  !!!!! 
  
      dcsi=tmp_dcsi  + dcsi_ini
     if (it_count==0)    write(747,'("  ",i6, 2E16.2, i8, 4D23.7)') it_mab, dcsi,tmp_dcsi, nint(dcsi/delta_z), potist-ene0, ene_einstein, force_zeta, tmp_force
-    if (it_count/=0)    write(767,'("  ",i6, 2E16.2, i8, 5D23.7)') it_mab, dcsi,tmp_dcsi, nint(dcsi/delta_z), potist-ene0, ene_einstein, force_zeta, tmp_force,noise
+    if (it_count/=0)    write(767,'("  ",i6, 2E16.2, i8, 5D23.7)') it_mab, dcsi,tmp_dcsi, nint(dcsi/delta_z), -(potist-ene_einstein -ene0 - tmp_force )*tmp_factor , the_moise, force_zeta*tmp_factor, tmp_force
 
        average_temp=average_temp+ dabs(tmp_dcsi)
 
        if ((dcsi<limit1).or.(dcsi>limit2)) then
             it_temp=it_temp+1
             it_count = it_count+1
-            if (it_temp==100000) then
+            if (it_temp==10000) then
               write(*,*) 'WLANGEVIN <langevin_overdamped_csi>: Too much rejection, the program will stop'
               it_stop=1
               dcsi=dcsi_ini
@@ -99,20 +106,23 @@ if (mode_zeta_potential==0) then
     force_zeta=0.d0
 end if 
 
+!it assumes that the potential is 1/2*alpha_zeta*(x-l1m)**2 for x < l1m and 1/2*alpha_zeta*(x-l1p)**2 for x > l1p
+
 if (mode_zeta_potential==1) then  
  if (x<=limit2m) then
-     force_zeta=alpha_zeta*(limit2m-limit1m)
+     !force_zeta=-alpha_zeta*(limit2m-limit1m)
+     force_zeta=-alpha_zeta*(x-limit1m)
   else if ((x<limit1m).and.(x>limit2m)) then
-    force_zeta=alpha_zeta*(x-limit1m)
+    force_zeta=-alpha_zeta*(x-limit1m)
   else if ((x>=limit1m).and.(x<=limit1p)) then
     force_zeta=0.d0 
   else if ((x>limit1p).and.(x<limit2p)) then
-    force_zeta=alpha_zeta*(x-limit1p)
+    force_zeta=-alpha_zeta*(x-limit1p)
   else if (x>=limit2p) then
-    force_zeta=alpha_zeta*(limit2p-limit1p)
+    !force_zeta=-alpha_zeta*(limit2p-limit1p)
+    force_zeta=-alpha_zeta*(x-limit1p)
  end if 
 end if 
-!force_zeta=-force_zeta
 !write(*,'("csi potential", 5d11.2,2D23.7)')  limit2m,limit1m,limit1p,limit2p, x, force_zeta, alpha_zeta
 return
 end subroutine zeta_potential

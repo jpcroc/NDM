@@ -56,7 +56,7 @@
        fplocal(:,:)=fp(:,:)
   end if 
 
-    
+     !write(*,*) 'fplocal',fplocal(:,1)
      ! xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
 
       !pp(1:3,1:im)= fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_mass(1:3,1:im)
