@@ -197,7 +197,7 @@ do it_mab=1,nlangevin
   write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') einstein_free_3N
   write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", F15.7)') tmp2
   !asta pare sa mearga cel mai bine. In mod normal l-as vedea cu +pbc_correction
-  write(6,'("F(Full3N-3)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction -  tmp2 
+  write(6,'("F(Full3N-6)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction -  tmp2 
   write(6,'("F(Full3N-3)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction 
   write(6,'("PBC correction         (eV) ............:  ", F15.7)') pbc_correction 
   write(6,'("Einstein correction    (eV) ............:  ", F15.7)') rests

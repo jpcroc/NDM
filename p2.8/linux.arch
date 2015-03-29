@@ -153,7 +153,7 @@ endif
 
 ifdef MAB
  F90 = ifort
- CPPFLAGS = -C -P -traditional -DMAB
+ CPPFLAGS = -C -P -traditional -DMAB -nostdinc
  EXT      = _MAB
 #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all -convert big_endian	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C

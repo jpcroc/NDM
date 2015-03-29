@@ -111,7 +111,7 @@ end if
 if (mode_zeta_potential==1) then  
  if (x<=limit2m) then
      !force_zeta=-alpha_zeta*(limit2m-limit1m)
-     force_zeta=-alpha_zeta*(x-limit1m)
+     force_zeta=-alpha_zeta*(x-limit1m)**3
   else if ((x<limit1m).and.(x>limit2m)) then
     force_zeta=-alpha_zeta*(x-limit1m)
   else if ((x>=limit1m).and.(x<=limit1p)) then
@@ -120,7 +120,7 @@ if (mode_zeta_potential==1) then
     force_zeta=-alpha_zeta*(x-limit1p)
   else if (x>=limit2p) then
     !force_zeta=-alpha_zeta*(limit2p-limit1p)
-    force_zeta=-alpha_zeta*(x-limit1p)
+    force_zeta=-alpha_zeta*(x-limit1p)**3
  end if 
 end if 
 !write(*,'("csi potential", 5d11.2,2D23.7)')  limit2m,limit1m,limit1p,limit2p, x, force_zeta, alpha_zeta
