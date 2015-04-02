@@ -33,7 +33,7 @@ subroutine calfo_einstein_solid ()
  USE tab_imm_m
  USE var_pot, ONLY : cm
  USE mab_in_ndm_module, ONLY:xbar,xbarini,xp0,maxforce,unit_omega_to_erg,ene_einstein, &
-                             omega_veinstein,fpeinstein,it_mab,n_equilibre
+                             omega_veinstein,fpeinstein,it_mab,n_equilibre,itype_einstein
  implicit none                             
  
  integer :: ic
@@ -47,12 +47,19 @@ subroutine calfo_einstein_solid ()
  fpeinstein (:,:) = zero
 ! Computing the forces on the protevtives spheres...
  ene_einstein=0.d0
+if (itype_einstein==0) then
  do ic=1,im
   ddepla_temp(:)=xp(:,ic)-xp0(:,ic)-xbar(:)+xbarini(:)
   fpeinstein(:,ic)=-omega_veinstein(:,ic)**2*unit_omega_to_erg*cm(ityp(ic))*ddepla_temp(:)
   ene_einstein=ene_einstein-DOT_PRODUCT(fpeinstein(:,ic),ddepla_temp(:))
  end do
  ene_einstein=0.5d0*ene_einstein
+end if 
+
+if (itype_einstein==1) then
+
+
+end if 
 
 
 end subroutine calfo_einstein_solid

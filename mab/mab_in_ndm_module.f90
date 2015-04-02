@@ -51,6 +51,8 @@ module mab_in_ndm_module
       integer::ecart_eta,nom_deconvo
       real(double)::eta_mab,ha_mix,temperature_zeta_min,temperature_zeta_max,equit
       integer::compute_mode,error_step
+      integer:: nsite_block,atom_to_jump,itype_reaction,itype_einstein
+      integer, dimension(:), allocatable :: isite_block
       
       logical :: block,test_end,histo_equi
 
@@ -142,13 +144,12 @@ end   subroutine allocate_mab
       limit2=limit2p
     end if 
    !
-   omega_veinstein(:,:)=omega_einstein
+   if (itype_einstein==0) omega_veinstein(:,:)=omega_einstein
    !instead that I will a file with all the einstein  frequencies 
    end if 
  
-    equit=temperature*3.d0*dble(im-1)/2.d0
-    equit = temperature*dble(3*im-3)*log(temperature/(omega_einstein*hbar*2.d0*pi*1.d+12))
-    equit=0
+    equit=0.d0
+    !equit = temperature*dble(3*im-3)*log(temperature/(omega_einstein*hbar*2.d0*pi*1.d+12))
 
     write(*,*) 'Equit correction ', equit*erg2ev
     !sigma_eta=sqrt(eta_mab)

@@ -90,7 +90,7 @@ endif
 ifdef PHONDY
 ifdef PARAPH
  F90 = mpif90
- CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH 
+ CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH  -nostdinc
 # EXT      = _PHONDY_PARAPH
 #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
@@ -120,11 +120,11 @@ LIBRARY =${LIBRARY_PHONDY} ${LLIBS_PHONDY}
 else
 
  F90 = ifort
- CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY
+ CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -nostdinc 
  EXT      = _PHONDY
-#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+##F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-#F90FLAGS =  -O3 -convert big_endian 
+F90FLAGS =  -O3 -convert big_endian 
 
 
 #FLAGS and LIBS for PHONDY

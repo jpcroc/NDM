@@ -76,7 +76,11 @@ subroutine divid (appel)
   if (izonr<1) then
      write (6, *) 'trop petite boite !!!'
    !cosboite  stop
+#ifdef PHONDY || PARAPH
+     write (6, *) 'trop petite boite !!!'
+#else
      stop
+#endif
   endif
   ! calcul du volume
   !      if ((rang==0).and.(appel==0)) write (6, *) 'avant volu'
@@ -229,7 +233,7 @@ subroutine divid (appel)
      if (rang==0) then
         write(6,*)'retour à la construction de la boite'
         write(6,*)
-     end if
+     end  if
      return
   end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -273,7 +277,12 @@ subroutine divid (appel)
      if (izonr2<1) then
         write (6, *) rang,'trop petite boite pour rvois !!!'
      !cosboite   call arret_ndm
+#ifdef PHONDY || PARAPH 
+ 
+        write (6, *) rang,'trop petite boite pour rvois !!!'
+#else 
         call arret_ndm
+#endif
      endif
      if(.not.lconstrtot)rumax=rvois
      voluperat=volu/im

@@ -14,7 +14,7 @@ subroutine calfo_ABFee()
                              x_mol,eta_ABFee,temperature,omega_abf,exp_A_bar,&
                              mean_force2,it_mab,histo_zeta,n_equilibre,histo_equi,&
                              it_mab,abf_mode,potist,ene_einstein,ene0,fpeinstein, &
-                             ha_mix,equit
+                             ha_mix,equit,atom_to_jump,itype_reaction
 
  implicit none
 integer::iter,ia,jx
@@ -41,8 +41,7 @@ fpabf(:,:) = zero
 
 if (abf_mode==1) then
 ! Computing the forces as an observable ...
-! Why they need that ? mcmCHECK
-force = - DOT_PRODUCT(fp(:,7),rfilac(:))
+if (itype_reaction==0) force = - DOT_PRODUCT(fp(:,atom_to_jump),rfilac(:))
 
  if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
   cumul_force1(icsi) =  cumul_force1(icsi) + force

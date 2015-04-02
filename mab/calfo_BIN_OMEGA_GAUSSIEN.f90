@@ -13,7 +13,7 @@ subroutine calfo_ABF_BIN() ! this concerns only the force applied on atoms
  USE mab_in_ndm_module, ONLY:dcsi,icsi,rfilac,histo,     &
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              mean_force1,histo1,ene_einstein,abf_mode,fpeinstein,ene0, &
-                             ha_mix,equit
+                             ha_mix,equit,atom_to_jump
  implicit none
 
  real(double), dimension(3,imm) :: fpabf
@@ -22,12 +22,12 @@ subroutine calfo_ABF_BIN() ! this concerns only the force applied on atoms
  fpabf(:,:) = zero
 ! Computing the forces from the ABF bins in the reaction coordinate case ...
 if (abf_mode==1) then
- force = - DOT_PRODUCT(fp(:,7),rfilac(:))   ! dU(q)/dq
+ force = - DOT_PRODUCT(fp(:,atom_to_jump),rfilac(:))   ! dU(q)/dq
  !
  if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
   cumul_force1(icsi) =  cumul_force1(icsi) + force
   mean_force1 (icsi) = cumul_force1(icsi)/histo1(icsi)
-  fpabf(1:3,7)=rfilac(1:3)*mean_force1(icsi)
+  fpabf(1:3,atom_to_jump)=rfilac(1:3)*mean_force1(icsi)
  end if
  !
  fp(1:3,:)=fp(1:3,:)+fpabf(1:3,:)

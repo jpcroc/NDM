@@ -1,7 +1,7 @@
 !  
 subroutine read_mab_file()
  USE T_kind_param_m, ONLY:  double
- use gen_com_m, ONLY: lenfnam,fnam,angst,ev2erg
+ use gen_com_m, ONLY: lenfnam,fnam,angst,ev2erg,im
  !use tab_imm_m
  USE mab_in_ndm_module, ONLY: dtlang,nlangevin,temperature,KtoERG,a0bcc,deltasph,  &
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
@@ -11,17 +11,20 @@ subroutine read_mab_file()
                               eta_mab,eta_ABFee,histo_equi,n_equilibre,           & 
                               maxforce,compute_mode,error_step,nom_deconvo,lang_factor, &
                               mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix,  &
-                              temperature_zeta_min,temperature_zeta_max
+                              temperature_zeta_min,temperature_zeta_max,          &
+                              nsite_block, isite_block,itype_reaction,itype_einstein
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
                       langevin_type,gamma,omega_abf,omega_einstein, nwrite_histo,  &
                       eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
                       maxforce,compute_mode,abf_mode, error_step,nom_deconvo,lang_factor, &
-                      mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix,temperature_zeta_min,temperature_zeta_max
+                      mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix,            &
+                      temperature_zeta_min,temperature_zeta_max,                          &
+                      nsite_block, isite_block, atom_to_jump, itype_reaction,itype_einstein
 
- character(len=128) :: fnamtin
- integer :: lumab
+ character(len=128) :: fnamtin,fnamt_lblock
+ integer :: lumab,lublock
 
 
  rtestlac=0.1d0
@@ -39,14 +42,55 @@ subroutine read_mab_file()
  ha_mix=0.d0
  temperature_zeta_min=150.d0
  temperature_zeta_max=1800.d0
-
+ block=.false.
+! The atom whici is desinged to jump ...
+ natom_to_jump=7
+ itype_reaction=0 ! 0 for vacancy, 1 for NEB 0 K reaction
+ itype_einstein=0 ! 0 - einstein, 1 HA, 2 Morse (for rthe future)
  fnamtin = fnam(1:lenfnam)//'.mab'
  write(*,*) 'file name', fnamtin
  lumab = 778
 open(unit=lumab, file=fnamtin, status='unknown')
 read (lumab, nml=input_mab)
 
-if (block) write(6,*) 'WARNING: Some spheres are in protective domains!'
+if (block)  then 
+
+   write(6,*) 'WARNING: Some spheres are in protective domains!'
+   fnamt_lblock = fnam(1:lenfnam)//'.mab.lblock'
+!debug  write(*,*) fnamtin
+   open(unit=lublock, file=fnamt_lblock, status='unknown')
+   read(lublock,*) nsite_block
+   allocate (isite_block(nsite_block))
+   do ii=1,nsite_block
+    !
+     read(lublock,*)  isite_block(ii)
+     if (isite_block(ii) > im) then
+       if (rangph==0) then
+        write(*,*) 'this atom cannot be blocked', isite_block(ii)
+        write(*,*) 'the value exceeds the number of atoms im ', im
+        write(*,*) 'stop in read_mab_file.f90'
+       end if 
+        stop
+     end if  
+      if (abf_mode==1) then
+        if (isite_block(ii)==atom_to_jump) then
+         if (rangph==0) then
+           write(*,*) 'The atom which is designed to jump is BLOCKED by the list *.mb.block ', isite_block(ii)
+           write(*,*) 'The atom to jump is set by atom_to_jump, currently set to ', atom_to_jump
+           write(*,*) 'stop in read_mab_file.f90'
+         end if 
+         stop
+        end if
+      end if
+  !
+   end do   
+ close(lublock)
+end if 
+
+
+
+
+
       if (langevin_type==2) then
         !if (abf_mode==2) then
         !   write(6,*) 'Alchemical transition not yet implemented with the underdamped Langevin'
