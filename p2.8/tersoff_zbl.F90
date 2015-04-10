@@ -5,6 +5,7 @@ subroutine tersoff_zbl
   USE T_kind_param_m
   use gen_com_m
   use var_pot
+  use force_tersoff_facteurs
 
   integer :: i,j,k,l,m,n,iti
   real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
@@ -42,15 +43,8 @@ end subroutine zieg2
 end interface
 
 
-
-
-
-
-
-
-
-
-  ktor=(maxval(roff2)+1.)/ngrid
+ write(6,*)'AJOUT ZBK � TERSOFF roff',roff1,roff2,csive
+  ktor=csive
 !C'est ça qui va pas !!! POT=0
      pot=0.0
      write(6,*)csive,ngrid,ntyp,npair,catom,roff1,roff2
@@ -59,7 +53,7 @@ end interface
 
      call zieg2(pot,pot_d,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
 !    write(6,*)pot
-
+    
   do l=1,npair
      select case (typ_pot_pair(l))
         case(13,14,15)
@@ -73,6 +67,13 @@ end interface
            pot(2,l,1:ngrid)=bsp(1:ngrid)
            pot(3,l,1:ngrid)=csp(1:ngrid)
            pot(4,l,1:ngrid)=dsp(1:ngrid)
+
+!           do k=1,ngrid            
+!              rk=(k*ktor) 
+!              write(648,'(I5, 4G15.7)')k,rk,pot(1,l,k)*erg2ev, fr(rk,Ater(l),lambda1(l))*erg2ev, (pot(1,l,k)+fr(rk,Ater(l),lambda1(l)))*erg2ev
+!           end do
+
+
         case default
            write(6,*)'PB avec tersoff zbl, l, typ_pot_pair(l) = ',l, typ_pot_pair(l)
         end select

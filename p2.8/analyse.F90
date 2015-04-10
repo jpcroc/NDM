@@ -20,7 +20,7 @@ subroutine analyse
   !   G l o b a l   P a r a m e t e r s
   !-----------------------------------------------
   !-----------------------------------------------
-  !   L o c a l   V a r i a b l e s        tersoff_zbl.o\
+  !   L o c a l   V a r i a b l e s        
   !-----------------------------------------------
   integer :: i, iti, ic, ko,kx,ky,kz
   real(double), dimension(ntyp) :: temptyp
@@ -113,6 +113,7 @@ subroutine analyse
                     write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
                  case(13)
                     write(6,'(A,G21.12,A)')'    *energie Tersoff = ',potisTersoff*unitE, cunitE
+                    If (potisZBL.ne.0)write(6,'(A,G21.12,A)')'    *energie ZBL = ',potisZBL*unitE, cunitE
                  end select
               end if
            end do

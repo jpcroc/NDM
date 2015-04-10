@@ -347,10 +347,10 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
                        ! spline
                        dr = rij-float(kk)*csive
 !                       write(6,*)'rij roff',rij,roff2(ij),pot(1,l,kk)
-                       potisTersoff = potisTersoff+pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk)))))                       
+                       potiszbl = potiszbl+0.5*(pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk))))))
                        phu = -1.0*(pot(2,ij,kk)+dr*(2.0*pot(3,ij,kk)+dr*(3.0*pot(4,ij,kk))))
-                       fp(:,i)=fp(:,i)+phu*cvij(1,:)
-                       fp(:,j)=fp(:,j)-phu*cvij(1,:)
+                       fp(:,i)=fp(:,i)+0.5*phu*cvij(1,:)/rij
+                       fp(:,j)=fp(:,j)-0.5*phu*cvij(1,:)/rij
 !
                     end if
 

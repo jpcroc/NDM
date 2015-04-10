@@ -57,8 +57,7 @@ subroutine sauveposition(itapp)
   if(rang==0) then
      if (itapp==0) then
        inquire (file=fnam(1:lenfnam)//'.crcin',EXIST=lcrcin)
-!COS       if (lcasca==.true.) lcrcin.EQV..false.
-       if (lcasca==.true.) lcrcin=.false.
+       if (lcasca==.true.)lcrcin=.false.
        if (lcrcin.EQV..false.)  open(lucoutxp, file=fnam(1:lenfnam)//'.crcin', form='unformatted', &
           status='unknown')
      else

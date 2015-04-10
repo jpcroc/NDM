@@ -351,4 +351,8 @@ module gen_com_m
   
   real(double), dimension (:),allocatable ::tempc,tempcm
 
+
+!ZBL 
+  real(double)::potiszbl ! energie pot de ZBl quand ajoute ind�pendemment
+
 end module gen_com_m

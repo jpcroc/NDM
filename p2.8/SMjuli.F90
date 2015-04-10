@@ -76,7 +76,9 @@ ipotentiel,typ_pot_pair)
     allocate(reppairjl(npair)) 
     allocate (typ_and_pot(1:ntyp,npotmax))
     typ_and_pot=.false. ; typ_and_pot(:,ipotentiel)=.true.
-    allocate (typ_pot_pair(1:npair)) ; typ_pot_pair=ipotentiel
+    allocate (typ_pot_pair(1:npair))
+    typ_pot_pair(1)=ipotentiel
+    typ_pot_pair(2)=ipotentiel
 
     embtypjl%ksi=1.0
 
@@ -131,7 +133,7 @@ ipotentiel,typ_pot_pair)
     cm(2)=12.01115 ; catom(2)=6. ; ty(2)='C '
     roff1(1)=1.1 ; roff2(1)=1.4
     roff1(2)=1.0 ; roff2(2)=1.2
-    roff1(3)=0.95 ; roff2(3)=1.12
+!    roff1(3)=0.95 ; roff2(3)=1.12
     roff1=roff1*1.0d-8 ; roff2=roff2*1.0d-8
 
     do i = 1, ntyp
@@ -142,6 +144,7 @@ ipotentiel,typ_pot_pair)
        write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
     end do
     write(6,*) '****potentiel de Ju Li pour ZrC ****'
+    write(6,*) '****Zr=1 C =2 ****'
 
     cm(:ntyp) = cm(:ntyp)*umass
     close(lupotin)

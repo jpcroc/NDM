@@ -40,11 +40,11 @@ subroutine calfo
   real(double),dimension (3):: fptot_tot
   real(double)::elosselectot,elosselec1tot
 #endif
-  !  if (rang==0) write(6,*) 'PARA-T entree calfo'
+!   if (rang==0) write(6,*) 'ldemintab',ldemitab
   sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
   potist=0.
   potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potisP=0.
-  potisTersoff=0.
+  potisTersoff=0.; potiszbl=0
   potisrep=0.; potisglue=0.; potiseam=0.
   if(lPrtSigat) sigat(:,:,:)=0. ; 
 
@@ -100,7 +100,11 @@ subroutine calfo
            select case (ipotentiel)
            case(12)
               ! !!! le cas parallele n'est pas pris en compte !!!
-              if (.not.parallele) call calfojuli(xp,  vp, fp, ielat, iwmax, ityp)
+              if (ltabvois) then 
+                 call calfojuli(xp,  vp, fp, ielat, iwmax, ityp)
+              else
+                 call calfojulicel
+              end if
            case(13,14,15)
               if (ltabvois) then
                  ! !!! le cas parallele n'est pas pris en compte !!!
@@ -108,7 +112,7 @@ subroutine calfo
               else
                  call force_tersoff_cel
               endif
-              potist=potist+potisTersoff
+              potist=potist+potisTersoff+potiszbl
            case (10,11)
               if (ltabvois) then
                  ! !!! le cas parallele n'est pas pris en compte !!!

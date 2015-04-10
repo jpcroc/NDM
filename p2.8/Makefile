@@ -159,6 +159,7 @@ OBJS_SEQ=	anapos.o \
         desinteg_insert.o\
         dislo.o\
         heat.o\
+        julicel.o\
         arret_ndm.o \
 
 ifdef PARA

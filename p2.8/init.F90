@@ -126,7 +126,7 @@ rang=rangph
         case(13,14,15)
            !nguyen mettre input tersoff
            !        if (rang.eq.0) then
-           if (rang==0)   write(6,*)'POTENTIEL tersoff.potin'
+!           if (rang==0)   write(6,*)'POTENTIEL tersoff.potin'
            !           if (ipotentiel==13) then
            !           
            !           else

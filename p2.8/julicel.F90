@@ -1,25 +1,14 @@
 !----------------------------------------------------------------------
-SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
+SUBROUTINE calfojulicel
   !tentaive de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
   use gen_com_m
   use var_pot
   use SMjuli
   use jqmod
+  use tab_imm_m
   implicit none
 
-  !-----------------------------------------------
-  !   D u m m y   A r g u m e n t s
-  !-----------------------------------------------
-  ! eam variables
-
-
-  integer  :: ielat(imm)
-  integer  :: iwmax(imm)
-  integer  :: ityp(imm)
-  real(double)  :: xp(3,imm)
-  real(double)  :: vp(3,imm)
-  real(double)  :: fp(3,imm)
 
   !local variables
   integer :: i,j,l !atomes
@@ -73,6 +62,9 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 
   real(double):: fpnemd(3,imm),fpnemdmoy(3), XijdotF,XildotF,XjldotF
 
+  integer::koo,ncelvois,i1,i2,ko1,ko1j,koj
+!  real(double)::
+  REAL(double), dimension(1:3) :: cp, dxp
   rue=rue_pot(ipotentiel)
   fpnemd=0
 
@@ -83,7 +75,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 
   ktor=rue/ngrid
   ktorho=(rhomax-rhomin)/ngrid
-!  fp(:,:) = 0.0
+  !  fp(:,:) = 0.0
 
   jq(:)=0.
   !  if (associated(eatom)) eatom(:)=0.
@@ -102,84 +94,129 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 
   ALLOCATE(xpnp(3,imm))
   if (lperiod) then
-   xpnp(:,:)=xp(:,:)
+     xpnp(:,:)=xp(:,:)
   else
-   call notperiod(xp,xpnp)
+     call notperiod(xp,xpnp)
   end if
-   
+
   call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
 
   loop1at1: do i=1,im
-
-     ! --- Calcul de la densite sur i ---    
      nvi=0.
      rhoitot=0.
      iti = ityp(i)
-!            write(6,*)'i iti = ',i,iti
      densityi=0.0 ;Eembi=0.0; dEembi=0.0
-     if (i==1) then
-        iw1 = 1
-     else
-        iw1=iwmax(i-1)+1
-     end if
-     iw2 = iwmax(i)
-     loopvois :do iw = iw1, iw2
-        j = indi(iw)
-        itj=ityp(j)
+!     write(6,*)'I',i
+     koo= ielat(i)      
+     ncelvois = min(noxyz,27)-1
+     ! pour chaque cel. voisine
+     loop1cel:   do i1 = 0, ncelvois
+        ko1 = ncel(koo,i1)
+!        write(6,*)'celI',ko1
 
+!        cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
+        ! pour chaque atome ds la cel. voisine
+        loop1at2: do i2 = 1, nato(ko1)
+           j = last(i2,ko1)
+           if (i==j)cycle
+!           write(6,*)'J',j
+           ! --- Calcul de la densite sur i ---    
+           !            write(6,*)'i iti = ',i,iti
+
+           !     if (i==1) then
+           !        iw1 = 1
+           !     else
+           !        iw1=iwmax(i-1)+1
+           !     end if
+           !     iw2 = iwmax(i)
+           !     loopvois :do iw = iw1, iw2
+           !        j = indi(iw)
+
+           itj=ityp(j)
+
+!           if (noxyz.ne.1) then
+!              dxp(1) = cp(1)-xpnp(1,j)
+!              IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
+!              dxp(2) = cp(2)-xpnp(2,j)
+!              IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
+!              dxp(3) = cp(3)-xpnp(3,j)
+!              IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
+!           else
+!              dxp(1) = cp(1)-xpnp(1,j)
+!              dxp(2) = cp(2)-xpnp(2,j)
+!              dxp(3) = cp(3)-xpnp(3,j)
+!              cv(1,1) = dxp(1)
+!              cv(1,2) = dxp(2)
+!              cv(1,3) = dxp(3)
+!              call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
+!              WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
+!                 cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
+!              END WHERE
+!              call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+!              dxp(1)=cv(1,1)
+!              dxp(2)=cv(1,2)
+!              dxp(3)=cv(1,3)
+!           end if
 
         c1ij = xpnp(1,i)-xpnp(1,j)
         c2ij = xpnp(2,i)-xpnp(2,j)
         c3ij = xpnp(3,i)-xpnp(3,j)
-        if (c1ij>0.5) c1ij = c1ij-1.
-        if (c1ij<(-0.5)) c1ij = c1ij+1.
-        if (c2ij>0.5) c2ij = c2ij-1.
-        if (c2ij<(-0.5)) c2ij = c2ij+1.
-        if (c3ij>0.5) c3ij = c3ij-1.
-        if (c3ij<(-0.5)) c3ij = c3ij+1.
-        cv(1,1) = c1ij
-        cv(1,2) = c2ij
-        cv(1,3) = c3ij
-        call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-        r2ij = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-        c1ij= cv(1,1) 
-        c2ij =cv(1,2) 
-        c3ij =cv(1,3) 
-
-        itj=ityp(j)
-        if (r2ij>rcut2(ipo(iti,itj))) cycle
-
-        rij=sqrt(r2ij)
-        !          write(6,*)'i iti j  itj r ',i,iti,j,itj
-        k=Int(rij/ktor)
-        !       write(6,*)'k ',k
-        drk=rij-k*ktor
-        ll = ipo(iti,itj)
-        rhoj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de j sur i
-        drhoj=eamrho(2,ll,k)+2.0*eamrho(3,ll,k)*drk+3.0*eamrho(4,ll,k)*drk**2  !rho' de j sur i
-
-        !          write(6,*)'i j rij rh',i,j,rij,rhoj
-        !          if (iti==1.and.itj==1) then
-        !             trh=exp(czz*(dzz-rij/1.0d-8)+kzz/(rij/1.0d-8-rczz))
-        !          else
-        !             trh=exp(2.0*(czc*(dzc-rij/1.0d-8)+kzc/(rij/1.0d-8-rczc)))
-        !          end if
-        !          write(6,*)'i jrij trh',i,j,rij,trh
 
 
 
-        nvi=nvi+1
-        Vc1ij(nvi)=c1ij ; Vc2ij(nvi)=c2ij ; Vc3ij(nvi)=c3ij
-        jvi(nvi)=j
-        Vrij(nvi)=rij
-        rhojsi(nvi)=rhoj
-        drhojsi(nvi)=drhoj
-        rhoitot=rhoitot+rhojsi(nvi)
-     end do loopvois
+           if (c1ij>0.5) c1ij = c1ij-1.
+           if (c1ij<(-0.5)) c1ij = c1ij+1.
+           if (c2ij>0.5) c2ij = c2ij-1.
+           if (c2ij<(-0.5)) c2ij = c2ij+1.
+           if (c3ij>0.5) c3ij = c3ij-1.
+           if (c3ij<(-0.5)) c3ij = c3ij+1.
+           cv(1,1) = c1ij
+           cv(1,2) = c2ij
+           cv(1,3) = c3ij
+           call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+           r2ij = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
+           c1ij= cv(1,1) 
+           c2ij =cv(1,2) 
+           c3ij =cv(1,3) 
+
+           itj=ityp(j)
+
+
+           if (r2ij>rcut2(ipo(iti,itj))) cycle
+
+           rij=sqrt(r2ij)
+!           write(6,*)'i  j   r ',i,j,ipo(iti,itj),rij
+           k=Int(rij/ktor)
+           !       write(6,*)'k ',k
+           drk=rij-k*ktor
+           ll = ipo(iti,itj)
+           rhoj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de j sur i
+           drhoj=eamrho(2,ll,k)+2.0*eamrho(3,ll,k)*drk+3.0*eamrho(4,ll,k)*drk**2  !rho' de j sur i
+
+           !          write(6,*)'i j rij rh',i,j,rij,rhoj
+           !          if (iti==1.and.itj==1) then
+           !             trh=exp(czz*(dzz-rij/1.0d-8)+kzz/(rij/1.0d-8-rczz))
+           !          else
+           !             trh=exp(2.0*(czc*(dzc-rij/1.0d-8)+kzc/(rij/1.0d-8-rczc)))
+           !          end if
+           !          write(6,*)'i jrij trh',i,j,rij,trh
+
+
+
+           nvi=nvi+1
+           Vc1ij(nvi)=c1ij ; Vc2ij(nvi)=c2ij ; Vc3ij(nvi)=c3ij
+           jvi(nvi)=j
+           Vrij(nvi)=rij
+           rhojsi(nvi)=rhoj
+           drhojsi(nvi)=drhoj
+           rhoitot=rhoitot+rhojsi(nvi)
+        end do loop1at2
+     end do loop1cel
+     !     end do loopvois
 
      !boucle sur les voisins de i
-     !       write(6,*)'i nvi', i,nvi
+!            write(6,*)'i nvi', i,nvi
      sij(:)=0.
      loopvj1 : do iw=1,nvi
         j=jvi(iw)
@@ -219,64 +256,73 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            ! fin terme l debut terme "k"
 
            !initialisations pour voisins de j
+           koj= ielat(j)      
+           loop2cel:   do i1 = 0, ncelvois
+              ko1j = ncel(koj,i1)
+              ! pour chaque atome ds la cel. voisine
+              loop2at2: do i2 = 1, nato(ko1j)
+                 l = last(i2,ko1j)
+                 if (l==j)cycle
 
-           if (j==1) then
-              iw1j=1
-           else
-              iw1j=iwmax(j-1)+1
-           endif
-           iw2j=iwmax(j)
+                 !           if (j==1) then
+                 !              iw1j=1
+                 !           else
+                 !              iw1j=iwmax(j-1)+1
+                 !           endif
+                 !           iw2j=iwmax(j)
+                 !           loopvjk1 :do iwl = iw1j, iw2j          
+                 !              l = indi(iwl)
+                 !                write(6,*)'i j l',i,j,l
+                 itl=ityp(l)
+                 if(itl==itj) cycle 
+                 !
+                 IF (L==I)cycle
+                 !
 
-           loopvjk1 :do iwl = iw1j, iw2j          
-              l = indi(iwl)
-              !                write(6,*)'i j l',i,j,l
-              itl=ityp(l)
-              if(itl==itj) cycle 
-              !
-              IF (L==I)cycle
-              !
-
-              c1jl = xpnp(1,j)-xpnp(1,l)
-              c2jl = xpnp(2,j)-xpnp(2,l)
-              c3jl = xpnp(3,j)-xpnp(3,l)
-              if (c1jl>0.5) c1jl = c1jl-1.
-              if (c1jl<(-0.5)) c1jl = c1jl+1.
-              if (c2jl>0.5) c2jl = c2jl-1.
-              if (c2jl<(-0.5)) c2jl = c2jl+1.
-              if (c3jl>0.5) c3jl = c3jl-1.
-              if (c3jl<(-0.5)) c3jl = c3jl+1.
-              cv(1,1) = c1jl
-              cv(1,2) = c2jl
-              cv(1,3) = c3jl
-              call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-              r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-              c1jl=cv(1,1)
-              c2jl=cv(1,2) 
-              c3jl=cv(1,3)
-
+                 c1jl = xpnp(1,j)-xpnp(1,l)
+                 c2jl = xpnp(2,j)-xpnp(2,l)
+                 c3jl = xpnp(3,j)-xpnp(3,l)
+                 if (c1jl>0.5) c1jl = c1jl-1.
+                 if (c1jl<(-0.5)) c1jl = c1jl+1.
+                 if (c2jl>0.5) c2jl = c2jl-1.
+                 if (c2jl<(-0.5)) c2jl = c2jl+1.
+                 if (c3jl>0.5) c3jl = c3jl-1.
+                 if (c3jl<(-0.5)) c3jl = c3jl+1.
+                 cv(1,1) = c1jl
+                 cv(1,2) = c2jl
+                 cv(1,3) = c3jl
+                 call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+                 r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
+                 c1jl=cv(1,1)
+                 c2jl=cv(1,2) 
+                 c3jl=cv(1,3)
 
 
-              if (r2jl>rcut2(ipo(itj,itl))) cycle               
-              !                write(6,*)'K i iti j itj l itl ',i,iti,j,itj,l,itl                
-              !                if (r2jl>rue2) cycle
-              rjl=sqrt(r2jl)
-              !       write(6,*)'k ',k
-              k=Int(rjl/ktor)
-              drk=rjl-k*ktor
-              ll = ipo(itj,itl)
-              rholsj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de l sur j
-              costetijl=-(c1ij*c1jl+c2ij*c2jl+c3ij*c3jl)/(rij*rjl)
-              !                write(6,*)'costetijk',costetijl
-              tdepcos=1+costetijl
 
-              if (tdepcos.le.0.0) tdepcos=1.0d-10
-              !                write(6,*)'tdepcos',tdepcos
-              sijl=rholsj*(tdepcos**beta)/alphaPbeta          
+                 if (r2jl>rcut2(ipo(itj,itl))) cycle               
+                 !                write(6,*)'K i iti j itj l itl ',i,iti,j,itj,l,itl                
+                 !                if (r2jl>rue2) cycle
+                 rjl=sqrt(r2jl)
+                 !       write(6,*)'k ',k
+                 k=Int(rjl/ktor)
+                 drk=rjl-k*ktor
+                 ll = ipo(itj,itl)
+                 rholsj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de l sur j
+                 costetijl=-(c1ij*c1jl+c2ij*c2jl+c3ij*c3jl)/(rij*rjl)
+                 !                write(6,*)'costetijk',costetijl
+                 tdepcos=1+costetijl
 
-              !                sijl=rholsj*((1+costetijl)**beta)/alphaPbeta          
-              sij(iw)=sij(iw)+sijl 
-              !                write(6,*)'Ksijl',i,iw,j,l,sij(iw),sijl
-           end do loopvjk1
+                 if (tdepcos.le.0.0) tdepcos=1.0d-10
+                 !                write(6,*)'tdepcos',tdepcos
+                 sijl=rholsj*(tdepcos**beta)/alphaPbeta          
+
+                 !                sijl=rholsj*((1+costetijl)**beta)/alphaPbeta          
+                 sij(iw)=sij(iw)+sijl 
+                 !                write(6,*)'Ksijl',i,iw,j,l,sij(iw),sijl
+
+              end do loop2at2
+           end do loop2cel
+           !           end do loopvjk1
            if (abs(sij(iw)/rhojsi(iw)).gt.50.0) then
               ecrsij(iw)=0.0
            else
@@ -341,7 +387,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            !             trh=exp((azc*(bzc-rij/1.0d-8)+kzc/(rij/1.0d-8-rczc)))*ev2erg
            !          end if
            !          write(6,*)'i jrij terp',i,j,rij,trh
-           
+
 
            potist=potist+Erep
            potisrep=potisrep+Erep
@@ -358,7 +404,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
            sig(1:3,1) = sig(1:3,1) -dErep*gradij(1:3)*c1ij/volu
            sig(1:3,2) = sig(1:3,2) -dErep*gradij(1:3)*c2ij/volu
            sig(1:3,3) = sig(1:3,3) -dErep*gradij(1:3)*c3ij/volu
-     
+
 
 
            ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
@@ -496,11 +542,11 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 
 
 
-           
+
            sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c1il/volu
            sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c2il/volu
            sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c3il/volu
-           
+
            sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/volu
            sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
            sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
@@ -528,105 +574,117 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 
         ! fin terme l debut terme "k"
         !initialisations pour voisins de j
-        if (j==1) then
-           iw1j=1
-        else
-           iw1j=iwmax(j-1)+1
-        endif
-        iw2j=iwmax(j)             
-        loopvjk2 :do iwl = iw1j, iw2j          
-           l = indi(iwl)
-           itl=ityp(l)
-           IF (L==I)cycle
-           if(itl==itj) cycle                 
-           c1jl = xpnp(1,j)-xpnp(1,l)
-           c2jl = xpnp(2,j)-xpnp(2,l)
-           c3jl = xpnp(3,j)-xpnp(3,l)
-           if (c1jl>0.5) c1jl = c1jl-1.
-           if (c1jl<(-0.5)) c1jl = c1jl+1.
-           if (c2jl>0.5) c2jl = c2jl-1.
-           if (c2jl<(-0.5)) c2jl = c2jl+1.
-           if (c3jl>0.5) c3jl = c3jl-1.
-           if (c3jl<(-0.5)) c3jl = c3jl+1.
-           cv(1,1) = c1jl
-           cv(1,2) = c2jl
-           cv(1,3) = c3jl
-           call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-           r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-           c1jl=cv(1,1)
-           c2jl=cv(1,2) 
-           c3jl=cv(1,3)                   
-
-           if (r2jl>rcut2(ipo(itj,itl))) cycle               
-           !                if (r2jl>rue2) cycle
-           rjl=sqrt(r2jl)
-           gradjl(1)=c1jl/rjl ; gradjl(2)=c2jl/rjl ; gradjl(3)=c3jl/rjl
-           !       write(6,*)'k ',k
-           k=Int(rjl/ktor)
-           drk=rjl-k*ktor
-           ll = ipo(itj,itl)
-           rholsj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de l sur 
-           drholsj=eamrho(2,ll,k)+2.0*eamrho(3,ll,k)*drk+3.0*eamrho(4,ll,k)*drk**2  !rho de l sur j
 
 
+        koj= ielat(j)      
+        loop3cel:   do i1 = 0, ncelvois
+           ko1j = ncel(koj,i1)
+           ! pour chaque atome ds la cel. voisine
+           loop3at2: do i2 = 1, nato(ko1j)
+              l = last(i2,ko1j)
 
-           costetijl=-(c1ij*c1jl+c2ij*c2jl+c3ij*c3jl)/(rij*rjl)
-           tdepcos=1.0+costetijl
-           if (tdepcos.le.0.0) tdepcos=1.0d-10
+              !        if (j==1) then
+              !           iw1j=1
+              !        else
+              !           iw1j=iwmax(j-1)+1
+              !        endif
+              !        iw2j=iwmax(j)             
+              !        loopvjk2 :do iwl = iw1j, iw2j          
+              !           l = indi(iwl)
 
-           aux2(1:3)=((tdepcos)**beta)*rjl*drholsj*gradjl(1:3)
-           aux3(1:3)=beta*((tdepcos)**(beta-1.))*rholsj*(-1.*gradij(1:3)-costetijl*gradjl(1:3))
-           aux4(1:3)=-1.0*beta*((tdepcos)**(beta-1.))*rholsj*(gradjl(1:3)+costetijl*gradij(1:3))
+              itl=ityp(l)
+              IF (L==I)cycle
+              IF (L==j)cycle
+              if(itl==itj) cycle                 
+              c1jl = xpnp(1,j)-xpnp(1,l)
+              c2jl = xpnp(2,j)-xpnp(2,l)
+              c3jl = xpnp(3,j)-xpnp(3,l)
+              if (c1jl>0.5) c1jl = c1jl-1.
+              if (c1jl<(-0.5)) c1jl = c1jl+1.
+              if (c2jl>0.5) c2jl = c2jl-1.
+              if (c2jl<(-0.5)) c2jl = c2jl+1.
+              if (c3jl>0.5) c3jl = c3jl-1.
+              if (c3jl<(-0.5)) c3jl = c3jl+1.
+              cv(1,1) = c1jl
+              cv(1,2) = c2jl
+              cv(1,3) = c3jl
+              call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+              r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
+              c1jl=cv(1,1)
+              c2jl=cv(1,2) 
+              c3jl=cv(1,3)                   
 
-           fp(1:3,j)=fp(1:3,j)-aux1*(aux2(1:3)+aux3(1:3))/rjl
-           fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/rjl
-           fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
-           fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
-
-           if (lnemd) then
-              XijdotF=c1ij*Fnemd
-              XjldotF=c1jl*Fnemd
-              do ic=1,3
-                 fpnemd(ic,j)=fpnemd(ic,j)+0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
-                 fpnemd(ic,l)=fpnemd(ic,l)+0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
-                 fpnemd(ic,i)=fpnemd(ic,i)+0.5*(aux1*aux4(ic)/rij)*XijdotF
-                 fpnemd(ic,j)=fpnemd(ic,j)+0.5*(aux1*aux4(ic)/rij)*XijdotF
-
-              end do
-           end if
+              if (r2jl>rcut2(ipo(itj,itl))) cycle               
+              !                if (r2jl>rue2) cycle
+              rjl=sqrt(r2jl)
+              gradjl(1)=c1jl/rjl ; gradjl(2)=c2jl/rjl ; gradjl(3)=c3jl/rjl
+              !       write(6,*)'k ',k
+              k=Int(rjl/ktor)
+              drk=rjl-k*ktor
+              ll = ipo(itj,itl)
+              rholsj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de l sur 
+              drholsj=eamrho(2,ll,k)+2.0*eamrho(3,ll,k)*drk+3.0*eamrho(4,ll,k)*drk**2  !rho de l sur j
 
 
 
+              costetijl=-(c1ij*c1jl+c2ij*c2jl+c3ij*c3jl)/(rij*rjl)
+              tdepcos=1.0+costetijl
+              if (tdepcos.le.0.0) tdepcos=1.0d-10
 
-           sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/volu
-           sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/volu
-           sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/volu
+              aux2(1:3)=((tdepcos)**beta)*rjl*drholsj*gradjl(1:3)
+              aux3(1:3)=beta*((tdepcos)**(beta-1.))*rholsj*(-1.*gradij(1:3)-costetijl*gradjl(1:3))
+              aux4(1:3)=-1.0*beta*((tdepcos)**(beta-1.))*rholsj*(gradjl(1:3)+costetijl*gradij(1:3))
 
+              fp(1:3,j)=fp(1:3,j)-aux1*(aux2(1:3)+aux3(1:3))/rjl
+              fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/rjl
+              fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
+              fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
 
-           sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/volu
-           sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
-           sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
+              if (lnemd) then
+                 XijdotF=c1ij*Fnemd
+                 XjldotF=c1jl*Fnemd
+                 do ic=1,3
+                    fpnemd(ic,j)=fpnemd(ic,j)+0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
+                    fpnemd(ic,l)=fpnemd(ic,l)+0.5*(aux1*(aux2(ic)+aux3(ic))/rjl)*XjldotF
+                    fpnemd(ic,i)=fpnemd(ic,i)+0.5*(aux1*aux4(ic)/rij)*XijdotF
+                    fpnemd(ic,j)=fpnemd(ic,j)+0.5*(aux1*aux4(ic)/rij)*XijdotF
 
-
-           if(lcalcjq) then
-              jqf=0.0
-              do ic=1,3
-                 jqf=jqf+(aux1*aux4(ic)/rij-aux1*(aux2(ic)+aux3(ic)/rjl))*vp(ic,j)
-              end do
-              do ic=1,3
-                 jq(ic)=jq(ic)-jqf*gradij(ic)*rij
-              end do
-              jqf=0.0
-              do ic=1,3
-                 jqf=jqf+(aux1*(aux2(ic)+aux3(ic))/rjl)*vp(ic,l)
-              end do
-              do ic=1,3
-                 jq(ic)=jq(ic)-jqf*(gradij(ic)*rij+gradjl(ic)*rjl)
-              end do
-           end if
+                 end do
+              end if
 
 
-        end do loopvjk2
+
+
+              sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/volu
+              sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/volu
+              sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/volu
+
+
+              sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/volu
+              sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
+              sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
+
+
+              if(lcalcjq) then
+                 jqf=0.0
+                 do ic=1,3
+                    jqf=jqf+(aux1*aux4(ic)/rij-aux1*(aux2(ic)+aux3(ic)/rjl))*vp(ic,j)
+                 end do
+                 do ic=1,3
+                    jq(ic)=jq(ic)-jqf*gradij(ic)*rij
+                 end do
+                 jqf=0.0
+                 do ic=1,3
+                    jqf=jqf+(aux1*(aux2(ic)+aux3(ic))/rjl)*vp(ic,l)
+                 end do
+                 do ic=1,3
+                    jq(ic)=jq(ic)-jqf*(gradij(ic)*rij+gradjl(ic)*rjl)
+                 end do
+              end if
+
+
+           end do loop3at2
+        end do loop3cel
         !if (i==1)  write(6,*)'fb1 ',fp(1,1),fp(2,1),fp(3,1)
      end do loopvj2
      !if (i==1)  write(6,*)'fb2 ',fp(1,1),fp(2,1),fp(3,1)
@@ -648,12 +706,12 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
      end do
 
      do i=1,imd
-!        write(6,*)'A',i,fp(:,i)
+        !        write(6,*)'A',i,fp(:,i)
         do l=1,3
            fp(l,i)=fp(l,i)-fpnemdmoy(l)
            fp(l,i)=fp(l,i)+fpnemd(l,i)
         enddo
-!        write(6,*)'B',i,fp(:,i)
+        !        write(6,*)'B',i,fp(:,i)
      end do
   end if
 
@@ -666,6 +724,6 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 
   !  write(6,*)'f8 ',fp(1,1),fp(2,1),fp(3,1)
   return
-end SUBROUTINE calfojuli
+end SUBROUTINE calfojulicel
 
 

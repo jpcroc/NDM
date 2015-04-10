@@ -312,17 +312,13 @@ subroutine readdm
   ibrake =0   ! if =1 electronic slowing for cascades (acting on all atoms)
   ngrdel=500
 
-  timemax=-1
+  timemax=1d20
 
 
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
   read (ludin, nml=input)
-
-  if ((dmtype==16).or.(dmtype==17)) then
-   timemax=1d+20
-  end if 
 
 
 
@@ -671,7 +667,7 @@ subroutine readdm
   end if
 
 
-  if (lpotentiel(12).EQV..true.) ltabvois=.true.
+  if ((lpotentiel(12).EQV..true.).and.(ltabvois==.true.))ldemitab=.false.
 
   if(lrestart.and.lcorrelvp) then
      if (rang==0) write(6,*)rang,'pas de restart et de correlation'

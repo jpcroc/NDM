@@ -334,10 +334,11 @@ subroutine force_tersoff_cel
                     kk = sk
 !                    ! spline
                     dr = rij-float(kk)*csive
-                    potisTersoff = potisTersoff+pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk)))))                       
+!                    write(6,*)'TZBL',rij,dr,kk,csive
+                    potiszbl = potiszbl+0.5*(pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk))))))
                     phu = -1.0*(pot(2,ij,kk)+dr*(2.0*pot(3,ij,kk)+dr*(3.0*pot(4,ij,kk))))
-                    fp(:,i)=fp(:,i)+phu*cvij(1,:)
-                    fp(:,j)=fp(:,j)-phu*cvij(1,:)
+                    fp(:,i)=fp(:,i)+0.5*phu*cvij(1,:)/rij
+                    fp(:,j)=fp(:,j)-0.5*phu*cvij(1,:)/rij
                  end if
 
               end if
