@@ -43,7 +43,7 @@ end subroutine zieg2
 end interface
 
 
- write(6,*)'AJOUT ZBK � TERSOFF roff',roff1,roff2,csive
+ write(6,*)'AJOUT ZBK a TERSOFF roff',roff1,roff2,csive
   ktor=csive
 !C'est ça qui va pas !!! POT=0
      pot=0.0
@@ -75,7 +75,7 @@ end interface
 
 
         case default
-           write(6,*)'PB avec tersoff zbl, l, typ_pot_pair(l) = ',l, typ_pot_pair(l)
+           write(6,*)'Tersoff zbl pas appliqu� � la paire , l, typ_pot_pair(l) = ',l, typ_pot_pair(l)
         end select
 end do
 

@@ -60,6 +60,7 @@ rang=rangph
      allocate(typ_and_pot(ntyp,npotmax))
      typ_and_pot(:,:)=.false.
      call  alloc_typ
+     typ_pot_pair=0
   end if
   allocate(rue_pot(npotmax))
   rue_pot(:)=0.
@@ -145,7 +146,7 @@ rang=rangph
         end select
      endif
   end do
-  if (rang == 0)  write(6,*)'cm',cm
+!  if (rang == 0)  write(6,*)'cm',cm
   usdh = 1/(two*tstep)         
   !endif
 

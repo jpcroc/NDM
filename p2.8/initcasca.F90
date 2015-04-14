@@ -124,7 +124,7 @@ subroutine initcasca
 if (parallele)  return
 
   ! Choix du pas en temps initial selon le vmax
-
+!goto 121
   vmax2 = 0.0
   imax = 0
   vpmod2(:im) = vp(1,:im)**2+vp(2,:im)**2+vp(3,:im)**2
@@ -199,6 +199,6 @@ if (parallele)  return
         xpp(3,iko) = xp(3,iko)-vp(3,iko)*tstep
      endif
   endif
-
+121 continue
   return
 end subroutine initcasca

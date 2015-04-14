@@ -7,22 +7,29 @@ subroutine inputtersoff
   implicit none
   integer :: lupotin=95
   character ::  fnampotin*80
-  integer::iti,itj,ipr,i,l,nprns,ntypr,j,rue
+  integer::iti,itj,ipr,i,l,nprns,ntypr,j,ntypzl!,npairlu,lp
   real(double)::rc1, psilu,rof1m,rof2m,cmr
   real(double),dimension (:), pointer :: lambda1lu,lambda2lu,lambda3lu,Aterlu,Bterlu
-  real(double),dimension (:), pointer :: Rterlu,Sterlu !, betalu,nterlu,cterlu, dterlu, hterlu
+  real(double),dimension (:), pointer :: Rterlu,Sterlu,catomlu(:) !, betalu,nterlu,cterlu, dterlu, hterlu
   character :: tyr*3
   !real(double),dimension (:), pointer :: lambda1,lambda2,lambda3,Ater,Bter
   !real(double),dimension (:), pointer :: Rter,Ster, beta,nter,cter, dter, hter
   integer,pointer :: typtyp(:)
 
- 
+
   fnampotin = 'tersoff.potin'
-!RUE_POT IS NOT DEFINED FOR TERSOFF!
+  !RUE_POT IS NOT DEFINED FOR TERSOFF!
+!  write(6,*)
+!  write(6,*)'LECTURE TERSOFF'
   open(unit=lupotin, file=fnampotin, status='old')
 
   if (npotentiel .gt.1)then
+!          read(lupotin,*) npairlu ! nombre de paire sur lesquelles le potentiels de tersoff s'applique
+!          do lo=1,npairlu
+!             read(lupotin,*)ipairlu !indice des paires form�es par 
+          
      read(lupotin,*) ntypr,psilu
+
   else
      iewald=0; l3c=.false.; r3cm=0.  
      read(lupotin,*) ntyp,psilu
@@ -43,10 +50,11 @@ subroutine inputtersoff
   allocate(Ater(npair));allocate(Bter(npair));allocate(Rter(npair))
   allocate(Ster(npair));allocate(psi(npair));
   allocate (typtyp(ntypr))
-  
+
   do i=1,ntypr
      if (npotentiel .gt.1)then
         read(lupotin,*) cmr,tyr,iti
+!        lterstyplu(iti)=.true.
      else
         iti=i
         read(lupotin,*) cmr,tyr
@@ -72,14 +80,30 @@ subroutine inputtersoff
      if (deltater(iti)==0) deltater(iti)=1.0/(2*nter(iti))
      !     if (rang==0) write(6,*) iti,deltater(iti)
   end do
-  read(lupotin,*,end=456)nprns
-  if (npotentiel.gt.1) then
-     if (rang==0) write(6,*)'lecture supplement potin pas possible avec npotentiel >1'
-     call arret_ndm
-  end if
-  do i=1,ntypr
-     read(lupotin,*)catom(i)
+
+!  do iti=1,ntyp
+!     do itj=1,ntyp
+!        l=ipo(,iti,itl)
+!        if((lterstyplu(iti)==.true.).and.(lterstyplu(itj)==.true.))then
+!           if typ_pot_pair
+
+  read(lupotin,*,end=456)ntypzl,nprns
+  allocate (catomlu(ntypzl))
+  if (rang==0) write(6,*)'lecture supplement tersoff.potin pour Ziegler'
+  !     call arret_ndm
+  !  end if
+  !  if (npotentiel.gt.1) then
+  do i=1,ntypzl
+     !     stop
+     !il faut changer �a i n'est pas le type lu de l'atome qd npot>1
+     read(lupotin,*)catomlu(i),iti
+     catom(iti)=catomlu(i)
   end do
+  !  else
+  !     read(lupotin,*)catom(i)
+  !     programmer un check sur catom
+  !stop
+
   write(6,*)'lecture de roff1 et roff2 pour certaines paires ',nprns
   do i = 1, nprns
      read (lupotin, *) l, rof1m, rof2m
@@ -92,12 +116,16 @@ subroutine inputtersoff
   close (lupotin)
 
   psi(:)=1.0
-  rue =0
+!  rue =0
   do i=1,ntypr
      iti=typtyp(i)
      do j=i,ntypr       
         itj=typtyp(j)
         ipr=ipo(iti,itj)
+        if (typ_pot_pair(ipr).ne.0)then
+           write(6,*)'paire ',ipr,' deja lue de potentiel=',typ_pot_pair(ipr)
+           stop
+        end if
         if (rang==0) write(6,*)'paire l active  ipotentiel: ',ipr, ipotentiel
 
         lambda1(ipr)=0.5*(lambda1lu(iti)+lambda1lu(itj))
@@ -136,16 +164,16 @@ subroutine inputtersoff
 
 
   rumax=max(rumax,maxval(rue_pair))
-!  if(rang==0)write(6,*)'rumax',rumax
+  !  if(rang==0)write(6,*)'rumax',rumax
 
   ldemitab =.false.
 
-!if(allocated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 
+  !if(allocated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 
   if(associated(typ_and_pot).eqv..false.) then
      allocate (typ_and_pot(ntyp,npotmax))
      typ_and_pot(:,:)=.false.
      typ_and_pot(1:ntyp,ipotentiel)=.true.
   end if
-
+  write(6,*)
 
 end subroutine inputtersoff

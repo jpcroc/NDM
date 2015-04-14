@@ -1,6 +1,7 @@
 module SMjuli
   USE T_kind_param_m
   USE gen_com_m, ONLY: ev2erg,A2cm
+  use var_pot, ONLY: lue_typ,npotentiel
   implicit none
 
 
@@ -64,10 +65,17 @@ ipotentiel,typ_pot_pair)
 
     !  lupotin = 95
     !  open(unit=lupotin, file=fnampotin, status='old')
-
+!    write(6,*)
+!  write(6,*)'LECTURE JULI'
     iewald=0; l3c=.false.; r3cm=0.
 
     !  read(lupotin,*)ntyp
+    if (npotentiel.gt.1) then
+       if (ntyp.ne.2)then
+          write(6,*)'JuLi ZrC seulement pour ntyp=2'
+          stop
+       end if
+    end if
     ntyp=2
     npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
     call  alloc_typ
@@ -128,6 +136,20 @@ ipotentiel,typ_pot_pair)
     rue=7.0*1.0d-8
     rumax=max(rue,rumax)
     write(6,*) 'Types d_atomes :'
+    if (npotentiel.gt.1) then
+       if(lue_typ(1).EQV..true.)then
+          if (ty(1).ne.'Zr')then 
+             write(6,*)'JuLi ZrC seulement pour Zr=1'
+             stop
+          end if
+       end if
+       if(lue_typ(2).EQV..true.)then
+          if (ty(2).ne.'C')then 
+             write(6,*)'JuLi ZrC seulement pour C=2'
+          stop
+       end if
+       end if
+    end if
 
     cm(1)=91.22 ; catom(1)=40. ; ty(1)='Zr'
     cm(2)=12.01115 ; catom(2)=6. ; ty(2)='C '
@@ -145,7 +167,7 @@ ipotentiel,typ_pot_pair)
     end do
     write(6,*) '****potentiel de Ju Li pour ZrC ****'
     write(6,*) '****Zr=1 C =2 ****'
-
+    write(6,*)
     cm(:ntyp) = cm(:ntyp)*umass
     close(lupotin)
     return
