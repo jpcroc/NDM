@@ -64,30 +64,44 @@ if (it_mab<10) A_ee=0.d0
 if (abf_mode==1) then
  !--2. Compute pi_A_ee (csi,q)
  ! xmol is zeta, eta = eta_ABFee for exteded dynamics 
- ! pi_Aee = num / denom = \exp{ -\frac{beta}{2*eta} (xmol(iter) - csi)**2  /denom  }
+ ! pi_Aee = num / denom = \exp{ -\frac{beta}{2*eta} (x_mol(iter) - csi)**2  /denom  }
  ! I think that the sign is in the opposite direction ??? mcmCHECK
  forall(iter=-nhisto2:nhisto+nhisto2) temp_log(iter)=-(x_mol(iter)-dcsi)**2/(2.d0*eta_ABFee*temperature)+A_ee(iter)/temperature
- ! What the hack is that !!!
+ ! Trick to avoid NaN errors ...
  temp_log_max=MAXVAL(temp_log(:) )
  temp_log(:)=temp_log(:)-temp_log_max
 
- temp_exp(-nhisto2:nhisto+nhisto2)=exp(temp_log(nhisto2:nhisto+nhisto2))! 
- ! strange way to have a integral :
- denom=SUM(temp_exp(:))
+  do iter=-nhisto2,nhisto+nhisto2
+     temp_exp(iter)=exp(temp_log(iter))!
+      if ((temp_exp(iter)+1.0).eq.temp_exp(iter)) then
+        write(*,*) 'WARNING:  NaN detected look in fort.333 file'
+        write(333,'(2i5,6D21.8)') it_mab, iter, x_mol(iter)-dcsi,A_ee(iter), temp_log(iter),temp_exp(iter),potist,ene0,ene_einstein
+      end if  
+  end do
+
+
+denom=SUM(temp_exp(:))
 
 
  !--3. Compute the E(grad U(.,q)|q) 
- temp_num_f(-nhisto2:nhisto+nhisto2)=temp_exp(nhisto2:nhisto+nhisto2)*(x_mol(-nhisto2:nhisto+nhisto2)-dcsi)
+ forall(iter=-nhisto2:nhisto+nhisto2)   temp_num_f(iter)=temp_exp(iter)*(x_mol(iter)-dcsi)/eta_ABFee
  ! strange way to have the integral but it is corect because we have only the fraction
  num_f=SUM(temp_num_f(:))
- ! 
- mean_force_ABF=1.d0/eta_ABFee*num_f/denom
- !
+ mean_force_ABF=num_f/denom
  mean_force2(icsi)=mean_force_ABF
-
- fpabf(1:3,7)=rfilac(1:3)*mean_force_ABF
-
+! write(*,*) atom_to_jump
+ fpabf(1:3,atom_to_jump)=rfilac(1:3)*mean_force_ABF
  fp(1:3,:)=fp(1:3,:)+fpabf(1:3,:)
+
+!write (41,*) fp(1,7),fpabf(1,7)
+!write (42,*) fp(2,7),fpabf(2,7)
+!write (43,*) fp(3,7),fpabf(3,7)
+
+
+
+
+!debug  write(*,*)'fp   ',fp(1:3,7) 
+!debug  write(*,*)'fpabf',fpabf(1:3,7) 
 end if !abf_mode==1
 
 if (abf_mode==2) then
@@ -99,6 +113,9 @@ if (abf_mode==2) then
      U_Aee(iter) = (1.d0-x_mol(iter))*(ene_einstein) + x_mol(iter)*(potist-ene0)
      temp_log(iter)=-(U_Aee(iter)-A_ee(iter))/temperature
   end do
+
+! add an extra trick to avoid the NaN errors. No influence in the pi_Aee(\zeta | q) appears in the same way
+! in the numerator and denumerator ... 
   temp_log_max=MAXVAL(temp_log(:) )
   temp_log(:)=temp_log(:)-temp_log_max
 
@@ -130,10 +147,9 @@ if (abf_mode==2) then
    do iter=-nhisto1+1,nhisto+nhisto1
     tmp_num=tmp_num  + 0.5d0*(temp_num_f(iter-1)+temp_num_f(iter) )*delta_z
    end do
-   if ((jx==1).and.(ia==7)) then
-   
-   !write(*,*) -tmp_num/denom, fp(jx,ia)
-   end if 
+!debub    if ((jx==1).and.(ia==7)) then
+!debug     write(*,*) -tmp_num/denom, fp(jx,ia)
+!debug    end if 
   if ((histo_equi == .true.) .And. (it_mab >= n_equilibre)) then
     fp(jx,ia)=-tmp_num/denom
    else 
@@ -146,34 +162,41 @@ end if !abf_mode==2
 
 if (abf_mode==22) then
  ! xmol is zeta
- ! U(zeta, q) = zeta*(potist-ene0 - ha_mix*U_HA)
- !--3. compute the  pi_A_ee(\zeta | q ) = \exp{U(zeta,q) / int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
- !--3.a num \exp{U(zeta,q)
+ ! U(zeta, q) = zeta*(potist-ene0-ha_mix*U_HA-equit)
+ !--2. compute the  pi_A_ee(\zeta | q ) = \exp{U(zeta,q) / int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
+ !--2.a num \exp{U(zeta,q)
 
 
   do iter=-nhisto1,nhisto+nhisto1
      U_Aee(iter) = x_mol(iter)*(potist-ene0+ha_mix*ene_einstein-equit)
      temp_log(iter)=-(U_Aee(iter)-A_ee(iter))/temperature
+  end do
+! add an extra trick to avoid the NaN errors. No influence in the pi_Aee(\zeta | q) appears in the same way
+! in the numerator and denumerator ... 
+  temp_log_max=MAXVAL(temp_log(:))
+  temp_log(:)=temp_log(:)-temp_log_max
+
+  do iter=-nhisto1,nhisto+nhisto1
      temp_exp(iter)=exp(temp_log(iter))!
       if ((temp_exp(iter)+1.0).eq.temp_exp(iter)) then
        itcount=itcount+1
         write(*,*) 'WARNING:  NaN detected look in fort.333 file'
         write(333,'(2i5,9D21.8)') it_mab, iter, U_Aee(iter),A_ee(iter), temp_log(iter),temp_exp(iter),potist,&
                ene0,ene_einstein,equit, (potist-ene0+ha_mix*ene_einstein-equit)*erg2ev
-        if (itcount==5) stop
+!debug        if (itcount==5) stop
       end if  
   end do
 
- !--3.b denom: int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
+ !--2.b denom: int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
   denom=0.d0
   do iter=-nhisto1+1,nhisto+nhisto1
+   ! Cn in my notes 
    denom=denom + 0.5d0*(temp_exp(iter-1)+temp_exp(iter) )*delta_z
   end do
  
- ! if (it_mab > n_equilibre+100) write(*,'("calfo_ABFee",3g15.4)') ene_einstein, fp(1,7),fpeinstein(1,7) 
  !--4. Compute the E(\grad_q U(.,q)|q)
- !In this case E[\grad_q U(.,q)|q]=E[ \zeta \grad_q U(q) ]
- !We should just remind that  \grad_q U(q) = - fp(q)
+ !In this case E[\grad_q U(.,q) | q ]= E[ \zeta \grad_q ( U(q) + ha_mix * U_HA(q) - E0 + equit) ]
+ !We should just remind that  \grad_q U(q) = - fp(q) and  \grad_q U_HA(q)=- fpeinstein (q)
  do ia=1,im
   do jx=1,3
    do iter=-nhisto1,nhisto+nhisto1
@@ -183,11 +206,9 @@ if (abf_mode==22) then
    do iter=-nhisto1+1,nhisto+nhisto1
     tmp_num=tmp_num  + 0.5d0*(temp_num_f(iter-1)+temp_num_f(iter) )*delta_z
    end do
-!debug<
-   if ((jx==1).and.(ia==7)) then
-   !write(*,*) -tmp_num/denom, fp(jx,ia)
-   end if
-!>debug 
+!debug    if ((jx==1).and.(ia==7)) then
+!debug    write(*,*) -tmp_num/denom, fp(jx,ia)
+!debug    end if
   if ((histo_equi == .true.) .And. (it_mab >= n_equilibre)) then
     fp(jx,ia)=-tmp_num/denom
   else 
@@ -198,10 +219,6 @@ end do
 
 end if !abf_mode==22 
 
-
-!write (41,*) fp(1,7),fpabf(1,7)
-!write (42,*) fp(2,7),fpabf(2,7)
-!write (43,*) fp(3,7),fpabf(3,7)
 ! 1. The computationb of the mean force A_dev_ee (\zeta)
   
 !1a We prepa denom and num  in order to compute A_dev_ee (\zeta}
@@ -211,9 +228,8 @@ if (abf_mode==1) then
  do iter=-nhisto2, nhisto+nhisto2
   P_ee(iter)=temp_exp(iter)/denom
   P_ee_denom(iter)=P_ee_denom(iter)+P_ee(iter)
-  P_ee_num(iter)=P_ee_num(iter)+(x_mol(iter)-dcsi)*P_ee(iter)
+  P_ee_num(iter)=P_ee_num(iter)+(x_mol(iter)-dcsi)*P_ee(iter)/eta_ABFee
  enddo
-  P_ee_num(:)=1.d0/eta_ABFee*P_ee_num(:)
 end if 
 
 
@@ -264,7 +280,7 @@ endif
  ! from where comes this nhisto !!!! mcmCHECK
  if (abf_mode==1) then
  do iter=-nhisto1,nhisto+nhisto1
-     A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+1.d0/(omega_abf*dble(nhisto)))
+     A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+1.d0/(omega_abf))
  enddo
 end if 
 

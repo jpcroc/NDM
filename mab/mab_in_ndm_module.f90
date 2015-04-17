@@ -46,14 +46,14 @@ module mab_in_ndm_module
       real(double) :: Free_energy_brute
       real(double) :: omega_einstein,ene_einstein,ene0,einstein_free_3N, einstein_correction, pbc_correction
       real(double), dimension(:,:), allocatable :: omega_veinstein,fpeinstein
+      real(double) , dimension(:,:,:,:) , allocatable :: matfor
       integer :: it_en
       real(double)::sigma_eta,sigma_carre,eta_ABFee,sum_error_A,sum_error_A_bar
       integer::ecart_eta,nom_deconvo
-      real(double)::eta_mab,ha_mix,temperature_zeta_min,temperature_zeta_max,equit
+      real(double)::eta_mab,ha_mix,temperature_zeta_min,temperature_zeta_max,equit,units_phondy
       integer::compute_mode,error_step
       integer:: nsite_block,atom_to_jump,itype_reaction,itype_einstein
       integer, dimension(:), allocatable :: isite_block
-      
       logical :: block,test_end,histo_equi
 
 
@@ -65,9 +65,8 @@ subroutine allocate_mab()
    implicit none
    
    allocate (sig_i(3,imm),sig_ll(3,imm),rga_i(3,imm),m_i(3,imm),xp0(3,imm)) 
-   allocate (omega_veinstein(3,imm),fpeinstein(3,imm))  
-
-return
+   allocate (fpeinstein(3,imm))  
+  return
 end   subroutine allocate_mab
 
 
@@ -76,9 +75,7 @@ end   subroutine allocate_mab
     implicit none
     integer :: ic
      
-     do ic=1,3
-      m_i(ic,1:im) = cm(ityp(1:im))
-     end do
+
      m_tot=SUM(m_i(1,1:im))
     
      xp0(:,:) = xp(:,:)
@@ -117,9 +114,9 @@ end   subroutine allocate_mab
 
 
    if (abf_mode==22) then
-                           ! 500 is the temperature in orderto made the simulation
-    xi_max=temperature/temperature_zeta_min     ! this is xi_max in order to have 100K at the reference temperature 500 K 
-    xi_min=temperature/temperature_zeta_max    ! this is xi_min in order to have melting temperature;  500 K is the reference temperature
+                                            ! 500 is the temperature in order to made the simulation
+    xi_max=temperature/temperature_zeta_min ! this is xi_max in order to have 100K at the reference temperature 500 K 
+    xi_min=temperature/temperature_zeta_max ! this is xi_min in order to have melting temperature;  500 K is the reference temperature
     normxlac=xi_max-xi_min
     delta_z=normxlac/dble(nhisto)
    end if 
@@ -142,14 +139,11 @@ end   subroutine allocate_mab
      else if (mode_zeta_potential==1) then 
       limit1=limit2m
       limit2=limit2p
-    end if 
+     end if 
+   end if  
    !
-   if (itype_einstein==0) omega_veinstein(:,:)=omega_einstein
-   !instead that I will a file with all the einstein  frequencies 
-   end if 
- 
-    equit=0.d0
-    !equit = temperature*dble(3*im-3)*log(temperature/(omega_einstein*hbar*2.d0*pi*1.d+12))
+    if (abf_mode==22) equit=0.d0
+     equit=0.d0
 
     write(*,*) 'Equit correction ', equit*erg2ev
     !sigma_eta=sqrt(eta_mab)

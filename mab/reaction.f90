@@ -38,7 +38,7 @@ if (itype_reaction==1) then
 end if 
     icsi=nint((dcsi-xi_min)/delta_z)
     
-    !write (*,*) 'icsi.(reaction) ...', dcsi,delta_z,icsi 
+!debug    write (*,*) 'icsi.(reaction) ...', dcsi,delta_z,icsi 
 
  return
   end subroutine reaction
@@ -49,9 +49,9 @@ subroutine calfoblock()
  USE gen_com_m, ONLY: zero,im,imm,low_limit,angst,ev2erg,erg2ev
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY:radiussph,deltasph,xbar,xbarini,xp0,maxforce,nsite_block,isite_block
- 
+ implicit none 
  real(double), dimension(3,imm) :: fpblock
- integer :: ic
+ integer :: ic,ii
  real(double) :: rp1,dFerDir
 
  fpblock(:,:) = zero

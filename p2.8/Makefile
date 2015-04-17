@@ -247,7 +247,7 @@ LIBMAB=libmab.a
 
 ${BIN}/rundm90 : ${DEP} 
 	${LD} -o ${BIN}/rundm90${EXT}  ${F90FLAGS} ${LDFLAGS} ${OBJS} ${LIBRARY}
-#	rm -rf ${DIREXT}
+	rm -rf ${DIREXT}
 
 
 $(LIBART): 

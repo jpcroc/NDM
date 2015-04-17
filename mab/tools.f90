@@ -261,7 +261,7 @@ subroutine test_displacement
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: im,imm,angst
  USE tab_imm_m
- USE mab_in_ndm_module, ONLY: xbarini,xbar,xp,xp0,itest_stop,a0bcc
+ USE mab_in_ndm_module, ONLY: xbarini,xbar,xp,xp0,itest_stop,a0bcc,abf_mode
  implicit none
  real(double) :: rtemp(imm),RRMAX,ddepla(3)
  integer,dimension(1) :: iimax
@@ -279,12 +279,14 @@ subroutine test_displacement
   !write(*,*) xp(2,iimax),xp0(2,iimax),xbar(2),xbarini(2)
   !write(*,*) xp(3,iimax),xp0(3,iimax),xbar(3),xbarini(3)
   write(*,*) 'The MAXXX displacement is for atom ',iimax, ' with ',rrmax*angst, 'Ang'
+  if (abf_mode/=1) then
   if ((rrmax*angst) >= sqrt(3.d0)*a0bcc/2.d0) then
    write(*,*) a0bcc
    write(*,*) 'WWARNING you have at least one 1NN jump.!!! '
    itest_stop=1
   end if 
   !stop
+  end if 
 
 end subroutine test_displacement
 

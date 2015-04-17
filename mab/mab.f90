@@ -34,10 +34,11 @@ subroutine mab
   write(6,*)'......READING.....' 
 
 !  call random_seed()
+
+  call allocate_mab()
   call read_mab_file()
 
   write(6,*)'......ALLOCATE....' 
-  call allocate_mab()
   write(6,*)'.......INIT.......' 
   !debug .... write(*,*) 'temperature ',temperature/KtoERG 
   call init_mab_in_ndm_module()
@@ -45,9 +46,6 @@ subroutine mab
 
  call prepare_langevin()
 if (abf_type==1)  call test_minimum_abf()
-if (abf_mode==22) then
-     call test_minimum_abf()
-end if 
 if ((abf_mode==2).or.(abf_mode==22)) then
  call test_minimum_abf () 
  call init_einstein_solid  ()
@@ -100,8 +98,8 @@ do it_mab=1,nlangevin
 
    if (.NOT.(abf_type==1))  call reaction()
    ! if (mod(it_mab,40)==0) then 
-   !debug   write(36,*) it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)
-   !debug   write(35,*) it_mab,it_en,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
+   !debug write(36,'(i6,3d15.7)') it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)*1.d+08
+   !debug write(35,*) it_mab,it_en,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
    ! end if
     it=it_mab
     if (mod(it_mab,ntestvacancyjump)==0)  call test_displacement ()
@@ -128,70 +126,60 @@ do it_mab=1,nlangevin
   end if 
 
   if (mod(it_mab,nwrite_histo)==0) then
-   open(unit=989,file='histogram1',status='unknown')
-   open(unit=990,file='histogram',status='unknown')
-   do i_iter=-nhisto1,nhisto+nhisto1
-    write(989,*),i_iter, histo1(i_iter)
-   enddo
+    open(unit=989,file='histogram1',status='unknown')
+    open(unit=990,file='histogram',status='unknown')
+    do i_iter=-nhisto1,nhisto+nhisto1
+      write(989,*),i_iter, histo1(i_iter)
+    enddo
     do i_iter=1,nhisto
-    write(990,*),i_iter, histo(i_iter)
-   enddo
+       write(990,*),i_iter, histo(i_iter)
+    enddo
  
-  close(989)
-  close(990)
-
+    close(989)
+    close(990)
   end if 
+
   if (it_stop==1) exit
   if (itest_stop==1) exit
- end do
-  !call force_constant(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+
+ end do   !end it_mab, langevin
 
  if (abf_type /= 1) then
   call fill_final_histo()! Attention!! pour ABFee il faut l'histogramme pour calculer l'énergie libre
-
   call Free_energy_ABF()! Calculate energy landscape for ABF
- 
   call create_files()! Create files needed
  end if 
 
  if (abf_type==1) then
-
- if (itest_stop==1)   write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
-  call correct_free_energy_brute(corr3N,corr3Nm3)
-  write(*,*) 'outsub', corr3N, corr3Nm3,corr3N*erg2ev
-  write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
-  write(6,'("DeltaFreeMD     (eV) ................:  ", F15.7)') Free_energy_brute*erg2ev
-  write(6,*) ' '
-  write(6,'("DeltaFree3N     (eV) ................:  ", F15.7)') (Free_energy_brute+corr3N)*erg2ev
-  write(6,'("FreeTOT3N       (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3N)*erg2ev
-  write(6,*) ' '
-  write(6,'("DeltaFree(3N-3) (eV) ................:  ", F15.7)') (Free_energy_brute+corr3Nm3)*erg2ev
-  write(6,'("FreeTOT(3N-3)   (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3Nm3)*erg2ev
-
-  write(6,'("Average_over N steps ..................:  ", i7)') it_calc_brute
-
-
- end if 
+   if (itest_stop==1)   write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
+      call correct_free_energy_brute(corr3N,corr3Nm3)
+      write(*,*) 'outsub', corr3N, corr3Nm3,corr3N*erg2ev
+      write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
+      write(6,'("DeltaFreeMD     (eV) ................:  ", F15.7)') Free_energy_brute*erg2ev
+      write(6,*) ' '
+      write(6,'("DeltaFree3N     (eV) ................:  ", F15.7)') (Free_energy_brute+corr3N)*erg2ev
+      write(6,'("FreeTOT3N       (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3N)*erg2ev
+      write(6,*) ' '
+      write(6,'("DeltaFree(3N-3) (eV) ................:  ", F15.7)') (Free_energy_brute+corr3Nm3)*erg2ev
+      write(6,'("FreeTOT(3N-3)   (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3Nm3)*erg2ev
+      write(6,'("Average_over N steps ..................:  ", i7)') it_calc_brute
+  end if 
 
  if (abf_mode==2) then
 !debug  Write (*,*) 'temp', temperature, temperature/KtoERG, omega_einstein
-!debug  Why should be - ???
-  tmp2=  (Free_energy(0)-Free_energy(nhisto))*erg2ev
-
-
-  call free_and_correction_einstein()
-  if (it_stop==1) write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
-
-  write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
-  write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction
-  write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", F15.7)') tmp2
+!debug  Why should be - 
+!debug  because it should be: F = F^HA + [ A(1) - A(0) ]
+   tmp2=  (Free_energy(0)-Free_energy(nhisto))*erg2ev
+   call free_and_correction_einstein()
+   if (it_stop==1) write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
+      write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
+      write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction
+      write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", F15.7)') tmp2
   !asta pare sa mearga cel mai bine. In mod normal l-as vedea cu +pbc_correction
-  write(6,'("F(Full3N-6)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction -  tmp2 
-  write(6,'("PBC correction         (eV) ............:  ", F15.7)') pbc_correction 
-  write(6,'("Einstein correction    (eV) ............:  ", F15.7)') rests
+      write(6,'("F(Full3N-6)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction -  tmp2 
+      write(6,'("PBC correction         (eV) ............:  ", F15.7)') pbc_correction 
+      write(6,'("Einstein correction    (eV) ............:  ", F15.7)') rests
  end if  !abf_mode==2
-
-
 
   write(6,*)
   write(6,*)

@@ -19,7 +19,7 @@ subroutine calfo_mab()
           endif
           if (ltabvois.and.mod(it_langevin,itetabvois)==0)  call caltabi
         call calfo
-!debug         write(*,*) 'potist', potist
+!debug        write(*,*) 'potist', potist
         if (block) call calfoblock()
 
 !ABF part ...

@@ -1,30 +1,36 @@
 !  
 subroutine read_mab_file()
  USE T_kind_param_m, ONLY:  double
- use gen_com_m, ONLY: lenfnam,fnam,angst,ev2erg,im
- !use tab_imm_m
+ use gen_com_m, ONLY: lenfnam,fnam,angst,ev2erg,im,rang,A2cm,umass,erg2ev
+ use tab_imm_m, ONLY: ityp
+ use var_pot,   ONLY: cm
  USE mab_in_ndm_module, ONLY: dtlang,nlangevin,temperature,KtoERG,a0bcc,deltasph,  &
                               radiussph,nhisto,deltar1,deltar2,abf_type,block,     &
                               sim_mode,rtestlac,langevin_type,gamma,omega_abf,     &
-                              omega_einstein,abf_mode,            & 
+                              omega_einstein,omega_veinstein, matfor, abf_mode,            & 
                               nwrite_histo,sigma_eta,ecart_eta, &
                               eta_mab,eta_ABFee,histo_equi,n_equilibre,           & 
                               maxforce,compute_mode,error_step,nom_deconvo,lang_factor, &
                               mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix,  &
                               temperature_zeta_min,temperature_zeta_max,          &
-                              nsite_block, isite_block,itype_reaction,itype_einstein
+                              nsite_block, isite_block,atom_to_jump,              &
+                              itype_reaction,itype_einstein, units_phondy,m_i
 
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
-                      langevin_type,gamma,omega_abf,omega_einstein, nwrite_histo,  &
+                      langevin_type,omega_einstein,gamma,omega_abf, nwrite_histo,  &
                       eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
                       maxforce,compute_mode,abf_mode, error_step,nom_deconvo,lang_factor, &
                       mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix,            &
                       temperature_zeta_min,temperature_zeta_max,                          &
-                      nsite_block, isite_block, atom_to_jump, itype_reaction,itype_einstein
+                      atom_to_jump, itype_reaction,itype_einstein
 
- character(len=128) :: fnamtin,fnamt_lblock
- integer :: lumab,lublock
+ implicit none
+ character(len=128) :: fnamtin, fnamt_lblock, fnamt_lfreq, fnamt_lm, fnamt_lu, fnamt_lv
+ integer :: lumab,lublock,lcu,lcv,lcm
+ integer :: ii,ia,ja,i,j,imax,iu,iv
+ real(double) :: temp_read
+ integer :: itemp_read
 
 
  rtestlac=0.1d0
@@ -32,8 +38,8 @@ subroutine read_mab_file()
  omega_abf=1.d0
  maxforce=2.d0   ! in order to enhance the max force on the protective domains 
  nom_deconvo=10
- abf_mode = 1
- abf_type = 1
+ abf_mode = 1   !vacancy jump 
+ abf_type = 1   !ABF BIN 
  omega_einstein=5.d0 ! einstein frequecy in THz
  lang_factor=1.d0
  mode_zeta_potential=0
@@ -43,21 +49,30 @@ subroutine read_mab_file()
  temperature_zeta_min=150.d0
  temperature_zeta_max=1800.d0
  block=.false.
-! The atom whici is desinged to jump ...
- natom_to_jump=7
+! The atom which is desinged to jump ...
+ atom_to_jump=7
  itype_reaction=0 ! 0 for vacancy, 1 for NEB 0 K reaction
  itype_einstein=0 ! 0 - einstein, 1 HA, 2 Morse (for rthe future)
+
+     
+     do ia=1,3
+      m_i(ia,1:im) = cm(ityp(1:im))
+     end do
+
+
  fnamtin = fnam(1:lenfnam)//'.mab'
  write(*,*) 'file name', fnamtin
  lumab = 778
 open(unit=lumab, file=fnamtin, status='unknown')
 read (lumab, nml=input_mab)
 
+
 if (block)  then 
 
    write(6,*) 'WARNING: Some spheres are in protective domains!'
    fnamt_lblock = fnam(1:lenfnam)//'.mab.lblock'
 !debug  write(*,*) fnamtin
+   LUBLOCK=775
    open(unit=lublock, file=fnamt_lblock, status='unknown')
    read(lublock,*) nsite_block
    allocate (isite_block(nsite_block))
@@ -65,7 +80,7 @@ if (block)  then
     !
      read(lublock,*)  isite_block(ii)
      if (isite_block(ii) > im) then
-       if (rangph==0) then
+       if (rang==0) then
         write(*,*) 'this atom cannot be blocked', isite_block(ii)
         write(*,*) 'the value exceeds the number of atoms im ', im
         write(*,*) 'stop in read_mab_file.f90'
@@ -74,7 +89,7 @@ if (block)  then
      end if  
       if (abf_mode==1) then
         if (isite_block(ii)==atom_to_jump) then
-         if (rangph==0) then
+         if (rang==0) then
            write(*,*) 'The atom which is designed to jump is BLOCKED by the list *.mb.block ', isite_block(ii)
            write(*,*) 'The atom to jump is set by atom_to_jump, currently set to ', atom_to_jump
            write(*,*) 'stop in read_mab_file.f90'
@@ -86,9 +101,6 @@ if (block)  then
    end do   
  close(lublock)
 end if 
-
-
-
 
 
       if (langevin_type==2) then
@@ -168,10 +180,58 @@ end if
          stop
     end if 
 
-    if (abf_mode==2) then
-     write(*,'("Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
+    if ((abf_mode==2).or.(abf_mode==22)) then
+       allocate (omega_veinstein(3,im))
+
+      if (itype_einstein==0 ) then
+       write(*,'("Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
+       omega_veinstein(:,:)=omega_einstein
+      end if 
+
+      if (itype_einstein==1) then
+
+       units_phondy = erg2eV*A2cm*A2cm*umass
+       allocate (matfor(im,im,3,3))
+       fnamt_lfreq = fnam(1:lenfnam)//'.mab.lfreq'
+       fnamt_lm = fnam(1:lenfnam)//'.mab.m'
+       fnamt_lv = fnam(1:lenfnam)//'.mab.v'
+       fnamt_lu = fnam(1:lenfnam)//'.mab.u'
+       lcm=71
+       lcu=72
+       lcv=73
+       open(unit=lcm, file=fnamt_lm, status='unknown', form='unformatted')
+       open(unit=lcu, file=fnamt_lu, status='unknown', form='unformatted')
+       open(unit=lcv, file=fnamt_lv, status='unknown', form='unformatted')
+       open(unit=lublock, file=fnamt_lfreq, status='unknown')
+       do ii=1,im
+          do ia=1,3
+           read(lublock,*)  itemp_read, omega_veinstein(ia,ii)
+          end do
+       end do
+       close(lublock)
+
+       read (lcm) imax
+       do ii=1,imax
+        read(lcu) iu
+        read(lcv) iv
+        ia=mod(iu,3)+1
+        ja=mod(iv,3)+1
+         i=(iu-ia)/3+1
+         j=(iv-ja)/3+1
+        read(lcm) temp_read
+          matfor (i,j,ia,ja) = temp_read *dsqrt(m_i(ia,i)*m_i(ja,j))/units_phondy
+       end do
+
+      close(lcu)
+      close(lcm)
+      close(lcv)
+
+     end if !  itype_einstein==1
+
+    end if ! abf_mode == 2 and 22
+
+
         !instead that I will a file with all the einstein  frequencies 
-    end if 
 
      select case (sim_mode)
       case (1) 

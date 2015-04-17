@@ -45,21 +45,21 @@ if (rangph==0) then
    formax  = formax*erg2eV/angst
    if (fpstop>0) then   
        if (formax.gt.fpstop) then
-   if (rangph==0)        write(6,*) 'MAB: WARNING - The forces are not converged compared to &
+   if (rang==0)        write(6,*) 'MAB: WARNING - The forces are not converged compared to &
         din file'
-    if (rangph==0)       write(6,'(" MAB: WARNING - formax is greater than fpstop...:",2D12.5)') & 
+    if (rang==0)       write(6,'(" MAB: WARNING - formax is greater than fpstop...:",2D12.5)') & 
         formax,fpstop
-     if (rangph==0)      write(6,*) 'MAB: WARNING - Check the input'        
+     if (rang==0)      write(6,*) 'MAB: WARNING - Check the input'        
        end if
    end if       
 
    if (fsumstop>0) then   
       if (forctot.gt.fsumstop) then
-    if (rangph==0)       write(6,*) 'MAB: WARNING - The forces are not converged compared to &
+    if (rang==0)       write(6,*) 'MAB: WARNING - The forces are not converged compared to &
         din file'
-    if (rangph==0)       write(6,*) 'MAB: WARNING - forctot greater than fsumstop', &
+    if (rang==0)       write(6,*) 'MAB: WARNING - forctot greater than fsumstop', &
        forctot,fsumstop
-   if (rangph==0)       write(6,*) 'MAB: WARNING - Check the input'        
+   if (rang==0)       write(6,*) 'MAB: WARNING - Check the input'        
       end if
    end if   
  end if
