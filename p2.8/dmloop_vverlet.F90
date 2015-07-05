@@ -111,6 +111,9 @@ real(double) sigkine_tot(3,3)
 	 end if	 
         end if
      endif
+     if (itesauvforce.GT.0) then
+         if (mod(it,itesauvforce)==0) call sauveforce (it)
+     end if 
      !     write(6,*)'sauvposition -> control'
 
   call controle

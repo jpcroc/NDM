@@ -24,15 +24,15 @@ F90 = ifort
 # CPPFLAGS = -C -P -traditional
 # EXT      = _5
 #version SRMP
- CPPFLAGS = -C -E -P -traditional
+ CPPFLAGS = -C -E -P -traditional -nostdinc
 
 
-F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 # F90FLAGS = -ffixed-line-length-0
-EXT = _check
+#EXT = _check
 
-# EXT      = 
-#F90FLAGS = -O3 -convert big_endian 
+ EXT      = 
+F90FLAGS = -O3 -convert big_endian 
 
 endif
 

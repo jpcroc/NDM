@@ -13,7 +13,7 @@ subroutine calfo_ABF_BIN() ! this concerns only the force applied on atoms
  USE mab_in_ndm_module, ONLY:dcsi,icsi,rfilac,histo,     &
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              mean_force1,histo1,ene_einstein,abf_mode,fpeinstein,ene0, &
-                             ha_mix,equit,atom_to_jump
+                             ha_mix,equit,atom_to_jump,delta_z,it_mab
  implicit none
 
  real(double), dimension(3,imm) :: fpabf
@@ -51,6 +51,7 @@ if (abf_mode==22) then
   force = potist + ha_mix*ene_einstein - ene0 - equit !  d U(zeta,q)/d zeta  
   fpabf(:,:) = dcsi*ha_mix*fpeinstein(:,:) + dcsi*fp(:,:) ! -d U(zeta,q)/d q
   fp(:,:)=fpabf(:,:)
+
   !
   if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
    cumul_force1(icsi) =  cumul_force1(icsi) + force
@@ -80,7 +81,8 @@ subroutine calfo_ABF_BIN_OMEGA()
  USE mab_in_ndm_module, ONLY:dcsi,icsi,rfilac,histo,     &
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              mean_force1,histo1,omega_abf,&
-                             abf_mode,ene_einstein,ene0,fpeinstein,ha_mix,equit
+                             abf_mode,ene_einstein,ene0,fpeinstein,ha_mix,equit, &
+                             atom_to_jump,it_mab, delta_z
  implicit none 
  real(double), dimension(3,imm) :: fpabf
  real(double) :: force
@@ -89,11 +91,11 @@ subroutine calfo_ABF_BIN_OMEGA()
  fpabf(:,:) = zero
  ! Computing the forces from the ABF bins ...
 if (abf_mode==1) then
- force = - DOT_PRODUCT(fp(:,7),rfilac(:))
+ force = - DOT_PRODUCT(fp(:,atom_to_jump),rfilac(:))
  if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
   cumul_force1(icsi) =  cumul_force1(icsi) + force
   mean_force1(icsi) = cumul_force1(icsi)/(1.d0/omega_abf+histo1(icsi))
-  fpabf(1:3,7)=rfilac(1:3)*mean_force1(icsi)
+  fpabf(1:3,atom_to_jump)=rfilac(1:3)*mean_force1(icsi)
  end if
   fp(1:3,:)=fp(1:3,:)+fpabf(1:3,:)
 end if
@@ -115,10 +117,11 @@ if (abf_mode==22) then
   force = potist + ha_mix*ene_einstein - ene0 - equit !  d U(zeta,q)/d zeta  
   fpabf(:,:) = dcsi*ha_mix*fpeinstein(:,:) + dcsi*fp(:,:) ! -d U(zeta,q)/d q
   fp(:,:)=fpabf(:,:)
-  !
+
+!  write(*,*) it_mab, dcsi/delta_z,icsi
   if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
    cumul_force1(icsi) =  cumul_force1(icsi) + force
-   mean_force1 (icsi) = cumul_force1(icsi)/histo1(icsi)
+   mean_force1 (icsi) = cumul_force1(icsi)/(1.d0/omega_abf+histo1(icsi))
   end if
   !
 end if 
@@ -177,7 +180,7 @@ subroutine calfo_ABF_GAUSSIEN()
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              mean_force1,histo1,omega_abf,&
                              xi_min,xi_max,ecart_eta,eta_mab,&
-                             cumul_force_denom1,x_mol,sigma_carre
+                             cumul_force_denom1,x_mol,sigma_carre,atom_to_jump
  implicit none
  real(double), dimension(3,imm) :: fpabf
  real(double) :: force
@@ -186,7 +189,7 @@ subroutine calfo_ABF_GAUSSIEN()
  
  fpabf(:,:) = zero
  ! Computing the forces from the ABF bins ...
- force = - DOT_PRODUCT(fp(:,7),rfilac(:))
+ force = - DOT_PRODUCT(fp(:,atom_to_jump),rfilac(:))
 do indice_gaussian=icsi-ecart_eta,icsi+ecart_eta
  if ((indice_gaussian >=-nhisto1).and.(indice_gaussian <= nhisto+nhisto1)) then 
   cumul_force1(indice_gaussian)=cumul_force1(indice_gaussian) +force*dexp(-(dcsi-x_mol(indice_gaussian))**2/2.d0*sigma_carre)
@@ -195,7 +198,7 @@ do indice_gaussian=icsi-ecart_eta,icsi+ecart_eta
   mean_force1 (indice_gaussian) = cumul_force1(indice_gaussian)/cumul_force_denom1(indice_gaussian)
 
   if(indice_gaussian == icsi) then
-  fpabf(1:3,7)=rfilac(1:3)*mean_force1(icsi)
+  fpabf(1:3,atom_to_jump)=rfilac(1:3)*mean_force1(icsi)
   endif
  end if
 enddo

@@ -64,6 +64,9 @@ contains
        if (itesauvposition.GT.0) then
           if (mod(it,itesauvposition)==0) call sauveposition ( it)
        endif
+       if (itesauvforce.GT.0) then
+          if (mod(it,itesauvforce)==0) call sauveforce ( it)
+       endif
 !            write(6,*)'work_cg_II sauvposition -> control',it
     endif                                   ! fin rang=0
     end if

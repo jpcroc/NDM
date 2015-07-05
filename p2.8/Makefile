@@ -121,6 +121,7 @@ OBJS_SEQ=	anapos.o \
         calfo2ccel.o \
         calfoew.o \
         sauveposition.o \
+        sauveforce.o \
         calfo3c.o \
         dyn.o \
         main.o \

@@ -82,6 +82,9 @@ subroutine dmloop
      if (itesauvposition.GT.0) then
         if (mod(it,itesauvposition)==0) call sauveposition ( it)
      endif
+     if (itesauvforce.GT.0) then
+        if (mod(it,itesauvforce)==0) call sauveforce ( it)
+     endif
 !          write(6,*)'sauvposition -> control'
   endif                                   ! fin rang=0
 

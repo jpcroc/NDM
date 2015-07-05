@@ -39,7 +39,7 @@ subroutine readdm
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
        lrestart, lPathFromGin, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
        ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
-       iteangle, ipotentiel, lpotentiel, itesauvposition, lfilmext, tdepla2, &
+       iteangle, ipotentiel, lpotentiel, itesauvposition, itesauvforce, lfilmext, tdepla2, &
        lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
        maxorder,  lalea, rsep, &
        h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
@@ -108,11 +108,12 @@ subroutine readdm
   lconstrtot=.FALSE.           !!construction de la table des voisins T=double boucle F=via cel.
   rvois = 0.0                 ! rayon de la table des voisins
   ltpcel = .FALSE.            ! output of temperature and stress in each cell
-  lforcetabulate = .FALSE.    ! The derivative of the enerby is NOT tabulated. TRUE if it is.
+  lforcetabulate = .FALSE.    ! The derivative of the energy is NOT tabulated. TRUE if it is.
 
 
   itesauv = 100               !period for saving
   itesauvposition = 0         !periode pour sauvegarde des positions en binaire
+  itesauvforce = 0            !periode pour sauvegarde des forces en binaire
   formatsauv = 3              !format of saving  2 MC triclin; 1 DM triclin
   fmt_cin=1                  !format des fichiers .cin 0 : initiale, 1 = para
   dfpred = 0.1            ! eguess for GC calculations and quenching
@@ -833,6 +834,7 @@ end if
   case (9)
      if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS ' 
      itesauvposition=-1
+     itesauvforce=-1
      itetemp=-1;itesigma=-1
   case (10)
      if (rang==0) write (6,'(a)') '      TREMPE FIRE '

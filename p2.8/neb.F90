@@ -197,6 +197,9 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
            else if (itesauvposition.GT.0) then
                    if (mod(ineb,itesauvposition)==0) call sauveposition ( ii)
            endif
+           if (itesauvforce.GT.0) then
+                   if (mod(ineb,itesauvforce)==0) call sauveforce ( ii)
+           endif
 
            !debug          print'("NEB: ",2i5,3E14.5,E20.10,i3)', ineb, ii,  formax,       &
            !debug	            formaxperp, formaxparl, potist*erg2eV,nebtest(ii)

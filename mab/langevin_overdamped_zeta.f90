@@ -1,53 +1,51 @@
 subroutine langevin_overdamped_zeta()
-    !On input ... the parameters 
-    !dt -        integration step size (units, internal units ndm ?)
-    !temperature (units ? )
-    !rga         (?)
-    !schema Euler
- 
-    !-----------------------------------------------
-    !   M o d u l e s
-    !-----------------------------------------------
-    USE T_kind_param_m, ONLY:  double
-    use gen_com_m
-    use tab_imm_m
-    use var_pot
-    USE mab_in_ndm_module, only: dtlang,abf_mode,block,gamma,dcsi, &
-                                 ene_einstein,ene0, temperature,mean_force1,icsi, &
-                                 limit1,limit2,langevin_type,m_i,it_mab,delta_z,nhisto,nhisto1, &
-                                 lang_factor,it_mab,it_stop,limit1m, limit1p,ha_mix,abf_type,equit
+   !On input ... the parameters 
+   !dt -        integration step size (units, internal units ndm ?)
+   !temperature (units ? )
+   !rga         (?)
+   !schema Euler
+
+   !-----------------------------------------------
+   !   M o d u l e s
+   !-----------------------------------------------
+   USE T_kind_param_m, ONLY:  double
+   use gen_com_m
+   use tab_imm_m
+   use var_pot
+   USE mab_in_ndm_module, only: dtlang,abf_mode,block,gamma,dcsi, &
+                                ene_einstein,ene0, temperature,mean_force1,icsi, &
+                                limit1,limit2,langevin_type,m_i,it_mab,delta_z,nhisto,nhisto1, &
+                                lang_factor,it_mab,it_stop,limit1m, limit1p,ha_mix,abf_type,equit, &
+                                xi_max, xi_min
 
 
-    implicit none
-    real(double)             :: noise,tmp_dcsi,tmp_force
-    real(double) :: dcsi_ini, force_zeta, tmp_factor,the_moise
-    real(double), save :: average_temp=0.d0
-    integer, save :: it_temp = 0
-    integer :: it_count 
-     
+   implicit none
+   real(double)             :: noise,tmp_dcsi,tmp_force
+   real(double) :: dcsi_ini, force_zeta, tmp_factor,the_moise
+   real(double), save :: average_temp=0.d0
+   integer, save :: it_temp = 0
+   integer :: it_count 
+    
 
-     !ddd ffactor=5.d+8
-     if ((dcsi>=limit1m).and.(dcsi<=limit1p)) then
-       tmp_force=mean_force1(icsi)
-      else 
-       if (dcsi<limit1m) tmp_force=mean_force1(-nhisto1)
-       if (dcsi>limit1p) tmp_force=mean_force1(nhisto+nhisto1)
-     end if
-     dcsi_ini=dcsi
-     tmp_dcsi=0.d0
-     noise=0
-     it_count=0
-     it_temp=0
+    !ddd ffactor=5.d+8
+    if (it_mab==1) then
+!     dcsi=(xi_max-xi_min)/2.d0
+     dcsi=1.0
+    end if 
+    if ((dcsi>=limit1m).and.(dcsi<=limit1p)) then
+      tmp_force=mean_force1(icsi)
+     else 
+      if (dcsi<limit1m) tmp_force=mean_force1(-nhisto1)
+      if (dcsi>limit1p) tmp_force=mean_force1(nhisto+nhisto1)
+    end if
+    dcsi_ini=dcsi
+    tmp_dcsi=0.d0
+    noise=0
+    it_count=0
+    it_temp=0
 10 continue
       call genere_bruit_one_value(noise)
       call zeta_potential (dcsi,force_zeta)
-
-   !  if (langevin_type==2) then
-   !   tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*dtlang/(gamma*umass*10.0) + noise*sqrt(2.d0*temperature*dtlang/(gamma*umass*10.0))      
-    ! end if 
-    ! if (langevin_type==1) then  !overdamped
-     !ddd tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*dtlang*angst*ffactor/(gamma*m_i(1,1)) + noise*sqrt(2.d0*temperature*dtlang*angst*ffactor/(gamma*m_i(1,1)))      
-    !write(*,*) potist,force_zeta
 
     tmp_factor=lang_factor*dtlang*angst*angst/(gamma*m_i(1,1))
     if (abf_mode==2) then
@@ -61,15 +59,28 @@ subroutine langevin_overdamped_zeta()
     if (abf_mode==22) then
      tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*tmp_factor  &
                 + noise*sqrt(2.d0*temperature*tmp_factor)  &
-                + force_zeta* tmp_factor
+                + force_zeta* tmp_factor*10.d0
     end if 
    !  end if
     the_moise=noise*sqrt(2.d0*lang_factor*temperature*dtlang*angst*angst/(gamma*m_i(1,1)))
 ! the best choise is factor = 5*d+8. actually for this value the 
 !dtlang * angst * ffactor / gamma (for ffactor=5.d+8 gamma=1.d+14 and dtlag=2*1d-15) is nothing else than 25* dtlan*dtlang * angst * angst  !!!!! 
- 
      dcsi=tmp_dcsi  + dcsi_ini
-    if (it_count==0)    write(747,'("  ",i6, 2E16.2, i8, 4D23.7)') it_mab, dcsi,tmp_dcsi, nint(dcsi/delta_z), potist-ene0, ene_einstein, force_zeta, tmp_force
+     if ((it_mab< 5000).and.(dabs(tmp_dcsi)>dabs(xi_max-xi_min)/20.d0)) then
+      if (dcsi<xi_min) dcsi=xi_min
+      if (dcsi>xi_max) dcsi=xi_max
+      !tmp_dcsi=0
+    end if 
+ 
+
+
+   if (it_count==0)    write(747,'("  ",i6, E16.2, i6, E16.2, i6, 4D23.7)') it_mab, dcsi_ini, nint(dcsi_ini/delta_z), tmp_dcsi, &
+       nint(tmp_dcsi/delta_z),  potist-ene0, ene_einstein, force_zeta, tmp_force
+    if (it_count==0)    write(744,'("  ",i6, E16.2, i6, E16.2, i6, i6, i6, 4D23.7)') it_mab, dcsi_ini, nint(dcsi_ini/delta_z), tmp_dcsi, &
+       nint(tmp_dcsi/delta_z), nint((potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*tmp_factor/delta_z) , nint(noise*sqrt(2.d0*temperature*tmp_factor)/delta_z)  , force_zeta, tmp_force
+  !debug   write(*,*) 'ddd', nint(potist*tmp_factor/delta_z) , nint(ene0*tmp_factor/delta_z),ha_mix*ene_einstein,equit,nint(tmp_force*tmp_factor/delta_z)
+
+
     if (it_count/=0)    write(767,'("  ",i6, 2E16.2, i8, 5D23.7)') it_mab, dcsi,tmp_dcsi, nint(dcsi/delta_z), -(potist-ene_einstein -ene0 - tmp_force )*tmp_factor , the_moise, force_zeta*tmp_factor, tmp_force
 
        average_temp=average_temp+ dabs(tmp_dcsi)
@@ -79,11 +90,11 @@ subroutine langevin_overdamped_zeta()
             it_count = it_count+1
             if (it_temp==10000) then
               write(*,*) 'WLANGEVIN <langevin_overdamped_csi>: Too much rejection, the program will stop'
-              it_stop=1
+!              it_stop=1
               dcsi=dcsi_ini
               go to 11
             end if 
-            go to 10
+!            go to 10
        end if 
 11 continue
   
