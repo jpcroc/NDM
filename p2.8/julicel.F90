@@ -63,7 +63,7 @@ SUBROUTINE calfojulicel
   real(double):: fpnemd(3,imm),fpnemdmoy(3), XijdotF,XildotF,XjldotF
 
   integer::koo,ncelvois,i1,i2,ko1,ko1j,koj
-!  real(double)::
+  !  real(double)::
   REAL(double), dimension(1:3) :: cp, dxp
   rue=rue_pot(ipotentiel)
   fpnemd=0
@@ -107,20 +107,20 @@ SUBROUTINE calfojulicel
      rhoitot=0.
      iti = ityp(i)
      densityi=0.0 ;Eembi=0.0; dEembi=0.0
-!     write(6,*)'I',i
+     !     write(6,*)'I',i
      koo= ielat(i)      
      ncelvois = min(noxyz,27)-1
      ! pour chaque cel. voisine
      loop1cel:   do i1 = 0, ncelvois
         ko1 = ncel(koo,i1)
-!        write(6,*)'celI',ko1
+        !        write(6,*)'celI',ko1
 
-!        cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
+        !        cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
         ! pour chaque atome ds la cel. voisine
         loop1at2: do i2 = 1, nato(ko1)
            j = last(i2,ko1)
            if (i==j)cycle
-!           write(6,*)'J',j
+           !           write(6,*)'J',j
            ! --- Calcul de la densite sur i ---    
            !            write(6,*)'i iti = ',i,iti
 
@@ -135,33 +135,33 @@ SUBROUTINE calfojulicel
 
            itj=ityp(j)
 
-!           if (noxyz.ne.1) then
-!              dxp(1) = cp(1)-xpnp(1,j)
-!              IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
-!              dxp(2) = cp(2)-xpnp(2,j)
-!              IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
-!              dxp(3) = cp(3)-xpnp(3,j)
-!              IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
-!           else
-!              dxp(1) = cp(1)-xpnp(1,j)
-!              dxp(2) = cp(2)-xpnp(2,j)
-!              dxp(3) = cp(3)-xpnp(3,j)
-!              cv(1,1) = dxp(1)
-!              cv(1,2) = dxp(2)
-!              cv(1,3) = dxp(3)
-!              call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
-!              WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-!                 cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-!              END WHERE
-!              call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-!              dxp(1)=cv(1,1)
-!              dxp(2)=cv(1,2)
-!              dxp(3)=cv(1,3)
-!           end if
+           !           if (noxyz.ne.1) then
+           !              dxp(1) = cp(1)-xpnp(1,j)
+           !              IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
+           !              dxp(2) = cp(2)-xpnp(2,j)
+           !              IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
+           !              dxp(3) = cp(3)-xpnp(3,j)
+           !              IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
+           !           else
+           !              dxp(1) = cp(1)-xpnp(1,j)
+           !              dxp(2) = cp(2)-xpnp(2,j)
+           !              dxp(3) = cp(3)-xpnp(3,j)
+           !              cv(1,1) = dxp(1)
+           !              cv(1,2) = dxp(2)
+           !              cv(1,3) = dxp(3)
+           !              call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
+           !              WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
+           !                 cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
+           !              END WHERE
+           !              call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+           !              dxp(1)=cv(1,1)
+           !              dxp(2)=cv(1,2)
+           !              dxp(3)=cv(1,3)
+           !           end if
 
-        c1ij = xpnp(1,i)-xpnp(1,j)
-        c2ij = xpnp(2,i)-xpnp(2,j)
-        c3ij = xpnp(3,i)-xpnp(3,j)
+           c1ij = xpnp(1,i)-xpnp(1,j)
+           c2ij = xpnp(2,i)-xpnp(2,j)
+           c3ij = xpnp(3,i)-xpnp(3,j)
 
 
 
@@ -186,7 +186,7 @@ SUBROUTINE calfojulicel
            if (r2ij>rcut2(ipo(iti,itj))) cycle
 
            rij=sqrt(r2ij)
-!           write(6,*)'i  j   r ',i,j,ipo(iti,itj),rij
+           !           write(6,*)'i  j   r ',i,j,ipo(iti,itj),rij
            k=Int(rij/ktor)
            !       write(6,*)'k ',k
            drk=rij-k*ktor
@@ -216,7 +216,7 @@ SUBROUTINE calfojulicel
      !     end do loopvois
 
      !boucle sur les voisins de i
-!            write(6,*)'i nvi', i,nvi
+!                 write(6,*)'i nvi', i,nvi
      sij(:)=0.
      loopvj1 : do iw=1,nvi
         j=jvi(iw)
@@ -393,6 +393,13 @@ SUBROUTINE calfojulicel
            potisrep=potisrep+Erep
            fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
            fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
+!           if((i==1).or.(j==1))then
+!              write(6,'(A,4I5,3G15.7)')'FF1',i,j,ityp(i),ityp(j),dErep*gradij(1),dErep, gradij(1)
+!              write(6,'(A,3G15.7)')'FF1',dErep*gradij(1),dErep*gradij(2),dErep*gradij(3)
+!              write(6,'(A,I5,3G15.7)')'FF1',i,xp(1,i),xp(2,i),xp(3,i)
+!              write(6,'(A,I5,3G15.7)')'FF1',j,xp(1,j),xp(2,j),xp(3,j)
+!              write(6,*)'FF1'
+!           end if
            if (lnemd) then
               XijdotF=c1ij*Fnemd
               do ic=1,3
@@ -432,6 +439,13 @@ SUBROUTINE calfojulicel
            ! terme standard
            fp(1:3,i)=fp(1:3,i)-dEembi*drhoj*gradij(1:3)
            fp(1:3,j)=fp(1:3,j)+dEembi*drhoj*gradij(1:3)
+!           if((i==1).or.(j==1))then
+!              write(6,'(A,2I5,G15.7)')'FF2', i,j,dEembi*drhoj*gradij(1)
+!              write(6,'(A,3G15.7)')'FF2',dEembi*drhoj*gradij(1),dEembi*drhoj*gradij(2),dEembi*drhoj*gradij(3)
+!              write(6,'(A,I5,3G15.7)')'FF2',i,xp(1,i),xp(2,i),xp(3,i)
+!              write(6,'(A,I5,3G15.7)')'FF2',j,xp(1,j),xp(2,j),xp(3,j)
+!              write(6,'(A)')'FF2'
+!           end if
 
            sig(1:3,1) = sig(1:3,1) -dEembi*drhoj*gradij(1:3)*c1ij/volu
            sig(1:3,2) = sig(1:3,2) -dEembi*drhoj*gradij(1:3)*c2ij/volu
@@ -465,6 +479,13 @@ SUBROUTINE calfojulicel
               aux1=ecrsij(iw)*(1.0+sqrt(sij(iw)/rhoj))
               fp(1:3,i)=fp(1:3,i)-dEembi*aux1*drhoj*gradij(1:3)
               fp(1:3,j)=fp(1:3,j)+dEembi*aux1*drhoj*gradij(1:3)
+!              if((i==1).or.(j==1))then
+!                 write(6,'(A,2I5,G15.7)')'FF3', i,j,dEembi*aux1*drhoj*gradij(1)
+!              write(6,'(A,3G15.7)')'FF3',dEembi*aux1*drhoj*gradij(1),dEembi*aux1*drhoj*gradij(2),dEembi*aux1*drhoj*gradij(3)
+!              write(6,'(A,I5,3G15.7)')'FF3',i,xp(1,i),xp(2,i),xp(3,i)
+ !             write(6,'(A,I5,3G15.7)')'FF3',j,xp(1,j),xp(2,j),xp(3,j)
+ !             write(6,'(A)')'FF3'
+!              end if
 
               sig(1:3,1) = sig(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/volu
               sig(1:3,2) = sig(1:3,2) -dEembi*aux1*drhoj*gradij(1:3)*c2ij/volu
@@ -525,6 +546,15 @@ SUBROUTINE calfojulicel
            fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/ril
            fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
            fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
+!           if((i==1).or.(j==1).or.(l==1))then
+!              write(6,'(A,3I5,2G15.7)')'FF4', i,j,l,aux1*(aux2(1)+aux3(1))/ril,aux1*aux4(1)/rij
+!              write(6,'(A,3G15.7)')'FF4',aux1*(aux2(1)+aux3(1))/ril,aux1*(aux2(2)+aux3(2))/ril,aux1*(aux2(3)+aux3(3))/ril
+!              write(6,'(A,3G15.7)')'FF4',aux1*aux4(1)/rij,aux1*aux4(2)/rij,aux1*aux4(3)/rij
+!              write(6,'(A,I5,3G15.7)')'FF4',i,xp(1,i),xp(2,i),xp(3,i)
+!              write(6,'(A,I5,3G15.7)')'FF4',j,xp(1,j),xp(2,j),xp(3,j)
+!              write(6,'(A,I5,3G15.7)')'FF4',l,xp(1,l),xp(2,l),xp(3,l)
+!              write(6,*)'FF4'
+!           end if
 
 
 
@@ -639,6 +669,15 @@ SUBROUTINE calfojulicel
               fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/rjl
               fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
               fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
+!              if((i==1).or.(j==1).or.(l==1))then
+!                 write(6,'(A,3I5,2G15.7)')'FF5', i,j,l,aux1*(aux2(1)+aux3(1))/rjl,aux1*aux4(1)/rij
+!              write(6,'(A,3G15.7)')'FF5',aux1*(aux2(1)+aux3(1))/rjl,aux1*(aux2(2)+aux3(2))/rjl,aux1*(aux2(3)+aux3(3))/rjl
+!              write(6,'(A,3G15.7)')'FF5',aux1*aux4(1)/rij,aux1*aux4(2)/rij,aux1*aux4(3)/rij
+!              write(6,'(A,I5,3G15.7)')'FF5',i,xp(1,i),xp(2,i),xp(3,i)
+!              write(6,'(A,I5,3G15.7)')'FF5',j,xp(1,j),xp(2,j),xp(3,j)
+!              write(6,'(A,I5,3G15.7)')'FF5',l,xp(1,l),xp(2,l),xp(3,l)
+!              write(6,*)'FF5'
+!              end if
 
               if (lnemd) then
                  XijdotF=c1ij*Fnemd
@@ -723,6 +762,7 @@ SUBROUTINE calfojulicel
   deALLOCATE(xpnp)
 
   !  write(6,*)'f8 ',fp(1,1),fp(2,1),fp(3,1)
+!  stop
   return
 end SUBROUTINE calfojulicel
 

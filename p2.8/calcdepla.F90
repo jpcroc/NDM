@@ -65,9 +65,11 @@ subroutine calcdepla
 
 
   !      write(6,*)'entree dans calcdepla'
-  write (6, *)
-  write (6, *) '----------- Deplacements ----------------'
-  !       write(6,*)'tdepla',tdepla
+  if (rang==0) then
+     write (6, *)
+     write (6, *) '----------- Deplacements ----------------'
+  end if
+!       write(6,*)'tdepla',tdepla
   ndeplatot = 0
   dr2(:ntyp) = 0.0
   ndepla(:ntyp) = 0
@@ -158,6 +160,7 @@ subroutine calcdepla
 
   if (rang==0) then
      write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', it, '  time = ', timel
+        write (6, *) 'nombre total d-atomes deplaces = ', ndeplatot
 
      write (6, *)
      do iti = 1, ntyp
@@ -167,7 +170,7 @@ subroutine calcdepla
         write (6, *) 'nombre d-atomes de type ', iti, ' deplaces = ', ndepla(&
              iti)
      end do
-  endif
+
 
 
   ! ***** Ecriture positions formattees dans un seul fichier *****
@@ -195,10 +198,11 @@ subroutine calcdepla
              indic(i))*1D+8, xp(3,indic(i))*1D+8, indic(i),distdepl(i)
      end do
 #endif
-
+  endif
+end if
      ! Ecriture coordonnees du premier atome frappe toutes les itedepla
      ! iterations
-     if (lcasca) then
+     if (lcasca.and.lfilm) then
 #if(PARA)
         ! Recherche du proc possedant iko
         est_present=0
@@ -230,7 +234,8 @@ subroutine calcdepla
                 xp_iko(3)*1D+8, iko,distdepl(iko)
         end if
      endif
-  endif
+
+
   ! ***** fin ecriture dans un seul fichier positions *****
 
 
@@ -291,8 +296,8 @@ subroutine calcdepla
 
      ! ***** Fin ecriture positions dans plusieurs fichiers *****
   end if
-112 format(a2,1x,3(f10.4,1x),1x,1x,i6,' PKA')
-113 format(a2,1x,3(f10.4,1x),1x,1x,i6,G10.4)
+112 format(a3,1x,3(f10.4,1x),1x,1x,i6,' PKA')
+113 format(a3,1x,3(f10.4,1x),1x,1x,i6,G12.4)
 
 #if(PARA)
   ! liberation des tableaux

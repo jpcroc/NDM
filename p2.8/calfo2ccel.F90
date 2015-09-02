@@ -38,6 +38,7 @@ subroutine calfo2ccel
   real(double) :: potis1_tot, potis2_tot
   real(double) :: deltaF_tot,deltaEpot_tot,deltaEspr_tot,Espr_tot,deltafcomp
   real(double), dimension(3,3) :: sig_tot
+  real(double), dimension(3,3,noxyz) :: sigc_tot
 #endif
 
   !-----------------------------------------------
@@ -360,6 +361,9 @@ subroutine calfo2ccel
   potis2=potis2_tot
   call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   sig=sig_tot
+  call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  sigc=sigc_tot
+
   if(ldesinteg) then
      call MPI_ALLREDUCE(Espr,Espr_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      Espr=Espr_tot

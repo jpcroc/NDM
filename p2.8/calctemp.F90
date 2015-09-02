@@ -29,14 +29,15 @@ subroutine calctemp(temptyp)
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   integer :: ic, i, iti, ko, i2,kx,ky,kz,koo
-  real(double), dimension(ntyp) :: v2 ! ,tempmaxat(ntyp)
-  real(double) :: vpn2,pmc,tat
+  real(double), dimension(ntyp) :: v2  ,tempmaxat(ntyp)
+  real(double) :: vpn2,tat
   real(double), dimension(ntyp,3) :: vx2
   ! ym      real(double), dimension(ntyp,nce) :: v2c
 !  real(double), dimension (:),allocatable ::tempc,tempcm
 #if(PARA)
   real(double), dimension(ntyp) :: v2_glob
   real(double), dimension(ntyp,3) :: vx2_glob
+  real(double), dimension(noxyz)::tempc_tot
 
 #endif
 
@@ -56,7 +57,7 @@ subroutine calctemp(temptyp)
   v2(:ntyp) = 0.0
   vx2(:ntyp,:) = 0.0
 
-!  tempmaxat(:)=0
+  if(ltpcel)tempmaxat(:)=0
 
   do ko = 1, noxyz
 
@@ -74,7 +75,9 @@ subroutine calctemp(temptyp)
         vpn2 = vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
         !       write(6,'(I4,D21.12)')i,vpn2
         v2(ityp(i)) = v2(ityp(i))+vpn2
-!        if(tempmaxat(ityp(i)).lt.vpn2)tempmaxat(ityp(i))=vpn2
+        if (ltpcel) then
+           if(tempmaxat(ityp(i)).lt.vpn2)tempmaxat(ityp(i))=vpn2
+        end if
         vx2(ityp(i),:) = vx2(ityp(i),:)+vp(:,i)**2
      if ((ltpcel).or.(tempstopcel.gt.0)) then
            tat=vpn2*cm(ityp(i))/(3.0*bk)
@@ -90,6 +93,8 @@ subroutine calctemp(temptyp)
      v2=v2_glob
      call MPI_ALLREDUCE(vx2(1:ntyp,1:3),vx2_glob(1:ntyp,1:3),ntyp*3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      vx2=vx2_glob
+     call MPI_ALLREDUCE(tempc,tempc_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     tempc=tempc_tot
 #endif
 
 
@@ -100,8 +105,10 @@ subroutine calctemp(temptyp)
         !            write(6,*)'iti' ,iti
         if (na(iti)==0) cycle
         temptyp(iti) = v2(iti)*cm(iti)/(3.0*na(iti)*bk)
-!        tempmaxat(iti)=tempmaxat(iti)*cm(iti)/(3.0*bk)
-!        write(6,*)'tempmaxat(iti)',iti,tempmaxat(iti)
+!        if (ltpcel) then 
+!           tempmaxat(iti)=tempmaxat(iti)*cm(iti)/(3.0*bk)
+!           write(6,*)'tempmaxat(iti)',iti,tempmaxat(iti)
+!        end if
         kine = kine+v2(iti)*cm(iti)/2.0
         temp = temp+temptyp(iti)*na(iti)
      end do
@@ -118,18 +125,18 @@ subroutine calctemp(temptyp)
 
      if ((ltpcel).or.(tempstopcel.gt.0)) then
         maxTcel=0.
-     	if (ltpcel) then
-           write (6, *)
-           write (6, *) '----------valeurs par cellules------------'
-        endif
+!     	if (ltpcel) then
+!           write (6, *)
+!           write (6, *) '----------valeurs par cellules------------'
+!        endif
 
         do kx=0,nox-1
            do ky=0,noy-1
               do kz=0,noz-1
                  ko=1+kx+nox*(ky+noy*kz)
-                 pmc=0.0
+!                 pmc=0.0
                  !                              write(6,*)'dans la celulle ',ko
-     	if (ltpcel)  write(6,'(A,I7,I5,3I4,2F12.2)')'CEL-TEMP ', it,ko,kx,ky,kz,tempc(ko),tempcm(ko)
+!     	if (ltpcel)  write(6,'(A,I7,I5,3I4,2F12.2)')'CEL-TEMP ', it,ko,kx,ky,kz,tempc(ko),tempcm(ko)
                  maxTcel=max(maxTcel,tempc(ko))
                  
                  !                              write (6, '(A11,I4,A15,F12.2)') 'Cellule: ', ko, &
@@ -137,7 +144,7 @@ subroutine calctemp(temptyp)
               enddo
            end do
         end do
-        write(6,*)'CEL-TEMPM',maxTcel
+!        write(6,*)'CEL-TEMPM',maxTcel
 !        deallocate (tempc)
      endif
 

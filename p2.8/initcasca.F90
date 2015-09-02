@@ -8,7 +8,10 @@ subroutine initcasca
   use var_pot
   use tab_imm_m
   ! *******************************************************************
-
+#if(PARA)
+  use mod_mpi
+#endif
+ 
 
   implicit none
   !-----------------------------------------------
@@ -23,36 +26,64 @@ subroutine initcasca
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: i, ic, i1
+  integer :: i, ic, i1,ikoloc
   real(double) :: z1, z2, z3, t1, t2, t3, znorm, aux1
 
   integer :: iti, expos, imax
   real(double) :: tifac1, tifac2, lts, tseuil, vmax2
   real(double), dimension(imm) :: vpmod2
   real(double) :: masstot, vpi(3)
+  
+  integer :: seed_size,isl
+  integer, dimension(:), allocatable :: iseedt
+
+#if(PARA)
+  real(double), dimension(3) :: max_loc,max_glob,max_typ
+  real(double), dimension(1) :: max_typl,max_typG
+  integer :: ityp_max
+#endif
+
+#if PARA
+  ikoloc=0
+  do i=1,im
+     if (num_at_glob(i)==iko) ikoloc=i
+  end do
+  
+#else
+ikoloc=iko
+#endif
 
   !-----------------------------------------------
   ! --- Translation de l'atome IKO au centre de la boite de simulation ---
-  if (rang==0) then
+  if (ikoloc.gt.0) then
      write (6, *) 'initialisation de la cascade'
-     write(6,*)'ATOME ',iko, '  TYPE ',ityp(iko)
-     if (iko>im) then
+     write(6,*)'ATOME ',iko, '  TYPE ',ityp(ikoloc)
+     if (iko>im_glob) then
         write (6, *) 'wrong input cascade iko eko ', iko, eko
         stop
      endif
   endif                                      ! rang=0
 
+
+#if PARA
+#else
+  
+  znorm=sqrt(xx0**2+yy0**2+zz0**2)
+  if (znorm==0) then
+     xx0=0.25 ; yy0=0.25 ; zz0=0.25
+  end if
+
   call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
   call cryst_to_cart (imm, ax, bg, -1)    !cart vers cryst
-  !debug write(6,*)xp(1,iko),xx0
+  !debug write(6,*)xp(1,ikoloc),xx0
   if (ltranche) then
      t1 = 0.
      t2 = 0.
      t3 = 0.
   else
-     t1 = xp(1,iko)-xx0
-     t2 = xp(2,iko)-yy0
-     t3 = xp(3,iko)-zz0
+     t1 = xp(1,ikoloc)-xx0
+     t2 = xp(2,ikoloc)-yy0
+     t3 = xp(3,ikoloc)-zz0
   endif
 
   !      write(6,*)'t1 t2 t3 zl', t1,t2,t3,zl(1),zl(2),zl(3)
@@ -68,28 +99,78 @@ subroutine initcasca
 
   call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
   call cryst_to_cart (imm, ax, at, 1)     !cryst vers cart
-  write(6,*)xp(1,iko)
-  !                                                !Conditions periodiques
   if (lperiod)       call period 
+#endif
+
+!  write(6,*)xp(1,iko)
+  !                                                !Conditions periodiques
+
   ! --- Fin de la translation ---
 
-580 continue
   znorm = sqrt(xko**2+yko**2+zko**2)
-  z1 = xko/znorm
-  z2 = yko/znorm
-  z3 = zko/znorm
+
+  if (znorm==0)then
+     if (parallele) then
+        write(6,*) 'tirage al�atoire projectile pas programm�'
+        stop
+     endif
+        write(6,*) 'tirage al�atoire xko '
+        call random_seed(size=seed_size)
+        allocate(iseedt(seed_size))
+        iseedt = 0
+!        if (iseed==0) then
+           call system_clock (count=isl)
+           write(6,*)'ISLxko',isl
+           iseedt(1)=isl
+!        else
+!           iseedt(1)=iseed
+!        end if
+
+        call    random_seed (put=iseedt)
+        deallocate(iseedt)
+        !        do i=1,100
+        call random_number(xko)
+        call random_number(yko)
+        call random_number(zko)
+        znorm = sqrt(xko**2+yko**2+zko**2)
+     end if
+
+     z1 = xko/znorm
+     z2 = yko/znorm
+     z3 = zko/znorm
+
   ! MPI
   if (rang==0) then
      write (6, 576) z1, z2, z3
 576  format('Direction du projectile ',3(f8.4,1x))
-     write (6, 577) xp(1:3,iko)*1.0d8     
-577  format('Positions initiales du projectile (A) ',3(f8.4,1x))
-    write(6,'("Positions initiales du projectile (CRYST)",3(f8.4,1x))') xx0,yy0,zz0
-
   endif
 
-  ! --- Modification de la vitesse de l'atome accelere ---
+577  format('Positions initiales du projectile (A) ',3(f8.4,1x))
+#if PARA
+  ikoloc=0
+  do i=1,im
+     if (num_at_glob(i)==iko) ikoloc=i
+  end do
+  
+  if (ikoloc.gt.0) then
+     write(6,*)'IKO dans processeur', rang,ikoloc
+     write (6, 577) xp(1:3,ikoloc)*1.0d8     
 
+     aux1 = sqrt(eko*ecgs*2./cm(ityp(ikoloc)))    !Vitesse en cgs
+     vp(1,ikoloc) = vp(1,ikoloc)+z1*aux1
+     vp(2,ikoloc) = vp(2,ikoloc)+z2*aux1
+     vp(3,ikoloc) = vp(3,ikoloc)+z3*aux1
+575  continue
+     xpp(1,ikoloc) = xp(1,ikoloc)-vp(1,ikoloc)*tstep
+     xpp(2,ikoloc) = xp(2,ikoloc)-vp(2,ikoloc)*tstep
+     xpp(3,ikoloc) = xp(3,ikoloc)-vp(3,ikoloc)*tstep
+     !                                                !Conditions periodiques
+  
+  end if
+
+#else
+    write (6, 577) xp(1:3,iko)*1.0d8     
+    write(6,'("Positions initiales du projectile (CRYST)",3(f8.4,1x))') xx0,yy0,zz0
   aux1 = sqrt(eko*ecgs*2./cm(ityp(iko)))    !Vitesse en cgs
   vp(1,iko) = vp(1,iko)+z1*aux1
   vp(2,iko) = vp(2,iko)+z2*aux1
@@ -119,9 +200,19 @@ subroutine initcasca
 
 
   if (lperiod)       call period 
-578 continue
 
-if (parallele)  return
+#endif
+
+  ! --- Modification de la vitesse de l'atome accelere ---
+
+
+
+!if (parallele)  return
+
+
+
+
+
 
   ! Choix du pas en temps initial selon le vmax
 !goto 121
@@ -137,9 +228,23 @@ if (parallele)  return
 
   vmax = sqrt(vmax2)
 
+#if(PARA)
+  max_loc(1)=vmax
+  max_loc(2)=rang
+  max_loc(3)=0.5+ityp(imax)
+  call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_WORLD,ierr)
+  vmax = max_glob(1)
+  ityp_max=int(max_glob(3))
+
+#else
   if (rang==0) then
      write (6, *) 'Vitesse maximale sur I=', imax, vmax
   endif
+
+#endif
+
+
+
 
   ! -> tseuil a diminuer pour eviter les derives en energies et temperature
   tseuil = 2.0D-10/(1.0D0*vmax)
@@ -193,10 +298,6 @@ if (parallele)  return
            xpp(2,i) = xp(2,i)-vp(2,i)*tstep
            xpp(3,i) = xp(3,i)-vp(3,i)*tstep
         end do
-     else
-        xpp(1,iko) = xp(1,iko)-vp(1,iko)*tstep
-        xpp(2,iko) = xp(2,iko)-vp(2,iko)*tstep
-        xpp(3,iko) = xp(3,iko)-vp(3,iko)*tstep
      endif
   endif
 121 continue

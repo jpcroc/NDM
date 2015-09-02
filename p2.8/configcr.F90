@@ -33,6 +33,8 @@ subroutine configcr(xpcr,ityp,lrescale,itypcr)
   real(double) :: tirax, tiray, tiraz, x1, x2, x3, a1, a2, a3, c1, c2, c3, r2
   real(double) :: rsep2,atcr(3,3),zlcr(3),bgcr(3,3)
   character :: fnamcin*80, fnamgin*80
+  integer, dimension(:),pointer     :: ibuffer,num_at_globcr
+  real(double), dimension(:,:),pointer    :: buffer
   !              real(double) drand
 
 
@@ -41,6 +43,9 @@ subroutine configcr(xpcr,ityp,lrescale,itypcr)
   ! open du fichier .cin
 
   !APARA
+  allocate (ibuffer(imm_glob))
+  allocate (num_at_globcr(imm_glob))
+  allocate (buffer(3,imm_glob))
 
   lucin = 93
   close (lucin)
@@ -86,7 +91,33 @@ subroutine configcr(xpcr,ityp,lrescale,itypcr)
     ! stop
   endif
 
-  read (lucin) itypcr                       !types
+  read (lucin) ibuffer                       !types
+
+  read (lucin) buffer !xp
+
+!  formcin:select case (fmt_cin)
+!  case (0) formcin
+!     do i=1,im
+!        num_at_globcr(i) = i
+!     enddo
+ ! case(1) formcin
+     read (lucin) num_at_globcr
+ ! case default  formcin
+ !    if (rang.eq.0) write(6,*) 'precisez le format fmt_cin'
+ !    call arret_ndm
+ ! end select formcin
+  
+
+
+
+
+
+     do i=1,im
+!        write(6,*)'i, num_at_glob',i,num_at_glob(i),buffer(1,i)
+        itypcr(num_at_globcr(i))=ibuffer(i)
+        xpcr(:,num_at_globcr(i))=buffer(:,i)
+     end do
+
   do i=1,min(im,imcr)
      if (ityp(i).ne.itypcr(i)) write(6,*)i,ityp(i),itypcr(i)
   end do
@@ -95,7 +126,7 @@ subroutine configcr(xpcr,ityp,lrescale,itypcr)
 !     stop
   endif
 
-  read (lucin) xpcr
+
   write(6,*)'lu'
   if (icintype>=2) then
      if (lrescale) then
@@ -135,6 +166,10 @@ subroutine configcr(xpcr,ityp,lrescale,itypcr)
         end do
      end if
   end if
+
+
   return
 end subroutine configcr
+
+
 

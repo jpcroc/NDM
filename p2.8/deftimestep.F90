@@ -26,13 +26,14 @@ subroutine deftimestep
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: i, iti, ic, expos, imax
+  integer :: i, iti, ic, expos, imax,ikoloc
   real(double) :: tifac1, tifac2, lts, tseuil, vmax2
   real(double), dimension(imm) :: vpmod2
   real(double) :: tmaxv, tmod, vpmod
   real(double) :: tv1
 #if(PARA)
   real(double), dimension(3) :: max_loc,max_glob,max_typ
+  real(double), dimension(1) :: max_typl,max_typG
   integer :: ityp_max
 #endif
 
@@ -62,22 +63,15 @@ subroutine deftimestep
 #if(PARA)
   max_loc(1)=vmax2
   max_loc(2)=myid
-  max_loc(3)=ityp(imax)
+!  max_loc(3)=0.5+ityp(imax)
   call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_WORLD,ierr)
   vmax2 = max_glob(1)
-  ityp_max=int(max_loc(3))
+!  ityp_max=int(max_glob(3))
 
-!  if (int(max_glob(2)).eq.myid) then
-!     call MPI_SEND(ityp(imax),1,MPI_INTEGER,0,1000,MPI_COMM_WORLD,ierr)
-!     call MPI_SEND(num_at_glob(imax),1,MPI_INTEGER,0,1001,MPI_COMM_WORLD,ierr)
-!  elseif (myid.eq.0) then
-!     call MPI_RECV(ityp_max,1,MPI_INTEGER,int(max_glob(2)),1000,MPI_COMM_WORLD,status,ierr)
-!     call MPI_RECV(imax,1,MPI_INTEGER,int(max_glob(2)),1001,MPI_COMM_WORLD,status,ierr)
-     tmaxv = 1./3./bk*cm(ityp_max)*vmax2
-!  endif
 
-!  call MPI_BCAST(tmaxv,1,NDM_MPI_REAL_DOUBLE,0,MPI_COMM_WORLD,ierr)
 
+!     tmaxv = 1./3./bk*cm(ityp_max)*vmax2
+tmaxv=0
 #else
   tmaxv = 1./3./bk*cm(ityp(imax))*vmax2
 #endif
@@ -92,12 +86,23 @@ subroutine deftimestep
   endif                                      ! fin rang=0
 
   if (lcasca) then
-     !          VPMOD2=VP(1,IKO)**2+VP(2,IKO)**2+VP(3,IKO)**2
-     tmod = 1./3./bk*cm(ityp(iko))*vpmod2(iko)
-     vpmod = sqrt(vpmod2(iko))
+#if PARA
+  ikoloc=0
+  do i=1,im
+     if (num_at_glob(i)==iko) ikoloc=i
+  end do
+  
+#else
+ikoloc=iko
+#endif
+
+  if (ikoloc.gt.0) then
+     tmod = 1./3./bk*cm(ityp(ikoloc))*vpmod2(ikoloc)
+     vpmod = sqrt(vpmod2(ikoloc))
      if (rang==0) write (6, *) 'Vitesse du projectile =', it, iko, vpmod, &
           tmod
   endif
+endif	
 
   ! *** Technique anti-bug ! ***
   ! -> tseuil a diminuer pour eviter les derives en energies et temperature

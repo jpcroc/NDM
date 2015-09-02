@@ -46,6 +46,8 @@ SUBROUTINE calfoeamcel
   real(double) ::  potisglue_tot
   real(double) ::  potisrep_tot
   real(double), dimension(3,3) :: sig_tot
+  real(double), dimension(3,3,noxyz) :: sigc_tot
+
 #endif
 
   real(double) :: xpnp(3,imm)
@@ -359,6 +361,8 @@ SUBROUTINE calfoeamcel
   potisglue=potisglue_tot
   call MPI_ALLREDUCE(sig,      sig_tot,      9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   sig=sig_tot
+  call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  sigc=sigc_tot
 #endif
 
   potiseam=potisglue+potisrep

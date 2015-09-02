@@ -110,7 +110,7 @@ subroutine config
 
         read (lucin, err=456) icintype
 
-        if (rang==0) write (6, *) 'type de fichier .cin : ', icintype
+        if (rang==0) write (6, *) 'config type de fichier .cin : ', icintype
         if (icintype>3.or.icintype<0) then
            write (6, *) rang, 'wrong icintype'
            call arret_ndm
@@ -558,10 +558,10 @@ subroutine config
 #if(PARA)
         i_glob = 0
 #endif
-        do icell = 1, imcell
-           do ia = 1,la
-              do ib = 1,lb
-                 do ic = 1,lc
+        do ia = 1,la
+           do ib = 1,lb
+              do ic = 1,lc
+                 do icell = 1, imcell
                     i  = i + 1
                     im = im + 1
                     xp(1,i) = (xc(icell,1)+float(ia-1))/float(la)

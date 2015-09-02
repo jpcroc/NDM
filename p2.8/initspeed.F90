@@ -441,13 +441,13 @@ subroutine bruit_xp
           write(6,*)'depla init Tempdeplainit',tempdeplainit,'debyetemp= ',debyetemp
 
           do iti=1,ntyp
-             sd=sqrt((tempdeplainit*hbar**2)/(bk*cm(iti)*debyetemp**2))
+             sd=sqrt((3*tempdeplainit*hbar**2)/(bk*cm(iti)*debyetemp**2))
              write(6,*)'sd2 de iti',sd*sd,iti
           end do
        end if
 !       decx=0
        do i=1,im
-          sd= sqrt((tempdeplainit*hbar**2)/(bk*cm(ityp(i))*debyetemp**2))
+          sd= sqrt((3*tempdeplainit*hbar**2)/(bk*cm(ityp(i))*debyetemp**2))
 
           do ic=1,3
              call gaussianrand(grnd)

@@ -32,13 +32,13 @@ subroutine calfo
   !-----------------------------------------------
   real(double), dimension(3) :: fptot
   integer :: i,ilocal,ipot
-  real(double)::vn,ic,v1,f1
+  real(double)::vn,ic,v1,f1,ekin
   integer::nv1
 
 #if(PARA)
   real(double), dimension(3,3) :: sig_tot,sigkine_tot
   real(double),dimension (3):: fptot_tot
-  real(double)::elosselectot,elosselec1tot
+!  real(double)::elosselectot,elosselec1tot
 #endif
 !   if (rang==0) write(6,*) 'ldemintab',ldemitab
   sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
@@ -204,7 +204,9 @@ subroutine calfo
      do i=1,im
 
         vn= vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
-        if (vn.ne.0) then
+	ekin=0.5*erg2ev*vn*cm(ityp(i))
+        if ((vn.ne.0).and.(ekin.gt.1)) then
+!	write(6,*)'RG',rang,i,ekin
            vn=sqrt(vn)
            v1=elstopforce(ityp(i),1,1)
 !           write(6,*)v1,vn
@@ -221,22 +223,27 @@ subroutine calfo
            end if
            do ic=1,3
               fp(ic,i)=fp(ic,i)-vp(ic,i)*f1/vn
-              Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(xp(ic,i)-xpp(ic,i))*erg2ev
-!              if (i==iko)then 
+              Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)*erg2ev
+              if (num_at_glob(i)==iko)then 
 
 !                write(6,*)'elfp',fp(ic,i)
-                 Elosselec1=Elosselec1+(vp(ic,i)*f1/vn)*(xp(ic,i)-xpp(ic,i))*erg2ev
-!              end if
-              end do
+                 Elosselec1=Elosselec1+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)*erg2ev
+              end if
+	      end do
 !                 write (6,*)'felstop',f1,vn                
            end if
 
-        end do
+        end do	
+!	write(6,*)'RG el',rang,elosselec,elosselec1
 #if(PARA)
-     call MPI_ALLREDUCE(elosselectot,elosselec,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-     elosselec=elosselectot
-     call MPI_ALLREDUCE(elosselec1tot,elosselec1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-     elosselec1=elosselec1tot
+     elosselectot=0
+     elosselectot1=0
+     call MPI_ALLREDUCE(elosselec,elosselectot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(elosselec1,elosselectot1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+#else
+     elosselectot=elosselec
+     elosselectot1=elosselec1
+     
 #endif
 
 
@@ -246,9 +253,10 @@ subroutine calfo
 
 
 
-
-
-
+!do i=1,im
+!   write(96,'(2I3,6G15.7)')i,ityp(i),xp(1,i),xp(2,i),xp(3,i),fp(1,i),fp(2,i),fp(3,i)
+!end do
+!stop
 
 
 

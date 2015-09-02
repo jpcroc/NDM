@@ -53,7 +53,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax
+       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils
 
 
   !
@@ -314,7 +314,7 @@ subroutine readdm
   ngrdel=500
 
   timemax=1d20
-
+  tpseuils(:)=0 ! 1:Tmin; 2:abs(T') ; 3: abs(T'') ; 1:abs(P); 2:abs(P') ; 3: abs(P'')
 
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -747,22 +747,22 @@ end if
   if (lcasca) then
      read (ludin, *) iko, eko, xko, yko, zko , xx0, yy0, zz0
      if (lrestart) lcasca=.false.
-     if (iko>imm .or. eko<=0.0) then
-        if (rang==0) write (6, *) rang,'wrong input cascade iko eko ', iko, eko
-        call arret_ndm
-     endif
      !     xx0=xx0*1.D-8
      !     yy0=yy0*1.D-8
      !     zz0=zz0*1.D-8
      if (ibrake.gt.0) then
-        write(6,*)'electronic stopping according to elstop.in from MDrange'
+if(rang==0) then 
+       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+endif
      end if
   endif
 
-  if ((ibrake.gt.0).and.(lcasca==.false.)) then
-     write(6,*)'electronic slowing for cascade only, no ?'
-     stop
-  end if
+
 
   if (lHcyl) then
      read (ludin,*) Ecyl, pc(1), pc(2), pc(3), vdc(1), vdc(2), vdc(3), rayonc, lgc 
@@ -788,7 +788,7 @@ end if
      if (iteangle > 0) nfda = 0
   endif
 
-  if (itedepla.gt.0) lfilm=.true.
+!  if (itedepla.gt.0) lfilm=.true.
   if (lfilm) then
      if(rang==0) then
         if(rang==0)         open(unit=lufilm, file='film', status='unknown')
@@ -1001,7 +1001,7 @@ end if
     end if
   end if
 
-
+  if (itetemp2==-1) itetemp2=itetemp
   if (rang==0) write(6,*)
   if (rang==0) write (6, *) '     ANALYSES '
   if (rang==0) write (6, *) 'itetemp=', itetemp, ' itesigma=', itesigma
@@ -1038,8 +1038,8 @@ end if
 
   if (ttol>0.)  write(6,*) ' ttol=', ttol
   if (tfroi>0.) write(6,*) ' tfroi=' ,tfroi
-  if (tempstop>0.) write(6,*)' tempstop=', tempstop
-  if (tfcou>0.)         write (6, '(A,F10.1,A,F10.1,A,F10.1)') 'tfcou=', tfcou, ' epcou=', &
+  if ((tempstop>0.).and.(rang==0)) write(6,*)' tempstop=', tempstop
+  if ((tfcou>0.).and.(rang==0))         write (6, '(A,F10.1,A,F10.1,A,F10.1)') 'tfcou=', tfcou, ' epcou=', &
        epcou*1D+8
   if (tcooling>0.) write(6,*)' tcooling=', tcooling
 

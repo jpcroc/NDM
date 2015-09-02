@@ -78,8 +78,7 @@ contains
 
     call Pextension(it,extension,lenfn)
     lurasmol=837
-    open(lurasmol, file='SiC.'//extension(1:lenfn)//'.mol', form='formatted', &
-         status='unknown')
+    open(lurasmol, file='SiC.'//extension(1:lenfn)//'.mol', form='formatted',status='unknown')
 
 
 

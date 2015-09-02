@@ -110,7 +110,7 @@ subroutine rasmol(itapp)
      !if(itapp==0) open (file='filmtot.mol',unit=47)
      !      write (47, 134) im
      !      write (47, *) 'IT =', itapp, '    Time = ', timel
-   end if
+  end if
    if (ivisu==3)  call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
 #if(PARA)
   ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
@@ -182,7 +182,13 @@ subroutine rasmol(itapp)
                  !write (luvisu, 135) ty(ityp(i)),xp1, xp2, xp3
                  select case (ivisu)
                  case (1)
-                   write (luvisu, 135) ty(ityp(i)),xp1, xp2, xp3
+#if(PARA)
+                 write (luvisu, 135)  ty(ityp(i)),xp1, xp2, xp3,num_at_glob(i)
+#else
+                 write (luvisu, 135)  ty(ityp(i)),xp1, xp2, xp3,i
+#endif
+
+!                   write (luvisu, 135) ty(ityp(i)),xp1, xp2, xp3
                  case (2)
                    ! cubic case
 !!$                   xp1 = xp1 + 0.5

@@ -51,6 +51,7 @@ subroutine force_tersoff_cel
   real(double), dimension(3)   :: jq_tot
   real(double), dimension(3,3) :: sig_tot
   real(double) :: potisTersoff_tot
+  real(double), dimension(3,3,noxyz) :: sigc_tot
 #endif
   real(double):: coupR(npair)
 
@@ -367,7 +368,10 @@ subroutine force_tersoff_cel
   !     call MPI_ALLREDUCE(jq,    jq_tot,    3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   !     jq=jq_tot
   call MPI_ALLREDUCE(sig,   sig_tot,   9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-  sig=sig_tot
+  sig=sig_tot  
+  call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  sigc=sigc_tot
+
 #endif
 
 

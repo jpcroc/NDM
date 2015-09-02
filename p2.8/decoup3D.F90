@@ -1,4 +1,4 @@
-subroutine decoupage(nbr_cpu)
+subroutine decoupage(nbr_cpuIN)
 
 #if(PARA)
   use mod_mpi
@@ -10,7 +10,7 @@ subroutine decoupage(nbr_cpu)
   implicit none
 
   !------------------
-  integer :: nbr_cpu !Egal aussi au nombre de zone qu'on découpera dans la boite
+  integer :: nbr_cpuIN !Egal aussi au nombre de zone qu'on dï¿½coupera dans la boite
 
   integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
   integer :: num_sol !iteration du decoupage possible
@@ -39,7 +39,7 @@ subroutine decoupage(nbr_cpu)
   integer :: num_cpu
   integer :: kx,ky,kz,koo
   integer :: cellules_max
-  integer :: imm_loc
+  integer :: imm_loc,nbr_cpu
 
   !------------------
 
@@ -48,6 +48,17 @@ subroutine decoupage(nbr_cpu)
 
   !------------------
   !Allocation des tableaux
+
+
+     
+#ifdef DECOUP
+loop1:     do nbr_cpu=1,nbr_cpuIN
+
+#else
+        nbr_cpu=nbr_cpuIN
+#endif
+    
+ 
 
   nb_sol = 0
 
@@ -116,7 +127,19 @@ subroutine decoupage(nbr_cpu)
         print *,'!!! nx / ny / nz / nb_cpu :',nox,noy,noz,nbr_cpu
         print *,'!!! Arret du programme !!!'
      endif
+#ifndef DECOUP
      call arret_ndm
+#else
+  deallocate(decoup)
+  deallocate(specifs)
+
+  deallocate(res_cpu)
+  deallocate(coord_min)
+  deallocate(coord_max)
+
+  cycle loop1
+#endif
+
   endif
 
   if (rang==0) print *,'Nbre de solutions possibles : ',nb_sol
@@ -164,7 +187,7 @@ subroutine decoupage(nbr_cpu)
      if (specifs(num_sol,3)>specifs(solution,3)) solution = num_sol
   enddo
 
-  !if (rang==0) print *,'Le cas choisit :',decoup(solution,1), decoup(solution,2), decoup(solution,3)
+  if (rang==0) write(6,'(A,4I5,F10.4)')'LE MEILLEUR DECOUPAGE :',nbr_cpu, decoup(solution,1), decoup(solution,2), decoup(solution,3),specifs(solution,3)
 
   !Calcul des xmin, ymin, zmin pour chaque decoupage
   tailleminx = int(nox/decoup(solution,1))
@@ -296,6 +319,26 @@ subroutine decoupage(nbr_cpu)
   nb_cell_y= cell_finy - cell_deby + 1
   nb_cell_z= cell_finz - cell_debz + 1
 #endif
+#endif
+
+#ifdef DECOUP
+  deallocate(decoup)
+  deallocate(specifs)
+
+  deallocate(res_cpu)
+  deallocate(coord_min)
+  deallocate(coord_max)
+
+#if(PARA)
+  deallocate(proc_cell)
+#endif
+
+enddo loop1
+
+
+
+#else
+!        nbr_cpul=nbr_cpuIN
 #endif
 
  

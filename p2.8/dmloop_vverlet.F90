@@ -17,6 +17,11 @@ subroutine dmloop_vverlet
   implicit none
  integer::ilocal
 real(double) sigkine_tot(3,3)
+#if(PARA)
+  ! declarations supplementaires pour MPI
+  real(double), dimension(3,3,noxyz) :: sigc_tot
+
+#endif
 
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
@@ -29,6 +34,7 @@ real(double) sigkine_tot(3,3)
 #endif
 
   if (lsuivinonpbc) call init_suivinonpbc()
+!  write(6,*)'RG i ',rang,it
   ! Appel de la routine generale des forces
   call calfo 
 
@@ -41,7 +47,7 @@ real(double) sigkine_tot(3,3)
   
   
   call dyn_vverlet
-
+!  write(6,*)'RG i ',rang,it
   ! calcul de sigtot
   !if (lpr==.false.) then
   sigkine=0.
@@ -89,7 +95,10 @@ real(double) sigkine_tot(3,3)
      sigtyp=sigtyp_loc
      call MPI_ALLREDUCE(sigtyptyp,sigtyptyp_loc,9*ntyp*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      sigtyptyp=sigtyptyp_loc
+
   end if
+  call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  sigc=sigc_tot
 #endif
   sigtot = sigkine+sig
 

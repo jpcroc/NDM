@@ -321,21 +321,23 @@ rang=rangph
 
   if (lcasca) then
      call initcasca 
-     if (rang==0) then
+#if PARA
+#else
+
         if (lfilm) then
            write (lufilmpaf, *) '1'
            write (lufilmpaf, *) 'IT ', '0 ', 'time      0.'
-           !            call type (ityp(iko))
            write (lufilmpaf, 114) 'Pb ', xp(1,iko)*1D+8, xp(2,iko)*1D+8, xp(3&
                 ,iko)*1D+8, iko
         endif
 114     format(a3,1x,3(f10.4,1x),i5)
+#endif
         if(iteanapos>0)then
            itapp=0
            call sauveposition (itapp)
         end if
+        
 
-     end if                                  !  fin rang=0 
 
 
 

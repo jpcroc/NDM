@@ -99,7 +99,7 @@ subroutine controle
   if (itetemp>0) then
      if (mod(it,itetemp)==0) then
         if (temp<=tempstop) then
-           write (6, *) 'temperature < tempstop '
+	if (rang==0)  write (6, *) 'temperature < tempstop '
            call endrun
            call DeallocateAll
 

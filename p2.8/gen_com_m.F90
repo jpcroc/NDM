@@ -148,7 +148,7 @@ module gen_com_m
   logical :: lposmoy ! ecrit à la fin la position moyenne des atomes
   real(double) :: tdepla, tdepla2 ! seuils de deplacement
   logical :: lfilm, linstantrdf,linstantfda, lrestart, ltpcel, lfilmext !film, RDF, restart, moyenne par cel
-
+  real*8,dimension(4)::tpseuils ! 1:Tmin; 2:abs(T') ; ; 3:abs(P); 4:abs(P')
   !Correlations et Cie
   logical :: lcorrelvp ! ecriture de l'autocorrelation des vitesses*Masses
   logical :: lcalcjq
@@ -190,6 +190,7 @@ module gen_com_m
   integer::ibrake   ! electronic slowing in cascades
   integer::ngrdel
   real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
+  real(double):: elosselectot,elosselectot1 ! electronic losses for all atoms ; the PKA
   real(double),pointer::elstopforce(:,:,:)
 
 
@@ -349,7 +350,8 @@ module gen_com_m
 !      definis dans le fichier .din
 ! ----------------------------------------------------------------------------------
   
-  real(double), dimension (:),allocatable ::tempc,tempcm
+  real(double), dimension (:),allocatable ::tempc,tempcm,celpm1,tm1,celpp,tcp,pmc
+  logical, dimension (:),allocatable ::lprtcel(:)
 
 
 !ZBL 

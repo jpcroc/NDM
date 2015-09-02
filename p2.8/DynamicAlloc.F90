@@ -21,6 +21,18 @@ subroutine DynamicalAllocationCell
   if((ltpcel==.true.).or.(tempstopcel.gt.0)) then
      allocate (tempc(noxyz))
      allocate (tempcm(noxyz))
+        allocate(celpm1(noxyz))
+!        allocate(celpm2(noxyz))
+        allocate(tm1(noxyz))
+!        allocate(tm2(noxyz))
+        allocate(celpp(noxyz))
+!        allocate(celpp2(noxyz))
+        allocate(tcp(noxyz))
+!        allocate(tcp2(noxyz))
+        allocate(pmc(noxyz))
+
+        allocate (lprtcel(noxyz))
+
   end if
 end subroutine DynamicalAllocationCell
 

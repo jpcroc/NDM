@@ -35,7 +35,6 @@ OBJS_MOD=   T_kind_param_m.o\
         caltabtcr.o \
         calpo_ew.o \
         anasic.o \
-        initeloss.o \
         modules.o 
 
 
@@ -53,6 +52,8 @@ OBJS_PARAPH=   init_MPI_phondy.o
 
 OBJS_SEQ=	anapos.o \
 	work_cgII.o \
+        DynamicAlloc.o\
+        initeloss.o \
 	alloc_typ.o \
         defcdp.o \
         fcc.o \
@@ -128,7 +129,6 @@ OBJS_SEQ=	anapos.o \
         calcdepla.o \
         config.o \
         readdm.o \
-        DynamicAlloc.o\
         calfow.o\
         dmloop_vverlet.o\
         dmloop_lpr.o\
@@ -247,8 +247,8 @@ LIBMAB=libmab.a
 
 
 ${BIN}/rundm90 : ${DEP} 
-	${LD} -o ${BIN}/rundm90${EXT}  ${F90FLAGS} ${LDFLAGS} ${OBJS} ${LIBRARY}
-	rm -rf ${DIREXT}
+	${LD} -o ${BIN}/rundm90${EXT}${EXT2}  ${F90FLAGS} ${LDFLAGS} ${OBJS} ${LIBRARY}
+#	rm -rf ${DIREXT}
 
 
 $(LIBART): 
