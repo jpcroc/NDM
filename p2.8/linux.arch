@@ -8,31 +8,27 @@ ifdef PARA
  F90      = mpif90
  CPPFLAGS = -C -P -traditional -DPARA
  EXT      = _para
- #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
- #F90FLAGS = -O0 -g -C
   F90FLAGS = -O3 
 
 else
  # Version sequentielle
- #
-#version tantale
-# F90 = pgf90#
-#version platine
-# F90 = /export/TMP/openmpi-1.1.4/bin/mpif90
+
 F90 = ifort
-#F90 = f95
-# CPPFLAGS = -C -P -traditional
-# EXT      = _5
-#version SRMP
- CPPFLAGS = -C -E -P -traditional -nostdinc
+
+ CPPFLAGS = -C -E -P -traditional
+EXT      = 
+
+#F90FLAGS = -O3  -convert big_endian 
+F90FLAGS = -O3  
 
 
-#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
-# F90FLAGS = -ffixed-line-length-0
-#EXT = _check
+ifdef CHECK
 
- EXT      = 
-F90FLAGS = -O3 -convert big_endian 
+F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all   -convert big_endian 	# Debuggage pas pour de rire
+
+EXT = _check
+endif
+
 
 endif
 
@@ -41,9 +37,9 @@ ifdef DECOUP
  #
  CPPFLAGS+= -DDECOUP
  ifdef PARA
-  EXT = _para_decoup
+  EXT2=_para_decoup
  else
-  EXT = _seq_decoup
+  EXT2=_seq_decoup
  endif
 endif
  

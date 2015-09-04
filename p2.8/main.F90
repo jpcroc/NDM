@@ -51,16 +51,16 @@ rangph=0
 
 
 
-  if (rang==0) write(6,*)'*** NDM278+1 ***'
+  if (rang==0) write(6,*)'*** NDM286 ***'
 #if(ART)
-  if (rang==0) write(6,*)'*** NDM278+1 + ART ***'
+  if (rang==0) write(6,*)'*** NDM286 + ART ***'
 #endif
 
-  if (rang==0) write(6,*)'*** NDMP278+1 + PHONDY ***'
+  if (rang==0) write(6,*)'*** NDMP286 + PHONDY ***'
 #endif
 
 #if(MAB)
-  if (rang==0) write(6,*)'*** NDMP278 + MAB ***'
+  if (rang==0) write(6,*)'*** NDMP286 + MAB ***'
 #endif
 
 
