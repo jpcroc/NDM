@@ -143,25 +143,91 @@ LIBRARY =${LIBRARY_PHONDY} ${LLIBS_PHONDY}
 endif
 endif
 
+#################   ML    #####################
+
+
+ifdef ML
+ifdef PARAML
+ F90 = mpif90
+ CPPFLAGS_ML = -C -P -traditional -DML -DPARAML  -nostdinc
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS =  -O3 -convert big_endian 
+#F90FLAGS =  -O3  
+
+#FLAGS and LIBS for ML
+FLAGS_ML =  -DNOIBM 
+#debug
+#F90FLAGS_ML = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_ML = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_ML =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_ML =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_ML = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+#LLIBS_ML =${mkkl_definitions}
+LLIBS_ML=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+# link library
+LIBRARY_ML = ml/libml.a
+
+
+# link library
+LIBRARY =${LIBRARY_ML} ${LLIBS_ML} 
+
+ 
+else
+
+ F90 = ifort
+ CPPFLAGS_ML = -C -P -traditional -DML -nostdinc 
+ EXT      = _ML
+##F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS =  -O3 -convert big_endian 
+
+
+#FLAGS and LIBS for PHONDY
+FLAGS_ML =  -DNOIBM 
+#debug
+#F90FLAGS_ML = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_ML = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_ML =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_ML =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_ML = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_ML =${mkkl_definitions}
+# link library
+LIBRARY_ML = ml/libml.a
+
+
+# link library
+LIBRARY =${LIBRARY_ML} ${LLIBS_ML}  
+endif
+endif
+
+
 
 #############   MAB   ################
 
 
 ifdef MAB
- F90 = ifort
+# F90 = ifort
+ F90 = gfortran
  CPPFLAGS = -C -P -traditional -DMAB -nostdinc
  EXT      = _MAB
 #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all -convert big_endian	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-F90FLAGS =  -O3 -convert big_endian 
-#F90FLAGS =  -O3  
+#ifort F90FLAGS =  -O3 -convert big_endian 
+ F90FLAGS =  -O3  
 
 #FLAGS and LIBS for MAB
 FLAGS_MAB =  -DNOIBM 
 #debug
 #F90FLAGS_MAB = -C -module ../ $(F90FLAGS) $(FLAGS) 
 #F77FLAGS_MAB = -C $(F90FLAGS) $(FLAGS) 
-F90FLAGS_MAB =  -module ../ $(F90FLAGS) $(FLAGS) 
+#gfortran 
+ F90FLAGS_MAB =  -fintrinsic-modules-path ../ $(F90FLAGS) $(FLAGS) 
+#ifort F90FLAGS_MAB =  -module ../ $(F90FLAGS) $(FLAGS) 
 F77FLAGS_MAB =   $(F90FLAGS) $(FLAGS) 
 FFLAGS =  
 

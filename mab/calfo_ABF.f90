@@ -29,7 +29,7 @@ subroutine calfo_mab()
       call fill_histo()
 
 !---if we only want to fill histogram after n_equilibre steps-------------
-        if ((histo_equi == .true.) .And. (it_mab >= n_equilibre)) then
+        if ((histo_equi .eqv. .true.) .And. (it_mab >= n_equilibre)) then
         call fill_histo_equilibre()
         endif
 !up to here we have fp(:,:) - the forces on atomic configurations

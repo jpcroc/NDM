@@ -434,7 +434,7 @@ subroutine initstress
 
 	! (force en cm.g.s-2)
 
-  IF (ldyn2D==.true.) THEN   	! initialisation vp(2,i)=0. pour les atomes en surface
+  IF (ldyn2D.EQV..true.) THEN   	! initialisation vp(2,i)=0. pour les atomes en surface
 			 	! (cas DYN 2D)
 	  Do i=1,i_surfMIN
 		j1 = b2sINF(i)

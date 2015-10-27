@@ -145,10 +145,10 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
      drk=tabdensity(i)-(rhomin+k*ktorho)
      Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
      if( associated (free)) then
-        if( ( (lprteat.EQV..true.).or.(lcalcjq==.true.) ).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
+        if( ( (lprteat.EQV..true.).or.(lcalcjq.EQV..true.) ).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
         if( free(i).EQV..true.)potisglue = potisglue+Eembi
      else
-        if((lprteat.EQV..true.).or.(lcalcjq==.true.)) eatom(i)=eatom(i)+Eembi
+        if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.)) eatom(i)=eatom(i)+Eembi
         potisglue = potisglue+Eembi
      end if
     if (lforcetabulate) then
@@ -212,7 +212,7 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
         !dFemb = ( tabdensity(i) + tabdensity(j))*drhoj
         dFemb = tabdensity(i)*drhoj + tabdensity(j)*drhoi  ! THIS is WRONG in my SENSE
 
-        if((lprteat.EQV..true.).or.(lcalcjq==.true.))then
+        if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.))then
            if (associated (free)) then
               if( free(i).EQV..true.)                eatom(i)=eatom(i) + 0.5d0*Erep
               if ((free(j).EQV..true.).and.ldemitab) eatom(j)=eatom(j) + 0.5d0*Erep

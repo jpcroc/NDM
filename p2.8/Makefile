@@ -47,6 +47,7 @@ OBJS_PARA=   T_kind_param_mpi_m.o\
 
 
 OBJS_PARAPH=   init_MPI_phondy.o
+OBJS_PARAML=   init_MPI_ML.o
 
 
 
@@ -201,6 +202,22 @@ endif
  DIREXT=phondy
 endif
 
+ifdef ML
+ # Version Machine Learning
+ifdef PARAML
+ OBJS = ${OBJS_MOD} ${OBJS_PARAML} ${OBJS_SEQ}
+ EXT=_ml_para 
+else
+ OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
+ EXT=_ml
+endif
+ DEP=${OBJS}  ${LIBML}
+ CPPFLAGS=${CPPFLAGS_ML}
+ CLEANML=clean_ml
+ DIREXT=ml
+endif
+
+
 ifdef SUNDAE
  # Version SUNDAE
 ifdef PARASUN
@@ -242,6 +259,7 @@ endif
 
 LIBART = libart.a
 LIBPHONDY=libphondy.a
+LIBML=libml.a
 LIBSUNDAE=libsundae.a
 LIBMAB=libmab.a
 
@@ -255,6 +273,8 @@ $(LIBART):
 	(cp -rp ../art ./ ; cd art	; make ; cp *.o *.a ../../art)
 $(LIBPHONDY): 
 	(cp -rp ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
+$(LIBML): 
+	(cp -rp ../ml ./ ; cd ml	; make ; cp *.o *.a ../../ml)
 $(LIBSUNDAE): 
 	(cp -rp ../sundae ./ ; cd sundae	; make ; cp *.o *.a *.tmp.f90 ../../sundae)
 $(LIBMAB): 
@@ -289,6 +309,8 @@ clean_art:
 	rm -rf art ; cd ../art ; make clean   
 clean_phondy:
 	rm -rf phondy ; cd ../phondy ; make clean   
+clean_ml:
+	rm -rf ml ; cd ../ml ; make clean   
 clean_sundae:
 	rm -rf sundae ; cd ../sundae ; make clean   
 clean_mab:

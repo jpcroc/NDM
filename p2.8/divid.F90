@@ -71,11 +71,11 @@ subroutine divid (appel)
   zlmin = min(zlmin,zlm2)
   zlmin=zlmin*2
   rut=rumax
-  if (lpotentiel(10)==.true.)      rut=max(rut,2*rue_pot(10))
+  if (lpotentiel(10).eqv..true.)      rut=max(rut,2*rue_pot(10))
   !     write(6,*)'BIP',rumax,rut,rue_pot(10)
   !  end if
-  if (lpotentiel(11)==.true.) rut=max(rut,2*rue_pot(11))
-  if (lpotentiel(12)==.true.) rut=max(rut,2*rue_pot(12))
+  if (lpotentiel(11).eqv..true.) rut=max(rut,2*rue_pot(11))
+  if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
 
   izonr = int(zlmin/rut)
   ! MPI

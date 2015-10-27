@@ -89,7 +89,7 @@ subroutine caltabi
 
 	   
 
-          IF (ldecal_bc==.TRUE.) THEN !*!  
+          IF (ldecal_bc.EQV..TRUE.) THEN !*!  
 	    IF (ds(1)>0.5) THEN
 	      ds(3) = ds(3) - decal_bc
 	    ELSE IF (ds(1) < -0.5) THEN
@@ -161,7 +161,7 @@ subroutine caltabi
               dx(:) = xpi(:) - xpnp(:,j)
               ds(:) = MatMul( dx(:), bg(:,:) )
 
-	     IF (ldecal_bc==.TRUE.) THEN !*!
+	     IF (ldecal_bc.EQV..TRUE.) THEN !*!
 	        IF (ds(1)>0.5) THEN
 	           ds(3) = ds(3) - decal_bc
 	        ELSE IF (ds(1) < -0.5) THEN

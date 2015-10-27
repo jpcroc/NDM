@@ -78,7 +78,7 @@ if ((abf_type .ne. 6) .and. (abf_type .ne. 7)) then ! when the biais is updated
   close(989)
   close(990)
 
- if (histo_equi == .True.) then
+ if (histo_equi .eqv. .True.) then
  open(unit=970,file='histogram_xi',status='unknown')  ! this file is available only if we only fill histogram after n_equilibre. 
  sum_histo_xi=sum(histo_xi)
 

@@ -156,7 +156,7 @@ subroutine analyse
               ! ------------------------------------ DES FICHIERS DE SORTIE, DANS LE ------------
               ! ------------------------------------ CAS DES CL CONTROLEES EN CONTRAINTE --------
               IF (ibound==2 .OR. ibound==3) THEN
-                 IF(flag_fin==.true.) THEN
+                 IF(flag_fin.EQV..true.) THEN
                     Call spebc_fin (.true.)
                  ELSE IF(itespebcout > 0. .AND. (mod(it,itespebcout)==0 .OR. it==1)) THEN
                     Call spebc_fin (.false.)
@@ -452,7 +452,7 @@ subroutine analyse
                                 !                             if(abs(celpp2(ko)).gt.tpseuils(6)) lprtcel(ko)=.true.
                                 if (it.le.2) lprtcel(ko)=.false.
                                 !                             lprtcel(ko)=.true.
-                                if (lprtcel(ko)==.true.) nprt=nprt+1
+                                if (lprtcel(ko).EQV..true.) nprt=nprt+1
                                 
                                 if(it.ge.3) then
                                    minp=min(minp,pmc(ko)*unitP)
@@ -496,7 +496,8 @@ subroutine analyse
                           xb(2)=float(kx)/float(nox)*at(2,1)+float(ky)/float(noy)*at(2,2)+float(kz)/float(noz)*at(2,3)
                           xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
                           xb=xb*1d8
-                          if(lprtcel(ko)==.true.)  write (luvisuc, 136) 'Au',kx,ky,kz,xb(1), xb(2), xb(3),tempc(ko),tcp(ko),pmc(ko)*unitP,celpp(ko),nato(ko)
+                          if(lprtcel(ko).EQV..true.)  write (luvisuc, 136) 'Au',kx,ky,kz,xb(1), xb(2), &
+                           xb(3),tempc(ko),tcp(ko),pmc(ko)*unitP,celpp(ko),nato(ko)
                        end do
                     end do
                  end do

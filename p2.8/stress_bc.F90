@@ -32,11 +32,11 @@ subroutine stress_bc
 	lwrite = .TRUE.
 
 	fact2Ddyn = 1.
-	IF (ldyn2D==.true.) THEN
+	IF (ldyn2D.EQV..true.) THEN
 		fact2Ddyn = 0.
 	END IF
 
-	IF (lwrite==.TRUE.) THEN  ! si on veut : genere un fichier de sortie (it, deformation)
+	IF (lwrite.EQV..TRUE.) THEN  ! si on veut : genere un fichier de sortie (it, deformation)
 
 	  mo_strain_inf = 0.
 	  mo_strain_sup = 0.
@@ -72,7 +72,7 @@ subroutine stress_bc
  	  If (it==1) Open (unit=121, file='stress_it.dat', status='unknown',action='write')
 	  Write (121,'(i7,2x,e24.16)') it,ef_strain
 
-	ELSE IF (lwrite==.false.) THEN  ! ici, on applique nos CL sans generer de fichier de sortie (itération, déformation)
+	ELSE IF (lwrite.EQV..false.) THEN  ! ici, on applique nos CL sans generer de fichier de sortie (itération, déformation)
 
 	  DO i=1,i_surfMIN
 		j1 = b2sINF(i)

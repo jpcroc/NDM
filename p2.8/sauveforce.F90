@@ -57,7 +57,7 @@ subroutine sauveforce(itapp)
   if(rang==0) then
      if (itapp==0) then
        inquire (file=fnam(1:lenfnam)//'.crcin',EXIST=lcrcin)
-       if (lcasca==.true.)lcrcin=.false.
+       if (lcasca.EQV..true.)lcrcin=.false.
        if (lcrcin.EQV..false.)  open(lucoutfp, file=fnam(1:lenfnam)//'.crcin', form='unformatted', &
           status='unknown')
      else

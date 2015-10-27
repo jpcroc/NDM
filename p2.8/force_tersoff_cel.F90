@@ -309,7 +309,8 @@ subroutine force_tersoff_cel
                                 sig(l,m)=sig(l,m) + triplet_ij*cvij(1,m)/volu
                                 sig(l,m)=sig(l,m) + triplet_ik*cvik(1,m)/volu
                              if (lTPcel.EQV..true.) then
-                                sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + noxyz*0.5*(triplet_ij*cvij(1,m)/volu + triplet_ik*cvik(1,m)/volu)
+                                sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + noxyz*0.5*(triplet_ij*cvij(1,m)/volu  &
+                                                       + triplet_ik*cvik(1,m)/volu)
                                 sigc(l,m,jcelnumber) = sigc(l,m,jcelnumber) + noxyz*0.5*triplet_ij*cvij(1,m)/volu 
                                 sigc(l,m,kcelnumber) = sigc(l,m,kcelnumber) + noxyz*0.5*triplet_ik*cvik(1,m)/volu
                              end if

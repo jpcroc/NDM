@@ -239,12 +239,12 @@ subroutine test_vacancy_position
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: im,imm
  USE tab_imm_m
- USE mab_in_ndm_module, ONLY: normxlac, xlacf,xbarini,xbar,test_end,rtestlac
+ USE mab_in_ndm_module, ONLY: atom_to_jump,normxlac, xlacf,xbarini,xbar,test_end,rtestlac
  implicit none
  real(double) :: rtemp
 
   test_end=.false.
-  rtemp=dsqrt(DOT_PRODUCT(xp(:,7)-xlacf(:)-xbar(:)+xbarini(:),xp(:,7)-xlacf(:)-xbar(:)+xbarini(:)))
+  rtemp=dsqrt(DOT_PRODUCT(xp(:,atom_to_jump)-xlacf(:)-xbar(:)+xbarini(:),xp(:,atom_to_jump)-xlacf(:)-xbar(:)+xbarini(:)))
 
   !write(6,*) xp(:,7)
   !write(6,*)  rtemp, rtestlac
@@ -261,7 +261,7 @@ subroutine test_displacement
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: im,imm,angst
  USE tab_imm_m
- USE mab_in_ndm_module, ONLY: xbarini,xbar,xp,xp0,itest_stop,a0bcc,abf_mode
+ USE mab_in_ndm_module, ONLY: xbarini,xbar,xp0,itest_stop,a0bcc,abf_mode
  implicit none
  real(double) :: rtemp(imm),RRMAX,ddepla(3)
  integer,dimension(1) :: iimax
@@ -300,9 +300,12 @@ subroutine brute_force_free_energy(itest_stop)
 
 implicit none
 integer, intent(in) :: itest_stop
-real(double),save :: free_temp=0.d0,free_kinetic=0.d0,average_kinetic=0.d0,free_temp1=0.d0,free_temp2=0.d0,free_temp3=0.d0,free_temp4=0.d0
+real(double),save :: free_temp=0.d0,free_kinetic=0.d0, &
+                     average_kinetic=0.d0,free_temp1=0.d0,&
+                     free_temp2=0.d0,free_temp3=0.d0,free_temp4=0.d0
 real(double), save :: free_history=-777.d0
-real(double) :: Free_kinetic_brute,temp,temp2,temp3,ave1,ave2,ave3, ave4,Free_energy_brute2,Free_energy_brute4,equit
+real(double) :: Free_kinetic_brute,temp,temp2,temp3,ave1,ave2,ave3, &
+                ave4,Free_energy_brute2,Free_energy_brute4,equit
 integer, save :: it_history
  equit=dble(3*im-3)*temperature
  if (it_mab > n_equilibre) then

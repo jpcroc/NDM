@@ -76,12 +76,17 @@ subroutine langevin_overdamped_zeta()
 
    if (it_count==0)    write(747,'("  ",i6, E16.2, i6, E16.2, i6, 4D23.7)') it_mab, dcsi_ini, nint(dcsi_ini/delta_z), tmp_dcsi, &
        nint(tmp_dcsi/delta_z),  potist-ene0, ene_einstein, force_zeta, tmp_force
-    if (it_count==0)    write(744,'("  ",i6, E16.2, i6, E16.2, i6, i6, i6, 4D23.7)') it_mab, dcsi_ini, nint(dcsi_ini/delta_z), tmp_dcsi, &
-       nint(tmp_dcsi/delta_z), nint((potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*tmp_factor/delta_z) , nint(noise*sqrt(2.d0*temperature*tmp_factor)/delta_z)  , force_zeta, tmp_force
+    if (it_count==0)    write(744,'("  ",i6, E16.2, i6, E16.2, i6, i6, i6, 4D23.7)') it_mab, &
+                        dcsi_ini, nint(dcsi_ini/delta_z), tmp_dcsi, &
+       nint(tmp_dcsi/delta_z), &
+       nint((potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*tmp_factor/delta_z) , &
+       nint(noise*sqrt(2.d0*temperature*tmp_factor)/delta_z)  , force_zeta, tmp_force
   !debug   write(*,*) 'ddd', nint(potist*tmp_factor/delta_z) , nint(ene0*tmp_factor/delta_z),ha_mix*ene_einstein,equit,nint(tmp_force*tmp_factor/delta_z)
 
 
-    if (it_count/=0)    write(767,'("  ",i6, 2E16.2, i8, 5D23.7)') it_mab, dcsi,tmp_dcsi, nint(dcsi/delta_z), -(potist-ene_einstein -ene0 - tmp_force )*tmp_factor , the_moise, force_zeta*tmp_factor, tmp_force
+    if (it_count/=0)    write(767,'("  ",i6, 2E16.2, i8, 5D23.7)') it_mab, dcsi,tmp_dcsi, &
+                        nint(dcsi/delta_z), -(potist-ene_einstein -ene0 - tmp_force )*tmp_factor , &
+                        the_moise, force_zeta*tmp_factor, tmp_force
 
        average_temp=average_temp+ dabs(tmp_dcsi)
 
@@ -98,7 +103,8 @@ subroutine langevin_overdamped_zeta()
        end if 
 11 continue
   
-    if (it_count/=0)  write(757,'(2i7,2D15.7)') it_mab, it_temp, tmp_dcsi, average_temp/dble(it_mab + it_temp)
+    if (it_count/=0)  write(757,'(2i7,2D15.7)') it_mab, it_temp, tmp_dcsi, &
+                      average_temp/dble(it_mab + it_temp)
     return
  end subroutine langevin_overdamped_zeta
 

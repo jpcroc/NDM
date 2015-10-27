@@ -16,6 +16,7 @@ subroutine read_mab_file()
                               nsite_block, isite_block,atom_to_jump,              &
                               itype_reaction,itype_einstein, units_phondy,m_i
 
+ implicit none
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
                       nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
                       langevin_type,omega_einstein,gamma,omega_abf, nwrite_histo,  &
@@ -25,7 +26,6 @@ subroutine read_mab_file()
                       temperature_zeta_min,temperature_zeta_max,                          &
                       atom_to_jump, itype_reaction,itype_einstein
 
- implicit none
  character(len=128) :: fnamtin, fnamt_lblock, fnamt_lfreq, fnamt_lm, fnamt_lu, fnamt_lv
  integer :: lumab,lublock,lcu,lcv,lcm
  integer :: ii,ia,ja,i,j,imax,iu,iv

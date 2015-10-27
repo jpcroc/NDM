@@ -129,7 +129,8 @@ subroutine endrun
 
         if (associated(free))then
            do i=1,im
-              if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatomtotm(i)*erg2eV-eatref(ityp(i))
+              if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3), & 
+              eatomtotm(i)*erg2eV-eatref(ityp(i))
            end do
         else
            do i=1,im

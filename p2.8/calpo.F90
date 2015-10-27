@@ -174,7 +174,7 @@ end interface
            r5 = r4*r
            r6 = r3*r3
            do l=1,npair
-              if((typ_pot_pair(l)==4).and.(lue_paire(l).eq..true.)) then
+              if((typ_pot_pair(l)==4).and.(lue_paire(l).eqv..true.)) then
                  pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 
               end if
            end do
@@ -213,18 +213,18 @@ end interface
            !                                                ! erg
            if (ipotentiel==3) then
               do l=1,npair
-                 if((typ_pot_pair(l)==3).and.(lue_paire(l).eq..true.)) then
+                 if((typ_pot_pair(l)==3).and.(lue_paire(l).eqv..true.)) then
                     pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 +r8p(l)/r8
                  end if
               end do
            else
               do l=1,npair
-                 if((typ_pot_pair(l)==5).and.(lue_paire(l).eq..true.)) then
+                 if((typ_pot_pair(l)==5).and.(lue_paire(l).eqv..true.)) then
                     pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 
                  end if
               end do
               do l=1,npair
-                 if((typ_pot_pair(l)==1).and.(lue_paire(l).eq..true.)) then
+                 if((typ_pot_pair(l)==1).and.(lue_paire(l).eqv..true.)) then
                     pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6
                  end if
               end do
@@ -234,7 +234,7 @@ end interface
            endif
            if (ipotentiel==5) then
               do l=1,npair
-                 if((typ_pot_pair(l)==5).and.(lue_paire(l).eq..true.)) then
+                 if((typ_pot_pair(l)==5).and.(lue_paire(l).eqv..true.)) then
                     pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 
                  end if
               end do
@@ -560,7 +560,7 @@ end interface
      enddo
   endif
 
-  if (lprtpot==.true.) then
+  if (lprtpot.EQV..true.) then
      do l=1,npair
         if (typ_pot_pair(l)==ipotentiel)then
            write(6,*)'l,k,r,pot(1,l,k)'

@@ -310,7 +310,7 @@ contains
              c2 = xpnp(2,i)-xpnp(2,j)
              c3 = xpnp(3,i)-xpnp(3,j)
 
-             if (ldecal_bc==.true.) then
+             if (ldecal_bc .eqv. .true.) then
                 if (ibound.gt.1) then		
                    IF (c1>0.5) THEN
                       c3 = c3 - decal_bc

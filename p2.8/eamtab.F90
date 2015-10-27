@@ -383,10 +383,12 @@ contains
 
           end if
        end do
-       call cspline (nptmax,reppair(ipr)%xr,reppair(ipr)%potr,SPreppair(ipr)%bpotr,SPreppair(ipr)%cpotr,SPreppair(ipr)%dpotr)
+       call cspline (nptmax,reppair(ipr)%xr,reppair(ipr)%potr,SPreppair(ipr)%bpotr,& 
+             SPreppair(ipr)%cpotr,SPreppair(ipr)%dpotr)
        if (lforcetabulate) then
         reppair_d(ipr)%xr=reppair(ipr)%xr
-        call cspline (nptmax,reppair_d(ipr)%xr,reppair_d(ipr)%potr,SPreppair_d(ipr)%bpotr,SPreppair_d(ipr)%cpotr,SPreppair_d(ipr)%dpotr)
+        call cspline (nptmax,reppair_d(ipr)%xr,reppair_d(ipr)%potr,SPreppair_d(ipr)%bpotr,&
+            SPreppair_d(ipr)%cpotr,SPreppair_d(ipr)%dpotr)
        end if
 
     end do

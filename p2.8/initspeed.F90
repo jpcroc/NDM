@@ -458,7 +458,7 @@ subroutine bruit_xp
           end do
        end do
 !       write(6,*)'decx',decx(1)/na(1),decx(2)/na(2)
-       if (lperiod==.true.) call period
+       if (lperiod.EQV..true.) call period
     end if
 
 

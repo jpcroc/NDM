@@ -117,9 +117,9 @@ subroutine calfo
               if (ltabvois) then
                  ! !!! le cas parallele n'est pas pris en compte !!!
                  if (.not.parallele) then
-                    IF(ldecal_bc==.FALSE.) THEN
+                    IF(ldecal_bc.EQV..FALSE.) THEN
                        call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
-                    ELSE IF (ldecal_bc==.TRUE.) THEN !*!
+                    ELSE IF (ldecal_bc.EQV..TRUE.) THEN !*!
                        call calfo_decalage(xp,  vp,  fp, ielat, iwmax, ityp)
                     END IF
 		 end if

@@ -32,11 +32,11 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
   CALL cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
   CALL cryst_to_cart (imm, xpp, bg, -1)
 
-  IF (flagfinloc==.true.) THEN
+  IF (flagfinloc.EQV..true.) THEN
 
  ! GENERE LE FICHIER DES PARAMETRES DE SORTIE ----------------------------------
     Open (unit=388, file='param.out', status='replace', action='write')
-      Write(388, '(a,i)') ' -- derniere iteration ---- ', it
+      Write(388, '(a,i10)') ' -- derniere iteration ---- ', it
       Write(388, '(a,e24.16)') ' -- Lx -- (Ang) ----------- ', Lx_cm*1e+08
       Write(388, '(a,e24.16)') ' -- Ly -- (Ang) ----------- ', (2*y_max-y_2nd_max-y_min)*1e+08
       Write(388, '(a,e24.16)') ' -- Lz -- (Ang) ----------- ', Lz_cm*1e+08
@@ -44,8 +44,8 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
       Write(388, '(a,e24.16)') ' -- Gap - (Ang) ----------- ', gap*1e+08
       Write(388, '(a,e24.16)') ' -- deformation ----------- ', ef_strain
       Write(388, '(a,e24.16)') ' -- SigmaYZ -- (GPa) ------ ', user_stress_yz
-      Write(388, '(a,i)') ' -- Nb at dans S+ --------- ', i_surfSUP
-      Write(388, '(a,i)') ' -- Nb at dans S- --------- ', i_surfINF
+      Write(388, '(a,i10)') ' -- Nb at dans S+ --------- ', i_surfSUP
+      Write(388, '(a,i10)') ' -- Nb at dans S- --------- ', i_surfINF
       Write(388, '(a,e24.16)') ' -- f at dans S+ (eV/Ang) - ', forceatsup*1e-05*1e-10/(1.60217646e-19)
       Write(388, '(a,e24.16)') ' -- f at dans S- (eV/Ang) - ', forceatinf*1e-05*1e-10/(1.60217646e-19)
      ! Write(388, '(a,G10.3)' ) ' -- Etot -- (eV) ---------- ', energietotale
@@ -53,7 +53,7 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
 
  ! GENERER UN FICHIER DE SORTIE DANS LE FORMAT UTILISE PAR LE LOGICIEL DE LAURENT/DAVID RODNEY ------------
     llaurent=.FALSE.                          
-    IF (llaurent==.TRUE.) THEN			! ATTENTION : non fini, non testé !
+    IF (llaurent.EQV..TRUE.) THEN			! ATTENTION : non fini, non testé !
 
       OPEN(unit=366, file='laurent.xyz', status='replace', action='write')
         Write(366,*) imm, user_stress_yz*1000
@@ -62,15 +62,18 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
         DO i=1,i_surfINF
            j1 =  b2sINF(i)
 	   tab_bulk(j1) = 1
-           Write(366,'(a2,4e18.10)') 'Ni',(xp(1,j1)-1/2)*at(1,1)*1e+8 , (xp(2,j1)-1/2)*at(2,2)*1e+8 , (xp(3,j1)-1/2)*at(3,3)*1e+8 , eatom(j1)*erg2eV	 
+           Write(366,'(a2,4e18.10)') 'Ni',(xp(1,j1)-1/2)*at(1,1)*1e+8 , & 
+           (xp(2,j1)-1/2)*at(2,2)*1e+8 , (xp(3,j1)-1/2)*at(3,3)*1e+8 , eatom(j1)*erg2eV	 
         END DO
         DO i=1,i_surfSUP
            j1 =  b2sSUP(i)
 	   tab_bulk(j1) = 1
-           Write(366,'(a2,4e18.10)') 'Ni',(xp(1,j1)-1/2)*at(1,1)*1e+8 , (xp(2,j1)-1/2)*at(2,2)*1e+8 , (xp(3,j1)-1/2)*at(3,3)*1e+8 , eatom(j1)*erg2eV	 
+           Write(366,'(a2,4e18.10)') 'Ni',(xp(1,j1)-1/2)*at(1,1)*1e+8 , & 
+           (xp(2,j1)-1/2)*at(2,2)*1e+8 , (xp(3,j1)-1/2)*at(3,3)*1e+8 , eatom(j1)*erg2eV	 
         END DO 
         DO i=1,imm
-	   IF (tab_bulk(i) == 0) Write(366,'(a2,4e18.10)') 'Si',(xp(1,i)-1/2)*at(1,1)*1e+8 , (xp(2,i)-1/2)*at(2,2)*1e+8 , (xp(3,i)-1/2)*at(3,3)*1e+8 , eatom(i)*erg2eV
+	   IF (tab_bulk(i) == 0) Write(366,'(a2,4e18.10)') 'Si',(xp(1,i)-1/2)*at(1,1)*1e+8 ,&
+           (xp(2,i)-1/2)*at(2,2)*1e+8 , (xp(3,i)-1/2)*at(3,3)*1e+8 , eatom(i)*erg2eV
         END DO
       Close(366)
 
@@ -84,9 +87,9 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
  ! GENERE LE FICHIER CFG NE REPRESENTANT QUE LES ATOMES DE LA DISLO -------------
 	
 
-	IF (flagfinloc==.true.) THEN
+	IF (flagfinloc.EQV..true.) THEN
 		OPEN(377, file='fin.dislo.cfg', status='replace', action='write')
-	ELSE IF (flagfinloc==.false.) THEN
+	ELSE IF (flagfinloc.EQV..false.) THEN
 		cfgname = 'dislo.000000000.cfg'
 		numcfg  = INT(Real(it)/Real(itespebcout))
 		Write(cfgname(7:15), '(i9.9)') numcfg
@@ -136,20 +139,20 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
 	END DO
 	indiciz2(compteur2+1) = 0
 
-	Write(377,'(a,i)')'Number of particles =', compteur+compteur2
+	Write(377,'(a,i10)')'Number of particles =', compteur+compteur2
 	Write(377,'(a)')'A = 1.000 Angstrom (basic length-scale)'
 	Write(377,'(a)')'# Unit cell vector #1'
-	Write(377,'(a,f,a)')'H0(1,1) = ', at(1,1)*1e+8, '  A'
-	Write(377,'(a,f,a)')'H0(1,2) = ', at(2,1)*1e+8, '  A'
-	Write(377,'(a,f,a)')'H0(1,3) = ', at(3,1)*1e+8, '  A'
+	Write(377,'(a,f25.12,a)')'H0(1,1) = ', at(1,1)*1e+8, '  A'
+	Write(377,'(a,f25.12,a)')'H0(1,2) = ', at(2,1)*1e+8, '  A'
+	Write(377,'(a,f25.12,a)')'H0(1,3) = ', at(3,1)*1e+8, '  A'
 	Write(377,'(a)')'# Unit cell vector #2'
-	Write(377,'(a,f,a)')'H0(2,1) = ', at(1,2)*1e+8, '  A'
-	Write(377,'(a,f,a)')'H0(2,2) = ', at(2,2)*1e+8, '  A'
-	Write(377,'(a,f,a)')'H0(2,3) = ', at(3,2)*1e+8, '  A'
+	Write(377,'(a,f25.12,a)')'H0(2,1) = ', at(1,2)*1e+8, '  A'
+	Write(377,'(a,f25.12,a)')'H0(2,2) = ', at(2,2)*1e+8, '  A'
+	Write(377,'(a,f25.12,a)')'H0(2,3) = ', at(3,2)*1e+8, '  A'
 	Write(377,'(a)')'# Unit cell vector #3'
-	Write(377,'(a,f,a)')'H0(3,1) = ', at(1,3)*1e+8, '  A'
-	Write(377,'(a,f,a)')'H0(3,2) = ', at(2,3)*1e+8, '  A'
-	Write(377,'(a,f,a)')'H0(3,3) = ', at(3,3)*1e+8, '  A'
+	Write(377,'(a,f25.12,a)')'H0(3,1) = ', at(1,3)*1e+8, '  A'
+	Write(377,'(a,f25.12,a)')'H0(3,2) = ', at(2,3)*1e+8, '  A'
+	Write(377,'(a,f25.12,a)')'H0(3,3) = ', at(3,3)*1e+8, '  A'
 	Write(377,'(a)')'.NO_VELOCITY.'
 	Write(377,'(a)')'entry_count = 4'
 	Write(377,'(a)')'auxiliary[0] = Energie_pat'
@@ -157,10 +160,10 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
 	Write(377,'(a)')'Fe'
 
 	DO i=1,compteur
-		Write(377,'(f,f,f,f)') xp(1,indiciz(i)),xp(2,indiciz(i)),xp(3,indiciz(i)), 1.0 !eatom(indiciz(i))*erg2eV
+		Write(377,'(4f25.12)') xp(1,indiciz(i)),xp(2,indiciz(i)),xp(3,indiciz(i)), 1.0 !eatom(indiciz(i))*erg2eV
 	END DO	
 	DO i=1,compteur2
-		Write(377,'(f,f,f,f)') xp(1,indiciz2(i)),xp(2,indiciz2(i)),xp(3,indiciz2(i)), 2.0 !eatom(indiciz(i))*erg2eV
+		Write(377,'(4f25.12)') xp(1,indiciz2(i)),xp(2,indiciz2(i)),xp(3,indiciz2(i)), 2.0 !eatom(indiciz(i))*erg2eV
 	END DO
       CLOSE(377)
 
@@ -175,7 +178,7 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
 
 	ldislospeed=.false.
 
-	IF (ldislospeed==.true.) THEN
+	IF (ldislospeed.EQV..true.) THEN
 	   IF (it==1) Open(unit=446, file='PositionDislo.dat', status='replace', action='write')
 	   XMdislo1 = 0.
 	   XMdislo2 = 0.
@@ -189,7 +192,8 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
 		inXMdis1 = XMdislo1
 		inXMdis2 = XMdislo2
 	   END IF
-	   Write(446,'(f,f)') it*tstep*1e+15, SQRT((XMdislo1-inXMdis1)*(XMdislo1-inXMdis1)+(XMdislo2-inXMdis2)*(XMdislo2-inXMdis2))*1e+8/0.8164970
+	   Write(446,'(2f25.12)') it*tstep*1e+15,  &
+           SQRT((XMdislo1-inXMdis1)*(XMdislo1-inXMdis1)+(XMdislo2-inXMdis2)*(XMdislo2-inXMdis2))*1e+8/0.8164970
 	END IF
 
 

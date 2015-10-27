@@ -672,7 +672,7 @@ subroutine readdm
   end if
 
 
-  if ((lpotentiel(12).EQV..true.).and.(ltabvois==.true.))ldemitab=.false.
+  if ((lpotentiel(12).EQV..true.).and.(ltabvois.EQV..true.))ldemitab=.false.
 
   if(lrestart.and.lcorrelvp) then
      if (rang==0) write(6,*)rang,'pas de restart et de correlation'
@@ -875,7 +875,7 @@ endif
 !     rulayer=rulayer*1.0d-8
 
      lfrozen=.true.
-     if (lcdp==.true.) then
+     if (lcdp.EQV..true.) then
         write(6,*)'TRANCHE +DP = PAS POSSIBLE' ; stop
      end if
 

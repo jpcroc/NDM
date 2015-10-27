@@ -1,0 +1,34 @@
+module mod_mpi_ml 
+ use mpi
+     integer, dimension(MPI_STATUS_SIZE) :: statut
+     integer :: nb_procsml,codeml
+end module mod_mpi_ml
+
+
+
+
+subroutine init_mpi_ml()
+
+  use mpi
+  use mod_mpi_ml
+  use gen_com_m , ONLY: rangml
+  implicit none
+
+  ! Routine d'initialisation de MPI pour le code NDM
+
+
+  !--------------------------------------------------
+  !Variables de la routine
+
+  !--------------------------------------------------
+  !Variables locales
+
+  !--------------------------------------------------
+  !Corps de la routine
+
+call MPI_INIT (codeml)
+call MPI_COMM_SIZE(MPI_COMM_WORLD,nb_procsml, codeml)
+call MPI_COMM_RANK(MPI_COMM_WORLD,rangml,codeml)
+
+
+end subroutine init_mpi_ml

@@ -69,7 +69,7 @@ subroutine strain_bc
 		End do
 	END IF
 
-	If (lwrite==.TRUE.) Then	! pour obtenir les lois de comportement
+	If (lwrite.EQV..TRUE.) Then	! pour obtenir les lois de comportement
 					! ( sigma = f(espilon) par exemple )
 	   If (it==1) Open (unit=119, file='strain_it.dat', status='unknown',action='write') ! destiné à etre tracé
 	   mo_strain_inf = 0.

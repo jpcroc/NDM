@@ -58,17 +58,17 @@ subroutine writing (file_num, file_name, grandeur)
 	Write (file_num, '(a)') 	'H0(2,2) =    83.06605379269264     A'
 	Write (file_num, '(a)') 	'H0(2,3) =    0.000000000000000     A'
       else if (iform==3) then
-	Write(file_num,'(a,f,a)')'H0(1,1) = ', at(1,1)*1e+8, '  A'
-	Write(file_num,'(a,f,a)')'H0(1,2) = ', at(2,1)*1e+8, '  A'
-	Write(file_num,'(a,f,a)')'H0(1,3) = ', at(3,1)*1e+8, '  A'
+	Write(file_num,'(a,f25.12,a)')'H0(1,1) = ', at(1,1)*1e+8, '  A'
+	Write(file_num,'(a,f25.12,a)')'H0(1,2) = ', at(2,1)*1e+8, '  A'
+	Write(file_num,'(a,f25.12,a)')'H0(1,3) = ', at(3,1)*1e+8, '  A'
 	Write(file_num,'(a)')'# Unit cell vector #2'
-	Write(file_num,'(a,f,a)')'H0(2,1) = ', at(1,2)*1e+8, '  A'
-	Write(file_num,'(a,f,a)')'H0(2,2) = ', at(2,2)*1e+8, '  A'
-	Write(file_num,'(a,f,a)')'H0(2,3) = ', at(3,2)*1e+8, '  A'
+	Write(file_num,'(a,f25.12,a)')'H0(2,1) = ', at(1,2)*1e+8, '  A'
+	Write(file_num,'(a,f25.12,a)')'H0(2,2) = ', at(2,2)*1e+8, '  A'
+	Write(file_num,'(a,f25.15,a)')'H0(2,3) = ', at(3,2)*1e+8, '  A'
 	Write(file_num,'(a)')'# Unit cell vector #3'
-	Write(file_num,'(a,f,a)')'H0(3,1) = ', at(1,3)*1e+8, '  A'
-	Write(file_num,'(a,f,a)')'H0(3,2) = ', at(2,3)*1e+8, '  A'
-	Write(file_num,'(a,f,a)')'H0(3,3) = ', at(3,3)*1e+8, '  A'
+	Write(file_num,'(a,f25.12,a)')'H0(3,1) = ', at(1,3)*1e+8, '  A'
+	Write(file_num,'(a,f25.12,a)')'H0(3,2) = ', at(2,3)*1e+8, '  A'
+	Write(file_num,'(a,f25.12,a)')'H0(3,3) = ', at(3,3)*1e+8, '  A'
       end if
 
 

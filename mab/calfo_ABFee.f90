@@ -63,7 +63,7 @@ if (it_mab<10) A_ee=0.d0
 
 if (abf_mode==1) then
  !--2. Compute pi_A_ee (csi,q)
- ! xmol is zeta, eta = eta_ABFee for exteded dynamics 
+ ! xmol is zeta, eta = eta_ABFee for extended dynamics 
  ! pi_Aee = num / denom = \exp{ -\frac{beta}{2*eta} (x_mol(iter) - csi)**2  /denom  }
  ! I think that the sign is in the opposite direction ??? mcmCHECK
  forall(iter=-nhisto2:nhisto+nhisto2) temp_log(iter)=-(x_mol(iter)-dcsi)**2/(2.d0*eta_ABFee*temperature)+A_ee(iter)/temperature
@@ -150,7 +150,7 @@ if (abf_mode==2) then
 !debub    if ((jx==1).and.(ia==7)) then
 !debug     write(*,*) -tmp_num/denom, fp(jx,ia)
 !debug    end if 
-  if ((histo_equi == .true.) .And. (it_mab >= n_equilibre)) then
+  if ((histo_equi .eqv. .true.) .And. (it_mab >= n_equilibre)) then
     fp(jx,ia)=-tmp_num/denom
    else 
     fp(jx,ia)=fp(jx,ia)+fpeinstein(jx,ia)
@@ -209,7 +209,7 @@ if (abf_mode==22) then
 !debug    if ((jx==1).and.(ia==7)) then
 !debug    write(*,*) -tmp_num/denom, fp(jx,ia)
 !debug    end if
-  if ((histo_equi == .true.) .And. (it_mab >= n_equilibre)) then
+  if ((histo_equi .eqv. .true.) .And. (it_mab >= n_equilibre)) then
     fp(jx,ia)=-tmp_num/denom
   else 
     fp(jx,ia)=fp(jx,ia)+fpeinstein(jx,ia)
@@ -252,7 +252,7 @@ end if
 
 
 !----------If histo_equi is true when it_mab > n_equilibre, or histo_equi is false, we fill the histogram of zeta
-if(((histo_equi == .true.) .AND. (it_mab > n_equilibre)) .OR. (histo_equi == .False.)) then
+if(((histo_equi .eqv. .true.) .AND. (it_mab > n_equilibre)) .OR. (histo_equi .eqv. .False.)) then
 
     do iter= -nhisto1, nhisto+nhisto1 
       histo_zeta(iter)=histo_zeta(iter)+P_ee(iter)
@@ -280,7 +280,7 @@ endif
  ! from where comes this nhisto !!!! mcmCHECK
  if (abf_mode==1) then
  do iter=-nhisto1,nhisto+nhisto1
-     A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+1.d0/(omega_abf))
+     A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+1.d0/(omega_abf*dble(nhisto)))
  enddo
 end if 
 

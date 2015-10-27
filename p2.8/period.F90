@@ -40,7 +40,7 @@ subroutine period
 
   !      write(*,*) 'PBC PBC PBC capitala tarii e ....             period',iperiod
 
-      IF (ldecal_bc==.FALSE.) THEN
+      IF (ldecal_bc.EQV..FALSE.) THEN
 
       call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
       call cryst_to_cart (imm, xpp, bg,  -1)
@@ -64,7 +64,7 @@ subroutine period
       call cryst_to_cart (imm, xpp, at,  1)
       call cryst_to_cart (imm, ax , at,  1)
 
-     ELSE IF (ldecal_bc==.TRUE.) THEN
+     ELSE IF (ldecal_bc.EQV..TRUE.) THEN
 
          call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
          call cryst_to_cart (imm, xpp, bg,  -1)
