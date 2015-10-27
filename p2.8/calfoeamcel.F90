@@ -203,9 +203,12 @@ SUBROUTINE calfoeamcel
                  sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)/volu
                  sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)/volu
                  if (lTPcel.EQV..true.) then
-                    sigc(1:3,1,koo) =sigc(1:3,1,koo) -dErep*gradij(1:3)*dxp(1)*nox*noy*noz/volu
-                    sigc(1:3,2,koo) =sigc(1:3,2,koo) -dErep*gradij(1:3)*dxp(2)*nox*noy*noz/volu
-                    sigc(1:3,3,koo) =sigc(1:3,3,koo) -dErep*gradij(1:3)*dxp(3)*nox*noy*noz/volu
+                    sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*nox*noy*noz/volu
+                    sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*nox*noy*noz/volu
+                    sigc(1:3,3,koo) =sigc(1:3,3,koo) -0.5*dErep*gradij(1:3)*dxp(3)*nox*noy*noz/volu
+                    sigc(1:3,1,ko1) =sigc(1:3,1,ko1) -0.5*dErep*gradij(1:3)*dxp(1)*nox*noy*noz/volu
+                    sigc(1:3,2,ko1) =sigc(1:3,2,ko1) -0.5*dErep*gradij(1:3)*dxp(2)*nox*noy*noz/volu
+                    sigc(1:3,3,ko1) =sigc(1:3,3,ko1) -0.5*dErep*gradij(1:3)*dxp(3)*nox*noy*noz/volu
                  end if
 
 	      endif
@@ -339,9 +342,12 @@ SUBROUTINE calfoeamcel
                  sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)/volu
                  sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)/volu
                  if (lTPcel.EQV..true.) then
-                    sigc(1:3,1,koo) =sigc(1:3,1,koo) - Femb*gradij(1:3)*dxp(1)*nox*noy*noz/volu
-                    sigc(1:3,2,koo) =sigc(1:3,2,koo) - Femb*gradij(1:3)*dxp(2)*nox*noy*noz/volu
-                    sigc(1:3,3,koo) =sigc(1:3,3,koo) - Femb*gradij(1:3)*dxp(3)*nox*noy*noz/volu
+                    sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*nox*noy*noz/volu
+                    sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*nox*noy*noz/volu
+                    sigc(1:3,3,koo) =sigc(1:3,3,koo) - 0.5*Femb*gradij(1:3)*dxp(3)*nox*noy*noz/volu
+                    sigc(1:3,1,ko1) =sigc(1:3,1,ko1) - 0.5*Femb*gradij(1:3)*dxp(1)*nox*noy*noz/volu
+                    sigc(1:3,2,ko1) =sigc(1:3,2,ko1) - 0.5*Femb*gradij(1:3)*dxp(2)*nox*noy*noz/volu
+                    sigc(1:3,3,ko1) =sigc(1:3,3,ko1) - 0.5*Femb*gradij(1:3)*dxp(3)*nox*noy*noz/volu
                  end if
 
 	      endif

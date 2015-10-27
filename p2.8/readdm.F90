@@ -53,7 +53,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils
+       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest
 
 
   !
@@ -316,6 +316,8 @@ subroutine readdm
   timemax=1d20
   tpseuils(:)=0 ! 1:Tmin; 2:abs(T') ; 3: abs(T'') ; 1:abs(P); 2:abs(P') ; 3: abs(P'')
 
+  lrctest=.true.
+
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -440,11 +442,13 @@ subroutine readdm
         ltabvois=.false.
         if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
      end if
-     if (dmtype.ne.4) then
+     select case(dmtype)
+        case(2,4)
+        case default 
         if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=4'
         if (rang==0) write(*,*) 'Stop in readdm'
         call arret_ndm
-     end if
+     end select
   end if
 
 

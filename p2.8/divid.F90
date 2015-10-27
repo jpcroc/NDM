@@ -17,7 +17,7 @@ subroutine divid (appel)
   !-----------------------------------------------
   real(double) :: celmin, zlmin, zlm2,rus
   integer::izonr2,izonr,ic
-  real(double)::voluperat,rm2,qtot
+  real(double)::voluperat,rm2,qtot,rut
 
   !-----------------------------------------------
   !   E x t e r n a l   F u n c t i o n s
@@ -34,7 +34,7 @@ subroutine divid (appel)
   call param_det
 
 
-!  write(6,*)rumax,rue_pair,maxval(rue_pair)
+  !  write(6,*)rumax,rue_pair,maxval(rue_pair)
   rumax = max(rumax,maxval(rue_pair))
   csive=rumax/float(ngrid)
 
@@ -52,7 +52,7 @@ subroutine divid (appel)
   if (ltabvois) then
      if (rumax>rvois) then
         if((rang==0).and.(appel==0)) write (6, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
-      !cosdebug call arret_ndm
+        !cosdebug call arret_ndm
      else
         if((rang==0).and.(appel==0)) write (6,'(A,2F12.2)') ' rumax devient rvois&
              & pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
@@ -69,19 +69,31 @@ subroutine divid (appel)
   zlmin = min(zlmin,zlm2)
   zlm2 = distmin(at(1,2),at(1,3))
   zlmin = min(zlmin,zlm2)
+  zlmin=zlmin*2
+  rut=rumax
+  if (lpotentiel(10)==.true.)      rut=max(rut,2*rue_pot(10))
+  !     write(6,*)'BIP',rumax,rut,rue_pot(10)
+  !  end if
+  if (lpotentiel(11)==.true.) rut=max(rut,2*rue_pot(11))
+  if (lpotentiel(12)==.true.) rut=max(rut,2*rue_pot(12))
 
-  izonr = int(zlmin/rumax)
+  izonr = int(zlmin/rut)
   ! MPI
-  if ((rang==0).and.(appel==0)) write (6, *) 'izonr,zlmin,rumax', izonr, zlmin*1d8, rumax*1d8
-  if (izonr<1) then
-     write (6, *) 'trop petite boite !!!'
-   !cosboite  stop
+  if ((rang==0).and.(appel==0)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
+
+     if (izonr<2) then
+        write (6, *) 'trop petite boite !!!'
+        !cosboite  stop
 #ifdef PHONDY || PARAPH
-     write (6, *) 'trop petite boite !!!'
+        write (6, *) 'trop petite boite !!!'
 #else
+  if (lrctest) then
+        write (6, *) 'STOP ; supprimer avec lrctest=.false. dans din'
      stop
-#endif
   endif
+#endif
+
+  end if
   ! calcul du volume
   !      if ((rang==0).and.(appel==0)) write (6, *) 'avant volu'
 
@@ -237,27 +249,27 @@ subroutine divid (appel)
      return
   end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN apppel=0
+  !RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN!RETURN apppel=0
 
 
   IF (natperc.LE.0) THEN        ! MODIF Clouet
-          natperc= INT(im_glob/noxyz)
-          nvat=10*natperc
-!          if(natperc.le.2)then
-!             if (rang==0) &
-!                  write(6,*) 'moins de 3 atomes par celulle -> table des voisins complete' 
-!             ltabvois=.TRUE. ; lconstrtot=.TRUE.
-!          end if
-          !!$natperc=max(2*natperc,10)     ! MODIF Clouet
-          natperc=max(5*natperc,10)     ! MODIF Clouet
+     natperc= INT(im_glob/noxyz)
+     nvat=10*natperc
+     !          if(natperc.le.2)then
+     !             if (rang==0) &
+     !                  write(6,*) 'moins de 3 atomes par celulle -> table des voisins complete' 
+     !             ltabvois=.TRUE. ; lconstrtot=.TRUE.
+     !          end if
+!!$natperc=max(2*natperc,10)     ! MODIF Clouet
+     natperc=max(5*natperc,10)     ! MODIF Clouet
   ELSE                          ! MODIF Clouet
-          nvat=10*natperc       ! MODIF Clouet
+     nvat=10*natperc       ! MODIF Clouet
   END IF                        ! MODIF Clouet
 
 
 
-!  natperc= INT(im_glob/noxyz)
-!  nvat=10*natperc
+  !  natperc= INT(im_glob/noxyz)
+  !  nvat=10*natperc
 
   natperc=max(5*natperc,20)
 
@@ -276,9 +288,9 @@ subroutine divid (appel)
      izonr2 = int(zlmin/rm2)
      if (izonr2<1) then
         write (6, *) rang,'trop petite boite pour rvois !!!'
-     !cosboite   call arret_ndm
+        !cosboite   call arret_ndm
 #ifdef PHONDY || PARAPH 
- 
+
         write (6, *) rang,'trop petite boite pour rvois !!!'
 #else 
         call arret_ndm

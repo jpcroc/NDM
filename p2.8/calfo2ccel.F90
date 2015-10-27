@@ -286,15 +286,24 @@ subroutine calfo2ccel
                     sig(3,3) = sig(3,3)+phu*c3*c3/volu
                  endif
                  if (lTPcel.EQV..true.) then
-                    sigc(1,1,koo) = sigc(1,1,koo)+phu*c1*c1*noxyz/volu
-                    sigc(1,2,koo) = sigc(1,2,koo)+phu*c1*c2*noxyz/volu
-                    sigc(1,3,koo) = sigc(1,3,koo)+phu*c1*c3*noxyz/volu
-                    sigc(2,1,koo) = sigc(2,1,koo)+phu*c2*c1*noxyz/volu
-                    sigc(2,2,koo) = sigc(2,2,koo)+phu*c2*c2*noxyz/volu
-                    sigc(2,3,koo) = sigc(2,3,koo)+phu*c2*c3*noxyz/volu
-                    sigc(3,1,koo) = sigc(3,1,koo)+phu*c3*c1*noxyz/volu
-                    sigc(3,2,koo) = sigc(3,2,koo)+phu*c3*c2*noxyz/volu
-                    sigc(3,3,koo) = sigc(3,3,koo)+phu*c3*c3*noxyz/volu
+                    sigc(1,1,koo) = sigc(1,1,koo)+0.5*phu*c1*c1*noxyz/volu
+                    sigc(1,2,koo) = sigc(1,2,koo)+0.5*phu*c1*c2*noxyz/volu
+                    sigc(1,3,koo) = sigc(1,3,koo)+0.5*phu*c1*c3*noxyz/volu
+                    sigc(2,1,koo) = sigc(2,1,koo)+0.5*phu*c2*c1*noxyz/volu
+                    sigc(2,2,koo) = sigc(2,2,koo)+0.5*phu*c2*c2*noxyz/volu
+                    sigc(2,3,koo) = sigc(2,3,koo)+0.5*phu*c2*c3*noxyz/volu
+                    sigc(3,1,koo) = sigc(3,1,koo)+0.5*phu*c3*c1*noxyz/volu
+                    sigc(3,2,koo) = sigc(3,2,koo)+0.5*phu*c3*c2*noxyz/volu
+                    sigc(3,3,koo) = sigc(3,3,koo)+0.5*phu*c3*c3*noxyz/volu
+                    sigc(1,1,ko1) = sigc(1,1,ko1)+0.5*phu*c1*c1*noxyz/volu
+                    sigc(1,2,ko1) = sigc(1,2,ko1)+0.5*phu*c1*c2*noxyz/volu
+                    sigc(1,3,ko1) = sigc(1,3,ko1)+0.5*phu*c1*c3*noxyz/volu
+                    sigc(2,1,ko1) = sigc(2,1,ko1)+0.5*phu*c2*c1*noxyz/volu
+                    sigc(2,2,ko1) = sigc(2,2,ko1)+0.5*phu*c2*c2*noxyz/volu
+                    sigc(2,3,ko1) = sigc(2,3,ko1)+0.5*phu*c2*c3*noxyz/volu
+                    sigc(3,1,ko1) = sigc(3,1,ko1)+0.5*phu*c3*c1*noxyz/volu
+                    sigc(3,2,ko1) = sigc(3,2,ko1)+0.5*phu*c3*c2*noxyz/volu
+                    sigc(3,3,ko1) = sigc(3,3,ko1)+0.5*phu*c3*c3*noxyz/volu
                  end if
                  if (num_at_glob(i).lt.num_at_glob(j)) then
                     if (lsigtyp.EQV..true.) then

@@ -63,6 +63,7 @@ module gen_com_m
   logical :: lfrozen    ! .true.: certains atomes sont bloques (pas de dynamique)
   logical :: lbulle    ! .true.: bulle
   logical :: ldesinteg    ! .true.: insertion appelle init_insert
+  logical :: lrctest    ! .true.: test sur rc ; false pas de test
   integer:: nstepdes,ides, pm1des,itdes,imdesup,imdesdeb,imdesdn
   real(double)::lambdades,deltaF
   
