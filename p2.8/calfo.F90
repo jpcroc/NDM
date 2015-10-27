@@ -31,8 +31,8 @@ subroutine calfo
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   real(double), dimension(3) :: fptot
-  integer :: i,ilocal,ipot
-  real(double)::vn,ic,v1,f1,ekin
+  integer :: i,ilocal,ipot,ic
+  real(double)::vn,v1,f1,ekin
   integer::nv1
 
 #if(PARA)

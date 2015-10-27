@@ -14,8 +14,8 @@ else
  # Version sequentielle
 
 F90 = ifort
-
- CPPFLAGS = -C -E -P -traditional
+#F90 = gfortran
+ CPPFLAGS = -C -E -P -traditional -nostdinc
 EXT      = 
 
 #F90FLAGS = -O3  -convert big_endian 
