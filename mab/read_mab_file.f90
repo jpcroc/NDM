@@ -14,7 +14,8 @@ subroutine read_mab_file()
                               mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix,  &
                               temperature_zeta_min,temperature_zeta_max,          &
                               nsite_block, isite_block,atom_to_jump,              &
-                              itype_reaction,itype_einstein, units_phondy,m_i
+                              itype_reaction,itype_einstein, units_phondy,m_i,    &
+                              nimage_neb,nimage_lambda                
 
  implicit none
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
@@ -24,7 +25,7 @@ subroutine read_mab_file()
                       maxforce,compute_mode,abf_mode, error_step,nom_deconvo,lang_factor, &
                       mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix,            &
                       temperature_zeta_min,temperature_zeta_max,                          &
-                      atom_to_jump, itype_reaction,itype_einstein
+                      atom_to_jump, itype_reaction,itype_einstein,nimage_neb,nimage_lambda
 
  character(len=128) :: fnamtin, fnamt_lblock, fnamt_lfreq, fnamt_lm, fnamt_lu, fnamt_lv
  integer :: lumab,lublock,lcu,lcv,lcm
@@ -53,6 +54,11 @@ subroutine read_mab_file()
  atom_to_jump=7
  itype_reaction=0 ! 0 for vacancy, 1 for NEB 0 K reaction
  itype_einstein=0 ! 0 - einstein, 1 HA, 2 Morse (for rthe future)
+      !neb part:
+
+ nimage_neb=15
+ nimage_lambda=70
+
 
      
      do ia=1,3

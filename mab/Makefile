@@ -1,12 +1,14 @@
 OBJ   = mab_in_ndm_module.o\
         read_mab_file.o\
         tools.o\
+	reaction_neb_module.o\
         einstein.o\
         test_minimum_abf.o\
         langevin.o\
         langevin_overdamped.o\
         langevin_overdamped_zeta.o\
 	reaction.o\
+	reaction_neb.o\
         histo.o\
         calfo_BIN_OMEGA_GAUSSIEN.o\
         calfo_ABFee.o\

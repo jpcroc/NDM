@@ -44,6 +44,10 @@ end if
   end subroutine reaction
 
 
+
+
+
+
 subroutine calfoblock()
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: zero,im,imm,low_limit,angst,ev2erg,erg2ev

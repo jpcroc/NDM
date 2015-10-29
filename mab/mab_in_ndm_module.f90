@@ -55,7 +55,8 @@ module mab_in_ndm_module
       integer:: nsite_block,atom_to_jump,itype_reaction,itype_einstein
       integer, dimension(:), allocatable :: isite_block
       logical :: block,test_end,histo_equi
-
+      !neb part:
+      integer :: nimage_neb, nimage_lambda
 
  contains
  

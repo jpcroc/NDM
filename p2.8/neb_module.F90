@@ -126,6 +126,19 @@ contains
     real(double),dimension(:,:), allocatable   :: fp_buffer
     real(double)::deplamax,depla
     !-----------------------------------------------
+!   nrep_peierls=10
+!   temp_local=0.5d0/dble(nrep_peierls)
+!---
+!   dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
+!
+!
+!   call cryst_to_cart (imm, dxx, bg, -1) !cart vers cryst
+!   do ic=1,im
+!      if ( (dabs(dxx(3,ic)).GE.temp_local) ) then
+!       dxx(3,ic)  = dxx(3,ic)  - dabs(dxx(3,ic))/dxx(3,ic)/dble(nrep_peierls)
+!      end if
+!   end do-------
+!   call cryst_to_cart (imm, dxx, at,   1) !cart vers cryst
 
 
     dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)

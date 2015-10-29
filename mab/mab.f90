@@ -42,6 +42,14 @@ subroutine mab
   write(6,*)'.......INIT.......' 
   !debug .... write(*,*) 'temperature ',temperature/KtoERG 
   call init_mab_in_ndm_module()
+  if (itype_reaction==1) then
+   call init_neb_reaction()
+   call read_neb_from_ndm()
+   call interpolate_the_neb_images()
+   call test_energy_along_reaction()
+!   call build_defect_force_along_reaction()
+   stop
+  end if 
   write(6,*)'......PREPARE.....' 
 
  call prepare_langevin()
