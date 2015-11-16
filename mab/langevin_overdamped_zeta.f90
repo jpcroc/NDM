@@ -78,7 +78,7 @@ subroutine langevin_overdamped_zeta()
 !oldw                + noise*sqrt(2.d0*temperature*tmp_factor)  &
 !oldw                + force_zeta* tmp_factor*10.d0
      tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*dtlang_zeta/(gamma*m_i(1,1))  &
-                 + noise*sqrt(2.d0*temperature/(gamma*m_i(1,1)))  &
+                 + noise*sqrt(2.d0*temperature*dtlang_zeta/(gamma*m_i(1,1)))  &
                  + force_zeta* tmp_factor*10.d0
     end if 
     the_moise=noise*sqrt(2.d0*lang_factor*temperature*dtlang_zeta*angst*angst/(gamma*m_i(1,1)))

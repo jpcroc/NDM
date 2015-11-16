@@ -15,7 +15,7 @@
     use var_pot
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,xbar,  &
                              Ecinetique,abf_type,abf_mode,block,gamma,fpeinstein,it_en,&
-                             temperature 
+                             temperature,dcsi 
 
 
     implicit none
@@ -33,7 +33,9 @@
 
 !tds if (abf_mode==22) then
      crit=0.01/1.d8
-     dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
+     if (abf_mode==2) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
+     if (abf_mode==1) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
+     if (abf_mode==22) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
      sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))
 !    end if 
 !    write(*,*) dtlang
