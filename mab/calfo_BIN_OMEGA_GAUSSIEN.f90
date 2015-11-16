@@ -34,7 +34,7 @@ if (abf_mode==1) then
 end if 
 
 if (abf_mode==2) then              
-  force = potist - ene_einstein - ene0 !  - d U(zeta,q)/d zeta  
+  force = potist - ene_einstein - ene0 !    d U(zeta,q)/d zeta  
   fpabf(:,:) = (1.d0-dcsi)*fpeinstein(:,:) + dcsi*fp(:,:) ! -d U(zeta,q)/d q
   fp(:,:)=fpabf(:,:)
   ! write(*,*) 'fpabf', fp(:,1)
@@ -43,7 +43,7 @@ if (abf_mode==2) then
   cumul_force1(icsi) =  cumul_force1(icsi) + force
   mean_force1 (icsi) = cumul_force1(icsi)/histo1(icsi)
   end if
-  !
+!debug  write(*,*) 'bin stop',icsi,cumul_force1(icsi),histo1(icsi),mean_force1(icsi)
 end if 
 
 

@@ -15,7 +15,7 @@ module mab_in_ndm_module
       implicit none
 
       real(double), dimension(:,:), allocatable :: sig_i,sig_ll,rga_i,xp0,m_i
-      real(double)  :: dtlang,temperature,Ecinetique,m_tot,a0bcc,omega_abf,maxforce,lang_factor
+      real(double)  :: dtlang,dtlang_ini, temperature,Ecinetique,m_tot,a0bcc,omega_abf,maxforce,lang_factor
       
 
       real(double), parameter :: KtoERG=1.3791946308724831d-16 
@@ -76,7 +76,7 @@ end   subroutine allocate_mab
     implicit none
     integer :: ic
      
-
+     dtlang_ini=dtlang
      m_tot=SUM(m_i(1,1:im))
     
      xp0(:,:) = xp(:,:)
@@ -177,9 +177,9 @@ end   subroutine allocate_mab
     cumul_force1(:)=0.d0 
     cumul_force_denom1(:)=0.d0
     histo(1:nhisto)=0
-    histo_temp(1:nhisto)=0
-    histo1(-nhisto1:nhisto+nhisto1)=0
-    histo2(-nhisto2:nhisto+nhisto2)=0
+    histo_temp(1:nhisto)=1
+    histo1(-nhisto1:nhisto+nhisto1)=1
+    histo2(-nhisto2:nhisto+nhisto2)=1
     histo_xi(-nhisto1:nhisto+nhisto1)=0
     histo_zeta(-nhisto1:nhisto+nhisto1)=0.d0
     Free_energy(:)=0

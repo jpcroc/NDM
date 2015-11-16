@@ -16,7 +16,7 @@ subroutine langevin_overdamped_zeta()
                                 ene_einstein,ene0, temperature,mean_force1,icsi, &
                                 limit1,limit2,langevin_type,m_i,it_mab,delta_z,nhisto,nhisto1, &
                                 lang_factor,it_mab,it_stop,limit1m, limit1p,ha_mix,abf_type,equit, &
-                                xi_max, xi_min
+                                xi_max, xi_min,dtlang_ini
 
 
    implicit none
@@ -24,13 +24,14 @@ subroutine langevin_overdamped_zeta()
    real(double) :: dcsi_ini, force_zeta, tmp_factor,the_moise
    real(double), save :: average_temp=0.d0
    integer, save :: it_temp = 0
-   integer :: it_count 
+   integer :: it_count
+   real(8)  :: crit_zeta,dtlang_zeta
     
 
     !ddd ffactor=5.d+8
     if (it_mab==1) then
-!     dcsi=(xi_max-xi_min)/2.d0
-     dcsi=1.0
+     dcsi=(xi_max-xi_min)/2.d0
+!     dcsi=1.0
     end if 
     if ((dcsi>=limit1m).and.(dcsi<=limit1p)) then
       tmp_force=mean_force1(icsi)
@@ -43,44 +44,62 @@ subroutine langevin_overdamped_zeta()
     noise=0
     it_count=0
     it_temp=0
-10 continue
+
+    tmp_factor=lang_factor*dtlang_ini*angst*angst/(gamma*m_i(1,1))
+  if (abf_mode==2) then
+    crit_zeta = 0.01
+    dtlang_zeta=crit_zeta**2*gamma*m_i(1,1)/(6.d0*temperature)
+!debug    write(*,'("lang ", i6, 4e18.4)') it_mab, dtlang_zeta, (potist-ene0)*tmp_factor,dtlang_zeta/(gamma*m_i(1,1))*(potist-ene0),sqrt(2.d0*temperature/(gamma*m_i(1,1))) 
+  end if 
+
+   10 continue
       call genere_bruit_one_value(noise)
       call zeta_potential (dcsi,force_zeta)
 
-    tmp_factor=lang_factor*dtlang*angst*angst/(gamma*m_i(1,1))
+  if (abf_mode==22) then
+     crit_zeta=0.01
+      dtlang_zeta=crit_zeta**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
+     end if 
+!     write(*,*) dtlang_zeta
+
+
+
+
     if (abf_mode==2) then
-     tmp_dcsi = -(potist-ene_einstein -ene0 - tmp_force )*tmp_factor     &
-                  + noise*sqrt(2.d0*temperature*tmp_factor)              &
+     tmp_dcsi = -(potist -ene0 -ene_einstein-tmp_force  )*dtlang_zeta/(gamma*m_i(1,1))      &
+                  + noise*sqrt(2.d0*temperature/(gamma*m_i(1,1)))              &
                   + force_zeta*tmp_factor*10.d0  
                   ! *100 for lang with mass under
                   ! * 10 for   over
     end if 
 
     if (abf_mode==22) then
-     tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*tmp_factor  &
-                + noise*sqrt(2.d0*temperature*tmp_factor)  &
-                + force_zeta* tmp_factor*10.d0
+!oldw     tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*tmp_factor  &
+!oldw                + noise*sqrt(2.d0*temperature*tmp_factor)  &
+!oldw                + force_zeta* tmp_factor*10.d0
+     tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*dtlang_zeta/(gamma*m_i(1,1))  &
+                 + noise*sqrt(2.d0*temperature/(gamma*m_i(1,1)))  &
+                 + force_zeta* tmp_factor*10.d0
     end if 
-   !  end if
-    the_moise=noise*sqrt(2.d0*lang_factor*temperature*dtlang*angst*angst/(gamma*m_i(1,1)))
+    the_moise=noise*sqrt(2.d0*lang_factor*temperature*dtlang_zeta*angst*angst/(gamma*m_i(1,1)))
 ! the best choise is factor = 5*d+8. actually for this value the 
-!dtlang * angst * ffactor / gamma (for ffactor=5.d+8 gamma=1.d+14 and dtlag=2*1d-15) is nothing else than 25* dtlan*dtlang * angst * angst  !!!!! 
+!dtlang_zeta * angst * ffactor / gamma (for ffactor=5.d+8 gamma=1.d+14 and dtlag=2*1d-15) is nothing else than 25* dtlan*dtlang_zeta * angst * angst  !!!!! 
      dcsi=tmp_dcsi  + dcsi_ini
-     if ((it_mab< 5000).and.(dabs(tmp_dcsi)>dabs(xi_max-xi_min)/20.d0)) then
+     if ((it_mab< 2000).and.(dabs(tmp_dcsi)>dabs(xi_max-xi_min)/20.d0)) then
       if (dcsi<xi_min) dcsi=xi_min
       if (dcsi>xi_max) dcsi=xi_max
-      !tmp_dcsi=0
+      tmp_dcsi=0
     end if 
  
+!debug    if (it_mab==1) write(747,*) " it_mab, dcsi_ini, nint(dcsi_ini/delta_z), tmp_dcsi, &
+!debug       nint(tmp_dcsi/delta_z),  potist-ene0, ene_einstein, force_zeta, tmp_force  "
 
 
-   if (it_count==0)    write(747,'("  ",i6, E16.2, i6, E16.2, i6, 4D23.7)') it_mab, dcsi_ini, nint(dcsi_ini/delta_z), tmp_dcsi, &
-       nint(tmp_dcsi/delta_z),  potist-ene0, ene_einstein, force_zeta, tmp_force
-    if (it_count==0)    write(744,'("  ",i6, E16.2, i6, E16.2, i6, i6, i6, 4D23.7)') it_mab, &
-                        dcsi_ini, nint(dcsi_ini/delta_z), tmp_dcsi, &
-       nint(tmp_dcsi/delta_z), &
-       nint((potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*tmp_factor/delta_z) , &
-       nint(noise*sqrt(2.d0*temperature*tmp_factor)/delta_z)  , force_zeta, tmp_force
+!debug   if (it_count==0)    write(747,'("  ",i6, E16.2, i6, E16.2, i6, 4D23.7)') it_mab, dcsi_ini, nint(dcsi_ini/delta_z), tmp_dcsi, &
+!debug        nint(tmp_dcsi/delta_z),  potist-ene0, (potist-ene0)*dtlang_zeta/(gamma*m_i(1,1)) , force_zeta, tmp_force
+
+!debug    if (it_count==0)    write(744,'("  ",i6,  D23.7, i6, D23.7, f12.6)') it_mab, noise, nint(noise*sqrt(2.d0*temperature/(gamma*m_i(1,1)))/delta_z), noise*sqrt(2.d0*temperature/(gamma*m_i(1,1))), delta_z 
+
   !debug   write(*,*) 'ddd', nint(potist*tmp_factor/delta_z) , nint(ene0*tmp_factor/delta_z),ha_mix*ene_einstein,equit,nint(tmp_force*tmp_factor/delta_z)
 
 
@@ -99,12 +118,12 @@ subroutine langevin_overdamped_zeta()
               dcsi=dcsi_ini
               go to 11
             end if 
-!            go to 10
+            go to 10
        end if 
 11 continue
   
-    if (it_count/=0)  write(757,'(2i7,2D15.7)') it_mab, it_temp, tmp_dcsi, &
-                      average_temp/dble(it_mab + it_temp)
+!debug    if (it_count/=0)  write(757,'(2i7,2D15.7)') it_mab, it_temp, tmp_dcsi, &
+!debug                      average_temp/dble(it_mab + it_temp)
     return
  end subroutine langevin_overdamped_zeta
 

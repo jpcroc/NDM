@@ -3,7 +3,9 @@
 !-------This program calculate Free energy (Free energy mollified)files, and create mean force files
 !-------This program has to be launched at the end of the simulation--------------------------------
 !----------------------------------------------------------------------------------------------------
-
+! A_ee       is A unnormalized
+! A_bar_ee   is A_ee normalized corrected
+! Free_energy is the free energy 
 subroutine Free_energy_ABF()
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: erg2eV,A2cm
@@ -24,7 +26,6 @@ Free_temp(:)=0.d0
 renorm_alch(:)=0.d0
 if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'energie libre 
   Free_energy(-nhisto1)=0.d0
-
    do i_loop=-nhisto1+1,nhisto+nhisto1
     !
     Free_energy(i_loop)=Free_energy(i_loop-1)+0.5d0*delta_z*(mean_force1(i_loop-1)+mean_force1(i_loop))
@@ -37,6 +38,9 @@ if (abf_type .NE. 5) then ! pour ABFee, on va calculer autrement l'energie libre
    forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=Free_energy(i_loop)+renorm_f
 endif
  
+
+!  call set_the_unit_histo()
+
   if (abf_mode==1) unit_histo2(:)=x_mol(:)/A2cm
   if ((abf_mode==2).or.(abf_mode==22)) then 
      do i_loop=-nhisto2, nhisto+nhisto2
@@ -56,10 +60,19 @@ endif
  case(2)
   write(*,*),'Free energy computation....ABF BIN'
   open(unit=993,file='Free_energy_ABFBIN',status='unknown')
+   
+  if (.not.(abf_mode==22)) then
    do i_loop=-nhisto1+1,nhisto+nhisto1
     write(993,*),  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
    enddo
+  else 
+  do i_loop=-nhisto1+1,nhisto+nhisto1
+    write(993,*),  1.d0/(unit_histo2(i_loop)/(temperature/KtoERG)), &
+             (Free_energy(i_loop)/unit_histo2(i_loop)+renorm_f/unit_histo2(i_loop))*erg2eV
+   enddo
   close(993)
+  end if
+
 
  case(3)
   write(*,*),'Free energy computation....ABF BIN OMEGA'
@@ -83,16 +96,10 @@ endif
   !-----------------------A_tilde-------------------------------
   !-----------------------------------------------------------------
 
+  ! take the remor_f from A_ee
   forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-A_ee(i_loop)/temperature)
   renorm_f=temperature*log(sum(Free_temp(-nhisto1:nhisto+nhisto1))*delta_z)
 
-!renormalization by changing the temperature see the page 17 of my notes ...
- do i_loop= -nhisto1,nhisto+nhisto1
-  do i_iter= -nhisto1,nhisto+nhisto1
-   renorm_alch(i_loop)=renorm_alch(i_loop) + exp(-A_ee(i_iter)*unit_histo2(i_iter)/temperature)*delta_z
-  end do
-   renorm_alch(i_loop)=temperature*log(renorm_alch(i_loop))
- end do
 
   if (abf_mode==2) then
     forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=A_ee(i_loop) + renorm_f
@@ -100,10 +107,21 @@ endif
 
   if (abf_mode==22) then
    do i_loop=-nhisto1,nhisto+nhisto1
-!debug      write(*,*) A_ee(i_loop), renorm_alch(i_loop), renorm_f
-          Free_energy(i_loop) = A_ee(i_loop)/unit_histo2(i_loop)           &
-                       -renorm_alch(i_loop)/unit_histo2(i_loop)   &
-                       +renorm_f/unit_histo2(i_loop)
+   !renormalization by changing the temperature see the page 17 of my notes ...
+   ! this was the old version from abf_type=22
+   ! do i_loop= -nhisto1,nhisto+nhisto1
+   !  do i_iter= -nhisto1,nhisto+nhisto1
+   !   renorm_alch(i_loop)=renorm_alch(i_loop) + exp(-A_ee(i_iter)*unit_histo2(i_iter)/temperature)*delta_z
+   !  end do
+   !   renorm_alch(i_loop)=temperature*log(renorm_alch(i_loop))
+   ! end do
+   !
+   ! 
+   !       Free_energy(i_loop) = A_ee(i_loop)/unit_histo2(i_loop)           &
+   !                     -renorm_alch(i_loop)/unit_histo2(i_loop)   &
+   !                    +renorm_f/unit_histo2(i_loop)
+
+   Free_energy(i_loop)=A_ee(i_loop)/unit_histo2(i_loop)+renorm_f/unit_histo2(i_loop)
    end do    
   end if 
 ! why this is here !!!!!
@@ -176,7 +194,8 @@ endif
 
   if (abf_mode==22) then
    do i_loop=nhisto+nhisto1,-nhisto1,-1
-     write(999,*) temperature/KtoERG/unit_histo2(i_loop),Free_energy(i_loop)*erg2eV+equit*erg2ev
+     !write(999,*) temperature/KtoERG/unit_histo2(i_loop),Free_energy(i_loop)*erg2eV+equit*erg2ev
+     write(999,*) 1.d0/(unit_histo2(i_loop)/(temperature/KtoERG)),Free_energy(i_loop)*erg2eV+equit*erg2ev
    enddo
    close(999)
   end if 

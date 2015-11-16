@@ -38,8 +38,7 @@ if (itype_reaction==1) then
 end if 
     icsi=nint((dcsi-xi_min)/delta_z)
     
-!debug    write (*,*) 'icsi.(reaction) ...', dcsi,delta_z,icsi 
-
+!debug     write (747,*) 'reaction: dcsi icsi ...', dcsi,icsi, delta_z 
  return
   end subroutine reaction
 

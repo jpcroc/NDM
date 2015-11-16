@@ -14,7 +14,8 @@
     use tab_imm_m
     use var_pot
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,xbar,  &
-                             Ecinetique,abf_type,abf_mode,block,gamma,fpeinstein,it_en 
+                             Ecinetique,abf_type,abf_mode,block,gamma,fpeinstein,it_en,&
+                             temperature 
 
 
     implicit none
@@ -26,8 +27,16 @@
     real(double):: sig_mass(3,im) 
     real(double) :: Ecin4
     real(double) :: fplocal(3,imm)
+    real(double) :: crit
 
     call genere_bruit(gau)
+
+!tds if (abf_mode==22) then
+     crit=0.01/1.d8
+     dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
+     sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))
+!    end if 
+!    write(*,*) dtlang
     sig_mass(1:3,1:im)=sig_ll(1:3,1:im)*gau(1:3,1:im)
     do ic=1,3
        xbar(ic)=sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules
@@ -61,7 +70,8 @@
 
       !pp(1:3,1:im)= fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_mass(1:3,1:im)
       pp(1:3,1:im)= fplocal(1:3,1:im)/(m_i(1:3,1:im)*gamma)*dtlang + sig_mass(1:3,1:im)
-
+      
+!here to change      write(*,*) sqrt(6.d0*dtlang*temperature/(gamma*m_i(1,1))), dtlang/(gamma*m_i(1,1))*erg2ev/1.d8
 
       do ic=1,3
       psum(ic)=sum(pp(ic,1:im))/dble(im)

@@ -62,7 +62,7 @@ if ((abf_type .ne. 6) .and. (abf_type .ne. 7)) then ! when the biais is updated
  open(unit=989,file='histogram1',status='unknown')
  open(unit=990,file='histogram',status='unknown')
 
-  sum_histo1=sum(histo1)
+ sum_histo1=sum(histo1)
  sum_histo=sum(histo)
 
    do i_iter=-nhisto1,nhisto+nhisto1

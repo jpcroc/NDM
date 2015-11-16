@@ -59,12 +59,13 @@ if ((abf_mode==2).or.(abf_mode==22)) then
  call init_einstein_solid  ()
  call calfo_einstein_solid ()
  fp(:,:) = fpeinstein(:,:)
-  do it_en=1,200
+  do it_en=1,100
    if (langevin_type==1) call langevin_overdamped ()
    if (langevin_type==2) call langevin()
-   !write(23,'(i7,2D13.5,3f12.5)') it_en, ene_einstein*erg2ev,xp(1,1)*angst,xp(1,1)*angst,fpeinstein(1,1)*erg2eV/angst
+!debug   write(23,'(i7,2D13.5,3f12.5)') it_en, ene_einstein*erg2ev,xp(1,1)*angst,xp(1,1)*angst,fpeinstein(1,1)*erg2eV/angst
   end do
  it_en=-1
+! stop
 end if 
 
 
@@ -86,9 +87,8 @@ if (abf_type == 8) then ! This calculate iterally ABFee ( process to calculate \
     enddo
   else
     write(*,*), 'Input file does not exsit!! Verify your input files!!'
-   stop
-end if
-
+    stop
+  end if
 
 endif
  
