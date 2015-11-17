@@ -177,16 +177,16 @@ do it_mab=1,nlangevin
 !debug  Write (*,*) 'temp', temperature, temperature/KtoERG, omega_einstein
 !debug  Why should be - 
 !debug  because it should be: F = F^HA + [ A(1) - A(0) ]
-   tmp2=  (Free_energy(0)-Free_energy(nhisto))*erg2ev
+   tmp2= -(Free_energy(0)-Free_energy(nhisto))*erg2ev
    call free_and_correction_einstein()
    if (it_stop==1) write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
       write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
-      write(6,'("F(Einstein)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction
-      write(6,'("F(Einstein) - F(Full)  (eV) ............:  ", F15.7)') tmp2
-  !asta pare sa mearga cel mai bine. In mod normal l-as vedea cu +pbc_correction
-      write(6,'("F(Full3N-6)            (eV) ............:  ", F15.7)') einstein_free_3N+einstein_correction -  tmp2 
-      write(6,'("PBC correction         (eV) ............:  ", F15.7)') pbc_correction 
-      write(6,'("Einstein correction    (eV) ............:  ", F15.7)') rests
+      write(6,'("F(Einstein) 3N                   (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction
+      write(6,'("Einstein PBC config  correction  (eV) .......:  ", F15.7)') einstein_correction
+      write(6,'("Einstein PBC kinetic correction  (eV) .......:  ", F15.7)') pbc_correction 
+      write(6,'("F(Einstein)                      (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction+pbc_correction
+      write(6,'("F(Einstein) - F(Full)            (eV) .......:  ", F15.7)') tmp2
+      write(6,'("F(Full3N-6)                      (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction+pbc_correction+tmp2 
  end if  !abf_mode==2
 
   write(6,*)
@@ -352,6 +352,7 @@ stop
 endif
 
 !-------------Dynamics with constant biais for ABFbin
+! you need the previous ABFee free energy (A_ee) and the mean force 
 if (abf_type == 7) then
 
 ! Check whether the file exists or not.
@@ -372,10 +373,10 @@ else
 
 end if
 
-inquire( file="Free_energy_mollifiée_ABFee", exist=dir_e )
+inquire( file="Free_energy_mollifiee_ABFee", exist=dir_e )
 if ( dir_e ) then
 
-open(unit=996,file='Free_energy_mollifiée_ABFee',action='read')
+open(unit=996,file='Free_energy_mollifiee_ABFee',action='read')
 
 do i_iter=-nhisto1,nhisto+nhisto1
 

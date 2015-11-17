@@ -15,7 +15,7 @@
     use var_pot
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,xbar,  &
                              Ecinetique,abf_type,abf_mode,block,gamma,fpeinstein,it_en,&
-                             temperature,dcsi 
+                             temperature,dcsi,dtlang_ini 
 
 
     implicit none
@@ -36,6 +36,7 @@
      if (abf_mode==2) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
      if (abf_mode==1) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
      if (abf_mode==22) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
+     dtlang=dtlang_ini
      sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))
 !    end if 
 !    write(*,*) dtlang
@@ -67,13 +68,7 @@
        fplocal(:,:)=fp(:,:)
   end if 
 
-     !write(*,*) 'fplocal',fplocal(:,1)
-     ! xp(1:3,1:im)= xp(1:3,1:im)+fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_ll(1:3,1:im)*gau(1:3,1:im)
-
-      !pp(1:3,1:im)= fp(1:3,1:im)/(gamma*m_i(1:3,1:im))*dtlang + sig_mass(1:3,1:im)
       pp(1:3,1:im)= fplocal(1:3,1:im)/(m_i(1:3,1:im)*gamma)*dtlang + sig_mass(1:3,1:im)
-      
-!here to change      write(*,*) sqrt(6.d0*dtlang*temperature/(gamma*m_i(1,1))), dtlang/(gamma*m_i(1,1))*erg2ev/1.d8
 
       do ic=1,3
       psum(ic)=sum(pp(ic,1:im))/dble(im)

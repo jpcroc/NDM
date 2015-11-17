@@ -108,21 +108,21 @@ integer :: ia,jx
 ! Einstein case .... 
  if (itype_einstein==0) then
 
+! the kinetic part of the PBC corrections in the partion function for the Einstein solid ...
   do ia=1,im
     do jx=1,3
        einstein_free_3N= einstein_free_3N -temperature*erg2ev*log(temperature/(omega_veinstein(jx,ia)*hbar*2.d0*pi*1.d+12))
    end do 
   end do
    einstein_correction = - 3.d0/2.d0*temperature*erg2ev*log(hbar**2/(temperature**2*m2tot))  
-  rests= -temperature*erg2ev*(im-1)*log(volu)
 
   if (volu==0.d0) then
   write(*,*) 'MALHEUUUUUUR volume NUL! '
   end if 
-!Frenkel PBC
-!  pbc_correction=temperature*erg2ev*log(dble(im)/volu*sqrt((hval**2/(2.d0*pi*mtot*temperature))**3) )
-!Almarza Correction
-pbc_correction=temperature*erg2ev*log(dble(im)/volu*sqrt((2.d0*pi*temperature/(m_i(1,1)*omega_einstein**2*1.d+24)**3)))
+
+!the configuration part of the PBC corrections in the partition function for the Einstein solid ....
+  pbc_correction=-temperature*erg2ev*log(sqrt((hval**2/(2.d0*pi*mtot*volu*temperature))**3) )
+  rests=0.d0 
 
 end if 
 

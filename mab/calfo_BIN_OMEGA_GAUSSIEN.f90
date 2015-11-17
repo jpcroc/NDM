@@ -43,7 +43,7 @@ if (abf_mode==2) then
   cumul_force1(icsi) =  cumul_force1(icsi) + force
   mean_force1 (icsi) = cumul_force1(icsi)/histo1(icsi)
   end if
-!debug  write(*,*) 'bin stop',icsi,cumul_force1(icsi),histo1(icsi),mean_force1(icsi)
+  if (icsi==0)  write(*,*) 'bin stop',it_mab, dcsi,icsi,cumul_force1(icsi),histo1(icsi),mean_force1(icsi)
 end if 
 
 

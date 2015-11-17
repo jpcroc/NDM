@@ -18,7 +18,7 @@ implicit none
    if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then
     histo1(icsi)=histo1(icsi) + 1
     ! The inner regin  
-     if ((icsi > 0).and.(icsi <= nhisto)) then
+     if ((icsi >= 0).and.(icsi <= nhisto)) then
        histo(icsi)=histo(icsi) + 1
      end if
    end if  

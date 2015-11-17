@@ -90,7 +90,8 @@ ifdef PARAPH
 # EXT      = _PHONDY_PARAPH
 #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-F90FLAGS =  -O3 -convert big_endian 
+#F90FLAGS =  -O3 -convert big_endian 
+F90FLAGS =   -convert big_endian 
 #F90FLAGS =  -O3  
 
 #FLAGS and LIBS for PHONDY

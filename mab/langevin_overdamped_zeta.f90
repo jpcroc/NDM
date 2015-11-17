@@ -47,40 +47,48 @@ subroutine langevin_overdamped_zeta()
 
     tmp_factor=lang_factor*dtlang_ini*angst*angst/(gamma*m_i(1,1))
   if (abf_mode==2) then
-    crit_zeta = 0.01
-    dtlang_zeta=crit_zeta**2*gamma*m_i(1,1)/(6.d0*temperature)
-!debug    write(*,'("lang ", i6, 4e18.4)') it_mab, dtlang_zeta, (potist-ene0)*tmp_factor,dtlang_zeta/(gamma*m_i(1,1))*(potist-ene0),sqrt(2.d0*temperature/(gamma*m_i(1,1))) 
+    crit_zeta = 0.05
+    dtlang_zeta=1.0*crit_zeta**2*gamma*m_i(1,1)/(6.d0*temperature)
+!     dtlang_zeta=crit_zeta**2*6.0*gamma*m_i(1,1)*temperature/(ev2erg)**2
+!    write(*,*) dtlang_zeta/(gamma*m_i(1,1)),  sqrt(2.d0*temperature*dtlang_zeta/(gamma*m_i(1,1)))
+     
   end if 
 
    10 continue
       call genere_bruit_one_value(noise)
       call zeta_potential (dcsi,force_zeta)
 
-  if (abf_mode==22) then
-     crit_zeta=0.01
-      dtlang_zeta=crit_zeta**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
-     end if 
-!     write(*,*) dtlang_zeta
+!   write(*,'("lang ", i6, 4e18.4)') it_mab,  &
+!            (potist-ene0)*dtlang_zeta/(gamma*m_i(1,1)), &
+!            (potist-ene0-ene_einstein-tmp_force)*dtlang_zeta/(gamma*m_i(1,1)), &
+!                                                         noise*sqrt(2.d0*temperature*dtlang_zeta/(gamma*m_i(1,1))) , &
+!            (potist-ene0)*dtlang_zeta/(gamma*m_i(1,1))/sqrt(2.d0*temperature*dtlang_zeta/(gamma*m_i(1,1)))
 
 
 
 
-    if (abf_mode==2) then
+  if (abf_mode==2) then
      tmp_dcsi = -(potist -ene0 -ene_einstein-tmp_force  )*dtlang_zeta/(gamma*m_i(1,1))      &
-                  + noise*sqrt(2.d0*temperature/(gamma*m_i(1,1)))              &
+                  + noise*sqrt(2.d0*temperature*dtlang_zeta/(gamma*m_i(1,1)))              &
                   + force_zeta*tmp_factor*10.d0  
                   ! *100 for lang with mass under
                   ! * 10 for   over
-    end if 
+  end if 
 
-    if (abf_mode==22) then
+
+  if (abf_mode==22) then
+     crit_zeta=0.01
+      dtlang_zeta=crit_zeta**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
+  end if 
+
+  if (abf_mode==22) then
 !oldw     tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*tmp_factor  &
 !oldw                + noise*sqrt(2.d0*temperature*tmp_factor)  &
 !oldw                + force_zeta* tmp_factor*10.d0
      tmp_dcsi = -(potist+ha_mix*ene_einstein -ene0 - equit- tmp_force )*dtlang_zeta/(gamma*m_i(1,1))  &
                  + noise*sqrt(2.d0*temperature*dtlang_zeta/(gamma*m_i(1,1)))  &
                  + force_zeta* tmp_factor*10.d0
-    end if 
+   end if 
     the_moise=noise*sqrt(2.d0*lang_factor*temperature*dtlang_zeta*angst*angst/(gamma*m_i(1,1)))
 ! the best choise is factor = 5*d+8. actually for this value the 
 !dtlang_zeta * angst * ffactor / gamma (for ffactor=5.d+8 gamma=1.d+14 and dtlag=2*1d-15) is nothing else than 25* dtlan*dtlang_zeta * angst * angst  !!!!! 
