@@ -162,7 +162,7 @@ end if !abf_mode==2
 
 if (abf_mode==22) then
  ! xmol is zeta
- ! U(zeta, q) = zeta*(potist-ene0-ha_mix*U_HA-equit)
+ ! U(zeta, q) = zeta*(potist-ene0+ha_mix*U_HA-equit)
  !--2. compute the  pi_A_ee(\zeta | q ) = \exp{U(zeta,q) / int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
  !--2.a num \exp{U(zeta,q)
 

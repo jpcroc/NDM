@@ -24,6 +24,7 @@ module mab_in_ndm_module
                                                                       !cm are already in  multiplied by 
                                                                       ! umass (in g) in the main NDM program. 
 
+      real(double) :: crit=0.01/1d+8
       integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre,abf_mode,mode_zeta_potential
       integer :: it_mab,it_stop,itest_stop,it_calc_brute
       integer :: ntestvacancyjump
@@ -39,6 +40,7 @@ module mab_in_ndm_module
       real(double),dimension(:), allocatable :: mean_force,mean_force1,mean_force2,mean_force_ABFee
       real(double),dimension(:),allocatable::x_mol,cumul_force_denom1,cumul_force1
       real(double),dimension(:),allocatable::Free_energy
+      real(double), dimension(:), allocatable :: unit_histo2
       real(double),dimension(:),allocatable::A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom,A_bar_ee
       real(double),dimension(:),allocatable::exp_A_bar
       real(double),dimension(:),allocatable::A_theo,error_A,error_A_bar
@@ -55,6 +57,7 @@ module mab_in_ndm_module
       integer:: nsite_block,atom_to_jump,itype_reaction,itype_einstein
       integer, dimension(:), allocatable :: isite_block
       logical :: block,test_end,histo_equi
+
       !neb part:
       integer :: nimage_neb, nimage_lambda
 
@@ -163,6 +166,19 @@ end   subroutine allocate_mab
 
 
    
+    allocate (unit_histo2(-nhisto2:nhisto+nhisto2))
+    
+    if (abf_mode==1) unit_histo2(:)=x_mol(:)/A2cm
+    if ((abf_mode==2).or.(abf_mode==22)) then 
+      do ic=-nhisto2, nhisto+nhisto2
+       unit_histo2(ic)=xi_min+delta_z*dble(ic)
+     end do
+    end if 
+
+
+    
+
+
     allocate(histo(nhisto),histo1(-nhisto1:nhisto+nhisto1),histo2(-nhisto2:nhisto+nhisto2),& 
              histo_temp(nhisto),histo_temp1(-nhisto1:nhisto+nhisto1))
     allocate(histo_xi(-nhisto1:nhisto+nhisto1),histo_zeta(-nhisto1:nhisto+nhisto1))

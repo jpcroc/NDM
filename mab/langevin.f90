@@ -2,12 +2,18 @@
  use gen_com_m, only:one,two,im,imm,tstep
  use var_pot
  use tab_imm_m
- use mab_in_ndm_module, only: sig_i,sig_ll, rga_i,m_i,temperature,gamma,langevin_type,dtlang,Ecinetique
+ use mab_in_ndm_module, only: crit, abf_mode, sig_i,sig_ll, rga_i,m_i,temperature, &
+                              gamma,langevin_type,dtlang,Ecinetique
  implicit none
   
   if (gamma < 0.d0) then
    if (langevin_type==2) gamma=one/(tstep*1.d2)  !under
-   if (langevin_type==1) gamma=one/dtlang        !over
+   if (langevin_type==1) then
+      gamma=5d+13
+      crit=0.01/1.d8
+     if (abf_mode==2) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
+     if (abf_mode==1) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)             !over
+   end if 
   end if 
 
   select case (langevin_type)

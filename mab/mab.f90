@@ -133,19 +133,11 @@ do it_mab=1,nlangevin
     end if  
   end if 
 
+! Writing intermediar steps ....
   if (mod(it_mab,nwrite_histo)==0) then
-    open(unit=989,file='histogram1',status='unknown')
-    open(unit=990,file='histogram',status='unknown')
-    do i_iter=-nhisto1,nhisto+nhisto1
-      write(989,*),i_iter, histo1(i_iter)
-    enddo
-    do i_iter=1,nhisto
-       write(990,*),i_iter, histo(i_iter)
-    enddo
- 
-    close(989)
-    close(990)
+     call on_run_writting
   end if 
+! End writting intermediare steps ....
 
   if (it_stop==1) exit
   if (itest_stop==1) exit

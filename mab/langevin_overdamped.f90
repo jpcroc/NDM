@@ -32,11 +32,13 @@
     call genere_bruit(gau)
 
 !tds if (abf_mode==22) then
-     crit=0.01/1.d8
-     if (abf_mode==2) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
-     if (abf_mode==1) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
+     crit=0.05/1.d8
+     if ((abf_mode==2).or.(abf_mode==1)) then
+          dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
+          dtlang=dtlang_ini
+     end if 
      if (abf_mode==22) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
-     dtlang=dtlang_ini
+     !     dtlang=dtlang_ini
      sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))
 !    end if 
 !    write(*,*) dtlang

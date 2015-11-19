@@ -14,13 +14,12 @@ subroutine Free_energy_ABF()
                               histo,histo1,histo2,Free_energy,&
                               mean_force1,abf_type,abf_mode,x_mol,temperature,&
                               A_ee,A_dev_ee,exp_A_bar,A_bar_ee,eta_ABFee,xi_min, &
-                              KtoERG,equit
+                              KtoERG,equit,unit_histo2
 
 implicit none
 integer::i_loop,i_iter
 real(double)::Free_temp(-nhisto2:nhisto+nhisto2)
 real(double)::renorm_alch(-nhisto2:nhisto+nhisto2)
-real(double) :: unit_histo2(-nhisto2:nhisto+nhisto2)
 real(double)::renorm_f,sum_histo
 Free_temp(:)=0.d0
 renorm_alch(:)=0.d0
@@ -40,14 +39,6 @@ endif
  
 
 !  call set_the_unit_histo()
-
-  if (abf_mode==1) unit_histo2(:)=x_mol(:)/A2cm
-  if ((abf_mode==2).or.(abf_mode==22)) then 
-     do i_loop=-nhisto2, nhisto+nhisto2
-      unit_histo2(i_loop)=xi_min+delta_z*dble(i_loop)
-     end do
-  end if 
-
  select case (abf_type)
  case(1)
   write(*,*),'Free energy computation....Langevin Dynamics'
@@ -106,6 +97,8 @@ endif
   end if 
 
   if (abf_mode==22) then
+  
+  forall(i_loop=-nhisto1:nhisto+nhisto1) A_ee(i_loop)=A_ee(i_loop)+renorm_f
    do i_loop=-nhisto1,nhisto+nhisto1
    !renormalization by changing the temperature see the page 17 of my notes ...
    ! this was the old version from abf_type=22
@@ -121,7 +114,7 @@ endif
    !                     -renorm_alch(i_loop)/unit_histo2(i_loop)   &
    !                    +renorm_f/unit_histo2(i_loop)
 
-   Free_energy(i_loop)=A_ee(i_loop)/unit_histo2(i_loop)+renorm_f/unit_histo2(i_loop)
+   Free_energy(i_loop)=A_ee(i_loop)/unit_histo2(i_loop)+renorm_f*temperature/unit_histo2(i_loop)
    end do    
   end if 
 ! why this is here !!!!!
@@ -509,3 +502,70 @@ enddo
 
 
 end subroutine deconvolution_ABFee
+
+
+
+subroutine on_run_writting()
+ USE T_kind_param_m, ONLY:  double
+ USE gen_com_m, ONLY: erg2eV,A2cm
+ USE tab_imm_m
+ USE mab_in_ndm_module, ONLY : A_ee, &
+                              delta_z, & 
+                              unit_histo2,nhisto,nhisto1,nhisto2, &
+                              abf_type, abf_mode,        &
+                              histo, histo1, histo_zeta, &
+                              temperature, KtoErg,it_mab
+                              
+
+
+ implicit none
+ 
+ integer      :: i_iter
+ real(double) :: renorm_f
+ real(double)::Free_temp(-nhisto2:nhisto+nhisto2)
+
+
+if (.NOT.(abf_type==5)) then
+    open(unit=989,file='histogram1',status='unknown')
+    open(unit=990,file='histogram',status='unknown')
+
+     do i_iter=-nhisto1,nhisto+nhisto1
+      write(989,*),i_iter, histo1(i_iter)
+     enddo
+     do i_iter=1,nhisto
+       write(990,*),i_iter, histo(i_iter)
+     enddo
+
+    close(990)
+   !
+
+end if 
+
+if (abf_type==5) then
+   !
+    open(unit=990,file='histogram_zeta',status='unknown')
+      do i_iter=-nhisto1,nhisto+nhisto1
+       write(990,*),i_iter, histo_zeta(i_iter)
+      enddo
+    close(990)
+    
+     ! take the remor_f from A_ee
+    open(unit=990,file='Free_e_temp',status='unknown')
+    forall(i_iter=-nhisto1:nhisto+nhisto1) Free_temp(i_iter)=exp(-A_ee(i_iter)/temperature)
+    renorm_f=temperature*log(sum(Free_temp(-nhisto1:nhisto+nhisto1))*delta_z)
+    if (abf_mode==22) then
+     do i_iter=-nhisto1+1,nhisto+nhisto1
+         write(990,'(f12.4, 3d17.8)') unit_histo2(i_iter)/(temperature/KtoErg),   &
+          (A_ee/unit_histo2(i_iter)+renorm_f*temperature/unit_histo2(i_iter))*erg2ev, &
+          A_ee/unit_histo2(i_iter)*erg2ev, &
+          renorm_f*temperature/unit_histo2(i_iter)*erg2ev
+     end do
+    end if
+    close(990)
+end if 
+
+
+return
+
+end subroutine on_run_writting
+
