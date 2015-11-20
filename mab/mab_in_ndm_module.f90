@@ -40,7 +40,7 @@ module mab_in_ndm_module
       real(double),dimension(:), allocatable :: mean_force,mean_force1,mean_force2,mean_force_ABFee
       real(double),dimension(:),allocatable::x_mol,cumul_force_denom1,cumul_force1
       real(double),dimension(:),allocatable::Free_energy
-      real(double), dimension(:), allocatable :: unit_histo2
+      real(double),dimension(:), allocatable :: unit_histo2
       real(double),dimension(:),allocatable::A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom,A_bar_ee
       real(double),dimension(:),allocatable::exp_A_bar
       real(double),dimension(:),allocatable::A_theo,error_A,error_A_bar
@@ -165,7 +165,22 @@ end   subroutine allocate_mab
 
 
 
-   
+  
+
+    
+
+
+    allocate(histo(0:nhisto),histo1(-nhisto1:nhisto+nhisto1),histo2(-nhisto2:nhisto+nhisto2),& 
+             histo_temp(0:nhisto),histo_temp1(-nhisto1:nhisto+nhisto1))
+    allocate(histo_xi(-nhisto1:nhisto+nhisto1),histo_zeta(-nhisto1:nhisto+nhisto1))
+    allocate(mean_force(0:nhisto),mean_force1(-nhisto1:nhisto+nhisto1),mean_force2(-nhisto2:nhisto+nhisto2))
+    allocate(mean_force_ABFee(-nhisto2:nhisto+nhisto2))
+    allocate(cumul_force1(-nhisto1:nhisto+nhisto1),cumul_force_denom1(-nhisto1:nhisto+nhisto1))
+    allocate(x_mol(-nhisto2:nhisto+nhisto2))
+    allocate(Free_energy(-nhisto2:nhisto+nhisto2))
+    allocate(A_theo(-nhisto1:nhisto+nhisto1),error_A(-nhisto1:nhisto+nhisto1))
+    allocate(error_A_bar(-nhisto1:nhisto+nhisto1))
+    forall(ic=-nhisto2:nhisto+nhisto2) x_mol(ic)=xi_min+ic*delta_z 
     allocate (unit_histo2(-nhisto2:nhisto+nhisto2))
     
     if (abf_mode==1) unit_histo2(:)=x_mol(:)/A2cm
@@ -174,26 +189,10 @@ end   subroutine allocate_mab
        unit_histo2(ic)=xi_min+delta_z*dble(ic)
      end do
     end if 
-
-
-    
-
-
-    allocate(histo(nhisto),histo1(-nhisto1:nhisto+nhisto1),histo2(-nhisto2:nhisto+nhisto2),& 
-             histo_temp(nhisto),histo_temp1(-nhisto1:nhisto+nhisto1))
-    allocate(histo_xi(-nhisto1:nhisto+nhisto1),histo_zeta(-nhisto1:nhisto+nhisto1))
-    allocate(mean_force(nhisto),mean_force1(-nhisto1:nhisto+nhisto1),mean_force2(-nhisto2:nhisto+nhisto2))
-    allocate(mean_force_ABFee(-nhisto2:nhisto+nhisto2))
-    allocate(cumul_force1(-nhisto1:nhisto+nhisto1),cumul_force_denom1(-nhisto1:nhisto+nhisto1))
-    allocate(x_mol(-nhisto2:nhisto+nhisto2))
-    allocate(Free_energy(-nhisto2:nhisto+nhisto2))
-    allocate(A_theo(-nhisto1:nhisto+nhisto1),error_A(-nhisto1:nhisto+nhisto1))
-    allocate(error_A_bar(-nhisto1:nhisto+nhisto1))
-    forall(ic=-nhisto2:nhisto+nhisto2) x_mol(ic)=xi_min+ic*delta_z 
     cumul_force1(:)=0.d0 
     cumul_force_denom1(:)=0.d0
-    histo(1:nhisto)=0
-    histo_temp(1:nhisto)=1
+    histo(0:nhisto)=0
+    histo_temp(0:nhisto)=1
     histo1(-nhisto1:nhisto+nhisto1)=1
     histo2(-nhisto2:nhisto+nhisto2)=1
     histo_xi(-nhisto1:nhisto+nhisto1)=0

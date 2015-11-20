@@ -15,7 +15,7 @@
     use var_pot
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,xbar,  &
                              Ecinetique,abf_type,abf_mode,block,gamma,fpeinstein,it_en,&
-                             temperature,dcsi,dtlang_ini 
+                             temperature,dcsi,dtlang_ini,xi_min,xi_max 
 
 
     implicit none
@@ -27,7 +27,7 @@
     real(double):: sig_mass(3,im) 
     real(double) :: Ecin4
     real(double) :: fplocal(3,imm)
-    real(double) :: crit
+    real(double) :: crit,dtlang_min, dtlang_max
 
     call genere_bruit(gau)
 
@@ -37,11 +37,21 @@
           dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
           dtlang=dtlang_ini
      end if 
-     if (abf_mode==22) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
-     !     dtlang=dtlang_ini
+     dtlang=dtlang_ini
+     if ((.NOT.(abf_type==5)).and.(abf_mode==22)) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
+     if ((abf_type==5).and.(abf_mode==22)) then
+
+      dtlang_min= crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/xi_min))
+      dtlang_max= crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/xi_max))
+      dtlang= crit**2*(gamma*m_i(1,1))/(6.d0*(temperature))
+
+!      write(*,'(4E25.3)')  dtlang_ini, dtlang, dtlang_min, dtlang_max
+      dtlang=dtlang_ini
+     end if 
+
      sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))
 !    end if 
-!    write(*,*) dtlang
+!    write(*,*) dtlang, dtlang_ini
     sig_mass(1:3,1:im)=sig_ll(1:3,1:im)*gau(1:3,1:im)
     do ic=1,3
        xbar(ic)=sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules

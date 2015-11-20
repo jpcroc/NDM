@@ -98,7 +98,6 @@ endif
 
   if (abf_mode==22) then
   
-  forall(i_loop=-nhisto1:nhisto+nhisto1) A_ee(i_loop)=A_ee(i_loop)+renorm_f
    do i_loop=-nhisto1,nhisto+nhisto1
    !renormalization by changing the temperature see the page 17 of my notes ...
    ! this was the old version from abf_type=22
@@ -113,10 +112,13 @@ endif
    !       Free_energy(i_loop) = A_ee(i_loop)/unit_histo2(i_loop)           &
    !                     -renorm_alch(i_loop)/unit_histo2(i_loop)   &
    !                    +renorm_f/unit_histo2(i_loop)
-
-   Free_energy(i_loop)=A_ee(i_loop)/unit_histo2(i_loop)+renorm_f*temperature/unit_histo2(i_loop)
+ 
+   ! the temperature is alreaby puted in the renormalization constant. 
+   Free_energy(i_loop)=A_ee(i_loop)/unit_histo2(i_loop)+renorm_f/unit_histo2(i_loop) 
    end do    
   end if 
+
+
 ! why this is here !!!!!
   forall(i_loop=-nhisto1:nhisto+nhisto1) A_ee(i_loop)=A_ee(i_loop)+renorm_f
   !minfreeval=minval(A_ee(-nhisto1:nhisto+nhisto1))
@@ -515,11 +517,8 @@ subroutine on_run_writting()
                               abf_type, abf_mode,        &
                               histo, histo1, histo_zeta, &
                               temperature, KtoErg,it_mab
-                              
-
-
  implicit none
- 
+! local variables .... 
  integer      :: i_iter
  real(double) :: renorm_f
  real(double)::Free_temp(-nhisto2:nhisto+nhisto2)
@@ -545,23 +544,25 @@ if (abf_type==5) then
    !
     open(unit=990,file='histogram_zeta',status='unknown')
       do i_iter=-nhisto1,nhisto+nhisto1
-       write(990,*),i_iter, histo_zeta(i_iter)
+       write(990,'(i9,E25.12,2f15.7)') i_iter, histo_zeta(i_iter), (temperature/KtoErg)/unit_histo2(i_iter),unit_histo2(i_iter)
       enddo
     close(990)
     
      ! take the remor_f from A_ee
-    open(unit=990,file='Free_e_temp',status='unknown')
+    open(unit=271,file="Free_data_temp.dat",status='unknown')
     forall(i_iter=-nhisto1:nhisto+nhisto1) Free_temp(i_iter)=exp(-A_ee(i_iter)/temperature)
     renorm_f=temperature*log(sum(Free_temp(-nhisto1:nhisto+nhisto1))*delta_z)
     if (abf_mode==22) then
      do i_iter=-nhisto1+1,nhisto+nhisto1
-         write(990,'(f12.4, 3d17.8)') unit_histo2(i_iter)/(temperature/KtoErg),   &
-          (A_ee/unit_histo2(i_iter)+renorm_f*temperature/unit_histo2(i_iter))*erg2ev, &
-          A_ee/unit_histo2(i_iter)*erg2ev, &
-          renorm_f*temperature/unit_histo2(i_iter)*erg2ev
+         write(271,'(f14.5,3f17.5)')  (temperature/KtoErg)/unit_histo2(i_iter),   &
+          (A_ee(i_iter)/unit_histo2(i_iter)+renorm_f/unit_histo2(i_iter))*erg2ev, &
+          A_ee(i_iter)/unit_histo2(i_iter)*erg2ev, &
+          renorm_f/unit_histo2(i_iter)*erg2ev
+    
      end do
+    close(271)
     end if
-    close(990)
+    
 end if 
 
 

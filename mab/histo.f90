@@ -51,7 +51,7 @@ subroutine fill_final_histo()!To create the final histogram for the simulation
  USE mab_in_ndm_module, ONLY: nhisto,nhisto1,nhisto2,& 
                               histo,histo1,histo2,delta_z,&
                               histo_xi,histo_equi,abf_type,abf_mode, histo_zeta,&
-                              x_mol
+                              x_mol,KtoErg,unit_histo2,temperature
 
 implicit none
 integer::i_iter
@@ -102,7 +102,8 @@ sum_histo_zeta=sum(histo_zeta)
   
  do i_iter=-nhisto1,nhisto+nhisto1
     if (abf_mode==1) write(969,*),x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
-    if (((abf_mode==2).or.(abf_mode==22))) write(969,*),dble(i_iter)*delta_z, histo_zeta(i_iter)/sum_histo_zeta
+    if (((abf_mode==2).or.(abf_mode==22))) write(969,'(i9,E25.12,2f15.7)')i_iter, histo_zeta(i_iter)/sum_histo_zeta,(temperature/KtoErg)/unit_histo2(i_iter),unit_histo2(i_iter)
+
  enddo
 
 
@@ -139,7 +140,7 @@ if (abf_type == 7) then
   
  do i_iter=-nhisto1,nhisto+nhisto1
    if (abf_mode==1)  write(1107,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo_xi
-   if (((abf_mode==2).or.(abf_mode==22)))  write(1107,*),dble(i_iter)*delta_z, histo1(i_iter)/sum_histo_xi
+   if (((abf_mode==2).or.(abf_mode==22)))  write(1107,*),dble(i_iter)*delta_z, histo1(i_iter)/sum_histo_xi 
  enddo
 
 
