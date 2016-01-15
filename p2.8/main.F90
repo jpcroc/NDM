@@ -48,6 +48,7 @@ program ndm
 
 #if(ML || PARAML)
 rangml=0
+#endif
 #if(ML && PARAML)
   call init_mpi_ml()
   rang=rangml
@@ -56,6 +57,7 @@ rangml=0
 
 #if(PHONDY || PARAPH)
 rangph=0
+#endif
 #if(PHONDY && PARAPH)
   call init_mpi_phondy()
   rang=rangph
@@ -68,6 +70,7 @@ rangph=0
   if (rang==0) write(6,*)'*** NDM286 + 1+ ART ***'
 #endif
 
+#if(PHONDY)
   if (rang==0) write(6,*)'*** NDMP286 + 1+ PHONDY ***'
 #endif
 
