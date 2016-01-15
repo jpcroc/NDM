@@ -16,6 +16,10 @@ program ndm
 #if(PHONDY && PARAPH)
  use mod_mpi_phondy
 #endif
+#if(PHONDY && PARAPH)
+ use mod_mpi_ml
+#endif
+
 
   implicit none
   !-----------------------------------------------
@@ -42,6 +46,14 @@ program ndm
   parallele = .false.
 #endif
 
+#if(ML || PARAML)
+rangml=0
+#if(ML && PARAML)
+  call init_mpi_ml()
+  rang=rangml
+#endif
+
+
 #if(PHONDY || PARAPH)
 rangph=0
 #if(PHONDY && PARAPH)
@@ -63,9 +75,9 @@ rangph=0
   if (rang==0) write(6,*)'*** NDMP286 + 1+  MAB ***'
 #endif
 
-
-  !     read(5,*)a1
-  ! modif pour compaq
+#if(ML)
+  if (rang==0) write(6,*)'*** NDMP286 + 1+  ML ***'
+#endif
 
 
 

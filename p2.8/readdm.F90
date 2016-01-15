@@ -86,6 +86,7 @@ subroutine readdm
   !                              12 -> ART
   !                              16 -> SUNDAE
   !                              17 -> MAB
+  !                              18 -> ML
   lFire = .true.              ! Fire algorithm is used for quenching (cf tr_fire.F90)
   ttol = 0.0                  !max tolerance for temperature in %
   tfroi = -1.0                !imposed temperature
@@ -865,6 +866,16 @@ endif
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
      if (rang==0) write (6,'(a)') '|==================================================|'
 #endif
+
+#if(ML)    
+  case (18)
+     if (rang==0) write (6,'(a)') '|=========       NDM + ML           ===============|'
+     if (rang==0) write (6,'(a)') '|---------..........................---------------|'
+     if (rang==0) write (6,'(a)') '|==================================================|'
+#endif
+
+
+
   case default
      if (rang==0) write (6, '(a)') 'mauvais type de calcul dmtype=', dmtype
      stop
