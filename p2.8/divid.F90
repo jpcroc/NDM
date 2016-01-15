@@ -84,7 +84,7 @@ subroutine divid (appel)
      if (izonr<2) then
         write (6, *) 'trop petite boite !!!'
         !cosboite  stop
-#if(PHONDY || PARAPH || MAB)
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
         write (6, *) 'trop petite boite !!!'
 #else
   if (lrctest) then
@@ -289,7 +289,7 @@ subroutine divid (appel)
      if (izonr2<1) then
         write (6, *) rang,'trop petite boite pour rvois !!!'
         !cosboite   call arret_ndm
-#if(PHONDY || PARAPH || MAB)
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
 
         write (6, *) rang,'trop petite boite pour rvois !!!'
 #else 
