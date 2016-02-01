@@ -181,7 +181,7 @@ else
  F90 = ifort
  CPPFLAGS_ML = -C -P -traditional -DML -nostdinc 
  EXT      = _ML
-##F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
 F90FLAGS =  -O3 -convert big_endian 
 

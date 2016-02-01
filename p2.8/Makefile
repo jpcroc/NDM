@@ -47,7 +47,7 @@ OBJS_PARA=   T_kind_param_mpi_m.o\
 
 
 OBJS_PARAPH=   init_MPI_phondy.o
-OBJS_PARAML=   init_MPI_ML.o
+OBJS_PARAML=   init_MPI_ml.o
 
 
 
