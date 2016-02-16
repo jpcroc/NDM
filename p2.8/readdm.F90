@@ -940,10 +940,14 @@ endif
          if(dmtype==7) then 
             ldemitab=.FALSE.
             if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
+         elseif(dmtype==18) then 
+            ldemitab=.FALSE.
+            if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
          else
             ldemitab=.TRUE.
             if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
          end if
+
       end select
 
      !     if(ipotentiel.le.10) then 

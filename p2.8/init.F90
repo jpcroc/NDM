@@ -143,7 +143,10 @@ rang=rangph
 
            call inputtersoff
 
+!       case(16)
+!         call imputml
         end select
+
      endif
   end do
 !  if (rang == 0)  write(6,*)'cm',cm
