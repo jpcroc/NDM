@@ -105,9 +105,12 @@ subroutine divid (appel)
 
 
   !DETERMINATION DE NOX NOY NOZ     
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#else 
 
   if ((rang==0).and.(appel==0)) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz
   if ((rang==0).and.(appel==1)) write (6, *) 'nox,noy,noz deuxième passage  =', nox, noy, noz
+#endif 
 
   ! ==== MODIF CLOUET 1 ====================
   !  nzl(1:3) doivent etre calcules ici: ils etaient calcules apres l'appel a divid
@@ -273,10 +276,13 @@ subroutine divid (appel)
 
   natperc=max(5*natperc,20)
 
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#else 
   if (rang==0) &
        write(6,*) 'natperc im/noxyz', natperc, im_glob/noxyz
 
   if (rang==0)  write(6,*)'ltabvois,lconstrtot',ltabvois,lconstrtot
+#endif 
 
   if (ltabvois) then
      if (rumax>rvois) then
@@ -299,9 +305,14 @@ subroutine divid (appel)
      if(.not.lconstrtot)rumax=rvois
      voluperat=volu/im
      IF (nvperat.LE.0) nvperat=4*Pi*(rvois+1.0d-8)**3/(3*voluperat)
+
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
+
+#else
      if(rang==0)         write (6, '(A,D10.3)') 'volumeperat=', voluperat
      if(rang==0)         write (6, '(A,D10.3)') 'Rvois=', RVois
      if(rang==0)         write (6, *) 'NVperat= ', nvperat
+#endif 
      if (ldemitab) then
         nvois=max(Int(1.5*nvperat*im),100)
         nvat=max(Int(nvperat*1.3),10)
@@ -309,8 +320,12 @@ subroutine divid (appel)
         nvois=max(Int(1.5*nvperat*im),100)
         nvat=max(Int(nvperat*1.3),10)
      end if
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
+
+#else
 
      if(rang==0)         write (6, *) 'Nvois= ', nvois
+#endif 
      allocate(indi(nvois))
      allocate(indi2(nvois))
   else
@@ -323,11 +338,14 @@ subroutine divid (appel)
   if ((qtot/=0.0).and.(rang==0)) write (6, *) ' CHARGE NON NULLE !! = ', qtot
 
   izonr = int(zlmin/r3cm)
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
 
+#else
   if(rang==0) write(6,*)
   if(rang==0) write(6,*)' TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! ' 
   if(rang==0) write(6,*) '-------------------------------------------------------------------'
   if(rang==0) write(6,*)
+#endif
 
   return
 end subroutine divid
