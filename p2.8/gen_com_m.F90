@@ -25,6 +25,8 @@ module gen_com_m
   integer :: natperc                        ! nb d'atome par cel
   integer :: nvperat    ! Nombre moyen de voisins par atome
 
+  integer :: ivoismax
+
   integer :: imm                 !imm taille des tableaux dependant du nombre d'atome
   integer :: imm_glob
 

@@ -37,7 +37,7 @@ subroutine caltabi
   integer :: iti, & !type de i
        koo, & !cel de i
        ncelvois,ko1, & !cel voisine de i
-       i1,i2
+       i1,i2,itemp
 
 
   real(double),dimension(:,:),allocatable :: xpnp  ! MODIF Cosmin                            
@@ -127,7 +127,6 @@ subroutine caltabi
 
      end do   ! im 
      maxvoi = iw           
-
   !*************construction par celulle ****************
   else 
      !write(*,*) 'THE fist passage .........'
@@ -188,6 +187,11 @@ subroutine caltabi
         iwmax(i) = iw
         iwmax2(i)= iwph
         nvij=iw-iwo
+        if (i>1) then
+             itemp= iwmax2(i)-iwmax2(i-1)
+             if (itemp>ivoismax) ivoismax=itemp
+        end if 
+
         !         write(449,*)'NVIJ',i,nvij,iw       
 
      end do ! fin i
@@ -196,6 +200,7 @@ subroutine caltabi
 
   endif ! lconstrtot 
 
+     write(*,*) 'maxvoi', maxvoi,ivoismax
    if ((rang==0).and.(it.le.100)) then
 !           write(6,*)'IT ',it,'  VOISINS ',maxvoi,' par atome ',float(maxvoi)/float(im)
    endif
