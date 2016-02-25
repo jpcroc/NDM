@@ -200,7 +200,6 @@ subroutine caltabi
 
   endif ! lconstrtot 
 
-     write(*,*) 'maxvoi', maxvoi,ivoismax
    if ((rang==0).and.(it.le.100)) then
 !           write(6,*)'IT ',it,'  VOISINS ',maxvoi,' par atome ',float(maxvoi)/float(im)
    endif
