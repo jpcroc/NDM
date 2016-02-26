@@ -569,6 +569,13 @@ subroutine readdm
         end if
   end if       
 
+ if (dmtype==18) then
+        ldemitab=.FALSE.
+        write (6,*) ' ML: ldemitab is set to false. We compute all pairs   '
+
+
+ end if 
+
 
 
   iThermo=0
