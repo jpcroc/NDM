@@ -94,6 +94,8 @@ endif
  
 do it_mab=1,nlangevin
 
+ !write(*,'(i6,5d20.8)') it_mab, xp(1:3,1)
+
    select case (langevin_type)
     case (1)
       call langevin_overdamped ()
@@ -139,15 +141,16 @@ do it_mab=1,nlangevin
   end if 
 ! End writting intermediare steps ....
 
+ write(*,*) 'main', it_mab, A_ee(1)
   if (it_stop==1) exit
   if (itest_stop==1) exit
 
  end do   !end it_mab, langevin
-
  if (abf_type /= 1) then
   call fill_final_histo()! Attention!! pour ABFee il faut l'histogramme pour calculer l'énergie libre
   call Free_energy_ABF()! Calculate energy landscape for ABF
   call create_files()! Create files needed
+
  end if 
 
  if (abf_type==1) then

@@ -59,7 +59,7 @@ A_ee(-nhisto2)=0.d0
 do iter=-nhisto2+1,nhisto+nhisto2
 A_ee(iter)=A_ee(iter-1)+delta_z*0.5d0*(A_dev_ee(iter-1)+A_dev_ee(iter))
 end do
-if (it_mab<10) A_ee=0.d0
+if (it_mab<4) A_ee=0.d0
 
 if (abf_mode==1) then
  !--2. Compute pi_A_ee (csi,q)
@@ -119,12 +119,16 @@ if (abf_mode==2) then
   temp_log_max=MAXVAL(temp_log(:) )
   temp_log(:)=temp_log(:)-temp_log_max
 
-     
+!  write(*,'(5D25.9)') potist*erg2ev, ene0*erg2ev, (potist-ene0)*erg2ev, ene_einstein*erg2ev, (potist-ene0-ene_einstein)*erg2ev
+  write(*,'("log_max U_Aee  Aee", i6,3D25.9)') it_mab, temp_log_max,U_Aee(1)/temperature, A_ee(1)/temperature
+  write(334,*) it_mab 
   do iter=-nhisto1,nhisto+nhisto1
-     temp_exp(iter)=exp(temp_log(iter))!
-      if ((temp_exp(iter)+1.0).eq.temp_exp(iter)) then
+     temp_exp(iter)=exp(temp_log(iter))
+     write(334,'(5D30.15)') temp_exp(iter), temp_log(iter),U_Aee(iter), A_ee(iter), -U_Aee(iter)/temperature
+      if ( temp_exp(iter) /= temp_exp(iter)) then
         write(*,*) 'WARNING:  NaN detected look in fort.333 file'
         write(333,'(2i5,7D21.8)') it_mab, iter, U_Aee(iter),A_ee(iter), temp_log(iter),temp_exp(iter),potist,ene0,ene_einstein
+        stop
       end if  
   end do
 
@@ -134,6 +138,7 @@ if (abf_mode==2) then
    !C_n in my notes
    denom=denom + 0.5d0*(temp_exp(iter-1)+temp_exp(iter) )*delta_z
   end do
+
 
  !--3. Compute the E(\grad_q U(.,q)|q)
  !In this case E[\grad_q U(.,q)|q]=E[ (1-\zeta) \grad_q U^HA(q) + \zeta \grad_q U(q) ]
@@ -147,11 +152,14 @@ if (abf_mode==2) then
    do iter=-nhisto1+1,nhisto+nhisto1
     tmp_num=tmp_num  + 0.5d0*(temp_num_f(iter-1)+temp_num_f(iter) )*delta_z
    end do
+   
+!    if (ia==1) write (*,'("n_equilibre0",i6,3d20.9)') it_mab,fp(jx,1),tmp_num,denom
 !debub    if ((jx==1).and.(ia==7)) then
 !debug     write(*,*) -tmp_num/denom, fp(jx,ia)
 !debug    end if 
   if ((histo_equi .eqv. .true.) .And. (it_mab >= n_equilibre)) then
     fp(jx,ia)=-tmp_num/denom
+!    if (ia==1) write(*,*) 'n_equilibre', it_mab,fp(jx,1),tmp_num,denom
    else 
     fp(jx,ia)=fp(jx,ia)+fpeinstein(jx,ia)
   end if 
@@ -226,7 +234,12 @@ end if !abf_mode==22
 ! denom = \tau + \sum_{all_md_steps} pi_A_ee(\zeta | q ) (below the pi_A_ee si denoted by is P_ee) 
 if (abf_mode==1) then
  do iter=-nhisto2, nhisto+nhisto2
-  P_ee(iter)=temp_exp(iter)/denom
+  if (denom==0.d0) then
+    P_ee(iter)= 0.d0
+   else 
+     P_ee(iter)=temp_exp(iter)/denom
+   end if 
+  if (P_ee(iter)/=P_ee(iter)) P_ee(iter)=0.d0
   P_ee_denom(iter)=P_ee_denom(iter)+P_ee(iter)
   P_ee_num(iter)=P_ee_num(iter)+(x_mol(iter)-dcsi)*P_ee(iter)/eta_ABFee
  enddo
@@ -239,6 +252,8 @@ if (abf_mode==2) then
   P_ee_denom(iter)=P_ee_denom(iter)+P_ee(iter)
   P_ee_num(iter)=P_ee_num(iter)+(potist-ene_einstein-ene0)*P_ee(iter)
  enddo
+
+  write(*,'("in pre-fine",i6,3D23.9)') it_mab, temp_exp(1), denom,P_ee(1)
 end if 
 
 
@@ -257,7 +272,6 @@ if(((histo_equi .eqv. .true.) .AND. (it_mab > n_equilibre)) .OR. (histo_equi .eq
     do iter= -nhisto1, nhisto+nhisto1 
       histo_zeta(iter)=histo_zeta(iter)+P_ee(iter)
     enddo
-
 endif
 
  if(nhisto1 < nhisto2) then
@@ -288,6 +302,7 @@ end if
  do iter=-nhisto1,nhisto+nhisto1
      A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+1.d0/omega_abf)
  enddo
+  write(*,'("in     fine",i6,3D23.9)') it_mab, A_dev_ee(1), P_ee_num(1),omega_abf  
 end if 
 
  if (abf_mode==22) then

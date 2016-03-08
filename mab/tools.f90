@@ -275,10 +275,11 @@ subroutine test_displacement
   rrmax=MAXVAL(rtemp(1:im))
   iimax=MAXLOC(rtemp(1:im))
 
-  !write(*,*) xp(1,iimax),xp0(1,iimax),xbar(1),xbarini(1)
-  !write(*,*) xp(2,iimax),xp0(2,iimax),xbar(2),xbarini(2)
-  !write(*,*) xp(3,iimax),xp0(3,iimax),xbar(3),xbarini(3)
   write(*,*) 'The MAXXX displacement is for atom ',iimax, ' with ',rrmax*angst, 'Ang'
+  write(*,*) xp(1,iimax),xp0(1,iimax),xbar(1),xbarini(1)
+  write(*,*) xp(2,iimax),xp0(2,iimax),xbar(2),xbarini(2)
+  write(*,*) xp(3,iimax),xp0(3,iimax),xbar(3),xbarini(3)
+
   if (abf_mode/=1) then
   if ((rrmax*angst) >= sqrt(3.d0)*a0bcc/2.d0) then
    write(*,*) a0bcc
