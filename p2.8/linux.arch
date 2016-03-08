@@ -150,11 +150,7 @@ endif
 ifdef ML
 ifdef PARAML
  F90 = mpif90
-ifdef DESC
- CPPFLAGS_ML = -C -P -traditional -DML -DPARAML -DDESC_TYP=${DESC} -nostdinc
-else
  CPPFLAGS_ML = -C -P -traditional -DML -DPARAML -nostdinc
-endif
 #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
 F90FLAGS =  -O3 -convert big_endian 
@@ -183,11 +179,7 @@ LIBRARY =${LIBRARY_ML} ${LLIBS_ML}
 else
 
  F90 = ifort
-ifdef DESC
- CPPFLAGS_ML = -C -P -traditional -DML -DDESC_TYP=${DESC} -nostdinc 
-else
  CPPFLAGS_ML = -C -P -traditional -DML -nostdinc 
-endif
  EXT      = _ML
 F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -ftrapuv -warn all # Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
