@@ -144,7 +144,7 @@ subroutine caltabi
            if (ko1==0) cycle
            loop_j: do i2 = 1, nato(ko1)
               j = last(i2,ko1)
-              !                  write(6,*)'j ',j
+               !                 write(6,*)'j ',j
                
                if(ldemitab) then
                    if(j.le.i) cycle !terme deja calcule

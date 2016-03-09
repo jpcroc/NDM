@@ -16,7 +16,7 @@ program ndm
 #if(PHONDY && PARAPH)
  use mod_mpi_phondy
 #endif
-#if(PHONDY && PARAPH)
+#if(ML && PARAML)
  use mod_mpi_ml
 #endif
 

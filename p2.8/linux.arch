@@ -151,9 +151,9 @@ ifdef ML
 ifdef PARAML
  F90 = mpif90
  CPPFLAGS_ML = -C -P -traditional -DML -DPARAML -nostdinc
-#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
+F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-F90FLAGS =  -O3 -convert big_endian 
+#F90FLAGS =  -O3 -convert big_endian 
 #F90FLAGS =  -O3  
 
 #FLAGS and LIBS for ML
@@ -167,10 +167,10 @@ FFLAGS =
 
 #LLIBS_ML = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
 #LLIBS_ML =${mkkl_definitions}
-LLIBS_ML=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+LLIBS_ML=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
 # link library
 LIBRARY_ML = ml/libml.a
-
+MKLSERVICE=/usr/local/intel/Compiler/11.1/072/mkl/
 
 # link library
 LIBRARY =${LIBRARY_ML} ${LLIBS_ML} 
@@ -216,10 +216,10 @@ ifdef MAB
 # F90 = gfortran
  CPPFLAGS = -C -P -traditional -DMAB -nostdinc
  EXT      = _MAB
-F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all -convert big_endian	# Debuggage pas pour de rire
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all -convert big_endian	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
 #ifort 
-#F90FLAGS =  -O3 -convert big_endian 
+F90FLAGS =  -O3 -convert big_endian 
 # F90FLAGS =  -O3  
 
 #FLAGS and LIBS for MAB

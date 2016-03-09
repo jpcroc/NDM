@@ -14,7 +14,7 @@ subroutine init_mpi_ml()
   use gen_com_m , ONLY: rangml
   implicit none
 
-  ! Routine d'initialisation de MPI pour le code NDM
+  ! Routine d'initialisation de MPI pour le code NDM+ML
 
 
   !--------------------------------------------------
