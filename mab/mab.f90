@@ -141,7 +141,7 @@ do it_mab=1,nlangevin
   end if 
 ! End writting intermediare steps ....
 
- write(*,*) 'main', it_mab, A_ee(1)
+ !write(*,*) 'main', it_mab, A_ee(1)
   if (it_stop==1) exit
   if (itest_stop==1) exit
 

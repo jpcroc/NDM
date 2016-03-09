@@ -110,7 +110,8 @@ if (abf_mode==2) then
  !--2. compute the  pi_A_ee(\zeta) = \exp{U(zeta,q) / int_\zeta_min^\zeta_max{\exp{U(zeta,q) d\zeta}
  !--2.a num \exp{U(zeta,q)
   do iter=-nhisto1,nhisto+nhisto1
-     U_Aee(iter) = (1.d0-x_mol(iter))*(ene_einstein) + x_mol(iter)*(potist-ene0)
+   !good_old  U_Aee(iter) = (1.d0-x_mol(iter))*(ene_einstein) + x_mol(iter)*(potist-ene0)
+     U_Aee(iter) = (1.d0-x_mol(iter))*(ene_einstein+ene0) + x_mol(iter)*(potist)
      temp_log(iter)=-(U_Aee(iter)-A_ee(iter))/temperature
   end do
 
@@ -120,11 +121,11 @@ if (abf_mode==2) then
   temp_log(:)=temp_log(:)-temp_log_max
 
 !  write(*,'(5D25.9)') potist*erg2ev, ene0*erg2ev, (potist-ene0)*erg2ev, ene_einstein*erg2ev, (potist-ene0-ene_einstein)*erg2ev
-  write(*,'("log_max U_Aee  Aee", i6,3D25.9)') it_mab, temp_log_max,U_Aee(1)/temperature, A_ee(1)/temperature
-  write(334,*) it_mab 
+!debug  write(*,'("log_max U_Aee  Aee", i6,3D25.9)') it_mab, temp_log_max,U_Aee(1)/temperature, A_ee(1)/temperature
+!  write(334,*) it_mab 
   do iter=-nhisto1,nhisto+nhisto1
      temp_exp(iter)=exp(temp_log(iter))
-     write(334,'(5D30.15)') temp_exp(iter), temp_log(iter),U_Aee(iter), A_ee(iter), -U_Aee(iter)/temperature
+ !    write(334,'(5D30.15)') temp_exp(iter), temp_log(iter),U_Aee(iter), A_ee(iter), -U_Aee(iter)/temperature
       if ( temp_exp(iter) /= temp_exp(iter)) then
         write(*,*) 'WARNING:  NaN detected look in fort.333 file'
         write(333,'(2i5,7D21.8)') it_mab, iter, U_Aee(iter),A_ee(iter), temp_log(iter),temp_exp(iter),potist,ene0,ene_einstein
@@ -248,12 +249,16 @@ end if
 
 if (abf_mode==2) then
  do iter=-nhisto1, nhisto+nhisto1
-  P_ee(iter)=temp_exp(iter)/denom
+   if (denom==0.d0) then
+    P_ee(iter)= 0.d0
+   else 
+     P_ee(iter)=temp_exp(iter)/denom
+   end if 
   P_ee_denom(iter)=P_ee_denom(iter)+P_ee(iter)
   P_ee_num(iter)=P_ee_num(iter)+(potist-ene_einstein-ene0)*P_ee(iter)
  enddo
 
-  write(*,'("in pre-fine",i6,3D23.9)') it_mab, temp_exp(1), denom,P_ee(1)
+ ! write(*,'("in pre-fine",i6,3D23.9)') it_mab, temp_exp(1), denom,P_ee(1)
 end if 
 
 
@@ -302,7 +307,7 @@ end if
  do iter=-nhisto1,nhisto+nhisto1
      A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+1.d0/omega_abf)
  enddo
-  write(*,'("in     fine",i6,3D23.9)') it_mab, A_dev_ee(1), P_ee_num(1),omega_abf  
+ ! write(*,'("in     fine",i6,3D23.9)') it_mab, A_dev_ee(1), P_ee_num(1),omega_abf  
 end if 
 
  if (abf_mode==22) then
