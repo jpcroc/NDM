@@ -181,6 +181,7 @@ do it_mab=1,nlangevin
       write(6,'("Einstein PBC kinetic correction  (eV) .......:  ", F15.7)') pbc_correction 
       write(6,'("F(Einstein)                      (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction+pbc_correction
       write(6,'("F(Einstein) - F(Full)            (eV) .......:  ", F15.7)') tmp2
+      write(6,'("F(Full3N-3)                      (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction+tmp2 
       write(6,'("F(Full3N-6)                      (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction+pbc_correction+tmp2 
  end if  !abf_mode==2
 
