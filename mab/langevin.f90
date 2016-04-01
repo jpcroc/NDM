@@ -16,6 +16,10 @@
    end if 
   end if 
 
+  write(*,'("MAB:   dtlang (fs) is fixed to ................:", d25.10)') dtlang 
+  write(*,'("MAB:   ga:mma  is fixed to ....................:", d25.10)') gamma 
+  write(*,'("MAB:   crit  (cm and ang) is fixed to .........:", 2d25.10)') dsqrt((6.d0*temperature*dtlang)/(gamma*m_i(1,1))), &
+              dsqrt((6.d0*temperature*dtlang)/(gamma*m_i(1,1)))*1.d8
   select case (langevin_type)
     case (1)  
      sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))

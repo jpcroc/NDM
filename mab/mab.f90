@@ -142,6 +142,20 @@ do it_mab=1,nlangevin
 ! End writting intermediare steps ....
 
  !write(*,*) 'main', it_mab, A_ee(1)
+    if (itesauvposition.GT.0) then
+        if (mod(it_mab,itesauvposition)==0) then
+         call sauveposition (it_mab)
+	 if (lsuivinonpbc) then
+          write(*,*) 'lsuivinonpbc true not yet implemented with mab'
+          stop
+	  !call reset_suivinonpbc
+	  !call sauvepositionnonpbc (it_mab)
+	 end if	 
+        end if
+     endif
+
+
+
   if (it_stop==1) exit
   if (itest_stop==1) exit
 
