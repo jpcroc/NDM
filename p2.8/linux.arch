@@ -167,7 +167,7 @@ FFLAGS =
 
 #LLIBS_ML = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
 #LLIBS_ML =${mkkl_definitions}
-LLIBS_ML=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+LLIBS_ML=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
 # link library
 LIBRARY_ML = ml/libml.a
 MKLSERVICE=/usr/local/intel/Compiler/11.1/072/mkl/
