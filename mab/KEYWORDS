@@ -1,0 +1,39 @@
+abf_mode - ABF mode if \zeta or \zeta(\q)
+---------------------
+integer, scalar
+values:
+1  - ABF 1D reaction coordinate depending on atomic cooordinate. 
+     e.g. migration of the vacancy
+2  - ABF 1D alchemical reaction coordinate. e.g. Frenkel-Ladd or other external reaction coordinate which 
+     does not depends on the atomic coordinates.   
+22 - ... nD alchemical reaction coordinate (under developpement, not working) 
+
+abf_type - way to integrate ABF
+---------------------
+integer, scalar
+values:
+
+1  - brute force (not working)
+2  - ABF BIN
+3  - ABF BIN OMEGA
+4  - ABF GAUSSIAN (not working)
+5  - ABF EE
+6  - ABF EE   with constant bias (only when compute_mode=3 and abf_mode=2)
+7  - ABF (?BIN) dynamics with constant bias (only when compute_mode=3 and abf_mode=2)
+8
+
+compute_mode - type of simulation
+----------------------
+integer, scalar
+values:
+1 - one simulation mode. Run over the system nlangevin steps
+2 - error analysis. I will delete this option in the future. Is useless in this version (I think)
+3 - constant bias simulations. Those are working only for the cases abf_type 7 and 8
+
+itype_reaction     
+---------------------
+integer, scalar
+values: 
+0 - user defined reaction coordinate as is done in reaction.f90
+1 - TJS style ... in developpement
+                   
