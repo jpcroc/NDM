@@ -20,14 +20,15 @@ values:
 5  - ABF EE
 6  - ABF EE   with constant bias (only when compute_mode=3 and abf_mode=2)
 7  - ABF (?BIN) dynamics with constant bias (only when compute_mode=3 and abf_mode=2)
-8
+8  - restart ABF_EE simulation. The program will read the meanforce_input file into the mean_force_ABFee vector.
+     for the case ABF EE From the beginning we will give the 
 
 compute_mode - type of simulation
 ----------------------
 integer, scalar
 values:
 1 - one simulation mode. Run over the system nlangevin steps
-2 - error analysis. I will delete this option in the future. Is useless in this version (I think)
+2 - error analysis. In the future I will delete this option - useless. Can be done easily using scripts
 3 - constant bias simulations. Those are working only for the cases abf_type 7 and 8
 
 itype_reaction     

@@ -15,7 +15,8 @@ subroutine read_mab_file()
                               temperature_zeta_min,temperature_zeta_max,          &
                               nsite_block, isite_block,atom_to_jump,              &
                               itype_reaction,itype_einstein, units_phondy,m_i,    &
-                              nimage_neb,nimage_lambda                
+                              nimage_neb,nimage_lambda,                           &
+                              abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature           
 
  implicit none
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
@@ -160,6 +161,17 @@ end if
                   write(6,*) ' OverDumped Langevin + ABF EE dynamics + iterative'
         end select 
       end if
+     if  (.not.( (abf_mode/=abf_mode_alchemical).or.  &
+           (abf_mode/=abf_mode_temperature).or. &
+           (abf_mode/=abf_mode_reaction))  ) then
+         write(6,*) 'No implementation for this ABF reaction coordinate which can be:'
+         write(6,*) 'af_mode = 1 for  geometric  reaction coordiante'
+         write(6,*) 'af_mode = 2 for  alchemical reaction  coordiante'
+         write(6,*) 'af_mode = 22 for temperature reaction  coordiante'
+         write(6,*) 'abf_mode = ', abf_mode
+         write(6,*)  'stop in read_mab_file'
+         stop
+     end if 
 
      if  ((abf_mode==2) .and. ((abf_type==1).or.(abf_type==4).or. &
                              (abf_type==6).or.(abf_type==7).or.  &

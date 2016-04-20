@@ -116,7 +116,7 @@ endif
    ! the temperature is alreaby puted in the renormalization constant. 
    Free_energy(i_loop)=A_ee(i_loop)/unit_histo2(i_loop)+renorm_f/unit_histo2(i_loop) 
    end do    
-  end if 
+  end if  !abf_mode=22
 
 
 ! why this is here !!!!!
@@ -195,10 +195,6 @@ endif
    close(999)
   end if 
 
-
-
-
-
 end select
 
 
@@ -241,21 +237,20 @@ sum_histo1=sum(histo1)
 histo1(:)=histo1(:)/sum_histo1
 
 if ((abf_type==5) .or. (abf_type == 8)) then
-sum_histo_zeta=sum(histo_zeta)
-histo_zeta(:)=histo_zeta(:)/sum_histo_zeta
+  sum_histo_zeta=sum(histo_zeta)
+  histo_zeta(:)=histo_zeta(:)/sum_histo_zeta
 !----1. bucket of \xi. 2. bar A, 3. A_bar_ee corrected by substracting log(P(\xi))
-open(unit=968,file='data_A_bar',status='unknown')
+  open(unit=968,file='data_A_bar',status='unknown')
 
 !----1. bucket of \zeta. 2.tilde A, 3. A_ee corrected by substracting log(P(\zeta))
-open(unit=967,file='data_A_tilde',status='unknown')
+  open(unit=967,file='data_A_tilde',status='unknown')
 
 
-A_bar_corrige(:)=A_bar_ee(-nhisto1:nhisto+nhisto1)*erg2eV-log(histo1(:))*temperature*erg2eV
+  A_bar_corrige(:)=A_bar_ee(-nhisto1:nhisto+nhisto1)*erg2eV-log(histo1(:))*temperature*erg2eV
+  !
+  forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-A_bar_corrige(i_loop)/temperature)
 
-
-forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-A_bar_corrige(i_loop)/temperature)
- 
-temp_A_bar=temperature*log(sum(Free_temp)*delta_z)
+  temp_A_bar=temperature*log(sum(Free_temp)*delta_z)
  
 write(*,*) temp_A_bar
 A_bar_corrige(:)=A_bar_corrige(:)+temp_A_bar
@@ -408,7 +403,7 @@ real(double),dimension(:),allocatable::A_tilde,A_tilde_temp,Deconvo_exp_pre
 real(double),dimension(:),allocatable::Deconvo_denom,Deconvo_inter,Deconvo_exp,Deconvo_exp_temp
 integer::i_iter,iter,optime
 real(double)::temp_calcul,C_norm
-
+logical :: dir_at
 allocate(A_tilde(-nhisto1:nhisto+nhisto1),A_tilde_temp(-nhisto1:nhisto+nhisto1))
 allocate(Deconvo_exp_pre(-nhisto1:nhisto+nhisto1),Deconvo_denom(-nhisto1:nhisto+nhisto1))
 allocate(Deconvo_inter(-nhisto1:nhisto+nhisto1),Deconvo_exp(-nhisto1:nhisto+nhisto1))
@@ -419,6 +414,13 @@ Deconvo_inter(:)=0
 A_tilde(:)=0
 A_tilde_temp(:)=0
 
+
+inquire(file='data_A_tilde',exist=dir_at)
+if (.not.dir_at) then
+  write(6,*) 'MAB: The file data_A_tilde is not present.The program will stop'
+  write(6,*) 'MAB: stop in sub deconvolution_ABFee'
+  stop
+end if 
 open(unit=967,file='data_A_tilde',action='read')
 
 do i_iter=-nhisto1,nhisto+nhisto1

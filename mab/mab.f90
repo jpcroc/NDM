@@ -51,12 +51,12 @@ subroutine mab
    stop
   end if 
   write(6,*)'......PREPARE.....' 
- neq_lang=8000
- call prepare_langevin()
+neq_lang=4000
+call prepare_langevin()
 if (abf_type==1)  call test_minimum_abf()
 if ((abf_mode==2).or.(abf_mode==22)) then
  call test_minimum_abf () 
- call init_einstein_solid  ()
+ !call init_einstein_solid  ()
   do it_en=1,neq_lang
    if (langevin_type==1) call langevin_overdamped ()
    if (langevin_type==2) call langevin()
