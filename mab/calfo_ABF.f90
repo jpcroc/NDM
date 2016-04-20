@@ -59,4 +59,32 @@ return
 end subroutine calfo_mab
 
 
+subroutine calfo_atomic_forces(it_force)
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+  use tab_imm_m
+  use var_pot
+  USE mab_in_ndm_module, only: block
+  implicit none
+  integer, intent(in) :: it_force
+
+! NDM part ...
+
+          if (itab/=0) then
+           if (mod(it_force,itab)==0) then
+           call caltabt
+           endif
+          endif
+          if (ltabvois.and.mod(it_force,itetabvois)==0)  call caltabi
+        call calfo
+!deubg         write(*,*) 'potist', potist
+        if (block) call calfoblock()
+
+
+
+!here we have only the atomic forces fp(:,) 
+return
+end subroutine calfo_atomic_forces
+
+
 

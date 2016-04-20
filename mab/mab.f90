@@ -51,19 +51,23 @@ subroutine mab
    stop
   end if 
   write(6,*)'......PREPARE.....' 
-
+ neq_lang=8000
  call prepare_langevin()
 if (abf_type==1)  call test_minimum_abf()
 if ((abf_mode==2).or.(abf_mode==22)) then
  call test_minimum_abf () 
  call init_einstein_solid  ()
- call calfo_einstein_solid ()
- fp(:,:) = fpeinstein(:,:)
-  do it_en=1,100
+  do it_en=1,neq_lang
    if (langevin_type==1) call langevin_overdamped ()
    if (langevin_type==2) call langevin()
+   it=it_en
+   call analyse 
+   call controle
+
 !debug   write(23,'(i7,2D13.5,3f12.5)') it_en, ene_einstein*erg2ev,xp(1,1)*angst,xp(1,1)*angst,fpeinstein(1,1)*erg2eV/angst
   end do
+
+ it=1
  it_en=-1
 ! stop
 end if 
@@ -92,7 +96,7 @@ if (abf_type == 8) then ! This calculate iterally ABFee ( process to calculate \
 
 endif
  
-do it_mab=1,nlangevin
+do it_mab=neq_lang+1,neq_lang+nlangevin
 
  !write(*,'(i6,5d20.8)') it_mab, xp(1:3,1)
 

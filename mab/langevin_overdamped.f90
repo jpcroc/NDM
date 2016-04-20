@@ -62,8 +62,9 @@
  !one force calculation ....
   if (abf_mode==2) then
    if (it_en > 0) then
-     call calfo_einstein_solid ()
-     fplocal(:,:) = fpeinstein (:,:)
+      call calfo_einstein_solid ()
+      call calfo_atomic_forces (it_en)
+      fplocal(:,:) = 1.0d0*fpeinstein (:,:) + fp(:,:)
     else 
       call calfo_mab()
      fplocal=fp(:,:)

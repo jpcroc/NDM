@@ -1,4 +1,6 @@
  subroutine prepare_langevin
+ !langevin_type 1  - without mass, overdump   ; 2 - with mass, underdump
+
  use gen_com_m, only:one,two,im,imm,tstep
  use var_pot
  use tab_imm_m
@@ -16,9 +18,9 @@
    end if 
   end if 
 
-  write(*,'("MAB:   dtlang (fs) is fixed to ................:", d25.10)') dtlang 
-  write(*,'("MAB:   ga:mma  is fixed to ....................:", d25.10)') gamma 
-  write(*,'("MAB:   crit  (cm and ang) is fixed to .........:", 2d25.10)') dsqrt((6.d0*temperature*dtlang)/(gamma*m_i(1,1))), &
+  write(*,'("MAB: perpare_lang  dtlang (fs) is fixed to ................:", d25.10)') dtlang 
+  write(*,'("MAB: prepare_lang  gamma  is fixed to ....................:", d25.10)') gamma 
+  write(*,'("MAB: prepare_lang  crit  (cm and ang) is fixed to .........:", 2d25.10)') dsqrt((6.d0*temperature*dtlang)/(gamma*m_i(1,1))), &
               dsqrt((6.d0*temperature*dtlang)/(gamma*m_i(1,1)))*1.d8
   select case (langevin_type)
     case (1)  
@@ -68,15 +70,15 @@
        xbar(ic)=sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules
        xbari(ic)=xbar(ic)
     enddo
-! one force calculation ....
  !one force calculation ....
   if (abf_mode==2) then
    if (it_en > 0) then
-     call calfo_einstein_solid ()
-     fplocal(:,:) = fpeinstein (:,:)
+      call calfo_einstein_solid ()
+      call calfo_atomic_forces (it_en)
+      fplocal(:,:) = 0.5d0*fpeinstein (:,:) + fp(:,:)
     else 
       call calfo_mab()
-     fplocal(:,:) = fp(:,:)
+      fplocal(:,:) = fp(:,:)
     end if          
    end if   
     
@@ -116,8 +118,9 @@
      !recompute the forces
   if (abf_mode==2) then
    if (it_en > 0) then
-     call calfo_einstein_solid ()
-     fplocal(:,:) = fpeinstein (:,:)
+      call calfo_einstein_solid ()
+      call calfo_atomic_forces (it_en)
+      fplocal(:,:) = 0.5d0*fpeinstein (:,:) + fp(:,:)
     else 
       call calfo_mab()
       fplocal(:,:) = fp(:,:)

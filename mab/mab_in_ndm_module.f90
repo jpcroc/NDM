@@ -49,7 +49,7 @@ module mab_in_ndm_module
       real(double) :: omega_einstein,ene_einstein,ene0,einstein_free_3N, einstein_correction, pbc_correction
       real(double), dimension(:,:), allocatable :: omega_veinstein,fpeinstein
       real(double) , dimension(:,:,:,:) , allocatable :: matfor
-      integer :: it_en
+      integer :: it_en, neq_lang
       real(double)::sigma_eta,sigma_carre,eta_ABFee,sum_error_A,sum_error_A_bar
       integer::ecart_eta,nom_deconvo
       real(double)::eta_mab,ha_mix,temperature_zeta_min,temperature_zeta_max,equit,units_phondy
