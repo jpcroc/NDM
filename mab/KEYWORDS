@@ -1,3 +1,5 @@
+KEYWORDS
+
 abf_mode - ABF mode if \zeta or \zeta(\q)
 ---------------------
 integer, scalar
@@ -37,4 +39,28 @@ integer, scalar
 values: 
 0 - user defined reaction coordinate as is done in reaction.f90
 1 - TJS style ... in developpement
+
+nwrite_histo
+----------------------
+integer  
+The frequency of writing on run histograms / unbiased free energy
+
+block and block_false 
+-----------------------
+logical
+default 
+block=.false.     
+T or F if you want to block or not atoms in protectives domains 
+block_file=.false. 
+! activated only if block is .true.. If F all the atoms are blocked. If T only atoms in the list  are blocked
+ 
+
+
+
+VARIABLES:
+---------------------------------
+
+histo,       histo1,    histo2 - histograms                              in all three areas
+histo_xi, histo_xi1, histo_xi2 - histograms after n_equilibrations steps in all three areas
+
                    

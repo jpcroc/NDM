@@ -15,12 +15,12 @@ subroutine read_mab_file()
                               temperature_zeta_min,temperature_zeta_max,          &
                               nsite_block, isite_block,atom_to_jump,              &
                               itype_reaction,itype_einstein, units_phondy,m_i,    &
-                              nimage_neb,nimage_lambda,                           &
+                              nimage_neb,nimage_lambda,block_file,                          &
                               abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature           
 
  implicit none
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
-                      nhisto,deltar1,deltar2,block,abf_type,sim_mode,rtestlac,     &
+                      nhisto,deltar1,deltar2,block,block_file, abf_type,sim_mode,rtestlac,     &
                       langevin_type,omega_einstein,gamma,omega_abf, nwrite_histo,  &
                       eta_mab,eta_ABFee,histo_equi,n_equilibre,            &
                       maxforce,compute_mode,abf_mode, error_step,nom_deconvo,lang_factor, &
@@ -51,6 +51,7 @@ subroutine read_mab_file()
  temperature_zeta_min=150.d0
  temperature_zeta_max=1800.d0
  block=.false.
+ block_file=.false.
 ! The atom which is desinged to jump ...
  atom_to_jump=7
  itype_reaction=0 ! 0 for vacancy, 1 for NEB 0 K reaction
@@ -75,11 +76,12 @@ read (lumab, nml=input_mab)
 
 
 if (block)  then 
-
-   write(6,*) 'WARNING: Some spheres are in protective domains!'
+ write(6,*) 'MAB: WARNING: Some atoms are in protective domains!'
+  if (block_file) then
+   write(6,*) 'MAB:  Atoms in protective domains are readed in on *.mab.lblock file!'
    fnamt_lblock = fnam(1:lenfnam)//'.mab.lblock'
 !debug  write(*,*) fnamtin
-   LUBLOCK=775
+   lublock=775
    open(unit=lublock, file=fnamt_lblock, status='unknown')
    read(lublock,*) nsite_block
    allocate (isite_block(nsite_block))
@@ -88,25 +90,43 @@ if (block)  then
      read(lublock,*)  isite_block(ii)
      if (isite_block(ii) > im) then
        if (rang==0) then
-        write(*,*) 'this atom cannot be blocked', isite_block(ii)
-        write(*,*) 'the value exceeds the number of atoms im ', im
-        write(*,*) 'stop in read_mab_file.f90'
+        write(*,*) 'MAB: this atom cannot be blocked', isite_block(ii)
+        write(*,*) 'MAB: the value exceeds the number of atoms im ', im
+        write(*,*) 'MAB: stop in read_mab_file.f90'
        end if 
         stop
      end if  
       if (abf_mode==1) then
         if (isite_block(ii)==atom_to_jump) then
          if (rang==0) then
-           write(*,*) 'The atom which is designed to jump is BLOCKED by the list *.mb.block ', isite_block(ii)
-           write(*,*) 'The atom to jump is set by atom_to_jump, currently set to ', atom_to_jump
-           write(*,*) 'stop in read_mab_file.f90'
+           write(*,*) 'MAB: The atom which is designed to jump is BLOCKED by the list *.mab.lblock ', isite_block(ii)
+           write(*,*) 'MAB: The atom to jump is set by atom_to_jump, currently set to ', atom_to_jump
+           write(*,*) 'MAB: stop in read_mab_file.f90'
          end if 
          stop
         end if
       end if
   !
    end do   
- close(lublock)
+  close(lublock)
+  else 
+   write(6,*) 'MAB:  All the atoms in protective domains *.mab.lblock are IGNORATED!'
+    nsite_block=im
+    allocate (isite_block(im))
+    do ii=1,nsite_block
+     isite_block(ii)=ii
+    end do
+
+    if (abf_mode==abf_mode_reaction) then
+      write(6,*) 'MAB: block, block_file, abf_mode are not compatible'
+      write(6,*) 'MAB: Change the type of abf_mode others than 1'
+      write(6,*) 'MAB: ... or switch block_file to T and provide an *.mab.lblock file which is compatible with your reaction coordinate'
+      write(6,*) 'MAB: stop in read_mab_file.f90'
+      stop
+    end if 
+
+  end if 
+
 end if 
 
 
@@ -164,23 +184,23 @@ end if
      if  (.not.( (abf_mode/=abf_mode_alchemical).or.  &
            (abf_mode/=abf_mode_temperature).or. &
            (abf_mode/=abf_mode_reaction))  ) then
-         write(6,*) 'No implementation for this ABF reaction coordinate which can be:'
-         write(6,*) 'af_mode = 1 for  geometric  reaction coordiante'
-         write(6,*) 'af_mode = 2 for  alchemical reaction  coordiante'
-         write(6,*) 'af_mode = 22 for temperature reaction  coordiante'
-         write(6,*) 'abf_mode = ', abf_mode
-         write(6,*)  'stop in read_mab_file'
+         write(6,*) 'MAB: No implementation for this ABF reaction coordinate which can be:'
+         write(6,*) 'MAB: af_mode = 1 for  geometric  reaction coordiante'
+         write(6,*) 'MAB: af_mode = 2 for  alchemical reaction  coordiante'
+         write(6,*) 'MAB: af_mode = 22 for temperature reaction  coordiante'
+         write(6,*) 'MAB: abf_mode = ', abf_mode
+         write(6,*) 'MAB: stop in read_mab_file'
          stop
      end if 
 
      if  ((abf_mode==2) .and. ((abf_type==1).or.(abf_type==4).or. &
                              (abf_type==6).or.(abf_type==7).or.  &
                              (abf_type==9))) then
-         write(6,*) 'The is no ABF implementation for this mode'
-         write(6,*) 'abf_type .....',abf_type
-         write(6,*) 'abf_mode .....',abf_mode
-         if (abf_type==1) write(6,*) 'MESSAGE: You cannot use Langevin dynamics having abf_mode in the input file.' 
-         if (abf_type==1) write(6,*) 'MESSAGE: Put abf_mode=1 and restart the calcultations' 
+         write(6,*) 'MAB: The is no ABF implementation for this mode'
+         write(6,*) 'MAB: abf_type .....',abf_type
+         write(6,*) 'MAB: abf_mode .....',abf_mode
+         if (abf_type==1) write(6,*) 'MAB: You cannot use Langevin dynamics having abf_mode in the input file.' 
+         if (abf_type==1) write(6,*) 'MAB: Put abf_mode=1 and restart the calcultations' 
          write(6,*) '<stop in read_mab_file>'
          stop
     end if 
@@ -189,11 +209,11 @@ end if
      if ((abf_mode==22) .and. ((abf_type==1).or.(abf_type==4).or. &
                              (abf_type==6).or.(abf_type==7).or.  &
                              (abf_type==9))) then
-         write(6,*) 'The is no ABF implementation for this mode'
-         write(6,*) 'abf_type .....',abf_type
-         write(6,*) 'abf_mode .....',abf_mode
-         if (abf_type==1) write(6,*) 'MESSAGE: You cannot use Langevin dynamics having abf_mode in the input file.' 
-         if (abf_type==1) write(6,*) 'MESSAGE: Put abf_mode=1 and restart the calcultations' 
+         write(6,*) 'MAB: The is no ABF implementation for this mode'
+         write(6,*) 'MAB: abf_type .....',abf_type
+         write(6,*) 'MAB: abf_mode .....',abf_mode
+         if (abf_type==1) write(6,*) 'MAB: You cannot use Langevin dynamics having abf_mode in the input file.' 
+         if (abf_type==1) write(6,*) 'MAB: Put abf_mode=1 and restart the calcultations' 
          write(6,*) '<stop in read_mab_file>'
          stop
     end if 
@@ -202,7 +222,7 @@ end if
        allocate (omega_veinstein(3,im))
 
       if (itype_einstein==0 ) then
-       write(*,'("Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
+       write(*,'("MAB: Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
        omega_veinstein(:,:)=omega_einstein
       end if 
 
@@ -253,55 +273,55 @@ end if
 
      select case (sim_mode)
       case (1) 
-           write(6,*) 'The simulatuion check the first passage time and '
-           write(6,*) 'will stop once the vacacy reach the final postion'
+           write(6,*) 'MAB: The simulatuion check the first passage time and '
+           write(6,*) 'MAB will stop once the vacacy reach the final postion'
       case (2) 
-       write(6,'("The simulation stops after nlangevin steps....:",i9)')  nlangevin
+       write(6,'("MAB: The simulation stops after nlangevin steps....:",i9)')  nlangevin
      end select 
 
 
 
 
-write(*,'("a0 of the cubic unit cell....................:",D15.4)') a0bcc 
-write(*,'("Langevin time step in s......................:",D15.4)') dtlang 
-write(*,'("Total number of steps .......................:",I9)')  nlangevin
-write(*,'("Langevin temperature in K....................:",F8.1)') temperature
-write(*,'("Langevin dumping coefficient ................:",D15.4)') gamma
-write(*,'("Factor for Langevin coefficient ................:",D15.4)') lang_factor
+write(*,'("MAB: a0 of the cubic unit cell....................:",D15.4)') a0bcc 
+write(*,'("MAb: Langevin time step in s......................:",D15.4)') dtlang 
+write(*,'("MAB: Total number of steps .......................:",I9)')  nlangevin
+write(*,'("MAB: Langevin temperature in K....................:",F8.1)') temperature
+write(*,'("MAB: Langevin dumping coefficient ................:",D15.4)') gamma
+write(*,'("MAB Factor for Langevin coefficient ................:",D15.4)') lang_factor
 
 
 if (abf_type==3) then
- write(*,'("Omega ABF BIN............... ................:",D15.4)') omega_abf
+ write(*,'("MAB: Omega ABF BIN............... ................:",D15.4)') omega_abf
 end if
 
 if (abf_type==4) then
- write(*,'("eta_mab the width of the Gaussian in bins.....:",D15.4)') eta_mab 
+ write(*,'("MAB: eta_mab the width of the Gaussian in bins.....:",D15.4)') eta_mab 
 end if
 
 if (block) then
-  write(*,'("Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
-  write(*,'("Width of the FD function in A................:",D15.4)') deltasph
+  write(*,'("MAB: Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
+  write(*,'("MAB: Width of the FD function in A................:",D15.4)') deltasph
 end if
 
-write(*,'("Number of the bins of histo..................:",i7)') nhisto
-write(*,'("The frequency of writing histo...............:",i7)') nwrite_histo
-write(*,'("The first shell of the histo (1nn units).....:",D15.4)') deltar1
-write(*,'("The second shell of the histo (1nn units)....:",D15.4)') deltar2
+write(*,'("MAB: Number of the bins of histo..................:",i7)') nhisto
+write(*,'("MAB: The frequency of writing histo...............:",i7)') nwrite_histo
+write(*,'("MAB: The first shell of the histo (1nn units).....:",D15.4)') deltar1
+write(*,'("MAb: The second shell of the histo (1nn units)....:",D15.4)') deltar2
 if ((abf_mode==2).or.(abf_mode==22)) then
  if (mode_zeta_potential==1) then
-  write(*,'("===============THERE IS AN EXTRA POTENTIAL FOR ZETA===========")') 
-  write(*,'("The prefactor of zeta potential...............:",D15.4)') alpha_zeta
+  write(*,'("MAB: ===============THERE IS AN EXTRA POTENTIAL FOR ZETA===========")') 
+  write(*,'("MAB: The prefactor of zeta potential...............:",D15.4)') alpha_zeta
   alpha_zeta=alpha_zeta*ev2erg
  end if 
 end if
 
 if (abf_mode==22) then
-write(*,'("ha_mix, U(\zeta,q)=\zeta*[U(q)+ha_mix*U_HA(q))]....:",D15.4)') ha_mix
-write(*,'("Temperature min \zeta..............................:",D15.4)') temperature_zeta_min
-write(*,'("Temperature max \zeta..............................:",D15.4)') temperature_zeta_max
+write(*,'("MAB: ha_mix, U(\zeta,q)=\zeta*[U(q)+ha_mix*U_HA(q))]....:",D15.4)') ha_mix
+write(*,'("MAB: Temperature min \zeta..............................:",D15.4)') temperature_zeta_min
+write(*,'("MAB Temperature max \zeta..............................:",D15.4)') temperature_zeta_max
 end if 
  
-write(*,'("The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac
+write(*,'("MAB: The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac
 
  temperature=temperature*KtoERG
  temperature_zeta_min=temperature_zeta_min*KtoERG
@@ -310,8 +330,8 @@ write(*,'("The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac
  radiussph=dsqrt(3.d0)*a0bcc*radiussph/(angst*2.d0)
 
     if (deltar2 < deltar1) then
-     write(6,*) 'Increase deltar2. deltar2 should be greater than deltar1'
-     write(6,*) 'deltar2,deltar1',deltar2,deltar1
+     write(6,*) 'MAB: Increase deltar2. deltar2 should be greater than deltar1'
+     write(6,*) 'MAB: deltar2,deltar1',deltar2,deltar1
      stop
     end if 
 

@@ -10,7 +10,7 @@ subroutine error_ABF_direct()!!---------Calculate error for ABF
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY: nhisto,nhisto1,nhisto2,       & 
                               histo,histo1,histo2,delta_z,  &
-                              histo_xi,histo_equi,abf_type, &
+                              histo_equi,abf_type, &
                               A_ee,A_bar_ee,histo_zeta,x_mol,&
                               mean_force1,mean_force2,abf_type,&
                               Free_energy,temperature,A_theo,error_A,&

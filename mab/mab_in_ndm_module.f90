@@ -35,7 +35,8 @@ module mab_in_ndm_module
       real(double)  :: deltar1,deltar2,delta_z,rests
       real(double)  :: xi_min,xi_max,alpha_zeta
       integer       :: nhisto,nhisto1,nhisto2,icsi,nwrite_histo
-      real(double),dimension(:), allocatable :: histo,histo1,histo2,histo_temp,histo_temp1,histo_xi
+      real(double),dimension(:), allocatable :: histo,histo1,histo2
+      real(double),dimension(:), allocatable :: histo_xi, histo_xi1, histo_xi2
       real(double),dimension(:),allocatable::histo_zeta
       real(double),dimension(:), allocatable :: mean_force,mean_force1,mean_force2,mean_force_ABFee
       real(double),dimension(:),allocatable::x_mol,cumul_force_denom1,cumul_force1
@@ -56,7 +57,7 @@ module mab_in_ndm_module
       integer::compute_mode,error_step
       integer:: nsite_block,atom_to_jump,itype_reaction,itype_einstein
       integer, dimension(:), allocatable :: isite_block
-      logical :: block,test_end,histo_equi
+      logical :: block,block_file, test_end,histo_equi
       integer,parameter :: abf_mode_reaction=1,  &
                            abf_mode_alchemical=2,&
                            abf_mode_temperature=22
@@ -172,9 +173,9 @@ end   subroutine allocate_mab
     
 
 
-    allocate(histo(0:nhisto),histo1(-nhisto1:nhisto+nhisto1),histo2(-nhisto2:nhisto+nhisto2),& 
-             histo_temp(0:nhisto),histo_temp1(-nhisto1:nhisto+nhisto1))
-    allocate(histo_xi(-nhisto1:nhisto+nhisto1),histo_zeta(-nhisto1:nhisto+nhisto1))
+    allocate(histo(0:nhisto),histo1(-nhisto1:nhisto+nhisto1),histo2(-nhisto2:nhisto+nhisto2))
+    allocate(histo_xi(0:nhisto),histo_xi1(-nhisto1:nhisto+nhisto1),histo_xi2(-nhisto2:nhisto+nhisto2))
+    allocate(histo_zeta(-nhisto1:nhisto+nhisto1))
     allocate(mean_force(0:nhisto),mean_force1(-nhisto1:nhisto+nhisto1),mean_force2(-nhisto2:nhisto+nhisto2))
     allocate(mean_force_ABFee(-nhisto2:nhisto+nhisto2))
     allocate(cumul_force1(-nhisto1:nhisto+nhisto1),cumul_force_denom1(-nhisto1:nhisto+nhisto1))
@@ -193,11 +194,14 @@ end   subroutine allocate_mab
     end if 
     cumul_force1(:)=0.d0 
     cumul_force_denom1(:)=0.d0
+
     histo(0:nhisto)=0
-    histo_temp(0:nhisto)=1
     histo1(-nhisto1:nhisto+nhisto1)=1
     histo2(-nhisto2:nhisto+nhisto2)=1
-    histo_xi(-nhisto1:nhisto+nhisto1)=0
+
+    histo_xi(0:nhisto)=0
+    histo_xi1(-nhisto1:nhisto+nhisto1)=0
+    histo_xi2(-nhisto2:nhisto+nhisto2)=0
     histo_zeta(-nhisto1:nhisto+nhisto1)=0.d0
     Free_energy(:)=0
     mean_force(:)=0

@@ -13,7 +13,7 @@ subroutine Free_energy_ABF()
  USE mab_in_ndm_module, ONLY: delta_z,nhisto,nhisto1,nhisto2, & 
                               histo,histo1,histo2,Free_energy,&
                               mean_force1,abf_type,abf_mode,x_mol,temperature,&
-                              A_ee,A_dev_ee,exp_A_bar,A_bar_ee,eta_ABFee,xi_min, &
+                              A_ee,exp_A_bar,A_bar_ee,eta_ABFee,xi_min, &
                               KtoERG,equit,unit_histo2
 
 implicit none
@@ -208,7 +208,7 @@ subroutine create_files()!!---------Create files for the programm
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY: nhisto,nhisto1,nhisto2,       & 
                               histo,histo1,histo2,delta_z,  &
-                              histo_xi,histo_equi,abf_type, &
+                              histo_equi,abf_type, &
                               A_ee,A_bar_ee,histo_zeta,x_mol,&
                               mean_force1,mean_force2,abf_type,&
                               Free_energy,temperature
@@ -509,26 +509,32 @@ end subroutine deconvolution_ABFee
 
 
 
-subroutine on_run_writting()
+subroutine on_run_writting_histo_freetemp(itapp)
  USE T_kind_param_m, ONLY:  double
- USE gen_com_m, ONLY: erg2eV,A2cm
+ USE gen_com_m, ONLY: erg2eV,A2cm,lenfnam,fnam
  USE tab_imm_m
  USE mab_in_ndm_module, ONLY : A_ee, &
                               delta_z, & 
                               unit_histo2,nhisto,nhisto1,nhisto2, &
                               abf_type, abf_mode,        &
                               histo, histo1, histo_zeta, &
-                              temperature, KtoErg,it_mab
+                              temperature, KtoErg, &
+                              abf_mode_reaction,abf_mode_temperature, abf_mode_alchemical
  implicit none
+ integer, intent(in) :: itapp
 ! local variables .... 
  integer      :: i_iter
  real(double) :: renorm_f
  real(double)::Free_temp(-nhisto2:nhisto+nhisto2)
+ character :: extension*9, fnamhisto0*80, fnamhisto1*80
+ character :: fnamhisto_zeta*80,fnamfreetemp*80
 
-
+ write(extension,'(i9.9)') itapp
+ fnamhisto0=fnam(1:lenfnam)//'.histogram0.'//extension
+ fnamhisto1=fnam(1:lenfnam)//'.histogram1.'//extension
 if (.NOT.(abf_type==5)) then
-    open(unit=989,file='histogram1',status='unknown')
-    open(unit=990,file='histogram',status='unknown')
+    open(unit=989,file=fnamhisto0,status='unknown')
+    open(unit=990,file=fnamhisto1,status='unknown')
 
      do i_iter=-nhisto1,nhisto+nhisto1
       write(989,*),i_iter, histo1(i_iter)
@@ -537,38 +543,58 @@ if (.NOT.(abf_type==5)) then
        write(990,*),i_iter, histo(i_iter)
      enddo
 
-    close(990)
+    close (989)
+    close (990)
    !
 
 end if 
 
 if (abf_type==5) then
    !
-    open(unit=990,file='histogram_zeta',status='unknown')
+    fnamhisto_zeta=fnam(1:lenfnam)//'.histogram_zeta.'//extension
+    open(unit=990,file=fnamhisto_zeta,status='unknown')
+    if ((abf_mode==abf_mode_reaction).or.(abf_mode==abf_mode_alchemical)) then
       do i_iter=-nhisto1,nhisto+nhisto1
-       write(990,'(i9,E25.12,2f15.7)') i_iter, histo_zeta(i_iter), (temperature/KtoErg)/unit_histo2(i_iter),unit_histo2(i_iter)
+       write(990,'(i9,E25.12)') i_iter, histo_zeta(i_iter)
       enddo
+    end if 
+
+    if (abf_mode==abf_mode_temperature) then
+     do i_iter=-nhisto1,nhisto+nhisto1
+       write(990,'(i9,E25.12,2f15.7)') i_iter, histo_zeta(i_iter), (temperature/KtoErg)/unit_histo2(i_iter),unit_histo2(i_iter)
+     enddo
+    end if 
     close(990)
-    
-     ! take the remor_f from A_ee
-    open(unit=271,file="Free_data_temp.dat",status='unknown')
-    forall(i_iter=-nhisto1:nhisto+nhisto1) Free_temp(i_iter)=exp(-A_ee(i_iter)/temperature)
-    renorm_f=temperature*log(sum(Free_temp(-nhisto1:nhisto+nhisto1))*delta_z)
-    if (abf_mode==22) then
-     do i_iter=-nhisto1+1,nhisto+nhisto1
-         write(271,'(f14.5,3f17.5)')  (temperature/KtoErg)/unit_histo2(i_iter),   &
+ 
+
+    fnamfreetemp=fnam(1:lenfnam)//'.free_temp.'//extension
+    open(unit=990,file=fnamfreetemp,status='unknown')
+
+    if ((abf_mode==abf_mode_reaction).or.(abf_mode==abf_mode_alchemical)) then
+      forall(i_iter=-nhisto1:nhisto+nhisto1) Free_temp(i_iter)=exp(-A_ee(i_iter)/temperature)
+      renorm_f=temperature*log(sum(Free_temp(-nhisto1:nhisto+nhisto1))*delta_z)
+      do i_iter=-nhisto1+1,nhisto+nhisto1
+        write(990,'(i9,E25.15)') i_iter*delta_z, (A_ee(i_iter)+renorm_f)*erg2ev
+      end do
+     end if 
+
+     if (abf_mode==abf_mode_temperature) then
+      do i_iter=-nhisto1+1,nhisto+nhisto1
+         write(990,'(f14.5,3f17.5)')  (temperature/KtoErg)/unit_histo2(i_iter),   &
           (A_ee(i_iter)/unit_histo2(i_iter)+renorm_f/unit_histo2(i_iter))*erg2ev, &
           A_ee(i_iter)/unit_histo2(i_iter)*erg2ev, &
           renorm_f/unit_histo2(i_iter)*erg2ev
-    
-     end do
-    close(271)
-    end if
+      end do
+      close(990)
+     end if
     
 end if 
 
-
 return
 
-end subroutine on_run_writting
+end subroutine on_run_writting_histo_freetemp
+
+
+
+
 

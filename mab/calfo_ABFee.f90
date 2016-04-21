@@ -211,11 +211,11 @@ case(abf_mode_temperature)
 !debug    if ((jx==1).and.(ia==7)) then
 !debug    write(*,*) -tmp_num/denom, fp(jx,ia)
 !debug    end if
-  if ((histo_equi .eqv. .true.) .And. (it_mab- neq_lang >= n_equilibre)) then
+!test  if ((histo_equi .eqv. .true.) .And. (it_mab- neq_lang >= n_equilibre)) then
     fp(jx,ia)=-tmp_num/denom
-  else 
-    fp(jx,ia)=fp(jx,ia)+fpeinstein(jx,ia)
-  end if 
+!test  else 
+!test    fp(jx,ia)=fp(jx,ia)+fpeinstein(jx,ia)
+!test  end if 
  end do
 end do
 
@@ -267,7 +267,7 @@ end select
 
 
 !----------If histo_equi is true when it_mab > n_equilibre, or histo_equi is false, we fill the histogram of zeta
-if(((histo_equi .eqv. .true.) .AND. (it_mab > n_equilibre)) .OR. (histo_equi .eqv. .False.)) then
+if(((histo_equi .eqv. .true.) .AND. (it_mab -neq_lang > n_equilibre)) .OR. (histo_equi .eqv. .False.)) then
 
     do iter= -nhisto1, nhisto+nhisto1 
       histo_zeta(iter)=histo_zeta(iter)+P_ee(iter)
@@ -296,6 +296,12 @@ endif
       forall(iter=-nhisto1:nhisto+nhisto1) A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+omega_abf_i)
   end select
 
+  !if ((it_mab - neq_lang - n_equilibre)==0) then
+    ! all the conters are set to zero. Only the mean force is not set to zero 
+    !A_dev_ee(:)=0.d0
+    !P_ee_num(:)=0
+    !P_ee_denom(:)=0
+  !end if 
 end subroutine calfo_ABFee
 
 

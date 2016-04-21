@@ -63,13 +63,9 @@ if ((abf_mode==2).or.(abf_mode==22)) then
    it=it_en
    call analyse 
    call controle
-
-!debug   write(23,'(i7,2D13.5,3f12.5)') it_en, ene_einstein*erg2ev,xp(1,1)*angst,xp(1,1)*angst,fpeinstein(1,1)*erg2eV/angst
   end do
 
- it=1
  it_en=-1
-! stop
 end if 
 
 
@@ -141,7 +137,7 @@ do it_mab=neq_lang+1,neq_lang+nlangevin
 
 ! Writing intermediar steps ....
   if (mod(it_mab,nwrite_histo)==0) then
-     call on_run_writting
+     call on_run_writting_histo_freetemp(it_mab)
   end if 
 ! End writting intermediare steps ....
 
@@ -259,10 +255,10 @@ xp=xp0
  cumul_force1(:)=0.d0 
     cumul_force_denom1(:)=0.d0
     histo(1:nhisto)=0
-    histo_temp(1:nhisto)=0
     histo1(-nhisto1:nhisto+nhisto1)=0
     histo2(-nhisto2:nhisto+nhisto2)=0
-    histo_xi(-nhisto1:nhisto+nhisto1)=0
+    histo_xi(0:nhisto)=0
+    histo_xi1(-nhisto1:nhisto+nhisto1)=0
     histo_zeta(-nhisto1:nhisto+nhisto1)=0.d0
     Free_energy(:)=0
     mean_force(:)=0

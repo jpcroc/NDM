@@ -3,7 +3,9 @@ subroutine calfo_mab()
   use gen_com_m
   use tab_imm_m
   use var_pot
-  USE mab_in_ndm_module, only: it_mab,abf_type,abf_mode, block,histo_equi,n_equilibre,ene0,fpeinstein,ene_einstein
+  USE mab_in_ndm_module, only: it_mab,abf_type,abf_mode, &
+                               abf_mode_reaction,              &
+                               block,histo_equi,n_equilibre,ene0,fpeinstein,ene_einstein
   implicit none
   integer :: it_langevin
  
@@ -25,13 +27,15 @@ subroutine calfo_mab()
 !ABF part ...
 
 
-      if ((abf_mode==2).or.(abf_mode==22)) call calfo_einstein_solid ()
-      call fill_histo()
+       if ((abf_mode==2).or.(abf_mode==22)) call calfo_einstein_solid ()
 
+       if (abf_mode==abf_mode_reaction) then
+        call fill_histo()
 !---if we only want to fill histogram after n_equilibre steps-------------
-        if ((histo_equi .eqv. .true.) .And. (it_mab >= n_equilibre)) then
-        call fill_histo_equilibre()
-        endif
+       if ((histo_equi .eqv. .true.) .And. (it_mab >= n_equilibre)) then
+         call fill_histo_equilibre()
+       endif
+      end if 
 !up to here we have fp(:,:) - the forces on atomic configurations
 !--------------------------------------------------------------------------
 
