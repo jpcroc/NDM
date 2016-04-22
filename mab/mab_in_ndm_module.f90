@@ -42,7 +42,7 @@ module mab_in_ndm_module
       real(double),dimension(:),allocatable::x_mol,cumul_force_denom1,cumul_force1
       real(double),dimension(:),allocatable::Free_energy
       real(double),dimension(:), allocatable :: unit_histo2
-      real(double),dimension(:),allocatable::A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom,A_bar_ee
+      real(double),dimension(:),allocatable::A_dev_ee,A_ee,corr_A_ee,P_ee,P_ee_num,P_ee_denom,A_bar_ee
       real(double),dimension(:),allocatable::exp_A_bar
       real(double),dimension(:),allocatable::A_theo,error_A,error_A_bar
       real(double) :: limit1m, limit1p, limit2m, limit2p,limit1,limit2
@@ -149,9 +149,10 @@ end   subroutine allocate_mab
      end if 
    end if  
    !
-    if (abf_mode==22) equit=0.d0
-     equit=0.d0
-
+    equit=0.d0
+    if (abf_mode==abf_mode_temperature) equit=0.d0
+    if (abf_mode== abf_mode_alchemical) equit=dble(im)*temperature
+    
     write(*,*) 'Equit correction ', equit*erg2ev
     !sigma_eta=sqrt(eta_mab)
      sigma_eta=eta_mab*delta_z ! choisir largeur de gaussienne
@@ -208,11 +209,13 @@ end   subroutine allocate_mab
     mean_force1(:)=0
     mean_force2(:)=0
     mean_force_ABFee(:)=0
-    allocate(A_ee(-nhisto2:nhisto+nhisto2),A_dev_ee(-nhisto2:nhisto+nhisto2),&
-            P_ee(-nhisto2:nhisto+nhisto2),P_ee_num(-nhisto2:nhisto+nhisto2),&
+    allocate(A_ee(-nhisto2:nhisto+nhisto2),A_dev_ee(-nhisto2:nhisto+nhisto2),     &
+            corr_A_ee(-nhisto2:nhisto+nhisto2),                                   &
+            P_ee(-nhisto2:nhisto+nhisto2),P_ee_num(-nhisto2:nhisto+nhisto2),      &
             P_ee_denom(-nhisto2:nhisto+nhisto2),A_bar_ee(-nhisto2:nhisto+nhisto2),&
             exp_A_bar(-nhisto2:nhisto+nhisto2))
   A_ee(:)=0.d0
+  corr_A_ee(:)=0.d0
   A_theo(:)=0.d0
   error_A(:)=0.d0
   error_A_bar(:)=0.d0

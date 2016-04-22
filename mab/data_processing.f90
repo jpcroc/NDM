@@ -574,7 +574,7 @@ if (abf_type==5) then
       forall(i_iter=-nhisto1:nhisto+nhisto1) Free_temp(i_iter)=exp(-A_ee(i_iter)/temperature)
       renorm_f=temperature*log(sum(Free_temp(-nhisto1:nhisto+nhisto1))*delta_z)
       do i_iter=-nhisto1+1,nhisto+nhisto1
-        write(990,'(i9,E25.15)') i_iter*delta_z, (A_ee(i_iter)+renorm_f)*erg2ev
+        write(990,'(E25.10,E25.15)') i_iter*delta_z, (A_ee(i_iter)+renorm_f)*erg2ev
       end do
      end if 
 

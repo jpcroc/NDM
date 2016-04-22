@@ -10,7 +10,7 @@ subroutine calfo_ABFee()
  USE mab_in_ndm_module, ONLY:dcsi,icsi,rfilac,histo,     &
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              nhisto2,mean_force1,histo1,cumul_force1,   &
-                             A_dev_ee,A_ee,P_ee,P_ee_num,P_ee_denom,delta_z,&
+                             A_dev_ee,A_ee,corr_A_ee,P_ee,P_ee_num,P_ee_denom,delta_z,&
                              x_mol,eta_ABFee,temperature,omega_abf,exp_A_bar,&
                              mean_force2,it_mab,histo_zeta,& 
                              neq_lang, n_equilibre,histo_equi,&
@@ -101,6 +101,7 @@ denom=SUM(temp_exp(:))
 
 
 case (abf_mode_alchemical)
+   
  ! xmol is zeta
  ! U_Aee is U(zeta, q) = (1-zeta)*(ene_einstein + ene0) + zeta * potist
  ! Aee   is A_n(zeta)
@@ -109,9 +110,13 @@ case (abf_mode_alchemical)
  !2. compute the  conditional probability 
  !    p_A_n (zeta | q_n )  = \exp{U_A_n(zeta,q_n) / int_\zeta_min^\zeta_max{\exp{U_a_n(zeta,q_n) d\zeta}
  !--2.a num is \exp{U_A_n (zeta,q_n)}
+  corr_A_ee(:)=0.d0
+  if ((it_mab-neq_lang)<n_equilibre) corr_A_ee(:)=equit
+     
   do iter=-nhisto1,nhisto+nhisto1
     !good_old  U_Aee(iter) = (1.d0-x_mol(iter))*(ene_einstein) + x_mol(iter)*(potist-ene0)
-     U_Aee(iter) = (1.d0-x_mol(iter))*(ene_einstein+ene0) + x_mol(iter)*(potist)
+     U_Aee(iter) = (1.d0-x_mol(iter))*(ene_einstein+ene0) + x_mol(iter)*(potist+corr_A_ee(iter))
+     !temp_log(iter)=-(U_Aee(iter)-A_ee(iter)+corr_A_ee(iter))/temperature
      temp_log(iter)=-(U_Aee(iter)-A_ee(iter))/temperature
   end do
 
