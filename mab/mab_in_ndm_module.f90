@@ -13,7 +13,7 @@ module mab_in_ndm_module
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       implicit none
-
+      integer :: rangmab=0
       real(double), dimension(:,:), allocatable :: sig_i,sig_ll,rga_i,xp0,m_i
       real(double)  :: dtlang,dtlang_ini, temperature,Ecinetique,m_tot,a0bcc,omega_abf,maxforce,lang_factor
       

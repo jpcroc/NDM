@@ -28,19 +28,20 @@ subroutine mab
 
   write(6,*)
   write(6,*)
-  write(6,*)'************ DEBUT DE MAB ****************'
+  write(6,'("MAB: ************ DEBUT DE MAB ****************")')
   write(6,*)
   write(6,*)
-  write(6,*)'......READING.....' 
+  if (rangmab==0) call  print_mab(rangmab)
 
 !  call random_seed()
 
+  if (rangmab==0) write(6,'("MAB:           ......ALLOCATE....           ")') 
   call allocate_mab()
+
+  if (rangmab==0) write(6,'("MAB:           ......READING.....           ")') 
   call read_mab_file()
 
-  write(6,*)'......ALLOCATE....' 
-  write(6,*)'.......INIT.......' 
-  !debug .... write(*,*) 'temperature ',temperature/KtoERG 
+  if (rangmab==0) write(6,'("MAB:           .......INIT.......           ")') 
   call init_mab_in_ndm_module()
   if (itype_reaction==1) then
    call init_neb_reaction()
@@ -50,7 +51,7 @@ subroutine mab
 !   call build_defect_force_along_reaction()
    stop
   end if 
-  write(6,*)'......PREPARE.....' 
+  if (rangmab==0) write(6,'("MAB:           ......PREPARE.....          ")') 
 neq_lang=4000
 call prepare_langevin()
 if (abf_type==1)  call test_minimum_abf()

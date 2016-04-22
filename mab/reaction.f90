@@ -59,7 +59,6 @@ subroutine calfoblock()
 
  fpblock(:,:) = zero
 ! Computing the forces on the protectives spheres...
- 
  do ii=1,nsite_block
    ic = isite_block(ii)
 !debug  if (ic/=7) then

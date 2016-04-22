@@ -16,7 +16,7 @@ subroutine read_mab_file()
                               nsite_block, isite_block,atom_to_jump,              &
                               itype_reaction,itype_einstein, units_phondy,m_i,    &
                               nimage_neb,nimage_lambda,block_file,                          &
-                              abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature           
+                              abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature,rangmab           
 
  implicit none
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
@@ -33,6 +33,7 @@ subroutine read_mab_file()
  integer :: ii,ia,ja,i,j,imax,iu,iv
  real(double) :: temp_read
  integer :: itemp_read
+
 
 
  rtestlac=0.1d0
@@ -75,112 +76,123 @@ open(unit=lumab, file=fnamtin, status='unknown')
 read (lumab, nml=input_mab)
 
 
+
+ if (langevin_type==2) then
+   !if (abf_mode==2) then
+   !   write(6,*) 'Alchemical transition not yet implemented with the underdamped Langevin'
+   !   write(6,*) 'put langevin_type = 1 and restart'
+   !   write(6,*) 'stop in <read_mab_file>'
+   !   stop 
+   !end if 
+
+
+
+
+   select case (abf_type)
+      case (1)
+             if (rangmab==0)   write(6,'("MAB:    Dumped Langevin dynamics  ")')
+      case (2)  
+            if (rangmab==0) then
+             if (abf_mode==1)  write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics + Reaction coordinate   ")')
+             if (abf_mode==2)  write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics + Alchemical coordinate ")')
+             if (abf_mode==22) write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics + Temperature coordinate")')
+            end if  
+      case (3) 
+            if (rangmab==0) then
+             if (abf_mode==1)  write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics with Omega + Reaction coordinate   ")')
+             if (abf_mode==2)  write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics with Omega + Alchemical coordinate ")')
+             if (abf_mode==22) write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics with Omega + Temperature coordinate")')
+            end if  
+      case (4) 
+             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF GAUSSIAN dynamics'
+      case (5) 
+             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF EE dynamics'
+      case (6) 
+             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF EE dynamics + constant biais'
+      case (7) 
+             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF BIN dynamics + constant biais'
+      case (8) 
+             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF EE dynamics + iterative'
+   end select 
+ end if
+
+ if (langevin_type==1) then
+   select case (abf_type)
+      case (1)
+             if (rangmab==0)   write(6,'("MAB:    OverDumped Langevin dynamics  ")')
+      case (2)
+             if (abf_mode==1) write(6,*) ' Dumped Langevin + ABF BIN dynamics'
+             if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'
+      case (3) 
+             if (abf_mode==1) write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega'
+             if (abf_mode==2) write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega + External parameter'
+      case (4) 
+             write(6,*) ' Overdumped Langevin + ABF GAUSSIAN dynamics'
+      case (5) 
+             write(6,*) ' OverDumped Langevin + ABF EE dynamics'
+      case (6) 
+             write(6,*) ' OverDumped Langevin + ABF EE dynamics + constant biais'
+      case (7) 
+             write(6,*) ' OverDumped Langevin + ABF BIN dynamics + constant biais'
+      case (8) 
+             write(6,*) ' OverDumped Langevin + ABF EE dynamics + iterative'
+   end select 
+ end if
+
+
 if (block)  then 
- write(6,*) 'MAB: WARNING: Some atoms are in protective domains!'
-  if (block_file) then
-   write(6,*) 'MAB:  Atoms in protective domains are readed in on *.mab.lblock file!'
-   fnamt_lblock = fnam(1:lenfnam)//'.mab.lblock'
-!debug  write(*,*) fnamtin
-   lublock=775
-   open(unit=lublock, file=fnamt_lblock, status='unknown')
-   read(lublock,*) nsite_block
-   allocate (isite_block(nsite_block))
-   do ii=1,nsite_block
-    !
-     read(lublock,*)  isite_block(ii)
-     if (isite_block(ii) > im) then
-       if (rang==0) then
-        write(*,*) 'MAB: this atom cannot be blocked', isite_block(ii)
-        write(*,*) 'MAB: the value exceeds the number of atoms im ', im
-        write(*,*) 'MAB: stop in read_mab_file.f90'
-       end if 
+  if (rangmab==0) write(6,'("MAB: WARNING -->>> Some atoms are in protective domains! <<-- WARNING")')
+   if (block_file) then
+     if (rangmab==0) write(6,'("MAB:  Atoms in protective domains are readed in on *.mab.lblock file!")')
+     fnamt_lblock = fnam(1:lenfnam)//'.mab.lblock'
+     !debug  write(*,*) fnamtin
+     lublock=775
+     open(unit=lublock, file=fnamt_lblock, status='unknown')
+     read(lublock,*) nsite_block
+     allocate (isite_block(nsite_block))
+     do ii=1,nsite_block
+     !
+      read(lublock,*)  isite_block(ii)
+      if (isite_block(ii) > im) then
+        if (rang==0) then
+          write(*,*) 'MAB: this atom cannot be blocked', isite_block(ii)
+          write(*,*) 'MAB: the value exceeds the number of atoms im ', im
+          write(*,*) 'MAB: stop in read_mab_file.f90'
+        end if 
         stop
-     end if  
+      end if  
       if (abf_mode==1) then
         if (isite_block(ii)==atom_to_jump) then
-         if (rang==0) then
-           write(*,*) 'MAB: The atom which is designed to jump is BLOCKED by the list *.mab.lblock ', isite_block(ii)
-           write(*,*) 'MAB: The atom to jump is set by atom_to_jump, currently set to ', atom_to_jump
-           write(*,*) 'MAB: stop in read_mab_file.f90'
-         end if 
-         stop
+          if (rang==0) then
+            write(*,*) 'MAB: The atom which is designed to jump is BLOCKED by the list *.mab.lblock ', isite_block(ii)
+            write(*,*) 'MAB: The atom to jump is set by atom_to_jump, currently set to ', atom_to_jump
+            write(*,*) 'MAB: stop in read_mab_file.f90'
+          end if 
+          stop
         end if
       end if
-  !
-   end do   
-  close(lublock)
+      !
+     end do   
+     close(lublock)
   else 
-   write(6,*) 'MAB:  All the atoms in protective domains *.mab.lblock are IGNORATED!'
-    nsite_block=im
-    allocate (isite_block(im))
-    do ii=1,nsite_block
-     isite_block(ii)=ii
-    end do
+     if (rangmab==0) write(6,'("MAB:  ALL the atoms are in protective domains *.mab.lblock file is IGNORATED!")')
+     nsite_block=im
+     allocate (isite_block(im))
+     do ii=1,nsite_block
+       isite_block(ii)=ii
+     end do
 
-    if (abf_mode==abf_mode_reaction) then
-      write(6,*) 'MAB: block, block_file, abf_mode are not compatible'
-      write(6,*) 'MAB: Change the type of abf_mode others than 1'
-      write(6,*) 'MAB: ... or switch block_file to T and provide an *.mab.lblock file which is compatible with your reaction coordinate'
-      write(6,*) 'MAB: stop in read_mab_file.f90'
-      stop
-    end if 
-
+     if (abf_mode==abf_mode_reaction) then
+       write(6,*) 'MAB: block, block_file, abf_mode are not compatible'
+       write(6,*) 'MAB: Change the type of abf_mode others than 1'
+       write(6,*) 'MAB: ... or switch block_file to T and provide an *.mab.lblock file which is compatible with your reaction coordinate'
+       write(6,*) 'MAB: stop in read_mab_file.f90'
+       stop
+     end if 
   end if 
 
 end if 
 
-
-      if (langevin_type==2) then
-        !if (abf_mode==2) then
-        !   write(6,*) 'Alchemical transition not yet implemented with the underdamped Langevin'
-        !   write(6,*) 'put langevin_type = 1 and restart'
-        !   write(6,*) 'stop in <read_mab_file>'
-        !   stop 
-        !end if 
-        select case (abf_type)
-           case (1)
-                  write(6,*) ' Dumped Langevin dynamics'
-                  if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'
-           case (2)  
-                  if (abf_mode==1) write(6,*) ' Dumped Langevin + ABF BIN dynamics'
-                  if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'
-           case (3) 
-                  write(6,*) ' Dumped Langevin + ABF BIN dynamics with Omega'
-           case (4) 
-                  write(6,*) ' Dumped Langevin + ABF GAUSSIAN dynamics'
-           case (5) 
-                  write(6,*) ' Dumped Langevin + ABF EE dynamics'
-           case (6) 
-                  write(6,*) ' Dumped Langevin + ABF EE dynamics + constant biais'
-           case (7) 
-                  write(6,*) ' Dumped Langevin + ABF BIN dynamics + constant biais'
-           case (8) 
-                  write(6,*) ' Dumped Langevin + ABF EE dynamics + iterative'
-        end select 
-      end if
-
-      if (langevin_type==1) then
-        select case (abf_type)
-           case (1)
-                  write(6,*) ' Overdumped Langevin dynamics'
-           case (2)
-                  if (abf_mode==1) write(6,*) ' Dumped Langevin + ABF BIN dynamics'
-                  if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'
-           case (3) 
-                  if (abf_mode==1) write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega'
-                  if (abf_mode==2) write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega + External parameter'
-           case (4) 
-                  write(6,*) ' Overdumped Langevin + ABF GAUSSIAN dynamics'
-           case (5) 
-                  write(6,*) ' OverDumped Langevin + ABF EE dynamics'
-           case (6) 
-                  write(6,*) ' OverDumped Langevin + ABF EE dynamics + constant biais'
-           case (7) 
-                  write(6,*) ' OverDumped Langevin + ABF BIN dynamics + constant biais'
-           case (8) 
-                  write(6,*) ' OverDumped Langevin + ABF EE dynamics + iterative'
-        end select 
-      end if
      if  (.not.( (abf_mode/=abf_mode_alchemical).or.  &
            (abf_mode/=abf_mode_temperature).or. &
            (abf_mode/=abf_mode_reaction))  ) then
@@ -222,7 +234,7 @@ end if
        allocate (omega_veinstein(3,im))
 
       if (itype_einstein==0 ) then
-       write(*,'("MAB: Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
+       if (rangmab==0) write(6,'("MAB: Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
        omega_veinstein(:,:)=omega_einstein
       end if 
 
@@ -273,55 +285,55 @@ end if
 
      select case (sim_mode)
       case (1) 
-           write(6,*) 'MAB: The simulatuion check the first passage time and '
-           write(6,*) 'MAB will stop once the vacacy reach the final postion'
+           if (rangmab==0) write(6,'(" MAB: The simulatuion check the first passage time and   ")')
+           if (rangmab==0) write(6,'("MAB: MAB will stop once the vacacy reach the final postion ")')
       case (2) 
-       write(6,'("MAB: The simulation stops after nlangevin steps....:",i9)')  nlangevin
+           if (rangmab==0) write(6,'("MAB: The simulation stops after nlangevin steps....:",i9)')  nlangevin
      end select 
 
 
 
 
-write(*,'("MAB: a0 of the cubic unit cell....................:",D15.4)') a0bcc 
-write(*,'("MAb: Langevin time step in s......................:",D15.4)') dtlang 
-write(*,'("MAB: Total number of steps .......................:",I9)')  nlangevin
-write(*,'("MAB: Langevin temperature in K....................:",F8.1)') temperature
-write(*,'("MAB: Langevin dumping coefficient ................:",D15.4)') gamma
-write(*,'("MAB Factor for Langevin coefficient ................:",D15.4)') lang_factor
+if (rangmab==0) write(6,'("MAB: a0 of the cubic unit cell....................:",D15.4)') a0bcc 
+if (rangmab==0) write(6,'("MAb: Langevin time step in s......................:",D15.4)') dtlang 
+if (rangmab==0) write(6,'("MAB: Total number of steps .......................:",I9)')  nlangevin
+if (rangmab==0) write(6,'("MAB: Langevin temperature in K....................:",F8.1)') temperature
+if (rangmab==0) write(6,'("MAB: Langevin dumping coefficient ................:",D15.4)') gamma
+if (rangmab==0) write(6,'("MAB Factor for Langevin coefficient ................:",D15.4)') lang_factor
 
 
 if (abf_type==3) then
- write(*,'("MAB: Omega ABF BIN............... ................:",D15.4)') omega_abf
+ if (rangmab==0) write(6,'("MAB: Omega ABF BIN............... ................:",D15.4)') omega_abf
 end if
 
 if (abf_type==4) then
- write(*,'("MAB: eta_mab the width of the Gaussian in bins.....:",D15.4)') eta_mab 
+ if (rangmab==0) write(6,'("MAB: eta_mab the width of the Gaussian in bins.....:",D15.4)') eta_mab 
 end if
 
 if (block) then
-  write(*,'("MAB: Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
-  write(*,'("MAB: Width of the FD function in A................:",D15.4)') deltasph
+  if (rangmab==0) write(6,'("MAB: Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
+  if (rangmab==0) write(6,'("MAB: Width of the FD function in A................:",D15.4)') deltasph
 end if
 
-write(*,'("MAB: Number of the bins of histo..................:",i7)') nhisto
-write(*,'("MAB: The frequency of writing histo...............:",i7)') nwrite_histo
-write(*,'("MAB: The first shell of the histo (1nn units).....:",D15.4)') deltar1
-write(*,'("MAb: The second shell of the histo (1nn units)....:",D15.4)') deltar2
+if (rangmab==0) write(6,'("MAB: Number of the bins of histo..................:",i7)') nhisto
+if (rangmab==0) write(6,'("MAB: The frequency of writing histo...............:",i7)') nwrite_histo
+if (rangmab==0) write(6,'("MAB: The first shell of the histo (1nn units).....:",D15.4)') deltar1
+if (rangmab==0) write(6,'("MAb: The second shell of the histo (1nn units)....:",D15.4)') deltar2
 if ((abf_mode==2).or.(abf_mode==22)) then
  if (mode_zeta_potential==1) then
-  write(*,'("MAB: ===============THERE IS AN EXTRA POTENTIAL FOR ZETA===========")') 
-  write(*,'("MAB: The prefactor of zeta potential...............:",D15.4)') alpha_zeta
+  if (rangmab==0) write(6,'("MAB: ===============THERE IS AN EXTRA POTENTIAL FOR ZETA===========")') 
+  if (rangmab==0) write(6,'("MAB: The prefactor of zeta potential...............:",D15.4)') alpha_zeta
   alpha_zeta=alpha_zeta*ev2erg
  end if 
 end if
 
 if (abf_mode==22) then
-write(*,'("MAB: ha_mix, U(\zeta,q)=\zeta*[U(q)+ha_mix*U_HA(q))]....:",D15.4)') ha_mix
-write(*,'("MAB: Temperature min \zeta..............................:",D15.4)') temperature_zeta_min
-write(*,'("MAB Temperature max \zeta..............................:",D15.4)') temperature_zeta_max
+if (rangmab==0) write(6,'("MAB: ha_mix, U(\zeta,q)=\zeta*[U(q)+ha_mix*U_HA(q))]....:",D15.4)') ha_mix
+if (rangmab==0) write(6,'("MAB: Temperature min \zeta..............................:",D15.4)') temperature_zeta_min
+if (rangmab==0) write(6,'("MAB Temperature max \zeta..............................:",D15.4)') temperature_zeta_max
 end if 
  
-write(*,'("MAB: The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac
+if (rangmab==0) write(6,'("MAB: The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac
 
  temperature=temperature*KtoERG
  temperature_zeta_min=temperature_zeta_min*KtoERG
@@ -340,3 +352,39 @@ write(*,'("MAB: The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestla
 close (lumab)
 
 end subroutine read_mab_file
+
+
+subroutine print_mab(rangloc)
+implicit none 
+integer, intent(in) :: rangloc
+character(len=1) :: quote,dquote
+
+
+ quote=char(39)
+dquote=char(34)
+
+if (rangloc==0) then
+
+write(6,'("/---------------------------------------------------------\")') 
+write(6,'("                                                           ")')
+write(6,'("               __  __   ___             /|                 ")')
+write(6,'("              |  |/  `.",a,"   `.           ||                 ")')quote
+write(6,'("              |   .-.  .-.   ",a,"          ||                 ")')quote
+write(6,'("              |  |  |  |  |  |    __    ||  __             ")')
+write(6,'("              |  |  |  |  |  | .:--.",a,".  ||/",a,"__ ",a,".          ")')quote,quote,quote
+write(6,'("              |  |  |  |  |  |/ |   \ | |:/`  ",a,". ",a,"         ")')quote,quote
+write(6,'("              |  |  |  |  |  |`",a," __ | | ||     | |         ")')dquote
+write(6,'("              |__|  |__|  |__| .",a,".",a,a"| | ||\    / ",a,"         ")')quote,quote,quote,quote
+write(6,'("                              / /   | |_|/\",a,"..",a," /          ")')quote,quote
+write(6,'("                              \ \._,\ ",a,"/",a,"  `",a,"-",a,"`           ")')quote,quote,quote,quote
+write(6,'("                               `--",a,"  `",a,"                    ")')quote,dquote
+write(6,'("copyleft CEA by ...                                        ")')
+write(6,'("... M.-C. Marinica, M. Athenes,                            ")')
+write(6,'("... G. Stoltz, T. Lelievre, L. L. Cao, P. Terrier          ")')
+write(6,'("email:mihai-cosmin.marinica@cea.fr                         ")')
+write(6,'("\---------------------------------------------------------/")') 
+
+end if 
+
+
+end subroutine print_mab
