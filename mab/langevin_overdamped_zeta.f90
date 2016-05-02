@@ -16,7 +16,7 @@ subroutine langevin_overdamped_zeta()
                                 ene_einstein,ene0, temperature,mean_force1,icsi, &
                                 limit1,limit2,langevin_type,m_i,it_mab,delta_z,nhisto,nhisto1, &
                                 lang_factor,it_mab,it_stop,limit1m, limit1p,ha_mix,abf_type,equit, &
-                                xi_max, xi_min,dtlang_ini
+                                xi_max, xi_min,dtlang_ini, crit_langevin_zeta
 
 
    implicit none
@@ -25,7 +25,7 @@ subroutine langevin_overdamped_zeta()
    real(double), save :: average_temp=0.d0
    integer, save :: it_temp = 0
    integer :: it_count
-   real(8)  :: crit_zeta,dtlang_zeta
+   real(8)  :: dtlang_zeta
     
 
     !ddd ffactor=5.d+8
@@ -47,8 +47,8 @@ subroutine langevin_overdamped_zeta()
 
     tmp_factor=lang_factor*dtlang_ini*angst*angst/(gamma*m_i(1,1))
   if (abf_mode==2) then
-    crit_zeta = 0.05
-    dtlang_zeta=1.0*crit_zeta**2*gamma*m_i(1,1)/(6.d0*temperature)
+    crit_langevin_zeta = 0.05
+    dtlang_zeta=1.0*crit_langevin_zeta**2*gamma*m_i(1,1)/(6.d0*temperature)
 !     dtlang_zeta=crit_zeta**2*6.0*gamma*m_i(1,1)*temperature/(ev2erg)**2
 !    write(*,*) dtlang_zeta/(gamma*m_i(1,1)),  sqrt(2.d0*temperature*dtlang_zeta/(gamma*m_i(1,1)))
      
@@ -77,8 +77,8 @@ subroutine langevin_overdamped_zeta()
 
 
   if (abf_mode==22) then
-     crit_zeta=0.01
-      dtlang_zeta=crit_zeta**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
+     crit_langevin_zeta=0.01
+      dtlang_zeta=crit_langevin_zeta**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
   end if 
 
   if (abf_mode==22) then

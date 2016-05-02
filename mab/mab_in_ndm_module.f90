@@ -24,7 +24,7 @@ module mab_in_ndm_module
                                                                       !cm are already in  multiplied by 
                                                                       ! umass (in g) in the main NDM program. 
 
-      real(double) :: crit=0.01/1d+8
+      real(double) :: crit_langevin_dist, crit_langevin_zeta
       integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre,abf_mode,mode_zeta_potential
       integer :: it_mab,it_stop,itest_stop,it_calc_brute
       integer :: ntestvacancyjump
@@ -38,11 +38,15 @@ module mab_in_ndm_module
       real(double),dimension(:), allocatable :: histo,histo1,histo2
       real(double),dimension(:), allocatable :: histo_xi, histo_xi1, histo_xi2
       real(double),dimension(:),allocatable::histo_zeta
-      real(double),dimension(:), allocatable :: mean_force,mean_force1,mean_force2,mean_force_ABFee
+      real(double),dimension(:), allocatable :: mean_force,mean_force1,mean_force_ABFee_dyn
+      real(double),dimension(:), allocatable ::     mean_force_ABF_restart
       real(double),dimension(:),allocatable::x_mol,cumul_force_denom1,cumul_force1
       real(double),dimension(:),allocatable::Free_energy
       real(double),dimension(:), allocatable :: unit_histo2
-      real(double),dimension(:),allocatable::A_dev_ee,A_ee,corr_A_ee,P_ee,P_ee_num,P_ee_denom,A_bar_ee
+      real(double),dimension(:),allocatable:: A_dev_ee,A_ee,A_ee_restart,corr_A_ee, A_bar_ee
+      real(double),dimension(:),allocatable:: P_ee
+      real(double),dimension(:),allocatable:: P_ee_num,P_ee_denom
+      real(double),dimension(:),allocatable:: P_ee_num_restart,P_ee_denom_restart
       real(double),dimension(:),allocatable::exp_A_bar
       real(double),dimension(:),allocatable::A_theo,error_A,error_A_bar
       real(double) :: limit1m, limit1p, limit2m, limit2p,limit1,limit2
@@ -57,7 +61,7 @@ module mab_in_ndm_module
       integer::compute_mode,error_step
       integer:: nsite_block,atom_to_jump,itype_reaction,itype_einstein
       integer, dimension(:), allocatable :: isite_block
-      logical :: block,block_file, test_end,histo_equi
+      logical :: block,block_file, abf_restart, test_end,histo_equi
       integer,parameter :: abf_mode_reaction=1,  &
                            abf_mode_alchemical=2,&
                            abf_mode_temperature=22
@@ -85,11 +89,10 @@ end   subroutine allocate_mab
      dtlang_ini=dtlang
      m_tot=SUM(m_i(1,1:im))
     
-     xp0(:,:) = xp(:,:)
+     !xp0(:,:) = xp(:,:)
      do ic=1,3
-       xbarini(ic)  = sum(xp(ic,1:im)*m_i(ic,1:im))/m_tot
+       xbarini(ic)  = sum(xp0(ic,1:im)*m_i(ic,1:im))/m_tot
      enddo
- 
      pinumber=4.d0*datan(1.D0)
 
     it_en=-1
@@ -153,23 +156,18 @@ end   subroutine allocate_mab
     if (abf_mode==abf_mode_temperature) equit=0.d0
     if (abf_mode== abf_mode_alchemical) equit=dble(im)*temperature
     
-    write(*,*) 'Equit correction ', equit*erg2ev
+    if (rangmab==0) write(6,'("MAB:  Equit correction (equit in eV) ......:", E25.15E3)') equit*erg2ev
     !sigma_eta=sqrt(eta_mab)
-     sigma_eta=eta_mab*delta_z ! choisir largeur de gaussienne
-     sigma_carre=sigma_eta**2
-     ecart_eta=nint(3.d0*sigma_eta/delta_z)
-      write(*,*),'ecart_eta,delta_z,sigma_eta',ecart_eta,delta_z,sigma_eta
-    write(*,'("The distribution over the histogram............:")')
-
-    write(*,'("...-nhisto2=",i6,"...-nhisto1=",i6,"..0..........nhisto=",i6,"......nhisto+nhisto1=",i6, &
+    sigma_eta=eta_mab*delta_z ! choisir largeur de gaussienne
+    sigma_carre=sigma_eta**2
+    ecart_eta=nint(3.d0*sigma_eta/delta_z)
+    if (rangmab==0) write(6,'("MAB:  ecart_eta,  delta_z,  sigma_eta",i6, 2E25.12E3)')ecart_eta,delta_z,sigma_eta
+    if (rangmab==0) write(6,'("...MAB.....The distribution over the histogram.....MAB...:")')
+    if (rangmab==0) write(6,'("...-nhisto2=",i6,"...-nhisto1=",i6,"..0..........nhisto=",i6,"......nhisto+nhisto1=",i6, &
           "....nhisto+nhisto2=",i6,"...")') -nhisto2, -nhisto1,nhisto,nhisto+nhisto1,nhisto+nhisto2
-     write(*,'("...-nhisto2=",f6.2,"...-nhisto1=",f6.2,"..",f6.2,".....nhisto=",f6.2,"......nhisto+nhisto1=",f6.2, &
+    if (rangmab==0) write(6,'("...-nhisto2=",f6.2,"...-nhisto1=",f6.2,"..",f6.2,".....nhisto=",f6.2,"......nhisto+nhisto1=",f6.2, &
           "....nhisto+nhisto2=",f6.2,"...")') -deltar2, -deltar1,xi_min,xi_max,xi_max+deltar1,xi_max+deltar2
 
-
-
-
-  
 
     
 
@@ -177,8 +175,9 @@ end   subroutine allocate_mab
     allocate(histo(0:nhisto),histo1(-nhisto1:nhisto+nhisto1),histo2(-nhisto2:nhisto+nhisto2))
     allocate(histo_xi(0:nhisto),histo_xi1(-nhisto1:nhisto+nhisto1),histo_xi2(-nhisto2:nhisto+nhisto2))
     allocate(histo_zeta(-nhisto1:nhisto+nhisto1))
-    allocate(mean_force(0:nhisto),mean_force1(-nhisto1:nhisto+nhisto1),mean_force2(-nhisto2:nhisto+nhisto2))
-    allocate(mean_force_ABFee(-nhisto2:nhisto+nhisto2))
+    allocate(mean_force(0:nhisto),mean_force1(-nhisto1:nhisto+nhisto1))
+    allocate(mean_force_ABFee_dyn(-nhisto2:nhisto+nhisto2))
+    allocate(mean_force_ABF_restart(-nhisto2:nhisto+nhisto2))
     allocate(cumul_force1(-nhisto1:nhisto+nhisto1),cumul_force_denom1(-nhisto1:nhisto+nhisto1))
     allocate(x_mol(-nhisto2:nhisto+nhisto2))
     allocate(Free_energy(-nhisto2:nhisto+nhisto2))
@@ -207,24 +206,31 @@ end   subroutine allocate_mab
     Free_energy(:)=0
     mean_force(:)=0
     mean_force1(:)=0
-    mean_force2(:)=0
-    mean_force_ABFee(:)=0
+    mean_force_ABFee_dyn(:)=0
+    mean_force_ABF_restart(:)=0
     allocate(A_ee(-nhisto2:nhisto+nhisto2),A_dev_ee(-nhisto2:nhisto+nhisto2),     &
             corr_A_ee(-nhisto2:nhisto+nhisto2),                                   &
-            P_ee(-nhisto2:nhisto+nhisto2),P_ee_num(-nhisto2:nhisto+nhisto2),      &
-            P_ee_denom(-nhisto2:nhisto+nhisto2),A_bar_ee(-nhisto2:nhisto+nhisto2),&
+            A_ee_restart(-nhisto2:nhisto+nhisto2),                                &
+            P_ee(-nhisto2:nhisto+nhisto2),                       &
+            P_ee_num(-nhisto2:nhisto+nhisto2),      &
+            P_ee_num_restart(-nhisto2:nhisto+nhisto2),      &
+            P_ee_denom(-nhisto2:nhisto+nhisto2),     &
+            P_ee_denom_restart(-nhisto2:nhisto+nhisto2),     &
+            A_bar_ee(-nhisto2:nhisto+nhisto2),&
             exp_A_bar(-nhisto2:nhisto+nhisto2))
-  A_ee(:)=0.d0
-  corr_A_ee(:)=0.d0
-  A_theo(:)=0.d0
-  error_A(:)=0.d0
-  error_A_bar(:)=0.d0
-  A_dev_ee(:)=0.d0
-  P_ee(:)=0.d0
-  P_ee_num(:)=0.d0
-  P_ee_denom(:)=0.d0    
-  A_bar_ee(:)=0.d0
-  exp_A_bar(:)=1.d0 
+  A_ee(:)        =0.d0
+  A_ee_restart(:)=0.d0
+  corr_A_ee(:)   =0.d0
+  A_theo(:)      =0.d0
+  error_A(:)     =0.d0
+  error_A_bar(:) =0.d0
+  A_dev_ee(:)    =0.d0
+  P_ee(:)        =0.d0
+  P_ee_num(:)    =0.d0
+  P_ee_num_restart(:)    =0.d0
+  P_ee_denom_restart(:)  =0.d0    
+  A_bar_ee(:)    =0.d0
+  exp_A_bar(:)   =1.d0 
 
  return
 !

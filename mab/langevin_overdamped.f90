@@ -14,7 +14,9 @@
     use tab_imm_m
     use var_pot
     USE mab_in_ndm_module, only: sig_ll,m_i,dtlang,xbar,  &
-                             Ecinetique,abf_type,abf_mode,block,gamma,fpeinstein,it_en,&
+                             Ecinetique,abf_type,         &
+                             abf_mode, abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature, &
+                             block,gamma,crit_langevin_dist, fpeinstein,it_en,&
                              temperature,dcsi,dtlang_ini,xi_min,xi_max 
 
 
@@ -27,40 +29,35 @@
     real(double):: sig_mass(3,im) 
     real(double) :: Ecin4
     real(double) :: fplocal(3,imm)
-    real(double) :: crit,dtlang_min, dtlang_max
+    real(double) :: dtlang_min, dtlang_max
 
     call genere_bruit(gau)
 
-!tds if (abf_mode==22) then
-     crit=0.05/1.d8
-     if ((abf_mode==2).or.(abf_mode==1)) then
-          dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*temperature)
-          dtlang=dtlang_ini
-     end if 
+ if (abf_mode==abf_mode_temperature) then
+
      dtlang=dtlang_ini
-     if ((.NOT.(abf_type==5)).and.(abf_mode==22)) dtlang=crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
-     if ((abf_type==5).and.(abf_mode==22)) then
+     if (.NOT.(abf_type==5)) dtlang=crit_langevin_dist**2*(gamma*m_i(1,1))/(6.d0*(temperature/dcsi))
+     if (abf_type==5) then
 
-      dtlang_min= crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/xi_min))
-      dtlang_max= crit**2*(gamma*m_i(1,1))/(6.d0*(temperature/xi_max))
-      dtlang= crit**2*(gamma*m_i(1,1))/(6.d0*(temperature))
-
+      dtlang_min= crit_langevin_dist**2*(gamma*m_i(1,1))/(6.d0*(temperature/xi_min))
+      dtlang_max= crit_langevin_dist**2*(gamma*m_i(1,1))/(6.d0*(temperature/xi_max))
+      dtlang= crit_langevin_dist**2*(gamma*m_i(1,1))/(6.d0*(temperature))
 !      write(*,'(4E25.3)')  dtlang_ini, dtlang, dtlang_min, dtlang_max
       dtlang=dtlang_ini
      end if 
 
      sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))
-!    end if 
-!    write(*,*) dtlang, dtlang_ini
+ end if 
+
     sig_mass(1:3,1:im)=sig_ll(1:3,1:im)*gau(1:3,1:im)
-    do ic=1,3
+ do ic=1,3
        xbar(ic)=sum(xp(ic,1:im))/dble(im) ! barycentre sur les particules
        xbari(ic)=xbar(ic)
-    enddo
+ enddo
 
  
  !one force calculation ....
-  if (abf_mode==2) then
+  if (abf_mode==abf_mode_alchemical) then
    if (it_en > 0) then
       call calfo_einstein_solid ()
       call calfo_atomic_forces (it_en)
@@ -71,12 +68,12 @@
     end if          
    end if   
     
-  if (abf_mode==1) then
+  if (abf_mode==abf_mode_reaction) then
       call calfo_mab()
       fplocal(:,:) = fp(:,:)
   end if          
   
-  if (abf_mode==22) then
+  if (abf_mode==abf_mode_temperature) then
        call calfo_mab()
        fplocal(:,:)=fp(:,:)
   end if 

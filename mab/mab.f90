@@ -17,7 +17,7 @@ subroutine mab
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       implicit none
-
+ integer :: iloc
   
 ! 
 ! Copyleft NDM Dec-2014
@@ -25,6 +25,10 @@ subroutine mab
   integer:: i_iter
   real(double)::temp_read,tmp2,corr3N,corr3Nm3
   logical :: dir_e
+  integer ::  stop_sim, abf_mode_r, abf_type_r, it_mab_r, nhisto_r, nhisto1_r, nhisto2_r
+  real(double) :: delta_z_r 
+  character(len=1) :: ac_read  
+
 
   write(6,*)
   write(6,*)
@@ -42,6 +46,8 @@ subroutine mab
   call read_mab_file()
 
   if (rangmab==0) write(6,'("MAB:           .......INIT.......           ")') 
+
+  call read_gin_file()
   call init_mab_in_ndm_module()
   if (itype_reaction==1) then
    call init_neb_reaction()
@@ -52,8 +58,62 @@ subroutine mab
    stop
   end if 
   if (rangmab==0) write(6,'("MAB:           ......PREPARE.....          ")') 
-neq_lang=4000
+
+neq_lang=0
+if (abf_mode==abf_mode_reaction) neq_lang=0
+if (abf_mode==abf_mode_alchemical) neq_lang=4000
+
 call prepare_langevin()
+
+if (rangmab==0) then
+     write(6,'("MAB: --------Few consitencies check--for--langevin steps------")')
+     write(6,'("MAB: crit_lanngevin_dist (in ang) ........................:",E25.12E3)') crit_langevin_dist*angst
+
+   if (abf_mode==abf_mode_reaction) then
+     write(6,'("MAB: (nhisto2-nhisto1)*delta_z (in ang)...................:",E25.12E3)') dble(nhisto2-nhisto1)*delta_z*angst
+     write(6,'("MAB: (nhisto1        )*delta_z (in ang)...................:",E25.12E3)') dble(nhisto1)*delta_z*angst
+   end if
+
+   if (crit_langevin_dist / (dble(nhisto2-nhisto1)*delta_z) > 1.d0 ) then 
+     write(6,'("MAB:  WARNING !!!! Langevin  vs histo settings  !!! WARNING ")')
+     write(6,'("MAB: the Langevins step is too large compared with (nhisto2-nhisto1)*delta_z, possible solutions ( or / and ):")')
+     write(6,'("MAB:  - decrease the Langevins step")')
+     write(6,'("MAB:  - increase the difference nhisto2 - nhisto1 ")')
+   end if 
+
+   if (crit_langevin_dist / (dble(nhisto1)*delta_z) > 1.d0 ) then 
+     write(6,'("MAB:  WARNING !!!! Langevin vs nhisto1  !!! WARNING ")') 
+     write(6,'("MAB: the Langevins step is too large compared with nhisto1*delta_z, possible solutions ( or / and ):")')
+     write(6,'("MAB:  - decrease the Langevins step")')
+     write(6,'("MAB:  - increase the difference nhisto2 - nhisto1 ")')
+   end if 
+
+
+   if (crit_langevin_dist / (dble(nhisto2)*delta_z) > 1.d0 ) then 
+     write(6,'("MAB: the Langevins step is huge. The system will leave the +/- nhisto2 histograms extensions  ")')
+     write(6,'("MAB:  - decrease the Langevins step")')
+     write(6,'("MAB:  - increase the difference nhisto2  ")') 
+     ! stop '< mab.f90 >'
+   end if  
+end if 
+
+
+if (block) then
+   write(6,'("MAB: width of the FD block  (in ang).....................:",E25.12E3)') deltasph*angst
+
+   if ((crit_langevin_dist*angst / deltasph ) > 1.d0)  then 
+     write(6,'("MAB:  WARNING !!!! Langevin  vs FD width  !!! WARNING ")') 
+     write(6,'("MAB: the Langevins step is huge or the width of the FD function for protectives domains are too narrow  ")')
+     write(6,'("MAB:  - decrease the Langevins step .....................:", E25.12E3)'), crit_langevin_dist
+     write(6,'("MAB:  - increase the width of the FD function............:", E25.12E3)')  deltasph
+     write(6,'("MAB:  ratio Lang / FD width ", E25.12E3)')  crit_langevin_dist/deltasph
+     !stop '< mab.f90 >'
+   end if 
+   write(6,'("MAB: --------------END  Consistencies ---------------")')
+end if !rangmab 
+
+
+
 if (abf_type==1)  call test_minimum_abf()
 if ((abf_mode==2).or.(abf_mode==22)) then
  call test_minimum_abf () 
@@ -77,21 +137,74 @@ select case(compute_mode)
 case(1)!--------one simulation
   write(6,*)'------COMPUTE MODE IS ONE SIMULATION!!!!!!--------------'
  
-if (abf_type == 8) then ! This calculate iterally ABFee ( process to calculate \bar A2 given \bar A1
-
-! Check whether the file exists or not.
+!if (abf_type == 8) then ! This calculate iterally ABFee ( process to calculate \bar A2 given \bar A1
+if (abf_mode==abf_mode_reaction) then
+if (abf_restart) then
   inquire( file="meanforce_input", exist=dir_e )
   if ( dir_e ) then
-   open(unit=13,file='meanforce_input',action='read')! this require meanforce data of ABFee!!!!!
+   open(unit=133,file='meanforce_input',action='read')! this require meanforce data of ABFee!!!!!
     do i_iter=-nhisto2,nhisto+nhisto2
-     read(13,*),temp_read,mean_force_ABFee(i_iter)
+     read(133,*)temp_read,mean_force_ABF_restart(i_iter)
+       if (temp_read-dble(i_iter)/=zero) then
+        if (rangmab==0) write(6,'("MAB: Problems in reading meanforce_input file ... stop in mab.f90",i6, 2E25.12E3)') i_iter, temp_read, dble(i_iter)
+        stop
+       end if 
     enddo
+    close(133)
   else
-    write(*,*), 'Input file does not exsit!! Verify your input files!!'
+    write(*,*)'Input file meanforce_input does not exsit!! Verify your input files!!'
     stop
   end if
 
-endif
+  inquire( file="A_ee_input", exist=dir_e )
+  if ( dir_e ) then
+    open(unit=133,file='A_ee_input',action='read')
+    
+    read(133,*) ac_read, abf_mode_r, abf_type_r, it_mab_r, nhisto_r, nhisto1_r, nhisto2_r, delta_z_r   
+    stop_sim=1 
+    if ( nhisto   /= nhisto_r) stop_sim=0
+    if ( nhisto1  /= nhisto1_r) stop_sim=0
+    if ( nhisto2  /= nhisto2_r) stop_sim=0
+    if ( abf_mode /= abf_mode_r) stop_sim=0
+    if ( dabs(delta_z - delta_z_r)*angst>1.d-8 ) stop_sim=0
+    if ( abf_type/=abf_type_r) then
+      if (rangmab==0) write(6,'("MAB: WARNING !!!! the abf_type from old simulation and the new simulation is not the same WARNING ")')
+    end if 
+    if (stop_sim==0) then
+       if (rangmab==0) then
+           write(6,'("MAB: the A_ee_restart file is not compatible with one of the following things. Check ...")')
+           write(6,'("MAB: Check that                   abf_mode  ,  nhisto  , nhisto1  , nhisto2  , delta_z")')
+           write(6,'("MAB: present simulation         ",2i3,3i5,E25.12E3)') abf_mode  ,  abf_type, nhisto  , nhisto1  , nhisto2  , delta_z   
+           write(6,'("MAB: old A_ee_restart simulation",2i3,3i5,E25.12E3)') abf_mode_r,  abf_type_r, nhisto_r, nhisto1_r, nhisto2_r, delta_z_r   
+       end if 
+       stop '< mab.f90 >'
+    end if 
+
+    do i_iter=-nhisto2,nhisto+nhisto2
+      read(133,*) temp_read, A_ee_restart(i_iter), P_ee_num_restart(i_iter), P_ee_denom_restart(i_iter)
+       if (dabs((temp_read-dble(i_iter)*delta_z)) >  1.d-10 ) then
+        if (rangmab==0) write(6,'("MAB: Problems in reading meanforce_input file ... stop in mab.f90")') i_iter, temp_read, dble(i_iter)
+        stop
+       end if 
+
+
+    enddo
+    close(133)
+    A_ee_restart(:)=A_ee_restart(:)/erg2ev
+  else 
+    write(*,*)'Input file A_ee_input does not exsit!! Verify your input files!!'
+    stop
+  end if 
+
+
+
+
+end if 
+end if 
+
+
+! Check whether the file exists or not.
+!endif
  
 do it_mab=neq_lang+1,neq_lang+nlangevin
 
@@ -200,6 +313,8 @@ do it_mab=neq_lang+1,neq_lang+nlangevin
       write(6,'("F(Full3N-6)                      (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction+pbc_correction+tmp2 
  end if  !abf_mode==2
 
+  call sauveposition (it_mab)
+
   write(6,*)
   write(6,*)
   write(6,*)'************  FIN  DE MAB ****************'
@@ -242,7 +357,7 @@ end if
 
 
 
-xp=xp0
+!xp=xp0
 
 
   A_ee(:)=0.d0
@@ -264,7 +379,7 @@ xp=xp0
     Free_energy(:)=0
     mean_force(:)=0
     mean_force1(:)=0
-    mean_force2(:)=0
+    mean_force_ABFee_dyn(:)=0
 
 if (abf_type == 2) then
 
@@ -391,7 +506,7 @@ open(unit=996,file='Free_energy_mollifiee_ABFee',action='read')
 
 do i_iter=-nhisto1,nhisto+nhisto1
 
-read(996,*),temp_read, A_ee(i_iter)
+read(996,*) temp_read, A_ee(i_iter)
 
 enddo
 
@@ -467,7 +582,7 @@ if ( dir_e ) then
 
 open(unit=13,file='meanforce_input',action='read')! this require meanforce data of ABFee!!!!!
 do i_iter=-nhisto2,nhisto+nhisto2
-read(13,*),temp_read,mean_force_ABFee(i_iter)
+read(13,*) temp_read,mean_force_ABF_restart(i_iter)
 enddo
 
 else

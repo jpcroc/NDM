@@ -16,7 +16,8 @@ subroutine read_mab_file()
                               nsite_block, isite_block,atom_to_jump,              &
                               itype_reaction,itype_einstein, units_phondy,m_i,    &
                               nimage_neb,nimage_lambda,block_file,                          &
-                              abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature,rangmab           
+                              abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature,rangmab, &
+                              abf_restart           
 
  implicit none
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
@@ -26,7 +27,8 @@ subroutine read_mab_file()
                       maxforce,compute_mode,abf_mode, error_step,nom_deconvo,lang_factor, &
                       mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix,            &
                       temperature_zeta_min,temperature_zeta_max,                          &
-                      atom_to_jump, itype_reaction,itype_einstein,nimage_neb,nimage_lambda
+                      atom_to_jump, itype_reaction,itype_einstein,nimage_neb,nimage_lambda, &
+                      abf_restart
 
  character(len=128) :: fnamtin, fnamt_lblock, fnamt_lfreq, fnamt_lm, fnamt_lu, fnamt_lv
  integer :: lumab,lublock,lcu,lcv,lcm
@@ -61,7 +63,7 @@ subroutine read_mab_file()
 
  nimage_neb=15
  nimage_lambda=70
-
+ abf_restart=.false.
 
      
      do ia=1,3
@@ -183,10 +185,13 @@ if (block)  then
      end do
 
      if (abf_mode==abf_mode_reaction) then
-       write(6,*) 'MAB: block, block_file, abf_mode are not compatible'
-       write(6,*) 'MAB: Change the type of abf_mode others than 1'
-       write(6,*) 'MAB: ... or switch block_file to T and provide an *.mab.lblock file which is compatible with your reaction coordinate'
+      if (rangmab==0) then
+       write(6,'("MAB: block, block_file, abf_mode are not compatible")')
+       write(6,'("MAB: Change the type of abf_mode others than 1")')
+       write(6,'("MAB: ... or switch block_file to T and provide an *.mab.lblock file which is compatible with")') 
+       write(6,'("MAB: your abf_mode reaction coordinate 1")')
        write(6,*) 'MAB: stop in read_mab_file.f90'
+       end if 
        stop
      end if 
   end if 
@@ -234,7 +239,7 @@ end if
        allocate (omega_veinstein(3,im))
 
       if (itype_einstein==0 ) then
-       if (rangmab==0) write(6,'("MAB: Einstein frequency (omega_einstein)..........:",D15.4)') omega_einstein
+       if (rangmab==0) write(6,'("MAB: Einstein frequency (omega_einstein)...................:",D15.4)') omega_einstein
        omega_veinstein(:,:)=omega_einstein
       end if 
 
@@ -285,55 +290,55 @@ end if
 
      select case (sim_mode)
       case (1) 
-           if (rangmab==0) write(6,'(" MAB: The simulatuion check the first passage time and   ")')
-           if (rangmab==0) write(6,'("MAB: MAB will stop once the vacacy reach the final postion ")')
+           if (rangmab==0) write(6,'("MAB:The simulation check the first passage time and   ")')
+           if (rangmab==0) write(6,'("MAB: MAB will stop once the vacancy goes into the final postion ")')
       case (2) 
-           if (rangmab==0) write(6,'("MAB: The simulation stops after nlangevin steps....:",i9)')  nlangevin
+           if (rangmab==0) write(6,'("MAB: The simulation stops after nlangevin steps.....................:",i9)')  nlangevin
      end select 
 
 
 
 
-if (rangmab==0) write(6,'("MAB: a0 of the cubic unit cell....................:",D15.4)') a0bcc 
-if (rangmab==0) write(6,'("MAb: Langevin time step in s......................:",D15.4)') dtlang 
-if (rangmab==0) write(6,'("MAB: Total number of steps .......................:",I9)')  nlangevin
-if (rangmab==0) write(6,'("MAB: Langevin temperature in K....................:",F8.1)') temperature
-if (rangmab==0) write(6,'("MAB: Langevin dumping coefficient ................:",D15.4)') gamma
-if (rangmab==0) write(6,'("MAB Factor for Langevin coefficient ................:",D15.4)') lang_factor
+if (rangmab==0) write(6,'("MAB: a0 of the cubic unit cell............................:",D15.4)') a0bcc 
+if (rangmab==0) write(6,'("MAB: Langevin time step in s..............................:",D15.4)') dtlang 
+if (rangmab==0) write(6,'("MAB: Total number of steps ...............................:",I9)')  nlangevin
+if (rangmab==0) write(6,'("MAB: Langevin temperature in K............................:",F8.1)') temperature
+if (rangmab==0) write(6,'("MAB: Langevin dumping coefficient ........................:",D15.4)') gamma
+if (rangmab==0) write(6,'("MAB Factor for Langevin coefficient ......................:",D15.4)') lang_factor
 
 
 if (abf_type==3) then
- if (rangmab==0) write(6,'("MAB: Omega ABF BIN............... ................:",D15.4)') omega_abf
+ if (rangmab==0) write(6,'("MAB: Omega ABF BIN.........................................:",E25.12E3)') omega_abf
 end if
 
 if (abf_type==4) then
- if (rangmab==0) write(6,'("MAB: eta_mab the width of the Gaussian in bins.....:",D15.4)') eta_mab 
+ if (rangmab==0) write(6,'("MAB: eta_mab the width of the Gaussian in bins............:",E25.12E3)') eta_mab 
 end if
 
 if (block) then
-  if (rangmab==0) write(6,'("MAB: Radius of the blocking spheres (1nn units) ..:",D15.4)') radiussph
-  if (rangmab==0) write(6,'("MAB: Width of the FD function in A................:",D15.4)') deltasph
+  if (rangmab==0) write(6,'("MAB: Radius of the blocking spheres (1nn units) ..........:",f15.4)') radiussph
+  if (rangmab==0) write(6,'("MAB: Width of the FD function in A........................:",f15.4)') deltasph
 end if
 
-if (rangmab==0) write(6,'("MAB: Number of the bins of histo..................:",i7)') nhisto
-if (rangmab==0) write(6,'("MAB: The frequency of writing histo...............:",i7)') nwrite_histo
-if (rangmab==0) write(6,'("MAB: The first shell of the histo (1nn units).....:",D15.4)') deltar1
-if (rangmab==0) write(6,'("MAb: The second shell of the histo (1nn units)....:",D15.4)') deltar2
+if (rangmab==0) write(6,'("MAB: Number of the bins of histo.........................:",i7)') nhisto
+if (rangmab==0) write(6,'("MAB: The frequency of writing histo......................:",i7)') nwrite_histo
+if (rangmab==0) write(6,'("MAB: The first shell of the histo (1nn units)............:",f15.4)') deltar1
+if (rangmab==0) write(6,'("MAB: The second shell of the histo (1nn units)...........:",f15.4)') deltar2
 if ((abf_mode==2).or.(abf_mode==22)) then
  if (mode_zeta_potential==1) then
   if (rangmab==0) write(6,'("MAB: ===============THERE IS AN EXTRA POTENTIAL FOR ZETA===========")') 
-  if (rangmab==0) write(6,'("MAB: The prefactor of zeta potential...............:",D15.4)') alpha_zeta
+  if (rangmab==0) write(6,'("MAB: The prefactor of zeta potential.......................:",E25.12E3)') alpha_zeta
   alpha_zeta=alpha_zeta*ev2erg
  end if 
 end if
 
 if (abf_mode==22) then
-if (rangmab==0) write(6,'("MAB: ha_mix, U(\zeta,q)=\zeta*[U(q)+ha_mix*U_HA(q))]....:",D15.4)') ha_mix
-if (rangmab==0) write(6,'("MAB: Temperature min \zeta..............................:",D15.4)') temperature_zeta_min
-if (rangmab==0) write(6,'("MAB Temperature max \zeta..............................:",D15.4)') temperature_zeta_max
+if (rangmab==0) write(6,'("MAB: ha_mix, U(\zeta,q)=\zeta*[U(q)+ha_mix*U_HA(q))].......:",f15.4)') ha_mix
+if (rangmab==0) write(6,'("MAB: Temperature min \zeta.................................:",f15.4)') temperature_zeta_min
+if (rangmab==0) write(6,'("MAB Temperature max \zeta..................................:",f15.4)') temperature_zeta_max
 end if 
  
-if (rangmab==0) write(6,'("MAB: The cutoff radius for ending sim (1nn unit)..:",D15.4)') rtestlac
+if (rangmab==0) write(6,'("MAB: The cutoff radius for ending sim (1nn unit)B.........:",D15.4)') rtestlac
 
  temperature=temperature*KtoERG
  temperature_zeta_min=temperature_zeta_min*KtoERG
@@ -350,6 +355,17 @@ if (rangmab==0) write(6,'("MAB: The cutoff radius for ending sim (1nn unit)..:",
 
 
 close (lumab)
+
+ if (abf_restart) then 
+  if (abf_mode/=abf_mode_reaction) then
+   if (rangmab==0) write(6,'("MAB: The restart mode is not implemented for this abf_mode", i6)') abf_mode
+   if (rangmab==0) write(6,'("MAB stop in read_mab_file.f90")')
+   stop
+  end if 
+ end if 
+
+
+
 
 end subroutine read_mab_file
 
@@ -388,3 +404,75 @@ end if
 
 
 end subroutine print_mab
+
+
+
+subroutine read_gin_file
+ USE T_kind_param_m, ONLY:  double
+ use gen_com_m, ONLY: lenfnam,fnam,im,imm,erg2ev,at
+ use tab_imm_m, ONLY: xp,ityp
+ use var_pot,   ONLY: cm
+ use gin_module 
+ USE mab_in_ndm_module, ONLY: a0bcc, xp0, block, block_file, abf_restart, rangmab, &
+                              atom_to_jump
+ implicit none
+ character(len=89) :: ginFile_block
+ integer :: im_local, i , j
+ real(double), dimension(3,3) :: at_local
+ integer     :: ityp_local(imm)
+ real(double) ::  xp_local(3,imm)
+ real(double) :: atmp
+ logical :: ok
+ 
+ 
+! ginFile_block=fnam(1:lenfnam)//'.gin'
+! if (abf_restart) 
+ ginFile_block=fnam(1:lenfnam)//'.gin.block'
+ inquire(file=ginFile_block, exist=ok)
+
+    IF (ok ) THEN
+            write(6,'("MAB: Read gin file for blockong spheres.....",a)') TRIM(ginFile_block)
+            OPEN(unit=93, file=ginFile_block, status='old', action='read')
+            CALL ReadGin(xp_local(:,:), ityp_local(:), im_local, at_local, 93)
+            CLOSE(93)
+    ELSE
+            WRITE(0,'("MAB: Does not manage to find ...", a)') TRIM(ginFile_block)
+            WRITE(0,'(3a)') 'File ', Trim(ginFile_block), ' does not exist'
+            STOP '< read_gin_file >'
+    END IF
+
+atmp=0.d0
+
+  do i=1,3
+    do j=1,3
+      atmp = atmp + (at_local(i,j)*1.d8-at(i,j)*1.d8)**2
+    end do
+  end do
+
+  if (atmp >= 1.d-8) then
+    if (rangmab==0) write(6,'("MAB: the at box of the *.gin file and .gin.block file is not the same")')
+    stop ' < read_gin_file >'
+  end if 
+
+
+  if ((im - im_local)**2/=0) then
+    if (rangmab==0) write(6,'("MAB: the im no of atoms of the *.gin file and .gin.block file is not the same")')
+    stop ' < read_gin_file >'
+  end if 
+
+  do i=1,im
+   atmp = dsqrt(SUM(xp(:,i)-xp_local(:,i))**2)
+   if (i/=atom_to_jump) then
+     if (atmp*1.d8>=(a0bcc*dsqrt(3.d0)/2.d0)) then
+       if (rangmab==0) write(6,'("MAB: the position of atom no",i0," of the *.gin file and .gin.block file is not related")') i
+       stop ' < read_gin_file >'
+     end if 
+   end if 
+  end do
+
+xp0(:,:) = xp_local(:,:)
+
+return
+
+
+end subroutine read_gin_file

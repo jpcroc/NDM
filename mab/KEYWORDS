@@ -63,4 +63,74 @@ VARIABLES:
 histo,       histo1,    histo2 - histograms                              in all three areas
 histo_xi, histo_xi1, histo_xi2 - histograms after n_equilibrations steps in all three areas
 
-                   
+                  
+
+
+FILES:
+-------------------------
+
+if (abf_mode == abf_mode_reaction)
+
+
+meanforce 
+--------------------
+the meanforce used in dynamics,derivative of bar_A
+--------------------
+content:
+
+
+
+In all others types than ABFee - mean_force1 -meanforce used in dynamics
+   if (abf_type /= 5) 
+do i=-nhisto1,nhisto+nhisto1
+   i, mean_force1(i) 
+end do
+
+
+If abf_type is related to 5 or ABFee - mean_force_ABFee_dyn (old mean_force2) - meanforce used in dynamics
+
+if (abf_type==5) (
+   do i_iter=-nhisto2,nhisto+nhisto2
+       write(991,*) i_iter,mean_force2(i_iter)
+   end do
+ 
+
+Integration_meanforce 
+---------------------
+Integration of the meanforce used in dynamics
+---------------------
+
+
+
+if (abf_type /= 5) all others types than ABFee
+  do i=-nhisto1,nhisto+nhisto1
+     write_in_Integration_meanforce: x_mol(i)/A2cm, Inter_meanforce1(i)*erg2eV, histo1(i)
+  enddo
+
+
+data_force_ABFee
+---------------------
+local mean force and the mean force used in dynamics 
+
+Only in the case of abf_type==5 (ABFee) contains
+  - local "mean"    force collected in dynamics:  mean_force1
+  - dynamic ""mean" force used in dynamics, mean_force_ABFee ( old  mean_force2) 
+!!! WARNING in the case of ABFee the mean_force are interchanged !!!
+
+do i_iter=-nhist1,nhisto+nhisto1 
+       write(964,*)i_iter,mean_force1(i_iter),mean_force_ABFee_dyn (i_iter)   
+enddo
+
+Integration_force_ABFee
+------------------------------
+contains a collection of 
+ -  \zeta 
+ - integration of local force in ABFee (meanforce1) which should be equal to bar_A
+ - A_bar_ee (\zeta)  
+
+!!!  the column 2 and 3 should be very close is the simulation is converged. 
+
+  do i_iter=-nhisto1,nhisto+nhisto1
+      write(965,*), x_mol(i_iter)/A2cm,Inter_meanforce1(i_iter)*erg2eV,A_bar_ee(i_iter)*erg2eV
+  enddo
+

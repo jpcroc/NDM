@@ -10,18 +10,23 @@ subroutine calfo_ABFee()
  USE mab_in_ndm_module, ONLY:dcsi,icsi,rfilac,histo,     &
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              nhisto2,mean_force1,histo1,cumul_force1,   &
-                             A_dev_ee,A_ee,corr_A_ee,P_ee,P_ee_num,P_ee_denom,delta_z,&
+                             A_dev_ee,A_ee,A_ee_restart,corr_A_ee,     &
+                             P_ee,                                     &
+                             P_ee_num,P_ee_denom,                      &
+                             P_ee_num_restart,P_ee_denom_restart,       &
+                             delta_z,&
                              x_mol,eta_ABFee,temperature,omega_abf,exp_A_bar,&
-                             mean_force2,it_mab,histo_zeta,& 
+                             mean_force_ABFee_dyn,it_mab,histo_zeta,& 
                              neq_lang, n_equilibre,histo_equi,&
                              it_mab,abf_mode,potist,ene_einstein,ene0,fpeinstein, &
                              ha_mix,equit,atom_to_jump,itype_reaction, &
-                             abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature
+                             abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature, &
+                             abf_restart, mean_force_ABF_restart,P_ee_num_restart, P_ee_denom_restart
 
  implicit none
 integer::iter,ia,jx
 integer, save :: itcount=0
-real(double), dimension(3,imm) :: fpabf
+real(double), dimension(3,imm) :: fpabf, fpabf_restart
 real(double),dimension(:),allocatable::temp_log
 real(double),dimension(:),allocatable::temp_exp,U_Aee
 real(double),dimension(:),allocatable::temp_num_f
@@ -41,6 +46,7 @@ temp_exp(:)=0
 
 
 fpabf(:,:) = zero
+fpabf_restart(:,:)= zero
 
 if (abf_mode==abf_mode_reaction) then
 ! Computing the forces as an observable ...
@@ -50,9 +56,6 @@ if (itype_reaction==0) force = - DOT_PRODUCT(fp(:,atom_to_jump),rfilac(:))
   cumul_force1(icsi) =  cumul_force1(icsi) + force
   mean_force1 (icsi) =  cumul_force1(icsi)/histo1(icsi)
  end if
-
-end if 
-
 !---------BEGIN PRINCIPAL PROGRAM-----------------------------------------------------
 
 !---------1. Compute A_ee(\zeta) for every \zeta, from A_dev_ee(\zeta).  Methode des trapezes
@@ -61,7 +64,23 @@ A_ee(-nhisto2)=0.d0
 do iter=-nhisto2+1,nhisto+nhisto2
 A_ee(iter)=A_ee(iter-1)+delta_z*0.5d0*(A_dev_ee(iter-1)+A_dev_ee(iter))
 end do
-if (it_mab<4) A_ee=0.d0
+
+write(139,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 
+
+ if (abf_restart) then
+  if ( (it_mab - neq_lang) < n_equilibre) then 
+        A_ee(:)=A_ee_restart(:)
+  end if 
+ end if 
+
+end if 
+
+write(110,'(i6,5E25.12)') it_mab, A_ee(10), A_ee_restart(10), A_ee(10)*erg2ev, A_ee_restart(10)*erg2ev, (A_ee(10)-A_ee_restart(10))*erg2ev 
+write(140,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 
+
+!if (.not.abf_restart) then
+!   if (it_mab<4) A_ee=0.d0
+!end if 
 
 select case (abf_mode)
 
@@ -83,19 +102,30 @@ case  (abf_mode_reaction)
       end if  
   end do
 
-
-denom=SUM(temp_exp(:))
-
+ denom=SUM(temp_exp(:))
 
  !--3. Compute the E(grad U(.,q)|q) 
  forall(iter=-nhisto2:nhisto+nhisto2)   temp_num_f(iter)=temp_exp(iter)*(x_mol(iter)-dcsi)/eta_ABFee
  ! strange way to have the integral but it is corect because we have only the fraction
  num_f=SUM(temp_num_f(:))
  mean_force_ABF=num_f/denom
- mean_force2(icsi)=mean_force_ABF
-! write(*,*) atom_to_jump
+! write(*,*) dcsi, icsi
+ mean_force_ABFee_dyn(icsi)=mean_force_ABF
+ !write(*,*) atom_to_jump
  fpabf(1:3,atom_to_jump)=rfilac(1:3)*mean_force_ABF
- fp(1:3,:)=fp(1:3,:)+fpabf(1:3,:)
+
+
+if (abf_restart) then
+  if ((it_mab-neq_lang)<n_equilibre) then
+    fpabf_restart(1:3,atom_to_jump)=rfilac(1:3)*mean_force_ABF_restart(icsi)
+    fpabf(:,:)=0.d0
+  end if 
+  
+end if 
+
+ fp(1:3,:)=fp(1:3,:)+fpabf(1:3,:)+fpabf_restart(1:3,:)
+
+ write(155,'(2i6,4E25.14)') it_mab, icsi, fp(2,7), fpabf(2,7),fpabf_restart(2,7),dcsi
 
 !----------------end case abf_mode==abf_mode_reaction=1 
 
@@ -270,6 +300,11 @@ end select
    !
  end select 
 
+  if (abf_restart.and.(it_mab==(neq_lang+1))) then
+    P_ee_num(:)   = P_ee_num(:)   + P_ee_num_restart(:)
+    P_ee_denom(:) = P_ee_denom(:) + P_ee_denom_restart(:)
+  end if 
+
 
 !----------If histo_equi is true when it_mab > n_equilibre, or histo_equi is false, we fill the histogram of zeta
 if(((histo_equi .eqv. .true.) .AND. (it_mab -neq_lang > n_equilibre)) .OR. (histo_equi .eqv. .False.)) then
@@ -294,7 +329,9 @@ endif
  omega_abf_i = 1.d0/omega_abf
  select case(abf_mode)
    case(abf_mode_reaction) 
-      forall(iter=-nhisto1:nhisto+nhisto1) A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+omega_abf_i/dble(nhisto))
+      forall(iter=-nhisto1:nhisto+nhisto1) A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+omega_abf_i)
+
+       write(240,'(i6,5E25.10E3)') it_mab, P_ee(200), P_ee_num(200), P_ee_denom(200), A_dev_ee(200), P_ee_num(200)/P_ee_denom(200)
    case(abf_mode_alchemical) 
       forall(iter=-nhisto1:nhisto+nhisto1) A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+omega_abf_i)
    case(abf_mode_temperature) 
