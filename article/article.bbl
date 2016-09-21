@@ -1,0 +1,267 @@
+\begin{thebibliography}{10}
+
+\bibitem{Bhattacharyya1997}
+S.~R. Bhattacharyya, T.~K. Chini, and D.~Basu.
+\newblock Transmission electron microscope studies of tantalum irradiated by
+  mev energy $\alpha$ particles.
+\newblock {\em Journal of Materials Science Letters}, 16(7):577--579, 1997.
+
+\bibitem{Blochl}
+P.~E. Bl\"ochl.
+\newblock Projector augmented-wave method.
+\newblock {\em Phys. Rev. B}, 50:17953--17979, Dec 1994.
+
+\bibitem{FU2008335}
+Jean-Louis Boutard, Sergei~L. Dudarev, Chu~Chun Fu, and F.~Willaime.
+\newblock Materials subjected to fast neutron irradiation first principles
+  calculations in iron: structure and mobility of defect clusters and defect
+  complexes for kinetic modelling.
+\newblock {\em Comptes Rendus Physique}, 9(3):335 -- 342, 2008.
+
+\bibitem{Dai2012141}
+Y.~Dai, G.R. Odette, and T.~Yamamoto.
+\newblock 1.06 - the effects of helium in irradiated structural alloys.
+\newblock In Rudy~J.M. Konings, editor, {\em Comprehensive Nuclear Materials},
+  pages 141 -- 193. Elsevier, Oxford, 2012.
+
+\bibitem{faber1974}
+K.~Faber, J.~Schweikhardt, and H.~Schultz.
+\newblock The intrinsic stage-iii annealing in niobium and tantalum following
+  electron irradiation.
+\newblock {\em Scripta Metallurgica}, 8(6):713 -- 720, 1974.
+
+\bibitem{FEDEROV1996}
+A.V. Federov, G.P. Buitenhuis, A.~van Veen, A.I. Ryazanov, J.H. Evans, W.~van
+  Witzenburg, and K.T. Westerduin.
+\newblock Helium desorption studies on vanadium and v-5ti and v-3ti-1si alloys
+  and their relevance to helium embrittlement.
+\newblock {\em Journal of Nuclear Materials}, 227(3):312 -- 321, 1996.
+
+\bibitem{Fedorov1996}
+A.V. Fedorov, A.~van Veen, and A.I. Ryazanov.
+\newblock Nucleation and growth of helium-vacancy clusters in vanadium and
+  vanadium alloys: V-5ti, v-3ti-1si, v-5ti-5cr.
+\newblock {\em Journal of Nuclear Materials}, 233:385–389, 1996.
+
+\bibitem{Fu2005}
+Chu-Chun Fu and F.~Willaime.
+\newblock \textit{Ab initio} study of helium in
+  $\ensuremath{\alpha}\text{-}\mathrm{Fe}$: Dissolution, migration, and
+  clustering with vacancies.
+\newblock {\em Phys. Rev. B}, 72:064117, Aug 2005.
+
+\bibitem{HEERSCHAP1973}
+M.~Heerschap, E.~Schüller, B.~Langevin, and A.~Trapani.
+\newblock Helium gas bubbles in vanadium.
+\newblock {\em Journal of Nuclear Materials}, 46(2):207 -- 209, 1973.
+
+\bibitem{henkelmann2000_2}
+Graeme Henkelman and Hannes Jónsson.
+\newblock Improved tangent estimate in the nudged elastic band method for
+  finding minimum energy paths and saddle points.
+\newblock {\em The Journal of Chemical Physics}, 113(22):9978--9985, 2000.
+
+\bibitem{henkelmann2000_1}
+Graeme Henkelman, Blas~P. Uberuaga, and Hannes Jónsson.
+\newblock A climbing image nudged elastic band method for finding saddle points
+  and minimum energy paths.
+\newblock {\em The Journal of Chemical Physics}, 113(22):9901--9904, 2000.
+
+\bibitem{Hua20151}
+Juan Hua, Yue-Lin Liu, Heng-Shuai Li, Ming-Wen Zhao, and Xiang-Dong Liu.
+\newblock The role of alloying element on the behaviors of helium in vanadium:
+  Ti as an example.
+\newblock {\em Computational Condensed Matter}, 3:1 -- 8, 2015.
+
+\bibitem{janot1982}
+C~Janot, B~George, and P~Delcroix.
+\newblock Point defects in vanadium investigated by mossbauer spectroscopy and
+  positron annihilation.
+\newblock {\em Journal of Physics F: Metal Physics}, 12(1):47, 1982.
+
+\bibitem{KALETTA1978}
+D.~Kaletta.
+\newblock Low-cycle irradiations of vanadium with 2 mev helium ions at elevated
+  temperatures.
+\newblock {\em Journal of Nuclear Materials}, 76:221 -- 223, 1978.
+
+\bibitem{kittel}
+C.~Kittel.
+\newblock {\em Introduction to Solid State Physics}.
+\newblock Wiley, 2004.
+
+\bibitem{kresse1996}
+G.~Kresse and J.~Furthm\"uller.
+\newblock Efficient iterative schemes for \textit{ab initio} total-energy
+  calculations using a plane-wave basis set.
+\newblock {\em Phys. Rev. B}, 54:11169--11186, Oct 1996.
+
+\bibitem{kresse1993}
+G.~Kresse and J.~Hafner.
+\newblock \textit{Ab initio} molecular dynamics for liquid metals.
+\newblock {\em Phys. Rev. B}, 47:558--561, Jan 1993.
+
+\bibitem{kresse1999}
+G.~Kresse and D.~Joubert.
+\newblock From ultrasoft pseudopotentials to the projector augmented-wave
+  method.
+\newblock {\em Phys. Rev. B}, 59:1758--1775, Jan 1999.
+
+\bibitem{lewis1988}
+M.B. Lewis.
+\newblock Diffusion of ion implanted helium in vanadium and niobium.
+\newblock {\em Journal of Nuclear Materials}, 152(2):114 -- 122, 1988.
+
+\bibitem{Li2013}
+Ruihuan Li, Pengbo Zhang, Chong Zhang, Xiaoming Huang, and Jijun Zhao.
+\newblock Vacancy trapping mechanism for multiple helium in monovacancy and
+  small void of vanadium solid.
+\newblock {\em Journal of Nuclear Materials}, 440(1–3):557 -- 561, 2013.
+
+\bibitem{maier1979}
+K.~Maier, M.~Peo, B.~Saile, H.~E. Schaefer, and A.~Seeger.
+\newblock High–temperature positron annihilation and vacancy formation in
+  refractory metals.
+\newblock {\em Philosophical Magazine A}, 40(5):701--728, 1979.
+
+\bibitem{MATSUI1992}
+H.~Matsui, M.~Tanaka, M.~Yamamoto, and M.~Tada.
+\newblock Embrittlement of vanadium alloys doped with helium.
+\newblock {\em Journal of Nuclear Materials}, 191:919 -- 923, 1992.
+
+\bibitem{MethPaxton}
+M.~Methfessel and A.~T. Paxton.
+\newblock High-precision sampling for brillouin-zone integration in metals.
+\newblock {\em Phys. Rev. B}, 40:3616--3621, Aug 1989.
+
+\bibitem{MPack}
+Hendrik~J. Monkhorst and James~D. Pack.
+\newblock Special points for brillouin-zone integrations.
+\newblock {\em Phys. Rev. B}, 13:5188--5192, Jun 1976.
+
+\bibitem{Morishita2003}
+K.~Morishita, R.~Sugano, B.D. Wirth, and T.~Diaz de~la Rubia.
+\newblock Thermal stability of helium–vacancy clusters in iron.
+\newblock {\em Nuclear Instruments and Methods in Physics Research Section B:
+  Beam Interactions with Materials and Atoms}, 202:76 -- 81, 2003.
+\newblock 6th International Conference on Computer Simulation of Radiation
+  Effects in Solids.
+
+\bibitem{Muroga2014}
+T.~Muroga, J.M. Chen, V.M. Chernov, R.J. Kurtz, and M.~Le Flem.
+\newblock Present status of vanadium alloys for fusion applications.
+\newblock {\em Journal of Nuclear Materials}, 455(1–3):263 -- 268, 2014.
+\newblock Proceedings of the 16th International Conference on Fusion Reactor
+  Materials (ICFRM-16).
+
+\bibitem{PBE}
+John~P. Perdew, Kieron Burke, and Matthias Ernzerhof.
+\newblock Generalized gradient approximation made simple.
+\newblock {\em Phys. Rev. Lett.}, 77:3865--3868, Oct 1996.
+
+\bibitem{Schaefer1987}
+H.-E. Schaefer.
+\newblock Investigation of thermal equilibrium vacancies in metals by positron
+  annihilation.
+\newblock {\em physica status solidi (a)}, 102(1):47--65, 1987.
+
+\bibitem{schultz1982}
+H~Schultz, J~Takamura, M~Doyama, and M~Kiritani.
+\newblock Point defects and defect interactions in metals.
+\newblock In {\em Proc. Yamada Conf. V, University of Tokyo Press, Tokyo}, page
+  183, 1982.
+
+\bibitem{seletskaia2008}
+Tatiana Seletskaia, Yuri Osetsky, R.~E. Stoller, and G.~M. Stocks.
+\newblock First-principles theory of the energetics of he defects in bcc
+  transition metals.
+\newblock {\em Phys. Rev. B}, 78:134103, Oct 2008.
+
+\bibitem{SUBRAHMANYAM1996}
+V.S. Subrahmanyam, P.M.G. Nambissan, and P.~Sen.
+\newblock Thermal evolution of alpha-induced defects and helium bubbles in
+  tantalum studied by positron annihilation.
+\newblock {\em Journal of Physics and Chemistry of Solids}, 57(3):319 -- 323,
+  1996.
+
+\bibitem{SUBRAHMANYAM1995}
+V.S. Subrahmanyam and P.~Sen.
+\newblock Helium implanted vanadium studied by the positron annihilation
+  technique.
+\newblock {\em Applied Radiation and Isotopes}, 46(10):981 -- 985, 1995.
+
+\bibitem{thomas1981}
+G.~J. Thomas and R.~Bastasz.
+\newblock Direct evidence for spontaneous precipitation of helium in metals.
+\newblock {\em Journal of Applied Physics}, 52(10):6426--6428, 1981.
+
+\bibitem{thomas1979}
+G.~J. Thomas, W.~A. Swansiger, and M.~I. Baskes.
+\newblock Low temperature helium release in nickel.
+\newblock {\em Journal of Applied Physics}, 50(11):6942--6947, 1979.
+
+\bibitem{Trinkaus2003}
+H~Trinkaus and B.N Singh.
+\newblock Helium accumulation in metals during irradiation – where do we
+  stand?
+\newblock {\em Journal of Nuclear Materials}, 323(2–3):229 -- 242, 2003.
+\newblock Proceedings of the Second \{IEA\} Fusion Materials Agreement Workshop
+  on Modeling and Experimental Validation.
+
+\bibitem{ullmaier1991}
+H.~Ullmaier, P.~Ehrhart, P.~Jung, and H.~Schultz.
+\newblock {\em Atomic Defects in Metals / Atomare Fehlstellen in Metallen}.
+\newblock Landolt-B{\"o}rnstein: Numerical Data and Functional Relationships in
+  Science and Technology - New Series / Condensed Matter. Springer Berlin
+  Heidelberg, 1991.
+
+\bibitem{vanveen1994}
+A.~van Veen, H.~Eleveld, and M.~Clement.
+\newblock Helium impurity interactions in vanadium and niobium.
+\newblock {\em Journal of Nuclear Materials}, 212:287–292, 1994.
+
+\bibitem{varvenne2013}
+C\'eline Varvenne, Fabien Bruneval, Mihai-Cosmin Marinica, and Emmanuel Clouet.
+\newblock Point defect modeling in materials: Coupling \textit{ab initio} and
+  elasticity approaches.
+\newblock {\em Phys. Rev. B}, 88:134102, Oct 2013.
+
+\bibitem{vassen1991}
+R.~Vassen, H.~Trinkaus, and P.~Jung.
+\newblock Helium desorption from fe and v by atomic diffusion and bubble
+  migration.
+\newblock {\em Phys. Rev. B}, 44:4206--4213, Sep 1991.
+
+\bibitem{wilson1981}
+W.~D. Wilson, C.~L. Bisson, and M.~I. Baskes.
+\newblock Self-trapping of helium in metals.
+\newblock {\em Phys. Rev. B}, 24:5616--5624, Nov 1981.
+
+\bibitem{Zhang20111}
+Pengbo Zhang, Jijun Zhao, Ying Qin, and Bin Wen.
+\newblock Stability and dissolution of helium–vacancy complexes in vanadium
+  solid.
+\newblock {\em Journal of Nuclear Materials}, 419(1–3):1 -- 8, 2011.
+
+\bibitem{Zhang201190}
+Pengbo Zhang, Jijun Zhao, Ying Qin, and Bin Wen.
+\newblock Stability and migration property of helium and self defects in
+  vanadium and v–4cr–4ti alloy by first-principles.
+\newblock {\em Journal of Nuclear Materials}, 413(2):90 -- 94, 2011.
+
+\bibitem{Zhang2015}
+Pengbo Zhang, Tingting Zou, and Jijun Zhao.
+\newblock He–he and he–metal interactions in transition metals from
+  first-principles.
+\newblock {\em Journal of Nuclear Materials}, 467, Part 1:465 -- 471, 2015.
+
+\bibitem{Zhang2015121}
+Pengbo Zhang, Tingting Zou, Jijun Zhao, Pengfei Zheng, and Jiming Chen.
+\newblock Effect of helium and vacancies in a vanadium grain boundary by
+  first-principles.
+\newblock {\em Nuclear Instruments and Methods in Physics Research Section B:
+  Beam Interactions with Materials and Atoms}, 352:121 -- 124, 2015.
+\newblock Proceedings of the 12th International Conference on Computer
+  Simulation of Radiation Effects in Solids, Alacant, Spain, 8-13 June, 2014.
+
+\end{thebibliography}
