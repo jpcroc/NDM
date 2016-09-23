@@ -73,7 +73,7 @@ self-images due to periodic boundary conditions \cite{varvenne2013}.
 The equilibrium lattice constant obtained for V was 3.00 $\angstrom$ and 3.32 $\angstrom$ for Ta are
 in agreement with experimental data (respectively 3.03 $\angstrom$ and 3.30 $\angstrom$) \cite{kittel} .
 
-% \newpage
+
 \section{Results}
 \subsection{Formation of vacancies and Helium clusters}\label{formation}
 The formation energy of He at high symmetry interstitial sites in bcc lattice is given by : 
@@ -217,7 +217,7 @@ with \textit{n} but the slope decreases with \textit{m}
 
  \begin{figure}
  \centering
- \includegraphics[scale=0.5]{figures/V/E_f_bis.png}
+ \includegraphics[scale=0.5]{figures/V/E_f.png}
   \begin{tabular}{ccccccc}
   \hline
    m & 0 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4\\ \hline
@@ -243,7 +243,7 @@ with \textit{n} but the slope decreases with \textit{m}
  The table gives the slope for each type of cluster.}
  \end{figure}
  
-% \newpage 
+
 \subsection{Stability of He--vacancy clusters}\label{binding}
 We investigated the stability of pure He and vacancy clusters and He--vacancy complexes 
 looking at their binding energy to helium atom and mono-vacancy given respectively by :
@@ -259,7 +259,7 @@ E$_V$ is the energy of the supercell with a mono-vacancy.
 With this definition, a positive binding energy corresponds to an attractive interaction, 
 therefore the clusters with the highest binding energy are more stable.
 \\
-A general overview of Fig.\ref{fig:V_eb_he} and Fig.\ref{fig:Ta_eb_he} shows a broad distribution in He-cluster binding energy for 
+A general overview of Fig.\ref{fig:eb_he} shows a broad distribution in He-cluster binding energy for 
 the same type of cluster  indicating a strong dependence of the configuration of the clusters.
 The binding energy of pure He clusters in vanadium range from -0.38 eV to 0.24 eV slowly increasing with the amount of He 
 at least up to \textit{n}=4, similar to tantalum case, which is 4 times less than in Fe ($\sim$1 eV)\cite{Fu2005}.
@@ -304,14 +304,18 @@ contrary to  He$_{19}$V$_4$ and  He$_{21}$V$_4$ clusters.
 
 \begin{figure}
 \centering
- \includegraphics[scale=0.5]{figures/V/E_b(He-He_nV_m).png}
- \caption{Binding energy of He to He$_n$V$_m$ clusters as a function of \textit{n} in vanadium\label{fig:V_eb_he}}
-\end{figure}
+\begin{tabular}{cc}
+ \includegraphics[scale=0.3]{figures/V/E_b(He-He_nV_m).png} &
+%  \caption{Binding energy of He to He$_n$V$_m$ clusters as a function of \textit{n} in vanadium\label{fig:V_eb_he}}
+% \end{figure}
 
-\begin{figure}
-\centering
- \includegraphics[scale=0.5]{figures/Ta/E_b(He-He_nV_m).png}
- \caption{Binding energy of He to He$_n$V$_m$ clusters as a function of \textit{n} in tantalum\label{fig:Ta_eb_he}}
+% \begin{figure}
+% \centering
+ \includegraphics[scale=0.3]{figures/Ta/E_b(He-He_nV_m).png}\\
+%  \caption{Binding energy of He to He$_n$V$_m$ clusters as a function of \textit{n} in tantalum\label{fig:Ta_eb_he}}
+ \end{tabular} 
+ \caption{Binding energy of He to He$_n$V$_m$ clusters as a function of \textit{n} in vanadium (left panel) 
+ and tantalum (right panel)\label{fig:eb_he}}
 \end{figure}
 
  \begin{table}
@@ -336,7 +340,7 @@ contrary to  He$_{19}$V$_4$ and  He$_{21}$V$_4$ clusters.
  
  
 The binding energy of pure vacancy clusters to mono-vacancy increases with the number of vacancy 
-from 0.27 eV to 0.88 eV in vanadium (Fig.\ref{fig:V_eb_v}). It seems to reach a plateau at \textit{m}=4 around 0.87 eV. 
+from 0.27 eV to 0.88 eV in vanadium (Fig.\ref{fig:eb_v}). It seems to reach a plateau at \textit{m}=4 around 0.87 eV. 
 Similar behaviour has been reported in Fe, using molecular dynamics simulation for which 
 the binding energy saturates slightly above 1 eV for \textit{m} $\gtrsim$ 20 \cite{Morishita2003}.\\
 The presence of He atoms in vacancy clusters enhances the binding energy to mono-vacancy,
@@ -345,17 +349,21 @@ We find again He$_n$V$_{2}$(1nn) are more stable than He$_n$V$_{2}$(2nn) for n $
 
 \begin{figure}
 \centering
- \includegraphics[scale=0.5]{figures/V/E_b(V-He_nV_m).png}
- \caption{Binding energy of mono-vacancy to He$_n$V$_m$ clusters as a function of \textit{m} in vanadium\label{fig:V_eb_v}}
+\begin{tabular}{cc}
+ \includegraphics[scale=0.3]{figures/V/E_b(V-He_nV_m).png}&
+%  \caption{Binding energy of mono-vacancy to He$_n$V$_m$ clusters as a function of \textit{m} in vanadium\label{fig:V_eb_v}}
+% \end{figure}
+
+% \begin{figure}
+% \centering
+ \includegraphics[scale=0.3]{figures/Ta/E_b(V-He_nV_m).png}\\
+ \end{tabular}
+ \caption{Binding energy of mono-vacancy to He$_n$V$_m$ clusters as a function of \textit{m} in vanadium (left panel) 
+ and tantalum (right panel)
+ \label{fig:eb_v}}
 \end{figure}
 
-\begin{figure}
-\centering
- \includegraphics[scale=0.5]{figures/Ta/E_b(V-He_nV_m).png}
- \caption{Binding energy of mono-vacancy to He$_n$V$_m$ clusters as a function of \textit{m} in tantalum\label{fig:Ta_eb_v}}
-\end{figure}
 
-\newpage 
 \subsection{Migration energy barriers}\label{migration}
 
 It is necessary to capture the diffusion processes of interstitial He and vacancy in order to 
@@ -365,7 +373,7 @@ understand how clusters grow at the primary stages.
 \subsubsection*{Vanadium}
 
 We computed 2 paths for interstitial diffusion barrier : T site to T site, and T site to O site.
-T $\rightarrow$ T path shows a barrier of 0.12 eV (Tab.\ref{tab:V_em}) in good agreement with TDS experiment in vanadium (E$^m_{He}$ = 0.13 eV) \cite{Fedorov1996},
+T $\rightarrow$ T path shows a barrier of 0.12 eV (Tab.\ref{tab:em}) in good agreement with TDS experiment in vanadium (E$^m_{He}$ = 0.13 eV) \cite{Fedorov1996},
 that is twice the barrier in Fe \cite{Fu2005},
 whereas the barrier of T $\rightarrow$ O path is E$^m_{He}$ = 0.26 eV. 
 Thus, interstitial He prefers to diffuse via the first neighbour T sites.
@@ -391,38 +399,41 @@ Nevertheless, the presence of He does not change the relative mobility of mono a
 
 \begin{table}
 \centering
- \begin{tabular}{cccc}
+ \begin{tabular}{c|ccc|ccc}
+ \hline
+  \multicolumn{4}{c|}{V} & \multicolumn{3}{c}{Ta} \\
   \hline
-  Configuration & Path & E$^m$ (eV) & Exp. (eV) \\
+  Configuration & Path & E$^m$ (eV) & Exp. (eV) & Path & E$^m$ (eV) & Exp. (eV) \\
   \hline
-  \multicolumn{4}{l}{Interstitial} \\
+  \multicolumn{7}{l}{Interstitial} \\
   \hline
-  He & T $\rightarrow$ T & 0.12 & 0.13 \cite{Fedorov1996} \\
-     & T $\rightarrow$ O & 0.26 & \\
+  He & T $\rightarrow$ T & 0.12 & 0.13 \cite{Fedorov1996} & T $\rightarrow$ T & 0.18 &\\
+     & T $\rightarrow$ O & 0.26 & & T $\rightarrow$ O & 0.40 &\\
   \hline
-  \multicolumn{4}{l}{Vacancy} \\
+  \multicolumn{7}{l}{Vacancy} \\
   \hline
-  Mono-vacancy & 1nn & 0.48 & 0.5 \cite{Fedorov1996} \cite{ullmaier1991} \\
-   & &  & 0.47 \cite{vanveen1994} \\
-  Di-vacancy & 1nn $\rightarrow$ 2nn & 0.34 & \\
-  Di-vacancy & 2nn $\rightarrow$ 1nn & 0.58 & \\
-  Di-vacancy & 2nn $\rightarrow$ 2nn & 0.37 & \\
+  Mono-vacancy & 1nn & 0.48 & 0.5 \cite{Fedorov1996} \cite{ullmaier1991} & 1nn & 0.72 & 0.7 \cite{faber1974}\cite{ullmaier1991}\\
+   & &  & 0.47 \cite{vanveen1994} & & & \\
+  Di-vacancy & 1nn $\rightarrow$ 2nn & 0.34 & & 1nn $\rightarrow$ 2nn & 0.63 &\\
+  Di-vacancy & 2nn $\rightarrow$ 1nn & 0.58 & & 2nn $\rightarrow$ 1nn & 0.87 &\\
+  Di-vacancy & 2nn $\rightarrow$ 2nn & 0.37 & & 2nn $\rightarrow$ 2nn & 0.55 &\\
   \hline
-  \multicolumn{4}{l}{He-vacancy clusters} \\
+  \multicolumn{7}{l}{He-vacancy clusters} \\
   \hline
-  He$_1$V$_1$ & 1nn & 1.27 & \\
-  He$_1$V$_2$ & 1nn $\rightarrow$ 2nn & 0.79 & \\
-  He$_1$V$_2$ & 2nn $\rightarrow$ 1nn & 0.88 & \\
-  He$_1$V$_2$ & 2nn $\rightarrow$ 2nn & 0.66 & \\
+  He$_1$V$_1$ & 1nn & 1.27 & & 1nn & 1.89 &\\
+  He$_1$V$_2$ & 1nn $\rightarrow$ 2nn & 0.79 & & 1nn $\rightarrow$ 2nn & 1.14 &\\
+  He$_1$V$_2$ & 2nn $\rightarrow$ 1nn & 0.88 & & 2nn $\rightarrow$ 1nn & 1.12 &\\
+  He$_1$V$_2$ & 2nn $\rightarrow$ 2nn & 0.66 & & 2nn $\rightarrow$ 2nn & 1.12 &\\
   \hline
  \end{tabular}
-\caption{Migration energy barrier (E$^m$) for He, vacancies and He-vacancy cluster in vanadium.\label{tab:V_em}}
+\caption{Migration energy barrier (E$^m$) for He, vacancies and He-vacancy cluster in vanadium and tantalum.
+\label{tab:em}}
 \end{table}
 
 \subsubsection*{Tantalum}
 
 Same conclusions as vanadium can be made for tantalum for which migration barrier of interstitials are 
-E$^m_{He}$(T $\rightarrow$ T) = 0.18 eV and  E$^m_{He}$(T $\rightarrow$ O) = 0.40 eV (Tab.\ref{tab:Ta_em}). 
+E$^m_{He}$(T $\rightarrow$ T) = 0.18 eV and  E$^m_{He}$(T $\rightarrow$ O) = 0.40 eV (Tab.\ref{tab:em}). 
 Interstitials He diffuse hopping from T to T sites.\\
 Concerning vacancies, migration barrier is higher for mono-vacancy (E$^m_{V}$ = 0.72 eV) consistent with 
 resistivity annealing experiment (E$^m_{V}$ = 0.7 eV)\cite{faber1974}, than for di-vacancy which 
@@ -436,36 +447,6 @@ than for mono-vacancy case.\\
 Contrary to the vanadium case all paths involving di-vacancy have the same barrier in presence of He, 
 so He$_1$V$_2$ clusters can migrate via three ways with the same probability.\\
 
-
-
-\begin{table}
-\centering
- \begin{tabular}{cccc}
-  \hline
-  Configuration & Path & E$^m$ (eV) & Exp. (eV) \\
-  \hline
-  \multicolumn{4}{l}{Interstitial} \\
-  \hline
-  He & T $\rightarrow$ T & 0.18 &  \\
-     & T $\rightarrow$ O & 0.40 &  \\
-  \hline
-  \multicolumn{4}{l}{Vacancy} \\
-  \hline
-  Mono-vacancy & 1nn & 0.72 & 0.7 \cite{faber1974}\cite{ullmaier1991} \\
-  Di-vacancy & 1nn $\rightarrow$ 2nn & 0.63 & \\
-  Di-vacancy & 2nn $\rightarrow$ 1nn & 0.87 & \\
-  Di-vacancy & 2nn $\rightarrow$ 2nn & 0.55 & \\
-  \hline
-  \multicolumn{4}{l}{He-vacancy clusters} \\
-  \hline
-  He$_1$V$_1$ & 1nn & 1.89 & \\
-  He$_1$V$_2$ & 1nn $\rightarrow$ 2nn & 1.14 & \\
-  He$_1$V$_2$ & 2nn $\rightarrow$ 1nn & 1.12 & \\
-  He$_1$V$_2$ & 2nn $\rightarrow$ 2nn & 1.12 & \\
-  \hline
- \end{tabular}
-\caption{Migration energy barrier (E$^m$) for He, vacancies and He-vacancy cluster in tantalum.\label{tab:Ta_em}}
-\end{table}
 
 Thermal desorption spectra experiment give us direct access to dissociation energy we can defined as the sum of binding energy and migration energy 
 of He atom or vacancy :
