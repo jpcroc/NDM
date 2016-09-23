@@ -212,37 +212,28 @@ for \textit{n}=1.
   
   
 For all types of cluster He$_n$V$_m$, the cost in energy to form He$_{n+1}$V$_m$ increases linearly 
-with \textit{n} but the slope decreases with \textit{m} 
-(see Fig.\ref{fig:V_formation_slope} and Fig.\ref{fig:Ta_formation_slope}).
+with \textit{n} but the slope decreases with \textit{m} (see Fig.\ref{fig:formation_slope}).
 
- \begin{figure}
+\begin{figure}
  \centering
- \includegraphics[scale=0.5]{figures/V/E_f.png}
-  \begin{tabular}{ccccccc}
+  \begin{tabular}{cc}
+ \includegraphics[scale=0.3]{figures/V/E_f.png}&
+ \includegraphics[scale=0.3]{figures/Ta/E_f.png}\\
+ \multicolumn{2}{c}{
+%  \resizebox{0.6\columnwidth}{!}{%
+  \begin{tabular}{c|ccccccc}
   \hline
-   m & 0 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4\\ \hline
-   $\Delta$E$^f_{n \rightarrow n+1}$ (eV) & 2.97 & 1.86-2.05 & 1.76-1.82 & 1.81-1.88 & 1.63 & 1.51-1.66\\ \hline 
+     & m & 0 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4\\ \hline
+   V & $\Delta$E$^f_{n \rightarrow n+1}$ (eV) & 2.97 & 1.86-2.05 & 1.76-1.82 & 1.81-1.88 & 1.63 & 1.51-1.66\\ \hline 
+   Ta & $\Delta$E$^f_{n \rightarrow n+1}$ (eV) & 3.26 & 2.06 & 1.73-2.19 & 1.87-2.10 & 1.41-1.90 & 1.07-1.35 \\ \hline 
+ \end{tabular}}\\
  \end{tabular}
- \caption{\label{fig:V_formation_slope}
- Formation energy as a function of \textit{n} in vanadium. 
+ \caption{\label{fig:formation_slope}
+ Formation energy as a function of \textit{n} in vanadium (left panel) and tantalum (right panel). 
  For di-vacancy clusters the label (1nn) is for 1st vacancy nearest neighbour and (2nn) for 2nd nearest vacancy neighbour.
  The table gives the slope for each type of cluster.}
  \end{figure}
- 
- \begin{figure}
- \centering
- \includegraphics[scale=0.5]{figures/Ta/E_f.png}
-  \begin{tabular}{ccccccc}
-  \hline
-   m & 0 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4\\ \hline
-   $\Delta$E$^f_{n \rightarrow n+1}$ (eV) & 3.26 & 2.06 & 1.73-2.19 & 1.87-2.10 & 1.41-1.90 & 1.07-1.35 \\ \hline 
- \end{tabular}
- \caption{\label{fig:Ta_formation_slope}
- Formation energy as a function of \textit{n} in tantalum. 
- For di-vacancy clusters the label (1nn) is for 1st vacancy nearest neighbour and (2nn) for 2nd nearest vacancy neighbour.
- The table gives the slope for each type of cluster.}
- \end{figure}
- 
+
 
 \subsection{Stability of He--vacancy clusters}\label{binding}
 We investigated the stability of pure He and vacancy clusters and He--vacancy complexes 
@@ -497,6 +488,11 @@ He is shifted toward O site.
 
 
 \section{Conclusion}
+
+\section*{Acknowledgments}
+This work was performed using HPC ressources from the Barcelona Supercomputing Center, CINES and TGCC.
+We acknowledge the French Research National Agency (ANR) in the EPIGRAPH project for funding.
+
 
 \newpage
 \bibliographystyle{plain}
