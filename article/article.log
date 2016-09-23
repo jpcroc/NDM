@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/TeX Live for SUSE Linux) (format=pdflatex 2015.7.6)  23 SEP 2016 11:42
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/TeX Live for SUSE Linux) (format=pdflatex 2015.7.6)  23 SEP 2016 14:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1019,29 +1019,29 @@ LaTeX Warning: Unused global option(s):
 (./article.aux)
 \openout1 = `article.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 40.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 40.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 41.
+LaTeX Font Info:    ... okay on input line 41.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 41.
+LaTeX Font Info:    ... okay on input line 41.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 41.
+LaTeX Font Info:    ... okay on input line 41.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 41.
+LaTeX Font Info:    ... okay on input line 41.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 41.
+LaTeX Font Info:    ... okay on input line 41.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 41.
+LaTeX Font Info:    ... okay on input line 41.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 41.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 41.
  (/usr/share/texmf/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-Class revtex4 Info: Patching array package. on input line 40.
-Class revtex4 Info: cite was not loaded (OK!) on input line 40.
-Class revtex4 Info: multicol was not loaded (OK!) on input line 40.
+LaTeX Font Info:    ... okay on input line 41.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 41.
+LaTeX Font Info:    ... okay on input line 41.
+Class revtex4 Info: Patching array package. on input line 41.
+Class revtex4 Info: cite was not loaded (OK!) on input line 41.
+Class revtex4 Info: multicol was not loaded (OK!) on input line 41.
 
 (/usr/share/texmf/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -1093,7 +1093,7 @@ Package caption Info: End \AtBeginDocument code.
 Package hyperref Warning: Height of page (\paperheight) is invalid (0.0pt),
 (hyperref)                using 11in.
 
-Package hyperref Info: Link coloring ON on input line 40.
+Package hyperref Info: Link coloring ON on input line 41.
 (/usr/share/texmf/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
 
@@ -1102,9 +1102,9 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
 \c@section@level=\count175
 )
-LaTeX Info: Redefining \ref on input line 40.
-LaTeX Info: Redefining \pageref on input line 40.
-LaTeX Info: Redefining \nameref on input line 40.
+LaTeX Info: Redefining \ref on input line 41.
+LaTeX Info: Redefining \pageref on input line 41.
+LaTeX Info: Redefining \nameref on input line 41.
  (./article.out)
 (./article.out)
 \@outlinefile=\write4
@@ -1112,11 +1112,11 @@ LaTeX Info: Redefining \nameref on input line 40.
 
  ABD: EveryShipout initializing macros [1{/usr/share/texmf/fonts/map/pdftex/upd
 map/pdftex.map}]
-LaTeX Font Info:    Try loading font information for U+msa on input line 93.
+LaTeX Font Info:    Try loading font information for U+msa on input line 94.
  (/usr/share/texmf/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 93.
+LaTeX Font Info:    Try loading font information for U+msb on input line 94.
 
 (/usr/share/texmf/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -1124,266 +1124,218 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 <figures/V/v1.png, id=134, 882.29625pt x 550.055pt>
 File: figures/V/v1.png Graphic file (type png)
  <use figures/V/v1.png>
-Package pdftex.def Info: figures/V/v1.png used on input line 165.
+Package pdftex.def Info: figures/V/v1.png used on input line 166.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/v2a.png, id=135, 882.29625pt x 550.055pt>
 File: figures/V/v2a.png Graphic file (type png)
  <use figures/V/v2a.png>
-Package pdftex.def Info: figures/V/v2a.png used on input line 166.
+Package pdftex.def Info: figures/V/v2a.png used on input line 167.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/v2b.png, id=136, 882.29625pt x 550.055pt>
 File: figures/V/v2b.png Graphic file (type png)
  <use figures/V/v2b.png>
-Package pdftex.def Info: figures/V/v2b.png used on input line 167.
+Package pdftex.def Info: figures/V/v2b.png used on input line 168.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/v3.png, id=137, 882.29625pt x 550.055pt>
 File: figures/V/v3.png Graphic file (type png)
  <use figures/V/v3.png>
-Package pdftex.def Info: figures/V/v3.png used on input line 169.
+Package pdftex.def Info: figures/V/v3.png used on input line 170.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/v4.png, id=138, 882.29625pt x 550.055pt>
 File: figures/V/v4.png Graphic file (type png)
  <use figures/V/v4.png>
-Package pdftex.def Info: figures/V/v4.png used on input line 170.
+Package pdftex.def Info: figures/V/v4.png used on input line 171.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/v5.png, id=139, 882.29625pt x 550.055pt>
 File: figures/V/v5.png Graphic file (type png)
  <use figures/V/v5.png>
-Package pdftex.def Info: figures/V/v5.png used on input line 171.
+Package pdftex.def Info: figures/V/v5.png used on input line 172.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 [3] <figures/V/he1v1_octa.png, id=159, 882.29625pt x 550.055pt>
 File: figures/V/he1v1_octa.png Graphic file (type png)
 
 <use figures/V/he1v1_octa.png>
-Package pdftex.def Info: figures/V/he1v1_octa.png used on input line 194.
+Package pdftex.def Info: figures/V/he1v1_octa.png used on input line 195.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he1v1.png, id=160, 882.29625pt x 550.055pt>
 File: figures/Ta/he1v1.png Graphic file (type png)
 
 <use figures/Ta/he1v1.png>
-Package pdftex.def Info: figures/Ta/he1v1.png used on input line 195.
+Package pdftex.def Info: figures/Ta/he1v1.png used on input line 196.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he2v1_111.png, id=161, 882.29625pt x 550.055pt>
 File: figures/V/he2v1_111.png Graphic file (type png)
 
 <use figures/V/he2v1_111.png>
-Package pdftex.def Info: figures/V/he2v1_111.png used on input line 196.
+Package pdftex.def Info: figures/V/he2v1_111.png used on input line 197.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he3v1_oso.png, id=162, 882.29625pt x 550.055pt>
 File: figures/V/he3v1_oso.png Graphic file (type png)
 
 <use figures/V/he3v1_oso.png>
-Package pdftex.def Info: figures/V/he3v1_oso.png used on input line 197.
+Package pdftex.def Info: figures/V/he3v1_oso.png used on input line 198.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he3v1.png, id=163, 882.29625pt x 550.055pt>
 File: figures/Ta/he3v1.png Graphic file (type png)
 
 <use figures/Ta/he3v1.png>
-Package pdftex.def Info: figures/Ta/he3v1.png used on input line 198.
+Package pdftex.def Info: figures/Ta/he3v1.png used on input line 199.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he4v1_4o.png, id=164, 882.29625pt x 550.055pt>
 File: figures/V/he4v1_4o.png Graphic file (type png)
 
 <use figures/V/he4v1_4o.png>
-Package pdftex.def Info: figures/V/he4v1_4o.png used on input line 200.
+Package pdftex.def Info: figures/V/he4v1_4o.png used on input line 201.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he5v1_5o.png, id=165, 882.29625pt x 550.055pt>
 File: figures/V/he5v1_5o.png Graphic file (type png)
 
 <use figures/V/he5v1_5o.png>
-Package pdftex.def Info: figures/V/he5v1_5o.png used on input line 201.
+Package pdftex.def Info: figures/V/he5v1_5o.png used on input line 202.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he6v1_6o.png, id=166, 882.29625pt x 550.055pt>
 File: figures/V/he6v1_6o.png Graphic file (type png)
 
 <use figures/V/he6v1_6o.png>
-Package pdftex.def Info: figures/V/he6v1_6o.png used on input line 202.
+Package pdftex.def Info: figures/V/he6v1_6o.png used on input line 203.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he1v2a_111.png, id=168, 882.29625pt x 550.055pt>
 File: figures/V/he1v2a_111.png Graphic file (type png)
 
 <use figures/V/he1v2a_111.png>
-Package pdftex.def Info: figures/V/he1v2a_111.png used on input line 221.
+Package pdftex.def Info: figures/V/he1v2a_111.png used on input line 222.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he2v2a_2o.png, id=169, 882.29625pt x 550.055pt>
 File: figures/V/he2v2a_2o.png Graphic file (type png)
 
 <use figures/V/he2v2a_2o.png>
-Package pdftex.def Info: figures/V/he2v2a_2o.png used on input line 222.
+Package pdftex.def Info: figures/V/he2v2a_2o.png used on input line 223.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he3v2a.png, id=170, 882.29625pt x 550.055pt>
 File: figures/V/he3v2a.png Graphic file (type png)
 
 <use figures/V/he3v2a.png>
-Package pdftex.def Info: figures/V/he3v2a.png used on input line 223.
+Package pdftex.def Info: figures/V/he3v2a.png used on input line 224.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he4v2a_111.png, id=171, 882.29625pt x 550.055pt>
 File: figures/V/he4v2a_111.png Graphic file (type png)
 
 <use figures/V/he4v2a_111.png>
-Package pdftex.def Info: figures/V/he4v2a_111.png used on input line 224.
+Package pdftex.def Info: figures/V/he4v2a_111.png used on input line 225.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he1v2a.png, id=172, 882.29625pt x 550.055pt>
 File: figures/Ta/he1v2a.png Graphic file (type png)
 
 <use figures/Ta/he1v2a.png>
-Package pdftex.def Info: figures/Ta/he1v2a.png used on input line 225.
+Package pdftex.def Info: figures/Ta/he1v2a.png used on input line 226.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he2v2a.png, id=173, 882.29625pt x 550.055pt>
 File: figures/Ta/he2v2a.png Graphic file (type png)
 
 <use figures/Ta/he2v2a.png>
-Package pdftex.def Info: figures/Ta/he2v2a.png used on input line 226.
+Package pdftex.def Info: figures/Ta/he2v2a.png used on input line 227.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he3v2a.png, id=174, 882.29625pt x 550.055pt>
 File: figures/Ta/he3v2a.png Graphic file (type png)
 
 <use figures/Ta/he3v2a.png>
-Package pdftex.def Info: figures/Ta/he3v2a.png used on input line 227.
+Package pdftex.def Info: figures/Ta/he3v2a.png used on input line 228.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he4v2a.png, id=175, 882.29625pt x 550.055pt>
 File: figures/Ta/he4v2a.png Graphic file (type png)
 
 <use figures/Ta/he4v2a.png>
-Package pdftex.def Info: figures/Ta/he4v2a.png used on input line 228.
+Package pdftex.def Info: figures/Ta/he4v2a.png used on input line 229.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he1v2b_octa.png, id=176, 882.29625pt x 550.055pt>
 File: figures/V/he1v2b_octa.png Graphic file (type png)
 
 <use figures/V/he1v2b_octa.png>
-Package pdftex.def Info: figures/V/he1v2b_octa.png used on input line 230.
+Package pdftex.def Info: figures/V/he1v2b_octa.png used on input line 231.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he2v2b_2o.png, id=177, 882.29625pt x 550.055pt>
 File: figures/V/he2v2b_2o.png Graphic file (type png)
 
 <use figures/V/he2v2b_2o.png>
-Package pdftex.def Info: figures/V/he2v2b_2o.png used on input line 231.
+Package pdftex.def Info: figures/V/he2v2b_2o.png used on input line 232.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he3v2b_o2t.png, id=178, 882.29625pt x 550.055pt>
 File: figures/V/he3v2b_o2t.png Graphic file (type png)
 
 <use figures/V/he3v2b_o2t.png>
-Package pdftex.def Info: figures/V/he3v2b_o2t.png used on input line 232.
+Package pdftex.def Info: figures/V/he3v2b_o2t.png used on input line 233.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/V/he4v2b_111.png, id=179, 882.29625pt x 550.055pt>
 File: figures/V/he4v2b_111.png Graphic file (type png)
 
 <use figures/V/he4v2b_111.png>
-Package pdftex.def Info: figures/V/he4v2b_111.png used on input line 233.
+Package pdftex.def Info: figures/V/he4v2b_111.png used on input line 234.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he1v2b.png, id=180, 882.29625pt x 550.055pt>
 File: figures/Ta/he1v2b.png Graphic file (type png)
 
 <use figures/Ta/he1v2b.png>
-Package pdftex.def Info: figures/Ta/he1v2b.png used on input line 234.
+Package pdftex.def Info: figures/Ta/he1v2b.png used on input line 235.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he2v2b.png, id=181, 882.29625pt x 550.055pt>
 File: figures/Ta/he2v2b.png Graphic file (type png)
 
 <use figures/Ta/he2v2b.png>
-Package pdftex.def Info: figures/Ta/he2v2b.png used on input line 235.
+Package pdftex.def Info: figures/Ta/he2v2b.png used on input line 236.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he3v2b.png, id=182, 882.29625pt x 550.055pt>
 File: figures/Ta/he3v2b.png Graphic file (type png)
 
 <use figures/Ta/he3v2b.png>
-Package pdftex.def Info: figures/Ta/he3v2b.png used on input line 236.
+Package pdftex.def Info: figures/Ta/he3v2b.png used on input line 237.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
 <figures/Ta/he4v2b.png, id=183, 882.29625pt x 550.055pt>
 File: figures/Ta/he4v2b.png Graphic file (type png)
 
 <use figures/Ta/he4v2b.png>
-Package pdftex.def Info: figures/Ta/he4v2b.png used on input line 237.
+Package pdftex.def Info: figures/Ta/he4v2b.png used on input line 238.
 (pdftex.def)             Requested size: 88.23479pt x 55.00871pt.
 
-Overfull \hbox (4.0pt too wide) in paragraph at lines 260--260
+Overfull \hbox (4.0pt too wide) in paragraph at lines 261--261
 [][] 
  []
 
-
-! LaTeX Error: Something's wrong--perhaps a missing \item.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.278  }
-        
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-! LaTeX Error: Something's wrong--perhaps a missing \item.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.278  }
-        
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-! LaTeX Error: Something's wrong--perhaps a missing \item.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.278  }
-        
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-
-! LaTeX Error: Something's wrong--perhaps a missing \item.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.278  }
-        
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-<figures/V/E_f.png, id=194, 642.4pt x 481.8pt>
+<figures/V/E_f.png, id=190, 642.4pt x 481.8pt>
 File: figures/V/E_f.png Graphic file (type png)
  <use figures/V/E_f.png>
 Package pdftex.def Info: figures/V/E_f.png used on input line 288.
 (pdftex.def)             Requested size: 224.84337pt x 168.63252pt.
 
-<figures/Ta/E_f.png, id=195, 642.4pt x 481.8pt>
+<figures/Ta/E_f.png, id=191, 642.4pt x 481.8pt>
 File: figures/Ta/E_f.png Graphic file (type png)
  <use figures/Ta/E_f.png>
 Package pdftex.def Info: figures/Ta/E_f.png used on input line 289.
@@ -1405,14 +1357,14 @@ Overfull \hbox (4.0pt too wide) in paragraph at lines 350--350
  []
 
 [7 <./figures/V/E_f.png> <./figures/Ta/E_f.png>]
-<figures/V/E_b(He-He_nV_m).png, id=247, 642.4pt x 481.8pt>
+<figures/V/E_b(He-He_nV_m).png, id=243, 642.4pt x 481.8pt>
 File: figures/V/E_b(He-He_nV_m).png Graphic file (type png)
 
 <use figures/V/E_b(He-He_nV_m).png>
 Package pdftex.def Info: figures/V/E_b(He-He_nV_m).png used on input line 367.
 (pdftex.def)             Requested size: 224.84337pt x 168.63252pt.
 
-<figures/Ta/E_b(He-He_nV_m).png, id=248, 642.4pt x 481.8pt>
+<figures/Ta/E_b(He-He_nV_m).png, id=244, 642.4pt x 481.8pt>
 File: figures/Ta/E_b(He-He_nV_m).png Graphic file (type png)
 
 <use figures/Ta/E_b(He-He_nV_m).png>
@@ -1424,14 +1376,14 @@ Overfull \hbox (4.0pt too wide) in paragraph at lines 386--386
 [][] 
  []
 
-<figures/V/E_b(V-He_nV_m).png, id=252, 642.4pt x 481.8pt>
+<figures/V/E_b(V-He_nV_m).png, id=248, 642.4pt x 481.8pt>
 File: figures/V/E_b(V-He_nV_m).png Graphic file (type png)
 
 <use figures/V/E_b(V-He_nV_m).png>
 Package pdftex.def Info: figures/V/E_b(V-He_nV_m).png used on input line 412.
 (pdftex.def)             Requested size: 224.84337pt x 168.63252pt.
 
-<figures/Ta/E_b(V-He_nV_m).png, id=253, 642.4pt x 481.8pt>
+<figures/Ta/E_b(V-He_nV_m).png, id=249, 642.4pt x 481.8pt>
 File: figures/Ta/E_b(V-He_nV_m).png Graphic file (type png)
 
 <use figures/Ta/E_b(V-He_nV_m).png>
@@ -1443,14 +1395,14 @@ Underfull \hbox (badness 10000) in paragraph at lines 494--508
 
  []
 
-[11] <figures/V/ratiomax.png, id=303, 642.4pt x 481.8pt>
+[11] <figures/V/ratiomax.png, id=299, 642.4pt x 481.8pt>
 File: figures/V/ratiomax.png Graphic file (type png)
 
 <use figures/V/ratiomax.png>
 Package pdftex.def Info: figures/V/ratiomax.png used on input line 529.
 (pdftex.def)             Requested size: 224.84337pt x 168.63252pt.
 
-<figures/Ta/ratiomax.png, id=304, 642.4pt x 481.8pt>
+<figures/Ta/ratiomax.png, id=300, 642.4pt x 481.8pt>
 File: figures/Ta/ratiomax.png Graphic file (type png)
 
 <use figures/Ta/ratiomax.png>
@@ -1483,7 +1435,7 @@ Package rerunfilecheck Info: File `article.out' has not changed.
 Here is how much of TeX's memory you used:
  18537 strings out of 493315
  311463 string characters out of 6145894
- 409587 words of memory out of 5000000
+ 408489 words of memory out of 5000000
  21522 multiletter control sequences out of 15000+600000
  15162 words of font info for 55 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
@@ -1503,9 +1455,9 @@ amsfonts/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmti10.p
 fb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texm
 f/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf/fonts/type1/
 public/cm-super/sfrm1095.pfb>
-Output written on article.pdf (17 pages, 3591323 bytes).
+Output written on article.pdf (17 pages, 3591237 bytes).
 PDF statistics:
- 420 PDF objects out of 1000 (max. 8388607)
+ 416 PDF objects out of 1000 (max. 8388607)
  336 compressed objects within 4 object streams
  96 named destinations out of 1000 (max. 500000)
  299 words of extra memory for PDF output out of 10000 (max. 10000000)
