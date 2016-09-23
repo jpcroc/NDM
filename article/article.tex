@@ -4,6 +4,7 @@
 \usepackage[english]{babel}
 \usepackage{graphicx}
 \usepackage{caption}
+\captionsetup{justification=raggedright,singlelinecheck=false}
 \usepackage{array}
 \usepackage{textcomp}
 \usepackage{url}
@@ -99,9 +100,17 @@ nucleation of such objects. The DFT calculations provide quantitative insight in
 the nature of clusters containing a small number of defects.
 %
 Only in recent years, such studies on vanadium began \cite{Hua20151,Zhang20111,Zhang201190,Zhang2015121} and 
-there is few literature concerning tantalum 
+there is few literature concerning tantalum. 
+Hua et al. went to the conclusion that alloying Vanadium with Ti enhances migration energy of He and diminishes He-vacancy 
+binding energy \cite{Hua20151}.
+Zhang et al. studied interaction of He with monovacancy and SIA in pure and Vanadium alloys. They shown Vanadium alloy 
+increases the cost of formation and migration of He \cite{Zhang201190}. The same group investigated stability of 
+small He-vacancy clusters and migration of monovacancy. They found interstitial He clusters are weakly bound and need vacancy 
+to be stable \cite{Zhang20111}. He-He and He-metal interactions have been studied in various bcc transition metals \cite{Zhang2015121}.
 In this study we will focus on He-vacancy type clusters in pure vanadium and tantalum, in particular we are interested in 
-the first steps of nascent bubbles. \MCM{Wesley can you detail more about the papers that you have cited.  
+the first steps of nascent bubbles. We will detail the formation and migration not only of He and monovacancy but 
+also di-vacancies that have been proved to play major role in diffusion processes in Fe \cite{fu2005nat}.
+\MCM{Wesley can you detail more about the papers that you have cited.  
 What they have done ... and why the present study will do more.}
  
 
@@ -126,43 +135,29 @@ The Methfessel-Paxton smearing \cite{MethPaxton} with a 0.25 eV width was used a
 for both V and Ta case.
 Atomic position were relaxed at constant volume until forces on each atom were less than 0.01 eV.
 The migration barriers and paths were determined using the climbing image nudged elastic band method (CI--NEB) 
-\cite{henkelmann2000_2,henkelmann2000_1}.\MCM{What about the convergency of the NEB, number of images, 
-the strength of the string between images ? }
-In addition, the converged energy was corrected by subtracting the elastic dipole interaction energy between
+\cite{henkelmann2000_2,henkelmann2000_1}.
+In addition, the converged energy was corrected by subtracting the elastic dipole--dipole interaction energy between 
 self-images due to periodic boundary conditions \cite{varvenne2013}. 
-The equilibrium bcc lattice constant obtained for V and Ta was 3.00 $\angstrom$ and 3.32 $\angstrom$, respectively. 
-Those values are close to experimental data for V and Ta, 
-3.03 $\angstrom$ and 3.30 $\angstrom$) \cite{kittel}, respectively.
+The equilibrium lattice constant obtained for V was 3.00 $\angstrom$ and 3.32 $\angstrom$ for Ta are
+in agreement with experimental data (respectively 3.03 $\angstrom$ and 3.30 $\angstrom$) \cite{kittel} .
 
 
 \section{Results}
 \subsection{Formation of vacancies and Helium clusters}\label{formation}
-
-Firstly we have examined the enegetics of He in interstitial configurations in the bcc lattice of V and Ta.  
-The formation energy of He at high symmetry interstitial sites in bcc lattice is given by: 
+The formation energy of $He$ at high symmetry interstitial sites in bcc lattice is given by: 
  \begin{equation}
-  E_f^{He_n} = E_{He_n} - E_0 - n \times E_{He}
+  E^f = E_{He_n} - E_0 - n \times E_{He}
  \end{equation}
-where \textit{n} denotes the number of He atom inserted in the simulation box, $E_{He_n}$ is the DFT energy of the supercell
-contaning \textit{n} interstitials He, 
-$E_0$ is the energy of the perfect bulk supercell and, finally,  $E_{He}$ is the energy of an isolated He atom.
-\MCM{How you have computed the energy of the isolated atom. Details and give the value}
-%
+where \textit{n} denotes the number of He atom,  $E_{He_n}$ energy of the supercell with \textit{n} interstitials cluster, 
+$E_0$ energy of the perfect supercell and  $E_{He}$ energy of an isolated $He$ atom.
 In V the formation energies for these interstitial configutations are 3.12 eV, 3.34 eV for 
-tetrahedral site ($T$) and octahedral site ($O$), respectivelly. 
+tetrahedral site (T) and octahedral site (O), respectivelly. The same relative stability is found in Ta the tetrahedral 
+configuration having a formation energy of 3.47 eV with 0.32 eV lower than octahedral configuration. 
 %
-In Ta is found the same relative stability,  the interstitial tetrahedral 
-configuration having a formation energy of 3.47 eV, with 0.32 eV lower than interstitial octahedral configuration. 
-%
-For both metals, V anf Ta, we found the similar hierarchy in the energy of interstitials configuerations,
-the $T$ interstitial site is more stable than the $O$ site, as in others bcc 
-transition metals, such as Fe \cite{Fu2005}, W and Nb \cite{seletskaia2008}.
-
-
-In both metals, V and Ta, we also studied the formation of vacancy 
-clusters ($V_m$)  up to quadri-vacancy (\textit{m}=4).  
-%
-The formation energy of 
+Similar to others bcc transition metals, such as Fe \cite{Fu2005}, W and Nb \cite{seletskaia2008}, the $T$ interstitial site 
+is more stable than the $O$ site for both V and Ta.
+\\
+In both metals, V and Ta, we also studied the formation of vacancy clusters ($V_m$)  up to quadri-vacancy (\textit{m}=4).  The formation energy of 
 the $V_n$ cluster is defined by:
 \begin{equation}
  E^f = E_{V_m} - \frac{(N-m)}{N} \times E_0
@@ -286,10 +281,9 @@ The main difference between V and Ta is that He tends to occupy $S$ site in Ta w
   \hline 
  \end{tabular} 
  \caption{\label{tab:efv}
- Lowest formation energy in eV of first smallest He-vacancy clusters He$_n$V$_m$ in vanadium and tantalum.\\
+ Lowest formation energy E$^f$ in eV of first smallest He-vacancy clusters He$_n$V$_m$ in vanadium and tantalum.\\
  $^a$ Experimental data from Ref \cite{maier1979}\\ $^b$ Experimental data from Ref \cite{janot1982}\\
- $^c$ Experimental data from Ref \cite{schultz1982}\\ $^d$ Experimental data from Ref \cite{Schaefer1987}
- }
+ $^c$ Experimental data from Ref \cite{schultz1982}\\ $^d$ Experimental data from Ref \cite{Schaefer1987}}
   \end{table}
   
   
