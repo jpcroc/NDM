@@ -91,7 +91,7 @@ ifdef PARAPH
 #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
 #F90FLAGS =  -O3 -convert big_endian 
-F90FLAGS =   -convert big_endian 
+F90FLAGS = -O3  -convert big_endian -lmpi 
 #F90FLAGS =  -O3  
 
 #FLAGS and LIBS for PHONDY
@@ -99,13 +99,23 @@ FLAGS_PHONDY =  -DNOIBM
 #debug
 #F90FLAGS_PHONDY = -C -module ../ $(F90FLAGS) $(FLAGS) 
 #F77FLAGS_PHONDY = -C $(F90FLAGS) $(FLAGS) 
-F90FLAGS_PHONDY =  -module ../ $(F90FLAGS) $(FLAGS) 
+F90FLAGS_PHONDY =  -module ../ $(F90FLAGS) $(FLAGS)   -I${MKLROOT}/include 
 F77FLAGS_PHONDY =   $(F90FLAGS) $(FLAGS) 
 FFLAGS =  
 
 #LLIBS_PHONDY = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
 #LLIBS_PHONDY =${mkkl_definitions}
-LLIBS_PHONDY=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+#sgimpt
+#LLIBS_PHONDY=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_sgimpt_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+#LLIBS_PHONDY=-mkl ${MKLROOT}/lib/intel64/libmkl_blas95_lp64.a ${MKLROOT}/lib/intel64/libmkl_lapack95_lp64.a -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lmkl_blacs_sgimpt_lp64 -lpthread -lm -ldl
+LLIBS_PHONDY=-L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lmkl_blacs_openmpi_lp64 -lpthread -lm -ldl
+
+
+
+#openmpi
+#LLIBS_PHONDY=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+#intelmpi
+#LLIBS_PHONDY=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
 # link library
 LIBRARY_PHONDY = phondy/libphondy.a
 
