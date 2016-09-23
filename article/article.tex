@@ -1,5 +1,4 @@
 \documentclass[a4,12pt,showpacs,preprintnumbers,amsmath,amssymb]{revtex4}
-%\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage[english]{babel}
@@ -47,7 +46,12 @@
 \date{}
 
 \begin{abstract}
-Inthis paper we investigate the energy landscape of vacancy clusters in the presence of Heliun in two material, Vanadium and Tantalum. In order to address the relative stability of small cluster vacancy-Helium clusters as well as the basic migration mechanisms we have used Density Functional Theory. The results of calculations are systematized in simple laws that can be easily used subsequently in multi-scale techniques including kinetic Monte Carlo simulations and cluster dynamics or dislocation dynamics studies.
+In this paper we investigate the energy landscape of vacancy clusters in the presence of Heliun in two material, 
+Vanadium and Tantalum. 
+In order to address the relative stability of small cluster vacancy-Helium clusters as well as the basic migration 
+mechanisms we have used Density Functional Theory. 
+The results of calculations are systematized in simple laws that can be easily used subsequently 
+in multi-scale techniques including kinetic Monte Carlo simulations and cluster dynamics or dislocation dynamics studies.
 \end{abstract}
 \pacs{61.72.Jj, 61.72.Bb, 61.80.Az, 61.82.Bg, 75.40.Mg}
 
@@ -56,12 +60,20 @@ Inthis paper we investigate the energy landscape of vacancy clusters in the pres
  
 \section{Introduction}
 
-The main materials of interest for  fission and fusion application are the body centered cubic (bcc) metals, such as transition metals. 
+The main materials of interest for  fission and fusion application are the body centered cubic (bcc) metals, 
+such as transition metals. 
 %
-Irradiation of bcc transition metals, leads to a large number of point defects in the form of self-interstitial atoms and vacancies. The interaction and migrations defects as well as theirs absorption on sinks, like dislocation and grain boundaries, can influence microstructural transformations in material which can affects various properties of the metals. 
+Irradiation of bcc transition metals, leads to a large number of point defects in the form of self-interstitial 
+atoms and vacancies. The interaction and migrations defects as well as theirs absorption on sinks, 
+like dislocation and grain boundaries, can influence microstructural transformations in material 
+which can affects various properties of the metals. 
 %
-Experimental and theoretical studies \cite{Zinkle2013} have shown that the body centered cubic lattice demonstrates improved radiation resistance compared to the close-packed face centered cubic lattice due to reduced amount of vacancy and interstitial defect clustering that occurs directly within displacement cascades as well as higher stacking fault energy.
-In this paper we will focus on the vacancy clusters and its interactions with Helium atoms in two materials promising for future fusion systems, Vanadium and Tantalum.   
+Experimental and theoretical studies \cite{Zinkle2013} have shown that the body centered cubic lattice demonstrates 
+improved radiation resistance compared to the close-packed face centered cubic lattice due to reduced amount of 
+vacancy and interstitial defect clustering that occurs directly within displacement cascades as well as 
+higher stacking fault energy.
+In this paper we will focus on the vacancy clusters and its interactions with Helium atoms in two materials promising 
+for future fusion systems, Vanadium and Tantalum.   
 
 
 %About Va and Ta 
@@ -69,29 +81,36 @@ Vanadium and its alloys are promising candidates as blanket for fusion reactor t
 to their mechanical properties at high temperature and low activation \cite{Muroga2000, Kurtz2004}.
 Vanadium alloys demonstrate a good combination of strength, ductility and radiation resistance~\cite{Zinkle1998,Muroga2000}.  
 %
-Tantalum is known for its high toughness, high-sputtering threshold energy, easy fabricability and low activation properties which make it a candidate for target material for spallation sources or even first wall material in fusion reactors~\cite{Gold1979, Kirk1981}. As such, study of defects in those two materials,  V and Ta serve as the basic foundation for future research regarding structural materials in the fusion industry.
+Tantalum is known for its high toughness, high-sputtering threshold energy, easy fabricability and 
+low activation properties which make it a candidate for target material for spallation sources or 
+even first wall material in fusion reactors~\cite{Gold1979, Kirk1981}. As such, study of defects in those two materials,  
+V and Ta serve as the basic foundation for future research regarding structural materials in the fusion industry.
 
 
 %About defetcs ... 
-Under irradiation, the structural materials are subject to damages such as swelling \cite{Dai2012141}, embrittlement \cite{MATSUI1992} and blistering \cite{KALETTA1978} 
+Under irradiation, the structural materials are subject to damages such as swelling \cite{Dai2012141}, 
+embrittlement \cite{MATSUI1992} and blistering \cite{KALETTA1978} 
 triggered, enhanced  or suppressed \cite{FEDEROV1996} by He resulting of (\textit{n, $\alpha$}) transmutation reactions. 
 He atoms are usually trapped at grain boundaries, dislocations or void clusters \cite{Bhattacharyya1997,HEERSCHAP1973}.
 The early stages of formation of He bubbles in metals are difficult to be treated in experiments due to the spatial resolutions.  
-\textit{Ab inito} calculations , based on Density Functional Theory (DFT), are powerful tools to investigate the processes taking place at the beginning of 
-nucleation of such objects. The DFT calculations provide quantitative insight into the nature of clusters containing a small number of defects.
+\textit{Ab inito} calculations , based on Density Functional Theory (DFT), 
+are powerful tools to investigate the processes taking place at the beginning of 
+nucleation of such objects. The DFT calculations provide quantitative insight into 
+the nature of clusters containing a small number of defects.
 %
 Only in recent years, such studies on vanadium began \cite{Hua20151,Zhang20111,Zhang201190,Zhang2015121} and 
 there is few literature concerning tantalum 
 In this study we will focus on He-vacancy type clusters in pure vanadium and tantalum, in particular we are interested in 
-the first steps of nascent bubbles. \MCM{Wesley can you detail more about the papers that you have cited.  What they have done ... and why the present study will do more.}
+the first steps of nascent bubbles. \MCM{Wesley can you detail more about the papers that you have cited.  
+What they have done ... and why the present study will do more.}
  
 
 
 This paper is organised as follows : Sec.\ref{compute} gives the parameters of the methodology employed for the calculations.
 In Sec.\ref{formation} we present the formation energies computed for vacancy and He-vacancy type clusters.
 In Sec.\ref{binding} the stability of He-vacancy type clusters is investigated.
-Finally, Sec.\ref{migration} describes the migration processes and barriers of vacancy clusters and how helium modifies the diffusion 
-mechanisms.
+Finally, Sec.\ref{migration} describes the migration processes and barriers of vacancy clusters and 
+how helium modifies the diffusion mechanisms.
 
 \section{Computational details}\label{compute}
 \textit{Ab initio} calculations were performed with density functional theory (DFT) as implemented in the 
@@ -138,7 +157,7 @@ the $V_n$ cluster is defined by:
  cluster. 
  For each type of clusters, we take only the most stable one to study the interaction with He in the following. 
  We find out that the lowest energy cluster to be the most compact (see Fig.\ref{fig:vacancies}), 
- except for the di-vacancy cluster for which the 2nd nearest neighbour cluster (2nn) is lower than 
+ except for the di-vacancy cluster for which the 2nd nearest neighbour cluster configuration (2nn) is lower than 
  the 1st nearest neighbour one (1nn) by 0.19 eV in vanadium and 0.24 eV in tantalum (Tab.\ref{tab:efv}).
  
 \begin{figure}
@@ -162,32 +181,36 @@ We now study multiple He-vacancy clusters (up to \textit{n}=26 for \textit{m}=4)
     \end{equation}
     where E$_{He_nV_m}$ is the energy of the supercell with the He$_n$V$_m$ cluster.\\
 As the number of clusters (He$_n$V$_m$) increases very fast with \textit{n} and \textit{m}, 
-we picked tens of configurations of each type, selected randomly with He atoms placed at first nearest neighbour 
+we picked tens of configurations of each type, selected randomly with He atoms initially placed at first nearest neighbour 
 T, O or substitutional (S) sites to the vacancy.\\
 For He$_1$V$_1$ in vanadium, the He atom is slightly off O site (Fig.\ref{fig:henv1}) 
 in the lowest energy configuration (E$^f$=4.47 eV) rather than at S site (E$^f$=4.68 eV) while in tantalum,
 the substitutional site is the only stable configuration.
 
 \begin{figure}
- \begin{tabular}{cccc}
+% \begin{adjustwidth}{-2cm}{}
+% \resizebox{1\columnwidth}{!}{%
+ \begin{tabular}{ccccc}
     \includegraphics[scale=0.1]{figures/V/he1v1_octa.png} &
+    \includegraphics[scale=0.1]{figures/Ta/he1v1.png} &
     \includegraphics[scale=0.1]{figures/V/he2v1_111.png} &
     \includegraphics[scale=0.1]{figures/V/he3v1_oso.png} &
     \includegraphics[scale=0.1]{figures/Ta/he3v1.png} \\
-    (a) & (b) & \multicolumn{2}{c}{(c)} \\
-    \includegraphics[scale=0.1]{figures/V/he4v1_4o.png} &
+    \multicolumn{2}{c}{(a)} & (b) & \multicolumn{2}{c}{(c)} \\
+    &\includegraphics[scale=0.1]{figures/V/he4v1_4o.png} &
     \includegraphics[scale=0.1]{figures/V/he5v1_5o.png} &
     \includegraphics[scale=0.1]{figures/V/he6v1_6o.png} &\\
-    (d) & (e) & (f) & \\
+    & (d) & (e) & (f) & \\
  \end{tabular}
  \caption{Lowest formation energy He$_n$V$_1$ type clusters in vanadium and tantalum. 
  (a) He$_1$V$_1$, (b) He$_2$V$_1$, (c) He$_3$V$_1$, (d) He$_4$V$_1$, (e) He$_5$V$_1$, (f) He$_6$V$_1$. 
  Vacancy is represented with yellow cube, vanadium with grey ball, tantalum with dark blue ball and 
  helium with light blue ball. Configurations for tantalum are shown only when different to vanadium ones.\label{fig:henv1}}
+%  \end{adjustwidth}
 \end{figure}
 
 
-For He$_2$V$_1$ cluster the 2 He atoms and the vacancy are aligned in the <111> direction. 
+For He$_2$V$_1$ cluster the 2 He atoms and the vacancy are aligned in the 111 direction. 
 The lowest energy clusters from \textit{n}=4 to \textit{n}=6 have all He atoms on O sites.
 In the case of di-vacancy clusters in vanadium, He$_1$V$_2$ in the 1nn configuration is still higher 
 in energy than in the 2nn one (Fig.\ref{fig:henv2}) but the difference is reduced to 0.09 eV compared to 0.19 eV 
@@ -225,7 +248,8 @@ in the pure vacancy cluster case.
 Furthermore, their formation energy are reversed since \textit{n}=2 as the 1nn configuration is 0.4 eV lower 
 than the other one (Tab.\ref{tab:efv}).\\
 In tantalum, the hierarchy in the formation energy between 1nn and 2nn configuration is already changed 
-for \textit{n}=1.
+for \textit{n}=1.\\
+The main difference between V and Ta is that He tends to occupy $S$ site in Ta when these are repulsive in V.  
 
  \begin{table}
  \centering
@@ -247,10 +271,11 @@ for \textit{n}=1.
  6 & 13.73 & 14.44 &  15.07 & 14.62 & 14.76 & 14.87 & 14.80 & 15.69 & 15.39 & 15.62\\
   \hline 
  \end{tabular} 
- \caption{Lowest formation energy E$^f$ in eV of first smallest He-vacancy clusters He$_n$V$_m$ in vanadium and tantalum.\\
- $^a$ Experimental data from Ref \cite{maier1979}.\\ $^b$ Experimental data from Ref \cite{janot1982}.\\
- $^c$ Experimental data from Ref \cite{schultz1982}.\\ $^d$ Experimental data from Ref \cite{Schaefer1987}.\\
- \label{tab:efv}}
+ \caption{\label{tab:efv}%
+ Lowest formation energy E$^f$ in eV of first smallest He-vacancy clusters He$_n$V$_m$ in vanadium and tantalum.\\
+ $^a$ Experimental data from Ref \cite{maier1979}\\ $^b$ Experimental data from Ref \cite{janot1982}\\
+ $^c$ Experimental data from Ref \cite{schultz1982}\\ $^d$ Experimental data from Ref \cite{Schaefer1987}
+ }
   \end{table}
   
   
@@ -260,8 +285,8 @@ with \textit{n} but the slope decreases with \textit{m} (see Fig.\ref{fig:format
 \begin{figure}
  \centering
   \begin{tabular}{cc}
- \includegraphics[scale=0.3]{figures/V/E_f.png}&
- \includegraphics[scale=0.3]{figures/Ta/E_f.png}\\
+ \includegraphics[scale=0.35]{figures/V/E_f.png}&
+ \includegraphics[scale=0.35]{figures/Ta/E_f.png}\\
  \multicolumn{2}{c}{
 %  \resizebox{0.6\columnwidth}{!}{%
   \begin{tabular}{c|ccccccc}
@@ -339,13 +364,13 @@ contrary to  He$_{19}$V$_4$ and  He$_{21}$V$_4$ clusters.
 \begin{figure}
 \centering
 \begin{tabular}{cc}
- \includegraphics[scale=0.3]{figures/V/E_b(He-He_nV_m).png} &
+ \includegraphics[scale=0.35]{figures/V/E_b(He-He_nV_m).png} &
 %  \caption{Binding energy of He to He$_n$V$_m$ clusters as a function of \textit{n} in vanadium\label{fig:V_eb_he}}
 % \end{figure}
 
 % \begin{figure}
 % \centering
- \includegraphics[scale=0.3]{figures/Ta/E_b(He-He_nV_m).png}\\
+ \includegraphics[scale=0.35]{figures/Ta/E_b(He-He_nV_m).png}\\
 %  \caption{Binding energy of He to He$_n$V$_m$ clusters as a function of \textit{n} in tantalum\label{fig:Ta_eb_he}}
  \end{tabular} 
  \caption{Binding energy of He to He$_n$V$_m$ clusters as a function of \textit{n} in vanadium (left panel) 
@@ -384,13 +409,13 @@ We find again He$_n$V$_{2}$(1nn) are more stable than He$_n$V$_{2}$(2nn) for n $
 \begin{figure}
 \centering
 \begin{tabular}{cc}
- \includegraphics[scale=0.3]{figures/V/E_b(V-He_nV_m).png}&
+ \includegraphics[scale=0.35]{figures/V/E_b(V-He_nV_m).png}&
 %  \caption{Binding energy of mono-vacancy to He$_n$V$_m$ clusters as a function of \textit{m} in vanadium\label{fig:V_eb_v}}
 % \end{figure}
 
 % \begin{figure}
 % \centering
- \includegraphics[scale=0.3]{figures/Ta/E_b(V-He_nV_m).png}\\
+ \includegraphics[scale=0.35]{figures/Ta/E_b(V-He_nV_m).png}\\
  \end{tabular}
  \caption{Binding energy of mono-vacancy to He$_n$V$_m$ clusters as a function of \textit{m} in vanadium (left panel) 
  and tantalum (right panel)
@@ -414,7 +439,7 @@ Thus, interstitial He prefers to diffuse via the first neighbour T sites.
 \\ Our calculations of mono-vacancy migration barrier (E$^m_{V}$ = 0.48 eV) agrees very well 
 with TDS experiments (E$^m_{V}$ = 0.5 eV) \cite{Fedorov1996} and (E$^m_{V}$ = 0.47 eV) \cite{vanveen1994}.
 \\ The di-vacancy migration barrier from the 1nn configuration to 2nn configuration is 
-E$^m_{V_2}$ = 0.34 eV. Di-vacancy cluster in 2nn configuration is more mobile since it can migrate without dissociation 
+E$^m_{V_2}$ = 0.34 eV. Di-vacancy cluster in the 2nn configuration is more mobile since it can migrate without dissociation 
 with a barrier of E$^m_{V_2}$ = 0.37 eV.
 \\ We turn on the influence of He on vacancy diffusion. The minimum energy path found for 
 the migration of mono-vacancy with helium in their lowest energy configuration at starting and final point; 
@@ -501,7 +526,7 @@ This is consistent with TDS experiment \cite{Fedorov1996} in which the peaks at 
 \begin{figure}
 \centering
 \begin{tabular}{cc}
-\includegraphics[scale=0.3]{figures/V/ratiomax.png}&
+\includegraphics[scale=0.35]{figures/V/ratiomax.png}&
 % \caption{Dissociation energy of He and vacancy to He$_n$V$_m$ as a function of \textit{n/m} 
 % ratio for the most stable clusters in vanadium.
 % \label{fig:V_ed}}
@@ -510,7 +535,7 @@ This is consistent with TDS experiment \cite{Fedorov1996} in which the peaks at 
 
 % \begin{figure}
 % \centering
-\includegraphics[scale=0.3]{figures/Ta/ratiomax.png}\\
+\includegraphics[scale=0.35]{figures/Ta/ratiomax.png}\\
 \end{tabular}
 \caption{Dissociation energy of He and vacancy to He$_n$V$_m$ as a function of \textit{n/m} ratio 
 for the most stable clusters in vanadium (left panel) and tantalum (right panel).

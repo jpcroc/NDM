@@ -50,6 +50,11 @@ Chu-Chun Fu and F.~Willaime.
   clustering with vacancies.
 \newblock {\em Phys. Rev. B}, 72:064117, Aug 2005.
 
+\bibitem{Gold1979}
+R.~E. Gold and D.~L. Harrod.
+\newblock Refractory metal alloys for fusion reactor applications.
+\newblock {\em J. Nucl. Mater.}, 85:805, 1979.
+
 \bibitem{HEERSCHAP1973}
 M.~Heerschap, E.~Schüller, B.~Langevin, and A.~Trapani.
 \newblock Helium gas bubbles in vanadium.
@@ -85,6 +90,12 @@ D.~Kaletta.
   temperatures.
 \newblock {\em Journal of Nuclear Materials}, 76:221 -- 223, 1978.
 
+\bibitem{Kirk1981}
+M.~A. Kirk, R.~C. Birtcher, and T.~H. Blewitt.
+\newblock Measurements of neutron spectra and fluxes at spallation-neutron
+  sources and their application to radiation effects research.
+\newblock 96:37, 1981.
+
 \bibitem{kittel}
 C.~Kittel.
 \newblock {\em Introduction to Solid State Physics}.
@@ -106,6 +117,14 @@ G.~Kresse and D.~Joubert.
 \newblock From ultrasoft pseudopotentials to the projector augmented-wave
   method.
 \newblock {\em Phys. Rev. B}, 59:1758--1775, Jan 1999.
+
+\bibitem{Kurtz2004}
+R.~J. Kurtz, K~Abe, V.~M. Chernov, D.~T. Hoelzer, H~Matsui, T~Muroga, and G.~R.
+  Odette.
+\newblock Recent progress on development of vanadium alloys for fusion.
+\newblock {\em J. Nucl. Mater.}, 329:47, 2004.
+\newblock Proceedings of the 11th International Conference on Fusion Reactor
+  Materials (ICFRM-11).
 
 \bibitem{lewis1988}
 M.B. Lewis.
@@ -147,12 +166,11 @@ K.~Morishita, R.~Sugano, B.D. Wirth, and T.~Diaz de~la Rubia.
 \newblock 6th International Conference on Computer Simulation of Radiation
   Effects in Solids.
 
-\bibitem{Muroga2014}
-T.~Muroga, J.M. Chen, V.M. Chernov, R.J. Kurtz, and M.~Le Flem.
-\newblock Present status of vanadium alloys for fusion applications.
-\newblock {\em Journal of Nuclear Materials}, 455(1–3):263 -- 268, 2014.
-\newblock Proceedings of the 16th International Conference on Fusion Reactor
-  Materials (ICFRM-16).
+\bibitem{Muroga2000}
+T~Muroga, T~Nagasaka, A~Iiyoshi, A~Kawabata, S~Sakurai, and M~Sakata.
+\newblock Nifs program for large ingot production of a v-cr-ti alloy.
+\newblock {\em J. Nucl. Mater.}, 283:711, 2000.
+\newblock 9th Int. Conf. on Fusion Reactor Materials.
 
 \bibitem{PBE}
 John~P. Perdew, Kieron Burke, and Matthias Ernzerhof.
@@ -263,5 +281,17 @@ Pengbo Zhang, Tingting Zou, Jijun Zhao, Pengfei Zheng, and Jiming Chen.
   Beam Interactions with Materials and Atoms}, 352:121 -- 124, 2015.
 \newblock Proceedings of the 12th International Conference on Computer
   Simulation of Radiation Effects in Solids, Alacant, Spain, 8-13 June, 2014.
+
+\bibitem{Zinkle1998}
+S.~J. Zinkle, H.~Matsui, D.~L. Smith, A.~F. Rowcliffe, E~van Osch, K~Abe, and
+  V.~A. Kazakov.
+\newblock Research and development on vanadium alloys for fusion applications.
+\newblock {\em J. Nucl. Mater.}, 258:205, 1998.
+
+\bibitem{Zinkle2013}
+Steven~J. Zinkle.
+\newblock Challenges in developing materials for fusion technology - past,
+  present and future.
+\newblock 64(2):65, 2013.
 
 \end{thebibliography}
