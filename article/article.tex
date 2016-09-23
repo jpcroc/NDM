@@ -1,5 +1,5 @@
-\documentclass[a4paper,10pt]{article}
-\usepackage[T1]{fontenc}
+\documentclass[a4,12pt,showpacs,preprintnumbers,amsmath,amssymb]{revtex4}
+%\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage[english]{babel}
@@ -9,6 +9,21 @@
 \usepackage{textcomp}
 \usepackage{url}
 \usepackage{makecell}
+\newcommand{\MCM}[1]{\noindent{\marginpar{\bf \tiny MCM} \bf  #1 }}
+\linespread{1.4}               % extra vertical space inserted before
+\setlength{\parskip}{3.0ex}    % the paragraph
+%...End lines and paragraphs
+
+\usepackage{layout}        %with the command layot print the format of the page
+\usepackage{color}
+\usepackage{graphicx}% Include figure files
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+\usepackage[colorlinks]{hyperref}
+
+
+
+
 \newcolumntype{x}[1]{>{\centering\arraybackslash}p{#1}}
 \usepackage{tikz}
 \newcommand\diag[4]{%
@@ -23,27 +38,52 @@
  \end{tikzpicture}}$\hskip-\tabcolsep}}
 \newcommand{\angstrom}{\text{\normalfont\AA}}
 
+\begin{document}
+
 % Title Page
 \title{He--vacancy interactions in pure vanadium and tantalum}
-\author{}
+\author{Wesley Unn-Toc, Mihai-Cosmin Marinica, Thomas Jourdan}
+\address{DEN-Service de Recherches de M\'etallurgie Physique, CEA, Université Paris-Saclay, F-91191, Gif-sur-Yvette, France}
 \date{}
 
-\begin{document}
+\begin{abstract}
+Inthis paper we investigate the energy landscape of vacancy clusters in the presence of Heliun in two material, Vanadium and Tantalum. In order to address the relative stability of small cluster vacancy-Helium clusters as well as the basic migration mechanisms we have used Density Functional Theory. The results of calculations are systematized in simple laws that can be easily used subsequently in multi-scale techniques including kinetic Monte Carlo simulations and cluster dynamics or dislocation dynamics studies.
+\end{abstract}
+\pacs{61.72.Jj, 61.72.Bb, 61.80.Az, 61.82.Bg, 75.40.Mg}
+
+
  \maketitle
  
 \section{Introduction}
+
+The main materials of interest for  fission and fusion application are the body centered cubic (bcc) metals, such as transition metals. 
+%
+Irradiation of bcc transition metals, leads to a large number of point defects in the form of self-interstitial atoms and vacancies. The interaction and migrations defects as well as theirs absorption on sinks, like dislocation and grain boundaries, can influence microstructural transformations in material which can affects various properties of the metals. 
+%
+Experimental and theoretical studies \cite{Zinkle2013} have shown that the body centered cubic lattice demonstrates improved radiation resistance compared to the close-packed face centered cubic lattice due to reduced amount of vacancy and interstitial defect clustering that occurs directly within displacement cascades as well as higher stacking fault energy.
+In this paper we will focus on the vacancy clusters and its interactions with Helium atoms in two materials promising for future fusion systems, Vanadium and Tantalum.   
+
+
+%About Va and Ta 
 Vanadium and its alloys are promising candidates as blanket for fusion reactor thanks 
-to their mechanical properties at high temperature and low activation \cite{Muroga2014}.
-Under irradiation, they are subject to damages such as swelling \cite{Dai2012141}, embrittlement \cite{MATSUI1992} and blistering \cite{KALETTA1978} 
+to their mechanical properties at high temperature and low activation \cite{Muroga2000, Kurtz2004}.
+Vanadium alloys demonstrate a good combination of strength, ductility and radiation resistance~\cite{Zinkle1998,Muroga2000}.  
+%
+Tantalum is known for its high toughness, high-sputtering threshold energy, easy fabricability and low activation properties which make it a candidate for target material for spallation sources or even first wall material in fusion reactors~\cite{Gold1979, Kirk1981}. As such, study of defects in those two materials,  V and Ta serve as the basic foundation for future research regarding structural materials in the fusion industry.
+
+
+%About defetcs ... 
+Under irradiation, the structural materials are subject to damages such as swelling \cite{Dai2012141}, embrittlement \cite{MATSUI1992} and blistering \cite{KALETTA1978} 
 triggered, enhanced  or suppressed \cite{FEDEROV1996} by He resulting of (\textit{n, $\alpha$}) transmutation reactions. 
 He atoms are usually trapped at grain boundaries, dislocations or void clusters \cite{Bhattacharyya1997,HEERSCHAP1973}.
-Experiments are unable to resolve the early stages of formation of He bubbles in metals, but
-\textit{ab inito} calculations are powerful tools to investigate the processes taking place at the beginning of 
-nucleation of such objects.
+The early stages of formation of He bubbles in metals are difficult to be treated in experiments due to the spatial resolutions.  
+\textit{Ab inito} calculations , based on Density Functional Theory (DFT), are powerful tools to investigate the processes taking place at the beginning of 
+nucleation of such objects. The DFT calculations provide quantitative insight into the nature of clusters containing a small number of defects.
+%
 Only in recent years, such studies on vanadium began \cite{Hua20151,Zhang20111,Zhang201190,Zhang2015121} and 
-there is few literature concerning tantalum.
+there is few literature concerning tantalum 
 In this study we will focus on He-vacancy type clusters in pure vanadium and tantalum, in particular we are interested in 
-the first steps of nascent bubbles.\\
+the first steps of nascent bubbles. \MCM{Wesley can you detail more about the papers that you have cited.  What they have done ... and why the present study will do more.}
  
 
 
@@ -76,22 +116,25 @@ in agreement with experimental data (respectively 3.03 $\angstrom$ and 3.30 $\an
 
 \section{Results}
 \subsection{Formation of vacancies and Helium clusters}\label{formation}
-The formation energy of He at high symmetry interstitial sites in bcc lattice is given by : 
+The formation energy of $He$ at high symmetry interstitial sites in bcc lattice is given by: 
  \begin{equation}
-    $$ E$^f$ = E$_{He_n}$ - E$_0$ - n $\times$ E$_{He}$ $$
+  E^f = E_{He_n} - E_0 - n \times E_{He}
  \end{equation}
-where \textit{n} denotes the number of He atom,  E$_{He_n}$ energy of the supercell with \textit{n} interstitials cluster, 
-E$_0$ energy of the perfect supercell and  E$_{He}$ energy of an isolated He atom.
-The formation energies are respectively in V E$^f$=3.12 eV for tetrahedral site (T) and E$^f$=3.34 eV octahedral site (O), 
-in Ta E$^f$=3.47 eV (T) and E$^f$=3.79 eV (O).
-As for other bcc transition metals such as Fe \cite{Fu2005}, W and Nb \cite{seletskaia2008}, the T site is more stable at low temperature than 
-the O site for both V and Ta.
+where \textit{n} denotes the number of He atom,  $E_{He_n}$ energy of the supercell with \textit{n} interstitials cluster, 
+$E_0$ energy of the perfect supercell and  $E_{He}$ energy of an isolated $He$ atom.
+In V the formation energies for these interstitial configutations are 3.12 eV, 3.34 eV for 
+tetrahedral site (T) and octahedral site (O), respectivelly. The same relative stability is found in Ta the tetrahedral 
+configuration having a formation energy of 3.47 eV with 0.32 eV lower than octahedral configuration. 
+%
+Similar to others bcc transition metals, such as Fe \cite{Fu2005}, W and Nb \cite{seletskaia2008}, the $T$ interstitial site 
+is more stable than the $O$ site for both V and Ta.
 \\
-We also studied the formation of vacancy clusters (V$_m$) in both V and Ta, up to \textit{m}=4 defined by :
+In both metals, V and Ta, we also studied the formation of vacancy clusters ($V_m$)  up to quadri-vacancy (\textit{m}=4).  The formation energy of 
+the $V_n$ cluster is defined by:
 \begin{equation}
- $$ E$^f$ = E$_{V_m}$ - $\dfrac{(N-m)}{N}$ E$_0$ $$
+ E^f = E_{V_m} - \frac{(N-m)}{N} \times E_0
 \end{equation}
- with  \textit{N} the number of atoms in the perfect lattice and E$_{V_m}$ energy of the supercell with \textit{m} vacancies 
+ with  \textit{N} the number of atoms in the perfect lattice and $E_{V_m}$ energy of the supercell with \textit{m} vacancies 
  cluster. 
  For each type of clusters, we take only the most stable one to study the interaction with He in the following. 
  We find out that the lowest energy cluster to be the most compact (see Fig.\ref{fig:vacancies}), 
