@@ -49,9 +49,9 @@
 \date{}
 
 \begin{abstract}
-In this paper we investigate the energy landscape of vacancy clusters in the presence of Heliun in two material, 
+In this paper we investigate the energy landscape of vacancy clusters in the presence of Heliun in two materials, 
 Vanadium and Tantalum. 
-In order to address the relative stability of small cluster vacancy-Helium clusters as well as the basic migration 
+In order to address the relative stability of small vacancy-Helium clusters as well as the basic migration 
 mechanisms we have used Density Functional Theory. 
 The results of calculations are systematized in simple laws that can be easily used subsequently 
 in multi-scale techniques including kinetic Monte Carlo simulations and cluster dynamics or dislocation dynamics studies.
@@ -69,7 +69,7 @@ such as transition metals.
 Irradiation of bcc transition metals, leads to a large number of point defects in the form of self-interstitial 
 atoms and vacancies. The interaction and migrations defects as well as theirs absorption on sinks, 
 like dislocation and grain boundaries, can influence microstructural transformations in material 
-which can affects various properties of the metals. 
+which can affect various properties of the metals. 
 %
 Experimental and theoretical studies \cite{Zinkle2013} have shown that the body centered cubic lattice demonstrates 
 improved radiation resistance compared to the close-packed face centered cubic lattice due to reduced amount of 
@@ -104,7 +104,7 @@ the nature of clusters containing a small number of defects.
 \wes{Only in recent years, such studies on Vanadium began and there is few literature concerning Tantalum. 
 Hua et al.\cite{Hua20151} went to the conclusion that alloying Vanadium with Ti enhances migration energy of He and diminishes He-vacancy 
 binding energy.
-Zhang et al.\cite{Zhang201190} studied interaction of He with monovacancy and SIA in pure and Vanadium alloys. 
+Zhang et al.\cite{Zhang201190} studied interaction of He with monovacancy and SIA in pure Vanadium and Vanadium alloys. 
 They shown Vanadium alloy increases the cost of formation and migration of He compared to pure Vanadium solid. 
 The same group investigated stability of small He-vacancy clusters and migration of monovacancy. 
 They found interstitial He clusters are weakly bound and need vacancy to be stable \cite{Zhang20111}.
@@ -145,8 +145,7 @@ the strength of the string between images ? }
 In addition, the converged energy was corrected by subtracting the elastic dipole interaction energy between
 self-images due to periodic boundary conditions \cite{varvenne2013}. 
 The equilibrium bcc lattice constant obtained for V and Ta was 3.00 $\angstrom$ and 3.32 $\angstrom$, respectively. 
-Those values are close to experimental data for V and Ta, 
-3.03 $\angstrom$ and 3.30 $\angstrom$) \cite{kittel}, respectively.
+Those values are close to experimental data 3.03 $\angstrom$ for V and 3.30 $\angstrom$ for Ta \cite{kittel}.
 
 
 \section{Results}
@@ -154,7 +153,7 @@ Those values are close to experimental data for V and Ta,
 
 Firstly we have examined the enegetics of He in interstitial configurations in the bcc lattice of V and Ta.  
 %
-The formation energy of He at high symmetry interstitial sites in bcc lattice is given by: 
+The formation energy of He at high symmetry interstitial sites in bcc lattice is given by : 
  \begin{equation}
   E_{He_n}^f = E_{He_n} - E_0 - n \times E_{He}
  \end{equation}
@@ -194,11 +193,11 @@ the 1st nearest neighbour configuration (hereafter denoted $V_{1nn}$). The forma
 than the formation energy of the configuration $V_{1nn}$ by 0.19 eV and 0.24 eV in V and Ta, 
 respectively (Tab.\ref{tab:efv}).
 %.  
-The same tendency is observed for all $VIB$ group and $VB$ group metals and iron for which the most stable configuration of di-vacancy is the second nearest neighbor configuration.
+The same tendency is observed for all $VIB$ group and $VB$ group metals and iron for which the most stable configuration of di-vacancy is the second nearest neighbour configuration.
 %
 However, the di-vacancy in V and Ta has positive binding energy for both configurations
 $V_2^{1nn}$ and  $V_2^{2nn}$ in variance with the di-vacancy energy landscape of $VIB$ metals, such as Mo and W, 
-for which the first nearest neighbor configuration is slightly attractive while the second nearest neighbor 
+for which the first nearest neighbour configuration is slightly attractive while the second nearest neighbour 
 configuration is strongly repulsive.     
  
  
@@ -214,8 +213,8 @@ configuration is strongly repulsive.
     \includegraphics[scale=0.1]{figures/V/v5.png} \\
     (d) & (e) & (f) \\
  \end{tabular}
-\caption{The configurations of vacancy clusters ($V_m$, $m=1, 3, 4,5 $) with the lowest formation energy. 
-For the case of di-vacancy we plot the first nearest neighbor ($V_2^{1nn}$) and the second nearest neighbor 
+\caption{The configurations of vacancy clusters ($V_m$, $m=1, 2, 3, 4,5 $) with the lowest formation energy. 
+For the case of di-vacancy we plot the first nearest neighbour ($V_2^{1nn}$) and the second nearest neighbour 
 configuration $V_2^{2nn}$: (a) $V_1$, (b) $V_{2}^{1nn}$, (c) $V_{2}^{2nn}$, (d) $V_3$, (e) $V_4$, (f) $V_5$.
 The vacancies are represented by cubes while the atoms of the bcc lattice are represented with spheres. \label{fig:vacancies}}
 \end{center}
@@ -225,6 +224,7 @@ The formation energy for mixed He-vacancy clusters, He$_nV_m$ (up to \textit{n}=
 %
 \begin{equation}
  E^f_{He_nV_m} = E_{He_nV_m} - \dfrac{(N-m)}{N} \times E_0 - n\times E_{He}
+ \label{eq:form}
 \end{equation}
 %
 where E$_{He_nV_m}$ is the DFT energy of the supercell containing the He$_n$V$_m$ cluster.
@@ -234,7 +234,7 @@ The number of possible choice grows as  exponential with the number of defects a
 several choices should be made in order to choose the initial geometries of those configurations.  
 He atoms have been chosen as strategy that for any given  He$_nV_m$ cluster the $n$ He atoms decorate the most $V_m$ stable 
 clusters, deduced previously and presented in the Fig.~\ref{fig:vacancies}. 
-The only exception was the di-vacancy for which the two configurations first and second nearest neighbors have been chosen.   
+The only exception was the di-vacancy for which the two configurations first and second nearest neighbours have been chosen.   
 %number of choices ... 
 Moreover for a given $n$ and $m$ we picked randomly tens of configurations, for which the He atoms were placed at first nearest neighbour 
 $T$, $O$ or substitutional ($S$) sites to the vacancy.
@@ -283,9 +283,9 @@ while in Ta, a He atom is shifted toward the vacancy and the 2 others occupy pos
 \MCM{This is the case of Ta, V, both ?}. 
 %
 The geometry of clusters with the lowest formation energy  from \textit{n}=4 to \textit{n}=6 have all 
-He atoms on $O$ sites \wes{in both V and Ta case}.
+He atoms close to $O$ sites \wes{in both V and Ta case}.
 \MCM{The same question as previous}.
-In V, for di-vacancy clusters, He$_1V_2$,  the $1nn$ configuration of di-vacancy is still higher in energy 
+In V, for di-vacancy clusters, He$_1V_2$,  the $1nn$ configuration is still higher in energy 
 than in the $2nn$ configuration (Fig.\ref{fig:henv2}). 
 However, the difference is reduced to 0.09 eV compared to 0.19 eV in the pure vacancy, $V_2$, cluster (Tab.\ref{tab:efv}). 
 %
@@ -310,7 +310,7 @@ However, the difference is reduced to 0.09 eV compared to 0.19 eV in the pure va
     \includegraphics[scale=0.1]{figures/Ta/he4v2b.png} \\
     (e) & (f) & (g) & (h) \\
  \end{tabular}
- \caption{The geometries of the lowest formation energy clusters of the type He$_nV_2$  in V (grey bcc lattice) and Ta (blue bcc lattice). The geometry of the di-vacancy clusters are taken in first nearest neighbor (1nn) and the second nearest neighbor configuration.
+ \caption{The geometries of the lowest formation energy clusters of the type He$_nV_2$  in V (grey bcc lattice) and Ta (blue bcc lattice). The geometry of the di-vacancy clusters are taken in first nearest neighbour (1nn) and the second nearest neighbour configuration.
  (a) He$_1V_{2}^{1nn}$, (b) He$_2V_{2}^{1nn}$, (c) He$_3V_{2}^{1nn}$, (d) He$_4V_{2}^{1nn}$, (e) He$_1V_{2}^{2nn}$, 
  (f) He$_6V_{2}^{2nn}$, (g) He$_3V_{2}^{2nn}$, (h) He$_4V_{2}^{2nn}$.
 Vacancy and the He impurities are represented with yellow cube
@@ -325,7 +325,7 @@ Since $n$=2 the formation of the 1nn configuration requires less energy than the
 \MCM{I do not understand the previous remark. Details, materials what compared with what ... I guess but I do not know what you mean}.
 
 \wes{In Tantalum, except for the case of di-vacancy without He, the formation energy of 1nn configuration is 
-systematically less than for the 2nn case. Futhermore, the difference is larger when adding more He atoms.}
+systematically less than for the 2nn case. Futhermore, the energy difference is larger when adding more He atoms.}
 \MCM{I do not understand again. Unclear}
 
 \wes{The main difference between V and Ta is that He tends to occupy $S$ site in Ta, but in V He prefers to occupy
@@ -334,26 +334,28 @@ interstitial sites.}
 
  \begin{table}
  \centering
- \begin{tabular}{c|ccccc|ccccc}
+ \begin{tabular}{c|cccccc|cccccc}
  
-  & \multicolumn{5}{c|}{V} & \multicolumn{5}{c}{Ta} \\
+  & \multicolumn{6}{c|}{V} & \multicolumn{6}{c}{Ta} \\
  \hline \hline
- \diag{.1em}{.5cm}{n}{m}  & 1 & 2 (1nn) & 2 (2nn) & 3 & 4 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4\\
+ \diag{.1em}{.5cm}{n}{m} & 0 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4 & 0 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4\\
 \hline \hline
- 0 & 2.47 & 4.69 & 4.50 & 6.46 & 8.07 & 2.88 & 5.66 & 5.42 & 7.97 & 9.96\\ 
-   & (2.1\textpm 0.2)$^a$ & & & & & (2.8\textpm0.6)$^a$ & & & \\
-   & (2.2\textpm 0.4)$^b$ & & & & & (3.1)$^c$ & & & & \\
-   & & & & & & (2.9\textpm0.4)$^d$ & & & & \\
- 1 & 4.47 & 6.15 &  6.06 & 7.58 & 8.88 & 4.66 & 6.89 & 6.92 & 8.77 & 10.44\\
- 2 & 6.26 & 7.54 & 7.94 & 8.90 &  9.81 & 6.49 & 8.22 & 8.40 & 9.97 & 11.31\\
- 3 & 8.15 & 9.18 &  9.74 & 10.09 & 10.84 & 8.63 & 9.69 & 10.07 & 11.09 & 12.28\\
- 4 & 10.01 & 10.92 & 11.48 & 11.74 & 11.92 & 10.79 & 11.22 & 11.80 & 12.29 & 13.31\\
- 5 & 11.91 & 12.47 & 13.45 & 12.99 & 13.20 &  & 12.84 & 14.19 & 13.81 & 14.46\\
- 6 & 13.73 & 14.44 &  15.07 & 14.62 & 14.76 & 14.87 & 14.80 & 15.69 & 15.39 & 15.62\\
+ 0 & & 2.47 & 4.69 & 4.50 & 6.46 & 8.07 & & 2.88 & 5.66 & 5.42 & 7.97 & 9.96\\ 
+   & & (2.1\textpm 0.2)$^a$ & & & & & & (2.8\textpm0.6)$^a$ & & & \\
+   & & (2.2\textpm 0.4)$^b$ & & & & & & (3.1)$^c$ & & & & \\
+   & & & & & & & & (2.9\textpm0.4)$^d$ & & & & \\
+ 1 & 3.12 & 4.47 & 6.15 &  6.06 & 7.58 & 8.88 & 3.47 & 4.66 & 6.89 & 6.92 & 8.77 & 10.44\\
+ 2 & 6.16 & 6.26 & 7.54 & 7.94 & 8.90 &  9.81 & 6.84 & 6.49 & 8.22 & 8.40 & 9.97 & 11.31\\
+ 3 & 9.15 & 8.15 & 9.18 &  9.74 & 10.09 & 10.84 & 10.00 & 8.63 & 9.69 & 10.07 & 11.09 & 12.28\\
+ 4 & 12.03 & 10.01 & 10.92 & 11.48 & 11.74 & 11.92 & 13.26 & 10.79 & 11.22 & 11.80 & 12.29 & 13.31\\
+ 5 & & 11.91 & 12.47 & 13.45 & 12.99 & 13.20 &  & & 12.84 & 14.19 & 13.81 & 14.46\\
+ 6 & & 13.73 & 14.44 &  15.07 & 14.62 & 14.76 & & 14.87 & 14.80 & 15.69 & 15.39 & 15.62\\
   \hline \hline
  \end{tabular} 
  \caption{\label{tab:efv}
- Lowest formation energy in eV of the smallest He-vacancy clusters He$_nV_m$ in V and Ta.\\
+ The lower limit of formation energy (in eV) of He$_n$V$_m$ clusters, 
+ extracted from the present calculations, using Eq.~\ref{eq:form},  
+ small values of $n$ and $m$.\\
  $^a$ Experimental data from Ref \cite{maier1979}\\ $^b$ Experimental data from Ref \cite{janot1982}\\
  $^c$ Experimental data from Ref \cite{schultz1982}\\ $^d$ Experimental data from Ref \cite{Schaefer1987}
  }
@@ -387,7 +389,7 @@ $VB$ group.}
  \end{tabular}}\\
  \end{tabular}
  \caption{\label{fig:formation_slope}
- In the upper graph we present the formation energy (in eV) of clusters He$_nV_m$ as a function of \textit{n}, number of He atoms, in V (left panel) and Ta (right panel). For di-vacancy clusters the labels $1nn$ and $2nn$ stand for di-vacancy configurations in first nearest neighbor and second nearest neighbor, respectively.
+ In the upper graph we present the formation energy (in eV) of clusters He$_nV_m$ as a function of \textit{n}, number of He atoms, in V (left panel) and Ta (right panel). For di-vacancy clusters the labels $1nn$ and $2nn$ stand for di-vacancy configurations in first nearest neighbour and second nearest neighbour, respectively.
 The lower table gives the slope for each type of cluster, at fixed $m$. In the case when two values are presented, we give the upper and lower limit of possibles choices of slope.}
  \end{figure}
 
@@ -420,7 +422,8 @@ The Fig.\ref{fig:eb_he} emphasizes a general overview of the binding energy of o
 Firstly, it should be noted the broad distribution in He binding energy for the same type of cluster i.e. fixed number of $n$ and $m$.  
 The sparse values of the binding energy indicate a strong dependence on the cluster morphology. 
 For each pair of $n$ and $m$ there are wide variety of clusters in which He is strongly or weakly bound. 
-For practical use, e.g. in cluster dynamics simulations,  in first order approximation are important only the upper value of those binding energy. The values are extracted in the table Tab.~\ref{tab:ebhe}.  
+For practical use, e.g. in cluster dynamics simulations,  in first order approximation are important only 
+the upper value of those binding energies. The values are extracted in Tab.~\ref{tab:ebhe}.  
 The thermal equilibrium conditions  will select only the most stable, the excited configurations having a influence only as second order e.g. through the configurational entropy.     
 %
 In V, the binding energy of He in pure He$_n$ clusters range from -0.38 eV to 0.24 eV, slowly increasing with the amount of He 
@@ -464,18 +467,18 @@ contrary to  He$_{19}$V$_4$ and  He$_{21}$V$_4$ clusters for which more high sym
 \MCM{Again Wesley I do not understand what you want to say. I had the impression that there are 4 ideea in the last 4 phrase. Split in 4 and details each oh them. Divide and conquer in software language, if you want :) }.
 \begin{table}
  \centering
- \begin{tabular}{c|ccccc|ccccc}
+ \begin{tabular}{c|cccccc|cccccc}
  
-  & \multicolumn{5}{c}{V} & \multicolumn{5}{c}{Ta} \\
+  & \multicolumn{6}{c}{V} & \multicolumn{6}{c}{Ta} \\
  \hline \hline
- \diag{.1em}{.5cm}{n}{m}  & 1 & 2 (1nn) & 2 (2nn) & 3 & 4 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4\\
+ \diag{.1em}{.5cm}{n}{m}  & 0 &  1 & 2 (1nn) & 2 (2nn) & 3 & 4 & 0 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4\\
  \hline \hline
- 1 & 1.12 & 1.64 & 1.50 & 2.01 & 2.32 & 1.75 & 2.22 & 1.95 & 2.66 & 2.97\\
- 2 & 1.34 & 1.73 & 1.24 & 1.81 & 2.21 & 1.62 & 2.00 & 1.98 & 2.25 & 2.58\\
- 3 & 1.24 & 1.49 & 1.33 & 1.94 & 2.10 & 1.32 & 2.11 & 1.77 & 2.33 & 2.49\\
- 4 & 1.26 & 1.39 & 1.38 & 1.48 & 2.04 & 1.29 & 1.92 & 1.72 & 2.25 & 2.42\\
- 5 & 1.23 & 1.58 & 1.16 & 1.87 & 1.85 &  & 1.84 & 1.07 & 1.93 & 2.31\\
- 6 & 1.30 & 1.16 & 1.51 & 1.50 & 1.57 &  & 1.49 & 1.95 & 1.87 & 2.29\\
+ 1 & 0.01 & 1.12 & 1.64 & 1.50 & 2.01 & 2.32 & 0.01 & 1.75 & 2.22 & 1.95 & 2.66 & 2.97\\
+ 2 & 0.09 & 1.34 & 1.73 & 1.24 & 1.81 & 2.21 & 0.06 & 1.62 & 2.00 & 1.98 & 2.25 & 2.58\\
+ 3 & 0.14 & 1.24 & 1.49 & 1.33 & 1.94 & 2.10 & 0.30 & 1.32 & 2.11 & 1.77 & 2.33 & 2.49\\
+ 4 & 0.24 & 1.26 & 1.39 & 1.38 & 1.48 & 2.04 & 0.20 & 1.29 & 1.92 & 1.72 & 2.25 & 2.42\\
+ 5 & & 1.23 & 1.58 & 1.16 & 1.87 & 1.85 & &  & 1.84 & 1.07 & 1.93 & 2.31\\
+ 6 & & 1.30 & 1.16 & 1.51 & 1.50 & 1.57 & &  & 1.49 & 1.95 & 1.87 & 2.29\\
   \hline \hline
  \end{tabular} 
  \caption{\label{tab:ebhe}
@@ -509,6 +512,7 @@ contrary to  He$_{19}$V$_4$ and  He$_{21}$V$_4$ clusters for which more high sym
  \hline \hline
  \diag{.1em}{.5cm}{n}{m}  & 1 & 2 (1nn) & 2 (2nn) & 3 & 4 & 1 & 2 (1nn) & 2 (2nn) & 3 & 4\\
  \hline \hline
+ 0 & 0.00 & 0.27 & 0.51 & 0.43 & 0.87 & 0.00 & 0.26 & 0.50 & 0.40 & 0.97\\
  1 & 1.11 & 0.79 & 0.89 & 0.94 & 1.17 & 1.74 & 0.73 & 0.70 & 1.11 & 1.28\\
  2 & 2.37 & 1.19 & 0.79 & 1.50 & 1.57 & 3.31 & 1.11 & 1.06 & 1.39 & 1.61\\
  3 & 3.47 & 1.43 & 0.88 & 2.12 & 1.72 & 4.33 & 1.90 & 1.51 & 1.94 & 1.77\\
@@ -529,7 +533,7 @@ It seems to reach a plateau at \textit{m}=4 around 0.87 eV.
 \MCM{You have speak only about V. What about Ta?}
 Similar behaviour has been reported in Fe, using molecular dynamics simulation for which 
 the binding energy saturates slightly above 1 eV for \textit{m} $\gtrsim$ 20 \cite{Morishita2003}.
-\wes{But for Tantalum, the binding energy of vacancy is likely to be linear at lest up to $m$=4 with E$^b$ = 0.97 eV.}
+\wes{But for Tantalum, the binding energy of vacancy is likely to be linear at least up to $m$=4 with E$^b$ = 0.97 eV.}
 
 
 From the values presented in the Tab.~\ref{tab:ebv}, the presence of He atoms in vacancy clusters enhances 
