@@ -573,31 +573,32 @@ understand how clusters grow at the primary stages.
 
 \subsubsection*{Vanadium}
 
-We computed 2 paths for interstitial diffusion barrier : T site to T site (1nn), and T site to O site (1nn).
-T $\rightarrow$ T path shows a barrier of 0.12 eV (Tab.\ref{tab:em}) in good agreement with TDS experiment in Vanadium (E$^m_{He}$ = 0.13 eV) \cite{Fedorov1996},
-that is twice the barrier in Fe \cite{Fu2005},
-whereas the barrier of T $\rightarrow$ O path is E$^m_{He}$ = 0.26 eV. 
-Thus, interstitial He prefers to diffuse via the first neighbour T sites.
-\\ Our calculations of mono-vacancy migration barrier (E$^m_{V}$ = 0.48 eV) agrees very well 
-with TDS experiments (E$^m_{V}$ = 0.5 eV) \cite{Fedorov1996} and (E$^m_{V}$ = 0.47 eV) \cite{vanveen1994}.
-\\ There is an asymmetry in the di-vacancy migration barrier since we have from the 1nn configuration to 2nn configuration 
-E$^m_{V_2}$ = 0.34 eV while reversed path gives E$^m_{V_2}$ = 0.58 eV. 
-Then di-vacancy cluster migrates following 2nn $\rightarrow$ 2nn easier path  
-with a barrier of E$^m_{V_2}$ = 0.37 eV and a 2 steps vacancy dissociation and recombination.
-\\ We turn on the influence of He on vacancy diffusion. The minimum energy path found for 
-the migration of mono-vacancy with helium in their lowest energy configuration at starting and final point; 
-showed first the dissociation of He to the monovacancy. Then He atom diffuses to a position near tetrahedral interstitial, 
+We computed 2 paths for interstitial diffusion barrier : $T$ site to $T$ site, and $T$ site to $O$ site.\MCM{Why you have chosen those paths? These migration paths govern the migration oh He in bcc matrix?}
+%
+$T$ $\rightarrow$ $T$ path shows a barrier of 0.12 eV (Tab.\ref{tab:em}) in good agreement with TDS experiment in vanadium which givee the value of  0.13 eV~\cite{Fedorov1996}.
+The barrier of this migration mechanism is twice than the similar migration barrier of He in Fe~\cite{Fu2005}.
+%
+The barrier of the migration path of He,  $T$ $\rightarrow$ $O$,  had the value 0.26 eV. 
+Consequently, the interstitial He prefers to diffuse via through to first neighbour $T$ sites.
+
+
+
+The DFT migration barrier of the mono-vacancy has the value of 0.48 eV and  agrees well with TDS experiments of Fedorov \cite{Fedorov1996}, 0.5 eV,  and Vanveen,  0.47 eV, \cite{vanveen1994}.\MCM{There is particular temperature for these experiments?}. The di-vacancy migration barrier from the $V_2^{1nn}$ configuration to $V_2^{2nn}$ configuration is 
+0.34 eV. Di-vacancy cluster $V_2^{2nn}$ configuration is more mobile \MCM{More mobile that what ?} since it can migrate without dissociation with a barrier of 0.37 eV.
+
+We turn on the influence of He on vacancy diffusion. 
+%
+For this goal, NEB was used in order to search for the minimum energy path of He$V_1$ cluster having in the initial and final state of the diffusion process the corresponding lowest energy configurations. 
+\MCM{ Wesley this part isunclear. I cannot rewrite because I do not understand: Ther migration path showed first the dissociation of He to the monovacancy. Then He atom diffuse to a position near tetrahedral interstitial, 
 which is followed by the migration of the mono-vacancy to recombine with He. 
-This dissociative mechanism has been also experimentally inferred \cite{lewis1988,vassen1991}.
-The migration barrier is about 1.27 eV that correspond roughly to the He-vacancy binding energy 
-plus migration barrier of He (T $\rightarrow$ T). As a result, He enhances the diffusion barrier of mono-vacancy by 0.67 eV.
-For the di-vacancy from 1nn to 2nn configuration, there is a 0.79 eV barrier. 
-Migration from 2nn to 2nn configuration is a 2 steps process with a lower barrier E$^m_{V_2}$ = 0.66 eV. 
-First, mono-vacancy dissociate from the cluster to reach first nearest neighbour site 
-changing the system into a slightly shifted 1nn configuration. 
-Then, the 2nd mono-vacancy moves to its nearest neighbour meanwhile He atom goes to its final octahedral position 
-between the 2 vacancies. The trapped He atom almost doubles the migration barrier of the di-vacancy.
-Nevertheless, the presence of He does not change the relative mobility of mono and di-vacancy but moreover, it amplifies the gap.
+Dissociative mechanism has been also experimentally inferred \cite{lewis1988,vassen1991}.}
+%
+The \MCM{experimental, theoretical, DFT ?} migration barrier is about 1.27 eV that correspond roughly to the He-vacancy binding energy plus migration barrier of He ($T$ $\rightarrow$ $T$). As a result, He increases the diffusion barrier of mono-vacancy by 0.67 eV.
+
+The di-vacancy $V_2^{1nn}$ can migrate into $V_2^{2nn}$ configuration with 0.79 eV barrier. 
+Migration from $V_2^{2nn}$ to $V_2^{2nn}$ configuration is a 2 steps process with a lower barrier 0.66 eV \MCM{compared with what?}. This process is a two step mechanism. Firstly, one of the vacancy of the cluster dissociates from the cluster to reach first nearest neighbour site \MCM{ in the $\langle 111 \rangle$ direction}  changing the geometry of the cluster into a slightly shifted $V_2^{1nn}$ configuration. Secondly, the second vacancy moves to its nearest neighbour \MCM{in the same  $\langle 111 \rangle$ direction}. In trhe same time the He atom goes to its final $0$ position 
+between the 2 vacancies \MCM{where it is the He in the initial position. There is hardly to figure out, without direction, the initial configuration to guess this migration mechanism. Even you repeat about configuration for clarity in a necessity, of put a reference on the figures that you already have.} The trapped He atom almost doubles the migration barrier of the di-vacancy\MCM{for 1nn, 2nn, both?}.
+Nevertheless, the presence of He does not change the relative mobility of mono and di-vacancy but moreover, it amplifies the gap \MCM{the gap between what and what}.
 
 \begin{table}
 \centering
@@ -607,12 +608,12 @@ Nevertheless, the presence of He does not change the relative mobility of mono a
   \hline
   Configuration & Path & E$^m$ (eV) & Exp. (eV) & Path & E$^m$ (eV) & Exp. (eV) \\
   \hline
-  \multicolumn{7}{l}{Interstitial} \\
+  \multicolumn{7}{l}{He interstitial} \\
   \hline
-  He & T $\rightarrow$ T & 0.12 & 0.13 \cite{Fedorov1996} & T $\rightarrow$ T & 0.18 &\\
-     & T $\rightarrow$ O & 0.26 & & T $\rightarrow$ O & 0.40 &\\
+  He & $T$ $\rightarrow$ $T$ & 0.12 & 0.13 \cite{Fedorov1996} & $T$ $\rightarrow$ $T$ & 0.18 &\\
+     & $T$ $\rightarrow$ $O$ & 0.26 & & $T$ $\rightarrow$ $O$ & 0.40 &\\
   \hline
-  \multicolumn{7}{l}{Vacancy} \\
+  \multicolumn{7}{l}{$V_m$ clusters} \\
   \hline
   Mono-vacancy & 1nn & 0.48 & 0.5 \cite{Fedorov1996} \cite{ullmaier1991} & 1nn & 0.72 & 0.7 \cite{faber1974}\cite{ullmaier1991}\\
    & &  & 0.47 \cite{vanveen1994} & & & \\
@@ -620,7 +621,7 @@ Nevertheless, the presence of He does not change the relative mobility of mono a
   Di-vacancy & 2nn $\rightarrow$ 1nn & 0.58 & & 2nn $\rightarrow$ 1nn & 0.87 &\\
   Di-vacancy & 2nn $\rightarrow$ 2nn & 0.37 & & 2nn $\rightarrow$ 2nn & 0.55 &\\
   \hline
-  \multicolumn{7}{l}{He-vacancy clusters} \\
+  \multicolumn{7}{l}{He$_nV_m$ clusters} \\
   \hline
   He$_1V_1$ & 1nn & 1.27 & & 1nn & 1.89 &\\
   He$_1V_2$ & 1nn $\rightarrow$ 2nn & 0.79 & & 1nn $\rightarrow$ 2nn & 1.14 &\\
@@ -628,43 +629,43 @@ Nevertheless, the presence of He does not change the relative mobility of mono a
   He$_1V_2$ & 2nn $\rightarrow$ 2nn & 0.66 & & 2nn $\rightarrow$ 2nn & 1.12 &\\
   \hline
  \end{tabular}
-\caption{Migration energy barrier (E$^m$) for He, vacancies and He-vacancy cluster in Vanadium and Tantalum.
+\caption{DFT migration energy barrier, E$^m$ (in eV),  for He, vacancy ($V_m$) and He-vacancy (He$_nV_m$) clusters in V and Ta. The theoretical values of the migration barriers are compared, when is possible, to the corresponding experimental values.  $1nn$ and $2nn$ denote the first and second nearest neighbor configuration of di-vacancy, respectively. 
 \label{tab:em}}
 \end{table}
 
 \subsubsection*{Tantalum}
 
-Same conclusions as Vanadium can be made for Tantalum for which migration barrier of interstitials are 
-E$^m_{He}$(T $\rightarrow$ T) = 0.18 eV and  E$^m_{He}$(T $\rightarrow$ O) = 0.40 eV (Tab.\ref{tab:em}). 
-Interstitials He diffuse hopping from T to T sites.\\
-Concerning vacancies, migration barrier is higher for mono-vacancy (E$^m_{V}$ = 0.72 eV) consistent with 
-resistivity annealing experiment (E$^m_{V}$ = 0.7 eV)\cite{faber1974}, than for di-vacancy which 
-energy barrier is 0.17 eV lower in 2nn $\rightarrow$ 2nn path.\\
-Diffusion of mono-vacancy with a He atom involve first a dissociation of He to the vacancy. Then He hops via T sites while
-mono-vacancy jumps to first nearest neighbour site. Finally He recombines with mono-vacancy, 
-following the 'impeded interstitial mechanism' or 'He-vacancy dissociative mechanism' \cite{Trinkaus2003,ullmaier1991}.
-He enhances the migration barrier of mono-vacancy by 1.17 eV.\\
-The increase of migration energy due to He is 2 times smaller (0.51 eV) for 1nn $\rightarrow$ 2nn path 
-than for mono-vacancy case.\\
-Contrary to the Vanadium case all paths involving di-vacancy have the same barrier in presence of He, 
-so He$_1V_2$ clusters can migrate via three ways with the same probability.\\
+The migration barrier of interstitial He in Ta lattice are reported in the (Tab.\ref{tab:em}). The migration barrier of interstitial He are 
+0.18 eV and 0.40 eV for the mechanisms $T$ $\rightarrow$ $T$  and $T$ $\rightarrow$ $O$, respectively.
+The lowest energy migration mechanism correspond to the $T$ $\rightarrow$ $T$ ad is similar to the V case.  
+
+The value of migration barrier of mono-vacancy in Ta is 0.73 eV.
+This result is consistent with resistivity annealing experiment which give the value of 0.7 eV~\cite{faber1974}. The lowest migration barrier of di-vacancy correspond to the 2nn $\rightarrow$ 2nn path. Similar to V the last mechanism is more favorable (with 0.17 eV) than the migration of the mono-vacancy.\MCM{These results confirm the tendency of for all bcc metals, Fe, W etc bla bla}
+
+Diffusion of mixed cluster He$_1V_1$ involve firstly  the dissociation of He from the vacancy\MCM{where? in which direction 1nn, 5nn etc}. Subsequently,  the He atom hops via $T$ interstitial sites while the 
+vacancy jumps to first nearest neighbour site\MCM{The $V_1$ and He migrate in the same time ? }. Finally, He recombines with the mono-vacancy, 
+following the 'impeded interstitial mechanism' or 'He-vacancy dissociative mechanism' \cite{Trinkaus2003,ullmaier1991} \MCM{Unclear, can you detail this mechanism?} 
+The presence of the He atom enhances the migration barrier of mono-vacancy by 1.17 eV.  For the He$_1V_2$ case, the increase of migration energy due to He is 2 times smaller (0.51 eV) for He$_1V_2^{1nn}$ $\rightarrow$  He$_1V_2^{2nn}$ path  than for He$_1V_1$ case.
+
+Contrary to the V case all paths involving He$_1V_2$ clusters have the almost same barrier in presence of He. Consequently, He$_1V_2$ clusters can migrate via three ways with the same probability \MCM{Are you sure that are only three ways ? Maybe there are three channels  but did you know the degeneracy of those channels ? Fix that.  }
 
 
 Thermal desorption spectra experiment give us direct access to dissociation energy we can defined as the sum of binding energy and migration energy 
-of He atom or vacancy :
+of He atom or vacancy\MCM{citation of general textbook}:
 \begin{equation}
-    $$ E$^d_{He/V-He_nV_m}$ = E$^b_{He/V-He_nV_m}$ + E$^m_{He/V}$ $$
+    E^d_{He/V-He_nV_m} = E^b_{He/V-He_nV_m} + E^m_{He/Va}
 \end{equation}
-
-On Fig.\ref{fig:ed} the dissociation energy of He and vacancy with most stable He$_nV_m$ cluster as a function 
-of \textit{n/m} ratio is drawn for respectively Vanadium and Tantalum. This allows us to determine wether a cluster 
-tends to emit a He atom or a vacancy to gain stability, 
+\MCM{is the first time when you use symbols like $He/V-He_nV_m$ can you explain which is which ?}
+In Fig.\ref{fig:ed} is shown for V and Ta the dissociation energy of He and vacancy with respect to the lowest energy configuration of He$_nV_m$ cluster as a function of \textit{n/m} ratio. 
+%
+This quantity allows to determine whether a mixed cluster tends to emit a He atom or a vacancy to gain stability, 
 i.e when E$^d_{He}$ $>$ E$^d_{V}$, the cluster is more likely to dissociate a vacancy.
-The crossover shows the most stable clusters for $\sim$ 0.9 \textit{n/m} ratio with E$^d$ $\sim$ 1.9 eV in Vanadium, 
-close to experimental result E$^d$ = 1.66 eV \cite{vassen1991},
-and E$^d$ $\sim$ 2.5 eV in Tantalum.
+%
+In  Fig.\ref{fig:ed} the crossover \MCM{between what and what} shows the most stable clusters for $\sim$ 0.9 \textit{n/m} ratio with E$^d$ $\sim$ 1.9 eV in V.  This theoretical result is close to experimental result which indicate the E$^d$ = 1.66 eV~\cite{vassen1991},
+The corresponding quantities for Ta are estimated to \MCM{where is n/m}  and   E$^d$ $\sim$ 2.5 eV.
+%
 This is consistent with TDS experiment \cite{Fedorov1996} in which the peaks at the highest temperature were attributed to the
- clusters with \textit{n}=\textit{m}.
+clusters with \textit{n}=\textit{m}\MCM{for V?  Ta? both?}. 
 
 \begin{figure}
 \centering
@@ -680,61 +681,48 @@ This is consistent with TDS experiment \cite{Fedorov1996} in which the peaks at 
 % \centering
 \includegraphics[scale=0.35]{figures/Ta/ratiomax.png}\\
 \end{tabular}
-\caption{Dissociation energy of He and vacancy to He$_nV_m$ as a function of \textit{n/m} ratio 
-for the most stable clusters in Vanadium (left panel) and Tantalum (right panel).
+\caption{Dissociation energy of He and vacancy from He$_nV_m$ clusters, in V (left panel) and Ta (right panel), as a function of \textit{n/m} ratio. We have taken as reference the configurations with the lowest formation energy.
 \label{fig:ed}}
 \end{figure}
 
 
 \section{Discussion}
 
-When we compare the behaviour of He in Vanadium and Tantalum, one can notice S site is attractive in Tantalum 
-while it is repulsive in Vanadium (Fig.\ref{fig:henv1}--\ref{fig:henv2}). Similar result has been found \cite{seletskaia2008} and explained by a larger 
-charge density at vacancy for Vanadium which energy is close to the Fermi level, thus closed-shell He will have a repulsive 
-interaction. Indeed, He at S site in Vanadium shows a larger density of state at the Fermi energy level than in Tantalum 
+Comparing the energy landscape of He in the neighborhood of the vacancy in V and Ta, it can be notted that the $S$ site is attractive in Ta 
+while it is repulsive in Vanadium (Fig.\ref{fig:henv1}--\ref{fig:henv2}). Similar result has been found \cite{seletskaia2008} which explain this tendency by a larger charge density at vacancy in V which energy is close to the Fermi level \MCM{which energy?}, thus closed-shell He will have a repulsive interaction \MCM{unclear. Details}. Indeed, He at $S$ site in V shows a larger density of state at the Fermi energy level than in Ta 
 then increasing the formation energy enough to make this configuration unstable. As a result in the most stable configuration, 
-He is shifted toward O site.
-
-
+He is shifted toward $O$ site.\MCM{This section should be suppressed. Probably  you must put all this paragraph when you discusses He$_1V_m$ clusters. You can leave this paraggraph only is you discuss all the results, type of clusters etc}.
 
 
 \section{Conclusion}
 
 We performed first-principle calculations of the formation, binding and migration energy of vacancies 
-in the presence or not of He atoms in bcc Vanadium and Tantalum.
+in the presence or not of He atoms in bcc V and Ta.
 In summary, we present our main results :
 \begin{itemize}
  \item Interstitial He atoms diffuse through tetrahedral sites in both V and Ta.
  
- \item Formation of Frenkel pair is expected with growing interstitial He$_n$ clusters, since the formation energy of 
- He$_nV_1$ cluster is less than pure interstitial He$_n$ cluster for $n\ge3$ in V and $n\ge2$ in Ta.
+ \item Formation of Frenkel pair is expected with growing interstitial He$_n$ clusters \MCM{growing of interstitial clusterS or interstitial cluster i.e. increasing $n$?. Fix that}, since the formation energy of He$_nV_1$ cluster is less than pure interstitial He$_n$ cluster for $n\ge3$ in V and $n\ge2$ in Ta.
+\MCM{be more clear here. You put effect then cause. The natural order is cause and then effect}. 
+ \item In V, He atoms prefer to occupy interstitial sites contrary to Ta case for which He atoms reside in substitutional sites because of larger density of state \MCM{DOS of what?} at Fermi level for V than for Ta.
  
- \item In V, He atoms prefer to occupy interstitial sites contrary to Ta case for which He atoms reside in 
- substitutional sites because of larger density of state at Fermi level for V than for Ta.
+ \item  for both V and Ta, the formation energy of di-vacancy in $V_2^{2nn}$ configuration  is  lower than the formation energy of $V_2^{1nn}$ configuration. This tendency id observed also in the $VI$ metals such as Mo and W. The di-vacancies in V and Ta have a weak attractive binding energy whereas are repulsive for group $VI$ metals.
  
- \item Like group $VI$ metals such as Mo and W, the formation of di-vacancy in 2nn configuration requires less energy than the
- 1nn configuration for both V and Ta. The di-vacancies in V and Ta have a weak attractive interaction whereas 
- they are repulsive for group $VI$ metals.
- 
- \item The effect of He on di-vacancies is to increase the formation energy of the 2nn configuration much more than the 1nn one 
- so that the hierarchy is reversed for $n\ge2$ in V and $n\ge1$ in Ta. In addition, He atom makes the 1nn configuration more 
+ \item The effect of He on di-vacancies is to increase the formation energy of the  $V_2^{2nn}$configuration much more than the  $V_2^{1nn}$ one 
+ so that the hierarchy is reversed for $n\ge2$ in V and $n\ge1$ in Ta\MCM{Many idea in the same phrase. Please rewrite simple and efficient}. In addition, He atom makes the 1nn configuration more 
  stable than the 2nn configuration as the binding energy of He$_nV_2^{1nn}$ to He atom and mono-vacancy is larger than 
- for He$_nV_2^{2nn}$ clusters.
+ for He$_nV_2^{2nn}$ clusters \MCM{The same point as previous.Keep short simple, exact. Rewrite the above part}. 
  
- \item Generally speaking, He atom stabilizes vacancy type clusters and vice versa.
+ \item as general tendency  the He atom stabilizes vacancy type clusters and vice versa.
  
- \item For the 2 studied group $V$ metals, di-vacancy is more mobile than mono-vacancy. 
- The presence of He atom enhances migration energy barrier of both mono-vacancy and di-vacancy but also 
- their relative difference.
+ \item For the 2 studied metals of group $VB$, di-vacancy is more mobile than mono-vacancy. The presence of He atom increase the value of migration energy barrier of both mono-vacancy and di-vacancy but also their relative difference\MCM{I do not understand. If the values are bigger also the differences are. Rewrite}.
  
- \item In absence of He, the diffusion of di-vacancy exhibits an asymmetry in migration energy since 
- the 1nn $\rightarrow$ 2nn path has a lower barrier than the 2nn $\rightarrow$ 1nn path for V and Ta.
+ \item In absence of He, the diffusion of $V_2$ cluster exhibits an asymmetry in migration energy since the 1nn $\rightarrow$ 2nn path has a lower barrier than the 2nn $\rightarrow$ 1nn path for V and Ta\MCM{As long as the energy is different I do not see how the migration path should be symmetric !?}. 
  Anyway, di-vacancy diffuses preferentially via 2nn $\rightarrow$ 2nn path in a 2 steps vacancy dissociation-recombination process.
  
  \item In the presence of He atom, diffusion of both mono-vacancy and di-vacancy involves dissociation of He atom the 
  vacancy type cluster following the 'impeded interstitial mechanism' in both V and Ta case.
- For the di-vacancy diffusion in V, the 2nn $\rightarrow$ 2nn path is still favored, but in case of Ta, 
- all paths have the same energy barrier.
+ For the di-vacancy diffusion in V, the 2nn $\rightarrow$ 2nn path is still favored, but in case of Ta, all paths have the same energy barrier.
  
  \item The most stable clusters have a $n/m$ ratio about 0.9 with a dissociation energy of 1.9 eV and 2.5 eV for V and Ta 
  respectively.
