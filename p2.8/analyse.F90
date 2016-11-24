@@ -287,8 +287,8 @@ subroutine analyse
               end if
            end do
 
-           if (itesigma>0) then
-              if (mod(it,itesigma)==0) then
+           if (iteSigma>0) then
+              if (mod(it,iteSigma)==0) then
                  if (mod(it,itetemp2)==0) then
                     write (6, *)
                     write (6, *) '* stress en ', cunitP

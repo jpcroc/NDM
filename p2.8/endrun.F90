@@ -186,6 +186,9 @@ subroutine endrun
   if (.not.linstantfda) then
      if (iteangle>=0) call adf
   endif
+  if ((dmtype==2).or.(dmtype==3)) then
+       it=0
+  end if
   call analyse
   if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
   if (iterasmol.GE.0) call rasmol (it)

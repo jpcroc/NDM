@@ -52,12 +52,12 @@ LD = ${F90}
 # ART ART ART ART ART ART
 
 ifdef ART
- F90 = ifort
- CPPFLAGS = -C -P -traditional -DART
- EXT      = _ART
+F90 = ifort
+CPPFLAGS_ART = -C -P -traditional -DART -nostdinc
+EXT = _ART
 #F90FLAGS =  -static -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-F90FLAGS =  -O3 
+F90FLAGS =  -O3  -convert big_endian
 
 #FLAGS and LIBS for ART
 FLAGS_ART =  -DNOIBM 
@@ -73,9 +73,17 @@ LLIBS_ART =${mkkl_definitions}
 # link library
 LIBRARY_ART = art/libart.a
 
+#LLIBS_ART = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_ART =${mkkl_definitions} 
+#cluster LLIBS_ART=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+#acasa LLIBS_ART=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+LLIBS_ART=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+
 
 # link library
 LIBRARY =${LIBRARY_ART} ${LLIBS_ART}  
+
+
 
 endif
 
@@ -169,6 +177,8 @@ FFLAGS =
 
 #LLIBS_ML = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
 #LLIBS_ML =${mkkl_definitions}
+
+
 LLIBS_ML=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
 # link library
 LIBRARY_ML = ml/libml.a
@@ -183,9 +193,9 @@ else
  F90 = ifort
  CPPFLAGS_ML = -C -P -traditional -DML -nostdinc 
  EXT      = _ML
-F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -ftrapuv -warn all # Debuggage pas pour de rire
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -ftrapuv -warn all # Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
-#F90FLAGS =  -O3 -convert big_endian 
+F90FLAGS =  -O3 -convert big_endian 
 
 
 #FLAGS and LIBS for PHONDY
@@ -198,7 +208,8 @@ F77FLAGS_ML =   $(F90FLAGS) $(FLAGS)
 FFLAGS =  
 
 #LLIBS_ML = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
-LLIBS_ML =${mkkl_definitions}
+LLIBS_ML=-L${MKLROOT}/lib/intel64 -lmkl_lapack_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lmkl_blacs_openmpi_lp64 -lpthread -lm -ldl
+
 # link library
 LIBRARY_ML = ml/libml.a
 

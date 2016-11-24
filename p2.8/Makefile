@@ -182,6 +182,7 @@ ifdef ART
  # Version ART
  OBJS = ${OBJS_MOD} ${OBJS_SEQ}
  DEP=${OBJS}  ${LIBART}
+ CPPFLAGS=${CPPFLAGS_ART}
  CLEANART=clean_art
  DIREXT=art
  EXT=_art
