@@ -138,8 +138,8 @@ case(1)!--------one simulation
   write(6,*)'------COMPUTE MODE IS ONE SIMULATION!!!!!!--------------'
  
 !if (abf_type == 8) then ! This calculate iterally ABFee ( process to calculate \bar A2 given \bar A1
-if (abf_mode==abf_mode_reaction) then
 if (abf_restart) then
+if (abf_mode==abf_mode_reaction) then
   inquire( file="meanforce_input", exist=dir_e )
   if ( dir_e ) then
    open(unit=133,file='meanforce_input',action='read')! this require meanforce data of ABFee!!!!!
@@ -155,7 +155,10 @@ if (abf_restart) then
     write(*,*)'Input file meanforce_input does not exsit!! Verify your input files!!'
     stop
   end if
+end if 
 
+
+if ((abf_mode==abf_mode_reaction).or.(abf_mode==abf_mode_alchemical)) then
   inquire( file="A_ee_input", exist=dir_e )
   if ( dir_e ) then
     open(unit=133,file='A_ee_input',action='read')
@@ -195,11 +198,8 @@ if (abf_restart) then
     write(*,*)'Input file A_ee_input does not exsit!! Verify your input files!!'
     stop
   end if 
-
-
-
-
 end if 
+
 end if 
 
 

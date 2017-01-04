@@ -50,22 +50,24 @@ fpabf_restart(:,:)= zero
 
 if (abf_mode==abf_mode_reaction) then
 ! Computing the forces as an observable ...
-if (itype_reaction==0) force = - DOT_PRODUCT(fp(:,atom_to_jump),rfilac(:))
+ if (itype_reaction==0) force = - DOT_PRODUCT(fp(:,atom_to_jump),rfilac(:))
 
  if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
   cumul_force1(icsi) =  cumul_force1(icsi) + force
   mean_force1 (icsi) =  cumul_force1(icsi)/histo1(icsi)
  end if
-!---------BEGIN PRINCIPAL PROGRAM-----------------------------------------------------
 
-!---------1. Compute A_ee(\zeta) for every \zeta, from A_dev_ee(\zeta).  Methode des trapezes
-! If delta_z is OK can be used  for any ABFee type 1 or 2
-A_ee(-nhisto2)=0.d0
-do iter=-nhisto2+1,nhisto+nhisto2
-A_ee(iter)=A_ee(iter-1)+delta_z*0.5d0*(A_dev_ee(iter-1)+A_dev_ee(iter))
-end do
+end if 
+ !---------BEGIN PRINCIPAL PROGRAM-----------------------------------------------------
 
-write(139,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 
+ !---------1. Compute A_ee(\zeta) for every \zeta, from A_dev_ee(\zeta).  Methode des trapezes
+ ! If delta_z is OK can be used  for any ABFee type 1 or 2
+ A_ee(-nhisto2)=0.d0
+ do iter=-nhisto2+1,nhisto+nhisto2
+  A_ee(iter)=A_ee(iter-1)+delta_z*0.5d0*(A_dev_ee(iter-1)+A_dev_ee(iter))
+ end do
+
+ write(139,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 
 
  if (abf_restart) then
   if ( (it_mab - neq_lang) < n_equilibre) then 
@@ -73,7 +75,6 @@ write(139,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev
   end if 
  end if 
 
-end if 
 
 write(110,'(i6,5E25.12)') it_mab, A_ee(10), A_ee_restart(10), A_ee(10)*erg2ev, A_ee_restart(10)*erg2ev, (A_ee(10)-A_ee_restart(10))*erg2ev 
 write(140,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 

@@ -357,7 +357,7 @@ if (rangmab==0) write(6,'("MAB: The cutoff radius for ending sim (1nn unit)B....
 close (lumab)
 
  if (abf_restart) then 
-  if (abf_mode/=abf_mode_reaction) then
+  if (.not.((abf_mode==abf_mode_reaction).or.(abf_mode==abf_mode_alchemical))) then
    if (rangmab==0) write(6,'("MAB: The restart mode is not implemented for this abf_mode", i6)') abf_mode
    if (rangmab==0) write(6,'("MAB stop in read_mab_file.f90")')
    stop

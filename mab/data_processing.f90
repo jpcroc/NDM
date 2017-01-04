@@ -17,6 +17,7 @@ subroutine Free_energy_ABF()
                               KtoERG,equit,unit_histo2
 
 implicit none
+integer :: ii
 integer::i_loop,i_iter
 real(double)::Free_temp(-nhisto2:nhisto+nhisto2)
 real(double)::renorm_alch(-nhisto2:nhisto+nhisto2)
@@ -94,6 +95,11 @@ endif
 
   if (abf_mode==2) then
     forall(i_loop=-nhisto1:nhisto+nhisto1) Free_energy(i_loop)=A_ee(i_loop) + renorm_f
+    !do ii=-nhisto1,nhisto+nhisto1
+ !
+  !  write(*,*) ii, Free_energy(ii)
+   ! end do
+    !stop 
   end if 
 
   if (abf_mode==22) then
@@ -575,7 +581,7 @@ if (abf_type==5) then
     fnamaeerestart=fnam(1:lenfnam)//'.temp_run_a_ee_restartin.'//extension
     open(unit=991,file=fnamaeerestart,status='unknown')
 
-    if (abf_mode==abf_mode_reaction) then
+    if ((abf_mode==abf_mode_reaction).or.(abf_mode==abf_mode_alchemical)) then
       !writting the en-tete ... in order to have a vague trace of the simulation
       write(991,'(a,"  ",2i3,i7,3i5,E25.12E3)') diez, abf_mode, abf_type, itapp, nhisto, nhisto1, nhisto2, delta_z   
       do i_iter=-nhisto2,nhisto+nhisto2
