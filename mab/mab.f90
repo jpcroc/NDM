@@ -115,7 +115,7 @@ end if !rangmab
 
 
 if (abf_type==1)  call test_minimum_abf()
-if ((abf_mode==2).or.(abf_mode==22)) then
+if ((abf_mode==abf_mode_alchemical).or.(abf_mode==abf_mode_temperature)) then
  call test_minimum_abf () 
  !call init_einstein_solid  ()
   do it_en=1,neq_lang
@@ -216,7 +216,7 @@ do it_mab=neq_lang+1,neq_lang+nlangevin
     case (2)
       call langevin()
     end select 
-   if ((abf_mode==2).or.(abf_mode==22)) then
+   if ((abf_mode==abf_mode_alchemical).or.(abf_mode==abf_mode_temperature)) then
          if (.NOT.(abf_type==5)) call langevin_overdamped_zeta()
    end if
 

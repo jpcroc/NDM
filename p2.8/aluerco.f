@@ -1,14 +1,15 @@
-*     Ercolessi-Adams glue potential for Al.
-*     Ref.: F. Ercolessi and J. B. Adams, Europhys. Lett. 26, 583 (1994).
-*     Potential home page: http://www.sissa.it/furio/potentials/Al/
+!     Ercolessi-Adams glue potential for Al.
+!     Ref.: F. Ercolessi and J. B. Adams, Europhys. Lett. 26, 583 (1994).
+!     Potential home page: http://www.sissa.it/furio/potentials/Al/
 
       SUBROUTINE v2(arg,func,dfunc,d2func)
-*     Aluminum  : pair potential   and its first two derivatives.
-*     Generated automatically by PoCo, version 04-may-93           
-*     Hamiltonian type #  2, run on 93/06/09 at 15.04.43
-*     Uses subroutine seval from netlib@ornl.gov [to get it,
-*     use 'send seval from sfmm'], trivially modified to
-*     compute also dfunc and d2func and use double precision.
+!     Aluminum  : pair potential   and its first two derivatives.
+!     Generated automatically by PoCo, version 04-may-93           
+
+!     Hamiltonian type #  2, run on 93/06/09 at 15.04.43
+!     Uses subroutine seval from netlib@ornl.gov [to get it,
+!     use 'send seval from sfmm'], trivially modified to
+!     compute also dfunc and d2func and use double precision.
       implicit double precision (a-h,o-z)
       parameter (nv2= 17)
       parameter (argmax=   .555805441821810D+01)
@@ -113,12 +114,12 @@
       end
 
       SUBROUTINE rh(arg,func,dfunc,d2func)
-*        Aluminum  : atomic density   and its first two derivatives.
-*        Generated automatically by PoCo, version 04-may-93           
-*        Hamiltonian type #  2, run on 93/06/09 at 15.04.43
-*        Uses subroutine seval from netlib@ornl.gov [to get it,
-*        use 'send seval from sfmm'], trivially modified to
-*        compute also dfunc and d2func and use double precision.
+!        Aluminum  : atomic density   and its first two derivatives.
+!        Generated automatically by PoCo, version 04-may-93           
+!        Hamiltonian type #  2, run on 93/06/09 at 15.04.43
+!        Uses subroutine seval from netlib@ornl.gov [to get it,
+!        use 'send seval from sfmm'], trivially modified to
+!        compute also dfunc and d2func and use double precision.
       implicit double precision (a-h,o-z)
       parameter (nrh= 17)
       parameter (argmax=   .555805441821810D+01)
@@ -219,12 +220,12 @@
       end
 
       SUBROUTINE uu(arg,func,dfunc,d2func)
-*        Aluminum  : glue function    and its first two derivatives.
-*        Generated automatically by PoCo, version 04-may-93           
-*        Hamiltonian type #  2, run on 93/06/09 at 15.04.43
-*        Uses subroutine seval from netlib@ornl.gov [to get it,
-*        use 'send seval from sfmm'], trivially modified to
-*        compute also dfunc and d2func and use double precision.
+!        Aluminum  : glue function    and its first two derivatives.
+!        Generated automatically by PoCo, version 04-may-93           
+!        Hamiltonian type #  2, run on 93/06/09 at 15.04.43
+!        Uses subroutine seval from netlib@ornl.gov [to get it,
+!        use 'send seval from sfmm'], trivially modified to
+!        compute also dfunc and d2func and use double precision.
       implicit double precision (a-h,o-z)
       parameter (nuu= 13)
       parameter (argmin=   .000000000000000D+00)
@@ -309,44 +310,44 @@
       integer n
       double precision  u, x(n), y(n), b(n), c(n), d(n)
       double precision f, df, d2f
-c
-c  this subroutine evaluates the cubic spline function
-c
-c    seval = y(i) + b(i)*(u-x(i)) + c(i)*(u-x(i))**2 + d(i)*(u-x(i))**3
-c
-c    where  x(i) .lt. u .lt. x(i+1), using horner's rule
-c
-c  if  u .lt. x(1) then  i = 1  is used.
-c  if  u .ge. x(n) then  i = n  is used.
-c
-c  input..
-c
-c    n = the number of data points
-c    u = the abscissa at which the spline is to be evaluated
-c    x,y = the arrays of data abscissas and ordinates
-c    b,c,d = arrays of spline coefficients computed by spline
-c
-c  if  u  is not in the same interval as the previous call, then a
-c  binary search is performed to determine the proper interval.
-c
+!
+!  this subroutine evaluates the cubic spline function
+!
+!    seval = y(i) + b(i)*(u-x(i)) + c(i)*(u-x(i))**2 + d(i)*(u-x(i))**3
+!
+!    where  x(i) .lt. u .lt. x(i+1), using horner's rule
+!
+!  if  u .lt. x(1) then  i = 1  is used.
+!  if  u .ge. x(n) then  i = n  is used.
+!
+!  input..
+!
+!    n = the number of data points
+!    u = the abscissa at which the spline is to be evaluated
+!    x,y = the arrays of data abscissas and ordinates
+!    b,c,d = arrays of spline coefficients computed by spline
+!
+!  if  u  is not in the same interval as the previous call, then a
+!  binary search is performed to determine the proper interval.
+!
       integer i, j, k
       double precision dx
       data i/1/
       if ( i .ge. n ) i = 1
       if ( u .lt. x(i) ) go to 10
       if ( u .le. x(i+1) ) go to 30
-c
-c  binary search
-c
+!
+!  binary search
+!
    10 i = 1
       j = n+1
    20 k = (i+j)/2
       if ( u .lt. x(k) ) j = k
       if ( u .ge. x(k) ) i = k
       if ( j .gt. i+1 ) go to 20
-c
-c  evaluate spline
-c
+!
+!  evaluate spline
+!
    30 dx = u - x(i)
       f = y(i) + dx*(b(i) + dx*(c(i) + dx*d(i)))
       df = b(i) + dx*(2.d0*c(i) + 3.d0*dx*d(i))

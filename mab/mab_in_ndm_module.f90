@@ -65,6 +65,7 @@ module mab_in_ndm_module
       integer,parameter :: abf_mode_reaction=1,  &
                            abf_mode_alchemical=2,&
                            abf_mode_temperature=22
+      integer :: idebug
       !neb part:
       integer :: nimage_neb, nimage_lambda
 

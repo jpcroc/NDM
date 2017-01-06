@@ -4,8 +4,6 @@
 ! - calfo_ABF_BIN_GAUSSIEN 
 
 
-
-
 subroutine calfo_ABF_BIN() ! this concerns only the force applied on atoms 
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: zero,im,imm,low_limit,angst,ev2erg,erg2ev,potist
@@ -13,7 +11,8 @@ subroutine calfo_ABF_BIN() ! this concerns only the force applied on atoms
  USE mab_in_ndm_module, ONLY:dcsi,icsi,rfilac,histo,     &
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              mean_force1,histo1,ene_einstein,abf_mode,fpeinstein,ene0, &
-                             ha_mix,equit,atom_to_jump,delta_z,it_mab
+                             ha_mix,equit,atom_to_jump,delta_z,it_mab, &
+                             abf_mode_reaction, abf_mode_alchemical,  abf_mode_temperature
  implicit none
 
  real(double), dimension(3,imm) :: fpabf
@@ -21,7 +20,7 @@ subroutine calfo_ABF_BIN() ! this concerns only the force applied on atoms
 
  fpabf(:,:) = zero
 ! Computing the forces from the ABF bins in the reaction coordinate case ...
-if (abf_mode==1) then
+if (abf_mode==abf_mode_reaction) then
  force = - DOT_PRODUCT(fp(:,atom_to_jump),rfilac(:))   ! dU(q)/dq
  !
  if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
@@ -33,7 +32,7 @@ if (abf_mode==1) then
  fp(1:3,:)=fp(1:3,:)+fpabf(1:3,:)
 end if 
 
-if (abf_mode==2) then              
+if (abf_mode==abf_mode_alchemical) then              
   force = potist - ene_einstein - ene0 !    d U(zeta,q)/d zeta  
   fpabf(:,:) = (1.d0-dcsi)*fpeinstein(:,:) + dcsi*fp(:,:) ! -d U(zeta,q)/d q
   fp(:,:)=fpabf(:,:)
@@ -47,7 +46,7 @@ if (abf_mode==2) then
 end if 
 
 
-if (abf_mode==22) then              
+if (abf_mode==abf_mode_temperature) then              
   force = potist + ha_mix*ene_einstein - ene0 - equit !  d U(zeta,q)/d zeta  
   fpabf(:,:) = dcsi*ha_mix*fpeinstein(:,:) + dcsi*fp(:,:) ! -d U(zeta,q)/d q
   fp(:,:)=fpabf(:,:)
@@ -61,14 +60,7 @@ if (abf_mode==22) then
 end if 
 
 
-
  !debug write(*,'("deb",i7,3D15.4,2D15.1)') icsi,dcsi, potist*erg2ev, ene_einstein*erg2ev,fpeinstein(1,1),fp(1,1)
-! Updating the forces ...
-!write (41,*) fp(1,7),fpabf(1,7)
-!write (42,*) fp(2,7),fpabf(2,7)
-!write (43,*) fp(3,7),fpabf(3,7)
-
-  
 
 return
 end subroutine calfo_ABF_BIN
@@ -82,7 +74,8 @@ subroutine calfo_ABF_BIN_OMEGA()
                              mean_force,cumul_force1,nhisto,nhisto1, &
                              mean_force1,histo1,omega_abf,&
                              abf_mode,ene_einstein,ene0,fpeinstein,ha_mix,equit, &
-                             atom_to_jump,it_mab, delta_z
+                             atom_to_jump,it_mab, delta_z, &
+                             abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature
  implicit none 
  real(double), dimension(3,imm) :: fpabf
  real(double) :: force
@@ -90,7 +83,7 @@ subroutine calfo_ABF_BIN_OMEGA()
  
  fpabf(:,:) = zero
  ! Computing the forces from the ABF bins ...
-if (abf_mode==1) then
+if (abf_mode==abf_mode_reaction) then
  force = - DOT_PRODUCT(fp(:,atom_to_jump),rfilac(:))
  if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
   cumul_force1(icsi) =  cumul_force1(icsi) + force
@@ -100,7 +93,7 @@ if (abf_mode==1) then
   fp(1:3,:)=fp(1:3,:)+fpabf(1:3,:)
 end if
 
-if (abf_mode==2) then
+if (abf_mode==abf_mode_alchemical) then
   !the mean force is - force = - [ - d U(zeta,q)/d zeta ] 
   force = potist - ene_einstein - ene0 !  d U(zeta,q)/d zeta  
   !  - d_q U(csi,q) 
@@ -113,12 +106,11 @@ if (abf_mode==2) then
 end if 
 
 
-if (abf_mode==22) then              
+if (abf_mode==abf_mode_temperature) then              
   force = potist + ha_mix*ene_einstein - ene0 - equit !  d U(zeta,q)/d zeta  
   fpabf(:,:) = dcsi*ha_mix*fpeinstein(:,:) + dcsi*fp(:,:) ! -d U(zeta,q)/d q
   fp(:,:)=fpabf(:,:)
 
-!  write(*,*) it_mab, dcsi/delta_z,icsi
   if ((icsi >= -nhisto1).and.(icsi <= nhisto+nhisto1)) then 
    cumul_force1(icsi) =  cumul_force1(icsi) + force
    mean_force1 (icsi) = cumul_force1(icsi)/(1.d0/omega_abf+histo1(icsi))
@@ -126,14 +118,6 @@ if (abf_mode==22) then
   !
 end if 
 
-
- 
-! Updating the forces ...
-!write (41,*) fp(1,7),fpabf(1,7)
-!write (42,*) fp(2,7),fpabf(2,7)
-!write (43,*) fp(3,7),fpabf(3,7)
-
-  
 return
 end subroutine calfo_ABF_BIN_OMEGA
 

@@ -45,7 +45,8 @@
     use gen_com_m
     use tab_imm_m
     USE mab_in_ndm_module, only: sig_i,rga_i,m_i,it_mab,dtlang,Ecinetique,xbar,  &
-                                 abf_type,block,it_en,fpeinstein,abf_mode
+                                 abf_type,block,it_en,fpeinstein,abf_mode, &
+                                 abf_mode_alchemical, abf_mode_reaction, abf_mode_temperature
 
     implicit none
     integer     :: ic
@@ -69,7 +70,7 @@
        xbari(ic)=xbar(ic)
     enddo
  !one force calculation ....
-  if (abf_mode==2) then
+  if (abf_mode==abf_mode_alchemical) then
    if (it_en > 0) then
       call calfo_einstein_solid ()
       call calfo_atomic_forces (it_en)
@@ -80,12 +81,12 @@
     end if          
    end if   
     
-  if (abf_mode==1) then
+  if (abf_mode==abf_mode_reaction) then
       call calfo_mab()
       fplocal(:,:) = fp(:,:)
   end if          
   
-  if (abf_mode==22) then
+  if (abf_mode==abf_mode_temperature) then
        call calfo_mab()
        fplocal(:,:)=fp(:,:)
   end if 
@@ -114,7 +115,7 @@
     enddo
 
      !recompute the forces
-  if (abf_mode==2) then
+  if (abf_mode==abf_mode_alchemical) then
    if (it_en > 0) then
       call calfo_einstein_solid ()
       call calfo_atomic_forces (it_en)
@@ -125,7 +126,7 @@
     end if      
   end if 
     
-  if (abf_mode==1) then
+  if (abf_mode==abf_mode_reaction) then
       call calfo_mab()
       fplocal(:,:) = fp(:,:)
     end if          

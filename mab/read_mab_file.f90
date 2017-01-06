@@ -17,7 +17,7 @@ subroutine read_mab_file()
                               itype_reaction,itype_einstein, units_phondy,m_i,    &
                               nimage_neb,nimage_lambda,block_file,                          &
                               abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature,rangmab, &
-                              abf_restart           
+                              abf_restart, idebug
 
  implicit none
  namelist /input_mab/ dtlang,nlangevin,temperature,a0bcc,deltasph,radiussph,       &
@@ -28,7 +28,7 @@ subroutine read_mab_file()
                       mode_zeta_potential, alpha_zeta,ntestvacancyjump,ha_mix,            &
                       temperature_zeta_min,temperature_zeta_max,                          &
                       atom_to_jump, itype_reaction,itype_einstein,nimage_neb,nimage_lambda, &
-                      abf_restart
+                      abf_restart, idebug
 
  character(len=128) :: fnamtin, fnamt_lblock, fnamt_lfreq, fnamt_lm, fnamt_lu, fnamt_lv
  integer :: lumab,lublock,lcu,lcv,lcm
@@ -37,7 +37,7 @@ subroutine read_mab_file()
  integer :: itemp_read
 
 
-
+ idebug = 0
  rtestlac=0.1d0
  nwrite_histo=1000000
  omega_abf=1.d0
@@ -176,7 +176,7 @@ if (block)  then
       !
      end do   
      close(lublock)
-  else 
+  else ! block_file  == .false.
      if (rangmab==0) write(6,'("MAB:  ALL the atoms are in protective domains *.mab.lblock file is IGNORATED!")')
      nsite_block=im
      allocate (isite_block(im))
@@ -194,7 +194,7 @@ if (block)  then
        end if 
        stop
      end if 
-  end if 
+  end if !block 
 
 end if 
 
@@ -202,15 +202,15 @@ end if
            (abf_mode/=abf_mode_temperature).or. &
            (abf_mode/=abf_mode_reaction))  ) then
          write(6,*) 'MAB: No implementation for this ABF reaction coordinate which can be:'
-         write(6,*) 'MAB: af_mode = 1 for  geometric  reaction coordiante'
-         write(6,*) 'MAB: af_mode = 2 for  alchemical reaction  coordiante'
-         write(6,*) 'MAB: af_mode = 22 for temperature reaction  coordiante'
-         write(6,*) 'MAB: abf_mode = ', abf_mode
+         write(6,*) 'MAB: abf_mode = 1 for  geometric  reaction coordiante'
+         write(6,*) 'MAB: abf_mode = 2 for  alchemical reaction  coordiante'
+         write(6,*) 'MAB: abf_mode = 22 for temperature reaction  coordiante'
+         write(6,*) 'MAB: abf_mode =  ', abf_mode
          write(6,*) 'MAB: stop in read_mab_file'
          stop
      end if 
 
-     if  ((abf_mode==2) .and. ((abf_type==1).or.(abf_type==4).or. &
+     if  ((abf_mode==abf_mode_alchemical) .and. ((abf_type==1).or.(abf_type==4).or. &
                              (abf_type==6).or.(abf_type==7).or.  &
                              (abf_type==9))) then
          write(6,*) 'MAB: The is no ABF implementation for this mode'
@@ -223,7 +223,7 @@ end if
     end if 
 
 
-     if ((abf_mode==22) .and. ((abf_type==1).or.(abf_type==4).or. &
+     if ((abf_mode==abf_mode_temperature) .and. ((abf_type==1).or.(abf_type==4).or. &
                              (abf_type==6).or.(abf_type==7).or.  &
                              (abf_type==9))) then
          write(6,*) 'MAB: The is no ABF implementation for this mode'
@@ -235,7 +235,7 @@ end if
          stop
     end if 
 
-    if ((abf_mode==2).or.(abf_mode==22)) then
+    if ((abf_mode==abf_mode_alchemical).or.(abf_mode==abf_mode_temperature)) then
        allocate (omega_veinstein(3,im))
 
       if (itype_einstein==0 ) then
@@ -304,7 +304,8 @@ if (rangmab==0) write(6,'("MAB: Langevin time step in s.........................
 if (rangmab==0) write(6,'("MAB: Total number of steps ...............................:",I9)')  nlangevin
 if (rangmab==0) write(6,'("MAB: Langevin temperature in K............................:",F8.1)') temperature
 if (rangmab==0) write(6,'("MAB: Langevin dumping coefficient ........................:",D15.4)') gamma
-if (rangmab==0) write(6,'("MAB Factor for Langevin coefficient ......................:",D15.4)') lang_factor
+if (rangmab==0) write(6,'("MAB: Factor for Langevin coefficient .....................:",D15.4)') lang_factor
+if (rangmab==0) write(6,'("MAB: Debug verbosity idebug ..............................:",I9)') idebug
 
 
 if (abf_type==3) then
@@ -324,7 +325,7 @@ if (rangmab==0) write(6,'("MAB: Number of the bins of histo.....................
 if (rangmab==0) write(6,'("MAB: The frequency of writing histo......................:",i7)') nwrite_histo
 if (rangmab==0) write(6,'("MAB: The first shell of the histo (1nn units)............:",f15.4)') deltar1
 if (rangmab==0) write(6,'("MAB: The second shell of the histo (1nn units)...........:",f15.4)') deltar2
-if ((abf_mode==2).or.(abf_mode==22)) then
+if ((abf_mode==abf_mode_temperature).or.(abf_mode==abf_mode_alchemical)) then
  if (mode_zeta_potential==1) then
   if (rangmab==0) write(6,'("MAB: ===============THERE IS AN EXTRA POTENTIAL FOR ZETA===========")') 
   if (rangmab==0) write(6,'("MAB: The prefactor of zeta potential.......................:",E25.12E3)') alpha_zeta
@@ -395,8 +396,9 @@ write(6,'("                              / /   | |_|/\",a,"..",a," /          ")
 write(6,'("                              \ \._,\ ",a,"/",a,"  `",a,"-",a,"`           ")')quote,quote,quote,quote
 write(6,'("                               `--",a,"  `",a,"                    ")')quote,dquote
 write(6,'("copyleft CEA by ...                                        ")')
-write(6,'("... M.-C. Marinica, M. Athenes,                            ")')
-write(6,'("... G. Stoltz, T. Lelievre, L. L. Cao, P. Terrier          ")')
+!write(6,'("... M.-C. Marinica, M. Athenes                             ")')
+!write(6,'("others contributions                                       ")')
+!write(6,'("L. Cao, G. Stoltz, T. Lelievre                             ")')
 write(6,'("email:mihai-cosmin.marinica@cea.fr                         ")')
 write(6,'("\---------------------------------------------------------/")') 
 

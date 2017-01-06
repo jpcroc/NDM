@@ -21,7 +21,8 @@ subroutine calfo_ABFee()
                              it_mab,abf_mode,potist,ene_einstein,ene0,fpeinstein, &
                              ha_mix,equit,atom_to_jump,itype_reaction, &
                              abf_mode_reaction, abf_mode_alchemical, abf_mode_temperature, &
-                             abf_restart, mean_force_ABF_restart,P_ee_num_restart, P_ee_denom_restart
+                             abf_restart, mean_force_ABF_restart,P_ee_num_restart, P_ee_denom_restart, &
+                             idebug
 
  implicit none
 integer::iter,ia,jx
@@ -66,8 +67,9 @@ end if
  do iter=-nhisto2+1,nhisto+nhisto2
   A_ee(iter)=A_ee(iter-1)+delta_z*0.5d0*(A_dev_ee(iter-1)+A_dev_ee(iter))
  end do
-
+if (idebug > 4) then
  write(139,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 
+end if 
 
  if (abf_restart) then
   if ( (it_mab - neq_lang) < n_equilibre) then 
@@ -75,10 +77,10 @@ end if
   end if 
  end if 
 
-
-write(110,'(i6,5E25.12)') it_mab, A_ee(10), A_ee_restart(10), A_ee(10)*erg2ev, A_ee_restart(10)*erg2ev, (A_ee(10)-A_ee_restart(10))*erg2ev 
-write(140,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 
-
+if (idebug > 3) then
+ write(110,'(i6,5E25.12)') it_mab, A_ee(10), A_ee_restart(10), A_ee(10)*erg2ev, A_ee_restart(10)*erg2ev, (A_ee(10)-A_ee_restart(10))*erg2ev 
+ write(140,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 
+end if 
 !if (.not.abf_restart) then
 !   if (it_mab<4) A_ee=0.d0
 !end if 
@@ -125,8 +127,9 @@ if (abf_restart) then
 end if 
 
  fp(1:3,:)=fp(1:3,:)+fpabf(1:3,:)+fpabf_restart(1:3,:)
-
+if (idebug>3) then
  write(155,'(2i6,4E25.14)') it_mab, icsi, fp(2,7), fpabf(2,7),fpabf_restart(2,7),dcsi
+end if 
 
 !----------------end case abf_mode==abf_mode_reaction=1 
 
@@ -331,8 +334,9 @@ endif
  select case(abf_mode)
    case(abf_mode_reaction) 
       forall(iter=-nhisto1:nhisto+nhisto1) A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+omega_abf_i)
-
-       write(240,'(i6,5E25.10E3)') it_mab, P_ee(200), P_ee_num(200), P_ee_denom(200), A_dev_ee(200), P_ee_num(200)/P_ee_denom(200)
+      if (idebug >3) then
+        write(240,'(i6,5E25.10E3)') it_mab, P_ee(200), P_ee_num(200), P_ee_denom(200), A_dev_ee(200), P_ee_num(200)/P_ee_denom(200)
+      end if 
    case(abf_mode_alchemical) 
       forall(iter=-nhisto1:nhisto+nhisto1) A_dev_ee(iter)=P_ee_num(iter)/(P_ee_denom(iter)+omega_abf_i)
    case(abf_mode_temperature) 
