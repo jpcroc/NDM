@@ -8,7 +8,6 @@
 ! to this eigenvalue until the force components parallel and perpdendicular
 ! to the eigendirection become close to zero.
 !
-!  Normand Mousseau, June 2001
 
 !old subroutine saddle_converge(ret, saddle_energy, fparl_max, fperp_max)
  subroutine saddle_converge(ret, saddle_energy, fparl_max, fperp_max)

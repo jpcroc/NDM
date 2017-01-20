@@ -206,16 +206,6 @@
       end do 
       
     art_gdr(1:ndr+1) = 2.d0*dble(ngdr(1:ndr+1))/dble(im)
-!    WRITE(*,*) 
-!    WRITE(*,'(a)') 'RADIAL DISTRIBUTION'
-!    WRITE(*,'(1x,a,f0.5,a,g14.6,i8)') '0.      < r < ', r_distrib(1), ' A :  g(r) ', art_gdr(1),ngdr(1)
-!    DO n=2, ndr
-!       WRITE(*,'(1x,f0.5,a,f0.5,a,g14.6,i8)') r_distrib(n-1), ' < r < ', r_distrib(n), ' A :  g(r) ', art_gdr(n), ngdr(n)
-!    END DO
-!    WRITE(*,'(1x,f0.5,a,g14.6,i8)') r_distrib(ndr), ' < r             :  g(r) ', art_gdr(ndr+1),ngdr(ndr+1)
-      
-      
-      
       
       end    subroutine radial_distribuition_function
 

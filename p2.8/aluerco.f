@@ -224,7 +224,7 @@
 !        Generated automatically by PoCo, version 04-may-93           
 !        Hamiltonian type #  2, run on 93/06/09 at 15.04.43
 !        Uses subroutine seval from netlib@ornl.gov [to get it,
-!        use 'send seval from sfmm'], trivially modified to
+!        use 'send seval from sfmm'],  trivially modified to
 !        compute also dfunc and d2func and use double precision.
       implicit double precision (a-h,o-z)
       parameter (nuu= 13)

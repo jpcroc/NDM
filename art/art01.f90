@@ -30,11 +30,9 @@ subroutine art90
 
 
 
-! This is the main program for ART nouveau version 2001
+! This is the main program for ART nouveau
 ! 
-! This version is made to work with SIESTA 2001
 !
-! Copyright Normand Mousseau, July 2001
 
   integer :: i, ierror
   integer :: npart             ! Number of atoms participating to the eventt
