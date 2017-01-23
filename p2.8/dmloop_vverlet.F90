@@ -47,6 +47,7 @@ real(double) sigkine_tot(3,3)
   
   
   call dyn_vverlet
+! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
 !  write(6,*)'RG i ',rang,it
   ! calcul de sigtot
   !if (lpr==.false.) then
@@ -58,7 +59,11 @@ real(double) sigkine_tot(3,3)
           cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)
      sigkine(1:3,3) = sigkine(1:3,3) + &
           cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)
-
+     if (lsigat) then 
+        sigat(1:3,1,ilocal) = sigat(1:3,1,ilocal) +  cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)
+        sigat(1:3,2,ilocal) = sigat(1:3,2,ilocal) +  cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)
+        sigat(1:3,3,ilocal) = sigat(1:3,3,ilocal) +  cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)
+     end if
      if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
         sigc(1:3,1,ielat(ilocal)) = sigc(1:3,1,ielat(ilocal)) + &
              cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)*noxyz/volu

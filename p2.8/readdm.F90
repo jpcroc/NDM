@@ -46,7 +46,7 @@ subroutine readdm
        lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlang,ilangevin,&
        lcdp,lsigtyp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
        fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
-       lprteat,lprteattotm,lprtfat,lprtsigat,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
+       lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
        rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat, &
        lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,imFirstFrozen,&
        natperc,iteanaposneb,ntyp,&
@@ -226,6 +226,7 @@ subroutine readdm
   lperiod=.true.    ! conditions periodiques
   lprteat=.false.   ! if you want to print the energy on atom
   lprtsigat=.false. ! calul et affichage de la contrainte sur chaque atome
+  lsigatcel=.false. ! calul et affichage de la contrainte atomique moyenne sur la cellule
   lprteattotm=.false.   ! energie par atome totale (pot+cin) moyenne
   ngrid = 20000  ! taille de la grille des potentiels
   itecfg=-1   ! ecriture de fichiers .cfg pour AtomEye
@@ -1090,6 +1091,12 @@ endif
      write(6,*)'PRESSION A DIVISER PAR LES VOLUMES !!!!!!!!!'
      write(6,*)
   end if
+  if ((lprtsigat.eqv..true.).or.(lsigatcel.eqv..true.))then 
+     lsigat=.true.
+  else
+     lsigat=.false.
+  end if
+
   if(lPrtSigat.and.(.not.ltabvois)) then
      write(6,'(a)')rang,'contrainte atomique programme en table des voisins&
                 & avec un potentiel EAM ou un terme a deux corps seulement'

@@ -34,6 +34,13 @@ subroutine DynamicalAllocationCell
         allocate (lprtcel(noxyz))
 
   end if
+  if (lsigatcel.eqv..true.) then
+     allocate (patcel(noxyz))
+     allocate (sigatcel(3,3,noxyz))
+     allocate (natchk(noxyz))
+  end if
+
+  
 end subroutine DynamicalAllocationCell
 
 subroutine Deallocatecel

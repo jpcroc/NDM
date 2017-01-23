@@ -32,9 +32,8 @@ subroutine analyse
   real(double) :: fteta, tbc, tca, tab, amod, bmod, cmod
   real(double) :: unitE,unitP
   character*5 :: cunitE, cunitP
-  real(double) :: temp2, alat
+  real(double) ::  alat
   real(double), external :: tempinst
-  real(double), save :: zlm(3)
   real(double), save :: volumean,amodmean,bmodmean,cmodmean,tcamean,tabmean,tbcmean
   real(double), dimension(3,3) :: transformation, strain, rotation, invh0
 
@@ -52,12 +51,11 @@ subroutine analyse
   character :: extension*9
   real(double)::xb(3),minp,maxp,mint,maxt
   real(double)::minpP,maxpP,mintP,maxtP
-  real(double)::minpP2,maxpP2,mintP2,maxtP2
   real(double),save::Cminp,Cmaxp,Cmint,Cmaxt
   real(double),save::CminpP,CmaxpP,CmintP,CmaxtP
   real(double),save::CminpP2,CmaxpP2,CmintP2,CmaxtP2
   real(double),save::timelm1=0
-
+  integer::koo
   !-----------------------------------------------
   !
   !
@@ -318,10 +316,10 @@ subroutine analyse
                        write (6, '(I1,3(A,I1),A,3G18.10)') ic,' sigma total (1,', ic, ') (2,', ic, &
                             ') (3,', ic, ') =',sigtot(1:3,ic)*unitP
                     end do
-                    
+
                     write (6, *)
                  end if
-                    
+
 
                  pist = ppot+pkin
                  if (mod(it,itetemp2)==0) then
@@ -399,9 +397,9 @@ subroutine analyse
               !              write (luvisuc,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
               !              at=at/1.d8
               !           end if
-              
-              
-              
+
+
+
               nprt=0
               do kx=0,nox-1
                  do ky=0,noy-1
@@ -420,9 +418,9 @@ subroutine analyse
                                 !                             write(6,*)'dans la celulle ',ko,' sigma  '
                                 do ic =1,3
                                    pmc(ko)=pmc(ko)+sigc(ic,ic,ko)/3.0
-                                   
-                                   
-                                   
+
+
+
                                    !                                write(6,'(3g14.5)')sigc(1,ic,ko),sigc(2,ic,ko),sigc(3,ic,ko)
                                    !                                write(6,'(A,I2,I2,I2,I2,G14.5,G14.5,G14.5)')'CEL-SIG ',ic,kx,ky&
                                    !                                     &,kz,sigc(1,ic,ko),sigc(2,ic,ko),sigc(3,ic,ko)
@@ -431,7 +429,7 @@ subroutine analyse
                                 celpP(ko)=1d-14*unitP*(pmc(ko)-celpm1(ko))/(timel-timelm1)
                                 !                             celpP2(ko)=1d-14*1d-14*unitP*(pmc(ko)-2*celpm1(ko)+celpm2(ko))/(tstep**2)
                                 !                             celpp2(ko)=1d-14*1d-14*unitP*((pmc(ko)-celpm1(ko))/tstep -(celpm1(ko)-celpm2(ko))/timelm1)/tstep
-                                
+
                                 tcp(ko)=1d-14*(tempc(ko)-tm1(ko))/(timel-timelm1)
                                 !                             tcp2(ko)=1d-14*1d-14*(tempc(ko)-2*tm1(ko)+tm2(ko))/(tstep**2)
                                 !                             tcp2(ko)=1d-14*1d-14*((tempc(ko)-tm1(ko))/tstep -(tm1(ko)-tm2(ko))/timelm1)/tstep
@@ -440,7 +438,7 @@ subroutine analyse
                                 !                             tm2(ko)=tm1(ko)
                                 tm1(ko)=tempc(ko)
                                 lprtcel(ko)=.false.
-                                
+
                                 !                             if ((kx==15).or.(ky==15).or.(kz==15).or.(kx==5).or.(ky==5).or.(kz==5)) lprt=.true.
                                 !                             if((kx.le.13).and.(kx.ge.7).and.(ky.le.13).and.(ky.ge.7).and.(kz.le.13).and.(kz.ge.7)) lprt=.true.
                                 !                             if (it.le.2) lprt=.false.
@@ -453,24 +451,24 @@ subroutine analyse
                                 if (it.le.2) lprtcel(ko)=.false.
                                 !                             lprtcel(ko)=.true.
                                 if (lprtcel(ko).EQV..true.) nprt=nprt+1
-                                
+
                                 if(it.ge.3) then
                                    minp=min(minp,pmc(ko)*unitP)
                                    maxp=max(maxp,pmc(ko)*unitP)
                                    mint=min(mint,tempc(ko))
                                    maxt=max(maxt,tempc(ko))
-                                   
+
                                    minpP=min(minpP,celpp(ko))
                                    maxpP=max(maxpP,celpp(ko))
                                    mintP=min(mintP,tcp(ko))
                                    maxtP=max(maxtP,tcP(ko))
-                                   
+
                                    !                                minpP2=min(minpP2,celpP2(ko))
                                    !                                maxpP2=max(maxpP2,celpP2(ko))
                                    !                                mintP2=min(mintP2,tcp2(ko))
                                    !                                maxtP2=max(maxtP2,tcp2(ko))
                                 end if
-                                
+
                              endif
                           endif
                        endif
@@ -497,29 +495,29 @@ subroutine analyse
                           xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
                           xb=xb*1d8
                           if(lprtcel(ko).EQV..true.)  write (luvisuc, 136) 'Au',kx,ky,kz,xb(1), xb(2), &
-                           xb(3),tempc(ko),tcp(ko),pmc(ko)*unitP,celpp(ko),nato(ko)
+                               xb(3),tempc(ko),tcp(ko),pmc(ko)*unitP,celpp(ko),nato(ko)
                        end do
                     end do
                  end do
                  close (luvisuc)
               end if
-              
+
               if (it.ge.3)then
                  Cminp=min(Cminp,minp)
                  Cmaxp=max(Cmaxp,maxP)
                  Cmint=min(Cmint,mint)
                  Cmaxt=max(Cmaxt,maxT)
-                 
+
                  CminpP=min(CminpP,minpP)
                  CmaxpP=max(CmaxpP,maxpP)
                  CmintP=min(CmintP,mintP)
                  CmaxtP=max(CmaxtP,maxTP)
-                 
+
                  !              CminpP2=min(CminpP2,minpP2)
                  !              CmaxpP2=max(CmaxpP2,maxPP2)
                  !              CmintP2=min(CmintP2,mintP2)
                  !              CmaxtP2=max(CmaxtP2,maxTP2)
-                 
+
                  write(6,'(A,4G20.10)')'minmaxp', minp,maxp,mint,maxt
                  write(6,'(A,4G20.10)')'Cminmaxp', Cminp,Cmaxp,Cmint,Cmaxt
                  write(6,'(A,4G20.10)')'minmaxpP', minpP,maxpP,mintP,maxtP
@@ -528,16 +526,16 @@ subroutine analyse
                  !              write(6,'(A,4G20.10)')'CminmaxpP2', CminpP2,CmaxpP2,CmintP2,CmaxtP2
               end if
            endif
-           
+
 136        format(A,3I4,3E15.5,4E15.7,I4)
-           
+
            if (ldesinteg)then
-              
-              
+
+
               write(6,'(A,3G21.12)')'lambda, deltaF',lambdades,deltaF,deltaF*erg2eV
               write(6,'(A,3G21.12)')'deltaEspr, Espr', lambdades,deltaEspr*erg2eV,Espr*erg2eV
            end if
-           
+
         endif
 
      endif
@@ -545,9 +543,9 @@ subroutine analyse
 
 
   if ((mod(it,itesigma)==0).and.(lsigtyp)) then
-     
+
      write(6,*)
-     
+
      do iti=1,ntyp
         pmc=0.
         do ic =1,3
@@ -561,9 +559,9 @@ subroutine analyse
         if (rang==0) write(6,'(A,G14.5)')'sigtyptyp ',iti,iti,' = ',pmc
      end do
   end if
-  
-  
-  
+
+
+
   ! calcul des deplacements
   !  if (rang==0) write(6,*) 'PARA-T itedepla' ,itedepla
   if (itedepla>0) then
@@ -572,14 +570,14 @@ subroutine analyse
         if (tdepla2>0.0) call calcdepla2
      endif
   endif
-  
-  
+
+
   ! calcul des coordinences
   if (itecoordo>0) then
      if (mod(it,itecoordo)==0) call calccoordo 
   endif
-  
-  
+
+
   ! calcul de la RDF et de la position moyenne
   if (iterdf>0) then
      if (mod(it,iterdf)==0) then
@@ -721,14 +719,62 @@ subroutine analyse
      !     write(912,*)ncalceattotm,eatomtotm(1)*erg2eV,eatom(1)*erg2eV
   end if
 
-  if (lbulle) then
-     if (parallele) then
-        write(6,*)' test pos He pas para'
-        stop
-     end if
-
-     call test_position_He(xp,at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,nstepdes,itmax)
-  end if
+!  if (lbulle) then
+!     if (parallele) then
+!        write(6,*)' test pos He pas para'
+!        stop
+!     end if
+!     call test_position_He(xp,at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,nstepdes,itmax)
+!  end if
   !  write(6,*) 'sortie canalyse',it,im
+
+  if (mod(it,itesigma)==0) then
+     if (lsigatcel)then
+        natchk(:)=0
+        sigatcel=0 ; patcel=0
+        do i=1,im
+           koo = ielat(i)                          ! Numero de la cellule
+           iti = ityp(i)
+           natchk(koo)=natchk(koo)+1
+           sigatcel(:,:,koo)=sigatcel(:,:,koo)+sigat(:,:,i)
+        end do
+        do koo=1,noxyz
+           sigatcel(:,:,koo)=sigatcel(:,:,koo)/natchk(koo)
+           do ic=1,3
+              patcel(koo)= patcel(koo)+sigatcel(ic,ic,koo)/3.0
+           end do
+           if (natchk(koo).ne.nato(koo)) then
+              write(6,*)'nato ? koo natcchk nato', koo, natchk(koo), nato (koo)
+              stop
+           end if
+        end do
+
+
+!        write (6, *) '------valeurs par cellules-------',it
+        write(extension,'(i9.9)') it
+        lenfn2 = 9
+        open(luvisuc, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.CEL.mol', form='formatted', &
+             status='unknown')
+        write (luvisuc, '(I9,A,I7,A,D15.6)') noxyz , ' IT =', it, ' Time = ', timel
+        at=at*1.d8
+        write (luvisuc,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
+        at=at/1.d8
+        do kx=0,nox-1
+           do ky=0,noy-1
+              do kz=0,noz-1
+                 koo=1+kx+nox*(ky+noy*kz)
+                 xb(1)=float(kx)/float(nox)*at(1,1)+float(ky)/float(noy)*at(1,2)+float(kz)/float(noz)*at(1,3)
+                 xb(2)=float(kx)/float(nox)*at(2,1)+float(ky)/float(noy)*at(2,2)+float(kz)/float(noz)*at(2,3)
+                 xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
+                 xb=xb*1d8
+                 write (luvisuc, 148) 'Au',kx,ky,kz,xb(1), xb(2),xb(3),patcel(koo)*unitP,nato(koo)
+              end do
+           end do
+        end do
+        close (luvisuc)
+148     format(A,3I4,3E15.5,1E15.7,I4)
+     end if
+  end if
+
   return
 end subroutine analyse

@@ -34,28 +34,31 @@ subroutine calfo
   integer :: i,ilocal,ipot,ic
   real(double)::vn,v1,f1,ekin
   integer::nv1
+  logical:: test_sigma
 
 #if(PARA)
   real(double), dimension(3,3) :: sig_tot,sigkine_tot
   real(double),dimension (3):: fptot_tot
-!  real(double)::elosselectot,elosselec1tot
+  !  real(double)::elosselectot,elosselec1tot
 #endif
-!   if (rang==0) write(6,*) 'ldemintab',ldemitab
-  sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
+  !   if (rang==0) write(6,*) 'ldemintab',ldemitab
+
   potist=0.
   potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potisP=0.
   potisTersoff=0.; potiszbl=0
   potisrep=0.; potisglue=0.; potiseam=0.
-  if(lPrtSigat) sigat(:,:,:)=0. ; 
 
-
-  if (lsigtyp) then
-     sigtyp=0. ; sigtyptyp=0.
+  test_sigma=(mod(it,itesigma)==0)
+  if (test_sigma) then
+     sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
+     if(lSigat) sigat(:,:,:)=0. ; 
+     if (lsigtyp) then
+        sigtyp=0. ; sigtyptyp=0.
 #if(PARA)
-     sigtyp_loc=0.;     sigtyptyp_loc=0.
+        sigtyp_loc=0.;     sigtyptyp_loc=0.
 #endif 
+     end if
   end if
-
 
 
   fp(:,:) = zero
@@ -140,30 +143,37 @@ subroutine calfo
 
   ! calcul de sigtot
   if (dmtype.ne.4.) then
-     sigkine=0.
-     do ilocal = 1, im
-        sigkine(1:3,1) = sigkine(1:3,1) + &
-             cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)
-        sigkine(1:3,2) = sigkine(1:3,2) + &
-             cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)
-        sigkine(1:3,3) = sigkine(1:3,3) + &
-             cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)
-     end do
-     sigkine(1:3,1:3) = sigkine(1:3,1:3)/volu
+     if (test_sigma) then                   
+        sigkine=0.
+        do ilocal = 1, im
+           sigkine(1:3,1) = sigkine(1:3,1) + &
+                cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)
+           sigkine(1:3,2) = sigkine(1:3,2) + &
+                cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)
+           sigkine(1:3,3) = sigkine(1:3,3) + &
+                cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)
+           if (lsigat) then 
+              sigat(1:3,1,ilocal) = sigat(1:3,1,ilocal) +  cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)
+              sigat(1:3,2,ilocal) = sigat(1:3,2,ilocal) +  cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)
+              sigat(1:3,3,ilocal) = sigat(1:3,3,ilocal) +  cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)
+           end if
+        end do
+        sigkine(1:3,1:3) = sigkine(1:3,1:3)/volu
 
 
 
 
 #if(PARA)
 
-     !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-     !  sig=sig_tot
-     call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-     sigkine=sigkine_tot
+        !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+        !  sig=sig_tot
+        call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+        sigkine=sigkine_tot
 
 #endif
 
-     sigtot = sigkine+sig
+        sigtot = sigkine+sig
+     end if
   end if
 
   !      if (ldislo) call forcedislo(fp)
@@ -206,10 +216,10 @@ subroutine calfo
         vn= vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
 	ekin=0.5*erg2ev*vn*cm(ityp(i))
         if ((vn.ne.0).and.(ekin.gt.1)) then
-!	write(6,*)'RG',rang,i,ekin
+           !	write(6,*)'RG',rang,i,ekin
            vn=sqrt(vn)
            v1=elstopforce(ityp(i),1,1)
-!           write(6,*)v1,vn
+           !           write(6,*)v1,vn
            nv1=1+INT(vn/v1)
            if (nv1.gt.ngrdel) then
               write(6,*)'elstop velocity > 49, rebuild elstop.in'
@@ -226,15 +236,15 @@ subroutine calfo
               Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)*erg2ev
               if (num_at_glob(i)==iko)then 
 
-!                write(6,*)'elfp',fp(ic,i)
+                 !                write(6,*)'elfp',fp(ic,i)
                  Elosselec1=Elosselec1+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)*erg2ev
               end if
-	      end do
-!                 write (6,*)'felstop',f1,vn                
-           end if
+           end do
+           !                 write (6,*)'felstop',f1,vn                
+        end if
 
-        end do	
-!	write(6,*)'RG el',rang,elosselec,elosselec1
+     end do
+     !	write(6,*)'RG el',rang,elosselec,elosselec1
 #if(PARA)
      elosselectot=0
      elosselectot1=0
@@ -243,7 +253,7 @@ subroutine calfo
 #else
      elosselectot=elosselec
      elosselectot1=elosselec1
-     
+
 #endif
 
 
@@ -253,10 +263,10 @@ subroutine calfo
 
 
 
-!do i=1,im
-!   write(96,'(2I3,6G15.7)')i,ityp(i),xp(1,i),xp(2,i),xp(3,i),fp(1,i),fp(2,i),fp(3,i)
-!end do
-!stop
+  !do i=1,im
+  !   write(96,'(2I3,6G15.7)')i,ityp(i),xp(1,i),xp(2,i),xp(3,i),fp(1,i),fp(2,i),fp(3,i)
+  !end do
+  !stop
 
 
 

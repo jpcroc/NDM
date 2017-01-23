@@ -37,6 +37,9 @@ subroutine rasmol(itapp)
   integer :: i, luvisu, luvisu2, iti,lenfn2
   real(double) :: xp1, xp2, xp3,pat
   character :: extension*9
+  real(double) :: unitE,unitP
+  character*5 :: cunitE, cunitP
+
   ! Notes about V_sim:
   ! * works if at(:,:) "encompasses" all the system (no duplication of lattice cells)
   ! * at(:,1) must be along x and at(:,2) must have no component along z.
@@ -45,6 +48,14 @@ subroutine rasmol(itapp)
   !
   !
   !
+  if(lPkbar) then
+     unitP=1.0d-9
+     cunitP='kbar'
+  else
+     unitP=1.0
+     cunitP='d/cm2'
+  endif
+
   iksp=-1
   if (lcasca) iksp=iko
   if (ldesinteg)iksp=1
@@ -147,7 +158,7 @@ subroutine rasmol(itapp)
               if(it.eq.0)then
                  pat=0.0
               else
-                 pat=(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
+                 pat=unitP*(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
               end if
               select case (ivisu)
               case (1)
