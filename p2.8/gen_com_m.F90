@@ -149,7 +149,7 @@ module gen_com_m
   real(double),pointer::eatomtotm(:) ! energie par atome
   logical :: lPrtSigat, lprteat, lprtfat,lprteattotm  ! calcul et ecriture de la contrainte, l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
   logical :: lsigatcel !ecriture de la contrainte atomique moyenne sur cellule
-  logical :: lsigat ! la contrainte atomique est calculï¿½e (rendu vrai par lprtsigat ou lsigatcel)
+  logical :: lsigat ! la contrainte atomique est calculée (rendu vrai par lprtsigat ou lsigatcel)
   logical :: lposmoy ! ecrit Ã  la fin la position moyenne des atomes
   real(double) :: tdepla, tdepla2 ! seuils de deplacement
   logical :: lfilm, linstantrdf,linstantfda, lrestart, ltpcel, lfilmext !film, RDF, restart, moyenne par cel
@@ -197,6 +197,7 @@ module gen_com_m
   real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
   real(double):: elosselectot,elosselectot1 ! electronic losses for all atoms ; the PKA
   real(double),pointer::elstopforce(:,:,:)
+  real(double):: tcelec ! coupure pour les pertes électroniques
 
 
 
@@ -355,7 +356,7 @@ module gen_com_m
 !      definis dans le fichier .din
 ! ----------------------------------------------------------------------------------
   
-  real(double), dimension (:),allocatable ::tempc,tempcm,celpm1,tm1,celpp,tcp,pmc,patcel
+  real(double), dimension (:),allocatable ::tempc,tempcm,celpm1,tm1,celpp,tcp,pmc,patcel,patcelmax
   real(double), dimension (:,:,:),allocatable ::sigatcel
   integer, dimension (:),allocatable ::natchk
   logical, dimension (:),allocatable ::lprtcel(:)

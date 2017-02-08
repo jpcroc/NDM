@@ -46,7 +46,7 @@ subroutine analyse
   integer::ipot, nAux_real, n
 
   !  real(double)::celpP,celpp2,Tcp,Tcp2  
-
+  real(double)::ptest
   integer::luvisuc=888,lenfn2,nprt
   character :: extension*9
   real(double)::xb(3),minp,maxp,mint,maxt
@@ -731,12 +731,18 @@ subroutine analyse
   if (mod(it,itesigma)==0) then
      if (lsigatcel)then
         natchk(:)=0
-        sigatcel=0 ; patcel=0
+        sigatcel=0 ; patcel=0 ; patcelmax=0
         do i=1,im
            koo = ielat(i)                          ! Numero de la cellule
            iti = ityp(i)
            natchk(koo)=natchk(koo)+1
            sigatcel(:,:,koo)=sigatcel(:,:,koo)+sigat(:,:,i)
+           ptest=0
+           do ic=1,3
+              ptest=ptest+sigat(ic,ic,i)/3
+           end do
+           ptest=abs(ptest)
+           patcelmax(koo)=max(patcelmax(koo),ptest)
         end do
         do koo=1,noxyz
            sigatcel(:,:,koo)=sigatcel(:,:,koo)/natchk(koo)
@@ -746,6 +752,7 @@ subroutine analyse
            if (natchk(koo).ne.nato(koo)) then
               write(6,*)'nato ? koo natcchk nato', koo, natchk(koo), nato (koo)
               stop
+
            end if
         end do
 
@@ -767,12 +774,13 @@ subroutine analyse
                  xb(2)=float(kx)/float(nox)*at(2,1)+float(ky)/float(noy)*at(2,2)+float(kz)/float(noz)*at(2,3)
                  xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
                  xb=xb*1d8
-                 write (luvisuc, 148) 'Au',kx,ky,kz,xb(1), xb(2),xb(3),patcel(koo)*unitP,nato(koo)
+                 write (luvisuc, 149) 'Au',xb(1), xb(2),xb(3),patcel(koo)*unitP,patcelmax(koo)*unitP,nato(koo)
               end do
            end do
         end do
         close (luvisuc)
 148     format(A,3I4,3E15.5,1E15.7,I4)
+149     format(A,3E15.5,2E15.7,I4)
      end if
   end if
 

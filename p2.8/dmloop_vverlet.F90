@@ -47,7 +47,7 @@ real(double) sigkine_tot(3,3)
   
   
   call dyn_vverlet
-! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien rï¿½partis en cellules
+! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien répartis en cellules
 !  write(6,*)'RG i ',rang,it
   ! calcul de sigtot
   !if (lpr==.false.) then

@@ -53,7 +53,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest
+       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec
 
 
   !
@@ -71,7 +71,7 @@ subroutine readdm
   tempstop = -1.0             !temperature of run stop
   tempstopcel = -1.0             !temperature of run stop
   dmtype = 0  
- !dmtype = type of calculation : 1 -> MD
+  !dmtype = type of calculation : 1 -> MD
   !                               2 -> quench (trempe) or fire quench
   !                               3 -> gradient conjugue sur les coordonnes cartesiennes
   !                              30 -> gradient conjugue sur les coordonnes reduites
@@ -266,11 +266,11 @@ subroutine readdm
   lyzfrozen=.FALSE.             
   lxyzfrozen=.FALSE.             
   imFree=-1                   ! The index from which all the atoms with the index i >  imFree   are frozen.
-                              !                          or with                  i <= imFree   are free
+  !                          or with                  i <= imFree   are free
   imFirstFrozen=0             ! The index from which all the atoms with the index i <= imFirstFrozen are frozen
-                              !                                         the index i >  imFirstFrozen are free
-                              ! imFirstFree can be used in the same time with imFree
- 
+  !                                         the index i >  imFirstFrozen are free
+  ! imFirstFree can be used in the same time with imFree
+
   nvperat=-1                  ! nb moyen de voisins par atomes
   natperc=-1   
   iteanaposneb=0
@@ -292,7 +292,7 @@ subroutine readdm
   Eheat=0.
   ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal cod√©, ivisu=3=xred
 
- ! management of the specific boundary conditions (free or rigid)  ---------------------------   !*!
+  ! management of the specific boundary conditions (free or rigid)  ---------------------------   !*!
   ibound = 0	! ( ibound = 0 <=> no spe BoundC, ibound = 1 <=> strain controlled BoundC, ibound = 2 <=> stress controlled BoundC)		!*!
   user_strainrate = 0.	! crystal strainrate (ibound=1)			!*!
   user_stress_yz  = 0.	! stress on the surface (ibound=2)		!*!
@@ -301,13 +301,13 @@ subroutine readdm
   ldecal_bc = .false.
   itespebcout = -1      ! on n'√©crit pas de .cfg pour le film
   ldyn2D = .false.      ! par d√©faut : bords libres selon Y
- !   ----------------------------------------------------------------------------------------    !*!
+  !   ----------------------------------------------------------------------------------------    !*!
 
-!.... in SUNDAE
+  !.... in SUNDAE
   kappa = 1e6
   niteration=10000
   lanczos_step=1.0d-3
-!.... in SUNDAE 
+  !.... in SUNDAE 
 
   tempdeplainit=-1
   debyetemp=-1
@@ -319,7 +319,7 @@ subroutine readdm
   tpseuils(:)=0 ! 1:Tmin; 2:abs(T') ; 3: abs(T'') ; 1:abs(P); 2:abs(P') ; 3: abs(P'')
 
   lrctest=.true.
-
+  tcelec=0 ! tempÈrature de coupure pour les pertes Èlectroniques
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -445,8 +445,8 @@ subroutine readdm
         if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
      end if
      select case(dmtype)
-        case(2,4)
-        case default 
+     case(2,4)
+     case default 
         if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=4'
         if (rang==0) write(*,*) 'Stop in readdm'
         call arret_ndm
@@ -549,33 +549,33 @@ subroutine readdm
      call arret_ndm
   endif
   if (dmtype==7.and.deltax.le.0) then
-          if (.not.lEev) then
-              write(6,*)  'PHONDY: lEev should be set on .true.'
-              write(6,*)  'PHONDY: Change accordingly and try again!'
-              stop
-          end if    
+     if (.not.lEev) then
+        write(6,*)  'PHONDY: lEev should be set on .true.'
+        write(6,*)  'PHONDY: Change accordingly and try again!'
+        stop
+     end if
      write(6,*) rang,'For dmtype 7 deltax must be deltax > 0'
      write(6,*) rang,'Change deltax!'
      call arret_ndm
   endif
 
   if (dmtype==7) then
-        ldemitab=.false.
-        if (.not.((HessianOrder.eq.1).or.(HessianOrder.eq.2).or.(HessianOrder.eq.4))) then
-         write (6,*) ' PHONDY: HessianOrder can have only the values 1, 2 or 4  '
-         write (6,*) ' PHONDY: which corresponds to a Hessian on 2,3 or 5 points' 
-         write (6,*) ' PHONDY: HessianOrder.........: ', HessianOrder  
-         write (6,*) ' PHONDY: stop'
-         stop
-        end if
-  end if       
+     ldemitab=.false.
+     if (.not.((HessianOrder.eq.1).or.(HessianOrder.eq.2).or.(HessianOrder.eq.4))) then
+        write (6,*) ' PHONDY: HessianOrder can have only the values 1, 2 or 4  '
+        write (6,*) ' PHONDY: which corresponds to a Hessian on 2,3 or 5 points' 
+        write (6,*) ' PHONDY: HessianOrder.........: ', HessianOrder  
+        write (6,*) ' PHONDY: stop'
+        stop
+     end if
+  end if
 
- if (dmtype==18) then
-        ldemitab=.FALSE.
-        write (6,*) ' ML: ldemitab is set to false. We compute all pairs   '
+  if (dmtype==18) then
+     ldemitab=.FALSE.
+     write (6,*) ' ML: ldemitab is set to false. We compute all pairs   '
 
 
- end if 
+  end if
 
 
 
@@ -717,16 +717,16 @@ subroutine readdm
 
   ! end check
   if (lpconxyz) then
-   if (.NOT.lpr) then
-    if (rang==0) then
-       write(6,*) 'lpconxyz can be used only is with PR dynamics or lpr=.true'
-       write(6,*) 'stop in <readdm>'
-    end if
-     stop
- end if 
-end if       
-   
-   
+     if (.NOT.lpr) then
+        if (rang==0) then
+           write(6,*) 'lpconxyz can be used only is with PR dynamics or lpr=.true'
+           write(6,*) 'stop in <readdm>'
+        end if
+        stop
+     end if
+  end if
+
+
   if (lpr) then
      if (dmtype==2) lprtrp=.true.
      dmtype=8
@@ -749,11 +749,11 @@ end if
      h0(1:3,1:3) = 1e-8*h0(1:3,1:3)
      ihbox0(:,:) = 1.d0   ! all the dimension of the box can change
      if (lpconxyz) then
-      ihbox0(:,:)=0.d0   ! ALL the dimension are blockef except ...
-      ihbox0(1,1)=1.d0   ! X ...
-      ihbox0(2,2)=1.d0   ! Y ...
-      ihbox0(3,3)=1.d0   ! and Z.
-     end if 
+        ihbox0(:,:)=0.d0   ! ALL the dimension are blockef except ...
+        ihbox0(1,1)=1.d0   ! X ...
+        ihbox0(2,2)=1.d0   ! Y ...
+        ihbox0(3,3)=1.d0   ! and Z.
+     end if
 
   end if
   ! read for cascade
@@ -764,17 +764,21 @@ end if
      !     yy0=yy0*1.D-8
      !     zz0=zz0*1.D-8
      if (ibrake.gt.0) then
-if(rang==0) then 
-       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-       write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-endif
-     end if
-  endif
-
+        if(rang==0) then 
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+        endif
+     else
+        if (tcelec.gt.0) then
+           write(6,*) 'tcelec > 0 et pas de pertes electroniques : stop'
+           stop
+        end if
+     endif
+  end if
 
 
   if (lHcyl) then
@@ -801,7 +805,7 @@ endif
      if (iteangle > 0) nfda = 0
   endif
 
-!  if (itedepla.gt.0) lfilm=.true.
+  !  if (itedepla.gt.0) lfilm=.true.
   if (lfilm) then
      if(rang==0) then
         if(rang==0)         open(unit=lufilm, file='film', status='unknown')
@@ -891,7 +895,7 @@ endif
 
   if (ltranche) then
      if (rang==0) write (6, '(a)') '******************* TRANCHE GELEE !!! *****'
-!     rulayer=rulayer*1.0d-8
+     !     rulayer=rulayer*1.0d-8
 
      lfrozen=.true.
      if (lcdp.EQV..true.) then
@@ -932,31 +936,31 @@ endif
         stop
      end if
 
-!     if (tempstopcel.gt.0) ltpcel=.true.
+     !     if (tempstopcel.gt.0) ltpcel=.true.
      if (ltpcel) write (6, *) '   -> -> pas de contrainte par celulles'
 
      if (rang==0) write(6,*)'IPOTENTIEL',ipotentiel
      select case (ipotentiel)
      case(:9)
-         ldemitab=.TRUE.
-         if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
-      case(11:)
-         ldemitab=.false.
-         if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+        ldemitab=.TRUE.
+        if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+     case(11:)
+        ldemitab=.false.
+        if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
 
-      case(10)  ! Potentiel EAM
-         if(dmtype==7) then 
-            ldemitab=.FALSE.
-            if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
-         elseif(dmtype==18) then 
-            ldemitab=.FALSE.
-            if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
-         else
-            ldemitab=.TRUE.
-            if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
-         end if
+     case(10)  ! Potentiel EAM
+        if(dmtype==7) then 
+           ldemitab=.FALSE.
+           if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
+        elseif(dmtype==18) then 
+           ldemitab=.FALSE.
+           if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
+        else
+           ldemitab=.TRUE.
+           if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+        end if
 
-      end select
+     end select
 
      !     if(ipotentiel.le.10) then 
      !        ldemitab=.TRUE.
@@ -1014,18 +1018,18 @@ endif
      end if
   end if
   if (lforcetabulate) then
-    if (ipotentiel/=10) then
-     write(*,*) 'There is no implementation for lforcetabulate TRUE and ipotentiel ', ipotentiel
-     write(*,*) 'Change lforcetabulate of FALSE or ipotential to EAM (10) '
-     write(*,*) 'stop in readdm'
-     stop
-    end if
-    if (lcasca) then
-     write(*,*) 'There is no implementation for lforcetabulate TRUE and lcasc TRUE'
-     write(*,*) 'Change lforcetabulate of FALSE or lcasc on FALSE'
-     write(*,*) 'stop in readdm'
-     stop
-    end if
+     if (ipotentiel/=10) then
+        write(*,*) 'There is no implementation for lforcetabulate TRUE and ipotentiel ', ipotentiel
+        write(*,*) 'Change lforcetabulate of FALSE or ipotential to EAM (10) '
+        write(*,*) 'stop in readdm'
+        stop
+     end if
+     if (lcasca) then
+        write(*,*) 'There is no implementation for lforcetabulate TRUE and lcasc TRUE'
+        write(*,*) 'Change lforcetabulate of FALSE or lcasc on FALSE'
+        write(*,*) 'stop in readdm'
+        stop
+     end if
   end if
 
   if (itetemp2==-1) itetemp2=itetemp
@@ -1099,7 +1103,7 @@ endif
 
   if(lPrtSigat.and.(.not.ltabvois)) then
      write(6,'(a)')rang,'contrainte atomique programme en table des voisins&
-                & avec un potentiel EAM ou un terme a deux corps seulement'
+          & avec un potentiel EAM ou un terme a deux corps seulement'
      call arret_ndm
   end if
 
@@ -1130,25 +1134,25 @@ endif
 
   ! Gestion des atomes bloques
   IF (lFrozen.OR.lxyzFrozen) THEN
-          lxFrozen=.true. ; lyFrozen=.true. ; lzFrozen=.true.
+     lxFrozen=.true. ; lyFrozen=.true. ; lzFrozen=.true.
   END IF
   IF (lxyFrozen) THEN
-          lxFrozen=.true. ; lyFrozen=.true.
+     lxFrozen=.true. ; lyFrozen=.true.
   END IF
   IF (lxzFrozen) THEN
-          lxFrozen=.true. ; lzFrozen=.true.
+     lxFrozen=.true. ; lzFrozen=.true.
   END IF
   IF (lyzFrozen) THEN
-          lyFrozen=.true. ; lzFrozen=.true.
+     lyFrozen=.true. ; lzFrozen=.true.
   END IF
-  
+
   IF (lxFrozen.OR.lyFrozen.OR.lzFrozen) THEN
 
      IF ( ( (imFree.gt.0) .AND. (parallele) ).OR. ( (imFirstFrozen/=0) .AND. (parallele) ) ) THEN
-           WRITE(0,'(a)') 'Initialisation du tableau free(:) pour&
-                & determiner les atomes bloques non implementes en&
-                & parallele'
-           STOP '< ReadDm >'
+        WRITE(0,'(a)') 'Initialisation du tableau free(:) pour&
+             & determiner les atomes bloques non implementes en&
+             & parallele'
+        STOP '< ReadDm >'
      end IF
 
      IF (dmType.EQ.8) THEN
@@ -1172,29 +1176,29 @@ endif
      Frozen(:,:)=.false.   ! Tout le monde bouge ... ...
 
      if (imFree.ne.-1) then
-             IF (lxFrozen) Frozen(1,1+imFree:imm)=.true.   !x of i>imFree is frozen  
-             IF (lyFrozen) Frozen(2,1+imFree:imm)=.true.   !y of i>imFree is frozen  
-             IF (lzFrozen) Frozen(3,1+imFree:imm)=.true.   !z of i>imFree is frozen  
-             IF ((rang==0).and.(imFree.ne.imm)) THEN
-                     WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
-                     if(imFirstFrozen==0) then
-                      WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
-                        imFree, " bougent"
-                     else 
-                      WRITE(6,'(a,i0,a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
-                        imFree, " et superieur et egal a ", imFirstFrozen+1, "bougent"
-                     end if 
-             end IF
+        IF (lxFrozen) Frozen(1,1+imFree:imm)=.true.   !x of i>imFree is frozen  
+        IF (lyFrozen) Frozen(2,1+imFree:imm)=.true.   !y of i>imFree is frozen  
+        IF (lzFrozen) Frozen(3,1+imFree:imm)=.true.   !z of i>imFree is frozen  
+        IF ((rang==0).and.(imFree.ne.imm)) THEN
+           WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
+           if(imFirstFrozen==0) then
+              WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
+                   imFree, " bougent"
+           else 
+              WRITE(6,'(a,i0,a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
+                   imFree, " et superieur et egal a ", imFirstFrozen+1, "bougent"
+           end if
+        end IF
      end if
 
      if (imFirstFrozen > 0) then
-             IF (lxFrozen) Frozen(1,1:imFirstFrozen)=.true. ! x of i<=imFirstFrozen is frozen
-             IF (lyFrozen) Frozen(2,1:imFirstFrozen)=.true. ! y of i<=imFirstFrozen is frozen
-             IF (lzFrozen) Frozen(3,1:imFirstFrozen)=.true. ! z of i<=imFirstFrozen is frozen
-            if (imFree == -1) WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
-            if (imFree == -1) WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice superior ou egal a ", &
-                        imFirstFrozen+1, " bougent"
-     end if 
+        IF (lxFrozen) Frozen(1,1:imFirstFrozen)=.true. ! x of i<=imFirstFrozen is frozen
+        IF (lyFrozen) Frozen(2,1:imFirstFrozen)=.true. ! y of i<=imFirstFrozen is frozen
+        IF (lzFrozen) Frozen(3,1:imFirstFrozen)=.true. ! z of i<=imFirstFrozen is frozen
+        if (imFree == -1) WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
+        if (imFree == -1) WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice superior ou egal a ", &
+             imFirstFrozen+1, " bougent"
+     end if
 
 
 
@@ -1204,7 +1208,7 @@ endif
   end IF   !lxFrozen,lyFrozen,lzFrozen
   if (rulayer.gt.0.0)then
      rulayer=rulayer*1.0d-8
-     
+
      IF (rang==0)write(6,*)'atomes immobiles fixes par rulayer ', rulayer*1d8
   end if
 
@@ -1229,10 +1233,10 @@ endif
         do ipotcont=1,npotmax
            if (lpotentiel(ipotcont).EQV..true.)write(6,*)'potentiel actif', ipotcont
         end do
-!        if (lcasca.eqv..true.) then
-!           if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
-!           stop
-!        end if
+        !        if (lcasca.eqv..true.) then
+        !           if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
+        !           stop
+        !        end if
      end if
   end if
   if (rang==0) write(6,*)'fmt_cin',fmt_cin

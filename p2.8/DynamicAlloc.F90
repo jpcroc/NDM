@@ -18,7 +18,7 @@ subroutine DynamicalAllocationCell
  
   ncel(:noxyz,:26) = zero                 ! et petite initialisation
 
-  if((ltpcel.eqv..true.).or.(tempstopcel.gt.0)) then
+  if((ltpcel.eqv..true.).or.(tempstopcel.gt.0).or.(tcelec.gt.0)) then
      allocate (tempc(noxyz))
      allocate (tempcm(noxyz))
         allocate(celpm1(noxyz))
@@ -36,6 +36,7 @@ subroutine DynamicalAllocationCell
   end if
   if (lsigatcel.eqv..true.) then
      allocate (patcel(noxyz))
+     allocate (patcelmax(noxyz))
      allocate (sigatcel(3,3,noxyz))
      allocate (natchk(noxyz))
   end if

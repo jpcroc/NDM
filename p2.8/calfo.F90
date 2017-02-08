@@ -33,7 +33,7 @@ subroutine calfo
   real(double), dimension(3) :: fptot
   integer :: i,ilocal,ipot,ic
   real(double)::vn,v1,f1,ekin
-  integer::nv1
+  integer::nv1,koo
   logical:: test_sigma
 
 #if(PARA)
@@ -212,6 +212,10 @@ subroutine calfo
 
   if(ibrake.gt.0) then
      do i=1,im
+        if(tcelec.gt.0) then
+           koo = ielat(i)                          ! Numero de la cellule
+           if (tempc(koo).le.tcelec) cycle
+        end if
 
         vn= vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
 	ekin=0.5*erg2ev*vn*cm(ityp(i))
