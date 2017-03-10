@@ -219,7 +219,7 @@ subroutine calfo
 
         vn= vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
 	ekin=0.5*erg2ev*vn*cm(ityp(i))
-        if ((vn.ne.0).and.(ekin.gt.1)) then
+        if ((vn.ne.0).and.(ekin.gt.Eccel)) then
            !	write(6,*)'RG',rang,i,ekin
            vn=sqrt(vn)
            v1=elstopforce(ityp(i),1,1)

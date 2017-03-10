@@ -399,6 +399,7 @@ subroutine config
 
      if (lrestart) then
         read (lucin, err=456) tmean, pmean, it, timel
+        if ((lrestart).and.(nitmax.ge.0)) itmax=it+nitmax
         tstep = oldtstep
 
         if (rang==0) then

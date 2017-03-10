@@ -35,7 +35,7 @@ subroutine readdm
 
   namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
        tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
-       tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax, itean, itespebcout,  &
+       tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, itespebcout,  &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
        lrestart, lPathFromGin, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
        ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
@@ -53,7 +53,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec
+       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Eccel
 
 
   !
@@ -100,6 +100,7 @@ subroutine readdm
   lcasca = .FALSE.            !cascade Y/N
   lfissure = .FALSE.          !crack Y/N
   itmax = -1                  !maximum number of iterations
+  nitmax = -1                 !maximum number of new iterations after restart
   itederive = -1              !"derive" correction
   igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 modification de cin puis stop
   lrestart = .FALSE.          !if T : restarting from an interrupt job
@@ -320,6 +321,7 @@ subroutine readdm
 
   lrctest=.true.
   tcelec=0 ! température de coupure pour les pertes électroniques
+  Eccel=0 ! température de coupure pour les pertes électroniques
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -466,6 +468,14 @@ subroutine readdm
      !     endif
      itab = 1
   endif
+
+  if ((itmax.GT.0).and.(nitmax.GT.0)) then
+     write(6,*)' NITMAX PASSE DEVANT ITMAX'
+  end if
+  if ((.not.lrestart).and.(nitmax.GT.0)) then
+     write(6,*)'Nitmax>0 et pas restart ?'
+     stop
+  end if
 
 
   if (dmtype.EQ.11) itmax=1
@@ -765,12 +775,9 @@ subroutine readdm
      !     zz0=zz0*1.D-8
      if (ibrake.gt.0) then
         if(rang==0) then 
-           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
-           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC > 1!!!!!!!!!!'
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC >' , Eccel,'!!!!!!!!!!'
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES Tempcel  >' , tcelec,'!!!!!!!!!!'
+
         endif
      else
         if (tcelec.gt.0) then

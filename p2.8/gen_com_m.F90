@@ -97,7 +97,7 @@ module gen_com_m
   real(double), dimension(3) :: celsize	     ! taille des cel
 
 
-  integer :: it, itmax, igen ! iteration courante, finale , type de generation
+  integer :: it, itmax, nitmax,igen ! iteration courante, finale , type de generation
   real(double)::timemax ! temps max simulï¿½
   integer :: lenfnam
   integer :: fmt_cin
@@ -197,7 +197,7 @@ module gen_com_m
   real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
   real(double):: elosselectot,elosselectot1 ! electronic losses for all atoms ; the PKA
   real(double),pointer::elstopforce(:,:,:)
-  real(double):: tcelec ! coupure pour les pertes électroniques
+  real(double):: tcelec,Eccel ! coupure pour les pertes électroniques
 
 
 

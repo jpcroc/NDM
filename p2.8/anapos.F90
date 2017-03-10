@@ -12,18 +12,22 @@ module posana
          ldetdec,&          !determination du decalage
          lrescale ,&          ! rescale des posistions de dÃ©part sur la boite d'arrivÃ©e
          lpstruct ,&          
+         lallint ,&          ! dans ws : si true dumbbal=2 ints ; si false dumbbal =1 int
          lpdep ,&          
          ldeptest ,&          
          lws ,&          ! Wigner-Seitz pour INT et VAC
          lpdef, &
          ldefcat, &        ! defauts sur les cations seulement
+         lsubc, &        ! analyse en sous cascade BLOB
          distordflag    ! analyse des angles dans le cristal si flag==.true.
     integer::         idistord,iprtnvi        ! analyse des diff angulaires
     integer :: imcr ! nb d'atomes dans le cristal de reference
     real(double)::pstmax(20)
     real(double),pointer:: xpcr(:,:)
     integer, pointer :: itypcr(:)
-
+    integer:: ndvblob,ndvmin ! voisins blob pour SC
+    real(double)::rdv ! distance entre d�fauts pour SC
+    integer, pointer:: indws(:),indatsit(:,:),natsit(:),indint(:),indvac(:),indas(:) ! indices des atomes deplaces et plottes
   ! **************************************************************
 contains
 
@@ -61,7 +65,7 @@ contains
     real (double) :: plmin1,plmin2,plmin3, plmax1,plmax2,plmax3 ! bord de plot lu dans la namelist
     namelist /analyse/ldecal,ldesord,idistord,idecal,tdep,lvac,tvac,tint,lcomp,plmin1, &
          plmin2,plmin3, plmax1,plmax2,plmax3,ldetdec,lrescale,lpstruct,lpdef,lpdep,ldeptest, &
-         ldefcat,rclu, lnbvois,lsic,nbvoisparf,pstmax,iprtnvi,lc15,lws,deltx,delty,deltz
+         ldefcat,rclu, lnbvois,lsic,nbvoisparf,pstmax,iprtnvi,lc15,lws,deltx,delty,deltz,lallint,ndvblob,ndvmin,rdv,lsubc
 
 
 
@@ -97,7 +101,11 @@ contains
     lrescale=.true.
     ldefcat=.false.
     deltx=0. ; delty=0.0; deltz=0.0
+    lallint=.false.
     nbvoisparf(:,:)=0
+    lsubc=.false.
+    ndvblob=0
+    ndvmin=0
     write(6,*)'*** analyse du crystal'
     open(175, file='analyse.in')
     read(175,nml=analyse)
@@ -227,6 +235,8 @@ contains
 
     !  if (dmtype==6)   stop
     !    write(6,*)'fin compcr'
+
+
 
     return
   end subroutine anapos
@@ -614,7 +624,7 @@ contains
     real(double), dimension(1,3) :: cv
 
     integer :: nvac,nint,nremp,nanti,ivac,iint,iremp,ias
-    integer, dimension(:), pointer :: indvac,indint,indremp,indas
+    integer, dimension(:), pointer :: indremp
     logical :: vacfl
 
     real(double) :: r2min
@@ -1115,7 +1125,7 @@ contains
 
     !Local variables
     integer :: i,j,k,ndep,ic,nplt,idp,iplt
-    integer, dimension(:), pointer:: indws(:),indatsit(:,:),natsit(:),indint(:),indvac(:),indas(:) ! indices des atomes deplaces et plottes
+
 
     real(double) :: a1,a2,a3,c1,c2,c3,r2
     real(double), dimension(1,3) :: cv
@@ -1123,10 +1133,10 @@ contains
     integer :: nvac,nint,nremp,nanti,ivac,iint,iremp,ias
     logical :: vacfl
 
-    real(double) :: r2min
+    real(double) :: r2min,r2ali
 
     real(double) :: c3p,c2p,c1p,c1abs,c2abs,c3abs,r
-    integer:: koo,i2,i1,ncelvois,ko1,immin,immax
+    integer:: koo,i2,i1,ncelvois,ko1,immin,immax,indws0
     !  integer,pointer :: lastcr (:,:),natocr(:),ielatcr(:)
 
     immin=min(im,imcr)
@@ -1205,10 +1215,39 @@ contains
           nvac=nvac+1
           indvac(nvac)=j
        elseif(natsit(j).gt.1) then
-          do i=1,natsit(j)
-             nint=nint+1
-             indint(nint)=indatsit(j,i)
-          end do
+          if (lallint.eqv..true.)then 
+             do i=1,natsit(j)
+                nint=nint+1
+                indint(nint)=indatsit(j,i)
+             end do
+          else
+             r2ali=100
+             do i=1,natsit(j)
+                c1 = xp(1,i)-xpcr(1,j)
+                c2 = xp(2,i)-xpcr(2,j)
+                c3 = xp(3,i)-xpcr(3,j)
+                if (c1>0.5) c1 = c1-1.
+                if (c1<(-0.5)) c1 = c1+1.
+                if (c2>0.5) c2 = c2-1.
+                if (c2<(-0.5)) c2 = c2+1.
+                if (c3>0.5) c3 = c3-1.
+                if (c3<(-0.5)) c3 = c3+1.
+                cv(1,1) = c1
+                cv(1,2) = c2
+                cv(1,3) = c3
+                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+                r2 = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)
+                if (r2.lt.r2ali) then
+                   r2ali=r2
+                   indws0=i
+                end if
+             end do
+             do i=1,natsit(j)
+                if (i==indws0)cycle
+                nint=nint+1
+                indint(nint)=indatsit(j,i)
+             end do
+          end if
        else
           if (ityp(j).ne.ityp(indatsit(j,1))) then
              nas=nas+1
@@ -1216,7 +1255,6 @@ contains
           end if
        end if
     end do iloop20
-
     call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
     call cryst_to_cart (imm, xpcr, at, 1)     !cryst vers cart
 
@@ -1330,11 +1368,12 @@ contains
 
 
     end if
+    if (lsubc) call subc (nvac,indvac,nint,indint)
     if(lvac) then
        deallocate (indvac) ; deallocate (indint) ; deallocate (indas) 
     end if
-
     !  if (nvac==0) then
+
     !     write(6,*)'plus de lacunes : STOP'
     !     write(6,*)'it = ', it, ' timel= ', timel
     !     stop
@@ -1353,9 +1392,275 @@ contains
   end subroutine ws
 
 
+  subroutine subc(nvac,indvac,nint,indint)
+    USE T_kind_param_m
+    use gen_com_m
+    use tab_imm_m
+
+    type:: deftype
+       real(double)::xd(3)
+       integer::typ ! 1=vac ; 2=int ; 3=AS
+       integer::attyp 
+       integer:: sc ! sous cascade
+       integer::nvd !nombre de d�fauts voisins
+       integer::nvdvois !nombre max de d�fauts parmi les atomes voisins
+       integer,dimension(:),allocatable::indvd !indice des d�fauts voisins
+    end type deftype
+
+    integer ::nvac,nint,ntypdefsc(3),nattypdefsc(ntyp),ivac,iint,nsc,id12,sc1,sc2,id3sc,id3,&
+         & isc,jrsc,jsc,krsc,ksc,irsc
+    integer, dimension(:), pointer:: indvac,indint
+    integer,allocatable::ndefsc (:),inddefsc(:,:),indrg(:),rgsc(:),ndefvois(:)
+    type(deftype), allocatable :: deft(:), deft2(:)
+    real(double)::c1,c2,c3,cv(1,3),dist
+    integer::ndeft,ndeft2,id1,id2,id
+    character*2::ch2
+    integer, dimension (1000):: nscIn,nscVn
+!    write(6,*)'indvac',indvac(1:nvac)
+!    write(6,*)'indint',indint(1:nint)
+
+    ndeft=nvac+nint
+    allocate (deft(ndeft)) 
+    allocate (ndefvois(ndeft))
+    do id=1,ndefT
+       allocate(defT(id)%indvd(ndeft))
+    end do
+    id=0
+    do ivac=1,nvac
+       id=id+1  
+
+       do ic=1,3
+          defT(id)%xd(ic)=xp(ic,indvac(ivac))
+!          write(6,*)xp(ic,indvac(ivac))
+       end do
+       deft(id)%typ=1
+       deft(id)%nvd=0
+
+    end do
+
+    do iint=1,nint
+       id=id+1
+       do ic=1,3
+          defT(id)%xd(ic)=xp(ic,indint(iint))
+       end do
+       deft(id)%typ=2
+       deft(id)%nvd=0
+       deft(id)%attyp=ityp(indint(iint))
+    end do
+    write(6,*)'nb de defauts pour SC=',ndeft,nvac
+!    do id=1,ndeft
+!       write(6,*)id,deft(id)%xd
+!    end do
+    ndefvois=0
+    write(6,*)'TATA'
+    do id1=1,ndeft
+       do id2=id1+1,ndeft
+          cv(1,1) = deft(id1)%xd(1)-deft(id2)%xd(1)
+          cv(1,2) = deft(id1)%xd(2)-deft(id2)%xd(2)
+          cv(1,3) = deft(id1)%xd(3)-deft(id2)%xd(3)
+          call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
+          if (cv(1,1)>0.5) cv(1,1) = cv(1,1)-1.
+          if (cv(1,1)<(-0.5)) cv(1,1) = cv(1,1)+1.
+          if (cv(1,2)>0.5) cv(1,2) = cv(1,2)-1.
+          if (cv(1,2)<(-0.5)) cv(1,2) = cv(1,2)+1.
+          if (cv(1,3)>0.5) cv(1,3) = cv(1,3)-1.
+          if (cv(1,3)<(-0.5)) cv(1,3) = cv(1,3)+1.
+          call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+          dist= sqrt(cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3))
+!          write(6,*)'dist',dist,rdv
+          if (dist.le.(rdv*1d-8)) then
+             deft(id1)%nvd=deft(id1)%nvd+1
+             deft(id1)%indvd(deft(id1)%nvd)=id2
+             deft(id2)%nvd=deft(id2)%nvd+1
+             deft(id2)%indvd(deft(id2)%nvd)=id1
+          end if
+       end do
+    end do
+    write(6,*)'TOTO'
+
+    do id1=1,ndeft
+       deft(id1)%nvdvois=deft(id1)%nvd
+       do id2=1,deft(id1)%nvd
+          deft(id1)%nvdvois=max(deft(id1)%nvdvois,deft(deft(id1)%indvd(id2))%nvd)
+       end do
+    end do
+
+    ndeft2=0
+    do id1=1,ndeft
+!       write(6,*)deft(id1)%nvd,deft(id1)%nvdvois
+       if(deft(id1)%nvdvois.ge.ndvblob)then
+          ndeft2=ndeft2+1
+       end if
+    end do
+    write(6,*)'nb de d�fauts dans les SC ',ndeft2
+    allocate (deft2(ndeft2))
+    do id2=1,ndefT2
+       allocate(defT2(id2)%indvd(ndeft2))
+    end do
+    id2=0
+
+    do id1=1,ndeft
+       if(deft(id1)%nvdvois.ge.ndvblob)then
+          id2=id2+1
+          deft2(id2)=deft(id1) 
+          deft(id1)%sc=id2
+          deft2(id2)%indvd(:)=0
+          deft2(id2)%nvd=0
+       end if
+    end do
+
+    do id1=1,ndeft2
+       do id2=id1+1,ndeft2
+          cv(1,1) = deft2(id1)%xd(1)-deft2(id2)%xd(1)
+          cv(1,2) = deft2(id1)%xd(2)-deft2(id2)%xd(2)
+          cv(1,3) = deft2(id1)%xd(3)-deft2(id2)%xd(3)
+          call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
+          if (cv(1,1)>0.5) cv(1,1) = cv(1,1)-1.
+          if (cv(1,1)<(-0.5)) cv(1,1) = cv(1,1)+1.
+          if (cv(1,2)>0.5) cv(1,2) = cv(1,2)-1.
+          if (cv(1,2)<(-0.5)) cv(1,2) = cv(1,2)+1.
+          if (cv(1,3)>0.5) cv(1,3) = cv(1,3)-1.
+          if (cv(1,3)<(-0.5)) cv(1,3) = cv(1,3)+1.
+          call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+          dist= cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)
+          if (dist.le.(rdv*1d-8)**2) then
+             deft2(id1)%nvd=deft2(id1)%nvd+1
+             deft2(id1)%indvd(deft2(id1)%nvd)=id2
+             deft2(id2)%nvd=deft2(id2)%nvd+1
+             deft2(id2)%indvd(deft2(id2)%nvd)=id1
+          end if
+       end do
+    end do
+    do id1=1,ndeft2
+       deft2(id1)%sc=id1
+    end do
+
+    nsc=ndeft2
+    allocate(ndefsc(nsc))
+    ndefsc(:)=1
+    allocate(inddefsc(ndeft2,nsc))
+    inddefsc(:,:)=0
+    do id=1,nsc
+       inddefsc(1,id)=id
+    end do
+
+    do id1=1,ndeft2
+       do id12=1,deft2(id1)%nvd
+          id2=deft2(id1)%indvd(id12)
+          if(deft2(id1)%sc.ne.deft2(id2)%sc)then
+             if (deft2(id1)%sc.lt.deft2(id2)%sc) then
+                sc1=deft2(id1)%sc
+                sc2=deft2(id2)%sc
+             else
+                sc1=deft2(id2)%sc
+                sc2=deft2(id1)%sc
+             end if
+             !                          write(6,*)'ndefc'
+             !                          write(6,*)ndefsc(sc1)
+             !                          write(6,*)ndefsc(sc2)
+             do id3sc=1,ndefsc(sc2)
+                id3=inddefsc(id3sc,sc2)
+                ndefsc(sc1)=ndefsc(sc1)+1
+                inddefsc(ndefsc(sc1),sc1)=id3
+                deft2(id3)%sc=sc1
+             end do
+             do isc=sc2+1,nsc
+                ndefsc(isc-1)=ndefsc(isc)
+                do id3sc=1,ndefsc(isc-1)
+                   id3=inddefsc(id3sc,isc)
+                   inddefsc(id3sc,isc-1)=inddefsc(id3sc,isc)
+                   deft2(id3)%sc=isc-1
+                end do
+             end do
+             nsc=nsc-1
+          end if
+       end do
+    end do
+
+
+    write(6,'(A,G14.5,I4,A,I6,A)')'POUR RDV/ndvblob =',RDV,ndvblob,' il y a ', nsc,' sous cascades'
+
+    allocate(indrg(nsc))
+    allocate(rgsc(nsc))
+    do isc=1,nsc
+       rgsc(isc)=isc
+       indrg(isc)=isc
+    end do
+    do isc=1,nsc  !on ordonne les cascades
+       !       write(6,*)'ISC',isc
+       do jrsc=1,isc-1  ! cascades ordonn�es
+          jsc=indrg(jrsc)  ! indices de la jrsc �me cascade
+          if (ndefsc(jsc).ge.ndefsc(isc))cycle
+          do krsc=isc-1,jrsc,-1  ! krsc cascades suivantes 
+             ksc=indrg(krsc) 
+             rgsc(ksc)=krsc+1
+             indrg(krsc+1)=ksc
+          end do
+          rgsc(isc)=jrsc
+          indrg(jrsc)=isc
+          exit
+       end do
+       !       do jrsc=1,isc
+       !          write(6,*)'ndef scR',jrsc,indrg(jrsc),ndefsc(indrg(jrsc))
+       !       end do
+    end do
+    nclustI=0; nclustV=0
+    do irsc=1,nsc
+       isc=indrg(irsc)
+       ntypdefsc(1:3)=0
+       nattypdefsc(:)=0
+       do id=1,ndefsc(isc)
+          id2=inddefsc(id,isc)
+          ntypdefsc(deft2(id2)%typ)=ntypdefsc(deft2(id2)%typ)+1
+          nattypdefsc(deft2(id2)%attyp)=nattypdefsc(deft2(id2)%attyp)+1
+          !             write(6,*)
+       end do
+       write(6,'(A,I7,I7,A,8I7)')'sous cascade ',isc,ndefsc(isc),' defauts',ntypdefsc(1:3),nattypdefsc(1:ntyp)
+       if (ntypdefsc(2)==ndefsc(isc))          nscIn(ndefsc(isc))=nscIn(ndefsc(isc))+1
+       if (ntypdefsc(1)==ndefsc(isc))          nscVn(ndefsc(isc))=nscVn(ndefsc(isc))+1
+    end do
+    if (ndeft.ne.ndeft2) write(6,*)'defauts isoles ', ndeft-ndeft2
+    write(6,*)
+       do i=1,maxval(ndefsc)
+       write(6,*)'nclustI ', i,' = ',nscIn(i)
+       enddo
+       write(6,*)
+       do i=1,maxval(ndefsc)
+       write(6,*)'nclustV ', i,' = ',nscVn(i)
+       enddo
+       write(6,*)
 
 
 
+    open(file='def_et_SC.mol', unit=182)
+    write(182,*)ndeft,'IT = ',it,' DEF ET SC'
+    at=at*1.d8
+    write (182,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),&
+         at(1,3),at(2,3),at(3,3)
+    at=at/1.d8
+119 format(a2,1x,3(G17.8,1x),1x,i5)       
+    do id=1,ndeft
+       if (deft(id)%typ==1)then
+          ch2='V '
+       else
+          ch2=ty(deft(id)%attyp)
+       end if
 
+       if(deft(id)%sc==0) then
+          write(182, 119) ch2 ,deft(id)%xd(1)*1d8,deft(id)%xd(2)*1d8,deft(id)%xd(3)*1d8,deft(id)%sc
+       else
+          write(152, 119) ch2 ,deft(id)%xd(1)*1d8,deft(id)%xd(2)*1d8,deft(id)%xd(3)*1d8,deft2(deft(id)%sc)%sc
+       end if
+    end do
+
+
+    deallocate (deft) ; 
+    deallocate (deft2);
+    deallocate (ndefvois);
+    deallocate(ndefsc);
+    deallocate(inddefsc);
+    deallocate(indrg);
+    deallocate(rgsc);
+  end subroutine subc
 
 end module posana
