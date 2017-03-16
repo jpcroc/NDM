@@ -5,7 +5,7 @@ subroutine initeloss
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m,only:elstopforce,ngrdel,ev2erg
+  use gen_com_m,only:elstopforce,ngrdel,ev2erg,rang
   use var_pot,only:ntyp,cm
   use tab_imm_m,only:
 !  use eam,only:
@@ -44,9 +44,9 @@ subroutine initeloss
   allocate (elstopforce(ntyp,2,0:ngrdel))
   allocate(vmaxel(ntyp))
   open (unit=99,file='elstop.in')
-  write(6,*)'electronic loss eV ; eV/Ang'
+  if(rang==0)  write(6,*)'electronic loss eV ; eV/Ang'
   do i=1,ntyp
-     write(6,*)'TYPE ',i
+ if(rang==0)     write(6,*)'TYPE ',i
      read(99,*)npr
      allocate(veloc(0:npr))
      allocate(stoppow(0:npr))
@@ -55,7 +55,7 @@ subroutine initeloss
         read(99,*)veloc(j),stoppow(j)
 !        vel=clum*sqrt(1-1./((veloc(j)*ev2erg/(cm(i)*clum**2)+1)**2))
         vel2=dsqrt(2*veloc(j)*ev2erg/cm(i))
-!        write(6,'(2G15.5)')vel,vel2
+ !        write(6,'(2G15.5)')vel,vel2
         veloc(j)=vel2 ! vitesse en cm.sec-1
         stoppow(j)=stoppow(j)*ev2erg*1e8 
 !        write(62,*)j,veloc(j),stoppow(j)
@@ -79,7 +79,7 @@ subroutine initeloss
            end if
         end do loopj
         elstopforce(i,2,k)=stoppow(j0)+(stoppow(j1)-stoppow(j0))*(vmaxel(i)*k/ngrdel-veloc(j0))/(veloc(j1)-veloc(j0))
-        if (mod(k,20)==0) write(6,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
+ if((rang==0).and.(mod(k,20)==0)) write(6,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
 !        write(61,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
      end do loopk
      deallocate(veloc)

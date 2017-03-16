@@ -65,21 +65,21 @@ rangph=0
 
 
 
-  if (rang==0) write(6,*)'*** NDM286 +1 ***'
+  if (rang==0) write(6,*)'*** NDM628 ***'
 #if(ART)
-  if (rang==0) write(6,*)'*** NDM286 + 1+ ART ***'
+  if (rang==0) write(6,*)'*** NDM628+ ART ***'
 #endif
 
 #if(PHONDY)
-  if (rang==0) write(6,*)'*** NDMP286 + 1+ PHONDY ***'
+  if (rang==0) write(6,*)'*** NDMP628 +  PHONDY ***'
 #endif
 
 #if(MAB)
-  if (rang==0) write(6,*)'*** NDMP286 + 1+  MAB ***'
+  if (rang==0) write(6,*)'*** NDMP628 +   MAB ***'
 #endif
 
 #if(ML)
-  if (rang==0) write(6,*)'*** NDMP286 + 1+  ML ***'
+  if (rang==0) write(6,*)'*** NDMP628 +   ML ***'
 #endif
 
 
@@ -100,4 +100,4 @@ end program ndm
 
 
 
-! ca c'est du programme, papa !
+! ca c'est du programme, papa 

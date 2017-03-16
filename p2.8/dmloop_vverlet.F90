@@ -47,7 +47,7 @@ real(double) sigkine_tot(3,3)
   
   
   call dyn_vverlet
-! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien répartis en cellules
+! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien rï¿½partis en cellules
 !  write(6,*)'RG i ',rang,it
   ! calcul de sigtot
   !if (lpr==.false.) then
@@ -102,8 +102,10 @@ real(double) sigkine_tot(3,3)
      sigtyptyp=sigtyptyp_loc
 
   end if
-  call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-  sigc=sigc_tot
+  if (associated(sigc)) then
+     call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     sigc=sigc_tot
+  end if
 #endif
   sigtot = sigkine+sig
 

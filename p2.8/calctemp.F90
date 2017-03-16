@@ -93,8 +93,10 @@ subroutine calctemp(temptyp)
      v2=v2_glob
      call MPI_ALLREDUCE(vx2(1:ntyp,1:3),vx2_glob(1:ntyp,1:3),ntyp*3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      vx2=vx2_glob
-     call MPI_ALLREDUCE(tempc,tempc_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-     tempc=tempc_tot
+     if (allocated(tempc)) then
+        call MPI_ALLREDUCE(tempc,tempc_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+        tempc=tempc_tot
+     end if
 #endif
 
 
