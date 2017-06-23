@@ -193,6 +193,9 @@ ifdef PHONDY
 ifdef PARAPH
  OBJS = ${OBJS_MOD} ${OBJS_PARAPH} ${OBJS_SEQ}
  EXT=_phondy_para 
+ifdef LAMMPS_VERSION
+ EXT=_phondy_para_lammps
+endif
 else
  OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
  EXT=_phondy
@@ -266,7 +269,7 @@ LIBMAB=libmab.a
 
 
 ${BIN}/rundm90 : ${DEP} 
-	${LD} -o ${BIN}/rundm90${EXT}${EXT2}  ${F90FLAGS} ${LDFLAGS} ${OBJS} ${LIBRARY}
+	${LD}  -o ${BIN}/rundm90${EXT}${EXT2}  ${F90FLAGS} ${LDFLAGS} ${OBJS} ${LIBRARY} ${LIBS}
 #	rm -rf ${DIREXT}
 
 

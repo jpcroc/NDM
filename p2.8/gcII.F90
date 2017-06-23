@@ -110,8 +110,9 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 #else
   it=0
   itetemp2=0
+  write (*, *) 'energie ',potist*erg2eV,'   eV', potist,'erg'
+  call analyse
   call endrun 
-  write (*, *) 'energie ', potist,'erg',potist*erg2eV,'eV'
   return
 #endif
 
