@@ -18,8 +18,8 @@ F90 = ifort
  CPPFLAGS = -C -E -P -traditional -nostdinc
 EXT      = 
 
-F90FLAGS = -O3  -convert big_endian 
-#F90FLAGS = -O3  
+#F90FLAGS = -O3  -convert big_endian 
+F90FLAGS = -O3  
 
 
 ifdef CHECK
@@ -210,7 +210,7 @@ ifdef LAMMPS_VERSION
 #LAMMPS_VERSION end_if 
 endif
 
- CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH  -nostdinc
+ CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH  ${KMC_INC} -nostdinc
 # EXT      = _PHONDY_PARAPH
 #F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
 #F90FLAGS = -static -O0 -g -C
