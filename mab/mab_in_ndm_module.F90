@@ -4,7 +4,7 @@ module mab_in_ndm_module
 !-----------------------------------------------
       USE T_kind_param_m, ONLY:  double
       use gen_com_m
-      use var_pot,  ONLY: cm
+      use var_pot,  ONLY: cm, ntyp
       use jqmod
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -13,7 +13,9 @@ module mab_in_ndm_module
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       implicit none
-      integer :: rangmab=0
+
+
+      integer :: rangmab
       real(double), dimension(:,:), allocatable :: sig_i,sig_ll,rga_i,xp0,m_i
       real(double)  :: dtlang,dtlang_ini, temperature,Ecinetique,m_tot,a0bcc,omega_abf,maxforce,lang_factor
       
@@ -24,6 +26,7 @@ module mab_in_ndm_module
                                                                       !cm are already in  multiplied by 
                                                                       ! umass (in g) in the main NDM program. 
 
+      real(double),dimension(:,:),allocatable, save:: fp0
       real(double) :: crit_langevin_dist, crit_langevin_zeta
       integer :: nlangevin,abf_type,sim_mode,langevin_type,n_equilibre,abf_mode,mode_zeta_potential
       integer :: it_mab,it_stop,itest_stop,it_calc_brute
@@ -69,6 +72,19 @@ module mab_in_ndm_module
       !neb part:
       integer :: nimage_neb, nimage_lambda
 
+
+     !LAMMPS interface ...
+     integer :: nat,VECSIZE
+     character(len=128) :: fnamtin_lammps
+     logical ::  firsttime_lammps
+     real(8) :: energy_conversion_lammps,  position_conversion_lammps
+     real(kind=8) , allocatable, dimension(:)  ::  posa, forca
+     real(kind=8) , allocatable, dimension(:)  ::  cm_phondy
+     real(8)               :: energy, boxl(3)
+
+
+
+
  contains
  
 
@@ -78,6 +94,25 @@ subroutine allocate_mab()
    
    allocate (sig_i(3,imm),sig_ll(3,imm),rga_i(3,imm),m_i(3,imm),xp0(3,imm)) 
    allocate (fpeinstein(3,imm))  
+   rangmab=0
+# if (LAMMPS_VERSION)
+  rangmab=rangph
+#else
+  allocate(cm_phondy(ntyp))
+  cm_phondy(:) = cm(:)
+#endif  
+
+
+! LAMMPS interface ...
+   write (*,*) 'This is LAMMPS'
+   nat=im
+   energy_conversion_lammps=1.d0
+   position_conversion_lammps=1.d0
+   allocate (posa(3*im),  forca(3*im))
+   VECSIZE=3*nat
+   firsttime_lammps=.true.
+
+
   return
 end   subroutine allocate_mab
 

@@ -1,8 +1,17 @@
-OBJ   = mab_in_ndm_module.o\
-        read_mab_file.o\
+
+OBJ_MODULE = mab_in_ndm_module.o
+
+OBJ_MODULE_LAMMPS=LAMMPS-wrapper.o \
+	LAMMPS.o 
+
+
+
+OBJ   = read_mab_file.o\
         tools.o\
 	reaction_neb_module.o\
         einstein.o\
+	calfo_atomic_forces.o\
+        test_minimum.o\
         test_minimum_abf.o\
         langevin.o\
         langevin_overdamped.o\
@@ -22,18 +31,32 @@ OBJ   = mab_in_ndm_module.o\
 
 include ../linux.arch
 
+OBJ_LAMMPS= ndm_lammps.o
+
 EXEC = libmab.a
 
 all : $(EXEC)
 
-$(EXEC) :$(OBJ) 
-	ar rcsv  $(EXEC) $(OBJ)
+ifdef LAMMPS_VERSION
+$(EXEC) : $(OBJ_MODULE) $(OBJ_MODULE_LAMMPS)  $(OBJ_LAMMPS) $(OBJ)
+	ar rcsv  $(EXEC)  $(OBJ_MODULE) $(OBJ_MODULE_LAMMPS)  $(OBJ_LAMMPS) $(OBJ)
+else
+$(EXEC) :$(OBJ_MODULE) $(OBJ) 
+	ar rcsv  $(EXEC) $(OBJ_MODULE) $(OBJ)
+endif
 
 
 
 .PRECIOUS: libmab.a
 
-.SUFFIXES: .f .f90 .o .a
+.SUFFIXES: .f .f90 .F90 .o .a .cpp
+
+
+# Compilation rules
+%.o: %.c
+	$(CC)  -c  ${EXTRA_INC} $(CFLAGS)            $< -o $@  
+%.o: %.cpp
+	$(C++)  -c ${EXTRA_INC} $(C++FLAGS)          $< -o $@ 
 
 .f.o:
 	$(F77) $(F77FLAGS_MAB) -c $<
@@ -50,7 +73,21 @@ $(EXEC) :$(OBJ)
 	$(F90) $(F90FLAGS_MAB) -c $<
 	ar rv $@ $%
 	rm -f $%
+.F90.o :
+	$(CPP)  $(CPPFLAGS_MAB) $< > $*.tmp.f90
+#ifort style	$(F90) -c  $(F90FLAGS_PHONDY) -I${MKLINCLUDE}  -mkl  $*.tmp.f90
+	$(F90) -c  ${EXTRA_INC} $(F90FLAGS_MAB)   $*.tmp.f90
+	mv $*.tmp.o $*.o
+.F90.a :
+	$(CPP)  $(CPPFLAGS_MAB) $< > $*.tmp.f90
+	$(F90) -c  ${EXTRA_INC} $(CPPFLAGS_MAB) $(F90FLAGS_MAB) $*.tmp.f90
+	mv $*.tmp.o $*.o
+	ar rv $@ $%
+	rm -rf $%
+
+
+
 
 
 clean:
-	rm -f *.o *.mod $(EXEC) 
+	rm -f *.o *.mod *.tmp.f90  $(EXEC) 

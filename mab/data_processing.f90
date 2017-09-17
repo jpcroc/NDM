@@ -42,24 +42,24 @@ endif
 !  call set_the_unit_histo()
  select case (abf_type)
  case(1)
-  write(*,*),'Free energy computation....Langevin Dynamics'
+  write(*,*)'Free energy computation....Langevin Dynamics'
   open(unit=992,file='Free_energy_Langevin',status='unknown')
    do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(992,*), unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
+    write(992,*) unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
    enddo
   close(992)
 
  case(2)
-  write(*,*),'Free energy computation....ABF BIN'
+  write(*,*)'Free energy computation....ABF BIN'
   open(unit=993,file='Free_energy_ABFBIN',status='unknown')
    
   if (.not.(abf_mode==22)) then
    do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(993,*),  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
+    write(993,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
    enddo
   else 
   do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(993,*),  1.d0/(unit_histo2(i_loop)/(temperature/KtoERG)), &
+    write(993,*)  1.d0/(unit_histo2(i_loop)/(temperature/KtoERG)), &
              (Free_energy(i_loop)/unit_histo2(i_loop)+renorm_f/unit_histo2(i_loop))*erg2eV
    enddo
   close(993)
@@ -67,23 +67,23 @@ endif
 
 
  case(3)
-  write(*,*),'Free energy computation....ABF BIN OMEGA'
+  write(*,*)'Free energy computation....ABF BIN OMEGA'
   open(unit=994,file='Free_energy_ABFBIN_OMEGA',status='unknown')
    do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(994,*),  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
+    write(994,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
    enddo
   close(994)
 
  case(4)
-  write(*,*),'Free energy computation....ABF Gaussian'
+  write(*,*)'Free energy computation....ABF Gaussian'
   open(unit=995,file='Free_energy_ABFGaussian',status='unknown')
    do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(995,*),  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
+    write(995,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
    enddo
  close(995)
 
  case(5,8)
-  write(*,*),'Free energy computation....ABF ee'
+  write(*,*)'Free energy computation....ABF ee'
   !--------Pour ABFee, on a besoin des A_ee pour calculer l'energie libre.
   !-----------------------A_tilde-------------------------------
   !-----------------------------------------------------------------
@@ -132,7 +132,7 @@ endif
   open(unit=996,file='Free_energy_mollifiee_ABFee',status='unknown')!A_tilde
     ! 
    do i_loop=-nhisto1, nhisto+nhisto1
-       write(996,*), unit_histo2(i_loop),A_ee(i_loop)*erg2eV
+       write(996,*) unit_histo2(i_loop),A_ee(i_loop)*erg2eV
    enddo
     !
   close(996)
@@ -167,7 +167,7 @@ endif
 
 
       do i_loop=-nhisto1,nhisto+nhisto1
-        write(998,*), x_mol(i_loop)/A2cm,A_bar_ee(i_loop)*erg2eV
+        write(998,*) x_mol(i_loop)/A2cm,A_bar_ee(i_loop)*erg2eV
       enddo
       close(998)
 
@@ -187,7 +187,7 @@ endif
    open(unit=999,file='Free_energy_ABFee',status='unknown')
    if (.NOT.(abf_mode==22)) then
    do i_loop=-nhisto1,nhisto+nhisto1
-     write(999,*),unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
+     write(999,*)unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
    enddo
    close(999)
    end if 
@@ -271,8 +271,8 @@ if ((abf_type==5) .or. (abf_type == 8)) then
   !----1. bucket of \zeta. 2.tilde A, 3. A_ee corrected by substracting log(P(\zeta))
   open(unit=967,file='data_A_tilde',status='unknown')
    do i_iter=-nhisto1,nhisto+nhisto1
-     write(968,*), x_mol(i_iter)/A2cm, A_bar_ee(i_iter)*erg2eV, A_bar_corrige(i_iter)
-     write(967,*), x_mol(i_iter)/A2cm, A_ee(i_iter)*erg2ev, A_corrige(i_iter)
+     write(968,*) x_mol(i_iter)/A2cm, A_bar_ee(i_iter)*erg2eV, A_bar_corrige(i_iter)
+     write(967,*) x_mol(i_iter)/A2cm, A_ee(i_iter)*erg2ev, A_corrige(i_iter)
   enddo
   !
   close(968)
@@ -293,7 +293,7 @@ else
    open(unit=966,file='data_A',status='unknown')
 
    do i_iter=-nhisto1,nhisto+nhisto1
-     write(966,*), x_mol(i_iter)/A2cm, Free_energy(i_iter)*erg2eV, A_corrige(i_iter)
+     write(966,*) x_mol(i_iter)/A2cm, Free_energy(i_iter)*erg2eV, A_corrige(i_iter)
    enddo
    close(966)
 endif
@@ -322,7 +322,7 @@ if ((abf_type==5).or.(abf_type==8)) then
    fnorm1=temperature*log(sum(Free_temp)*delta_z)
    Inter_meanforce(:)=Inter_meanforce(:)+fnorm1
    do i_iter=-nhisto1,nhisto+nhisto1
-       write(966,*),x_mol(i_iter)/A2cm, Inter_meanforce(i_iter)*erg2eV, histo_zeta(i_iter)
+       write(966,*)x_mol(i_iter)/A2cm, Inter_meanforce(i_iter)*erg2eV, histo_zeta(i_iter)
    enddo
    close(966)
 
@@ -352,7 +352,7 @@ if ((abf_type==5).or.(abf_type==8)) then
    fnorm2=temperature*log(sum(Free_temp)*delta_z)
    Inter_meanforce1(:)=Inter_meanforce1(:)+fnorm2
    do i_iter=-nhisto1,nhisto+nhisto1
-       write(965,*), x_mol(i_iter)/A2cm,Inter_meanforce1(i_iter)*erg2eV,A_bar_ee(i_iter)*erg2eV
+       write(965,*) x_mol(i_iter)/A2cm,Inter_meanforce1(i_iter)*erg2eV,A_bar_ee(i_iter)*erg2eV
    enddo
    close(965)
 
@@ -433,7 +433,7 @@ end if
 open(unit=967,file='data_A_tilde',action='read')
 
 do i_iter=-nhisto1,nhisto+nhisto1
-read(967,*),lest1,A_tilde_temp(i_iter),lest2
+read(967,*)lest1,A_tilde_temp(i_iter),lest2
 enddo
 
 A_tilde_temp(:)=A_tilde_temp(:)/erg2eV ! change unit for calculating
@@ -464,7 +464,7 @@ Deconvo_exp_temp(:)=0
     enddo
     
     if (Deconvo_denom(i_iter)==0.d0) then
-    write(*,*),'error!!! Deconvo_denom is zero!'
+    write(*,*)'error!!! Deconvo_denom is zero!'
     stop
     endif 
     
@@ -481,7 +481,7 @@ Deconvo_exp_temp(:)=0
         Deconvo_exp_temp(iter)=Deconvo_exp_temp(iter)+temp_calcul  
      enddo
      if (Deconvo_exp_temp(iter) .eq. 0.d0) then
-     write(*,*),'error!!!Deconvo_exp_temp is zero!'
+     write(*,*)'error!!!Deconvo_exp_temp is zero!'
      stop
      endif
 
@@ -507,7 +507,7 @@ open(unit=1111,file='Deconvo_Free_energy',status='unknown')
 
 do iter=-nhisto1,nhisto+nhisto1
 
-write(1111,*), x_mol(iter)/A2cm,Deconvo_exp(iter)
+write(1111,*) x_mol(iter)/A2cm,Deconvo_exp(iter)
 enddo
 
 
@@ -549,10 +549,10 @@ if (.NOT.(abf_type==5)) then
     open(unit=990,file=fnamhisto1,status='unknown')
 
      do i_iter=-nhisto1,nhisto+nhisto1
-      write(989,*),i_iter, histo1(i_iter)
+      write(989,*)i_iter, histo1(i_iter)
      enddo
      do i_iter=1,nhisto
-       write(990,*),i_iter, histo(i_iter)
+       write(990,*)i_iter, histo(i_iter)
      enddo
 
     close (989)

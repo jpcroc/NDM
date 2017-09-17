@@ -13,6 +13,12 @@ program ndm
   use mod_mpi
 #endif
 
+#if(MAB)
+  use mod_mpi_mab
+#endif
+
+
+
 #if(PHONDY && PARAPH)
  use mod_mpi_phondy
 #endif
@@ -75,6 +81,8 @@ rangph=0
 #endif
 
 #if(MAB)
+  rangph=0
+  call init_mpi_mab()
   if (rang==0) write(6,*)'*** NDMP628 +   MAB ***'
 #endif
 

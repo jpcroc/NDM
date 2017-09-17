@@ -349,7 +349,9 @@ if (it_mab > n_equilibre+500)  write(43,*) it_mab-n_equilibre,  Free_energy_brut
 
  if (it_mab > n_equilibre+500)  write(45,*) it_mab-n_equilibre, Free_energy_brute2*erg2ev, (Free_energy_brute4)*erg2ev
  Free_kinetic_brute=-temperature*log(free_kinetic/dble(it_mab-n_equilibre))
- if (mod(it_mab,2000)==0) write(*,*) 'free energy brute O2 O4',Free_energy_brute*erg2ev,Free_energy_brute2*erg2ev, Free_energy_brute4*erg2ev
+ if (mod(it_mab,2000)==0) write(*,*) 'free energy brute O2 O4', &
+            Free_energy_brute*erg2ev,&
+                    Free_energy_brute2*erg2ev, Free_energy_brute4*erg2ev
 
 
 

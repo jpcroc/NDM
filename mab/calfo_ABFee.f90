@@ -68,7 +68,9 @@ end if
   A_ee(iter)=A_ee(iter-1)+delta_z*0.5d0*(A_dev_ee(iter-1)+A_dev_ee(iter))
  end do
 if (idebug > 4) then
- write(139,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 
+ write(139,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), &
+                      A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, &
+                    (A_ee(200)-A_ee_restart(200))*erg2ev 
 end if 
 
  if (abf_restart) then
@@ -78,8 +80,12 @@ end if
  end if 
 
 if (idebug > 3) then
- write(110,'(i6,5E25.12)') it_mab, A_ee(10), A_ee_restart(10), A_ee(10)*erg2ev, A_ee_restart(10)*erg2ev, (A_ee(10)-A_ee_restart(10))*erg2ev 
- write(140,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, (A_ee(200)-A_ee_restart(200))*erg2ev 
+ write(110,'(i6,5E25.12)') it_mab, A_ee(10), A_ee_restart(10), &
+                            A_ee(10)*erg2ev, A_ee_restart(10)*erg2ev, &
+                            (A_ee(10)-A_ee_restart(10))*erg2ev 
+ write(140,'(i6,5E25.12)') it_mab, A_ee(200), A_ee_restart(200), &
+                           A_ee(200)*erg2ev, A_ee_restart(200)*erg2ev, &
+                          (A_ee(200)-A_ee_restart(200))*erg2ev 
 end if 
 !if (.not.abf_restart) then
 !   if (it_mab<4) A_ee=0.d0

@@ -79,12 +79,12 @@ if ((abf_type .ne. 6) .and. (abf_type .ne. 7)) then ! when the biais is updated
    sum_histo=sum(histo)
 
    do i_iter=-nhisto1,nhisto+nhisto1
-    if (abf_mode==1) write(989,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo1
+    if (abf_mode==1) write(989,*)x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo1
     !test if (((abf_mode==2).or.(abf_mode==22))) write(989,*),dble(i_iter)*delta_z, histo1(i_iter)/sum_histo1
    enddo
    !
    do i_iter=1,nhisto
-    if (abf_mode==1) write(990,*),x_mol(i_iter)/A2cm, histo(i_iter)/sum_histo
+    if (abf_mode==1) write(990,*)x_mol(i_iter)/A2cm, histo(i_iter)/sum_histo
     !test if (((abf_mode==2).or.(abf_mode==22))) write(990,*),dble(i_iter)*delta_z, histo(i_iter)/sum_histo
    enddo
    !
@@ -99,12 +99,12 @@ if (histo_equi .eqv. .True.) then
    sum_histo1=sum(histo_xi1)
    !
    do i_iter=-nhisto1,nhisto+nhisto1
-    if (abf_mode==1) write(989,*),x_mol(i_iter)/A2cm, histo_xi1(i_iter)/sum_histo1
+    if (abf_mode==1) write(989,*)x_mol(i_iter)/A2cm, histo_xi1(i_iter)/sum_histo1
     !test if (((abf_mode==2).or.(abf_mode==22))) write(989,*),dble(i_iter)*delta_z, histo_xi1(i_iter)/sum_histo1
    enddo
    ! 
    do i_iter=1,nhisto
-    if (abf_mode==1) write(990,*),x_mol(i_iter)/A2cm, histo_xi(i_iter)/sum_histo
+    if (abf_mode==1) write(990,*)x_mol(i_iter)/A2cm, histo_xi(i_iter)/sum_histo
     !test if (((abf_mode==2).or.(abf_mode==22))) write(990,*),dble(i_iter)*delta_z, histo_xi(i_iter)/sum_histo
    enddo
    !
@@ -125,9 +125,11 @@ if (abf_type == 5 .or. abf_type == 8 ) then ! if it is ABFee, we need to fill hi
   sum_histo_zeta=sum(histo_zeta)
   !
   do i_iter=-nhisto1,nhisto+nhisto1
-    if (abf_mode==1) write(969,*),x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
+    if (abf_mode==1) write(969,*)x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
     if (abf_mode==2) write(969,'(i9,E25.12)')i_iter, histo_zeta(i_iter)/sum_histo_zeta
-    if (abf_mode==22) write(969,'(i9,E25.12,2f15.7)')i_iter, histo_zeta(i_iter)/sum_histo_zeta,(temperature/KtoErg)/unit_histo2(i_iter),unit_histo2(i_iter)
+    if (abf_mode==22) write(969,'(i9,E25.12,2f15.7)')i_iter, & 
+                histo_zeta(i_iter)/sum_histo_zeta,&
+                  (temperature/KtoErg)/unit_histo2(i_iter),unit_histo2(i_iter)
   enddo
   !
   close(969)
@@ -142,10 +144,10 @@ open(unit=1106,file='histogram_xi_const_biais',status='unknown')
  sum_histo_zeta=sum(histo_zeta)
   
  do i_iter=-nhisto1,nhisto+nhisto1
-    if (abf_mode==1) write(1105,*),x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
-    if (((abf_mode==2).or.(abf_mode==22))) write(1105,*),dble(i_iter)*delta_z, histo_zeta(i_iter)/sum_histo_zeta
-    if (abf_mode==1) write(1106,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo
-    if (((abf_mode==2).or.(abf_mode==22))) write(1106,*),dble(i_iter)*delta_z, histo1(i_iter)/sum_histo
+    if (abf_mode==1) write(1105,*)x_mol(i_iter)/A2cm, histo_zeta(i_iter)/sum_histo_zeta
+    if (((abf_mode==2).or.(abf_mode==22))) write(1105,*)dble(i_iter)*delta_z, histo_zeta(i_iter)/sum_histo_zeta
+    if (abf_mode==1) write(1106,*)x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo
+    if (((abf_mode==2).or.(abf_mode==22))) write(1106,*)dble(i_iter)*delta_z, histo1(i_iter)/sum_histo
  enddo
 
 
@@ -162,8 +164,8 @@ if (abf_type == 7) then
  sum_histo1=sum(histo1)
   
  do i_iter=-nhisto1,nhisto+nhisto1
-   if (abf_mode==1)  write(1107,*),x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo1
-   if (((abf_mode==2).or.(abf_mode==22)))  write(1107,*),dble(i_iter)*delta_z, histo1(i_iter)/sum_histo1 
+   if (abf_mode==1)  write(1107,*)x_mol(i_iter)/A2cm, histo1(i_iter)/sum_histo1
+   if (((abf_mode==2).or.(abf_mode==22)))  write(1107,*)dble(i_iter)*delta_z, histo1(i_iter)/sum_histo1 
  enddo
 
 

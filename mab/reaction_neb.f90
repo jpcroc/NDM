@@ -323,7 +323,8 @@ end do
 free_energy_force_defect(0)=0.d0
    do i_loop=1,npoints
     !
-    free_energy_force_defect(i_loop)=free_energy_force_defect(i_loop-1)+0.5d0*delta_lambda*(force_defect(i_loop-1)+force_defect(i_loop))
+    free_energy_force_defect(i_loop)=free_energy_force_defect(i_loop-1) + & 
+                          0.5d0*delta_lambda*(force_defect(i_loop-1)+force_defect(i_loop))
 !debug_defect     
 write(781,*) llambda(i_loop), -free_energy_force_defect(i_loop)*erg2ev 
    enddo

@@ -47,6 +47,7 @@ OBJS_PARA=   T_kind_param_mpi_m.o\
 
 
 OBJS_PARAPH=   init_MPI_phondy.o
+OBJS_PARAMAB=  init_MPI_mab.o
 OBJS_PARAML=   init_MPI_ml.o
 
 
@@ -241,11 +242,17 @@ endif
 
 ifdef  MAB
  # Version MAB
- OBJS = ${OBJS_MOD} ${OBJS_SEQ}
+ OBJS = ${OBJS_MOD} ${OBJS_PARAMAB} ${OBJS_SEQ}
  DEP=${OBJS}  ${LIBMAB}
+ CPPFLAGS=${CPPFLAGS_MAB}
  CLEANMAB=clean_mab
  DIREXT=mab
  EXT=_mab
+ifdef LAMMPS_VERSION
+ EXT=_mab_lammps
+endif
+
+
 endif
 
 .f.o :
