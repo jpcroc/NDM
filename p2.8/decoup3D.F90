@@ -187,7 +187,8 @@ loop1:     do nbr_cpu=1,nbr_cpuIN
      if (specifs(num_sol,3)>specifs(solution,3)) solution = num_sol
   enddo
 
-  if (rang==0) write(6,'(A,4I5,F10.4)')'LE MEILLEUR DECOUPAGE :',nbr_cpu, decoup(solution,1), decoup(solution,2), decoup(solution,3),specifs(solution,3)
+  if (rang==0) write(6,'(A,4I5,F10.4)')'LE MEILLEUR DECOUPAGE :',nbr_cpu, decoup(solution,1), & 
+     decoup(solution,2), decoup(solution,3),specifs(solution,3)
 
   !Calcul des xmin, ymin, zmin pour chaque decoupage
   tailleminx = int(nox/decoup(solution,1))
@@ -267,18 +268,18 @@ loop1:     do nbr_cpu=1,nbr_cpuIN
      ldecoup=6
 #endif
     
-     write(ldecoup,*),'Taille des decoupages'
+     write(ldecoup,*)'Taille des decoupages'
      do ii=0,nbr_cpu-1
-        write(ldecoup,*),'Decoupage',ii,':',res_cpu(ii,1:3)
+        write(ldecoup,*)'Decoupage',ii,':',res_cpu(ii,1:3)
      enddo
-     write(ldecoup,*),'----------------------------------------------'
+     write(ldecoup,*)'----------------------------------------------'
      do ii = 0,nbr_cpu-1   
-        write(ldecoup,*),'Debut/Fin en x pour ii',ii,'egal',coord_min(ii,1),coord_max(ii,1)
-        write(ldecoup,*),'Debut/Fin en y pour ii',ii,'egal',coord_min(ii,2),coord_max(ii,2)
-        write(ldecoup,*),'Debut/Fin en z pour ii',ii,'egal',coord_min(ii,3),coord_max(ii,3)
+        write(ldecoup,*)'Debut/Fin en x pour ii',ii,'egal',coord_min(ii,1),coord_max(ii,1)
+        write(ldecoup,*)'Debut/Fin en y pour ii',ii,'egal',coord_min(ii,2),coord_max(ii,2)
+        write(ldecoup,*)'Debut/Fin en z pour ii',ii,'egal',coord_min(ii,3),coord_max(ii,3)
         write(ldecoup,*)
      enddo
-     write(ldecoup,*),'-----------------------------------------------'
+     write(ldecoup,*)'-----------------------------------------------'
 
 
 #if(PARA)

@@ -163,7 +163,8 @@ subroutine endrun
        at=at/1.d8
 
        do i=1,im
-          write (919, 136) ty(ityp(i)),posmoyx(1,i)*1D+08,posmoyx(2,i)*1D+08,posmoyx(3,i)*1D+08,eatomtotm(i)*erg2eV-eatref(ityp(i)) ,num_at_glob(i)
+          write (919, 136) ty(ityp(i)),posmoyx(1,i)*1D+08,posmoyx(2,i)*1D+08,posmoyx(3,i)*1D+08,& 
+          eatomtotm(i)*erg2eV-eatref(ityp(i)) ,num_at_glob(i)
        end do
     end if
 

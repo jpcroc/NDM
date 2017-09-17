@@ -61,9 +61,9 @@ subroutine init_neb_reaction
 !  and the last image (the image number =  nimage_neb) has the reaction coordinate 1.d0
    
 !  the images are defined from 1 to nimage_neb. 1 being the starting_min and nimage_neb being the final_min
- delta_neb=(1.d0-0.d0)/(dble(nimage_neb-1))
+ delta_neb=(lambda_max-lambda_min)/(dble(nimage_neb-1))
  allocate (coord_neb(nimage_neb))
- forall (ia=1:nimage_neb) coord_neb(ia)=0.d0+(dble(ia-1))*delta_neb
+ forall (ia=1:nimage_neb) coord_neb(ia)=lambda_min+(dble(ia-1))*delta_neb
 
 
  allocate (force_defect(0:npoints),free_energy_force_defect(0:npoints))
@@ -232,7 +232,7 @@ subroutine interpolate_the_neb_images()
 
         ival=int(llambda(i)/delta_neb)+1  
         ! pay attention to fact that the grid of neb images is from  1 to nimage_neb
-        !                        and the grid of lambda if from 0 to npoints ...... 
+        !                        and the grid of lambda     is from  0 to npoints ...... 
         lambda_images(i)%xp_neb(ix,ia)=neb_images(ival)%xp_neb(ix,ia)   + &
                    atoms_on_spline(ix,ia)%b(ival)*(llambda(i)-coord_neb(ival))    +    & 
                    atoms_on_spline(ix,ia)%c(ival)*(llambda(i)-coord_neb(ival))**2 + & 
