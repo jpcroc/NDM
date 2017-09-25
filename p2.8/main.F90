@@ -102,7 +102,10 @@ rangph=0
 
   call prog
 
+#if (PARAPH)
+#elif
   call arret_ndm
+#endif
 
 end program ndm
 
