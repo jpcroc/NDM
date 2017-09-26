@@ -107,6 +107,7 @@ case  (abf_mode_reaction)
      temp_exp(iter)=exp(temp_log(iter))!
       if (temp_exp(iter) /= temp_exp(iter)) then
         write(*,*) 'WARNING:  NaN detected look in fort.333 file'
+        write(*,*) 'debug', x_mol(iter), dcsi
         write(333,'(2i5,6D21.8)') it_mab, iter, x_mol(iter)-dcsi,A_ee(iter), temp_log(iter),temp_exp(iter),potist,ene0,ene_einstein
       end if  
   end do

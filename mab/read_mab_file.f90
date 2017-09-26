@@ -92,52 +92,52 @@ read (lumab, nml=input_mab)
 
    select case (abf_type)
       case (1)
-             if (rangmab==0)   write(6,'("MAB:    Dumped Langevin dynamics  ")')
+             if (rangmab==0)   write(6,'("MAB:    Damped Langevin dynamics  ")')
       case (2)  
             if (rangmab==0) then
-             if (abf_mode==1)  write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics + Reaction coordinate   ")')
-             if (abf_mode==2)  write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics + Alchemical coordinate ")')
-             if (abf_mode==22) write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics + Temperature coordinate")')
+             if (abf_mode==1)  write(6,'("MAB:  Damped Langevin + ABF BIN dynamics + Reaction coordinate   ")')
+             if (abf_mode==2)  write(6,'("MAB:  Damped Langevin + ABF BIN dynamics + Alchemical coordinate ")')
+             if (abf_mode==22) write(6,'("MAB:  Damped Langevin + ABF BIN dynamics + Temperature coordinate")')
             end if  
       case (3) 
             if (rangmab==0) then
-             if (abf_mode==1)  write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics with Omega + Reaction coordinate   ")')
-             if (abf_mode==2)  write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics with Omega + Alchemical coordinate ")')
-             if (abf_mode==22) write(6,'("MAB:  Dumped Langevin + ABF BIN dynamics with Omega + Temperature coordinate")')
+             if (abf_mode==1)  write(6,'("MAB:  Damped Langevin + ABF BIN dynamics with Omega + Reaction coordinate   ")')
+             if (abf_mode==2)  write(6,'("MAB:  Damped Langevin + ABF BIN dynamics with Omega + Alchemical coordinate ")')
+             if (abf_mode==22) write(6,'("MAB:  Damped Langevin + ABF BIN dynamics with Omega + Temperature coordinate")')
             end if  
       case (4) 
-             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF GAUSSIAN dynamics'
+             if (rangmab==0) write(6,*) ' Damped Langevin + ABF GAUSSIAN dynamics'
       case (5) 
-             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF EE dynamics'
+             if (rangmab==0) write(6,*) ' Damped Langevin + ABF EE dynamics'
       case (6) 
-             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF EE dynamics + constant biais'
+             if (rangmab==0) write(6,*) ' Damped Langevin + ABF EE dynamics + constant biais'
       case (7) 
-             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF BIN dynamics + constant biais'
+             if (rangmab==0) write(6,*) ' Damped Langevin + ABF BIN dynamics + constant biais'
       case (8) 
-             if (rangmab==0) write(6,*) ' Dumped Langevin + ABF EE dynamics + iterative'
+             if (rangmab==0) write(6,*) ' Damped Langevin + ABF EE dynamics + iterative'
    end select 
  end if
 
  if (langevin_type==1) then
    select case (abf_type)
       case (1)
-             if (rangmab==0)   write(6,'("MAB:    OverDumped Langevin dynamics  ")')
+             if (rangmab==0)   write(6,'("MAB:    OverDamped Langevin dynamics  ")')
       case (2)
-             if (abf_mode==1) write(6,*) ' Dumped Langevin + ABF BIN dynamics'
-             if (abf_mode==2) write(6,*) ' Dumped Langevin + ABF BIN dynamics + External parameter'
+             if (abf_mode==1) write(6,*) ' Damped Langevin + ABF BIN dynamics'
+             if (abf_mode==2) write(6,*) ' Damped Langevin + ABF BIN dynamics + External parameter'
       case (3) 
-             if (abf_mode==1) write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega'
-             if (abf_mode==2) write(6,*) ' Overdumped Langevin + ABF BIN dynamics with Omega + External parameter'
+             if (abf_mode==1) write(6,*) ' Overdamped Langevin + ABF BIN dynamics with Omega'
+             if (abf_mode==2) write(6,*) ' Overdamped Langevin + ABF BIN dynamics with Omega + External parameter'
       case (4) 
-             write(6,*) ' Overdumped Langevin + ABF GAUSSIAN dynamics'
+             write(6,*) ' Overdamped Langevin + ABF GAUSSIAN dynamics'
       case (5) 
-             write(6,*) ' OverDumped Langevin + ABF EE dynamics'
+             write(6,*) ' Overdamped Langevin + ABF EE dynamics'
       case (6) 
-             write(6,*) ' OverDumped Langevin + ABF EE dynamics + constant biais'
+             write(6,*) ' Overdamped Langevin + ABF EE dynamics + constant biais'
       case (7) 
-             write(6,*) ' OverDumped Langevin + ABF BIN dynamics + constant biais'
+             write(6,*) ' Overdamped Langevin + ABF BIN dynamics + constant biais'
       case (8) 
-             write(6,*) ' OverDumped Langevin + ABF EE dynamics + iterative'
+             write(6,*) ' Overdamped Langevin + ABF EE dynamics + iterative'
    end select 
  end if
 
@@ -433,7 +433,7 @@ subroutine read_gin_file
  inquire(file=ginFile_block, exist=ok)
 
     IF (ok ) THEN
-            write(6,'("MAB: Read gin file for blockong spheres.....",a)') TRIM(ginFile_block)
+            write(6,'("MAB: Read gin file for blocking spheres.....",a)') TRIM(ginFile_block)
             OPEN(unit=93, file=ginFile_block, status='old', action='read')
             CALL ReadGin(xp_local(:,:), ityp_local(:), im_local, at_local, 93)
             CLOSE(93)

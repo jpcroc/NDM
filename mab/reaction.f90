@@ -77,6 +77,7 @@ subroutine calfoblock()
 !debug  end if
  end do
 
+
 ! Updating the forces ...
  do ii=1,nsite_block
   ic=isite_block(ii)

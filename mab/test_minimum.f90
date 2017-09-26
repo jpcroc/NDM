@@ -41,10 +41,10 @@ subroutine test_minimum !(xp, xpp, vp, ax, fp, ielat, iwmax, iwmax2, ityp)
   !         write(6,*)i,xp(1,i),xp(2,i),xp(3,i)
   !      end do
   fp=0.
-  call calfo_atomic_forces(1)
+  call calfo_atomic_forces(0)
   epot0=potist*erg2eV
   if (rangph==0)   write (6, '(" MAB: *Epot (eV) = ",D21.12)') epot0
-  ene0 = epot0
+  ene0 = potist
   fp0=fp
 !debugCOS  do i=1,im
 !debugCOS     write(6,'(I7,3D21.12)')i,fp0(1,i),fp0(2,i),fp0(3,i)

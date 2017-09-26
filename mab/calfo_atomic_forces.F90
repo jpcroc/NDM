@@ -109,7 +109,6 @@ subroutine calfo_atomic_forces_ndm(it_force)
   integer, intent(in) :: it_force
 
 ! NDM part ...
-
           if (itab/=0) then
            if (mod(it_force,itab)==0) then
            call caltabt

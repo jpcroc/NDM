@@ -255,7 +255,7 @@ do it_mab=neq_lang+1,neq_lang+nlangevin
 
    if (.NOT.(abf_type==1))  call reaction()
    ! if (mod(it_mab,40)==0) then 
-   !debug write(36,'(i6,3d15.7)') it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)*1.d+08
+    write(36,'(i6,3d15.7)') it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)*1.d+08
    !debug write(35,*) it_mab,it_en,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
    ! end if
     it=it_mab

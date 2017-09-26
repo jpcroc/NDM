@@ -93,8 +93,9 @@ subroutine allocate_mab()
    implicit none
    
    allocate (sig_i(3,imm),sig_ll(3,imm),rga_i(3,imm),m_i(3,imm),xp0(3,imm)) 
-   allocate (fpeinstein(3,imm))  
+   allocate (fpeinstein(3,imm), fp0(3,imm))  
    rangmab=0
+   rangph=0
 # if (LAMMPS_VERSION)
   rangmab=rangph
 #else
@@ -104,14 +105,15 @@ subroutine allocate_mab()
 
 
 ! LAMMPS interface ...
-   write (*,*) 'This is LAMMPS'
+#if (LAMMPS_VERSION)
+   write (*,*) 'This is LAMMPS force field VERSION'
    nat=im
    energy_conversion_lammps=1.d0
    position_conversion_lammps=1.d0
    allocate (posa(3*im),  forca(3*im))
    VECSIZE=3*nat
    firsttime_lammps=.true.
-
+#endif
 
   return
 end   subroutine allocate_mab
@@ -129,6 +131,8 @@ end   subroutine allocate_mab
      do ic=1,3
        xbarini(ic)  = sum(xp0(ic,1:im)*m_i(ic,1:im))/m_tot
      enddo
+! in order to initialize the baricenter
+     xbar(:) = xbarini(:)
      pinumber=4.d0*datan(1.D0)
 
     it_en=-1
