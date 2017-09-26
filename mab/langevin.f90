@@ -5,7 +5,7 @@
  use var_pot
  use tab_imm_m
  use mab_in_ndm_module, only: crit_langevin_dist, abf_mode, sig_i,sig_ll, rga_i,m_i,temperature, &
-                              gamma,langevin_type,dtlang,Ecinetique
+                              gamma,langevin_type,dtlang,Ecinetique, rangmab
  implicit none
   if (gamma < 0.d0) then
    if (langevin_type==2) gamma=one/(tstep*1.d2)  !under
@@ -17,9 +17,11 @@
    end if 
   end if 
   crit_langevin_dist=dsqrt((6.d0*temperature*dtlang)/(gamma*m_i(1,1)))
+  if (rangmab==0) then
   write(*,'("MAB: dtlang (fs) is fixed to .............................:", E25.12E3)') dtlang 
   write(*,'("MAB: gamma  is fixed to ..................................:", E25.12E3)') gamma 
   write(*,'("MAB: crit_langevin_dist  (cm and ang) is fixed to ........:", 2E25.12E3)') crit_langevin_dist,crit_langevin_dist*angst
+  end if 
   select case (langevin_type)
     case (1)  
      sig_ll(1:3,1:im) = sqrt(2.d0*temperature*dtlang/(gamma*m_i(1:3,1:im)))

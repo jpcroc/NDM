@@ -129,15 +129,15 @@ read (lumab, nml=input_mab)
              if (abf_mode==1) write(6,*) ' Overdamped Langevin + ABF BIN dynamics with Omega'
              if (abf_mode==2) write(6,*) ' Overdamped Langevin + ABF BIN dynamics with Omega + External parameter'
       case (4) 
-             write(6,*) ' Overdamped Langevin + ABF GAUSSIAN dynamics'
+              if (rangmab==0) write(6,*) ' Overdamped Langevin + ABF GAUSSIAN dynamics'
       case (5) 
-             write(6,*) ' Overdamped Langevin + ABF EE dynamics'
+              if (rangmab==0) write(6,*) ' Overdamped Langevin + ABF EE dynamics'
       case (6) 
-             write(6,*) ' Overdamped Langevin + ABF EE dynamics + constant biais'
+              if (rangmab==0) write(6,*) ' Overdamped Langevin + ABF EE dynamics + constant biais'
       case (7) 
-             write(6,*) ' Overdamped Langevin + ABF BIN dynamics + constant biais'
+              if (rangmab==0) write(6,*) ' Overdamped Langevin + ABF BIN dynamics + constant biais'
       case (8) 
-             write(6,*) ' Overdamped Langevin + ABF EE dynamics + iterative'
+              if (rangmab==0) write(6,*) ' Overdamped Langevin + ABF EE dynamics + iterative'
    end select 
  end if
 
@@ -201,12 +201,14 @@ end if
      if  (.not.( (abf_mode/=abf_mode_alchemical).or.  &
            (abf_mode/=abf_mode_temperature).or. &
            (abf_mode/=abf_mode_reaction))  ) then
+         if (rangmab==0) then
          write(6,*) 'MAB: No implementation for this ABF reaction coordinate which can be:'
          write(6,*) 'MAB: abf_mode = 1 for  geometric  reaction coordiante'
          write(6,*) 'MAB: abf_mode = 2 for  alchemical reaction  coordiante'
          write(6,*) 'MAB: abf_mode = 22 for temperature reaction  coordiante'
          write(6,*) 'MAB: abf_mode =  ', abf_mode
          write(6,*) 'MAB: stop in read_mab_file'
+         end if 
          stop
      end if 
 

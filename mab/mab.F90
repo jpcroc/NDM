@@ -39,21 +39,29 @@ subroutine mab
   real(double) :: delta_z_r 
   character(len=1) :: ac_read  
 
+ ! NDM link with rang ...
+ rang=rangph
 
+
+ if (rangph==0) then
   write(6,*)
   write(6,*)
   write(6,'("MAB: ************ DEBUT DE MAB ****************")')
   write(6,*)
+ end if 
+
 #if(LAMMPS_VERSION)
   if (rangph==0) write(6,*)'---------------LAMMPS FORCES-----------------'
 #endif 
  write(6,*)
-  if (rangmab==0) call  print_mab(rangmab)
 
 !  call random_seed()
 
-  if (rangmab==0) write(6,'("MAB:           ......ALLOCATE....           ")') 
   call allocate_mab()
+
+  if (rangmab==0) write(6,'("MAB:           ......ALLOCATE....           ")') 
+  if (rangmab==0) call  print_mab(rangmab)
+
 
   if (rangmab==0) write(6,'("MAB:           ......READING.....           ")') 
   call read_mab_file()
@@ -122,22 +130,23 @@ if (rangmab==0) then
      write(6,'("MAB:  - increase the difference nhisto2  ")') 
      ! stop '< mab.f90 >'
    end if  
-end if 
+end if !rangmab 
 
 
 if (block) then
-   write(6,'("MAB: width of the FD block  (in ang).....................:",E25.12E3)') deltasph*angst
+   
+    if (rangmab==0) write(6,'("MAB: width of the FD block  (in ang).....................:",E25.12E3)') deltasph*angst
 
    if ((crit_langevin_dist*angst / deltasph ) > 1.d0)  then 
-     write(6,'("MAB:  WARNING !!!! Langevin  vs FD width  !!! WARNING ")') 
-     write(6,'("MAB: the Langevins step is huge or the width of the FD function for protectives domains are too narrow  ")')
-     write(6,'("MAB:  - decrease the Langevins step .....................:", E25.12E3)') crit_langevin_dist
-     write(6,'("MAB:  - increase the width of the FD function............:", E25.12E3)')  deltasph
-     write(6,'("MAB:  ratio Lang / FD width ", E25.12E3)')  crit_langevin_dist/deltasph
+     if (rangmab==0) write(6,'("MAB:  WARNING !!!! Langevin  vs FD width  !!! WARNING ")') 
+     if (rangmab==0) write(6,'("MAB: the Langevins step is huge or the width of the FD function for protectives domains are too narrow  ")')
+     if (rangmab==0) write(6,'("MAB:  - decrease the Langevins step .....................:", E25.12E3)') crit_langevin_dist
+     if (rangmab==0) write(6,'("MAB:  - increase the width of the FD function............:", E25.12E3)')  deltasph
+     if (rangmab==0) write(6,'("MAB:  ratio Lang / FD width ", E25.12E3)')  crit_langevin_dist/deltasph
      !stop '< mab.f90 >'
    end if 
-   write(6,'("MAB: --------------END  Consistencies ---------------")')
-end if !rangmab 
+   if (rangmab==0) write(6,'("MAB: --------------END  Consistencies ---------------")')
+end if 
 
 
 

@@ -94,13 +94,14 @@ subroutine allocate_mab()
    
    allocate (sig_i(3,imm),sig_ll(3,imm),rga_i(3,imm),m_i(3,imm),xp0(3,imm)) 
    allocate (fpeinstein(3,imm), fp0(3,imm))  
-   rangmab=0
-   rangph=0
 # if (LAMMPS_VERSION)
   rangmab=rangph
 #else
   allocate(cm_phondy(ntyp))
   cm_phondy(:) = cm(:)
+  rangmab=0
+  rangph=0
+
 #endif  
 
 

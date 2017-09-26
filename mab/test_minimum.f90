@@ -27,7 +27,6 @@ subroutine test_minimum !(xp, xpp, vp, ax, fp, ielat, iwmax, iwmax2, ityp)
   !-----------------------------------------------
   !
   
-
   ! MPI
   if (rangph==0) write (6, *) 'MAB: Testing if the forces are zero.'
 

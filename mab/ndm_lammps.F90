@@ -116,10 +116,10 @@ subroutine init_potential_lammps()
      !call lammps_open_no_mpi('lmp -log none -screen none', lmp)
      !call lammps_file (lmp, INPUT_LAMMPS_FILE)
      !call lammps_open('lmp',MPI_COMM_WORLD,lmp)
-   if (rangph==0) write(*,'("PHONDY: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
+   if (rangph==0) write(*,'("MAB: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
    firsttime_lammps= .TRUE.
 
-   if (rangph==0) write(*,'("PHONDY: LAMMPS force field init done")')
+   if (rangph==0) write(*,'("MAB: LAMMPS force field init done")')
 
 end subroutine init_potential_lammps
 
@@ -165,7 +165,7 @@ subroutine calcforce_lammps(NATOMS,posART,boxl,tmp_force,tmp_pos,pot_energy)
   allocate(pos_lammps(VECSIZE), stat=ierr)
 
   if (firsttime_lammps) then
-     if (rangph==0) write(*,'("PHONDY: Number of atoms   :",i7)') NATOMS
+     if (rangph==0) write(*,'("MAB: Number of atoms   :",i7)') NATOMS
      num=lammps_get_natoms(lmp)
      if ((NATOMS /= im).or.(num /= im)) then
        write(*,*) 'Big problem: gin and lammps files contain different number of atoms'
@@ -213,14 +213,16 @@ subroutine calcforce_lammps(NATOMS,posART,boxl,tmp_force,tmp_pos,pot_energy)
   pot_energy = energy*energy_conversion_lammps
   ! Extract forces from LAMMPS  
   
-  !call lammps_gather_atoms (lmp, 'f', 3, force_lammps)
-  call lammps_extract_atom (for_tmp, lmp, 'f')
-  allocate(force_lammps(VECSIZE))
- do i=1,NATOMS
-     force_lammps(3*i-2)=for_tmp(1,i)
-     force_lammps(3*i-1)=for_tmp(2,i)
-     force_lammps(3*i  )=for_tmp(3,i)
- end do
+  call lammps_gather_atoms (lmp, 'f', 3, force_lammps)
+! OLD WORKING VERSION ...............
+! call lammps_extract_atom (for_tmp, lmp, 'f')
+!  allocate(force_lammps(VECSIZE))
+! do i=1,NATOMS
+!     force_lammps(3*i-2)=for_tmp(1,i)
+!     force_lammps(3*i-1)=for_tmp(2,i)
+!     force_lammps(3*i  )=for_tmp(3,i)
+! end do
+!END OLD WORKING VERSION 
 
 
   !force_lammps=for_tmp
