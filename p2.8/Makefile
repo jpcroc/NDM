@@ -242,13 +242,14 @@ endif
 
 ifdef  MAB
  # Version MAB
- OBJS = ${OBJS_MOD} ${OBJS_PARAMAB} ${OBJS_SEQ}
+ OBJS = ${OBJS_MOD} ${OBJS_PARAMAB}  ${OBJS_SEQ}
  DEP=${OBJS}  ${LIBMAB}
  CPPFLAGS=${CPPFLAGS_MAB}
  CLEANMAB=clean_mab
  DIREXT=mab
  EXT=_mab
 ifdef LAMMPS_VERSION
+ OBJS = ${OBJS_MOD} ${OBJS_PARAMAB} ${OBJS_SEQ}
  EXT=_mab_lammps
 endif
 

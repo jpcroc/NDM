@@ -82,7 +82,9 @@ rangph=0
 
 #if(MAB)
   rangph=0
+#if(LAMMPS_VERSION)
   call init_mpi_mab()
+#endif
   if (rang==0) write(6,*)'*** NDMP628 +   MAB ***'
 #endif
 
@@ -102,8 +104,9 @@ rangph=0
 
   call prog
 
-#if (PARAPH)
-#elif
+#if (PARAPH || MAB)
+continue
+#else
   call arret_ndm
 #endif
 
