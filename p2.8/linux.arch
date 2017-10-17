@@ -1,0 +1,326 @@
+# link library
+LIBRARY =
+
+ 
+ifdef PARA
+ # Version Parallele
+ #
+ F90      = mpif90
+ CPPFLAGS = -C -P -traditional -DPARA
+ EXT      = _para
+  F90FLAGS = -O3 
+
+else
+ # Version sequentielle
+
+F90 = ifort
+#F90 = gfortran
+ CPPFLAGS = -C -E -P -traditional -nostdinc
+EXT      = 
+
+F90FLAGS = -O3  -convert big_endian 
+#F90FLAGS = -O3  
+
+
+ifdef CHECK
+
+F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all   -convert big_endian 	# Debuggage pas pour de rire
+
+EXT = _check
+endif
+
+
+endif
+
+ifdef DECOUP
+ # Code sequentiel pour evaluer le decoupage en sous-domaines
+ #
+ CPPFLAGS+= -DDECOUP
+ ifdef PARA
+  EXT2=_para_decoup
+ else
+  EXT2=_seq_decoup
+ endif
+endif
+ 
+CPP = /usr/bin/cpp
+#CPP = /export/TMP/openmpi-1.1.4/bin/mpic++
+LD = ${F90}
+
+
+
+# ART ART ART ART ART ART
+
+ifdef ART
+F90 = ifort
+CPPFLAGS_ART = -C -P -traditional -DART -nostdinc
+EXT = _ART
+#F90FLAGS =  -static -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS =  -O3  -convert big_endian
+
+#FLAGS and LIBS for ART
+FLAGS_ART =  -DNOIBM 
+#debug
+#F90FLAGS_ART = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_ART = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_ART =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_ART =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_ART = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_ART =${mkkl_definitions}
+# link library
+LIBRARY_ART = art/libart.a
+
+#LLIBS_ART = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_ART =${mkkl_definitions} 
+#cluster LLIBS_ART=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+#acasa LLIBS_ART=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+LLIBS_ART=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+
+
+# link library
+LIBRARY =${LIBRARY_ART} ${LLIBS_ART}  
+
+
+
+endif
+
+
+#################   PHONDY    #####################
+
+
+ifdef PHONDY
+ifdef PARAPH
+ F90 = mpif90
+ CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -DPARAPH  -nostdinc
+# EXT      = _PHONDY_PARAPH
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+#F90FLAGS =  -O3 -convert big_endian 
+F90FLAGS =   -O3 -convert big_endian 
+#F90FLAGS =  -O3  
+
+#FLAGS and LIBS for PHONDY
+FLAGS_PHONDY =  -DNOIBM 
+#debug
+#F90FLAGS_PHONDY = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_PHONDY = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_PHONDY =  -module ../ $(F90FLAGS) $(FLAGS)   -I${MKLROOT}/include 
+F77FLAGS_PHONDY =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_PHONDY = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_PHONDY =${mkkl_definitions} 
+#cluster LLIBS_PHONDY=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+#acasa LLIBS_PHONDY=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+LLIBS_PHONDY=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+# link library
+LIBRARY_PHONDY = phondy/libphondy.a
+
+
+# link library
+LIBRARY =${LIBRARY_PHONDY} ${LLIBS_PHONDY} 
+
+ 
+else
+
+ F90 = ifort
+ CPPFLAGS_PHONDY = -C -P -traditional -DPHONDY -nostdinc 
+ EXT      = _PHONDY
+##F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS =  -O3 -convert big_endian 
+
+
+#FLAGS and LIBS for PHONDY
+FLAGS_PHONDY =  -DNOIBM 
+#debug
+#F90FLAGS_PHONDY = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_PHONDY = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_PHONDY =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_PHONDY =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_PHONDY = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_PHONDY =${mkkl_definitions}
+# link library
+LIBRARY_PHONDY = phondy/libphondy.a
+
+
+# link library
+LIBRARY =${LIBRARY_PHONDY} ${LLIBS_PHONDY}  
+endif
+endif
+
+#################   ML    #####################
+
+
+ifdef ML
+ifdef PARAML
+ F90 = mpif90
+ CPPFLAGS_ML = -C -P -traditional -DML -DPARAML -nostdinc
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -convert big_endian  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS =  -O3 -convert big_endian 
+#F90FLAGS =  -O3  
+
+#FLAGS and LIBS for ML
+FLAGS_ML =  -DNOIBM 
+#debug
+#F90FLAGS_ML = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_ML = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_ML =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_ML =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_ML = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+#LLIBS_ML =${mkkl_definitions}
+
+
+LLIBS_ML=-L${MKLPATH} -I${MKLINCLUDE} -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
+# link library
+LIBRARY_ML = ml/libml.a
+MKLSERVICE=/usr/local/intel/Compiler/11.1/072/mkl/
+
+# link library
+LIBRARY =${LIBRARY_ML} ${LLIBS_ML} 
+
+ 
+else
+
+ F90 = ifort
+ CPPFLAGS_ML = -C -P -traditional -DML -nostdinc 
+ EXT      = _ML
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u -ftrapuv -warn all # Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS =  -O3 -convert big_endian 
+
+
+#FLAGS and LIBS for PHONDY
+FLAGS_ML =  -DNOIBM 
+#debug
+#F90FLAGS_ML = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_ML = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_ML =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_ML =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_ML = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_ML=-L${MKLROOT}/lib/intel64 -lmkl_lapack_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lmkl_blacs_openmpi_lp64 -lpthread -lm -ldl
+
+# link library
+LIBRARY_ML = ml/libml.a
+
+
+# link library
+LIBRARY =${LIBRARY_ML} ${LLIBS_ML}  
+endif
+endif
+
+
+
+#############   MAB   ################
+
+
+ifdef MAB
+ F90 = ifort
+# F90 = gfortran
+ CPPFLAGS = -C -P -traditional -DMAB -nostdinc
+ EXT      = _MAB
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all -convert big_endian	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+#ifort 
+F90FLAGS =  -O3 -convert big_endian 
+# F90FLAGS =  -O3  
+
+#FLAGS and LIBS for MAB
+FLAGS_MAB =  -DNOIBM 
+#debug
+#F90FLAGS_MAB = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_MAB = -C $(F90FLAGS) $(FLAGS) 
+#gfortran  F90FLAGS_MAB =  -fintrinsic-modules-path ../ $(F90FLAGS) $(FLAGS) 
+#ifort
+ F90FLAGS_MAB =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_MAB =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_MAB = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_MAB =${mkkl_definitions}
+# link library
+LIBRARY_MAB = mab/libmab.a
+
+# link library
+LIBRARY =${LIBRARY_MAB} ${LLIBS_MAB}  
+endif
+
+
+
+
+#############   SUNDAE   #############
+
+
+ifdef SUNDAE
+ifdef PARASUN
+
+
+F90 = mpif90
+CPPFLAGS_SUNDAE = -C -P -traditional -DSUNDAE -DPARASUN 
+# EXT      = _SUNDAE_PARASUN
+#F90FLAGS =  -O0 -fpe0 -C -traceback -warn all -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+#F90FLAGS =  -O3 -convert big_endian 
+F90FLAGS =  -O3  
+
+
+#FLAGS and LIBS for SUNDAE
+FLAGS_SUNDAE =  -DNOIBM 
+#debug
+#F90FLAGS_SUNDAE = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_SUNDAE = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_SUNDAE =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_SUNDAE =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_SUNDAE = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_SUNDAE =${mkkl_definitions}
+# link library
+LIBRARY_SUNDAE = sundae/libsundae.a
+
+
+# link library
+LIBRARY =${LIBRARY_SUNDAE} ${LLIBS_SUNDAE}  
+
+ 
+else
+
+
+ F90 = ifort
+ CPPFLAGS_SUNDAE = -C -P -traditional -DSUNDAE
+ EXT      = _SUNDAE
+#F90FLAGS =  -O0 -fpe0 -C -traceback  -u  -ftrapuv -warn all	# Debuggage pas pour de rire
+#F90FLAGS = -static -O0 -g -C
+F90FLAGS =  -O3 -convert big_endian 
+
+#FLAGS and LIBS for SUNDAE
+FLAGS_SUNDAE =  -DNOIBM 
+#debug
+#F90FLAGS_SUNDAE = -C -module ../ $(F90FLAGS) $(FLAGS) 
+#F77FLAGS_SUNDAE = -C $(F90FLAGS) $(FLAGS) 
+F90FLAGS_SUNDAE =  -module ../ $(F90FLAGS) $(FLAGS) 
+F77FLAGS_SUNDAE =   $(F90FLAGS) $(FLAGS) 
+FFLAGS =  
+
+#LLIBS_SUNDAE = -L/opt/intel/mkl/lib/32/ -lmkl_lapack  -lmkl_ia32 -lguide  -lpthread
+LLIBS_SUNDAE =${mkkl_definitions}
+# link library
+LIBRARY_SUNDAE = sundae/libsundae.a
+
+
+# link library
+LIBRARY =${LIBRARY_SUNDAE} ${LLIBS_SUNDAE}  
+
+
+endif
+endif

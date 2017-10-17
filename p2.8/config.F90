@@ -58,6 +58,7 @@ subroutine config
   real(double), dimension(3) :: rr
   real(double) :: tirax, tiray, tiraz, x1, x2, x3, a1, a2, a3, c1, c2, c3, r2,xpici,cpp
   real(double) :: rsep2
+  real(double) :: avemass !average mass of atoms
   character :: fnamcin*80, fnamgin*80
   !              real(double) drand
   !              external drand
@@ -139,7 +140,7 @@ subroutine config
               normat(ic)=0
               normat(ic)=sqrt(sum(bg(:,ic)**2))
               nzl(ic)=1.0/normat(ic)
-!              if(rang==0)write(6,*)'nzl',nzl(ic)*1d8           
+              !              if(rang==0)write(6,*)'nzl',nzl(ic)*1d8           
 
 
            end do
@@ -187,10 +188,10 @@ subroutine config
 #endif
  	   call  decoupage(nprocs)
 	   allocate(num_at_buff(imm))
-	endif
+        endif
 #endif
 #if(DECOUP)
- ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation
+        ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation
 	return	
 #endif
 
@@ -218,7 +219,7 @@ subroutine config
 	   enddo
         endif
 #else
-!crc 24.11.08        read (lucin, err=456) ityp                       !types
+        !crc 24.11.08        read (lucin, err=456) ityp                       !types
         read (lucin, err=456) ibuffer                       !types
 #endif
 
@@ -237,7 +238,7 @@ subroutine config
 	endif
 #else
         do i=1,im
-!crc 24.11.08           na(ityp(i))=na(ityp(i))+1
+           !crc 24.11.08           na(ityp(i))=na(ityp(i))+1
            na(ibuffer(i))=na(ibuffer(i))+1
         enddo
 #endif
@@ -253,16 +254,16 @@ subroutine config
               read (lucin, err=456) ibuffer   ! num_at_glob
            endif
 
-     if((ldesinteg).and.(ides.ne.1))then
-        indpoint1=0; indpointdes=0
-        do i=1,im_glob
-           if (ibuffer(i)==1) indpoint1=i
-           if (ibuffer(i)==ides) indpointdes=i
-        end do
-        write(6,*)'point1 pointdes', indpoint1,indpointdes
-        ibuffer(indpoint1)=ides
-        ibuffer(indpointdes)=1
-     end if
+           if((ldesinteg).and.(ides.ne.1))then
+              indpoint1=0; indpointdes=0
+              do i=1,im_glob
+                 if (ibuffer(i)==1) indpoint1=i
+                 if (ibuffer(i)==ides) indpointdes=i
+              end do
+              write(6,*)'point1 pointdes', indpoint1,indpointdes
+              ibuffer(indpoint1)=ides
+              ibuffer(indpointdes)=1
+           end if
 
            im = 0
            do i=1,im_glob
@@ -292,7 +293,7 @@ subroutine config
            endif
         endif
 #else
-!crc24.11.08        read (lucin, err=456) xp
+        !crc24.11.08        read (lucin, err=456) xp
         read (lucin, err=456) buffer
         if (rang==0)write(6,*)'fmt_cin',fmt_cin
         formcin:select case (fmt_cin)
@@ -311,7 +312,11 @@ subroutine config
 #endif
 
      enddo   ! boucle sur les 2 passes de lecture
-!crc 24.11.08
+
+
+
+
+     !crc 24.11.08
 
 #ifndef PARA
      if((ldesinteg).and.(ides.ne.1))then
@@ -326,14 +331,14 @@ subroutine config
      end if
 
      do i=1,im
-!        write(6,*)'i, num_at_glob',i,num_at_glob(i),buffer(1,i)
+        !        write(6,*)'i, num_at_glob',i,num_at_glob(i),buffer(1,i)
         ityp(num_at_glob(i))=ibuffer(i)
         xp(:,num_at_glob(i))=buffer(:,i)
      end do
 
 
 #endif
-!crc 24.11.08
+     !crc 24.11.08
 
 
 
@@ -356,10 +361,10 @@ subroutine config
         enddo
 
 #else
-!crc 24.11.08
-!        read (lucin, err=456) xpp                     !former positions
-!        read (lucin, err=456) vp                      !velocities
-!        read (lucin, err=456) ax                      !original positions
+        !crc 24.11.08
+        !        read (lucin, err=456) xpp                     !former positions
+        !        read (lucin, err=456) vp                      !velocities
+        !        read (lucin, err=456) ax                      !original positions
 
         read (lucin, err=456) buffer                     !former positions
         do i=1,im
@@ -380,7 +385,7 @@ subroutine config
            num_at_glob(i)=i
         end do
         if((ldesinteg).and.(xpspr(1)==-1000))xpspr(:)=xp(:,1)
-        
+
 #endif
         !            lvpread = .TRUE.
         read (lucin, err=456) oldtstep
@@ -393,7 +398,7 @@ subroutine config
 
      else                                    ! si icintypemod=0
         ax(:,:im) = xp(:,:im)
-	 if (lsuivinonpbc) axnonpbc(:,:im)=ax(:,:im)
+        if (lsuivinonpbc) axnonpbc(:,:im)=ax(:,:im)
         lvpread=.false.
      endif
 
@@ -417,11 +422,11 @@ subroutine config
 #if(PARA)
      deallocate(num_at_buff)
 #endif
-!     do i=1,im
-!        write(6,*)'i, num_at_glob',i,num_at_glob(i),xp(1,i)
-!        ityp(num_at_glob(i))=ibuffer(i)
-!        xp(:,num_at_glob(i))=buffer(:,i)
-!     end do
+     !     do i=1,im
+     !        write(6,*)'i, num_at_glob',i,num_at_glob(i),xp(1,i)
+     !        ityp(num_at_glob(i))=ibuffer(i)
+     !        xp(:,num_at_glob(i))=buffer(:,i)
+     !     end do
 
      !-----------------------------------------------------
      ! BUILDING OF THE CRISTAL FROM .GIN FILE
@@ -479,7 +484,7 @@ subroutine config
            normat(ic)=sqrt(sum(bg(:,ic)**2))
            nzl(ic)=1.0/normat(ic)
 
-!           if(rang==0)  write(6,)'nzl',nzl(ic)*1d8
+           !           if(rang==0)  write(6,)'nzl',nzl(ic)*1d8
         enddo
 
         call divid(0)
@@ -531,27 +536,27 @@ subroutine config
 
 
         if (lperiod.EQV..true.)then
-! NEVER but NEVER rewrite this sequence. In not true for coordinates |x| > 2 
-!           do i=1,imcell
-!              where(xc(i,:).ge.1.0) 
-!                 xc(i,:)=xc(i,:)-1.0
-!              end where
-!              where(xc(i,:).lt.0.0) 
-!                 xc(i,:)=xc(i,:)+1.0
-!              end where
-!           end do
-! This sequence is coorect:
+           ! NEVER but NEVER rewrite this sequence. In not true for coordinates |x| > 2 
+           !           do i=1,imcell
+           !              where(xc(i,:).ge.1.0) 
+           !                 xc(i,:)=xc(i,:)-1.0
+           !              end where
+           !              where(xc(i,:).lt.0.0) 
+           !                 xc(i,:)=xc(i,:)+1.0
+           !              end where
+           !           end do
+           ! This sequence is coorect:
            if (lsuivinonpbc) then
-	    do i=1,imcell
-	     tmpsuivi (1:3,i) = xc(i,1:3)
-	    end do 
-	   end if 
+              do i=1,imcell
+                 tmpsuivi (1:3,i) = xc(i,1:3)
+              end do
+	   end if
            do i=1,imcell
-	     WHERE ( (xc(i,:).LT.0.d0).OR.(xc(i,:).GE.1.d0) )
-	      xc(i,:)  = xc(i,:)  - Dble(Floor(xc(i,:)))
-	     END WHERE
+              WHERE ( (xc(i,:).LT.0.d0).OR.(xc(i,:).GE.1.d0) )
+                 xc(i,:)  = xc(i,:)  - Dble(Floor(xc(i,:)))
+              END WHERE
            end do
-        
+
         end if
 
         i  = 0
@@ -582,9 +587,9 @@ subroutine config
                     end do
 #endif
 		    if (lsuivinonpbc) then
-                     xpnonpbc(1,i) = (tmpsuivi(1,icell)+float(ia-1))/float(la)
-                     xpnonpbc(2,i) = (tmpsuivi(2,icell)+float(ib-1))/float(lb)
-                     xpnonpbc(3,i) = (tmpsuivi(3,icell)+float(ic-1))/float(lc)
+                       xpnonpbc(1,i) = (tmpsuivi(1,icell)+float(ia-1))/float(la)
+                       xpnonpbc(2,i) = (tmpsuivi(2,icell)+float(ib-1))/float(lb)
+                       xpnonpbc(3,i) = (tmpsuivi(3,icell)+float(ic-1))/float(lc)
 		    end if
                     ityp(i) = itypc(icell)
 #if(PARA)
@@ -625,11 +630,11 @@ subroutine config
         call cryst_to_cart (imm, xp, at, 1)  !cryst vers cart
         ax(:,:im) = xp(:,:im)
 	if ((lperiod).and.(lsuivinonpbc)) then
-         call cryst_to_cart (imm, xpnonpbc, at, 1)  !cryst vers cart
-	 axnonpbc(:,:im) = xpnonpbc (:,:im)
+           call cryst_to_cart (imm, xpnonpbc, at, 1)  !cryst vers cart
+           axnonpbc(:,:im) = xpnonpbc (:,:im)
 	end if
 
-        ! génération de verre
+ ! génération de verre
      else if ( lalea) then
         ! Cas ou on tire les positions aleatoires
 
@@ -794,9 +799,13 @@ subroutine config
 
      endif                                  ! fin rang=0
 
+     if (llangevin.eqv..true.) then
+        allocate(Gl(3,imm))
+        gamlg=gamlang/tstep
+     end if
      deallocate (ibuffer)
      deallocate (buffer)
-        write(6,*)
+     write(6,*)
 
      return
 
@@ -820,7 +829,7 @@ subroutine config
 
      real(double), dimension(3,1) :: coord_tab
      real(double) :: aux, auy, auz
-     integer      :: kx,ky,kz
+
 
 
      coord_tab(1,1)=coordx

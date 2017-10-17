@@ -166,7 +166,7 @@ subroutine readdm
   nuandersen=1.0d14        !frequence de tirage aleatoire des vitesses en Hz (valeur elevee = pour cascades)
   landerscou=.false.       ! Andersen seulement sur les bords
   lLangevin=.false.        ! Langevin MD
-  gamlang =0.001            ! Gamma de Langevin
+  gamlang =0.005            ! Gamma de Langevin
   ilangevin=1
   iko=-1
   lcdp=.false.             ! algorithme d'accumulation de defauts ponctuels
@@ -717,8 +717,6 @@ subroutine readdm
 
   if(lLangevin) then
      dmtype=4
-     write(6,*)'langevin bugguÃ© voir Cosmin fabien'
-     stop
   end if
   if(lLangevin.and.(Text.le.0.0)) then
      if (rang==0) write(6,*)'Langevin avec Text pas defini : stop'

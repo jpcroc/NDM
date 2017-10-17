@@ -339,13 +339,6 @@ rang=rangph
            itapp=0
            call sauveposition (itapp)
         end if
-        
-
-
-
-
-
-
 
      if (itmax==0) stop
      call caltabt 
@@ -445,6 +438,8 @@ rang=rangph
   end if
 
   if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
+
+
 
 
   return

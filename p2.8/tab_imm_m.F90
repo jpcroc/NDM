@@ -1,7 +1,7 @@
 module tab_imm_m
   !
   USE T_kind_param_m
-  USE gen_com_m, ONLY: lsuivinonpbc,lposmoy,mdcg_noise
+  USE gen_com_m, ONLY: lsuivinonpbc,lposmoy,mdcg_noise,llangevin
   !$ use OMP_LIB
   ! 
   ! Module contenant les tableaux dimmensionnes sur le
@@ -23,6 +23,7 @@ module tab_imm_m
   real(double),dimension(:,:), pointer :: xpnonpbc    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), pointer :: axnonpbc    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), pointer :: tmpsuivi    ! only in the case, lsuivinonpbc  
+  real(double),dimension(:,:), pointer :: Gl    ! random noise langevin
 
   integer, dimension(:), pointer       :: num_at_glob ! numero global d'un atome
 contains
@@ -228,5 +229,6 @@ contains
     if (lsuivinonpbc) deallocate(xpnonpbc)
     if (lsuivinonpbc) deallocate(axnonpbc)
     if (lsuivinonpbc) deallocate(tmpsuivi)
+    if (llangevin)deallocate(Gl)
   end subroutine dealloc_all_tab_imm
 end module tab_imm_m

@@ -21,7 +21,7 @@ use suivinonpbc
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: i, ia,ic
+  integer :: i, ia,ic,il
   real(double), dimension(ntyp) :: aux
   real(double), save :: tmoyinst, imesureT
   !-----------------------------------------------
@@ -40,6 +40,7 @@ use suivinonpbc
 ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
 
 
+
   if (dmtype==2) then
      do i = 1, im
         do ic = 1, 3
@@ -50,15 +51,14 @@ use suivinonpbc
      end do
  end if
 
-
-
-     DO i=1, imd
-        vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
-     END DO
-
-
-
-
+ if (lLangevin) then
+    il=2*(ilangevin-1)+1
+    call calfolangevin(xp,vp,fp,ityp,il,Gl)
+ else
+    DO i=1, imd
+       vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
+    END DO
+ end if
 
 
 !step 2  Coordinate update, x(t)-> x(t+dt)
@@ -114,11 +114,16 @@ use suivinonpbc
 
 
 
-
+ 
   ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
+  if (llangevin.eqv..true.) then
+    il=2*(ilangevin-1)+2
+     call calfolangevin(xp,vp,fp,ityp,il,Gl)
+  else
      DO i=1, imd
         vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
      END DO
+  end if
 
   if (associated(eatom))  eatom(1:im)=eatom(1:im)+0.5*cm(ityp(1:im))*(vp(1,1:im)**2+vp(2,1:im)**2+vp(3,1:im)**2)
 
@@ -145,7 +150,7 @@ use suivinonpbc
      !         write(66,'(I8,3D15.6)')it-1,expvect(1),expvect(2),expvect(3)
   end if
 
-        if (lLangevin) call calfolangevin(xp,vp,fp,ityp)
+
 
   return
 end subroutine dyn_vverlet
