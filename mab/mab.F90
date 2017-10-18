@@ -96,7 +96,7 @@ subroutine mab
 
 neq_lang=0
 if (abf_mode==abf_mode_reaction) neq_lang=0
-if (abf_mode==abf_mode_alchemical) neq_lang=4000
+if (abf_mode==abf_mode_alchemical) neq_lang=40
 
 call prepare_langevin()
 
@@ -169,11 +169,11 @@ end if
 
 
 
-  write(6,*)'......LANGEVIN.....' 
+  if (rangmab==0) write(6,*)'......LANGEVIN.....' 
 select case(compute_mode)
 
 case(1)!--------one simulation
-  write(6,*)'------COMPUTE MODE IS ONE SIMULATION!!!!!!--------------'
+  if (rangmab==0) write(6,*)'------COMPUTE MODE IS ONE SIMULATION!!!!!!--------------'
  
 !if (abf_type == 8) then ! This calculate iterally ABFee ( process to calculate \bar A2 given \bar A1
 if (abf_restart) then
@@ -264,7 +264,7 @@ do it_mab=neq_lang+1,neq_lang+nlangevin
 
    if (.NOT.(abf_type==1))  call reaction()
    ! if (mod(it_mab,40)==0) then 
-    write(36,'(i6,3d15.7)') it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)*1.d+08
+   if (rangmab ==0 )  write(36,'(i6,3d15.7)') it_mab,dcsi,xbar(1)-xbarini(1),xp(1,7)*1.d+08
    !debug write(35,*) it_mab,it_en,(2.d0*Ecinetique)/(KtoERG*3.d0*dble(im))
    ! end if
     it=it_mab
@@ -326,6 +326,8 @@ do it_mab=neq_lang+1,neq_lang+nlangevin
  if (abf_type==1) then
    if (itest_stop==1)   write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
       call correct_free_energy_brute(corr3N,corr3Nm3)
+
+   if (rangmab==0) then 
       write(*,*) 'outsub', corr3N, corr3Nm3,corr3N*erg2ev
       write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
       write(6,'("DeltaFreeMD     (eV) ................:  ", F15.7)') Free_energy_brute*erg2ev
@@ -336,7 +338,9 @@ do it_mab=neq_lang+1,neq_lang+nlangevin
       write(6,'("DeltaFree(3N-3) (eV) ................:  ", F15.7)') (Free_energy_brute+corr3Nm3)*erg2ev
       write(6,'("FreeTOT(3N-3)   (eV) ................:  ", F15.7)') ene0*erg2ev+(Free_energy_brute+corr3Nm3)*erg2ev
       write(6,'("Average_over N steps ..................:  ", i7)') it_calc_brute
-  end if 
+   end if 
+
+ end if 
 
  if (abf_mode==2) then
 !debug  Write (*,*) 'temp', temperature, temperature/KtoERG, omega_einstein
@@ -344,7 +348,9 @@ do it_mab=neq_lang+1,neq_lang+nlangevin
 !debug  because it should be: F = F^HA + [ A(1) - A(0) ]
    tmp2= -(Free_energy(0)-Free_energy(nhisto))*erg2ev
    call free_and_correction_einstein()
-   if (it_stop==1) write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
+  if (it_stop==1) write(6,*) '----------WLANGEVIN NOT CONVERGED-----------'
+
+  if (rangmab==0) then 
     write(6,*) '----------FREE ENERGY FINAL RESULTS---------' 
     write(6,'("F(Einstein) 3N                   (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction
     write(6,'("Einstein PBC config  correction  (eV) .......:  ", F15.7)') einstein_correction
@@ -353,27 +359,31 @@ do it_mab=neq_lang+1,neq_lang+nlangevin
     write(6,'("F(Einstein) - F(Full)            (eV) .......:  ", F15.7)') tmp2
     write(6,'("F(Full3N-3)                      (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction+tmp2 
     write(6,'("F(Full3N-6)                      (eV) .......:  ", F15.7)') einstein_free_3N+einstein_correction+ &
-                                                                           pbc_correction+tmp2 
+                                                                           pbc_correction+tmp2
+  end if  
+
   endif  !abf_mode==2
 
   call sauveposition (it_mab)
+  if (rangmab==0) then 
+    write(6,*)
+    write(6,*)
+    write(6,*)'************  FIN  DE MAB ****************'
+    write(6,*)
+    write(6,*)
+  end if  
 
-  write(6,*)
-  write(6,*)
-  write(6,*)'************  FIN  DE MAB ****************'
-  write(6,*)
-  write(6,*)
- 
 case (2)!------error analysis for ABF bin et ABF ee ( abf_type == 2 or abf_type == 5)
 
-write(*,*) '*******************************************************************'
-write(*,*) '************Error Analysis!!!!!!!!*********************************'
-write(*,*) '*******************************************************************'
-
+if (rangmab==0) then 
+  write(*,*) '*******************************************************************'
+  write(*,*) '************Error Analysis!!!!!!!!*********************************'
+  write(*,*) '*******************************************************************'
+end if 
 
 call init_random_seed()
 
-write(6,*) '------COMPUTE MODE: Compute statistical error!!!!!!--------------'
+if (rangmab==0) write(6,*) '------COMPUTE MODE: Compute statistical error!!!!!!--------------'
 !-------It needs entry file: Free_energy_theo.
 
 if ( (abf_type .ne. 2) .and. (abf_type .ne. 5)) then

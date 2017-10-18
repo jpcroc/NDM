@@ -53,10 +53,25 @@ endif
 
 
 # Compilation rules
-%.o: %.c
-	$(CC)  -c  ${EXTRA_INC} $(CFLAGS)            $< -o $@  
-%.o: %.cpp
+
+
+.cpp.o:
+	$(C++)  -c -I/soft/lammps/src/ ${EXTRA_INC} $(C++FLAGS)          $< -o $@ 
+	echo "FHERE"
+.cpp.a:
 	$(C++)  -c ${EXTRA_INC} $(C++FLAGS)          $< -o $@ 
+	ar rv $@ $%
+	rm -f $%
+
+.c.o:
+	$(CC)  -c  ${EXTRA_INC} $(CFLAGS)            $< -o $@  
+
+.c.a:
+	$(CC)  -c  ${EXTRA_INC} $(CFLAGS)            $< -o $@  
+	ar rv $@ $%
+	rm -f $%
+
+
 
 .f.o:
 	$(F77) $(F77FLAGS_MAB) -c $<

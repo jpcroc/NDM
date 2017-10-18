@@ -42,48 +42,61 @@ endif
 !  call set_the_unit_histo()
  select case (abf_type)
  case(1)
+
+  if (rangmab==0) then
   write(*,*)'Free energy computation....Langevin Dynamics'
-  open(unit=992,file='Free_energy_Langevin',status='unknown')
-   do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(992,*) unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
-   enddo
-  close(992)
+   open(unit=992,file='Free_energy_Langevin',status='unknown')
+    do i_loop=-nhisto1+1,nhisto+nhisto1
+     write(992,*) unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
+    enddo
+   close(992)
+  end if 
 
  case(2)
-  write(*,*)'Free energy computation....ABF BIN'
-  open(unit=993,file='Free_energy_ABFBIN',status='unknown')
+
+  if (rangmab==0) then 
+    write(*,*)'Free energy computation....ABF BIN'
+    open(unit=993,file='Free_energy_ABFBIN',status='unknown')
    
-  if (.not.(abf_mode==22)) then
-   do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(993,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
-   enddo
-  else 
-  do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(993,*)  1.d0/(unit_histo2(i_loop)/(temperature/KtoERG)), &
+    if (.not.(abf_mode==22)) then
+      do i_loop=-nhisto1+1,nhisto+nhisto1
+        write(993,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
+      enddo
+    else 
+
+      do i_loop=-nhisto1+1,nhisto+nhisto1
+        write(993,*)  1.d0/(unit_histo2(i_loop)/(temperature/KtoERG)), &
              (Free_energy(i_loop)/unit_histo2(i_loop)+renorm_f/unit_histo2(i_loop))*erg2eV
-   enddo
-  close(993)
-  end if
+      enddo
+    end if
+    close(993)
+  end if 
 
 
  case(3)
-  write(*,*)'Free energy computation....ABF BIN OMEGA'
-  open(unit=994,file='Free_energy_ABFBIN_OMEGA',status='unknown')
-   do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(994,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
-   enddo
-  close(994)
+
+
+  if (rangmab==0) then 
+    write(*,*)'Free energy computation....ABF BIN OMEGA'
+    open(unit=994,file='Free_energy_ABFBIN_OMEGA',status='unknown')
+    do i_loop=-nhisto1+1,nhisto+nhisto1
+      write(994,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
+    enddo
+    close(994)
+  end if 
 
  case(4)
-  write(*,*)'Free energy computation....ABF Gaussian'
-  open(unit=995,file='Free_energy_ABFGaussian',status='unknown')
-   do i_loop=-nhisto1+1,nhisto+nhisto1
-    write(995,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
-   enddo
- close(995)
-
+  
+  if (rangmab==0) then 
+    write(*,*)'Free energy computation....ABF Gaussian'
+    open(unit=995,file='Free_energy_ABFGaussian',status='unknown')
+    do i_loop=-nhisto1+1,nhisto+nhisto1
+      write(995,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
+    enddo
+    close(995)
+  end if 
  case(5,8)
-  write(*,*)'Free energy computation....ABF ee'
+  if (rangph==0) write(*,*)'Free energy computation....ABF ee'
   !--------Pour ABFee, on a besoin des A_ee pour calculer l'energie libre.
   !-----------------------A_tilde-------------------------------
   !-----------------------------------------------------------------

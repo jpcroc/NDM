@@ -9,7 +9,7 @@ MODULE vars_lammps
   !Characteristic of each  group 
   integer, dimension(:),allocatable :: lammps_size, lammps_rank, all_rang
   integer :: no_of_lammps_group
-  integer :: no_procs_of_lammps_group = 1
+  integer :: no_procs_of_lammps_group = 4
   integer :: ranks(1),new_group, new_comm
   integer :: w_rang, w_size
 end MODULE vars_lammps
