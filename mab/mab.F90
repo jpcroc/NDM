@@ -96,7 +96,7 @@ subroutine mab
 
 neq_lang=0
 if (abf_mode==abf_mode_reaction) neq_lang=0
-if (abf_mode==abf_mode_alchemical) neq_lang=40
+if (abf_mode==abf_mode_alchemical) neq_lang=50
 
 call prepare_langevin()
 
@@ -545,6 +545,8 @@ do i_iter=-nhisto1,nhisto+nhisto1
 read(991,*)temp_read, mean_force1(i_iter)
 
 enddo
+
+close (991)
 
 else
   write(*,*) 'Input file does not exsit!! Verify your input files!!'

@@ -14,7 +14,7 @@ subroutine Free_energy_ABF()
                               histo,histo1,histo2,Free_energy,&
                               mean_force1,abf_type,abf_mode,x_mol,temperature,&
                               A_ee,exp_A_bar,A_bar_ee,eta_ABFee,xi_min, &
-                              KtoERG,equit,unit_histo2
+                              KtoERG,equit,unit_histo2,  rangmab
 
 implicit none
 integer :: ii
@@ -43,18 +43,15 @@ endif
  select case (abf_type)
  case(1)
 
-  if (rangmab==0) then
   write(*,*)'Free energy computation....Langevin Dynamics'
    open(unit=992,file='Free_energy_Langevin',status='unknown')
     do i_loop=-nhisto1+1,nhisto+nhisto1
      write(992,*) unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
     enddo
    close(992)
-  end if 
 
  case(2)
 
-  if (rangmab==0) then 
     write(*,*)'Free energy computation....ABF BIN'
     open(unit=993,file='Free_energy_ABFBIN',status='unknown')
    
@@ -70,33 +67,28 @@ endif
       enddo
     end if
     close(993)
-  end if 
 
 
  case(3)
 
 
-  if (rangmab==0) then 
     write(*,*)'Free energy computation....ABF BIN OMEGA'
     open(unit=994,file='Free_energy_ABFBIN_OMEGA',status='unknown')
     do i_loop=-nhisto1+1,nhisto+nhisto1
       write(994,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
     enddo
     close(994)
-  end if 
 
  case(4)
   
-  if (rangmab==0) then 
     write(*,*)'Free energy computation....ABF Gaussian'
     open(unit=995,file='Free_energy_ABFGaussian',status='unknown')
     do i_loop=-nhisto1+1,nhisto+nhisto1
       write(995,*)  unit_histo2(i_loop), Free_energy(i_loop)*erg2eV
     enddo
     close(995)
-  end if 
  case(5,8)
-  if (rangph==0) write(*,*)'Free energy computation....ABF ee'
+  if (rangmab==0) write(*,*)'Free energy computation....ABF ee'
   !--------Pour ABFee, on a besoin des A_ee pour calculer l'energie libre.
   !-----------------------A_tilde-------------------------------
   !-----------------------------------------------------------------
@@ -149,7 +141,6 @@ endif
    enddo
     !
   close(996)
-
   if (abf_mode==1) then 
    ! THOSE LINES ARE OBSOLTE: mcmCHECK
      forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-Free_energy(i_loop)/temperature)
@@ -160,7 +151,6 @@ endif
 !--------------------------A_bar----------------------------------------------------
 !------------------------------------------------------------------------------------ 
 
-      open(unit=998,file='Free_energy_biais_ABFee',status='unknown')
       !
       do i_loop=-nhisto1,nhisto+nhisto1
         exp_A_bar(i_loop)=0.d0
@@ -178,12 +168,11 @@ endif
 !forall(i_loop=-nhisto1:nhisto+nhisto1) A_bar_ee(i_loop)=A_bar_ee(i_loop)-minfreeval
 
 
-
+      open(unit=998,file='Free_energy_biais_ABFee',status='unknown')
       do i_loop=-nhisto1,nhisto+nhisto1
         write(998,*) x_mol(i_loop)/A2cm,A_bar_ee(i_loop)*erg2eV
       enddo
       close(998)
-
 !-----------------------------------------------------------------------
 !-----------------------Free_energy!!!!---------------------------------
 !-----------------------------------------------------------------------
@@ -197,22 +186,23 @@ endif
 
 
 
-   open(unit=999,file='Free_energy_ABFee',status='unknown')
-   if (.NOT.(abf_mode==22)) then
-   do i_loop=-nhisto1,nhisto+nhisto1
-     write(999,*)unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
-   enddo
-   close(999)
-   end if 
+     open(unit=79,file='Free_energy_ABFee',status='unknown')
 
+     if (.NOT.(abf_mode==22)) then
+       do i_loop=-nhisto1,nhisto+nhisto1
+          write(79,*)unit_histo2(i_loop),Free_energy(i_loop)*erg2eV
+       enddo
+     end if 
 
-  if (abf_mode==22) then
-   do i_loop=nhisto+nhisto1,-nhisto1,-1
-     !write(999,*) temperature/KtoERG/unit_histo2(i_loop),Free_energy(i_loop)*erg2eV+equit*erg2ev
-     write(999,*) 1.d0/(unit_histo2(i_loop)/(temperature/KtoERG)),Free_energy(i_loop)*erg2eV+equit*erg2ev
-   enddo
-   close(999)
-  end if 
+     if (abf_mode==22) then
+      do i_loop=nhisto+nhisto1,-nhisto1,-1
+        !write(999,*) temperature/KtoERG/unit_histo2(i_loop),Free_energy(i_loop)*erg2eV+equit*erg2ev
+        write(79,*) 1.d0/(unit_histo2(i_loop)/(temperature/KtoERG)),Free_energy(i_loop)*erg2eV+equit*erg2ev
+      enddo
+     end if 
+  
+     close(79, status='keep')
+
 
 end select
 
@@ -222,6 +212,10 @@ end subroutine Free_energy_ABF
 
 subroutine create_files()!!---------Create files for the programm
 
+
+  use mpi
+  use mod_mpi_mab
+
  USE T_kind_param_m, ONLY:  double
  USE gen_com_m, ONLY: erg2eV,A2cm
  USE tab_imm_m
@@ -230,7 +224,7 @@ subroutine create_files()!!---------Create files for the programm
                               histo_equi,abf_type, &
                               A_ee,A_bar_ee,histo_zeta,x_mol,&
                               mean_force1,mean_force_ABFee_dyn,abf_type,&
-                              Free_energy,temperature,rangmab
+                              Free_energy,temperature,rangmab, unit_histo2
 
 
 
@@ -278,19 +272,21 @@ if ((abf_type==5) .or. (abf_type == 8)) then
   if (rangmab==0) write(6,'("MAB: create_files temp_A .........:",f15.6)') temp_A
 
   A_corrige(:)=A_corrige(:)+temp_A
+  call mpi_barrier (MPI_COMM_WORLD,codeph)
+  !r if (rangmab==0) then
   !----1. bucket of \xi. 2. bar A, 3. A_bar_ee corrected by substracting log(P(\xi))
   open(unit=968,file='data_A_bar',status='unknown')
 
   !----1. bucket of \zeta. 2.tilde A, 3. A_ee corrected by substracting log(P(\zeta))
   open(unit=967,file='data_A_tilde',status='unknown')
    do i_iter=-nhisto1,nhisto+nhisto1
-     write(968,*) x_mol(i_iter)/A2cm, A_bar_ee(i_iter)*erg2eV, A_bar_corrige(i_iter)
-     write(967,*) x_mol(i_iter)/A2cm, A_ee(i_iter)*erg2ev, A_corrige(i_iter)
+     write(968,*) unit_histo2(i_iter), A_bar_ee(i_iter)*erg2eV, A_bar_corrige(i_iter)
+     write(967,*) unit_histo2(i_iter), A_ee(i_iter)*erg2ev, A_corrige(i_iter)
   enddo
   !
   close(968)
   close(967)
-
+  !r end if
 else
   A_corrige(:)=Free_energy(-nhisto1:nhisto+nhisto1)*erg2eV-log(histo1(:))*temperature*erg2eV
 
@@ -301,14 +297,16 @@ else
 
   if (rangmab==0) write(6,'("MAB: create files temp_A",f15.6)') temp_A
    A_corrige(:)=A_corrige(:)+temp_A
- 
+
+   !r if (rangmab==0) then 
    !----1. bucket of \xi. 2. Free energy, 3. Free energy corrected by substracting log(P(\xi))
    open(unit=966,file='data_A',status='unknown')
 
    do i_iter=-nhisto1,nhisto+nhisto1
-     write(966,*) x_mol(i_iter)/A2cm, Free_energy(i_iter)*erg2eV, A_corrige(i_iter)
+     write(966,*) unit_histo2(i_iter), Free_energy(i_iter)*erg2eV, A_corrige(i_iter)
    enddo
    close(966)
+   !r end if
 endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -318,26 +316,29 @@ endif
 if ((abf_type==5).or.(abf_type==8)) then
    ! meanforce1: local force in ABFee 
    ! mean_force_ABFee_dyn (old mean_force2): mean force used in the dynamics, derivative of bar_A in ABFee
-
+   !r if (rangmab==0) then
    !meanforce file - mean force used in dynamics, derivative of bar_A
    open(unit=991,file='meanforce',status='unknown')
    do i_iter=-nhisto2,nhisto+nhisto2
        write(991,*) i_iter,mean_force_ABFee_dyn(i_iter)
    end do
    close(991)
-   
-   ! Integration_meanforce file - integration of mean force used in dynamics mean_force_ABFee_dyn (old mean_force2 for ABFee)
-   open(unit=966,file='Integration_meanforce',status='unknown')
+   !r end if
+
    do i_iter=-nhisto1+1,nhisto+nhisto1
      Inter_meanforce(i_iter)=Inter_meanforce(i_iter-1)+0.5d0*delta_z*(mean_force_ABFee_dyn(i_iter-1)+mean_force_ABFee_dyn(i_iter))
    enddo
    forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-Inter_meanforce(i_loop)/temperature)
    fnorm1=temperature*log(sum(Free_temp)*delta_z)
    Inter_meanforce(:)=Inter_meanforce(:)+fnorm1
+
+   !r if (rangmab==0) then
+   ! Integration_meanforce file - integration of mean force used in dynamics mean_force_ABFee_dyn (old mean_force2 for ABFee)
+   open(unit=75,file='Integration_meanforce',status='unknown')
    do i_iter=-nhisto1,nhisto+nhisto1
-       write(966,*)x_mol(i_iter)/A2cm, Inter_meanforce(i_iter)*erg2eV, histo_zeta(i_iter)
+       write(75,'(f18.4,d18.10,f18.4)')unit_histo2(i_iter), Inter_meanforce(i_iter)*erg2eV, histo_zeta(i_iter)
    enddo
-   close(966)
+   close(75, status='keep')
 
    ! data_force_ABFee: a collection of mean forces with 
    ! meanforce1: local force in ABFee 
@@ -350,13 +351,13 @@ if ((abf_type==5).or.(abf_type==8)) then
    end do
    close(964)
 
+   !r endif !rangmab
 
    !data_Integration_force_ABFee file
    ! a collection of \zeta 
    ! integration of local force in ABFee (meanforce1) which should be equal to bar_A
    ! A_bar_ee (\zeta)  
    ! the column 2 and 3 should be very close is the simulation is converged. 
-   open(unit=965,file='data_Integration_force_ABFee',status='unknown')
 
    do i_iter=-nhisto1+1,nhisto+nhisto1
      Inter_meanforce1(i_iter)=Inter_meanforce1(i_iter-1)+0.5d0*delta_z*(mean_force1(i_iter-1)+mean_force1(i_iter))
@@ -364,25 +365,30 @@ if ((abf_type==5).or.(abf_type==8)) then
    forall(i_loop=-nhisto1:nhisto+nhisto1) Free_temp(i_loop)=exp(-Inter_meanforce1(i_loop)/temperature)
    fnorm2=temperature*log(sum(Free_temp)*delta_z)
    Inter_meanforce1(:)=Inter_meanforce1(:)+fnorm2
+
+
+   !r if (rangmab==0) then
+   open(unit=965,file='data_Integration_force_ABFee',status='unknown')
    do i_iter=-nhisto1,nhisto+nhisto1
-       write(965,*) x_mol(i_iter)/A2cm,Inter_meanforce1(i_iter)*erg2eV,A_bar_ee(i_iter)*erg2eV
+       write(965,*) unit_histo2(i_iter), Inter_meanforce1(i_iter)*erg2eV,A_bar_ee(i_iter)*erg2eV
    enddo
    close(965)
+   !r end if
 
 else 
    !   meanforce1 - mean force used in dynamics (is different that in the case of abf_type=5) 
 
    !  meanforce file 
    ! contains the meanforce used in dynamics  (meanforce1) for ABFbin 
+
+
+   !r if (rangmab==0) then
    open(unit=991,file='meanforce',status='unknown')
    do i_iter=-nhisto1,nhisto+nhisto1
     write(991,*) i_iter,mean_force1(i_iter)
    enddo
    close(991)
-
-   ! Intr_meanforce1 - integration of the meanforce used in dynamics for ABFbin
-   ! Integration_meanforce file 
-   open(unit=966,file='Integration_meanforce',status='unknown')
+   !r end if
 
    do i_iter=-nhisto1+1,nhisto+nhisto1
       Inter_meanforce1(i_iter)=Inter_meanforce1(i_iter-1)+0.5d0*delta_z*(mean_force1(i_iter-1)+mean_force1(i_iter))
@@ -392,11 +398,19 @@ else
    fnorm1=temperature*log(sum(Free_temp)*delta_z)
    Inter_meanforce1(:)=Inter_meanforce1(:)+fnorm1
 
+
+
+   !r if (rangmab==0) then
+   ! Intr_meanforce1 - integration of the meanforce used in dynamics for ABFbin
+   ! Integration_meanforce file 
+   open(unit=966,file='Integration_meanforce',status='unknown')
+
+
    do i_iter=-nhisto1,nhisto+nhisto1
-       write(966,*)x_mol(i_iter)/A2cm, Inter_meanforce1(i_iter)*erg2eV, histo1(i_iter)
+       write(966,*)unit_histo2(i_iter), Inter_meanforce1(i_iter)*erg2eV, histo1(i_iter)
    enddo
    close(966)
-
+   !r end  if
 end if 
 
 
@@ -593,15 +607,14 @@ if (abf_type==5) then
  
     fnamaeerestart=fnam(1:lenfnam)//'.temp_run_a_ee_restartin.'//extension
     open(unit=991,file=fnamaeerestart,status='unknown')
-
     if ((abf_mode==abf_mode_reaction).or.(abf_mode==abf_mode_alchemical)) then
       !writting the en-tete ... in order to have a vague trace of the simulation
       write(991,'(a,"  ",2i3,i7,3i5,E25.12E3)') diez, abf_mode, abf_type, itapp, nhisto, nhisto1, nhisto2, delta_z   
       do i_iter=-nhisto2,nhisto+nhisto2
         write(991,'(E25.10,3E25.15)') dble(i_iter)*delta_z, A_ee(i_iter)*erg2ev, P_ee_num(i_iter),P_ee_denom(i_iter)
       end do
+      close(991)
      end if 
-    close(991)
 
     fnamfreetemp  =fnam(1:lenfnam)//'.temp_run_free_energyyyy.'//extension
     open(unit=990,file=fnamfreetemp,status='unknown')
