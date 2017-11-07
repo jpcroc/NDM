@@ -705,6 +705,12 @@ endif
 
 end select
 
+#if(LAMMPS_VERSION)
+call MPI_BARRIER(MPI_COMM_WORLD,codeph)
+call MPI_FINALIZE(codeph) 
+#endif
+
+
   return
 
   
