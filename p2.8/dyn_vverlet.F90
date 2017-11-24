@@ -55,7 +55,7 @@ use suivinonpbc
     il=2*(ilangevin-1)+1
     call calfolangevin(xp,vp,fp,ityp,il,Gl)
  else
-    DO i=1, imd
+   DO i=1, imd
        vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
     END DO
  end if

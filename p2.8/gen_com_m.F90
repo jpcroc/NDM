@@ -183,7 +183,7 @@ module gen_com_m
   logical :: lTcon, lTberendsen,lTandersen,lTNose,lTHoover,landerscou ! temp constante (3 algorithmes differents)
   real(double) :: Text ! T exterieure
   logical :: lLangevin ! Langevin MD
-  real(double) :: gamlang,gamlg  ! gamma et xsi de Langevin
+  real(double) :: gamlg  ! gamma de Langevin
   integer :: ilangevin ! 1=std ; 2=Athenes
   real(double) :: tauTcon ! Temps berendsen
   real(double) :: nuandersen ! frequence andersen     

@@ -43,7 +43,7 @@ subroutine readdm
        lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
        maxorder,  lalea, rsep, &
        h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
-       lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlang,ilangevin,&
+       lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
        lcdp,lsigtyp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
        fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
        lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
@@ -166,7 +166,7 @@ subroutine readdm
   nuandersen=1.0d14        !frequence de tirage aleatoire des vitesses en Hz (valeur elevee = pour cascades)
   landerscou=.false.       ! Andersen seulement sur les bords
   lLangevin=.false.        ! Langevin MD
-  gamlang =0.005            ! Gamma de Langevin
+  gamlg =5d12            ! Gamma deLangevin (= 0.005/1d-15 fera vp*0.995 pour tstep=1d-15)
   ilangevin=1
   iko=-1
   lcdp=.false.             ! algorithme d'accumulation de defauts ponctuels

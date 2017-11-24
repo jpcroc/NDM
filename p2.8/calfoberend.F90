@@ -39,9 +39,9 @@ subroutine calfolangevin(xp, vp, fp,ityp,il,Gl)
   real(double)  :: Gl(3,imm)
   integer  :: ityp(imm)
   integer::il
-
+  real(double)::rga
   integer :: i,ic
-  real(double) :: u1,u2,siglang
+  real(double) :: u1,u2
 !langevin codé à partir du poly de Gabriel Stolz page 84, dans une version avec expoentielle comme Manuel et Cosmin
   select case (il)
   case(1)
@@ -49,24 +49,26 @@ subroutine calfolangevin(xp, vp, fp,ityp,il,Gl)
 !     write(6,*)'rga',rga,Gl(ic,i)*sqrt(cm(ityp(1))*bk*text*(1-rga**2))/cm(ityp(1)),vp(1,1)
      do i=1,im
         do ic=1,3
+!  write(6,*)'ct',cm(ityp(1)),tstep
            call random_number(u1)
            call random_number(u2)
            Gl(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
-!           write(6,*)'rga',rga,Gl(ic,i)*sqrt(cm(ityp(i))*bk*text*(1-rga**2))/cm(ityp(i)),vp(1,i)
-           vp(1:3,i) = vp(1:3,i)*rga+ fp(1:3,i)*tstep/(cm(ityp(i))*2)+Gl(ic,i)*sqrt(cm(ityp(i))*bk*text*(1-rga))/cm(ityp(i))
+           vp(ic,i) = vp(ic,i)*rga+ fp(ic,i)*tstep/(cm(ityp(i))*2)+Gl(ic,i)*sqrt(cm(ityp(i))*bk*text*(1-rga))/cm(ityp(i))
+
         end do
      end do
   case(2)
      rga=exp(-gamlg*tstep/2)
      do i=1,im
         do ic=1,3
-           vp(1:3,i) = vp(1:3,i)*rga+ fp(1:3,i)*tstep/(cm(ityp(i))*2)+Gl(ic,i)*sqrt(cm(ityp(i))*bk*text*(1-rga))/cm(ityp(i))
+           vp(ic,i) = vp(ic,i)*rga+ fp(ic,i)*tstep/(cm(ityp(i))*2)+Gl(ic,i)*sqrt(cm(ityp(i))*bk*text*(1-rga))/cm(ityp(i))
         end do
      end do
   case default 
      write(6,*)'check ilangevin'
      stop
   end select
+
 
 
 end subroutine calfolangevin

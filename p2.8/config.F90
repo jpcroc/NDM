@@ -801,7 +801,6 @@ subroutine config
 
      if (llangevin.eqv..true.) then
         allocate(Gl(3,imm))
-        gamlg=gamlang/tstep
      end if
      deallocate (ibuffer)
      deallocate (buffer)

@@ -156,9 +156,9 @@ endif
               write (6, *) ' iteration ', it, 'ancien pas en temps', oldtstep
               write (6, *) 'nouveau tstep ', tstep
            endif 
-           if(llangevin.eqv..true.) then 
-              gamlg=gamlang/tstep
-           end if
+!           if(llangevin.eqv..true.) then 
+!              gamlg=gamlang/tstep
+!           end if
 	end if                                  ! rang=0
 
      else                                       ! cad si tstep >= 2.10-15s
