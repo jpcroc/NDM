@@ -219,7 +219,7 @@ subroutine calfo
 
         vn= vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
 	ekin=0.5*erg2ev*vn*cm(ityp(i))
-        if ((vn.ne.0).and.(ekin.gt.Eccel)) then
+        if ((vn.ne.0).and.(ekin.gt.Ecelec)) then
            !	write(6,*)'RG',rang,i,ekin
            vn=sqrt(vn)
            v1=elstopforce(ityp(i),1,1)
@@ -230,11 +230,14 @@ subroutine calfo
               stop
            end if
            f1=elstopforce(ityp(i),2,nv1)-(elstopforce(ityp(i),2,nv1)-elstopforce(ityp(i),2,nv1-1))*(nv1-vn/v1)
-           !                 write (6,*)'felstop',f1,vn, vn/v1
+!           write (6,'(A,4G15.7)')'felstop ',f1,vn, vn/v1,elstopforce(ityp(i),2,nv1)
            if (f1.le.0) then
               write(6,*)'f1<0 ?', f1
               stop
            end if
+           if (ibrake==2) f1=f1-gamlt(ityp(i))*sqrt(cm(ityp(i))*2*Ecelec*ev2erg)
+!           write(6,'(A,5G15.7)')'EL222',ekin,vn,f1,gamlt(ityp(i))*sqrt(cm(ityp(i))*2*Ecelec*ev2erg),f1/vn
+!           write(6,*)
            do ic=1,3
               fp(ic,i)=fp(ic,i)-vp(ic,i)*f1/vn
               Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)*erg2ev

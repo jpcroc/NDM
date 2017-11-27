@@ -53,7 +53,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Eccel
+       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec
 
 
   !
@@ -321,7 +321,7 @@ subroutine readdm
 
   lrctest=.true.
   tcelec=0 ! température de coupure pour les pertes électroniques
-  Eccel=0 ! température de coupure pour les pertes électroniques
+  Ecelec=0 ! température de coupure pour les pertes électroniques
   if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -715,12 +715,12 @@ subroutine readdm
      end if
   end if
 
-  if(lLangevin) then
-     dmtype=4
-  end if
   if(lLangevin.and.(Text.le.0.0)) then
      if (rang==0) write(6,*)'Langevin avec Text pas defini : stop'
      stop
+  end if
+  if(lLangevin) then
+     dmtype=4
   end if
 
   ! end check
@@ -771,19 +771,35 @@ subroutine readdm
      !     xx0=xx0*1.D-8
      !     yy0=yy0*1.D-8
      !     zz0=zz0*1.D-8
-     if (ibrake.gt.0) then
-        if(rang==0) then 
-           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC >' , Eccel,'!!!!!!!!!!'
-           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES Tempcel  >' , tcelec,'!!!!!!!!!!'
 
-        endif
-     else
-        if (tcelec.gt.0) then
+  end if
+     select case (ibrake)
+     case(0)
+        if ((tcelec.gt.0).or.(ecelec.gt.0)) then
            write(6,*) 'tcelec > 0 et pas de pertes electroniques : stop'
            stop
         end if
-     endif
-  end if
+     case(1)
+        if(rang==0) then 
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC >' , Ecelec,'!!!!!!!!!!'
+           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES Tempcel  >' , tcelec,'!!!!!!!!!!'
+
+        endif
+     case(2)
+        if (ecelec.le.0) then
+           write(6,*) 'Ecelec <  0 et  perte electronique Langevin : stop'
+           stop
+        end if
+        if (Text.le.0) then
+           write(6,*) 'Text <  0 et  perte electronique Langevin : stop'
+           stop
+        end if
+        if(rang==0) then 
+           write(6,*)'electronic stopping according to elstop.in from SRIM ET CONNECTION A LANGEVIN pour EC >' , Ecelec,'!!!!!!!!!!'
+        endif
+        llangevin=.true.
+        gamlg=-1.
+     end select
 
 
   if (lHcyl) then

@@ -2,6 +2,7 @@
 subroutine alloc_typ
 
   use var_pot
+  use gen_com_m,only: llangevin,gamlg
   implicit none
   integer::i,j,k ,ic
   integer,save ::ncall=0
@@ -56,6 +57,12 @@ subroutine alloc_typ
 !     endif
 !     if(iteangle.ge.0) then
         allocate(fda(ntyp,ntyp,ntyp,contmax))
+
+
+        if (llangevin) then 
+           allocate (gamlt(ntyp))
+           if (gamlg.ge.0) gamlt(:)=gamlg
+        end if
      endif
 
      allocate(nad(ntyp)) ; allocate(nas(ntyp)) ; allocate(nai(ntyp))

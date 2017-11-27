@@ -192,12 +192,12 @@ module gen_com_m
   real(double) :: eko, xko, yko, zko ! energie et direction du PAF
   real(double) :: xx0, yy0, zz0 ! position initiale du projectile
   logical :: lcasca,lderive ! cascade,correction derive ?
-  integer::ibrake   ! electronic slowing in cascades
+  integer::ibrake   ! electronic slowing in cascades : 0 none, 1 down to ecelec, tcelec , 2 connected to Langevin
   integer::ngrdel
   real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
   real(double):: elosselectot,elosselectot1 ! electronic losses for all atoms ; the PKA
   real(double),pointer::elstopforce(:,:,:)
-  real(double):: tcelec,Eccel ! coupure pour les pertes électroniques
+  real(double):: tcelec,Ecelec ! coupure pour les pertes électroniques
 
 
 

@@ -45,9 +45,9 @@ subroutine calfolangevin(xp, vp, fp,ityp,il,Gl)
 !langevin codé à partir du poly de Gabriel Stolz page 84, dans une version avec expoentielle comme Manuel et Cosmin
   select case (il)
   case(1)
-     rga=exp(-gamlg*tstep/2)
 !     write(6,*)'rga',rga,Gl(ic,i)*sqrt(cm(ityp(1))*bk*text*(1-rga**2))/cm(ityp(1)),vp(1,1)
      do i=1,im
+        rga=exp(-gamlt(ityp(i))*tstep/2)
         do ic=1,3
 !  write(6,*)'ct',cm(ityp(1)),tstep
            call random_number(u1)
@@ -58,8 +58,9 @@ subroutine calfolangevin(xp, vp, fp,ityp,il,Gl)
         end do
      end do
   case(2)
-     rga=exp(-gamlg*tstep/2)
+
      do i=1,im
+        rga=exp(-gamlt(ityp(i))*tstep/2)
         do ic=1,3
            vp(ic,i) = vp(ic,i)*rga+ fp(ic,i)*tstep/(cm(ityp(i))*2)+Gl(ic,i)*sqrt(cm(ityp(i))*bk*text*(1-rga))/cm(ityp(i))
         end do

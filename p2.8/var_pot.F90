@@ -19,6 +19,7 @@ module var_pot
   real(double), dimension(:), pointer :: cm, cm_buffer, catom, q, rc	! masse, numero atomique, charge ionique, rayon de coup.
   character , dimension(:), pointer  :: ty*3
   character , dimension(:), pointer  :: ty_buffer*3
+  real(double),dimension(:),pointer::gamlt(:)
 
   real(double)::rclu(20), eatref(20)   ! rayon et energie des types d'atomes
 
