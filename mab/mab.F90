@@ -139,7 +139,8 @@ if (block) then
 
    if ((crit_langevin_dist*angst / deltasph ) > 1.d0)  then 
      if (rangmab==0) write(6,'("MAB:  WARNING !!!! Langevin  vs FD width  !!! WARNING ")') 
-     if (rangmab==0) write(6,'("MAB: the Langevins step is huge or the width of the FD function for protectives domains are too narrow  ")')
+     if (rangmab==0) write(6,'("MAB: the Langevins step is huge or the width of the FD function for  & 
+                                protectives domains are too narrow  ")')
      if (rangmab==0) write(6,'("MAB:  - decrease the Langevins step .....................:", E25.12E3)') crit_langevin_dist
      if (rangmab==0) write(6,'("MAB:  - increase the width of the FD function............:", E25.12E3)')  deltasph
      if (rangmab==0) write(6,'("MAB:  ratio Lang / FD width ", E25.12E3)')  crit_langevin_dist/deltasph
