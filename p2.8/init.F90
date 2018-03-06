@@ -17,7 +17,7 @@ subroutine init
   use elec_cell,only: i2t,it_cpl, readelec
   use eloss, only : ibrake,ecelec,initeloss
 
-!  use var_pot
+  !  use var_pot
 #if(PARA)
   use mod_mpi
 #endif
@@ -50,7 +50,7 @@ subroutine init
   !     write(6,*)'entree dans init.f'
   !potentiel BKS
 #if(PARAPH)
-rang=rangph
+  rang=rangph
 #endif 
 
 
@@ -130,7 +130,7 @@ rang=rangph
         case(13,14,15)
            !nguyen mettre input tersoff
            !        if (rang.eq.0) then
-!           if (rang==0)   write(6,*)'POTENTIEL tersoff.potin'
+           !           if (rang==0)   write(6,*)'POTENTIEL tersoff.potin'
            !           if (ipotentiel==13) then
            !           
            !           else
@@ -146,13 +146,13 @@ rang=rangph
 
            call inputtersoff
 
-!       case(16)
-!         call imputml
+           !       case(16)
+           !         call imputml
         end select
 
      endif
   end do
-!  if (rang == 0)  write(6,*)'cm',cm
+  !  if (rang == 0)  write(6,*)'cm',cm
   usdh = 1/(two*tstep)         
   !endif
 
@@ -289,7 +289,7 @@ rang=rangph
 
   if (L2T.eqv..true.) then
      call readelec
-!     if (lrestart) call restartelec
+     !     if (lrestart) call restartelec
      if (rang==0) write(6,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
      dmtype=4
      ibrake=1
@@ -308,7 +308,7 @@ rang=rangph
      end if
 
 
-
+  endif
 
   if (.not.lrestart) then
      !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
@@ -316,43 +316,43 @@ rang=rangph
      temps_initspeed_deb = MPI_Wtime()
 #endif
 
-! input and initialization of 2T
-   call initspeed 
-       if (iterasmol>=0) then 
-     itapp=0
-     call rasmol (itapp)
+     ! input and initialization of 2T
+     call initspeed 
+     if (iterasmol>=0) then 
+        itapp=0
+        call rasmol (itapp)
+     end if
+
   end if
-    
-end if
 
 
 
 
-  
-     if (lcorrelvp) then
-        ax=vp
-        write(6,*)'AX DEVIENT VP0'
-        write(6,*)'AX DEVIENT VP0'
-        write(6,*)'AX DEVIENT VP0'
-        write(6,*)'AX DEVIENT VP0'
-        write(6,*)'AX DEVIENT VP0'
 
-        call correlvp(xp,xpp,vp,ax,fp,ityp)
-     end if
+  if (lcorrelvp) then
+     ax=vp
+     write(6,*)'AX DEVIENT VP0'
+     write(6,*)'AX DEVIENT VP0'
+     write(6,*)'AX DEVIENT VP0'
+     write(6,*)'AX DEVIENT VP0'
+     write(6,*)'AX DEVIENT VP0'
 
-     if (lHcyl) then
-        call Hcyl
-     end if
+     call correlvp(xp,xpp,vp,ax,fp,ityp)
+  end if
+
+  if (lHcyl) then
+     call Hcyl
+  end if
 
 
 
 #if(PARA)
-     temps_initspeed=MPI_Wtime()-temps_initspeed_deb
+  temps_initspeed=MPI_Wtime()-temps_initspeed_deb
 #endif
 
-     if ((itetimestep>0).and.(.not.lcasca)) call deftimestep 
+  if ((itetimestep>0).and.(.not.lcasca)) call deftimestep 
 
-  endif
+
 
   if (lcontr) call initcontr(xp,xpp,vp,ax,ityp)
 
@@ -362,18 +362,18 @@ end if
 #if PARA
 #else
 
-        if (lfilm) then
-           write (lufilmpaf, *) '1'
-           write (lufilmpaf, *) 'IT ', '0 ', 'time      0.'
-           write (lufilmpaf, 114) 'Pb ', xp(1,iko)*1D+8, xp(2,iko)*1D+8, xp(3&
-                ,iko)*1D+8, iko
-        endif
-114     format(a3,1x,3(f10.4,1x),i5)
+     if (lfilm) then
+        write (lufilmpaf, *) '1'
+        write (lufilmpaf, *) 'IT ', '0 ', 'time      0.'
+        write (lufilmpaf, 114) 'Pb ', xp(1,iko)*1D+8, xp(2,iko)*1D+8, xp(3&
+             ,iko)*1D+8, iko
+     endif
+114  format(a3,1x,3(f10.4,1x),i5)
 #endif
-        if(iteanapos>0)then
-           itapp=0
-           call sauveposition (itapp)
-        end if
+     if(iteanapos>0)then
+        itapp=0
+        call sauveposition (itapp)
+     end if
 
      if (itmax==0) stop
      call caltabt 
@@ -409,7 +409,7 @@ end if
         call creadp (xp, xpp, ityp,vp)
         call caltabt
         if (ltabvois) call caltabi
-        
+
         if (lperiod) then 
            call period
         else 
@@ -422,7 +422,7 @@ end if
   end if
 
   if ((lheat.EQV..true.).and.(iteheat==0))call heat
-  
+
   if(iteplz>0)  call prtplz(xp,ityp)
 
 
