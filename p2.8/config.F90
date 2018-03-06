@@ -1,8 +1,8 @@
+subroutine config
 !********************************************************************
 !             CONSTRUCTION DE LA BOITE DE SIMULATION
 !********************************************************************
 
-subroutine config
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -11,6 +11,7 @@ subroutine config
   use var_pot
   use tab_imm_m
   use suivinonpbc
+!  use elec_cell,only: restartelec
 #if(PARA)
   use mod_mpi
 #endif
@@ -418,6 +419,8 @@ subroutine config
      endif
 
      close (lucin)
+
+
 
 #if(PARA)
      deallocate(num_at_buff)

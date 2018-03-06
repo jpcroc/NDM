@@ -7,9 +7,11 @@ subroutine readdm
   use gen_com_m
   use var_pot
   use jqmod
+  use eloss, only : tcelec,ecelec,ibrake,ngrdel
 #if(PARA)
   use mod_mpi
 #endif
+ 
   ! *****************************************************************
 
   implicit none
@@ -53,7 +55,7 @@ subroutine readdm
        lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
-       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec
+       tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin
 
 
   !
@@ -125,7 +127,7 @@ subroutine readdm
   ltranche = .FALSE.          ! existence d'une trache gelee
   rulayer=0.0                 ! largeur de la tranche gelee par 
   ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
-  lpr=.false.                 ! parinnelo rahman Â  contrainte constante
+  lpr=.false.                 ! parinnelo rahman õ‚‰…ã‚ contrainte constante
   sigext = 0.0                ! Symetric tensor related to the external stress
   !=== Modif Emmanuel Clouet ================
   h0(1:3,1:3) = 0.d0          ! Vecteurs de base de la bite de reference en A (Parrinello, Rahman)
@@ -153,10 +155,10 @@ subroutine readdm
   iteTconst =itetemp
   lalea = .FALSE.             ! structure initiale aleatoire
   rsep = 1.0               !Distance de separation pour le tirage aleatoire
-  ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW ÃƒÂƒÃ‚Â  la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original) ; 11 Ercollesi
+  ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW õ‚‰…Ï€ï½´ï¾ï½µç¸ºï½¤  la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original) ; 11 Ercollesi
   npotentiel = 1              ! nb de potentiels
   lpotentiel(:)=.false.
-  ntyp=-1                    ! le nombre de type DOIT etre specifie si le nombre de potentiel est superieur ÃƒÂƒÃ‚Â  1
+  ntyp=-1                    ! le nombre de type DOIT etre specifie si le nombre de potentiel est superieur õ‚‰…Ï€ï½´ï¾ï½µç¸ºï½¤  1
   ! PME
   maxorder=10                                ! Ordre du developpement maximal de la PME
   lvpread=.true.
@@ -259,7 +261,7 @@ subroutine readdm
   lprtfat=.false.
 
   lFrozen=.FALSE.
-  lxfrozen=.FALSE.             ! .true.: certains atomes sont bloqueÃ‚Â¸ (pas de dynamique)
+  lxfrozen=.FALSE.             ! .true.: certains atomes sont bloqueõ‚‰…õ€ˆšâ–½õ‚‰„ï½¸ (pas de dynamique)
   lyfrozen=.FALSE.             
   lzfrozen=.FALSE.             
   lxyfrozen=.FALSE.             
@@ -291,7 +293,7 @@ subroutine readdm
   rheat=0.
   Theat=0.0
   Eheat=0.
-  ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codÃ©, ivisu=3=xred
+  ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codõ‚‰…õ€ˆ¦ï½½ï½©, ivisu=3=xred
 
   ! management of the specific boundary conditions (free or rigid)  ---------------------------   !*!
   ibound = 0	! ( ibound = 0 <=> no spe BoundC, ibound = 1 <=> strain controlled BoundC, ibound = 2 <=> stress controlled BoundC)		!*!
@@ -300,8 +302,8 @@ subroutine readdm
   fdbkcoef	  = 0.  ! feedback coefficient for the correction of applied stress (ibound=3)   !*! 
   decal_bc = 0.
   ldecal_bc = .false.
-  itespebcout = -1      ! on n'Ã©crit pas de .cfg pour le film
-  ldyn2D = .false.      ! par dÃ©faut : bords libres selon Y
+  itespebcout = -1      ! on n'õ‚‰…õ€ˆ¦ï½½ï½©crit pas de .cfg pour le film
+  ldyn2D = .false.      ! par dõ‚‰…õ€ˆ¦ï½½ï½©faut : bords libres selon Y
   !   ----------------------------------------------------------------------------------------    !*!
 
   !.... in SUNDAE
@@ -320,12 +322,26 @@ subroutine readdm
   tpseuils(:)=0 ! 1:Tmin; 2:abs(T') ; 3: abs(T'') ; 1:abs(P); 2:abs(P') ; 3: abs(P'')
 
   lrctest=.true.
-  tcelec=0 ! température de coupure pour les pertes électroniques
-  Ecelec=0 ! température de coupure pour les pertes électroniques
-  if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
+  tcelec=0 ! tempé¬§ï½»ature de coupure pour les pertes é¬§è„‡ctroniques
+  Ecelec=0 ! tempé¬§ï½»ature de coupure pour les pertes é¬§è„‡ctroniques
+
+
+  l2T=.false. ! 2T model
+  depmaxts=0.02
+  tsmin=2.0
+
+ if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
   read (ludin, nml=input)
+  tsmin=tsmin*1d-15
+  depmaxts=depmaxts*1d-8
+  if ((l2T).and.(tsmin==2d-15)) then
+     tsmin=2.d-16
+!     depmaxts=0.002
+  end if
+
+
 
 
 
@@ -1129,10 +1145,10 @@ subroutine readdm
   end if
 
 
-  if(itetemp2.gt.0)then
-     fnamdin = fnam(1:lenfnam)//'.2.T'
-     open(unit=112, file=fnamdin, status='unknown')
-  end if
+!  if(itetemp2.gt.0)then
+!     fnamdin = fnam(1:lenfnam)//'.2.T'
+!     open(unit=112, file=fnamdin, status='unknown')
+!  end if
 
   if (ldislo.and.((epcoudis==0.0).or.(fdislo==0.0))) then
      epcoudis=epcoudis*1.0d-8
@@ -1190,7 +1206,7 @@ subroutine readdm
 
      ! Le tableau free controle quels atomes participent a l'energie (utilise par JP a priori)
      ! Le tableau frozen controle quelles coordonnees de quels atomes sont libres de relaxer
-     !    i.e. quelles forces doivent ÃƒÂªtre annulees
+     !    i.e. quelles forces doivent õ‚‰…Ï€ï½´õ‚‰„ï½ªtre annulees
      Allocate(Free(1:imm))
      Free(:)=.true.
      Allocate(Frozen(1:3,1:imm))
@@ -1277,13 +1293,13 @@ subroutine readdm
      if(tempdes==-1)tempdes=Text
 
      if (rang==0)write(6,*)
-     if (rang==0)write(6,*)'desintegration de l atome ',ides, 'mis ÃƒÂ  1'
+     if (rang==0)write(6,*)'desintegration de l atome ',ides, 'mis õ‚‰…Ï€ï½´  1'
      if (rang==0)write(6,*) 'desinteg NE FONCTIONNE QUE AVEC DES POT DE PAIRES !!!'
      if (rang==0)write(6,'(A,D12.5,A)')' kspr=',kspr,'eV/Ang**2'
      kspr=kspr*1d16/erg2eV
      if (rang==0)write(6,*)
      if (rang==0)write(6,*)'ATTENTION EN PARA LES ATOMES NE DOIVENT PAS TROP VOYAGER PENDANT LES CHEMINS'
-     if (rang==0)write(6,*)'ATTENTION EN PARA un atome ne doit pas aller d-un proc. ÃƒÂ  un proc non voisin'
+     if (rang==0)write(6,*)'ATTENTION EN PARA un atome ne doit pas aller d-un proc. õ‚‰…Ï€ï½´  un proc non voisin'
 
 
 
@@ -1316,6 +1332,8 @@ subroutine readdm
         stop
      end if
   end if
+
+
 
   return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'

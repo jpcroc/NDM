@@ -26,7 +26,7 @@ subroutine calfoberend(xp, vp, fp,ityp)
 
 end subroutine calfoberend
 
-subroutine calfolangevin(xp, vp, fp,ityp,il,Gl)
+subroutine dynlangevin(xp, vp, fp,ityp,il,Gl)
   use gen_com_m
   use var_pot
 #if(PARA)
@@ -48,6 +48,7 @@ subroutine calfolangevin(xp, vp, fp,ityp,il,Gl)
 !     write(6,*)'rga',rga,Gl(ic,i)*sqrt(cm(ityp(1))*bk*text*(1-rga**2))/cm(ityp(1)),vp(1,1)
      do i=1,im
         rga=exp(-gamlt(ityp(i))*tstep/2)
+!        write(6,'(A,2G15.7)')'gamstd ',gamlt(ityp(i)),rga
         do ic=1,3
 !  write(6,*)'ct',cm(ityp(1)),tstep
            call random_number(u1)
@@ -72,7 +73,7 @@ subroutine calfolangevin(xp, vp, fp,ityp,il,Gl)
 
 
 
-end subroutine calfolangevin
+end subroutine dynlangevin
 
 
 

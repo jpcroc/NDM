@@ -1,7 +1,7 @@
 module tab_imm_m
   !
   USE T_kind_param_m
-  USE gen_com_m, ONLY: lsuivinonpbc,lposmoy,mdcg_noise,llangevin
+  USE gen_com_m, ONLY: lsuivinonpbc,lposmoy,mdcg_noise,llangevin,l2T
   !$ use OMP_LIB
   ! 
   ! Module contenant les tableaux dimmensionnes sur le
@@ -48,6 +48,9 @@ contains
        allocate(posmoyx(3,nb_imm))
        posmoyx = 0.0
     end if
+     if ((llangevin.eqv..true.).or.(l2T.eqv..true.)) then
+        allocate(Gl(3,nb_imm))
+     end if
 
     if (mdcg_noise/=0) then
      allocate (bruitmd(3,nb_imm))

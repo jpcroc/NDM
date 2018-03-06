@@ -14,6 +14,9 @@ subroutine init
   use neb_module
   use posana
   use defcdp, ONLY :itecdp
+  use elec_cell,only: i2t,it_cpl, readelec
+  use eloss, only : ibrake,ecelec,initeloss
+
 !  use var_pot
 #if(PARA)
   use mod_mpi
@@ -283,16 +286,48 @@ rang=rangph
   if (ltabvois) call caltabi 
   ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
   !  end if
+
+  if (L2T.eqv..true.) then
+     call readelec
+!     if (lrestart) call restartelec
+     if (rang==0) write(6,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
+     dmtype=4
+     ibrake=1
+     ilangevin=1
+     if((ecelec==0))then
+        write(6,*) 'eccelec<>0  and l2T : STOP'
+        stop
+     end if
+     if ((i2T==0).and.(it_cpl==-1)) then
+        write(6,*) 'i2T=0 it_cpl=-1 and l2T : STOP'
+        stop
+     end if
+     if (nox.le.0 ) then 
+        write(6,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
+        stop
+     end if
+
+
+
+
   if (.not.lrestart) then
      !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
 #if(PARA)
      temps_initspeed_deb = MPI_Wtime()
 #endif
-     call initspeed 
+
+! input and initialization of 2T
+   call initspeed 
        if (iterasmol>=0) then 
      itapp=0
      call rasmol (itapp)
   end if
+    
+end if
+
+
+
+
   
      if (lcorrelvp) then
         ax=vp
@@ -402,7 +437,7 @@ rang=rangph
      itapp=0
      call sauveposition (itapp)
   end if
-  if (rang==0) write(6,*)'sortie init'
+
 
 
   if (ldesinteg) then
@@ -439,7 +474,7 @@ rang=rangph
 
   if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
 
-
+  if (rang==0) write(6,*)'sortie init'
 
 
   return

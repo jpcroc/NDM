@@ -98,7 +98,7 @@ module gen_com_m
 
 
   integer :: it, itmax, nitmax,igen ! iteration courante, finale , type de generation
-  real(double)::timemax ! temps max simul�
+  real(double)::timemax ! temps max simul
   integer :: lenfnam
   integer :: fmt_cin
 
@@ -122,7 +122,7 @@ module gen_com_m
   real(double) :: tstep, usdh, timel  
   integer :: itetemp, itesigma, itedepla, itecoordo, iterdf, nrdf, & 
        iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc,itecfg
-  integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codé, ivisu=2=xred
+  integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codﾃｩ, ivisu=2=xred
   real(double)::rcangle,rcrdf
 
   real(double), dimension(3,3) :: sig ! contrainte
@@ -132,10 +132,10 @@ module gen_com_m
   real(double), dimension(:,:,:),pointer :: sigc ! contrainte par cel
   real(double), dimension(:,:,:),pointer :: sigat,sigtyp,sigtyp_loc ! contrainte par atome
   real(double), dimension(:,:,:,:),pointer :: sigtyptyp,sigtyptyp_loc ! contrainte par atome
-  logical :: lEparat,lsigtyp  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ©nergie par atome,calcul bond valence
+  logical :: lEparat,lsigtyp  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ﾂｩnergie par atome,calcul bond valence
   integer:: itebdv ! frequence de calcul des bond valence
-  logical :: ljqbh ! calcul de la conductivitÃ© thermique par la mÃ©thode directe
-  logical :: lnemd  ! calcul de la conductivitÃ© thermique par NEMD
+  logical :: ljqbh ! calcul de la conductivitﾃδｩ thermique par la mﾃδｩthode directe
+  logical :: lnemd  ! calcul de la conductivitﾃδｩ thermique par NEMD
   integer ::njqbh,ittherm,ntr
   real(double) :: epsil,epcoud,kthg
 
@@ -149,8 +149,8 @@ module gen_com_m
   real(double),pointer::eatomtotm(:) ! energie par atome
   logical :: lPrtSigat, lprteat, lprtfat,lprteattotm  ! calcul et ecriture de la contrainte, l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
   logical :: lsigatcel !ecriture de la contrainte atomique moyenne sur cellule
-  logical :: lsigat ! la contrainte atomique est calcul�e (rendu vrai par lprtsigat ou lsigatcel)
-  logical :: lposmoy ! ecrit à la fin la position moyenne des atomes
+  logical :: lsigat ! la contrainte atomique est calcul馥 (rendu vrai par lprtsigat ou lsigatcel)
+  logical :: lposmoy ! ecrit ﾃ� la fin la position moyenne des atomes
   real(double) :: tdepla, tdepla2 ! seuils de deplacement
   logical :: lfilm, linstantrdf,linstantfda, lrestart, ltpcel, lfilmext !film, RDF, restart, moyenne par cel
   real*8,dimension(4)::tpseuils ! 1:Tmin; 2:abs(T') ; ; 3:abs(P); 4:abs(P')
@@ -169,6 +169,7 @@ module gen_com_m
   logical :: lvpread  ! vitesse lue dans le fichier .cin
   integer:: iseed ! graine du gerateur aleatoire des vitesses
   integer :: dmtype, itab, itetabvois, itetimestep, itederive ! type dynamique, periode de repartition entre cel, periode de calc. tab des voisins, periode de chgt du pas en temps, poeriode de correction de la derive
+  real(double):: depmaxts,tsmin
   real(double) :: tempstop, tempstopcel,ttol, tfroi, tcooling, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
        tsfact, vmax, tgc, dfpred ! gestion du pas en temps
   real(double)::maxtcel
@@ -192,17 +193,11 @@ module gen_com_m
   real(double) :: eko, xko, yko, zko ! energie et direction du PAF
   real(double) :: xx0, yy0, zz0 ! position initiale du projectile
   logical :: lcasca,lderive ! cascade,correction derive ?
-  integer::ibrake   ! electronic slowing in cascades : 0 none, 1 down to ecelec, tcelec , 2 connected to Langevin
-  integer::ngrdel
-  real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
-  real(double):: elosselectot,elosselectot1 ! electronic losses for all atoms ; the PKA
-  real(double),pointer::elstopforce(:,:,:)
-  real(double):: tcelec,Ecelec ! coupure pour les pertes �lectroniques
 
 
 
   real(double) :: pist, temp, pmean, tmean, kine, kinemean ! pression temp et moyennes associees
-
+  real(double) :: tempEP ! temperature for slow moving atoms (EP=elec-phon)
 
   integer :: nvois   ! nb de voisins max dans toute la boite = nb d'atome * nb de voisins (/2)
   integer, pointer,dimension(:) :: indi ! table des voisins
@@ -255,7 +250,7 @@ module gen_com_m
 
   logical lEev,lPkbar   !unite
   ! energies potentielle, cinetique et totale de la boite en Parrinello-Rahman
-  real(double):: Ecell, Kcell, Ucell      
+  real(double):: EcellPR, Kcell, Ucell      
 
 
   !Variables Nose
@@ -325,17 +320,17 @@ module gen_com_m
   real(double) :: y_max
   real(double) :: y_min
   real(double) :: y_2nd_max
-  integer, dimension(:), pointer  :: b2sINF ! appartenance à la surface inférieure !*!
-  integer, dimension(:), pointer  :: b2sSUP ! appartenance à la surface supérieure !*!
+  integer, dimension(:), pointer  :: b2sINF ! appartenance ﾃ� la surface infﾃｩrieure !*!
+  integer, dimension(:), pointer  :: b2sSUP ! appartenance ﾃ� la surface supﾃｩrieure !*!
   logical      :: flag_fin
   real(double) :: ef_strain
   logical      :: ldecal_bc
   real(double) :: decal_bc		! pour les dislocations vis - decalage selon X
-				! pour des potentiels EAM (implementé pour calfoeamtabvois)
+				! pour des potentiels EAM (implementﾃｩ pour calfoeamtabvois)
   integer      :: itespebcout   ! frequence a laquelle on genere des .cfg (films mvt de dislo)
   real(double) :: inXMdis1
   real(double) :: inXMdis2
-  logical      :: ldyn2D        ! .true. ->  dynamique 2D   ;    .false. ->  bords libres (par défaut)
+  logical      :: ldyn2D        ! .true. ->  dynamique 2D   ;    .false. ->  bords libres (par dﾃｩfaut)
 
 ! cas ibound = 1 :
   real(double):: user_strainrate   !*strain rate choosen by the user	     !*!
@@ -345,8 +340,8 @@ module gen_com_m
   real(double):: user_stress_yz	   !*stress applied on the cryst. surface	     !*!
 
 ! cas ibound = 3 : 
- !real(double):: user_strainrate   !*est aussi nécessaire		     !*!
- !real(double):: user_strainrate   !*est aussi nécessaire		     !*!
+ !real(double):: user_strainrate   !*est aussi nﾃｩcessaire		     !*!
+ !real(double):: user_strainrate   !*est aussi nﾃｩcessaire		     !*!
   real(double):: currentstress     ! stress applied - corrected at each time step !*!
   real(double):: fdbkcoef	   !*coef de la boucle de feedback de correct0 de currentstress
   real(double):: forceatsup        ! force on sup. surface atom (stress controlled) !*!
@@ -363,6 +358,9 @@ module gen_com_m
 
 
 !ZBL 
-  real(double)::potiszbl ! energie pot de ZBl quand ajoute ind�pendemment
+  real(double)::potiszbl ! energie pot de ZBl quand ajoute ind����ｽpendemment
+
+  logical :: l2T
+ real(double), dimension (:),allocatable ::elossCel
 
 end module gen_com_m

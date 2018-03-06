@@ -7,6 +7,7 @@ subroutine deftimestep
   use gen_com_m
   use var_pot
   use tab_imm_m
+  use elec_cell, only:  etstep, necycle, necyclemin
 #if(PARA)
   use mod_mpi
 #endif
@@ -27,7 +28,7 @@ subroutine deftimestep
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   integer :: i, iti, ic, expos, imax,ikoloc
-  real(double) :: tifac1, tifac2, lts, tseuil, vmax2
+  real(double) :: tifac1, tifac2, lts, tseuil, vmax2,depmaxts2
   real(double), dimension(imm) :: vpmod2
   real(double) :: tmaxv, tmod, vpmod
   real(double) :: tv1
@@ -48,7 +49,7 @@ subroutine deftimestep
   ! pour ne pas tout melanger on ne prend que des pas en temps
   ! egaux a 2.0 ou 5.0 ou 10 * 10 **-qqch
 
-
+      depmaxts2=depmaxts*1.125
   if (it.le.2) return
   vmax2 = 0.0
   imax = 0
@@ -106,7 +107,7 @@ endif
 
   ! *** Technique anti-bug ! ***
   ! -> tseuil a diminuer pour eviter les derives en energies et temperature
-  tseuil = 2.0D-10/(1.0D0*vmax)
+  tseuil = depmaxts/(1.0D0*vmax)
   tv1=tstep*vmax !variable servant pour imposer une hysteresis
   !      write(6,*)'tseuil ',tseuil
   lts = log10(tseuil)
@@ -148,8 +149,8 @@ endif
    if (dmtype==4) then
 
   ! Limite a ne pas depasser pour tstep
-     if (tstep<=2D-15.and.(tv1.lt.2D-10.OR.&
-          tv1.gt.2.5D-10)) then
+     if ((tstep<=tsmin).and.((tv1.lt.depmaxts).OR.(&
+          tv1.gt.depmaxts2))) then
         if (tstep/=oldtstep) then
            if (rang==0) then
               write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
@@ -173,8 +174,8 @@ endif
   if (dmtype==1) then
 
   ! Limite a ne pas depasser pour tstep
-     if (tstep<=2D-15.and.(tv1.lt.2D-10.OR.&
-          tv1.gt.2.5D-10)) then
+     if (tstep<=tsmin.and.(tv1.lt.depmaxts.OR.&
+          tv1.gt.depmaxts2)) then
         if (tstep/=oldtstep) then
            if (rang==0) then
               write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
@@ -217,7 +218,15 @@ endif
         if (rang==0) write (6, *) 'tstep maintenu'
      endif
   end if
-
+    ! electronic timestep
+  if (l2T)then
+     etstep=tstep/necyclemin
+     if (etstep.gt.6d-17)then
+        etstep=2d-16
+        necycle=int(tstep/etstep)
+        write(6,*)'chgt etstep',etstep,necycle
+     end if
+  end if
   !     write(6,*)'sortie deftimestep'
   return
 end subroutine deftimestep

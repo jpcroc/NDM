@@ -395,7 +395,7 @@ contains
     xpp(1:3,1:imm) = MatMul(hold(1:3,1:3), sold(1:3,1:imm) )
 
     ! Total energy of the cell
-    Ecell = Kcell + Ucell
+    EcellPR = Kcell + Ucell
 
     ! Kinetic and potential energies of Nosé thermostat (Eq. 3.1 Ref. [3])
     KNose = 0.5d0*wNose*fpoint**2

@@ -13,6 +13,8 @@ subroutine calfo
   use contrainte
   use tab_imm_m
   use jqmod
+  use eloss, only : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
+  use elec_cell, only :i2t
 #if(PARA)
   use mod_mpi
 #endif
@@ -32,14 +34,16 @@ subroutine calfo
   !-----------------------------------------------
   real(double), dimension(3) :: fptot
   integer :: i,ilocal,ipot,ic
-  real(double)::vn,v1,f1,ekin
-  integer::nv1,koo
+!  real(double)::vn,v1,f1,ekin
+!  integer::nv1,koo
   logical:: test_sigma
 
 #if(PARA)
   real(double), dimension(3,3) :: sig_tot,sigkine_tot
   real(double),dimension (3):: fptot_tot
-  !  real(double)::elosselectot,elosselec1tot
+
+
+
 #endif
   !   if (rang==0) write(6,*) 'ldemintab',ldemitab
 
@@ -209,62 +213,10 @@ subroutine calfo
   If (ibound == 2 .OR. ibound == 3)            call stress_bc	!*!
 
   !stop
-
-  if(ibrake.gt.0) then
-     do i=1,im
-        if(tcelec.gt.0) then
-           koo = ielat(i)                          ! Numero de la cellule
-           if (tempc(koo).le.tcelec) cycle
-        end if
-
-        vn= vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
-	ekin=0.5*erg2ev*vn*cm(ityp(i))
-        if ((vn.ne.0).and.(ekin.gt.Ecelec)) then
-           !	write(6,*)'RG',rang,i,ekin
-           vn=sqrt(vn)
-           v1=elstopforce(ityp(i),1,1)
-           !           write(6,*)v1,vn
-           nv1=1+INT(vn/v1)
-           if (nv1.gt.ngrdel) then
-              write(6,*)'elstop velocity > 49, rebuild elstop.in'
-              stop
-           end if
-           f1=elstopforce(ityp(i),2,nv1)-(elstopforce(ityp(i),2,nv1)-elstopforce(ityp(i),2,nv1-1))*(nv1-vn/v1)
-!           write (6,'(A,4G15.7)')'felstop ',f1,vn, vn/v1,elstopforce(ityp(i),2,nv1)
-           if (f1.le.0) then
-              write(6,*)'f1<0 ?', f1
-              stop
-           end if
-           if (ibrake==2) f1=f1-gamlt(ityp(i))*sqrt(cm(ityp(i))*2*Ecelec*ev2erg)
-!           write(6,'(A,5G15.7)')'EL222',ekin,vn,f1,gamlt(ityp(i))*sqrt(cm(ityp(i))*2*Ecelec*ev2erg),f1/vn
-!           write(6,*)
-           do ic=1,3
-              fp(ic,i)=fp(ic,i)-vp(ic,i)*f1/vn
-              Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)*erg2ev
-              if (num_at_glob(i)==iko)then 
-
-                 !                write(6,*)'elfp',fp(ic,i)
-                 Elosselec1=Elosselec1+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)*erg2ev
-              end if
-           end do
-           !                 write (6,*)'felstop',f1,vn                
-        end if
-
-     end do
-     !	write(6,*)'RG el',rang,elosselec,elosselec1
-#if(PARA)
-     elosselectot=0
-     elosselectot1=0
-     call MPI_ALLREDUCE(elosselec,elosselectot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-     call MPI_ALLREDUCE(elosselec1,elosselectot1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-#else
-     elosselectot=elosselec
-     elosselectot1=elosselec1
-
-#endif
-
-
-
+  if (l2t)then
+     if (i2t==1)  call calceloss
+  else
+     if(ibrake.gt.0) call calceloss
   end if
 
 

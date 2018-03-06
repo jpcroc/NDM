@@ -119,7 +119,7 @@ subroutine configcr(xpcr,ityp,lrescale,itypcr)
      end do
 
   do i=1,min(im,imcr)
-     if (ityp(i).ne.itypcr(i)) write(6,*)i,ityp(i),itypcr(i)
+     if (ityp(i).ne.itypcr(i)) write(6,*)'pbtyp',i,ityp(i),itypcr(i)
   end do
   if (any(ityp.ne.itypcr)) then
      if(rang==0)                    write (6, *) 'ityp <> itypcr'

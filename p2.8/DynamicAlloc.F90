@@ -2,6 +2,7 @@ subroutine DynamicalAllocationCell
 
   use gen_com_m
   use var_pot
+  use eloss, only :tcelec
   implicit none
 
   allocate(ncel(0:noxyz,0:26))
@@ -34,6 +35,10 @@ subroutine DynamicalAllocationCell
         allocate (lprtcel(noxyz))
 
   end if
+  if (l2T.eqv..true.)then
+     if (.not.allocated(tempc))     allocate (tempc(noxyz))
+     allocate (elossCel(noxyz))
+  endif
   if (lsigatcel.eqv..true.) then
      allocate (patcel(noxyz))
      allocate (patcelmax(noxyz))

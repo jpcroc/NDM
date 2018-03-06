@@ -8,11 +8,12 @@ subroutine dyn_vverlet
 use tab_imm_m
 use jqmod
 use suivinonpbc
+use elec_cell,only: dynelec
 #if(PARA)
   use mod_mpi
 #endif
 
-
+  use elec_cell, only:TTlangevin
   use parrinello_rahman
 
   implicit none
@@ -53,7 +54,10 @@ use suivinonpbc
 
  if (lLangevin) then
     il=2*(ilangevin-1)+1
-    call calfolangevin(xp,vp,fp,ityp,il,Gl)
+    call dynlangevin(xp,vp,fp,ityp,il,Gl)
+ elseif (l2T) then
+    il=2*(ilangevin-1)+1
+    call TTlangevin(xp,vp,fp,ityp,il,Gl)
  else
    DO i=1, imd
        vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
@@ -89,6 +93,8 @@ use suivinonpbc
         endif
      endif
   end if
+
+
 #if(PARA)
   temps_debpara=MPI_Wtime()
 	   ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
@@ -97,6 +103,10 @@ use suivinonpbc
   if (ltranche) call layer
 #endif
 
+
+  if (l2T) then
+     call dynelec
+  end if
 
   ! Force calculation
 
@@ -118,7 +128,10 @@ use suivinonpbc
   ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
   if (llangevin.eqv..true.) then
     il=2*(ilangevin-1)+2
-     call calfolangevin(xp,vp,fp,ityp,il,Gl)
+     call dynlangevin(xp,vp,fp,ityp,il,Gl)
+  elseif (l2T) then
+     il=2*(ilangevin-1)+2
+     call TTlangevin(xp,vp,fp,ityp,il,Gl)
   else
      DO i=1, imd
         vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)

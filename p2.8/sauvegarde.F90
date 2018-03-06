@@ -6,6 +6,7 @@ subroutine sauvegarde
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
+  use elec_cell, only : sauveelec
 #if(PARA)
   use mod_mpi
 #endif
@@ -135,6 +136,8 @@ subroutine sauvegarde
 #endif
 
      close(unit=lucout)
+
+     call sauveelec
 
   else ! rang different de 0 :
 #if(PARA)

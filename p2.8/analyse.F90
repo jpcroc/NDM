@@ -15,6 +15,8 @@ subroutine analyse
   USE fcc_module
   USE cfg_module
   USE posana
+  use elec_cell, only : Eelec,Teavg,Tecmax,ietm,eleccellmol
+  use eloss, only : ibrake, elosselectot1, elosselectot
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -105,7 +107,7 @@ subroutine analyse
   if (itetemp>0) then
      if (mod(it,itetemp)==0) then
 
-        call calctemp (temptyp)
+!        call calctemp (temptyp)
         !        write(6,*) 'sortie calctemp',temp,rang
 
         ! MPI
@@ -117,7 +119,7 @@ subroutine analyse
 
               write (6, *)
               write (6, *)
-              write (6, '(A,I7,A,G10.3)') '<<<<<<<<  ITERATION =', it, &
+              write (6, '(A,I7,A,G15.7)') '<<<<<<<<  ITERATION =', it, &
                    '  time = ', timel
               write (6, *)
               write (6, *)
@@ -144,7 +146,19 @@ subroutine analyse
               end do
               write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel,'*Ec = ',kine*unitE, cunitE, &
                    '  (', temp, ' K)'
+             
               write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
+              If (l2T) then
+
+                 write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Eelec = ',Eelec*unitE, cunitE                 
+                 write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*IE_Et = ',&
+                      &(kine+potist+Eelec)*unitE, cunitE                 
+                 write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Telec = ',Teavg
+                 write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*TempE = ',TempEP
+                 write (6,'(I10,G10.3,A,G21.12,3I5)') it,timel,'*maxTe = ',Tecmax,ietm(:)
+
+              end If
+
               write (6, *)
 
               !	IF(it==1) Open(unit=774, file='energie_it.dat', status='unknown', action='write')
@@ -179,9 +193,9 @@ subroutine analyse
                       '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
                  IF (lUcell) THEN
                     write(6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Ucell = ',Ucell*unitE,cunitE
-                    write(6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Ecell = ',Ecell*unitE,cunitE
+                    write(6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Ecell = ',EcellPR*unitE,cunitE
                     write(6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Htot_PR = ', &
-                         (potist+kine+Ecell)*unitE,cunitE
+                         (potist+kine+EcellPR)*unitE,cunitE
                  END IF
                  write(6,*) 'Box tensor'
                  write(6,*)'a',at(1,1),at(2,1),at(3,1)
@@ -252,7 +266,7 @@ subroutine analyse
                  WRITE(6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel, &
                       '*KNose = ',KNose*unitE,cunitE, '  (', 2.d0*KNose/(bk), ' K)'
                  WRITE(6,'(i7,G10.3,a,g22.12)') it,timel,'*fNose = ', fNose
-                 WRITE(6,'(i7,G10.3,a,g22.12,a)') it,timel,'*Htot_Nose = ', (kine+potist+Ecell+KNose+UNose)*unitE,cunitE
+                 WRITE(6,'(i7,G10.3,a,g22.12,a)') it,timel,'*Htot_Nose = ', (kine+potist+EcellPR+KNose+UNose)*unitE,cunitE
 
               ELSEIF (lTHoover) THEN
                  WRITE(6,'(a)') 'Thermostat de Nose-Hoover'
@@ -415,7 +429,7 @@ subroutine analyse
                              if (ltabvois) then
                                 continue
                              else
-                                !                             write(6,*)'dans la celulle ',ko,' sigma  '
+!                                write(6,*)'dans la celulle ',ko,' sigma  '
                                 do ic =1,3
                                    pmc(ko)=pmc(ko)+sigc(ic,ic,ko)/3.0
 
@@ -450,6 +464,7 @@ subroutine analyse
                                 !                             if(abs(celpp2(ko)).gt.tpseuils(6)) lprtcel(ko)=.true.
                                 if (it.le.2) lprtcel(ko)=.false.
                                 !                             lprtcel(ko)=.true.
+                                write(6,*)'tempcprt', tempc(ko),abs(tcp(ko))
                                 if (lprtcel(ko).EQV..true.) nprt=nprt+1
 
                                 if(it.ge.3) then
@@ -476,6 +491,7 @@ subroutine analyse
                  end do
               end do
               timelm1=timel
+
               if ((mod(it,itetemp2)==0).and.(nprt.gt.0))then
                  write (6, *) '------valeurs par cellules-------',it,nprt
                  write(extension,'(i9.9)') it
@@ -677,6 +693,7 @@ subroutine analyse
            call refix_ty()
         else
            call rasmol (it)
+           if (l2T) call  eleccellmol
         end if
      end if
   endif

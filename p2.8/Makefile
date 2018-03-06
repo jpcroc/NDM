@@ -23,6 +23,8 @@ OBJS_MOD=   T_kind_param_m.o\
 	var_pot.o \
         pos_com_m.o \
         fft_com_m.o \
+        tab_imm_m.o\
+        eloss.o \
 	SMjuli.o \
 	eamerco.o \
 	eamtab.o \
@@ -31,10 +33,10 @@ OBJS_MOD=   T_kind_param_m.o\
 	gin.o \
         neb_module.o \
         jqmod.o \
-        tab_imm_m.o\
         caltabtcr.o \
         calpo_ew.o \
         anasic.o \
+        elec_cell.o \
         modules.o 
 
 
@@ -55,7 +57,6 @@ OBJS_PARAML=   init_MPI_ml.o
 OBJS_SEQ=	anapos.o \
 	work_cgII.o \
         DynamicAlloc.o\
-        initeloss.o \
 	alloc_typ.o \
         defcdp.o \
         fcc.o \

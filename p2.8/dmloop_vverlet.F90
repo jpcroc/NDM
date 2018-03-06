@@ -10,6 +10,8 @@ subroutine dmloop_vverlet
   use parrinello_rahman
   use tab_imm_m
   use suivinonpbc
+use elec_cell,only: dynelec
+!  use elec_cell,only: dynelec
 
 #if(PARA)
   use mod_mpi
@@ -17,6 +19,7 @@ subroutine dmloop_vverlet
   implicit none
  integer::ilocal
 real(double) sigkine_tot(3,3)
+  real(double) :: temptyp(ntyp)
 #if(PARA)
   ! declarations supplementaires pour MPI
   real(double), dimension(3,3,noxyz) :: sigc_tot
@@ -38,7 +41,8 @@ real(double) sigkine_tot(3,3)
   ! Appel de la routine generale des forces
   call calfo 
 
-!  call analyse 
+!  call analyse
+  call calctemp (temptyp) 
 1 continue
   it = it+1
 
@@ -51,6 +55,12 @@ real(double) sigkine_tot(3,3)
 !  write(6,*)'RG i ',rang,it
   ! calcul de sigtot
   !if (lpr==.false.) then
+! ancien emplacement de dynelec
+!  if (l2T) then
+!     call dynelec
+!  end if
+
+
   sigkine=0.
   do ilocal = 1, im
      sigkine(1:3,1) = sigkine(1:3,1) + &

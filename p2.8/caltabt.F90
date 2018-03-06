@@ -35,8 +35,9 @@ subroutine caltabt
   nato(:noxyz) = 0
   last(natperc,:noxyz) = 0
 
-
-
+!     do i = 1, im
+!     if ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xp(1,i),xp(2,i),xp(3,i)
+!  end do
   !  -------- cas sans cellule  -----------
   if (noxyz==1) then
           nato(1) = im
@@ -64,8 +65,9 @@ subroutine caltabt
      call cryst_to_cart (imm, xpnp, bg, -1) !cart vers cryst
      !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
 
-
+!     if (it.gt.1000) write(6,*)'CALTABT',it
      do i = 1, im
+!     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
         aux = xpnp(1,i)*nox
         auy = xpnp(2,i)*noy
         auz = xpnp(3,i)*noz
@@ -76,6 +78,7 @@ subroutine caltabt
         kx = Modulo(kx,nox)
         ky = Modulo(ky,noy)
         kz = Modulo(kz,noz)
+!          if  ((it.ge.1000).and.(i.lt.20))  write(6,'(I5,3G15.7)')i, kx,ky,kz
         !==============================================================
         koo = 1+kx+nox*(ky+noy*kz)
 
@@ -108,6 +111,8 @@ subroutine caltabt
   endif
 
   !!$write(6,*)'sortie caltabt'     ! DEBUG
+
+!  write(6,*)'maxnato', maxval(nato)
 
   return
 end subroutine caltabt

@@ -7,6 +7,7 @@ subroutine initcasca
   use gen_com_m
   use var_pot
   use tab_imm_m
+  use elec_cell, only : necycle,etstep,necyclemin
   ! *******************************************************************
 #if(PARA)
   use mod_mpi
@@ -64,7 +65,7 @@ ikoloc=iko
      endif
   endif                                      ! rang=0
 
-
+if (xx0.ge.0) then
 #if PARA
 #else
   
@@ -106,7 +107,7 @@ ikoloc=iko
   !                                                !Conditions periodiques
 
   ! --- Fin de la translation ---
-
+end if 	! xx0>0
   znorm = sqrt(xko**2+yko**2+zko**2)
 
   if (znorm==0)then
@@ -247,7 +248,7 @@ ikoloc=iko
 
 
   ! -> tseuil a diminuer pour eviter les derives en energies et temperature
-  tseuil = 2.0D-10/(1.0D0*vmax)
+  tseuil = depmaxts/(1.0D0*vmax)
   lts = log10(tseuil)
   expos = 1-int(lts)
 
@@ -280,7 +281,7 @@ ikoloc=iko
      tstep = tstep/float(10)
   end do
 
-  if (tstep>1.D-15) tstep=1.D-15
+  if (tstep>tsmin) tstep=tsmin
 
 
   if (rang==0) then
@@ -289,6 +290,15 @@ ikoloc=iko
 
 
   usdh = 1/(two*tstep)
+
+  if (l2T)then
+     etstep=tstep/necyclemin
+     if (etstep.gt.6d-17)then
+        etstep=2d-16
+        necycle=int(tstep/etstep)
+        write(6,*)'chgt etstep',etstep,necycle
+     end if
+  end if
 
   ! redefinition des positions atomiques suite au changement de pas de temps
   if (dmtype==1) then

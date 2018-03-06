@@ -305,10 +305,10 @@ loop1:     do nbr_cpu=1,nbr_cpuIN
   imm = imm_loc
   call MPI_REDUCE(imm_loc,imm,1,MPI_INTEGER,MPI_MAX,0,MPI_COMM_WORLD,ierr)
 
-     print *,'test4' 
+!     print *,'test4' 
   call realloc_all_tab_imm(imm)
 
-     print *,'test4' 
+!     print *,'test4' 
   ! Initialisation des donnees geometriques qui serviront pour le reste du code :
   cell_debx= coord_min(myid,1)
   cell_finx= coord_max(myid,1)

@@ -540,7 +540,7 @@ contains
 
     ! Énergie cinétique de la cellule (Eq. 2.14, Ref.2)
     Kcell = 0.5d0*wbox*Sum( hDot(1:3,1:3)**2 )
-    Ecell = Kcell + Ucell
+    EcellPR = Kcell + Ucell
 
     IF (lTHoover) THEN
        ! Dérivée de la viscosité et énergie cinétique du thermostat

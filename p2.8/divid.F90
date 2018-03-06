@@ -239,6 +239,8 @@ subroutine divid (appel)
      ! ==== FIN MODIF CLOUET 3 ============================
 
   endif
+
+if (rang==0) write(6,'(A,3G15.7)') 'celsizes ',celsize(:)
   ! nox noy et noz sont determines
 
   noxy = nox*noy

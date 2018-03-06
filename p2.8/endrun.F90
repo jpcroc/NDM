@@ -11,6 +11,7 @@ subroutine endrun
 #endif
   use posana
   USE cfg_module
+  use elec_cell, only:  sauveelec
   !       version MPI du 07 f if (associated(eatom)) eatom(:)=0
 
   ! ****************************************************************
@@ -180,7 +181,11 @@ subroutine endrun
 #if(PARA)
   temps_dmloop=MPI_Wtime() - temps_dmloop_deb
 #endif
-  IF (iteSauv.GE.0) call sauvegarde     ! Modif E. Clouet: sauvegarde seulement si voulu
+  IF (iteSauv.GE.0) then
+     call sauvegarde     ! Modif E. Clouet: sauvegarde seulement si voulu
+     if (l2T) call sauveelec
+  end IF
+
   if (.not.linstantrdf) then
      if (iterdf>=0) call rdf
   endif
