@@ -1,6 +1,6 @@
 module eloss
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m,only:ev2erg,rang,tstep,elosscel,tempc,l2T,erg2eV,im,iko
+  use gen_com_m,only:ev2erg,rang,tstep,elosscel,tempc,l2T,erg2eV,im,iko,noxyz
   use var_pot,only:ntyp,cm,gamlt
   use tab_imm_m,only:fp,vp,ityp,ielat,num_at_glob
 
@@ -203,7 +203,7 @@ contains
     call MPI_ALLREDUCE(elosselec1,elosselectot1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
     !if l2T
     if (allocated(elosscel)) then
-       call MPI_ALLREDUCE(elosscel,elosscel_tot_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
        elosscel=elosscel_tot
        deallocate (elosscel_tot)
     end if

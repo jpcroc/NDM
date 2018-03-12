@@ -24,7 +24,6 @@ OBJS_MOD=   T_kind_param_m.o\
         pos_com_m.o \
         fft_com_m.o \
         tab_imm_m.o\
-        eloss.o \
 	SMjuli.o \
 	eamerco.o \
 	eamtab.o \
@@ -36,7 +35,6 @@ OBJS_MOD=   T_kind_param_m.o\
         caltabtcr.o \
         calpo_ew.o \
         anasic.o \
-        elec_cell.o \
         modules.o 
 
 
@@ -55,6 +53,8 @@ OBJS_PARAML=   init_MPI_ml.o
 
 
 OBJS_SEQ=	anapos.o \
+        eloss.o \
+        elec_cell.o \
 	work_cgII.o \
         DynamicAlloc.o\
 	alloc_typ.o \
@@ -295,11 +295,11 @@ $(LIBMAB):
 clean : clean_seq clean_para
 
 clean_seq :
-	@rm -f  *.o *.tmp.f90 *.mod rundm90_seq*  *.l *_genmod.f90
+	@rm -f  *.o *.tmp.f90 *.mod   *.l *_genmod.f90
 
 
 clean_para:
-	@rm -f  *.o *.tmp.f90 *.mod rundm90_para* *.l
+	@rm -f  *.o *.tmp.f90 *.mod  *.l
 
 
 obj_clean:

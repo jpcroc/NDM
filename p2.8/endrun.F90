@@ -198,7 +198,7 @@ subroutine endrun
   call analyse
   if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
   if (iterasmol.GE.0) call rasmol (it)
-  if (iteanapos>=0) call anapos (it)
+  if (.not.parallele.and.iteanapos>=0) call anapos (it)
 
   ! Ecriture d'un fichier atomeye
   if (itecfg.GE.0) then

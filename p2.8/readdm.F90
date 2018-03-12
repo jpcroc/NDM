@@ -118,7 +118,7 @@ subroutine readdm
   itesauv = 100               !period for saving
   itesauvposition = 0         !periode pour sauvegarde des positions en binaire
   itesauvforce = 0            !periode pour sauvegarde des forces en binaire
-  formatsauv = 3              !format of saving  2 MC triclin; 1 DM triclin
+  formatsauv = 3              !format of saving always triclin 3 copmplete ; 2 positions only
   fmt_cin=1                  !format des fichiers .cin 0 : initiale, 1 = para
   dfpred = 0.1            ! eguess for GC calculations and quenching
   nox = -1

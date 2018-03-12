@@ -157,16 +157,16 @@ subroutine calctemp(temptyp)
      call MPI_ALLREDUCE(ecell%tempIon,tempiontot,nex*ney*nez,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      ecell(:,:,:)%tempIon=tempiontot(:,:,:)
      niontot=0
-     call MPI_ALLREDUCE(ecell%nIon,niontot,nex*ney*nez,NDM_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(ecell%nIon,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
      ecell(:,:,:)%nIon=niontot(:,:,:)
      niontot=0
-     call MPI_ALLREDUCE(ecell%nIonS,niontot,nex*ney*nez,NDM_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(ecell%nIonS,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
      ecell(:,:,:)%nIonS=niontot(:,:,:)
 
      call MPI_ALLREDUCE(tempEP,tempEptot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      tempEP=tempEPtot
-     call MPI_ALLREDUCE(nats,natstot,1,NDM_MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
-     nats=natstottot
+     call MPI_ALLREDUCE(nats,natstot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+     nats=natstot
 
 
      deallocate(tempiontot)

@@ -137,7 +137,7 @@ subroutine sauvegarde
 
      close(unit=lucout)
 
-     call sauveelec
+     if (l2T)call sauveelec
 
   else ! rang different de 0 :
 #if(PARA)

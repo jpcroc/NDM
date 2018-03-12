@@ -125,7 +125,7 @@ subroutine config
            call arret_ndm
         endif
         !at(vect123,xyz)
-        if (icintype>=2) then
+!        if (icintype>=2) then
            read (lucin, err=456) at
            if(dilat(1).ne.0.0)then
               do i=1,3
@@ -148,27 +148,27 @@ subroutine config
            !                    write(6,*)at
            zls2 = zl/2.0
 
-        else
-           read (lucin, err=456) zl                      !size of the box
-           if(dilat(1).ne.0.0)then
-              zl(:)=zl(:)*dilat(:)
-           end if
-           if (rang==0) write (6, *) 'zl ', zl
-           at(1,1)=zl(1)
-           at(2,2)=zl(2)
-           at(3,3)=zl(3)
-           at(1,2)=zero
-           at(1,3)=zero
-           at(2,1)=zero
-           at(2,3)=zero
-           at(3,1)=zero
-           at(3,2)=zero
-           call recips (at(1,1), at(1,2), at(1,3), bg(1,1), bg(1,2), bg(1,3))
-           nzl(:)=zl(:)
-
-           zls2 = zl/2.0
-
-        endif                                   !icintype=2
+!        else
+!           read (lucin, err=456) zl                      !size of the box
+!           if(dilat(1).ne.0.0)then
+!              zl(:)=zl(:)*dilat(:)
+!           end if
+!           if (rang==0) write (6, *) 'zl ', zl
+!           at(1,1)=zl(1)
+!           at(2,2)=zl(2)
+!           at(3,3)=zl(3)
+!           at(1,2)=zero
+!           at(1,3)=zero
+!           at(2,1)=zero
+!           at(2,3)=zero
+!           at(3,1)=zero
+!           at(3,2)=zero
+!           call recips (at(1,1), at(1,2), at(1,3), bg(1,1), bg(1,2), bg(1,3))
+!           nzl(:)=zl(:)
+!
+!           zls2 = zl/2.0
+!
+!        endif                                   !icintype=2
 
 	! Il est important de conserver rumax et alpha identique a
  	! chaque appel a la routine divid, on sauvegarde donc la valeur
