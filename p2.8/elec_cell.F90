@@ -1,7 +1,7 @@
 module elec_cell
   use T_kind_param_m
   use gen_com_m, only : nox,noy,noz, noxyz,nzl,bk,imm,nato,last,im_glob,tstep,erg2eV,pi,rang,elosscel,lenfnam,fnam,lrestart&
-       &,joule2erg,erg2eV,it,timel,it
+       &,joule2erg,erg2eV,it,timel,it,igen
   use var_pot,only:cm
   use tab_imm_m, only : num_at_glob,ielat
   use eloss,only :Ecelec ,elstopforce,ngrdel
@@ -51,7 +51,7 @@ module elec_cell
   integer::ietm(3)
   integer, parameter::nTmax=40000
   integer:: ncer
-  integer:: itetec,integrTtype
+  integer:: itetec,integrTtype,igenelec
   real(double),dimension(:), allocatable:: CedT,Eedt,KedT,GepdT
   logical lalletemp 
 contains
@@ -62,7 +62,7 @@ contains
     integer::ix,iy,iz
     character :: fnamedin*80
     namelist /inputelec/nexov,neyov,nezov,deltaxyz,Cec,KeC,ibc,T0,k0T,GepC,necyclemin,i2T&
-         &,it_cpl,ncer,Gep,iteTec,lalletemp,integrTtype
+         &,it_cpl,ncer,Gep,iteTec,lalletemp,integrTtype,igenelec
     i2T=1 ! model Croc&Murphy (0= DD)
     T0=300. !T0=borders temperature
     k0T=0.96
@@ -79,13 +79,14 @@ contains
     integrTtype=1 ! type of temperature integrator 1= std , 2= for insulator
     deltaxyz(:)=0
     ncer=1000
+    igenelec=igen
     if (rang.eq.0) write(6,*) 
     if (rang.eq.0) write(6,*) 
     if (rang.eq.0) write(6,*) '>>>>>>>>>>> entree readelec  input units are SI, internal units are cgs'
 
     fnamedin=  fnam(1:lenfnam)//'.edin'
 
-    open(unit=luelec, file='elec.in', status='unknown')
+!    open(unit=luelec, file='elec.in', status='unknown')
     open(unit=luelec, file=fnamedin, status='unknown')
     read (luelec, nml=inputelec)
     close(luelec)
@@ -141,7 +142,16 @@ contains
 
     allocate(ecell(nex,ney,nez))
 
-    if (lrestart) then
+    if (rang==0) then
+       if (igenelec==1) then
+          write(6,*)'ELECTRONIC TEMPERATURE READ FROM FILE, T0 NOT USED'
+          if (igen.ne.1) write(6,*)'BUT NOT THE ATOMIC CONFIGURATION'
+       else
+          write(6,*)'ELECTRONIC TEMPERATURE INITIALZED AT T0=',T0
+          if (igen==1)write(6,*)'BUT ATOMIC CONFIGURATION IS READ'
+       end if
+    end if
+    if (igenelec==1) then
        call restartelec
     else
        ecell(:,:,:)%lionovlp=.false.
@@ -206,10 +216,10 @@ contains
 
     if (i2t==0)elosscel(:)=0
     do ko = 1, noxyz
-       if (nato(ko)==0) cycle
 #if(PARA)
        if (proc_cell(ko).ne.myid) cycle
 #endif
+       if (nato(ko)==0) cycle
        call nox_2_nex(ko,ixyze)
        do i2 = 1, nato(ko)
           i = last(i2,ko)
@@ -322,11 +332,12 @@ contains
           do iey=1,ney
              do iez=1,nez
                 iet=iex+iey*nex+iez*nex*ney
+!                write(6,*)iet,iex,iey,iez
                 if (lalletemp.or.(ecell(iex,iey,iez)%lionovlp))then
                    !                   write(6,*)
                    !                   write(6,'(A,3I3,G15.7)')'ecell%temp',iex,iey,iez,ecell(iex,iey,iez)%lionovlp
                    !                   write(6,'(A,I5,2G15.7)')'ecell%temp',it,timel,ecell(iex,iey,iez)%temp
-                   if (rang.eq.0) write(iet,*)it,timel, ecell(iex,iey,iez)%temp
+!                   if (rang.eq.0) write(iet,*)it,timel, ecell(iex,iey,iez)%temp
                 end if
              end do
           end do
@@ -397,6 +408,9 @@ contains
              !             if (it.ge.900)             write(6,'(I5,A,3I3)')it,'it iex',iex,iey,iez
              !             if (it.ge.900)             write(6,'(I8,A,3I4,7G12.6)')it*necycle+ite,' TCpp ',iex,iey,iez,&
              !&TC,txm1,txp1,tym1,typ1,tzm1,tzp1
+!             write(6,'(I5,A,3I3)')it,'it iex',iex,iey,iez
+!             write(6,'(I8,A,3I4,7G15.6)')it*necycle+ite,' TCpp ',iex,iey,iez,&
+!             &TC,txm1,txp1,tym1,typ1,tzm1,tzp1
 
              select case(integrTtype)
              case(1)
@@ -447,6 +461,7 @@ contains
                 !                if (ecell(iex,iey,iez)%Qi2e.ne.0)write(6,'(I6,A,3I3,G15.6)')it,' qi2ets ',iex,iey,iez,&
                 !&etstep*ecell(iex,iey,iez)%Qi2e
                 ! integration for insulators (energy input then temperature change)
+!                write(6,*)nexttemp(iex,iey,iez)
              case(2)
                 deltaE=0
                 Tm=0.5*(Txm1+TC)
@@ -793,54 +808,20 @@ contains
   subroutine sauveelec
     integer:: luecout
     character :: fnamecout*80
-    integer,allocatable::ibuf(:,:,:),i3buf(:,:,:,:)
-    real(double),allocatable::rbuf(:,:,:)
-    logical, allocatable:: lbuf(:,:,:)
 
     integer::iex,iey,iez,ic
     luecout=65
+!    write(6,*)'IN SVEL'
     if (rang.ne.0)then
        write(6,*) 'WTF sauvE rang <>0!'
        stop
     end if
-    allocate (ibuf(nex,ney,nez))
-    allocate (rbuf(nex,ney,nez))
-    allocate (lbuf(nex,ney,nez))
-    allocate (i3buf(nex,ney,nez,3))
+    
     fnamecout = fnam(1:lenfnam)//'.ecout'
     open (unit=luecout,file=fnamecout,form='unformatted')
 
-    call fillrbuf(ecell%temp,rbuf,nex,ney,nez,1)
-    write(luecout)rbuf
 
-    call fillrbuf(ecell%tempIon,rbuf,nex,ney,nez,1)
-    write(luecout)rbuf
-
-    do iex=1,nex
-       do iey=1,ney
-          do iez=1,nez
-             do ic=1,3
-                i3buf(iex,iey,iez,ic)=ecell(iex,iey,iez)%ixb(ic)
-             end do
-          end do
-       end do
-    end do
-    write(luecout)i3buf
-
-    call filllbuf(ecell%lionovlp,lbuf,nex,ney,nez,1)
-    write(luecout)lbuf
-
-    call fillrbuf(ecell%Qi2e,rbuf,nex,ney,nez,1)
-    write(luecout)rbuf
-
-    call fillibuf(ecell%nIon,ibuf,nex,ney,nez,1)
-    write(luecout)ibuf
-
-    call fillibuf(ecell%nIonS,ibuf,nex,ney,nez,1)
-    write(luecout)ibuf
-
-    call fillrbuf(ecell%En,rbuf,nex,ney,nez,1)
-    write(luecout)rbuf
+    write(luecout)ecell
 
     write(luecout)Eelec
     write(luecout)Teavg
@@ -850,11 +831,8 @@ contains
   subroutine restartelec
 
     character ::  fnamecin*80
-    integer,allocatable::ibuf(:,:,:),i3buf(:,:,:,:)
-    real(double),allocatable::rbuf(:,:,:)
-    logical, allocatable:: lbuf(:,:,:)
     integer:: luecin,iex,iey,iez,ic
-    luecin=65
+    luecin=66
     write(6,*)'in Erestart',nez,nex,nez
     if (lrestart) then
        fnamecin = fnam(1:lenfnam)//'.ecout'
@@ -863,45 +841,7 @@ contains
     end if
     open (unit=luecin,file=fnamecin,form='unformatted')
 
-    allocate (ibuf(nex,ney,nez))
-    allocate (rbuf(nex,ney,nez))
-    allocate (lbuf(nex,ney,nez))
-    allocate (i3buf(nex,ney,nez,3))
-
-    read(luecin)rbuf
-    call fillrbuf(ecell%temp,rbuf,nex,ney,nez,1)
-    write(6,*)'in Erestart2'
-
-    read(luecin)rbuf
-    call fillrbuf(ecell%tempIon,rbuf,nex,ney,nez,-1)
-    write(6,*)'in Erestart3'
-    read(luecin)i3buf
-    do iex=1,nex
-       do iey=1,ney
-          do iez=1,nez
-             do ic=1,3
-                ecell(iex,iey,iez)%ixb(ic)=i3buf(iex,iey,iez,ic)
-             end do
-          end do
-       end do
-    end do
-
-    read(luecin)lbuf
-    call filllbuf(ecell%lionovlp,lbuf,nex,ney,nez,-1)
-
-    read(luecin)rbuf
-    call fillrbuf(ecell%Qi2e,rbuf,nex,ney,nez,-1)
-
-    read(luecin)ibuf
-    call fillibuf(ecell%nIon,ibuf,nex,ney,nez,-1)
-
-    read(luecin)ibuf
-    call fillibuf(ecell%nIonS,ibuf,nex,ney,nez,-1)
-
-    read(luecin)rbuf
-    call fillrbuf(ecell%En,rbuf,nex,ney,nez,-1)
-
-
+    read(luecin)ecell
     read(luecin)Eelec
     read(luecin) Teavg
     close (luecin)
@@ -909,12 +849,25 @@ contains
   end subroutine restartelec
 
   subroutine fillrbuf (tabe,buftab,nx,ny,nz,ir)
-    integer:: ir,nx,ny,nz
+    integer:: ir,nx,ny,nz,ix,iy,iz
     real(double):: tabe(nx,ny,nz),buftab(nx,ny,nz)
 
     if (ir==1) then
-       buftab=tabe
+       do ix=1,nx
+          do iy=1,ny
+             do iz=1,nz
+                buftab(ix,iy,iz)=tabe(ix,iy,iz)
+             end do
+          end do
+       end do
     elseif (ir==-1) then
+       do ix=1,nx
+          do iy=1,ny
+             do iz=1,nz
+                tabe(ix,iy,iz)=buftab(ix,iy,iz)
+             end do
+          end do
+       end do
        tabe=buftab
     end if
     return
@@ -969,7 +922,8 @@ contains
              end do
           end do
        end do
+       close(luvisue)
     end if
-    close(luvisue)
+
   end subroutine eleccellmol
 end module elec_cell

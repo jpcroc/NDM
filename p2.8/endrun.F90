@@ -183,7 +183,7 @@ subroutine endrun
 #endif
   IF (iteSauv.GE.0) then
      call sauvegarde     ! Modif E. Clouet: sauvegarde seulement si voulu
-     if (l2T) call sauveelec
+     if (l2T.and.rang==0) call sauveelec
   end IF
 
   if (.not.linstantrdf) then

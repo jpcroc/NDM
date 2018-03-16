@@ -289,7 +289,6 @@ subroutine init
 
   if (L2T.eqv..true.) then
      call readelec
-     !     if (lrestart) call restartelec
      if (rang==0) write(6,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
      dmtype=4
      ibrake=1

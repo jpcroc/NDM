@@ -10,8 +10,7 @@ subroutine dmloop_vverlet
   use parrinello_rahman
   use tab_imm_m
   use suivinonpbc
-use elec_cell,only: dynelec
-!  use elec_cell,only: dynelec
+
 
 #if(PARA)
   use mod_mpi
@@ -55,10 +54,7 @@ real(double) sigkine_tot(3,3)
 !  write(6,*)'RG i ',rang,it
   ! calcul de sigtot
   !if (lpr==.false.) then
-! ancien emplacement de dynelec
-!  if (l2T) then
-!     call dynelec
-!  end if
+
 
 
   sigkine=0.

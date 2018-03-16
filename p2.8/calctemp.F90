@@ -167,12 +167,13 @@ subroutine calctemp(temptyp)
      tempEP=tempEPtot
      call MPI_ALLREDUCE(nats,natstot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
      nats=natstot
-
+     
 
      deallocate(tempiontot)
      deallocate(niontot)
   end if
 #endif
+
 
      if (l2T) then
         tempEP=tempEP/nats

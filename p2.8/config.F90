@@ -11,7 +11,6 @@ subroutine config
   use var_pot
   use tab_imm_m
   use suivinonpbc
-!  use elec_cell,only: restartelec
 #if(PARA)
   use mod_mpi
 #endif

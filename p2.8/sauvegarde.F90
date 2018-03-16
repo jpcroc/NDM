@@ -157,6 +157,6 @@ subroutine sauvegarde
   deallocate (ibuffer)
 #endif
 
-  if (rang==0)write(6,*)'fin sauvegarde'
+!  if (rang==0)write(6,*)'fin sauvegarde'
   return
 end subroutine sauvegarde
