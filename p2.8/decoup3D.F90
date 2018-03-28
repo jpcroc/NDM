@@ -267,7 +267,8 @@ loop1:     do nbr_cpu=1,nbr_cpuIN
 #else
      ldecoup=6
 #endif
-    
+#if(PARA)
+#else
      write(ldecoup,*)'Taille des decoupages'
      do ii=0,nbr_cpu-1
         write(ldecoup,*)'Decoupage',ii,':',res_cpu(ii,1:3)
@@ -281,7 +282,7 @@ loop1:     do nbr_cpu=1,nbr_cpuIN
      enddo
      write(ldecoup,*)'-----------------------------------------------'
 
-
+#endif
 #if(PARA)
   endif
 #endif

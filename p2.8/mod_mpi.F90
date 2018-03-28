@@ -211,6 +211,10 @@ contains
    else 
     nb_var_dbl = 9
   end if 
+  if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
+     nb_var_dbl = nb_var_dbl+3
+  end if
+
 
     allocate(send_nb_val(nbr_proc_voisin))
     allocate(send_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
@@ -264,7 +268,7 @@ contains
                 send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = vp(1,i_at)
                 send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = vp(2,i_at)
                 send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = vp(3,i_at)
-
+                
                if (lsuivinonpbc) then 
 		send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(1,i_at)
                 send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(2,i_at)
@@ -279,7 +283,11 @@ contains
                 send_buff_dbl(18,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(3,i_at)
 
                end if
-
+               if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
+                  send_buff_dbl(nb_var_dbl-2,send_nb_val(nproc_voisin),nproc_voisin) = Gl(1,i_at)
+                  send_buff_dbl(nb_var_dbl-1,send_nb_val(nproc_voisin),nproc_voisin) = Gl(2,i_at)
+                  send_buff_dbl(nb_var_dbl,send_nb_val(nproc_voisin),nproc_voisin) = Gl(3,i_at)
+               end if
 
 !LPARAFULLSEND
 !                   send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpp(1,i_at)
@@ -381,8 +389,13 @@ contains
            axnonpbc(1,im) = recv_buff_dbl(16,i_at,ind_recv)
            axnonpbc(2,im) = recv_buff_dbl(17,i_at,ind_recv)
            axnonpbc(3,im) = recv_buff_dbl(18,i_at,ind_recv)
-	  end if
-	  
+        end if
+        if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
+            Gl(1,i_at)= recv_buff_dbl(nb_var_dbl-2,i_at,ind_recv)
+            Gl(2,i_at)= recv_buff_dbl(nb_var_dbl-1,i_at,ind_recv)
+            Gl(3,i_at)= recv_buff_dbl(nb_var_dbl,i_at,ind_recv)
+        end if
+
           if(lfrozen)free(im)=.true.
 !LPARAFULLSEND
 !          xpp(1,im) = recv_buff_dbl(10,i_at,ind_recv)

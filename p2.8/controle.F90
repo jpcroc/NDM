@@ -106,13 +106,14 @@ subroutine controle
 	   call arret_ndm
 
         endif
-        if (maxtcel<=tempstopcel) then
-           write (6, *) 'temperature dans toutes les cels < tempstopcel '
-           call endrun
-           call DeallocateAll
-
-	   call arret_ndm
-
+        if (tempstopcel.gt.0) then
+           if (maxtcel<=tempstopcel) then
+              write (6, *) 'temperature dans toutes les cels < tempstopcel '
+              call endrun
+              call DeallocateAll
+              
+              call arret_ndm
+           end if
         endif
      endif
   endif

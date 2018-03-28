@@ -111,6 +111,11 @@ contains
           nv1=1+INT(vnlt/v1)
           if (nv1.gt.ngrdel) then
              write(6,*)'elstop velocity > 49, rebuild elstop.in,nv1',nv1
+#if(PARA)
+	            call MPI_FINALIZE(ierr)
+#endif 
+
+
              stop
           end if
           f1=elstopforce(i,2,nv1)-(elstopforce(i,2,nv1)-elstopforce(i,2,nv1-1))*(nv1-vnlt/v1)
@@ -154,7 +159,10 @@ contains
           nv1=1+INT(vn/v1)
           if (nv1.gt.ngrdel) then
              write(6,*)'elstop velocity > 49, rebuild elstop.in'
-             stop
+#if(PARA)
+	            call MPI_FINALIZE(ierr)
+#endif 
+            stop
           end if
           f1=elstopforce(ityp(i),2,nv1)-(elstopforce(ityp(i),2,nv1)-elstopforce(ityp(i),2,nv1-1))*(nv1-vn/v1)
           !           write (6,'(A,4G15.7)')'felstop ',f1,vn, vn/v1,elstopforce(ityp(i),2,nv1)

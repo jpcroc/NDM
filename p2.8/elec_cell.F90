@@ -41,7 +41,7 @@ module elec_cell
   integer:: nexmp,neymp,nezmp ! number of cells in x,y,z directions outside the MD box on each side
   real(double)::wex,wey,wez ! width of electronic system (wex=cellside(1)*nxe)
   real(double)::deltaxyz(3),Ax(3)
-  real(double)::CeC,KeC,T0,k0T,Gep,GepC
+  real(double)::CeC,KeC,T0,k0T,GepC
   real(double)::Vecell
   integer::i2t ! type of 2T model   i2T=1 ! model Croc&Murphy (0= DD)model Croc&Murphy (0= DD)
   integer:: it_cpl ! ep coupling after it_cpl iterations
@@ -62,20 +62,18 @@ contains
     integer::ix,iy,iz
     character :: fnamedin*80
     namelist /inputelec/nexov,neyov,nezov,deltaxyz,Cec,KeC,ibc,T0,k0T,GepC,necyclemin,i2T&
-         &,it_cpl,ncer,Gep,iteTec,lalletemp,integrTtype,igenelec
+         &,it_cpl,ncer,iteTec,lalletemp,integrTtype,igenelec
     i2T=1 ! model Croc&Murphy (0= DD)
     T0=300. !T0=borders temperature
-    k0T=0.96
+    k0T=0.8
     necyclemin=10
     ibc=-1
-    Gep=0
     KeC=0
     CeC=0
     GepC=0
     it_cpl=0
     itetec=-1
     lalletemp=.false. 
-    !ibc = borders condition
     integrTtype=1 ! type of temperature integrator 1= std , 2= for insulator
     deltaxyz(:)=0
     ncer=1000
@@ -91,7 +89,7 @@ contains
     read (luelec, nml=inputelec)
     close(luelec)
     necycle=necyclemin
-    Gep=Gep*joule2erg*1d-6
+    GepC=GepC*joule2erg*1d-6
     CeC=Cec*joule2erg*1d-6
     KeC=KeC*joule2erg*1d-2
     deltaxyz=deltaxyz*1d-8
@@ -209,7 +207,7 @@ contains
     integer::il
     real(double)::rga
     integer :: i,ic,ko,i2,nv1
-    real(double) :: u1,u2,gamlat,ekin,vpn2,v1,f1,vn
+    real(double) :: u1,u2,gamlat,ekin,vpn2,v1,f1,vn,Gep
     !langevin codé à partir du poly de Gabriel Stolz page 84, dans une version avec expoentielle comme Manuel et Cosmin
     ! adapted to 2T model
     integer :: ixyze(3)
@@ -221,6 +219,7 @@ contains
 #endif
        if (nato(ko)==0) cycle
        call nox_2_nex(ko,ixyze)
+       call GepT(Gep,ecell(ixyze(1),ixyze(2),ixyze(3))%temp)
        do i2 = 1, nato(ko)
           i = last(i2,ko)
           if (num_at_glob(i).gt.im_glob) cycle
@@ -245,6 +244,10 @@ contains
                 nv1=1+INT(vn/v1)
                 if (nv1.gt.ngrdel) then
                    if (rang.eq.0)  write(6,*)'elstop velocity > 49, rebuild elstop.in'
+#if(PARA)
+	            call MPI_FINALIZE(ierr)
+#endif 
+
                    stop
                 end if
                 f1=elstopforce(ityp(i),2,nv1)-(elstopforce(ityp(i),2,nv1)-elstopforce(ityp(i),2,nv1-1))*(nv1-vn/v1)
@@ -352,7 +355,7 @@ contains
 
     integer::ko,ixe,iye,ize
     integer :: ixyze(3)
-
+    real(double)::Gep
     ecell(:,:,:)%Qi2e=0
     !ES stopping
     do ko=1,noxyz
@@ -370,6 +373,7 @@ contains
        do iye=1,ney
           do ize=1,nez
              if(ecell(ixe,iye,ize)%lionovlp.eqv..true.)then
+                call GepT(Gep,ecell(ixyze(1),ixyze(2),ixyze(3))%temp)
                 ecell(ixe,iye,ize)%Qi2e=ecell(ixe,iye,ize)%Qi2e-&
                      &Gep*( ecell(ixe,iye,ize)%temp- ecell(ixe,iye,ize)%tempIon)*Vecell
              end if
@@ -688,6 +692,7 @@ contains
     else
        G=GepC
     endif
+!    write(6,*) 'g ',g
   end subroutine GepT
 
   subroutine prepCe
@@ -698,7 +703,7 @@ contains
     allocate(cerf(0:ncer))
     allocate(CedT(0:nTmax))
     allocate(temprf(0:ncer))
-    if (rang==0) write(6,*) 'Ce read from Ce.in'
+    if (rang==0) write(6,*) 'Ce read from Ce.in ! ATTENTION AUX UNITES 1O^5Jm-3K-1'
     open(unit=84, file='Ce.in',form='formatted')
     cerf(0)=0 ; temprf(0)=0
     do itr=1,ncer
@@ -748,7 +753,7 @@ contains
     allocate(Geprf(0:ncer))
     allocate(GepdT(0:nTmax))
     allocate(temprf(0:ncer))
-    if (rang==0) write(6,*) 'Ce read from Gep.in'
+    if (rang==0) write(6,*) 'Gep read from Gep.in! ATTENTION AUX UNITES 1O^17Jm-3K-1'
     open(unit=84, file='Gep.in',form='formatted')
     Geprf(0)=0 ; temprf(0)=0
     do itr=1,ncer

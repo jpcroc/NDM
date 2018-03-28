@@ -341,7 +341,7 @@ subroutine readdm
 !     depmaxts=0.002
   end if
 
-
+  timemax=timemax*1d-15
 
 
 
