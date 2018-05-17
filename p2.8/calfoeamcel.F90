@@ -365,12 +365,15 @@ SUBROUTINE calfoeamcel
   potisrep=potisrep_tot
   CALL MPI_ALLREDUCE(potisglue,potisglue_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   potisglue=potisglue_tot
-  call MPI_ALLREDUCE(sig,      sig_tot,      9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-  sig=sig_tot
-  if (associated(sigc)) then
+!  write(6,'(I3,9G15.7)')rang,sig
+ if (test_sigma) then 
+     call MPI_ALLREDUCE(sig,      sig_tot,      9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     sig=sig_tot
+       if (associated(sigc)) then
      call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      sigc=sigc_tot
   endif
+endif
 #endif
 
   potiseam=potisglue+potisrep

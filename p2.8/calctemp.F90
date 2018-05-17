@@ -131,18 +131,6 @@ subroutine calctemp(temptyp)
 
 
   end do
-  if (l2T.eqv..true.) then
-     do ixe=1,nex
-        do iye=1,ney
-           do ize=1,nez
-              if (ecell(ixe,iye,ize)%nIonS.gt.0) then
-                 ecell(ixe,iye,ize)%tempIon=ecell(ixe,iye,ize)%tempIon/ecell(ixe,iye,ize)%nIonS
-              end if
-           end do
-        end do
-     end  do
-  end if
-
 
 #if(PARA)
   call MPI_ALLREDUCE(v2,v2_glob,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -174,11 +162,19 @@ subroutine calctemp(temptyp)
   end if
 #endif
 
-
-     if (l2T) then
+  if (l2T.eqv..true.) then
+     do ixe=1,nex
+        do iye=1,ney
+           do ize=1,nez
+              if (ecell(ixe,iye,ize)%nIonS.gt.0) then
+                 ecell(ixe,iye,ize)%tempIon=ecell(ixe,iye,ize)%tempIon/ecell(ixe,iye,ize)%nIonS
+              end if
+           end do
+        end do
+     end  do
         tempEP=tempEP/nats
-     end if
-     !      enddo
+  end if
+
 
 
      do iti = 1, ntyp

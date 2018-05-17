@@ -154,7 +154,7 @@ subroutine analyse
                  write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*IE_Et = ',&
                       &(kine+potist+Eelec)*unitE, cunitE                 
                  write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Telec = ',Teavg
-                 write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*TempE = ',TempEP
+                 write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*TempEP = ',TempEP
                  write (6,'(I10,G10.3,A,G21.12,3I5)') it,timel,'*maxTe = ',Tecmax,ietm(:)
 
               end If

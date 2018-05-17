@@ -1,7 +1,7 @@
 module elec_cell
   use T_kind_param_m
   use gen_com_m, only : nox,noy,noz, noxyz,nzl,bk,imm,nato,last,im_glob,tstep,erg2eV,pi,rang,elosscel,lenfnam,fnam,lrestart&
-       &,joule2erg,erg2eV,it,timel,it,igen
+       &,joule2erg,erg2eV,it,timel,it,igen,lrestart
   use var_pot,only:cm
   use tab_imm_m, only : num_at_glob,ielat
   use eloss,only :Ecelec ,elstopforce,ngrdel
@@ -78,6 +78,7 @@ contains
     deltaxyz(:)=0
     ncer=1000
     igenelec=igen
+
     if (rang.eq.0) write(6,*) 
     if (rang.eq.0) write(6,*) 
     if (rang.eq.0) write(6,*) '>>>>>>>>>>> entree readelec  input units are SI, internal units are cgs'
@@ -88,6 +89,7 @@ contains
     open(unit=luelec, file=fnamedin, status='unknown')
     read (luelec, nml=inputelec)
     close(luelec)
+    if (lrestart) igenelec=1
     necycle=necyclemin
     GepC=GepC*joule2erg*1d-6
     CeC=Cec*joule2erg*1d-6

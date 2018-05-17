@@ -133,12 +133,17 @@ contains
 
     real(double)::ekin,vn,v1,f1,eta,etavc,f1vc,vc
     integer::koo,i,nv1,ic,iti
+    integer, save:: icall=0
 
 #if(PARA)
     real(double), allocatable,dimension(:)::elosscel_tot
     if (allocated(elosscel)) allocate (elosscel_tot(noxyz))
 #endif
-
+    icall=icall+1
+    if (icall==1) then
+        elosselec=0
+    	elosselec1=0
+     endif
 
     if (L2T.eqv..true.)     elosscel(:)=0
     do i=1,im
@@ -172,11 +177,12 @@ contains
           end if
           if (ibrake==2) then
              iti=ityp(i)
+!	     write(6,*)rang,i,iti
              eta=f1/vn
              vc=sqrt(2*Ecelec*ev2erg/cm(iti))
              v1=elstopforce(iti,1,1)
              nv1=1+INT(vc/v1)
-             f1vc=elstopforce(i,2,nv1)-(elstopforce(iti,2,nv1)-elstopforce(iti,2,nv1-1))*(nv1-vc/v1)
+             f1vc=elstopforce(iti,2,nv1)-(elstopforce(iti,2,nv1)-elstopforce(iti,2,nv1-1))*(nv1-vc/v1)
              etavc=f1vc/vc
              
              f1=f1-etavc*vn

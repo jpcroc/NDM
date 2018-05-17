@@ -391,9 +391,9 @@ contains
            axnonpbc(3,im) = recv_buff_dbl(18,i_at,ind_recv)
         end if
         if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
-            Gl(1,i_at)= recv_buff_dbl(nb_var_dbl-2,i_at,ind_recv)
-            Gl(2,i_at)= recv_buff_dbl(nb_var_dbl-1,i_at,ind_recv)
-            Gl(3,i_at)= recv_buff_dbl(nb_var_dbl,i_at,ind_recv)
+            Gl(1,im)= recv_buff_dbl(nb_var_dbl-2,i_at,ind_recv)
+            Gl(2,im)= recv_buff_dbl(nb_var_dbl-1,i_at,ind_recv)
+            Gl(3,im)= recv_buff_dbl(nb_var_dbl,i_at,ind_recv)
         end if
 
           if(lfrozen)free(im)=.true.
