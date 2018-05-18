@@ -1649,7 +1649,7 @@ contains
        if(deft(id)%sc==0) then
           write(182, 119) ch2 ,deft(id)%xd(1)*1d8,deft(id)%xd(2)*1d8,deft(id)%xd(3)*1d8,deft(id)%sc
        else
-          write(152, 119) ch2 ,deft(id)%xd(1)*1d8,deft(id)%xd(2)*1d8,deft(id)%xd(3)*1d8,deft2(deft(id)%sc)%sc
+          write(182, 119) ch2 ,deft(id)%xd(1)*1d8,deft(id)%xd(2)*1d8,deft(id)%xd(3)*1d8,deft2(deft(id)%sc)%sc
        end if
     end do
 

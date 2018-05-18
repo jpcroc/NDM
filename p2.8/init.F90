@@ -14,7 +14,7 @@ subroutine init
   use neb_module
   use posana
   use defcdp, ONLY :itecdp
-  use elec_cell,only: i2t,it_cpl, readelec
+  use elec_cell,only: i2t,t_cpl, readelec
   use eloss, only : ibrake,ecelec,initeloss
 
   !  use var_pot
@@ -187,10 +187,6 @@ subroutine init
   end if
   !...inNEB
 
-  if (iterasmol>=0) then 
-     itapp=-1
-     call rasmol (itapp)
-  end if
 
   if (igen==(-1)) then
      formatsauv = 2
@@ -297,8 +293,8 @@ subroutine init
         write(6,*) 'eccelec<>0  and l2T : STOP'
         stop
      end if
-     if ((i2T==0).and.(it_cpl==-1)) then
-        write(6,*) 'i2T=0 it_cpl=-1 and l2T : STOP'
+     if ((i2T==0).and.(t_cpl.lt.0)) then
+        write(6,*) 'i2T=0 t_cpl<0 and l2T : STOP'
         stop
      end if
      if (nox.le.0 ) then 

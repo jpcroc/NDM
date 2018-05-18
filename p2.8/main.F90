@@ -71,13 +71,13 @@ rangph=0
 
 
 
-  if (rang==0) write(6,*)'*** NDM828 ***'
+  if (rang==0) write(6,*)'*** NDM830 ***'
 #if(ART)
-  if (rang==0) write(6,*)'*** NDM828+ ART ***'
+  if (rang==0) write(6,*)'*** NDM830+ ART ***'
 #endif
 
 #if(PHONDY)
-  if (rang==0) write(6,*)'*** NDMP828 +  PHONDY ***'
+  if (rang==0) write(6,*)'*** NDMP830 +  PHONDY ***'
 #endif
 
 #if(MAB)
@@ -85,11 +85,11 @@ rangph=0
 #if(LAMMPS_VERSION)
   call init_mpi_mab()
 #endif
-  if (rang==0) write(6,*)'*** NDMP828 +   MAB ***'
+  if (rang==0) write(6,*)'*** NDMP830 +   MAB ***'
 #endif
 
 #if(ML)
-  if (rang==0) write(6,*)'*** NDMP828 +   ML ***'
+  if (rang==0) write(6,*)'*** NDMP830 +   ML ***'
 #endif
 
 

@@ -44,7 +44,7 @@ module elec_cell
   real(double)::CeC,KeC,T0,k0T,GepC
   real(double)::Vecell
   integer::i2t ! type of 2T model   i2T=1 ! model Croc&Murphy (0= DD)model Croc&Murphy (0= DD)
-  integer:: it_cpl ! ep coupling after it_cpl iterations
+  real(double):: t_cpl ! ep coupling after t_cpl iterations
   integer:: ibc ! borders conditions
   real(double)::Eelec,Teavg ! energy stored in cells
   real(double)::Tecmax
@@ -62,7 +62,7 @@ contains
     integer::ix,iy,iz
     character :: fnamedin*80
     namelist /inputelec/nexov,neyov,nezov,deltaxyz,Cec,KeC,ibc,T0,k0T,GepC,necyclemin,i2T&
-         &,it_cpl,ncer,iteTec,lalletemp,integrTtype,igenelec
+         &,t_cpl,ncer,iteTec,lalletemp,integrTtype,igenelec
     i2T=1 ! model Croc&Murphy (0= DD)
     T0=300. !T0=borders temperature
     k0T=0.8
@@ -71,7 +71,7 @@ contains
     KeC=0
     CeC=0
     GepC=0
-    it_cpl=0
+    t_cpl=-1
     itetec=-1
     lalletemp=.false. 
     integrTtype=1 ! type of temperature integrator 1= std , 2= for insulator
@@ -256,9 +256,16 @@ contains
                 do ic=1,3
                    elosscel(ielat(i))=elosscel(ielat(i))+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)
                 end do
-                gamlat=f1/(cm(ityp(i))*vn)+VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion)
+                gamlat=f1/(cm(ityp(i))*vn)
+                if (timel.gt.t_cpl) then
+                   gamlat=gamlat+VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion)
+                end if
              else
-                gamlat=VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion)
+                if (timel.gt.t_cpl) then
+                   gamlat=VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion)
+                else 
+                   gamlat=0.
+                end if
                 !if(i==1) write(6,*)'gamf',VeCell,Gep,bk,ecell(ixyze(1),ixyze(2),ixyze(3))%Nion
              end if
 
@@ -376,8 +383,10 @@ contains
           do ize=1,nez
              if(ecell(ixe,iye,ize)%lionovlp.eqv..true.)then
                 call GepT(Gep,ecell(ixyze(1),ixyze(2),ixyze(3))%temp)
-                ecell(ixe,iye,ize)%Qi2e=ecell(ixe,iye,ize)%Qi2e-&
-                     &Gep*( ecell(ixe,iye,ize)%temp- ecell(ixe,iye,ize)%tempIon)*Vecell
+                if (timel.gt.t_cpl) then
+                   ecell(ixe,iye,ize)%Qi2e=ecell(ixe,iye,ize)%Qi2e-&
+                        &Gep*( ecell(ixe,iye,ize)%temp- ecell(ixe,iye,ize)%tempIon)*Vecell
+                endif
              end if
              !             if (ecell(ixe,iye,ize)%Qi2e.ne.0) &
              !&  write(6,'(I6,A,3I4,G15.7)')it,' TRF ',ixe,iye,ize,ecell(ixe,iye,ize)%Qi2e
