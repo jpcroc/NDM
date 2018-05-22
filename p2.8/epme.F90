@@ -122,7 +122,9 @@ subroutine epme (Deb,Fin,sige)
 
 
   ! appel de la fft codees dans fft_inter
-  call fft_inter('cald') !Calcul avec la FFT sequentielle
+
+  !DEBUG_WITH_INTEL
+  !>call fft_inter('cald') !Calcul avec la FFT sequentielle
   !     call fftfront (nfft1,nfft2,nfft3,kpmex,kpmey,kpmez,kpme,&
   !     ntable,table,qgrid)
 
@@ -199,8 +201,8 @@ subroutine epme (Deb,Fin,sige)
 
   ! *** Debut du calcul des forces par la methode pme ***
 
-
-  call fft_inter ('cali')  !FFT sequentielle inverse
+  !DEBUG_WITH_INTEL
+  !call fft_inter ('cali')  !FFT sequentielle inverse
   !     call fftback (nfft1,nfft2,nfft3,kpmex,kpmey,kpmez,kpme,ntable,table,qgrid)
   !      MODE='M'
   !        call DFTCBM (ARPME,AIPME,NDIM,IDIM,WORK,TWORK,MODE,INIT,IFAIL)

@@ -134,7 +134,10 @@ subroutine calfo
                  call calfoeamcel
               endif
               potist=potist+potiseam
-
+#if(ML)
+           case (20)
+              call md_calfo_ml
+#endif
            end select
         end if
      end if

@@ -178,7 +178,7 @@ subroutine caltabi
               if (r2>rvois2(ll)) cycle
               iw = iw+1
               iwph = iwph+1
-              !                  write(6,*)i,koo,ko1,j,iw
+                                !write(6,*)i,koo,ko1,j,iw, at,bg
               indi(iw) = j
               indi2(iwph) = j
            end do loop_j !i2

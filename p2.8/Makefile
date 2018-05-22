@@ -144,7 +144,6 @@ OBJS_SEQ=	anapos.o \
         Tersoff.o\
         calfoberend.o\
         configcr.o\
-        fft_inter.o\
         force_tersoff_facteurs.o\
         inputtersoff.o\
         force_tersoff.o\
@@ -287,7 +286,7 @@ $(LIBART):
 $(LIBPHONDY): 
 	(cp -rp ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
 $(LIBML): 
-	(cp -rp ../ml ./ ; cd ml	; make ; cp *.o *.a ../../ml)
+	(cp -rL ../ml ./ ; cd ml	; make ; cp *.o *.a ../../ml)
 $(LIBSUNDAE): 
 	(cp -rp ../sundae ./ ; cd sundae	; make ; cp *.o *.a *.tmp.f90 ../../sundae)
 $(LIBMAB): 
@@ -309,7 +308,7 @@ obj_clean:
 
 fft_inter.o : fft_inter.F90
 	$(CPP) $(CPPFLAGS) fft_inter.F90 > fft_inter.tmp.f90
-	$(F90) -c  -O0   fft_inter.tmp.f90
+	$(F90) -c  -O0  $(F90FLAGS) fft_inter.tmp.f90
 	mv fft_inter.tmp.o fft_inter.o
 
 #configcr.o : configcr.F90

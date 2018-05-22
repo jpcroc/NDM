@@ -58,7 +58,8 @@ subroutine calpo_ew
      call moduli !Initialisation des tableaux bsmod1, bsmod2, bsmod3
 
      table(:ntable,:3)=zero
-     call fft_inter('init')
+     !DEBUG_WITH_INTEL
+     !call fft_inter('init')
 
 
   endif !Fin du cas iewald=2

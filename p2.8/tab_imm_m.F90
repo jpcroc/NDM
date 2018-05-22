@@ -217,21 +217,33 @@ contains
   subroutine dealloc_all_tab_imm
     implicit none
 
-    deallocate(xp)
-    deallocate(xpp)
-    deallocate(vp)
-    deallocate(ax)
-    deallocate(fp)
-    deallocate(bruitmd)
-    deallocate(ielat)
-    deallocate(iwmax)
-    deallocate(iwmax2)
-    deallocate(ityp)
-    deallocate(ityp_buffer)
-    deallocate(num_at_glob)
-    if (lsuivinonpbc) deallocate(xpnonpbc)
-    if (lsuivinonpbc) deallocate(axnonpbc)
-    if (lsuivinonpbc) deallocate(tmpsuivi)
-    if (llangevin)deallocate(Gl)
+    if (associated(xp))          deallocate(xp)
+    if (associated(xpp))         deallocate(xpp)
+    if (associated(vp))          deallocate(vp)
+    if (associated(ax))          deallocate(ax)
+    if (associated(fp))          deallocate(fp)
+    if (associated(bruitmd))      deallocate(bruitmd)
+    if (associated(ielat))       deallocate(ielat)
+    if (associated(iwmax))       deallocate(iwmax)
+    if (associated(iwmax2))      deallocate(iwmax2)
+    if (associated(ityp))        deallocate(ityp)
+    if (associated(ityp_buffer)) deallocate(ityp_buffer)
+    if (associated(num_at_glob)) deallocate(num_at_glob)
+    if (lsuivinonpbc) then
+      if (associated(xpnonpbc))  deallocate(xpnonpbc)
+    end if 
+
+    if (lsuivinonpbc) then 
+      if (associated(axnonpbc))  deallocate(axnonpbc)
+    end if 
+
+    if (lsuivinonpbc) then 
+            if (associated(tmpsuivi)) deallocate(tmpsuivi)
+    end if 
+
+    if (llangevin) then 
+       if(associated(Gl)) deallocate(Gl)
+    end if 
+
   end subroutine dealloc_all_tab_imm
 end module tab_imm_m

@@ -14,10 +14,7 @@ subroutine init
   use neb_module
   use posana
   use defcdp, ONLY :itecdp
-  use elec_cell,only: i2t,t_cpl, readelec
-  use eloss, only : ibrake,ecelec,initeloss
-
-  !  use var_pot
+!  use var_pot
 #if(PARA)
   use mod_mpi
 #endif
@@ -50,13 +47,15 @@ subroutine init
   !     write(6,*)'entree dans init.f'
   !potentiel BKS
 #if(PARAPH)
-  rang=rangph
+rang=rangph
 #endif 
 
 
 #if(PARA)
   temps_input_deb = MPI_Wtime()
 #endif
+
+!>---------allocating the types------------------
   if (npotentiel.gt.1)then
      ipotentiel=-1
      npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
@@ -65,13 +64,17 @@ subroutine init
      call  alloc_typ
      typ_pot_pair=0
   end if
+
   allocate(rue_pot(npotmax))
   rue_pot(:)=0.
+
+!>---------setting the potential------------------
   if (rang.eq.0) then
      write(6,*)
      write(6,*)'-*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-'
      write(6,*)
-  END if
+  end if
+
   do ipotcont=0,npotmax
      if(lpotentiel(ipotcont).EQV..true.) then 
         ipotentiel=ipotcont
@@ -130,7 +133,7 @@ subroutine init
         case(13,14,15)
            !nguyen mettre input tersoff
            !        if (rang.eq.0) then
-           !           if (rang==0)   write(6,*)'POTENTIEL tersoff.potin'
+!           if (rang==0)   write(6,*)'POTENTIEL tersoff.potin'
            !           if (ipotentiel==13) then
            !           
            !           else
@@ -146,13 +149,25 @@ subroutine init
 
            call inputtersoff
 
-           !       case(16)
-           !         call imputml
-        end select
+#if(ML)
+! MiLaDy
+         case(20)
+           if (rang.eq.0) then
+              write(6,*)
+              write(6,*)' ML ..... set-up POTENTIEL MiLady '
+              write(6,*)
+           end if
+           !This comes with MiLaDy Package
+           call md_init_potential_ml
+#endif
+   end select
 
      endif
   end do
-  !  if (rang == 0)  write(6,*)'cm',cm
+!<---------end setting the potential---------------
+
+  
+!  if (rang == 0)  write(6,*)'cm',cm
   usdh = 1/(two*tstep)         
   !endif
 
@@ -164,6 +179,9 @@ subroutine init
   it=0 
 
 
+
+
+!<---------setting the configuration by reading gin / cin file --------------
   !---inNEB
   if (dmtype.ne.9) then
 #if(PARA)
@@ -186,14 +204,23 @@ subroutine init
      call configNEB(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   end if
   !...inNEB
+!<---------ends etting the configuration by reading gin /  cin file ---------
 
 
+
+  if (iterasmol>=0) then 
+     itapp=-1
+     call rasmol (itapp)
+  end if
+
+!<---------setting the configuration by generation gin / cin file --------------
   if (igen==(-1)) then
      formatsauv = 2
      call sauvegarde
      if (rang==0) write (6, *) 'generation terminee'
      call arret_ndm
   endif
+!<---------end setting the configuration by generation gin /  cin file ---------
 
   if (igen==2) then
      call transf 
@@ -203,11 +230,12 @@ subroutine init
      call arret_ndm
   endif
 
+
+!<---------setting the cell division -------------------------
   ! determination des tailles du nombre de cel. (nox, noy, noz)
 
   call divid (complet)
   call DynamicalAllocationCell
-  !      allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
 
   do ipotcont=0,npotmax
      if(lpotentiel(ipotcont).EQV..true.) then 
@@ -262,6 +290,7 @@ subroutine init
   ! !!! compcr non pris en charge en parallele !!!
 
 
+  !<---------end setting the cell division ----------------------
 
 
   imd = im
@@ -275,79 +304,66 @@ subroutine init
   imana=min(imd,imd)
 
 
-
+!computing the neighbours for the very first time ......
   !  if (itmax>0) then
   call caltabt
   ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
   if (ltabvois) call caltabi 
   ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
   !  end if
+!computing the neighbours for the very first time ......
 
-  if (L2T.eqv..true.) then
-     call readelec
-     if (rang==0) write(6,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
-     dmtype=4
-     ibrake=1
-     ilangevin=1
-     if((ecelec==0))then
-        write(6,*) 'eccelec<>0  and l2T : STOP'
-        stop
-     end if
-     if ((i2T==0).and.(t_cpl.lt.0)) then
-        write(6,*) 'i2T=0 t_cpl<0 and l2T : STOP'
-        stop
-     end if
-     if (nox.le.0 ) then 
-        write(6,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
-        stop
-     end if
+#if(ML)
+! MiLaDy
+  if(ipotentiel==20) then
+   if (rang.eq.0) then
+      write(6,*)
+      write(6,*)' ML  ..... configuration MiLady '
+      write(6,*)  
+   end if
+   !This comes with MiLaDy Package
+   call md_init_config_ml
+  end if 
+#endif
 
-
-  endif
-
-  if (.not.lrestart) then
+if (.not.lrestart) then
      !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
 #if(PARA)
      temps_initspeed_deb = MPI_Wtime()
 #endif
 
-     ! input and initialization of 2T
-     call initspeed 
-     if (iterasmol>=0) then 
-        itapp=0
-        call rasmol (itapp)
+!init the speed using Maxwell proba density-----------------
+call initspeed 
+       if (iterasmol>=0) then 
+     itapp=0
+     call rasmol (itapp)
+  end if
+  
+     if (lcorrelvp) then
+        ax=vp
+        write(6,*)'AX DEVIENT VP0'
+        write(6,*)'AX DEVIENT VP0'
+        write(6,*)'AX DEVIENT VP0'
+        write(6,*)'AX DEVIENT VP0'
+        write(6,*)'AX DEVIENT VP0'
+
+        call correlvp(xp,xpp,vp,ax,fp,ityp)
      end if
 
-  end if
-
-
-
-
-
-  if (lcorrelvp) then
-     ax=vp
-     write(6,*)'AX DEVIENT VP0'
-     write(6,*)'AX DEVIENT VP0'
-     write(6,*)'AX DEVIENT VP0'
-     write(6,*)'AX DEVIENT VP0'
-     write(6,*)'AX DEVIENT VP0'
-
-     call correlvp(xp,xpp,vp,ax,fp,ityp)
-  end if
-
-  if (lHcyl) then
-     call Hcyl
-  end if
+     if (lHcyl) then
+        call Hcyl
+     end if
+!end init the speed using Maxwell proba density-----------------
 
 
 
 #if(PARA)
-  temps_initspeed=MPI_Wtime()-temps_initspeed_deb
+     temps_initspeed=MPI_Wtime()-temps_initspeed_deb
 #endif
 
-  if ((itetimestep>0).and.(.not.lcasca)) call deftimestep 
+     if ((itetimestep>0).and.(.not.lcasca)) call deftimestep 
 
-
+  endif
 
   if (lcontr) call initcontr(xp,xpp,vp,ax,ityp)
 
@@ -357,18 +373,18 @@ subroutine init
 #if PARA
 #else
 
-     if (lfilm) then
-        write (lufilmpaf, *) '1'
-        write (lufilmpaf, *) 'IT ', '0 ', 'time      0.'
-        write (lufilmpaf, 114) 'Pb ', xp(1,iko)*1D+8, xp(2,iko)*1D+8, xp(3&
-             ,iko)*1D+8, iko
-     endif
-114  format(a3,1x,3(f10.4,1x),i5)
+        if (lfilm) then
+           write (lufilmpaf, *) '1'
+           write (lufilmpaf, *) 'IT ', '0 ', 'time      0.'
+           write (lufilmpaf, 114) 'Pb ', xp(1,iko)*1D+8, xp(2,iko)*1D+8, xp(3&
+                ,iko)*1D+8, iko
+        endif
+114     format(a3,1x,3(f10.4,1x),i5)
 #endif
-     if(iteanapos>0)then
-        itapp=0
-        call sauveposition (itapp)
-     end if
+        if(iteanapos>0)then
+           itapp=0
+           call sauveposition (itapp)
+        end if
 
      if (itmax==0) stop
      call caltabt 
@@ -404,7 +420,7 @@ subroutine init
         call creadp (xp, xpp, ityp,vp)
         call caltabt
         if (ltabvois) call caltabi
-
+        
         if (lperiod) then 
            call period
         else 
@@ -417,7 +433,7 @@ subroutine init
   end if
 
   if ((lheat.EQV..true.).and.(iteheat==0))call heat
-
+  
   if(iteplz>0)  call prtplz(xp,ityp)
 
 
@@ -432,7 +448,7 @@ subroutine init
      itapp=0
      call sauveposition (itapp)
   end if
-
+  if (rang==0) write(6,*)'sortie init'
 
 
   if (ldesinteg) then
@@ -469,7 +485,7 @@ subroutine init
 
   if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
 
-  if (rang==0) write(6,*)'sortie init'
+
 
 
   return

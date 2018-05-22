@@ -17,11 +17,10 @@ program ndm
   use mod_mpi_mab
 #endif
 
-
-
 #if(PHONDY && PARAPH)
  use mod_mpi_phondy
 #endif
+
 #if(ML && PARAML)
  use mod_mpi_ml
 #endif
@@ -111,7 +110,4 @@ continue
 #endif
 
 end program ndm
-
-
-
 ! ca c'est du programme, papa 

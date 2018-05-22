@@ -1,6 +1,8 @@
 ! ***********************************************************
 !    Sous-programme d'interface des differentes FFT
 ! ***********************************************************
+!THis subroutine is completely bug and cannot be compiled usinf ifort compiler. 
+!DEBUG_WITH_INTEL
 subroutine fft_inter (char1)
   !-----------------------------------------------
   !   M o d u l e s
