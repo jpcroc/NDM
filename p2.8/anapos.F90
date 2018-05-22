@@ -1418,6 +1418,7 @@ contains
     integer, dimension (1000):: nscIn,nscVn
 !    write(6,*)'indvac',indvac(1:nvac)
 !    write(6,*)'indint',indint(1:nint)
+    integer :: i, ic, nclustI, nclustV
 
     ndeft=nvac+nint
     allocate (deft(ndeft)) 

@@ -14,6 +14,7 @@ subroutine init
   use neb_module
   use posana
   use defcdp, ONLY :itecdp
+  use eloss
 !  use var_pot
 #if(PARA)
   use mod_mpi
