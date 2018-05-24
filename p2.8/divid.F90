@@ -241,7 +241,10 @@ subroutine divid (appel)
 
   endif
 
-if (rang==0) write(6,'(A,3G15.7)') 'celsizes ',celsize(:)
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#else 
+   if (rang==0) write(6,'(A,3G15.7)') 'celsizes ',celsize(:)
+#endif 
   ! nox noy et noz sont determines
 
   noxy = nox*noy
@@ -306,15 +309,15 @@ if (rang==0) write(6,'(A,3G15.7)') 'celsizes ',celsize(:)
 #endif
      endif
      if(.not.lconstrtot)rumax=rvois
-     write(*,*) 'DEBUG IN DIVID volu, im', volu, im
+     !write(*,*) 'DEBUG IN DIVID volu, im', volu, im
      voluperat=volu/im
      IF (nvperat.LE.0) nvperat=4*Pi*(rvois+1.0d-8)**3/(3*voluperat)
 
 #if(PHONDY || PARAPH || MAB || ML || PARAML)
 
-     if(rang==0)         write (6, '(A,D10.3)') 'volumeperat=', voluperat
-     if(rang==0)         write (6, '(A,D10.3)') 'Rvois=', RVois
-     if(rang==0)         write (6, *) 'NVperat= ', nvperat
+     !debug if(rang==0)         write (6, '(A,D10.3)') 'volumeperat=', voluperat
+     !debug if(rang==0)         write (6, '(A,D10.3)') 'Rvois=', RVois
+     !debug if(rang==0)         write (6, *) 'NVperat= ', nvperat
 #else
      if(rang==0)         write (6, '(A,D10.3)') 'volumeperat=', voluperat
      if(rang==0)         write (6, '(A,D10.3)') 'Rvois=', RVois
@@ -328,7 +331,7 @@ if (rang==0) write(6,'(A,3G15.7)') 'celsizes ',celsize(:)
         nvat=max(Int(nvperat*1.3),10)
      end if
 #if(PHONDY || PARAPH || MAB || ML || PARAML)
-     if(rang==0)         write (6, *) 'Nvois= ', nvois
+    !debug  if(rang==0)         write (6, *) 'Nvois= ', nvois
 #else
 
      if(rang==0)         write (6, *) 'Nvois= ', nvois
