@@ -237,17 +237,18 @@ subroutine bruit_xp
           end do
           tempsauv=tempinst(vp,ityp)
           if (rang==0) write(6,*)'temperature MI initspeed ',tempsauv
-
+          kinx(:)=0.d0
           do ic=1,3
              do i=1,im
                 kinx(ic)=kinx(ic)+0.5*vp(ic,i)*vp(ic,i)*cm(ityp(i))/dfloat(im_glob)
+                !write(*,*) ic, i,kinx(ic),  cm(ityp(i)), vp(ic,i)
              end do
              ka=0.5*bk*tinit 
 #if(PARA)
              call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
              kinx(ic)=kinx_glob
 #endif          
-             if (rang==0) write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
+             !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
           end do
           !***************************************************************
           !       Make total momentum zero
