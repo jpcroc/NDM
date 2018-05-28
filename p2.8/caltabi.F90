@@ -67,7 +67,7 @@ subroutine caltabi
    call notperiod(xp,xpnp)
   end if  
   
-  
+  !write(*,*) 'caltabi_inside  ', rvois, rvois2
   !*************construction par double boucle ****************
   if(lconstrtot) then  !construction par double boucle
 
@@ -174,7 +174,7 @@ subroutine caltabi
               if ((ds(3)>0.5d0).or.(ds(3)<-0.5d0))   ds(3) = ds(3)-dble(Nint(ds(3)))
               dx(:) = MatMul( at(:,:), ds(:) )
               r2 = Sum( dx(:)**2 )
-
+              !write(*,*) 'ttt', r2, rvois2(ll)
               if (r2>rvois2(ll)) cycle
               iw = iw+1
               iwph = iwph+1

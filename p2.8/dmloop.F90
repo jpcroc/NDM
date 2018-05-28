@@ -33,7 +33,6 @@ subroutine dmloop
 
   ! MPI
   if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
-
   ! Initialization
   IF ((dmtype.EQ.2).AND.lFire) THEN
           CALL init_trempe_fire(fire_dt, fire_nstep, fire_alph)

@@ -137,7 +137,9 @@ subroutine calfo
 #if(ML)
            case (20)
               call md_calfo_ml
-#endif
+                !write(*,*) 'NDM', potist, maxval(fp)
+                !stop 'ndm'
+#endif          
            end select
         end if
      end if

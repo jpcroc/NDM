@@ -33,8 +33,8 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   !
 
-!  if (rang==0) write(6,*) 'PARA-T entree trempe'
   aux(:ntyp) = tstep**2/cm(:ntyp)
+  !if (rang==0) write(6,*) 'entree trempe and the mass', cm(:ntyp), tstep
           do i = 1, im
              do ic = 1, 3
                 if (vp(ic,i)*fp(ic,i)>0) then
@@ -57,6 +57,6 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   end do
   forctot = sqrt(forctot)
   !debug if(rang==0) write (6, *) 'ITTRP ', it, potist, forctot
-!  if (rang==0) write(6,*) 'PARA-T sortie trempe'
+  !if (rang==0) write(6,*) 'PARA-T sortie trempe'
   return
 end subroutine trempe

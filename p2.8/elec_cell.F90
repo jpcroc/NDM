@@ -934,7 +934,8 @@ contains
           do iey=1,ney
              do iez=1,nez
                 write(luvisue,'(5G15.7,2I5)')ecell(iex,iey,iez)%ixb(1),ecell(iex,iey,iez)%ixb(2),ecell(iex,iey,iez)%ixb(3),&
-                     &ecell(iex,iey,iez)%temp,ecell(iex,iey,iez)%tempIon,ecell(iex,iey,iez)%nion,ecell(iex,iey,iez)%nion-ecell(iex,iey,iez)%nionS
+                     &ecell(iex,iey,iez)%temp,ecell(iex,iey,iez)%tempIon,& 
+                     ecell(iex,iey,iez)%nion,ecell(iex,iey,iez)%nion-ecell(iex,iey,iez)%nionS
              end do
           end do
        end do

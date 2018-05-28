@@ -981,7 +981,7 @@ subroutine readdm
      case(:9)
         ldemitab=.TRUE.
         if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
-     case(11:)
+     case(11:18)
         ldemitab=.false.
         if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
 
@@ -989,13 +989,16 @@ subroutine readdm
         if(dmtype==7) then 
            ldemitab=.FALSE.
            if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
-        elseif(dmtype==18) then 
-           ldemitab=.FALSE.
-           if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
         else
            ldemitab=.TRUE.
            if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
         end if
+      case(20)
+              if (lconstrtot) then
+                 if (rang==0)  write(6,*)  'MiLaDy potentials should have lconstrtot set to false'
+                 if (rang==0)  write(6,*)  'Nos is set to ... ',lconstrtot 
+                 stop 'lconstrtot and MiLaDy 1'
+              end if 
 
      end select
 
@@ -1009,6 +1012,16 @@ subroutine readdm
 
   endif
 
+  if(dmtype==18) then 
+        ldemitab=.FALSE.
+        if (rang.eq.0) write(6,*)' For MiLady TABLE DES VOISINS COMPLETE rvois ',rvois
+              if (lconstrtot) then
+                 if (rang==0)  write(6,*)  'MiLaDy potentials should have lconstrtot set to false'
+                 if (rang==0)  write(6,*)  'Now is set to ... ',lconstrtot 
+                 stop 'lconstrtot and MiLaDy 2'
+              end if 
+  end if 
+ 
   if ( (dmtype==2).or.(dmtype==3).or.(dmtype==30).or.(dmtype==9).or.(dmtype==10) ) then    
      if ( (fpstop<0).and.(fsumstop<0)) then
         if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
