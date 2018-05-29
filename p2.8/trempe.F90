@@ -56,7 +56,7 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      forctot = forctot+sum(fp(:,i)**2)
   end do
   forctot = sqrt(forctot)
-  !debug if(rang==0) write (6, *) 'ITTRP ', it, potist, forctot
+  !debug if(rang==0) write (6, *) 'ITTRP ', it, potist, forctot, usdh, aux(:ntyp)
   !if (rang==0) write(6,*) 'PARA-T sortie trempe'
   return
 end subroutine trempe
