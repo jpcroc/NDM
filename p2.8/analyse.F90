@@ -146,7 +146,8 @@ subroutine analyse
               end do
               write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel,'*Ec = ',kine*unitE, cunitE, &
                    '  (', temp, ' K)'
-             
+              write(6,*) 'kine', kine, potist, unitE, cunitE
+              !stop 
               write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
               If (l2T) then
 
