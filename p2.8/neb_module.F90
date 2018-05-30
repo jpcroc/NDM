@@ -26,20 +26,20 @@ contains
   subroutine allocate_neb()
     implicit none
     allocate (ielat_n(imm,npath), iwmax_n(imm,npath), &
-         ityp_n(imm,npath),&
-         irelax(imm),                            &
-	 icontrainte(imm),                       &
-         xp_n(3,imm,npath),                      &
-         xpp_n(3,imm,npath),                     &
-         vp_n(3,imm,npath),                      &
-         ax_n(3,imm,npath),                      &
-         fp_n(3,imm,npath),                      &
+              ityp_n(imm,npath),                      &
+         irelax(imm),                                 &
+	 icontrainte(imm),                            &
+         xp_n(3,imm,npath),                           &
+         xpp_n(3,imm,npath),                          &
+         vp_n(3,imm,npath),                           &
+         ax_n(3,imm,npath),                           &
+         fp_n(3,imm,npath),                           &
          reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
-    allocate(sigPATH(3,3,npath))    ! Stress tensor for each image
+    allocate  (sigPATH(3,3,npath))    ! Stress tensor for each image
     allocate  (fp_par(3,imm),fp_perp(3,imm))
     allocate  (s_path(3,imm,npath),force_neb(3,imm,npath))
-    allocate   (bruitneb(3,imm,npath))
+    allocate  (bruitneb(3,imm,npath))
 
     return
 
@@ -154,7 +154,7 @@ contains
           idepmax=i
        end if
     end do
-    write(6,*)'NEB: deplacement max entre configurations = ',deplamax,' pour l atome ',idepmax
+    if (rang==0) write(6,*)'NEB: deplacement max entre configurations = ',deplamax,' pour l atome ',idepmax
 
     do iph=1,npath
 
@@ -181,9 +181,9 @@ contains
 
     masstot=SUM(cm(ityp(1:im)))
     if  (nebtype>=2) then
-       write(*,'(" NEB: The kspring is in the eV/A^2                          :", f12.5)')  kspring
+       if (rang==0) write(*,'(" NEB: The kspring is in the eV/A^2                          :", f12.5)')  kspring
        kspring=kspring*angst**2/erg2eV 
-       write(*,'(" NEB: The kspring is in the NDM internal units (copyright)  :", f12.5)')  kspring
+       if (rang==0) write(*,'(" NEB: The kspring is in the NDM internal units (copyright)  :", f12.5)')  kspring
     end if
 
     icontrainte(:)=1
@@ -201,7 +201,7 @@ contains
     end do
     fp(:,:)=fp_buffer(:,:)
 
-    write(*,'(" NEB: The number of atoms which are not included in the DRAG CONTRAINT :", i6)')  non_contr
+    if (rang==0) write(*,'(" NEB: The number of atoms which are not included in the DRAG CONTRAINT :", i6)')  non_contr
 
     deallocate(fp_buffer)     
 
@@ -235,7 +235,7 @@ contains
     INQUIRE(file=fnamneb, exist=ok)
     IF (ok ) THEN
             ! Load NEB image ip in file *.coutposition.*
-            write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(fnamneb)
+            if (rang==0) write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(fnamneb)
             lucin = 93
             open(unit=lucin, file=fnamneb, form='unformatted', status='old', action='read')
             read (lucin) icintype
@@ -325,7 +325,7 @@ contains
 
     IF (ok ) THEN
             ! Load NEB image ip in file *.<ip>.gin
-            write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(ginFile)
+            if (rang==0) write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(ginFile)
             OPEN(unit=93, file=ginFile, status='old', action='read')
             CALL ReadGin(xp_n(:,:,ip), iTyp_n(:,ip), im, at, 93)
             CLOSE(93)
@@ -469,7 +469,7 @@ contains
 
        if (deltaR>deltaRmax) then
           irelax(ia)=1
-          write(*,*) 'NEB:    relaxation de l atome no ',ia,' deltaR= ',sqrt(deltaR)
+          if (rang==0) write(*,*) 'NEB:    relaxation de l atome no ',ia,' deltaR= ',sqrt(deltaR)
        end if
     end do
 
@@ -589,7 +589,7 @@ contains
        do ip=1, npath, npath-1
           write(extension,'(i9.9)') ip
           fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
-          write(6,'(2a)')'image = ',fnamneb
+          if (rang==0) write(6,'(2a)')'image = ',fnamneb
           lucin = 93
           open(unit=lucin, file=fnamneb, form='unformatted', status='old')
           read (lucin) icintype
@@ -733,7 +733,7 @@ contains
    end do
   end do
   
-  write(*,*) 'ISEED for neb, NORM of the noise ',iseed, neb_noise_scale, totalbruit
+  if (rang==0) write(*,*) 'ISEED for neb, NORM of the noise ',iseed, neb_noise_scale, totalbruit
   bruitneb(1:3,1:im,2:npath-1) = bruitneb(1:3,1:im,2:npath-1) * neb_noise_scale * xp_n(1:3,1:im,2:npath-1) / (sqrt(totalbruit))
   xp_n(1:3,1:im,1:npath) = xp_n(1:3,1:im,1:npath) + bruitneb(1:3,1:im,1:npath)
   !debug write(*,*) xp_n(1,5,4), bruitneb(1,5,4)

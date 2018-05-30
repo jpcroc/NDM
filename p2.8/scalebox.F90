@@ -86,6 +86,7 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      noxy = nox*noy
      noxyz = nox*noy*noz
 
+     !write(*,*) 'inside scalebox', nox, noxyz, zl(1), rumax,  im
      natperc= INT(im/noxyz)
 
      natperc=max(3*natperc,10)

@@ -125,7 +125,7 @@ subroutine calfo
                  ! !!! le cas parallele n'est pas pris en compte !!!
                  if (.not.parallele) then
                     IF(ldecal_bc.EQV..FALSE.) THEN
-                       !write(*,*) 'NDM eam calfo1', fp(1,1), maxval(fp)
+                       !write(*,*) 'NDM eam calfo1', xp(1,1)
                        call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
                        !write(*,*) 'NDM eam calfo2', fp(1,1), maxval(fp)
                     ELSE IF (ldecal_bc.EQV..TRUE.) THEN !*!
@@ -138,7 +138,7 @@ subroutine calfo
               potist=potist+potiseam
 #if(ML)
            case (20)
-                !write(*,*) 'NDM ml calfo1', xp(1,1), fp(1,1)
+                !write(*,*) 'NDM ml calfo1', xp(1,1)
               call md_calfo_ml
                 !write(*,*) 'NDM ml calfo2', xp(1,1), fp(1,1)
                 !stop 'ndm'
