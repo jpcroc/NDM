@@ -1,15 +1,19 @@
 module work_cgII
 
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
+  use gen_com_m, ONLY: im, imm,at, inv_angst, lperiod, rang, &
+                       it, itesauv, itesauvposition, itesauvforce, &
+                       inv_angst, erg2ev, angst, &
+                       dmtype, potist
   implicit none
 
 
 contains
 
   subroutine FUNCT(N,X,F,G,NCALLS,                      &
-       xp, xpp, vp, ax, fp,  ielat, iwmax, ityp)
-    double precision X(N),G(N),F,forctot,formax  
+       xp_local, xpp, vp, ax, fp_local,  ielat, iwmax, ityp)
+    use tab_imm_m, only : xp, fp
+    double precision X(N),G(N),F
     integer i,N,NCALLS
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
@@ -17,13 +21,12 @@ contains
     integer  :: ielat(imm)
     integer  :: iwmax(imm)
     integer  :: ityp(imm)
-    real(double)  :: xp(3,imm)
+    real(double)  :: xp_local(3,imm)
     real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
     real(double)  :: ax(3,imm)
-    real(double)  :: fp(3,imm)
+    real(double)  :: fp_local(3,imm)
     !-----------------------------------------------
-    INTEGER :: IGC
 
     
 
@@ -34,14 +37,14 @@ contains
           END IF
           IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
                   do i=1,im
-                     xp(1:3,i) = MatMul( at, X(3*i-2:3*i) )
+                     xp_local(1:3,i) = MatMul( at, X(3*i-2:3*i) )
                   end do
           ELSE ! Variables = cartesian coordinates (in A)
                   do i=1,im
-                     xp(1:3,i)=X(3*i-2:3*i)*inv_angst
+                     xp_local(1:3,i)=X(3*i-2:3*i)*inv_angst
                   end do
           END IF
-
+          xp(:,:) =  xp_local(:,:)
     !back to internal units and JP world.......................................
 
     it=NCALLS-1
@@ -49,8 +52,12 @@ contains
     if (lperiod)          call period 
 
     call controle 
+    !write(*,*) 'inside FUNCT debug_incg1', xp_local(1,1), fp_local(1,1)
     call calfo
+    fp_local(:,:) =  fp(:,:)
+    !write(*,*) 'inside FUNCT debug_incg2', xp_local(1,1), fp_local(1,1)
     call analyse 
+    !write(*,*) 'inside FUNCT debug_incg3', xp_local(1,1), fp_local(1,1)
    
     
     if (it.ne.0) then
@@ -76,11 +83,11 @@ contains
     F=potist*erg2eV
             IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
                     do i=1,im
-                       G(3*i-2:3*i)=-MatMul(fp(:,i), at)*erg2eV
+                       G(3*i-2:3*i)=-MatMul(fp_local(:,i), at)*erg2eV
                     end do
             ELSE ! Variables = cartesian coordinates (in A)
                     do i=1,im
-                       G(3*i-2:3*i)=-fp(1:3,i)*erg2eV/angst
+                       G(3*i-2:3*i)=-fp_local(1:3,i)*erg2eV/angst
                     end do
             END IF
             G(3*im+1:N)=0.d0

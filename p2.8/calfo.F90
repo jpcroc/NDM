@@ -125,7 +125,9 @@ subroutine calfo
                  ! !!! le cas parallele n'est pas pris en compte !!!
                  if (.not.parallele) then
                     IF(ldecal_bc.EQV..FALSE.) THEN
+                       !write(*,*) 'NDM eam calfo1', fp(1,1), maxval(fp)
                        call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
+                       !write(*,*) 'NDM eam calfo2', fp(1,1), maxval(fp)
                     ELSE IF (ldecal_bc.EQV..TRUE.) THEN !*!
                        call calfo_decalage(xp,  vp,  fp, ielat, iwmax, ityp)
                     END IF
@@ -136,8 +138,9 @@ subroutine calfo
               potist=potist+potiseam
 #if(ML)
            case (20)
+                !write(*,*) 'NDM ml calfo1', xp(1,1), fp(1,1)
               call md_calfo_ml
-                !write(*,*) 'NDM', potist, maxval(fp)
+                !write(*,*) 'NDM ml calfo2', xp(1,1), fp(1,1)
                 !stop 'ndm'
 #endif          
            end select
@@ -231,9 +234,7 @@ subroutine calfo
   !   write(96,'(2I3,6G15.7)')i,ityp(i),xp(1,i),xp(2,i),xp(3,i),fp(1,i),fp(2,i),fp(3,i)
   !end do
   !stop
-
-
-
+  !write(*,*) 'NDM calfo end debug', xp(1,1), fp(1,1) 
 
   return
 end subroutine calfo

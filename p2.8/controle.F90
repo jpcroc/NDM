@@ -597,9 +597,9 @@ subroutine controle
 
      if (it==1) then
         if (lEev.EQV..true.) then 
-           write(6,*)'Resultats en eV, Ang'
+           if (rang==0) write(6,*)'Resultats en eV, Ang'
         else
-           write(6,*)'Resultats en cgs'
+           if (rang==0) write(6,*)'Resultats en cgs'
         end if
         if (rang==0)      write(*,'(70("="))')
         if (rang==0)      write(*,'("CG:     ","iter",10(" "),"epsi",14(" "),"Fmax",14(" "), "Energy")')
@@ -631,30 +631,30 @@ subroutine controle
         if (lEev.EQV..true.) then 
            forctot = forctot*erg2eV/angst
            formax  = formax*erg2eV/angst
-           write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
+           if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
            if (fpstop>0) then   
               if (formax.le.fpstop) then
-                 write(6,*)'force par atome  max  ev/Ang ', formax
-                 write (6, *) 'energie ', potist*erg2eV
+                 if (rang==0) write(6,*)'force par atome  max  ev/Ang ', formax
+                 if (rang==0) write (6, *) 'energie ', potist*erg2eV
                  if (it.le.1) xp(:,:)=ax(:,:)
                  call endrun
               end if
            end if
            if (fsumstop>0) then   
               if (forctot.le.fsumstop) then
-                 write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
-                 write (6, *) 'energie ', potist*erg2eV
+                 if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
+                 if (rang==0) write(6, *) 'energie ', potist*erg2eV
                  if (it.le.1) xp(:,:)=ax(:,:)
                  call endrun
               end if
            end if
 
         else
-           write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
+           if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
            if (fpstop>0) then   
               if (formax.le.fpstop) then
-                 write(6,*)'force par atome  max cgs ',formax
-                 write (6, *) 'energie ', potist
+                 if (rang==0) write(6,*)'force par atome  max cgs ',formax
+                 if (rang==0) write (6, *) 'energie ', potist
                  if (it.le.1) xp(:,:)=ax(:,:)
                  call endrun
 
@@ -663,8 +663,8 @@ subroutine controle
 
            if (fsumstop>0) then   
               if (forctot.le.fsumstop) then
-                 write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
-                 write (6, *) 'energie ', potist
+                 if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
+                 if (rang==0) write (6, *) 'energie ', potist
                  if (it.le.1) xp(:,:)=ax(:,:)
                  call endrun
               end if

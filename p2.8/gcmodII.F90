@@ -213,7 +213,8 @@ SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS, &
 !debugGC     do i=1,5
 !debugGC      write(*,'(".......gcmodII bF xp(*,1) ",3f15.8)')xp(1,i)/at(1,1),xp(2,i)/at(1,1),xp(3,i)/at(1,1)
 !debugGC     end do
-!debugGC        write(*,'(".......GCMOD II X6 ",i6,3f15.8)')  NCALLS, X(6)/at(1,1)/angst                                      
+!debugGC        write(*,'(".......GCMOD II X6 ",i6,3f15.8)')  NCALLS, X(6)/at(1,1)/angst  
+  !write(*,*) 'inside ZXCGRII before FUNCT', xp(1,1), fp(1,1), NCALLS
   CALL FUNCT (N,X,F,G,NCALLS,                       &
        xp, xpp, vp, ax, fp,  ielat, iwmax, ityp)                                
 !debugGC     do i=1,5
