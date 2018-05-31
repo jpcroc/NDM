@@ -9,6 +9,9 @@ subroutine endrun
 #if(PARA)
   use mod_mpi
 #endif
+#if(ML)
+ use time_measure
+#endif
   use posana
   USE cfg_module
   use elec_cell, only:  sauveelec
@@ -172,7 +175,16 @@ subroutine endrun
 136 format(A,3f10.4,D14.5,I9)
 
   end if
+
+
+
   if (rang==0) then
+#if(ML)
+     write (6, *) 'ML: energy time', temps_energy
+     write (6, *) 'ML: force time',  temps_force
+     write (6, *) 'ML: descriptors time',  temps_descripteurs
+#endif
+
      write (6, *)
      write (6, *)
 

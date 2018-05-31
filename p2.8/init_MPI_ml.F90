@@ -1,3 +1,10 @@
+
+
+module time_measure
+real(kind(0.d0)) :: temps_energy, temps_force, temps_descripteurs
+end module time_measure
+
+
 module mod_mpi_ml 
  use mpi
      integer, dimension(MPI_STATUS_SIZE) :: statut
