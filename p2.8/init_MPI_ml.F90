@@ -1,7 +1,7 @@
 
 
 module time_measure
-real(kind(0.d0)) :: temps_energy, temps_force, temps_descripteurs
+real(kind(0.d0)) :: temps_energy, temps_force, temps_descripteurs, temps_neigh
 end module time_measure
 
 

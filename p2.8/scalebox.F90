@@ -67,6 +67,17 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   noxn = int(zl(1)/rumax)
   noyn = int(zl(2)/rumax)
   nozn = int(zl(3)/rumax)
+  
+#if(ML)
+  if (noxn==0) noxn=1
+  if (noyn==0) noyn=1
+  if (nozn==0) nozn=1
+
+  if (nox==0) nox=1
+  if (noy==0) noy=1
+  if (noz==0) noz=1
+#endif
+
   if ((noxn==2).or.(noyn==2).or.(nozn==2))then
      noxn=1 ;noyn=1; nozn=1
   end if
@@ -86,7 +97,9 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      noxy = nox*noy
      noxyz = nox*noy*noz
 
-     !write(*,*) 'inside scalebox', nox, noxyz, zl(1), rumax,  im
+     !write(*,*) 'inside scalebox1', nox, noy, noz
+     !write(*,*) 'inside scalebox2', noxn, noyn, nozn
+     !write(*,*) 'inside scalebox3', noxyz, zl(1), rumax,  im
      natperc= INT(im/noxyz)
 
      natperc=max(3*natperc,10)
