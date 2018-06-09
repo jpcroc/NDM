@@ -182,6 +182,7 @@ subroutine endrun
 #if(ML)
      write (6, *) 'ML: energy time', temps_energy
      write (6, *) 'ML: force time',  temps_force
+     write (6, *) 'ML: force time',  temps_stress
      write (6, *) 'ML: descriptors time',  temps_descripteurs
 #endif
 
