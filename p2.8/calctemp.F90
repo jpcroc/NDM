@@ -178,7 +178,7 @@ subroutine calctemp(temptyp)
 
 
      do iti = 1, ntyp
-        !            write(6,*)'iti' ,iti
+        !debug            write(6,*)'iti' ,iti, na(iti)
         if (na(iti)==0) cycle
         temptyp(iti) = v2(iti)*cm(iti)/(3.0*na(iti)*bk)
         !        if (ltpcel) then 
@@ -186,6 +186,7 @@ subroutine calctemp(temptyp)
         !           write(6,*)'tempmaxat(iti)',iti,tempmaxat(iti)
         !        end if
         kine = kine+v2(iti)*cm(iti)/2.0
+        !debug write(*,*) 'KINE WAS HERE ....', kine, rangml
         temp = temp+temptyp(iti)*na(iti)
      end do
 

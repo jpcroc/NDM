@@ -104,6 +104,7 @@ subroutine analyse
   !     end if
   !  end if
   call calctemp (temptyp)
+  !debug write(*,*) 'kine.....', kine
   if (itetemp>0) then
      if (mod(it,itetemp)==0) then
 

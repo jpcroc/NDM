@@ -64,7 +64,7 @@ subroutine dyn
   !      write(6,*)'aux ',aux
 
 
-  !debug write(*,*) 'md_test1',  xp(1,1), xpp(1,1) 
+   !debug write(*,*) 'md_test1',  xp(1,1), xpp(1,1), vp(1,1) 
           do i = 1, imd
              do ic = 1, 3
                 xprov = (xp(ic,i)-xpp(ic,i))+xp(ic,i)+aux(ityp(i))*fp(ic,i)
@@ -73,7 +73,7 @@ subroutine dyn
                 xp(ic,i) = xprov
              end do
           end do
-  !debug write(*,*) 'md_test2',  xp(1,1), xpp(1,1) 
+   !debug write(*,*) 'md_test2',  xp(1,1), xpp(1,1), vp(1,1)
 
   if (lcalcjq) then
      eatommoy=0.
