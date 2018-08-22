@@ -1,6 +1,6 @@
 /*********************************************************************
 
-    Copyright 2017, Christian Borschel
+    Copyright 2016, Christian Borschel
 
     This file is part of iradina.
 

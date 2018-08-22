@@ -1,20 +1,20 @@
 /*********************************************************************
 
-	Copyright 2017, Christian Borschel
-	
-	This file is part of iradina.
-	
-	iradina is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-	
-	iradina is distributed WITHOUT ANY WARRANTY; without even the implied
-	warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-	See the GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with iradina.  If not, see <http://www.gnu.org/licenses/>.
+    Copyright 2016, Christian Borschel
+
+    This file is part of iradina.
+
+    iradina is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    iradina is distributed WITHOUT ANY WARRANTY; without even the implied
+    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with iradina.  If not, see <http://www.gnu.org/licenses/>.
 
 ***********************************************************************/
 
@@ -38,10 +38,14 @@
 /* -- Declare some global variables (not nice, but easier)-- */
 
 /*******************************************************************************/
-/*	Different "materials" can be defined. A material can be single-elemental
-	as well as a compound.
-	The target consists of (possibly a large number of) little cells. Each of
-	these is filled with one of the defined materials */
+/* Different "materials" can be defined. A material can be single-elemental
+   as well as a compound.
+   The target consists of (possibly a large number of) little cells. Each of
+   these is filled with one of the defined materials */
+/* Alternatively, for the dynamic version, a number of seperate elements are
+   defined. Each cell has a composition vector describing the fractions of each
+   element in that cell. This is called element-based in contrast to "material-
+   based" */
 /*******************************************************************************/
 
 
@@ -54,50 +58,48 @@
 
 struct material                             /* all properties of a material */
 {
-	char  Name[50];                           /* A name can be defined */
-	int   Is_Vacuum;                          /* 1 if the material is vacuum, 0 else */
-	float Density;                            /* Total atomic density in at/cm^3 */
-	float DensityNM;                          /* Total atomic density in at/nm^3 */
-	float AtomicDistance;                     /* Average inter-atomic distance [nm] */
-	float LayerDistance;                      /* Layer distcance assuming simple cubic structure[nm] */
-	float SqrtAtomicDistance;                 /* Square root of average inter-atomic distance [nm] */
-	float MeanImpactPar;                      /* Not actually the mean impact paramater but rather 1/sqrt(PI*density*MeanFreePath) */
-	float SqrtRecFlDensity;                   /* 1/sqrt(pi*flight_length_constant*density) needed for constant flight lengths */
-	int   ElementsZ[MAX_EL_PER_MAT];          /* List of the elements contained in this materials */
-	float ElementsM[MAX_EL_PER_MAT];          /* List of the element masses in this materials */
-	float ElementsConc[MAX_EL_PER_MAT];       /* Relative concentration of the elements */
-	float ElementsDispEnergy[MAX_EL_PER_MAT]; /* Displacement energy for each element in eV */
-	float ElementsLattEnergy[MAX_EL_PER_MAT]; /* Lattice energy for each element in eV */
-	float ElementsSurfEnergy[MAX_EL_PER_MAT]; /* Surface binding energy for each element in eV */
-	float ElementsReplEnergy[MAX_EL_PER_MAT]; /* Replacement threshold energy for each element in eV (default=e_latt) */
-	float IonSurfEnergy;                      /* Surface binding energy of the ion in this material. If not provided: use mean */
-	int   SputterCounter[MAX_EL_PER_MAT*6];   /* Count sputtered atoms leaving the sample in each of the possible 6 directions
-											Note: for all elements all 6 directions in one array, one after another: faster. */
-	int   ElementCount;                       /* Number of different elements contained in this material */
-	int   CellCount;                          /* Number of cells that consist of this material */
-	float MeanZ;                              /* Average Z, weighted by fraction */ 
-	float MeanM;                              /* Average M, weighted by fraction */ 
-	float MeanF;                              /* Average F (reduced energy conversion factor), weighted by fraction */ 
-	float MeanA;                              /* Average A (screening length), weighted by fraction, */ 
-    float MeanEd;                             /* Average displacement energy, weighted by fraction */ 
-	float MeanMinRedTransfer;                 /* Average minimun energy transfer in reduced units */
+  char  Name[50];                           /* A name can be defined */
+  int   Is_Vacuum;                          /* 1 if the material is vacuum, 0 else */
+  float Density;                            /* Total atomic density in at/cm^3 */
+  float DensityNM;                          /* Total atomic density in at/nm^3 */
+  float AtomicDistance;                     /* Average inter-atomic distance [nm] */
+  float LayerDistance;                      /* Layer distcance assuming simple cubic structure[nm] */
+  float SqrtAtomicDistance;                 /* Square root of average inter-atomic distance [nm] */
+  float MeanImpactPar;                      /* Not actually the mean impact paramater but rather 1/sqrt(PI*density*MeanFreePath) */
+  float SqrtRecFlDensity;                   /* 1/sqrt(pi*flight_length_constant*density) needed for constant flight lengths */
+  int   ElementsZ[MAX_EL_PER_MAT];          /* List of the elements contained in this materials */
+  float ElementsM[MAX_EL_PER_MAT];          /* List of the element masses in this materials */
+  float ElementsConc[MAX_EL_PER_MAT];       /* Relative concentration of the elements */
+  float ElementsDispEnergy[MAX_EL_PER_MAT]; /* Displacement energy for each element in eV */
+  float ElementsLattEnergy[MAX_EL_PER_MAT]; /* Lattice energy for each element in eV */
+  float ElementsSurfEnergy[MAX_EL_PER_MAT]; /* Surface binding energy for each element in eV */
+  float IonSurfEnergy;                      /* Surface binding energy of the ion in this material. If not provided: use mean */
+  int   SputterCounter[MAX_EL_PER_MAT*6];   /* Count sputtered atoms leaving the sample in each of the possible 6 directions
+					       Note: for all elements all 6 directions in one array, one after another: faster. */
+  int   ElementCount;                       /* Number of different elements contained in this material */
+  int   CellCount;                          /* Number of cells that consist of this material */
+  float MeanZ;                              /* Average Z, weighted by fraction */ 
+  float MeanM;                              /* Average M, weighted by fraction */ 
+  float MeanF;                              /* Average F (reduced energy conversion factor), weighted by fraction */ 
+  float MeanA;                              /* Average A (screening length), weighted by fraction, */ 
+  float MeanEd;                              /* Average A (screening length), weighted by fraction, */ 
+  float MeanMinRedTransfer;                 /* Average minimun energy transfer in reduced units */
+  float ed_oE ;              
+  float k_d ;
 
-	/*CROC  for KP quick calculation*/
-	float ed_oE ;              /* ToDo: add comment */
-	float k_d ;                /* ToDo: add comment */
 
-	/*	For each element of each material we want to store the recoils, interstitials and so on. The equations are:
-		Displacements = Vacancies + Replacement Collisions
-		Vacancies     = Interstitials + Atoms that left the target */
-	/*	So will need to make an array of pointers (one pointer for each element), pointing to
-		the various target arrays. Further down, these four arrays occur once for the target but 
-		independently of the elements, and those will hold the sum for all elements */
-	int **TargetImplantedRecoilsInt;   /* The implanted recoils stopped as interstitials */
-	int **TargetImplantedRecoilsRepl;  /* The implanted recoils stopped as replacement atoms */
-	int **TargetElementalVacancies;    /* Vacancies of this element left behind */
-	int **TargetElementalDisp;         /* Displacements of this element that took place */
-	int **TargetSputteredAtoms;        /* Number of atoms sputtered from this cell */
-	float** StoppingZE;                /* points to an array of 92 elements (the Zs) which contain pointers
+  /* For each element of each material we want to store the recoils, interstitials and so on. The equations are:
+     Displacements = Vacancies + Replacement Collisions
+     Vacancies     = Interstitials + Atoms that left the target */
+  /* So will need to make an array of pointers (one pointer for each element), pointing to
+     the various target arrays. Further down, these four arrays occur once for the target but 
+     independently of the elements, and those will hold the sum for all elements */
+  int **TargetImplantedRecoilsInt;   /* The implanted recoils stopped as interstitials */
+  int **TargetImplantedRecoilsRepl;  /* The implanted recoils stopped as replacement atoms */
+  int **TargetElementalVacancies;    /* Vacancies of this element left behind */
+  int **TargetElementalDisp;         /* Displacements of this element that took place */
+  int **TargetSputteredAtoms;        /* Number of atoms sputtered from this cell */
+  float** StoppingZE;                /* points to an array of 92 elements (the Zs) which contain pointers
 					to logarithmically scaled stopping tables for Z in this material.*/
   float** StragglingZE;              /* We need the same for energy loss straggling */
   struct transmitted_ion** ElementalLeavingRecoils; /* Arrays storing recoils that are leaving of each element */
@@ -119,37 +121,37 @@ int ionZ_in_target;                     /* The ion is always included in the exi
 struct scattering_matrix     /* This structure holds information for a scattering events of two 
 				particles, for each possible energy and impact parameter */
 {
-	float screening_length;    /* screening length from ZBL85,p45, eq.2-60, but in [nm] */
-	float inv_screening_length;/* 1/screening length in 1/nm */
-	float mass_ratio;          /* ... */
-	float sqrt_mass_ratio;     /* we will need this occasionally */
-	float kfactor_m;           /* mass part of the kinematic factor. This is called EC in the TRIM code */
-	float red_E_conv;          /* reduced energy conversion factor. This is called FI in TRIM */
-	float* CosScat;            /* Cosines of scattering angles, for each energy and p */
-	float* SinScat;            /* Sines of scattering angles, for each energy and p */
-	/*float max_red_im_par;*/      /* Maximum reduced impact parameter */
-	/* opposed to corteo, we need to calc this value during simulation only */
+  float screening_length;    /* screening length from ZBL85,p45, eq.2-60, but in [nm] */
+  float inv_screening_length;/* 1/screening length in 1/nm */
+  float mass_ratio;          /* ... */
+  float sqrt_mass_ratio;     /* we will need this occasionally */
+  float kfactor_m;           /* mass part of the kinematic factor. This is called EC in the TRIM code */
+  float red_E_conv;          /* reduced energy conversion factor. This is called FI in TRIM */
+  float* CosScat;            /* Cosines of scattering angles, for each energy and p */
+  float* SinScat;            /* Sines of scattering angles, for each energy and p */
+  /*float max_red_im_par;*/      /* Maximum reduced impact parameter */
+  /* opposed to corteo, we need to calc this value during simulation only */
 };
 
-/*	The following structures hold scattering matrices for each possible projectile and target combination.
-	The ion gets its own matrix, because the ion might be a specific isotope which is not the naturally most abundant.
-	For the other elements, we will assume most abundant isotopes only, because memory is not unlimited.
-	In case we need to care about specific target isotopes, the MAGIC algorithm should be used instead of the ScatBase approach. */
+/* The following structures hold scattering matrices for each possible projectile and target combination.
+   The ion gets its own matrix, because the ion might be a specific isotope which is not the naturally most abundant.
+   For the other elements, we will assume most abundant isotopes only, because memory is not unlimited.
+   In case we need to care about specific target isotopes, the MAGIC algorithm should be used instead of the ScatBase approach. */
 struct scattering_matrix ion_scattering_matrix[MAX_ELEMENT_NO];
 struct scattering_matrix scattering_matrices[MAX_ELEMENT_NO][MAX_ELEMENT_NO]; /* First index: projectile, second: target */
 
 
 /*******************************************************************************/
-/*	The target is a cuboid-shaped box, which consists of (possibly a large number
-	of) of small equal-sized cuboid cells. Several arrays describe the target
-	composition, the distributions of implanted ions, recoils, vacancies and so
-	on. The dimension of the target is defined by the number and size of the
-	small cells in each direction.
-	Furthermore, boundary conditions need to be defined in each target direction.
-	x is the primary incident ion beam direction. (Though the ion beam may hit
-	the target under any angle).
-	Note, that integer coordinates always refer to a cell x, y and z number,
-	while float coordinates always to refer to nm positions in the target.
+/* The target is a cuboid-shaped box, which consists of (possibly a large number
+   of) of small equal-sized cuboid cells. Several arrays describe the target
+   composition, the distributions of implanted ions, recoils, vacancies and so
+   on. The dimension of the target is defined by the number and size of the
+   small cells in each direction.
+   Furthermore, boundary conditions need to be defined in each target direction.
+   x is the primary incident ion beam direction. (Though the ion beam may hit
+   the target under any angle).
+   Note, that integer coordinates always refer to a cell x, y and z number,
+   while float coordinates always to refer to nm positions in the target.
  */
 /*******************************************************************************/
 

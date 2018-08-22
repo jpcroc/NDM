@@ -1,6 +1,6 @@
 /*********************************************************************
 
-    Copyright 2017, Christian Borschel
+    Copyright 2016, Christian Borschel
 
     This file is part of iradina.
 
@@ -49,10 +49,10 @@
 /* Parameters of the ion beam */
 
 int simulation_type;     /* How to do the simulation.
+			    Plan: simulation type can be:
 			    0 = Full Damage Cascade, follow recoils, free flight path statistically distr.
-			    3 = Ions only. Recoils are not followed, No damage profiles stored (--- not TESTED!)
-			    4 = KP quick calculation of damage, mono-elemental formula similar to SRIM (added by J.-P. Crocombette)
-			    5 = KP quick calculation of damage, material averaging, more physical as 4 but different compared to SRIM (added by J.-P. Crocombette) */
+			    3 = Ions only. Recoils are not followed, No damage profiles stored
+			    NOTE: At the moment only 0 is correctly implemented */
 
 int detailed_sputtering; /* Needs to be set to 1, if you want to get better results regarding sputtering.
 			    If set to 0, the program doesn't care about surface binding energy at all
@@ -67,8 +67,7 @@ int flight_length_type;  /* Flight lengths between collisions can be selected
 			    0: poisson distributed flight lengths mit average of interatomic spacing
 			    1: always mean interatomic spacing of current material
 			    2: constant flight length. Is has be be specified in units of nm.
-			    Options 0 and 1 ignore the flight_length_constant parameter.
-			    3: SRIM-like flight path */
+			    Options 0 and 1 ignore the flight_length_constant parameter. */
 float flight_length_constant; /* If constant flight length is selected, then this is it. (in nm) */
 
 int ionZ;                  /* Proton number */
@@ -82,8 +81,8 @@ float ion_vz;              /* but by the flying direction vector of length 1 and
 float min_energy;          /* Minimum energy below which all projectiles are stopped */
 
 int ion_distribution;      /* 0 for random ion entry positions, 1 for centered, 2 for specified position,
-			      3 for random square around position, 4 center of simulation volume */
-float enter_x,enter_y,enter_z;     /* entry point in nm */
+			      3 for random square around position */
+float enter_y,enter_z;     /* entry point in nm */
 float beam_spread;         /* in nm, only relevant for option 3 */
 
 int max_no_ions;           /* Maximum number of ions */
@@ -121,8 +120,9 @@ FILE* recoil_cascades_fp;  /* the file with the recoil cascades will be open all
 			      should be stored. This points to that file */
 int store_range3d;         /* stores the final positions of implanted ions to range3d.ions (similar to the TRIM file) */
 FILE* store_range3d_fp;    /* pointer to range_3d_file */
-FILE* store_range3dV_fp;    /* pointer to file for vacancies */
-FILE* store_range3dI_fp;    /* pointer to file dor interstitials */
+FILE* store_range3dV_fp;    /* pointer to range_3dV_file */
+FILE* store_range3dI_fp;    /* pointer to range_3dI_file */
+
 
 float chu_values[98][4];   /* Values to calculate straggling according to Chu's model; fit data from Yang et al. NIMB61(1991)149. */
 int straggling_model;      /* how to calc straggling */
@@ -133,7 +133,7 @@ int max_annular_coll_volumes;  /* According to W.Eckstein "Computer Simulation i
 				  just 1. Recommended for sputtering is 2. */
 
 int scattering_calculation;    /* 0: corteo database, 1: MAGIC  */
-int transport_type;            /* 0: accurate, 1: Fast (like corteo). For KP: use 1 */
+int transport_type;            /* 0: accurate, 1: Fast (like corteo) */
 int single_ion_sputter_yields; /* if 1, iradina will store sputter yields for single ions (at the moment those are not
 				  seperated by type of sputtered particles */
 int* sputter_yield_histogram;  /* array that stores single ion sputter yield histogram */
@@ -187,4 +187,6 @@ int CalcSurfaceNormal(int old_cell, int new_cell, float* nx, float* ny, float *n
    For rectangular cells the surface normal should consist of integers (1s or 0s),
    but for general geometries it might differ, so we will allow float values */
 
+int prepare_KP_tables2 ();
+/*CROC : some initialization for modified Kinchin-Pease quick calculation of damage*/
 #endif

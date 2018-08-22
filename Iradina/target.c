@@ -1,6 +1,6 @@
 /*********************************************************************
 
-    Copyright 2017, Christian Borschel
+    Copyright 2016, Christian Borschel
 
     This file is part of iradina.
 
@@ -41,13 +41,10 @@ int InitializeMaterials(char* Filename){
   struct scattering_matrix *psm; /* Pointer to a scattering matrix */
 
   /* Init some material arrays etc. */
-  for(i=0;i<MAX_NO_MATERIALS;i++){ /* set some default values for each material: */
+  NumberOfMaterials=0;
+  for(i=0;i<MAX_NO_MATERIALS;i++){
     sprintf(ListOfMaterials[i].Name,"new material %i",i); /* some initial name */
-    for(j=0;j<MAX_EL_PER_MAT;j++){ /* some default values for each element: */
-      ListOfMaterials[i].ElementsReplEnergy[j]=-1.0; /* use -1.0 as dummy value (don't use 0 in case user wants to use 0) */
-    }
   }
-  
 
   /* Read in file with material info */
   result=IniFileReader(Materials_DataBlockReader, Materials_DataReader, Filename);
@@ -55,18 +52,10 @@ int InitializeMaterials(char* Filename){
     return result;
   }
 
-#ifdef DEBUG_MODE
-    printf("DEBUG %s, line %i.\n",__FILE__,__LINE__);
-#endif
-
   /* Fill existing elements with 0 */
   for(i=0;i<MAX_ELEMENT_NO;i++){
     existing_elements[i]=0;
   }
-
-#ifdef DEBUG_MODE
-    printf("DEBUG %s, line %i.\n",__FILE__,__LINE__);
-#endif
 
   /* Loop through materials, for each:
      - normalize elemental concentrations to 1,
@@ -86,9 +75,6 @@ int InitializeMaterials(char* Filename){
       existing_elements[ListOfMaterials[i].ElementsZ[j]]=1;
       number_of_all_target_elements++;
     }
-#ifdef DEBUG_MODE
-    printf("DEBUG %s, line %i.\n",__FILE__,__LINE__);
-#endif
     /* If ion SBE is not given, calculate mean value: */
     if( ListOfMaterials[i].IonSurfEnergy<0){
       ListOfMaterials[i].IonSurfEnergy=0;
@@ -104,9 +90,7 @@ int InitializeMaterials(char* Filename){
       ListOfMaterials[i].IonSurfEnergy=3;
       printf("No ion SBE for material %i defined. Using %f eV\n",i,ListOfMaterials[i].IonSurfEnergy);
     }
-#ifdef DEBUG_MODE
-    printf("DEBUG %s, line %i.\n",__FILE__,__LINE__);
-#endif
+    
     ListOfMaterials[i].MeanZ=0;
     ListOfMaterials[i].MeanM=0;
     for(j=0;j<ListOfMaterials[i].ElementCount;j++){ /* go through elements, normalize concentration, check for hydorgen existence*/
@@ -116,16 +100,8 @@ int InitializeMaterials(char* Filename){
       ListOfMaterials[i].MeanM+=ListOfMaterials[i].ElementsConc[j]*ListOfMaterials[i].ElementsM[j];
       if(ListOfMaterials[i].ElementsZ[j]==1){hydrogen_in_target=1;} /* Hydrogen is really within target! */
       if(ListOfMaterials[i].ElementsZ[j]==ionZ){ionZ_in_target=1;} /* An element like the ion is within target! */
-
-	/* in case replacement threshold is not given, set it to e_lattice as default: */
-      if(ListOfMaterials[i].ElementsReplEnergy[j]==-1.0){
-	ListOfMaterials[i].ElementsReplEnergy[j]=ListOfMaterials[i].ElementsLattEnergy[j];
-        if(print_level>1){printf("No replacement threshold defined for material %i, element %i. Use lattice energy as default: %f eV\n",i,j,ListOfMaterials[i].ElementsReplEnergy[j]);}
-      }
     }
-#ifdef DEBUG_MODE
-    printf("DEBUG %s, line %i.\n",__FILE__,__LINE__);
-#endif
+    
     /* For testing purposes and comparisons for SRIM, we calculate the mean screening length and energy reduction factor (as in ZBL85) */
     ListOfMaterials[i].MeanA= d2f( 0.1f * SCREENCONST / ( pow(ionZ,0.23) + pow(ListOfMaterials[i].MeanZ,0.23) )  );
     ListOfMaterials[i].MeanF= 10.0f * ListOfMaterials[i].MeanA * ListOfMaterials[i].MeanM / ( ionZ * ListOfMaterials[i].MeanZ * (ionM+ListOfMaterials[i].MeanM) * E2 );
@@ -280,7 +256,7 @@ int Materials_DataBlockReader(char* MaterialName){
     return -627;
   }
   
-  /* Make sure, that materialname is not too long, i.e. cut it if it is */
+  /* Make sure, that materialname is not to long, i.e. cut it if it is */
   if(strlen(MaterialName)>=25){MaterialName[24]='\0';}
 
   strcpy(ListOfMaterials[NumberOfMaterials].Name,MaterialName); /* Store Name */
@@ -306,7 +282,8 @@ int Materials_DataReader(char* ParName, char* ParValue){
     return -628;
   }
 
-  /* Compare the parameter name to known parameters and then read in corresponding value */
+  /* Compare the parameter name to known parameters and then
+     read in corresponding value */
 
   if(strcmp(ParName,"ElementCount")==0){ /* Read number of element into the current material */
     sscanf(ParValue,"%i",&(ListOfMaterials[NumberOfMaterials-1].ElementCount));
@@ -337,9 +314,6 @@ int Materials_DataReader(char* ParName, char* ParValue){
   }
   if(strcmp(ParName,"ElementsSurfEnergy")==0){ /* Read list of surface binding energies */
     if(make_float_array(ParValue,MAX_EL_PER_MAT,ListOfMaterials[NumberOfMaterials-1].ElementsSurfEnergy)!=0){return -7;}
-  }
-  if(strcmp(ParName,"ElementsReplEnergy")==0){ /* Read list of replacement threshold energies */
-    if(make_float_array(ParValue,MAX_EL_PER_MAT,ListOfMaterials[NumberOfMaterials-1].ElementsReplEnergy)!=0){return -8;}
   }
   if(strcmp(ParName,"IonSurfEnergy")==0){ /* Read ion surface binding energy */
     sscanf(ParValue,"%f",&(ListOfMaterials[NumberOfMaterials-1].IonSurfEnergy));

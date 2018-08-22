@@ -1,6 +1,6 @@
 /*********************************************************************
 
-    Copyright 2017, Christian Borschel
+    Copyright 2016, Christian Borschel
 
     This file is part of iradina.
 
@@ -52,7 +52,6 @@ unsigned int iazimAngle;      /* Points to next azimutal angle to choose */
 unsigned int iranlist;        /* Points to next entry in the random list */
 unsigned int iranloglist;     /* Points to next entry in the random sqrt logarithmic list */
 
-int stopping_target_index;    /* In case of -s option: target index */
 
 int conv_create_separate_elements; /* if 1 then, separate elements are created for each material, so some elements may appear more than once */
 
@@ -127,11 +126,6 @@ void get_float_one_bit_smaller(float* fltInput,float* fltOutput); /* returns the
 int print_version_info(FILE* fp); /* print some machine-readable info on this version of iradina. */
 
 int print_some_simulation_parameters(FILE* fp,int ion_number); /* print some information on the current simulation to the stream pointed to by fp */
-
-int print_stopping_table(int ionZ, double ionM, int target, double e_min, double e_max, double e_step); /* print stopping table for testing */
-
-int prepare_KP_tables2 ();
-/*CROC : some initialization for modified Kinchin-Pease quick calculation of damage*/
 
 #endif
 

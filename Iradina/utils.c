@@ -1,42 +1,42 @@
 /*********************************************************************
 
-Copyright 2017, Christian Borschel
+    Copyright 2016, Christian Borschel
 
-This file is part of iradina.
+    This file is part of iradina.
 
-iradina is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    iradina is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-iradina is distributed WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-See the GNU General Public License for more details.
+    iradina is distributed WITHOUT ANY WARRANTY; without even the implied
+    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with iradina.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with iradina.  If not, see <http://www.gnu.org/licenses/>.
 
 ***********************************************************************/
- 
- 
- 
+
+
+
 /********************************************************************/
 /* This module contains some utility functions                      */
 /********************************************************************/
 
 /* Error numbers in this file: 4000-4999 */
 
- 
+
 #include "utils.h"
- 
- 
+
+
 int make_double_array(char* values, int count, double* d_array){
   /* Read comma-seprated values from string and put them into
      the double array, which has #count entries. The double array
      must exist already */
   int i=1;
   char* temp;
-	
+  
   temp=(char*)malloc(sizeof(char)*32);
   temp=strtok(values,",");
   sscanf(temp,"%lg",&(d_array[0]));
@@ -46,14 +46,14 @@ int make_double_array(char* values, int count, double* d_array){
   }
   return 0;
 }
- 
+
 int make_float_array(char* values, int count, float* f_array){
   /* Read comma-seprated values from string and put them into
      the float array, which has #count entries. The float array
      must exist already */
   int i=1;
   char* temp;
-	
+  
   temp=(char*)malloc(sizeof(char)*32);
   temp=strtok(values,",");
   sscanf(temp,"%g",&(f_array[0]));
@@ -63,7 +63,7 @@ int make_float_array(char* values, int count, float* f_array){
   }
   return 0;
 }
- 
+
 int make_int_array(char* values, int count, int* i_array){
   /* Read comma-seprated values from string and put them into
      the int array, which has #count entries. The int array
@@ -81,7 +81,7 @@ int make_int_array(char* values, int count, int* i_array){
   }
   return 0;
 }
- 
+
 int handle_cmd_line_options(int argc, char* argv[]){
   /* handles all command line arguments. Returns a value > 0 in case the main program should not perform
      a simultion but something else:
@@ -172,20 +172,6 @@ int handle_cmd_line_options(int argc, char* argv[]){
       print_version_info(stdout);
       return 1; /* tell main function to exit */
     }
-    if(strcmp(argv[i],"-s")==0){ /* option to print stopping table */
-      i++;
-      if(i<argc){
-	if(sscanf(argv[i],"%i",&stopping_target_index)!=1){
-	  printf("Error: cannot read target material for option -s\n");
-	  return -4035;
-	} else { /* Successfully read: */
-	  return 4;
-	}
-      } else {
-	printf("Error: the -s option requires a following integer number!\n");
-	return -4036;
-      }
-    }
     if(strcmp(argv[i],"-conv")==0){ /* option for converting a material based definition to element based */
       i++;
       if((i<argc)&&(strlen(argv[i])<=1023)){
@@ -202,7 +188,7 @@ int handle_cmd_line_options(int argc, char* argv[]){
   }
   return result;
 }
- 
+
 int print_help_text(){
   /* prints the help */
   printf("Usage: iradina [OPTIONS]\n");
@@ -221,8 +207,6 @@ int print_help_text(){
   printf(" -d            print details for memory usage (only useful with -m option) \n");
   printf(" -g ID         generate status file while running \n");
   printf(" -i            print info on this version of iradina \n");
-  printf(" -s NUMBER     print electronic stopping table for ion in material of\n");
-  printf("               index NUMBER. No simulation is done.\n");
   /*  printf(" -conv FILE    Converts material based input files to element based input\n");
       printf("               file. If the input file is combined, then the output file\n");
       printf("               will also be combined and written to FILE. Otherwise, the\n");
@@ -232,26 +216,26 @@ int print_help_text(){
       printf("               each material.\n"); */
   return 0;
 }
- 
+
 int store_results(char* BaseName,int ion_number){
   /* Store the results of the simulation (arrays with distribution of
      implanted ions, defects etc.) */
   /* This is the non-dynamic version of the function for material-based output */
- 
+
   int BaseNameLength;
   char* strTemp;
   char* strTemp2;
- 
+
   int i,j;
- 
+
   FILE* fp;
   FILE* fpinfo=NULL; /* for additioanl information */
- 
+
   BaseNameLength=strlen(BaseName);
   strTemp=(char*)malloc(sizeof(char)*(BaseNameLength+100));
   strTemp2=(char*)malloc(sizeof(char)*(255));
   strncpy(strTemp,BaseName,BaseNameLength+1);
- 
+
   /* Create an additional output file with information on iradina and on the simulation */
   if(store_info_file==1){
     strcat(strTemp,".information");
@@ -266,7 +250,7 @@ int store_results(char* BaseName,int ion_number){
     strTemp[BaseNameLength]='\0';  /* reset strTemporary filename for next storing operation */
   }
   /*  printf("DEBUG %s, l %i\n",__FILE__,__LINE__);fflush(stdout);*/
- 
+
   /* Arrays to be stored:
      - the array with concentration of implanted ions
      - sum of displacements, replacement and so on in each cell
@@ -275,13 +259,13 @@ int store_results(char* BaseName,int ion_number){
      - transmitted ions
      - sputtered atoms in each direction
   */
- 
+
   /* Concentration of implanted ions: */
   strcat(strTemp,".ions.total");
   if(print_level>=2){printf("Storing implanted ions to:      %s\n",strTemp);}
   WriteIntArrayToFile(strTemp,TargetImplantedIons,cell_count,TargetCompositionFileType);
   strTemp[BaseNameLength]='\0';  /* reset strTemporary filename for next storing operation */
- 
+
   if(do_not_store_damage==0){
     /* Part of ions that replaced identical target atoms */
     strcat(strTemp,".ions.replacements");
@@ -289,9 +273,9 @@ int store_results(char* BaseName,int ion_number){
     WriteIntArrayToFile(strTemp,TargetReplacingIons,cell_count,TargetCompositionFileType);
     strTemp[BaseNameLength]='\0';  /* reset strTemporary filename for next storing operation */
   }
- 
+    
   sum_up_material_arrays(); /* sum up the individual element-dependent arrays */
- 
+    
   if(do_not_store_damage==0){
     /* Sum of vacancies: */
     strcat(strTemp,".vac.sum");
@@ -314,7 +298,7 @@ int store_results(char* BaseName,int ion_number){
     WriteIntArrayToFile(strTemp,TargetTotalReplacements,cell_count,TargetCompositionFileType);
     strTemp[BaseNameLength]='\0';
   }
- 
+
   /* Deposited energy */
   if(store_energy_deposit==1){
     strcat(strTemp,".energy.phonons");
@@ -326,7 +310,7 @@ int store_results(char* BaseName,int ion_number){
     WriteDoubleArrayToFile(strTemp,TargetEnergyElectrons,cell_count,TargetCompositionFileType);
     strTemp[BaseNameLength]='\0';
   }
- 
+
   /* store single ion sputter yields */
   if(single_ion_sputter_yields==1){ 
     strcat(strTemp,".single_ion_sputter_yields");
@@ -342,8 +326,8 @@ int store_results(char* BaseName,int ion_number){
     fclose(fp);
     strTemp[BaseNameLength]='\0';
   }
- 
- 
+
+
   /* Sum of atoms leaving the target */
   if(detailed_sputtering==1){
     /* Particles leaving the sample (sputtered or implanted deeper): */
@@ -355,12 +339,12 @@ int store_results(char* BaseName,int ion_number){
 	    , TotalSputterCounter[4], TotalSputterCounter[5]);
     WriteStringToFile(strTemp,strTemp2);
     strTemp[BaseNameLength]='\0';
- 
+
     strcat(strTemp,".leaving.sum");
     if(print_level>=2){printf("Storing sum of leaving atoms (cells):   %s\n",strTemp);}
     WriteIntArrayToFile(strTemp,TargetTotalSputtered,cell_count,TargetCompositionFileType);
     strTemp[BaseNameLength]='\0';
- 
+
     /* Ions leaving the target */
     strcat(strTemp,".leaving_directions.ions");
     if(print_level>=2){printf(" Storing sum of leaving ions to:        %s\n",strTemp);}
@@ -371,14 +355,14 @@ int store_results(char* BaseName,int ion_number){
     WriteStringToFile(strTemp,strTemp2);
     strTemp[BaseNameLength]='\0';
   }
- 
+
   /* Sum of ints and vacs and so on for each element in each material */
   for(i=0;i<NumberOfMaterials;i++){
     if(ListOfMaterials[i].Is_Vacuum==0){ /* do not store stuff for vacuum */
       for(j=0;j<ListOfMaterials[i].ElementCount;j++){ /* Go through elements, store arrays for each */
- 
+	  
 	if(print_level>=2){printf("Storing for material %i, elem %i:\n",i,j);}
- 
+	  
 	if(do_not_store_damage==0){
 	  sprintf(strTemp+BaseNameLength,".int.z%i.m%.3f.mat%i.elem%i",
 		  ListOfMaterials[i].ElementsZ[j],
@@ -387,7 +371,7 @@ int store_results(char* BaseName,int ion_number){
 	  if(print_level>=2){printf(" Recoil interstitials to %s\n",strTemp);}
 	  WriteIntArrayToFile(strTemp,ListOfMaterials[i].TargetImplantedRecoilsInt[j],cell_count,TargetCompositionFileType);
 	  strTemp[BaseNameLength]='\0';
- 
+	  
 	  sprintf(strTemp+BaseNameLength,".repl.z%i.m%.3f.mat%i.elem%i",
 		  ListOfMaterials[i].ElementsZ[j],
 		  ListOfMaterials[i].ElementsM[j],
@@ -395,7 +379,7 @@ int store_results(char* BaseName,int ion_number){
 	  if(print_level>=2){printf(" Recoil replacements to %s\n",strTemp);}
 	  WriteIntArrayToFile(strTemp,ListOfMaterials[i].TargetImplantedRecoilsRepl[j],cell_count,TargetCompositionFileType);
 	  strTemp[BaseNameLength]='\0';
- 
+	  
 	  sprintf(strTemp+BaseNameLength,".vac.z%i.m%.3f.mat%i.elem%i",
 		  ListOfMaterials[i].ElementsZ[j],
 		  ListOfMaterials[i].ElementsM[j],
@@ -403,7 +387,7 @@ int store_results(char* BaseName,int ion_number){
 	  if(print_level>=2){printf(" Vacancies to     %s\n",strTemp);}
 	  WriteIntArrayToFile(strTemp,ListOfMaterials[i].TargetElementalVacancies[j],cell_count,TargetCompositionFileType);
 	  strTemp[BaseNameLength]='\0';
- 
+	  
 	  sprintf(strTemp+BaseNameLength,".disp.z%i.m%.3f.mat%i.elem%i",
 		  ListOfMaterials[i].ElementsZ[j],
 		  ListOfMaterials[i].ElementsM[j],
@@ -412,7 +396,7 @@ int store_results(char* BaseName,int ion_number){
 	  WriteIntArrayToFile(strTemp,ListOfMaterials[i].TargetElementalDisp[j],cell_count,TargetCompositionFileType);
 	  strTemp[BaseNameLength]='\0';
 	}
- 
+
 	if(detailed_sputtering==1){
 	  /* Particles leaving the sample (sputtered or implanted deeper): */
 	  sprintf(strTemp+BaseNameLength,".leaving_directions.z%i.m%.3f.mat%i.elem%i",
@@ -426,7 +410,7 @@ int store_results(char* BaseName,int ion_number){
 		  , ListOfMaterials[i].SputterCounter[6*j+4], ListOfMaterials[i].SputterCounter[6*j+5]);
 	  WriteStringToFile(strTemp,strTemp2);
 	  strTemp[BaseNameLength]='\0';
- 
+
 	  sprintf(strTemp+BaseNameLength,".leaving.z%i.m%.3f.mat%i.elem%i",
 		  ListOfMaterials[i].ElementsZ[j],
 		  ListOfMaterials[i].ElementsM[j],
@@ -438,7 +422,7 @@ int store_results(char* BaseName,int ion_number){
       }
     }
   }
- 
+
   if(store_transmitted_ions==1){
     strcat(strTemp,".transmitted.ions");
     if(print_level>=2){printf("Storing transmitted ions to: %s\n",strTemp);}
@@ -460,34 +444,34 @@ int store_results(char* BaseName,int ion_number){
       }
     }
   }
- 
+
   free(strTemp);
   if(store_info_file==1){ /* close file with additional info */
     if(fpinfo!=NULL){fclose(fpinfo);}
   }
- 
+  
   return 0;
 }
- 
- 
+
+
 int InitConfiguration(char* ConfigFileName){
   /* Read configuration from file, initialize variables etc. */
- 
+
   int result;
   float length;
   float random;
   int i;
   long unsigned int lui_temp;
   struct transmitted_ion temp;
- 
+    
   /* Some default values */
   straggling_model=0;
   simulation_type=0;
- 
+
   /* if the config file is a combined input file (including target, materials, and composition),
      then it must be split up into the separate files first: */
   CheckSplitInputFile(ConfigFileName);
- 
+  
   /* Read general config: */
   result=IniFileReader(ConfigFileDataBlockReader, ConfigFileDataReader, ConfigFileName);
   if(result!=0){
@@ -495,31 +479,31 @@ int InitConfiguration(char* ConfigFileName){
     return result;
   }
   if(print_level>=0){printf("Configuration read from %s.\n",ConfigFileName);}
- 
+
   if(mem_usage_only==0){ /* Do real stuff, not just estimating memory usage */
     /* Load the corteo scattering matrix */
     result=loadMatrix();
     if(result!=1){printf("Error loading corteo scattering matrix.\n");return -4014; }
     if(print_level>=0){printf("Corteo scattering matrix loaded.\n");}
- 
+    
     /* call corteo's list generator */
     computelists();
     mySqrtTableFill();
     if(print_level>=0){printf("Lists of random numbers generated.\n");}
- 
+    
     /* Normalize ion velocity unit vector */
     length=1.0f/sqrt(ion_vx*ion_vx + ion_vy*ion_vy + ion_vz*ion_vz);
     ion_vx*=length;
     ion_vy*=length;
     ion_vz*=length;
- 
+    
     /* Make sure that everything is correctly initialzed: */
     if(OutputFileBaseName==NULL){
       printf("No output file basename specified. Using: default_out/out.\n");
       OutputFileBaseName=(char*)malloc(sizeof(char)*18);
       strcpy(OutputFileBaseName,"default_out/out");
     }
- 
+
     /* Init array for storing transmitted ions */
     if(store_transmitted_ions==1){
       transmission_pointer=0;
@@ -529,19 +513,19 @@ int InitConfiguration(char* ConfigFileName){
 	return -10;
       }
     }
- 
+    
     /* Read Chu's straggling data */
     result=load_Chu_straggling_values();
     if(result!=0){printf("Error reading Chu's straggling values!\n");return result;}
     if(print_level>=0){printf("Chu's straggling data read.\n");}
- 
+    
     /* Read invserse error function list and randomize it*/
     result=LoadInverseErf();
     if(result!=0){printf("Error reading invser Erf() list!\n");return result;}
     if(print_level>=0){printf("Invsere Erf list read.\n");}
     randomizelist(inverse_erf_list, MAXERFLIST);
     if(print_level>=0){printf("Invsere Erf list randomized.\n");}
- 
+
   } else { /* Esimate memory usage: */
     lui_temp=(DIME*DIMS*sizeof(float));
     mem_usage+=lui_temp;
@@ -562,7 +546,7 @@ int InitConfiguration(char* ConfigFileName){
     mem_usage+=lui_temp;
     if(mem_usage_details==1){printf("MEMORY ERF list:                    %li bytes\n",lui_temp);}
   }
- 
+
   /* Read and init materials or element data: */
   result=InitializeMaterials(MaterialsFileName);
   if(result!=0){printf("Error reading materials file %s.\n",MaterialsFileName);return result;  }
@@ -570,12 +554,12 @@ int InitConfiguration(char* ConfigFileName){
   for(i=0;i<6;i++){ /* Empty ion leaving counter */
     leaving_ions[i]=0;
   }
- 
+
   /* Read and init target structure */
   result=InitializeTargetStructure(TargetStructureFileName);
   if(result!=0){printf("Error reading target structure file %s.\n",TargetStructureFileName);return result;  }
   if(print_level>=0){printf("Target structure read from %s.\n",TargetStructureFileName);}
- 
+
 #ifdef INCLUDE_SPECIAL_GEOMETRY
   if(special_geometry==1){
     result=InitSpecialGeometry();
@@ -585,14 +569,14 @@ int InitConfiguration(char* ConfigFileName){
     }
   }
 #endif
- 
+
   /* Init some random values (random starting point for lists of random numbers */
   random=d2f(randomx());
   iazimAngle=(unsigned int)(random*MAXAZILIST);
   iranlist=(unsigned int)(random*MAXRANLIST);
   iranloglist=(unsigned int)(random*MAXLOGLIST);
   erflist_pointer=(unsigned int)(random*MAXLOGLIST);
- 
+
   /* init array for ion single ion sputter yield histogram */
   if(single_ion_sputter_yields==1){
     sputter_yield_histogram=malloc((MAX_SPUTTERED+1)*sizeof(int));
@@ -604,22 +588,22 @@ int InitConfiguration(char* ConfigFileName){
       sputter_yield_histogram[i]=0;
     }
   }
- 
+
   calculate_normalization_factor(max_no_ions);
   if(print_level>=0){printf("Normalization factor:\t%lg\n",unit_conversion_factor);}
- 
+
   return 0;
 }
- 
+
 int PrepareStoppingTables(){
   /* Read stopping data from file and fill arrays etc. */
   /* material version */
   int i,j,k,l;
   int result;
   char StoppingFileName[1000];
- 
+
   float fltTemp[DIMD+1];
- 
+
   /* Go through materials and create stopping tables for all existing elements */
   for(i=0;i<NumberOfMaterials;i++){
     ListOfMaterials[i].StoppingZE=(float**)malloc(sizeof(float*)*MAX_ELEMENT_NO); /* pointers to stopping arrays */
@@ -630,19 +614,19 @@ int PrepareStoppingTables(){
 	/* Allocate memory for stopping table */
 	ListOfMaterials[i].StoppingZE[j]=(float*)calloc(MAX_STOPPING_ENTRIES,sizeof(float));
 	if(ListOfMaterials[i].StoppingZE[j]==NULL){return -1;}
- 
+	
 	/* Ok, now we can load the stopping table from the file */
 	/* The following code to do this is adapted from the corteo code */
 	sprintf(StoppingFileName, "data/%u.asp",j); /* Filename where stopping data are tabulated */
- 
+	
 	/* For all elements occuring in the current material, we need to load the stopping data and then apply a rule for stopping in compounds */
 	for(k=0;k<ListOfMaterials[i].ElementCount;k++){ /* Go through elements of target material */
- 
+	  
 	  result=FloatBlockReader(StoppingFileName,(DIMD+1)*(ListOfMaterials[i].ElementsZ[k]-1),DIMD+1,fltTemp);
 	  if(result!=0){ /* Could not read float data block from file */
 	    return -2;
 	  }
- 
+
 	  if(fltTemp[DIMD]!=ListOfMaterials[i].ElementsZ[k]) { /* each record must end with the element number as control data */
 	    return -3; 
 	  }
@@ -663,7 +647,7 @@ int PrepareStoppingTables(){
 	       spp[k]*=f*(compoundCorr-1.0f)+1.0f;
 	       }
 	    */
- 
+
 	    /* Unit here is eV/nm */
 	  } /* End of loop through index stopping values */
 	} /* End of loop through elements of target material */
@@ -683,10 +667,10 @@ int PrepareStragglingTables(int model){
       2: Chu correction        PRA  13 (1976) 2057
       3: Chu + Yang correction NIMB 61 (1991) 149 */
   /* The function load_Chu_straggling_values() must have been called before */
- 
+
   int i,Z,k,l;        /* projectile's Z */
   unsigned long ii;
- 
+
   double straggling;
   double stragg_element;
   double stopping;
@@ -699,42 +683,42 @@ int PrepareStragglingTables(int model){
   double Chu_factor;  /* Chu's correction factor for the Bohr straggling */
   double Yang,epsilon,Gamma;
   double C1,C2,C3,C4,B1,B2,B3,B4;
- 
+
   if(print_level>1)printf("Straggling model %i\n",model);
- 
+
   /* Go through materials and create straggling tables for all existing elements */
   for(i=0;i<NumberOfMaterials;i++){
- 
+
     ListOfMaterials[i].StragglingZE=(float**)malloc(sizeof(float*)*MAX_ELEMENT_NO); /* pointers to straggling arrays */
     if(ListOfMaterials[i].StragglingZE==NULL){return -4016;} /* Cannot allocate memory */
- 
+
     for(Z=0;Z<MAX_ELEMENT_NO;Z++){ /* Loop through all possible projectiles */
       if(existing_elements[Z]==1){ /* ok, element might occur as projectile, calculate */
- 
+
 	/* Allocate memory for straggling table of projectile j in material i */
 	ListOfMaterials[i].StragglingZE[Z]=(float*)calloc(MAX_STOPPING_ENTRIES,sizeof(float));
 	if(ListOfMaterials[i].StragglingZE[Z]==NULL){return -4017;}
- 
+
 	mass=MostAbundantIsotope[Z];
- 
+
 	/* Calculation of straggling (similar to corteo code): */
 	for(k=0;k<DIMD;k++){ /* go through table that has to be filled */
 	  straggling=0;
- 
+	  
 	  for(l=0;l<ListOfMaterials[i].ElementCount;l++){ /* All elements of current target material */
- 
+
 	    target_Z=ListOfMaterials[i].ElementsZ[l];
 	    stopping=(ListOfMaterials[i].StoppingZE[Z])[k];
 	    energy=Dval(k); /* energy corresponding to index k */
- 
+
 	    /* the effective charge state is obtained from comparing stopping of the ion and the hydrogen:
 	       chargestateqaured = stopping(H)/stopping(ion) Z_ion^2 for stopping at same speed */
 	    ii = Dindex(d2f(energy/mass)); /* index of the velocity which is proton energy of same velocity */
 	    chargestate2 = stopping/( ((ListOfMaterials[i].StoppingZE[1])[ii]) * Z * Z);
- 
+	    
 	    /* Start by calculating squared Bohr straggling (all other models need this anyway) */
 	    OmegaBohr2=4.0 * PI * Z * Z * target_Z *  E2 * E2 * ListOfMaterials[i].Density*1e-24  /* Must be in at/A^3 CHECK */;
- 
+	    
 	    /* Calculate the Chu correction factor. The formula needs energy[MeV]/mass: */
 	    MEV_energy_amu = energy*1e-6/mass;
 	    if(target_Z>1){
@@ -745,8 +729,8 @@ int PrepareStragglingTables(int model){
 	      /* Chu values undefined for target_Z==1,  because the chu table has no data on hydrogen --> use Bohr.*/
 	      Chu_factor=1.0;
 	    }
- 
- 
+
+
 	    /* To calculate Yang's extra straggling contribution caused by charge state fluctuations,
 	       we need his Gamma and his epsilon (eq.6-8 from the paper): */
 	    /* For hydrogen we need the B and for other projectile the C constants: */
@@ -760,7 +744,7 @@ int PrepareStragglingTables(int model){
 	      Gamma = C3 * (1.0- exp(-C4 * epsilon));
 	      Yang  = (  pow(Z,1.333333333333)/pow(target_Z,0.33333333333) ) *  C1 * Gamma / ( pow((epsilon-C2),2.0) + Gamma*Gamma  );
 	    }
- 
+
 	    /* Now we have all ingredients for any of the straggling models. We could have saved some
 	       calculations by checking the model first, but well... we'll probably use Yang's model in most cases */
 	    switch(model) {
@@ -779,23 +763,23 @@ int PrepareStragglingTables(int model){
 	    default:
 	      stragg_element=0;
 	    }
- 
+
 	    /* Now we know the straggling for each target element in the material we can add them up using Bragg's rule of additivity */
 	    straggling += stragg_element * ListOfMaterials[i].ElementsConc[l];
- 
+
 	  } /* end of loop through elements in current target material, l */
- 
+
 	  /* Store the straggling in its table: */
 	  (ListOfMaterials[i].StragglingZE[Z])[k] = sqrtdf(straggling)*sqrtdf(2.0);
- 
+
 	} /* end of loop through entries in straggling table, k */
       } /* end the check if element might occur as projectile */
     } /* end of possible projectiles loop */
   } /* end of target material loop */
- 
+  
   return 0;
 }
- 
+
 int load_Chu_straggling_values(){
   /* This function is adapted from corteo */
   /* returns 0 on success */
@@ -803,7 +787,7 @@ int load_Chu_straggling_values(){
   unsigned int k, l, Z;
   char temp[1000];
   FILE * fp;
- 
+
   fp = fopen("data/chu.dat", "r");
   if(fp==NULL) {
     return -1;
@@ -822,24 +806,24 @@ int load_Chu_straggling_values(){
   fclose(fp);
   return 0;
 }
- 
+
 int sum_up_material_arrays(){
   /* Interstitials and so on are stored for each element from each material
      separately, but may also be interesting in sum. So this function does
      all the summing up. */
   int k;
   int i,j;
- 
+
   /* Reset sum arrays: */
   fill_zero(TargetTotalVacancies,cell_count);
   fill_zero(TargetTotalDisplacements,cell_count);
   fill_zero(TargetTotalInterstitials,cell_count);
   fill_zero(TargetTotalReplacements,cell_count);
- 
+
   if(detailed_sputtering==1){
     /* Arrays of leaving atoms */
     for(k=0;k<6;k++){TotalSputterCounter[k]=0;} /* Reset sum */
- 
+
     fill_zero(TargetTotalSputtered,cell_count);
   }
  
@@ -852,7 +836,7 @@ int sum_up_material_arrays(){
 	add_int_array(TargetTotalInterstitials, (ListOfMaterials[i].TargetImplantedRecoilsInt)[j] ,cell_count);
 	if(detailed_sputtering==1){
 	  add_int_array(TargetTotalSputtered,     (ListOfMaterials[i].TargetSputteredAtoms)[j]      ,cell_count);
- 
+	  
 	  for(k=0;k<6;k++){ /* Loop through all 6 directions */
 	    TotalSputterCounter[k]+=ListOfMaterials[i].SputterCounter[(6*j)+k];
 	  }
@@ -862,7 +846,7 @@ int sum_up_material_arrays(){
   }
   return 0;
 }
- 
+
 int fill_zero(int* array, int count){
   /* Fill an arrays with zeros */
   int i;
@@ -871,8 +855,8 @@ int fill_zero(int* array, int count){
   }
   return 0;
 }
- 
- 
+
+
 void add_int_array(int* dest, int* source, int count){
   /* adds array source to array dest, both arrays must have count entries*/
   int i;
@@ -880,7 +864,7 @@ void add_int_array(int* dest, int* source, int count){
     dest[i]+=source[i];
   }
 }
- 
+
 int count_existing_elements(int* elementarray){
   /* returns the number of ones in the provided array */
   int result=0;
@@ -890,7 +874,7 @@ int count_existing_elements(int* elementarray){
   }
   return result;
 }
- 
+
 int calculate_normalization_factor(int num_of_ions){
   /* for converting units to 1/cm^3 per 1/cm^2 */
   if(normalize_output==1){
@@ -901,7 +885,7 @@ int calculate_normalization_factor(int num_of_ions){
   }
   return 0;
 }
- 
+
 int write_status_file(char* status_text, int ion_number){
   /* create a file that hols status information on iradina. Can be used to monitor iradinas status from another program */
   FILE* fpointer;
@@ -917,23 +901,23 @@ int write_status_file(char* status_text, int ion_number){
     return 0;
   }
 }
- 
+
 double MAGIC(double B, double epsilon){
   /* B: reduced impact par
      epsilon: reduced center of mass energy
      returns cos(theta/2) of the scattering event */
- 
+  
   double cost2;  /* cos(theta/2)*/
   double RoC,Delta,R,RR,A,G,alpha,beta,gamma,V,V1,FR,FR1,Q;
   double SQE;
   double C[6];
- 
+  
   C[1]=0.99229;  /* TRIM 85:  */
   C[2]=0.011615;
   C[3]=0.0071222;
   C[4]=14.813;
   C[5]=9.3066;
- 
+  
   /* Initial guess for R: */
   R=B;
   RR=-2.7*log(epsilon*B);
@@ -948,7 +932,7 @@ double MAGIC(double B, double epsilon){
   do{
     /* Calculate potential and its derivative */
     V=ZBL_and_deri(R,&V1);
- 
+    
     /* Excerpt from the TRIM95 code: */
     /*    EX1=0.;
 	  if (R<7){ EX1=.18175*exp(-3.1998*R); }
@@ -957,37 +941,37 @@ double MAGIC(double B, double epsilon){
 	  EX4=.028171*exp(-.20162*R);
 	  V=(EX1+EX2+EX3+EX4)/R;
 	  V1=-(V+3.1998*EX1+.94229*EX2+.4029*EX3+.20162*EX4)/R;*/
- 
+
     FR  = B * B / R + V*R/epsilon - R;
     FR1 = - B * B / (R * R) + (V+V1*R)/epsilon - 1.0;
     Q   = FR/FR1;
     R   = R-Q;
   } while(fabs(Q/R)>0.001);
- 
+  
   RoC = -2.0 * (epsilon-V)/V1;
   SQE = sqrt(epsilon);
- 
+    
   alpha = 1+ C[1]/SQE;
   beta  = (C[2]+SQE) / (C[3]+SQE);           /* TRIM85: CC */
   gamma = (C[4]+epsilon)/(C[5]+epsilon);
   A     = 2*alpha*epsilon*pow(B,beta);
   G     = gamma / ( sqrt((1.0+A*A))-A  );    /* TRIM85: 1/FF */
   Delta = A * (R-B)/(1+G);
- 
+
   /* TRIM85: */
   /*  CC = (0.011615+SQE) / (0.0071222+SQE);
       AA = 2.0 * epsilon * (1.0+ (0.99229/SQE)) * pow(B,CC);
       FF = (sqrt(AA*AA+1.0)-AA) * ( (9.3066+epsilon)/(14.813+epsilon) );
       Delta = (R-B)*AA*FF/(FF+1.0);*/
- 
+
   cost2=(B+RoC+Delta)/(R+RoC);
   return cost2;
 }
- 
+
 double ZBL_and_deri(double R, double* Vprime){
   /* return ZBL potential, and via the pointer Vprime its derivative */
   /* Values are taken from ZBL85 */
- 
+
   double EX1,EX2,EX3,EX4,V;
   /* corteo:    return 0.1818*exp(-3.*x)+0.5099*exp(-0.9423*x)+0.2802*exp(-0.4028*x)+0.02817*exp(-0.2016*x); */
   /* EX1=0.1818   * exp( -3.0  * R);
@@ -997,7 +981,7 @@ double ZBL_and_deri(double R, double* Vprime){
      V=(EX1+EX2+EX3+EX4)/R;
      *Vprime = -(V+3.0*EX1+0.9423*EX2 + 0.4028*EX3 + 0.2016*EX4)/R;
      return V;*/
- 
+  
   /* TRIM85: */
   EX1=0.18175  * exp( -3.1998  * R);
   /*  if(R>=7){EX1=0.0;}*/ /* According to TRIM95 */
@@ -1008,8 +992,8 @@ double ZBL_and_deri(double R, double* Vprime){
   *Vprime = -(V+3.1998*EX1+0.94229*EX2 + 0.4029*EX3 + 0.20162*EX4)/R;
   return V;
 }
- 
- 
+
+
 void CalculateRelativeTargetAtomPosition(float vx,float vy, float vz,float *px, float *py, float *pz, unsigned int iazimAngle){
   /* This calculates the direction in which the target nucleus is found.
      v is the projectile velocity vector, the IP vector is returned in p components */
@@ -1017,10 +1001,10 @@ void CalculateRelativeTargetAtomPosition(float vx,float vy, float vz,float *px, 
      fixed scattering angle of 90 degrees and reverses the resulting vector. Adding the 
      result multiplied with impact_par to the current projectile position leads to
      the target nucleus position. */
- 
+  
   float k, kinv;
   float k2 = 1.0f-vz*vz;
- 
+  
   /* random azimutal rotation angle components */
   float cosomega = cosAzimAngle[iazimAngle];
   float sinomega = sinAzimAngle[iazimAngle];
@@ -1033,7 +1017,7 @@ void CalculateRelativeTargetAtomPosition(float vx,float vy, float vz,float *px, 
     *px = sinomega;
     return;
   } 
- 
+  
   /* usual case */
 #ifndef SAFE_SQR_ROTATION
   kinv = myInvSqrt(k2);  /* 1/sqrt() (approximate) */
@@ -1043,11 +1027,11 @@ void CalculateRelativeTargetAtomPosition(float vx,float vy, float vz,float *px, 
   k  = sqrtdf(k2);   /*  ...using a sqrt() here makes the program 25% slower! */
   kinv = 1.0f/k; 
 #endif
- 
+  
   *px = -kinv*(vx*vz*cosomega+vy*sinomega);
   *py = -kinv*(vy*vz*cosomega-vx*sinomega);
   *pz =  k*cosomega;
- 
+  
 #ifdef SAFE_ROTATION /* makes iradina slower, but safer */
   if(*px>1){*px=1};
   if(*px<-1){*px=-1};
@@ -1057,7 +1041,7 @@ void CalculateRelativeTargetAtomPosition(float vx,float vy, float vz,float *px, 
   if(*pz<-1){*pz=-1};
 #endif
 }
- 
+
 float signf(float f){
   /* return signum(f) */
   if(f<0.0){
@@ -1074,13 +1058,13 @@ double signd(double d){
     return +1.0;
   }
 }
- 
- 
+
+
 int MaterialToElementConverter(char* OutputFile){
   /* reads in the "standard" config file for material-based target definition and creates files for element based target definition.
      This function only works in the non-dynamic compilation, because this way it is easier to write, since the standard read-procedures
      can be used. */
- 
+  
   int i,j,k;
   int x,y,z;                 /* integer cell indices in each direction */
   struct material* cell_mat; /* pointer to material of current cell */
@@ -1088,13 +1072,13 @@ int MaterialToElementConverter(char* OutputFile){
   FILE* comp_fp;             /* points to new composition file */
   char strTemp[MAX_FILENAME_LENGTH]; /* for temporary filenames */
   int result;
- 
+
   float meanDisp; /* mean energies are calculated and used for the ion... its simple and may not be correct, */
   float meanLatt; /* but we need some values. Can be changed later by the user */
   float meanSurf;
   float meanMass;
   int ElemCount,ElemCount2;
- 
+
   float fltTemp;          /* for temporary floats */
   float* compVector;      /* for writing the composition file. Has as many entries as different elements occur */
   int* MatElemVectorP;    /* for each material and element, we will store here the index of the composition
@@ -1102,22 +1086,22 @@ int MaterialToElementConverter(char* OutputFile){
 			     the composition file. It is not part of the material structure, because it is not
 			     used for normal operation of iradina */
   char strTemp2[1024];
- 
+
   meanDisp=.0f;
   meanLatt=.0f;
   meanSurf=.0f;
   meanMass=.0f;
   ElemCount=0;
   ElemCount2=0;
- 
+
   printf("\nAttempting to convert material based target definition to element based target composition... \n\n");
- 
+
   MatElemVectorP=(int*)malloc(MAX_NO_MATERIALS*MAX_EL_PER_MAT*sizeof(int));
   if(MatElemVectorP==NULL){
     printf("Error: insufficient memory!\n");
     return -501;
   }
- 
+  
   if(single_input_file==1){ /* ok, create also a single output file. So we need a temporary element file to write to, and a temporary composition file */
     strcpy(ElementsFileName,"temp_elementfile.iradina");
     strcpy(TargetCompositionFileName,"temp_compfile.iradina");
@@ -1131,7 +1115,7 @@ int MaterialToElementConverter(char* OutputFile){
   }
   elem_fp=fopen(ElementsFileName,"w");
   if(elem_fp==NULL){printf("Error. Cannot open file %s for writing.\n",ElementsFileName);return -4030;}
- 
+  
   /* Create element file */
   if(conv_create_separate_elements==1){ /* create separate elements */
     if(print_level>-2){printf("Parsing elements (create separate elements for each material) ...\n");}
@@ -1158,7 +1142,7 @@ int MaterialToElementConverter(char* OutputFile){
     meanLatt /= (float)ElemCount;
     meanSurf /= (float)ElemCount;
     if(print_level>-2){printf("Finished parsing elements.\n");}
- 
+
   } else {  /* Each element to appear only once */
     if(print_level>-2){printf("Parsing elements (list each elements not more than once) ...\n");}
     /* first: count element to put into file: */
@@ -1215,26 +1199,26 @@ int MaterialToElementConverter(char* OutputFile){
     /* For now, the ion's displacement, lattice and surface energy are simply determined by the last element that appeard. 
        The values should anyway better be set by the user later! */
   }
- 
+  
   fprintf(elem_fp,"[ion]\n");
   fprintf(elem_fp,"DispEnergy=%g\n",meanDisp);
   fprintf(elem_fp,"LattEnergy=%g\n",meanLatt);
   fprintf(elem_fp,"SurfEnergy=%g\n",meanSurf);
- 
+
   fclose(elem_fp);
- 
+
   if(print_level>-2){printf("New element file has been created.\n");}
   /* ok, element file has been written, new create composition file */
- 
+
   compVector=(float*)malloc((ElemCount+1)*sizeof(float));
   if(compVector==NULL){
     printf("Error: insufficient memory!\n");
     return -502;
   }
- 
+
   comp_fp=fopen(TargetCompositionFileName,"w");
   if(comp_fp==NULL){printf("Error. Cannot open file %s for writing.\n",TargetCompositionFileName);return -4031;}
- 
+  
   if(print_level>-2){printf("Creating new composition file %s ...\n",TargetCompositionFileName);}
   for(i=0;i<cell_count;i++){ /* Cycle through all cells and write entries to file */
     GetTargetXYZ(i, &x, &y, &z);                          /* Get coords of cell */
@@ -1259,7 +1243,7 @@ int MaterialToElementConverter(char* OutputFile){
   }
   fclose(comp_fp);
   if(print_level>-2){printf("New composition file %s has been created.\n",TargetCompositionFileName);}
- 
+
   if(single_input_file==1){ /* ok, create a single output file */
     if(print_level>-2){printf("Combining input files to create single project file %s... \n",ConversionFileName);}
     sprintf(strTemp2,"ElementsFileName=%s\n\n#<<<BEGIN STRUCTUREFILE",ElementsFileName);
@@ -1279,12 +1263,12 @@ int MaterialToElementConverter(char* OutputFile){
     }
     if(print_level>-2){printf("Combined input files %s has been created.\n",ConversionFileName);}
   }
- 
+  
   if(print_level>-2){printf("\nMaterial based input file successfully converted to element based input file. \n\n");}
- 
+
   return 0;
 }
- 
+
 void get_float_one_bit_smaller(float* fltInput,float* fltOutput){
   /* returns the largest float that is smaller than the fltInput */
   /* the following code presumes a IEEE754-conform bit-representation of floats */
@@ -1292,7 +1276,7 @@ void get_float_one_bit_smaller(float* fltInput,float* fltOutput){
   int temp; temp=(*((int*)(fltInput)))-1;
   (*fltOutput)=*((float*)(&(temp)));
 }
- 
+
 int print_version_info(FILE* fp){
   /* print some machine-readable info on this version of iradina to the stream pointed to by fp */
   char sTemp[254];  /* temporary string */
@@ -1321,30 +1305,30 @@ int print_version_info(FILE* fp){
 #ifdef INDEX_BOUND_CHECKING
   strcpy(sTemp+pos,"INDEX_BOUND_CHECKING,"); pos=pos+21;
 #endif
- 
-  INDEX_BOUND_CHECKING
-    sTemp[pos]='\0';
+
+INDEX_BOUND_CHECKING
+  sTemp[pos]='\0';
   fprintf(fp,"compiled_options=%s\n",sTemp);
 #ifdef PROJ_HANGUP_SAFETY
   fprintf(fp,"proj_hangup_safety=%i\n",PROJ_HANGUP_SAFETY);
 #endif
   fprintf(fp,"\n[Lookup_tables]\n");
- 
-  /* matrix index calculation parameters */
-  /*  fprintf(fp,"MINE=%g\n",MINE);
-      fprintf(fp,"MAXE=%g\n",MAXE);
-      fprintf(fp,"DIME=%i\n",DIME);
-      fprintf(fp,"BIASE=%i\n",BIASE);
-      fprintf(fp,"SHIFTE=%i\n",SHIFTE);*/
+  
+/* matrix index calculation parameters */
+/*  fprintf(fp,"MINE=%g\n",MINE);
+    fprintf(fp,"MAXE=%g\n",MAXE);
+    fprintf(fp,"DIME=%i\n",DIME);
+    fprintf(fp,"BIASE=%i\n",BIASE);
+    fprintf(fp,"SHIFTE=%i\n",SHIFTE);*/
   fprintf(fp,"energy_mantissa_bits=%i\n",23-SHIFTE);
- 
+
   /*  fprintf(fp,"MINS=%g\n",MINS);
       fprintf(fp,"MAXS=%g\n",MAXS);
       fprintf(fp,"DIMS=%i\n",DIMS);
       fprintf(fp,"BIASS=%i\n",BIASS);
       fprintf(fp,"SHIFTS=%i\n",SHIFTS);*/
   fprintf(fp,"red_impact_par_mantissa_bits=%i\n",23-SHIFTS);
- 
+
   /*  fprintf(fp,"MIND=%g\n",MIND);
       fprintf(fp,"MAXD=%g\n",MAXD);
       fprintf(fp,"DIMD=%i\n",DIMD);
@@ -1353,7 +1337,7 @@ int print_version_info(FILE* fp){
   fprintf(fp,"e_stop_mantissa_bits=%i\n",23-SHIFTD);
   return 0;
 }
- 
+
 int print_some_simulation_parameters(FILE* fp,int ion_number){
   /* print some information on the current simulation to the stream pointed to by fp */
   time_t current;
@@ -1368,48 +1352,5 @@ int print_some_simulation_parameters(FILE* fp,int ion_number){
   fprintf(fp,"simulation_start=%s\n",timestr);
   strftime(timestr,20,"%Y-%m-%d_%H:%M:%S",localtime(&current));
   fprintf(fp,"results_stored__=%s\n\n",timestr);
-  return 0;
-}
- 
-int print_stopping_table(int ionZ, double ionM, int target, double e_min, double e_max, double e_step){
-  /* prints value for electronic stopping of one element in a defined target */
-  double stopping, energy;
-  energy=e_min;
- 
-  printf("#Printing stopping table for ion: %i, mass: %f, target material: %s\n",ionZ,ionM,ListOfMaterials[target].Name);
-  printf("#Energy/eV\tStopping/(eV/nm)\n");
- 
-  while(energy<=e_max){
- 
- 
-    stopping   = 10.0*ElectronicStopping(ionZ,ionM,energy,target);
-    /* factor 10, because flightpath is in nm, stopping in A */
- 
-    printf("%g\t%g\n",energy,stopping);
- 
-    energy+=e_step;
-  }
-  printf("#Finished.\n");
-  return 0;
-}
- 
-/* CROC Modified Kinchin Pease damage see page 7-28 of SRIM book ZBZ*/
-int prepare_KP_tables2 (void) {
-  int i, k;
- 
-  for (i=0; i<NumberOfMaterials; i++) {
-    ListOfMaterials[i].MeanEd=0;
-    for(k=0;k<ListOfMaterials[i].ElementCount;k++){    
-      ListOfMaterials[i].MeanEd=ListOfMaterials[i].MeanEd+ListOfMaterials[i].ElementsConc[k]*ListOfMaterials[i].ElementsDispEnergy[k];
-    }
-    /*   SRIM like*/
-    ListOfMaterials[i].k_d= 0.1334 * pow ( ListOfMaterials[i].MeanZ, 2.0 / 3.0) / pow ( ListOfMaterials[i].MeanM, 0.5);
-    ListOfMaterials[i].ed_oE=0.01014 * pow (ListOfMaterials[i].MeanZ , -7.0 / 3.0) ; 
-    /*  MyTrim like*/
-    /*      ListOfMaterials[i].k_d= 0.1337 * pow ( ListOfMaterials[i].MeanZ, 2.0 / 3.0) / pow ( ListOfMaterials[i].MeanM, 0.5);
-	    ListOfMaterials[i].ed_oE=0.0115 * pow (ListOfMaterials[i].MeanZ , -7.0 / 3.0) ; 
-    */
-  }
- 
   return 0;
 }

@@ -1,6 +1,6 @@
 /*********************************************************************
 
-    Copyright 2017, Christian Borschel
+    Copyright 2016, Christian Borschel
 
     This file is part of iradina.
 
@@ -19,23 +19,18 @@
 ***********************************************************************/
 
 
-/***************************************************************************
-   This module contains the functions to simulate the ion transport, etc.   
+/****************************************************************************/
+/* This module contains the functions to simulate the ion transport, etc.   
    There are currently two transport functions:
    
    FullProjectileTransport() simulates full transport accurately.
    FastProjectileTransport() works similar to the corteo transport function.
    It is faster, but makes a few more approximations. It is accurate enough
-   for ion and coarse damage distribution but not for sputtering!
+   for ion and coarse damage distribution but not for sputtering! */
 
-	Modifications by Jean-Paul Crocombette, CEA Saclay for modified
-	Kinchin-Pease calculation of damage and free flight path approximation,
-	to allow comparison with SRIM.
-	They  are indicated by "CROC" comments
-	
-	Error numbers supposed to be used in transport module: 1000-1999      
-   
-****************************************************************************/
+/* Modifications by Jean-Paul Crocombette, CEA Saclay for modified Kinchin-Pease calculation of damage and free flight path approximation, to allow comparison with SRIM.
+   They  are indicated by "CROC" comments */
+/****************************************************************************/
 
 //#define MONITOR_ION 1000000000000
 
@@ -69,11 +64,8 @@ int IrradiateTarget(){
   /* The entry positions can be random or more defined */
 
   /*CROC x=0 initialization to allow from inside bulk irradiation */
-  float x,y,z;
+  float y=0.0,z=0.0,x=0.0;
   int   i;    /* count ions */
-   x=0.0;
-   y=0.0;
-   z=0.0;
 
   sim_start_time=time(NULL);
 
@@ -108,24 +100,27 @@ int IrradiateTarget(){
     store_range3dV_fp=OpenFileContinuous(OutputFileBaseName,".ions.range3dV");
     if(store_range3dV_fp==NULL){
       printf("Error: Cannot open range3dV-file!\n");
-      return -1003;
+      return -1002;
     }
     store_range3dI_fp=OpenFileContinuous(OutputFileBaseName,".ions.range3dI");
     if(store_range3dI_fp==NULL){
       printf("Error: Cannot open range3dI-file!\n");
-      return -1004;
+      return -1002;
     }
   }
-  
+    
+
 
   single_ion_sputter_counter=0;
 
   /*  fEnergy=OpenFileContinuous(OutputFileBaseName,".SurfEnergy"); */
-  /* CROC call to building of KP tables if simulation_type>3*/
-    if(simulation_type>=3){ 
+
+  /* CROC call to building of KP tables if simulation_type=3*/
+    if(simulation_type==5){ /* Status file, which can be read by other programs */
       prepare_KP_tables2 ();
+      
+
     }
-  
 
   for(i=0;i<max_no_ions;i++){ /* Create the ions and let them impinge on the target */
 
@@ -174,7 +169,9 @@ int IrradiateTarget(){
     if(store_recoil_cascades==1){
       fflush(recoil_cascades_fp);
     }
-    if(store_range3d==1){fflush(store_range3d_fp);}
+    if(store_range3d>=1){fflush(store_range3d_fp);}
+    if(store_range3d==2){fflush(store_range3dV_fp);}
+    if(store_range3d==2){fflush(store_range3dI_fp);}
 
     if(single_ion_sputter_yields==1){ /* store single ion sputter yields */
       if(single_ion_sputter_counter<=MAX_SPUTTERED){
@@ -207,20 +204,23 @@ int IrradiateTarget(){
     /* Define ion entry positions: */
     switch(ion_distribution){
     case 0: /* Random */
+      x=0;
       y=randomx()*target_size_y;
       z=randomx()*target_size_z;
       /*printf("Entry pos: y: %g, z: %g\n",y,z);*/
       break;
     case 1:  /* centered */
+      x=0;
       y=target_size_y/2.0;
       z=target_size_z/2.0;
       break;
     case 2:  /* defined position */
-      x=enter_x;
+      x=0;
       y=enter_y;
       z=enter_z;
       break;
     case 3:  /* random square around predefined position */
+      x=0;
       y=enter_y+(0.5-randomx())*beam_spread;
       z=enter_z+(0.5-randomx())*beam_spread;
       break;
@@ -236,18 +236,18 @@ int IrradiateTarget(){
     printf("DEBUG %s, l %i\n",__FILE__,__LINE__);fflush(stdout);
 #endif
 
-	/*CROC indicates in the defect file the beginning of a new cascade*/
-	if(store_range3d==2){
-		fprintf(store_range3dV_fp,"C %i\n",i);
-		fprintf(store_range3dI_fp,"C %i\n",i);
-	} 
-
     /* Call function to simulate ion */
     switch(transport_type){
     case 0: /* accurate */
+      /*CROC indicates in the defect file the beginning of a new cascade*/
+      if(store_range3d==2){fprintf(store_range3dV_fp,"C %i\n",i);} 
+      if(store_range3d==2){fprintf(store_range3dI_fp,"C %i\n",i);} 
       FullProjectileTransport(ionZ,ionM,ionInitialEnergy,x,y,z,ion_vx,ion_vy,ion_vz,1,0,0,0,0,0);
       break;
     default: /* fast, like corteo */
+      /*CROC indicates in the defect file the beginning of a new cascade*/
+      if(store_range3d==2){fprintf(store_range3dV_fp,"C %i\n",i);} 
+      if(store_range3d==2){fprintf(store_range3dI_fp,"C %i\n",i);} 
       FastProjectileTransport(ionZ,ionM,ionInitialEnergy,x,y,z,ion_vx,ion_vy,ion_vz,1,0,0,0);
       break;
     }
@@ -270,12 +270,14 @@ int IrradiateTarget(){
   /* Close files that have been opened for continuous output: */
   if(store_ion_paths==1){fclose(ion_paths_fp);}
   if(store_recoil_cascades==1){fclose(recoil_cascades_fp);}
-  if(store_range3d==1){fclose(store_range3d_fp);}
+  if(store_range3d>=1){fclose(store_range3d_fp);}
+  if(store_range3d==2){fclose(store_range3dV_fp);}
+  if(store_range3d==2){fclose(store_range3dI_fp);}
   return 0;
 }
 
 int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, float Proj_y, float Proj_z, float Proj_vx, float Proj_vy, float Proj_vz, int is_ion, int OrgMaterial, int OrgElement, int OrgCell){
-  /* Calculates the path of a projectile with given porperties (proton number, mass, energy, coordiantes, velocity unit vector (directional cosines) through the target material. Can be called recursively to follow recoils. The "is_ion" parameter must be 1 when an initial ion is handled or 0 when recoils are simulated, so the function will know where to store results and which scattering matrix is needed (shouldn't be necessary for the physics though). If the projectile is a recoil from within the target, the material and element and cell that it originated from must be known in order to store correctly the distribution of implanted recoils for each material*/
+  /* Calculates the path of a projectile with given porperties (proton number, mass, energy, coordiantes, velocity unit vector (directional cosines) through the target material. Can be called recursively to follow recoils. The "is_ion" parameter must be 1 when an initial ion is handled or 0 when recoils are simulated, so the function will know where to store results and which scattering matrix is needed (shouldn't be necessary for the physics though). If the projectile is a recoil from within the target, the material and element and cell that it originated from must be known on order to store correctly the distribution of implanted recoils for each material*/
   
   /* What this function does:
      It performs a loop with:
@@ -298,11 +300,12 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
   struct material* current_material; /* Pointer to material we are using */
   //  struct material* old_material;     /* Index of material into which the projectile moves after collision */
   int i=0;
+
   int ion_left_target=0;
   int leaving_direction=0;    /* Direction in which a sputtered atom leaves the target */
   float flightpath=0;         /* length of free flight until next collision [nm] */
-  float epsil;                /* CROC SRIMepsillon*/
-  float randomSRIM;           /* CROC  */
+  float epsil;         /*CROC SRIMepsillon*/
+  float randomSRIM;               /* CROC  */
   float x,y,z;                /* Current point in space where projectile is [nm]*/
   float vx,vy,vz;             /* current velocity unit vector */
   float old_vx,old_vy,old_vz; /* previous velocity unit vector */
@@ -326,7 +329,7 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
   float E_compare;                       /* the displacement energy that has to be used.
 					    (In some cases it is the surface energy instead of the displacement energies) */
   int surface_sputtered;                 /* is 1, if atom was sputtered from surface */
-  float e_disp,e_latt,e_surf=0,e_repl;   /* Displacement, lattice, surface and replacement energy of target atoms */
+  float e_disp,e_latt,e_surf=0;          /* Displacement, lattice and surface energy of target atoms */
   int replaced=0;                        /* is 1 if a replacement occured */
   int proj_eq_target=0;                  /* if projectile and target are the same, this is 1 */
   struct scattering_matrix * ScatMatrix; /* Points to currently needed scattering matrix */
@@ -339,10 +342,8 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 					    inaccuracies in rotation fct. */
   /*  int multi_col_counter; */          /* To allow multiple collisions as suggested in Eckstein, p. 92 */
   int isvac;                             /* is 1 if vacuum */
-  float e_d, g_ed, E_v, E_div, k_dr;     /* CROC: SRIM variables for free flight path */
-  float xsi, pmax=0, bmax;               /* CROC: 7.40-7.41 page 7-16 */
-  
-
+  float   e_d, g_ed, E_v,  E_div,k_dr; /* CROC : SRIM variables for free flight path*/
+  float xsi ,pmax,bmax ;/* 7.40-7.41 page 7-16 */
   /* init values */
   recoil_number=recoil_counter++; /* set unique ID of this recoil */
   x=Proj_x;
@@ -352,6 +353,7 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
   vy=Proj_vy;
   vz=Proj_vz;
   energy=ProjE;
+  randomSRIM=d2f(randomx());
 
   recoil_vx=0;
   recoil_vy=0;
@@ -364,17 +366,15 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
      printf("DEBUG info: vx vy vz: %f,%f,%f energy: %g \n",vx,vy,vz,energy);
      } */
 
-
-  /*CROC: if from inside bulk cascade the initial site is a vacancy! */
+  /* Determine initial cell and material */
+  /*CROC: if from inside bulk cascade the initila site is a vacancy*/
   if (ion_distribution==4){
     if(is_ion==1){
       if(store_range3d==2){fprintf(store_range3dV_fp,"%g\t%g\t%g\n",x,y,z);}             
     }
   }
-
-  /* Determine initial cell and material */
   cell_i=GetCellIndex(x,y,z);
-  
+
 #ifdef INCLUDE_SPECIAL_GEOMETRY
   if(special_geometry==0){ /* use standard grid to determine material */
     current_material_index=TargetComposition[cell_i];
@@ -408,29 +408,32 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
     if(isvac==0){ /* if real material, not vacuum */
 
       /* Calculate free flight path (note that this is strongly correlated with the calculation of the impact parameter (see below) ): */
-	switch(flight_length_type){
-	case 0: /* Poisson distributed flight length and impact pars */
-		/* Flight length between collisions: Poisson-distributed value with interatomic spacing as mean free path */
-		/* flightpath = -current_material->AtomicDistance * log(randomx()); */
-		temp1= sqrtloglist[iranloglist]*current_material->SqrtAtomicDistance; /* Use of random list faster (as in corteo)*/
-		flightpath=temp1*temp1;
-		break;
-	case 1: /* atomic spacing */
-		flightpath=current_material->AtomicDistance;
-		break;
-	case 2: /* constant flightpath in nm*/
-		flightpath=flight_length_constant;
-		break;
-	case 3: /*CROC SRIM like free flight path*/
-		epsil=energy*current_material->MeanF;
-		/*	if(is_ion==1) {	printf(" %f  %f \n ", energy,epsil);}*/
-		/* 	printf(" %f  %f \n ", energy,epsil);*/
-		xsi=pow( epsil*current_material->MeanMinRedTransfer,0.5) ;
-		bmax=1/(xsi+pow(xsi,0.5)+0.125*pow(xsi,0.1)); /* ToDO: CHECK: if this formula correct... bmax in nm? */
-		pmax= bmax*current_material->MeanA; /* pmax has to be in nanometer ... is this the case? */
-		flightpath=1.0f / (PI*current_material->DensityNM*pmax*pmax) ;
-		break;
-	}
+      switch(flight_length_type){
+      case 0: /* Poisson distributed flight length and impact pars */
+	/* Flight length between collisions: Poisson-distributed value with interatomic spacing
+	   as mean free path */
+	/* flightpath = -current_material->AtomicDistance * log(randomx()); */
+	temp1= sqrtloglist[iranloglist]*current_material->SqrtAtomicDistance; /* Use of random list faster (as in corteo)*/
+	flightpath=temp1*temp1;
+	break;
+      case 1: /* atomic spacing */
+	flightpath=current_material->AtomicDistance;
+	break;
+      case 2: /* constant flightpath in nm*/
+	flightpath=flight_length_constant;
+	break;
+      case 3: /*CROC SRIM like free flight path*/
+	epsil=energy*current_material->MeanF;
+	/*	if(is_ion==1) {	printf(" %f  %f \n ", energy,epsil);}*/
+	/* 	printf(" %f  %f \n ", energy,epsil);*/
+	xsi=pow( epsil*current_material->MeanMinRedTransfer,0.5) ;
+	bmax=1/(xsi+pow(xsi,0.5)+0.125*pow(xsi,0.1));
+	pmax=bmax*current_material->MeanA;
+	flightpath=1.0f / (PI*current_material->DensityNM*pmax*pmax) ;
+
+	break;
+
+      }
       
       /* TO DO: Perhaps impose a limit on unrealstically long flight paths? --> this has only little influence */
       /* printf("DEBUG transport.c: line %i  flight length %f, ad %f\n",__LINE__,flightpath,current_material->AtomicDistance); */
@@ -610,10 +613,11 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 	  impact_par = sqrtrandomlist[(iranlist)++] * current_material->SqrtRecFlDensity; /* without the log list! */
 	  break;
 	case 3: /*CROC SRIMlike */
-	  randomSRIM=d2f(randomx());  /* Attention! Using random tables does not seem to be "sufficiently" random for large ion numbers in der KP case! --> randomx() is better here to get better statistics! */
+	  randomSRIM=d2f(randomx());
 	  impact_par = sqrt(randomSRIM) *pmax ;/* pmax decided before  */
 	  /*	  impact_par = sqrtrandomlist[(iranlist)++] *pmax ; */ /* pmax decided before  */
-	  break;
+
+	break;
 	}
 	
 	/* calculate reduced impact parameter s=p/a */
@@ -623,12 +627,15 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 	
 	/* Calculate scattering angle */
 	temp1=2.0*current_material->LayerDistance;
-	if(impact_par >= temp1) {  /* impact parameter larger than interatomic distance: assume collision has missed */
+	if(impact_par >= temp1) {  
+	  if(flight_length_type <3) {  
+	  /* impact parameter larger than interatomic distance: assume collision has missed */
 	  /* Is this valid? Yes: tests have shown, that increasing the limit to 10 times the atomic distance
 	     yields practically the same distribution of implanted ions and damage! */
 	  sin2thetaby2 = 0.0f;
 	  recoil_energy = 0.0f;
 	  miss_c+=1;
+	  }
 	} else { /* Collision takes place */
 	  /* Get matrix index (using corteo's indexing functions): */
 	  smIndex      = Eindex(energy * ScatMatrix->red_E_conv) * DIMS + Sindex(red_impact_par);
@@ -678,7 +685,6 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 	    /* Obtain relevant energy barriers */
 	    e_disp=(current_material->ElementsDispEnergy)[target_index];
 	    e_latt=(current_material->ElementsLattEnergy)[target_index];
-	    e_repl=(current_material->ElementsReplEnergy)[target_index];
 	    /* e_surf=(current_material->ElementsSurfEnergy)[target_index]; */
 
 	    /* If all of the following conditions are fulfilled, we need to check the surface binding energy instead of the displacement energy:
@@ -791,60 +797,79 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 
 	      /* Now check whether the projectile might replace the recoil */
 	      if(proj_eq_target==1){ /* this only happens if they are the same, otherwise projectile can
-			only become an interstitial if stopped */
-			/* E_compare=e_disp;    OLD VERSION
-			if(surface_sputtered==1){
-			E_compare=e_surf;
-			}*/
-			E_compare=e_repl; /* Flexible replacement energy introduced in version 1.0.9 of iradina. */
-			if(energy<E_compare){ /* the projectile cannot leave the site and replaces the recoil, no vacancy! */
-			repl_c+=1;
-			replaced=1;
-			if(is_ion==0){   /* Old recoil (atom from target) replaces new recoil */
-				(ListOfMaterials[OrgMaterial].TargetImplantedRecoilsRepl[OrgElement])[cell_i]+=1;
-			} else { /* The ion replaces the recoil */
-				TargetReplacingIons[cell_i]+=1;
-			}
-			if(store_energy_deposit==1){TargetEnergyPhonons[cell_i]+=(double)energy;} /* remaining projectile energy is released to phonons */
-			energy=-.001; /* set the energy slightly negative to stop the ion. */
-			} else { /* The projectile has enough energy to leave site, a vacancy is created */
-				((current_material->TargetElementalVacancies)[target_index])[cell_i]+=1;
-				/* CROC store positions of vacancy: */
-				if(store_range3d==2){fprintf(store_range3dV_fp,"%g\t%g\t%g\n",x,y,z);} 
-			}
-	      } else { /* projectile and target not the same */
-				/* A vacancy is created in the target */
-				((current_material->TargetElementalVacancies)[target_index])[cell_i]+=1;
-				/* CROC  store positions of vacancy: */
-				if(store_range3d==2){fprintf(store_range3dV_fp,"%g\t%g\t%g\n",x,y,z);} 
+					only become an interstitial if stopped */
+		/* Now check whether the projectile might replace the recoil */
+		E_compare=e_latt;
+		/*CROC !! E_compare set to e_latt ! CHANGE OF DEFAULT BEHAVIOUR !
+		E_compare=e_disp;
+		*/
+		if(surface_sputtered==1){
+		  E_compare=e_surf;
+		}
 
+		if(energy<E_compare){ /* the projectile cannot leave the site and replaces the recoil, no vacancy! */
+		  repl_c+=1;
+		  replaced=1;
+		  if(is_ion==0){   /* Old recoil (atom from target) replaces new recoil */
+		    (ListOfMaterials[OrgMaterial].TargetImplantedRecoilsRepl[OrgElement])[cell_i]+=1;
+		  } else { /* The ion replaces the recoil */
+		    TargetReplacingIons[cell_i]+=1;
+		  }
+		  if(store_energy_deposit==1){TargetEnergyPhonons[cell_i]+=(double)energy;} /* remaining projectile energy is released to phonons */
+		  energy=-.001; /* set the energy slightly negative to stop the ion. */
+		} else { /* The projectile has enough energy to leave site, a vacancy is created */
+		/* CROC  store positions of vacancies*/
+		if(store_range3d==2){fprintf(store_range3dV_fp,"%g\t%g\t%g\n",x,y,z);} 
+		  ((current_material->TargetElementalVacancies)[target_index])[cell_i]+=1;
+		}
+	      } else { /* projectile and target not the same */
+		/* A vacancy is created in the target */
+		((current_material->TargetElementalVacancies)[target_index])[cell_i]+=1;
+		/* CROC  store positions of vacancies*/
+		if(store_range3d==2){fprintf(store_range3dV_fp,"%g\t%g\t%g\n",x,y,z);} 
 	      }
 	    } else { /* Recoil cannot be displaced, because e<e_disp
 			its energy goes into phonons (unless sputtered) */
 	      if(store_energy_deposit==1){TargetEnergyPhonons[cell_i]+=(double)recoil_energy;}
 	    }
-	  } else { /* no recoils considered as cascade, but perhaps as KP: */
+	  }else { 	      /* no recoils considered ; */
+
 	    if(simulation_type==5){    /*CROC : KP INCLUDED HERE.  based on average material <> SRIM but FOLLOWS page 7-28 of SRIM book by ZBZ*/
 	      E_div=2.5*current_material->MeanEd;
 	      e_d = current_material->ed_oE * recoil_energy;
 	      g_ed = 3.4008 * pow (e_d, 1.0 / 6.0) + 0.40244 * pow (e_d, 0.75) + e_d;
 	      E_v = recoil_energy/ (1.0 + current_material->k_d * g_ed);
+	      if(store_energy_deposit==1){
+		cell_i=GetCellIndex(x,y,z);
+		TargetEnergyElectrons[cell_i]= TargetEnergyElectrons[cell_i]+recoil_energy-E_v;
+		TargetEnergyPhonons[cell_i]+= E_v;
+	      }
 	      	      if (E_v < current_material->MeanEd) {
-		            ((current_material->TargetElementalVacancies)[0])[cell_i]+=0;
-	              }
+		((current_material->TargetElementalVacancies)[0])[cell_i]+=0;
+	      }
 	      else if (E_v >= current_material->MeanEd && E_v < E_div) {
 		((current_material->TargetElementalVacancies)[0])[cell_i]+=1;
 	      }
 	      else if (E_v >= E_div) {
 		((current_material->TargetElementalVacancies)[0])[cell_i]+=floor(E_v / E_div) ;
 	      }
-	    } else if(simulation_type==4){  /*CROC : KP INCLUDED HERE. pure elemental solid after collisions apparently corresponding to  SRIM (page 7-28 book by ZBZ*/
+	    }
+	    if(simulation_type==4){  /*CROC : KP INCLUDED HERE. pure elemental solid after collisions apparently corresponding to  SRIM (page 7-28 book by ZBZ*/
 	      e_disp=(current_material->ElementsDispEnergy)[target_index];
 	      E_div=2.5*e_disp;
 	      k_dr=0.1334 * pow ( target_Z, 2.0 / 3.0) / pow ( target_mass, 0.5);
 	      e_d = 0.01014 * pow (target_Z , -7.0 / 3.0)  * recoil_energy;
 	      g_ed = 3.4008 * pow (e_d, 1.0 / 6.0) + 0.40244 * pow (e_d, 0.75) + e_d;
 	      E_v = recoil_energy/ (1.0 + k_dr * g_ed);
+/* CROC outputs the ballistic energy and the electronic energy of the cascade as estimated by the above formulas */	      
+	      if(store_energy_deposit==1){
+		cell_i=GetCellIndex(x,y,z);
+		//		printf(" 1 %f %f \n", TargetEnergyElectrons[cell_i], TargetEnergyPhonons[cell_i] );
+		TargetEnergyElectrons[cell_i]= TargetEnergyElectrons[cell_i]+recoil_energy-E_v;
+		TargetEnergyPhonons[cell_i]+= E_v;
+		//		printf(" 2 %f %f \n", TargetEnergyElectrons[cell_i], TargetEnergyPhonons[cell_i]) ;
+		//		printf(" %f  %f %i \n ", recoil_energy,E_v,cell_i);
+	      }
 	      if (E_v < e_disp) {
 		((current_material->TargetElementalVacancies)[target_index])[cell_i]+=0;
 	      }
@@ -857,18 +882,19 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 	    }
 	  }
 	} /* Collision took place */
-	
+
 	/* Check what happens to the projectile after possible collision: */
 	if(energy<min_energy){ /* projectile has to stop. Store as implanted ion or recoil */
 	  /*CROC Interstitials and vacancies  are stored in store RANGE 3D V/I  and not only the ions */
-	  if(is_ion==1){ /* the ion comes to rest */
-	    TargetImplantedIons[cell_i]+=1;
+	  if(is_ion==1){  
 	    if(replaced==0){
 	      if(store_range3d==2){fprintf(store_range3dI_fp,"%g\t%g\t%g\n",x,y,z);} 
 	    }
-	    if(store_range3d>=1){fprintf(store_range3d_fp,"%g\t%g\t%g\n",x,y,z);}
+	    if(store_range3d>=1){fprintf(store_range3d_fp,"%g\t%g\t%g\n",x,y,z);} 
+	    TargetImplantedIons[cell_i]+=1;
 	  } else { /* a target atom stopped */
 	    if(replaced==0){ /* if it wasn't a replacement, it becomes interstitial, store as such */
+	    if(store_range3d==2){fprintf(store_range3dI_fp,"%g\t%g\t%g\n",x,y,z);} 
 	      ((ListOfMaterials[OrgMaterial]).TargetImplantedRecoilsInt[OrgElement])[cell_i]+=1;
 	    } /* else: it was a replacement, so we do not need to store interstitial */
 	    if(store_recoil_cascades==1){ /* if cascades are to be stored, store empty line in file to separate record */
@@ -962,8 +988,8 @@ int FullProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
   float vel,svel;                       /* for velocity normalization */
   int   coll_counter;                   /* if multiple collisions are allowed for one flightpath, they need to be counted */
   long int recoil_number;               /* Identifying unique number of this recoil */
-  float E_surf, E_disp, E_latt,E_repl;  /* Energy barriers: surface binding, perpendicular energy component,
-					   displacement threshold, lattice binding energy, and replacement threshold */
+  float E_surf, E_disp, E_latt;         /* Energy barriers: surface binding, perpendicular energy component,
+					   displacement threshold and lattice binding energy */
   int   leaving_direction=0;            /* denotes into which direction a particle left the sim volume */
   float random;                         /* a random number */
   float conc_sum;                       /* sum of concentration of elements */
@@ -1048,10 +1074,12 @@ int FullProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
       /* So, some random variations must be used (this is new in version 1.0.1 of iradina!). */
       flightpath=0.15+randomlist[(iranlist)++]*0.14; 
       flightpath_sqr=sqrtf(flightpath);
-      if(iranlist>=MAXRANLIST-2)iranlist = 0; /* reset list pointer if needed */
+      if(iranlist>=MAXRANLIST-2)iranlist = 0; /* reset list pointer of needed */
       stopping=0.0;                           /* no stopping or straggling in vacuum */
       straggling=0.0;
     } else { /* no vacuum */
+      //      if((ion_c>MONITOR_ION)&&(1)){printf("---Density: %g\n", cell_c->DensityNM);}
+
       /* Calculate the flight path, depending on material: */
       switch(flight_length_type){
       case 0: /* Poisson distributed flight length and impact pars */
@@ -1093,6 +1121,10 @@ int FullProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 	straggling*=(energy*0.0625);
       }
       if(erflist_pointer>=MAXERFLIST){erflist_pointer=0;} /* Check and adjust boundary */
+
+      /* To Do: Idea: for very small energy, perhapse increase stopping to MAKE things stop quickly! */
+      //      if(energy<(min_energy/2.0)){stopping=energy;straggling=0;}
+
     }
 
 #ifdef DEBUG_MODE
@@ -1114,11 +1146,10 @@ int FullProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 
     if(ion_left_target!=0){ /* projectile left sample! */
 
-      /* Outside the simulation there might be vacuum...! If the last position was material,
-	 then we should make sure that the projectile has sufficient energy to overcome
+      /* Outside the simulation there should be vacuum...! If the last position was material,
+	 we should make sure that the projectile has sufficient energy to overcome
 	 the surface binding energy, otherwise it should be refleced. This is not implemented.
-	 Instead, the user should make sure that there is some vacuum around the structure,
-	 if this is required. */
+	 Instead, the user should make sure that there is some vacuum around the structure.*/
       /*  if it is the ion that has left the target, store transmitted ion: */
       if(is_ion==1){
 	if(store_transmitted_ions==1){
@@ -1671,11 +1702,14 @@ int FullProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 		    ((target_material->TargetElementalDisp[targetIndex])[target_cell])++;
 		    ((target_material->TargetElementalVacancies[targetIndex])[target_cell])++;
 		    disp_c++;vac_c++;
-		    /* check if projectile might replace the recoil. Conditions for replacement collision:
-		       1. equal particles, 2. proj has less than lattice energy, 3. proj was not marked sub-threshold, 4. recoil is not sub-threshold */
+		    /* check if projectile might replace the recoil. Condition for replacement collision:
+		       1. equal particles, 2. proj has less than disp energy, 3. proj was not marked sub-threshold, 4. recoil is not sub-threshold */
 		    if( (proj_eq_target==1)){
-		      E_repl = target_material->ElementsReplEnergy[targetIndex];
-		      if(energy<E_repl){  /* changed in version 1.0.9 of iradina: compare to e_repl instead of e_disp */
+
+		      if(energy<E_disp){
+		/*CROC!!
+		      if(energy<E_latt)! CHANGE OF DEFAULT BEHAVIOUR !{
+		*/
 			if((ProjState&1)==0){
 			  /* all conditions fulfilled, replace! */
 			  if(is_ion==0){ /* replacing recoil: */
@@ -1721,9 +1755,9 @@ int FullProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 	if(isvac2==0){   /* no vacuum, stop, because of too little energy */
 	  if(is_ion==1){                  /* its an ion that has to stop */
 	    TargetImplantedIons[new_cell]+=1;
-	    if(store_range3d==1){fprintf(store_range3d_fp,"%g\t%g\t%g\n",x,y,z);}
+	    if(store_range3d>=1){fprintf(store_range3d_fp,"%g\t%g\t%g\n",x,y,z);}
 	  } else {                        /* its a recoil that has to stop */
-	    if( (ProjState&1)==0){        /* projectile was not sub-threshold, so it was really displaced. It's allowed to become an interstitial */
+	    if( (ProjState&1)==0){        /* projectile was not sub-threshold, so it was really displaced. It's allowed to becomes an interstitial */
 	      if(replaced==0){            /* replacing recoils are not counted as interstitials */
 		((ListOfMaterials[OrgMaterial]).TargetImplantedRecoilsInt[OrgElement])[new_cell]+=1;
 		int_c++;
@@ -1952,3 +1986,25 @@ int CheckAndCorrectBoundary(float* dim, float target_size, float* target_size_ma
   }
   return result;
 }
+/* CROC Modified Kinchin Pease damage see page 7-28 of SRIM book ZBZ*/
+int prepare_KP_tables2 (void) {
+    int i, k;
+
+    for (i=0; i<NumberOfMaterials; i++) {
+      ListOfMaterials[i].MeanEd=0;
+      for(k=0;k<ListOfMaterials[i].ElementCount;k++){    
+	ListOfMaterials[i].MeanEd=ListOfMaterials[i].MeanEd+ListOfMaterials[i].ElementsConc[k]*ListOfMaterials[i].ElementsDispEnergy[k];
+     }
+      /*   SRIM like*/
+           ListOfMaterials[i].k_d= 0.1334 * pow ( ListOfMaterials[i].MeanZ, 2.0 / 3.0) / pow ( ListOfMaterials[i].MeanM, 0.5);
+	   ListOfMaterials[i].ed_oE=0.01014 * pow (ListOfMaterials[i].MeanZ , -7.0 / 3.0) ; 
+	   /*  MyTrim like*/
+	   /*      ListOfMaterials[i].k_d= 0.1337 * pow ( ListOfMaterials[i].MeanZ, 2.0 / 3.0) / pow ( ListOfMaterials[i].MeanM, 0.5);
+		   ListOfMaterials[i].ed_oE=0.0115 * pow (ListOfMaterials[i].MeanZ , -7.0 / 3.0) ; 
+	   */
+    }
+
+    return 0;
+}
+
+

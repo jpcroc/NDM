@@ -34,7 +34,7 @@
    special geometries deviating from the rectangular grid. 
    The special geometry is accounted for by the functions in geometry.c */
 
-//#define INCLUDE_SPECIAL_GEOMETRY
+#define INCLUDE_SPECIAL_GEOMETRY
 
 /* if this parameter is not defined, then iradina is a little faster,
    because some queries will not be compiled into the code */
@@ -50,7 +50,7 @@
 #define PROJ_HANGUP_SAFETY 100000000 /* if a recoil or ion hangs up, this ensure that it will be stopped after so many steps.
 					This should be a large number if you simulate large structures. */
 
-// #define DEBUG_MODE                 /* If defined, then some DEBUG messages are printed. */
+//#define DEBUG_MODE                 /* If defined, then some DEBUG messages are printed. */
 //#define DEBUG_MODE2                /* If defined, then some other DEBUG messages are printed. */
 //#define DEBUG_MODE3                /* ... */
 //#define DEBUG_MODE4
@@ -69,14 +69,14 @@
 #include "geometry.h"
 #endif
 
-#define VERSIONDATE "2017-Jul-01"
+#define VERSIONDATE "2016-Mar-02"
 #define VERSION 1
 #define SUBVERSION 0
-#define SUBSUBVERSION 9
-#define RELEASESTRING ".A"
-#define VERSIONCOMMENT " -- under development --"
-//#define RELEASESTRING ""
-//#define VERSIONCOMMENT ""
+#define SUBSUBVERSION 8
+//#define RELEASESTRING ".C"
+//#define VERSIONCOMMENT " -- under development --"
+#define RELEASESTRING ""
+#define VERSIONCOMMENT ""
 
 #define MAX_FILENAME_LENGTH 1024
 

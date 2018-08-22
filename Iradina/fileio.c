@@ -1,6 +1,6 @@
 /*********************************************************************
 
-    Copyright 2017, Christian Borschel
+    Copyright 2016, Christian Borschel
 
     This file is part of iradina.
 
@@ -413,10 +413,6 @@ int ConfigFileDataReader(char* ParName, char* ParValue){
     if(print_level>=1){printf("ion beam vz:\t\t\t %g\n",ion_vz);}
   }
 
-  if(strcmp(ParName,"enter_x")==0){ /* point of entry */
-    sscanf(ParValue,"%f",&enter_x);
-    if(print_level>=1){printf("Entry point x:\t\t\t %g nm\n",enter_y);}
-  }
   if(strcmp(ParName,"enter_y")==0){ /* point of entry */
     sscanf(ParValue,"%f",&enter_y);
     if(print_level>=1){printf("Entry point y:\t\t\t %g nm\n",enter_y);}
