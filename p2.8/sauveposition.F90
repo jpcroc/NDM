@@ -29,7 +29,7 @@ subroutine sauveposition(itapp)
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: lucoutxp, lutampon,formatsauvT,lenfn2
+  integer :: lucoutxp, formatsauvT
   character :: extension*9
   logical::lcrcin
 #if(PARA)
@@ -63,7 +63,6 @@ subroutine sauveposition(itapp)
      else
        
         write(extension,'(i9.9)') itapp
-        lenfn2 = 9
 
         ! -------------------------------------------------------------
         ! -------------------------------------------------------------

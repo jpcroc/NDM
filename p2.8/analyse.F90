@@ -104,7 +104,6 @@ subroutine analyse
   !     end if
   !  end if
   call calctemp (temptyp)
-  !debug write(*,*) 'kine.....', kine
   if (itetemp>0) then
      if (mod(it,itetemp)==0) then
 
@@ -147,8 +146,7 @@ subroutine analyse
               end do
               write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel,'*Ec = ',kine*unitE, cunitE, &
                    '  (', temp, ' K)'
-              write(6,*) 'kine_dmldebug', kine, potist, unitE, cunitE
-              !stop 
+             
               write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
               If (l2T) then
 

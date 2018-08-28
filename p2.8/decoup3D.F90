@@ -1,4 +1,4 @@
-subroutine decoupage(nbr_cpuIN)
+subroutine decoupage(nbr_cpuIN,ncore)
 
 #if(PARA)
   use mod_mpi
@@ -11,7 +11,8 @@ subroutine decoupage(nbr_cpuIN)
 
   !------------------
   integer :: nbr_cpuIN !Egal aussi au nombre de zone qu'on d�coupera dans la boite
-
+  integer::ncore ! nb de coeur par noeud
+  integer:: nnoeuds
   integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
   integer :: num_sol !iteration du decoupage possible
   integer :: test
@@ -52,7 +53,7 @@ subroutine decoupage(nbr_cpuIN)
 
      
 #ifdef DECOUP
-loop1:     do nbr_cpu=1,nbr_cpuIN
+loop1:     do nbr_cpu=2,nbr_cpuIN
 
 #else
         nbr_cpu=nbr_cpuIN
@@ -68,7 +69,7 @@ loop1:     do nbr_cpu=1,nbr_cpuIN
      print *
      print *,'-----------------------------------------------------------'
      print *,'Procedure de decoupage pour une boite de taille  :',nox,noy,noz
-     print *,'sur ',nbr_cpu,' cpus'
+     print *,'sur ',nbr_cpu,' cpus',ncore
   endif
 
   do ii=1,nbr_cpu
@@ -184,6 +185,16 @@ loop1:     do nbr_cpu=1,nbr_cpuIN
      ! La formule magique ! (a voir si il faut modifier les coefficients)
      specifs(num_sol,3) = 1.d-3*(specifs(num_sol,1)*1000+100*(-1+specifs(num_sol,4)/specifs(num_sol,7)))
 !     specifs(num_sol,3) = 1.d-3*(specifs(num_sol,1)*1000+2000/specifs(num_sol,2)+500*(-1+specifs(num_sol,4)/specifs(num_sol,7)))
+
+     if (ncore.ne.0) then
+        if (mod(nbr_cpu,ncore).ne.0)then
+           nnoeuds=nbr_cpu/ncore+1
+        else
+           nnoeuds=nbr_cpu/ncore
+        end if
+        write(6,*)'GOGO',specifs(num_sol,3),ncore,nbr_cpu,nnoeuds
+        specifs(num_sol,3)=specifs(num_sol,3)*nbr_cpu/(ncore*nnoeuds)
+     end if
      if (specifs(num_sol,3)>specifs(solution,3)) solution = num_sol
   enddo
 

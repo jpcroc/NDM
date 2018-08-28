@@ -1,7 +1,7 @@
 module elec_cell
   use T_kind_param_m
   use gen_com_m, only : nox,noy,noz, noxyz,nzl,bk,imm,nato,last,im_glob,tstep,erg2eV,pi,rang,elosscel,lenfnam,fnam,lrestart&
-       &,joule2erg,erg2eV,it,timel,it,igen,lrestart
+       &,joule2erg,erg2eV,it,timel,it,igen,lrestart,itesauvinter
   use var_pot,only:cm
   use tab_imm_m, only : num_at_glob,ielat
   use eloss,only :Ecelec ,elstopforce,ngrdel
@@ -213,8 +213,19 @@ contains
     !langevin codé à partir du poly de Gabriel Stolz page 84, dans une version avec expoentielle comme Manuel et Cosmin
     ! adapted to 2T model
     integer :: ixyze(3)
+#if(PARA)
+    real(double), allocatable,dimension(:)::elosscel_tot
+#endif
 
-    if (i2t==0)elosscel(:)=0
+  
+
+    if (i2t==0)then 
+       elosscel(:)=0
+#if(PARA)
+    allocate (elosscel_tot(noxyz))
+#endif
+
+    end if
     do ko = 1, noxyz
 #if(PARA)
        if (proc_cell(ko).ne.myid) cycle
@@ -254,8 +265,9 @@ contains
                 end if
                 f1=elstopforce(ityp(i),2,nv1)-(elstopforce(ityp(i),2,nv1)-elstopforce(ityp(i),2,nv1-1))*(nv1-vn/v1)
                 do ic=1,3
-                   elosscel(ielat(i))=elosscel(ielat(i))+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)
+                   elosscel(ko)=elosscel(ko)+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)
                 end do
+
                 gamlat=f1/(cm(ityp(i))*vn)
                 if (timel.gt.t_cpl) then
                    gamlat=gamlat+VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion)
@@ -327,6 +339,13 @@ contains
           end select
        end do
     end do
+#if(PARA)
+       call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+       elosscel=elosscel_tot
+       deallocate (elosscel_tot)
+#endif 
+
+
   end subroutine TTlangevin
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -373,6 +392,7 @@ contains
        !          write(6,'(4I3)')ko,ixyze(:)
        !          write(6,*)'ko',elosscel(ko)
        !       end if
+!       write(6,'(A,I4,I6,G15.7)')'rg ko el', rang, ko, elosscel(ko)
        ecell(ixyze(1),ixyze(2),ixyze(3))%Qi2e=ecell(ixyze(1),ixyze(2),ixyze(3))%Qi2e+elosscel(ko)/tstep
     end do
     !    write(6,*)ecell%Qi2e
@@ -824,6 +844,7 @@ contains
   subroutine sauveelec
     integer:: luecout
     character :: fnamecout*80
+  character :: extension*9
 
     integer::iex,iey,iez,ic
     luecout=65
@@ -832,10 +853,16 @@ contains
        write(6,*) 'WTF sauvE rang <>0!'
        stop
     end if
-    
-    fnamecout = fnam(1:lenfnam)//'.ecout'
-    open (unit=luecout,file=fnamecout,form='unformatted')
-
+    if (itesauvinter>0) then
+       if (mod(it,itesauvinter).eq.0) then
+          write(extension,'(i9.9)') it
+          fnamecout = fnam(1:lenfnam)//'.ecout.'//extension
+       else
+          fnamecout = fnam(1:lenfnam)//'.ecout'
+       endif
+    else
+       open (unit=luecout,file=fnamecout,form='unformatted')
+    endif
 
     write(luecout)ecell
 

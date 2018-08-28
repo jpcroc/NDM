@@ -176,7 +176,7 @@ module gen_com_m
   real(double) :: deltaestop ! decroissance de la temperature moyenne
   integer :: nbmoye
   integer :: ibordcou
-  integer :: itesauv, formatsauv, itesauvposition, itesauvforce ! periode de sauvegarde format de sauvegarde periode de d'ecriture des positions et/ou forces en formatted
+  integer :: itesauv, formatsauv, itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde format de sauvegarde periode de d'ecriture des positions et/ou forces en formatted ; itesauvinter=sauvegarde regulière .cout.it qui n'efface pas les fichiers .cout préceents
   real(double), dimension(3) :: vh ! vitesse de la boite
   real(double) :: pext, wbox, tbox ! pext poids de la boite temps d'amortissment de la boite
   logical ::  lpcon2,lprtzlm ! pression constante sans et avec amortissement

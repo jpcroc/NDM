@@ -31,7 +31,7 @@ subroutine config
   integer :: i, j, k, ia, ib, ic, icell, iti, icintype, icintypemod&
        , lucin, lugin, imcell, la, lb, lc, typmax, typmin, npoin, natyp, typ
   integer:: indpoint1, indpointdes
-  integer :: passe, nb_passes
+  integer :: passe, nb_passes,ncore
 #ifndef PARA
   integer :: nprocs
 #endif
@@ -183,10 +183,10 @@ subroutine config
 	if (passe==1) then
 #if(DECOUP) 
 	   open(123, file='decoup.dat', status='old')
-	   read (123, *) nprocs
+	   read (123, *) nprocs,ncore
 	   close(123)
 #endif
- 	   call  decoupage(nprocs)
+ 	   call  decoupage(nprocs,ncore)
 	   allocate(num_at_buff(imm))
         endif
 #endif
@@ -495,11 +495,11 @@ subroutine config
 
 #if(DECOUP)
 	open(123, file='decoup.dat', status='old')
-	read (123, *) nprocs
+	   read (123, *) nprocs,ncore
 	close(123)
 #endif
 #if(DECOUP)||(PARA)
-	call  decoupage(nprocs)
+ 	   call  decoupage(nprocs,ncore)
 #endif
 #if(DECOUP)
  ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation
@@ -673,11 +673,11 @@ subroutine config
 
 #if(DECOUP)
         open(123, file='decoup.dat', status='old')
-        read (123, *) nprocs
+        read (123, *) nprocs,ncore
         close(123)
 #endif
 #if(DECOUP)||(PARA)
-        call  decoupage(nprocs)
+ 	   call  decoupage(nprocs,ncore)
 #endif
 #if(DECOUP)
         ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation

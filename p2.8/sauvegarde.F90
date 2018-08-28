@@ -28,6 +28,7 @@ subroutine sauvegarde
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   integer :: lucout, formatsauvmod,i
+  character :: extension*9
 #if(PARA)
   integer,dimension(:),pointer     :: ibuffer
   real(double), dimension(:,:),pointer   :: buffer
@@ -51,7 +52,16 @@ subroutine sauvegarde
   formatsauvmod = mod(formatsauv,2)
 
   if (rang==0) then
-     fnamcout = fnam(1:lenfnam)//'.cout'
+     if(itesauvinter.gt.0) then
+        if (mod(it,itesauvinter).eq.0) then
+           write(extension,'(i9.9)') it
+           fnamcout = fnam(1:lenfnam)//'.cout.'//extension
+        else
+           fnamcout = fnam(1:lenfnam)//'.cout'
+        endif
+     else
+        fnamcout = fnam(1:lenfnam)//'.cout'
+     end if
      if((it==0).and.lcasca)       fnamcout = fnam(1:lenfnam)//'.0.cout'
 
      lucout = 87
@@ -120,9 +130,9 @@ subroutine sauvegarde
      !
      ! Partie sequentielle de la sauvegarde :
      !
-!     do i=1,im
-!        write(1004,*)i,num_at_glob(i),xp(1,i)
-!     enddo
+     !     do i=1,im
+     !        write(1004,*)i,num_at_glob(i),xp(1,i)
+     !     enddo
      write (lucout) ityp
      write (lucout) xp
      write (lucout) num_at_glob
@@ -157,6 +167,6 @@ subroutine sauvegarde
   deallocate (ibuffer)
 #endif
 
-!  if (rang==0)write(6,*)'fin sauvegarde'
+  !  if (rang==0)write(6,*)'fin sauvegarde'
   return
 end subroutine sauvegarde

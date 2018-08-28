@@ -929,7 +929,7 @@ contains
 
        !     if (nint.ne.0) then
        write(71,*)nint+2,'IT = ',it,' interstitiels'
-       write(71,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+       write(71,'(9F11.5)'),1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
             1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
             1d8*at(3,3)     
 
@@ -940,7 +940,7 @@ contains
                indint(iint))*1D+8, xp(3,indint(iint))*1D+8, indint(iint)
        end do
        write(74,*)nint+2,'IT = ',it,' interstitiels'
-       write(74,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+       write(74,'(9F11.5)'),1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
             1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
             1d8*at(3,3)     
 
@@ -1294,7 +1294,7 @@ contains
 
        !     if (nint.ne.0) then
        write(71,*)nint+2,'IT = ',it,' interstitiels'
-       write(71,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+       write(71,'(9F11.5)'),1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
             1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
             1d8*at(3,3)     
 
@@ -1305,7 +1305,7 @@ contains
                indint(iint))*1D+8, xp(3,indint(iint))*1D+8, indint(iint)
        end do
        write(74,*)nint+2,'IT = ',it,' interstitiels'
-       write(74,'(9F11.5)')1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
+       write(74,'(9F11.5)'),1d8*at(1,1),1d8*at(2,1),1d8*at(3,1),&
             1d8*at(1,2),1d8*at(2,2),1d8*at(3,2),1d8*at(1,3),1d8*at(2,3),&
             1d8*at(3,3)     
 
@@ -1418,7 +1418,6 @@ contains
     integer, dimension (1000):: nscIn,nscVn
 !    write(6,*)'indvac',indvac(1:nvac)
 !    write(6,*)'indint',indint(1:nint)
-    integer :: i, ic, nclustI, nclustV
 
     ndeft=nvac+nint
     allocate (deft(ndeft)) 

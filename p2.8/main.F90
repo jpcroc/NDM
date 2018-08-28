@@ -17,10 +17,11 @@ program ndm
   use mod_mpi_mab
 #endif
 
+
+
 #if(PHONDY && PARAPH)
  use mod_mpi_phondy
 #endif
-
 #if(ML && PARAML)
  use mod_mpi_ml
 #endif
@@ -70,13 +71,13 @@ rangph=0
 
 
 
-  if (rang==0) write(6,*)'*** NDM830 ***'
+  if (rang==0) write(6,*)'*** NDM853 ***'
 #if(ART)
-  if (rang==0) write(6,*)'*** NDM830+ ART ***'
+  if (rang==0) write(6,*)'*** NDM853+ ART ***'
 #endif
 
 #if(PHONDY)
-  if (rang==0) write(6,*)'*** NDMP830 +  PHONDY ***'
+  if (rang==0) write(6,*)'*** NDMP853 +  PHONDY ***'
 #endif
 
 #if(MAB)
@@ -84,11 +85,11 @@ rangph=0
 #if(LAMMPS_VERSION)
   call init_mpi_mab()
 #endif
-  if (rang==0) write(6,*)'*** NDMP830 +   MAB ***'
+  if (rang==0) write(6,*)'*** NDMP853 +   MAB ***'
 #endif
 
 #if(ML)
-  if (rang==0) write(6,*)'*** NDMP830 +   ML ***'
+  if (rang==0) write(6,*)'*** NDMP853 +   ML ***'
 #endif
 
 
@@ -110,4 +111,7 @@ continue
 #endif
 
 end program ndm
+
+
+
 ! ca c'est du programme, papa 
