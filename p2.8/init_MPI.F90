@@ -22,3 +22,6 @@ subroutine init_mpi()
   temps_deb = MPI_Wtime()
 
 end subroutine init_mpi
+
+
+

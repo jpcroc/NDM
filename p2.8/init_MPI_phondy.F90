@@ -11,6 +11,7 @@ subroutine init_mpi_phondy()
 
   use mpi
   use mod_mpi_phondy
+  use gen_mpi
   use gen_com_m , ONLY: rangph
   implicit none
 
@@ -26,7 +27,8 @@ subroutine init_mpi_phondy()
   !--------------------------------------------------
   !Corps de la routine
 
-call MPI_INIT (codeph)
+codeph=code_mpi
+!call MPI_INIT (codeph)
 call MPI_COMM_SIZE(MPI_COMM_WORLD,nb_procsph, codeph)
 call MPI_COMM_RANK(MPI_COMM_WORLD,rangph,codeph)
 

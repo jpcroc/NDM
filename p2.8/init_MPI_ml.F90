@@ -14,10 +14,12 @@ end module mod_mpi_ml
 
 
 
+
 subroutine init_mpi_ml()
 
   use mpi
   use mod_mpi_ml
+  use gen_mpi
   use gen_com_m , ONLY: rangml
   implicit none
 
@@ -33,9 +35,13 @@ subroutine init_mpi_ml()
   !--------------------------------------------------
   !Corps de la routine
 
-call MPI_INIT (codeml)
+codeml=code_mpi
+!call MPI_INIT (codeml)
 call MPI_COMM_SIZE(MPI_COMM_WORLD,nb_procsml, codeml)
 call MPI_COMM_RANK(MPI_COMM_WORLD,rangml,codeml)
 
 
 end subroutine init_mpi_ml
+
+
+

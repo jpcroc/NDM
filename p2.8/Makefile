@@ -43,9 +43,10 @@ OBJS_MOD=   T_kind_param_m.o\
 OBJS_PARA=   T_kind_param_mpi_m.o\
 	mod_mpi.o\
 	init_voisinage.o\
-	init_MPI.o 
+	init_MPI.o
 
 
+OBJS_PARACOM=  gen_init_MPI.o
 OBJS_PARAPH=   init_MPI_phondy.o
 OBJS_PARAMAB=  init_MPI_mab.o
 OBJS_PARAML=   init_MPI_ml.o
@@ -192,7 +193,7 @@ endif
 ifdef PHONDY
  # Version PHONDY
 ifdef PARAPH
- OBJS = ${OBJS_MOD} ${OBJS_PARAPH} ${OBJS_SEQ}
+ OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAPH} ${OBJS_SEQ}
  EXT=_phondy_para 
 ifdef LAMMPS_VERSION
  EXT=_phondy_para_lammps
@@ -210,7 +211,7 @@ endif
 ifdef ML
  # Version Machine Learning
 ifdef PARAML
- OBJS = ${OBJS_MOD} ${OBJS_PARAML} ${OBJS_SEQ}
+ OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAML} ${OBJS_SEQ}
  EXT=_ml_para 
 else
  OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
@@ -220,6 +221,36 @@ endif
  CPPFLAGS=${CPPFLAGS_ML}
  CLEANML=clean_ml
  DIREXT=ml
+endif
+
+
+ifdef ML
+ # Version Machine Learning
+ifdef PARAML
+ifdef PHONDY
+ # Version PHONDY
+ifdef PARAPH
+ OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAPH} ${OBJS_PARAML} ${OBJS_SEQ}
+ CPPFLAGS=${CPPFLAGS_ML}
+ EXT=_ml_phondy_para
+ DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
+endif
+endif
+endif
+endif
+
+
+ifdef ML
+ # Version Machine Learning
+ifdef PHONDY
+ # Version PHONDY
+ifdef PARAPH
+ OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAPH} ${OBJS_PARAML} ${OBJS_SEQ}
+ CPPFLAGS=${CPPFLAGS_ML}
+ EXT=_ml_phondy_para
+ DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
+endif
+endif
 endif
 
 
@@ -284,7 +315,7 @@ ${BIN}/rundm90 : ${DEP}
 $(LIBART): 
 	(cp -rp ../art ./ ; cd art	; make ; cp *.o *.a ../../art)
 $(LIBPHONDY): 
-	(cp -rp ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
+	(cp -rL ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
 $(LIBML): 
 	(cp -rL ../ml ./ ; cd ml	; make ; cp *.o *.a ../../ml)
 $(LIBSUNDAE): 

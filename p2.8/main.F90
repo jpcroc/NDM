@@ -52,9 +52,16 @@ program ndm
   parallele = .false.
 #endif
 
-#if(ML || PARAML)
-rangml=0
+
+
+#if (PARAML || PARAPH)
+  call gen_init_mpi
 #endif
+
+#if(ML || PARAML)
+  rangml=0
+#endif
+
 #if(ML && PARAML)
   call init_mpi_ml()
   rang=rangml
@@ -62,8 +69,9 @@ rangml=0
 
 
 #if(PHONDY || PARAPH)
-rangph=0
+  rangph=0
 #endif
+
 #if(PHONDY && PARAPH)
   call init_mpi_phondy()
   rang=rangph
