@@ -878,8 +878,13 @@ int count_existing_elements(int* elementarray){
 int calculate_normalization_factor(int num_of_ions){
   /* for converting units to 1/cm^3 per 1/cm^2 */
   if(normalize_output==1){
+    /*CROC MODIFICATION
+      I do not understabd the ion_vx in this rescale. This may be linked with an ion_vx change I did somewhere else.
+      I remove the ion_vx
+    /*    unit_conversion_factor = (  (double)(1.0/(cell_size_x*cell_size_y*cell_size_z*1e-21))  ) /
+	  (((double)(num_of_ions))  /  (ion_vx*target_size_y*target_size_z*1e-14) );*/
     unit_conversion_factor = (  (double)(1.0/(cell_size_x*cell_size_y*cell_size_z*1e-21))  ) /
-      (((double)(num_of_ions))  /  (ion_vx*target_size_y*target_size_z*1e-14) );
+      (((double)(num_of_ions))  /  (target_size_y*target_size_z*1e-14) );
   }else{
     unit_conversion_factor=1.0;
   }

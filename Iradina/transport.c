@@ -115,7 +115,7 @@ int IrradiateTarget(){
 
   /*  fEnergy=OpenFileContinuous(OutputFileBaseName,".SurfEnergy"); */
 
-  /* CROC call to building of KP tables if simulation_type=3*/
+  /* CROC call to building of KP tables if simulation_type=5*/
     if(simulation_type==5){ /* Status file, which can be read by other programs */
       prepare_KP_tables2 ();
       
@@ -765,6 +765,7 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 		   and move it into vacuum! (by about the spacing!) However this might move it outside target which could be a problem!*/
 		/* Start recoil as new projectile: */
 		recoil_energy-=E_compare; /* substract surface binding energy */
+		if(store_energy_deposit==1){TargetEnergyPhonons[cell_i]+=(double)E_compare;} /* Energy goes to phonons */
 		FastProjectileTransport(target_Z, target_mass, recoil_energy,
 					x+recoil_vx*current_material->LayerDistance,
 					y+recoil_vy*current_material->LayerDistance,
@@ -832,7 +833,7 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 			its energy goes into phonons (unless sputtered) */
 	      if(store_energy_deposit==1){TargetEnergyPhonons[cell_i]+=(double)recoil_energy;}
 	    }
-	  }else { 	      /* no recoils considered ; */
+	  }else { 	      /* Simulation_type no recoils considered ; */
 
 	    if(simulation_type==5){    /*CROC : KP INCLUDED HERE.  based on average material <> SRIM but FOLLOWS page 7-28 of SRIM book by ZBZ*/
 	      E_div=2.5*current_material->MeanEd;
@@ -880,7 +881,10 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 		((current_material->TargetElementalVacancies)[target_index])[cell_i]+=floor(E_v / E_div) ;
 	      }
 	    }
-	  }
+	    if(simulation_type==3){  
+	      TargetEnergyPhonons[cell_i]+= recoil_energy ;
+	    }
+	  }      /* Simulation_type no recoils considered ; */
 	} /* Collision took place */
 
 	/* Check what happens to the projectile after possible collision: */
@@ -911,6 +915,36 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
   
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
