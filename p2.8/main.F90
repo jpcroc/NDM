@@ -86,17 +86,21 @@ program ndm
   if (rang==0) write(6,*)'*** NDMP853 +  PHONDY ***'
 #endif
 
+
+!if MAB .....
 #if(MAB)
   rangmab=0
+  if (rang==0) write(6,*)'*** NDMP853 +   MAB ***'
 #if (ML && PARAML)
+  if (rang==0) write(6,*)'*** NDMP853 +   MAB + ML + PARAML ***'
   call init_mpi_mab()
   rang=rangmab
-#endif 
+#endif
 #if(LAMMPS_VERSION)
   call init_mpi_mab()
 #endif
-  if (rang==0) write(6,*)'*** NDMP853 +   MAB ***'
 #endif
+!endif MAB ......
 
 #if(ML)
   if (rang==0) write(6,*)'*** NDMP853 +   ML ***'
@@ -104,7 +108,7 @@ program ndm
 
 
 
-     
+
   open(29, file='name.in', status='unknown')
   read (29, *) a1
   fnam = a1
@@ -124,4 +128,4 @@ end program ndm
 
 
 
-! ca c'est du programme, papa 
+! ca c'est du programme, papa
