@@ -50,7 +50,7 @@ subroutine init
   !potentiel BKS
 #if(PARAPH)
 rang=rangph
-#endif 
+#endif
 
 
 #if(PARA)
@@ -78,7 +78,7 @@ rang=rangph
   end if
 
   do ipotcont=0,npotmax
-     if(lpotentiel(ipotcont).EQV..true.) then 
+     if(lpotentiel(ipotcont).EQV..true.) then
         ipotentiel=ipotcont
      else
         cycle
@@ -137,7 +137,7 @@ rang=rangph
            !        if (rang.eq.0) then
 !           if (rang==0)   write(6,*)'POTENTIEL tersoff.potin'
            !           if (ipotentiel==13) then
-           !           
+           !
            !           else
            !              write(6,*)'POTENTIEL tersoff.potin COUPURE MODIFIEE !!!!!!!!!!!!!!!!!!!!!!!!'
            !           end if
@@ -156,10 +156,10 @@ rang=rangph
          case(20)
            if (rang.eq.0) then
               write(6,*)
-              write(6,*)' ML ..... set-up POTENTIEL MiLady '
+              write(6,*)' ML ..... set-up MiLady potential'
               write(6,*)
            end if
-           !This comes with MiLaDy Package
+           !This comes with MiLaDy package
            call md_init_potential_ml
 #endif
    end select
@@ -168,9 +168,9 @@ rang=rangph
   end do
 !<---------end setting the potential---------------
 
-  
+
 !  if (rang == 0)  write(6,*)'cm',cm
-  usdh = 1/(two*tstep)         
+  usdh = 1/(two*tstep)
   !endif
 
   if (ibrake.gt.0) then
@@ -178,7 +178,7 @@ rang=rangph
   end if
 
 
-  it=0 
+  it=0
 
 
 
@@ -191,7 +191,7 @@ rang=rangph
 
      temps_config_deb = MPI_Wtime()
 #endif
-     call config 
+     call config
 #if(PARA)
      temps_config=MPI_Wtime()-temps_config_deb
 #endif
@@ -210,7 +210,7 @@ rang=rangph
 
 
 
-  if (iterasmol>=0) then 
+  if (iterasmol>=0) then
      itapp=-1
      call rasmol (itapp)
   end if
@@ -225,7 +225,7 @@ rang=rangph
 !<---------end setting the configuration by generation gin /  cin file ---------
 
   if (igen==2) then
-     call transf 
+     call transf
      formatsauv = 2
      call sauvegarde
      if (rang==0) write (6, *) 'modification terminee'
@@ -240,15 +240,15 @@ rang=rangph
   call DynamicalAllocationCell
 
   do ipotcont=0,npotmax
-     if(lpotentiel(ipotcont).EQV..true.) then 
+     if(lpotentiel(ipotcont).EQV..true.) then
         ipotentiel=ipotcont
      else
         cycle
      end if
 
-     select case(ipotentiel) 
+     select case(ipotentiel)
      case(0:9)
-        call calpo 
+        call calpo
      case(10:12)
         call calpoeam
      case(13,14,15)
@@ -276,7 +276,7 @@ rang=rangph
         write(6,*)
      end if
   end if
-  call neigcel 
+  call neigcel
 
 #if(PARA)
   call init_voisinage()
@@ -287,7 +287,7 @@ rang=rangph
   !     WRITE(6,*) 'Le proc ',myid,' envoit ',nbr_cell_frontiere(i),' vers le proc ',proc_voisin(i)
   !  enddo
   !  WRITE(6,*) 'Le proc ',myid,' recoit ',nbr_cell_ftm,' cell. fantome de ses voisins'
-#endif 
+#endif
 
   ! !!! compcr non pris en charge en parallele !!!
 
@@ -310,7 +310,7 @@ rang=rangph
   !  if (itmax>0) then
   call caltabt
   ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
-  if (ltabvois) call caltabi 
+  if (ltabvois) call caltabi
   ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
   !  end if
 !computing the neighbours for the very first time ......
@@ -321,11 +321,11 @@ rang=rangph
    if (rang.eq.0) then
       write(6,*)
       write(6,*)' ML  ..... configuration MiLady '
-      write(6,*)  
+      write(6,*)
    end if
    !This comes with MiLaDy Package
    call md_init_config_ml
-  end if 
+  end if
 #endif
 
 
@@ -343,7 +343,7 @@ rang=rangph
         write(6,*) 'i2T=0 t_cpl<0 and l2T : STOP'
         stop
      end if
-     if (nox.le.0 ) then 
+     if (nox.le.0 ) then
         write(6,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
         stop
      end if
@@ -358,11 +358,11 @@ if (.not.lrestart) then
 #endif
 
      ! input and initialization of 2T
-     call initspeed 
-     if (iterasmol>=0) then 
+     call initspeed
+     if (iterasmol>=0) then
         itapp=0
         call rasmol (itapp)
-     end if 
+     end if
   end if
      if (lcorrelvp) then
         ax=vp
@@ -386,14 +386,14 @@ if (.not.lrestart) then
      temps_initspeed=MPI_Wtime()-temps_initspeed_deb
 #endif
 
-     if ((itetimestep>0).and.(.not.lcasca)) call deftimestep 
+     if ((itetimestep>0).and.(.not.lcasca)) call deftimestep
 
 
   if (lcontr) call initcontr(xp,xpp,vp,ax,ityp)
 
 
   if (lcasca) then
-     call initcasca 
+     call initcasca
 #if PARA
 #else
 
@@ -411,9 +411,9 @@ if (.not.lrestart) then
         end if
 
      if (itmax==0) stop
-     call caltabt 
+     call caltabt
      if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
-     if (ltabvois) call caltabi 
+     if (ltabvois) call caltabi
   end if
 
 
@@ -435,7 +435,7 @@ if (.not.lrestart) then
 #if(PARA)
      allocate (sigtyp_loc(3,3,ntyp))
      allocate (sigtyptyp_loc(3,3,ntyp,ntyp))
-#endif 
+#endif
   end if
 
   if (lcdp) then
@@ -444,28 +444,28 @@ if (.not.lrestart) then
         call creadp (xp, xpp, ityp,vp)
         call caltabt
         if (ltabvois) call caltabi
-        
-        if (lperiod) then 
+
+        if (lperiod) then
            call period
-        else 
+        else
            write(*,*) 'WARNING .... Not implemented for lperiod  FALSE nad lcdp TRUE'
            write(*,*) 'FIX THAT! Until there the program will stop'
-           stop      
+           stop
         end if
         write(6,*)'im',im
      end if
   end if
 
   if ((lheat.EQV..true.).and.(iteheat==0))call heat
-  
+
   if(iteplz>0)  call prtplz(xp,ityp)
 
 
   if (dmtype==6) then
-     call anapos(it) 
+     call anapos(it)
      call arret_ndm
   end if
-  !  call sauvegarde 
+  !  call sauvegarde
   if (itmax==0) call arret_ndm
 
   if(iteanapos>0)then

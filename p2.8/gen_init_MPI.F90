@@ -1,4 +1,3 @@
-
 module gen_mpi
      integer:: code_mpi, nb_procs_mpi, rang_mpi
 end module gen_mpi

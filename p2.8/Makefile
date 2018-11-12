@@ -230,7 +230,7 @@ ifdef PARAML
 ifdef PHONDY
  # Version PHONDY
 ifdef PARAPH
- OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAPH} ${OBJS_PARAML} ${OBJS_SEQ}
+ OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAML} ${OBJS_PARAPH}  ${OBJS_SEQ}
  CPPFLAGS=${CPPFLAGS_ML}
  EXT=_ml_phondy_para
  DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
@@ -273,17 +273,28 @@ endif
 
 ifdef  MAB
  # Version MAB
- OBJS = ${OBJS_MOD} ${OBJS_PARAMAB}  ${OBJS_SEQ}
+ OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAMAB}  ${OBJS_SEQ}
  DEP=${OBJS}  ${LIBMAB}
  CPPFLAGS=${CPPFLAGS_MAB}
  CLEANMAB=clean_mab
  DIREXT=mab
  EXT=_mab
 ifdef LAMMPS_VERSION
- OBJS = ${OBJS_MOD} ${OBJS_PARAMAB} ${OBJS_SEQ}
+ OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAMAB} ${OBJS_SEQ}
  EXT=_mab_lammps
 endif
 
+ifdef ML
+ifdef PARAML
+ # Version MAB + ML + PARAML
+OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAMAB} ${OBJS_PARAML}  ${OBJS_SEQ}
+DEP=${OBJS} ${LIBML}  ${LIBMAB}
+CPPFLAGS=${CPPFLAGS_MAB}
+CLEANMAB=clean_mab
+DIREXT=mab
+EXT=_mab_ml_para
+endif 
+endif
 
 endif
 
@@ -313,15 +324,15 @@ ${BIN}/rundm90 : ${DEP}
 
 
 $(LIBART): 
-	(cp -rp ../art ./ ; cd art	; make ; cp *.o *.a ../../art)
+	(cp -rL ../art ./ ; cd art	; make ; cp *.o *.a ../../art)
 $(LIBPHONDY): 
 	(cp -rL ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
 $(LIBML): 
 	(cp -rL ../ml ./ ; cd ml	; make ; cp *.o *.a ../../ml)
 $(LIBSUNDAE): 
-	(cp -rp ../sundae ./ ; cd sundae	; make ; cp *.o *.a *.tmp.f90 ../../sundae)
+	(cp -rL ../sundae ./ ; cd sundae	; make ; cp *.o *.a *.tmp.f90 ../../sundae)
 $(LIBMAB): 
-	(cp -rp ../mab ./ ; cd mab	; make ; cp *.o *.a ../../mab)
+	(cp -rL ../mab ./ ; cd mab	; make ; cp *.o *.a ../../mab)
 clean : clean_seq clean_para
 
 clean_seq :

@@ -1,7 +1,7 @@
 module mod_mpi_mab 
  use mpi
      integer, dimension(MPI_STATUS_SIZE) :: statut
-     integer :: nb_procsph,codeph
+     integer :: nb_procsmab,codemab
 end module mod_mpi_mab
 
 
@@ -11,7 +11,8 @@ subroutine init_mpi_mab()
 
   use mpi
   use mod_mpi_mab
-  use gen_com_m , ONLY: rangph
+  use gen_mpi
+  use gen_com_m , ONLY: rangmab
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM
@@ -25,10 +26,10 @@ subroutine init_mpi_mab()
 
   !--------------------------------------------------
   !Corps de la routine
-
-call MPI_INIT (codeph)
-call MPI_COMM_SIZE(MPI_COMM_WORLD,nb_procsph, codeph)
-call MPI_COMM_RANK(MPI_COMM_WORLD,rangph,codeph)
+codemab=code_mpi
+!call MPI_INIT (codemab)
+call MPI_COMM_SIZE(MPI_COMM_WORLD,nb_procsmab, codemab)
+call MPI_COMM_RANK(MPI_COMM_WORLD,rangmab,codemab)
 
 
 end subroutine init_mpi_mab

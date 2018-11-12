@@ -17,8 +17,6 @@ program ndm
   use mod_mpi_mab
 #endif
 
-
-
 #if(PHONDY && PARAPH)
  use mod_mpi_phondy
 #endif
@@ -54,7 +52,7 @@ program ndm
 
 
 
-#if (PARAML || PARAPH)
+#if (PARAML || PARAPH || MAB)
   call gen_init_mpi
 #endif
 
@@ -89,7 +87,11 @@ program ndm
 #endif
 
 #if(MAB)
-  rangph=0
+  rangmab=0
+#if (ML && PARAML)
+  call init_mpi_mab()
+  rang=rangmab
+#endif 
 #if(LAMMPS_VERSION)
   call init_mpi_mab()
 #endif
