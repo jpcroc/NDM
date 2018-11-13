@@ -498,7 +498,7 @@ double THETA(double epsilon, double s, unsigned int nsum) {
 /* compute all the elements of matrix and write matrix to file 'corteo.mat'
    user sets showProgress!=0 to display the progress of this (long) calculation to the console
    return 1 if successful, 0 if not able to write file */
-int calcMatrix(int showProgress) {
+int calcMatrix(int showProgress, char* DirectoryData) {
   unsigned long i, j, nThetaErr = 0;
   double theta, sinThetaBy2;
 //double s, ds, dsdTheta, eps;
@@ -506,7 +506,10 @@ int calcMatrix(int showProgress) {
 
   FILE *ofp;
   char *mode = "wb";
+  char dataFile[1000];
 
+  sprintf(dataFile, "%s/corteo.mat", DirectoryData); /* dir + corteo.mat */
+  fprintf(stdout, "create %s", dataFile);
   PHI = PHIUniv;  // matrix computed using Universal potential 
   // (TODO: let the user decide; WARNING then: screening ion->a to be computed with the right screening length)
 
@@ -530,7 +533,7 @@ int calcMatrix(int showProgress) {
   }
 
   // open file corteo.mat and write matrix, including a header indicating the parameters used to compute matrix
-  ofp = fopen("data/corteo.mat", mode);
+  ofp = fopen(dataFile, mode); // ex "./data/corteo.mat"
   if (ofp == NULL) return 0;
   fwrite((void*)headerRef, HEADERSIZE, sizeof(float), ofp);
   fwrite((void*)matrix,    DIME*DIMS,  sizeof(float), ofp);
@@ -540,14 +543,14 @@ int calcMatrix(int showProgress) {
     fprintf(stdout, "done,\n");
     fflush(stdout);
   }
-  if(nThetaErr) fprintf(stderr, "%lu error(s) evaluating theta\n", nThetaErr);
+  if(nThetaErr) fprintf(stderr, "ERROR: %lu error(s) evaluating theta.\n", nThetaErr);
   
   return 1;
 }
 
 /* read scattering matrix from file corteo.mat
    return 1 if file read correctly, 0 otherwise */
-int loadMatrix(void) {
+int loadMatrix(char* DirectoryData) {
   unsigned int i;
   FILE *ifp;
   char *mode = "rb";
@@ -555,23 +558,32 @@ int loadMatrix(void) {
   float header[HEADERSIZE];
   unsigned int tail;
 
-  ifp = fopen("data/corteo.mat", mode);
+  char dataFile[1000];
+
+  sprintf(dataFile, "%s/corteo.mat", DirectoryData); /* dir + corteo.mat */
+  fprintf(stdout, "Open %s\n", dataFile);
+  ifp = fopen(dataFile, mode); // "../data/corteo.mat"
   if (ifp == NULL) {
-    fprintf(stderr,"Can't open data/corteo.mat ");
+    fprintf(stderr, "ERROR: Can't open '%s'.", dataFile);
     return 0;
   }
 
   // file exists, get header
   fread((void*)header, HEADERSIZE, sizeof(float), ifp);
 
-  for(i=0; i<HEADERSIZE; i++)
+  for(i=0; i<HEADERSIZE; i++) {
+    fprintf(stdout,"----- Header elements %i (header %.4e and %.4e expected)\n", i, header[i], headerRef[i]);
+  }
+  for(i=0; i<HEADERSIZE; i++) {
     if(header[i] != headerRef[i]) {
       /* "corteo.mat" header does not correspond to currently defined parameters */
       fclose(ifp);
-      fprintf(stderr,"Header element %i does not correspond to current parameters in corteo.mat\n",i);
+      fprintf(stderr,"ERROR: Header element %i does not correspond to current parameters in corteo.mat.\n",i);
       return 0;
     }
+  }
   
+  fprintf(stdout,"----- Header elements correspond to current parameters in corteo.mat\n");
   // read file into matrix
   fread((void*)matrix, DIME*DIMS, sizeof(float), ifp);
 
@@ -613,7 +625,7 @@ double crossSectionScreenPot(double E, unsigned int Z1, unsigned int Z2, double 
     PHI = PHILJ; // Lenz-Jensen screening function
     break;
   default:
-    fprintf(stderr, "Error, screening function of type %u unknown. Stopping here.", screeningType);
+    fprintf(stderr, "ERROR: screening function of type %u unknown.", screeningType);
     exit(1);
   }
 
@@ -740,15 +752,15 @@ double randomx() {
 unsigned int check_type_representation() {
     float f = 3328.625f;
     if( sizeof(unsigned int)!=4 ) {
-      fprintf(stderr,"Error: sizeof(unsigned int) = %i instead of 4\n", (int)sizeof(unsigned int));
+      fprintf(stderr,"ERROR: sizeof(unsigned int) = %i instead of 4.\n", (int)sizeof(unsigned int));
       return 1;
     }
     if(sizeof(float)!=4)  {
-      fprintf(stderr,"Error: sizeof(float) = %i instead of 4\n", (int)sizeof(float));
+      fprintf(stderr,"ERROR: sizeof(float) = %i instead of 4.\n", (int)sizeof(float));
         return 2;
     }
     if(*(unsigned int *)&f != 0x45500a00)  {
-        fprintf(stderr,"Error: looks like your machine does not follow IEEE-754 standard for binary representation of float.\n");
+        fprintf(stderr,"ERROR: looks like your machine does not follow IEEE-754 standard for binary representation of float.\n");
         return 3;
     }
     return 0;

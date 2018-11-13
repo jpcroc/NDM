@@ -110,6 +110,15 @@ int handle_cmd_line_options(int argc, char* argv[]){
 	return -4001;
       }
     }
+    if(strcmp(argv[i],"-data")==0){ /* option for alternative directory data corteo */
+      i++;
+      if((i<argc)&&(strlen(argv[i])<=1023)){
+	strcpy(DirectoryData,argv[i]);
+      } else {
+	printf("Error: the -data option requires a directory name (of less than 1024 characters)\n");
+	return -4001;
+      }
+    }
     if(strcmp(argv[i],"-p")==0){ /* option for setting print level */
       i++;
       if(i<argc){
@@ -196,6 +205,7 @@ int print_help_text(){
   printf(" -h            print this help\n");
   printf(" -l            display license\n");
   printf(" -c FILENAME   specify name of config file. Default: Config.in\n");
+  printf(" -data DATADIR specify name of corteo database directory. Default: ./data\n");
   printf(" -p NUMBER     specify how much info to print to console. > 0 means much,\n");
   printf("               < 0 means little\n");
   printf(" -n NUMBER     sets the maximum number of ions to be simulated to NUMBER.\n");
@@ -225,7 +235,7 @@ int store_results(char* BaseName,int ion_number){
   int BaseNameLength;
   char* strTemp;
   char* strTemp2;
-
+  float maxion,maxvac ;
   int i,j;
 
   FILE* fp;
@@ -297,7 +307,38 @@ int store_results(char* BaseName,int ion_number){
     if(print_level>=2){printf("Storing sum of recoiled replacements:   %s\n",strTemp);}
     WriteIntArrayToFile(strTemp,TargetTotalReplacements,cell_count,TargetCompositionFileType);
     strTemp[BaseNameLength]='\0';
-  }
+    /* vacancies + ions: */
+        strcat(strTemp,".IONS_VAC");
+    if(print_level>=2){printf("Storing implanted ions and vacancies:   %s\n",strTemp);}
+    maxion=0;
+    maxvac=0;
+    for (i = 0; i < cell_count; ++i) {
+        if ( TargetImplantedIons[i] > maxion ) {
+            maxion=TargetImplantedIons[i];
+        }
+    }
+    if(normalize_output==1){
+    printf("Maximum number of implanted ions :   %g\n",maxion * unit_conversion_factor);
+    }else{
+    printf("Maximum number of implanted ions :   %g\n",maxion );
+    }
+    for (i = 0; i < cell_count; ++i) {
+        if ( TargetTotalVacancies[i] > maxvac ) {
+            maxvac=TargetTotalVacancies[i];
+        }
+    }
+     if(normalize_output==1){
+   printf("Maximum number of vacancies :   %g\n",maxvac* unit_conversion_factor);
+    }else{
+   printf("Maximum number of vacancies :   %g\n",maxvac* unit_conversion_factor);
+     }
+
+
+    Write2ArraysToFile(strTemp,TargetImplantedIons,maxion,TargetTotalVacancies,maxvac,cell_count,TargetCompositionFileType);
+    strTemp[BaseNameLength]='\0';
+    
+
+}
 
   /* Deposited energy */
   if(store_energy_deposit==1){
@@ -482,7 +523,7 @@ int InitConfiguration(char* ConfigFileName){
 
   if(mem_usage_only==0){ /* Do real stuff, not just estimating memory usage */
     /* Load the corteo scattering matrix */
-    result=loadMatrix();
+    result=loadMatrix(DirectoryData);
     if(result!=1){printf("Error loading corteo scattering matrix.\n");return -4014; }
     if(print_level>=0){printf("Corteo scattering matrix loaded.\n");}
     
@@ -522,9 +563,9 @@ int InitConfiguration(char* ConfigFileName){
     /* Read invserse error function list and randomize it*/
     result=LoadInverseErf();
     if(result!=0){printf("Error reading invser Erf() list!\n");return result;}
-    if(print_level>=0){printf("Invsere Erf list read.\n");}
+    if(print_level>=0){printf("Inverse Erf list read.\n");}
     randomizelist(inverse_erf_list, MAXERFLIST);
-    if(print_level>=0){printf("Invsere Erf list randomized.\n");}
+    if(print_level>=0){printf("Inverse Erf list randomized.\n");}
 
   } else { /* Esimate memory usage: */
     lui_temp=(DIME*DIMS*sizeof(float));
@@ -617,8 +658,9 @@ int PrepareStoppingTables(){
 	
 	/* Ok, now we can load the stopping table from the file */
 	/* The following code to do this is adapted from the corteo code */
-	sprintf(StoppingFileName, "data/%u.asp",j); /* Filename where stopping data are tabulated */
-	
+	sprintf(StoppingFileName, "%s/%u.asp", DirectoryData, j); /* Filename where stopping data are tabulated */
+	fprintf(stdout, "Open %s\n", StoppingFileName);
+
 	/* For all elements occuring in the current material, we need to load the stopping data and then apply a rule for stopping in compounds */
 	for(k=0;k<ListOfMaterials[i].ElementCount;k++){ /* Go through elements of target material */
 	  
@@ -787,8 +829,12 @@ int load_Chu_straggling_values(){
   unsigned int k, l, Z;
   char temp[1000];
   FILE * fp;
+  char dataFile[1000];
 
-  fp = fopen("data/chu.dat", "r");
+  sprintf(dataFile, "%s/chu.dat", DirectoryData); /* dir + chu.dat */
+  fprintf(stdout, "Open %s\n", dataFile);
+
+  fp = fopen(dataFile, "r");
   if(fp==NULL) {
     return -1;
   }
@@ -1346,8 +1392,9 @@ INDEX_BOUND_CHECKING
 int print_some_simulation_parameters(FILE* fp,int ion_number){
   /* print some information on the current simulation to the stream pointed to by fp */
   time_t current;
-  current=time(NULL);
   char timestr[20];
+
+  current=time(NULL);
   fprintf(fp,"[Simulation]\n");
   fprintf(fp,"ions_simulated=%i\n",ion_number);
   fprintf(fp,"cmd_line_override_number_of_ions=%i\n",override_max_ions);

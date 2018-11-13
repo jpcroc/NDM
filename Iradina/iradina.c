@@ -16,11 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with iradina.  If not, see <http://www.gnu.org/licenses/>.
 
-
 ***********************************************************************/
 
 
 #include "iradina.h"
+#include <time.h>
 
 int main(int argc, char* argv[]){
   int result;
@@ -56,6 +56,11 @@ int main(int argc, char* argv[]){
   ConfigFileName=(char*)malloc(sizeof(char)*1024);
   if(ConfigFileName==NULL){printf("Not enough memory\n"); return -1;}
   strcpy(ConfigFileName,"Config.in"); /* Default */
+
+  DirectoryData=(char*)malloc(sizeof(char)*1024);
+  if(DirectoryData==NULL){printf("Not enough memory\n"); return -1;}
+  strcpy(DirectoryData,"./data"); /* Default as (previously) data dir in current dir*/
+
   MaterialsFileName=(char*)malloc(sizeof(char)*1024);
   if(MaterialsFileName==NULL){printf("Not enough memory\n"); return -1;}
   strcpy(MaterialsFileName,"Materials.in"); /* Default */
@@ -77,12 +82,13 @@ int main(int argc, char* argv[]){
     display_startup_message();
     /* check for correct type representation on machine: */
     if( (result=check_type_representation()) !=0){
-      printf("Error 107. Type checker returned %i\n",result);return -107;
+      fprintf(stderr, "ERROR: incorrect type on machine (%i).\n",result);
+      return -107;
     }
     if(create_status_file==1){write_status_file("init0", 0);}
     result=InitConfiguration(ConfigFileName);   /* init all things */
     if(result!=0){
-      printf("Initialization error: %i. Aborting.\n",result);
+      fprintf(stderr, "ERROR: Initialization (%i).\n",result);
       return result;
     }
     if(create_status_file==1){write_status_file("init1", 0);}
@@ -126,19 +132,19 @@ int main(int argc, char* argv[]){
 	printf("\nYou are using iradina to convert a material based target definition to an element based one.\n\n");
 	result=InitConfiguration(ConfigFileName);   /* init all things, needs to be done to read material file */
 	if(result!=0){
-	  printf("Initialization error: %i. Aborting.\n",result);
+	  fprintf(stderr, "ERROR: Initialization error (%i).\n",result);
 	  return result;
 	}
 	/* Call converter: */
 	result=MaterialToElementConverter(ConversionFileName);
 	if(result!=0){
-	  printf("Conversion failed. Error: %i\n",result);
+	  fprintf(stderr, "ERROR: Conversion failed (%i).\n",result);
 	  return result;
 	}
     	break;
       case 1: break;	/* help was printed. Do nothing else */
       default:
-	printf("Error: Unknown operation to perform.\n");
+	fprintf(stderr, "ERROR: Unknown operation to perform.\n");
       }
     }
   }
@@ -147,15 +153,26 @@ int main(int argc, char* argv[]){
 
 
 int display_startup_message(){
-  if(print_level>=-1){
-    printf("\nHello. This is iradina version %i.%i.%i%s, ",VERSION,SUBVERSION,SUBSUBVERSION,RELEASESTRING);
-    printf("%s\n%s\n",VERSIONDATE,VERSIONCOMMENT);
-    printf("by C. Borschel, 2016\nInstitute for Solid State Physics, University of Jena\n\n");
-    printf("This program comes with ABSOLUTELY NO WARRANTY.\nThis is free software, and you are welcome to redistribute\nit under certain conditions, see license.txt for details.\n\n");
+  time_t rawtime;
+  struct tm * timeinfo;
 
+  if(print_level>=-1){
+    printf("\nHello. This is iradina version %i.%i.%i%s (cea).\n",VERSION,SUBVERSION,SUBSUBVERSION,RELEASESTRING);
+    printf("Compiled %s.\n", COMPILEDATE);
+    // printf("%s\n%s\n",VERSIONDATE,VERSIONCOMMENT);
+    printf("From iradina version 1.0.8, 2016-Mar-02 by C.Borschel.\n");
+    printf("Institute for Solid State Physics, University of Jena.\n\n");
+    printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
+    printf("This is free software, and you are welcome to redistribute it under certain conditions,\n");
+    printf("see license.txt for details.\n\n");
+    printf("Modified JP.Crocombette (cea).\nwith -data as corteo dat directory argument.\n\n");
 #ifdef INCLUDE_SPECIAL_GEOMETRY
     printf("This is the %s version of iradina.\n\n",SPECIAL_GEOMETRY_NAME);
-#endif    
+#endif
   }
+  time( &rawtime );
+  timeinfo = localtime( &rawtime );
+  printf( "Current case computing time: %s\n", asctime(timeinfo) );
+
   return 0;
 }

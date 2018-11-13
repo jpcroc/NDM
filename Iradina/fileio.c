@@ -140,6 +140,7 @@ int ReadIntFileIntoArray(char* Filename,int* TargetArray, int Count, int FileTyp
 
   FILE* fp;
   int   i;
+  int   iline;
   int   x,y,z,value;
   int   result;
 
@@ -150,22 +151,33 @@ int ReadIntFileIntoArray(char* Filename,int* TargetArray, int Count, int FileTyp
 
   switch(FileType){
   case 1: /* just one column */
+    iline = 0;
     while((i<Count)&&(!feof(fp))){ /* read count lines max or until file ends */
+      iline++;
       result=fscanf(fp,"%i",&value);
       if(result==1){
-	(TargetArray[i++])=value;
+	    (TargetArray[i++])=value;
       } else {
-	if(result!=EOF){printf("Warning: entry in target composition file does not match expected format! Entry skipped.\n");}
+	    if(result!=EOF){
+	      printf("Error: bad entry in line %i in target composition file '%s'.\n", iline, Filename);
+	      return 1;
+	    }
       }
     }
     break;
+
   default: /* four column file, x,y,z and value. */
+    iline = 0;
     while(!feof(fp)){ /* read count lines max or until file ends */
+      iline++;
       result=fscanf(fp,"%i %i %i %i",&x,&y,&z,&value);
       if(result==4){
-	i=TargetIndex(x,y,z);if((i>=0)&&(i<Count)){TargetArray[i]=value;}
+	    i=TargetIndex(x,y,z);if((i>=0)&&(i<Count)){TargetArray[i]=value;}
       } else {
-	if(result!=EOF){printf("Warning: entry in target composition file does not match expected format! Entry skipped.\n");}
+	    if(result!=EOF){
+	      printf("Error: bad entry in line %i in target composition file '%s'.\n", iline, Filename);
+	      return 1;
+	    }
       }
     }
     break;
@@ -253,6 +265,41 @@ int WriteIntArrayToFile(char* Filename,int* SourceArray, int Count, int FileType
   fclose(fp);
   return 0;
 }
+/* CRC*/
+int Write2ArraysToFile(char* Filename,int* SourceArray1,float maxA1,int* SourceArray2, float maxA2,int Count, int FileType){      /* Writes designated array into file */
+
+  /* Writes the designated array of Count elements into a file. 
+     If the file is just one column of values then FileType should be
+     set to 1. If the file contains 4 columns (x, y, z, value)
+     then set it to 0.
+     The caller needs to make sure, that the array is large enough. */
+
+  
+  FILE* fp;
+  int   i;
+  int   x,y,z;
+
+  fp=fopen(Filename,"wt");
+  if(fp==NULL){return -5006;}
+  i=0;
+
+  switch(FileType){
+  case 1: 
+      for(i=0;i<Count;i++){
+	fprintf(fp,"%g\t%g\n",(double)SourceArray1[i]/(double)(maxA1),(double)SourceArray2[i]/(double)(maxA2));
+      }
+    break;
+  default: 
+      for(i=0;i<Count;i++){
+	GetTargetXYZ(i,&x,&y,&z); 
+	fprintf(fp,"%i\t%i\t%i\t%g\t%g\n",x,y,z,(double)SourceArray1[i]/(double)(maxA1),(double)SourceArray2[i]/(double)(maxA2));
+      }
+    break;
+  }
+  fclose(fp);
+  return 0;
+}
+  
 
 int WriteFloatArrayToFile(char* Filename, float* SourceArray, int Count, int FileType){
   /* Writes the designated array of Count elements into a file. 
@@ -469,7 +516,7 @@ int ConfigFileDataReader(char* ParName, char* ParValue){
   }
   if(strcmp(ParName,"store_exiting_limit")==0){ /* Store transmitted recoils until this number */
     sscanf(ParValue,"%i",&store_exiting_limit);
-    if(print_level>=1){printf("Max. exiting reoils:\t\t%i\n",store_exiting_limit);}
+    if(print_level>=1){printf("Max. exiting recoils:\t\t%i\n",store_exiting_limit);}
   }
 
   if(strcmp(ParName,"store_ion_paths")==0){ /* Store ion paths? */
@@ -593,8 +640,12 @@ int LoadInverseErf() {
   unsigned int k;
   char erfval[1000];
   FILE * ifp;
+  char dataFile[1000];
 
-  ifp = fopen("data/erfinv.dat", "r");
+  sprintf(dataFile, "%s/erfinv.dat", DirectoryData); /* dir + erfinv.dat */
+  fprintf(stdout, "Open %s\n", dataFile);
+
+  ifp = fopen(dataFile, "r");
   if(ifp==NULL){return -5014;}
 
   for(k=0; k<MAXERFLIST; k++) {

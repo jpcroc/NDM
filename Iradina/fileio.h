@@ -53,6 +53,7 @@ int IniFileReader(int(*DataBlockReader)(char* BlockName), int(*DataReader)(char*
 int ReadIntFileIntoArray(char* Filename,int* TargetArray, int Count, int FileType);     /* Reads the designated file into the designated array */
 int ReadFloatFileIntoArray(char* Filename,float* TargetArray, int Count, int FileType); /* Reads the designated file into the designated array */
 int WriteIntArrayToFile(char* Filename,int* SourceArray, int Count, int FileType);      /* Writes designated array into file */
+int Write2ArraysToFile(char* Filename,int* SourceArray1,float maxA1,int* SourceArray2, float maxA2,int Count, int FileType);      /* Writes designated array into file */
 int WriteFloatArrayToFile(char* Filename,float* SourceArray, int Count, int FileType);  /* Writes designated array into file */
 int WriteDoubleArrayToFile(char* Filename,double* SourceArray, int Count, int FileType);/* Writes designated array into file */
 

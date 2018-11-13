@@ -69,14 +69,16 @@
 #include "geometry.h"
 #endif
 
-#define VERSIONDATE "2016-Mar-02"
+#define COMPILEDATE __DATE__
+#define VERSIONDATE "sept 2018"
 #define VERSION 1
-#define SUBVERSION 0
-#define SUBSUBVERSION 8
+#define SUBVERSION 1
+#define SUBSUBVERSION 0
 //#define RELEASESTRING ".C"
 //#define VERSIONCOMMENT " -- under development --"
 #define RELEASESTRING ""
 #define VERSIONCOMMENT ""
+
 
 #define MAX_FILENAME_LENGTH 1024
 
@@ -96,6 +98,7 @@ char* ConversionFileName;      /* Name of the converted input file (when convert
 char* ElementsFileName;        /* Name of the file that defines the elements in the target.
 				  This is not needed for standard material based operation,
 				  but for conversion of one to another... so it is defined in both cases. */
+char* DirectoryData;           /* Name of the data corteo directory */
 
 char* TargetDensityMultFileName; /* */
 

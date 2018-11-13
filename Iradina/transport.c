@@ -26,9 +26,11 @@
    FullProjectileTransport() simulates full transport accurately.
    FastProjectileTransport() works similar to the corteo transport function.
    It is faster, but makes a few more approximations. It is accurate enough
-   for ion and coarse damage distribution but not for sputtering! */
+   for ion and coarse damage distribution but not for sputtering!
 
-/* Modifications by Jean-Paul Crocombette, CEA Saclay for modified Kinchin-Pease calculation of damage and free flight path approximation, to allow comparison with SRIM.
+   Modifications by Jean-Paul Crocombette, CEA Saclay 
+   for modified Kinchin-Pease calculation of damage and free flight path approximation, 
+   to allow comparison with SRIM.
    They  are indicated by "CROC" comments */
 /****************************************************************************/
 
@@ -115,7 +117,7 @@ int IrradiateTarget(){
 
   /*  fEnergy=OpenFileContinuous(OutputFileBaseName,".SurfEnergy"); */
 
-  /* CROC call to building of KP tables if simulation_type=5*/
+  /* CROC call to building of KP tables if simulation_type=3*/
     if(simulation_type==5){ /* Status file, which can be read by other programs */
       prepare_KP_tables2 ();
       
@@ -156,7 +158,7 @@ int IrradiateTarget(){
       /* Stop further logging: */
       store_ion_paths=0;
       store_recoil_cascades=0;
-      if(print_level>0){printf("Paths and cacscades are no longer stored after %i ions.\n",i);fflush(stdout);}
+      if(print_level>0){printf("Paths and cascades are no longer stored after %i ions.\n",i);fflush(stdout);}
     }
 
 #ifdef DEBUG_MODE
@@ -668,7 +670,8 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 	  
 	  /* Errors should not occur often, but if they do, we can check if the velocity became "not a number" */
 #ifdef CHECK_NAN_VECTORS  /* we need to check if vx becomes NaN */
-	  if(isnan(vx)) {
+	  //cvw if(isnan(vx)) {
+	  if(vx <= 0) {
 	    if(is_ion==1){
 	      printf("Rotation error occured (caused by ion no. %i).\n",ion_c);
 	    } else {
@@ -765,7 +768,6 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 		   and move it into vacuum! (by about the spacing!) However this might move it outside target which could be a problem!*/
 		/* Start recoil as new projectile: */
 		recoil_energy-=E_compare; /* substract surface binding energy */
-		if(store_energy_deposit==1){TargetEnergyPhonons[cell_i]+=(double)E_compare;} /* Energy goes to phonons */
 		FastProjectileTransport(target_Z, target_mass, recoil_energy,
 					x+recoil_vx*current_material->LayerDistance,
 					y+recoil_vy*current_material->LayerDistance,
@@ -833,7 +835,7 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 			its energy goes into phonons (unless sputtered) */
 	      if(store_energy_deposit==1){TargetEnergyPhonons[cell_i]+=(double)recoil_energy;}
 	    }
-	  }else { 	      /* Simulation_type no recoils considered ; */
+	  }else { 	      /* no recoils considered ; */
 
 	    if(simulation_type==5){    /*CROC : KP INCLUDED HERE.  based on average material <> SRIM but FOLLOWS page 7-28 of SRIM book by ZBZ*/
 	      E_div=2.5*current_material->MeanEd;
@@ -881,10 +883,7 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 		((current_material->TargetElementalVacancies)[target_index])[cell_i]+=floor(E_v / E_div) ;
 	      }
 	    }
-	    if(simulation_type==3){  
-	      TargetEnergyPhonons[cell_i]+= recoil_energy ;
-	    }
-	  }      /* Simulation_type no recoils considered ; */
+	  }
 	} /* Collision took place */
 
 	/* Check what happens to the projectile after possible collision: */
@@ -915,36 +914,6 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
   
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

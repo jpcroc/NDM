@@ -110,8 +110,8 @@ float Dval(unsigned int index);
 
 /*************** Adapted from corteomatrix.h ***********************/
 
-int calcMatrix(int showProgress);
-int loadMatrix(void);
+int calcMatrix(int showProgress, char* DirectoryData);
+int loadMatrix(char* DirectoryData);
 float Matrix(unsigned long i);
 void setMatrix(unsigned long i, float val);
 double THETA(double epsilon, double s, unsigned int nsum);
