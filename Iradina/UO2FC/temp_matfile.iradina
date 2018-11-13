@@ -1,0 +1,15 @@
+# This file was generated automatically by the GUI for iradina
+[nickel]
+Description=UO2
+IsVacuum=0
+Density=7.339E22
+Color=-986896
+ElementCount=2
+ElementsZ=92,8
+ElementsM=238.03,15.999
+ElementsConc=1,2
+ElementsDispEnergy=40,20
+ElementsLattEnergy=4,2
+ElementsSurfEnergy=4,2
+
+

@@ -1,0 +1,144 @@
+
+Hello. This is iradina version 1.0.8, 2016-Mar-02
+
+by C. Borschel, 2016
+Institute for Solid State Physics, University of Jena
+
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute
+it under certain conditions, see license.txt for details.
+
+This is the nanoparticle version of iradina.
+
+Configuration read from temp_configfile.iradina.
+Corteo scattering matrix loaded.
+Lists of random numbers generated.
+Chu's straggling data read.
+Invsere Erf list read.
+Invsere Erf list randomized.
+Prepare scattering matrices for ion on target collisions... finished
+Prepare scattering matrices for recoil on target collisions... finished
+Materials read from temp_matfile.iradina.
+Initializing target.
+Target structure definition file: temp_structfile.iradina
+
+Target size is: 
+x: 250 cells, 1 nm per cell, 250 nm in total.
+y: 1 cells, 1000 nm per cell, 1000 nm in total.
+z: 1 cells, 1000 nm per cell, 1000 nm in total.
+Total: 250 cells in 2.5e+08 nm^3.
+Target composition read from temp_compfile.iradina.
+Target structure read from temp_structfile.iradina.
+Normalization factor:	100
+Starting simulation of irradiation...
+Ions completed: 0
+Ions completed: 1000
+Ions completed: 2000
+Ions completed: 3000
+Ions completed: 4000
+Ions completed: 5000
+Ions completed: 6000
+Ions completed: 7000
+Ions completed: 8000
+Ions completed: 9000
+Ions completed: 10000
+Ions completed: 11000
+Ions completed: 12000
+Ions completed: 13000
+Ions completed: 14000
+Ions completed: 15000
+Ions completed: 16000
+Ions completed: 17000
+Ions completed: 18000
+Ions completed: 19000
+Ions completed: 20000
+Storing results after ion no. 20000 ...
+done.
+Ions completed: 21000
+Ions completed: 22000
+Ions completed: 23000
+Ions completed: 24000
+Ions completed: 25000
+Ions completed: 26000
+Ions completed: 27000
+Ions completed: 28000
+Ions completed: 29000
+Ions completed: 30000
+Ions completed: 31000
+Ions completed: 32000
+Ions completed: 33000
+Ions completed: 34000
+Ions completed: 35000
+Ions completed: 36000
+Ions completed: 37000
+Ions completed: 38000
+Ions completed: 39000
+Ions completed: 40000
+Storing results after ion no. 40000 ...
+done.
+Ions completed: 41000
+Ions completed: 42000
+Ions completed: 43000
+Ions completed: 44000
+Ions completed: 45000
+Ions completed: 46000
+Ions completed: 47000
+Ions completed: 48000
+Ions completed: 49000
+Ions completed: 50000
+Ions completed: 51000
+Ions completed: 52000
+Ions completed: 53000
+Ions completed: 54000
+Ions completed: 55000
+Ions completed: 56000
+Ions completed: 57000
+Ions completed: 58000
+Ions completed: 59000
+Ions completed: 60000
+Storing results after ion no. 60000 ...
+done.
+Ions completed: 61000
+Ions completed: 62000
+Ions completed: 63000
+Ions completed: 64000
+Ions completed: 65000
+Ions completed: 66000
+Ions completed: 67000
+Ions completed: 68000
+Ions completed: 69000
+Ions completed: 70000
+Ions completed: 71000
+Ions completed: 72000
+Ions completed: 73000
+Ions completed: 74000
+Ions completed: 75000
+Ions completed: 76000
+Ions completed: 77000
+Ions completed: 78000
+Ions completed: 79000
+Ions completed: 80000
+Storing results after ion no. 80000 ...
+done.
+Ions completed: 81000
+Ions completed: 82000
+Ions completed: 83000
+Ions completed: 84000
+Ions completed: 85000
+Ions completed: 86000
+Ions completed: 87000
+Ions completed: 88000
+Ions completed: 89000
+Ions completed: 90000
+Ions completed: 91000
+Ions completed: 92000
+Ions completed: 93000
+Ions completed: 94000
+Ions completed: 95000
+Ions completed: 96000
+Ions completed: 97000
+Ions completed: 98000
+Ions completed: 99000
+Storing final results: ...
+ done.
+
