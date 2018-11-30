@@ -117,7 +117,7 @@ int IrradiateTarget(){
 
   /*  fEnergy=OpenFileContinuous(OutputFileBaseName,".SurfEnergy"); */
 
-  /* CROC call to building of KP tables if simulation_type=3*/
+  /* CROC call to building of KP tables if simulation_type=5*/
     if(simulation_type==5){ /* Status file, which can be read by other programs */
       prepare_KP_tables2 ();
       
@@ -646,6 +646,10 @@ int FastProjectileTransport(int ProjZ, float ProjM, double ProjE, float Proj_x, 
 	  /* Energy transfer to recoil: */
 	  recoil_energy = energy * ScatMatrix->kfactor_m * sin2thetaby2;
 	  energy       -= recoil_energy;
+	  /*if one follows only the ion this energy loss should be attributed to phonons, i.e. ballistic losses*/
+	  if(simulation_type==3){	  
+	    if(store_energy_deposit==1){TargetEnergyPhonons[cell_i]+=(double)recoil_energy;} /* Energy goes to ballistic losses */
+	  }
 
 	  /* Store old flying direction */
 	  old_vx = vx;

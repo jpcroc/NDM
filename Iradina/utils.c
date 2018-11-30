@@ -308,7 +308,7 @@ int store_results(char* BaseName,int ion_number){
     WriteIntArrayToFile(strTemp,TargetTotalReplacements,cell_count,TargetCompositionFileType);
     strTemp[BaseNameLength]='\0';
     /* vacancies + ions: */
-        strcat(strTemp,".IONS_VAC");
+        strcat(strTemp,".ions_vac");
     if(print_level>=2){printf("Storing implanted ions and vacancies:   %s\n",strTemp);}
     maxion=0;
     maxvac=0;
