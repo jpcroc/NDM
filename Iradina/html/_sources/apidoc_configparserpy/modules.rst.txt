@@ -1,0 +1,7 @@
+configparserpy
+==============
+
+.. toctree::
+   :maxdepth: 4
+
+   configparserpy

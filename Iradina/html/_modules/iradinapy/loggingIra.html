@@ -1,0 +1,1161 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>iradinapy.loggingIra &#8212; iradinaGUI 1.0.0dev documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for iradinapy.loggingIra</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">iradinaGui logger. using logging package</span>
+
+<span class="sd">| Define one logger with one handler on stdout and one handler on file for production.</span>
+<span class="sd">| Define another one logger for unittest.</span>
+<span class="sd">|</span>
+<span class="sd">| see: http://sametmax.com/ecrire-des-logs-en-python</span>
+<span class="sd">|</span>
+<span class="sd">| Define two LoggerIra instances in iradinaGui, no more need.</span>
+<span class="sd">|   - _loggerDefault as production/development logger</span>
+<span class="sd">|   - _loggerUnittest as unittest logger</span>
+<span class="sd">|</span>
+<span class="sd">| see use of handlers of _loggerDefault for</span>
+<span class="sd">| log console and log files xml, txt</span>
+<span class="sd">|</span>
+<span class="sd">| console handler:</span>
+<span class="sd">|   - info() : no format</span>
+<span class="sd">|   - error() warning() trace() debug() etc. :</span>
+<span class="sd">|      formatted indented on multi lines messages using handlers</span>
+<span class="sd">|</span>
+<span class="sd">| file handlers:</span>
+<span class="sd">|   - info() error() warning() trace() debug() etc. :</span>
+<span class="sd">|      formatted indented on multi lines messages using handlers</span>
+<span class="sd">|</span>
+<span class="sd">| WARNING:</span>
+<span class="sd">|  log step and log trace are present on stdout console or log file </span>
+<span class="sd">|  following level handlers settings</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">LOGI</span>
+<span class="kn">from</span> <span class="nn">logging.handlers</span> <span class="k">import</span> <span class="n">BufferingHandler</span>
+<span class="kn">import</span> <span class="nn">pprint</span> <span class="k">as</span> <span class="nn">PP</span>
+
+
+<span class="n">_verbose</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># True</span>
+<span class="n">_name</span> <span class="o">=</span> <span class="s2">&quot;loggingIra&quot;</span>
+<span class="n">_loggerDefaultName</span> <span class="o">=</span> <span class="s1">&#39;IraDefaultLogger&#39;</span>
+<span class="n">_loggerUnittestName</span> <span class="o">=</span> <span class="s1">&#39;IraUnittestLogger&#39;</span>
+
+<span class="n">_loggerCurrent</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="n">_STEP</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span> <span class="o">-</span> <span class="mi">1</span> <span class="c1"># step level is just below INFO</span>
+<span class="n">_TRACE</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span> <span class="o">-</span> <span class="mi">2</span> <span class="c1"># trace level is just below STEP</span>
+
+<span class="k">if</span> <span class="n">_verbose</span><span class="p">:</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CRITICAL  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">WARN</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INFO  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;STEP  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">_STEP</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TRACE </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">_TRACE</span><span class="p">)</span>
+
+<span class="n">LOGI</span><span class="o">.</span><span class="n">STEP</span> <span class="o">=</span> <span class="n">_STEP</span> <span class="c1"># only for coherency,</span>
+<span class="n">LOGI</span><span class="o">.</span><span class="n">TRACE</span> <span class="o">=</span> <span class="n">_TRACE</span> <span class="c1"># only for coherency,</span>
+
+<span class="n">_knownLevels</span> <span class="o">=</span> <span class="s2">&quot;CRITICAL ERROR WARNING INFO STEP TRACE DEBUG&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<span class="n">_knownLevelsStr</span> <span class="o">=</span> <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_knownLevels</span><span class="p">)</span>
+
+<span class="c1">#################################################################</span>
+<span class="c1"># utilities methods</span>
+<span class="c1">#################################################################</span>
+
+<div class="viewcode-block" id="filterLevel"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.filterLevel">[docs]</a><span class="k">def</span> <span class="nf">filterLevel</span><span class="p">(</span><span class="n">aLevel</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  filter levels logging values from firsts characters levels.</span>
+<span class="sd">  No case sensitive.</span>
+
+<span class="sd">  | example:</span>
+<span class="sd">  | &#39;i&#39; -&gt; &#39;INFO&#39;</span>
+<span class="sd">  | &#39;cRiT&#39; -&gt; &#39;CRITICAL&#39;</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">aLev</span> <span class="o">=</span> <span class="n">aLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+  <span class="n">knownLevels</span> <span class="o">=</span> <span class="n">_knownLevels</span>
+  <span class="n">maxLen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">knownLevels</span><span class="p">])</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxLen</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">lev</span> <span class="ow">in</span> <span class="n">knownLevels</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">aLev</span> <span class="o">==</span> <span class="n">lev</span><span class="p">[:</span><span class="n">i</span><span class="p">]:</span>
+        <span class="c1"># DBG.write(&quot;filterLevel&quot;, &quot;%s -&gt; %s&quot; % (aLevel, lev))</span>
+        <span class="k">return</span> <span class="n">lev</span>
+  <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Unknown level &#39;</span><span class="si">%s</span><span class="s2">&#39;, accepted are: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">aLev</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">knownLevels</span><span class="p">))</span>
+  <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+  <span class="c1"># or signal problem but message debug</span>
+  <span class="c1"># DBG.write(&quot;Problem filterLevel&quot;, msg, True)</span>
+  <span class="c1"># return &quot;CRITICAL&quot;</span>
+
+<div class="viewcode-block" id="indent"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.indent">[docs]</a><span class="k">def</span> <span class="nf">indent</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">car</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;indent nb car (spaces) multi lines message except first one&quot;&quot;&quot;</span>
+  <span class="n">s</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span><span class="n">car</span><span class="o">*</span><span class="n">nb</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="indentUnittest"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.indentUnittest">[docs]</a><span class="k">def</span> <span class="nf">indentUnittest</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot; | &quot;</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  indent multi lines message except first one with prefix.</span>
+<span class="sd">  prefix default is designed for less spaces for size logs files</span>
+<span class="sd">  and keep logs human eye readable</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">s</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">prefix</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="log"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.log">[docs]</a><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;elementary log when no logging.Logger yet&quot;&quot;&quot;</span>
+  <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;---- </span><span class="si">%s</span><span class="s2">.log: &quot;</span> <span class="o">%</span> <span class="n">_name</span>
+  <span class="n">nb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">_verbose</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">((</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">indent</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">nb</span><span class="p">)))</span></div>
+
+<span class="c1"># just for debug info where is import logging</span>
+<span class="n">log</span><span class="p">(</span><span class="s2">&quot;import logging on </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">LOGI</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="getStrDirLogger"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.getStrDirLogger">[docs]</a><span class="k">def</span> <span class="nf">getStrDirLogger</span><span class="p">(</span><span class="n">logger</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Returns multi line string for logger description, with dir(logger).</span>
+<span class="sd">  Used for debug</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">lgr</span> <span class="o">=</span> <span class="n">logger</span> <span class="c1"># shortcut</span>
+  <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(name=</span><span class="si">%s</span><span class="s2">, dateLogger=</span><span class="si">%s</span><span class="s2">):</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
+  <span class="n">cName</span> <span class="o">=</span> <span class="n">lgr</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">cName</span><span class="p">,</span> <span class="n">lgr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">lgr</span><span class="o">.</span><span class="n">dateLogger</span><span class="p">,</span> <span class="n">PP</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="n">lgr</span><span class="p">)))</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="getStrHandler"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.getStrHandler">[docs]</a><span class="k">def</span> <span class="nf">getStrHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Returns one line string for handler description </span>
+<span class="sd">  (as inexisting __repr__)</span>
+<span class="sd">  to avoid create inherited classe(s) handler</span>
+<span class="sd">  &quot;&quot;&quot;</span> 
+  <span class="n">h</span> <span class="o">=</span> <span class="n">handler</span> <span class="c1"># shortcut</span>
+  <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(name=</span><span class="si">%s</span><span class="s2">)&quot;</span>
+  <span class="n">cName</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">cName</span><span class="p">,</span> <span class="n">h</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+  
+<div class="viewcode-block" id="getStrShort"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.getStrShort">[docs]</a><span class="k">def</span> <span class="nf">getStrShort</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Returns short string for msg (as first caracters without line feed&quot;&quot;&quot;</span>
+  <span class="c1"># log(&quot;getStrShort &quot; + str(msg), True)</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;//&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">30</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+  
+<div class="viewcode-block" id="getStrLogRecord"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.getStrLogRecord">[docs]</a><span class="k">def</span> <span class="nf">getStrLogRecord</span><span class="p">(</span><span class="n">logRecord</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Returns one line string for simple logging LogRecord description </span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="kn">import</span> <span class="nn">iradinapy.coloringIra</span> <span class="k">as</span> <span class="nn">COLS</span> <span class="c1"># needs sys.path.insert(0, iradir)</span>
+  <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;LogRecord(level=&#39;</span><span class="si">%s</span><span class="s2">&#39;, msg=&#39;</span><span class="si">%s</span><span class="s2">...&#39;)&quot;</span>
+  <span class="n">shortMsg</span> <span class="o">=</span> <span class="n">getStrShort</span><span class="p">(</span><span class="n">logRecord</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+  <span class="n">levelName</span> <span class="o">=</span> <span class="n">COLS</span><span class="o">.</span><span class="n">cleanColors</span><span class="p">(</span><span class="n">logRecord</span><span class="o">.</span><span class="n">levelname</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">levelName</span><span class="p">,</span> <span class="n">shortMsg</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="getListOfStrLogRecord"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.getListOfStrLogRecord">[docs]</a><span class="k">def</span> <span class="nf">getListOfStrLogRecord</span><span class="p">(</span><span class="n">listOfLogRecord</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Returns one line string for logging LogRecord description </span>
+<span class="sd">  &quot;&quot;&quot;</span> 
+  <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">getStrLogRecord</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">listOfLogRecord</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+
+<span class="c1">#################################################################</span>
+<span class="c1"># iradinaGui logger classes</span>
+<span class="c1">#################################################################</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="nb">str</span>
+    <span class="n">_unicode</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+    <span class="n">_unicode</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="getMessage"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.getMessage">[docs]</a><span class="k">def</span> <span class="nf">getMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    modified from logging.__init__.LogRecord.getMessage, </span>
+<span class="sd">    better message on format error </span>
+<span class="sd">    Return the message for this LogRecord.</span>
+<span class="sd">  </span>
+<span class="sd">    Return the message for this LogRecord after merging any user-supplied</span>
+<span class="sd">    arguments with the message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_unicode</span><span class="p">:</span> <span class="c1">#if no unicode support...</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">UnicodeError</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span>      <span class="c1">#Defer encoding till later</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span> <span class="c1"># better message on format error </span>
+          <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+          <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;ERROR: </span><span class="si">%s</span><span class="s2"> with args </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">PP</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+          <span class="n">log</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">msg</span></div>
+
+<span class="n">LOGI</span><span class="o">.</span><span class="n">LogRecord</span><span class="o">.</span><span class="n">getMessage</span> <span class="o">=</span> <span class="n">getMessage</span> <span class="c1"># better message if error</span>
+
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="LoggerIra"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra">[docs]</a><span class="k">class</span> <span class="nc">LoggerIra</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">Logger</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Inherited class logging.Logger for logger iradinaGui</span>
+<span class="sd">  </span>
+<span class="sd">  | add a level STEP as log.step(msg) </span>
+<span class="sd">  | add a level TRACE as log.trace(msg) </span>
+<span class="sd">  | below log.info(msg)</span>
+<span class="sd">  | above log.debug(msg)</span>
+<span class="sd">  | to assume message step inside files xml &#39;command&#39;s internal traces&#39;</span>
+<span class="sd">  | to assume store long log asci in files txt outside files xml</span>
+<span class="sd">  | </span>
+<span class="sd">  | see: /usr/lib64/python2.7/logging/__init__.py etc.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize the logger with a name and an optional level.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">LoggerIra</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
+    <span class="n">LOGI</span><span class="o">.</span><span class="n">addLevelName</span><span class="p">(</span><span class="n">_STEP</span><span class="p">,</span> <span class="s2">&quot;STEP&quot;</span><span class="p">)</span>
+    <span class="n">LOGI</span><span class="o">.</span><span class="n">addLevelName</span><span class="p">(</span><span class="n">_TRACE</span><span class="p">,</span> <span class="s2">&quot;TRACE&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dateLogger</span> <span class="o">=</span> <span class="s2">&quot;NoDateLogger&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dateHour</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># datehour of main command</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">isClosed</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># incremented, 0 for main command 1, 2, etc. for micro command</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">STEP</span> <span class="o">=</span> <span class="n">_STEP</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">TRACE</span> <span class="o">=</span> <span class="n">_TRACE</span>
+   
+    <span class="bp">self</span><span class="o">.</span><span class="n">_logStep_header</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;No log step header ...&quot;</span><span class="p">]</span> <span class="c1"># one line message for steps</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_loggerParamiko</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># set only if iradina jobs, useless for now</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_fileParamiko</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># set when main command set iradina logger</span>
+
+<div class="viewcode-block" id="LoggerIra.logStep_begin"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.logStep_begin">[docs]</a>  <span class="k">def</span> <span class="nf">logStep_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    initialize for main handler (tty as stdout)</span>
+<span class="sd">    a one line message for steps (...of compilation for example) </span>
+<span class="sd">    as no return line message with logger.info() level</span>
+<span class="sd">    </span>
+<span class="sd">    | example:</span>
+<span class="sd">    | &#39;header ... first temporary step message ...&#39; </span>
+<span class="sd">    | &#39;header ... etc ...&#39;         (on same line)</span>
+<span class="sd">    | &#39;header ... OK&#39;              (on same line)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_logStep_header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logStep</span><span class="p">(</span><span class="n">step</span><span class="p">)</span></div>
+      
+<div class="viewcode-block" id="LoggerIra.logStep"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.logStep">[docs]</a>  <span class="k">def</span> <span class="nf">logStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    current logger.info() step as</span>
+<span class="sd">    &#39;header ... etc ...&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logStep_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">step</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&lt;RC&gt;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">step</span><span class="p">))</span>
+      <span class="k">return</span>
+    <span class="k">elif</span> <span class="n">step</span><span class="o">.</span><span class="n">isOk</span><span class="p">():</span> <span class="c1"># as ReturnCode type step</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&lt;RC&gt;</span><span class="si">%s</span><span class="s2"> &lt;OK&gt; ...&quot;</span> <span class="o">%</span> <span class="n">header</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&lt;RC&gt;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &lt;KO&gt; ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">getWhy</span><span class="p">()))</span> </div>
+  
+<div class="viewcode-block" id="LoggerIra.logStep_end"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.logStep_end">[docs]</a>  <span class="k">def</span> <span class="nf">logStep_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">tab</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    last logger.info() step as</span>
+<span class="sd">    &#39;header ... OK&#39; or &#39;header ... KO&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.utilsIra</span> <span class="k">as</span> <span class="nn">UTS</span>
+    
+    <span class="n">header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logStep_header</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">tab</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">step</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&lt;RC&gt;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">step</span><span class="p">))</span>
+      <span class="k">elif</span> <span class="n">step</span><span class="o">.</span><span class="n">isOk</span><span class="p">():</span> <span class="c1"># as ReturnCode type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&lt;RC&gt;</span><span class="si">%s</span><span class="s2"> &lt;OK&gt;&quot;</span> <span class="o">%</span> <span class="n">header</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&lt;RC&gt;</span><span class="si">%s</span><span class="s2"> &lt;</span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">getStatus</span><span class="p">()))</span>
+      <span class="c1"># pop as end</span>
+      <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_logStep_header</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logStep_header</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>    
+      <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Something wrong for logStep&quot;</span><span class="p">)</span>
+      <span class="k">return</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">step</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">stepTab</span> <span class="o">=</span> <span class="n">UTS</span><span class="o">.</span><span class="n">tabColor</span><span class="p">(</span><span class="n">tab</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&lt;RC&gt;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">stepTab</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="n">step</span><span class="o">.</span><span class="n">isOk</span><span class="p">():</span> <span class="c1"># as ReturnCode type</span>
+        <span class="n">stepTab</span> <span class="o">=</span> <span class="n">UTS</span><span class="o">.</span><span class="n">tabColor</span><span class="p">(</span><span class="n">tab</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;&lt;OK&gt;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&lt;RC&gt;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">stepTab</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">stepTab</span> <span class="o">=</span> <span class="n">UTS</span><span class="o">.</span><span class="n">tabColor</span><span class="p">(</span><span class="n">tab</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2">&gt;: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">getStatus</span><span class="p">(),</span> <span class="n">step</span><span class="o">.</span><span class="n">getWhy</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&lt;RC&gt;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">stepTab</span><span class="p">)</span>
+      <span class="c1"># pop as end</span>
+      <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_logStep_header</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logStep_header</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>    
+      <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Something wrong for logStep&quot;</span><span class="p">)</span>
+      <span class="k">return</span></div>
+        
+<div class="viewcode-block" id="LoggerIra.setLoggerParamiko"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.setLoggerParamiko">[docs]</a>  <span class="k">def</span> <span class="nf">setLoggerParamiko</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      jobs used paramiko wich uses &#39;paramiko&#39; logger,</span>
+<span class="sd">      which is defined here with an handler to automatic named .txt file.</span>
+<span class="sd">      this method have to be called only one time.</span>
+
+<span class="sd">      | see:</span>
+<span class="sd">      | &gt;&gt; cd /usr/lib/python2.7/site-packages/paramiko</span>
+<span class="sd">      | &gt;&gt; ffipy logging.getLogger</span>
+<span class="sd">      |      ./util.py:248:     l = logging.getLogger(&quot;paramiko&quot;)</span>
+<span class="sd">      |      ./util.py:270:     l = logging.getLogger(name)</span>
+<span class="sd">      | &gt;&gt; ffipy paramiko  grep &quot;get_logger&quot;</span>
+<span class="sd">      |      ./channel.py:120:  self.logger = util.get_logger(&#39;paramiko.transport&#39;)</span>
+<span class="sd">      |      ./sftp.py:99:      self.logger = util.get_logger(&#39;paramiko.sftp&#39;)</span>
+<span class="sd">      |      ./hostkeys.py:337: log = get_logger(&#39;paramiko.hostkeys&#39;)</span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      <span class="kn">import</span> <span class="nn">iradinapy.returnCode</span> <span class="k">as</span> <span class="nn">RCO</span>
+      <span class="kn">import</span> <span class="nn">iradinapy.utilsIra</span> <span class="k">as</span> <span class="nn">UTS</span>
+      
+      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loggerParamiko</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">loggerPrmk</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;paramiko&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loggerParamiko</span> <span class="o">=</span> <span class="n">loggerPrmk</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fileParamiko</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+          <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;logger._fileParamiko not set, fix it&quot;</span>
+          <span class="k">return</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">(</span><span class="s2">&quot;KO&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loggerPrmk</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;logger paramiko have handler set yet ouside iradina, is a surprise&quot;</span><span class="p">)</span>
+        
+        <span class="n">paramiko_log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fileParamiko</span><span class="p">)</span>
+        <span class="n">UTS</span><span class="o">.</span><span class="n">ensure_path_exists</span><span class="p">(</span><span class="n">paramiko_log_dir</span><span class="p">)</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fileParamiko</span><span class="p">)</span>
+        <span class="c1"># original from paramiko</span>
+        <span class="c1"># frm = &#39;%(levelname)-.3s [%(asctime)s.%(msecs)03d] thr=%(thread)-3d %(name)s: %(message)s&#39; # noqa</span>
+        <span class="n">frm</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(levelname)-.4s</span><span class="s1"> :: </span><span class="si">%(asctime)s</span><span class="s1">.</span><span class="si">%(msecs)03d</span><span class="s1"> :: </span><span class="si">%(name)s</span><span class="s1"> :: </span><span class="si">%(message)s</span><span class="s1">&#39;</span> <span class="c1"># noqa</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">frm</span><span class="p">,</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">-%H:%M:%S&#39;</span><span class="p">))</span>
+        <span class="n">loggerPrmk</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+        
+        <span class="c1"># logger is not notset but low, handlers needs setlevel greater</span>
+        <span class="n">loggerPrmk</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span> <span class="c1"># may be other</span>
+    
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;create paramiko logger, with handler on file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fileParamiko</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">(</span><span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">loggerPrmk</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;logger paramiko set yet, fix it&quot;</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;existing paramiko logger, with </span><span class="si">%s</span><span class="s2"> handlers&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">loggerPrmk</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">(</span><span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">loggerPrmk</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="LoggerIra.getLoggerParamiko"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.getLoggerParamiko">[docs]</a>  <span class="k">def</span> <span class="nf">getLoggerParamiko</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;for convenience, theorically useless&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loggerParamiko</span></div>
+        
+<div class="viewcode-block" id="LoggerIra.getMainCommandHandler"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.getMainCommandHandler">[docs]</a>  <span class="k">def</span> <span class="nf">getMainCommandHandler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    returns handler for colored stdout console/terminal</span>
+<span class="sd">    for human user eye iradinaGUI outputs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">h</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+    
+<div class="viewcode-block" id="LoggerIra.close"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.close">[docs]</a>  <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    final stuff for logger, done at end iradinaGui</span>
+<span class="sd">    flushed and closed xml files have to be not overriden/appended</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isClosed</span><span class="p">:</span> 
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;logger closed yet: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;close stuff logger </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">)</span> <span class="c1"># getStrDirLogger(self)</span>
+    <span class="k">for</span> <span class="n">handl</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span>  <span class="c1"># get original list</span>
+      <span class="n">log</span><span class="p">(</span><span class="s2">&quot;close stuff handler </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">getStrHandler</span><span class="p">(</span><span class="n">handl</span><span class="p">))</span>
+      <span class="n">handl</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="c1"># Tidy up any resources used by the handler.</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">handl</span><span class="p">)</span>
+    <span class="c1"># todo etc</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">isClosed</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># done at end iradinaGUI, flushed closed xml files.</span>
+    <span class="k">return</span></div>
+       
+  <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;one line string representation&quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(name=</span><span class="si">%s</span><span class="s2">, dateLogger=</span><span class="si">%s</span><span class="s2">, handlers=</span><span class="si">%s</span><span class="s2">)&quot;</span>
+    <span class="n">cName</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">[</span><span class="n">getStrHandler</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">]</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">cName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dateLogger</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">res</span>
+    
+<div class="viewcode-block" id="LoggerIra.trace"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.trace">[docs]</a>  <span class="k">def</span> <span class="nf">trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log &#39;msg % args&#39; with severity &#39;_TRACE&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;trace stuff logger &#39;</span><span class="si">%s</span><span class="s2">&#39; msg &#39;</span><span class="si">%s</span><span class="s2">...&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">getStrShort</span><span class="p">(</span><span class="n">msg</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">_TRACE</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="n">_TRACE</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LoggerIra.step"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.step">[docs]</a>  <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log &#39;msg % args&#39; with severity &#39;_STEP&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;step stuff logger &#39;</span><span class="si">%s</span><span class="s2">&#39; msg &#39;</span><span class="si">%s</span><span class="s2">...&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">getStrShort</span><span class="p">(</span><span class="n">msg</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">_STEP</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="n">_STEP</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LoggerIra.xx_isEnabledFor"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.xx_isEnabledFor">[docs]</a>  <span class="k">def</span> <span class="nf">xx_isEnabledFor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Is this logger enabled for level &#39;level&#39;?</span>
+<span class="sd">    currently not modified from logging.Logger class,</span>
+<span class="sd">    here only for call log debug.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;logger </span><span class="si">%s</span><span class="s2"> isEnabledFor </span><span class="si">%i</span><span class="s2">&gt;=</span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEffectiveLevel</span><span class="p">()))</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">disable</span> <span class="o">&gt;=</span> <span class="n">level</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">level</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEffectiveLevel</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LoggerIra.setFileHandlerForCommand"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.setFileHandlerForCommand">[docs]</a>  <span class="k">def</span> <span class="nf">setFileHandlerForCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmdParent</span><span class="p">,</span> <span class="n">cmdInstance</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    add file handler to logger to set log files</span>
+<span class="sd">    for a iradinaGui command.</span>
+<span class="sd">    when command is known from pyconf/config instance</span>
+<span class="sd">    </span>
+<span class="sd">    | Example: </span>
+<span class="sd">    | log files names for command prepare </span>
+<span class="sd">    | with micro commands clean/source/patch</span>
+<span class="sd">    |   ~/LOGS/20180510_140606_prepare_lenovo.xml</span>
+<span class="sd">    |   ~/LOGS/OUT/20180510_140606_prepare_lenovo.txt</span>
+<span class="sd">    |   ~/LOGS/micro_20180510_140607_clean_lenovo.xml</span>
+<span class="sd">    |   ~/LOGS/OUT/micro_20180510_140607_clean_lenovo.txt</span>
+<span class="sd">    |   etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.utilsIra</span> <span class="k">as</span> <span class="nn">UTS</span> <span class="c1"># needs sys.path.insert(0, iradir)</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">cmdInstance</span><span class="o">.</span><span class="n">getConfig</span><span class="p">()</span>
+    
+    <span class="c1">#import iradinapy.debug as DBG # avoid cross import</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;setFileHandler </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">logger</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;setFileHandler config</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">PP</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">VARS</span><span class="p">)))</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;setFileHandler TODO set log_dir config.LOCAL.log_dir&quot;</span><span class="p">)</span>
+    
+    <span class="n">log_dir</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">LOCAL</span><span class="o">.</span><span class="n">log_dir</span> <span class="c1"># files xml</span>
+    <span class="n">log_dir_out</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="s2">&quot;OUT&quot;</span><span class="p">)</span> <span class="c1"># files txt</span>
+    <span class="n">log_dir_jobs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="s2">&quot;JOBS&quot;</span><span class="p">)</span> <span class="c1"># files txt</span>
+    <span class="n">UTS</span><span class="o">.</span><span class="n">ensure_path_exists</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
+    <span class="n">UTS</span><span class="o">.</span><span class="n">ensure_path_exists</span><span class="p">(</span><span class="n">log_dir_out</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">datehour</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">VARS</span><span class="o">.</span><span class="n">datehour</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">dateHour</span> <span class="o">=</span> <span class="n">datehour</span> <span class="c1"># save dateHour for micro commands</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">datehour</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dateHour</span> <span class="c1"># micro commands have same datehour for naming files</span>
+
+    <span class="n">cmd</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">VARS</span><span class="o">.</span><span class="n">command</span>
+    <span class="n">fullNameCmd</span> <span class="o">=</span> <span class="n">cmdInstance</span><span class="o">.</span><span class="n">getFullNameStr</span><span class="p">()</span>
+    <span class="n">hostname</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">VARS</span><span class="o">.</span><span class="n">hostname</span>
+    <span class="n">nameFileXml</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_</span><span class="si">%03i</span><span class="s2">_</span><span class="si">%s</span><span class="s2">_</span><span class="si">%s</span><span class="s2">.xml&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">datehour</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">hostname</span><span class="p">)</span>
+    <span class="n">nameFileTxt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_</span><span class="si">%03i</span><span class="s2">_</span><span class="si">%s</span><span class="s2">_</span><span class="si">%s</span><span class="s2">.txt&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">datehour</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">hostname</span><span class="p">)</span>
+    <span class="n">fileXml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">nameFileXml</span><span class="p">)</span>
+    <span class="n">fileTxt</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir_out</span><span class="p">,</span> <span class="n">nameFileTxt</span><span class="p">)</span>
+    
+    <span class="c1"># precaution</span>
+    <span class="n">lastCmd</span> <span class="o">=</span> <span class="n">cmdInstance</span><span class="o">.</span><span class="n">getFullNameList</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">cmd</span> <span class="o">!=</span> <span class="n">lastCmd</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;setFileHandler &#39;</span><span class="si">%s</span><span class="s2">&#39; command name incoherency in config &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fullNameCmd</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+  
+    <span class="n">nbhandl</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span> <span class="c1"># number of active current handlers</span>
+    
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># first main command</span>
+      <span class="n">log</span><span class="p">(</span><span class="s2">&quot;setFileHandler &#39;</span><span class="si">%s</span><span class="s2">&#39; main command (id=</span><span class="si">%i</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fullNameCmd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span><span class="p">))</span>
+      
+      <span class="c1">################################</span>
+      <span class="c1"># Logging vers file xml</span>
+      <span class="n">handler</span> <span class="o">=</span> <span class="n">XmlHandler</span><span class="p">(</span><span class="mi">3000</span><span class="p">)</span> <span class="c1"># no many log outputs in memory</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">STEP</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">nameFileXml</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">set_target_file</span><span class="p">(</span><span class="n">fileXml</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span>
+      
+      <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> :: </span><span class="si">%(levelname)-8s</span><span class="s1"> :: </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+      <span class="n">formatter</span> <span class="o">=</span> <span class="n">FileXmlFormatter</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="s2">&quot;%y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+      
+      <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+      
+      <span class="c1">################################</span>
+      <span class="c1"># Logging vers file txt</span>
+      <span class="n">handler</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">fileTxt</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">TRACE</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">nameFileTxt</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span>
+      
+      <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> :: </span><span class="si">%(levelname)-8s</span><span class="s1"> :: </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+      <span class="n">formatter</span> <span class="o">=</span> <span class="n">FileTxtFormatter</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="s2">&quot;%y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+      
+      <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+      
+      <span class="c1"># same name for paramiko logs if needed, useful for iradineGUI logs only</span>
+      <span class="c1"># but other JOBS directory  </span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_fileParamiko</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir_jobs</span><span class="p">,</span> <span class="n">nameFileTxt</span><span class="p">)</span> <span class="c1"># useful for iradinaGUI logs only</span>
+      
+  
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># secondary micro command</span>
+      <span class="n">log</span><span class="p">(</span><span class="s2">&quot;TODO setFileHandler &#39;</span><span class="si">%s</span><span class="s2">&#39; micro command (id=</span><span class="si">%i</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fullNameCmd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span><span class="p">))</span>
+      
+      <span class="c1">################################</span>
+      <span class="c1"># Logging vers file xml</span>
+      <span class="n">handler</span> <span class="o">=</span> <span class="n">XmlHandler</span><span class="p">(</span><span class="mi">3000</span><span class="p">)</span> <span class="c1"># no many log outputs in memory</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">STEP</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">nameFileXml</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">set_target_file</span><span class="p">(</span><span class="n">fileXml</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span>
+      
+      <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> :: </span><span class="si">%(levelname)-8s</span><span class="s1"> :: </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+      <span class="n">formatter</span> <span class="o">=</span> <span class="n">FileXmlFormatter</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="s2">&quot;%y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+      
+      <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+      
+      <span class="c1">################################</span>
+      <span class="c1"># Logging vers file txt</span>
+      <span class="n">handler</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">fileTxt</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">TRACE</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">nameFileTxt</span><span class="p">)</span>
+      <span class="n">handler</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span>
+      
+      <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> :: </span><span class="si">%(levelname)-8s</span><span class="s1"> :: </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+      <span class="n">formatter</span> <span class="o">=</span> <span class="n">FileTxtFormatter</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="s2">&quot;%y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+      
+      <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+    
+    <span class="n">cmdInstance</span><span class="o">.</span><span class="n">setIdCommandHandlers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span><span class="p">)</span>
+    <span class="n">newLink</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initLinkForCommand</span><span class="p">(</span><span class="n">cmdParent</span><span class="p">,</span> <span class="n">cmdInstance</span><span class="p">)</span>
+    <span class="n">newLink</span><span class="o">.</span><span class="n">setAuthAttr</span><span class="p">(</span><span class="s2">&quot;cmd_name&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
+    <span class="n">newLink</span><span class="o">.</span><span class="n">setAuthAttr</span><span class="p">(</span><span class="s2">&quot;log_file_name&quot;</span><span class="p">,</span> <span class="n">nameFileXml</span><span class="p">)</span>
+    
+    <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;setFileHandler </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">logger</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span></div>
+
+<div class="viewcode-block" id="LoggerIra.setLevelMainHandler"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.setLevelMainHandler">[docs]</a>  <span class="k">def</span> <span class="nf">setLevelMainHandler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">handl</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span> <span class="c1"># get main handler</span>
+      <span class="k">if</span> <span class="n">handl</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;setLevelMainHandler </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">level</span><span class="p">)</span>
+        <span class="n">handl</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;main handler not found for level </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">level</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="LoggerIra.closeFileHandlerForCommand"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.closeFileHandlerForCommand">[docs]</a>  <span class="k">def</span> <span class="nf">closeFileHandlerForCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmdInstance</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">handl</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span> <span class="c1"># get original list</span>
+      <span class="k">try</span><span class="p">:</span> <span class="c1"># may be foreign handlers without idCommandHandlers attribute</span>
+        <span class="k">if</span> <span class="n">handl</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">==</span> <span class="n">cmdInstance</span><span class="o">.</span><span class="n">_idCommandHandlers</span><span class="p">:</span>
+          <span class="n">nbini</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span>
+          <span class="n">log</span><span class="p">(</span><span class="s2">&quot;close stuff handler </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">getStrHandler</span><span class="p">(</span><span class="n">handl</span><span class="p">))</span>
+          <span class="n">handl</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="c1"># Tidy up any resources used by the handler.</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">handl</span><span class="p">)</span>
+          <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span> <span class="o">!=</span> <span class="n">nbini</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Unexpected len(logger.handlers)=</span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span>  <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">))</span>
+      <span class="k">except</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Existing logger handler without idCommandHandlers attribute </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">handl</span><span class="p">))</span>
+        <span class="k">pass</span></div>
+      
+<div class="viewcode-block" id="LoggerIra.initLinkForCommand"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.initLinkForCommand">[docs]</a>  <span class="k">def</span> <span class="nf">initLinkForCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmdParent</span><span class="p">,</span> <span class="n">cmdNew</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.linksXml</span> <span class="k">as</span> <span class="nn">LIXML</span>
+    <span class="n">newLink</span> <span class="o">=</span> <span class="n">LIXML</span><span class="o">.</span><span class="n">appendLinkForCommand</span><span class="p">(</span><span class="n">cmdParent</span><span class="p">,</span> <span class="n">cmdNew</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">newLink</span></div>
+      
+<div class="viewcode-block" id="LoggerIra.testNoReturn"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.LoggerIra.testNoReturn">[docs]</a>  <span class="k">def</span> <span class="nf">testNoReturn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;test when message ending &#39;...&#39; and level info then no return mode&quot;&quot;&quot;</span>
+    <span class="n">testNoReturn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="c1"># module method</span></div></div>
+  
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="DefaultFormatter"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.DefaultFormatter">[docs]</a><span class="k">class</span> <span class="nc">DefaultFormatter</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">Formatter</span><span class="p">):</span>
+  
+  <span class="c1"># to set color prefix, problem with indent format as </span>
+  <span class="n">_ColorLevelname</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;DEBUG&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;green&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TRACE&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;green&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STEP&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;green&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INFO&quot;</span><span class="p">:</span>  <span class="s2">&quot;&lt;green&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WARNING&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;red&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ERROR&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;yellow&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CRITICAL&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;yellow&gt;&quot;</span><span class="p">,</span>
+  <span class="p">}</span>
+  
+<div class="viewcode-block" id="DefaultFormatter.format"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.DefaultFormatter.format">[docs]</a>  <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.coloringIra</span> <span class="k">as</span> <span class="nn">COLS</span> <span class="c1"># needs sys.path.insert(0, iradir)</span>
+    <span class="k">if</span> <span class="n">_verbose</span><span class="p">:</span>
+      <span class="kn">import</span> <span class="nn">iradinapy.debug</span> <span class="k">as</span> <span class="nn">DBG</span> <span class="c1"># avoid cross import</span>
+      <span class="n">DBG</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;DefaultFormatter.format&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">20</span><span class="p">]),</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">record</span><span class="o">.</span><span class="n">levelname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setColorLevelname</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">)</span>
+    <span class="c1"># INFO messages could be NOT prefixed</span>
+    <span class="k">if</span> <span class="s2">&quot;xxxINFO&quot;</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">:</span> <span class="c1"># but xxxINFO as every times prefixed</span>
+      <span class="n">res</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">res</span> <span class="o">=</span> <span class="n">indent</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">DefaultFormatter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">),</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">COLS</span><span class="o">.</span><span class="n">toColor</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="c1"># print &quot;begin_mes&#39;%s&#39;end_mess&quot; % res</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+  
+<div class="viewcode-block" id="DefaultFormatter.setColorLevelname"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.DefaultFormatter.setColorLevelname">[docs]</a>  <span class="k">def</span> <span class="nf">setColorLevelname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    set color implies color special characters and</span>
+<span class="sd">    tabulate levelname length of string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ColorLevelname</span><span class="p">[</span><span class="n">levelname</span><span class="p">]</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">color</span> <span class="o">+</span> <span class="n">levelname</span> <span class="o">+</span> <span class="s2">&quot;&lt;reset&gt;&quot;</span>
+    <span class="n">nb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">levelname</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">res</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">*</span><span class="p">(</span><span class="mi">8</span><span class="o">-</span><span class="n">nb</span><span class="p">)</span> <span class="c1"># 8 as len(&quot;CRITICAL&quot;)</span>
+    <span class="c1"># log(&quot;setColorLevelname&#39;%s&#39;&quot; % res)</span>
+    <span class="k">return</span> <span class="n">res</span></div></div>
+
+
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="UnittestFormatter"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.UnittestFormatter">[docs]</a><span class="k">class</span> <span class="nc">UnittestFormatter</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">Formatter</span><span class="p">):</span>
+<div class="viewcode-block" id="UnittestFormatter.format"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.UnittestFormatter.format">[docs]</a>  <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.coloringIra</span> <span class="k">as</span> <span class="nn">COLS</span> <span class="c1"># needs sys.path.insert(0, iradir)</span>
+    <span class="c1"># print &quot;&quot;, record.levelname #type(record), dir(record)</span>
+    <span class="c1"># nb = len(&quot;2018-03-17 12:15:41 :: INFO     :: &quot;)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UnittestFormatter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">indentUnittest</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">COLS</span><span class="o">.</span><span class="n">toColor</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div></div>
+
+
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="FileTxtFormatter"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.FileTxtFormatter">[docs]</a><span class="k">class</span> <span class="nc">FileTxtFormatter</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">Formatter</span><span class="p">):</span>
+<div class="viewcode-block" id="FileTxtFormatter.format"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.FileTxtFormatter.format">[docs]</a>  <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.coloringIra</span> <span class="k">as</span> <span class="nn">COLS</span> <span class="c1"># needs sys.path.insert(0, iradir)</span>
+    <span class="c1"># print &quot;&quot;, record.levelname #type(record), dir(record)</span>
+    <span class="c1"># nb = len(&quot;2018-03-17 12:15:41 :: INFO     :: &quot;)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">FileTxtFormatter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">indentUnittest</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">COLS</span><span class="o">.</span><span class="n">cleanColors</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div></div>
+
+
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="FileXmlFormatter"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.FileXmlFormatter">[docs]</a><span class="k">class</span> <span class="nc">FileXmlFormatter</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">Formatter</span><span class="p">):</span>
+<div class="viewcode-block" id="FileXmlFormatter.format"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.FileXmlFormatter.format">[docs]</a>  <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.coloringIra</span> <span class="k">as</span> <span class="nn">COLS</span> <span class="c1"># needs sys.path.insert(0, iradir)</span>
+    <span class="c1"># print &quot;&quot;, record.levelname #type(record), dir(record)</span>
+    <span class="c1"># nb = len(&quot;2018-03-17 12:15:41 :: INFO     :: &quot;)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">FileXmlFormatter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">indentUnittest</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">COLS</span><span class="o">.</span><span class="n">cleanColors</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div></div>
+
+
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="UnittestStream"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.UnittestStream">[docs]</a><span class="k">class</span> <span class="nc">UnittestStream</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  write my stream class</span>
+<span class="sd">  only write and flush are used for the streaming</span>
+<span class="sd">  </span>
+<span class="sd">  | https://docs.python.org/2/library/logging.handlers.html</span>
+<span class="sd">  | https://stackoverflow.com/questions/31999627/storing-logger-messages-in-a-string</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_logs</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    
+<div class="viewcode-block" id="UnittestStream.getLogs"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.UnittestStream.getLogs">[docs]</a>  <span class="k">def</span> <span class="nf">getLogs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logs</span></div>
+  
+<div class="viewcode-block" id="UnittestStream.getLogsAndClear"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.UnittestStream.getLogsAndClear">[docs]</a>  <span class="k">def</span> <span class="nf">getLogsAndClear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logs</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_logs</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="UnittestStream.write"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.UnittestStream.write">[docs]</a>  <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">astr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;final method called when message is logged&quot;&quot;&quot;</span>
+    <span class="c1"># log(&quot;UnittestStream.write(&#39;%s&#39;)&quot; % astr) # for debug ... </span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_logs</span> <span class="o">+=</span> <span class="n">astr</span></div>
+
+<div class="viewcode-block" id="UnittestStream.flush"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.UnittestStream.flush">[docs]</a>  <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+  <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logs</span></div>
+
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="StreamHandlerIra"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.StreamHandlerIra">[docs]</a><span class="k">class</span> <span class="nc">StreamHandlerIra</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A handler class which writes logging records, appropriately formatted,</span>
+<span class="sd">    to a stream. Note that this class does not close the stream, as</span>
+<span class="sd">    sys.stdout or sys.stderr may be used.</span>
+<span class="sd">    </span>
+<span class="sd">    from logging.StreamHandler class,</span>
+<span class="sd">    modified for &#39;no return&#39; mode line if &#39;...&#39; at end of record message</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="StreamHandlerIra.isLastRecordHaveNoReturn"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.StreamHandlerIra.isLastRecordHaveNoReturn">[docs]</a>    <span class="k">def</span> <span class="nf">isLastRecordHaveNoReturn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        to memorize if last info record is &#39;no return&#39; mode (as ending &#39;...&#39;)</span>
+<span class="sd">        avoid define inherited __init__</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;lastRecordHaveNoReturn&quot;</span><span class="p">):</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">lastRecordHaveNoReturn</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastRecordHaveNoReturn</span></div>
+      
+<div class="viewcode-block" id="StreamHandlerIra.isNeedFirstReturn"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.StreamHandlerIra.isNeedFirstReturn">[docs]</a>    <span class="k">def</span> <span class="nf">isNeedFirstReturn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &#39;no return&#39; mode  valid only if 2 consecutives info messages</span>
+<span class="sd">        if not, needs insert return line BEFORE (warning, debug, or other) </span>
+<span class="sd">        current record message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isLastRecordHaveNoReturn</span><span class="p">():</span> 
+          <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
+          <span class="k">return</span> <span class="kc">False</span> <span class="c1"># case is 2 consecutives info messages (OK for continuity)</span>
+        <span class="k">return</span> <span class="kc">True</span> <span class="c1"># case need insert return line BEFORE message (KO for continuity)</span></div>
+          
+<div class="viewcode-block" id="StreamHandlerIra.emit"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.StreamHandlerIra.emit">[docs]</a>    <span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Emit a record.</span>
+
+<span class="sd">        If a formatter is specified, it is used to format the record.</span>
+<span class="sd">        The record is then written to the stream with a trailing newline.  If</span>
+<span class="sd">        exception information is present, it is formatted using</span>
+<span class="sd">        traceback.print_exception and appended to the stream.  If the stream</span>
+<span class="sd">        has an &#39;encoding&#39; attribute, it is used to determine how to do the</span>
+<span class="sd">        output to the stream.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span>
+            <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">&quot;...&quot;</span> <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
+              <span class="n">fs</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span>
+              <span class="n">ufs</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">lastRecordHaveNoReturn</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+              <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isNeedFirstReturn</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+                <span class="n">fs</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="n">ufs</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lastRecordHaveNoReturn</span> <span class="o">=</span> <span class="kc">False</span>
+              <span class="k">else</span><span class="p">:</span>
+                <span class="n">fs</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="n">ufs</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_unicode</span><span class="p">:</span> <span class="c1">#if no unicode support...</span>
+                <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fs</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;encoding&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
+                        <span class="c1"># ufs = u&#39;%s\n&#39;</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ufs</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">UnicodeEncodeError</span><span class="p">:</span>
+                            <span class="c1">#Printing to terminals sometimes fails. For example,</span>
+                            <span class="c1">#with an encoding of &#39;cp1251&#39;, the above write will</span>
+                            <span class="c1">#work if written to a stream opened or wrapped by</span>
+                            <span class="c1">#the codecs module, but fail when writing to a</span>
+                            <span class="c1">#terminal even when the codepage is set to cp1251.</span>
+                            <span class="c1">#An extra encoding step seems to be needed.</span>
+                            <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">((</span><span class="n">ufs</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">encoding</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fs</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">UnicodeError</span><span class="p">:</span>
+                    <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fs</span> <span class="o">%</span> <span class="n">msg</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">,</span> <span class="ne">SystemExit</span><span class="p">):</span>
+            <span class="k">raise</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handleError</span><span class="p">(</span><span class="n">record</span><span class="p">)</span></div></div>
+            
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="XmlHandler"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.XmlHandler">[docs]</a><span class="k">class</span> <span class="nc">XmlHandler</span><span class="p">(</span><span class="n">BufferingHandler</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  log outputs in memory as BufferingHandler.</span>
+<span class="sd">  Write ElementTree in file and flush are done once </span>
+<span class="sd">  when method close is called, to generate xml file.</span>
+<span class="sd">  </span>
+<span class="sd">  | atts = {</span>
+<span class="sd">  |   &quot;fileName&quot;: xml file name of micro command</span>
+<span class="sd">  |   &quot;command&quot;: cmd, # &#39;compile&#39; or &#39;prepare&#39; etc.</span>
+<span class="sd">  |   &quot;passed&quot;: res, # &#39;O&#39; or &#39;1&#39;</span>
+<span class="sd">  |   &quot;launchedCommand&quot; : fullcmd, # &#39;compile TOTO -etc&#39;</span>
+<span class="sd">  |   }</span>
+<span class="sd">  |</span>
+<span class="sd">  | see: https://docs.python.org/2/library/logging.handlers.html</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capacity</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">XmlHandler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">capacity</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_target_file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_log_field</span> <span class="o">=</span> <span class="s2">&quot;Uninitialized log&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_final_fields</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># node attributes</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">isClosed</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># precaution as write file done yet</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># have to be set later to know links</span>
+    
+<div class="viewcode-block" id="XmlHandler.set_target_file"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.XmlHandler.set_target_file">[docs]</a>  <span class="k">def</span> <span class="nf">set_target_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    filename is file name xml with path</span>
+<span class="sd">    supposedly non existing, no overwrite accepted</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;XmlHandler target file </span><span class="si">%s</span><span class="s2"> existing yet&quot;</span> <span class="o">%</span> <span class="n">filename</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_target_file</span> <span class="o">=</span> <span class="n">filename</span></div>
+
+<div class="viewcode-block" id="XmlHandler.set_config"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.XmlHandler.set_config">[docs]</a>  <span class="k">def</span> <span class="nf">set_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    config is supposedly non existing, no overwrite accepted</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;XmlHandler target config existing yet&quot;</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span></div>
+    
+<div class="viewcode-block" id="XmlHandler.close"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.XmlHandler.close">[docs]</a>  <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    prepare ElementTree from existing logs and write xml file</span>
+<span class="sd">    </span>
+<span class="sd">    warning: avoid iradinaGUI logging message in logger close phase</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">targetFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_file</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>
+    
+    <span class="c1"># log(&quot;dir(XmlHandler)\n&quot; + PP.pformat(dir(self)), True)</span>
+    
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isClosed</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;XmlHandler target file </span><span class="si">%s</span><span class="s2"> closed yet&quot;</span> <span class="o">%</span> <span class="n">targetFile</span>
+      <span class="n">log</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="c1">#avoid iradinaGUI logging message in logger close phase</span>
+      <span class="k">return</span> <span class="c1"># avoid overwrite</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">targetFile</span><span class="p">):</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;XmlHandler target file </span><span class="si">%s</span><span class="s2"> existing yet&quot;</span> <span class="o">%</span> <span class="n">targetFile</span>
+      <span class="n">log</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="c1">#avoid iradinaGUI logging message in logger close phase</span>
+      <span class="k">return</span> <span class="c1"># avoid overwrite    </span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    else: # for debug</span>
+<span class="sd">      msg = &quot;XmlHandler target file %s NOT existing yet&quot; % targetFile</span>
+<span class="sd">      log(msg, True) #avoid iradinaGUI logging message in logger close phase</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+           
+    <span class="c1"># TODO for debug</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;XmlHandler to xml file</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">PP</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">getListOfStrLogRecord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)))</span>
+    
+    <span class="bp">self</span><span class="o">.</span><span class="n">_log_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">createLogField</span><span class="p">()</span>
+       
+    <span class="n">xmlFile</span> <span class="o">=</span> <span class="n">XMLMGR</span><span class="o">.</span><span class="n">XmlLogFile</span><span class="p">(</span><span class="n">targetFile</span><span class="p">,</span> <span class="s2">&quot;iradinaGUIcommand&quot;</span><span class="p">)</span>
+    <span class="n">xmlFile</span><span class="o">.</span><span class="n">put_initial_fields</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>    
+    <span class="n">xmlFile</span><span class="o">.</span><span class="n">put_log_field</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_log_field</span><span class="p">)</span>
+    <span class="n">xmlFile</span><span class="o">.</span><span class="n">put_links_fields</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idCommandHandlers</span><span class="p">)</span>
+    <span class="n">xmlFile</span><span class="o">.</span><span class="n">put_final_fields</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_final_fields</span><span class="p">)</span> 
+    <span class="n">xmlFile</span><span class="o">.</span><span class="n">write_tree</span><span class="p">(</span><span class="n">stylesheet</span> <span class="o">=</span> <span class="s2">&quot;command.xsl&quot;</span><span class="p">)</span> <span class="c1"># xml complete closed file</span>
+    <span class="n">xmlFile</span><span class="o">.</span><span class="n">dump_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="c1"># create pyconf file in the log directory</span>
+    
+    <span class="bp">self</span><span class="o">.</span><span class="n">isClosed</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># precaution to not override xml closed file</span>
+    <span class="c1"># zaps the buffer to empty as parent class</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">XmlHandler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="c1"># n.b. extract handler from logger</span></div>
+    
+<div class="viewcode-block" id="XmlHandler.createLogFieldFromScrath"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.XmlHandler.createLogFieldFromScrath">[docs]</a>  <span class="k">def</span> <span class="nf">createLogFieldFromScrath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    prepare formatted string from self.buffer LogRecord for xml &#39;Log&#39; node</span>
+<span class="sd">    local format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.coloringIra</span> <span class="k">as</span> <span class="nn">COLS</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">lr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">:</span>
+      <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> :: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
+      <span class="k">if</span> <span class="n">lr</span><span class="o">.</span><span class="n">levelno</span> <span class="o">!=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
+        <span class="n">levelName</span> <span class="o">=</span> <span class="n">COLS</span><span class="o">.</span><span class="n">cleanColors</span><span class="p">(</span><span class="n">lr</span><span class="o">.</span><span class="n">levelname</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">COLS</span><span class="o">.</span><span class="n">cleanColors</span><span class="p">(</span><span class="n">lr</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">+=</span> <span class="n">fmt</span> <span class="o">%</span> <span class="p">(</span><span class="n">levelName</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">res</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+      <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;Empty log&quot;</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="XmlHandler.createLogField"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.XmlHandler.createLogField">[docs]</a>  <span class="k">def</span> <span class="nf">createLogField</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    prepare formatted string from self.buffer LogRecord for xml &#39;Log&#39; node</span>
+<span class="sd">    using handler formatter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.coloringIra</span> <span class="k">as</span> <span class="nn">COLS</span>
+    <span class="n">fmtr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">lr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">lr</span><span class="o">.</span><span class="n">levelno</span> <span class="o">!=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span> <span class="c1">#skip info level and supposed no debug present</span>
+        <span class="n">res</span> <span class="o">+=</span> <span class="n">fmtr</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">res</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+      <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;Empty log&quot;</span>
+    <span class="k">return</span> <span class="n">COLS</span><span class="o">.</span><span class="n">cleanColors</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div></div>
+
+    
+<span class="c1">#################################################################</span>
+<span class="c1"># methods to define two LoggerIra instances in iradinaGui,</span>
+<span class="c1"># no more need</span>
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="initLoggerAsDefault"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.initLoggerAsDefault">[docs]</a><span class="k">def</span> <span class="nf">initLoggerAsDefault</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  init logger as prefixed message and indented message if multi line</span>
+<span class="sd">  exept info() outed &#39;as it&#39; without any format.</span>
+<span class="sd">  level could be modified during execution</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">log</span><span class="p">(</span><span class="s2">&quot;initLoggerAsDefault name=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">fmt=&#39;</span><span class="si">%s</span><span class="s2">&#39; level=&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">level</span><span class="p">))</span>
+  <span class="n">handler</span> <span class="o">=</span> <span class="n">StreamHandlerIra</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span> <span class="c1"># Logging vers console</span>
+  <span class="n">handler</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_console&quot;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">fmt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># formatter = LOGI.Formatter(fmt, &quot;%Y-%m-%d %H:%M:%S&quot;)</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">DefaultFormatter</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="s2">&quot;%y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+  <span class="n">handler</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+  <span class="c1"># as RootLogger is level WARNING</span>
+  <span class="c1"># my logger is not notset but low, handlers needs setlevel greater</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+  <span class="c1"># import src/debug as DBG</span>
+  <span class="c1"># tmp = (logger.getEffectiveLevel(), LOGI.NOTSET, logger.level, logger.parent.level)</span>
+  <span class="c1"># DBG.write(&quot;logger levels tmp, True)  </span>
+  <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># level could be modified during execution</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="c1"># on screen log as user wants</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span> <span class="c1"># on screen no log step, which are in xml files</span>
+  <span class="k">return</span></div>
+    
+  
+<div class="viewcode-block" id="initLoggerAsUnittest"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.initLoggerAsUnittest">[docs]</a><span class="k">def</span> <span class="nf">initLoggerAsUnittest</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  init logger as silent on stdout/stderr</span>
+<span class="sd">  used for retrieve messages in memory for post execution unittest</span>
+<span class="sd">  https://docs.python.org/2/library/logging.handlers.html</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">log</span><span class="p">(</span><span class="s2">&quot;initLoggerAsUnittest name=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">fmt=&#39;</span><span class="si">%s</span><span class="s2">&#39; level=&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">level</span><span class="p">))</span>
+  <span class="n">stream</span> <span class="o">=</span> <span class="n">UnittestStream</span><span class="p">()</span>
+  <span class="n">handler</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="c1"># Logging vers stream</span>
+  <span class="n">handler</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_unittest&quot;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">fmt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># formatter = LOGI.Formatter(fmt, &quot;%Y-%m-%d %H:%M:%S&quot;)</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">UnittestFormatter</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+  <span class="n">handler</span><span class="o">.</span><span class="n">idCommandHandlers</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">getLogs</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">getLogs</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">getLogsAndClear</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">getLogsAndClear</span>
+  <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGI</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_getDefaultLogger</span><span class="p">():</span>
+  <span class="sd">&quot;&quot;&quot;internal use only&quot;&quot;&quot;</span>
+  <span class="n">log</span><span class="p">(</span><span class="s2">&quot;getDefaultLogger </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">_loggerDefaultName</span><span class="p">)</span>
+  <span class="c1"># case multithread may be problem as not LOGI._acquireLock()</span>
+  <span class="n">previousClass</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">_loggerClass</span>
+  <span class="n">LOGI</span><span class="o">.</span><span class="n">setLoggerClass</span><span class="p">(</span><span class="n">LoggerIra</span><span class="p">)</span> <span class="c1"># to get LoggerIra instance with trace etc.</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">_loggerDefaultName</span><span class="p">)</span>
+  <span class="n">LOGI</span><span class="o">.</span><span class="n">setLoggerClass</span><span class="p">(</span><span class="n">previousClass</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">res</span>
+
+
+<span class="k">def</span> <span class="nf">_getUnittestLogger</span><span class="p">():</span>
+  <span class="sd">&quot;&quot;&quot;internal use only&quot;&quot;&quot;</span>
+  <span class="n">log</span><span class="p">(</span><span class="s2">&quot;getUnittestLogger </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">_loggerUnittestName</span><span class="p">)</span>
+  <span class="c1"># case multithread may be problem as not LOGI._acquireLock()</span>
+  <span class="n">previousClass</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">_loggerClass</span>
+  <span class="n">LOGI</span><span class="o">.</span><span class="n">setLoggerClass</span><span class="p">(</span><span class="n">LoggerIra</span><span class="p">)</span> <span class="c1"># to get LoggerIra instance with trace etc.</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">LOGI</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">_loggerUnittestName</span><span class="p">)</span>
+  <span class="n">LOGI</span><span class="o">.</span><span class="n">setLoggerClass</span><span class="p">(</span><span class="n">previousClass</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">res</span>
+
+
+<div class="viewcode-block" id="getDefaultLogger"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.getDefaultLogger">[docs]</a><span class="k">def</span> <span class="nf">getDefaultLogger</span><span class="p">():</span>
+  <span class="sd">&quot;&quot;&quot;official method to get the only one instance of Default Logger&quot;&quot;&quot;</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">_getDefaultLogger</span><span class="p">()</span>
+  <span class="n">_loggerCurrent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="getUnittestLogger"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.getUnittestLogger">[docs]</a><span class="k">def</span> <span class="nf">getUnittestLogger</span><span class="p">():</span>
+  <span class="sd">&quot;&quot;&quot;official method to get the only one instance of Unittest Logger&quot;&quot;&quot;</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">_getUnittestLogger</span><span class="p">()</span>
+  <span class="n">_loggerCurrent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="getCurrentLogger"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.getCurrentLogger">[docs]</a><span class="k">def</span> <span class="nf">getCurrentLogger</span><span class="p">():</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  get one of _loggerDefault or _loggerUnittest as first created by</span>
+<span class="sd">  getDefautLogger() or getUnittestLogger():</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">nb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">_loggerCurrent</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">nb</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;WARNING: no _loggerCurrent for now, create DefaultLogger&quot;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">getDefaultLogger</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">res</span>
+  <span class="k">return</span> <span class="n">_loggerCurrent</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<span class="c1">#################################################################</span>
+<span class="c1"># small tests as demonstration, see unittest also</span>
+<span class="c1">#################################################################</span>
+<div class="viewcode-block" id="testLogger_1"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.testLogger_1">[docs]</a><span class="k">def</span> <span class="nf">testLogger_1</span><span class="p">(</span><span class="n">logger</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;small test&quot;&quot;&quot;</span>
+  <span class="c1"># print getStrDirLogger(logger)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;test logger debug&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s1">&#39;test logger trace&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;test logger info&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;test logger warning&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;test logger error&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;test logger critical&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">test logger info: no indent</span><span class="se">\n</span><span class="s1">- second line</span><span class="se">\n</span><span class="s1">- third line</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;test logger warning:</span><span class="se">\n</span><span class="s1">- second line</span><span class="se">\n</span><span class="s1">- third line&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="testNoReturn"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.testNoReturn">[docs]</a><span class="k">def</span> <span class="nf">testNoReturn</span><span class="p">(</span><span class="n">logger</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;test when message ending &#39;...&#39; and level info then no return mode&quot;&quot;&quot;</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;BEGIN test NoReturn 1&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;test no return here 0...&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;have to continue here 1...&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;have to continue here 2&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;END test NoReturn 1&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;BEGIN test NoReturn 2&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;test no return here 0...&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;have NOT to continue here 1...&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;have NOT to continue here 2&#39;</span><span class="p">)</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;END test NoReturn 2&#39;</span><span class="p">)</span></div>
+  
+
+
+<div class="viewcode-block" id="testMain"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.loggingIra.testMain">[docs]</a><span class="k">def</span> <span class="nf">testMain</span><span class="p">():</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">**** DEFAULT logger&quot;</span><span class="p">)</span>
+  <span class="n">logdef</span> <span class="o">=</span> <span class="n">getDefaultLogger</span><span class="p">()</span>
+  <span class="c1"># use of setColorLevelname &lt;color&gt;...&lt;reset&gt;, so do not use %(levelname)-8s</span>
+  <span class="n">initLoggerAsDefault</span><span class="p">(</span><span class="n">logdef</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1"> :: </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">LOGI</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+  <span class="n">testLogger_1</span><span class="p">(</span><span class="n">logdef</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">**** DEFAULT logger NoReturn&quot;</span><span class="p">)</span>
+  <span class="n">logdef</span><span class="o">.</span><span class="n">testNoReturn</span><span class="p">()</span>
+  
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">**** UNITTEST logger&quot;</span><span class="p">)</span>
+  <span class="n">loguni</span> <span class="o">=</span> <span class="n">getUnittestLogger</span><span class="p">()</span>
+  <span class="n">initLoggerAsUnittest</span><span class="p">(</span><span class="n">loguni</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> :: </span><span class="si">%(levelname)-8s</span><span class="s1"> :: </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">LOGI</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+  <span class="n">testLogger_1</span><span class="p">(</span><span class="n">loguni</span><span class="p">)</span> <span class="c1"># is silent</span>
+  <span class="c1"># log(&quot;loguni.getLogs():\n%s&quot; % loguni.getLogs())</span>
+  <span class="nb">print</span><span class="p">((</span><span class="s2">&quot;loguni.streamUnittest:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">loguni</span><span class="o">.</span><span class="n">getLogs</span><span class="p">()))</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">**** UNITTEST logger NoReturn&quot;</span><span class="p">)</span>
+  <span class="n">loguni</span><span class="o">.</span><span class="n">testNoReturn</span><span class="p">()</span>
+  <span class="nb">print</span><span class="p">((</span><span class="s2">&quot;loguni.streamUnittest:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">loguni</span><span class="o">.</span><span class="n">getLogs</span><span class="p">()))</span>
+    
+  <span class="kn">from</span> <span class="nn">.colorama</span> <span class="k">import</span> <span class="n">Fore</span> <span class="k">as</span> <span class="n">FG</span>
+  <span class="kn">from</span> <span class="nn">.colorama</span> <span class="k">import</span> <span class="n">Style</span> <span class="k">as</span> <span class="n">ST</span>
+  <span class="nb">print</span><span class="p">((</span><span class="s2">&quot;this is unconditionally </span><span class="si">%s</span><span class="s2">colored in green</span><span class="si">%s</span><span class="s2"> !!!&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">FG</span><span class="o">.</span><span class="n">GREEN</span><span class="p">,</span> <span class="n">ST</span><span class="o">.</span><span class="n">RESET_ALL</span><span class="p">)))</span>
+  
+  <span class="kn">import</span> <span class="nn">iradinapy.utilsIra</span> <span class="k">as</span> <span class="nn">UTS</span>
+  <span class="kn">import</span> <span class="nn">iradinapy.coloringIra</span> <span class="k">as</span> <span class="nn">COLS</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1234567890123456789012345678901234567890123456789012345678901234567890&quot;</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">((</span><span class="n">UTS</span><span class="o">.</span><span class="n">tabColor</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;4&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;5&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;6&quot;</span><span class="p">)))</span>
+  <span class="nb">print</span><span class="p">((</span><span class="n">UTS</span><span class="o">.</span><span class="n">tabColor</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;1 tabulated&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;21 OK here&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;36 OK end&quot;</span><span class="p">)))</span>   
+  <span class="nb">print</span><span class="p">((</span><span class="n">COLS</span><span class="o">.</span><span class="n">toColor</span><span class="p">(</span><span class="n">UTS</span><span class="o">.</span><span class="n">tabColor</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;1 &lt;green&gt;tabulated&lt;reset&gt;&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;21 &lt;OK&gt; &lt;info&gt;here&lt;reset&gt;&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;36 &lt;OK&gt; end&quot;</span><span class="p">))))</span>   
+  <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;toColor(20, &quot;1 &lt;green&gt;tabulated&lt;reset&gt;&quot;, 15, &quot;21 &lt;OK&gt; &lt;info&gt;here&lt;reset&gt;&quot;, 10, &quot;36 &lt;OK&gt; end&quot;)&#39;</span><span class="p">)</span> 
+
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1234567890123456789012345678901234567890123456789012345678901234567890&quot;</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">((</span><span class="n">UTS</span><span class="o">.</span><span class="n">tabColor</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;4&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;5&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;6&quot;</span><span class="p">)))</span>
+  <span class="nb">print</span><span class="p">((</span><span class="n">UTS</span><span class="o">.</span><span class="n">tabColor</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;tabulated 20&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;OK here 35&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;OK end 45&quot;</span><span class="p">)))</span>   
+  <span class="nb">print</span><span class="p">((</span><span class="n">COLS</span><span class="o">.</span><span class="n">toColor</span><span class="p">(</span><span class="n">UTS</span><span class="o">.</span><span class="n">tabColor</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;&lt;green&gt;tabulated&lt;reset&gt; 20&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;&lt;OK&gt; &lt;info&gt;here&lt;reset&gt; 35&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;&lt;OK&gt; end 45&quot;</span><span class="p">))))</span>   
+  <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;toColor(-20, &quot;&lt;green&gt;tabulated&lt;reset&gt; 20&quot;, -15, &quot;&lt;OK&gt; &lt;info&gt;here&lt;reset&gt; 35&quot;, -10, &quot;&lt;OK&gt; end 45&quot;)&#39;</span><span class="p">)</span>  </div>
+
+
+
+<span class="c1">#################################################################</span>
+<span class="c1"># in production, or not (if __main__)</span>
+<span class="c1">#################################################################</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+  <span class="c1"># for example, not in production</span>
+  <span class="c1"># get path to iradinaGui sources</span>
+  <span class="n">iradir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+  <span class="c1"># Make the src &amp; commands package accessible from all code</span>
+  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">iradir</span><span class="p">)</span>
+  <span class="n">testMain</span><span class="p">()</span> 
+  <span class="c1"># here we have sys.exit()</span>
+<span class="k">else</span><span class="p">:</span>
+  <span class="c1"># in production</span>
+  <span class="c1"># get two LoggerIra instance used in iradinaGui, no more needed.</span>
+  <span class="n">_loggerDefault</span> <span class="o">=</span> <span class="n">_getDefaultLogger</span><span class="p">()</span>
+  <span class="n">_loggerUnittest</span> <span class="o">=</span> <span class="n">_getUnittestLogger</span><span class="p">()</span>
+  <span class="n">initLoggerAsDefault</span><span class="p">(</span><span class="n">_loggerDefault</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1"> :: </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+  <span class="n">initLoggerAsUnittest</span><span class="p">(</span><span class="n">_loggerUnittest</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> :: </span><span class="si">%(levelname)s</span><span class="s1"> :: </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/icon_applogo_IradinaGUI.png" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, CEA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,132 @@
+
+.. include:: ../rst_prolog.rst
+
+.. _iraIradinaCode:
+
+**************************
+Iradina code compilation
+**************************
+
+IradinaGUI uses a specific version of Iradina code, modified by J.P. Crocombette (cea),
+which is tagged version 1.1.x for now.
+This code comes from original version 1.0.8 by Christian Borschel.
+
+Users find two current compiled executable files, which are used by iradinaGUI, located at
+*.../iradinaGUI/iradinaCode*.
+
+#. *iradina_mingw64.exe*, compiled by MinGW_ gcc compiler, for Windows (64 bits).
+#. *iradina_linux64.exe*, compiled by GNU_ `gcc <GNUgcc_>`_ compiler, for Linux (64 bits).
+
+A development installation of Iradina code allows programmer improvments.
+The following chapters explain Iradina code compilation processes.
+
+
+.. _iraIradinaCodeSources:
+
+Iradina code sources
+============================
+
+With GPL licence, sources are available in iradinaGUI directory tree, located at
+*.../iradinaGUI/iradinaCodes/iradina_cea*.
+
+User find also the useful Corteo_ data base, located at
+*.../iradinaGUI/iradinaCodes/data_4bit*
+
+.. code-block:: bash
+
+    .../iradinaCodes > tree
+    .
+    ├── data_4bit
+    │   ├── 10.asp
+    │   ├── 11.asp
+    etc.
+    │   ├── corteo.mat
+    │   └── erfinv.dat
+    ├── doc
+    │   ├── 20140804_iradina_manual.pdf
+    │   ├── Corteo20160816.pdf
+    │   ├── iradina-1-s2.0-S0168583X11006318-main.pdf
+    │   └── Iradina_tuto_installation.pdf
+    ├── iradina_cea
+    │   ├── compileIradina.bat
+    │   ├── fileio.c
+    │   ├── fileio.h
+    │   ├── fromcorteo.c
+    │   ├── fromcorteo.h
+    │   ├── geometry.c
+    │   ├── geometry.h
+    │   ├── indexvalues6bit.h
+    │   ├── indexvalues.h
+    │   ├── iradina.c
+    │   ├── iradina.h
+    │   ├── license.txt
+    │   ├── makefile_cea
+    │   ├── target.c
+    │   ├── target.h
+    │   ├── transport.c
+    │   ├── transport.h
+    │   ├── utils.c
+    │   └── utils.h
+    ├── compileIradina.lnk
+    └── README.txt
+
+
+
+.. _iraIradinaCodeCompilation_linux:
+
+Iradina code compilation Linux
+==============================
+
+Example of compilation *(Linux-bash)*:
+
+.. code-block:: bash
+
+    # this is your location
+    cd .../iradinaGUI/iradinaCodes/iradina_cea
+    # verifications
+    cat README.txt
+    # compilation
+    make -f makefile_cea clean
+    make -f makefile_cea iradina
+    make -f makefile_cea installGUI  # install executable in iradinaGUI/iradinaCode
+
+
+
+.. _iraIradinaCodeCompilation_windows:
+
+Iradina code compilation Windows7-10
+=====================================
+
+.. warning:: #. MinGW_ is supposed to be set
+                and useful in environment path, at an usual location
+                *C:\\MinGW* (for example).
+             #. Git-windows_ is supposed to be set
+                and useful in environment path, at an usual location
+                *C:\\Program Files\\Git* (for example).
+                In order to use like-Linux commands.
+
+
+Example of compilation *(Windows7/10-cmd.exe shell)*:
+
+.. code-block:: bat
+
+    # this is mandatory location
+    C:\
+    cd C:\Users\Public\iradina\iradinaGUI\iradinaCodes\iradina_cea
+    # verifications
+    where make                       # --> C:\MinGW\bin\make.exe
+    where gcc                        # --> C:\MinGW\bin\gcc.exe
+    where uname                      # --> C:\Program Files\Git\usr\bin\uname.exe
+    # compilation
+    make -f makefile_cea clean
+    make -f makefile_cea iradina
+    make -f makefile_cea installGUI  # install executable in iradinaGUI/iradinaCode
+
+
+.. note:: To launch Iradina code compilation, you may use Windows shortcut
+          *C:\\User\\Public\\iradina\\iradinaGUI\\iradinaCodes\\compileIradina(.lnk)*
+          .
+
+
+
+

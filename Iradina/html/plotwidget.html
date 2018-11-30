@@ -1,0 +1,221 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Plot widget &#8212; iradinaGUI 1.0.0dev documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Prerequisites" href="prerequisites.html" />
+    <link rel="prev" title="Explore Dir widget" href="exploredirwidget.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="plot-widget">
+<span id="iraplotwidget"></span><h1>Plot widget<a class="headerlink" href="#plot-widget" title="Permalink to this headline">¶</a></h1>
+<p>This widget is to explore, modify and make plots from data.
+It appears when users activate <strong>matplotlib plot</strong> in <a class="reference internal" href="exploredirwidget.html#irafilesnamesmenu"><span class="std std-ref">Files names widget menu</span></a>.</p>
+<p>It uses some important Python packages:</p>
+<ol class="arabic simple">
+<li><a class="reference external" href="https://pandas.pydata.org">PANDAS</a> (Python Data Analysis Library) to read and store data in memory.</li>
+<li><a class="reference external" href="https://matplotlib.org">MATPLOTLIB</a> (Python 2D plotting library) to plot curves.</li>
+</ol>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Data are read from <a class="reference external" href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> formated files.
+Note that result files of Iradina code use whitespace/tabulation
+for separator character, <em>not comma</em>, for readability.</p>
+</div>
+<a class="reference internal image-reference" href="_images/iradinaPlotWidgetPlots1.png"><img alt="_images/iradinaPlotWidgetPlots1.png" class="align-center" src="_images/iradinaPlotWidgetPlots1.png" style="width: 491.2px; height: 501.6px;" /></a>
+<p>There are four main widgets (from up to down, left to right):</p>
+<ol class="arabic simple">
+<li>Plots toolbar widget</li>
+<li>Infos tab widget</li>
+<li>Contents tab widget</li>
+<li>Plots tab widget</li>
+</ol>
+<div class="section" id="plot-toolbar-widget">
+<span id="iraplottoolbarwidget"></span><h2>Plot toolbar widget<a class="headerlink" href="#plot-toolbar-widget" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/iradinaToolbarWidgetPlots1n.png" class="align-center" src="_images/iradinaToolbarWidgetPlots1n.png" />
+<p>This menu contains some buttons, as actions, which are, from left to right:</p>
+<ol class="arabic simple">
+<li>Read a new data set from file, <a class="reference external" href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> formatted.</li>
+<li>Plot curve y=f(x). 2 columns (x,y) selected.</li>
+<li>Plot 2 curves (y1,y2)=f(x), two distinct Y-axis. 3 columns (x,y1,y2) selected.</li>
+<li>Plot n curves y1,…yn=f(x), one Y-axis, (n+1) columns (x,y1,…yn) selected.</li>
+<li>Plot n <em>distinct</em> curves y1,…yn=f(x), (n+1) columns (x,y1,…yn) selected.</li>
+<li>Plot histogram, one columns selected, (automatic number of intervals).</li>
+<li>Execute <a class="reference external" href="https://pandas.pydata.org">PANDAS</a> expressions, modification <strong>on the fly</strong> of <em>Contents tab widget</em>.</li>
+<li>Initialize data <strong>ellipse</strong> in <em>Contents tab widget</em> (as a <em>newbie example</em>),
+plot the ellipse.</li>
+</ol>
+<p>With this toolbar, user may process:</p>
+<ol class="arabic simple">
+<li>Select one, or more columns in <em>Contents tab widget</em>,
+then call plot of curve(s) using plot buttons of this plot toolbar.
+A MATPLOTLIB plot is displayed in <em>Plots tab widget</em>.
+See <a class="reference internal" href="#exampleuserplot"><span class="std std-ref">Example of user plot</span></a>.</li>
+<li>Create, remove, calculate new(s) colums of data in <em>Contents tab widget</em>.
+See <a class="reference internal" href="#examplepandasexpression"><span class="std std-ref">Example of user PANDAS expression</span></a>.</li>
+<li>Filter, sort etc. lines of data in <em>Contents tab widget</em>,
+that means also get (and trace) a subset of <em>Contents tab widget</em>.</li>
+</ol>
+</div>
+<div class="section" id="infos-tab-widget">
+<h2>Infos tab widget<a class="headerlink" href="#infos-tab-widget" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/iradinaInfosTabWidgetPlots1.png" class="align-center" src="_images/iradinaInfosTabWidgetPlots1.png" />
+<p>This widget contains some contextual informations from CSV data file,
+if they are present.</p>
+</div>
+<div class="section" id="contents-tab-widget">
+<span id="iracontentstabwidget"></span><h2>Contents tab widget<a class="headerlink" href="#contents-tab-widget" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/iradinaContentsTabWidgetPlots1.png" class="align-center" src="_images/iradinaContentsTabWidgetPlots1.png" />
+<p>This widget displays current data, allowing some <em>elementary</em>
+modifications (see your appropriate spreadsheet for more functionalities
+(Excel, or else).</p>
+</div>
+<div class="section" id="plots-tab-widget">
+<h2>Plots tab widget<a class="headerlink" href="#plots-tab-widget" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/iradinaPlotsTabWidgetPlots1.png" class="align-center" src="_images/iradinaPlotsTabWidgetPlots1.png" />
+<p>This widget displays current plot, as an instance of <a class="reference external" href="https://matplotlib.org">matplotlib</a> <em>figure</em>.</p>
+</div>
+<div class="section" id="interactive-navigation-toolbar-matplotlib">
+<h2>Interactive navigation toolbar matplotlib<a class="headerlink" href="#interactive-navigation-toolbar-matplotlib" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/iradinaNavigationToolbarMatplotlib1.png" class="align-center" src="_images/iradinaNavigationToolbarMatplotlib1.png" />
+<p>Using this standard toolbar of <a class="reference external" href="https://matplotlib.org">matplotlib</a>, user may customize current plot.</p>
+<p>For more informations, users should refer to the description of
+<a class="reference external" href="http://matplotlib.org/users/navigation_toolbar.html?highlight=toolbar">navigation toolbar MATPLOTLIB</a>.</p>
+</div>
+</div>
+<div class="section" id="plot-widget-usage">
+<h1>Plot widget usage<a class="headerlink" href="#plot-widget-usage" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="example-of-user-pandas-expression">
+<span id="examplepandasexpression"></span><h2>Example of user PANDAS expression<a class="headerlink" href="#example-of-user-pandas-expression" title="Permalink to this headline">¶</a></h2>
+<p>User may modify data of <a class="reference internal" href="#iracontentstabwidget"><span class="std std-ref">Contents tab widget</span></a>,
+Clicking on menu actions button <em>Execute PANDAS expressions</em> of
+<a class="reference internal" href="#iraplottoolbarwidget"><span class="std std-ref">Plot toolbar widget</span></a>.</p>
+<img alt="_images/iradinaExecutePandasExpression0.png" class="align-center" src="_images/iradinaExecutePandasExpression0.png" />
+<p>A dialog box appears <em>set your pandas expression</em>.
+An expression is an python affectation expression <em>‘df = something’</em>,
+where ‘df’ <em>is</em> a pandas dataframe instance displayed
+in <a class="reference internal" href="#iracontentstabwidget"><span class="std std-ref">Contents tab widget</span></a>.</p>
+<a class="reference internal image-reference" href="_images/iradinaExecutePandasExpression2.png"><img alt="_images/iradinaExecutePandasExpression2.png" class="align-center" src="_images/iradinaExecutePandasExpression2.png" style="width: 515.2px; height: 417.6px;" /></a>
+<p>Scrolling, there are some examples of <a class="reference external" href="https://pandas.pydata.org">PANDAS</a> dataframe expressions,
+(read the documentation, sometimes it is <strong>not trivial</strong>).</p>
+<a class="reference internal image-reference" href="_images/iradinaExecutePandasExpression3.png"><img alt="_images/iradinaExecutePandasExpression3.png" class="align-center" src="_images/iradinaExecutePandasExpression3.png" style="width: 528.0px; height: 406.4px;" /></a>
+<p>Users have to type their own expression, and confirm (OK).
+Do not worry, in case of error(s) in expression, an error dialog box appears.</p>
+<a class="reference internal image-reference" href="_images/iradinaExecutePandasExpression5.png"><img alt="_images/iradinaExecutePandasExpression5.png" class="align-center" src="_images/iradinaExecutePandasExpression5.png" style="width: 404.0px; height: 205.6px;" /></a>
+</div>
+<div class="section" id="example-of-user-plot">
+<span id="exampleuserplot"></span><h2>Example of user plot<a class="headerlink" href="#example-of-user-plot" title="Permalink to this headline">¶</a></h2>
+<p>When selecting, <em>for example</em>, theses two columns from ellipse: (X, Z2=X*Y),
+and Clicking on button 2 of <a class="reference internal" href="#iraplottoolbarwidget"><span class="std std-ref">Plot toolbar widget</span></a>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Sometimes, users have to make a <strong>multiple-selection</strong> of
+<em>expected</em> number of colums in
+<em>Contents tab widget</em> <strong>before</strong> plot actions.
+The order of multiple-selection is significant.</p>
+</div>
+<a class="reference internal image-reference" href="_images/iradinaPlotEllipse1.png"><img alt="_images/iradinaPlotEllipse1.png" class="align-center" src="_images/iradinaPlotEllipse1.png" style="width: 357.6px; height: 386.4px;" /></a>
+<p>User get this plot</p>
+<a class="reference internal image-reference" href="_images/iradinaPlotEllipse2.png"><img alt="_images/iradinaPlotEllipse2.png" class="align-center" src="_images/iradinaPlotEllipse2.png" style="width: 357.6px; height: 386.4px;" /></a>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/icon_applogo_IradinaGUI.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Plot widget</a><ul>
+<li><a class="reference internal" href="#plot-toolbar-widget">Plot toolbar widget</a></li>
+<li><a class="reference internal" href="#infos-tab-widget">Infos tab widget</a></li>
+<li><a class="reference internal" href="#contents-tab-widget">Contents tab widget</a></li>
+<li><a class="reference internal" href="#plots-tab-widget">Plots tab widget</a></li>
+<li><a class="reference internal" href="#interactive-navigation-toolbar-matplotlib">Interactive navigation toolbar matplotlib</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plot-widget-usage">Plot widget usage</a><ul>
+<li><a class="reference internal" href="#example-of-user-pandas-expression">Example of user PANDAS expression</a></li>
+<li><a class="reference internal" href="#example-of-user-plot">Example of user plot</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="exploredirwidget.html" title="previous chapter">Explore Dir widget</a></li>
+      <li>Next: <a href="prerequisites.html" title="next chapter">Prerequisites</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/plotwidget.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, CEA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/plotwidget.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

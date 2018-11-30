@@ -1,0 +1,71 @@
+
+.. include:: ../rst_prolog.rst
+
+
+.. _iraUsage:
+
+********************
+Usage of iradinaGUI
+********************
+
+Usage
+=====
+
+IradinaGUI usage is a Command Line Interface (CLI_), which is
+Windows *and* Linux compatible.
+
+.. code-block:: bash
+
+  iradinaGUI --[options]
+
+
+Options of iradinaGUI
+............................
+
+Useful but *not exhaustive* generic options of *iradinaGUI* CLI.
+
+
+Option *--help or -h*
+............................
+
+Get help as simple text.
+
+.. code-block:: bash
+
+    iradinaGUI --help          # get list of existing options
+
+
+Option *--doc or -d*
+............................
+
+Get documentation as browser html.
+
+.. code-block:: bash
+
+    iradinaGUI --doc           # see html doc
+
+
+Option *--verbose or -v*
+............................
+
+Change verbosity level (default is 'info').
+
+.. code-block:: bash
+
+    # execute iradinaGUI command in verbose debug mode
+    iradinaGUI -v debug
+
+
+Option *--workdir or -w*
+............................
+
+Change working directory (user data directory). Default is
+../IRADINAGUI_WORKDIR
+
+.. code-block:: bash
+
+    # execute iradinaGUI in user choice working directory
+    iradinaGUI -w .../MY_WORKDIR
+
+
+

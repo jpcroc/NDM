@@ -1,0 +1,22 @@
+configparserpy.test package
+===========================
+
+Submodules
+----------
+
+configparserpy.test.configParserUtilsTest module
+------------------------------------------------
+
+.. automodule:: configparserpy.test.configParserUtilsTest
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: configparserpy.test
+    :members:
+    :undoc-members:
+    :show-inheritance:

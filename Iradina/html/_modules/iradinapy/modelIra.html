@@ -1,0 +1,255 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>iradinapy.modelIra &#8212; iradinaGUI 1.0.0dev documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for iradinapy.modelIra</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="c1"># %% LICENSE_SALOME_CEA_BEGIN</span>
+<span class="c1"># Copyright (C) 2008-2015  CEA/DEN</span>
+<span class="c1"># </span>
+<span class="c1"># This library is free software; you can redistribute it and/or</span>
+<span class="c1"># modify it under the terms of the GNU Lesser General Public</span>
+<span class="c1"># License as published by the Free Software Foundation; either</span>
+<span class="c1"># version 2.1 of the License, or (at your option) any later version.</span>
+<span class="c1"># </span>
+<span class="c1"># This library is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU</span>
+<span class="c1"># Lesser General Public License for more details.</span>
+<span class="c1"># </span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public</span>
+<span class="c1"># License along with this library; if not, write to the Free Software</span>
+<span class="c1"># Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA</span>
+<span class="c1"># </span>
+<span class="c1"># See http://www.salome-platform.org or email : webmaster.salome@opencascade.com</span>
+<span class="c1"># %% LICENSE_END</span>
+
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">pprint</span> <span class="k">as</span> <span class="nn">PP</span>
+
+<span class="kn">import</span> <span class="nn">xyzpy.loggingXyz</span> <span class="k">as</span> <span class="nn">LOG</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">from</span> <span class="nn">xyzpy.baseXyz</span> <span class="k">import</span> <span class="n">_XyzConstrainBase</span><span class="p">,</span> <span class="n">BaseXyz</span>
+<span class="c1">#from xyzpy.intFloatListXyz import _XyzImmBase #, ListOfBaseXyz</span>
+<span class="kn">import</span> <span class="nn">xyzpy.utilsXyz</span> <span class="k">as</span> <span class="nn">UXYZ</span>
+<span class="kn">from</span> <span class="nn">xyzpy.utilsXyz</span> <span class="k">import</span> <span class="n">newElement</span> <span class="k">as</span> <span class="n">ETELE</span>
+<span class="kn">from</span> <span class="nn">xyzpy.guiXyz.dialogXmlXyz</span> <span class="k">import</span> <span class="n">DialogXyz</span><span class="p">,</span> <span class="n">DialogXmlXyz</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">salomepy.utilsWorkdir</span> <span class="k">as</span> <span class="nn">UTW</span>
+<span class="kn">import</span> <span class="nn">xyzpy.classFactoryXyz</span> <span class="k">as</span> <span class="nn">CLFX</span>
+<span class="kn">import</span> <span class="nn">xyzpy.loggingXyz</span> <span class="k">as</span> <span class="nn">LOG</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">LOG</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+
+<span class="c1">#set classes Xyz in factory xyzpy.utilsXyz</span>
+<span class="kn">import</span> <span class="nn">xyzpy.intFloatListXyz</span> <span class="k">as</span> <span class="nn">IFLX</span>
+
+<span class="c1">#set classes Ura in factory xyzpy.utilsXyz</span>
+<span class="kn">import</span> <span class="nn">iradinapy.analysisIra</span>
+<span class="kn">import</span> <span class="nn">iradinapy.controlSimulationIra</span>
+
+<span class="kn">import</span> <span class="nn">mendeleievpy.projectileDrt</span>
+<span class="kn">import</span> <span class="nn">mendeleievpy.targetDrt</span>
+<span class="kn">import</span> <span class="nn">mendeleievpy.elementDrt</span>
+
+<span class="kn">import</span> <span class="nn">iradinapy.configIra</span> <span class="k">as</span> <span class="nn">CFGIRA</span>
+<span class="kn">import</span> <span class="nn">iradinapy.debug</span> <span class="k">as</span> <span class="nn">DBG</span>
+
+<span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">verboseEvent</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="c1">########################################################################################</span>
+<div class="viewcode-block" id="ModelIra"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra">[docs]</a><span class="k">class</span> <span class="nc">ModelIra</span><span class="p">(</span><span class="n">_XyzConstrainBase</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  general instance to group all iradina data files in a directory</span>
+<span class="sd">  input file iradina release ?</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">_attributesList</span> <span class="o">=</span> <span class="p">[</span> <span class="c1">#list, not a dict because sequential order list is used in files</span>
+    <span class="c1"># just for test &amp; debug</span>
+    <span class="c1"># (&quot;Isotope&quot;, &quot;IsotopeDrt&quot;),</span>
+    <span class="c1"># (&quot;Projectile&quot;, &quot;ProjectileDrt&quot;),</span>
+    <span class="c1"># (&quot;Element&quot;, &quot;ElementDrt&quot;),</span>
+    <span class="c1"># (&quot;TargetComponent&quot;, &quot;TargetComponentDrt&quot;),</span>
+    <span class="c1"># (&quot;Target&quot;, &quot;TargetDrt&quot;),</span>
+    <span class="p">(</span><span class="s2">&quot;Controls&quot;</span><span class="p">,</span> <span class="s2">&quot;ControlSimulationIra&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Analysis&quot;</span><span class="p">,</span> <span class="s2">&quot;AnalysisIra&quot;</span><span class="p">),</span>
+  <span class="p">]</span>
+  
+  <span class="n">_helpDict</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Controls&quot;</span><span class="p">:</span> <span class="p">(</span><span class="sa">u</span><span class="s2">&quot;Known settings for calculus&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;Analysis&quot;</span><span class="p">:</span> <span class="p">(</span><span class="sa">u</span><span class="s2">&quot;iradina analysis data parameters&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+  <span class="p">}</span>
+  <span class="n">_icon</span> <span class="o">=</span> <span class="s2">&quot;iradinapy.resources.iradinagui&quot;</span>
+
+  
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">ModelIra</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_defautNameAsRoot</span> <span class="o">=</span> <span class="s2">&quot;Iradina&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setIsCast</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_setAllAttributesList</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ModelIra.isHidden"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.isHidden">[docs]</a>  <span class="k">def</span> <span class="nf">isHidden</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nameAttr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;to know if attribute is currently displayed in treeView and other dialog widget&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">CFGIRA</span><span class="o">.</span><span class="n">isHidden</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nameAttr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelIra.setDefaultValues"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.setDefaultValues">[docs]</a>  <span class="k">def</span> <span class="nf">setDefaultValues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">Controls</span><span class="o">.</span><span class="n">setDefaultValues</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">setDefaultValues</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ModelIra.setFromFileIra"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.setFromFileIra">[docs]</a>  <span class="k">def</span> <span class="nf">setFromFileIra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;override inherited method&quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Cannot set from file iradinaGUI Analysis.xml, use method setFromDirectoryIra(aDirWithIraFiles) instead&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelIra.toStrIra"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.toStrIra">[docs]</a>  <span class="k">def</span> <span class="nf">toStrIra</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;override inherited method&quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Cannot write to file iradinaGUI Analysis.xml, use method toDirectoryIra(aDirWithIraFiles) instead&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelIra.getEtudeWorkdirExpanded"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.getEtudeWorkdirExpanded">[docs]</a>  <span class="k">def</span> <span class="nf">getEtudeWorkdirExpanded</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">dataInformations</span><span class="o">.</span><span class="n">getEtudeWorkdir</span><span class="p">()</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
+    <span class="k">if</span> <span class="s2">&quot;$&quot;</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;impossible to expand etude directory: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">res</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="ModelIra.getEtudeWorkdirBrut"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.getEtudeWorkdirBrut">[docs]</a>  <span class="k">def</span> <span class="nf">getEtudeWorkdirBrut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expanded</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">dataInformations</span><span class="o">.</span><span class="n">getEtudeWorkdirBrut</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ModelIra.getHistoryFile"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.getHistoryFile">[docs]</a>  <span class="k">def</span> <span class="nf">getHistoryFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">historyFileManager</span></div>
+
+<div class="viewcode-block" id="ModelIra.getActionsContextMenu"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.getActionsContextMenu">[docs]</a>  <span class="k">def</span> <span class="nf">getActionsContextMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ModelIra</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">getActionsContextMenu</span><span class="p">()</span>
+    <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_createAction</span><span class="p">(</span><span class="s1">&#39;change user mode&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;change user mode of data display&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">userMode</span><span class="p">,</span> <span class="s2">&quot;usermode&quot;</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_createAction</span><span class="p">(</span><span class="s1">&#39;user expanding&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;custom reset expanding iradina tree&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">userExpand</span><span class="p">,</span> <span class="s2">&quot;expand&quot;</span><span class="p">)</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">actions</span></div>
+
+<div class="viewcode-block" id="ModelIra.userExpand"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.userExpand">[docs]</a>  <span class="k">def</span> <span class="nf">userExpand</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    filename patterns &#39;*,??&#39;</span>
+<span class="sd">    warning not for &#39;[&#39; &#39;]&#39; as &#39;alist[*]&#39;</span>
+<span class="sd">    no found way to quote meta-character</span>
+<span class="sd">    https://docs.python.org/2/library/fnmatch.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">expanded</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Iradina</span>
+<span class="s2">Analysis</span>
+<span class="s2">dataInformations</span>
+<span class="s2">dataManager</span>
+<span class="s2">macroManager</span>
+<span class="s2">functions</span>
+<span class="s2">libraries</span>
+<span class="s2">macros</span>
+<span class="s2">userFileManager</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="c1">#print(&quot;userExpand\n%s&quot; % PP.pformat(expanded))</span>
+    <span class="bp">self</span> <span class="o">.</span><span class="n">getController</span><span class="p">()</span><span class="o">.</span><span class="n">UserExpandSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">expanded</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelIra.userMode"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.modelIra.ModelIra.userMode">[docs]</a>  <span class="k">def</span> <span class="nf">userMode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    change user mode</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">CFGIRA</span><span class="o">.</span><span class="n">getCurrentMode</span><span class="p">()</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">CLFX</span><span class="o">.</span><span class="n">getXyzClassFromName</span><span class="p">(</span><span class="s2">&quot;UserModeIra&quot;</span><span class="p">)(</span><span class="n">cur</span><span class="p">)</span>
+    <span class="n">aDialog</span> <span class="o">=</span> <span class="n">DialogXyz</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getDesktop</span><span class="p">())</span> <span class="c1"># open in center desktop</span>
+    <span class="n">aWidget</span> <span class="o">=</span> <span class="n">mode</span><span class="o">.</span><span class="n">createEditor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getDesktop</span><span class="p">())</span>
+    <span class="n">aDialog</span><span class="o">.</span><span class="n">setUpWidgetLayout</span><span class="p">([</span><span class="n">aWidget</span><span class="p">])</span>
+    <span class="n">aDialog</span><span class="o">.</span><span class="n">setMinimumSize</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">aDialog</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">&quot;change user mode&quot;</span><span class="p">)</span>
+    <span class="n">aDialog</span><span class="o">.</span><span class="n">hideButtons</span><span class="p">(</span><span class="s2">&quot;Reset Help&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="n">aDialog</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">aDialog</span><span class="o">.</span><span class="n">choice</span>
+    <span class="k">if</span> <span class="n">aDialog</span><span class="o">.</span><span class="n">choice</span> <span class="o">==</span> <span class="s2">&quot;Cancel&quot;</span><span class="p">:</span> <span class="k">return</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">aWidget</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+    <span class="c1"># DBG.write(&quot;change userMode %s - &gt; %s&quot; % (cur, res), &quot; &quot;)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">getController</span><span class="p">()</span><span class="o">.</span><span class="n">UserModeSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span></div></div>
+
+<span class="c1">#factory pattern using xyzpy.utilsXyz._dictOfXyzClass</span>
+<span class="n">CLFX</span><span class="o">.</span><span class="n">appendAllXyzClasses</span><span class="p">(</span> <span class="p">[</span><span class="n">ModelIra</span><span class="p">]</span> <span class="p">)</span>
+
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/icon_applogo_IradinaGUI.png" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, CEA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

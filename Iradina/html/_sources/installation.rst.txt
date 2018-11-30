@@ -1,0 +1,128 @@
+
+.. include:: ../rst_prolog.rst
+
+.. _iraInstallation:
+
+**************************
+Development installations
+**************************
+
+A development installation of iradinaGUI allows programmer improvments.
+It is a classical usage of Python_ packages.
+It needs a directory for Python_ interpreter (usually named *miniconda3*),
+and another directory for iradinaGUI scripts (usually named *iradinaGUI*),
+
+*In fine*, user could find (and use) command *iradinaGUI* directly after a
+*detar/unzip* installation. Or a *git clone*.
+
+.. warning:: #. **Windows7-10** all-in-one installation is a *development installation* of iradinaGUI,
+                which allows programmer improvments.
+             #. Users find *miniconda3* and *iradinaGUI* directories in parent directory named
+                *C:\\Users\\Public\\iradina*.
+             #. **Linux** all-in-one installation PyInstaller_ bundle is **NOT** like that.
+             #. To get *development installation* **Linux** (freely located) of iradinaGUI,
+                users have to follow the two next chapters.
+
+
+.. _iraInstallation_pythonlinux:
+
+Python installation Linux
+============================
+
+To install python3 (and its mandatory packages PyQt5 etc.) *locally*, we suggest to use miniconda_.
+Note that *miniconda* is windows7-10 compliant.
+
+.. note:: You may use this Python interpreter for another python scripting code than iradinaGUI.
+
+For information:
+
+#. https://conda.io/miniconda.html
+#. https://conda.io/docs/index.html
+
+Example of install *(Linux-bash)*:
+
+.. code-block:: bash
+
+    bash Miniconda3-latest-Linux-x86_64.sh
+    # -> Miniconda3 will now be installed into this location:
+    # -> /volatile/common/miniconda3 (for example. It is located as you want.)
+    # -> Thank you for installing Miniconda3!
+
+    export PATH=/volatile/common/miniconda3/bin:$PATH
+    which conda
+    # -> /volatile/common/miniconda3/bin/conda
+
+    conda create --name py3qt5 python=3 \
+       pip jupyter matplotlib numpy pandas pandas-datareader \
+       pyqt=5 scipy sympy jsonschema pyyaml libxml2 paramiko
+    # -> Solving environment: done
+    # -> Proceed ([y]/n)? y
+    # -> Downloading and Extracting Packages
+    # -> To activate this environment, use:
+    # -> source activate py3qt5
+
+    conda info --envs
+    # -> conda environments:
+    # ->   base         /volatile/common/miniconda3
+    # ->   py3qt5       /volatile/common/miniconda3/envs/py3qt5
+    # ->   etc...
+
+    source activate py3qt5
+    which python
+    # - > /volatile/common/miniconda3/envs/py3qt5/bin/python
+
+
+.. _iraInstallation_linux:
+
+iradinaGUI installation Linux
+==============================
+
+
+.. warning:: Python interpreter py3qt5 is supposed to be set
+             and useful in environment path.
+             Usually command *source activate py3qt5* assume that.
+
+Example of install/launch *(Linux-bash)*:
+
+.. code-block:: bash
+
+    cd whereYouWant
+    tar -xf .../iradinaGUI_xxxx.tgz
+    cd iradinaGUI
+    ls -l iradinaGUI        # the launch executable command (is a script python)
+    which python            # --> py3qt5
+    ./iradinaGUI -h         # on line help
+    ./iradinaGUI -g -w ...  # launch GUI
+
+
+.. _iraInstallation_windows:
+
+iradinaGUI installation Windows7-10
+=====================================
+
+.. warning:: Python interpreter py3qt5 is supposed to be set
+             and useful in environment path, at **mandatory** usual location
+             *C:\\Users\\Public\\iradina\\miniconda3*.
+             Usually command *conda activate py3qt5* assume that.
+
+
+Example of install/launch *(Windows7/10-cmd.exe shell)*, using 7-zip_:
+
+.. code-block:: bat
+
+    C:\
+    cd C:\Users\Public\iradina   # this is mandatory location, useful for all users
+    "C:\Program Files\7-Zip\7z.exe" x .../iradinaGUI_xxxx.7z
+    cd C:\Users\Public\iradina\iradinaGUI
+    where python                 # --> py3qt5
+    python iradinaGUI -h         # on line help
+    python iradinaGUI -g -w ...  # launch GUI
+
+
+.. note:: To launch iradina GUI, you may use Windows shortcut
+          *C:\\User\\Public\\iradina\\iradinaGUI\\LaunchIradinaGUI(.lnk)*
+          .
+
+
+
+

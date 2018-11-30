@@ -1,0 +1,149 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Explore Dir widget &#8212; iradinaGUI 1.0.0dev documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Plot widget" href="plotwidget.html" />
+    <link rel="prev" title="Log Run Code widget" href="logruncodewidget.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="explore-dir-widget">
+<span id="iraexploredirwidget"></span><h1>Explore Dir widget<a class="headerlink" href="#explore-dir-widget" title="Permalink to this headline">¶</a></h1>
+<p>This widget displays the contents of user iradinaGUI working directory.
+This directory is usually referenced as <em>IRADINAGUI_WORKDIR</em>.</p>
+<p>Its usage is like a <strong>simple</strong> file explorer.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Theses result files of Iradina code are located in sub-directories named <em>output</em>.</p>
+</div>
+<a class="reference internal image-reference" href="_images/iradinaExploreDirWidget1.png"><img alt="_images/iradinaExploreDirWidget1.png" class="align-center" src="_images/iradinaExploreDirWidget1.png" style="width: 540.0px; height: 435.2px;" /></a>
+<p>There are three main widgets (from left to right):</p>
+<ol class="arabic simple">
+<li>Directories names widget</li>
+<li>Files names widget</li>
+<li>File contents widget</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The lower <em>selected files</em> widget is for future improvments, no usage <em>yet</em>.</p>
+</div>
+<p>There are some contextual menus to explore directories, and to display input/output text files.</p>
+<div class="section" id="directories-names-widget-menu">
+<h2>Directories names widget menu<a class="headerlink" href="#directories-names-widget-menu" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="_images/iradinaExploreDirectoriesMenu1.png"><img alt="_images/iradinaExploreDirectoriesMenu1.png" class="align-center" src="_images/iradinaExploreDirectoriesMenu1.png" style="width: 500.0px; height: 421.6px;" /></a>
+<p>This menu contains some elementary actions to navigate in <strong>all</strong> disk directories.</p>
+</div>
+<div class="section" id="files-names-widget-menu">
+<span id="irafilesnamesmenu"></span><h2>Files names widget menu<a class="headerlink" href="#files-names-widget-menu" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="_images/iradinaExploreFilesMenu1.png"><img alt="_images/iradinaExploreFilesMenu1.png" class="align-center" src="_images/iradinaExploreFilesMenu1.png" style="width: 497.6px; height: 423.2px;" /></a>
+<p>This menu contains some actions to apply on selected file.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">An useful action is the lower <strong>matplotlib plot</strong>, to plot curves
+from result files of Iradina code as post-treatment.</p>
+</div>
+</div>
+<div class="section" id="files-contents-widget-menu">
+<h2>Files contents widget menu<a class="headerlink" href="#files-contents-widget-menu" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="_images/iradinaExploreDisplayMenu1.png"><img alt="_images/iradinaExploreDisplayMenu1.png" class="align-center" src="_images/iradinaExploreDisplayMenu1.png" style="width: 500.0px; height: 424.0px;" /></a>
+<p>This menu contains some elementary actions to apply on displayed file.
+The files are <em>syntax highlighted</em> if possible, using <a class="reference external" href="http://www.andre-simon.de/doku/highlight/en/highlight.php">highlight</a> tool, only on Linux distributions for now.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The lower <em>highlight theme</em> action is displayed only for Linux distribution.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/icon_applogo_IradinaGUI.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Explore Dir widget</a><ul>
+<li><a class="reference internal" href="#directories-names-widget-menu">Directories names widget menu</a></li>
+<li><a class="reference internal" href="#files-names-widget-menu">Files names widget menu</a></li>
+<li><a class="reference internal" href="#files-contents-widget-menu">Files contents widget menu</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="logruncodewidget.html" title="previous chapter">Log Run Code widget</a></li>
+      <li>Next: <a href="plotwidget.html" title="next chapter">Plot widget</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/exploredirwidget.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, CEA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/exploredirwidget.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

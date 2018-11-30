@@ -1,0 +1,29 @@
+configparserpy package
+======================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    configparserpy.test
+
+Submodules
+----------
+
+configparserpy.configParserUtils module
+---------------------------------------
+
+.. automodule:: configparserpy.configParserUtils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: configparserpy
+    :members:
+    :undoc-members:
+    :show-inheritance:

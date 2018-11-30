@@ -1,0 +1,1015 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>iradinapy.controllerIra &#8212; iradinaGUI 1.0.0dev documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for iradinapy.controllerIra</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="c1"># %% LICENSE_SALOME_CEA_BEGIN</span>
+<span class="c1"># Copyright (C) 2008-2015  CEA/DEN</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or</span>
+<span class="c1"># modify it under the terms of the GNU Lesser General Public</span>
+<span class="c1"># License as published by the Free Software Foundation; either</span>
+<span class="c1"># version 2.1 of the License, or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU</span>
+<span class="c1"># Lesser General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public</span>
+<span class="c1"># License along with this library; if not, write to the Free Software</span>
+<span class="c1"># Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA</span>
+<span class="c1">#</span>
+<span class="c1"># See http://www.salome-platform.org or email : webmaster.salome@opencascade.com</span>
+<span class="c1"># %% LICENSE_END</span>
+
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">pprint</span> <span class="k">as</span> <span class="nn">PP</span>
+<span class="kn">import</span> <span class="nn">subprocess</span> <span class="k">as</span> <span class="nn">SP</span>
+
+<span class="kn">from</span> <span class="nn">PyQt5</span> <span class="k">import</span> <span class="n">QtGui</span><span class="p">,</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtWidgets</span> <span class="k">as</span> <span class="n">QTW</span>
+
+<span class="kn">import</span> <span class="nn">xyzpy.loggingXyz</span> <span class="k">as</span> <span class="nn">LOG</span>
+<span class="kn">from</span> <span class="nn">xyzpy.controllerXyz</span> <span class="k">import</span> <span class="n">ControllerXyz</span>
+<span class="kn">import</span> <span class="nn">xyzpy.actionsFactoryXyz</span> <span class="k">as</span> <span class="nn">ACFX</span>
+
+<span class="c1"># append factory classes</span>
+<span class="kn">import</span> <span class="nn">xyzpy.intFloatListXyz</span> <span class="k">as</span> <span class="nn">IFLX</span>  <span class="c1"># append factory classes</span>
+
+<span class="kn">import</span> <span class="nn">iradinapy.modelIra</span>
+<span class="kn">from</span> <span class="nn">iradinapy.modelIra</span> <span class="k">import</span> <span class="n">ModelIra</span>
+
+<span class="kn">from</span> <span class="nn">salomepy.qTabMultipleTextCentral</span> <span class="k">import</span> <span class="n">QTabMultipleTextCentral</span>
+<span class="c1"># from qtRootCanvasWidget import QtRootCanvasWidget</span>
+
+<span class="kn">import</span> <span class="nn">xyzpy.utilsXyz</span> <span class="k">as</span> <span class="nn">UXYZ</span>
+<span class="kn">import</span> <span class="nn">salomepy.utilsWorkdir</span> <span class="k">as</span> <span class="nn">UTW</span>
+<span class="kn">import</span> <span class="nn">iradinapy.iradinaFilePatterns</span> <span class="k">as</span> <span class="nn">UFPA</span>
+<span class="kn">import</span> <span class="nn">iradinapy.iradinaSettings</span> <span class="k">as</span> <span class="nn">USET</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">LOG</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">verboseEvent</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">_MyDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1">########################################################################################</span>
+<span class="k">class</span> <span class="nc">QTabMultipleTextCentralIra</span><span class="p">(</span><span class="n">QTabMultipleTextCentral</span><span class="p">):</span>
+  <span class="c1"># -1 as useless as not created</span>
+  <span class="c1"># user use inheritage for modify TAB_... order or appearence tabs</span>
+  <span class="n">TAB_LOG_CMD</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">TAB_OTHERTEXTEDIT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="n">TAB_FILESYSTEM</span> <span class="o">=</span> <span class="mi">1</span>
+
+  <span class="c1"># additional inherited</span>
+  <span class="c1"># TAB_ROOTCANVAS = 3</span>
+
+  <span class="k">def</span> <span class="nf">_init_tabs_inherited</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    if self.TAB_ROOTCANVAS != -1:</span>
+<span class="sd">      wid = QtRootCanvasWidget()</span>
+<span class="sd">      wid.saveFileExt = &quot;.iradina&quot;</span>
+<span class="sd">      wid.tabName = &quot;Canvas&quot;  # as foreign clear short label name</span>
+<span class="sd">      # wid.attName = &quot;ROOTCanvasWidget&quot;  # as immmutable name</span>
+<span class="sd">      # self.activeTabs[self.TAB_ROOTCANVAS] = wid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="c1">########################################################################################</span>
+<span class="k">class</span> <span class="nc">ControllerIra</span><span class="p">(</span><span class="n">ControllerXyz</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  class for manage request and action to/from views and model of iradinaGUI</span>
+<span class="sd">  as MVC pattern</span>
+<span class="sd">  one controller for one model and some views</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+
+  <span class="c1"># http://pyqt.sourceforge.net/Docs/PyQt4/new_style_signals_slots.html</span>
+  <span class="c1"># http://qt-project.org/doc/qt-5.1/qtwidgets/qaction.html ... Detailed Description</span>
+
+  <span class="n">LaunchIradinaSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">LaunchAllTestsSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">LaunchIradinaCodeTestsSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">LoadIradinaDefaultModelSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">LoadIradinaModelXmlSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">SaveIradinaModelXmlSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">RefreshIradinaModelSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">LoadDataFileInModelSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">UpdateEtudeSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">UpdateEtudeDataSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">UpdateEtudeRootlogonSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">CreateCpackEtudeSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">CreateDocSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">GitCommitEtudeSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">ClearModelSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">ExecPythonCodeSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">ExecRootCodeSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">ExecRootProcessFileSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">ExecSearchMethodInIradinaSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">ExecPrintROOTContextSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">ExecPostTreatmentsSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">UserExpandSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+  <span class="n">UserModeSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+  <span class="n">IradinaGuiHelpSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+  <span class="n">IradinaCodeHelpSignal</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">ControllerIra</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">initializeDone</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">workDir</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># will not change</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">currentDir</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># could change, subdirectory of workDir (a priori)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">iradinaNameFileSaveXml</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">iradinaNameDirSaveIra</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">treeViews</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">docks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">toolBars</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__initialize</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_iradinaXmlDefaultName</span> <span class="o">=</span> <span class="s2">&quot;iradinaGui.xml&quot;</span>
+    <span class="c1"># self.setIpcController(ControllerIpcIra())</span>
+
+    <span class="c1"># connect</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">UpdateEtudeSignal</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_updateEtude</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">UpdateEtudeDataSignal</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_updateDataEtude</span><span class="p">)</span>
+    <span class="c1">#self.UpdateEtudeRootlogonSignal.connect(self._updateRootlogonEtude)</span>
+    <span class="c1">#self.GitCommitEtudeSignal.connect(self._gitCommitEtude)</span>
+    <span class="c1">#self.CreateCpackEtudeSignal.connect(self._createCpackEtude)</span>
+    <span class="c1">#self.CreateDocSignal.connect(self._createDocEtude)</span>
+    <span class="c1">#self.ExecPythonCodeSignal.connect(self._ExecPythonCode)</span>
+    <span class="c1">#self.ExecRootCodeSignal.connect(self._ExecRootCode)</span>
+    <span class="c1">#self.ExecRootProcessFileSignal.connect(self._ExecRootProcessFile)</span>
+    <span class="c1">#self.ExecSearchMethodInIradinaSignal.connect(self._ExecSearchMethodInIradina)</span>
+    <span class="c1"># self.ExecPrintROOTContextSignal.connect(self._ExecPrintROOTContext)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ExecPostTreatmentsSignal</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ExecPostTreatments</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">UserExpandSignal</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_UserExpand</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">UserModeSignal</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_UserMode</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">LoadDataFileInModelSignal</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_loadDataFileInModel</span><span class="p">)</span>
+    <span class="c1">#self.modelChangeSignal.connect(self.SetIradinaGUIDIR)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">isController</span> <span class="o">=</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">__initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initializeDone</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;initialize only once for controller </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objectName</span><span class="p">()))</span>
+      <span class="k">return</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__initializeWorkdir</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__createActions</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__addToolBars</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__addCentral</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__addDocks</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">:</span>  <span class="c1"># salome?</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ControllerIra: desktop have set dock and central widget&quot;</span><span class="p">)</span>
+      <span class="k">for</span> <span class="n">dock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">docks</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="o">.</span><span class="n">addDockWidget</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">LeftDockWidgetArea</span><span class="p">,</span> <span class="n">dock</span><span class="p">)</span>
+        <span class="n">dock</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="o">.</span><span class="n">centralWidget</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+      <span class="k">for</span> <span class="n">tb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">toolBars</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="o">.</span><span class="n">addToolBar</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">__addCentral</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">salomepy.qMainWindowForLog</span> <span class="k">as</span> <span class="nn">QMFL</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span> <span class="o">=</span> <span class="n">QMFL</span><span class="o">.</span><span class="n">QMainWindowForLog</span><span class="p">(</span><span class="n">centralWidget</span><span class="o">=</span><span class="n">QTabMultipleTextCentralIra</span><span class="p">())</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">:</span>  <span class="c1"># salome? no need dock of QMainWindowForLog</span>
+      <span class="k">for</span> <span class="n">dock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="o">.</span><span class="n">docks</span><span class="p">:</span> <span class="n">dock</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>  <span class="c1"># no need</span>
+      <span class="k">for</span> <span class="n">tb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="o">.</span><span class="n">toolBars</span><span class="p">:</span> <span class="n">tb</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;create central view for log iradina&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="p">)</span>
+
+    <span class="n">tabs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="o">.</span><span class="n">getTabs</span><span class="p">()</span>
+    <span class="n">filetab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="o">.</span><span class="n">getTabByName</span><span class="p">(</span><span class="s2">&quot;Explore Dir&quot;</span><span class="p">)</span>
+    <span class="n">rootPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;$IRADINAGUI_WORKDIR&quot;</span><span class="p">)</span>
+    <span class="n">filetab</span><span class="o">.</span><span class="n">setDirRootPath</span><span class="p">(</span><span class="n">rootPath</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[])</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    self.setCentralWidget(central)</span>
+<span class="sd">    self.centralWidget().resize(self.centralWidget().size())</span>
+<span class="sd">    self.centralWidget().show</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+  <span class="k">def</span> <span class="nf">__addDocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.treeViewIra</span> <span class="k">as</span> <span class="nn">TVIRA</span>
+    <span class="c1"># self.docks = []</span>
+    <span class="n">dock</span> <span class="o">=</span> <span class="n">QTW</span><span class="o">.</span><span class="n">QDockWidget</span><span class="p">(</span><span class="s2">&quot;IradinaObjects&quot;</span><span class="p">)</span>
+    <span class="n">treeView</span> <span class="o">=</span> <span class="n">TVIRA</span><span class="o">.</span><span class="n">TreeViewIra</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">treeViews</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">treeView</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;create treeView for iradina&quot;</span><span class="p">)</span>
+    <span class="n">dock</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="n">treeView</span><span class="p">)</span>
+    <span class="n">dock</span><span class="o">.</span><span class="n">setAllowedAreas</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">LeftDockWidgetArea</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">docks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dock</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setView</span><span class="p">(</span><span class="n">treeView</span><span class="p">)</span>  <span class="c1"># contains treeViews</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    for dock in self.docks:</span>
+<span class="sd">      self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)</span>
+<span class="sd">      dock.show()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+  <span class="k">def</span> <span class="nf">__addToolBars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c1"># self.toolBars = []</span>
+    <span class="n">tb</span> <span class="o">=</span> <span class="n">QTW</span><span class="o">.</span><span class="n">QToolBar</span><span class="p">(</span><span class="s2">&quot;EditIra&quot;</span><span class="p">)</span>  <span class="c1"># self.addToolBar(&quot;Edit&quot;)</span>
+    <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">:</span>
+      <span class="n">tb</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+    <span class="c1"># act = ACFX.getCommonActionByName(&quot;GeneralHelp&quot;)</span>
+    <span class="c1"># if act != None: tb.addAction(act)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">toolBars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">__createActions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;create actions for self widget AND other widgets through ACFX.addInCommonActions&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;create actions </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objectName</span><span class="p">()))</span>
+    <span class="c1"># self.actions = []</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;LoadIradinaDefaultModel&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Load Default Iradina data&quot;</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LoadIradinaDefaultModelAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LoadIradinaDefaultModelSignal</span><span class="p">,</span>
+                          <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;New Iradina data&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;iradinapy.resources.iradinagui&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;LoadIradinaModelXml&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Load Iradina data xml&quot;</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LoadIradinaModelXmlAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LoadIradinaModelXmlSignal</span><span class="p">,</span>
+                          <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;Load Iradina data from file xml&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;openxml&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;SaveIradinaModelXml&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Save Iradina data XmlXyz format&quot;</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">SaveIradinaModelXmlAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">SaveIradinaModelXmlSignal</span><span class="p">,</span>
+                          <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;Save Iradina data to file xml&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;savexml&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;LaunchIradina&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Launch Iradina calculus&quot;</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LaunchIradinaAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LaunchIradinaSignal</span><span class="p">,</span>
+                          <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;Launch Iradina calculus&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;run&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="kn">import</span> <span class="nn">iradinapy.debug</span> <span class="k">as</span> <span class="nn">DBG</span>
+    <span class="k">if</span> <span class="n">DBG</span><span class="o">.</span><span class="n">isDeveloper</span><span class="p">():</span>
+      <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;LaunchAllTests&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Launch tests&quot;</span><span class="p">)</span>
+      <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LaunchAllTestsAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LaunchAllTestsSignal</span><span class="p">,</span>
+                            <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;Launch all tests&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+        <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+      <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;LaunchIradinaCodeTests&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Launch IradinaCode tests&quot;</span><span class="p">)</span>
+      <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LaunchIradinaCodeTestsAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LaunchIradinaCodeTestsSignal</span><span class="p">,</span>
+                            <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;Launch all IradinaCode tests&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;testIradinaCode&quot;</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+        <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;RefreshIradinaModel&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Refresh views&quot;</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelSignal</span><span class="p">,</span>
+                          <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;Refresh IradinaObjects tree view&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;refresh&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>  <span class="c1"># may be not in common, only for controller?</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ClearModel&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Clear Model&quot;</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ClearModelAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ClearModelSignal</span><span class="p">,</span>
+                          <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;Clear Iradina model&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;clearModel&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>  <span class="c1"># may be not in common, only for controller?</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;GuiHelp&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;iradina GUI help&quot;</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">IradinaGuiHelpAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">IradinaGuiHelpSignal</span><span class="p">,</span>
+                          <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;iradina GUI help&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;helpIraGui&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>  <span class="c1"># may be not in common, only for controller?</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="n">ACFX</span><span class="o">.</span><span class="n">QActionXyz</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;IradinaHelp&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;iradina CODE help&quot;</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">setAction</span><span class="p">(</span><span class="n">slot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">IradinaCodeHelpAction</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">IradinaCodeHelpSignal</span><span class="p">,</span>
+                          <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;iradina CODE help&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;helpIraCode&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">ACFX</span><span class="o">.</span><span class="n">addInCommonActions</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>  <span class="c1"># may be not in common, only for controller?</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">IradinaGuiHelpAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">nameBrowser</span> <span class="o">=</span> <span class="n">UXYZ</span><span class="o">.</span><span class="n">getBrowser</span><span class="p">()</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="s2">&quot;$IRADINAGUI_ROOT_DIR/doc/build/html/index.html&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">tmp</span><span class="p">)</span>
+    <span class="n">nameUrlHelp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">nameUrlHelp</span><span class="p">):</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &amp;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nameBrowser</span><span class="p">,</span> <span class="n">nameUrlHelp</span><span class="p">)</span>
+      <span class="n">proc</span> <span class="o">=</span> <span class="n">SP</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;inexisting name Url Help: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">nameUrlHelp</span> <span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">IradinaCodeHelpAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">nameBrowser</span> <span class="o">=</span> <span class="n">UXYZ</span><span class="o">.</span><span class="n">getBrowser</span><span class="p">()</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="s2">&quot;$IRADINAGUI_ROOT_DIR/doc/src/iradinaDocuments/20140804_iradina_manual.pdf&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">tmp</span><span class="p">)</span>
+    <span class="n">nameUrlHelp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">nameUrlHelp</span><span class="p">):</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &amp;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nameBrowser</span><span class="p">,</span> <span class="n">nameUrlHelp</span><span class="p">)</span>
+      <span class="n">proc</span> <span class="o">=</span> <span class="n">SP</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;inexisting name Url Help: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">nameUrlHelp</span> <span class="p">)</span>
+
+
+  <span class="k">def</span> <span class="nf">__initializeWorkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    initialize user working directory $IRADINAGUI_WORKDIR if not existing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nameVar</span> <span class="o">=</span> <span class="s2">&quot;IRADINAGUI_WORKDIR&quot;</span>
+    <span class="n">workDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="n">nameVar</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">workDir</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">homeDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;HOME&quot;</span><span class="p">)</span>
+      <span class="n">workDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">homeDir</span><span class="p">,</span> <span class="s2">&quot;IRADINAGUI_WORKDIR&quot;</span><span class="p">)</span>
+    <span class="n">workDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">workDir</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">nameVar</span><span class="p">]</span> <span class="o">=</span> <span class="n">workDir</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">workDir</span><span class="p">):</span>
+      <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">workDir</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">workDir</span> <span class="o">=</span> <span class="n">workDir</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">currentDir</span> <span class="o">=</span> <span class="n">workDir</span>
+
+  <span class="k">def</span> <span class="nf">getEtudeWorkdirExpanded</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirExpanded</span><span class="p">()</span>
+
+  <span class="c1">############################################################################</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  slots:</span>
+<span class="sd">  all name beginning with uppercase are slot without argument</span>
+<span class="sd">  they are also postfixed ... xxxxAction</span>
+<span class="sd">  return status is only to significate method is ok, but nothing about action</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+
+  <span class="c1">############################################################################</span>
+  <span class="k">def</span> <span class="nf">ShowAllViewsAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ShowAllViewsAction&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">view</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">getViews</span><span class="p">():</span>
+      <span class="n">view</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">ClearModelAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ClearModelAction&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">clearModel</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">RefreshIradinaModelAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;refresh Views&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;RefreshIradinaModelAction&quot;</span><span class="p">)</span>
+    <span class="c1"># aDataXml =  self._model.toXml() #as a copy</span>
+    <span class="c1"># self.SetIradinaGUIDIR() #IradinaGUIDIR change?</span>
+    <span class="k">for</span> <span class="n">treeView</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treeViews</span><span class="p">:</span>
+      <span class="c1"># treeView.update()</span>
+      <span class="n">treeView</span><span class="o">.</span><span class="n">refreshModel</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">ExpandAllAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ExpandAllAction&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">treeView</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treeViews</span><span class="p">:</span>
+      <span class="n">treeView</span><span class="o">.</span><span class="n">expandAll</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">LaunchAllTestsAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c1"># cmd = &quot;AllTestLauncher.py 2&gt;&amp;1&quot; #unittests strerr to stdout</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;cd $IRADINAGUI_ROOT_DIR; pwd ; AllTestLauncher.sh&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;LaunchAllTestsAction &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">cmd</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="o">.</span><span class="n">launchCmdIntoPopen</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">LaunchIradinaCodeTestsAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;AllIradinaCodeTestLauncher.sh&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;LaunchIradinaCodeTestsAction &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">cmd</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="o">.</span><span class="n">launchCmdIntoPopen</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">CreateEtudeWorkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">etudeDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirExpanded</span><span class="p">()</span>
+    <span class="n">etudeDirBrut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirBrut</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">):</span>
+      <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;etude directory existing yet as file, fix it:</span><span class="se">\n</span><span class="s2">&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">etudeDir</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">):</span>
+      <span class="c1"># QTW.QMessageBox.warning(self._desktop, &quot;warning&quot;, &quot;etude directory existing yet:\n&#39;%s&#39;&quot; % etudeDir)</span>
+      <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">UTW</span><span class="o">.</span><span class="n">makeDir</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">)</span>
+    <span class="c1"># for subDir in &quot;data macros doc&quot;.split():</span>
+    <span class="k">for</span> <span class="n">subDir</span> <span class="ow">in</span> <span class="s2">&quot;output&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+      <span class="n">aDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">subDir</span><span class="p">)</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">aDir</span><span class="p">):</span>
+        <span class="n">UTW</span><span class="o">.</span><span class="n">makeDir</span><span class="p">(</span><span class="n">aDir</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;create directory &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">aDir</span><span class="p">)</span>
+    <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;current etude directory:</span><span class="se">\n</span><span class="s2">&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">etudeDir</span><span class="p">)</span>
+    <span class="c1">#self._createGitignore(etudeDir)</span>
+    <span class="c1">#self._createREADMEfile(etudeDirBrut)</span>
+    <span class="c1">#self._createDoxyfile(etudeDirBrut)</span>
+    <span class="c1">#self._createRootLogon(etudeDirBrut)</span>
+    <span class="c1">#self._gitInit(etudeDir)</span>
+    <span class="c1">#self._gitCommit(&quot;initial commit&quot;, etudeDir)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">createFilePattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nameFile</span><span class="p">,</span> <span class="n">patternName</span><span class="p">):</span>
+    <span class="n">etudeDirExp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirExpanded</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">etudeDirExp</span><span class="p">):</span>
+      <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="s2">&quot;etude directory not existing, create it.&quot;</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">CreateEtudeWorkdir</span><span class="p">()</span>
+
+    <span class="n">replaces</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;@FILE@&quot;</span><span class="p">,</span> <span class="n">nameFile</span><span class="p">)]</span>
+    <span class="n">existingPatterns</span> <span class="o">=</span> <span class="n">UFPA</span><span class="o">.</span><span class="n">getPatternKeys</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">patternName</span> <span class="ow">in</span> <span class="n">existingPatterns</span><span class="p">:</span>
+      <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">nameFile</span><span class="p">)</span>
+      <span class="n">patternNameByDefault</span> <span class="o">=</span> <span class="s2">&quot;aUserFile</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ext</span>
+      <span class="n">contents</span> <span class="o">=</span> <span class="n">UFPA</span><span class="o">.</span><span class="n">getFilePatterns</span><span class="p">(</span><span class="n">patternNameByDefault</span><span class="p">,</span> <span class="n">replaces</span><span class="o">=</span><span class="n">replaces</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">contents</span> <span class="o">=</span> <span class="n">UFPA</span><span class="o">.</span><span class="n">getFilePatterns</span><span class="p">(</span><span class="n">patternName</span><span class="p">,</span> <span class="n">replaces</span><span class="o">=</span><span class="n">replaces</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">nameFile</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+      <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">contents</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">_insertFileInListOf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">aFile</span><span class="p">,</span> <span class="n">theListOf</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;no insert if existing yet&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">theListOf</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="n">aFile</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># existing yet TODO compare true expandvars name file</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">newItem</span> <span class="o">=</span> <span class="n">theListOf</span><span class="o">.</span><span class="n">_allowedClasses</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">aFile</span><span class="p">)</span>  <span class="c1"># immutable</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">newItem</span> <span class="o">=</span> <span class="n">theListOf</span><span class="o">.</span><span class="n">_allowedClasses</span><span class="p">[</span><span class="mi">0</span><span class="p">]()</span>  <span class="c1"># mutable as data List Of</span>
+      <span class="n">newItem</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">aFile</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">theListOf</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">newItem</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># index -1</span>
+      <span class="n">theListOf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newItem</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">_createREADMEfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etudeDirBrut</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    create file README.txt</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;README.txt&quot;</span>
+    <span class="n">nameFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDirBrut</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">nameFileExp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">nameFile</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">createFilePattern</span><span class="p">(</span><span class="n">nameFileExp</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_insertFileInListOf</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nameFile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">userFileManager</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># changed model</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">_updateEtude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">toUpdate</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    override files in etude, with message, and synchronize controller model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="kc">False</span>
+    <span class="c1"># TODO obsolete ?</span>
+    <span class="n">etudeDirBrut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirBrut</span><span class="p">()</span>
+    <span class="n">etudeDirExp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirExpanded</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">etudeDirExp</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">CreateEtudeWorkdir</span><span class="p">()</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;TODO update etude </span><span class="si">%s</span><span class="s2"> create other directories yes or no&quot;</span> <span class="o">%</span> <span class="n">etudeDirBrut</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;update etude </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">etudeDirBrut</span><span class="p">)</span>
+    <span class="c1">###### dir functions</span>
+    <span class="n">functions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">macroManager</span><span class="o">.</span><span class="n">functions</span>
+    <span class="c1"># new functions instance for ultimate replace in model</span>
+    <span class="n">arg1</span> <span class="o">=</span> <span class="n">functions</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">functions</span><span class="p">:</span>
+      <span class="n">newFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smartCopyFileInEtude</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;macros&quot;</span><span class="p">)</span>
+      <span class="n">arg1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newFile</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;.Analysis.macroManager.functions = args[1]&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setModelItemValueSignalList</span><span class="o">.</span><span class="n">emit</span><span class="p">([</span><span class="n">cmd</span><span class="p">,</span> <span class="n">arg1</span><span class="p">])</span>
+
+    <span class="c1">###### dir macros</span>
+    <span class="n">macros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">macroManager</span><span class="o">.</span><span class="n">macros</span>
+    <span class="c1"># new macros instance for ultimate replace in model</span>
+    <span class="n">arg1</span> <span class="o">=</span> <span class="n">macros</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">macros</span><span class="p">:</span>
+      <span class="n">newFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smartCopyFileInEtude</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;macros&quot;</span><span class="p">)</span>
+      <span class="n">arg1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newFile</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;.Analysis.macroManager.macros = args[1]&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setModelItemValueSignalList</span><span class="o">.</span><span class="n">emit</span><span class="p">([</span><span class="n">cmd</span><span class="p">,</span> <span class="n">arg1</span><span class="p">])</span>
+
+    <span class="c1">###### dir libraries</span>
+    <span class="n">libs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">macroManager</span><span class="o">.</span><span class="n">libraries</span>
+    <span class="c1"># new libraries instance for ultimate replace in model</span>
+    <span class="n">arg1</span> <span class="o">=</span> <span class="n">libs</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">libs</span><span class="p">:</span>
+      <span class="n">newFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smartCopyFileInEtude</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;macros&quot;</span><span class="p">)</span>
+      <span class="n">arg1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newFile</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;.Analysis.macroManager.libraries = args[1]&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setModelItemValueSignalList</span><span class="o">.</span><span class="n">emit</span><span class="p">([</span><span class="n">cmd</span><span class="p">,</span> <span class="n">arg1</span><span class="p">])</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">UpdateEtudeRootlogonSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># automatic</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">_loadDataFileInModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aFile</span><span class="p">):</span>
+    <span class="k">return</span> <span class="kc">False</span>
+    <span class="c1"># TODO obsolete ?</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">aFile</span>
+    <span class="n">nameFileExp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">nameFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">nameFileExp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">nameFile</span><span class="p">):</span>
+      <span class="n">ret</span> <span class="o">=</span> <span class="n">mbox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;inexisting data file:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">nameFile</span><span class="p">,</span>
+                         <span class="n">mbox</span><span class="o">.</span><span class="n">Ok</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">ret</span> <span class="o">==</span> <span class="n">mbox</span><span class="o">.</span><span class="n">Ok</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># nothing to do</span>
+    <span class="n">theListOf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">dataManager</span>
+    <span class="k">for</span> <span class="n">datai</span> <span class="ow">in</span> <span class="n">theListOf</span><span class="p">:</span>  <span class="c1"># mutable class</span>
+      <span class="n">ii</span> <span class="o">=</span> <span class="n">datai</span><span class="o">.</span><span class="n">getNameExpanded</span><span class="p">()</span>  <span class="c1"># compare true expandvars name file</span>
+      <span class="k">if</span> <span class="n">ii</span> <span class="o">==</span> <span class="n">nameFile</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># no changed model, may be changed file contents?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># changed contents precaution</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># existing yet</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_insertFileInListOf</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">theListOf</span><span class="p">)</span>
+    <span class="c1"># logger.debug(&quot;_loadDataFileInModel:\n  %s %s %s&quot; % (aFile, nameFile, PP.pformat(theListOf)))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># changed model</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">_ExecPostTreatments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;TODO _ExecPostTreatments&quot;</span><span class="p">)</span>
+    <span class="c1">#from matplotlibpy.matplotlibWindowToolbar import MatplotlibWindowToolbar</span>
+    <span class="c1">#self.MatplotlibWindow = MatplotlibWindowToolbar()</span>
+    <span class="c1">#self.MatplotlibWindow.show()</span>
+
+    <span class="c1">#from pandaspy.pandasOscarMainWidget import PandasTabWidget, PandasMainWidget</span>
+    <span class="c1">#from pandaspy.pandasMainWidgetXyz import PandasMainDialogXyz</span>
+    <span class="kn">import</span> <span class="nn">pandaspy.pandasMainWidgetXyz</span> <span class="k">as</span> <span class="nn">PDMW</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">PandasWindow</span> <span class="o">=</span> <span class="n">PDMW</span><span class="o">.</span><span class="n">PandasMainDialogXyz</span><span class="p">(</span><span class="s2">&quot;IradinaGUI Plot Viewer&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">PandasWindow</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">_updateDataEtude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">toUpdate</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    override files in etude/data, with message, and synchronize controller model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">etudeDirBrut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirBrut</span><span class="p">()</span>
+    <span class="n">etudeDirExp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirExpanded</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">etudeDirExp</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">CreateEtudeWorkdir</span><span class="p">()</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;updateDataEtude </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">etudeDirBrut</span><span class="p">)</span>
+
+    <span class="c1">###### data files</span>
+    <span class="n">dataManager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">dataManager</span>
+    <span class="c1"># new dataManager instance for ultimate replace in model</span>
+    <span class="n">arg1</span> <span class="o">=</span> <span class="n">dataManager</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dataManager</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">toUpdate</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">name</span><span class="p">]:</span>
+        <span class="n">newFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smartCopyFileDataInEtude</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">newFile</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="vm">__class__</span><span class="p">();</span>
+        <span class="n">newFile</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+      <span class="n">arg1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newFile</span><span class="p">)</span>
+
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;.Analysis.dataManager = args[1]&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setModelItemValueSignalList</span><span class="o">.</span><span class="n">emit</span><span class="p">([</span><span class="n">cmd</span><span class="p">,</span> <span class="n">arg1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">_splitFileName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aFile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;TODO future small tests avoid bug&quot;&quot;&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">aFile</span><span class="p">)</span>
+    <span class="n">aDir</span><span class="p">,</span> <span class="n">aName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># as (&#39;$HOME&#39;, &#39;aa.txt&#39;)</span>
+    <span class="n">aDirExp</span><span class="p">,</span> <span class="n">aNameExp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">f</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">aDir</span><span class="p">,</span> <span class="n">aName</span><span class="p">,</span> <span class="n">aDirExp</span><span class="p">,</span> <span class="n">aNameExp</span>
+
+  <span class="k">def</span> <span class="nf">_copyFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">originFile</span><span class="p">,</span> <span class="n">targetFile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;copy expanded files and question if override&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;copy file:</span><span class="se">\n</span><span class="s2">originFile </span><span class="si">%s</span><span class="se">\n</span><span class="s2">targetFile </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">originFile</span><span class="p">,</span> <span class="n">targetFile</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">originFile</span> <span class="o">==</span> <span class="n">targetFile</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># nothing to do</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">targetFile</span><span class="p">):</span>
+      <span class="n">mbox</span> <span class="o">=</span> <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span>
+      <span class="n">ret</span> <span class="o">=</span> <span class="n">mbox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;override file:</span><span class="se">\n</span><span class="s2">&#39;</span><span class="si">%s</span><span class="s2">&#39;?&quot;</span> <span class="o">%</span> <span class="n">targetFile</span><span class="p">,</span>
+                         <span class="n">mbox</span><span class="o">.</span><span class="n">Yes</span> <span class="o">|</span> <span class="n">mbox</span><span class="o">.</span><span class="n">No</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">ret</span> <span class="o">==</span> <span class="n">mbox</span><span class="o">.</span><span class="n">No</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># nothing to do</span>
+    <span class="c1"># copy file...</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">originFile</span><span class="p">,</span> <span class="n">targetFile</span><span class="p">)</span>
+    <span class="c1"># message...</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">copyFile:</span><span class="se">\n</span><span class="s2">  originFile </span><span class="si">%s</span><span class="se">\n</span><span class="s2">  targetFile </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">originFile</span><span class="p">,</span> <span class="n">targetFile</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="o">.</span><span class="n">insertText</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">hist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getHistoryFile</span><span class="p">()</span>
+    <span class="n">hist</span><span class="o">.</span><span class="n">appendHistoryCopyOf</span><span class="p">(</span><span class="n">originFile</span><span class="p">,</span> <span class="n">targetFile</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">_smartCopyFileInEtude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aFile</span><span class="p">,</span> <span class="n">targetDir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    have to be smart to copy and override if necessary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">etudeDirBrut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirBrut</span><span class="p">()</span>
+    <span class="n">etudeDirExp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirExpanded</span><span class="p">()</span>
+
+    <span class="n">aDir</span><span class="p">,</span> <span class="n">aName</span><span class="p">,</span> <span class="n">aDirExp</span><span class="p">,</span> <span class="n">aNameExp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_splitFileName</span><span class="p">(</span><span class="n">aFile</span><span class="p">)</span>
+
+    <span class="n">originFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aDirExp</span><span class="p">,</span> <span class="n">aNameExp</span><span class="p">)</span>
+    <span class="n">targetFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDirExp</span><span class="p">,</span> <span class="n">targetDir</span><span class="p">,</span> <span class="n">aNameExp</span><span class="p">)</span>
+    <span class="n">targetFileBrut</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDirBrut</span><span class="p">,</span> <span class="n">targetDir</span><span class="p">,</span> <span class="n">aNameExp</span><span class="p">)</span>
+
+    <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copyFile</span><span class="p">(</span><span class="n">originFile</span><span class="p">,</span> <span class="n">targetFile</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">newFile</span> <span class="o">=</span> <span class="n">aFile</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">targetFileBrut</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">newFile</span> <span class="o">=</span> <span class="n">aFile</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">aFile</span><span class="p">))</span>  <span class="c1"># duplicate reference without copy</span>
+    <span class="k">return</span> <span class="n">newFile</span>
+
+  <span class="k">def</span> <span class="nf">_smartCopyFileDataInEtude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aFile</span><span class="p">,</span> <span class="n">targetDir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    have to be smart to copy and override if necessary</span>
+<span class="sd">    assume dataManager items</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">etudeDirBrut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirBrut</span><span class="p">()</span>
+    <span class="n">etudeDirExp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirExpanded</span><span class="p">()</span>
+
+    <span class="n">aDir</span><span class="p">,</span> <span class="n">aName</span><span class="p">,</span> <span class="n">aDirExp</span><span class="p">,</span> <span class="n">aNameExp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_splitFileName</span><span class="p">(</span><span class="n">aFile</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="n">originFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aDirExp</span><span class="p">,</span> <span class="n">aNameExp</span><span class="p">)</span>
+    <span class="n">targetFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDirExp</span><span class="p">,</span> <span class="n">targetDir</span><span class="p">,</span> <span class="n">aNameExp</span><span class="p">)</span>
+    <span class="n">targetFileBrut</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDirBrut</span><span class="p">,</span> <span class="n">targetDir</span><span class="p">,</span> <span class="n">aNameExp</span><span class="p">)</span>
+
+    <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copyFile</span><span class="p">(</span><span class="n">originFile</span><span class="p">,</span> <span class="n">targetFile</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">newFile</span> <span class="o">=</span> <span class="n">aFile</span><span class="o">.</span><span class="vm">__class__</span><span class="p">();</span>
+      <span class="n">newFile</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">targetFileBrut</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">newFile</span> <span class="o">=</span> <span class="n">aFile</span><span class="o">.</span><span class="vm">__class__</span><span class="p">();</span>
+      <span class="n">newFile</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">targetFileBrut</span>  <span class="c1"># duplicate reference without copy</span>
+    <span class="k">return</span> <span class="n">newFile</span>
+
+  <span class="k">def</span> <span class="nf">_launchEtude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#mbox = QTW.QMessageBox</span>
+    <span class="c1">#ret = mbox.question(self._desktop, &quot;question&quot;, &quot; TODO !!! launch background ?&quot;, mbox.Yes | mbox.No)</span>
+    <span class="c1">#logger.warning(&quot;ControllerIra._launchEtude() TODO...&quot;)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">Analysis</span><span class="o">.</span><span class="n">toFileIra</span><span class="p">()</span>
+    <span class="k">return</span>
+
+  <span class="k">def</span> <span class="nf">assertDataDirectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etudeDir</span><span class="p">):</span>
+    <span class="n">dataDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dataDir</span><span class="p">):</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;use existing corteo data directory:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">dataDir</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="s2">&quot;$</span><span class="si">{IRADINAGUI_ROOT_DIR}</span><span class="s2"> iradinaCode data_4bit&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+      <span class="n">origDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;create user data corteo directory:</span><span class="se">\n</span><span class="si">%s</span><span class="s2"> -&gt;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">origDir</span><span class="p">,</span> <span class="n">dataDir</span><span class="p">))</span>
+      <span class="n">UTW</span><span class="o">.</span><span class="n">copyDir</span><span class="p">(</span><span class="n">origDir</span><span class="p">,</span> <span class="n">dataDir</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">LaunchIradinaAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Inexisting iradina data tree&quot;</span><span class="p">)</span>
+      <span class="n">mbox</span> <span class="o">=</span> <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span>
+      <span class="n">ret</span> <span class="o">=</span> <span class="n">mbox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;question&quot;</span><span class="p">,</span> <span class="s2">&quot;Inexisting iradina data tree,</span><span class="se">\n</span><span class="s2">Create one ?&quot;</span><span class="p">,</span> <span class="n">mbox</span><span class="o">.</span><span class="n">Yes</span> <span class="o">|</span> <span class="n">mbox</span><span class="o">.</span><span class="n">No</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">ret</span> <span class="o">==</span> <span class="n">mbox</span><span class="o">.</span><span class="n">Yes</span><span class="p">:</span>
+        <span class="c1"># logger.debug(&quot;Create iradina data tree&quot;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LoadIradinaDefaultModelAction</span><span class="p">()</span>
+      <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">etudeDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirExpanded</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Launch iradina in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">etudeDir</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">CreateEtudeWorkdir</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_updateEtude</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_launchEtude</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">assertDataDirectory</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">)</span> <span class="c1"># assert etudeDir/../data directory exists (corteo database)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s2">&quot;save iradina model xml&quot;</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SaveIradinaModelXmlAction</span><span class="p">(</span><span class="n">withMessage</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">res</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+      <span class="c1"># no save as abort</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;no save xml as abort:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">etudeDir</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">True</span>
+    <span class="c1"># if self.iradinaNameDirSaveIra == None:  # cancel save... cancel run</span>
+    <span class="c1">#   return True</span>
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+      <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;launchIRADINA.bat&quot;</span>
+      <span class="n">nameFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+      <span class="n">strLaunch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getStrLaunchBat</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">)</span>
+      <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">nameFile</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">strLaunch</span><span class="p">)</span>
+      <span class="c1"># useless .bat windows self.chmodarwx(nameFile)</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;START /B </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">nameFile</span> <span class="c1"># windows popen accept ONE line</span>
+      <span class="c1"># cmd = strLaunch</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Launch iradina bat script:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cmd</span>
+
+    <span class="k">else</span><span class="p">:</span> <span class="c1">#&quot;Linux etc.&quot;</span>
+      <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;launchIRADINA.sh&quot;</span>
+      <span class="n">nameFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+      <span class="n">strLaunch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getStrLaunchSh</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">)</span>
+      <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">nameFile</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">strLaunch</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">chmodarwx</span><span class="p">(</span><span class="n">nameFile</span><span class="p">)</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="n">strLaunch</span> <span class="c1"># linux popen accept multiples lines</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Launch iradina bash script:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cmd</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">mbox</span> <span class="o">=</span> <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">mbox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;question&quot;</span><span class="p">,</span> <span class="s2">&quot;Iradina data files created</span><span class="se">\n</span><span class="s2">Launch Iradina code ?&quot;</span><span class="p">,</span> <span class="n">mbox</span><span class="o">.</span><span class="n">Yes</span> <span class="o">|</span> <span class="n">mbox</span><span class="o">.</span><span class="n">No</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ret</span> <span class="o">==</span> <span class="n">mbox</span><span class="o">.</span><span class="n">Yes</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">centralLogView</span><span class="o">.</span><span class="n">launchCmdIntoPopen</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+  <span class="c1">##################################################################</span>
+  <span class="k">def</span> <span class="nf">getStrLaunchBat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etudeDir</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="s2">&quot;4bit etc.&quot;</span><span class="p">):</span>
+    <span class="c1"># data Corteo in etudeDir/../data</span>
+    <span class="c1"># logger.debug(&quot;current etude directory %s&quot; % etudeDir)</span>
+
+    <span class="n">code_exe</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="s2">&quot;$</span><span class="si">{IRADINAGUI_ROOT_DIR}</span><span class="s2"> iradinaCode iradina_mingw64.exe&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="n">code_exe</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">code_exe</span><span class="p">))</span>
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">data_dir</span><span class="p">))</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;iradina code file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">code_exe</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;iradina data dir  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">data_dir</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;rem inexisting corteo data directory: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">rem fix it.&quot;</span> <span class="o">%</span> <span class="n">data_dir</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="n">mater_file</span> <span class="o">=</span> <span class="s2">&quot;Materials.in&quot;</span>
+    <span class="n">struc_file</span> <span class="o">=</span> <span class="s2">&quot;Structure.in&quot;</span>
+    <span class="n">compo_file</span> <span class="o">=</span> <span class="s2">&quot;Composition.in&quot;</span>
+
+    <span class="n">material_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">mater_file</span><span class="p">)</span>
+    <span class="n">structure_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">struc_file</span><span class="p">)</span>
+    <span class="n">composition_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">compo_file</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">@echo off</span>
+<span class="s2">SET studyDir=</span><span class="si">{0}</span><span class="s2"></span>
+<span class="s2">SET iradinaExe=</span><span class="si">{1}</span><span class="s2"></span>
+<span class="s2">CD </span><span class="si">%s</span><span class="s2">tudyDir%</span>
+
+<span class="s2">REM tree /A</span>
+<span class="s2">REM dir</span>
+
+<span class="s2">REM to see iradina progress (if log as file)</span>
+<span class="s2">REM type </span><span class="si">{0}</span><span class="s2">/iradina.log</span>
+
+<span class="s2">REM get iradina log as file</span>
+<span class="s2">REM </span><span class="si">%i</span><span class="s2">radinaExe% -p 9 -data ../data -c ./Configuration.in &gt; ./iradina.log</span>
+
+<span class="s2">REM get iradina log as stdout</span>
+<span class="si">%i</span><span class="s2">radinaExe% -p 9 -data ../data -c ./Configuration.in</span>
+<span class="s2">SET iradinaExitCode=</span><span class="si">%e</span><span class="s2">rrorlevel%</span>
+
+<span class="s2">ECHO END of iradina, exit code is </span><span class="si">%i</span><span class="s2">radinaExitCode%</span>
+<span class="s2">EXIT </span><span class="si">%i</span><span class="s2">radinaExitCode%</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">code_exe</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cmd</span>
+
+  <span class="c1">##################################################################</span>
+  <span class="k">def</span> <span class="nf">getStrLaunchSh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etudeDir</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="s2">&quot;4bit etc.&quot;</span><span class="p">):</span>
+    <span class="c1"># data Corteo in etudeDir/../data</span>
+    <span class="c1"># logger.debug(&quot;current etude directory %s&quot; % etudeDir)</span>
+
+    <span class="n">code_exe</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="s2">&quot;$</span><span class="si">{IRADINAGUI_ROOT_DIR}</span><span class="s2"> iradinaCode iradina_linux64.exe&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="n">code_exe</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">code_exe</span><span class="p">))</span>
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">data_dir</span><span class="p">))</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;iradina code file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">code_exe</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;iradina data dir  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">data_dir</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;# inexisting corteo data directory: </span><span class="si">%s</span><span class="se">\n</span><span class="s2"># fix it.&quot;</span> <span class="o">%</span> <span class="n">data_dir</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="n">mater_file</span> <span class="o">=</span> <span class="s2">&quot;Materials.in&quot;</span>
+    <span class="n">struc_file</span> <span class="o">=</span> <span class="s2">&quot;Structure.in&quot;</span>
+    <span class="n">compo_file</span> <span class="o">=</span> <span class="s2">&quot;Composition.in&quot;</span>
+
+    <span class="n">material_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">mater_file</span><span class="p">)</span>
+    <span class="n">structure_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">struc_file</span><span class="p">)</span>
+    <span class="n">composition_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">compo_file</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">set -x</span>
+<span class="s2">studyDir=</span><span class="si">{0}</span><span class="s2"></span>
+<span class="s2">iradinaExe=</span><span class="si">{1}</span><span class="s2"></span>
+<span class="s2">cd $studyDir</span>
+<span class="s2">tree</span>
+<span class="s2">ls -alt</span>
+<span class="s2">( $iradinaExe -p 9 -data ../data -c ./Configuration.in  | tee ./iradina.log )&amp;</span>
+<span class="s2"># to see iradina progress</span>
+<span class="s2"># tail -f </span><span class="si">{0}</span><span class="s2">/iradina.log</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="n">code_exe</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cmd</span>
+
+  <span class="k">def</span> <span class="nf">SaveIradinaModelXmlAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">withMessage</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="s2">&quot;No Iradina data to save&quot;</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">etudeDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">getEtudeWorkdirExpanded</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;SaveIradinaModelXmlAction </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">etudeDir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">):</span>  <span class="c1"># create without question if inexisting</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">CreateEtudeWorkdir</span><span class="p">()</span>
+    <span class="n">nameFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">etudeDir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iradinaXmlDefaultName</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">toFileXml</span><span class="p">(</span><span class="n">nameFile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">withMessage</span><span class="p">:</span>
+      <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;saved file:</span><span class="se">\n</span><span class="s2">&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">nameFile</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">LoadIradinaDefaultModelAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;LoadIradinaDefaultModel&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="kc">True</span><span class="p">:</span> <span class="c1">#try:</span>
+      <span class="n">aData</span> <span class="o">=</span> <span class="n">ModelIra</span><span class="p">()</span>
+      <span class="n">aData</span><span class="o">.</span><span class="n">setDefaultValues</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">clearModel</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">aData</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+      <span class="c1"># self.ExpandAllAction()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">userExpand</span><span class="p">()</span>
+      <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span> <span class="c1">#except:</span>
+      <span class="kn">import</span> <span class="nn">traceback</span>
+      <span class="n">trace</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+      <span class="c1"># traceback.print_exc() #better explicit verbose problem</span>
+      <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;Load Iradina Default data: houston! we have a problem </span><span class="se">\n\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">trace</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">False</span>
+
+  <span class="k">def</span> <span class="nf">LoadIradinaModelXmlAction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">widgetpy.salomeQFileDialog</span> <span class="k">import</span> <span class="n">SalomeQFileDialog</span>
+    <span class="n">aDialog</span> <span class="o">=</span> <span class="n">SalomeQFileDialog</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">)</span>
+    <span class="n">aDir</span> <span class="o">=</span> <span class="n">USET</span><span class="o">.</span><span class="n">getExpandedVar</span><span class="p">(</span><span class="s2">&quot;_IRADINAGUI_WORKDIR&quot;</span><span class="p">)</span>
+    <span class="n">nameFile</span> <span class="o">=</span> <span class="n">aDialog</span><span class="o">.</span><span class="n">browseFileDialog</span><span class="p">(</span><span class="s1">&#39;Load Iradina file xml&#39;</span><span class="p">,</span> <span class="n">aDir</span><span class="p">,</span> <span class="s2">&quot;(*.xml *.XML)&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;LoadIradinaModelXml </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">nameFile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nameFile</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># cancel</span>
+    <span class="n">realPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">nameFile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">realPath</span><span class="p">):</span>
+      <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;Load Iradina xml data: not a file </span><span class="se">\n</span><span class="s2">&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">realPath</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">aData</span> <span class="o">=</span> <span class="n">UXYZ</span><span class="o">.</span><span class="n">fromFileXml</span><span class="p">(</span><span class="n">realPath</span><span class="p">)</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;LoadIradinaModelXml: data loaded from file&quot;</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">aData</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">!=</span> <span class="s2">&quot;ModelIra&quot;</span><span class="p">:</span>
+        <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span> \
+                                  <span class="s2">&quot;Load Iradina data: &#39;</span><span class="si">%s</span><span class="s2">&#39; is not a ModelIra instance from </span><span class="se">\n</span><span class="s2">&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> \
+                                  <span class="p">(</span><span class="n">aData</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">realPath</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">clearModel</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">aData</span><span class="p">)</span>
+      <span class="c1"># logger.debug(&quot;LoadIradinaModelXml: set model data done&quot;)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+      <span class="c1"># self.ExpandAllAction()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">userExpand</span><span class="p">()</span>
+      <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="c1"># traceback.print_exc()</span>
+      <span class="n">QTW</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_desktop</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;Load Iradina xml data: problem loading</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">False</span>
+
+  <span class="k">def</span> <span class="nf">loadXmlFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aFileOrDir</span><span class="p">):</span>
+    <span class="n">realPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">aFileOrDir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">realPath</span><span class="p">):</span>
+      <span class="n">realPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">realPath</span><span class="p">,</span> <span class="s2">&quot;iradinaGui.xml&quot;</span><span class="p">)</span>  <span class="c1"># default name</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">realPath</span><span class="p">):</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;inexisting file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">realPath</span><span class="p">)</span>
+      <span class="k">return</span>
+
+    <span class="n">etudeDirToLoad</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">realPath</span><span class="p">)</span>
+    <span class="n">USET</span><span class="o">.</span><span class="n">setEnvVar</span><span class="p">(</span><span class="s2">&quot;IRADINAGUIDIR&quot;</span><span class="p">,</span> <span class="n">etudeDirToLoad</span><span class="p">)</span>
+    <span class="n">aData</span> <span class="o">=</span> <span class="n">UXYZ</span><span class="o">.</span><span class="n">fromFileXml</span><span class="p">(</span><span class="n">realPath</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">clearModel</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">aData</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">checkFromCpack</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ExpandAllAction</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">isPresentInFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aFile</span><span class="p">,</span> <span class="n">strOrListOfStr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;return True if str or one str of [str1, str2,...] is in file&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">aFile</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">contents</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+      <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">strOrListOfStr</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">strOrListOfStr</span> <span class="ow">in</span> <span class="n">contents</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
+      <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">strOrListOfStr</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">aStr</span> <span class="ow">in</span> <span class="n">strOrListOfStr</span><span class="p">:</span>
+          <span class="k">if</span> <span class="n">aStr</span> <span class="ow">in</span> <span class="n">contents</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="k">pass</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+  <span class="k">def</span> <span class="nf">_UserExpand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aList</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;User expand</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">PP</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">aList</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">treeView</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treeViews</span><span class="p">:</span>
+      <span class="n">treeView</span><span class="o">.</span><span class="n">userExpandModel</span><span class="p">(</span><span class="n">aList</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">_UserMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aStr</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.configIra</span> <span class="k">as</span> <span class="nn">CFGIRA</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;User change mode &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">aStr</span><span class="p">)</span>
+    <span class="n">CFGIRA</span><span class="o">.</span><span class="n">setCurrentMode</span><span class="p">(</span><span class="n">aStr</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">RefreshIradinaModelSignal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="launchFromSalomePyConsole"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.controllerIra.launchFromSalomePyConsole">[docs]</a><span class="k">def</span> <span class="nf">launchFromSalomePyConsole</span><span class="p">():</span>
+  <span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtGui</span>
+  <span class="kn">from</span> <span class="nn">iradinapy.controllerIra</span> <span class="k">import</span> <span class="n">ControllerIra</span>
+  <span class="n">desktop</span> <span class="o">=</span> <span class="n">QTW</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">()</span>
+  <span class="n">desktop</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">700</span><span class="p">)</span>
+  <span class="n">ctrl</span> <span class="o">=</span> <span class="n">ControllerIra</span><span class="p">(</span><span class="n">desktop</span><span class="o">=</span><span class="n">desktop</span><span class="p">)</span>
+  <span class="n">desktop</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+  <span class="k">return</span> <span class="n">desktop</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+  <span class="kn">from</span> <span class="nn">salomepy.onceQApplication</span> <span class="k">import</span> <span class="n">OnceQApplication</span>
+
+  <span class="n">app</span> <span class="o">=</span> <span class="n">OnceQApplication</span><span class="p">()</span>
+  <span class="n">aWindow</span> <span class="o">=</span> <span class="n">launchFromSalomePyConsole</span><span class="p">()</span>
+  <span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/icon_applogo_IradinaGUI.png" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, CEA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,235 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>iradinapy.testPrerequisitesIra &#8212; iradinaGUI 1.0.0dev documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for iradinapy.testPrerequisitesIra</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="c1"># %% LICENSE_SALOME_CEA_BEGIN</span>
+<span class="c1"># Copyright (C) 2008-2018  CEA/DEN</span>
+<span class="c1"># </span>
+<span class="c1"># This library is free software; you can redistribute it and/or</span>
+<span class="c1"># modify it under the terms of the GNU Lesser General Public</span>
+<span class="c1"># License as published by the Free Software Foundation; either</span>
+<span class="c1"># version 2.1 of the License, or (at your option) any later version.</span>
+<span class="c1"># </span>
+<span class="c1"># This library is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU</span>
+<span class="c1"># Lesser General Public License for more details.</span>
+<span class="c1"># </span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public</span>
+<span class="c1"># License along with this library; if not, write to the Free Software</span>
+<span class="c1"># Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA</span>
+<span class="c1"># </span>
+<span class="c1"># See http://www.salome-platform.org or email : webmaster.salome@opencascade.com</span>
+<span class="c1"># %% LICENSE_END</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">***********************************************</span>
+<span class="sd">* prerequisites environment variables </span>
+<span class="sd">* to use iradinaGUI</span>
+<span class="sd">***********************************************</span>
+
+<span class="sd">#example of set env to use iradinaGUI</span>
+<span class="sd">bash</span>
+
+<span class="sd">export CONDADIR=/volatile/wambeke/miniconda2</span>
+<span class="sd">export PATH=$CONDADIR/bin:$PATH</span>
+<span class="sd">source activate pyscientific # as python3 PyQt5</span>
+<span class="sd">  </span>
+<span class="sd"># useful environ var</span>
+<span class="sd">IRADINAGUI_ROOT_DIR=.../iradinaGUI</span>
+<span class="sd">IRADINA_ROOT_DIR=.../iradina  # where .de code is located</span>
+
+
+<span class="sd">${IRADINAGUI_ROOT_DIR}/iradinaGUI -h    # help</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+
+<span class="c1">#####################################</span>
+<span class="n">_importErrorMessage</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">***********************************************</span>
+<span class="s2">* iradinaGUI configuration is incorrect.</span>
+<span class="s2">***********************************************</span>
+
+<span class="s2">in &#39;classical iradinaGUI installation&#39; configuration.</span>
+<span class="s2">user usually have:</span>
+
+<span class="s2">  &gt;&gt; bash</span>
+<span class="s2">  &gt;&gt; IRADINA_ROOT_DIR=...       # where .de code is located</span>
+<span class="s2">  &gt;&gt; IRADINAGUI_ROOT_DIR=...    # useful environ var</span>
+<span class="s2">  &gt;&gt; which iradina_linux64.exe  # iradina executable (from C.Borschel)</span>
+<span class="s2">  &gt;&gt; $</span><span class="si">{IRADINAGUI_ROOT_DIR}</span><span class="s2">/iradinaGUI</span>
+
+<span class="s2">Minimum python configuration is:</span>
+<span class="s2">  python 3.5</span>
+<span class="s2">  PyQt5, PyQt5.QtWebEngine</span>
+<span class="s2">  xml</span>
+<span class="s2">  numpy</span>
+<span class="s2">  matplotlib</span>
+<span class="s2">  pandas</span>
+
+<span class="s2">Tricks:</span>
+<span class="s2">  Easily get local python (as no superuser Linux or Windows) see:</span>
+<span class="s2">  https://conda.io/miniconda.html</span>
+<span class="s2">  https://conda.io/docs/install/quick.html</span>
+<span class="s2">  and:</span>
+<span class="s2">  &gt;&gt; conda create --name pyscientific \</span>
+<span class="s2">           python=3.5 pyqt=5 \</span>
+<span class="s2">           pip jupyter matplotlib numpy pandas pandas-datareader \</span>
+<span class="s2">           scipy sympy jsonschema pyyaml libxml2</span>
+
+<span class="s2">  &gt;&gt; export CONDADIR=.../miniconda3</span>
+<span class="s2">  &gt;&gt; export PATH=$CONDADIR/bin:$PATH</span>
+<span class="s2">  &gt;&gt; source activate pyscientific </span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1">#####################################</span>
+<span class="n">_rootFeaturesErrorMessage</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">***********************************************</span>
+<span class="s2">* iradina code configuration is incorrect.</span>
+<span class="s2">***********************************************</span>
+
+<span class="s2">in &#39;classical iradina code compilation/installation&#39; configuration.</span>
+<span class="s2">user usually have:</span>
+
+<span class="s2">  &gt;&gt;&gt; TODO</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">subprocess</span> <span class="k">as</span> <span class="nn">SP</span>
+
+<div class="viewcode-block" id="error"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.testPrerequisitesIra.error">[docs]</a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">message</span><span class="p">)</span>
+  <span class="k">return</span></div>
+
+<div class="viewcode-block" id="TestImports"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.testPrerequisitesIra.TestImports">[docs]</a><span class="k">def</span> <span class="nf">TestImports</span><span class="p">():</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  test of prerequisites import python for IradinaGui</span>
+<span class="sd">  message for problem(s), aborting immediatly. </span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="c1"># TODO imports = &quot;PyQt5 PyQt5.QtWebEngineWidgets salomepy xyzpy numpy pandas&quot;.split()</span>
+  <span class="n">imports</span> <span class="o">=</span> <span class="s2">&quot;PyQt5 salomepy xyzpy zlib numpy  pandas&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+  <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
+  <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">imports</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">exec</span><span class="p">(</span><span class="s2">&quot;import </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ii</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">error</span><span class="p">(</span><span class="s2">&quot;problem with &#39;import </span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">ii</span><span class="p">)</span>
+      <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;KO&quot;</span>
+
+  <span class="k">if</span> <span class="n">res</span> <span class="o">==</span> <span class="s2">&quot;KO&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">_importErrorMessage</span><span class="p">)</span>
+    <span class="c1"># sys.exit(&quot;------&gt; Fix it. Aborting.\n&quot;)</span>
+    <span class="c1"># sys.exit(&quot;------&gt; Fix it. Now it&#39;s at your owns risks.\n&quot;)</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="TestIradinaFeatures"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.testPrerequisitesIra.TestIradinaFeatures">[docs]</a><span class="k">def</span> <span class="nf">TestIradinaFeatures</span><span class="p">():</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  test of iradina code features</span>
+<span class="sd">  TODO</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;iradina.exe -h&quot;</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">SP</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">SP</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">SP</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+  <span class="k">if</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+    <span class="n">error</span><span class="p">(</span><span class="s2">&quot;problem with &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="c1">#stderr</span>
+  <span class="n">stdout</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+  <span class="n">prereq</span> <span class="o">=</span> <span class="s2">&quot;qt python&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
+  <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">prereq</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">ii</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stdout</span><span class="p">:</span>
+      <span class="n">error</span><span class="p">(</span><span class="s2">&quot;problem with necessary ROOT compilation feature &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">ii</span><span class="p">)</span>
+      <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;KO&quot;</span>
+
+  <span class="k">if</span> <span class="n">res</span> <span class="o">==</span> <span class="s2">&quot;KO&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">_rootFeaturesErrorMessage</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">_importErrorMessage</span><span class="p">)</span>
+    <span class="c1">#print(&quot;------&gt; Fix it. Now it&#39;s at your owns risks.\n&quot;)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;------&gt; Fix it. Aborting.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+
+
+<span class="c1"># TestImports()</span>
+<span class="c1"># TestIradinaFeatures()</span>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/icon_applogo_IradinaGUI.png" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, CEA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

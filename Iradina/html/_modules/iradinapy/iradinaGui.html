@@ -1,0 +1,668 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>iradinapy.iradinaGui &#8212; iradinaGUI 1.0.0dev documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for iradinapy.iradinaGui</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">#-*- coding:utf-8 -*-</span>
+
+<span class="c1">#  Copyright (C) 2010-2018  CEA/DEN</span>
+<span class="c1">#</span>
+<span class="c1">#  This library is free software; you can redistribute it and/or</span>
+<span class="c1">#  modify it under the terms of the GNU Lesser General Public</span>
+<span class="c1">#  License as published by the Free Software Foundation; either</span>
+<span class="c1">#  version 2.1 of the License.</span>
+<span class="c1">#</span>
+<span class="c1">#  This library is distributed in the hope that it will be useful,</span>
+<span class="c1">#  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU</span>
+<span class="c1">#  Lesser General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#  You should have received a copy of the GNU Lesser General Public</span>
+<span class="c1">#  License along with this library; if not, write to the Free Software</span>
+<span class="c1">#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This file is the main API file for iradinaGUI</span>
+
+<span class="sd">| Warning: NO &#39;__main__ &#39; call allowed, </span>
+<span class="sd">|          Use &#39;../iradinaGUI&#39; (in parent directory)</span>
+<span class="sd">| </span>
+<span class="sd">| Usage: see file ../iradinaGUI</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">_KOSYS</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># avoid import src</span>
+
+<span class="c1"># Compatibility python 2/3 for input function</span>
+<span class="c1"># input stays input for python 3 and input = raw_input for python 2</span>
+<span class="k">try</span><span class="p">:</span> 
+    <span class="nb">input</span> <span class="o">=</span> <span class="n">raw_input</span>
+<span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span> 
+    <span class="k">pass</span>
+  
+<span class="c1">########################################################################</span>
+<span class="c1"># NO __main__ entry allowed, use &#39;../iradinaGUI&#39; (in parent directory)</span>
+<span class="c1">########################################################################</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">ERROR: &#39;iradinaGui.py&#39; is not main command entry (CLI) for iradinaGUI.</span>
+<span class="s2">       Use &#39;../iradinaGUI&#39; instead.</span><span class="se">\n\n</span><span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">_KOSYS</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">pprint</span> <span class="k">as</span> <span class="nn">PP</span>
+<span class="kn">import</span> <span class="nn">argparse</span> <span class="k">as</span> <span class="nn">AP</span>
+<span class="kn">import</span> <span class="nn">gettext</span>
+
+<span class="kn">import</span> <span class="nn">iradinapy</span> <span class="c1"># for __version__</span>
+<span class="kn">import</span> <span class="nn">iradinapy.debug</span> <span class="k">as</span> <span class="nn">DBG</span> <span class="c1"># Easy print stderr (for DEBUG only)</span>
+<span class="kn">import</span> <span class="nn">iradinapy.returnCode</span> <span class="k">as</span> <span class="nn">RCO</span> <span class="c1"># Easy (ok/ko, why) return methods code</span>
+<span class="kn">import</span> <span class="nn">iradinapy.utilsIra</span> <span class="k">as</span> <span class="nn">UTS</span>
+
+<span class="c1"># get path to src</span>
+<span class="n">rootdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="p">)</span>
+<span class="n">DBG</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;iradinaGUI rootdir&quot;</span><span class="p">,</span> <span class="n">rootdir</span><span class="p">)</span>
+<span class="n">srcdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="s2">&quot;iradinapy&quot;</span><span class="p">)</span>
+<span class="n">cmdsdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="s2">&quot;commands&quot;</span><span class="p">)</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">if DBG.isDeveloper():</span>
+<span class="sd">  workdirdefault = os.path.realpath(os.path.join(rootdir, &quot;..&quot;, &quot;IRADINAGUI_WORKDIR&quot;))</span>
+<span class="sd">else:</span>
+<span class="sd">  workdirdefault = os.path.expandvars(os.path.join(&quot;$HOME&quot;, &quot;IRADINAGUI_WORKDIR&quot;))</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="c1"># load resources for internationalization</span>
+<span class="n">gettext</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="s2">&quot;iradinaGUI&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">srcdir</span><span class="p">,</span> <span class="s2">&quot;i18n&quot;</span><span class="p">))</span>
+
+<span class="n">_LANG</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;LANG&quot;</span><span class="p">)</span> <span class="c1"># original locale</span>
+
+
+<span class="c1">########################################################################</span>
+<span class="c1"># utility methods</span>
+<span class="c1">########################################################################</span>
+
+<div class="viewcode-block" id="launchIra"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.launchIra">[docs]</a><span class="k">def</span> <span class="nf">launchIra</span><span class="p">(</span><span class="n">command</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  launch iradinaGUI as subprocess.Popen</span>
+<span class="sd">  command as string (&#39;iradinaGUI --help&#39; for example)</span>
+<span class="sd">  used for unittest, or else...</span>
+
+<span class="sd">  :return: RCO.ReturnCode</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">if</span> <span class="s2">&quot;iradinaGUI&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not a valid command for launchIra: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">command</span><span class="p">)</span>
+  <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span> <span class="c1"># copy</span>
+  <span class="c1"># theorically useless, in user environ $PATH,</span>
+  <span class="c1"># on ne sait jamais</span>
+  <span class="c1"># https://docs.python.org/2/library/os.html</span>
+  <span class="c1"># On some platforms, including FreeBSD and Mac OS X,</span>
+  <span class="c1"># setting environ may cause memory leaks.</span>
+  <span class="c1"># see test/initializeTest.py</span>
+  <span class="k">if</span> <span class="n">rootdir</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">):</span>
+    <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootdir</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span>
+  <span class="c1"># TODO setLocale not &#39;fr&#39; on subprocesses, why not?</span>
+  <span class="c1"># env[&quot;LANG&quot;] == &#39;&#39;</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">UTS</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># no logger! unittest!</span>
+  <span class="k">return</span> <span class="n">res</span></div>
+    
+<div class="viewcode-block" id="getVersion"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.getVersion">[docs]</a><span class="k">def</span> <span class="nf">getVersion</span><span class="p">():</span>
+  <span class="sd">&quot;&quot;&quot;get version number as string&quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="n">iradinapy</span><span class="o">.</span><span class="n">__version__</span></div>
+ 
+<div class="viewcode-block" id="assumeAsList"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.assumeAsList">[docs]</a><span class="k">def</span> <span class="nf">assumeAsList</span><span class="p">(</span><span class="n">strOrList</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;return a list as sys.argv if string&quot;&quot;&quot;</span>
+  <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">strOrList</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">strOrList</span><span class="p">)</span> <span class="c1"># copy</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">strOrList</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">res</span> <span class="k">if</span> <span class="n">r</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="c1"># supposed string to split for convenience</span></div>
+
+
+<span class="c1">########################################################################</span>
+<span class="c1"># parser arguments iradinaGUI class</span>
+<span class="c1">########################################################################</span>
+<div class="viewcode-block" id="ArgumentParserNoExit"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit">[docs]</a><span class="k">class</span> <span class="nc">ArgumentParserNoExit</span><span class="p">(</span><span class="n">AP</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;change Exiting method as no exit&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ArgumentParserNoExit.exit"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.exit">[docs]</a>  <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">message</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_print_message</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">AP</span><span class="o">.</span><span class="n">_sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.getLogLevels"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.getLogLevels">[docs]</a>  <span class="k">def</span> <span class="nf">getLogLevels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.loggingIra</span> <span class="k">as</span> <span class="nn">LOG</span>
+    <span class="k">return</span> <span class="n">LOG</span><span class="o">.</span><span class="n">_knownLevels</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.getLogLevelsStr"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.getLogLevelsStr">[docs]</a>  <span class="k">def</span> <span class="nf">getLogLevelsStr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.loggingIra</span> <span class="k">as</span> <span class="nn">LOG</span>
+    <span class="k">return</span> <span class="n">LOG</span><span class="o">.</span><span class="n">_knownLevelsStr</span></div>
+
+  <span class="c1">#################################################</span>
+  <span class="c1"># filter methods</span>
+  <span class="c1">#################################################</span>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_logLevel"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_logLevel">[docs]</a>  <span class="k">def</span> <span class="nf">filter_logLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aStr</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.loggingIra</span> <span class="k">as</span> <span class="nn">LOG</span>
+    <span class="n">DBG</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;filter_logLevel(self, string) </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">aStr</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">LOG</span><span class="o">.</span><span class="n">filterLevel</span><span class="p">(</span><span class="n">aStr</span><span class="p">)</span>
+    <span class="n">DBG</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;filter_logLevel(self, string) </span><span class="si">%s</span><span class="s2"> -&gt; </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">aStr</span><span class="p">,</span> <span class="n">value</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_list"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_list">[docs]</a>  <span class="k">def</span> <span class="nf">filter_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    parser filter from string &#39;xx,yy,zz,...&#39;</span>
+<span class="sd">    returns list (if not error with python exec(value=[xx,yy,zz,...]))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">exec</span><span class="p">(</span><span class="s2">&quot;value = [</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="n">string</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a list&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_list_float"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_list_float">[docs]</a>  <span class="k">def</span> <span class="nf">filter_list_float</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    parser filter from string &#39;xx,yy,zz,...&#39;</span>
+<span class="sd">    returns list (if not error with python exec(value=[xx,yy,zz,...]))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">exec</span><span class="p">(</span><span class="s2">&quot;value = [</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="n">string</span><span class="p">)</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a list of float&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_range"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_range">[docs]</a>  <span class="k">def</span> <span class="nf">filter_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    parser filter from string &#39;vmin,vmax&#39;</span>
+<span class="sd">    returns list (if not error with python exec(value=[xx,yy]))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">exec</span><span class="p">(</span><span class="s2">&quot;value = [</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="n">string</span><span class="p">)</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a list of float&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a range of 2 float&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_list_int"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_list_int">[docs]</a>  <span class="k">def</span> <span class="nf">filter_list_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    parser filter from string &#39;xx,yy,zz,...&#39;</span>
+<span class="sd">    returns list (if not error with python exec(value=[xx,yy,zz,...]))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">exec</span><span class="p">(</span><span class="s2">&quot;value = [</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="n">string</span><span class="p">)</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a list of int&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_square"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_square">[docs]</a>  <span class="k">def</span> <span class="nf">filter_square</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="n">sqrtv</span> <span class="o">=</span> <span class="n">value</span><span class="o">**</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sqrtv</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrtv</span><span class="p">):</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a perfect square&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_int_positive"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_int_positive">[docs]</a>  <span class="k">def</span> <span class="nf">filter_int_positive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a correct positive integer number&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a positive integer number&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_float_positive"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_float_positive">[docs]</a>  <span class="k">def</span> <span class="nf">filter_float_positive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a correct positive float number&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a positive float number&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_existing_file"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_existing_file">[docs]</a>  <span class="k">def</span> <span class="nf">filter_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">ok</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a correct existing file name&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not an existing file&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ArgumentParserNoExit.filter_workdir"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.ArgumentParserNoExit.filter_workdir">[docs]</a>  <span class="k">def</span> <span class="nf">filter_workdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">wdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">string</span><span class="p">))</span>
+      <span class="c1"># DBG.write(&quot;arg workdir&quot;, (wdir, rootdir), True)</span>
+      <span class="n">ok</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="n">wdir</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a correct existing directory&quot;</span> <span class="o">%</span> <span class="n">string</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rootdir</span> <span class="ow">in</span> <span class="n">wdir</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;working directory: </span><span class="si">%r</span><span class="se">\n</span><span class="s2">have to be outside directory: </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">rootdir</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="c1"># not existing directory: have to be created by user, or automatic.</span>
+    <span class="c1"># if not ok:</span>
+    <span class="c1">#  msg = &quot;%r is not an existing directory&quot; % wdir</span>
+    <span class="c1">#  raise Exception(msg)</span>
+    <span class="k">return</span> <span class="n">value</span></div></div>
+
+
+<span class="c1">########################################################################</span>
+<span class="c1"># Ira class</span>
+<span class="c1">########################################################################</span>
+<div class="viewcode-block" id="Ira"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira">[docs]</a><span class="k">class</span> <span class="nc">Ira</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  The main class that stores all the commands of iradinaGui</span>
+<span class="sd">  (usually known as &#39;runner&#39; argument in Command classes)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initialization</span>
+
+<span class="sd">    :param logger: (Logger) The logger to use</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Read the iradinaGui</span>
+    <span class="c1"># iradinaGUI &lt;options&gt;</span>
+    <span class="c1"># (the list of possible options is at the beginning of this file)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="c1"># the logger that will be use</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">arguments</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># args are postfixes options</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># the main options passed to iradinaGui</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># the config values from file workdir/iradinaGUI_*.cfg</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getParser</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_confirmMode</span> <span class="o">=</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">aDict</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="s2">&quot;arguments&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span>
+      <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">PP</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">aDict</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;Ira(</span><span class="se">\n</span><span class="s2"> </span><span class="si">%s</span><span class="se">\n</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">res</span>
+
+<div class="viewcode-block" id="Ira.getId"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.getId">[docs]</a>  <span class="k">def</span> <span class="nf">getId</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;assimiled as integer incremented on _idCommandHandlers&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="c1"># assimiled as root of main first command</span></div>
+
+<div class="viewcode-block" id="Ira.getLogger"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.getLogger">[docs]</a>  <span class="k">def</span> <span class="nf">getLogger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># could use owner Ira instance logger</span>
+      <span class="kn">import</span> <span class="nn">iradinapy.loggingIra</span> <span class="k">as</span> <span class="nn">LOG</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">LOG</span><span class="o">.</span><span class="n">getDefaultLogger</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Ira logger not set, unexpected situation, fixed as default&quot;</span><span class="p">)</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span>
+    <span class="k">else</span><span class="p">:</span>                   <span class="c1"># could use local logger</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span></div>
+
+<div class="viewcode-block" id="Ira.getOptions"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.getOptions">[docs]</a>  <span class="k">def</span> <span class="nf">getOptions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span></div>
+
+<div class="viewcode-block" id="Ira.getConfig"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.getConfig">[docs]</a>  <span class="k">def</span> <span class="nf">getConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span></div>
+
+<div class="viewcode-block" id="Ira.assumeAsList"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.assumeAsList">[docs]</a>  <span class="k">def</span> <span class="nf">assumeAsList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strOrList</span><span class="p">):</span>
+    <span class="c1"># DBG.write(&quot;Ira assumeAsList&quot;, strOrList, True)</span>
+    <span class="k">return</span> <span class="n">assumeAsList</span><span class="p">(</span><span class="n">strOrList</span><span class="p">)</span></div>
+
+  <span class="k">def</span> <span class="nf">_getParser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Define all possible &lt;options&gt; for iradinaGui CLI: &#39;iradinaGUI &lt;options&gt;&#39;</span>
+<span class="sd">    (internal use only)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">workdirdefault</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;IRADINAGUI_WORKDIR&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">workdirdefault</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">workdirdefault</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">workdirdefault</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">workdirdefault</span><span class="p">))</span>
+
+    <span class="c1"># parser = AP.ArgumentParser(description=&#39;launch iradinaGUI&#39;, argument_default=None)</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParserNoExit</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Graphical user interface to launch iradina code&#39;</span><span class="p">,</span> <span class="n">argument_default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+      <span class="s1">&#39;-h&#39;</span><span class="p">,</span> <span class="s1">&#39;--help&#39;</span><span class="p">,</span>
+      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;show this help message (and do no exit)&#39;</span><span class="p">,</span>
+      <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+      <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+      <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="s1">&#39;--doc&#39;</span><span class="p">,</span>
+      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;show html documentation&#39;</span><span class="p">,</span>
+      <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+      <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+      <span class="s1">&#39;-g&#39;</span><span class="p">,</span> <span class="s1">&#39;--gui&#39;</span><span class="p">,</span>
+      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;show GUI&#39;</span><span class="p">,</span>
+      <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+      <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+      <span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span>
+      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;set log level verbosity: </span><span class="si">%s</span><span class="s1"> default=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">getLogLevelsStr</span><span class="p">(),</span> <span class="s2">&quot;INFO&quot;</span><span class="p">),</span>
+      <span class="nb">type</span><span class="o">=</span><span class="n">parser</span><span class="o">.</span><span class="n">filter_logLevel</span><span class="p">,</span>
+      <span class="n">default</span><span class="o">=</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
+      <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;logLevel&#39;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+      <span class="s1">&#39;-w&#39;</span><span class="p">,</span> <span class="s1">&#39;--workdir&#39;</span><span class="p">,</span>
+      <span class="n">help</span><span class="o">=</span><span class="s2">&quot;current working directory default=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">workdirdefault</span><span class="p">,</span>
+      <span class="nb">type</span><span class="o">=</span><span class="n">parser</span><span class="o">.</span><span class="n">filter_workdir</span><span class="p">,</span>
+      <span class="n">default</span><span class="o">=</span><span class="n">workdirdefault</span><span class="p">,</span>
+      <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;dirName&#39;</span>
+    <span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;# other examples</span>
+<span class="sd">    parser.add_argument(</span>
+<span class="sd">      &#39;-p&#39;, &#39;--pattern&#39;,</span>
+<span class="sd">      help=&quot;file pattern for unittest files [&#39;test_*.py&#39;|&#39;*Test.py&#39;...]&quot;,</span>
+<span class="sd">      default=&quot;test_???_*.py&quot;,  # as alphabetical ordered test site</span>
+<span class="sd">      metavar=&#39;filePattern&#39;</span>
+<span class="sd">    )</span>
+<span class="sd">    parser.add_argument(</span>
+<span class="sd">      &#39;-t&#39;, &#39;--type&#39;,</span>
+<span class="sd">      help=&quot;type of output: [&#39;std&#39;(standart ascii)|&#39;xml&#39;|&#39;html&#39;]&quot;,</span>
+<span class="sd">      default=&quot;std&quot;,</span>
+<span class="sd">      choices=[&#39;std&#39;, &#39;xml&#39;, &#39;html&#39;],</span>
+<span class="sd">      metavar=&#39;outputType&#39;</span>
+<span class="sd">    )&quot;&quot;&quot;</span>
+
+    <span class="c1"># DBG.write(&#39;dir(parser)&#39;, dir(parser))</span>
+    <span class="k">return</span> <span class="n">parser</span>
+
+<div class="viewcode-block" id="Ira.parseArguments"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.parseArguments">[docs]</a>  <span class="k">def</span> <span class="nf">parseArguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arguments</span><span class="p">):</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assumeAsList</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">DBG</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;IradinaGUI options&quot;</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">options</span></div>
+
+<div class="viewcode-block" id="Ira.execute_cli"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.execute_cli">[docs]</a>  <span class="k">def</span> <span class="nf">execute_cli</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cli_arguments</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;select first argument as a command in directory &#39;commands&#39;, and launch on arguments</span>
+
+<span class="sd">    :param cli_arguments: (str or list) The iradinaGUI CLI arguments (as sys.argv)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span> <span class="c1"># shortcut</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assumeAsList</span><span class="p">(</span><span class="n">cli_arguments</span><span class="p">)</span>
+    <span class="c1"># no arguments do print help and returns</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+      <span class="k">return</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">(</span><span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="s2">&quot;No arguments, as &#39;--help&#39;&quot;</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parseArguments</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOptions</span><span class="p">()</span> <span class="c1"># shortcut</span>
+
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">doc</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">show_doc</span><span class="p">()</span>
+      <span class="k">return</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">(</span><span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="s2">&quot;exit if arguments contains &#39;--doc&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">workdir</span><span class="p">):</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;inexisting working directory: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">create it.&quot;</span> <span class="o">%</span> <span class="n">options</span><span class="o">.</span><span class="n">workdir</span>
+      <span class="k">return</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">(</span><span class="s2">&quot;KO&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># set main handler level</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevelMainHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s2">&quot;arguments options:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">PP</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">))</span>
+
+    <span class="c1"># if the help option has been called, print command help</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">help</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+      <span class="c1"># and not continue</span>
+      <span class="k">return</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">(</span><span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="s2">&quot;exit if arguments contains &#39;--help&#39;&quot;</span><span class="p">)</span>
+
+    <span class="kn">import</span> <span class="nn">iradinapy.configIra</span> <span class="k">as</span> <span class="nn">CFGIRA</span>
+    <span class="n">cfgMgr</span> <span class="o">=</span> <span class="n">CFGIRA</span><span class="o">.</span><span class="n">ConfigManager</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="c1"># as main config, current config from option.workdir/iradinaGUI_*.cfg</span>
+    <span class="n">rc</span> <span class="o">=</span> <span class="n">cfgMgr</span><span class="o">.</span><span class="n">getMainConfig</span><span class="p">()</span> <span class="c1"># current config from options.workdir/xxx.cfg</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rc</span><span class="o">.</span><span class="n">isOk</span><span class="p">():</span>
+      <span class="k">return</span> <span class="n">rc</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+    <span class="n">cfgMgr</span><span class="o">.</span><span class="n">setMainConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span> <span class="c1"># set as global with CFGIRA.getMainConfig()</span>
+
+    <span class="c1"># cvw TODO logger.debug(&quot;Configuration values:\n%s&quot;, self.config.writeToStr())</span>
+
+    <span class="c1"># cfg = self.config.toCatchAll()</span>
+    <span class="c1"># TODO [DefaultEnvironment]</span>
+    <span class="c1"># DBG.write(&quot;DefaultEnvironment&quot;, self.config.writeToStr(), True)</span>
+    <span class="c1"># TODO set environ var if not set? not yet</span>
+    <span class="c1"># if cfg.DefaultEnvironment.iradina_root_dir == &quot;default&quot;:</span>
+    <span class="c1"># etc.</span>
+
+    <span class="c1"># logger.setFileHandlerForCommand(self, cmdInstance)</span>
+
+    <span class="c1"># Run the main command using options and config</span>
+    <span class="n">returnCode</span> <span class="o">=</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">(</span><span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="s2">&quot;seems finished on (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">gui</span><span class="p">:</span>
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;BEGIN GUI on options:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+      <span class="n">returnCode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runGUI</span><span class="p">()</span>
+
+      <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">returnCode</span><span class="p">)</span> <span class="o">!=</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ReturnCode GUI type unexpected </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">returnCode</span><span class="p">))</span>
+
+      <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;END GUI on options</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">returnCode</span><span class="p">))</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+      <span class="sd">&quot;&quot;&quot;# no xml log file, (yet)</span>
+<span class="sd">      import iradinapy.linksXml as LKXML</span>
+<span class="sd">      LKXML.setAttribLinkForCommand(cmdInstance, &quot;full_launched_cmd&quot;, strArgs)</span>
+<span class="sd">      LKXML.setAttribLinkForCommand(cmdInstance, &quot;cmd_res&quot;, returnCode.toXmlPassed())</span>
+<span class="sd">      &quot;&quot;&quot;</span>
+
+    <span class="c1"># close logger/main handler have to be caller stuff...</span>
+    <span class="k">return</span> <span class="n">returnCode</span></div>
+
+<div class="viewcode-block" id="Ira.get_help"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.get_help">[docs]</a>  <span class="k">def</span> <span class="nf">get_help</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;get general help colored string&quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getColoredVersion</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+    <span class="n">msg</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">format_help</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">msg</span></div>
+
+<div class="viewcode-block" id="Ira.print_help"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.print_help">[docs]</a>  <span class="k">def</span> <span class="nf">print_help</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;prints iradinaGui general help&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_help</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Ira.show_doc"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.show_doc">[docs]</a>  <span class="k">def</span> <span class="nf">show_doc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;show iradinaGui general documentation&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">xyzpy.utilsXyz</span> <span class="k">as</span> <span class="nn">UXYZ</span>
+    <span class="n">nameBrowser</span> <span class="o">=</span> <span class="n">UXYZ</span><span class="o">.</span><span class="n">getBrowser</span><span class="p">()</span>  <span class="c1">#</span>
+    <span class="n">fileIndex</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="s2">&quot;doc&quot;</span><span class="p">,</span> <span class="s2">&quot;build&quot;</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="s2">&quot;index.html&quot;</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &amp;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nameBrowser</span><span class="p">,</span> <span class="n">fileIndex</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;active show doc command:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cmd</span><span class="p">)</span>
+    <span class="n">UTS</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Ira.getColoredVersion"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.getColoredVersion">[docs]</a>  <span class="k">def</span> <span class="nf">getColoredVersion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;get colored iradinaGui version message&quot;&quot;&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">getVersion</span><span class="p">()</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&lt;header&gt;iradinaGUI version:&lt;reset&gt; &quot;</span> <span class="o">+</span> <span class="n">version</span>
+    <span class="k">return</span> <span class="n">msg</span></div>
+
+<div class="viewcode-block" id="Ira.getConfirmMode"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.getConfirmMode">[docs]</a>  <span class="k">def</span> <span class="nf">getConfirmMode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_confirmMode</span></div>
+
+<div class="viewcode-block" id="Ira.setConfirmMode"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.setConfirmMode">[docs]</a>  <span class="k">def</span> <span class="nf">setConfirmMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_confirmMode</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Ira.getBatchMode"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.getBatchMode">[docs]</a>  <span class="k">def</span> <span class="nf">getBatchMode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">batch</span></div>
+
+<div class="viewcode-block" id="Ira.getAnswer"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.getAnswer">[docs]</a>  <span class="k">def</span> <span class="nf">getAnswer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    question and user answer (in console)</span>
+<span class="sd">    if confirm mode and not batch mode.</span>
+
+<span class="sd">    | returns &#39;YES&#39; or &#39;NO&#39; if confirm mode and not batch mode</span>
+<span class="sd">    | returns &#39;YES&#39; if batch mode</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">getConfirmMode</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">getBatchMode</span><span class="p">():</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">)</span>
+      <span class="n">rep</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Do you want to continue? [yes/no] &quot;</span><span class="p">)))</span>
+      <span class="k">if</span> <span class="n">rep</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;YES&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;YES&quot;</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;NO&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="c1"># silent message</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&lt;green&gt;YES&lt;reset&gt; (as automatic answer)&quot;</span><span class="p">)</span>
+      <span class="k">return</span> <span class="s2">&quot;YES&quot;</span></div>
+
+  <span class="sd">&#39;&#39;&#39;useless</span>
+<span class="sd">  def runGUI_example(self):</span>
+<span class="sd">    &quot;&quot;&quot;a main window example&quot;&quot;&quot;</span>
+<span class="sd">    import salomepy.onceQApplication as OQA</span>
+<span class="sd">    import ribbonpy.ribbonClassFactory as RCF</span>
+<span class="sd">    import ribbonpy.ribbonQMainWindow as RQM</span>
+
+<span class="sd">    logger = self.getLogger()</span>
+<span class="sd">    config = self.getConfig()</span>
+<span class="sd">    logger.trace(&quot;runGUI config:\n\n%s&quot; % config.writeToStr())</span>
+<span class="sd">    cfg = config.toCatchAll() # EZ use</span>
+
+<span class="sd">    app = OQA.OnceQApplication()</span>
+<span class="sd">    aJsonValue = RCF.getExampleJsonRibbon()</span>
+<span class="sd">    fen = RQM.QMainWindowForRibbon(setFromJson=aJsonValue)</span>
+<span class="sd">    fen.setWindowTitle(cfg.MainWindow.title)</span>
+<span class="sd">    fen.resize(int(cfg.MainWindow.sizex), int(cfg.MainWindow.sizey))</span>
+<span class="sd">    msg = &quot;BEGIN run GUI&quot;</span>
+<span class="sd">    logger.step(msg)</span>
+<span class="sd">    fen.show()</span>
+<span class="sd">    res = app.exec_()</span>
+<span class="sd">    msg = &quot;END run GUI, return &#39;%s&#39;&quot; % res</span>
+<span class="sd">    logger.step(msg)</span>
+<span class="sd">    return RCO.ReturnCode(&quot;OK&quot;, msg, res)</span>
+<span class="sd">  &#39;&#39;&#39;</span>
+
+<div class="viewcode-block" id="Ira.runGUI"><a class="viewcode-back" href="../../apidoc_iradinapy/iradinapy.html#iradinapy.iradinaGui.Ira.runGUI">[docs]</a>  <span class="k">def</span> <span class="nf">runGUI</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a main window for iradinaGUI&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">salomepy.onceQApplication</span> <span class="k">as</span> <span class="nn">OQA</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">OQA</span><span class="o">.</span><span class="n">OnceQApplication</span><span class="p">()</span>
+
+    <span class="kn">import</span> <span class="nn">ribbonpy.ribbonClassFactory</span> <span class="k">as</span> <span class="nn">RCF</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.mainWindowIra</span> <span class="k">as</span> <span class="nn">MWIRA</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.controllerIra</span> <span class="k">as</span> <span class="nn">CTIRA</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.treeViewIra</span> <span class="k">as</span> <span class="nn">TVIRA</span>
+    <span class="kn">import</span> <span class="nn">iradinapy.configIra</span> <span class="k">as</span> <span class="nn">CFGIRA</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getConfig</span><span class="p">()</span>
+    <span class="c1"># cvw TODO logger.trace(&quot;runGUI config:\n\n%s&quot; % config.writeToStr())</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s2">&quot;runGUI create window&quot;</span><span class="p">)</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">toCatchAll</span><span class="p">()</span> <span class="c1"># EZ access</span>
+
+    <span class="c1"># settings from user config &#39;cfg&#39;</span>
+    <span class="n">usermode</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">General</span><span class="o">.</span><span class="n">usermode</span>
+    <span class="n">CFGIRA</span><span class="o">.</span><span class="n">setCurrentMode</span><span class="p">(</span><span class="n">usermode</span><span class="p">)</span> <span class="c1"># global</span>
+
+    <span class="n">aJsonValue</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1">#TODO for future: a ribbon RCF.getExampleJsonRibbon()</span>
+    <span class="n">desktop</span> <span class="o">=</span> <span class="n">MWIRA</span><span class="o">.</span><span class="n">QMainWindowIra</span><span class="p">(</span><span class="n">setFromJson</span><span class="o">=</span><span class="n">aJsonValue</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">MainWindow</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">sx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">MainWindow</span><span class="o">.</span><span class="n">sizex</span><span class="p">)</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">MainWindow</span><span class="o">.</span><span class="n">sizey</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;iradina main window size </span><span class="si">%s</span><span class="s2">x</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">))</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">)</span>
+    <span class="n">controller</span> <span class="o">=</span> <span class="n">CTIRA</span><span class="o">.</span><span class="n">ControllerIra</span><span class="p">(</span><span class="n">desktop</span><span class="o">=</span><span class="n">desktop</span><span class="p">)</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;BEGIN run GUI&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;END run GUI, return &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">res</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">RCO</span><span class="o">.</span><span class="n">ReturnCode</span><span class="p">(</span><span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span></div></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/icon_applogo_IradinaGUI.png" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, CEA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,107 @@
+
+.. include:: ../rst_prolog.rst
+
+
+.. _iraPrerequisites:
+
+***************
+Prerequisites
+***************
+
+There are some definitions, and links.
+
+#. Iradina_ code, and its `manual <IradinaManualPdf_>`_.
+#. PYTHON_ 3.5, with packages PyQt5_, numpy, matplotlib_, pandas_, etc. (usually named *py3qt5*).
+#. PyInstaller_, free sofware to make iradinaGUI bundle (*only* valid for Linux).
+#. 7-zip_, free sofware to compress/uncompress .7z files (for Windows installations).
+
+Installation needs a PYTHON_ 3.5 interpreter, which is included in
+*All-in-one* iradina installations (Linux *and* Windows).
+see :ref:`iraInstallation_pythonlinux`.
+
+PyInstaller_ is a program that freezes Python programs
+in *bundle*, which is **almost** a python package.
+For more information about *bundle*, see `PyInstaller manual <PyInstallerManual_>`_.
+
+
+.. _iraAllInOneInstallation:
+
+*********************************
+All-in-one installation
+*********************************
+
+These installations contain in **one** compressed file:
+
+#. the iradinaGUI python scripts.
+#. An interpreter PYTHON_.
+#. The Iradina code (GPL), its **source files**, and
+   two executable files, one for Linux and one Windows.
+#. The useful Corteo_ data base (4bits).
+
+
+.. warning:: Corteo data base used version in iradinaGUI is **NOT** Version 20160816.
+
+
+*********************************
+All-in-one installation Linux
+*********************************
+
+.. warning:: This is a PyInstaller_ bundle,
+             installed locally **where users want**.
+             Python interpreter (named py3qt5) is simultaneously installed,
+
+
+Source tar file *iradinaGUI_bundle_xxxx.tgz* is the **one** compressed archive file
+of the PyInstaller bundle in *one folder* mode.
+See `more information here <https://pyinstaller.readthedocs.io/en/stable/operating-mode.html#bundling-to-one-folder>`_.
+
+There are two ways to install iradinaGUI:
+
+#. Install iradinaGUI directly, using usual *file manager* functionalities:
+   uncompress tar file in user's choice directory.
+#. Install iradinaGUI typing bash command, in usual *terminal*:
+
+    .. code-block:: bash
+
+        # install
+        cd yourChoiceDirectory       # which is really where you want
+        tar -xf .../iradinaGUI_bundle_xxxx.tgz
+        # launch
+        cd iradinaGUI_bundle         # folder name as linux pyinstaller bundle
+        ./iradinaGUI -h              # on line help
+        ./iradinaGUI -g -w ...       # launch GUI
+
+
+*********************************************
+All-in-one installation Windows7-10
+*********************************************
+
+.. warning:: #. This is **not** a PyInstaller_ bundle.
+             #. The **mandatory located** root directory is *C:\\Users\\Public\\iradina*.
+             #. The **mandatory located** iradinaGUI directory
+                is *C:\\Users\\Public\\iradina\\iradinaGUI*.
+             #. The **mandatory located** Python interpreter py3qt5 directory
+                is *C:\\Users\\Public\\iradina\\miniconda3*.
+             #. The sofware tool to uncompress .7z files is 7-zip_, which **has to be installed**.
+
+Source .7z file *iradinaGUI_xxxx.7z* is the **one** compressed archive file.
+
+There are two ways to install iradinaGUI:
+
+#. Install iradinaGUI directly, using usual *file manager* functionalities:
+   uncompress .7z file in mandatory *C:\\Users\\Public* directory.
+#. Install iradinaGUI typing DOS command, in usual *(Windows7/10-cmd.exe shell)*:
+
+    .. code-block:: bat
+
+        rem install
+        C:\
+        cd C:\Users\Public   # this is mandatory location, useful for all users
+        "C:\Program Files\7-Zip\7z.exe" x .../iradina_xxxx.7z
+        rem launch
+        C:\User\Public\iradina\iradinaGUI\LaunchIradinaGUI.bat
+
+.. note:: To launch iradina GUI, you may use Windows shortcut
+          *C:\\User\\Public\\iradina\\iradinaGUI\\LaunchIradinaGUI(.lnk)*
+
+          .
