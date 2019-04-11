@@ -425,7 +425,7 @@ subroutine bruit_xp
 
     tempsauv=tempinst(vp,ityp)
     if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
-
+    if (lTPcel.eqv..true.) call calctemp(temptyp)
     if (lfrozen.EQV..true.) then
        WHERE (frozen(:,1:im))
           vp(:,1:im) = 0.d0

@@ -1,6 +1,6 @@
 module elec_cell
   use T_kind_param_m
-  use gen_com_m, only : nox,noy,noz, noxyz,nzl,bk,imm,nato,last,im_glob,tstep,erg2eV,pi,rang,elosscel,lenfnam,fnam,lrestart&
+  use gen_com_m, only : nox,noy,noz, noxyz,nzl,bk,imm,nato,last,im_glob,tstep,erg2eV,pi,rang,elosscel,lenfnam,fnam,lrestart,lTPcel&
        &,joule2erg,erg2eV,it,timel,it,igen,lrestart,itesauvinter
   use var_pot,only:cm
   use tab_imm_m, only : num_at_glob,ielat
@@ -54,6 +54,8 @@ module elec_cell
   integer:: itetec,integrTtype,igenelec
   real(double),dimension(:), allocatable:: CedT,Eedt,KedT,GepdT
   logical lalletemp 
+
+  real(double),allocatable, dimension (:,:,:,:)::xb
 contains
 
   subroutine readelec
@@ -141,6 +143,7 @@ contains
     if (KeC.lt.0) call prepKe
 
     allocate(ecell(nex,ney,nez))
+    if (lTPcel.eqv..true.) allocate(xb(nex,ney,nez,3))
 
     if (rang==0) then
        if (igenelec==1) then
@@ -176,7 +179,18 @@ contains
           end do
        end do
     end if
-
+    if (LTPcel.eqv..true.) then
+       do ix=1,nex
+          do iy=1,ney
+             do iz=1,nez
+                xb(ix,iy,iz,1)=ix*cellside(1)-deltaxyz(1)
+                xb(ix,iy,iz,2)=iy*cellside(2)-deltaxyz(2)
+                xb(ix,iy,iz,3)=iz*cellside(3)-deltaxyz(3)
+             end do
+          end do
+       end do
+    end if
+    
 
     if (rang.eq.0) write(6,*) 
     if (rang.eq.0) write(6,*) 
@@ -189,6 +203,15 @@ contains
     !     end if
 
 
+    if (LTPcel.eqv..true.) then
+        do ix=1,nex
+          do iy=1,ney
+             do iz=1,nez
+                write(744,'(3I5,3G15.5,2F15.5,L3)')ix,iy,iz,xb(ix,iy,iz,1)*1d8,xb(ix,iy,iz,2)*1d8,xb(ix,iy,iz,3)*1d8,ecell(ix,iy,iz)%temp,ecell(ix,iy,iz)%tempion,ecell(ix,iy,iz)%lionovlp
+             end do
+          end do
+       end do
+    end if
     return
 
   end subroutine readelec
@@ -340,9 +363,11 @@ contains
        end do
     end do
 #if(PARA)
+    if (i2T==0)then
        call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
        elosscel=elosscel_tot
        deallocate (elosscel_tot)
+    end if
 #endif 
 
 

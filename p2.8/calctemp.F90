@@ -199,7 +199,7 @@ subroutine calctemp(temptyp)
 #else
      temp = temp/float(imd)
 #endif
-
+!     write(6,*)'ZL',zl
      if ((ltpcel).or.(tempstopcel.gt.0)) then
         maxTcel=0.
         !     	if (ltpcel) then
@@ -213,7 +213,8 @@ subroutine calctemp(temptyp)
                  ko=1+kx+nox*(ky+noy*kz)
                  !                 pmc=0.0
                  !                              write(6,*)'dans la celulle ',ko
-                 !     	if (ltpcel)  write(6,'(A,I7,I5,3I4,2F12.2)')'CEL-TEMP ', it,ko,kx,ky,kz,tempc(ko),tempcm(ko)
+         !     	if (ltpcel)  write(6,'(A,I7,I5,3I4,2F12.2)')'CEL-TEMP ', it,ko,kx,ky,kz,tempc(ko),tempcm(ko)
+             	if (ltpcel)  write(743,'(3I4,3F15.5,F15.5)') kx,ky,kz,kx*Zl(1)*1d8/nox,ky*Zl(2)*1d8/noy,kz*Zl(3)*1d8/noz,tempc(ko)
                  maxTcel=max(maxTcel,tempc(ko))
 
                  !                              write (6, '(A11,I4,A15,F12.2)') 'Cellule: ', ko, &

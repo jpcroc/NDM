@@ -77,22 +77,22 @@ program ndm
 
 
 
-  if (rang==0) write(6,*)'*** NDM853 ***'
+  if (rang==0) write(6,*)'*** NDM859 ***'
 #if(ART)
-  if (rang==0) write(6,*)'*** NDM853+ ART ***'
+  if (rang==0) write(6,*)'*** NDM859+ ART ***'
 #endif
 
 #if(PHONDY)
-  if (rang==0) write(6,*)'*** NDMP853 +  PHONDY ***'
+  if (rang==0) write(6,*)'*** NDMP859 +  PHONDY ***'
 #endif
 
 
 !if MAB .....
 #if(MAB)
   rangmab=0
-  if (rang==0) write(6,*)'*** NDMP853 +   MAB ***'
+  if (rang==0) write(6,*)'*** NDMP859 +   MAB ***'
 #if (ML && PARAML)
-  if (rang==0) write(6,*)'*** NDMP853 +   MAB + ML + PARAML ***'
+  if (rang==0) write(6,*)'*** NDMP859 +   MAB + ML + PARAML ***'
   call init_mpi_mab()
   rang=rangmab
 #endif
@@ -103,7 +103,7 @@ program ndm
 !endif MAB ......
 
 #if(ML)
-  if (rang==0) write(6,*)'*** NDMP853 +   ML ***'
+  if (rang==0) write(6,*)'*** NDMP859 +   ML ***'
 #endif
 
 
