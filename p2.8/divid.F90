@@ -33,14 +33,23 @@ subroutine divid (appel)
 
   call param_det
 
-
+!C_debug
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
   !  write(6,*)rumax,rue_pair,maxval(rue_pair)
+  rumax=0.0
+
   rumax = max(rumax,maxval(rue_pair))
   csive=rumax/float(ngrid)
+ ! write(*,*) rumax, rvois
+#else
+  rumax = max(rumax,maxval(rue_pair))
+  csive=rumax/float(ngrid)
+#endif
 
-
-
-  if((rang==0).and.(appel==0))      write(6,'(A,F12.2)') 'DIVID rumax',rumax*1d8
+#if ML
+#else
+  if((rang==0).and.(appel==0))      write(6,'(A,I4,F12.2)') 'DIVID appel rumax',appel, rumax*1d8
+#endif
 
   !     if(l3c) then
   if (r3cm.eq.0) r3cm=5.0d-8
@@ -54,8 +63,11 @@ subroutine divid (appel)
         if((rang==0).and.(appel==0)) write (6, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
         !cosdebug call arret_ndm
      else
+#if (ML)
+#else
         if((rang==0).and.(appel==0)) write (6,'(A,2F12.2)') ' rumax devient rvois&
              & pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
+#endif
         rumax=rvois
      end if
 
@@ -80,8 +92,10 @@ subroutine divid (appel)
 
   izonr = int(zlmin/rut)
   ! MPI
+#if(ML)
+#else
   if ((rang==0).and.(appel==0)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
-
+#endif
      if (izonr<2) then
         write (6, *) 'trop petite boite !!!'
         !cosboite  stop
@@ -99,19 +113,20 @@ subroutine divid (appel)
   !      if ((rang==0).and.(appel==0)) write (6, *) 'avant volu'
 
   volu = calcvol(at(1,1),at(1,2),at(1,3))
-
-  if ((rang==0).and.(appel==0)) then 
+#if(ML)
+#else
+  if ((rang==0).and.(appel==0)) then
      write (6, '(A,D15.8,A,D15.8,A)') 'volume=', volu,' cm3 ',volu*1d24,' Ang3'
   end if
+#endif
 
-
-  !DETERMINATION DE NOX NOY NOZ     
+  !DETERMINATION DE NOX NOY NOZ
 #if(PHONDY || PARAPH || MAB || ML || PARAML)
-#else 
+#else
 
   if ((rang==0).and.(appel==0)) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz
   if ((rang==0).and.(appel==1)) write (6, *) 'nox,noy,noz deuxième passage  =', nox, noy, noz
-#endif 
+#endif
 
   ! ==== MODIF CLOUET 1 ====================
   !  nzl(1:3) doivent etre calcules ici: ils etaient calcules apres l'appel a divid
@@ -125,7 +140,7 @@ subroutine divid (appel)
 
   if (nox<=0.or.noy<=0.or.noz<=0) then
      ! détermination de nox noy noz qui ne sont pas donnes dans .din
-     ! 
+     !
      if ((rang==0).and.(appel==0)) write (6, *) 'calcul de nox noy noz !!!'
 
      ! ==== MODIF CLOUET 2 ====================
@@ -156,11 +171,16 @@ subroutine divid (appel)
         nox=1 ; noy=1 ; noz=1
         !             ltabvois=.TRUE.
         !             lconstrtot=.TRUE.
+#if(ML)
+#else
         if ((rang==0).and.(appel==0)) write(6,*)'!!!!!!!!!!Envisager ltabvois = true !!!!!!!!!!!!!!'
+#endif
      END IF
-
+#if(ML)
+#else
      if ((rang==0).and.(appel==0)) write (6,'(a,3(i0,1x))') 'nox noy noz apres correction = '&
           , nox, noy, noz
+#endif
 !!$     if (izonr<3) then
 !!$
 !!$        ltabvois = .TRUE.
@@ -195,7 +215,7 @@ subroutine divid (appel)
         call arret_ndm
      endif
      !     if (nox==1.or.noy==1.or.noz==1) then
-     !        if ((rang==0).and.(appel==0))  write (6, *) 'plus de cellules, on considere toute la boite'            
+     !        if ((rang==0).and.(appel==0))  write (6, *) 'plus de cellules, on considere toute la boite'
      !        ltabvois = .TRUE.
      !        lconstrtot=.TRUE.
      !        nox = 1
@@ -242,9 +262,9 @@ subroutine divid (appel)
   endif
 
 #if(PHONDY || PARAPH || MAB || ML || PARAML)
-#else 
+#else
    if (rang==0) write(6,'(A,3G15.7)') 'celsizes ',celsize(:)
-#endif 
+#endif
   ! nox noy et noz sont determines
 
   noxy = nox*noy
@@ -252,8 +272,11 @@ subroutine divid (appel)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if (appel==0) then
      if (rang==0) then
+#if(ML)
+#else
         write(6,*)'retour à la construction de la boite'
         write(6,*)
+#endif
      end  if
      return
   end if
@@ -266,7 +289,7 @@ subroutine divid (appel)
      nvat=10*natperc
      !          if(natperc.le.2)then
      !             if (rang==0) &
-     !                  write(6,*) 'moins de 3 atomes par celulle -> table des voisins complete' 
+     !                  write(6,*) 'moins de 3 atomes par celulle -> table des voisins complete'
      !             ltabvois=.TRUE. ; lconstrtot=.TRUE.
      !          end if
 !!$natperc=max(2*natperc,10)     ! MODIF Clouet
@@ -283,12 +306,12 @@ subroutine divid (appel)
   natperc=max(5*natperc,20)
 
 #if(PHONDY || PARAPH || MAB || ML || PARAML)
-#else 
+#else
   if (rang==0) &
        write(6,*) 'natperc im/noxyz', natperc, im_glob/noxyz
 
   if (rang==0)  write(6,*)'ltabvois,lconstrtot',ltabvois,lconstrtot
-#endif 
+#endif
 
   if (ltabvois) then
      if (rumax>rvois) then
@@ -304,7 +327,7 @@ subroutine divid (appel)
 #if(PHONDY || PARAPH || MAB || ML || PARAML)
 
         write (6, *) rang,'trop petite boite pour rvois !!!'
-#else 
+#else
         call arret_ndm
 #endif
      endif
@@ -322,7 +345,7 @@ subroutine divid (appel)
      if(rang==0)         write (6, '(A,D10.3)') 'volumeperat=', voluperat
      if(rang==0)         write (6, '(A,D10.3)') 'Rvois=', RVois
      if(rang==0)         write (6, *) 'NVperat= ', nvperat
-#endif 
+#endif
      if (ldemitab) then
         nvois=max(Int(1.5*nvperat*im),100)
         nvat=max(Int(nvperat*1.3),10)
@@ -335,7 +358,7 @@ subroutine divid (appel)
 #else
 
      if(rang==0)         write (6, *) 'Nvois= ', nvois
-#endif 
+#endif
      allocate(indi(nvois))
      allocate(indi2(nvois))
   else
@@ -352,11 +375,10 @@ subroutine divid (appel)
 
 #else
   if(rang==0) write(6,*)
-  if(rang==0) write(6,*)' TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! ' 
+  if(rang==0) write(6,*)' TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! '
   if(rang==0) write(6,*) '-------------------------------------------------------------------'
   if(rang==0) write(6,*)
 #endif
 
   return
 end subroutine divid
-

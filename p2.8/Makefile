@@ -190,23 +190,6 @@ ifdef ART
  EXT=_art
 endif
 
-ifdef PHONDY
- # Version PHONDY
-ifdef PARAPH
- OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAPH} ${OBJS_SEQ}
- EXT=_phondy_para 
-ifdef LAMMPS_VERSION
- EXT=_phondy_para_lammps
-endif
-else
- OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
- EXT=_phondy
-endif
- DEP=${OBJS}  ${LIBPHONDY}
- CPPFLAGS=${CPPFLAGS_PHONDY}
- CLEANPHONDY=clean_phondy
- DIREXT=phondy
-endif
 
 ifdef ML
  # Version Machine Learning
@@ -224,34 +207,71 @@ endif
 endif
 
 
-ifdef ML
- # Version Machine Learning
-ifdef PARAML
+#ifdef ML
+# # Version Machine Learning
+#ifdef PARAML
+#ifdef PHONDY
+# # Version PHONDY
+#ifdef PARAPH
+# OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAML} ${OBJS_PARAPH}  ${OBJS_SEQ}
+# CPPFLAGS=${CPPFLAGS_ML}
+# EXT=_ml_phondy_para
+# DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
+#endif
+#endif
+#endif
+#endif
+
+
+#ifdef ML
+# # Version Machine Learning
+#ifdef PHONDY
+# # Version PHONDY
+#ifdef PARAPH
+# OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAPH} ${OBJS_PARAML} ${OBJS_SEQ}
+# CPPFLAGS=${CPPFLAGS_ML}
+# EXT=_ml_phondy_para
+# DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
+#endif
+#endif
+#endif
+
+
+
 ifdef PHONDY
  # Version PHONDY
-ifdef PARAPH
- OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAML} ${OBJS_PARAPH}  ${OBJS_SEQ}
- CPPFLAGS=${CPPFLAGS_ML}
- EXT=_ml_phondy_para
- DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
-endif
-endif
-endif
+ ifdef PARAPH
+   OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAPH} ${OBJS_SEQ}
+   EXT=_phondy_para 
+ ifdef LAMMPS_VERSION
+   EXT=_phondy_para_lammps
+ endif
+ ifdef ML
+   OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAPH} ${OBJS_PARAML} ${OBJS_SEQ}
+   CPPFLAGS=${CPPFLAGS_ML}
+   EXT=_phondy_para_ml
+   DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
+ endif 
+else
+ OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
+ EXT=_phondy
+ endif
+   DEP=${OBJS}  ${LIBPHONDY}
+   CPPFLAGS=${CPPFLAGS_PHONDY}
+   CLEANPHONDY=clean_phondy
+   DIREXT=phondy
 endif
 
 
-ifdef ML
- # Version Machine Learning
-ifdef PHONDY
- # Version PHONDY
-ifdef PARAPH
- OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAPH} ${OBJS_PARAML} ${OBJS_SEQ}
- CPPFLAGS=${CPPFLAGS_ML}
- EXT=_ml_phondy_para
- DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
-endif
-endif
-endif
+
+
+
+
+
+
+
+
+
 
 
 ifdef SUNDAE
