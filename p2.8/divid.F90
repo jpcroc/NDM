@@ -25,12 +25,14 @@ subroutine divid (appel)
   real(double) , external :: distmin, calcvol
   !-----------------------------------------------
 
+#if(ML)
+#else
   if ((rang==0).and.(appel==0)) then
      write(6,*)
      write(6,*)' -------------------------------------------------------------------'
      write(6,*)'             definition des rayons de coupure'
   endif
-
+#endif 
   call param_det
 
 !C_debug
@@ -141,8 +143,10 @@ subroutine divid (appel)
   if (nox<=0.or.noy<=0.or.noz<=0) then
      ! détermination de nox noy noz qui ne sont pas donnes dans .din
      !
+#if(ML)
+#else
      if ((rang==0).and.(appel==0)) write (6, *) 'calcul de nox noy noz !!!'
-
+#endif
      ! ==== MODIF CLOUET 2 ====================
      if (izonr<3) then
 #ifdef PARA
@@ -150,19 +154,24 @@ subroutine divid (appel)
         call arret_ndm
 #endif
         if ((rang==0).and.(appel==0)) then
+#if(ML)
+#else
            WRITE(6,'(a)') "Boite trop petite: le nombre de cellules est fixe a son minimum"
+#endif
         endif
      endif
      nox = int(nzl(1)/rumax)
      noy = int(nzl(2)/rumax)
      noz = int(nzl(3)/rumax)
+#if(ML)
+#else
      if ((rang==0).and.(appel==0)) THEN
         write (6,'(a)') 'nox noy noz calcules a partir de ru'
         WRITE(6,'(2(a,g12.4),a,i0)') '  nox = Int( ', nzl(1),'/',rumax,') = ', nox
         WRITE(6,'(2(a,g12.4),a,i0)') '  noy = Int( ', nzl(2),'/',rumax,') = ', noy
         WRITE(6,'(2(a,g12.4),a,i0)') '  noz = Int( ', nzl(3),'/',rumax,') = ', noz
      END IF
-
+#endif
      IF (nox.LT.3) nox=3
      IF (noy.LT.3) noy=3
      IF (noz.LT.3) noz=3
