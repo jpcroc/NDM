@@ -528,6 +528,9 @@ subroutine controle
 !  write(6,* )'dmtype',dmtype
 
 
+
+     
+  
   select case (dmtype)
 
   case(2,10,8)

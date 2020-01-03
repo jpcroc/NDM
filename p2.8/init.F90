@@ -77,6 +77,13 @@ rang=rangph
      write(6,*)
   end if
 
+#ifdef LAMMPS_VERSION
+  firsttime_lammps=.true.
+  if ((ipotentiel==-10).or.(ipotentiel==-11))then
+     call init_potential_simple
+  else
+#endif  
+
   do ipotcont=0,npotmax
      if(lpotentiel(ipotcont).EQV..true.) then
         ipotentiel=ipotcont
@@ -153,6 +160,7 @@ rang=rangph
 
 #if(ML)
 ! MiLaDy
+!CROC To be replaced  by case(-20) ?? ??
          case(20)
            if (rang.eq.0) then
               write(6,*)
@@ -161,11 +169,17 @@ rang=rangph
            end if
            !This comes with MiLaDy package
            call md_init_potential_ml
+!CROC To be replaced  by init_potential_simple ??
 #endif
-   end select
+        end select
 
      endif
   end do
+
+#ifdef LAMMPS_VERSION
+endif
+#endif  
+
 !<---------end setting the potential---------------
 
 
@@ -191,6 +205,7 @@ rang=rangph
 
      temps_config_deb = MPI_Wtime()
 #endif
+!     write(6,*)'NNNNNNNNNNNNTYPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',ntyp
      call config
 #if(PARA)
      temps_config=MPI_Wtime()-temps_config_deb
@@ -208,6 +223,14 @@ rang=rangph
   !...inNEB
 !<---------ends etting the configuration by reading gin /  cin file ---------
 
+#ifdef LAMMPS_VERSION
+
+  if ((ipotentiel==-10).or.(ipotentiel==-11))then
+     firsttime_lammps=.true.
+     allocate (posa(3*im),  forca(3*im))
+     call read_lammps()
+  end if
+#endif  
 
 
   if (iterasmol>=0) then
@@ -316,7 +339,8 @@ rang=rangph
 !computing the neighbours for the very first time ......
 
 #if(ML)
-! MiLaDy
+  ! MiLaDy
+  !CROC To be replaced by -20 ?
   if(ipotentiel==20) then
    if (rang.eq.0) then
       write(6,*)
@@ -325,6 +349,7 @@ rang=rangph
    end if
    !This comes with MiLaDy Package
    call md_init_config_ml
+
   end if
 #endif
 
@@ -514,3 +539,43 @@ if (.not.lrestart) then
 
   return
 end subroutine init
+
+subroutine init_potential_simple
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m, ONLY: rang,A2cm
+  use var_pot, only: ntyp, npair, ntrip,cm,catom, ty,rue_pair,ipotentiel,q
+#ifdef PARA
+  use mpi
+#endif
+  implicit none
+  integer :: i,error, beggin,  endding,lupotin
+  character ::  fnampotin*80
+  real(double)::rue
+
+
+  fnampotin = 'simple.potin'
+  lupotin = 95
+  open(unit=lupotin, file=fnampotin, status='old')
+  read(lupotin,*)ntyp
+  npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
+  call  alloc_typ
+  read(lupotin,*) rue
+  rue=rue*A2cm
+  rue_pair(:)=rue
+  select case (ipotentiel)
+  case(-10)
+     do i = 1, ntyp
+        read (lupotin,*) cm(i),catom(i),ty(i)
+        if (rang/=0) cycle
+        write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
+     end do
+  case(-11)
+     do i = 1, ntyp
+        read (lupotin,*) cm(i),catom(i),ty(i),q(i)
+        if (rang/=0) cycle
+        write (6, '(I4,2F9.3,A5,F9.3)') i, cm(i),catom(i),ty(i),q(i)
+     end do
+
+  end select
+  close (lupotin)
+end subroutine init_potential_simple

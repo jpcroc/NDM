@@ -19,6 +19,11 @@ subroutine calfo
   use mod_mpi
 #endif
 
+#ifdef LAMMPS_VERSION
+
+#endif
+
+
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -34,8 +39,8 @@ subroutine calfo
   !-----------------------------------------------
   real(double), dimension(3) :: fptot
   integer :: i,ilocal,ipot,ic
-!  real(double)::vn,v1,f1,ekin
-!  integer::nv1,koo
+  !  real(double)::vn,v1,f1,ekin
+  !  integer::nv1,koo
   logical:: test_sigma
 
 #if(PARA)
@@ -47,6 +52,14 @@ subroutine calfo
 #endif
   !   if (rang==0) write(6,*) 'ldemintab',ldemitab
 
+  interface 
+
+     subroutine calcforce_lammps2
+     end subroutine calcforce_lammps2
+
+  end interface
+
+  
   potist=0.
   potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potisP=0.
   potisTersoff=0.; potiszbl=0
@@ -69,87 +82,109 @@ subroutine calfo
   jq=0.0 
   if (associated(eatom)) eatom(:)=0
 
-
-  do ipot=0,npotmax
-     if (lpotentiel(ipot).EQV..true.) then
-        ipotentiel=ipot
-        if(ipotentiel.lt.10) then
-           select case (ipotentiel)
-           case(0,1,3,4,5,6,7)
-              if (ltabvois) then
-                 call calfo2ctabvois (xp, vp,  fp, iwmax, ityp)
-              else
-                 call calfo2ccel 
-
-              endif
+#ifdef LAMMPS_VERSION
+  if ((ipotentiel==-10).or.(ipotentiel==-11)) then
+     do i=1,im
+        posa(i)=xp(1,i)/A2cm
+        posa(im+i)=xp(2,i)/A2cm
+        posa(2*im+i)=xp(3,i)/A2cm
+     end do
 
 
-              if (iewald.ge.1) call calfoew
+     boxl(1)=at(1,1)/A2cm
+     boxl(2)=at(2,2)/A2cm
+     boxl(3)=at(3,3)/A2cm
 
-              ! Potentiel total
-              potisP = potis0+potis1+potis2+potis3
-              potist=potist+potisP
+     call calcforce_lammps2
 
-           case(2)
-              ! !!! le cas parallele n'est pas pris en compte !!!
+  else
+#endif  
 
-              if (.not.parallele) call calfow(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
-           case default
-           end select
 
-           ! !!! le cas parallele n'est pas pris en compte !!!
-           if (.not.parallele.and.l3c) call calfo3c (xp,  vp,  fp, ielat, iwmax, ityp)
+     do ipot=0,npotmax
+        if (lpotentiel(ipot).EQV..true.) then
+           ipotentiel=ipot
+           if(ipotentiel.lt.10) then
+              select case (ipotentiel)
+              case(0,1,3,4,5,6,7)
+                 if (ltabvois) then
+                    call calfo2ctabvois (xp, vp,  fp, iwmax, ityp)
+                 else
+                    call calfo2ccel 
 
-           ! !!! le cas parallele n'est pas pris en compte !!!
-           !potentiels EAM
-        else
-           select case (ipotentiel)
-           case(12)
-              ! !!! le cas parallele n'est pas pris en compte !!!
-              if (ltabvois) then 
-                 call calfojuli(xp,  vp, fp, ielat, iwmax, ityp)
-              else
-                 call calfojulicel
-              end if
-           case(13,14,15)
-              if (ltabvois) then
+                 endif
+
+
+                 if (iewald.ge.1) call calfoew
+
+                 ! Potentiel total
+                 potisP = potis0+potis1+potis2+potis3
+                 potist=potist+potisP
+
+              case(2)
                  ! !!! le cas parallele n'est pas pris en compte !!!
-                 if (.not.parallele) call force_tersoff (xp,  vp, fp, iwmax, ityp)
-              else
-                 call force_tersoff_cel
-              endif
-              potist=potist+potisTersoff+potiszbl
-           case (10,11)
-              if (ltabvois) then
+
+                 if (.not.parallele) call calfow(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+
+              case default
+              end select
+
+              ! !!! le cas parallele n'est pas pris en compte !!!
+              if (.not.parallele.and.l3c) call calfo3c (xp,  vp,  fp, ielat, iwmax, ityp)
+
+              ! !!! le cas parallele n'est pas pris en compte !!!
+              !potentiels EAM
+           else
+              select case (ipotentiel)
+              case(12)
                  ! !!! le cas parallele n'est pas pris en compte !!!
-                 if (.not.parallele) then
-                    IF(ldecal_bc.EQV..FALSE.) THEN
-                       !write(*,*) 'NDM eam calfo1', xp(1,1)
-                       call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
-                       !write(*,*) 'NDM eam calfo2', fp(1,1), maxval(fp)
-                    ELSE IF (ldecal_bc.EQV..TRUE.) THEN !*!
-                       call calfo_decalage(xp,  vp,  fp, ielat, iwmax, ityp)
-                    END IF
-		 end if
-              else
-                 call calfoeamcel
-              endif
-              potist=potist+potiseam
+                 if (ltabvois) then 
+                    call calfojuli(xp,  vp, fp, ielat, iwmax, ityp)
+                 else
+                    call calfojulicel
+                 end if
+              case(13,14,15)
+                 if (ltabvois) then
+                    ! !!! le cas parallele n'est pas pris en compte !!!
+                    if (.not.parallele) call force_tersoff (xp,  vp, fp, iwmax, ityp)
+                 else
+                    call force_tersoff_cel
+                 endif
+                 potist=potist+potisTersoff+potiszbl
+              case (10,11)
+                 if (ltabvois) then
+                    ! !!! le cas parallele n'est pas pris en compte !!!
+                    if (.not.parallele) then
+                       IF(ldecal_bc.EQV..FALSE.) THEN
+                          !write(*,*) 'NDM eam calfo1', xp(1,1)
+                          call calfoeamtabvois(xp,  vp,  fp, ielat, iwmax, ityp)
+                          !write(*,*) 'NDM eam calfo2', fp(1,1), maxval(fp)
+                       ELSE IF (ldecal_bc.EQV..TRUE.) THEN !*!
+                          call calfo_decalage(xp,  vp,  fp, ielat, iwmax, ityp)
+                       END IF
+                    end if
+                 else
+                    call calfoeamcel
+                 endif
+                 potist=potist+potiseam
 #if(ML)
-           case (20)
-                !write(*,*) 'NDM ml calfo1', xp(1,1)
-              call md_calfo_ml
-                !write(*,*) 'NDM ml calfo2', xp(1,1), fp(1,1)
-                !stop 'ndm'
+              case (20)
+                 !write(*,*) 'NDM ml calfo1', xp(1,1)
+                 call md_calfo_ml
+                 !write(*,*) 'NDM ml calfo2', xp(1,1), fp(1,1)
+                 !stop 'ndm'
 #endif          
-           end select
+              end select
+           end if
         end if
-     end if
-  end do
+     end do
+
+#ifdef LAMMPS_VERSION
+  endif
+#endif  
 
   ! !!! le cas parallele n'est pas pris en compte !!!
-
   if (lTberendsen) call calfoberend(xp,vp,fp,ityp)
 
 

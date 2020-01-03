@@ -9,14 +9,16 @@ subroutine bruit_xp
   !   M o d u l e s
   !-----------------------------------------------
  implicit none
-   integer    :: ia, ip
-   integer, dimension(2) :: iseedt
+   integer    :: ia, ip,seed_size
+   integer, dimension(:),allocatable :: iseedt
    real(double)  :: zr1,zr2,zr3,zr4,totalbruit
- 
+
+   call random_seed(size=seed_size)
+   allocate(iseedt(seed_size))
   call system_clock (iseed)
-   iseedt(1)=iseed
+   iseedt(:)=iseed
  
-  call random_seed(iseedt(1))
+  call random_seed(put=iseedt)
  totalbruit=0.d0
  bruitmd(1:3,1:im)=0.d0
   do ia=1,im
@@ -178,18 +180,31 @@ subroutine bruit_xp
           if (rang==0) write (6, *) 'random velocities at TINIT = ', tinit, &
                'K'
 
-          if (iseed==0)  iseed=1
+!          if (iseed==0)  iseed=1
 
+
+!  call system_clock (iseed)
+!   iseedt(1)=iseed
+ 
+ ! call random_seed(iseedt(1))
+          
           call random_seed(size=seed_size)
+          write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
-          iseedt = 0
+!          iseedt = 0
 
 
-          !        if (iseed==0)  call system_clock (iseed) 
+          if (iseed==0)  then
+                call system_clock (iseed)
+                write(6,*)'iseed pour tirage des vitesses',iseed
+                iseedt(:)=iseed
 
-          !        write(6,*)''proc', myid, iseed pour tirage des vitesses',iseed
+          else
+             write(6,*)'iseed pour tirage des vitesses',iseed
+             iseedt(:)=iseed
+          end if
 
-          iseedt(1)=iseed
+!          iseedt(1)=iseed
           call    random_seed (put=iseedt)
           deallocate(iseedt)
 
@@ -206,7 +221,7 @@ subroutine bruit_xp
              if(z2.eq.0.d0) z2=0.000000001d0
              if(z3.eq.0.d0) z3=0.000000001d0
              if(z4.eq.0.d0) z4=0.000000001d0
-
+!             write(6,*)z1,z2,z3,z4
 !             est_local=0
              !	   do i=1,im
              !	     if (num_at_glob(i)==i_glob) then
@@ -234,7 +249,10 @@ subroutine bruit_xp
 
 
 !             endif
-          end do
+             end do
+!             write (6,*)'VVVVAAAAAAAAAAAAPPPPPPPPPP ',vp(1,1),vp(2,1),vp(3,1)
+
+             
           tempsauv=tempinst(vp,ityp)
           if (rang==0) write(6,*)'temperature MI initspeed ',tempsauv
           kinx(:)=0.d0
@@ -462,7 +480,7 @@ subroutine bruit_xp
        if (lperiod.EQV..true.) call period
     end if
 
-
+!    write (6,*)'VVVVPPPPPPPPPP ',vp(1,1),vp(2,1),vp(3,1)
     return
 
 

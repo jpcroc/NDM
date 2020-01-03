@@ -801,5 +801,7 @@ subroutine analyse
      end if
   end if
 
+  if (lmodecalc.eqv..true.) call modecalc
+
   return
 end subroutine analyse

@@ -35,11 +35,11 @@ subroutine readdm
   !
   !
 
-  namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
+  namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, nmaxdepla,lfilm, &
        tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
        tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, itespebcout,  &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
-       lrestart, lPathFromGin, tgc, ltabvois, rvois, ltpcel, nox, noy, noz, imm, dfpred, &
+       lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
        ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
        iteangle, ipotentiel, lpotentiel, itesauvposition, itesauvforce, lfilmext, tdepla2, &
        lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
@@ -56,7 +56,7 @@ subroutine readdm
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
        tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-       itesauvinter
+       itesauvinter,units_lammps,lmodecalc
 
 
   !
@@ -112,6 +112,7 @@ subroutine readdm
   ltabvois = .FALSE.          ! methode de la table des voisins
   lconstrtot=.FALSE.           !!construction de la table des voisins T=double boucle F=via cel.
   rvois = 0.0                 ! rayon de la table des voisins
+  rskin=0.4
   ltpcel = .FALSE.            ! output of temperature and stress in each cell
   lforcetabulate = .FALSE.    ! The derivative of the energy is NOT tabulated. TRUE if it is.
 
@@ -157,7 +158,7 @@ subroutine readdm
   iteTconst =itetemp
   lalea = .FALSE.             ! structure initiale aleatoire
   rsep = 1.0               !Distance de separation pour le tirage aleatoire
-  ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW �πｴﾎｵ縺､� la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original) ; 11 Ercollesi
+  ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW �πｴﾎｵ縺､� la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original) ; 11 Ercollesi ;; -10=LAMMPS atom style atomic; -11 LAMMPS atom style charge (changes only simple.potin)
   npotentiel = 1              ! nb de potentiels
   lpotentiel(:)=.false.
   ntyp=-1                    ! le nombre de type DOIT etre specifie si le nombre de potentiel est superieur �πｴﾎｵ縺､� 1
@@ -192,6 +193,7 @@ subroutine readdm
   itedepla = -100              !period of displacement cal.
   tdepla = 1.0                !threshold for displacement
   tdepla2 = -1.0              !second seuil pour calcul des atomes deplaces
+  nmaxdepla=-1                !si >0 stop si nb de depla >=nmaxdepla
   lfilm = .FALSE.             !film making of displaced atoms
   lfilmext = .FALSE.          !film par iteration des atomes deplaces
   itecoordo = -100             !period of coordination calculation
@@ -332,6 +334,10 @@ subroutine readdm
   depmaxts=0.02
   tsmin=2.0
 
+  units_lammps='metal'
+
+  lmodecalc=.false.
+  
  if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
   open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -1353,8 +1359,28 @@ subroutine readdm
      end if
   end if
 
-
-
+#ifdef LAMMPS_VERSION
+  if(trim(units_lammps)=='metal') then
+     energy_conversion_lammps=1/erg2ev
+     position_conversion_lammps=A2cm
+  elseif(trim(units_lammps)=='real') then
+     energy_conversion_lammps=0.043/erg2ev
+     position_conversion_lammps=A2cm
+  elseif(trim(units_lammps)=='si') then
+     energy_conversion_lammps=1e7
+     position_conversion_lammps=1d2
+  elseif(trim(units_lammps)=='cgs') then
+     energy_conversion_lammps=1
+     position_conversion_lammps=1
+  elseif(trim(units_lammps)=='electron') then
+     energy_conversion_lammps=27.211399/erg2ev
+     position_conversion_lammps=A2cm*0.529177249
+  else 
+     write(6,*)'error in units_lammps'
+     stop
+  end if
+#endif     
+     
   return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
 end subroutine readdm

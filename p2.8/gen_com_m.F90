@@ -121,8 +121,9 @@ module gen_com_m
   real(double) :: oldtstep  
   real(double) :: tstep, usdh, timel  
   integer :: itetemp, itesigma, itedepla, itecoordo, iterdf, nrdf, & 
-       iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc,itecfg
+       iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc,itecfg,nmaxdepla
   integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codﾃｩ, ivisu=2=xred
+  logical::lmodecalc ! calcule les projections des trajectoires sur des modes de phonons lus par ailleiurs
   real(double)::rcangle,rcrdf
 
   real(double), dimension(3,3) :: sig ! contrainte
@@ -203,6 +204,7 @@ module gen_com_m
   integer, pointer,dimension(:) :: indi ! table des voisins
   integer, pointer, dimension(:) :: indi2 ! table de voision pour les constantes de force
   real(double) :: rvois ! rayon de la table des voisins
+  real(double)::rskin ! épaisseur pour lammps (equivalent rvois-rue)
   logical :: ltabvois      ! table des voisins ?
   logical :: lconstrtot ! construction par double boucle (T) ou par cel (F)
   logical :: ldemitab ! construction d'une demi-table (T) ou d'une table complete (F)
@@ -362,5 +364,15 @@ module gen_com_m
 
   logical :: l2T
  real(double), dimension (:),allocatable ::elossCel
+ character (len=15):: units_lammps
+
+#ifdef LAMMPS_VERSION
+
+ logical ::  firsttime_lammps
+ real(8) :: energy_conversion_lammps,  position_conversion_lammps
+ real(kind=8) , allocatable, dimension(:)  ::  posa, forca
+ real(kind=8) , allocatable, dimension(:)  ::  cm_phondy, cm_phondy_at
+ real(8)               :: energy, boxl(3),energy_conversion_lammps2ndm,position_conversion_lammps2ndm
+#endif
 
 end module gen_com_m

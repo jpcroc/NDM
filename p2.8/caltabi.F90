@@ -55,7 +55,7 @@ subroutine caltabi
      rvois2(2)=(3.5d-8)**2
      rvois2(3)=(2.8d-8)**2
   else
-     rvois2(:)=rvois**2
+     rvois2(:)=rvois**2 
   end if
 
   nvij=0
@@ -121,10 +121,8 @@ subroutine caltabi
            END IF
 
            indi(iw) = j
-           indi2(iw) = j
         end do
         iwmax(i) = iw
-        iwmax2(i) = iw
         nvij=iw-iwo
 
      end do   ! im 
@@ -195,7 +193,7 @@ subroutine caltabi
         end if 
 
         !         write(449,*)'NVIJ',i,nvij,iw       
-       !debug write(*,*) 'caltaabi calling', i, iwmax(i), iwmax2(i), rvois2(:)
+
      end do ! fin i
      maxvoi=iw
 
@@ -209,3 +207,4 @@ subroutine caltabi
   DEALLOCATE (xpnp)  
   return
 end subroutine caltabi
+

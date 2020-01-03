@@ -74,7 +74,7 @@ subroutine caltabt
         kx = int(aux)
         ky = int(auy)
         kz = int(auz)
-        !write(*,*) i, nox,noy,noz, kx,ky,kz
+
         kx = Modulo(kx,nox)
         ky = Modulo(ky,noy)
         kz = Modulo(kz,noz)

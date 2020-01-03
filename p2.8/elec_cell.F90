@@ -207,7 +207,8 @@ contains
         do ix=1,nex
           do iy=1,ney
              do iz=1,nez
-                write(744,'(3I5,3G15.5,2F15.5,L3)')ix,iy,iz,xb(ix,iy,iz,1)*1d8,xb(ix,iy,iz,2)*1d8,xb(ix,iy,iz,3)*1d8,ecell(ix,iy,iz)%temp,ecell(ix,iy,iz)%tempion,ecell(ix,iy,iz)%lionovlp
+                write(744,'(3I5,3G15.5,2F15.5,L3)')ix,iy,iz,xb(ix,iy,iz,1)*1d8,xb(ix,iy,iz,2)*1d8,&
+                     &xb(ix,iy,iz,3)*1d8,ecell(ix,iy,iz)%temp,ecell(ix,iy,iz)%tempion,ecell(ix,iy,iz)%lionovlp
              end do
           end do
        end do

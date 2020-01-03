@@ -1,7 +1,7 @@
 subroutine config
-!********************************************************************
-!             CONSTRUCTION DE LA BOITE DE SIMULATION
-!********************************************************************
+  !******************************************************************
+  !             CONSTRUCTION DE LA BOITE DE SIMULATION
+  !********************************************************************
 
   !-----------------------------------------------
   !   M o d u l e s
@@ -124,50 +124,50 @@ subroutine config
            call arret_ndm
         endif
         !at(vect123,xyz)
-!        if (icintype>=2) then
-           read (lucin, err=456) at
-           if(dilat(1).ne.0.0)then
-              do i=1,3
-                 at(i,:)=at(i,:)*dilat(i)
-              end do
-           end if
-           call recips (at(1,1), at(1,2), at(1,3), bg(1,1), bg(1,2), bg(1,3))
-           do ic = 1, 3
-              normat(ic) = 0
-              normat(ic) = normat(ic)+sum(at(:,ic)**2)
-              normat(ic) = sqrt(normat(ic))
-              zl(ic) = normat(ic)
-              normat(ic)=0
-              normat(ic)=sqrt(sum(bg(:,ic)**2))
-              nzl(ic)=1.0/normat(ic)
-              !              if(rang==0)write(6,*)'nzl',nzl(ic)*1d8           
-
-
+        !        if (icintype>=2) then
+        read (lucin, err=456) at
+        if(dilat(1).ne.0.0)then
+           do i=1,3
+              at(i,:)=at(i,:)*dilat(i)
            end do
-           !                    write(6,*)at
-           zls2 = zl/2.0
+        end if
+        call recips (at(1,1), at(1,2), at(1,3), bg(1,1), bg(1,2), bg(1,3))
+        do ic = 1, 3
+           normat(ic) = 0
+           normat(ic) = normat(ic)+sum(at(:,ic)**2)
+           normat(ic) = sqrt(normat(ic))
+           zl(ic) = normat(ic)
+           normat(ic)=0
+           normat(ic)=sqrt(sum(bg(:,ic)**2))
+           nzl(ic)=1.0/normat(ic)
+           !              if(rang==0)write(6,*)'nzl',nzl(ic)*1d8           
 
-!        else
-!           read (lucin, err=456) zl                      !size of the box
-!           if(dilat(1).ne.0.0)then
-!              zl(:)=zl(:)*dilat(:)
-!           end if
-!           if (rang==0) write (6, *) 'zl ', zl
-!           at(1,1)=zl(1)
-!           at(2,2)=zl(2)
-!           at(3,3)=zl(3)
-!           at(1,2)=zero
-!           at(1,3)=zero
-!           at(2,1)=zero
-!           at(2,3)=zero
-!           at(3,1)=zero
-!           at(3,2)=zero
-!           call recips (at(1,1), at(1,2), at(1,3), bg(1,1), bg(1,2), bg(1,3))
-!           nzl(:)=zl(:)
-!
-!           zls2 = zl/2.0
-!
-!        endif                                   !icintype=2
+
+        end do
+        !                    write(6,*)at
+        zls2 = zl/2.0
+
+        !        else
+        !           read (lucin, err=456) zl                      !size of the box
+        !           if(dilat(1).ne.0.0)then
+        !              zl(:)=zl(:)*dilat(:)
+        !           end if
+        !           if (rang==0) write (6, *) 'zl ', zl
+        !           at(1,1)=zl(1)
+        !           at(2,2)=zl(2)
+        !           at(3,3)=zl(3)
+        !           at(1,2)=zero
+        !           at(1,3)=zero
+        !           at(2,1)=zero
+        !           at(2,3)=zero
+        !           at(3,1)=zero
+        !           at(3,2)=zero
+        !           call recips (at(1,1), at(1,2), at(1,3), bg(1,1), bg(1,2), bg(1,3))
+        !           nzl(:)=zl(:)
+        !
+        !           zls2 = zl/2.0
+        !
+        !        endif                                   !icintype=2
 
 	! Il est important de conserver rumax et alpha identique a
  	! chaque appel a la routine divid, on sauvegarde donc la valeur
@@ -419,8 +419,6 @@ subroutine config
 
      close (lucin)
 
-
-
 #if(PARA)
      deallocate(num_at_buff)
 #endif
@@ -495,14 +493,14 @@ subroutine config
 
 #if(DECOUP)
 	open(123, file='decoup.dat', status='old')
-	   read (123, *) nprocs,ncore
+        read (123, *) nprocs,ncore
 	close(123)
 #endif
 #if(DECOUP)||(PARA)
- 	   call  decoupage(nprocs,ncore)
+        call  decoupage(nprocs,ncore)
 #endif
 #if(DECOUP)
- ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation
+        ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation
 	return	
 #endif
         if (rang==0)	write (6,*) ' Lecture imcell' 
@@ -677,7 +675,7 @@ subroutine config
         close(123)
 #endif
 #if(DECOUP)||(PARA)
- 	   call  decoupage(nprocs,ncore)
+        call  decoupage(nprocs,ncore)
 #endif
 #if(DECOUP)
         ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation
@@ -720,7 +718,7 @@ subroutine config
         a2=-dsign(zl(2),x2)
         a3=-dsign(zl(3),x3)
         npoin=1
-        do 198 j=1,i-1
+        do  j=1,i-1
            if (npoin.eq.0) goto 198
            c1=x1-xp(1,j)
            c2=x2-xp(2,j)
@@ -733,122 +731,211 @@ subroutine config
               npoin=0
            endif
 198        continue
-           if (npoin.eq.1) then
-              i=i+1
-              xp(1,i)=x1
-              xp(2,i)=x2
-              xp(3,i)=x3
-              do while (i.gt.natyp)
-                 typ=typ+1
-                 natyp=natyp+na(typ)
-              end do
-              ityp(i)=typ
-           endif
-           if (i.ne.im) goto 197
-
-           !            fv(:im,:ntyp) = 0
-
-           !            do j = 1, ntyp
-           !               where (ityp(:im)==j) fv(:im,j) = 1
-           !            end do
-
-           !            do j = 1, ntyp
-           !               na(j) = na(j)+sum(fv(:im,j))
-           !            end do
-
-           do i=1,im
-              na(ityp(i))=na(ityp(i))+1
-           enddo
-
-           ax(:,:im) = xp(:,:im)
-           if(lsuivinonpbc) axnonpbc(:,:) = ax(:,:)
-
-        endif      !Fin du if general pour  lalea
-
-        ! fin de la construction du cristal
-
-        close(lugin)
-
-     endif
-
-     ! ----------------------------------------------------------
-     !  CONDITIONS PERIODIQUES : REMETTRE LES ATOMES DANS BOITE
-     ! ----------------------------------------------------------
-
-
-     if (lperiod.EQV..true.) call period
-
-     ! SUMMARY
-
-     if (rang==0) then
-
-        write(6,*)
-        write (6, *) '-------- boite de simulation ------'
-        write (6, *) 'nombre d atomes =', im_glob
-        !      write(6,*)'taille de la boite ZL ', zl(1),zl(2),zl(3)
-        write (6, '(A,3F11.4)') 'taille de la boite ZL ', 1D+08*zl(1), 1D+08*&
-             zl(2), 1D+08*zl(3)
-        do i=1,3
-           write(6,'(A,I2,3F15.6)')'vecteur ',i, (at(ic,i)*1.0d8,ic=1,3)
         end do
-        do iti = 1, ntyp
-           if (na(iti)==0) cycle
-           write (6, *) na(iti), ' atomes de type', iti
-        end do
-        !           write (6, *) '----------------------------------'
+        if (npoin.eq.1) then
+           i=i+1
+           xp(1,i)=x1
+           xp(2,i)=x2
+           xp(3,i)=x3
+           do while (i.gt.natyp)
+              typ=typ+1
+              natyp=natyp+na(typ)
+           end do
+           ityp(i)=typ
+        endif
+        if (i.ne.im) goto 197
 
-        !      write(6,*)'sortie de config.f'
+        !            fv(:im,:ntyp) = 0
 
-     endif                                  ! fin rang=0
+        !            do j = 1, ntyp
+        !               where (ityp(:im)==j) fv(:im,j) = 1
+        !            end do
 
-     if (llangevin.eqv..true.) then
-        allocate(Gl(3,imm))
-     end if
-     deallocate (ibuffer)
-     deallocate (buffer)
+        !            do j = 1, ntyp
+        !               na(j) = na(j)+sum(fv(:im,j))
+        !            end do
+
+        do i=1,im
+           na(ityp(i))=na(ityp(i))+1
+        enddo
+
+        ax(:,:im) = xp(:,:im)
+        if(lsuivinonpbc) axnonpbc(:,:) = ax(:,:)
+
+     endif      !Fin du if general pour  lalea
+
+     ! fin de la construction du cristal
+
+     close(lugin)
+
+  endif
+
+  ! ----------------------------------------------------------
+  !  CONDITIONS PERIODIQUES : REMETTRE LES ATOMES DANS BOITE
+  ! ----------------------------------------------------------
+
+
+  if (lperiod.EQV..true.) call period
+
+  ! SUMMARY
+
+#ifdef LAMMPS_VERSION
+
+  if((ipotentiel==-10).or.(ipotentiel==-11)) then
+     write(6,*)'write configuration to conf.lmp'
+     call config2data (imm,im,xp,ityp,at,ntyp)
+  end if
+#endif     
+  if (rang==0) then
+
      write(6,*)
+     write (6, *) '-------- boite de simulation ------'
+     write (6, *) 'nombre d atomes =', im_glob
+     !      write(6,*)'taille de la boite ZL ', zl(1),zl(2),zl(3)
+     write (6, '(A,3F11.4)') 'taille de la boite ZL ', 1D+08*zl(1), 1D+08*&
+          zl(2), 1D+08*zl(3)
+     do i=1,3
+        write(6,'(A,I2,3F15.6)')'vecteur ',i, (at(ic,i)*1.0d8,ic=1,3)
+     end do
+     do iti = 1, ntyp
+        if (na(iti)==0) cycle
+        write (6, *) na(iti), ' atomes de type', iti
+     end do
+     !           write (6, *) '----------------------------------'
 
-     return
+     !      write(6,*)'sortie de config.f'
 
-456  print *,'Erreur dans la lecture du fichier .cin, verifier son format&
-          & et fmt_cin ATTENTION A BIG_ENDIAN !! SI COMMPILE BIG_ENDIAN NE LIT PLUS QUE CA'
+  endif                                  ! fin rang=0
 
+  if (llangevin.eqv..true.) then
+     allocate(Gl(3,imm))
+  end if
+  deallocate (ibuffer)
+  deallocate (buffer)
+  write(6,*)
 
-   end subroutine config
+  return
 
-   subroutine  coord_to_cellcoord(coordx,coordy,coordz,cellx,celly,cellz)
-     !-----------------------------------------------
-     !   M o d u l e s
-     !-----------------------------------------------
-     USE T_kind_param_m, ONLY:  double
-     use gen_com_m
-
-     implicit none
-
-     real(double) :: coordx,coordy,coordz
-     integer      :: cellx,celly,cellz
-
-     real(double), dimension(3,1) :: coord_tab
-     real(double) :: aux, auy, auz
-
-
-
-     coord_tab(1,1)=coordx
-     coord_tab(2,1)=coordy
-     coord_tab(3,1)=coordz
-
-     aux = coord_tab(1,1)*nox
-     auy = coord_tab(2,1)*noy
-     auz = coord_tab(3,1)*noz
-     cellx = int(aux)+1
-     celly = int(auy)+1
-     cellz = int(auz)+1
+456 print *,'Erreur dans la lecture du fichier .cin, verifier son format&
+       & et fmt_cin ATTENTION A BIG_ENDIAN !! SI COMMPILE BIG_ENDIAN NE LIT PLUS QUE CA'
 
 
+end subroutine config
+
+subroutine  coord_to_cellcoord(coordx,coordy,coordz,cellx,celly,cellz)
+  !-----------------------------------------------
+  !   M o d u l e s
+  !-----------------------------------------------
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+
+  implicit none
+
+  real(double) :: coordx,coordy,coordz
+  integer      :: cellx,celly,cellz
+
+  real(double), dimension(3,1) :: coord_tab
+  real(double) :: aux, auy, auz
 
 
 
+  coord_tab(1,1)=coordx
+  coord_tab(2,1)=coordy
+  coord_tab(3,1)=coordz
+
+  aux = coord_tab(1,1)*nox
+  auy = coord_tab(2,1)*noy
+  auz = coord_tab(3,1)*noz
+  cellx = int(aux)+1
+  celly = int(auy)+1
+  cellz = int(auz)+1
+
+  return
+end subroutine coord_to_cellcoord
 
 
-     return
-   end subroutine coord_to_cellcoord
+#ifdef LAMMPS_VERSION
+
+subroutine config2data (imm,im,xp,ityp,at,ntyp)
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m,only : position_conversion_lammps
+  use var_pot, only:q,ipotentiel
+  integer,intent(in)::imm,im,ntyp
+  real(double),intent(in)::xp(3,imm),at(3,3)
+  integer,intent(in)::ityp(imm)
+
+  real(double)::xhi,yhi,zhi,xy,xz,yz
+
+  if ((at(2,1).ne.0).or.(at(3,1).ne.0).or.(at(3,2).ne.0))then
+     write(6,*)
+     write(6,*)
+     write(6,*)
+     write(6,*)'LAMMPS BOX BUILT FROM NDM'
+     write(6,*)'ASSUMES NDM BOX IS SHAPED LIKE SUPPOSED FOR LAMMPS'
+     write(6,*)
+     write(6,*)
+     write(6,*)
+     stop
+  endif
+
+  open(63,file='conf.lmp',status='unknown')
+  write(63,*)
+
+
+  xhi=at(1,1)/position_conversion_lammps
+  yhi=dsqrt(at(1,2)**2+at(2,2)**2)/position_conversion_lammps
+  zhi=dsqrt(at(1,3)**2+at(2,3)**2+at(3,3)**2)/position_conversion_lammps
+  xz=at(1,1)*at(1,3)/(xhi*zhi*position_conversion_lammps*position_conversion_lammps)
+  xy=at(1,1)*at(1,2)/(xhi*yhi*position_conversion_lammps*position_conversion_lammps)
+  yz=(at(1,2)*at(1,3)+at(2,2)*at(2,3))/(yhi*zhi*position_conversion_lammps*position_conversion_lammps)
+
+  if(IM.lt.10)then
+     write(63,"(I1,A)") IM,' atoms'
+  elseif((IM.lt.100).and.(IM.gt.10))then
+     write(63,"(I2,A)") IM,' atoms'
+  elseif((IM.lt.1000).and.(IM.gt.100))then
+     write(63,"(I3,A)") IM,' atoms' 
+  elseif((IM.lt.10000).and.(IM.gt.1000))then
+     write(63,"(I4,A)") IM,' atoms'       
+  elseif((IM.lt.100000).and.(IM.gt.10000))then
+     write(63,"(I5,A)") IM,' atoms'         
+  elseif((IM.lt.1000000).and.(IM.gt.100000))then
+     write(63,"(I6,A)") IM,' atoms'         
+  elseif((IM.lt.10000000).and.(IM.gt.1000000))then
+     write(63,"(I7,A)") IM,' atoms'        
+  elseif((IM.lt.100000000).and.(IM.gt.10000000))then
+     write(63,"(I8,A)") IM,' atoms'         
+  else 
+     stop 'ADD FORMAT'
+  endif
+
+
+  write(63,"(I1,A)") ntyp, ' atom types' 
+  write(63,*) 
+  write(63,"(F23.16,F24.16,A10)") 0.0000000000000000,&
+  & xhi,'xlo xhi'
+  write(63,"(F23.16,F24.16,A10)") 0.0000000000000000,&
+  & yhi,'ylo yhi'
+  write(63,"(F23.16,F24.16,A10)") 0.0000000000000000,&
+  & zhi,'zlo zhi'
+  write(63,"(F23.16,F24.16,F24.16,A11)") xy,xz,yz,'xy xz yz'
+  write(63,*)
+  write(63,"(A)")'Atoms'
+  write(63,*)
+  select case (ipotentiel)
+  case(-10)
+     do i=1,im
+        write(63,"(I8,I6,F21.12,F20.12,F20.12)") i,ityp(i),&
+             & xp(1,i)/position_conversion_lammps,xp(2,i)/position_conversion_lammps,xp(3,i)/position_conversion_lammps
+     end do
+  case(-11)
+     do i=1,im
+        write(63,"(I8,I6,F20.12,F20.12,F20.12,F20.12)") i,ityp(i),&
+             & q(ityp(i)), xp(1,i)/position_conversion_lammps,xp(2,i)/position_conversion_lammps,xp(3,i)/position_conversion_lammps
+     end do
+  end select
+     close (63)
+end subroutine config2data
+
+
+#endif

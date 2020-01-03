@@ -74,7 +74,7 @@ subroutine dyn
              end do
           end do
    !debug write(*,*) 'md_test2',  xp(1,1), xpp(1,1), vp(1,1)
-
+!  write(101,'(I4,6G20.12)')it,1d8*xp(1,1168),1d8*xp(2,1168),1d8*xp(3,1168),1d8*vp(1,1168),1d8*vp(2,1168),1d8*vp(3,1168)
   if (lcalcjq) then
      eatommoy=0.
      jqp=jq ; jqk=0.0 !; expvect(:)=0.0
