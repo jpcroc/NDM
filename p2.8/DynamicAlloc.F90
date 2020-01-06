@@ -53,15 +53,28 @@ subroutine Deallocatecel
   use gen_com_m
   use var_pot,only : iewald
   implicit none
-  deallocate(ncel)
-  deallocate(nato)
-  deallocate(last)
-  deallocate(deltadist)
-  if(associated(sigc))deallocate(sigc)
+  if(associated(ncel))      deallocate(ncel)
+  if(associated(nato))      deallocate(nato)
+  if(associated(last))      deallocate(last)
+  if(associated(deltadist)) deallocate(deltadist)
+  if(associated(sigc))      deallocate(sigc)
   if (iewald.ge.1) then
-     deallocate (tabv3)
-     deallocate (tabf3)
+          if (associated(tabv3)) deallocate (tabv3)
+          if (associated(tabf3)) deallocate (tabf3)
   end if
+
+   !deallocate(ncel)
+   !deallocate(nato)
+   !deallocate(last)
+   !deallocate(deltadist)
+   if(associated(sigc))deallocate(sigc)
+  if (iewald.ge.1) then
+   deallocate (tabv3)
+   deallocate (tabf3)
+  end if
+
+
+
 
 end subroutine Deallocatecel
 
