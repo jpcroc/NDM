@@ -542,7 +542,7 @@ end subroutine init
 
 subroutine init_potential_simple
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m, ONLY: rang,A2cm
+  use gen_com_m, ONLY: rang,A2cm,umass
   use var_pot, only: ntyp, npair, ntrip,cm,catom, ty,rue_pair,ipotentiel,q
 #ifdef PARA
   use mpi
@@ -577,5 +577,7 @@ subroutine init_potential_simple
      end do
 
   end select
+  cm(:ntyp) = cm(:ntyp)*umass
+
   close (lupotin)
 end subroutine init_potential_simple

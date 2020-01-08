@@ -155,7 +155,7 @@ c     enddo
                enddo
             enddo
             do i=1,im
-               write(18,'(3F12.6,I6)')xp(1,i),xp(2,i),xp(3,i),ityp(i) !coordonnes reduites des
+               write(18,'(3F18.11,I6)')xp(1,i),xp(2,i),xp(3,i),ityp(i) !coordonnes reduites des
             enddo
          else
             write(6,*)'PAS triclin'
@@ -170,7 +170,7 @@ c     enddo
                do ic=1,3 
                   xp(ic,i)=xp(ic,i)*1.0d8/zl(ic) +0.5
                enddo
-               write(18,'(3F13.7,I2)')xp(1,i),xp(2,i),xp(3,i),ityp(i) !positions of atoms in UC (orthonormal coordinates assumed)
+               write(18,'(3F17.11,I2)')xp(1,i),xp(2,i),xp(3,i),ityp(i) !positions of atoms in UC (orthonormal coordinates assumed)
             enddo
          endif
       case(2)

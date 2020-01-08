@@ -50,7 +50,7 @@ subroutine deftimestep
   ! egaux a 2.0 ou 5.0 ou 10 * 10 **-qqch
 
       depmaxts2=depmaxts*1.125
-  if (it.le.2) return
+!  if (it.le.2) return
   vmax2 = 0.0
   imax = 0
   vpmod2(:im) = vp(1,:im)**2+vp(2,:im)**2+vp(3,:im)**2
@@ -80,12 +80,14 @@ tmaxv=0
   vmax = sqrt(vmax2)
   if (vmax==0)return
 
-  if (rang==0) then
-     write (6, '(A,I5,A,D14.5)') '*****  ITERATION  = ', it, '  time = ', &
-          timel
-     write (6, *) 'Vitesse maximale sur I=', it, imax, vmax, tmaxv
-  endif                                      ! fin rang=0
-
+  if (itetimestep.ne.1) then
+     if (rang==0) then
+        write (6, '(A,I5,A,D14.5)') '*****  ITERATION  = ', it, '  time = ', &
+             timel
+        write (6, *) 'Vitesse maximale sur I=', it, imax, vmax, tmaxv
+     endif                                      ! fin rang=0
+  end if
+  if (vmax==0)return
   if (lcasca) then
 #if PARA
   ikoloc=0
@@ -164,7 +166,7 @@ endif
 
      else                                       ! cad si tstep >= 2.10-15s
         tstep = oldtstep
-        if (rang==0) write (6, *) 'tstep maintenu'
+        if (rang==0) write (6, *) 'tstep maintenu',tstep
      endif
 
   end if
@@ -198,25 +200,28 @@ endif
   end if
 
   if (dmtype==2) then
-     if (tstep.ne.oldtstep) then
-        if (rang==0) then
-           write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
-           write (6, *) ' iteration ', it, 'ancien pas en temps', oldtstep
-           write (6, *) 'nouveau tstep ', tstep
-        endif                                ! rang=0
-        usdh = 1/(two*tstep)
-        if (it==0) then
-           fp(:,:im) = 0.D0
+     if (tstep<=tsmin.and.(tv1.lt.depmaxts.OR.&
+          tv1.gt.depmaxts2)) then
+        if (tstep.ne.oldtstep) then
+           if (rang==0) then
+              write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
+              write (6, *) ' iteration ', it, 'ancien pas en temps', oldtstep
+              write (6, *) 'nouveau tstep ', tstep
+           endif                                ! rang=0
+           usdh = 1/(two*tstep)
+           if (it==0) then
+              fp(:,:im) = 0.D0
+           endif
+           do i = 1, im
+              xp(:,i) = xpp(:,i)+tstep*vp(:,i)+tstep**2/cm(ityp(i))/two*fp(:,i)
+           end do
+           if (lperiod) call period
+           
+        else                                       ! cad si tstep >= 2.10-15s
+           tstep = oldtstep
+           if (rang==0) write (6, *) 'tstep maintenu',tstep
         endif
-        do i = 1, im
-           xp(:,i) = xpp(:,i)+tstep*vp(:,i)+tstep**2/cm(ityp(i))/two*fp(:,i)
-        end do
-         if (lperiod) call period
-
-     else                                       ! cad si tstep >= 2.10-15s
-        tstep = oldtstep
-        if (rang==0) write (6, *) 'tstep maintenu'
-     endif
+     end if
   end if
     ! electronic timestep
   if (l2T)then

@@ -90,7 +90,7 @@ subroutine readdm
   !                              16 -> SUNDAE
   !                              17 -> MAB
   !                              18 -> ML
-  lFire = .true.              ! Fire algorithm is used for quenching (cf tr_fire.F90)
+  lFire = .false.              ! Fire algorithm is used for quenching (cf tr_fire.F90)
   ttol = 0.0                  !max tolerance for temperature in %
   tfroi = -1.0                !imposed temperature
   tstep = 1.0                 !timestep in 10^-15 sec unit

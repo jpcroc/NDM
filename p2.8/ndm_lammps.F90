@@ -74,7 +74,7 @@ subroutine calcforce_lammps2
   if (allocated(pos_lammps)) deallocate (pos_lammps)
   allocate(pos_lammps(3*im), stat=ierr)
   if (firsttime_lammps) then
-!     if (rangph==0) write(*,'("PHONDY: Number of atoms   :",i7)') NATOMS
+!     write(6,*)'calfolammps0'
      num=lammps_get_natoms(lmp)
      if (num /= im) then
         write(*,*) 'Big problem: gin and lammps files contain different number of atoms'
@@ -92,9 +92,10 @@ subroutine calcforce_lammps2
            stop
         end if
      end do
-
-     allocate(axlmp(3,im))
-     axlmp(:,:)=xp(:,:)
+!     write(6,*)'calfolammps1.2',im
+     if(.not.allocated(axlmp))allocate(axlmp(3,im))
+!     write(6,*)'calfolammps1.2.1'
+     axlmp(:,1:im)=xp(:,1:im)
   endif
 
   do i=1, im
@@ -164,8 +165,8 @@ subroutine calcforce_lammps2
 
   do i=1,im
      fp(1,i)=for_tmp(1,i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
-     fp(1,i)=for_tmp(2,i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
-     fp(1,i)=for_tmp(3,i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
+     fp(2,i)=for_tmp(2,i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
+     fp(3,i)=for_tmp(3,i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
 !     force_lammps(3*i-2)=for_tmp(1,i)
 !     force_lammps(3*i-1)=for_tmp(2,i)
 !     force_lammps(3*i  )=for_tmp(3,i)
