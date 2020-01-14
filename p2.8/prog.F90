@@ -57,6 +57,7 @@ subroutine prog
 #endif
   ! Actuellement uniquement le cas dmloop_vverlet est traite en parallele
 
+
   select case (dmtype) 
   case(5)
    if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)

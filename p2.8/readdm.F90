@@ -35,7 +35,7 @@ subroutine readdm
   !
   !
 
-  namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, nmaxdepla,lfilm, &
+  namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
        tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
        tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, itespebcout,  &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
@@ -56,7 +56,7 @@ subroutine readdm
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
        tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-       itesauvinter,units_lammps,lmodecalc
+       itesauvinter,units_lammps
 
 
   !
@@ -193,7 +193,6 @@ subroutine readdm
   itedepla = -100              !period of displacement cal.
   tdepla = 1.0                !threshold for displacement
   tdepla2 = -1.0              !second seuil pour calcul des atomes deplaces
-  nmaxdepla=-1                !si >0 stop si nb de depla >=nmaxdepla
   lfilm = .FALSE.             !film making of displaced atoms
   lfilmext = .FALSE.          !film par iteration des atomes deplaces
   itecoordo = -100             !period of coordination calculation
@@ -336,7 +335,6 @@ subroutine readdm
 
   units_lammps='metal'
 
-  lmodecalc=.false.
   
  if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 

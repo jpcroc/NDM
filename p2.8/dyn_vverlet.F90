@@ -137,8 +137,7 @@ use elec_cell,only: dynelec
         vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
      END DO
   end if
-!  write(101,'(I4,6G20.12)')it,1d8*xp(1,1168),1d8*xp(2,1168),1d8*xp(3,1168),1d8*vp(1,1168),1d8*vp(2,1168),1d8*vp(3,1168)
-  
+
   if (associated(eatom))  eatom(1:im)=eatom(1:im)+0.5*cm(ityp(1:im))*(vp(1,1:im)**2+vp(2,1:im)**2+vp(3,1:im)**2)
 
   if (lcalcjq) then

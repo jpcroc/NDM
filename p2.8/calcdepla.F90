@@ -65,7 +65,7 @@ subroutine calcdepla
 
 
   !      write(6,*)'entree dans calcdepla'
-  if ((rang==0).and.(itedepla.ne.1)) then
+  if (rang==0) then
      write (6, *)
      write (6, *) '----------- Deplacements ----------------'
   end if
@@ -158,7 +158,7 @@ subroutine calcdepla
 #endif
 
 
-  if ((rang==0).and.(itedepla.ne.1)) then
+  if (rang==0) then
      write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', it, '  time = ', timel
         write (6, *) 'nombre total d-atomes deplaces = ', ndeplatot
 
@@ -307,11 +307,4 @@ end if
   deallocate(dist_depla)
 #endif
 
-
-  if ((nmaxdepla.ge.1).and.(ndeplatot.ge.nmaxdepla))then
-     if(rang==0)write(6,*)" STOPDEPLA ", it,timel
-!     call 
-     stop
-  end if
-  
 end subroutine calcdepla

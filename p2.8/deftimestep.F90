@@ -78,7 +78,6 @@ tmaxv=0
 #endif
  
   vmax = sqrt(vmax2)
-  if (vmax==0)return
 
   if (itetimestep.ne.1) then
      if (rang==0) then

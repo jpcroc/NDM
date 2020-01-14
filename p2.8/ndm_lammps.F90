@@ -81,11 +81,11 @@ subroutine calcforce_lammps2
         stop
      end if 
      call lammps_gather_atoms(lmp, 'type', 1, lammps_types)
-
+!     write(6,*)'calfolammps1'
      if (num /= size(lammps_types)) then
         write(*,*) 'WARNING:  the atoms type is not correctly read in the LAMMPS wrapper ndm_lammps'
      end if 
-
+!     write(6,*)'calfolammps1.1'
      do i=1,im
         if (ityp(i).ne.lammps_types(i)) then
            write(6,*)'erreur de transmission de type atome ',i,' type ndm lammps ',ityp(i),lammps_types(i)
@@ -97,17 +97,18 @@ subroutine calcforce_lammps2
 !     write(6,*)'calfolammps1.2.1'
      axlmp(:,1:im)=xp(:,1:im)
   endif
-
+!     write(6,*)'calfolammps1.3'
   do i=1, im
 	pos_lammps(3*i-2) = xp(1,i)/position_conversion_lammps
 	pos_lammps(3*i-1) = xp(2,i)/position_conversion_lammps
 	pos_lammps(3*i  ) = xp(3,i)/position_conversion_lammps
   enddo
-
+!     write(6,*)'calfolammps2'
 
   ! Put the coordinates to LAMMPS
-  call lammps_scatter_atoms (lmp, 'x',  pos_lammps)
 
+  call lammps_scatter_atoms (lmp, 'x',  pos_lammps)
+!     write(6,*)'calfolammps3'
 
   ! Call LAMMPS to compute energy and forces
   if (firsttime_lammps) then
@@ -121,26 +122,28 @@ subroutine calcforce_lammps2
      end do
      if (rdiff.ge.rskin) then
         axlmp(:,:)=xp(:,:)
+        write(6,*)'LRUN0'
         lrun0=.true.
      end if
   end if
   
-  if (lrun0.eqv..true.)then
+ if (lrun0.eqv..true.)then
      call lammps_command (lmp, 'run 0')
      lrun0=.false.
-  else
-     call lammps_command (lmp, 'run 1 pre no post yes')
-  end if
+ else
+    call lammps_command (lmp, 'run 1 pre no post yes')
+ end if
 !  call lammps_command (lmp, 'run 0')
-
+!     write(6,*)'calfolammps4'
 
 
   ! Extract energy from LAMMPS
   call lammps_extract_compute (energy, lmp, 'thermo_pe',0,0)
+!     write(6,*)'calfolammps5'
   potist=energy*energy_conversion_lammps 
   if (mod(it,itesigma)==0) then
      call lammps_extract_compute (p_tensor, lmp, 'thermo_press',0,1)
-
+!     write(6,*)'calfolammps6'
 !  pot_energy = energy*energy_conversion_lammps
 !     write (6,*)p_tensor
      sig(1,1)=p_tensor(1)*energy_conversion_lammps/(position_conversion_lammps**3)
@@ -157,6 +160,8 @@ subroutine calcforce_lammps2
   ! Extract forces from LAMMPS  
   !v call lammps_gather_atoms (lmp, 'f', 3, force_lammps)
   call lammps_extract_atom (for_tmp, lmp, 'f')
+
+!       write(6,*)'calfolammps7'
 !    call lammps_extract_atom (vel_tmp, lmp, 'v')
 !  write(6,*) vel_tmp
 
@@ -171,8 +176,10 @@ subroutine calcforce_lammps2
 !     force_lammps(3*i-1)=for_tmp(2,i)
 !     force_lammps(3*i  )=for_tmp(3,i)
   end do
-
-
+!  write(6,*)
+!  write(6,*)'fp1',fp(:,1), 'Z'
+!  write(6,*)'fp2',fp(:,2)
+!  write(6,*)'fp3',fp(:,3)
 !  do i=1, NATOMS    
 !     tmp_force(i)          = force_lammps(3*i-2)*energy_conversion_lammps*position_conversion_lammps
 !     tmp_force(i+NATOMS)   = force_lammps(3*i-1)*energy_conversion_lammps*position_conversion_lammps

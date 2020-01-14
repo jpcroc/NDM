@@ -25,22 +25,33 @@ subroutine divid (appel)
   real(double) , external :: distmin, calcvol
   !-----------------------------------------------
 
+#if(ML)
+#else
   if ((rang==0).and.(appel==0)) then
      write(6,*)
      write(6,*)' -------------------------------------------------------------------'
      write(6,*)'             definition des rayons de coupure'
   endif
-
+#endif 
   call param_det
 
-
+!C_debug
+#if(PHONDY || PARAPH || MAB || ML || PARAML)
   !  write(6,*)rumax,rue_pair,maxval(rue_pair)
+  rumax=0.0
+
   rumax = max(rumax,maxval(rue_pair))
   csive=rumax/float(ngrid)
+ ! write(*,*) rumax, rvois
+#else
+  rumax = max(rumax,maxval(rue_pair))
+  csive=rumax/float(ngrid)
+#endif
 
-
-
-  if((rang==0).and.(appel==0))      write(6,'(A,F12.2)') 'DIVID rumax',rumax*1d8
+#if ML
+#else
+  if((rang==0).and.(appel==0))      write(6,'(A,I4,F12.2)') 'DIVID appel rumax',appel, rumax*1d8
+#endif
 
   !     if(l3c) then
   if (r3cm.eq.0) r3cm=5.0d-8
@@ -54,8 +65,11 @@ subroutine divid (appel)
         if((rang==0).and.(appel==0)) write (6, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
         !cosdebug call arret_ndm
      else
+#if (ML)
+#else
         if((rang==0).and.(appel==0)) write (6,'(A,2F12.2)') ' rumax devient rvois&
              & pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
+#endif
         rumax=rvois
      end if
 
@@ -80,8 +94,10 @@ subroutine divid (appel)
 
   izonr = int(zlmin/rut)
   ! MPI
+#if(ML)
+#else
   if ((rang==0).and.(appel==0)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
-
+#endif
      if (izonr<2) then
         write (6, *) 'trop petite boite !!!'
         !cosboite  stop
@@ -99,19 +115,20 @@ subroutine divid (appel)
   !      if ((rang==0).and.(appel==0)) write (6, *) 'avant volu'
 
   volu = calcvol(at(1,1),at(1,2),at(1,3))
-
-  if ((rang==0).and.(appel==0)) then 
+#if(ML)
+#else
+  if ((rang==0).and.(appel==0)) then
      write (6, '(A,D15.8,A,D15.8,A)') 'volume=', volu,' cm3 ',volu*1d24,' Ang3'
   end if
+#endif
 
-
-  !DETERMINATION DE NOX NOY NOZ     
+  !DETERMINATION DE NOX NOY NOZ
 #if(PHONDY || PARAPH || MAB || ML || PARAML)
-#else 
+#else
 
   if ((rang==0).and.(appel==0)) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz
   if ((rang==0).and.(appel==1)) write (6, *) 'nox,noy,noz deuxième passage  =', nox, noy, noz
-#endif 
+#endif
 
   ! ==== MODIF CLOUET 1 ====================
   !  nzl(1:3) doivent etre calcules ici: ils etaient calcules apres l'appel a divid
@@ -155,7 +172,6 @@ subroutine divid (appel)
         WRITE(6,'(2(a,g12.4),a,i0)') '  noz = Int( ', nzl(3),'/',rumax,') = ', noz
      END IF
 #endif
-
      IF (nox.LT.3) nox=3
      IF (noy.LT.3) noy=3
      IF (noz.LT.3) noz=3
@@ -375,4 +391,3 @@ subroutine divid (appel)
 
   return
 end subroutine divid
-

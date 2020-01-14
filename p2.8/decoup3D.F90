@@ -192,7 +192,7 @@ loop1:     do nbr_cpu=2,nbr_cpuIN
         else
            nnoeuds=nbr_cpu/ncore
         end if
-!        write(6,*)'GOGO',specifs(num_sol,3),ncore,nbr_cpu,nnoeuds
+        write(6,*)'GOGO',specifs(num_sol,3),ncore,nbr_cpu,nnoeuds
         specifs(num_sol,3)=specifs(num_sol,3)*nbr_cpu/(ncore*nnoeuds)
      end if
      if (specifs(num_sol,3)>specifs(solution,3)) solution = num_sol

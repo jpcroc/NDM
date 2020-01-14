@@ -221,7 +221,7 @@ subroutine bruit_xp
              if(z2.eq.0.d0) z2=0.000000001d0
              if(z3.eq.0.d0) z3=0.000000001d0
              if(z4.eq.0.d0) z4=0.000000001d0
-!             write(6,*)z1,z2,z3,z4
+
 !             est_local=0
              !	   do i=1,im
              !	     if (num_at_glob(i)==i_glob) then
@@ -249,10 +249,7 @@ subroutine bruit_xp
 
 
 !             endif
-             end do
-!             write (6,*)'VVVVAAAAAAAAAAAAPPPPPPPPPP ',vp(1,1),vp(2,1),vp(3,1)
-
-             
+          end do
           tempsauv=tempinst(vp,ityp)
           if (rang==0) write(6,*)'temperature MI initspeed ',tempsauv
           kinx(:)=0.d0
@@ -480,7 +477,7 @@ subroutine bruit_xp
        if (lperiod.EQV..true.) call period
     end if
 
-!    write (6,*)'VVVVPPPPPPPPPP ',vp(1,1),vp(2,1),vp(3,1)
+
     return
 
 

@@ -9,7 +9,7 @@ subroutine endrun
 #if(PARA)
   use mod_mpi
 #endif
-#if(ML)
+#if(PARAML)
  use time_measure
 #endif
   use posana
@@ -179,7 +179,7 @@ subroutine endrun
 
 
   if (rang==0) then
-#if(ML)
+#if(ML && PARAML)
      write (6, *) 'ML: neighbours  time',  temps_neigh
      write (6, *) 'ML: energy      time',  temps_energy
      write (6, *) 'ML: force       time',  temps_force

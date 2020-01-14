@@ -160,7 +160,6 @@ rang=rangph
 
 #if(ML)
 ! MiLaDy
-!CROC To be replaced  by case(-20) ?? ??
          case(20)
            if (rang.eq.0) then
               write(6,*)
@@ -169,9 +168,8 @@ rang=rangph
            end if
            !This comes with MiLaDy package
            call md_init_potential_ml
-!CROC To be replaced  by init_potential_simple ??
 #endif
-        end select
+   end select
 
      endif
   end do
@@ -205,7 +203,6 @@ endif
 
      temps_config_deb = MPI_Wtime()
 #endif
-!     write(6,*)'NNNNNNNNNNNNTYPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',ntyp
      call config
 #if(PARA)
      temps_config=MPI_Wtime()-temps_config_deb
@@ -339,8 +336,7 @@ endif
 !computing the neighbours for the very first time ......
 
 #if(ML)
-  ! MiLaDy
-  !CROC To be replaced by -20 ?
+! MiLaDy
   if(ipotentiel==20) then
    if (rang.eq.0) then
       write(6,*)
@@ -349,7 +345,6 @@ endif
    end if
    !This comes with MiLaDy Package
    call md_init_config_ml
-
   end if
 #endif
 
