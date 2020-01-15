@@ -96,7 +96,7 @@ program ndm
   call init_mpi_mab()
   rang=rangmab
 #endif
-#if(LAMMPS_VERSION)
+#if(LAMMPS_MAB)
   call init_mpi_mab()
 #endif
 #endif

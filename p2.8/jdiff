@@ -1,5 +1,5 @@
 #!/bin/csh
-foreach temp (`ls -1 *90 *f Makefil*`)
+foreach temp (`ls -1 *F90 *f Makefil*`)
 	echo $temp
 	rm -f rd
 	diff   $temp /volatile/home/jcrocombette/DM/codesndm/SVN/NDM/p2.8/$temp >rd
