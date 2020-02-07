@@ -1,0 +1,162 @@
+! ************************************************
+!           Sous-programme force_constant
+! ************************************************
+subroutine force_constant 
+  !-----------------------------------------------
+  !   M o d u l e s
+  !-----------------------------------------------
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+  use var_pot
+  use tab_imm_m, ONLY : im
+  use phondy_in_ndm_module 
+#if(PARAPH) 
+  use mpi
+#endif 
+
+  implicit none
+  !-----------------------------------------------
+  !   L o c a l   P a r a m e t e r s
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !   L o c a l   V a r i a b l e s
+  !-----------------------------------------------
+  integer :: i, j
+  real(double)::time
+  integer :: count1,count2,count_rate,count_max 
+  integer :: i_start,i_final,nlocal,u,v
+  integer, allocatable, dimension(:) :: u_local,v_local
+  real(double), allocatable, dimension(:) :: mlocal
+  integer :: imax
+#if(PARAPH)
+integer, dimension(MPI_STATUS_SIZE) :: statut
+integer :: nb_procsph,codeph
+integer :: nratio,iproc,nb_elements
+#endif
+
+i_start=1
+i_final=im
+
+#if(PARAPH)
+call MPI_INIT (codeph)
+call MPI_COMM_SIZE(MPI_COMM_WORLD,nb_procsph, codeph)
+call MPI_COMM_RANK(MPI_COMM_WORLD,rangph,codeph)
+ 
+nratio=int(im/nb_procsph)
+  
+i_start=rangph*nratio+1
+
+if (rangph /= (nb_procsph-1) ) i_final=(rangph+1)*nratio
+if (rangph == (nb_procsph-1) ) i_final= im 
+#endif 
+
+  
+  call system_clock (count1,count_rate,count_max)
+
+
+  call partial_take_size(i_start,i_final,imax)
+
+#if(PARAPH)
+  write(*,*) 'on rangph ', rangph,' imax,  ',imax
+#else
+  write(*,*) 'imax ..',imax
+#endif
+
+  nlocal=(i_final-i_start)*3
+  if (i_final<=i_start) then
+   if (rangph==0) write(*,*) 'i_final should be grater than i_start',i_final, ' > ', i_start
+   if (rangph==0) write(*,*) 'stop in force_constat.F90. Change no of procs.'
+   stop
+  end if  
+ 
+  allocate (mlocal(imax),u_local(imax), v_local(imax),w(nmat))
+
+  call partial_hessian (i_start,i_final,imax,mlocal,u_local,v_local,HessianOrder)
+
+#if(PARAPH)
+ 
+ if (rangph == 0 ) then
+  allocate(matfor(nmat,nmat))
+  matfor(:,:)=0.d0
+  do i=1,imax
+    u=u_local(i)
+    v=v_local(i)
+    matfor(u,v)=mlocal(i)
+  end do
+ end if
+ if (rangph /= 0 ) then
+       call MPI_SEND(mlocal,imax,MPI_DOUBLE_PRECISION,0,10000+rangph,MPI_COMM_WORLD,codeph)
+       call MPI_SEND(u_local,imax,MPI_INTEGER,0,10000+rangph,MPI_COMM_WORLD,codeph)
+       call MPI_SEND(v_local,imax,MPI_INTEGER,0,10000+rangph,MPI_COMM_WORLD,codeph)
+
+ end if
+
+ if (rangph == 0)  then
+      iproc=0
+      do iproc=1,nb_procsph-1 
+       call MPI_PROBE(MPI_ANY_SOURCE,MPI_ANY_TAG, MPI_COMM_WORLD,statut,codeph)
+       call MPI_GET_COUNT(statut,MPI_DOUBLE_PRECISION,nb_elements,codeph)
+       write(*,*) 'on proc  ', iproc, 'imax is', nb_elements
+       deallocate(mlocal,u_local,v_local)
+       allocate(u_local(nb_elements),v_local(nb_elements), mlocal(nb_elements))
+       call MPI_RECV(mlocal,nb_elements,MPI_DOUBLE_PRECISION,statut(MPI_SOURCE), &
+        statut(MPI_TAG),MPI_COMM_WORLD,statut,codeph)
+       call MPI_RECV(u_local,nb_elements,MPI_INTEGER,statut(MPI_SOURCE),statut(MPI_TAG),MPI_COMM_WORLD,statut,codeph)
+       call MPI_RECV(v_local,nb_elements,MPI_INTEGER,statut(MPI_SOURCE),statut(MPI_TAG),MPI_COMM_WORLD,statut,codeph)
+       do i=1,imax
+         u=u_local(i)
+         v=v_local(i)
+         matfor(u,v)=mlocal(i)
+       end do
+      end do 
+
+
+  end if
+  call MPI_BARRIER(MPI_COMM_WORLD,codeph) 
+
+#else
+
+  allocate(matfor(nmat,nmat))
+  matfor(:,:)=0.d0
+  do i=1,imax
+    u=u_local(i)
+    v=v_local(i)
+    matfor(u,v)=mlocal(i)
+  end do
+
+#endif
+
+  call system_clock (count2,count_rate,count_max)
+  time=real((count2-count1))/real(count_rate)
+  if (rangph==0) write(*,"(' PHONDY: MATFOR  was filled in.......:  ',f16.8,' s')") time
+  if (rangph==0) write(*,*) 'PHONDY: MATFOR', matfor (1,2) ,matfor(2,1)
+  if (rangph==0) write(*,*) 'PHONDY: MATFOR', matfor (1,5) ,matfor(5,1)
+
+
+#if(PARAPH)
+ if (rangph==0) then
+#endif
+  do i=1,3*im
+    do j=i,3*im
+  
+    matfor(i,j)=0.5d0*(matfor(i,j)+matfor(j,i))
+    matfor(j,i)=matfor(i,j)
+    end do
+  end do
+#if(PARAPH)
+end if
+#endif
+
+  call system_clock (count1,count_rate,count_max)
+  time=real((count1-count2))/real(count_rate)
+  if (rangph==0) write(*,"(' PHONDY: MATFOR  was symmetrized in...:  ',f16.8,' s')") time
+
+  if (rangph==0) write(*,*) 'PHONDY: ...the force constants were  filled'
+
+#if(PARAPH)
+call MPI_FINALIZE(codeph) 
+#endif
+
+end subroutine force_constant
+
+

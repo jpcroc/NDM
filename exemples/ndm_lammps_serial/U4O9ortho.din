@@ -1,0 +1,25 @@
+ &input
+
+        ipotentiel=-11
+	imm=1000
+	igen=0
+	dmtype=1   ! 7 ph ; 3 CG
+	itesauv=20
+        tinit=150.0,
+	LTberendsen=.true.,text=300.0,tauTcon=50.0
+	
+	itmax=8
+	itetemp=1,itesigma=1
+	lEev=.true. 
+	lEparat=.true.,
+        lPkbar=.true. 	
+
+
+	ltriclin=.true.
+
+	lconstrtot=.false.
+	lperiod=.false.
+	itetabvois=10000
+        
+ &end
+	fpstop= 0.1

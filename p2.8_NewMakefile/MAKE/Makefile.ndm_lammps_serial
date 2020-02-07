@@ -1,0 +1,193 @@
+# ndm_slammps_serial = NDN with LAMMPS code with Intel Compiler on Gatsby cluster Linux arch
+# (last time tested 06 Feb. 2020 by Mickael Trochet)
+# IMPORTANT NOTE : 
+# LAMMPS must be precompiled as a static library with the following command
+# make mode=lib serial 
+# add this module in your .bashrc or charge them before compilation and executions.
+# module  load openmpi/intel/4.0.2
+# it will load these two modules :
+# 1) intel/2019.5.281   2) openmpi/intel/4.0.2
+
+SHELL = /bin/sh
+# ---------------------------------------------------------------------
+# compiler/linker settings
+# generally no need to edit this section
+# unless additional compiler/linker flags or libraries needed for your machine
+
+
+  C++ = icpc
+  CC  = icc
+  F77 = ifort  -cpp # -warn all -check all
+  F90 = ifort  -cpp # -warn all -check all
+  LINK = ${F90}
+
+  SIZE = size
+  ARCHIVE = ar
+  ARFLAGS = -rc
+
+
+  LAMMPS_USER_PATH="/home/trochet/mylammps"
+  LAMMPS_LIBNAME= serial# exact same name as the argument to compile lammps as a library 
+
+# Compiler flags setting 
+ 
+  #F90FLAGS = -g -traceback 
+  #CFLAGS =
+  #C++FLAGS = 
+
+# ---------------------------------------------------------------------
+# NDM-specific settings
+# specify settings for NDM features you will use
+# if you change any -D setting, do full re-compile after "make clean"
+
+# NDM ifdef settings, OPTIONAL
+# see possible settings in doc/Section_start.html#2_2 (step 4)
+  OPTIONS  =  -O3 -g -traceback
+  NDM_INC  =  -DLAMMPS_VERSION # HERE ONLY mod IF NDM SERIAL WITH NO EXTERNAL LIBS 
+
+# MPI library, REQUIRED if -DPARA
+# INC = path for *.h, MPI compiler settings
+# PATH = path for MPI library
+# LIB = name of MPI library
+
+  MPI_INC  = -I${LAMMPS_USER_PATH}/src/STUBS
+  MPI_PATH = -L${LAMMPS_USER_PATH}/src/STUBS
+  MPI_LIB  = -lmpi_stubs
+
+# MAB library, REQUIRED if -DMAB
+# INC = path for *.h, MAB settings
+# PATH = path for MAB library
+# LIB = name of MAB library
+  MAB_INC  =
+  MAB_PATH =
+  MAB_LIB  =# libmab.a
+
+# ART library, REQUIRED if -DART
+# INC = path for *.h, ART settings
+# PATH = path for ART library
+# LIB = name of ART library
+  ART_INC  =
+  ART_PATH =
+  ART_LIB  =# libart.a
+
+# LAMMPS library, REQUIRED if -DLAMMPS_VERSION
+# INC = path for *.h, include folder LAMMPS
+# PATH = path for LAMMPS library
+# LIB = name of LAMMPS library
+  LAMMPS_INC  =-I${LAMMPS_USER_PATH}/src
+  LAMMPS_PATH =-L${LAMMPS_USER_PATH}/src
+  LAMMPS_LIB  = ${LAMMPS_USER_PATH}/src/liblammps_${LAMMPS_LIBNAME}.a
+  #MEAM=${LAMMPS_USER_PATH}/lib/meam/libmeam.a
+  #VORONOI=${LAMMPS_USER_PATH}/lib/voronoi/lib/libvoro++.a
+  #ATC= ${LAMMPS_USER_PATH}/lib/atc/libatc.a
+  #QMMM= ${LAMMPS_USER_PATH}/lib/qmmm/libqmmm.a
+  #COLVARS=${LAMMPS_USER_PATH}/lib/colvars/libcolvars.a
+  #REAX=${LAMMPS_USER_PATH}/lib/reax/libreax.a
+  #POEMS=${LAMMPS_USER_PATH}/lib/poems/libpoems.a
+  #AWPMD=${LAMMPS_USER_PATH}/lib/awpmd/libawpmd.a
+  #PYTHON=-L/soft/Conda/miniconda2/lib/ -lpython2.7
+  #QUIP_HOME=${HOME}/Flow/QUIPnew/
+  #QUIP=${QUIP_HOME}/build/linux_x86_64_ifort_icc_mpi/libquip.a
+  #LAMMPS_OPTIONAL_LIB = ${PYTHON} ${MEAM} ${VORONOI} ${ATC} ${COLVARS} ${REAX} ${QMMM} ${POEMS} ${QUIP} ${AWPMD}
+  #LAMMPS_OPTIONAL_LIB = ${MEAM}  ${QUIP} 
+
+
+# ML library, REQUIRED if -DML
+# INC = path for mpi.h, MPI compiler settings
+# PATH = path for MPI library
+# LIB = name of MPI library
+  ML_INC  =
+  ML_PATH =
+  ML_LIB  =# libml.a
+# PARAML library, REQUIRED if -DPARAML
+# INC = path for mpi.h, MPI compiler settings
+# PATH = path for MPI library
+# LIB = name of MPI library
+  PARAML_INC  =
+  PARAML_PATH =
+  PARAML_LIB  =
+
+
+# PHONDY library, REQUIRED if -DPHONDY
+# INC = path for *.h, PHONDY settings
+# PATH = path for PHONDY library
+# LIB = name of PHONDY library
+  PHONDY_INC  =
+  PHONDY_PATH =
+  PHONDY_LIB  =# libphondy.a 
+# PARAPH library, REQUIRED if -DPARAPH
+# INC = path for *.h, MPI compiler settings
+# PATH = path for MPI library
+# LIB = name of MPI library
+  PARAPH_INC  =
+  PARAPH_PATH =
+  PARAPH_LIB  =
+
+# FFT library, REQUIRED if -DLAMMPS_VERSION 
+# INC = -DFFT setting, e.g. -DFFT_FFTW, FFT compiler settings
+# PATH = path for FFT library
+# LIB = name of FFT library
+
+  FFTW_INC  =
+  FFTW_PATH =
+  FFTW_LIB  =
+
+
+# MKL library, REQUIRED  
+# INC = path(s) for *.h required by MKL library 
+# PATH = path for MKL library
+# LIB = name of MKL library
+
+  MKL_INC  = #-I/opt/intel/mkl/include/intel64/lp64
+  MKL_PATH = #-L/opt/intel/mkl/lib
+  MKL_LIB  = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 
+# ---------------------------------------------------------------------
+# build rules and dependencies
+# no need to edit this section
+
+  EXTRA_INC   = ${MKL_INC} $(MPI_INC) ${FFTW_INC} ${LAMMPS_INC} \
+  ${MAB_INC} ${ART_INC} ${ML_INC} ${PARAML_INC} \
+  ${PHONDY_INC} ${PARAPH_INC} ${NDM_INC} ${OPTIONS}
+  EXTRA_PATH  = ${MKL_PATH} ${MPI_PATH} ${FFTW_PATH} ${LAMMPS_PATH} \
+  ${MAB_PATH} ${ART_PATH} ${ML_PATH} ${PARAML_PATH} \
+  ${PHONDY_PATH} ${PARAPH_PATH} 
+  EXTRA_LIB   = ${MKL_LIB} ${MPI_LIB} ${FFTW_LIB} ${LAMMPS_LIB}  \
+  ${MAB_LIB} ${ART_LIB} ${ML_LIB} ${PARAML_LIB}  \
+  ${PHONDY_LIB} ${PARAPH_LIB}
+
+
+  LIBS = ${EXTRA_PATH} ${EXTRA_LIB} -lstdc++   
+  CLIBS =
+
+# Path to src files
+CODE_PATH = ../lammps:../mod/:.. 
+
+vpath %.f90 ${CODE_PATH}
+vpath %.F90 ${CODE_PATH}
+vpath %.f   ${CODE_PATH}
+vpath %.c   ${CODE_PATH}
+vpath %.cpp ${CODE_PATH}
+vpath %.h   ${CODE_PATH}
+
+
+# Compilation rules
+%.o: %.c
+	$(CC)  -c ${EXTRA_INC} $(CFLAGS)   $< -o $@ 
+%.o: %.f
+	$(F77) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
+%.o: %.f90
+	$(F90) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
+%.o: %.F90
+	$(F90) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
+%.o: %.cpp
+	$(C++) -c ${EXTRA_INC} $(C++FLAGS) $< -o $@ 
+
+# Link target
+
+$(EXE):	$(OBJ)  
+	$(LINK) $(OBJ) $(LIBS) -o $(EXE)
+	$(SIZE) $(EXE)
+
+
+
+

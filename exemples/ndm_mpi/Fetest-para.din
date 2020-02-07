@@ -1,0 +1,27 @@
+ &input
+ 
+        ipotentiel=10
+	imm=22000
+	igen=0
+	dmtype=4   ! 7 ph ; 3 CG
+        tinit=60
+	
+	itmax=400,itesauv=1000
+	itetemp=10,itesigma=100
+	lEev=.true. 
+	lEparat=.true.,
+        lPkbar=.true. 	
+
+	iterasmol=-1
+	ltriclin=.true.
+
+	lconstrtot=.false.
+	lperiod=.true.
+	ltabvois=.false.
+
+
+        
+ &end
+
+	rvois=7.9
+	itetimestep=1, depmaxts=0.1

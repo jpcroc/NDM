@@ -1,0 +1,35 @@
+# UO2 crystal, qeq on, minimizes, then calculates elastic constants
+log             log_uo2_lammps
+units		metal
+atom_style	charge
+atom_modify     map array
+dimension       3
+boundary        p p p
+
+read_data	conf.data
+
+mass		1 16.00
+group    	Oxy type 1
+compute   	chargeOxy Oxy property/atom q
+compute   	q_Oxy Oxy reduce ave c_chargeOxy
+
+mass            2 238.03
+group           U type 2
+compute         chargeU U property/atom q
+compute         q_U U reduce ave c_chargeU
+
+compute		chargeall all property/atom q
+compute		qall all reduce sum c_chargeall
+
+#velocity	all create 300.0 277387
+
+pair_style	smtbq
+pair_coeff	* * ffield.smtbq.uo2 O U
+
+
+
+
+timestep        0.0002
+
+
+thermo		1
