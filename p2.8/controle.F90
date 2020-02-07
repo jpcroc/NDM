@@ -45,8 +45,6 @@ subroutine controle
   real(double) :: forctot_glob
   real(double) :: formax_glob
 #endif
-  character*5 :: cunitE, cunitP
-  real(double) :: unitE,unitP
   save ltc
   !-----------------------------------------------
   !

@@ -32,8 +32,6 @@ subroutine analyse
   real(double) :: ppot, pkin
   real(double) :: a1, a2, a3, b1, b2, b3, c1, c2, c3
   real(double) :: fteta, tbc, tca, tab, amod, bmod, cmod
-  real(double) :: unitE,unitP
-  character*5 :: cunitE, cunitP
   real(double) ::  alat
   real(double), external :: tempinst
   real(double), save :: volumean,amodmean,bmodmean,cmodmean,tcamean,tabmean,tbcmean
@@ -80,20 +78,6 @@ subroutine analyse
      CmintP2=100000
      CmaxtP2=-100000
   end if
-  if(lEev) then
-     unitE=erg2eV
-     cunitE='  eV'
-  else
-     unitE=1.0
-     cunitE=' erg'
-  end if
-  if(lPkbar) then
-     unitP=1.0d-9
-     cunitP='kbar'
-  else
-     unitP=1.0
-     cunitP='d/cm2'
-  endif
 
   ! calcul de la temperature
   ! calcul de la temperature

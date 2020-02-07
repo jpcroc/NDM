@@ -32,8 +32,6 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   integer :: i, iti,ic,is,test_force
-  real(double) :: unitE,unitP
-  character*4 :: cunitE, cunitP
   real(double) :: epot0,deltaE,deltaf1,fps(3,imm)
   !-----------------------------------------------
   !

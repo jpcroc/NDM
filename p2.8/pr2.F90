@@ -40,6 +40,7 @@ module Parrinello_Rahman
   USE T_kind_param_m
   use gen_com_m    
   use var_pot
+  use mat_util
 #if(PARA)
   use mod_mpi
 #endif
@@ -82,8 +83,6 @@ contains
 
     INTEGER :: ia, i, j
     real(double), external :: calcvol
-    real(double):: unitE
-    character*5 :: cunitE
 #if(PARA)
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
@@ -111,8 +110,8 @@ contains
     IF (wbox==0.0) THEN
        wbox = sum(0.5*cm(ityp(:im)))       ! La moitié de la masse totale des atomes
 #if(PARA)
-  call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-  wbox=wbox_tot
+       call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+       wbox=wbox_tot
 #endif
 
 
@@ -155,13 +154,6 @@ contains
     Kcell = 0.5d0*wbox*Sum( hDot(1:3,1:3)**2 )
 
 
-    if(lEev) then
-       unitE=erg2eV
-       cunitE='  eV'
-    else
-       unitE=1.0
-       cunitE=' erg'
-    end if
     if(rang==0) write(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
          '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
 
@@ -185,7 +177,7 @@ contains
        !ALLOCATE(UHoover(1:nHoover), UHoover_new(1:nHoover), UHoover_old(1:nHoover))
 
        ! Nombre de degrés de liberté pour le thermostat de Nosé-Hoover
-!crc       gNose=dble(3*imana)
+       !crc       gNose=dble(3*imana)
        gNose=dble(3*im_glob)
 
        ! Masse de chaque thermostat
@@ -404,7 +396,8 @@ contains
 
 #else
     ! On recalcule et réalloue les cellules, puis on applique les conditions aux
-    ! limites périodiques sur les positions des atomes
+  ! limites périodiques sur les positions des atomes
+
     CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 #endif
 

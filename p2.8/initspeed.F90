@@ -5,6 +5,7 @@ subroutine bruit_xp
   use gen_com_m
   use var_pot
   use tab_imm_m
+
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -54,6 +55,7 @@ subroutine bruit_xp
     use gen_com_m
     use var_pot
     use tab_imm_m
+    use mat_util
 #if(PARA)
     use mod_mpi
 #endif

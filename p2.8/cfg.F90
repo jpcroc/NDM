@@ -1,5 +1,5 @@
 MODULE cfg_module
-
+use Mat_util
 
 CONTAINS
 

@@ -26,7 +26,7 @@ subroutine readdm
   !-----------------------------------------------
   integer :: ludin, lufilm, lufilmpaf,  i,itean, ic, iThermo,itecompcr,ipotcont
   character :: fnamdin*80
-  logical :: lginread,ltriclin,lpcon,lfissure,tpot
+  logical :: lginread,ltriclin,tpot
   logical :: lxFrozen,lyFrozen,lzFrozen, lxyFrozen, lxzFrozen, lyzFrozen, lxyzFrozen
   !  integer :: imFree     ! nb d'atomes libres
   !-----------------------------------------------
@@ -37,10 +37,10 @@ subroutine readdm
 
   namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
        tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
-       tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, itespebcout,  &
+       tinit, tcooling, tfcou, epcou, lcasca, itmax,nitmax, itean, itespebcout,  &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
-       lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
-       ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
+       lrestart, lPathFromGin,  ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
+       ltranche, rulayer,iterasmol,  lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
        iteangle, ipotentiel, lpotentiel, itesauvposition, itesauvforce, lfilmext, tdepla2, &
        lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
        maxorder,  lalea, rsep, &
@@ -56,7 +56,7 @@ subroutine readdm
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
        tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-       itesauvinter,units_lammps
+       itesauvinter,units_lammps,iverbose
 
 
   !
@@ -101,14 +101,12 @@ subroutine readdm
   tfcou = -1.0                !temperature of the border of the box
   epcou = -1.0                !width of the border of the box
   lcasca = .FALSE.            !cascade Y/N
-  lfissure = .FALSE.          !crack Y/N
   itmax = -1                  !maximum number of iterations
   nitmax = -1                 !maximum number of new iterations after restart
   itederive = -1              !"derive" correction
   igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 modification de cin puis stop
   lrestart = .FALSE.          !if T : restarting from an interrupt job
   lPathFromGin = .FALSE.      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
-  tgc = 0.0                   ! threshold for CG calculation
   ltabvois = .FALSE.          ! methode de la table des voisins
   lconstrtot=.FALSE.           !!construction de la table des voisins T=double boucle F=via cel.
   rvois = 0.0                 ! rayon de la table des voisins
@@ -139,7 +137,6 @@ subroutine readdm
   ! reference, ie etat pour laquelle la
   ! contrainte est nulle)
   !=== Fin des modifications ================
-  lpcon = .FALSE.             !algorithm a pression constante a la hache
   lpcon2 = .FALSE.            !amortissement de la deformation de la boite
   lpconxyz = .FALSE.          !the relaxation are allowed only along the X, Y and Z axis
 
@@ -334,7 +331,7 @@ subroutine readdm
   tsmin=2.0
 
   units_lammps='metal'
-
+  iverbose =0
   
  if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -373,21 +370,6 @@ subroutine readdm
   endif                                      ! fin rang=0
 
 
-  if(lpcon) then
-     if (rang==0) write(6,*)
-     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-     if (rang==0) write(6,*)
-     if (rang==0) write(6,*)'lpcon n_existe plusest historique utiliser plutot lpr pour un Parinnello Rahman propre '
-     if (rang==0) write(6,*)
-     if (rang==0) write(6,*)
-     if (rang==0) write(6,*)
-     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-     call arret_ndm
-  end if
 
   if(.not.lperiod) then
      if (rang==0) write(6,*)
@@ -1356,23 +1338,42 @@ subroutine readdm
         stop
      end if
   end if
+  if(lPkbar) then
+     unitP=1.0d-9
+     cunitP='kbar'
+  else
+     unitP=1.0
+     cunitP='d/cm2'
+  endif
+  if(lEev) then
+     unitE=erg2eV
+     cunitE='  eV'
+  else
+     unitE=1.0
+     cunitE=' erg'
+  end if
 
 #ifdef LAMMPS_VERSION
   if(trim(units_lammps)=='metal') then
      energy_conversion_lammps=1/erg2ev
      position_conversion_lammps=A2cm
+     pressure_conversion_lammps=1d6
   elseif(trim(units_lammps)=='real') then
      energy_conversion_lammps=0.043/erg2ev
      position_conversion_lammps=A2cm
+     pressure_conversion_lammps=1013250.0
   elseif(trim(units_lammps)=='si') then
      energy_conversion_lammps=1e7
      position_conversion_lammps=1d2
+     pressure_conversion_lammps=10.0
   elseif(trim(units_lammps)=='cgs') then
      energy_conversion_lammps=1
      position_conversion_lammps=1
+     pressure_conversion_lammps=1.0
   elseif(trim(units_lammps)=='electron') then
      energy_conversion_lammps=27.211399/erg2ev
      position_conversion_lammps=A2cm*0.529177249
+     pressure_conversion_lammps=10.
   else 
      write(6,*)'error in units_lammps'
      stop

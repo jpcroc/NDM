@@ -29,16 +29,9 @@ subroutine dyn
   real(double), save :: tmoyinst, imesureT
   real(double), external :: tempinst
   real(double) :: tempavant,tmoy
-  real(double) :: unitE,deltaE
-  character*5 :: cunitE
+  real(double) :: deltaE
+
   real(double):: eatommoy
-  if(lEev) then
-     unitE=erg2eV
-     cunitE='  eV '
-  else
-     unitE=1.0
-     cunitE=' erg '
-  end if
   
   if (associated(eatom))  eatom(1:im)=eatom(1:im)+0.5*cm(ityp(1:im))*(vp(1,1:im)**2+vp(2,1:im)**2+vp(3,1:im)**2)
 

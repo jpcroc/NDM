@@ -92,7 +92,6 @@ subroutine dmloop_lpr
   endif
 
 #else
-
      CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 #endif

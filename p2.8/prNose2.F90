@@ -34,7 +34,7 @@ module Parrinello_Rahman_Nose
   USE T_kind_param_m
   use gen_com_m   
   use var_pot
-
+  use mat_util
 #if(PARA)
   use mod_mpi
 #endif
@@ -66,8 +66,7 @@ contains
 
     real(double), dimension(1:3,1:3) :: maux2
     real(double), external :: tempinst, calcvol, detmat
-    real(double)::temp0, unitE
-    character*5 :: cunitE
+    real(double)::temp0
 
 #if(PARA)
     real(double)::wbox_tot
@@ -152,13 +151,6 @@ contains
     ! Kinetic energy of the cell (Eq. 2.14 of Ref. [2])
     maux2 = MatMul( Transpose(hpoint), hpoint )
     Kcell = 0.5d0*wbox*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
-    if(lEev) then
-       unitE=erg2eV
-       cunitE='  eV'
-    else
-       unitE=1.0
-       cunitE=' erg'
-    end if
     write(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
          '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
 

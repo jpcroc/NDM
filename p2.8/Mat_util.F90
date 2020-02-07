@@ -1,6 +1,7 @@
-
-!**********************************************************************
-subroutine matscl(a,s,b)
+module mat_util
+contains
+  !**********************************************************************
+  subroutine matscl(a,s,b)
   !     Multiplies a scalar, s, to a 3-by-3 matrices a.
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
@@ -22,33 +23,6 @@ subroutine matscl(a,s,b)
   enddo
   return
 end subroutine matscl
-
-!**********************************************************************
-subroutine matmul(a,b,c)
-  !     Multiplies 3-by-3 matrices a & b, and stores the result in c.
-  !-----------------------------------------------
-  USE T_kind_param_m, ONLY:  double
-  implicit none
-  !-----------------------------------------------
-  !   D u m m y   A r g u m e n t s
-  !-----------------------------------------------
-  real(double) , intent(in) :: a(3,3), b(3,3)
-  real(double) , intent(out) :: c(3,3)
-  !-----------------------------------------------
-  !   L o c a l   V a r i a b l e s
-  !-----------------------------------------------
-  integer :: j, i, k
-  !-----------------------------------------------
-  do j = 1,3
-     do i = 1,3
-        c(i,j) = 0d0
-        do k = 1,3
-           c(i,j) = c(i,j)+a(i,k)*b(k,j)
-        enddo
-     enddo
-  enddo
-  return
-end subroutine matmul
 
 !**********************************************************************
 subroutine mattrp(a,at)
@@ -152,7 +126,7 @@ subroutine matcof(a,c)
 end subroutine matcof
 
 !**********************************************************************
-real(kind(0.0d0)) function detmat(a)
+real(double) function detmat(a)
   !  Returns the determinant of a 3-by-3 matrices a.
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
@@ -359,3 +333,62 @@ subroutine myrnd(rnd,dseed)
   rnd   = dseed/d2p31
   return
 end subroutine myrnd
+function cross_product(vecta,vectb) result(vectaxb) ! a intégrer
+  USE T_kind_param_m, ONLY:  double
+real(double), dimension(3), intent(in) :: vecta, vectb
+real(double), dimension(3) :: vectaxb
+
+vectaxb(1) = vecta(2)*vectb(3) - vecta(3)*vectb(2)
+vectaxb(2) = vecta(3)*vectb(1) - vecta(1)*vectb(3)
+vectaxb(3) = vecta(1)*vectb(2) - vecta(2)*vectb(1)
+end function cross_product
+
+!-----------------------------------------------------
+function norme(vect) result(norme_vect) ! a intégrer
+  USE T_kind_param_m, ONLY:  double
+  real(double), dimension(3), intent(in) :: vect
+real(double) :: norme_vect
+norme_vect = sqrt(dot_product(vect,vect))
+end function norme
+
+subroutine right_hand_basis(vect1,vect2,vect3,l_right) ! inutile à inliner
+  USE T_kind_param_m, ONLY:  double
+implicit none
+
+real(double), dimension(3), intent(in) :: vect1, vect2, vect3
+logical, intent(out) :: l_right
+real(double), dimension(3)::cp
+l_right = .true.
+cp=cross_product(vect1,vect2)
+if (dot_product(cp,vect3).lt.0) then
+    l_right = .false.
+endif
+
+return
+end subroutine right_hand_basis
+
+
+
+!---------------------------------------------------
+subroutine is_upper_triangular(M,l_triang) 
+  USE T_kind_param_m, ONLY:  double
+  implicit none
+real(double), dimension(3,3), intent(in)  :: M
+logical, intent(out) :: l_triang
+!write(*,*)'2,1',M(2,1) !debug
+!write(*,*)'3,1',M(3,1) !debug
+!write(*,*)'3,2',M(3,2) !debug
+real(double)::v1,v2,v3
+v1=abs(M(2,1))
+v2=abs(M(3,1))
+v3=abs(M(3,2))
+l_triang = .true.
+if ((v1.gt.1.d-16).or.(v2.gt.1.d-16).or.(v3.gt.1.d-16)) then
+    l_triang = .false.
+endif
+
+return
+end subroutine is_upper_triangular
+
+
+end module mat_util

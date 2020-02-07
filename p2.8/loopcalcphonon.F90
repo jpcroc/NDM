@@ -31,8 +31,6 @@ subroutine loopcalcphonon(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   integer :: i, iti,ic,is,j,u,v,icj,i3m
-  real(double) :: unitE,unitP
-  character*4 :: cunitE, cunitP
   real(double) :: epot0,deltaE,fps(3,imm)
 
   real(double),pointer :: matfor(:,:),fp0(:,:),d(:),d2(:),matforsym(:,:)

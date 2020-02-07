@@ -171,7 +171,7 @@ module gen_com_m
   integer :: dmtype, itab, itetabvois, itetimestep, itederive ! type dynamique, periode de repartition entre cel, periode de calc. tab des voisins, periode de chgt du pas en temps, poeriode de correction de la derive
   real(double):: depmaxts,tsmin
   real(double) :: tempstop, tempstopcel,ttol, tfroi, tcooling, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
-       tsfact, vmax, tgc, dfpred ! gestion du pas en temps
+       tsfact, vmax,  dfpred ! gestion du pas en temps
   real(double)::maxtcel
   real(double) :: deltaestop ! decroissance de la temperature moyenne
   integer :: nbmoye
@@ -249,6 +249,9 @@ module gen_com_m
   real(double), parameter :: thetamax = 6.2
 
   logical lEev,lPkbar   !unite
+    real(double) :: unitE,unitP
+  character*5 :: cunitE, cunitP
+
   ! energies potentielle, cinetique et totale de la boite en Parrinello-Rahman
   real(double):: EcellPR, Kcell, Ucell      
 
@@ -363,7 +366,8 @@ module gen_com_m
   logical :: l2T
  real(double), dimension (:),allocatable ::elossCel
 character (len=15):: units_lammps
-real(double)::rskin,position_conversion_lammps, energy_conversion_lammps ! épaisseur pour lammps (equivalent rvois-rue)
+real(double)::rskin,position_conversion_lammps, energy_conversion_lammps, pressure_conversion_lammps ! épaisseur pour lammps (equivalent rvois-rue)
  real(kind=8) , allocatable, dimension(:)  ::  posa, forca
  logical :: firsttime_lammps
+ integer:: iverbose ! verbosity (0 = pas de détails, défaut, 1 = détails)
 end module gen_com_m

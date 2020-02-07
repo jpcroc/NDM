@@ -37,8 +37,6 @@ subroutine endrun
   CHARACTER(len=100) :: out_file
   REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
   CHARACTER(len=20), dimension(:), allocatable :: aux_title
-  real(double) :: unitE,unitP
-  character*5 :: cunitE, cunitP
 #if(PARA)
   integer :: iproc
   real(double), allocatable :: xp_loc(:,:),eatom_loc(:)
@@ -52,13 +50,6 @@ subroutine endrun
   !
   !
   
-  if(lPkbar) then
-     unitP=1.0d-9
-     cunitP='kbar'
-  else
-     unitP=1.0
-     cunitP='d/cm2'
-  endif
 
   ! Un dernier calcul des forces pour la route
   IF (iteTemp.GE.0) iteTemp=1
