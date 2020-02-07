@@ -1,0 +1,5 @@
+#define DATE "2020-02-07"
+#define REVISION "6c41d50"
+#define COMPILE_DATE "Fri Feb 7 13:33:22 CET 2020"
+#define LOCATION "/home/trochet/NDM/p2.8_Trochet"
+#define COMPILE_TARGET "ndm_lammps_serial_gfortran"
