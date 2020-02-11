@@ -6,7 +6,8 @@ atom_modify     map array
 dimension       3
 boundary        p p p
 
-read_data	conf.data
+#read_data	conf.data
+read_data	conf.lmp
 
 mass		1 16.00
 group    	Oxy type 1
