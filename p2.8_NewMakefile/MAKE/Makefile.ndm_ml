@@ -1,5 +1,5 @@
-# ndm_mpi = NDM + OPENMPI  with Intel Compiler on Gatsby cluster Linux arch
-# (last time tested 10 Feb. 2020 by Mickael Trochet)
+# ndm_ml = NDM + MILADI code with Intel Compiler on Gatsby cluster Linux arch
+# with Intel compiler (last time tested xxx by yyy)
 #
 # add this module in your .bashrc or charge them before compilation and executions.
 #
@@ -36,8 +36,8 @@ SHELL = /bin/sh
 
 # NDM ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
-  OPTIONS  = -O3 -g -traceback # -fast
-  NDM_INC  = -DPARA # HERE DEFINE MACRO NEEDED IF NDM SERIAL WITH NO EXTERNAL LIBS 
+  OPTIONS  = -fast -g -traceback
+  NDM_INC  = -DML -DPARAML -DPARA # HERE DEFINE MACRO NEEDED IF NDM SERIAL WITH NO EXTERNAL LIBS 
 
 # MPI library, REQUIRED if -DPARA
 # INC = path for *.h, MPI compiler settings
@@ -157,7 +157,7 @@ SHELL = /bin/sh
 
 # Path to src files
 # THIS VARIABLE CODE_PATH IS VERY IMPORTANT TO SET PROPERLY TO SCAN THE CORRECT FOLDER DEPENDING OF MACRO USED
-CODE_PATH = ../para:../mod/:.. 
+CODE_PATH = ../ml:../para:../mod/:.. 
 
 vpath %.f90 ${CODE_PATH}
 vpath %.F90 ${CODE_PATH}

@@ -1,4 +1,4 @@
-# ndm_slammps_serial = NDN with LAMMPS code with Intel Compiler on Gatsby cluster Linux arch
+# ndm_lammps_serial = NDM with LAMMPS code with Intel Compiler on Gatsby cluster Linux arch
 # (last time tested 06 Feb. 2020 by Mickael Trochet)
 # IMPORTANT NOTE : 
 # LAMMPS must be precompiled as a static library with the following command
