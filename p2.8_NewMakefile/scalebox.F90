@@ -77,7 +77,7 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   noyn = int(zl(2)/rumax)
   nozn = int(zl(3)/rumax)
   
-#if(ML)
+#ifdef ML
   if (noxn==0) noxn=1
   if (noyn==0) noyn=1
   if (nozn==0) nozn=1

@@ -36,8 +36,6 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   real(double)  :: fp(3,imm)
   integer :: ineb,ii,it_neb_inter
   real(double)  :: a_local,forneb
-  real(double) :: unitP
-  character*5 :: cunitP
 
   ! Variables for Fire quench algorithm
   REAL(double), dimension(:), allocatable :: fire_dt, fire_alph

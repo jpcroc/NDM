@@ -179,7 +179,7 @@ subroutine calfo
                  call calfoeamcel
               endif
               potist=potist+potiseam
-#if(ML)
+#ifdef ML
            case (20)
                 !write(*,*) 'NDM ml calfo1', xp(1,1)
               call md_calfo_ml

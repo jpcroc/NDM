@@ -21,7 +21,7 @@ subroutine endrun
 #ifdef PARA
   use mod_para
 #endif
-#if(PARAML)
+#ifdef PARAML
  use time_measure
 #endif
   use posana
@@ -49,8 +49,6 @@ subroutine endrun
   CHARACTER(len=100) :: out_file
   REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
   CHARACTER(len=20), dimension(:), allocatable :: aux_title
-  real(double) :: unitE,unitP
-  character*5 :: cunitE, cunitP
 #ifdef PARA
   integer :: iproc
   real(double), allocatable :: xp_loc(:,:),eatom_loc(:)
@@ -191,7 +189,7 @@ subroutine endrun
 
 
   if (rang==0) then
-#if(ML && PARAML)
+#if defined ML && defined PARAML
      write (6, *) 'ML: neighbours  time',  temps_neigh
      write (6, *) 'ML: energy      time',  temps_energy
      write (6, *) 'ML: force       time',  temps_force

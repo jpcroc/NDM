@@ -1,4 +1,3 @@
-
 module Parrinello_Rahman
 
   ! Algorithme de Parrinello-Rahman [1] combiné ou non à un thermostat de Nosé-Hoover [4]

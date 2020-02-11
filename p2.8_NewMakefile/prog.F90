@@ -47,7 +47,7 @@ subroutine prog
   temps_init=MPI_Wtime()-temps_init_deb
 #endif
 
-#if(DECOUP)
+#ifdef DECOUP
   ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
   return
 #endif
@@ -101,27 +101,27 @@ subroutine prog
      CALL controle()
      CALL endrun()
 
-#if(ART)    
+#ifdef ART    
      case (12) 
           call art90
 #endif
 
-#if(SUNDAE)    
+#ifdef SUNDAE    
      case (16) 
           call sundae
 #endif
 
-#if(MAB)    
+#ifdef MAB    
      case (17) 
           call mab
 #endif
 
-#if(PHONDY | PARAPH)    
+#if defined PHONDY || defined PARAPH    
      case (7) 
           call phondy
 #endif
 
-#if(ML || PARAML)    
+#if defined ML || defined PARAML    
      case (18) 
           call ml
 #endif

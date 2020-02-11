@@ -5,20 +5,22 @@ real(kind(0.d0)) :: temps_energy, temps_force, temps_descripteurs, temps_neigh, 
 end module time_measure
 
 
-module mod_para_ml 
+module mod_mpi_ml 
  use mpi
      integer, dimension(MPI_STATUS_SIZE) :: statut
      integer :: nb_procsml,codeml
-end module mod_para_ml
+end module mod_mpi_ml
 
 
 
-
+module init_mpi_ml_mod 
+  implicit none
+  contains  
 
 subroutine init_mpi_ml()
 
   use mpi
-  use mod_para_ml
+  use mod_mpi_ml
   use gen_mpi
   use gen_com_m , ONLY: rangml
   implicit none
@@ -42,6 +44,7 @@ call MPI_COMM_RANK(MPI_COMM_WORLD,rangml,codeml)
 
 
 end subroutine init_mpi_ml
+end module
 
 
 #endif

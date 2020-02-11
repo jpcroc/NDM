@@ -31,7 +31,8 @@ subroutine divid (appel)
   !real(double) , external :: distmin, calcvol
   !-----------------------------------------------
 
-#if(ML)
+#ifdef ML
+
 #else
   if ((rang==0).and.(appel==0)) then
      write(6,*)
@@ -42,7 +43,7 @@ subroutine divid (appel)
   call param_det
 
 !C_debug
-#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
   !  write(6,*)rumax,rue_pair,maxval(rue_pair)
   rumax=0.0
 
@@ -71,8 +72,7 @@ subroutine divid (appel)
         if((rang==0).and.(appel==0)) write (6, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
         !cosdebug call arret_ndm
      else
-#if (ML)
-#else
+#ifndef ML
         if((rang==0).and.(appel==0)) write (6,'(A,2F12.2)') ' rumax devient rvois&
              & pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
 #endif
@@ -100,14 +100,14 @@ subroutine divid (appel)
 
   izonr = int(zlmin/rut)
   ! MPI
-#if(ML)
+#ifdef ML
 #else
   if ((rang==0).and.(appel==0)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
 #endif
      if (izonr<2) then
         write (6, *) 'trop petite boite !!!'
         !cosboite  stop
-#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
         write (6, *) 'trop petite boite !!!'
 #else
   if (lrctest) then
@@ -121,7 +121,7 @@ subroutine divid (appel)
   !      if ((rang==0).and.(appel==0)) write (6, *) 'avant volu'
 
   volu = calcvol(at(1,1),at(1,2),at(1,3))
-#if(ML)
+#ifdef ML
 #else
   if ((rang==0).and.(appel==0)) then
      write (6, '(A,D15.8,A,D15.8,A)') 'volume=', volu,' cm3 ',volu*1d24,' Ang3'
@@ -129,7 +129,7 @@ subroutine divid (appel)
 #endif
 
   !DETERMINATION DE NOX NOY NOZ
-#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
 #else
 
   if ((rang==0).and.(appel==0)) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz
@@ -149,7 +149,7 @@ subroutine divid (appel)
   if (nox<=0.or.noy<=0.or.noz<=0) then
      ! détermination de nox noy noz qui ne sont pas donnes dans .din
      !
-#if(ML)
+#ifdef ML
 #else
      if ((rang==0).and.(appel==0)) write (6, *) 'calcul de nox noy noz !!!'
 #endif
@@ -160,7 +160,7 @@ subroutine divid (appel)
         call arret_ndm
 #endif
         if ((rang==0).and.(appel==0)) then
-#if(ML)
+#ifdef ML
 #else
            WRITE(6,'(a)') "Boite trop petite: le nombre de cellules est fixe a son minimum"
 #endif
@@ -169,7 +169,7 @@ subroutine divid (appel)
      nox = int(nzl(1)/rumax)
      noy = int(nzl(2)/rumax)
      noz = int(nzl(3)/rumax)
-#if(ML)
+#ifdef ML
 #else
      if ((rang==0).and.(appel==0)) THEN
         write (6,'(a)') 'nox noy noz calcules a partir de ru'
@@ -186,12 +186,12 @@ subroutine divid (appel)
         nox=1 ; noy=1 ; noz=1
         !             ltabvois=.TRUE.
         !             lconstrtot=.TRUE.
-#if(ML)
+#ifdef ML
 #else
         if ((rang==0).and.(appel==0)) write(6,*)'!!!!!!!!!!Envisager ltabvois = true !!!!!!!!!!!!!!'
 #endif
      END IF
-#if(ML)
+#ifdef ML
 #else
      if ((rang==0).and.(appel==0)) write (6,'(a,3(i0,1x))') 'nox noy noz apres correction = '&
           , nox, noy, noz
@@ -276,7 +276,7 @@ subroutine divid (appel)
 
   endif
 
-#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
 #else
    if (rang==0) write(6,'(A,3G15.7)') 'celsizes ',celsize(:)
 #endif
@@ -287,7 +287,7 @@ subroutine divid (appel)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if (appel==0) then
      if (rang==0) then
-#if(ML)
+#ifdef ML
 #else
         write(6,*)'retour à la construction de la boite'
         write(6,*)
@@ -320,7 +320,7 @@ subroutine divid (appel)
 
   natperc=max(5*natperc,20)
 
-#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
 #else
   if (rang==0) &
        write(6,*) 'natperc im/noxyz', natperc, im_glob/noxyz
@@ -339,7 +339,7 @@ subroutine divid (appel)
      if (izonr2<1) then
         write (6, *) rang,'trop petite boite pour rvois !!!'
         !cosboite   call arret_ndm
-#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
 
         write (6, *) rang,'trop petite boite pour rvois !!!'
 #else
@@ -351,7 +351,7 @@ subroutine divid (appel)
      voluperat=volu/im
      IF (nvperat.LE.0) nvperat=4*Pi*(rvois+1.0d-8)**3/(3*voluperat)
 
-#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
 
      !debug if(rang==0)         write (6, '(A,D10.3)') 'volumeperat=', voluperat
      !debug if(rang==0)         write (6, '(A,D10.3)') 'Rvois=', RVois
@@ -368,7 +368,7 @@ subroutine divid (appel)
         nvois=max(Int(1.5*nvperat*im),100)
         nvat=max(Int(nvperat*1.3),10)
      end if
-#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
     !debug  if(rang==0)         write (6, *) 'Nvois= ', nvois
 #else
 
@@ -386,7 +386,7 @@ subroutine divid (appel)
   if ((qtot/=0.0).and.(rang==0)) write (6, *) ' CHARGE NON NULLE !! = ', qtot
 
   izonr = int(zlmin/r3cm)
-#if(PHONDY || PARAPH || MAB || ML || PARAML)
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
 
 #else
   if(rang==0) write(6,*)

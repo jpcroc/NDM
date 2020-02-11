@@ -3,7 +3,7 @@ module gen_com_m
   implicit none
 
 
-#ifdef para
+#ifdef PARA
 
   ! Declarations MPI
   !      include 'mpif.h'
@@ -251,6 +251,10 @@ module gen_com_m
   real(double), parameter :: thetamax = 6.2
 
   logical lEev,lPkbar   !unite
+  real(double) :: unitE,unitP
+  character*5 :: cunitE, cunitP
+
+
   ! energies potentielle, cinetique et totale de la boite en Parrinello-Rahman
   real(double):: EcellPR, Kcell, Ucell      
 
@@ -365,7 +369,9 @@ module gen_com_m
   logical :: l2T
  real(double), dimension (:),allocatable ::elossCel
 character (len=15):: units_lammps
-real(double)::rskin,position_conversion_lammps, energy_conversion_lammps ! epaisseur pour lammps (equivalent rvois-rue)
+real(double)::rskin,position_conversion_lammps, energy_conversion_lammps, pressure_conversion_lammps ! epaisseur pour lammps (equivalent rvois-rue)
  real(kind=8) , allocatable, dimension(:)  ::  posa, forca
  logical :: firsttime_lammps
+ integer:: iverbose ! verbosity (0 = pas de détails, défaut, 1 = détails)
+
 end module gen_com_m

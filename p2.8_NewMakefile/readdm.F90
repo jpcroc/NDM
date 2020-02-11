@@ -485,7 +485,7 @@ subroutine readdm
   end if
 
 
-#if(DECOUP)
+#ifdef DECOUP
   ltabvois=.false.;rvois=0.
 #endif
 
@@ -915,26 +915,26 @@ subroutine readdm
   case (11)
      if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
      if (rang==0) write (6,*)
-#if(ART)    
+#ifdef ART    
   case (12)
      if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
      if (rang==0) write (6,'(a)') '|---------ART nouveau by N MOUSSEAU.---------------|'
      if (rang==0) write (6,'(a)') '|======== colored by Cosmin Marinica!==============|'
 #endif
-#if(SUNDAE)    
+#ifdef SUNDAE    
   case (16)
      if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
      if (rang==0) write (6,'(a)') '|==================================================|'
 #endif
-#if(MAB)    
+#ifdef MAB    
   case (17)
      if (rang==0) write (6,'(a)') '|=========       NDM + MAB          ===============|'
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
      if (rang==0) write (6,'(a)') '|==================================================|'
 #endif
 
-#if(ML)    
+#ifdef ML    
   case (18)
      if (rang==0) write (6,'(a)') '|=========       NDM + ML           ===============|'
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
@@ -1363,24 +1363,42 @@ subroutine readdm
         stop
      end if
   end if
-
+  if(lPkbar) then
+     unitP=1.0d-9
+     cunitP='kbar'
+  else
+     unitP=1.0
+     cunitP='d/cm2'
+  endif
+  if(lEev) then
+     unitE=erg2eV
+     cunitE='  eV'
+  else
+     unitE=1.0
+     cunitE=' erg'
+  end if
 #ifdef LAMMPS_VERSION
   if(trim(units_lammps)=='metal') then
      energy_conversion_lammps=1/erg2ev
      position_conversion_lammps=A2cm
+     pressure_conversion_lammps=1d6
   elseif(trim(units_lammps)=='real') then
      energy_conversion_lammps=0.043/erg2ev
      position_conversion_lammps=A2cm
+     pressure_conversion_lammps=1013250.0
   elseif(trim(units_lammps)=='si') then
      energy_conversion_lammps=1e7
      position_conversion_lammps=1d2
+     pressure_conversion_lammps=10.0
   elseif(trim(units_lammps)=='cgs') then
      energy_conversion_lammps=1
      position_conversion_lammps=1
+     pressure_conversion_lammps=1.0
   elseif(trim(units_lammps)=='electron') then
      energy_conversion_lammps=27.211399/erg2ev
      position_conversion_lammps=A2cm*0.529177249
-  else 
+     pressure_conversion_lammps=10.
+  else
      write(6,*)'error in units_lammps'
      stop
   end if

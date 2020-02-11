@@ -20,6 +20,7 @@ module init_mod
         use dislo_mod
         use initcdp_mod
         use initcasca_mod
+
 #ifdef PARA
         use init_vois_mod
 #endif
@@ -75,7 +76,7 @@ subroutine init
 
   !     write(6,*)'entree dans init.f'
   !potentiel BKS
-#if(PARAPH)
+#ifdef PARAPH
 rang=rangph
 #endif
 
@@ -185,7 +186,7 @@ rang=rangph
 
            call inputtersoff
 
-#if(ML)
+#ifdef ML
 ! MiLaDy
          case(20)
            if (rang.eq.0) then
@@ -236,7 +237,7 @@ endif
 #endif
 
 
-#if(DECOUP)
+#ifdef DECOUP
      ! Pas la peine d'aller plus loin dans l'initialisation
      return
 #endif
@@ -362,7 +363,7 @@ endif
   !  end if
 !computing the neighbours for the very first time ......
 
-#if(ML)
+#ifdef ML
 ! MiLaDy
   if(ipotentiel==20) then
    if (rang.eq.0) then

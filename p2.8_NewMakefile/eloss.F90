@@ -72,7 +72,7 @@ contains
           !        write(6,'(2G15.5)')vel,vel2
           veloc(j)=vel2 ! vitesse en cm.sec-1
           stoppow(j)=sp*ev2erg*1e8 
-#if(CHECK)
+#ifdef CHECK
           write(62,'(I3,7G15.7)')j,vel,sp,veloc(j),stoppow(j), stoppow(j)/veloc(j),tstep*stoppow(j)/veloc(j)/cm(i)
 #endif
 
@@ -94,7 +94,7 @@ contains
              end if
           end do loopj
           elstopforce(i,2,k)=stoppow(j0)+(stoppow(j1)-stoppow(j0))*(vmaxel(i)*k/ngrdel-veloc(j0))/(veloc(j1)-veloc(j0))
-#if(CHECK)
+#ifdef CHECK
           if((rang==0).and.(mod(k,20)==0)) write(6,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
           write(61,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
 #endif

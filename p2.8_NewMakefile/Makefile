@@ -35,8 +35,17 @@ OBJ_MOD   = $(f90mod:mod/%.F90=%.o) #$(f77files:mod/%.f=%.o) $(cfiles:mod/%.c=%.
 f90para   = $(wildcard para/*.F90)
 #cpara    = $(wildcard para/*.c)
 #cpppara   = $(wildcard para/*.cpp)
-#INC_PARA  = $(wildcard para/*.h)
+INC_PARA  = $(wildcard para/*.h)
 OBJ_PARA   = $(f90para:para/%.F90=%.o) #$(f77files:para/%.f=%.o) $(cfiles:para/%.c=%.o)  $(cppfiles:para/%.cpp=%.o)
+
+#f77ml  = $(wildcard ml/*.f)
+sf90ml    =  $(wildcard ml/*.f90) 
+bF90ml = $(wildcard ml/*.F90)   
+#cml    = $(wildcard ml/*.c)
+#cppml   = $(wildcard ml/*.cpp)
+INC_ML  = $(wildcard ml/*.h)
+OBJ_MLS   = $(sf90ml:ml/%.f90=%.o) #$(f77files:ml/%.f=%.o) $(cfiles:ml/%.c=%.o)  $(cppfiles:ml/%.cpp=%.o)
+OBJ_MLB   = $(bf90ml:ml/%.F90=%.o) #$(f77files:ml/%.f=%.o) $(cfiles:ml/%.c=%.o)  $(cppfiles:ml/%.cpp=%.o)
 
 #f77lammps  = $(wildcard lammps/*.f)
 f90lammps   = $(wildcard lammps/*.F90)
@@ -54,6 +63,14 @@ ROOT = rundm90
 EXT = $@
 FLAG = # BECAREFUL THIS LINE IS IMPORTANT BECAUSE WE APPEND TO IT AFTER IF MACRO ARE DEFINED 
 EXE = $(ROOT)_$@    #_$(shell ./version.sh)
+
+
+# For dependencies here are some variables :
+MAKEDEPEND=fortdepend
+# dependence file name with arch extension
+DEP_FILE= .dependencies_$@ 
+
+
 #EXE = $(ROOT)_$@_v$(shell ./version.sh) # if git and version.sh present
 
 ifdef PARA
@@ -71,8 +88,18 @@ FLAG += -DLAMMPS_VERSION
 endif
 
 
+ifdef ML # this is ML + PARAML, serial version of ML is not considered  
+OBJ +=  $(OBJ_MLS) $(OBJ_MLB) 
+OBJ +=  $(OBJ_PARA)
+checkfiles += $(sf90ml) $(bf90ml) 
+checkfiles += $(f90para)
+INC += $(INC_ML) 
+INC += $(INC_PARA)
+FLAG += -DML -DPARAML -DPARA 
+endif
 
 # List of all targets
+
 
 help:
 	@echo ''
@@ -95,22 +122,22 @@ help:
 	@./version.sh
 	@cat version.h
 	@echo \#define COMPILE_TARGET \"$@\" >> version.h
-	@#fortdepend -w ${MPIFLAG} -i mpi -o .depend -f  *.f90 *F90 
-	@#fortdepend -w ${MPIFLAG} -i mpi -f  *.F90 mod/* para/*  *.f  -o .dependencies
-	fortdepend -w ${FLAG} -i "mpi" -f  ${checkfiles}  -o .dependencies
+	@#fortdepend -w $(MPIFLAG) -i mpi -o .depend -f  *.f90 *F90 
+	@#fortdepend -w $(MPIFLAG) -i mpi -f  *.F90 mod/* para/*  *.f  -o .dependencies
+	$(MAKEDEPEND) -v -w $(FLAG) -i "mpi" -i "iso_c_binding" -f  $(checkfiles) -I/lammps/ -o $(DEP_FILE)
 	@chmod +x MAKE/Makefile.$@ 
 	@cp MAKE/Makefile.$@ Obj_$@/Makefile
 	@cp name.in Obj_$@/.
-	@echo "sinclude ../.dependencies" >> Obj_$@/Makefile 
+	@echo "sinclude ../$(DEP_FILE)" >> Obj_$@/Makefile 
 	cd Obj_$@; \
-        $(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = ${INC}"  "EXE = ../$(EXE)" ../$(EXE)
+        $(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)"  "EXE = ../$(EXE)" ../$(EXE)
 	@ln -sf ./$(EXE) ./$(ROOT)_exec
 	#cp $(ROOT)_* ~/bin/.
 
 
 tar:
 	@$(MAKE) clean-all
-	@cd ..; tar cvzf p2.8/$(ROOT)_src.tar.gz p2.8/* \
+	@tar cvzf ../$(ROOT)_src.tar.gz ./*
 
 clean-all:
 	rm -rf Obj_*
@@ -118,3 +145,16 @@ clean-all:
 clean-%:
 	rm -rf Obj_$(@:clean-%=%)
 
+
+all: $(EXE) $(DEP_FILE)
+
+## Make dependencies
+#.PHONY: depend
+#depend: $(DEP_FILE)
+#
+#$(DEP_FILE):$(OBJ)
+#	@echo "Making dependencies !"
+#	$(MAKEDEPEND) -w $(FLAG) -i mpi -f $(checkfiles) -o $(DEP_FILE)
+#
+#include $(DEP_FILE)
+#

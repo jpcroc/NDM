@@ -35,8 +35,7 @@ subroutine dyn
   real(double), save :: tmoyinst, imesureT
   !real(double), external :: tempinst
   real(double) :: tempavant,tmoy
-  real(double) :: unitE,deltaE
-  character*5 :: cunitE
+  real(double) :: deltaE
   real(double):: eatommoy
   if(lEev) then
      unitE=erg2eV

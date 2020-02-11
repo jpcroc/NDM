@@ -42,8 +42,6 @@ subroutine rasmol(itapp)
   integer :: i, luvisu, luvisu2, iti,lenfn2
   real(double) :: xp1, xp2, xp3,pat
   character :: extension*9
-  real(double) :: unitE,unitP
-  character*5 :: cunitE, cunitP
 
   ! Notes about V_sim:
   ! * works if at(:,:) "encompasses" all the system (no duplication of lattice cells)
