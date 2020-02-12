@@ -90,12 +90,12 @@ endif
 
 ifdef ML # this is ML + PARAML, serial version of ML is not considered  
 OBJ +=  $(OBJ_MLS) $(OBJ_MLB) 
-OBJ +=  $(OBJ_PARA)
+#OBJ +=  $(OBJ_PARA)
 checkfiles += $(sf90ml) $(bf90ml) 
-checkfiles += $(f90para)
+#checkfiles += $(f90para)
 INC += $(INC_ML) 
-INC += $(INC_PARA)
-FLAG += -DML -DPARAML -DPARA 
+#INC += $(INC_PARA)
+FLAG += -DML -DPARAML #-DPARA 
 endif
 
 # List of all targets
@@ -124,7 +124,7 @@ help:
 	@echo \#define COMPILE_TARGET \"$@\" >> version.h
 	@#fortdepend -w $(MPIFLAG) -i mpi -o .depend -f  *.f90 *F90 
 	@#fortdepend -w $(MPIFLAG) -i mpi -f  *.F90 mod/* para/*  *.f  -o .dependencies
-	$(MAKEDEPEND) -v -w $(FLAG) -i "mpi" -i "iso_c_binding" -f  $(checkfiles) -I/lammps/ -o $(DEP_FILE)
+	$(MAKEDEPEND) -v -w $(FLAG) -i mpi iso_c_binding -f  $(checkfiles)  -o $(DEP_FILE)
 	@chmod +x MAKE/Makefile.$@ 
 	@cp MAKE/Makefile.$@ Obj_$@/Makefile
 	@cp name.in Obj_$@/.
