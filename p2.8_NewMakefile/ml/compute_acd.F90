@@ -1,3 +1,7 @@
+module compute_acd_mod
+        use notperiod_mod
+        implicit none
+        contains
 subroutine compute_kernel_acd(ns_data,k_acd_out,distance_acd_out)
 
  USE T_kind_param_m, ONLY:  double
@@ -5,7 +9,7 @@ subroutine compute_kernel_acd(ns_data,k_acd_out,distance_acd_out)
   use ml_in_ndm_module, ONLY: rangml,pi,r_cut,alpha_acd,kappa_acd,ksi_ini,temp_ini,tau,mc_step,rotate,&
                               mconf,w2_rho,acd_weighted,acd_fcut,massat,reject,sparsification_by_acd,max_data, &
                               data_im,data_natm,max_ntyp,r_acd,seed
-#if(PARAML) 
+#ifdef PARAML 
 !for curie      use mkl_service
   use mpi
   use mod_mpi_ml 
@@ -150,14 +154,14 @@ do nk=1,max_data-1
                  enddo !jk
                  local_norm_fcut1_ji=local_norm_fcut1_ji+fcut1_ji
                  local_norm_fcut2_ji=local_norm_fcut2_ji+fcut2_ji
-#if (PARAML)
+#ifdef PARAML
 #else 
                  norm_fcut1_ji=local_norm_fcut1_ji
                  norm_fcut2_ji=local_norm_fcut2_ji
 #endif
               enddo !ji           
       
-#if (PARAML) 
+#ifdef PARAML 
               call MPI_ALLREDUCE(local_norm_fcut1_ji,norm_fcut1_ji,1,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
               call MPI_ALLREDUCE(local_norm_fcut2_ji,norm_fcut2_ji,1,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
               call MPI_BCAST(norm_fcut1_jk,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,codeml)
@@ -222,13 +226,13 @@ do nk=1,max_data-1
       
                  enddo !jk
                  local_norm_fcut3_ji=local_norm_fcut3_ji+fcut3_ji
-#if (PARAML) 
+#ifdef PARAML 
 #else 
                  norm_fcut3_ji=local_norm_fcut3_ji
 #endif
               enddo !ji           
       
-#if (PARAML) 
+#ifdef PARAML 
              call MPI_ALLREDUCE(local_norm_fcut3_ji,norm_fcut3_ji,1,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
              call MPI_BCAST(norm_fcut3_jk,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,codeml)
              if (((norm_fcut3_ji==0d0).or.(norm_fcut3_jk==0d0)).and.(rangml==0)) then
@@ -282,12 +286,12 @@ do nk=1,max_data-1
 
               enddo !jk
               local_norm_fcut_ji=local_norm_fcut_ji+fcut_ji
-#if (PARAML) 
+#ifdef PARAML 
 #else 
               norm_fcut_ji=local_norm_fcut_ji
 #endif
            enddo !ji           
-#if (PARAML) 
+#ifdef PARAML 
            call MPI_ALLREDUCE(local_norm_fcut_ji,norm_fcut_ji,1,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
            call MPI_BCAST(norm_fcut_jk,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,codeml)
            if (((norm_fcut_ji==0d0).or.(norm_fcut_jk==0d0)).and.(rangml==0)) then
@@ -372,3 +376,4 @@ enddo ! nk
   
 return
 end subroutine compute_kernel_acd
+end module

@@ -1,3 +1,6 @@
+module deftimestep_mod
+        implicit none
+        contains
 ! *********************************************************************
 subroutine deftimestep
   !-----------------------------------------------
@@ -236,3 +239,4 @@ endif
   !     write(6,*)'sortie deftimestep'
   return
 end subroutine deftimestep
+end module deftimestep_mod

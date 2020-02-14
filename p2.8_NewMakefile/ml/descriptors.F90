@@ -10,12 +10,14 @@ end module descriptors_interface
 
 
 
-
+module compute_descriptors_mod
+        implicit none
+        contains
 
 
 subroutine compute_descriptors(xdesc_out,icount)
 
-#if(PARAML)
+#ifdef PARAML
 use mpi
 use mod_mpi_ml
 #endif
@@ -43,6 +45,18 @@ use temporary_data_cov, ONLY:  dim_xdesc
 use set_limits
 use angular_functions
 use derived_types, only: config_desc, config_real
+use compute_g2_mod
+use compute_g3_mod
+use compute_afs_mod
+use compute_mtp_mod
+use compute_bispectrum_so3_mod
+use compute_bispectrum_so4_mod
+use compute_pow_so4_mod
+use compute_pow_so3_mod
+use compute_soap_mod
+
+
+
 
 implicit none
 
@@ -98,139 +112,139 @@ integer, dimension(imm,imm_neigh) :: l_d_kind_neigh, d_kind_neigh
  integer :: jso4
 
 
-interface
+!interface
 
-subroutine compute_g2(i_start_at,i_final_at, l_d_n_neigh, l_d_kind_neigh,  local_g2,local_g2_deriv, iconf)
-    use gen_com_m, only: imm
-    use ml_in_ndm_module, only: g2_dim, imm_neigh
-    implicit none
-    integer, intent(in) :: i_start_at, i_final_at
-    integer, dimension(imm), intent(out) :: l_d_n_neigh
-    integer, dimension(imm, imm_neigh), intent(out) :: l_d_kind_neigh
-    double precision,dimension(g2_dim,imm), intent(out) :: local_g2
-    double precision,dimension(g2_dim,imm,0:imm_neigh,3), intent(out) :: local_g2_deriv
-    integer, optional, intent(in) :: iconf
-end subroutine compute_g2
-
-
-subroutine compute_g3(i_start_at,i_final_at, l_d_n_neigh, l_d_kind_neigh,  local_g3,local_g3_deriv, iconf)
-    use gen_com_m, only: imm
-    use ml_in_ndm_module, only: g3_dim, imm_neigh
-    implicit none
-    integer, intent(in) :: i_start_at, i_final_at
-    integer, dimension(imm), intent(out) :: l_d_n_neigh
-    integer, dimension(imm, imm_neigh), intent(out) :: l_d_kind_neigh
-    double precision,dimension(g3_dim,imm), intent(out) :: local_g3
-    double precision,dimension(g3_dim,imm,0:imm_neigh,3), intent(out) :: local_g3_deriv
-    integer, optional, intent(in) :: iconf
-end subroutine compute_g3
-
-subroutine compute_afs(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, iconf)
-   use gen_com_m, only: imm
-   use ml_in_ndm_module, only: afs_dim, imm_neigh
-   implicit none
-   integer, intent (in) :: i_start_at,i_final_at
-   integer, dimension(imm),intent(out)  :: l_d_n_neigh
-   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
-   !real(kind(0.d0)),dimension(afs_dim,imm),intent(out) :: local_afs_out
-   !real(kind(0.d0)),dimension(afs_dim,imm, 0:imm_neigh, 3),intent(out) :: local_afs_deriv_out
-   integer, optional :: iconf
-
-end subroutine compute_afs
-
-
-subroutine compute_pow_so3(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
-                         local_pow_so3_out,local_pow_so3_deriv_out, iconf)
-   use gen_com_m, only: imm
-   use ml_in_ndm_module, only: pow_so3_dim, imm_neigh
-   implicit none
-   integer, intent (in) :: i_start_at,i_final_at
-   integer, dimension(imm),intent(out)  :: l_d_n_neigh
-   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
-   real(kind(0.d0)),dimension(pow_so3_dim,imm),intent(out) :: local_pow_so3_out
-   real(kind(0.d0)),dimension(pow_so3_dim,imm, 0:imm_neigh, 3),intent(out) :: local_pow_so3_deriv_out
-   integer, optional :: iconf
-
-end subroutine compute_pow_so3
-
-
-subroutine compute_bispectrum_so3(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
-                         local_bispectrum_so3_out,local_bispectrum_so3_deriv_out, iconf)
-   use gen_com_m, only: imm
-   use ml_in_ndm_module, only: bisso3_dim, imm_neigh
-   implicit none
-   integer, intent (in) :: i_start_at,i_final_at
-   integer, dimension(imm),intent(out)  :: l_d_n_neigh
-   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
-   double precision, dimension(bisso3_dim,imm),intent(out) :: local_bispectrum_so3_out
-   double precision, dimension(bisso3_dim,imm, 0:imm_neigh, 3),intent(out) :: local_bispectrum_so3_deriv_out
-   integer, optional :: iconf
-
-end subroutine compute_bispectrum_so3
-
-
-subroutine compute_pow_so4(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
-                           local_pow_so4_out, local_pow_so4_deriv_out, iconf)
-
-   use gen_com_m, only: imm
-   use ml_in_ndm_module, only: jj_max, imm_neigh
-   implicit none
-   integer, intent (in) :: i_start_at,i_final_at
-   integer, dimension(imm),intent(out)  :: l_d_n_neigh
-   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
-   double precision,dimension(0:jj_max,imm),intent(out) :: local_pow_so4_out
-   double precision,dimension(0:jj_max,imm,0:imm_neigh,3), intent(out) :: local_pow_so4_deriv_out
-   integer, optional :: iconf
-
-end subroutine compute_pow_so4
-
-
-subroutine compute_bispectrum_so4(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh,iconf)
-   use gen_com_m, only: imm
-   use ml_in_ndm_module, only: bisso4_dim, imm_neigh
-   implicit none
-   integer, intent (in) :: i_start_at,i_final_at
-   integer, dimension(imm),intent(out)  :: l_d_n_neigh
-   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
-   !double precision,dimension(bisso4_dim,imm),intent(out) :: local_bispectrum_so4_out
-   !double precision,dimension(bisso4_dim,imm, 0:imm_neigh, 3),intent(out) :: local_bispectrum_so4_deriv_out
-   integer, optional :: iconf
-
-end subroutine compute_bispectrum_so4
-
-
-
-subroutine compute_soap(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
-                          iconf)
-   use gen_com_m, only: imm
-   use ml_in_ndm_module, only: soap_dim, imm_neigh
-   implicit none
-   integer, intent (in) :: i_start_at,i_final_at
-   integer, dimension(imm),intent(out)  :: l_d_n_neigh
-   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
-   !double precision, dimension(soap_dim,imm),intent(out) :: local_soap_out
-   !double precision, dimension(soap_dim,imm, 0:imm_neigh, 3),intent(out) :: local_soap_deriv_out
-   integer, optional :: iconf
-
-end subroutine compute_soap
-
-
-
-
-subroutine compute_mtp(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
-                         iconf)
-
-   use gen_com_m, only: imm
-   use ml_in_ndm_module, only: mtp_dim, imm_neigh
-   implicit none
-   integer, intent (in) :: i_start_at,i_final_at
-   integer, dimension(imm),intent(out)  :: l_d_n_neigh
-   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
-   integer, optional :: iconf
-
-end subroutine compute_mtp
-
-end interface
+!subroutine compute_g2(i_start_at,i_final_at, l_d_n_neigh, l_d_kind_neigh,  local_g2,local_g2_deriv, iconf)
+!    use gen_com_m, only: imm
+!    use ml_in_ndm_module, only: g2_dim, imm_neigh
+!    implicit none
+!    integer, intent(in) :: i_start_at, i_final_at
+!    integer, dimension(imm), intent(out) :: l_d_n_neigh
+!    integer, dimension(imm, imm_neigh), intent(out) :: l_d_kind_neigh
+!    double precision,dimension(g2_dim,imm), intent(out) :: local_g2
+!    double precision,dimension(g2_dim,imm,0:imm_neigh,3), intent(out) :: local_g2_deriv
+!    integer, optional, intent(in) :: iconf
+!end subroutine compute_g2
+!
+!
+!subroutine compute_g3(i_start_at,i_final_at, l_d_n_neigh, l_d_kind_neigh,  local_g3,local_g3_deriv, iconf)
+!    use gen_com_m, only: imm
+!    use ml_in_ndm_module, only: g3_dim, imm_neigh
+!    implicit none
+!    integer, intent(in) :: i_start_at, i_final_at
+!    integer, dimension(imm), intent(out) :: l_d_n_neigh
+!    integer, dimension(imm, imm_neigh), intent(out) :: l_d_kind_neigh
+!    double precision,dimension(g3_dim,imm), intent(out) :: local_g3
+!    double precision,dimension(g3_dim,imm,0:imm_neigh,3), intent(out) :: local_g3_deriv
+!    integer, optional, intent(in) :: iconf
+!end subroutine compute_g3
+!
+!subroutine compute_afs(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, iconf)
+!   use gen_com_m, only: imm
+!   use ml_in_ndm_module, only: afs_dim, imm_neigh
+!   implicit none
+!   integer, intent (in) :: i_start_at,i_final_at
+!   integer, dimension(imm),intent(out)  :: l_d_n_neigh
+!   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
+!   !real(kind(0.d0)),dimension(afs_dim,imm),intent(out) :: local_afs_out
+!   !real(kind(0.d0)),dimension(afs_dim,imm, 0:imm_neigh, 3),intent(out) :: local_afs_deriv_out
+!   integer, optional :: iconf
+!
+!end subroutine compute_afs
+!
+!
+!subroutine compute_pow_so3(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
+!                         local_pow_so3_out,local_pow_so3_deriv_out, iconf)
+!   use gen_com_m, only: imm
+!   use ml_in_ndm_module, only: pow_so3_dim, imm_neigh
+!   implicit none
+!   integer, intent (in) :: i_start_at,i_final_at
+!   integer, dimension(imm),intent(out)  :: l_d_n_neigh
+!   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
+!   real(kind(0.d0)),dimension(pow_so3_dim,imm),intent(out) :: local_pow_so3_out
+!   real(kind(0.d0)),dimension(pow_so3_dim,imm, 0:imm_neigh, 3),intent(out) :: local_pow_so3_deriv_out
+!   integer, optional :: iconf
+!
+!end subroutine compute_pow_so3
+!
+!
+!subroutine compute_bispectrum_so3(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
+!                         local_bispectrum_so3_out,local_bispectrum_so3_deriv_out, iconf)
+!   use gen_com_m, only: imm
+!   use ml_in_ndm_module, only: bisso3_dim, imm_neigh
+!   implicit none
+!   integer, intent (in) :: i_start_at,i_final_at
+!   integer, dimension(imm),intent(out)  :: l_d_n_neigh
+!   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
+!   double precision, dimension(bisso3_dim,imm),intent(out) :: local_bispectrum_so3_out
+!   double precision, dimension(bisso3_dim,imm, 0:imm_neigh, 3),intent(out) :: local_bispectrum_so3_deriv_out
+!   integer, optional :: iconf
+!
+!end subroutine compute_bispectrum_so3
+!
+!
+!subroutine compute_pow_so4(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
+!                           local_pow_so4_out, local_pow_so4_deriv_out, iconf)
+!
+!   use gen_com_m, only: imm
+!   use ml_in_ndm_module, only: jj_max, imm_neigh
+!   implicit none
+!   integer, intent (in) :: i_start_at,i_final_at
+!   integer, dimension(imm),intent(out)  :: l_d_n_neigh
+!   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
+!   double precision,dimension(0:jj_max,imm),intent(out) :: local_pow_so4_out
+!   double precision,dimension(0:jj_max,imm,0:imm_neigh,3), intent(out) :: local_pow_so4_deriv_out
+!   integer, optional :: iconf
+!
+!end subroutine compute_pow_so4
+!
+!
+!subroutine compute_bispectrum_so4(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh,iconf)
+!   use gen_com_m, only: imm
+!   use ml_in_ndm_module, only: bisso4_dim, imm_neigh
+!   implicit none
+!   integer, intent (in) :: i_start_at,i_final_at
+!   integer, dimension(imm),intent(out)  :: l_d_n_neigh
+!   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
+!   !double precision,dimension(bisso4_dim,imm),intent(out) :: local_bispectrum_so4_out
+!   !double precision,dimension(bisso4_dim,imm, 0:imm_neigh, 3),intent(out) :: local_bispectrum_so4_deriv_out
+!   integer, optional :: iconf
+!
+!end subroutine compute_bispectrum_so4
+!
+!
+!
+!subroutine compute_soap(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
+!                          iconf)
+!   use gen_com_m, only: imm
+!   use ml_in_ndm_module, only: soap_dim, imm_neigh
+!   implicit none
+!   integer, intent (in) :: i_start_at,i_final_at
+!   integer, dimension(imm),intent(out)  :: l_d_n_neigh
+!   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
+!   !double precision, dimension(soap_dim,imm),intent(out) :: local_soap_out
+!   !double precision, dimension(soap_dim,imm, 0:imm_neigh, 3),intent(out) :: local_soap_deriv_out
+!   integer, optional :: iconf
+!
+!end subroutine compute_soap
+!
+!
+!
+!
+!subroutine compute_mtp(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
+!                         iconf)
+!
+!   use gen_com_m, only: imm
+!   use ml_in_ndm_module, only: mtp_dim, imm_neigh
+!   implicit none
+!   integer, intent (in) :: i_start_at,i_final_at
+!   integer, dimension(imm),intent(out)  :: l_d_n_neigh
+!   integer, dimension(imm,imm_neigh), intent(out) :: l_d_kind_neigh
+!   integer, optional :: iconf
+!
+!end subroutine compute_mtp
+!
+!end interface
 
 
 !depending on rang the index of atoms is distributed on procs ...
@@ -238,12 +252,12 @@ call set_limit_for_atoms(rangml,im,i_start_at,i_final_at)
 !find on which proc are is specific atom ...
 call find_rang_of_my_atom(icount)
 
-#if(PARAML)
+#ifdef PARAML
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_real(icount)%proc_atom, config_real(icount)%nat,MPI_INTEGER, MPI_SUM,MPI_COMM_WORLD,codeml)
 #endif
 !debug write(6,*) 'rangml', rangml,   config_real(icount)%proc_atom
 !without this MPI_BARRIER after ind_rang_of_my_atom the code crash ...
-#if(PARAML)
+#ifdef PARAML
     call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 #endif
 
@@ -253,7 +267,7 @@ call typ(n2_typ,n3_typ)
 
  if (debug) then
    write(6,'("ML: compute_descriptors in compute_descriptor rangml im i_start_at, i_final_at  nf ",i4, 4i9)')rangml, im, i_start_at, i_final_at, i_final_at-i_start_at+1
-#if (PARAML)
+#ifdef PARAML
  call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 #endif
  end if
@@ -264,7 +278,7 @@ call typ(n2_typ,n3_typ)
     if (allocated(local_g2_deriv)) deallocate(local_g2_deriv); allocate(local_g2_deriv(g2_dim,imm, 0:imm_neigh, 3))
 
     call compute_g2(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, local_g2,local_g2_deriv, icount)
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=g2_dim*imm
     call MPI_ALLREDUCE(local_g2,g2,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 
@@ -291,7 +305,7 @@ call typ(n2_typ,n3_typ)
     config_desc(icount)%energy(1:dim_xdesc,1:imm) = g2(1:g2_dim,1:imm)
     config_desc(icount)%force(1:dim_xdesc,1:imm,0:imm_neigh,1:3)=g2_deriv(1:g2_dim,1:imm, 0:imm_neigh,1:3)
 
-#if(PARAML)
+#ifdef PARAML
     call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 #endif
 
@@ -304,7 +318,7 @@ call typ(n2_typ,n3_typ)
     if (allocated(local_g3_deriv)) deallocate(local_g3_deriv); allocate(local_g3_deriv(g3_dim, imm, 0:imm_neigh, 3))
 
    call compute_g3(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh,   local_g3,local_g3_deriv, icount)
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=g3_dim*imm
     call MPI_ALLREDUCE(local_g3,g3,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
     dim_reduce=g3_dim*imm*(imm_neigh+1)*3
@@ -342,7 +356,7 @@ call typ(n2_typ,n3_typ)
 
     call compute_g3(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, local_g3,local_g3_deriv, icount)
     call compute_g2(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, local_g2,local_g2_deriv, icount)
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=g3_dim*imm
     call MPI_ALLREDUCE(local_g3,g3,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
     dim_reduce=g3_dim*imm*(imm_neigh+1)*3
@@ -392,7 +406,7 @@ call typ(n2_typ,n3_typ)
     if (allocated(config_desc(icount)%kind_neigh)) deallocate(config_desc(icount)%kind_neigh) ; allocate(config_desc(icount)%kind_neigh(imm,imm_neigh))
     !call pre_compute_neighbours_descriptors(i_start_at, i_final_at,config_desc(icount)%n_neigh, config_desc(icount)%kind_neigh,   icount)
 
-#if (PARAML)
+#ifdef PARAML
     !put the list of neighbours in descritors together ...
     !call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%n_neigh,imm,MPI_INTEGER, MPI_SUM,MPI_COMM_WORLD,codeml)
     !call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%kind_neigh ,imm*imm_neigh,MPI_INTEGER, MPI_SUM,MPI_COMM_WORLD,codeml)
@@ -422,7 +436,7 @@ call typ(n2_typ,n3_typ)
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%kind_neigh ,imm*imm_neigh,MPI_INTEGER, MPI_SUM,MPI_COMM_WORLD,codeml)
 
     !debug call distribute_ghost_descriptors()
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=dim_xdesc*imm
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%energy ,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 
@@ -456,7 +470,7 @@ call typ(n2_typ,n3_typ)
     !call compute_soap(i_start_at,i_final_at,config_desc(icount)%n_neigh, config_desc(icount)%kind_neigh, config_desc(icount)%energy,   config_desc(icount)%force,   icount)
     call compute_soap(i_start_at,i_final_at,config_desc(icount)%n_neigh, config_desc(icount)%kind_neigh,   icount)
 
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=imm*soap_dim
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%energy ,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 
@@ -482,7 +496,7 @@ call typ(n2_typ,n3_typ)
     if (allocated(local_pow_so3_deriv)) deallocate(local_pow_so3_deriv); allocate(local_pow_so3_deriv(pow_so3_dim,imm, 0:imm_neigh, 3))
 
     call compute_pow_so3(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, local_pow_so3,local_pow_so3_deriv, icount)
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=(pow_so3_dim)*imm
     call MPI_ALLREDUCE(local_pow_so3,pow_so3,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 
@@ -509,7 +523,7 @@ call typ(n2_typ,n3_typ)
     config_desc(icount)%energy(1:dim_xdesc,1:imm) = pow_so3(1:pow_so3_dim,1:imm)
     config_desc(icount)%force(1:dim_xdesc,1:imm,0:imm_neigh,1:3)=pow_so3_deriv(1:pow_so3_dim,1:imm, 0:imm_neigh,1:3)
 
-#if(PARAML)
+#ifdef PARAML
     call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 #endif
 
@@ -528,7 +542,7 @@ call typ(n2_typ,n3_typ)
     if (allocated(config_desc(icount)%force ))     deallocate(config_desc(icount)%force ) ; allocate(config_desc(icount)%force (dim_xdesc,imm,0:imm_neigh,3))
 
     call compute_bispectrum_so3(i_start_at,i_final_at,config_desc(icount)%n_neigh, config_desc(icount)%kind_neigh, config_desc(icount)%energy,   config_desc(icount)%force,   icount)
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=imm*bisso3_dim
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%energy ,dim_reduce,MPI_DOUBLE, MPI_SUM,MPI_COMM_WORLD,codeml)
     dim_reduce=imm*bisso3_dim*(imm_neigh+1)*3
@@ -557,7 +571,7 @@ call typ(n2_typ,n3_typ)
 
     call compute_g2(i_start_at,i_final_at, config_desc(icount)%n_neigh, config_desc(icount)%kind_neigh, g2, g2_deriv, icount)
     call compute_pow_so4(i_start_at,i_final_at, config_desc(icount)%n_neigh, config_desc(icount)%kind_neigh, pow_so4, pow_so4_deriv, icount)
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=(jso4+1)*imm
     call MPI_ALLREDUCE(MPI_IN_PLACE,pow_so4,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 
@@ -594,7 +608,7 @@ call typ(n2_typ,n3_typ)
     if (allocated(local_pow_so4_deriv)) deallocate(local_pow_so4_deriv); allocate(local_pow_so4_deriv(0:jso4,imm,0:imm_neigh,3))
     call compute_pow_so4(i_start_at,i_final_at,l_d_n_neigh, l_d_kind_neigh, &
                          local_pow_so4, local_pow_so4_deriv, icount)
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=(jso4+1)*imm
     dim_reduce_full=(jso4+1)*imm*(imm_neigh+1)*3
     call MPI_ALLREDUCE(local_pow_so4,pow_so4,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
@@ -636,7 +650,7 @@ call typ(n2_typ,n3_typ)
     end if
 
     call compute_bispectrum_so4(i_start_at,i_final_at,config_desc(icount)%n_neigh, config_desc(icount)%kind_neigh, icount)
-#if (PARAML)
+#ifdef PARAML
     !all the neighbours
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%n_neigh,imm,MPI_INTEGER, MPI_SUM,MPI_COMM_WORLD,codeml)
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%kind_neigh ,imm*imm_neigh,MPI_INTEGER, MPI_SUM,MPI_COMM_WORLD,codeml)
@@ -673,7 +687,7 @@ call typ(n2_typ,n3_typ)
     end if
 
     call compute_mtp(i_start_at,i_final_at,config_desc(icount)%n_neigh, config_desc(icount)%kind_neigh,  icount)
-#if (PARAML)
+#ifdef PARAML
     !all the neighbours
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%n_neigh,imm,MPI_INTEGER, MPI_SUM,MPI_COMM_WORLD,codeml)
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(icount)%kind_neigh ,imm*imm_neigh,MPI_INTEGER, MPI_SUM,MPI_COMM_WORLD,codeml)
@@ -686,7 +700,7 @@ call typ(n2_typ,n3_typ)
     if (write_desc) then
       call write_descriptors(icount)
     endif
-#if (PARAML)
+#ifdef PARAML
     call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 #endif
 
@@ -713,7 +727,7 @@ call typ(n2_typ,n3_typ)
     call compute_g2(i_start_at,i_final_at, config_desc(icount)%n_neigh, config_desc(icount)%kind_neigh,  g2,   g2_deriv, icount)
 
 
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=imm*bisso4_dim
     call MPI_ALLREDUCE(MPI_IN_PLACE, bispectrum_so4, dim_reduce, MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 
@@ -773,7 +787,7 @@ call typ(n2_typ,n3_typ)
     config_desc(icount)%dim_desc=dim_xdesc
     if (allocated(config_desc(icount)%energy))     deallocate(config_desc(icount)%energy) ; allocate(config_desc(icount)%energy(dim_xdesc,imm))
     if (allocated(config_desc(icount)%force ))     deallocate(config_desc(icount)%force ) ; allocate(config_desc(icount)%force (dim_xdesc,imm,0:imm_neigh,3))
-#if (PARAML)
+#ifdef PARAML
     dim_reduce=imm*afs_dim
     call MPI_BARRIER(MPI_COMM_WORLD,codeml)
     call MPI_ALLREDUCE(MPI_IN_PLACE,afs,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
@@ -808,7 +822,7 @@ call typ(n2_typ,n3_typ)
 end select
 
 
-#if(PARAML)
+#ifdef PARAML
 if (debug) then
  call MPI_BARRIER(MPI_COMM_WORLD,codeml)
   if (rangml==0) write(6,'("ML: descriptor was computed in compute_descriptors...")')
@@ -847,7 +861,7 @@ end subroutine val_renormalize_descritors
 !$--------------------------------------------------------------
 subroutine  write_descriptors (iconf)
 !$--------------------------------------------------------------
-#if(PARAML)
+#ifdef PARAML
 use mpi
 use mod_mpi_ml
 #endif
@@ -989,7 +1003,7 @@ end subroutine para_write_descriptors
 
 subroutine  init_descriptors
 
-#if(PARAML)
+#ifdef PARAML
 use mpi
 use mod_mpi_ml
 #endif
@@ -1004,11 +1018,17 @@ use   ml_in_ndm_module, ONLY : rangml,debug,  &
                                pow_so3_dim, l_max, lbso3_diag, bisso3_dim, &
                                soap_dim, weighted
 use temporary_data_cov, only : dim_xdesc
-
+use compute_pow_so3_mod
+use compute_pow_so4_mod
+use compute_soap_mod
+use compute_mtp_mod
+use compute_afs_mod
+use compute_bispectrum_so3_mod
+use compute_bispectrum_so4_mod
 implicit none
 
 if (debug) then
-#if(PARAML)
+#ifdef PARAML
  call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 #endif
   if (rangml==0) write(6,'("ML: descriptor was initialized in init_descriptors...")')
@@ -1131,12 +1151,12 @@ end select
   if (rangml==0) write(6,'("ML: descriptor ",a," has the dimension ",i6)') char_desc, dim_xdesc
 
 if (debug) then
-#if(PARAML)
+#ifdef PARAML
  call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 #endif
   if (rangml==0) write(6,'("ML: descriptor was initialized in init_descriptors...")')
 end if
-#if(PARAML)
+#ifdef PARAML
  call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 #endif
 
@@ -1226,3 +1246,4 @@ end if
 return
 end subroutine train_deallocate_desc
 !<-------------------------------------------------------------
+end module 

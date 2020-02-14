@@ -5,6 +5,8 @@ subroutine coord_soap(i)
   use gen_com_m, ONLY: imm,lperiod,bg,at,indi2,nvois
   use tab_imm_m, ONLY : iwmax2,xp
   use ml_in_ndm_module, ONLY: r_soap,iwmax2_soap,indi2_soap,at_soap
+  use notperiod_mod
+  use cryst_to_cart_mod
 
   implicit none
 
@@ -35,7 +37,7 @@ subroutine compute_kernel_soap(k_soap_out)
   use ml_in_ndm_module, ONLY: rangml,ns_data,pi,r_cut,l_max,alpha_soap,kappa_acd,n_soap,&
                               mconf,w2_rho,weighted,massat, &
                               data_im,r_soap,iwmax2_soap,indi2_soap,at_soap,lsoap_fcut, cg_vector
-#if(PARAML)
+#ifdef PARAML
 !for curie      use mkl_service
   use mpi
   use mod_mpi_ml
@@ -210,7 +212,7 @@ subroutine compute_kernel_soap(k_soap_out)
 
            enddo !jk
         enddo !ji
-#if (PARAML)
+#ifdef PARAML
 !       call MPI_ALLREDUCE(local_k_soap_tmp,k_soap_tmp,sum(data_im)**2,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,codeml)
        call MPI_ALLREDUCE(local_k_soap_tmp(sum(data_im(0:k-1))+1:sum(data_im(0:k)),sum(data_im(0:i-1))+1:sum(data_im(0:i))), &
                 k_soap_tmp(sum(data_im(0:k-1))+1:sum(data_im(0:k)),sum(data_im(0:i-1))+1:sum(data_im(0:i))),data_im(i)*data_im(k),&
@@ -280,20 +282,25 @@ use k_cross_validation
 use set_limits
 use def_kernels, ONLY : length_kse
 use opt_marginal_likelihood
-
-#if(PARAML)
+use recips_mod
+use dynalloccell
+use divid_mod
+use neigcel_mod
+use caltabi_mod
+use compute_descriptors_mod
+#ifdef PARAML
 !for curie      use mkl_service
       use mpi
       use mod_mpi_ml
 #endif
 implicit none
-interface compute_descriptors
-   subroutine compute_descriptors(xdesc_out,icount)
-    implicit none
-    double precision,dimension(:,:),allocatable :: xdesc_out
-    integer, optional ::  icount
-   end subroutine compute_descriptors
-end interface compute_descriptors
+!interface compute_descriptors
+!   subroutine compute_descriptors(xdesc_out,icount)
+!    implicit none
+!    double precision,dimension(:,:),allocatable :: xdesc_out
+!    integer, optional ::  icount
+!   end subroutine compute_descriptors
+!end interface compute_descriptors
 integer, intent(in) :: n_count
 integer :: i, i2_count, i_count, nb
 double precision :: y_target
@@ -409,8 +416,13 @@ use k_cross_validation
 use set_limits
 use def_kernels, ONLY : length_kse
 use opt_marginal_likelihood
+use dynalloccell
+use divid_mod
+use neigcel_mod
+use caltabi_mod
+use compute_descriptors_mod
 
-#if(PARAML)
+#ifdef PARAML
 !for curie      use mkl_service
       use mpi
       use mod_mpi_ml
@@ -493,20 +505,26 @@ use k_cross_validation
 use set_limits
 use def_kernels, ONLY : length_kse
 use opt_marginal_likelihood
-
-#if(PARAML)
+use dynalloccell
+use divid_mod
+use neigcel_mod
+use caltabi_mod
+use compute_descriptors_mod
+use compute_acd_mod
+use compute_acd_local_mod
+#ifdef PARAML
 !for curie      use mkl_service
       use mpi
       use mod_mpi_ml
 #endif
 implicit none
-interface compute_descriptors
-   subroutine compute_descriptors(xdesc_out,icount)
-    implicit none
-    double complex,dimension(:,:),allocatable :: xdesc_out
-    integer, optional ::  icount
-   end subroutine compute_descriptors
-end interface compute_descriptors
+!interface compute_descriptors
+!   subroutine compute_descriptors(xdesc_out,icount)
+!    implicit none
+!    double complex,dimension(:,:),allocatable :: xdesc_out
+!    integer, optional ::  icount
+!   end subroutine compute_descriptors
+!end interface compute_descriptors
 integer, intent(in) :: n_count
 integer :: i, j, k, i_count, i2_count
 double precision :: y_target

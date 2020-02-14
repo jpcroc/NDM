@@ -4,6 +4,7 @@ use temporary_data_cov
 use def_kernels, ONLY : length_kse,sigma_kse
 use set_limits
 use extrapolation
+use math
 
 contains
 
@@ -17,7 +18,7 @@ real(kind=kind(1.d0)) :: r_coeff
  call fill_xdesc_yfunc_marginal_likelihood (rangml)
  call set_limit_for_cov(rangml, dim_train,i_final_cov,i_start_cov)
  call build_kernel_matrix(xdesc_train,dim_xdesc,dim_train)
-#if(PARAML)
+#ifdef PARAML
        if (isave_ml==2) then
          call cholesky_threading()
         else

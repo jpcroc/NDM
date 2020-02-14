@@ -1,3 +1,8 @@
+module compute_pow_so4_mod
+        use notperiod_mod
+        implicit none
+        contains
+
 subroutine compute_pow_so4(i_start_at,i_final_at,d_n_neigh, d_kind_neigh, &
                            local_pow_so4_out, local_pow_so4_deriv_out, iconf)
 
@@ -189,3 +194,4 @@ enddo !ja
 
 return
 end subroutine compute_pow_so4
+end module

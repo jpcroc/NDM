@@ -1,4 +1,11 @@
 !!this code is copyrighted
+module ml_main_mod
+        use read_ml_file_mod
+        use snap
+        use build_subdata_mod
+        use regularization_mod
+        implicit none 
+        contains
 
 subroutine ml
 !-----------------------------------------------
@@ -20,9 +27,9 @@ use k_cross_validation
 use set_limits
 use def_kernels, ONLY : length_kse
 use opt_marginal_likelihood
-use descriptors_interface
+use compute_descriptors_mod
 !use snap, only: i_fit_snap, dim_ene_train_snap,dim_force_train_snap
-#if(PARAML)
+#ifdef PARAML
 !for curie      use mkl_service
       use mpi
       use mod_mpi_ml
@@ -62,7 +69,7 @@ if (ml_type==ml_type_basis) then
    else
    !  regular fit ... one shot.
       call train_snap
-      if (.not.train_only) call test_snap
+      if (.not.train_only) call test_snap_routine
    end if
 
 end if
@@ -176,7 +183,7 @@ if (ml_type==ml_type_krr) then
         call fill_xdesc_yfunc_kcross(ik,rangml)
         call set_limit_for_cov(rangml, dim_train,i_final_cov,i_start_cov)
         call build_kernel_matrix(xdesc_train,dim_xdesc,dim_train)
-        !debug #if(PARAML)
+        !debug #ifdef PARAML
         !debug         if (allocated(eigen_values)) deallocate(eigen_values)
         !debug         allocate(eigen_values(dim_train))
         !debug         call diago_scalapack(dim_train,eigen_values)
@@ -271,10 +278,11 @@ if (rangml==0) write(6,*)'************  END  DE MACHINE LEARNING ***************
 if (rangml==0) write(6,*)
 if (rangml==0) write(6,*)
 
-#if(PARAML)
+#ifdef PARAML
     call MPI_BARRIER(MPI_COMM_WORLD, codeml)
     call MPI_FINALIZE(codeml)
 #endif
 
 !debug stop
 end subroutine ml
+end module

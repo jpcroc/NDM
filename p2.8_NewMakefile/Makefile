@@ -39,12 +39,12 @@ INC_PARA  = $(wildcard para/*.h)
 OBJ_PARA   = $(f90para:para/%.F90=%.o) #$(f77files:para/%.f=%.o) $(cfiles:para/%.c=%.o)  $(cppfiles:para/%.cpp=%.o)
 
 #f77ml  = $(wildcard ml/*.f)
-sf90ml    =  $(wildcard ml/*.f90) 
-bF90ml = $(wildcard ml/*.F90)   
+#sf90ml    =  $(wildcard ml/*.f90) 
+bf90ml = $(wildcard ml/*.F90)   
 #cml    = $(wildcard ml/*.c)
 #cppml   = $(wildcard ml/*.cpp)
 INC_ML  = $(wildcard ml/*.h)
-OBJ_MLS   = $(sf90ml:ml/%.f90=%.o) #$(f77files:ml/%.f=%.o) $(cfiles:ml/%.c=%.o)  $(cppfiles:ml/%.cpp=%.o)
+#OBJ_MLS   = $(sf90ml:ml/%.f90=%.o) #$(f77files:ml/%.f=%.o) $(cfiles:ml/%.c=%.o)  $(cppfiles:ml/%.cpp=%.o)
 OBJ_MLB   = $(bf90ml:ml/%.F90=%.o) #$(f77files:ml/%.f=%.o) $(cfiles:ml/%.c=%.o)  $(cppfiles:ml/%.cpp=%.o)
 
 #f77lammps  = $(wildcard lammps/*.f)
@@ -89,9 +89,9 @@ endif
 
 
 ifdef ML # this is ML + PARAML, serial version of ML is not considered  
-OBJ +=  $(OBJ_MLS) $(OBJ_MLB) 
+OBJ +=$(OBJ_MLB) #$(OBJ_MLS)
 #OBJ +=  $(OBJ_PARA)
-checkfiles += $(sf90ml) $(bf90ml) 
+checkfiles +=  $(bf90ml) #$(sf90ml)
 #checkfiles += $(f90para)
 INC += $(INC_ML) 
 #INC += $(INC_PARA)
@@ -122,13 +122,13 @@ help:
 	@./version.sh
 	@cat version.h
 	@echo \#define COMPILE_TARGET \"$@\" >> version.h
-	@#fortdepend -w $(MPIFLAG) -i mpi -o .depend -f  *.f90 *F90 
 	@#fortdepend -w $(MPIFLAG) -i mpi -f  *.F90 mod/* para/*  *.f  -o .dependencies
-	$(MAKEDEPEND) -v -w $(FLAG) -i mpi iso_c_binding -f  $(checkfiles)  -o $(DEP_FILE)
+	$(MAKEDEPEND) -w $(FLAG) -i mpi iso_c_binding -f  $(checkfiles)  -o $(DEP_FILE)
 	@chmod +x MAKE/Makefile.$@ 
 	@cp MAKE/Makefile.$@ Obj_$@/Makefile
 	@cp name.in Obj_$@/.
 	@echo "sinclude ../$(DEP_FILE)" >> Obj_$@/Makefile 
+	@#echo "sinclude ../ml/milady.depends" >> Obj_$@/Makefile 
 	cd Obj_$@; \
         $(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)"  "EXE = ../$(EXE)" ../$(EXE)
 	@ln -sf ./$(EXE) ./$(ROOT)_exec

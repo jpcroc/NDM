@@ -1,3 +1,8 @@
+module read_ml_file_mod
+        use build_subdata_mod
+        use math
+        implicit none
+        contains
 subroutine read_ml_file
 use T_kind_param_m, ONLY:  double
 use gen_com_m, ONLY: lenfnam,fnam,angst,ev2erg,rangml
@@ -64,7 +69,7 @@ namelist /input_ml/ ml_type, &
                     fix_no_of_elements, weight_per_element, chemical_elements, chemical_elements_invisible, snap_order
 
 character(len=128) :: fnamtin
-integer :: luml, none_class, i, nitems
+integer :: luml, none_class, i ! , nitems
 !integer :: i
 
 ml_type=1    ! 1 - KRR ; 0 SNAP_1 ; 2 - GP
@@ -601,7 +606,8 @@ subroutine fix_type_of_atoms
                               weighted, chemical_elements_invisible, linvisible
   use math
   implicit none
-  integer :: int_local, nitems2, i_p, icount
+  !integer :: int_local, nitems2, i_p, icount
+  integer :: int_local, i_p, icount
   character(len=1) :: quote,dquote
   !character (len=60) :: READCH
 
@@ -705,3 +711,4 @@ end if
 
   return
 end subroutine fix_type_of_atoms
+end module

@@ -1,3 +1,6 @@
+module compute_g3_mod
+        implicit none
+        contains
 subroutine compute_g3(i_start_at,i_final_at,  local_d_n_neigh, local_d_kind_neigh,   local_g3_out,local_g3_deriv_out, iconf)
 
 USE T_kind_param_m, ONLY:  double
@@ -7,6 +10,8 @@ use ml_in_ndm_module, ONLY: tconf,w3_rho,weighted, &
                             one_pi,r_cut,g3_eta,g3_zeta,g3_lambda,g3_dim, imm_neigh, factor_weight_mass, linvisible
 
 use derived_types, only: config_real
+use notperiod_mod
+use cryst_to_cart_mod
 implicit none
 
 integer, intent (in) :: i_start_at,i_final_at
@@ -234,3 +239,4 @@ local_g3_deriv_out(:,:,:,:)=0.d0
  deallocate(xpnp)
 return
 end subroutine compute_g3
+end module

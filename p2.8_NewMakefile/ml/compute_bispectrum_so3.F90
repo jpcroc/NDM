@@ -1,3 +1,6 @@
+module compute_bispectrum_so3_mod
+        implicit none
+        contains
 subroutine compute_bispectrum_so3(i_start_at,i_final_at,d_n_neigh, d_kind_neigh, local_bispectrum_so3_out,local_bispectrum_so3_deriv_out, iconf)
 
 USE T_kind_param_m, ONLY:  double
@@ -8,7 +11,7 @@ use ml_in_ndm_module, ONLY: imm_neigh,  n_rbf,l_max,mconf, w2_rho,weighted, cg_v
                             lbso3_diag, bisso3_dim, desc_forces, W_pow_so3, coeff_rbf, r_cut, factor_weight_mass, linvisible
 
 use derived_types, only : config_real
-
+use notperiod_mod
 implicit none
 integer, intent (in) :: i_start_at,i_final_at
 integer, dimension(imm),intent(out)  :: d_n_neigh
@@ -317,3 +320,4 @@ enddo
 
 return
 end subroutine gen_dimension_for_bispectrum_so3_diagonal
+end module

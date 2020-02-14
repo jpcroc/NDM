@@ -33,11 +33,9 @@ ndm :  \
 	caltabt.o \
 	config.o \
 	controle.o \
-	coord_to_cell.o \
 	correl.o \
 	creadp.o \
 	cryst_to_car.o \
-	decoup3D.o \
 	defcdp.o \
 	deftimestep.o \
 	desinteg_insert.o \
@@ -60,8 +58,10 @@ ndm :  \
 	force_tersoff_facteurs.o \
 	gcII.o \
 	gcmodII.o \
+	gen_init_MPI.o \
 	heat.o \
 	init.o \
+	init_MPI_ml.o \
 	init_spebc.o \
 	initcasca.o \
 	initcdp.o \
@@ -74,6 +74,31 @@ ndm :  \
 	layer.o \
 	loopforcetest.o \
 	main.o \
+	angular_functions.o \
+	build_subdata.o \
+	compute_afs.o \
+	compute_bispectrum_so3.o \
+	compute_bispectrum_so4.o \
+	compute_g2.o \
+	compute_g3.o \
+	compute_mtp.o \
+	compute_pow_so3.o \
+	compute_pow_so4.o \
+	compute_soap.o \
+	def_kernels.o \
+	derived_types.o \
+	descriptors.o \
+	extrapolation.o \
+	kcross.o \
+	marginal_likelihood.o \
+	ml.o \
+	ml_in_ndm_module.o \
+	partial_index_ml.o \
+	read_ml_file.o \
+	regularization.o \
+	snap.o \
+	stats_tools.o \
+	toy_models.o \
 	SMjuli.o \
 	T_kind_param_m.o \
 	anasic.o \
@@ -95,9 +120,6 @@ ndm :  \
 	neb_controle.o \
 	neigcel.o \
 	notperiod.o \
-	init_MPI.o \
-	init_voisinage.o \
-	mod_mpi.o \
 	param_det.o \
 	period.o \
 	potrep.o \
@@ -143,7 +165,6 @@ Hcyl.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	period.o \
 	tempinstcyl.o
 
@@ -183,7 +204,6 @@ analyse.o :  \
 	cfg.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	mod_mpi.o \
 	prtplz.o \
 	rasmol.o \
 	rdf.o \
@@ -197,13 +217,11 @@ anapos.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	period.o \
 	recips.o
 
 arret_ndm.o :  \
-	T_kind_param_m.o \
-	mod_mpi.o
+	T_kind_param_m.o
 
 bondval.o :  \
 	cryst_to_car.o \
@@ -219,8 +237,7 @@ calcangle.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	notperiod.o \
-	mod_mpi.o
+	notperiod.o
 
 calccoordo.o :  \
 	cryst_to_car.o \
@@ -228,24 +245,21 @@ calccoordo.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	notperiod.o \
-	mod_mpi.o
+	notperiod.o
 
 calcdepla.o :  \
 	cryst_to_car.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 calcdepla2.o :  \
 	cryst_to_car.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 calcdigr.o :  \
 	cryst_to_car.o \
@@ -253,8 +267,7 @@ calcdigr.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	notperiod.o \
-	mod_mpi.o
+	notperiod.o
 
 calctemp.o :  \
 	elec_cell.o \
@@ -262,8 +275,7 @@ calctemp.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 calfo.o :  \
 	calfo2ccel.o \
@@ -286,7 +298,6 @@ calfo.o :  \
 	gen_com_m.o \
 	jqmod.o \
 	tab_imm_m.o \
-	mod_mpi.o \
 	strain_bc.o \
 	stress_bc.o
 
@@ -297,8 +308,7 @@ calfo2ccel.o :  \
 	jqmod.o \
 	tab_imm_m.o \
 	var_pot.o \
-	notperiod.o \
-	mod_mpi.o
+	notperiod.o
 
 calfo2ctabvois.o :  \
 	cryst_to_car.o \
@@ -326,7 +336,6 @@ calfo_decalage.o :  \
 calfoberend.o :  \
 	gen_com_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	tempinst.o
 
 calfoeamcel.o :  \
@@ -335,8 +344,7 @@ calfoeamcel.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	notperiod.o \
-	mod_mpi.o
+	notperiod.o
 
 calfoeamtabvois.o :  \
 	cryst_to_car.o \
@@ -351,8 +359,7 @@ calfoew.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 calfow.o :  \
 	cryst_to_car.o \
@@ -396,18 +403,14 @@ caltabt.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	notperiod.o \
-	mod_mpi.o
+	notperiod.o
 
 config.o :  \
-	coord_to_cell.o \
-	decoup3D.o \
 	divid.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	period.o \
 	suivinonpbc_module.o
 
@@ -426,7 +429,6 @@ controle.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	period.o \
 	suivinonpbc_module.o \
 	tempinst.o
@@ -453,9 +455,7 @@ cryst_to_car.o :  \
 decoup3D.o :  \
 	arret_ndm.o \
 	gen_com_m.o \
-	tab_imm_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 defcdp.o :  \
 	T_kind_param_m.o
@@ -467,15 +467,13 @@ deftimestep.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	period.o
 
 desinteg_insert.o :  \
 	caltabt.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
-	tab_imm_m.o \
-	mod_mpi.o
+	tab_imm_m.o
 
 dislo.o :  \
 	cryst_to_car.o \
@@ -500,7 +498,6 @@ dmloop.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	mod_mpi.o \
 	sauveforce.o \
 	sauvegarde.o \
 	sauveposition.o \
@@ -513,10 +510,8 @@ dmloop_lpr.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	mod_mpi.o \
 	pr2.o \
 	prNose2.o \
-	recips.o \
 	sauveforce.o \
 	sauvegarde.o \
 	sauveposition.o
@@ -531,7 +526,6 @@ dmloop_vverlet.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	mod_mpi.o \
 	pr2.o \
 	sauveforce.o \
 	sauvegarde.o \
@@ -544,7 +538,6 @@ dyn.o :  \
 	jqmod.o \
 	tab_imm_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	period.o \
 	tempinst.o
 
@@ -553,12 +546,10 @@ dyn_vverlet.o :  \
 	calfoberend.o \
 	caltabt.o \
 	elec_cell.o \
-	layer.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	jqmod.o \
 	tab_imm_m.o \
-	mod_mpi.o \
 	pr2.o \
 	suivinonpbc_module.o
 
@@ -567,15 +558,13 @@ elec_cell.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 eloss.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 endrun.o :  \
 	adf.o \
@@ -585,11 +574,11 @@ endrun.o :  \
 	calfo.o \
 	desinteg_insert.o \
 	elec_cell.o \
+	init_MPI_ml.o \
 	T_kind_param_m.o \
 	cfg.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	mod_mpi.o \
 	rasmol.o \
 	rdf.o \
 	sauvegarde.o \
@@ -627,8 +616,7 @@ force_tersoff_cel.o :  \
 	gen_com_m.o \
 	jqmod.o \
 	tab_imm_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 force_tersoff_facteurs.o :  \
 	T_kind_param_m.o \
@@ -693,15 +681,15 @@ init.o :  \
 	tab_imm_m.o \
 	var_pot.o \
 	neigcel.o \
-	init_voisinage.o \
-	mod_mpi.o \
 	sauvegarde.o \
 	tersoff_zbl.o \
 	transf.o
 
 init_MPI_mab.o : 
 
-init_MPI_ml.o : 
+init_MPI_ml.o :  \
+	gen_init_MPI.o \
+	gen_com_m.o
 
 init_MPI_phondy.o : 
 
@@ -720,7 +708,6 @@ initcasca.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	period.o
 
 initcdp.o :  \
@@ -738,7 +725,6 @@ initspeed.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	period.o \
 	tempinst.o
 
@@ -762,7 +748,6 @@ jqbh.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	tempinst.o
 
 julicel.o :  \
@@ -788,8 +773,7 @@ layer.o :  \
 	cryst_to_car.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
-	tab_imm_m.o \
-	mod_mpi.o
+	tab_imm_m.o
 
 loopforcetest.o :  \
 	calfo.o \
@@ -799,12 +783,267 @@ loopforcetest.o :  \
 
 main.o :  \
 	arret_ndm.o \
+	gen_init_MPI.o \
+	init_MPI_ml.o \
+	init_MPI_ml.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
-	init_MPI.o \
-	mod_mpi.o \
 	prog.o \
 	readdm.o
+
+alloc_typ_ml.o : 
+
+angular_functions.o :  \
+	ml_in_ndm_module.o
+
+build_kernel_matrix.o : 
+
+build_subdata.o :  \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	stats_tools.o
+
+calfo_ml.o : 
+
+cholesky.o : 
+
+compute_acd.o :  \
+	init_MPI_ml.o \
+	ml_in_ndm_module.o \
+	partial_index_ml.o \
+	T_kind_param_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_acd_local.o :  \
+	cryst_to_car.o \
+	init_MPI_ml.o \
+	ml_in_ndm_module.o \
+	partial_index_ml.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_afs.o :  \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_bispectrum_so3.o :  \
+	angular_functions.o \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_bispectrum_so4.o :  \
+	angular_functions.o \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_g2.o :  \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_g3.o :  \
+	cryst_to_car.o \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_magnetic.o :  \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_mtp.o :  \
+	angular_functions.o \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_pow_so3.o :  \
+	angular_functions.o \
+	compute_afs.o \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_pow_so4.o :  \
+	angular_functions.o \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+compute_soap.o :  \
+	angular_functions.o \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+def_kernels.o :  \
+	T_kind_param_m.o
+
+derived_types.o :  \
+	T_kind_param_m.o
+
+descriptors.o :  \
+	init_MPI_ml.o \
+	angular_functions.o \
+	compute_afs.o \
+	compute_bispectrum_so3.o \
+	compute_bispectrum_so4.o \
+	compute_g2.o \
+	compute_g3.o \
+	compute_mtp.o \
+	compute_pow_so3.o \
+	compute_pow_so4.o \
+	compute_soap.o \
+	derived_types.o \
+	kcross.o \
+	ml_in_ndm_module.o \
+	partial_index_ml.o \
+	toy_models.o \
+	gen_com_m.o
+
+diago_scalapack.o : 
+
+extrapolation.o :  \
+	def_kernels.o \
+	kcross.o \
+	ml_in_ndm_module.o
+
+kcross.o : 
+
+main_compute_descriptors.o : 
+
+marginal_likelihood.o :  \
+	def_kernels.o \
+	extrapolation.o \
+	kcross.o \
+	ml_in_ndm_module.o \
+	partial_index_ml.o \
+	stats_tools.o
+
+ml.o :  \
+	gen_init_MPI.o \
+	init_MPI_ml.o \
+	build_subdata.o \
+	def_kernels.o \
+	descriptors.o \
+	extrapolation.o \
+	kcross.o \
+	kcross.o \
+	marginal_likelihood.o \
+	ml_in_ndm_module.o \
+	partial_index_ml.o \
+	read_ml_file.o \
+	regularization.o \
+	snap.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	var_pot.o
+
+ml_in_ndm_module.o :  \
+	init_MPI_ml.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	jqmod.o \
+	tab_imm_m.o \
+	var_pot.o
+
+neighbours.o : 
+
+nr.o : 
+
+partial_index_ml.o :  \
+	init_MPI_ml.o \
+	derived_types.o \
+	ml_in_ndm_module.o
+
+print_matrix.o : 
+
+read_desc_data.o : 
+
+read_ml_file.o :  \
+	build_subdata.o \
+	def_kernels.o \
+	kcross.o \
+	kcross.o \
+	ml_in_ndm_module.o \
+	stats_tools.o \
+	T_kind_param_m.o \
+	gen_com_m.o
+
+read_poscar.o : 
+
+regularization.o :  \
+	init_MPI_ml.o \
+	build_subdata.o \
+	derived_types.o \
+	descriptors.o \
+	kcross.o \
+	ml_in_ndm_module.o \
+	snap.o \
+	snap.o
+
+snap.o :  \
+	init_MPI_ml.o \
+	build_subdata.o \
+	derived_types.o \
+	descriptors.o \
+	kcross.o \
+	ml_in_ndm_module.o \
+	stats_tools.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	notperiod.o
+
+snap_weights_train.o : 
+
+sparsification.o : 
+
+stats_tools.o :  \
+	ml_in_ndm_module.o
+
+svd.o : 
+
+toy_models.o : 
+
+wesley_style.o : 
 
 SMjuli.o :  \
 	alloc_typ.o \
@@ -926,21 +1165,6 @@ notperiod.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o
 
-T_kind_param_mpi_m.o : 
-
-init_MPI.o :  \
-	mod_mpi.o
-
-init_voisinage.o :  \
-	gen_com_m.o \
-	tab_imm_m.o \
-	mod_mpi.o
-
-mod_mpi.o :  \
-	T_kind_param_m.o \
-	gen_com_m.o \
-	tab_imm_m.o
-
 param_det.o :  \
 	endrun.o \
 	T_kind_param_m.o \
@@ -963,7 +1187,6 @@ pr2.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	recips.o \
 	scalebox.o
 
@@ -972,7 +1195,6 @@ prNose2.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	var_pot.o \
-	mod_mpi.o \
 	recips.o \
 	tempinst.o
 
@@ -987,11 +1209,11 @@ prog.o :  \
 	gcII.o \
 	init.o \
 	loopforcetest.o \
+	ml.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	neb.o \
-	mod_mpi.o
+	neb.o
 
 prtplz.o :  \
 	cryst_to_car.o \
@@ -1003,8 +1225,7 @@ rasmol.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 rdf.o :  \
 	T_kind_param_m.o \
@@ -1019,8 +1240,7 @@ readdm.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	jqmod.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 recips.o :  \
 	T_kind_param_m.o
@@ -1029,22 +1249,19 @@ sauveforce.o :  \
 	arret_ndm.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
-	tab_imm_m.o \
-	mod_mpi.o
+	tab_imm_m.o
 
 sauvegarde.o :  \
 	elec_cell.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
-	tab_imm_m.o \
-	mod_mpi.o
+	tab_imm_m.o
 
 sauveposition.o :  \
 	arret_ndm.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
-	tab_imm_m.o \
-	mod_mpi.o
+	tab_imm_m.o
 
 scalebox.o :  \
 	DynamicAlloc.o \
@@ -1063,8 +1280,7 @@ spebc_fin.o :  \
 	T_kind_param_m.o \
 	cfg.o \
 	gen_com_m.o \
-	tab_imm_m.o \
-	mod_mpi.o
+	tab_imm_m.o
 
 spline.o :  \
 	T_kind_param_m.o
@@ -1088,14 +1304,12 @@ suivinonpbc_module.o :  \
 	arret_ndm.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
-	tab_imm_m.o \
-	mod_mpi.o
+	tab_imm_m.o
 
 tempinst.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
-	var_pot.o \
-	mod_mpi.o
+	var_pot.o
 
 tempinstcyl.o :  \
 	T_kind_param_m.o \
@@ -1111,8 +1325,7 @@ tersoff_zbl.o :  \
 	zieg2.o
 
 test_position_He.o :  \
-	T_kind_param_m.o \
-	mod_mpi.o
+	T_kind_param_m.o
 
 tr_fire.o :  \
 	T_kind_param_m.o \

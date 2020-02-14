@@ -1,5 +1,10 @@
 !subroutine compute_mtp(i_start_at,i_final_at,d_n_neigh, d_kind_neigh, local_mtp_out,local_mtp_deriv_out, iconf)
 !LM
+module compute_mtp_mod
+        use notperiod_mod
+        implicit none
+        contains
+
 subroutine compute_mtp(i_start_at,i_final_at,d_n_neigh, d_kind_neigh, iconf)
 
 use T_kind_param_m, ONLY:  double
@@ -919,3 +924,4 @@ end subroutine gen_dimension_for_mtp
 !  end select
 !
 !end function mtp_radial_tensor
+end module

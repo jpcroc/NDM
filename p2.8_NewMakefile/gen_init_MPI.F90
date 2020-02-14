@@ -3,6 +3,9 @@ module gen_mpi
      integer:: code_mpi, nb_procs_mpi, rang_mpi
 end module gen_mpi
 
+module gen_init_mpi_mod
+  implicit none
+  contains
 subroutine gen_init_mpi()
 
   use mpi
@@ -28,4 +31,6 @@ subroutine gen_init_mpi()
 
 
 end subroutine gen_init_mpi
+end module gen_init_mpi_mod
+
 #endif

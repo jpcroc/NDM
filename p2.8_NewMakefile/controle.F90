@@ -9,6 +9,7 @@ module controle_mod
         use caltabi_mod
         use heat_mod
         use creadp_mod
+        use deftimestep_mod
         implicit none
         contains
 ! ***********************************************************

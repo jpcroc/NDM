@@ -291,7 +291,7 @@ subroutine build_kernel_matrix(local_xdesc,dim_xdesc, dim_train)
   use ml_in_ndm_module
   use temporary_data_cov, ONLY:  i_start_cov, i_final_cov,i_local_cov,&
                                  d_mlocal, mlocal, u_local, v_local
-#if(PARAML)
+#ifdef PARAML
   use mpi
   use mod_mpi_ml
 #endif
@@ -321,7 +321,7 @@ subroutine build_kernel_matrix(local_xdesc,dim_xdesc, dim_train)
   call set_neighbors_size_cov_ml(i_start_cov,i_final_cov,i_local_cov,dim_train)
 
  if (debug) then
-#if(PARAML)
+#ifdef PARAML
   write(*,'(" proc i_start_cov i_final_cov natoms",i5,3i7,i10)') rangml,i_start_cov,i_final_cov,i_final_cov-i_start_cov,i_local_cov
 #else
   write(*,*) 'i_start_cov i_final_cov i_local_cov ', i_start_cov, i_final_cov, i_local_cov
@@ -356,7 +356,8 @@ subroutine build_kernel_matrix(local_xdesc,dim_xdesc, dim_train)
   end if
 
 !This is MPI version ........
-#if ( PARAML && ML ) || ( PARAML && ML && PHONDY && PARAPH )
+! #if ( PARAML && ML ) || ( PARAML && ML && PHONDY && PARAPH )
+#if defined PARAML && defined ML 
 if (isave_ml==1) then   !Writing on disk in order to be read by ScaLpack
                         !diagonalization program ...
  call save_matrix_para(rangml)
@@ -365,7 +366,7 @@ end if
 
 #endif
 !This is serial version ...
-#if !(PARAML)
+#ifndef PARAML
 
 
   if (iread_ml==1) then     ! serial version reading the matrix

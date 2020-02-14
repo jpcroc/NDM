@@ -126,7 +126,7 @@ use temporary_data_cov, ONLY:  yfunc, yfunc_nd, xdesc, dim_data,  dim_xdesc,  &
 !use extrapolation
 use k_cross_validation
 use set_limits
-
+use math
 
 
 implicit none

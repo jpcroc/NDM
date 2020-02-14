@@ -10,6 +10,9 @@ module prog_mod
         use gcII_mod
         use dmloop_vverlet_mod
         use dmloop_mod
+#if defined ML || defined PARAML    
+        use ml_main_mod
+#endif 
         implicit none
         contains
 subroutine prog

@@ -36,8 +36,8 @@ SHELL = /bin/sh
 
 # NDM ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
-  OPTIONS  = -fast -g -traceback
-  NDM_INC  = -DML -DPARAML -DPARA # HERE DEFINE MACRO NEEDED IF NDM SERIAL WITH NO EXTERNAL LIBS 
+  OPTIONS  = -O3 -g -traceback #-fast
+  NDM_INC  = -DML -DPARAML #-DPARA # HERE DEFINE MACRO NEEDED IF NDM SERIAL WITH NO EXTERNAL LIBS 
 
 # MPI library, REQUIRED if -DPARA
 # INC = path for *.h, MPI compiler settings
@@ -135,7 +135,7 @@ SHELL = /bin/sh
 
   MKL_INC  = #-I/opt/intel/mkl/include/intel64/lp64
   MKL_PATH = #-L/opt/intel/mkl/lib
-  MKL_LIB  = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 
+  MKL_LIB  = -lmkl_sequential -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_lapack95_lp64 -lmkl_core -liomp5  -lpthread
 # ---------------------------------------------------------------------
 # build rules and dependencies
 # no need to edit this section
@@ -157,9 +157,9 @@ SHELL = /bin/sh
 
 # Path to src files
 # THIS VARIABLE CODE_PATH IS VERY IMPORTANT TO SET PROPERLY TO SCAN THE CORRECT FOLDER DEPENDING OF MACRO USED
-CODE_PATH = ../ml:../para:../mod/:.. 
+CODE_PATH = ../ml::../mod/:.. 
 
-vpath %.f90 ${CODE_PATH}
+#vpath %.f90 ${CODE_PATH}
 vpath %.F90 ${CODE_PATH}
 vpath %.f   ${CODE_PATH}
 vpath %.c   ${CODE_PATH}
@@ -172,8 +172,8 @@ vpath %.h   ${CODE_PATH}
 	$(CC)  -c ${EXTRA_INC} $(CFLAGS)   $< -o $@  
 %.o: %.f
 	$(F77) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
-%.o: %.f90
-	$(F90) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
+#%.o: %.f90
+#	$(F90) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
 %.o: %.F90
 	$(F90) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
 %.o: %.cpp

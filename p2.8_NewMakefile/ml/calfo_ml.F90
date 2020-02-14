@@ -8,6 +8,9 @@ use gen_com_m, only: A2cm, rvois, umass, dmtype
 use ml_in_ndm_module, only: prepare_factorial,r_cut, rangml, periodic_table_element, fix_no_of_elements, fix_type_to_periodic
 use var_pot
 use time_measure, only: temps_energy, temps_force, temps_descripteurs, temps_neigh, temps_stress
+use read_ml_file_mod
+use compute_descriptors_mod
+use snap
 implicit none
 integer :: i
 !!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -85,6 +88,7 @@ use ml_in_ndm_module, only: iconf_data, iconf_data_train, iconf_data_test, md_ic
 use gen_com_m, only: im, imm, volu, A2cm, dmtype
 use derived_types, only:config_real, config_desc
 use var_pot, only: ntyp
+use snap
 implicit none
 
 
@@ -200,7 +204,7 @@ subroutine md_calfo_ml
 !This subroutine is called in the main NDM's calfo.F90
 !Output: (to be completed)
 !         potist and fp ? through NDM module
-#if (PARAML)
+#ifdef PARAML
    use mpi
    use mod_mpi_ml
 #endif
@@ -211,9 +215,10 @@ use tab_imm_m, only: fp
 use ml_in_ndm_module, only: ml_type, ml_type_basis, &
                             md_iconf, &
                             prepare_factorial, allocate_ml, deallocate_ml
-use descriptors_interface
-use snap_interface
-use snap, only: ene_snap,fp_snap, stress_snap
+use compute_descriptors_mod
+use snap
+!use snap, only: ene_snap,fp_snap, stress_snap
+!use snap_interface
 use derived_types, only: config_real
 !use var_pot, only: rumax
 use time_measure, only: temps_energy, temps_force, temps_descripteurs, temps_neigh, temps_stress
@@ -233,11 +238,11 @@ if (ml_type==ml_type_basis) then
     call test_if_config_is_small(md_iconf)
     !ph if (rangml==0) write(*,*) 'here2', nox,noxyz
     !if (debug) write(6,*) 'was test_if_config_is_small'
-#if (PARAML)
+#ifdef PARAML
     temps1=MPI_Wtime()
 #endif
     call calc_neighbours(md_iconf)
-#if (PARAML)
+#ifdef PARAML
     temps2=MPI_Wtime()
 #endif
     temps_neigh = temps_neigh + (temps2 - temps1)
@@ -247,11 +252,11 @@ if (ml_type==ml_type_basis) then
     !if (debug)
     !ph if (rangml==0) write(6,*) 'here4 was allocate_ml'
 
-#if (PARAML)
+#ifdef PARAML
     temps1=MPI_Wtime()
 #endif
     call compute_descriptors(xdesc_i, md_iconf)
-#if (PARAML)
+#ifdef PARAML
     temps2=MPI_Wtime()
 #endif
     temps_descripteurs = temps_descripteurs + (temps2 - temps1)
@@ -260,27 +265,27 @@ if (ml_type==ml_type_basis) then
     !ph if (rangml==0) write(*,*) 'here6 ....'
     !call MPI_BARRIER
 
-#if (PARAML)
+#ifdef PARAML
     temps1=MPI_Wtime()
 #endif
     !debug write(6,*) 'ALL THAT', config_real(md_iconf)%has_energy, config_real(md_iconf)%has_force, config_real(md_iconf)%has_stress
     call md_snap_compute_energy(md_iconf)
-#if (PARAML)
+#ifdef PARAML
     temps2=MPI_Wtime()
 #endif
     call md_snap_compute_force(md_iconf)
-#if (PARAML)
+#ifdef PARAML
     temps3=MPI_Wtime()
 #endif
     temps_energy=temps_energy + (temps2 - temps1)
     temps_force=temps_force+ (temps3 - temps2)
 
 
-#if (PARAML)
+#ifdef PARAML
     temps1=MPI_Wtime()
 #endif
     call md_snap_compute_stress(md_iconf)
-#if (PARAML)
+#ifdef PARAML
     temps2=MPI_Wtime()
 #endif
 

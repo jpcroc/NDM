@@ -1,3 +1,6 @@
+module compute_bispectrum_so4_mod
+        implicit none
+        contains
 !subroutine compute_bispectrum_so4(i_start_at,i_final_at,d_n_neigh, d_kind_neigh, local_bispectrum_so4_out,local_bispectrum_so4_deriv_out, iconf)
 subroutine compute_bispectrum_so4(i_start_at,i_final_at,d_n_neigh, d_kind_neigh, iconf)
 
@@ -8,7 +11,7 @@ use angular_functions
 use ml_in_ndm_module, ONLY: rangml,pi,r_cut,j_max,jj_max, imm_neigh, mconf,   &
                             debug, w2_rho,weighted, cg_vector, bisso4_dim, lbso4_diag, desc_forces, factor_weight_mass,bisso4_dim, linvisible
 use derived_types, only : config_real, config_desc
-
+use notperiod_mod
 implicit none
 integer, intent (in) :: i_start_at,i_final_at
 integer, dimension(imm),intent(out)  :: d_n_neigh
@@ -376,3 +379,4 @@ enddo
 
 return
 end subroutine gen_dimension_for_bispectrum_so4_diagonal
+end module

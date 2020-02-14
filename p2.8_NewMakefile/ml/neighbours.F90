@@ -11,6 +11,7 @@ subroutine test_if_config_is_small(iconf)
 use T_kind_param_m, only : double
 use ml_in_ndm_module, only: r_cut, rangml, debug
 use derived_types, only: config_real
+use recips_mod
 implicit none
 integer, intent(in) :: iconf
 real(double) :: bval(3)
@@ -132,6 +133,10 @@ end subroutine neighbours_ndm_layer
 subroutine neighbours_large (iconf)
 use gen_com_m, only: natperc, nox, noy, noz
 use ml_in_ndm_module, only: debug, rangml
+use dynalloccell
+use divid_mod
+use neigcel_mod
+use caltabi_mod
 implicit none
 integer, intent(in) :: iconf
 if (debug) then

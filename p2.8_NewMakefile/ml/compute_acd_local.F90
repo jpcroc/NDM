@@ -1,9 +1,14 @@
+module compute_acd_local_mod
+        implicit none
+        contains
 subroutine coord_acd_local(i)
 
   USE T_kind_param_m, ONLY:  double
   use gen_com_m, ONLY: imm,lperiod,bg,at,indi2,nvois
   use tab_imm_m, ONLY : xp,iwmax2
   use ml_in_ndm_module, ONLY: r_acd,at_acd,iwmax2_acd,indi2_acd
+  use notperiod_mod
+  use cryst_to_cart_mod
 
   implicit none
 
@@ -35,7 +40,7 @@ subroutine compute_kernel_acd_local(ns_data,k_acd_out,distance_acd_out)
   use ml_in_ndm_module, ONLY: rangml,pi,r_cut,alpha_acd,kappa_acd,acd_fcut,ksi_ini,temp_ini,tau,mc_step,rotate,&
                               mconf,w2_rho,acd_weighted,massat,reject,sparsification_by_acd,max_data, &
                               data_im,data_natm,max_ntyp,r_acd,seed,at_acd,iwmax2_acd,indi2_acd
-#if(PARAML)
+#ifdef PARAML
 !for curie      use mkl_service
   use mpi
   use mod_mpi_ml
@@ -241,14 +246,14 @@ do nk=1,max_data-1
                        enddo
                     enddo
                  enddo !jk
-#if (PARAML)
+#ifdef PARAML
 #else
                  norm_fcut1_ji(ji)=local_norm_fcut1_ji(ji)
                  norm_fcut2_ji(ji)=local_norm_fcut2_ji(ji)
 #endif
               enddo !ji
 
-#if (PARAML)
+#ifdef PARAML
               call MPI_ALLREDUCE(local_norm_fcut1_ji,norm_fcut1_ji,data_natm(j,i),MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
               call MPI_ALLREDUCE(local_norm_fcut2_ji,norm_fcut2_ji,data_natm(j,i),MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
               if (((sum(norm_fcut1_ji)==0d0).or.(sum(norm_fcut1_jk)==0d0)).and.(rangml==0)) then
@@ -341,13 +346,13 @@ do nk=1,max_data-1
                     enddo
 
                  enddo !jk
-#if (PARAML)
+#ifdef PARAML
 #else
                  norm_fcut3_ji(ji)=local_norm_fcut3_ji(ji)
 #endif
               enddo !ji
 
-#if (PARAML)
+#ifdef PARAML
              call MPI_ALLREDUCE(local_norm_fcut3_ji,norm_fcut3_ji,data_natm(j,k),MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
              if (((sum(norm_fcut3_ji)==0d0).or.(sum(norm_fcut3_jk)==0d0)).and.(rangml==0)) then
                 write(*,*)"sum(norm_fcut3_ji) or sum(norm_fcut3_jk) = 0"
@@ -430,12 +435,12 @@ do nk=1,max_data-1
                     enddo
                  enddo
               enddo !jk
-#if (PARAML)
+#ifdef PARAML
 #else
               norm_fcut_ji(ji)=local_norm_fcut_ji(ji)
 #endif
            enddo !ji
-#if (PARAML)
+#ifdef PARAML
            call MPI_ALLREDUCE(local_norm_fcut_ji,norm_fcut_ji,data_im(i),MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
            if (((sum(norm_fcut_ji)==0d0).or.(sum(norm_fcut_jk)==0d0)).and.(rangml==0)) then
               write(*,*)"sum(norm_fcut_ji) or sum(norm_fcut_jk) = 0"
@@ -522,3 +527,4 @@ enddo ! nk
 
 return
 end subroutine compute_kernel_acd_local
+end module

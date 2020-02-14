@@ -20,6 +20,7 @@ module init_mod
         use dislo_mod
         use initcdp_mod
         use initcasca_mod
+        use deftimestep_mod
 
 #ifdef PARA
         use init_vois_mod

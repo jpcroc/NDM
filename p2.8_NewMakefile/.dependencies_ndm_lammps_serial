@@ -37,6 +37,7 @@ ndm :  \
 	creadp.o \
 	cryst_to_car.o \
 	defcdp.o \
+	deftimestep.o \
 	desinteg_insert.o \
 	dislo.o \
 	divid.o \
@@ -393,6 +394,7 @@ controle.o :  \
 	caltabt.o \
 	creadp.o \
 	defcdp.o \
+	deftimestep.o \
 	desinteg_insert.o \
 	endrun.o \
 	heat.o \
@@ -432,7 +434,14 @@ decoup3D.o :  \
 defcdp.o :  \
 	T_kind_param_m.o
 
-deftimestep.o : 
+deftimestep.o :  \
+	arret_ndm.o \
+	elec_cell.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	var_pot.o \
+	period.o
 
 desinteg_insert.o :  \
 	caltabt.o \
@@ -623,6 +632,7 @@ init.o :  \
 	correl.o \
 	creadp.o \
 	defcdp.o \
+	deftimestep.o \
 	dislo.o \
 	elec_cell.o \
 	eloss.o \
@@ -857,6 +867,7 @@ neb.o :  \
 
 neb_controle.o :  \
 	DynamicAlloc.o \
+	deftimestep.o \
 	endrun.o \
 	T_kind_param_m.o \
 	gen_com_m.o \

@@ -1,3 +1,7 @@
+module compute_pow_so3_mod
+        use notperiod_mod
+        implicit none
+        contains
 subroutine compute_pow_so3(i_start_at,i_final_at,d_n_neigh, d_kind_neigh, local_pow_so3_out,local_pow_so3_deriv_out, iconf)
 
  USE T_kind_param_m, ONLY:  double
@@ -200,6 +204,7 @@ end subroutine compute_pow_so3
 
 subroutine init_pow_so3_rbf()
 use ml_in_ndm_module, only: n_rbf, W_pow_so3, coeff_rbf, r_cut
+use compute_afs_mod
 implicit none
 real(kind(0.d0)),dimension(n_rbf,n_rbf) :: S,V
 real(kind(0.d0)),dimension(n_rbf) :: L
@@ -236,3 +241,4 @@ W_pow_so3(:,:)=matmul(S(:,:),matmul(V(:,:),transpose(S(:,:))))
 
 return
 end subroutine init_pow_so3_rbf
+end module

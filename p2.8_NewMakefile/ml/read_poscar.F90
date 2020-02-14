@@ -7,14 +7,15 @@ use gen_com_m, ONLY: im,at,bg
 use tab_imm_m, only : ityp,xp,fp
 use var_pot, only : ntyp
 use ml_in_ndm_module, only : rangml,path,lpath,build_subdata,natm
-
+use recips_mod
+use math
 implicit none
 
 character(len=2),intent(in) :: pref
 integer,intent(in) :: l ! N° of poscar
 double precision,intent(out) :: ef
 
-integer :: i,j,fileunit,nitems
+integer :: i,j,fileunit ! ,nitems
 double precision :: e,ecor
 character(len=60) :: fullfilenamein
 character(len=13) :: filenamein

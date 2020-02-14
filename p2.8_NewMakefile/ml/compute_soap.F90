@@ -1,3 +1,7 @@
+module compute_soap_mod
+        use notperiod_mod
+        implicit none
+        contains
 subroutine compute_soap(i_start_at,i_final_at,d_n_neigh, d_kind_neigh, iconf)
 
 use T_kind_param_m, ONLY:  double
@@ -9,6 +13,7 @@ use ml_in_ndm_module, ONLY: rangml,r_cut,l_max, j_max, jj_max, imm_neigh, mconf,
                             r_cut_width_soap, alpha_soap, one_pi, sqrt_two, rb_soap, W_soap, S_factor_matrix, ns_soap_index, n_soap,  &
                             lsoap_diag, lsoap_norm, lsoap_lnorm, ns_soap_index, nspecies_soap, c_zero, vec_3d_zero, linvisible
 use derived_types, only : config_real, config_desc
+
 
 implicit none
 integer, intent (in) :: i_start_at,i_final_at
@@ -533,3 +538,4 @@ endif
 
 return
 end subroutine gen_dimension_for_soap
+end module

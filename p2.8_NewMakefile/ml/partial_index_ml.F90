@@ -28,7 +28,7 @@ end subroutine set_unlimit_for_cov
 
 
 subroutine set_limit_for_atoms(rangml,im,i_start_at,i_final_at)
-#if(PARAML)
+#ifdef PARAML
      use mod_mpi_ml,ONLY:  nb_procsml
      implicit none
 #else
@@ -37,14 +37,14 @@ subroutine set_limit_for_atoms(rangml,im,i_start_at,i_final_at)
      integer, intent(in) :: im           ! numbers of atoms to be distributed on procs
      integer, intent(inout)  :: rangml   ! rang of the proc for MPI
      integer, intent(out) :: i_start_at, i_final_at
-#if(PARAML)
+#ifdef PARAML
      integer :: nratio1,nratio2, nrest
 #else
      integer :: nb_procsml
 #endif
 
 
-#if(PARAML)
+#ifdef PARAML
 if (im >= nb_procsml) then
   nrest=mod(im,nb_procsml)
   nratio1=im/nb_procsml+1
@@ -96,7 +96,7 @@ end subroutine set_limit_for_atoms
 
 subroutine find_rang_of_my_atom (iconf)
 ! find the rang of the proc where my atom is located.
-#if(PARAML)
+#ifdef PARAML
 use mpi
 use mod_mpi_ml
 #endif
@@ -125,7 +125,7 @@ end subroutine find_rang_of_my_atom
 subroutine  set_limit_for_cov (rangml, dim_train, i_final_cov,i_start_cov)
 ! set the limit for covariance matrix. all atoms are defined on all procs
 
-#if(PARAML)
+#ifdef PARAML
      use mod_mpi_ml,ONLY:  nb_procsml
      implicit none
 #else
@@ -136,14 +136,14 @@ subroutine  set_limit_for_cov (rangml, dim_train, i_final_cov,i_start_cov)
      integer, intent(out) :: i_final_cov,i_start_cov  !local limits defined on each procs.
 
 
-#if(PARAML)
+#ifdef PARAML
      integer :: nratio1,nratio2, nrest
 #else
      integer :: nb_procsml
 #endif
 
 
-#if(PARAML)
+#ifdef PARAML
 
 nrest=mod(dim_train,nb_procsml)
 nratio1=dim_train/nb_procsml+1

@@ -7,7 +7,7 @@ module ml_in_ndm_module
       use tab_imm_m
       use var_pot
       use jqmod
-#if(PARAML)
+#ifdef PARAML
       use mpi
       use mod_mpi_ml
 #endif
@@ -244,7 +244,7 @@ module ml_in_ndm_module
 
 
 
-#if(PARAML)
+#ifdef PARAML
      integer ::   iproc, nb_elements, itempproc
 #endif
 

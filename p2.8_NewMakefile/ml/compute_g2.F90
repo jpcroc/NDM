@@ -1,3 +1,7 @@
+module compute_g2_mod
+        use notperiod_mod
+        implicit none
+        contains
 subroutine compute_g2(i_start_at,i_final_at, local_d_n_neigh, local_d_kind_neigh,  local_g2_out,local_g2_deriv_out, iconf)
 
 USE T_kind_param_m, ONLY:  double
@@ -9,6 +13,7 @@ use ml_in_ndm_module, ONLY: mconf,w2_rho,weighted, &
                             r_cut,  &
                             g2_dim, factor_weight_mass, desc_forces, weighted, linvisible
 use derived_types, only: config_real
+use notperiod_mod
 implicit none
 
 
@@ -151,3 +156,4 @@ local_g2_deriv_out(:,:,:,:)=0d0
 
 return
 end subroutine compute_g2
+end module

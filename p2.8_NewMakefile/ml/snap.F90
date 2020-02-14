@@ -39,10 +39,52 @@ module snap_interface
 end module snap_interface
 
 
+!$-------------------------------------------------------------
+module module_snap_quadratic
+!$-------------------------------------------------------------
+! Store the tools for snap fitting
+! Emat matrix for descriptors matrix to regress E ~ Descriptors in quadratic approximation .
+! Fmat matrix for descriptors matrix to regress F ~ Descriptors in quadratic approximation .
+! Smat matrix for descriptors matrix to regress S ~ Descriptors in quadratic approximation .
+! In the case of snap:
+!       Emat    (1 + dim_xdesc , dim_ene_train_snap)
+!       sub_yfunc_E_train   (dim_ene_train_snap,              1)
+!       Fmat    ((1 + dim_xdesc)^2 , dim_force_train_snap)
+!       sub_yfunc_F_train    (dim_force_train_snap,              1)
+!       w_params(1 + dim_xdesc ,   1 + dim_xdesc)
+!$-------------------------------------------------------------
+!training Emat and ymat_E
+real(kind=kind(1.d0)), dimension(:,:), allocatable :: Emat
+real(kind=kind(1.d0)), dimension(:,:), allocatable :: ymat_E
+real(kind=kind(1.d0)), dimension(:)  , allocatable :: sub_yfunc_E_train
+integer,               dimension(:)  , allocatable :: map_Emat_index_to_fit
+
+real(kind=kind(1.d0)), dimension(:,:), allocatable :: Fmat
+real(kind=kind(1.d0)), dimension(:,:), allocatable :: ymat_F
+real(kind=kind(1.d0)), dimension(:),   allocatable :: sub_yfunc_F_train
+integer,               dimension(:)  , allocatable :: map_Fmat_index_to_fit
+
+
+real(kind=kind(1.d0)), dimension(:,:), allocatable :: Smat
+real(kind=kind(1.d0)), dimension(:,:), allocatable :: ymat_S
+real(kind=kind(1.d0)), dimension(:),   allocatable :: sub_yfunc_S_train
+integer,               dimension(:)  , allocatable :: map_Smat_index_to_fit
+
+
+integer :: i_e_fit_snap, i_f_fit_snap, i_s_fit_snap
+!parameters
+!real(kind=kind(1.d0)), dimension(:,:), allocatable :: w_params
+
+end module module_snap_quadratic
+!<-------------------------------------------------------------
 
 
 !$-------------------------------------------------------------
 module snap
+        use build_subdata_mod
+        use notperiod_mod
+        use math
+        
 !$-------------------------------------------------------------
 ! Store the tools for snap fitting
 ! A matrix from Amat^T x  w_params = ymat.
@@ -122,49 +164,10 @@ type (fit_snap_type), dimension(:), allocatable :: fit_snap, test_snap
 type (weights_type),  dimension(:), allocatable :: map_weights_in_db
 type (db_type),  dimension(:), allocatable :: map_db_in_weights
 
-end module snap
 !<-------------------------------------------------------------
 
 
 
-!$-------------------------------------------------------------
-module module_snap_quadratic
-!$-------------------------------------------------------------
-! Store the tools for snap fitting
-! Emat matrix for descriptors matrix to regress E ~ Descriptors in quadratic approximation .
-! Fmat matrix for descriptors matrix to regress F ~ Descriptors in quadratic approximation .
-! Smat matrix for descriptors matrix to regress S ~ Descriptors in quadratic approximation .
-! In the case of snap:
-!       Emat    (1 + dim_xdesc , dim_ene_train_snap)
-!       sub_yfunc_E_train   (dim_ene_train_snap,              1)
-!       Fmat    ((1 + dim_xdesc)^2 , dim_force_train_snap)
-!       sub_yfunc_F_train    (dim_force_train_snap,              1)
-!       w_params(1 + dim_xdesc ,   1 + dim_xdesc)
-!$-------------------------------------------------------------
-!training Emat and ymat_E
-real(kind=kind(1.d0)), dimension(:,:), allocatable :: Emat
-real(kind=kind(1.d0)), dimension(:,:), allocatable :: ymat_E
-real(kind=kind(1.d0)), dimension(:)  , allocatable :: sub_yfunc_E_train
-integer,               dimension(:)  , allocatable :: map_Emat_index_to_fit
-
-real(kind=kind(1.d0)), dimension(:,:), allocatable :: Fmat
-real(kind=kind(1.d0)), dimension(:,:), allocatable :: ymat_F
-real(kind=kind(1.d0)), dimension(:),   allocatable :: sub_yfunc_F_train
-integer,               dimension(:)  , allocatable :: map_Fmat_index_to_fit
-
-
-real(kind=kind(1.d0)), dimension(:,:), allocatable :: Smat
-real(kind=kind(1.d0)), dimension(:,:), allocatable :: ymat_S
-real(kind=kind(1.d0)), dimension(:),   allocatable :: sub_yfunc_S_train
-integer,               dimension(:)  , allocatable :: map_Smat_index_to_fit
-
-
-integer :: i_e_fit_snap, i_f_fit_snap, i_s_fit_snap
-!parameters
-!real(kind=kind(1.d0)), dimension(:,:), allocatable :: w_params
-
-end module module_snap_quadratic
-!<-------------------------------------------------------------
 
 
 
@@ -176,8 +179,7 @@ end module module_snap_quadratic
 !                                                             !
 !\------------------------------------------------------------/
 
-
-
+contains
 
 !$-------------------------------------------------------------
 subroutine train_snap
@@ -187,16 +189,16 @@ use ml_in_ndm_module, only: iconf_data, allocate_ml, deallocate_ml, rangml, opti
                             snap_order, snap_linear, snap_quadratic
 use temporary_data_cov, only: dim_data, dim_data_train, dim_data_test, dim_data_constraints
 use derived_types, only: config_real
-use snap, only: i_fit_snap, dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap, &
-                i_e_train_snap, i_f_train_snap, i_s_train_snap, &
-                y_e_train_snap, y_f_train_snap, y_s_train_snap, &
-                y_e_train_base, y_f_train_base, y_s_train_base, &
-                y_e_p_a_train_base, y_e_p_a_train_snap, i_constraints_snap,  &
-                dim_force_constraints, dim_stress_constraints
+!use snap, only: i_fit_snap, dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap, &
+!                i_e_train_snap, i_f_train_snap, i_s_train_snap, &
+!                y_e_train_snap, y_f_train_snap, y_s_train_snap, &
+!                y_e_train_base, y_f_train_base, y_s_train_base, &
+!                y_e_p_a_train_base, y_e_p_a_train_snap, i_constraints_snap,  &
+!                dim_force_constraints, dim_stress_constraints
 use module_snap_quadratic, only: i_e_fit_snap, i_f_fit_snap, i_s_fit_snap
 
-use descriptors_interface
-use snap_interface
+use compute_descriptors_mod
+!use snap_interface
 implicit none
 integer :: i,einp, finp, sinp
 double precision,dimension(:,:),allocatable :: xdesc_i
@@ -280,7 +282,7 @@ end if
      call deallocate_ml
   end do
 
-!#if (PARAML)
+!#ifdef PARAML
 !    call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 !#endif
 
@@ -386,7 +388,7 @@ subroutine  train_get_fit_dimensions(iconf)
 !$-------------------------------------------------------------
 use temporary_data_cov, only: dim_data, dim_data_test, dim_data_train
 use derived_types, only:config_real
-use snap, only: dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap
+!use snap, only: dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap
 implicit none
 integer, intent(in) :: iconf
   if (config_real(iconf)%train)  then
@@ -427,7 +429,7 @@ subroutine  train_get_constraints_dimensions(iconf)
 use ml_in_ndm_module, only: rangml
 use temporary_data_cov, only: dim_data_constraints
 use derived_types, only:config_real
-use snap, only: dim_ene_constraints, dim_force_constraints, dim_stress_constraints
+!use snap, only: dim_ene_constraints, dim_force_constraints, dim_stress_constraints
 implicit none
 integer, intent(in) :: iconf
 
@@ -476,8 +478,8 @@ use ml_in_ndm_module, only: rangml, snap_fit_type, fit_lapack_qr_constraints, &
                             snap_order, snap_linear, snap_quadratic
 use temporary_data_cov, only: dim_data_train, &
                               xdesc_train, yfunc_train, dim_xdesc, dim_data_constraints
-use snap, only: w_params, Amat, ymat, Bmat, zmat, fit_snap, weights_snap, &
-                dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap
+!use snap, only: w_params, Amat, ymat, Bmat, zmat, fit_snap, weights_snap, &
+!                dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap
 use module_snap_quadratic, only : Emat, Fmat, Smat, sub_yfunc_E_train, sub_yfunc_F_train, sub_yfunc_S_train, &
                            map_Emat_index_to_fit, map_Fmat_index_to_fit, map_Smat_index_to_fit
 implicit none
@@ -544,7 +546,7 @@ subroutine  train_fill_Emat_with_energy (iconf, pack_opt)
 !$-------------------------------------------------------------
 use temporary_data_cov, only: xdesc_train, yfunc_train,  dim_xdesc
 use derived_types, only: config_desc, config_real
-use snap, only: Amat, ymat, i_fit_snap, fit_snap,weights_snap
+!use snap, only: Amat, ymat, i_fit_snap, fit_snap,weights_snap
 use module_snap_quadratic, only: Emat, sub_yfunc_E_train, map_Emat_index_to_fit, i_e_fit_snap
 
 implicit none
@@ -585,7 +587,7 @@ subroutine  train_fill_Amat_with_energy (iconf, pack_opt)
 !$-------------------------------------------------------------
 use temporary_data_cov, only: xdesc_train, yfunc_train,  dim_xdesc
 use derived_types, only: config_desc, config_real
-use snap, only: Amat, ymat, i_fit_snap, fit_snap,weights_snap
+!use snap, only: Amat, ymat, i_fit_snap, fit_snap,weights_snap
 
 implicit none
 integer, intent(in) :: iconf
@@ -622,7 +624,7 @@ subroutine  train_fill_Bmat_constraints (iconf)
 !$-------------------------------------------------------------
 use temporary_data_cov, only: dim_xdesc
 use derived_types, only: config_desc, config_real
-use snap, only: Bmat, zmat, i_constraints_snap
+!use snap, only: Bmat, zmat, i_constraints_snap
 implicit none
 integer, intent(in) :: iconf
 !integer :: i
@@ -711,7 +713,7 @@ end subroutine snap_pre_pack_force_descriptor
 !$--------------------------------------------------------------
 subroutine snap_pack_force_descriptor (iconf)
 !$--------------------------------------------------------------
-#if(PARAML)
+#ifdef PARAML
 use mpi
 use mod_mpi_ml
 #endif
@@ -731,7 +733,7 @@ if (descriptor_type==descriptor_afs) then
     config_desc(iconf)%pack_force(:,:,:)=0.d0
     call para_snap_pack_force_descriptor(iconf)
 
-#if(PARAML)
+#ifdef PARAML
     dim_reduce=dim_xdesc*imm*3
     if (desc_forces) call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(iconf)%pack_force ,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 #endif
@@ -742,7 +744,7 @@ else if (descriptor_type==descriptor_bispectrum_so4) then
     config_desc(iconf)%pack_force(:,:,:)=0.d0
     call para_snap_pack_force_descriptor(iconf)
 
-#if(PARAML)
+#ifdef PARAML
     dim_reduce=dim_xdesc*imm*3
     if (desc_forces) call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(iconf)%pack_force ,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 #endif
@@ -753,7 +755,7 @@ else if (descriptor_type==descriptor_mtp) then
     config_desc(iconf)%pack_force(:,:,:)=0.d0
     call para_snap_pack_force_descriptor(iconf)
 
-#if(PARAML)
+#ifdef PARAML
     dim_reduce=dim_xdesc*imm*3
     if (desc_forces) call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(iconf)%pack_force ,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 #endif
@@ -903,7 +905,7 @@ subroutine  train_fill_Amat_with_force (iconf, pack_opt)
 !$-------------------------------------------------------------
 use temporary_data_cov, only: xdesc_train, yfunc_train,  dim_xdesc
 use derived_types, only: config_desc, config_real
-use snap, only: Amat, ymat, i_fit_snap, fit_snap, weights_snap
+!use snap, only: Amat, ymat, i_fit_snap, fit_snap, weights_snap
 implicit none
 integer, intent(in) :: iconf
 integer :: ik,  i_fit_snap_ini, i_fit_snap_end
@@ -943,7 +945,7 @@ end subroutine  train_fill_Amat_with_force
 !$--------------------------------------------------------------
 subroutine snap_pack_stress_descriptor (iconf)
 !$--------------------------------------------------------------
-#if(PARAML)
+#ifdef PARAML
 use mpi
 use mod_mpi_ml
 #endif
@@ -966,7 +968,7 @@ if (descriptor_type==descriptor_afs) then
     !call MPI_BARRIER(MPI_COMM_WORLD, codeml)
     call para_snap_pack_stress_descriptor(iconf)
 
-#if(PARAML)
+#ifdef PARAML
     dim_reduce=dim_xdesc*6
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(iconf)%pack_stress ,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 #endif
@@ -979,7 +981,7 @@ else if (descriptor_type==descriptor_bispectrum_so4) then
     !call MPI_BARRIER(MPI_COMM_WORLD, codeml)
     call para_snap_pack_stress_descriptor(iconf)
 
-#if(PARAML)
+#ifdef PARAML
     dim_reduce=dim_xdesc*6
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(iconf)%pack_stress ,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 #endif
@@ -990,7 +992,7 @@ else if (descriptor_type==descriptor_mtp) then
     config_desc(iconf)%pack_stress(:,:)=0.d0
     call para_snap_pack_stress_descriptor(iconf)
 
-#if(PARAML)
+#ifdef PARAML
     dim_reduce=dim_xdesc*6
     call MPI_ALLREDUCE(MPI_IN_PLACE, config_desc(iconf)%pack_stress ,dim_reduce,MPI_DOUBLE_PRECISION, MPI_SUM,MPI_COMM_WORLD,codeml)
 #endif
@@ -1194,7 +1196,7 @@ subroutine  train_fill_Amat_with_stress (iconf, pack_opt)
 
 use temporary_data_cov, only: xdesc_train, yfunc_train,  dim_xdesc
 use derived_types, only: config_desc, config_real
-use snap, only: Amat, ymat, i_fit_snap, fit_snap, weights_snap
+!use snap, only: Amat, ymat, i_fit_snap, fit_snap, weights_snap
 implicit none
 integer, intent(in) :: iconf
 logical, intent(in), optional :: pack_opt
@@ -1243,7 +1245,7 @@ use ml_in_ndm_module, only : rangml, char_desc,  snap_fit_type, &
                              eta_max_g2, n_g2_eta, n_g2_rs, debug, &
                              j_max, lbso4_diag, weighted, periodic_table_element, fix_no_of_elements, fix_type_to_periodic
 use temporary_data_cov, only: dim_data_train, dim_xdesc
-use snap, only: w_params, Amat, ymat, Bmat, zmat, i_fit_snap, weights_snap
+!use snap, only: w_params, Amat, ymat, Bmat, zmat, i_fit_snap, weights_snap
 implicit none
 real(kind=kind(1.d0)), dimension(size(Amat,1), size(Amat,1)) :: phi, phi_inv
 real(kind=kind(1.d0)), dimension(size(Amat,1), size(Amat,1)) :: phi_diag
@@ -1597,11 +1599,11 @@ end subroutine train_snap_get_parameters
 !$-------------------------------------------------------------
 subroutine train_snap_compute_energy_force_stress(idata, einp, finp, sinp)
 !$-------------------------------------------------------------
-use snap, only : w_params, Amat, ene_snap, fit_snap, &
-                 i_e_train_snap, i_f_train_snap, i_s_train_snap, &
-                 y_e_train_base, y_f_train_base, y_s_train_base, &
-                 y_e_train_snap, y_f_train_snap, y_s_train_snap, &
-                 y_e_p_a_train_snap, y_e_p_a_train_base
+!use snap, only : w_params, Amat, ene_snap, fit_snap, &
+!                 i_e_train_snap, i_f_train_snap, i_s_train_snap, &
+!                 y_e_train_base, y_f_train_base, y_s_train_base, &
+!                 y_e_train_snap, y_f_train_snap, y_s_train_snap, &
+!                 y_e_p_a_train_snap, y_e_p_a_train_base
 
 use temporary_data_cov, only:  yfunc_train
 use derived_types, only: config_real
@@ -1651,12 +1653,12 @@ end subroutine train_snap_compute_energy_force_stress
 subroutine train_error_snap
 !$-------------------------------------------------------------
 use ml_in_ndm_module, only: rangml
-use snap, only: dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap, &
-                y_e_train_snap, y_f_train_snap, y_s_train_snap, &
-                y_e_train_base, y_f_train_base, y_s_train_base, &
-                y_e_p_a_train_base, y_e_p_a_train_snap,  &
-                train_rmse_energy, train_rmse_force, train_rmse_stress, &
-                train_mae_energy, train_mae_force, train_mae_stress
+!use snap, only: dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap, &
+!                y_e_train_snap, y_f_train_snap, y_s_train_snap, &
+!                y_e_train_base, y_f_train_base, y_s_train_base, &
+!                y_e_p_a_train_base, y_e_p_a_train_snap,  &
+!                train_rmse_energy, train_rmse_force, train_rmse_stress, &
+!                train_mae_energy, train_mae_force, train_mae_stress
 implicit none
 
 real(kind(0.d0)) :: corr, detr, rmse, mae
@@ -1718,18 +1720,18 @@ end subroutine train_error_snap
 !\------------------------------------------------------------/
 
 !$-------------------------------------------------------------
-subroutine test_snap
+subroutine test_snap_routine
 !$-------------------------------------------------------------
 use ml_in_ndm_module, only: rangml, debug, iconf_data, allocate_ml, deallocate_ml
 use temporary_data_cov, only:  dim_data_test
 use derived_types, only: config_real
-use snap, only: dim_ene_test_snap, dim_force_test_snap, dim_stress_test_snap, &
-                y_e_test_snap, y_f_test_snap, y_s_test_snap, &
-                y_e_test_base, y_f_test_base, y_s_test_base, &
-                y_e_p_a_test_snap, y_e_p_a_test_base, &
-                ene_snap, fp_snap, stress_snap
-use descriptors_interface
-use snap_interface
+!use snap, only: dim_ene_test_snap, dim_force_test_snap, dim_stress_test_snap, &
+!                y_e_test_snap, y_f_test_snap, y_s_test_snap, &
+!                y_e_test_base, y_f_test_base, y_s_test_base, &
+!                y_e_p_a_test_snap, y_e_p_a_test_base, &
+!                ene_snap, fp_snap, stress_snap
+use compute_descriptors_mod
+!use snap_interface
 implicit none
 integer :: i, ix, einp, finp, sinp
 double precision,dimension(:,:),allocatable :: xdesc_i
@@ -1843,7 +1845,7 @@ integer :: i_e_test_snap, i_f_test_snap, i_s_test_snap
   !call test_error_snap
 
 return
-end subroutine test_snap
+end subroutine test_snap_routine
 !<-------------------------------------------------------------
 
 !$-------------------------------------------------------------
@@ -1859,7 +1861,7 @@ subroutine  test_get_fit_dimensions(iconf)
 !$-------------------------------------------------------------
 use temporary_data_cov, only: dim_data, dim_data_test, dim_data_train
 use derived_types, only:config_real
-use snap, only: dim_ene_test_snap, dim_force_test_snap, dim_stress_test_snap
+!use snap, only: dim_ene_test_snap, dim_force_test_snap, dim_stress_test_snap
 implicit none
 integer, intent(in) :: iconf
 
@@ -1895,12 +1897,12 @@ end subroutine  test_get_fit_dimensions
 subroutine test_error_snap
 !$-------------------------------------------------------------
 use ml_in_ndm_module, only: rangml
-use snap, only: dim_ene_test_snap, dim_force_test_snap, dim_stress_test_snap, &
-                y_e_test_snap, y_f_test_snap, y_s_test_snap, &
-                y_e_test_base, y_f_test_base, y_s_test_base, &
-                y_e_p_a_test_snap, y_e_p_a_test_base, &
-                test_rmse_energy, test_rmse_force, test_rmse_stress, &
-                test_mae_energy, test_mae_force, test_mae_stress
+!use snap, only: dim_ene_test_snap, dim_force_test_snap, dim_stress_test_snap, &
+!                y_e_test_snap, y_f_test_snap, y_s_test_snap, &
+!                y_e_test_base, y_f_test_base, y_s_test_base, &
+!                y_e_p_a_test_snap, y_e_p_a_test_base, &
+!                test_rmse_energy, test_rmse_force, test_rmse_stress, &
+!                test_mae_energy, test_mae_force, test_mae_stress
 implicit none
 real(kind(0.d0)) :: corr, detr, rmse, mae
 
@@ -1970,7 +1972,7 @@ subroutine md_allocate_snap_params
 !used olny for md
 use ml_in_ndm_module, only: rangml
 use temporary_data_cov, only: dim_xdesc
-use snap, only: w_params
+!use snap, only: w_params
 implicit none
 
 if (dim_xdesc == 0) then
@@ -1991,7 +1993,7 @@ subroutine md_allocate_snap_desc
 !used olny for md
 use ml_in_ndm_module, only: rangml
 use temporary_data_cov, only: xdesc_emd, xdesc_fmd, xdesc_smd, dim_xdesc
-use snap, only: fp_snap
+!use snap, only: fp_snap
 use gen_com_m, only: im, imm
 implicit none
 
@@ -2025,7 +2027,7 @@ subroutine md_snap_compute_energy(iconf, pack_opt)
 !$-------------------------------------------------------------
 use temporary_data_cov, only: dim_xdesc, xdesc_emd
 use derived_types, only: config_desc, config_real
-use snap, only : w_params, ene_snap
+!use snap, only : w_params, ene_snap
 implicit none
 integer , intent(in) :: iconf
 logical, intent(in), optional :: pack_opt
@@ -2051,7 +2053,7 @@ subroutine md_snap_compute_force(iconf, pack_opt)
 !$-------------------------------------------------------------
 use temporary_data_cov, only: dim_xdesc, xdesc_fmd
 use derived_types, only: config_desc, config_real
-use snap, only : w_params, fp_snap
+!use snap, only : w_params, fp_snap
 implicit none
 integer , intent(in) :: iconf
 integer ::  ik, ix
@@ -2088,7 +2090,7 @@ subroutine md_snap_compute_stress(iconf, pack_opt)
 !MiLaDy_interaction
 use temporary_data_cov, only: dim_xdesc, xdesc_smd
 use derived_types, only: config_desc
-use snap, only : w_params, stress_snap
+!use snap, only : w_params, stress_snap
 implicit none
 integer , intent(in) :: iconf
 integer :: ix
@@ -2209,7 +2211,7 @@ subroutine read_parameters_snap
 ! This subroutine read the parameters file of the snap potential
 use temporary_data_cov, only : dim_xdesc
 use ml_in_ndm_module, only: char_desc, rangml
-use snap, only: w_params
+!use snap, only: w_params
 implicit none
 character(len=80) :: file_params
 integer :: dim_pot,i
@@ -2236,3 +2238,4 @@ endif
 return
 end subroutine read_parameters_snap
 !<-------------------------------------------------------------
+end module snap

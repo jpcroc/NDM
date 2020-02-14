@@ -17,7 +17,7 @@ subroutine try_sparsification(n_count)
      use def_kernels, ONLY : length_kse
      use opt_marginal_likelihood
 
-#if(PARAML)
+#ifdef PARAML
 !for curie      use mkl_service
       use mpi
       use mod_mpi_ml
@@ -39,7 +39,7 @@ if (sparsification_by_entropy) call sub_sparsification_by_entropy()
 if (sparsification_by_acd) call sub_sparsification_by_acd()
 
 
-#if (PARAML)
+#ifdef PARAML
        call MPI_BCAST(reject,ns_data,MPI_LOGICAL,0,MPI_COMM_WORLD,codeml)
 #endif
        n_count=0
@@ -69,21 +69,27 @@ subroutine sub_sparsification_by_entropy()
      use k_cross_validation
      use set_limits
      use opt_marginal_likelihood
+     use dynalloccell
+     use divid_mod
+     use neigcel_mod
+     use caltabi_mod
+     use compute_descriptors_mod
+     use recips_mod
 
-#if(PARAML)
+#ifdef PARAML
 !for curie      use mkl_service
       use mpi
       use mod_mpi_ml
 #endif
 implicit none
 
-interface compute_descriptors
-   subroutine compute_descriptors(xdesc_out,icount)
-    implicit none
-    double precision,dimension(:,:),allocatable :: xdesc_out
-    integer, optional ::  icount
-   end subroutine compute_descriptors
-end interface compute_descriptors
+!interface compute_descriptors
+!   subroutine compute_descriptors(xdesc_out,icount)
+!    implicit none
+!    double precision,dimension(:,:),allocatable :: xdesc_out
+!    integer, optional ::  icount
+!   end subroutine compute_descriptors
+!end interface compute_descriptors
 
 double precision,dimension(:),allocatable :: diff_entropy
 integer,dimension(:),allocatable :: idx
@@ -210,8 +216,15 @@ use extrapolation
 use k_cross_validation
 use set_limits
 use opt_marginal_likelihood
+use dynalloccell
+use divid_mod
+use neigcel_mod
+use caltabi_mod
+use compute_acd_mod
+use compute_acd_local_mod
 
-#if(PARAML)
+
+#ifdef PARAML
 !for curie      use mkl_service
       use mpi
       use mod_mpi_ml

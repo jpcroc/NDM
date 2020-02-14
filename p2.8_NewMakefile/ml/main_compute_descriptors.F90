@@ -13,8 +13,10 @@ use snap, only: i_fit_snap, dim_ene_train_snap, dim_force_train_snap, dim_stress
                 y_e_p_a_train_base, y_e_p_a_train_snap, i_constraints_snap,  &
                 dim_force_constraints, dim_stress_constraints
 
-use descriptors_interface
+use compute_descriptors_mod
 use tab_imm_m
+use build_subdata_mod
+use dynalloccell
 implicit none
 integer :: i,einp, finp, sinp
 double precision,dimension(:,:),allocatable :: xdesc_i

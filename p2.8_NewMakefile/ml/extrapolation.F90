@@ -44,11 +44,11 @@ do j=1,dim_extra
   if (krr_error) then
 
     temp_chol(:) = temp_j(:)
-#if(PARAML)
+#ifdef PARAML
     if (rangml==0) then
 #endif
     call cholesky_solve_k(matfor, temp_chol,dim_train)
-#if(PARAML)
+#ifdef PARAML
     end if
 #endif
     error_extra(j) =1.d0-DOT_PRODUCT(temp_j(:),temp_chol(:))

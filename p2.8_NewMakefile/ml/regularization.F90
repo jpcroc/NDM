@@ -1,8 +1,14 @@
-
+module regularization_mod
+        use build_subdata_mod
+        use compute_descriptors_mod
+        use snap
+!        use snap_interface
+        implicit none
+        contains
 !$-------------------------------------------------------------
 subroutine regularization
 !$-------------------------------------------------------------
-#if(PARAML)
+#ifdef PARAML
 use mpi
 use mod_mpi_ml
 #endif
@@ -59,10 +65,10 @@ use ml_in_ndm_module, only: iconf_data, allocate_ml, deallocate_ml, rangml, opti
                             fit_lapack_qr_constraints, tmp_val_desc_max, lambda_krr
 use temporary_data_cov, only: dim_data, dim_data_train, dim_data_test, dim_data_constraints
 use derived_types, only: config_real
-use snap, only: i_fit_snap, dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap, &
-                dim_force_constraints, dim_stress_constraints
+!use snap, only: i_fit_snap, dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap, &
+!                dim_force_constraints, dim_stress_constraints
 use module_snap_quadratic, only: i_e_fit_snap, i_f_fit_snap, i_s_fit_snap
-use snap_interface
+!use snap_interface
 
 implicit none
 integer :: i
@@ -213,7 +219,7 @@ end subroutine get_train_errors
 subroutine compute_descriptors_all_database
 !$-------------------------------------------------------------
 use ml_in_ndm_module, only: rangml, iconf_data, allocate_ml, deallocate_ml
-use descriptors_interface
+use compute_descriptors_mod
 implicit none
 integer :: i
 double precision,dimension(:,:),allocatable :: xdesc_i
@@ -261,7 +267,7 @@ use snap, only: dim_ene_test_snap, dim_force_test_snap, dim_stress_test_snap, &
                 y_e_test_base, y_f_test_base, y_s_test_base, &
                 y_e_p_a_test_snap, y_e_p_a_test_base, &
                 ene_snap, fp_snap, stress_snap
-use descriptors_interface
+use compute_descriptors_mod
 implicit none
 integer :: i, ix, einp, finp, sinp
 double precision,dimension(:,:),allocatable :: xdesc_i
@@ -300,13 +306,13 @@ subroutine get_test_errors
 use ml_in_ndm_module, only: rangml, debug, iconf_data, allocate_ml, deallocate_ml, regularization_name
 use temporary_data_cov, only:  dim_data_test
 use derived_types, only: config_real
-use snap, only: dim_ene_test_snap, dim_force_test_snap, dim_stress_test_snap, &
-                y_e_test_snap, y_f_test_snap, y_s_test_snap, &
-                y_e_test_base, y_f_test_base, y_s_test_base, &
-                y_e_p_a_test_snap, y_e_p_a_test_base, &
-                ene_snap, fp_snap, stress_snap
-use descriptors_interface
-use snap_interface
+!use snap, only: dim_ene_test_snap, dim_force_test_snap, dim_stress_test_snap, &
+!                y_e_test_snap, y_f_test_snap, y_s_test_snap, &
+!                y_e_test_base, y_f_test_base, y_s_test_base, &
+!                y_e_p_a_test_snap, y_e_p_a_test_base, &
+!                ene_snap, fp_snap, stress_snap
+use compute_descriptors_mod
+!use snap_interface
 implicit none
 integer :: i, ix, einp, finp, sinp
 double precision,dimension(:,:),allocatable :: xdesc_i
@@ -393,3 +399,4 @@ integer :: i_e_test_snap, i_f_test_snap, i_s_test_snap
 return
 end subroutine get_test_errors
 !<-------------------------------------------------------------
+end module

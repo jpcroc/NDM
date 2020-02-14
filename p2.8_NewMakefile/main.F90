@@ -26,6 +26,9 @@ program ndm
 #endif
 #if defined ML && defined PARAML
  use mod_mpi_ml
+ use init_mpi_ml_mod
+ use gen_init_mpi_mod
+
 #endif
 
 

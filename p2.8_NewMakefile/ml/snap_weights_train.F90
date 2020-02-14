@@ -98,7 +98,8 @@ end subroutine snap_optimize_weights
 
 subroutine ga_best_evaluation (xval)
   use ml_in_ndm_module, only : lambda_krr, optimize_weights_Le
-  use snap, only : tmp_weights, weights_snap, dim_weights_function, dim_weights_function_full
+  !use snap, only : tmp_weights, weights_snap, dim_weights_function, dim_weights_function_full
+  use snap
   implicit none
   real(kind(0.d0)), dimension(dim_weights_function_full), intent(in) :: xval
 
@@ -115,7 +116,9 @@ subroutine function_to_min(xval,objval)
 use data_type, only : icall, nunit
 use ml_in_ndm_module, only: rangml, debug, factor_energy_error, factor_force_error, factor_stress_error, lambda_krr, &
                             optimize_weights_L1, optimize_weights_L2, optimize_weights_Le, lambda_krr_fake, lambda_krr_2
-use snap, only: dim_weights_function, dim_weights_function_full, tmp_weights, weights_snap, tmp_weights_snap
+!use snap, only: dim_weights_function, dim_weights_function_full, tmp_weights, weights_snap, tmp_weights_snap
+use snap
+use math
 implicit none
 real(kind(0.d0)), dimension(dim_weights_function+1), intent(in) :: xval
 real(kind(0.d0)), intent(out) :: objval
@@ -448,6 +451,7 @@ use snap, only : w_params, Amat, ene_snap, fit_snap!, &
 
 use temporary_data_cov, only:  yfunc_train, dim_data_train
 use derived_types, only: config_real
+use math
 implicit none
 real(kind(0.d0)),intent(out)  :: mae_energy, mae_force, mae_stress
 integer :: idata, i_w, jc, dim_y_force_error, dim_y_energy_error, dim_y_stress_error

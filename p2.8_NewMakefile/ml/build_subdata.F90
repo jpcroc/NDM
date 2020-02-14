@@ -1,3 +1,7 @@
+module build_subdata_mod
+        !use math
+        implicit none
+        contains
 !$-----------------------------------------------------
 subroutine prepare_database
 !$-----------------------------------------------------
@@ -436,7 +440,7 @@ real(kind=kind(1.d0)) :: alat
 real(kind=kind(0.d0)), dimension(3,3) :: box, box_inv
 character(len=80)   :: dummy,trimdummy
 character(len=80)   :: line, header_poscar
-integer :: im_local, icnt, ij, i_p, spin, i_pos_form,i,nitype,nitems2, itest_there_is_a_number
+integer :: im_local, icnt, ij, i_p, spin, i_pos_form,i,nitype ! ,nitems2, itest_there_is_a_number
 integer, dimension(:), allocatable :: nspecies,ityp             ! nspecies is the same as nb_elements???
 real(kind=kind(1.d0)), dimension(:,:), allocatable :: xp,xc,fp, l_spin
 real(kind=kind(1.d0)) :: st(6), volume
@@ -884,7 +888,7 @@ implicit none
 
 integer (kind = 4) :: k,c1,c2,i,k0,n,seed
 integer (kind = 4),dimension(k) :: a
-real (kind = 8) :: r,r8_uniform_01
+real (kind = 8) :: r ! ,r8_uniform_01
 
 if ( k < 0 .or. n < k ) then
   if (rangml==0) write ( *, '(a)' ) ''
@@ -1003,7 +1007,8 @@ use ml_in_ndm_module, only : rangml
 !
   implicit none
 
-  integer (kind = 4) :: i4_huge,k,seed
+  !integer (kind = 4) :: i4_huge,k,seed
+  integer (kind = 4) :: k,seed
   real (kind = 8) :: r8_uniform_01
 
   if ( seed == 0 ) then
@@ -1059,3 +1064,4 @@ function i4_huge ( )
 
   return
 end function i4_huge
+end module

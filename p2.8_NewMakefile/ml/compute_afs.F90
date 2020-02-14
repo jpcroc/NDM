@@ -1,3 +1,6 @@
+module compute_afs_mod
+        implicit none
+        contains
 !subroutine compute_afs(i_start_at,i_final_at, d_n_neigh, d_kind_neigh,  local_afs_out,config_desc(iconf)%force, iconf)
 subroutine compute_afs(i_start_at,i_final_at, d_n_neigh, d_kind_neigh, iconf)
 
@@ -7,7 +10,7 @@ use tab_imm_m, ONLY : iwmax2,xp
 use ml_in_ndm_module, ONLY: n_rbf,n_cheb,afs_dim, tconf,write_desc,w3_rho,weighted,massat, &
                             imm_neigh, r_cut, n_rbf, W_afs, desc_forces, factor_weight_mass, coeff_rbf_afs, linvisible
 use derived_types, only : config_real, config_desc
-
+use notperiod_mod
  implicit none
   integer, intent (in) :: i_start_at,i_final_at
 integer, dimension(imm),intent(out)  :: d_n_neigh
@@ -294,7 +297,7 @@ use tab_imm_m, ONLY : iwmax2,xp
 use ml_in_ndm_module, ONLY: n_rbf,n_cheb,afs_dim, tconf,write_desc,w3_rho,weighted,massat, &
                             imm_neigh, r_cut, n_rbf, W_afs, desc_forces, factor_weight_mass, coeff_rbf_afs
 use derived_types, only : config_real
-
+use notperiod_mod
 implicit none
 integer, intent (in) :: i_start_at,i_final_at
 integer, dimension(imm),intent(out)  :: d_n_neigh
@@ -494,3 +497,4 @@ if ( (i_start_at==0).and.(i_final_at==0) ) return
 
 return
 end subroutine distribute_ghost_descritors
+end module

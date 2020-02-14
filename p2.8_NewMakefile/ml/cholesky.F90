@@ -7,7 +7,7 @@ integer, intent(in) :: rangml
 integer :: count1,count2,count_rate,count_max
 real(double) :: time
 
-#if(PARAML)
+#ifdef PARAML
 
 
   call system_clock (count1,count_rate,count_max)
@@ -42,7 +42,7 @@ use ml_in_ndm_module
 use temporary_data_cov, ONLY: yfunc_train, dim_train, &
                               mlocal, u_local,v_local, i_local_cov, &
                               kbfunc,matfor
-#if(PARAML)
+#ifdef PARAML
 !  include "mkl_service.h"
   use mpi
   use mod_mpi_ml
@@ -81,7 +81,7 @@ if (rangml == 0 ) then
 end if
 
 
-#if(PARAML)
+#ifdef PARAML
 
 if (isave_ml==2) then  ! this correspond to the case when DYN matrix is
                        ! computed/readed by MPI and then is packed only to the procs number
@@ -140,7 +140,7 @@ end if ! isave_ml=2
 
   call system_clock (count2,count_rate,count_max)
 
-#if(PARAML)
+#ifdef PARAML
 
 
  if (isave_ml==2) then
@@ -161,7 +161,7 @@ if (debug) then
    if (rangml==0) write(*,*) 'ML: MATFOR (1,5) (5,1)', matfor (1,5) ,matfor(5,1)
 end if
 
-#if(PARAML)
+#ifdef PARAML
 
 
 end if  !rang_ml==0
@@ -282,7 +282,7 @@ end if  ! rangml=0
 
 
 
-#if (PARAML)
+#ifdef PARAML
 
 call MPI_BARRIER(MPI_COMM_WORLD,codeml)
 
@@ -308,7 +308,7 @@ end subroutine cholesky_threading
 
 
 
-#if(PARAML)
+#ifdef PARAML
 
 subroutine cholesky_scalapack
  use mpi

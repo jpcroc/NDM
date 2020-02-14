@@ -6,6 +6,9 @@ real(double), dimension(:), allocatable :: c_spline, k_spline
 
 end module magnetic_parameters_rho
 
+module compute_magnetic_mod
+        implicit none
+        contains
 subroutine compute_magnetic_sld(i_start_at,i_final_at, local_d_n_neigh, local_d_kind_neigh,  iconf)
 
 USE T_kind_param_m, ONLY:  double
@@ -18,6 +21,7 @@ use ml_in_ndm_module, ONLY: mconf,w2_rho,weighted, &
                             r_cut,  r_cut_magnetic, &
                             magnetic_sld_dim, factor_weight_mass, desc_forces, linvisible
 use derived_types, only: config_real, config_desc
+use notperiod_mod
 implicit none
 
 
@@ -35,7 +39,8 @@ integer :: iw,iw1,iw2
 integer :: p, p_desc
 real(double) :: fcut,r_ji,dfcut, f_out, df_out
 real(double) :: factor_ia, factor_ja
-real(double) :: magnetic_sld_func, tij_mag, d_tij_mag, rho_ia, rho_ja, A_out, B_out, dA_out, dB_out
+!real(double) :: magnetic_sld_func, tij_mag, d_tij_mag, rho_ia, rho_ja, A_out, B_out, dA_out, dB_out
+real(double) :: magnetic_sld_func, d_tij_mag, rho_ia, rho_ja, A_out, B_out, dA_out, dB_out
 
 integer :: ia,ja,ia_n
 logical :: small
@@ -179,7 +184,7 @@ USE T_kind_param_m, ONLY:  double
 real(double), intent(in)  :: r, alpha, r_cut
 real(double), intent(out) ::  f_out, df_out
 real(double) :: r_temp
-
+real(double) :: unit
 
 unit=0.176d0
 r_temp = 1.d0 - r / r_cut
@@ -197,6 +202,7 @@ use ml_in_ndm_module, only: magnetic_sld_dim, magnetic_sld_j_dim, magnetic_sld_s
                             magnetic_alpha, magnetic_rho_s2, magnetic_rho_s4
 
 real(double) :: alpha_ini, alpha_fin
+integer      :: i 
 
 
 if (allocated(magnetic_alpha)) deallocate(magnetic_alpha) ; allocate(magnetic_alpha(magnetic_sld_j_dim))
@@ -300,7 +306,7 @@ function  tij_mag(x) result (value)
   use magnetic_parameters_rho, only: c_spline, k_spline
   implicit none
   real(kind(0.d0)), intent(in) :: x
-  real(kind(0.d0)) :: value,step
+  real(kind(0.d0)) :: value ! , step
   integer :: i
   !
   value=0.d0
@@ -316,7 +322,7 @@ function  d_tij_mag(x) result (value)
   use magnetic_parameters_rho, only: c_spline, k_spline
   implicit none
   real(kind(0.d0)), intent(in) :: x
-   real(kind(0.d0)) ::  value, step
+   real(kind(0.d0)) ::  value ! , step
   integer :: i
   !
   value=0.d0
@@ -365,3 +371,4 @@ function  step(x) result (value)
   end if
 
 end function step
+end module

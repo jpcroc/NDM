@@ -1,4 +1,3 @@
-
 module math
 
 contains
@@ -93,8 +92,6 @@ contains
     END SELECT
 
   END SUBROUTINE matinv_gen
-end module math
-
 
 
 subroutine correlation_coef(y1,y2,n,r)
@@ -295,3 +292,4 @@ integer function itest_there_is_a_number (line)
 
  end do
 end function itest_there_is_a_number
+end module  math
