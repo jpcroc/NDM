@@ -74,8 +74,14 @@ ndm :  \
 	layer.o \
 	loopforcetest.o \
 	main.o \
+	alloc_typ_ml.o \
 	angular_functions.o \
+	build_kernel_matrix.o \
 	build_subdata.o \
+	calfo_ml.o \
+	cholesky.o \
+	compute_acd.o \
+	compute_acd_local.o \
 	compute_afs.o \
 	compute_bispectrum_so3.o \
 	compute_bispectrum_so4.o \
@@ -90,15 +96,22 @@ ndm :  \
 	descriptors.o \
 	extrapolation.o \
 	kcross.o \
+	main_compute_descriptors.o \
 	marginal_likelihood.o \
 	ml.o \
 	ml_in_ndm_module.o \
+	neighbours.o \
 	partial_index_ml.o \
 	read_ml_file.o \
+	read_poscar.o \
 	regularization.o \
 	snap.o \
+	snap_param.o \
+	sparsification.o \
 	stats_tools.o \
+	svd.o \
 	toy_models.o \
+	wesley_style.o \
 	SMjuli.o \
 	T_kind_param_m.o \
 	anasic.o \
@@ -120,7 +133,6 @@ ndm :  \
 	neb_controle.o \
 	neigcel.o \
 	notperiod.o \
-	param_det.o \
 	period.o \
 	potrep.o \
 	pr2.o \
@@ -293,6 +305,7 @@ calfo.o :  \
 	force_tersoff_cel.o \
 	julicel.o \
 	julitabvois.o \
+	calfo_ml.o \
 	T_kind_param_m.o \
 	contrainte.o \
 	gen_com_m.o \
@@ -486,7 +499,6 @@ divid.o :  \
 	gen_com_m.o \
 	tab_imm_m.o \
 	var_pot.o \
-	param_det.o \
 	recips.o
 
 dmloop.o :  \
@@ -671,6 +683,7 @@ init.o :  \
 	input_pair.o \
 	inputtersoff.o \
 	layer.o \
+	calfo_ml.o \
 	SMjuli.o \
 	T_kind_param_m.o \
 	eamerco.o \
@@ -681,6 +694,8 @@ init.o :  \
 	tab_imm_m.o \
 	var_pot.o \
 	neigcel.o \
+	prtplz.o \
+	rasmol.o \
 	sauvegarde.o \
 	tersoff_zbl.o \
 	transf.o
@@ -791,21 +806,47 @@ main.o :  \
 	prog.o \
 	readdm.o
 
-alloc_typ_ml.o : 
+alloc_typ_ml.o :  \
+	var_pot.o
 
 angular_functions.o :  \
 	ml_in_ndm_module.o
 
-build_kernel_matrix.o : 
+build_kernel_matrix.o :  \
+	init_MPI_ml.o \
+	def_kernels.o \
+	kcross.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o
 
 build_subdata.o :  \
 	derived_types.o \
 	ml_in_ndm_module.o \
+	neighbours.o \
+	read_poscar.o \
 	stats_tools.o
 
-calfo_ml.o : 
+calfo_ml.o :  \
+	init_MPI_ml.o \
+	init_MPI_ml.o \
+	alloc_typ_ml.o \
+	derived_types.o \
+	descriptors.o \
+	ml_in_ndm_module.o \
+	read_ml_file.o \
+	snap.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	var_pot.o
 
-cholesky.o : 
+cholesky.o :  \
+	init_MPI_ml.o \
+	kcross.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o \
+	gen_com_m.o
 
 compute_acd.o :  \
 	init_MPI_ml.o \
@@ -938,8 +979,6 @@ descriptors.o :  \
 	toy_models.o \
 	gen_com_m.o
 
-diago_scalapack.o : 
-
 extrapolation.o :  \
 	def_kernels.o \
 	kcross.o \
@@ -947,9 +986,20 @@ extrapolation.o :  \
 
 kcross.o : 
 
-main_compute_descriptors.o : 
+main_compute_descriptors.o :  \
+	DynamicAlloc.o \
+	build_subdata.o \
+	derived_types.o \
+	descriptors.o \
+	kcross.o \
+	ml_in_ndm_module.o \
+	neighbours.o \
+	snap.o \
+	tab_imm_m.o
 
 marginal_likelihood.o :  \
+	build_kernel_matrix.o \
+	cholesky.o \
 	def_kernels.o \
 	extrapolation.o \
 	kcross.o \
@@ -961,17 +1011,22 @@ ml.o :  \
 	gen_init_MPI.o \
 	init_MPI_ml.o \
 	build_subdata.o \
+	cholesky.o \
 	def_kernels.o \
 	descriptors.o \
 	extrapolation.o \
 	kcross.o \
 	kcross.o \
+	main_compute_descriptors.o \
 	marginal_likelihood.o \
 	ml_in_ndm_module.o \
 	partial_index_ml.o \
 	read_ml_file.o \
 	regularization.o \
 	snap.o \
+	sparsification.o \
+	toy_models.o \
+	wesley_style.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
@@ -985,7 +1040,21 @@ ml_in_ndm_module.o :  \
 	tab_imm_m.o \
 	var_pot.o
 
-neighbours.o : 
+neighbours.o :  \
+	DynamicAlloc.o \
+	caltabi.o \
+	caltabt.o \
+	divid.o \
+	alloc_typ_ml.o \
+	derived_types.o \
+	ml_in_ndm_module.o \
+	read_poscar.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	var_pot.o \
+	neigcel.o \
+	recips.o
 
 nr.o : 
 
@@ -996,7 +1065,8 @@ partial_index_ml.o :  \
 
 print_matrix.o : 
 
-read_desc_data.o : 
+read_desc_data.o :  \
+	ml_in_ndm_module.o
 
 read_ml_file.o :  \
 	build_subdata.o \
@@ -1008,7 +1078,13 @@ read_ml_file.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o
 
-read_poscar.o : 
+read_poscar.o :  \
+	ml_in_ndm_module.o \
+	stats_tools.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	var_pot.o \
+	recips.o
 
 regularization.o :  \
 	init_MPI_ml.o \
@@ -1017,6 +1093,7 @@ regularization.o :  \
 	descriptors.o \
 	kcross.o \
 	ml_in_ndm_module.o \
+	neighbours.o \
 	snap.o \
 	snap.o
 
@@ -1027,23 +1104,83 @@ snap.o :  \
 	descriptors.o \
 	kcross.o \
 	ml_in_ndm_module.o \
+	snap_param.o \
 	stats_tools.o \
 	gen_com_m.o \
 	tab_imm_m.o \
 	notperiod.o
 
-snap_weights_train.o : 
+snap_param.o : 
 
-sparsification.o : 
+sparsification.o :  \
+	DynamicAlloc.o \
+	caltabi.o \
+	caltabt.o \
+	divid.o \
+	init_MPI_ml.o \
+	alloc_typ_ml.o \
+	compute_acd.o \
+	compute_acd_local.o \
+	def_kernels.o \
+	descriptors.o \
+	extrapolation.o \
+	kcross.o \
+	kcross.o \
+	marginal_likelihood.o \
+	ml_in_ndm_module.o \
+	partial_index_ml.o \
+	read_poscar.o \
+	svd.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	var_pot.o \
+	neigcel.o \
+	recips.o
 
 stats_tools.o :  \
 	ml_in_ndm_module.o
 
-svd.o : 
+svd.o :  \
+	kcross.o \
+	ml_in_ndm_module.o \
+	T_kind_param_m.o
 
-toy_models.o : 
+toy_models.o :  \
+	kcross.o \
+	kcross.o \
+	ml_in_ndm_module.o \
+	partial_index_ml.o \
+	stats_tools.o \
+	T_kind_param_m.o
 
-wesley_style.o : 
+wesley_style.o :  \
+	DynamicAlloc.o \
+	caltabi.o \
+	caltabt.o \
+	cryst_to_car.o \
+	divid.o \
+	init_MPI_ml.o \
+	alloc_typ_ml.o \
+	angular_functions.o \
+	compute_acd.o \
+	compute_acd_local.o \
+	def_kernels.o \
+	descriptors.o \
+	extrapolation.o \
+	kcross.o \
+	kcross.o \
+	marginal_likelihood.o \
+	ml_in_ndm_module.o \
+	partial_index_ml.o \
+	read_poscar.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o \
+	var_pot.o \
+	neigcel.o \
+	notperiod.o \
+	recips.o
 
 SMjuli.o :  \
 	alloc_typ.o \
@@ -1165,11 +1302,7 @@ notperiod.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o
 
-param_det.o :  \
-	endrun.o \
-	T_kind_param_m.o \
-	gen_com_m.o \
-	var_pot.o
+param_det.o : 
 
 period.o :  \
 	cryst_to_car.o \

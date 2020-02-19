@@ -140,21 +140,14 @@ tar:
 	@tar cvzf ../$(ROOT)_src.tar.gz ./*
 
 clean-all:
-	rm -rf Obj_*
+	rm -rf Obj_* $(ROOT)_*
 
 clean-%:
-	rm -rf Obj_$(@:clean-%=%)
+	rm -rf Obj_$(@:clean-%=%) $(ROOT)_$(@:clean-%=%)
 
+softclean-all:
+	rm -rf $(ROOT)_*
 
-all: $(EXE) $(DEP_FILE)
+softclean-%:
+	rm -rf $(ROOT)_$(@:clean-%=%)
 
-## Make dependencies
-#.PHONY: depend
-#depend: $(DEP_FILE)
-#
-#$(DEP_FILE):$(OBJ)
-#	@echo "Making dependencies !"
-#	$(MAKEDEPEND) -w $(FLAG) -i mpi -f $(checkfiles) -o $(DEP_FILE)
-#
-#include $(DEP_FILE)
-#

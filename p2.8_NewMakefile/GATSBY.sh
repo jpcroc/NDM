@@ -3,6 +3,8 @@
 # no module are need and no module will conflict 
 module purge
 module load openmpi/gcc/4.0.2
+make clean-all
+
 make ndm_serial_gfortran
 
 # with lammps and gfortran 

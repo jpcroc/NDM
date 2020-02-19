@@ -695,6 +695,8 @@ init.o :  \
 	neigcel.o \
 	init_voisinage.o \
 	mod_mpi.o \
+	prtplz.o \
+	rasmol.o \
 	sauvegarde.o \
 	tersoff_zbl.o \
 	transf.o
@@ -942,6 +944,7 @@ mod_mpi.o :  \
 	tab_imm_m.o
 
 param_det.o :  \
+	arret_ndm.o \
 	endrun.o \
 	T_kind_param_m.o \
 	gen_com_m.o \

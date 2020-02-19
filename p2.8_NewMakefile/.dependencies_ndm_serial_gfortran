@@ -653,6 +653,8 @@ init.o :  \
 	tab_imm_m.o \
 	var_pot.o \
 	neigcel.o \
+	prtplz.o \
+	rasmol.o \
 	sauvegarde.o \
 	tersoff_zbl.o \
 	transf.o
@@ -879,6 +881,7 @@ notperiod.o :  \
 	gen_com_m.o
 
 param_det.o :  \
+	arret_ndm.o \
 	endrun.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
