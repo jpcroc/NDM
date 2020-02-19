@@ -1,3 +1,6 @@
+module alloc_typ_ml_mod
+        implicit none
+        contains
 subroutine alloc_typ_ml
 
   use var_pot
@@ -83,3 +86,4 @@ subroutine alloc_typ_ml
 
   return
 end subroutine alloc_typ_ml
+end module

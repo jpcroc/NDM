@@ -6,7 +6,7 @@ module gcII_mod
         implicit none
         contains
 ! *************************************************************
-subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+subroutine  gcII   ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -30,14 +30,14 @@ subroutine gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer  :: ielat(imm)
-  integer  :: iwmax(imm)
-  integer  :: ityp(imm)
-  real(double)  :: xp(3,imm)
-  real(double)  :: xpp(3,imm)
-  real(double)  :: vp(3,imm)
-  real(double)  :: ax(3,imm)
-  real(double)  :: fp(3,imm)
+  !integer  :: ielat(imm)
+  !integer  :: iwmax(imm)
+  !integer  :: ityp(imm)
+  !real(double)  :: xp(3,imm)
+  !real(double)  :: xpp(3,imm)
+  !real(double)  :: vp(3,imm)
+  !real(double)  :: ax(3,imm)
+  !real(double)  :: fp(3,imm)
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------

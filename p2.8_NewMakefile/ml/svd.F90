@@ -1,3 +1,6 @@
+module svd_mod
+        implicit none
+        contains
 subroutine svd(entropy,n_temp)
 
 USE T_kind_param_m, ONLY:  double
@@ -48,3 +51,4 @@ deallocate(u,vt,s,work,norm_spec)
 
 return
 end subroutine svd
+end module

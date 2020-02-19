@@ -1,36 +1,40 @@
+module read_desc_data_mod
+        implicit none
+        contains
+
 subroutine read_descriptor(path,lpath,l,descriptor_type)
 
 use ml_in_ndm_module, only : rangml
 
 implicit none
 
-interface read_g2ml
-   subroutine read_g2ml(path,lpath,l,g2_out,nb,n_eta,n_rs)
-   
-   implicit none
-   
-   integer,intent(in) :: lpath
-   character(len=lpath),intent(in) :: path
-   integer,intent(in) :: l
-   double precision,dimension(:,:,:),pointer :: g2_out
-   integer,intent(out) :: nb,n_eta,n_rs
-   
-   end subroutine read_g2ml
-end interface read_g2ml
-
-interface read_g3ml
-   subroutine read_g3ml(path,lpath,l,g3_out,nb,n_eta,n_lambda,n_zeta)
-   
-   implicit none
-   
-   integer,intent(in) :: lpath
-   character(len=lpath),intent(in) :: path
-   integer,intent(in) :: l
-   double precision,dimension(:,:,:,:),pointer :: g3_out
-   integer,intent(out) :: nb,n_eta,n_lambda,n_zeta
-   
-   end subroutine read_g3ml
-end interface read_g3ml
+!interface ! read_g2ml
+!   subroutine read_g2ml(path,lpath,l,g2_out,nb,n_eta,n_rs)
+!   
+!   implicit none
+!   
+!   integer,intent(in) :: lpath
+!   character(len=lpath),intent(in) :: path
+!   integer,intent(in) :: l
+!   double precision,dimension(:,:,:),pointer :: g2_out
+!   integer,intent(out) :: nb,n_eta,n_rs
+!   
+!   end subroutine read_g2ml
+!!end interface read_g2ml
+!
+!!interface read_g3ml
+!   subroutine read_g3ml(path,lpath,l,g3_out,nb,n_eta,n_lambda,n_zeta)
+!   
+!   implicit none
+!   
+!   integer,intent(in) :: lpath
+!   character(len=lpath),intent(in) :: path
+!   integer,intent(in) :: l
+!   double precision,dimension(:,:,:,:),pointer :: g3_out
+!   integer,intent(out) :: nb,n_eta,n_lambda,n_zeta
+!   
+!   end subroutine read_g3ml
+!end interface  ! read_g3ml
 
 
 integer,intent(in) :: lpath
@@ -261,3 +265,5 @@ g3unit=31
 
 return
 end subroutine read_g3ml
+
+end module

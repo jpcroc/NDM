@@ -13,7 +13,7 @@ module neb_controle_mod
 !           MCM for JPC 08/02/2007
 ! ***********************************************************
 
-subroutine neb_controle(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+subroutine neb_controle (ii) ! (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -29,14 +29,14 @@ subroutine neb_controle(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   integer  :: ii
-  integer  :: ielat(imm)
-  integer  :: iwmax(imm)
-  integer  :: ityp(imm)
-  real(double)  :: xp(3,imm)
-  real(double)  :: xpp(3,imm)
-  real(double)  :: vp(3,imm)
-  real(double)  :: ax(3,imm)
-  real(double)  :: fp(3,imm)
+  ! integer  :: ielat(imm)
+  ! integer  :: iwmax(imm)
+  ! integer  :: ityp(imm)
+  ! real(double)  :: xp(3,imm)
+  ! real(double)  :: xpp(3,imm)
+  ! real(double)  :: vp(3,imm)
+  ! real(double)  :: ax(3,imm)
+  ! real(double)  :: fp(3,imm)
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------

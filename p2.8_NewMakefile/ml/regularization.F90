@@ -2,7 +2,8 @@ module regularization_mod
         use build_subdata_mod
         use compute_descriptors_mod
         use snap
-!        use snap_interface
+        use neighbours_mod 
+        !use snap_weights_trains_mod
         implicit none
         contains
 !$-------------------------------------------------------------
@@ -68,7 +69,6 @@ use derived_types, only: config_real
 !use snap, only: i_fit_snap, dim_ene_train_snap, dim_force_train_snap, dim_stress_train_snap, &
 !                dim_force_constraints, dim_stress_constraints
 use module_snap_quadratic, only: i_e_fit_snap, i_f_fit_snap, i_s_fit_snap
-!use snap_interface
 
 implicit none
 integer :: i
@@ -312,7 +312,6 @@ use derived_types, only: config_real
 !                y_e_p_a_test_snap, y_e_p_a_test_base, &
 !                ene_snap, fp_snap, stress_snap
 use compute_descriptors_mod
-!use snap_interface
 implicit none
 integer :: i, ix, einp, finp, sinp
 double precision,dimension(:,:),allocatable :: xdesc_i

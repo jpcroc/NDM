@@ -1,4 +1,7 @@
 module calfo_mod
+#ifdef ML
+        use calfo_ml_mod, only : md_calfo_ml
+#endif 
         use calfoew_mod
         use calfoberend_mod
         use calfo2ctabvois_mod
@@ -11,18 +14,7 @@ module calfo_mod
         use calfojuli_mod
         use calfojulicel_mod
         use force_tersoff_cel_mod
-        implicit none
-        contains
-! ************************************************
-!           Sous-programme calfo
-!routine d'appel des routines de forces
-! ************************************************
 
-subroutine calfo
-
-  !-----------------------------------------------
-  !   M o d u l e s
-  !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use contrainte
@@ -36,6 +28,31 @@ subroutine calfo
 #ifdef PARA
   use mod_para
 #endif
+        implicit none
+        contains
+! ************************************************
+!           Sous-programme calfo
+!routine d'appel des routines de forces
+! ************************************************
+
+subroutine calfo
+
+  !-----------------------------------------------
+  !   M o d u l e s
+  !-----------------------------------------------
+!  USE T_kind_param_m, ONLY:  double
+!  use gen_com_m
+!  use contrainte
+!  use tab_imm_m
+!  use jqmod
+!  use eloss, only : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
+!  use elec_cell, only :i2t
+!  use strain_bc_mod
+!  use stress_bc_mod
+!  use force_tersoff_mod
+!#ifdef PARA
+!  use mod_para
+!#endif
 
   implicit none
   !-----------------------------------------------

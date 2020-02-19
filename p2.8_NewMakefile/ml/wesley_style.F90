@@ -1,4 +1,9 @@
-
+module wesley_style_mod
+        use read_poscar_mod
+        use alloc_typ_ml_mod
+        use caltabt_mod
+        implicit none
+        contains
 subroutine coord_soap(i)
 
  USE T_kind_param_m, ONLY:  double
@@ -641,3 +646,4 @@ double precision,dimension(:,:),allocatable :: distance_desc
  if (rangml==0) write(6,*) 'ML: end compute ACD ...'
 
 end subroutine  wesley_fill_acd
+end module

@@ -4,6 +4,11 @@ module ml_main_mod
         use snap
         use build_subdata_mod
         use regularization_mod
+        use cholesky_mod
+        use toy_models
+        use wesley_style_mod
+        use sparsification_mod
+        use main_compute_descriptors_mod
         implicit none 
         contains
 

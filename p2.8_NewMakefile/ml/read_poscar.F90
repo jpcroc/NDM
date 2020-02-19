@@ -1,4 +1,6 @@
-
+module read_poscar_mod
+        implicit none
+        contains
 
 
 subroutine read_poscar(pref,l,ef)
@@ -142,3 +144,4 @@ endif
 
 return
 end subroutine convert_A2cm
+end module

@@ -1,3 +1,7 @@
+module calfo_ml_mod
+        use alloc_typ_ml_mod 
+        implicit none
+        contains
 !!this code is copyrighted @mihai-cosmin.marinica@cea.fr
 !$-------------------------------------------------------------
 subroutine md_init_potential_ml
@@ -217,8 +221,6 @@ use ml_in_ndm_module, only: ml_type, ml_type_basis, &
                             prepare_factorial, allocate_ml, deallocate_ml
 use compute_descriptors_mod
 use snap
-!use snap, only: ene_snap,fp_snap, stress_snap
-!use snap_interface
 use derived_types, only: config_real
 !use var_pot, only: rumax
 use time_measure, only: temps_energy, temps_force, temps_descripteurs, temps_neigh, temps_stress
@@ -372,3 +374,4 @@ end if
 return
 end subroutine md_calfo_ml
 !<-------------------------------------------------------------
+end module 

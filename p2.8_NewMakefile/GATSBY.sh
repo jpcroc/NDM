@@ -1,9 +1,9 @@
 # to compile in serial on gatsby 
 # with gcc compiler 
 # no module are need and no module will conflict 
+make clean-all
 module purge
 module load openmpi/gcc/4.0.2
-make clean-all
 
 make ndm_serial_gfortran
 
@@ -24,7 +24,9 @@ make ndm_mpi_gfortran PARA=1
 # with intel compiler 
 # intel/219.5.281 module is needed and no module will conflict
 module purge
+
 module load openmpi/intel/4.0.2
+
 make ndm_serial 
 
 # with lammps and intel

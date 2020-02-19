@@ -1,3 +1,9 @@
+module sparsification_mod
+        use svd_mod
+        use read_poscar_mod
+        use alloc_typ_ml_mod
+        implicit none
+        contains
 subroutine try_sparsification(n_count)
 
       USE T_kind_param_m, ONLY:  double
@@ -73,6 +79,7 @@ subroutine sub_sparsification_by_entropy()
      use divid_mod
      use neigcel_mod
      use caltabi_mod
+     use caltabt_mod
      use compute_descriptors_mod
      use recips_mod
 
@@ -220,6 +227,7 @@ use dynalloccell
 use divid_mod
 use neigcel_mod
 use caltabi_mod
+use caltabt_mod
 use compute_acd_mod
 use compute_acd_local_mod
 
@@ -323,3 +331,4 @@ double precision :: y_target
 
 return
 end subroutine sub_sparsification_by_acd
+end module

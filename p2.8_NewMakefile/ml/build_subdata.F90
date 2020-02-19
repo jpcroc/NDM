@@ -1,4 +1,6 @@
 module build_subdata_mod
+        use read_poscar_mod
+        use neighbours_mod
         !use math
         implicit none
         contains

@@ -5,7 +5,8 @@ use def_kernels, ONLY : length_kse,sigma_kse
 use set_limits
 use extrapolation
 use math
-
+use cholesky_mod
+use build_kernel_matrix_mod
 contains
 
 

@@ -1,5 +1,7 @@
 module divid_mod
+#ifndef ML
         use param_det_mod
+#endif
         use arret_ndm_mod
         use recips_mod
         implicit none
@@ -39,8 +41,8 @@ subroutine divid (appel)
      write(6,*)' -------------------------------------------------------------------'
      write(6,*)'             definition des rayons de coupure'
   endif
-#endif 
   call param_det
+#endif 
 
 !C_debug
 #if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML

@@ -112,7 +112,6 @@ return
 
 end subroutine toy_nD
 
-end module toy_models
 
 
 
@@ -154,3 +153,4 @@ if (rangml==0) write(6,*) 'ML:     dim_data ',dim_data
 
 
 end subroutine set_toy_model
+end module toy_models

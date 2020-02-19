@@ -92,17 +92,17 @@ subroutine caltabi
            dx(:) = xpi(:) - xpnp(:,j)
            ds(:) = MatMul( dx(:), bg(:,:) )
 
-	   
+       
 
           IF (ldecal_bc.EQV..TRUE.) THEN !*!  
-	    IF (ds(1)>0.5) THEN
-	      ds(3) = ds(3) - decal_bc
-	    ELSE IF (ds(1) < -0.5) THEN
-	      ds(3) = ds(3) + decal_bc
-	    END IF
-	  END IF !*!
+        IF (ds(1)>0.5) THEN
+          ds(3) = ds(3) - decal_bc
+        ELSE IF (ds(1) < -0.5) THEN
+          ds(3) = ds(3) + decal_bc
+        END IF
+      END IF !*!
            
-	   if ((ds(1)>0.5d0).or.(ds(1)<-0.5d0))   ds(1) = ds(1)-dble(Nint(ds(1)))
+       if ((ds(1)>0.5d0).or.(ds(1)<-0.5d0))   ds(1) = ds(1)-dble(Nint(ds(1)))
            if ((ds(2)>0.5d0).or.(ds(2)<-0.5d0))   ds(2) = ds(2)-dble(Nint(ds(2)))
            if ((ds(3)>0.5d0).or.(ds(3)<-0.5d0))   ds(3) = ds(3)-dble(Nint(ds(3)))
 
@@ -167,13 +167,13 @@ subroutine caltabi
               dx(:) = xpi(:) - xpnp(:,j)
               ds(:) = MatMul( dx(:), bg(:,:) )
 
-	     IF (ldecal_bc.EQV..TRUE.) THEN !*!
-	        IF (ds(1)>0.5) THEN
-	           ds(3) = ds(3) - decal_bc
-	        ELSE IF (ds(1) < -0.5) THEN
-	     	   ds(3) = ds(3) + decal_bc
-	        END IF
-	     END IF
+         IF (ldecal_bc.EQV..TRUE.) THEN !*!
+            IF (ds(1)>0.5) THEN
+               ds(3) = ds(3) - decal_bc
+            ELSE IF (ds(1) < -0.5) THEN
+                ds(3) = ds(3) + decal_bc
+            END IF
+         END IF
 
               if ((ds(1)>0.5d0).or.(ds(1)<-0.5d0))   ds(1) = ds(1)-dble(Nint(ds(1)))
               if ((ds(2)>0.5d0).or.(ds(2)<-0.5d0))   ds(2) = ds(2)-dble(Nint(ds(2)))

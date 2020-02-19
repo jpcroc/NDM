@@ -1,4 +1,7 @@
-
+module main_compute_descriptors_mod
+        use neighbours_mod
+        implicit none
+        contains
 !$-------------------------------------------------------------
 subroutine main_compute_descriptors
 !$-------------------------------------------------------------
@@ -76,3 +79,4 @@ real(kind(1.d0)) :: tmp_val
 return
 end subroutine main_compute_descriptors
 !<-------------------------------------------------------------
+end module

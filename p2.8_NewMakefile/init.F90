@@ -21,10 +21,15 @@ module init_mod
         use initcdp_mod
         use initcasca_mod
         use deftimestep_mod
+        use rasmol_mod
+        use prtplz_mod
 
 #ifdef PARA
         use init_vois_mod
 #endif
+#ifdef ML
+        use calfo_ml_mod 
+#endif 
 
         implicit none 
         contains

@@ -94,15 +94,15 @@ subroutine prog
 #endif
        endif
   case (3,30) 
-    if (.not.parallele)   call gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    if (.not.parallele)   call gcII ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   case (9)
-     if (.not.parallele)   call neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+     if (.not.parallele)   call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   case(11)
      if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
-     CALL calfo()
-     CALL analyse()
-     CALL controle()
-     CALL endrun()
+     call calfo()
+     call analyse()
+     call controle()
+     call endrun()
 
 #ifdef ART    
      case (12) 

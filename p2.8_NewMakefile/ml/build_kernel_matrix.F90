@@ -1,4 +1,6 @@
-
+module build_kernel_matrix_mod
+        implicit none 
+        contains
 subroutine save_matrix_para(rangml)
  use temporary_data_cov, ONLY:  i_local_cov,&
                                 d_mlocal,  mlocal, u_local, v_local
@@ -392,3 +394,4 @@ if (debug) then
   if (rangml==0) write(*,*) 'ML: ...the kernel matrix was computed'
 end if
 end subroutine build_kernel_matrix
+end module

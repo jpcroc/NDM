@@ -1,3 +1,9 @@
+module neighbours_mod
+        use read_poscar_mod
+        use alloc_typ_ml_mod
+        use caltabt_mod
+        implicit none
+        contains
 !$---------------------------------------------
 subroutine test_if_config_is_small(iconf)
 !test is a configuration is small comapred to r_cut.
@@ -320,4 +326,6 @@ subroutine deallocate_real_config(ifile)
 
 
   return
-  end
+end subroutine deallocate_real_config
+end module
+

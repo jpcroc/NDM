@@ -2,10 +2,10 @@ module endrun_mod
         use analyse_mod
         use adf_mod
         use spebc_fin_mod
-        use calfo_mod
         use desinteg_insert_mod
         use arret_ndm_mod
         use sauvegarde_mod
+        use calfo_mod  
         use rdf_mod
         use rasmol_mod
         implicit none
@@ -21,7 +21,7 @@ subroutine endrun
 #ifdef PARA
   use mod_para
 #endif
-#ifdef PARAML
+#if defined ML && defined PARAML
  use time_measure
 #endif
   use posana
@@ -62,7 +62,7 @@ subroutine endrun
   !
   !
   
-  if(lPkbar) then
+  if (lPkbar) then
      unitP=1.0d-9
      cunitP='kbar'
   else

@@ -1,3 +1,6 @@
+module print_matrix_mod
+        implicit none
+        contains
 function r8mat_norm_li ( m, n, a )
 !*****************************************************************************80
 !! R8MAT_NORM_LI returns the matrix L-infinity norm of an R8MAT.
@@ -19,7 +22,7 @@ function r8mat_norm_li ( m, n, a )
   end do
 
   return
-end
+end function r8mat_norm_li
 subroutine r8mat_print ( m, n, a, title )
 
 !*****************************************************************************80
@@ -37,7 +40,7 @@ subroutine r8mat_print ( m, n, a, title )
   call r8mat_print_some ( m, n, a, 1, 1, m, n, title )
 
   return
-end
+end subroutine r8mat_print 
 subroutine r8mat_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
 
 !*****************************************************************************80
@@ -116,7 +119,7 @@ subroutine r8mat_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
   write ( *, '(a)' ) ' '
 
   return
-end
+end subroutine r8mat_print_some
 subroutine r8mat_uniform_01 ( m, n, seed, r )
 
 !*****************************************************************************80
@@ -152,7 +155,7 @@ subroutine r8mat_uniform_01 ( m, n, seed, r )
   end do
 
   return
-end
+end subroutine r8mat_uniform_01
 subroutine r8vec_print ( n, a, title )
 
 !*****************************************************************************80
@@ -179,7 +182,7 @@ subroutine r8vec_print ( n, a, title )
   end do
 
   return
-end
+end subroutine r8vec_print
 subroutine r8vec_print_some ( n, a, i_lo, i_hi, title )
 
 !*****************************************************************************80
@@ -207,7 +210,7 @@ subroutine r8vec_print_some ( n, a, i_lo, i_hi, title )
   end do
 
   return
-end
+end subroutine r8vec_print_some
 subroutine timestamp ( )
 
 !*****************************************************************************80
@@ -267,5 +270,5 @@ subroutine timestamp ( )
     d, trim ( month(m) ), y, h, ':', n, ':', s, '.', mm, trim ( ampm )
 
   return
-end
-
+end subroutine timestamp
+end module
