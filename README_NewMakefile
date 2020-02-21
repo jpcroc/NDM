@@ -1,0 +1,178 @@
+-------------------------------------------
+This file is separated in two parts.
+One for users and an other for developpers.
+Search for DEV to jump to developpers part.
+However, it is also recommanded for developpers to read the user part.
+
+-------------------------------------------
+
+I. Users Part
+-------------------------------------------
+-------------------------------------------
+I.a) Generating dependency file during compilation
+-------------------------------------------
+Fortran project is known to not be very developper friendly for dependency rule automatic generation.
+However, the Python executable fortdepend can allow us to build the dependency files prior to compilation.
+REQUIREMENT : fortdepend requires python3
+LIMITATION : it looks at matching pairs of program <name>/end program <name> and module <name>/end module <name>
+	
+(more info on how to install it is available here : https://pypi.org/project/fortdepend/ ) 
+FOR GASTBY USER: fortdepend is already installed on the cluster but you need to load the python3 module for it to run properly.	
+
+
+
+
+I.b) Compiling the Code.
+-------------------------------------------
+The basic idea of the compilation of NDM package is based on a primary Makefile. 
+This primary Makefile gather all files to be compiled based on predefine Macros.
+It also create the dependency file before compilation.
+Then specific options (compiler choose, library to load, compiler flags) is inside the secondary Makefile.
+All secondary Makefile are in the folder MAKE. 
+By exploring few of them, one can see a sort template.
+
+USERS ARE NOT SUPPOSED TO CHANGE THE PRIMARY MAKEFILE. 
+THEY SHOULD TRY TO USE EXISTING SECONDARY MAKEFILE OR CREATE THEIR OWN ONE BASED ON THEIR ARCHITECTURE.
+
+A first sight is given when one just enter :
+make 
+
+It will prompt a little helper of what can be appended to the make   
+
+!make arch             build NDM where arch is one of:
+!
+! MACRO NEEDED PARA=1 LAMMPS=1	, ndm_lammps_mpi 		= NDN with LAMMPS with OPENMPI code with Intel Compiler on Gatsby cluster Linux arch
+! MACRO NEEDED LAMMPS=1		, ndm_lammps_serial 		= NDM with LAMMPS code with Intel Compiler on Gatsby cluster Linux arch
+! MACRO NEEDED LAMMPS=1		, ndm_lammps_serial_gfortran 	= NDM code with GNU Compiler on Gatsby cluster Linux arch
+! MACRO NEEDED ML=1		, ndm_ml 			= NDM + MILADI code with Intel Compiler on Gatsby cluster Linux arch
+! MACRO NEEDED PARA=1		, ndm_mpi 			= NDM + OPENMPI  with Intel Compiler on Gatsby cluster Linux arch
+! MACRO NEEDED PARA=1		, ndm_mpi_gfortran 		= NDM with OPENMPI code with GNU Compiler on Gatsby cluster Linux arch
+! 				  ndm_serial 			= NDM code with Intel Compiler on Gatsby cluster Linux arch
+! 				  ndm_serial_gfortran 		= NDM code with GNU Compiler on Gatsby cluster Linux arch
+! 				  template 			= TEMPLATE COPY THIS FILE WITH A NEW EXTENSION AND ASSIGN VARIABLE AT YOUR NEED
+!
+! make clean-arch          delete object folder and executable of arch
+! make softclean-arch      only delete executable of arch
+! make clean-all           delete object folder and executable of all arch
+! make softclean-all       only delete executable of all arch
+! make tar                 create NDM.tar.gz of src dir and packages
+
+
+The basic package is the serial version of NDM which can be compiled with the following command line: 
+
+make ndm_serial           ! use Intel compiler
+or 
+make ndm_serial_gfortran
+
+Also some executable build,as mentioned above, requires the use to append the MACRO in the command line such as the openmpi version of NDM:
+
+make ndm_mpi PARA=1
+or 
+make ndm_mpi_gfortran PARA=1
+
+
+FOR GASTBY USER: A bash script is availabled (named GASTBY.sh which will compile all available architecture compatible on Gastby).
+So one can just enter:
+./GASTBY.sh	
+
+
+
+
+
+II) Devellopers part (DEV)
+-------------------------------------------
+-------------------------------------------
+II.a) Information regarding fortdepend
+-------------------------------------------
+As mentioned in the users part, fortdepend has several requirement and limitations
+REQUIREMENT : fortdepend requires python3
+LIMITATION : it looks at matching pairs of program <name>/end program <name> and module <name>/end module <name>
+
+Because of the scaning of module only each source file in the project must be encapsulated in a module:  
+
+This have pros and cons. 
+One avantage is that if two subroutines A & B are inside the same module mod1 and B need a variable varA from A then external declaration in B is unnecessary  
+since the variable is declared inside the module mod1.
+
+One disavantage is that one cannot stack subroutine in a file randomly. One has to make sure that no cyclic dependency is created.
+
+
+fortdepend to not react well with \#ifdef macros that contains parenthesis or }{ or space between if and def, here few exemple:
+#ifdef (TOTO) should be  #ifdef TOTO
+#if def TOTO  should be  #ifdef TOTO
+
+More when logical and/or are needed, fortdepend understand only one specific format:
+
+#if (PARA || ML) should be #if defined PARA || defined ML
+
+II.b) Develloper restrictions for content additions.
+-------------------------------------------
+There is three main restriction regarding addition of content in the project :
+	new files need to be encapsulated inside modules
+	ifdef statement as one specific format mention above
+	(Recommanded not requirement) fortran file should be *.F90 exclusively (case sensitive)
+
+II.c) Develloper watchout for new MACRO supported.
+-------------------------------------------
+HERE PHONDY MACRO WILL BE USED AS A TEST FOR DEV
+
+First of all to add a new macro which contains additionnal files such as PHONDY please try to collect then in a subdirectory to avoid any potential alteration of the main project NDM.
+
+*******************************************
+Open primary Makefile with your beloved editor
+One can see the \# Definition section
+
+Copy paste one of the present blocks starting from f77 up to OBJ variables.
+change variable name for original to phondy for exemple
+f90para   = $(wildcard para/*.F90) -> f90phondy   = $(wildcard phondy/*.F90)
+NOTE: do not forget to change the scaned folder inside the wildcard !!
+
+*******************************************
+NOW copy paste one of the present \#ifdef 
+Update names OBJ_* f90* INC_* and declare the FLAG present in the source code
+NOTE: the name of the macro here does not have to be the name of the ifdef in the code check ML for instance 
+
+*******************************************
+
+You have added all the necessary new declaration to use the new macro PHONDY or TOTO.
+
+NOW go to following section (new secondary Makefile) 
+
+
+II.d) Develloper watchout for new secondary Makefile.
+-------------------------------------------
+Copy paste any of the secondary makefile that is the "closest" to your new architecture 
+for phondy, the ml makefile seems a good start.
+
+FIRST PLEASE UPDATE THE HEADER OF THE NEW SECONDARY MAKEFILE
+*******************************************
+
+SECOND, verify if compiler/linker settings are what you want.
+*******************************************
+
+THIRD, check OPTIONS variable, and change NDM_INC variable, it should reflect phondy so -DPHONDY in serial or -DPHONDY -DPARAPH in parallel version.
+*******************************************
+
+FOURTH, you might need to update the INC, PATH and LIB of some the predefined blocs.
+
+For exemple, the MPI blocs is set to work on gastby so if you try to construct a makefile on your local machine you need to provide it INC and PATH variable as well as the mpi library of your choice.
+
+Same thing with MKL blocs it will be completely different if you use GNU or INTEL compiler.
+
+*******************************************
+LATE THING BUT VERY IMPORTANT ONE 
+
+UPDATE THE CODE_PATH VARIABLE 
+for exemple from ndm_ml to ndm_phondy it has to change from 
+CODE_PATH = ../ml::../mod/:..
+
+to 
+
+CODE_PATH = ../phondy::../mod/:..
+
+
+NOW your setup is completed for phondy! but becareful the original files of phondy have not been encapsulated in module nor \#ifdef statement updated.
+
+
+
+

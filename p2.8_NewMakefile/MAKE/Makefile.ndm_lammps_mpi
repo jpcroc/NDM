@@ -1,4 +1,4 @@
-# ndm_lammps_mpi = NDN with LAMMPS with OPENMPI code with Intel Compiler on Gatsby cluster Linux arch
+# MACRO NEEDED PARA=1 LAMMPS=1, ndm_lammps_mpi = NDN with LAMMPS with OPENMPI code with Intel Compiler on Gatsby cluster Linux arch
 # (last time tested 06 Feb. 2020 by Mickael Trochet)
 # IMPORTANT NOTE : 
 # LAMMPS must be precompiled as a static library with the following command

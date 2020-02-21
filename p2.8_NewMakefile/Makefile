@@ -39,13 +39,11 @@ INC_PARA  = $(wildcard para/*.h)
 OBJ_PARA   = $(f90para:para/%.F90=%.o) #$(f77files:para/%.f=%.o) $(cfiles:para/%.c=%.o)  $(cppfiles:para/%.cpp=%.o)
 
 #f77ml  = $(wildcard ml/*.f)
-#sf90ml    =  $(wildcard ml/*.f90) 
-bf90ml = $(wildcard ml/*.F90)   
+f90ml = $(wildcard ml/*.F90)   
 #cml    = $(wildcard ml/*.c)
 #cppml   = $(wildcard ml/*.cpp)
 INC_ML  = $(wildcard ml/*.h)
-#OBJ_MLS   = $(sf90ml:ml/%.f90=%.o) #$(f77files:ml/%.f=%.o) $(cfiles:ml/%.c=%.o)  $(cppfiles:ml/%.cpp=%.o)
-OBJ_MLB   = $(bf90ml:ml/%.F90=%.o) #$(f77files:ml/%.f=%.o) $(cfiles:ml/%.c=%.o)  $(cppfiles:ml/%.cpp=%.o)
+OBJ_ML   = $(f90ml:ml/%.F90=%.o) #$(f77files:ml/%.f=%.o) $(cfiles:ml/%.c=%.o)  $(cppfiles:ml/%.cpp=%.o)
 
 #f77lammps  = $(wildcard lammps/*.f)
 f90lammps   = $(wildcard lammps/*.F90)
@@ -73,6 +71,8 @@ DEP_FILE= .dependencies_$@
 
 #EXE = $(ROOT)_$@_v$(shell ./version.sh) # if git and version.sh present
 
+# MACRO DECLARATION SECTION
+
 ifdef PARA
 OBJ +=  $(OBJ_PARA)
 checkfiles +=  $(f90para) 
@@ -89,12 +89,9 @@ endif
 
 
 ifdef ML # this is ML + PARAML, serial version of ML is not considered  
-OBJ +=$(OBJ_MLB) #$(OBJ_MLS)
-#OBJ +=  $(OBJ_PARA)
-checkfiles +=  $(bf90ml) #$(sf90ml)
-#checkfiles += $(f90para)
+OBJ +=$(OBJ_ML) 
+checkfiles +=  $(f90ml) 
 INC += $(INC_ML) 
-#INC += $(INC_PARA)
 FLAG += -DML -DPARAML #-DPARA 
 endif
 
@@ -103,13 +100,16 @@ endif
 
 help:
 	@echo ''
-	@echo 'make machine             build MCE where machine is one of:'
+	@echo 'make arch             build NDM where arch is one of:'
 	@echo ''
 	@files="`ls MAKE/Makefile.*`"; \
-          for file in $$files; do head -3 $$file; done
+          for file in $$files; do head -1 $$file; done
 	@echo ''
-	@echo 'make clean               delete all object files'
-	@echo 'make tar                 create MCE.tar.gz of src dir and packages'
+	@echo 'make clean-arch          delete object folder and executable of arch'
+	@echo 'make softclean-arch      only delete executable of arch'
+	@echo 'make clean-all           delete object folder and executable of all arch'
+	@echo 'make softclean-all       only delete executable of all arch'
+	@echo 'make tar                 create NDM.tar.gz of src dir and packages'
 	@echo ''
 
 

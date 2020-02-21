@@ -1,4 +1,5 @@
-# ndm_serial = NDN code with Intel Compiler on Gatsby cluster Linux arch
+# template = TEMPLATE COPY THIS FILE WITH A NEW EXTENSION AND ASSIGN VARIABLE AT YOUR NEED
+# ndm_serial = NDM code with Intel Compiler on Gatsby cluster Linux arch
 # with Intel compiler (last time tested xxx by yyy)
 #
 # add this module in your .bashrc or charge them before compilation and executions.

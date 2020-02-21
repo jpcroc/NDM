@@ -1,4 +1,4 @@
-# ndm_lammps_serial_gfortran = NDM code with GNU Compiler on Gatsby cluster Linux arch
+# MACRO NEEDED LAMMPS=1, ndm_lammps_serial_gfortran = NDM code with GNU Compiler on Gatsby cluster Linux arch
 # (last time tested 06 Feb. 2020 by Mickael Trochet)
 # IMPORTANT NOTE : 
 # LAMMPS must be precompiled as a static library with the following command
