@@ -100,7 +100,7 @@ endif
 
 help:
 	@echo ''
-	@echo 'make arch             build NDM where arch is one of:'
+	@echo 'make arch ARGS=1          build NDM where arch is one of:'
 	@echo ''
 	@files="`ls MAKE/Makefile.*`"; \
           for file in $$files; do head -1 $$file; done
