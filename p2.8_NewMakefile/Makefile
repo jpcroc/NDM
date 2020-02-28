@@ -149,5 +149,5 @@ softclean-all:
 	rm -rf $(ROOT)_*
 
 softclean-%:
-	rm -rf $(ROOT)_$(@:clean-%=%)
+	rm -rf $(ROOT)_$(@:softclean-%=%)
 
