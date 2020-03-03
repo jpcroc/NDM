@@ -115,7 +115,8 @@ subroutine bruit_xp
     !-----------------------------------------------
     !real(double) :: tempinst ! in module tempinst_mod
 
-    !  if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed
+!    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
+    
     select case (dmtype)
     case(3,30,5,11,7)
        vp = 0.0
@@ -125,7 +126,7 @@ subroutine bruit_xp
           return
        else
           if (mdcg_noise==0) then 
-             vp=0.0
+             vp=0.0;          xpp=xp
              return
           else
              vp=0.0 
