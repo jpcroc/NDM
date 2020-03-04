@@ -178,7 +178,8 @@ module gen_com_m
   integer :: ibordcou
   integer :: itesauv, formatsauv, itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde format de sauvegarde periode 
                                                                               ! de d'ecriture des positions et/ou forces en formatted ; 
-                                                                              !itesauvinter=sauvegarde reguliere .cout.it qui n'efface pas les fichiers .cout precedent 
+  !itesauvinter=sauvegarde reguliere .cout.it qui n'efface pas les fichiers .cout precedent
+  logical::lWgin ! ecriture finale de .newgin
   real(double), dimension(3) :: vh ! vitesse de la boite
   real(double) :: pext, wbox, tbox ! pext poids de la boite temps d'amortissment de la boite
   logical ::  lpcon2,lprtzlm ! pression constante sans et avec amortissement
