@@ -63,7 +63,7 @@ subroutine readdm
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
        tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-       itesauvinter,units_lammps
+       itesauvinter,units_lammps,lWgin
 
 
   !
@@ -112,7 +112,7 @@ subroutine readdm
   itmax = -1                  !maximum number of iterations
   nitmax = -1                 !maximum number of new iterations after restart
   itederive = -1              !"derive" correction
-  igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 modification de cin puis stop
+  igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 cintogin ; +3 modification de cin puis stop
   lrestart = .FALSE.          !if T : restarting from an interrupt job
   lPathFromGin = .FALSE.      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
   tgc = 0.0                   ! threshold for CG calculation
@@ -341,6 +341,7 @@ subroutine readdm
   tsmin=2.0
 
   units_lammps='metal'
+  lWgin=.false. ! =true écrit un fichier .newgin à la fin
 
   
  if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
@@ -865,7 +866,7 @@ subroutine readdm
   if (tcooling > 0) lastcool = 0.0
 
   if(dilat(1).ne.0.0) then
-     if(igen.ne.1) then
+     if(igen.lt.1) then
         if (rang==0) write (6,*) rang,'dilat<>0 et igen<>1 stop'
         call arret_ndm
      end if
@@ -979,6 +980,8 @@ subroutine readdm
   case (1)
      if (rang==0) write (6, *) 'run a partir du fichier .cin'
   case (2)
+     if (rang==0) write (6, *) 'écriture de gin à partir du fichier .cin'
+  case (3)
      if (rang==0) write (6, *) 'modification du fichier .cin'
   case default
      if (rang==0) write (6, *) 'mauvais igen=', igen

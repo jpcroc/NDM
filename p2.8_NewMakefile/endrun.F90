@@ -77,7 +77,7 @@ subroutine endrun
   !flag_fin = .true. !*!
   if(ibound.ne.0) Call spebc_fin (.true.) !*!
 
-  CALL calfo
+!  CALL calfo
 
 
   ! MPI
@@ -205,6 +205,8 @@ subroutine endrun
 #ifdef PARA
   temps_dmloop=MPI_Wtime() - temps_dmloop_deb
 #endif
+
+  if (lWgin.eqv..true.) call cin2gin
   IF (iteSauv.GE.0) then
      call sauvegarde     ! Modif E. Clouet: sauvegarde seulement si voulu
      if (l2T.and.rang==0) call sauveelec
@@ -216,7 +218,7 @@ subroutine endrun
   if (.not.linstantfda) then
      if (iteangle>=0) call adf
   endif
-  if ((dmtype==2).or.(dmtype==3)) then
+  if ((dmtype==2).or.(dmtype==3).or.(dmtype==30)) then
        it=0
   end if
   call analyse

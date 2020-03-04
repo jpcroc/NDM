@@ -1,5 +1,5 @@
 #define DATE "2020-03-03"
-#define REVISION "a9569ca"
-#define COMPILE_DATE "Tue Mar 3 10:46:37 CET 2020"
+#define REVISION "55c879d"
+#define COMPILE_DATE "Tue Mar 3 11:18:06 CET 2020"
 #define LOCATION "/volatile/home/jcrocombette/DM/codesndm/GIT/p2.8_NewMakefile"
 #define COMPILE_TARGET "ndm_serial_gfortran"

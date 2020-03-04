@@ -269,22 +269,29 @@ endif
      call rasmol (itapp)
   end if
 
-!<---------setting the configuration by generation gin / cin file --------------
-  if (igen==(-1)) then
+  !<---------setting the configuration by generation gin / cin file --------------
+  select case (igen)
+  case (-1)
      formatsauv = 2
      call sauvegarde
      if (rang==0) write (6, *) 'generation terminee'
      call arret_ndm
-  endif
-!<---------end setting the configuration by generation gin /  cin file ---------
+!  case (0)
+!     if (rang==0) write (6, *) 'generation du crystal ; puis run'
+!  case (1)
+!     if (rang==0) write (6, *) 'run a partir du fichier .cin'
+  case (2)
+     call cin2gin
+     call arret_ndm
 
-  if (igen==2) then
+  case (3)
      call transf
      formatsauv = 2
      call sauvegarde
      if (rang==0) write (6, *) 'modification terminee'
      call arret_ndm
-  endif
+  case default
+  end select
 
 
 !<---------setting the cell division -------------------------
