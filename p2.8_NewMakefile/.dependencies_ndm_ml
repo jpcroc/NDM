@@ -1385,6 +1385,7 @@ sauveforce.o :  \
 	tab_imm_m.o
 
 sauvegarde.o :  \
+	cryst_to_car.o \
 	elec_cell.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
@@ -1473,6 +1474,7 @@ transf.o :  \
 	var_pot.o
 
 trempe.o :  \
+	calctemp.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	var_pot.o \

@@ -213,6 +213,7 @@ contains
        write(lugout,*)at(1,2),at(2,2),at(3,2) !b
        write(lugout,*)at(1,3),at(2,3),at(3,3) !c
        at=at*1d-8
+      write(lugout,*)im_glob
 
 
 #ifdef PARA

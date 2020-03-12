@@ -647,7 +647,8 @@ gcII.o :  \
 
 gcmodII.o :  \
 	T_kind_param_m.o \
-	gen_com_m.o
+	gen_com_m.o \
+	mod_mpi.o
 
 gen_init_MPI.o : 
 
@@ -1036,6 +1037,7 @@ sauveforce.o :  \
 	mod_mpi.o
 
 sauvegarde.o :  \
+	cryst_to_car.o \
 	elec_cell.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
@@ -1130,6 +1132,7 @@ transf.o :  \
 	var_pot.o
 
 trempe.o :  \
+	calctemp.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	var_pot.o \
@@ -1143,10 +1146,13 @@ vanbeest.o :  \
 work_cgII.o :  \
 	analyse.o \
 	calfo.o \
+	caltabt.o \
+	config.o \
 	controle.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
+	mod_mpi.o \
 	sauveforce.o \
 	sauvegarde.o \
 	sauveposition.o

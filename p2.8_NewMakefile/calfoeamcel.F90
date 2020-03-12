@@ -81,8 +81,7 @@ SUBROUTINE calfoeamcel
      call notperiod(xp,xpnp)
   end if
 
-  ! Sequentiel
-
+    
 
   loop1at1: do i=1,im
      if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
@@ -99,6 +98,7 @@ SUBROUTINE calfoeamcel
         ko1 = ncel(koo,i1)
         cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
         ! pour chaque atome ds la cel. voisine
+
         loop1at2: do i2 = 1, nato(ko1)
            j = last(i2,ko1)
            if (typ_pot_pair(ipo(ityp(i),ityp(j))).ne.ipotentiel) cycle
@@ -112,7 +112,9 @@ SUBROUTINE calfoeamcel
            ! - si j est local on ne retient que le couple i<j
            ! - si j n'est pas local, le couple n'est par definition
 	   !   pris qu'une fois puisque i est local
+
 	   if (j.le.im) then
+
        ! les deux atomes sont locaux
               if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme deja calcule
 	   else
@@ -225,6 +227,7 @@ SUBROUTINE calfoeamcel
      end do loop1cel
   end do loop1at1
 
+  
   ! calcul et stockage de Eembi et dEembi
   loop2at1: do i=1,im
      if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
