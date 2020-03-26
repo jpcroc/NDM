@@ -28,6 +28,8 @@ subroutine dmloop_vverlet
   use mod_para
 #endif
   implicit none
+    character :: extension*2
+    integer::lenfn2,i
  integer::ilocal
 real(double) sigkine_tot(3,3)
   real(double) :: temptyp(ntyp)
@@ -52,6 +54,8 @@ real(double) sigkine_tot(3,3)
   ! Appel de la routine generale des forces
   call calfo 
 
+
+  
 !  call analyse
   call calctemp (temptyp) 
 1 continue

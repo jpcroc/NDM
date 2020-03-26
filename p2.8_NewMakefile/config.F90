@@ -40,7 +40,7 @@ subroutine config
   integer :: i, j, k, ia, ib, ic, icell, iti, icintype, icintypemod&
        , lucin, lugin, imcell, la, lb, lc, typmax, typmin, npoin, natyp, typ
   integer:: indpoint1, indpointdes
-  integer :: passe, nb_passes,ncore
+  integer :: passe, nb_passes,ncore,lenfn2
 #ifndef PARA
   integer :: nprocs
 #endif
@@ -50,6 +50,7 @@ subroutine config
   integer, dimension(:),pointer     :: ibuffer
   real(double), dimension(:,:),pointer    :: buffer
   real(double),dimension(:,:),allocatable :: tmpxc
+  character :: extension*2
 
 #ifdef PARA
   integer,      dimension(ntyp)         :: na_loc
@@ -818,12 +819,16 @@ subroutine config
 
      endif                                  ! fin rang=0
 
+
+
      if (llangevin.eqv..true.) then
         allocate(Gl(3,imm))
      end if
      deallocate (ibuffer)
      deallocate (buffer)
      write(6,*)
+
+
 
      return
 

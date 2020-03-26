@@ -379,7 +379,6 @@ caltabt.o :  \
 	notperiod.o
 
 config.o :  \
-	Mat_util.o \
 	divid.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
@@ -742,11 +741,6 @@ julitabvois.o :  \
 	var_pot.o \
 	notperiod.o
 
-LAMMPS.o : 
-
-ndm_lammps.o :  \
-	LAMMPS.o
-
 layer.o :  \
 	cryst_to_car.o \
 	T_kind_param_m.o \
@@ -973,6 +967,7 @@ sauveforce.o :  \
 	tab_imm_m.o
 
 sauvegarde.o :  \
+	cryst_to_car.o \
 	elec_cell.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
@@ -1061,6 +1056,7 @@ transf.o :  \
 	var_pot.o
 
 trempe.o :  \
+	calctemp.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	var_pot.o \

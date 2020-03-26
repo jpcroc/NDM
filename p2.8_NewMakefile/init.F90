@@ -70,10 +70,10 @@ subroutine init
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: i, lufilmpaf,itapp,ipotcont,j
+  integer :: i, lufilmpaf,itapp,ipotcont,j,lenfn2
   integer :: complet=1    ! flag d'appel a divid : complet : exec de la routine complete
   !-----------------------------------------------
-
+  character*2::extension
   tmean = 0.0
   pmean = 0.0
   timel = 0.0
@@ -356,6 +356,7 @@ endif
   !<---------end setting the cell division ----------------------
 
 
+
   imd = im
   if (ltranche) call layer
 
@@ -376,6 +377,8 @@ endif
   !  end if
 !computing the neighbours for the very first time ......
 
+
+  
 #ifdef ML
 ! MiLaDy
   if(ipotentiel==20) then
@@ -533,7 +536,7 @@ if (.not.lrestart) then
      itapp=0
      call sauveposition (itapp)
   end if
-  if (rang==0) write(6,*)'sortie init'
+
 
 
   if (ldesinteg) then
@@ -570,8 +573,7 @@ if (.not.lrestart) then
 
   if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
 
-
-
+  if (rang==0) write(6,*)'sortie init'
 
   return
 end subroutine init

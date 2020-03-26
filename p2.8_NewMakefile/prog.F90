@@ -28,6 +28,10 @@ subroutine prog
 #endif
 
   implicit none
+             character :: extension*2
+    integer::lenfn2,i,ko
+
+
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e rs
   !-----------------------------------------------
@@ -54,12 +58,18 @@ subroutine prog
   ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
   return
 #endif
+
 #ifdef PARA
   ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-!	if (rang==0) write(6,*)'PARA-T avant MAJ'
+	if (rang==0) write(6,*)'PARA-T avant MAJ'
+
+ 
   call maj_atomes_frt_ftm
+	if (rang==0) write(6,*)'PARA-T apres MAJ'
 
 
+
+ 
   ! Affichage du temps d'initialisation
 #ifdef PARA
   if (myid==0) then
@@ -93,8 +103,10 @@ subroutine prog
           call dmloop_vverlet ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 #endif
        endif
-  case (3,30) 
-    if (.not.parallele)   call gcII ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    case (3,30)
+!    stop
+
+    call gcII ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   case (9)
      if (.not.parallele)   call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   case(11)

@@ -290,14 +290,6 @@ subroutine calfo
   end if
 
 
-
-
-  !do i=1,im
-  !   write(96,'(2I3,6G15.7)')i,ityp(i),xp(1,i),xp(2,i),xp(3,i),fp(1,i),fp(2,i),fp(3,i)
-  !end do
-  !stop
-  !write(*,*) 'NDM calfo end debug', xp(1,1), fp(1,1) 
-
   return
 end subroutine calfo
 

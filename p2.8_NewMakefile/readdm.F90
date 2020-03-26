@@ -477,9 +477,9 @@ subroutine readdm
         if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
      end if
      select case(dmtype)
-     case(2,4)
+     case(2,4,3)
      case default 
-        if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=4'
+        if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=2,3,4'
         if (rang==0) write(*,*) 'Stop in readdm'
         call arret_ndm
      end select
@@ -883,7 +883,7 @@ subroutine readdm
      end if
   end if
   if (rang==0) write (6, *)
-  if (rang==0) write (6, '(a)') ' -------- caracteristiques du run DM--------'
+  if (rang==0) write (6, '(a,I2)') ' -------- caracteristiques du run DM--------', dmtype
 
   select case (dmtype)
   case (1)

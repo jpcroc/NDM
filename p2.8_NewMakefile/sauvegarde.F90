@@ -213,6 +213,7 @@ contains
        write(lugout,*)at(1,2),at(2,2),at(3,2) !b
        write(lugout,*)at(1,3),at(2,3),at(3,3) !c
        at=at*1d-8
+      write(lugout,*)im_glob
 
 
 #ifdef PARA
@@ -244,7 +245,8 @@ contains
        ! Partie sequentielle de la sauvegarde :
        call cryst_to_cart(imm,xp,bg,-1) !cart vers cryst
        do i=1,im
-          write(lugout,'(3F18.11,I6)')xp(1,i),xp(2,i),xp(3,i),ityp(i) !coordonnes reduites des
+          write(6,*)xp(1,i),xp(2,i),xp(3,i),ityp(i) !coordonnes reduites des
+          write(lugout,'(3F21.11,I6)')xp(1,i),xp(2,i),xp(3,i),ityp(i) !coordonnes reduites des
        enddo
        call cryst_to_cart(imm,xp,at,1) !cart vers cryst
 #endif
