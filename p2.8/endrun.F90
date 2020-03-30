@@ -1,3 +1,15 @@
+module endrun_mod
+        use analyse_mod
+        use adf_mod
+        use spebc_fin_mod
+        use desinteg_insert_mod
+        use arret_ndm_mod
+        use sauvegarde_mod
+        use calfo_mod  
+        use rdf_mod
+        use rasmol_mod
+        implicit none
+        contains
 ! ****************************************************************
 subroutine endrun
   !-----------------------------------------------
@@ -6,10 +18,10 @@ subroutine endrun
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
-#if(PARAML)
+#if defined ML && defined PARAML
  use time_measure
 #endif
   use posana
@@ -37,7 +49,7 @@ subroutine endrun
   CHARACTER(len=100) :: out_file
   REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
   CHARACTER(len=20), dimension(:), allocatable :: aux_title
-#if(PARA)
+#ifdef PARA
   integer :: iproc
   real(double), allocatable :: xp_loc(:,:),eatom_loc(:)
   integer, allocatable      :: ityp_loc(:)
@@ -50,6 +62,13 @@ subroutine endrun
   !
   !
   
+  if (lPkbar) then
+     unitP=1.0d-9
+     cunitP='kbar'
+  else
+     unitP=1.0
+     cunitP='d/cm2'
+  endif
 
   ! Un dernier calcul des forces pour la route
   IF (iteTemp.GE.0) iteTemp=1
@@ -58,7 +77,7 @@ subroutine endrun
   !flag_fin = .true. !*!
   if(ibound.ne.0) Call spebc_fin (.true.) !*!
 
-  CALL calfo
+!  CALL calfo
 
 
   ! MPI
@@ -72,7 +91,7 @@ subroutine endrun
   end if
   if (lprteat)then
      if (rang==0)open(unit=10, file='xiei.dat', status='unknown')
-#if(PARA)
+#ifdef PARA
      ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
      if (myid==0) then
         ! Copie des tableaux xp,num_at_glob et ityp locaux 
@@ -170,7 +189,7 @@ subroutine endrun
 
 
   if (rang==0) then
-#if(ML && PARAML)
+#if defined ML && defined PARAML
      write (6, *) 'ML: neighbours  time',  temps_neigh
      write (6, *) 'ML: energy      time',  temps_energy
      write (6, *) 'ML: force       time',  temps_force
@@ -183,9 +202,11 @@ subroutine endrun
 
      write (6, *) '####### END OF RUN  ######## = ', it, '  time = ', timel
   endif
-#if(PARA)
+#ifdef PARA
   temps_dmloop=MPI_Wtime() - temps_dmloop_deb
 #endif
+
+  if (lWgin.eqv..true.) call cin2gin
   IF (iteSauv.GE.0) then
      call sauvegarde     ! Modif E. Clouet: sauvegarde seulement si voulu
      if (l2T.and.rang==0) call sauveelec
@@ -197,7 +218,7 @@ subroutine endrun
   if (.not.linstantfda) then
      if (iteangle>=0) call adf
   endif
-  if ((dmtype==2).or.(dmtype==3)) then
+  if ((dmtype==2).or.(dmtype==3).or.(dmtype==30)) then
        it=0
   end if
   call analyse
@@ -254,3 +275,4 @@ subroutine endrun
   stop
   return
 end subroutine endrun
+end module

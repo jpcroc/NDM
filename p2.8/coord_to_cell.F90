@@ -1,3 +1,7 @@
+module coord_to_cell_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 subroutine coord_to_cell(tab_coord, cell)
   !-----------------------------------------------
   !   M o d u l e s
@@ -40,3 +44,4 @@ subroutine coord_to_cell(tab_coord, cell)
 
   return
 end subroutine coord_to_cell
+end module

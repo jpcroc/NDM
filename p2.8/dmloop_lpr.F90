@@ -1,3 +1,15 @@
+module dmloop_lpr_mod
+        use analyse_mod
+        use controle_mod 
+        use sauvegarde_mod
+        use sauveposition_mod
+        use sauveforce_mod
+        
+#ifdef PARA
+        use recips_mod
+#endif
+        implicit none 
+        contains
 ! boucle de DM pour velocity Verlet
 ! ************************************************
 
@@ -7,11 +19,11 @@ subroutine dmloop_lpr
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m 
-  use parrinello_rahman
+  use Parrinello_Rahman
   USE Parrinello_Rahman_Nose
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   implicit none
 
@@ -20,13 +32,13 @@ subroutine dmloop_lpr
   !-----------------------------------------------
   ! MPI
 
-#if(PARA)
+#ifdef PARA
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
   integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
   real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1&
        , fact2, hk2, ex, ex1, ex2
-  real(double), external :: calcvol
+  !real(double), external :: calcvol
 
 #endif
 
@@ -38,7 +50,7 @@ subroutine dmloop_lpr
   ! Initialization -------------------------------------------------------
   IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
      call initlprNose(xp,xpp,vp,ityp)
-  ELSE ! Parinello-Rahman with Nosé-Hoover thermostat or constant energy
+  ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
      call initlpr(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   END IF
 
@@ -47,11 +59,11 @@ subroutine dmloop_lpr
   ! MD loop -------------------------------------------------------------
 1 continue 
   it = it+1
-  IF (lTNose) THEN ! Parrinello-Rahman with Nosé thermostat
+  IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
      call calfo
      call prNose(xp,xpp,vp,fp,ityp)
 
-#if(PARA)
+#ifdef PARA
      zl(1) = Sqrt( Sum(at(1:3,1)**2 ) )
      zl(2) = Sqrt( Sum(at(1:3,2)**2 ) )
      zl(3) = Sqrt( Sum(at(1:3,3)**2 ) )
@@ -92,11 +104,12 @@ subroutine dmloop_lpr
   endif
 
 #else
+
      CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 #endif
      timel=timel+fNose*tstep
-  ELSE ! Parinello-Rahman with Nosé-Hoover thermostat or constant energy
+  ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
      call pr(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      timel=timel+tstep
   END IF
@@ -122,3 +135,4 @@ subroutine dmloop_lpr
   return
 end subroutine dmloop_lpr
 
+end module

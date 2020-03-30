@@ -1,3 +1,6 @@
+module sauveposition_mod
+       implicit none
+      contains 
 ! ********************************************************************
 subroutine sauveposition(itapp)
   !-----------------------------------------------
@@ -6,8 +9,9 @@ subroutine sauveposition(itapp)
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+  use arret_ndm_mod
+#ifdef PARA
+  use mod_para
 #endif
 
   !         version du 04 octobre 2000
@@ -32,7 +36,7 @@ subroutine sauveposition(itapp)
   integer :: lucoutxp, formatsauvT
   character :: extension*9
   logical::lcrcin
-#if(PARA)
+#ifdef PARA
   integer,dimension(:),pointer     :: ibuffer
   real(double), dimension(:,:),pointer   :: buffer
   integer,      dimension(0:nprocs-1)   :: im_loc
@@ -92,7 +96,7 @@ subroutine sauveposition(itapp)
         write (lucoutxp) at
         write (lucoutxp) im_glob
 
-#if(PARA)
+#ifdef PARA
      im_loc(0)=im
      ibuffer=0
      ibuffer(1:im)  = ityp(1:im)
@@ -140,7 +144,7 @@ subroutine sauveposition(itapp)
         call arret_ndm
      endif
 
-#if(PARA)
+#ifdef PARA
      call MPI_SEND(im,          1,   MPI_INTEGER,        0,12001,MPI_COMM_WORLD,ierr)
      call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,12002,MPI_COMM_WORLD,ierr)
      call MPI_SEND(xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,12003,MPI_COMM_WORLD,ierr)
@@ -169,4 +173,4 @@ subroutine sauveposition(itapp)
   if(rang==0)      close(lucoutxp)
   return
 end subroutine sauveposition
-
+end module

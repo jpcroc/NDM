@@ -3,6 +3,9 @@
 !                   array() pour la PME
 !                Version du 10/12/2001
 ! ***********************************************************
+module moduli_mod 
+        implicit none
+        contains
 subroutine moduli
   !----------------------------------------------
   !   M o d u l e s
@@ -177,3 +180,4 @@ subroutine dftmod (bsmod,bsarray,nfft)
   end do
   return
 end subroutine dftmod
+end module

@@ -1,4 +1,6 @@
-
+module recips_mod
+        implicit none
+        contains
 
 !
 !---------------------------------------------------------------------
@@ -166,3 +168,4 @@ real(kind(0.0d0)) function calcvol (a1, a2, a3)
   calcvol=dabs(calcvol)
   return
 end function calcvol
+end module

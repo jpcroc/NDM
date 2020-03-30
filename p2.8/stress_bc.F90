@@ -1,3 +1,6 @@
+module stress_bc_mod
+        implicit none 
+        contains
 subroutine stress_bc
 	!-----------------------------------------------
  	!   M o d u l e s
@@ -161,7 +164,7 @@ subroutine recalc_stress
 	!-----------------------------------------------
 	!   L o c a l   V a r i a b l e s
 	!-----------------------------------------------
-	real(double), external :: calcvol
+	!real(double), external :: calcvol
 	integer 	:: i,j1,j2
 	real (double)	:: dmoy, dmoy1, dmoy2, gamma_pt
 	real (double)	:: sigma_new, inst1, inst2
@@ -257,3 +260,4 @@ subroutine it_countdown
 	Close(543)
 
 end subroutine it_countdown
+end module

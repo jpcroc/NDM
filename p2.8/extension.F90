@@ -1,3 +1,6 @@
+module extension_mod
+        implicit none
+        contains
 subroutine Pextension(it,extension,lenfn)
   implicit none
   integer::lenfn,it
@@ -32,3 +35,4 @@ subroutine Pextension(it,extension,lenfn)
 901 format(a9)
  
   end subroutine Pextension
+end module

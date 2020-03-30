@@ -1,3 +1,6 @@
+module tempinst_mod
+        implicit none
+        contains
 !c******************************************************************
 function tempinst(vp,ityp)     !calcul de la T instant.
   !c******************************************************************
@@ -8,8 +11,8 @@ function tempinst(vp,ityp)     !calcul de la T instant.
   USE T_kind_param_m
   use gen_com_m
   use var_pot
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
@@ -22,7 +25,7 @@ function tempinst(vp,ityp)     !calcul de la T instant.
   !-----------------------------------------------
 
   real(double) ::  mv2,v2
-#if(PARA)
+#ifdef PARA
   real(double) :: mv2_glob
 #endif
   integer :: i
@@ -33,7 +36,7 @@ function tempinst(vp,ityp)     !calcul de la T instant.
      mv2= mv2 + cm(ityp(i))*v2
   enddo
 
-#if(PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   mv2 = mv2_glob
   tempinst=mv2/(3.d0*float(im_glob)*bk)
@@ -88,3 +91,4 @@ end subroutine andersenth
 
 
 
+end module

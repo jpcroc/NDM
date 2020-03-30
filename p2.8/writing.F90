@@ -1,3 +1,7 @@
+module writing_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 subroutine writing (file_num, file_name, grandeur)
 
 	! *****************************************************
@@ -90,3 +94,4 @@ subroutine writing (file_num, file_name, grandeur)
 	call cryst_to_cart (imm, xp, at, 1)  !cryst vers cart
 
 end subroutine writing
+end module

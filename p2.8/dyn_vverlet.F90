@@ -1,3 +1,12 @@
+module dyn_vverlet_mod
+        use calfo_mod
+        use calfoberend_mod 
+        use caltabt_mod
+#ifdef PARA
+        use layer_mod 
+#endif
+        implicit none
+        contains
 ! *************************************************************
 subroutine dyn_vverlet
   !-----------------------------------------------
@@ -9,12 +18,12 @@ use tab_imm_m
 use jqmod
 use suivinonpbc
 use elec_cell,only: dynelec
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   use elec_cell, only:TTlangevin
-  use parrinello_rahman
+  use Parrinello_Rahman
 
   implicit none
   !-----------------------------------------------
@@ -26,9 +35,9 @@ use elec_cell,only: dynelec
   real(double), dimension(ntyp) :: aux
   real(double), save :: tmoyinst, imesureT
   !-----------------------------------------------
-  real(double), external :: tempinst
+  !real(double), external :: tempinst
   real(double)::eatommoy
-#if(PARA)
+#ifdef PARA
   real(double)::jq_tot(3)
 #endif
 
@@ -95,7 +104,7 @@ use elec_cell,only: dynelec
   end if
 
 
-#if(PARA)
+#ifdef PARA
   temps_debpara=MPI_Wtime()
 	   ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
 	   call maj_atomes_frt_ftm
@@ -152,7 +161,7 @@ use elec_cell,only: dynelec
      end do
      jq=jqp+jqk
 
-#if(PARA)
+#ifdef PARA
      call MPI_ALLREDUCE(jq,jq_tot,3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      jq=jq_tot
 #endif
@@ -167,3 +176,4 @@ use elec_cell,only: dynelec
 
   return
 end subroutine dyn_vverlet
+end module

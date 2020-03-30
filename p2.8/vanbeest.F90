@@ -1,4 +1,7 @@
-
+module dervbeest_mod
+  use calerf_mod 
+  implicit none 
+  contains  
 subroutine deriVBEEST(rrep,itdp,l,dp,auxe,alpha,ngrid, &
      ntyp,npair,pau,dip,ro,zz,csive)
   !------------------------------------------------------------
@@ -34,7 +37,7 @@ subroutine deriVBEEST(rrep,itdp,l,dp,auxe,alpha,ngrid, &
   real(double) :: r2,r3,r7
   real(double) :: dampr, ar
 
-  real(double), external :: derfc
+  !real(double), external :: derfc
   !------------------------------------------------------------
 
   do k = -1,1
@@ -207,7 +210,7 @@ subroutine potVBEEST(Vpot,r,l,auxe,alpha,ngrid, &
   real(double) :: r2,r3,r6
   real(double) :: dampr, ar
 
-  real(double), external :: derfc
+  !real(double), external :: derfc
   !------------------------------------------------------------
 
   if(r==0.D0) then
@@ -224,5 +227,5 @@ subroutine potVBEEST(Vpot,r,l,auxe,alpha,ngrid, &
   return
 
 end subroutine potVBEEST
-
+end module
 

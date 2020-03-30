@@ -1,3 +1,7 @@
+module loopforcetest_mod
+        use calfo_mod
+        implicit none
+        contains
 ! ************************************************
 !           Sous-programme dmloop.f
 !          Version MPI du 21 fevrier 2001
@@ -118,3 +122,4 @@ test_force=2
   end select
 
 end subroutine loopforcetest
+end module

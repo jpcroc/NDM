@@ -1,8 +1,9 @@
-module mod_mpi_phondy 
+#ifdef PHONDY
+module mod_para_phondy 
  use mpi
      integer, dimension(MPI_STATUS_SIZE) :: statut
      integer :: nb_procsph,codeph
-end module mod_mpi_phondy
+end module mod_para_phondy
 
 
 
@@ -10,7 +11,7 @@ end module mod_mpi_phondy
 subroutine init_mpi_phondy()
 
   use mpi
-  use mod_mpi_phondy
+  use mod_para_phondy
   use gen_mpi
   use gen_com_m , ONLY: rangph
   implicit none
@@ -34,3 +35,4 @@ call MPI_COMM_RANK(MPI_COMM_WORLD,rangph,codeph)
 
 
 end subroutine init_mpi_phondy
+#endif

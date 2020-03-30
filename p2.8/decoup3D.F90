@@ -1,7 +1,11 @@
+module decoupage_mod
+        use arret_ndm_mod
+        implicit none
+        contains
 subroutine decoupage(nbr_cpuIN,ncore)
 
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
   use tab_imm_m
 #endif
   use gen_com_m
@@ -111,7 +115,7 @@ loop1:     do nbr_cpu=2,nbr_cpuIN
   allocate(coord_min(0:nbr_cpu-1,3))
   allocate(coord_max(0:nbr_cpu-1,3))
 
-#if(PARA)
+#ifdef PARA
   allocate(proc_cell(nox*noy*noz))
 #endif
 
@@ -233,7 +237,7 @@ loop1:     do nbr_cpu=2,nbr_cpuIN
 	   res_cpu(num_cpu,2) = coord_max(num_cpu,2) - coord_min(num_cpu,2) + 1
 	   res_cpu(num_cpu,3) = coord_max(num_cpu,3) - coord_min(num_cpu,3) + 1
 
-#if(PARA)
+#ifdef PARA
     ! On affecte ces cellules au processeur concerne
 	   do kx = coord_min(num_cpu,1), coord_max(num_cpu,1)
 	      do ky = coord_min(num_cpu,2), coord_max(num_cpu,2)
@@ -250,7 +254,7 @@ loop1:     do nbr_cpu=2,nbr_cpuIN
   enddo
 
 
-#if(PARA)
+#ifdef PARA
   if (myid == 0) then
 #endif
      Print *,'-----------------------------------------------'
@@ -278,7 +282,7 @@ loop1:     do nbr_cpu=2,nbr_cpuIN
 #else
      ldecoup=6
 #endif
-#if(PARA)
+#ifdef PARA
 #else
      write(ldecoup,*)'Taille des decoupages'
      do ii=0,nbr_cpu-1
@@ -294,13 +298,13 @@ loop1:     do nbr_cpu=2,nbr_cpuIN
      write(ldecoup,*)'-----------------------------------------------'
 
 #endif
-#if(PARA)
+#ifdef PARA
   endif
 #endif
   
 
 #ifndef DECOUP
-#if(PARA)
+#ifdef PARA
   ! On est dans le code de calcul NDM, on realloue les tableaux sur le
   ! nombre d'atomes en tenant compte des cellules fantomes
 
@@ -342,7 +346,7 @@ loop1:     do nbr_cpu=2,nbr_cpuIN
   deallocate(coord_min)
   deallocate(coord_max)
 
-#if(PARA)
+#ifdef PARA
   deallocate(proc_cell)
 #endif
 
@@ -356,3 +360,4 @@ enddo loop1
 
  
 end subroutine decoupage
+end module

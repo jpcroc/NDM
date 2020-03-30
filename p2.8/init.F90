@@ -1,4 +1,38 @@
+module init_mod
+        use input_pair_mod
+        use inputtersoff_mod
+        use calpoeam_mod
+        use calpo_mod
+        use transf_mod
+        use init_spebc_mod
+        use Hcyl_mod
+        use neigcel_mod
+        use tersoff_zbl_mod
+        use dynalloccell
+        use initspeed_mod
+        use caltabt_mod
+        use sauvegarde_mod
+        use heat_mod
+        use caltabi_mod
+        use creadp_mod
+        use correl_mod
+        use layer_mod
+        use dislo_mod
+        use initcdp_mod
+        use initcasca_mod
+        use deftimestep_mod
+        use rasmol_mod
+        use prtplz_mod
 
+#ifdef PARA
+        use init_vois_mod
+#endif
+#ifdef ML
+        use calfo_ml_mod 
+#endif 
+
+        implicit none 
+        contains
 ! **************************************************************
 subroutine init
   !-----------------------------------------------
@@ -17,8 +51,8 @@ subroutine init
   use elec_cell,only: i2t,t_cpl, readelec
   use eloss, only : ibrake,ecelec,initeloss
 !  use var_pot
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   ! **************************************************************
@@ -36,10 +70,10 @@ subroutine init
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: i, lufilmpaf,itapp,ipotcont,j
+  integer :: i, lufilmpaf,itapp,ipotcont,j,lenfn2
   integer :: complet=1    ! flag d'appel a divid : complet : exec de la routine complete
   !-----------------------------------------------
-
+  character*2::extension
   tmean = 0.0
   pmean = 0.0
   timel = 0.0
@@ -48,12 +82,12 @@ subroutine init
 
   !     write(6,*)'entree dans init.f'
   !potentiel BKS
-#if(PARAPH)
+#ifdef PARAPH
 rang=rangph
 #endif
 
 
-#if(PARA)
+#ifdef PARA
   temps_input_deb = MPI_Wtime()
 #endif
 
@@ -158,7 +192,7 @@ rang=rangph
 
            call inputtersoff
 
-#if(ML)
+#ifdef ML
 ! MiLaDy
          case(20)
            if (rang.eq.0) then
@@ -198,18 +232,18 @@ endif
 !<---------setting the configuration by reading gin / cin file --------------
   !---inNEB
   if (dmtype.ne.9) then
-#if(PARA)
+#ifdef PARA
      temps_input=MPI_Wtime()-temps_input_deb
 
      temps_config_deb = MPI_Wtime()
 #endif
      call config
-#if(PARA)
+#ifdef PARA
      temps_config=MPI_Wtime()-temps_config_deb
 #endif
 
 
-#if(DECOUP)
+#ifdef DECOUP
      ! Pas la peine d'aller plus loin dans l'initialisation
      return
 #endif
@@ -235,22 +269,29 @@ endif
      call rasmol (itapp)
   end if
 
-!<---------setting the configuration by generation gin / cin file --------------
-  if (igen==(-1)) then
+  !<---------setting the configuration by generation gin / cin file --------------
+  select case (igen)
+  case (-1)
      formatsauv = 2
      call sauvegarde
      if (rang==0) write (6, *) 'generation terminee'
      call arret_ndm
-  endif
-!<---------end setting the configuration by generation gin /  cin file ---------
+!  case (0)
+!     if (rang==0) write (6, *) 'generation du crystal ; puis run'
+!  case (1)
+!     if (rang==0) write (6, *) 'run a partir du fichier .cin'
+  case (2)
+     call cin2gin
+     call arret_ndm
 
-  if (igen==2) then
+  case (3)
      call transf
      formatsauv = 2
      call sauvegarde
      if (rang==0) write (6, *) 'modification terminee'
      call arret_ndm
-  endif
+  case default
+  end select
 
 
 !<---------setting the cell division -------------------------
@@ -298,7 +339,7 @@ endif
   end if
   call neigcel
 
-#if(PARA)
+#ifdef PARA
   call init_voisinage()
 
   if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
@@ -313,6 +354,7 @@ endif
 
 
   !<---------end setting the cell division ----------------------
+
 
 
   imd = im
@@ -335,7 +377,9 @@ endif
   !  end if
 !computing the neighbours for the very first time ......
 
-#if(ML)
+
+  
+#ifdef ML
 ! MiLaDy
   if(ipotentiel==20) then
    if (rang.eq.0) then
@@ -373,7 +417,7 @@ endif
 
 if (.not.lrestart) then
      !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
-#if(PARA)
+#ifdef PARA
      temps_initspeed_deb = MPI_Wtime()
 #endif
 
@@ -402,7 +446,7 @@ if (.not.lrestart) then
 
 
 
-#if(PARA)
+#ifdef PARA
      temps_initspeed=MPI_Wtime()-temps_initspeed_deb
 #endif
 
@@ -452,7 +496,7 @@ if (.not.lrestart) then
   if(lsigtyp) then
      allocate(sigtyp(3,3,ntyp))
      allocate(sigtyptyp(3,3,ntyp,ntyp))
-#if(PARA)
+#ifdef PARA
      allocate (sigtyp_loc(3,3,ntyp))
      allocate (sigtyptyp_loc(3,3,ntyp,ntyp))
 #endif
@@ -492,7 +536,7 @@ if (.not.lrestart) then
      itapp=0
      call sauveposition (itapp)
   end if
-  if (rang==0) write(6,*)'sortie init'
+
 
 
   if (ldesinteg) then
@@ -511,7 +555,7 @@ if (.not.lrestart) then
      xpchdeb=xp
      vpchdeb=vp
 
-#if(PARA)
+#ifdef PARA
      allocate(itichup(imm))
      allocate(itichdn(imm))
      allocate(itichdeb(imm))
@@ -529,8 +573,7 @@ if (.not.lrestart) then
 
   if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
 
-
-
+  if (rang==0) write(6,*)'sortie init'
 
   return
 end subroutine init
@@ -576,3 +619,4 @@ subroutine init_potential_simple
 
   close (lupotin)
 end subroutine init_potential_simple
+end module

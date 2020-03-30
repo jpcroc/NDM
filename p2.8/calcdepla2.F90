@@ -1,3 +1,7 @@
+module calcdepla2_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 ! *******************************************************************
 subroutine calcdepla2
   !-----------------------------------------------
@@ -7,8 +11,8 @@ subroutine calcdepla2
   use gen_com_m
   use var_pot
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   !
   !
@@ -38,7 +42,7 @@ subroutine calcdepla2
   real(double), dimension(1,3) :: cv
 
   character :: fnamtampon*10, fnamfilm2it*20, extension*10
-#if(PARA)
+#ifdef PARA
   integer,      allocatable :: ityp_depla(:)
   integer,      allocatable :: indic_depla(:)
   real(double), allocatable :: xp_depla(:,:)
@@ -96,7 +100,7 @@ subroutine calcdepla2
 
 
 
-#if(PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(dr2,dr2_glob,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   dr2 = dr2_glob
   call MPI_ALLREDUCE(ndepla,ndepla_glob,ntyp,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -188,7 +192,7 @@ subroutine calcdepla2
      !         write (lufilm2it, *) ' IT', it, ' time ', timel
 
 
-#if(PARA)
+#ifdef PARA
      do i = 1, ndeplatot
         !       write(6,*)i,indic(i)
         write (lufilm2it, 113) ty(ityp_depla(i)), xp_depla(1,i)*1D+8, xp_depla(2,&
@@ -211,3 +215,4 @@ subroutine calcdepla2
 
   return
 end subroutine calcdepla2
+end module

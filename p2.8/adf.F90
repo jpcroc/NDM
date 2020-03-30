@@ -1,4 +1,6 @@
-
+module adf_mod
+        implicit none
+        contains
 subroutine adf
   !-----------------------------------------------
   !   M o d u l e s
@@ -211,4 +213,4 @@ subroutine adf
   angle(:,:,:)=0.D0
   return
 end subroutine adf
-
+end module

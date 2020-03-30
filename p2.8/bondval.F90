@@ -1,3 +1,8 @@
+module bondval_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 subroutine bondval
 
   USE T_kind_param_m, ONLY:  double
@@ -294,3 +299,4 @@ subroutine bondval
 
 
 end subroutine bondval
+end module

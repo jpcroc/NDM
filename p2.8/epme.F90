@@ -1,3 +1,7 @@
+module epme_mod
+        use moduli_mod 
+        implicit none 
+        contains
 !                   Version du 10/12/2001
 ! ***********************************************************
 subroutine epme (Deb,Fin,sige)
@@ -251,4 +255,4 @@ subroutine epme (Deb,Fin,sige)
   deallocate (qgrid)
   return
 end subroutine epme
-
+end module

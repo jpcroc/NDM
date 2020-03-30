@@ -1,3 +1,9 @@
+#ifndef ML
+module param_det_mod
+        use arret_ndm_mod
+        use endrun_mod
+        implicit none
+        contains
 subroutine param_det
   !-----------------------------------------------
   !   M o d u l e s
@@ -541,3 +547,5 @@ subroutine param_det
 
   return
 end subroutine param_det
+end module
+#endif 

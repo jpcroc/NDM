@@ -1,3 +1,15 @@
+module dmloop_mod
+        use calfo_mod
+        use dyn_mod
+        use analyse_mod
+        use controle_mod
+        use trempe_mod
+        use sauvegarde_mod
+        use correl_mod
+        use sauveforce_mod
+        use sauveposition_mod
+        implicit none
+        contains
 ! ************************************************
 !           Sous-programme dmloop.f
 !          Version MPI du 21 fevrier 2001
@@ -11,8 +23,8 @@ subroutine dmloop
   use gen_com_m
   use tab_imm_m
   USE FireModule
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   implicit none
@@ -100,3 +112,4 @@ subroutine dmloop
   return
 
 end subroutine dmloop
+end module

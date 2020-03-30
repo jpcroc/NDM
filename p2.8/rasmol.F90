@@ -1,4 +1,9 @@
 ! ****************************************************************
+module rasmol_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
+
 subroutine rasmol(itapp)
   !-----------------------------------------------
   !   M o d u l e s
@@ -7,8 +12,8 @@ subroutine rasmol(itapp)
   use gen_com_m
   use var_pot
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   ! ****************************************************************
 
@@ -20,7 +25,7 @@ subroutine rasmol(itapp)
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   integer  :: itapp,iksp
-#if(PARA)
+#ifdef PARA
   integer :: iproc
   real(double), allocatable :: xp_loc(:,:)
   integer, allocatable      :: ityp_loc(:)
@@ -46,6 +51,14 @@ subroutine rasmol(itapp)
   !
   !
   !
+  if(lPkbar) then
+     unitP=1.0d-9
+     cunitP='kbar'
+  else
+     unitP=1.0
+     cunitP='d/cm2'
+  endif
+
   iksp=-1
   if (lcasca) iksp=iko
   if (ldesinteg)iksp=1
@@ -113,7 +126,7 @@ subroutine rasmol(itapp)
      !      write (47, *) 'IT =', itapp, '    Time = ', timel
   end if
    if (ivisu==3)  call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
-#if(PARA)
+#ifdef PARA
   ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
 
   
@@ -174,7 +187,7 @@ subroutine rasmol(itapp)
               end select
            else  
               if (num_at_glob(i)==iksp) then
-#if(PARA)
+#ifdef PARA
                  write (luvisu, 138) xp1, xp2, xp3,num_at_glob(i)
 #else
                  write (luvisu, 138) xp1, xp2, xp3,i
@@ -183,7 +196,7 @@ subroutine rasmol(itapp)
                  !write (luvisu, 135) ty(ityp(i)),xp1, xp2, xp3
                  select case (ivisu)
                  case (1)
-#if(PARA)
+#ifdef PARA
                  write (luvisu, 135)  ty(ityp(i)),xp1, xp2, xp3,num_at_glob(i)
 #else
                  write (luvisu, 135)  ty(ityp(i)),xp1, xp2, xp3,i
@@ -206,7 +219,7 @@ subroutine rasmol(itapp)
               end if
            end if
         end do
-#if(PARA)
+#ifdef PARA
      enddo  ! fin de boucle sur les processeurs
      ! Le processeur maitre recupere ses donnees locales
      xp = xp_loc
@@ -266,8 +279,8 @@ end subroutine rasmol
   use gen_com_m
   use var_pot
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 implicit none
 ntyp_buffer=ntyp
@@ -300,8 +313,8 @@ allocate(ityp_buffer(imm),ty_buffer(ntyp),cm_buffer(ntyp))
   use gen_com_m
   use var_pot
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 implicit none 
 
@@ -320,4 +333,4 @@ implicit none
 
 
 
-
+ end module

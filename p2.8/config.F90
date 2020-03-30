@@ -1,17 +1,27 @@
+module config_mod
+        use period_mod
+        use divid_mod
+#ifdef PARA
+        use coord_to_cell_mod
+        use decoupage_mod
+#endif
+        implicit none
+        contains
 subroutine config
 !********************************************************************
 !             CONSTRUCTION DE LA BOITE DE SIMULATION
 !********************************************************************
-!-----------------------------------------------
-  !   M  d u l e s
+
+  !-----------------------------------------------
+  !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use var_pot
   use tab_imm_m
   use suivinonpbc
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   implicit none
@@ -30,7 +40,7 @@ subroutine config
   integer :: i, j, k, ia, ib, ic, icell, iti, icintype, icintypemod&
        , lucin, lugin, imcell, la, lb, lc, typmax, typmin, npoin, natyp, typ
   integer:: indpoint1, indpointdes
-  integer :: passe, nb_passes,ncore
+  integer :: passe, nb_passes,ncore,lenfn2
 #ifndef PARA
   integer :: nprocs
 #endif
@@ -40,8 +50,9 @@ subroutine config
   integer, dimension(:),pointer     :: ibuffer
   real(double), dimension(:,:),pointer    :: buffer
   real(double),dimension(:,:),allocatable :: tmpxc
+  character :: extension*2
 
-#if(PARA)
+#ifdef PARA
   integer,      dimension(ntyp)         :: na_loc
 
   integer  :: pointeur_loc, i_loc
@@ -82,7 +93,7 @@ subroutine config
 
   if (igen.ge.1) then
 
-#if(PARA)
+#ifdef PARA
      ! En parallele, la lecture du fichier de position se fait en passes
      !  - la premiere pour lire toutes les positions et determiner le
      !    meilleur equilibrage/decoupage
@@ -178,9 +189,9 @@ subroutine config
 	rumax=rumax_init
 	alpha = alpha_init
 
-#if(DECOUP)||(PARA)
+#if defined DECOUP || defined PARA
 	if (passe==1) then
-#if(DECOUP) 
+#ifdef DECOUP 
 	   open(123, file='decoup.dat', status='old')
 	   read (123, *) nprocs,ncore
 	   close(123)
@@ -189,7 +200,7 @@ subroutine config
 	   allocate(num_at_buff(imm))
         endif
 #endif
-#if(DECOUP)
+#ifdef DECOUP
         ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation
 	return	
 #endif
@@ -199,14 +210,14 @@ subroutine config
            if(rang==0)                    write (6, *) 'im > imM', im, imm
            call arret_ndm
         endif
-#if(PARA)
+#ifdef PARA
 	if (passe==1) im = im_glob
 #else
  	im = im_glob
 #endif
 
   !                    write(6,*)im
-#if(PARA)
+#ifdef PARA
         if (passe == 1) then
            ! lecture muette
            read (lucin, err=456) ibuffer   !ityp
@@ -245,7 +256,7 @@ subroutine config
 
         !  lecture des positions
 
-#if(PARA)
+#ifdef PARA
         if (passe == 1) then
            ! lecture du tableau et chaque proc conserve ce qui le concerne
            read (lucin, err=456) buffer    ! xp
@@ -343,7 +354,7 @@ subroutine config
 
 
      if (icintypemod==1) then
-#if(PARA)
+#ifdef PARA
         read (lucin, err=456) buffer                ! (xpp) former positions
 	do i_loc=1,im
 	   xpp(:,i_loc)=buffer(:,num_at_buff(i_loc))
@@ -420,7 +431,7 @@ subroutine config
 
 
 
-#if(PARA)
+#ifdef PARA
      deallocate(num_at_buff)
 #endif
      !     do i=1,im
@@ -492,15 +503,15 @@ subroutine config
 	rumax = rumax_init
 	alpha = alpha_init
 
-#if(DECOUP)
+#ifdef DECOUP
 	open(123, file='decoup.dat', status='old')
 	   read (123, *) nprocs,ncore
 	close(123)
 #endif
-#if(DECOUP)||(PARA)
+#if defined DECOUP || defined PARA
  	   call  decoupage(nprocs,ncore)
 #endif
-#if(DECOUP)
+#ifdef DECOUP
  ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation
 	return	
 #endif
@@ -562,7 +573,7 @@ subroutine config
 
         i  = 0
         im = 0
-#if(PARA)
+#ifdef PARA
         i_glob = 0
 #endif
         do ia = 1,la
@@ -574,7 +585,7 @@ subroutine config
                     xp(1,i) = (xc(icell,1)+float(ia-1))/float(la)
                     xp(2,i) = (xc(icell,2)+float(ib-1))/float(lb)
                     xp(3,i) = (xc(icell,3)+float(ic-1))/float(lc)
-#if(PARA)
+#ifdef PARA
                     do k=1,3
                        xpici=xp(k,i)
                        if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
@@ -593,7 +604,7 @@ subroutine config
                        xpnonpbc(3,i) = (tmpsuivi(3,icell)+float(ic-1))/float(lc)
 		    end if
                     ityp(i) = itypc(icell)
-#if(PARA)
+#ifdef PARA
                     i_glob = i_glob + 1
                     num_at_glob(i)=i_glob
                     ! On teste si c'est un atome local pour le prendre
@@ -670,15 +681,15 @@ subroutine config
         rumax=rumax_init
         alpha = alpha_init
 
-#if(DECOUP)
+#ifdef DECOUP
         open(123, file='decoup.dat', status='old')
         read (123, *) nprocs,ncore
         close(123)
 #endif
-#if(DECOUP)||(PARA)
+#if defined DECOUP || defined PARA
  	   call  decoupage(nprocs,ncore)
 #endif
-#if(DECOUP)
+#ifdef DECOUP
         ! Dans ce cas, pas la peine d'aller plus loin dans l'initialisation
         return	
 #endif
@@ -778,32 +789,37 @@ subroutine config
      if (lperiod.EQV..true.) call period
 
      ! SUMMARY
-
 #ifdef LAMMPS_VERSION
 
-  if((ipotentiel==-10).or.(ipotentiel==-11)) then
-     write(6,*)'write configuration to conf.lmp'
-     call config2data (imm,im,xp,ityp,at,ntyp)
-  end if
+     if((ipotentiel==-10).or.(ipotentiel==-11)) then
+        write(6,*)'write configuration to conf.lmp'
+        call config2data (imm,im,xp,ityp,at,ntyp)
+     end if
 #endif     
-  if (rang==0) then
 
-     write(6,*)
-     write (6, *) '-------- boite de simulation ------'
-     write (6, *) 'nombre d atomes =', im_glob
-     !      write(6,*)'taille de la boite ZL ', zl(1),zl(2),zl(3)
-     write (6, '(A,3F11.4)') 'taille de la boite ZL ', 1D+08*zl(1), 1D+08*&
-          zl(2), 1D+08*zl(3)
-     do i=1,3
-        write(6,'(A,I2,3F15.6)')'vecteur ',i, (at(ic,i)*1.0d8,ic=1,3)
-     end do
-     do iti = 1, ntyp
-        if (na(iti)==0) cycle
-        write (6, *) na(iti), ' atomes de type', iti
-     end do
-     !           write (6, *) '----------------------------------'
+
+     if (rang==0) then
+
+        write(6,*)
+        write (6, *) '-------- boite de simulation ------'
+        write (6, *) 'nombre d atomes =', im_glob
+        !      write(6,*)'taille de la boite ZL ', zl(1),zl(2),zl(3)
+        write (6, '(A,3F11.4)') 'taille de la boite ZL ', 1D+08*zl(1), 1D+08*&
+             zl(2), 1D+08*zl(3)
+        do i=1,3
+           write(6,'(A,I2,3F15.6)')'vecteur ',i, (at(ic,i)*1.0d8,ic=1,3)
+        end do
+        do iti = 1, ntyp
+           if (na(iti)==0) cycle
+           write (6, *) na(iti), ' atomes de type', iti
+        end do
+        !           write (6, *) '----------------------------------'
+
+        !      write(6,*)'sortie de config.f'
 
      endif                                  ! fin rang=0
+
+
 
      if (llangevin.eqv..true.) then
         allocate(Gl(3,imm))
@@ -811,6 +827,8 @@ subroutine config
      deallocate (ibuffer)
      deallocate (buffer)
      write(6,*)
+
+
 
      return
 
@@ -859,7 +877,7 @@ subroutine config2data (imm,im,xp,ityp,at,ntyp)
   USE T_kind_param_m, ONLY:  double
   use gen_com_m,only : position_conversion_lammps
   use var_pot, only:q,ipotentiel
-  use mat_util
+  use Mat_utils_mod
   implicit none
   integer,intent(in)::imm,im,ntyp
   real(double),intent(in)::xp(3,imm),at(3,3)
@@ -985,7 +1003,7 @@ end subroutine config2data
 
 !---------------------------------------------------
 subroutine convert_cell(mat_ini,new_mat,transform)
-  use mat_util
+  use Mat_utils_mod
 
 
   implicit none
@@ -1045,5 +1063,5 @@ subroutine convert_cell(mat_ini,new_mat,transform)
   return
 end subroutine convert_cell
 
-
 #endif
+end module

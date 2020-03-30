@@ -1,11 +1,16 @@
+module calfoeamcel_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 !----------------------------------------------------------------------
 SUBROUTINE calfoeamcel
   USE T_kind_param_m
   use gen_com_m
   use var_pot
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   implicit none
 
@@ -41,7 +46,7 @@ SUBROUTINE calfoeamcel
 
   real(double) :: tabdensity(imm)
 
-#if(PARA)
+#ifdef PARA
   ! declarations supplementaires pour MPI
   real(double) ::  potisglue_tot
   real(double) ::  potisrep_tot
@@ -76,8 +81,7 @@ SUBROUTINE calfoeamcel
      call notperiod(xp,xpnp)
   end if
 
-  ! Sequentiel
-
+    
 
   loop1at1: do i=1,im
      if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
@@ -94,20 +98,23 @@ SUBROUTINE calfoeamcel
         ko1 = ncel(koo,i1)
         cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
         ! pour chaque atome ds la cel. voisine
+
         loop1at2: do i2 = 1, nato(ko1)
            j = last(i2,ko1)
            if (typ_pot_pair(ipo(ityp(i),ityp(j))).ne.ipotentiel) cycle
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
            !CRC             if(i.eq.j) cycle
-#if(PARA)
+#ifdef PARA
 	   ! Methode pour ne prendre qu'une seule fois en compte
            ! le couple i,j en paralle :
 	   ! - i est necesairement local (boucle i<=im)
            ! - si j est local on ne retient que le couple i<j
            ! - si j n'est pas local, le couple n'est par definition
 	   !   pris qu'une fois puisque i est local
+
 	   if (j.le.im) then
+
        ! les deux atomes sont locaux
               if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme deja calcule
 	   else
@@ -220,6 +227,7 @@ SUBROUTINE calfoeamcel
      end do loop1cel
   end do loop1at1
 
+  
   ! calcul et stockage de Eembi et dEembi
   loop2at1: do i=1,im
      if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
@@ -246,7 +254,7 @@ SUBROUTINE calfoeamcel
 
 
 
-#if(PARA)
+#ifdef PARA
   call maj_tabdensity_ftm(tabdensity)
 #endif
 
@@ -272,7 +280,7 @@ SUBROUTINE calfoeamcel
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
            !CRC             if(i.eq.j) cycle
-#if(PARA)
+#ifdef PARA
 	   ! Methode pour ne prendre qu'une seule fois en compte
            ! le couple i,j en paralle :
 	   ! - i est necesairement local (boucle i<=im)
@@ -360,7 +368,7 @@ SUBROUTINE calfoeamcel
 
 !  if (test_sigma) sig(1:3,1:3) = sig(1:3,1:3)/volu
 
-#if(PARA)
+#ifdef PARA
   CALL MPI_ALLREDUCE(potisrep, potisrep_tot, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   potisrep=potisrep_tot
   CALL MPI_ALLREDUCE(potisglue,potisglue_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -380,3 +388,4 @@ endif
 
   return
 end SUBROUTINE calfoeamcel
+end module

@@ -1,3 +1,6 @@
+module alloc_typ_mod
+        implicit none 
+        contains
 
 subroutine alloc_typ
 
@@ -146,3 +149,4 @@ subroutine alloc_typ
 
   return
 end subroutine alloc_typ
+end module

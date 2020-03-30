@@ -1,3 +1,6 @@
+module Tersoff_mod 
+      implicit none
+      contains
 !     nvar=3*nb d'atome
 !     ndim = dimension des tableaux d'atomes
 !     xvar(3*nbd'at)=positions
@@ -246,3 +249,4 @@
       end
 !
 !                                   ***** Fin routine TSPOTENTIEL *****
+end module

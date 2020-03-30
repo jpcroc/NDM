@@ -1,3 +1,8 @@
+module calfojulicel_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 !----------------------------------------------------------------------
 SUBROUTINE calfojulicel
   !tentaive de calfoeam avec une seule grande boucle sur i
@@ -766,4 +771,4 @@ SUBROUTINE calfojulicel
   return
 end SUBROUTINE calfojulicel
 
-
+end module

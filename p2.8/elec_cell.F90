@@ -221,8 +221,8 @@ contains
   subroutine TTlangevin(xp, vp, fp,ityp,il,Gl)
 
 
-#if(PARA)
-    use mod_mpi
+#ifdef PARA
+    use mod_para
 #endif
 
     real(double)  :: xp(3,imm)
@@ -237,7 +237,7 @@ contains
     !langevin codé à partir du poly de Gabriel Stolz page 84, dans une version avec expoentielle comme Manuel et Cosmin
     ! adapted to 2T model
     integer :: ixyze(3)
-#if(PARA)
+#ifdef PARA
     real(double), allocatable,dimension(:)::elosscel_tot
 #endif
 
@@ -245,13 +245,13 @@ contains
 
     if (i2t==0)then 
        elosscel(:)=0
-#if(PARA)
+#ifdef PARA
     allocate (elosscel_tot(noxyz))
 #endif
 
     end if
     do ko = 1, noxyz
-#if(PARA)
+#ifdef PARA
        if (proc_cell(ko).ne.myid) cycle
 #endif
        if (nato(ko)==0) cycle
@@ -281,7 +281,7 @@ contains
                 nv1=1+INT(vn/v1)
                 if (nv1.gt.ngrdel) then
                    if (rang.eq.0)  write(6,*)'elstop velocity > 49, rebuild elstop.in'
-#if(PARA)
+#ifdef PARA
 	            call MPI_FINALIZE(ierr)
 #endif 
 
@@ -363,7 +363,7 @@ contains
           end select
        end do
     end do
-#if(PARA)
+#ifdef PARA
     if (i2T==0)then
        call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
        elosscel=elosscel_tot

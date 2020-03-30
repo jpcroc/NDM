@@ -12,8 +12,8 @@ module eloss
   !  use neb_module,only:
   !  use defcdp, ONLY :
   !  use var_pot
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif 
 
   ! **************************************************************
@@ -72,7 +72,7 @@ contains
           !        write(6,'(2G15.5)')vel,vel2
           veloc(j)=vel2 ! vitesse en cm.sec-1
           stoppow(j)=sp*ev2erg*1e8 
-#if(CHECK)
+#ifdef CHECK
           write(62,'(I3,7G15.7)')j,vel,sp,veloc(j),stoppow(j), stoppow(j)/veloc(j),tstep*stoppow(j)/veloc(j)/cm(i)
 #endif
 
@@ -94,7 +94,7 @@ contains
              end if
           end do loopj
           elstopforce(i,2,k)=stoppow(j0)+(stoppow(j1)-stoppow(j0))*(vmaxel(i)*k/ngrdel-veloc(j0))/(veloc(j1)-veloc(j0))
-#if(CHECK)
+#ifdef CHECK
           if((rang==0).and.(mod(k,20)==0)) write(6,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
           write(61,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
 #endif
@@ -111,7 +111,7 @@ contains
           nv1=1+INT(vnlt/v1)
           if (nv1.gt.ngrdel) then
              write(6,*)'elstop velocity > 49, rebuild elstop.in,nv1',nv1
-#if(PARA)
+#ifdef PARA
 	            call MPI_FINALIZE(ierr)
 #endif 
 
@@ -135,7 +135,7 @@ contains
     integer::koo,i,nv1,ic,iti
     integer, save:: icall=0
 
-#if(PARA)
+#ifdef PARA
     real(double), allocatable,dimension(:)::elosscel_tot
     if (allocated(elosscel)) allocate (elosscel_tot(noxyz))
 #endif
@@ -164,7 +164,7 @@ contains
           nv1=1+INT(vn/v1)
           if (nv1.gt.ngrdel) then
              write(6,*)'elstop velocity > 49, rebuild elstop.in'
-#if(PARA)
+#ifdef PARA
 	            call MPI_FINALIZE(ierr)
 #endif 
             stop
@@ -210,7 +210,7 @@ contains
 
     end do
     !	write(6,*)'RG el',rang,elosselec,elosselec1
-#if(PARA)
+#ifdef PARA
     elosselectot=0
     elosselectot1=0
     call MPI_ALLREDUCE(elosselec,elosselectot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)

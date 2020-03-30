@@ -2,6 +2,10 @@
 !           Sous-programme at_bord
 ! alloue et remplit le tableau latdebord
 ! ************************************************
+module dislo_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 
 subroutine at_bord(xp)
   !-----------------------------------------------
@@ -76,3 +80,4 @@ subroutine calfodislo(fp)
 
   return  
 end subroutine calfodislo
+end module

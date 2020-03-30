@@ -1,3 +1,6 @@
+module strain_bc_mod
+        implicit none
+        contains
 subroutine strain_bc
 	!-----------------------------------------------
  	!   M o d u l e s
@@ -139,3 +142,4 @@ subroutine surf_calc
 
 end subroutine surf_calc
 
+end module

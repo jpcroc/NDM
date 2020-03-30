@@ -1,3 +1,8 @@
+module layer_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
+
 subroutine layer
   !-----------------------------------------------
   !   M o d u l e s
@@ -6,8 +11,8 @@ subroutine layer
   use gen_com_m
   use tab_imm_m
 
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif 
 
 
@@ -43,7 +48,7 @@ subroutine layer
   end if
 
 
-#if(PARA)
+#ifdef PARA
   free(:)=.true.
   frozen(:,:)=.false.
   call cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
@@ -156,3 +161,4 @@ subroutine layer
 #endif
   return
 end subroutine layer
+end module

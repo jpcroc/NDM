@@ -1,4 +1,8 @@
 
+module notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 
 ! *****************************************************************
 subroutine notperiod(xp, xpnp)
@@ -71,4 +75,4 @@ subroutine notperiod(xp, xpnp)
 
 
 end subroutine notperiod
-
+end module

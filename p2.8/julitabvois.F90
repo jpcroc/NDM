@@ -1,3 +1,9 @@
+module calfojuli_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
+
 !----------------------------------------------------------------------
 SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   !tentaive de calfoeam avec une seule grande boucle sur i
@@ -669,3 +675,4 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
 end SUBROUTINE calfojuli
 
 
+end module

@@ -1,3 +1,7 @@
+module force_tersoff_cel_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 ! ***************************************************************
 subroutine force_tersoff_cel
   !-----------------------------------------------
@@ -9,8 +13,8 @@ subroutine force_tersoff_cel
   use tab_imm_m
   use jqmod
   use force_tersoff_facteurs
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   ! **************************************************************
   ! Programme par NGUYEN Quoc Hoang
@@ -46,7 +50,7 @@ subroutine force_tersoff_cel
   real(double) , dimension(15,6) :: tmp
   real(double) , dimension(15,3) :: tmp1
   real(double) , dimension(1,3) :: cvij, cvik
-#if(PARA)
+#ifdef PARA
   real(double) :: potist_tot, ER1_tot, ER2_tot, ER3_tot 
   real(double), dimension(3)   :: jq_tot
   real(double), dimension(3,3) :: sig_tot
@@ -367,7 +371,7 @@ subroutine force_tersoff_cel
   end do
   call cryst_to_cart(imm,xp,at,1)
 
-#if(PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(potisTersoff,potisTersoff_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   potisTersoff=potisTersoff_tot
   !     call MPI_ALLREDUCE(jq,    jq_tot,    3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -382,7 +386,7 @@ subroutine force_tersoff_cel
 #endif
 
 
-#if(PARA)
+#ifdef PARA
   call maj_fp_frt
 #endif
   !  write(6,*)sig
@@ -392,4 +396,4 @@ subroutine force_tersoff_cel
 
 end subroutine force_tersoff_cel
 
-
+end module

@@ -140,7 +140,7 @@ Connaissant potis1 pour chaque proc, potis1 global est
 pour des entiers   call MPI_ALLREDUCE(nb_at_max,nb_at_max_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
 
 valeur max 
-mod_mpi.F90:    call MPI_ALLREDUCE(nb_at_max,nb_at_max_tot,1,MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
+mod_para.F90:    call MPI_ALLREDUCE(nb_at_max,nb_at_max_tot,1,MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
 
 
 */moyennes sur tout les atomes = "somme simple"/im_glob

@@ -40,10 +40,13 @@ module Parrinello_Rahman
   USE T_kind_param_m
   use gen_com_m    
   use var_pot
-  use mat_util
-#if(PARA)
-  use mod_mpi
+  use recips_mod
+#ifdef PARA
+  use mod_para
 #endif
+  use calfo_mod
+  use scalebox_mod
+  use Mat_utils_mod, only : MatInv
   implicit none
   ! Vecteurs de la boîte et leurs dérivées
   real(double), dimension(3,3), save , private :: h, hDot
@@ -82,8 +85,10 @@ contains
     real(double) :: ax(3,imm)
 
     INTEGER :: ia, i, j
-    real(double), external :: calcvol
-#if(PARA)
+    !real(double), external :: calcvol
+    real(double):: unitE
+    character*5 :: cunitE
+#ifdef PARA
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
 #endif
@@ -109,9 +114,9 @@ contains
     IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*at(1:3,3)
     IF (wbox==0.0) THEN
        wbox = sum(0.5*cm(ityp(:im)))       ! La moitié de la masse totale des atomes
-#if(PARA)
-       call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-       wbox=wbox_tot
+#ifdef PARA
+  call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  wbox=wbox_tot
 #endif
 
 
@@ -154,6 +159,13 @@ contains
     Kcell = 0.5d0*wbox*Sum( hDot(1:3,1:3)**2 )
 
 
+    if(lEev) then
+       unitE=erg2eV
+       cunitE='  eV'
+    else
+       unitE=1.0
+       cunitE=' erg'
+    end if
     if(rang==0) write(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
          '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
 
@@ -177,7 +189,7 @@ contains
        !ALLOCATE(UHoover(1:nHoover), UHoover_new(1:nHoover), UHoover_old(1:nHoover))
 
        ! Nombre de degrés de liberté pour le thermostat de Nosé-Hoover
-       !crc       gNose=dble(3*imana)
+!crc       gNose=dble(3*imana)
        gNose=dble(3*im_glob)
 
        ! Masse de chaque thermostat
@@ -225,7 +237,11 @@ contains
     sdot(:,1:im) = MatMul(invh(:,:), vp(:,1:im) )
 
     ! Forces à l'instant initial
-    CALL CalFo (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+# ifdef PARA
+    CALL CalFo !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+#else
+    CALL CalFo !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+#endif
 
     !  Contrainte thermique à l'instant initial
     sigkine(:,:)=0.d0
@@ -236,7 +252,7 @@ contains
     enddo
     sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 
-#if(PARA)
+#ifdef PARA
     call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
     sigkine=sigkine_tot
 
@@ -268,11 +284,11 @@ contains
     real(double),dimension(3,3)::mf,mfi, grsig, hdot_new, hdot_last,forcebox
     REAL(double) :: diff, tdiff
     integer:: i,j,ia, iter,ic
-    real(double) , external ::  calcvol 
+    !real(double) , external ::  calcvol 
     ! Parameter for Parrinello-Rahman self consistency loop
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
-#if(PARA)
+#ifdef PARA
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
   integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
@@ -352,7 +368,7 @@ contains
     invtrh = Transpose(invh)
 
 
-#if(PARA)
+#ifdef PARA
      zl(1) = Sqrt( Sum(at(1:3,1)**2 ) )
      zl(2) = Sqrt( Sum(at(1:3,2)**2 ) )
      zl(3) = Sqrt( Sum(at(1:3,3)**2 ) )
@@ -396,14 +412,17 @@ contains
 
 #else
     ! On recalcule et réalloue les cellules, puis on applique les conditions aux
-  ! limites périodiques sur les positions des atomes
-
+    ! limites périodiques sur les positions des atomes
     CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 #endif
 
 
     ! Calcul des forces et des contraintes à l'instant t+dt
-    CALL CalFo (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+# ifdef PARA
+    CALL CalFo !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+#else
+    CALL CalFo !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+#endif
 
     ! Calcul de la viscosité à l'instant ...
     DO i=1, nHoover
@@ -461,7 +480,7 @@ contains
           enddo
        enddo
        sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
-#if(PARA)
+#ifdef PARA
        call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
        sigkine=sigkine_tot
 #endif
@@ -559,7 +578,7 @@ contains
 
   end subroutine pr
 
-end module Parrinello_Rahman
+end module !Parrinello_Rahman
 
 
 

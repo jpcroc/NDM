@@ -1,3 +1,8 @@
+module Hcyl_mod
+        use tempinstcyl_mod 
+        use period_mod
+        implicit none
+        contains
 ! *********************************************************************
 subroutine Hcyl 
   !-----------------------------------------------
@@ -9,8 +14,8 @@ subroutine Hcyl
   !     Version  du 12 avril 2007
   ! *********************************************************************
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   implicit none
@@ -24,7 +29,7 @@ subroutine Hcyl
   !-----------------------------------------------
   !   E x t e r n a l    F u n c t i o n s
   !-----------------------------------------------
-  real(double) :: tempinstcyl
+  !real(double) :: tempinstcyl
   if (rang==0) write(6,*)'generation de pointe thermique !!!!!!!!!!'
   open (111,file="cyl.mol")
   ! open (112,file="vcyl.mol")
@@ -108,3 +113,4 @@ subroutine Hcyl
   !end do
 
 end subroutine Hcyl
+end module

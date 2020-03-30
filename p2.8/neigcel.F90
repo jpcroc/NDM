@@ -1,3 +1,6 @@
+module neigcel_mod
+        implicit none
+        contains
 !**************************************************************
 !                                                             *
 !                       subroutine cells                      *
@@ -126,3 +129,4 @@ subroutine neigcel
 
   return
 end subroutine neigcel
+end module

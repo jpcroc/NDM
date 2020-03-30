@@ -1,4 +1,6 @@
-
+module spline_mod
+        !implicit none
+        contains 
 
 subroutine cspline(n, x, y, b, c, d)
   !-----------------------------------------------
@@ -534,3 +536,5 @@ end subroutine cspline
       D(1) = 0.0
       RETURN
       END
+
+end module

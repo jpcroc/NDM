@@ -1,3 +1,8 @@
+module prtplz_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
+
 subroutine prtplz(xp,ityp)
 
 
@@ -58,3 +63,4 @@ subroutine prtplz(xp,ityp)
 
   return
 end subroutine prtplz
+end module

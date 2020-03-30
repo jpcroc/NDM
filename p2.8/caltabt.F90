@@ -1,3 +1,11 @@
+module caltabt_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+#ifdef PARA
+        use mod_para
+#endif      
+        implicit none
+        contains
 ! ******************************************************************
 subroutine caltabt
   !-----------------------------------------------
@@ -6,9 +14,6 @@ subroutine caltabt
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
-#endif      
   !          Version du 01 fevrier 2001
   ! ******************************************************************
 
@@ -116,3 +121,4 @@ subroutine caltabt
 
   return
 end subroutine caltabt
+end module

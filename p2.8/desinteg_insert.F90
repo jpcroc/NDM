@@ -1,6 +1,10 @@
 ! ***********************************************************
 !           sous-programme controle.f
 ! ***********************************************************
+module desinteg_insert_mod
+        use caltabt_mod
+        implicit none
+        contains
 
 subroutine desinteg_insert
   !-----------------------------------------------
@@ -9,8 +13,8 @@ subroutine desinteg_insert
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   implicit none
@@ -53,7 +57,7 @@ endif
      if (nchemin==1) then
         Wch0=deltaF*erg2eV
         nchacc=1
-#if(PARA)
+#ifdef PARA
         itichdn=ityp
         imdesdn=im
         num_at_globdesdn=num_at_glob
@@ -73,7 +77,7 @@ endif
            laccept=.false. ; u1=0
            iaccept=0
            testval=exp(-0.5*(wch1-wch0)/(erg2eV*Tempdes*bk))
-#if(PARA)
+#ifdef PARA
 if (rang==0)then
 #endif
            call random_number(u1)
@@ -83,7 +87,7 @@ if (rang==0)then
               iaccept=1
            end if
            write(6,*)'DES laccept ',laccept
-#if(PARA)
+#ifdef PARA
 endif
 !	write(6,*)'PO',rang,laccept,u1
   call MPI_BCAST(laccept,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
@@ -120,7 +124,7 @@ endif
               xpchdn=xpchdeb
               vpchdn=vpchdeb
 
-#if(PARA)
+#ifdef PARA
               itichdn=itichdeb
               itichup=ityp
 
@@ -134,7 +138,7 @@ endif
 		if (typspr==1) then
 			xpspr0=xpspr
 
-#if(PARA)	
+#ifdef PARA	
 			do i=1,im
 				if (num_at_glob(i)==1) then
 					xpspr=xp(:,i)
@@ -154,7 +158,7 @@ endif
               vpchdn=vp
 
 
-#if(PARA)
+#ifdef PARA
               itichup=itichdeb
               itichdn=ityp
 
@@ -175,7 +179,7 @@ endif
            if (pm1des==-1)then
               xp=xpchdn
               vp=vpchdn
-#if(PARA)
+#ifdef PARA
               ityp=itichdn
               im=imdesdn
               num_at_glob=num_at_globdesdn
@@ -186,7 +190,7 @@ endif
               xp=xpchup
               vp=vpchup
 
-#if(PARA)
+#ifdef PARA
               ityp=itichup
               im=imdesup
               num_at_glob=num_at_globdesup
@@ -204,7 +208,7 @@ endif
      xpchdeb=xp
      vpchdeb=vp
 
-#if(PARA)
+#ifdef PARA
      itichdeb=ityp
      imdesdeb=im
      num_at_globdesdeb=num_at_glob
@@ -226,3 +230,4 @@ endif
 
   return
 end subroutine desinteg_insert
+end module

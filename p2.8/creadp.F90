@@ -1,4 +1,7 @@
-
+module creadp_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 subroutine creadp(xp, xpp, ityp,vp)
 
   !-----------------------------------------------
@@ -298,3 +301,4 @@ subroutine creadp(xp, xpp, ityp,vp)
   
   return
 end subroutine creadp
+end module

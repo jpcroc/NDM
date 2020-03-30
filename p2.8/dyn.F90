@@ -1,3 +1,8 @@
+module dyn_mod
+        use tempinst_mod
+        use period_mod
+        implicit none
+        contains
 ! *************************************************************
 subroutine dyn
   !-----------------------------------------------
@@ -7,10 +12,11 @@ subroutine dyn
   use gen_com_m
   use var_pot
   use jqmod
-   use tab_imm_m
+  use tab_imm_m
+  use tempinst_mod
 
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   implicit none
@@ -27,11 +33,17 @@ subroutine dyn
   real(double), dimension(ntyp) :: aux
   real(double) :: xprov ,vv
   real(double), save :: tmoyinst, imesureT
-  real(double), external :: tempinst
+  !real(double), external :: tempinst
   real(double) :: tempavant,tmoy
   real(double) :: deltaE
-
   real(double):: eatommoy
+  if(lEev) then
+     unitE=erg2eV
+     cunitE='  eV '
+  else
+     unitE=1.0
+     cunitE=' erg '
+  end if
   
   if (associated(eatom))  eatom(1:im)=eatom(1:im)+0.5*cm(ityp(1:im))*(vp(1,1:im)**2+vp(2,1:im)**2+vp(3,1:im)**2)
 
@@ -123,3 +135,4 @@ subroutine dyn
   return
 end subroutine dyn
 
+end module

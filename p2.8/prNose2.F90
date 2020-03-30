@@ -34,9 +34,12 @@ module Parrinello_Rahman_Nose
   USE T_kind_param_m
   use gen_com_m   
   use var_pot
-  use mat_util
-#if(PARA)
-  use mod_mpi
+  use tempinst_mod
+  use Mat_utils_mod, only : matinv
+  use recips_mod
+
+#ifdef PARA
+  use mod_para
 #endif
  
   implicit none
@@ -65,10 +68,13 @@ contains
     integer, intent(in)  :: ityp(imm)
 
     real(double), dimension(1:3,1:3) :: maux2
-    real(double), external :: tempinst, calcvol, detmat
-    real(double)::temp0
+    real(double), external :: detmat
+    !real(double), external :: calcvol
+    !real(double):: tempinst
+    real(double)::temp0, unitE
+    character*5 :: cunitE
 
-#if(PARA)
+#ifdef PARA
     real(double)::wbox_tot
 
 #endif
@@ -96,7 +102,7 @@ contains
     if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*at(1:3,3)
     IF (wbox==0.0) THEN
        wbox = sum(0.5*cm(ityp(:im)))       ! La moitié de la masse totale des atomes
-#if(PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   wbox=wbox_tot
 #endif
@@ -151,6 +157,13 @@ contains
     ! Kinetic energy of the cell (Eq. 2.14 of Ref. [2])
     maux2 = MatMul( Transpose(hpoint), hpoint )
     Kcell = 0.5d0*wbox*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
+    if(lEev) then
+       unitE=erg2eV
+       cunitE='  eV'
+    else
+       unitE=1.0
+       cunitE=' erg'
+    end if
     write(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
          '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
 
@@ -188,13 +201,13 @@ contains
     REAL(double), dimension(1:3,1:3) ::  Gpoint
     real(double):: diff,tdiff, invVolu, fNose2, f2point
     integer:: i,j,ia, iter 
-    real(double) , external ::  calcvol 
+    !real(double) , external ::  calcvol 
 
     ! Parameter for Parrinello-Rahman self consistency loop
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
 
-#if(PARA)
+#ifdef PARA
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
 #endif
@@ -318,7 +331,7 @@ contains
        enddo
     enddo
     sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
-#if(PARA)
+#ifdef PARA
     call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
     sigkine=sigkine_tot
 
@@ -397,7 +410,7 @@ contains
 
   end subroutine prNose
 
-end module Parrinello_Rahman_Nose
+end module ! Parrinello_Rahman_Nose
 
 
 

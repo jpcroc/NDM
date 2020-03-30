@@ -1,8 +1,9 @@
-module mod_mpi_mab 
+#ifdef MAB
+module mod_para_mab 
  use mpi
      integer, dimension(MPI_STATUS_SIZE) :: statut
      integer :: nb_procsmab,codemab
-end module mod_mpi_mab
+end module mod_para_mab
 
 
 
@@ -10,7 +11,7 @@ end module mod_mpi_mab
 subroutine init_mpi_mab()
 
   use mpi
-  use mod_mpi_mab
+  use mod_para_mab
   use gen_mpi
   use gen_com_m , ONLY: rangmab
   implicit none
@@ -33,3 +34,4 @@ call MPI_COMM_RANK(MPI_COMM_WORLD,rangmab,codemab)
 
 
 end subroutine init_mpi_mab
+#endif

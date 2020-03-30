@@ -1,3 +1,7 @@
+module trempe_mod
+        use period_mod
+        implicit none
+        contains
 subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   !   M o d u l e s
@@ -5,6 +9,7 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use var_pot
+ use calctemp_mod
 
   implicit none
   !-----------------------------------------------
@@ -21,6 +26,8 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   real(double)  :: vp(3,imm)
   real(double)  :: ax(3,imm)
   real(double)  :: fp(3,imm)
+  real(double), dimension(ntyp) :: temptyp
+
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -34,7 +41,7 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !
 
   aux(:ntyp) = tstep**2/cm(:ntyp)
-  !if (rang==0) write(6,*) 'entree trempe and the mass', cm(:ntyp), tstep
+!  if (rang==0) write(6,*) 'entree trempe and the mass', cm(:ntyp), tstep
           do i = 1, im
              do ic = 1, 3
                 if (vp(ic,i)*fp(ic,i)>0) then
@@ -46,6 +53,7 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
                 xpp(ic,i) = xp(ic,i)
                 xp(ic,i) = xprov
              end do
+
           end do
 
   IF (lperiod) call period
@@ -56,7 +64,11 @@ subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      forctot = forctot+sum(fp(:,i)**2)
   end do
   forctot = sqrt(forctot)
-  !debug if(rang==0) write (6, *) 'ITTRP ', it, potist, forctot, usdh, aux(:ntyp)
+!  write(6,*)'vp',vp
+!  call calctemp (temptyp) ; write (6,*) 'temp',temptyp
+  
+!  if(rang==0) write (6, *) 'ITTRP ', it, pqotist, forctot, usdh, aux(:ntyp),vp(:,1)
   !if (rang==0) write(6,*) 'PARA-T sortie trempe'
   return
 end subroutine trempe
+end module

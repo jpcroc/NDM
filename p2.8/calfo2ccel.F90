@@ -1,3 +1,8 @@
+module calfo2ccel_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 ! ***************************************************************
 subroutine calfo2ccel
   !-----------------------------------------------
@@ -8,8 +13,8 @@ subroutine calfo2ccel
   use var_pot
   use jqmod
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   !...Translated by PSUITE Trans90                  4.3ZH 16:03:53   7/03/ 1
   !...Switches: -nqp -rl -xf -xhm -x
@@ -34,7 +39,7 @@ subroutine calfo2ccel
   real(double) :: aux, alp, f1, f2, f3,  c1, c2&
        , c3, c1p,c2p,c3p, sk, r, phu, c1abs,c2abs,c3abs, ra(3),cv(1,3)
   real(double) :: dr,deltaepot,fcontr
-#if(PARA)
+#ifdef PARA
   real(double) :: potis1_tot, potis2_tot
   real(double) :: deltaF_tot,deltaEpot_tot,deltaEspr_tot,Espr_tot,deltafcomp
   real(double), dimension(3,3) :: sig_tot
@@ -74,7 +79,7 @@ subroutine calfo2ccel
   !pour chaque atome
 
   if (ldesinteg) then
-#if(PARA)
+#ifdef PARA
      deltafcomp=0.
 #endif
      if (pm1des==-1) then
@@ -114,7 +119,7 @@ subroutine calfo2ccel
            l = ipo(iti,itj)
            if (typ_pot_pair(l).ne.ipotentiel) cycle
 
-#if(PARA)
+#ifdef PARA
 	   ! Methode pour ne prendre qu'une seule fois en compte
            ! le couple i,j en paralle :
 	   ! - i est necesairement local (boucle i<=im)
@@ -179,14 +184,14 @@ subroutine calfo2ccel
 
            if ((ldesinteg).and.(num_at_glob(i)==1)) then
 
-#if(PARA)
+#ifdef PARA
               deltafcomp=deltafcomp+2*deltaepot*1./float(nstepdes)
 #else
               deltaF=deltaF+2*deltaepot*1./float(nstepdes)
 #endif
               phu=phu*lambdades
               deltaepot=deltaepot*lambdades
-              !#if(PARA)
+              !#ifdef PARA
               !	write(6,*)'des',rang,i,deltafcomp
               !#endif
            endif
@@ -208,21 +213,21 @@ subroutine calfo2ccel
 
            if (associated (free)) then
               if (free(i).EQV..true.)potis1 = potis1+deltaepot
-#if(PARA)
+#ifdef PARA
               if (j.le.im) then
 #endif
                  if (free(j).EQV..true.)potis1 = potis1+deltaepot
-#if(PARA)
+#ifdef PARA
               endif
 #endif
 
            else
               potis1 = potis1+deltaepot
-#if(PARA)
+#ifdef PARA
               if (j.le.im) then
 #endif
                  potis1 = potis1+deltaepot
-#if(PARA)
+#ifdef PARA
               endif
 #endif
 
@@ -237,7 +242,7 @@ subroutine calfo2ccel
            if (lcalcjq) then
               jqf=0.0
               eatom(i) = eatom(i)+deltaepot
-#if(PARA)
+#ifdef PARA
               if (j.le.im) then
                  eatom(j) = eatom(j)+deltaepot
                  do ic=1,3
@@ -363,7 +368,7 @@ subroutine calfo2ccel
 
   end do ! fin i
 
-#if(PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(potis1,potis1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   potis1=potis1_tot
   call MPI_ALLREDUCE(potis2,potis2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -394,4 +399,4 @@ subroutine calfo2ccel
   return
 end subroutine calfo2ccel
 
-
+end module

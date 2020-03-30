@@ -1,4 +1,6 @@
-!
+module cryst_to_cart_mod
+        implicit none
+        contains
 !-----------------------------------------------------------------------
 subroutine cryst_to_cart(nvec, vec, trmat, iflag)
   !-----------------------------------------------
@@ -69,3 +71,4 @@ subroutine cryst_to_cart(nvec, vec, trmat, iflag)
   !
   return
 end subroutine cryst_to_cart
+end module

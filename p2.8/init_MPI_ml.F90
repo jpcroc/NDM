@@ -1,4 +1,4 @@
-
+#ifdef ML
 
 module time_measure
 real(kind(0.d0)) :: temps_energy, temps_force, temps_descripteurs, temps_neigh, temps_stress
@@ -13,7 +13,9 @@ end module mod_mpi_ml
 
 
 
-
+module init_mpi_ml_mod 
+  implicit none
+  contains  
 
 subroutine init_mpi_ml()
 
@@ -42,6 +44,7 @@ call MPI_COMM_RANK(MPI_COMM_WORLD,rangml,codeml)
 
 
 end subroutine init_mpi_ml
+end module
 
 
-
+#endif

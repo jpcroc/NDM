@@ -1,3 +1,6 @@
+module deftimestep_mod
+        implicit none
+        contains
 ! *********************************************************************
 subroutine deftimestep
   !-----------------------------------------------
@@ -8,8 +11,10 @@ subroutine deftimestep
   use var_pot
   use tab_imm_m
   use elec_cell, only:  etstep, necycle, necyclemin
-#if(PARA)
-  use mod_mpi
+  use arret_ndm_mod
+  use period_mod
+#ifdef PARA
+  use mod_para
 #endif
   !         version paraseq du 21 fevrier 2001
   ! *********************************************************************
@@ -32,7 +37,7 @@ subroutine deftimestep
   real(double), dimension(imm) :: vpmod2
   real(double) :: tmaxv, tmod, vpmod
   real(double) :: tv1
-#if(PARA)
+#ifdef PARA
   real(double), dimension(3) :: max_loc,max_glob,max_typ
   real(double), dimension(1) :: max_typl,max_typG
   integer :: ityp_max
@@ -61,7 +66,7 @@ subroutine deftimestep
      imax = i
   end do
 
-#if(PARA)
+#ifdef PARA
   max_loc(1)=vmax2
   max_loc(2)=myid
 !  max_loc(3)=0.5+ityp(imax)
@@ -234,3 +239,4 @@ endif
   !     write(6,*)'sortie deftimestep'
   return
 end subroutine deftimestep
+end module deftimestep_mod

@@ -1,3 +1,6 @@
+module dynallocPME
+        implicit none
+        contains
 subroutine DynamicalAllocationPME
 
   use gen_com_m
@@ -16,4 +19,4 @@ subroutine DynamicalAllocationPME
   !  allocate(w1pme(imm),w2pme(imm),w3pme(imm))
 
 end subroutine DynamicalAllocationPME
-
+end module

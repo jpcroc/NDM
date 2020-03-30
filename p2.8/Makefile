@@ -1,430 +1,158 @@
-# LES OPTIONS DE COMPILATIONS SONT DANS LINUX.ARCH
-# VOIR CE FICHIER
+# MCE Makefile
+#########################################
+#
+# Makefile - makefile for the MCE code
+#
+# DEN/DMN/SRMP
+# CEA Saclay
+#
+# Copyright Mickaël Trochet
+#
+#########################################
+
+SHELL = /bin/bash
+
+#sinclude Objectlist
+
+# Definitions
+
+f77files = $(wildcard *.f)
+f90files = $(wildcard *.F90)
+cfiles   = $(wildcard *.c)
+#cppfiles = $(wildcard *.cpp)
+INC_SRC  = $(wildcard *.h)
+OBJ_SRC   = $(f77files:%.f=%.o) $(f90files:%.F90=%.o)
+#MOD_SRC = $(f90files:%.F90=%.mod)
+
+#f77mod   = $(wildcard mod/*.f)
+f90mod 	  = $(wildcard mod/*.F90)
+#cmod     = $(wildcard mod/*.c)
+#cppmod   = $(wildcard mod/*.cpp)
+INC_MOD  = $(wildcard mod/*.h)
+OBJ_MOD   = $(f90mod:mod/%.F90=%.o) 
+#MOD_MOD =   = $(f90mod:mod/%.F90=%.mod) 
+
+#f77para  = $(wildcard para/*.f)
+f90para   = $(wildcard para/*.F90)
+#cpara    = $(wildcard para/*.c)
+#cpppara   = $(wildcard para/*.cpp)
+INC_PARA  = $(wildcard para/*.h)
+OBJ_PARA   = $(f90para:para/%.F90=%.o)
+#MOD_PARA= $(f90para:para/%.F90=%.mod)
+
+#f77ml  = $(wildcard ml/*.f)
+f90ml = $(wildcard ml/*.F90)   
+#cml    = $(wildcard ml/*.c)
+#cppml   = $(wildcard ml/*.cpp)
+INC_ML  = $(wildcard ml/*.h)
+OBJ_ML   = $(f90ml:ml/%.F90=%.o)
+#MOD_ML   = $(f90ml:ml/%.F90=%.mod) 
+
+#f77lammps  = $(wildcard lammps/*.f)
+f90lammps   = $(wildcard lammps/*.F90)
+#clammps     = $(wildcard lammps/*.c)
+cpplammps   = $(wildcard lammps/*.cpp)
+INC_LAMMPS  = $(wildcard lammps/*.h)
+OBJ_LAMMPS  = $(f90lammps:lammps/%.F90=%.o) $(cpplammps:lammps/%.cpp=%.o)
+#MOD_LAMMPS  = $(f90lammps:lammps/%.F90=%.mod) $(cpplammps:lammps/%.cpp=%.mod) 
 
 
-BIN=./
+
+checkfiles = $(f77files) $(f90files) $(f90mod)  
+OBJ = $(OBJ_SRC) $(OBJ_MOD)
+INC = $(INC_SRC) $(INC_MOD)
+#MOD = 
+ROOT = rundm90
+EXT = $@
+FLAG = # BECAREFUL THIS LINE IS IMPORTANT BECAUSE WE APPEND TO IT AFTER IF MACRO ARE DEFINED 
+EXE = $(ROOT)_$@    #_$(shell ./version.sh)
 
 
-SHELL=/bin/sh
-
-# Suffixes rule
-.SUFFIXES :
-.SUFFIXES : .o .f90 .F90 .f .cpp
-
-
-include ./linux.arch
-
-MODULS =
+# For dependencies here are some variables :
+MAKEDEPEND=fortdepend
+# dependence file name with arch extension
+DEP_FILE= .dependencies_$@ 
 
 
-                
-OBJS_MOD=   T_kind_param_m.o\
-	gen_com_m.o \
-	var_pot.o \
-        pos_com_m.o \
-        fft_com_m.o \
-        tab_imm_m.o\
-	SMjuli.o \
-	eamerco.o \
-	eamtab.o \
-        contrainte.o \
-        cfg.o \
-	gin.o \
-        neb_module.o \
-        jqmod.o \
-        caltabtcr.o \
-        calpo_ew.o \
-        anasic.o \
-        modules.o 
+#EXE = $(ROOT)_$@_v$(shell ./version.sh) # if git and version.sh present
 
-
-
-                
-OBJS_PARA=   T_kind_param_mpi_m.o\
-	mod_mpi.o\
-	init_voisinage.o\
-	init_MPI.o
-
-
-OBJS_PARACOM=  gen_init_MPI.o
-OBJS_PARAPH=   init_MPI_phondy.o
-OBJS_PARAMAB=  init_MPI_mab.o
-OBJS_PARAML=   init_MPI_ml.o
-
-
-
-OBJS_SEQ=	anapos.o \
-        eloss.o \
-        elec_cell.o \
-	work_cgII.o \
-        DynamicAlloc.o\
-	alloc_typ.o \
-        defcdp.o \
-        fcc.o \
-        suivinonpbc_module.o \
-        neb_controle.o \
-        pr2.o \
-        prNose2.o \
-	DynamicPME.o\
-        epme.o\
-        transf.o\
-        moduli.o\
-        param_det.o\
-	aluerco.o \
-	correl.o \
-        calccoordo.o \
-        calcangle.o \
-	calfoeamcel.o \
-	calfoeamtabvois.o \
-	julitabvois.o \
-	calpoeam.o \
-	adf.o\
-        endrun.o \
-        controle.o \
-        period.o \
-	notperiod.o \
-        trempe.o \
-        tr_fire.o\
-        input_pair.o \
-        sauvegarde.o \
-        neigcel.o \
-        analyse.o \
-	 spebc_fin.o\
-	gcII.o \
-	gcmodII.o \
-        init.o \
-	init_spebc.o \
-	writing.o \
-        calcdigr.o \
-        tempinstcyl.o \
-	Hcyl.o \
-        initspeed.o \
-        layer.o \
-        recips.o \
-        calcdepla2.o \
-        zieg2.o \
-        erf.o \
-        rdf.o \
-        calctemp.o \
-        tempinst.o \
-        dmloop.o \
-	strain_bc.o \
-	stress_bc.o \
-        scalebox.o \
-        calfo.o\
-	calfo_decalage.o\
-        initcasca.o \
-        prog.o \
-        caltabi.o \
-        cryst_to_car.o \
-        calpo.o \
-        rasmol.o \
-        spline.o \
-        caltabt.o \
-        deftimestep.o \
-        calfo2ctabvois.o \
-        calfo2ccel.o \
-        calfoew.o \
-        sauveposition.o \
-        sauveforce.o \
-        calfo3c.o \
-        dyn.o \
-        main.o \
-        calcdepla.o \
-        config.o \
-        readdm.o \
-        calfow.o\
-        dmloop_vverlet.o\
-        dmloop_lpr.o\
-        dyn_vverlet.o\
-        Mat_util.o\
-        divid.o\
-        vanbeest.o\
-        potrep.o\
-        loopforcetest.o\
-        Tersoff.o\
-        calfoberend.o\
-        configcr.o\
-        force_tersoff_facteurs.o\
-        inputtersoff.o\
-        force_tersoff.o\
-        force_tersoff_cel.o\
-        initcdp.o\
-        creadp.o\
-        jqbh.o\
-        bondval.o\
-        decoup3D.o \
-        coord_to_cell.o\
-        prtplz.o\
-        neb.o\
-        extension.o\
-        tersoff_zbl.o\
-        test_position_He.o\
-        desinteg_insert.o\
-        dislo.o\
-        heat.o\
-        julicel.o\
-        arret_ndm.o 
-
-OBJ_LAMMPS=ndm_lammps.o
-OBJ_MODULE_LAMMPS=LAMMPS.o \
-		LAMMPS-wrapper.o
-
-
+# MACRO DECLARATION SECTION
 
 ifdef PARA
- # Version Parallele
- OBJS =  ${OBJS_MOD} ${OBJS_PARA} ${OBJS_SEQ} 
+OBJ +=  $(OBJ_PARA)
+checkfiles +=  $(f90para) 
+INC += $(INC_PARA)
+FLAG += -DPARA
+endif
 
- ifdef LAMMPS_VERSION 
-    OBJS =  ${OBJS_MOD} ${OBJ_MODULE_LAMMPS} ${OBJS_PARA} ${OBJS_SEQ} ${OBJ_LAMMPS}
- endif 
- EXT=_para
-else
- # Version Sequentielle
- OBJS = ${OBJS_MOD} ${OBJS_SEQ}
- ifdef LAMMPS_VERSION 
-    OBJS =  ${OBJS_MOD} ${OBJ_MODULE_LAMMPS} ${OBJS_SEQ} ${OBJ_LAMMPS}
- endif 
-
+ifdef LAMMPS
+OBJ +=  $(OBJ_LAMMPS)
+checkfiles += $(f90lammps) 
+INC += $(INC_LAMMPS)
+FLAG += -DLAMMPS_VERSION 
 endif
 
 
- DEP=${OBJS}
- CLEANART=clean_art
- CLEANPHONDY=clean_phondy
-
-ifdef ART
- # Version ART
- OBJS = ${OBJS_MOD} ${OBJS_SEQ}
- DEP=${OBJS}  ${LIBART}
- CPPFLAGS=${CPPFLAGS_ART}
- CLEANART=clean_art
- DIREXT=art
- EXT=_art
+ifdef ML # this is ML + PARAML, serial version of ML is not considered  
+OBJ +=$(OBJ_ML) 
+checkfiles +=  $(f90ml) 
+INC += $(INC_ML) 
+FLAG += -DML -DPARAML #-DPARA 
 endif
 
-
-ifdef ML
- # Version Machine Learning
-ifdef PARAML
- OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAML} ${OBJS_SEQ}
- EXT=_ml_para 
-else
- OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
- EXT=_ml
-endif
- DEP=${OBJS}  ${LIBML}
- CPPFLAGS=${CPPFLAGS_ML}
- CLEANML=clean_ml
- DIREXT=ml
-endif
+# List of all targets
 
 
-#ifdef ML
-# # Version Machine Learning
-#ifdef PARAML
-#ifdef PHONDY
-# # Version PHONDY
-#ifdef PARAPH
-# OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAML} ${OBJS_PARAPH}  ${OBJS_SEQ}
-# CPPFLAGS=${CPPFLAGS_ML}
-# EXT=_ml_phondy_para
-# DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
-#endif
-#endif
-#endif
-#endif
-
-
-#ifdef ML
-# # Version Machine Learning
-#ifdef PHONDY
-# # Version PHONDY
-#ifdef PARAPH
-# OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAPH} ${OBJS_PARAML} ${OBJS_SEQ}
-# CPPFLAGS=${CPPFLAGS_ML}
-# EXT=_ml_phondy_para
-# DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
-#endif
-#endif
-#endif
-
-
-
-ifdef PHONDY
- # Version PHONDY
- ifdef PARAPH
-   OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAPH} ${OBJS_SEQ}
-   EXT=_phondy_para 
- ifdef LAMMPS_PHONDY
-   EXT=_phondy_para_lammps
- endif
-
-
- ifdef ML
-   OBJS = ${OBJS_MOD} ${OBJS_PARACOM}  ${OBJS_PARAPH} ${OBJS_PARAML} ${OBJS_SEQ}
-   CPPFLAGS=${CPPFLAGS_ML}
-   EXT=_phondy_para_ml
-   DEP=${OBJS}  ${LIBML} ${LIBPHONDY}
- endif 
-else
- OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
- EXT=_phondy
- endif
-   DEP=${OBJS}  ${LIBPHONDY}
-   CPPFLAGS=${CPPFLAGS_PHONDY}
-   CLEANPHONDY=clean_phondy
-   DIREXT=phondy
-endif
+help:
+	@echo ''
+	@echo 'make arch ARGS=1          build NDM where arch is one of:'
+	@echo ''
+	@files="`ls MAKE/Makefile.*`"; \
+          for file in $$files; do head -1 $$file; done
+	@echo ''
+	@echo 'make clean-arch          delete object folder and executable of arch'
+	@echo 'make softclean-arch      only delete executable of arch'
+	@echo 'make clean-all           delete object folder and executable of all arch'
+	@echo 'make softclean-all       only delete executable of all arch'
+	@echo 'make tar                 create NDM.tar.gz of src dir and packages'
+	@echo ''
 
 
 
 
+# Create a tarball of src dir and packages
+
+.DEFAULT:
+	@test -f MAKE/Makefile.$@
+	@if [ ! -d Obj_$@ ]; then mkdir Obj_$@; fi
+	@./version.sh
+	@cat version.h
+	@echo \#define COMPILE_TARGET \"$@\" >> version.h
+	@#fortdepend -w $(MPIFLAG) -i mpi -f  *.F90 mod/* para/*  *.f  -o .dependencies
+	$(MAKEDEPEND) -w $(FLAG) -i mpi iso_c_binding -f  $(checkfiles)  -o $(DEP_FILE)
+	@chmod +x MAKE/Makefile.$@ 
+	@cp MAKE/Makefile.$@ Obj_$@/Makefile
+	@cp name.in Obj_$@/.
+	@echo "sinclude ../$(DEP_FILE)" >> Obj_$@/Makefile 
+	@#echo "sinclude ../ml/milady.depends" >> Obj_$@/Makefile 
+	cd Obj_$@; \
+        $(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)"  "EXE = ../$(EXE)" ../$(EXE)
 
 
 
+tar:
+	@$(MAKE) clean-all
+	@tar cvzf ../$(ROOT)_src.tar.gz ./*
 
+clean-all:
+	rm -rf Obj_* $(ROOT)_*
 
+clean-%:
+	rm -rf Obj_$(@:clean-%=%) $(ROOT)_$(@:clean-%=%)
 
+softclean-all:
+	rm -rf $(ROOT)_*
 
+softclean-%:
+	rm -rf $(ROOT)_$(@:softclean-%=%)
 
-
-ifdef SUNDAE
- # Version SUNDAE
-ifdef PARASUN
-OBJS = ${OBJS_MOD} ${OBJS_SEQ}
- EXT=_sundae_para
-else
-OBJS = ${OBJS_MOD} ${OBJS_SEQ} 
- EXT=_sundae
-endif
- OBJS = ${OBJS_MOD} ${OBJS_SEQ}
- DEP=${OBJS}  ${LIBSUNDAE}
- CPPFLAGS=${CPPFLAGS_SUNDAE}
- CLEANSUNDAE=clean_sundae
- DIREXT=sundae
- EXT=_sundae
-endif
-
-ifdef  MAB
- # Version MAB
- OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAMAB}  ${OBJS_SEQ}
- DEP=${OBJS}  ${LIBMAB}
- CPPFLAGS=${CPPFLAGS_MAB}
- CLEANMAB=clean_mab
- DIREXT=mab
- EXT=_mab
-ifdef LAMMPS_PHONDY
- OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAMAB} ${OBJS_SEQ}
- EXT=_mab_lammps
-endif
-
-ifdef ML
-ifdef PARAML
- # Version MAB + ML + PARAML
-OBJS = ${OBJS_MOD} ${OBJS_PARACOM} ${OBJS_PARAMAB} ${OBJS_PARAML}  ${OBJS_SEQ}
-DEP=${OBJS} ${LIBML}  ${LIBMAB}
-CPPFLAGS=${CPPFLAGS_MAB}
-CLEANMAB=clean_mab
-DIREXT=mab
-EXT=_mab_ml_para
-endif 
-endif
-
-endif
-
-
-ifdef LAMMPS_VERSION 
-
-.f.o :
-	${F90} -c ${LAMMPS_INC} ${F90FLAGS} $<
-
-.cpp.o :
-	$(C++) -c  ${LAMMPS_INC} ${LAMMPS_LIB} $<
-
-.f90.o :
-	${F90} -c  ${LAMMPS_INC} ${F90FLAGS} $<
-
-.F90.o :
-	$(CPP) $(CPPFLAGS)  $< > $*.tmp.f90
-	$(F90) -c ${LAMMPS_INC}  $(F90FLAGS) $*.tmp.f90
-	mv $*.tmp.o $*.o
-
-else
-
-.f.o :
-	${F90} -c  ${F90FLAGS} $<
-
-.cpp.o :
-	$(C++) -c  ${F90FLAGS} $<
-
-.f90.o :
-	${F90} -c  ${F90FLAGS} $<
-
-.F90.o :
-	$(CPP) $(CPPFLAGS)  $< > $*.tmp.f90
-	$(F90) -c  $(F90FLAGS) $*.tmp.f90
-	mv $*.tmp.o $*.o
-endif 
-
-
-LIBART = libart.a
-LIBPHONDY=libphondy.a
-LIBML=libml.a
-LIBSUNDAE=libsundae.a
-LIBMAB=libmab.a
-
-
-${BIN}/rundm90 : ${DEP} 
-	${LD}  -o ${BIN}/rundm90${EXT}${EXT2}  ${F90FLAGS} ${LDFLAGS} ${OBJS} ${LIBRARY} ${LIBS}
-#	rm -rf ${DIREXT}
-
-
-$(LIBART): 
-	(cp -rL ../art ./ ; cd art	; make ; cp *.o *.a ../../art)
-$(LIBPHONDY): 
-	(cp -rL ../phondy ./ ; cd phondy	; make ; cp *.o *.a ../../phondy)
-$(LIBML): 
-	(cp -rL ../ml ./ ; cd ml	; make ; cp *.o *.a ../../ml)
-$(LIBSUNDAE): 
-	(cp -rL ../sundae ./ ; cd sundae	; make ; cp *.o *.a *.tmp.f90 ../../sundae)
-$(LIBMAB): 
-	(cp -rL ../mab ./ ; cd mab	; make ; cp *.o *.a ../../mab)
-clean : clean_seq clean_para
-
-clean_seq :
-	@rm -f  *.o *.tmp.f90 *.mod   *.l *_genmod.f90
-
-
-clean_para:
-	@rm -f  *.o *.tmp.f90 *.mod  *.l
-
-
-obj_clean:
-	@rm -f  *.o *.tmp.f90 *.mod *.l
-
-
-
-fft_inter.o : fft_inter.F90
-	$(CPP) $(CPPFLAGS) fft_inter.F90 > fft_inter.tmp.f90
-	$(F90) -c  -O0  $(F90FLAGS) fft_inter.tmp.f90
-	mv fft_inter.tmp.o fft_inter.o
-
-#configcr.o : configcr.F90
-#	$(CPP) $(CPPFLAGS) configcr.F90 > configcr.tmp.f90
-#	$(F90) -c -convert big_endian   configcr.tmp.f90
-#	mv configcr.tmp.o configcr.o
-
-
-clean_art:
-	rm -rf art ; cd ../art ; make clean   
-clean_phondy:
-	rm -rf phondy ; cd ../phondy ; make clean   
-clean_ml:
-	rm -rf ml ; cd ../ml ; make clean   
-clean_sundae:
-	rm -rf sundae ; cd ../sundae ; make clean   
-clean_mab:
-	rm -rf mab ; cd ../mab ; make clean   
-#

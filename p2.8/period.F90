@@ -1,3 +1,7 @@
+module period_mod
+        use cryst_to_cart_mod
+        implicit none 
+        contains
 ! *****************************************************************
 subroutine period
   !-----------------------------------------------
@@ -89,4 +93,4 @@ subroutine period
 
 
 end subroutine period
-
+end module

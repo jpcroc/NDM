@@ -1,3 +1,6 @@
+module spebc_fin_mod
+        implicit none
+        contains
 subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
   !-----------------------------------------------
   !   M o d u l e s
@@ -5,8 +8,8 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   USE fcc_module
   USE cfg_module
@@ -221,4 +224,4 @@ end subroutine spebc_fin
 
 
 
-
+end module

@@ -1,4 +1,13 @@
-subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+module neb_mod
+        use calfo_mod
+        use analyse_mod
+        use trempe_mod
+        use neb_controle_mod
+        use scalebox_mod
+        use sauveforce_mod
+        implicit none 
+        contains
+subroutine neb ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
@@ -17,18 +26,16 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   !integer  :: iph,i_dir_path
-  integer  :: ielat(imm)
-  integer  :: iwmax(imm)
-  integer  :: ityp(imm)
-  real(double)  :: xp(3,imm)
-  real(double)  :: xpp(3,imm)
-  real(double)  :: vp(3,imm)
-  real(double)  :: ax(3,imm)
-  real(double)  :: fp(3,imm)
+  !integer  :: ielat(imm)
+  !integer  :: iwmax(imm)
+  !integer  :: ityp(imm)
+  !real(double)  :: xp(3,imm)
+  !real(double)  :: xpp(3,imm)
+  !real(double)  :: vp(3,imm)
+  !real(double)  :: ax(3,imm)
+  !real(double)  :: fp(3,imm)
   integer :: ineb,ii,it_neb_inter
   real(double)  :: a_local,forneb
-  real(double) :: unitP
-  character*5 :: cunitP
 
   ! Variables for Fire quench algorithm
   REAL(double), dimension(:), allocatable :: fire_dt, fire_alph
@@ -102,7 +109,7 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
      call calfo 
      !write(*,*) 'inside NEB debug2',ii, xp(1,1)
      call analyse  
-     call neb_controle    (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
+     call neb_controle(ii)  !  (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
      enePATH(ii)=potist
      enePATHev(ii)=potist*erg2ev
      sigPATH(:,:,ii) = sigtot(:,:)      ! Contrainte
@@ -136,7 +143,7 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
                    call trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
            ENDIF
            call analyse  
-           call neb_controle    (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+           call neb_controle(ii) !   (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
         end do   ! end do for a while
 
         enePATH(ii)=potist
@@ -187,7 +194,7 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
               ENDIF
 
               call analyse 
-              call neb_controle        (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp) 
+              call neb_controle(ii) !   (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp) 
               !
            end do
 
@@ -292,3 +299,4 @@ subroutine neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 
 end subroutine neb
+end module

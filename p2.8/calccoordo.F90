@@ -1,11 +1,16 @@
+module calccoordo_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 subroutine calccoordo
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   use gen_com_m
   use var_pot
@@ -24,7 +29,7 @@ subroutine calccoordo
   real(double) :: r2, c1, c2, c3,cv(1,3),x1,x2,x3
   real(double):: a1, a2, a3
 
-#if(PARA)
+#ifdef PARA
   real(double), dimension(ntyp,ntyp) :: dnco_glob
   integer :: nci_glob
 #endif
@@ -99,7 +104,7 @@ subroutine calccoordo
 
   end do
 
-#if(PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(dnco(:,:),dnco_glob(:,:),ntyp*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   dnco = dnco_glob
   ! nci n'est pas utilise dans la suite, je laisse en commentaire la reduction
@@ -129,3 +134,4 @@ subroutine calccoordo
   return
 
 end subroutine calccoordo
+end module
