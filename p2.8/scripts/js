@@ -1,6 +1,0 @@
-#!/bin/csh
-foreach temp (`ls -1 *.F90`)
-        echo $temp
-        sed -f sj < $temp > t1
-        mv t1 $temp
-end
