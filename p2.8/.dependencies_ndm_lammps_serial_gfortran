@@ -122,6 +122,7 @@ ndm :  \
 	vanbeest.o \
 	work_cgII.o \
 	writing.o \
+	zero2all2zero.o \
 	zieg2.o
 
 DynamicAlloc.o :  \
@@ -849,6 +850,8 @@ tab_imm_m.o :  \
 var_pot.o :  \
 	T_kind_param_m.o
 
+modecalc.o : 
+
 moduli.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
@@ -1076,15 +1079,25 @@ vanbeest.o :  \
 work_cgII.o :  \
 	analyse.o \
 	calfo.o \
+	caltabt.o \
+	config.o \
 	controle.o \
 	T_kind_param_m.o \
 	gen_com_m.o \
 	tab_imm_m.o \
 	sauveforce.o \
 	sauvegarde.o \
-	sauveposition.o
+	sauveposition.o \
+	zero2all2zero.o
 
 writing.o :  \
+	cryst_to_car.o \
+	T_kind_param_m.o \
+	gen_com_m.o \
+	tab_imm_m.o
+
+zero2all2zero.o :  \
+	caltabt.o \
 	cryst_to_car.o \
 	T_kind_param_m.o \
 	gen_com_m.o \

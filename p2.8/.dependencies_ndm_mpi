@@ -893,6 +893,8 @@ tab_imm_m.o :  \
 var_pot.o :  \
 	T_kind_param_m.o
 
+modecalc.o : 
+
 moduli.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o \
