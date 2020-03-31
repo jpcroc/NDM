@@ -1,5 +1,5 @@
 MODULE cfg_module
-use Mat_util
+
 
 CONTAINS
 
@@ -24,6 +24,7 @@ CONTAINS
 
     USE gen_com_m, ONLY : imm, umass
     use var_pot
+    use Mat_utils_mod, only : MatInv
     IMPLICIT NONE
     REAL(double),                 intent(in) :: xp(3,imm)
     INTEGER,                      intent(in) :: ityp(imm)

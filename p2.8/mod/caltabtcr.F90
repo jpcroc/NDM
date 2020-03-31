@@ -10,6 +10,7 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use tab_imm_m
+  use cryst_to_cart_mod
   !          Version du 01 fevrier 2001
   ! ******************************************************************
 
@@ -22,7 +23,8 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   !-----------------------------------------------
 
   integer,intent(in)::natperc,nox,noy,noz,im,imm
-  real(double),intent(in)  :: xpcr(3,imm),bg(3,3),at(3,3)
+  real(double),intent(in)  :: bg(3,3),at(3,3)
+  real(double),intent(inout)  :: xpcr(3,imm)
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------

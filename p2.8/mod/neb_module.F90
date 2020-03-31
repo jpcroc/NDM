@@ -3,6 +3,9 @@ module neb_module
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use contrainte
+  use config_mod
+  use recips_mod
+  use sauveposition_mod
 
   !-----------------------------------------------
   implicit none

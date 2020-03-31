@@ -3,7 +3,7 @@ module gen_com_m
   implicit none
 
 
-#ifdef para
+#ifdef PARA
 
   ! Declarations MPI
   !      include 'mpif.h'
@@ -150,7 +150,7 @@ module gen_com_m
   logical :: lPrtSigat, lprteat, lprtfat,lprteattotm  ! calcul et ecriture de la contrainte, l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
   logical :: lsigatcel !ecriture de la contrainte atomique moyenne sur cellule
   logical :: lsigat ! la contrainte atomique est calcul馥 (rendu vrai par lprtsigat ou lsigatcel)
-  logical :: lposmoy ! ecrit ﾃ� la fin la position moyenne des atomes
+  logical :: lposmoy ! ecrit a la fin la position moyenne des atomes
   real(double) :: tdepla, tdepla2 ! seuils de deplacement
   logical :: lfilm, linstantrdf,linstantfda, lrestart, ltpcel, lfilmext !film, RDF, restart, moyenne par cel
   real*8,dimension(4)::tpseuils ! 1:Tmin; 2:abs(T') ; ; 3:abs(P); 4:abs(P')
@@ -171,12 +171,15 @@ module gen_com_m
   integer :: dmtype, itab, itetabvois, itetimestep, itederive ! type dynamique, periode de repartition entre cel, periode de calc. tab des voisins, periode de chgt du pas en temps, poeriode de correction de la derive
   real(double):: depmaxts,tsmin
   real(double) :: tempstop, tempstopcel,ttol, tfroi, tcooling, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
-       tsfact, vmax,  dfpred ! gestion du pas en temps
+       tsfact, vmax, tgc, dfpred ! gestion du pas en temps
   real(double)::maxtcel
   real(double) :: deltaestop ! decroissance de la temperature moyenne
   integer :: nbmoye
   integer :: ibordcou
-  integer :: itesauv, formatsauv, itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde format de sauvegarde periode de d'ecriture des positions et/ou forces en formatted ; itesauvinter=sauvegarde reguli�re .cout.it qui n'efface pas les fichiers .cout pr�ceents
+  integer :: itesauv, formatsauv, itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde format de sauvegarde periode 
+                                                                              ! de d'ecriture des positions et/ou forces en formatted ; 
+  !itesauvinter=sauvegarde reguliere .cout.it qui n'efface pas les fichiers .cout precedent
+  logical::lWgin ! ecriture finale de .newgin
   real(double), dimension(3) :: vh ! vitesse de la boite
   real(double) :: pext, wbox, tbox ! pext poids de la boite temps d'amortissment de la boite
   logical ::  lpcon2,lprtzlm ! pression constante sans et avec amortissement
@@ -249,8 +252,9 @@ module gen_com_m
   real(double), parameter :: thetamax = 6.2
 
   logical lEev,lPkbar   !unite
-    real(double) :: unitE,unitP
+  real(double) :: unitE,unitP
   character*5 :: cunitE, cunitP
+
 
   ! energies potentielle, cinetique et totale de la boite en Parrinello-Rahman
   real(double):: EcellPR, Kcell, Ucell      
@@ -323,17 +327,17 @@ module gen_com_m
   real(double) :: y_max
   real(double) :: y_min
   real(double) :: y_2nd_max
-  integer, dimension(:), pointer  :: b2sINF ! appartenance ﾃ� la surface infﾃｩrieure !*!
-  integer, dimension(:), pointer  :: b2sSUP ! appartenance ﾃ� la surface supﾃｩrieure !*!
+  integer, dimension(:), pointer  :: b2sINF ! appartenance a la surface infﾃｩrieure !*!
+  integer, dimension(:), pointer  :: b2sSUP ! appartenance a la surface supﾃｩrieure !*!
   logical      :: flag_fin
   real(double) :: ef_strain
   logical      :: ldecal_bc
   real(double) :: decal_bc		! pour les dislocations vis - decalage selon X
-				! pour des potentiels EAM (implementﾃｩ pour calfoeamtabvois)
+				! pour des potentiels EAM (implemente pour calfoeamtabvois)
   integer      :: itespebcout   ! frequence a laquelle on genere des .cfg (films mvt de dislo)
   real(double) :: inXMdis1
   real(double) :: inXMdis2
-  logical      :: ldyn2D        ! .true. ->  dynamique 2D   ;    .false. ->  bords libres (par dﾃｩfaut)
+  logical      :: ldyn2D        ! .true. ->  dynamique 2D   ;    .false. ->  bords libres (par defaut)
 
 ! cas ibound = 1 :
   real(double):: user_strainrate   !*strain rate choosen by the user	     !*!
@@ -343,8 +347,8 @@ module gen_com_m
   real(double):: user_stress_yz	   !*stress applied on the cryst. surface	     !*!
 
 ! cas ibound = 3 : 
- !real(double):: user_strainrate   !*est aussi nﾃｩcessaire		     !*!
- !real(double):: user_strainrate   !*est aussi nﾃｩcessaire		     !*!
+ !real(double):: user_strainrate   !*est aussi necessaire		     !*!
+ !real(double):: user_strainrate   !*est aussi necessaire		     !*!
   real(double):: currentstress     ! stress applied - corrected at each time step !*!
   real(double):: fdbkcoef	   !*coef de la boucle de feedback de correct0 de currentstress
   real(double):: forceatsup        ! force on sup. surface atom (stress controlled) !*!
@@ -361,13 +365,14 @@ module gen_com_m
 
 
 !ZBL 
-  real(double)::potiszbl ! energie pot de ZBl quand ajoute ind����ｽpendemment
-
+  real(double)::potiszbl ! energie pot de ZBl quand ajoute independement 
+  
   logical :: l2T
  real(double), dimension (:),allocatable ::elossCel
 character (len=15):: units_lammps
-real(double)::rskin,position_conversion_lammps, energy_conversion_lammps, pressure_conversion_lammps ! épaisseur pour lammps (equivalent rvois-rue)
+real(double)::rskin,position_conversion_lammps, energy_conversion_lammps, pressure_conversion_lammps ! epaisseur pour lammps (equivalent rvois-rue)
  real(kind=8) , allocatable, dimension(:)  ::  posa, forca
  logical :: firsttime_lammps
  integer:: iverbose ! verbosity (0 = pas de détails, défaut, 1 = détails)
+
 end module gen_com_m

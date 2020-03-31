@@ -1,4 +1,5 @@
 module sic
+    use extension_mod    
 
 
 contains

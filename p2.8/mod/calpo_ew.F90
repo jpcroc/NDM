@@ -1,3 +1,7 @@
+module calpo_ew_mod
+        use moduli_mod
+        implicit none
+        contains
 subroutine calpo_ew
   !-----------------------------------------------
   !   M o d u l e s
@@ -5,6 +9,7 @@ subroutine calpo_ew
   USE T_kind_param_m
   use gen_com_m
   use var_pot
+  use dynallocPME
   implicit none
   real(double) :: pi2, fact, fact1, fact2, hk2, ex, ex1, ex2 ,hbv(3)
   integer ::nb1,nb2,nb3
@@ -64,3 +69,4 @@ subroutine calpo_ew
 
   endif !Fin du cas iewald=2
 end subroutine calpo_ew
+end module
