@@ -18,7 +18,7 @@ subroutine test_position_He (xp, at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,ns
   use mod_mpi
 #endif
   implicit none
-  !variables passées
+  !variables passes
   INTEGER ityp(imm),rang,imm,im,nstepdes
   real(double) :: xp(3,imm), H
   real(double) :: at(3,3) ! valeur des 3 vecteurs definissant la taille de laboite

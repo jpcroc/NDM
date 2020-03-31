@@ -31,6 +31,8 @@ subroutine loopcalcphonon(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
   integer :: i, iti,ic,is,j,u,v,icj,i3m
+  real(double) :: unitE,unitP
+  character*4 :: cunitE, cunitP
   real(double) :: epot0,deltaE,fps(3,imm)
 
   real(double),pointer :: matfor(:,:),fp0(:,:),d(:),d2(:),matforsym(:,:)
@@ -41,7 +43,7 @@ subroutine loopcalcphonon(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   ! construit la matrice dynamique par calcul des forces pour de petits deplacements des atomes autour de positions
   ! d'equilibre. 
   ! diagonalise cette matrice. La diagonalisation sort les carre des pulsations
-  ! les frequences sont les racines carrées divisées par 2pi des valeurs propres
+  ! les frequences sont les racines carres divisees par 2pi des valeurs propres
   !
   !
   !
@@ -59,7 +61,7 @@ subroutine loopcalcphonon(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 
   ! MPI
-  if (rang==0) write (6, *) '***** calcul des fréquences de phonons  ****'
+  if (rang==0) write (6, *) '***** calcul des frequences de phonons  ****'
 
   imd = im
   nad(:ntyp) = na(:ntyp)
@@ -74,7 +76,7 @@ subroutine loopcalcphonon(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 
   ! appel de la routine generale des forces
-  !position de départ
+  !position de depart
   vp=0.0
   !      do i=1,im
   !         write(6,*)i,xp(1,i),xp(2,i),xp(3,i)
@@ -136,13 +138,13 @@ subroutine loopcalcphonon(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   call tqli(D,D2,i3m,i3m,matforsym)
 
   call EIGSRT(D,matforsym,i3m,i3m)
-  write(6,*)'carré des pulsations'
+  write(6,*)'carre des pulsations'
   do i=1,i3m
      write(6,*)i,d(i)
   end do
   write(6,*)
   !         pi=3.141592654d0
-  write(6,*)'fréquences'
+  write(6,*)'frequences'
   do i=1,i3m
      write(6,*)sqrt(d(i))/(2.*pi),' 1'
   end do

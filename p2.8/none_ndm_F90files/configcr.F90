@@ -1,6 +1,10 @@
 !********************************************************************
 !             CONSTRUCTION DE LA BOITE DE SIMULATION
 !********************************************************************
+module configcr_mod
+  use posana, ONLY : imcr
+        implicit none
+        contains
 
 subroutine configcr(xpcr,ityp,lrescale,itypcr)
   !-----------------------------------------------
@@ -8,7 +12,7 @@ subroutine configcr(xpcr,ityp,lrescale,itypcr)
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
-  use posana, ONLY : imcr
+  !use posana, ONLY : imcr
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -173,3 +177,4 @@ end subroutine configcr
 
 
 
+end module
