@@ -1,5 +1,8 @@
-module mod_mpi
+
+#ifdef PARA
+module mod_para
   use T_kind_param_m, ONLY:  double
+  !use mpi
   !  use T_kind_param_mpi_m
   implicit none
 
@@ -908,7 +911,6 @@ contains
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
-
     implicit none
 
     integer :: nb_at_recv
@@ -921,6 +923,7 @@ contains
     integer :: ind_loc,ftm_at
 
     real(double) :: tabdensity(imm)
+    real(double) :: temps_exe
 
     ! On place le pointeur de stockage des atomes fantomes a la suite des 
     ! atomes locaux
@@ -949,7 +952,19 @@ contains
           enddo
           if (ind_loc==-1) then
              print *,myid,'!!!Pb!!! Reception du proc',proc_source,'d''un atome fantome inexistant'
-             call arret_ndm
+             temps_exe = MPI_Wtime() - temps_deb
+             if (myid==0) then
+                print *, 'Temps d''execution : ', temps_exe
+                print *, 'Temps d''init      : ', temps_init
+                print *, 'Temps d''input     : ', temps_input
+                print *, 'Temps de config   : ', temps_config
+                print *, 'Temps d''initspeed : ', temps_initspeed
+                print *, 'Temps para estime : ', temps_para
+                print *, 'Temps dmloop : ', temps_dmloop
+             endif
+             call MPI_FINALIZE(ierr)
+             stop 
+             !call arret_ndm
           endif
 
           ! On affecte a cet atome fantome la valeur de tabdensity recue
@@ -1074,7 +1089,6 @@ contains
     USE T_kind_param_m, ONLY:  double
     use gen_com_m
     use tab_imm_m
-
     implicit none
 
     integer :: nb_at_recv
@@ -1084,6 +1098,7 @@ contains
     integer :: ind_recv
     integer :: nb_at_max,nb_at,koo
     integer :: ind_loc,i_at_loc,ind_glob
+    real(double) :: temps_exe
 
  
     ! On boucle sur les processeurs voisins
@@ -1111,7 +1126,20 @@ contains
           enddo
           if (ind_loc==-1) then
              print *,myid,'!!!Pb!!! Reception du proc',proc_source,'d''un atome non local'
-             call arret_ndm
+             temps_exe = MPI_Wtime() - temps_deb
+             if (myid==0) then
+                print *, 'Temps d''execution : ', temps_exe
+                print *, 'Temps d''init      : ', temps_init
+                print *, 'Temps d''input     : ', temps_input
+                print *, 'Temps de config   : ', temps_config
+                print *, 'Temps d''initspeed : ', temps_initspeed
+                print *, 'Temps para estime : ', temps_para
+                print *, 'Temps dmloop : ', temps_dmloop
+             endif
+             call MPI_FINALIZE(ierr)
+             stop 
+             stop
+             !call arret_ndm
           endif
 
           ! On ajoute a cet atome local la valeur de fp recue
@@ -1125,4 +1153,5 @@ contains
   end subroutine reception_fp_frontieres
 
 
-end module mod_mpi
+end module mod_para
+#endif

@@ -1,6 +1,10 @@
+#ifdef PARA
+module init_mpi_mod
+        implicit none
+        contains
 subroutine init_mpi()
 
-  use mod_mpi
+  use mod_para
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM
@@ -22,6 +26,7 @@ subroutine init_mpi()
   temps_deb = MPI_Wtime()
 
 end subroutine init_mpi
+end module
 
-
+#endif
 

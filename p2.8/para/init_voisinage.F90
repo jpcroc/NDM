@@ -1,10 +1,14 @@
+#ifdef PARA
+module init_vois_mod
+        implicit none
+        contains
 subroutine init_voisinage
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   use gen_com_m
   use tab_imm_m
-  use mod_mpi
+  use mod_para
   implicit none
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
@@ -120,3 +124,5 @@ subroutine init_voisinage
   enddo
 
 end subroutine init_voisinage
+end module
+#endif
