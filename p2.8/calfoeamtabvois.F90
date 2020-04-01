@@ -1,3 +1,8 @@
+module calfoeamtabvois_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 !----------------------------------------------------------------------
 SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
   !tentative de calfoeam avec une seule grande boucle sur i
@@ -309,3 +314,4 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
 !  write(6,*)'eamtabvois'
   return
 end SUBROUTINE calfoeamtabvois
+end module

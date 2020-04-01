@@ -1,3 +1,11 @@
+module caltabt_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+#ifdef PARA
+        use mod_para
+#endif      
+        implicit none
+        contains
 ! ******************************************************************
 subroutine caltabt
   !-----------------------------------------------
@@ -6,9 +14,6 @@ subroutine caltabt
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
-#endif      
   !          Version du 01 fevrier 2001
   ! ******************************************************************
 
@@ -32,7 +37,8 @@ subroutine caltabt
   !
   ! --------- Initialisation --------------
   !
-  nato(:noxyz) = 0
+!   write(6,*)'caltabt',it
+   nato(:noxyz) = 0
   last(natperc,:noxyz) = 0
 
 !     do i = 1, im
@@ -103,10 +109,15 @@ subroutine caltabt
      !debug            call cryst_to_cart (imm, xpnp, at, 1)  !cryst vers cart
 
 
-
-     !         do i=1,noxyz
-     !            write(6,*) i, nato(i) 
-     !         end do
+!        open(unit=809, file='cell.csv', form='formatted', &
+!             status='unknown')
+!    do i=1,im_glob
+!       write(809,'(A,3I6,3G22.13)')'Cel ', it,i,ielat(i),xp(:,i)
+!       write(809,'(A,3I6,3G22.13)')'Cel ', it,i,ielat(i),xpnp(:,i)
+!    end do
+ !             do i=1,noxyz
+ !                write(6,*) i, nato(i) 
+ !             end do
      DEALLOCATE(xpnp)   ! MODIF CLOUET
   endif
 
@@ -116,3 +127,4 @@ subroutine caltabt
 
   return
 end subroutine caltabt
+end module

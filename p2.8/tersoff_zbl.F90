@@ -1,3 +1,8 @@
+module tersoff_zbl_mod
+        use zieg2_mod
+        use spline_mod
+        implicit none
+        contains
 subroutine tersoff_zbl
   !-----------------------------------------------
   !   M o d u l e s
@@ -14,33 +19,33 @@ subroutine tersoff_zbl
 
 
 
-interface
-
-subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
-  !-----------------------------------------------
-  !   M o d u l e s
-  !-----------------------------------------------
-  USE T_kind_param_m, ONLY:  double
-
-  implicit none
-  !-----------------------------------------------
-  !   D u m m y   A r g u m e n t s
-  !-----------------------------------------------
-  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
-  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
-  integer , intent(in) :: ngrid,ipotentiel
-  integer  :: ntyp
-  integer  :: npair
-  real(double) , intent(in) :: csive
-  real(double)  :: auxe= 23.06134575D-20 
-  real(double) , intent(inout) :: pot(4,npair,0:ngrid+1),pot_d(4,npair,0:ngrid+1)
-  real(double)  :: catom(ntyp)
-  real(double)  :: roff1(npair)
-  real(double)  :: roff2(npair)
-  logical :: lu_roff_pair(npair)
-
-end subroutine zieg2
-end interface
+!interface
+!
+!subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
+!  !-----------------------------------------------
+!  !   M o d u l e s
+!  !-----------------------------------------------
+!  USE T_kind_param_m, ONLY:  double
+!
+!  implicit none
+!  !-----------------------------------------------
+!  !   D u m m y   A r g u m e n t s
+!  !-----------------------------------------------
+!  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
+!  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+!  integer , intent(in) :: ngrid,ipotentiel
+!  integer  :: ntyp
+!  integer  :: npair
+!  real(double) , intent(in) :: csive
+!  real(double)  :: auxe= 23.06134575D-20 
+!  real(double) , intent(inout) :: pot(4,npair,0:ngrid+1),pot_d(4,npair,0:ngrid+1)
+!  real(double)  :: catom(ntyp)
+!  real(double)  :: roff1(npair)
+!  real(double)  :: roff2(npair)
+!  logical :: lu_roff_pair(npair)
+!
+!end subroutine zieg2
+!end interface
 
 
  write(6,*)'AJOUT ZBK a TERSOFF roff',roff1,roff2,csive
@@ -80,3 +85,4 @@ end interface
 end do
 
 end subroutine tersoff_zbl
+end module

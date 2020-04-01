@@ -3,7 +3,9 @@
 !      Calcul du potentiel repulsif a courte distance
 !           de type : Vrep=V0+(rij-rc)**n
 !  **********************************************************
-
+module potrep_mod
+     implicit none
+     contains
 
 subroutine potrep(csive,r0rep,V0rep,ngrid,ntyp,npair)
   !----------------------------------------------
@@ -61,3 +63,4 @@ subroutine potrep(csive,r0rep,V0rep,ngrid,ntyp,npair)
   enddo
   return
 end subroutine potrep
+end module

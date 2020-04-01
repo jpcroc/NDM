@@ -9,8 +9,9 @@ module suivinonpbc
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+  use arret_ndm_mod
+#ifdef PARA
+  use mod_para
 #endif
 
   
@@ -50,7 +51,7 @@ subroutine sauvepositionnonpbc(itapp)
   integer ::  formatsauvT,lenfn2,lucoutnonpbcxp
   character :: extension*9
 
-#if(PARA)
+#ifdef PARA
   integer,dimension(:),pointer     :: ibuffer
   real(double), dimension(:,:),pointer   :: buffer
   integer,      dimension(0:nprocs-1)   :: im_loc
@@ -99,7 +100,7 @@ subroutine sauvepositionnonpbc(itapp)
          write (lucoutnonpbcxp) at
          write (lucoutnonpbcxp) im_glob
 
-#if(PARA)
+#ifdef PARA
      im_loc(0)=im
      ibuffer=0
      ibuffer(1:im)  = ityp(1:im)
@@ -143,7 +144,7 @@ subroutine sauvepositionnonpbc(itapp)
         call arret_ndm
     endif
 
-#if(PARA)
+#ifdef PARA
      call MPI_SEND(im,          1,   MPI_INTEGER,              0,12021,MPI_COMM_WORLD,ierr)
      call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,              0,12022,MPI_COMM_WORLD,ierr)
      call MPI_SEND(xpnonpbc(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,12023,MPI_COMM_WORLD,ierr)

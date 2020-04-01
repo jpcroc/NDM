@@ -1,11 +1,17 @@
-
+module initspeed_mod
+        use Mat_utils_mod, only : MatInv
+        use tempinst_mod
+        use calctemp_mod
+        use arret_ndm_mod
+        use period_mod
+        implicit none
+        contains
 ! *********************************************************************
 subroutine bruit_xp 
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use var_pot
   use tab_imm_m
-
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -55,9 +61,8 @@ subroutine bruit_xp
     use gen_com_m
     use var_pot
     use tab_imm_m
-    use mat_util
-#if(PARA)
-    use mod_mpi
+#ifdef PARA
+    use mod_para
 #endif
     ! *********************************************************************
 
@@ -96,7 +101,7 @@ subroutine bruit_xp
     integer::iti
     real(double)::sd,grnd,theta,fhi ! ,decx(2)
 
-#if(PARA)
+#ifdef PARA
     real(double) :: kinx_glob
     real(double), dimension(3)   :: scom_glob, pav_glob
     real(double), dimension(3,3) :: ainer_glob
@@ -108,9 +113,10 @@ subroutine bruit_xp
     !-----------------------------------------------
     !  external fucntions
     !-----------------------------------------------
-    real(double) :: tempinst
+    !real(double) :: tempinst ! in module tempinst_mod
 
-    !  if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed
+!    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
+    
     select case (dmtype)
     case(3,30,5,11,7)
        vp = 0.0
@@ -120,7 +126,7 @@ subroutine bruit_xp
           return
        else
           if (mdcg_noise==0) then 
-             vp=0.0
+             vp=0.0;          xpp=xp
              return
           else
              vp=0.0 
@@ -261,7 +267,7 @@ subroutine bruit_xp
                 !write(*,*) ic, i,kinx(ic),  cm(ityp(i)), vp(ic,i)
              end do
              ka=0.5*bk*tinit 
-#if(PARA)
+#ifdef PARA
              call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
              kinx(ic)=kinx_glob
 #endif          
@@ -285,7 +291,7 @@ subroutine bruit_xp
              enddo
           enddo
 
-#if(PARA)
+#ifdef PARA
           call MPI_ALLREDUCE(totmass,  totmass_glob,  1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
           call MPI_ALLREDUCE(scom(1:3),scom_glob(1:3),3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
           call MPI_ALLREDUCE(pav(1:3), pav_glob(1:3), 3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -326,7 +332,7 @@ subroutine bruit_xp
                    kinx(ic)=kinx(ic)+0.5*vp(ic,i)*vp(ic,i)*cm(ityp(i))/dfloat(im_glob)
                 end do
 
-#if(PARA)
+#ifdef PARA
                 call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
                 kinx(ic)=kinx_glob
 #endif          
@@ -385,7 +391,7 @@ subroutine bruit_xp
              ainer(1,3) = ainer(3,1)
              ainer(2,1) = ainer(1,2)
 
-#if(PARA)
+#ifdef PARA
              call MPI_ALLREDUCE(ainer(1:3,1:3), ainer_glob(1:3,1:3), 9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
              ainer = ainer_glob
              call MPI_ALLREDUCE(prx, prx_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -502,3 +508,4 @@ subroutine gaussianrand(gr)
 
   
 end subroutine  gaussianrand
+end module

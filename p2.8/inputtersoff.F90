@@ -1,3 +1,7 @@
+module inputtersoff_mod
+        use alloc_typ_mod
+        implicit none
+        contains
 subroutine inputtersoff
   ! NE PAS FAIRE DE MOYENNE POUR LES n,c ... etc
   use gen_com_m
@@ -177,3 +181,4 @@ subroutine inputtersoff
   write(6,*)
 
 end subroutine inputtersoff
+end module

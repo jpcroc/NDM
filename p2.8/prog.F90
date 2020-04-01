@@ -1,3 +1,20 @@
+module prog_mod
+        use init_mod
+        use calfo_mod
+        use analyse_mod
+        use controle_mod
+        use endrun_mod
+        use neb_mod
+        use dmloop_lpr_mod
+        use loopforcetest_mod
+        use gcII_mod
+        use dmloop_vverlet_mod
+        use dmloop_mod
+#if defined ML || defined PARAML    
+        use ml_main_mod
+#endif 
+        implicit none
+        contains
 subroutine prog
   !-----------------------------------------------
   !   M o d u l e s
@@ -6,11 +23,15 @@ subroutine prog
   use gen_com_m
   use tab_imm_m
 
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   implicit none
+             character :: extension*2
+    integer::lenfn2,i,ko
+
+
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e rs
   !-----------------------------------------------
@@ -24,27 +45,33 @@ subroutine prog
   ! Allocation des tableaux dimensionnes sur le nombre d'atomes
   call alloc_all_tab_imm(imm) 
 
-#if(PARA)
+#ifdef PARA
   temps_init_deb = MPI_Wtime()
 #endif
   ! Initilisation
   call init
-#if(PARA)
+#ifdef PARA
   temps_init=MPI_Wtime()-temps_init_deb
 #endif
 
-#if(DECOUP)
+#ifdef DECOUP
   ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
   return
 #endif
-#if(PARA)
+
+#ifdef PARA
   ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-!	if (rang==0) write(6,*)'PARA-T avant MAJ'
+	if (rang==0) write(6,*)'PARA-T avant MAJ'
+
+ 
   call maj_atomes_frt_ftm
+	if (rang==0) write(6,*)'PARA-T apres MAJ'
 
 
+
+ 
   ! Affichage du temps d'initialisation
-#if(PARA)
+#ifdef PARA
   if (myid==0) then
      print *, 'Temps d''initialisation : ', MPI_Wtime() - temps_deb
   endif
@@ -52,7 +79,7 @@ subroutine prog
 
 #endif
 
-#if(PARA)
+#ifdef PARA
   temps_dmloop_deb = MPI_Wtime()
 #endif
   ! Actuellement uniquement le cas dmloop_vverlet est traite en parallele
@@ -60,52 +87,56 @@ subroutine prog
 
   select case (dmtype) 
   case(5)
-   if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   case(4,10)
        call dmloop_vverlet 
   case(8)
        call dmloop_lpr 
   case (1)
-     if (.not.parallele)  call dmloop 
+       if (.not.parallele)  call dmloop 
   case (2)
-     if (.not.parallele)  then
-       call dmloop
-   else
-      if(rang==0) write (6,*)'DMTYPE+PARA=DMLOOP_VVERLET_+OPTION'
-      call dmloop_vverlet (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-   endif
-  case (3,30) 
-    if (.not.parallele)   call gcII(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       if (.not.parallele)  then
+          call dmloop
+       else
+#ifdef PARA
+          if(rang==0) write (6,*)'DMTYPE+PARA=DMLOOP_VVERLET_+OPTION'
+          call dmloop_vverlet ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+#endif
+       endif
+    case (3,30)
+!    stop
+
+    call gcII ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   case (9)
-     if (.not.parallele)   call neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+     if (.not.parallele)   call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   case(11)
      if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
-     CALL calfo()
-     CALL analyse()
-     CALL controle()
-     CALL endrun()
+     call calfo()
+     call analyse()
+     call controle()
+     call endrun()
 
-#if(ART)    
+#ifdef ART    
      case (12) 
           call art90
 #endif
 
-#if(SUNDAE)    
+#ifdef SUNDAE    
      case (16) 
           call sundae
 #endif
 
-#if(MAB)    
+#ifdef MAB    
      case (17) 
           call mab
 #endif
 
-#if(PHONDY | PARAPH)    
+#if defined PHONDY || defined PARAPH    
      case (7) 
           call phondy
 #endif
 
-#if(ML || PARAML)    
+#if defined ML || defined PARAML    
      case (18) 
           call ml
 #endif
@@ -116,3 +147,4 @@ subroutine prog
 
 
 end subroutine prog
+end module

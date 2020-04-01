@@ -2,7 +2,9 @@
 !      Calcul du potentiel de Ziegler-Biersack-Littmark
 !           
 !  **********************************************************
-
+module zieg2_mod
+        implicit none 
+        contains
 
 subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
   !-----------------------------------------------
@@ -38,35 +40,35 @@ subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_rof
   real(double), dimension(npair) :: decal
   !-----------------------------------------------
 
-  interface
-subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
-   
-  !-----------------------------------------------
-  !   M o d u l e s
-  !-----------------------------------------------
-  USE T_kind_param_m, ONLY:  double
-  implicit none
-  !-----------------------------------------------
-  !   D u m m y   A r g u m e n t s
-  !-----------------------------------------------
-  integer , intent(in) :: ntyp,ipotentiel
-  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
-  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
-
-  integer , intent(in) :: npair
-  real(double)  :: auxe
-  real(double) , intent(inout) :: zie(npair,0:5)
-  real(double) , intent(inout) :: decal(npair)
-  real(double) , intent(in) :: catom(ntyp)
-  real(double) , intent(in) :: roff1(npair)
-  real(double) , intent(in) :: roff2(npair)
-  integer :: ngrid
-  real(double) , intent(inout) :: pot(4,npair,0:ngrid+1)
-  logical :: lu_roff_pair(npair)
-
-  real(double)::csive
-end subroutine zieg
-end interface
+!  interface
+!subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
+!   
+!  !-----------------------------------------------
+!  !   M o d u l e s
+!  !-----------------------------------------------
+!  USE T_kind_param_m, ONLY:  double
+!  implicit none
+!  !-----------------------------------------------
+!  !   D u m m y   A r g u m e n t s
+!  !-----------------------------------------------
+!  integer , intent(in) :: ntyp,ipotentiel
+!  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+!  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
+!
+!  integer , intent(in) :: npair
+!  real(double)  :: auxe
+!  real(double) , intent(inout) :: zie(npair,0:5)
+!  real(double) , intent(inout) :: decal(npair)
+!  real(double) , intent(in) :: catom(ntyp)
+!  real(double) , intent(in) :: roff1(npair)
+!  real(double) , intent(in) :: roff2(npair)
+!  integer :: ngrid
+!  real(double) , intent(inout) :: pot(4,npair,0:ngrid+1)
+!  logical :: lu_roff_pair(npair)
+!
+!  real(double)::csive
+!end subroutine zieg
+!end interface
 
 
   data rbohr/ 0.529D-8/
@@ -212,7 +214,7 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
         b4 = 0.2016/a0
 
         aux2 = 9.D18*1.602D-19**2*catom(i1)*catom(i2)
-        !potentiel de Ziegler à roff1
+        !potentiel de Ziegler a roff1
         r = roff1(l)
         r2 = roff12
         r3 = roff13
@@ -225,7 +227,7 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
         vdd1 = 2.*aux2/r3*som-2.*aux3/r+aux2/r*(c1*b1*b1*exp((-b1*r))+c2*&
              b2*b2*exp((-b2*r))+c3*b3*b3*exp((-b3*r))+c4*b4*b4*exp((-b4*r)&
              ))                                !Derivee seconde de Ziegler
-        !potentiel de Ziegler à mi-chemin de roff1 et roff2
+        !potentiel de Ziegler a mi-chemin de roff1 et roff2
         r = rmid
         som = c1*exp((-b1*r))+c2*exp((-b2*r))+c3*exp((-b3*r))+c4*exp((-&
              b4*r))
@@ -234,7 +236,7 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
         vd1mid = (-aux2/r/r*som)+aux2/r*((-c1*exp((-b1*r))*b1)-c2*exp((-&
              b2*r))*b2-c3*exp((-b3*r))*b3-c4*exp((-b4*r))*b4)
 
-        !potentiel de répulsion standard à roff2
+        !potentiel de répulsion standarda roff2
         r = roff2(l)
         sk = r/csive
         k=int(sk)
@@ -243,7 +245,7 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
         Nvd2=pot(2,l,k)+2.0*pot(3,l,k)*drk+3.0*pot(4,l,k)*drk**2
         Nvdd2=2.0*pot(3,l,k)+6.0*pot(4,l,k)*drk
         v2=Nv2 ; vd2=Nvd2 ; vdd2=Nvdd2
-        !potentiel de répulsion standard à mi-chemin de roff1 et roff2
+        !potentiel de répulsion standarda mi-chemin de roff1 et roff2
         r  = rmid
 
         k=Int(r/csive)
@@ -298,4 +300,4 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
   end do
   return
 end subroutine zieg
-
+end module

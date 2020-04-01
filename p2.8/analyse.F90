@@ -1,3 +1,21 @@
+module analyse_mod
+        use Mat_utils_mod, only : MatInv
+        use spebc_fin_mod
+        use adf_mod
+        use calctemp_mod
+        use calcdepla_mod
+        use calcdepla2_mod
+        use calccoordo_mod
+        use calcdigr_mod
+        use calcangle_mod
+        use bondval_mod
+        use rasmol_mod
+        use rdf_mod
+        use prtplz_mod
+        
+
+        implicit none
+        contains
 ! ************************************************
 !         Sous-programme analyse.f
 ! ************************************************
@@ -9,8 +27,8 @@ subroutine analyse
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   USE fcc_module
   USE cfg_module
@@ -78,6 +96,20 @@ subroutine analyse
      CmintP2=100000
      CmaxtP2=-100000
   end if
+  if(lEev) then
+     unitE=erg2eV
+     cunitE='  eV'
+  else
+     unitE=1.0
+     cunitE=' erg'
+  end if
+  if(lPkbar) then
+     unitP=1.0d-9
+     cunitP='kbar'
+  else
+     unitP=1.0
+     cunitP='d/cm2'
+  endif
 
   ! calcul de la temperature
   ! calcul de la temperature
@@ -787,3 +819,4 @@ subroutine analyse
 
   return
 end subroutine analyse
+end module

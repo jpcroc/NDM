@@ -1,4 +1,9 @@
 ! *****************************************************************
+module readdm_mod
+        implicit none
+        contains
+
+
 subroutine readdm
   !-----------------------------------------------
   !   M o d u l e s
@@ -8,8 +13,10 @@ subroutine readdm
   use var_pot
   use jqmod
   use eloss, only : tcelec,ecelec,ibrake,ngrdel
-#if(PARA)
-  use mod_mpi
+  use endrun_mod
+  use arret_ndm_mod
+#ifdef PARA
+  use mod_para
 #endif
  
   ! *****************************************************************
@@ -26,7 +33,7 @@ subroutine readdm
   !-----------------------------------------------
   integer :: ludin, lufilm, lufilmpaf,  i,itean, ic, iThermo,itecompcr,ipotcont
   character :: fnamdin*80
-  logical :: lginread,ltriclin,tpot
+  logical :: lginread,ltriclin,lpcon,lfissure,tpot
   logical :: lxFrozen,lyFrozen,lzFrozen, lxyFrozen, lxzFrozen, lyzFrozen, lxyzFrozen
   !  integer :: imFree     ! nb d'atomes libres
   !-----------------------------------------------
@@ -37,10 +44,10 @@ subroutine readdm
 
   namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
        tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
-       tinit, tcooling, tfcou, epcou, lcasca, itmax,nitmax, itean, itespebcout,  &
+       tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, itespebcout,  &
        itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
-       lrestart, lPathFromGin,  ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
-       ltranche, rulayer,iterasmol,  lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
+       lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
+       ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
        iteangle, ipotentiel, lpotentiel, itesauvposition, itesauvforce, lfilmext, tdepla2, &
        lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
        maxorder,  lalea, rsep, &
@@ -56,7 +63,7 @@ subroutine readdm
        eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
        mdcg_noise, lforcetabulate,ivisu,ibound,user_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
        tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-       itesauvinter,units_lammps,iverbose
+       itesauvinter,units_lammps,lWgin
 
 
   !
@@ -101,12 +108,14 @@ subroutine readdm
   tfcou = -1.0                !temperature of the border of the box
   epcou = -1.0                !width of the border of the box
   lcasca = .FALSE.            !cascade Y/N
+  lfissure = .FALSE.          !crack Y/N
   itmax = -1                  !maximum number of iterations
   nitmax = -1                 !maximum number of new iterations after restart
   itederive = -1              !"derive" correction
-  igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 modification de cin puis stop
+  igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 cintogin ; +3 modification de cin puis stop
   lrestart = .FALSE.          !if T : restarting from an interrupt job
   lPathFromGin = .FALSE.      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
+  tgc = 0.0                   ! threshold for CG calculation
   ltabvois = .FALSE.          ! methode de la table des voisins
   lconstrtot=.FALSE.           !!construction de la table des voisins T=double boucle F=via cel.
   rvois = 0.0                 ! rayon de la table des voisins
@@ -137,6 +146,7 @@ subroutine readdm
   ! reference, ie etat pour laquelle la
   ! contrainte est nulle)
   !=== Fin des modifications ================
+  lpcon = .FALSE.             !algorithm a pression constante a la hache
   lpcon2 = .FALSE.            !amortissement de la deformation de la boite
   lpconxyz = .FALSE.          !the relaxation are allowed only along the X, Y and Z axis
 
@@ -331,7 +341,8 @@ subroutine readdm
   tsmin=2.0
 
   units_lammps='metal'
-  iverbose =0
+  lWgin=.false. ! =true écrit un fichier .newgin à la fin
+
   
  if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -349,7 +360,7 @@ subroutine readdm
 
 
   imm_glob = imm
-#if(PARA)
+#ifdef PARA
   ! En parallele, on initialise le nombre maximum d'atomes d'un
   ! processus au nombre d'atomes locaux. Plus tard ce nombre sera
   ! complete par le nombre maximal d'atomes fantomes
@@ -370,6 +381,21 @@ subroutine readdm
   endif                                      ! fin rang=0
 
 
+  if(lpcon) then
+     if (rang==0) write(6,*)
+     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
+     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
+     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
+     if (rang==0) write(6,*)
+     if (rang==0) write(6,*)'lpcon n_existe plusest historique utiliser plutot lpr pour un Parinnello Rahman propre '
+     if (rang==0) write(6,*)
+     if (rang==0) write(6,*)
+     if (rang==0) write(6,*)
+     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
+     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
+     if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
+     call arret_ndm
+  end if
 
   if(.not.lperiod) then
      if (rang==0) write(6,*)
@@ -451,16 +477,16 @@ subroutine readdm
         if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
      end if
      select case(dmtype)
-     case(2,4)
+     case(2,4,3)
      case default 
-        if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=4'
+        if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=2,3,4'
         if (rang==0) write(*,*) 'Stop in readdm'
         call arret_ndm
      end select
   end if
 
 
-#if(DECOUP)
+#ifdef DECOUP
   ltabvois=.false.;rvois=0.
 #endif
 
@@ -840,7 +866,7 @@ subroutine readdm
   if (tcooling > 0) lastcool = 0.0
 
   if(dilat(1).ne.0.0) then
-     if(igen.ne.1) then
+     if(igen.lt.1) then
         if (rang==0) write (6,*) rang,'dilat<>0 et igen<>1 stop'
         call arret_ndm
      end if
@@ -857,7 +883,7 @@ subroutine readdm
      end if
   end if
   if (rang==0) write (6, *)
-  if (rang==0) write (6, '(a)') ' -------- caracteristiques du run DM--------'
+  if (rang==0) write (6, '(a,I2)') ' -------- caracteristiques du run DM--------', dmtype
 
   select case (dmtype)
   case (1)
@@ -890,26 +916,26 @@ subroutine readdm
   case (11)
      if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
      if (rang==0) write (6,*)
-#if(ART)    
+#ifdef ART    
   case (12)
      if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
      if (rang==0) write (6,'(a)') '|---------ART nouveau by N MOUSSEAU.---------------|'
      if (rang==0) write (6,'(a)') '|======== colored by Cosmin Marinica!==============|'
 #endif
-#if(SUNDAE)    
+#ifdef SUNDAE    
   case (16)
      if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
      if (rang==0) write (6,'(a)') '|==================================================|'
 #endif
-#if(MAB)    
+#ifdef MAB    
   case (17)
      if (rang==0) write (6,'(a)') '|=========       NDM + MAB          ===============|'
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
      if (rang==0) write (6,'(a)') '|==================================================|'
 #endif
 
-#if(ML)    
+#ifdef ML    
   case (18)
      if (rang==0) write (6,'(a)') '|=========       NDM + ML           ===============|'
      if (rang==0) write (6,'(a)') '|---------..........................---------------|'
@@ -954,6 +980,8 @@ subroutine readdm
   case (1)
      if (rang==0) write (6, *) 'run a partir du fichier .cin'
   case (2)
+     if (rang==0) write (6, *) 'écriture de gin à partir du fichier .cin'
+  case (3)
      if (rang==0) write (6, *) 'modification du fichier .cin'
   case default
      if (rang==0) write (6, *) 'mauvais igen=', igen
@@ -1352,7 +1380,6 @@ subroutine readdm
      unitE=1.0
      cunitE=' erg'
   end if
-
 #ifdef LAMMPS_VERSION
   if(trim(units_lammps)=='metal') then
      energy_conversion_lammps=1/erg2ev
@@ -1374,7 +1401,7 @@ subroutine readdm
      energy_conversion_lammps=27.211399/erg2ev
      position_conversion_lammps=A2cm*0.529177249
      pressure_conversion_lammps=10.
-  else 
+  else
      write(6,*)'error in units_lammps'
      stop
   end if
@@ -1384,4 +1411,4 @@ subroutine readdm
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
 end subroutine readdm
 
-
+end module

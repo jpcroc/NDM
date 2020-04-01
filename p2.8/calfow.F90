@@ -1,3 +1,8 @@
+module calfow_mod
+      use notperiod_mod
+      use cryst_to_cart_mod 
+      implicit none
+      contains
 ! ***************************************************************
       SUBROUTINE CALFOW(xp,xpp,vp,ax,fp,ielat,iwmax,ityp)
 !     calcule des forces a 2 corps dans le pot de Watanabe
@@ -40,8 +45,10 @@
       phu,ra,sz,&
       hbn2,&		!||g||**2
       dfp,fdp,&
+      c1p,c2p,c3p,&
+      c1abs,c2abs,c3abs,&
       potr,foncgz,dpotr,dfoncgz,dzdxpart   ! intermediaires de calcul 
-
+        
 ! spline
       real(double) dr,potpart,dz     
 
@@ -425,6 +432,6 @@
 
 
       return
-      end
+      end subroutine
 
-
+end module

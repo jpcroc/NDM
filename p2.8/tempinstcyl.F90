@@ -1,3 +1,6 @@
+module tempinstcyl_mod
+        implicit none
+        contains
 !c******************************************************************
 function tempinstcyl(vp,ityp)     !calcul de la T instant.
   !c******************************************************************
@@ -33,3 +36,4 @@ function tempinstcyl(vp,ityp)     !calcul de la T instant.
 
   return
 end function tempinstcyl
+end module

@@ -1,3 +1,7 @@
+module force_tersoff_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 ! ***************************************************************
 subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
   !-----------------------------------------------
@@ -434,4 +438,4 @@ subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
 
    end subroutine force_tersoff
 
-
+   end module

@@ -1,3 +1,9 @@
+module calfo2ctabvois_mod
+        use cryst_to_cart_mod
+        use calerf_mod
+        use potrep_mod
+        implicit none
+        contains
 ! **********************************************************
 subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
   !-----------------------------------------------
@@ -244,3 +250,4 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
 
   return
 end subroutine calfo2ctabvois
+end module

@@ -1,3 +1,6 @@
+module sauveforce_mod
+        implicit none
+        contains
 ! ********************************************************************
 subroutine sauveforce(itapp)
   !-----------------------------------------------
@@ -6,8 +9,10 @@ subroutine sauveforce(itapp)
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+  use arret_ndm_mod
+#ifdef PARA
+  use mod_para
+  !use mpi
 #endif
 
   !         version du 04 octobre 2000
@@ -32,7 +37,7 @@ subroutine sauveforce(itapp)
   integer :: lucoutfp, lutampon,formatsauvT,lenfn2
   character :: extension*9
   logical::lcrcin
-#if(PARA)
+#ifdef PARA
   integer,dimension(:),pointer     :: ibuffer
   real(double), dimension(:,:),pointer   :: buffer
   integer,      dimension(0:nprocs-1)   :: im_loc
@@ -93,7 +98,7 @@ subroutine sauveforce(itapp)
         write (lucoutfp) at
         write (lucoutfp) im_glob
 
-#if(PARA)
+#ifdef PARA
      im_loc(0)=im
      ibuffer=0
      ibuffer(1:im)  = ityp(1:im)
@@ -141,7 +146,7 @@ subroutine sauveforce(itapp)
         call arret_ndm
      endif
 
-#if(PARA)
+#ifdef PARA
      call MPI_SEND(im,          1,   MPI_INTEGER,        0,12001,MPI_COMM_WORLD,ierr)
      call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,12002,MPI_COMM_WORLD,ierr)
      call MPI_SEND(fp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,12003,MPI_COMM_WORLD,ierr)
@@ -170,4 +175,4 @@ subroutine sauveforce(itapp)
   if(rang==0)      close(lucoutfp)
   return
 end subroutine sauveforce
-
+end module

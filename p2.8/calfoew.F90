@@ -1,3 +1,8 @@
+module calfoew_mod
+        use epme_mod 
+        implicit none
+        contains
+
 ! ***************************************************************
 subroutine calfoew
   !-----------------------------------------------
@@ -7,8 +12,8 @@ subroutine calfoew
   use gen_com_m
   use var_pot
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   ! ewald reciproque
   ! **************************************************************
@@ -33,7 +38,7 @@ subroutine calfoew
   real(double) :: potisewg, hbn2, &
         hbv(3),phu
   real(double) :: scacos,scasin
-#if(PARA)
+#ifdef PARA
   real(double) :: scacos_glob, scasin_glob
 #endif
   real(double), dimension(3,3) :: sige
@@ -96,7 +101,7 @@ subroutine calfoew
                  scasin = scasin + sin(scalar(ii))*q(ityp(ii))
               enddo
 
-#if(PARA)
+#ifdef PARA
               ! Reduction MPI en interne de la boucle. Prefere au stockage dans des tableaux
               ! (pour scalar et hbv il faudrait ajouter des dimensions ncoux/y/z)
               call MPI_ALLREDUCE(scacos,scacos_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -182,4 +187,4 @@ end subroutine calfoew
 
 
 
-
+end module 

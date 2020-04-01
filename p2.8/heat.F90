@@ -1,3 +1,8 @@
+module heat_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 ! *************************************************************
 subroutine heat
   !-----------------------------------------------
@@ -75,4 +80,4 @@ subroutine heat
   return
 end subroutine heat
 
-
+end module

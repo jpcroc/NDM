@@ -1,4 +1,7 @@
-
+module init_spebc_mod
+        use writing_mod
+        implicit none
+        contains
 subroutine init_spebc
   !-----------------------------------------------
   !   M o d u l e s
@@ -463,4 +466,4 @@ subroutine initstress
 end subroutine initstress
 
 
-
+end module

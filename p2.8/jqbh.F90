@@ -1,10 +1,15 @@
+module jqbh_mod
+        use tempinst_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 subroutine jqbh (xp,xpp,vp,ityp)
 
   USE T_kind_param_m, ONLY:  double
   use gen_com_m
   use var_pot
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   implicit none
   !-----------------------------------------------
@@ -28,7 +33,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
   real(double),pointer,save :: temptr(:)
   real(double),pointer,save :: temptra(:)
   integer,pointer,save::nattr(:)
-#if(PARA) 
+#ifdef PARA 
   real(double) :: ecou1_tot,ecou2_tot
   integer::nacou1_tot,nacou2_tot
   real(double),pointer,save :: temptra_tot(:)
@@ -38,8 +43,9 @@ subroutine jqbh (xp,xpp,vp,ityp)
   character*15:: fnamtr
   character(len=2) :: extension
   logical :: loc(imm)
-  real(double):: dTtot,tempact,dTloc,tempinst,crulinv
-
+  !real(double):: dTtot,tempact,dTloc,tempinst,crulinv
+  real(double):: dTtot,tempact,dTloc,crulinv
+  ! tempinst does not need declaration because it is declared in tempinst_mod
   if(it.eq.1) then
      if(rang==0) write(6,*)'condutivité thermique méthode directe'
 
@@ -56,7 +62,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      allocate (temptr(ntr))
      allocate (temptra(ntr))
      allocate (nattr(ntr))
-#if (PARA)
+#ifdef PARA
      allocate (temptra_tot(ntr))
      allocate (nattr_tot(ntr))
 #endif
@@ -144,7 +150,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      if ((it==1).and.(rang==0)) write(6,*)'cinf,csup crul',cinf,csup,crul
 
 
-#if (PARA) 
+#ifdef PARA 
      do i = 1, im
         if(free(i))then
            if (xp(1,i)<cinf) then
@@ -196,7 +202,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      loc(:)=.false.
      call cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
 
-#if(PARA)
+#ifdef PARA
      do i = 1, im
         if (free(i))then
            if (xp(1,i).gt.csup)then
@@ -243,7 +249,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
      call cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
 
-#if(PARA)
+#ifdef PARA
      temptra(:)=0.
      nattr(:)=0
      do i=1,imd
@@ -458,4 +464,4 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
 end subroutine jqbh
 
-
+end module

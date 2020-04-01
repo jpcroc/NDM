@@ -1,3 +1,8 @@
+module calfo3c_mod
+        use cryst_to_cart_mod
+        use notperiod_mod
+        implicit none 
+        contains
 ! *****************************************************************
 subroutine calfo3c(xp,  vp,  fp, ielat, iwmax, ityp)
   !version du 20.11.2001
@@ -404,4 +409,4 @@ if(noxyz==1)  call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
   return
 end subroutine calfo3c
 
-
+end module

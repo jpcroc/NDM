@@ -1,3 +1,6 @@
+module correl_mod
+        implicit none
+        contains
 subroutine correlvp(xp, xpp, vp, ax, fp, ityp)
   use gen_com_m
   use var_pot
@@ -76,3 +79,4 @@ subroutine correlvp(xp, xpp, vp, ax, fp, ityp)
 
 
 end subroutine correlvp
+endmodule

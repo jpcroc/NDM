@@ -1,3 +1,12 @@
+module scalebox_mod
+        use dynalloccell
+        use neigcel_mod
+        use caltabt_mod
+        use period_mod
+        use recips_mod 
+        use caltabi_mod
+        implicit none
+        contains
 ! ******************************************************************
 subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
@@ -33,7 +42,7 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   integer :: i, nb1, nb2, nb3, i1, l,noxn,noyn,nozn
   real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1&
        , fact2, hk2, ex, ex1, ex2
-  real(double), external :: calcvol
+  !real(double), external :: calcvol
   !-----------------------------------------------
   !
   !
@@ -67,7 +76,8 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   noxn = int(zl(1)/rumax)
   noyn = int(zl(2)/rumax)
   nozn = int(zl(3)/rumax)
-#if(ML)
+  
+#ifdef ML
   if (noxn==0) noxn=1
   if (noyn==0) noyn=1
   if (nozn==0) nozn=1
@@ -150,3 +160,4 @@ subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
   return
 end subroutine scalebox
+end module

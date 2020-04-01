@@ -1,4 +1,6 @@
-
+module calctemp_mod
+        implicit none
+        contains
 ! *************************************************************
 subroutine calctemp(temptyp)
   !-----------------------------------------------
@@ -10,8 +12,8 @@ subroutine calctemp(temptyp)
   use tab_imm_m
   use elec_cell, only: ecell,i2T,nex,ney,nez,nox_2_nex
   use eloss, only : tcelec,ecelec
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   ! *************************************************************
@@ -37,7 +39,7 @@ subroutine calctemp(temptyp)
   integer::ixyze(3),nats
   ! ym      real(double), dimension(ntyp,nce) :: v2c
   !  real(double), dimension (:),allocatable ::tempc,tempcm
-#if(PARA)
+#ifdef PARA
   real(double), dimension(ntyp) :: v2_glob
   real(double), dimension(ntyp,3) :: vx2_glob
   real(double), dimension(noxyz)::tempc_tot
@@ -70,7 +72,7 @@ subroutine calctemp(temptyp)
      ecell(:,:,:)%nIon=0
      ecell(:,:,:)%nIonS=0
      nats=0
-#if(PARA)
+#ifdef PARA
      allocate(tempiontot(nex,ney,nez))
      allocate(niontot(nex,ney,nez))
 #endif
@@ -82,7 +84,7 @@ subroutine calctemp(temptyp)
 
      if (nato(ko)==0) cycle
 
-#if(PARA)
+#ifdef PARA
      if (proc_cell(ko).ne.myid) cycle
 
 #endif
@@ -132,7 +134,7 @@ subroutine calctemp(temptyp)
 
   end do
 
-#if(PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(v2,v2_glob,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   v2=v2_glob
   call MPI_ALLREDUCE(vx2(1:ntyp,1:3),vx2_glob(1:ntyp,1:3),ntyp*3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -190,7 +192,7 @@ subroutine calctemp(temptyp)
         temp = temp+temptyp(iti)*na(iti)
      end do
 
-#if(PARA)
+#ifdef PARA
      if( associated(free)) then
         temp = temp/float(imfree)
      else
@@ -229,3 +231,4 @@ subroutine calctemp(temptyp)
 
      return
    end subroutine calctemp
+   end module

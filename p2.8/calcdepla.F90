@@ -1,3 +1,7 @@
+module calcdepla_mod
+        use cryst_to_cart_mod
+        implicit none 
+        contains
 ! *******************************************************************
 subroutine calcdepla
   !-----------------------------------------------
@@ -7,8 +11,8 @@ subroutine calcdepla
   use gen_com_m
   use var_pot
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   ! pas de conditions periodiques sur xp-ax
   !       version du 09 decembre 2003
@@ -39,7 +43,7 @@ subroutine calcdepla
   character :: fnamtampon*10, fnamfilmext*20, extension*10
   real(double), dimension(3) :: xp_iko
   integer :: ityp_iko
-#if(PARA)
+#ifdef PARA
   integer,      allocatable :: ityp_depla(:)
   integer,      allocatable :: indic_depla(:)
   real(double), allocatable :: xp_depla(:,:)
@@ -105,7 +109,7 @@ subroutine calcdepla
 
 
 
-#if(PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(dr2,dr2_glob,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   dr2 = dr2_glob
   call MPI_ALLREDUCE(ndepla,ndepla_glob,ntyp,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -185,7 +189,7 @@ subroutine calcdepla
      write (lufilm, 114)  zls2(1)*1d8,zls2(2)*1d8,zls2(3)*1d8
      write (lufilm, 114) -zls2(1)*1d8,-zls2(2)*1d8,-zls2(3)*1d8
 
-#if(PARA)
+#ifdef PARA
      do i = 1, ndeplatot_glob
         !       write(6,*)i,indic(i)
         write (lufilm, 113) ty(ityp_depla(i)), xp_depla(1,i)*1D+8, xp_depla(2,&
@@ -203,7 +207,7 @@ end if
      ! Ecriture coordonnees du premier atome frappe toutes les itedepla
      ! iterations
      if (lcasca.and.lfilm) then
-#if(PARA)
+#ifdef PARA
         ! Recherche du proc possedant iko
         est_present=0
         do i=1, im
@@ -265,7 +269,7 @@ end if
         write (lufilmext, 114)  zls2(1)*1d8,zls2(2)*1d8,zls2(3)*1d8
         write (lufilmext, 114) -zls2(1)*1d8,-zls2(2)*1d8,-zls2(3)*1d8
 114     format('H ',1x,3(f10.4,1x))
-#if(PARA)
+#ifdef PARA
         do i = 1, ndeplatot_glob
            !     write(6,*)i,indic(i),iko
            if (indic_depla(i)==iko) then
@@ -299,7 +303,7 @@ end if
 112 format(a3,1x,3(f10.4,1x),1x,1x,i6,' PKA')
 113 format(a3,1x,3(f10.4,1x),1x,1x,i6,G12.4)
 
-#if(PARA)
+#ifdef PARA
   ! liberation des tableaux
   deallocate(ityp_depla)
   deallocate(xp_depla)
@@ -308,3 +312,4 @@ end if
 #endif
 
 end subroutine calcdepla
+end module

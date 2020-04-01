@@ -1,3 +1,8 @@
+module calcangle_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 subroutine calcangle
   !-----------------------------------------------
   !   M o d u l e s
@@ -6,8 +11,8 @@ subroutine calcangle
   use gen_com_m  
   use var_pot
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   !******************************************************************
@@ -26,7 +31,7 @@ subroutine calcangle
   real(double) :: thetaijk, c11, c21, c31, c12, c22, c32, &
        incre,dij2,dik2,dij,dik
   real(double) :: costheta,invincre,rspace2,rc2(ntyp,ntyp),rc22(ntyp,ntyp),cv(1,3)
-#if(PARA)
+#ifdef PARA
   real(double) :: fda_glob(ntyp,ntyp,ntyp,contmax)
 #endif
   !-----------------------------------------------
@@ -130,7 +135,7 @@ subroutine calcangle
      end do
   end do
 
-#if(PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(fda,fda_glob,ntyp*ntyp*ntyp*contmax,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   fda = fda_glob
 #endif
@@ -138,6 +143,6 @@ subroutine calcangle
   return
 end subroutine calcangle
 
-
+end module
 
 

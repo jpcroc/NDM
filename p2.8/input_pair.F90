@@ -1,4 +1,9 @@
-
+module input_pair_mod
+        use spline_mod
+        use alloc_typ_mod
+        use arret_ndm_mod
+        implicit none
+        contains
 ! **********************************************************************
 subroutine input_pair
   !-----------------------------------------------
@@ -135,7 +140,7 @@ subroutine input_pair
   case(0,1,3,4,5,7)
 
      read (lupotin, *) iewald, l3c
-#if(PARA)
+#ifdef PARA
      if (iewald==2) then
 	iewald=1
         write(6,*)'IEWALD MIS A 1'
@@ -879,3 +884,4 @@ subroutine input_pair
   close(lupotin)
   return
 end subroutine input_pair
+end module

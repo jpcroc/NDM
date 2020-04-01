@@ -1,3 +1,8 @@
+module calcdigr_mod
+        use notperiod_mod
+        use cryst_to_cart_mod
+        implicit none
+        contains
 subroutine calcdigr
   !-----------------------------------------------
   !   M o d u l e s
@@ -6,8 +11,8 @@ subroutine calcdigr
   use gen_com_m
   use var_pot
   use tab_imm_m
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
 
   !******************************************************************
@@ -127,3 +132,4 @@ subroutine calcdigr
   return
 end subroutine calcdigr
 
+end module

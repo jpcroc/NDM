@@ -1,3 +1,15 @@
+module dmloop_vverlet_mod
+        use calfo_mod
+        use analyse_mod
+        use controle_mod
+        use dyn_vverlet_mod
+        use calctemp_mod
+        use sauvegarde_mod
+        use sauveposition_mod
+        use sauveforce_mod
+        use correl_mod
+        implicit none 
+        contains
 ! boucle de DM pour velocity Verlet
 ! ************************************************
 
@@ -7,19 +19,21 @@ subroutine dmloop_vverlet
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   use gen_com_m 
-  use parrinello_rahman
+  use Parrinello_Rahman
   use tab_imm_m
   use suivinonpbc
 
 
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   implicit none
+    character :: extension*2
+    integer::lenfn2,i
  integer::ilocal
 real(double) sigkine_tot(3,3)
   real(double) :: temptyp(ntyp)
-#if(PARA)
+#ifdef PARA
   ! declarations supplementaires pour MPI
   real(double), dimension(3,3,noxyz) :: sigc_tot
 
@@ -31,7 +45,7 @@ real(double) sigkine_tot(3,3)
   ! MPI
 
   if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
-#if(PARA)
+#ifdef PARA
   temps_para=0.
 #endif
 
@@ -40,6 +54,8 @@ real(double) sigkine_tot(3,3)
   ! Appel de la routine generale des forces
   call calfo 
 
+
+  
 !  call analyse
   call calctemp (temptyp) 
 1 continue
@@ -95,7 +111,7 @@ real(double) sigkine_tot(3,3)
      end if
   end do
   sigkine(1:3,1:3) = sigkine(1:3,1:3)/volu
-#if(PARA)
+#ifdef PARA
 
 !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
 !  sig=sig_tot
@@ -144,3 +160,4 @@ real(double) sigkine_tot(3,3)
 
   return
 end subroutine dmloop_vverlet
+end module

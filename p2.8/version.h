@@ -1,0 +1,5 @@
+#define DATE "2020-03-12"
+#define REVISION "f2876e5"
+#define COMPILE_DATE "Thu Mar 12 13:45:45 CET 2020"
+#define LOCATION "/home/croc/NDM/NDM/p2.8_NewMakefile"
+#define COMPILE_TARGET "ndm_mpi"

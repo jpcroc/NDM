@@ -1,3 +1,6 @@
+module dynalloccell
+        implicit none 
+        contains
 subroutine DynamicalAllocationCell
 
   use gen_com_m
@@ -139,10 +142,8 @@ subroutine DeallocateAll
   if(allocated(tempc))deallocate (tempc)
   if(allocated(tempcm))deallocate (tempcm)
 
-
-
-
-
+  return
 
 
 end subroutine DeallocateAll
+end module

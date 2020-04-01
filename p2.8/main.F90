@@ -8,20 +8,27 @@ program ndm
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-#if(PARA)
-  use mod_mpi
+  use gen_com_m 
+  use prog_mod
+  use readdm_mod
+  use arret_ndm_mod
+#ifdef PARA
+  use mod_para
+  use init_mpi_mod
 #endif
 
-#if(MAB)
+#ifdef MAB
   use mod_mpi_mab
 #endif
 
-#if(PHONDY && PARAPH)
+#if defined PHONDY && defined PARAPH
  use mod_mpi_phondy
 #endif
-#if(ML && PARAML)
+#if defined ML && defined PARAML
  use mod_mpi_ml
+ use init_mpi_ml_mod
+ use gen_init_mpi_mod
+
 #endif
 
 
@@ -39,7 +46,7 @@ program ndm
   !-----------------------------------------------
   !
   !Initialisation MPI
-#if(PARA)
+#ifdef PARA
   call init_MPI()
 
  PRINT *, 'Process ', myid, ' of ', nprocs, ' is alive'
@@ -52,25 +59,25 @@ program ndm
 
 
 
-#if (PARAML || PARAPH || MAB)
+#if defined PARAML || defined PARAPH || defined MAB
   call gen_init_mpi
 #endif
 
-#if(ML || PARAML)
+#if defined ML || defined PARAML
   rangml=0
 #endif
 
-#if(ML && PARAML)
+#if defined ML && defined PARAML
   call init_mpi_ml()
   rang=rangml
 #endif
 
 
-#if(PHONDY || PARAPH)
+#if defined PHONDY || defined PARAPH
   rangph=0
 #endif
 
-#if(PHONDY && PARAPH)
+#if defined PHONDY && defined PARAPH
   call init_mpi_phondy()
   rang=rangph
 #endif
@@ -78,31 +85,31 @@ program ndm
 
 
   if (rang==0) write(6,*)'*** NDM859 ***'
-#if(ART)
+#ifdef ART
   if (rang==0) write(6,*)'*** NDM859+ ART ***'
 #endif
 
-#if(PHONDY)
+#ifdef PHONDY
   if (rang==0) write(6,*)'*** NDMP859 +  PHONDY ***'
 #endif
 
 
 !if MAB .....
-#if(MAB)
+#ifdef MAB
   rangmab=0
   if (rang==0) write(6,*)'*** NDMP859 +   MAB ***'
-#if (ML && PARAML)
+#if defined ML && defined PARAML
   if (rang==0) write(6,*)'*** NDMP859 +   MAB + ML + PARAML ***'
   call init_mpi_mab()
   rang=rangmab
 #endif
-#if(LAMMPS_MAB)
+#ifdef LAMMPS_VERSION
   call init_mpi_mab()
 #endif
 #endif
 !endif MAB ......
 
-#if(ML)
+#ifdef ML
   if (rang==0) write(6,*)'*** NDMP859 +   ML ***'
 #endif
 
@@ -118,7 +125,7 @@ program ndm
 
   call prog
 
-#if (PARAPH || MAB)
+#if defined PARAPH || defined MAB
 continue
 #else
   call arret_ndm

@@ -1,3 +1,6 @@
+module calerf_mod
+        implicit none
+        contains
 subroutine calerf(arg, result, jint)
   !-----------------------------------------------
   !   M o d u l e s
@@ -402,3 +405,4 @@ end subroutine calerf
       return
 !---------- Last card of DERFCX ----------
       end function derfcx
+end module

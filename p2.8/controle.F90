@@ -1,3 +1,17 @@
+module controle_mod
+        use endrun_mod 
+        use dynalloccell
+        use tempinst_mod
+        use jqbh_mod
+        use caltabt_mod
+        use desinteg_insert_mod
+        use period_mod
+        use caltabi_mod
+        use heat_mod
+        use creadp_mod
+        use deftimestep_mod
+        implicit none
+        contains
 ! ***********************************************************
 !           sous-programme controle.f
 ! ***********************************************************
@@ -11,8 +25,8 @@ subroutine controle
   use var_pot
   use tab_imm_m
   use suivinonpbc
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   use defcdp, ONLY :itecdp
   implicit none
@@ -38,7 +52,7 @@ subroutine controle
   real(double) :: potistmean,potistdif
   real(double),save :: potist1000
   real, pointer,save :: potiststock(:)
-#if(PARA)
+#ifdef PARA
   real(double) :: tcou_glob
   integer      :: nacou_glob
   real(double) :: fpmax_glob
@@ -337,7 +351,7 @@ subroutine controle
                  tcou = tcou+(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(&
                       i))/(3.0*bk)
               end do
-#if(PARA)
+#ifdef PARA
               call MPI_ALLREDUCE(tcou,tcou_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
               tcou = tcou_glob
               call MPI_ALLREDUCE(nacou,nacou_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -538,7 +552,7 @@ subroutine controle
            !fpmax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
            fpmax = MaxVal( Abs(fp(:,1:im)) )
         END IF
-#if (PARA)
+#ifdef PARA
         call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
         fpmax=fpmax_glob
 #endif
@@ -567,7 +581,7 @@ subroutine controle
         ELSE
            fpmax=sqrt( SUM(fp(:,1:im)**2) )
         END IF
-#if (PARA)
+#ifdef PARA
         fpmax=fpmax**2
         call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
         fpmax=sqrt(fpmax_glob)
@@ -618,7 +632,7 @@ subroutine controle
            !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
            formax = MaxVal( Abs(fp(:,1:im)) )
         END IF
-#if (PARA)
+#ifdef PARA
         call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
         formax=fpmax_glob
         forctot=forctot**2
@@ -685,3 +699,4 @@ subroutine controle
 !
   return
 end subroutine controle
+end module

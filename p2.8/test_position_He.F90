@@ -1,3 +1,6 @@
+module test_pos_He_mod
+        implicit none
+        contains
 ! ***************************************************************
 subroutine test_position_He (xp, at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,nstepdes,itmax)
   !-----------------------------------------------
@@ -14,8 +17,8 @@ subroutine test_position_He (xp, at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,ns
 
 
   USE T_kind_param_m, ONLY:  double
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
   implicit none
   !variables passées
@@ -113,7 +116,7 @@ endif
      ENDIF
 
   ENDDO
-#if (PARA)
+#ifdef PARA
   call MPI_ALLREDUCE(kount,kount_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
   kount=kount_tot
   call MPI_ALLREDUCE(Rmax,Rmax_tot,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
@@ -155,3 +158,4 @@ endif
   return
 end subroutine test_position_He
 		
+end module

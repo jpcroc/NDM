@@ -1,3 +1,8 @@
+module initcasca_mod
+        use cryst_to_cart_mod
+        use period_mod
+        implicit none
+        contains
 ! *************** initialisation de la cascade **********************
 subroutine initcasca
   !-----------------------------------------------
@@ -9,8 +14,8 @@ subroutine initcasca
   use tab_imm_m
   use elec_cell, only : necycle,etstep,necyclemin
   ! *******************************************************************
-#if(PARA)
-  use mod_mpi
+#ifdef PARA
+  use mod_para
 #endif
  
 
@@ -38,7 +43,7 @@ subroutine initcasca
   integer :: seed_size,isl
   integer, dimension(:), allocatable :: iseedt
 
-#if(PARA)
+#ifdef PARA
   real(double), dimension(3) :: max_loc,max_glob,max_typ
   real(double), dimension(1) :: max_typl,max_typG
   integer :: ityp_max
@@ -229,7 +234,7 @@ end if 	! xx0>0
 
   vmax = sqrt(vmax2)
 
-#if(PARA)
+#ifdef PARA
   max_loc(1)=vmax
   max_loc(2)=rang
   max_loc(3)=0.5+ityp(imax)
@@ -313,3 +318,4 @@ end if 	! xx0>0
 121 continue
   return
 end subroutine initcasca
+end module

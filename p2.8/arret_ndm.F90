@@ -1,10 +1,19 @@
+module arret_ndm_mod
+#ifdef PARA
+  !use mpi
+  use mod_para, only : temps_deb,myid,temps_init,temps_input,temps_config,temps_initspeed,temps_para,temps_dmloop,ierr
+#endif
+        implicit none
+        contains
 subroutine arret_ndm()
 
   USE T_kind_param_m
-#if(PARA)
-  use mod_mpi
-#endif
+
+  !use mpi
   implicit none
+#ifdef PARA  
+  include "mpif.h"
+#endif
   real(double) :: temps_exe
 
   ! Routine d'arret du code NDM
@@ -18,7 +27,7 @@ subroutine arret_ndm()
   !--------------------------------------------------
   !Corps de la routine
 
-#if(PARA)
+#ifdef PARA
 !  temps_dmloop=MPI_Wtime() - temps_dmloop_deb
 
   temps_exe = MPI_Wtime() - temps_deb
@@ -37,3 +46,5 @@ subroutine arret_ndm()
   stop
 
 end subroutine arret_ndm
+
+end module

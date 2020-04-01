@@ -1,3 +1,6 @@
+module initcdp_mod
+        implicit none
+        contains
 ! **************************************************************
 subroutine initcdp
   !-----------------------------------------------
@@ -7,6 +10,7 @@ subroutine initcdp
   use gen_com_m, iseed_glob=>iseed
   use tab_imm_m
   use defcdp
+  use arret_ndm_mod
   implicit none
   integer, dimension(2) :: iseedt
   !-----------------------------------------------
@@ -80,3 +84,4 @@ subroutine initcdp
 
   return
 end subroutine initcdp
+end module

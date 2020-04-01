@@ -1,3 +1,7 @@
+module rdf_mod
+        implicit none 
+        contains
+
 subroutine rdf
   !-----------------------------------------------
   !   M o d u l e s
@@ -240,3 +244,4 @@ subroutine rdf
   gdertot(:)=0.D0
   return
 end subroutine rdf
+end module

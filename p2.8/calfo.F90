@@ -1,3 +1,35 @@
+module calfo_mod
+#ifdef ML
+        use calfo_ml_mod, only : md_calfo_ml
+#endif 
+        use calfoew_mod
+        use calfoberend_mod
+        use calfo2ctabvois_mod
+        use calfo2ccel_mod
+        use calfo3c_mod
+        use calfow_mod
+        use calfo_decalage_mod
+        use calfoeamtabvois_mod
+        use calfoeamcel_mod
+        use calfojuli_mod
+        use calfojulicel_mod
+        use force_tersoff_cel_mod
+
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+  use contrainte
+  use tab_imm_m
+  use jqmod
+  use eloss, only : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
+  use elec_cell, only :i2t
+  use strain_bc_mod
+  use stress_bc_mod
+  use force_tersoff_mod
+#ifdef PARA
+  use mod_para
+#endif
+        implicit none
+        contains
 ! ************************************************
 !           Sous-programme calfo
 !routine d'appel des routines de forces
@@ -8,16 +40,19 @@ subroutine calfo
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
-  USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use contrainte
-  use tab_imm_m
-  use jqmod
-  use eloss, only : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
-  use elec_cell, only :i2t
-#if(PARA)
-  use mod_mpi
-#endif
+!  USE T_kind_param_m, ONLY:  double
+!  use gen_com_m
+!  use contrainte
+!  use tab_imm_m
+!  use jqmod
+!  use eloss, only : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
+!  use elec_cell, only :i2t
+!  use strain_bc_mod
+!  use stress_bc_mod
+!  use force_tersoff_mod
+!#ifdef PARA
+!  use mod_para
+!#endif
 
   implicit none
   !-----------------------------------------------
@@ -38,7 +73,7 @@ subroutine calfo
 !  integer::nv1,koo
   logical:: test_sigma
 
-#if(PARA)
+#ifdef PARA
   real(double), dimension(3,3) :: sig_tot,sigkine_tot
   real(double),dimension (3):: fptot_tot
 
@@ -65,7 +100,7 @@ subroutine calfo
      if(lSigat) sigat(:,:,:)=0. ; 
      if (lsigtyp) then
         sigtyp=0. ; sigtyptyp=0.
-#if(PARA)
+#ifdef PARA
         sigtyp_loc=0.;     sigtyptyp_loc=0.
 #endif 
      end if
@@ -161,7 +196,7 @@ subroutine calfo
                  call calfoeamcel
               endif
               potist=potist+potiseam
-#if(ML)
+#ifdef ML
            case (20)
                 !write(*,*) 'NDM ml calfo1', xp(1,1)
               call md_calfo_ml
@@ -202,7 +237,7 @@ subroutine calfo
 
 
 
-#if(PARA)
+#ifdef PARA
 
         !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
         !  sig=sig_tot
@@ -233,7 +268,7 @@ subroutine calfo
      do i=1,im
         fptot(:)=fptot+fp(:,i)
      enddo
-#if(PARA)
+#ifdef PARA
      call MPI_ALLREDUCE(fptot,fptot_tot,3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      fptot=fptot_tot
 #endif
@@ -255,15 +290,7 @@ subroutine calfo
   end if
 
 
-
-
-  !do i=1,im
-  !   write(96,'(2I3,6G15.7)')i,ityp(i),xp(1,i),xp(2,i),xp(3,i),fp(1,i),fp(2,i),fp(3,i)
-  !end do
-  !stop
-  !write(*,*) 'NDM calfo end debug', xp(1,1), fp(1,1) 
-
   return
 end subroutine calfo
 
-
+end module

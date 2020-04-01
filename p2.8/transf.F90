@@ -1,4 +1,6 @@
-
+module transf_mod
+        implicit none 
+        contains
 ! **************************************************************
 subroutine transf
   !routine de transformation de la boite : ajouter, enlever, transformer des atomes,
@@ -134,3 +136,4 @@ subroutine poscheck(xp,ityp,im,imm)
 
   return
 end subroutine poscheck
+end module
