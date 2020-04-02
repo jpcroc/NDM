@@ -77,7 +77,6 @@ contains
        call bruit_xp
     end if
 
-    write(6,*)'preGC0',xp(:,1),ax(:,1),it,'dmtype ',dmtype
 
 
     
@@ -161,7 +160,7 @@ contains
     allocate(fp_all(3,imm))
     allocate(ityp_all(imm))
 
-    write(6,*)'preGC0A',xp(:,1),xp_all(:,1),it,'dmtype ',dmtype
+!    write(6,*)'preGC0A',xp(:,1),xp_all(:,1),it,'dmtype ',dmtype
     !New GC settings ....:
     NGC=3*imm
 
@@ -189,7 +188,7 @@ contains
           ityp_all(i)=ityp(i)
 
     end do
-    write(6,*)'preGC0B',xp(:,1),xp_all(:,1),it,'dmtype ',dmtype
+!    write(6,*)'preGC0B',xp(:,1),xp_all(:,1),it,'dmtype ',dmtype
     X(3*im+1:3*imm)=0.d0
     ims=imm
 #endif
@@ -204,7 +203,7 @@ contains
 
     it = 0
     efinal = 0.0
-    write(6,*)'preGC',xp_all(:,1),it
+!    write(6,*)'preGC',xp_all(:,1),it
     CALL ZXCGRII(FUNCT,NGC,ACC,itmax,X,G,F,W,IER,criterion,NCALLS, &
          xp_all,fp_all, ityp_all,ims)       
 
