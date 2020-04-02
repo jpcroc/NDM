@@ -258,7 +258,7 @@ subroutine readdm
   ! where "random" is a random number between 
   ! 0 and 1  
   neb_noise=0                 ! 0 without noise, 1 with noise
-  mdcg_noise=0                ! 0 without noise, 1 with noise
+  mdcg_noise=1                ! 0 without noise, 1 with noise
   !      	lperiod=.false.  ! pas de conditions periodiques
 
   !...inNEB

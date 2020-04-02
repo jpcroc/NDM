@@ -6,7 +6,6 @@ module zero2all2zero_mod
   use gen_com_m
   use tab_imm_m
   use cryst_to_cart_mod
-  use caltabt_mod
 contains
   subroutine zero2all(vectall,vectp,itypall)
     real(double),intent(in)::vectall(3,imm_glob)
