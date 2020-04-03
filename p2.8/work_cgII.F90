@@ -219,21 +219,21 @@ contains
 !    write(6,*)'1rg cel nat',rang, ko,nato(ko)
     !end do
 !     write(6,*)'im_glob', im_glob
-    open(unit=607, file='xpG.csv', form='formatted', &
-             status='unknown')
-    do i=1,im_glob
-      !       write(6,*)rang,i,xp_all(:,i)
-       write(607,'(I6,3G22.13)') i,xp(:,i)
-    end do
+!    open(unit=607, file='xpG.csv', form='formatted', &
+!             status='unknown')
+!    do i=1,im_glob
+!      !       write(6,*)rang,i,xp_all(:,i)
+!       write(607,'(I6,3G22.13)') i,xp(:,i)
+!    end do
 
     
     call calfo
-    open(unit=606, file='fpG.csv', form='formatted', &
-             status='unknown')
-    do i=1,im_glob
-      !       write(6,*)rang,i,xp_all(:,i)
-       write(606,'(I6,3G22.13)') i,fp(:,i)
-    end do
+!    open(unit=606, file='fpG.csv', form='formatted', &
+!             status='unknown')
+!    do i=1,im_glob
+!      !       write(6,*)rang,i,xp_all(:,i)
+!       write(606,'(I6,3G22.13)') i,fp(:,i)
+!    end do
 
 !#ifdef PARA
 !    lenfn2=2
