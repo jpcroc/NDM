@@ -1,6 +1,6 @@
 module tersoff_zbl_mod
-        use zieg2_mod
-        use spline_mod
+        USE zieg2_mod
+        USE spline_mod
         implicit none
         contains
 subroutine tersoff_zbl
@@ -8,9 +8,9 @@ subroutine tersoff_zbl
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m
-  use gen_com_m
-  use var_pot
-  use force_tersoff_facteurs
+  USE gen_com_m, ONLY:
+  USE var_pot, ONLY:ngrid,catom,csive,ipo,lu_roff_pair,npair,ntyp,pot,pot_d,roff1,roff2,typ_pot_pair,typ_pot_pair
+  USE force_tersoff_facteurs
 
   integer :: i,j,k,l,m,n,iti
   real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)

@@ -1,5 +1,5 @@
 module loopforcetest_mod
-        use calfo_mod
+        USE calfo_mod
         implicit none
         contains
 ! ************************************************
@@ -12,8 +12,8 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
+  USE gen_com_m, ONLY:cunite,cunitp,deltax,erg2ev,rang,unite,unitp
+  USE var_pot, ONLY:nad,na,ntyp,gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s

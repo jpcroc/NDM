@@ -11,8 +11,9 @@ subroutine moduli
   !   M o d u l e s
   !----------------------------------------------
   USE T_kind_param_m
-  use gen_com_m
-  use var_pot
+  USE gen_com_m, ONLY:
+  USE var_pot, ONLY:maxorder,kpme,bsmod1,bsmod2,bsmod3,kpmex,kpmey,kpmez
+
   implicit none
   integer i
   real(double) w,bsarray(kpme)
@@ -73,7 +74,7 @@ subroutine bspline1 (x,n,c,d)
      d(i) = c(i-1) - c(i)
   end do
   !
-  !     use one final recursion to get to "n"-th order
+  !     USE one final recursion to get to "n"-th order
   !
   denom = 1.0d0 / dble(n-1)
   c(n) = x * c(n-1) * denom
@@ -130,7 +131,7 @@ subroutine bspline (nbatom,x,n,c,d)
      end do
   enddo
   !
-  !     use one final recursion to get to "n"-th order
+  !     USE one final recursion to get to "n"-th order
   !
   denom = 1.0d0 / dble(n-1)
   do i1=1,nbatom

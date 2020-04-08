@@ -1,4 +1,6 @@
 module deftimestep_mod
+  USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,im,imm,it,itetimestep,lcasca,lperiod,oldtstep,&
+       &rang,timel,tsmin,tstep,two,usdh,vmax
         implicit none
         contains
 ! *********************************************************************
@@ -7,14 +9,13 @@ subroutine deftimestep
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use tab_imm_m
-  use elec_cell, only:  etstep, necycle, necyclemin
-  use arret_ndm_mod
-  use period_mod
+  USE var_pot, ONLY:cm
+  USE tab_imm_m
+  USE elec_cell, ONLY:  etstep, necycle, necyclemin
+  USE arret_ndm_mod
+  USE period_mod
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
   !         version paraseq du 21 fevrier 2001
   ! *********************************************************************

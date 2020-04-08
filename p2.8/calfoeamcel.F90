@@ -1,16 +1,22 @@
 module calfoeamcel_mod
-        use notperiod_mod
-        use cryst_to_cart_mod
+        USE notperiod_mod
+        USE cryst_to_cart_mod
+        USE gen_com_m, ONLY:angst,at,bg,nvat,im,imm,it,itesigma,low_limit,lperiod,lprteat,&
+             &ltpcel,noxyz,zero,ncel,last,free,free,nato,free,ncel,last,nato,sig,sigc,eatom,&
+             &deltadist,nox,noy,noz,volu
+
         implicit none
         contains
 !----------------------------------------------------------------------
 SUBROUTINE calfoeamcel
   USE T_kind_param_m
-  use gen_com_m
-  use var_pot
-  use tab_imm_m
+
+  USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,eamglue,eamrho,rue_pot,&
+       &typ_and_pot,typ_pot_pair,ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,ipo,eamrep,eamrep,&
+  &eamglue,eamglue,eamrho
+  USE tab_imm_m
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
   implicit none
 

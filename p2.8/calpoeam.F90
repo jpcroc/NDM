@@ -1,7 +1,7 @@
 module calpoeam_mod
-        use zieg2_mod
-        use spline_mod
-        use arret_ndm_mod
+        USE zieg2_mod
+        USE spline_mod
+        USE arret_ndm_mod
         implicit none
         contains
 subroutine calpoeam
@@ -9,11 +9,11 @@ subroutine calpoeam
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m
-  use gen_com_m
-  use eam
-  use eamerco
-  use var_pot
-  use SMjuli
+  USE gen_com_m, ONLY:rang
+  USE eam
+  USE eamerco
+  USE var_pot, ONLY:csive,ipotentiel,lprtpot,rue_pot,typ_and_pot
+  USE SMjuli
   implicit none
 
   integer :: k,l,iti,lw

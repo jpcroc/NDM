@@ -48,7 +48,7 @@ subroutine cspline(n, x, y, b, c, d)
   !    c(i) = spp(x(i))/2
   !    d(i) = sppp(x(i))/6  (derivative from the right)
   !
-  !  the accompanying function subprogram  seval  can be used
+  !  the accompanying function subprogram  seval  can be USEd
   !  to evaluate the spline.
   !
   !

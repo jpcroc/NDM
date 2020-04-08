@@ -7,10 +7,10 @@ subroutine initcdp
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m, iseed_glob=>iseed
-  use tab_imm_m
-  use defcdp
-  use arret_ndm_mod
+  USE gen_com_m, ONLY: iseed_glob=>iseed,im,rang
+  USE tab_imm_m
+  USE defcdp
+  USE arret_ndm_mod
   implicit none
   integer, dimension(2) :: iseedt
   !-----------------------------------------------

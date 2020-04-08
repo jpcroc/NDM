@@ -6,7 +6,7 @@ end module time_measure
 
 
 module mod_mpi_ml 
- use mpi
+ USE mpi
      integer, dimension(MPI_STATUS_SIZE) :: statut
      integer :: nb_procsml,codeml
 end module mod_mpi_ml
@@ -19,10 +19,10 @@ module init_mpi_ml_mod
 
 subroutine init_mpi_ml()
 
-  use mpi
-  use mod_mpi_ml
-  use gen_mpi
-  use gen_com_m , ONLY: rangml
+  USE mpi
+  USE mod_mpi_ml
+  USE gen_mpi
+  USE gen_com_m, ONLY: , ONLY: rangml
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM+ML

@@ -1,8 +1,8 @@
 module caltabt_mod
-        use notperiod_mod
-        use cryst_to_cart_mod
+        USE notperiod_mod
+        USE cryst_to_cart_mod
 #ifdef PARA
-        use mod_para
+        USE mod_para
 #endif      
         implicit none
         contains
@@ -12,8 +12,8 @@ subroutine caltabt
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use tab_imm_m
+  USE gen_com_m, ONLY:nato,last,bg,im,imm,natperc,nox,noy,noz,lperiod,noxyz
+  USE tab_imm_m
   !          Version du 01 fevrier 2001
   ! ******************************************************************
 

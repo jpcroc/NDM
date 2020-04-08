@@ -1,5 +1,5 @@
 module sic
-    use extension_mod    
+    USE extension_mod    
 
 
 contains

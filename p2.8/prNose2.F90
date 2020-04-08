@@ -32,14 +32,17 @@ module Parrinello_Rahman_Nose
 
 
   USE T_kind_param_m
-  use gen_com_m   
-  use var_pot
-  use tempinst_mod
-  use Mat_utils_mod, only : matinv
-  use recips_mod
+  USE gen_com_m, ONLY:   ecellpr,enose,fnose,h0,im,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
+       &tstep,ucell,unose,volu,wbox,wnose,at,enose,erg2ev,fnose,h0,im,im_glob,it,kcell,knose,leev,&
+       &lucell,rang,timel,tstep,unose,wbox,wnose,sigkine,rang,at,bg,sig
+
+  USE var_pot, ONLY:cm
+  USE tempinst_mod
+  USE Mat_utils_mod, ONLY : matinv
+  USE recips_mod
 
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
  
   implicit none

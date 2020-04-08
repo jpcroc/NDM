@@ -1,20 +1,22 @@
 module force_tersoff_cel_mod
-        use cryst_to_cart_mod
-        implicit none
-        contains
+  USE cryst_to_cart_mod
+  USE gen_com_m, ONLY:at,bg,im,imm,it,itesigma,lcalcjq,ltpcel,noxyz,potistersoff,potiszbl,&
+       &ncel,last,ncel,last,nato,nato,free,free,sig,sigc,eatom,volu
+  
+  implicit none
+contains
 ! ***************************************************************
 subroutine force_tersoff_cel
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use tab_imm_m
-  use jqmod
-  use force_tersoff_facteurs
+  USE var_pot, ONLY:npair,csive,typ_and_pot,ipo,typ_pot_pair,roff2,pot
+  USE tab_imm_m
+  USE jqmod
+  USE force_tersoff_facteurs
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
   ! **************************************************************
   ! Programme par NGUYEN Quoc Hoang

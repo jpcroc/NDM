@@ -42,7 +42,7 @@ subroutine calerf(arg, result, jint)
   !   and
   !                   Y=ERFCX(X)   (or   Y=DERFCX(X)).
   !
-  !   The routine  CALERF  is intended for internal packet use only,
+  !   The routine  CALERF  is intended for internal packet USE ONLY,
   !   all computations within the packet being concentrated in this
   !   routine.  The function subprograms invoke  CALERF  with the
   !   statement
@@ -61,7 +61,7 @@ subroutine calerf(arg, result, jint)
   !   The main computation evaluates near-minimax approximations
   !   from "Rational Chebyshev approximations for the error function"
   !   by W. J. Cody, Math. Comp., 1969, PP. 631-638.  This
-  !   transportable program uses rational functions that theoretically
+  !   transportable program USEs rational functions that theoretically
   !   approximate  erf(x)  and  erfc(x)  to at least 18 significant
   !   decimal digits.  The accuracy achieved depends on the arithmetic
   !   system, the compiler, the intrinsic functions, and proper

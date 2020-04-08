@@ -1,60 +1,67 @@
 module dynalloccell
-        implicit none 
-        contains
-subroutine DynamicalAllocationCell
+  USE gen_com_m, ONLY:l2t,lsigatcel,ltpcel,tempstopcel,tabv3,tabf3,sigc,tempcm,deltadist,nato,last,&
+       &ncel,natchk,noxyz,pmc, tcp, celpp,tcp, lprtcel,tempc,tm1,patcelmax,zero,elossCel,&
+       &patcelmax, celpm1,patcel,sigatcel,natperc
+  USE var_pot, ONLY:iewald,ncoucx,ncoucy,ncoucz,ntyp,na,cm,ipo,catom,ty,pot,rc,lue_paire,lue_typ,lue_trip,dip,pm,roff1,&
+       &roff2,a_factor,r8p,ray,bm,shel,awat,bwat,qwat,potw,bspw,cspw,bspw,eamrep,eamrep_d,eamglue,eamglue_d,eamrho,eamrho_d,&
+       &lamb,gam,cangle, coup3c,ipo3c, coup3c2,l3ctyp,l3cpair,coord,digr,fda,nad,nas,nai,lu_roff_pair,lue_typ,&
+       &typ_pot_pair,lue_trip,rue_pair,ipo,q,ro,rawat,dspw
+  implicit none 
+contains
+  subroutine DynamicalAllocationCell
 
-  use gen_com_m
-  use var_pot
-  use eloss, only :tcelec
-  implicit none
 
-  allocate(ncel(0:noxyz,0:26))
-  allocate(nato(0:noxyz))
-  allocate(last(natperc,0:noxyz))
-  allocate(deltadist(3,0:26,noxyz))
-  if (lTPcel.EQV..true.)then
-         allocate(sigc(3,3,noxyz)); sigc(:,:,:noxyz)=0.
-  endif
-  if (iewald.ge.1) then
-     allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
-     allocate (tabf3(ntyp,-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
-  end if
- 
-  ncel(:noxyz,:26) = zero                 ! et petite initialisation
 
-  if((ltpcel.eqv..true.).or.(tempstopcel.gt.0).or.(tcelec.gt.0)) then
-     allocate (tempc(noxyz))
-     allocate (tempcm(noxyz))
-        allocate(celpm1(noxyz))
-!        allocate(celpm2(noxyz))
-        allocate(tm1(noxyz))
-!        allocate(tm2(noxyz))
-        allocate(celpp(noxyz))
-!        allocate(celpp2(noxyz))
-        allocate(tcp(noxyz))
-!        allocate(tcp2(noxyz))
-        allocate(pmc(noxyz))
+    USE eloss, ONLY :tcelec
+    implicit none
 
-        allocate (lprtcel(noxyz))
+    allocate(ncel(0:noxyz,0:26))
+    allocate(nato(0:noxyz))
+    allocate(last(natperc,0:noxyz))
+    allocate(deltadist(3,0:26,noxyz))
+    if (lTPcel.EQV..true.)then
+       allocate(sigc(3,3,noxyz)); sigc(:,:,:noxyz)=0.
+    endif
+    if (iewald.ge.1) then
+       allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
+       allocate (tabf3(ntyp,-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
+    end if
 
-  end if
-  if (l2T.eqv..true.)then
-     if (.not.allocated(tempc))     allocate (tempc(noxyz))
-     allocate (elossCel(noxyz))
-  endif
-  if (lsigatcel.eqv..true.) then
-     allocate (patcel(noxyz))
-     allocate (patcelmax(noxyz))
-     allocate (sigatcel(3,3,noxyz))
-     allocate (natchk(noxyz))
-  end if
+    ncel(:noxyz,:26) = zero                 ! et petite initialisation
 
-  
-end subroutine DynamicalAllocationCell
+    if((ltpcel.eqv..true.).or.(tempstopcel.gt.0).or.(tcelec.gt.0)) then
+       allocate (tempc(noxyz))
+       allocate (tempcm(noxyz))
+       allocate(celpm1(noxyz))
+       !        allocate(celpm2(noxyz))
+       allocate(tm1(noxyz))
+       !        allocate(tm2(noxyz))
+       allocate(celpp(noxyz))
+       !        allocate(celpp2(noxyz))
+       allocate(tcp(noxyz))
+       !        allocate(tcp2(noxyz))
+       allocate(pmc(noxyz))
+
+       allocate (lprtcel(noxyz))
+
+    end if
+    if (l2T.eqv..true.)then
+       if (.not.allocated(tempc))     allocate (tempc(noxyz))
+       allocate (elossCel(noxyz))
+    endif
+    if (lsigatcel.eqv..true.) then
+       allocate (patcel(noxyz))
+       allocate (patcelmax(noxyz))
+       allocate (sigatcel(3,3,noxyz))
+       allocate (natchk(noxyz))
+    end if
+
+
+  end subroutine DynamicalAllocationCell
 
 subroutine Deallocatecel
-  use gen_com_m
-  use var_pot,only : iewald
+  USE gen_com_m, ONLY:
+
   implicit none
   if(associated(ncel))deallocate(ncel)
   if(associated(nato))deallocate(nato)
@@ -70,8 +77,8 @@ end subroutine Deallocatecel
 
 subroutine DeallocateAll
 
-  use gen_com_m
-  use var_pot
+  USE gen_com_m, ONLY:
+
   implicit none
 
   if(associated(ncel)) deallocate(ncel)

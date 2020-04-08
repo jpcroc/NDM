@@ -1,68 +1,73 @@
 module initspeed_mod
-        use Mat_utils_mod, only : MatInv
-        use tempinst_mod
-        use calctemp_mod
-        use arret_ndm_mod
-        use period_mod
-        implicit none
-        contains
-! *********************************************************************
-subroutine bruit_xp 
+  USE tab_imm_m
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use tab_imm_m
-  !-----------------------------------------------
-  !   M o d u l e s
-  !-----------------------------------------------
- implicit none
-   integer    :: ia, ip,seed_size
-   integer, dimension(:),allocatable :: iseedt
-   real(double)  :: zr1,zr2,zr3,zr4,totalbruit
+  USE Mat_utils_mod, ONLY : MatInv
+  USE tempinst_mod
+  USE calctemp_mod
+  USE arret_ndm_mod
+  USE period_mod
+  USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,im,im_glob,iseed,lcalcjq,lfrozen,lperiod,ltpcel,&
+       &lvpread,noxyz,oldtstep,one,pi,rang,tempdeplainit,tinit,tstep,im,iseed,mdcg_noise_scale,&
+       neb_noise_scale,pi,rang,frozen
+  USE var_pot, ONLY:ntyp,cm
+  implicit none
+contains
+  ! *********************************************************************
+  subroutine bruit_xp 
+    USE T_kind_param_m, ONLY:  double
 
-   call random_seed(size=seed_size)
-   allocate(iseedt(seed_size))
-  call system_clock (iseed)
-   iseedt(:)=iseed
- 
-  call random_seed(put=iseedt)
- totalbruit=0.d0
- bruitmd(1:3,1:im)=0.d0
-  do ia=1,im
-   call random_number(zr1)
-   call random_number(zr2)
-   call random_number(zr3)
-   call random_number(zr4)
-    if(zr1.eq.0.d0) zr1=0.000000001d0
-    if(zr2.eq.0.d0) zr2=0.000000001d0
-    if(zr3.eq.0.d0) zr3=0.000000001d0
-    if(zr4.eq.0.d0) zr4=0.000000001d0
-    
-    bruitmd(1,ia)=sqrt((-log(zr1)))*cos(2.0*pi*zr3)
-    bruitmd(2,ia)=sqrt((-log(zr1)))*sin(2.0*pi*zr3)
-    bruitmd(3,ia)=sqrt((-log(zr2)))*cos(2.0*pi*zr4)
-    totalbruit=totalbruit + bruitmd(1,ia)**2 + bruitmd(2,ia)**2 + bruitmd(3,ia)**2
-   end do
-  
-  if (rang==0)  write(6,*) 'ISEED for MD, NORM of the noise ',iseed, neb_noise_scale, totalbruit
-  bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale * xp(1:3,1:im) / (sqrt(totalbruit))
-  
+    USE tab_imm_m
+    !-----------------------------------------------
+    !   M o d u l e s
+    !-----------------------------------------------
+    implicit none
+    integer    :: ia, ip,seed_size
+    integer, dimension(:),allocatable :: iseedt
+    real(double)  :: zr1,zr2,zr3,zr4,totalbruit
+
+    call random_seed(size=seed_size)
+    allocate(iseedt(seed_size))
+    call system_clock (iseed)
+    iseedt(:)=iseed
+
+    call random_seed(put=iseedt)
+    totalbruit=0.d0
+    bruitmd(1:3,1:im)=0.d0
+    do ia=1,im
+       call random_number(zr1)
+       call random_number(zr2)
+       call random_number(zr3)
+       call random_number(zr4)
+       if(zr1.eq.0.d0) zr1=0.000000001d0
+       if(zr2.eq.0.d0) zr2=0.000000001d0
+       if(zr3.eq.0.d0) zr3=0.000000001d0
+       if(zr4.eq.0.d0) zr4=0.000000001d0
+
+       bruitmd(1,ia)=sqrt((-log(zr1)))*cos(2.0*pi*zr3)
+       bruitmd(2,ia)=sqrt((-log(zr1)))*sin(2.0*pi*zr3)
+       bruitmd(3,ia)=sqrt((-log(zr2)))*cos(2.0*pi*zr4)
+       totalbruit=totalbruit + bruitmd(1,ia)**2 + bruitmd(2,ia)**2 + bruitmd(3,ia)**2
+    end do
+
+    if (rang==0)  write(6,*) 'ISEED for MD, NORM of the noise ',iseed, neb_noise_scale, totalbruit
+    bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale * xp(1:3,1:im) / (sqrt(totalbruit))
+
   end subroutine bruit_xp
 
 
 
 
-! *********************************************************************
+  ! *********************************************************************
   subroutine initspeed
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
-    use var_pot
-    use tab_imm_m
+    USE gen_com_m, ONLY:
+    USE var_pot, ONLY:
+    USE tab_imm_m
 #ifdef PARA
-    use mod_para
+    USE mod_para
 #endif
     ! *********************************************************************
 
@@ -115,8 +120,8 @@ subroutine bruit_xp
     !-----------------------------------------------
     !real(double) :: tempinst ! in module tempinst_mod
 
-!    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
-    
+    !    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
+
     select case (dmtype)
     case(3,30,5,11,7)
        vp = 0.0
@@ -188,31 +193,31 @@ subroutine bruit_xp
           if (rang==0) write (6, *) 'random velocities at TINIT = ', tinit, &
                'K'
 
-!          if (iseed==0)  iseed=1
+          !          if (iseed==0)  iseed=1
 
 
-!  call system_clock (iseed)
-!   iseedt(1)=iseed
- 
- ! call random_seed(iseedt(1))
-          
+          !  call system_clock (iseed)
+          !   iseedt(1)=iseed
+
+          ! call random_seed(iseedt(1))
+
           call random_seed(size=seed_size)
           write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
-!          iseedt = 0
+          !          iseedt = 0
 
 
           if (iseed==0)  then
-                call system_clock (iseed)
-                write(6,*)'iseed pour tirage des vitesses',iseed
-                iseedt(:)=iseed
+             call system_clock (iseed)
+             write(6,*)'iseed pour tirage des vitesses',iseed
+             iseedt(:)=iseed
 
           else
              write(6,*)'iseed pour tirage des vitesses',iseed
              iseedt(:)=iseed
           end if
 
-!          iseedt(1)=iseed
+          !          iseedt(1)=iseed
           call    random_seed (put=iseedt)
           deallocate(iseedt)
 
@@ -230,33 +235,33 @@ subroutine bruit_xp
              if(z3.eq.0.d0) z3=0.000000001d0
              if(z4.eq.0.d0) z4=0.000000001d0
 
-!             est_local=0
+             !             est_local=0
              !	   do i=1,im
              !	     if (num_at_glob(i)==i_glob) then
-!             est_local=1
+             !             est_local=1
              !		exit
              !             endif
              !           enddo
 
-!             if (est_local==1) then
-!                if(z1.eq.0.d0) z1=0.000000001d0
-!                if(z2.eq.0.d0) z2=0.000000001d0
-!                if(z3.eq.0.d0) z3=0.000000001d0
-!                if(z4.eq.0.d0) z4=0.000000001d0
+             !             if (est_local==1) then
+             !                if(z1.eq.0.d0) z1=0.000000001d0
+             !                if(z2.eq.0.d0) z2=0.000000001d0
+             !                if(z3.eq.0.d0) z3=0.000000001d0
+             !                if(z4.eq.0.d0) z4=0.000000001d0
 
-                !**************************************
-                v1 = one/sqrt(cm(ityp(i)))
-                vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
-                vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
-                vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
-                theta=acos(1-2*z3)
-                fhi=2*pi*z4
-               ! vp(1,i) = v1*v0*sqrt((-log(z1)))*sin(theta)*cos(fhi)
-               ! vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(theta)*sin(fhi)
-               ! vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(theta)
+             !**************************************
+             v1 = one/sqrt(cm(ityp(i)))
+             vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
+             vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
+             vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
+             theta=acos(1-2*z3)
+             fhi=2*pi*z4
+             ! vp(1,i) = v1*v0*sqrt((-log(z1)))*sin(theta)*cos(fhi)
+             ! vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(theta)*sin(fhi)
+             ! vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(theta)
 
 
-!             endif
+             !             endif
           end do
           tempsauv=tempinst(vp,ityp)
           if (rang==0) write(6,*)'temperature MI initspeed ',tempsauv
@@ -469,19 +474,19 @@ subroutine bruit_xp
              write(6,*)'sd2 de iti',sd*sd,iti
           end do
        end if
-!       decx=0
+       !       decx=0
        do i=1,im
           sd= sqrt((3*tempdeplainit*hbar**2)/(bk*cm(ityp(i))*debyetemp**2))
 
           do ic=1,3
              call gaussianrand(grnd)
-!                        write(6,*)grnd
+             !                        write(6,*)grnd
              xp(ic,i)=xp(ic,i)+sd*grnd
              xpp(ic,i)=xpp(ic,i)+sd*grnd
-!             decx(ityp(i))=decx(ityp(i))+(sd*grnd)**2
+             !             decx(ityp(i))=decx(ityp(i))+(sd*grnd)**2
           end do
        end do
-!       write(6,*)'decx',decx(1)/na(1),decx(2)/na(2)
+       !       write(6,*)'decx',decx(1)/na(1),decx(2)/na(2)
        if (lperiod.EQV..true.) call period
     end if
 
@@ -493,19 +498,19 @@ subroutine bruit_xp
 
   end subroutine initspeed
 
-subroutine gaussianrand(gr)
-  USE T_kind_param_m
-  use gen_com_m,only:pi
-  implicit none
-  real(double),intent(out)::gr
-  
-  real(double):: v1,v2,r,fac,z1,z2
+  subroutine gaussianrand(gr)
+    USE T_kind_param_m
+    USE gen_com_m, ONLY:pi
+    implicit none
+    real(double),intent(out)::gr
 
-1 continue
-  call random_number(z1)  
-  call random_number(z2)  
-  gr=sqrt(-2*log(z1))*cos(2*pi*z2)
+    real(double):: v1,v2,r,fac,z1,z2
 
-  
-end subroutine  gaussianrand
-end module
+1   continue
+    call random_number(z1)  
+    call random_number(z2)  
+    gr=sqrt(-2*log(z1))*cos(2*pi*z2)
+
+
+  end subroutine  gaussianrand
+end module initspeed_mod

@@ -8,8 +8,8 @@
 
 !     Hamiltonian type #  2, run on 93/06/09 at 15.04.43
 !     Uses subroutine seval from netlib@ornl.gov [to get it,
-!     use 'send seval from sfmm'], trivially modified to
-!     compute also dfunc and d2func and use double precision.
+!     USE 'send seval from sfmm'], trivially modified to
+!     compute also dfunc and d2func and USE double precision.
       implicit double precision (a-h,o-z)
       parameter (nv2= 17)
       parameter (argmax=   .555805441821810D+01)
@@ -118,8 +118,8 @@
 !        Generated automatically by PoCo, version 04-may-93           
 !        Hamiltonian type #  2, run on 93/06/09 at 15.04.43
 !        Uses subroutine seval from netlib@ornl.gov [to get it,
-!        use 'send seval from sfmm'], trivially modified to
-!        compute also dfunc and d2func and use double precision.
+!        USE 'send seval from sfmm'], trivially modified to
+!        compute also dfunc and d2func and USE double precision.
       implicit double precision (a-h,o-z)
       parameter (nrh= 17)
       parameter (argmax=   .555805441821810D+01)
@@ -224,8 +224,8 @@
 !        Generated automatically by PoCo, version 04-may-93           
 !        Hamiltonian type #  2, run on 93/06/09 at 15.04.43
 !        Uses subroutine seval from netlib@ornl.gov [to get it,
-!        use 'send seval from sfmm'],  trivially modified to
-!        compute also dfunc and d2func and use double precision.
+!        USE 'send seval from sfmm'],  trivially modified to
+!        compute also dfunc and d2func and USE double precision.
       implicit double precision (a-h,o-z)
       parameter (nuu= 13)
       parameter (argmin=   .000000000000000D+00)
@@ -317,8 +317,8 @@
 !
 !    where  x(i) .lt. u .lt. x(i+1), using horner's rule
 !
-!  if  u .lt. x(1) then  i = 1  is used.
-!  if  u .ge. x(n) then  i = n  is used.
+!  if  u .lt. x(1) then  i = 1  is USEd.
+!  if  u .ge. x(n) then  i = n  is USEd.
 !
 !  input..
 !

@@ -38,15 +38,17 @@ module Parrinello_Rahman
   !     Mol. Phys., 1984, 52, 255-268
 
   USE T_kind_param_m
-  use gen_com_m    
-  use var_pot
-  use recips_mod
+  USE gen_com_m, ONLY:ecellpr,h0,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,wbox,erg2ev,&
+       &h0,kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover,zhoover,zhoover,&
+       &zhoover,zhoover,zhoover,zhoover,zhoover, ihbox0,tbox  
+  USE var_pot, ONLY:
+  USE recips_mod
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
-  use calfo_mod
-  use scalebox_mod
-  use Mat_utils_mod, only : MatInv
+  USE calfo_mod
+  USE scalebox_mod
+  USE Mat_utils_mod, ONLY : MatInv
   implicit none
   ! Vecteurs de la boîte et leurs dérivées
   real(double), dimension(3,3), save , private :: h, hDot

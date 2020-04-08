@@ -1,5 +1,5 @@
 module defcdp
-  use T_kind_param_m
+  USE T_kind_param_m
 
 
   integer :: &

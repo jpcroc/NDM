@@ -1,5 +1,5 @@
 module var_pot
-  use T_kind_param_m
+  USE T_kind_param_m
   implicit none
 
   integer,parameter::npotmax=100

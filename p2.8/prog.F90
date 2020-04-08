@@ -1,17 +1,17 @@
 module prog_mod
-        use init_mod
-        use calfo_mod
-        use analyse_mod
-        use controle_mod
-        use endrun_mod
-        use neb_mod
-        use dmloop_lpr_mod
-        use loopforcetest_mod
-        use gcII_mod
-        use dmloop_vverlet_mod
-        use dmloop_mod
+        USE init_mod
+        USE calfo_mod
+        USE analyse_mod
+        USE controle_mod
+        USE endrun_mod
+        USE neb_mod
+        USE dmloop_lpr_mod
+        USE loopforcetest_mod
+        USE gcII_mod
+        USE dmloop_vverlet_mod
+        USE dmloop_mod
 #if defined ML || defined PARAML    
-        use ml_main_mod
+        USE ml_main_mod
 #endif 
         implicit none
         contains
@@ -20,11 +20,11 @@ subroutine prog
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use tab_imm_m
+  USE gen_com_m, ONLY:
+  USE tab_imm_m
 
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
 
   implicit none

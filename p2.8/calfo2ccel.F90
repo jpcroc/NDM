@@ -1,6 +1,7 @@
 module calfo2ccel_mod
-        use notperiod_mod
-        use cryst_to_cart_mod
+        USE notperiod_mod
+        USE cryst_to_cart_mod
+          USE var_pot, ONLY:alpha,csive,ipotentiel,ipo,zz,ipo,rue_pair,pot,typ_and_pot,typ_pot_pair
         implicit none
         contains
 ! ***************************************************************
@@ -9,12 +10,15 @@ subroutine calfo2ccel
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use jqmod
-  use tab_imm_m
+  USE gen_com_m , ONLY:at,bg,deltadist, espr,deltaf,espr,im,imm,it,itdes,itesigma,kspr,lambdades,&
+       &lcalcjq,ldesinteg,lperiod,lprteat,lsigtyp,ltpcel,noxyz,nstepdes,pi,pm1des,potis1,potis2,&
+      &ncel,last,free,free,free,nato,xpspr,xpspr,xpspr,sigtyptyp,sigtyp,sigc,sig,eatom,volu,deltaEspr
+
+
+  USE jqmod
+  USE tab_imm_m
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
   !...Translated by PSUITE Trans90                  4.3ZH 16:03:53   7/03/ 1
   !...Switches: -nqp -rl -xf -xhm -x

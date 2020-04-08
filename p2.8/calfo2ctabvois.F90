@@ -1,7 +1,7 @@
 module calfo2ctabvois_mod
-        use cryst_to_cart_mod
-        use calerf_mod
-        use potrep_mod
+        USE cryst_to_cart_mod
+        USE calerf_mod
+        USE potrep_mod
         implicit none
         contains
 ! **********************************************************
@@ -10,9 +10,11 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use jqmod
+  USE gen_com_m, ONLY:sig,sigat,imm,at,bg,deltaespr,deltaf,espr,im,it,itdes,itesigma,kspr,&
+       &lambdades,lcalcjq,ldesinteg,lprteat,lsigat,nstepdes,pi,pm1des,potis1,potis2,volu,indi,&
+       &free,free,free,xpspr,xpspr,xpspr,eatom
+  USE var_pot, ONLY:alpha,csive,ipo,zz,rue_pair,ipo,pot
+  USE jqmod
   ! **********************************************************
 
   implicit none

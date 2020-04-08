@@ -1,7 +1,7 @@
 module arret_ndm_mod
 #ifdef PARA
-  !use mpi
-  use mod_para, only : temps_deb,myid,temps_init,temps_input,temps_config,temps_initspeed,temps_para,temps_dmloop,ierr
+  !USE mpi
+  USE mod_para, ONLY : temps_deb,myid,temps_init,temps_input,temps_config,temps_initspeed,temps_para,temps_dmloop,ierr
 #endif
         implicit none
         contains
@@ -9,7 +9,7 @@ subroutine arret_ndm()
 
   USE T_kind_param_m
 
-  !use mpi
+  !USE mpi
   implicit none
 #ifdef PARA  
   include "mpif.h"

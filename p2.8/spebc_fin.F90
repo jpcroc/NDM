@@ -1,15 +1,22 @@
 module spebc_fin_mod
-        implicit none
-        contains
+  USE gen_com_m, ONLY:b2ssup,y_max,USEr_stress_yz,Lz_cm,thick_cryst,itespebcout,inXMdis1,&
+  &tstep,inXMdis2,i_surfSUP,i_surfINF,thick_cryst,b2sSUP,Lz_cm,USEr_stress_yz,y_max,y_2nd_max,y_min,&
+       &y_max,y_2nd_max,y_min,USEr_stress_yz,tstep, ef_strain,erg2eV,forceatinf,forceatsup,gap, i_surfINF,&
+       &inXMdis1,inXMdis2,b2sINF,tstep,ef_strain,erg2ev,gap,y_max,y_min, USEr_stress_yz,&
+       &y_2nd_max, layer_surf, Lx_cm
+
+
+  implicit none
+contains
 subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use tab_imm_m
+
+  USE tab_imm_m
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
   USE fcc_module
   USE cfg_module
@@ -46,7 +53,7 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
       Write(388, '(a,e24.16)') ' -- Surface -- (Ang2) ----- ', layer_surf*1e+16
       Write(388, '(a,e24.16)') ' -- Gap - (Ang) ----------- ', gap*1e+08
       Write(388, '(a,e24.16)') ' -- deformation ----------- ', ef_strain
-      Write(388, '(a,e24.16)') ' -- SigmaYZ -- (GPa) ------ ', user_stress_yz
+      Write(388, '(a,e24.16)') ' -- SigmaYZ -- (GPa) ------ ', USEr_stress_yz
       Write(388, '(a,i10)') ' -- Nb at dans S+ --------- ', i_surfSUP
       Write(388, '(a,i10)') ' -- Nb at dans S- --------- ', i_surfINF
       Write(388, '(a,e24.16)') ' -- f at dans S+ (eV/Ang) - ', forceatsup*1e-05*1e-10/(1.60217646e-19)
@@ -59,7 +66,7 @@ subroutine spebc_fin (flagfinloc) !(energietotale, flagfinloc)
     IF (llaurent.EQV..TRUE.) THEN			! ATTENTION : non fini, non testé !
 
       OPEN(unit=366, file='laurent.xyz', status='replace', action='write')
-        Write(366,*) imm, user_stress_yz*1000
+        Write(366,*) imm, USEr_stress_yz*1000
       	Write(366,'(3e20.12)') at(1,1)*1e+8,at(2,2)*1e+8,at(3,3)*1e+8
 	tab_bulk(:) = 0
         DO i=1,i_surfINF

@@ -7,13 +7,14 @@ subroutine calctemp(temptyp)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use var_pot
-  use gen_com_m
-  use tab_imm_m
-  use elec_cell, only: ecell,i2T,nex,ney,nez,nox_2_nex
-  use eloss, only : tcelec,ecelec
+  USE var_pot, ONLY:ntyp,cm,na
+  USE gen_com_m, ONLY:nox,noy,noz,temp,last,nato,kine,erg2ev,ltpcel,im,im_glob,tempc,&
+       &tempcm,maxTcel,imd,tempEP,zl,bk,noxyz,tempstopcel
+  USE tab_imm_m
+  USE elec_cell, ONLY: ecell,i2T,nex,ney,nez,nox_2_nex
+  USE eloss, ONLY : tcelec,ecelec
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
 
   ! *************************************************************

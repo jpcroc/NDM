@@ -1,13 +1,16 @@
 module endrun_mod
-        use analyse_mod
-        use adf_mod
-        use spebc_fin_mod
-        use desinteg_insert_mod
-        use arret_ndm_mod
-        use sauvegarde_mod
-        use calfo_mod  
-        use rdf_mod
-        use rasmol_mod
+        USE analyse_mod
+        USE adf_mod
+        USE spebc_fin_mod
+        USE desinteg_insert_mod
+        USE arret_ndm_mod
+        USE sauvegarde_mod
+        USE calfo_mod  
+        USE rdf_mod
+        USE rasmol_mod
+        USE gen_com_m, ONLY:itesauv,lprtfat,lwgin
+        use var_pot, only: eatref,eatref,eatref
+
         implicit none
         contains
 ! ****************************************************************
@@ -16,17 +19,16 @@ subroutine endrun
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use tab_imm_m
+  USE tab_imm_m
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
 #if defined ML && defined PARAML
- use time_measure
+ USE time_measure
 #endif
-  use posana
+  USE posana
   USE cfg_module
-  use elec_cell, only:  sauveelec
+  USE elec_cell, ONLY:  sauveelec
   !       version MPI du 07 f if (associated(eatom)) eatom(:)=0
 
   ! ****************************************************************

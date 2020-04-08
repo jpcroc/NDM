@@ -1,5 +1,5 @@
 module coord_to_cell_mod
-        use cryst_to_cart_mod
+        USE cryst_to_cart_mod
         implicit none
         contains
 subroutine coord_to_cell(tab_coord, cell)
@@ -7,7 +7,8 @@ subroutine coord_to_cell(tab_coord, cell)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
+  USE gen_com_m, ONLY:bg,nox,noy,noz
+
   implicit none
 
   !       version du 10 janvier 2007

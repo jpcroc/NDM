@@ -1,6 +1,7 @@
 module calccoordo_mod
-        use notperiod_mod
-        use cryst_to_cart_mod
+        USE notperiod_mod
+        USE cryst_to_cart_mod
+        USE gen_com_m, ONLY: rang,last,nato,noxyz,it,timel,imm,im,imd,at,deltadist,bg,lperiod,ncel
         implicit none
         contains
 subroutine calccoordo
@@ -8,12 +9,11 @@ subroutine calccoordo
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use tab_imm_m
+  USE tab_imm_m
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
-  use gen_com_m
-  use var_pot
+  USE var_pot, ONLY:ntyp,rc,nad
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s

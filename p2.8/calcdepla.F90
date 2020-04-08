@@ -1,5 +1,7 @@
 module calcdepla_mod
-        use cryst_to_cart_mod
+  USE cryst_to_cart_mod
+  USE var_pot, ONLY:ntyp,nad,ty
+  USE gen_com_m, ONLY:zls2,tdepla,lfilmext,it,timel,at,im,imm,bg,iko,lcasca,lfilm,rang
         implicit none 
         contains
 ! *******************************************************************
@@ -8,11 +10,10 @@ subroutine calcdepla
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use tab_imm_m
+
+  USE tab_imm_m
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
   ! pas de conditions periodiques sur xp-ax
   !       version du 09 decembre 2003

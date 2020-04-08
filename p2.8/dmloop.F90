@@ -1,13 +1,14 @@
 module dmloop_mod
-        use calfo_mod
-        use dyn_mod
-        use analyse_mod
-        use controle_mod
-        use trempe_mod
-        use sauvegarde_mod
-        use correl_mod
-        use sauveforce_mod
-        use sauveposition_mod
+        USE calfo_mod
+        USE dyn_mod
+        USE analyse_mod
+        USE controle_mod
+        USE trempe_mod
+        USE sauvegarde_mod
+        USE correl_mod
+        USE sauveforce_mod
+        USE sauveposition_mod
+        USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
         implicit none
         contains
 ! ************************************************
@@ -20,11 +21,11 @@ subroutine dmloop
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use tab_imm_m
+
+  USE tab_imm_m
   USE FireModule
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
 
   implicit none

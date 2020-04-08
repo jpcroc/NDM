@@ -1,11 +1,11 @@
 module zero2all2zero_mod
-  use T_kind_param_m, ONLY:  double
+  USE T_kind_param_m, ONLY:  double
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
-  use gen_com_m
-  use tab_imm_m
-  use cryst_to_cart_mod
+  USE gen_com_m, ONLY:imm_glob,imm
+  USE tab_imm_m
+  USE cryst_to_cart_mod
 contains
   subroutine zero2all(vectall,vectp,itypall)
     real(double),intent(in)::vectall(3,imm_glob)

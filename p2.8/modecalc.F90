@@ -7,8 +7,8 @@ subroutine modecalc
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m,only : im
-  use tab_imm_m
+  USE gen_com_m, ONLY : im
+  USE tab_imm_m
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s

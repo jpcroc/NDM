@@ -1,14 +1,17 @@
 module calfo_decalage_mod
-        use notperiod_mod
-        use cryst_to_cart_mod
+        USE notperiod_mod
+        USE cryst_to_cart_mod
         implicit none 
         contains
 !----------------------------------------------------------------------
 SUBROUTINE calfo_decalage(xp, vp,  fp,  ielat, iwmax, ityp)
   !tentative de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
-  use gen_com_m
-  use var_pot
+  USE gen_com_m, ONLY:imm,angst,at,bg,decal_bc,im,it,itesigma,ldemitab,low_limit,&
+       &lperiod,lprteat,potist,zero,indi,free,free,free,indi,sig,eatom,volu
+  USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,ipo,eamrep,eamrep_d,eamrep,&
+       &eamglue,eamglue_d,eamglue,eamrho_d,eamrho_d,eamrho,rue_pot
+
   implicit none
 
   !           version du 4 juin 2010, 15h20 - last chaged by MCM (xpnp sa mere)

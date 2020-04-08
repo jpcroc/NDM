@@ -1,23 +1,23 @@
 module work_cgII
 
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m, ONLY: im, imm,at, inv_angst, lperiod, rang, &
+  USE gen_com_m, ONLY: im, imm,at, inv_angst, lperiod, rang, &
                        it, itesauv, itesauvposition, itesauvforce, &
-                       inv_angst, erg2ev, angst, &
+                       inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
                        dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz
-  use controle_mod
-  use calfo_mod
-  use analyse_mod
-  use sauvegarde_mod
-  use sauveposition_mod
-  use sauveforce_mod
-  use caltabt_mod
-  use config_mod
-  use zero2all2zero_mod
+  USE controle_mod
+  USE calfo_mod
+  USE analyse_mod
+  USE sauvegarde_mod
+  USE sauveposition_mod
+  USE sauveforce_mod
+  USE caltabt_mod
+  USE config_mod
+  USE zero2all2zero_mod
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
-  use tab_imm_m, only : xp, fp,num_at_glob
+  USE tab_imm_m, ONLY : xp, fp,num_at_glob
   
   implicit none
 
@@ -26,7 +26,7 @@ contains
 
   subroutine FUNCT(N,X,F,G,NCALLS,                      &
        xp_local,  fp_local,   ityp_local,ims)
-    use tab_imm_m, only : xp, fp,num_at_glob
+    USE tab_imm_m, ONLY : xp, fp,num_at_glob
 
     real(double),intent(in):: X(N)
     real(double),intent(out)::G(N),F
@@ -219,21 +219,21 @@ contains
 !    write(6,*)'1rg cel nat',rang, ko,nato(ko)
     !end do
 !     write(6,*)'im_glob', im_glob
-!    open(unit=607, file='xpG.csv', form='formatted', &
-!             status='unknown')
-!    do i=1,im_glob
-!      !       write(6,*)rang,i,xp_all(:,i)
-!       write(607,'(I6,3G22.13)') i,xp(:,i)
-!    end do
+    open(unit=607, file='xpG.csv', form='formatted', &
+             status='unknown')
+    do i=1,im_glob
+      !       write(6,*)rang,i,xp_all(:,i)
+       write(607,'(I6,3G22.13)') i,xp(:,i)
+    end do
 
     
     call calfo
-!    open(unit=606, file='fpG.csv', form='formatted', &
-!             status='unknown')
-!    do i=1,im_glob
-!      !       write(6,*)rang,i,xp_all(:,i)
-!       write(606,'(I6,3G22.13)') i,fp(:,i)
-!    end do
+    open(unit=606, file='fpG.csv', form='formatted', &
+             status='unknown')
+    do i=1,im_glob
+      !       write(6,*)rang,i,xp_all(:,i)
+       write(606,'(I6,3G22.13)') i,fp(:,i)
+    end do
 
 !#ifdef PARA
 !    lenfn2=2

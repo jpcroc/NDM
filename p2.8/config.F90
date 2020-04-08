@@ -1,9 +1,9 @@
 module config_mod
-        use period_mod
-        use divid_mod
+        USE period_mod
+        USE divid_mod
 #ifdef PARA
-        use coord_to_cell_mod
-        use decoupage_mod
+        USE coord_to_cell_mod
+        USE decoupage_mod
 #endif
         implicit none
         contains
@@ -16,12 +16,12 @@ subroutine config
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use tab_imm_m
-  use suivinonpbc
+  USE gen_com_m, ONLY:
+  USE var_pot, ONLY:
+  USE tab_imm_m
+  USE suivinonpbc
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
 
   implicit none
@@ -843,7 +843,7 @@ subroutine config
      !   M o d u l e s
      !-----------------------------------------------
      USE T_kind_param_m, ONLY:  double
-     use gen_com_m
+     USE gen_com_m, ONLY:
 
      implicit none
 
@@ -875,9 +875,9 @@ end subroutine coord_to_cellcoord
 
 subroutine config2data (imm,im,xp,ityp,at,ntyp)
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m,only : position_conversion_lammps
-  use var_pot, only:q,ipotentiel
-  use Mat_utils_mod
+  USE gen_com_m, ONLY:,ONLY : position_conversion_lammps
+  USE var_pot, ONLY:q,ipotentiel
+  USE Mat_utils_mod
   implicit none
   integer,intent(in)::imm,im,ntyp
   real(double),intent(in)::xp(3,imm),at(3,3)
@@ -1003,7 +1003,7 @@ end subroutine config2data
 
 !---------------------------------------------------
 subroutine convert_cell(mat_ini,new_mat,transform)
-  use Mat_utils_mod
+  USE Mat_utils_mod
 
 
   implicit none

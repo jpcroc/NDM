@@ -1,5 +1,6 @@
 module epme_mod
-        use moduli_mod 
+  USE moduli_mod
+    USE gen_com_m, ONLY:it,itesigma,pi,potis3,volu,zero,bg,tabv3,bg
         implicit none 
         contains
 !                   Version du 10/12/2001
@@ -9,10 +10,11 @@ subroutine epme (Deb,Fin,sige)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m
-  use gen_com_m
-  use var_pot
-  use fft_com_m
-  use tab_imm_m
+
+  USE var_pot, ONLY:alpha,auxe,maxorder,kpmex,kpmey,kpmez,ncoucx,ncoucy,ncoucz,nf1,nf2,nf3,nff,nfft1,nfft2,nfft3,&
+       &npoint,pterm,volterm,fr1,fr2,fr3,iiim,q,bsmod3,iiim,ijim,ikim,bsmod2,de3,bsmod1,de2,de1
+  USE fft_com_m
+  USE tab_imm_m
   implicit none
 
   !#ifdef para2c

@@ -1,6 +1,6 @@
 module calfo3c_mod
-        use cryst_to_cart_mod
-        use notperiod_mod
+        USE cryst_to_cart_mod
+        USE notperiod_mod
         implicit none 
         contains
 ! *****************************************************************
@@ -10,8 +10,10 @@ subroutine calfo3c(xp,  vp,  fp, ielat, iwmax, ityp)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
+  USE gen_com_m, ONLY:imm,bg,free,im,natperc,it,itesigma,lperiod,ltpcel,noxyz,potcp,potist,&
+       &precexp,volu,at,ncel,last,deltadist,deltadist,deltadist,nato,sig,sigc
+
+  USE var_pot, ONLY:r3cm2,ipo3c,ipo,coup3c2,ipo,coup3c2,coup3c,coup3c,gam,lamb,cangle,c3c
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s

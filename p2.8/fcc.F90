@@ -1,6 +1,7 @@
 MODULE fcc_module
-        use cryst_to_cart_mod
-
+  USE T_kind_param_m, ONLY:  double
+  USE cryst_to_cart_mod
+  USE gen_com_m, ONLY:at,imm,bg,im,indi
 
 CONTAINS
 
@@ -14,7 +15,7 @@ CONTAINS
     ! Defect atoms, ie atoms which do not have fcc stacking, are gathered into
     ! clusters and fcc_cluster(i) is the index of the corresponding cluster
     ! This subroutine assumes that the axes are x = [110]/2, y = [-112]/2, z = [1-11]
-    USE gen_com_m
+
     IMPLICIT NONE
 
     REAL(double)  :: xp(3,imm)
@@ -32,7 +33,7 @@ CONTAINS
     INTEGER, parameter :: max_nVoisins=14
     INTEGER, dimension(:,:), allocatable :: iVoisins
 
-    ! Variables used for clusters
+    ! Variables USEd for clusters
     !  icl(i): label of the cluster which atom i belongs to
     !  ncl(i): number of atoms in cluster i
     INTEGER, dimension(:), allocatable :: icl, ncl

@@ -1,8 +1,8 @@
 module contrainte
 
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
+  USE gen_com_m, ONLY:imm,imm,im,dmtype,im,at,bg
+  USE var_pot, ONLY:cm
   implicit none
 
   ! Constraint
@@ -11,7 +11,7 @@ module contrainte
   ! Tell if constraint is applied on reduced or cartesian coordinates
   LOGICAL, save, private :: reduced
 
-  ! Variables used when reduced=.true.
+  ! Variables USEd when reduced=.true.
   real(double), dimension(1:3,1:3), save, private :: inv_at, trans_at, trans_inv_at
 
 
@@ -77,17 +77,17 @@ contains
     END IF
 
     IF (reduced.AND.(dmtype.NE.30)) THEN
-            WRITE(0,'(a)') "You have to use &
+            WRITE(0,'(a)') "You have to USE &
                 &minimization on reduced coordinate when applying &
                 & a constraint on reduced coordinates"
             WRITE(0,'(a)') "Use dmtype=30"
             STOP '< InitContr >'
     END IF
     IF ((.NOT.reduced).AND.(dmtype.EQ.30)) THEN
-            WRITE(0,'(a)') 'You cannot use minimization on &
+            WRITE(0,'(a)') 'You cannot USE minimization on &
                 &reduced coordinates when applying a constraint on &
                 &cartesian coordinate'
-            WRITE(0,'(a)') "Do not use dmtype=30"
+            WRITE(0,'(a)') "Do not USE dmtype=30"
             STOP '< InitContr >'
     END IF
 
@@ -138,7 +138,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m, ONLY : im, imm
+    USE gen_com_m, ONLY : im, imm
     implicit none
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e r s

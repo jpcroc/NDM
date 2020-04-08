@@ -1,19 +1,19 @@
 module eloss
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m,only:ev2erg,rang,tstep,elosscel,tempc,l2T,erg2eV,im,iko,noxyz
-  use var_pot,only:ntyp,cm,gamlt
-  use tab_imm_m,only:fp,vp,ityp,ielat,num_at_glob
+  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,tempc,l2T,erg2eV,im,iko,noxyz
+  USE var_pot, ONLY:ntyp,cm,gamlt
+  USE tab_imm_m,ONLY:fp,vp,ityp,ielat,num_at_glob
 
 
-  !  use eam,only:
-  !  use eamerco,only:
-  !  use SMjuli,only:
-  !  use jqmod,only:
-  !  use neb_module,only:
-  !  use defcdp, ONLY :
-  !  use var_pot
+  !  USE eam,ONLY:
+  !  USE eamerco,ONLY:
+  !  USE SMjuli,ONLY:
+  !  USE jqmod,ONLY:
+  !  USE neb_module,ONLY:
+  !  USE defcdp, ONLY :
+  !  USE var_pot, ONLY:
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif 
 
   ! **************************************************************

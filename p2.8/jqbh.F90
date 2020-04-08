@@ -1,15 +1,17 @@
 module jqbh_mod
-        use tempinst_mod
-        use cryst_to_cart_mod
+        USE tempinst_mod
+        USE cryst_to_cart_mod
+        USE gen_com_m, ONLY:at,bg,epcoud,epsil,erg2ev,erg2joule,im,it,ittherm,kthg,njqbh,ntr,&
+             &rang,rulayer,tstep,nzl,zl,zls2
+
         implicit none
         contains
 subroutine jqbh (xp,xpp,vp,ityp)
 
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
+  USE var_pot, ONLY:cm
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
   implicit none
   !-----------------------------------------------
@@ -45,7 +47,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
   logical :: loc(imm)
   !real(double):: dTtot,tempact,dTloc,tempinst,crulinv
   real(double):: dTtot,tempact,dTloc,crulinv
-  ! tempinst does not need declaration because it is declared in tempinst_mod
+  ! tempinst does not need declaration becaUSE it is declared in tempinst_mod
   if(it.eq.1) then
      if(rang==0) write(6,*)'condutivité thermique méthode directe'
 

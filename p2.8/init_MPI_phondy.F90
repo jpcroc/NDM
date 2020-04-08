@@ -1,6 +1,6 @@
 #ifdef PHONDY
 module mod_para_phondy 
- use mpi
+ USE mpi
      integer, dimension(MPI_STATUS_SIZE) :: statut
      integer :: nb_procsph,codeph
 end module mod_para_phondy
@@ -10,10 +10,10 @@ end module mod_para_phondy
 
 subroutine init_mpi_phondy()
 
-  use mpi
-  use mod_para_phondy
-  use gen_mpi
-  use gen_com_m , ONLY: rangph
+  USE mpi
+  USE mod_para_phondy
+  USE gen_mpi
+  USE gen_com_m, ONLY: , ONLY: rangph
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM

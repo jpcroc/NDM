@@ -1,9 +1,9 @@
 module gcII_mod
-  use endrun_mod
-  use analyse_mod
-  use initspeed_mod
-  use gcmodII_mod
-  use tab_imm_m
+  USE endrun_mod
+  USE analyse_mod
+  USE initspeed_mod
+  USE gcmodII_mod
+  USE tab_imm_m
   implicit none
 
 contains
@@ -13,10 +13,10 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
-    use var_pot
-    use work_cgII
-    !  use tab_imm_m, ONLY : bruitmd
+    USE gen_com_m, ONLY:
+    USE var_pot, ONLY:
+    USE work_cgII
+    !  USE tab_imm_m, ONLY : bruitmd
     ! *************************************************************
     ! xp positions des atomes
     ! xpp previous positions

@@ -1,6 +1,6 @@
 #ifdef MAB
 module mod_para_mab 
- use mpi
+ USE mpi
      integer, dimension(MPI_STATUS_SIZE) :: statut
      integer :: nb_procsmab,codemab
 end module mod_para_mab
@@ -10,10 +10,10 @@ end module mod_para_mab
 
 subroutine init_mpi_mab()
 
-  use mpi
-  use mod_para_mab
-  use gen_mpi
-  use gen_com_m , ONLY: rangmab
+  USE mpi
+  USE mod_para_mab
+  USE gen_mpi
+  USE gen_com_m, ONLY: , ONLY: rangmab
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM

@@ -8,26 +8,26 @@ program ndm
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m 
-  use prog_mod
-  use readdm_mod
-  use arret_ndm_mod
+  USE gen_com_m, ONLY: 
+  USE prog_mod
+  USE readdm_mod
+  USE arret_ndm_mod
 #ifdef PARA
-  use mod_para
-  use init_mpi_mod
+  USE mod_para
+  USE init_mpi_mod
 #endif
 
 #ifdef MAB
-  use mod_mpi_mab
+  USE mod_mpi_mab
 #endif
 
 #if defined PHONDY && defined PARAPH
- use mod_mpi_phondy
+ USE mod_mpi_phondy
 #endif
 #if defined ML && defined PARAML
- use mod_mpi_ml
- use init_mpi_ml_mod
- use gen_init_mpi_mod
+ USE mod_mpi_ml
+ USE init_mpi_ml_mod
+ USE gen_init_mpi_mod
 
 #endif
 

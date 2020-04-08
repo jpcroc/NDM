@@ -177,7 +177,7 @@ subroutine boxmat
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
+  USE gen_com_m, ONLY: at, ati, volu
   ! *********************************************************************
   implicit none
   !-----------------------------------------------

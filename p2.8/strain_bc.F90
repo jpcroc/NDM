@@ -1,4 +1,12 @@
 module strain_bc_mod
+   USE gen_com_m, ONLY:ef_strain,gap,i_surfinf,i_surfmax,i_surfmin,i_surfsup,&
+        &layer_surf,tstep,user_strainrate,b2sinf,b2ssup,b2ssup,b2sinf,b2sinf,b2ssup,b2ssup,b2sinf,b2sinf,&
+        &currentstress,fdbkcoef,forceatinf,forceatsup,i_surfinf,i_surfmax,i_surfmin,i_surfsup,layer_surf,&
+        lz_cm,thickness,tstep,user_strainrate,y_max,y_min,ef_strain,forceatinf,forceatsup,gap,i_surfinf,&
+        i_surfmax,i_surfmin,i_surfsup,ldyn2d,b2sinf,b2ssup,b2ssup,b2sinf,b2sinf,b2ssup,b2ssup,b2sinf,&
+        &b2sinf,b2ssup,b2ssup,b2sinf
+
+
         implicit none
         contains
 subroutine strain_bc
@@ -6,10 +14,10 @@ subroutine strain_bc
  	!   M o d u l e s
  	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
-	use gen_com_m
-	use tab_imm_m
-        use eam
-  	use posana
+
+	USE tab_imm_m
+        USE eam
+  	USE posana
 	
 	implicit none
 	!-----------------------------------------------
@@ -86,7 +94,7 @@ subroutine strain_bc
 	   mo_strr_inf   = - 2.*mo_strr_inf    /(i_surfINF*gap*tstep)
 	   ef_strain     = mo_strain_inf
 	   ef_strrate    = mo_strr_inf
-	   th_strain     = user_strainrate * tstep * it
+	   th_strain     = USEr_strainrate * tstep * it
 	   Write(119, '(e24.16,2x,e24.16)')  ef_strain, (-(moy_sup*1E-5)*i_surfSUP/layer_surf*1e-04)*1E-9
 	End if
 end subroutine strain_bc
@@ -104,10 +112,10 @@ subroutine surf_calc
  	!   M o d u l e s
  	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
-	use gen_com_m
-	use tab_imm_m
-        use eam
-  	use posana
+	USE gen_com_m, ONLY:
+	USE tab_imm_m
+        USE eam
+  	USE posana
 	
 	implicit none
 	!-----------------------------------------------

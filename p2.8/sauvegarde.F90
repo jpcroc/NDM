@@ -1,12 +1,13 @@
 module sauvegarde_mod
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
-    use tab_imm_m
-    use elec_cell, only : sauveelec
-    use cryst_to_cart_mod
+    USE gen_com_m, ONLY:at,bg,im,im_glob,imm,rang,at,fnamcout,formatsauv,im_glob,it,itesauvinter,&
+         &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca
+    USE tab_imm_m
+    USE elec_cell, ONLY : sauveelec
+    USE cryst_to_cart_mod
 #ifdef PARA
-    use mod_para
+    USE mod_para
 #endif
 
 

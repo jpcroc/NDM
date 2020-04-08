@@ -1,6 +1,6 @@
 module force_tersoff_facteurs
   USE T_kind_param_m
-  use var_pot, ONLY:  ipotentiel
+  USE var_pot, ONLY:  ipotentiel
   implicit none
 
   real(double),dimension (:), pointer :: lambda1,lambda2,lambda3,Ater,Bter,psi

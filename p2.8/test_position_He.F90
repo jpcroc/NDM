@@ -18,7 +18,7 @@ subroutine test_position_He (xp, at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,ns
 
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
   implicit none
   !variables passées

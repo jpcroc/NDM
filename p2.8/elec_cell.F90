@@ -1,10 +1,10 @@
 module elec_cell
-  use T_kind_param_m
-  use gen_com_m, only : nox,noy,noz, noxyz,nzl,bk,imm,nato,last,im_glob,tstep,erg2eV,pi,rang,elosscel,lenfnam,fnam,lrestart,lTPcel&
+  USE T_kind_param_m
+  USE gen_com_m, ONLY: nox,noy,noz, noxyz,nzl,bk,imm,nato,last,im_glob,tstep,erg2eV,pi,rang,elosscel,lenfnam,fnam,lrestart,lTPcel&
        &,joule2erg,erg2eV,it,timel,it,igen,lrestart,itesauvinter
-  use var_pot,only:cm
-  use tab_imm_m, only : num_at_glob,ielat
-  use eloss,only :Ecelec ,elstopforce,ngrdel
+  USE var_pot, ONLY:cm
+  USE tab_imm_m, ONLY : num_at_glob,ielat
+  USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
   !
   implicit none
   type :: ecelltype
@@ -222,7 +222,7 @@ contains
 
 
 #ifdef PARA
-    use mod_para
+    USE mod_para
 #endif
 
     real(double)  :: xp(3,imm)

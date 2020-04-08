@@ -1,15 +1,15 @@
 module controle_mod
-        use endrun_mod 
-        use dynalloccell
-        use tempinst_mod
-        use jqbh_mod
-        use caltabt_mod
-        use desinteg_insert_mod
-        use period_mod
-        use caltabi_mod
-        use heat_mod
-        use creadp_mod
-        use deftimestep_mod
+        USE endrun_mod 
+        USE dynalloccell
+        USE tempinst_mod
+        USE jqbh_mod
+        USE caltabt_mod
+        USE desinteg_insert_mod
+        USE period_mod
+        USE caltabi_mod
+        USE heat_mod
+        USE creadp_mod
+        USE deftimestep_mod
         implicit none
         contains
 ! ***********************************************************
@@ -21,14 +21,17 @@ subroutine controle
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use tab_imm_m
-  use suivinonpbc
+  USE gen_com_m, ONLY:deltaestop,epcou,fpstop,fsumstop,ibordcou,itab,itederive,iteheat,itetabvois,&
+       &landerscou,lastcool,lcdp,ljqbh,lprtrp,ltandersen,maxtcel,nbmoye,nuandersen,sigstop,tcooling,&
+       &tempstop,tfroi,timemax,ttol
+
+  USE var_pot, ONLY:
+  USE tab_imm_m
+  USE suivinonpbc
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif
-  use defcdp, ONLY :itecdp
+  USE defcdp, ONLY :itecdp
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s

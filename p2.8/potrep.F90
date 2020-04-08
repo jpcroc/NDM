@@ -12,7 +12,7 @@ subroutine potrep(csive,r0rep,V0rep,ngrid,ntyp,npair)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE var_pot, ONLY : ipo, pot,lue_paire
+  USE var_pot, ONLY: ipo, pot,lue_paire
 
   implicit none
   !-----------------------------------------------

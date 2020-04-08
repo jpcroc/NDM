@@ -6,8 +6,8 @@ MODULE FireModule
   !       Phys. Rev. Lett. 97, 170201 (2006).
 
   USE T_kind_param_m, ONLY:  double
-  use period_mod
-
+  USE period_mod
+  USE gen_com_m, ONLY:imm,im,lperiod,tstep,usdh,tstep
   ! --- Paramètres de l'algorithme fire -----------------------
   real(double), parameter, private :: finc=1.1
   real(double), parameter, private :: fdec=0.5
@@ -20,7 +20,8 @@ CONTAINS
 
 SUBROUTINE init_trempe_fire(dt, nstep, alph)
 
-  USE gen_com_m, ONLY : tstep
+
+
   implicit none
   REAL(double), intent(out) :: dt
   INTEGER, intent(out) :: nstep
@@ -39,8 +40,8 @@ subroutine trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
-  use gen_com_m
-  use var_pot
+  USE gen_com_m, ONLY:
+  USE var_pot, ONLY:ntyp,cm
   implicit none
 
   integer  :: ielat(imm)

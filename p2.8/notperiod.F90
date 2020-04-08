@@ -1,6 +1,6 @@
 
 module notperiod_mod
-        use cryst_to_cart_mod
+        USE cryst_to_cart_mod
         implicit none
         contains
 
@@ -10,7 +10,7 @@ subroutine notperiod(xp, xpnp)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
+  USE gen_com_m, ONLY:imm,at,bg,im,low_limit,zero
 
   !       version du 09 decembre 2003
 

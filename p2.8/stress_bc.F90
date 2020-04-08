@@ -1,4 +1,8 @@
 module stress_bc_mod
+  USE gen_com_m, ONLY:currentstress,fdbkcoef,forceatinf,forceatsup,i_surfinf,i_surfmax,i_surfmin,&
+       &i_surfsup,layer_surf,lz_cm,thickness,tstep,user_strainrate,y_max,y_min,ef_strain,forceatinf,&
+       &forceatsup,gap,i_surfinf,i_surfmax,i_surfmin,i_surfsup,ldyn2d,b2sinf,b2ssup,b2ssup,b2sinf&
+       &,b2sinf,b2ssup,b2ssup,b2sinf,b2sinf,b2ssup,b2ssup,b2sinf
         implicit none 
         contains
 subroutine stress_bc
@@ -6,10 +10,11 @@ subroutine stress_bc
  	!   M o d u l e s
  	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
-	use gen_com_m
-	use tab_imm_m
-	use eam
-	use posana
+
+
+	USE tab_imm_m
+	USE eam
+	USE posana
         USE cfg_module
 	
 	implicit none
@@ -149,10 +154,10 @@ subroutine recalc_stress
  	!   M o d u l e s
  	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
-	use gen_com_m
-	use tab_imm_m
-	use eam
-	use posana
+	USE gen_com_m, ONLY:
+	USE tab_imm_m
+	USE eam
+	USE posana
 	
 	implicit none
 	!-----------------------------------------------
@@ -205,7 +210,7 @@ subroutine recalc_stress
 
    ! calcul de l'erreur sur gamma_pt - on corrige sigma en consequence
 	!currentstress = 0.2e-23
-	currentstress = currentstress - fdbkcoef*(gamma_pt - user_strainrate)
+	currentstress = currentstress - fdbkcoef*(gamma_pt - USEr_strainrate)
 	!currentstress en Gpa
 
    ! on recalcule maitenant les forces à appliquer sur les atomes	
@@ -242,10 +247,10 @@ subroutine it_countdown
  	!   M o d u l e s
  	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
-	use gen_com_m
-	use tab_imm_m
-	use eam
-	use posana
+	USE gen_com_m, ONLY:
+	USE tab_imm_m
+	USE eam
+	USE posana
 	
 	implicit none
 	!-----------------------------------------------

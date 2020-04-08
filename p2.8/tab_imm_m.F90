@@ -2,7 +2,7 @@ module tab_imm_m
   !
   USE T_kind_param_m
   USE gen_com_m, ONLY: lsuivinonpbc,lposmoy,mdcg_noise,llangevin,l2T
-  !$ use OMP_LIB
+  !$ USE OMP_LIB
   ! 
   ! Module contenant les tableaux dimmensionnes sur le
   ! nombre d'atomes de la simulation

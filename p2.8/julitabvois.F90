@@ -1,6 +1,8 @@
 module calfojuli_mod
-        use notperiod_mod
-        use cryst_to_cart_mod
+        USE notperiod_mod
+        USE cryst_to_cart_mod
+        USE gen_com_m, ONLY:imm,at,bg,nvat,fnemd,free,im,imd,lcalcjq,lnemd,lperiod,&
+             potist,zero,indi,indi,indi,sig,eatom,volu
         implicit none
         contains
 
@@ -8,10 +10,10 @@ module calfojuli_mod
 SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   !tentaive de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
-  use gen_com_m
-  use var_pot
-  use SMjuli
-  use jqmod
+
+  USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot
+  USE SMjuli
+  USE jqmod
   implicit none
 
   !-----------------------------------------------

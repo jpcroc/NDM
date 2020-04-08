@@ -8,8 +8,8 @@ module gen_init_mpi_mod
   contains
 subroutine gen_init_mpi()
 
-  use mpi
-  use gen_mpi, only: code_mpi, nb_procs_mpi, rang_mpi
+  USE mpi
+  USE gen_mpi, ONLY: code_mpi, nb_procs_mpi, rang_mpi
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM

@@ -1,6 +1,7 @@
 module heat_mod
-        use notperiod_mod
-        use cryst_to_cart_mod
+        USE notperiod_mod
+        USE cryst_to_cart_mod
+          USE gen_com_m, ONLY:at,bg,bk,eheat,im,imm,lperiod,rheat,theat
         implicit none
         contains
 ! *************************************************************
@@ -9,10 +10,9 @@ subroutine heat
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use var_pot
-  use jqmod
-   use tab_imm_m
+  USE var_pot, ONLY:cm
+  USE jqmod
+   USE tab_imm_m
 
 
 

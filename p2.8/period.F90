@@ -1,5 +1,5 @@
 module period_mod
-        use cryst_to_cart_mod
+        USE cryst_to_cart_mod
         implicit none 
         contains
 ! *****************************************************************
@@ -8,8 +8,8 @@ subroutine period
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  use gen_com_m
-  use tab_imm_m
+  USE gen_com_m, ONLY:at,bg,DECAL_bc,imm,ldecal_bc,low_limit,lperiod,zero
+  USE tab_imm_m
 
   !       version du 09 decembre 2003
 

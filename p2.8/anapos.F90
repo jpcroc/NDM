@@ -1,11 +1,13 @@
 module posana
   USE T_kind_param_m
-  use caltabt_mod
-  use sic
-  use var_pot
-  use period_mod
-  use recips_mod
-  !use configcr_mod
+  USE caltabt_mod
+  USE sic
+  USE var_pot, ONLY:nas,rclu,ty,na,rc,ntyp
+  USE period_mod
+  USE recips_mod
+  USE gen_com_m, ONLY: at,zl,last,ncel,deltadist,fnam,im,imm,rang,lperiod,pi,bg,nato,noxyz,npath,ibound,im_glob,&
+       &dmtype,eatom,decal_bc,noy,nox,noz,ldecal_bc,lenfnam,it,imd,zl,nato,imm_glob,natperc,timel
+  !USE configcr_mod
   logical :: lsic
     logical :: lcomp, & ! comparaison ou non avec un cristal de dÃ©part
          ldecal, & ! decalage en tre boite cr et boite ana
@@ -40,10 +42,10 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m
-    use gen_com_m
-    use tab_imm_m
+
+    USE tab_imm_m
 #ifdef PARA 
-    use mod_para
+    USE mod_para
 #endif
 
     ! **************************************************************
@@ -249,7 +251,6 @@ contains
   subroutine nbvois(xp, ityp,ielat,icall,nbvoisparf,itapp)
 
     USE T_kind_param_m
-    use gen_com_m
     implicit none
     !variables transmises
     integer , intent(in)  :: ielat(imm),nbvoisparf(20,20)
@@ -609,9 +610,8 @@ contains
   !**********************************************************
   subroutine depcr(tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep,ldeptest)
     USE T_kind_param_m
-    use gen_com_m
-    use tab_imm_m
-    use tabcr
+    USE tab_imm_m
+    USE tabcr
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
@@ -1075,7 +1075,6 @@ contains
   !**************** PLOT PART****
   subroutine plotpart(xp,plmin,plmax,ityp)
     USE T_kind_param_m
-    use gen_com_m
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
@@ -1118,9 +1117,9 @@ contains
 
   subroutine ws
     USE T_kind_param_m
-    use gen_com_m
-    use tab_imm_m
-    use tabcr
+
+    USE tab_imm_m
+    USE tabcr
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
@@ -1398,8 +1397,7 @@ contains
 
   subroutine subc(nvac,indvac,nint,indint)
     USE T_kind_param_m
-    use gen_com_m
-    use tab_imm_m
+    USE tab_imm_m
 
     type:: deftype
        real(double)::xd(3)
@@ -1672,8 +1670,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
-    !use posana, ONLY : imcr
+    !USE posana, ONLY : imcr
     implicit none
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e r s

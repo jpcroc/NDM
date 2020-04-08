@@ -130,7 +130,7 @@
 
 module gcmodII_mod
 #ifdef PARA
-  use mod_para
+  USE mod_para
 #endif  
   implicit none 
 contains
@@ -138,8 +138,8 @@ contains
   SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS, &
        xp_all,  fp_all, ityp_all,ims)
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m,only:dfpred,rang
-    !  use gen_com_m
+    USE gen_com_m, ONLY:dfpred,rang
+    !  USE gen_com_m, ONLY:
     !                                  SPECIFICATIONS FOR ARGUMENTS         
 
     INTEGER            N,MAXFN,IER   ,ims,iopt                              
