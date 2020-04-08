@@ -261,25 +261,25 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
 
         if (test_sigma) then                   
                 IF (ldemitab) THEN
-                        sig(1:3,1) = sig(1:3,1) - inv_volu*fij(1:3)*dxp(1)
-                        sig(1:3,2) = sig(1:3,2) - inv_volu*fij(1:3)*dxp(2)
-                        sig(1:3,3) = sig(1:3,3) - inv_volu*fij(1:3)*dxp(3)
+                        sig(1:3,1) = sig(1:3,1) + inv_volu*fij(1:3)*dxp(1)
+                        sig(1:3,2) = sig(1:3,2) + inv_volu*fij(1:3)*dxp(2)
+                        sig(1:3,3) = sig(1:3,3) + inv_volu*fij(1:3)*dxp(3)
                         IF (lSigat) THEN
-                                sigat(1:3,1,i) = sigat(1:3,1,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
-                                sigat(1:3,2,i) = sigat(1:3,2,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
-                                sigat(1:3,3,i) = sigat(1:3,3,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
-                                sigat(1:3,1,j) = sigat(1:3,1,j) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
-                                sigat(1:3,2,j) = sigat(1:3,2,j) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
-                                sigat(1:3,3,j) = sigat(1:3,3,j) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                                sigat(1:3,1,i) = sigat(1:3,1,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
+                                sigat(1:3,2,i) = sigat(1:3,2,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
+                                sigat(1:3,3,i) = sigat(1:3,3,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                                sigat(1:3,1,j) = sigat(1:3,1,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
+                                sigat(1:3,2,j) = sigat(1:3,2,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
+                                sigat(1:3,3,j) = sigat(1:3,3,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
                         END IF
                 ELSE
-                        sig(1:3,1) = sig(1:3,1) - 0.5d0*inv_volu*fij(1:3)*dxp(1)
-                        sig(1:3,2) = sig(1:3,2) - 0.5d0*inv_volu*fij(1:3)*dxp(2)
-                        sig(1:3,3) = sig(1:3,3) - 0.5d0*inv_volu*fij(1:3)*dxp(3)
+                        sig(1:3,1) = sig(1:3,1) + 0.5d0*inv_volu*fij(1:3)*dxp(1)
+                        sig(1:3,2) = sig(1:3,2) + 0.5d0*inv_volu*fij(1:3)*dxp(2)
+                        sig(1:3,3) = sig(1:3,3) + 0.5d0*inv_volu*fij(1:3)*dxp(3)
                         IF (lSigat) THEN
-                                sigat(1:3,1,i) = sigat(1:3,1,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
-                                sigat(1:3,2,i) = sigat(1:3,2,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
-                                sigat(1:3,3,i) = sigat(1:3,3,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                                sigat(1:3,1,i) = sigat(1:3,1,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
+                                sigat(1:3,2,i) = sigat(1:3,2,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
+                                sigat(1:3,3,i) = sigat(1:3,3,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
                         END IF
                 END IF
         end if
