@@ -277,9 +277,9 @@ SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
                         sig(1:3,2) = sig(1:3,2) - 0.5d0*inv_volu*fij(1:3)*dxp(2)
                         sig(1:3,3) = sig(1:3,3) - 0.5d0*inv_volu*fij(1:3)*dxp(3)
                         IF (lSigat) THEN
-                                sigat(1:3,1,i) = sigat(1:3,1,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
-                                sigat(1:3,2,i) = sigat(1:3,2,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
-                                sigat(1:3,3,i) = sigat(1:3,3,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                                sigat(1:3,1,i) = sigat(1:3,1,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
+                                sigat(1:3,2,i) = sigat(1:3,2,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
+                                sigat(1:3,3,i) = sigat(1:3,3,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
                         END IF
                 END IF
         end if
