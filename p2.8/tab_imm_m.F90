@@ -7,25 +7,25 @@ module tab_imm_m
   ! Module contenant les tableaux dimmensionnes sur le
   ! nombre d'atomes de la simulation
 
-  integer, dimension(:), pointer       :: ielat  ! numero de cellule
-  integer, dimension(:), pointer       :: iwmax  ! indice du dernier voisin
-  integer, dimension(:), pointer       :: iwmax2  ! indice du dernier voisin pour les constantes de force (only phondy)
-  integer, dimension(:), pointer       :: ityp   ! types 
-  integer, dimension(:), pointer       :: ityp_buffer   ! temp/iorary store the types buffer when we
+  integer, dimension(:), allocatable       :: ielat  ! numero de cellule
+  integer, dimension(:), allocatable       :: iwmax  ! indice du dernier voisin
+  integer, dimension(:), allocatable       :: iwmax2  ! indice du dernier voisin pour les constantes de force (only phondy)
+  integer, dimension(:), allocatable       :: ityp   ! types 
+  integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when we
                                                         ! perform temporary changes on ityp 
-  real(double),dimension(:,:), pointer :: xp     ! positions 
-  real(double),dimension(:,:), pointer :: xpp    ! positions precedentes
-  real(double),dimension(:,:), pointer :: vp     ! vitesses
-  real(double),dimension(:,:), pointer :: ax     ! positions d'origine
-  real(double),dimension(:,:), pointer :: posmoyx     ! positions moyennes
-  real(double),dimension(:,:), pointer :: fp     ! forces 
-  real(double),dimension(:,:), pointer :: bruitmd     ! bruitmd 
-  real(double),dimension(:,:), pointer :: xpnonpbc    ! only in the case, lsuivinonpbc  
-  real(double),dimension(:,:), pointer :: axnonpbc    ! only in the case, lsuivinonpbc  
-  real(double),dimension(:,:), pointer :: tmpsuivi    ! only in the case, lsuivinonpbc  
-  real(double),dimension(:,:), pointer :: Gl    ! random noise langevin
+  real(double),dimension(:,:), allocatable :: xp     ! positions 
+  real(double),dimension(:,:), allocatable :: xpp    ! positions precedentes
+  real(double),dimension(:,:), allocatable :: vp     ! vitesses
+  real(double),dimension(:,:), allocatable :: ax     ! positions d'origine
+  real(double),dimension(:,:), allocatable :: posmoyx     ! positions moyennes
+  real(double),dimension(:,:), allocatable :: fp     ! forces 
+  real(double),dimension(:,:), allocatable :: bruitmd     ! bruitmd 
+  real(double),dimension(:,:), allocatable :: xpnonpbc    ! only in the case, lsuivinonpbc  
+  real(double),dimension(:,:), allocatable :: axnonpbc    ! only in the case, lsuivinonpbc  
+  real(double),dimension(:,:), allocatable :: tmpsuivi    ! only in the case, lsuivinonpbc  
+  real(double),dimension(:,:), allocatable :: Gl    ! random noise langevin
 
-  integer, dimension(:), pointer       :: num_at_glob ! numero global d'un atome
+  integer, dimension(:), allocatable       :: num_at_glob ! numero global d'un atome
 contains
 
   !--------------------------------------------------------------------------!
@@ -98,8 +98,8 @@ contains
 
     integer :: new_nb_imm
     integer :: old_nb_imm
-    integer, dimension(:), pointer       :: ibuff
-    real(double),dimension(:,:), pointer :: rbuff
+    integer, dimension(:), allocatable       :: ibuff
+    real(double),dimension(:,:), allocatable :: rbuff
 
     old_nb_imm = size(xp,2)
     if ( old_nb_imm < new_nb_imm) then
@@ -217,32 +217,32 @@ contains
   subroutine dealloc_all_tab_imm
     implicit none
 
-    if (associated(xp))          deallocate(xp)
-    if (associated(xpp))         deallocate(xpp)
-    if (associated(vp))          deallocate(vp)
-    if (associated(ax))          deallocate(ax)
-    if (associated(fp))          deallocate(fp)
-    if (associated(bruitmd))      deallocate(bruitmd)
-    if (associated(ielat))       deallocate(ielat)
-    if (associated(iwmax))       deallocate(iwmax)
-    if (associated(iwmax2))      deallocate(iwmax2)
-    if (associated(ityp))        deallocate(ityp)
-    if (associated(ityp_buffer)) deallocate(ityp_buffer)
-    if (associated(num_at_glob)) deallocate(num_at_glob)
+    if (allocated(xp))          deallocate(xp)
+    if (allocated(xpp))         deallocate(xpp)
+    if (allocated(vp))          deallocate(vp)
+    if (allocated(ax))          deallocate(ax)
+    if (allocated(fp))          deallocate(fp)
+    if (allocated(bruitmd))      deallocate(bruitmd)
+    if (allocated(ielat))       deallocate(ielat)
+    if (allocated(iwmax))       deallocate(iwmax)
+    if (allocated(iwmax2))      deallocate(iwmax2)
+    if (allocated(ityp))        deallocate(ityp)
+    if (allocated(ityp_buffer)) deallocate(ityp_buffer)
+    if (allocated(num_at_glob)) deallocate(num_at_glob)
     if (lsuivinonpbc) then
-      if (associated(xpnonpbc))  deallocate(xpnonpbc)
+      if (allocated(xpnonpbc))  deallocate(xpnonpbc)
     end if 
 
     if (lsuivinonpbc) then 
-      if (associated(axnonpbc))  deallocate(axnonpbc)
+      if (allocated(axnonpbc))  deallocate(axnonpbc)
     end if 
 
     if (lsuivinonpbc) then 
-            if (associated(tmpsuivi)) deallocate(tmpsuivi)
+            if (allocated(tmpsuivi)) deallocate(tmpsuivi)
     end if 
 
     if (llangevin) then 
-       if(associated(Gl)) deallocate(Gl)
+       if(allocated(Gl)) deallocate(Gl)
     end if 
 
   end subroutine dealloc_all_tab_imm

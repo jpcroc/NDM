@@ -69,27 +69,27 @@ module gen_com_m
   integer:: nstepdes,ides, pm1des,itdes,imdesup,imdesdeb,imdesdn
   real(double)::lambdades,deltaF
   
-  real(double),pointer:: xpchup(:,:),vpchup(:,:),xpchdn(:,:),vpchdn(:,:),xpchdeb(:,:),vpchdeb(:,:)
-  integer,pointer :: itichup(:),itichdn(:),itichdeb(:),num_at_globdesup(:),num_at_globdesdn(:),num_at_globdesdeb(:)
+  real(double),allocatable:: xpchup(:,:),vpchup(:,:),xpchdn(:,:),vpchdn(:,:),xpchdeb(:,:),vpchdeb(:,:)
+  integer,allocatable :: itichup(:),itichdn(:),itichdeb(:),num_at_globdesup(:),num_at_globdesdn(:),num_at_globdesdeb(:)
   real(double):: kspr,xpspr(3),Espr,deltaEspr,xpspr0(3),tempdes
   integer:: typspr
 
 
-  logical, dimension(:), pointer :: Free ! free(i)=.true. si l'atome i compte dans l'energie 
-  logical, dimension(:,:), pointer :: Frozen ! Frozen(ix,i)=.true. si la coordonnee ix de l'atome i est gelee
+!  logical, dimension(:), allocatable :: Free ! free(i)=.true. si l'atome i compte dans l'energie 
+!  logical, dimension(:,:), allocatable :: Frozen ! Frozen(ix,i)=.true. si la coordonnee ix de l'atome i est gelee
   integer::imFree,imFirstFrozen ! nb d'atoems libres
 
   real(double), dimension(3) :: normat ! norme de at
 
 
 
-  integer, dimension(:,:), pointer :: ncel  ! ncel(i,j) indice de la jeme cel voisines de la cel i
+  integer, dimension(:,:), allocatable :: ncel  ! ncel(i,j) indice de la jeme cel voisines de la cel i
 
-  integer, dimension(:), pointer :: nato    ! nb d'atome dans la ieme cel
+  integer, dimension(:), allocatable :: nato    ! nb d'atome dans la ieme cel
 
-  integer, dimension(:,:),pointer :: last	! last (i,j) numero du ieme atome de la jeme cel
+  integer, dimension(:,:),allocatable :: last	! last (i,j) numero du ieme atome de la jeme cel
 
-  integer, dimension(:,:,:),pointer :: deltadist ! decalage a appliquer sur la cel
+  integer, dimension(:,:,:),allocatable :: deltadist ! decalage a appliquer sur la cel
   integer :: nox, noy, noz, noxy, noxyz	     !nb de cel suivant x y z et total (DOIT REMPLACER nce)
   integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
   integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
@@ -129,9 +129,9 @@ module gen_com_m
   real(double), dimension(3,3) :: sigtot
   real(double), dimension(3,3) :: sigkine
 
-  real(double), dimension(:,:,:),pointer :: sigc ! contrainte par cel
-  real(double), dimension(:,:,:),pointer :: sigat,sigtyp,sigtyp_loc ! contrainte par atome
-  real(double), dimension(:,:,:,:),pointer :: sigtyptyp,sigtyptyp_loc ! contrainte par atome
+  real(double), dimension(:,:,:),allocatable :: sigc ! contrainte par cel
+  real(double), dimension(:,:,:),allocatable :: sigat,sigtyp,sigtyp_loc ! contrainte par atome
+  real(double), dimension(:,:,:,:),allocatable :: sigtyptyp,sigtyptyp_loc ! contrainte par atome
   logical :: lEparat,lsigtyp  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ﾂｩnergie par atome,calcul bond valence
   integer:: itebdv ! frequence de calcul des bond valence
   logical :: ljqbh ! calcul de la conductivitﾃδｩ thermique par la mﾃδｩthode directe
@@ -145,8 +145,8 @@ module gen_com_m
   real(double):: fpstop ! critere de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
   real(double):: sigstop ! critere de conv. sur les composantes de contraintes  pour les trempes UNITE = kbar
   real(double):: fsumstop ! critere de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
-  real(double),pointer::eatom(:) ! energie par atome
-  real(double),pointer::eatomtotm(:) ! energie par atome
+  real(double),allocatable::eatom(:) ! energie par atome
+  real(double),allocatable::eatomtotm(:) ! energie par atome
   logical :: lPrtSigat, lprteat, lprtfat,lprteattotm  ! calcul et ecriture de la contrainte, l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
   logical :: lsigatcel !ecriture de la contrainte atomique moyenne sur cellule
   logical :: lsigat ! la contrainte atomique est calcul馥 (rendu vrai par lprtsigat ou lsigatcel)
@@ -203,8 +203,8 @@ module gen_com_m
   real(double) :: tempEP ! temperature for slow moving atoms (EP=elec-phon)
 
   integer :: nvois   ! nb de voisins max dans toute la boite = nb d'atome * nb de voisins (/2)
-  integer, pointer,dimension(:) :: indi ! table des voisins
-  integer, pointer, dimension(:) :: indi2 ! table de voision pour les constantes de force
+  integer, allocatable,dimension(:) :: indi ! table des voisins
+  integer, allocatable, dimension(:) :: indi2 ! table de voision pour les constantes de force
   real(double) :: rvois ! rayon de la table des voisins
   logical :: ltabvois      ! table des voisins ?
   logical :: lconstrtot ! construction par double boucle (T) ou par cel (F)
@@ -212,8 +212,8 @@ module gen_com_m
   character :: nature*6 ! element chimique
   integer :: nvat
   !EWALD
-  real(double), dimension(:,:,:),pointer :: tabv3
-  real(double), dimension(:,:,:,:),pointer :: tabf3
+  real(double), dimension(:,:,:),allocatable :: tabv3
+  real(double), dimension(:,:,:,:),allocatable :: tabf3
 
 
   logical :: lalea  ! preparation d'une configuration aleatoire
@@ -242,7 +242,7 @@ module gen_com_m
 
   real(double)::strucfact
 
-  integer, dimension(:,:), pointer :: voisins
+  integer, dimension(:,:), allocatable :: voisins
   real(double), parameter :: rcut=12e-8    !cutoff pour le calcul de S(q)
 
   integer, parameter :: cont888 = 1000
@@ -278,7 +278,7 @@ module gen_com_m
   logical :: ldislo  ! calcul de dislocation
   real(double) :: epcoudis,& !epaisseur de la couche avec ajout de force pour dislo
        &fdislo ! force appliqu
-  integer, pointer :: latdebord(:)
+  integer, allocatable :: latdebord(:)
 
   logical :: lcontr    ! dynamique contrainte (routine contrainte)
   logical :: lperiod   ! conditions periodiques
@@ -303,7 +303,7 @@ module gen_com_m
   real(double) :: rayonc ! rayon du cylindre
   real(double) :: lgc ! longueur du cylindre
   integer :: ncyl ! nombre d'atomes dans le cylindre
-  logical, dimension(:), pointer :: cyl ! tableau pour savoir si atome dans cylindre
+  logical, dimension(:), allocatable :: cyl ! tableau pour savoir si atome dans cylindre
 
   ! selection des atomes distordus
   integer :: natdistordusvraiment
@@ -327,8 +327,8 @@ module gen_com_m
   real(double) :: y_max
   real(double) :: y_min
   real(double) :: y_2nd_max
-  integer, dimension(:), pointer  :: b2sINF ! appartenance a la surface infﾃｩrieure !*!
-  integer, dimension(:), pointer  :: b2sSUP ! appartenance a la surface supﾃｩrieure !*!
+  integer, dimension(:), allocatable  :: b2sINF ! appartenance a la surface infﾃｩrieure !*!
+  integer, dimension(:), allocatable  :: b2sSUP ! appartenance a la surface supﾃｩrieure !*!
   logical      :: flag_fin
   real(double) :: ef_strain
   logical      :: ldecal_bc

@@ -1,13 +1,41 @@
-var_pot: à ne pas toucher
+gérer imd,free, frozen !  géer le  calul des forces sur une partie des atomes seulement...
+SUPPRIMER FREE, FROZEN et IMD !
+remplacer frozen par une construction de atomconfig simple
+remplacer free par un calcul de force partiel (beaucoup plus dur!).
+
+
+COUPER complètement calfo du reste
+GERER POTIST ET SIG!! IDEM eatom ! sigat !
+
+calceloss et strain_bc doivent être traités en dehors de calfo dans des modules séparés
+
+
+dans les appels standards de calfo (dyn, etc.) appeler jsute avant une routine oldndm_2_atoms qui remplit un tableau d'atomes et idem au retour atoms_2_oldndm. L'idée est de faire disparaitre petit à petit ces appels. 
+
+
+idée générale: faire des gros modules bien distincts
+calfo and friends : calule les forces sur les atomes et c'est tout !
+sauvegarde
+
+les choses particulières ne doivent pas être ajoutées les unes sur les autres dans une routine calfo/controle/anlyse.
+Elles doivent être "à l'extérieur" et appéler les gros modules, 
+
+
+
 
 gen_com_m : à divisier
 
 tab_imm
-a diviser en
-définition des types mais PAS allocations et usages des véritables types des atomes
+a diviser en définition des types mais PAS allocations et usages des véritables types des atomes
+
 
 var_pot mettre les essentiels dans un module_common like avec les essentiles qui dépendent du type (masse, symbole)
 ntyp,na,ty,cm,na na ??? variment
 npotmax
-
 diviser ensuite  selon les potentiels et  mettre chaque potentiel  dans un seul module  
+
+
+calfo
+remplacer call calfo par call calfo(atoms) où atoms est le tableau des atomes avec lerus cellules
+de même en cascade dans les sous calfo avec soit un changement local atoms_2_oldndl like soit une ré-écriture systématique..
+

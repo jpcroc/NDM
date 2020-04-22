@@ -4,11 +4,11 @@ module calfo_decalage_mod
         implicit none 
         contains
 !----------------------------------------------------------------------
-SUBROUTINE calfo_decalage(xp, vp,  fp,  ielat, iwmax, ityp)
+SUBROUTINE calfo_decalage(im,xp, vp,  fp,  iwmax, ityp,indi)
   !tentative de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
-  USE gen_com_m, ONLY:imm,angst,at,bg,decal_bc,im,it,itesigma,ldemitab,low_limit,&
-       &lperiod,lprteat,potist,zero,indi,free,free,free,indi,sig,eatom,volu
+  USE gen_com_m, ONLY:angst,at,bg,decal_bc,it,itesigma,ldemitab,low_limit,&
+       &lperiod,lprteat,potist,zero,sig,eatom,volu
   USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,ipo,eamrep,eamrep_d,eamrep,&
        &eamglue,eamglue_d,eamglue,eamrho_d,eamrho_d,eamrho,rue_pot
 
@@ -21,13 +21,13 @@ SUBROUTINE calfo_decalage(xp, vp,  fp,  ielat, iwmax, ityp)
   !-----------------------------------------------
   ! eam variables
 
-
-  integer  :: ielat(imm)
-  integer  :: iwmax(imm)
-  integer  :: ityp(imm)
-  real(double)  :: xp(3,imm)
-  real(double)  :: vp(3,imm)
-  real(double)  :: fp(3,imm)
+  integer,intent(in)::im
+  integer  :: iwmax(:)
+    integer  :: indi(:)
+  integer  :: ityp(:)
+  real(double)  :: xp(:,:)
+  real(double)  :: vp(:,:)
+  real(double)  :: fp(:,:)
 
   !local variables
   integer :: i,j !atomes
@@ -47,7 +47,7 @@ SUBROUTINE calfo_decalage(xp, vp,  fp,  ielat, iwmax, ityp)
 
   real(double) :: drk, ktor, inv_ktor, ktorho, inv_ktorho
 
-  real(double) :: densityi,tabdensity(imm)
+  real(double) :: densityi,tabdensity(im)
   LOGICAL :: test_sigma
 
   real(double)::rue,rue2
@@ -80,14 +80,14 @@ SUBROUTINE calfo_decalage(xp, vp,  fp,  ielat, iwmax, ityp)
 
 
   iw2=0
-  ALLOCATE(xpnp(3,imm))
+  ALLOCATE(xpnp(3,im))
   if (lperiod) then
    xpnp(:,:)=xp(:,:)
   else
-   call notperiod(xp,xpnp)
+   call notperiod(im,xp,xpnp)
   end if
    
-  call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
+  call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst
 
   loop1at1: do i=1,im
      !       densityi=tabdensity(i)
@@ -149,26 +149,26 @@ SUBROUTINE calfo_decalage(xp, vp,  fp,  ielat, iwmax, ityp)
         l = ipo(iti,itj)
         Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
         if(lprteat.EQV..true.)then
-           if (associated (free)) then
-              if( free(i).EQV..true.)           eatom(i)=eatom(i)+Erep/2.d0
-              if ((free(j).EQV..true.).and.ldemitab)           eatom(j)=eatom(j)+Erep/2.d0
-           else
+!           if (associated (free)) then
+!              if( free(i).EQV..true.)           eatom(i)=eatom(i)+Erep/2.d0
+!              if ((free(j).EQV..true.).and.ldemitab)           eatom(j)=eatom(j)+Erep/2.d0
+!           else
                            eatom(i)=eatom(i)+Erep/2.d0
             if (ldemitab)  eatom(j)=eatom(j)+Erep/2.d0
-           end if
+ !          end if
         end if
         if (lforcetabulate) then
           dErep = eamrep_d(1,l,k) + drk*( eamrep_d(2,l,k) + drk*( eamrep_d(3,l,k) + drk*eamrep_d(4,l,k) ) )
         else
           dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
         end if
-           if (associated (free)) then
-              if( free(i).EQV..true.)potisrep = potisrep+0.5*Erep
-              if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep+0.5*Erep
-           else
+!           if (associated (free)) then
+!              if( free(i).EQV..true.)potisrep = potisrep+0.5*Erep
+!              if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep+0.5*Erep
+!           else
               potisrep = potisrep+0.5*Erep
               if (ldemitab) potisrep = potisrep+0.5*Erep
-           end if
+!           end if
 
         fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
         if (ldemitab) fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
@@ -197,13 +197,13 @@ SUBROUTINE calfo_decalage(xp, vp,  fp,  ielat, iwmax, ityp)
      end if
      drk=tabdensity(i)-(rhomin+k*ktorho)
      Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
-     if( associated (free)) then
-        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
-        if( free(i).EQV..true.)potisglue = potisglue+Eembi
-     else
+!     if( associated (free)) then
+!        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
+!        if( free(i).EQV..true.)potisglue = potisglue+Eembi
+!     else
         if(lprteat.EQV..true.) eatom(i)=eatom(i)+Eembi
         potisglue = potisglue+Eembi
-     end if
+ !    end if
     if (lforcetabulate) then
      tabdensity(i)= eamglue_d(1,iti,k) + drk*( eamglue_d(2,iti,k) + drk*( eamglue_d(3,iti,k) + drk*eamglue_d(4,iti,k) ) )
     else 
@@ -283,7 +283,7 @@ SUBROUTINE calfo_decalage(xp, vp,  fp,  ielat, iwmax, ityp)
   ! Ã©nergie potentielle totale
   potist = potisglue + potisrep
 
-  !call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
+  !call cryst_to_cart (im, xp, at, 1)     !cryst vers cart
    DEALLOCATE (xpnp)
 !  write(6,*)'eamtabvois'
   return

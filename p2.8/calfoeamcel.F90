@@ -1,20 +1,20 @@
 module calfoeamcel_mod
         USE notperiod_mod
         USE cryst_to_cart_mod
-        USE gen_com_m, ONLY:angst,at,bg,nvat,im,imm,it,itesigma,low_limit,lperiod,lprteat,&
-             &ltpcel,noxyz,zero,ncel,last,free,free,nato,free,ncel,last,nato,sig,sigc,eatom,&
+        USE gen_com_m, ONLY:angst,at,bg,nvat,it,itesigma,low_limit,lperiod,lprteat,&
+             &ltpcel,noxyz,zero,ncel,last,nato,ncel,last,nato,sig,sigc,eatom,&
              &deltadist,nox,noy,noz,volu
 
         implicit none
         contains
 !----------------------------------------------------------------------
-SUBROUTINE calfoeamcel
+SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob)
   USE T_kind_param_m
 
   USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,eamglue,eamrho,rue_pot,&
        &typ_and_pot,typ_pot_pair,ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,ipo,eamrep,eamrep,&
   &eamglue,eamglue,eamrho
-  USE tab_imm_m
+!  USE tab_imm_m
 #ifdef PARA
   USE mod_para
 #endif
@@ -24,7 +24,9 @@ SUBROUTINE calfoeamcel
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   ! eam variables
-
+  integer,intent(in)::im
+  real(double),intent(inout),allocatable,dimension(:,:)::xp,vp,fp
+  integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
   !local variables
   integer :: i,j !atomes
   integer ::iti,itj !types
@@ -50,7 +52,7 @@ SUBROUTINE calfoeamcel
   LOGICAL :: test_sigma
   integer :: izero
 
-  real(double) :: tabdensity(imm)
+  real(double) :: tabdensity(im)
 
 #ifdef PARA
   ! declarations supplementaires pour MPI
@@ -61,7 +63,7 @@ SUBROUTINE calfoeamcel
 
 #endif
 
-  real(double) :: xpnp(3,imm)
+  real(double) :: xpnp(3,im)
   real(double)::rue
   rue=rue_pot(ipotentiel)
   test_sigma=(mod(it,itesigma)==0)
@@ -84,7 +86,7 @@ SUBROUTINE calfoeamcel
   if (lperiod) then
      xpnp(:,:)=xp(:,:)
   else 
-     call notperiod(xp,xpnp)
+     call notperiod(im,xp,xpnp)
   end if
 
  !       open(unit=806, file='CALFOGMT.csv', form='formatted', &
@@ -208,22 +210,22 @@ SUBROUTINE calfoeamcel
            l = ipo(iti,itj)
            Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
            if(lprteat.EQV..true.)then
-              if (associated (free)) then              
-                 if( free(i).EQV..true.) eatom(i)=eatom(i)+Erep/2.d0
-                 if( free(j).EQV..true.) eatom(j)=eatom(j)+Erep/2.d0
-              else
+!              if (associated (free)) then              
+!                 if( free(i).EQV..true.) eatom(i)=eatom(i)+Erep/2.d0
+!                 if( free(j).EQV..true.) eatom(j)=eatom(j)+Erep/2.d0
+!              else
                   eatom(i)=eatom(i)+Erep/2.d0
                   eatom(j)=eatom(j)+Erep/2.d0
-               end if
+!               end if
            end if
            dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
 
          if (num_at_glob(i).lt.num_at_glob(j)) then
-              if (associated (free)) then              
-                 if( free(i).EQV..true.) potisrep = potisrep+Erep
-              else
+!              if (associated (free)) then              
+!                 if( free(i).EQV..true.) potisrep = potisrep+Erep
+!              else
                  potisrep = potisrep+Erep
-              end if
+!              end if
            endif
 
            fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
@@ -266,13 +268,13 @@ SUBROUTINE calfoeamcel
      drk=tabdensity(i)-(rhomin+k*ktorho)
      Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
 
-     if (associated (free)) then
-        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
-        if( free(i).EQV..true.)   potisglue = potisglue+Eembi
-     else
+!     if (associated (free)) then
+!        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
+!        if( free(i).EQV..true.)   potisglue = potisglue+Eembi
+!     else
         if(lprteat.EQV..true.) eatom(i)=eatom(i)+Eembi
         potisglue = potisglue+Eembi
-     end if
+!     end if
 
      tabdensity(i) = eamglue(2,iti,k) + drk*( 2.0*eamglue(3,iti,k) + 3.0*drk*eamglue(4,iti,k) )
   end do loop2at1

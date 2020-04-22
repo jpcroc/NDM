@@ -4,13 +4,13 @@ module calfo3c_mod
         implicit none 
         contains
 ! *****************************************************************
-subroutine calfo3c(xp,  vp,  fp, ielat, iwmax, ityp)
+subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp)
   !version du 20.11.2001
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:imm,bg,free,im,natperc,it,itesigma,lperiod,ltpcel,noxyz,potcp,potist,&
+  USE gen_com_m, ONLY:bg,natperc,it,itesigma,lperiod,ltpcel,noxyz,potcp,potist,&
        &precexp,volu,at,ncel,last,deltadist,deltadist,deltadist,nato,sig,sigc
 
   USE var_pot, ONLY:r3cm2,ipo3c,ipo,coup3c2,ipo,coup3c2,coup3c,coup3c,gam,lamb,cangle,c3c
@@ -21,13 +21,13 @@ subroutine calfo3c(xp,  vp,  fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer , intent(in) :: ielat(imm)
-  integer  :: iwmax(imm)
-  integer , intent(in) :: ityp(imm)
-  real(double) , intent(inout) :: xp(3,imm)
-  real(double)  :: vp(3,imm)
-  real(double)  :: ax(3,imm)
-  real(double) , intent(inout) :: fp(3,imm)
+  integer , intent(in) :: im
+  integer , intent(in) :: ielat(im)
+  integer , intent(in) :: ityp(im)
+  real(double) , intent(inout) :: xp(3,im)
+  real(double)  :: vp(3,im)
+  real(double)  :: ax(3,im)
+  real(double) , intent(inout) :: fp(3,im)
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -62,7 +62,7 @@ subroutine calfo3c(xp,  vp,  fp, ielat, iwmax, ityp)
   integer :: Fin,ncelvois
 
 
-  real(double) :: xpnp(3,imm)
+  real(double) :: xpnp(3,im)
   REAL(double), dimension(1:3) :: dxp
 
 
@@ -79,21 +79,17 @@ subroutine calfo3c(xp,  vp,  fp, ielat, iwmax, ityp)
   !C --- ouverture de la boucle sur i
 
   if (noxyz==1) then
-     call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
+     call cryst_to_cart (im, xp, bg, -1)    !cart vers cryst
 
   else
      if (lperiod) then
         xpnp(:,:)=xp(:,:)
      else 
-        call notperiod(xp,xpnp)
+        call notperiod(im,xp,xpnp)
      end if
 
   end if
 
-      if (any(free).NEQV..true.)then
-         write(6,*)'free +SW =pas code'
-         stop
-      end if
 
 
 
@@ -402,7 +398,7 @@ subroutine calfo3c(xp,  vp,  fp, ielat, iwmax, ityp)
 
   end DO
 
-if(noxyz==1)  call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
+if(noxyz==1)  call cryst_to_cart (im, xp, at, 1)     !cryst vers cart
 
 
 

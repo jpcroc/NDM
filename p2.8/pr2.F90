@@ -49,6 +49,7 @@ module Parrinello_Rahman
   USE calfo_mod
   USE scalebox_mod
   USE Mat_utils_mod, ONLY : MatInv
+  USE atomconfig
   implicit none
   ! Vecteurs de la boîte et leurs dérivées
   real(double), dimension(3,3), save , private :: h, hDot
@@ -76,16 +77,18 @@ module Parrinello_Rahman
 
 contains
 
-  subroutine initlpr (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+  subroutine initlpr (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
 
     implicit none
     ! Variables utiles
-    integer, intent(in)  :: ityp(imm)
+    integer, intent(inout)  :: ityp(imm)
     real(double), intent(inout)  :: xp(3,imm), xpp(3,imm), vp(3,imm), fp(3,imm)
     ! Variables inutiles
-    integer  :: ielat(imm), iwmax(imm)
+    integer  :: ielat(imm), iwmax(imm),num_at_glob(imm)
     real(double) :: ax(3,imm)
 
+    type(atom_config_d)::atpr
+    integer, allocatable ::iwmaxCF(:),indiCF(:)
     INTEGER :: ia, i, j
     !real(double), external :: calcvol
     real(double):: unitE
@@ -239,12 +242,11 @@ contains
     sdot(:,1:im) = MatMul(invh(:,:), vp(:,1:im) )
 
     ! Forces à l'instant initial
-# ifdef PARA
-    CALL CalFo !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-#else
-    CALL CalFo !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-#endif
-
+    call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atpr) 
+!    call config2ndm(atpr,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
     !  Contrainte thermique à l'instant initial
     sigkine(:,:)=0.d0
     do ia = 1, im
@@ -272,15 +274,15 @@ contains
 
   !-----------------------------------------------
 
-  subroutine pr (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+  subroutine pr (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
 
     implicit none
     ! Variables utiles
-   
-    integer, intent(in)  :: ityp(imm)
+
+    integer, intent(inout)  :: ityp(imm)
     real(double), intent(inout)  :: xp(3,imm), xpp(3,imm), vp(3,imm), fp(3,imm)
     ! Variables inutiles
-    integer  :: ielat(imm), iwmax(imm)
+    integer  :: ielat(imm), iwmax(imm),num_at_glob(imm)
     real(double) :: ax(3,imm)
 
     real(double),dimension(3,3)::mf,mfi, grsig, hdot_new, hdot_last,forcebox
@@ -290,40 +292,42 @@ contains
     ! Parameter for Parrinello-Rahman self consistency loop
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
+    type(atom_config_d)::atpr
+    integer, allocatable :: iwmaxCF(:),indiCF(:)
 #ifdef PARA
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
-  integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
-  real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1&
-       , fact2, hk2, ex, ex1, ex2
+    integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
+    real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1, fact2, hk2, ex, ex1, ex2
+
 
 
 #endif
 
-  if (lprtrp) then
-     do i = 1, im
-        do ic = 1, 3
-           if (vp(ic,i)*fp(ic,i)<0) then
-              vp(ic,i)=0.
-           end if
-        end do
-     end do
-!     do i = 1, im
-!        do ic = 1, 3
-!           if (vp(ic,i)*fp(ic,i)<0) then
-!              vp(ic,i)=0.
-!           end if
-!        end do
-!     end do
-     forcebox(:,:)=MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )
-     do i = 1, 3
-        do ic = 1, 3
-           if (hdot(ic,i)*forcebox(ic,i)<0) then
-              hdot(ic,i)=0.
-           end if
-        end do
-     end do
-  end if
+    if (lprtrp) then
+       do i = 1, im
+          do ic = 1, 3
+             if (vp(ic,i)*fp(ic,i)<0) then
+                vp(ic,i)=0.
+             end if
+          end do
+       end do
+       !     do i = 1, im
+       !        do ic = 1, 3
+       !           if (vp(ic,i)*fp(ic,i)<0) then
+       !              vp(ic,i)=0.
+       !           end if
+       !        end do
+       !     end do
+       forcebox(:,:)=MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )
+       do i = 1, 3
+          do ic = 1, 3
+             if (hdot(ic,i)*forcebox(ic,i)<0) then
+                hdot(ic,i)=0.
+             end if
+          end do
+       end do
+    end if
 
     ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
     sp(:,1:im) = MatMul(invh(:,:), xp(:,1:im) )
@@ -371,44 +375,44 @@ contains
 
 
 #ifdef PARA
-     zl(1) = Sqrt( Sum(at(1:3,1)**2 ) )
-     zl(2) = Sqrt( Sum(at(1:3,2)**2 ) )
-     zl(3) = Sqrt( Sum(at(1:3,3)**2 ) )
-     volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
-     zls2(1:3) = 0.5d0*zl(1:3)
+    zl(1) = Sqrt( Sum(at(1:3,1)**2 ) )
+    zl(2) = Sqrt( Sum(at(1:3,2)**2 ) )
+    zl(3) = Sqrt( Sum(at(1:3,3)**2 ) )
+    volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
+    zls2(1:3) = 0.5d0*zl(1:3)
 
 
-     call caltabt
-!  temps_debpara=MPI_Wtime()
-	   ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-  call maj_atomes_frt_ftm
-!  temps_para=temps_para+MPI_Wtime()-temps_debpara
+    call caltabt
+    !  temps_debpara=MPI_Wtime()
+    ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+    call maj_atomes_frt_ftm
+    !  temps_para=temps_para+MPI_Wtime()-temps_debpara
 
 
-  if (iewald>0) then
+    if (iewald>0) then
 
-     ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
-     auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
-     pi2 = pi*pi
-     volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
-     fact = pi2/alpha**2
-     fact1 = auxe/2./pi/volu
-     fact2 = auxe*2./volu
-     do nb1 = -ncoucx, ncoucx
-        do nb2 = -ncoucy, ncoucy
-           do nb3 = -ncoucz, ncoucz
-              if (nb1==0.and.nb2==0.and.nb3==0) cycle
-              hk2 = nb1*nb1/zl(1)**2+nb2*nb2/zl(2)**2+nb3*nb3/zl(3)**2
-              ex = exp((-hk2*fact))/hk2
-              ex1 = ex*fact1
-              ex2 = ex*fact2
-              tabv3(nb1,nb2,nb3) = ex1
-              tabf3(:,nb1,nb2,nb3) = ex2*q(:)
-           end do
-        end do
-     end do
+       ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
+       auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
+       pi2 = pi*pi
+       volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
+       fact = pi2/alpha**2
+       fact1 = auxe/2./pi/volu
+       fact2 = auxe*2./volu
+       do nb1 = -ncoucx, ncoucx
+          do nb2 = -ncoucy, ncoucy
+             do nb3 = -ncoucz, ncoucz
+                if (nb1==0.and.nb2==0.and.nb3==0) cycle
+                hk2 = nb1*nb1/zl(1)**2+nb2*nb2/zl(2)**2+nb3*nb3/zl(3)**2
+                ex = exp((-hk2*fact))/hk2
+                ex1 = ex*fact1
+                ex2 = ex*fact2
+                tabv3(nb1,nb2,nb3) = ex1
+                tabf3(:,nb1,nb2,nb3) = ex2*q(:)
+             end do
+          end do
+       end do
 
-  endif
+    endif
 
 
 
@@ -420,12 +424,11 @@ contains
 
 
     ! Calcul des forces et des contraintes à l'instant t+dt
-# ifdef PARA
-    CALL CalFo !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-#else
-    CALL CalFo !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-#endif
-
+    call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atpr) 
+!    call config2ndm(atpr,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
     ! Calcul de la viscosité à l'instant ...
     DO i=1, nHoover
        zNew(i) = zOld(i) + 2.d0*zDot(i)*tstep    ! ... t+dt

@@ -1,5 +1,7 @@
 module loopforcetest_mod
-        USE calfo_mod
+  USE calfo_mod
+  USE atomconfig
+
         implicit none
         contains
 ! ************************************************
@@ -7,12 +9,12 @@ module loopforcetest_mod
 !          Version MPI du 21 fevrier 2001
 ! ************************************************
 
-subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:cunite,cunitp,deltax,erg2ev,rang,unite,unitp
+  USE gen_com_m, ONLY:cunite,cunitp,deltax,erg2ev,rang,unite,unitp,ltabvois
   USE var_pot, ONLY:nad,na,ntyp,gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu
   implicit none
   !-----------------------------------------------
@@ -23,7 +25,7 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   !-----------------------------------------------
   integer  :: ielat(imm)
   integer  :: iwmax(imm)
-  integer  :: ityp(imm)
+  integer  :: ityp(imm),num_at_glob(imm)
   real(double)  :: xp(3,imm)
   real(double)  :: xpp(3,imm)
   real(double)  :: vp(3,imm)
@@ -39,6 +41,8 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   real(double) :: epot0,deltaE,deltaf1,fps(3,imm)
   !-----------------------------------------------
   !
+    type(atom_config_d)::atdml
+    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
   unitE=1.0
   cunitE=' erg'
@@ -50,7 +54,6 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   ! MPI
   if (rang==0) write (6, *) '***** test des forces  ****'
 
-  imd = im
   nad(:ntyp) = na(:ntyp)
 
 
@@ -72,7 +75,12 @@ test_force=2
         write(6,*)i,xp(1,i),xp(2,i),xp(3,i)
      end do
      fp=0.
-     call calfo
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
+!     call calfo
      write (6, '(A,D21.12)') '*Epot = ', potist
      epot0=potist
      write(6,*)'forces'
@@ -89,8 +97,13 @@ test_force=2
               xp(ic,i)=xp(ic,i)+is*deltax
               write(6,*)
               write(6,*) 'i,X is', i, ic,is
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
 
-              call calfo
+!              call calfo
               deltaE=potist-epot0
               write (6, '(A,D21.12,A,D21.12)') '*Epot = ', potist,' deltaE= ',deltaE
               !                  deltaf1= (-1.*is*deltaE/deltax-fps(ic,i))/fps(ic,i)
@@ -110,13 +123,25 @@ test_force=2
         write(6,*)i,xp(1,i),xp(2,i),xp(3,i)
      end do
      fp=0.
-     call calfo
+     call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
+
+!     call calfo
      write(789,*)(xp(1,2)-xp(1,1))*1.d8,potist
 
 
      do while (xp(1,1).lt.xp(1,2))
         xp(1,1)=xp(1,1)+deltax
-        call calfo
+!        call calfo
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
+
         write(789,*)(xp(1,2)-xp(1,1))*1.d8,potist*erg2ev
      end do
   end select

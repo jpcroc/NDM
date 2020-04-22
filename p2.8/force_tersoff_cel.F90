@@ -1,18 +1,17 @@
 module force_tersoff_cel_mod
   USE cryst_to_cart_mod
-  USE gen_com_m, ONLY:at,bg,im,imm,it,itesigma,lcalcjq,ltpcel,noxyz,potistersoff,potiszbl,&
-       &ncel,last,ncel,last,nato,nato,free,free,sig,sigc,eatom,volu
-  
+  USE gen_com_m, ONLY:at,bg,it,itesigma,lcalcjq,ltpcel,noxyz,potistersoff,potiszbl,&
+       &ncel,last,ncel,last,nato,nato,sigc,eatom,volu,sig,potist
   implicit none
 contains
 ! ***************************************************************
-subroutine force_tersoff_cel
+subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:npair,csive,typ_and_pot,ipo,typ_pot_pair,roff2,pot
-  USE tab_imm_m
+!  USE tab_imm_m
   USE jqmod
   USE force_tersoff_facteurs
 #ifdef PARA
@@ -35,6 +34,10 @@ subroutine force_tersoff_cel
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
+  integer,intent(in)::im
+  integer , intent(in),allocatable :: ielat(:),ityp(:)
+  real(double),intent(in),allocatable  :: vp(:,:)
+  real(double) , intent(inout),allocatable :: fp(:,:),xp(:,:)
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -82,7 +85,7 @@ subroutine force_tersoff_cel
 
   ER1=0. ;  ER2=0. ;  ER3=0.
   !         write(6,*)'boite quelc'
-  call cryst_to_cart(imm,xp,bg,-1)
+  call cryst_to_cart(im,xp,bg,-1)
 
   !  write(6,*)sig
   !  write(6,*)
@@ -358,20 +361,20 @@ subroutine force_tersoff_cel
            end if
         end do
      end do
-     if (associated (free)) then
-        if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
-     else
+!     if (associated (free)) then
+!        if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
+!     else
         potisTersoff = potisTersoff + 0.5*v_ij
-     end if
-     if (associated (free)) then
-        if ((associated(eatom)).and.(free(i).EQV..true.)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
-     else
+!     end if
+!     if (associated (free)) then
+!        if ((associated(eatom)).and.(free(i).EQV..true.)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
+!     else
         if (associated(eatom)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
-     end if
+!     end if
 
 
   end do
-  call cryst_to_cart(imm,xp,at,1)
+  call cryst_to_cart(im,xp,at,1)
 
 #ifdef PARA
   call MPI_ALLREDUCE(potisTersoff,potisTersoff_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)

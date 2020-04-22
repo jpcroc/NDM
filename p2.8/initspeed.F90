@@ -6,9 +6,9 @@ module initspeed_mod
   USE calctemp_mod
   USE arret_ndm_mod
   USE period_mod
-  USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,im,im_glob,iseed,lcalcjq,lfrozen,lperiod,ltpcel,&
+  USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,im,im_glob,iseed,lcalcjq,lperiod,ltpcel,&
        &lvpread,noxyz,oldtstep,one,pi,rang,tempdeplainit,tinit,tstep,im,iseed,mdcg_noise_scale,&
-       neb_noise_scale,pi,rang,frozen
+       neb_noise_scale,pi,rang
   USE var_pot, ONLY:ntyp,cm
   implicit none
 contains
@@ -454,12 +454,6 @@ contains
     tempsauv=tempinst(vp,ityp)
     if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
     if (lTPcel.eqv..true.) call calctemp(temptyp)
-    if (lfrozen.EQV..true.) then
-       WHERE (frozen(:,1:im))
-          vp(:,1:im) = 0.d0
-          xpp(:,1:im) = xp(:,1:im)
-       END WHERE
-    end if
 
 
     if (tempdeplainit.gt.0)then

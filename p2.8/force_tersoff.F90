@@ -1,12 +1,11 @@
 module force_tersoff_mod
   USE cryst_to_cart_mod
-  USE gen_com_m, ONLY:imm,at,bg,fnemd,im,imd,it,itesigma,lcalcjq,lnemd,potistersoff,potiszbl,indi,&
-       &zl,indi,zl,free,free,sig,eatom,volu,lprteat
-
+  USE gen_com_m, ONLY:at,bg,fnemd,it,itesigma,lcalcjq,lnemd,potistersoff,potiszbl,indi,eatom,sig,&
+       &zl,indi,zl,volu,lprteat
   implicit none
 contains
   ! ***************************************************************
-  subroutine force_tersoff (xp,  vp,  fp,  iwmax, ityp)
+  subroutine force_tersoff (im,xp,  vp,  fp,  iwmax, ityp,indi)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -29,11 +28,11 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer :: iwmax(imm)
-    integer , intent(in) :: ityp(imm)
-    real(double) , intent(inout) :: xp(3,imm)
-    real(double) :: vp(3,imm)
-    real(double) , intent(inout) :: fp(3,imm)
+      integer,intent(in)::im
+  integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
+  real(double),intent(in),allocatable  :: vp(:,:)
+  real(double),intent(inout),allocatable  :: xp(:,:)
+  real(double) , intent(inout),allocatable :: fp(:,:)
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -63,10 +62,9 @@ contains
 
 
     ! declarations supplementaires pour MPI
-    real(double), dimension (3,imm) :: fpTemp
+    real(double), dimension (3,im) :: fpTemp
     real(double) ::  potistTemp
     real(double) :: sigTemp (3,3)
-    !  real(double) :: eatomtemp(imm)
     integer :: Fin,Deb
     real(double) :: div
 #endif
@@ -94,7 +92,7 @@ contains
     if (lnemd) fpnemdmoy(:)=0
 
     ER1=0. ;  ER2=0. ;  ER3=0.
-    call cryst_to_cart(imm,xp,bg,-1)
+    call cryst_to_cart(im,xp,bg,-1)
 
     idv = 0
 
@@ -364,24 +362,24 @@ contains
              end if
 
           end do Tloop1at2
-          if (associated (free)) then
-             if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
-          else
+!          if (associated (free)) then
+!             if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
+!          else
              potisTersoff = potisTersoff + 0.5*v_ij
-          end if
+!          end if
 
 
           !energie_i =  0.5*v_i
-          if (associated (free)) then
-             if ((lprteat.or.lcalcjq.or.lnemd).and.(free(i).EQV..true.))eatom(i) = eatom(i)+0.5*v_ij
-          else
+!          if (associated (free)) then
+!             if ((lprteat.or.lcalcjq.or.lnemd).and.(free(i).EQV..true.))eatom(i) = eatom(i)+0.5*v_ij
+!          else
              if (lprteat.or.lcalcjq.or.lnemd)eatom(i) = eatom(i)+0.5*v_ij
-          end if
+             !          end if
 
 
           if (lnemd) then
              do l=1,3
-                fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l)/float(imd)
+                fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l)/float(im)
                 fp(l,i)=fp(l,i)+fpnemd(l)
              enddo
           end if
@@ -389,7 +387,7 @@ contains
        end do Tloop1at1
 
        if (lnemd) then
-          do i=1,imd
+          do i=1,im
              do l=1,3
                 fp(l,i)=fp(l,i)-fpnemdmoy(l)
              enddo
@@ -432,7 +430,7 @@ contains
 
 
 
-       call cryst_to_cart(imm,xp,at,1)
+       call cryst_to_cart(im,xp,at,1)
 
 
 

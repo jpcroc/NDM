@@ -11,7 +11,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:a2cm,debyetemp,decal_bc,deltaestop,deltarmax,deltax,depmaxts,dfpred,eheat,eko,&
          &epcou,epcoud,epcoudis,epsil,ev2erg,fdislo,fmt_cin,fpstop,fsumstop,gamlg,hessianorder,ibordcou,&
-         &ides,igen,ilangevin,imfirstfrozen,imfree,imm_glob,iseed,itab,iteanaposneb,itederive,iteheat,&
+         &ides,igen,ilangevin,imm_glob,iseed,itab,iteanaposneb,itederive,iteheat,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,ittherm,kappa,kspr,kspring,kthg,&
          &lalea,lanczos_step,landerscou,lastcool,lbulle,lcdp,lconstrtot,lcorrelvp,lderive,ldislo,lfire,&
          &lgc,lhcyl,lheat,ljqbh,lpathfromgin,lpcon2,lpconxyz,lprtrp,lprtzlm,lrctest,lrestart,ltandersen,&
@@ -45,7 +45,7 @@ contains
     integer :: ludin, lufilm, lufilmpaf,  i,itean, ic, iThermo,itecompcr,ipotcont
     character :: fnamdin*80
     logical :: lginread,ltriclin,lpcon,lfissure,tpot
-    logical :: lxFrozen,lyFrozen,lzFrozen, lxyFrozen, lxzFrozen, lyzFrozen, lxyzFrozen
+
     !  integer :: imFree     ! nb d'atomes libres
     !-----------------------------------------------
     !
@@ -68,7 +68,6 @@ contains
          fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
          rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat, &
-         lFrozen,lxFrozen,lyFrozen,lzFrozen,lxyFrozen,lxzFrozen,lyzFrozen,lxyzFrozen,imFree,imFirstFrozen,&
          natperc,iteanaposneb,ntyp,&
          lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
@@ -280,20 +279,6 @@ contains
     lHcyl=.false.
     ltriclin=.true.
     lprtfat=.false.
-
-    lFrozen=.FALSE.
-    lxfrozen=.FALSE.             ! .true.: certains atomes sont bloque��▽�ｸ (pas de dynamique)
-    lyfrozen=.FALSE.             
-    lzfrozen=.FALSE.             
-    lxyfrozen=.FALSE.             
-    lxzfrozen=.FALSE.             
-    lyzfrozen=.FALSE.             
-    lxyzfrozen=.FALSE.             
-    imFree=-1                   ! The index from which all the atoms with the index i >  imFree   are frozen.
-    !                          or with                  i <= imFree   are free
-    imFirstFrozen=0             ! The index from which all the atoms with the index i <= imFirstFrozen are frozen
-    !                                         the index i >  imFirstFrozen are free
-    ! imFirstFree can be USEd in the same time with imFree
 
     nvperat=-1                  ! nb moyen de voisins par atomes
     natperc=-1   
@@ -964,10 +949,6 @@ contains
        if (rang==0) write (6, '(a)') '******************* TRANCHE GELEE !!! *****'
        !     rulayer=rulayer*1.0d-8
 
-       lfrozen=.true.
-       if (lcdp.EQV..true.) then
-          write(6,*)'TRANCHE +DP = PAS POSSIBLE' ; stop
-       end if
 
 
     end if
@@ -1215,79 +1196,6 @@ contains
 
 
     ! Gestion des atomes bloques
-    IF (lFrozen.OR.lxyzFrozen) THEN
-       lxFrozen=.true. ; lyFrozen=.true. ; lzFrozen=.true.
-    END IF
-    IF (lxyFrozen) THEN
-       lxFrozen=.true. ; lyFrozen=.true.
-    END IF
-    IF (lxzFrozen) THEN
-       lxFrozen=.true. ; lzFrozen=.true.
-    END IF
-    IF (lyzFrozen) THEN
-       lyFrozen=.true. ; lzFrozen=.true.
-    END IF
-
-    IF (lxFrozen.OR.lyFrozen.OR.lzFrozen) THEN
-
-       IF ( ( (imFree.gt.0) .AND. (parallele) ).OR. ( (imFirstFrozen/=0) .AND. (parallele) ) ) THEN
-          WRITE(0,'(a)') 'Initialisation du tableau free(:) pour&
-               & determiner les atomes bloques non implementes en&
-               & parallele'
-          STOP '< ReadDm >'
-       end IF
-
-       IF (dmType.EQ.8) THEN
-          IF (RANG==0) WRITE(0,'(a)') 'Vous ne pouvez pas utiliser&
-               & Parrinello-Rahman tout en maintenant fixes certains&
-               & atomes'
-          STOP '< ReadDm >'
-       END IF
-
-       if ((imFree==-1).and.(rulayer==0.0).and.(imFirstFrozen==0))then
-          if(rang==0) write(6,*)'LFROZEN+IMFREE=-1 et RULAYER=0 et imFirstFrozen==0 == stop'
-          stop
-       end if
-
-       ! Le tableau free controle quels atomes participent a l'energie (utilise par JP a priori)
-       ! Le tableau frozen controle quelles coordonnees de quels atomes sont libres de relaxer
-       !    i.e. quelles forces doivent �πｴ�ｪtre annulees
-       Allocate(Free(1:imm))
-       Free(:)=.true.
-       Allocate(Frozen(1:3,1:imm))
-       Frozen(:,:)=.false.   ! Tout le monde bouge ... ...
-
-       if (imFree.ne.-1) then
-          IF (lxFrozen) Frozen(1,1+imFree:imm)=.true.   !x of i>imFree is frozen  
-          IF (lyFrozen) Frozen(2,1+imFree:imm)=.true.   !y of i>imFree is frozen  
-          IF (lzFrozen) Frozen(3,1+imFree:imm)=.true.   !z of i>imFree is frozen  
-          IF ((rang==0).and.(imFree.ne.imm)) THEN
-             WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
-             if(imFirstFrozen==0) then
-                WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
-                     imFree, " bougent"
-             else 
-                WRITE(6,'(a,i0,a,i0,a)') "Seuls les atomes d'indice inferieur ou egal a ", &
-                     imFree, " et superieur et egal a ", imFirstFrozen+1, "bougent"
-             end if
-          end IF
-       end if
-
-       if (imFirstFrozen > 0) then
-          IF (lxFrozen) Frozen(1,1:imFirstFrozen)=.true. ! x of i<=imFirstFrozen is frozen
-          IF (lyFrozen) Frozen(2,1:imFirstFrozen)=.true. ! y of i<=imFirstFrozen is frozen
-          IF (lzFrozen) Frozen(3,1:imFirstFrozen)=.true. ! z of i<=imFirstFrozen is frozen
-          if (imFree == -1) WRITE(6,'(a)') 'Dynamique / relaxation avec des atomes bloques'
-          if (imFree == -1) WRITE(6,'(a,i0,a)') "Seuls les atomes d'indice superior ou egal a ", &
-               imFirstFrozen+1, " bougent"
-       end if
-
-
-
-
-       lFrozen=.true.
-
-    end IF   !lxFrozen,lyFrozen,lzFrozen
     if (rulayer.gt.0.0)then
        rulayer=rulayer*1.0d-8
 

@@ -57,7 +57,7 @@ subroutine caltabt
           if (lperiod) then            
              xpnp(:,:)=xp(:,:)         
           else                         
-             call notperiod(xp,xpnp)   
+             call notperiod(im,xp,xpnp)   
           end if                       
      !  -------- Initialisations  -----------
      nato(0:noxyz) = 0

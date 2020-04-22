@@ -9,6 +9,8 @@ module dmloop_mod
         USE sauveforce_mod
         USE sauveposition_mod
         USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
+        USE atomconfig
+
         implicit none
         contains
 ! ************************************************
@@ -43,7 +45,8 @@ subroutine dmloop
   INTEGER :: fire_nstep
   !-----------------------------------------------
   !
-
+    type(atom_config_d)::atdml
+    integer, allocatable ::iwmaxCF(:),indiCF(:)
   ! MPI
   if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 
@@ -60,8 +63,14 @@ subroutine dmloop
   !      write(6,*)'***** ITERATION  ****', it
 
   ! appel de la routine generale des forces
+  call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+  CALL CalFo(atdml)
+!  write(6,*)'dml potist ',potist,atdml%potist
+    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+!    iwmax=iwmaxCF
+!    indi=indiCF
 
-  call calfo
+!  call calfo
   select case (dmtype)
 
   case(1)

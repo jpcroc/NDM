@@ -8,6 +8,7 @@ module dmloop_vverlet_mod
   USE sauveposition_mod
   USE sauveforce_mod
   USE correl_mod
+  USE atomconfig
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,im,lgc,rang,rayonc,&
        &tstep,vdc,pc,vdc
   implicit none 
@@ -45,6 +46,8 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     ! MPI
+    type(atom_config_d)::atdml
+    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 #ifdef PARA
@@ -54,7 +57,12 @@ contains
     if (lsuivinonpbc) call init_suivinonpbc()
     !  write(6,*)'RG i ',rang,it
     ! Appel de la routine generale des forces
-    call calfo 
+!    call calfo 
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
 
 
 

@@ -6,6 +6,7 @@ module dmloop_lpr_mod
   USE sauveforce_mod
   USE gen_com_m, ONLY: itesauvforce, itesauvposition
 
+  USE atomconfig
 
 #ifdef PARA
   USE recips_mod
@@ -42,6 +43,8 @@ contains
     !real(double), external :: calcvol
 
 #endif
+    type(atom_config_d)::atdml
+    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
 
 
@@ -52,7 +55,7 @@ contains
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
        call initlprNose(xp,xpp,vp,ityp)
     ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
-       call initlpr(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       call initlpr(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
     END IF
 
     call analyse 
@@ -61,7 +64,12 @@ contains
 1   continue 
     it = it+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
-       call calfo
+!       call calfo
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
        call prNose(xp,xpp,vp,fp,ityp)
 
 #ifdef PARA
@@ -111,7 +119,7 @@ contains
 #endif
        timel=timel+fNose*tstep
     ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
-       call pr(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       call pr(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
        timel=timel+tstep
     END IF
 

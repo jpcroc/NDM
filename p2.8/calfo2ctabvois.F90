@@ -5,14 +5,14 @@ module calfo2ctabvois_mod
         implicit none
         contains
 ! **********************************************************
-subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
+subroutine calfo2ctabvois(im,xp,  vp, fp,  iwmax, ityp,indi )
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:sig,sigat,imm,at,bg,deltaespr,deltaf,espr,im,it,itdes,itesigma,kspr,&
-       &lambdades,lcalcjq,ldesinteg,lprteat,lsigat,nstepdes,pi,pm1des,potis1,potis2,volu,indi,&
-       &free,free,free,xpspr,xpspr,xpspr,eatom
+  USE gen_com_m, ONLY:sig,sigat,at,bg,deltaespr,deltaf,espr,it,itdes,itesigma,kspr,&
+       &lambdades,lcalcjq,ldesinteg,lprteat,lsigat,nstepdes,pi,pm1des,potis1,potis2,volu&
+       &,xpspr,xpspr,xpspr,eatom
   USE var_pot, ONLY:alpha,csive,ipo,zz,rue_pair,ipo,pot
   USE jqmod
   ! **********************************************************
@@ -24,11 +24,11 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer , intent(in) :: iwmax(imm)
-  integer , intent(in) :: ityp(imm)
-  real(double)  :: xp(3,imm)
-  real(double)  :: vp(3,imm)
-  real(double) , intent(inout) :: fp(3,imm)
+  integer,intent(in)::im
+  integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
+  real(double),intent(in),allocatable  :: vp(:,:)
+  real(double),intent(inout),allocatable  :: xp(:,:)
+  real(double) , intent(inout),allocatable :: fp(:,:)
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -69,7 +69,7 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
   ! --------------------------
   !   OUVERTURE BOUCLE SUR I
   ! --------------------------
-  call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
+  call cryst_to_cart (im, xp, bg, -1)    !cart vers cryst
   do i = 1, im-1
 
      iti = ityp(i)
@@ -142,17 +142,13 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
         endif
         
 
-        if (associated(free)) then
-           if (free(i).EQV..true.)potis1 = potis1+deltaepot
-           if (free(j).EQV..true.)potis1 = potis1+deltaepot
-        else
-           potis1 = potis1+2*deltaepot
-        end if
-
-
-
-
-
+!        if (associated(free)) then
+!           if (free(i).EQV..true.)potis1 = potis1+deltaepot
+!           if (free(j).EQV..true.)potis1 = potis1+deltaepot
+!        else
+        potis1 = potis1+2*deltaepot
+        
+!        end if
 
         ! --- Fin du calcul ---
         fp(:,i)=fp(:,i)+phu*dxp(:)
@@ -171,13 +167,13 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
         ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
         !ra(3)=Force de j sur i
            if (lprteat) then
-              if (associated(free)) then
-                 if (free(i).EQV..true.)eatom(i) = eatom(i)+deltaepot
-                 if (free(j).EQV..true.)eatom(j) = eatom(j)+deltaepot
-              else
+!              if (associated(free)) then
+!                 if (free(i).EQV..true.)eatom(i) = eatom(i)+deltaepot
+!                 if (free(j).EQV..true.)eatom(j) = eatom(j)+deltaepot
+!              else
                  eatom(i) = eatom(i)+deltaepot
                  eatom(j) = eatom(j)+deltaepot
-              end if
+!              end if
            end if
         if (lcalcjq) then
            jqf=0.0
@@ -248,7 +244,7 @@ subroutine calfo2ctabvois(xp,  vp, fp,  iwmax, ityp )
 !        end do
 
 
-  call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
+  call cryst_to_cart (im, xp, at, 1)     !cryst vers cart
 
   return
 end subroutine calfo2ctabvois

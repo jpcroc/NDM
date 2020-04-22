@@ -5,18 +5,18 @@ module calfo2ccel_mod
         implicit none
         contains
 ! ***************************************************************
-subroutine calfo2ccel
+subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m , ONLY:at,bg,deltadist, espr,deltaf,espr,im,imm,it,itdes,itesigma,kspr,lambdades,&
+  USE gen_com_m , ONLY:at,bg,deltadist, espr,deltaf,espr,it,itdes,itesigma,kspr,lambdades,&
        &lcalcjq,ldesinteg,lperiod,lprteat,lsigtyp,ltpcel,noxyz,nstepdes,pi,pm1des,potis1,potis2,&
-      &ncel,last,free,free,free,nato,xpspr,xpspr,xpspr,sigtyptyp,sigtyp,sigc,sig,eatom,volu,deltaEspr
+      &ncel,last,nato,xpspr,xpspr,xpspr,sigtyptyp,sigtyp,sigc,sig,eatom,volu,deltaEspr
 
 
   USE jqmod
-  USE tab_imm_m
+!  USE tab_imm_m
 #ifdef PARA
   USE mod_para
 #endif
@@ -32,6 +32,10 @@ subroutine calfo2ccel
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
+  integer,intent(in)::im
+  integer , intent(in),allocatable :: ielat(:),ityp(:),num_at_glob(:)
+  real(double),intent(in),allocatable  :: xp(:,:),vp(:,:)
+  real(double) , intent(inout),allocatable :: fp(:,:)
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -56,7 +60,7 @@ subroutine calfo2ccel
   ! *** Initialisations ***
 
   real(double),pointer :: xpnp(:,:)
-  allocate(xpnp(3,imm))
+  allocate(xpnp(3,im))
   ! Initialisation des termes du potentiel
   !  potis2 = zero
   !  potis0 = zero
@@ -68,7 +72,7 @@ subroutine calfo2ccel
   if (lperiod) then
      xpnp(:,:)=xp(:,:)
   else 
-     call notperiod(xp,xpnp)
+     call notperiod(im,xp,xpnp)
   end if
 
 
@@ -215,17 +219,17 @@ subroutine calfo2ccel
 
 
 
-           if (associated (free)) then
-              if (free(i).EQV..true.)potis1 = potis1+deltaepot
-#ifdef PARA
-              if (j.le.im) then
-#endif
-                 if (free(j).EQV..true.)potis1 = potis1+deltaepot
-#ifdef PARA
-              endif
-#endif
+!           if (associated (free)) then
+!              if (free(i).EQV..true.)potis1 = potis1+deltaepot
+!#ifdef PARA
+!              if (j.le.im) then
+!#endif
+!                 if (free(j).EQV..true.)potis1 = potis1+deltaepot
+!#ifdef PARA
+!              endif
+!#endif
 
-           else
+!           else
               potis1 = potis1+deltaepot
 #ifdef PARA
               if (j.le.im) then
@@ -236,7 +240,7 @@ subroutine calfo2ccel
 #endif
 
 
-           endif
+!           endif
 
 
            fp(1,j) = fp(1,j)-f1
@@ -269,13 +273,13 @@ subroutine calfo2ccel
            end if
 
            if (lprteat) then
-              if (associated (free)) then
-                 if (free(i).EQV..true.)eatom(i) = eatom(i)+deltaepot
-                 if (free(j).EQV..true.)eatom(j) = eatom(j)+deltaepot
-              else
+!              if (associated (free)) then
+!                 if (free(i).EQV..true.)eatom(i) = eatom(i)+deltaepot
+!                 if (free(j).EQV..true.)eatom(j) = eatom(j)+deltaepot
+!              else
                  eatom(i) = eatom(i)+deltaepot
                  eatom(j) = eatom(j)+deltaepot
-              end if
+!              end if
            end if
 
            ! calcul des contraintes

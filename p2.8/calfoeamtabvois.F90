@@ -1,14 +1,14 @@
 module calfoeamtabvois_mod
   USE notperiod_mod
   USE cryst_to_cart_mod
-  USE gen_com_m, ONLY:imm,angst,at,bg,fnemd,im,imd,it,itesigma,lcalcjq,ldemitab,&
-       &lnemd,low_limit,lperiod,lprteat,lsigat,potist,volu,zero,indi,free,free,indi,free,&
+  USE gen_com_m, ONLY:angst,at,bg,fnemd,it,itesigma,lcalcjq,ldemitab,&
+       &lnemd,low_limit,lperiod,lprteat,lsigat,potist,volu,zero,indi,&
        &sigat,sig,eatom
 
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfoeamtabvois(xp, vp,  fp,  ielat, iwmax, ityp)
+  SUBROUTINE calfoeamtabvois(im,xp, vp,  fp,  iwmax, ityp)
     !tentative de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
     USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,eamglue,eamglue_d,&
@@ -24,13 +24,12 @@ contains
     !-----------------------------------------------
     ! eam variables
 
-
-    integer  :: ielat(imm)
-    integer  :: iwmax(imm)
-    integer  :: ityp(imm)
-    real(double)  :: xp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: fp(3,imm)
+    integer,intent(in)::im
+    integer  :: iwmax(:)
+    integer  :: ityp(:)
+    real(double)  :: xp(:,:)
+    real(double)  :: vp(:,:)
+    real(double)  :: fp(:,:)
 
     !local variables
     integer :: i,j !atomes
@@ -47,12 +46,12 @@ contains
     real(double) :: dEembi, Eembi ! potentiel et gradient de l'immersion
     real(double) :: rhoi,rhoj, drhoi, drhoj ! densite de i sur j et j sur i et leurs derivees radiales
     REAL(double) :: Femb, dFemb
-    real(double):: fpnemd(3,imm),fpnemdmoy(3), XijdotF
+    real(double):: fpnemd(3,im),fpnemdmoy(3), XijdotF
     real(double) :: drk, ktor, inv_ktor, ktorho, inv_ktorho
     real(double), dimension(3) :: fij
     real(double) :: inv_volu, inv_atomic_volu
 
-    real(double) :: densityi,tabdensity(imm)
+    real(double) :: densityi,tabdensity(im)
     LOGICAL :: test_sigma
 
     real(double)::rue,rue2
@@ -82,14 +81,14 @@ contains
     inv_atomic_volu = dble(im)/volu
 
     iw2=0
-    ALLOCATE(xpnp(3,imm))
+    ALLOCATE(xpnp(3,im))
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else
-       call notperiod(xp,xpnp)
+       call notperiod(im,xp,xpnp)
     end if
 
-    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
+    call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst
 
 
 
@@ -155,13 +154,13 @@ contains
        end if
        drk=tabdensity(i)-(rhomin+k*ktorho)
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
-       if( associated (free)) then
-          if( ( (lprteat.EQV..true.).or.(lcalcjq.EQV..true.) ).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
-          if( free(i).EQV..true.)potisglue = potisglue+Eembi
-       else
+!       if( associated (free)) then
+!          if( ( (lprteat.EQV..true.).or.(lcalcjq.EQV..true.) ).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
+!          if( free(i).EQV..true.)potisglue = potisglue+Eembi
+!       else
           if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.)) eatom(i)=eatom(i)+Eembi
           potisglue = potisglue+Eembi
-       end if
+!       end if
        if (lforcetabulate) then
           tabdensity(i)= eamglue_d(1,iti,k) + drk*( eamglue_d(2,iti,k) + drk*( eamglue_d(3,iti,k) + drk*eamglue_d(4,iti,k) ) )
        else 
@@ -224,24 +223,24 @@ contains
           dFemb = tabdensity(i)*drhoj + tabdensity(j)*drhoi  ! THIS is WRONG in my SENSE
 
           if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.))then
-             if (associated (free)) then
-                if( free(i).EQV..true.)                eatom(i)=eatom(i) + 0.5d0*Erep
-                if ((free(j).EQV..true.).and.ldemitab) eatom(j)=eatom(j) + 0.5d0*Erep
-             else
+!             if (associated (free)) then
+!                if( free(i).EQV..true.)                eatom(i)=eatom(i) + 0.5d0*Erep
+!                if ((free(j).EQV..true.).and.ldemitab) eatom(j)=eatom(j) + 0.5d0*Erep
+!             else
                 eatom(i)=eatom(i) + 0.5d0*Erep
                 if (ldemitab)  eatom(j)=eatom(j) + 0.5d0*Erep
-             end if
+!             end if
           end if
-          if (associated (free)) then
-             if( free(i).EQV..true.)                potisrep = potisrep + 0.5*Erep
-             if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep + 0.5*Erep
-          else
+!          if (associated (free)) then
+!             if( free(i).EQV..true.)                potisrep = potisrep + 0.5*Erep
+!             if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep + 0.5*Erep
+!          else
              IF (ldemitab) THEN
                 potisrep = potisrep + Erep
              ELSE
                 potisrep = potisrep + 0.5d0*Erep
              END IF
-          end if
+!          end if
 
           fij(:) = - (dFemb+dErep)*gradij(1:3)
           fp(1:3,i) = fp(1:3,i) + fij(:)
@@ -266,21 +265,21 @@ contains
 
           if (test_sigma) then                   
              IF (ldemitab) THEN
-                sig(1:3,1) = sig(1:3,1) - inv_volu*fij(1:3)*dxp(1)
-                sig(1:3,2) = sig(1:3,2) - inv_volu*fij(1:3)*dxp(2)
-                sig(1:3,3) = sig(1:3,3) - inv_volu*fij(1:3)*dxp(3)
+                sig(1:3,1) = sig(1:3,1) + inv_volu*fij(1:3)*dxp(1)
+                sig(1:3,2) = sig(1:3,2) + inv_volu*fij(1:3)*dxp(2)
+                sig(1:3,3) = sig(1:3,3) + inv_volu*fij(1:3)*dxp(3)
                 IF (lSigat) THEN
-                   sigat(1:3,1,i) = sigat(1:3,1,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
-                   sigat(1:3,2,i) = sigat(1:3,2,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
-                   sigat(1:3,3,i) = sigat(1:3,3,i) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
-                   sigat(1:3,1,j) = sigat(1:3,1,j) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
-                   sigat(1:3,2,j) = sigat(1:3,2,j) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
-                   sigat(1:3,3,j) = sigat(1:3,3,j) - 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                   sigat(1:3,1,i) = sigat(1:3,1,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
+                   sigat(1:3,2,i) = sigat(1:3,2,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
+                   sigat(1:3,3,i) = sigat(1:3,3,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                   sigat(1:3,1,j) = sigat(1:3,1,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
+                   sigat(1:3,2,j) = sigat(1:3,2,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
+                   sigat(1:3,3,j) = sigat(1:3,3,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
                 END IF
              ELSE
-                sig(1:3,1) = sig(1:3,1) - 0.5d0*inv_volu*fij(1:3)*dxp(1)
-                sig(1:3,2) = sig(1:3,2) - 0.5d0*inv_volu*fij(1:3)*dxp(2)
-                sig(1:3,3) = sig(1:3,3) - 0.5d0*inv_volu*fij(1:3)*dxp(3)
+                sig(1:3,1) = sig(1:3,1) + 0.5d0*inv_volu*fij(1:3)*dxp(1)
+                sig(1:3,2) = sig(1:3,2) + 0.5d0*inv_volu*fij(1:3)*dxp(2)
+                sig(1:3,3) = sig(1:3,3) + 0.5d0*inv_volu*fij(1:3)*dxp(3)
                 IF (lSigat) THEN
                    sigat(1:3,1,i) = sigat(1:3,1,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
                    sigat(1:3,2,i) = sigat(1:3,2,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
@@ -298,13 +297,13 @@ contains
 
     if (lnemd) then
        fpnemdmoy=0
-       do i=1,imd   
+       do i=1,im   
           do l=1,3
-             fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(imd)
+             fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(im)
           enddo
        end do
 
-       do i=1,imd
+       do i=1,im
           !        write(6,*)'A',i,fp(:,i)
           do l=1,3
              fp(l,i)=fp(l,i)-fpnemdmoy(l)
@@ -315,7 +314,6 @@ contains
     end if
 
 
-    !call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
     DEALLOCATE (xpnp)
     !  write(6,*)'eamtabvois'
     return

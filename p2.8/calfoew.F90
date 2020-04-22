@@ -1,18 +1,18 @@
 module calfoew_mod
   USE epme_mod
-  USE gen_com_m, ONLY:imd,imm,ltpcel,tabf3,sig,sigc,noxyz
+  USE gen_com_m, ONLY:ltpcel,tabf3,sigc,noxyz,sig
   implicit none
 contains
 
   ! ***************************************************************
-  subroutine calfoew
+  subroutine calfoew(im,xp,fp,ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
     USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q
-    USE tab_imm_m
+!    USE tab_imm_m
 #ifdef PARA
     USE mod_para
 #endif
@@ -26,6 +26,10 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
+    integer,intent(in)::im
+    real(double),intent(inout),allocatable::fp(:,:),xp(:,:)
+    integer,intent(in),allocatable::ityp(:)
+    
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -34,7 +38,7 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     integer :: Deb, Fin
-    real(double), dimension(imm) :: scalar
+    real(double), dimension(im) :: scalar
     integer nb1,nb2,nb3,i,i1,iti
     real(double) :: potisewg, hbn2, &
          hbv(3),phu
@@ -89,7 +93,7 @@ contains
                    hbv(ii) = 2.d0*pi*(bg(1,ii)*nb1+bg(2,ii)*nb2+bg(3,ii)*nb3)
                 enddo
 
-                do ii=1,imd
+                do ii=1,im
                    scalar(ii)=xp(1,ii)*hbv(1)+xp(2,ii)*hbv(2)+xp(3,ii)*hbv(3)
                 enddo
 
@@ -97,7 +101,7 @@ contains
 
                 scacos = 0
                 scasin = 0
-                do ii=1,imd
+                do ii=1,im
                    scacos = scacos + cos(scalar(ii))*q(ityp(ii))
                    scasin = scasin + sin(scalar(ii))*q(ityp(ii))
                 enddo
@@ -110,7 +114,7 @@ contains
                 call MPI_ALLREDUCE(scasin,scasin_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
                 scasin = scasin_glob
 #endif
-                do i = 1, imd
+                do i = 1, im
                    iti = ityp(i)
                    phu = tabf3(iti,nb1,nb2,nb3)*(sin(scalar(i))*scacos-&
                         cos(scalar(i))*scasin)
@@ -164,7 +168,7 @@ contains
        ! Sequentiel
 
        Deb=1 !Test
-       Fin=imd !Test
+       Fin=im !Test
 
        call epme (Deb,Fin,sige)
 

@@ -175,7 +175,7 @@ subroutine controle
      if (lperiod) then
         xpnp(:,:)=xp(:,:)
      else
-        call notperiod(xp,xpnp)
+        call notperiod(im,xp,xpnp)
      end if
 
      ! Scaling temperature if intolerable ?
@@ -307,7 +307,7 @@ subroutine controle
      if (lperiod) then
         xpnp(:,:)=xp(:,:)
      else       
-        call notperiod(xp,xpnp)
+        call notperiod(im,xp,xpnp)
      end if
 
 
@@ -548,13 +548,13 @@ subroutine controle
   case(2,10,8)
      if ((lprtrp.EQV..false.).and.((dmtype==10).or.(dmtype==8))) goto 123
      if ((fpstop>0.0).AND.(it.GE.1)) then 
-        IF (lFrozen) THEN
+!        IF (lFrozen) THEN
            !fpmax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
-           fpmax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) )
-        ELSE
+!           fpmax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) )
+!        ELSE
            !fpmax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
            fpmax = MaxVal( Abs(fp(:,1:im)) )
-        END IF
+!        END IF
 #ifdef PARA
         call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
         fpmax=fpmax_glob
@@ -578,12 +578,12 @@ subroutine controle
      end if
 
      if ((fsumstop>0.0).AND.(it.GE.1)) then 
-        IF (lFrozen) THEN
+!        IF (lFrozen) THEN
            !fpmax=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
-           fpmax=sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
-        ELSE
-           fpmax=sqrt( SUM(fp(:,1:im)**2) )
-        END IF
+!           fpmax=sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
+!        ELSE
+!           fpmax=sqrt( SUM(fp(:,1:im)**2) )
+!        END IF
 #ifdef PARA
         fpmax=fpmax**2
         call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -625,16 +625,16 @@ subroutine controle
      !debug     write(*,*) 'DEBUG ALL IT IN CONTROLE',it
 
      IF (it.GE.1) THEN
-        IF (lFrozen) THEN
+!        IF (lFrozen) THEN
            !forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
            !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
-           forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
-           formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) ) 
-        ELSE
+!           forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
+!           formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) ) 
+!        ELSE
            forctot=sqrt( SUM(fp(1:3,1:im)**2) )
            !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
            formax = MaxVal( Abs(fp(:,1:im)) )
-        END IF
+!        END IF
 #ifdef PARA
         call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
         formax=fpmax_glob

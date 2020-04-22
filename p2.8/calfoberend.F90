@@ -1,28 +1,45 @@
 module calfoberend_mod
-  USE tempinst_mod
+!  USE tempinst_mod
   USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:gamlt,cm
-  USE gen_com_m, ONLY:imm,imm,bk,im,pi,text,tstep,imd,tautcon,text
+  USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text
   implicit none
 contains
-  subroutine calfoberend(xp, vp, fp,ityp)
+  subroutine calfoberend(im,xp, vp, fp,ityp)
 
-
-    real(double)  :: xp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: fp(3,imm)
-    integer  :: ityp(imm)
+    integer::im
+    real(double)  :: xp(3,im)
+    real(double)  :: vp(3,im)
+    real(double)  :: fp(3,im)
+    integer  :: ityp(im)
     integer :: i,ic
     !real(double), external :: tempinst
-    real(double) :: gamb,fact,tempm1
+    real(double) :: gamb,fact,tempm1,mv2,v2
 
-    tempm1=tempinst(vp,ityp)
+    do i = 1,im
+       v2= vp(1,i)**2+ vp(2,i)**2+ vp(3,i)**2
+       mv2= mv2 + cm(ityp(i))*v2
+    enddo
+
+#ifdef PARA
+    call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    mv2 = mv2_glob
+    tempm1=mv2/(3.d0*float(im_glob)*bk)
+
+#else
+    tempm1=mv2/(3.d0*float(im)*bk)
+
+
+#endif
+
+
+!    tempm1=tempinst(im,vp,ityp)
 
     !      write(6,*)'jy suis'
     gamb=1./(2.*tauTcon)
     !      write(6,*)gamb,text,tempm1
 
-    do i=1,imd
+    do i=1,im
        fact=cm(ityp(i))*gamb*(Text/tempm1-1.0)
        do ic=1,3
           !            write(6,*)fp(ic,i),fact*vp(ic,i)
@@ -33,18 +50,18 @@ contains
 
   end subroutine calfoberend
 
-  subroutine dynlangevin(xp, vp, fp,ityp,il,Gl)
+  subroutine dynlangevin(im,xp, vp, fp,ityp,il,Gl)
     USE gen_com_m, ONLY:
     USE var_pot, ONLY:
 #ifdef PARA
     USE mod_para
 #endif
-
-    real(double)  :: xp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: fp(3,imm)
-    real(double)  :: Gl(3,imm)
-    integer  :: ityp(imm)
+    integer::im
+    real(double)  :: xp(3,im)
+    real(double)  :: vp(3,im)
+    real(double)  :: fp(3,im)
+    real(double)  :: Gl(3,im)
+    integer  :: ityp(im)
     integer::il
     real(double)::rga
     integer :: i,ic

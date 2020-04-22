@@ -1,13 +1,13 @@
 module calfojuli_mod
         USE notperiod_mod
         USE cryst_to_cart_mod
-        USE gen_com_m, ONLY:imm,at,bg,nvat,fnemd,free,im,imd,lcalcjq,lnemd,lperiod,&
-             potist,zero,indi,indi,indi,sig,eatom,volu
+        USE gen_com_m, ONLY:at,bg,nvat,fnemd,lcalcjq,lnemd,lperiod,&
+             potist,zero,sig,eatom,volu
         implicit none
         contains
 
 !----------------------------------------------------------------------
-SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
+SUBROUTINE calfojuli(im,xp,  vp,  fp, iwmax, ityp,indi)
   !tentaive de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
 
@@ -20,15 +20,13 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   ! eam variables
+  integer,intent(in)::im
+  integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
+  real(double),intent(in),allocatable  :: vp(:,:)
+  real(double),intent(inout),allocatable  :: xp(:,:)
+  real(double) , intent(inout),allocatable :: fp(:,:)
 
-
-  integer  :: ielat(imm)
-  integer  :: iwmax(imm)
-  integer  :: ityp(imm)
-  real(double)  :: xp(3,imm)
-  real(double)  :: vp(3,imm)
-  real(double)  :: fp(3,imm)
-
+ 
   !local variables
   integer :: i,j,l !atomes
   integer ::iti,itj,itl,ic !types
@@ -79,7 +77,7 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   real(double), dimension(:,:), allocatable :: xpnp
 
 
-  real(double):: fpnemd(3,imm),fpnemdmoy(3), XijdotF,XildotF,XjldotF
+  real(double):: fpnemd(3,im),fpnemdmoy(3), XijdotF,XildotF,XjldotF
 
   rue=rue_pot(ipotentiel)
   fpnemd=0
@@ -101,21 +99,15 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   potisrep=0.;potisglue=0.
   rue2=rue**2
   !    iw2=0
-  if (associated (free)) then
-     if (any(free).NEQV..true.)then
-        write(6,*)' free +SMJL =pas code'
-        stop
-     end if
-  endif
 
-  ALLOCATE(xpnp(3,imm))
+  ALLOCATE(xpnp(3,im))
   if (lperiod) then
    xpnp(:,:)=xp(:,:)
   else
-   call notperiod(xp,xpnp)
+   call notperiod(im,xp,xpnp)
   end if
    
-  call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
+  call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst
 
 
   loop1at1: do i=1,im
@@ -649,13 +641,13 @@ SUBROUTINE calfojuli(xp,  vp,  fp, ielat, iwmax, ityp)
   end do loop1at1
   if (lnemd) then
      fpnemdmoy=0
-     do i=1,imd   
+     do i=1,im   
         do l=1,3
-           fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(imd)
+           fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(im)
         enddo
      end do
 
-     do i=1,imd
+     do i=1,im
 !        write(6,*)'A',i,fp(:,i)
         do l=1,3
            fp(l,i)=fp(l,i)-fpnemdmoy(l)

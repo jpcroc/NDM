@@ -10,6 +10,7 @@ module prog_mod
         USE gcII_mod
         USE dmloop_vverlet_mod
         USE dmloop_mod
+        USE atomconfig
 #if defined ML || defined PARAML    
         USE ml_main_mod
 #endif 
@@ -30,6 +31,8 @@ subroutine prog
   implicit none
              character :: extension*2
     integer::lenfn2,i,ko
+    type(atom_config_d)::atdml
+    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
 
   !-----------------------------------------------
@@ -87,7 +90,7 @@ subroutine prog
 
   select case (dmtype) 
   case(5)
-       if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
   case(4,10)
        call dmloop_vverlet 
   case(8)
@@ -111,7 +114,12 @@ subroutine prog
      if (.not.parallele)   call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
   case(11)
      if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
-     call calfo()
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
+!     call calfo()
      call analyse()
      call controle()
      call endrun()

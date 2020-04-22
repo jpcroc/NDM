@@ -4,7 +4,9 @@ module dyn_vverlet_mod
   USE caltabt_mod
   USE gen_com_m, ONLY:ilangevin,itab
 #ifdef PARA
-  USE layer_mod 
+  USE layer_mod
+  USE atomconfig
+
 #endif
   implicit none
 contains
@@ -42,6 +44,9 @@ contains
     real(double)::jq_tot(3)
 #endif
 
+    type(atom_config_d)::atdml
+    integer, allocatable ::iwmaxCF(:),indiCF(:)
+
     !      write (*,*) 'sub dynvverlet'
 
     timel = timel+tstep
@@ -64,7 +69,7 @@ contains
 
     if (lLangevin) then
        il=2*(ilangevin-1)+1
-       call dynlangevin(xp,vp,fp,ityp,il,Gl)
+       call dynlangevin(im,xp,vp,fp,ityp,il,Gl)
     elseif (l2T) then
        il=2*(ilangevin-1)+1
        call TTlangevin(xp,vp,fp,ityp,il,Gl)
@@ -119,8 +124,13 @@ contains
     end if
 
     ! Force calculation
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml )
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
 
-    call calfo   ! F(t+dt)
+!    call calfo   ! F(t+dt)
 
     if (lnemd) then
        eatommoy=0.
@@ -138,7 +148,7 @@ contains
     ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
     if (llangevin.eqv..true.) then
        il=2*(ilangevin-1)+2
-       call dynlangevin(xp,vp,fp,ityp,il,Gl)
+       call dynlangevin(im,xp,vp,fp,ityp,il,Gl)
     elseif (l2T) then
        il=2*(ilangevin-1)+2
        call TTlangevin(xp,vp,fp,ityp,il,Gl)

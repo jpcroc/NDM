@@ -64,7 +64,7 @@ contains
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else 
-       call notperiod(xp,xpnp)
+       call notperiod(im,xp,xpnp)
     end if
 
     do i = 1, imana

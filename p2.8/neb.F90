@@ -6,6 +6,7 @@ module neb_mod
   USE scalebox_mod
   USE sauveforce_mod
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation
+  USE atomconfig
   implicit none 
 contains
   subroutine neb ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
@@ -41,6 +42,8 @@ contains
     ! Variables for Fire quench algorithm
     REAL(double), dimension(:), allocatable :: fire_dt, fire_alph
     INTEGER, dimension(:), allocatable :: fire_nstep
+    type(atom_config_d)::atdml
+    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
     if(lPkbar) then
        unitP=1.0d-9
@@ -107,7 +110,12 @@ contains
        call into_path(ii,2,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
        call scalebox           (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
        !write(*,*) 'inside NEB debug1',ii, xp(1,1)
-       call calfo 
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
+!       call calfo 
        !write(*,*) 'inside NEB debug2',ii, xp(1,1)
        call analyse  
        call neb_controle(ii)  !  (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
@@ -135,7 +143,13 @@ contains
           do while (dragtest==0)
              it=it+1
              call scalebox           (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
-             call calfo
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
+
+!             call calfo
              call force_projection(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              IF (lFire) THEN
                 call trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
@@ -185,7 +199,13 @@ contains
                 it_neb_inter=it_neb_inter+1
                 it=it_neb_inter
                 call scalebox               (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
-                call calfo
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
+
+                !                call calfo
                 call force_projection_neb(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
                 IF (lFire) THEN
                    call trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &

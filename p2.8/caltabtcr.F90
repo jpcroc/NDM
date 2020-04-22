@@ -46,7 +46,7 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   !  if (lperiod) then
   !     xpnp(:,:)=xpcr(:,:)
   !  else 
-  !     call notperiod(xp,xpnp)
+  !     call notperiod(im,xp,xpnp)
   !  end if
 
   !      write(6,*)'entree caltabt noxyz',noxyz

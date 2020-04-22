@@ -18,6 +18,7 @@ module work_cgII
   USE mod_para
 #endif
   USE tab_imm_m, ONLY : xp, fp,num_at_glob
+  USE atomconfig
   
   implicit none
 
@@ -46,6 +47,9 @@ contains
     character :: extension*2
     integer::lenfn2,ko
     real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
+
+    type(atom_config_d)::atcg
+    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
 !    write(6,*)'entree funct', it,ncalls
     it=NCALLS-1
@@ -225,9 +229,14 @@ contains
       !       write(6,*)rang,i,xp_all(:,i)
        write(607,'(I6,3G22.13)') i,xp(:,i)
     end do
+    call ndm2config(atcg,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    CALL CalFo(atcg) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atcg,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
+    iwmax=iwmaxCF
+    indi=indiCF
 
     
-    call calfo
+!    call calfo
     open(unit=606, file='fpG.csv', form='formatted', &
              status='unknown')
     do i=1,im_glob
@@ -256,16 +265,16 @@ contains
 !    write(6,*)'2rg cel 1nat',rang, ko,nato(ko)
 ! end do
      IF (it.GE.1) THEN
-        IF (lFrozen) THEN
+!        IF (lFrozen) THEN
            !forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
            !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
-           forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
-           formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) ) 
-        ELSE
+!           forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozcalfoen(:,1:im) ) )
+!           formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) ) 
+!        ELSE
            forctot=sqrt( SUM(fp(1:3,1:im)**2) )
            !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
            formax = MaxVal( Abs(fp(:,1:im)) )
-        END IF
+!        END IF
 !        write(6,*)'FF ', forctot,formax
 #ifdef PARA
         call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)

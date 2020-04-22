@@ -1,13 +1,13 @@
 module calfow_mod
   USE notperiod_mod
   USE cryst_to_cart_mod
-  USE gen_com_m, ONLY: imm,bg,free,im,imd,it,itesigma,lperiod,ltpcel,noxyz,pi,potcp,&
+  USE gen_com_m, ONLY: imm,bg,it,itesigma,lperiod,ltpcel,noxyz,pi,potcp,&
        &potis1,potist,zero,ncel,last,at,nato,ncel,deltadist,deltadist,deltadist,last,nato,&
        &deltadist,sig,sigc,volu
   implicit none
 contains
   ! ***************************************************************
-  SUBROUTINE CALFOW(xp,xpp,vp,ax,fp,ielat,iwmax,ityp)
+  SUBROUTINE CALFOW(im,xp,vp,fp,ielat,ityp)
     !     calcule des forces a 2 corps dans le pot de Watanabe
     !     version Avril 2001  
     ! ***************************************************************
@@ -20,13 +20,11 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
+    integer,intent(in)::im
     integer  :: ielat(imm) 
-    integer  :: iwmax(imm) 
     integer  :: ityp(imm)
     real(double)  :: xp(3,imm) 
-    real(double)  :: xpp(3,imm) 
     real(double)  :: vp(3,imm) 
-    real(double)  :: ax(3,imm) 
     real(double)  :: fp(3,imm) 
     !--------------------------------------------
     !  L o c a l   v a r i a b l e s
@@ -57,15 +55,15 @@ contains
     ! sig=0
     !       write(6,*)'entree calfw'
 
-    if (any(free).NEQV..true.)then
-       write(6,*)'free +SW =pas code'
-       stop
-    end if
+!    if (any(free).NEQV..true.)then
+!       write(6,*)'free +SW =pas code'
+!       stop
+!    end if
 
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else 
-       call notperiod(xp,xpnp)
+       call notperiod(im,xp,xpnp)
     end if
 
 
@@ -115,7 +113,7 @@ contains
        ! calcul de la cordination des atomes d'O (z)
        ! plus some des fonctions de SW pour les forces qui suivent
 
-       do i=1,imd
+       do i=1,im
           !         write(6,*)i
           iti=ityp(i)
           if(iti.eq.itO) then
@@ -224,7 +222,7 @@ contains
 
              ! boucle de calcul des forces
 
-             DO 699 I=1,IMD
+             DO 699 I=1,IM
                 !         write(6,*)i
                 KOO=IELAT(I)   ! Numero de la cellule
                 ITI=ITYP(I)

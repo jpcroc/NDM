@@ -5,12 +5,12 @@ module notperiod_mod
         contains
 
 ! *****************************************************************
-subroutine notperiod(xp, xpnp)
+subroutine notperiod(im,xp, xpnp)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:imm,at,bg,im,low_limit,zero
+  USE gen_com_m, ONLY:at,bg,low_limit,zero
 
   !       version du 09 decembre 2003
 
@@ -28,8 +28,9 @@ subroutine notperiod(xp, xpnp)
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  real(double)  :: xp(3,imm)
-  real(double)  :: xpnp(3,imm)
+  integer,intent(in)::im
+  real(double)  :: xp(3,im)
+  real(double)  :: xpnp(3,im)
 
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
@@ -50,7 +51,7 @@ subroutine notperiod(xp, xpnp)
   xpnp(:,:)=xp(:,:)
 
 
-     call cryst_to_cart (imm, xpnp,  bg,  -1) !cart vers cryst
+     call cryst_to_cart (im, xpnp,  bg,  -1) !cart vers cryst
 
      do i=1,im
         do ic=1,3
@@ -68,7 +69,7 @@ subroutine notperiod(xp, xpnp)
         end do
      end do
 
-     call cryst_to_cart (imm, xpnp, at, 1)  !cryst vers cart
+     call cryst_to_cart (im, xpnp, at, 1)  !cryst vers cart
 
 
 

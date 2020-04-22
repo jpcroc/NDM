@@ -1,21 +1,25 @@
 module calfojulicel_mod
   USE notperiod_mod
   USE cryst_to_cart_mod
-  USE gen_com_m, ONLY:at,bg,nvat,fnemd,imm,free,im,imd,lcalcjq,lnemd,lperiod,noxyz,&
+  USE gen_com_m, ONLY:at,bg,nvat,fnemd,lcalcjq,lnemd,lperiod,noxyz,&
        &potist,zero,ncel,last,nato,ncel,last,nato,ncel,last,nato,sig,sigc,sigat,eatom,volu
   USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfojulicel
+  SUBROUTINE calfojulicel(im,xp,  vp, fp, ielat, ityp)
     !tentaive de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
 
     USE SMjuli
     USE jqmod
-    USE tab_imm_m
+!    USE tab_imm_m
     implicit none
-
+  integer,intent(in)::im
+  integer , intent(in),allocatable :: ielat(:),ityp(:)
+  real(double),intent(in),allocatable  :: vp(:,:)
+  real(double),intent(inout),allocatable  :: xp(:,:)
+  real(double) , intent(inout),allocatable :: fp(:,:)
 
     !local variables
     integer :: i,j,l !atomes
@@ -67,7 +71,7 @@ contains
     real(double), dimension(:,:), allocatable :: xpnp
 
 
-    real(double):: fpnemd(3,imm),fpnemdmoy(3), XijdotF,XildotF,XjldotF
+    real(double):: fpnemd(3,im),fpnemdmoy(3), XijdotF,XildotF,XjldotF
 
     integer::koo,ncelvois,i1,i2,ko1,ko1j,koj
     !  real(double)::
@@ -92,21 +96,15 @@ contains
     potisrep=0.;potisglue=0.
     rue2=rue**2
     !    iw2=0
-    if (associated (free)) then
-       if (any(free).NEQV..true.)then
-          write(6,*)' free +SMJL =pas code'
-          stop
-       end if
-    endif
 
-    ALLOCATE(xpnp(3,imm))
+    ALLOCATE(xpnp(3,im))
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else
-       call notperiod(xp,xpnp)
+       call notperiod(im,xp,xpnp)
     end if
 
-    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
+    call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst
 
 
     loop1at1: do i=1,im
@@ -745,13 +743,13 @@ contains
     end do loop1at1
     if (lnemd) then
        fpnemdmoy=0
-       do i=1,imd   
+       do i=1,im   
           do l=1,3
-             fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(imd)
+             fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(im)
           enddo
        end do
 
-       do i=1,imd
+       do i=1,im
           !        write(6,*)'A',i,fp(:,i)
           do l=1,3
              fp(l,i)=fp(l,i)-fpnemdmoy(l)
