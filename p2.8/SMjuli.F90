@@ -25,9 +25,9 @@ module SMjuli
      real(double)::rc
   end type DensityTjl
 
-  type(DensityTjl),dimension(:), pointer :: rhotypjl  !
-  type(EamTjl),dimension(:), pointer :: embtypjl      !
-  type(repTjl),dimension(:), pointer :: reppairjl     !
+  type(DensityTjl),dimension(:), allocatable :: rhotypjl  !
+  type(EamTjl),dimension(:), allocatable :: embtypjl      !
+  type(repTjl),dimension(:), allocatable :: reppairjl     !
 
   real(double):: alphaPbeta, beta
 
@@ -47,15 +47,15 @@ ipotentiel,typ_pot_pair)
     integer, intent(out) :: ntyp                           !nb de type
     integer, intent(out) :: npair                  ! = ntyp*(ntyp+1)/2
     integer, intent(out) :: ntrip                  ! = ntyp*ntyp *(ntyp+1)/2
-    real(double), dimension(:), pointer :: cm, catom,roff1,roff2
-    character , dimension(:), pointer  :: ty*3
+    real(double), dimension(:), allocatable :: cm, catom,roff1,roff2
+    character , dimension(:), allocatable  :: ty*3
     real(double), intent(in) ::umass 
     real(double), intent(out) :: rue,rumax,r3cm
     integer, intent(out) :: iewald
     logical, intent(out) :: l3c
     integer , intent(in) ::rang,ipotentiel,npotmax
-    logical, pointer :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
-    integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+    logical, allocatable :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
+    integer, allocatable:: typ_pot_pair(:) ! donne le type d'interaction de la paire
     !local variables
     integer:: i
     integer :: lupotin=95

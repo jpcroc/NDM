@@ -54,7 +54,7 @@ subroutine controle
   real(double) :: xpnp(3,imm)
   real(double) :: potistmean,potistdif
   real(double),save :: potist1000
-  real, pointer,save :: potiststock(:)
+  real, allocatable,save :: potiststock(:)
 #ifdef PARA
   real(double) :: tcou_glob
   integer      :: nacou_glob

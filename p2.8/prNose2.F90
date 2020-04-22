@@ -49,7 +49,7 @@ module Parrinello_Rahman_Nose
 
   real(double), dimension(3,3), save , private ::h,trh,invh,invtrh,Gmat,invGmat,Area,hnew,hlast,hold,invhold
   real(double), dimension(3,3), save , private ::hpoint, h2point, whpointpoint, Gpoint
-  real(double), pointer, save, private :: sp(:,:),sold(:,:),snew(:,:),sdot(:,:)
+  real(double), allocatable, save, private :: sp(:,:),sold(:,:),snew(:,:),sdot(:,:)
 
   ! Variables uniquement nécessaires au calcul de l'énergie potentielle de la
   ! boîte

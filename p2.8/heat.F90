@@ -29,7 +29,7 @@ subroutine heat
   real(double), dimension(:,:), allocatable :: xpnp
   integer ::i,natheat,j
   real(double):: dxp(3),r2,tsph,xtr(3)
-  integer, pointer,dimension (:):: iatheat
+  integer, allocatable,dimension (:):: iatheat
 
 
   write(6,*)'entree heat'

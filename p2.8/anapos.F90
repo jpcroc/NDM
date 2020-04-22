@@ -29,11 +29,11 @@ module posana
     integer::         idistord,iprtnvi        ! analyse des diff angulaires
     integer :: imcr ! nb d'atomes dans le cristal de reference
     real(double)::pstmax(20)
-    real(double),pointer:: xpcr(:,:)
-    integer, pointer :: itypcr(:)
+    real(double),allocatable:: xpcr(:,:)
+    integer, allocatable :: itypcr(:)
     integer:: ndvblob,ndvmin ! voisins blob pour SC
     real(double)::rdv ! distance entre defauts pour SC
-    integer, pointer:: indws(:),indatsit(:,:),natsit(:),indint(:),indvac(:),indas(:) ! indices des atomes deplaces et plottes
+    integer, allocatable:: indws(:),indatsit(:,:),natsit(:),indint(:),indvac(:),indas(:) ! indices des atomes deplaces et plottes
   ! **************************************************************
 contains
 
@@ -267,13 +267,13 @@ contains
     integer, save:: lurasmol
 
     integer :: maxvois ,nana,itj,i5,iwr
-    integer,pointer, save :: nvi(:),nvityp(:,:),ivois(:,:)
-    real(double),pointer:: rccar(:)
+    integer,allocatable, save :: nvi(:),nvityp(:,:),ivois(:,:)
+    real(double),allocatable:: rccar(:)
     real(double) :: xpnp(3,imm),dx(3,20)
     real(double)::cv(1,3)
     logical::lvoisOK,permut
     real(double)::pst,psta,pstp,mtheta(200),costheta,moytet(200,20),thetajik,tetreg,temptri
-    integer,pointer::iatd(:)
+    integer,allocatable::iatd(:)
     integer::natd,k11,j11,nteta,ntetmax,natdtyp(20)
 
     natd=0
@@ -621,21 +621,21 @@ contains
 
     !Local variables
     integer :: i,j,k,ndep,ic,nplt,idp,iplt
-    integer, dimension(:), pointer:: inddep(:),indplt(:) ! indices des atomes deplaces et plottes
+    integer, dimension(:), allocatable:: inddep(:),indplt(:) ! indices des atomes deplaces et plottes
 
     real(double) :: tdep2
     real(double) :: a1,a2,a3,c1,c2,c3,r2
     real(double), dimension(1,3) :: cv
 
     integer :: nvac,nint,nremp,nanti,ivac,iint,iremp,ias
-    integer, dimension(:), pointer :: indremp
+    integer, dimension(:), allocatable :: indremp
     logical :: vacfl
 
     real(double) :: r2min
 
     real(double) :: c3p,c2p,c1p,c1abs,c2abs,c3abs,r
     integer:: koo,i2,i1,ncelvois,ko1,immin,immax
-    !  integer,pointer :: lastcr (:,:),natocr(:),ielatcr(:)
+    !  integer,allocatable :: lastcr (:,:),natocr(:),ielatcr(:)
 
     immin=min(im,imcr)
     immax=max(im,imcr)
@@ -1140,7 +1140,7 @@ contains
 
     real(double) :: c3p,c2p,c1p,c1abs,c2abs,c3abs,r
     integer:: koo,i2,i1,ncelvois,ko1,immin,immax,indws0
-    !  integer,pointer :: lastcr (:,:),natocr(:),ielatcr(:)
+    !  integer,allocatable :: lastcr (:,:),natocr(:),ielatcr(:)
 
     immin=min(im,imcr)
     immax=max(im,imcr)
@@ -1411,7 +1411,7 @@ contains
 
     integer ::nvac,nint,ntypdefsc(3),nattypdefsc(ntyp),ivac,iint,nsc,id12,sc1,sc2,id3sc,id3,&
          & isc,jrsc,jsc,krsc,ksc,irsc
-    integer, dimension(:), pointer:: indvac,indint
+    integer, dimension(:), allocatable:: indvac,indint
     integer,allocatable::ndefsc (:),inddefsc(:,:),indrg(:),rgsc(:),ndefvois(:)
     type(deftype), allocatable :: deft(:), deft2(:)
     real(double)::c1,c2,c3,cv(1,3),dist
@@ -1695,8 +1695,8 @@ contains
     real(double) :: tirax, tiray, tiraz, x1, x2, x3, a1, a2, a3, c1, c2, c3, r2
     real(double) :: rsep2,atcr(3,3),zlcr(3),bgcr(3,3)
     character :: fnamcin*80, fnamgin*80
-    integer, dimension(:),pointer     :: ibuffer,num_at_globcr
-    real(double), dimension(:,:),pointer    :: buffer
+    integer, dimension(:),allocatable     :: ibuffer,num_at_globcr
+    real(double), dimension(:,:),allocatable    :: buffer
     !              real(double) drand
   
   

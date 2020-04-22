@@ -173,7 +173,7 @@ CONTAINS
 104       Continue
        END DO
        if(ndif.ne.0) then
-          ! on fait pointer sur newlab tous les amas qu'il faut rattacher
+          ! on fait allocatable sur newlab tous les amas qu'il faut rattacher
           do i=1,ndif
              ncl(ldif(i))=-newlab
           end do

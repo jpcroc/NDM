@@ -17,8 +17,8 @@ contains
     real(double),save :: mvp0vp0
     real(double) :: mvptvp0
     real(double) :: ratiocor
-    real(double),pointer ::vptvp0(:),ratiocortyp(:)
-    real(double),pointer,save ::  vp0vp0(:) 
+    real(double),allocatable ::vptvp0(:),ratiocortyp(:)
+    real(double),allocatable,save ::  vp0vp0(:) 
     integer :: i,j,k,l,ic,m,n,iti,unitch
     real(double) :: cmat
     character :: chit*2,fch*80

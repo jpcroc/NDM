@@ -3,8 +3,8 @@ module fft_com_m
 
   integer*4 :: STATUS
 #ifdef para2c
-  complex(double), dimension(:,:,:), pointer :: qgrid1   !tampon de qgrid
+  complex(double), dimension(:,:,:), allocatable :: qgrid1   !tampon de qgrid
 #endif
-  complex(double), dimension(:,:,:), pointer :: qgrid   !tampon de qgrid
+  complex(double), dimension(:,:,:), allocatable :: qgrid   !tampon de qgrid
 
 end module fft_com_m

@@ -44,11 +44,11 @@ subroutine config
 #ifndef PARA
   integer :: nprocs
 #endif
-  integer ,     dimension(:),   pointer :: itypc
-  real(double), dimension(:,:), pointer :: xc
-  integer,      dimension(:), pointer   :: num_at_buff
-  integer, dimension(:),pointer     :: ibuffer
-  real(double), dimension(:,:),pointer    :: buffer
+  integer ,     dimension(:),   allocatable :: itypc
+  real(double), dimension(:,:), allocatable :: xc
+  integer,      dimension(:), allocatable   :: num_at_buff
+  integer, dimension(:),allocatable     :: ibuffer
+  real(double), dimension(:,:),allocatable    :: buffer
   real(double),dimension(:,:),allocatable :: tmpxc
   character :: extension*2
 

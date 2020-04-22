@@ -142,7 +142,7 @@ subroutine calfo2ctabvois(im,xp,  vp, fp,  iwmax, ityp,indi )
         endif
         
 
-!        if (associated(free)) then
+!        if (allocated(free)) then
 !           if (free(i).EQV..true.)potis1 = potis1+deltaepot
 !           if (free(j).EQV..true.)potis1 = potis1+deltaepot
 !        else
@@ -167,7 +167,7 @@ subroutine calfo2ctabvois(im,xp,  vp, fp,  iwmax, ityp,indi )
         ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
         !ra(3)=Force de j sur i
            if (lprteat) then
-!              if (associated(free)) then
+!              if (allocated(free)) then
 !                 if (free(i).EQV..true.)eatom(i) = eatom(i)+deltaepot
 !                 if (free(j).EQV..true.)eatom(j) = eatom(j)+deltaepot
 !              else

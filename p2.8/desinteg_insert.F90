@@ -33,7 +33,7 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
 
-    real(double),pointer,save:: Wchemin(:)
+    real(double),allocatable,save:: Wchemin(:)
     real(double),save :: Wch0
     real(double)::wch1,testval,u1,taup,taum,mug
     real(double), parameter::bkev=8.617385d-5 

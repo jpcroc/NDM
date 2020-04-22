@@ -32,14 +32,14 @@ subroutine jqbh (xp,xpp,vp,ityp)
   integer, save :: iunite
   real(double):: tcou1,tcou2,dec1,dec2,delt,ecou1,ecou2,alph1,alph2,xdec
   real(double), save ::tfcou1,tfcou2,tmcou1,tmcou2,csup,cinf,crul
-  real(double),pointer,save :: temptr(:)
-  real(double),pointer,save :: temptra(:)
-  integer,pointer,save::nattr(:)
+  real(double),allocatable,save :: temptr(:)
+  real(double),allocatable,save :: temptra(:)
+  integer,allocatable,save::nattr(:)
 #ifdef PARA 
   real(double) :: ecou1_tot,ecou2_tot
   integer::nacou1_tot,nacou2_tot
-  real(double),pointer,save :: temptra_tot(:)
-  integer,pointer,save::nattr_tot(:)
+  real(double),allocatable,save :: temptra_tot(:)
+  integer,allocatable,save::nattr_tot(:)
 
 #endif
   character*15:: fnamtr

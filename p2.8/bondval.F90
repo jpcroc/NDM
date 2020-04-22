@@ -24,10 +24,10 @@ contains
 
     real(double)::c1p,c2p,c3p,cv(1,3),ra(3),c1,c2,c3
 
-    real(double),pointer::bdv(:)
+    real(double),allocatable::bdv(:)
     real(double) :: R,xx,dcut2,dis
 
-    real(double),pointer :: xpnp(:,:)
+    real(double),allocatable :: xpnp(:,:)
 
     character :: extension*9
     !APARA

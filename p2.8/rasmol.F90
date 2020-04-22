@@ -113,7 +113,7 @@ contains
           at=at/1.d8
           open(luvisu2,file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.dat', form='formatted', &
                status='unknown')
-          write(luvisu2,'(a)') '# Data file associated with an ascii file (V_Sim)'
+          write(luvisu2,'(a)') '# Data file allocated with an ascii file (V_Sim)'
        case(3) 
           open(luvisu, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.xred', form='formatted', &
                status='unknown')

@@ -16,51 +16,51 @@ module eam
   ! routines generRho, generEAm, generRep. Ils sont ensuite utilisé dans les routines extrapolate
 
   type :: EamT
-     real(double),dimension (:),pointer :: feam,xg
+     real(double),dimension (:),allocatable :: feam,xg
      real(double)::deltaEAM
      !     integer :: typ
   end type EamT
 
   type :: EamTsp
-     real(double),dimension (:),pointer :: beam,ceam,deam
+     real(double),dimension (:),allocatable :: beam,ceam,deam
   end type EamTsp
 
   type :: RepT
-     real(double),dimension (:),pointer :: potr,xr
+     real(double),dimension (:),allocatable :: potr,xr
      real(double)::deltaREP
   end type Rept
 
   type :: RepTsp
-     real(double),dimension (:),pointer :: bpotr,cpotr,dpotr
+     real(double),dimension (:),allocatable :: bpotr,cpotr,dpotr
   end type RepTsp
 
   type :: DensityT
-     real(double),dimension (:),pointer::rho,xd
+     real(double),dimension (:),allocatable::rho,xd
      real(double)::deltaRHO
   end type DensityT
 
   type :: DensityTsp
-     real(double),dimension (:),pointer::brho,crho,drho
+     real(double),dimension (:),allocatable::brho,crho,drho
   end type DensityTsp
 
-  type(DensityT),dimension(:), pointer :: rhotyp
-  type(EamT),dimension(:), pointer :: embtyp
-  type(repT),dimension(:), pointer :: reppair
+  type(DensityT),dimension(:), allocatable :: rhotyp
+  type(EamT),dimension(:), allocatable :: embtyp
+  type(repT),dimension(:), allocatable :: reppair
 
-  type(DensityTsp),dimension(:), pointer :: SPrhotyp
-  type(EamTsp),dimension(:), pointer :: SPembtyp
-  type(repTsp),dimension(:), pointer :: SPreppair
+  type(DensityTsp),dimension(:), allocatable :: SPrhotyp
+  type(EamTsp),dimension(:), allocatable :: SPembtyp
+  type(repTsp),dimension(:), allocatable :: SPreppair
 
-  type(DensityT),dimension(:), pointer :: rhotyp_d
-  type(EamT),dimension(:), pointer :: embtyp_d
-  type(repT),dimension(:), pointer :: reppair_d
+  type(DensityT),dimension(:), allocatable :: rhotyp_d
+  type(EamT),dimension(:), allocatable :: embtyp_d
+  type(repT),dimension(:), allocatable :: reppair_d
 
-  type(DensityTsp),dimension(:), pointer :: SPrhotyp_d
-  type(EamTsp),dimension(:), pointer :: SPembtyp_d
-  type(repTsp),dimension(:), pointer :: SPreppair_d
-  !  real(double),pointer, dimension(:,:):: xg,xr,xd ! tablezau construit à partir de la grille lue
-  !  real(double),pointer, dimension(:,:,:):: eg,vr,dd ! tablezau construit à partir de la grille lue
-  !  real(double),pointer, dimension(:):: xspb,yspb,bspb,cspb,dspb
+  type(DensityTsp),dimension(:), allocatable :: SPrhotyp_d
+  type(EamTsp),dimension(:), allocatable :: SPembtyp_d
+  type(repTsp),dimension(:), allocatable :: SPreppair_d
+  !  real(double),allocatable, dimension(:,:):: xg,xr,xd ! tablezau construit à partir de la grille lue
+  !  real(double),allocatable, dimension(:,:,:):: eg,vr,dd ! tablezau construit à partir de la grille lue
+  !  real(double),allocatable, dimension(:):: xspb,yspb,bspb,cspb,dspb
   integer :: nptmax ! nombre de points dans la grille lue
 
   public ::  extrapolateRho, extrapolateRep, extrapolateEam,inputeam
@@ -81,17 +81,17 @@ contains
     integer, intent(out) :: ntyp                           !nb de type
     integer, intent(out) :: npair                  ! = ntyp*(ntyp+1)/2
     integer, intent(out) :: ntrip                  ! = ntyp*ntyp *(ntyp+1)/2
-    real(double), dimension(:), pointer :: cm, catom,roff1,roff2
-    character , dimension(:), pointer  :: ty*3
+    real(double), dimension(:), allocatable :: cm, catom,roff1,roff2
+    character , dimension(:), allocatable  :: ty*3
     real(double), intent(in) ::umass 
     real(double), intent(out) :: rue,rumax,r3cm
     integer, intent(out) :: iewald
     logical, intent(out) :: l3c
     integer , intent(in) ::rang,ipotentiel,npotmax,npotentiel
-    logical, pointer :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
-    integer,pointer:: typ_pot_pair(:)
-    integer, dimension(:,:), pointer  :: ipo			! indice des paires d'atomes
-    logical,pointer::lue_typ(:),lue_paire(:),lu_roff_pair(:)
+    logical, allocatable :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
+    integer,allocatable:: typ_pot_pair(:)
+    integer, dimension(:,:), allocatable  :: ipo			! indice des paires d'atomes
+    logical,allocatable::lue_typ(:),lue_paire(:),lu_roff_pair(:)
 
 
     !local variables
@@ -99,7 +99,7 @@ contains
     integer :: lupotin=95
     character ::  fnampotin*80
     real(double) :: xdum,cmr,catomr,drk,erep
-    integer,pointer :: typtyp(:),ind_pair(:)
+    integer,allocatable :: typtyp(:),ind_pair(:)
     integer::itir,npair_r,ipair,ntypr,j,itj,k
     character :: tyr*3
 
@@ -397,8 +397,8 @@ contains
     end do
 
     close(lupotin)
-!if(associated* (typ_and_pot).eqv..false.), i.e. if npotentiel==1 
-    if(associated (typ_and_pot).eqv..false.) then
+!if(allocated* (typ_and_pot).eqv..false.), i.e. if npotentiel==1 
+    if(allocated (typ_and_pot).eqv..false.) then
        allocate (typ_and_pot(ntyp,npotmax))
        typ_and_pot(:,:)=.false.
        typ_and_pot(1:ntyp,ipotentiel)=.true.

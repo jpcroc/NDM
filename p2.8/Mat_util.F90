@@ -172,7 +172,7 @@ end function detmat
 
 !**********************************************************************
 subroutine boxmat
-  !     Sets up matrices associated with the MD box.
+  !     Sets up matrices allocated with the MD box.
   !----------------------------------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------

@@ -26,7 +26,7 @@ subroutine test_position_He (xp, at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,ns
   real(double) :: xp(3,imm), H
   real(double) :: at(3,3) ! valeur des 3 vecteurs definissant la taille de laboite
   logical::ldesinteg
-  integer, dimension(:), pointer       :: num_at_glob
+  integer, dimension(:), allocatable       :: num_at_glob
   !variables locales
 
   real(double),save :: X, Y, Z, R, Rmax,a,b,c,d,e,f,g,q,l,m,n,o,p, Rmax_tot,rmax1,rmin ! position du centre et distance du centre   au plus proche voisin
@@ -36,7 +36,7 @@ subroutine test_position_He (xp, at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,ns
   logical::ldesdes
   logical,save::lsort
   integer,save::ntrm
-  real(double),save,pointer ::at_par_tr(:),natsortideplus(:),natsortidemoins(:)
+  real(double),save,allocatable ::at_par_tr(:),natsortideplus(:),natsortidemoins(:)
   integer::ntr
   
 

@@ -16,8 +16,8 @@ subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_rof
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
-  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+  integer, dimension(:,:), allocatable  :: ipo                      ! indice des paires d'atomes
+  integer, allocatable:: typ_pot_pair(:) ! donne le type d'interaction de la paire
   integer , intent(in) :: ngrid,ipotentiel
   integer  :: ntyp
   integer  :: npair
@@ -52,8 +52,8 @@ subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_rof
 !  !   D u m m y   A r g u m e n t s
 !  !-----------------------------------------------
 !  integer , intent(in) :: ntyp,ipotentiel
-!  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
-!  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
+!  integer, allocatable:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+!  integer, dimension(:,:), allocatable  :: ipo                      ! indice des paires d'atomes
 !
 !  integer , intent(in) :: npair
 !  real(double)  :: auxe
@@ -147,8 +147,8 @@ subroutine zieg(zie,decal,catom,roff1,roff2,auxe, ntyp, npair, pot,ngrid,csive,l
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   integer , intent(in) :: ntyp,ipotentiel
-  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
-  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
+  integer, allocatable:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+  integer, dimension(:,:), allocatable  :: ipo                      ! indice des paires d'atomes
 
   integer , intent(in) :: npair
   real(double)  :: auxe

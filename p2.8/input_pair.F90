@@ -47,7 +47,7 @@ contains
     integer  :: nb_paire_a_lire, lect_paire,tt1,tt2,igr
     integer::num_paire
     ! lecture des termes a trois corps
-    !  logical, dimension (:),pointer :: lue_trip
+    !  logical, dimension (:),allocatable :: lue_trip
     integer  :: n3c,npg,npd
     real(double) :: lambr,gamgr,gamdr,agcr,adcr,cangler, dmr,amr,rmr,rumaxa
 
@@ -64,7 +64,7 @@ contains
     !-----------------------------------------------
     !      real(double) , external :: distmin, calcvol
     !-----------------------------------------------
-    integer,pointer :: ityplu(:)
+    integer,allocatable :: ityplu(:)
 
     namelist /ewald/ rue, alpha, precis, ncouc3, ncoucx, ncoucy, ncoucz,&
          kpmex, kpmey, kpmez, lopt,ecrue,ipotrep
@@ -234,7 +234,7 @@ contains
                       end if
                    end if
                 endif
-                if (associated(typ_and_pot))typ_and_pot(iti,ipotentiel)=.true.
+                if (allocated(typ_and_pot))typ_and_pot(iti,ipotentiel)=.true.
                 write(6,*)cmr,umass
                 cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
                 if(iewald.ne.0) q(iti)=qr
@@ -878,8 +878,8 @@ contains
        write (6, *) rang, 'Bienvenue dans le cote obscur de la force :pas de potentiel ?'
        call arret_ndm
     end select
-    !if(associated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 
-    if(associated (typ_and_pot).eqv..false.) then
+    !if(allocated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 
+    if(allocated (typ_and_pot).eqv..false.) then
        allocate (typ_and_pot(ntyp,npotmax))
        typ_and_pot(:,:)=.false.
        typ_and_pot(1:ntyp,ipotentiel)=.true.

@@ -39,7 +39,7 @@ contains
 #endif
     !-----------------------------------------------
 
-    real(double),pointer :: xpnp(:,:)
+    real(double),allocatable :: xpnp(:,:)
     allocate (xpnp(3,imm))
     !repartition des atomes entre les petites cel.
     !  if (rang==0) write(6,*) 'PARA-T entree calcangle'

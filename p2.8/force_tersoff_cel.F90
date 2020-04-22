@@ -361,15 +361,15 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp)
            end if
         end do
      end do
-!     if (associated (free)) then
+!     if (allocated (free)) then
 !        if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
 !     else
         potisTersoff = potisTersoff + 0.5*v_ij
 !     end if
-!     if (associated (free)) then
-!        if ((associated(eatom)).and.(free(i).EQV..true.)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
+!     if (allocated (free)) then
+!        if ((allocated(eatom)).and.(free(i).EQV..true.)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
 !     else
-        if (associated(eatom)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
+        if (allocated(eatom)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
 !     end if
 
 
@@ -383,7 +383,7 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp)
   !     jq=jq_tot
   call MPI_ALLREDUCE(sig,   sig_tot,   9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   sig=sig_tot  
-  if (associated(sigc)) then
+  if (allocated(sigc)) then
      call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      sigc=sigc_tot
   endif

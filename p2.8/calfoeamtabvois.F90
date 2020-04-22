@@ -154,7 +154,7 @@ contains
        end if
        drk=tabdensity(i)-(rhomin+k*ktorho)
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
-!       if( associated (free)) then
+!       if( allocated (free)) then
 !          if( ( (lprteat.EQV..true.).or.(lcalcjq.EQV..true.) ).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
 !          if( free(i).EQV..true.)potisglue = potisglue+Eembi
 !       else
@@ -223,7 +223,7 @@ contains
           dFemb = tabdensity(i)*drhoj + tabdensity(j)*drhoi  ! THIS is WRONG in my SENSE
 
           if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.))then
-!             if (associated (free)) then
+!             if (allocated (free)) then
 !                if( free(i).EQV..true.)                eatom(i)=eatom(i) + 0.5d0*Erep
 !                if ((free(j).EQV..true.).and.ldemitab) eatom(j)=eatom(j) + 0.5d0*Erep
 !             else
@@ -231,7 +231,7 @@ contains
                 if (ldemitab)  eatom(j)=eatom(j) + 0.5d0*Erep
 !             end if
           end if
-!          if (associated (free)) then
+!          if (allocated (free)) then
 !             if( free(i).EQV..true.)                potisrep = potisrep + 0.5*Erep
 !             if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep + 0.5*Erep
 !          else

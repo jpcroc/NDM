@@ -210,7 +210,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob)
            l = ipo(iti,itj)
            Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
            if(lprteat.EQV..true.)then
-!              if (associated (free)) then              
+!              if (allocated (free)) then              
 !                 if( free(i).EQV..true.) eatom(i)=eatom(i)+Erep/2.d0
 !                 if( free(j).EQV..true.) eatom(j)=eatom(j)+Erep/2.d0
 !              else
@@ -221,7 +221,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob)
            dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
 
          if (num_at_glob(i).lt.num_at_glob(j)) then
-!              if (associated (free)) then              
+!              if (allocated (free)) then              
 !                 if( free(i).EQV..true.) potisrep = potisrep+Erep
 !              else
                  potisrep = potisrep+Erep
@@ -268,7 +268,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob)
      drk=tabdensity(i)-(rhomin+k*ktorho)
      Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
 
-!     if (associated (free)) then
+!     if (allocated (free)) then
 !        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
 !        if( free(i).EQV..true.)   potisglue = potisglue+Eembi
 !     else
@@ -404,7 +404,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob)
  if (test_sigma) then 
      call MPI_ALLREDUCE(sig,      sig_tot,      9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      sig=sig_tot
-       if (associated(sigc)) then
+       if (allocated(sigc)) then
      call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      sigc=sigc_tot
   endif

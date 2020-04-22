@@ -40,8 +40,8 @@ contains
     integer :: lucout, formatsauvmod,i
     character :: extension*9
 #ifdef PARA
-    integer,dimension(:),pointer     :: ibuffer
-    real(double), dimension(:,:),pointer   :: buffer
+    integer,dimension(:),allocatable     :: ibuffer
+    real(double), dimension(:,:),allocatable   :: buffer
     integer,      dimension(0:nprocs-1)   :: im_loc
     integer,      dimension(0:nprocs-1)   :: pt_im
     integer :: next_pt
@@ -186,8 +186,8 @@ contains
     character :: extension*9
     character :: fnamgout*80
 #ifdef PARA
-    integer,dimension(:),pointer     :: ibuffer
-    real(double), dimension(:,:),pointer   :: buffer
+    integer,dimension(:),allocatable     :: ibuffer
+    real(double), dimension(:,:),allocatable   :: buffer
     integer,      dimension(0:nprocs-1)   :: im_loc
     integer,      dimension(0:nprocs-1)   :: pt_im
     integer :: next_pt

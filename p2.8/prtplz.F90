@@ -15,7 +15,7 @@ contains
     real(double)  :: xp(3,imm)
 
 
-    real(double), pointer,save :: natz(:)
+    real(double), allocatable,save :: natz(:)
     integer :: i,j,k,l,itr,ii,itempo
     integer,save :: ntrl,icall
     real(double):: ltr

@@ -362,7 +362,7 @@ contains
              end if
 
           end do Tloop1at2
-!          if (associated (free)) then
+!          if (allocated (free)) then
 !             if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
 !          else
              potisTersoff = potisTersoff + 0.5*v_ij
@@ -370,7 +370,7 @@ contains
 
 
           !energie_i =  0.5*v_i
-!          if (associated (free)) then
+!          if (allocated (free)) then
 !             if ((lprteat.or.lcalcjq.or.lnemd).and.(free(i).EQV..true.))eatom(i) = eatom(i)+0.5*v_ij
 !          else
              if (lprteat.or.lcalcjq.or.lnemd)eatom(i) = eatom(i)+0.5*v_ij

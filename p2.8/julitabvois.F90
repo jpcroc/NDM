@@ -92,7 +92,7 @@ SUBROUTINE calfojuli(im,xp,  vp,  fp, iwmax, ityp,indi)
 !  fp(:,:) = 0.0
 
   jq(:)=0.
-  !  if (associated(eatom)) eatom(:)=0.
+  !  if (allocated(eatom)) eatom(:)=0.
 
 
   potist = zero

@@ -22,7 +22,7 @@ module eloss
 
   real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
   real(double):: elosselectot,elosselectot1 ! electronic losses for all atoms ; the PKA
-  real(double),pointer::elstopforce(:,:,:)
+  real(double),allocatable::elstopforce(:,:,:)
   real(double):: tcelec,Ecelec ! coupure pour les pertes 駘ectroniques
   integer::ibrake   ! electronic slowing in cascades : 0 none, 1 down to ecelec, tcelec , 2 connected to Langevin
   integer::ngrdel
@@ -52,8 +52,8 @@ contains
     integer::i,j,j1,j2,j0,npr,k,nv1,iti
     real(double)::vel,vel2,sp,vnlt,v1,f1
     !  real(double),parameter::clum=29979245800
-    real(double), pointer, dimension(:):: veloc, stoppow
-    real(double),pointer::vmaxel(:)
+    real(double), allocatable, dimension(:):: veloc, stoppow
+    real(double),allocatable::vmaxel(:)
 
     allocate (elstopforce(ntyp,2,0:ngrdel))
     allocate(vmaxel(ntyp))

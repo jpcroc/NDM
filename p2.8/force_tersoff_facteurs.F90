@@ -3,8 +3,8 @@ module force_tersoff_facteurs
   USE var_pot, ONLY:  ipotentiel
   implicit none
 
-  real(double),dimension (:), pointer :: lambda1,lambda2,lambda3,Ater,Bter,psi
-  real(double),dimension (:), pointer :: Rter,Ster, beta,nter,cter, dter, hter,deltater
+  real(double),dimension (:), allocatable :: lambda1,lambda2,lambda3,Ater,Bter,psi
+  real(double),dimension (:), allocatable :: Rter,Ster, beta,nter,cter, dter, hter,deltater
   !real(double) , external :: fr, fa !fc
   real(double) :: pi=3.141592654D0
 contains

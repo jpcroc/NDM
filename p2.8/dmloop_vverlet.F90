@@ -134,7 +134,7 @@ contains
        sigtyptyp=sigtyptyp_loc
 
     end if
-    if (associated(sigc)) then
+    if (allocated(sigc)) then
        call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
        sigc=sigc_tot
     end if

@@ -109,7 +109,7 @@ contains
 
     atcf%fp(:,:) = zero
     jq=0.0 
-    if (associated(eatom)) eatom(:)=0
+    if (allocated(eatom)) eatom(:)=0
 
 #ifdef LAMMPS_VERSION
     if ((ipotentiel==-10).or.(ipotentiel==-11)) then

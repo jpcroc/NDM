@@ -6,7 +6,7 @@ module contrainte
   implicit none
 
   ! Constraint
-  real(double),pointer,save, private :: dg0(:,:)
+  real(double),allocatable,save, private :: dg0(:,:)
 
   ! Tell if constraint is applied on reduced or cartesian coordinates
   LOGICAL, save, private :: reduced

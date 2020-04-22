@@ -149,7 +149,7 @@ SUBROUTINE calfo_decalage(im,xp, vp,  fp,  iwmax, ityp,indi)
         l = ipo(iti,itj)
         Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
         if(lprteat.EQV..true.)then
-!           if (associated (free)) then
+!           if (allocated (free)) then
 !              if( free(i).EQV..true.)           eatom(i)=eatom(i)+Erep/2.d0
 !              if ((free(j).EQV..true.).and.ldemitab)           eatom(j)=eatom(j)+Erep/2.d0
 !           else
@@ -162,7 +162,7 @@ SUBROUTINE calfo_decalage(im,xp, vp,  fp,  iwmax, ityp,indi)
         else
           dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
         end if
-!           if (associated (free)) then
+!           if (allocated (free)) then
 !              if( free(i).EQV..true.)potisrep = potisrep+0.5*Erep
 !              if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep+0.5*Erep
 !           else
@@ -197,7 +197,7 @@ SUBROUTINE calfo_decalage(im,xp, vp,  fp,  iwmax, ityp,indi)
      end if
      drk=tabdensity(i)-(rhomin+k*ktorho)
      Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
-!     if( associated (free)) then
+!     if( allocated (free)) then
 !        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
 !        if( free(i).EQV..true.)potisglue = potisglue+Eembi
 !     else

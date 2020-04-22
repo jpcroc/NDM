@@ -16,12 +16,12 @@ contains
     character ::  fnampotin*80
     integer::iti,itj,ipr,i,l,nprns,ntypr,j,ntypzl!,npairlu,lp
     real(double)::rc1, psilu,rof1m,rof2m,cmr
-    real(double),dimension (:), pointer :: lambda1lu,lambda2lu,lambda3lu,Aterlu,Bterlu
-    real(double),dimension (:), pointer :: Rterlu,Sterlu,catomlu(:) !, betalu,nterlu,cterlu, dterlu, hterlu
+    real(double),dimension (:), allocatable :: lambda1lu,lambda2lu,lambda3lu,Aterlu,Bterlu
+    real(double),dimension (:), allocatable :: Rterlu,Sterlu,catomlu(:) !, betalu,nterlu,cterlu, dterlu, hterlu
     character :: tyr*3
-    !real(double),dimension (:), pointer :: lambda1,lambda2,lambda3,Ater,Bter
-    !real(double),dimension (:), pointer :: Rter,Ster, beta,nter,cter, dter, hter
-    integer,pointer :: typtyp(:)
+    !real(double),dimension (:), allocatable :: lambda1,lambda2,lambda3,Ater,Bter
+    !real(double),dimension (:), allocatable :: Rter,Ster, beta,nter,cter, dter, hter
+    integer,allocatable :: typtyp(:)
 
 
     fnampotin = 'tersoff.potin'
@@ -78,7 +78,7 @@ contains
              stop
           end if
        end if
-       if (associated(typ_and_pot))typ_and_pot(iti,ipotentiel)=.true.
+       if (allocated(typ_and_pot))typ_and_pot(iti,ipotentiel)=.true.
 
        cm(iti)=cmr*umass;ty(iti)=tyr
        read(lupotin,*) lambda1lu(iti),lambda2lu(iti),lambda3lu(iti),Aterlu(iti),Bterlu(iti)
@@ -176,7 +176,7 @@ contains
     ldemitab =.false.
 
     !if(allocated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 
-    if(associated(typ_and_pot).eqv..false.) then
+    if(allocated(typ_and_pot).eqv..false.) then
        allocate (typ_and_pot(ntyp,npotmax))
        typ_and_pot(:,:)=.false.
        typ_and_pot(1:ntyp,ipotentiel)=.true.

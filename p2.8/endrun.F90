@@ -29,7 +29,7 @@ subroutine endrun
   USE posana
   USE cfg_module
   USE elec_cell, ONLY:  sauveelec
-  !       version MPI du 07 f if (associated(eatom)) eatom(:)=0
+  !       version MPI du 07 f if (allocated(eatom)) eatom(:)=0
 
   ! ****************************************************************
 
@@ -143,7 +143,7 @@ subroutine endrun
 #else
      if (lprteattotm.EQV..true.) then
 
-!        if (associated(free))then
+!        if (allocated(free))then
 !           do i=1,im
 !              if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3), & 
 !              eatomtotm(i)*erg2eV-eatref(ityp(i))
@@ -155,7 +155,7 @@ subroutine endrun
 !        end if
 
      else
- !       if (associated(free))then
+ !       if (allocated(free))then
  !          do i=1,im
  !             if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatom(i)*erg2eV
  !          end do

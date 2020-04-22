@@ -57,7 +57,7 @@ module Parrinello_Rahman
   real(double), save, private :: invVolu
 
   ! Coordonnées réduites des atomes et leurs dérivées
-  real(double), pointer, save, private :: sp(:,:), sdot(:,:), sdot_new(:,:)
+  real(double), allocatable, save, private :: sp(:,:), sdot(:,:), sdot_new(:,:)
 
   ! Variable associée au thermostat de Nosé-Hoover
   !  (zHoover est défini dans gen_com_m.F90)

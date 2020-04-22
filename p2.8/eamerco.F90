@@ -25,8 +25,8 @@ contains
     integer, intent(out) :: ntyp                           !nb de type
     integer, intent(out) :: npair                  ! = ntyp*(ntyp+1)/2
     integer, intent(out) :: ntrip                  ! = ntyp*ntyp *(ntyp+1)/2
-    real(double), dimension(:), pointer :: cm, catom,roff1,roff2
-    character , dimension(:), pointer  :: ty*3
+    real(double), dimension(:), allocatable :: cm, catom,roff1,roff2
+    character , dimension(:), allocatable  :: ty*3
     real(double), intent(in) ::umass 
     real(double), intent(out) :: rue,rumax,r3cm
     integer, intent(out) :: iewald
@@ -34,10 +34,10 @@ contains
     integer , intent(in) ::rang
 
     integer::ipotentiel,npotmax,npotentiel
-    logical, pointer :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
-    integer,pointer:: typ_pot_pair(:)
-    integer, dimension(:,:), pointer  :: ipo			! indice des paires d'atomes
-    logical,pointer::lue_typ(:),lue_paire(:),lu_roff_pair(:)
+    logical, allocatable :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
+    integer,allocatable:: typ_pot_pair(:)
+    integer, dimension(:,:), allocatable  :: ipo			! indice des paires d'atomes
+    logical,allocatable::lue_typ(:),lue_paire(:),lu_roff_pair(:)
 
 
     !local variables

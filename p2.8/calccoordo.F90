@@ -34,7 +34,7 @@ subroutine calccoordo
   integer :: nci_glob
 #endif
 
-  real(double),pointer :: xpnp(:,:)
+  real(double),allocatable :: xpnp(:,:)
 
   allocate(xpnp(3,imm))
   !

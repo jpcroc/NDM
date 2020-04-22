@@ -576,7 +576,7 @@ contains
     atndm%num_at_glob(1:im)=num_at_glob(1:im)
     atndm%ielat(1:im)=ielat(1:im)
     if (ltabvois) then
-       write(6,*)'sizes ', size (iwmax),size(atndm%iwmax)
+!       write(6,*)'sizes ', size (iwmax),size(atndm%iwmax)
        atndm%iwmax(1:im)=iwmax(1:im)
        is=size(indi)
        allocate(atndm%indi(is))
@@ -622,11 +622,11 @@ contains
     num_at_glob(1:im)=atndm%num_at_glob(1:im)
     ielat(1:im)=atndm%ielat(1:im)
     if (atndm%ltabvois) then
-       write(6,*)'sizes ', size (iwmax),size(atndm%iwmax)
+!       write(6,*)'sizes ', size (iwmax),size(atndm%iwmax)
 !       allocate(iwmax(imm))
        iwmax(1:im)=atndm%iwmax(1:im)
        is =size(atndm%indi)
-       write(6,*)'IS',is
+!       write(6,*)'IS',is
 !       allocate(indi(is))
        indi(1:is)=atndm%indi(1:is)
     end if

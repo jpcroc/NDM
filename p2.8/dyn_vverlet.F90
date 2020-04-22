@@ -158,7 +158,7 @@ contains
        END DO
     end if
 
-    if (associated(eatom))  eatom(1:im)=eatom(1:im)+0.5*cm(ityp(1:im))*(vp(1,1:im)**2+vp(2,1:im)**2+vp(3,1:im)**2)
+    if (allocated(eatom))  eatom(1:im)=eatom(1:im)+0.5*cm(ityp(1:im))*(vp(1,1:im)**2+vp(2,1:im)**2+vp(3,1:im)**2)
 
     if (lcalcjq) then
        jqp=jq ; jqk=0.0 !; expvect(:)=0.0

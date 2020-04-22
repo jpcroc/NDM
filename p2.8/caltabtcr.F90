@@ -1,6 +1,6 @@
 module tabcr
 
-  integer,pointer :: lastcr (:,:),natocr(:),ielatcr(:)
+  integer,allocatable :: lastcr (:,:),natocr(:),ielatcr(:)
 
 contains
 ! ******************************************************************

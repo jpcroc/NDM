@@ -12,7 +12,7 @@ module defcdp
        ideftyp, &      ! racine des nombres aléatoires
        typint        ! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
 
-  real(double), dimension(:,:), pointer :: xposint ! positions des interstitiels
+  real(double), dimension(:,:), allocatable :: xposint ! positions des interstitiels
   real(double), dimension(20) :: Ed ! Energies de seuils
   real (double) :: dminins,rsphdef,centresphdef(3)
   integer:: ioxdef

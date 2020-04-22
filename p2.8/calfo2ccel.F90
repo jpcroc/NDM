@@ -59,7 +59,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
   !
   ! *** Initialisations ***
 
-  real(double),pointer :: xpnp(:,:)
+  real(double),allocatable :: xpnp(:,:)
   allocate(xpnp(3,im))
   ! Initialisation des termes du potentiel
   !  potis2 = zero
@@ -219,7 +219,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
 
 
 
-!           if (associated (free)) then
+!           if (allocated (free)) then
 !              if (free(i).EQV..true.)potis1 = potis1+deltaepot
 !#ifdef PARA
 !              if (j.le.im) then
@@ -273,7 +273,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
            end if
 
            if (lprteat) then
-!              if (associated (free)) then
+!              if (allocated (free)) then
 !                 if (free(i).EQV..true.)eatom(i) = eatom(i)+deltaepot
 !                 if (free(j).EQV..true.)eatom(j) = eatom(j)+deltaepot
 !              else
@@ -383,7 +383,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
   potis2=potis2_tot
   call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
   sig=sig_tot
-  if (associated(sigc)) then
+  if (allocated(sigc)) then
      call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
      sigc=sigc_tot
   endif

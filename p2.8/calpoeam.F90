@@ -36,8 +36,8 @@ subroutine calpoeam
 !  !-----------------------------------------------
 !  !   D u m m y   A r g u m e n t s
 !  !-----------------------------------------------
-!  integer, dimension(:,:), pointer  :: ipo                      ! indice des paires d'atomes
-!  integer, pointer:: typ_pot_pair(:) ! donne le type d'interaction de la paire
+!  integer, dimension(:,:), allocatable  :: ipo                      ! indice des paires d'atomes
+!  integer, allocatable:: typ_pot_pair(:) ! donne le type d'interaction de la paire
 !  integer , intent(in) :: ngrid,ipotentiel
 !  integer  :: ntyp
 !  integer  :: npair
