@@ -1,5 +1,5 @@
 module calfoberend_mod
-!  USE tempinst_mod
+!  USE tempinst_mod,only: tempinst
   USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:gamlt,cm
   USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text

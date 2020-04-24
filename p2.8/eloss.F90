@@ -9,7 +9,7 @@ module eloss
   !  USE eamerco,ONLY:
   !  USE SMjuli,ONLY:
   !  USE jqmod,ONLY:
-  !  USE neb_module,ONLY:
+  !  USE neb_mod,only: nebule,ONLY:
   !  USE defcdp, ONLY :
   !  USE var_pot, ONLY:
 #ifdef PARA

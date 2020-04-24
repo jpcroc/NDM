@@ -1,6 +1,6 @@
 module tersoff_zbl_mod
-        USE zieg2_mod
-        USE spline_mod
+        USE zieg2_mod,only: zieg2
+        USE spline_mod,only: cspline
         implicit none
         contains
 subroutine tersoff_zbl

@@ -1,5 +1,5 @@
 module layer_mod
-!  USE cryst_to_cart_mod
+!  USE cryst_to_cart_mod,only: cryst_to_cart
 !  USE gen_com_m, ONLY:at,bg,im,imd,imfree,imgi,imgs,imm,it,rang,rulayer,nzl
   implicit none
 contains

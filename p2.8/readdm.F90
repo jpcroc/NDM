@@ -19,13 +19,21 @@ contains
          &nebtype,nhoover,niteration,nitmax,njqbh,npath,ntr,nuandersen,nvperat,pext,rayonc,rheat,rsep,&
          &rskin,rulayer,rvois,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
          &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wbox,wnose,xko,xx0,yko,yy0,&
-         &zko,zz0,dilat,dilat,dilat,dilat,vdc,pc,ecyl,ihbox0
+         &zko,zz0,dilat,dilat,dilat,dilat,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fdbkcoef,fnemd,&
+         &formatsauv,h0,ibound,iko,imm,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,iteplz,&
+         &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itespebcout,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
+         &lcasca,lcontr,ldecal_bc,ldemitab,ldesinteg,ldyn2d,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
+         &llangevin,lnemd,lperiod,lpkbar,lposmoy,lpr,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,lsigtyp,&
+         &lsuivinonpbc,ltabvois,ltberendsen,lthoover,ltnose,ltpcel,ltranche,lucell,lwgin,mdcg_noise,nfda,nox,noy,noz,nplz,&
+         &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
+         &,tpseuils,tstep,typspr,unite,unitp,user_strainrate,user_stress_yz,xpspr,lenfnam,fnam
 
-    USE var_pot, ONLY:gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu
+
+    USE var_pot, ONLY:gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
-    USE endrun_mod
-    USE arret_ndm_mod
+    USE endrun_mod,only: endrun
+    USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
     USE mod_para
 #endif
@@ -59,9 +67,9 @@ contains
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
          ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
-         iteangle, ipotentiel, lpotentiel, itesauvposition, itesauvforce, lfilmext, tdepla2, &
+         iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
-         maxorder,  lalea, rsep, &
+         maxorder,  lalea, rsep, ipotentiel,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp,lsigtyp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&

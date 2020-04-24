@@ -40,15 +40,17 @@ module Parrinello_Rahman
   USE T_kind_param_m
   USE gen_com_m, ONLY:ecellpr,h0,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,wbox,erg2ev,&
        &h0,kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover,zhoover,zhoover,&
-       &zhoover,zhoover,zhoover,zhoover,zhoover, ihbox0,tbox  
-  USE var_pot, ONLY:
-  USE recips_mod
+       &zhoover,zhoover,zhoover,zhoover,zhoover, ihbox0,tbox, bk,im,imm,indi,ltabvois,potist,sig,sigkine,sigtot,&
+       &text,tstep,volu,at,im_glob,it,ltabvois,potist,rang,sig,text,tstep,volu,sigkine,bg
+ 
+  USE var_pot, ONLY:cm
+  USE recips_mod,only: recips,calcvol
 #ifdef PARA
   USE mod_para
 #endif
-  USE calfo_mod
-  USE scalebox_mod
-  USE Mat_utils_mod, ONLY : MatInv
+  USE calfo_mod,only: calfo
+  USE scalebox_mod,only: scalebox
+  USE Mat_utils_mod,only:  MatInv
   USE atomconfig
   implicit none
   ! Vecteurs de la boîte et leurs dérivées
@@ -80,15 +82,16 @@ contains
   subroutine initlpr (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
 
     implicit none
+  integer,allocatable, dimension(:)  :: ielat,iwmax,ityp,num_at_glob
+  real(double),allocatable,dimension(:,:)  :: xp,fp,vp,ax,xpp
     ! Variables utiles
-    integer, intent(inout)  :: ityp(imm)
-    real(double), intent(inout)  :: xp(3,imm), xpp(3,imm), vp(3,imm), fp(3,imm)
+!    integer, intent(inout)  :: ityp(imm)
+!    real(double), intent(inout)  :: xp(3,imm), xpp(3,imm), vp(3,imm), fp(3,imm)
     ! Variables inutiles
-    integer  :: ielat(imm), iwmax(imm),num_at_glob(imm)
-    real(double) :: ax(3,imm)
+!    integer  :: ielat(imm), iwmax(imm),num_at_glob(imm)
+!    real(double) :: ax(3,imm)
 
     type(atom_config_d)::atpr
-    integer, allocatable ::iwmaxCF(:),indiCF(:)
     INTEGER :: ia, i, j
     !real(double), external :: calcvol
     real(double):: unitE
@@ -243,10 +246,9 @@ contains
 
     ! Forces à l'instant initial
     call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atpr) 
-!    call config2ndm(atpr,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
+    CALL CalFo(sig,potist,atpr) 
+!    call config2ndm(atpr,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+
     !  Contrainte thermique à l'instant initial
     sigkine(:,:)=0.d0
     do ia = 1, im
@@ -279,11 +281,13 @@ contains
     implicit none
     ! Variables utiles
 
-    integer, intent(inout)  :: ityp(imm)
-    real(double), intent(inout)  :: xp(3,imm), xpp(3,imm), vp(3,imm), fp(3,imm)
+  integer,allocatable, dimension(:)  :: ielat,iwmax,ityp,num_at_glob
+  real(double),allocatable,dimension(:,:)  :: xp,fp,vp,ax,xpp
+!    integer, intent(inout)  :: ityp(imm)
+!    real(double), intent(inout)  :: xp(3,imm), xpp(3,imm), vp(3,imm), fp(3,imm)
     ! Variables inutiles
-    integer  :: ielat(imm), iwmax(imm),num_at_glob(imm)
-    real(double) :: ax(3,imm)
+!    integer  :: ielat(imm), iwmax(imm),num_at_glob(imm)
+!    real(double) :: ax(3,imm)
 
     real(double),dimension(3,3)::mf,mfi, grsig, hdot_new, hdot_last,forcebox
     REAL(double) :: diff, tdiff
@@ -293,7 +297,6 @@ contains
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
     type(atom_config_d)::atpr
-    integer, allocatable :: iwmaxCF(:),indiCF(:)
 #ifdef PARA
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
@@ -425,10 +428,8 @@ contains
 
     ! Calcul des forces et des contraintes à l'instant t+dt
     call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atpr) 
-!    call config2ndm(atpr,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
+    CALL CalFo(sig,potist,atpr) 
+!    call config2ndm(atpr,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
     ! Calcul de la viscosité à l'instant ...
     DO i=1, nHoover
        zNew(i) = zOld(i) + 2.d0*zDot(i)*tstep    ! ... t+dt

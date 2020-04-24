@@ -2,7 +2,7 @@
 !           sous-programme controle.f
 ! ***********************************************************
 module desinteg_insert_mod
-  USE caltabt_mod
+  USE caltabt_mod,only: caltabt
   USE gen_com_m, ONLY:bk,deltaespr,deltaf,erg2ev,it,itdes,itmax,nstepdes,pm1des,rang,&
        &tempdes,typspr,vpchdeb,vpchdn,vpchup,xpchdeb,xpchdn,xpchup,xpspr,xpspr0
   implicit none

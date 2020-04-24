@@ -24,7 +24,7 @@ CONTAINS
   USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY: imm, umass
     USE var_pot, ONLY:ntyp,cm,ty
-    USE Mat_utils_mod, ONLY : MatInv
+    USE Mat_utils_mod
     IMPLICIT NONE
     REAL(double),                 intent(in) :: xp(3,imm)
     INTEGER,                      intent(in) :: ityp(imm)

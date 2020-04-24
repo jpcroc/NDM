@@ -5,7 +5,7 @@ module zero2all2zero_mod
 #endif
   USE gen_com_m, ONLY:imm_glob,imm
   USE tab_imm_m
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
 contains
   subroutine zero2all(vectall,vectp,itypall)
     real(double),intent(in)::vectall(3,imm_glob)

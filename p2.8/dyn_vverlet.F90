@@ -1,10 +1,11 @@
 module dyn_vverlet_mod
-  USE calfo_mod
-  USE calfoberend_mod 
-  USE caltabt_mod
-  USE gen_com_m, ONLY:ilangevin,itab
+  USE calfo_mod,only: calfo
+  USE calfoberend_mod,only: calfoberend 
+  USE caltabt_mod,only: caltabt
+  use var_pot,only:ntyp
+  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,eatom
 #ifdef PARA
-  USE layer_mod
+  USE layer_mod,only: layer
   USE atomconfig
 
 #endif
@@ -27,7 +28,8 @@ contains
 
     USE elec_cell, ONLY:TTlangevin
     USE Parrinello_Rahman
-
+    use calfoberend_mod,only:dynlangevin
+    use period_mod,only:period
     implicit none
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
@@ -45,7 +47,6 @@ contains
 #endif
 
     type(atom_config_d)::atdml
-    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
     !      write (*,*) 'sub dynvverlet'
 
@@ -125,10 +126,9 @@ contains
 
     ! Force calculation
     call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atdml )
-!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
+    CALL CalFo(sig,potist,atdml )
+    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+    
 
 !    call calfo   ! F(t+dt)
 

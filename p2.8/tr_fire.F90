@@ -6,7 +6,7 @@ MODULE FireModule
   !       Phys. Rev. Lett. 97, 170201 (2006).
 
   USE T_kind_param_m, ONLY:  double
-  USE period_mod
+  USE period_mod,only: period
   USE gen_com_m, ONLY:imm,im,lperiod,tstep,usdh,tstep
   ! --- Paramètres de l'algorithme fire -----------------------
   real(double), parameter, private :: finc=1.1

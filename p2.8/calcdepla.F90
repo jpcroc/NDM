@@ -1,5 +1,5 @@
 module calcdepla_mod
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:ntyp,nad,ty
   USE gen_com_m, ONLY:zls2,tdepla,lfilmext,it,timel,at,im,imm,bg,iko,lcasca,lfilm,rang
         implicit none 

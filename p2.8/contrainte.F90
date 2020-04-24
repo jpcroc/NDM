@@ -1,7 +1,7 @@
 module contrainte
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:imm,imm,im,dmtype,im,at,bg
+  USE gen_com_m, ONLY:imm,dmtype,im,at,bg
   USE var_pot, ONLY:cm
   implicit none
 

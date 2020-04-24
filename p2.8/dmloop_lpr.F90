@@ -1,15 +1,15 @@
 module dmloop_lpr_mod
-  USE analyse_mod
-  USE controle_mod 
-  USE sauvegarde_mod
-  USE sauveposition_mod
-  USE sauveforce_mod
-  USE gen_com_m, ONLY: itesauvforce, itesauvposition
+  USE analyse_mod,only: analyse
+  USE controle_mod,only: controle 
+  USE sauvegarde_mod,only: sauvegarde
+  USE sauveposition_mod,only: sauveposition
+  USE sauveforce_mod,only: sauveforce
+  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose
 
   USE atomconfig
 
 #ifdef PARA
-  USE recips_mod
+  USE recips_mod,only: recips
 #endif
   implicit none 
 contains
@@ -44,7 +44,6 @@ contains
 
 #endif
     type(atom_config_d)::atdml
-    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
 
 
@@ -66,10 +65,9 @@ contains
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
 !       call calfo
     call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atdml)
-!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
+    CALL CalFo(sig,potist,atdml)
+    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+
        call prNose(xp,xpp,vp,fp,ityp)
 
 #ifdef PARA

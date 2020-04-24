@@ -1,8 +1,8 @@
 module dyn_mod
   USE gen_com_m, ONLY:cunite,erg2ev,fnemd,im,it,itetconst,lcalcjq,leev,lnemd,lperiod,&
-       &ltcon,text,timel,tstep,unite,usdh,eatom,eatom,eatom,eatom
-  USE tempinst_mod
-  USE period_mod
+       &ltcon,text,timel,tstep,unite,usdh,eatom,eatom,eatom,eatom,bk
+  USE tempinst_mod,only: tempinst
+  USE period_mod,only: period
   implicit none
 contains
   ! *************************************************************
@@ -15,7 +15,7 @@ contains
     USE var_pot, ONLY:ntyp,cm
     USE jqmod
     USE tab_imm_m
-    USE tempinst_mod
+    USE tempinst_mod,only: tempinst
 
 #ifdef PARA
     USE mod_para
@@ -51,15 +51,15 @@ contains
 
     if (lnemd) then
        eatommoy=0.
-       do i=1,imd
+       do i=1,im
           !        eatom(i)=eatom(i)+0.5*cm(ityp(i))*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)
-          eatommoy=eatommoy+eatom(i)/float(imd)
+          eatommoy=eatommoy+eatom(i)/float(im)
        end do
-       do i=1,imd
+       do i=1,im
 
           fp(1,i)=fp(1,i)+(eatom(i)-eatommoy)*Fnemd
        end do
-       !     do i=1,imd
+       !     do i=1,im
        !        eatom(i)=eatom(i)-0.5*cm(ityp(i))*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)
        !     end do
     end if
@@ -72,7 +72,7 @@ contains
 
 
     !debug write(*,*) 'md_test1',  xp(1,1), xpp(1,1), vp(1,1) 
-    do i = 1, imd
+    do i = 1, im
        do ic = 1, 3
           xprov = (xp(ic,i)-xpp(ic,i))+xp(ic,i)+aux(ityp(i))*fp(ic,i)
           vp(ic,i) = (xprov-xpp(ic,i))*usdh
@@ -85,9 +85,9 @@ contains
     if (lcalcjq) then
        eatommoy=0.
        jqp=jq ; jqk=0.0 !; expvect(:)=0.0
-       do i=1,imd
+       do i=1,im
           !        eatom(i)=eatom(i)+0.5*cm(ityp(i))*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)
-          if(lnemd) eatommoy=eatommoy+eatom(i)/float(imd)
+          if(lnemd) eatommoy=eatommoy+eatom(i)/float(im)
           expvect(:)=expvect(:)+eatom(i)*xpp(:,i)
           do ic=1,3              
              jqk(ic)=jqk(ic)+eatom(i)*vp(ic,i)

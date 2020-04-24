@@ -1,6 +1,6 @@
 module bondval_mod
-  USE notperiod_mod
-  USE cryst_to_cart_mod
+  USE notperiod_mod,only: notperiod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:at,bg,im,imm,it,last,ncel,rang,fnam,deltadist,lperiod,noxyz,nato,lenfnam
   USE var_pot, ONLY:ntyp,ty
   implicit none

@@ -1,8 +1,9 @@
 module init_spebc_mod
-  USE writing_mod
+  USE writing_mod,only: writing
   USE gen_com_m, ONLY:b2sinf,b2ssup,USEr_stress_yz,y_2nd_max,y_max,y_min,Lx_cm,Lz_cm,layer_surf,&
        &thickness,thick_cryst,i_surfMAX,i_surfINF,speed_USEr,tstep,i_surfSUP,flag_fin,gap,&
        &forceatinf,forceatsup,i_surfMIN,ldyn2D,user_strainrate,currentstress
+  use cryst_to_cart_mod,only:cryst_to_cart
 
   implicit none
 contains

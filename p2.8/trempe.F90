@@ -1,5 +1,5 @@
 module trempe_mod
-  USE period_mod
+  USE period_mod,only: period
   USE gen_com_m, ONLY:imm,im,lperiod,tstep,usdh
 
   implicit none
@@ -11,7 +11,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE var_pot, ONLY:cm,ntyp
-    USE calctemp_mod
+    USE calctemp_mod,only: calctemp
 
     implicit none
     !-----------------------------------------------

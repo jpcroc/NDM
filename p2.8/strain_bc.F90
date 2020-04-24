@@ -6,6 +6,8 @@ module strain_bc_mod
         i_surfmax,i_surfmin,i_surfsup,ldyn2d,b2sinf,b2ssup,b2ssup,b2sinf,b2sinf,b2ssup,b2ssup,b2sinf,&
         &b2sinf,b2ssup,b2ssup,b2sinf
 
+  use cryst_to_cart_mod,only:cryst_to_cart
+
 
         implicit none
         contains

@@ -1,6 +1,6 @@
 module initcasca_mod
-  USE cryst_to_cart_mod
-  USE period_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
+  USE period_mod,only: period
   USE gen_com_m, ONLY:at,bg,depmaxts,dmtype,ecgs,eko,iko,im,im_glob,imm,lderive,lperiod,ltranche,&
        &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0
   implicit none

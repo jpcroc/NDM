@@ -1,15 +1,15 @@
 module controle_mod
-        USE endrun_mod 
+        USE endrun_mod,only: endrun 
         USE dynalloccell
-        USE tempinst_mod
-        USE jqbh_mod
-        USE caltabt_mod
-        USE desinteg_insert_mod
-        USE period_mod
-        USE caltabi_mod
-        USE heat_mod
-        USE creadp_mod
-        USE deftimestep_mod
+        USE tempinst_mod,only: tempinst,andersenth
+        USE jqbh_mod,only: jqbh
+        USE caltabt_mod,only: caltabt
+        USE desinteg_insert_mod,only: desinteg_insert
+        USE period_mod,only: period
+        USE caltabi_mod,only: caltabi
+        USE heat_mod,only: heat
+        USE creadp_mod,only: creadp
+        USE deftimestep_mod,only: deftimestep
         implicit none
         contains
 ! ***********************************************************
@@ -23,11 +23,14 @@ subroutine controle
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:deltaestop,epcou,fpstop,fsumstop,ibordcou,itab,itederive,iteheat,itetabvois,&
        &landerscou,lastcool,lcdp,ljqbh,lprtrp,ltandersen,maxtcel,nbmoye,nuandersen,sigstop,tcooling,&
-       &tempstop,tfroi,timemax,ttol
+       &tempstop,tfroi,timemax,ttol,angst,bk,cunite,cunitp,dmtype,erg2ev,iko,im,imm,it,itdes,itetemp,itetimestep,&
+       &itmax,ldesinteg,leev,lperiod,lpkbar,ltabvois,nstepdes,potist,sigtot,tcou,temp,text,tfcou,timel,tstep,unite,unitp,zl,bg
 
   USE var_pot, ONLY:
   USE tab_imm_m
   USE suivinonpbc
+  USE cryst_to_cart_mod,only: cryst_to_cart
+  USE notperiod_mod,only: notperiod
 #ifdef PARA
   USE mod_para
 #endif

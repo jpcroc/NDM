@@ -1,14 +1,17 @@
 module endrun_mod
-        USE analyse_mod
-        USE adf_mod
-        USE spebc_fin_mod
-        USE desinteg_insert_mod
-        USE arret_ndm_mod
-        USE sauvegarde_mod
-        USE calfo_mod  
-        USE rdf_mod
-        USE rasmol_mod
-        USE gen_com_m, ONLY:itesauv,lprtfat,lwgin
+        USE analyse_mod,only:analyse
+        USE adf_mod,only:adf
+        USE spebc_fin_mod,only:spebc_fin
+        USE desinteg_insert_mod,only:desinteg_insert
+        USE arret_ndm_mod,only:arret_ndm
+        USE sauvegarde_mod,only:sauvegarde,cin2gin
+        USE calfo_mod  ,only:calfo
+        USE rdf_mod,only:rdf
+        USE rasmol_mod,only:rasmol,redefine_ty
+        USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,sigat,cunitP,erg2eV,itdes,&
+             &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
+             &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,eatomtotm,&
+             &lwgin,nstepdes
         use var_pot, only: eatref,eatref,eatref
 
         implicit none

@@ -1,18 +1,18 @@
 module prog_mod
-        USE init_mod
-        USE calfo_mod
-        USE analyse_mod
-        USE controle_mod
-        USE endrun_mod
-        USE neb_mod
-        USE dmloop_lpr_mod
-        USE loopforcetest_mod
-        USE gcII_mod
-        USE dmloop_vverlet_mod
-        USE dmloop_mod
+        USE init_mod,only: init
+        USE calfo_mod,only: calfo
+        USE analyse_mod,only: analyse
+        USE controle_mod,only: controle
+        USE endrun_mod,only: endrun
+        USE neb_mod,only: neb
+        USE dmloop_lpr_mod,only: dmloop_lpr
+        USE loopforcetest_mod,only: loopforcetest
+        USE gcII_mod,only: gcII
+        USE dmloop_vverlet_mod,only: dmloop_vverlet
+        USE dmloop_mod,only: dmloop
         USE atomconfig
 #if defined ML || defined PARAML    
-        USE ml_main_mod
+        USE ml_main_mod,only: ml_main
 #endif 
         implicit none
         contains
@@ -21,7 +21,7 @@ subroutine prog
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:
+  USE gen_com_m, ONLY:dmtype,im,imm,indi,ltabvois,parallele,potist,rang,sig
   USE tab_imm_m
 
 #ifdef PARA
@@ -32,7 +32,6 @@ subroutine prog
              character :: extension*2
     integer::lenfn2,i,ko
     type(atom_config_d)::atdml
-    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
 
   !-----------------------------------------------
@@ -115,11 +114,8 @@ subroutine prog
   case(11)
      if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
        call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
-!     call calfo()
+    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
      call analyse()
      call controle()
      call endrun()

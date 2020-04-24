@@ -1,10 +1,12 @@
 module neb_controle_mod
-  USE endrun_mod
-  USE dynalloccell
-  USE sauveposition_mod
-  USE recips_mod
-  USE deftimestep_mod
-  USE gen_com_m, ONLY:fpstop,fsumstop,tempstop
+  USE endrun_mod,only: endrun
+  USE dynalloccell,only:
+  USE tab_imm_m,only:xp,fp
+  USE sauveposition_mod,only: sauveposition
+  USE recips_mod,only: recips
+  USE deftimestep_mod,only: deftimestep
+  USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,nebtype,temp,rang,potist,leev,itmax,itetimestep,itetemp,&
+       &angst,erg2ev,it
   implicit none
 contains
 
@@ -20,7 +22,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE neb_module
+    USE neb_module!,only: neb_module,forctot,formax
 
     implicit none
     !-----------------------------------------------

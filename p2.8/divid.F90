@@ -1,12 +1,13 @@
 module divid_mod
 #ifndef ML
-  USE param_det_mod
+  USE param_det_mod,only: param_det
 #endif
-  USE arret_ndm_mod
+  USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:itab,lconstrtot,lrctest,natperc,noxy,nvois,nvperat,rvois,nzl,&
-       &at,normat,indi2
-    USE var_pot, ONLY:ngrid,r3cm,r3cm2,rumax,q,na
-  USE recips_mod
+       &at,indi2,bg,celsize,rang,volu,pi,indi,nvat,nox,noy,noz,noxyz,ldemitab,&
+       &im, im_glob,zl,ltabvois,normat
+    USE var_pot, ONLY:ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
+  USE recips_mod,only:recips,calcvol,distmin
   implicit none
 contains
   subroutine divid (appel)

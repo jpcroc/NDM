@@ -1,16 +1,18 @@
 module calpo_mod
-  USE spline_mod
-  USE zieg2_mod
-  USE calpo_ew_mod
-  USE dervbeest_mod
-  USE arret_ndm_mod
-  USE potrep_mod
-  USE calerf_mod
-  USE gen_com_m, ONLY:ecgs,half,one,precexp,rang
+  USE spline_mod,only: cspline
+  USE zieg2_mod,only: zieg2
+  USE calpo_ew_mod,only: calpo_ew
+  USE dervbeest_mod,only: deriVBEEST,maxVBEEST,potvbeest
+
+  USE arret_ndm_mod,only: arret_ndm
+  USE potrep_mod,only: potrep
+  USE calerf_mod,only: calerf
+  USE gen_com_m, ONLY:ecgs,half,one,precexp,rang,pi
   USE var_pot, ONLY:bspg,ngrid,catom,csive,csive_g,cspg,dip,dspg,gd,gm2,gm3,gm4,gm5,gr,gz,ipotentiel,ipotrep,&
        &npair,lprtpot,lu_roff_pair,ngr,ntyp,pot_d,roff1,roff2,rue_pair,sigmawat,ro,lue_paire,ipo,pot,rawat,qwat,&
        &ipo_2_pair_tab,zz,ipo,capdij,caphij,capwij,gm1,ietaij,lambda,rbp5,rp3c,rp5p3,xsi,poly5,poly3,r8p,pwat,&
-       &typ_pot_pair,pot_pair_tab,ray,a_factor,fcr,potw,bspw,cspw,dspw,bspf,dspf,cspf,shel,pm,bwat,bm,awat
+       &typ_pot_pair,pot_pair_tab,ray,a_factor,fcr,potw,bspw,cspw,dspw,bspf,dspf,cspf,shel,pm,bwat,bm,awat,&
+       &alpha,auxe,iewald,q
 
   
   implicit none

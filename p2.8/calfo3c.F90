@@ -1,7 +1,8 @@
 module calfo3c_mod
-        USE cryst_to_cart_mod
-        USE notperiod_mod
-        implicit none 
+        USE cryst_to_cart_mod,only: cryst_to_cart
+        USE notperiod_mod,only: notperiod
+        USE calfocommon
+       implicit none 
         contains
 ! *****************************************************************
 subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp)
@@ -10,8 +11,8 @@ subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:bg,natperc,it,itesigma,lperiod,ltpcel,noxyz,potcp,potist,&
-       &precexp,volu,at,ncel,last,deltadist,deltadist,deltadist,nato,sig,sigc
+  USE gen_com_m, ONLY:bg,natperc,it,itesigma,lperiod,ltpcel,noxyz,potcp,&
+       &precexp,volu,at,ncel,last,deltadist,deltadist,deltadist,nato,sigc
 
   USE var_pot, ONLY:r3cm2,ipo3c,ipo,coup3c2,ipo,coup3c2,coup3c,coup3c,gam,lamb,cangle,c3c
   implicit none

@@ -1,17 +1,19 @@
 module analyse_mod
-  use Mat_utils_mod, only : MatInv
-  use spebc_fin_mod
-  use adf_mod
-  use calctemp_mod
-  use calcdepla_mod
-  use calcdepla2_mod
-  use calccoordo_mod
-  use calcdigr_mod
-  use calcangle_mod
-  use bondval_mod
-  use rasmol_mod
-  use rdf_mod
-  use prtplz_mod
+  USE Mat_utils_mod
+  USE spebc_fin_mod,only: spebc_fin
+  USE adf_mod,only: adf
+  USE calctemp_mod,only: calctemp
+  USE calcdepla_mod,only: calcdepla
+  USE calcdepla2_mod,only: calcdepla2
+  USE calccoordo_mod,only: calccoordo
+  USE calcdigr_mod,only: calcdigr
+  USE calcangle_mod,only: calcangle
+  USE bondval_mod,only: bondval
+  USE rasmol_mod,only: rasmol,redefine_ty,refix_ty
+  USE rdf_mod,only: rdf
+  USE prtplz_mod,only: prtplz
+
+
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,h0,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
@@ -19,7 +21,8 @@ module analyse_mod
        &nfda,parallele,patcel,patcelmax,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,sigatcel,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,tempc,tcp,lprtcel,pmc,pmc,tempc,tempc,celpp,&
        &celpp,tcp,tcp,lprtcel,tempc,tcp,pmc,celpp,natchk,natchk,sigc,celpm1,tm1,tpseuils,tpseuils,tpseuils,tpseuils,&
-       &sigtyp,sigtyptyp,sigtot,eatomtotm
+       &sigtyp,sigtyptyp,sigtot,eatomtotm,volu,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
+       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,sigat
 
 
 

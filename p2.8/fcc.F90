@@ -1,6 +1,6 @@
 MODULE fcc_module
   USE T_kind_param_m, ONLY:  double
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:at,imm,bg,im,indi
 
 CONTAINS

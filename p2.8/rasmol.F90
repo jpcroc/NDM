@@ -1,6 +1,6 @@
 ! ****************************************************************
 module rasmol_mod
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:lprtsigat,rang,ivisu,sigat,ldesinteg,lpkbar,lprteat,im_glob,imm,im,iko,&
        &cunitP,it,lcasca,timel,unitP,at,fnam,bg,erg2ev,lenfnam,eatom
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm

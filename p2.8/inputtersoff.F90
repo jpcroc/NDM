@@ -1,7 +1,7 @@
 module inputtersoff_mod
-  USE alloc_typ_mod
+  USE alloc_typ_mod,only: alloc_typ
   USE gen_com_m, ONLY:ldemitab,rang,umass
-      USE var_pot, ONLY:iewald,l3c,npotentiel,r3cm,typ_and_pot,npotmax
+      USE var_pot!, ONLY:iewald,l3c,npotentiel,r3cm,typ_and_pot,npotmax
   implicit none
 contains
   subroutine inputtersoff

@@ -1,16 +1,17 @@
 module dmloop_vverlet_mod
-  USE calfo_mod
-  USE analyse_mod
-  USE controle_mod
-  USE dyn_vverlet_mod
-  USE calctemp_mod
-  USE sauvegarde_mod
-  USE sauveposition_mod
-  USE sauveforce_mod
-  USE correl_mod
+  USE calfo_mod,only: calfo
+  USE analyse_mod,only: analyse
+  USE controle_mod,only: controle
+  USE dyn_vverlet_mod,only: dyn_vverlet
+  USE calctemp_mod,only: calctemp
+  USE sauvegarde_mod,only: sauvegarde
+  USE sauveposition_mod,only: sauveposition
+  USE sauveforce_mod,only: sauveforce
+  USE correl_mod,only: correlvp
   USE atomconfig
+  use var_pot,only:ntyp
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,im,lgc,rang,rayonc,&
-       &tstep,vdc,pc,vdc
+       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,lsigtyp,ltpcel,sigat,sigc,sigtyptyp,sigtyp,noxyz
   implicit none 
 contains
   ! boucle de DM pour velocity Verlet
@@ -47,7 +48,6 @@ contains
     !-----------------------------------------------
     ! MPI
     type(atom_config_d)::atdml
-    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 #ifdef PARA
@@ -59,10 +59,8 @@ contains
     ! Appel de la routine generale des forces
 !    call calfo 
     call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
+    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
 
 
 

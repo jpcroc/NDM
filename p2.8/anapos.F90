@@ -1,13 +1,15 @@
 module posana
   USE T_kind_param_m
-  USE caltabt_mod
+  USE caltabt_mod,only: caltabt
   USE sic
   USE var_pot, ONLY:nas,rclu,ty,na,rc,ntyp
-  USE period_mod
-  USE recips_mod
+  USE period_mod,only: period
+  USE recips_mod,only: recips
+  use notperiod_mod, only: notperiod
+  use cryst_to_cart_mod,only:cryst_to_cart
   USE gen_com_m, ONLY: at,zl,last,ncel,deltadist,fnam,im,imm,rang,lperiod,pi,bg,nato,noxyz,npath,ibound,im_glob,&
        &dmtype,eatom,decal_bc,noy,nox,noz,ldecal_bc,lenfnam,it,imd,zl,nato,imm_glob,natperc,timel
-  !USE configcr_mod
+  !USE configcr_mod,only: configcr
   logical :: lsic
     logical :: lcomp, & ! comparaison ou non avec un cristal de dÃ©part
          ldecal, & ! decalage en tre boite cr et boite ana

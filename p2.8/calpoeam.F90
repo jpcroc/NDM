@@ -1,7 +1,7 @@
 module calpoeam_mod
-        USE zieg2_mod
-        USE spline_mod
-        USE arret_ndm_mod
+        USE zieg2_mod,only: zieg2
+        USE spline_mod,only: cspline
+        USE arret_ndm_mod,only: arret_ndm
         implicit none
         contains
 subroutine calpoeam
@@ -12,7 +12,9 @@ subroutine calpoeam
   USE gen_com_m, ONLY:rang
   USE eam
   USE eamerco
-  USE var_pot, ONLY:csive,ipotentiel,lprtpot,rue_pot,typ_and_pot
+  USE var_pot, ONLY:csive,ipotentiel,lprtpot,rue_pot,typ_and_pot,ngrid,catom,eamrep_d,ipo,npair,ntyp,roff2,typ_pot_pair,&
+       &eamrep,roff1,lu_roff_pair,eamrho,eamglue,eamrho_d,eamglue_d
+
   USE SMjuli
   implicit none
 

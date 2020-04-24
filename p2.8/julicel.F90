@@ -1,9 +1,11 @@
 module calfojulicel_mod
-  USE notperiod_mod
-  USE cryst_to_cart_mod
+  USE notperiod_mod,only: notperiod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:at,bg,nvat,fnemd,lcalcjq,lnemd,lperiod,noxyz,&
-       &potist,zero,ncel,last,nato,ncel,last,nato,ncel,last,nato,sig,sigc,sigat,eatom,volu
-  USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot
+       &zero,ncel,last,nato,ncel,last,nato,ncel,last,nato,sigc,sigat,eatom,volu
+  USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot,ngrid,npair,&
+       &eamrep,ipo,typ_pot_pair,eamglue,eamrho
+        USE calfocommon
   implicit none
 contains
   !----------------------------------------------------------------------

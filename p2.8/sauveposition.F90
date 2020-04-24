@@ -11,7 +11,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE tab_imm_m
-    USE arret_ndm_mod
+    USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
     USE mod_para
 #endif

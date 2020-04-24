@@ -1,9 +1,10 @@
 module calfoeamtabvois_mod
-  USE notperiod_mod
-  USE cryst_to_cart_mod
+  USE notperiod_mod,only: notperiod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:angst,at,bg,fnemd,it,itesigma,lcalcjq,ldemitab,&
-       &lnemd,low_limit,lperiod,lprteat,lsigat,potist,volu,zero,indi,&
-       &sigat,sig,eatom
+       &lnemd,low_limit,lperiod,lprteat,lsigat,volu,zero,indi,&
+       &sigat,eatom
+        USE calfocommon
 
   implicit none
 contains

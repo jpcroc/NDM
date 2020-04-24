@@ -1,7 +1,7 @@
 module eamerco
   USE T_kind_param_m
   USE gen_com_m, ONLY: ev2erg,A2cm
-  USE alloc_typ_mod
+  USE alloc_typ_mod,only: alloc_typ
   implicit none
 
 

@@ -1,12 +1,20 @@
 module neb_mod
-  USE calfo_mod
-  USE analyse_mod
-  USE trempe_mod
-  USE neb_controle_mod
-  USE scalebox_mod
-  USE sauveforce_mod
-  USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation
+  USE calfo_mod,only: calfo
+  USE analyse_mod,only: analyse
+  USE trempe_mod,only: trempe
+  USE neb_controle_mod,only: neb_controle
+  USE scalebox_mod,only: scalebox
+  USE sauveforce_mod,only: sauveforce
+  USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
+       &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst
+  USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,ax,fp,ielat,num_at_glob
   USE atomconfig
+  use var_pot,only:coord
+  use rasmol_mod,only:rasmol
+  use calfoberend_mod,only:dynlangevin
+  use period_mod,only:period
+  use neb_module!,only: sigpath,enepathev,dragtest,formax,nebtest,reaction_coord,force_neb,irelax,enepath,xp_n,&
+!       &init_neb,find_relax,into_path,bruit_neb,build_s_path_neb
   implicit none 
 contains
   subroutine neb ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
@@ -14,7 +22,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     !-----------------------------------------------
-    USE neb_module
+
     USE posana
     USE FireModule
     !-----------------------------------------------
@@ -43,7 +51,6 @@ contains
     REAL(double), dimension(:), allocatable :: fire_dt, fire_alph
     INTEGER, dimension(:), allocatable :: fire_nstep
     type(atom_config_d)::atdml
-    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
     if(lPkbar) then
        unitP=1.0d-9
@@ -111,11 +118,9 @@ contains
        call scalebox           (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
        !write(*,*) 'inside NEB debug1',ii, xp(1,1)
        call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
-!       call calfo 
+    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+     
        !write(*,*) 'inside NEB debug2',ii, xp(1,1)
        call analyse  
        call neb_controle(ii)  !  (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
@@ -144,12 +149,8 @@ contains
              it=it+1
              call scalebox           (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
        call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
-
-!             call calfo
+    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
              call force_projection(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              IF (lFire) THEN
                 call trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
@@ -200,12 +201,8 @@ contains
                 it=it_neb_inter
                 call scalebox               (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
        call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-!    call config2ndm(atdml,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
-
-                !                call calfo
+    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
                 call force_projection_neb(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
                 IF (lFire) THEN
                    call trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &

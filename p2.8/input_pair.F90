@@ -1,12 +1,13 @@
 module input_pair_mod
-  USE spline_mod
-  USE alloc_typ_mod
-  USE arret_ndm_mod
+  USE spline_mod,only: cspline
+  USE alloc_typ_mod,only: alloc_typ
+  USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:a2cm,e2on4pieps0,ecgs,ev2erg,lopt,rang,tstep,two,umass,usdh
-  USE var_pot, ONLY:alpha,epswat,eta,eva62ergcm6,gd,gm1,gm2,gm3,gm4,gm5,gr,iewald,ipotentiel,&
-       &ipotrep,kpmex,kpmey,kpmez,l3c,lambda,ncouc3,ncoucx,ncoucy,ncoucz,ngr,npotentiel,precis,&
-       &r3cm,r3cm2,rbp5,rp3c,rp5p3,sigmawat,typ_and_pot,xsi,pot_pair_tab,pot_pair_tab,poly5,poly3,&
-       &ipo_2_pair_tab,npotmax
+  USE var_pot!, ONLY:alpha,epswat,eta,eva62ergcm6,gd,gm1,gm2,gm3,gm4,gm5,gr,iewald,ipotentiel,&
+!       &ipotrep,kpmex,kpmey,kpmez,l3c,lambda,ncouc3,ncoucx,ncoucy,ncoucz,ngr,npotentiel,precis,&
+!       &r3cm,r3cm2,rbp5,rp3c,rp5p3,sigmawat,typ_and_pot,xsi,pot_pair_tab,pot_pair_tab,poly5,poly3,&
+!       &ipo_2_pair_tab,npotmax,npair,ntrip,ntyp,r8p,rumax,lue_typ,cm,ty,catom,q,bm,shel,ty,lue_typ,ipo,&
+!       &lue_paire,ipo3c,catom,lue_trip,typ_pot_pair,rue_pair,lu_roff_pair ,roff1, roff2,ray,ro,dip,pm,a_factor
 
   implicit none
 contains

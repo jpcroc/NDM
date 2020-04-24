@@ -1,11 +1,12 @@
 module scalebox_mod
-  USE gen_com_m, ONLY:dmtype,itetabvois,lpr,ltabvois,noxy,nvat,pi,volu,zl,zls2,celsize
+  USE gen_com_m, ONLY:dmtype,itetabvois,lpr,ltabvois,noxy,nvat,pi,volu,zl,zls2,celsize,imm,im,it,&
+       &lperiod,nox,noy,noz,rang,at
   USE dynalloccell
-  USE neigcel_mod
-  USE caltabt_mod
-  USE period_mod
-  USE recips_mod 
-  USE caltabi_mod
+  USE neigcel_mod,only: neigcel
+  USE caltabt_mod,only: caltabt
+  USE period_mod,only: period
+  USE recips_mod,only: recips ,calcvol
+  USE caltabi_mod,only: caltabi
   implicit none
 contains
   ! ******************************************************************

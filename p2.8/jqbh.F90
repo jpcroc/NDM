@@ -1,8 +1,9 @@
 module jqbh_mod
-        USE tempinst_mod
-        USE cryst_to_cart_mod
+        USE tempinst_mod,only: tempinst
+        USE cryst_to_cart_mod,only: cryst_to_cart
         USE gen_com_m, ONLY:at,bg,epcoud,epsil,erg2ev,erg2joule,im,it,ittherm,kthg,njqbh,ntr,&
-             &rang,rulayer,tstep,nzl,zl,zls2
+             &rang,rulayer,tstep,nzl,zl,zls2,imm,bk
+        USE tab_imm_m
 
         implicit none
         contains
@@ -47,7 +48,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
   logical :: loc(imm)
   !real(double):: dTtot,tempact,dTloc,tempinst,crulinv
   real(double):: dTtot,tempact,dTloc,crulinv
-  ! tempinst does not need declaration becaUSE it is declared in tempinst_mod
+  ! tempinst does not need declaration becaUSE it is declared in tempinst_mod,only: it is declared in tempinst
   if(it.eq.1) then
      if(rang==0) write(6,*)'condutivité thermique méthode directe'
 
@@ -100,7 +101,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
            crul=rulayer/nzl(1)           
            crulinv=1-crul
 !           write(6,*)'rulayer, nzl,crul',rulayer, nzl(1),crul
-           do i=1,imd
+           do i=1,im
               if((xp(1,i).lt.crul).or.(xp(1,i).gt.crulinv))cycle
               indtr=1+Int(ntr*(xp(1,i)-crul)/(1-2*crul))
               if (indtr==itr) then
@@ -116,7 +117,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 !           if(rang==0) write(6,*)'alph2',alph2
            call cryst_to_cart (imm, xp, at, 1)  !cryst vers cart
 
-           do i = 1, imd
+           do i = 1, im
               if (loc(i))then
                  xpp(:,i) = xp(:,i)-(xp(:,i)-xpp(:,i))*alph2
                  vp(:,i)=vp(:,i)*alph2
@@ -172,7 +173,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
 #else
 
-     do i = 1, imd
+     do i = 1, im
         if (xp(1,i)<cinf) then
            nacou1 = nacou1+1
            ecou1 = ecou1+0.5*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(&
@@ -191,7 +192,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      tcou1=ecou1*2./(3.*bk*nacou1)
      alph1=sqrt(1+epsil/ecou1)
 !     if(rang==0) write(6,*)'nacou1 alph1 tcou1', nacou1,alph1,tcou1
-     do i = 1, imd
+     do i = 1, im
         if (loc(i)) then
            xpp(:,i) = xp(:,i)-(xp(:,i)-xpp(:,i))*alph1
            vp(:,i)=vp(:,i)*alph1
@@ -223,7 +224,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 !     write(6,*)'ecou2B', rang,nacou2,ecou2
 #else
 
-     do i = 1, imd
+     do i = 1, im
         if (xp(1,i).gt.csup)then
            nacou2 = nacou2+1
            ecou2 = ecou2+(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(&
@@ -240,7 +241,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      alph2=sqrt(1-epsil/ecou2)
 !                      write(6,*)'nacou2 alph2 tcou2', nacou2,alph2,tcou2
 
-     do i = 1, imd
+     do i = 1, im
         if (loc(i))then
            xpp(:,i) = xp(:,i)-(xp(:,i)-xpp(:,i))*alph2
            vp(:,i)=vp(:,i)*alph2
@@ -254,7 +255,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 #ifdef PARA
      temptra(:)=0.
      nattr(:)=0
-     do i=1,imd
+     do i=1,im
 	        if(free(i))then	
         indtr=1+Int(ntr*(xp(1,i)-crul)/(1-2*crul))
         !          write(6,*)i,indtr,xp(1,i), (xp(1,i)-crul)/(1-2*crul)
@@ -273,7 +274,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      temptra(:)=0.
      nattr(:)=0
      crulinv=1-crul
-     do i=1,imd
+     do i=1,im
         if((xp(1,i).lt.crul).or.(xp(1,i).gt.crulinv))cycle
         indtr=1+Int(ntr*(xp(1,i)-crul)/(1-2*crul))
 !              write(6,*)i,indtr,xp(1,i), (xp(1,i)-crul)/(1-2*crul)
@@ -314,7 +315,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      tcou1=ecou1*2./(3.*bk*nacou1)
      alph1=sqrt(1+epsil/ecou1)
      !            write(6,*)'nacou1 alph1 tcou1', nacou1,alph1,tcou1
-     do i = 1, imd
+     do i = 1, im
         if (zls2(1)-abs(xp(1,i))<epcoud) then
            xpp(:,i) = xp(:,i)-(xp(:,i)-xpp(:,i))*alph1
            vp(:,i)=vp(:,i)*alph1

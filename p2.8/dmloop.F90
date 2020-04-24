@@ -1,15 +1,16 @@
 module dmloop_mod
-        USE calfo_mod
-        USE dyn_mod
-        USE analyse_mod
-        USE controle_mod
-        USE trempe_mod
-        USE sauvegarde_mod
-        USE correl_mod
-        USE sauveforce_mod
-        USE sauveposition_mod
+        USE calfo_mod,only: calfo
+        USE dyn_mod,only: dyn
+        USE analyse_mod,only: analyse
+        USE controle_mod,only: controle
+        USE trempe_mod,only: trempe
+        USE sauvegarde_mod,only: sauvegarde
+        USE correl_mod,only: correlvp
+        USE sauveforce_mod,only: sauveforce
+        USE sauveposition_mod,only: sauveposition
         USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
         USE atomconfig
+        USE gen_com_m,only: dmtype,indi,it,itesauv,ltabvois,potist,rang,sig
 
         implicit none
         contains
@@ -46,7 +47,6 @@ subroutine dmloop
   !-----------------------------------------------
   !
     type(atom_config_d)::atdml
-    integer, allocatable ::iwmaxCF(:),indiCF(:)
   ! MPI
   if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 
@@ -64,10 +64,9 @@ subroutine dmloop
 
   ! appel de la routine generale des forces
   call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-  CALL CalFo(atdml)
+  CALL CalFo(sig,potist,atdml)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
-!    iwmax=iwmaxCF
 !    indi=indiCF
 
 !  call calfo

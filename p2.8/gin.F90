@@ -1,4 +1,4 @@
-MODULE gin_module
+MODULE gin_mod
   USE gen_com_m, ONLY : imm
 CONTAINS
   SUBROUTINE ReadGin(xp, iTyp, im, at, inp)
@@ -87,4 +87,4 @@ CONTAINS
 
   END SUBROUTINE ReadGin
 
-END MODULE gin_module
+END MODULE gin_mod

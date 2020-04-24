@@ -1,9 +1,10 @@
 module calfow_mod
-  USE notperiod_mod
-  USE cryst_to_cart_mod
+  USE notperiod_mod,only: notperiod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY: imm,bg,it,itesigma,lperiod,ltpcel,noxyz,pi,potcp,&
-       &potis1,potist,zero,ncel,last,at,nato,ncel,deltadist,deltadist,deltadist,last,nato,&
-       &deltadist,sig,sigc,volu
+       &potis1,zero,ncel,last,at,nato,ncel,deltadist,deltadist,deltadist,last,nato,&
+       &deltadist,sigc,volu
+  USE calfocommon
   implicit none
 contains
   ! ***************************************************************

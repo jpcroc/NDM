@@ -2,33 +2,37 @@ module calfo_mod
 #ifdef ML
   USE calfo_ml_mod, ONLY : md_calfo_ml
 #endif 
-  USE calfoew_mod
-  USE calfoberend_mod
-  USE calfo2ctabvois_mod
-  USE calfo2ccel_mod
-  USE calfo3c_mod
-  USE calfow_mod
-  USE calfo_decalage_mod
-  USE calfoeamtabvois_mod
-  USE calfoeamcel_mod
-  USE calfojuli_mod
-  USE calfojulicel_mod
-  USE force_tersoff_cel_mod
-  use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel
+  USE calfoew_mod,only:calfoew
+  USE calfoberend_mod,only:calfoberend
+  USE calfo2ctabvois_mod,only:calfo2ctabvois
+  USE calfo2ccel_mod,only:calfo2ccel
+  USE calfo3c_mod,only:calfo3c
+  USE calfow_mod,only:calfow
+  USE calfo_decalage_mod,only:calfo_decalage
+  USE calfoeamtabvois_mod,only:calfoeamtabvois
+  USE calfoeamcel_mod,only:calfoeamcel
+  USE calfojuli_mod,only:calfojuli
+  USE calfojulicel_mod,only:calfojulicel
+  USE force_tersoff_cel_mod,only:force_tersoff_cel
+  use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
+
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:ibound,im_glob,lcontr,ldecal_bc,ldesinteg,lsigtyp,&
-       &ltberendsen,ltranche,parallele,potis0,potis2,potisp,sigkine,sigtot,sigtyp,sigtyptyp,l2t
+       &ltberendsen,ltranche,parallele,potis0,potis2,potisp,sigkine,sigtot,sigtyp,sigtyptyp,l2t,&
+       &sigat,lsigat,eatom,volu,zero,dmtype,it,itesigma,ltpcel,potistersoff,sigc,potiszbl,&
+       &potiszbl,potcp,potis1,potis3,sigkine,sigtot,sigtyp,sigtyptyp,zero
 
-  USE contrainte
-  USE jqmod
+  USE contrainte,only:initcontr,contr
+  USE jqmod,only:jq
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t
-  USE strain_bc_mod
-  USE stress_bc_mod
-  USE force_tersoff_mod
+  USE strain_bc_mod,only:strain_bc
+  USE stress_bc_mod,only:stress_bc
+  USE force_tersoff_mod,only:force_tersoff
 !  USE tab_imm_m,only::
 !  USE tab_imm_m
   USE atomconfig 
+  USE calfocommon
 #ifdef PARA
   USE mod_para
 #endif
@@ -39,7 +43,7 @@ contains
   !routine d'appel des routines de forces
   ! ************************************************
 
-  subroutine calfo (atcf)
+  subroutine calfo (sigcf,potistcf,atcf)
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
@@ -54,7 +58,7 @@ contains
 
     integer::im
 !    integer, intent(in) ::imm
-!    real(double)::potist,sig(3,3)
+    real(double),intent(out)::potistcf,sigcf(3,3)
     real(double),dimension(:,:),allocatable:: xp,vp,fp,xpp
 !    integer,dimension(:),allocatable::ityp,ielat
 !    logical::ltabvois
@@ -295,6 +299,7 @@ contains
 !       if(ibrake.gt.0) call calceloss
 !    end if
 !    write(6,*)'dml potist 3',potist,atcf%potist
+    sigcf=sig;potistcf=potist
     return
   end subroutine calfo
 

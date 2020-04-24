@@ -1,5 +1,5 @@
 module coord_to_cell_mod
-        USE cryst_to_cart_mod
+        USE cryst_to_cart_mod,only: cryst_to_cart
         implicit none
         contains
 subroutine coord_to_cell(tab_coord, cell)

@@ -1,9 +1,10 @@
 #ifndef ML
 module param_det_mod
-        USE arret_ndm_mod
-        USE endrun_mod
-        USE gen_com_m, ONLY:lopt
-          USE var_pot, ONLY:kpme,kpmex,kpmey,kpmez,n2max,ncouc3,ncoucx,ncoucy,ncoucz,npair,npotentiel,nvecttot,precis
+        USE arret_ndm_mod,only: arret_ndm
+        USE endrun_mod,only: endrun
+        USE gen_com_m, ONLY:lopt,zl,zero,rang,pi
+        USE var_pot, ONLY:kpme,kpmex,kpmey,kpmez,n2max,ncouc3,ncoucx,ncoucy,ncoucz,npair,&
+             &npotentiel,nvecttot,precis,rue_pair,typ_pot_pair,ipotentiel,alpha,iewald
         implicit none
         contains
 subroutine param_det

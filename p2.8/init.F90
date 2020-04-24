@@ -1,36 +1,45 @@
 module init_mod
-  USE input_pair_mod
-  USE inputtersoff_mod
-  USE calpoeam_mod
-  USE calpo_mod
-  USE transf_mod
-  USE init_spebc_mod
-  USE Hcyl_mod
-  USE neigcel_mod
-  USE tersoff_zbl_mod
+  USE config_mod,only:config
+  USE divid_mod,only:divid
+  USE contrainte,only:initcontr
+  USE sauveposition_mod,only:sauveposition
+  USE alloc_typ_mod,only: alloc_typ
+  USE input_pair_mod,only: input_pair
+  USE inputtersoff_mod,only: inputtersoff
+  USE calpoeam_mod,only: calpoeam
+  USE calpo_mod,only: calpo
+  USE transf_mod,only: transf
+  USE init_spebc_mod,only: init_spebc
+  USE Hcyl_mod,only: Hcyl
+  USE neigcel_mod,only: neigcel
+  USE tersoff_zbl_mod,only: tersoff_zbl
   USE dynalloccell
-  USE initspeed_mod
-  USE caltabt_mod
-  USE sauvegarde_mod
-  USE heat_mod
-  USE caltabi_mod
-  USE creadp_mod
-  USE correl_mod
-  USE layer_mod
-  USE dislo_mod
-  USE initcdp_mod
-  USE initcasca_mod
-  USE deftimestep_mod
-  USE rasmol_mod
-  USE prtplz_mod
-
+  USE initspeed_mod,only: initspeed
+  USE caltabt_mod,only: caltabt
+  USE sauvegarde_mod,only: sauvegarde,cin2gin
+  USE heat_mod,only: heat
+  USE caltabi_mod,only: caltabi
+  USE creadp_mod,only: creadp
+  USE correl_mod,only: correlvp
+  USE layer_mod,only: layer
+  USE dislo_mod,only: at_bord
+  USE initcdp_mod,only: initcdp
+  USE initcasca_mod,only: initcasca
+  USE deftimestep_mod,only: deftimestep
+  USE rasmol_mod,only: rasmol
+  USE prtplz_mod,only: prtplz
+  USE neb_module,only: configneb
 #ifdef PARA
-  USE init_vois_mod
+  USE init_vois_mod,only: init_vois
 #endif
 #ifdef ML
-  USE calfo_ml_mod 
+  USE calfo_ml_mod,only: calfo_ml 
 #endif 
-  USE gen_com_m, ONLY:igen,ilangevin,imf,iteheat,lcdp,lcorrelvp,ldislo,lhcyl,lheat,itichup,itichdn,itichdeb
+  USE gen_com_m, ONLY:igen,ilangevin,imf,iteheat,lcdp,lcorrelvp,ldislo,lhcyl,lheat,itichup,itichdn,itichdeb,formatsauv,iko,&
+       &imana,itdes,iteanapos,iteplz,iterasmol,itetimestep,itmax,lcalcjq,lcasca,ldesinteg,lcontr,lfilm,lprteat,&
+       &lrestart,lsigtyp,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,sigtyp,&
+       kinemean,lsigat,pmean,xpchdn,sigtyptyp,sigtyp,eatomtotm,lprteattotm,vpchdn
+      USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel
   implicit none 
 contains
   ! **************************************************************
@@ -45,12 +54,12 @@ contains
     USE eamerco
     USE SMjuli
     USE jqmod
-    USE neb_module
+
     USE posana
     USE defcdp, ONLY :itecdp
     USE elec_cell,ONLY: i2t,t_cpl, readelec
     USE eloss, ONLY : ibrake,ecelec,initeloss
-    !  USE var_pot, ONLY:
+
 #ifdef PARA
     USE mod_para
 #endif

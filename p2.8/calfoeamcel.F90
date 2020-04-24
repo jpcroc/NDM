@@ -1,9 +1,10 @@
 module calfoeamcel_mod
-        USE notperiod_mod
-        USE cryst_to_cart_mod
+        USE notperiod_mod,only: notperiod
+        USE cryst_to_cart_mod,only: cryst_to_cart
         USE gen_com_m, ONLY:angst,at,bg,nvat,it,itesigma,low_limit,lperiod,lprteat,&
-             &ltpcel,noxyz,zero,ncel,last,nato,ncel,last,nato,sig,sigc,eatom,&
+             &ltpcel,noxyz,zero,ncel,last,nato,ncel,last,nato,sigc,eatom,&
              &deltadist,nox,noy,noz,volu
+        USE calfocommon
 
         implicit none
         contains

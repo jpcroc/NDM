@@ -1,6 +1,6 @@
 module calccoordo_mod
-        USE notperiod_mod
-        USE cryst_to_cart_mod
+        USE notperiod_mod,only: notperiod
+        USE cryst_to_cart_mod,only: cryst_to_cart
         USE gen_com_m, ONLY: rang,last,nato,noxyz,it,timel,imm,im,imd,at,deltadist,bg,lperiod,ncel
         implicit none
         contains

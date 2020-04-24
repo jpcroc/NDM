@@ -1,8 +1,8 @@
 module gcII_mod
-  USE endrun_mod
-  USE analyse_mod
-  USE initspeed_mod
-  USE gcmodII_mod
+  USE endrun_mod,only: endrun
+  USE analyse_mod,only: analyse
+  USE initspeed_mod,only: initspeed,bruit_xp
+  USE gcmodII_mod,only: ZXCGRII
   USE tab_imm_m
   implicit none
 
@@ -13,8 +13,8 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:
-    USE var_pot, ONLY:
+    USE gen_com_m, ONLY:bg,itetemp2
+    USE var_pot, ONLY:nad,na,ntyp
     USE work_cgII
     !  USE tab_imm_m, ONLY : bruitmd
     ! *************************************************************
@@ -70,7 +70,7 @@ contains
 
 
 !    stop
-    imd = im
+
     nad(:ntyp) = na(:ntyp)
 
     if (mdcg_noise /= 0 ) then

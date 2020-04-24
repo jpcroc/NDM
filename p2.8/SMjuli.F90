@@ -2,7 +2,7 @@ module SMjuli
   USE T_kind_param_m
   USE gen_com_m, ONLY: ev2erg,A2cm
   USE var_pot, ONLY: lue_typ,npotentiel
-  USE alloc_typ_mod
+  USE alloc_typ_mod,only: alloc_typ
   implicit none
 
 

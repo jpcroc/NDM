@@ -1,6 +1,7 @@
 module calfoew_mod
-  USE epme_mod
-  USE gen_com_m, ONLY:ltpcel,tabf3,sigc,noxyz,sig
+  USE epme_mod,only: epme
+  USE gen_com_m, ONLY:ltpcel,tabf3,sigc,noxyz,it,itesigma,pi,potis3,volu,zero,bg,tabv3
+  USE calfocommon
   implicit none
 contains
 

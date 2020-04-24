@@ -1,5 +1,5 @@
 module decoupage_mod
-  USE arret_ndm_mod
+  USE arret_ndm_mod,only: arret_ndm
       USE T_kind_param_m, ONLY:  double
   implicit none
 contains

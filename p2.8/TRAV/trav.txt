@@ -7,6 +7,17 @@ remplacer free par un calcul de force partiel (beaucoup plus dur!).
 COUPER complètement calfo du reste
 GERER POTIST ET SIG!! IDEM eatom ! sigat !
 
+à ranger dans un type "box"
+potist, sig, volu
+ncaractéristques des cel nox noy noz etc  (sigc, etc.)
+
+Type options/calc ??
+itesigma, etc ??
+it ?
+ltpcel ?
+
+MODULE CONST  avec les constantes (à ranger dans T_kind ? sale mais pratique
+
 calceloss et strain_bc doivent être traités en dehors de calfo dans des modules séparés
 
 

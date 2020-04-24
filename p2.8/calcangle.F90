@@ -1,6 +1,6 @@
 module calcangle_mod
-  USE notperiod_mod
-  USE cryst_to_cart_mod
+  USE notperiod_mod,only: notperiod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:fda,ntyp
   USE gen_com_m, ONLY:lperiod,noxyz,thetamin,thetamax,cont888,rcangle,last,&
        &ncel,at,bg,deltadist,imana,imm,im,nato,noxyz,rang

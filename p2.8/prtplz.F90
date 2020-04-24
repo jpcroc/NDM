@@ -1,5 +1,5 @@
 module prtplz_mod
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:at,bg,itmax,iteplz,nplz,zl,imm,imd,it
   implicit none
 contains

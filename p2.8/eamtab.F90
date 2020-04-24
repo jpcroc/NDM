@@ -2,9 +2,9 @@ module eam
   USE T_kind_param_m
   USE gen_com_m, ONLY: A2cm
   USE var_pot, ONLY:rhomin,rhomax,lforcetabulate
-  USE spline_mod
-  USE alloc_typ_mod
-  USE arret_ndm_mod
+  USE spline_mod,only: cspline
+  USE alloc_typ_mod,only: alloc_typ
+  USE arret_ndm_mod,only: arret_ndm
 
   implicit none
 

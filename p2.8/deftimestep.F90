@@ -12,8 +12,8 @@ subroutine deftimestep
   USE var_pot, ONLY:cm
   USE tab_imm_m
   USE elec_cell, ONLY:  etstep, necycle, necyclemin
-  USE arret_ndm_mod
-  USE period_mod
+  USE arret_ndm_mod,only: arret_ndm
+  USE period_mod,only: period
 #ifdef PARA
   USE mod_para
 #endif

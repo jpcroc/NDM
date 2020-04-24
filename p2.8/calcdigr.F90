@@ -1,6 +1,6 @@
 module calcdigr_mod
-  USE notperiod_mod
-  USE cryst_to_cart_mod
+  USE notperiod_mod,only: notperiod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:noxyz,ncel,last,lperiod,imana,rang,last,rcrdf,at,nato,imm,im,&
        &deltadist,celsize,bg
 

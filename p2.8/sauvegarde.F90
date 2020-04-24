@@ -5,7 +5,7 @@ module sauvegarde_mod
          &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca
     USE tab_imm_m
     USE elec_cell, ONLY : sauveelec
-    USE cryst_to_cart_mod
+    USE cryst_to_cart_mod,only: cryst_to_cart
 #ifdef PARA
     USE mod_para
 #endif

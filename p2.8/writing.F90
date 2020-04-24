@@ -1,5 +1,5 @@
 module writing_mod
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:imm,at,bg
   implicit none
 contains

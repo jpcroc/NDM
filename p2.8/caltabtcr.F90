@@ -10,7 +10,7 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE tab_imm_m
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   !          Version du 01 fevrier 2001
   ! ******************************************************************
 

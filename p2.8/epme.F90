@@ -1,5 +1,5 @@
 module epme_mod
-  USE moduli_mod
+  USE moduli_mod,only: moduli
     USE gen_com_m, ONLY:it,itesigma,pi,potis3,volu,zero,bg,tabv3,bg
         implicit none 
         contains
@@ -10,6 +10,7 @@ subroutine epme (Deb,Fin,sige)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m
+  use moduli_mod,only:bspline
 
   USE var_pot, ONLY:alpha,auxe,maxorder,kpmex,kpmey,kpmez,ncoucx,ncoucy,ncoucz,nf1,nf2,nf3,nff,nfft1,nfft2,nfft3,&
        &npoint,pterm,volterm,fr1,fr2,fr3,iiim,q,bsmod3,iiim,ijim,ikim,bsmod2,de3,bsmod1,de2,de1

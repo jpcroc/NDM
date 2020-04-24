@@ -1,6 +1,6 @@
 !****************************************************************
 module caltabi_mod
-  USE notperiod_mod
+  USE notperiod_mod,only: notperiod
   USE gen_com_m, ONLY:decal_bc,im,imm,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,noxyz,&
        &nvois,nvperat,rang,rvois,ncel,last,nato,at,bg,indi,indi2
         implicit none

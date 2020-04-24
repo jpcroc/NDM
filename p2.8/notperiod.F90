@@ -1,6 +1,6 @@
 
 module notperiod_mod
-        USE cryst_to_cart_mod
+        USE cryst_to_cart_mod,only: cryst_to_cart
         implicit none
         contains
 

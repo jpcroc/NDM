@@ -1,23 +1,28 @@
 module work_cgII
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: im, imm,at, inv_angst, lperiod, rang, &
-                       it, itesauv, itesauvposition, itesauvforce, &
+  USE gen_com_m, ONLY: im, imm,at, inv_angst, lperiod, rang,indi,itmax,leev,ltabvois,sig, &
+                       it, itesauv, itesauvposition, itesauvforce,itmax, &
                        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
                        dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz
-  USE controle_mod
-  USE calfo_mod
-  USE analyse_mod
-  USE sauvegarde_mod
-  USE sauveposition_mod
-  USE sauveforce_mod
-  USE caltabt_mod
-  USE config_mod
-  USE zero2all2zero_mod
+  USE controle_mod,only: controle
+  USE calfo_mod,only: calfo
+  USE analyse_mod,only: analyse
+  USE sauvegarde_mod,only: sauvegarde
+  USE sauveposition_mod,only: sauveposition
+  USE sauveforce_mod,only: sauveforce
+  USE caltabt_mod,only: caltabt
+  USE config_mod,only: config
+  USE zero2all2zero_mod,only: zero2all,all2zero
+  use period_mod,only:period
+  USE endrun_mod,only: endrun
+ USE dynalloccell,only:deallocateall
+USE arret_ndm_mod,only: arret_ndm
+USE caltabi_mod,only: caltabi
 #ifdef PARA
   USE mod_para
 #endif
-  USE tab_imm_m, ONLY : xp, fp,num_at_glob
+  USE tab_imm_m, ONLY : xp, fp,num_at_glob,ax,vp,xpp,ityp,ielat,iwmax
   USE atomconfig
   
   implicit none
@@ -49,7 +54,6 @@ contains
     real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
 
     type(atom_config_d)::atcg
-    integer, allocatable ::iwmaxCF(:),indiCF(:)
 
 !    write(6,*)'entree funct', it,ncalls
     it=NCALLS-1
@@ -230,10 +234,8 @@ contains
        write(607,'(I6,3G22.13)') i,xp(:,i)
     end do
     call ndm2config(atcg,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
-    CALL CalFo(atcg) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-!    call config2ndm(atcg,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,ltabvois,iwmaxCF,indiCF)
-    iwmax=iwmaxCF
-    indi=indiCF
+    CALL CalFo(sig,potist,atcg) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    call config2ndm(atcg,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
 
     
 !    call calfo

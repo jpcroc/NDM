@@ -1,6 +1,6 @@
 module caltabt_mod
-        USE notperiod_mod
-        USE cryst_to_cart_mod
+        USE notperiod_mod,only: notperiod
+        USE cryst_to_cart_mod,only: cryst_to_cart
 #ifdef PARA
         USE mod_para
 #endif      

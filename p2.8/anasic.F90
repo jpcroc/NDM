@@ -1,5 +1,5 @@
 module sic
-    USE extension_mod    
+    USE extension_mod,only: Pextension    
 
 
 contains

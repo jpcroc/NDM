@@ -1,12 +1,21 @@
 module config_mod
-        USE period_mod
-        USE divid_mod
+        USE period_mod,only:period
+        USE divid_mod, only:divid
 #ifdef PARA
-        USE coord_to_cell_mod
-        USE decoupage_mod
+        USE coord_to_cell_mod,only:coord_to_cell
+        USE decoupage_mod,only: decoupage
 #endif
-        implicit none
-        contains
+  USE gen_com_m, ONLY:at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
+  &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat
+  USE var_pot, ONLY:alpha,na,ntyp,rumax
+  USE recips_mod,only: recips
+  use cryst_to_cart_mod,only:cryst_to_cart
+  USE dynalloccell,only:deallocateall
+ USE arret_ndm_mod,only: arret_ndm
+USE caltabi_mod,only: caltabi
+
+  implicit none
+  contains
 subroutine config
 !********************************************************************
 !             CONSTRUCTION DE LA BOITE DE SIMULATION
@@ -16,8 +25,6 @@ subroutine config
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:
-  USE var_pot, ONLY:
   USE tab_imm_m
   USE suivinonpbc
 #ifdef PARA
@@ -149,8 +156,7 @@ subroutine config
               zl(ic) = normat(ic)
               normat(ic)=0
               normat(ic)=sqrt(sum(bg(:,ic)**2))
-              nzl(ic)=1.0/normat(ic)
-              !              if(rang==0)write(6,*)'nzl',nzl(ic)*1d8           
+              nzl(ic)=1/zl(ic)
 
 
            end do
@@ -877,7 +883,7 @@ subroutine config2data (imm,im,xp,ityp,at,ntyp)
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:,ONLY : position_conversion_lammps
   USE var_pot, ONLY:q,ipotentiel
-  USE Mat_utils_mod
+  USE Mat_utils_mod,only: Mat_utils
   implicit none
   integer,intent(in)::imm,im,ntyp
   real(double),intent(in)::xp(3,imm),at(3,3)
@@ -1003,7 +1009,7 @@ end subroutine config2data
 
 !---------------------------------------------------
 subroutine convert_cell(mat_ini,new_mat,transform)
-  USE Mat_utils_mod
+  USE Mat_utils_mod,only: Mat_utils
 
 
   implicit none

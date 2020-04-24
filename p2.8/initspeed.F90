@@ -1,14 +1,14 @@
 module initspeed_mod
   USE tab_imm_m
   USE T_kind_param_m, ONLY:  double
-  USE Mat_utils_mod, ONLY : MatInv
-  USE tempinst_mod
-  USE calctemp_mod
-  USE arret_ndm_mod
-  USE period_mod
+  USE Mat_utils_mod,only: MatInv
+  USE tempinst_mod,only: tempinst
+  USE calctemp_mod,only: calctemp
+  USE arret_ndm_mod,only: arret_ndm
+  USE period_mod,only: period
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,im,im_glob,iseed,lcalcjq,lperiod,ltpcel,&
        &lvpread,noxyz,oldtstep,one,pi,rang,tempdeplainit,tinit,tstep,im,iseed,mdcg_noise_scale,&
-       neb_noise_scale,pi,rang
+       neb_noise_scale,pi,rang,bk
   USE var_pot, ONLY:ntyp,cm
   implicit none
 contains

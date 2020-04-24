@@ -1,6 +1,6 @@
 module calcdepla2_mod
   USE var_pot, ONLY:ntyp,nad,ty
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:zls2,tdepla2,it,timel, im,imm,at, bg,rang
   implicit none
 contains

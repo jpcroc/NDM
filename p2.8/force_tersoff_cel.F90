@@ -1,7 +1,8 @@
 module force_tersoff_cel_mod
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:at,bg,it,itesigma,lcalcjq,ltpcel,noxyz,potistersoff,potiszbl,&
-       &ncel,last,ncel,last,nato,nato,sigc,eatom,volu,sig,potist
+       &ncel,last,ncel,last,nato,nato,sigc,eatom,volu
+        USE calfocommon
   implicit none
 contains
 ! ***************************************************************

@@ -1,5 +1,5 @@
 module dervbeest_mod
-  USE calerf_mod 
+  USE calerf_mod,only: calerf 
   implicit none 
   contains  
 subroutine deriVBEEST(rrep,itdp,l,dp,auxe,alpha,ngrid, &

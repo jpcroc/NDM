@@ -3,7 +3,7 @@
 ! alloue et remplit le tableau latdebord
 ! ************************************************
 module dislo_mod
-  USE cryst_to_cart_mod
+  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:imm,imm,fdislo,im,at,bg,epcoudis,im,latdebord,latdebord,zl
   implicit none
 contains

@@ -1,8 +1,9 @@
 module calfo2ccel_mod
-        USE notperiod_mod
-        USE cryst_to_cart_mod
+        USE notperiod_mod,only: notperiod
+        USE cryst_to_cart_mod,only: cryst_to_cart
           USE var_pot, ONLY:alpha,csive,ipotentiel,ipo,zz,ipo,rue_pair,pot,typ_and_pot,typ_pot_pair
-        implicit none
+          USE calfocommon
+          implicit none
         contains
 ! ***************************************************************
 subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
@@ -12,7 +13,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m , ONLY:at,bg,deltadist, espr,deltaf,espr,it,itdes,itesigma,kspr,lambdades,&
        &lcalcjq,ldesinteg,lperiod,lprteat,lsigtyp,ltpcel,noxyz,nstepdes,pi,pm1des,potis1,potis2,&
-      &ncel,last,nato,xpspr,xpspr,xpspr,sigtyptyp,sigtyp,sigc,sig,eatom,volu,deltaEspr
+       &ncel,last,nato,xpspr,xpspr,xpspr,sigtyptyp,sigtyp,sigc,eatom,volu,deltaEspr
 
 
   USE jqmod
