@@ -29,6 +29,7 @@ module init_mod
   USE rasmol_mod,only: rasmol
   USE prtplz_mod,only: prtplz
   USE neb_module,only: configneb
+!  USE atomconfig
 #ifdef PARA
   USE init_vois_mod,only: init_vois
 #endif
@@ -380,7 +381,8 @@ contains
     !computing the neighbours for the very first time ......
     !  if (itmax>0) then
     write(6,*)'1ER CALL init'
-    call caltabt
+    call caltabt(im,xp,ielat)
+
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
     if (ltabvois) call caltabi
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
@@ -485,7 +487,7 @@ contains
        end if
 
        if (itmax==0) stop
-       call caltabt
+    call caltabt(im,xp,ielat)
        if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
        if (ltabvois) call caltabi
     end if
@@ -516,11 +518,12 @@ contains
        call initcdp
        if (itecdp==0)then
           call creadp (xp, xpp, ityp,vp)
-          call caltabt
+          call caltabt(im,xp,ielat)
+          
           if (ltabvois) call caltabi
 
           if (lperiod) then
-             call period
+             call period (imm,xp,xpp,ax)
           else
              write(*,*) 'WARNING .... Not implemented for lperiod  FALSE nad lcdp TRUE'
              write(*,*) 'FIX THAT! Until there the program will stop'

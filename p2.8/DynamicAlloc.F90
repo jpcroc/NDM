@@ -1,5 +1,5 @@
 module dynalloccell
-  USE gen_com_m, ONLY:l2t,lsigatcel,ltpcel,tempstopcel,tabv3,tabf3,sigc,tempcm,deltadist,nato,last,&
+  USE gen_com_m, ONLY:l2t,lsigatcel,ltpcel,tempstopcel,tabv3,tabf3,sigc,tempcm,deltadist,nato,atincel,&
        &ncel,natchk,noxyz,pmc, tcp, celpp,tcp, lprtcel,tempc,tm1,patcelmax,zero,elossCel,&
        &patcelmax, celpm1,patcel,sigatcel,natperc
   USE var_pot, ONLY:iewald,ncoucx,ncoucy,ncoucz,ntyp,na,cm,ipo,catom,ty,pot,rc,lue_paire,lue_typ,lue_trip,dip,pm,roff1,&
@@ -17,7 +17,7 @@ contains
 
     allocate(ncel(0:noxyz,0:26))
     allocate(nato(0:noxyz))
-    allocate(last(natperc,0:noxyz))
+    allocate(atincel(natperc,0:noxyz))
     allocate(deltadist(3,0:26,noxyz))
     if (lTPcel.EQV..true.)then
        allocate(sigc(3,3,noxyz)); sigc(:,:,:noxyz)=0.
@@ -65,7 +65,7 @@ subroutine Deallocatecel
   implicit none
   if(allocated(ncel))deallocate(ncel)
   if(allocated(nato))deallocate(nato)
-  if(allocated(last))deallocate(last)
+  if(allocated(atincel))deallocate(atincel)
   if(allocated(deltadist))deallocate(deltadist)
   if(allocated(sigc))deallocate(sigc)
   if (iewald.ge.1) then
@@ -83,7 +83,7 @@ subroutine DeallocateAll
 
   if(allocated(ncel)) deallocate(ncel)
   if(allocated(nato)) deallocate(nato)
-  if(allocated(last)) deallocate(last)
+  if(allocated(atincel)) deallocate(atincel)
   if(allocated(deltadist)) deallocate(deltadist)
   if(allocated(sigc))deallocate(sigc)
   if(allocated(tabv3))deallocate(tabv3)

@@ -1,7 +1,7 @@
 module elec_cell
   USE T_kind_param_m
-  USE gen_com_m, ONLY: nox,noy,noz, noxyz,nzl,bk,imm,nato,last,im_glob,tstep,erg2eV,pi,rang,elosscel,lenfnam,fnam,lrestart,lTPcel&
-       &,joule2erg,erg2eV,it,timel,it,igen,lrestart,itesauvinter
+  USE gen_com_m, ONLY: nox,noy,noz, noxyz,nzl,bk,imm,nato,atincel,im_glob,tstep,erg2eV,pi,rang,&
+       &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,it,igen,lrestart,itesauvinter
   USE var_pot, ONLY:cm
   USE tab_imm_m, ONLY : num_at_glob,ielat
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
@@ -258,7 +258,7 @@ contains
        call nox_2_nex(ko,ixyze)
        call GepT(Gep,ecell(ixyze(1),ixyze(2),ixyze(3))%temp)
        do i2 = 1, nato(ko)
-          i = last(i2,ko)
+          i = atincel(i2,ko)
           if (num_at_glob(i).gt.im_glob) cycle
           select case (i2t)
           case(1)

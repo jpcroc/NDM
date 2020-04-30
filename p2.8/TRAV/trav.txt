@@ -7,9 +7,18 @@ remplacer free par un calcul de force partiel (beaucoup plus dur!).
 COUPER complètement calfo du reste
 GERER POTIST ET SIG!! IDEM eatom ! sigat !
 
+supprimer tous ls appels parasites à ndm2config et diminuer le plus possible les types dans la chaine atonconfig
+
+gérer period avec des appels faits
+
+caltabt,caltabi avec des atomconfig
+
+
 à ranger dans un type "box"
-potist, sig, volu
+potist, sig, volu,normat, at ,bg,
+
 ncaractéristques des cel nox noy noz etc  (sigc, etc.)
+atincel, deltadist,nato,ncel,celldeb_x,cell_deb_y,_z, cellsize,cell_fin_x
 
 Type options/calc ??
 itesigma, etc ??

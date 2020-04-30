@@ -7,9 +7,10 @@ module posana
   USE recips_mod,only: recips
   use notperiod_mod, only: notperiod
   use cryst_to_cart_mod,only:cryst_to_cart
-  USE gen_com_m, ONLY: at,zl,last,ncel,deltadist,fnam,im,imm,rang,lperiod,pi,bg,nato,noxyz,npath,ibound,im_glob,&
+  USE gen_com_m, ONLY: at,zl,atincel,ncel,deltadist,fnam,im,imm,rang,lperiod,pi,bg,nato,noxyz,npath,ibound,im_glob,&
        &dmtype,eatom,decal_bc,noy,nox,noz,ldecal_bc,lenfnam,it,imd,zl,nato,imm_glob,natperc,timel
   !USE configcr_mod,only: configcr
+!  USE atomconfig
   logical :: lsic
     logical :: lcomp, & ! comparaison ou non avec un cristal de dÃ©part
          ldecal, & ! decalage en tre boite cr et boite ana
@@ -68,6 +69,7 @@ contains
     real(double) :: plmin(3),plmax(3) ! bords de la portion afichÃ©e de la boite
     integer :: idecal    ! alignement des posistions sur l'atome idecal
     integer, save:: icall=0
+
 
     real(double) :: tvac ,tint,deltx,delty,deltz ! distance pour les lacunes et les int
     real (double) :: plmin1,plmin2,plmin3, plmax1,plmax2,plmax3 ! bord de plot lu dans la namelist
@@ -186,7 +188,7 @@ contains
        call plotpart(xp,plmin,plmax,ityp)
     end if
     if (lcomp) then 
-       if (lperiod) call period
+       if (lperiod) call period (imm,xp,xpp,ax)
        call configcr (xpcr,ityp,lrescale,itypcr)
 
        !     write(6,*)'apres configcr'
@@ -209,7 +211,7 @@ contains
                 xpcr(3,i)=xpcr(3,i)-deltz
              end do
           end if
-          if (lperiod)         call period
+          if (lperiod)         call period (imm,xp,xpp,ax)
           
        end if
        if(ldetdec) then
@@ -255,7 +257,8 @@ contains
     USE T_kind_param_m
     implicit none
     !variables transmises
-    integer , intent(in)  :: ielat(imm),nbvoisparf(20,20)
+    integer , intent(inout)  :: ielat(imm)
+    integer , intent(in)  :: nbvoisparf(20,20)
     integer , intent(in) :: ityp(imm)
     real(double) , intent(in) :: xp(3,imm)
     integer :: icall,itapp
@@ -267,7 +270,6 @@ contains
     character*9 :: extension
     character(len=2) :: extension2
     integer, save:: lurasmol
-
     integer :: maxvois ,nana,itj,i5,iwr
     integer,allocatable, save :: nvi(:),nvityp(:,:),ivois(:,:)
     real(double),allocatable:: rccar(:)
@@ -295,7 +297,9 @@ contains
 
     !calcul en deux temps
     !calcul du nombre de voisins par atome
-    call caltabt 
+!    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    call caltabt(im,xp,ielat) 
+!    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
 
 
     if (lperiod) then
@@ -318,7 +322,7 @@ contains
           ko1 = ncel(koo,i1)
           !       write(6,*)'koo,ko1',koo,ko1
           do i2 = 1, nato(ko1)
-             j = last(i2,ko1)
+             j = atincel(i2,ko1)
              !         write(6,*)'j',j
              !         write(6,*)i,xp(:,i)
              !         write(6,*)j,xp(:,j)
@@ -812,7 +816,7 @@ contains
           do i1 = 0, ncelvois
              ko1=ncel(koo,i1)
              do i2 = 1, nato(ko1) !atomes dans la cel dans la conf. init.
-                j = last(i2,ko1)
+                j = atincel(i2,ko1)
                 c1 = xpcr(1,i)-xp(1,j)
                 c2 = xpcr(2,i)-xp(2,j)
                 c3 = xpcr(3,i)-xp(3,j)

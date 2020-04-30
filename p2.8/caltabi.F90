@@ -2,7 +2,7 @@
 module caltabi_mod
   USE notperiod_mod,only: notperiod
   USE gen_com_m, ONLY:decal_bc,im,imm,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,noxyz,&
-       &nvois,nvperat,rang,rvois,ncel,last,nato,at,bg,indi,indi2
+       &nvois,nvperat,rang,rvois,ncel,atincel,nato,at,bg,indi,indi2
         implicit none
         contains
 
@@ -152,7 +152,7 @@ subroutine caltabi
            !               write(6,*)'i1 ko1 ',i1,ko1
            if (ko1==0) cycle
            loop_j: do i2 = 1, nato(ko1)
-              j = last(i2,ko1)
+              j = atincel(i2,ko1)
                !                 write(6,*)'j ',j
                
                if(ldemitab) then

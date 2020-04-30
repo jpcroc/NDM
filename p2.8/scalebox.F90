@@ -7,6 +7,7 @@ module scalebox_mod
   USE period_mod,only: period
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
+!  USE atomconfig
   implicit none
 contains
   ! ******************************************************************
@@ -58,7 +59,7 @@ contains
     ! -------------------------------------------------------------
     ! Rescaling des positions
     ! -------------------------------------------------------------
-    if (lperiod)    call period
+    if (lperiod)    call period (imm,xp,xpp,ax)
 
     !debug       write (*,*) 'sub scalebox',it,xp(1,1)
 
@@ -123,9 +124,7 @@ contains
        call neigcel  
 
     end if
-
-
-    call caltabt 
+    call caltabt(im,xp,ielat)
 
     if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
        call caltabi 

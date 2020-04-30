@@ -100,9 +100,9 @@ contains
     call zero2all(xp_local,xp,ityp_local)
 !      write(6,*)'CALL W',it
 #ifndef PARA
-    call period
+    call period (imm,xp)
 #endif    
-    call caltabt
+    call caltabt(im,xp,ielat)
     if (ltabvois.and.mod(it,itetabvois)==0) call caltabi
 !    call period
     !    do ko=1,noxyz
@@ -204,7 +204,7 @@ contains
     !back to internal units and JP world.......................................
 
 
-    if (lperiod)          call period 
+    if (lperiod)          call period  (imm,xp)
 !    call controle
      if (it==1) then
         if (lEev.EQV..true.) then 

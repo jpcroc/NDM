@@ -1,7 +1,7 @@
 module bondval_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,im,imm,it,last,ncel,rang,fnam,deltadist,lperiod,noxyz,nato,lenfnam
+  USE gen_com_m, ONLY:at,bg,im,imm,it,atincel,ncel,rang,fnam,deltadist,lperiod,noxyz,nato,lenfnam
   USE var_pot, ONLY:ntyp,ty
   implicit none
 
@@ -75,7 +75,7 @@ contains
           c3p = xpnp(3,i)+sum(at(3,:)*deltadist(:,i1,koo))
           ! pour chaque atome ds la cel. voisine
           do i2 = 1, nato(ko1)
-             j = last(i2,ko1)
+             j = atincel(i2,ko1)
 
              itj=ityp(j) 
              if (iti.eq.itj) cycle 

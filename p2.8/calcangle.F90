@@ -2,7 +2,7 @@ module calcangle_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:fda,ntyp
-  USE gen_com_m, ONLY:lperiod,noxyz,thetamin,thetamax,cont888,rcangle,last,&
+  USE gen_com_m, ONLY:lperiod,noxyz,thetamin,thetamax,cont888,rcangle,atincel,&
        &ncel,at,bg,deltadist,imana,imm,im,nato,noxyz,rang
   implicit none
 contains
@@ -59,7 +59,7 @@ contains
        do i1 = 0, 26
           ko1 = ncel(koo,i1)
           do i2 = 1, nato(ko1) 
-             j = last(i2,ko1)
+             j = atincel(i2,ko1)
              c11 = xpnp(1,i)-xpnp(1,j) 
              c21 = xpnp(2,i)-xpnp(2,j) 
              c31 = xpnp(3,i)-xpnp(3,j)
@@ -91,7 +91,7 @@ contains
              do i3 = 0,26
                 ko2 = ncel(koo,i3)
                 do i4 = 1, nato(ko2)
-                   k = last(i4,ko2)
+                   k = atincel(i4,ko2)
                    if(j==i.or.k==i.or.j==k) cycle                 
                    c12 = xpnp(1,i)-xpnp(1,k) 
                    c22 = xpnp(2,i)-xpnp(2,k) 

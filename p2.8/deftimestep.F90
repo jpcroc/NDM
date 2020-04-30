@@ -196,7 +196,7 @@ endif
            do i = 1, im
               xp(:,i) = xpp(:,i)+tstep*vp(:,i)+tstep**2/cm(ityp(i))/two*fp(:,i)
            end do
-           if (lperiod) call period
+           if (lperiod) call period (imm,xp,xpp,ax)
         endif
      else                                       ! cad si tstep >= 2.10-15s
         tstep = oldtstep
@@ -220,7 +220,7 @@ endif
            do i = 1, im
               xp(:,i) = xpp(:,i)+tstep*vp(:,i)+tstep**2/cm(ityp(i))/two*fp(:,i)
            end do
-           if (lperiod) call period
+           if (lperiod) call period (imm,xp,xpp,ax)
            
         else                                       ! cad si tstep >= 2.10-15s
            tstep = oldtstep

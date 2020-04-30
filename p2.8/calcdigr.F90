@@ -1,7 +1,7 @@
 module calcdigr_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:noxyz,ncel,last,lperiod,imana,rang,last,rcrdf,at,nato,imm,im,&
+  USE gen_com_m, ONLY:noxyz,ncel,atincel,lperiod,imana,rang,atincel,rcrdf,at,nato,imm,im,&
        &deltadist,celsize,bg
 
   implicit none
@@ -72,7 +72,7 @@ contains
        do i1 = 0, 26
           ko1 = ncel(koo,i1)
           do i2 = 1, nato(ko1)
-             j = last(i2,ko1)
+             j = atincel(i2,ko1)
              if(j==i) cycle 
 
              c1 = xpnp(1,i)-xpnp(1,j) 

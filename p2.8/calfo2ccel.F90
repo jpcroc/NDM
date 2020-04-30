@@ -13,7 +13,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m , ONLY:at,bg,deltadist, espr,deltaf,espr,it,itdes,itesigma,kspr,lambdades,&
        &lcalcjq,ldesinteg,lperiod,lprteat,lsigtyp,ltpcel,noxyz,nstepdes,pi,pm1des,potis1,potis2,&
-       &ncel,last,nato,xpspr,xpspr,xpspr,sigtyptyp,sigtyp,sigc,eatom,volu,deltaEspr
+       &ncel,atincel,nato,xpspr,xpspr,xpspr,sigtyptyp,sigtyp,sigc,eatom,volu,deltaEspr
 
 
   USE jqmod
@@ -123,7 +123,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
 
         ! pour chaque atome ds la cel. voisine
         do i2 = 1, nato(ko1)
-           j = last(i2,ko1)
+           j = atincel(i2,ko1)
            itj = ityp(j)
            l = ipo(iti,itj)
            if (typ_pot_pair(l).ne.ipotentiel) cycle

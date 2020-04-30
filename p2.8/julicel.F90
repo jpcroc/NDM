@@ -2,7 +2,7 @@ module calfojulicel_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:at,bg,nvat,fnemd,lcalcjq,lnemd,lperiod,noxyz,&
-       &zero,ncel,last,nato,ncel,last,nato,ncel,last,nato,sigc,sigat,eatom,volu
+       &zero,ncel,atincel,nato,ncel,nato,ncel,nato,sigc,sigat,eatom,volu
   USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot,ngrid,npair,&
        &eamrep,ipo,typ_pot_pair,eamglue,eamrho
         USE calfocommon
@@ -125,7 +125,7 @@ contains
           !        cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
           ! pour chaque atome ds la cel. voisine
           loop1at2: do i2 = 1, nato(ko1)
-             j = last(i2,ko1)
+             j = atincel(i2,ko1)
              if (i==j)cycle
              !           write(6,*)'J',j
              ! --- Calcul de la densite sur i ---    
@@ -268,7 +268,7 @@ contains
                 ko1j = ncel(koj,i1)
                 ! pour chaque atome ds la cel. voisine
                 loop2at2: do i2 = 1, nato(ko1j)
-                   l = last(i2,ko1j)
+                   l = atincel(i2,ko1j)
                    if (l==j)cycle
 
                    !           if (j==1) then
@@ -618,7 +618,7 @@ contains
              ko1j = ncel(koj,i1)
              ! pour chaque atome ds la cel. voisine
              loop3at2: do i2 = 1, nato(ko1j)
-                l = last(i2,ko1j)
+                l = atincel(i2,ko1j)
 
                 !        if (j==1) then
                 !           iw1j=1

@@ -107,7 +107,7 @@ contains
 
        call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
        call cryst_to_cart (imm, ax, at, 1)     !cryst vers cart
-       if (lperiod)       call period 
+       if (lperiod)       call period  (imm,xp,xpp,ax)
 #endif
 
        !  write(6,*)xp(1,iko)
@@ -207,7 +207,7 @@ contains
     end if
 
 
-    if (lperiod)       call period 
+    if (lperiod)       call period  (imm,xp,xpp,ax)
 
 #endif
 

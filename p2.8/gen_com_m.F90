@@ -87,7 +87,7 @@ module gen_com_m
 
   integer, dimension(:), allocatable :: nato    ! nb d'atome dans la ieme cel
 
-  integer, dimension(:,:),allocatable :: last	! last (i,j) numero du ieme atome de la jeme cel
+  integer, dimension(:,:),allocatable :: atincel	! last (i,j) numero du ieme atome de la jeme cel
 
   integer, dimension(:,:,:),allocatable :: deltadist ! decalage a appliquer sur la cel
   integer :: nox, noy, noz, noxy, noxyz	     !nb de cel suivant x y z et total (DOIT REMPLACER nce)

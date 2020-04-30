@@ -102,7 +102,7 @@ contains
 
        end if
     end do
-    call period
+    call period (imm,xp,xpp,ax)
     !	write(6,*)'xpP',xpp(1,1),xpp(1,2),xpp(1,3),xpp(1,4)
 
     !do m=1,im

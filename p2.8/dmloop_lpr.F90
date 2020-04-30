@@ -78,7 +78,8 @@ contains
        zls2(1:3) = 0.5d0*zl(1:3)
 
 
-       call caltabt
+    call caltabt(im,xp,ielat) 
+
        temps_debpara=MPI_Wtime()
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        call maj_atomes_frt_ftm

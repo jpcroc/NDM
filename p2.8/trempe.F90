@@ -58,7 +58,7 @@ contains
 
     end do
 
-    IF (lperiod) call period
+    IF (lperiod) call period (imm,xp,xpp,ax)
 
 
     forctot = 0.0

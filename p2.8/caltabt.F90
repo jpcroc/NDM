@@ -7,13 +7,14 @@ module caltabt_mod
         implicit none
         contains
 ! ******************************************************************
-subroutine caltabt
+subroutine caltabt(im,xp,ielat)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:nato,last,bg,im,imm,natperc,nox,noy,noz,lperiod,noxyz
-  USE tab_imm_m
+  USE gen_com_m, ONLY:nato,atincel,bg,natperc,nox,noy,noz,lperiod,noxyz
+!  USE atomconfig
+!  USE tab_imm_m
   !          Version du 01 fevrier 2001
   ! ******************************************************************
 
@@ -24,6 +25,9 @@ subroutine caltabt
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
+  integer,intent(in):: im
+  real(double),intent(in)::xp(3,im)
+  integer,intent(out)::ielat(im)
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -39,7 +43,7 @@ subroutine caltabt
   !
 !   write(6,*)'caltabt',it
    nato(:noxyz) = 0
-  last(natperc,:noxyz) = 0
+  atincel(natperc,:noxyz) = 0
 
 !     do i = 1, im
 !     if ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xp(1,i),xp(2,i),xp(3,i)
@@ -49,11 +53,11 @@ subroutine caltabt
           nato(1) = im
           do i = 1, im
              ielat(i) = 1
-             last(i,1) = i
+             atincel(i,1) = i
           end do
   else
 
-          ALLOCATE(xpnp(3,imm))        
+          ALLOCATE(xpnp(3,im))        
           if (lperiod) then            
              xpnp(:,:)=xp(:,:)         
           else                         
@@ -61,14 +65,14 @@ subroutine caltabt
           end if                       
      !  -------- Initialisations  -----------
      nato(0:noxyz) = 0
-     last(natperc,:noxyz) = 0
+     atincel(natperc,:noxyz) = 0
 
      ! -------------------------------------------
      !   1. loop: lattice-coordinates of all atoms
      ! - - - - - - - - - - - - - - - - - - - - - -
 
      !debug       write (*,*) 'sub caltabt 1',it,xp(1,1)
-     call cryst_to_cart (imm, xpnp, bg, -1) !cart vers cryst
+     call cryst_to_cart (im, xpnp, bg, -1) !cart vers cryst
      !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
 
 !     if (it.gt.1000) write(6,*)'CALTABT',it
@@ -104,7 +108,7 @@ subroutine caltabt
                 STOP '< Caltabt >'
         END IF
         ! ==== Fin MODIF Clouet =================
-        last(nato(koo),koo) = i
+        atincel(nato(koo),koo) = i
      end do
      !debug            call cryst_to_cart (imm, xpnp, at, 1)  !cryst vers cart
 

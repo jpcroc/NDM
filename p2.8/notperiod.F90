@@ -29,7 +29,7 @@ subroutine notperiod(im,xp, xpnp)
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   integer,intent(in)::im
-  real(double)  :: xp(3,im)
+  real(double),intent(in)  :: xp(3,im)
   real(double)  :: xpnp(3,im)
 
   !-----------------------------------------------

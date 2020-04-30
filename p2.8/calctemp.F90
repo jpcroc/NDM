@@ -8,7 +8,7 @@ subroutine calctemp(temptyp)
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:ntyp,cm,na
-  USE gen_com_m, ONLY:nox,noy,noz,temp,last,nato,kine,erg2ev,ltpcel,im,im_glob,tempc,&
+  USE gen_com_m, ONLY:nox,noy,noz,temp,atincel,nato,kine,erg2ev,ltpcel,im,im_glob,tempc,&
        &tempcm,maxTcel,imd,tempEP,zl,bk,noxyz,tempstopcel
   USE tab_imm_m
   USE elec_cell, ONLY: ecell,i2T,nex,ney,nez,nox_2_nex
@@ -94,7 +94,7 @@ subroutine calctemp(temptyp)
 
      do i2 = 1, nato(ko)
 
-        i = last(i2,ko)
+        i = atincel(i2,ko)
         if (num_at_glob(i).gt.im_glob) cycle
         vpn2 = vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
         !calculation of ionic temperature and number of ions in the electronic cell (only slow moving ions)  

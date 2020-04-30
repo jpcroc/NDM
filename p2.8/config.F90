@@ -792,7 +792,7 @@ subroutine config
      ! ----------------------------------------------------------
 
 
-     if (lperiod.EQV..true.) call period
+     if (lperiod.EQV..true.) call period (imm,xp,xpp,ax)
 
      ! SUMMARY
 #ifdef LAMMPS_VERSION

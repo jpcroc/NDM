@@ -56,7 +56,7 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
      do i = 1, im
         ielatcr(i) = 1
         lastcr(i,1) = i
-        !      write(6,*) 'last,i,im=',last(i,1),i,im
+        !      write(6,*) 'atincel,i,im=',last(i,1),i,im
      end do
   else
 

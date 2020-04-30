@@ -95,7 +95,7 @@ contains
           tmpsuivi(1:3,i)=tmpsuivi(1:3,i)+tstep*vp(1:3,i)
        END DO
     end if
-    if (lperiod)  call period 
+    if (lperiod)  call period  (imm,xp,ax)
 
     ! repartition des atomes dans la nouvelle boite
 
@@ -105,7 +105,8 @@ contains
     if (.not.lpr) then
        if (itab/=0) then
           if (mod(it,itab)==0) then
-             call caltabt
+             call caltabt(im,xp,ielat)
+             
           endif
        endif
     end if

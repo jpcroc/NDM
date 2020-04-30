@@ -1,7 +1,7 @@
 module force_tersoff_cel_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:at,bg,it,itesigma,lcalcjq,ltpcel,noxyz,potistersoff,potiszbl,&
-       &ncel,last,ncel,last,nato,nato,sigc,eatom,volu
+       &ncel,atincel,ncel,nato,nato,sigc,eatom,volu
         USE calfocommon
   implicit none
 contains
@@ -100,7 +100,7 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp)
      do jcelvois=0, ncelvois
         jcelnumber = ncel(icelnumber,jcelvois)
         do jnumber =1, nato(jcelnumber)
-           j = last(jnumber,jcelnumber)
+           j = atincel(jnumber,jcelnumber)
            if (j==i) then  !Cette condition n'est pas necessaire si JP. fais correctement sa table
               cycle
            else
@@ -131,7 +131,7 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp)
                  do kcelvois=0, ncelvois
                     kcelnumber = ncel(icelnumber,kcelvois)
                     do knumber =1, nato(kcelnumber)
-                       k = last(knumber,kcelnumber)
+                       k = atincel(knumber,kcelnumber)
 
                        if (k==j .or. k==i) then
                           cycle

@@ -2,7 +2,7 @@ module calfoeamcel_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
         USE gen_com_m, ONLY:angst,at,bg,nvat,it,itesigma,low_limit,lperiod,lprteat,&
-             &ltpcel,noxyz,zero,ncel,last,nato,ncel,last,nato,sigc,eatom,&
+             &ltpcel,noxyz,zero,ncel,atincel,nato,ncel,nato,sigc,eatom,&
              &deltadist,nox,noy,noz,volu
         USE calfocommon
 
@@ -121,7 +121,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob)
         ! pour chaque atome ds la cel. voisine
 
         loop1at2: do i2 = 1, nato(ko1)
-           j = last(i2,ko1)
+           j = atincel(i2,ko1)
  !if (it.ge.4)           write(806,'(A,4I6)')'CF4 ' ,it,ko1,i2,j
  !if (it.ge.4)         write(806,'(A,2I6,3G22.13)')'CF5 ', it,j,xp(:,j)
  !if (it.ge.4)         write(806,'(A,2I6,3G22.13)')'CF6 ', it,j,xpnp(:,j)
@@ -303,7 +303,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob)
         cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
         ! pour chaque atome ds la cel. voisine
         loop2at2: do i2 = 1, nato(ko1)
-           j = last(i2,ko1)
+           j = atincel(i2,ko1)
            if (typ_pot_pair(ipo(ityp(i),ityp(j))).ne.ipotentiel) cycle
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

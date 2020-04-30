@@ -302,6 +302,7 @@ contains
     real(double) sigkine_tot(3,3)
     integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
     real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1, fact2, hk2, ex, ex1, ex2
+    type(atom_config_d)::atdml
 
 
 
@@ -383,9 +384,7 @@ contains
     zl(3) = Sqrt( Sum(at(1:3,3)**2 ) )
     volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
     zls2(1:3) = 0.5d0*zl(1:3)
-
-
-    call caltabt
+    call caltabt(im,xp,ielat)
     !  temps_debpara=MPI_Wtime()
     ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
     call maj_atomes_frt_ftm

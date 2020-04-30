@@ -4,7 +4,8 @@
 module desinteg_insert_mod
   USE caltabt_mod,only: caltabt
   USE gen_com_m, ONLY:bk,deltaespr,deltaf,erg2ev,it,itdes,itmax,nstepdes,pm1des,rang,&
-       &tempdes,typspr,vpchdeb,vpchdn,vpchup,xpchdeb,xpchdn,xpchup,xpspr,xpspr0
+       &tempdes,typspr,vpchdeb,vpchdn,vpchup,xpchdeb,xpchdn,xpchup,xpspr,xpspr0,im
+!  USE atomconfig
   implicit none
 contains
 
@@ -41,6 +42,7 @@ contains
 
     integer:: i,k,l,m,n,ic,iaccept
     integer,save:: nchemin=0,nchacc,nchup=0,nchdn=0
+
 
     logical:: laccept
 
@@ -225,7 +227,8 @@ contains
 
     deltaF=0.0
     deltaEspr=0.0
-    call caltabt
+    call caltabt(im,xp,ielat) 
+
 
 
     write(6,*)'DES -------------------------------------'

@@ -12,7 +12,7 @@ subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp)
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:bg,natperc,it,itesigma,lperiod,ltpcel,noxyz,potcp,&
-       &precexp,volu,at,ncel,last,deltadist,deltadist,deltadist,nato,sigc
+       &precexp,volu,at,ncel,atincel,deltadist,deltadist,deltadist,nato,sigc
 
   USE var_pot, ONLY:r3cm2,ipo3c,ipo,coup3c2,ipo,coup3c2,coup3c,coup3c,gam,lamb,cangle,c3c
   implicit none
@@ -140,7 +140,7 @@ subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp)
            !     DO  I1=0,26
            KO1=NCEL(KOO,I1)
            DO  I2=1,NATO(KO1)
-              j=last(i2,ko1)
+              j=atincel(i2,ko1)
 
               if(i.eq.j) cycle
               !C --- calcul de la distance (=>rij)

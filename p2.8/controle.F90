@@ -10,6 +10,7 @@ module controle_mod
         USE heat_mod,only: heat
         USE creadp_mod,only: creadp
         USE deftimestep_mod,only: deftimestep
+!        USE atomconfig
         implicit none
         contains
 ! ***********************************************************
@@ -145,10 +146,11 @@ subroutine controle
 
 
         call creadp (xp, xpp, ityp,vp)
-        call caltabt
+    call caltabt(im,xp,ielat) 
+
         if (ltabvois) call caltabi
         if (lperiod) then 
-           call period
+           call period (imm,xp,xpp,ax)
         else 
            write(*,*) 'WARNING .... Not implemented for lperiod  FALSE nad lcdp TRUE'
            write(*,*) 'FIX THAT! Until there the program will stop'
@@ -163,7 +165,8 @@ subroutine controle
   if (dmtype.ne.4) then
      if (itab/=0) then
         if (mod(it,itab)==0) then
-           call caltabt
+    call caltabt(im,xp,ielat) 
+
         endif
      endif
   endif !dmtype
@@ -193,7 +196,7 @@ subroutine controle
 		 endif
                  vv = sqrt(tfroi/temp)
                  xpp(:,:im) = xp(:,:im)-(xp(:,:im)-xpp(:,:im))*vv
-                 if (lperiod) call period              !Conditions periodiques
+                 if (lperiod) call period  (imm,xp,xpp,ax)              !Conditions periodiques
               endif  !end tdev>=toll
            endif !end toll>0
         endif !end mod(it,itetemp)==0
@@ -505,7 +508,7 @@ subroutine controle
 
 
         !                                                !Conditions periodiques
-        if (lperiod) call period
+        if (lperiod) call period  (imm,xp,xpp,ax)
 
      endif   ! end of mod(it,itederive)==0
   endif      ! end of itederive > 0

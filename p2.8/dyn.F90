@@ -128,7 +128,7 @@ contains
        endif
     endif
 
-    if (lperiod)       call period 
+    if (lperiod)       call period  (im,xp,xpp,ax)
 
 
 

@@ -2,8 +2,8 @@ module calfow_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY: imm,bg,it,itesigma,lperiod,ltpcel,noxyz,pi,potcp,&
-       &potis1,zero,ncel,last,at,nato,ncel,deltadist,deltadist,deltadist,last,nato,&
-       &deltadist,sigc,volu
+       &potis1,zero,ncel,at,nato,ncel,deltadist,deltadist,deltadist,nato,&
+       &deltadist,sigc,volu,atincel
   USE calfocommon
   implicit none
 contains
@@ -129,7 +129,7 @@ contains
                 c3p = xpnp(3,i)+sum(at(3,:)*deltadist(:,i1,koo))
 
                 do 12 i2=1,nato(ko1)
-                   j=last(i2,ko1)
+                   j=atincel(i2,ko1)
                    !         write(6,*)'j ', j
                    itj=ityp(j)
                    if(itj.eq.itSi)then
@@ -239,7 +239,7 @@ contains
 
 
                    DO 62 I2=1,NATO(KO1)
-                      j=last(i2,ko1)
+                      j=atincel(i2,ko1)
                       if(i.eq.j) goto 62
                       !    C1=xpnp(1,i)-xpnp(1,J)
                       !    C2=xpnp(2,i)-xpnp(2,J)

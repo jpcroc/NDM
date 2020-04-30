@@ -1,7 +1,7 @@
 module calccoordo_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
-        USE gen_com_m, ONLY: rang,last,nato,noxyz,it,timel,imm,im,imd,at,deltadist,bg,lperiod,ncel
+        USE gen_com_m, ONLY: rang,atincel,nato,noxyz,it,timel,imm,im,imd,at,deltadist,bg,lperiod,ncel
         implicit none
         contains
 subroutine calccoordo
@@ -64,7 +64,7 @@ subroutine calccoordo
         ko1 = ncel(koo,i1)
 
         do i2 = 1, nato(ko1)
-           j = last(i2,ko1)
+           j = atincel(i2,ko1)
            if (i==j) cycle
            c1 = xpnp(1,i)-xpnp(1,j)
            c2 = xpnp(2,i)-xpnp(2,j)

@@ -74,7 +74,7 @@ subroutine trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
   END DO
 
   
-  IF (lperiod) call period
+  IF (lperiod) call period (imm,xp,xpp,ax)
 
 
   ! 2/ Renormalisation des vitesses par l'algorithme fire
