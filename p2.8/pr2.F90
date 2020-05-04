@@ -245,9 +245,10 @@ contains
     sdot(:,1:im) = MatMul(invh(:,:), vp(:,1:im) )
 
     ! Forces à l'instant initial
-    call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+    call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
     CALL CalFo(sig,potist,atpr) 
-!    call config2ndm(atpr,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+    call config2ndm(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
 
     !  Contrainte thermique à l'instant initial
     sigkine(:,:)=0.d0
@@ -426,9 +427,10 @@ contains
 
 
     ! Calcul des forces et des contraintes à l'instant t+dt
-    call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+    call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
     CALL CalFo(sig,potist,atpr) 
-!    call config2ndm(atpr,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+    call config2ndm(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     ! Calcul de la viscosité à l'instant ...
     DO i=1, nHoover
        zNew(i) = zOld(i) + 2.d0*zDot(i)*tstep    ! ... t+dt

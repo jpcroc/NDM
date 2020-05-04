@@ -386,9 +386,10 @@ contains
 
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
     if (ltabvois) then
-       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        call caltabi(atdml%atom_config)
-       call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     end if
 !       call caltabi
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
@@ -496,9 +497,10 @@ contains
     call caltabt(im,xp,ielat)
        if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
        if (ltabvois) then
-       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+          call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+               &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        call caltabi(atdml%atom_config)
-       call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     end if
        
     end if

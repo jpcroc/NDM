@@ -116,19 +116,19 @@ contains
     if (allocated(eatom)) eatom(:)=0
 
 #ifdef LAMMPS_VERSION
-    if ((ipotentiel==-10).or.(ipotentiel==-11)) then
-       do i=1,atcf%im
-          posa(i)=atcf%xp(1,i)/A2cm
-          posa(atcf%im+i)=atcf%xp(2,i)/A2cm
-          posa(2*atcf%im+i)=atcf%xp(3,i)/A2cm
-       end do
+   if ((ipotentiel==-10).or.(ipotentiel==-11)) then
+!       do i=1,atcf%im
+!          posa(i)=atcf%xp(1,i)/A2cm
+!          posa(atcf%im+i)=atcf%xp(2,i)/A2cm
+!          posa(2*atcf%im+i)=atcf%xp(3,i)/A2cm
+!       end do
 
 
        !     boxl(1)=at(1,1)/A2cm
        !     boxl(2)=at(2,2)/A2cm
        !     boxl(3)=at(3,3)/A2cm
 
-       call calcforce_lammps2
+       call calcforce_lammps2(atcf%im,atcf%xp,atcf%ityp,atcf%fp)
 
     else
 #endif  

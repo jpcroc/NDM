@@ -3,10 +3,11 @@ module neb_mod
   USE analyse_mod,only: analyse
   USE trempe_mod,only: trempe
   USE neb_controle_mod,only: neb_controle
-  USE scalebox_mod,only: scalebox
+!  USE scalebox_mod,only: scalebox
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
-       &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois
+       &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois,itetabvois
+  
   USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,ax,fp,ielat,num_at_glob
   USE atomconfig
   use var_pot,only:coord
@@ -14,7 +15,12 @@ module neb_mod
   use calfoberend_mod,only:dynlangevin
   use period_mod,only:period
   use neb_module!,only: sigpath,enepathev,dragtest,formax,nebtest,reaction_coord,force_neb,irelax,enepath,xp_n,&
-!       &init_neb,find_relax,into_path,bruit_neb,build_s_path_neb
+  !       &init_neb,find_relax,into_path,bruit_neb,build_s_path_neb
+  USE period_mod,only: period
+  USE caltabi_mod,only: caltabi
+  USE caltabt_mod,only: caltabt
+
+  
   implicit none 
 contains
   subroutine neb ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
@@ -115,11 +121,16 @@ contains
     do ii=1,npath
        it=1
        call into_path(ii,2,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-       call scalebox (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
-       !write(*,*) 'inside NEB debug1',ii, xp(1,1)
-       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
-    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+
+!       call scalebox (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
+       if (lperiod)    call period (imm,xp,xpp,ax)
+       call caltabt(im,xp,ielat)
+       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+       if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
+            &call caltabi(atdml%atom_config)
+       CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
      
        !write(*,*) 'inside NEB debug2',ii, xp(1,1)
        call analyse  
@@ -147,11 +158,23 @@ contains
           dragtest=0
           do while (dragtest==0)
              it=it+1
-             call scalebox  (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)       
-       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
-    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
-             call force_projection(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       if (lperiod)    call period (imm,xp,xpp,ax)
+       call caltabt(im,xp,ielat)
+       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+       if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
+            &call caltabi(atdml%atom_config)
+       CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+
+
+!             call scalebox  (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)       
+!             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+!                  &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+!    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+
+       call force_projection(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              IF (lFire) THEN
                 call trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
                      fire_dt(ii), fire_nstep(ii), fire_alph(ii))
@@ -199,11 +222,24 @@ contains
                 !
                 it_neb_inter=it_neb_inter+1
                 it=it_neb_inter
-                call scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)       
-       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
-    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
-                call force_projection_neb(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+
+       if (lperiod)    call period (imm,xp,xpp,ax)
+       call caltabt(im,xp,ielat)
+       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+       if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
+            &call caltabi(atdml%atom_config)
+       CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+
+
+!                call scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)       
+!                call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+!                     &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+!    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+!    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+
+       call force_projection_neb(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
                 IF (lFire) THEN
                    call trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
                         fire_dt(ii), fire_nstep(ii), fire_alph(ii))

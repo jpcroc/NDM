@@ -32,7 +32,11 @@ program ndm
 
 #endif
 
+!#ifdef PARANEB
+! use para_neb
+!#endif 
 
+ 
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -58,6 +62,13 @@ program ndm
   parallele = .false.
 #endif
 
+#ifdef PARANEB
+  call init_mpi_neb
+
+ PRINT *, 'NEB Process ', myid, ' of ', nprocs, ' is alive'
+  rang = myid
+!  parallele = .true.
+#endif
 
 
 #if defined PARAML || defined PARAPH || defined MAB

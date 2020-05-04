@@ -63,10 +63,11 @@ subroutine dmloop
   !      write(6,*)'***** ITERATION  ****', it
 
   ! appel de la routine generale des forces
-  call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   CALL CalFo(sig,potist,atdml)
 !  write(6,*)'dml potist ',potist,atdml%potist
-    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
 !    indi=indiCF
 
 !  call calfo

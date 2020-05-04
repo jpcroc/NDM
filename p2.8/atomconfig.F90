@@ -554,9 +554,9 @@ contains
     integer,intent(in),dimension(imm)::ityp,ielat
     integer,optional,intent(in),dimension(imm)::num_at_glob
     logical, optional,intent(in)::ltabvois
-    integer,optional, intent(in)::nvois
+    integer,optional,intent(in)::nvois
     integer, optional,intent(in) ::iwmax(imm)
-    integer,optional,intent(in):: indi(nvois)
+    integer,optional,intent(in),allocatable:: indi(:)
     real(double),optional,intent(in),dimension(3,imm):: vp,xpp
     real(double),optional,intent(in):: eat(imm),sigat(3,3,imm)
 
@@ -584,7 +584,7 @@ contains
        atndm%ltabvois=.true.
        atndm%iwmax(1:im)=iwmax(1:im)
        allocate(atndm%indi(nvois))
-       atndm%indi(1:nvois)=indi(1:nois)
+       atndm%indi(1:nvois)=indi(1:nvois)
     end if
 
     select type(atndm)

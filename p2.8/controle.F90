@@ -151,9 +151,11 @@ contains
           call caltabt(im,xp,ielat) 
 
           if (ltabvois) then
-             call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
              call caltabi(atdml%atom_config)
-             call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                  &xpp=xpp)
           end if
           if (lperiod) then 
              call period (imm,xp,xpp,ax)
@@ -178,9 +180,11 @@ contains
     endif !dmtype
 
     if (ltabvois.and.mod(it,itetabvois)==0) then
-       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,iwmax=iwmax,&
+            &indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        call caltabi(atdml%atom_config)
-       call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,&
+            &vp=vp,xpp=xpp)
     end if
     !call caltabi 
 

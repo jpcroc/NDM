@@ -104,9 +104,10 @@ contains
 #endif    
     call caltabt(im,xp,ielat)
     if (ltabvois.and.mod(it,itetabvois)==0) then
-       call ndm2config(atcg,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+       call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        call caltabi(atcg%atom_config)
-       call config2ndm(atcg,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+       call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     end if
     
 !    call period
@@ -238,9 +239,10 @@ contains
       !       write(6,*)rang,i,xp_all(:,i)
        write(607,'(I6,3G22.13)') i,xp(:,i)
     end do
-    call ndm2config(atcg,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+    call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
     CALL CalFo(sig,potist,atcg) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-    call config2ndm(atcg,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+    call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
 
     
 !    call calfo
