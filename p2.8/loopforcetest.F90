@@ -14,7 +14,7 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:cunite,cunitp,deltax,erg2ev,rang,unite,unitp,ltabvois,imm,im,potist,sig,indi
+  USE gen_com_m, ONLY:cunite,cunitp,deltax,erg2ev,rang,unite,unitp,ltabvois,imm,im,potist,sig,indi,nvois
   USE var_pot, ONLY:nad,na,ntyp,gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu
   implicit none
   !-----------------------------------------------
@@ -75,7 +75,7 @@ test_force=2
         write(6,*)i,xp(1,i),xp(2,i),xp(3,i)
      end do
      fp=0.
-    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
     
@@ -95,7 +95,7 @@ test_force=2
               xp(ic,i)=xp(ic,i)+is*deltax
               write(6,*)
               write(6,*) 'i,X is', i, ic,is
-    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
     
@@ -118,7 +118,7 @@ test_force=2
         write(6,*)i,xp(1,i),xp(2,i),xp(3,i)
      end do
      fp=0.
-     call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+     call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
     
@@ -128,7 +128,7 @@ test_force=2
      do while (xp(1,1).lt.xp(1,2))
         xp(1,1)=xp(1,1)+deltax
 !        call calfo
-    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
 

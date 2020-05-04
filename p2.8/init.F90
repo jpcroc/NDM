@@ -29,7 +29,7 @@ module init_mod
   USE rasmol_mod,only: rasmol
   USE prtplz_mod,only: prtplz
   USE neb_module,only: configneb
-!  USE atomconfig
+  USE atomconfig
 #ifdef PARA
   USE init_vois_mod,only: init_vois
 #endif
@@ -39,7 +39,7 @@ module init_mod
   USE gen_com_m, ONLY:igen,ilangevin,imf,iteheat,lcdp,lcorrelvp,ldislo,lhcyl,lheat,itichup,itichdn,itichdeb,formatsauv,iko,&
        &imana,itdes,iteanapos,iteplz,iterasmol,itetimestep,itmax,lcalcjq,lcasca,ldesinteg,lcontr,lfilm,lprteat,&
        &lrestart,lsigtyp,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,sigtyp,&
-       kinemean,lsigat,pmean,xpchdn,sigtyptyp,sigtyp,eatomtotm,lprteattotm,vpchdn
+       kinemean,lsigat,pmean,xpchdn,sigtyptyp,sigtyp,eatomtotm,lprteattotm,vpchdn,indi,nvois
       USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel
   implicit none 
 contains
@@ -84,6 +84,7 @@ contains
     integer :: complet=1    ! flag d'appel a divid : complet : exec de la routine complete
     !-----------------------------------------------
     character*2::extension
+    type(atom_config_d)::atdml
     tmean = 0.0
     pmean = 0.0
     timel = 0.0
@@ -384,7 +385,12 @@ contains
     call caltabt(im,xp,ielat)
 
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
-    if (ltabvois) call caltabi
+    if (ltabvois) then
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+       call caltabi(atdml%atom_config)
+       call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+    end if
+!       call caltabi
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
     !  end if
     !computing the neighbours for the very first time ......
@@ -489,7 +495,12 @@ contains
        if (itmax==0) stop
     call caltabt(im,xp,ielat)
        if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
-       if (ltabvois) call caltabi
+       if (ltabvois) then
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+       call caltabi(atdml%atom_config)
+       call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+    end if
+       
     end if
 
 
@@ -520,7 +531,7 @@ contains
           call creadp (xp, xpp, ityp,vp)
           call caltabt(im,xp,ielat)
           
-          if (ltabvois) call caltabi
+          if (ltabvois) call caltabi(atdml%atom_config)
 
           if (lperiod) then
              call period (imm,xp,xpp,ax)

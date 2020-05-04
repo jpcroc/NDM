@@ -1,15 +1,16 @@
 !****************************************************************
 module caltabi_mod
   USE notperiod_mod,only: notperiod
-  USE gen_com_m, ONLY:decal_bc,im,imm,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,noxyz,&
-       &nvois,nvperat,rang,rvois,ncel,atincel,nato,at,bg,indi,indi2
-        implicit none
+  USE gen_com_m, ONLY:decal_bc,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,noxyz,&
+       &nvois,nvperat,rang,rvois,ncel,atincel,nato,at,bg,indi2
+  use atomconfig
+  implicit none
         contains
 
 
 
 ! *****************************************************************
-subroutine caltabi
+subroutine caltabi(atvois)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -17,7 +18,7 @@ subroutine caltabi
 
 
   USE var_pot, ONLY:ipotentiel,npair,ipo
-  USE tab_imm_m
+  USE tab_imm_m,only:iwmax2
   !           version du 4 juin 2010, 14h38 - last chaged by MCM
   ! *****************************************************************
 
@@ -28,6 +29,7 @@ subroutine caltabi
   !----------------------------------------------1-
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
+  type(atom_config), intent(inout)::atvois
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -67,11 +69,11 @@ subroutine caltabi
 
   nvij=0
   
-  ALLOCATE(xpnp(3,imm))
+  ALLOCATE(xpnp(3,atvois%im))
   if (lperiod) then
-    xpnp(:,:)=xp(:,:)
+    xpnp(:,:)=atvois%xp(:,:)
    else
-   call notperiod(im,xp,xpnp)
+   call notperiod(atvois%im,atvois%xp,xpnp)
   end if  
   
   !write(*,*) 'caltabi_inside  ', rvois, rvois2
@@ -79,10 +81,10 @@ subroutine caltabi
   if(lconstrtot) then  !construction par double boucle
 
 
-     do i = 1, im
+     do i = 1, atvois%im
         iwo=iw
         xpi(:) = xpnp(:,i)
-        iti=ityp(i)
+        iti=atvois%ityp(i)
 
         if(ldemitab)then
            ip = i+1
@@ -90,7 +92,7 @@ subroutine caltabi
            ip=1
         end if
 
-        do j = ip, im
+        do j = ip, atvois%im
            if(i.eq.j) cycle
            dx(:) = xpi(:) - xpnp(:,j)
            ds(:) = MatMul( dx(:), bg(:,:) )
@@ -112,7 +114,7 @@ subroutine caltabi
            dx(:) = MatMul( at(:,:), ds(:) )
            r2 = Sum( dx(:)**2 )
 
-           itj=ityp(j) 
+           itj=atvois%ityp(j) 
            ll=ipo(iti,itj)
 
            if (r2>rvois2(ll)) cycle
@@ -127,22 +129,22 @@ subroutine caltabi
                    STOP '< Caltabi >'
            END IF
 
-           indi(iw) = j
+           atvois%indi(iw) = j
            indi2(iw) = j
         end do
-        iwmax(i) = iw
+        atvois%iwmax(i) = iw
         iwmax2(i) = iw
         nvij=iw-iwo
 
-     end do   ! im 
+     end do   ! atvois%im 
      maxvoi = iw           
   !*************construction par celulle ****************
   else 
      !write(*,*) 'THE fist passage .........'
-     do i = 1, im
+     do i = 1, atvois%im
         iwo=iw
-        koo = ielat(i)                          ! Numero de la cellule
-        iti=ityp(i) 
+        koo = atvois%ielat(i)                          ! Numero de la cellule
+        iti=atvois%ityp(i) 
         xpi(:) = xpnp(:,i)
 
         ncelvois = min(noxyz,27)-1
@@ -165,7 +167,7 @@ subroutine caltabi
                  end if
                end if
             
-              itj=ityp(j) ; ll=ipo(iti,itj)
+              itj=atvois%ityp(j) ; ll=ipo(iti,itj)
 
               dx(:) = xpi(:) - xpnp(:,j)
               ds(:) = MatMul( dx(:), bg(:,:) )
@@ -188,12 +190,12 @@ subroutine caltabi
               iw = iw+1
               iwph = iwph+1
                                 !write(6,*)i,koo,ko1,j,iw, at,bg
-              indi(iw) = j
+              atvois%indi(iw) = j
               indi2(iwph) = j
            end do loop_j !i2
 
         end do !ncelvois
-        iwmax(i) = iw
+        atvois%iwmax(i) = iw
         iwmax2(i)= iwph
         nvij=iw-iwo
         if (i>1) then
@@ -211,7 +213,7 @@ subroutine caltabi
    
 !     write(*,*) 'maxvoi', maxvoi,ivoismax
    if ((rang==0).and.(it.le.100)) then
-!           write(6,*)'IT ',it,'  VOISINS ',maxvoi,' par atome ',float(maxvoi)/float(im)
+!           write(6,*)'IT ',it,'  VOISINS ',maxvoi,' par atome ',float(maxvoi)/float(atvois%im)
    endif
   DEALLOCATE (xpnp)  
   return

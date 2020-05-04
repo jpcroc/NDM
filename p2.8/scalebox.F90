@@ -1,17 +1,18 @@
 module scalebox_mod
   USE gen_com_m, ONLY:dmtype,itetabvois,lpr,ltabvois,noxy,nvat,pi,volu,zl,zls2,celsize,imm,im,it,&
-       &lperiod,nox,noy,noz,rang,at
+       &lperiod,nox,noy,noz,rang,at,indi,nvois
   USE dynalloccell
   USE neigcel_mod,only: neigcel
   USE caltabt_mod,only: caltabt
   USE period_mod,only: period
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
-!  USE atomconfig
+  USE atomconfig
+  USE tab_imm_m,only:num_at_glob
   implicit none
 contains
   ! ******************************************************************
-  subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+  subroutine scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -28,14 +29,16 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer  :: ielat(imm)
-    integer  :: iwmax(imm)
-    integer  :: ityp(imm)
-    real(double)  :: xp(3,imm)
-    real(double)  :: xpp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: ax(3,imm)
-    real(double)  :: fp(3,imm)
+  real(double),allocatable,dimension(:,:)  :: xp,fp,vp,ax,xpp
+  integer,allocatable, dimension(:)  :: ielat,iwmax,ityp,num_at_glob
+!    integer  :: ielat(imm)
+!    integer  :: iwmax(imm)
+!    integer  :: ityp(imm)
+!    real(double)  :: xp(3,imm)
+!    real(double)  :: xpp(3,imm)
+!    real(double)  :: vp(3,imm)
+!    real(double)  :: ax(3,imm)
+!    real(double)  :: fp(3,imm)
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -45,6 +48,7 @@ contains
     integer :: i, nb1, nb2, nb3, i1, l,noxn,noyn,nozn
     real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1&
          , fact2, hk2, ex, ex1, ex2
+    type(atom_config_d)::atdml
     !real(double), external :: calcvol
     !-----------------------------------------------
     !
@@ -127,7 +131,9 @@ contains
     call caltabt(im,xp,ielat)
 
     if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
-       call caltabi 
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+       call caltabi(atdml%atom_config)
+       call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
     end if
 
 

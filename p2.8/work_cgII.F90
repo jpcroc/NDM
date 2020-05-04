@@ -4,7 +4,7 @@ module work_cgII
   USE gen_com_m, ONLY: im, imm,at, inv_angst, lperiod, rang,indi,itmax,leev,ltabvois,sig, &
                        it, itesauv, itesauvposition, itesauvforce,itmax, &
                        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
-                       dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz
+                       dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz,nvois
   USE controle_mod,only: controle
   USE calfo_mod,only: calfo
   USE analyse_mod,only: analyse
@@ -103,7 +103,12 @@ contains
     call period (imm,xp)
 #endif    
     call caltabt(im,xp,ielat)
-    if (ltabvois.and.mod(it,itetabvois)==0) call caltabi
+    if (ltabvois.and.mod(it,itetabvois)==0) then
+       call ndm2config(atcg,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
+       call caltabi(atcg%atom_config)
+       call config2ndm(atcg,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
+    end if
+    
 !    call period
     !    do ko=1,noxyz
     !       write(6,*)'0rg cel nat',rang, ko,nato(ko)
@@ -233,7 +238,7 @@ contains
       !       write(6,*)rang,i,xp_all(:,i)
        write(607,'(I6,3G22.13)') i,xp(:,i)
     end do
-    call ndm2config(atcg,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    call ndm2config(atcg,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atcg) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     call config2ndm(atcg,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
 

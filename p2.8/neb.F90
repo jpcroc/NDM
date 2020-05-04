@@ -6,7 +6,7 @@ module neb_mod
   USE scalebox_mod,only: scalebox
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
-       &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst
+       &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois
   USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,ax,fp,ielat,num_at_glob
   USE atomconfig
   use var_pot,only:coord
@@ -115,9 +115,9 @@ contains
     do ii=1,npath
        it=1
        call into_path(ii,2,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-       call scalebox           (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
+       call scalebox (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
        !write(*,*) 'inside NEB debug1',ii, xp(1,1)
-       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
      
@@ -147,8 +147,8 @@ contains
           dragtest=0
           do while (dragtest==0)
              it=it+1
-             call scalebox           (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
-       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+             call scalebox  (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)       
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
              call force_projection(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
@@ -199,8 +199,8 @@ contains
                 !
                 it_neb_inter=it_neb_inter+1
                 it=it_neb_inter
-                call scalebox               (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
-       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+                call scalebox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)       
+       call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
                 call force_projection_neb(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)

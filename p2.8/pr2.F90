@@ -41,7 +41,7 @@ module Parrinello_Rahman
   USE gen_com_m, ONLY:ecellpr,h0,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,wbox,erg2ev,&
        &h0,kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover,zhoover,zhoover,&
        &zhoover,zhoover,zhoover,zhoover,zhoover, ihbox0,tbox, bk,im,imm,indi,ltabvois,potist,sig,sigkine,sigtot,&
-       &text,tstep,volu,at,im_glob,it,ltabvois,potist,rang,sig,text,tstep,volu,sigkine,bg
+       &text,tstep,volu,at,im_glob,it,ltabvois,potist,rang,sig,text,tstep,volu,sigkine,bg,nvois
  
   USE var_pot, ONLY:cm
   USE recips_mod,only: recips,calcvol
@@ -245,7 +245,7 @@ contains
     sdot(:,1:im) = MatMul(invh(:,:), vp(:,1:im) )
 
     ! Forces à l'instant initial
-    call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atpr) 
 !    call config2ndm(atpr,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
 
@@ -421,12 +421,12 @@ contains
 #else
     ! On recalcule et réalloue les cellules, puis on applique les conditions aux
     ! limites périodiques sur les positions des atomes
-    CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
 #endif
 
 
     ! Calcul des forces et des contraintes à l'instant t+dt
-    call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    call ndm2config(atpr,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atpr) 
 !    call config2ndm(atpr,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
     ! Calcul de la viscosité à l'instant ...

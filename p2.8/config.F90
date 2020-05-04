@@ -12,7 +12,7 @@ module config_mod
   use cryst_to_cart_mod,only:cryst_to_cart
   USE dynalloccell,only:deallocateall
  USE arret_ndm_mod,only: arret_ndm
-USE caltabi_mod,only: caltabi
+!USE caltabi_mod,only: caltabi
 
   implicit none
   contains

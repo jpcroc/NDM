@@ -10,7 +10,7 @@ module dmloop_mod
         USE sauveposition_mod,only: sauveposition
         USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
         USE atomconfig
-        USE gen_com_m,only: dmtype,indi,it,itesauv,ltabvois,potist,rang,sig
+        USE gen_com_m,only: dmtype,indi,it,itesauv,ltabvois,potist,rang,sig,nvois
 
         implicit none
         contains
@@ -63,7 +63,7 @@ subroutine dmloop
   !      write(6,*)'***** ITERATION  ****', it
 
   ! appel de la routine generale des forces
-  call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+  call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
   CALL CalFo(sig,potist,atdml)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)

@@ -64,7 +64,7 @@ contains
     it = it+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
 !       call calfo
-    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
+    call ndm2config(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois)
     CALL CalFo(sig,potist,atdml)
     call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi)
 
@@ -113,7 +113,7 @@ contains
 
 #else
 
-       CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
 
 #endif
        timel=timel+fNose*tstep

@@ -547,44 +547,51 @@ contains
     write(6,*)
   end subroutine print
   !MANQUE SIG AU MINIMUM
-  subroutine ndm2config (atndm,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,eat,sigat)
-    class(atom_config_d)::atndm
+  subroutine ndm2config (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois,vp,xpp,eat,sigat)
+    class(atom_config)::atndm
     integer,intent(in)::im,imm
-    real(double),intent(in),dimension(3,imm):: xp,vp,fp,xpp
-    integer,intent(in),dimension(imm)::ityp,ielat,num_at_glob
-    logical, intent(in)::ltabvois
+    real(double),intent(in),dimension(3,imm):: xp,fp
+    integer,intent(in),dimension(imm)::ityp,ielat
+    integer,optional,intent(in),dimension(imm)::num_at_glob
+    logical, optional,intent(in)::ltabvois
+    integer,optional, intent(in)::nvois
     integer, optional,intent(in) ::iwmax(imm)
-    integer,optional,intent(in):: indi(imm)
+    integer,optional,intent(in):: indi(nvois)
+    real(double),optional,intent(in),dimension(3,imm):: vp,xpp
     real(double),optional,intent(in):: eat(imm),sigat(3,3,imm)
-    integer::is
-    logical ::lprteat=.false.,lsigat=.false.
 
-    if (present(eat))lprteat=.true.; if(present(sigat))lsigat=.true.
+    integer::is
+    logical ::lprteat=.false.,lsigat=.false.,ltbv=.false.
+
+
+    if (present(eat))lprteat=.true.; if(present(sigat))lsigat=.true.;  if(present(ltabvois))ltbv=ltabvois
 !    write(6,*)'in ndm2conf'
     select type(atndm)
-    type is (atom_config_d)
+!    type is (atom_config)
+    class is (atom_config)
        call atndm%init(im,ltabvois)
     type is (atom_config_e)
        call atndm%init(im,ltabvois,lsigat,lprteat)
     end select
-    
+
     atndm%xp(:,1:im)=xp(:,1:im)
-    atndm%vp(:,1:im)=vp(:,1:im)
     atndm%fp(:,1:im)=fp(:,1:im)
-    atndm%xpp(:,1:im)=xpp(:,1:im)
     atndm%ityp(1:im)=ityp(1:im)
-    atndm%num_at_glob(1:im)=num_at_glob(1:im)
+    if (present(num_at_glob))atndm%num_at_glob(1:im)=num_at_glob(1:im)
     atndm%ielat(1:im)=ielat(1:im)
-    if (ltabvois) then
+    if (ltbv) then
 !       write(6,*)'sizes ', size (iwmax),size(atndm%iwmax)
+       atndm%ltabvois=.true.
        atndm%iwmax(1:im)=iwmax(1:im)
-       is=size(indi)
-       allocate(atndm%indi(is))
-       atndm%indi(1:is)=indi(1:is)
+       allocate(atndm%indi(nvois))
+       atndm%indi(1:nvois)=indi(1:nois)
     end if
 
     select type(atndm)
     type is (atom_config_d)
+       if (present(vp))atndm%vp(:,1:im)=vp(:,1:im)
+       if(present(xpp))atndm%xpp(:,1:im)=xpp(:,1:im)
+
     type is (atom_config_e)
        if (present(sigat).and.(atndm%lsigat))then
         !  allocate(sigat(3,3,imm))
@@ -598,26 +605,30 @@ contains
 
   end subroutine ndm2config
 
-  subroutine config2ndm (atndm,im,imm,xp,fp,vp,xpp,ityp,num_at_glob,ielat,ltabvois,iwmax,indi,eat,sigat)
-    class(atom_config_d),intent(in)::atndm
+  subroutine config2ndm (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,vp,xpp,eat,sigat)
+    class(atom_config),intent(in)::atndm
     integer,intent(inout)::im
     integer,intent(in)::imm
-    real(double),intent(inout),allocatable:: xp(:,:),vp(:,:),fp(:,:),xpp(:,:)
+    real(double),intent(inout),allocatable:: xp(:,:),fp(:,:)
+
     integer,intent(inout),dimension(:),allocatable::ityp,num_at_glob,ielat
     logical, intent(out)::ltabvois
     integer, optional,intent(inout),allocatable ::iwmax(:)
     integer,optional,intent(inout),allocatable:: indi(:)
+    
+    real(double),optional,intent(inout),allocatable:: vp(:,:),xpp(:,:)
+    
     real(double),optional,intent(inout),allocatable::eat(:),sigat(:,:,:)
-
+!    integer,intent(in)::nvois
     integer::is
 !    write(6,*)'in conf2ndm'
     im=atndm%im
 !    allocate(xp(3,imm));allocate(fp(3,imm));allocate(vp(3,imm));allocate(xpp(3,imm))
 !    allocate(ityp(imm));allocate(ielat(imm));allocate(num_at_glob(imm))
     xp(:,1:im)=atndm%xp(:,1:im)
-    vp(:,1:im)=atndm%vp(:,1:im)
+
     fp(:,1:im)=atndm%fp(:,1:im)
-    xpp(:,1:im)=atndm%xpp(:,1:im)
+
     ityp(1:im)=atndm%ityp(1:im)
     num_at_glob(1:im)=atndm%num_at_glob(1:im)
     ielat(1:im)=atndm%ielat(1:im)
@@ -632,6 +643,8 @@ contains
     end if
     select type(atndm)
     type is (atom_config_d)
+       if(present(vp))vp(:,1:im)=atndm%vp(:,1:im)
+       if(present(xpp))xpp(:,1:im)=atndm%xpp(:,1:im)
     type is (atom_config_e)
        if (present(sigat).and.(atndm%lsigat))then
 !          allocate(sigat(3,3,imm))
