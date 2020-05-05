@@ -6,7 +6,8 @@ module config_mod
         USE decoupage_mod,only: decoupage
 #endif
   USE gen_com_m, ONLY:at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
-  &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat
+  &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat,cell_debx,cell_deby,cell_debz,&
+  &cell_finx,cell_finy,cell_finz,low_limit
   USE var_pot, ONLY:alpha,na,ntyp,rumax
   USE recips_mod,only: recips
   use cryst_to_cart_mod,only:cryst_to_cart

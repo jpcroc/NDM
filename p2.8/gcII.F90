@@ -13,7 +13,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:bg,itetemp2
+    USE gen_com_m, ONLY:bg,itetemp2,imm_glob
     USE var_pot, ONLY:nad,na,ntyp
     USE work_cgII
     !  USE tab_imm_m, ONLY : bruitmd

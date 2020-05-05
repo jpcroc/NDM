@@ -4,7 +4,9 @@
 module desinteg_insert_mod
   USE caltabt_mod,only: caltabt
   USE gen_com_m, ONLY:bk,deltaespr,deltaf,erg2ev,it,itdes,itmax,nstepdes,pm1des,rang,&
-       &tempdes,typspr,vpchdeb,vpchdn,vpchup,xpchdeb,xpchdn,xpchup,xpspr,xpspr0,im
+       &tempdes,typspr,vpchdeb,vpchdn,vpchup,xpchdeb,xpchdn,xpchup,xpspr,xpspr0,im,&
+       &imdesup,imdesdeb,imdesdn,itichdeb,itichdn,itichup,num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,im_glob
+
 !  USE atomconfig
   implicit none
 contains
@@ -27,7 +29,7 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    !-----------------------------------------------
+    !------------------,-----------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
     !-----------------------------------------------

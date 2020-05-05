@@ -23,12 +23,12 @@ module atomconfig
      procedure, pass::fab
      procedure, pass::add2conf
      procedure, pass::extend
-#ifdef PARA
-     procedure, pass::send2proc=>s2p_atom
-     procedure, pass::send2all=>s2a_atom
-     procedure, pass::recv=>rcv_atom
-
-#endif     
+!#ifdef PARA
+!     procedure, pass::send2proc=>s2p_atom
+!     procedure, pass::send2all=>s2a_atom
+!     procedure, pass::recv=>rcv_atom
+!
+!#endif     
   end type atom_config
 
   type, extends (atom_config):: atom_config_d ! type dynamique des configurations atomiques(+vp/+xpp). vp et xpp seront toujours allouées
@@ -37,11 +37,11 @@ module atomconfig
    contains
      procedure, pass::copy_atom=>copy_atom_d
      procedure, pass::dealloc=>dealloc_atom_config_d
-#ifdef PARA
-     procedure, pass::send2proc=>s2p_atom_d
-     procedure, pass::send2all=>s2a_atom_d
-     procedure, pass::recv=>rcv_atom_d
-#endif     
+!#ifdef PARA
+!     procedure, pass::send2proc=>s2p_atom_d
+!     procedure, pass::send2all=>s2a_atom_d
+!     procedure, pass::recv=>rcv_atom_d
+!#endif     
   end type atom_config_d
   
   type, extends (atom_config_d):: atom_config_e ! type étendu des configurations atomiques avec quantités optionelles Ces quantités seront allouées en fonction dss logical
@@ -52,12 +52,12 @@ module atomconfig
    contains
      procedure, pass::copy_atom=>copy_atom_e
      procedure, pass::dealloc=>dealloc_atom_config_e
-#ifdef PARA
-     procedure, pass::send2proc=>s2p_atom_e
-     procedure, pass::send2all=>s2a_atom_e
-     procedure, pass::recv=>rcv_atom_e
+!#ifdef PARA
+!     procedure, pass::send2proc=>s2p_atom_e
+!     procedure, pass::send2all=>s2a_atom_e
+!     procedure, pass::recv=>rcv_atom_e
      
-#endif     
+!#endif     
   end type atom_config_e
   
 contains
@@ -307,39 +307,39 @@ contains
 #ifdef PARA  
   
   
-  subroutine s2p_atom(atconf_trf,pcible)
-    class(atom_config),intent(in)::atconf_trf
-    integer,intent(in):: pcible
+!  subroutine s2p_atom(atconf_trf,pcible)
+!    class(atom_config),intent(in)::atconf_trf
+!    integer,intent(in):: pcible
     !MPI_SEND de xp
     !MPI_SEND de fp
     !MPI_SEND de ityp
     !MPI_SEND de ielat
     !MPI_SEND de num_at_glob
     
-  end subroutine s2p_atom
+!  end subroutine s2p_atom
   
-  subroutine s2p_atom_d(atomes_trf,pcible)
-    class(atomes_types),intent(in)::atomes_trf
-    integer,intent(in):: pcible
+ ! subroutine s2p_atom_d(atomes_trf,pcible)
+ !   class(atomes_types),intent(in)::atomes_trf
+ !   integer,intent(in):: pcible
     
-    call atomes_trf%atom_config%send2proc(pcible)
+ !   call atomes_trf%atom_config%send2proc(pcible)
     ! MPI_SEND  de vp vers pcible
     ! MPI_SEND  de xpp vers pcible
     
-  end subroutine s2p_atom_d
+ ! end subroutine s2p_atom_d
   
   
-  subroutine s2p_atom_e(atomes_trf,pcible)
-    class(atomes_types),intent(in)::atomes_trf
-    integer,intent(in):: pcible
-    call atomes_trf%atom_config_e%send2proc(pcible)
-    if (allocated (ax)) then
+ ! subroutine s2p_atom_e(atomes_trf,pcible)
+ !   class(atomes_types),intent(in)::atomes_trf
+ !   integer,intent(in):: pcible
+ !   call atomes_trf%atom_config_e%send2proc(pcible)
+ !   if (allocated (ax)) then
        ! MPI_SEND  de ax vers pcible
-    endif
+ !   endif
     !    etc...
     
     
-  end subroutine s2p_atom_e
+ ! end subroutine s2p_atom_e
 #endif
   subroutine pack(at2pack)
     class(atom_config),intent(inout):: at2pack

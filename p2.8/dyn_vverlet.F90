@@ -3,7 +3,7 @@ module dyn_vverlet_mod
   USE calfoberend_mod,only: calfoberend 
   USE caltabt_mod,only: caltabt
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,eatom
+  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,eatom,ltranche
 #ifdef PARA
   USE layer_mod,only: layer
   USE atomconfig

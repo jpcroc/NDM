@@ -155,14 +155,14 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
 #ifdef PARA 
      do i = 1, im
-        if(free(i))then
+!        if(free(i))then
            if (xp(1,i)<cinf) then
               nacou1 = nacou1+1
               ecou1 = ecou1+0.5*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(&
                    i))
               loc(i)=.true.
            end if
-        end if
+!        end if
      end do
 !     write(6,*)'ecou1', rang,nacou1,ecou1
      call MPI_ALLREDUCE(ecou1,ecou1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -207,14 +207,14 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
 #ifdef PARA
      do i = 1, im
-        if (free(i))then
+!        if (free(i))then
            if (xp(1,i).gt.csup)then
               nacou2 = nacou2+1
               ecou2 = ecou2+(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(&
                    i))*0.5
               loc(i)=.true.
            end if
-        end if
+!        end if
      end do
 !     write(6,*)'ecou2', rang,nacou2,ecou2
      call MPI_ALLREDUCE(ecou2,ecou2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -256,12 +256,12 @@ subroutine jqbh (xp,xpp,vp,ityp)
      temptra(:)=0.
      nattr(:)=0
      do i=1,im
-	        if(free(i))then	
+!	        if(free(i))then	
         indtr=1+Int(ntr*(xp(1,i)-crul)/(1-2*crul))
         !          write(6,*)i,indtr,xp(1,i), (xp(1,i)-crul)/(1-2*crul)
         nattr(indtr)=nattr(indtr)+1
         temptra(indtr)=temptra(indtr)+ (vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(i))/(3.*bk*ittherm)
-		endif
+!		endif
      end do
 !     write(6,*)'temptra', rang,temptra,nattr
      call MPI_ALLREDUCE(temptra,temptra_tot,ntr,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)

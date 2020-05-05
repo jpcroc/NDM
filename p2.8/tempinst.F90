@@ -1,5 +1,5 @@
 module tempinst_mod
-  USE gen_com_m, ONLY:imm,bk,imd
+  USE gen_com_m, ONLY:imm,bk,imd,im_glob
   implicit none
 contains
   !c******************************************************************

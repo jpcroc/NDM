@@ -3,9 +3,11 @@ module zero2all2zero_mod
 #ifdef PARA
   USE mod_para
 #endif
-  USE gen_com_m, ONLY:imm_glob,imm
+  USE gen_com_m, ONLY:imm_glob,imm,bg,at,im,rang,cell_debx,cell_deby,cell_debz,im_glob,zero,nox,noy,noz,&
+       &cell_finx,cell_finy,cell_finz,low_limit
   USE tab_imm_m
   USE cryst_to_cart_mod,only: cryst_to_cart
+  implicit none
 contains
   subroutine zero2all(vectall,vectp,itypall)
     real(double),intent(in)::vectall(3,imm_glob)
@@ -13,8 +15,8 @@ contains
     real(double),intent(out)::vectp(3,imm)
     !    integer,intent(out)::itypp(im_glob)
 
-    integer::i,it,cellx,celly,cellz
-    real(double)::aux,auy,auz
+    integer::i,it,cellx,celly,cellz,ic
+    real(double)::aux,auy,auz,xpici,cpp
 
 
     !    real(double)

@@ -41,9 +41,10 @@ module Parrinello_Rahman
   USE gen_com_m, ONLY:ecellpr,h0,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,wbox,erg2ev,&
        &h0,kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover,zhoover,zhoover,&
        &zhoover,zhoover,zhoover,zhoover,zhoover, ihbox0,tbox, bk,im,imm,indi,ltabvois,potist,sig,sigkine,sigtot,&
-       &text,tstep,volu,at,im_glob,it,ltabvois,potist,rang,sig,text,tstep,volu,sigkine,bg,nvois
+       &text,tstep,volu,at,im_glob,it,ltabvois,potist,rang,sig,text,tstep,volu,sigkine,bg,nvois,zls2,tabf3,tabv3,&
+       &pi,zl
  
-  USE var_pot, ONLY:cm
+  USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
   USE mod_para
@@ -52,6 +53,7 @@ module Parrinello_Rahman
   USE scalebox_mod,only: scalebox
   USE Mat_utils_mod,only:  MatInv
   USE atomconfig
+   USE caltabt_mod,only: caltabt
   implicit none
   ! Vecteurs de la boîte et leurs dérivées
   real(double), dimension(3,3), save , private :: h, hDot

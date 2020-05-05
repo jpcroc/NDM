@@ -20,7 +20,7 @@ module calfo_mod
   USE gen_com_m, ONLY:ibound,im_glob,lcontr,ldecal_bc,ldesinteg,lsigtyp,&
        &ltberendsen,ltranche,parallele,potis0,potis2,potisp,sigkine,sigtot,sigtyp,sigtyptyp,l2t,&
        &sigat,lsigat,eatom,volu,zero,dmtype,it,itesigma,ltpcel,potistersoff,sigc,potiszbl,&
-       &potiszbl,potcp,potis1,potis3,sigkine,sigtot,sigtyp,sigtyptyp,zero
+       &potiszbl,potcp,potis1,potis3,sigkine,sigtot,sigtyp,sigtyptyp,zero,sigtyp_loc,sigtyptyp_loc
 
   USE contrainte,only:initcontr,contr
   USE jqmod,only:jq

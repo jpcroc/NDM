@@ -9,7 +9,8 @@ contains
     USE mod_para
     USE tab_imm_m
 #endif
-    USE gen_com_m, ONLY:nox,noy,noz,rang
+    USE gen_com_m, ONLY:nox,noy,noz,rang,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
+         &nb_cell_x,nb_cell_y,nb_cell_z,noxyz,imm
 
     USE var_pot, ONLY:
 

@@ -2,10 +2,13 @@ module calfoberend_mod
 !  USE tempinst_mod,only: tempinst
   USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:gamlt,cm
-  USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text
+  USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text,im_glob
   implicit none
 contains
   subroutine calfoberend(im,xp, vp, fp,ityp)
+#ifdef PARA
+    USE mod_para
+#endif
 
     integer::im
     real(double)  :: xp(3,im)
@@ -14,7 +17,7 @@ contains
     integer  :: ityp(im)
     integer :: i,ic
     !real(double), external :: tempinst
-    real(double) :: gamb,fact,tempm1,mv2,v2
+    real(double) :: gamb,fact,tempm1,mv2,v2,mv2_glob
 
     do i = 1,im
        v2= vp(1,i)**2+ vp(2,i)**2+ vp(3,i)**2

@@ -194,11 +194,11 @@ subroutine calctemp(temptyp)
      end do
 
 #ifdef PARA
-     if( allocated(free)) then
-        temp = temp/float(imfree)
-     else
+!     if( allocated(free)) then
+!        temp = temp/float(imfree)
+!     else
         temp = temp/float(im_glob)
-     end if
+!     end if
 #else
      temp = temp/float(imd)
 #endif
