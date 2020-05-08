@@ -6,7 +6,7 @@ module neb_mod
 !  USE scalebox_mod,only: scalebox
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
-       &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois,itetabvois
+       &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois,itetabvois,rang
   
   USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,ax,fp,ielat,num_at_glob
   USE atomconfig
@@ -20,7 +20,9 @@ module neb_mod
   USE caltabi_mod,only: caltabi
   USE caltabt_mod,only: caltabt
 
-  
+#ifdef PARANEB
+  USE para_neb_mod
+#endif
   implicit none 
 contains
   subroutine neb ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
@@ -57,7 +59,17 @@ contains
     REAL(double), dimension(:), allocatable :: fire_dt, fire_alph
     INTEGER, dimension(:), allocatable :: fire_nstep
     type(atom_config_d)::atdml
-
+#ifdef PARANEB    
+    real(double),allocatable:: enepathev_tot(:),enepath_tot(:),sigpath_tot(:,:,:),rc_tot(:)
+    enepath(:)=0
+    allocate(enepathev_tot(npath));    allocate(enepath_tot(npath)); allocate(sigpath_tot(3,3,npath))
+    allocate(rc_tot(npath))
+    enepathev_tot=0;enepath_tot=0
+    if (npath.ne.(nprocs+2)) then
+       write(6,*)'nrpocs<>npath-2 ; stop'
+       stop
+    end if
+#endif    
     if(lPkbar) then
        unitP=1.0d-9
        cunitP='kbar'
@@ -65,29 +77,29 @@ contains
        unitP=1.0
        cunitP='d/cm2'
     endif
-
-    open(unit=55,file='image_col_relax.out')
-    WRITE(55,'(a)')  '#  1: (i-1)/(nPath-1)'
-    WRITE(55,'(a)')  '#  2: energy E(i) (eV)'
-    WRITE(55,'(a)')  '#  3: energy difference E(i)-E(1) (eV)'
-    WRITE(55,'(3a)') '#  4: stess s(1,1) (', cUnitP, ')'
-    WRITE(55,'(a)')  '#  5:       s(2,2)'
-    WRITE(55,'(a)')  '#  6:       s(3,3)'
-    WRITE(55,'(a)')  '#  7:       s(2,3)'
-    WRITE(55,'(a)')  '#  8:       s(1,3)'
-    WRITE(55,'(a)')  '#  9:       s(1,2)'
-    open(unit=56,file='react_col_relax.out')
-    WRITE(56,'(a)')  '#  1: reaction coordinate z(i)'
-    WRITE(56,'(a)')  '#  2: energy E(i) (eV)'
-    WRITE(56,'(a)')  '#  3: energy difference E(i)-E(1) (eV)'
-    WRITE(56,'(3a)') '#  4: stess s(1,1) (', cUnitP, ')'
-    WRITE(56,'(a)')  '#  5:       s(2,2)'
-    WRITE(56,'(a)')  '#  6:       s(3,3)'
-    WRITE(56,'(a)')  '#  7:       s(2,3)'
-    WRITE(56,'(a)')  '#  8:       s(1,3)'
-    WRITE(56,'(a)')  '#  9:       s(1,2)'
-
-
+    if (rang==0) then
+       open(unit=55,file='image_col_relax.out')
+       WRITE(55,'(a)')  '#  1: (i-1)/(nPath-1)'
+       WRITE(55,'(a)')  '#  2: energy E(i) (eV)'
+       WRITE(55,'(a)')  '#  3: energy difference E(i)-E(1) (eV)'
+       WRITE(55,'(3a)') '#  4: stess s(1,1) (', cUnitP, ')'
+       WRITE(55,'(a)')  '#  5:       s(2,2)'
+       WRITE(55,'(a)')  '#  6:       s(3,3)'
+       WRITE(55,'(a)')  '#  7:       s(2,3)'
+       WRITE(55,'(a)')  '#  8:       s(1,3)'
+       WRITE(55,'(a)')  '#  9:       s(1,2)'
+       open(unit=56,file='react_col_relax.out')
+       WRITE(56,'(a)')  '#  1: reaction coordinate z(i)'
+       WRITE(56,'(a)')  '#  2: energy E(i) (eV)'
+       WRITE(56,'(a)')  '#  3: energy difference E(i)-E(1) (eV)'
+       WRITE(56,'(3a)') '#  4: stess s(1,1) (', cUnitP, ')'
+       WRITE(56,'(a)')  '#  5:       s(2,2)'
+       WRITE(56,'(a)')  '#  6:       s(3,3)'
+       WRITE(56,'(a)')  '#  7:       s(2,3)'
+       WRITE(56,'(a)')  '#  8:       s(1,3)'
+       WRITE(56,'(a)')  '#  9:       s(1,2)'
+    end if
+    
     call init_neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
     ! Initialization of fire quench algorithm
@@ -115,11 +127,17 @@ contains
        if (rang==0) write(6,*)'NEB: We apply a random noise on the atoms '
        call bruit_neb
     end if
-
-
+#ifdef PARANEB
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+#endif
     !call calfo
     do ii=1,npath
        it=1
+#ifdef PARANEB
+       if ((ii==myid+2).or.((ii==1).and.(myid==0)).or.((ii==npath).and.(myid==nprocs-1))) then
+
+
+#endif       
        call into_path(ii,2,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
 !       call scalebox (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
@@ -133,17 +151,35 @@ contains
        call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
      
        !write(*,*) 'inside NEB debug2',ii, xp(1,1)
-       call analyse  
+!       call analyse  
        call neb_controle(ii)  !  (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)       
        enePATH(ii)=potist
        enePATHev(ii)=potist*erg2ev
        sigPATH(:,:,ii) = sigtot(:,:)      ! Contrainte
-       if (rang==0) write(*,'(i5,3(g20.8,1x))') ii, enePATHev(ii),enePATHev(ii)-enePATHev(1)
+ !      write(*,'(i5,3(g20.8,1x))') ii, enePATHev(ii),enePATHev(ii)-enePATHev(1)
        call into_path(ii,1,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       
+ 
+    endif
 
-    end do
+    
+ end do
+#ifdef PARANEB
+    write(6,*)
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    enepathev(:)=enepathev_tot ; enepath=enepath_tot
+#endif
+    if (rang==0) then
+       do ii=1,npath
+            write(*,'(i5,3(g20.8,1x))') ii, enePATHev(ii),enePATHev(ii)-enePATHev(1)
+         end do
+      end if
+!    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
 
+!stop
     select case (nebtype)
 
 
@@ -152,54 +188,69 @@ contains
        call build_s_path_drag(ityp)
 
        do ii=2,npath-1
-          call into_path(ii,2,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+#ifdef PARANEB
+          if (ii==myid+2) then
+             enepath(2:npath-1)=0; enepathev(2:npath-1)=0
+             if (myid.ne.0) then
+                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
+             end if
+#endif
+             call into_path(ii,2,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
           it=0
           dragtest=0
           do while (dragtest==0)
              it=it+1
-       if (lperiod)    call period (imm,xp,xpp,ax)
-       call caltabt(im,xp,ielat)
-       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-       if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
-            &call caltabi(atdml%atom_config)
-       CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-
-
-!             call scalebox  (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)       
-!             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!                  &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-!    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-!    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-
-       call force_projection(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+             if (lperiod)    call period (imm,xp,xpp,ax)
+             call caltabt(im,xp,ielat)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+                  &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
+                  &call caltabi(atdml%atom_config)
+             CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+             
+             call force_projection(ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              IF (lFire) THEN
                 call trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
                      fire_dt(ii), fire_nstep(ii), fire_alph(ii))
              ELSE
                 call trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              ENDIF
-             call analyse  
+             !             call analyse  
              call neb_controle(ii) !   (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
           end do   ! end do for a while
-
+          
           enePATH(ii)=potist
           enePATHev(ii)=potist*erg2ev
           sigPATH(:,:,ii) = sigtot(:,:)      ! Contrainte
-          if (rang==0) write(*,*) 'NEB: THIS IS THE DRAG IMAGE=====================', ii
-          if (rang==0) write(*,*) 'NEB: THE NUMBER OF ITERATIONS===================', it
-          if (rang==0) write(*,*) 'NEB: THE ENERGY OF THIS IMAGE===================', enePATHev(ii)
-          if (rang==0) WRITE(6,'(3a)') 'NEB: stress tensor in Voigt notation (units: ', cunitP,' ):'
-          if (rang==0) WRITE(6,'(a,6g20.8)') unitP*sigPATH(1,1,ii), unitP*sigPATH(2,2,ii), unitP*sigPATH(3,3,ii), &
+          call into_path(ii,1,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+#ifdef PARANEB
+
+       end if
+#endif
+
+    end do      !end ii,npath
+#ifdef PARANEB
+    write(6,*)'rg ene',myid,enepathev
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(sigpath,sigpath_tot,9*npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    enepathev(:)=enepathev_tot ; enepath=enepath_tot;sigpath=sigpath_tot
+#endif
+    if (rang==0) then
+       do ii=1,npath-1
+          write(6,*)
+          write(*,*) 'NEB: THIS IS THE DRAG IMAGE=====================', ii
+          write(*,*) 'NEB: THE ENERGY OF THIS IMAGE===================', enePATHev(ii)
+          WRITE(6,'(3a)') 'NEB: stress tensor in Voigt notation (units: ', cunitP,' ):'
+          WRITE(6,'(a,6g20.8)') unitP*sigPATH(1,1,ii), unitP*sigPATH(2,2,ii), unitP*sigPATH(3,3,ii), &
                0.5*unitP*(sigPath(2,3,ii)+sigPath(3,2,ii)), &
                0.5*unitP*(sigPath(1,3,ii)+sigPath(3,1,ii)), &
                0.5*unitP*(sigPath(1,2,ii)+sigPath(2,1,ii))
-          call into_path(ii,1,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-       end do      !end ii,npath
-
-
+       end do
+    end if
     case(2)
        if (rang==0) write(6,*)'NEB: -------this is NEB--V2-------'
        if (rang==0) write(6,*)'NEB: The MAX steps in NEB        :',maxneb
@@ -306,7 +357,11 @@ contains
     reaction_coord(npath)=1
     a_local=SUM((xp_n(:,:,npath)-xp_n(:,:,1))**2) 
     ! 
-    do ii=1,npath      
+    do ii=2,npath-1
+#ifdef PARANEB
+       if ((ii==1).or.(ii==npath)) cycle
+       if (ii==myid+2) then
+#endif          
        call into_path      (ii,2,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
        call sauveposition(ii)      
        call rasmol(ii)
@@ -314,8 +369,20 @@ contains
        !	 
        reaction_coord(ii) = SUM((xp_n(:,:,ii)-xp_n(:,:,1))*(xp_n(:,:,npath)-xp_n(:,:,1)))/a_local 
        !
+#ifdef PARANEB
+    endif
+#endif          
+
     end do
 
+#ifdef PARANEB
+    write(6,*)
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(reaction_coord,rc_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    reaction_coord(:)=rc_tot(:)
+#endif
+
+    
     if (rang==0) WRITE(*,'(3a)') "NEB:--IMAGE-----REACT-COORD------ENERGY------ENERGY-ENERGY(1)&
          &-------------STRESS-sVoigt(1:6)-(units:-", cunitP, ")"
     do ii=1,npath
@@ -325,12 +392,12 @@ contains
             0.5*unitP*(sigPath(2,3,ii)+sigPath(3,2,ii)), &
             0.5*unitP*(sigPath(1,3,ii)+sigPath(3,1,ii)), &
             0.5*unitP*(sigPath(1,2,ii)+sigPath(2,1,ii))
-       write(55,'(9(g20.8,1x))') dble(ii-1)/dble(npath-1), enePATHev(ii),enePATHev(ii)-enePATHev(1), &
+       if (rang==0)   write(55,'(9(g20.8,1x))') dble(ii-1)/dble(npath-1), enePATHev(ii),enePATHev(ii)-enePATHev(1), &
             unitP*sigPATH(1,1,ii), unitP*sigPATH(2,2,ii), unitP*sigPATH(3,3,ii), &
             0.5*unitP*(sigPath(2,3,ii)+sigPath(3,2,ii)), &
             0.5*unitP*(sigPath(1,3,ii)+sigPath(3,1,ii)), &
             0.5*unitP*(sigPath(1,2,ii)+sigPath(2,1,ii))
-       write(56,'(9(g20.8,1x))') reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1), &
+        if (rang==0)  write(56,'(9(g20.8,1x))') reaction_coord(ii), enePATHev(ii),enePATHev(ii)-enePATHev(1), &
             unitP*sigPATH(1,1,ii), unitP*sigPATH(2,2,ii), unitP*sigPATH(3,3,ii), &
             0.5*unitP*(sigPath(2,3,ii)+sigPath(3,2,ii)), &
             0.5*unitP*(sigPath(1,3,ii)+sigPath(3,1,ii)), &

@@ -191,7 +191,7 @@ subroutine config
  	! initiale pour la remettre en sortie
 	rumax_init=rumax
         alpha_init=alpha
-        write(6,*)'call divid 0'
+         if(rang==0)write(6,*)'call divid 0'
         call divid(0)
 	rumax=rumax_init
 	alpha = alpha_init
@@ -799,11 +799,10 @@ subroutine config
 #ifdef LAMMPS_VERSION
 
      if((ipotentiel==-10).or.(ipotentiel==-11)) then
-        write(6,*)'write configuration to conf.lmp'
+         if(rang==0)write(6,*)'write configuration to conf.lmp'
         call config2data (imm,im,xp,ityp,at,ntyp)
      end if
 #endif     
-
 
      if (rang==0) then
 

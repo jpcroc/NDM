@@ -18,6 +18,9 @@ contains
 #ifdef PARA
     USE mod_para
 #endif
+#ifdef PARANEB
+    USE para_neb_mod
+#endif
     ! ****************************************************************
 
     implicit none
@@ -27,7 +30,7 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer  :: itapp,iksp
+    integer  :: itapp,iksp,rgloc
 #ifdef PARA
     integer :: iproc
     real(double), allocatable :: xp_loc(:,:)
@@ -53,6 +56,11 @@ contains
     !-----------------------------------------------
     !
     !
+#ifdef PARA
+    rgloc=rang
+#else
+    rgloc=0
+#endif    
     !
     if(lPkbar) then
        unitP=1.0d-9
@@ -67,10 +75,15 @@ contains
     if (ldesinteg)iksp=1
     luvisu = 86
     luvisu2 = 87
+#ifdef PARANEB    
+    luvisu = 86+rang
+    luvisu2 = 87+rang
+#endif    
+
     !      write (*, *) 'entree dans rasmol.f',im
 
     ! ****ouverture fichier sortie pour traitement images rasmol****
-    !if(rang==0)       OPEN(luvisu,file='donnrasmol',form='formatted', &
+    !if(rgloc==0)       OPEN(luvisu,file='donnrasmol',form='formatted', &
     !       status='unknown')
     !   la fonction char ne marche que pour de faibles valeurs de it!!!!
     !     open(luvisu,file='donn_rasmolit.'//char(48+it),form='formatted',status='unknown')
@@ -78,7 +91,7 @@ contains
     ! conversion entier-->alphanumerique par transfert du nombre
     ! de l'iteration vers fichier tampon relu sous format caractere.
 
-    if(rang==0) then
+    if(rgloc==0) then
 
        ! TJ: change the formatting so that files are well listed.
        lenfn2 = 9
@@ -129,6 +142,8 @@ contains
        !      write (47, *) 'IT =', itapp, '    Time = ', timel
     end if
     if (ivisu==3)  call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
+
+    
 #ifdef PARA
     ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
 
@@ -268,8 +283,8 @@ contains
 801 format(a8)
 901 format(a9)
 
-    if(rang==0)      close(luvisu)
-    if ((rang == 0).and.(ivisu == 2)) then
+    if(rgloc==0)      close(luvisu)
+    if ((rgloc == 0).and.(ivisu == 2)) then
        close(luvisu2)
     end if
 

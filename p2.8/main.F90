@@ -32,9 +32,9 @@ program ndm
 
 #endif
 
-!#ifdef PARANEB
-! use para_neb
-!#endif 
+#ifdef PARANEB
+ use para_neb_mod
+#endif 
 
  
   implicit none

@@ -9,6 +9,7 @@ module neb_module
   USE config_mod,only: config
   USE recips_mod,only: recips
   USE sauveposition_mod,only: sauveposition
+  USE rasmol_mod,only: rasmol
   use var_pot,only:ntyp,na
   USE dynalloccell,only:deallocateall
   !-----------------------------------------------
@@ -152,7 +153,7 @@ contains
     open(unit=831,file='distimages')
     deplamax=0
     idepmax=0
-    write(6,*)'im',im
+    if(rang==0)write(6,*)'im',im
     do i=1,im
        depla=1d8*sqrt(dxx(1,i)**2+dxx(2,i)**2+dxx(3,i)**2)
        write(831,*)i,depla
@@ -675,12 +676,16 @@ contains
 
        fnamneb=fnam
        fnam(1:lenfnam+4)='deb_'//fnamneb(1:lenfnam)
-       write(6,*)'FNAM ',fnam
+        if(rang==0)write(6,*)'FNAM ',fnam
        lenfnam=lenfnam+4
        call config 
        fnam=fnamneb
        lenfnam=lenfnam-4
-       call sauveposition(1)
+       if (rang==0)then
+          call sauveposition(1)
+          call rasmol(1)
+       endif
+
        call into_path(1,1,xp, xpp, vp, ax, fp, ielat, iwmax,ityp)
 
 
@@ -693,7 +698,10 @@ contains
        lenfnam=lenfnam-4
        !       write(6,*)'FNAM ',fnam
 
-       call sauveposition(npath)
+       if (rang==0)then
+          call sauveposition(npath)
+          call rasmol(npath)
+       endif
        call into_path(npath,1,xp, xpp, vp, ax, fp, ielat, iwmax,ityp)
 
        !       fnam=fnamneb

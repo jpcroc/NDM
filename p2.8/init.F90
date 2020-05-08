@@ -384,7 +384,7 @@ contains
 
     !computing the neighbours for the very first time ......
     !  if (itmax>0) then
-    write(6,*)'1ER CALL init'
+    if (rang==0)write(6,*)'1ER CALL init'
     call caltabt(im,xp,ielat)
 
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'

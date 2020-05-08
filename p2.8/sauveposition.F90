@@ -35,7 +35,7 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: lucoutxp, formatsauvT
+    integer :: lucoutxp, formatsauvT,rgloc
     character :: extension*9
     logical::lcrcin
 #ifdef PARA
@@ -50,8 +50,10 @@ contains
 
     allocate (buffer(3,imm_glob))
     allocate (ibuffer(imm_glob))
-
-#endif
+    rgloc=rang
+#else
+    rgloc=0
+#endif    
     !-----------------------------------------------
     !
 
@@ -59,8 +61,8 @@ contains
     ! conversion entier-->alphanumerique par transfert du nombre
     ! de l'iteration vers fichier tampon relu sous format caractere.
 
-    lucoutxp = 97
-    if(rang==0) then
+    lucoutxp = 97+rang
+    if(rgloc==0) then
        if (itapp==0) then
           inquire (file=fnam(1:lenfnam)//'.crcin',EXIST=lcrcin)
           if (lcasca.EQV..true.)lcrcin=.false.
@@ -172,7 +174,7 @@ contains
 701 format(a7)
 801 format(a8)
 
-    if(rang==0)      close(lucoutxp)
+    if(rgloc==0)      close(lucoutxp)
     return
   end subroutine sauveposition
 end module sauveposition_mod
