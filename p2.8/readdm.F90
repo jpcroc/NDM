@@ -26,7 +26,7 @@ contains
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lpr,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,lsigtyp,&
          &lsuivinonpbc,ltabvois,ltberendsen,lthoover,ltnose,ltpcel,ltranche,lucell,lwgin,mdcg_noise,nfda,nox,noy,noz,nplz,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
-         &,tpseuils,tstep,typspr,unite,unitp,user_strainrate,user_stress_yz,xpspr,lenfnam,fnam
+         &,tpseuils,tstep,typspr,unite,unitp,user_strainrate,user_stress_yz,xpspr,lenfnam,fnam,position_conversion_lammps, energy_conversion_lammps, pressure_conversion_lammps
 
 
     USE var_pot, ONLY:gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       

@@ -4,6 +4,10 @@ module rasmol_mod
   USE gen_com_m, ONLY:lprtsigat,rang,ivisu,sigat,ldesinteg,lpkbar,lprteat,im_glob,imm,im,iko,&
        &cunitP,it,lcasca,timel,unitP,at,fnam,bg,erg2ev,lenfnam,eatom
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
+
+    USE paraneb_mod
+
+
   implicit none
 contains
 
@@ -17,9 +21,6 @@ contains
     USE tab_imm_m
 #ifdef PARA
     USE mod_para
-#endif
-#ifdef PARANEB
-    USE para_neb_mod
 #endif
     ! ****************************************************************
 

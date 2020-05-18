@@ -33,7 +33,7 @@ program ndm
 #endif
 
 #ifdef PARANEB
- use para_neb_mod
+ use paraneb_mod
 #endif 
 
  

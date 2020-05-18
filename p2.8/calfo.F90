@@ -36,6 +36,10 @@ module calfo_mod
 #ifdef PARA
   USE mod_para
 #endif
+#ifdef LAMMPS_VERSION
+  use lammps_util_mod,only: read_lammps,calcforce_lammps2
+  use vars_lammps
+#endif
   implicit none
 contains
   ! ************************************************
@@ -80,15 +84,6 @@ contains
 #endif
     !   if (rang==0) write(6,*) 'ldemintab',ldemitab
 
-
-    
-    interface 
-
-       subroutine calcforce_lammps2
-       end subroutine calcforce_lammps2
-
-    end interface
-!    write(6,*)'avant call config2ndm'
 !    write(6,*)'dml potist1 ',potist,atcf%potist
 !    call config2ndm(atcf,im,imm,potist,sig,xp,atcf%fp,vp,xpp,ityp,ielat,ltabvois,iwmax,indi)
 !    write(6,*)'dml potist 2',potist,atcf%potist

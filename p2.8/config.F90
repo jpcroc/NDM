@@ -8,7 +8,7 @@ module config_mod
   USE gen_com_m, ONLY:at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
   &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat,cell_debx,cell_deby,cell_debz,&
   &cell_finx,cell_finy,cell_finz,low_limit
-  USE var_pot, ONLY:alpha,na,ntyp,rumax
+  USE var_pot, ONLY:alpha,na,ntyp,rumax,ipotentiel
   USE recips_mod,only: recips
   use cryst_to_cart_mod,only:cryst_to_cart
   USE dynalloccell,only:deallocateall
@@ -881,9 +881,9 @@ end subroutine coord_to_cellcoord
 
 subroutine config2data (imm,im,xp,ityp,at,ntyp)
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:,ONLY : position_conversion_lammps
+  USE gen_com_m, ONLY : position_conversion_lammps
   USE var_pot, ONLY:q,ipotentiel
-  USE Mat_utils_mod,only: Mat_utils
+  USE Mat_utils_mod,only: Matinv,is_upper_triangular
   implicit none
   integer,intent(in)::imm,im,ntyp
   real(double),intent(in)::xp(3,imm),at(3,3)
@@ -1009,7 +1009,7 @@ end subroutine config2data
 
 !---------------------------------------------------
 subroutine convert_cell(mat_ini,new_mat,transform)
-  USE Mat_utils_mod,only: Mat_utils
+  USE Mat_utils_mod,only: Matinv,norme,cross_product,is_upper_triangular,right_hand_basis
 
 
   implicit none

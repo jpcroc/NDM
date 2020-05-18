@@ -35,7 +35,12 @@ module init_mod
 #endif
 #ifdef ML
   USE calfo_ml_mod,only: calfo_ml 
-#endif 
+#endif
+#ifdef LAMMPS_VERSION
+  use lammps_util_mod
+  use vars_lammps
+#endif
+  
   USE gen_com_m, ONLY:igen,ilangevin,imf,iteheat,lcdp,lcorrelvp,ldislo,lhcyl,lheat,itichup,itichdn,itichdeb,formatsauv,iko,&
        &imana,itdes,iteanapos,iteplz,iterasmol,itetimestep,itmax,lcalcjq,lcasca,ldesinteg,lcontr,lfilm,lprteat,&
        &lrestart,lsigtyp,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,sigtyp,&
