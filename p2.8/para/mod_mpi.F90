@@ -252,7 +252,7 @@ contains
 
              ! On boucle sur les atomes de cette cellule
              do n_at= 1, nato(cellf)
-                i_at = last(n_at,cellf)
+                i_at = atincel(n_at,cellf)
 
                 ! On complete le buffer
                 send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1
@@ -367,7 +367,7 @@ contains
 
           ! mise a jour des donnees de la cellule correspondante
           nato(ielat(im)) = nato(ielat(im)) + 1
-          last(nato(ielat(im)),ielat(im)) = im
+          atincel(nato(ielat(im)),ielat(im)) = im
 
           ! mise a jour des variables reelles
           xp(1,im) = recv_buff_dbl(1,i_at,ind_recv) 
@@ -399,7 +399,7 @@ contains
             Gl(3,im)= recv_buff_dbl(nb_var_dbl,i_at,ind_recv)
         end if
 
-          if(lfrozen)free(im)=.true.
+!          if(lfrozen)free(im)=.true.
 !LPARAFULLSEND
 !          xpp(1,im) = recv_buff_dbl(10,i_at,ind_recv)
 !          xpp(2,im) = recv_buff_dbl(11,i_at,ind_recv)
@@ -465,11 +465,11 @@ contains
              ! On met a jour les caracteristiques de la cellule correspondante
              koo = ielat(i_at)
              do j_at = 1, nato(koo)
-                if ( last(j_at,koo).eq.i_at ) then
+                if ( atincel(j_at,koo).eq.i_at ) then
                    if (j_at.eq.nato(koo)) then
-                      last(j_at,koo) = 0
+                      atincel(j_at,koo) = 0
                    else
-                      last(j_at:nato(koo)-1,koo) = last(j_at+1:nato(koo),koo)
+                      atincel(j_at:nato(koo)-1,koo) = atincel(j_at+1:nato(koo),koo)
                    endif
                 endif
              enddo
@@ -488,7 +488,7 @@ contains
 	     if (lsuivinonpbc)  tmpsuivi(:,i_new)  = tmpsuivi(:,i_at)
 	     if (lsuivinonpbc)  axnonpbc(:,i_new)  = axnonpbc(:,i_at)
 !             fp(:,i_new)  = fp(:,i_at)
-             if(lfrozen)free(i_new)=free(i_at)
+!             if(lfrozen)free(i_new)=free(i_at)
 
              ityp(i_new)        = ityp(i_at)
              ielat(i_new)       = ielat(i_at)
@@ -497,8 +497,8 @@ contains
 
              ! On met aussi a jour le numero local de l'atome dans la liste de la cellule
              do j_at=1,nato(ielat(i_at))
-                if (last(j_at,ielat(i_at)).eq.i_at) then
-                   last(j_at,ielat(i_at))=i_new
+                if (atincel(j_at,ielat(i_at)).eq.i_at) then
+                   atincel(j_at,ielat(i_at))=i_new
                    exit
                 endif
              enddo
@@ -608,7 +608,7 @@ contains
 
           ! On copie le contenu de la cellule dans le buffer d'envoi
           do n_at = 1, nato(koo)
-             i_at = last(n_at,koo)
+             i_at = atincel(n_at,koo)
 
              ! On complete le buffer
              send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1
@@ -763,7 +763,7 @@ contains
 
           ! mise a jour des donnees de la cellule correspondante
           nato(ielat(pt_at_ftm)) = nato(ielat(pt_at_ftm)) + 1
-          last(nato(ielat(pt_at_ftm)),ielat(pt_at_ftm)) = pt_at_ftm
+          atincel(nato(ielat(pt_at_ftm)),ielat(pt_at_ftm)) = pt_at_ftm
 
           ! mise a jour des variables reelles
           xp(1,pt_at_ftm) = recv_buff_dbl(1,i_at,ind_recv) 
@@ -874,7 +874,7 @@ contains
 
           ! On copie le contenu de la cellule dans le buffer d'envoi
           do n_at = 1, nato(koo)
-             i_at = last(n_at,koo)
+             i_at = atincel(n_at,koo)
 
              ! On complete le buffer
              send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1
@@ -1051,7 +1051,7 @@ contains
 
              ! On copie le contenu de la cellule dans le buffer d'envoi
              do n_at = 1, nato(koo)
-                i_at = last(n_at,koo)
+                i_at = atincel(n_at,koo)
                 
                 ! On complete le buffer
                 send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1

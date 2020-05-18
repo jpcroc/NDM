@@ -1,5 +1,6 @@
 #ifdef LAMMPS_VERSION
 MODULE vars_lammps
+  USE T_kind_param_m, ONLY:  double
   use LAMMPS
   type (C_ptr) :: lmp 
   !old not workingversion
@@ -14,13 +15,13 @@ MODULE vars_lammps
 end MODULE !vars_lammps
 
 
-!module lammps_util_mod
-!        use gen_com_m
-!        use LAMMPS
-!        use vars_lammps
-!        implicit none
-!        contains
-!
+module lammps_util_mod
+        use gen_com_m
+        use LAMMPS
+        use vars_lammps
+        implicit none
+        contains
+
 subroutine read_lammps
   use gen_com_m, ONLY: rang,firsttime_lammps
   use LAMMPS
@@ -48,17 +49,23 @@ subroutine read_lammps
 
 
 
-subroutine calcforce_lammps2
+subroutine calcforce_lammps2 (im,xp,ityp,fp)
   use vars_lammps
   use LAMMPS
-  use tab_imm_m, ONLY: ityp,xp,fp
+!  use tab_imm_m, ONLY: ityp,xp,fp
   use var_pot,only:ntyp,cm
-  use gen_com_m, ONLY : im,umass,firsttime_lammps,potist,energy_conversion_lammps,position_conversion_lammps,sig,it,itesigma,rskin
+  use gen_com_m, ONLY : umass,firsttime_lammps,potist,energy_conversion_lammps,position_conversion_lammps,sig,it,itesigma,rskin
 !  use mod_para_phondy
 !  use mpi
 
 
   implicit none
+
+  integer,intent(in)::im
+  integer, intent (in),allocatable:: ityp(:)
+  real(double),intent(in),allocatable::xp(:,:)
+  real(double), intent(inout),allocatable::fp(:,:)
+  
   integer i,k,num,ierr
   real (C_double), pointer :: energy => NULL()
   real(C_double), dimension(:), pointer :: p_tensor=>NULL()
@@ -195,7 +202,7 @@ subroutine calcforce_lammps2
 end subroutine calcforce_lammps2
 
 
-!end module
+end module
 
 
 #endif

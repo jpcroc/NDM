@@ -129,7 +129,7 @@ help:
 	@cat version.h
 	@echo \#define COMPILE_TARGET \"$@\" >> version.h
 	@#fortdepend -w $(MPIFLAG) -i mpi -f  *.F90 mod/* para/*  *.f  -o .dependencies
-	$(MAKEDEPEND) -w $(FLAG) -i mpi iso_c_binding -f  $(checkfiles)  -o $(DEP_FILE)
+	$(MAKEDEPEND) -wvc $(FLAG) -i mpi ISO_C_binding -f  $(checkfiles)  -o $(DEP_FILE)
 	@chmod +x MAKE/Makefile.$@ 
 	@cp MAKE/Makefile.$@ Obj_$@/Makefile
 	@cp name.in Obj_$@/.
