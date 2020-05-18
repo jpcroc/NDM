@@ -28,6 +28,11 @@ module calfo_mod
 #ifdef PARA
   use mod_para
 #endif
+#ifdef LAMMPS_VERSION        
+        use lammps_util_mod
+        use vars_lammps  
+#endif
+
         implicit none
         contains
 ! ************************************************
@@ -82,12 +87,12 @@ subroutine calfo
 #endif
   !   if (rang==0) write(6,*) 'ldemintab',ldemitab
 
-  interface 
+  !interface 
 
-     subroutine calcforce_lammps2
-     end subroutine calcforce_lammps2
+  !   subroutine calcforce_lammps2
+  !   end subroutine calcforce_lammps2
 
-  end interface
+  !end interface
 
   potist=0.
   potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potisP=0.

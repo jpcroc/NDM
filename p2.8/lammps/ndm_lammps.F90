@@ -14,12 +14,12 @@ MODULE vars_lammps
 end MODULE !vars_lammps
 
 
-!module lammps_util_mod
-!        use gen_com_m
-!        use LAMMPS
-!        use vars_lammps
-!        implicit none
-!        contains
+module lammps_util_mod
+        use gen_com_m
+        use LAMMPS
+        use vars_lammps
+        implicit none
+        contains
 !
 subroutine read_lammps
   use gen_com_m, ONLY: rang,firsttime_lammps
@@ -195,7 +195,7 @@ subroutine calcforce_lammps2
 end subroutine calcforce_lammps2
 
 
-!end module
+end module
 
 
 #endif

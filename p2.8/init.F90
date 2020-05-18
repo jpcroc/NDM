@@ -23,7 +23,10 @@ module init_mod
         use deftimestep_mod
         use rasmol_mod
         use prtplz_mod
-
+#ifdef LAMMPS_VERSION        
+        use lammps_util_mod
+        use vars_lammps  
+#endif
 #ifdef PARA
         use init_vois_mod
 #endif
