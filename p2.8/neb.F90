@@ -61,7 +61,7 @@ contains
 #ifdef PARANEB    
     real(double),allocatable:: enepathev_tot(:),enepath_tot(:),sigpath_tot(:,:,:),rc_tot(:)
     integer, allocatable:: nebtest_tot(:)
-    real(double)::enertrf,sigpathtrf(3,3)
+    real(double)::enertrf,sigpathtrf(3,3),rc_trf
     integer:: iproc,proc_source
     enepath(:)=0
     allocate(enepathev_tot(npath));    allocate(enepath_tot(npath)); allocate(sigpath_tot(3,3,npath))
@@ -420,8 +420,6 @@ contains
 #ifdef PARANEB
     write(6,*)
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-    call MPI_ALLREDUCE(reaction_coord,rc_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-    reaction_coord(:)=rc_tot(:)
 
     if (myid==0) then
        do iproc=1,nprocs-1
@@ -434,6 +432,9 @@ contains
           call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10002, MPI_COMM_WORLD, status, ierr)
           proc_source = status(MPI_SOURCE)
           sigpath(:,:,proc_source+2)=sigpathtrf(:,:)
+          call MPI_RECV(rc_trf,1,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10005, MPI_COMM_WORLD, status, ierr)
+          proc_source = status(MPI_SOURCE)
+          reaction_coord(proc_source+2)=rc_trf
           
           !          endif
        end do
@@ -446,7 +447,7 @@ contains
     else ! Les autres processeurs envoient leurs donnees locales
        call MPI_SEND(enepath(myid+2),               1,   NDM_MPI_REAL_DOUBLE,        0,10001,MPI_COMM_WORLD,ierr)
        call MPI_SEND(sigpath(:,:,myid+2),               9,   NDM_MPI_REAL_DOUBLE,        0,10002,MPI_COMM_WORLD,ierr)
-       
+       call MPI_SEND(reaction_coord(myid+2),               1,   NDM_MPI_REAL_DOUBLE,        0,10005,MPI_COMM_WORLD,ierr)       
        if (myid==nprocs-1)then
           call MPI_SEND(enepath(npath),               1,   NDM_MPI_REAL_DOUBLE,        0,10003,MPI_COMM_WORLD,ierr)
           call MPI_SEND(sigpath(:,:,npath),               9,   NDM_MPI_REAL_DOUBLE,        0,10004,MPI_COMM_WORLD,ierr)
