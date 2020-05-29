@@ -123,7 +123,7 @@ contains
        !     boxl(2)=at(2,2)/A2cm
        !     boxl(3)=at(3,3)/A2cm
 
-       call calcforce_lammps2(atcf%im,atcf%xp,atcf%ityp,atcf%fp)
+       call calcforce_lammps2(atcf%im,atcf%xp,atcf%ityp,atcf%fp,potist)
 
     else
 #endif  

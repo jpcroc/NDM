@@ -49,12 +49,12 @@ subroutine read_lammps
 
 
 
-subroutine calcforce_lammps2 (im,xp,ityp,fp)
+subroutine calcforce_lammps2 (im,xp,ityp,fp,potislammps)
   use vars_lammps
   use LAMMPS
 !  use tab_imm_m, ONLY: ityp,xp,fp
   use var_pot,only:ntyp,cm
-  use gen_com_m, ONLY : umass,firsttime_lammps,potist,energy_conversion_lammps,position_conversion_lammps,sig,it,itesigma,rskin
+  use gen_com_m, ONLY : umass,firsttime_lammps,energy_conversion_lammps,position_conversion_lammps,sig,it,itesigma,rskin
 !  use mod_para_phondy
 !  use mpi
 
@@ -65,7 +65,7 @@ subroutine calcforce_lammps2 (im,xp,ityp,fp)
   integer, intent (in),allocatable:: ityp(:)
   real(double),intent(in),allocatable::xp(:,:)
   real(double), intent(inout),allocatable::fp(:,:)
-  
+  real(double),intent(out)::potislammps
   integer i,k,num,ierr
   real (C_double), pointer :: energy => NULL()
   real(C_double), dimension(:), pointer :: p_tensor=>NULL()
@@ -152,7 +152,7 @@ subroutine calcforce_lammps2 (im,xp,ityp,fp)
   ! Extract energy from LAMMPS
   call lammps_extract_compute (energy, lmp, 'thermo_pe',0,0)
 !     write(6,*)'calfolammps5'
-  potist=energy*energy_conversion_lammps 
+  potislammps=energy*energy_conversion_lammps 
   if (mod(it,itesigma)==0) then
      call lammps_extract_compute (p_tensor, lmp, 'thermo_press',0,1)
 !     write(6,*)'calfolammps6'
