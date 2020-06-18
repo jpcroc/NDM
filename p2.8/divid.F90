@@ -382,7 +382,7 @@ contains
        allocate(indi(nvois))
        allocate(indi2(nvois))
     else
-
+       nvois=0
     end if
 
 

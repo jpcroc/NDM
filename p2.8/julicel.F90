@@ -1,15 +1,14 @@
 module calfojulicel_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,nvat,fnemd,lcalcjq,lnemd,lperiod,noxyz,&
-       &zero,ncel,atincel,nato,ncel,nato,ncel,nato,sigc,sigat,eatom,volu
+  USE gen_com_m, ONLY:at,bg,nvat,fnemd,lcalcjq,lnemd,lperiod,zero,sigc,sigat,eatom,volu
   USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot,ngrid,npair,&
        &eamrep,ipo,typ_pot_pair,eamglue,eamrho
         USE calfocommon
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfojulicel(im,xp,  vp, fp, ielat, ityp)
+  SUBROUTINE calfojulicel(im,xp,  vp, fp, ielat, ityp,noxyz,natperc,atincel,nato,ncel,deltadist)
     !tentaive de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
 
@@ -22,6 +21,9 @@ contains
   real(double),intent(in),allocatable  :: vp(:,:)
   real(double),intent(inout),allocatable  :: xp(:,:)
   real(double) , intent(inout),allocatable :: fp(:,:)
+
+  integer,intent(in)::noxyz,natperc
+  integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)  
 
     !local variables
     integer :: i,j,l !atomes

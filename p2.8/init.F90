@@ -29,7 +29,10 @@ module init_mod
   USE rasmol_mod,only: rasmol
   USE prtplz_mod,only: prtplz
   USE neb_module,only: configneb
-  USE atomconfig
+  USE atomconfig,only:atom_config,ndm2config,config2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+
+
 #ifdef PARA
   USE init_vois_mod,only: init_voisinage
 #endif
@@ -93,6 +96,7 @@ contains
     !-----------------------------------------------
     character*2::extension
     type(atom_config_d)::atdml
+
     tmean = 0.0
     pmean = 0.0
     timel = 0.0
@@ -394,12 +398,15 @@ contains
 
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
     if (ltabvois) then
-       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-       call caltabi(atdml%atom_config)
-       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+       call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+            &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+       call caltabi(atdml%atom_config,celndm)
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+            &xpp=xpp)
+       call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
     end if
-!       call caltabi
+
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
     !  end if
     !computing the neighbours for the very first time ......
@@ -505,10 +512,13 @@ contains
     call caltabt(im,xp,ielat)
        if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
        if (ltabvois) then
-          call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-               &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-       call caltabi(atdml%atom_config)
-       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+                       call  ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call caltabi(atdml%atom_config,celndm)
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                  &xpp=xpp)
+             call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
     end if
        
     end if
@@ -541,8 +551,15 @@ contains
           call creadp (xp, xpp, ityp,vp)
           call caltabt(im,xp,ielat)
           
-          if (ltabvois) call caltabi(atdml%atom_config)
-
+          if (ltabvois)  then
+             call  ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call caltabi(atdml%atom_config,celndm)
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                  &xpp=xpp)
+             call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+          end if
           if (lperiod) then
              call period (imm,xp,xpp,ax)
           else

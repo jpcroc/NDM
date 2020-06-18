@@ -7,7 +7,9 @@ module scalebox_mod
   USE period_mod,only: period
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
-  USE atomconfig
+  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+
   USE tab_imm_m,only:num_at_glob
   implicit none
 contains
@@ -49,6 +51,8 @@ contains
     real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1&
          , fact2, hk2, ex, ex1, ex2
     type(atom_config_d)::atdml
+    type(cell_config):: celndm
+
     !real(double), external :: calcvol
     !-----------------------------------------------
     !
@@ -131,11 +135,13 @@ contains
     call caltabt(im,xp,ielat)
 
     if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
-       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-       call caltabi(atdml%atom_config)
-       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,&
-            &vp=vp,xpp=xpp)
+             call  ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call caltabi(atdml%atom_config,celndm)
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                  &xpp=xpp)
+             call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
     end if
 
 

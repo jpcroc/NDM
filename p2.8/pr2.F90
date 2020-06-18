@@ -52,7 +52,9 @@ module Parrinello_Rahman
   USE calfo_mod,only: calfo
   USE scalebox_mod,only: scalebox
   USE Mat_utils_mod,only:  MatInv
-  USE atomconfig
+  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+
    USE caltabt_mod,only: caltabt
   implicit none
   ! Vecteurs de la boîte et leurs dérivées
@@ -93,7 +95,9 @@ contains
 !    integer  :: ielat(imm), iwmax(imm),num_at_glob(imm)
 !    real(double) :: ax(3,imm)
 
-    type(atom_config_d)::atpr
+  type(atom_config_d)::atpr
+  type(cell_config):: celndm
+
     INTEGER :: ia, i, j
     !real(double), external :: calcvol
     real(double):: unitE
@@ -247,10 +251,14 @@ contains
     sdot(:,1:im) = MatMul(invh(:,:), vp(:,1:im) )
 
     ! Forces à l'instant initial
-    call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    CALL CalFo(sig,potist,atpr) 
+
+      call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+  CALL CalFo(sig,potist,atpr,celndm)
+!  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
     !  Contrainte thermique à l'instant initial
     sigkine(:,:)=0.d0
@@ -429,10 +437,14 @@ contains
 
 
     ! Calcul des forces et des contraintes à l'instant t+dt
-    call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    CALL CalFo(sig,potist,atpr) 
+          call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+  CALL CalFo(sig,potist,atpr,celndm)
+!  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+
     ! Calcul de la viscosité à l'instant ...
     DO i=1, nHoover
        zNew(i) = zOld(i) + 2.d0*zDot(i)*tstep    ! ... t+dt

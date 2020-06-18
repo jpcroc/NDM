@@ -9,9 +9,13 @@ module dmloop_mod
         USE sauveforce_mod,only: sauveforce
         USE sauveposition_mod,only: sauveposition
         USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
-        USE atomconfig
+        USE atomconfig,only : atom_config,ndm2config, config2ndm
+        USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+
         USE gen_com_m,only: dmtype,indi,it,itesauv,ltabvois,potist,rang,sig,nvois
 
+        
+        
         implicit none
         contains
 ! ************************************************
@@ -47,7 +51,8 @@ subroutine dmloop
   !-----------------------------------------------
   !
     type(atom_config_d)::atdml
-  ! MPI
+    type(cell_config):: celndm
+    ! MPI
   if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 
   ! Initialization
@@ -63,12 +68,14 @@ subroutine dmloop
   !      write(6,*)'***** ITERATION  ****', it
 
   ! appel de la routine generale des forces
+  call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml)
+  CALL CalFo(sig,potist,atdml,celndm)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-!    indi=indiCF
+    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    !    indi=indiCF
 
 !  call calfo
   select case (dmtype)

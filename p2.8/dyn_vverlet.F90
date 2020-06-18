@@ -6,7 +6,10 @@ module dyn_vverlet_mod
   USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,eatom,ltranche
 #ifdef PARA
   USE layer_mod,only: layer
-  USE atomconfig
+
+  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+
 
 #endif
   implicit none
@@ -47,6 +50,7 @@ contains
 #endif
 
     type(atom_config_d)::atdml
+    type(cell_config):: celndm
 
     !      write (*,*) 'sub dynvverlet'
 
@@ -126,13 +130,15 @@ contains
     end if
 
     ! Force calculation
-    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    CALL CalFo(sig,potist,atdml )
-    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    
 
-!    call calfo   ! F(t+dt)
+      call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+  CALL CalFo(sig,potist,atdml,celndm)
+!  write(6,*)'dml potist ',potist,atdml%potist
+    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    
 
     if (lnemd) then
        eatommoy=0.

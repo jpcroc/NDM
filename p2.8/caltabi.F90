@@ -1,16 +1,17 @@
 !****************************************************************
 module caltabi_mod
   USE notperiod_mod,only: notperiod
-  USE gen_com_m, ONLY:decal_bc,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,noxyz,&
-       &nvois,nvperat,rang,rvois,ncel,atincel,nato,at,bg,indi2
-  use atomconfig
+  USE gen_com_m, ONLY:decal_bc,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,&
+       &nvois,nvperat,rang,rvois,at,bg,indi2
+  use atomconfig,only: atom_config
+  USE cellconfig,only:cell_config
   implicit none
         contains
 
 
 
 ! *****************************************************************
-subroutine caltabi(atvois)
+subroutine caltabi(atvois,celvois)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -30,6 +31,7 @@ subroutine caltabi(atvois)
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   type(atom_config), intent(inout)::atvois
+  type(cell_config), intent(in)::celvois
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -56,6 +58,11 @@ subroutine caltabi(atvois)
   ! --------------------------
   !   OUVERTURE BOUCLE SUR I
   ! --------------------------
+    if(celvois%icaltabt.ne.atvois%icaltabt) then
+       write (6,*)'incoherence dans icaltabt'
+       stop
+    end if
+    
   iw = 0
   iwph = 0
 
@@ -147,14 +154,14 @@ subroutine caltabi(atvois)
         iti=atvois%ityp(i) 
         xpi(:) = xpnp(:,i)
 
-        ncelvois = min(noxyz,27)-1
+        ncelvois = min(celvois%noxyz,27)-1
         ! pour chaque cel. voisine
         do i1 = 0, ncelvois
-           ko1 = ncel(koo,i1)
+           ko1 = celvois%ncel(koo,i1)
            !               write(6,*)'i1 ko1 ',i1,ko1
            if (ko1==0) cycle
            loop_j: do i2 = 1, nato(ko1)
-              j = atincel(i2,ko1)
+              j = celvois%atincel(i2,ko1)
                !                 write(6,*)'j ',j
                
                if(ldemitab) then

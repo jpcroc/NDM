@@ -4,6 +4,7 @@ module atomconfig
   integer:: incr=20 ! incrément des tailles de tableau 
   type atom_config ! type minimal des configurations atomiques. Tous les composants seront toujours alloué (im_glob seulement si PARA)
      integer::im=0
+     integer(long)::icaltabt 
      real(double),allocatable:: xp(:,:)
      real(double),allocatable::fp(:,:)
      integer,allocatable::ityp(:)
@@ -63,10 +64,11 @@ module atomconfig
 contains
   !initialisations
 
-  subroutine init_atom_config(atconf,imin,ltabvois,lsigat,lprteat)
+  subroutine init_atom_config(atconf,imin,ltabvois,nvois,lsigat,lprteat)
     class(atom_config),intent(out)::atconf
     integer,intent(in):: imin
     logical,optional, intent(in)::ltabvois,lsigat,lprteat
+    integer, optional::nvois
     
     
     logical ::ltbv=.false.
@@ -86,6 +88,7 @@ contains
     if(ltbv)then
        atconf%ltabvois=.true.
        allocate(atconf%iwmax(atconf%im)); atconf%iwmax=0
+       if (nvois.ne.0) allocate(atconf%indi(nvois))
     end if
     select type (atconf)
     type is (atom_config_d)
@@ -149,29 +152,29 @@ contains
     
   end subroutine copy_atom_config
 
-  subroutine extend (atcf,iadd)
+  subroutine extend(atcf,iadd)
     class(atom_config),intent(inout)::atcf
     integer,intent(in)::iadd
     
     type(atom_config):: attemp
     type(atom_config_d):: attemp_d
     type(atom_config_e):: attemp_e
-    integer::imcn,nvav
+    integer::imcn,nvav,nvois
     
     imcn=atcf%im+iadd
-
+    if (atcf%ltabvois)then
+       nvois=int(1.1*imcn/atcf%im)*size(atcf%indi)
+    else
+       nvois=0
+    end if
     select type(atcf)
     type is (atom_config)
-       call attemp%init(imcn,atcf%ltabvois)
+       call attemp%init(imcn,atcf%ltabvois,nvois)
     type is (atom_config_d)
-       call attemp_d%init(imcn,atcf%ltabvois)
+       call attemp_d%init(imcn,atcf%ltabvois,nvois)
     type is (atom_config_e)
-       call attemp_e%init(imcn,atcf%ltabvois,atcf%lsigat,atcf%lprteat)
+       call attemp_e%init(imcn,atcf%ltabvois,nvois,atcf%lsigat,atcf%lprteat)
     end select
-    if (atcf%ltabvois)then
-       nvav=imcn*int(1.1*(float(atcf%iwmax(atcf%im))/atcf%im+1))
-       allocate(attemp%iwmax(nvav))
-    end if
     call atcf%copy_config(attemp,lrescl=.false.)
     call attemp%copy_config(atcf,lrescl=.true.)
        
@@ -230,7 +233,7 @@ contains
     if (lrescl) then
        if (atcible%im.ne.atsource%im) then
           call atcible%dealloc
-          call atcible%init(atsource%im,atcible%ltabvois)
+          call atcible%init(atsource%im,atcible%ltabvois,size(atsource%indi))
           if ((atcible%ltabvois).and.(atsource%ltabvois)) then
              allocate (atcible%indi(size(atsource%indi)))
           end if
@@ -356,7 +359,7 @@ contains
     end do
     select type (at2pack)
     type is (atom_config)
-       call at%init(imn,at2pack%ltabvois)
+       call at%init(imn,at2pack%ltabvois,size(at2pack%indi))
        do i=1,imn
           call at2pack%copy_atom(i,at,i)
        end do
@@ -364,7 +367,7 @@ contains
        call at%copy_config(at2pack,lrescl=.true.)
        
     type is(atom_config_d)
-       call atd%init(imn,at2pack%ltabvois)
+       call atd%init(imn,at2pack%ltabvois,size(at2pack%indi))
        do i=1,imn
           call at2pack%copy_atom(i,atd,i)
        end do
@@ -372,7 +375,7 @@ contains
        call atd%copy_config(at2pack,lrescl=.true.)
 
     type is(atom_config_e)
-       call ate%init(imn,at2pack%ltabvois,at2pack%lsigat,at2pack%lprteat)
+       call ate%init(imn,at2pack%ltabvois,size(at2pack%indi),at2pack%lsigat,at2pack%lprteat)
        do i=1,imn
           call at2pack%copy_atom(i,ate,i)
        end do
@@ -392,9 +395,9 @@ contains
     imtrf=COUNT(atsource%lgul)
     select type (atsource)
     type is (atom_config_e)
-       call atcible%init(imtrf,atsource%ltabvois,lsigat=atsource%lsigat,lprteat=atsource%lprteat)
+       call atcible%init(imtrf,atsource%ltabvois,size(atsource%indi),lsigat=atsource%lsigat,lprteat=atsource%lprteat)
     class is (atom_config)
-       call atcible%init(imtrf,atsource%ltabvois)
+       call atcible%init(imtrf,atsource%ltabvois,size(atsource%indi))
     end select
     i2=0
     do i=1,atsource%im
@@ -431,9 +434,9 @@ contains
     if(atcible%im==0) then
        select type (atsource)
        type is (atom_config_e)
-          call atcible%init(imtrf,atsource%ltabvois,lsigat=atsource%lsigat,lprteat=atsource%lprteat)
+          call atcible%init(imtrf,atsource%ltabvois,size(atsource%indi),lsigat=atsource%lsigat,lprteat=atsource%lprteat)
        class is (atom_config)
-          call atcible%init(imtrf,atsource%ltabvois)
+          call atcible%init(imtrf,atsource%ltabvois,size(atsource%indi))
        end select
     else
        call atcible%extend(imnew)
@@ -547,6 +550,7 @@ contains
     write(6,*)
   end subroutine print
   !MANQUE SIG AU MINIMUM
+  
   subroutine ndm2config (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois,vp,xpp,eat,sigat)
     class(atom_config)::atndm
     integer,intent(in)::im,imm
@@ -569,11 +573,12 @@ contains
     select type(atndm)
 !    type is (atom_config)
     class is (atom_config)
-       call atndm%init(im,ltabvois)
+       call atndm%init(im,ltabvois,nvois)
     type is (atom_config_e)
-       call atndm%init(im,ltabvois,lsigat,lprteat)
+       call atndm%init(im,ltabvois,nvois,lsigat,lprteat)
     end select
 
+    atndm%icaltabt=0
     atndm%xp(:,1:im)=xp(:,1:im)
     atndm%fp(:,1:im)=fp(:,1:im)
     atndm%ityp(1:im)=ityp(1:im)
@@ -654,6 +659,9 @@ contains
 !          allocate(eat(imm))
           eat(1:atndm%im)=atndm%eat(1:atndm%im)
        end if
+       call atndm%dealloc
+
+       
     end select
   end subroutine config2ndm
 

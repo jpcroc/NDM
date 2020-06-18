@@ -6,26 +6,19 @@ module calfo2ccel_mod
           implicit none
         contains
 ! ***************************************************************
-subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
+subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m , ONLY:at,bg,deltadist, espr,deltaf,espr,it,itdes,itesigma,kspr,lambdades,&
-       &lcalcjq,ldesinteg,lperiod,lprteat,lsigtyp,ltpcel,noxyz,nstepdes,pi,pm1des,potis1,potis2,&
-       &ncel,atincel,nato,xpspr,xpspr,xpspr,sigtyptyp,sigtyp,sigc,eatom,volu,deltaEspr
-
-
+  USE gen_com_m , ONLY:at,bg, espr,deltaf,espr,it,itdes,itesigma,kspr,lambdades,&
+       &lcalcjq,ldesinteg,lperiod,lprteat,lsigtyp,ltpcel,nstepdes,pi,pm1des,potis1,potis2,&
+       &xpspr,sigtyptyp,sigtyp,sigc,eatom,volu,deltaEspr
   USE jqmod
 !  USE tab_imm_m
 #ifdef PARA
   USE mod_para
 #endif
-  !...Translated by PSUITE Trans90                  4.3ZH 16:03:53   7/03/ 1
-  !...Switches: -nqp -rl -xf -xhm -x
-  !      version para-seq du 22 fevrier 2001
-  ! **************************************************************
-
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -37,6 +30,9 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob)
   integer , intent(in),allocatable :: ielat(:),ityp(:),num_at_glob(:)
   real(double),intent(in),allocatable  :: xp(:,:),vp(:,:)
   real(double) , intent(inout),allocatable :: fp(:,:)
+
+  integer,intent(in)::noxyz,natperc
+  integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------

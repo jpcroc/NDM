@@ -8,7 +8,8 @@ module dmloop_vverlet_mod
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
   USE correl_mod,only: correlvp
-  USE atomconfig
+  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
   use var_pot,only:ntyp
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,im,lgc,rang,rayonc,&
        &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,lsigtyp,ltpcel,sigat,sigc,sigtyptyp,sigtyp&
@@ -49,7 +50,7 @@ contains
     !-----------------------------------------------
     ! MPI
     type(atom_config_d)::atdml
-
+    type(cell_config):: celndm
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 #ifdef PARA
     temps_para=0.
@@ -58,11 +59,15 @@ contains
     if (lsuivinonpbc) call init_suivinonpbc()
     !  write(6,*)'RG i ',rang,it
     ! Appel de la routine generale des forces
-!    call calfo 
-    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+    !    call calfo
+      call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+  CALL CalFo(sig,potist,atdml,celndm)
+!  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+
 
 
 

@@ -5,8 +5,11 @@ module dmloop_lpr_mod
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose
+  USE calfo_mod,only: calfo
 
-  USE atomconfig
+  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+
 
 #ifdef PARA
   USE recips_mod,only: recips
@@ -44,6 +47,7 @@ contains
 
 #endif
     type(atom_config_d)::atdml
+    type(cell_config):: celndm
 
 
 
@@ -63,12 +67,17 @@ contains
 1   continue 
     it = it+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
-!       call calfo
-       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    CALL CalFo(sig,potist,atdml)
-    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
 
+      call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+  CALL CalFo(sig,potist,atdml,celndm)
+!  write(6,*)'dml potist ',potist,atdml%potist
+    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+
+
+       
        call prNose(xp,xpp,vp,fp,ityp)
 
 #ifdef PARA

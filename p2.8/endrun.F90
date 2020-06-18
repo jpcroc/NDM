@@ -5,7 +5,6 @@ module endrun_mod
         USE desinteg_insert_mod,only:desinteg_insert
         USE arret_ndm_mod,only:arret_ndm
         USE sauvegarde_mod,only:sauvegarde,cin2gin
-        USE calfo_mod  ,only:calfo
         USE rdf_mod,only:rdf
         USE rasmol_mod,only:rasmol,redefine_ty
         USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,sigat,cunitP,erg2eV,itdes,&
@@ -82,7 +81,6 @@ subroutine endrun
   !flag_fin = .true. !*!
   if(ibound.ne.0) Call spebc_fin (.true.) !*!
 
-!  CALL calfo
 
 
   ! MPI

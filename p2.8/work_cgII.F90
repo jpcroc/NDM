@@ -23,7 +23,9 @@ USE caltabi_mod,only: caltabi
   USE mod_para
 #endif
   USE tab_imm_m, ONLY : xp, fp,num_at_glob,ax,vp,xpp,ityp,ielat,iwmax
-  USE atomconfig
+  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+
   
   implicit none
 
@@ -54,7 +56,8 @@ contains
     real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
 
     type(atom_config_d)::atcg
-
+    type(cell_config):: celcg
+    
 !    write(6,*)'entree funct', it,ncalls
     it=NCALLS-1
 
@@ -104,10 +107,13 @@ contains
 #endif    
     call caltabt(im,xp,ielat)
     if (ltabvois.and.mod(it,itetabvois)==0) then
+       call  ndm2cellconfig(celcg,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
        call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
             &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-       call caltabi(atcg%atom_config)
+       call caltabi(atcg%atom_config,celcg)
        call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+       call cellconfig2ndm(celcg,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+
     end if
     
 !    call period
@@ -239,11 +245,14 @@ contains
 !      !       write(6,*)rang,i,xp_all(:,i)
 !       write(607,'(I6,3G22.13)') i,xp(:,i)
 !    end do
-    call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    CALL CalFo(sig,potist,atcg) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-    call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
 
+      call ndm2cellconfig(celcg,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+  CALL CalFo(sig,potist,atdml,celcg)
+!  write(6,*)'dml potist ',potist,atdml%potist
+    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    call cellconfig2ndm(celcg,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
     
 !    call calfo
 !    open(unit=606, file='fpG.csv', form='formatted', &

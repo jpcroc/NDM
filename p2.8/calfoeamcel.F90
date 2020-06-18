@@ -1,15 +1,13 @@
 module calfoeamcel_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
-        USE gen_com_m, ONLY:angst,at,bg,nvat,it,itesigma,low_limit,lperiod,lprteat,&
-             &ltpcel,noxyz,zero,ncel,atincel,nato,ncel,nato,sigc,eatom,&
-             &deltadist,nox,noy,noz,volu
+        USE gen_com_m, ONLY:angst,at,bg,nvat,it,itesigma,low_limit,lperiod,lprteat,ltpcel,zero,sigc,eatom,volu
         USE calfocommon
 
         implicit none
         contains
 !----------------------------------------------------------------------
-SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob)
+SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,nox,noy,noz)
   USE T_kind_param_m
 
   USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,eamglue,eamrho,rue_pot,&
@@ -28,6 +26,10 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob)
   integer,intent(in)::im
   real(double),intent(inout),allocatable,dimension(:,:)::xp,vp,fp
   integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
+  
+  integer,intent(in)::noxyz,natperc,nox,noy,noz
+  integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
+
   !local variables
   integer :: i,j !atomes
   integer ::iti,itj !types

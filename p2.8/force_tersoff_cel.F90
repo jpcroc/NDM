@@ -1,12 +1,11 @@
 module force_tersoff_cel_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,it,itesigma,lcalcjq,ltpcel,noxyz,potistersoff,potiszbl,&
-       &ncel,atincel,ncel,nato,nato,sigc,eatom,volu
+  USE gen_com_m, ONLY:at,bg,it,itesigma,lcalcjq,ltpcel,potistersoff,potiszbl,sigc,eatom,volu
         USE calfocommon
   implicit none
 contains
 ! ***************************************************************
-subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp)
+subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp,noxyz,natperc,atincel,nato,ncel,deltadist)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -39,6 +38,10 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp)
   integer , intent(in),allocatable :: ielat(:),ityp(:)
   real(double),intent(in),allocatable  :: vp(:,:)
   real(double) , intent(inout),allocatable :: fp(:,:),xp(:,:)
+
+  integer,intent(in)::noxyz,natperc
+  integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)  
+  
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------

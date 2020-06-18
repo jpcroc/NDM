@@ -19,20 +19,26 @@ module neb_module
   integer, save                                  :: dragtest
   integer,dimension(:),allocatable,save          :: irelax,nebtest,icontrainte
   integer,dimension(:,:),allocatable,save        :: ielat_n, iwmax_n, ityp_n
-  real(double),dimension(:,:,:),allocatable,save ::  xp_n, xpp_n, vp_n, ax_n, fp_n
+  real(double),dimension(:,:,:),allocatable,save ::  xp_n, xpp_n, vp_n, fp_n
   real(double),dimension(:,:),allocatable        :: fp_par,fp_perp
   real(double), dimension(:),allocatable, save   :: enePATH,enePATHev,norms,reaction_coord
   real(double), dimension(:,:,:), allocatable, save :: sigPATH  ! Stress tensor
   real(double), dimension(:,:,:),allocatable,save:: s_path,force_neb,bruitneb 
-  real(double)                                   :: forctot,formax,formaxperp, &
-       formaxparl,masstot
+  real(double)                                   :: forctot,formax,formaxperp,formaxparl,masstot
 
+!  type(atom_config_d),allocatable::atneb(:)
 
 
 contains 
 
   subroutine allocate_neb()
     implicit none
+ !   integer ip2
+ !   allocate(atneb(npath))
+ !   do ip2=1,npath
+ !      call atneb(ip2)%init_atom_config(im,ltabvois,nvois)
+ !   end do
+       
     allocate (ielat_n(imm,npath), iwmax_n(imm,npath), &
               ityp_n(imm,npath),                      &
          irelax(imm),                                 &
@@ -40,7 +46,6 @@ contains
          xp_n(3,imm,npath),                           &
          xpp_n(3,imm,npath),                          &
          vp_n(3,imm,npath),                           &
-         ax_n(3,imm,npath),                           &
          fp_n(3,imm,npath),                           &
          reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
@@ -55,7 +60,7 @@ contains
 
   ! **************************************************************
   subroutine into_path(iph, i_dir_path, &                         
-       xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       xp, xpp, vp,  fp, ielat, iwmax, ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -75,7 +80,6 @@ contains
     real(double)  :: xp(3,imm)
     real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
-    real(double)  :: ax(3,imm)
     real(double)  :: fp(3,imm)
     !-----------------------------------------------
     !-----------------------------------------------
@@ -91,7 +95,6 @@ contains
        xpp_n(:,:,iph)    = xpp(:,:)
        !vp_n (:,:,iph)    = vp (:,:)
        vp_n (:,:,iph)    = 0.d0
-       ax_n (:,:,iph)    = ax (:,:)
        fp_n (:,:,iph)    = fp (:,:)
     else 
        ielat   (:)      = ielat_n   (:,iph)
@@ -101,7 +104,6 @@ contains
        xpp(1:3,:)	      = xpp_n(1:3,:,iph)   
        !vp (1:3,:)	      = vp_n (1:3,:,iph)   
        vp(1:3,:) = 0.d0
-       ax (1:3,:)	      = ax_n (1:3,:,iph)   
        fp (1:3,:)	      = fp_n (1:3,:,iph)   
        !fp (1:3,:)	      = 0.d0   
     end if
@@ -112,7 +114,7 @@ contains
 
 
 
-  subroutine init_neb(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+  subroutine init_neb(xp, xpp, vp,  fp, ielat, iwmax, ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -126,7 +128,6 @@ contains
     real(double)  :: xp(3,imm)
     real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
-    real(double)  :: ax(3,imm)
     real(double)  :: fp(3,imm)
     real(double)  :: dxx(3,imm)
     !-----------------------------------------------
@@ -183,7 +184,6 @@ contains
        iwmax_n   (:,iph) = iwmax   (:)
        xpp_n(:,:,iph)    = xp_n(:,:,iph)
        vp_n (:,:,iph)    = 0.d0
-       ax_n (:,:,iph)    = xp_n(:,:,iph)
        fp_n (:,:,iph)    = 0.d0
     end do
 
@@ -484,7 +484,7 @@ contains
     return
   end subroutine find_relax
 
-  subroutine force_projection(ipath,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+  subroutine force_projection(ipath,xp, xpp, vp,  fp, ielat, iwmax, ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -498,7 +498,6 @@ contains
     real(double)  :: xp(3,imm)
     real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
-    real(double)  :: ax(3,imm)
     real(double)  :: fp(3,imm)      
     !-----------------------------------------------
     integer       :: ia,ipath
@@ -526,7 +525,7 @@ contains
 
   end subroutine force_projection
 
-  subroutine force_projection_neb(ipath,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+  subroutine force_projection_neb(ipath,xp, xpp, vp,  fp, ielat, iwmax, ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -540,7 +539,6 @@ contains
     real(double)  :: xp(3,imm)
     real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
-    real(double)  :: ax(3,imm)
     real(double)  :: fp(3,imm)      
     !-----------------------------------------------
     integer       :: ia,ipath
@@ -576,7 +574,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-  subroutine configNEB(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+  subroutine configNEB(xp, xpp, vp,  fp, ielat, iwmax, ityp)
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:
 
@@ -586,7 +584,6 @@ contains
     real(double)  :: xp(3,imm)
     real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
-    real(double)  :: ax(3,imm)
     real(double)  :: fp(3,imm)
 
     integer :: ic, ip,lucin,icintype,typmax,i,typmin
@@ -668,7 +665,6 @@ contains
           xp_n (:,:,ip)    = xp (:,:)
           xpp_n(:,:,ip)    = xpp(:,:)
           vp_n (:,:,ip)    = vp (:,:)
-          ax_n (:,:,ip)    = ax (:,:)
           fp_n (:,:,ip)    = fp (:,:)
           close(lucin)
        end do
@@ -686,7 +682,7 @@ contains
           call rasmol(1)
        endif
 
-       call into_path(1,1,xp, xpp, vp, ax, fp, ielat, iwmax,ityp)
+       call into_path(1,1,xp, xpp, vp,  fp, ielat, iwmax,ityp)
 
 
 
@@ -702,7 +698,7 @@ contains
           call sauveposition(npath)
           call rasmol(npath)
        endif
-       call into_path(npath,1,xp, xpp, vp, ax, fp, ielat, iwmax,ityp)
+       call into_path(npath,1,xp, xpp, vp,  fp, ielat, iwmax,ityp)
 
        !       fnam=fnamneb
        !       lenfnam=lenfnam-4

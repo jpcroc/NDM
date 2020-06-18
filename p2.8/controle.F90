@@ -10,7 +10,8 @@ module controle_mod
   USE heat_mod,only: heat
   USE creadp_mod,only: creadp
   USE deftimestep_mod,only: deftimestep
-  USE atomconfig
+  USE atomconfig,only:atom_config,ndm2config,config2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
   implicit none
 contains
   ! ***********************************************************
@@ -61,6 +62,7 @@ contains
     real(double),save :: potist1000
     real, allocatable,save :: potiststock(:)
     type(atom_config_d)::atdml
+    type(cell_config)::cellcf
 #ifdef PARA
     real(double) :: tcou_glob
     integer      :: nacou_glob
@@ -151,11 +153,14 @@ contains
           call caltabt(im,xp,ielat) 
 
           if (ltabvois) then
+             call  ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
              call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
                   &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-             call caltabi(atdml%atom_config)
+             call caltabi(atdml%atom_config,celndm)
              call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
                   &xpp=xpp)
+             call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+
           end if
           if (lperiod) then 
              call period (imm,xp,xpp,ax)
@@ -180,13 +185,16 @@ contains
     endif !dmtype
 
     if (ltabvois.and.mod(it,itetabvois)==0) then
-       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,iwmax=iwmax,&
-            &indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-       call caltabi(atdml%atom_config)
-       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,&
-            &vp=vp,xpp=xpp)
+       call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+            &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+       call caltabi(atdml%atom_config,celndm)
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+            &xpp=xpp)
+       call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+
     end if
-    !call caltabi 
+ 
 
     !write(6,*)it
 

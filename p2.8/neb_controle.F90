@@ -16,7 +16,7 @@ contains
   !           MCM for JPC 08/02/2007
   ! ***********************************************************
 
-  subroutine neb_controle (ii) ! (ii,xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+  subroutine neb_controle (ii) 
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -38,7 +38,6 @@ contains
     ! real(double)  :: xp(3,imm)
     ! real(double)  :: xpp(3,imm)
     ! real(double)  :: vp(3,imm)
-    ! real(double)  :: ax(3,imm)
     ! real(double)  :: fp(3,imm)
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
