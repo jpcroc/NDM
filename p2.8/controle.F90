@@ -10,7 +10,7 @@ module controle_mod
   USE heat_mod,only: heat
   USE creadp_mod,only: creadp
   USE deftimestep_mod,only: deftimestep
-  USE atomconfig,only:atom_config,ndm2config,config2ndm
+  USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
   implicit none
 contains
@@ -27,7 +27,7 @@ contains
          &landerscou,lastcool,lcdp,ljqbh,lprtrp,ltandersen,maxtcel,nbmoye,nuandersen,sigstop,tcooling,&
          &tempstop,tfroi,timemax,ttol,angst,bk,cunite,cunitp,dmtype,erg2ev,iko,im,imm,it,itdes,itetemp,itetimestep,&
          &itmax,ldesinteg,leev,lperiod,lpkbar,ltabvois,nstepdes,potist,sigtot,tcou,temp,text,tfcou,timel,tstep,unite,&
-         &unitp,zl,bg,nvois
+         &unitp,zl,bg,nvois,nox,noy,noz,celsize
 
     USE var_pot, ONLY:
     USE tab_imm_m
@@ -62,7 +62,7 @@ contains
     real(double),save :: potist1000
     real, allocatable,save :: potiststock(:)
     type(atom_config_d)::atdml
-    type(cell_config)::cellcf
+    type(cell_config)::celndm
 #ifdef PARA
     real(double) :: tcou_glob
     integer      :: nacou_glob
@@ -153,13 +153,13 @@ contains
           call caltabt(im,xp,ielat) 
 
           if (ltabvois) then
-             call  ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call  ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
              call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
                   &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
              call caltabi(atdml%atom_config,celndm)
              call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
                   &xpp=xpp)
-             call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
           end if
           if (lperiod) then 
@@ -185,13 +185,13 @@ contains
     endif !dmtype
 
     if (ltabvois.and.mod(it,itetabvois)==0) then
-       call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
        call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
             &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        call caltabi(atdml%atom_config,celndm)
        call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
             &xpp=xpp)
-       call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+       call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
     end if
  

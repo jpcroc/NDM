@@ -3,6 +3,8 @@
 module cellconfig
   USE T_kind_param_m
   use atomconfig,only : atom_config
+
+
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
@@ -63,13 +65,13 @@ contains
 
     call allocatecelN(cell)
 
-    call neigcellN(cell)
+    call neigcelN(cell)
     return
 
   end subroutine init_cel
   subroutine allocatecelN(cell)
     class(cell_config)::cell
-    
+    integer::nsize
     cell%noxyz=cell%nox*cell%noy*cell%noz
     nsize=cell%noxyz
     allocate(cell%ncel(0:nsize,0:26))
@@ -200,6 +202,8 @@ contains
 
 
   subroutine caltabtN(cell,atcf,lperiod,bg)
+    USE notperiod_mod,only: notperiod
+    USE cryst_to_cart_mod,only: cryst_to_cart
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
     logical,intent(in)::lperiod
@@ -307,10 +311,10 @@ contains
   end subroutine caltabtN
 
 
-  subroutine ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  subroutine ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
     type(cell_config), intent(out):: celndm
-    integer, intent(in):: nox,noy,noz,natperc
-    integer,intent(in)::ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,nsize)
+    integer, intent(in):: nox,noy,noz,natperc,noxyz
+    integer,intent(in)::ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
     real(double),intent(in)::celsize(3)
 
     celndm%nox=nox
@@ -328,11 +332,11 @@ contains
     celndm%celsize(3)=celsize(3)
   end subroutine ndm2cellconfig
 
-  subroutine cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
     type(cell_config), intent(inout):: celndm
-    integer, intent(inout):: nox,noy,noz,natperc
+    integer, intent(inout):: nox,noy,noz,natperc,noxyz
     integer,intent(inout)::ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
-    real(double),intent(in)::celsize(3)
+    real(double),intent(out)::celsize(3)
 
     if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
        write(6,*)'incohérence entre noxyz et celndm%noxyz'

@@ -42,7 +42,7 @@ module Parrinello_Rahman
        &h0,kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover,zhoover,zhoover,&
        &zhoover,zhoover,zhoover,zhoover,zhoover, ihbox0,tbox, bk,im,imm,indi,ltabvois,potist,sig,sigkine,sigtot,&
        &text,tstep,volu,at,im_glob,it,ltabvois,potist,rang,sig,text,tstep,volu,sigkine,bg,nvois,zls2,tabf3,tabv3,&
-       &pi,zl
+       &pi,zl,nox,noy,noz,noxyz,natperc,ncel,atincel,deltadist,celsize,nato
  
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q
   USE recips_mod,only: recips,calcvol
@@ -252,13 +252,12 @@ contains
 
     ! Forces à l'instant initial
 
-      call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   CALL CalFo(sig,potist,atpr,celndm)
-!  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
     !  Contrainte thermique à l'instant initial
     sigkine(:,:)=0.d0
@@ -308,13 +307,13 @@ contains
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
     type(atom_config_d)::atpr
+    type(cell_config):: celndm
+
 #ifdef PARA
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
     integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
     real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1, fact2, hk2, ex, ex1, ex2
-    type(atom_config_d)::atdml
-
 
 
 #endif
@@ -437,13 +436,12 @@ contains
 
 
     ! Calcul des forces et des contraintes à l'instant t+dt
-          call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+          call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   CALL CalFo(sig,potist,atpr,celndm)
-!  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
     ! Calcul de la viscosité à l'instant ...
     DO i=1, nHoover

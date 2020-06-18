@@ -10,11 +10,12 @@ module prog_mod
   USE gcII_mod,only: gcII
   USE dmloop_vverlet_mod,only: dmloop_vverlet
   USE dmloop_mod,only: dmloop
-  USE atomconfig,only : atom_config,ndm2config, config2ndm
+  USE atomconfig,only : atom_config,atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
 #if defined ML || defined PARAML    
   USE ml_main_mod,only: ml_main
-#endif 
+#endif
+      USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
   implicit none
 contains
   subroutine prog
@@ -22,7 +23,9 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dmtype,im,imm,indi,ltabvois,parallele,potist,rang,sig,nvois
+    USE gen_com_m, ONLY:dmtype,im,imm,indi,ltabvois,parallele,potist,rang,sig,nvois ,&
+         &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize
+
     USE tab_imm_m
 
 #ifdef PARA
@@ -33,7 +36,7 @@ contains
     character :: extension*2
     integer::lenfn2,i,ko
     type(atom_config_d)::atdml
-    USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+    type(cell_config)::celndm
 
 
     !-----------------------------------------------
@@ -115,10 +118,12 @@ contains
        if (.not.parallele)   call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     case(11)
        if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
+       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
        call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
             &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-       CALL CalFo(sig,potist,atdml) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       CALL CalFo(sig,potist,atdml,celndm) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
        call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
        call analyse()
        call controle()
        call endrun()

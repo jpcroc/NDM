@@ -34,7 +34,7 @@ module calfo_mod
   USE atomconfig,only : atom_config_d,atom_config_d,atom_config_e
   USE calfocommon ! stocke des variables LOCALES sig et potist
 
-  USE cellconfig, only : cel_config
+  USE cellconfig, only : cell_config
 #ifdef PARA
   USE mod_para
 #endif
@@ -91,7 +91,7 @@ contains
 !    call config2ndm(atcf,im,imm,potist,sig,xp,atcf%fp,vp,xpp,ityp,ielat,ltabvois,iwmax,indi)
 !    write(6,*)'dml potist 2',potist,atcf%potist
     !    write(6,*)'apres call'
-    if(celcf%icaltabt.ne.atomcf%icaltabt) then
+    if(celcf%icaltabt.ne.atcf%icaltabt) then
        write (6,*)'incoherence dans icaltabt'
        stop
     end if

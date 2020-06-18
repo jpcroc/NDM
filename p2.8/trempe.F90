@@ -4,7 +4,7 @@ module trempe_mod
 
   implicit none
 contains
-  subroutine trempe(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+  subroutine trempe(xp, xpp, vp, fp, ielat, iwmax, ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -26,7 +26,6 @@ contains
     real(double)  :: xp(3,imm)
     real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
-    real(double)  :: ax(3,imm)
     real(double)  :: fp(3,imm)
     real(double), dimension(ntyp) :: temptyp
 
@@ -58,7 +57,7 @@ contains
 
     end do
 
-    IF (lperiod) call period (imm,xp,xpp,ax)
+    IF (lperiod) call period (imm,xp,xpp)
 
 
     forctot = 0.0

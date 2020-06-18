@@ -9,10 +9,11 @@ module dmloop_mod
         USE sauveforce_mod,only: sauveforce
         USE sauveposition_mod,only: sauveposition
         USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
-        USE atomconfig,only : atom_config,ndm2config, config2ndm
+        USE atomconfig,only : atom_config,atom_config_d,ndm2config, config2ndm
         USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
 
-        USE gen_com_m,only: dmtype,indi,it,itesauv,ltabvois,potist,rang,sig,nvois
+        USE gen_com_m,only: dmtype,indi,it,itesauv,ltabvois,potist,rang,sig,nvois,&
+             &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize
 
         
         
@@ -68,13 +69,13 @@ subroutine dmloop
   !      write(6,*)'***** ITERATION  ****', it
 
   ! appel de la routine generale des forces
-  call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   CALL CalFo(sig,potist,atdml,celndm)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
     !    indi=indiCF
 
 !  call calfo
@@ -87,10 +88,10 @@ subroutine dmloop
 
   case (2) 
           IF (lFire) THEN
-                  call trempe_fire (xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
+                  call trempe_fire (xp, xpp, vp,  fp, ielat, iwmax, ityp, &
                         fire_dt, fire_nstep, fire_alph)
           ELSE
-                  call trempe (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+                  call trempe (xp, xpp, vp, fp, ielat, iwmax, ityp)
           END IF
 
   case default

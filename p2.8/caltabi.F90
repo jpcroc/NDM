@@ -160,7 +160,7 @@ subroutine caltabi(atvois,celvois)
            ko1 = celvois%ncel(koo,i1)
            !               write(6,*)'i1 ko1 ',i1,ko1
            if (ko1==0) cycle
-           loop_j: do i2 = 1, nato(ko1)
+           loop_j: do i2 = 1, celvois%nato(ko1)
               j = celvois%atincel(i2,ko1)
                !                 write(6,*)'j ',j
                

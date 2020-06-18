@@ -35,7 +35,7 @@ SUBROUTINE init_trempe_fire(dt, nstep, alph)
 END SUBROUTINE init_trempe_fire
 
 ! **************************************************************
-subroutine trempe_fire(xp, xpp, vp, ax, fp, ielat, iwmax, ityp, &
+subroutine trempe_fire(xp, xpp, vp, fp, ielat, iwmax, ityp, &
         dt, nstep, alph)
   !-----------------------------------------------
   !   M o d u l e s

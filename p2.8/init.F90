@@ -29,7 +29,7 @@ module init_mod
   USE rasmol_mod,only: rasmol
   USE prtplz_mod,only: prtplz
   USE neb_module,only: configneb
-  USE atomconfig,only:atom_config,ndm2config,config2ndm
+  USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
 
 
@@ -43,16 +43,17 @@ module init_mod
   use lammps_util_mod
   use vars_lammps
 #endif
-  
+
   USE gen_com_m, ONLY:igen,ilangevin,imf,iteheat,lcdp,lcorrelvp,ldislo,lhcyl,lheat,itichup,itichdn,itichdeb,formatsauv,iko,&
        &imana,itdes,iteanapos,iteplz,iterasmol,itetimestep,itmax,lcalcjq,lcasca,ldesinteg,lcontr,lfilm,lprteat,&
        &lrestart,lsigtyp,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,sigtyp,&
        kinemean,lsigat,pmean,xpchdn,sigtyptyp,sigtyp,eatomtotm,lprteattotm,vpchdn,indi,nvois,sigtyp_loc,sigtyptyp_loc,&
-       &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB
+       &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,celsize
 
-  
-      USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel
-  implicit none 
+
+  USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel
+  implicit none
+
 contains
   ! **************************************************************
   subroutine init
@@ -79,24 +80,12 @@ contains
     ! **************************************************************
 
     implicit none
-    !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
     integer :: i, lufilmpaf,itapp,ipotcont,j,lenfn2
     integer :: complet=1    ! flag d'appel a divid : complet : exec de la routine complete
     !-----------------------------------------------
     character*2::extension
     type(atom_config_d)::atdml
-
+    type(cell_config)::celndm
     tmean = 0.0
     pmean = 0.0
     timel = 0.0
@@ -272,7 +261,7 @@ contains
 #endif
     else
 
-       call configNEB(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       call configNEB(xp, xpp, vp, fp, ielat, iwmax, ityp)
     end if
     !...inNEB
     !<---------ends etting the configuration by reading gin /  cin file ---------
@@ -398,13 +387,13 @@ contains
 
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
     if (ltabvois) then
-       call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
        call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
             &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        call caltabi(atdml%atom_config,celndm)
        call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
             &xpp=xpp)
-       call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+       call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
     end if
 
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
@@ -509,18 +498,18 @@ contains
        end if
 
        if (itmax==0) stop
-    call caltabt(im,xp,ielat)
+       call caltabt(im,xp,ielat)
        if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
        if (ltabvois) then
-                       call  ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-             call caltabi(atdml%atom_config,celndm)
-             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
-                  &xpp=xpp)
-             call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
-    end if
-       
+          call  ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+          call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+               &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+          call caltabi(atdml%atom_config,celndm)
+          call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+               &xpp=xpp)
+          call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+       end if
+
     end if
 
 
@@ -550,15 +539,15 @@ contains
        if (itecdp==0)then
           call creadp (xp, xpp, ityp,vp)
           call caltabt(im,xp,ielat)
-          
+
           if (ltabvois)  then
-             call  ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call  ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
              call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
                   &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
              call caltabi(atdml%atom_config,celndm)
              call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
                   &xpp=xpp)
-             call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
           end if
           if (lperiod) then
              call period (imm,xp,xpp,ax)

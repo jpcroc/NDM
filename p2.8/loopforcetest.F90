@@ -16,7 +16,8 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:cunite,cunitp,deltax,erg2ev,rang,unite,unitp,ltabvois,imm,im,potist,sig,indi,nvois
+  USE gen_com_m, ONLY:cunite,cunitp,deltax,erg2ev,rang,unite,unitp,ltabvois,imm,im,potist,sig,indi,nvois,&
+       nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize
   USE var_pot, ONLY:nad,na,ntyp,gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu
   implicit none
   !-----------------------------------------------
@@ -79,13 +80,13 @@ test_force=2
      end do
      fp=0.
 
-      call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   CALL CalFo(sig,potist,atdml,celndm)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
     
      write (6, '(A,D21.12)') '*Epot = ', potist
      epot0=potist
@@ -103,13 +104,13 @@ test_force=2
               xp(ic,i)=xp(ic,i)+is*deltax
               write(6,*)
               write(6,*) 'i,X is', i, ic,is
-       call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   CALL CalFo(sig,potist,atdml,celndm)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
     
               deltaE=potist-epot0
               write (6, '(A,D21.12,A,D21.12)') '*Epot = ', potist,' deltaE= ',deltaE
@@ -130,13 +131,13 @@ test_force=2
         write(6,*)i,xp(1,i),xp(2,i),xp(3,i)
      end do
      fp=0.
-      call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   CALL CalFo(sig,potist,atdml,celndm)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
 
      write(789,*)(xp(1,2)-xp(1,1))*1.d8,potist
@@ -145,13 +146,13 @@ test_force=2
      do while (xp(1,1).lt.xp(1,2))
         xp(1,1)=xp(1,1)+deltax
 
-      call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   CALL CalFo(sig,potist,atdml,celndm)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
         
         write(789,*)(xp(1,2)-xp(1,1))*1.d8,potist*erg2ev
      end do

@@ -6,7 +6,8 @@ module neb_mod
 !  USE scalebox_mod,only: scalebox
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
-       &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois,itetabvois,rang
+       &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois,itetabvois,rang,&
+       &celsize
   
   USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,fp,ielat,num_at_glob
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
@@ -144,14 +145,14 @@ contains
           !       call scalebox (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
           if (lperiod)    call period (imm,xp,xpp)
           call caltabt(im,xp,ielat)
-          call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+          call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
           call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
                &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
           if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
-               &call caltabi(atdml%atom_config)
-          CALL CalFo(sig,potist,atdml) 
+               &call caltabi(atdml%atom_config,celndm)
+          CALL CalFo(sig,potist,atdml,celndm) 
           call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-          call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+          call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
           !write(*,*) 'inside NEB debug2',ii, xp(1,1)
           !       call analyse  
@@ -206,20 +207,20 @@ contains
                 it=it+1
                 if (lperiod)    call period (imm,xp,xpp)
                 call caltabt(im,xp,ielat)
-          call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+          call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
                 call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
                      &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
-                     &call caltabi(atdml%atom_config)
-                CALL CalFo(sig,potist,atdml) 
+                     &call caltabi(atdml%atom_config,celndm)
+                CALL CalFo(sig,potist,atdml,celndm) 
                 call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
                 call force_projection(ii,xp, xpp, vp,  fp, ielat, iwmax, ityp)
                 IF (lFire) THEN
                    call trempe_fire(xp, xpp, vp,  fp, ielat, iwmax, ityp, &
                         fire_dt(ii), fire_nstep(ii), fire_alph(ii))
                 ELSE
-                   call trempe(xp, xpp, vp,  fp, ielat, iwmax, ityp)
+                   call trempe(xp, xpp, vp, fp, ielat, iwmax, ityp)
                 ENDIF
                 !             call analyse  
                 call neb_controle(ii) 
@@ -287,21 +288,21 @@ contains
 
                 if (lperiod)    call period (imm,xp,xpp)
                 call caltabt(im,xp,ielat)
-                call ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+                call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
                 call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
                      &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
-                     &call caltabi(atdml%atom_config)
-                CALL CalFo(sig,potist,atdml) 
+                     &call caltabi(atdml%atom_config,celndm)
+                CALL CalFo(sig,potist,atdml,celndm) 
                 call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
                 call force_projection_neb(ii,xp, xpp, vp,  fp, ielat, iwmax, ityp)
                 IF (lFire) THEN
                    call trempe_fire(xp, xpp, vp,  fp, ielat, iwmax, ityp, &
                         fire_dt(ii), fire_nstep(ii), fire_alph(ii))
                 ELSE
-                   call trempe(xp, xpp, vp,  fp, ielat, iwmax, ityp)
+                   call trempe(xp, xpp, vp, fp, ielat, iwmax, ityp)
                 ENDIF
 
                 call analyse

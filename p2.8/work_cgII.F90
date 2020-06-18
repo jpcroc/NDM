@@ -4,7 +4,8 @@ module work_cgII
   USE gen_com_m, ONLY: im, imm,at, inv_angst, lperiod, rang,indi,itmax,leev,ltabvois,sig, &
                        it, itesauv, itesauvposition, itesauvforce,itmax, &
                        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
-                       dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz,nvois
+                       dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz,nvois,&
+                       &natperc,nato,ncel,atincel,deltadist,celsize
   USE controle_mod,only: controle
   USE calfo_mod,only: calfo
   USE analyse_mod,only: analyse
@@ -107,12 +108,12 @@ contains
 #endif    
     call caltabt(im,xp,ielat)
     if (ltabvois.and.mod(it,itetabvois)==0) then
-       call  ndm2cellconfig(celcg,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+       call  ndm2cellconfig(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
        call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
             &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        call caltabi(atcg%atom_config,celcg)
        call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-       call cellconfig2ndm(celcg,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+       call cellconfig2ndm(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
     end if
     
@@ -246,13 +247,13 @@ contains
 !       write(607,'(I6,3G22.13)') i,xp(:,i)
 !    end do
 
-      call ndm2cellconfig(celcg,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+      call ndm2cellconfig(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml,celcg)
+  CALL CalFo(sig,potist,atcg,celcg)
 !  write(6,*)'dml potist ',potist,atdml%potist
-    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celcg,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    call cellconfig2ndm(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
     
 !    call calfo
 !    open(unit=606, file='fpG.csv', form='formatted', &

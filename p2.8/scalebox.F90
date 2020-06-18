@@ -135,13 +135,13 @@ contains
     call caltabt(im,xp,ielat)
 
     if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
-             call  ndm2cellconfig(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call  ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
              call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
                   &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
              call caltabi(atdml%atom_config,celndm)
              call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
                   &xpp=xpp)
-             call cellconfig2ndm(celndm,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
     end if
 
 

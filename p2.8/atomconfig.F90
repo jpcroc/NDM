@@ -637,6 +637,7 @@ contains
     ityp(1:im)=atndm%ityp(1:im)
     num_at_glob(1:im)=atndm%num_at_glob(1:im)
     ielat(1:im)=atndm%ielat(1:im)
+    ltabvois=atndm%ltabvois
     if (atndm%ltabvois) then
 !       write(6,*)'sizes ', size (iwmax),size(atndm%iwmax)
 !       allocate(iwmax(imm))
@@ -659,7 +660,7 @@ contains
 !          allocate(eat(imm))
           eat(1:atndm%im)=atndm%eat(1:atndm%im)
        end if
-       call atndm%dealloc
+!       call atndm%dealloc
 
        
     end select
