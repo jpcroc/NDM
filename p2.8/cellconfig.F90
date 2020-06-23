@@ -201,7 +201,7 @@ contains
   end subroutine neigcelN
 
 
-  subroutine caltabtN(cell,atcf,lperiod,bg)
+  subroutine caltabtC (cell,atcf,lperiod,bg)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
     class(cell_config), intent(inout):: cell
@@ -219,12 +219,9 @@ contains
     !   write(6,*)'caltabt',it
     icaltabt=icaltabt+1
     
-    cell%nato(1:cell%noxyz) = 0
-    cell%atincel(cell%natperc,1:cell%noxyz) = 0
+    cell%nato(0:cell%noxyz) = 0
+    cell%atincel(1:cell%natperc,0:cell%noxyz) = 0
 
-    !     do i = 1, im
-    !     if ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xp(1,i),xp(2,i),xp(3,i)
-    !  end do
     !  -------- cas sans cellule  -----------
     if (cell%noxyz==1) then
        cell%nato(1) = atcf%im
@@ -241,8 +238,6 @@ contains
           call notperiod(atcf%im,atcf%xp,xpnp)   
        end if
        !  -------- Initialisations  -----------
-!       nato(0:noxyz) = 0
-!       atincel(natperc,:noxyz) = 0
 
        ! -------------------------------------------
        !   1. loop: lattice-coordinates of all atoms
@@ -277,7 +272,7 @@ contains
           END IF
           atcf%ielat(i) = koo
           cell%nato(koo) = cell%nato(koo)+1
-!!$write(*,*) MAXVAL(nato(:)),koo,i        ! DEBUG
+!write(*,*) MAXVAL(nato(:)),koo,i        ! DEBUG
           ! ==== MODIF Clouet =====================
           IF (cell%nato(koo).GT.cell%natperc) THEN
              WRITE(0,'(a)') 'You need to increase the maximal number of atoms per cell'
@@ -304,11 +299,11 @@ contains
 
 !!$write(6,*)'sortie caltabt'     ! DEBUG
 
-    !  write(6,*)'maxnato', maxval(nato)
+!      write(6,*)'maxnato', maxval(cell%nato)
     cell%icaltabt=icaltabt
     atcf%icaltabt=icaltabt
     return
-  end subroutine caltabtN
+  end subroutine caltabtC
 
 
   subroutine ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
@@ -316,7 +311,7 @@ contains
     integer, intent(in):: nox,noy,noz,natperc,noxyz
     integer,intent(in)::ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
     real(double),intent(in)::celsize(3)
-
+    
     celndm%nox=nox
     celndm%noy=noy
     celndm%noz=noz
@@ -327,9 +322,9 @@ contains
 
     celndm%ncel(0:noxyz,0:26)=ncel(0:noxyz,0:26)
     celndm%nato(0:noxyz)=nato(0:noxyz)
-    celndm%atincel(natperc,0:noxyz)=atincel(natperc,0:noxyz)
-    celndm%deltadist(3,0:26,noxyz)=deltadist(3,0:26,noxyz)
-    celndm%celsize(3)=celsize(3)
+    celndm%atincel(1:natperc,0:noxyz)=atincel(1:natperc,0:noxyz)
+    celndm%deltadist(1:3,0:26,1:noxyz)=deltadist(1:3,0:26,1:noxyz)
+    celndm%celsize(1:3)=celsize(1:3)
   end subroutine ndm2cellconfig
 
   subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
@@ -346,9 +341,9 @@ contains
     celndm%icaltabt=0
     ncel(0:noxyz,0:26)=celndm%ncel(0:noxyz,0:26)
     nato(0:noxyz)=celndm%nato(0:noxyz)
-    atincel(natperc,0:noxyz)=celndm%atincel(natperc,0:noxyz)
-    deltadist(3,0:26,noxyz)=celndm%deltadist(3,0:26,noxyz)
-    celsize(3)=celndm%celsize(3)
+    atincel(1:natperc,0:noxyz)=celndm%atincel(1:natperc,0:noxyz)
+    deltadist(1:3,0:26,1:noxyz)=celndm%deltadist(1:3,0:26,1:noxyz)
+    celsize(1:3)=celndm%celsize(1:3)
 
     call celndm%dealloc
     

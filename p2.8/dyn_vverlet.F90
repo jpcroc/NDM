@@ -1,16 +1,14 @@
 module dyn_vverlet_mod
   USE calfo_mod,only: calfo
   USE calfoberend_mod,only: calfoberend 
-  USE caltabt_mod,only: caltabt
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,eatom,ltranche
+  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,eatom,ltranche,bg
+  USE cellconfig,only: cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
+
+
 #ifdef PARA
   USE layer_mod,only: layer
-
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
-
-
 #endif
   implicit none
 contains
@@ -109,7 +107,13 @@ contains
     if (.not.lpr) then
        if (itab/=0) then
           if (mod(it,itab)==0) then
-             call caltabt(im,xp,ielat)
+                 call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call caltabtC(celndm,atdml,lperiod,bg)
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                  &xpp=xpp)
+             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
              
           endif
        endif

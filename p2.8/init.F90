@@ -15,7 +15,6 @@ module init_mod
   USE tersoff_zbl_mod,only: tersoff_zbl
   USE dynalloccell
   USE initspeed_mod,only: initspeed
-  USE caltabt_mod,only: caltabt
   USE sauvegarde_mod,only: sauvegarde,cin2gin
   USE heat_mod,only: heat
   USE caltabi_mod,only: caltabi
@@ -30,7 +29,7 @@ module init_mod
   USE prtplz_mod,only: prtplz
   USE neb_module,only: configneb
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
 
 
 #ifdef PARA
@@ -383,18 +382,17 @@ contains
     !computing the neighbours for the very first time ......
     !  if (itmax>0) then
     if (rang==0)write(6,*)'1ER CALL init'
-    call caltabt(im,xp,ielat)
-
-    ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabt'
+    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+         &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+    call caltabtC(celndm,atdml,lperiod,bg)
     if (ltabvois) then
-       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-            &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        call caltabi(atdml%atom_config,celndm)
-       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
-            &xpp=xpp)
-       call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
     end if
+    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+         &xpp=xpp)
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+
 
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
     !  end if
@@ -498,18 +496,20 @@ contains
        end if
 
        if (itmax==0) stop
-       call caltabt(im,xp,ielat)
-       if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
+                    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call caltabtC(celndm,atdml,lperiod,bg)
        if (ltabvois) then
-          call  ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-          call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-               &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
           call caltabi(atdml%atom_config,celndm)
-          call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
-               &xpp=xpp)
-          call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
        end if
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                  &xpp=xpp)
+             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
+
+
+       if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
     end if
 
 
@@ -538,17 +538,17 @@ contains
        call initcdp
        if (itecdp==0)then
           call creadp (xp, xpp, ityp,vp)
-          call caltabt(im,xp,ielat)
-
-          if (ltabvois)  then
-             call  ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
              call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
                   &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call caltabtC(celndm,atdml,lperiod,bg)
+          if (ltabvois)  then
              call caltabi(atdml%atom_config,celndm)
-             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+          end if
+           call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
                   &xpp=xpp)
              call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
-          end if
+
           if (lperiod) then
              call period (imm,xp,xpp,ax)
           else

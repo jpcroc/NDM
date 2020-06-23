@@ -3,7 +3,6 @@ module controle_mod
   USE dynalloccell
   USE tempinst_mod,only: tempinst,andersenth
   USE jqbh_mod,only: jqbh
-  USE caltabt_mod,only: caltabt
   USE desinteg_insert_mod,only: desinteg_insert
   USE period_mod,only: period
   USE caltabi_mod,only: caltabi
@@ -11,7 +10,7 @@ module controle_mod
   USE creadp_mod,only: creadp
   USE deftimestep_mod,only: deftimestep
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
   implicit none
 contains
   ! ***********************************************************
@@ -150,7 +149,13 @@ contains
 
 
           call creadp (xp, xpp, ityp,vp)
-          call caltabt(im,xp,ielat) 
+             call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call caltabtC(celndm,atdml,lperiod,bg)
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                  &xpp=xpp)
+             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
           if (ltabvois) then
              call  ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
@@ -178,7 +183,13 @@ contains
     if (dmtype.ne.4) then
        if (itab/=0) then
           if (mod(it,itab)==0) then
-             call caltabt(im,xp,ielat) 
+             call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call caltabtC(celndm,atdml,lperiod,bg)
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                  &xpp=xpp)
+             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
           endif
        endif
@@ -194,7 +205,7 @@ contains
        call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
     end if
- 
+
 
     !write(6,*)it
 

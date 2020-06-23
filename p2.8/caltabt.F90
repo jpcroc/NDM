@@ -41,9 +41,9 @@ subroutine caltabt(im,xp,ielat)
   !
   ! --------- Initialisation --------------
   !
-!   write(6,*)'caltabt',it
+!   write(6,*)'caltabt',noxyz
    nato(:noxyz) = 0
-  atincel(natperc,:noxyz) = 0
+  atincel(1:natperc,:noxyz) = 0
 
 !     do i = 1, im
 !     if ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xp(1,i),xp(2,i),xp(3,i)
@@ -65,7 +65,7 @@ subroutine caltabt(im,xp,ielat)
           end if                       
      !  -------- Initialisations  -----------
      nato(0:noxyz) = 0
-     atincel(natperc,:noxyz) = 0
+     atincel(1:natperc,:noxyz) = 0
 
      ! -------------------------------------------
      !   1. loop: lattice-coordinates of all atoms

@@ -153,16 +153,16 @@ subroutine caltabi(atvois,celvois)
         koo = atvois%ielat(i)                          ! Numero de la cellule
         iti=atvois%ityp(i) 
         xpi(:) = xpnp(:,i)
-
+!        write(6,*)'atome i',i,iti
         ncelvois = min(celvois%noxyz,27)-1
         ! pour chaque cel. voisine
         do i1 = 0, ncelvois
            ko1 = celvois%ncel(koo,i1)
-           !               write(6,*)'i1 ko1 ',i1,ko1
+!           write(6,*)'i1 ko1 ',i1,ko1
            if (ko1==0) cycle
            loop_j: do i2 = 1, celvois%nato(ko1)
               j = celvois%atincel(i2,ko1)
-               !                 write(6,*)'j ',j
+!                                write(6,*)'j ',j
                
                if(ldemitab) then
                    if(j.le.i) cycle !terme deja calcule
@@ -174,7 +174,8 @@ subroutine caltabi(atvois,celvois)
                  end if
                end if
             
-              itj=atvois%ityp(j) ; ll=ipo(iti,itj)
+               itj=atvois%ityp(j)
+               ll=ipo(iti,itj)
 
               dx(:) = xpi(:) - xpnp(:,j)
               ds(:) = MatMul( dx(:), bg(:,:) )

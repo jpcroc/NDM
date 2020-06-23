@@ -1,14 +1,13 @@
 module scalebox_mod
   USE gen_com_m, ONLY:dmtype,itetabvois,lpr,ltabvois,noxy,nvat,pi,volu,zl,zls2,celsize,imm,im,it,&
-       &lperiod,nox,noy,noz,rang,at,indi,nvois
+       &lperiod,nox,noy,noz,rang,at,indi,nvois,bg
   USE dynalloccell
   USE neigcel_mod,only: neigcel
-  USE caltabt_mod,only: caltabt
   USE period_mod,only: period
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
 
   USE tab_imm_m,only:num_at_glob
   implicit none
@@ -132,18 +131,16 @@ contains
        call neigcel  
 
     end if
-    call caltabt(im,xp,ielat)
-
-    if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
-             call  ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+                 call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
              call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
                   &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-             call caltabi(atdml%atom_config,celndm)
+             call caltabtC(celndm,atdml,lperiod,bg)
+             if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
+                call caltabi(atdml%atom_config,celndm)
+             end if
              call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
                   &xpp=xpp)
              call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
-    end if
-
 
     if (iewald>0) then
 

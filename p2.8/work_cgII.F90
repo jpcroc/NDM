@@ -5,14 +5,13 @@ module work_cgII
                        it, itesauv, itesauvposition, itesauvforce,itmax, &
                        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
                        dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz,nvois,&
-                       &natperc,nato,ncel,atincel,deltadist,celsize
+                       &natperc,nato,ncel,atincel,deltadist,celsize,bg
   USE controle_mod,only: controle
   USE calfo_mod,only: calfo
   USE analyse_mod,only: analyse
   USE sauvegarde_mod,only: sauvegarde
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
-  USE caltabt_mod,only: caltabt
   USE config_mod,only: config
   USE zero2all2zero_mod,only: zero2all,all2zero
   use period_mod,only:period
@@ -25,7 +24,7 @@ USE caltabi_mod,only: caltabi
 #endif
   USE tab_imm_m, ONLY : xp, fp,num_at_glob,ax,vp,xpp,ityp,ielat,iwmax
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
 
   
   implicit none
@@ -106,16 +105,18 @@ contains
 #ifndef PARA
     call period (imm,xp)
 #endif    
-    call caltabt(im,xp,ielat)
+
+    call  ndm2cellconfig(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+    call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+    call caltabtC(celcg,atcg,lperiod,bg)
     if (ltabvois.and.mod(it,itetabvois)==0) then
-       call  ndm2cellconfig(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-       call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+
        call caltabi(atcg%atom_config,celcg)
-       call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-       call cellconfig2ndm(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
     end if
+       call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+       call cellconfig2ndm(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
     
 !    call period
     !    do ko=1,noxyz
@@ -125,95 +126,6 @@ contains
     call maj_atomes_frt_ftm
 #endif
 
-!#ifdef PARA
-!    write(extension,'(i2.2)') rang
-!    lenfn2=2   
-!    open(unit=607, file='xp.'//extension(1:lenfn2)//'.csv', form='formatted', &
-!             status='unknown')
-!    do i=1,im
-!       !       write(6,*)rang,i,xp_all(:,i)
-!       write(607,'(2I2,2I6,3G18.9)') rang,ncalls,num_at_glob(i),i,xp(:,i)
-!    end do
-!    call mpi_barrier(MPI_COMM_WORLD,ierr)
-!#else
-!     open(unit=607, file='xp.SEQ.csv', form='formatted', &
-!             status='unknown')
-!    do i=1,im_glob
-!       !       write(6,*)rang,i,xp_all(:,i)
-!       write(607,'(2I2,2I6,3G18.9)') rang,ncalls,i,num_at_glob(i),xp(:,i)
-!    end do
-!#endif
-
-    
-!#ifdef PARA
-!    !    if (rang==0) then !envoi xp_local à tous!
-!    call MPI_BCAST(xp_local,3*ims,NDM_MPI_REAL_DOUBLE,0,MPI_COMM_WORLD,ierr)
-!    call MPI_BCAST(ityp_local,ims,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-!    call MPI_BCAST(num_at_glob,ims,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-!    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-!    write(6,*)rang, 'POST BCAST',im_glob
-!    write(extension,'(i2.2)') rang
-!    lenfn2=2
-!    open(unit=606, file='poB.'//extension(1:lenfn2)//'.csv', form='formatted', &
-!             status='unknown')
-!    do i=1,im_glob
-!       !       write(6,*)rang,i,xp_all(:,i)
-!       write(606,'(I2,I6,3G18.9)') rang,i,xp_local(:,i)
-!    end do
-!    call mpi_barrier(MPI_COMM_WORLD,ierr)
-
-
-!    write(6,*)'rg cell',rang,cell_finx,cell_finy,cell_finz
-!    i=0
-!    call cryst_to_cart (im_glob, xp_local, bg, -1) !cart vers cryst
-!    do it=1,im_glob
-!       ! On teste si c'est un atome local pour le prendre
-       ! en compte ou le retirer
-!       aux = xp_local(1,it)*nox
-!       auy = xp_local(2,it)*noy
-!       auz = xp_local(3,it)*noz
-!       cellx = int(aux)+1
-!       celly = int(auy)+1
-!       cellz = int(auz)+1
-!       write(6,'(A,I2,I5,6G18.9,3I3)')'at cell',rang,it,xp_local(1,it),xp_local(2,it),xp_local(3,it),aux,auy,auz,cellx,celly,cellz
-!       call coord_to_cellcoord(xp_local(1,i),xp_local(2,i),xp_local(3,i),cellx,celly,cellz)
-!       if (cellx<cell_debx.or.cellx>cell_finx .or. &
-!            celly<cell_deby.or.celly>cell_finy .or. &
-!            cellz<cell_debz.or.cellz>cell_finz) then
-!          ! l'atome n'est pas local, on l'elimine du processeur courant
-!       else
-!          i=i+1
-!          xp(:,i)=xp_local(:,it)
-!          ityp(i)=ityp_local(it)
-!          num_at_glob(i)=it
-!       endif
-!    end do
-!    call cryst_to_cart (im_glob, xp_local, at, 1)!cryst vers cart
-!    call cryst_to_cart (im_glob, xp, at, 1)  !cryst vers cart
-!    im=i
-!!    lenfn2=2
-!!    write(6,*)rang, 'POST TRI',im_glob,im
-!    write(extension,'(i2.2)') rang
-!    open(unit=618, file='poscont.'//extension(1:lenfn2)//'.csv', form='formatted', &
-!         status='unknown')
-!     do i=1,im
-!       write(618,'(I2,2I6,3G18.9)') rang,i,num_at_glob(i),xp(:,i)
-!    end do
-!    
-!    call mpi_barrier(MPI_COMM_WORLD,ierr)
-!    stop
-!
-!    
-!   call caltabt
-!    do ko=1,noxyz
-!       write(6,*)'0rg cel nat',rang, ko,nato(ko)
-!    end do
-!    
-!    call maj_atomes_frt_ftm
-!#else
-!
-!    xp(:,:) =  xp_local(:,:)
-!#endif
     !back to internal units and JP world.......................................
 
 

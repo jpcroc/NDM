@@ -11,7 +11,7 @@ module neb_mod
   
   USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,fp,ielat,num_at_glob
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
   use var_pot,only:coord
   use rasmol_mod,only:rasmol
   use calfoberend_mod,only:dynlangevin
@@ -144,10 +144,11 @@ contains
 
           !       call scalebox (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
           if (lperiod)    call period (imm,xp,xpp)
-          call caltabt(im,xp,ielat)
+
           call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
           call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
                &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+          call caltabtC(celndm,atdml,lperiod,bg)
           if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                &call caltabi(atdml%atom_config,celndm)
           CALL CalFo(sig,potist,atdml,celndm) 
@@ -206,10 +207,11 @@ contains
              do while (dragtest==0)
                 it=it+1
                 if (lperiod)    call period (imm,xp,xpp)
-                call caltabt(im,xp,ielat)
+!                call caltabt(im,xp,ielat)
           call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
                 call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
                      &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+                call caltabtC(celndm,atdml,lperiod,bg)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                      &call caltabi(atdml%atom_config,celndm)
                 CALL CalFo(sig,potist,atdml,celndm) 
@@ -287,10 +289,11 @@ contains
                 it=it_neb_inter
 
                 if (lperiod)    call period (imm,xp,xpp)
-                call caltabt(im,xp,ielat)
+!                call caltabt(im,xp,ielat)
                 call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
                 call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
                      &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+                call caltabtC(celndm,atdml,lperiod,bg)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                      &call caltabi(atdml%atom_config,celndm)
                 CALL CalFo(sig,potist,atdml,celndm) 

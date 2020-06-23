@@ -313,7 +313,7 @@ contains
        !             ltabvois=.TRUE. ; lconstrtot=.TRUE.
        !          end if
 !!$natperc=max(2*natperc,10)     ! MODIF Clouet
-       natperc=max(5*natperc,10)     ! MODIF Clouet
+       natperc=max(int(5*natperc),10)     ! MODIF Clouet
     ELSE                          ! MODIF Clouet
        nvat=10*natperc       ! MODIF Clouet
     END IF                        ! MODIF Clouet
@@ -323,7 +323,7 @@ contains
     !  natperc= INT(im_glob/noxyz)
     !  nvat=10*natperc
 
-    natperc=max(5*natperc,20)
+!    natperc=max(5*natperc,20)
 
 #if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
 #else
@@ -399,7 +399,7 @@ contains
     if(rang==0) write(6,*) '-------------------------------------------------------------------'
     if(rang==0) write(6,*)
 #endif
-
+    write(6,*)'DIV',im/noxyz,natperc
     return
   end subroutine divid
 end module divid_mod

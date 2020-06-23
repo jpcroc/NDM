@@ -234,9 +234,9 @@ contains
        if (atcible%im.ne.atsource%im) then
           call atcible%dealloc
           call atcible%init(atsource%im,atcible%ltabvois,size(atsource%indi))
-          if ((atcible%ltabvois).and.(atsource%ltabvois)) then
-             allocate (atcible%indi(size(atsource%indi)))
-          end if
+!          if ((atcible%ltabvois).and.(atsource%ltabvois)) then
+!             allocate (atcible%indi(size(atsource%indi)))
+!          end if
        end if
     else
        lstop=.false.
@@ -588,7 +588,7 @@ contains
 !       write(6,*)'sizes ', size (iwmax),size(atndm%iwmax)
        atndm%ltabvois=.true.
        atndm%iwmax(1:im)=iwmax(1:im)
-       allocate(atndm%indi(nvois))
+!       allocate(atndm%indi(nvois))
        atndm%indi(1:nvois)=indi(1:nvois)
     end if
 
