@@ -399,7 +399,7 @@ contains
     if(rang==0) write(6,*) '-------------------------------------------------------------------'
     if(rang==0) write(6,*)
 #endif
-    write(6,*)'DIV',im/noxyz,natperc
+!    write(6,*)'DIV',im/noxyz,natperc
     return
   end subroutine divid
 end module divid_mod

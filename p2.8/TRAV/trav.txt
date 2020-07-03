@@ -1,24 +1,35 @@
-gérer imd,free, frozen !  géer le  calul des forces sur une partie des atomes seulement...
-SUPPRIMER FREE, FROZEN et IMD !
-remplacer frozen par une construction de atomconfig simple
-remplacer free par un calcul de force partiel (beaucoup plus dur!).
-
-
+FAIT :***************************
 COUPER complètement calfo du reste
-GERER POTIST ET SIG!! IDEM eatom ! sigat !
-
-supprimer tous ls appels parasites à ndm2config et diminuer le plus possible les types dans la chaine atonconfig
-
-gérer period avec des appels faits
-
+gérer period avec des appels
 caltabt,caltabi avec des atomconfig
 
+calfo
+remplacer call calfo par call calfo(atoms) où atoms est le tableau des atomes avec lerus cellules
+de même en cascade dans les sous calfo avec soit un changement local atoms_2_oldndl like soit une ré-écriture systématique..
+
+ncaractéristques des cel nox noy noz etc  (sigc, etc.)
+atincel, deltadist,nato,ncel,celldeb_x,cell_deb_y,_z, cellsize,cell_fin_x
+
+
+PRESQUE **************************
+
+SUPPRIMER FREE, FROZEN et IMD !
+
+PAS FAIT ****************
+PARA !!! num_at_glob
+CONFIG lecture d'une conf atomique directement dans le type et forme de boite
+
+sauvegarde diverses en format atomcofig
+
+gérer imd,free, frozen !  géer le  calul des forces sur une partie des atomes seulement...
+remplacer frozen par une construction de atomconfig simple
+remplacer free par un calcul de force partiel (beaucoup plus dur!).
+GERER POTIST ET SIG!! IDEM eatom ! sigat !
+supprimer tous ls appels parasites à ndm2config et diminuer le plus possible les types dans la chaine atonconfig
 
 à ranger dans un type "box"
 potist, sig, volu,normat, at ,bg,
 
-ncaractéristques des cel nox noy noz etc  (sigc, etc.)
-atincel, deltadist,nato,ncel,celldeb_x,cell_deb_y,_z, cellsize,cell_fin_x
 
 Type options/calc ??
 itesigma, etc ??
@@ -54,8 +65,4 @@ ntyp,na,ty,cm,na na ??? variment
 npotmax
 diviser ensuite  selon les potentiels et  mettre chaque potentiel  dans un seul module  
 
-
-calfo
-remplacer call calfo par call calfo(atoms) où atoms est le tableau des atomes avec lerus cellules
-de même en cascade dans les sous calfo avec soit un changement local atoms_2_oldndl like soit une ré-écriture systématique..
 

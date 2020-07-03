@@ -310,7 +310,6 @@ contains
 !    else
 !       if(ibrake.gt.0) call calceloss
 !    end if
-!    write(6,*)'dml potist 3',potist,atcf%potist
     sigcf=sig;potistcf=potist
     return
   end subroutine calfo
