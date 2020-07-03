@@ -35,6 +35,7 @@ contains
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE endrun_mod,only: endrun
     USE arret_ndm_mod,only: arret_ndm
+    use neb_module,only: lvzeroneb
 #ifdef PARA
     USE mod_para
 #endif
@@ -82,7 +83,7 @@ contains
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
          mdcg_noise, lforcetabulate,ivisu,ibound,USEr_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-         itesauvinter,units_lammps,lWgin
+         itesauvinter,units_lammps,lWgin,lvzeroneb
 
 
     !
@@ -264,9 +265,8 @@ contains
     itecfg=-1   ! ecriture de fichiers .cfg pour AtomEye
 
     !---inNEB
-    nebtype=2        ! drag methos is the default     
-    nebrelaxation=2  ! We relax all the atoms if nebrelaxation==1 only
-    ! the most "deplaced" atoms      
+    nebtype=2        ! NEB is the default
+    nebrelaxation=2  ! We relax all the atoms; if nebrelaxation==1 only the most "deplaced" atoms      
     npath = 15       ! 15 images of the neb is the default
     maxneb = 700     ! the MAX of NEB steps
     kspring = 1.0    ! the default value for the spring
@@ -347,7 +347,7 @@ contains
 
     units_lammps='metal'
     lWgin=.false. ! =true écrit un fichier .newgin à la fin
-
+    lvzeroneb=.false. ! si true , met vp à 0 ente chaque iteration neb (comportement pre ndm2020), defaut = false==> calcul plus rapide
 
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 

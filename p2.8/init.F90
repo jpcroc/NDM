@@ -27,9 +27,9 @@ module init_mod
   USE deftimestep_mod,only: deftimestep
   USE rasmol_mod,only: rasmol
   USE prtplz_mod,only: prtplz
-  USE neb_module,only: configneb
+  USE neb_module,only: configneb,atneb,cellneb
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC,init_cel
 
 
 #ifdef PARA
@@ -47,7 +47,7 @@ module init_mod
        &imana,itdes,iteanapos,iteplz,iterasmol,itetimestep,itmax,lcalcjq,lcasca,ldesinteg,lcontr,lfilm,lprteat,&
        &lrestart,lsigtyp,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,sigtyp,&
        kinemean,lsigat,pmean,xpchdn,sigtyptyp,sigtyp,eatomtotm,lprteattotm,vpchdn,indi,nvois,sigtyp_loc,sigtyptyp_loc,&
-       &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,celsize
+       &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,celsize,npath
 
 
   USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel
@@ -79,7 +79,7 @@ contains
     ! **************************************************************
 
     implicit none
-    integer :: i, lufilmpaf,itapp,ipotcont,j,lenfn2
+    integer :: i, lufilmpaf,itapp,ipotcont,j,lenfn2,ipath
     integer :: complet=1    ! flag d'appel a divid : complet : exec de la routine complete
     !-----------------------------------------------
     character*2::extension
@@ -260,7 +260,10 @@ contains
 #endif
     else
 
-       call configNEB(xp, xpp, vp, fp, ielat, iwmax, ityp)
+       call configNEB !(xp, xpp, vp, fp, ielat, iwmax, ityp)
+!       do i=1,npath
+!          call print(atneb(1))
+!       end do
     end if
     !...inNEB
     !<---------ends etting the configuration by reading gin /  cin file ---------
@@ -310,7 +313,12 @@ contains
 
     call divid (complet)
     call DynamicalAllocationCell
-
+    if (dmtype==9) then
+       do ipath=1,npath
+          call init_cel(cellneb(ipath),nox,noy,noz,natperc)
+       end do
+    end if
+    
     do ipotcont=0,npotmax
        if(lpotentiel(ipotcont).EQV..true.) then
           ipotentiel=ipotcont

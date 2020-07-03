@@ -3,7 +3,7 @@ module neb_module
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:iseed,neb_noise_scale,npath,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam, imm,pi,rang,im_glob,lenfnam,rang,zero,zl,zls2,lcontr,&
-       &angst,lenfnam,angst,erg2ev,normat
+       &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois
 
   USE contrainte
   USE config_mod,only: config
@@ -13,41 +13,52 @@ module neb_module
   use var_pot,only:ntyp,na
   USE dynalloccell,only:deallocateall
   !-----------------------------------------------
+  USE atomconfig,only:atom_config,atom_config_d
+  USE cellconfig, only:cell_config,init_cel
   implicit none
 
 
   integer, save                                  :: dragtest
-  integer,dimension(:),allocatable,save          :: irelax,nebtest,icontrainte
-  integer,dimension(:,:),allocatable,save        :: ielat_n, iwmax_n, ityp_n
-  real(double),dimension(:,:,:),allocatable,save ::  xp_n, xpp_n, vp_n, fp_n
+  integer,dimension(:),allocatable,save          :: nebtest,icontrainte !irelax,
+!  integer,dimension(:,:),allocatable,save        :: ielat_n, iwmax_n, ityp_n
+!  real(double),dimension(:,:,:),allocatable,save ::  xp_n, xpp_n, vp_n, fp_n
   real(double),dimension(:,:),allocatable        :: fp_par,fp_perp
   real(double), dimension(:),allocatable, save   :: enePATH,enePATHev,norms,reaction_coord
   real(double), dimension(:,:,:), allocatable, save :: sigPATH  ! Stress tensor
   real(double), dimension(:,:,:),allocatable,save:: s_path,force_neb,bruitneb 
   real(double)                                   :: forctot,formax,formaxperp,formaxparl,masstot
+  logical:: lvzeroneb
+  type(atom_config_d),allocatable,save::atneb(:)
+  type(cell_config),allocatable,save:: cellneb(:)
 
-!  type(atom_config_d),allocatable::atneb(:)
+contains
+  
 
-
-contains 
-
+  
   subroutine allocate_neb()
     implicit none
  !   integer ip2
  !   allocate(atneb(npath))
  !   do ip2=1,npath
  !      call atneb(ip2)%init_atom_config(im,ltabvois,nvois)
- !   end do
-       
-    allocate (ielat_n(imm,npath), iwmax_n(imm,npath), &
-              ityp_n(imm,npath),                      &
-         irelax(imm),                                 &
-	 icontrainte(imm),                            &
-         xp_n(3,imm,npath),                           &
-         xpp_n(3,imm,npath),                          &
-         vp_n(3,imm,npath),                           &
-         fp_n(3,imm,npath),                           &
-         reaction_coord(npath))
+    !   end do
+    integer ipath
+    allocate(atneb(npath))
+    allocate(cellneb(npath))
+
+    do ipath=1,npath
+       call atneb(ipath)%init(imm,ltabvois,nvois)
+    end do
+
+!    allocate (ielat_n(imm,npath), iwmax_n(imm,npath), &
+!              ityp_n(imm,npath),                      &
+!         irelax(imm),                                 &
+!	 icontrainte(imm),                            &
+!         xp_n(3,imm,npath),                           &
+!         xpp_n(3,imm,npath),                          &
+!         vp_n(3,imm,npath),                           &
+!         fp_n(3,imm,npath),                           &
+         allocate (icontrainte(imm),reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
     allocate  (sigPATH(3,3,npath))    ! Stress tensor for each image
     allocate  (fp_par(3,imm),fp_perp(3,imm))
@@ -60,7 +71,7 @@ contains
 
   ! **************************************************************
   subroutine into_path(iph, i_dir_path, &                         
-       xp, xpp, vp,  fp, ielat, iwmax, ityp)
+       xp, xpp, vp,  fp, ielat, iwmax, ityp,num_at_glob)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -76,6 +87,7 @@ contains
     !-----------------------------------------------
     integer  :: ielat(imm)
     integer  :: iwmax(imm)
+    integer  :: num_at_glob(imm)
     integer  :: ityp(imm)
     real(double)  :: xp(3,imm)
     real(double)  :: xpp(3,imm)
@@ -88,25 +100,44 @@ contains
 
 
     if (i_dir_path==1) then
-       ielat_n   (:,iph) = ielat   (:) 
-       iwmax_n   (:,iph) = iwmax   (:)
-       ityp_n    (:,iph) = ityp    (:)
-       xp_n (:,:,iph)    = xp (:,:)
-       xpp_n(:,:,iph)    = xpp(:,:)
-       !vp_n (:,:,iph)    = vp (:,:)
-       vp_n (:,:,iph)    = 0.d0
-       fp_n (:,:,iph)    = fp (:,:)
+       atneb(iph)%ielat(:) = ielat(:)
+       if(allocated(atneb(iph)%iwmax))      atneb(iph)%iwmax(:) = iwmax(:)
+       atneb(iph)%ityp(:) = ityp(:)
+       atneb(iph)%xp(:,:) = xp(:,:)
+       atneb(iph)%vp(:,:) = 0
+       atneb(iph)%xpp(:,:) = xpp(:,:)
+       atneb(iph)%fp(:,:) = fp(:,:) 
+       atneb(iph)%num_at_glob(:) =num_at_glob   (:) 
+!       ielat_n   (:,iph) = ielat   (:) 
+!       iwmax_n   (:,iph) = iwmax   (:)
+!       ityp_n    (:,iph) = ityp    (:)
+!       xp_n (:,:,iph)    = xp (:,:)
+!       xpp_n(:,:,iph)    = xpp(:,:)
+!       !vp_n (:,:,iph)    = vp (:,:)
+!       vp_n (:,:,iph)    = 0.d0
+!       fp_n (:,:,iph)    = fp (:,:)
     else 
-       ielat   (:)      = ielat_n   (:,iph)
-       iwmax   (:)      = iwmax_n   (:,iph)
-       ityp    (:)      = ityp_n    (:,iph)
-       xp (1:3,:)	      = xp_n (1:3,:,iph)   
-       xpp(1:3,:)	      = xpp_n(1:3,:,iph)   
-       !vp (1:3,:)	      = vp_n (1:3,:,iph)   
+       ielat   (:)      = atneb(iph)%ielat(:)
+       if(allocated(atneb(iph)%iwmax))  iwmax   (:)      = atneb(iph)%iwmax(:)
+       num_at_glob   (:)      = atneb(iph)%num_at_glob(:)
+       ityp    (:)      = atneb(iph)%ityp(:)
+       xp (1:3,:)        = atneb(iph)%xp(:,:)
+       xpp(1:3,:)       =atneb(iph)%xpp(:,:)
        vp(1:3,:) = 0.d0
-       fp (1:3,:)	      = fp_n (1:3,:,iph)   
+       fp (1:3,:)      = atneb(iph)%fp(:,:)
        !fp (1:3,:)	      = 0.d0   
-    end if
+
+
+!           ielat   (:)      = ielat_n   (:,iph)
+!       iwmax   (:)      = iwmax_n   (:,iph)
+!       ityp    (:)      = ityp_n    (:,iph)
+!       xp (1:3,:)	      = xp_n (1:3,:,iph)   
+!       xpp(1:3,:)	      = xpp_n(1:3,:,iph)   
+       !vp (1:3,:)	      = vp_n (1:3,:,iph)   
+!       vp(1:3,:) = 0.d0
+!       fp (1:3,:)	      = fp_n (1:3,:,iph)   
+       !fp (1:3,:)	      = 0.d0   
+end if
 
     return
 
@@ -114,7 +145,7 @@ contains
 
 
 
-  subroutine init_neb(xp, xpp, vp,  fp, ielat, iwmax, ityp)
+  subroutine init_neb!(xp, xpp, vp,  fp, ielat, iwmax, ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -122,35 +153,22 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer  :: ielat(imm)
-    integer  :: iwmax(imm)
-    integer  :: ityp(imm)
-    real(double)  :: xp(3,imm)
-    real(double)  :: xpp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: fp(3,imm)
+!    integer  :: ielat(imm)
+!    integer  :: iwmax(imm)
+!    integer  :: ityp(imm)
+!    real(double)  :: xp(3,imm)
+!    real(double)  :: xpp(3,imm)
+!    real(double)  :: vp(3,imm)
+!    real(double)  :: fp(3,imm)
     real(double)  :: dxx(3,imm)
     !-----------------------------------------------
     integer :: iph,ic,non_contr,i,idepmax
     real(double),dimension(:,:), allocatable   :: fp_buffer
     real(double)::deplamax,depla
     !-----------------------------------------------
-!   nrep_peierls=10
-!   temp_local=0.5d0/dble(nrep_peierls)
-!---
-!   dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
-!
-!
-!   call cryst_to_cart (imm, dxx, bg, -1) !cart vers cryst
-!   do ic=1,im
-!      if ( (dabs(dxx(3,ic)).GE.temp_local) ) then
-!       dxx(3,ic)  = dxx(3,ic)  - dabs(dxx(3,ic))/dxx(3,ic)/dble(nrep_peierls)
-!      end if
-!   end do-------
-!   call cryst_to_cart (imm, dxx, at,   1) !cart vers cryst
 
-
-    dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
+    dxx(:,:)=atneb(npath)%xp(:,:)-atneb(1)%xp(:,:) 
+!    dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
     open(unit=831,file='distimages')
     deplamax=0
     idepmax=0
@@ -175,19 +193,27 @@ contains
                CALL Load_NEB_Image_Gin(iph)
        ELSE
                ! Construction of NEB image
-               xp_n(:,:,iph) = xp_n(:,:,1) +                               &
-                    ( dxx(:,:) ) * dble(iph -1) / dble(npath-1)
-               ityp_n    (:,iph) = ityp    (:)
-
+          atneb(iph)%xp(:,:)=atneb(1)%xp(:,:)+dxx(:,:)*dble(iph -1) / dble(npath-1)
+!          xp_n(:,:,iph) = xp_n(:,:,1) +                               &
+!                    ( dxx(:,:) ) * dble(iph -1) / dble(npath-1)
+!          ityp_n    (:,iph) = ityp    (:)
+          atneb(iph)%ityp(:)=atneb(1)%ityp(:)
+          atneb(iph)%num_at_glob(:)=atneb(1)%num_at_glob(:)
+          !CRC RESTE ITYP...
        END IF
-       ielat_n   (:,iph) = ielat   (:) 
-       iwmax_n   (:,iph) = iwmax   (:)
-       xpp_n(:,:,iph)    = xp_n(:,:,iph)
-       vp_n (:,:,iph)    = 0.d0
-       fp_n (:,:,iph)    = 0.d0
+!       atneb(iph)%ielat(:)=0 !ielat   (:)
+!       atneb(iph)%iwmax(:)=0 !iwmax   (:)
+!       ielat_n   (:,iph) = ielat   (:) 
+!       iwmax_n   (:,iph) = iwmax   (:)
+!       xpp_n(:,:,iph)    = xp_n(:,:,iph)
+!       vp_n (:,:,iph)    = 0.d0
+!       atneb(iph)%fp(:,:)=0.0
+       atneb(iph)%xpp(:,:)= atneb(iph)%xp(:,:)
+!       atneb(iph)%vp(:,:)=0.0
+!       fp_n (:,:,iph)    = 0.d0
     end do
 
-    masstot=SUM(cm(ityp(1:im)))
+    masstot=SUM(cm(atneb(1)%ityp(1:im)))
     if  (nebtype>=2) then
        if (rang==0) write(*,'(" NEB: The kspring is in the eV/A^2                          :", f12.5)')  kspring
        kspring=kspring*angst**2/erg2eV 
@@ -196,24 +222,27 @@ contains
 
     icontrainte(:)=1
     allocate (fp_buffer(3,imm))
+!CRC WTF ??
+!    non_contr=0
+!    fp_buffer(:,:)=fp(:,:)
+!    fp(:,:)=1.d0
+!    if(lcontr) call contr (xp,vp,fp,ityp)
+!    do ic=1,im
+!       if(fp(1,ic).eq.0) then
+!          icontrainte(ic)=0
+!          non_contr=non_contr+1
+!       end if
+!    end do
+ !   fp(:,:)=fp_buffer(:,:)
 
-    non_contr=0
-    fp_buffer(:,:)=fp(:,:)
-    fp(:,:)=1.d0
-    if(lcontr) call contr (xp,vp,fp,ityp)
-    do ic=1,im
-       if(fp(1,ic).eq.0) then
-          icontrainte(ic)=0
-          non_contr=non_contr+1
-       end if
-    end do
-    fp(:,:)=fp_buffer(:,:)
-
-    if (rang==0) write(*,'(" NEB: The number of atoms which are not included in the DRAG CONTRAINT :", i6)')  non_contr
+!    if (rang==0) write(*,'(" NEB: The number of atoms which are not included in the DRAG CONTRAINT :", i6)')  non_contr
 
     deallocate(fp_buffer)     
-
-
+!    do iph=1,npath
+!       write(6,*)'INITNEB',iph
+!       call atneb(iph)%print
+!    end do
+!    stop
     return
 
   end subroutine init_neb
@@ -234,9 +263,10 @@ contains
     INTEGER :: lucin, icintype, im
     REAL(double), dimension(3,3) :: at
     REAL(double), dimension(3) :: zl
-
+    integer,allocatable ::ibuffer(:)
+    real(double),allocatable::rbuffer(:,:)
     LOGICAL :: ok
-
+    allocate( ibuffer(imm)); allocate(rbuffer(3,imm))
     ! Try to read binary file
     write(extension,'(i9.9)') ip
     fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
@@ -256,11 +286,18 @@ contains
             read (lucin) im
             im_glob=im
             if (im>imm) then
-                    if(rang==0) write (6, *) 'im > imM', im, imm
-                    stop
+               if(rang==0) write (6, *) 'im > imM', im, imm
+               stop
             endif
-            read (lucin) ityp_n(:,ip)
-            read (lucin) xp_n(:,:,ip)
+            atneb(:)%im=im
+            read (lucin) ibuffer
+            atneb(ip)%ityp(1:im)=ibuffer(1:im)
+            read (lucin) rbuffer(:,:)
+            atneb(ip)%xp(:,1:im)=rbuffer(:,1:im)
+            read(lucin)ibuffer
+            atneb(ip)%num_at_glob(1:im)=ibuffer(1:im)
+!            read (lucin) ityp_n(:,ip)
+!            read (lucin) xp_n(:,:,ip)
             CLOSE(lucin)
             RETURN
     END IF
@@ -279,6 +316,8 @@ contains
     IMPLICIT NONE
 
     INTEGER, intent(in) :: ip
+
+    integer::i
 
     CHARACTER(len=89) :: ginFile
     !CHARACTER(len=89) :: cfgFile        ! DEBUG 
@@ -335,8 +374,12 @@ contains
             ! Load NEB image ip in file *.<ip>.gin
             if (rang==0) write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(ginFile)
             OPEN(unit=93, file=ginFile, status='old', action='read')
-            CALL ReadGin(xp_n(:,:,ip), iTyp_n(:,ip), im, at, 93)
+!            CALL ReadGin(xp_n(:,:,ip), iTyp_n(:,ip), im, at, 93)
+            CALL ReadGin(atneb(ip)%xp(:,:), atneb(ip)%ityp(:), im, at, 93)
             CLOSE(93)
+            do i=1,im
+               atneb(ip)%num_at_glob(i)=i
+            end do
     ELSE
             WRITE(0,'(a,i0)') 'Does not manage to find a backup file for image ', ip
             WRITE(0,'(3a)') 'File ', Trim(ginFile), ' does not exist'
@@ -368,8 +411,11 @@ contains
        temp_m=0.d0
        temp_p=0.d0
        do ia=1,im
-          tg_p(:)=xp_n(:,ia,ip+1) - xp_n(:,ia,ip  ) 
-          tg_m(:)=xp_n(:,ia,ip  ) - xp_n(:,ia,ip-1) 
+          
+          tg_p(:)=atneb(ip+1)%xp(:,ia) - atneb(ip)%xp(:,ia  )
+          tg_m(:)=atneb(ip)%xp(:,ia) - atneb(ip-1)%xp(:,ia  ) 
+!          tg_p(:)=xp_n(:,ia,ip+1) - xp_n(:,ia,ip  ) 
+!          tg_m(:)=xp_n(:,ia,ip  ) - xp_n(:,ia,ip-1) 
 
           Rtemp_m= DOT_PRODUCT(tg_m,tg_m)
           Rtemp_p= DOT_PRODUCT(tg_p,tg_p)
@@ -430,7 +476,8 @@ contains
     real(double)  :: dxx(3,imm),rcm_loc(3)
 
 
-    dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
+    dxx(:,:)=atneb(npath)%xp(:,:) - atneb(1)%xp(:,:)
+!    dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
 
 
     s_path(:,:,:)=0.d0
@@ -465,26 +512,32 @@ contains
   subroutine find_relax()
 
     implicit none
-    integer   ::  ia
+    integer   ::  ia,ipath
     real(double)   :: deltaR
 
-    irelax(:)=0
+!    atneb(1:)%lgul(:)=.false.
+    !    irelax(:)=0
     deltaRmax=deltaRmax**2
     do ia=1,im
-       deltaR=DOT_PRODUCT(xp_n(:,ia,1)-xp_n(:,ia,npath),xp_n(:,ia,1)-xp_n(:,ia,npath))
+       deltaR=DOT_PRODUCT(atneb(1)%xp(:,ia)-atneb(npath)%xp(:,ia),atneb(1)%xp(:,ia)-atneb(npath)%xp(:,ia))
+
 
        deltaR=deltaR*angst*angst
-
+       write(6,*)ia,deltar,deltarmax
        if (deltaR>deltaRmax) then
-          irelax(ia)=1
+          atneb(1)%lgul(ia)=.true.
+!          irelax(ia)=1
           if (rang==0) write(*,*) 'NEB:    relaxation de l atome no ',ia,' deltaR= ',sqrt(deltaR)
        end if
     end do
-
+    do ipath=2,npath
+       atneb(ipath)%lgul(:)=atneb(ipath)%lgul(:)
+    end do
+    
     return
   end subroutine find_relax
-
-  subroutine force_projection(ipath,xp, xpp, vp,  fp, ielat, iwmax, ityp)
+!CRC a gérer dans les appels
+  subroutine force_projection(ipath,xp,  vp,  fp,  ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -492,11 +545,11 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer  :: ielat(imm)
-    integer  :: iwmax(imm)
+!    integer  :: ielat(imm)
+!    integer  :: iwmax(imm)
     integer  :: ityp(imm)
     real(double)  :: xp(3,imm)
-    real(double)  :: xpp(3,imm)
+!    real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
     real(double)  :: fp(3,imm)      
     !-----------------------------------------------
@@ -507,14 +560,14 @@ contains
     lbd=0
     do ia=1,im
 
-       if (irelax(ia)==1) then
+       if (atneb(ipath)%lgul(ia)) then
           lbd = lbd + DOT_PRODUCT(s_path(:,ia,ipath),fp(:,ia))
        end if
     end do
 
 
     do ia=1,im
-       if (irelax(ia)==1) then
+       if (atneb(ipath)%lgul(ia)) then
           fp(:,ia) =fp(:,ia) - s_path(:,ia,ipath)*lbd/norms(ipath)
        end if
     end do
@@ -525,7 +578,7 @@ contains
 
   end subroutine force_projection
 
-  subroutine force_projection_neb(ipath,xp, xpp, vp,  fp, ielat, iwmax, ityp)
+  subroutine force_projection_neb(ipath,xp, vp,  fp,  ityp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -547,13 +600,13 @@ contains
 
     lbd=0
     do ia=1,im      
-       if (irelax(ia)==1) then
+       if (atneb(ipath)%lgul(ia)) then
           lbd = lbd + DOT_PRODUCT(s_path(:,ia,ipath),fp(:,ia))
        end if
     end do
     do ia=1,im
 
-       if (irelax(ia)==1) then
+       if (atneb(ipath)%lgul(ia)) then
           !
           fp(:,ia) =fp(:,ia) -  s_path(:,ia,ipath)*lbd/norms(ipath)  &
                + force_neb(:,ia,ipath)*s_path(:,ia,ipath) / dsqrt(norms(ipath))
@@ -569,29 +622,19 @@ contains
   end subroutine force_projection_neb
 
 
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-  subroutine configNEB(xp, xpp, vp,  fp, ielat, iwmax, ityp)
+    subroutine configNEB !(xp, xpp, vp,  fp, ielat, iwmax, ityp)
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:
+    USE tab_imm_m
 
-    integer  :: ielat(imm)
-    integer  :: iwmax(imm)
-    integer  :: ityp(imm)
-    real(double)  :: xp(3,imm)
-    real(double)  :: xpp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: fp(3,imm)
 
     integer :: ic, ip,lucin,icintype,typmax,i,typmin
     character :: extension*9
     character :: fnamneb*80
     call allocate_neb()
     if (lrestart) then
-       do ip=1, npath, npath-1
+       do ip=1, npath, npath-1 !CRC ne lit que deux images ??
+
           write(extension,'(i9.9)') ip
           fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
           if (rang==0) write(6,'(2a)')'image = ',fnamneb
@@ -627,8 +670,8 @@ contains
           endif
 
           read (lucin) im                         !number of atoms in the box
+          atneb(ip)%im=im
           im_glob=im
-
           if ( (im>imm).OR.(im.LE.0) ) then
              if (rang==0) WRITE(6,'(2a)') 'File: ', Trim(fnamneb)
              if (rang==0) write (6, '(2(a,i0,1x))') 'im = ', im, ' - imm = ', imm
@@ -658,14 +701,24 @@ contains
              na(ityp(i))=na(ityp(i))+1
           enddo
           read (lucin) xp
+          read(lucin)num_at_glob
+          atneb(ip)%ityp(:)=ityp(:)
+          atneb(ip)%num_at_glob(:)=num_at_glob(:)
+          atneb(ip)%xp(:,:)=xp(:,:)
 
-          ielat_n   (:,ip) = ielat   (:) 
-          iwmax_n   (:,ip) = iwmax   (:)
-          ityp_n    (:,ip) = ityp    (:)
-          xp_n (:,:,ip)    = xp (:,:)
-          xpp_n(:,:,ip)    = xpp(:,:)
-          vp_n (:,:,ip)    = vp (:,:)
-          fp_n (:,:,ip)    = fp (:,:)
+          atneb(ip)%ielat(:)=0 !ielat(:)
+          atneb(ip)%iwmax(:)=0 !iwmax(:)
+          atneb(ip)%fp(:,:)= 0 !fp(:,:)
+          atneb(ip)%vp(:,:)=0 !vp(:,:)
+          atneb(ip)%xpp(:,:)=xp(:,:) !xpp(:,:)
+          
+!          ielat_n   (:,ip) = ielat   (:) 
+!          iwmax_n   (:,ip) = iwmax   (:)
+!          ityp_n    (:,ip) = ityp    (:)
+!          xp_n (:,:,ip)    = xp (:,:)
+!          xpp_n(:,:,ip)    = xpp(:,:)
+!          vp_n (:,:,ip)    = vp (:,:)
+!          fp_n (:,:,ip)    = fp (:,:)
           close(lucin)
        end do
     else ! pas restart
@@ -674,7 +727,8 @@ contains
        fnam(1:lenfnam+4)='deb_'//fnamneb(1:lenfnam)
         if(rang==0)write(6,*)'FNAM ',fnam
        lenfnam=lenfnam+4
-       call config 
+       call config
+       fp=0; ielat=0;iwmax=0;vp=0
        fnam=fnamneb
        lenfnam=lenfnam-4
        if (rang==0)then
@@ -682,14 +736,28 @@ contains
           call rasmol(1)
        endif
 
-       call into_path(1,1,xp, xpp, vp,  fp, ielat, iwmax,ityp)
+       atneb(1)%xp(1:3,1:im)=xp(1:3,1:im)
+       atneb(1)%ityp(1:im)=ityp(1:im)
+       atneb(1)%xpp=atneb(1)%xp
+       atneb(1)%num_at_glob(:)=num_at_glob(:)
+       atneb(1)%ielat=0
+       atneb(1)%fp(:,:)= 0 !fp(:,:)
+       atneb(1)%vp(:,:)=0 !vp(:,:)
+
+       if (atneb(1)%ltabvois) then
+          atneb(1)%iwmax=0 !iwmax(:)
+          atneb(1)%indi=0
+       end if
 
 
 
        fnam(1:lenfnam+4)='fin_'//fnam(1:lenfnam)   
        lenfnam=lenfnam+4
        !       write(6,*)'FNAM ',fnam
-       call config 
+       call config
+
+!       fp=0; ielat=0;iwmax=0;vp=0
+
        fnam=fnamneb
        lenfnam=lenfnam-4
        !       write(6,*)'FNAM ',fnam
@@ -698,7 +766,22 @@ contains
           call sauveposition(npath)
           call rasmol(npath)
        endif
-       call into_path(npath,1,xp, xpp, vp,  fp, ielat, iwmax,ityp)
+
+       atneb(npath)%xp(1:3,1:im)=xp(1:3,1:im)
+       atneb(npath)%ityp(1:3)=ityp(1:im)
+       atneb(npath)%xpp=atneb(npath)%xp
+       atneb(npath)%num_at_glob(:)=num_at_glob(:)
+       atneb(npath)%ielat=0
+       atneb(npath)%fp(:,:)= 0 !fp(:,:)
+       atneb(npath)%vp(:,:)=0 !vp(:,:)
+!       atneb(npath)%xpp(:,:)=0 !xpp(:,:)
+       if (atneb(npath)%ltabvois) then
+          atneb(npath)%iwmax=0 !iwmax(:)
+          atneb(npath)%indi=0
+       end if
+
+
+!       call into_path(npath,1,xp, xpp, vp,  fp, ielat, iwmax,ityp)
 
        !       fnam=fnamneb
        !       lenfnam=lenfnam-4
@@ -710,7 +793,7 @@ contains
 
 
     end if
-
+    atneb(:)%im=im
   end subroutine configneb
   
   
@@ -745,8 +828,12 @@ contains
   end do
   
   if (rang==0) write(*,*) 'ISEED for neb, NORM of the noise ',iseed, neb_noise_scale, totalbruit
-  bruitneb(1:3,1:im,2:npath-1) = bruitneb(1:3,1:im,2:npath-1) * neb_noise_scale * xp_n(1:3,1:im,2:npath-1) / (sqrt(totalbruit))
-  xp_n(1:3,1:im,1:npath) = xp_n(1:3,1:im,1:npath) + bruitneb(1:3,1:im,1:npath)
+  do ip=2,npath-1
+     bruitneb(1:3,1:im,ip) = bruitneb(1:3,1:im,ip) * neb_noise_scale * atneb(ip)%xp(1:3,1:im) / (sqrt(totalbruit))
+  end do
+  do ip=1,npath
+     atneb(ip)%xp(1:3,1:im) = atneb(ip)%xp(1:3,1:im) + bruitneb(1:3,1:im,ip)
+  end do
   !debug write(*,*) xp_n(1,5,4), bruitneb(1,5,4)
   !debug stop
   

@@ -1,7 +1,7 @@
 module neb_controle_mod
   USE endrun_mod,only: endrun
   USE dynalloccell,only:
-  USE tab_imm_m,only:xp,fp
+!  USE tab_imm_m,only:xp,fp
   USE sauveposition_mod,only: sauveposition
   USE recips_mod,only: recips
   USE deftimestep_mod,only: deftimestep
@@ -16,7 +16,7 @@ contains
   !           MCM for JPC 08/02/2007
   ! ***********************************************************
 
-  subroutine neb_controle (ii) 
+  subroutine neb_controle (ii,xp,fp) 
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -35,10 +35,10 @@ contains
     ! integer  :: ielat(imm)
     ! integer  :: iwmax(imm)
     ! integer  :: ityp(imm)
-    ! real(double)  :: xp(3,imm)
+     real(double)  :: xp(3,imm)
     ! real(double)  :: xpp(3,imm)
     ! real(double)  :: vp(3,imm)
-    ! real(double)  :: fp(3,imm)
+     real(double)  :: fp(3,imm)
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------

@@ -72,7 +72,6 @@ contains
     
     
     logical ::ltbv=.false.
-!    write(6,*)'init_e'
 
 !        write(6,*)'init'
     if (atconf%im.ne.0) then
@@ -101,7 +100,7 @@ contains
 
        if(present(lprteat)) atconf%lprteat=lprteat
        if(present(lsigat)) atconf%lsigat=lsigat
-       write(6,*)'init_e',atconf%lprteat,atconf%lsigat
+!       write(6,*)'init_e',atconf%lprteat,atconf%lsigat
        if(atconf%lprteat)then
           allocate(atconf%eat(imin))
           atconf%eat=0
@@ -457,29 +456,46 @@ contains
   
   
     
-  subroutine print(atprt)
+  subroutine print(atprt,i1,i2)
     class(atom_config), intent(in)::atprt
+    integer,optional,intent(in)::i1,i2
     type(atom_config_d):: td
     type(atom_config_e):: te
-    integer::i,ic,im
-    write(6,*)
+    integer::i,ic,im,ifin,ideb,ist,ifn
+!    write(6,*)
     write(6,*)'in print'
      im=atprt%im
     
-    write(6,*)'im = ',atprt%im
-    write(6,*)'ltabvois ', atprt%ltabvois
+     write(6,*)'im = ',atprt%im
+     write(6,*)'icaltabt = ',atprt%icaltabt
+     write(6,*)'ltabvois ', atprt%ltabvois
+     
+     if (present(i1))then
+        ideb=i1
+     else
+        ideb=1
+     endif
+     if (present(i2)) then
+        ifin=i2
+     else
+        if (present(i1))then
+           ifin=i1
+        else
+           ifin=im
+        endif
+     end if
     if (allocated(atprt%xp)) then
-       do i=1,im
-          write(6,*)'%xp= ', atprt%xp(:,i)
+       do i=ideb,im
+          write(6,*)'%xp= ', i,atprt%xp(:,i)
        end do
-       do i=1,im
-          write(6,*)'%fp= ', atprt%fp(:,i)
+       do i=ideb,im
+          write(6,*)'%fp= ', i,atprt%fp(:,i)
        end do
-       do i=1,im
-          write(6,*)'%ityp= ', atprt%ityp(i)
+       do i=ideb,im
+          write(6,*)'%ityp= ', i,atprt%ityp(i)
        end do
-       do i=1,im
-          write(6,*)'%ielat= ', atprt%ielat(i)
+       do i=ideb,im
+          write(6,*)'%ielat= ', i,atprt%ielat(i)
        end do
 !       if (extends_type_of(atprt,td)) then
 !          write(6,*)'prt_d'
@@ -502,32 +518,36 @@ contains
 !             end do
 !          end if
 !       end if
+          do i=ideb,im
+             write(6,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
+          end do
+
        select type (atprt)
        class is (atom_config_d)
           write(6,*)'prt_d'
-          do i=1,im
+          do i=ideb,im
              write(6,*)'%vp= ', i,atprt%vp(:,i)
           end do
-          do i=1,im
+          do i=ideb,im
              write(6,*)'%xpp= ', i,atprt%xpp(:,i)
           end do
        class is (atom_config_e)
           write(6,*)'prt_e'
-          do i=1,im
+          do i=ideb,im
              write(6,*)'%vp= ', i,atprt%vp(:,i)
           end do
-          do i=1,im
+          do i=ideb,im
              write(6,*)'%xpp= ', i,atprt%xpp(:,i)
           end do
           
           
           if (atprt%lsigat) then
-             do i=1,im
+             do i=ideb,im
                 write(6,*)'%sigat= ',i, atprt%sigat(:,:,i)
              end do
           end if
           if (atprt%lprteat) then
-             do i=1,im
+             do i=ideb,im
                 write(6,*)'%eat= ', i,atprt%eat(i)
              end do
           end if
@@ -535,12 +555,23 @@ contains
 
 
        if (atprt%ltabvois) then
-          do i=1,im
+          do i=ideb,im
              write(6,*)'%iwmax= ', i,atprt%iwmax(i)
           end do
-          
+                    
           if (allocated(atprt%indi))then
-             do i=1,size(atprt%indi)
+             if (ideb==1) then
+                ist=1
+             else
+                ist=atprt%iwmax(ideb-1)+1
+             end if
+             if (ifin==im) then
+                ifn=size(atprt%indi)
+             else
+                ifn=atprt%iwmax(ifin)
+             end if
+             
+             do i=ist,ifn
                 write(6,*)'vois', i,atprt%indi(i)
              end do
           end if
