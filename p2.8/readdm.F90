@@ -727,6 +727,11 @@ contains
 
 
     if ((lpotentiel(12).EQV..true.).and.(ltabvois.EQV..true.))ldemitab=.false.
+    if (lpotentiel(12).le.-10)then
+       ltabvois=.false.
+       if (rang==0) write(6,*)'LAMMPS +ltabvois ; impossible pour l instant'
+       stop
+    end if
 
     if(lrestart.and.lcorrelvp) then
        if (rang==0) write(6,*)rang,'pas de restart et de correlation'

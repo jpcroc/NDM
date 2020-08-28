@@ -10,11 +10,12 @@ module neb_module
   USE recips_mod,only: recips
   USE sauveposition_mod,only: sauveposition
   USE rasmol_mod,only: rasmol
-  use var_pot,only:ntyp,na
+  use var_pot,only:ntyp,na,ipotentiel
   USE dynalloccell,only:deallocateall
   !-----------------------------------------------
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config,init_cel
+  USE config_mod,only : config2data
   implicit none
 
 
@@ -217,7 +218,7 @@ end if
     if  (nebtype>=2) then
        if (rang==0) write(*,'(" NEB: The kspring is in the eV/A^2                          :", f12.5)')  kspring
        kspring=kspring*angst**2/erg2eV 
-       if (rang==0) write(*,'(" NEB: The kspring is in the NDM internal units (copyright)  :", f12.5)')  kspring
+       if (rang==0) write(*,'(" NEB: The kspring is in the NDM internal units (cgs)  :", f12.5)')  kspring
     end if
 
     icontrainte(:)=1
@@ -794,6 +795,16 @@ end if
 
     end if
     atneb(:)%im=im
+!#ifdef LAMMPS_VERSION
+
+     if((ipotentiel==-10).or.(ipotentiel==-11)) then
+         if(rang==0)write(6,*)'write configuration to conf.lmp'
+        call config2data (imm,im,atneb(1)%xp,atneb(1)%ityp,at,ntyp)
+     end if
+!#endif     
+
+
+    
   end subroutine configneb
   
   
