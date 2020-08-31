@@ -47,7 +47,8 @@ module init_mod
        &imana,itdes,iteanapos,iteplz,iterasmol,itetimestep,itmax,lcalcjq,lcasca,ldesinteg,lcontr,lfilm,lprteat,&
        &lrestart,lsigtyp,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,sigtyp,&
        kinemean,lsigat,pmean,xpchdn,sigtyptyp,sigtyp,eatomtotm,lprteattotm,vpchdn,indi,nvois,sigtyp_loc,sigtyptyp_loc,&
-       &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,celsize,npath
+       &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,celsize,npath,&
+       &posa,forca,firsttime_lammps
 
 
   USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel
@@ -122,12 +123,12 @@ contains
        write(6,*)
     end if
 
-#ifdef LAMMPS_VERSION
+!#ifdef LAMMPS_VERSION
     firsttime_lammps=.true.
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        call init_potential_simple
     else
-#endif  
+!#endif  
 
        do ipotcont=0,npotmax
           if(lpotentiel(ipotcont).EQV..true.) then
@@ -219,9 +220,9 @@ contains
           endif
        end do
 
-#ifdef LAMMPS_VERSION
+!#ifdef LAMMPS_VERSION
     endif
-#endif  
+!#endif  
 
     !<---------end setting the potential---------------
 

@@ -796,13 +796,13 @@ subroutine config
      if (lperiod.EQV..true.) call period (imm,xp,xpp,ax)
 
      ! SUMMARY
-#ifdef LAMMPS_VERSION
+!#ifdef LAMMPS_VERSION
 
      if((ipotentiel==-10).or.(ipotentiel==-11)) then
          if(rang==0)write(6,*)'write configuration to conf.lmp'
         call config2data (imm,im,xp,ityp,at,ntyp)
      end if
-#endif     
+!#endif     
 
      if (rang==0) then
 
@@ -877,7 +877,7 @@ subroutine config
 end subroutine coord_to_cellcoord
 
 
-#ifdef LAMMPS_VERSION
+!#ifdef LAMMPS_VERSION
 
 subroutine config2data (imm,im,xp,ityp,at,ntyp)
   USE T_kind_param_m, ONLY:  double
@@ -1069,5 +1069,5 @@ subroutine convert_cell(mat_ini,new_mat,transform)
   return
 end subroutine convert_cell
 
-#endif
+!#endif
 end module
