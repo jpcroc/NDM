@@ -11,7 +11,7 @@ end module mod_para_phondy
 subroutine init_mpi_phondy()
 
   USE mpi
-  USE mod_para_phondy
+  USE mod_para,only:_phondy
   USE gen_mpi
   USE gen_com_m, ONLY: , ONLY: rangph
   implicit none

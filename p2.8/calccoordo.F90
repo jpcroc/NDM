@@ -1,29 +1,25 @@
 module calccoordo_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
-        USE gen_com_m, ONLY: rang,atincel,nato,noxyz,it,timel,imm,im,imd,at,deltadist,bg,lperiod,ncel
+        USE gen_com_m, ONLY: rang,atincel,nato,noxyz,it,timel,at,deltadist,bg,lperiod,ncel
         implicit none
         contains
-subroutine calccoordo
+subroutine calccoordo(im,ityp,xp,ielat)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE tab_imm_m
 #ifdef PARA
-  USE mod_para
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+
 #endif
   USE var_pot, ONLY:ntyp,rc,nad
   implicit none
-  !-----------------------------------------------
-  !   G l o b a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   V a r i a b l e s
-  !-----------------------------------------------
+    integer,intent(in)::im
+    real(double),intent(in),allocatable::xp(:,:)
+    integer,allocatable::ityp(:),ielat(:)
+
   integer :: i, iti, itj, i1, i2, koo, ko1, j, ic,nci,ip,ll
   real(double), dimension(ntyp,ntyp) :: dnco
   real(double) :: r2, c1, c2, c3,cv(1,3),x1,x2,x3
@@ -36,7 +32,7 @@ subroutine calccoordo
 
   real(double),allocatable :: xpnp(:,:)
 
-  allocate(xpnp(3,imm))
+  allocate(xpnp(3,im))
   !
 
   !      write(6,*)'entree calcoordo'
@@ -44,10 +40,6 @@ subroutine calccoordo
   write (6, *) '--------- Coordinations ----------------'
   dnco(:ntyp,:ntyp) = 0
 
-  !      write(6,*)' calcoordo2'
-  !      a1(:imd-1) = -sign(zl(1),xp(1,:imd-1))
-  !      a2(:imd-1) = -sign(zl(2),xp(2,:imd-1))
-  !      a3(:imd-1) = -sign(zl(3),xp(3,:imd-1))
 
 
   if (lperiod) then
@@ -56,7 +48,7 @@ subroutine calccoordo
      call notperiod(im,xp,xpnp)
   end if
 
-  do i = 1, imd
+  do i = 1, im
      koo = ielat(i)
      nci=0
      iti=ityp(i)

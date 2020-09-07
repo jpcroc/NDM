@@ -5,7 +5,7 @@ module epme_mod
         contains
 !                   Version du 10/12/2001
 ! ***********************************************************
-subroutine epme (Deb,Fin,sige)
+subroutine epme (Deb,Fin,sige,im,xp,fp,ityp)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -15,7 +15,7 @@ subroutine epme (Deb,Fin,sige)
   USE var_pot, ONLY:alpha,auxe,maxorder,kpmex,kpmey,kpmez,ncoucx,ncoucy,ncoucz,nf1,nf2,nf3,nff,nfft1,nfft2,nfft3,&
        &npoint,pterm,volterm,fr1,fr2,fr3,iiim,q,bsmod3,iiim,ijim,ikim,bsmod2,de3,bsmod1,de2,de1
   USE fft_com_m
-  USE tab_imm_m
+
   implicit none
 
   !#ifdef para2c
@@ -30,10 +30,14 @@ subroutine epme (Deb,Fin,sige)
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !----------------------------------------------
-
-  real(double) :: potisewg, hbn2
-
+  integer,intent(in)::im
+  real(double), dimension(im) :: scalar
   integer :: deb, fin
+  real(double),intent(inout),allocatable::fp(:,:)
+  real(double),intent(in)::xp(:,:)
+  integer,intent(in),allocatable::ityp(:)
+    
+  real(double) :: potisewg, hbn2  
   real(double)  :: theta1(maxorder,Deb:Fin),dtheta1(maxorder,Deb:Fin)
   real(double)  :: theta2(maxorder,Deb:Fin),dtheta2(maxorder,Deb:Fin)
   real(double)  :: theta3(maxorder,Deb:Fin),dtheta3(maxorder,Deb:Fin)

@@ -13,7 +13,9 @@ contains
     
     USE var_pot, ONLY:cm
 #ifdef PARA
-    USE mod_para
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+
 #endif
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s

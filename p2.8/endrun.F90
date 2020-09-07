@@ -10,7 +10,7 @@ module endrun_mod
         USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,sigat,cunitP,erg2eV,itdes,&
              &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
              &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,eatomtotm,&
-             &lwgin,nstepdes
+             &lwgin,nstepdes, lposmoy,l2T,angst
         use var_pot, only: eatref,eatref,eatref
 
         implicit none
@@ -21,9 +21,14 @@ subroutine endrun
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE tab_imm_m
+  USE tab_imm_m,only:posmoyx,ityp,xp,num_at_glob,fp
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,temps_dmloop_deb,temps_dmloop,&
+       &temps_config,temps_deb
+!  use mpi
+!  USE mod_para,only:MPI_INTEGER, MPI_ANY_SOURCE, MPI_COMM_WORLD, status,ierr,nprocs,MPI_SOURCE,NDM_MPI_REAL_DOUBLE,MPI_SUM,myid,proc_cell,MPI_LOGICAL,MPI_Wtime&
+!       &, temps_dmloop,temps_dmloop_deb
 #endif
 #if defined ML && defined PARAML
  USE time_measure

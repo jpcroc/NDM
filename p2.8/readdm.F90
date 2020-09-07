@@ -37,7 +37,7 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
 #ifdef PARA
-    USE mod_para
+    USE mod_para,only:NPROCS
 #endif
 
     ! *****************************************************************
@@ -727,7 +727,7 @@ contains
 
 
     if ((lpotentiel(12).EQV..true.).and.(ltabvois.EQV..true.))ldemitab=.false.
-    if (lpotentiel(12).le.-10)then
+    if (ipotentiel.le.-10)then
        ltabvois=.false.
        if (rang==0) write(6,*)'LAMMPS +ltabvois ; impossible pour l instant'
        stop

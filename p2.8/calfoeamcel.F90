@@ -13,9 +13,10 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,at
   USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,eamglue,eamrho,rue_pot,&
        &typ_and_pot,typ_pot_pair,ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,ipo,eamrep,eamrep,&
   &eamglue,eamglue,eamrho
-!  USE tab_imm_m
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,maj_tabdensity_ftm
+
 #endif
   implicit none
 

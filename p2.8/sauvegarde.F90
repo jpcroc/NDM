@@ -2,12 +2,15 @@ module sauvegarde_mod
 
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:at,bg,im,im_glob,imm,rang,at,fnamcout,formatsauv,im_glob,it,itesauvinter,&
-         &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob
-    USE tab_imm_m
+         &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
+    USE tab_imm_m,only:xp,vp,fp,xpp,ax,ityp,num_at_glob
     USE elec_cell, ONLY : sauveelec
     USE cryst_to_cart_mod,only: cryst_to_cart
 #ifdef PARA
-    USE mod_para
+
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+         
 #endif
 
 

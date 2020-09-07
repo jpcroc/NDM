@@ -6,8 +6,9 @@ contains
   subroutine decoupage(nbr_cpuIN,ncore)
 
 #ifdef PARA
-    USE mod_para
-    USE tab_imm_m
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,res_cpu,coord_max,coord_min,proc_cell
+    use tab_imm_m,only:realloc_all_tab_imm
 #endif
     USE gen_com_m, ONLY:nox,noy,noz,rang,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
          &nb_cell_x,nb_cell_y,nb_cell_z,noxyz,imm

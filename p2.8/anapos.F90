@@ -11,6 +11,7 @@ module posana
        &dmtype,eatom,decal_bc,noy,nox,noz,ldecal_bc,lenfnam,it,imd,zl,nato,imm_glob,natperc,timel
   !USE configcr_mod,only: configcr
 !  USE atomconfig
+  USE tab_imm_m,only:xp,ityp,ielat,ax,xpp
   logical :: lsic
     logical :: lcomp, & ! comparaison ou non avec un cristal de dÃ©part
          ldecal, & ! decalage en tre boite cr et boite ana
@@ -46,9 +47,9 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m
 
-    USE tab_imm_m
+
 #ifdef PARA 
-    USE mod_para
+    USE mod_para,only:
 #endif
 
     ! **************************************************************
@@ -616,7 +617,7 @@ contains
   !**********************************************************
   subroutine depcr(tdep,plmin,plmax,tvac,tint,lvac,lpstruct,lpdef,lpdep,ldeptest)
     USE T_kind_param_m
-    USE tab_imm_m
+
     USE tabcr
     implicit none
     !-----------------------------------------------
@@ -1124,7 +1125,6 @@ contains
   subroutine ws
     USE T_kind_param_m
 
-    USE tab_imm_m
     USE tabcr
     implicit none
     !-----------------------------------------------
@@ -1403,7 +1403,6 @@ contains
 
   subroutine subc(nvac,indvac,nint,indint)
     USE T_kind_param_m
-    USE tab_imm_m
 
     type:: deftype
        real(double)::xd(3)

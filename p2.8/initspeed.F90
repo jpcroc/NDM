@@ -1,5 +1,5 @@
 module initspeed_mod
-  USE tab_imm_m
+  USE tab_imm_m,only:xp,vp,xpp,ityp,ax,bruitmd
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: MatInv
   USE tempinst_mod,only: tempinst
@@ -8,15 +8,17 @@ module initspeed_mod
   USE period_mod,only: period
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,im,im_glob,iseed,lcalcjq,lperiod,ltpcel,&
        &lvpread,noxyz,oldtstep,one,pi,rang,tempdeplainit,tinit,tstep,im,iseed,mdcg_noise_scale,&
-       neb_noise_scale,pi,rang,bk
+       neb_noise_scale,pi,rang,bk,mdcg_noise
   USE var_pot, ONLY:ntyp,cm
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
+
   implicit none
 contains
   ! *********************************************************************
   subroutine bruit_xp 
     USE T_kind_param_m, ONLY:  double
 
-    USE tab_imm_m
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -65,9 +67,8 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:
     USE var_pot, ONLY:
-    USE tab_imm_m
 #ifdef PARA
-    USE mod_para
+    USE mod_para,only:
 #endif
     ! *********************************************************************
 

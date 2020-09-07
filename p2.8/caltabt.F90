@@ -2,7 +2,7 @@ module caltabt_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
 #ifdef PARA
-        USE mod_para
+        USE mod_para,only:
 #endif      
         implicit none
         contains
@@ -14,7 +14,6 @@ subroutine caltabt(im,xp,ielat)
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:nato,atincel,bg,natperc,nox,noy,noz,lperiod,noxyz
 !  USE atomconfig
-!  USE tab_imm_m
   !          Version du 01 fevrier 2001
   ! ******************************************************************
 

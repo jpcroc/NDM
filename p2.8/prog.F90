@@ -26,10 +26,11 @@ contains
     USE gen_com_m, ONLY:dmtype,im,imm,indi,ltabvois,parallele,potist,rang,sig,nvois ,&
          &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize
 
-    USE tab_imm_m
+    USE tab_imm_m,only:xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob,alloc_all_tab_imm
 
 #ifdef PARA
-    USE mod_para
+    use mpi
+    USE mod_para,only:TEMPS_INIT_DEB,TEMPS_INIT,MYID,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm
 #endif
 
     implicit none

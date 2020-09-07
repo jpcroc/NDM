@@ -62,7 +62,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE tab_imm_m
+    USE tab_imm_m,only:num_at_glob,fp,iwmax,vp,xpp,vp,fp
     USE eam
     USE eamerco
     USE SMjuli
@@ -74,7 +74,8 @@ contains
     USE eloss, ONLY : ibrake,ecelec,initeloss
 
 #ifdef PARA
-    USE mod_para
+    use mpi
+    USE mod_para,only:TEMPS_INPUT_DEB,TEMPS_INPUT,TEMPS_CONFIG_DEB,TEMPS_CONFIG,MYID,NBR_PROC_VOISIN,TEMPS_INITSPEED_DEB,TEMPS_INITSPEED
 #endif
 
     ! **************************************************************
@@ -569,7 +570,7 @@ contains
        end if
     end if
 
-    if ((lheat.EQV..true.).and.(iteheat==0))call heat
+    if ((lheat.EQV..true.).and.(iteheat==0))call heat(im,xp,vp,ityp)
 
     if(iteplz>0)  call prtplz(xp,ityp)
 

@@ -9,12 +9,13 @@ subroutine calctemp(temptyp)
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:ntyp,cm,na
   USE gen_com_m, ONLY:nox,noy,noz,temp,atincel,nato,kine,erg2ev,ltpcel,im,im_glob,tempc,&
-       &tempcm,maxTcel,imd,tempEP,zl,bk,noxyz,tempstopcel
-  USE tab_imm_m
+       &tempcm,maxTcel,imd,tempEP,zl,bk,noxyz,tempstopcel,l2t
+  USE tab_imm_m,only:ityp,vp,num_at_glob
   USE elec_cell, ONLY: ecell,i2T,nex,ney,nez,nox_2_nex
   USE eloss, ONLY : tcelec,ecelec
 #ifdef PARA
-  USE mod_para
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_cell
 #endif
 
   ! *************************************************************

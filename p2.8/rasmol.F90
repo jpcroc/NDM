@@ -2,13 +2,14 @@
 module rasmol_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:lprtsigat,rang,ivisu,sigat,ldesinteg,lpkbar,lprteat,im_glob,imm,im,iko,&
-       &cunitP,it,lcasca,timel,unitP,at,fnam,bg,erg2ev,lenfnam,eatom
+       &cunitP,it,lcasca,timel,unitP,at,fnam,bg,erg2ev,lenfnam,eatom,dmtype
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
     USE paraneb_mod
+    USE tab_imm_m,only:num_at_glob,ityp,xp
 
-
-  implicit none
+    implicit none
+    integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when we
 contains
 
   subroutine rasmol(itapp)
@@ -18,9 +19,10 @@ contains
     USE T_kind_param_m, ONLY:  double
 
 
-    USE tab_imm_m
+
 #ifdef PARA
-    USE mod_para
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 #endif
     ! ****************************************************************
 
@@ -57,6 +59,11 @@ contains
     !-----------------------------------------------
     !
     !
+
+          if (dmtype==17) then 
+             call redefine_ty() 
+          end if
+
 #ifdef PARA
     rgloc=rang
 #else
@@ -288,6 +295,9 @@ contains
     if ((rgloc == 0).and.(ivisu == 2)) then
        close(luvisu2)
     end if
+          if (dmtype==17) then 
+             call refix_ty()
+          end if
 
     return
   end subroutine rasmol
@@ -297,11 +307,14 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE var_pot, ONLY:
-    USE tab_imm_m
+
 #ifdef PARA
-    USE mod_para
+    USE mod_para,only:
 #endif
     implicit none
+
+                                                        ! perform temporary changes on ityp 
+
     ntyp_buffer=ntyp
     allocate(ityp_buffer(imm),ty_buffer(ntyp),cm_buffer(ntyp))
     ityp_buffer(:)=ityp(:)
@@ -330,9 +343,8 @@ contains
   subroutine refix_ty
     USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:
-    USE tab_imm_m
 #ifdef PARA
-    USE mod_para
+    USE mod_para,only:
 #endif
     implicit none 
 
@@ -342,7 +354,7 @@ contains
     ityp(:)=ityp_buffer(:)
     ty(:)=ty_buffer(:)
     cm(:)=cm_buffer(:)
-
+    deallocate(ityp_buffer,ty_buffer,cm_buffer)
     return
   end subroutine refix_ty
 

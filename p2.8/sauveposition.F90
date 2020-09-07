@@ -10,10 +10,12 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE tab_imm_m
+    USE tab_imm_m,only:xp,ityp,num_at_glob
     USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
-    USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs
+
 #endif
 
     !         version du 04 octobre 2000

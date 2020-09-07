@@ -29,12 +29,12 @@ contains
          &unitp,zl,bg,nvois,nox,noy,noz,celsize
 
     USE var_pot, ONLY:
-    USE tab_imm_m
+    USE tab_imm_m,only:xp,vp,ax,ityp,xpp,fp,iwmax,ielat
     USE suivinonpbc
     USE cryst_to_cart_mod,only: cryst_to_cart
     USE notperiod_mod,only: notperiod
 #ifdef PARA
-    USE mod_para
+    USE mod_para,only:
 #endif
     USE defcdp, ONLY :itecdp
     implicit none
@@ -734,7 +734,7 @@ contains
 
 
     if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
-    if ((iteheat.gt.0).and.(mod(it,iteheat)==0))call heat
+    if ((iteheat.gt.0).and.(mod(it,iteheat)==0))call heat(im,xp,vp,ityp)
 
 
 

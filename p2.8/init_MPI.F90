@@ -3,8 +3,8 @@ module init_mpi_mod
         implicit none
         contains
 subroutine init_mpi()
-
-  use mod_para
+  use mpi
+  use mod_para,only:ierr,myid,nprocs,temps_deb
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM

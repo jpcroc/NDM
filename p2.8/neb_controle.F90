@@ -1,7 +1,6 @@
 module neb_controle_mod
   USE endrun_mod,only: endrun
   USE dynalloccell,only:
-!  USE tab_imm_m,only:xp,fp
   USE sauveposition_mod,only: sauveposition
   USE recips_mod,only: recips
   USE deftimestep_mod,only: deftimestep

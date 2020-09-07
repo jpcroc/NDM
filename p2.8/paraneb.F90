@@ -2,8 +2,7 @@
 module paraneb_mod
 #ifdef PARANEB
   USE T_kind_param_m, ONLY:  double
-  !USE mpi
-  !  USE T_kind_param_mpi_m
+  USE mpi
   implicit none
 
   include 'mpif.h'

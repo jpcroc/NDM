@@ -7,7 +7,9 @@ module calfoberend_mod
 contains
   subroutine calfoberend(im,xp, vp, fp,ityp)
 #ifdef PARA
-    USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE
+
 #endif
 
     integer::im
@@ -57,7 +59,7 @@ contains
     USE gen_com_m, ONLY:
     USE var_pot, ONLY:
 #ifdef PARA
-    USE mod_para
+    USE mod_para,only:
 #endif
     integer::im
     real(double)  :: xp(3,im)

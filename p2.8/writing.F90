@@ -14,7 +14,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE tab_imm_m
+    USE tab_imm_m,only:xp
 
     implicit none	
     !-----------------------------------------------

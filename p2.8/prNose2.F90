@@ -42,7 +42,9 @@ module Parrinello_Rahman_Nose
   USE recips_mod,only: recips,calcvol
 
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs
+
 #endif
  
   implicit none

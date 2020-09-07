@@ -12,7 +12,7 @@ subroutine stress_bc
 	USE T_kind_param_m, ONLY: double
 
 
-	USE tab_imm_m
+	USE tab_imm_m,only:fp
 	USE eam
 	USE posana
         USE cfg_module
@@ -155,7 +155,7 @@ subroutine recalc_stress
  	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
 	USE gen_com_m, ONLY:
-	USE tab_imm_m
+	USE tab_imm_m,only:
 	USE eam
 	USE posana
 	
@@ -248,7 +248,7 @@ subroutine it_countdown
  	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
 	USE gen_com_m, ONLY:
-	USE tab_imm_m
+	USE tab_imm_m,only:
 	USE eam
 	USE posana
 	

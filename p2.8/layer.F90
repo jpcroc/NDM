@@ -10,10 +10,10 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE tab_imm_m
+    USE tab_imm_m,only:
 
 #ifdef PARA
-    USE mod_para
+    USE mod_para,only:
 #endif 
     write(6,*)'LAYER DETRUIT'
     stop

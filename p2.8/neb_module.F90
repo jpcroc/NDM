@@ -626,7 +626,7 @@ end if
     subroutine configNEB !(xp, xpp, vp,  fp, ielat, iwmax, ityp)
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:
-    USE tab_imm_m
+    USE tab_imm_m,only:xp,xpp,vp,fp,ielat,iwmax,ityp,num_at_glob
 
 
     integer :: ic, ip,lucin,icintype,typmax,i,typmin

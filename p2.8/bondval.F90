@@ -1,21 +1,19 @@
 module bondval_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,im,imm,it,atincel,ncel,rang,fnam,deltadist,lperiod,noxyz,nato,lenfnam
+  USE gen_com_m, ONLY:at,bg,it,atincel,ncel,rang,fnam,deltadist,lperiod,noxyz,nato,lenfnam
   USE var_pot, ONLY:ntyp,ty
   implicit none
 
 contains
 
-  subroutine bondval
+  subroutine bondval(im,xp,ityp,ielat,num_at_glob)
 
     USE T_kind_param_m, ONLY:  double
 
-
-    USE tab_imm_m
-
-    implicit none
-
+    integer,intent(in)::im
+    real(double),intent(in),allocatable::xp(:,:)
+    integer,allocatable::ityp(:),ielat(:),num_at_glob(:)
 
     ! variables locales
 
@@ -31,7 +29,7 @@ contains
 
     character :: extension*9
     !APARA
-    allocate(xpnp(3,imm))
+    allocate(xpnp(3,im))
 
     if(rang==0) then
 
@@ -49,7 +47,7 @@ contains
 
     dcut2=(5.0d-8)**2
 
-    allocate(bdv(imm))
+    allocate(bdv(im))
 
 
     bdv(:)=0.

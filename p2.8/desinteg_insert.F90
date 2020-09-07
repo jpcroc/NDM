@@ -1,6 +1,3 @@
-! ***********************************************************
-!           sous-programme controle.f
-! ***********************************************************
 module desinteg_insert_mod
   USE caltabt_mod,only: caltabt
   USE gen_com_m, ONLY:bk,deltaespr,deltaf,erg2ev,it,itdes,itmax,nstepdes,pm1des,rang,&
@@ -17,9 +14,10 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE tab_imm_m
+    USE tab_imm_m,only:xp,vp,ielat,ityp,num_at_glob
 #ifdef PARA
-    USE mod_para
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 #endif
 
     implicit none

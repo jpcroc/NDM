@@ -15,9 +15,9 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atin
        &lcalcjq,ldesinteg,lperiod,lprteat,lsigtyp,ltpcel,nstepdes,pi,pm1des,potis1,potis2,&
        &xpspr,sigtyptyp,sigtyp,sigc,eatom,volu,deltaEspr
   USE jqmod
-!  USE tab_imm_m
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE
 #endif
   implicit none
   !-----------------------------------------------

@@ -47,7 +47,9 @@ module Parrinello_Rahman
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,maj_atomes_frt_ftm
+!  USE mod_para,only:
 #endif
   USE calfo_mod,only: calfo
   USE scalebox_mod,only: scalebox
