@@ -9,7 +9,6 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE tab_imm_m
   USE cryst_to_cart_mod,only: cryst_to_cart
   !          Version du 01 fevrier 2001
   ! ******************************************************************
@@ -98,7 +97,7 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
         !               end if
         IF ( (koo.GT.noxyz).OR.(koo.LT.0) ) THEN
            WRITE(0,'(a,i0,a,3g20.12)') &
-                'Problem with atom ', i, ', x,y,z = ', xp(1:3,i)
+                'Problem with atom ', i, ', x,y,z = ', xpcr(1:3,i)
            WRITE(0,'(2(a,i0))') ' koo = ', koo, ' - noxyz = ', noxyz
            STOP
         END IF

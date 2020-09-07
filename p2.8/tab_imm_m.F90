@@ -11,8 +11,6 @@ module tab_imm_m
   integer, dimension(:), allocatable       :: iwmax  ! indice du dernier voisin
   integer, dimension(:), allocatable       :: iwmax2  ! indice du dernier voisin pour les constantes de force (only phondy)
   integer, dimension(:), allocatable       :: ityp   ! types 
-  integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when we
-                                                        ! perform temporary changes on ityp 
   real(double),dimension(:,:), allocatable :: xp     ! positions 
   real(double),dimension(:,:), allocatable :: xpp    ! positions precedentes
   real(double),dimension(:,:), allocatable :: vp     ! vitesses
@@ -23,7 +21,7 @@ module tab_imm_m
   real(double),dimension(:,:), allocatable :: xpnonpbc    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), allocatable :: axnonpbc    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), allocatable :: tmpsuivi    ! only in the case, lsuivinonpbc  
-  real(double),dimension(:,:), allocatable :: Gl    ! random noise langevin
+  real(double),dimension(:,:), allocatable :: Glanv    ! random noise langevin
 
   integer, dimension(:), allocatable       :: num_at_glob ! numero global d'un atome
 contains
@@ -49,7 +47,7 @@ contains
        posmoyx = 0.0
     end if
      if ((llangevin.eqv..true.).or.(l2T.eqv..true.)) then
-        allocate(Gl(3,nb_imm))
+        allocate(Glanv(3,nb_imm))
      end if
 
     if (mdcg_noise/=0) then
@@ -65,9 +63,7 @@ contains
     allocate(iwmax2(nb_imm))
     iwmax = 0
     allocate(ityp(nb_imm))
-    allocate(ityp_buffer(nb_imm))
     ityp  = 0
-    ityp_buffer = 0
     allocate(num_at_glob(nb_imm))
     num_at_glob  = 0
 
@@ -186,16 +182,11 @@ contains
        iwmax(1:old_nb_imm) = ibuff
 
        ibuff = ityp
-       ibuff = ityp_buffer
        deallocate(ityp)
-       deallocate(ityp_buffer)
        
        allocate(ityp(new_nb_imm))
-       allocate(ityp_buffer(new_nb_imm))
        ityp = 0
-       ityp_buffer = 0
        ityp(1:old_nb_imm) = ibuff
-       ityp_buffer(1:old_nb_imm) = ibuff
 
        ibuff = num_at_glob
        deallocate(num_at_glob)
@@ -227,7 +218,6 @@ contains
     if (allocated(iwmax))       deallocate(iwmax)
     if (allocated(iwmax2))      deallocate(iwmax2)
     if (allocated(ityp))        deallocate(ityp)
-    if (allocated(ityp_buffer)) deallocate(ityp_buffer)
     if (allocated(num_at_glob)) deallocate(num_at_glob)
     if (lsuivinonpbc) then
       if (allocated(xpnonpbc))  deallocate(xpnonpbc)
@@ -242,7 +232,7 @@ contains
     end if 
 
     if (llangevin) then 
-       if(allocated(Gl)) deallocate(Gl)
+       if(allocated(Glanv)) deallocate(Glanv)
     end if 
 
   end subroutine dealloc_all_tab_imm

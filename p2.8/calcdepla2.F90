@@ -1,43 +1,30 @@
 module calcdepla2_mod
   USE var_pot, ONLY:ntyp,nad,ty
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:zls2,tdepla2,it,timel, im,imm,at, bg,rang
+  USE gen_com_m, ONLY:zls2,tdepla2,it,timel,at, bg,rang
   implicit none
 contains
   ! *******************************************************************
-  subroutine calcdepla2
+  subroutine calcdepla2(im,xp,ielat,ityp,ax)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-
-
-    USE tab_imm_m
 #ifdef PARA
-    USE mod_para
-#endif
-    !
-    !
-    !       version du 09 decembre 2003
-    ! *******************************************************************
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 
+    use tab_imm_m,only:num_at_glob
+#endif
     implicit none
-    !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
+    integer,intent(in)::im
+    real(double),allocatable::xp(:,:),ax(:,:)
+    integer,allocatable::ityp(:),ielat(:)
+    
     integer :: ndeplatot
     integer , dimension(ntyp) :: ndepla
     integer :: i, iti
-    integer , dimension(imm) :: indic
+    integer , dimension(im) :: indic
     integer :: lufilm2it, lutampon
     real(double), dimension(ntyp) :: dr2
     real(double) :: dri2, a1, a2, a3, c1, c2, c3, racdri2
@@ -72,8 +59,8 @@ contains
     ndeplatot = 0
     dr2(:ntyp) = 0.0
     ndepla(:ntyp) = 0
-    call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
-    call cryst_to_cart (imm, ax, bg, -1)    !cart vers cryst
+    call cryst_to_cart (im, xp, bg, -1)    !cart vers cryst
+    call cryst_to_cart (im, ax, bg, -1)    !cart vers cryst
 
     do i = 1, im
        c1 = ax(1,i)-xp(1,i)
@@ -97,8 +84,8 @@ contains
        ndeplatot = ndeplatot+1
        indic(ndeplatot) = i
     end do
-    call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
-    call cryst_to_cart (imm, ax, at, 1)     !cryst vers cart
+    call cryst_to_cart (im, xp, at, 1)     !cryst vers cart
+    call cryst_to_cart (im, ax, at, 1)     !cryst vers cart
 
 
 

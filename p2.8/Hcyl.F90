@@ -15,9 +15,9 @@ contains
     USE var_pot, ONLY:ty
     !     Version  du 12 avril 2007
     ! *********************************************************************
-    USE tab_imm_m
+    USE tab_imm_m,only:xp,xpp,ax,vp,ityp
 #ifdef PARA
-    USE mod_para
+    USE mod_para,only:
 #endif
 
     implicit none

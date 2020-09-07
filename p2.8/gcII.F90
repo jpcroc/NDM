@@ -3,7 +3,7 @@ module gcII_mod
   USE analyse_mod,only: analyse
   USE initspeed_mod,only: initspeed,bruit_xp
   USE gcmodII_mod,only: ZXCGRII
-  USE tab_imm_m
+  USE tab_imm_m,only:xp,ityp,bruitmd,num_at_glob
   implicit none
 
 contains
@@ -13,10 +13,14 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:bg,itetemp2,imm_glob
+    USE gen_com_m, ONLY:bg,itetemp2,imm_glob,dmtype,rang,im,it,itmax,mdcg_noise,&
+         &angst,erg2ev,imm,potist
     USE var_pot, ONLY:nad,na,ntyp
-    USE work_cgII
-    !  USE tab_imm_m, ONLY : bruitmd
+    USE work_cgII,only: funct
+#ifdef PARA
+
+use mod_para
+#endif
     ! *************************************************************
     ! xp positions des atomes
     ! xpp previous positions

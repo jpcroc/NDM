@@ -9,7 +9,7 @@ module analyse_mod
   USE calcdigr_mod,only: calcdigr
   USE calcangle_mod,only: calcangle
   USE bondval_mod,only: bondval
-  USE rasmol_mod,only: rasmol,redefine_ty,refix_ty
+  USE rasmol_mod,only: rasmol
   USE rdf_mod,only: rdf
   USE prtplz_mod,only: prtplz
 
@@ -40,7 +40,7 @@ contains
 
     use tab_imm_m
 #ifdef PARA
-    use mod_para
+    use mod_para,only:
 #endif
     USE fcc_module
     USE cfg_module
@@ -610,22 +610,22 @@ contains
     !  if (rang==0) write(6,*) 'PARA-T itedepla' ,itedepla
     if (itedepla>0) then
        if (mod(it,itedepla)==0) then
-          call calcdepla
-          if (tdepla2>0.0) call calcdepla2
+          call calcdepla(im,xp,ielat,ityp,ax)
+          if (tdepla2>0.0) call calcdepla2(im,xp,ielat,ityp,ax)
        endif
     endif
 
 
     ! calcul des coordinences
     if (itecoordo>0) then
-       if (mod(it,itecoordo)==0) call calccoordo 
+       if (mod(it,itecoordo)==0) call calccoordo  (im,ityp,xp,ielat)
     endif
 
 
     ! calcul de la RDF et de la position moyenne
     if (iterdf>0) then
        if (mod(it,iterdf)==0) then
-          call calcdigr 
+          call calcdigr (im,xp,ityp,ielat)
           nrdf = nrdf+1
           if (linstantrdf) then
              call rdf 
@@ -634,7 +634,7 @@ contains
        endif
     else if (iterdf==0) then
        if (itmax-it<nrdf) then
-          call calcdigr 
+          call calcdigr (im,xp,ityp,ielat)
           nrdf = nrdf+1
           !        write(6,*)'sortie digr de analyse'
        endif
@@ -644,7 +644,7 @@ contains
 
     if (iteangle>0) then
        if (mod(it,iteangle)==0) then
-          call calcangle 
+          call calcangle (im,ityp,xp,ielat)
           nfda=nfda+1 
           if (linstantfda) then
              call adf
@@ -653,7 +653,7 @@ contains
        endif
     else if(iteangle==0) then
        if(itmax-it<nfda) then
-          call calcangle 
+          call calcangle (im,ityp,xp,ielat)
           nfda=nfda+1
        endif
     endif
@@ -715,14 +715,9 @@ contains
 
     if (iterasmol>0) then     
        if (mod(it,iterasmol)==0) then
-          if (dmtype==17) then 
-             call redefine_ty() 
-             call rasmol (it)
-             call refix_ty()
-          else
-             call rasmol (it)
-             if (l2T) call  eleccellmol
-          end if
+          call rasmol (it)
+          if (l2T) call  eleccellmol
+
        end if
     endif
 
@@ -736,7 +731,7 @@ contains
 
     if (itebdv>0) then
        ! Pas pris en compte en parallele
-       if (.not.parallele.and.mod(it,itebdv)==0) call bondval
+       if (.not.parallele.and.mod(it,itebdv)==0) call bondval(im,xp,ityp,ielat,num_at_glob)
     endif
 
     if (iteanapos>0) then

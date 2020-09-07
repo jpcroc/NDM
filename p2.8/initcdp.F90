@@ -8,7 +8,6 @@ subroutine initcdp
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY: iseed_glob=>iseed,im,rang
-  USE tab_imm_m
   USE defcdp
   USE arret_ndm_mod,only: arret_ndm
   implicit none

@@ -13,9 +13,10 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q
-!    USE tab_imm_m
 #ifdef PARA
-    USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE
+
 #endif
     ! ewald reciproque
     ! **************************************************************
@@ -171,7 +172,7 @@ contains
        Deb=1 !Test
        Fin=im !Test
 
-       call epme (Deb,Fin,sige)
+       call epme (Deb,Fin,sige,im,xp,fp,ityp)
 
        if (itesigma>0) then
           if (mod(it,itesigma)==0) then

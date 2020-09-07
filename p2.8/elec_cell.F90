@@ -3,7 +3,6 @@ module elec_cell
   USE gen_com_m, ONLY: nox,noy,noz, noxyz,nzl,bk,imm,nato,atincel,im_glob,tstep,erg2eV,pi,rang,&
        &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,it,igen,lrestart,itesauvinter
   USE var_pot, ONLY:cm
-  USE tab_imm_m, ONLY : num_at_glob,ielat
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
   !
   implicit none
@@ -218,18 +217,21 @@ contains
   end subroutine readelec
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine TTlangevin(xp, vp, fp,ityp,il,Gl)
+  subroutine TTlangevin(xp, vp, fp,ityp,il,Gl,num_at_glob)
 
 
 #ifdef PARA
-    USE mod_para
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_cell
+
+
 #endif
 
     real(double)  :: xp(3,imm)
     real(double)  :: vp(3,imm)
     real(double)  :: fp(3,imm)
     real(double)  :: Gl(3,imm)
-    integer  :: ityp(imm)
+    integer  :: ityp(imm),num_at_glob(imm)
     integer::il
     real(double)::rga
     integer :: i,ic,ko,i2,nv1

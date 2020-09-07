@@ -3,29 +3,30 @@ module calcangle_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:fda,ntyp,contmax
   USE gen_com_m, ONLY:lperiod,noxyz,thetamin,thetamax,cont888,rcangle,atincel,&
-       &ncel,at,bg,deltadist,imana,imm,im,nato,noxyz,rang
+       &ncel,at,bg,deltadist,imana,nato,noxyz,rang
   implicit none
 contains
-  subroutine calcangle
+  subroutine calcangle(im,ityp,xp,ielat)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-
-
-    USE tab_imm_m
 #ifdef PARA
-    USE mod_para
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+
 #endif
 
     !******************************************************************
     implicit none
     !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
+
+    integer,intent(in)::im
+    real(double),intent(in),allocatable::xp(:,:)
+    integer,allocatable::ityp(:),ielat(:)
+
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
@@ -40,7 +41,7 @@ contains
     !-----------------------------------------------
 
     real(double),allocatable :: xpnp(:,:)
-    allocate (xpnp(3,imm))
+    allocate (xpnp(3,im))
     !repartition des atomes entre les petites cel.
     !  if (rang==0) write(6,*) 'PARA-T entree calcangle'
     rc2=rcangle*1.0d-8
@@ -54,7 +55,7 @@ contains
        call notperiod(im,xp,xpnp)
     end if
 
-    do i = 1, imana-1
+    do i = 1, im-1
        koo = ielat(i)
        do i1 = 0, 26
           ko1 = ncel(koo,i1)

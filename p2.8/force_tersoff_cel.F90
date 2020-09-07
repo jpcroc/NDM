@@ -11,11 +11,13 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp,noxyz,natperc,atincel,n
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:npair,csive,typ_and_pot,ipo,typ_pot_pair,roff2,pot
-!  USE tab_imm_m
+!  USE tab_imm_m,only:
   USE jqmod
   USE force_tersoff_facteurs
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,maj_fp_frt
+
 #endif
   ! **************************************************************
   ! Programme par NGUYEN Quoc Hoang

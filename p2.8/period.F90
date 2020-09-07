@@ -9,7 +9,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:at,bg,DECAL_bc,ldecal_bc,low_limit,lperiod,zero
-    !  USE tab_imm_m
+    !  USE tab_imm_m,only:
 
     !       version du 09 decembre 2003
 

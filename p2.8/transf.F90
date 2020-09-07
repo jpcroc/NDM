@@ -11,7 +11,7 @@ contains
     USE T_kind_param_m
 
     USE var_pot, ONLY:ntyp,na
-    USE tab_imm_m
+    USE tab_imm_m,only:xp,ityp,vp,ax,xpp
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s

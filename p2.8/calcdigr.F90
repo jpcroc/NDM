@@ -1,53 +1,34 @@
 module calcdigr_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:noxyz,ncel,atincel,lperiod,imana,rang,atincel,rcrdf,at,nato,imm,im,&
+  USE gen_com_m, ONLY:noxyz,ncel,atincel,lperiod,rang,atincel,rcrdf,at,nato,&
        &deltadist,celsize,bg
 
   implicit none
 contains
-  subroutine calcdigr
+  subroutine calcdigr(im,xp,ityp,ielat)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:nkmax,ntyp,nad,digr,gdertot
-    USE tab_imm_m
+
 #ifdef PARA
-    USE mod_para
+    USE mod_para,only:
 #endif
 
-    !******************************************************************
     implicit none
-    !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
 
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
+    integer,intent(in)::im
+    real(double),intent(in),allocatable::xp(:,:)
+    integer,allocatable,intent(in)::ityp(:),ielat(:)
+
     integer :: i, iti, itj, i1, i2, icell, kx, ky, kz, koo, ko1, j, &
          ic, k, m,m1,n,iti1,iti2
     real(double) :: rij, c1, c2, c3, x1, x2, x3, rmax2,rmax, incre
     real(double) :: rspace2,invincre
     real(double) :: aaa, bbb, ccc,cv(1,3)
-    real(double) :: xpnp(3,imm)
-    !-----------------------------------------------
-    !
-    ! local variables
-    !
-
-
-    !repartition des atomes entre les petites cel.
-
-
-
+    real(double) :: xpnp(3,im)
 
 
     rmax=rcrdf*1.0d-8
@@ -67,7 +48,7 @@ contains
        call notperiod(im,xp,xpnp)
     end if
 
-    do i = 1, imana
+    do i = 1, im
        koo = ielat(i)
        do i1 = 0, 26
           ko1 = ncel(koo,i1)

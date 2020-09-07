@@ -7,7 +7,7 @@ module config_mod
 #endif
   USE gen_com_m, ONLY:at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
   &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat,cell_debx,cell_deby,cell_debz,&
-  &cell_finx,cell_finy,cell_finz,low_limit
+  &cell_finx,cell_finy,cell_finz,low_limit,llangevin,lsuivinonpbc
   USE var_pot, ONLY:alpha,na,ntyp,rumax,ipotentiel
   USE recips_mod,only: recips
   use cryst_to_cart_mod,only:cryst_to_cart
@@ -26,10 +26,12 @@ subroutine config
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE tab_imm_m
+  USE tab_imm_m,only:xp,ax,glanv,vp,xpp
   USE suivinonpbc
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,proc_cell
+
 #endif
 
   implicit none
@@ -828,7 +830,7 @@ subroutine config
 
 
      if (llangevin.eqv..true.) then
-        allocate(Gl(3,imm))
+        allocate(Glanv(3,imm))
      end if
      deallocate (ibuffer)
      deallocate (buffer)

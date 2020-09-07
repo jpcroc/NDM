@@ -2,7 +2,7 @@ module eloss
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,tempc,l2T,erg2eV,im,iko,noxyz
   USE var_pot, ONLY:ntyp,cm,gamlt
-  USE tab_imm_m,ONLY:fp,vp,ityp,ielat,num_at_glob
+
 
 
   !  USE eam,ONLY:
@@ -13,7 +13,9 @@ module eloss
   !  USE defcdp, ONLY :
   !  USE var_pot, ONLY:
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+
 #endif 
 
   ! **************************************************************
@@ -129,8 +131,14 @@ contains
 
 
 
-  subroutine calceloss
+  subroutine calceloss(im,fp,vp,ityp,ielat,num_at_glob)
 
+  integer,intent(in)::im
+  real(double),intent(inout),allocatable,dimension(:,:)::fp
+    real(double),intent(inout),allocatable,dimension(:,:)::vp
+  integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
+
+    
     real(double)::ekin,vn,v1,f1,eta,etavc,f1vc,vc
     integer::koo,i,nv1,ic,iti
     integer, save:: icall=0

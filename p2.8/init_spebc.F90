@@ -4,7 +4,7 @@ module init_spebc_mod
        &thickness,thick_cryst,i_surfMAX,i_surfINF,speed_USEr,tstep,i_surfSUP,flag_fin,gap,&
        &forceatinf,forceatsup,i_surfMIN,ldyn2D,user_strainrate,currentstress
   use cryst_to_cart_mod,only:cryst_to_cart
-
+    USE tab_imm_m,only:xp,xpp,vp
   implicit none
 contains
   subroutine init_spebc
@@ -13,7 +13,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m
 
-    USE tab_imm_m
+
     USE eam
     USE posana
 
@@ -178,7 +178,6 @@ subroutine surface_detect
  	!-----------------------------------------------
 	USE T_kind_param_m
 	USE gen_com_m, ONLY:
-	USE tab_imm_m
   	USE eam
 	USE posana
 
@@ -306,7 +305,6 @@ subroutine inisurfspeed
   !-----------------------------------------------
   USE T_kind_param_m
   USE gen_com_m, ONLY:
-  USE tab_imm_m
   USE eam
   USE posana
 
@@ -413,7 +411,6 @@ subroutine initstress
   !-----------------------------------------------
   USE T_kind_param_m
   USE gen_com_m, ONLY:
-  USE tab_imm_m
 
   implicit none
   !-----------------------------------------------

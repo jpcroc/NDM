@@ -1,11 +1,13 @@
 module zero2all2zero_mod
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
+!  use mpi
   USE mod_para
+
 #endif
   USE gen_com_m, ONLY:imm_glob,imm,bg,at,im,rang,cell_debx,cell_deby,cell_debz,im_glob,zero,nox,noy,noz,&
        &cell_finx,cell_finy,cell_finz,low_limit
-  USE tab_imm_m
+  USE tab_imm_m,only:ityp,num_at_glob
   USE cryst_to_cart_mod,only: cryst_to_cart
   implicit none
 contains

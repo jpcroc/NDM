@@ -14,7 +14,6 @@ contains
 
     USE SMjuli
     USE jqmod
-!    USE tab_imm_m
     implicit none
   integer,intent(in)::im
   integer , intent(in),allocatable :: ielat(:),ityp(:)

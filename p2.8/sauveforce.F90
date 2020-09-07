@@ -9,11 +9,11 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE tab_imm_m
+    USE tab_imm_m,only:fp,xp,ityp,num_at_glob
     USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
-    USE mod_para
-    !USE mpi
+    USE mod_para,only:nprocs,ierr,status,NDM_MPI_REAL_DOUBLE
+    USE mpi
 #endif
 
     !         version du 04 octobre 2000

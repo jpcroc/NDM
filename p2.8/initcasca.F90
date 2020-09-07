@@ -2,7 +2,7 @@ module initcasca_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE period_mod,only: period
   USE gen_com_m, ONLY:at,bg,depmaxts,dmtype,ecgs,eko,iko,im,im_glob,imm,lderive,lperiod,ltranche,&
-       &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0
+       &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T
   implicit none
 contains
   ! *************** initialisation de la cascade **********************
@@ -13,11 +13,12 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE var_pot, ONLY:cm
-    USE tab_imm_m
+    USE tab_imm_m,only:xp,xpp,ax,vp,ityp,NUM_AT_GLOB
     USE elec_cell, ONLY : necycle,etstep,necyclemin
     ! *******************************************************************
 #ifdef PARA
-    USE mod_para
+    use mpi
+    USE mod_para,only:ierr
 #endif
 
 

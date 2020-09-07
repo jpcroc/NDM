@@ -17,7 +17,7 @@ subroutine strain_bc
  	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
 
-	USE tab_imm_m
+	USE tab_imm_m,only:fp
         USE eam
   	USE posana
 	
@@ -115,7 +115,7 @@ subroutine surf_calc
  	!-----------------------------------------------
 	USE T_kind_param_m, ONLY: double
 	USE gen_com_m, ONLY:
-	USE tab_imm_m
+	USE tab_imm_m,only:
         USE eam
   	USE posana
 	

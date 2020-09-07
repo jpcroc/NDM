@@ -1,0 +1,5 @@
+#define DATE "2020-06-19"
+#define REVISION "5aa8e8a"
+#define COMPILE_DATE "Fri Jun 19 16:16:00 CEST 2020"
+#define LOCATION "/home/croc/NDM/GIT/NDM/p2.8"
+#define COMPILE_TARGET "ndm_serial_gfortran_debug"

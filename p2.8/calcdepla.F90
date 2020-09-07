@@ -1,42 +1,37 @@
 module calcdepla_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:ntyp,nad,ty
-  USE gen_com_m, ONLY:zls2,tdepla,lfilmext,it,timel,at,im,imm,bg,iko,lcasca,lfilm,rang
+  USE gen_com_m, ONLY:zls2,tdepla,lfilmext,it,timel,at,bg,iko,lcasca,lfilm,rang
         implicit none 
         contains
 ! *******************************************************************
-subroutine calcdepla
+subroutine calcdepla(im,xp,ielat,ityp,ax)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
 
-  USE tab_imm_m
+
 #ifdef PARA
-  USE mod_para
+    USE mpi
+    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    use tab_imm_m,only:num_at_glob
 #endif
   ! pas de conditions periodiques sur xp-ax
   !       version du 09 decembre 2003
   ! *******************************************************************
 
   implicit none
-  !-----------------------------------------------
-  !   G l o b a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   D u m m y   A r g u m e n t s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   V a r i a b l e s
-  !-----------------------------------------------
+  integer,intent(in)::im
+  real(double),allocatable::xp(:,:),ax(:,:)
+  integer,allocatable::ityp(:),ielat(:)
+
+
   integer :: ndeplatot
   integer , dimension(ntyp) :: ndepla
   integer :: i, iti
-  integer , dimension(imm) :: indic
-  real(double), dimension(imm) :: distdepl(imm)
+  integer , dimension(im) :: indic
+  real(double), dimension(im) :: distdepl
   integer :: lufilm, lufilmpaf, lufilmext, lutampon
   real(double), dimension(ntyp) :: dr2
   real(double) :: dri2, a1, a2, a3, c1, c2, c3, racdri2,depiko
@@ -78,8 +73,8 @@ subroutine calcdepla
   ndeplatot = 0
   dr2(:ntyp) = 0.0
   ndepla(:ntyp) = 0
-     call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
-     call cryst_to_cart (imm, ax, bg, -1)    !cart vers cryst
+     call cryst_to_cart (im, xp, bg, -1)    !cart vers cryst
+     call cryst_to_cart (im, ax, bg, -1)    !cart vers cryst
 
      do i = 1, im
         c1 = ax(1,i)-xp(1,i)
@@ -105,8 +100,8 @@ subroutine calcdepla
         indic(ndeplatot) = i
         distdepl(ndeplatot)=racdri2*1.0d8
      end do
-     call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
-     call cryst_to_cart (imm, ax, at, 1)     !cryst vers cart
+     call cryst_to_cart (im, xp, at, 1)     !cryst vers cart
+     call cryst_to_cart (im, ax, at, 1)     !cryst vers cart
 
 
 

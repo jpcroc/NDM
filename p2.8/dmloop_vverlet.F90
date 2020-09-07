@@ -13,7 +13,7 @@ module dmloop_vverlet_mod
   use var_pot,only:ntyp
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,im,lgc,rang,rayonc,&
        &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,lsigtyp,ltpcel,sigat,sigc,sigtyptyp,sigtyp&
-       &,noxyz,sigtyp_loc,sigtyptyp_loc
+       &,noxyz,sigtyp_loc,sigtyptyp_loc,lsuivinonpbc
   implicit none 
 contains
   ! boucle de DM pour velocity Verlet
@@ -26,12 +26,14 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE Parrinello_Rahman
-    USE tab_imm_m
+    USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
     USE suivinonpbc
 
 
 #ifdef PARA
-    USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
+
 #endif
     implicit none
     character :: extension*2

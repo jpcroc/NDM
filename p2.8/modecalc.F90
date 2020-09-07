@@ -2,20 +2,16 @@
 !         Sous-programme modecalc
 ! ************************************************
 
-subroutine modecalc
-  !-----------------------------------------------
-  !   M o d u l e s
-  !-----------------------------------------------
+subroutine modecalc(im,xp,vp,ax)
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY : im
-  USE tab_imm_m
   implicit none
-  !-----------------------------------------------
-  !   G l o b a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   V a r i a b l e s        
-  !-----------------------------------------------
+
+    integer,intent(in)::im
+    real(double),allocatable,intent(in),dimension(:,:)::xp,vp,ax
+  
+  
+  
+
   integer :: i, iti, ic
   real(double)::sq1,asd,xnu,sca,scaa
   real(double),allocatable,save::dxp(:,:),eigval(:),xp_t(:,:)

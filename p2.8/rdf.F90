@@ -8,9 +8,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:
     USE var_pot, ONLY:coord,ty,nad,gdertot,nkmax,digr,ntyp
-    USE tab_imm_m
 
     !      USE coordo_m
     !******************************************************************

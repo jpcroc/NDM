@@ -131,6 +131,7 @@
 module gcmodII_mod
 #ifdef PARA
   USE mod_para
+
 #endif  
   implicit none 
 contains

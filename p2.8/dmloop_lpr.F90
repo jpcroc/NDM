@@ -4,11 +4,11 @@ module dmloop_lpr_mod
   USE sauvegarde_mod,only: sauvegarde
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
-  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose
+  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod
   USE calfo_mod,only: calfo
 
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtc
 
 
 #ifdef PARA
@@ -26,9 +26,11 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE Parrinello_Rahman
     USE Parrinello_Rahman_Nose
-    USE tab_imm_m
+  USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
 #ifdef PARA
-    USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_para,temps_debpara,maj_atomes_frt_ftm
+
 #endif
     implicit none
 

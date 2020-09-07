@@ -11,7 +11,7 @@ end module mod_para_mab
 subroutine init_mpi_mab()
 
   USE mpi
-  USE mod_para_mab
+  USE mod_para,only:_mab
   USE gen_mpi
   USE gen_com_m, ONLY: , ONLY: rangmab
   implicit none

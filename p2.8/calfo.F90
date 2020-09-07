@@ -29,14 +29,14 @@ module calfo_mod
   USE strain_bc_mod,only:strain_bc
   USE stress_bc_mod,only:stress_bc
   USE force_tersoff_mod,only:force_tersoff
-!  USE tab_imm_m,only::
-!  USE tab_imm_m
   USE atomconfig,only : atom_config_d,atom_config_d,atom_config_e
   USE calfocommon ! stocke des variables LOCALES sig et potist
 
   USE cellconfig, only : cell_config
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE
+
 #endif
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only: read_lammps,calcforce_lammps2
@@ -301,15 +301,15 @@ contains
 !    If (ibound == 2 .OR. ibound == 3)            call stress_bc	!*!
     end If
     !stop
-    if ((l2t).or.(ibrake.gt.0)) then
-       write(6,*) 'calceloss  doit être traité en dehors de calfo'
-       stop
-    end if
-!    if (l2t)then
-!       if (i2t==1)  call calceloss
-!    else
-!       if(ibrake.gt.0) call calceloss
+!    if ((l2t).or.(ibrake.gt.0)) then
+!       write(6,*) 'calceloss  doit être traité en dehors de calfo'
+!       stop
 !    end if
+    if (l2t)then
+       if (i2t==1)  call calceloss (atcf%im,atcf%fp,atcf%vp,atcf%ityp,atcf%ielat,atcf%num_at_glob)
+    else
+       if(ibrake.gt.0) call calceloss (atcf%im,atcf%fp,atcf%vp,atcf%ityp,atcf%ielat,atcf%num_at_glob)
+    end if
     sigcf=sig;potistcf=potist
     return
   end subroutine calfo

@@ -1,9 +1,10 @@
 
 #ifdef PARA
 module mod_para
+!    USE mod_para,only:MPI_INTEGER, MPI_ANY_SOURCE, MPI_COMM_WORLD, status,ierr,nprocs,MPI_SOURCE,NDM_MPI_REAL_DOUBLE,MPI_SUM,myid,proc_cell,MPI_LOGICAL,MPI_Wtime
   use T_kind_param_m, ONLY:  double
+  use gen_com_m !,only:
   !use mpi
-  !  use T_kind_param_mpi_m
   implicit none
 
   include 'mpif.h'
@@ -84,7 +85,6 @@ contains
   subroutine maj_atomes_frt_ftm
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -119,7 +119,6 @@ contains
   subroutine maj_tabdensity_ftm(tabdensity)
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -144,7 +143,6 @@ contains
   subroutine maj_fp_frt
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -168,7 +166,6 @@ contains
   subroutine envoi_atomes_fantomes
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -287,9 +284,9 @@ contains
 
                end if
                if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
-                  send_buff_dbl(nb_var_dbl-2,send_nb_val(nproc_voisin),nproc_voisin) = Gl(1,i_at)
-                  send_buff_dbl(nb_var_dbl-1,send_nb_val(nproc_voisin),nproc_voisin) = Gl(2,i_at)
-                  send_buff_dbl(nb_var_dbl,send_nb_val(nproc_voisin),nproc_voisin) = Gl(3,i_at)
+                  send_buff_dbl(nb_var_dbl-2,send_nb_val(nproc_voisin),nproc_voisin) = Glanv(1,i_at)
+                  send_buff_dbl(nb_var_dbl-1,send_nb_val(nproc_voisin),nproc_voisin) = Glanv(2,i_at)
+                  send_buff_dbl(nb_var_dbl,send_nb_val(nproc_voisin),nproc_voisin) = Glanv(3,i_at)
                end if
 
 !LPARAFULLSEND
@@ -327,7 +324,6 @@ contains
   subroutine reception_nouveaux_atomes
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -394,9 +390,9 @@ contains
            axnonpbc(3,im) = recv_buff_dbl(18,i_at,ind_recv)
         end if
         if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
-            Gl(1,im)= recv_buff_dbl(nb_var_dbl-2,i_at,ind_recv)
-            Gl(2,im)= recv_buff_dbl(nb_var_dbl-1,i_at,ind_recv)
-            Gl(3,im)= recv_buff_dbl(nb_var_dbl,i_at,ind_recv)
+            Glanv(1,im)= recv_buff_dbl(nb_var_dbl-2,i_at,ind_recv)
+            Glanv(2,im)= recv_buff_dbl(nb_var_dbl-1,i_at,ind_recv)
+            Glanv(3,im)= recv_buff_dbl(nb_var_dbl,i_at,ind_recv)
         end if
 
 !          if(lfrozen)free(im)=.true.
@@ -426,7 +422,7 @@ contains
   subroutine elimine_atomes_fantomes
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
+
     use tab_imm_m
 
     implicit none
@@ -539,7 +535,6 @@ contains
   subroutine envoi_atomes_frontieres
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -678,7 +673,6 @@ contains
   subroutine finalisation_envoi_atomes
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -721,7 +715,6 @@ contains
   subroutine reception_atomes_fantomes
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -813,7 +806,6 @@ contains
   subroutine envoi_tabdensity_frontieres(tabdensity)
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -909,7 +901,6 @@ contains
   subroutine reception_tabdensity_fantomes(tabdensity)
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
     implicit none
 
@@ -986,7 +977,6 @@ contains
   subroutine envoi_fp_fantomes
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
 
     implicit none
@@ -1087,7 +1077,6 @@ contains
   subroutine reception_fp_frontieres
 
     USE T_kind_param_m, ONLY:  double
-    use gen_com_m
     use tab_imm_m
     implicit none
 

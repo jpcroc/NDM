@@ -1,31 +1,25 @@
 module heat_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
-          USE gen_com_m, ONLY:at,bg,bk,eheat,im,imm,lperiod,rheat,theat
+          USE gen_com_m, ONLY:at,bg,bk,eheat,lperiod,rheat,theat
         implicit none
         contains
 ! *************************************************************
-subroutine heat
+subroutine heat(im,xp,vp,ityp)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:cm
   USE jqmod
-   USE tab_imm_m
-
-
 
   implicit none
-  !----------------------------------------------
-  !   G l o b a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   V a r i a b l e s
-  !-----------------------------------------------
+    integer,intent(in)::im
+    real(double),allocatable,intent(in)::xp(:,:)
+    real(double),allocatable::vp(:,:)
+    integer,allocatable,intent(in)::ityp(:)
+  
+  
   real(double), dimension(:,:), allocatable :: xpnp
   integer ::i,natheat,j
   real(double):: dxp(3),r2,tsph,xtr(3)
@@ -33,8 +27,8 @@ subroutine heat
 
 
   write(6,*)'entree heat'
-  ALLOCATE(xpnp(3,imm))
-  allocate (iatheat(imm))
+  ALLOCATE(xpnp(3,im))
+  allocate (iatheat(im))
 
   if (lperiod) then
    xpnp(:,:)=xp(:,:)
@@ -42,7 +36,7 @@ subroutine heat
    call notperiod(im,xp,xpnp)
   end if
 
-  call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
+  call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst
   natheat=0
   tsph=0.
 

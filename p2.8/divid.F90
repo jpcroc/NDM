@@ -16,7 +16,6 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE tab_imm_m
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s

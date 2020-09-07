@@ -3,7 +3,6 @@ module jqbh_mod
         USE cryst_to_cart_mod,only: cryst_to_cart
         USE gen_com_m, ONLY:at,bg,epcoud,epsil,erg2ev,erg2joule,im,it,ittherm,kthg,njqbh,ntr,&
              &rang,rulayer,tstep,nzl,zl,zls2,imm,bk
-        USE tab_imm_m
 
         implicit none
         contains
@@ -12,7 +11,9 @@ subroutine jqbh (xp,xpp,vp,ityp)
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:cm
 #ifdef PARA
-  USE mod_para
+  use mpi
+  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE
+ 
 #endif
   implicit none
   !-----------------------------------------------

@@ -5,7 +5,7 @@ module work_cgII
                        it, itesauv, itesauvposition, itesauvforce,itmax, &
                        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
                        dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz,nvois,&
-                       &natperc,nato,ncel,atincel,deltadist,celsize,bg
+                       &natperc,nato,ncel,atincel,deltadist,celsize,bg,mdcg_noise
   USE controle_mod,only: controle
   USE calfo_mod,only: calfo
   USE analyse_mod,only: analyse
@@ -20,9 +20,10 @@ module work_cgII
 USE arret_ndm_mod,only: arret_ndm
 USE caltabi_mod,only: caltabi
 #ifdef PARA
-  USE mod_para
+USE mpi
+use mod_para,only: status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,maj_atomes_frt_ftm
 #endif
-  USE tab_imm_m, ONLY : xp, fp,num_at_glob,ax,vp,xpp,ityp,ielat,iwmax
+  USE tab_imm_m,only : xp, fp,num_at_glob,ax,vp,xpp,ityp,ielat,iwmax,bruitmd
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
 
@@ -34,7 +35,6 @@ contains
 
   subroutine FUNCT(N,X,F,G,NCALLS,                      &
        xp_local,  fp_local,   ityp_local,ims)
-    USE tab_imm_m, ONLY : xp, fp,num_at_glob
 
     real(double),intent(in):: X(N)
     real(double),intent(out)::G(N),F
