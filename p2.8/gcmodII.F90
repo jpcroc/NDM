@@ -332,7 +332,7 @@ contains
 #ifdef PARA
                          iopt=1
                          do ip=1,nprocs-1
-                            call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_WORLD, status, ierr)
+                            call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
                          end do
 #endif                         
 
@@ -480,14 +480,14 @@ contains
 #ifdef PARA
                                      iopt=0
                                      do ip=1,nprocs-1
-                                        call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_WORLD, status, ierr)
+                                        call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
                                      end do
 #endif                                     
                                      RETURN                                                            
 !                                  END DO
                                   else
 #ifdef PARA
-   call MPI_RECV(iopt,  1, MPI_INTEGER, 0, 10001, MPI_COMM_WORLD, status, ierr)
+   call MPI_RECV(iopt,  1, MPI_INTEGER, 0, 10001, MPI_COMM_space, status, ierr)
    select case (iopt)
    case (0)
       return

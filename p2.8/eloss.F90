@@ -1,6 +1,6 @@
 module eloss
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,tempc,l2T,erg2eV,im,iko,noxyz
+  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,tempc,l2T,erg2eV,iko,noxyz
   USE var_pot, ONLY:ntyp,cm,gamlt
 
 
@@ -14,7 +14,7 @@ module eloss
   !  USE var_pot, ONLY:
 #ifdef PARA
   use mpi
-  USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+  USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 
 #endif 
 
@@ -221,11 +221,11 @@ contains
 #ifdef PARA
     elosselectot=0
     elosselectot1=0
-    call MPI_ALLREDUCE(elosselec,elosselectot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-    call MPI_ALLREDUCE(elosselec1,elosselectot1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(elosselec,elosselectot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+    call MPI_ALLREDUCE(elosselec1,elosselectot1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     !if l2T
     if (allocated(elosscel)) then
-       call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        elosscel=elosscel_tot
        deallocate (elosscel_tot)
     end if

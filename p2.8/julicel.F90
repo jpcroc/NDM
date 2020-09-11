@@ -8,14 +8,14 @@ module calfojulicel_mod
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfojulicel(im,xp,  vp, fp, ielat, ityp,noxyz,natperc,atincel,nato,ncel,deltadist)
+  SUBROUTINE calfojulicel(im,imm,xp,  vp, fp, ielat, ityp,noxyz,natperc,atincel,nato,ncel,deltadist)
     !tentaive de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
 
     USE SMjuli
     USE jqmod
     implicit none
-  integer,intent(in)::im
+  integer,intent(in)::im,imm
   integer , intent(in),allocatable :: ielat(:),ityp(:)
   real(double),intent(in),allocatable  :: vp(:,:)
   real(double),intent(inout),allocatable  :: xp(:,:)
@@ -100,14 +100,14 @@ contains
     rue2=rue**2
     !    iw2=0
 
-    ALLOCATE(xpnp(3,im))
+    ALLOCATE(xpnp(3,imm))
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else
-       call notperiod(im,xp,xpnp)
+       call notperiod(imm,xp,xpnp)
     end if
 
-    call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst
+    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
 
     loop1at1: do i=1,im

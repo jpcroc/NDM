@@ -6,7 +6,7 @@ module force_tersoff_mod
   implicit none
 contains
   ! ***************************************************************
-  subroutine force_tersoff (im,xp,  vp,  fp,  iwmax, ityp,indi)
+  subroutine force_tersoff (im,imm,xp,  vp,  fp,  iwmax, ityp,indi)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -29,7 +29,7 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-      integer,intent(in)::im
+      integer,intent(in)::im,imm
   integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
   real(double),intent(in),allocatable  :: vp(:,:)
   real(double),intent(inout),allocatable  :: xp(:,:)
@@ -93,7 +93,7 @@ contains
     if (lnemd) fpnemdmoy(:)=0
 
     ER1=0. ;  ER2=0. ;  ER3=0.
-    call cryst_to_cart(im,xp,bg,-1)
+    call cryst_to_cart(imm,xp,bg,-1)
 
     idv = 0
 
@@ -399,31 +399,31 @@ contains
 
 
 #ifdef paraTersoff
-       CALL MPI_BARRIER(MPI_COMM_WORLD,code)
+       CALL MPI_BARRIER(MPI_COMM_space,code)
 
        CALL MPI_ALLREDUCE(fp,fpTemp,3*im,MPI_DOUBLE_PRECISION,&
-            MPI_SUM,MPI_COMM_WORLD,code)
+            MPI_SUM,MPI_COMM_space,code)
        !      fp(:,1:im)=fpTemp(:,1:im)
        fp=fpTemp
 
        CALL MPI_ALLREDUCE(potisTersoff,potisTersoffTemp,1,MPI_DOUBLE_PRECISION,&
-            MPI_SUM,MPI_COMM_WORLD,code)
+            MPI_SUM,MPI_COMM_space,code)
 
        potisTersoff=potisTersoffTemp
 
        ! MPI : collecte generale et somme des contraintes calcules par les process
        if(test_sigma)then
           CALL MPI_ALLREDUCE(sig,sigTemp,9,MPI_DOUBLE_PRECISION,&
-               MPI_SUM,MPI_COMM_WORLD,code)
+               MPI_SUM,MPI_COMM_space,code)
           sig=sigTemp
        end if
 
        !  if (lcalcjq) then
        !     CALL MPI_ALLREDUCE(jq,jqTemp,3,MPI_DOUBLE_PRECISION,&
-       !          MPI_SUM,MPI_COMM_WORLD,code)
+       !          MPI_SUM,MPI_COMM_space,code)
        !     jq=jqTemp
        !     CALL MPI_ALLREDUCE(eatom,eatomTemp,imm,MPI_DOUBLE_PRECISION,&
-       !          MPI_SUM,MPI_COMM_WORLD,code)
+       !          MPI_SUM,MPI_COMM_space,code)
        !     eatom=eatomTemp
        !  end if
 
@@ -431,7 +431,7 @@ contains
 
 
 
-       call cryst_to_cart(im,xp,at,1)
+       call cryst_to_cart(imm,xp,at,1)
 
 
 

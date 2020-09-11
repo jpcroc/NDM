@@ -17,9 +17,9 @@ contains
     USE tab_imm_m,only:ax,xp,vp,xpp,fp,ityp
     USE tempinst_mod,only: tempinst
 
-#ifdef PARA
-    USE mod_para,only:
-#endif
+!#ifdef PARA
+!    USE mod_para,only:MPI_COMM_space
+!#endif
 
     implicit none
     !----------------------------------------------

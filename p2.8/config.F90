@@ -26,11 +26,11 @@ subroutine config
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE tab_imm_m,only:xp,ax,glanv,vp,xpp
+  USE tab_imm_m,only:xp,ax,glangv,vp,xpp
   USE suivinonpbc
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,proc_cell
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,proc_cell
 
 #endif
 
@@ -253,7 +253,7 @@ subroutine config
            enddo
            ! On somme les valeurs locales
            na_loc = na
-           call MPI_ALLREDUCE(na_loc,na,ntyp,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+           call MPI_ALLREDUCE(na_loc,na,ntyp,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
 	endif
 #else
         do i=1,im
@@ -645,7 +645,7 @@ subroutine config
 #ifdef PARA
         ! On somme les valeurs locales
         na_loc = na
-        call MPI_ALLREDUCE(na_loc,na,ntyp,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+        call MPI_ALLREDUCE(na_loc,na,ntyp,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
 #endif
 
         call cryst_to_cart (imm, xp, at, 1)  !cryst vers cart
@@ -830,11 +830,11 @@ subroutine config
 
 
      if (llangevin.eqv..true.) then
-        allocate(Glanv(3,imm))
+        allocate(Glangv(3,imm))
      end if
      deallocate (ibuffer)
      deallocate (buffer)
-     write(6,*)
+
 
 
 

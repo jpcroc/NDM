@@ -8,9 +8,9 @@ subroutine init_voisinage
   !-----------------------------------------------
   use gen_com_m
   use tab_imm_m
-!  use mod_para,only:
+!  use mod_para,only:MPI_COMM_space,
 !  USE mpi
-  use mod_para,only: status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_voisin,nbr_proc_voisin,nbr_cell_ftm,&
+  use mod_para,only:MPI_COMM_space, status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_voisin,nbr_proc_voisin,nbr_cell_ftm,&
        &NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm,proc_cell
 
   implicit none

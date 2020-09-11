@@ -21,7 +21,7 @@ module tab_imm_m
   real(double),dimension(:,:), allocatable :: xpnonpbc    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), allocatable :: axnonpbc    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), allocatable :: tmpsuivi    ! only in the case, lsuivinonpbc  
-  real(double),dimension(:,:), allocatable :: Glanv    ! random noise langevin
+  real(double),dimension(:,:), allocatable :: Glangv    ! random noise langevin
 
   integer, dimension(:), allocatable       :: num_at_glob ! numero global d'un atome
 contains
@@ -47,7 +47,7 @@ contains
        posmoyx = 0.0
     end if
      if ((llangevin.eqv..true.).or.(l2T.eqv..true.)) then
-        allocate(Glanv(3,nb_imm))
+        allocate(Glangv(3,nb_imm))
      end if
 
     if (mdcg_noise/=0) then
@@ -232,7 +232,7 @@ contains
     end if 
 
     if (llangevin) then 
-       if(allocated(Glanv)) deallocate(Glanv)
+       if(allocated(Glangv)) deallocate(Glangv)
     end if 
 
   end subroutine dealloc_all_tab_imm

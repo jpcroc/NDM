@@ -7,7 +7,7 @@ module calfoeamcel_mod
         implicit none
         contains
 !----------------------------------------------------------------------
-SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,nox,noy,noz)
+SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,nox,noy,noz)
   USE T_kind_param_m
 
   USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,eamglue,eamrho,rue_pot,&
@@ -15,7 +15,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,at
   &eamglue,eamglue,eamrho
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,maj_tabdensity_ftm
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,maj_tabdensity_ftm
 
 #endif
   implicit none
@@ -24,7 +24,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,at
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   ! eam variables
-  integer,intent(in)::im
+  integer,intent(in)::im,imm
   real(double),intent(inout),allocatable,dimension(:,:)::xp,vp,fp
   integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
   
@@ -56,7 +56,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,at
   LOGICAL :: test_sigma
   integer :: izero
 
-  real(double) :: tabdensity(im)
+  real(double) :: tabdensity(imm)
 
 #ifdef PARA
   ! declarations supplementaires pour MPI
@@ -67,11 +67,12 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,at
 
 #endif
 
-  real(double) :: xpnp(3,im)
+  real(double) :: xpnp(3,imm)
   real(double)::rue
+
+  
   rue=rue_pot(ipotentiel)
   test_sigma=(mod(it,itesigma)==0)
-  !  if (it.le.1)   write(6,*)'ROUTINE CALFOEAMCEL :boucle (i,j) complete et non j>i car parallelise *'
 
 
 
@@ -90,7 +91,7 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,at
   if (lperiod) then
      xpnp(:,:)=xp(:,:)
   else 
-     call notperiod(im,xp,xpnp)
+     call notperiod(imm,xp,xpnp)
   end if
 
  !       open(unit=806, file='CALFOGMT.csv', form='formatted', &
@@ -400,16 +401,15 @@ SUBROUTINE calfoeamcel(im,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,at
 !  if (test_sigma) sig(1:3,1:3) = sig(1:3,1:3)/volu
 
 #ifdef PARA
-  CALL MPI_ALLREDUCE(potisrep, potisrep_tot, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  CALL MPI_ALLREDUCE(potisrep, potisrep_tot, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   potisrep=potisrep_tot
-  CALL MPI_ALLREDUCE(potisglue,potisglue_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  CALL MPI_ALLREDUCE(potisglue,potisglue_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   potisglue=potisglue_tot
-!  write(6,'(I3,9G15.7)')rang,sig
  if (test_sigma) then 
-     call MPI_ALLREDUCE(sig,      sig_tot,      9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(sig,      sig_tot,      9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      sig=sig_tot
        if (allocated(sigc)) then
-     call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      sigc=sigc_tot
   endif
 endif

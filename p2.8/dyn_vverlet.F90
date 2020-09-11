@@ -20,13 +20,13 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-  USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax,glanv
+  USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax,glangv
     USE jqmod
     USE suivinonpbc
     USE elec_cell,ONLY: dynelec
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para,maj_atomes_frt_ftm
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para,maj_atomes_frt_ftm
 #endif
 
     USE elec_cell, ONLY:TTlangevin
@@ -74,10 +74,10 @@ contains
 
     if (lLangevin) then
        il=2*(ilangevin-1)+1
-       call dynlangevin(im,xp,vp,fp,ityp,il,Glanv)
+       call dynlangevin(im,xp,vp,fp,ityp,il,Glangv)
     elseif (l2T) then
        il=2*(ilangevin-1)+1
-       call TTlangevin(xp,vp,fp,ityp,il,Glanv,num_at_glob)
+       call TTlangevin(xp,vp,fp,ityp,il,Glangv,num_at_glob)
     else
        DO i=1, imd
           vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
@@ -162,10 +162,10 @@ contains
     ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
     if (llangevin.eqv..true.) then
        il=2*(ilangevin-1)+2
-       call dynlangevin(im,xp,vp,fp,ityp,il,Glanv)
+       call dynlangevin(im,xp,vp,fp,ityp,il,Glangv)
     elseif (l2T) then
        il=2*(ilangevin-1)+2
-       call TTlangevin(xp,vp,fp,ityp,il,Glanv,num_at_glob)
+       call TTlangevin(xp,vp,fp,ityp,il,Glangv,num_at_glob)
     else
        DO i=1, imd
           vp(1:3,i) = vp(1:3,i) + aux(iTyp(i))*fp(1:3,i)
@@ -187,7 +187,7 @@ contains
        jq=jqp+jqk
 
 #ifdef PARA
-       call MPI_ALLREDUCE(jq,jq_tot,3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_ALLREDUCE(jq,jq_tot,3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        jq=jq_tot
 #endif
 

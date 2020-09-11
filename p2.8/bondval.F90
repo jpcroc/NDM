@@ -7,11 +7,11 @@ module bondval_mod
 
 contains
 
-  subroutine bondval(im,xp,ityp,ielat,num_at_glob)
+  subroutine bondval(im,imm,xp,ityp,ielat,num_at_glob)
 
     USE T_kind_param_m, ONLY:  double
 
-    integer,intent(in)::im
+    integer,intent(in)::im,imm
     real(double),intent(in),allocatable::xp(:,:)
     integer,allocatable::ityp(:),ielat(:),num_at_glob(:)
 
@@ -29,7 +29,7 @@ contains
 
     character :: extension*9
     !APARA
-    allocate(xpnp(3,im))
+    allocate(xpnp(3,imm))
 
     if(rang==0) then
 
@@ -55,7 +55,7 @@ contains
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else 
-       call notperiod(im,xp,xpnp)
+       call notperiod(imm,xp,xpnp)
     end if
 
 

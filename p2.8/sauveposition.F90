@@ -14,7 +14,7 @@ contains
     USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs
 
 #endif
 
@@ -111,15 +111,15 @@ contains
        pt_im(0)=1
        next_pt = pt_im(0) + im_loc(0)
        do i_proc=1,nprocs-1
-          call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 12001, MPI_COMM_WORLD, status, ierr)
+          call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 12001, MPI_COMM_space, status, ierr)
           proc_source = status(MPI_SOURCE)
           im_loc(proc_source)=im_temp
           pt_im(proc_source)=next_pt
           next_pt = pt_im(proc_source) + im_loc(proc_source)
           call MPI_RECV(ibuffer(pt_im(proc_source):pt_im(proc_source)+im_temp-1),    im_loc(proc_source),   &
-               MPI_INTEGER,         proc_source, 12002, MPI_COMM_WORLD, status, ierr)
+               MPI_INTEGER,         proc_source, 12002, MPI_COMM_space, status, ierr)
           call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
-               NDM_MPI_REAL_DOUBLE, proc_source, 12003, MPI_COMM_WORLD, status, ierr)
+               NDM_MPI_REAL_DOUBLE, proc_source, 12003, MPI_COMM_space, status, ierr)
        enddo
 
        !debug if (rang==0) write(*,*) 'Preparation ecriture ityp'
@@ -132,7 +132,7 @@ contains
        ibuffer(1:im) = num_at_glob(1:im)
        do i_proc=1,nprocs-1
           call MPI_RECV(ibuffer(pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),im_loc(i_proc), &
-               MPI_INTEGER, i_proc, 12004, MPI_COMM_WORLD, status, ierr)
+               MPI_INTEGER, i_proc, 12004, MPI_COMM_space, status, ierr)
        enddo
        write (lucoutxp) ibuffer   ! Ecriture num_at_glob
 
@@ -151,10 +151,10 @@ contains
        endif
 
 #ifdef PARA
-       call MPI_SEND(im,          1,   MPI_INTEGER,        0,12001,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,12002,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,12003,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(num_at_glob(1:im), im,    MPI_INTEGER,0,12004,MPI_COMM_WORLD,ierr)
+       call MPI_SEND(im,          1,   MPI_INTEGER,        0,12001,MPI_COMM_space,ierr)
+       call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,12002,MPI_COMM_space,ierr)
+       call MPI_SEND(xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,12003,MPI_COMM_space,ierr)
+       call MPI_SEND(num_at_glob(1:im), im,    MPI_INTEGER,0,12004,MPI_COMM_space,ierr)
 #endif
 
     end if

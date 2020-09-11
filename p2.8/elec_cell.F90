@@ -222,7 +222,7 @@ contains
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_cell
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_cell
 
 
 #endif
@@ -367,7 +367,7 @@ contains
     end do
 #ifdef PARA
     if (i2T==0)then
-       call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        elosscel=elosscel_tot
        deallocate (elosscel_tot)
     end if

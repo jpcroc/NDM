@@ -4,19 +4,19 @@ module calccoordo_mod
         USE gen_com_m, ONLY: rang,atincel,nato,noxyz,it,timel,at,deltadist,bg,lperiod,ncel
         implicit none
         contains
-subroutine calccoordo(im,ityp,xp,ielat)
+subroutine calccoordo(im,imm,ityp,xp,ielat)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 
 #endif
   USE var_pot, ONLY:ntyp,rc,nad
   implicit none
-    integer,intent(in)::im
+    integer,intent(in)::im,imm
     real(double),intent(in),allocatable::xp(:,:)
     integer,allocatable::ityp(:),ielat(:)
 
@@ -32,7 +32,7 @@ subroutine calccoordo(im,ityp,xp,ielat)
 
   real(double),allocatable :: xpnp(:,:)
 
-  allocate(xpnp(3,im))
+  allocate(xpnp(3,imm))
   !
 
   !      write(6,*)'entree calcoordo'
@@ -45,7 +45,7 @@ subroutine calccoordo(im,ityp,xp,ielat)
   if (lperiod) then
      xpnp(:,:)=xp(:,:)
   else 
-     call notperiod(im,xp,xpnp)
+     call notperiod(imm,xp,xpnp)
   end if
 
   do i = 1, im
@@ -97,10 +97,10 @@ subroutine calccoordo(im,ityp,xp,ielat)
   end do
 
 #ifdef PARA
-  call MPI_ALLREDUCE(dnco(:,:),dnco_glob(:,:),ntyp*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  call MPI_ALLREDUCE(dnco(:,:),dnco_glob(:,:),ntyp*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   dnco = dnco_glob
   ! nci n'est pas utilise dans la suite, je laisse en commentaire la reduction
-  !  call MPI_ALLREDUCE(nci,nci_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+  !  call MPI_ALLREDUCE(nci,nci_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
   !  nci = nci_glob
 #endif
 

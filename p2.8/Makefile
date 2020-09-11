@@ -85,6 +85,10 @@ INC += $(INC_PARA)
 FLAG += -DPARA
 endif
 
+ifdef DEBUG
+FLAG += -DDEBUG
+endif
+
 ifdef LAMMPS
 OBJ +=  $(OBJ_LAMMPS)
 checkfiles += $(f90lammps) 

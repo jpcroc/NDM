@@ -32,7 +32,7 @@ contains
 
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
 
 #endif
     implicit none
@@ -59,14 +59,12 @@ contains
 #endif
 
     if (lsuivinonpbc) call init_suivinonpbc()
-    !  write(6,*)'RG i ',rang,it
     ! Appel de la routine generale des forces
     !    call calfo
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   CALL CalFo(sig,potist,atdml,celndm)
-!  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
@@ -84,9 +82,7 @@ contains
 
     call dyn_vverlet
     ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
-    !  write(6,*)'RG i ',rang,it
-    ! calcul de sigtot
-    !if (lpr==.false.) then
+
 
 
 
@@ -130,19 +126,19 @@ contains
     sigkine(1:3,1:3) = sigkine(1:3,1:3)/volu
 #ifdef PARA
 
-    !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     !  sig=sig_tot
-    call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     sigkine=sigkine_tot
     if (lsigtyp.and.mod(it,itesigma) == 0) then
-       call MPI_ALLREDUCE(sigtyp,sigtyp_loc,9*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_ALLREDUCE(sigtyp,sigtyp_loc,9*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        sigtyp=sigtyp_loc
-       call MPI_ALLREDUCE(sigtyptyp,sigtyptyp_loc,9*ntyp*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_ALLREDUCE(sigtyptyp,sigtyptyp_loc,9*ntyp*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        sigtyptyp=sigtyptyp_loc
 
     end if
     if (allocated(sigc)) then
-       call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        sigc=sigc_tot
     end if
 #endif

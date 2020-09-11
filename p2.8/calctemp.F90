@@ -15,7 +15,7 @@ subroutine calctemp(temptyp)
   USE eloss, ONLY : tcelec,ecelec
 #ifdef PARA
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_cell
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_cell
 #endif
 
   ! *************************************************************
@@ -137,27 +137,27 @@ subroutine calctemp(temptyp)
   end do
 
 #ifdef PARA
-  call MPI_ALLREDUCE(v2,v2_glob,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  call MPI_ALLREDUCE(v2,v2_glob,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   v2=v2_glob
-  call MPI_ALLREDUCE(vx2(1:ntyp,1:3),vx2_glob(1:ntyp,1:3),ntyp*3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  call MPI_ALLREDUCE(vx2(1:ntyp,1:3),vx2_glob(1:ntyp,1:3),ntyp*3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   vx2=vx2_glob
   if (allocated(tempc)) then
-     call MPI_ALLREDUCE(tempc,tempc_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(tempc,tempc_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      tempc=tempc_tot
   end if
   if (l2T.eqv..true.) then
-     call MPI_ALLREDUCE(ecell%tempIon,tempiontot,nex*ney*nez,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(ecell%tempIon,tempiontot,nex*ney*nez,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      ecell(:,:,:)%tempIon=tempiontot(:,:,:)
      niontot=0
-     call MPI_ALLREDUCE(ecell%nIon,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(ecell%nIon,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
      ecell(:,:,:)%nIon=niontot(:,:,:)
      niontot=0
-     call MPI_ALLREDUCE(ecell%nIonS,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(ecell%nIonS,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
      ecell(:,:,:)%nIonS=niontot(:,:,:)
 
-     call MPI_ALLREDUCE(tempEP,tempEptot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(tempEP,tempEptot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      tempEP=tempEPtot
-     call MPI_ALLREDUCE(nats,natstot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(nats,natstot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
      nats=natstot
      
 

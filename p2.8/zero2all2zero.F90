@@ -29,10 +29,10 @@ contains
     vectin=vectall
     call cryst_to_cart (im_glob, vectin, bg, -1) !cart vers cryst
     !    if (rang==0) then !envoi vectall à tous
-    call MPI_BCAST(vectin,3*imm_glob,NDM_MPI_REAL_DOUBLE,0,MPI_COMM_WORLD,ierr)
-    call MPI_BCAST(itypall,imm_glob,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-    !    call MPI_BCAST(num_at_glob,ims,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    call MPI_BCAST(vectin,3*imm_glob,NDM_MPI_REAL_DOUBLE,0,MPI_COMM_space,ierr)
+    call MPI_BCAST(itypall,imm_glob,MPI_INTEGER,0,MPI_COMM_space,ierr)
+    !    call MPI_BCAST(num_at_glob,ims,MPI_INTEGER,0,MPI_COMM_space,ierr)
+    CALL MPI_BARRIER(MPI_COMM_space,ierr)
 
 
 
@@ -90,7 +90,7 @@ contains
     !       write(618,'(I2,2I6,3G18.9)') rang,i,num_at_glob(i),vectp(:,i)
     !    end do
     !    
-    !    call mpi_barrier(MPI_COMM_WORLD,ierr)
+    !    call mpi_barrier(MPI_COMM_space,ierr)
     !    stop
 
 !    write(6,*)"rg im",rang,im
@@ -118,12 +118,12 @@ contains
           ! Pour le processeur maitre il n'y a rien a faire
           ! reception des donnees des autres processeurs
           if (iproc.ne.0) then
-             call MPI_RECV(im,               1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_WORLD, status, ierr)
+             call MPI_RECV(im,               1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_space, status, ierr)
              proc_source = status(MPI_SOURCE)
-             call MPI_RECV(vectp(1:3,1:im),     3*im, NDM_MPI_REAL_DOUBLE, proc_source, 10002, MPI_COMM_WORLD, status, ierr)
-             !             call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_WORLD, status, ierr)
-             call MPI_RECV(nag(1:im),     im, MPI_INTEGER, proc_source, 10003, MPI_COMM_WORLD, status, ierr)
-             !             call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_WORLD, status, ierr)
+             call MPI_RECV(vectp(1:3,1:im),     3*im, NDM_MPI_REAL_DOUBLE, proc_source, 10002, MPI_COMM_space, status, ierr)
+             !             call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_space, status, ierr)
+             call MPI_RECV(nag(1:im),     im, MPI_INTEGER, proc_source, 10003, MPI_COMM_space, status, ierr)
+             !             call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_space, status, ierr)
           else
              nag(1:im)=num_at_glob(1:im)
           end if
@@ -137,11 +137,11 @@ contains
        end do
 
     else
-       call MPI_SEND(im,               1,   MPI_INTEGER,        0,10001,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(vectp(1:3,1:im),     3*im,NDM_MPI_REAL_DOUBLE,0,10002,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(num_at_glob(1:im),     im, MPI_INTEGER, 0, 10003, MPI_COMM_WORLD, status, ierr)
-       !       call MPI_SEND(ityp(1:im),       im,  MPI_INTEGER,        0,10003,MPI_COMM_WORLD,ierr)
-       !       call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_WORLD,ierr)
+       call MPI_SEND(im,               1,   MPI_INTEGER,        0,10001,MPI_COMM_space,ierr)
+       call MPI_SEND(vectp(1:3,1:im),     3*im,NDM_MPI_REAL_DOUBLE,0,10002,MPI_COMM_space,ierr)
+       call MPI_SEND(num_at_glob(1:im),     im, MPI_INTEGER, 0, 10003, MPI_COMM_space, status, ierr)
+       !       call MPI_SEND(ityp(1:im),       im,  MPI_INTEGER,        0,10003,MPI_COMM_space,ierr)
+       !       call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_space,ierr)
        !      xp_all=0; vectp_all=0;ityp_all=0
        !      X=0
     end if

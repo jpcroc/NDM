@@ -5,18 +5,18 @@ module calfoberend_mod
   USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text,im_glob
   implicit none
 contains
-  subroutine calfoberend(im,xp, vp, fp,ityp)
+  subroutine calfoberend(im,imm,xp, vp, fp,ityp)
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE
 
 #endif
 
-    integer::im
-    real(double)  :: xp(3,im)
-    real(double)  :: vp(3,im)
-    real(double)  :: fp(3,im)
-    integer  :: ityp(im)
+    integer::im,imm
+    real(double)  :: xp(3,imm)
+    real(double)  :: vp(3,imm)
+    real(double)  :: fp(3,imm)
+    integer  :: ityp(imm)
     integer :: i,ic
     !real(double), external :: tempinst
     real(double) :: gamb,fact,tempm1,mv2,v2,mv2_glob
@@ -27,7 +27,7 @@ contains
     enddo
 
 #ifdef PARA
-    call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     mv2 = mv2_glob
     tempm1=mv2/(3.d0*float(im_glob)*bk)
 
@@ -58,9 +58,7 @@ contains
   subroutine dynlangevin(im,xp, vp, fp,ityp,il,Gl)
     USE gen_com_m, ONLY:
     USE var_pot, ONLY:
-#ifdef PARA
-    USE mod_para,only:
-#endif
+
     integer::im
     real(double)  :: xp(3,im)
     real(double)  :: vp(3,im)

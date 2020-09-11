@@ -9,7 +9,7 @@ module paraneb_mod
   integer :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
 
   ! Module de declaration des variables MPI pour le code NDM
-!  Integer :: COMM_NEB = MPI_COMM_WORLD
+!  Integer :: COMM_NEB = MPI_COMM_space
   !Entiers :
   real(double)::temps_deb
   integer :: myid 			! numero de process
@@ -37,8 +37,8 @@ contains
     !Corps de la routine
 
     call MPI_INIT(ierr)
-    call MPI_COMM_RANK( MPI_COMM_WORLD, myid, ierr )
-    call MPI_COMM_SIZE( MPI_COMM_WORLD, nprocs, ierr )
+    call MPI_COMM_RANK( MPI_COMM_space, myid, ierr )
+    call MPI_COMM_SIZE( MPI_COMM_space, nprocs, ierr )
     write(6,*)'INPNEB', myid,nprocs
 
     temps_deb = MPI_Wtime()

@@ -7,7 +7,7 @@ contains
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,res_cpu,coord_max,coord_min,proc_cell
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,res_cpu,coord_max,coord_min,proc_cell
     use tab_imm_m,only:realloc_all_tab_imm
 #endif
     USE gen_com_m, ONLY:nox,noy,noz,rang,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
@@ -200,7 +200,6 @@ contains
              else
                 nnoeuds=nbr_cpu/ncore
              end if
-             write(6,*)'GOGO',specifs(num_sol,3),ncore,nbr_cpu,nnoeuds
              specifs(num_sol,3)=specifs(num_sol,3)*nbr_cpu/(ncore*nnoeuds)
           end if
           if (specifs(num_sol,3)>specifs(solution,3)) solution = num_sol
@@ -323,7 +322,7 @@ contains
        ! differents processeurs afin de pouvoir receptionner les tableaux
        ! des autres processeurs lors d'I/O :
        imm = imm_loc
-       call MPI_REDUCE(imm_loc,imm,1,MPI_INTEGER,MPI_MAX,0,MPI_COMM_WORLD,ierr)
+       call MPI_REDUCE(imm_loc,imm,1,MPI_INTEGER,MPI_MAX,0,MPI_COMM_space,ierr)
 
        !     print *,'test4' 
        call realloc_all_tab_imm(imm)

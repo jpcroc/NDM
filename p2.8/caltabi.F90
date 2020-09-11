@@ -76,11 +76,11 @@ subroutine caltabi(atvois,celvois)
 
   nvij=0
   
-  ALLOCATE(xpnp(3,atvois%im))
+  ALLOCATE(xpnp(3,atvois%imm))
   if (lperiod) then
     xpnp(:,:)=atvois%xp(:,:)
    else
-   call notperiod(atvois%im,atvois%xp,xpnp)
+   call notperiod(atvois%imm,atvois%xp,xpnp)
   end if  
   
   !write(*,*) 'caltabi_inside  ', rvois, rvois2

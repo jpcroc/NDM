@@ -39,9 +39,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     use tab_imm_m
-#ifdef PARA
-    use mod_para,only:
-#endif
+
     USE fcc_module
     USE cfg_module
     USE posana
@@ -206,7 +204,7 @@ contains
 
 
                 if (lEparat) then
-                   write (6, '(I10,G10.3,A,G21.12,A)') it, timel, '*Epot/at = ', potist*unitE/im, cunitE
+                   write (6, '(I10,G10.3,A,G21.12,A)') it, timel, '*Epot/at = ', potist*unitE/im_glob, cunitE
                    write(6,*)
                 end if
 
@@ -618,7 +616,7 @@ contains
 
     ! calcul des coordinences
     if (itecoordo>0) then
-       if (mod(it,itecoordo)==0) call calccoordo  (im,ityp,xp,ielat)
+       if (mod(it,itecoordo)==0) call calccoordo  (im,imm,ityp,xp,ielat)
     endif
 
 
@@ -644,7 +642,7 @@ contains
 
     if (iteangle>0) then
        if (mod(it,iteangle)==0) then
-          call calcangle (im,ityp,xp,ielat)
+          call calcangle (im,imm,ityp,xp,ielat)
           nfda=nfda+1 
           if (linstantfda) then
              call adf
@@ -653,7 +651,7 @@ contains
        endif
     else if(iteangle==0) then
        if(itmax-it<nfda) then
-          call calcangle (im,ityp,xp,ielat)
+          call calcangle (im,imm,ityp,xp,ielat)
           nfda=nfda+1
        endif
     endif
@@ -731,7 +729,7 @@ contains
 
     if (itebdv>0) then
        ! Pas pris en compte en parallele
-       if (.not.parallele.and.mod(it,itebdv)==0) call bondval(im,xp,ityp,ielat,num_at_glob)
+       if (.not.parallele.and.mod(it,itebdv)==0) call bondval(im,imm,xp,ityp,ielat,num_at_glob)
     endif
 
     if (iteanapos>0) then

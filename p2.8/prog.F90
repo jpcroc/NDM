@@ -30,7 +30,7 @@ contains
 
 #ifdef PARA
     use mpi
-    USE mod_para,only:TEMPS_INIT_DEB,TEMPS_INIT,MYID,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm
+    USE mod_para,only:MPI_COMM_space,TEMPS_INIT_DEB,TEMPS_INIT,MYID,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm
 #endif
 
     implicit none

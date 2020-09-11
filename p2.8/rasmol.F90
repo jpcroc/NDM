@@ -22,7 +22,7 @@ contains
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 #endif
     ! ****************************************************************
 
@@ -172,11 +172,11 @@ contains
           ! Pour le processeur maitre il n'y a rien a faire
           ! reception des donnees des autres processeurs
           if (iproc.ne.0) then
-             call MPI_RECV(im,               1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_WORLD, status, ierr)
+             call MPI_RECV(im,               1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_space, status, ierr)
              proc_source = status(MPI_SOURCE)
-             call MPI_RECV(xp(1:3,1:im),     3*im, NDM_MPI_REAL_DOUBLE, proc_source, 10002, MPI_COMM_WORLD, status, ierr)
-             call MPI_RECV(ityp(1:im),       im,   MPI_INTEGER,         proc_source, 10003, MPI_COMM_WORLD, status, ierr)
-             call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_WORLD, status, ierr)
+             call MPI_RECV(xp(1:3,1:im),     3*im, NDM_MPI_REAL_DOUBLE, proc_source, 10002, MPI_COMM_space, status, ierr)
+             call MPI_RECV(ityp(1:im),       im,   MPI_INTEGER,         proc_source, 10003, MPI_COMM_space, status, ierr)
+             call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_space, status, ierr)
           endif
 #endif
           do i = 1, im
@@ -257,10 +257,10 @@ contains
        deallocate(num_at_glob_loc)
 
     else ! Les autres processeurs envoient leurs donnees locales
-       call MPI_SEND(im,               1,   MPI_INTEGER,        0,10001,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(xp(1:3,1:im),     3*im,NDM_MPI_REAL_DOUBLE,0,10002,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(ityp(1:im),       im,  MPI_INTEGER,        0,10003,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_WORLD,ierr)
+       call MPI_SEND(im,               1,   MPI_INTEGER,        0,10001,MPI_COMM_space,ierr)
+       call MPI_SEND(xp(1:3,1:im),     3*im,NDM_MPI_REAL_DOUBLE,0,10002,MPI_COMM_space,ierr)
+       call MPI_SEND(ityp(1:im),       im,  MPI_INTEGER,        0,10003,MPI_COMM_space,ierr)
+       call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_space,ierr)
     endif
 #endif
     if (ivisu==3)    call cryst_to_cart (imm, xp , at,  1)  !cryst vers cart
@@ -308,9 +308,7 @@ contains
 
     USE var_pot, ONLY:
 
-#ifdef PARA
-    USE mod_para,only:
-#endif
+
     implicit none
 
                                                         ! perform temporary changes on ityp 
@@ -343,9 +341,6 @@ contains
   subroutine refix_ty
     USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:
-#ifdef PARA
-    USE mod_para,only:
-#endif
     implicit none 
 
     ntyp=ntyp_buffer

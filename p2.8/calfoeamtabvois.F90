@@ -9,7 +9,7 @@ module calfoeamtabvois_mod
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfoeamtabvois(im,xp, vp,  fp,  iwmax, ityp)
+  SUBROUTINE calfoeamtabvois(im,imm,xp, vp,  fp,  iwmax, ityp)
     !tentative de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
     USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,eamglue,eamglue_d,&
@@ -25,7 +25,7 @@ contains
     !-----------------------------------------------
     ! eam variables
 
-    integer,intent(in)::im
+    integer,intent(in)::im,imm
     integer  :: iwmax(:)
     integer  :: ityp(:)
     real(double)  :: xp(:,:)
@@ -52,7 +52,7 @@ contains
     real(double), dimension(3) :: fij
     real(double) :: inv_volu, inv_atomic_volu
 
-    real(double) :: densityi,tabdensity(im)
+    real(double) :: densityi,tabdensity(imm)
     LOGICAL :: test_sigma
 
     real(double)::rue,rue2
@@ -82,14 +82,14 @@ contains
     inv_atomic_volu = dble(im)/volu
 
     iw2=0
-    ALLOCATE(xpnp(3,im))
+    ALLOCATE(xpnp(3,imm))
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else
-       call notperiod(im,xp,xpnp)
+       call notperiod(imm,xp,xpnp)
     end if
 
-    call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst
+    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
 
 

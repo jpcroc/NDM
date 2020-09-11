@@ -18,7 +18,7 @@ contains
     ! *******************************************************************
 #ifdef PARA
     use mpi
-    USE mod_para,only:ierr
+    USE mod_para,only:MPI_COMM_space,ierr
 #endif
 
 
@@ -241,7 +241,7 @@ contains
     max_loc(1)=vmax
     max_loc(2)=rang
     max_loc(3)=0.5+ityp(imax)
-    call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_space,ierr)
     vmax = max_glob(1)
     ityp_max=int(max_glob(3))
 

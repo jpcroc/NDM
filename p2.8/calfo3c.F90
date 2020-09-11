@@ -5,7 +5,7 @@ module calfo3c_mod
        implicit none 
         contains
 ! *****************************************************************
-subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel,deltadist)
+subroutine calfo3c(im,imm,xp,  vp,  fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel,deltadist)
   !version du 20.11.2001
   !-----------------------------------------------
   !   M o d u l e s
@@ -21,13 +21,13 @@ subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer , intent(in) :: im
-  integer , intent(in) :: ielat(im)
-  integer , intent(in) :: ityp(im)
-  real(double) , intent(inout) :: xp(3,im)
-  real(double)  :: vp(3,im)
-  real(double)  :: ax(3,im)
-  real(double) , intent(inout) :: fp(3,im)
+  integer , intent(in) :: im,imm
+  integer , intent(in) :: ielat(imm),ityp(imm)
+
+  real(double) , intent(inout) :: xp(3,imm)
+  real(double)  :: vp(3,imm)
+  real(double)  :: ax(3,imm)
+  real(double) , intent(inout) :: fp(3,imm)
   
   integer,intent(in)::noxyz,natperc
   integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
@@ -65,7 +65,7 @@ subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel
   integer :: Fin,ncelvois
 
 
-  real(double) :: xpnp(3,im)
+  real(double) :: xpnp(3,imm)
   REAL(double), dimension(1:3) :: dxp
 
 
@@ -82,13 +82,13 @@ subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel
   !C --- ouverture de la boucle sur i
 
   if (noxyz==1) then
-     call cryst_to_cart (im, xp, bg, -1)    !cart vers cryst
+     call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
 
   else
      if (lperiod) then
         xpnp(:,:)=xp(:,:)
      else 
-        call notperiod(im,xp,xpnp)
+        call notperiod(imm,xp,xpnp)
      end if
 
   end if
@@ -401,7 +401,7 @@ subroutine calfo3c(im,xp,  vp,  fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel
 
   end DO
 
-if(noxyz==1)  call cryst_to_cart (im, xp, at, 1)     !cryst vers cart
+if(noxyz==1)  call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
 
 
 

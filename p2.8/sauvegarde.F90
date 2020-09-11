@@ -9,7 +9,7 @@ module sauvegarde_mod
 #ifdef PARA
 
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
          
 #endif
 
@@ -93,15 +93,15 @@ contains
        pt_im(0)=1
        next_pt = pt_im(0) + im_loc(0)
        do i_proc=1,nprocs-1
-          call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_WORLD, status, ierr)
+          call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_space, status, ierr)
           proc_source = status(MPI_SOURCE)
           im_loc(proc_source)=im_temp
           pt_im(proc_source)=next_pt
           next_pt = pt_im(proc_source) + im_loc(proc_source)
           call MPI_RECV(ibuffer(pt_im(proc_source):pt_im(proc_source)+im_temp-1),    im_loc(proc_source),   &
-               MPI_INTEGER,         proc_source, 11002, MPI_COMM_WORLD, status, ierr)
+               MPI_INTEGER,         proc_source, 11002, MPI_COMM_space, status, ierr)
           call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
-               NDM_MPI_REAL_DOUBLE, proc_source, 11003, MPI_COMM_WORLD, status, ierr)
+               NDM_MPI_REAL_DOUBLE, proc_source, 11003, MPI_COMM_space, status, ierr)
        enddo
        write (lucout) ibuffer  ! Ecriture ityp
        write (lucout) buffer   ! Ecriture xp
@@ -110,7 +110,7 @@ contains
        ibuffer(1:im) = num_at_glob(1:im)
        do i_proc=1,nprocs-1
           call MPI_RECV(ibuffer(pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),im_loc(i_proc), &
-               MPI_INTEGER, i_proc, 11004, MPI_COMM_WORLD, status, ierr)
+               MPI_INTEGER, i_proc, 11004, MPI_COMM_space, status, ierr)
        enddo
        write (lucout) ibuffer   ! Ecriture num_at_glob
 
@@ -118,21 +118,21 @@ contains
           buffer(:,1:im) = xpp(:,1:im)
           do i_proc=1,nprocs-1
              call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
-                  NDM_MPI_REAL_DOUBLE, i_proc, 11005, MPI_COMM_WORLD, status, ierr)
+                  NDM_MPI_REAL_DOUBLE, i_proc, 11005, MPI_COMM_space, status, ierr)
           enddo
           write (lucout) buffer   ! Ecriture xpp
 
           buffer(:,1:im) = vp(:,1:im)
           do i_proc=1,nprocs-1
              call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
-                  NDM_MPI_REAL_DOUBLE, i_proc, 11006, MPI_COMM_WORLD, status, ierr)
+                  NDM_MPI_REAL_DOUBLE, i_proc, 11006, MPI_COMM_space, status, ierr)
           enddo
           write (lucout) buffer   ! Ecriture vp
 
           buffer(:,1:im) = ax(:,1:im)
           do i_proc=1,nprocs-1
              call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
-                  NDM_MPI_REAL_DOUBLE, i_proc, 11007, MPI_COMM_WORLD, status, ierr)
+                  NDM_MPI_REAL_DOUBLE, i_proc, 11007, MPI_COMM_space, status, ierr)
           enddo
           write (lucout) buffer   ! Ecriture ax
 
@@ -164,14 +164,14 @@ contains
 
     else ! rang different de 0 :
 #ifdef PARA
-       call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(num_at_glob(1:im), im,    MPI_INTEGER,0,11004,MPI_COMM_WORLD,ierr)
+       call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
+       call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
+       call MPI_SEND(xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_space,ierr)
+       call MPI_SEND(num_at_glob(1:im), im,    MPI_INTEGER,0,11004,MPI_COMM_space,ierr)
        if (formatsauvmod==1) then
-          call MPI_SEND(xpp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11005,MPI_COMM_WORLD,ierr)
-          call MPI_SEND(vp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11006,MPI_COMM_WORLD,ierr)
-          call MPI_SEND(ax(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11007,MPI_COMM_WORLD,ierr)
+          call MPI_SEND(xpp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11005,MPI_COMM_space,ierr)
+          call MPI_SEND(vp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11006,MPI_COMM_space,ierr)
+          call MPI_SEND(ax(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11007,MPI_COMM_space,ierr)
        endif
 #endif
     endif
@@ -229,15 +229,15 @@ contains
        pt_im(0)=1
        next_pt = pt_im(0) + im_loc(0)
        do i_proc=1,nprocs-1
-          call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_WORLD, status, ierr)
+          call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_space, status, ierr)
           proc_source = status(MPI_SOURCE)
           im_loc(proc_source)=im_temp
           pt_im(proc_source)=next_pt
           next_pt = pt_im(proc_source) + im_loc(proc_source)
           call MPI_RECV(ibuffer(pt_im(proc_source):pt_im(proc_source)+im_temp-1),    im_loc(proc_source),   &
-               MPI_INTEGER,         proc_source, 11002, MPI_COMM_WORLD, status, ierr)
+               MPI_INTEGER,         proc_source, 11002, MPI_COMM_space, status, ierr)
           call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
-               NDM_MPI_REAL_DOUBLE, proc_source, 11003, MPI_COMM_WORLD, status, ierr)
+               NDM_MPI_REAL_DOUBLE, proc_source, 11003, MPI_COMM_space, status, ierr)
        enddo
        call cryst_to_cart(im_glob,buffer,bg,-1) !cart vers cryst
 
@@ -260,9 +260,9 @@ contains
 
     else ! rang different de 0 :
 #ifdef PARA
-       call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_WORLD,ierr)
+       call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
+       call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
+       call MPI_SEND(xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_space,ierr)
 #endif
     endif
 #ifdef PARA

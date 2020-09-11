@@ -4,7 +4,7 @@ module calfo_decalage_mod
         implicit none 
         contains
 !----------------------------------------------------------------------
-SUBROUTINE calfo_decalage(im,xp, vp,  fp,  iwmax, ityp,indi)
+SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
   !tentative de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
   USE gen_com_m, ONLY:angst,at,bg,decal_bc,it,itesigma,ldemitab,low_limit,&
@@ -21,7 +21,7 @@ SUBROUTINE calfo_decalage(im,xp, vp,  fp,  iwmax, ityp,indi)
   !-----------------------------------------------
   ! eam variables
 
-  integer,intent(in)::im
+  integer,intent(in)::im,imm
   integer  :: iwmax(:)
     integer  :: indi(:)
   integer  :: ityp(:)
@@ -47,7 +47,7 @@ SUBROUTINE calfo_decalage(im,xp, vp,  fp,  iwmax, ityp,indi)
 
   real(double) :: drk, ktor, inv_ktor, ktorho, inv_ktorho
 
-  real(double) :: densityi,tabdensity(im)
+  real(double) :: densityi,tabdensity(imm)
   LOGICAL :: test_sigma
 
   real(double)::rue,rue2
@@ -80,14 +80,14 @@ SUBROUTINE calfo_decalage(im,xp, vp,  fp,  iwmax, ityp,indi)
 
 
   iw2=0
-  ALLOCATE(xpnp(3,im))
+  ALLOCATE(xpnp(3,imm))
   if (lperiod) then
    xpnp(:,:)=xp(:,:)
   else
-   call notperiod(im,xp,xpnp)
+   call notperiod(imm,xp,xpnp)
   end if
    
-  call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst
+  call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
   loop1at1: do i=1,im
      !       densityi=tabdensity(i)
