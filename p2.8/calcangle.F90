@@ -6,14 +6,14 @@ module calcangle_mod
        &ncel,at,bg,deltadist,imana,nato,noxyz,rang
   implicit none
 contains
-  subroutine calcangle(im,ityp,xp,ielat)
+  subroutine calcangle(im,imm,ityp,xp,ielat)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 
 #endif
 
@@ -23,7 +23,7 @@ contains
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
 
-    integer,intent(in)::im
+    integer,intent(in)::im,imm
     real(double),intent(in),allocatable::xp(:,:)
     integer,allocatable::ityp(:),ielat(:)
 
@@ -41,7 +41,7 @@ contains
     !-----------------------------------------------
 
     real(double),allocatable :: xpnp(:,:)
-    allocate (xpnp(3,im))
+    allocate (xpnp(3,imm))
     !repartition des atomes entre les petites cel.
     !  if (rang==0) write(6,*) 'PARA-T entree calcangle'
     rc2=rcangle*1.0d-8
@@ -52,7 +52,7 @@ contains
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else 
-       call notperiod(im,xp,xpnp)
+       call notperiod(imm,xp,xpnp)
     end if
 
     do i = 1, im-1
@@ -140,7 +140,7 @@ contains
     end do
 
 #ifdef PARA
-    call MPI_ALLREDUCE(fda,fda_glob,ntyp*ntyp*ntyp*contmax,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(fda,fda_glob,ntyp*ntyp*ntyp*contmax,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     fda = fda_glob
 #endif
     deallocate (xpnp)

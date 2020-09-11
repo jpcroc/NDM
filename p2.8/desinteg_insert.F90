@@ -17,7 +17,7 @@ contains
     USE tab_imm_m,only:xp,vp,ielat,ityp,num_at_glob
 #ifdef PARA
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 #endif
 
     implicit none
@@ -94,9 +94,9 @@ contains
 #ifdef PARA
           endif
           !	write(6,*)'PO',rang,laccept,u1
-          call MPI_BCAST(laccept,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
-          call MPI_BCAST(u1,1,NDM_MPI_REAL_DOUBLE,0,MPI_COMM_WORLD,ierr)
-          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+          call MPI_BCAST(laccept,1,MPI_LOGICAL,0,MPI_COMM_space,ierr)
+          call MPI_BCAST(u1,1,NDM_MPI_REAL_DOUBLE,0,MPI_COMM_space,ierr)
+          CALL MPI_BARRIER(MPI_COMM_space,ierr)
 
           !	write(6,*)'P1',rang,laccept,u1
 #endif
@@ -146,7 +146,7 @@ contains
                 do i=1,im
                    if (num_at_glob(i)==1) then
                       xpspr=xp(:,i)
-                      call MPI_BCAST(xpspr,3,NDM_MPI_REAL_DOUBLE,rang,MPI_COMM_WORLD,ierr)			
+                      call MPI_BCAST(xpspr,3,NDM_MPI_REAL_DOUBLE,rang,MPI_COMM_space,ierr)			
                    endif
                 enddo
 #else

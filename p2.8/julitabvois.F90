@@ -9,7 +9,7 @@ module calfojuli_mod
 
 
 !----------------------------------------------------------------------
-SUBROUTINE calfojuli(im,xp,  vp,  fp, iwmax, ityp,indi)
+SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi)
   !tentaive de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
 
@@ -22,7 +22,7 @@ SUBROUTINE calfojuli(im,xp,  vp,  fp, iwmax, ityp,indi)
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   ! eam variables
-  integer,intent(in)::im
+  integer,intent(in)::im,imm
   integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
   real(double),intent(in),allocatable  :: vp(:,:)
   real(double),intent(inout),allocatable  :: xp(:,:)
@@ -102,14 +102,14 @@ SUBROUTINE calfojuli(im,xp,  vp,  fp, iwmax, ityp,indi)
   rue2=rue**2
   !    iw2=0
 
-  ALLOCATE(xpnp(3,im))
+  ALLOCATE(xpnp(3,imm))
   if (lperiod) then
    xpnp(:,:)=xp(:,:)
   else
-   call notperiod(im,xp,xpnp)
+   call notperiod(imm,xp,xpnp)
   end if
    
-  call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst
+  call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
 
   loop1at1: do i=1,im

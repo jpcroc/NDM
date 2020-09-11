@@ -21,7 +21,7 @@ USE arret_ndm_mod,only: arret_ndm
 USE caltabi_mod,only: caltabi
 #ifdef PARA
 USE mpi
-use mod_para,only: status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,maj_atomes_frt_ftm
+use mod_para,only:MPI_COMM_space, status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,maj_atomes_frt_ftm
 #endif
   USE tab_imm_m,only : xp, fp,num_at_glob,ax,vp,xpp,ityp,ielat,iwmax,bruitmd
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
@@ -88,7 +88,7 @@ contains
 !       !       write(6,*)rang,i,xp_all(:,i)
 !       write(606,'(2I2,I6,3G18.9)') rang,ncalls,i,xp_local(:,i)
 !    end do
-!    call mpi_barrier(MPI_COMM_WORLD,ierr)
+!    call mpi_barrier(MPI_COMM_space,ierr)
 !#else
 !     open(unit=606, file='xp_local.SEQ.csv', form='formatted', &
 !             status='unknown')
@@ -188,7 +188,7 @@ contains
 !       write(625,'(2I2,2I6,3G18.9)') rang, ncalls,i,num_at_glob(i),fp(:,i)
 !    end do
 #ifdef PARA
-    call mpi_barrier(MPI_COMM_WORLD,ierr)
+    call mpi_barrier(MPI_COMM_space,ierr)
 #endif    
 !   stop
 
@@ -208,10 +208,10 @@ contains
 !        END IF
 !        write(6,*)'FF ', forctot,formax
 #ifdef PARA
-        call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
+        call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
         formax=fpmax_glob
         forctot=forctot**2
-        call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+        call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
         forctot=sqrt(fpmax_glob)
 #endif
 

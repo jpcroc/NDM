@@ -1,7 +1,7 @@
 module arret_ndm_mod
 #ifdef PARA
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,temps_initspeed,temps_para,temps_dmloop,temps_init,temps_input,&
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,temps_initspeed,temps_para,temps_dmloop,temps_init,temps_input,&
          &temps_config,temps_deb
 #endif
         implicit none

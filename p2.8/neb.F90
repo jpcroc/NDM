@@ -140,7 +140,7 @@ contains
        call bruit_neb
     end if
 #ifdef PARANEB
-    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    CALL MPI_BARRIER(MPI_COMM_space,ierr)
 #endif
     !call calfo
     do ii=1,npath
@@ -175,9 +175,9 @@ contains
     end do
 #ifdef PARANEB
     write(6,*)
-    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-    call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-    call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    CALL MPI_BARRIER(MPI_COMM_space,ierr)
+    call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+    call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     enepathev(:)=enepathev_tot ; enepath=enepath_tot
 #endif
     if (rang==0) then
@@ -185,7 +185,7 @@ contains
           write(*,'(i5,3(g20.8,1x))') ii, enePATHev(ii),enePATHev(ii)-enePATHev(1)
        end do
     end if
-    !    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    !    CALL MPI_BARRIER(MPI_COMM_space,ierr)
 
 
     !stop
@@ -248,11 +248,11 @@ contains
        end do      !end ii,npath
 #ifdef PARANEB
        write(6,*)'rg ene',myid,enepathev
-       CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-       call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-       call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-       call MPI_ALLREDUCE(sigpath,sigpath_tot,9*npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-       call MPI_ALLREDUCE(iter,iter,npath,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+       CALL MPI_BARRIER(MPI_COMM_space,ierr)
+       call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       call MPI_ALLREDUCE(sigpath,sigpath_tot,9*npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       call MPI_ALLREDUCE(iter,iter,npath,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
        enepathev(:)=enepathev_tot ; enepath=enepath_tot;sigpath=sigpath_tot
 #endif
        if (rang==0) then
@@ -348,17 +348,17 @@ contains
 
 #ifdef PARANEB
 
-             if (myid.lt.nprocs-1) call MPI_SEND(enepath(ii), 1,   NDM_MPI_REAL_DOUBLE,   myid+1,10001,MPI_COMM_WORLD,ierr)
-               if (myid.gt.0)  call MPI_RECV(enepath(ii-1),1,   NDM_MPI_REAL_DOUBLE,   myid-1,10001,MPI_COMM_WORLD,status,ierr)
+             if (myid.lt.nprocs-1) call MPI_SEND(enepath(ii), 1,   NDM_MPI_REAL_DOUBLE,   myid+1,10001,MPI_COMM_space,ierr)
+               if (myid.gt.0)  call MPI_RECV(enepath(ii-1),1,   NDM_MPI_REAL_DOUBLE,   myid-1,10001,MPI_COMM_space,status,ierr)
 
-               if (myid.lt.nprocs-1)    call MPI_SEND(atneb(ii)%xp(1:3,1:im), 3*im,   NDM_MPI_REAL_DOUBLE,  myid+1,10002,MPI_COMM_WORLD,ierr)
-                if (myid.gt.0)                 call MPI_RECV(atneb(ii-1)%xp(1:3,1:im),3*im,   NDM_MPI_REAL_DOUBLE,   myid-1,10002,MPI_COMM_WORLD,status,ierr)
+               if (myid.lt.nprocs-1)    call MPI_SEND(atneb(ii)%xp(1:3,1:im), 3*im,   NDM_MPI_REAL_DOUBLE,  myid+1,10002,MPI_COMM_space,ierr)
+                if (myid.gt.0)                 call MPI_RECV(atneb(ii-1)%xp(1:3,1:im),3*im,   NDM_MPI_REAL_DOUBLE,   myid-1,10002,MPI_COMM_space,status,ierr)
               
-                if (myid.gt.0) call MPI_SEND(enepath(ii), 1,   NDM_MPI_REAL_DOUBLE,   myid-1,10003,MPI_COMM_WORLD,ierr)
-              if (myid.lt.nprocs-1)    call MPI_RECV(enepath(ii+1),1,   NDM_MPI_REAL_DOUBLE,   myid+1,10003,MPI_COMM_WORLD,status,ierr)
+                if (myid.gt.0) call MPI_SEND(enepath(ii), 1,   NDM_MPI_REAL_DOUBLE,   myid-1,10003,MPI_COMM_space,ierr)
+              if (myid.lt.nprocs-1)    call MPI_RECV(enepath(ii+1),1,   NDM_MPI_REAL_DOUBLE,   myid+1,10003,MPI_COMM_space,status,ierr)
 
-              if (myid.gt.0)  call MPI_SEND(atneb(ii)%xp(1:3,1:im), 3*im,   NDM_MPI_REAL_DOUBLE,  myid-1,10004,MPI_COMM_WORLD,ierr)
-               if (myid.lt.nprocs-1)   call MPI_RECV(atneb(ii+1)%xp(1:3,1:im),3*im,   NDM_MPI_REAL_DOUBLE,   myid+1,10004,MPI_COMM_WORLD,status,ierr)
+              if (myid.gt.0)  call MPI_SEND(atneb(ii)%xp(1:3,1:im), 3*im,   NDM_MPI_REAL_DOUBLE,  myid-1,10004,MPI_COMM_space,ierr)
+               if (myid.lt.nprocs-1)   call MPI_RECV(atneb(ii+1)%xp(1:3,1:im),3*im,   NDM_MPI_REAL_DOUBLE,   myid+1,10004,MPI_COMM_space,status,ierr)
                
              enepathev(:)=enepath(:)*erg2ev
 !             stop
@@ -407,8 +407,8 @@ contains
 
 #ifdef PARANEB
        !           write(6,'(A,10I4)')'rg AV nebtest',myid, nebtest(2:npath-1)
-       CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-       call MPI_ALLREDUCE(nebtest,nebtest_tot,npath,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+       CALL MPI_BARRIER(MPI_COMM_space,ierr)
+       call MPI_ALLREDUCE(nebtest,nebtest_tot,npath,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
        nebtest=nebtest_tot
 !       write(6,'(A,10I4)')'rg AP nebtest',myid,nebtest(2:npath-1)
 
@@ -466,38 +466,38 @@ contains
 
 #ifdef PARANEB
     write(6,*)
-    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    CALL MPI_BARRIER(MPI_COMM_space,ierr)
 
     if (myid==0) then
        do iproc=1,nprocs-1
           ! Pour le processeur maitre il n'y a rien a faire
           ! reception des donnees des autres processeurs
           !          if (iproc.ne.0) then
-          call MPI_RECV(enertrf,               1,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10001, MPI_COMM_WORLD, status, ierr)
+          call MPI_RECV(enertrf,               1,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10001, MPI_COMM_space, status, ierr)
           proc_source = status(MPI_SOURCE)
           enepath(proc_source+2)=enertrf
-          call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10002, MPI_COMM_WORLD, status, ierr)
+          call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10002, MPI_COMM_space, status, ierr)
           proc_source = status(MPI_SOURCE)
           sigpath(:,:,proc_source+2)=sigpathtrf(:,:)
-          call MPI_RECV(rc_trf,1,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10005, MPI_COMM_WORLD, status, ierr)
+          call MPI_RECV(rc_trf,1,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10005, MPI_COMM_space, status, ierr)
           proc_source = status(MPI_SOURCE)
           reaction_coord(proc_source+2)=rc_trf
           
           !          endif
        end do
-       call MPI_RECV(enertrf,               1,NDM_MPI_REAL_DOUBLE,   nprocs-1, 10003, MPI_COMM_WORLD, status, ierr)
+       call MPI_RECV(enertrf,               1,NDM_MPI_REAL_DOUBLE,   nprocs-1, 10003, MPI_COMM_space, status, ierr)
        enepath(npath)=enertrf
-       call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,    nprocs-1, 10004, MPI_COMM_WORLD, status, ierr)
+       call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,    nprocs-1, 10004, MPI_COMM_space, status, ierr)
        sigpath(:,:,npath)=sigpathtrf(:,:)
 
 
     else ! Les autres processeurs envoient leurs donnees locales
-       call MPI_SEND(enepath(myid+2),               1,   NDM_MPI_REAL_DOUBLE,        0,10001,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(sigpath(:,:,myid+2),               9,   NDM_MPI_REAL_DOUBLE,        0,10002,MPI_COMM_WORLD,ierr)
-       call MPI_SEND(reaction_coord(myid+2),               1,   NDM_MPI_REAL_DOUBLE,        0,10005,MPI_COMM_WORLD,ierr)       
+       call MPI_SEND(enepath(myid+2),               1,   NDM_MPI_REAL_DOUBLE,        0,10001,MPI_COMM_space,ierr)
+       call MPI_SEND(sigpath(:,:,myid+2),               9,   NDM_MPI_REAL_DOUBLE,        0,10002,MPI_COMM_space,ierr)
+       call MPI_SEND(reaction_coord(myid+2),               1,   NDM_MPI_REAL_DOUBLE,        0,10005,MPI_COMM_space,ierr)       
        if (myid==nprocs-1)then
-          call MPI_SEND(enepath(npath),               1,   NDM_MPI_REAL_DOUBLE,        0,10003,MPI_COMM_WORLD,ierr)
-          call MPI_SEND(sigpath(:,:,npath),               9,   NDM_MPI_REAL_DOUBLE,        0,10004,MPI_COMM_WORLD,ierr)
+          call MPI_SEND(enepath(npath),               1,   NDM_MPI_REAL_DOUBLE,        0,10003,MPI_COMM_space,ierr)
+          call MPI_SEND(sigpath(:,:,npath),               9,   NDM_MPI_REAL_DOUBLE,        0,10004,MPI_COMM_space,ierr)
        end if
     endif
     

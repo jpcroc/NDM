@@ -6,7 +6,7 @@ module calfoew_mod
 contains
 
   ! ***************************************************************
-  subroutine calfoew(im,xp,fp,ityp,noxyz)
+  subroutine calfoew(im,imm,xp,fp,ityp,noxyz)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -15,7 +15,7 @@ contains
     USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE
 
 #endif
     ! ewald reciproque
@@ -28,7 +28,7 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer,intent(in)::im,noxyz
+    integer,intent(in)::im,noxyz,imm
     real(double),intent(inout),allocatable::fp(:,:),xp(:,:)
     integer,intent(in),allocatable::ityp(:)
     
@@ -111,9 +111,9 @@ contains
 #ifdef PARA
                 ! Reduction MPI en interne de la boucle. Prefere au stockage dans des tableaux
                 ! (pour scalar et hbv il faudrait ajouter des dimensions ncoux/y/z)
-                call MPI_ALLREDUCE(scacos,scacos_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+                call MPI_ALLREDUCE(scacos,scacos_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
                 scacos = scacos_glob
-                call MPI_ALLREDUCE(scasin,scasin_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+                call MPI_ALLREDUCE(scasin,scasin_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
                 scasin = scasin_glob
 #endif
                 do i = 1, im

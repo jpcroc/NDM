@@ -16,9 +16,6 @@ contains
     !     Version  du 12 avril 2007
     ! *********************************************************************
     USE tab_imm_m,only:xp,xpp,ax,vp,ityp
-#ifdef PARA
-    USE mod_para,only:
-#endif
 
     implicit none
     !-----------------------------------------------

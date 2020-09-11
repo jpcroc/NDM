@@ -32,9 +32,6 @@ subroutine dmloop
 
   USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
   USE FireModule
-#ifdef PARA
-  USE mod_para,only:
-#endif
 
   implicit none
   !-----------------------------------------------

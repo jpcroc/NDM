@@ -5,7 +5,7 @@ module force_tersoff_cel_mod
   implicit none
 contains
 ! ***************************************************************
-subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp,noxyz,natperc,atincel,nato,ncel,deltadist)
+subroutine force_tersoff_cel(im,imm,xp, vp,  fp, ielat, ityp,noxyz,natperc,atincel,nato,ncel,deltadist)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -16,18 +16,10 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp,noxyz,natperc,atincel,n
   USE force_tersoff_facteurs
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,maj_fp_frt
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,maj_fp_frt
 
 #endif
-  ! **************************************************************
-  ! Programme par NGUYEN Quoc Hoang
-  ! CEA-Saclay/DEN/DMN/SRMP
-  ! Printemps 2004 version du 27 septembre 2004
 
-  ! Calcul des forces en utilisant la methode des cellules
-  ! Test des contraintes -> OK (warning: convention de signe speciale)
-  ! Probleme de flux
-  ! ***************************************************************
 
   implicit none
   !-----------------------------------------------
@@ -36,7 +28,7 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp,noxyz,natperc,atincel,n
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer,intent(in)::im
+  integer,intent(in)::im,imm
   integer , intent(in),allocatable :: ielat(:),ityp(:)
   real(double),intent(in),allocatable  :: vp(:,:)
   real(double) , intent(inout),allocatable :: fp(:,:),xp(:,:)
@@ -91,7 +83,7 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp,noxyz,natperc,atincel,n
 
   ER1=0. ;  ER2=0. ;  ER3=0.
   !         write(6,*)'boite quelc'
-  call cryst_to_cart(im,xp,bg,-1)
+  call cryst_to_cart(imm,xp,bg,-1)
 
   !  write(6,*)sig
   !  write(6,*)
@@ -380,17 +372,17 @@ subroutine force_tersoff_cel(im,xp, vp,  fp, ielat, ityp,noxyz,natperc,atincel,n
 
 
   end do
-  call cryst_to_cart(im,xp,at,1)
+  call cryst_to_cart(imm,xp,at,1)
 
 #ifdef PARA
-  call MPI_ALLREDUCE(potisTersoff,potisTersoff_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  call MPI_ALLREDUCE(potisTersoff,potisTersoff_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   potisTersoff=potisTersoff_tot
-  !     call MPI_ALLREDUCE(jq,    jq_tot,    3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  !     call MPI_ALLREDUCE(jq,    jq_tot,    3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   !     jq=jq_tot
-  call MPI_ALLREDUCE(sig,   sig_tot,   9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  call MPI_ALLREDUCE(sig,   sig_tot,   9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   sig=sig_tot  
   if (allocated(sigc)) then
-     call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      sigc=sigc_tot
   endif
 

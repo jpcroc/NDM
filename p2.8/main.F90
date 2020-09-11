@@ -14,7 +14,7 @@ program ndm
   USE readdm_mod,only: readdm
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
-  USE mod_para,only:myid,nprocs
+  USE mod_para,only:MPI_COMM_space,myid,nprocs
   USE init_mpi_mod,only: init_mpi
 #endif
 

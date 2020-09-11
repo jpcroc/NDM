@@ -12,7 +12,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
   USE var_pot, ONLY:cm
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE
  
 #endif
   implicit none
@@ -166,9 +166,9 @@ subroutine jqbh (xp,xpp,vp,ityp)
 !        end if
      end do
 !     write(6,*)'ecou1', rang,nacou1,ecou1
-     call MPI_ALLREDUCE(ecou1,ecou1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(ecou1,ecou1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      ecou1=ecou1_tot
-     call MPI_ALLREDUCE(nacou1,nacou1_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(nacou1,nacou1_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
      nacou1=nacou1_tot
 !     write(6,*)'ecou1B', rang,nacou1,ecou1
 
@@ -218,9 +218,9 @@ subroutine jqbh (xp,xpp,vp,ityp)
 !        end if
      end do
 !     write(6,*)'ecou2', rang,nacou2,ecou2
-     call MPI_ALLREDUCE(ecou2,ecou2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(ecou2,ecou2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      ecou2=ecou2_tot
-     call MPI_ALLREDUCE(nacou2,nacou2_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(nacou2,nacou2_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
      nacou2=nacou2_tot
 !     write(6,*)'ecou2B', rang,nacou2,ecou2
 #else
@@ -265,9 +265,9 @@ subroutine jqbh (xp,xpp,vp,ityp)
 !		endif
      end do
 !     write(6,*)'temptra', rang,temptra,nattr
-     call MPI_ALLREDUCE(temptra,temptra_tot,ntr,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(temptra,temptra_tot,ntr,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      temptra=temptra_tot
-     call MPI_ALLREDUCE(nattr,nattr_tot,ntr,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(nattr,nattr_tot,ntr,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
      nattr=nattr_tot
 !     write(6,*)'temptra2', rang,temptra,nattr
 

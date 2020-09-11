@@ -13,9 +13,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:nkmax,ntyp,nad,digr,gdertot
 
-#ifdef PARA
-    USE mod_para,only:
-#endif
+
 
     implicit none
 

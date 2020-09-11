@@ -37,7 +37,7 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
 #ifdef PARA
-    USE mod_para,only:NPROCS
+    USE mod_para,only:MPI_COMM_space,NPROCS
 #endif
 
     ! *****************************************************************

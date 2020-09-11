@@ -21,7 +21,11 @@ module lammps_util_mod
         use vars_lammps
         implicit none
         contains
+<<<<<<< HEAD
 
+=======
+!
+>>>>>>> f48eb679ca3c0a28dbdd70a92b7134f26bc0b4ca
 subroutine read_lammps
   use gen_com_m, ONLY: rang,firsttime_lammps
   use LAMMPS

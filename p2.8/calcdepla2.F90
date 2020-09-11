@@ -12,7 +12,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 
     use tab_imm_m,only:num_at_glob
 #endif
@@ -90,11 +90,11 @@ contains
 
 
 #ifdef PARA
-    call MPI_ALLREDUCE(dr2,dr2_glob,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(dr2,dr2_glob,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     dr2 = dr2_glob
-    call MPI_ALLREDUCE(ndepla,ndepla_glob,ntyp,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(ndepla,ndepla_glob,ntyp,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
     ndepla = ndepla_glob
-    call MPI_ALLREDUCE(ndeplatot,ndeplatot_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+    call MPI_ALLREDUCE(ndeplatot,ndeplatot_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
 
     ! Allocation des tableaux d'emission/reception
     if (myid==0) then
@@ -117,21 +117,21 @@ contains
 
     if (myid==0) then
        do i=1,nprocs-1
-          call MPI_RECV(ndeplatot_tmp,1,MPI_INTEGER,MPI_ANY_SOURCE,14001,MPI_COMM_WORLD,status,ierr)
+          call MPI_RECV(ndeplatot_tmp,1,MPI_INTEGER,MPI_ANY_SOURCE,14001,MPI_COMM_space,status,ierr)
           if (ndeplatot_tmp.ne.0) then
              proc_source = status(MPI_SOURCE)
-             call MPI_RECV(ityp_depla(ndeplatot+1),ndeplatot_tmp,MPI_INTEGER,proc_source,14002,MPI_COMM_WORLD,status,ierr)
-             call MPI_RECV(xp_depla(:,ndeplatot+1),3*ndeplatot_tmp,NDM_MPI_REAL_DOUBLE,proc_source,14003,MPI_COMM_WORLD,status,ierr)
-             call MPI_RECV(indic_depla(ndeplatot+1),ndeplatot_tmp,MPI_INTEGER,proc_source,14004,MPI_COMM_WORLD,status,ierr)
+             call MPI_RECV(ityp_depla(ndeplatot+1),ndeplatot_tmp,MPI_INTEGER,proc_source,14002,MPI_COMM_space,status,ierr)
+             call MPI_RECV(xp_depla(:,ndeplatot+1),3*ndeplatot_tmp,NDM_MPI_REAL_DOUBLE,proc_source,14003,MPI_COMM_space,status,ierr)
+             call MPI_RECV(indic_depla(ndeplatot+1),ndeplatot_tmp,MPI_INTEGER,proc_source,14004,MPI_COMM_space,status,ierr)
              ndeplatot = ndeplatot + ndeplatot_tmp
           endif
        enddo
     else
-       call MPI_SEND(ndeplatot,1,MPI_INTEGER,0,13001,MPI_COMM_WORLD,ierr)
+       call MPI_SEND(ndeplatot,1,MPI_INTEGER,0,13001,MPI_COMM_space,ierr)
        if (ndeplatot.ne.0) then
-          call MPI_SEND(ityp_depla,ndeplatot,MPI_INTEGER,0,14002,MPI_COMM_WORLD,ierr)
-          call MPI_SEND(xp_depla(:,1:ndeplatot),3*ndeplatot,NDM_MPI_REAL_DOUBLE,0,14003,MPI_COMM_WORLD,ierr)
-          call MPI_SEND(indic_depla,ndeplatot,MPI_INTEGER,0,14004,MPI_COMM_WORLD,ierr)
+          call MPI_SEND(ityp_depla,ndeplatot,MPI_INTEGER,0,14002,MPI_COMM_space,ierr)
+          call MPI_SEND(xp_depla(:,1:ndeplatot),3*ndeplatot,NDM_MPI_REAL_DOUBLE,0,14003,MPI_COMM_space,ierr)
+          call MPI_SEND(indic_depla,ndeplatot,MPI_INTEGER,0,14004,MPI_COMM_space,ierr)
        endif
     endif
 #endif

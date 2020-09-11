@@ -39,8 +39,8 @@ subroutine init_mpi_ml()
 
 codeml=code_mpi
 !call MPI_INIT (codeml)
-call MPI_COMM_SIZE(MPI_COMM_WORLD,nb_procsml, codeml)
-call MPI_COMM_RANK(MPI_COMM_WORLD,rangml,codeml)
+call MPI_COMM_SIZE(MPI_COMM_space,nb_procsml, codeml)
+call MPI_COMM_RANK(MPI_COMM_space,rangml,codeml)
 
 
 end subroutine init_mpi_ml

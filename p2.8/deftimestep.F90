@@ -16,7 +16,7 @@ subroutine deftimestep
   USE period_mod,only: period
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,myid
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,myid
 #endif
   !         version paraseq du 21 fevrier 2001
   ! *********************************************************************
@@ -72,7 +72,7 @@ subroutine deftimestep
   max_loc(1)=vmax2
   max_loc(2)=myid
 !  max_loc(3)=0.5+ityp(imax)
-  call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_WORLD,ierr)
+  call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_space,ierr)
   vmax2 = max_glob(1)
 !  ityp_max=int(max_glob(3))
 

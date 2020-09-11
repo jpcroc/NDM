@@ -12,9 +12,6 @@ contains
 
     USE tab_imm_m,only:
 
-#ifdef PARA
-    USE mod_para,only:
-#endif 
     write(6,*)'LAYER DETRUIT'
     stop
     

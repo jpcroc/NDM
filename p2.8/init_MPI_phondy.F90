@@ -11,7 +11,7 @@ end module mod_para_phondy
 subroutine init_mpi_phondy()
 
   USE mpi
-  USE mod_para,only:_phondy
+  USE mod_para,only:MPI_COMM_space,_phondy
   USE gen_mpi
   USE gen_com_m, ONLY: , ONLY: rangph
   implicit none
@@ -30,8 +30,8 @@ subroutine init_mpi_phondy()
 
 codeph=code_mpi
 !call MPI_INIT (codeph)
-call MPI_COMM_SIZE(MPI_COMM_WORLD,nb_procsph, codeph)
-call MPI_COMM_RANK(MPI_COMM_WORLD,rangph,codeph)
+call MPI_COMM_SIZE(MPI_COMM_space,nb_procsph, codeph)
+call MPI_COMM_RANK(MPI_COMM_space,rangph,codeph)
 
 
 end subroutine init_mpi_phondy

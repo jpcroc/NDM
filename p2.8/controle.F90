@@ -33,9 +33,6 @@ contains
     USE suivinonpbc
     USE cryst_to_cart_mod,only: cryst_to_cart
     USE notperiod_mod,only: notperiod
-#ifdef PARA
-    USE mod_para,only:
-#endif
     USE defcdp, ONLY :itecdp
     implicit none
     !-----------------------------------------------
@@ -395,9 +392,9 @@ contains
                         i))/(3.0*bk)
                 end do
 #ifdef PARA
-                call MPI_ALLREDUCE(tcou,tcou_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+                call MPI_ALLREDUCE(tcou,tcou_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
                 tcou = tcou_glob
-                call MPI_ALLREDUCE(nacou,nacou_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+                call MPI_ALLREDUCE(nacou,nacou_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
                 nacou = nacou_glob
 #endif
 
@@ -596,7 +593,7 @@ contains
           fpmax = MaxVal( Abs(fp(:,1:im)) )
           !        END IF
 #ifdef PARA
-          call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
+          call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
           fpmax=fpmax_glob
 #endif
 
@@ -626,7 +623,7 @@ contains
           !        END IF
 #ifdef PARA
           fpmax=fpmax**2
-          call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+          call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
           fpmax=sqrt(fpmax_glob)
 #endif
 
@@ -676,10 +673,10 @@ contains
           formax = MaxVal( Abs(fp(:,1:im)) )
           !        END IF
 #ifdef PARA
-          call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_WORLD,ierr)
+          call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
           formax=fpmax_glob
           forctot=forctot**2
-          call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+          call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
           forctot=sqrt(fpmax_glob)
 #endif
 

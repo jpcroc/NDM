@@ -6,7 +6,7 @@ module calfo2ctabvois_mod
         implicit none
         contains
 ! **********************************************************
-subroutine calfo2ctabvois(im,xp,  vp, fp,  iwmax, ityp,indi )
+subroutine calfo2ctabvois(im,imm,xp,  vp, fp,  iwmax, ityp,indi )
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -25,7 +25,7 @@ subroutine calfo2ctabvois(im,xp,  vp, fp,  iwmax, ityp,indi )
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer,intent(in)::im
+  integer,intent(in)::im,imm
   integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
   real(double),intent(in),allocatable  :: vp(:,:)
   real(double),intent(inout),allocatable  :: xp(:,:)
@@ -70,7 +70,7 @@ subroutine calfo2ctabvois(im,xp,  vp, fp,  iwmax, ityp,indi )
   ! --------------------------
   !   OUVERTURE BOUCLE SUR I
   ! --------------------------
-  call cryst_to_cart (im, xp, bg, -1)    !cart vers cryst
+  call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
   do i = 1, im-1
 
      iti = ityp(i)
@@ -245,7 +245,7 @@ subroutine calfo2ctabvois(im,xp,  vp, fp,  iwmax, ityp,indi )
 !        end do
 
 
-  call cryst_to_cart (im, xp, at, 1)     !cryst vers cart
+  call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
 
   return
 end subroutine calfo2ctabvois

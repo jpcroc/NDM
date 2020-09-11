@@ -1,9 +1,7 @@
 module caltabt_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
-#ifdef PARA
-        USE mod_para,only:
-#endif      
+
         implicit none
         contains
 ! ******************************************************************

@@ -10,8 +10,11 @@ module initspeed_mod
        &lvpread,noxyz,oldtstep,one,pi,rang,tempdeplainit,tinit,tstep,im,iseed,mdcg_noise_scale,&
        neb_noise_scale,pi,rang,bk,mdcg_noise
   USE var_pot, ONLY:ntyp,cm
+#ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
+#endif
+
 
   implicit none
 contains
@@ -67,9 +70,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:
     USE var_pot, ONLY:
-#ifdef PARA
-    USE mod_para,only:
-#endif
+
     ! *********************************************************************
 
 
@@ -274,7 +275,7 @@ contains
              end do
              ka=0.5*bk*tinit 
 #ifdef PARA
-             call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+             call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
              kinx(ic)=kinx_glob
 #endif          
              !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
@@ -298,9 +299,9 @@ contains
           enddo
 
 #ifdef PARA
-          call MPI_ALLREDUCE(totmass,  totmass_glob,  1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-          call MPI_ALLREDUCE(scom(1:3),scom_glob(1:3),3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
-          call MPI_ALLREDUCE(pav(1:3), pav_glob(1:3), 3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+          call MPI_ALLREDUCE(totmass,  totmass_glob,  1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+          call MPI_ALLREDUCE(scom(1:3),scom_glob(1:3),3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+          call MPI_ALLREDUCE(pav(1:3), pav_glob(1:3), 3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
           totmass = totmass_glob
           scom = scom_glob
           pav  = pav_glob
@@ -339,7 +340,7 @@ contains
                 end do
 
 #ifdef PARA
-                call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+                call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
                 kinx(ic)=kinx_glob
 #endif          
 
@@ -398,13 +399,13 @@ contains
              ainer(2,1) = ainer(1,2)
 
 #ifdef PARA
-             call MPI_ALLREDUCE(ainer(1:3,1:3), ainer_glob(1:3,1:3), 9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+             call MPI_ALLREDUCE(ainer(1:3,1:3), ainer_glob(1:3,1:3), 9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
              ainer = ainer_glob
-             call MPI_ALLREDUCE(prx, prx_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+             call MPI_ALLREDUCE(prx, prx_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
              prx = prx_glob
-             call MPI_ALLREDUCE(pry, pry_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+             call MPI_ALLREDUCE(pry, pry_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
              pry = pry_glob
-             call MPI_ALLREDUCE(prz, prz_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+             call MPI_ALLREDUCE(prz, prz_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
              prz = prz_glob
 #endif          
 

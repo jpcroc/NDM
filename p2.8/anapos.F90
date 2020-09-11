@@ -48,9 +48,7 @@ contains
     USE T_kind_param_m
 
 
-#ifdef PARA 
-    USE mod_para,only:
-#endif
+
 
     ! **************************************************************
 

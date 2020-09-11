@@ -1,6 +1,6 @@
 #if defined PARA || defined PARAML || defined PARAPH 
 module gen_mpi
-     integer:: code_mpi, nb_procs_mpi, rang_mpi
+     integer:: code_mpi, nb_procs_mpi, rang_mpi,MPI_COMM_space
 end module gen_mpi
 
 module gen_init_mpi_mod
@@ -9,7 +9,7 @@ module gen_init_mpi_mod
 subroutine gen_init_mpi()
 
   USE mpi
-  USE gen_mpi, ONLY: code_mpi, nb_procs_mpi, rang_mpi
+  USE gen_mpi, ONLY: code_mpi, nb_procs_mpi, rang_mpi,MPI_COMM_space
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM
@@ -27,7 +27,7 @@ subroutine gen_init_mpi()
   call MPI_INIT(code_mpi)
   call MPI_COMM_RANK( MPI_COMM_WORLD, rang_mpi, code_mpi )
   call MPI_COMM_SIZE( MPI_COMM_WORLD, nb_procs_mpi, code_mpi )
-
+  MPI_COMM_space=MPI_COMM_WORLD
 
 
 end subroutine gen_init_mpi

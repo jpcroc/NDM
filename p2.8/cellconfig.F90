@@ -230,11 +230,11 @@ contains
        end do
     else
 
-       ALLOCATE(xpnp(3,atcf%im))        
+       ALLOCATE(xpnp(3,atcf%imm))        
        if (lperiod) then            
           xpnp(:,:)=atcf%xp(:,:)         
        else                         
-          call notperiod(atcf%im,atcf%xp,xpnp)   
+          call notperiod(atcf%imm,atcf%xp,xpnp)   
        end if
        !  -------- Initialisations  -----------
 

@@ -6,7 +6,7 @@ module calfo2ccel_mod
           implicit none
         contains
 ! ***************************************************************
-subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist)
+subroutine calfo2ccel(im,imm,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -17,7 +17,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atin
   USE jqmod
 #ifdef PARA
   use mpi
-  USE mod_para,only:ierr,NDM_MPI_REAL_DOUBLE
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE
 #endif
   implicit none
   !-----------------------------------------------
@@ -26,7 +26,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atin
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  integer,intent(in)::im
+  integer,intent(in)::im,imm
   integer , intent(in),allocatable :: ielat(:),ityp(:),num_at_glob(:)
   real(double),intent(in),allocatable  :: xp(:,:),vp(:,:)
   real(double) , intent(inout),allocatable :: fp(:,:)
@@ -57,7 +57,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atin
   ! *** Initialisations ***
 
   real(double),allocatable :: xpnp(:,:)
-  allocate(xpnp(3,im))
+  allocate(xpnp(3,imm))
   ! Initialisation des termes du potentiel
   !  potis2 = zero
   !  potis0 = zero
@@ -69,7 +69,7 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atin
   if (lperiod) then
      xpnp(:,:)=xp(:,:)
   else 
-     call notperiod(im,xp,xpnp)
+     call notperiod(imm,xp,xpnp)
   end if
 
 
@@ -374,24 +374,24 @@ subroutine calfo2ccel(im,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atin
   end do ! fin i
 
 #ifdef PARA
-  call MPI_ALLREDUCE(potis1,potis1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  call MPI_ALLREDUCE(potis1,potis1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   potis1=potis1_tot
-  call MPI_ALLREDUCE(potis2,potis2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  call MPI_ALLREDUCE(potis2,potis2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   potis2=potis2_tot
-  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   sig=sig_tot
   if (allocated(sigc)) then
-     call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      sigc=sigc_tot
   endif
 
   if(ldesinteg) then
-     call MPI_ALLREDUCE(Espr,Espr_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(Espr,Espr_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      Espr=Espr_tot
-     call MPI_ALLREDUCE(deltafcomp,deltaF_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     call MPI_ALLREDUCE(deltafcomp,deltaF_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      deltaF=deltaF+deltaF_tot
      !	write(6,*)'deltaf',deltaf
-     !  call MPI_ALLREDUCE(deltaEspr,deltaEspr_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_WORLD,ierr)
+     !  call MPI_ALLREDUCE(deltaEspr,deltaEspr_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      !  deltaEspr=deltaEspr_tot
   endif
 
