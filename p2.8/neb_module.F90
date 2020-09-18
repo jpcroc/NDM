@@ -795,8 +795,6 @@ end if
 
     end if
     atneb(:)%im=im
-<<<<<<< HEAD
-=======
 !#ifdef LAMMPS_VERSION
 
      if((ipotentiel==-10).or.(ipotentiel==-11)) then
@@ -807,7 +805,6 @@ end if
 
 
     
->>>>>>> 12fa6e176fdb3bb7c2eb7928d0d029764fc79d75
   end subroutine configneb
   
   

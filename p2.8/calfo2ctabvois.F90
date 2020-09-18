@@ -11,9 +11,9 @@ subroutine calfo2ctabvois(im,imm,xp,  vp, fp,  iwmax, ityp,indi )
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:sigat,at,bg,deltaespr,deltaf,espr,it,itdes,itesigma,kspr,&
-       &lambdades,lcalcjq,ldesinteg,lprteat,lsigat,nstepdes,pi,pm1des,potis1,potis2,volu&
-       &,xpspr,xpspr,xpspr,eatom
+  USE gen_com_m, ONLY:at,bg,&
+       &lcalcjq,pi,potis1,potis2,volu
+
   USE var_pot, ONLY:alpha,csive,ipo,zz,rue_pair,ipo,pot
   USE jqmod
   ! **********************************************************
@@ -44,17 +44,6 @@ subroutine calfo2ctabvois(im,imm,xp,  vp, fp,  iwmax, ityp,indi )
   real(double) ::  dr, r,r2,partsig,deltaepot
   real(double), dimension(1,3) :: cv
   REAL(double), dimension(1:3) :: dxp, aCell, gradij
-
-  logical ::test_sigma
-
-
-!  write(6,*)'calcfo2ctabvois'
-  test_sigma=(mod(it,itesigma)==0)
-
-
-
-
-
 
   aux = 23.06134575D-20
   alp = alpha/sqrt(pi)*aux
@@ -124,24 +113,6 @@ subroutine calfo2ctabvois(im,imm,xp,  vp, fp,  iwmax, ityp,indi )
 !        write(6,*)'i,j,r,sk,k'
 !        write(6,*)i,j,r,sk,k
 !        write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
-        if ((ldesinteg).and.(i==1)) then
-           if (pm1des==-1) then
-              lambdades=1.-itdes/float(nstepdes)           
-              deltaF=deltaF+2*deltaepot*1./float(nstepdes)
-              !              lambdades=1.-it/float(nstepdes)           
-              phu=phu*lambdades
-              deltaepot=deltaepot*lambdades
-              
-           else
-              lambdades=itdes/float(nstepdes)           
-              deltaF=deltaF+2*deltaepot*1./float(nstepdes)
-              !              lambdades=1.-it/float(nstepdes)           
-              phu=phu*lambdades
-              deltaepot=deltaepot*lambdades
-              
-           end if
-        endif
-        
 
 !        if (allocated(free)) then
 !           if (free(i).EQV..true.)potis1 = potis1+deltaepot
@@ -169,17 +140,17 @@ subroutine calfo2ctabvois(im,imm,xp,  vp, fp,  iwmax, ityp,indi )
         !ra(3)=Force de j sur i
            if (lprteat) then
 !              if (allocated(free)) then
-!                 if (free(i).EQV..true.)eatom(i) = eatom(i)+deltaepot
-!                 if (free(j).EQV..true.)eatom(j) = eatom(j)+deltaepot
+!                 if (free(i).EQV..true.)eat(i) = eat(i)+deltaepot
+!                 if (free(j).EQV..true.)eat(j) = eat(j)+deltaepot
 !              else
-                 eatom(i) = eatom(i)+deltaepot
-                 eatom(j) = eatom(j)+deltaepot
+                 eat(i) = eat(i)+deltaepot
+                 eat(j) = eat(j)+deltaepot
 !              end if
            end if
         if (lcalcjq) then
            jqf=0.0
-           eatom(i) = eatom(i)+deltaepot
-           eatom(j) = eatom(j)+deltaepot
+           eat(i) = eat(i)+deltaepot
+           eat(j) = eat(j)+deltaepot
            
            do ic=1,3
               jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
@@ -223,20 +194,6 @@ subroutine calfo2ctabvois(im,imm,xp,  vp, fp,  iwmax, ityp,indi )
            end if
         end if
      end do
-     if ((ldesinteg).and.(i==1)) then
-        cv(1,1) = xp(1,i)-xpspr(1)
-        cv(1,2) = xp(2,i)-xpspr(2)
-        cv(1,3) = xp(3,i)-xpspr(3)
-        call cryst_to_cart (1, cv, bg, -1) !cart vers cryst sur cv
-        WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-           cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-        END WHERE
-        call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-        r = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)
-        deltaEspr=deltaEspr+kspr*r/float(nstepdes)
-        Espr=(1-lambdades)*kspr*r
-        fp(:,i)=fp(:,i)-2*kspr*cv(1,:)
-     end if
 
   end do
 

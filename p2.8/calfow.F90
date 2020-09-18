@@ -1,7 +1,7 @@
 module calfow_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY: bg,it,itesigma,lperiod,ltpcel,pi,potcp,potis1,zero,at,sigc,volu
+  USE gen_com_m, ONLY: bg,lperiod,ltpcel,pi,potcp,potis1,zero,at,sigc,volu
   USE calfocommon
   implicit none
 contains
@@ -21,13 +21,13 @@ contains
     !-----------------------------------------------
     integer,intent(in)::im,imm
     integer,allocatable  :: ielat(:),ityp(:) 
-!    integer  :: ityp(imm)
+    !    integer  :: ityp(imm)
     real(double),allocatable  :: xp(:,:),vp(:,:),fp(:,:) 
-!    real(double)  :: vp(3,imm) 
-!    real(double)  :: fp(3,imm)
+    !    real(double)  :: vp(3,imm) 
+    !    real(double)  :: fp(3,imm)
 
-   integer,intent(in)::noxyz,natperc
-   integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)   
+    integer,intent(in)::noxyz,natperc
+    integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)   
     !--------------------------------------------
     !  L o c a l   v a r i a b l e s
     !-------------------------------------------
@@ -57,10 +57,10 @@ contains
     ! sig=0
     !       write(6,*)'entree calfw'
 
-!    if (any(free).NEQV..true.)then
-!       write(6,*)'free +SW =pas code'
-!       stop
-!    end if
+    !    if (any(free).NEQV..true.)then
+    !       write(6,*)'free +SW =pas code'
+    !       stop
+    !    end if
 
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
@@ -68,26 +68,24 @@ contains
        call notperiod(imm,xp,xpnp)
     end if
 
-
-    if (itesigma.gt.0) then
-       if (mod(it,itesigma).eq.0) then
-          do i1=1,3
-             do i2=1,3
-                do i=1,im
-                   virdzdx(i,i1,i2)=0.0
-                   !               sigat(i,i1,i2)=0.0
-                enddo
-                sig(i1,i2)=0.0
-                if (lTPcel.EQV..true.) then
-                   do koo=1,noxyz
-                      sigc(i1,i2,koo)=0.0
-                      sigc(i1,i2,koo)=0.0
-                   enddo
-                end if
+    if (test_sigma)  then
+       do i1=1,3
+          do i2=1,3
+             do i=1,im
+                virdzdx(i,i1,i2)=0.0
+                !               sigat(i,i1,i2)=0.0
              enddo
+             sig(i1,i2)=0.0
+             if (lTPcel.EQV..true.) then
+                do koo=1,noxyz
+                   sigc(i1,i2,koo)=0.0
+                   sigc(i1,i2,koo)=0.0
+                enddo
+             end if
           enddo
-       endif
-    endif
+       enddo
+    end if
+
 
     ! Epot=0      
     potis1=zero
@@ -119,7 +117,7 @@ contains
           !         write(6,*)i
           iti=ityp(i)
           if(iti.eq.itO) then
-
+             
              koo=ielat(i)   ! Numero de la cellule
              ncelvois=min(noxyz,27)-1
              do 11 i1=0,ncelvois
@@ -336,91 +334,89 @@ contains
                       !     if(i.eq.4) write(6,*)'it,fp1itesigma=',it,fp(1,i)
 
                       ! calcul des contraintes
-                      if (itesigma.gt.0) then
-                         if (mod(it,itesigma).eq.0) then
-                            if(iti.ne.itj.and.iti.eq.itO) then ! O est l'atome considere
-                               sig(1,1)=sig(1,1)-0.5*(virdzdx(i,1,1)*dfp+fdp*c1*c1)/volu
-                               sig(1,2)=sig(1,2)-0.5*(virdzdx(i,1,2)*dfp+fdp*c1*c2)/volu
-                               sig(1,3)=sig(1,3)-0.5*(virdzdx(i,1,3)*dfp+fdp*c1*c3)/volu
-                               sig(2,1)=sig(2,1)-0.5*(virdzdx(i,2,1)*dfp+fdp*c2*c1)/volu
-                               sig(2,2)=sig(2,2)-0.5*(virdzdx(i,2,2)*dfp+fdp*c2*c2)/volu
-                               sig(2,3)=sig(2,3)-0.5*(virdzdx(i,2,3)*dfp+fdp*c2*c3)/volu
-                               sig(3,1)=sig(3,1)-0.5*(virdzdx(i,3,1)*dfp+fdp*c3*c1)/volu
-                               sig(3,2)=sig(3,2)-0.5*(virdzdx(i,3,2)*dfp+fdp*c3*c2)/volu
-                               sig(3,3)=sig(3,3)-0.5*(virdzdx(i,3,3)*dfp+fdp*c3*c3)/volu
-                               !contraintes atomiques statique 
-                               !               sigat(i,1,1)=sigat(i,1,1)-&
-                               !                   0.5*(virdzdx(i,1,1)*dfp+fdp*c1*c1)
-                               !               sigat(i,1,2)=sigat(i,1,2)-&
-                               !                   0.5*(virdzdx(i,1,2)*dfp+fdp*c1*c2)
-                               !               sigat(i,1,3)=sigat(i,1,3)-&
-                               !                   0.5*(virdzdx(i,1,3)*dfp+fdp*c1*c3)
-                               !               sigat(i,2,1)=sigat(i,2,1)-&
-                               !                   0.5*(virdzdx(i,2,1)*dfp+fdp*c2*c1)
-                               !               sigat(i,2,2)=sigat(i,2,2)-&
-                               !                   0.5*(virdzdx(i,2,2)*dfp+fdp*c2*c2)
+                      if (test_sigma) then
+                         if(iti.ne.itj.and.iti.eq.itO) then ! O est l'atome considere
+                            sig(1,1)=sig(1,1)-0.5*(virdzdx(i,1,1)*dfp+fdp*c1*c1)/volu
+                            sig(1,2)=sig(1,2)-0.5*(virdzdx(i,1,2)*dfp+fdp*c1*c2)/volu
+                            sig(1,3)=sig(1,3)-0.5*(virdzdx(i,1,3)*dfp+fdp*c1*c3)/volu
+                            sig(2,1)=sig(2,1)-0.5*(virdzdx(i,2,1)*dfp+fdp*c2*c1)/volu
+                            sig(2,2)=sig(2,2)-0.5*(virdzdx(i,2,2)*dfp+fdp*c2*c2)/volu
+                            sig(2,3)=sig(2,3)-0.5*(virdzdx(i,2,3)*dfp+fdp*c2*c3)/volu
+                            sig(3,1)=sig(3,1)-0.5*(virdzdx(i,3,1)*dfp+fdp*c3*c1)/volu
+                            sig(3,2)=sig(3,2)-0.5*(virdzdx(i,3,2)*dfp+fdp*c3*c2)/volu
+                            sig(3,3)=sig(3,3)-0.5*(virdzdx(i,3,3)*dfp+fdp*c3*c3)/volu
+                            !contraintes atomiques statique 
+                            !               sigat(i,1,1)=sigat(i,1,1)-&
+                            !                   0.5*(virdzdx(i,1,1)*dfp+fdp*c1*c1)
+                            !               sigat(i,1,2)=sigat(i,1,2)-&
+                            !                   0.5*(virdzdx(i,1,2)*dfp+fdp*c1*c2)
+                            !               sigat(i,1,3)=sigat(i,1,3)-&
+                            !                   0.5*(virdzdx(i,1,3)*dfp+fdp*c1*c3)
+                            !               sigat(i,2,1)=sigat(i,2,1)-&
+                            !                   0.5*(virdzdx(i,2,1)*dfp+fdp*c2*c1)
+                            !               sigat(i,2,2)=sigat(i,2,2)-&
+                            !                   0.5*(virdzdx(i,2,2)*dfp+fdp*c2*c2)
                                !               sigat(i,2,3)=sigat(i,2,3)-&
-                               !                   0.5*(virdzdx(i,2,3)*dfp+fdp*c2*c3)
-                               !               sigat(i,3,1)=sigat(i,3,1)-&
-                               !                   0.5*(virdzdx(i,3,1)*dfp+fdp*c3*c1)
-                               !               sigat(i,3,2)=sigat(i,3,2)-&
-                               !                   0.5*(virdzdx(i,3,2)*dfp+fdp*c3*c2)
-                               !               sigat(i,3,3)=sigat(i,3,3)-&
-                               !                   0.5*(virdzdx(i,3,3)*dfp+fdp*c3*c3)
-                               !contraintes locales
-                               if (lTPcel.EQV..true.) then
-                                  sigc(1,1,koo)=sigc(1,1,koo)-&
-                                       0.5*(virdzdx(i,1,1)*dfp+fdp*c1*c1)*noxyz/volu
-                                  sigc(1,2,koo)=sigc(1,2,koo)-&
-                                       0.5*(virdzdx(i,1,2)*dfp+fdp*c1*c2)*noxyz/volu
-                                  sigc(1,3,koo)=sigc(1,3,koo)-&
-                                       0.5*(virdzdx(i,1,3)*dfp+fdp*c1*c3)*noxyz/volu
-                                  sigc(2,1,koo)=sigc(2,1,koo)-&
-                                       0.5*(virdzdx(i,2,1)*dfp+fdp*c2*c1)*noxyz/volu
-                                  sigc(2,2,koo)=sigc(2,2,koo)-&
-                                       0.5*(virdzdx(i,2,2)*dfp+fdp*c2*c2)*noxyz/volu
-                                  sigc(2,3,koo)=sigc(2,3,koo)-&
-                                       0.5*(virdzdx(i,2,3)*dfp+fdp*c2*c3)*noxyz/volu
-                                  sigc(3,1,koo)=sigc(3,1,koo)-&
-                                       0.5*(virdzdx(i,3,1)*dfp+fdp*c3*c1)*noxyz/volu
-                                  sigc(3,2,koo)=sigc(3,2,koo)-&
-                                       0.5*(virdzdx(i,3,2)*dfp+fdp*c3*c2)*noxyz/volu
-                                  sigc(3,3,koo)=sigc(3,3,koo)-&
-                                       0.5*(virdzdx(i,3,3)*dfp+fdp*c3*c3)*noxyz/volu
-                               end if
-                            else
-                               sig(1,1)=sig(1,1)+0.5*F1*c1/volu
-                               sig(1,2)=sig(1,2)+0.5*F1*c2/volu
-                               sig(1,3)=sig(1,3)+0.5*F1*c3/volu
-                               sig(2,1)=sig(2,1)+0.5*F2*c1/volu
-                               sig(2,2)=sig(2,2)+0.5*F2*c2/volu
-                               sig(2,3)=sig(2,3)+0.5*F2*c3/volu
-                               sig(3,1)=sig(3,1)+0.5*F3*c1/volu
-                               sig(3,2)=sig(3,2)+0.5*F3*c2/volu
-                               sig(3,3)=sig(3,3)+0.5*F3*c3/volu
-                               !contraintes atomiques
-                               !               sigat(i,1,1)=sigat(i,1,1)+0.5*F1*c1
-                               !               sigat(i,1,2)=sigat(i,1,2)+0.5*F1*c2
-                               !               sigat(i,1,3)=sigat(i,1,3)+0.5*F1*c3
-                               !               sigat(i,2,1)=sigat(i,2,1)+0.5*F2*c1
-                               !               sigat(i,2,2)=sigat(i,2,2)+0.5*F2*c2
-                               !               sigat(i,2,3)=sigat(i,2,3)+0.5*F2*c3
-                               !               sigat(i,3,1)=sigat(i,3,1)+0.5*F3*c1
-                               !               sigat(i,3,2)=sigat(i,3,2)+0.5*F3*c2
-                               !               sigat(i,3,3)=sigat(i,3,3)+0.5*F3*c3
-                               !contraintes locales   
-                               if (lTPcel.EQV..true.) then
-                                  sigc(1,1,koo)=sigc(1,1,koo)+0.5*F1*c1*noxyz/volu
-                                  sigc(1,2,koo)=sigc(1,2,koo)+0.5*F1*c2*noxyz/volu
-                                  sigc(1,3,koo)=sigc(1,3,koo)+0.5*F1*c3*noxyz/volu
-                                  sigc(2,1,koo)=sigc(2,1,koo)+0.5*F2*c1*noxyz/volu
-                                  sigc(2,2,koo)=sigc(2,2,koo)+0.5*F2*c2*noxyz/volu
-                                  sigc(2,3,koo)=sigc(2,3,koo)+0.5*F2*c3*noxyz/volu
-                                  sigc(3,1,koo)=sigc(3,1,koo)+0.5*F3*c1*noxyz/volu
-                                  sigc(3,2,koo)=sigc(3,2,koo)+0.5*F3*c2*noxyz/volu
-                                  sigc(3,3,koo)=sigc(3,3,koo)+0.5*F3*c3*noxyz/volu
-                               end if
-                            endif
+                            !                   0.5*(virdzdx(i,2,3)*dfp+fdp*c2*c3)
+                            !               sigat(i,3,1)=sigat(i,3,1)-&
+                            !                   0.5*(virdzdx(i,3,1)*dfp+fdp*c3*c1)
+                            !               sigat(i,3,2)=sigat(i,3,2)-&
+                            !                   0.5*(virdzdx(i,3,2)*dfp+fdp*c3*c2)
+                            !               sigat(i,3,3)=sigat(i,3,3)-&
+                            !                   0.5*(virdzdx(i,3,3)*dfp+fdp*c3*c3)
+                            !contraintes locales
+                            if (lTPcel.EQV..true.) then
+                               sigc(1,1,koo)=sigc(1,1,koo)-&
+                                    0.5*(virdzdx(i,1,1)*dfp+fdp*c1*c1)*noxyz/volu
+                               sigc(1,2,koo)=sigc(1,2,koo)-&
+                                    0.5*(virdzdx(i,1,2)*dfp+fdp*c1*c2)*noxyz/volu
+                               sigc(1,3,koo)=sigc(1,3,koo)-&
+                                    0.5*(virdzdx(i,1,3)*dfp+fdp*c1*c3)*noxyz/volu
+                               sigc(2,1,koo)=sigc(2,1,koo)-&
+                                    0.5*(virdzdx(i,2,1)*dfp+fdp*c2*c1)*noxyz/volu
+                               sigc(2,2,koo)=sigc(2,2,koo)-&
+                                    0.5*(virdzdx(i,2,2)*dfp+fdp*c2*c2)*noxyz/volu
+                               sigc(2,3,koo)=sigc(2,3,koo)-&
+                                    0.5*(virdzdx(i,2,3)*dfp+fdp*c2*c3)*noxyz/volu
+                               sigc(3,1,koo)=sigc(3,1,koo)-&
+                                    0.5*(virdzdx(i,3,1)*dfp+fdp*c3*c1)*noxyz/volu
+                               sigc(3,2,koo)=sigc(3,2,koo)-&
+                                    0.5*(virdzdx(i,3,2)*dfp+fdp*c3*c2)*noxyz/volu
+                               sigc(3,3,koo)=sigc(3,3,koo)-&
+                                    0.5*(virdzdx(i,3,3)*dfp+fdp*c3*c3)*noxyz/volu
+                            end if
+                         else
+                            sig(1,1)=sig(1,1)+0.5*F1*c1/volu
+                            sig(1,2)=sig(1,2)+0.5*F1*c2/volu
+                            sig(1,3)=sig(1,3)+0.5*F1*c3/volu
+                            sig(2,1)=sig(2,1)+0.5*F2*c1/volu
+                            sig(2,2)=sig(2,2)+0.5*F2*c2/volu
+                            sig(2,3)=sig(2,3)+0.5*F2*c3/volu
+                            sig(3,1)=sig(3,1)+0.5*F3*c1/volu
+                            sig(3,2)=sig(3,2)+0.5*F3*c2/volu
+                            sig(3,3)=sig(3,3)+0.5*F3*c3/volu
+                            !contraintes atomiques
+                            !               sigat(i,1,1)=sigat(i,1,1)+0.5*F1*c1
+                            !               sigat(i,1,2)=sigat(i,1,2)+0.5*F1*c2
+                            !               sigat(i,1,3)=sigat(i,1,3)+0.5*F1*c3
+                            !               sigat(i,2,1)=sigat(i,2,1)+0.5*F2*c1
+                            !               sigat(i,2,2)=sigat(i,2,2)+0.5*F2*c2
+                            !               sigat(i,2,3)=sigat(i,2,3)+0.5*F2*c3
+                            !               sigat(i,3,1)=sigat(i,3,1)+0.5*F3*c1
+                            !               sigat(i,3,2)=sigat(i,3,2)+0.5*F3*c2
+                            !               sigat(i,3,3)=sigat(i,3,3)+0.5*F3*c3
+                            !contraintes locales   
+                            if (lTPcel.EQV..true.) then
+                               sigc(1,1,koo)=sigc(1,1,koo)+0.5*F1*c1*noxyz/volu
+                               sigc(1,2,koo)=sigc(1,2,koo)+0.5*F1*c2*noxyz/volu
+                               sigc(1,3,koo)=sigc(1,3,koo)+0.5*F1*c3*noxyz/volu
+                               sigc(2,1,koo)=sigc(2,1,koo)+0.5*F2*c1*noxyz/volu
+                               sigc(2,2,koo)=sigc(2,2,koo)+0.5*F2*c2*noxyz/volu
+                               sigc(2,3,koo)=sigc(2,3,koo)+0.5*F2*c3*noxyz/volu
+                               sigc(3,1,koo)=sigc(3,1,koo)+0.5*F3*c1*noxyz/volu
+                               sigc(3,2,koo)=sigc(3,2,koo)+0.5*F3*c2*noxyz/volu
+                               sigc(3,3,koo)=sigc(3,3,koo)+0.5*F3*c3*noxyz/volu
+                            end if
                          endif
                       endif
 62                    CONTINUE

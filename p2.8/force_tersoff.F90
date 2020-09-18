@@ -1,7 +1,6 @@
 module force_tersoff_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,fnemd,it,itesigma,lcalcjq,lnemd,potistersoff,potiszbl,indi,eatom,&
-       &zl,indi,zl,volu,lprteat
+  USE gen_com_m, ONLY:at,bg,fnemd,lcalcjq,lnemd,potistersoff,potiszbl,zl,volu
         USE calfocommon
   implicit none
 contains
@@ -51,7 +50,6 @@ contains
     real(double) , dimension(15,6) :: tmp
     real(double) , dimension(15,3) :: tmp1
     real(double) , dimension(1,3) :: cvij, cvik
-    logical::test_sigma
     real(double):: coupR(npair)
     real(double) :: phu,sk,dr
     integer::kk
@@ -77,12 +75,6 @@ contains
        coupR(:)=rter(:)+ster(:)
     end select
     !write(6,*)'coupR',coupR
-
-    if (mod(it,itesigma)==0) then
-       test_sigma=.true.
-    else
-       test_sigma=.false.
-    end if
 
     moi =0
     !  do i=1,im
@@ -374,7 +366,7 @@ contains
 !          if (allocated (free)) then
 !             if ((lprteat.or.lcalcjq.or.lnemd).and.(free(i).EQV..true.))eatom(i) = eatom(i)+0.5*v_ij
 !          else
-             if (lprteat.or.lcalcjq.or.lnemd)eatom(i) = eatom(i)+0.5*v_ij
+             if (lprteat.or.lcalcjq.or.lnemd)eat(i) = eat(i)+0.5*v_ij
              !          end if
 
 

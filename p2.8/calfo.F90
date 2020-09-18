@@ -3,7 +3,6 @@ module calfo_mod
   USE calfo_ml_mod, ONLY : md_calfo_ml
 #endif 
   USE calfoew_mod,only:calfoew
-  USE calfoberend_mod,only:calfoberend
   USE calfo2ctabvois_mod,only:calfo2ctabvois
   USE calfo2ccel_mod,only:calfo2ccel
   USE calfo3c_mod,only:calfo3c
@@ -17,20 +16,16 @@ module calfo_mod
   use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:ibound,im_glob,lcontr,ldecal_bc,ldesinteg,lsigtyp,&
-       &ltberendsen,ltranche,parallele,potis0,potis2,potisp,sigkine,sigtot,sigtyp,sigtyptyp,l2t,&
-       &sigat,lsigat,eatom,volu,zero,dmtype,it,itesigma,ltpcel,potistersoff,sigc,potiszbl,&
-       &potiszbl,potcp,potis1,potis3,sigkine,sigtot,sigtyp,sigtyptyp,zero,sigtyp_loc,sigtyptyp_loc
+  USE gen_com_m, ONLY:it,itesigma,ldecal_bc,ltpcel,parallele,potis0,potis2,potisp&
+       &,potistersoff,potiszbl,potcp,potis1,potis3,sigc,zero
 
   USE contrainte,only:initcontr,contr
-  USE jqmod,only:jq
-  USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
-  USE elec_cell, ONLY :i2t
-  USE strain_bc_mod,only:strain_bc
-  USE stress_bc_mod,only:stress_bc
+!  USE jqmod,only:jq
+!  USE strain_bc_mod,only:strain_bc
+!  USE stress_bc_mod,only:stress_bc
   USE force_tersoff_mod,only:force_tersoff
   USE atomconfig,only : atom_config_d,atom_config_d,atom_config_e
-  USE calfocommon ! stocke des variables LOCALES sig et potist
+  USE calfocommon ! stocke des variables LOCALES sig et potist eat sigat etc.
 
   USE cellconfig, only : cell_config
 #ifdef PARA
@@ -49,12 +44,12 @@ contains
   !routine d'appel des routines de forces
   ! ************************************************
 
-  subroutine calfo (sigcf,potistcf,atcf,celcf)
+  subroutine calfo (sigcf,potistcf,atcf,celcf,t_sigma)
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    type(atom_config_d),intent(inout)::atcf
+    class(atom_config_d),intent(inout)::atcf
     type(cell_config),intent(in)::celcf
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
@@ -72,19 +67,15 @@ contains
 !    integer,allocatable ::iwmax(:)
 !    integer,allocatable:: indi(:)
     
-    real(double), dimension(3) :: fptot
     integer :: i,ilocal,ipot,ic
     !  real(double)::vn,v1,f1,ekin
     !  integer::nv1,koo
-    logical:: test_sigma
- 
-#ifdef PARA
-    real(double), dimension(3,3) :: sig_tot,sigkine_tot
-    real(double),dimension (3):: fptot_tot
+    logical,optional, intent(in)  ::t_sigma
 
 
+    test_sigma=.false.
+    if (present(t_sigma))test_sigma=t_sigma
 
-#endif
     if(celcf%icaltabt.ne.atcf%icaltabt) then
        write (6,*)'incoherence dans icaltabt'
        stop
@@ -95,22 +86,29 @@ contains
     potisTersoff=0.; potiszbl=0
     potisrep=0.; potisglue=0.; potiseam=0.
 
-    test_sigma=(mod(it,itesigma)==0)
+
+    lprteat=.false.
+    lsigat=.false.
     if (test_sigma) then
        sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
-       if(lSigat) sigat(:,:,:)=0. ; 
-       if (lsigtyp) then
-          sigtyp=0. ; sigtyptyp=0.
-#ifdef PARA
-          sigtyp_loc=0.;     sigtyptyp_loc=0.
-#endif 
-       end if
     end if
-
+    select type(atcf)
+    type is (atom_config_e)
+       if (atcf%lsigat)then
+          lsigat=.true.
+          sigat=> atcf%sigat
+          sigat=0
+       end if
+       if (atcf%lprteat) then
+          lprteat=.true.
+          eat=>atcf%eat(:)
+          eat=0
+       end if
+       
+    end select
 
     atcf%fp(:,:) = zero
-    jq=0.0 
-    if (allocated(eatom)) eatom(:)=0
+
 
 #ifdef LAMMPS_VERSION
    if ((ipotentiel==-10).or.(ipotentiel==-11)) then
@@ -138,6 +136,8 @@ contains
                 select case (ipotentiel)
                 case(0,1,3,4,5,6,7)
                    if (atcf%ltabvois) then
+
+                      call calfo2ctabvois (atcf%im,atcf%imm,atcf%xp, atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi)
                       call calfo2ctabvois (atcf%im,atcf%imm,atcf%xp, atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi)
                    else
                       call calfo2ccel (atcf%im,atcf%imm,atcf%xp, atcf%vp,  atcf%fp, atcf%ityp,atcf%ielat,atcf%num_at_glob,&
@@ -181,9 +181,11 @@ contains
                 case(13,14,15)
                    if (atcf%ltabvois) then
                       ! !!! le cas parallele n'est pas pris en compte !!!
-                      if (.not.parallele) call force_tersoff (atcf%im,atcf%imm,atcf%xp,  atcf%vp, atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi)
+                      if (.not.parallele) call force_tersoff (atcf%im,atcf%imm,atcf%xp,  atcf%vp, atcf%fp, atcf%iwmax, &
+                           &atcf%ityp,atcf%indi)
                    else
-                      call force_tersoff_cel(atcf%im,atcf%imm,atcf%xp,  atcf%vp, atcf%fp, atcf%ielat, atcf%ityp,&
+                      call force_tersoff_cel(atcf%im,atcf%imm,atcf%xp,  atcf%vp, atcf%fp, &
+                           &atcf%ielat, atcf%ityp,&
                       &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist)
                    endif
                    potist=potist+potisTersoff+potiszbl
@@ -193,7 +195,7 @@ contains
                       if (.not.parallele) then
                          IF(ldecal_bc.EQV..FALSE.) THEN
                             !write(*,*) 'NDM eam calfo1', xp(1,1)
-                            call calfoeamtabvois(atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp)
+                            call calfoeamtabvois(atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi)
                             !write(*,*) 'NDM eam calfo2', fp(1,1), maxval(fp)
                          ELSE IF (ldecal_bc.EQV..TRUE.) THEN !*!
                             call calfo_decalage(atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi)
@@ -222,89 +224,23 @@ contains
 #endif  
     ! !!! le cas parallele n'est pas pris en compte !!!
 
-    if (lTberendsen) call calfoberend(atcf%im,atcf%imm,atcf%xp,atcf%vp,atcf%fp,atcf%ityp)
-
-
-    ! calcul de sigtot
-    if (dmtype.ne.4.) then
-       if (test_sigma) then                   
-          sigkine=0.
-          do ilocal = 1, atcf%im
-             sigkine(1:3,1) = sigkine(1:3,1) + &
-                  cm(atcf%ityp(ilocal))*atcf%vp(1:3,ilocal)*atcf%vp(1,ilocal)
-             sigkine(1:3,2) = sigkine(1:3,2) + &
-                  cm(atcf%ityp(ilocal))*atcf%vp(1:3,ilocal)*atcf%vp(2,ilocal)
-             sigkine(1:3,3) = sigkine(1:3,3) + &
-                  cm(atcf%ityp(ilocal))*atcf%vp(1:3,ilocal)*atcf%vp(3,ilocal)
-             if (lsigat) then 
-                sigat(1:3,1,ilocal) = sigat(1:3,1,ilocal) +  cm(atcf%ityp(ilocal))*atcf%vp(1:3,ilocal)*atcf%vp(1,ilocal)
-                sigat(1:3,2,ilocal) = sigat(1:3,2,ilocal) +  cm(atcf%ityp(ilocal))*atcf%vp(1:3,ilocal)*atcf%vp(2,ilocal)
-                sigat(1:3,3,ilocal) = sigat(1:3,3,ilocal) +  cm(atcf%ityp(ilocal))*atcf%vp(1:3,ilocal)*atcf%vp(3,ilocal)
-             end if
-          end do
-          sigkine(1:3,1:3) = sigkine(1:3,1:3)/volu
 
 
 
 
-#ifdef PARA
 
-          !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          !  sig=sig_tot
-          call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          sigkine=sigkine_tot
-
-#endif
-
-          sigtot = sigkine+sig
-       end if
-    end if
-
-    !      if (ldislo) call forcedislo(atcf%fp)
-
-
-    if (.not.parallele) then
-       if(lcontr) call contr (atcf%xp,atcf%vp,atcf%fp,atcf%ityp)
-!       if(ltranche) atcf%fp(:,imd+1:im)=0.0
-    end if
+    ! A MODULARISER
+!    if (.not.parallele) then
+!       if(lcontr) call contr (atcf%xp,atcf%vp,atcf%fp,atcf%ityp)
+!!       if(ltranche) atcf%fp(:,imd+1:im)=0.0
+!    end if
 
 !    if (lFrozen.EQV..true.) then
 !       WHERE (Frozen(:,1:im)) atcf%fp(:,1:im)=0.d0
 !    endif
 
-
-    if (ldesinteg) then
-       fptot=0
-       do i=1,atcf%im
-          fptot(:)=fptot+atcf%fp(:,i)
-       enddo
-#ifdef PARA
-       call MPI_ALLREDUCE(fptot,fptot_tot,3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       fptot=fptot_tot
-#endif
-       fptot=fptot/im_glob
-       do i=1,atcf%im
-          atcf%fp(:,i)=atcf%fp(:,i)-fptot(:)
-       enddo
-    endif
-
-    If (ibound==1 .OR. ibound==2 .OR. ibound==3) then
-       write(6,*) 'strain stress BC doit être traité en dehors de calfo'
-       stop
-!    If (ibound == 1)                             call strain_bc	!*!
-!    If (ibound == 2 .OR. ibound == 3)            call stress_bc	!*!
-    end If
-    !stop
-!    if ((l2t).or.(ibrake.gt.0)) then
-!       write(6,*) 'calceloss  doit être traité en dehors de calfo'
-!       stop
-!    end if
-    if (l2t)then
-       if (i2t==1)  call calceloss (atcf%im,atcf%fp,atcf%vp,atcf%ityp,atcf%ielat,atcf%num_at_glob)
-    else
-       if(ibrake.gt.0) call calceloss (atcf%im,atcf%fp,atcf%vp,atcf%ityp,atcf%ielat,atcf%num_at_glob)
-    end if
     sigcf=sig;potistcf=potist
+    nullify(eat);nullify(sigat)
     return
   end subroutine calfo
 

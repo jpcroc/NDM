@@ -17,11 +17,11 @@ module analyse_mod
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,h0,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
-       &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,lsigtyp,ltabvois,lthoover,ltnose,ltpcel,lucell,&
+       &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,ltabvois,lthoover,ltnose,ltpcel,lucell,&
        &nfda,parallele,patcel,patcelmax,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,sigatcel,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,tempc,tcp,lprtcel,pmc,pmc,tempc,tempc,celpp,&
        &celpp,tcp,tcp,lprtcel,tempc,tcp,pmc,celpp,natchk,natchk,sigc,celpm1,tm1,tpseuils,tpseuils,tpseuils,tpseuils,&
-       &sigtyp,sigtyptyp,sigtot,eatomtotm,volu,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
+       &sigtot,eatomtotm,volu,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
        &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,sigat
 
 
@@ -584,23 +584,6 @@ contains
     endif
 
 
-    if ((mod(it,itesigma)==0).and.(lsigtyp)) then
-
-       write(6,*)
-
-       do iti=1,ntyp
-          pmc=0.
-          do ic =1,3
-             pmc=pmc+sigtyp(ic,ic,iti)/3.0 
-          end do
-          if (rang==0) write(6,'(A,G14.5)')'sigtyp ',iti,' = ',pmc
-          pmc=0.
-          do ic =1,3
-             pmc=pmc+sigtyptyp(ic,ic,iti,iti)/3.0 
-          end do
-          if (rang==0) write(6,'(A,G14.5)')'sigtyptyp ',iti,iti,' = ',pmc
-       end do
-    end if
 
 
 

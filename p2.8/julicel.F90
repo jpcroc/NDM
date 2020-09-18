@@ -1,7 +1,7 @@
 module calfojulicel_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,nvat,fnemd,lcalcjq,lnemd,lperiod,zero,sigc,sigat,eatom,volu
+  USE gen_com_m, ONLY:at,bg,nvat,fnemd,lcalcjq,lnemd,lperiod,zero,sigc,volu
   USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot,ngrid,npair,&
        &eamrep,ipo,typ_pot_pair,eamglue,eamrho
         USE calfocommon
@@ -92,7 +92,7 @@ contains
     !  fp(:,:) = 0.0
 
     jq(:)=0.
-    !  if (allocated(eatom)) eatom(:)=0.
+    !  if (allocated(eat)) eat(:)=0.
 
 
     potist = zero
@@ -425,8 +425,8 @@ contains
              ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
              if (lcalcjq) then
                 jqf=0.0
-                eatom(i)=eatom(i)+0.5*Erep
-                eatom(j)=eatom(j)+0.5*Erep
+                eat(i)=eat(i)+0.5*Erep
+                eat(j)=eat(j)+0.5*Erep
                 do ic=1,3
                    jqf=jqf-0.5*(dErep*gradij(ic)*(vp(ic,i)+vp(ic,j)))
                 end do
@@ -737,7 +737,7 @@ contains
        !if (i==1)  write(6,*)'fb2 ',fp(1,1),fp(2,1),fp(3,1)
 
        potist=potist+Eembi
-       if (lcalcjq) eatom(i)=eatom(i)+Eembi
+       if (lcalcjq) eat(i)=eat(i)+Eembi
        potisglue=potisglue+Eembi
 
        !    write(6,*)

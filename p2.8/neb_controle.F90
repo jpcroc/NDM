@@ -15,7 +15,7 @@ contains
   !           MCM for JPC 08/02/2007
   ! ***********************************************************
 
-  subroutine neb_controle (ii,xp,fp) 
+  subroutine neb_controle (ii,xp,fp,imr) 
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -30,14 +30,9 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer  :: ii
-    ! integer  :: ielat(imm)
-    ! integer  :: iwmax(imm)
-    ! integer  :: ityp(imm)
-     real(double)  :: xp(3,imm)
-    ! real(double)  :: xpp(3,imm)
-    ! real(double)  :: vp(3,imm)
-     real(double)  :: fp(3,imm)
+    integer,intent(in)  :: ii,imr
+    real(double),allocatable  :: xp(:,:)
+    real(double),allocatable  :: fp(:,:)
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -156,8 +151,13 @@ contains
        if (lEev.EQV..true.) then 
           forctot = sqrt(SUM(fp**2))*erg2eV/angst
           formax  = sqrt(MAXVAL(fp(1,:)**2+fp(2,:)**2+fp(3,:)**2))*erg2eV/angst
+
+          
           formaxperp  = sqrt(MAXVAL(fp_par(1,:)**2+fp_par(2,:)**2+     &
                fp_par(3,:)**2))*erg2eV/angst
+
+
+
           formaxparl  = sqrt(MAXVAL((fp(1,:)-fp_par(1,:))**2+(fp(2,:)-  &
                fp_par(2,:))**2+(fp(3,:)-fp_par(3,:))**2))*erg2eV/angst
 

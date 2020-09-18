@@ -45,8 +45,8 @@ module init_mod
 
   USE gen_com_m, ONLY:igen,ilangevin,imf,iteheat,lcdp,lcorrelvp,ldislo,lhcyl,lheat,itichup,itichdn,itichdeb,formatsauv,iko,&
        &imana,itdes,iteanapos,iteplz,iterasmol,itetimestep,itmax,lcalcjq,lcasca,ldesinteg,lcontr,lfilm,lprteat,&
-       &lrestart,lsigtyp,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,sigtyp,&
-       kinemean,lsigat,pmean,xpchdn,sigtyptyp,sigtyp,eatomtotm,lprteattotm,vpchdn,indi,nvois,sigtyp_loc,sigtyptyp_loc,&
+       &lrestart,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,&
+       kinemean,lsigat,pmean,xpchdn,eatomtotm,lprteattotm,vpchdn,indi,nvois,&
        &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,celsize,npath,&
        &posa,forca,firsttime_lammps
 
@@ -535,14 +535,6 @@ contains
 
 
     if(lSigat) allocate(sigat(3,3,imm))
-    if(lsigtyp) then
-       allocate(sigtyp(3,3,ntyp))
-       allocate(sigtyptyp(3,3,ntyp,ntyp))
-#ifdef PARA
-       allocate (sigtyp_loc(3,3,ntyp))
-       allocate (sigtyptyp_loc(3,3,ntyp,ntyp))
-#endif
-    end if
 
     if (lcdp) then
        call initcdp

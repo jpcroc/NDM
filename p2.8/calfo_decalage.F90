@@ -1,14 +1,15 @@
 module calfo_decalage_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
+        use calfocommon
         implicit none 
         contains
 !----------------------------------------------------------------------
 SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
   !tentative de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
-  USE gen_com_m, ONLY:angst,at,bg,decal_bc,it,itesigma,ldemitab,low_limit,&
-       &lperiod,lprteat,potist,zero,sig,eatom,volu
+  USE gen_com_m, ONLY:angst,at,bg,decal_bc,it,ldemitab,low_limit,&
+       &lperiod,lprteat,potist,zero,sig,volu
   USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,ipo,eamrep,eamrep_d,eamrep,&
        &eamglue,eamglue_d,eamglue,eamrho_d,eamrho_d,eamrho,rue_pot
 
@@ -48,7 +49,6 @@ SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
   real(double) :: drk, ktor, inv_ktor, ktorho, inv_ktorho
 
   real(double) :: densityi,tabdensity(imm)
-  LOGICAL :: test_sigma
 
   real(double)::rue,rue2
   
@@ -60,7 +60,7 @@ SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
 !  write(6,*)'eamtabvois'
   rue=rue_pot(ipotentiel)
 !  if (lprteat.EQV..true.) then
-!     eatom(:)=0.
+!     eat(:)=0.
 !  end if
   ktor=rue/ngrid
   inv_ktor=1.d0/ktor
@@ -74,10 +74,6 @@ SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
   potisrep=0.
   potisglue=0.
   rue2=rue**2
-
-  test_sigma=(mod(it,itesigma)==0)
-
-
 
   iw2=0
   ALLOCATE(xpnp(3,imm))
@@ -150,11 +146,11 @@ SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
         Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
         if(lprteat.EQV..true.)then
 !           if (allocated (free)) then
-!              if( free(i).EQV..true.)           eatom(i)=eatom(i)+Erep/2.d0
-!              if ((free(j).EQV..true.).and.ldemitab)           eatom(j)=eatom(j)+Erep/2.d0
+!              if( free(i).EQV..true.)           eat(i)=eat(i)+Erep/2.d0
+!              if ((free(j).EQV..true.).and.ldemitab)           eat(j)=eat(j)+Erep/2.d0
 !           else
-                           eatom(i)=eatom(i)+Erep/2.d0
-            if (ldemitab)  eatom(j)=eatom(j)+Erep/2.d0
+                           eat(i)=eat(i)+Erep/2.d0
+            if (ldemitab)  eat(j)=eat(j)+Erep/2.d0
  !          end if
         end if
         if (lforcetabulate) then
@@ -198,10 +194,10 @@ SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
      drk=tabdensity(i)-(rhomin+k*ktorho)
      Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
 !     if( allocated (free)) then
-!        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
+!        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eat(i)=eat(i)+Eembi
 !        if( free(i).EQV..true.)potisglue = potisglue+Eembi
 !     else
-        if(lprteat.EQV..true.) eatom(i)=eatom(i)+Eembi
+        if(lprteat.EQV..true.) eat(i)=eat(i)+Eembi
         potisglue = potisglue+Eembi
  !    end if
     if (lforcetabulate) then

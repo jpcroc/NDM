@@ -3,7 +3,7 @@ module dyn_vverlet_mod
   USE calfoberend_mod,only: calfoberend 
   use var_pot,only:ntyp
   USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,eatom,ltranche,bg,&
-       &l2T,llangevin,lsuivinonpbc
+       &l2T,llangevin,lsuivinonpbc,itesigma
   USE cellconfig,only: cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
 
 
@@ -51,7 +51,7 @@ contains
 
     type(atom_config_d)::atdml
     type(cell_config):: celndm
-
+    logical::test_sigma=.false.
     !      write (*,*) 'sub dynvverlet'
 
     timel = timel+tstep
@@ -140,7 +140,16 @@ contains
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml,celndm)
+  jq=0.0
+  if (itesigma>0) test_sigma=(mod(it,itesigma)==0)
+  CALL CalFo(sig,potist,atdml,celndm,t_sigma=test_sigma)
+
+      if (l2t)then
+       if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+    else
+       if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+    end if
+    if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite

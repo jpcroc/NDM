@@ -1,6 +1,6 @@
 module force_tersoff_cel_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,it,itesigma,lcalcjq,ltpcel,potistersoff,potiszbl,sigc,eatom,volu
+  USE gen_com_m, ONLY:at,bg,it,lcalcjq,ltpcel,potistersoff,potiszbl,sigc,volu
         USE calfocommon
   implicit none
 contains
@@ -199,7 +199,7 @@ subroutine force_tersoff_cel(im,imm,xp, vp,  fp, ielat, ityp,noxyz,natperc,atinc
                           Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
                        end if
                        !Contrainte
-                       if (mod(it,itesigma)==0) then 
+                       if (test_sigma) then 
                           do m=1,3
                              sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/volu
                              if (lTPcel.EQV..true.) then
@@ -231,7 +231,7 @@ subroutine force_tersoff_cel(im,imm,xp, vp,  fp, ielat, ityp,noxyz,natperc,atinc
                           Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
                        end if
                        !Contrainte
-                       if (mod(it,itesigma)==0) then 
+                       if (test_sigma) then 
                           do m=1,3
                              sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/volu
                              if (lTPcel.EQV..true.) then
@@ -311,7 +311,7 @@ subroutine force_tersoff_cel(im,imm,xp, vp,  fp, ielat, ityp,noxyz,natperc,atinc
                           !Contrainte
                           !write(6,*)'sig AV l',l
                           !write(6,*)sig
-                          if (mod(it,itesigma)==0) then 
+                          if (test_sigma) then 
                              do m=1,3
                                 sig(l,m)=sig(l,m) + triplet_ij*cvij(1,m)/volu
                                 sig(l,m)=sig(l,m) + triplet_ik*cvik(1,m)/volu
@@ -365,9 +365,9 @@ subroutine force_tersoff_cel(im,imm,xp, vp,  fp, ielat, ityp,noxyz,natperc,atinc
         potisTersoff = potisTersoff + 0.5*v_ij
 !     end if
 !     if (allocated (free)) then
-!        if ((allocated(eatom)).and.(free(i).EQV..true.)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
+!        if ((allocated(eat)).and.(free(i).EQV..true.)) eat(i) = eat(i)+eat(i)+0.5*v_ij
 !     else
-        if (allocated(eatom)) eatom(i) = eatom(i)+eatom(i)+0.5*v_ij
+        if (associated(eat)) eat(i) = eat(i)+eat(i)+0.5*v_ij
 !     end if
 
 

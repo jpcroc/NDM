@@ -130,9 +130,8 @@ module gen_com_m
   real(double), dimension(3,3) :: sigkine
 
   real(double), dimension(:,:,:),allocatable :: sigc ! contrainte par cel
-  real(double), dimension(:,:,:),allocatable :: sigat,sigtyp,sigtyp_loc ! contrainte par atome
-  real(double), dimension(:,:,:,:),allocatable :: sigtyptyp,sigtyptyp_loc ! contrainte par atome
-  logical :: lEparat,lsigtyp  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ﾂｩnergie par atome,calcul bond valence
+  real(double), dimension(:,:,:),allocatable :: sigat ! contrainte par atome
+  logical :: lEparat  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ﾂｩnergie par atome,calcul bond valence
   integer:: itebdv ! frequence de calcul des bond valence
   logical :: ljqbh ! calcul de la conductivitﾃδｩ thermique par la mﾃδｩthode directe
   logical :: lnemd  ! calcul de la conductivitﾃδｩ thermique par NEMD

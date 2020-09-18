@@ -3,7 +3,7 @@ module calfojuli_mod
         USE cryst_to_cart_mod,only: cryst_to_cart
         USE calfocommon
         USE gen_com_m, ONLY:at,bg,nvat,fnemd,lcalcjq,lnemd,lperiod,&
-             zero,eatom,volu
+             zero,volu
         implicit none
       contains
 
@@ -94,7 +94,7 @@ SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi)
 !  fp(:,:) = 0.0
 
   jq(:)=0.
-  !  if (allocated(eatom)) eatom(:)=0.
+  !  if (allocated(eat)) eat(:)=0.
 
 
   potist = zero
@@ -366,8 +366,8 @@ SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi)
            ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
            if (lcalcjq) then
               jqf=0.0
-              eatom(i)=eatom(i)+0.5*Erep
-              eatom(j)=eatom(j)+0.5*Erep
+              eat(i)=eat(i)+0.5*Erep
+              eat(j)=eat(j)+0.5*Erep
               do ic=1,3
                  jqf=jqf-0.5*(dErep*gradij(ic)*(vp(ic,i)+vp(ic,j)))
               end do
@@ -634,7 +634,7 @@ SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi)
      !if (i==1)  write(6,*)'fb2 ',fp(1,1),fp(2,1),fp(3,1)
 
      potist=potist+Eembi
-     if (lcalcjq) eatom(i)=eatom(i)+Eembi
+     if (lcalcjq) eat(i)=eat(i)+Eembi
      potisglue=potisglue+Eembi
 
      !    write(6,*)

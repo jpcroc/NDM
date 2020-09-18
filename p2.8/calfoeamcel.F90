@@ -1,7 +1,7 @@
 module calfoeamcel_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
-        USE gen_com_m, ONLY:angst,at,bg,nvat,it,itesigma,low_limit,lperiod,lprteat,ltpcel,zero,sigc,eatom,volu
+        USE gen_com_m, ONLY:angst,at,bg,nvat,it,low_limit,lperiod,ltpcel,zero,sigc,volu
         USE calfocommon
 
         implicit none
@@ -53,7 +53,6 @@ SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natper
   integer, dimension(nvat) :: jvi
   real(double), dimension (nvat) ::rij
   real(double), dimension (1:3,nvat) ::dxpij
-  LOGICAL :: test_sigma
   integer :: izero
 
   real(double) :: tabdensity(imm)
@@ -72,10 +71,6 @@ SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natper
 
   
   rue=rue_pot(ipotentiel)
-  test_sigma=(mod(it,itesigma)==0)
-
-
-
 
   ktor=rue/ngrid
   inv_ktor=1.d0/ktor
@@ -216,11 +211,11 @@ SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natper
            Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
            if(lprteat.EQV..true.)then
 !              if (allocated (free)) then              
-!                 if( free(i).EQV..true.) eatom(i)=eatom(i)+Erep/2.d0
-!                 if( free(j).EQV..true.) eatom(j)=eatom(j)+Erep/2.d0
+!                 if( free(i).EQV..true.) eat(i)=eat(i)+Erep/2.d0
+!                 if( free(j).EQV..true.) eat(j)=eat(j)+Erep/2.d0
 !              else
-                  eatom(i)=eatom(i)+Erep/2.d0
-                  eatom(j)=eatom(j)+Erep/2.d0
+                  eat(i)=eat(i)+Erep/2.d0
+                  eat(j)=eat(j)+Erep/2.d0
 !               end if
            end if
            dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
@@ -274,10 +269,10 @@ SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natper
      Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
 
 !     if (allocated (free)) then
-!        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
+!        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eat(i)=eat(i)+Eembi
 !        if( free(i).EQV..true.)   potisglue = potisglue+Eembi
 !     else
-        if(lprteat.EQV..true.) eatom(i)=eatom(i)+Eembi
+        if(lprteat.EQV..true.) eat(i)=eat(i)+Eembi
         potisglue = potisglue+Eembi
 !     end if
 
@@ -398,7 +393,6 @@ SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natper
   end do loop3at1
 
 
-!  if (test_sigma) sig(1:3,1:3) = sig(1:3,1:3)/volu
 
 #ifdef PARA
   CALL MPI_ALLREDUCE(potisrep, potisrep_tot, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)

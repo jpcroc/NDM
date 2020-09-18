@@ -12,8 +12,14 @@ module dmloop_vverlet_mod
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
   use var_pot,only:ntyp
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,im,lgc,rang,rayonc,&
-       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,lsigtyp,ltpcel,sigat,sigc,sigtyptyp,sigtyp&
-       &,noxyz,sigtyp_loc,sigtyptyp_loc,lsuivinonpbc
+       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,sigat,sigc&
+       &,noxyz,lsuivinonpbc
+
+  USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
+  USE elec_cell, ONLY :i2t       
+USE calfoberend_mod,only:calfoberend
+
+
   implicit none 
 contains
   ! boucle de DM pour velocity Verlet
@@ -53,7 +59,8 @@ contains
     ! MPI
     type(atom_config_d)::atdml
     type(cell_config):: celndm
-    if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
+    logical :: test_sigma
+    if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****'
 #ifdef PARA
     temps_para=0.
 #endif
@@ -64,7 +71,14 @@ contains
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml,celndm)
+  test_sigma=(mod(it,itesigma)==0)
+  CALL CalFo(sig,potist,atdml,celndm,t_sigma=test_sigma)
+  if (l2t)then
+     if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+    else
+       if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+    end if
+    if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
@@ -107,21 +121,6 @@ contains
           sigc(1:3,3,ielat(ilocal)) = sigc(1:3,3,ielat(ilocal)) + &
                cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)*noxyz/volu
        end if
-       if ((mod(it,itesigma)==0).and.(lsigtyp.EQV..true.)) then
-          sigtyp(1:3,1,ityp(ilocal)) = sigtyp(1:3,1,ityp(ilocal)) + &
-               cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)
-          sigtyp(1:3,2,ityp(ilocal)) = sigtyp(1:3,2,ityp(ilocal)) + &
-               cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)
-          sigtyp(1:3,3,ityp(ilocal)) = sigtyp(1:3,3,ityp(ilocal)) + &
-               cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)
-
-          sigtyptyp(1:3,1,ityp(ilocal),ityp(ilocal)) = sigtyptyp(1:3,1,ityp(ilocal),ityp(ilocal)) + &
-               cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)
-          sigtyptyp(1:3,2,ityp(ilocal),ityp(ilocal)) = sigtyptyp(1:3,2,ityp(ilocal),ityp(ilocal)) + &
-               cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)
-          sigtyptyp(1:3,3,ityp(ilocal),ityp(ilocal)) = sigtyptyp(1:3,3,ityp(ilocal),ityp(ilocal)) + &
-               cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)
-       end if
     end do
     sigkine(1:3,1:3) = sigkine(1:3,1:3)/volu
 #ifdef PARA
@@ -130,13 +129,6 @@ contains
     !  sig=sig_tot
     call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     sigkine=sigkine_tot
-    if (lsigtyp.and.mod(it,itesigma) == 0) then
-       call MPI_ALLREDUCE(sigtyp,sigtyp_loc,9*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       sigtyp=sigtyp_loc
-       call MPI_ALLREDUCE(sigtyptyp,sigtyptyp_loc,9*ntyp*ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       sigtyptyp=sigtyptyp_loc
-
-    end if
     if (allocated(sigc)) then
        call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        sigc=sigc_tot

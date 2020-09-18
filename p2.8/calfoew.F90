@@ -1,6 +1,6 @@
 module calfoew_mod
   USE epme_mod,only: epme
-  USE gen_com_m, ONLY:ltpcel,tabf3,sigc,it,itesigma,pi,potis3,volu,zero,bg,tabv3
+  USE gen_com_m, ONLY:ltpcel,tabf3,sigc,pi,potis3,volu,zero,bg,tabv3
   USE calfocommon
   implicit none
 contains
@@ -129,15 +129,13 @@ contains
                 ! calcul de sig contrainte
                 potisewg = tabv3(nb1,nb2,nb3)*(scacos**2+scasin**2)
                 hbn2 = hbv(1)**2+hbv(2)**2+hbv(3)**2
-                if (itesigma>0) then
-                   if (mod(it,itesigma)==0) then
-                      sige(1,1) = sige(1,1)+potisewg*hbv(1)*hbv(1)/hbn2*(hbn2/(4.0*&
-                           &         alpha**2)+1)/volu
-                      sige(2,2) = sige(2,2)+potisewg*hbv(2)*hbv(2)/hbn2*(hbn2/(4.0*&
-                           &         alpha**2)+1)/volu
-                      sige(3,3) = sige(3,3)+potisewg*hbv(3)*hbv(3)/hbn2*(hbn2/(4.0*&
-                           &        alpha**2)+1)/volu
-                   endif
+                if (test_sigma) then
+                   sige(1,1) = sige(1,1)+potisewg*hbv(1)*hbv(1)/hbn2*(hbn2/(4.0*&
+                        &         alpha**2)+1)/volu
+                   sige(2,2) = sige(2,2)+potisewg*hbv(2)*hbv(2)/hbn2*(hbn2/(4.0*&
+                        &         alpha**2)+1)/volu
+                   sige(3,3) = sige(3,3)+potisewg*hbv(3)*hbv(3)/hbn2*(hbn2/(4.0*&
+                        &        alpha**2)+1)/volu
                 endif
 
                 potis3 = potis3+potisewg
@@ -147,15 +145,13 @@ contains
 
        ! --- Fin du calcul ---
 
-       if (itesigma>0) then
-          if (mod(it,itesigma)==0) then
+       if (test_sigma) then
              do i1 = 1, 3
                 sig(i1,i1) = sig(i1,i1)+sige(i1,i1)
                 if (lTPcel.EQV..true.) then
                    sigc(i1,i1,:noxyz) = sigc(i1,i1,:noxyz)+sige(i1,i1)
                 end if
              end do
-          endif
        endif
 
 
@@ -174,8 +170,7 @@ contains
 
        call epme (Deb,Fin,sige,im,xp,fp,ityp)
 
-       if (itesigma>0) then
-          if (mod(it,itesigma)==0) then
+       if (test_sigma) then
              do i1 = 1, 3
                 sig(i1,i1) = sig(i1,i1)+sige(i1,i1)
                 if (lTPcel.EQV..true.) then
@@ -183,7 +178,6 @@ contains
                 end if
              end do
           endif
-       endif
 
     end select
 

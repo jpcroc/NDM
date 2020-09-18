@@ -162,7 +162,7 @@ contains
           CALL CalFo(sig,potist,atneb(ii),cellneb(ii)) 
 
 
-          call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp) 
+          call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im) 
           enePATH(ii)=potist
           enePATHev(ii)=potist*erg2ev
           sigPATH(:,:,ii) = sigtot(:,:)      ! Contrainte
@@ -231,7 +231,7 @@ contains
                         &atneb(ii)%iwmax, atneb(ii)%ityp)
                 ENDIF
                 !             call analyse  
-                call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp)
+                call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
                 !call neb_controle(ii) 
              end do   ! end do for a while
 
@@ -334,7 +334,7 @@ contains
 #ifdef PARANEB
                 nebtest(:)=0
 #endif
-                call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp)
+                call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
  !               write(6,*)'********POST NC*************it',it,ii
  !               call atneb(ii)%print(i1=2049,i2=2049)
 

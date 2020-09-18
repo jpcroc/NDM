@@ -23,7 +23,7 @@ contains
          &formatsauv,h0,ibound,iko,imm,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,iteplz,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itespebcout,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
          &lcasca,lcontr,ldecal_bc,ldemitab,ldesinteg,ldyn2d,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
-         &llangevin,lnemd,lperiod,lpkbar,lposmoy,lpr,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,lsigtyp,&
+         &llangevin,lnemd,lperiod,lpkbar,lposmoy,lpr,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltabvois,ltberendsen,lthoover,ltnose,ltpcel,ltranche,lucell,lwgin,mdcg_noise,nfda,nox,noy,noz,nplz,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
          &,tpseuils,tstep,typspr,unite,unitp,user_strainrate,user_stress_yz,xpspr,lenfnam,fnam,position_conversion_lammps&
@@ -74,7 +74,7 @@ contains
          maxorder,  lalea, rsep, ipotentiel,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
-         lcdp,lsigtyp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
+         lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
          fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
          rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat, &
@@ -247,7 +247,6 @@ contains
     ludin = 94
     lcorrelvp=.false.
     lcalcjq=.false.
-    lsigtyp=.false.             ! calul et affichage de la contrainte atomique
     lEparat=.false.             ! calul et affichage de l'energie par atom
     itebdv=-1  ! frequence de calcul des bond valence
     iteplz=0
@@ -1166,12 +1165,6 @@ contains
 
     if(lTandersen.and.rang==0) write(6,*)'Tandersen nuandersen = ',nuandersen
 
-    if ((lsigtyp).and.(rang==0)) then
-       write(6,*)
-       write(6,*)'SIGTYP programme en 2 corps cellule seulement pour le type 3!!!!!!!!!!!!!!!!!!!!!!'
-       write(6,*)'PRESSION A DIVISER PAR LES VOLUMES !!!!!!!!!'
-       write(6,*)
-    end if
     if ((lprtsigat.eqv..true.).or.(lsigatcel.eqv..true.))then 
        lsigat=.true.
     else

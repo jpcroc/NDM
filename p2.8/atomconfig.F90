@@ -11,6 +11,7 @@ module atomconfig
      integer,allocatable::ielat(:)
      logical :: ltabvois
      integer,allocatable:: iwmax(:)
+     integer:: nvois ! taille du tableau des voisins si ltabvois=.true.
      integer,allocatable:: indi(:)
      logical, allocatable:: lgul(:)
      integer,allocatable::num_at_glob(:)
@@ -93,7 +94,10 @@ contains
     if(ltbv)then
        atconf%ltabvois=.true.
        allocate(atconf%iwmax(atconf%imm)); atconf%iwmax=0
-       if (nvois.ne.0) allocate(atconf%indi(nvois))
+       if (nvois.ne.0) then
+          atconf%nvois=nvois
+          allocate(atconf%indi(nvois))
+       end if
     end if
     select type (atconf)
     type is (atom_config_d)
@@ -424,7 +428,8 @@ contains
     imtrf=COUNT(atsource%lgul)
     select type (atsource)
     type is (atom_config_e)
-       call atcible%init(imtrf,atsource%ltabvois,size(atsource%indi),lsigat=atsource%lsigat,lprteat=atsource%lprteat,llangevin=atsource%llangevin)
+       call atcible%init(imtrf,atsource%ltabvois,size(atsource%indi),lsigat=atsource%lsigat,&
+            &lprteat=atsource%lprteat,llangevin=atsource%llangevin)
     class is (atom_config)
        call atcible%init(imtrf,atsource%ltabvois,size(atsource%indi))
     end select
@@ -474,7 +479,8 @@ contains
     if(atcible%imm==0) then
        select type (atsource)
        type is (atom_config_e)
-          call atcible%init(imsrc,atsource%ltabvois,size(atsource%indi),lsigat=atsource%lsigat,lprteat=atsource%lprteat,immin=immsrc,llangevin=atsource%llangevin)
+          call atcible%init(imsrc,atsource%ltabvois,size(atsource%indi),lsigat=atsource%lsigat&
+               &,lprteat=atsource%lprteat,immin=immsrc,llangevin=atsource%llangevin)
        class is (atom_config)
           call atcible%init(imsrc,atsource%ltabvois,size(atsource%indi),immin=immsrc)
        end select
@@ -487,7 +493,8 @@ contains
           call atcor_d%init(imcib,atcible%ltabvois,size(atcible%indi),immin=immcib)
           call atcible%copy_config(atcor_d,.false.)
        type is (atom_config_e)
-          call atcor_e%init(imcib,atcible%ltabvois,size(atcible%indi),atcible%lsigat,atcible%lprteat,immin=immcib,llangevin=atcible%llangevin)
+          call atcor_e%init(imcib,atcible%ltabvois,size(atcible%indi),atcible%lsigat,&
+               &atcible%lprteat,immin=immcib,llangevin=atcible%llangevin)
           call atcible%copy_config(atcor_e,.false.)
        end select
        if (lext) then

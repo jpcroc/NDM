@@ -1,15 +1,14 @@
 module calfoeamtabvois_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:angst,at,bg,fnemd,it,itesigma,lcalcjq,ldemitab,&
-       &lnemd,low_limit,lperiod,lprteat,lsigat,volu,zero,indi,&
-       &sigat,eatom
+  USE gen_com_m, ONLY:angst,at,bg,fnemd,it,lcalcjq,ldemitab,&
+       &lnemd,low_limit,lperiod,volu,zero
         USE calfocommon
 
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfoeamtabvois(im,imm,xp, vp,  fp,  iwmax, ityp)
+  SUBROUTINE calfoeamtabvois(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
     !tentative de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
     USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,eamglue,eamglue_d,&
@@ -26,7 +25,7 @@ contains
     ! eam variables
 
     integer,intent(in)::im,imm
-    integer  :: iwmax(:)
+    integer,allocatable  :: iwmax(:),indi(:)
     integer  :: ityp(:)
     real(double)  :: xp(:,:)
     real(double)  :: vp(:,:)
@@ -53,7 +52,6 @@ contains
     real(double) :: inv_volu, inv_atomic_volu
 
     real(double) :: densityi,tabdensity(imm)
-    LOGICAL :: test_sigma
 
     real(double)::rue,rue2
 
@@ -62,7 +60,7 @@ contains
     !  write(6,*)'eamtabvois'
     rue=rue_pot(ipotentiel)
     !  if (lprteat.EQV..true.) then
-    !     eatom(:)=0.
+    !     eat(:)=0.
     !  end if
     ktor=rue/ngrid
     inv_ktor=1.d0/ktor
@@ -75,7 +73,6 @@ contains
     potisrep=0.
     potisglue=0.
     rue2=rue**2
-    test_sigma=(mod(it,itesigma)==0)
     jq=0.
     fpnemd(:,:)=0.
     inv_volu = 1.d0/volu
@@ -156,10 +153,10 @@ contains
        drk=tabdensity(i)-(rhomin+k*ktorho)
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
 !       if( allocated (free)) then
-!          if( ( (lprteat.EQV..true.).or.(lcalcjq.EQV..true.) ).and.( free(i).EQV..true.)) eatom(i)=eatom(i)+Eembi
+!          if( ( (lprteat.EQV..true.).or.(lcalcjq.EQV..true.) ).and.( free(i).EQV..true.)) eat(i)=eat(i)+Eembi
 !          if( free(i).EQV..true.)potisglue = potisglue+Eembi
 !       else
-          if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.)) eatom(i)=eatom(i)+Eembi
+          if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.)) eat(i)=eat(i)+Eembi
           potisglue = potisglue+Eembi
 !       end if
        if (lforcetabulate) then
@@ -225,11 +222,11 @@ contains
 
           if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.))then
 !             if (allocated (free)) then
-!                if( free(i).EQV..true.)                eatom(i)=eatom(i) + 0.5d0*Erep
-!                if ((free(j).EQV..true.).and.ldemitab) eatom(j)=eatom(j) + 0.5d0*Erep
+!                if( free(i).EQV..true.)                eat(i)=eat(i) + 0.5d0*Erep
+!                if ((free(j).EQV..true.).and.ldemitab) eat(j)=eat(j) + 0.5d0*Erep
 !             else
-                eatom(i)=eatom(i) + 0.5d0*Erep
-                if (ldemitab)  eatom(j)=eatom(j) + 0.5d0*Erep
+                eat(i)=eat(i) + 0.5d0*Erep
+                if (ldemitab)  eat(j)=eat(j) + 0.5d0*Erep
 !             end if
           end if
 !          if (allocated (free)) then

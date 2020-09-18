@@ -42,7 +42,7 @@ module Parrinello_Rahman
        &h0,kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover,zhoover,zhoover,&
        &zhoover,zhoover,zhoover,zhoover,zhoover, ihbox0,tbox, bk,im,imm,indi,ltabvois,potist,sig,sigkine,sigtot,&
        &text,tstep,volu,at,im_glob,it,ltabvois,potist,rang,sig,text,tstep,volu,sigkine,bg,nvois,zls2,tabf3,tabv3,&
-       &pi,zl,nox,noy,noz,noxyz,natperc,ncel,atincel,deltadist,celsize,nato
+       &pi,zl,nox,noy,noz,noxyz,natperc,ncel,atincel,deltadist,celsize,nato,l2t,ltberendsen
  
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q
   USE recips_mod,only: recips,calcvol
@@ -56,6 +56,9 @@ module Parrinello_Rahman
   USE Mat_utils_mod,only:  MatInv
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
+  USE elec_cell, ONLY :i2t       
+USE calfoberend_mod,only:calfoberend
 
    USE caltabt_mod,only: caltabt
   implicit none
@@ -257,7 +260,13 @@ contains
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atpr,celndm)
+  CALL CalFo(sig,potist,atpr,celndm,t_sigma=.true.)
+      if (l2t)then
+       if (i2t==1)  call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+    else
+       if(ibrake.gt.0) call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+    end if
+
     call config2ndm(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
@@ -441,7 +450,13 @@ contains
           call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atpr,celndm)
+  CALL CalFo(sig,potist,atpr,celndm,t_sigma=.true.)
+      if (l2t)then
+       if (i2t==1)  call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+    else
+       if(ibrake.gt.0) call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+    end if
+    if (lTberendsen) call calfoberend(atpr%im,atpr%imm,atpr%xp,atpr%vp,atpr%fp,atpr%ityp)
     call config2ndm(atpr,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
