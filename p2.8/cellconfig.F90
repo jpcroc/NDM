@@ -29,6 +29,7 @@ module cellconfig
    contains
      procedure, pass::init=>init_cel
      procedure, pass::dealloc=>dealloc_cel
+     procedure, pass::copy_cell
      procedure, pass::print=>cellprint
 
   end type cell_config
@@ -64,11 +65,14 @@ contains
     class(cell_config)::cell
     integer,intent(in)::nox,noy,noz,natperc
     cell%nox=nox; cell%noy=noy; cell%noz=noz; cell%natperc=natperc
+    !write(6,*) 'nox', cell%nox
+    call dealloc_cel(cell)
     call allocatecelN(cell)
     call neigcelN(cell)
     return
 
   end subroutine init_cel
+
   subroutine allocatecelN(cell)
     class(cell_config)::cell
 !    integer,intent(in)::nox,noy,noz,natperc
@@ -86,11 +90,13 @@ contains
   subroutine dealloc_cel(cell)
     class(cell_config)::cell
 
-    deallocate(cell%ncel)
-    deallocate(cell%nato)
-    deallocate(cell%atincel)
-    deallocate(cell%deltadist)
+    if (allocated(cell%ncel))       deallocate(cell%ncel)
 
+    if (allocated(cell%nato))       deallocate(cell%nato)
+
+    if (allocated(cell%atincel))    deallocate(cell%atincel)
+
+    if (allocated(cell%deltadist))  deallocate(cell%deltadist)
 
     return
 
@@ -351,6 +357,28 @@ contains
     call celndm%dealloc
     
   end subroutine cellconfig2ndm
+
+  ! copie d'une config entière vers config de base
+
+  subroutine copy_cell (cellsource,cellcible)
+    class(cell_config)::cellsource
+    class(cell_config)::cellcible
+    
+    call cellcible%dealloc
+    call cellcible%init(cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc)
+
+    cellcible%nox=cellsource%nox
+    cellcible%noy=cellsource%noy
+    cellcible%noy=cellsource%noz
+    cellcible%noxyz=cellsource%noxyz
+    cellcible%natperc=cellsource%natperc
+    cellcible%icaltabt=cellsource%icaltabt
+    cellcible%nato(:)=cellsource%nato(:)
+    cellcible%ncel(:,:)=cellsource%ncel(:,:)
+    cellcible%atincel(:,:)=cellsource%atincel(:,:)
+    cellcible%deltadist(:,:,:)=cellsource%deltadist(:,:,:)
+    cellcible%celsize=cellsource%celsize
+  end subroutine copy_cell
 
 
   subroutine cellprint(cellv)

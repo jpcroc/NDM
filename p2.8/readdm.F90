@@ -36,6 +36,7 @@ contains
     USE endrun_mod,only: endrun
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
+    USE montecarlo_mod, ONLY: pas_lambda_mc
 #ifdef PARA
     USE mod_para,only:MPI_COMM_space,NPROCS
 #endif
@@ -83,7 +84,7 @@ contains
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
          mdcg_noise, lforcetabulate,ivisu,ibound,USEr_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-         itesauvinter,units_lammps,lWgin,lvzeroneb
+         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc
 
 
     !
@@ -117,6 +118,7 @@ contains
     !                              16 -> SUNDAE
     !                              17 -> MAB
     !                              18 -> ML
+    !                              15 -> montecarlo_mcgc
     lFire = .false.              ! Fire algorithm is USEd for quenching (cf tr_fire.F90)
     ttol = 0.0                  !max tolerance for temperature in %
     tfroi = -1.0                !imposed temperature
@@ -347,6 +349,8 @@ contains
     units_lammps='metal'
     lWgin=.false. ! =true écrit un fichier .newgin à la fin
     lvzeroneb=.false. ! si true , met vp à 0 ente chaque iteration neb (comportement pre ndm2020), defaut = false==> calcul plus rapide
+
+    pas_lambda_mc = -100 !valeur negative par defaut pour que l'utilisateur la change
 
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -925,6 +929,10 @@ contains
     case (11)
        if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
        if (rang==0) write (6,*)
+    case (15)
+       if (rang==0) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
+       if (rang==0) write (6,*)
+
 #ifdef ART    
     case (12)
        if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
@@ -1332,6 +1340,12 @@ contains
        stop
     end if
 #endif     
+
+!condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
+    if((dmtype == 15) .and. (pas_lambda_mc.lt.0)) then
+       write(6,*)'Pour utiliser la methode MCGC, indiquer une valeur pour le pas lambda d integration'
+       stop
+    end if    
 
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'

@@ -10,6 +10,9 @@ module prog_mod
   USE gcII_mod,only: gcII
   USE dmloop_vverlet_mod,only: dmloop_vverlet
   USE dmloop_mod,only: dmloop
+ 
+  USE montecarlo_mod, only: montecarlo
+
   USE atomconfig,only : atom_config,atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
 #if defined ML || defined PARAML    
@@ -26,7 +29,9 @@ contains
     USE gen_com_m, ONLY:dmtype,im,imm,indi,ltabvois,parallele,potist,rang,sig,nvois ,&
          &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize
 
-    USE tab_imm_m,only:xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob,alloc_all_tab_imm
+    USE tab_imm_m
+    
+    USE montecarlo_mod, ONLY: config_atom_n, cells_n
 
 #ifdef PARA
     use mpi
@@ -155,6 +160,11 @@ contains
 #endif
 
 
+    case (15)
+       call ndm2cellconfig(cells_n,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+       call ndm2config(config_atom_n,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+         &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+       call montecarlo
 
     end select
 
