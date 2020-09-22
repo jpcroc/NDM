@@ -1,4 +1,4 @@
-module calfo_mod
+xmodule calfo_mod
 #ifdef ML
   USE calfo_ml_mod, ONLY : md_calfo_ml
 #endif 
@@ -49,7 +49,7 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    class(atom_config_d),intent(inout)::atcf
+    class(atom_config_d),intent(inout),target::atcf
     type(cell_config),intent(in)::celcf
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
