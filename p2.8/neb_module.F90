@@ -3,14 +3,14 @@ module neb_module
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:iseed,neb_noise_scale,npath,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam, imm,pi,rang,im_glob,lenfnam,rang,zero,zl,zls2,lcontr,&
-       &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois
+       &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois,im,at,bg
 
-  USE contrainte
+  USE contrainte,only:contr
   USE config_mod,only: config
   USE recips_mod,only: recips
   USE sauveposition_mod,only: sauveposition
   USE rasmol_mod,only: rasmol
-  use var_pot,only:ntyp,na,ipotentiel
+  use var_pot,only:ntyp,na,ipotentiel,cm
   USE dynalloccell,only:deallocateall
   !-----------------------------------------------
   USE atomconfig,only:atom_config,atom_config_d
@@ -23,7 +23,7 @@ module neb_module
   integer,dimension(:),allocatable,save          :: nebtest,icontrainte !irelax,
 !  integer,dimension(:,:),allocatable,save        :: ielat_n, iwmax_n, ityp_n
 !  real(double),dimension(:,:,:),allocatable,save ::  xp_n, xpp_n, vp_n, fp_n
-  real(double),dimension(:,:),allocatable        :: fp_par,fp_perp
+!  real(double),dimension(:,:),allocatable        :: fp_par,fp_perp
   real(double), dimension(:),allocatable, save   :: enePATH,enePATHev,norms,reaction_coord
   real(double), dimension(:,:,:), allocatable, save :: sigPATH  ! Stress tensor
   real(double), dimension(:,:,:),allocatable,save:: s_path,force_neb,bruitneb 
@@ -39,8 +39,7 @@ contains
   subroutine allocate_neb()
     implicit none
  !   integer ip2
- !   allocate(atneb(npath))
- !   do ip2=1,npath
+ !   allocate(atneb(npath)) !   do ip2=1,npath
  !      call atneb(ip2)%init_atom_config(im,ltabvois,nvois)
     !   end do
     integer ipath
@@ -48,7 +47,7 @@ contains
     allocate(cellneb(npath))
 
     do ipath=1,npath
-       call atneb(ipath)%init(imm,ltabvois,nvois)
+       call atneb(ipath)%init(im,imm,ltabvois,nvois)
     end do
 
 !    allocate (ielat_n(imm,npath), iwmax_n(imm,npath), &
@@ -62,7 +61,7 @@ contains
          allocate (icontrainte(imm),reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
     allocate  (sigPATH(3,3,npath))    ! Stress tensor for each image
-    allocate  (fp_par(3,imm),fp_perp(3,imm))
+!    allocate  (fp_par(3,imm),fp_perp(3,imm))
     allocate  (s_path(3,imm,npath),force_neb(3,imm,npath))
     allocate  (bruitneb(3,imm,npath))
 
@@ -625,7 +624,7 @@ end if
 
     subroutine configNEB !(xp, xpp, vp,  fp, ielat, iwmax, ityp)
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:
+!    USE gen_com_m, ONLY:im,imm,nvois,
     USE tab_imm_m,only:xp,xpp,vp,fp,ielat,iwmax,ityp,num_at_glob
 
 

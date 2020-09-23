@@ -15,6 +15,8 @@ module initspeed_mod
   USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
 #endif
 
+  USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
 
   implicit none
 contains
@@ -76,17 +78,11 @@ contains
 
     implicit none
     !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
+    type(atom_config_d)::atdml
+    type(cell_config):: celndm
+
+
+    
     integer :: i, ic, ia, ib
     integer, dimension(:), allocatable :: iseedt
     real(double), dimension(ntyp) :: temptyp
@@ -455,7 +451,6 @@ contains
 
     tempsauv=tempinst(vp,ityp)
     if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
-    if (lTPcel.eqv..true.) call calctemp(temptyp)
 
 
     if (tempdeplainit.gt.0)then

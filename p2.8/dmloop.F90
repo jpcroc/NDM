@@ -11,13 +11,15 @@ module dmloop_mod
         USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
         USE atomconfig,only : atom_config,atom_config_d,ndm2config, config2ndm
         USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
-  USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
-  USE elec_cell, ONLY :i2t       
-USE calfoberend_mod,only:calfoberend
+        USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
+        USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
+        USE elec_cell, ONLY :i2t       
+        USE calfoberend_mod,only:calfoberend
 
         USE gen_com_m,only: dmtype,indi,it,itesauv,ltabvois,potist,rang,sig,nvois,&
              &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize,lsigat,l2t,ltpcel,&
-             &sigc,sigkine,sigat,sigtot,itesigma,ltberendsen,volu,itesigma
+             &sigc,sigkine,sigat,sigtot,itesigma,ltberendsen,volu,itesigma,&
+             &at,bg,zl,zls2,nzl,volu,normat
 
         use var_pot, only: cm! iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
     
@@ -54,6 +56,7 @@ subroutine dmloop
   !
     type(atom_config_d)::atdml
     type(cell_config):: celndm
+    type(box_config)::boxndm
 #ifdef PARA
     real(double), dimension(3,3) :: sig_tot,sigkine_tot
 
@@ -72,11 +75,12 @@ subroutine dmloop
   !      write(6,*)'im',im
 1 continue
   it = it+1
-
-        write(6,*)
-        write(6,*)'***** ITERATION  ****', it
-
+  
+  write(6,*)
+  write(6,*)'***** ITERATION  ****', it
+  
   ! appel de la routine generale des forces
+  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
   call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
@@ -87,7 +91,7 @@ subroutine dmloop
        if(lSigat) sigat(:,:,:)=0. ; 
     end if
 
-  CALL CalFo(sig,potist,atdml,celndm,t_sigma=test_sigma)
+  CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
     if (l2t)then
        if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     else

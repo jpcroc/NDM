@@ -1,13 +1,14 @@
 module calfoeamcel_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
-        USE gen_com_m, ONLY:angst,at,bg,nvat,it,low_limit,lperiod,ltpcel,zero,sigc,volu
+        USE gen_com_m, ONLY:angst,nvat,it,low_limit,lperiod,zero
         USE calfocommon
 
         implicit none
         contains
 !----------------------------------------------------------------------
-SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,nox,noy,noz)
+          SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,&
+               &nox,noy,noz,at,bg,volu)
   USE T_kind_param_m
 
   USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,eamglue,eamrho,rue_pot,&
@@ -30,7 +31,8 @@ SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natper
   
   integer,intent(in)::noxyz,natperc,nox,noy,noz
   integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
-
+    real(double),intent(in),dimension(3,3)::at,bg
+    real(double),intent(in)::volu
   !local variables
   integer :: i,j !atomes
   integer ::iti,itj !types
@@ -49,10 +51,10 @@ SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natper
   real(double) :: rk, drk,ktor, inv_ktor, ktorho, inv_ktorho
   real(double) :: densityi !densite totale sur i
 
-  integer ::nvi,iw
-  integer, dimension(nvat) :: jvi
-  real(double), dimension (nvat) ::rij
-  real(double), dimension (1:3,nvat) ::dxpij
+!  integer ::nvi,iw
+!  integer, dimension(nvat) :: jvi
+!  real(double), dimension (nvat) ::rij
+!  real(double), dimension (1:3,nvat) ::dxpij
   integer :: izero
 
   real(double) :: tabdensity(imm)
@@ -104,7 +106,7 @@ SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natper
 
      ! --- Calcul de la densite sur i ---    
 
-     nvi=0
+!     nvi=0
      densityi=0.0 ; dEembi=0.0
      koo = ielat(i)                          ! Numero de la cellule
  !if (it.ge.4)       write(806,'(A,2I6,G22.13)')'CF2B ' ,it,i,ielat(i)

@@ -49,7 +49,7 @@ subroutine config
   !-----------------------------------------------
   integer :: i, j, k, ia, ib, ic, icell, iti, icintype, icintypemod&
        , lucin, lugin, imcell, la, lb, lc, typmax, typmin, npoin, natyp, typ
-  integer:: indpoint1, indpointdes
+  integer:: indpoint1, indpointdes,lat(3)
   integer :: passe, nb_passes,ncore,lenfn2
 #ifndef PARA
   integer :: nprocs

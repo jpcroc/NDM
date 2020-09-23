@@ -5,11 +5,11 @@ module calfo_decalage_mod
         implicit none 
         contains
 !----------------------------------------------------------------------
-SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
+SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi,at,bg,volu)
   !tentative de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
-  USE gen_com_m, ONLY:angst,at,bg,decal_bc,it,ldemitab,low_limit,&
-       &lperiod,lprteat,potist,zero,sig,volu
+  USE gen_com_m, ONLY:angst,decal_bc,it,ldemitab,low_limit,&
+       &lperiod,lprteat,potist,zero,sig
   USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,ipo,eamrep,eamrep_d,eamrep,&
        &eamglue,eamglue_d,eamglue,eamrho_d,eamrho_d,eamrho,rue_pot
 
@@ -29,7 +29,8 @@ SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
   real(double)  :: xp(:,:)
   real(double)  :: vp(:,:)
   real(double)  :: fp(:,:)
-
+    real(double),intent(in),dimension(3,3)::at,bg
+    real(double),intent(in)::volu
   !local variables
   integer :: i,j !atomes
   integer ::iti,itj !types

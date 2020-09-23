@@ -7,11 +7,13 @@ module neb_mod
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
        &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois,itetabvois,rang,&
-       &celsize
+       &celsize ,at,bg,zl,zls2,nzl,volu,normat
+
   
   USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,fp,ielat,num_at_glob
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
+  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   use var_pot,only:coord
   use rasmol_mod,only:rasmol
   use calfoberend_mod,only:dynlangevin
@@ -43,14 +45,8 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    !integer  :: iph,i_dir_path
-    !integer  :: ielat(imm)
-    !integer  :: iwmax(imm)
-    !integer  :: ityp(imm)
-    !real(double)  :: xp(3,imm)
-    !real(double)  :: xpp(3,imm)
-    !real(double)  :: vp(3,imm)
-    !real(double)  :: fp(3,imm)
+    type(box_config)::boxneb
+
     integer :: ineb,ii,it_neb_inter,ipath
     real(double)  :: a_local,forneb
 
@@ -74,7 +70,7 @@ contains
     end if
 #endif    
      allocate (iter(npath))
-
+     call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxneb)
     call ndm2cellconfig(cellneb(1),noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
     do ii=2,npath
        cellneb(ii)=cellneb(1)
@@ -159,7 +155,7 @@ contains
           call caltabtC(cellneb(ii),atneb(ii),lperiod,bg)
           if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                &call caltabi(atneb(ii)%atom_config,cellneb(ii))
-          CALL CalFo(sig,potist,atneb(ii),cellneb(ii)) 
+          CALL CalFo(sig,potist,atneb(ii),cellneb(ii),boxneb) 
 
 
           call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im) 
@@ -218,7 +214,7 @@ contains
                 call caltabtC(cellneb(ii),atneb(ii),lperiod,bg)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                      &call caltabi(atneb(ii)%atom_config,cellneb(ii))
-                CALL CalFo(sig,potist,atneb(ii),cellneb(ii)) 
+                CALL CalFo(sig,potist,atneb(ii),cellneb(ii),boxneb) 
 !                call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
 !    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
                 call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp)
@@ -310,7 +306,7 @@ contains
                 call caltabtC(cellneb(ii),atneb(ii),lperiod,bg)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                      &call caltabi(atneb(ii)%atom_config,cellneb(ii))
-                CALL CalFo(sig,potist,atneb(ii),cellneb(ii)) 
+                CALL CalFo(sig,potist,atneb(ii),cellneb(ii),boxneb) 
 !                call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
 !    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 !                write(6,*)'********PRE FPN ****************it',it,ii

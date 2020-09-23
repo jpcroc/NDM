@@ -17,7 +17,8 @@ module cellconfig
      integer,allocatable:: ncel (:,:) ! ncel(ko,i1)=numéro de la ième cellule voisine de la cellule ko
      integer,allocatable:: atincel (:,:) ! atincel(i,k)= indice du ième atome de la cellule k
      integer,allocatable:: deltadist(:,:,:) !gestion des conditions périodiques entre les cellules (voisinage de bords de boites)
-
+     logical :: ltpcel
+     real(double),allocatable::sigc(:,:,:),tempc(:)
      real(double):: celsize(3)
 
 #ifdef PARA
@@ -34,48 +35,53 @@ module cellconfig
 
   end type cell_config
 
-!  type,extends(cell_config)::  cel_config_e ! des tas de tableaux annexes par toujours alloués car le plus souvent inutiles
-!     integer::iewald !pilote les tableux de la sommation d'Ewald
-!     real(double), allocatable:: tabv3,tabf3
-!     real(double),allocatable::sigc(:,:,:)! contrainte par cellule
-!     logical:: ltpcel ! écriture des quantités par cellules
-!     real(double)::tempstopcel ! température d'arrêt de la cellule
-!     integer::istopcel ! diverses versions de tempstopcel
-!     real(double),allocatable,dimension(:):: eatcel,tempc,tempcm,celpm1,tm1,celpp,tcp,pmc
-!     logical::lprtcel ! ecriture des résultats seulement sur certaines cellules.
-!     
-!     logical :: l2T ! cellule pour modèles à 2T
-!     real(double),allocatable:: elossCel(:)
-!     
-!     logical :: lsigatcel ! moyenne des contraintes atomiques par cellule ?
-!     integer, allocatable:: natchk(:)
-!     real(double), allocatable::patcel(:),patcelmax, sigatcel(:,:,:)
-!   contains
-!     procedure, pass::init=>init_cel_e
-!     procedure, pass::dealloc=>dealloc_cel_e
-!     
-!  end type cel_config_e
-  
-  
+  !  type,extends(cell_config)::  cel_config_e ! des tas de tableaux annexes par toujours alloués car le plus souvent inutiles
+  !     integer::iewald !pilote les tableux de la sommation d'Ewald
+  !     real(double), allocatable:: tabv3,tabf3
+  !     real(double),allocatable::sigc(:,:,:)! contrainte par cellule
+  !     logical:: ltpcel ! écriture des quantités par cellules
+  !     real(double)::tempstopcel ! température d'arrêt de la cellule
+  !     integer::istopcel ! diverses versions de tempstopcel
+  !     real(double),allocatable,dimension(:):: eatcel,tempc,tempcm,celpm1,tm1,celpp,tcp,pmc
+  !     logical::lprtcel ! ecriture des résultats seulement sur certaines cellules.
+  !     
+  !     logical :: l2T ! cellule pour modèles à 2T
+  !     real(double),allocatable:: elossCel(:)
+  !     
+  !     logical :: lsigatcel ! moyenne des contraintes atomiques par cellule ?
+  !     integer, allocatable:: natchk(:)
+  !     real(double), allocatable::patcel(:),patcelmax, sigatcel(:,:,:)
+  !   contains
+  !     procedure, pass::init=>init_cel_e
+  !     procedure, pass::dealloc=>dealloc_cel_e
+  !     
+  !  end type cel_config_e
+
+
 contains
 
 
-  
-  subroutine init_cel(cell,nox,noy,noz,natperc)
+
+  subroutine init_cel(cell,nox,noy,noz,natperc,ltpc)
     class(cell_config)::cell
     integer,intent(in)::nox,noy,noz,natperc
+    logical,optional,intent(in):: ltpc
+    logical::ltpcel=.false.
+    if (present (ltpc))ltpcel=ltpc
     cell%nox=nox; cell%noy=noy; cell%noz=noz; cell%natperc=natperc
     !write(6,*) 'nox', cell%nox
+    cell%ltpcel=ltpcel
     call dealloc_cel(cell)
     call allocatecelN(cell)
     call neigcelN(cell)
+
     return
 
   end subroutine init_cel
 
   subroutine allocatecelN(cell)
     class(cell_config)::cell
-!    integer,intent(in)::nox,noy,noz,natperc
+    !    integer,intent(in)::nox,noy,noz,natperc
     integer::nsize
     cell%noxyz=cell%nox*cell%noy*cell%noz
     nsize=cell%noxyz
@@ -83,20 +89,23 @@ contains
     allocate(cell%nato(0:nsize))
     allocate(cell%atincel(cell%natperc,0:nsize))
     allocate(cell%deltadist(3,0:26,nsize))
+    if (cell%ltpcel) then
+       allocate(cell%sigc(3,3,nsize))
+       allocate(cell%tempc(nsize))
+    end if
     return
   end subroutine allocatecelN
 
-  
+
   subroutine dealloc_cel(cell)
     class(cell_config)::cell
 
     if (allocated(cell%ncel))       deallocate(cell%ncel)
-
     if (allocated(cell%nato))       deallocate(cell%nato)
-
     if (allocated(cell%atincel))    deallocate(cell%atincel)
-
     if (allocated(cell%deltadist))  deallocate(cell%deltadist)
+    if (allocated(cell%sigc))  deallocate(cell%sigc)
+    if (allocated(cell%tempc))  deallocate(cell%tempc)
 
     return
 
@@ -223,7 +232,7 @@ contains
     !
     !   write(6,*)'caltabt',it
     icaltabt=icaltabt+1
-    
+
     cell%nato(0:cell%noxyz) = 0
     cell%atincel(1:cell%natperc,0:cell%noxyz) = 0
 
@@ -240,7 +249,7 @@ contains
        if (lperiod) then            
           xpnp(:,:)=atcf%xp(:,:)         
        else                         
-          call notperiod(atcf%imm,atcf%xp,xpnp)   
+          call notperiod(atcf%im,atcf%xp,xpnp)   
        end if
        !  -------- Initialisations  -----------
 
@@ -253,7 +262,7 @@ contains
        !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
 
        !     if (it.gt.1000) write(6,*)'CALTABT',it
-!       write(6,*)'caltabt icaltabt im',icaltabt,atcf%im
+       !       write(6,*)'caltabt icaltabt im',icaltabt,atcf%im
        do i = 1, atcf%im
           !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
           aux = xpnp(1,i)*cell%nox
@@ -278,7 +287,7 @@ contains
           END IF
           atcf%ielat(i) = koo
           cell%nato(koo) = cell%nato(koo)+1
-!          write(6,*)'caltabt', koo,i,cell%nato(koo)        ! DEBUG
+          !          write(6,*)'caltabt', koo,i,cell%nato(koo)        ! DEBUG
           ! ==== MODIF Clouet =====================
           IF (cell%nato(koo).GT.cell%natperc) THEN
              WRITE(0,'(a)') 'You need to increase the maximal number of atoms per cell'
@@ -302,60 +311,82 @@ contains
        !             end do
        DEALLOCATE(xpnp)   ! MODIF CLOUET
     endif
-!    do koo=1,cell%noxyz
-!       write(6,*)'nato',koo,cell%nato(koo)
-!    end do
+    !    do koo=1,cell%noxyz
+    !       write(6,*)'nato',koo,cell%nato(koo)
+    !    end do
 
 !!$write(6,*)'sortie caltabt'     ! DEBUG
 
-!      write(6,*)'maxnato', maxval(cell%nato)
+    !      write(6,*)'maxnato', maxval(cell%nato)
     cell%icaltabt=icaltabt
     atcf%icaltabt=icaltabt
     return
   end subroutine caltabtC
 
 
-  subroutine ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  subroutine ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpc,sigc,tempc)
     type(cell_config), intent(out):: celndm
     integer, intent(in):: nox,noy,noz,natperc,noxyz
     integer,intent(in)::ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
     real(double),intent(in)::celsize(3)
-    
-    celndm%nox=nox
-    celndm%noy=noy
-    celndm%noz=noz
-    celndm%natperc=natperc
-    celndm%noxyz=nox*noy*noz
-    call allocatecelN(celndm)
-    celndm%icaltabt=0
+    logical,optional,intent(in)::ltpc
+    real(double),intent(in),optional,allocatable::sigc(:,:,:),tempc(:)
+    logical::ltpcel=.false.
+    if (present (ltpc))ltpcel=ltpc
 
+    call init_cel(celndm,nox,noy,noz,natperc,ltpcel)
+    !    celndm%nox=nox
+    !    celndm%noy=noy
+    !    celndm%noz=noz
+    !    celndm%natperc=natperc
+    !    celndm%noxyz=nox*noy*noz
+    !    if (ltpcel)then
+    !       celndm%ltpcel=.true.
+    !    end if
+    !    call allocatecelN(celndm)
+    celndm%icaltabt=0
     celndm%ncel(0:noxyz,0:26)=ncel(0:noxyz,0:26)
     celndm%nato(0:noxyz)=nato(0:noxyz)
     celndm%atincel(1:natperc,0:noxyz)=atincel(1:natperc,0:noxyz)
     celndm%deltadist(1:3,0:26,1:noxyz)=deltadist(1:3,0:26,1:noxyz)
     celndm%celsize(1:3)=celsize(1:3)
-  end subroutine ndm2cellconfig
+    if (ltpcel)then
+       celndm%sigc=sigc
+       celndm%tempc=tempc
+    end if
+  endsubroutine ndm2cellconfig
 
-  subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc)
     type(cell_config), intent(inout):: celndm
     integer, intent(inout):: nox,noy,noz,natperc,noxyz
     integer,intent(inout)::ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
     real(double),intent(out)::celsize(3)
-
+    logical,optional,intent(out)::ltpcel
+    real(double),intent(out),optional,allocatable::sigc(:,:,:),tempc(:)
+    if (celndm%ltpcel)then
+       ltpcel=celndm%ltpcel
+       if (ltpcel) then
+          if (.not.allocated(sigc))allocate (sigc(3,3,celndm%noxyz))
+          if (.not.allocated(tempc))allocate (tempc(celndm%noxyz))
+       end if
+    end if
     if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
        write(6,*)'incohérence entre noxyz et celndm%noxyz'
        stop
     end if
-    
+
     celndm%icaltabt=0
     ncel(0:noxyz,0:26)=celndm%ncel(0:noxyz,0:26)
     nato(0:noxyz)=celndm%nato(0:noxyz)
     atincel(1:natperc,0:noxyz)=celndm%atincel(1:natperc,0:noxyz)
     deltadist(1:3,0:26,1:noxyz)=celndm%deltadist(1:3,0:26,1:noxyz)
     celsize(1:3)=celndm%celsize(1:3)
-
+    if (celndm%ltpcel)then
+       sigc(:,:,:)=celndm%sigc(:,:,:)
+       tempc(:)=celndm%tempc(:)
+    end if
     call celndm%dealloc
-    
+
   end subroutine cellconfig2ndm
 
   ! copie d'une config entière vers config de base
@@ -363,7 +394,7 @@ contains
   subroutine copy_cell (cellsource,cellcible)
     class(cell_config)::cellsource
     class(cell_config)::cellcible
-    
+
     call cellcible%dealloc
     call cellcible%init(cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc)
 
@@ -378,6 +409,10 @@ contains
     cellcible%atincel(:,:)=cellsource%atincel(:,:)
     cellcible%deltadist(:,:,:)=cellsource%deltadist(:,:,:)
     cellcible%celsize=cellsource%celsize
+    if ((cellcible%ltpcel).and.(cellsource%ltpcel))then
+       cellcible%sigc=cellsource%sigc
+       cellcible%tempc=cellsource%tempc
+    end if
   end subroutine copy_cell
 
 
@@ -394,7 +429,7 @@ contains
        write(6,*)'atincel',i,cellv%atincel(:,i)
     end do
     write(6,*)'deltadist',cellv%deltadist
-    
+
   end subroutine cellprint
 end module cellconfig
 

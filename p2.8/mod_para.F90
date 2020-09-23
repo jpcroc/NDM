@@ -116,7 +116,7 @@ contains
   ! Procedure pour la mise a jour des valeurs tabdensity des atomes 
   ! fantomes sur les processeurs.
 
-  subroutine maj_tabdensity_ftm(tabdensity)
+  subroutine maj_tabdensity_ftm(tabdensity) !appelée dans calfoeamcel
 
     USE T_kind_param_m, ONLY:  double
     use tab_imm_m
@@ -140,7 +140,7 @@ contains
   ! Procedure pour la mise a jour des valeurs fp des atomes frontieres
   ! du processeur courant avec leurs contributions des processeurs voisins
  
-  subroutine maj_fp_frt
+  subroutine maj_fp_frt !appelée SEULEMENT dans force_tersoff_cel !
 
     USE T_kind_param_m, ONLY:  double
     use tab_imm_m
@@ -163,7 +163,7 @@ contains
   ! Procedure dont le but est l'envoi des atomes qui sont sorti du domaine
   ! courant pour etre pris en charge par leur nouveau processeur
 
-  subroutine envoi_atomes_fantomes
+  subroutine envoi_atomes_fantomes ! seulement maj_atomes_frt_ftm
 
     USE T_kind_param_m, ONLY:  double
     use tab_imm_m
@@ -321,7 +321,7 @@ contains
   !------------------------------------------------------------------------!
   ! Procedure dont le but est la reception des nouveaux atomes locaux
 
-  subroutine reception_nouveaux_atomes
+  subroutine reception_nouveaux_atomes !seulment MAJ
 
     USE T_kind_param_m, ONLY:  double
     use tab_imm_m
@@ -712,7 +712,7 @@ contains
   ! Procedure en charge de la reception des nouveaux atomes fantomes en 
   ! provenance des processeurs voisins
 
-  subroutine reception_atomes_fantomes
+  subroutine reception_atomes_fantomes !seulement MAJ
 
     USE T_kind_param_m, ONLY:  double
     use tab_imm_m

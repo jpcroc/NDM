@@ -1,6 +1,6 @@
 module trempe_mod
   USE period_mod,only: period
-  USE gen_com_m, ONLY:imm,im,lperiod,tstep,usdh
+  USE gen_com_m, ONLY:im,imm,lperiod,tstep,usdh
 
   implicit none
 contains

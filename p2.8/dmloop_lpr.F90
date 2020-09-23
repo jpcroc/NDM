@@ -9,6 +9,8 @@ module dmloop_lpr_mod
 
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtc
+  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
+
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
@@ -53,6 +55,7 @@ contains
 #endif
     type(atom_config_d)::atdml
     type(cell_config):: celndm
+    type(box_config)::boxndm
 
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 
@@ -70,11 +73,11 @@ contains
 1   continue 
     it = it+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
-
+  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml,celndm,t_sigma=.true.)
+  CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=.true.)
 
 !  CALL CalFo(sig,potist,atdml,celndm)
       if (l2t)then

@@ -1,7 +1,6 @@
 module boxconfig
   USE T_kind_param_m
   use recips_mod,only:recips,calcvol
-
   implicit none
   type box_config
      real(double):: at(3,3)

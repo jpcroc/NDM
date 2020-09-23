@@ -3,13 +3,14 @@ module dmloop_vverlet_mod
   USE analyse_mod,only: analyse
   USE controle_mod,only: controle
   USE dyn_vverlet_mod,only: dyn_vverlet
-  USE calctemp_mod,only: calctemp
+!  USE calctemp_mod,only: calctemp
   USE sauvegarde_mod,only: sauvegarde
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
   USE correl_mod,only: correlvp
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   use var_pot,only:ntyp
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,im,lgc,rang,rayonc,&
        &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,sigat,sigc&
@@ -46,7 +47,7 @@ contains
     integer::lenfn2,i
     integer::ilocal
     real(double) sigkine_tot(3,3)
-    real(double) :: temptyp(ntyp)
+!    real(double) :: temptyp(ntyp)
 #ifdef PARA
     ! declarations supplementaires pour MPI
     real(double), dimension(3,3,noxyz) :: sigc_tot
@@ -57,6 +58,7 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     ! MPI
+    type(box_config)::boxndm
     type(atom_config_d)::atdml
     type(cell_config):: celndm
     logical :: test_sigma
@@ -68,11 +70,12 @@ contains
     if (lsuivinonpbc) call init_suivinonpbc()
     ! Appel de la routine generale des forces
     !    call calfo
+  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   test_sigma=(mod(it,itesigma)==0)
-  CALL CalFo(sig,potist,atdml,celndm,t_sigma=test_sigma)
+  CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
   if (l2t)then
      if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     else
@@ -86,7 +89,7 @@ contains
 
 
     !  call analyse
-    call calctemp (temptyp) 
+!    call calctemp (temptyp) 
 1   continue
     it = it+1
 

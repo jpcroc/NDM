@@ -6,12 +6,12 @@ module calfo2ccel_mod
   implicit none
 contains
   ! ***************************************************************
-  subroutine calfo2ccel(im,imm,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist)
+  subroutine calfo2ccel(im,imm,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m , ONLY:at,bg,lcalcjq,lperiod,ltpcel,pi,potis1,potis2,sigc,volu
+    USE gen_com_m , ONLY:lcalcjq,lperiod,pi,potis1,potis2
     USE jqmod
 #ifdef PARA
     use mpi
@@ -31,6 +31,9 @@ contains
 
     integer,intent(in)::noxyz,natperc
     integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
+    real(double),intent(in),dimension(3,3)::at,bg
+    real(double),intent(in)::volu
+
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------

@@ -12,7 +12,7 @@ module prog_mod
   USE dmloop_mod,only: dmloop
  
   USE montecarlo_mod, only: montecarlo
-
+  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
 #if defined ML || defined PARAML    
@@ -27,7 +27,8 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,im,imm,indi,ltabvois,parallele,potist,rang,sig,nvois ,&
-         &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize
+         &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize,&
+             &at,bg,zl,zls2,nzl,volu,normat
 
     USE tab_imm_m
     
@@ -43,6 +44,7 @@ contains
     integer::lenfn2,i,ko
     type(atom_config_d)::atdml
     type(cell_config)::celndm
+    type(box_config)::boxndm
 
 
     !-----------------------------------------------
@@ -124,10 +126,11 @@ contains
        if (.not.parallele)   call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     case(11)
        if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
+       call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
        call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
        call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
             &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-       CALL CalFo(sig,potist,atdml,celndm) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       CALL CalFo(sig,potist,atdml,celndm,boxndm) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
        call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
        call analyse()

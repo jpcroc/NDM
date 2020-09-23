@@ -7,7 +7,7 @@ MODULE FireModule
 
   USE T_kind_param_m, ONLY:  double
   USE period_mod,only: period
-  USE gen_com_m, ONLY:imm,im,lperiod,tstep,usdh,tstep
+  USE gen_com_m, ONLY:im,imm,lperiod,tstep,usdh,tstep
   ! --- Paramètres de l'algorithme fire -----------------------
   real(double), parameter, private :: finc=1.1
   real(double), parameter, private :: fdec=0.5

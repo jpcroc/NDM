@@ -48,9 +48,10 @@ contains
 #ifdef PARA
     real(double)::jq_tot(3)
 #endif
-
+    type(box_config)::boxndm
     type(atom_config_d)::atdml
     type(cell_config):: celndm
+
     logical::test_sigma=.false.
     !      write (*,*) 'sub dynvverlet'
 
@@ -136,13 +137,13 @@ contains
     end if
 
     ! Force calculation
-
+  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   jq=0.0
   if (itesigma>0) test_sigma=(mod(it,itesigma)==0)
-  CALL CalFo(sig,potist,atdml,celndm,t_sigma=test_sigma)
+  CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
 
       if (l2t)then
        if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)

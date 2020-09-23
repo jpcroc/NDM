@@ -2,10 +2,12 @@ module work_cgII
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY: im, imm,at, inv_angst, lperiod, rang,indi,itmax,leev,ltabvois,sig, &
-                       it, itesauv, itesauvposition, itesauvforce,itmax, &
-                       inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
-                       dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz,nvois,&
-                       &natperc,nato,ncel,atincel,deltadist,celsize,bg,mdcg_noise
+       it, itesauv, itesauvposition, itesauvforce,itmax, &
+       inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
+       dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz,nvois,&
+       &natperc,nato,ncel,atincel,deltadist,celsize,bg,mdcg_noise,&
+       &at,bg,zl,zls2,nzl,volu,normat
+
   USE controle_mod,only: controle
   USE calfo_mod,only: calfo
   USE analyse_mod,only: analyse
@@ -26,6 +28,7 @@ use mod_para,only:MPI_COMM_space, status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,ma
   USE tab_imm_m,only : xp, fp,num_at_glob,ax,vp,xpp,ityp,ielat,iwmax,bruitmd
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
+  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
 
   
   implicit none
@@ -57,7 +60,8 @@ contains
 
     type(atom_config_d)::atcg
     type(cell_config):: celcg
-    
+    type(box_config)::boxndm
+
 !    write(6,*)'entree funct', it,ncalls
     it=NCALLS-1
 
@@ -158,11 +162,11 @@ contains
 !      !       write(6,*)rang,i,xp_all(:,i)
 !       write(607,'(I6,3G22.13)') i,xp(:,i)
 !    end do
-
-      call ndm2cellconfig(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+  call ndm2cellconfig(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atcg,celcg)
+  CALL CalFo(sig,potist,atcg,celcg,boxndm)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite

@@ -22,9 +22,10 @@ module analyse_mod
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,tempc,tcp,lprtcel,pmc,pmc,tempc,tempc,celpp,&
        &celpp,tcp,tcp,lprtcel,tempc,tcp,pmc,celpp,natchk,natchk,sigc,celpm1,tm1,tpseuils,tpseuils,tpseuils,tpseuils,&
        &sigtot,eatomtotm,volu,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
-       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,sigat
+       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,sigat,celsize,nvois
 
-
+  USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
 
   implicit none
 contains
@@ -56,10 +57,12 @@ contains
     real(double), dimension(ntyp) :: temptyp
 
 
+    type(atom_config_d)::atdml,attyp
+    type(cell_config):: celndm,celtyp
 
     real(double) :: ppot, pkin
     real(double) :: a1, a2, a3, b1, b2, b3, c1, c2, c3
-    real(double) :: fteta, tbc, tca, tab, amod, bmod, cmod
+    real(double) :: fteta, tbc, tca, tab, amod, bmod, cmod,kinetyp
     real(double) ::  alat
     real(double), external :: tempinst
     real(double), save :: volumean,amodmean,bmodmean,cmodmean,tcamean,tabmean,tbcmean
@@ -129,13 +132,29 @@ contains
     !        write(112,'(I10,G15.6,F12.2)')it,timel,temp2
     !     end if
     !  end if
-    call calctemp (temptyp)
+ 
     if (itetemp>0) then
        if (mod(it,itetemp)==0) then
-
+          call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+          call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+               &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+          call calctemp (temp,kine,atdml,celndm)
+          
+          do iti=1,ntyp
+             if (na(iti)==0) cycle
+             atdml%lgul=.false.
+             celtyp=celndm
+             where(atdml%ityp==iti)
+                atdml%lgul=.true.
+             end where
+             call atdml%fab(attyp)
+             !write(6,*)'nbat',count(atdml%ityp==iti),na(iti),attyp%im,attyp%ityp
+             call caltabtC(celtyp,attyp,lperiod,bg)
+             call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
+ !temptyp=0
           !        call calctemp (temptyp)
-          !        write(6,*) 'sortie calctemp',temp,rang
-
+                  write(6,*) 'sortie calctemp',temptyp(iti)
+          end do
           ! MPI
           !remarque 1erg = 6.24d11 eV
           if (mod(it,itetemp2)==0) then

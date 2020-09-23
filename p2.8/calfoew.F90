@@ -1,12 +1,12 @@
 module calfoew_mod
   USE epme_mod,only: epme
-  USE gen_com_m, ONLY:ltpcel,tabf3,sigc,pi,potis3,volu,zero,bg,tabv3
+  USE gen_com_m, ONLY:tabf3,pi,potis3,zero,tabv3
   USE calfocommon
   implicit none
 contains
 
   ! ***************************************************************
-  subroutine calfoew(im,imm,xp,fp,ityp,noxyz)
+  subroutine calfoew(im,imm,xp,fp,ityp,noxyz,at,bg,volu)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -31,6 +31,9 @@ contains
     integer,intent(in)::im,noxyz,imm
     real(double),intent(inout),allocatable::fp(:,:),xp(:,:)
     integer,intent(in),allocatable::ityp(:)
+    real(double),intent(in),dimension(3,3)::bg,at
+    real(double),intent(in)::volu 
+
     
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s

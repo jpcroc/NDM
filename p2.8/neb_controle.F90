@@ -6,6 +6,7 @@ module neb_controle_mod
   USE deftimestep_mod,only: deftimestep
   USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,nebtype,temp,rang,potist,leev,itmax,itetimestep,itetemp,&
        &angst,erg2ev,it
+  USE dynalloccell,only:deallocateall
   implicit none
 contains
 
@@ -15,13 +16,13 @@ contains
   !           MCM for JPC 08/02/2007
   ! ***********************************************************
 
-  subroutine neb_controle (ii,xp,fp,imr) 
+  subroutine neb_controle (ii,xp,fp,im) 
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE neb_module!,only: neb_module,forctot,formax
+    USE neb_module,only: forctot,formax,nebtest,dragtest
 
     implicit none
     !-----------------------------------------------
@@ -30,7 +31,7 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer,intent(in)  :: ii,imr
+    integer,intent(in)  :: ii,im
     real(double),allocatable  :: xp(:,:)
     real(double),allocatable  :: fp(:,:)
     !-----------------------------------------------
@@ -102,8 +103,8 @@ contains
     case(1)
 
        if (lEev.EQV..true.) then 
-          forctot = sqrt(SUM(fp**2))*erg2eV/angst
-          formax  = sqrt(MAXVAL(fp(1,:)**2+fp(2,:)**2+fp(3,:)**2))*erg2eV/angst
+          forctot = sqrt(SUM(fp(1:3,1:im)**2))*erg2eV/angst
+          formax  = sqrt(MAXVAL(fp(1,:im)**2+fp(2,1:im)**2+fp(3,1:im)**2))*erg2eV/angst
           !            write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
           if (fpstop>0) then   
              if (formax.le.fpstop) then
@@ -121,8 +122,8 @@ contains
           end if
 
        else
-          forctot = sqrt(SUM(fp**2))
-          formax  = sqrt(MAXVAL(fp(1,:)**2+fp(2,:)**2+fp(3,:)**2))
+          forctot = sqrt(SUM(fp(1:3,1:im)**2))
+          formax  = sqrt(MAXVAL(fp(1,1:im)**2+fp(2,1:im)**2+fp(3,1:im)**2))
           !            write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
           if (fpstop>0) then   
              if (formax.le.fpstop) then
@@ -149,17 +150,14 @@ contains
        nebtest(ii)=0 
 
        if (lEev.EQV..true.) then 
-          forctot = sqrt(SUM(fp**2))*erg2eV/angst
-          formax  = sqrt(MAXVAL(fp(1,:)**2+fp(2,:)**2+fp(3,:)**2))*erg2eV/angst
+          forctot = sqrt(SUM(fp(1:3,1:im)**2))*erg2eV/angst
+          formax  = sqrt(MAXVAL(fp(1,1:im)**2+fp(2,1:im)**2+fp(3,1:im)**2))*erg2eV/angst
 
           
-          formaxperp  = sqrt(MAXVAL(fp_par(1,:)**2+fp_par(2,:)**2+     &
-               fp_par(3,:)**2))*erg2eV/angst
-
-
-
-          formaxparl  = sqrt(MAXVAL((fp(1,:)-fp_par(1,:))**2+(fp(2,:)-  &
-               fp_par(2,:))**2+(fp(3,:)-fp_par(3,:))**2))*erg2eV/angst
+!          formaxperp  = sqrt(MAXVAL(fp_par(1,:)**2+fp_par(2,:)**2+     &
+!               fp_par(3,:)**2))*erg2eV/angst
+!          formaxparl  = sqrt(MAXVAL((fp(1,:)-fp_par(1,:))**2+(fp(2,:)-  &
+!               fp_par(2,:))**2+(fp(3,:)-fp_par(3,:))**2))*erg2eV/angst
 
           if (fpstop>0) then   
              if (formax.le.fpstop) then
@@ -178,8 +176,8 @@ contains
           end if
 
        else
-          forctot = sqrt(SUM(fp**2))
-          formax  = sqrt(MAXVAL(fp(1,:)**2+fp(2,:)**2+fp(3,:)**2))
+          forctot = sqrt(SUM(fp(1:3,1:im)**2))
+          formax  = sqrt(MAXVAL(fp(1,1:im)**2+fp(2,1:im)**2+fp(3,1:im)**2))
           !            write(*,'("GC: ",i6,3E15.5)') it,forctot, formax, potist
           if (fpstop>0) then   
              if (formax.le.fpstop) then

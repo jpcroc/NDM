@@ -208,7 +208,7 @@ contains
     end if
 
 
-    if (lperiod)       call period  (imm,xp,xpp,ax)
+    if (lperiod)       call period  (im,xp,xpp,ax)
 
 #endif
 

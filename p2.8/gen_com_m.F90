@@ -56,7 +56,7 @@ module gen_com_m
 
   real(double), dimension(3) :: zl, zls2,nzl    ! largeur de la boite et largeur sur 2
   real(double) :: volu      ! volume
-  integer, dimension(3) :: lat      ! generation: nb de repetition de cel unite
+!  integer, dimension(3) :: lat      ! generation: nb de repetition de cel unite
   real(double), dimension(3,3) :: at, bg ! at : vecteurs de base de la boite (BOND en cm) bg: vecteur du reseau reciproque
   real(double), dimension(3,3) :: h0     ! Vecteurs de base de la boite de reference en A (Parrinello, Rahman)
   logical :: lUcell                 ! affiche l'energie potentielle de la boite

@@ -1,11 +1,11 @@
 module force_tersoff_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,fnemd,lcalcjq,lnemd,potistersoff,potiszbl,zl,volu
+  USE gen_com_m, ONLY:fnemd,lcalcjq,lnemd,potistersoff,potiszbl
         USE calfocommon
   implicit none
 contains
   ! ***************************************************************
-  subroutine force_tersoff (im,imm,xp,  vp,  fp,  iwmax, ityp,indi)
+  subroutine force_tersoff (im,imm,xp,  vp,  fp,  iwmax, ityp,indi,at,bg,volu,zl)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -28,12 +28,14 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-      integer,intent(in)::im,imm
-  integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
-  real(double),intent(in),allocatable  :: vp(:,:)
-  real(double),intent(inout),allocatable  :: xp(:,:)
-  real(double) , intent(inout),allocatable :: fp(:,:)
-    !-----------------------------------------------
+    integer,intent(in)::im,imm
+    integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
+    real(double),intent(in),allocatable  :: vp(:,:)
+    real(double),intent(inout),allocatable  :: xp(:,:)
+    real(double) , intent(inout),allocatable :: fp(:,:)
+    real(double),intent(in),dimension(3,3)::at,bg
+     real(double),intent(in)::volu,zl(3)
+     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
     !-----------------------------------------------
@@ -75,7 +77,11 @@ contains
        coupR(:)=rter(:)+ster(:)
     end select
     !write(6,*)'coupR',coupR
-
+    if ((at(1,2).ne.0).or.(at(1,3).ne.0).or.(at(2,3).ne.0).or.(at(2,1).ne.0).or.(at(3,2).ne.0).or.(at(3,1).ne.0)) then
+       write(6,*)'Tersoff seulement en tetragonal'
+       stop
+    end if
+       
     moi =0
     !  do i=1,im
     !     fp(1,i)=0; fp(2,i)=0; fp(3,i)=0

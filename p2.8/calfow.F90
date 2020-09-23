@@ -1,12 +1,12 @@
 module calfow_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY: bg,lperiod,ltpcel,pi,potcp,potis1,zero,at,sigc,volu
+  USE gen_com_m, ONLY: lperiod,pi,potcp,potis1,zero,volu
   USE calfocommon
   implicit none
 contains
   ! ***************************************************************
-  SUBROUTINE CALFOW(im,imm,xp,vp,fp,ielat,ityp,noxyz,natperc,atincel,nato,ncel,deltadist)
+  SUBROUTINE CALFOW(im,imm,xp,vp,fp,ielat,ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
     !     calcule des forces a 2 corps dans le pot de Watanabe
     !     version Avril 2001  
     ! ***************************************************************
@@ -25,6 +25,8 @@ contains
     real(double),allocatable  :: xp(:,:),vp(:,:),fp(:,:) 
     !    real(double)  :: vp(3,imm) 
     !    real(double)  :: fp(3,imm)
+    real(double),intent(in),dimension(3,3)::at,bg
+    real(double),intent(in)::volu
 
     integer,intent(in)::noxyz,natperc
     integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)   

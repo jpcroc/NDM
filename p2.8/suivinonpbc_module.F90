@@ -8,7 +8,7 @@ module suivinonpbc
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:at,fnamcoutnonpbcxp,fnamcoutxp,im_glob,rang,imd,zero,imd,fnam,lenfnam,&
-  &fmt_cin,half,ides,igen,imm_glob,lalea,lat,lrestart,lvpread,nitmax,oldtstep,rsep,two,usdh,dilat,im
+  &fmt_cin,half,ides,igen,imm_glob,lalea,lrestart,lvpread,nitmax,oldtstep,rsep,two,usdh,dilat,im
 
   USE tab_imm_m,only:ityp,xpnonpbc,tmpsuivi,axnonpbc,num_at_glob
   USE arret_ndm_mod,only: arret_ndm

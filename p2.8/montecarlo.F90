@@ -1,6 +1,7 @@
 module montecarlo_mod
   USE gen_com_m,only:  at, bg, lperiod, timel,& 
-                      &tstep, timel,tstep, sig, potist
+                      &tstep, timel,tstep, sig, potist,&
+             &at,bg,zl,zls2,nzl,volu,normat
   USE atomconfig,only:atom_config,atom_config_d
   USE period_mod,only: period 
   USE cellconfig, only:cell_config, caltabtC
@@ -9,8 +10,10 @@ module montecarlo_mod
   USE T_kind_param_m, ONLY:  double
   USE cryst_to_cart_mod, ONLY: cryst_to_cart
   USE caltabi_mod,only: caltabi
+  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
 
   implicit none
+  type(box_config)::boxndm
 
   type(atom_config_d)::config_atom_n !type derive atom_config du systeme a n atomes
   type(atom_config_d)::config_atom_nplus1 !type derive atom_config du systeme a n+1 atomes
@@ -55,6 +58,7 @@ lambda_mc = 0.0
 lextend = .true.
 
 lperiod = .true.
+call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
 
 !defintion de la boite du syst a N atomes
     call caltabtC(cells_n,config_atom_n,lperiod,bg)
@@ -72,7 +76,7 @@ lperiod = .true.
    call cryst_to_cart(1,cart_vec_nplus1,at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
 
    !copie du syst n dans n+1 et addition de la n+1eme particule
-   call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%ltabvois,immin=config_atom_n%imm)
+   call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois)
 
    config_atom_nplus1%ltabvois=config_atom_n%ltabvois
    call config_atom_n%copy_config(config_atom_nplus1,lrescl=.false.)
@@ -105,8 +109,8 @@ lperiod = .true.
 DO WHILE (lambda_mc < 1)
 
 !calcul des forces des systemes N et N+1
-CALL CalFo(sig_n,potist_n,config_atom_n,cells_n)
-CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1)
+CALL CalFo(sig_n,potist_n,config_atom_n,cells_n,boxndm)
+CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1,boxndm)
 
 
 ! melange des deux systemes
@@ -137,7 +141,7 @@ CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1)
     call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,bg)
 
     ! Force calculation
-    CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1)
+    CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1,boxndm)
     
     ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
     DO i=1, config_atom_nplus1%im

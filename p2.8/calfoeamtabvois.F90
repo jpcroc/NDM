@@ -1,14 +1,14 @@
 module calfoeamtabvois_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:angst,at,bg,fnemd,it,lcalcjq,ldemitab,&
-       &lnemd,low_limit,lperiod,volu,zero
+  USE gen_com_m, ONLY:angst,fnemd,it,lcalcjq,ldemitab,&
+       &lnemd,low_limit,lperiod,zero
         USE calfocommon
 
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfoeamtabvois(im,imm,xp, vp,  fp,  iwmax, ityp,indi)
+  SUBROUTINE calfoeamtabvois(im,imm,xp, vp,  fp,  iwmax, ityp,indi,at,bg,volu)
     !tentative de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
     USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,eamglue,eamglue_d,&
@@ -30,7 +30,8 @@ contains
     real(double)  :: xp(:,:)
     real(double)  :: vp(:,:)
     real(double)  :: fp(:,:)
-
+    real(double),intent(in),dimension(3,3)::at,bg
+    real(double),intent(in)::volu
     !local variables
     integer :: i,j !atomes
     integer ::iti,itj !types
