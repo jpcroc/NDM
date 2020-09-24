@@ -6,12 +6,17 @@ module endrun_mod
         USE arret_ndm_mod,only:arret_ndm
         USE sauvegarde_mod,only:sauvegarde,cin2gin
         USE rdf_mod,only:rdf
-        USE rasmol_mod,only:rasmol,redefine_ty
+        USE rasmol_mod,only:rasmol
         USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,sigat,cunitP,erg2eV,itdes,&
              &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
              &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,eatomtotm,&
-             &lwgin,nstepdes, lposmoy,l2T,angst
+             &lwgin,nstepdes, lposmoy,l2T,angst,&
+             &celsize,indi,ltabvois,normat,nvois,nzl,volu,zls2
         use var_pot, only: eatref,eatref,eatref
+          USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
+          USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
+          use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
+  
 
         implicit none
         contains
@@ -21,7 +26,7 @@ subroutine endrun
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE tab_imm_m,only:posmoyx,ityp,xp,num_at_glob,fp
+  USE tab_imm_m,only:posmoyx,ityp,xp,num_at_glob,fp,vp,iwmax
 #ifdef PARA
   use mpi
   USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,temps_dmloop_deb,temps_dmloop,&
@@ -53,6 +58,9 @@ subroutine endrun
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
+    type(atom_config_d)::atdml,attyp
+    type(cell_config):: celndm,celtyp
+    type(box_config)::boxndm
 
   integer :: i,j, n, nAux_real
   CHARACTER(len=100) :: out_file
@@ -70,7 +78,10 @@ subroutine endrun
   !
   !
   !
-
+   call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
   if (lPkbar) then
      unitP=1.0d-9
      cunitP='kbar'
@@ -230,8 +241,7 @@ subroutine endrun
        it=0
   end if
   call analyse
-  if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
-  if (iterasmol.GE.0) call rasmol (it)
+  if (iterasmol.GE.0) call rasmol (atdml,boxndm,it)
   if (.not.parallele.and.iteanapos>=0) call anapos (it)
 
   ! Ecriture d'un fichier atomeye
@@ -240,7 +250,7 @@ subroutine endrun
         WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.cfg'
         OPEN(file=out_file, unit=60, action='write')
 
-        if (dmtype==17)  CALL redefine_ty()
+!        if (dmtype==17)  CALL redefine_ty()
 
         IF (lPrtEat.OR.lPrtSigat) THEN       ! Energy and/or stress per atom
                 nAux_real=0

@@ -30,6 +30,7 @@ module init_mod
   USE neb_module,only: configneb,atneb,cellneb
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC,init_cel
+  use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
 
 
 #ifdef PARA
@@ -48,7 +49,7 @@ module init_mod
        &lrestart,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,&
        kinemean,lsigat,pmean,xpchdn,eatomtotm,lprteattotm,vpchdn,indi,nvois,&
        &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,celsize,npath,&
-       &posa,forca,firsttime_lammps
+       &posa,forca,firsttime_lammps,normat,nzl,volu,zls2
 
 
   USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel
@@ -87,6 +88,7 @@ contains
     character*2::extension
     type(atom_config_d)::atdml
     type(cell_config)::celndm
+    type(box_config)::boxndm
     tmean = 0.0
     pmean = 0.0
     timel = 0.0
@@ -282,7 +284,10 @@ contains
 
     if (iterasmol>=0) then
        itapp=-1
-       call rasmol (itapp)
+       call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+     call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+          &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+     call rasmol (atdml,boxndm,itapp)
     end if
 
     !<---------setting the configuration by generation gin / cin file --------------
@@ -456,7 +461,12 @@ contains
        call initspeed
        if (iterasmol>=0) then
           itapp=0
-          call rasmol (itapp)
+                 call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+     call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+          &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+     call rasmol (atdml,boxndm,itapp)
+
+
        end if
     end if
     if (lcorrelvp) then

@@ -283,7 +283,10 @@ contains
 
           read(lupotin,*)nb_paire_a_lire,ngr
           allocate (pot_pair_tab(0:ngr,0:4,nb_paire_a_lire))
+          pot_pair_tab=0
+          
           allocate (ipo_2_pair_tab(npair))
+          ipo_2_pair_tab=0
           if (rang==0) write(6,*)'nb de paires grille',  nb_paire_a_lire, ngr
           do lect_paire=1,nb_paire_a_lire
              if(ipotrep==2) then

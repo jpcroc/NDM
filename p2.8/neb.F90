@@ -448,7 +448,8 @@ contains
 #endif
           call into_path      (ii,2,xp, xpp, vp,  fp, ielat, iwmax, ityp,num_at_glob)
           call sauveposition(ii)      
-          call rasmol(ii)
+          call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxneb)
+          call rasmol(atneb(ii),boxneb,ii)
           if (iteanaposneb.gt.0) call anapos(ii)
           !	 
           reaction_coord(ii) = SUM((atneb(ii)%xp(:,:)-atneb(1)%xp(:,:))*(atneb(npath)%xp(:,:)-atneb(1)%xp(:,:)))/a_local

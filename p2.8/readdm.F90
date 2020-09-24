@@ -309,7 +309,7 @@ contains
     rheat=0.
     Theat=0.0
     Eheat=0.
-    ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal cod��ｽｩ, ivisu=3=xred
+    ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG a préférer à itecfg 
 
     ! management of the specific boundary conditions (free or rigid)  ---------------------------   !*!
     ibound = 0	! ( ibound = 0 <=> no spe BoundC, ibound = 1 <=> strain controlled BoundC, ibound = 2 <=> stress controlled BoundC)		!*!
@@ -365,7 +365,11 @@ contains
 
     timemax=timemax*1d-15
 
-
+    if (itecfg.gt.0) then
+       write(6,*)'ITECFG desactive, reactivez (in readdm )"at your own risks"'
+       write(6,*) 'utilisez ivisu=4 pour sortir des .cfg'
+       stop
+    end if
 
     imm_glob = imm
 #ifdef PARA
@@ -574,7 +578,7 @@ contains
        if (rang==0) write(6,*)'INPUT HISTORIQUE ??'
     end if
 
-    if(dmtype==9) lprteat=.true.
+!    if(dmtype==9) lprteat=.true.
     if(dmtype==12) lprteat=.true.
     if(dmtype==16) lprteat=.true.
     if (lposmoy.EQV..true.) then 

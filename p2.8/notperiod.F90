@@ -55,7 +55,6 @@ subroutine notperiod(im,xp, xpnp)
 
      do i=1,im
         do ic=1,3
-           write(6,*)'BBBB',i,ic,xpnp(ic,i)
            xpici=xpnp(ic,i)
 
            if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then

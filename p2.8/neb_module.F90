@@ -3,7 +3,7 @@ module neb_module
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:iseed,neb_noise_scale,npath,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam, imm,pi,rang,im_glob,lenfnam,rang,zero,zl,zls2,lcontr,&
-       &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois,im,at,bg
+       &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois,im,at,bg,nzl,volu
 
   USE contrainte,only:contr
   USE config_mod,only: config
@@ -16,7 +16,8 @@ module neb_module
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config,init_cel
   USE config_mod,only : config2data
-  implicit none
+  use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
+ implicit none
 
 
   integer, save                                  :: dragtest
@@ -627,6 +628,7 @@ end if
 !    USE gen_com_m, ONLY:im,imm,nvois,
     USE tab_imm_m,only:xp,xpp,vp,fp,ielat,iwmax,ityp,num_at_glob
 
+    type(box_config)::boxneb
 
     integer :: ic, ip,lucin,icintype,typmax,i,typmin
     character :: extension*9
@@ -728,13 +730,14 @@ end if
         if(rang==0)write(6,*)'FNAM ',fnam
        lenfnam=lenfnam+4
        call config
+       atneb(:)%im=im
        fp=0; ielat=0;iwmax=0;vp=0
        fnam=fnamneb
        lenfnam=lenfnam-4
-       if (rang==0)then
-          call sauveposition(1)
-          call rasmol(1)
-       endif
+!       if (rang==0)then
+!          call sauveposition(1)
+!          call rasmol(1)
+!       endif
 
        atneb(1)%xp(1:3,1:im)=xp(1:3,1:im)
        atneb(1)%ityp(1:im)=ityp(1:im)
@@ -748,6 +751,11 @@ end if
           atneb(1)%iwmax=0 !iwmax(:)
           atneb(1)%indi=0
        end if
+       if (rang==0)then
+          call sauveposition(1)
+          call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxneb)
+          call rasmol(atneb(1),boxneb,1)
+       endif
 
 
 
@@ -762,10 +770,6 @@ end if
        lenfnam=lenfnam-4
        !       write(6,*)'FNAM ',fnam
 
-       if (rang==0)then
-          call sauveposition(npath)
-          call rasmol(npath)
-       endif
 
        atneb(npath)%xp(1:3,1:im)=xp(1:3,1:im)
        atneb(npath)%ityp(1:3)=ityp(1:im)
@@ -779,6 +783,12 @@ end if
           atneb(npath)%iwmax=0 !iwmax(:)
           atneb(npath)%indi=0
        end if
+       if (rang==0)then
+          call sauveposition(npath)
+          call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxneb)
+          call rasmol(atneb(npath),boxneb,npath)
+!         call rasmol(npath)
+       endif
 
 
 !       call into_path(npath,1,xp, xpp, vp,  fp, ielat, iwmax,ityp)
@@ -793,7 +803,7 @@ end if
 
 
     end if
-    atneb(:)%im=im
+
 !#ifdef LAMMPS_VERSION
 
      if((ipotentiel==-10).or.(ipotentiel==-11)) then

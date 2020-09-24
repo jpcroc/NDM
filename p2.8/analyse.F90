@@ -22,11 +22,12 @@ module analyse_mod
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,tempc,tcp,lprtcel,pmc,pmc,tempc,tempc,celpp,&
        &celpp,tcp,tcp,lprtcel,tempc,tcp,pmc,celpp,natchk,natchk,sigc,celpm1,tm1,tpseuils,tpseuils,tpseuils,tpseuils,&
        &sigtot,eatomtotm,volu,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
-       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,sigat,celsize,nvois
+       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,sigat,celsize,nvois,&
+       &normat,nzl,zls2
 
   USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
-
+  use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
   implicit none
 contains
   ! ************************************************
@@ -59,6 +60,7 @@ contains
 
     type(atom_config_d)::atdml,attyp
     type(cell_config):: celndm,celtyp
+    type(box_config)::boxndm
 
     real(double) :: ppot, pkin
     real(double) :: a1, a2, a3, b1, b2, b3, c1, c2, c3
@@ -92,6 +94,11 @@ contains
     !
     !      logical:: lEev=.false., lPkbar=.false.
     !        write(6,*)'analyse',itetemp,it
+
+    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
 
     if(it==1) then
        Cminp=100000
@@ -135,9 +142,6 @@ contains
  
     if (itetemp>0) then
        if (mod(it,itetemp)==0) then
-          call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-          call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-               &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
           call calctemp (temp,kine,atdml,celndm)
           
           do iti=1,ntyp
@@ -151,7 +155,8 @@ contains
              !write(6,*)'nbat',count(atdml%ityp==iti),na(iti),attyp%im,attyp%ityp
              call caltabtC(celtyp,attyp,lperiod,bg)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
- !temptyp=0
+             !temptyp=0
+             call celtyp%dealloc ; call attyp%dealloc
           !        call calctemp (temptyp)
                   write(6,*) 'sortie calctemp',temptyp(iti)
           end do
@@ -715,7 +720,11 @@ contains
 
     if (iterasmol>0) then     
        if (mod(it,iterasmol)==0) then
-          call rasmol (it)
+     call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+         call rasmol(atdml,boxndm,it)
           if (l2T) call  eleccellmol
 
        end if
