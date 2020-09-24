@@ -54,7 +54,9 @@ contains
     logical :: lextend   
 
 !initialisation variables
-lambda_mc = 0.0
+! CRC Je pense que commencer à lambda=0 n'est pas nécessaire 
+    lambda_mc = 1./pas_lambda_mc
+!    lambda_mc = 0.0
 lextend = .true.
 
 lperiod = .true.
@@ -105,24 +107,36 @@ call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
 !   &call caltabi(config_atom_nplus1%atom_config,cells_nplus1)
 
 
-!boucle sur lambda
-DO WHILE (lambda_mc < 1)
+!initialisation pour le dyn_vverlet
 
 !calcul des forces des systemes N et N+1
-CALL CalFo(sig_n,potist_n,config_atom_n,cells_n,boxndm)
-CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1,boxndm)
+   CALL CalFo(sig_n,potist_n,config_atom_n,cells_n,boxndm) 
+   CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1,boxndm)
 
-
-! melange des deux systemes
+   ! melange des forces des deux systemes N et N+1
     DO i=1,config_atom_n%im
      config_atom_nplus1%fp(:,i) = (1-lambda_mc)*config_atom_n%fp(:,i) + lambda_mc*config_atom_nplus1%fp(:,i)
     END DO
+   config_atom_nplus1%fp(:,config_atom_nplus1%im) = lambda_mc*config_atom_nplus1%fp(:,config_atom_nplus1%im)
+   !Egalisation des forces pour les deux systemes
+   DO i=1,config_atom_n%im
+      config_atom_n%fp(:,i) = config_atom_nplus1%fp(:,i)
+   END DO
+
+!CRC déplacé en dehors de la boucle   
+   aux(:ntyp) = tstep/cm(:ntyp)/2.d0
+
+
+   !boucle sur lambda
+DO WHILE (lambda_mc <= 1)
+write(6,*) 'lambda_mc=' ,lambda_mc
+
 
 ! faire le pas de velocity verlet pour determiner les nouvelles forces et positions
 
     ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
     timel = timel+tstep
-    aux(:ntyp) = tstep/cm(:ntyp)/2.d0
+
     DO i=1, config_atom_nplus1%im
       config_atom_nplus1%vp(1:3,i) = config_atom_nplus1%vp(1:3,i) + aux(config_atom_nplus1%ityp(i))*config_atom_nplus1%fp(1:3,i)
     END DO
@@ -133,15 +147,47 @@ CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1,boxndm)
        config_atom_nplus1%xp(1:3,i) = config_atom_nplus1%xp(1:3,i) + tstep*config_atom_nplus1%vp(1:3,i)
     END DO
 
-    !conditions periodiques ?
-    write(6,*) 'config_atom_nplus1%im =' ,config_atom_nplus1%im
-    if (lperiod)    call period(config_atom_nplus1%im,config_atom_nplus1%xp,config_atom_nplus1%xpp)
+   !recopier les nouvelles positions dans le syst N
+    DO i=1, config_atom_n%im
+       config_atom_n%xpp(1:3,i) = config_atom_nplus1%xpp(1:3,i)
+       config_atom_n%xp(1:3,i) = config_atom_nplus1%xp(1:3,i)
+!       config_atom_n%vp(1:3,i) = config_atom_nplus1%vp(1:3,i) 
+    END DO
     
-    ! repartition des atomes dans la nouvelle boite
+    !conditions periodiques 
+    !write(6,*) 'config_atom_nplus1%im =' ,config_atom_nplus1%im
+    if (lperiod)    then
+       call period(config_atom_n%im,config_atom_n%xp,config_atom_n%xpp)
+       call period(config_atom_nplus1%im,config_atom_nplus1%xp,config_atom_nplus1%xpp)
+    end if
+    
+    ! repartition des atomes des syst N et N+1 avec les nouvelles positions
+    call caltabtC(cells_n,config_atom_n,lperiod,bg)
     call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,bg)
 
-    ! Force calculation
+! Force calculation pour chacun des systèmes avec les nouvelles positions et forces melangées
+    CALL CalFo(sig_n,potist_n,config_atom_n,cells_n,boxndm)
     CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1,boxndm)
+
+
+!write(6,*) 'position du ieme atome du syst n',config_atom_n%xp(1:3,1)
+!write(6,*) 'forces du ieme atome du syst n' ,config_atom_n%fp(1:3,6061)
+!write(6,*) 'position du ieme atome du syst n+1',config_atom_nplus1%xp(1:3,1)
+!write(6,*) 'forces du ieme atome du syst n+1' ,config_atom_nplus1%fp(1:3,6061)
+
+    ! melange des forces des deux systemes N et N+1
+    DO i=1,config_atom_n%im
+       config_atom_nplus1%fp(:,i) = (1-lambda_mc)*config_atom_n%fp(:,i) + lambda_mc*config_atom_nplus1%fp(:,i)
+    END DO
+    config_atom_nplus1%fp(:,config_atom_nplus1%im) = lambda_mc*config_atom_nplus1%fp(:,config_atom_nplus1%im)
+
+    !Egalisation des forces pour les deux systemes
+    DO i=1,config_atom_n%im
+       config_atom_n%fp(:,i) = config_atom_nplus1%fp(:,i)
+    END DO  
+  
+!write(6,*) 'ap forces du ieme atome du syst n' ,config_atom_n%fp(1:3,6061)
+!write(6,*) 'ap forces du ieme atome du syst n+1' ,config_atom_nplus1%fp(1:3,6061)
     
     ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
     DO i=1, config_atom_nplus1%im
@@ -152,18 +198,24 @@ CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1,boxndm)
    !Systeme a N
 
     DO i=1, config_atom_n%im
-       config_atom_n%xpp(1:3,i) = config_atom_nplus1%xpp(1:3,i)
-       config_atom_n%xp(1:3,i) = config_atom_nplus1%xp(1:3,i)
+!       config_atom_n%xpp(1:3,i) = config_atom_nplus1%xpp(1:3,i)
+!       config_atom_n%xp(1:3,i) = config_atom_nplus1%xp(1:3,i)
        config_atom_n%vp(1:3,i) = config_atom_nplus1%vp(1:3,i) 
     END DO
-
-    call caltabtC(cells_n,config_atom_n,lperiod,bg)
+!CRC je préfère que la copie (N+1)->(N) des vitesses se fassent ici. car c'est le point où les vitesses et les positions sont synchrones
 
 !incrementation de lambda
-lambda_mc = lambda_mc + 1/pas_lambda_mc
+lambda_mc = lambda_mc + (1./pas_lambda_mc)
+
+
+!write(6,*) 'position du n+1eme atome' ,config_atom_nplus1%xp(1:3,config_atom_nplus1%im)
+!write(6,*) 'forces du n+1eme atome' ,config_atom_nplus1%fp(1:3,config_atom_nplus1%im)
+
 
 END DO 
 
+!write(6,*) 'position du n+1eme atome' ,config_atom_nplus1%xp(1:3,config_atom_nplus1%im)
+!write(6,*) 'forces du n+1eme atome' ,config_atom_nplus1%fp(1:3,config_atom_nplus1%im)
 
   end subroutine montecarlo
 end module montecarlo_mod
