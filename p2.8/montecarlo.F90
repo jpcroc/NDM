@@ -78,7 +78,8 @@ call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
    call cryst_to_cart(1,cart_vec_nplus1,at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
 
    !copie du syst n dans n+1 et addition de la n+1eme particule
-   call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois)
+   write(6,*)'pre', config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois,config_atom_n%nvois
+   call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois,config_atom_n%nvois)
 
    config_atom_nplus1%ltabvois=config_atom_n%ltabvois
    call config_atom_n%copy_config(config_atom_nplus1,lrescl=.false.)
