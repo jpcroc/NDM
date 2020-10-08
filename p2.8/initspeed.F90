@@ -1,33 +1,38 @@
 module initspeed_mod
-  USE tab_imm_m,only:xp,vp,xpp,ityp,ax,bruitmd
+!  USE tab_imm_m,only:xp,vp,xpp,ityp,ax,bruitmd
+    USE tab_imm_m,only:bruitmd
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: MatInv
   USE tempinst_mod,only: tempinst
   USE calctemp_mod,only: calctemp
   USE arret_ndm_mod,only: arret_ndm
   USE period_mod,only: period
-  USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,im,im_glob,iseed,lcalcjq,lperiod,ltpcel,&
-       &lvpread,noxyz,oldtstep,one,pi,rang,tempdeplainit,tinit,tstep,im,iseed,mdcg_noise_scale,&
-       neb_noise_scale,pi,rang,bk,mdcg_noise
+  USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
+       &lvpread,noxyz,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,mdcg_noise_scale,&
+       neb_noise_scale,bk,mdcg_noise! enleve im, im_glog
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
   use mpi
   USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
 #endif
 
-  USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm
+!  USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
 
   implicit none
 contains
   ! *********************************************************************
-  subroutine bruit_xp 
+  subroutine bruit_xp (xp,im)
     USE T_kind_param_m, ONLY:  double
 
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     implicit none
+
+    real(double), allocatable::xp(:,:)
+    integer::im
+    
     integer    :: ia, ip,seed_size
     integer, dimension(:),allocatable :: iseedt
     real(double)  :: zr1,zr2,zr3,zr4,totalbruit
@@ -65,7 +70,7 @@ contains
 
 
   ! *********************************************************************
-  subroutine initspeed
+  subroutine initspeed(atcf,im_glob)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -78,10 +83,13 @@ contains
 
     implicit none
     !-----------------------------------------------
-    type(atom_config_d)::atdml
-    type(cell_config):: celndm
+    class(atom_config_d)::atcf
+!    type(cell_config):: celndm
+    integer,intent(in)::im_glob
 
-
+    real(double),allocatable::xp(:,:),xpp(:,:),vp(:,:)
+    integer,allocatable::ityp(:)
+    integer::im,imm
     
     integer :: i, ic, ia, ib
     integer, dimension(:), allocatable :: iseedt
@@ -120,22 +128,26 @@ contains
 
     !    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
 
+    im=atcf%im ; imm=atcf%imm
+    allocate(xp(3,imm));  allocate(xpp(3,imm));  allocate(vp(3,imm));    allocate(ityp(im))
+    xp=atcf%xp;xpp=atcf%xpp; vp=atcf%vp; ityp=atcf%ityp;
+    
     select case (dmtype)
     case(3,30,5,11,7)
        vp = 0.0
-       return
+       goto 66
     case(2)
        if (lvpread) then 
-          return
+          goto 66
        else
           if (mdcg_noise==0) then 
              vp=0.0;          xpp=xp
-             return
+             goto 66
           else
              vp=0.0 
-             call bruit_xp
+             call bruit_xp(atcf%xp,im)
              xp(1:3,1:im) = xp(1:3,1:im) + bruitmd(1:3,1:im)
-             return
+             goto 66
           end if
        end if
     end select
@@ -478,9 +490,11 @@ contains
           end do
        end do
        !       write(6,*)'decx',decx(1)/na(1),decx(2)/na(2)
-       if (lperiod.EQV..true.) call period (im,xp,xpp,ax)
+       if (lperiod.EQV..true.) call period (im,xp,xpp) !period (im,xp,xpp,ax)
     end if
-
+66  continue
+       atcf%xp=xp;atcf%xpp=xpp; atcf%vp=vp; atcf%ityp=ityp;
+       deallocate(ityp);deallocate(xp);deallocate(xpp);deallocate(vp)
 
     return
 

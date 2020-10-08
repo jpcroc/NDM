@@ -17,13 +17,13 @@ module gen_com_m
   !      integer :: rang, tranche
 #endif
 
+  integer::nvperat
 
 
   integer :: rang, rangph, rangml, rangmab, ja_phondy, ja_ml
   logical :: parallele
 
   integer :: natperc                        ! nb d'atome par cel
-  integer :: nvperat    ! Nombre moyen de voisins par atome
 
   integer :: ivoismax
 
@@ -149,9 +149,11 @@ module gen_com_m
   logical :: lPrtSigat, lprteat, lprtfat,lprteattotm  ! calcul et ecriture de la contrainte, l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
   logical :: lsigatcel !ecriture de la contrainte atomique moyenne sur cellule
   logical :: lsigat ! la contrainte atomique est calcul馥 (rendu vrai par lprtsigat ou lsigatcel)
+  logical :: lax ! stockage positions initiales
   logical :: lposmoy ! ecrit a la fin la position moyenne des atomes
   real(double) :: tdepla, tdepla2 ! seuils de deplacement
   logical :: lfilm, linstantrdf,linstantfda, lrestart, ltpcel, lfilmext !film, RDF, restart, moyenne par cel
+  logical:: ldecoup !if T: cherche les nombres de procs optimums, voir decoup3D (ne marche su'en séquentiel (évidemment)) 
   real*8,dimension(4)::tpseuils ! 1:Tmin; 2:abs(T') ; ; 3:abs(P); 4:abs(P')
   !Correlations et Cie
   logical :: lcorrelvp ! ecriture de l'autocorrelation des vitesses*Masses
@@ -271,8 +273,6 @@ module gen_com_m
 
 
 
-  integer :: imf     ! 
-  integer :: imana     ! 
 
   logical :: ldislo  ! calcul de dislocation
   real(double) :: epcoudis,& !epaisseur de la couche avec ajout de force pour dislo

@@ -3,7 +3,7 @@ module calcangle_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:fda,ntyp,contmax
   USE gen_com_m, ONLY:lperiod,noxyz,thetamin,thetamax,cont888,rcangle,atincel,&
-       &ncel,at,bg,deltadist,imana,nato,noxyz,rang
+       &ncel,at,bg,deltadist,nato,noxyz,rang
   implicit none
 contains
   subroutine calcangle(im,imm,ityp,xp,ielat)

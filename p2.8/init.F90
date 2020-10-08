@@ -1,6 +1,6 @@
 module init_mod
-  USE config_mod,only:config
-  USE divid_mod,only:divid
+!  USE config_mod,only:config
+  USE setcell,only:setcellconf
   USE contrainte,only:initcontr
   USE sauveposition_mod,only:sauveposition
   USE alloc_typ_mod,only: alloc_typ
@@ -28,10 +28,11 @@ module init_mod
   USE rasmol_mod,only: rasmol
   USE prtplz_mod,only: prtplz
   USE neb_module,only: configneb,atneb,cellneb
-  USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
+  USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm,atom_config_e
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC,init_cel
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
-
+  USE param_det_mod,only: param_det
+  USE constrconf_mod, only :constrconf
 
 #ifdef PARA
   USE init_vois_mod,only: init_voisinage
@@ -44,20 +45,20 @@ module init_mod
   use vars_lammps
 #endif
 
-  USE gen_com_m, ONLY:igen,ilangevin,imf,iteheat,lcdp,lcorrelvp,ldislo,lhcyl,lheat,itichup,itichdn,itichdeb,formatsauv,iko,&
-       &imana,itdes,iteanapos,iteplz,iterasmol,itetimestep,itmax,lcalcjq,lcasca,ldesinteg,lcontr,lfilm,lprteat,&
+  USE gen_com_m, ONLY:igen,ilangevin,iteheat,lcdp,lcorrelvp,ldislo,lhcyl,lheat,itichup,itichdn,itichdeb,formatsauv,iko&
+       &,iteanapos,iteplz,iterasmol,itetimestep,itmax,lcalcjq,lcasca,ldesinteg,lcontr,lfilm,lprteat,&
        &lrestart,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,&
        kinemean,lsigat,pmean,xpchdn,eatomtotm,lprteattotm,vpchdn,indi,nvois,&
-       &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,celsize,npath,&
-       &posa,forca,firsttime_lammps,normat,nzl,volu,zls2
+       &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,npath,&
+       &posa,forca,firsttime_lammps,normat,nzl,volu,zls2,celsize,im_glob
 
 
-  USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel
+  USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive
   implicit none
 
 contains
   ! **************************************************************
-  subroutine init
+  subroutine init(atdml,boxndm,celndm)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -82,13 +83,13 @@ contains
     ! **************************************************************
 
     implicit none
+    class(atom_config)::atdml
+    type(cell_config),intent(out)::celndm
+    type(box_config),intent(out)::boxndm
+    
     integer :: i, lufilmpaf,itapp,ipotcont,j,lenfn2,ipath
-    integer :: complet=1    ! flag d'appel a divid : complet : exec de la routine complete
     !-----------------------------------------------
     character*2::extension
-    type(atom_config_d)::atdml
-    type(cell_config)::celndm
-    type(box_config)::boxndm
     tmean = 0.0
     pmean = 0.0
     timel = 0.0
@@ -252,7 +253,25 @@ contains
 
        temps_config_deb = MPI_Wtime()
 #endif
-       call config
+
+
+       
+#ifdef ML
+
+#else
+       write(6,*)
+       write(6,*)' -------------------------------------------------------------------'
+       write(6,*)'             definition des rayons de coupure'
+    call param_det
+! rumax défini en ce point
+#endif 
+
+
+    call constrconf(atdml,boxndm,celndm)
+    write(6,*)'BOUH !'
+!   call celndm%print
+!       call atdml%print
+write(6,*)'BOUH2!'
 #ifdef PARA
        temps_config=MPI_Wtime()-temps_config_deb
 #endif
@@ -271,7 +290,14 @@ contains
     end if
     !...inNEB
     !<---------ends etting the configuration by reading gin /  cin file ---------
+    !<---------setting the cell division -------------------------
+    ! determination des tailles du nombre de cel. (nox, noy, noz)
+    call setcellconf(celndm,atdml,boxndm,im_glob,rumax)
+    write(6,*)'BAH !'
+!   call celndm%print
 
+!    call DynamicalAllocationCell
+!     call celndm%print
 #ifdef LAMMPS_VERSION
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
@@ -284,11 +310,18 @@ contains
 
     if (iterasmol>=0) then
        itapp=-1
-       call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-     call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-          &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+!       call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+!     call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+!          &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
      call rasmol (atdml,boxndm,itapp)
     end if
+    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+         &xpp=xpp)
+    write(6,*)'BIH !'
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+    write(6,*)'BUH !'
+    call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+      write(6,*)'BZH !'
 
     !<---------setting the configuration by generation gin / cin file --------------
     select case (igen)
@@ -315,11 +348,6 @@ contains
     end select
 
 
-    !<---------setting the cell division -------------------------
-    ! determination des tailles du nombre de cel. (nox, noy, noz)
-
-    call divid (complet)
-    call DynamicalAllocationCell
     if (dmtype==9) then
        do ipath=1,npath
           call init_cel(cellneb(ipath),nox,noy,noz,natperc)
@@ -379,34 +407,44 @@ contains
     ! !!! compcr non pris en charge en parallele !!!
 
 
-    !<---------end setting the cell division ----------------------
+    !<---------end setting the cell diviion ----------------------
 
 
 
-    imd = im
     if (ltranche) call layer
 
 
     nad(:ntyp) = na(:ntyp)
-!!!  endif
 
-    imf=im
-    imana=min(imd,imd)
 
 
     !computing the neighbours for the very first time ......
-    !  if (itmax>0) then
+    !  if (itmax>0) thenq
+
+!   call atdml%print
+!  call celndm%print
+!      call boxndm%print
+!    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+!    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+ !        &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
     if (rang==0)write(6,*)'1ER CALL init'
-    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-         &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
     call caltabtC(celndm,atdml,lperiod,bg)
     if (ltabvois) then
-       call caltabi(atdml%atom_config,celndm)
+       call caltabi(atdml,celndm)
     end if
+    write(6,*)'post caltabi'
+!   call celndm%print
+!   call atdml%print
+
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
          &xpp=xpp)
+    write(6,*)'BIH !'
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+    write(6,*)'BUH !'
+    call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+      write(6,*)'BZH !'
+
+
 
 
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
@@ -456,29 +494,32 @@ contains
 #ifdef PARA
        temps_initspeed_deb = MPI_Wtime()
 #endif
-
+       
        ! input and initialization of 2T
-       call initspeed
+       select type(atdml)
+       class is (atom_config_d)
+          call initspeed(atdml,im_glob)
+!      call atdml%print          
+       end select
        if (iterasmol>=0) then
           itapp=0
-                 call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-     call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-          &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+!         call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+!    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+!         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
      call rasmol (atdml,boxndm,itapp)
 
 
        end if
     end if
-    if (lcorrelvp) then
-       ax=vp
-       write(6,*)'AX DEVIENT VP0'
-       write(6,*)'AX DEVIENT VP0'
-       write(6,*)'AX DEVIENT VP0'
-       write(6,*)'AX DEVIENT VP0'
-       write(6,*)'AX DEVIENT VP0'
-
-       call correlvp(xp,xpp,vp,ax,fp,ityp)
-    end if
+!    if (lcorrelvp) then
+!       ax=vp
+!       write(6,*)'AX DEVIENT VP0'
+!       write(6,*)'AX DEVIENT VP0'
+!       write(6,*)'AX DEVIENT VP0'
+!       write(6,*)'AX DEVIENT VP0'
+!       write(6,*)'AX DEVIENT VP0'
+!       call correlvp(xp,xpp,vp,ax,fp,ityp)
+!    end if
 
     if (lHcyl) then
        call Hcyl
@@ -516,15 +557,15 @@ contains
        end if
 
        if (itmax==0) stop
-                    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-             call caltabtC(celndm,atdml,lperiod,bg)
+!                  call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+!           call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+!                &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+!            call caltabtC(celndm,atdml,lperiod,bg)
        if (ltabvois) then
-          call caltabi(atdml%atom_config,celndm)
+          call caltabi(atdml,celndm)
        end if
-             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
-                  &xpp=xpp)
+            call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                 &xpp=xpp)
              call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
 
@@ -555,7 +596,7 @@ contains
                   &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
              call caltabtC(celndm,atdml,lperiod,bg)
           if (ltabvois)  then
-             call caltabi(atdml%atom_config,celndm)
+             call caltabi(atdml,celndm)
           end if
            call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
                   &xpp=xpp)
@@ -591,37 +632,6 @@ contains
 
 
 
-    if (ldesinteg) then
-       itdes=0
-       allocate(xpchup(3,imm))
-       allocate(xpchdeb(3,imm))
-       allocate(xpchdn(3,imm))
-       allocate(vpchup(3,imm))
-       allocate(vpchdeb(3,imm))
-       allocate(vpchdn(3,imm))
-       allocate(itichup(imm))
-       allocate(itichdn(imm))
-       allocate(itichdeb(imm))
-       xpchup=xp
-       vpchup=vp
-       xpchdeb=xp
-       vpchdeb=vp
-
-#ifdef PARA
-       allocate(itichup(imm))
-       allocate(itichdn(imm))
-       allocate(itichdeb(imm))
-       allocate(num_at_globdesdeb(imm))
-       allocate(num_at_globdesup(imm))
-       allocate(num_at_globdesdn(imm))
-       itichdeb=ityp
-       itichup=ityp
-       imdesup=im ; imdesdeb=im
-       num_at_globdesup=num_at_glob
-       num_at_globdesdeb=num_at_glob
-
-#endif
-    end if
 
     if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
 

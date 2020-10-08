@@ -210,7 +210,6 @@ contains
        !ALLOCATE(UHoover(1:nHoover), UHoover_new(1:nHoover), UHoover_old(1:nHoover))
 
        ! Nombre de degrés de liberté pour le thermostat de Nosé-Hoover
-!crc       gNose=dble(3*imana)
        gNose=dble(3*im_glob)
 
        ! Masse de chaque thermostat

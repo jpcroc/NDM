@@ -3,7 +3,7 @@ module neb_module
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:iseed,neb_noise_scale,npath,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam, imm,pi,rang,im_glob,lenfnam,rang,zero,zl,zls2,lcontr,&
-       &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois,im,at,bg,nzl,volu
+       &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois,im,at,bg,nzl,volu,lprteat
 
   USE contrainte,only:contr
   USE config_mod,only: config
@@ -48,7 +48,7 @@ contains
     allocate(cellneb(npath))
 
     do ipath=1,npath
-       call atneb(ipath)%init(im,imm,ltabvois,nvois)
+       call atneb(ipath)%init(im,imm,ltabvois,nvois,lprteat=lprteat)
     end do
 
 !    allocate (ielat_n(imm,npath), iwmax_n(imm,npath), &

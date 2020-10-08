@@ -1,7 +1,7 @@
 ! ****************************************************************
 module rasmol_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:lprtsigat,rang,ivisu,sigat,ldesinteg,lpkbar,lprteat,im_glob,&
+  USE gen_com_m, ONLY:rang,ivisu,sigat,ldesinteg,lpkbar,im_glob,&
        &cunitP,it,lcasca,timel,unitP,at,fnam,bg,erg2ev,lenfnam,eatom,dmtype,umass
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
@@ -99,7 +99,9 @@ contains
           sigat=0
           sigat(:,:,1:im)=atmol%sigat(:,:,:1:im)
        end if
+       
        if(atmol%lprteat) then
+          
           allocate (eat(im)) ; eat=0; eat(1:im)=atmol%eat(1:im)
        end if
     end select
@@ -268,14 +270,17 @@ contains
        num_at_glob_loc = num_at_glob
        im_loc = im
        tyw_loc=tyw
-       if (lprteat) then
-          allocate (eat_loc(imm))
-          eat_loc=eat
-       end if
-       if (lprtsigat)then
-          allocate (sigat_loc(3,3,imm))
-          sigat_loc=sigat
-       end if
+       select type (atmol)
+       type is (atom_config_e)
+          if (atmol%lprteat) then
+             allocate (eat_loc(imm))
+             eat_loc=eat
+          end if
+          if (atmol%lsigat)then
+             allocate (sigat_loc(3,3,imm))
+             sigat_loc=sigat
+          end if
+       end select
        ! Boucle sur les processeurs
        do iproc=0,nprocs-1
           ! Pour le processeur maitre il n'y a rien a faire
@@ -287,8 +292,11 @@ contains
              call MPI_RECV(ityp(1:im),       im,   MPI_INTEGER,         proc_source, 10003, MPI_COMM_space, status, ierr)
              call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_space, status, ierr)
              call MPI_RECV(tyw(1:im),3*im,   MPI_CHARACTER,         proc_source, 10004, MPI_COMM_space, status, ierr)
-             if (lprteat) call MPI_RECV(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10005, MPI_COMM_space, status, ierr)
-             if (lprtsigat) call MPI_RECV(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10006, MPI_COMM_space, status, ierr)
+             select type (atmol)
+             type is (atom_config_e)
+                if (atmol%lprteat) call MPI_RECV(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,  proc_source, 10005, MPI_COMM_space, status, ierr)
+                if (atmol%lsigat) call MPI_RECV(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE,proc_source, 10006, MPI_COMM_space, status, ierr)
+             end select
 
           endif
 #endif
@@ -301,15 +309,18 @@ contains
 !                write (6,*) 't',tyw(i)
 !                write(6,*)'x', xp1,xp2, xp3
                 write (luvisu, '(A,3f10.4)',advance='no') tyw(i),xp1, xp2, xp3
-                if (lPrtSigat) then
-                   if(it.eq.0)then
-                      pat=0.0
-                   else
-                      pat=unitP*(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
+                select type (atmol)
+                type is (atom_config_e)
+                   if (atmol%lsigat) then
+                      if(it.eq.0)then
+                         pat=0.0
+                      else
+                         pat=unitP*(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
+                      end if
+                      write (luvisu, '(D14.5)',advance='no') pat
                    end if
-                   write (luvisu, '(D14.5)',advance='no') pat
-                end if
-                if (lprteat) write (luvisu, '(D14.5)',advance='no') eat(i)*erg2ev
+                   if (atmol%lprteat) write (luvisu, '(D14.5)',advance='no') eat(i)*erg2ev
+                end select
 #ifdef PARA
                 write (luvisu, '(I9)')  num_at_glob(i)
 #else
@@ -339,23 +350,28 @@ contains
        deallocate(xp_loc)
        deallocate(ityp_loc)
        deallocate(num_at_glob_loc)
-       if (lprteat) then
-          eat=eat_loc
-          deallocate (eat_loc)
-       end if
-       if (lprtsigat)then
-          sigat=sigat_loc
-          deallocate (sigat_loc)
-       end if
-
+       select type (atmol)
+       type is (atom_config_e)
+          
+          if (atmol%lprteat) then
+             eat=eat_loc
+             deallocate (eat_loc)
+          end if
+          if (atmol%lsigat)then
+             sigat=sigat_loc
+             deallocate (sigat_loc)
+          end if
+       end select
     else ! Les autres processeurs envoient leurs donnees locales
        call MPI_SEND(im,               1,   MPI_INTEGER,        0,10001,MPI_COMM_space,ierr)
        call MPI_SEND(xp(1:3,1:im),     3*im,NDM_MPI_REAL_DOUBLE,0,10002,MPI_COMM_space,ierr)
        call MPI_SEND(ityp(1:im),       im,  MPI_INTEGER,        0,10003,MPI_COMM_space,ierr)
        call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_space,ierr)
-       if (lprteat) call MPI_send(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10005, MPI_COMM_space, status, ierr)
-       if (lprtsigat) call MPI_send(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10006, MPI_COMM_space, status, ierr)
-
+       select type (atmol)
+       type is (atom_config_e)
+          if (atmol%lprteat) call MPI_send(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10005, MPI_COMM_space, status, ierr)
+          if (atmol%lsigat) call MPI_send(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10006, MPI_COMM_space, status, ierr)
+       end select
     endif
 #endif
 

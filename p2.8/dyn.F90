@@ -1,12 +1,12 @@
 module dyn_mod
-  USE gen_com_m, ONLY:cunite,erg2ev,fnemd,im,it,itetconst,lcalcjq,leev,lnemd,lperiod,&
-       &ltcon,text,timel,tstep,unite,usdh,eatom,eatom,eatom,eatom,bk
+  USE gen_com_m, ONLY:cunite,erg2ev,fnemd,it,itetconst,lcalcjq,leev,lnemd,lperiod,&
+       &ltcon,text,timel,tstep,unite,usdh,eatom,bk
   USE tempinst_mod,only: tempinst
   USE period_mod,only: period
   implicit none
 contains
   ! *************************************************************
-  subroutine dyn
+  subroutine dyn (xp,xpp,vp,fp,ityp,im)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -14,7 +14,7 @@ contains
 
     USE var_pot, ONLY:ntyp,cm
     USE jqmod
-    USE tab_imm_m,only:ax,xp,vp,xpp,fp,ityp
+!    USE tab_imm_m,only:ax,xp,vp,xpp,fp,ityp
     USE tempinst_mod,only: tempinst
 
 !#ifdef PARA
@@ -22,15 +22,11 @@ contains
 !#endif
 
     implicit none
-    !----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
+
+    real(double),allocatable::xp(:,:),vp(:,:),xpp(:,:),fp(:,:)
+    integer, allocatable::ityp(:)
+    integer::im
+    
     integer :: i, iti, ic
     real(double), dimension(ntyp) :: aux
     real(double) :: xprov ,vv
@@ -128,7 +124,7 @@ contains
        endif
     endif
 
-    if (lperiod)       call period  (im,xp,xpp,ax)
+    if (lperiod)       call period  (im,xp,xpp)
 
 
 

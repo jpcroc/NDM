@@ -1,25 +1,23 @@
 module decoupage_mod
   USE arret_ndm_mod,only: arret_ndm
-      USE T_kind_param_m, ONLY:  double
+  USE T_kind_param_m, ONLY:  double
+  USE cellconfig,only:cell_config
   implicit none
 contains
-  subroutine decoupage(nbr_cpuIN,ncore)
+  subroutine decoupage(nbr_cpuIN,ncore,celdec)
 
 #ifdef PARA
     USE mpi
     USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,res_cpu,coord_max,coord_min,proc_cell
     use tab_imm_m,only:realloc_all_tab_imm
 #endif
-    USE gen_com_m, ONLY:nox,noy,noz,rang,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
-         &nb_cell_x,nb_cell_y,nb_cell_z,noxyz,imm
+    USE gen_com_m, ONLY:cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
+         &nb_cell_x,nb_cell_y,nb_cell_z,noxyz,imm,rang,ldecoup
 
-    USE var_pot, ONLY:
-
-    implicit none
-
-    !------------------
     integer :: nbr_cpuIN !Egal aussi au nombre de zone qu'on d�coupera dans la boite
     integer::ncore ! nb de coeur par noeud
+    type(cell_config)::celdec
+
     integer:: nnoeuds
     integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
     integer :: num_sol !iteration du decoupage possible
@@ -48,24 +46,22 @@ contains
     integer :: num_cpu
     integer :: kx,ky,kz,koo
     integer :: cellules_max
-    integer :: imm_loc,nbr_cpu
+    integer :: imm_loc,nbr_cpu,nox,noy,noz
+    integer :: ii,jj,kk,nbr_cpumin,iudecoup !indice de boucle
 
-    !------------------
-
-    integer :: ii,jj,kk,ldecoup !indice de boucle
-
-
-    !------------------
-    !Allocation des tableaux
-
-
-
-#ifdef DECOUP
-    loop1:     do nbr_cpu=2,nbr_cpuIN
-
+    nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
+#ifdef PARA
+    nbr_cpumin=nbr_cpuin
 #else
-       nbr_cpu=nbr_cpuIN
+    if (ldecoup) then
+       nbr_cpumin=2
+    else
+    write(6,*)'WTF decoup'
+    stop
+ end if
 #endif
+    loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
+
 
 
 
@@ -134,9 +130,10 @@ contains
           if (rang==0) then
              print *,'!!! Pas de possibilite de decoupage pour la configuration demandee !!!'
              print *,'!!! nx / ny / nz / nb_cpu :',nox,noy,noz,nbr_cpu
-             print *,'!!! Arret du programme !!!'
+
           endif
-#ifndef DECOUP
+#ifdef PARA
+          print *,'!!! Arret du programme !!!'
           call arret_ndm
 #else
           deallocate(decoup)
@@ -279,26 +276,26 @@ contains
 
 
 
-#ifndef DECOUP
-          ldecoup=1023
+#ifndef PARA
+          iudecoup=1023
           open (unit=1023,file='decoup_out')
 #else
-          ldecoup=6
+          iudecoup=6
 #endif
-#ifdef PARA
-#else
-          write(ldecoup,*)'Taille des decoupages'
+#ifndef PARA
+
+          write(iudecoup,*)'Taille des decoupages'
           do ii=0,nbr_cpu-1
-             write(ldecoup,*)'Decoupage',ii,':',res_cpu(ii,1:3)
+             write(iudecoup,*)'Decoupage',ii,':',res_cpu(ii,1:3)
           enddo
-          write(ldecoup,*)'----------------------------------------------'
+          write(iudecoup,*)'----------------------------------------------'
           do ii = 0,nbr_cpu-1   
-             write(ldecoup,*)'Debut/Fin en x pour ii',ii,'egal',coord_min(ii,1),coord_max(ii,1)
-             write(ldecoup,*)'Debut/Fin en y pour ii',ii,'egal',coord_min(ii,2),coord_max(ii,2)
-             write(ldecoup,*)'Debut/Fin en z pour ii',ii,'egal',coord_min(ii,3),coord_max(ii,3)
-             write(ldecoup,*)
+             write(iudecoup,*)'Debut/Fin en x pour ii',ii,'egal',coord_min(ii,1),coord_max(ii,1)
+             write(iudecoup,*)'Debut/Fin en y pour ii',ii,'egal',coord_min(ii,2),coord_max(ii,2)
+             write(iudecoup,*)'Debut/Fin en z pour ii',ii,'egal',coord_min(ii,3),coord_max(ii,3)
+             write(iudecoup,*)
           enddo
-          write(ldecoup,*)'-----------------------------------------------'
+          write(iudecoup,*)'-----------------------------------------------'
 
 #endif
 #ifdef PARA
@@ -306,7 +303,6 @@ contains
 #endif
 
 
-#ifndef DECOUP
 #ifdef PARA
        ! On est dans le code de calcul NDM, on realloue les tableaux sur le
        ! nombre d'atomes en tenant compte des cellules fantomes
@@ -339,16 +335,16 @@ contains
        nb_cell_y= cell_finy - cell_deby + 1
        nb_cell_z= cell_finz - cell_debz + 1
 #endif
-#endif
+!#endif
 
-#ifdef DECOUP
+#ifndef PARA
        deallocate(decoup)
        deallocate(specifs)
 
        deallocate(res_cpu)
        deallocate(coord_min)
        deallocate(coord_max)
-
+#endif
 #ifdef PARA
        deallocate(proc_cell)
 #endif
@@ -357,9 +353,7 @@ contains
 
 
 
-#else
-    !        nbr_cpul=nbr_cpuIN
-#endif
+
 
 
   end subroutine decoupage

@@ -16,7 +16,7 @@ contains
          &lalea,lanczos_step,landerscou,lastcool,lbulle,lcdp,lconstrtot,lcorrelvp,lderive,ldislo,lfire,&
          &lgc,lhcyl,lheat,ljqbh,lpathfromgin,lpcon2,lpconxyz,lprtrp,lprtzlm,lrctest,lrestart,ltandersen,&
          &ltcon,lvpread,maxneb,mdcg_noise_scale,natperc,nbmoye,neb_noise,neb_noise_scale,nebrelaxation,&
-         &nebtype,nhoover,niteration,nitmax,njqbh,npath,ntr,nuandersen,nvperat,pext,rayonc,rheat,rsep,&
+         &nebtype,nhoover,niteration,nitmax,njqbh,npath,ntr,nuandersen,pext,rayonc,rheat,rsep,&
          &rskin,rulayer,rvois,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
          &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wbox,wnose,xko,xx0,yko,yy0,&
          &zko,zz0,dilat,dilat,dilat,dilat,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fdbkcoef,fnemd,&
@@ -27,7 +27,7 @@ contains
          &lsuivinonpbc,ltabvois,ltberendsen,lthoover,ltnose,ltpcel,ltranche,lucell,lwgin,mdcg_noise,nfda,nox,noy,noz,nplz,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
          &,tpseuils,tstep,typspr,unite,unitp,user_strainrate,user_stress_yz,xpspr,lenfnam,fnam,position_conversion_lammps&
-         &, energy_conversion_lammps, pressure_conversion_lammps
+         &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup
 
 
     USE var_pot, ONLY:gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
@@ -78,13 +78,12 @@ contains
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
          fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
-         rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,nvperat, &
-         natperc,iteanaposneb,ntyp,&
+         rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,natperc,iteanaposneb,ntyp,&
          lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
          mdcg_noise, lforcetabulate,ivisu,ibound,USEr_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc
+         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,lax,ldecoup
 
 
     !
@@ -136,6 +135,7 @@ contains
     itederive = -1              !"derive" correction
     igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 cintogin ; +3 modification de cin puis stop
     lrestart = .FALSE.          !if T : restarting from an interrupt job
+    ldecoup = .FALSE.          !if T: cherche les nombres de procs optimums, voir decoup3D (ne marche su'en séquentiel (évidemment)) 
     lPathFromGin = .FALSE.      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
     tgc = 0.0                   ! threshold for CG calculation
     ltabvois = .FALSE.          ! methode de la table des voisins
@@ -261,6 +261,7 @@ contains
     lprteat=.false.   ! if you want to print the energy on atom
     lprtsigat=.false. ! calul et affichage de la contrainte sur chaque atome
     lsigatcel=.false. ! calul et affichage de la contrainte atomique moyenne sur la cellule
+    lax=.false. ! stockage positions initiales
     lprteattotm=.false.   ! energie par atome totale (pot+cin) moyenne
     ngrid = 20000  ! taille de la grille des potentiels
     itecfg=-1   ! ecriture de fichiers .cfg pour AtomEye
@@ -290,7 +291,6 @@ contains
     ltriclin=.true.
     lprtfat=.false.
 
-    nvperat=-1                  ! nb moyen de voisins par atomes
     natperc=-1   
     iteanaposneb=0
     lbulle=.false.
@@ -578,7 +578,7 @@ contains
        if (rang==0) write(6,*)'INPUT HISTORIQUE ??'
     end if
 
-!    if(dmtype==9) lprteat=.true.
+    if(dmtype==9) lprteat=.true.
     if(dmtype==12) lprteat=.true.
     if(dmtype==16) lprteat=.true.
     if (lposmoy.EQV..true.) then 

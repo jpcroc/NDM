@@ -24,7 +24,7 @@ module calfo_mod
 !  USE strain_bc_mod,only:strain_bc
 !  USE stress_bc_mod,only:stress_bc
   USE force_tersoff_mod,only:force_tersoff
-  USE atomconfig,only : atom_config_d,atom_config_d,atom_config_e
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE calfocommon ! stocke des variables LOCALES sig et potist eat sigat etc.
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
@@ -111,7 +111,7 @@ contains
        end if
        
     end select
-
+!    write(6,*)'lprteat',lprteat
     atcf%fp(:,:) = zero
 
 

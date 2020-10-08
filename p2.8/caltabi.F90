@@ -2,7 +2,7 @@
 module caltabi_mod
   USE notperiod_mod,only: notperiod
   USE gen_com_m, ONLY:decal_bc,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,&
-       &nvois,nvperat,rang,rvois,at,bg,indi2
+       &nvois,rang,rvois,at,bg,indi2
   use atomconfig,only: atom_config
   USE cellconfig,only:cell_config
   implicit none
@@ -130,9 +130,9 @@ subroutine caltabi(atvois,celvois)
            IF (iw.GT.nVois) THEN
                    WRITE(0,'(a,i0)') 'Indice iw du tableau de voisin plus grand&
                         & que le max, nVois = ', nVois
-                   WRITE(0,'(a)') 'Augmentez le nombre moyen de voisins par&
-                        & atome dans le fichier *.din'
-                   WRITE(0,'(a,i0)') 'valeur actuelle: nvperat = ', nvperat
+!                   WRITE(0,'(a)') 'Augmentez le nombre moyen de voisins par&
+!                        & atome dans le fichier *.din'
+                   WRITE(0,'(a,i0)') 'truc étrange dans setcellconf'
                    STOP '< Caltabi >'
            END IF
 

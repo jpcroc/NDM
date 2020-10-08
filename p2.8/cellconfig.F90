@@ -9,7 +9,7 @@ module cellconfig
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
   type cell_config
-     integer:: nox,noy,noz,noxyz 
+     integer:: nox=0,noy=0,noz=0,noxyz=0 
      integer::natperc !nombre (max) d'atomes par cellule
      integer(long)::icaltabt 
      integer,allocatable::nato (:) ! nombre d'atomes dans la cellule ko
@@ -64,17 +64,25 @@ contains
 
   subroutine init_cel(cell,nox,noy,noz,natperc,ltpc)
     class(cell_config)::cell
-    integer,intent(in)::nox,noy,noz,natperc
+    integer,intent(in),optional::nox,noy,noz,natperc
     logical,optional,intent(in):: ltpc
-    logical::ltpcel=.false.
+    logical::ltpcel
+    ltpcel=.false.
     if (present (ltpc))ltpcel=ltpc
-    cell%nox=nox; cell%noy=noy; cell%noz=noz; cell%natperc=natperc
+    if (present(nox)) then
+       cell%nox=nox; cell%noy=noy; cell%noz=noz;cell%noxyz=nox*noy*noz
+    end if
+    if (present(natperc)) then
+       cell%natperc=natperc
+    else
+       cell%natperc=0
+    end if
     !write(6,*) 'nox', cell%nox
     cell%ltpcel=ltpcel
     call dealloc_cel(cell)
     call allocatecelN(cell)
     call neigcelN(cell)
-
+!    call cell%print
     return
 
   end subroutine init_cel
@@ -85,16 +93,19 @@ contains
     integer::nsize
     cell%noxyz=cell%nox*cell%noy*cell%noz
     nsize=cell%noxyz
-    allocate(cell%ncel(0:nsize,0:26))
-    allocate(cell%nato(0:nsize))
-    allocate(cell%atincel(cell%natperc,0:nsize))
-    allocate(cell%deltadist(3,0:26,nsize))
-    if (cell%ltpcel) then
-       allocate(cell%sigc(3,3,nsize))
-       allocate(cell%tempc(nsize))
+    if (nsize.ne.0) then
+       allocate(cell%ncel(0:nsize,0:26))
+       allocate(cell%nato(0:nsize))
+       allocate(cell%deltadist(3,0:26,nsize))
+       if (cell%ltpcel) then
+          allocate(cell%sigc(3,3,nsize))
+          allocate(cell%tempc(nsize))
+       end if
+       if (cell%natperc.ne.0)       allocate(cell%atincel(cell%natperc,0:nsize))
     end if
     return
   end subroutine allocatecelN
+
 
 
   subroutine dealloc_cel(cell)
@@ -333,8 +344,9 @@ contains
     real(double),intent(in),optional,allocatable::sigc(:,:,:),tempc(:)
     logical::ltpcel=.false.
     if (present (ltpc))ltpcel=ltpc
-
-    call init_cel(celndm,nox,noy,noz,natperc,ltpcel)
+    if (.not.allocated(celndm%ncel))then
+       call init_cel(celndm,nox,noy,noz,natperc,ltpcel)
+    end if
     !    celndm%nox=nox
     !    celndm%noy=noy
     !    celndm%noz=noz
@@ -359,10 +371,24 @@ contains
   subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc)
     type(cell_config), intent(inout):: celndm
     integer, intent(inout):: nox,noy,noz,natperc,noxyz
-    integer,intent(inout)::ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
+    integer,intent(inout),allocatable::ncel(:,:),nato(:),atincel(:,:),deltadist(:,:,:)!ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
     real(double),intent(out)::celsize(3)
     logical,optional,intent(out)::ltpcel
     real(double),intent(out),optional,allocatable::sigc(:,:,:),tempc(:)
+    write(6,*)'allocated ncel',allocated(ncel)
+    if (.not.allocated(ncel))then
+       nox=celndm%nox ;noy=celndm%noy;noz=celndm%noz
+       noxyz=nox*noy*noz
+       natperc=celndm%natperc
+       allocate(ncel(0:noxyz,0:26));allocate(nato(0:noxyz));allocate(atincel(natperc,0:noxyz));allocate(deltadist(3,0:26,noxyz))
+    else
+       if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
+          write(6,*)'incohérence entre noxyz et celndm%noxyz'
+          write(6,*)nox,celndm%nox,natperc,celndm%natperc
+          stop
+       end if
+    end if
+       
     if (celndm%ltpcel)then
        ltpcel=celndm%ltpcel
        if (ltpcel) then
@@ -370,12 +396,8 @@ contains
           if (.not.allocated(tempc))allocate (tempc(celndm%noxyz))
        end if
     end if
-    if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
-       write(6,*)'incohérence entre noxyz et celndm%noxyz'
-       stop
-    end if
-
-    celndm%icaltabt=0
+   
+!    celndm%icaltabt=0
     ncel(0:noxyz,0:26)=celndm%ncel(0:noxyz,0:26)
     nato(0:noxyz)=celndm%nato(0:noxyz)
     atincel(1:natperc,0:noxyz)=celndm%atincel(1:natperc,0:noxyz)
@@ -385,7 +407,7 @@ contains
        sigc(:,:,:)=celndm%sigc(:,:,:)
        tempc(:)=celndm%tempc(:)
     end if
-    call celndm%dealloc
+!    call celndm%dealloc
 
   end subroutine cellconfig2ndm
 
@@ -425,10 +447,12 @@ contains
     write(6,*)'celsize',cellv%celsize
     write(6,*)'icaltabt',cellv%icaltabt
     write(6,*)'nato',cellv%nato
-    do i=1,cellv%noxyz
-       write(6,*)'atincel',i,cellv%atincel(:,i)
-    end do
-    write(6,*)'deltadist',cellv%deltadist
+    if (allocated(cellv%atincel))then 
+       do i=1,cellv%noxyz
+          write(6,*)'atincel',i,cellv%atincel(:,i)
+       end do
+    end if
+!    write(6,*)'deltadist',cellv%deltadist
 
   end subroutine cellprint
 end module cellconfig

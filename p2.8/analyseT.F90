@@ -1,4 +1,4 @@
-module analyse_mod
+module analyseT_mod
   USE Mat_utils_mod
   USE spebc_fin_mod,only: spebc_fin
   USE adf_mod,only: adf
@@ -34,7 +34,7 @@ contains
   !         Sous-programme analyse.f
   ! ************************************************
 
-  subroutine analyse
+  subroutine analyseT(atdml,celndm,boxndm)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -58,9 +58,12 @@ contains
     real(double), dimension(ntyp) :: temptyp
 
 
-    type(atom_config_e)::atdml,attyp
-    type(cell_config):: celndm,celtyp
+    class(atom_config_d)::atdml
+    type(cell_config):: celndm
     type(box_config)::boxndm
+
+    type(atom_config_d)::attyp
+    type(cell_config):: celtyp
 
     real(double) :: ppot, pkin
     real(double) :: a1, a2, a3, b1, b2, b3, c1, c2, c3
@@ -95,10 +98,14 @@ contains
     !      logical:: lEev=.false., lPkbar=.false.
     !        write(6,*)'analyse',itetemp,it
 
-    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+!    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+!    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+!         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+!    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+         &iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
 
     if(it==1) then
        Cminp=100000
@@ -719,10 +726,10 @@ contains
 
     if (iterasmol>0) then     
        if (mod(it,iterasmol)==0) then
-     call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp,eat=eatom)
-    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+!     call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+!    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+!         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp,eat=eatom)
+!    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
          call rasmol(atdml,boxndm,it)
           if (l2T) call  eleccellmol
 
@@ -833,5 +840,5 @@ contains
     end if
 
     return
-  end subroutine analyse
-end module analyse_mod
+  end subroutine analyseT
+end module analyseT_mod

@@ -8,13 +8,13 @@ module work_cgII
        &natperc,nato,ncel,atincel,deltadist,celsize,bg,mdcg_noise,&
        &at,bg,zl,zls2,nzl,volu,normat
 
-  USE controle_mod,only: controle
+!  USE controle_mod,only: controle
   USE calfo_mod,only: calfo
   USE analyse_mod,only: analyse
   USE sauvegarde_mod,only: sauvegarde
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
-  USE config_mod,only: config
+!  USE config_mod,only: config
   USE zero2all2zero_mod,only: zero2all,all2zero
   use period_mod,only:period
   USE endrun_mod,only: endrun

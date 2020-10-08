@@ -78,7 +78,7 @@ use mod_para
     nad(:ntyp) = na(:ntyp)
 
     if (mdcg_noise /= 0 ) then
-       call bruit_xp
+       call bruit_xp (xp,im)
     end if
 
 

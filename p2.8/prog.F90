@@ -10,10 +10,12 @@ module prog_mod
   USE gcII_mod,only: gcII
   USE dmloop_vverlet_mod,only: dmloop_vverlet
   USE dmloop_mod,only: dmloop
+  USE analyseT_mod,only: analyseT
+  USE controleT_mod,only: controleT
  
   USE montecarlo_mod, only: montecarlo
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
-  USE atomconfig,only : atom_config,atom_config_d,ndm2config, config2ndm
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
 #if defined ML || defined PARAML    
   USE ml_main_mod,only: ml_main
@@ -28,7 +30,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,im,imm,indi,ltabvois,parallele,potist,rang,sig,nvois ,&
          &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize,&
-             &at,bg,zl,zls2,nzl,volu,normat
+             &at,bg,zl,zls2,nzl,volu,normat,lax,lprteat,lsigat
 
     USE tab_imm_m
     
@@ -42,7 +44,10 @@ contains
     implicit none
     character :: extension*2
     integer::lenfn2,i,ko
-    type(atom_config_d)::atdml
+    class(atom_config_d),pointer::atdml
+!    type(atom_config),target:: atdm
+    type(atom_config_d),target:: atdmd
+    type(atom_config_e),target:: atdme
     type(cell_config)::celndm
     type(box_config)::boxndm
 
@@ -58,13 +63,20 @@ contains
     !-----------------------------------------------
 
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
-    call alloc_all_tab_imm(imm) 
-
+    call alloc_all_tab_imm(imm)
+    if ((lax).or.(lsigat).or.(lprteat).or.(llangevin))then
+       atdml=>atdme
+    else
+       atdml=>atdmd
+    end if
+    im=0 ; nvois=0
+    call atdml%init(im,imm,ltabvois,nvois,lsigat,lprteat,llangevin,lax)
+    
 #ifdef PARA
     temps_init_deb = MPI_Wtime()
 #endif
     ! Initilisation
-    call init
+    call init(atdml,boxndm,celndm)
 #ifdef PARA
     temps_init=MPI_Wtime()-temps_init_deb
 #endif
@@ -108,13 +120,13 @@ contains
     case(8)
        call dmloop_lpr 
     case (1)
-       if (.not.parallele)  call dmloop 
+       if (.not.parallele)  call dmloop (atdml,celndm,boxndm)
     case (2)
        if (.not.parallele)  then
-          call dmloop
+          call dmloop(atdml,celndm,boxndm)
        else
 #ifdef PARA
-          if(rang==0) write (6,*)'DMTYPE+PARA=DMLOOP_VVERLET_+OPTION'
+          if(rang==0) write (6,*)'DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION'
           call dmloop_vverlet ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 #endif
        endif
@@ -126,15 +138,15 @@ contains
        if (.not.parallele)   call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     case(11)
        if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
-       call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+!       call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+!       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+!       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+!            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        CALL CalFo(sig,potist,atdml,celndm,boxndm) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
-       call analyse()
-       call controle()
+!       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+!    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+       call analyseT(atdml,celndm,boxndm)
+       call controleT(atdml,celndm,boxndm)
        call endrun()
 
 #ifdef ART    

@@ -120,7 +120,6 @@ contains
     IF (wNose.EQ.0) THEN
        ! On suppose que la fréquence de vibration typique du solide est
        !  1 THz = 1e-12 s¯¹
-       ! wNose = bk*Text*dble(2*(3*imana+1))/(2.d0*pi*1d-12)**2        ! Eq. 2.30 Ref.[4]
        !  => ça ne marche pas
        ! On veut qu'une variation de la température de 10K corresponde à
        ! une variation de f de 1% avec f~1

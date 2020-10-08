@@ -3,7 +3,7 @@ module correl_mod
   USE gen_com_m, ONLY:imm,im,it,rang,timel
   implicit none
 contains
-  subroutine correlvp(xp, xpp, vp, ax, fp, ityp)
+  subroutine correlvp(xp, xpp, vp, ax,fp, ityp)
 
 
     USE var_pot, ONLY:ntyp,na,ty,cm
@@ -11,8 +11,8 @@ contains
     real(double) , intent(in)  :: xp(3,imm)
     real(double) , intent(in)  :: xpp(3,imm)
     real(double) , intent(in)  :: vp(3,imm)
-    real(double) , intent(in)  :: ax(3,imm)
     real(double) , intent(in)  :: fp(3,imm)
+    real(double) , intent(in)  :: ax(3,imm)
 
     real(double),save :: mvp0vp0
     real(double) :: mvptvp0

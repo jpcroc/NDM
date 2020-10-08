@@ -2,9 +2,10 @@
 module param_det_mod
         USE arret_ndm_mod,only: arret_ndm
         USE endrun_mod,only: endrun
-        USE gen_com_m, ONLY:lopt,zl,zero,rang,pi
+        USE gen_com_m, ONLY:lopt,zl,zero,rang,pi,itab,ltabvois,rvois
         USE var_pot, ONLY:kpme,kpmex,kpmey,kpmez,n2max,ncouc3,ncoucx,ncoucy,ncoucz,npair,&
-             &npotentiel,nvecttot,precis,rue_pair,typ_pot_pair,ipotentiel,alpha,iewald
+             &npotentiel,nvecttot,precis,rue_pair,typ_pot_pair,ipotentiel,alpha,iewald,csive,&
+             &ngrid,r3cm2,rumax,r3cm
         implicit none
         contains
 subroutine param_det
@@ -13,7 +14,7 @@ subroutine param_det
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
 
-
+!determine rumax et rue si pas défini
 
 
   implicit none
@@ -100,7 +101,7 @@ subroutine param_det
         endif
 
 
-        if (.not. lopt) then
+!        if (.not. lopt) then
 
            if (precis == zero) then
 
@@ -485,60 +486,60 @@ subroutine param_det
               endif
            endif   ! rang = 0
 
-        else ! boucle if (.not. lopt)
-
-
-#ifdef ixia
-           if (rang==0) &
-                write (6,*) 'Optimisation de Ewald pour la machine ixia'
-           alpha_ixia=0.47832d8 !Valeur optimisee pour ixia
-
-           alpha=alpha_ixia
-
-           if (iewald /= 2) then
-              if (rang==0) &
-                   write(6,*) 'Demande d optimisation de Ewald et iewald/=2 INCOHERENT !!!'
-              stop
-           endif
-
-           if (precis == zero) then
-              precis=1.0d-3
-              pparam=-log(precis)
-              rue=dsqrt(pparam)/alpha_ixia
-              ncoucx=int(2.d0*pparam/rue/k00x)+1
-              ncoucy=int(2.d0*pparam/rue/k00y)+1
-              ncoucz=int(2.d0*pparam/rue/k00z)+1
-
-           else !  if (precis /= zero) then
-              pparam=-log(precis)
-              rue=dsqrt(pparam)/alpha_ixia
-              ncoucx=int(2.d0*pparam/rue/k00x)+1
-              ncoucy=int(2.d0*pparam/rue/k00y)+1
-              ncoucz=int(2.d0*pparam/rue/k00z)+1
-
-           endif
-
-           if (rang==0) &
-                write(6,*) 'Paramtres utiliss pour le traitement de EWALD(PME) :'
-
-           !determination de kpme
-           kpmex=int(2.5*(2*ncoucx+1))
-           kpmey=int(2.5*(2*ncoucy+1))
-           kpmez=int(2.5*(2*ncoucz+1))
-           kpme=max(kpmex,kpmey,kpmez)
-           if (rang==0) write(6,*) 'kpme x,y,x max ', kpmex,kpmey,kpmez,kpme
-
-           if (rang==0)  write(6,*) 'RUE=',rue,' ALPHA='&
-                ,alpha,' NCOUC=',ncoucx,ncoucy,ncoucz,&
-                ' PRECIS =',precis
-
-#else
-           write (6,*) rang,'Optimisation de Ewald non prevue pour cette machine'
-           call arret_ndm
-#endif
-
-
-        endif ! fin de la boucle if (.not. lopt)
+!!$        else ! boucle if (.not. lopt)
+!!$
+!!$
+!!$#ifdef ixia
+!!$           if (rang==0) &
+!!$                write (6,*) 'Optimisation de Ewald pour la machine ixia'
+!!$           alpha_ixia=0.47832d8 !Valeur optimisee pour ixia
+!!$
+!!$           alpha=alpha_ixia
+!!$
+!!$           if (iewald /= 2) then
+!!$              if (rang==0) &
+!!$                   write(6,*) 'Demande d optimisation de Ewald et iewald/=2 INCOHERENT !!!'
+!!$              stop
+!!$           endif
+!!$
+!!$           if (precis == zero) then
+!!$              precis=1.0d-3
+!!$              pparam=-log(precis)
+!!$              rue=dsqrt(pparam)/alpha_ixia
+!!$              ncoucx=int(2.d0*pparam/rue/k00x)+1
+!!$              ncoucy=int(2.d0*pparam/rue/k00y)+1
+!!$              ncoucz=int(2.d0*pparam/rue/k00z)+1
+!!$
+!!$           else !  if (precis /= zero) then
+!!$              pparam=-log(precis)
+!!$              rue=dsqrt(pparam)/alpha_ixia
+!!$              ncoucx=int(2.d0*pparam/rue/k00x)+1
+!!$              ncoucy=int(2.d0*pparam/rue/k00y)+1
+!!$              ncoucz=int(2.d0*pparam/rue/k00z)+1
+!!$
+!!$           endif
+!!$
+!!$           if (rang==0) &
+!!$                write(6,*) 'Paramtres utiliss pour le traitement de EWALD(PME) :'
+!!$
+!!$           !determination de kpme
+!!$           kpmex=int(2.5*(2*ncoucx+1))
+!!$           kpmey=int(2.5*(2*ncoucy+1))
+!!$           kpmez=int(2.5*(2*ncoucz+1))
+!!$           kpme=max(kpmex,kpmey,kpmez)
+!!$           if (rang==0) write(6,*) 'kpme x,y,x max ', kpmex,kpmey,kpmez,kpme
+!!$
+!!$           if (rang==0)  write(6,*) 'RUE=',rue,' ALPHA='&
+!!$                ,alpha,' NCOUC=',ncoucx,ncoucy,ncoucz,&
+!!$                ' PRECIS =',precis
+!!$
+!!$#else
+!!$           write (6,*) rang,'Optimisation de Ewald non prevue pour cette machine'
+!!$           call arret_ndm
+!!$#endif
+!!$
+!!$
+!!$        endif ! fin de la boucle if (.not. lopt)
 
         nvecttot=(2*ncoucx+1)*(2*ncoucy+1)*(2*ncoucz+1)-1
         write(6,*)'nvecttot',nvecttot
@@ -549,6 +550,48 @@ subroutine param_det
      endif
   end if
 
+
+
+    !C_debug
+#if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
+    !  write(6,*)rumax,rue_pair,maxval(rue_pair)
+    rumax=0.0
+
+    rumax = max(rumax,maxval(rue_pair))
+    csive=rumax/float(ngrid)
+    ! write(*,*) rumax, rvois
+#else
+    rumax = max(rumax,maxval(rue_pair))
+    csive=rumax/float(ngrid)
+#endif
+
+    !     if(l3c) then
+    if (r3cm.eq.0) r3cm=5.0d-8
+    itab=1
+    r3cm2=r3cm**2
+    !     endif
+    !if((rang==0).and.(appel==0))         write (6, *) ' rvois  ', rvois
+
+    if (ltabvois) then
+       if (rumax>rvois) then
+          if((rang==0)) write (6, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
+          call arret_ndm
+       else
+#ifndef ML
+          if(rang==0) write (6,'(A,2F12.2)') ' rumax devient rvois&
+               & pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
+#endif
+          rumax=rvois
+       end if
+
+
+    endif
+
+
+
+
+
+  
   return
 end subroutine param_det
 end module
