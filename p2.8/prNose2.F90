@@ -85,7 +85,7 @@ contains
 #endif
 
     ! Calcul de la température initiale
-    temp0=tempinst(vp,ityp)
+    temp0=tempinst(vp,ityp,im,imm)
 
     if (rang==0) WRITE(6,*)
     if (rang==0) WRITE(6,'(a)') 'Algorithme de Parrinello-Rahman couplé au thermostat de Nosé (V2)'

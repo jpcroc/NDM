@@ -15,7 +15,7 @@ module init_mod
   USE tersoff_zbl_mod,only: tersoff_zbl
   USE dynalloccell
   USE initspeed_mod,only: initspeed
-  USE sauvegarde_mod,only: sauvegarde,cin2gin
+  USE sauvegardeT_mod,only: sauvegardeT,cin2gin
   USE heat_mod,only: heat
   USE caltabi_mod,only: caltabi
   USE creadp_mod,only: creadp
@@ -268,10 +268,6 @@ contains
 
 
     call constrconf(atdml,boxndm,celndm)
-    write(6,*)'BOUH !'
-!   call celndm%print
-!       call atdml%print
-write(6,*)'BOUH2!'
 #ifdef PARA
        temps_config=MPI_Wtime()-temps_config_deb
 #endif
@@ -293,7 +289,6 @@ write(6,*)'BOUH2!'
     !<---------setting the cell division -------------------------
     ! determination des tailles du nombre de cel. (nox, noy, noz)
     call setcellconf(celndm,atdml,boxndm,im_glob,rumax)
-    write(6,*)'BAH !'
 !   call celndm%print
 
 !    call DynamicalAllocationCell
@@ -317,17 +312,14 @@ write(6,*)'BOUH2!'
     end if
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
          &xpp=xpp)
-    write(6,*)'BIH !'
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
-    write(6,*)'BUH !'
     call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-      write(6,*)'BZH !'
 
     !<---------setting the configuration by generation gin / cin file --------------
     select case (igen)
     case (-1)
        formatsauv = 2
-       call sauvegarde
+       call sauvegardeT(atdml,celndm,boxndm)
        if (rang==0) write (6, *) 'generation terminee'
        call arret_ndm
        !  case (0)
@@ -341,7 +333,7 @@ write(6,*)'BOUH2!'
     case (3)
        call transf
        formatsauv = 2
-       call sauvegarde
+       call sauvegardeT(atdml,celndm,boxndm)
        if (rang==0) write (6, *) 'modification terminee'
        call arret_ndm
     case default
@@ -438,18 +430,15 @@ write(6,*)'BOUH2!'
 
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
          &xpp=xpp)
-    write(6,*)'BIH !'
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
-    write(6,*)'BUH !'
     call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-      write(6,*)'BZH !'
 
 
 
 
     ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
     !  end if
-    !computing the neighbours for the very first time ......
+    !computing the neighbours for the very first time ......write(6
 
 
 
@@ -636,6 +625,9 @@ write(6,*)'BOUH2!'
     if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
 
     if (rang==0) write(6,*)'sortie init'
+!    call boxndm%print
+!    call celndm%print
+!   call atdml%print
 
     return
   end subroutine init

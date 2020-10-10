@@ -13,21 +13,21 @@ module montecarlo_mod
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
 
   implicit none
-  type(box_config)::boxndm
-
-  type(atom_config_d)::config_atom_n !type derive atom_config du systeme a n atomes
-  type(atom_config_d)::config_atom_nplus1 !type derive atom_config du systeme a n+1 atomes
-
-  type(cell_config):: cells_n !type derive cell_config du systeme a n atomes
-  type(cell_config):: cells_nplus1 !type derive cell_config du systeme a n+1 atomes
 integer::  pas_lambda_mc
 contains 
-  subroutine montecarlo
+  subroutine montecarlo(config_atom_n,cells_n,boxndm)
 
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     implicit none
+    type(box_config)::boxndm
+    
+    type(atom_config_d)::config_atom_n !type derive atom_config du systeme a n atomes
+    type(atom_config_d)::config_atom_nplus1 !type derive atom_config du systeme a n+1 atomes
+    
+    type(cell_config):: cells_n !type derive cell_config du systeme a n atomes
+    type(cell_config):: cells_nplus1 !type derive cell_config du systeme a n+1 atomes
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -60,7 +60,7 @@ contains
 lextend = .true.
 
 lperiod = .true.
-call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+!call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
 
 !defintion de la boite du syst a N atomes
     call caltabtC(cells_n,config_atom_n,lperiod,bg)

@@ -107,7 +107,7 @@ module gen_com_m
   integer:: iteplz,nplz ! distribution suivant des tranches en z
   real(double):: rulayer
 
-  integer :: imgs, imgi, imd, itefrac !fracture IMD nombre d'atomes sur lesquels on fait la dynamique normale
+  integer :: imgs, imgi, itefrac !fracture IMD nombre d'atomes sur lesquels on fait la dynamique normale
   real(double) :: cougel, zincr !fracture
 
 
@@ -116,7 +116,7 @@ module gen_com_m
   real(double):: potisP,potis1, potis2, potis3, potis0, potcp ! energie potentielle de paire
   real(double) :: potisTersoff ! energie potentielle de tersoff
 
-
+  INTEGER::imd ! HISTORIQUE A DEGAGER LE PLUS TOT POSSIBLE
 
   real(double) :: oldtstep  
   real(double) :: tstep, usdh, timel  

@@ -131,7 +131,6 @@ contains
     im=atcf%im ; imm=atcf%imm
     allocate(xp(3,imm));  allocate(xpp(3,imm));  allocate(vp(3,imm));    allocate(ityp(im))
     xp=atcf%xp;xpp=atcf%xpp; vp=atcf%vp; ityp=atcf%ityp;
-    
     select case (dmtype)
     case(3,30,5,11,7)
        vp = 0.0
@@ -155,7 +154,7 @@ contains
     !      write(6,*)'vp',vp(1,1)
     if (lvpread) then
        !       oldtstep=1.0d-15
-       tempsauv=tempinst(vp,ityp)
+       tempsauv=tempinst(vp,ityp,im,imm)
        if (rang==0) write(6,*)'tempsauv ',tempsauv
 
        xpp(:,:im) = xp(:,:im)-(xp(:,:im)-xpp(:,:im))*tstep/oldtstep
@@ -273,7 +272,7 @@ contains
 
              !             endif
           end do
-          tempsauv=tempinst(vp,ityp)
+          tempsauv=tempinst(vp,ityp,im,imm)
           if (rang==0) write(6,*)'temperature MI initspeed ',tempsauv
           kinx(:)=0.d0
           do ic=1,3
@@ -461,7 +460,7 @@ contains
     endif
     !     write(6,*)'sortie initspeed'
 
-    tempsauv=tempinst(vp,ityp)
+    tempsauv=tempinst(vp,ityp,im,imm)
     if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
 
 

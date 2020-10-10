@@ -1,5 +1,5 @@
-module endrun_mod
-        USE analyse_mod,only:analyse
+module endrunT_mod
+        USE analyseT_mod,only:analyseT
         USE adf_mod,only:adf
         USE spebc_fin_mod,only:spebc_fin
         USE desinteg_insert_mod,only:desinteg_insert
@@ -13,15 +13,15 @@ module endrun_mod
              &lwgin,nstepdes, lposmoy,l2T,angst,&
              &celsize,indi,ltabvois,normat,nvois,nzl,volu,zls2
         use var_pot, only: eatref,eatref,eatref
-          USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
-          USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
-          use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
+          USE cellconfig,only:cell_config,caltabtC
+          USE atomconfig,only:atom_config,atom_config_d,atom_config_e!, ndm2config, config2ndm
+          use boxconfig,only: box_config!,ndm2boxconfig,boxconfig2ndm
   
 
         implicit none
         contains
 ! ****************************************************************
-subroutine endrun
+subroutine endrunT(atdml,celndm,boxndm)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -46,21 +46,10 @@ subroutine endrun
   ! ****************************************************************
 
   implicit none
-  !-----------------------------------------------
-  !   G l o b a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   D u m m y   A r g u m e n t s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   V a r i a b l e s
-  !-----------------------------------------------
-    type(atom_config_d)::atdml,attyp
-    type(cell_config):: celndm,celtyp
     type(box_config)::boxndm
+    class(atom_config)::atdml
+    type(cell_config):: celndm
+
 
   integer :: i,j, n, nAux_real
   CHARACTER(len=100) :: out_file
@@ -78,10 +67,10 @@ subroutine endrun
   !
   !
   !
-   call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+ !  call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+ !   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+ !        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+ !   call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
   if (lPkbar) then
      unitP=1.0d-9
      cunitP='kbar'
@@ -227,6 +216,9 @@ subroutine endrun
 
   if (lWgin.eqv..true.) call cin2gin
   IF (iteSauv.GE.0) then
+!    call boxndm%print
+!    call celndm%print
+!     call atdml%print
      call sauvegardeT(atdml,celndm,boxndm)     ! Modif E. Clouet: sauvegarde seulement si voulu
      if (l2T.and.rang==0) call sauveelec
   end IF
@@ -238,9 +230,12 @@ subroutine endrun
      if (iteangle>=0) call adf
   endif
   if ((dmtype==2).or.(dmtype==3).or.(dmtype==30)) then
-       it=0
+     it=0
   end if
-  call analyse
+  select type(atdml)
+  type is (atom_config_d)
+     call analyseT(atdml,celndm,boxndm)
+  end select
   if (iterasmol.GE.0) call rasmol (atdml,boxndm,it)
   if (.not.parallele.and.iteanapos>=0) call anapos (it)
 
@@ -292,5 +287,5 @@ subroutine endrun
 
   stop
   return
-end subroutine endrun
-end module
+end subroutine endrunT
+end module endrunT_mod

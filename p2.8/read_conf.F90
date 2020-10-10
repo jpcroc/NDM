@@ -54,7 +54,7 @@ contains
     if (rang==0) then
        write(6,*)
        write(6,*)' *-*-*-*-*-*LECTURE DE CIN*-*-*-*-*-*-'
-       write(6,*)
+       write(6,*)' *-*-*-*-*- LRESTART =',lrestart
     endif
 
     lucin = 93
@@ -133,8 +133,10 @@ contains
           if (icintypemod==1) then
              read (lucin, err=456) buffer                     !xpp
              atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
+             write(6,*)'xpp'
              read (lucin, err=456) buffer                     !vp
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
+             write(6,*)'vp'
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
              read (lucin, err=456) buffer                     !ax inutile
@@ -143,8 +145,10 @@ contains
           if (icintypemod==1) then
              read (lucin, err=456) buffer                     !xpp
              atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
+             write(6,*)'xpp_e'
              read (lucin, err=456) buffer                     !vp
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
+             write(6,*)'vp_e'
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
              read (lucin, err=456) buffer                     !ax utile peut-être

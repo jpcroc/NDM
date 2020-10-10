@@ -1,6 +1,6 @@
 module prtplz_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,itmax,iteplz,nplz,zl,imm,imd,it
+  USE gen_com_m, ONLY:at,bg,itmax,iteplz,nplz,zl,imm,it,im
   implicit none
 contains
 
@@ -39,7 +39,7 @@ contains
 
        if ((iteplz.le.nplz).or.(itempo.lt.nplz)) then
           call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
-          do i = 1, imd
+          do i = 1, im
              itr=Int(ntrl*xp(3,i))
              natz(itr)=natz(itr)+1.
           end do

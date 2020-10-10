@@ -4,7 +4,7 @@ module dmloop_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
   USE trempe_mod,only: trempe
-  USE sauvegarde_mod,only: sauvegarde
+  USE sauvegardeT_mod,only: sauvegardeT
   USE correl_mod,only: correlvp
   USE sauveforce_mod,only: sauveforce
   USE sauveposition_mod,only: sauveposition
@@ -172,7 +172,7 @@ contains
     if (rang==0) then
        !          write(6,*)'analyse -> sauvegarde'
        if (itesauv.GT.0) then
-          if (mod(it,itesauv)==0) call sauvegarde 
+          if (mod(it,itesauv)==0) call sauvegardeT (atdml,celndm,boxndm)
        endif
 
        !          write(6,*)'analyse -> sauveposition'

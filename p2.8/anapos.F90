@@ -8,7 +8,7 @@ module posana
   use notperiod_mod, only: notperiod
   use cryst_to_cart_mod,only:cryst_to_cart
   USE gen_com_m, ONLY: at,zl,atincel,ncel,deltadist,fnam,im,imm,rang,lperiod,pi,bg,nato,noxyz,npath,ibound,im_glob,&
-       &dmtype,eatom,decal_bc,noy,nox,noz,ldecal_bc,lenfnam,it,imd,zl,nato,imm_glob,natperc,timel
+       &dmtype,eatom,decal_bc,noy,nox,noz,ldecal_bc,lenfnam,it,zl,nato,imm_glob,natperc,timel
   !USE configcr_mod,only: configcr
 !  USE atomconfig
   USE tab_imm_m,only:xp,ityp,ielat,ax,xpp
@@ -309,7 +309,7 @@ contains
 
     natvityp(:,:)=0
     ntetmax=-1
-    do i = 1, imd
+    do i = 1, im
        if(ldefcat.and.ityp(i)==2) cycle 
        pst=0;psta=0;pstp=0.
        nvi(i)=0

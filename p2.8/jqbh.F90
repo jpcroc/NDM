@@ -85,10 +85,10 @@ subroutine jqbh (xp,xpp,vp,ityp)
      end if
 
      if (njqbh==5) then
-        if(rang==0) write(6,*)'tempinst',tempinst(vp,ityp)
+        if(rang==0) write(6,*)'tempinst',tempinst(vp,ityp,im,imm)
         dTtot=epsil*(nzl(1)-2*rulayer)/(nzl(2)*nzl(3)*kthg*tstep)
         if(rang==0) write(6,*)'dTtot', dTtot
-        tempact=tempinst(vp,ityp)
+        tempact=tempinst(vp,ityp,im,imm)
         temptra(:)=0.
         nattr(:)=0
 

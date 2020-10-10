@@ -1,9 +1,9 @@
 module tempinst_mod
-  USE gen_com_m, ONLY:imm,bk,imd,im_glob
+  USE gen_com_m, ONLY:imm,bk,im_glob
   implicit none
 contains
   !c******************************************************************
-  function tempinst(vp,ityp)     !calcul de la T instant.
+  function tempinst(vp,ityp,im,imm)     !calcul de la T instant.
     !c******************************************************************
 
     !-----------------------------------------------
@@ -21,7 +21,7 @@ contains
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     real(double),dimension (3,imm) ::  vp
-    integer :: ityp(imm)
+    integer :: ityp(imm),im,imm
     real(double)::  tempinst
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
@@ -33,8 +33,7 @@ contains
 #endif
     integer :: i
     mv2=0.0
-    !  write(6,*)'imd ', imd
-    do i = 1,imd
+    do i = 1,im
        v2= vp(1,i)**2+ vp(2,i)**2+ vp(3,i)**2
        mv2= mv2 + cm(ityp(i))*v2
     enddo
@@ -45,7 +44,7 @@ contains
     tempinst=mv2/(3.d0*float(im_glob)*bk)
 
 #else
-    tempinst=mv2/(3.d0*float(imd)*bk)
+    tempinst=mv2/(3.d0*float(im)*bk)
 
 
 #endif

@@ -3,7 +3,7 @@ module prog_mod
   USE calfo_mod,only: calfo
   USE analyse_mod,only: analyse
   USE controle_mod,only: controle
-  USE endrun_mod,only: endrun
+  USE endrunT_mod,only: endrunT
   USE neb_mod,only: neb
   USE dmloop_lpr_mod,only: dmloop_lpr
   USE loopforcetest_mod,only: loopforcetest
@@ -34,7 +34,7 @@ contains
 
     USE tab_imm_m
     
-    USE montecarlo_mod, ONLY: config_atom_n, cells_n
+!    USE montecarlo_mod, ONLY: config_atom_n, cells_n
 
 #ifdef PARA
     use mpi
@@ -116,7 +116,7 @@ contains
     case(5)
        if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
     case(4,10)
-       call dmloop_vverlet 
+       call dmloop_vverlet (atdml,celndm,boxndm)
     case(8)
        call dmloop_lpr 
     case (1)
@@ -147,7 +147,7 @@ contains
 !    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
        call analyseT(atdml,celndm,boxndm)
        call controleT(atdml,celndm,boxndm)
-       call endrun()
+       call endrunT(atdml,celndm,boxndm)
 
 #ifdef ART    
     case (12) 
@@ -176,10 +176,10 @@ contains
 
 
     case (15)
-       call ndm2cellconfig(cells_n,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-       call ndm2config(config_atom_n,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-         &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-       call montecarlo
+!       call ndm2cellconfig(cells_n,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+!       call ndm2config(config_atom_n,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+!         &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+       call montecarlo(atdml,celndm,boxndm)
 
     end select
 

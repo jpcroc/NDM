@@ -217,7 +217,7 @@ contains
   end subroutine readelec
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine TTlangevin(xp, vp, fp,ityp,il,Gl,num_at_glob)
+  subroutine TTlangevin(xp, vp, fp,ityp,il,num_at_glob)
 
 
 #ifdef PARA

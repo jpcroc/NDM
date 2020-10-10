@@ -55,7 +55,7 @@ contains
 
   end subroutine calfoberend
 
-  subroutine dynlangevin(im,xp, vp, fp,ityp,il,Gl)
+  subroutine dynlangevin(im,xp, vp, fp,ityp,il)
     USE gen_com_m, ONLY:
     USE var_pot, ONLY:
 

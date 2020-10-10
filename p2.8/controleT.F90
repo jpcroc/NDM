@@ -1,5 +1,5 @@
 module controleT_mod
-  USE endrun_mod,only: endrun 
+  USE endrunT_mod,only: endrunT
   USE dynalloccell
   USE tempinst_mod,only: tempinst,andersenth
   USE jqbh_mod,only: jqbh
@@ -77,7 +77,7 @@ contains
 
     if (it>=itmax) then
        if (rang==0) write (6, *) '*******Derniere iteration **** '
-       call endrun
+       call endrunT(atdml,celndm,boxndm)
        call DeallocateAll
 
        call arret_ndm
@@ -86,7 +86,7 @@ contains
 
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
-       call endrun
+       call endrunT(atdml,celndm,boxndm)
        call DeallocateAll
 
        call arret_ndm
@@ -112,7 +112,7 @@ contains
        if (mod(it,itetemp)==0) then
           if (temp<=tempstop) then
              if (rang==0)  write (6, *) 'temperature < tempstop '
-             call endrun
+             call endrunT(atdml,celndm,boxndm)
              call DeallocateAll
 
              call arret_ndm
@@ -121,7 +121,7 @@ contains
           if (tempstopcel.gt.0) then
              if (maxtcel<=tempstopcel) then
                 write (6, *) 'temperature dans toutes les cels < tempstopcel '
-                call endrun
+                call endrunT(atdml,celndm,boxndm)
                 call DeallocateAll
 
                 call arret_ndm
@@ -563,9 +563,9 @@ contains
           if((rang==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot))
           if (fpn.le.fpstop)then
              if (sigstop.ge.0) then
-                if(maxval(abs(sigtot)).le.sigstop/1d-9) call endrun
+                if(maxval(abs(sigtot)).le.sigstop/1d-9) call endrunT(atdml,celndm,boxndm)
              else
-                call endrun
+                call endrunT(atdml,celndm,boxndm)
              end if
 
              if (rang==0)      write(6,*)
@@ -592,9 +592,9 @@ contains
           if((rang==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot))
           if (fpn.le.fsumstop) then
              if (sigstop.ge.0) then
-                if(maxval(abs(sigtot)).le.sigstop/1d-9) call endrun
+                if(maxval(abs(sigtot)).le.sigstop/1d-9) call endrunT(atdml,celndm,boxndm)
              else
-                call endrun
+                call endrunT(atdml,celndm,boxndm)
              end if
              if (rang==0)      write(6,*)
           end if
@@ -647,7 +647,7 @@ contains
                    if (rang==0) write(6,*)'force par atome  max  ev/Ang ', formax
                    if (rang==0) write (6, *) 'energie ', potist*erg2eV
                    if (it.le.1) xp(:,:)=ax(:,:)
-                   call endrun
+                   call endrunT(atdml,celndm,boxndm)
                 end if
              end if
              if (fsumstop>0) then   
@@ -655,7 +655,7 @@ contains
                    if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
                    if (rang==0) write(6, *) 'energie ', potist*erg2eV
                    if (it.le.1) xp(:,:)=ax(:,:)
-                   call endrun
+                   call endrunT(atdml,celndm,boxndm)
                 end if
              end if
 
@@ -666,7 +666,7 @@ contains
                    if (rang==0) write(6,*)'force par atome  max cgs ',formax
                    if (rang==0) write (6, *) 'energie ', potist
                    if (it.le.1) xp(:,:)=ax(:,:)
-                   call endrun
+                   call endrunT(atdml,celndm,boxndm)
 
                 end if
              end if
@@ -676,7 +676,7 @@ contains
                    if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
                    if (rang==0) write (6, *) 'energie ', potist
                    if (it.le.1) xp(:,:)=ax(:,:)
-                   call endrun
+                   call endrunT(atdml,celndm,boxndm)
                 end if
              end if
 

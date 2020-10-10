@@ -101,7 +101,7 @@ contains
 
     ! temp const moyenne depuis le dernier rescale
     if(lTcon) then
-       tempavant=tempinst(vp,ityp)
+       tempavant=tempinst(vp,ityp,im, size(ityp))
        tmoyinst = tmoyinst +tempavant 
        imesureT = imesureT + 1
        if(mod(it,iteTconst).eq.0) then

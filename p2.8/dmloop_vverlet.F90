@@ -1,16 +1,16 @@
 module dmloop_vverlet_mod
   USE calfo_mod,only: calfo
-  USE analyse_mod,only: analyse
-  USE controle_mod,only: controle
+  USE analyseT_mod,only: analyseT
+  USE controleT_mod,only: controleT
   USE dyn_vverlet_mod,only: dyn_vverlet
 !  USE calctemp_mod,only: calctemp
-  USE sauvegarde_mod,only: sauvegarde
+  USE sauvegardeT_mod,only: sauvegardeT
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
   USE correl_mod,only: correlvp
-  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
-  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
+  USE atomconfig,only : atom_config_d, atom_config_e!,ndm2config, config2ndm
+  USE cellconfig, only:cell_config!,ndm2cellconfig,cellconfig2ndm
+  USE boxconfig,only:box_config!,boxconfig2ndm,ndm2boxconfig
   use var_pot,only:ntyp
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,im,lgc,rang,rayonc,&
        &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,sigat,sigc&
@@ -26,14 +26,14 @@ contains
   ! boucle de DM pour velocity Verlet
   ! ************************************************
 
-  subroutine dmloop_vverlet
+  subroutine dmloop_vverlet(atdml,celndm,boxndm)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
     USE Parrinello_Rahman
-    USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
+!    USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
     USE suivinonpbc
 
 
@@ -43,6 +43,9 @@ contains
 
 #endif
     implicit none
+    type(box_config)::boxndm
+    class(atom_config_d)::atdml
+    type(cell_config):: celndm
     character :: extension*2
     integer::lenfn2,i
     integer::ilocal
@@ -58,9 +61,6 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     ! MPI
-    type(box_config)::boxndm
-    type(atom_config_d)::atdml
-    type(cell_config):: celndm
     logical :: test_sigma
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****'
 #ifdef PARA
@@ -70,10 +70,10 @@ contains
     if (lsuivinonpbc) call init_suivinonpbc()
     ! Appel de la routine generale des forces
     !    call calfo
-  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+!  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+!      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+!  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+!       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
   test_sigma=(mod(it,itesigma)==0)
   CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
   if (l2t)then
@@ -82,8 +82,8 @@ contains
        if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     end if
     if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
-    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+!    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+!    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
 
 
@@ -97,7 +97,7 @@ contains
     if (ldesinteg)itdes=itdes+1
 
 
-    call dyn_vverlet
+    call dyn_vverlet(atdml,celndm,boxndm)
     ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
 
 
@@ -106,23 +106,30 @@ contains
     sigkine=0.
     do ilocal = 1, im
        sigkine(1:3,1) = sigkine(1:3,1) + &
-            cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)
+            cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
        sigkine(1:3,2) = sigkine(1:3,2) + &
-            cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)
+            cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
        sigkine(1:3,3) = sigkine(1:3,3) + &
-            cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)
-       if (lsigat) then 
-          sigat(1:3,1,ilocal) = sigat(1:3,1,ilocal) +  cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)
-          sigat(1:3,2,ilocal) = sigat(1:3,2,ilocal) +  cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)
-          sigat(1:3,3,ilocal) = sigat(1:3,3,ilocal) +  cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)
-       end if
+            cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+       select type (atdml)
+       typeis (atom_config_e)
+          
+          if (atdml%lsigat) then 
+             atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &
+                  &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
+             atdml%sigat(1:3,2,ilocal) = atdml%sigat(1:3,2,ilocal) + &
+                  &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
+             atdml%sigat(1:3,3,ilocal) = atdml%sigat(1:3,3,ilocal) +  &
+                  &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+          end if
+       end select
        if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
-          sigc(1:3,1,ielat(ilocal)) = sigc(1:3,1,ielat(ilocal)) + &
-               cm(ityp(ilocal))*vp(1:3,ilocal)*vp(1,ilocal)*noxyz/volu
-          sigc(1:3,2,ielat(ilocal)) = sigc(1:3,2,ielat(ilocal)) + &
-               cm(ityp(ilocal))*vp(1:3,ilocal)*vp(2,ilocal)*noxyz/volu
-          sigc(1:3,3,ielat(ilocal)) = sigc(1:3,3,ielat(ilocal)) + &
-               cm(ityp(ilocal))*vp(1:3,ilocal)*vp(3,ilocal)*noxyz/volu
+          sigc(1:3,1,atdml%ielat(ilocal)) = sigc(1:3,1,atdml%ielat(ilocal)) + &
+               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*noxyz/volu
+          sigc(1:3,2,atdml%ielat(ilocal)) = sigc(1:3,2,atdml%ielat(ilocal)) + &
+               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*noxyz/volu
+          sigc(1:3,3,atdml%ielat(ilocal)) = sigc(1:3,3,atdml%ielat(ilocal)) + &
+               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*noxyz/volu
        end if
     end do
     sigkine(1:3,1:3) = sigkine(1:3,1:3)/volu
@@ -139,12 +146,12 @@ contains
 #endif
     sigtot = sigkine+sig
 
-    call analyse 
+    call analyseT (atdml,celndm,boxndm)
 !    if (lcorrelvp) call correlvp(xp,xpp,vp,ax,fp,ityp)
     ! MPI
     !     write(6,*)'analyse -> sauvegarde'XS
     if (itesauv.GT.0) then
-       if (mod(it,itesauv)==0) call sauvegarde
+       if (mod(it,itesauv)==0) call sauvegardeT(atdml,celndm,boxndm)
     endif
 
     !     write(6,*)'analyse -> sauveposition'
@@ -162,7 +169,7 @@ contains
     end if
     !     write(6,*)'sauvposition -> control'
 
-    call controle
+    call controleT(atdml,celndm,boxndm)
     !     write(6,*)' controle ->'
     go to 1
 
