@@ -294,8 +294,8 @@ contains
        class is (atom_config_d)
        select type (atcible)
           class is (atom_config_d)
-          atcible%vp(:,1:atsource%imm)=atsource%xp(:,1:atsource%imm)
-          atcible%xpp(:,1:atsource%imm)=atsource%fp(:,1:atsource%imm)
+          atcible%vp(:,1:atsource%imm)=atsource%vp(:,1:atsource%imm)
+          atcible%xpp(:,1:atsource%imm)=atsource%xp(:,1:atsource%imm)
        end select
     end select
     ! atsource et atcible sont _e    
