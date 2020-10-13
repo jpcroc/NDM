@@ -1,5 +1,0 @@
-#define DATE "2020-09-07"
-#define REVISION "9c438ce"
-#define COMPILE_DATE "Mon Sep 7 17:19:24 CEST 2020"
-#define LOCATION "/home/croc/NDM/GIT/NDM/p2.8"
-#define COMPILE_TARGET "ndm_mpi"
