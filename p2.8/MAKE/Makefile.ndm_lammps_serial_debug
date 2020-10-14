@@ -178,7 +178,8 @@ vpath %.h   ${CODE_PATH}
 %.o: %.f90
 	$(F90) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
 %.o: %.F90
-	$(F90) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
+	$(F90) -c ${EXTRA_INC} $(FFLAGS)  $< -o $@ 
+	
 %.o: %.cpp
 	$(C++) -c ${EXTRA_INC} $(C++FLAGS) $< -o $@ 
 

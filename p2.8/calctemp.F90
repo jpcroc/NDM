@@ -37,7 +37,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 #ifdef PARA
   real(double):: sumtat2tot,kinetot
 !  real(double), dimension(ntyp,3) :: vx2_glob
-  real(double), dimension(noxyz)::tempc_tot
+  real(double), allocatable::tempc_tot(:)
   real(double),allocatable::tempiontot(:,:,:)
   integer,allocatable::niontot(:,:,:)
   integer::natstot
@@ -79,6 +79,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
      if (cellcf%nato(ko)==0) cycle
 
 #ifdef PARA
+     allocate(tempc_tot(cellcf%noxyz))
      if (proc_cell(ko).ne.myid) cycle
 
 #endif
@@ -138,7 +139,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 !  call MPI_ALLREDUCE(vx2(1:ntyp,1:3),vx2_glob(1:ntyp,1:3),ntyp*3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
 !  vx2=vx2_glob
   if (allocated(cellcf%tempc)) then
-     call MPI_ALLREDUCE(cellcf%tempc,tempc_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+     call MPI_ALLREDUCE(cellcf%tempc,tempc_tot,cellcf%noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      cellcf%tempc=tempc_tot
   end if
   if (l2T.eqv..true.) then
@@ -183,8 +184,9 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 !     if( allocated(free)) then
 !        temp = temp/float(imfree)
 !     else
-        temp = sumtat2/float(im_glob)
-!     end if
+  temp = sumtat2/float(im_glob)
+  !     end if
+  deallocate(tempc_tot)
 #else
         temp = sumtat2/float(atcf%im)
         

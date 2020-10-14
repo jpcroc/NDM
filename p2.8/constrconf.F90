@@ -118,7 +118,7 @@ contains
        end if
        call setnox(boxrcf,cellrcf,rumax)
        do iti=1,ntyp
-          na(iti)=count(COMPatrcf%ityp(1:atrcf%im)==iti)
+          na(iti)=count(COMPatrcf%ityp(1:COMPatrcf%im)==iti)
        end do
        ncore=0
        call  decoupage(nprocs,ncore,cellrcf)
@@ -273,23 +273,25 @@ contains
        endif
        atrcf%im=im
        im_glob=im
+       write(6,*)
+!       call atrcf%print
        do ia = 1,lat(1)
           do ib = 1,lat(2)
              do ic = 1,lat(3)
                 do icell = 1, atrgin%im
                    i  = i + 1
-!                   write(6,*)i
                    atrcf%xp(1,i) = (atrgin%xp(1,icell)+float(ia-1))/float(lat(1))
                    atrcf%xp(2,i) = (atrgin%xp(2,icell)+float(ib-1))/float(lat(2))
                    atrcf%xp(3,i) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
                    atrcf%num_at_glob(i)=i
                    atrcf%ityp(i)=atrgin%ityp(icell)
-!                   write(6,*)'constr',i,atrcf%xp(:,i)
+                   !                   write(6,*)'constr',i,atrcf%xp(:,i)
                 end do
              end do
           end do
        end do
-       write(6,*)'POSTCONSTR'
+!       write(6,*)'POSTCONSTR'
+
 #endif
        call atrgin%dealloc
        do iti=1,ntyp
@@ -297,7 +299,7 @@ contains
        end do
        call cryst_to_cart (imm, atrcf%xp, boxrcf%at, 1)
        if (lperiod.EQV..true.) call periodbox (boxrcf,atrcf)
-       write(6,*)'POSTCONSTR2'
+!       write(6,*)'POSTCONSTR2'
 
        select type(atrcf)
        type is (atom_config_d)
@@ -308,9 +310,12 @@ contains
              atrcf%ax(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           end if
        end select
-
+!       write(6,*)'POSTCONSTR3'
+!       stop
        !#endif
     end if
+
+    
 
     if (rang==0) then
 

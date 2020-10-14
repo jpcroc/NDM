@@ -60,7 +60,7 @@ contains
     real(double), allocatable :: xp_loc(:,:)
     integer, allocatable      :: ityp_loc(:)
     integer, allocatable      :: num_at_glob_loc(:)
-    character*3, allocatable      :: tyw_loc_loc(:)
+    character*3, allocatable      :: tyw_loc(:)
     real(double),allocatable::sigat_loc(:,:,:),eat_loc(:)
     integer :: im_loc
     integer :: proc_source
@@ -297,6 +297,11 @@ contains
                 if (atmol%lprteat) call MPI_RECV(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,  proc_source, 10005, MPI_COMM_space, status, ierr)
                 if (atmol%lsigat) call MPI_RECV(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE,proc_source, 10006, MPI_COMM_space, status, ierr)
              end select
+!       select type (atmol)
+!       type is (atom_config_e)
+!          if (atmol%lprteat) call MPI_send(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10005, MPI_COMM_space, status, ierr)
+!          if (atmol%lsigat) call MPI_send(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10006, MPI_COMM_space, status, ierr)
+!       end select
 
           endif
 #endif
@@ -369,8 +374,8 @@ contains
        call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_space,ierr)
        select type (atmol)
        type is (atom_config_e)
-          if (atmol%lprteat) call MPI_send(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10005, MPI_COMM_space, status, ierr)
-          if (atmol%lsigat) call MPI_send(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10006, MPI_COMM_space, status, ierr)
+          if (atmol%lprteat) call MPI_SEND(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,    proc_source, 10005, MPI_COMM_space,  ierr)
+          if (atmol%lsigat) call MPI_SEND(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10006, MPI_COMM_space,  ierr)
        end select
     endif
 #endif

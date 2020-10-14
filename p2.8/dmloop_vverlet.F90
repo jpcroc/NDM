@@ -112,7 +112,7 @@ contains
        sigkine(1:3,3) = sigkine(1:3,3) + &
             cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
        select type (atdml)
-       typeis (atom_config_e)
+       type is (atom_config_e)
           
           if (atdml%lsigat) then 
              atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &

@@ -27,7 +27,7 @@ SHELL = /bin/sh
   ARFLAGS = -rc
 
 
-  LAMMPS_USER_PATH="/volatile/home/jcrocombette/DM/LAMMPS/lammps"
+  LAMMPS_USER_PATH="/home/trochet/mylammps"
   LAMMPS_LIBNAME= serial
 
 # Compiler flags setting 

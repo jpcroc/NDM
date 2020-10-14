@@ -350,9 +350,9 @@ contains
 
           ! On ajoute un atome a la liste
           im = im + 1
-          imd = imd + 1
-          imf = imf + 1
-          imana = imana + 1
+!          imd = imd + 1
+!          imf = imf + 1
+!          imana = imana + 1
 
 
           ! mise a jour des variables entieres
@@ -511,9 +511,9 @@ contains
        enddo
 
        im = im - nb_at_a_eliminer
-       imd = imd - nb_at_a_eliminer
-       imf = imf - nb_at_a_eliminer
-       imana = imana - nb_at_a_eliminer
+!       imd = imd - nb_at_a_eliminer
+!       imf = imf - nb_at_a_eliminer
+!       imana = imana - nb_at_a_eliminer
 
     endif
 

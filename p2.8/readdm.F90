@@ -735,9 +735,8 @@ contains
 
     if ((lpotentiel(12).EQV..true.).and.(ltabvois.EQV..true.))ldemitab=.false.
     if (ipotentiel.le.-10)then
+       if ((rang==0).and.(ltabvois)) write(6,*)'LAMMPS +ltabvois ; impossible pour l instant, ltabvois à false'
        ltabvois=.false.
-       if (rang==0) write(6,*)'LAMMPS +ltabvois ; impossible pour l instant'
-       stop
     end if
 
     if(lrestart.and.lcorrelvp) then

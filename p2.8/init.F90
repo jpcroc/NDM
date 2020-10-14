@@ -644,7 +644,6 @@ contains
     character ::  fnampotin*80
     real(double)::rue
 
-
     fnampotin = 'simple.potin'
     lupotin = 95
     open(unit=lupotin, file=fnampotin, status='old')
@@ -662,7 +661,7 @@ contains
           write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
        end do
     case(-11)
-       do i = 1, ntyp
+           do i = 1, ntyp
           read (lupotin,*) cm(i),catom(i),ty(i),q(i)
           if (rang/=0) cycle
           write (6, '(I4,2F9.3,A5,F9.3)') i, cm(i),catom(i),ty(i),q(i)
