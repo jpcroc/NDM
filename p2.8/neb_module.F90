@@ -56,18 +56,10 @@ contains
        call atneb(ipath)%init(im,imm,ltabvois,nvois,lprteat=lprteat)
     end do
 
-!    allocate (ielat_n(imm,npath), iwmax_n(imm,npath), &
-!              ityp_n(imm,npath),                      &
-!         irelax(imm),                                 &
-!	 icontrainte(imm),                            &
-!         xp_n(3,imm,npath),                           &
-!         xpp_n(3,imm,npath),                          &
-!         vp_n(3,imm,npath),                           &
-!         fp_n(3,imm,npath),                           &
          allocate (icontrainte(imm),reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
     allocate  (sigPATH(3,3,npath))    ! Stress tensor for each image
-!    allocate  (fp_par(3,imm),fp_perp(3,imm))
+
     allocate  (s_path(3,imm,npath),force_neb(3,imm,npath))
     allocate  (bruitneb(3,imm,npath))
 
@@ -115,14 +107,6 @@ contains
        atneb(iph)%xpp(:,:) = xpp(:,:)
        atneb(iph)%fp(:,:) = fp(:,:) 
        atneb(iph)%num_at_glob(:) =num_at_glob   (:) 
-!       ielat_n   (:,iph) = ielat   (:) 
-!       iwmax_n   (:,iph) = iwmax   (:)
-!       ityp_n    (:,iph) = ityp    (:)
-!       xp_n (:,:,iph)    = xp (:,:)
-!       xpp_n(:,:,iph)    = xpp(:,:)
-!       !vp_n (:,:,iph)    = vp (:,:)
-!       vp_n (:,:,iph)    = 0.d0
-!       fp_n (:,:,iph)    = fp (:,:)
     else 
        ielat   (:)      = atneb(iph)%ielat(:)
        if(allocated(atneb(iph)%iwmax))  iwmax   (:)      = atneb(iph)%iwmax(:)
@@ -132,18 +116,6 @@ contains
        xpp(1:3,:)       =atneb(iph)%xpp(:,:)
        vp(1:3,:) = 0.d0
        fp (1:3,:)      = atneb(iph)%fp(:,:)
-       !fp (1:3,:)	      = 0.d0   
-
-
-!           ielat   (:)      = ielat_n   (:,iph)
-!       iwmax   (:)      = iwmax_n   (:,iph)
-!       ityp    (:)      = ityp_n    (:,iph)
-!       xp (1:3,:)	      = xp_n (1:3,:,iph)   
-!       xpp(1:3,:)	      = xpp_n(1:3,:,iph)   
-       !vp (1:3,:)	      = vp_n (1:3,:,iph)   
-!       vp(1:3,:) = 0.d0
-!       fp (1:3,:)	      = fp_n (1:3,:,iph)   
-       !fp (1:3,:)	      = 0.d0   
 end if
 
     return
@@ -152,27 +124,21 @@ end if
 
 
 
-  subroutine init_neb(im,imm)!(xp, xpp, vp,  fp, ielat, iwmax, ityp)
+  subroutine init_neb(im,imm)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     implicit none
     integer::imm,im
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-!    integer  :: ielat(imm)
-!    integer  :: iwmax(imm)
-!    integer  :: ityp(imm)
-!    real(double)  :: xp(3,imm)
-!    real(double)  :: xpp(3,imm)
-!    real(double)  :: vp(3,imm)
-!    real(double)  :: fp(3,imm)
     real(double)  :: dxx(3,imm)
     !-----------------------------------------------
-    integer :: iph,ic,non_contr,i,idepmax
+    integer :: iph,ic,non_contr,i,idepmax,itread
     real(double),dimension(:,:), allocatable   :: fp_buffer
     real(double)::deplamax,depla
+    CHARACTER(len=80) :: ginFile
+    CHARACTER(len=9) :: extension
+    CHARACTER(len=89) :: fnamneb
+    logical ::ok
     !-----------------------------------------------
 
     dxx(:,:)=atneb(npath)%xp(:,:)-atneb(1)%xp(:,:) 
@@ -194,31 +160,76 @@ end if
     do iph=1,npath
 
        IF (lrestart) THEN
-               ! NEB image load from previous run
-               CALL Load_NEB_Image(iph)
+          write(extension,'(i9.9)') iph
+          fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
+          itread=1
+          call read_cin(boxneb,itread,atneb(iph),imm,fnamneb) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
        ELSE IF (lPathFromGin) THEN
                ! read initial path in gin files *.1.gin, *.2.gin, ...
-               CALL Load_NEB_Image_Gin(iph)
+
+          WRITE(ginFile, '(2a,i0,a)') Trim(fnam), '.', iph, '.gin'
+          INQUIRE(file=ginFile, exist=ok)
+          IF ((.NOT.ok).AND.(iph.LE.999999999)) THEN
+             WRITE(ginFile, '(2a,i9.9,a)') Trim(fnam), '.', iph, '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          IF ( (.NOT.ok).AND.(iph.LE.99999999)) THEN
+             WRITE(ginFile, '(2a,i8.8,a)') Trim(fnam), '.', iph, '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          IF ( (.NOT.ok).AND.(iph.LE.9999999)) THEN
+             WRITE(ginFile, '(2a,i7.7,a)') Trim(fnam), '.', iph, '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          IF ( (.NOT.ok).AND.(iph.LE.999999)) THEN
+             WRITE(ginFile, '(2a,i6.6,a)') Trim(fnam), '.', iph, '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          IF ( (.NOT.ok).AND.(iph.LE.99999)) THEN
+             WRITE(ginFile, '(2a,i5.5,a)') Trim(fnam), '.', iph, '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          IF ( (.NOT.ok).AND.(iph.LE.9999)) THEN
+             WRITE(ginFile, '(2a,i4.4,a)') Trim(fnam), '.', iph, '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          IF ( (.NOT.ok).AND.(iph.LE.999)) THEN
+             WRITE(ginFile, '(2a,i3.3,a)') Trim(fnam), '.', iph, '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          IF ( (.NOT.ok).AND.(iph.LE.99)) THEN
+             WRITE(ginFile, '(2a,i2.2,a)') Trim(fnam), '.', iph, '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          IF ( (.NOT.ok).AND. (iph.EQ.1) ) THEN
+             WRITE(ginFile, '(3a)') 'deb_', Trim(fnam), '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          IF ( (.NOT.ok).AND. (iph.EQ.nPath) ) THEN
+             WRITE(ginFile, '(3a)') 'fin_', Trim(fnam), '.gin'
+             INQUIRE(file=ginFile, exist=ok)
+          END IF
+          
+          IF (ok ) THEN
+             ! Load NEB image ip in file *.<ip>.gin
+          if(rang==0)write(6,*)'FNAMneb  ',iph,ginfile
+          call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,im_glob,rumax)
+            do i=1,im
+               atneb(iph)%num_at_glob(i)=i
+            end do
+         ELSE
+            WRITE(0,'(a,i0)') 'Does not manage to find a backup file for image ', iph
+            WRITE(0,'(3a)') 'File ', Trim(ginFile), ' does not exist'
+            STOP '< Load_NEB_Image_Gin >'
+         END IF
        ELSE
-               ! Construction of NEB image
+
           atneb(iph)%xp(:,:)=atneb(1)%xp(:,:)+dxx(:,:)*dble(iph -1) / dble(npath-1)
-!          xp_n(:,:,iph) = xp_n(:,:,1) +                               &
-!                    ( dxx(:,:) ) * dble(iph -1) / dble(npath-1)
-!          ityp_n    (:,iph) = ityp    (:)
           atneb(iph)%ityp(:)=atneb(1)%ityp(:)
           atneb(iph)%num_at_glob(:)=atneb(1)%num_at_glob(:)
           !CRC RESTE ITYP...
        END IF
-!       atneb(iph)%ielat(:)=0 !ielat   (:)
-!       atneb(iph)%iwmax(:)=0 !iwmax   (:)
-!       ielat_n   (:,iph) = ielat   (:) 
-!       iwmax_n   (:,iph) = iwmax   (:)
-!       xpp_n(:,:,iph)    = xp_n(:,:,iph)
-!       vp_n (:,:,iph)    = 0.d0
-!       atneb(iph)%fp(:,:)=0.0
        atneb(iph)%xpp(:,:)= atneb(iph)%xp(:,:)
-!       atneb(iph)%vp(:,:)=0.0
-!       fp_n (:,:,iph)    = 0.d0
     end do
 
     masstot=SUM(cm(atneb(1)%ityp(1:im)))
@@ -230,171 +241,13 @@ end if
 
     icontrainte(:)=1
     allocate (fp_buffer(3,imm))
-!CRC WTF ??
-!    non_contr=0
-!    fp_buffer(:,:)=fp(:,:)
-!    fp(:,:)=1.d0
-!    if(lcontr) call contr (xp,vp,fp,ityp)
-!    do ic=1,im
-!       if(fp(1,ic).eq.0) then
-!          icontrainte(ic)=0
-!          non_contr=non_contr+1
-!       end if
-!    end do
- !   fp(:,:)=fp_buffer(:,:)
-
-!    if (rang==0) write(*,'(" NEB: The number of atoms which are not included in the DRAG CONTRAINT :", i6)')  non_contr
 
     deallocate(fp_buffer)     
-!    do iph=1,npath
-!       write(6,*)'INITNEB',iph
-!       call atneb(iph)%print
-!    end do
-!    stop
+
     return
 
   end subroutine init_neb
 
-  !-------------------------------------------------------
-
-  SUBROUTINE Load_NEB_Image(ip)
-    ! Load NEB image ip in file *.coutposition.*
-    
-
-    USE gin_mod
-    IMPLICIT NONE
-
-    INTEGER, intent(in) :: ip
-
-    CHARACTER(len=9) :: extension
-    CHARACTER(len=89) :: fnamneb
-    INTEGER :: lucin, icintype, im
-    REAL(double), dimension(3,3) :: at
-    REAL(double), dimension(3) :: zl
-    integer,allocatable ::ibuffer(:)
-    real(double),allocatable::rbuffer(:,:)
-    LOGICAL :: ok
-    allocate( ibuffer(imm)); allocate(rbuffer(3,imm))
-    ! Try to read binary file
-    write(extension,'(i9.9)') ip
-    fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
-    INQUIRE(file=fnamneb, exist=ok)
-    IF (ok ) THEN
-            ! Load NEB image ip in file *.coutposition.*
-            if (rang==0) write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(fnamneb)
-            lucin = 93
-            open(unit=lucin, file=fnamneb, form='unformatted', status='old', action='read')
-            read (lucin) icintype
-            if (icintype>=2) then
-                    read (lucin) at
-            else
-                    read (lucin) zl
-            endif
-
-            read (lucin) im
-            im_glob=im
-            if (im>imm) then
-               if(rang==0) write (6, *) 'im > imM', im, imm
-               stop
-            endif
-            atneb(:)%im=im
-            read (lucin) ibuffer
-            atneb(ip)%ityp(1:im)=ibuffer(1:im)
-            read (lucin) rbuffer(:,:)
-            atneb(ip)%xp(:,1:im)=rbuffer(:,1:im)
-            read(lucin)ibuffer
-            atneb(ip)%num_at_glob(1:im)=ibuffer(1:im)
-!            read (lucin) ityp_n(:,ip)
-!            read (lucin) xp_n(:,:,ip)
-            CLOSE(lucin)
-            RETURN
-    END IF
-
-    WRITE(0,'(a,i0)') 'Does not manage to find a backup file for image ', ip
-    WRITE(0,'(3a)') 'File ', Trim(fnamneb), ' does not exist'
-    STOP '< Load_NEB_Image >'
-
-  END SUBROUTINE Load_NEB_Image
-
-  SUBROUTINE Load_NEB_Image_Gin(ip)
-    ! Load NEB image ip in file *.<ip>.gin like *.1.gin, *.2.gin, ...
-    
-
-    USE gin_mod
-    IMPLICIT NONE
-
-    INTEGER, intent(in) :: ip
-
-    integer::i
-
-    CHARACTER(len=89) :: ginFile
-    !CHARACTER(len=89) :: cfgFile        ! DEBUG 
-    INTEGER :: im
-    REAL(double), dimension(3,3) :: at
-
-    LOGICAL :: ok
-
-    ! Try to read *.gin file 
-    WRITE(ginFile, '(2a,i0,a)') Trim(fnam), '.', ip, '.gin'
-    INQUIRE(file=ginFile, exist=ok)
-    IF ((.NOT.ok).AND.(ip.LE.999999999)) THEN
-            WRITE(ginFile, '(2a,i9.9,a)') Trim(fnam), '.', ip, '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-    IF ( (.NOT.ok).AND.(ip.LE.99999999)) THEN
-            WRITE(ginFile, '(2a,i8.8,a)') Trim(fnam), '.', ip, '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-    IF ( (.NOT.ok).AND.(ip.LE.9999999)) THEN
-            WRITE(ginFile, '(2a,i7.7,a)') Trim(fnam), '.', ip, '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-    IF ( (.NOT.ok).AND.(ip.LE.999999)) THEN
-            WRITE(ginFile, '(2a,i6.6,a)') Trim(fnam), '.', ip, '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-    IF ( (.NOT.ok).AND.(ip.LE.99999)) THEN
-            WRITE(ginFile, '(2a,i5.5,a)') Trim(fnam), '.', ip, '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-    IF ( (.NOT.ok).AND.(ip.LE.9999)) THEN
-            WRITE(ginFile, '(2a,i4.4,a)') Trim(fnam), '.', ip, '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-    IF ( (.NOT.ok).AND.(ip.LE.999)) THEN
-            WRITE(ginFile, '(2a,i3.3,a)') Trim(fnam), '.', ip, '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-    IF ( (.NOT.ok).AND.(ip.LE.99)) THEN
-            WRITE(ginFile, '(2a,i2.2,a)') Trim(fnam), '.', ip, '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-    IF ( (.NOT.ok).AND. (ip.EQ.1) ) THEN
-            WRITE(ginFile, '(3a)') 'deb_', Trim(fnam), '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-    IF ( (.NOT.ok).AND. (ip.EQ.nPath) ) THEN
-            WRITE(ginFile, '(3a)') 'fin_', Trim(fnam), '.gin'
-            INQUIRE(file=ginFile, exist=ok)
-    END IF
-
-    IF (ok ) THEN
-            ! Load NEB image ip in file *.<ip>.gin
-            if (rang==0) write(6,'(a,i0,2a)')'Read NEB image ', ip, ' in file ', TRIM(ginFile)
-            OPEN(unit=93, file=ginFile, status='old', action='read')
-!            CALL ReadGin(xp_n(:,:,ip), iTyp_n(:,ip), im, at, 93)
-            CALL ReadGin(atneb(ip)%xp(:,:), atneb(ip)%ityp(:), im, at, 93)
-            CLOSE(93)
-            do i=1,im
-               atneb(ip)%num_at_glob(i)=i
-            end do
-    ELSE
-            WRITE(0,'(a,i0)') 'Does not manage to find a backup file for image ', ip
-            WRITE(0,'(3a)') 'File ', Trim(ginFile), ' does not exist'
-            STOP '< Load_NEB_Image_Gin >'
-    END IF
-
-  END SUBROUTINE Load_NEB_Image_Gin
 
   !-------------------------------------------------------
 

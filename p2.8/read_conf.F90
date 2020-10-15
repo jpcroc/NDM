@@ -13,6 +13,11 @@ module read_conf
     
 contains
   subroutine read_cin(boxcin,itread,atcinr,immr,fnamcin,lres,fmtcin,icible,imic)
+    !itread 0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+    !immr : imm extrait .cin
+    !lres : lrestart,
+    !fmtcin=1 avec num_at_glob (optional)
+    !icible tableau de taille imic qui donne les atomes à lire (utile pour para), optionel
     USE T_kind_param_m, ONLY:  double
     !    USE suivinonpbc
 #ifdef PARA
