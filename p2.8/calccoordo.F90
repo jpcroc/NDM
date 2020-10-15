@@ -45,7 +45,7 @@ subroutine calccoordo(im,imm,ityp,xp,ielat)
   if (lperiod) then
      xpnp(:,:)=xp(:,:)
   else 
-     call notperiod(imm,xp,xpnp)
+     call notperiod(imm,xp,xpnp,at,bg)
   end if
 
   do i = 1, im

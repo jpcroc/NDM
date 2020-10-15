@@ -574,6 +574,7 @@ contains
     im=atprt%im
 
     write(6,*)'im = ',atprt%im
+    write(6,*)'imm = ',atprt%imm
     write(6,*)'icaltabt = ',atprt%icaltabt
     write(6,*)'ltabvois ', atprt%ltabvois
 

@@ -7,10 +7,10 @@ module neb_mod
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
        &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois,itetabvois,rang,&
-       &celsize ,at,bg,zl,zls2,nzl,volu,normat
+       &celsize ,at,bg,zl,zls2,nzl,volu,normat,fnam,lenfnam
 
   
-  USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,fp,ielat,num_at_glob
+!  USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,fp,ielat,num_at_glob
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
@@ -45,11 +45,12 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    type(box_config)::boxneb
+
 
     integer :: ineb,ii,it_neb_inter,ipath
     real(double)  :: a_local,forneb
-
+    character::fnamcout*80,extension*9
+    integer::formatsauv
     ! Variables for Fire quench algorithm
     REAL(double), dimension(:), allocatable :: fire_dt, fire_alph
     INTEGER, dimension(:), allocatable :: fire_nstep,iter
@@ -69,11 +70,25 @@ contains
        stop
     end if
 #endif    
-     allocate (iter(npath))
-     call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxneb)
-    call ndm2cellconfig(cellneb(1),noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-    do ii=2,npath
-       cellneb(ii)=cellneb(1)
+
+
+    allocate (iter(npath))
+!     call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxneb)
+!    call ndm2cellconfig(cellneb(1),noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+    do ii=1,npath
+        if ((ii.ne.1).and.(ii.ne.npath))then
+           cellneb(ii)=cellneb(1)
+        end if
+     end do
+     call init_neb(atneb(1)%im,atneb(1)%imm)
+     do ii=1,npath
+!        write(6,*)'NNNNNNNNNNNNNNEEEEEEEEEEEEEEEEBBBBBBBBBBBB',ii
+!        call atneb(ii)%print
+!       call cellneb(ii)%print
+!       call boxneb%print
+           !       call atneb(ii)%print
+       call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
+       if (ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii))
     end do
 !    call cellneb(npath)%print
     if(lPkbar) then
@@ -106,7 +121,7 @@ contains
     end if
     
     
-    call init_neb 
+
 
     ! Initialization of fire quench algorithm
     IF (lFire) THEN
@@ -121,7 +136,7 @@ contains
     if (nebrelaxation==1) then
        if (rang==0) write(6,*)'NEB: nebrelaxation == 1'
        if (rang==0) write(6,*)'NEB: relaxation NEB que pour les atomes' 
-       call find_relax()
+       call find_relax(atneb(1)%im)
     else
        do ipath=1,npath
           atneb(ipath)%lgul(:)=.true.
@@ -133,7 +148,7 @@ contains
 
     if (neb_noise.eq.1) then
        if (rang==0) write(6,*)'NEB: We apply a random noise on the atoms '
-       call bruit_neb
+       call bruit_neb(atneb(1)%im)
     end if
 #ifdef PARANEB
     CALL MPI_BARRIER(MPI_COMM_space,ierr)
@@ -152,7 +167,7 @@ contains
           if (lperiod)    call period (imm,atneb(ii)%xp,atneb(ii)%xpp)
 
 
-          call caltabtC(cellneb(ii),atneb(ii),lperiod,bg)
+          call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
           if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                &call caltabi(atneb(ii)%atom_config,cellneb(ii))
           CALL CalFo(sig,potist,atneb(ii),cellneb(ii),boxneb) 
@@ -190,7 +205,7 @@ contains
 
     case (1)
        if (rang==0) write(6,*) 'NEB: !!!!-------this is DRAG----------!!!!!!'
-       call build_s_path_drag(ityp)
+       call build_s_path_drag(im,imm)
 
        do ii=2,npath-1
 #ifdef PARANEB
@@ -200,24 +215,17 @@ contains
                 enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
              end if
 #endif
-!             call into_path(ii,2,xp, xpp, vp,  fp, ielat, iwmax, ityp)
 
              it=0
              dragtest=0
              do while (dragtest==0)
                 it=it+1
-                if (lperiod)    call period (imm,atneb(ii)%xp,atneb(ii)%xpp)
-!                call caltabt(im,xp,ielat)
-!          call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!                call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!                     &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-                call caltabtC(cellneb(ii),atneb(ii),lperiod,bg)
+                if (lperiod)    call period (atneb(ii)%imm,atneb(ii)%xp,atneb(ii)%xpp)
+                call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                      &call caltabi(atneb(ii)%atom_config,cellneb(ii))
                 CALL CalFo(sig,potist,atneb(ii),cellneb(ii),boxneb) 
-!                call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-!    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
-                call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp)
+                call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp,atneb(ii)%imm,atneb(ii)%im)
                 IF (lFire) THEN
                    call trempe_fire(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ielat, &
                         &atneb(ii)%iwmax, atneb(ii)%ityp, &
@@ -228,13 +236,13 @@ contains
                 ENDIF
                 !             call analyse  
                 call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
-                !call neb_controle(ii) 
+
              end do   ! end do for a while
 
              enePATH(ii)=potist
              enePATHev(ii)=potist*erg2ev
              sigPATH(:,:,ii) = sigtot(:,:)      ! Contrainte
-!             call into_path(ii,1,xp, xpp, vp,  fp, ielat, iwmax, ityp)
+
 #ifdef PARANEB
 
           end if
@@ -276,7 +284,7 @@ contains
           end if
           it=0
           !   
-          call build_s_path_neb(ityp)       
+          call build_s_path_neb(atneb(1)%im,atneb(1)%imm)
           ! 
           if (rang==0) print'("NEB:===============================================")'
           if (rang==0) print'("NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable")'
@@ -289,7 +297,6 @@ contains
              !             end if
 #endif
              !
-!             call into_path      (ii,2,xp, xpp, vp,  fp, ielat, iwmax, ityp)
              !
              it_neb_inter=0  
              !
@@ -298,22 +305,13 @@ contains
                 it_neb_inter=it_neb_inter+1
                 it=it_neb_inter
 
-                if (lperiod)    call period (imm,atneb(ii)%xp,atneb(ii)%xpp)
-!                call caltabt(im,xp,ielat)
-!                call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!                call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!                     &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-                call caltabtC(cellneb(ii),atneb(ii),lperiod,bg)
+                if (lperiod)    call period (atneb(ii)%imm,atneb(ii)%xp,atneb(ii)%xpp)
+                call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                      &call caltabi(atneb(ii)%atom_config,cellneb(ii))
                 CALL CalFo(sig,potist,atneb(ii),cellneb(ii),boxneb) 
-!                call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-!    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
-!                write(6,*)'********PRE FPN ****************it',it,ii
-!                call atneb(ii)%print(i1=2049,i2=2049)
-                call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp)
- !               write(6,*)'*********POST FPN***************it',it,ii
- !               call atneb(ii)%print(i1=2049,i2=2049)
+                call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,atneb(ii)%imm,atneb(ii)%im)
+
                 IF (lFire) THEN
 ! CRC nettoyer ces appels !                   !
                    call trempe_fire(atneb(ii)%xp, atneb(ii)%xpp,atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ielat, &
@@ -323,24 +321,18 @@ contains
                    call trempe(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp, atneb(ii)%fp, atneb(ii)%ielat,&
                         &atneb(ii)%iwmax, atneb(ii)%ityp)
                 ENDIF
- !               write(6,*)'**********POST TRP ***********it',it,ii
- !               call atneb(ii)%print(i1=2049,i2=2049)
-! CRC CA CRAINT !
+
 !                call analyse
 #ifdef PARANEB
                 nebtest(:)=0
 #endif
                 call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
- !               write(6,*)'********POST NC*************it',it,ii
- !               call atneb(ii)%print(i1=2049,i2=2049)
 
-                !call neb_controle(ii) 
                 !
              end do
              enePATH(ii)=potist
              enePATHev(ii)=potist*erg2eV       
              sigPATH(:,:,ii) = sigtot(:,:)      ! Contrainte
-!             call into_path       (ii,1, xp, xpp, vp,  fp, ielat, iwmax, ityp)
 
 #ifdef PARANEB
 
@@ -359,27 +351,16 @@ contains
              enepathev(:)=enepath(:)*erg2ev
 !             stop
 #endif             
-             ! Backup image ii
- !            write(6,*)'********PRE BACKUP*************it',it,ii
- !       call atneb(ii)%print(i1=2049,i2=2049)
         
              if (itesauv.GT.0) then
                 if (mod(ineb,itesauv)==0) then
-                   call into_path       (ii,2, xp, xpp, vp,  fp, ielat, iwmax, ityp,num_at_glob)
-                   call sauveposition(ii)
+!                   call into_path       (ii,2, xp, xpp, vp,  fp, ielat, iwmax, ityp,num_at_glob)
+                   formatsauv = 2
+                   write(extension,'(i9.9)') ii
+                   fnamcout = fnam(1:lenfnam)//'.cout.'//extension
+                   call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout)
                 end if
-             else if (itesauvposition.GT.0) then
-                if (mod(ineb,itesauvposition)==0) then
-                   call into_path       (ii,2, xp, xpp, vp,  fp, ielat, iwmax, ityp,num_at_glob)
-                   call sauveposition ( ii)
-                end if
-             endif
-             if (itesauvforce.GT.0) then
-                if (mod(ineb,itesauvforce)==0) then
-                   call into_path       (ii,2, xp, xpp, vp,  fp, ielat, iwmax, ityp,num_at_glob)
-                   call sauveforce ( ii)
-                end if
-             endif
+             end if
 
              !debug          print'("NEB: ",2i5,3E14.5,E20.10,i3)', ineb, ii,  formax,       &
              !debug	            formaxperp, formaxparl, potist*erg2eV,nebtest(ii)
@@ -393,12 +374,8 @@ contains
 #ifdef PARANEB
            end if
 #endif
- !       write(6,*)'********PREENDO loop path*************it',it,ii
- !       call atneb(ii)%print(i1=2049,i2=2049)
 
         end do      ! end ii,path
- !       write(6,*)'********POST loop path*************it',it,ii
- !       call atneb(ii)%print(i1=2049,i2=2049)
 
 
 #ifdef PARANEB
@@ -446,9 +423,10 @@ contains
        if ((ii==1).or.(ii==npath)) cycle
        if (ii==myid+2) then
 #endif
-          call into_path      (ii,2,xp, xpp, vp,  fp, ielat, iwmax, ityp,num_at_glob)
-          call sauveposition(ii)      
-          call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxneb)
+          formatsauv = 2
+          write(extension,'(i9.9)') ii
+          fnamcout = fnam(1:lenfnam)//'.cout.'//extension
+          call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout)
           call rasmol(atneb(ii),boxneb,ii)
           if (iteanaposneb.gt.0) call anapos(ii)
           !	 

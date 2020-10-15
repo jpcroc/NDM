@@ -2,7 +2,7 @@ module read_conf
 #ifdef PARA
 #endif
   USE gen_com_m, ONLY:imm,rang,it,itmax,nitmax,tmean,pmean,timel,tstep,two,usdh,dilat,lvpread,&
-       &oldtstep !at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
+       &oldtstep,lperiod !at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
 !         &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat,rang,dilat,fmt_cin,lsuivinonpbc,&
 !         &lvpread,nitmax,usdh,two
     USE arret_ndm_mod,only: arret_ndm
@@ -358,7 +358,7 @@ contains
     !  si coordonnees reduites
 
     if (rang==0) write (6, *) '**********construction du reseau************'
-    lugin=92
+  lugin=92
     !                                                !number of cells in 3 directions
      open(unit=lugin, file=fnamgin, status='unknown')
     read (lugin, *) latr(1), latr(2), latr(3)
@@ -383,11 +383,13 @@ contains
     do i = 1, imcell
        read (lugin, *) atrg%xp(1,i), atrg%xp(2,i), atrg%xp(3,i),atrg%ityp(i)
     end do
-    do i=1,imcell
-       WHERE ( (atrg%xp(:,i).LT.0.d0).OR.(atrg%xp(:,i).GE.1.d0) )
-          atrg%xp(:,i)  = atrg%xp(:,i)  - Dble(Floor(atrg%xp(:,i)))
-       END WHERE
-    end do
+    if (lperiod) then
+       do i=1,imcell
+          WHERE ( (atrg%xp(:,i).LT.0.d0).OR.(atrg%xp(:,i).GE.1.d0) )
+             atrg%xp(:,i)  = atrg%xp(:,i)  - Dble(Floor(atrg%xp(:,i)))
+          END WHERE
+       end do
+    end if
 
     close(lugin)
   end subroutine read_gin

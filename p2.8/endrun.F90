@@ -11,7 +11,7 @@ module endrun_mod
              &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
              &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,eatomtotm,&
              &lwgin,nstepdes, lposmoy,l2T,angst,&
-             &celsize,indi,ltabvois,normat,nvois,nzl,volu,zls2
+             &celsize,indi,ltabvois,normat,nvois,nzl,volu,zls2,fnamcout,formatsauv
         use var_pot, only: eatref,eatref,eatref
           USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
           USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
@@ -227,7 +227,7 @@ subroutine endrun
 
   if (lWgin.eqv..true.) call cin2gin
   IF (iteSauv.GE.0) then
-     call sauvegardeT(atdml,celndm,boxndm)     ! Modif E. Clouet: sauvegarde seulement si voulu
+     call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)     ! Modif E. Clouet: sauvegarde seulement si voulu
      if (l2T.and.rang==0) call sauveelec
   end IF
 

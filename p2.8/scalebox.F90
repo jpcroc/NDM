@@ -8,6 +8,7 @@ module scalebox_mod
   USE caltabi_mod,only: caltabi
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
+  USE boxconfig, only:box_config,ndm2boxconfig
 
   USE tab_imm_m,only:num_at_glob
   implicit none
@@ -51,7 +52,7 @@ contains
          , fact2, hk2, ex, ex1, ex2
     type(atom_config_d)::atdml
     type(cell_config):: celndm
-
+    type(box_config)::boxndm
     !real(double), external :: calcvol
     !-----------------------------------------------
     !
@@ -134,7 +135,7 @@ contains
                  call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
              call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
                   &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-             call caltabtC(celndm,atdml,lperiod,bg)
+             call caltabtC(celndm,atdml,lperiod,boxndm)
              if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
                 call caltabi(atdml%atom_config,celndm)
              end if

@@ -112,7 +112,7 @@ contains
     if (.not.lpr) then
        if (itab/=0) then
           if (mod(it,itab)==0) then
-             call caltabtC(celndm,atdml,lperiod,bg)
+             call caltabtC(celndm,atdml,lperiod,boxndm)
           endif
        endif
     end if

@@ -43,7 +43,7 @@ contains
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else 
-       call notperiod(im,xp,xpnp)
+       call notperiod(im,xp,xpnp,at,bg)
     end if
 
     do i = 1, im

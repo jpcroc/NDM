@@ -27,7 +27,7 @@ module init_mod
   USE deftimestep_mod,only: deftimestep
   USE rasmol_mod,only: rasmol
   USE prtplz_mod,only: prtplz
-  USE neb_module,only: configneb,atneb,cellneb
+  USE neb_module,only: constrconfNEB,atneb,cellneb,boxneb
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm,atom_config_e
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC,init_cel
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
@@ -50,7 +50,7 @@ module init_mod
        &lrestart,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,&
        kinemean,lsigat,pmean,xpchdn,eatomtotm,lprteattotm,vpchdn,indi,nvois,&
        &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,npath,&
-       &posa,forca,firsttime_lammps,normat,nzl,volu,zls2,celsize,im_glob
+       &posa,forca,firsttime_lammps,normat,nzl,volu,zls2,celsize,im_glob,fnamcout
 
 
   USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive
@@ -86,7 +86,7 @@ contains
     class(atom_config)::atdml
     type(cell_config),intent(out)::celndm
     type(box_config),intent(out)::boxndm
-    
+
     integer :: i, lufilmpaf,itapp,ipotcont,j,lenfn2,ipath
     !-----------------------------------------------
     character*2::extension
@@ -127,12 +127,12 @@ contains
        write(6,*)
     end if
 
-!#ifdef LAMMPS_VERSION
+    !#ifdef LAMMPS_VERSION
     firsttime_lammps=.true.
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        call init_potential_simple
     else
-!#endif  
+       !#endif  
 
        do ipotcont=0,npotmax
           if(lpotentiel(ipotcont).EQV..true.) then
@@ -224,9 +224,9 @@ contains
           endif
        end do
 
-!#ifdef LAMMPS_VERSION
+       !#ifdef LAMMPS_VERSION
     endif
-!#endif  
+    !#endif  
 
     !<---------end setting the potential---------------
 
@@ -246,8 +246,8 @@ contains
 
 
     !<---------setting the configuration by reading gin / cin file --------------
-    !---inNEB
-    if (dmtype.ne.9) then
+
+
 #ifdef PARA
        temps_input=MPI_Wtime()-temps_input_deb
 
@@ -255,19 +255,20 @@ contains
 #endif
 
 
-       
+
 #ifdef ML
 
 #else
        write(6,*)
        write(6,*)' -------------------------------------------------------------------'
        write(6,*)'             definition des rayons de coupure'
-    call param_det
-! rumax défini en ce point
+       call param_det
+       ! rumax défini en ce point
 #endif 
 
-
-    call constrconf(atdml,boxndm,celndm)
+    if (dmtype.ne.9) then
+       call constrconf(atdml,boxndm,celndm)
+       call setcellconf(celndm,atdml,boxndm,im_glob,rumax)
 #ifdef PARA
        temps_config=MPI_Wtime()-temps_config_deb
 #endif
@@ -279,20 +280,20 @@ contains
 #endif
     else
 
-       call configNEB !(xp, xpp, vp, fp, ielat, iwmax, ityp)
-!       do i=1,npath
-!          call print(atneb(1))
-!       end do
+       call constrconfNEB !(xp, xpp, vp, fp, ielat, iwmax, ityp)
+       !       do i=1,npath
+       !          call print(atneb(1))
+       !       end do
     end if
     !...inNEB
     !<---------ends etting the configuration by reading gin /  cin file ---------
     !<---------setting the cell division -------------------------
     ! determination des tailles du nombre de cel. (nox, noy, noz)
-    call setcellconf(celndm,atdml,boxndm,im_glob,rumax)
-!   call celndm%print
 
-!    call DynamicalAllocationCell
-!     call celndm%print
+    !   call celndm%print
+
+    !    call DynamicalAllocationCell
+    !     call celndm%print
 #ifdef LAMMPS_VERSION
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
@@ -302,50 +303,46 @@ contains
     end if
 #endif  
 
+    if (dmtype.ne.9)then  !pas NEB
+       if (iterasmol>=0) then
+          itapp=-1
+          call rasmol (atdml,boxndm,itapp)
+       end if
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+            &xpp=xpp)
+       call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+       call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
 
-    if (iterasmol>=0) then
-       itapp=-1
-!       call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-!     call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!          &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-     call rasmol (atdml,boxndm,itapp)
+       !<---------setting the configuration by generation gin / cin file --------------
+       select case (igen)
+       case (-1)
+          formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+          if (rang==0) write (6, *) 'generation terminee'
+          call arret_ndm
+          !  case (0)
+          !     if (rang==0) write (6, *) 'generation du crystal ; puis run'
+          !  case (1)
+          !     if (rang==0) write (6, *) 'run a partir du fichier .cin'
+       case (2)
+          call cin2gin
+          call arret_ndm
+
+       case (3)
+          call transf
+          formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+          if (rang==0) write (6, *) 'modification terminee'
+          call arret_ndm
+       case default
+       end select
+
+    else !NEB
+!       do ipath=2,npath-1
+!          call init_cel(cellneb(ipath),cellnox,noy,noz,natperc)
+!       end do
     end if
-    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
-         &xpp=xpp)
-    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
-    call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
 
-    !<---------setting the configuration by generation gin / cin file --------------
-    select case (igen)
-    case (-1)
-       formatsauv = 2
-       call sauvegardeT(atdml,celndm,boxndm)
-       if (rang==0) write (6, *) 'generation terminee'
-       call arret_ndm
-       !  case (0)
-       !     if (rang==0) write (6, *) 'generation du crystal ; puis run'
-       !  case (1)
-       !     if (rang==0) write (6, *) 'run a partir du fichier .cin'
-    case (2)
-       call cin2gin
-       call arret_ndm
-
-    case (3)
-       call transf
-       formatsauv = 2
-       call sauvegardeT(atdml,celndm,boxndm)
-       if (rang==0) write (6, *) 'modification terminee'
-       call arret_ndm
-    case default
-    end select
-
-
-    if (dmtype==9) then
-       do ipath=1,npath
-          call init_cel(cellneb(ipath),nox,noy,noz,natperc)
-       end do
-    end if
-    
     do ipotcont=0,npotmax
        if(lpotentiel(ipotcont).EQV..true.) then
           ipotentiel=ipotcont
@@ -383,7 +380,8 @@ contains
           write(6,*)
        end if
     end if
-    call neigcel
+if (dmtype.ne.9) then
+   call neigcel
 
 #ifdef PARA
     call init_voisinage()
@@ -403,231 +401,205 @@ contains
 
 
 
-    if (ltranche) call layer
+       if (ltranche) call layer
+       nad(:ntyp) = na(:ntyp)
 
+       call caltabtC(celndm,atdml,lperiod,boxndm)
+       if (ltabvois) then
+          call caltabi(atdml,celndm)
+       end if
+       write(6,*)'post caltabi'
 
-    nad(:ntyp) = na(:ntyp)
-
-
-
-    !computing the neighbours for the very first time ......
-    !  if (itmax>0) thenq
-
-!   call atdml%print
-!  call celndm%print
-!      call boxndm%print
-!    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
- !        &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    if (rang==0)write(6,*)'1ER CALL init'
-    call caltabtC(celndm,atdml,lperiod,bg)
-    if (ltabvois) then
-       call caltabi(atdml,celndm)
-    end if
-    write(6,*)'post caltabi'
-!   call celndm%print
-!   call atdml%print
-
-    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
-         &xpp=xpp)
-    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
-    call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-
-
-
-
-    ! if (rang==0)  write(6,*)'>>>>>>>>>>>apres caltabi'
-    !  end if
-    !computing the neighbours for the very first time ......write(6
-
-
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+            &xpp=xpp)
+       call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+       call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
 
 #ifdef ML
-    ! MiLaDy
-    if(ipotentiel==20) then
-       if (rang.eq.0) then
-          write(6,*)
-          write(6,*)' ML  ..... configuration MiLady '
-          write(6,*)
+       ! MiLaDy
+       if(ipotentiel==20) then
+          if (rang.eq.0) then
+             write(6,*)
+             write(6,*)' ML  ..... configuration MiLady '
+             write(6,*)
+          end if
+          !This comes with MiLaDy Package
+          call md_init_config_ml
        end if
-       !This comes with MiLaDy Package
-       call md_init_config_ml
-    end if
 #endif
 
 
-    if (L2T.eqv..true.) then
-       call readelec
-       if (rang==0) write(6,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
-       dmtype=4
-       ibrake=1
-       ilangevin=1
-       if((ecelec==0))then
-          write(6,*) 'eccelec<>0  and l2T : STOP'
-          stop
-       end if
-       if ((i2T==0).and.(t_cpl.lt.0)) then
-          write(6,*) 'i2T=0 t_cpl<0 and l2T : STOP'
-          stop
-       end if
-       if (nox.le.0 ) then
-          write(6,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
-          stop
-       end if
+       if (L2T.eqv..true.) then
+          call readelec
+          if (rang==0) write(6,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
+          dmtype=4
+          ibrake=1
+          ilangevin=1
+          if((ecelec==0))then
+             write(6,*) 'eccelec<>0  and l2T : STOP'
+             stop
+          end if
+          if ((i2T==0).and.(t_cpl.lt.0)) then
+             write(6,*) 'i2T=0 t_cpl<0 and l2T : STOP'
+             stop
+          end if
+          if (nox.le.0 ) then
+             write(6,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
+             stop
+          end if
 
 
-    endif
+       endif
 
-    if (.not.lrestart) then
-       !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
+       if (.not.lrestart) then
+          !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
 #ifdef PARA
-       temps_initspeed_deb = MPI_Wtime()
+          temps_initspeed_deb = MPI_Wtime()
 #endif
-       
-       ! input and initialization of 2T
-       select type(atdml)
-       class is (atom_config_d)
-          call initspeed(atdml,im_glob)
-!      call atdml%print          
-       end select
-       if (iterasmol>=0) then
-          itapp=0
-!         call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-!    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-     call rasmol (atdml,boxndm,itapp)
+
+          ! input and initialization of 2T
+          select type(atdml)
+             class is (atom_config_d)
+             call initspeed(atdml,im_glob)
+             !      call atdml%print          
+          end select
+          if (iterasmol>=0) then
+             itapp=0
+             !         call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+             !    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+             !         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call rasmol (atdml,boxndm,itapp)
 
 
+          end if
        end if
-    end if
-!    if (lcorrelvp) then
-!       ax=vp
-!       write(6,*)'AX DEVIENT VP0'
-!       write(6,*)'AX DEVIENT VP0'
-!       write(6,*)'AX DEVIENT VP0'
-!       write(6,*)'AX DEVIENT VP0'
-!       write(6,*)'AX DEVIENT VP0'
-!       call correlvp(xp,xpp,vp,ax,fp,ityp)
-!    end if
-
-    if (lHcyl) then
-       call Hcyl
-    end if
-    !end init the speed using Maxwell proba density-----------------
+       !  
+       if (lHcyl) then
+          call Hcyl
+       end if
+       !end init the speed using Maxwell proba density-----------------
 
 
 
 #ifdef PARA
-    temps_initspeed=MPI_Wtime()-temps_initspeed_deb
+       temps_initspeed=MPI_Wtime()-temps_initspeed_deb
 #endif
 
-    if ((itetimestep>0).and.(.not.lcasca)) call deftimestep
+       if ((itetimestep>0).and.(.not.lcasca)) call deftimestep
 
 
-    if (lcontr) call initcontr(xp,xpp,vp,ax,ityp)
+       if (lcontr) call initcontr(xp,xpp,vp,ax,ityp)
 
 
-    if (lcasca) then
-       call initcasca
+       if (lcasca) then
+          call initcasca
 #if PARA
 #else
 
-       if (lfilm) then
-          write (lufilmpaf, *) '1'
-          write (lufilmpaf, *) 'IT ', '0 ', 'time      0.'
-          write (lufilmpaf, 114) 'Pb ', xp(1,iko)*1D+8, xp(2,iko)*1D+8, xp(3&
-               ,iko)*1D+8, iko
-       endif
-114    format(a3,1x,3(f10.4,1x),i5)
+          if (lfilm) then
+             write (lufilmpaf, *) '1'
+             write (lufilmpaf, *) 'IT ', '0 ', 'time      0.'
+             write (lufilmpaf, 114) 'Pb ', xp(1,iko)*1D+8, xp(2,iko)*1D+8, xp(3&
+                  ,iko)*1D+8, iko
+          endif
+114       format(a3,1x,3(f10.4,1x),i5)
 #endif
+          if(iteanapos>0)then
+             itapp=0
+             call sauveposition (itapp)
+          end if
+       end if
+
+       if (itmax==0) stop
+       !                  call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+       !           call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+       !                &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+       !            call caltabtC(celndm,atdml,lperiod,bg)
+       if (ltabvois) then
+          call caltabi(atdml,celndm)
+       end if
+       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+            &xpp=xpp)
+       call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+
+
+
+       if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
+
+
+
+
+       if (ldislo) call at_bord(xp)
+
+
+
+       !initialisation pour lcalcjq
+
+       if (lcalcjq.or.lprteat) allocate(eatom(imm))
+       if (lprteattotm) allocate(eatomtotm(imm))
+
+
+       if(lSigat) allocate(sigat(3,3,imm))
+
+       if (lcdp) then
+          call initcdp
+          if (itecdp==0)then
+             call creadp (xp, xpp, ityp,vp)
+             call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
+                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+             call caltabtC(celndm,atdml,lperiod,boxndm)
+             if (ltabvois)  then
+                call caltabi(atdml,celndm)
+             end if
+             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
+                  &xpp=xpp)
+             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+
+             if (lperiod) then
+                call period (imm,xp,xpp,ax)
+             else
+                write(*,*) 'WARNING .... Not implemented for lperiod  FALSE nad lcdp TRUE'
+                write(*,*) 'FIX THAT! Until there the program will stop'
+                stop
+             end if
+             write(6,*)'im',im
+          end if
+       end if
+
+       if ((lheat.EQV..true.).and.(iteheat==0))call heat(im,xp,vp,ityp)
+
+       if(iteplz>0)  call prtplz(xp,ityp)
+
+
+       if (dmtype==6) then
+          call anapos(it)
+          call arret_ndm
+       end if
+       if (lcasca) then
+          fnamcout = fnam(1:lenfnam)//'.0.cout'
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+       else
+          fnamcout = fnam(1:lenfnam)//'.cout'
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+       end if
+       !  call sauvegarde
+       if (itmax==0) call arret_ndm
+
        if(iteanapos>0)then
           itapp=0
           call sauveposition (itapp)
        end if
 
-       if (itmax==0) stop
-!                  call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!           call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-!                &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-!            call caltabtC(celndm,atdml,lperiod,bg)
-       if (ltabvois) then
-          call caltabi(atdml,celndm)
-       end if
-            call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
-                 &xpp=xpp)
-             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
 
 
 
-       if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
+       if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
     end if
-
-
-
-    if (ldislo) call at_bord(xp)
-
-
-
-    !initialisation pour lcalcjq
-
-    if (lcalcjq.or.lprteat) allocate(eatom(imm))
-    if (lprteattotm) allocate(eatomtotm(imm))
-
-
-    if(lSigat) allocate(sigat(3,3,imm))
-
-    if (lcdp) then
-       call initcdp
-       if (itecdp==0)then
-          call creadp (xp, xpp, ityp,vp)
-             call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-             call caltabtC(celndm,atdml,lperiod,bg)
-          if (ltabvois)  then
-             call caltabi(atdml,celndm)
-          end if
-           call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
-                  &xpp=xpp)
-             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
-
-          if (lperiod) then
-             call period (imm,xp,xpp,ax)
-          else
-             write(*,*) 'WARNING .... Not implemented for lperiod  FALSE nad lcdp TRUE'
-             write(*,*) 'FIX THAT! Until there the program will stop'
-             stop
-          end if
-          write(6,*)'im',im
-       end if
-    end if
-
-    if ((lheat.EQV..true.).and.(iteheat==0))call heat(im,xp,vp,ityp)
-
-    if(iteplz>0)  call prtplz(xp,ityp)
-
-
-    if (dmtype==6) then
-       call anapos(it)
-       call arret_ndm
-    end if
-    !  call sauvegarde
-    if (itmax==0) call arret_ndm
-
-    if(iteanapos>0)then
-       itapp=0
-       call sauveposition (itapp)
-    end if
-
-
-
-
-    if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
-
     if (rang==0) write(6,*)'sortie init'
-!    call boxndm%print
-!    call celndm%print
-!   call atdml%print
+!    call boxneb%print
+    !    call celndm%print
+    !   call atdml%print
 
     return
   end subroutine init

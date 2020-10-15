@@ -10,7 +10,7 @@ subroutine caltabt(im,xp,ielat)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:nato,atincel,bg,natperc,nox,noy,noz,lperiod,noxyz
+  USE gen_com_m, ONLY:nato,atincel,bg,natperc,nox,noy,noz,lperiod,noxyz,at,bg
 !  USE atomconfig
   !          Version du 01 fevrier 2001
   ! ******************************************************************
@@ -58,7 +58,7 @@ subroutine caltabt(im,xp,ielat)
           if (lperiod) then            
              xpnp(:,:)=xp(:,:)         
           else                         
-             call notperiod(im,xp,xpnp)   
+             call notperiod(im,xp,xpnp,at,bg)   
           end if                       
      !  -------- Initialisations  -----------
      nato(0:noxyz) = 0
