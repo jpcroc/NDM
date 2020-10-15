@@ -268,7 +268,7 @@ contains
 
     if (dmtype.ne.9) then
        call constrconf(atdml,boxndm,celndm)
-       call setcellconf(celndm,atdml,boxndm,im_glob,rumax)
+
 #ifdef PARA
        temps_config=MPI_Wtime()-temps_config_deb
 #endif

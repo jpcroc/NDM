@@ -563,15 +563,17 @@ contains
 
 
 
-  subroutine print(atprt,i1,i2)
+  subroutine print(atprt,i1,i2,iwr)
     class(atom_config), intent(in)::atprt
-    integer,optional,intent(in)::i1,i2
+    integer,optional,intent(in)::i1,i2,iwr
     !    type(atom_config_d):: td
     !    type(atom_config_e):: te
-    integer::i,im,ifin,ideb,ist,ifn
+    integer::i,im,ifin,ideb,ist,ifn,iw
     !    write(6,*)
     write(6,*)'in print'
     im=atprt%im
+    iw=1
+    if (present(iwr))iw=iwr
 
     write(6,*)'im = ',atprt%im
     write(6,*)'imm = ',atprt%imm
@@ -597,10 +599,14 @@ contains
           write(6,*)'%xp= ', i,atprt%xp(:,i)
        end do
        do i=ideb,im
-          write(6,*)'%fp= ', i,atprt%fp(:,i)
+          write(6,*)'%ityp= ', i,atprt%ityp(i)
        end do
        do i=ideb,im
-          write(6,*)'%ityp= ', i,atprt%ityp(i)
+          write(6,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
+       end do
+       if (iw==0) return
+       do i=ideb,im
+          write(6,*)'%fp= ', i,atprt%fp(:,i)
        end do
        do i=ideb,im
           write(6,*)'%ielat= ', i,atprt%ielat(i)
@@ -626,9 +632,6 @@ contains
        !             end do
        !          end if
        !       end if
-       do i=ideb,im
-          write(6,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
-       end do
 
        select type (atprt)
           class is (atom_config_d)

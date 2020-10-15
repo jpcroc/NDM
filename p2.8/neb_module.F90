@@ -4,8 +4,8 @@ module neb_module
   USE gen_com_m, ONLY:iseed,neb_noise_scale,npath,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,im_glob,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois,fnamcout,igen,lprteat
-  USE constrconf_mod,only:constr_2gin
-
+  USE constrconf_mod,only:constr_2gin,gin2ndm
+    use cryst_to_cart_mod,only:cryst_to_cart
   USE contrainte,only:contr
   USE config_mod,only: config
   USE recips_mod,only: recips
@@ -710,19 +710,23 @@ end if
     else
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
        if(rang==0)write(6,*)'FNAMneb 1 ',fnamneb
-       call read_gin(boxrgin,atrgin,fnamneb,lat)
-       do ic=1,3
-          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
-       end do
-       call initbox(boxneb,atg)
+       call gin2ndm(atneb(1),cellneb(1),boxneb,fnamneb,im_glob,rumax)
+!!$       call read_gin(boxrgin,atrgin,fnamneb,lat)
+!!$       do ic=1,3
+!!$          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
+!!$       end do
+!!$       call initbox(boxneb,atg)
+!!$
+!!$       call setnox(boxneb,cellneb(1),rumax)
+!!$       if (rang==0) then
+!!$          write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxneb%volu,' cm3 ',boxneb%volu*1d24,' Ang3'
+!!$       end if
+!!$       
+!!$       call constr_2gin (atneb(1),boxneb,cellneb(1),atrgin,boxrgin,lat,im_glob)
+!!$       call cryst_to_cart (atneb(1)%imm, atneb(1)%xp, boxneb%at, 1)
 
-       call setnox(boxneb,cellneb(1),rumax)
-       if (rang==0) then
-          write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxneb%volu,' cm3 ',boxneb%volu*1d24,' Ang3'
-       end if
-       
-       call constr_2gin (atneb(1),boxneb,cellneb(1),atrgin,boxrgin,lat)
-          atneb(:)%im=atneb(1)%im
+       atneb(:)%im=atneb(1)%im
+!       call atneb(1)%print(iwr=0)
           atneb(1)%xpp=atneb(1)%xp
           atneb(1)%ielat=0
           atneb(1)%fp(:,:)= 0 !fp(:,:)
@@ -731,7 +735,7 @@ end if
              atneb(1)%iwmax=0 !iwmax(:)
              atneb(1)%indi=0
           end if
-          call setcellconf(cellneb(1),atneb(1),boxneb,im_glob,rumax)
+!          call setcellconf(cellneb(1),atneb(1),boxneb,im_glob,rumax)
 !          call cellneb(1)%print
 !          call boxneb%print
           if (rang==0)then
@@ -743,18 +747,22 @@ end if
           
        fnamneb='fin_'//fnam(1:lenfnam)//'.gin'
        if(rang==0)write(6,*)'FNAMneb npath ',fnamneb
-       call read_gin(boxrgin,atrgin,fnamneb,lat)
-       do ic=1,3
-          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
-       end do
-       call initbox(boxneb,atg)
-       call setnox(boxneb,cellneb(npath),rumax)
-!       if (rang==0) then
-!          write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
-!       end if
-       
-       call constr_2gin (atneb(npath),boxneb,cellneb(npath),atrgin,boxrgin,lat)
-          atneb(:)%im=atneb(npath)%im
+       call gin2ndm(atneb(npath),cellneb(npath),boxneb,fnamneb,im_glob,rumax)
+
+!!$       call read_gin(boxrgin,atrgin,fnamneb,lat)
+!!$       do ic=1,3
+!!$          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
+!!$       end do
+!!$       call initbox(boxneb,atg)
+!!$       call setnox(boxneb,cellneb(npath),rumax)
+!!$!       if (rang==0) then
+!!$!          write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
+!!$!       end if
+!!$       
+!!$       call constr_2gin (atneb(npath),boxneb,cellneb(npath),atrgin,boxrgin,lat,im_glob)
+!!$       call cryst_to_cart (atneb(npath)%imm, atneb(npath)%xp, boxneb%at, 1)
+!       call atneb(npath)%print(iwr=0)
+       atneb(:)%im=atneb(npath)%im
           atneb(npath)%xpp=atneb(npath)%xp
           atneb(npath)%ielat=0
           atneb(npath)%fp(:,:)= 0 !fp(:,:)
@@ -763,7 +771,7 @@ end if
              atneb(npath)%iwmax=0 !iwmax(:)
              atneb(npath)%indi=0
           end if
-          call setcellconf(cellneb(npath),atneb(npath),boxneb,im_glob,rumax)
+!          call setcellconf(cellneb(npath),atneb(npath),boxneb,im_glob,rumax)
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
              call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout)
