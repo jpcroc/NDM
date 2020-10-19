@@ -3,7 +3,7 @@
 module cellconfig
   USE T_kind_param_m
   use atomconfig,only : atom_config
-
+  use boxconfig,only:box_config
 
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
@@ -226,13 +226,14 @@ contains
   end subroutine neigcelN
 
 
-  subroutine caltabtC (cell,atcf,lperiod,bg)
+  subroutine caltabtC (cell,atcf,lperiod,boxcf)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
+    type(box_config),intent(in)::boxcf
     logical,intent(in)::lperiod
-    real(double),intent(in)::bg(3,3)
+
 
     integer :: i, ic, icell, kx, ky, kz, koo
     real(double) :: aux, auy, auz
@@ -241,9 +242,10 @@ contains
     !
     ! --------- Initialisation --------------
     !
-    !   write(6,*)'caltabt',it
-    icaltabt=icaltabt+1
 
+    icaltabt=icaltabt+1
+!       write(6,*)'caltabt',icaltabt
+!    call atcf%print
     cell%nato(0:cell%noxyz) = 0
     cell%atincel(1:cell%natperc,0:cell%noxyz) = 0
 
@@ -260,8 +262,9 @@ contains
        if (lperiod) then            
           xpnp(:,:)=atcf%xp(:,:)         
        else                         
-          call notperiod(atcf%im,atcf%xp,xpnp)   
+          call notperiod(atcf%im,atcf%xp,xpnp,boxcf%at,boxcf%bg)   
        end if
+
        !  -------- Initialisations  -----------
 
        ! -------------------------------------------
@@ -269,7 +272,7 @@ contains
        ! - - - - - - - - - - - - - - - - - - - - - -
 
        !debug       write (*,*) 'sub caltabt 1',it,xp(1,1)
-       call cryst_to_cart (atcf%im, xpnp, bg, -1) !cart vers cryst
+       call cryst_to_cart (atcf%im, xpnp, boxcf%bg, -1) !cart vers cryst
        !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
 
        !     if (it.gt.1000) write(6,*)'CALTABT',it
@@ -282,7 +285,8 @@ contains
           kx = int(aux)
           ky = int(auy)
           kz = int(auz)
-          !write(*,*) i, nox,noy,noz, kx,ky,kz
+!          write(*,*) i, cell%nox,cell%noy,cell%noz, kx,ky,kz
+!          write(*,*) i, aux,auy,auz, xpnp(2,i), xpnp(3,i), xpnp(4,i)
           kx = Modulo(kx,cell%nox)
           ky = Modulo(ky,cell%noy)
           kz = Modulo(kz,cell%noz)

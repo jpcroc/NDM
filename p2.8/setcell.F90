@@ -136,7 +136,10 @@ contains
     zlmin=zlmin*2
   
 !    IF (natperc.LE.0) THEN        ! MODIF Clouet
-       natperc= INT(im_glob/celscf%noxyz)
+!    write(6,*)'TTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUTTTTTTTTTTTTTTT'
+!    write(6,*)celscf%noxyz
+!    write(6,*)im_glob
+    natperc= INT(im_glob/celscf%noxyz)
        nvat=10*natperc
        natperc=max(int(2*natperc),10)     ! MODIF Clouet
 !    ELSE                          ! MODIF Clouet

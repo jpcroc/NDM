@@ -168,26 +168,10 @@ contains
 
 
     call analyseT (atdml,celndm,boxndm)
-    ! MPI
-    if (rang==0) then
-       !          write(6,*)'analyse -> sauvegarde'
-       if (itesauv.GT.0) then
-          if (mod(it,itesauv)==0) call sauvegardeT (atdml,celndm,boxndm)
-       endif
-
-       !          write(6,*)'analyse -> sauveposition'
-       if (itesauvposition.GT.0) then
-          if (mod(it,itesauvposition)==0) call sauveposition ( it)
-       endif
-       if (itesauvforce.GT.0) then
-          if (mod(it,itesauvforce)==0) call sauveforce ( it)
-       endif
-       !          write(6,*)'sauvposition -> control'
-    endif                                   ! fin rang=0
 
        if (itab/=0) then
           if (mod(it,itab)==0) then
-             call caltabtC(celndm,atdml,lperiod,boxndm%bg)
+             call caltabtC(celndm,atdml,lperiod,boxndm)
           endif
        endif
 

@@ -80,7 +80,7 @@ subroutine caltabi(atvois,celvois)
   if (lperiod) then
     xpnp(:,:)=atvois%xp(:,:)
    else
-   call notperiod(atvois%imm,atvois%xp,xpnp)
+   call notperiod(atvois%imm,atvois%xp,xpnp,at,bg)
   end if  
   
   !write(*,*) 'caltabi_inside  ', rvois, rvois2

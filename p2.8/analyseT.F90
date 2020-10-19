@@ -12,7 +12,8 @@ module analyseT_mod
   USE rasmol_mod,only: rasmol
   USE rdf_mod,only: rdf
   USE prtplz_mod,only: prtplz
-
+  USE sauvegardeT_mod,only:sauvegardeT
+ USE sauveforce_mod,only: sauveforce
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,h0,iteanapos,iteangle,itebdv,&
@@ -23,7 +24,7 @@ module analyseT_mod
        &celpp,tcp,tcp,lprtcel,tempc,tcp,pmc,celpp,natchk,natchk,sigc,celpm1,tm1,tpseuils,tpseuils,tpseuils,tpseuils,&
        &sigtot,eatomtotm,volu,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
        &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,sigat,celsize,nvois,&
-       &normat,nzl,zls2
+       &normat,nzl,zls2, itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam
 
   USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
@@ -102,6 +103,43 @@ contains
 !    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
 !         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
 !    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+    ! MPI
+    if (rang==0) then
+       !          write(6,*)'analyse -> sauvegarde'
+       if (itesauv.GT.0) then
+          if (mod(it,itesauv)==0) then 
+             formatsauv = 3
+             if(itesauvinter.gt.0) then
+                if (mod(it,itesauvinter).eq.0) then
+                   write(extension,'(i9.9)') it
+                   fnamcout = fnam(1:lenfnam)//'.cout.'//extension
+                else
+                   fnamcout = fnam(1:lenfnam)//'.cout'
+                endif
+             else
+                fnamcout = fnam(1:lenfnam)//'.cout'
+             end if
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+          end if
+       endif
+
+       if (itesauvposition.GT.0) then
+          if (mod(it,itesauvposition)==0) then
+             formatsauv = 2
+             write(extension,'(i9.9)') it
+             fnamcout = fnam(1:lenfnam)//'.cout.'//extension
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+          end if
+       endif
+       
+       if (itesauvforce.GT.0) then
+          if (mod(it,itesauvforce)==0) call sauveforce ( it)
+       endif
+       !          write(6,*)'sauvposition -> control'
+    endif                                   ! fin rang=0
+
+
+
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
          &iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
@@ -160,7 +198,7 @@ contains
              end where
              call atdml%fab(attyp)
              !write(6,*)'nbat',count(atdml%ityp==iti),na(iti),attyp%im,attyp%ityp
-             call caltabtC(celtyp,attyp,lperiod,bg)
+             call caltabtC(celtyp,attyp,lperiod,boxndm)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              !temptyp=0
              call celtyp%dealloc ; call attyp%dealloc

@@ -1,7 +1,7 @@
 module sauvegardeT_mod
 
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:rang,fnamcout,formatsauv,im_glob,it,itesauvinter,&
+    USE gen_com_m, ONLY:rang,formatsauv,im_glob,it,itesauvinter,&
          &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
 
     USE elec_cell, ONLY : sauveelec
@@ -22,7 +22,7 @@ module sauvegardeT_mod
 
 contains
   ! ********************************************************************
-  subroutine sauvegardeT(atdml,celndm,boxndm)
+  subroutine sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
     !-----------------------------------------------
     !   M o d u l e s
 
@@ -33,10 +33,10 @@ contains
     class(atom_config)::atdml
     type(cell_config):: celndm
 
-    integer :: lucout, formatsauvmod,i
+    integer :: lucout, formatsauvmod,i,formatsauv
     character :: extension*9
     logical :: lwax
-        
+    character::fnamcout*80
 #ifdef PARA
     integer,dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable   :: buffer
@@ -59,17 +59,6 @@ contains
     formatsauvmod = mod(formatsauv,2)
 
     if (rang==0) then
-       if(itesauvinter.gt.0) then
-          if (mod(it,itesauvinter).eq.0) then
-             write(extension,'(i9.9)') it
-             fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-          else
-             fnamcout = fnam(1:lenfnam)//'.cout'
-          endif
-       else
-          fnamcout = fnam(1:lenfnam)//'.cout'
-       end if
-       if((it==0).and.lcasca)       fnamcout = fnam(1:lenfnam)//'.0.cout'
 
        lucout = 87
        write (6, *) ' sauvegarde it=', it, fnamcout

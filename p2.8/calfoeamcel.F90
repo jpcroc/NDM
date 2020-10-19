@@ -88,7 +88,7 @@ module calfoeamcel_mod
   if (lperiod) then
      xpnp(:,:)=xp(:,:)
   else 
-     call notperiod(imm,xp,xpnp)
+     call notperiod(imm,xp,xpnp,at,bg)
   end if
 
  !       open(unit=806, file='CALFOGMT.csv', form='formatted', &

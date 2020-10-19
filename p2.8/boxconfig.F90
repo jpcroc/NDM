@@ -85,7 +85,7 @@ contains
   subroutine cellprint(boxprt)
     class(box_config)::boxprt
      write(6,*)'boxprt at',boxprt%at(:,:)
-     write(6,*)'boxprt bg',boxprt%bg(3,3)
+     write(6,*)'boxprt bg',boxprt%bg(:,:)
      write(6,*)'boxprt volu',boxprt%volu
      write(6,*)'boxprt icaltabt',boxprt%icaltabt
    end subroutine cellprint

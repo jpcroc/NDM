@@ -150,23 +150,6 @@ contains
 !    if (lcorrelvp) call correlvp(xp,xpp,vp,ax,fp,ityp)
     ! MPI
     !     write(6,*)'analyse -> sauvegarde'XS
-    if (itesauv.GT.0) then
-       if (mod(it,itesauv)==0) call sauvegardeT(atdml,celndm,boxndm)
-    endif
-
-    !     write(6,*)'analyse -> sauveposition'
-    if (itesauvposition.GT.0) then
-       if (mod(it,itesauvposition)==0) then
-          call sauveposition (it)
-          if (lsuivinonpbc) then
-             call reset_suivinonpbc
-             call sauvepositionnonpbc (it)
-          end if
-       end if
-    endif
-    if (itesauvforce.GT.0) then
-       if (mod(it,itesauvforce)==0) call sauveforce (it)
-    end if
     !     write(6,*)'sauvposition -> control'
 
     call controleT(atdml,celndm,boxndm)

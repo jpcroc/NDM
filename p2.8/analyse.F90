@@ -153,7 +153,7 @@ contains
              end where
              call atdml%fab(attyp)
              !write(6,*)'nbat',count(atdml%ityp==iti),na(iti),attyp%im,attyp%ityp
-             call caltabtC(celtyp,attyp,lperiod,bg)
+             call caltabtC(celtyp,attyp,lperiod,boxndm)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              !temptyp=0
              call celtyp%dealloc ; call attyp%dealloc

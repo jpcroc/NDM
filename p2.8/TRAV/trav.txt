@@ -1,3 +1,19 @@
+
+INTEGRER DECOUP dans la version sequentielle avec un ldecoup
+Faire une version de base dmtype, simple qui fonctionne
+paralléliser
+paralléliser mixte
+rè-introduire les fonctionalités pas à pas:
+-period ??
+
+1/EATOM NE FONCTIONNE PAS ; ax ne fonctionne pas
+2/RVOIS lconstrtot,ldemitab a intégrer dans le type atom_config ?
+2/parallèlisation test de départ puis mixte NEB/espace
+3/continuer à étendre atomconfig
+4/documenter atomconfig et ajouter des routines intégrantes (par exemple appel calctemp)
+5/ vérifier et modifier PRahman et l'indispendable des analyses. DEBRANCHER LE RESTE 
+
+
 FAIT :***************************
 COUPER complètement calfo du reste
 gérer period avec des appels
@@ -12,6 +28,18 @@ atincel, deltadist,nato,ncel,celldeb_x,cell_deb_y,_z, cellsize,cell_fin_x
 
 
 PRESQUE **************************
+
+généraliser atom_config
+2 niveaux, à déterminer proprement
+routines avec atom_config en entrée
+analyse, controle, config, dmloop,etc., caltabtC
+
+routines avec passsages des composants de atomconfig call toto(atcf%xp)
+toutes les analyses, toutes les routines cul de sac. COMMENCER PAR CA
+
+modulariser les merdes de tab_imm_m qui sont marginales et ne les allouer qui si nécessaire
+
+ATTENTION à PARA. développer des routines interfaces pour ne pas avoir à réécrire ? 
 
 SUPPRIMER FREE, FROZEN et IMD !
 

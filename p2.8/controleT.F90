@@ -180,7 +180,7 @@ contains
 !!$       if (lperiod) then
 !!$          xpnp(:,:)=xp(:,:)
 !!$       else
-!!$          call notperiod(im,xp,xpnp)
+!!$          call notperiod(im,xp,xpnp,at,bg)
 !!$       end if
 !!$
 !!$       ! Scaling temperature if intolerable ?
@@ -302,7 +302,7 @@ contains
 !!$       if (lperiod) then
 !!$          xpnp(:,:)=xp(:,:)
 !!$       else       
-!!$          call notperiod(im,xp,xpnp)
+!!$          call notperiod(im,xp,xpnp,at,bg)
 !!$       end if
 !!$
 !!$

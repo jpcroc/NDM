@@ -113,7 +113,8 @@ contains
     call  ndm2cellconfig(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
     call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
          &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    call caltabtC(celcg,atcg,lperiod,bg)
+    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+    call caltabtC(celcg,atcg,lperiod,boxndm)
     if (ltabvois.and.mod(it,itetabvois)==0) then
 
        call caltabi(atcg%atom_config,celcg)

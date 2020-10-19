@@ -81,7 +81,7 @@ SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi,at,bg,volu)
   if (lperiod) then
    xpnp(:,:)=xp(:,:)
   else
-   call notperiod(imm,xp,xpnp)
+   call notperiod(imm,xp,xpnp,at,bg)
   end if
    
   call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst

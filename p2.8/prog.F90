@@ -12,7 +12,8 @@ module prog_mod
   USE dmloop_mod,only: dmloop
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
- 
+  USE neb_module,only:boxneb
+
   USE montecarlo_mod, only: montecarlo
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm

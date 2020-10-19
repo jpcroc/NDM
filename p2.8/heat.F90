@@ -33,7 +33,7 @@ subroutine heat(im,xp,vp,ityp)
   if (lperiod) then
    xpnp(:,:)=xp(:,:)
   else
-   call notperiod(im,xp,xpnp)
+   call notperiod(im,xp,xpnp,at,bg)
   end if
 
   call cryst_to_cart (im, xpnp, bg, -1)    !cart vers cryst

@@ -5,12 +5,12 @@ module notperiod_mod
         contains
 
 ! *****************************************************************
-subroutine notperiod(im,xp, xpnp)
+subroutine notperiod(im,xp, xpnp,at,bg)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:at,bg,low_limit,zero
+  USE gen_com_m, ONLY:low_limit,zero
 
   !       version du 09 decembre 2003
 
@@ -29,7 +29,7 @@ subroutine notperiod(im,xp, xpnp)
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
   integer,intent(in)::im
-  real(double),intent(in)  :: xp(3,im)
+  real(double),intent(in)  :: xp(3,im),at(3,3),bg(3,3)
   real(double)  :: xpnp(3,im)
 
   !-----------------------------------------------

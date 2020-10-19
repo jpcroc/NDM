@@ -63,7 +63,7 @@ lperiod = .true.
 !call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
 
 !defintion de la boite du syst a N atomes
-    call caltabtC(cells_n,config_atom_n,lperiod,bg)
+    call caltabtC(cells_n,config_atom_n,lperiod,boxndm)
    !call cells_n%print
 
 !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
@@ -99,7 +99,7 @@ lperiod = .true.
    call cells_n%copy_cell(cells_nplus1)
    
    !call cells_nplus1%print
-   call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,bg)
+   call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,boxndm)
    !call cells_nplus1%print
 
 !lorsque ltabvois = true, attention, il faut la recalculer pour le syst n+1
@@ -162,8 +162,8 @@ write(6,*) 'lambda_mc=' ,lambda_mc
     end if
     
     ! repartition des atomes des syst N et N+1 avec les nouvelles positions
-    call caltabtC(cells_n,config_atom_n,lperiod,bg)
-    call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,bg)
+    call caltabtC(cells_n,config_atom_n,lperiod,boxndm)
+    call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,boxndm)
 
 ! Force calculation pour chacun des systèmes avec les nouvelles positions et forces melangées
     CALL CalFo(sig_n,potist_n,config_atom_n,cells_n,boxndm)

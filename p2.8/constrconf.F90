@@ -18,7 +18,7 @@ module constrconf_mod
   USE read_conf,only:read_cin,read_gin
   USE setcell,only:setnox,setcellconf
   USE decoupage_mod,only: decoupage
-  
+  USE T_kind_param_m, ONLY:  double
   implicit none
 contains
   subroutine constrconf (atrcf,boxrcf,cellrcf)
@@ -29,7 +29,7 @@ contains
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
-    USE T_kind_param_m, ONLY:  double
+
     !    USE tab_imm_m,only:xp,ax,glangv,vp,xpp
     !    USE suivinonpbc
     !    USE read_conf_mod
@@ -124,28 +124,8 @@ contains
        call  decoupage(nprocs,ncore,cellrcf)
        allocate(num_at_buff(imm_glob))
        im_glob=COMPatrcf%im
-       im=0
-
-       do i=1,im_glob
-          ! Dans les buffer lus, on ne garde que les atomes locaux
-          call coord_to_cell(COMPatrcf%xp(:,i),numcell,boxrcf%bg,cellrcf%nox,cellrcf%noy,cellrcf%noz)
-          numproc=proc_cell(numcell)
-          if (numproc == myid) then
-             im = im + 1
-             atrcf%xp(:,im) = COMPatrcf%xp(:,i)
-             if (fmt_cin==0) then
-                atrcf%num_at_glob(im)=i
-                num_at_buff(im)=i
-             else
-                atrcf%num_at_glob(im)=COMPatrcf%num_at_glob(i)
-                ! num_at_buff permet de stocker l'indice dans le buffer/fichier
-                ! du imieme atome local pour repositionner les atomes lors de 
-                ! la lecture des autres tableaux
-                num_at_buff(im)=i
-             endif
-          endif
-       enddo
-       atrcf%im=im
+       
+       call repartition(COMPatrcf,atrcf,cellrcf,num_at_buff)
        itread=3
        call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,num_at_buff,im) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
 
@@ -179,6 +159,7 @@ contains
        end if
 
 #endif
+       call setcellconf(cellrcf,atrcf,boxrcf,im_glob,rumax)
     deallocate (ibuffer)
     deallocate (buffer)
 
@@ -188,124 +169,24 @@ contains
     else    ! igen.eq.0
 
 
+
        lvpread=.false.
 
 
        ! open fichier .gin
-       lugin = 92
        fnamgin = fnam(1:lenfnam)//'.gin'
-       open(unit=lugin, file=fnamgin, status='unknown')
-
-       call read_gin(boxrgin,atrgin,fnamgin,lat)
-       write(6,*)'outreadgin'
-       do ic=1,3
-          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
-       end do
-       call initbox(boxrcf,atg)
-       call setnox(boxrcf,cellrcf,rumax)
-
-       if (rang==0) then
-          write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
-       end if
-#ifdef PARA
-       im_glob=lat(1)*lat(2)*lat(3)*atrgin%im
-       if (im_glob>imm_glob) then
-          write (6, *) rang,'imm trop petit'
-          call arret_ndm
-       endif
-       i_glob=0;i=0;im=0
-       do ia = 1,la
-          do ib = 1,lb
-             do ic = 1,lc
-                do icell = 1, imcell
-                   i  = i + 1
-                   im = im + 1
-                   xt(1) = (atrgin%xp(icell,1)+float(ia-1))/float(lat(1))
-                   xt(2) = (atrgin%xp(icell,2)+float(ib-1))/float(lat(2))
-                   xt(3) = (atrgin%xp(icell,3)+float(ic-1))/float(lat(3))
-                   do k=1,3
-                      xpici=xt(i)
-                      if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
-                         if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
-                            xt(i)=zero
-                         else
-                            cpp  = Dble(Floor(xp(ic,i)))
-                            xt(i) = xpici     - cpp
-                         end if
-                      end if
-                   end do
-!!$		    if (lsuivinonpbc) then
-!!$                       xpnonpbc(1,i) = (tmpsuivi(1,icell)+float(ia-1))/float(la)
-!!$                       xpnonpbc(2,i) = (tmpsuivi(2,icell)+float(ib-1))/float(lb)
-!!$                       xpnonpbc(3,i) = (tmpsuivi(3,icell)+float(ic-1))/float(lc)
-!!$		    end if
-                   iti = atrgin%ityp(icell)
-                   i_glob = i_glob + 1
-                   !                    num_at_glob(i)=i_glob
-                   ! On teste si c'est un atome local pour le prendre
-                   ! en compte ou le retirer
-                   call coord_to_cell(xt,numcell,boxrcf%nb,cellrcf%nox,cellrcf%noy,cellrcf%noz)
-!                   call coord_to_cell(xt(:),numcell)
-                   numproc=proc_cell(numcell)
-                   if (numproc == myid) then
-                      i=i+1
-                      im=im+1
-                      atrcf%xp(:,i)=at(:)
-                      atrcf%ityp(i)=iti
-                   endif
-                end do
-             end do
-          end do
-       end do
-
-#else       
-       if (ldecoup) then 
-          open(123, file='decoup.dat', status='old')
-          read (123, *) nprocs,ncore
-          close(123)         
-          call  decoupage(nprocs,ncore,cellrcf)
-          stop
-       end if
-       im=lat(1)*lat(2)*lat(3)*atrgin%im
-       if (im>imm) then
-          write (6, *) rang,'imm trop petit'
-          call arret_ndm
-       endif
-       atrcf%im=im
-       im_glob=im
-       write(6,*)
-!       call atrcf%print
-       do ia = 1,lat(1)
-          do ib = 1,lat(2)
-             do ic = 1,lat(3)
-                do icell = 1, atrgin%im
-                   i  = i + 1
-                   atrcf%xp(1,i) = (atrgin%xp(1,icell)+float(ia-1))/float(lat(1))
-                   atrcf%xp(2,i) = (atrgin%xp(2,icell)+float(ib-1))/float(lat(2))
-                   atrcf%xp(3,i) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
-                   atrcf%num_at_glob(i)=i
-                   atrcf%ityp(i)=atrgin%ityp(icell)
-                   !                   write(6,*)'constr',i,atrcf%xp(:,i)
-                end do
-             end do
-          end do
-       end do
-!       write(6,*)'POSTCONSTR'
-
-#endif
-       call atrgin%dealloc
+       call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax)
        do iti=1,ntyp
           na(iti)=count(atrcf%ityp(1:atrcf%im)==iti)
        end do
-       call cryst_to_cart (imm, atrcf%xp, boxrcf%at, 1)
+
        if (lperiod.EQV..true.) call periodbox (boxrcf,atrcf)
-!       write(6,*)'POSTCONSTR2'
 
        select type(atrcf)
        type is (atom_config_d)
-          atrcf%xpp(:,1:atrcf%im)=atrcf%xpp(:,1:atrcf%im)
+          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
        type is (atom_config_e)
-          atrcf%xpp(:,1:atrcf%im)=atrcf%xpp(:,1:atrcf%im)
+          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           if (atrcf%lax) then
              atrcf%ax(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           end if
@@ -412,8 +293,96 @@ contains
     return
   end subroutine coord_to_cell
 
-  !#ifdef LAMMPS_VERSION
+  subroutine constr_2gin(atrcf,boxrcf,cellrcf,atrgin,boxrgin,lat,imtot)
 
+    class(atom_config),intent(inout)::atrcf
+    type(cell_config),intent(in)::cellrcf
+    type(box_config),intent(in)::boxrcf    
+    type(box_config)::boxrgin
+    type(atom_config)::atrgin
+    integer,intent(in)::lat(3)
+    integer,intent(out)::imtot
+
+    integer::i,ia,ib,ic,icell,im,ncore,nprocs
+
+    imtot=lat(1)*lat(2)*lat(3)*atrgin%im
+    im=lat(1)*lat(2)*lat(3)*atrgin%im
+    if (im>imm) then
+       write (6, *) rang,'imm trop petit'
+       call arret_ndm
+    endif
+    call atrcf%init(im)
+    
+    imtot=im
+    i=0
+    write(6,*)
+    do ia = 1,lat(1)
+       do ib = 1,lat(2)
+          do ic = 1,lat(3)
+             do icell = 1, atrgin%im
+                i  = i + 1
+                atrcf%xp(1,i) = (atrgin%xp(1,icell)+float(ia-1))/float(lat(1))
+                atrcf%xp(2,i) = (atrgin%xp(2,icell)+float(ib-1))/float(lat(2))
+                atrcf%xp(3,i) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
+                atrcf%num_at_glob(i)=i
+                atrcf%ityp(i)=atrgin%ityp(icell)
+                !                   write(6,*)'constr',i,atrcf%xp(:,i)
+             end do
+          end do
+       end do
+    end do
+
+    return
+  end subroutine constr_2gin
+
+  subroutine repartition(atcomp,atrep,boxrep,cellrep,nab)
+    class(atom_config)::atrep
+    class(atom_config),intent(in)::atcomp
+    type(cell_config)::cellrep
+    type(box_config)::boxrep
+    integer,optional, dimension(:), allocatable   :: nab
+
+  
+  
+#ifdef PARA
+       imtot=atrep%im
+       if (imtot>imm_glob) then
+          write (6, *) rang,'imm trop petit'
+          call arret_ndm
+       endif
+       im_glob=imtot
+       i=0;im=0
+       do icomp=1,atcomp%im
+          xt(:)=atcomp%xp(:,icomp)
+          do k=1,3
+             xpici=xt(i)
+             if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
+                if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
+                   xt(i)=zero
+                else
+                   cpp  = Dble(Floor(xp(ic,i)))
+                   xt(i) = xpici     - cpp
+                end if
+             end if
+          end do
+          iti = atrcomp%ityp(icell)
+          call coord_to_cell(xt,numcell,boxrep%nb,cellrep%nox,cellrep%noy,cellrep%noz)
+          numproc=proc_cell(numcell)
+          if (numproc == myid) then
+             i=i+1
+             im=im+1
+             atrep%num_at_glob(i)=atcomp%num_at_glob(icomp)
+             if (present(nab)) nab(i)=icomp
+             atrep%xp(:,i)=at(:)
+             atrep%ityp(i)=iti
+          endif
+       end do
+       atrep%im=im
+#endif
+       return
+     end subroutine repartition
+          
+  
   subroutine config2data (imm,im,xp,ityp,at,ntyp)
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY : position_conversion_lammps
@@ -604,5 +573,41 @@ contains
     return
   end subroutine convert_cell
 
+  subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum)
+    class(atom_config),intent(out)::at2b
+    type(cell_config),intent(out)::cel2b
+    type(box_config),intent(out)::box2b
+    integer,intent(out)::imtot
+    character,intent(in) :: fnamg*80
+    real(double),intent(in)::rum
+    type (atom_config)::COMPatrcf
+    type(atom_config)::atrgin
+    type(box_config)::boxrgin
+    real(double)::atg(3,3)
+    integer::lat(3),ic
+    call read_gin(boxrgin,atrgin,fnamg,lat)
+    do ic=1,3
+       atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
+    end do
+    call initbox(box2b,atg)
+    
+    call setnox(box2b,cel2b,rum)
+    if (rang==0) then
+       write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
+    end if
+#ifdef PARA
+       call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imtot)
+       call repartition(COMPatrcf,at2b,cel2b)
+#else
+
+       call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imtot)
+#endif             
+
+    call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
+    call setcellconf(cel2b,at2b,box2b,imtot,rum)
+    return
+
+  end subroutine gin2ndm
+  
   !#endif
 end module constrconf_mod
