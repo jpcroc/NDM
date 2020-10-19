@@ -21,11 +21,7 @@ module lammps_util_mod
         use vars_lammps
         implicit none
         contains
-<<<<<<< HEAD
 
-=======
-!
->>>>>>> f48eb679ca3c0a28dbdd70a92b7134f26bc0b4ca
 subroutine read_lammps
   use gen_com_m, ONLY: rang,firsttime_lammps
   use LAMMPS
@@ -53,19 +49,20 @@ subroutine read_lammps
 
 
 
-subroutine calcforce_lammps2 (im,xp,ityp,fp,potislammps)
+subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
   use vars_lammps
   use LAMMPS
 !  use tab_imm_m, ONLY: ityp,xp,fp
   use var_pot,only:ntyp,cm
-  use gen_com_m, ONLY : umass,firsttime_lammps,energy_conversion_lammps,position_conversion_lammps,sig,it,itesigma,rskin
+  use gen_com_m, ONLY : umass,firsttime_lammps,energy_conversion_lammps,position_conversion_lammps,sig,it,itesigma,rskin&
+       &,pressure_conversion_lammps
 !  use mod_para_phondy
 !  use mpi
 
 
   implicit none
 
-  integer,intent(in)::im
+  integer,intent(in)::im,imm
   integer, intent (in),allocatable:: ityp(:)
   real(double),intent(in),allocatable::xp(:,:)
   real(double), intent(inout),allocatable::fp(:,:)
@@ -162,12 +159,12 @@ subroutine calcforce_lammps2 (im,xp,ityp,fp,potislammps)
 !     write(6,*)'calfolammps6'
 !  pot_energy = energy*energy_conversion_lammps
 !     write (6,*)p_tensor
-     sig(1,1)=p_tensor(1)*energy_conversion_lammps/(position_conversion_lammps**3)
-     sig(2,2)=p_tensor(2)*energy_conversion_lammps/(position_conversion_lammps**3)
-     sig(3,3)=p_tensor(3)*energy_conversion_lammps/(position_conversion_lammps**3)
-     sig(1,2)=p_tensor(4)*energy_conversion_lammps/(position_conversion_lammps**3)
-     sig(1,3)=p_tensor(5)*energy_conversion_lammps/(position_conversion_lammps**3)
-     sig(2,3)=p_tensor(6)*energy_conversion_lammps/(position_conversion_lammps**3)
+      sig(1,1)=p_tensor(1)*pressure_conversion_lammps
+     sig(2,2)=p_tensor(2)*pressure_conversion_lammps
+     sig(3,3)=p_tensor(3)*pressure_conversion_lammps
+     sig(1,2)=p_tensor(4)*pressure_conversion_lammps
+     sig(1,3)=p_tensor(5)*pressure_conversion_lammps
+     sig(2,3)=p_tensor(6)*pressure_conversion_lammps
      sig(2,1)=sig(1,2)
      sig(3,1)=sig(1,3)
      sig(3,2)=sig(2,3)
