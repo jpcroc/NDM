@@ -20,11 +20,12 @@ module cellconfig
      logical :: ltpcel
      real(double),allocatable::sigc(:,:,:),tempc(:)
      real(double):: celsize(3)
-
+     integer,allocatable::proc_cell(:)
 #ifdef PARA
      integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
      integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
      integer :: nb_cell_x, nb_cell_y, nb_cell_z     !nb de cel locales suivant x y z     
+     
 #endif     
 
    contains
@@ -102,6 +103,9 @@ contains
           allocate(cell%tempc(nsize))
        end if
        if (cell%natperc.ne.0)       allocate(cell%atincel(cell%natperc,0:nsize))
+#ifdef PARA
+       allocate(cell%proc_cell(nsize))
+#endif       
     end if
     return
   end subroutine allocatecelN
@@ -231,7 +235,7 @@ contains
     USE cryst_to_cart_mod,only: cryst_to_cart
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
-    type(box_config),intent(in)::boxcf
+    type(box_config),intent(inout)::boxcf
     logical,intent(in)::lperiod
 
 
@@ -335,6 +339,7 @@ contains
     !      write(6,*)'maxnato', maxval(cell%nato)
     cell%icaltabt=icaltabt
     atcf%icaltabt=icaltabt
+    boxcf%icaltabt=icaltabt
     return
   end subroutine caltabtC
 

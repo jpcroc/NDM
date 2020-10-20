@@ -1,12 +1,12 @@
 module constrconf_mod
-    USE period_mod,only:period
+!    USE period_mod,only:period
   !  USE divid_mod, only:divid
   USE setcell,only: setnox
 #ifdef PARA
   USE decoupage_mod,only: decoupage
 #endif
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,im_glob,imm,imm_glob,ldecoup,lperiod,lrestart,rang,&
-       &lvpread!at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
+       &lvpread,zero,low_limit !at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
   !       &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat,cell_debx,cell_deby,cell_debz,&
   !       &cell_finx,cell_finy,cell_finz,low_limit,llangevin,lsuivinonpbc
   USE var_pot, ONLY:na,ntyp,rumax,ipotentiel
@@ -19,6 +19,12 @@ module constrconf_mod
   USE setcell,only:setnox,setcellconf
   USE decoupage_mod,only: decoupage
   USE T_kind_param_m, ONLY:  double
+#ifdef PARA
+    use mpi
+    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs
+#endif
+
+
   implicit none
 contains
   subroutine constrconf (atrcf,boxrcf,cellrcf)
@@ -33,56 +39,30 @@ contains
     !    USE tab_imm_m,only:xp,ax,glangv,vp,xpp
     !    USE suivinonpbc
     !    USE read_conf_mod
-#ifdef PARA
-    use mpi
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,proc_cell
-
-#endif
 
     implicit none
 
     class(atom_config),intent(inout)::atrcf
     type(cell_config),intent(out)::cellrcf
     type(box_config),intent(out)::boxrcf
-    integer :: i, j, k, ia, ib, ic, icell, iti, icintype, icintypemod&
-         , lucin, lugin, imcell, la, lb, lc, typmax, typmin, npoin, natyp, typ,im
-    integer:: indpoint1, indpointdes
-    integer :: passe, nb_passes,ncore,lenfn2
+    integer :: i, icell, iti
 
     type(box_config)::boxrgin
     type(atom_config)::atrgin
 #ifndef PARA
     integer :: nprocs
 #endif
-    integer ,     dimension(:),   allocatable :: itypc
-    real(double), dimension(:,:), allocatable :: xc
     integer,      dimension(:), allocatable   :: num_at_buff
     integer, dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable    :: buffer
-    real(double),dimension(:,:),allocatable :: tmpxc
-    character :: extension*2
+    integer::ncore,ic
 
 #ifdef PARA
-    integer,      dimension(ntyp)         :: na_loc
-    real(double)::xt(3)
-    integer  :: pointeur_loc, i_loc
-    integer  :: numcell, numproc
-    integer  :: i_glob
-    integer  :: cellx,celly,cellz
     type (atom_config)::COMPatrcf
 #endif
-    real(double) :: rue_init
-    real(double) :: rumax_init
-    real(double) :: alpha_init
-    !      integer , dimension(imm,ntyp) :: fv
-    !         integer , dimension(6000,10) :: fv    !Truc_bizarre_jmd
-    real(double), dimension(3) :: rr
-    real(double) :: tirax, tiray, tiraz, x1, x2, x3, a1, a2, a3, c1, c2, c3, r2,xpici,cpp
-    real(double) :: rsep2,atg(3,3)
-    real(double) :: avemass !average mass of atoms
     character :: fnamcin*80, fnamgin*80
-    integer::itread,lat(3)
-    imm_glob=imm
+    integer::itread
+
     
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
@@ -90,7 +70,7 @@ contains
 
     if (rang==0) then
        write(6,*)
-       write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-'
+       write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-',imm,imm_glob,nprocs
        write(6,*)
     endif
 
@@ -110,9 +90,9 @@ contains
        !    meilleur equilibrage/decoupage
        !  - la deuxieme pour lire uniquement les positions propres au
        !    processeur
-       imm_glob=imm
+
        itread=2
-       call read_cin(boxrcf,itread,COMPatrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+       call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
        if (rang==0) then
           write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
        end if
@@ -121,13 +101,13 @@ contains
           na(iti)=count(COMPatrcf%ityp(1:COMPatrcf%im)==iti)
        end do
        ncore=0
-       call  decoupage(nprocs,ncore,cellrcf)
+       call  decoupage(nprocs,ncore,cellrcf,atrcf)
        allocate(num_at_buff(imm_glob))
        im_glob=COMPatrcf%im
        
-       call repartition(COMPatrcf,atrcf,cellrcf,num_at_buff)
+       call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
        itread=3
-       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,num_at_buff,im) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
+       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,imm_glob) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
 
 #else
 
@@ -176,6 +156,7 @@ contains
        ! open fichier .gin
        fnamgin = fnam(1:lenfnam)//'.gin'
        call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax)
+
        do iti=1,ntyp
           na(iti)=count(atrcf%ityp(1:atrcf%im)==iti)
        end do
@@ -293,7 +274,7 @@ contains
     return
   end subroutine coord_to_cell
 
-  subroutine constr_2gin(atrcf,boxrcf,cellrcf,atrgin,boxrgin,lat,imtot)
+  subroutine constr_2gin(atrcf,boxrcf,cellrcf,atrgin,boxrgin,lat,imm)
 
     class(atom_config),intent(inout)::atrcf
     type(cell_config),intent(in)::cellrcf
@@ -301,19 +282,24 @@ contains
     type(box_config)::boxrgin
     type(atom_config)::atrgin
     integer,intent(in)::lat(3)
-    integer,intent(out)::imtot
+    integer,intent(in),optional::imm
 
-    integer::i,ia,ib,ic,icell,im,ncore,nprocs
+    integer::i,ia,ib,ic,icell,imloc,ncore
 
-    imtot=lat(1)*lat(2)*lat(3)*atrgin%im
-    im=lat(1)*lat(2)*lat(3)*atrgin%im
-    if (im>imm) then
-       write (6, *) rang,'imm trop petit'
+    !imtot=lat(1)*lat(2)*lat(3)*atrgin%im
+    imloc=lat(1)*lat(2)*lat(3)*atrgin%im
+    if (imloc>imm_glob) then
+       write (6, *) rang,'imm trop petit',imloc,imm_glob
        call arret_ndm
     endif
-    call atrcf%init(im)
+    if (present(imm))then
+       call atrcf%init(imloc,immin=imm)
+       
+    else
+       call atrcf%init(imloc)
+    end if
     
-    imtot=im
+!    imtot=imloc
     i=0
     write(6,*)
     do ia = 1,lat(1)
@@ -336,48 +322,55 @@ contains
   end subroutine constr_2gin
 
   subroutine repartition(atcomp,atrep,boxrep,cellrep,nab)
+#ifdef PARA
+    use mod_para,only:myid
+#endif
     class(atom_config)::atrep
     class(atom_config),intent(in)::atcomp
     type(cell_config)::cellrep
     type(box_config)::boxrep
     integer,optional, dimension(:), allocatable   :: nab
 
-  
-  
-#ifdef PARA
-       imtot=atrep%im
-       if (imtot>imm_glob) then
+    integer::i,icomp,k,iti,im,ic,numcell,numproc
+    real(double)::xt(3),xpici,cpp
+#ifdef PARA  
+
+!    write(6,*)rang,'REP',imm,im_glob,imm_glob
+!    call atcomp%print
+!    imtot=atrep%im
+       if (atrep%im>imm_glob) then
           write (6, *) rang,'imm trop petit'
           call arret_ndm
        endif
-       im_glob=imtot
+!       im_glob=imtot
        i=0;im=0
        do icomp=1,atcomp%im
           xt(:)=atcomp%xp(:,icomp)
           do k=1,3
-             xpici=xt(i)
+             xpici=xt(k)
              if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
                 if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
-                   xt(i)=zero
+                   xt(k)=zero
                 else
-                   cpp  = Dble(Floor(xp(ic,i)))
-                   xt(i) = xpici     - cpp
+                   cpp  = Dble(Floor(atcomp%xp(ic,i)))
+                   xt(k) = xpici     - cpp
                 end if
              end if
           end do
-          iti = atrcomp%ityp(icell)
-          call coord_to_cell(xt,numcell,boxrep%nb,cellrep%nox,cellrep%noy,cellrep%noz)
-          numproc=proc_cell(numcell)
+          iti = atcomp%ityp(icomp)
+          call coord_to_cell(xt,numcell,boxrep%bg,cellrep%nox,cellrep%noy,cellrep%noz)
+          numproc=cellrep%proc_cell(numcell)
           if (numproc == myid) then
              i=i+1
              im=im+1
              atrep%num_at_glob(i)=atcomp%num_at_glob(icomp)
              if (present(nab)) nab(i)=icomp
-             atrep%xp(:,i)=at(:)
+             atrep%xp(:,i)=xt(:)
              atrep%ityp(i)=iti
           endif
        end do
        atrep%im=im
+!    write(6,*)rang,'REP2',imm,im_glob,imm_glob,atrep%im
 #endif
        return
      end subroutine repartition
@@ -584,7 +577,7 @@ contains
     type(atom_config)::atrgin
     type(box_config)::boxrgin
     real(double)::atg(3,3)
-    integer::lat(3),ic
+    integer::lat(3),ic,ncore,npr,ierr
     call read_gin(boxrgin,atrgin,fnamg,lat)
     do ic=1,3
        atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
@@ -596,15 +589,32 @@ contains
        write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
     end if
 #ifdef PARA
-       call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imtot)
-       call repartition(COMPatrcf,at2b,cel2b)
-#else
+    ncore=0
+    call  decoupage(nprocs,ncore,cel2b,at2b)
+    call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
+    imtot=COMPatrcf%im
+    im_glob=COMPatrcf%im
 
-       call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imtot)
+   call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
+    call repartition(COMPatrcf,at2b,box2b,cel2b)
+    
+#else
+    if (ldecoup) then
+       open(123, file='decoup.dat', status='old')
+       read (123, *) npr,ncore
+       close(123)         
+       call  decoupage(npr,ncore,cel2b)
+       stop
+    end if
+    call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
+    call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
+!    im=at2b%im
+    !    imtot=atrcf%im
+    im_glob=at2b%im
 #endif             
 
-    call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
-    call setcellconf(cel2b,at2b,box2b,imtot,rum)
+
+    call setcellconf(cel2b,at2b,box2b,im_glob,rum)
     return
 
   end subroutine gin2ndm

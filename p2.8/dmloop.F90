@@ -11,19 +11,24 @@ module dmloop_mod
   USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
   USE cellconfig, only:cell_config,caltabtC!,ndm2cellconfig,cellconfig2ndm
-  USE boxconfig,only:box_config!,boxconfig2ndm,ndm2boxconfig
+  USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
   USE calfoberend_mod,only:calfoberend
   USE caltabi_mod,only: caltabi
 
-  USE gen_com_m,only: dmtype,it,itesauv,ltabvois, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, ltabvois, itetabvois ! indi,it,itesauv,ltabvois,potist,rang,sig,nvois,&
+  USE gen_com_m,only: dmtype,it,itesauv,ltabvois, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
+       &ltabvois, itetabvois,lperiod ! indi,it,itesauv,ltabvois,potist,rang,sig,nvois,&
   !             &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize,lsigat,l2t,ltpcel,&
   !             &sigc,sigkine,sigat,sigtot,itesigma,ltberendsen,volu,itesigma,&
   !             &at,bg,zl,zls2,nzl,volu,normat
 
   use var_pot, only: cm! iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
-
+#ifdef PARA
+  use mpi
+  use mod_para,only:NDM_MPI_REAL_DOUBLE,MPI_COMM_space,ierr
+#endif
+  
   implicit none
 contains
   ! ************************************************
@@ -151,21 +156,24 @@ contains
 
     case(1)
        call dyn  (atdml%xp,atdml%xpp,atdml%vp,atdml%fp,atdml%ityp,atdml%im)
+
+      
 !       if (lcorrelvp) call correlvp(atdml%xp,atdml%xpp,atdml%vp,atdml%ax,atdml%fp,atdml%ax, atdml%ityp)
 
     case (2) 
        IF (lFire) THEN
           call trempe_fire (atdml%xp, atdml%xpp, atdml%vp,  atdml%fp, atdml%ielat, atdml%iwmax, atdml%ityp, &
-               fire_dt, fire_nstep, fire_alph)
+               fire_dt, fire_nstep, fire_alph,atdml%im)
+
        ELSE
-          call trempe (atdml%xp, atdml%xpp, atdml%vp, atdml%fp, atdml%ielat, atdml%iwmax, atdml%ityp)
+          call trempe (atdml%xp, atdml%xpp, atdml%vp, atdml%fp, atdml%ielat, atdml%iwmax, atdml%ityp,atdml%im)
        END IF
 
     case default
        write (6, *) 'ne sait pas quoi faire stop'
        stop
     end select
-
+    if (lperiod)       call periodbox(boxndm,atdml)
 
     call analyseT (atdml,celndm,boxndm)
 

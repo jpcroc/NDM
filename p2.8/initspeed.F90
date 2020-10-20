@@ -18,7 +18,7 @@ module initspeed_mod
 
 !  USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
-
+  use boxconfig,only:box_config,periodbox
   implicit none
 contains
   ! *********************************************************************
@@ -70,7 +70,7 @@ contains
 
 
   ! *********************************************************************
-  subroutine initspeed(atcf,im_glob)
+  subroutine initspeed(atcf,im_glob,boxndm)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -84,7 +84,8 @@ contains
     implicit none
     !-----------------------------------------------
     class(atom_config_d)::atcf
-!    type(cell_config):: celndm
+    !    type(cell_config):: celndm
+    type(box_config),intent(in)::boxndm
     integer,intent(in)::im_glob
 
     real(double),allocatable::xp(:,:),xpp(:,:),vp(:,:)
@@ -489,7 +490,7 @@ contains
           end do
        end do
        !       write(6,*)'decx',decx(1)/na(1),decx(2)/na(2)
-       if (lperiod.EQV..true.) call period (im,xp,xpp) !period (im,xp,xpp,ax)
+       if (lperiod.EQV..true.) call periodbox (boxndm,atcf)
     end if
 66  continue
        atcf%xp=xp;atcf%xpp=xpp; atcf%vp=vp; atcf%ityp=ityp;

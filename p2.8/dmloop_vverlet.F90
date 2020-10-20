@@ -12,7 +12,7 @@ module dmloop_vverlet_mod
   USE cellconfig, only:cell_config!,ndm2cellconfig,cellconfig2ndm
   USE boxconfig,only:box_config!,boxconfig2ndm,ndm2boxconfig
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,im,lgc,rang,rayonc,&
+  USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,lgc,rang,rayonc,&
        &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,sigat,sigc&
        &,noxyz,lsuivinonpbc
 
@@ -96,43 +96,44 @@ contains
 
     if (ldesinteg)itdes=itdes+1
 
-
     call dyn_vverlet(atdml,celndm,boxndm)
     ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
 
 
 
+    if (test_sigma) then
 
-    sigkine=0.
-    do ilocal = 1, im
-       sigkine(1:3,1) = sigkine(1:3,1) + &
-            cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
-       sigkine(1:3,2) = sigkine(1:3,2) + &
-            cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
-       sigkine(1:3,3) = sigkine(1:3,3) + &
-            cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
-       select type (atdml)
-       type is (atom_config_e)
-          
-          if (atdml%lsigat) then 
-             atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &
-                  &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
-             atdml%sigat(1:3,2,ilocal) = atdml%sigat(1:3,2,ilocal) + &
-                  &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
-             atdml%sigat(1:3,3,ilocal) = atdml%sigat(1:3,3,ilocal) +  &
-                  &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+       sigkine=0.
+       do ilocal = 1, atdml%im
+          sigkine(1:3,1) = sigkine(1:3,1) + &
+               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
+          sigkine(1:3,2) = sigkine(1:3,2) + &
+               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
+          sigkine(1:3,3) = sigkine(1:3,3) + &
+               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+          select type (atdml)
+          type is (atom_config_e)
+             
+             if (atdml%lsigat) then 
+                atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &
+                     &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
+                atdml%sigat(1:3,2,ilocal) = atdml%sigat(1:3,2,ilocal) + &
+                     &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
+                atdml%sigat(1:3,3,ilocal) = atdml%sigat(1:3,3,ilocal) +  &
+                     &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+             end if
+          end select
+          if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
+             sigc(1:3,1,atdml%ielat(ilocal)) = sigc(1:3,1,atdml%ielat(ilocal)) + &
+                  cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*noxyz/volu
+             sigc(1:3,2,atdml%ielat(ilocal)) = sigc(1:3,2,atdml%ielat(ilocal)) + &
+                  cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*noxyz/volu
+             sigc(1:3,3,atdml%ielat(ilocal)) = sigc(1:3,3,atdml%ielat(ilocal)) + &
+                  cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*noxyz/volu
           end if
-       end select
-       if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
-          sigc(1:3,1,atdml%ielat(ilocal)) = sigc(1:3,1,atdml%ielat(ilocal)) + &
-               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*noxyz/volu
-          sigc(1:3,2,atdml%ielat(ilocal)) = sigc(1:3,2,atdml%ielat(ilocal)) + &
-               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*noxyz/volu
-          sigc(1:3,3,atdml%ielat(ilocal)) = sigc(1:3,3,atdml%ielat(ilocal)) + &
-               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*noxyz/volu
-       end if
-    end do
-    sigkine(1:3,1:3) = sigkine(1:3,1:3)/volu
+       end do
+       sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
+      
 #ifdef PARA
 
     !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
@@ -145,7 +146,7 @@ contains
     end if
 #endif
     sigtot = sigkine+sig
-
+ end if
     call analyseT (atdml,celndm,boxndm)
 !    if (lcorrelvp) call correlvp(xp,xpp,vp,ax,fp,ityp)
     ! MPI

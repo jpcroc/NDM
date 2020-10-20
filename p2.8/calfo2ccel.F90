@@ -302,7 +302,7 @@ contains
     potis2=potis2_tot
     call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     sig=sig_tot
-    if (allocated(sigc)) then
+    if (associated(sigc)) then
        call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        sigc=sigc_tot
     endif

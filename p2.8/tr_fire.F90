@@ -6,8 +6,7 @@ MODULE FireModule
   !       Phys. Rev. Lett. 97, 170201 (2006).
 
   USE T_kind_param_m, ONLY:  double
-  USE period_mod,only: period
-  USE gen_com_m, ONLY:im,imm,lperiod,tstep,usdh,tstep
+  USE gen_com_m, ONLY:tstep,usdh,tstep
   ! --- Paramètres de l'algorithme fire -----------------------
   real(double), parameter, private :: finc=1.1
   real(double), parameter, private :: fdec=0.5
@@ -36,22 +35,21 @@ END SUBROUTINE init_trempe_fire
 
 ! **************************************************************
 subroutine trempe_fire(xp, xpp, vp, fp, ielat, iwmax, ityp, &
-        dt, nstep, alph)
+        dt, nstep, alph,im)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE gen_com_m, ONLY:
   USE var_pot, ONLY:ntyp,cm
   implicit none
-
-  integer  :: ielat(imm)
-  integer  :: iwmax(imm)
-  integer  :: ityp(imm)
-  real(double)  :: xp(3,imm)
-  real(double)  :: xpp(3,imm)
-  real(double)  :: vp(3,imm)
-  real(double)  :: ax(3,imm)
-  real(double)  :: fp(3,imm)
+    integer,allocatable  :: ielat(:)
+    integer,allocatable   :: iwmax(:)
+    integer,allocatable   :: ityp(:)
+    real(double),allocatable   :: xp(:,:)
+    real(double) ,allocatable  :: xpp(:,:)
+    real(double) ,allocatable  :: vp(:,:)
+    real(double),allocatable   :: fp(:,:)
+    integer::im
   REAL(double), intent(inout) :: dt
   INTEGER, intent(inout) :: nstep
   REAL(double), intent(inout) :: alph
@@ -74,7 +72,6 @@ subroutine trempe_fire(xp, xpp, vp, fp, ielat, iwmax, ityp, &
   END DO
 
   
-  IF (lperiod) call period (imm,xp,xpp,ax)
 
 
   ! 2/ Renormalisation des vitesses par l'algorithme fire

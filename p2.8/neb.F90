@@ -11,15 +11,14 @@ module neb_mod
 
   
 !  USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,fp,ielat,num_at_glob
-  USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
-  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
+  USE atomconfig,only:atom_config,atom_config_d
+  USE cellconfig, only:cell_config,caltabtC
+  USE boxconfig,only:box_config,periodbox
   use var_pot,only:coord
   use rasmol_mod,only:rasmol
   use calfoberend_mod,only:dynlangevin
-  use period_mod,only:period
+
   use neb_module
-  USE period_mod,only: period
   USE caltabi_mod,only: caltabi
 
 #ifdef PARANEB
@@ -164,7 +163,7 @@ contains
 
 #endif       
           !       call scalebox (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
-          if (lperiod)    call period (imm,atneb(ii)%xp,atneb(ii)%xpp)
+          if (lperiod)    call periodbox (boxneb,atneb(ii))
 
 
           call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
@@ -220,7 +219,7 @@ contains
              dragtest=0
              do while (dragtest==0)
                 it=it+1
-                if (lperiod)    call period (atneb(ii)%imm,atneb(ii)%xp,atneb(ii)%xpp)
+                if (lperiod)    call periodbox (boxneb,atneb(ii))
                 call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                      &call caltabi(atneb(ii)%atom_config,cellneb(ii))
@@ -229,10 +228,10 @@ contains
                 IF (lFire) THEN
                    call trempe_fire(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ielat, &
                         &atneb(ii)%iwmax, atneb(ii)%ityp, &
-                        fire_dt(ii), fire_nstep(ii), fire_alph(ii))
+                        fire_dt(ii), fire_nstep(ii), fire_alph(ii),atneb(ii)%im)
                 ELSE
                    call trempe(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp, atneb(ii)%fp, atneb(ii)%ielat, &
-                        &atneb(ii)%iwmax, atneb(ii)%ityp)
+                        &atneb(ii)%iwmax, atneb(ii)%ityp,atneb(ii)%im)
                 ENDIF
                 !             call analyse  
                 call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
@@ -305,7 +304,7 @@ contains
                 it_neb_inter=it_neb_inter+1
                 it=it_neb_inter
 
-                if (lperiod)    call period (atneb(ii)%imm,atneb(ii)%xp,atneb(ii)%xpp)
+                if (lperiod)    call periodbox (boxneb,atneb(ii))
                 call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                      &call caltabi(atneb(ii)%atom_config,cellneb(ii))
@@ -316,10 +315,10 @@ contains
 ! CRC nettoyer ces appels !                   !
                    call trempe_fire(atneb(ii)%xp, atneb(ii)%xpp,atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ielat, &
                         &atneb(ii)%iwmax, atneb(ii)%ityp, &
-                        fire_dt(ii), fire_nstep(ii), fire_alph(ii))
+                        fire_dt(ii), fire_nstep(ii), fire_alph(ii),atneb(ii)%im)
                 ELSE
                    call trempe(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp, atneb(ii)%fp, atneb(ii)%ielat,&
-                        &atneb(ii)%iwmax, atneb(ii)%ityp)
+                        &atneb(ii)%iwmax, atneb(ii)%ityp,atneb(ii)%im)
                 ENDIF
 
 !                call analyse

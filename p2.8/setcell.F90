@@ -134,7 +134,8 @@ contains
     zlm2 = distmin(boxcf%at(1,2),boxcf%at(1,3))
     zlmin = min(zlmin,zlm2)
     zlmin=zlmin*2
-  
+
+    
 !    IF (natperc.LE.0) THEN        ! MODIF Clouet
 !    write(6,*)'TTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUTTTTTTTTTTTTTTT'
 !    write(6,*)celscf%noxyz

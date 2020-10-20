@@ -11,7 +11,7 @@ module controleT_mod
   USE deftimestep_mod,only: deftimestep
   USE atomconfig,only:atom_config,atom_config_d!,ndm2config,config2ndm
   USE cellconfig, only:cell_config!,ndm2cellconfig,cellconfig2ndm,caltabtC
-  USE boxconfig,only:box_config!,boxconfig2ndm,ndm2boxconfig
+  USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
   implicit none
 contains
   ! ***********************************************************

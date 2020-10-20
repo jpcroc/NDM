@@ -1,10 +1,9 @@
 module trempe_mod
-  USE period_mod,only: period
-  USE gen_com_m, ONLY:im,imm,lperiod,tstep,usdh
+  USE gen_com_m, ONLY:lperiod,tstep,usdh
 
   implicit none
 contains
-  subroutine trempe(xp, xpp, vp, fp, ielat, iwmax, ityp)
+  subroutine trempe(xp, xpp, vp, fp, ielat, iwmax, ityp,im)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -20,15 +19,15 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer  :: ielat(imm)
-    integer  :: iwmax(imm)
-    integer  :: ityp(imm)
-    real(double)  :: xp(3,imm)
-    real(double)  :: xpp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: fp(3,imm)
+    integer,allocatable  :: ielat(:)
+    integer,allocatable   :: iwmax(:)
+    integer,allocatable   :: ityp(:)
+    real(double),allocatable   :: xp(:,:)
+    real(double) ,allocatable  :: xpp(:,:)
+    real(double) ,allocatable  :: vp(:,:)
+    real(double),allocatable   :: fp(:,:)
     real(double), dimension(ntyp) :: temptyp
-
+    integer::im
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -57,7 +56,7 @@ contains
 
     end do
 
-    IF (lperiod) call period (imm,xp,xpp)
+
 
 
     forctot = 0.0

@@ -2,27 +2,30 @@ module decoupage_mod
   USE arret_ndm_mod,only: arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE cellconfig,only:cell_config
+  USE atomconfig,only: atom_config
   implicit none
 contains
-  subroutine decoupage(nbr_cpuIN,ncore,celdec)
+  subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec)
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,res_cpu,coord_max,coord_min,proc_cell
-    use tab_imm_m,only:realloc_all_tab_imm
+    USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE,res_cpu,coord_max,coord_min
+!    use tab_imm_m,only:realloc_all_tab_imm
 #endif
     USE gen_com_m, ONLY:cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
-         &nb_cell_x,nb_cell_y,nb_cell_z,noxyz,imm,rang,ldecoup
+         &nb_cell_x,nb_cell_y,nb_cell_z,rang,ldecoup,ltabvois,lsigat,lprteat,llangevin,lax
 
     integer :: nbr_cpuIN !Egal aussi au nombre de zone qu'on d�coupera dans la boite
     integer::ncore ! nb de coeur par noeud
     type(cell_config)::celdec
+    class(atom_config),optional:: atdec
 
     integer:: nnoeuds
     integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
     integer :: num_sol !iteration du decoupage possible
     integer :: test
 
+    integer::im0,nvois0
     integer, allocatable :: decoup(:,:) !tableau comprenant l'ensemble des decoupages 
     !possibles en fct des 3 dimensions
     real(double), allocatable :: specifs(:,:) 
@@ -46,10 +49,11 @@ contains
     integer :: num_cpu
     integer :: kx,ky,kz,koo
     integer :: cellules_max
-    integer :: imm_loc,nbr_cpu,nox,noy,noz
+    integer :: imm_loc,nbr_cpu,nox,noy,noz,noxyz,imm
     integer :: ii,jj,kk,nbr_cpumin,iudecoup !indice de boucle
 
     nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
+    write(6,*)'NOX',nox,noxyz
 #ifdef PARA
     nbr_cpumin=nbr_cpuin
 #else
@@ -60,7 +64,11 @@ contains
     stop
  end if
 #endif
-    loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
+!#ifdef PARA
+!       allocate(proc_cell(nox*noy*noz))
+!#endif
+
+ loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
 
 
 
@@ -115,9 +123,6 @@ contains
        allocate(coord_min(0:nbr_cpu-1,3))
        allocate(coord_max(0:nbr_cpu-1,3))
 
-#ifdef PARA
-       allocate(proc_cell(nox*noy*noz))
-#endif
 
        !print *,'Voici les cas possibles :'
        !print *,'-------------------------'
@@ -243,7 +248,7 @@ contains
                    do ky = coord_min(num_cpu,2), coord_max(num_cpu,2)
                       do kz = coord_min(num_cpu,3), coord_max(num_cpu,3)
                          koo = 1+(kx-1)+nox*((ky-1)+noy*(kz-1))
-                         proc_cell(koo) = num_cpu
+                         celdec%proc_cell(koo) = num_cpu
                       enddo
                    enddo
                 enddo
@@ -321,7 +326,10 @@ contains
        call MPI_REDUCE(imm_loc,imm,1,MPI_INTEGER,MPI_MAX,0,MPI_COMM_space,ierr)
 
        !     print *,'test4' 
-       call realloc_all_tab_imm(imm)
+       im0=0 ; nvois0=0
+       call atdec%dealloc
+       call atdec%init(im0,imm,ltabvois,nvois0,lsigat,lprteat,llangevin,lax)
+!       call realloc_all_tab_imm(imm)
 
        !     print *,'test4' 
        ! Initialisation des donnees geometriques qui serviront pour le reste du code :
@@ -345,13 +353,13 @@ contains
        deallocate(coord_min)
        deallocate(coord_max)
 #endif
-#ifdef PARA
-       deallocate(proc_cell)
-#endif
+!#ifdef PARA
+!       deallocate(proc_cell)
+!#endif
 
     enddo loop1
 
-
+!write(6,*)rang,proc_cell
 
 
 

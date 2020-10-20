@@ -1,19 +1,23 @@
 #ifdef PARA
 module init_vois_mod
-        implicit none
+  use cellconfig,only:cell_config
+  implicit none
+
+  
         contains
-subroutine init_voisinage
+subroutine init_voisinage (cellv)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
-  use gen_com_m
+  use gen_com_m,only:
   use tab_imm_m
 !  use mod_para,only:MPI_COMM_space,
 !  USE mpi
   use mod_para,only:MPI_COMM_space, status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_voisin,nbr_proc_voisin,nbr_cell_ftm,&
-       &NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm,proc_cell
+       &NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
 
   implicit none
+  type(cell_config)::cellv
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
@@ -48,33 +52,33 @@ subroutine init_voisinage
   ! Calcul du nombre de cellules fantomes 
 
   ! boucle sur toutes les cellules
-  do cell=1,noxyz
+  do cell=1,cellv%noxyz
 
-     if ( proc_cell(cell)==myid ) then
+     if ( cellv%proc_cell(cell)==myid ) then
         ! si la cellule est locale
 
         do icell=1,26
            ! boucle sur les cellules voisines
 
-           cell_vois = ncel(cell,icell)
+           cell_vois = cellv%ncel(cell,icell)
            if (cell_vois/=0) then
               ! si la cellule voisine existe
 
-              if ( proc_cell(cell_vois)/=myid ) then
+              if ( cellv%proc_cell(cell_vois)/=myid ) then
                  ! Si la cellule voisine n'est pas locale
 
                  ! on stocke le processeur voisin si il n'est
                  ! pas deja connu
                  est_present=0
                  do i=1,nbr_proc_voisin
-                    if ( proc_voisin(i)==proc_cell(cell_vois) ) then
+                    if ( proc_voisin(i)==cellv%proc_cell(cell_vois) ) then
                        est_present=1
                        num_proc_vois=i
                     endif
                  enddo
                  if (est_present==0) then
                     nbr_proc_voisin = nbr_proc_voisin + 1
-                    proc_voisin(nbr_proc_voisin) = proc_cell(cell_vois)
+                    proc_voisin(nbr_proc_voisin) = cellv%proc_cell(cell_vois)
                     num_proc_vois = nbr_proc_voisin
                  endif
 
@@ -101,9 +105,9 @@ subroutine init_voisinage
         do icell=1,26
            ! boucle sur les cellules voisines
 
-           cell_vois = ncel(cell,icell)
+           cell_vois = cellv%ncel(cell,icell)
            if (cell_vois/=0) then
-              if ( proc_cell(cell_vois)==myid ) then
+              if ( cellv%proc_cell(cell_vois)==myid ) then
 
                  ! il s'agit bien d'une cellule fantome car une cellule voisine est
                  ! locale
@@ -128,5 +132,5 @@ subroutine init_voisinage
   enddo
 
 end subroutine init_voisinage
-end module
+end module init_vois_mod
 #endif

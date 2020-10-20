@@ -7,7 +7,7 @@ module neb_module
   USE constrconf_mod,only:constr_2gin,gin2ndm
     use cryst_to_cart_mod,only:cryst_to_cart
   USE contrainte,only:contr
-  USE config_mod,only: config
+!  USE config_mod,only: config
   USE recips_mod,only: recips
   USE sauveposition_mod,only: sauveposition
   USE rasmol_mod,only: rasmol

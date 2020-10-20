@@ -12,6 +12,8 @@ module read_conf
     implicit none
     
 contains
+
+
   subroutine read_cin(boxcin,itread,atcinr,immr,fnamcin,lres,fmtcin,icible,imic)
     !itread 0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
     !immr : imm extrait .cin
@@ -22,6 +24,7 @@ contains
     !    USE suivinonpbc
 #ifdef PARA
     !    use mpi
+    USE var_pot, ONLY:ntyp
     !    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,proc_cell
 #endif
     implicit none
@@ -101,7 +104,7 @@ contains
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
        if (im_gr>immr) then
-          if(rang==0)                    write (6, *) 'im > imM', im_gr, imm
+          if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
           call arret_ndm
        endif
        atcinr%im=im_gr
@@ -200,7 +203,7 @@ contains
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
        if (im_gr>immr) then
-          if(rang==0)                    write (6, *) 'im > imM', im_gr, imm
+          if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
           call arret_ndm
        endif
        atcinr%im=im_gr
@@ -234,7 +237,7 @@ contains
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
        if (im_gr>immr) then
-          if(rang==0)                    write (6, *) 'im > imM', im_gr, imm
+          if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
           call arret_ndm
        endif
        atcinr%im=imic
@@ -347,9 +350,9 @@ contains
 
 
     character,intent(in) :: fnamgin*80
-    type(atom_config)::atrg
-    type(box_config)::boxrg
-    integer::latr(3)
+    type(atom_config),intent(out)::atrg
+    type(box_config),intent(out)::boxrg
+    integer,intent(out)::latr(3)
 
 !    real(double)::rumax_init,alpha_init
     integer ,     dimension(:),   allocatable :: itypc

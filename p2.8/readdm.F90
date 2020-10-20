@@ -379,7 +379,7 @@ contains
     ! On suppose que la concentration max ne depasse pas 20%  de 
     ! la concentration moyenne
     imm      = min( imm_glob, int(1.2 * imm_glob / nprocs) )
-    if (rang==0) write(6,*)'IMM PARA = ',imm
+    if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
 #endif
 
 

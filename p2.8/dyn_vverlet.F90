@@ -6,7 +6,7 @@ module dyn_vverlet_mod
        &l2T,llangevin,lsuivinonpbc,itesigma,it,itetabvois,ltabvois,ltberendsen,potist,sig,timel,tstep
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
   USE cellconfig, only:cell_config,caltabtC!,ndm2cellconfig,cellconfig2ndm
-  USE boxconfig,only:box_config!,boxconfig2ndm,ndm2boxconfig
+  USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
   use var_pot,only : cm
   USE eloss, only:ibrake, calceloss
 #ifdef PARA
@@ -102,12 +102,11 @@ contains
           tmpsuivi(1:3,i)=tmpsuivi(1:3,i)+tstep*atdml%vp(1:3,i)
        END DO
     end if
-    if (lperiod)  call period  (atdml%imm,atdml%xp)
+    if (lperiod)  call periodbox (boxndm,atdml)
 
     ! repartition des atomes dans la nouvelle boite
 
 
-    ! cell dispatching
 
     if (.not.lpr) then
        if (itab/=0) then

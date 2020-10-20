@@ -128,7 +128,8 @@ contains
        else
 #ifdef PARA
           if(rang==0) write (6,*)'DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION'
-          call dmloop_vverlet ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+                 call dmloop_vverlet (atdml,celndm,boxndm)
+
 #endif
        endif
     case (3,30)

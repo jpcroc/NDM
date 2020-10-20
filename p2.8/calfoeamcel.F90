@@ -404,7 +404,7 @@ module calfoeamcel_mod
  if (test_sigma) then 
      call MPI_ALLREDUCE(sig,      sig_tot,      9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      sig=sig_tot
-       if (allocated(sigc)) then
+       if (associated(sigc)) then
      call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      sigc=sigc_tot
   endif

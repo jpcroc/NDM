@@ -2,7 +2,7 @@ module dyn_mod
   USE gen_com_m, ONLY:cunite,erg2ev,fnemd,it,itetconst,lcalcjq,leev,lnemd,lperiod,&
        &ltcon,text,timel,tstep,unite,usdh,eatom,bk
   USE tempinst_mod,only: tempinst
-  USE period_mod,only: period
+!  USE period_mod,only: period
   implicit none
 contains
   ! *************************************************************
@@ -124,7 +124,7 @@ contains
        endif
     endif
 
-    if (lperiod)       call period  (im,xp,xpp)
+!    if (lperiod)       call period  (im,xp,xpp)
 
 
 
