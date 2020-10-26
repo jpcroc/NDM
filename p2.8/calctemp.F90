@@ -69,13 +69,14 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 #ifdef PARA
      allocate(tempiontot(nex,ney,nez))
      allocate(niontot(nex,ney,nez))
-     allocate(tempc_tot(cellcf%noxyz))
+
 #endif
   end if
 
   tempEP=0
-
-
+#ifdef PARA
+  allocate(tempc_tot(cellcf%noxyz))
+#endif  
   do ko = 1, cellcf%noxyz
 
      if (cellcf%nato(ko)==0) cycle

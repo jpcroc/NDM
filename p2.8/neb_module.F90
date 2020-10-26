@@ -4,7 +4,7 @@ module neb_module
   USE gen_com_m, ONLY:iseed,neb_noise_scale,npath,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,im_glob,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois,fnamcout,igen,lprteat
-  USE constrconf_mod,only:constr_2gin,gin2ndm
+  USE constrconf_mod,only:constr_2gin,gin2ndm,config2data,read_cin
     use cryst_to_cart_mod,only:cryst_to_cart
   USE contrainte,only:contr
 !  USE config_mod,only: config
@@ -16,8 +16,8 @@ module neb_module
   !-----------------------------------------------
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config,init_cel
-  USE constrconf_mod,only : config2data
-  USE read_conf, only:read_cin,read_gin
+!  USE constrconf_mod,only : config2data
+!  USE read_conf, only:read_cin,read_gin
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm,initbox
   USE setcell,only:setcellconf,setnox
   USE sauvegardeT_mod,only:sauvegardeT

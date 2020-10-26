@@ -63,7 +63,7 @@ contains
 
 
     ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
-
+    
 
 
     if (dmtype==2) then

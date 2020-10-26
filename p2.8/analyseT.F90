@@ -171,7 +171,6 @@ contains
     if (itetemp>0) then
        if (mod(it,itetemp)==0) then
           call calctemp (temp,kine,atdml,celndm)
-          
           do iti=1,ntyp
              if (na(iti)==0) cycle
              atdml%lgul=.false.
@@ -179,8 +178,8 @@ contains
              where(atdml%ityp(1:atdml%im)==iti)
                 atdml%lgul=.true.
              end where
-             
              call atdml%fab(attyp)
+
              call caltabtC(celtyp,attyp,lperiod,boxndm)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              call celtyp%dealloc ; call attyp%dealloc
