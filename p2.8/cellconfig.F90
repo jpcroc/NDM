@@ -20,8 +20,8 @@ module cellconfig
      logical :: ltpcel
      real(double),allocatable::sigc(:,:,:),tempc(:)
      real(double):: celsize(3)
-     integer,allocatable::proc_cell(:)
 #ifdef PARA
+     integer,allocatable::proc_cell(:)
      integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
      integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
      integer :: nb_cell_x, nb_cell_y, nb_cell_z     !nb de cel locales suivant x y z     
@@ -344,7 +344,7 @@ contains
   end subroutine caltabtC
 
 
-  subroutine ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpc,sigc,tempc)
+  subroutine ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpc,sigc,tempc,proc_cell)
     type(cell_config), intent(out):: celndm
     integer, intent(in):: nox,noy,noz,natperc,noxyz
     integer,intent(in)::ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
@@ -352,6 +352,7 @@ contains
     logical,optional,intent(in)::ltpc
     real(double),intent(in),optional,allocatable::sigc(:,:,:),tempc(:)
     logical::ltpcel=.false.
+    integer,optional::proc_cell(:)
     if (present (ltpc))ltpcel=ltpc
     if (.not.allocated(celndm%ncel))then
        call init_cel(celndm,nox,noy,noz,natperc,ltpcel)
@@ -375,21 +376,30 @@ contains
        celndm%sigc=sigc
        celndm%tempc=tempc
     end if
+#ifdef PARA=1
+    celndm%proc_cell=proc_cell
+#endif    
+
   endsubroutine ndm2cellconfig
 
-  subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc)
+  subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,proc_cell)
     type(cell_config), intent(inout):: celndm
     integer, intent(inout):: nox,noy,noz,natperc,noxyz
     integer,intent(inout),allocatable::ncel(:,:),nato(:),atincel(:,:),deltadist(:,:,:)!ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
     real(double),intent(out)::celsize(3)
     logical,optional,intent(out)::ltpcel
     real(double),intent(out),optional,allocatable::sigc(:,:,:),tempc(:)
-    write(6,*)'allocated ncel',allocated(ncel)
+    integer,optional,allocatable::proc_cell(:)
+    integer::nsize
     if (.not.allocated(ncel))then
        nox=celndm%nox ;noy=celndm%noy;noz=celndm%noz
-       noxyz=nox*noy*noz
+       noxyz=nox*noy*noz;nsize=noxyz
        natperc=celndm%natperc
        allocate(ncel(0:noxyz,0:26));allocate(nato(0:noxyz));allocate(atincel(natperc,0:noxyz));allocate(deltadist(3,0:26,noxyz))
+
+#ifdef PARA=1
+           if (present(proc_cell))allocate(proc_cell(nsize))
+#endif       
     else
        if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
           write(6,*)'incohérence entre noxyz et celndm%noxyz'
@@ -397,7 +407,6 @@ contains
           stop
        end if
     end if
-       
     if (celndm%ltpcel)then
        ltpcel=celndm%ltpcel
        if (ltpcel) then
@@ -405,7 +414,6 @@ contains
           if (.not.allocated(tempc))allocate (tempc(celndm%noxyz))
        end if
     end if
-   
 !    celndm%icaltabt=0
     ncel(0:noxyz,0:26)=celndm%ncel(0:noxyz,0:26)
     nato(0:noxyz)=celndm%nato(0:noxyz)
@@ -417,7 +425,9 @@ contains
        tempc(:)=celndm%tempc(:)
     end if
 !    call celndm%dealloc
-
+#ifdef PARA=1
+    if (present(proc_cell))proc_cell=celndm%proc_cell
+#endif    
   end subroutine cellconfig2ndm
 
   ! copie d'une config entière vers config de base

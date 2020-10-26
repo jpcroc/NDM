@@ -4,7 +4,8 @@ module init_mpi_mod
         contains
 subroutine init_mpi()
   use mpi
-  use mod_para,only:ierr,myid,nprocs,temps_deb,MPI_COMM_space
+  use mod_para,only:ierr,nprocs,temps_deb,MPI_COMM_space,myid
+
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM

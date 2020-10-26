@@ -39,7 +39,7 @@ contains
 
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,TEMPS_INIT_DEB,TEMPS_INIT,MYID,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm
+    USE mod_para,only:MPI_COMM_space,TEMPS_INIT_DEB,TEMPS_INIT,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm,myid
 #endif
 
     implicit none
@@ -89,11 +89,8 @@ contains
 
 #ifdef PARA
     ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-    if (rang==0) write(6,*)'PARA-T avant MAJ'
 
-
-    call maj_atomes_frt_ftm
-    if (rang==0) write(6,*)'PARA-T apres MAJ'
+    call maj_atomes_frt_ftm(atdml,celndm)
 
 
 

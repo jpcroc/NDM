@@ -14,12 +14,13 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:bg,itetemp2,imm_glob,dmtype,rang,im,it,itmax,mdcg_noise,&
-         &angst,erg2ev,imm,potist
+         &angst,erg2ev,imm,potist,im_glob
     USE var_pot, ONLY:nad,na,ntyp
     USE work_cgII,only: funct
 #ifdef PARA
 
-use mod_para
+    use mod_para,only:nprocs,MPI_COMM_space ,ierr,status,NDM_MPI_REAL_DOUBLE
+
 #endif
     ! *************************************************************
     ! xp positions des atomes
@@ -30,6 +31,12 @@ use mod_para
     !iwmax =  indice du dernier voisin de chaque atome
     !ityp  tableau des types
     implicit none
+#ifdef PARA
+
+
+    include "mpif.h" 
+#endif
+
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e r s
     !-----------------------------------------------

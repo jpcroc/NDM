@@ -1,10 +1,13 @@
-
+nettoyer le merdier myid
 INTEGRER DECOUP dans la version sequentielle avec un ldecoup
 Faire une version de base dmtype, simple qui fonctionne
 paralléliser
 paralléliser mixte
-rè-introduire les fonctionalités pas à pas:
--period ??
+rè-introduire les fonctionalités pas à pas:gcII,pr2 !!
+-period ?? remplacer par periodbox
+
+automatiser les transferts entre procs pour gérer automatiquement ax, eat, etc... et ne transférer que si besoin. 
+séparer les routines en deux : constructions des vecteurs à transférer et transfert effectif des vecteurs
 
 1/EATOM NE FONCTIONNE PAS ; ax ne fonctionne pas
 2/RVOIS lconstrtot,ldemitab a intégrer dans le type atom_config ?

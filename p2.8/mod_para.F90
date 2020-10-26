@@ -1,9 +1,9 @@
-
-
 module mod_para
 
   use T_kind_param_m, ONLY:  double
-  use gen_com_m !,only:
+  use gen_com_m ,only:l2t,rang
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e,ndm2config,config2ndm
+  USE cellconfig,only:cell_config,ndm2cellconfig,cellconfig2ndm
 !  use mpi
   implicit none
 #ifdef PARA
@@ -70,7 +70,16 @@ module mod_para
   real(double) :: temps_config_deb, temps_config
   real(double) :: temps_para,temps_debpara,temps_finpara
 
-
+  real(double), allocatable,dimension(:,:)::xp,vp,fp,xpp,ax,glangv
+  real(double),allocatable::eat(:),sigat(:,:,:)
+  integer,allocatable,dimension(:)::ityp,ielat,iwmax,num_at_glob,indi
+  logical ::llangevin,lprteat,lsigat,ltbv,lax
+  integer::im,imm,nvois
+  integer:: nox,noy,noz,natperc,noxyz
+  integer,allocatable::ncel(:,:),nato(:),atincel(:,:),deltadist(:,:,:)
+  real(double)::celsize(3)
+  logical::ltpcel
+  real(double),allocatable::sigc(:,:,:),tempc(:)
   !---------------------------------------------------------!
   !               Routines spécifique à MPI                 !
   !---------------------------------------------------------!
@@ -82,54 +91,81 @@ contains
   ! les processeurs. Elle prend en compte la nouvelle repartition dans 
   ! les cellules suite a l'appel a caltabt
 
-  subroutine maj_atomes_frt_ftm
+  subroutine maj_atomes_frt_ftm(atcf,cellcf)
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
-
+    type(cell_config)::cellcf
+    class(atom_config)::atcf
+    integer::i
+    ltbv=atcf%ltabvois ;
+    lsigat=.false.; lprteat=.false. ; llangevin=.false.;lax=.false.
+    select type (atcf)
+    type is (atom_config_e)
+       lsigat=atcf%lsigat;lprteat=atcf%lprteat; llangevin=atcf%llangevin;lax=atcf%lax
+    end select
+    call config2ndm(atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall=.true.)
+    call cellconfig2ndm (cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,proc_cell)
     ! On envoit les atomes qui n'appartiennent plus au processeur courant
     call envoi_atomes_fantomes
-
     ! On recoit les nouveaux atomes locaux
     call reception_nouveaux_atomes
-
     ! On retire les atomes qui ne sont plus locaux
     call elimine_atomes_fantomes
-
     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
     call finalisation_envoi_atomes
-
     ! On envoit les atomes frontieres aux processeurs voisins
     call envoi_atomes_frontieres
-
     ! On receptionne les nouveaux atomes fantomes
     call reception_atomes_fantomes
-
     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
     call finalisation_envoi_atomes
+    xpp=0;fp=0
+    call ndm2config (atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,nvois,vp,xpp,ldeall=.true.)
+    call ndm2cellconfig(cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=proc_cell)
 
-  end subroutine maj_atomes_frt_ftm
+!!$#ifdef PARA
+!!$          CALL MPI_BARRIER(MPI_COMM_space,ierr)
+!!$          do i=0,nprocs-1
+!!$             if (myid==i) then
+!!$                write(6,*)
+!!$                write(6,*)'PPPPPPPPPPRRRRRRRRRTTTTTT',myid
+!!$
+!!$#endif
+!!$                call atcf%print
+!!$                call cellcf%print
+!!$!                call boxndm%print
+!!$#ifdef PARA                
+!!$             end if
+!!$             CALL MPI_BARRIER(MPI_COMM_space,ierr)
+!!$          end do
+!!$#endif
+
+end subroutine maj_atomes_frt_ftm
 
   !------------------------------------------------------------------------!
   ! Procedure pour la mise a jour des valeurs tabdensity des atomes 
   ! fantomes sur les processeurs.
 
-  subroutine maj_tabdensity_ftm(tabdensity) !appelée dans calfoeamcel
+  subroutine maj_tabdensity_ftm(tabdensity,imm,natR,num_at_glob) !appelée dans calfoeamcel
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
-
+    integer::imm
+    integer,intent(in)::num_at_glob(imm)
     real(double) :: tabdensity(imm)
+    integer::natr(:)
+    nato=natr 
 
     ! On envoit les atomes frontieres aux processeurs voisins
-    call envoi_tabdensity_frontieres(tabdensity)
+    call envoi_tabdensity_frontieres(tabdensity,imm,num_at_glob)
 
     ! On receptionne les nouveaux atomes fantomes
-    call reception_tabdensity_fantomes(tabdensity)
+    call reception_tabdensity_fantomes(tabdensity,imm,num_at_glob)
 
     ! Finalisation de l'envoi pour liberer les buffers d'envoi (identique a l'envoi des atomes)
     call finalisation_envoi_atomes
@@ -143,7 +179,7 @@ contains
   subroutine maj_fp_frt !appelée SEULEMENT dans force_tersoff_cel !
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
 
@@ -166,7 +202,7 @@ contains
   subroutine envoi_atomes_fantomes ! seulement maj_atomes_frt_ftm
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
 
@@ -203,14 +239,17 @@ contains
     nb_at_max = max(nb_at_max,1)
 
     ! Allocation des buffers
-    nb_var_int = 4
+    nb_var_int = 3
+!    nb_var_int = 4 avec iwmax aucun intérêt
 !LPARAFULLSEND
 !    nb_var_dbl = 15
-   if (lsuivinonpbc) then
-    nb_var_dbl = 18
-   else 
-    nb_var_dbl = 9
-  end if 
+!!$   if (lsuivinonpbc) then
+!!$    nb_var_dbl = 18
+!!$   else 
+!!$    nb_var_dbl = 9
+!!$ end if
+!    nb_var_dbl = 9 avec ax
+    nb_var_dbl = 6
   if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
      nb_var_dbl = nb_var_dbl+3
   end if
@@ -256,33 +295,33 @@ contains
 
                 send_buff_int(1,send_nb_val(nproc_voisin),nproc_voisin) = ityp(i_at)
                 send_buff_int(2,send_nb_val(nproc_voisin),nproc_voisin) = ielat(i_at)
-                send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = iwmax(i_at)
-                send_buff_int(4,send_nb_val(nproc_voisin),nproc_voisin) = num_at_glob(i_at)
+!                send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = iwmax(i_at)
+                send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = num_at_glob(i_at)
 
                 send_buff_dbl(1,send_nb_val(nproc_voisin),nproc_voisin) = xp(1,i_at)
                 send_buff_dbl(2,send_nb_val(nproc_voisin),nproc_voisin) = xp(2,i_at)
                 send_buff_dbl(3,send_nb_val(nproc_voisin),nproc_voisin) = xp(3,i_at)
-                send_buff_dbl(4,send_nb_val(nproc_voisin),nproc_voisin) = ax(1,i_at)
-                send_buff_dbl(5,send_nb_val(nproc_voisin),nproc_voisin) = ax(2,i_at)
-                send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = ax(3,i_at)
-                send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = vp(1,i_at)
-                send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = vp(2,i_at)
-                send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = vp(3,i_at)
+!!$                send_buff_dbl(4,send_nb_val(nproc_voisin),nproc_voisin) = ax(1,i_at)
+!!$                send_buff_dbl(5,send_nb_val(nproc_voisin),nproc_voisin) = ax(2,i_at)
+!!$                send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = ax(3,i_at)
+                send_buff_dbl(4,send_nb_val(nproc_voisin),nproc_voisin) = vp(1,i_at)
+                send_buff_dbl(5,send_nb_val(nproc_voisin),nproc_voisin) = vp(2,i_at)
+                send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = vp(3,i_at)
                 
-               if (lsuivinonpbc) then 
-		send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(1,i_at)
-                send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(2,i_at)
-                send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(3,i_at)
-
-		send_buff_dbl(13,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(1,i_at)
-                send_buff_dbl(14,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(2,i_at)
-                send_buff_dbl(15,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(3,i_at)
-
-		send_buff_dbl(16,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(1,i_at)
-                send_buff_dbl(17,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(2,i_at)
-                send_buff_dbl(18,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(3,i_at)
-
-               end if
+!!$               if (lsuivinonpbc) then 
+!!$		send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(1,i_at)
+!!$                send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(2,i_at)
+!!$                send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(3,i_at)
+!!$
+!!$		send_buff_dbl(13,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(1,i_at)
+!!$                send_buff_dbl(14,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(2,i_at)
+!!$                send_buff_dbl(15,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(3,i_at)
+!!$
+!!$		send_buff_dbl(16,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(1,i_at)
+!!$                send_buff_dbl(17,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(2,i_at)
+!!$                send_buff_dbl(18,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(3,i_at)
+!!$
+!!$               end if
                if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
                   send_buff_dbl(nb_var_dbl-2,send_nb_val(nproc_voisin),nproc_voisin) = Glangv(1,i_at)
                   send_buff_dbl(nb_var_dbl-1,send_nb_val(nproc_voisin),nproc_voisin) = Glangv(2,i_at)
@@ -324,7 +363,7 @@ contains
   subroutine reception_nouveaux_atomes !seulment MAJ
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
 
@@ -358,8 +397,8 @@ contains
           ! mise a jour des variables entieres
           ityp(im)        = recv_buff_int(1,i_at,ind_recv)
           ielat(im)       = recv_buff_int(2,i_at,ind_recv)
-          iwmax(im)       = recv_buff_int(3,i_at,ind_recv)
-          num_at_glob(im) = recv_buff_int(4,i_at,ind_recv)
+!          iwmax(im)       = recv_buff_int(3,i_at,ind_recv)
+          num_at_glob(im) = recv_buff_int(3,i_at,ind_recv)
 
           ! mise a jour des donnees de la cellule correspondante
           nato(ielat(im)) = nato(ielat(im)) + 1
@@ -369,26 +408,26 @@ contains
           xp(1,im) = recv_buff_dbl(1,i_at,ind_recv) 
           xp(2,im) = recv_buff_dbl(2,i_at,ind_recv) 
           xp(3,im) = recv_buff_dbl(3,i_at,ind_recv) 
-          ax(1,im) = recv_buff_dbl(4,i_at,ind_recv)
-          ax(2,im) = recv_buff_dbl(5,i_at,ind_recv)
-          ax(3,im) = recv_buff_dbl(6,i_at,ind_recv)
-          vp(1,im) = recv_buff_dbl(7,i_at,ind_recv) 
-          vp(2,im) = recv_buff_dbl(8,i_at,ind_recv) 
-          vp(3,im) = recv_buff_dbl(9,i_at,ind_recv) 
+!          ax(1,im) = recv_buff_dbl(4,i_at,ind_recv)
+!          ax(2,im) = recv_buff_dbl(5,i_at,ind_recv)
+!          ax(3,im) = recv_buff_dbl(6,i_at,ind_recv)
+          vp(1,im) = recv_buff_dbl(4,i_at,ind_recv) 
+          vp(2,im) = recv_buff_dbl(5,i_at,ind_recv) 
+          vp(3,im) = recv_buff_dbl(6,i_at,ind_recv) 
 	  
-	  if (lsuivinonpbc) then
-           xpnonpbc(1,im) = recv_buff_dbl(10,i_at,ind_recv)
-           xpnonpbc(2,im) = recv_buff_dbl(11,i_at,ind_recv)
-           xpnonpbc(3,im) = recv_buff_dbl(12,i_at,ind_recv)
- 
-           tmpsuivi(1,im) = recv_buff_dbl(13,i_at,ind_recv)
-           tmpsuivi(2,im) = recv_buff_dbl(14,i_at,ind_recv)
-           tmpsuivi(3,im) = recv_buff_dbl(15,i_at,ind_recv)
- 
-           axnonpbc(1,im) = recv_buff_dbl(16,i_at,ind_recv)
-           axnonpbc(2,im) = recv_buff_dbl(17,i_at,ind_recv)
-           axnonpbc(3,im) = recv_buff_dbl(18,i_at,ind_recv)
-        end if
+!!$	  if (lsuivinonpbc) then
+!!$           xpnonpbc(1,im) = recv_buff_dbl(10,i_at,ind_recv)
+!!$           xpnonpbc(2,im) = recv_buff_dbl(11,i_at,ind_recv)
+!!$           xpnonpbc(3,im) = recv_buff_dbl(12,i_at,ind_recv)
+!!$ 
+!!$           tmpsuivi(1,im) = recv_buff_dbl(13,i_at,ind_recv)
+!!$           tmpsuivi(2,im) = recv_buff_dbl(14,i_at,ind_recv)
+!!$           tmpsuivi(3,im) = recv_buff_dbl(15,i_at,ind_recv)
+!!$ 
+!!$           axnonpbc(1,im) = recv_buff_dbl(16,i_at,ind_recv)
+!!$           axnonpbc(2,im) = recv_buff_dbl(17,i_at,ind_recv)
+!!$           axnonpbc(3,im) = recv_buff_dbl(18,i_at,ind_recv)
+!!$        end if
         if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
             Glangv(1,im)= recv_buff_dbl(nb_var_dbl-2,i_at,ind_recv)
             Glangv(2,im)= recv_buff_dbl(nb_var_dbl-1,i_at,ind_recv)
@@ -423,7 +462,7 @@ contains
 
     USE T_kind_param_m, ONLY:  double
 
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
 
@@ -479,16 +518,16 @@ contains
 !LPARAFULLSEND
 !             xpp(:,i_new) = xpp(:,i_at)
              vp(:,i_new)  = vp(:,i_at)
-             ax(:,i_new)  = ax(:,i_at)
-	     if (lsuivinonpbc)  xpnonpbc(:,i_new)  = xpnonpbc(:,i_at)
-	     if (lsuivinonpbc)  tmpsuivi(:,i_new)  = tmpsuivi(:,i_at)
-	     if (lsuivinonpbc)  axnonpbc(:,i_new)  = axnonpbc(:,i_at)
+!             ax(:,i_new)  = ax(:,i_at)
+!!$	     if (lsuivinonpbc)  xpnonpbc(:,i_new)  = xpnonpbc(:,i_at)
+!!$	     if (lsuivinonpbc)  tmpsuivi(:,i_new)  = tmpsuivi(:,i_at)
+!!$	     if (lsuivinonpbc)  axnonpbc(:,i_new)  = axnonpbc(:,i_at)
 !             fp(:,i_new)  = fp(:,i_at)
 !             if(lfrozen)free(i_new)=free(i_at)
 
              ityp(i_new)        = ityp(i_at)
              ielat(i_new)       = ielat(i_at)
-             iwmax(i_new)       = iwmax(i_at)
+!             iwmax(i_new)       = iwmax(i_at)
              num_at_glob(i_new) = num_at_glob(i_at)
 
              ! On met aussi a jour le numero local de l'atome dans la liste de la cellule
@@ -535,7 +574,7 @@ contains
   subroutine envoi_atomes_frontieres
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
 
@@ -565,12 +604,12 @@ contains
     nb_var_int = 4
 !LPARAFULLSEND
 !    nb_var_dbl = 15
-   if  (lsuivinonpbc) then
-    nb_var_dbl = 18
-    else  
+!!$   if  (lsuivinonpbc) then
+!!$    nb_var_dbl = 18
+!!$    else  
+!!$    nb_var_dbl = 9
+!!$   end if 
     nb_var_dbl = 9
-   end if 
-
     allocate(send_nb_val(nbr_proc_voisin))
     allocate(send_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
     allocate(send_buff_dbl(nb_var_dbl,nb_at_max,nbr_proc_voisin))
@@ -610,34 +649,34 @@ contains
 
              send_buff_int(1,send_nb_val(nproc_voisin),nproc_voisin) = ityp(i_at)
              send_buff_int(2,send_nb_val(nproc_voisin),nproc_voisin) = ielat(i_at)
-             send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = iwmax(i_at)
-             send_buff_int(4,send_nb_val(nproc_voisin),nproc_voisin) = num_at_glob(i_at)
+!             send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = iwmax(i_at)
+             send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = num_at_glob(i_at)
 
              send_buff_dbl(1,send_nb_val(nproc_voisin),nproc_voisin) = xp(1,i_at)
              send_buff_dbl(2,send_nb_val(nproc_voisin),nproc_voisin) = xp(2,i_at)
              send_buff_dbl(3,send_nb_val(nproc_voisin),nproc_voisin) = xp(3,i_at)
-             send_buff_dbl(4,send_nb_val(nproc_voisin),nproc_voisin) = ax(1,i_at)
-             send_buff_dbl(5,send_nb_val(nproc_voisin),nproc_voisin) = ax(2,i_at)
-             send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = ax(3,i_at)
-             send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = vp(1,i_at)
-             send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = vp(2,i_at)
-             send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = vp(3,i_at)
+!             send_buff_dbl(4,send_nb_val(nproc_voisin),nproc_voisin) = ax(1,i_at)
+!             send_buff_dbl(5,send_nb_val(nproc_voisin),nproc_voisin) = ax(2,i_at)
+!             send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = ax(3,i_at)
+             send_buff_dbl(4,send_nb_val(nproc_voisin),nproc_voisin) = vp(1,i_at)
+             send_buff_dbl(5,send_nb_val(nproc_voisin),nproc_voisin) = vp(2,i_at)
+             send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = vp(3,i_at)
 	     
-	      if (lsuivinonpbc) then
-              !
-	       send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(1,i_at)
-               send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(2,i_at)
-               send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(3,i_at)
-	      !
-	       send_buff_dbl(13,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(1,i_at)
-               send_buff_dbl(14,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(2,i_at)
-               send_buff_dbl(15,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(3,i_at)
-	      !
-	       send_buff_dbl(16,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(1,i_at)
-               send_buff_dbl(17,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(2,i_at)
-               send_buff_dbl(18,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(3,i_at)
-	      !
-	      end if
+!!$	      if (lsuivinonpbc) then
+!!$              !
+!!$	       send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(1,i_at)
+!!$               send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(2,i_at)
+!!$               send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(3,i_at)
+!!$	      !
+!!$	       send_buff_dbl(13,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(1,i_at)
+!!$               send_buff_dbl(14,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(2,i_at)
+!!$               send_buff_dbl(15,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(3,i_at)
+!!$	      !
+!!$	       send_buff_dbl(16,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(1,i_at)
+!!$               send_buff_dbl(17,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(2,i_at)
+!!$               send_buff_dbl(18,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(3,i_at)
+!!$	      !
+!!$	      end if
              	     
 !LPARAFULLSEND
 !             send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpp(1,i_at)
@@ -673,7 +712,7 @@ contains
   subroutine finalisation_envoi_atomes
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
 
@@ -715,7 +754,7 @@ contains
   subroutine reception_atomes_fantomes !seulement MAJ
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
 
@@ -751,8 +790,8 @@ contains
           ! mise a jour des variables entieres
           ityp(pt_at_ftm)  = recv_buff_int(1,i_at,ind_recv)
           ielat(pt_at_ftm) = recv_buff_int(2,i_at,ind_recv)
-          iwmax(pt_at_ftm) = recv_buff_int(3,i_at,ind_recv)
-          num_at_glob(pt_at_ftm) = recv_buff_int(4,i_at,ind_recv)
+!          iwmax(pt_at_ftm) = recv_buff_int(3,i_at,ind_recv)
+          num_at_glob(pt_at_ftm) = recv_buff_int(3,i_at,ind_recv)
 
           ! mise a jour des donnees de la cellule correspondante
           nato(ielat(pt_at_ftm)) = nato(ielat(pt_at_ftm)) + 1
@@ -762,28 +801,28 @@ contains
           xp(1,pt_at_ftm) = recv_buff_dbl(1,i_at,ind_recv) 
           xp(2,pt_at_ftm) = recv_buff_dbl(2,i_at,ind_recv) 
           xp(3,pt_at_ftm) = recv_buff_dbl(3,i_at,ind_recv) 
-          ax(1,pt_at_ftm) = recv_buff_dbl(4,i_at,ind_recv)
-          ax(2,pt_at_ftm) = recv_buff_dbl(5,i_at,ind_recv)
-          ax(3,pt_at_ftm) = recv_buff_dbl(6,i_at,ind_recv)
-          vp(1,pt_at_ftm) = recv_buff_dbl(7,i_at,ind_recv) 
-          vp(2,pt_at_ftm) = recv_buff_dbl(8,i_at,ind_recv) 
-          vp(3,pt_at_ftm) = recv_buff_dbl(9,i_at,ind_recv) 
-	  if (lsuivinonpbc) then
-          !
-	   xpnonpbc(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv)
-           xpnonpbc(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv)
-           xpnonpbc(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
-	  !
-	   tmpsuivi(1,pt_at_ftm) = recv_buff_dbl(13,i_at,ind_recv)
-           tmpsuivi(2,pt_at_ftm) = recv_buff_dbl(14,i_at,ind_recv)
-           tmpsuivi(3,pt_at_ftm) = recv_buff_dbl(15,i_at,ind_recv)
-	  !
-	   axnonpbc(1,pt_at_ftm) = recv_buff_dbl(16,i_at,ind_recv)
-           axnonpbc(2,pt_at_ftm) = recv_buff_dbl(17,i_at,ind_recv)
-           axnonpbc(3,pt_at_ftm) = recv_buff_dbl(18,i_at,ind_recv)
-	  !
-	  end if
-	  
+!          ax(1,pt_at_ftm) = recv_buff_dbl(4,i_at,ind_recv)
+!          ax(2,pt_at_ftm) = recv_buff_dbl(5,i_at,ind_recv)
+!          ax(3,pt_at_ftm) = recv_buff_dbl(6,i_at,ind_recv)
+          vp(1,pt_at_ftm) = recv_buff_dbl(4,i_at,ind_recv) 
+          vp(2,pt_at_ftm) = recv_buff_dbl(5,i_at,ind_recv) 
+          vp(3,pt_at_ftm) = recv_buff_dbl(6,i_at,ind_recv) 
+!!$	  if (lsuivinonpbc) then
+!!$          !
+!!$	   xpnonpbc(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv)
+!!$           xpnonpbc(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv)
+!!$           xpnonpbc(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
+!!$	  !
+!!$	   tmpsuivi(1,pt_at_ftm) = recv_buff_dbl(13,i_at,ind_recv)
+!!$           tmpsuivi(2,pt_at_ftm) = recv_buff_dbl(14,i_at,ind_recv)
+!!$           tmpsuivi(3,pt_at_ftm) = recv_buff_dbl(15,i_at,ind_recv)
+!!$	  !
+!!$	   axnonpbc(1,pt_at_ftm) = recv_buff_dbl(16,i_at,ind_recv)
+!!$           axnonpbc(2,pt_at_ftm) = recv_buff_dbl(17,i_at,ind_recv)
+!!$           axnonpbc(3,pt_at_ftm) = recv_buff_dbl(18,i_at,ind_recv)
+!!$	  !
+!!$	  end if
+!!$	  
 	  
 !LPARAFULLSEND
 !          xpp(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv)
@@ -803,13 +842,13 @@ contains
   ! Procedure dont le but est l'envoi des valeurs de tabdensity pour les 
   ! atomes frontieres
 
-  subroutine envoi_tabdensity_frontieres(tabdensity)
+  subroutine envoi_tabdensity_frontieres(tabdensity,imm,num_at_glob)
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
-
+    integer::imm
     integer :: nproc_voisin
     integer :: ncell_front
     integer :: procv
@@ -818,7 +857,8 @@ contains
     integer :: n_at
     integer :: i_at
     real(double) :: tabdensity(imm)
-
+    integer,intent(in)::num_at_glob(imm)
+    
     ! Boucle a vide pour determiner au mieux la taille du buffer d'envoi 
     nb_at_max = 0
     do nproc_voisin = 1, nbr_proc_voisin
@@ -898,12 +938,13 @@ contains
   ! Procedure en charge de la reception des tabdensity des atomes fantomes
   ! en provenance des processeurs voisins
 
-  subroutine reception_tabdensity_fantomes(tabdensity)
+  subroutine reception_tabdensity_fantomes(tabdensity,imm,num_at_glob)
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
     implicit none
-
+    integer::imm
+    integer,intent(in)::num_at_glob(imm)
     integer :: nb_at_recv
     integer :: proc_source
     integer :: i_at
@@ -977,7 +1018,7 @@ contains
   subroutine envoi_fp_fantomes
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
 
     implicit none
 
@@ -1077,7 +1118,7 @@ contains
   subroutine reception_fp_frontieres
 
     USE T_kind_param_m, ONLY:  double
-    use tab_imm_m
+!    use tab_imm_m
     implicit none
 
     integer :: nb_at_recv

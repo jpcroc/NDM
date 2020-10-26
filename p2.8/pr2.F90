@@ -410,7 +410,9 @@ contains
     call caltabt(im,xp,ielat)
     !  temps_debpara=MPI_Wtime()
     ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-    call maj_atomes_frt_ftm
+    write(6,*)'A DEV' ! pas programmé
+    stop
+    call maj_atomes_frt_ftm(atpr,celndm)
     !  temps_para=temps_para+MPI_Wtime()-temps_debpara
 
 

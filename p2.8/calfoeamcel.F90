@@ -71,7 +71,6 @@ module calfoeamcel_mod
   real(double) :: xpnp(3,imm)
   real(double)::rue
 
-  
   rue=rue_pot(ipotentiel)
 
   ktor=rue/ngrid
@@ -91,15 +90,6 @@ module calfoeamcel_mod
      call notperiod(imm,xp,xpnp,at,bg)
   end if
 
- !       open(unit=806, file='CALFOGMT.csv', form='formatted', &
- !            status='unknown')
- !   do i=1,im_glob
-!       if (it.ge.4)write(806,'(A,2I6,3G22.13)')'CF1 ', it,i,xp(:,i)
- !   end do
- !   do i=1,im_glob
-! if (it.ge.4)       write(806,'(A,2I6,3G22.13)')'CF2 ',it,i,xpnp(:,i)
- !   end do
-
 
   loop1at1: do i=1,im
      if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
@@ -109,7 +99,6 @@ module calfoeamcel_mod
 !     nvi=0
      densityi=0.0 ; dEembi=0.0
      koo = ielat(i)                          ! Numero de la cellule
- !if (it.ge.4)       write(806,'(A,2I6,G22.13)')'CF2B ' ,it,i,ielat(i)
 
 
      iti = ityp(i)
@@ -117,15 +106,11 @@ module calfoeamcel_mod
      ! pour chaque cel. voisine
      loop1cel:   do i1 = 0, ncelvois
         ko1 = ncel(koo,i1)
- !if (it.ge.4)               write(806,'(A,4I6)')'CF3 ', it,i,ko1,nato(ko1)
         cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
         ! pour chaque atome ds la cel. voisine
 
         loop1at2: do i2 = 1, nato(ko1)
            j = atincel(i2,ko1)
- !if (it.ge.4)           write(806,'(A,4I6)')'CF4 ' ,it,ko1,i2,j
- !if (it.ge.4)         write(806,'(A,2I6,3G22.13)')'CF5 ', it,j,xp(:,j)
- !if (it.ge.4)         write(806,'(A,2I6,3G22.13)')'CF6 ', it,j,xpnp(:,j)
        
            if (typ_pot_pair(ipo(ityp(i),ityp(j))).ne.ipotentiel) cycle
 
@@ -284,7 +269,7 @@ module calfoeamcel_mod
 
 
 #ifdef PARA
-  call maj_tabdensity_ftm(tabdensity)
+  call maj_tabdensity_ftm(tabdensity,imm,nato,num_at_glob)
 #endif
 
 
@@ -412,7 +397,6 @@ endif
 #endif
 
   potiseam=potisglue+potisrep
-
   return
 end SUBROUTINE calfoeamcel
 end module

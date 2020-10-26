@@ -33,13 +33,13 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE Parrinello_Rahman
-!    USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
+    !    USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
     USE suivinonpbc
 
 
 #ifdef PARA
-  use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
+    use mpi
+    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
 
 #endif
     implicit none
@@ -50,7 +50,7 @@ contains
     integer::lenfn2,i
     integer::ilocal
     real(double) sigkine_tot(3,3)
-!    real(double) :: temptyp(ntyp)
+    !    real(double) :: temptyp(ntyp)
 #ifdef PARA
     ! declarations supplementaires pour MPI
     real(double), dimension(3,3,noxyz) :: sigc_tot
@@ -70,91 +70,85 @@ contains
     if (lsuivinonpbc) call init_suivinonpbc()
     ! Appel de la routine generale des forces
     !    call calfo
-!  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-!      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  test_sigma=(mod(it,itesigma)==0)
-  CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
-  if (l2t)then
-     if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+    !  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
+    !      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+    !  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+    !       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
+    test_sigma=(mod(it,itesigma)==0)
+
+    CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
+    if (l2t)then
+       if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     else
        if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     end if
     if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
-!    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-!    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    !    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+    !    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
 
 
 
     !  call analyse
-!    call calctemp (temptyp) 
+    !    call calctemp (temptyp) 
 1   continue
     it = it+1
 
 
     if (ldesinteg)itdes=itdes+1
-
     call dyn_vverlet(atdml,celndm,boxndm)
     ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
-
-
 
     if (test_sigma) then
 
        sigkine=0.
        do ilocal = 1, atdml%im
           sigkine(1:3,1) = sigkine(1:3,1) + &
-               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
+               cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
           sigkine(1:3,2) = sigkine(1:3,2) + &
-               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
+               cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
           sigkine(1:3,3) = sigkine(1:3,3) + &
-               cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+               cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
           select type (atdml)
           type is (atom_config_e)
-             
+
              if (atdml%lsigat) then 
                 atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &
-                     &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
+                     &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
                 atdml%sigat(1:3,2,ilocal) = atdml%sigat(1:3,2,ilocal) + &
-                     &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
+                     &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
                 atdml%sigat(1:3,3,ilocal) = atdml%sigat(1:3,3,ilocal) +  &
-                     &cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+                     &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
              end if
           end select
           if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
              sigc(1:3,1,atdml%ielat(ilocal)) = sigc(1:3,1,atdml%ielat(ilocal)) + &
-                  cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*noxyz/volu
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*noxyz/volu
              sigc(1:3,2,atdml%ielat(ilocal)) = sigc(1:3,2,atdml%ielat(ilocal)) + &
-                  cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*noxyz/volu
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*noxyz/volu
              sigc(1:3,3,atdml%ielat(ilocal)) = sigc(1:3,3,atdml%ielat(ilocal)) + &
-                  cm(ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*noxyz/volu
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*noxyz/volu
           end if
        end do
        sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
-      
+
 #ifdef PARA
 
-    !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    !  sig=sig_tot
-    call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    sigkine=sigkine_tot
-    if (allocated(sigc)) then
-       call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       sigc=sigc_tot
-    end if
+       !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       !  sig=sig_tot
+       call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       sigkine=sigkine_tot
+       if (allocated(sigc)) then
+          call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+          sigc=sigc_tot
+       end if
 #endif
-    sigtot = sigkine+sig
- end if
+       sigtot = sigkine+sig
+    end if
     call analyseT (atdml,celndm,boxndm)
-!    if (lcorrelvp) call correlvp(xp,xpp,vp,ax,fp,ityp)
-    ! MPI
-    !     write(6,*)'analyse -> sauvegarde'XS
-    !     write(6,*)'sauvposition -> control'
-
     call controleT(atdml,celndm,boxndm)
-    !     write(6,*)' controle ->'
+
+
     go to 1
 
     return

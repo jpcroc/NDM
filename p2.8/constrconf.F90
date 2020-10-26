@@ -594,7 +594,7 @@ contains
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
     imtot=COMPatrcf%im
     im_glob=COMPatrcf%im
-
+!    write(6,*)'GIN2NDM',size(at2b%xp)
    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
     call repartition(COMPatrcf,at2b,box2b,cel2b)
     

@@ -130,10 +130,14 @@
 
 module gcmodII_mod
 #ifdef PARA
-  USE mod_para
+!  use mpi
+  USE mod_para,only:MPI_COMM_space,ierr,nprocs,status
 
 #endif  
-  implicit none 
+  implicit none
+#ifdef PARA
+  include 'mpif.h'
+#endif  
 contains
 
   SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS, &

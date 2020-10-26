@@ -110,7 +110,8 @@ contains
 
        temps_debpara=MPI_Wtime()
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       call maj_atomes_frt_ftm
+       write(6,*)'pas dev'; stop
+       call maj_atomes_frt_ftm(atdml,celndm)
        temps_para=temps_para+MPI_Wtime()-temps_debpara
 
 

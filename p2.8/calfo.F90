@@ -17,7 +17,7 @@ module calfo_mod
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:ldecal_bc,parallele,potis0,potis2,potisp&
-       &,potistersoff,potiszbl,potcp,potis1,potis3,zero
+       &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang,imm_glob
 
   USE contrainte,only:initcontr,contr
 !  USE jqmod,only:jq
@@ -72,8 +72,6 @@ contains
     !  real(double)::vn,v1,f1,ekin
     !  integer::nv1,koo
     logical,optional, intent(in)  ::t_sigma
-
-
     ltpcel=.false.
     test_sigma=.false.
     if (present(t_sigma))test_sigma=t_sigma
@@ -111,7 +109,6 @@ contains
        end if
        
     end select
-!    write(6,*)'lprteat',lprteat
     atcf%fp(:,:) = zero
 
 
@@ -206,10 +203,8 @@ contains
                       ! !!! le cas parallele n'est pas pris en compte !!!
                       if (.not.parallele) then
                          IF(ldecal_bc.EQV..FALSE.) THEN
-                            !write(*,*) 'NDM eam calfo1', xp(1,1)
                             call calfoeamtabvois(atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
                                  &boxcf%at,boxcf%bg,boxcf%volu)
-                            !write(*,*) 'NDM eam calfo2', fp(1,1), maxval(fp)
                          ELSE IF (ldecal_bc.EQV..TRUE.) THEN !*!
                             call calfo_decalage(atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
                                  &boxcf%at,boxcf%bg,boxcf%volu)
@@ -224,10 +219,7 @@ contains
                    potist=potist+potiseam
 #ifdef ML
                 case (20)
-                   !write(*,*) 'NDM ml calfo1', xp(1,1)
                    call md_calfo_ml
-                   !write(*,*) 'NDM ml calfo2', xp(1,1), fp(1,1)
-                   !stop 'ndm'
 #endif          
                 end select
              end if

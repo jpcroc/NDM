@@ -64,9 +64,6 @@ contains
     stop
  end if
 #endif
-!#ifdef PARA
-!       allocate(proc_cell(nox*noy*noz))
-!#endif
 
  loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
 
@@ -318,6 +315,7 @@ contains
           cellules_max = max(cellules_max,(res_cpu(ii,1)+2) * (res_cpu(ii,2)+2)* (res_cpu(ii,3)+2))
        enddo
        cellules_max = min (cellules_max, noxyz)
+!       write(6,*)'decoup',imm_glob,int(1.2 * imm_glob * cellules_max / noxyz) 
        imm_loc = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
        ! Le processeur maitre recupere la valeur maximale des imm des
        ! differents processeurs afin de pouvoir receptionner les tableaux
@@ -353,13 +351,10 @@ contains
        deallocate(coord_min)
        deallocate(coord_max)
 #endif
-!#ifdef PARA
-!       deallocate(proc_cell)
-!#endif
 
     enddo loop1
 
-!write(6,*)rang,proc_cell
+
 
 
 

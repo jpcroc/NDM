@@ -128,7 +128,8 @@ contains
     !       write(6,*)'0rg cel nat',rang, ko,nato(ko)
     !    end do
 #ifdef PARA
-    call maj_atomes_frt_ftm
+       write(6,*)'pas dev'
+    call maj_atomes_frt_ftm(atcg,celcg)
 #endif
 
     !back to internal units and JP world.......................................

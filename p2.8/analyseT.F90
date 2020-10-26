@@ -123,7 +123,7 @@ contains
           end if
        endif
 
-       if (itesauvposition.GT.0) then
+              if (itesauvposition.GT.0) then
           if (mod(it,itesauvposition)==0) then
              formatsauv = 2
              write(extension,'(i9.9)') it
@@ -140,27 +140,10 @@ contains
 
 
 
-    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-
-    if(it==1) then
-       Cminp=100000
-       Cmaxp=-100000
-       Cmint=100000
-       Cmaxt=-100000
-
-       CminpP=100000
-       CmaxpP=-100000
-       CmintP=100000
-       CmaxtP=-100000
-
-       CminpP2=100000
-       CmaxpP2=-100000
-       CmintP2=100000
-       CmaxtP2=-100000
-    end if
+!    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
+!    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
+!         &iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
+!    call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
     if(lEev) then
        unitE=erg2eV
        cunitE='  eV'
@@ -193,16 +176,14 @@ contains
              if (na(iti)==0) cycle
              atdml%lgul=.false.
              celtyp=celndm
-             where(atdml%ityp==iti)
+             where(atdml%ityp(1:atdml%im)==iti)
                 atdml%lgul=.true.
              end where
+             
              call atdml%fab(attyp)
-             !write(6,*)'nbat',count(atdml%ityp==iti),na(iti),attyp%im,attyp%ityp
              call caltabtC(celtyp,attyp,lperiod,boxndm)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
-             !temptyp=0
              call celtyp%dealloc ; call attyp%dealloc
-          !        call calctemp (temptyp)
           end do
           ! MPI
           !remarque 1erg = 6.24d11 eV
@@ -450,29 +431,6 @@ contains
                 endif
              endif                             !  itesigma>0
 
-             IF (itefcc>0) THEN
-                IF (mod(it,itefcc)==0) THEN
-                   alat=(4.d0*volu/dble(im))**(1.d0/3.d0)   ! Lattice parameter
-                   Allocate(fcc_nVoisins(1:im))
-                   Allocate(fcc_cluster(1:im))
-                   CALL Count_Fcc_Neighbours(xp, iwmax, alat, fcc_nVoisins, fcc_cluster, 6)
-                   IF (Allocated(aux_int)) DeAllocate(aux_int)
-                   Allocate(aux_int(2,1:im))
-                   IF (Allocated(aux_title)) DeAllocate(aux_title)
-                   Allocate(aux_title(2))
-                   aux_title(1) = 'fcc neighbours'
-                   aux_int(1,1:im) = fcc_nVoisins(1:im)
-                   aux_title(2) = 'cluster index'
-                   aux_int(2,1:im) = fcc_cluster(1:im)
-                   Deallocate(fcc_cluster)
-                   WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.fcc.cfg'
-                   OPEN(file=out_file, unit=60, action='write')
-                   CALL WriteCfg(xp, ityp, im, at, 60, fcc_nVoisins(1:im).NE.12, 2, aux_int, aux_title=aux_title)
-                   CLOSE(60)
-                   Deallocate(fcc_nVoisins)
-                   Deallocate(aux_int, aux_title)
-                END IF
-             END IF
 
              if (mod(it,itetemp2)==0) then
                 !               write (6, *)
@@ -489,162 +447,9 @@ contains
 
 
 
-
-             if (ltpcel) then
-                minp=100000
-                maxp=-100000
-                mint=100000
-                maxt=-100000
-                !           write(extension,'(i9.9)') it
-                !           lenfn2 = 9
-                !           if (it.ge.3) then
-                !              open(luvisuc, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.CEL.mol', form='formatted', &
-                !                   status='unknown')
-                !              write (luvisuc, '(I9,A,I7,A,D15.6)') 2511 , ' IT =', it, ' Time = ', timel
-                !              at=at*1.d8
-                !              write (luvisuc,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
-                !              at=at/1.d8
-                !           end if
-
-
-
-                nprt=0
-                do kx=0,nox-1
-                   do ky=0,noy-1
-                      do kz=0,noz-1
-                         ko=1+kx+nox*(ky+noy*kz)
-                         xb(1)=float(kx)/float(nox)*at(1,1)+float(ky)/float(noy)*at(1,2)+float(kz)/float(noz)*at(1,3)
-                         xb(2)=float(kx)/float(nox)*at(2,1)+float(ky)/float(noy)*at(2,2)+float(kz)/float(noz)*at(2,3)
-                         xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
-                         xb=xb*1d8
-                         pmc(ko)=0.0
-                         if (itesigma.gt.0) then
-                            if (mod(it,itesigma).eq.0) then
-                               if (ltabvois) then
-                                  continue
-                               else
-                                  !                                write(6,*)'dans la celulle ',ko,' sigma  '
-                                  do ic =1,3
-                                     pmc(ko)=pmc(ko)+sigc(ic,ic,ko)/3.0
-
-
-
-                                     !                                write(6,'(3g14.5)')sigc(1,ic,ko),sigc(2,ic,ko),sigc(3,ic,ko)
-                                     !                                write(6,'(A,I2,I2,I2,I2,G14.5,G14.5,G14.5)')'CEL-SIG ',ic,kx,ky&
-                                     !                                     &,kz,sigc(1,ic,ko),sigc(2,ic,ko),sigc(3,ic,ko)
-                                  enddo
-                                  !                             write(6,'(A,I5,3I4,G14.5,A,A,I4)')'CEL-PRESS ', ko,kx,ky,kz,pmc*unitP, '  ',cunitP,nato(ko)
-                                  celpP(ko)=1d-14*unitP*(pmc(ko)-celpm1(ko))/(timel-timelm1)
-                                  !                             celpP2(ko)=1d-14*1d-14*unitP*(pmc(ko)-2*celpm1(ko)+celpm2(ko))/(tstep**2)
-                                  !                             celpp2(ko)=1d-14*1d-14*unitP*((pmc(ko)-celpm1(ko))/tstep -(celpm1(ko)-celpm2(ko))/timelm1)/tstep
-
-                                  tcp(ko)=1d-14*(tempc(ko)-tm1(ko))/(timel-timelm1)
-                                  !                             tcp2(ko)=1d-14*1d-14*(tempc(ko)-2*tm1(ko)+tm2(ko))/(tstep**2)
-                                  !                             tcp2(ko)=1d-14*1d-14*((tempc(ko)-tm1(ko))/tstep -(tm1(ko)-tm2(ko))/timelm1)/tstep
-                                  !                             celpm2(ko)=celpm1(ko)
-                                  celpm1(ko)=pmc(ko)
-                                  !                             tm2(ko)=tm1(ko)
-                                  tm1(ko)=tempc(ko)
-                                  lprtcel(ko)=.false.
-
-                                  !                             if ((kx==15).or.(ky==15).or.(kz==15).or.(kx==5).or.(ky==5).or.(kz==5)) lprt=.true.
-                                  !                             if((kx.le.13).and.(kx.ge.7).and.(ky.le.13).and.(ky.ge.7).and.(kz.le.13).and.(kz.ge.7)) lprt=.true.
-                                  !                             if (it.le.2) lprt=.false.
-                                  if(tempc(ko).gt.tpseuils(1)) lprtcel(ko)=.true.
-                                  if(abs(tcp(ko)).gt.tpseuils(2)) lprtcel(ko)=.true.
-                                  !                             if(abs(tcp2(ko)).gt.tpseuils(3)) lprtcel(ko)=.true.
-                                  if(abs(pmc(ko)*unitP).gt.tpseuils(3)) lprtcel(ko)=.true.
-                                  if(abs(celpp(ko)).gt.tpseuils(4)) lprtcel(ko)=.true.
-                                  !                             if(abs(celpp2(ko)).gt.tpseuils(6)) lprtcel(ko)=.true.
-                                  if (it.le.2) lprtcel(ko)=.false.
-                                  !                             lprtcel(ko)=.true.
-                                  write(6,*)'tempcprt', tempc(ko),abs(tcp(ko))
-                                  if (lprtcel(ko).EQV..true.) nprt=nprt+1
-
-                                  if(it.ge.3) then
-                                     minp=min(minp,pmc(ko)*unitP)
-                                     maxp=max(maxp,pmc(ko)*unitP)
-                                     mint=min(mint,tempc(ko))
-                                     maxt=max(maxt,tempc(ko))
-
-                                     minpP=min(minpP,celpp(ko))
-                                     maxpP=max(maxpP,celpp(ko))
-                                     mintP=min(mintP,tcp(ko))
-                                     maxtP=max(maxtP,tcP(ko))
-
-                                     !                                minpP2=min(minpP2,celpP2(ko))
-                                     !                                maxpP2=max(maxpP2,celpP2(ko))
-                                     !                                mintP2=min(mintP2,tcp2(ko))
-                                     !                                maxtP2=max(maxtP2,tcp2(ko))
-                                  end if
-
-                               endif
-                            endif
-                         endif
-                      enddo
-                   end do
-                end do
-                timelm1=timel
-
-                if ((mod(it,itetemp2)==0).and.(nprt.gt.0))then
-                   write (6, *) '------valeurs par cellules-------',it,nprt
-                   write(extension,'(i9.9)') it
-                   lenfn2 = 9
-                   open(luvisuc, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.CEL.mol', form='formatted', &
-                        status='unknown')
-                   write (luvisuc, '(I9,A,I7,A,D15.6)') nprt , ' IT =', it, ' Time = ', timel
-                   at=at*1.d8
-                   write (luvisuc,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
-                   at=at/1.d8
-                   do kx=0,nox-1
-                      do ky=0,noy-1
-                         do kz=0,noz-1
-                            ko=1+kx+nox*(ky+noy*kz)
-                            xb(1)=float(kx)/float(nox)*at(1,1)+float(ky)/float(noy)*at(1,2)+float(kz)/float(noz)*at(1,3)
-                            xb(2)=float(kx)/float(nox)*at(2,1)+float(ky)/float(noy)*at(2,2)+float(kz)/float(noz)*at(2,3)
-                            xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
-                            xb=xb*1d8
-                            if(lprtcel(ko).EQV..true.)  write (luvisuc, 136) 'Au',kx,ky,kz,xb(1), xb(2), &
-                                 xb(3),tempc(ko),tcp(ko),pmc(ko)*unitP,celpp(ko),nato(ko)
-                         end do
-                      end do
-                   end do
-                   close (luvisuc)
-                end if
-
-                if (it.ge.3)then
-                   Cminp=min(Cminp,minp)
-                   Cmaxp=max(Cmaxp,maxP)
-                   Cmint=min(Cmint,mint)
-                   Cmaxt=max(Cmaxt,maxT)
-
-                   CminpP=min(CminpP,minpP)
-                   CmaxpP=max(CmaxpP,maxpP)
-                   CmintP=min(CmintP,mintP)
-                   CmaxtP=max(CmaxtP,maxTP)
-
-                   !              CminpP2=min(CminpP2,minpP2)
-                   !              CmaxpP2=max(CmaxpP2,maxPP2)
-                   !              CmintP2=min(CmintP2,mintP2)
-                   !              CmaxtP2=max(CmaxtP2,maxTP2)
-
-                   write(6,'(A,4G20.10)')'minmaxp', minp,maxp,mint,maxt
-                   write(6,'(A,4G20.10)')'Cminmaxp', Cminp,Cmaxp,Cmint,Cmaxt
-                   write(6,'(A,4G20.10)')'minmaxpP', minpP,maxpP,mintP,maxtP
-                   write(6,'(A,4G20.10)')'CminmaxpP', CminpP,CmaxpP,CmintP,CmaxtP
-                   !              write(6,'(A,4G20.10)')'minmaxpP2', minpP2,maxpP2,mintP2,maxtP2
-                   !              write(6,'(A,4G20.10)')'CminmaxpP2', CminpP2,CmaxpP2,CmintP2,CmaxtP2
-                end if
-             endif
-
+             
 136          format(A,3I4,3E15.5,4E15.7,I4)
 
-             if (ldesinteg)then
-
-
-                write(6,'(A,3G21.12)')'lambda, deltaF',lambdades,deltaF,deltaF*erg2eV
-                write(6,'(A,3G21.12)')'deltaEspr, Espr', lambdades,deltaEspr*erg2eV,Espr*erg2eV
-             end if
 
           endif
 
@@ -655,108 +460,6 @@ contains
 
 
 
-    ! calcul des deplacements
-    !  if (rang==0) write(6,*) 'PARA-T itedepla' ,itedepla
-    if (itedepla>0) then
-       if (mod(it,itedepla)==0) then
-          call calcdepla(im,xp,ielat,ityp,ax)
-          if (tdepla2>0.0) call calcdepla2(im,xp,ielat,ityp,ax)
-       endif
-    endif
-
-
-    ! calcul des coordinences
-    if (itecoordo>0) then
-       if (mod(it,itecoordo)==0) call calccoordo  (im,imm,ityp,xp,ielat)
-    endif
-
-
-    ! calcul de la RDF et de la position moyenne
-    if (iterdf>0) then
-       if (mod(it,iterdf)==0) then
-          call calcdigr (im,xp,ityp,ielat)
-          nrdf = nrdf+1
-          if (linstantrdf) then
-             call rdf 
-             nrdf = 0
-          endif
-       endif
-    else if (iterdf==0) then
-       if (itmax-it<nrdf) then
-          call calcdigr (im,xp,ityp,ielat)
-          nrdf = nrdf+1
-          !        write(6,*)'sortie digr de analyse'
-       endif
-    endif
-
-    !                 CALCUL DES DISTRIBUTIONS ANGULAIRES
-
-    if (iteangle>0) then
-       if (mod(it,iteangle)==0) then
-          call calcangle (im,imm,ityp,xp,ielat)
-          nfda=nfda+1 
-          if (linstantfda) then
-             call adf
-             nfda=0
-          endif
-       endif
-    else if(iteangle==0) then
-       if(itmax-it<nfda) then
-          call calcangle (im,imm,ityp,xp,ielat)
-          nfda=nfda+1
-       endif
-    endif
-    ! -----------------------------------------------
-
-    ! ecriture de CFG
-
-    if (itecfg>0) then
-       if (mod(it,itecfg)==0) then
-
-          WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.cfg'
-          OPEN(file=out_file, unit=60, action='write')
-
-          !WHAT_THE_HACK_IS_THAT        if (dmtype==17)  CALL redefine_ty()
-
-          IF (lPrtEat.OR.lPrtSigat) THEN       ! Energy and/or stress per atom
-             nAux_real=0
-             IF (lPrtEat)   nAux_real = nAux_real + 1
-             IF (lPrtSigat) nAux_real = nAux_real + 6
-             IF (Allocated(aux_real)) DeAllocate(aux_real)
-             Allocate(aux_real(nAux_real,1:im))
-             IF (Allocated(aux_title)) DeAllocate(aux_title)
-             Allocate(aux_title(nAux_real))
-             n=0
-             IF (lPrtEat) THEN
-                aux_title(n+1)="Energy per atom (eV)"
-                aux_real(n+1,1:im)=Eatom(1:im)*erg2eV
-                n = n+1
-             END IF
-             IF (lPrtSigat) THEN
-                aux_title(n+1) = 'Stress Sxx (' // cunitP // ')'
-                aux_title(n+2) = 'Stress Syy (' // cunitP // ')'
-                aux_title(n+3) = 'Stress Szz (' // cunitP // ')'
-                aux_title(n+4) = 'Stress Syz (' // cunitP // ')'
-                aux_title(n+5) = 'Stress Sxz (' // cunitP // ')'
-                aux_title(n+6) = 'Stress Sxy (' // cunitP // ')'
-                aux_real(n+1,1:im) = sigat(1,1,1:im)*unitP
-                aux_real(n+2,1:im) = sigat(2,2,1:im)*unitP
-                aux_real(n+3,1:im) = sigat(3,3,1:im)*unitP
-                aux_real(n+4,1:im) = 0.5d0*( sigat(2,3,1:im) + sigat(3,2,1:im) )*unitP
-                aux_real(n+5,1:im) = 0.5d0*( sigat(1,3,1:im) + sigat(3,1,1:im) )*unitP
-                aux_real(n+6,1:im) = 0.5d0*( sigat(1,2,1:im) + sigat(2,1,1:im) )*unitP
-             END IF
-             CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=nAux_real, aux_real=aux_real, aux_title=aux_title)
-             DEALLOCATE(aux_real, aux_title)
-          ELSE
-             CALL WriteCfg(xp, ityp, im, at, 60)
-          END IF
-          CLOSE(60)
-       endif
-
-       !WHAT_THE_HACK_IS_THAT     if (dmtype==17) CALL refix_ty()
-
-    endif                                      ! fin rang=0
 
 
 
@@ -776,32 +479,9 @@ contains
 
 
 
-
     !     write(6,*)'sortie ssprogramme analyse'
     !crcmit      call flush(6)
 
-
-
-    if (itebdv>0) then
-       ! Pas pris en compte en parallele
-       if (.not.parallele.and.mod(it,itebdv)==0) call bondval(im,imm,xp,ityp,ielat,num_at_glob)
-    endif
-
-    if (iteanapos>0) then
-       ! Pas pris en compte en parallele
-       if (.not.parallele.and.mod(it,iteanapos)==0) call anapos(it)
-    endif
-
-
-    if(iteplz>0.and.(.not.parallele)) then
-       call prtplz(xp,ityp)
-    end if
-    if (lposmoy.eqv..true.) then
-       nposmoy=nposmoy+1
-       do i=1,im
-          posmoyx(1:3,i)=(xp(1:3,i)+(nposmoy-1)*posmoyx(1:3,i))/nposmoy
-       end do
-    end if
 
     if (lprteattotm.EQV..true.) then
        if (ncalceattotm==0)eatomtotm(:)=0.
@@ -876,7 +556,6 @@ contains
 149       format(A,3E15.5,2E15.7,I4)
        end if
     end if
-
     return
   end subroutine analyseT
 end module analyseT_mod

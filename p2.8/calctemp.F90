@@ -10,7 +10,7 @@ module calctemp_mod
   USE cellconfig,only : cell_config
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_cell
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
 #endif
 
   ! *************************************************************
@@ -69,19 +69,20 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 #ifdef PARA
      allocate(tempiontot(nex,ney,nez))
      allocate(niontot(nex,ney,nez))
+     allocate(tempc_tot(cellcf%noxyz))
 #endif
   end if
 
   tempEP=0
+
 
   do ko = 1, cellcf%noxyz
 
      if (cellcf%nato(ko)==0) cycle
 
 #ifdef PARA
-     allocate(tempc_tot(cellcf%noxyz))
-     if (proc_cell(ko).ne.myid) cycle
 
+     if (cellcf%proc_cell(ko).ne.myid) cycle
 #endif
 
      if (L2T)     call nox_2_nex(ko,ixyze)
@@ -192,7 +193,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
         
 #endif
 
-
+       
      return
    end subroutine calctemp
    end module

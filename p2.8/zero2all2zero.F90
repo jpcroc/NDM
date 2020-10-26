@@ -2,7 +2,7 @@ module zero2all2zero_mod
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
 !  use mpi
-  USE mod_para
+  USE mod_para,only:nprocs,MPI_COMM_space,ierr,status,NDM_MPI_REAL_DOUBLE
 
 #endif
   USE gen_com_m, ONLY:imm_glob,imm,bg,at,im,rang,cell_debx,cell_deby,cell_debz,im_glob,zero,nox,noy,noz,&
@@ -10,6 +10,9 @@ module zero2all2zero_mod
   USE tab_imm_m,only:ityp,num_at_glob
   USE cryst_to_cart_mod,only: cryst_to_cart
   implicit none
+#ifdef PARA  
+  include 'mpif.h'
+#endif
 contains
   subroutine zero2all(vectall,vectp,itypall)
     real(double),intent(in)::vectall(3,imm_glob)

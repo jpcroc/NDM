@@ -27,6 +27,7 @@ contains
     USE elec_cell,ONLY: dynelec,i2t
 #ifdef PARA
     use mpi
+
     USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para,maj_atomes_frt_ftm
 #endif
     USE caltabi_mod,only:caltabi
@@ -55,9 +56,9 @@ contains
 
 
     logical::test_sigma=.false.
-    !      write (*,*) 'sub dynvverlet'
 
     timel = timel+tstep
+    
     aux(:ntyp) = tstep/cm(:ntyp)/2.d0
 
 
@@ -77,13 +78,13 @@ contains
 
     if (lLangevin) then
        il=2*(ilangevin-1)+1
-       call dynlangevin(atdml%im,atdml%xp,atdml%vp,atdml%fp,ityp,il)
+       call dynlangevin(atdml%im,atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il)
     elseif (l2T) then
        il=2*(ilangevin-1)+1
-       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,ityp,il,num_at_glob)
+       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il,atdml%num_at_glob)
     else
        DO i=1, atdml%im
-          atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(iTyp(i))*atdml%fp(1:3,i)
+          atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(atdml%iTyp(i))*atdml%fp(1:3,i)
        END DO
     end if
 
@@ -124,7 +125,7 @@ contains
 #ifdef PARA
     temps_debpara=MPI_Wtime()
     ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-    call maj_atomes_frt_ftm
+    call maj_atomes_frt_ftm(atdml,celndm)
     temps_para=temps_para+MPI_Wtime()-temps_debpara
     if (ltranche) call layer
 #endif
@@ -164,13 +165,13 @@ contains
     ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
     if (llangevin.eqv..true.) then
        il=2*(ilangevin-1)+2
-       call dynlangevin(atdml%im,atdml%xp,atdml%vp,atdml%fp,ityp,il)
+       call dynlangevin(atdml%im,atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il)
     elseif (l2T) then
        il=2*(ilangevin-1)+2
-       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,ityp,il,num_at_glob)
+       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il,atdml%num_at_glob)
     else
        DO i=1, atdml%im
-          atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(iTyp(i))*atdml%fp(1:3,i)
+          atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(atdml%iTyp(i))*atdml%fp(1:3,i)
        END DO
     end if
 

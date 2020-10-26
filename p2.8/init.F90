@@ -50,10 +50,12 @@ module init_mod
        &lrestart,ltabvois,ltranche,parallele,tmean,tstep,two,umass,usdh,vpchdeb,vpchup,xpchdeb,xpchup,sigat,&
        kinemean,lsigat,pmean,xpchdn,eatomtotm,lprteattotm,vpchdn,indi,nvois,&
        &num_at_globdesdeb,num_at_globdesup,num_at_globdesdn,imdesup,imdesdn,IMDESDEB,npath,&
-       &posa,forca,firsttime_lammps,normat,nzl,volu,zls2,celsize,im_glob,fnamcout
+       &posa,forca,firsttime_lammps,normat,nzl,volu,zls2,celsize,im_glob,fnamcout,rang,timel,it,dmtype,fnam,&
+       &lenfnam,ibound,lperiod
 
 
-  USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive
+  USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive,&
+       &npotentiel
   implicit none
 
 contains
@@ -65,12 +67,13 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE tab_imm_m,only:num_at_glob,fp,iwmax,vp,xpp,vp,fp
-    USE eam
-    USE eamerco
-    USE SMjuli
-    USE jqmod
-
-    USE posana
+    USE eam,only:inputeam
+    USE eamerco,only:inputeamerco
+    USE SMjuli,only:inputeamjl
+!    USE jqmod,only:
+    USE arret_ndm_mod,only: arret_ndm
+    use posana,only:anapos
+    USE posana,only:
     USE defcdp, ONLY :itecdp
     USE elec_cell,ONLY: i2t,t_cpl, readelec
     USE eloss, ONLY : ibrake,ecelec,initeloss
@@ -159,7 +162,7 @@ contains
                    write(6,*)
                 end if
                 call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue_pot(ipotentiel),rumax,&
-                     iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,&
+                     iewald,l3c,r3cm,roff1,roff2,typ_and_pot,npotmax,&
                      ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
                      npotentiel,ipo)
                 do i=1,npair
@@ -418,7 +421,6 @@ contains
        if (ltabvois) then
           call caltabi(atdml,celndm)
        end if
-       write(6,*)'post caltabi'
 
 !       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
 !            &xpp=xpp)
@@ -453,7 +455,7 @@ contains
              write(6,*) 'i2T=0 t_cpl<0 and l2T : STOP'
              stop
           end if
-          if (nox.le.0 ) then
+          if (celndm%nox.le.0 ) then
              write(6,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
              stop
           end if
@@ -498,22 +500,22 @@ contains
        if ((itetimestep>0).and.(.not.lcasca)) call deftimestep
 
 
-       if (lcontr) call initcontr(xp,xpp,vp,ax,ityp)
+!       if (lcontr) call initcontr(xp,xpp,vp,ax,ityp)
 
 
        if (lcasca) then
           call initcasca
-#if PARA
-#else
-
-          if (lfilm) then
-             write (lufilmpaf, *) '1'
-             write (lufilmpaf, *) 'IT ', '0 ', 'time      0.'
-             write (lufilmpaf, 114) 'Pb ', xp(1,iko)*1D+8, xp(2,iko)*1D+8, xp(3&
-                  ,iko)*1D+8, iko
-          endif
+!#if PARA
+!#else!
+!
+!          if (lfilm) then
+!             write (lufilmpaf, *) '1'
+!             write (lufilmpaf, *) 'IT ', '0 ', 'time      0.'
+!             write (lufilmpaf, 114) 'Pb ', xp(1,iko)*1D+8, xp(2,iko)*1D+8, xp(3&
+!                  ,iko)*1D+8, iko
+!          endif
 114       format(a3,1x,3(f10.4,1x),i5)
-#endif
+!#endif
           if(iteanapos>0)then
              itapp=0
              call sauveposition (itapp)
@@ -534,7 +536,7 @@ contains
 
 
 
-       if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
+!       if (rang==0)     write(6,*)'>>>>>>>>>>>apres caltabt'
 
 
 
@@ -542,7 +544,7 @@ contains
           call anapos(it)
           call arret_ndm
        end if
-                 write(6,*)'RANG,im',rang,atdml%im,atdml%imm,atdml%xp(3,3)
+!                 write(6,*)'RANG,im',rang,atdml%im,atdml%imm,atdml%xp(3,3)
 !    call MPI_FINALIZE(ierr)
 !    stop
 
@@ -551,22 +553,22 @@ contains
           fnamcout = fnam(1:lenfnam)//'.0.cout'
           call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
        else
-#ifdef PARA
-          CALL MPI_BARRIER(MPI_COMM_space,ierr)
-          do i=0,nprocs-1
-             if (myid==i) then
-                write(6,*)
-                write(6,*)'PPPPPPPPPPRRRRRRRRRTTTTTT',myid
-
-#endif
-!                call atdml%print
-!                call celndm%print
-!                call boxndm%print
-#ifdef PARA                
-             end if
-             CALL MPI_BARRIER(MPI_COMM_space,ierr)
-          end do
-#endif
+!!$#ifdef PARA
+!!$          CALL MPI_BARRIER(MPI_COMM_space,ierr)
+!!$          do i=0,nprocs-1
+!!$             if (myid==i) then
+!!$                write(6,*)
+!!$                write(6,*)'PPPPPPPPPPRRRRRRRRRTTTTTT',myid
+!!$
+!!$#endif
+!!$                call atdml%print
+!!$                call celndm%print
+!!$                call boxndm%print
+!!$#ifdef PARA                
+!!$             end if
+!!$             CALL MPI_BARRIER(MPI_COMM_space,ierr)
+!!$          end do
+!!$#endif
           fnamcout = fnam(1:lenfnam)//'.cout'
           call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
        end if
@@ -582,7 +584,7 @@ contains
 
        if (ibound==1 .OR. ibound==2 .OR. ibound==3) call init_spebc		!*!
     end if
-    if (rang==0) write(6,*)'sortie init'
+!     write(6,*)'sortie init',rang,myid
 !    call boxneb%print
     !    call celndm%print
     !   call atdml%print

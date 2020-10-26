@@ -1,6 +1,6 @@
 module eam
   USE T_kind_param_m
-  USE gen_com_m, ONLY: A2cm
+  USE gen_com_m, ONLY: A2cm,rang
   USE var_pot, ONLY:rhomin,rhomax,lforcetabulate
   USE spline_mod,only: cspline
   USE alloc_typ_mod,only: alloc_typ
@@ -72,7 +72,7 @@ contains
 
   !---------------------------------------------------------------------------
   subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,&
-       rue,rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,&
+       rue,rumax,iewald,l3c,r3cm,roff1,roff2,typ_and_pot,&
        npotmax,ipotentiel,typ_pot_pair,lue_typ,lue_paire,&
        lu_roff_pair,npotentiel,ipo)
 
@@ -87,7 +87,7 @@ contains
     real(double), intent(out) :: rue,rumax,r3cm
     integer, intent(out) :: iewald
     logical, intent(out) :: l3c
-    integer , intent(in) ::rang,ipotentiel,npotmax,npotentiel
+    integer , intent(in) ::ipotentiel,npotmax,npotentiel
     logical, allocatable :: typ_and_pot(:,:) ! typ_and_pot(iti,ipot)=.true. si le type iti interagit (en autres) par le potentiel ipot
     integer,allocatable:: typ_pot_pair(:)
     integer, dimension(:,:), allocatable  :: ipo			! indice des paires d'atomes
@@ -119,7 +119,7 @@ contains
        allocate (typtyp(ntypr))
        npair_r=  ntypr*(ntypr+1)/2 
        allocate (ind_pair(npair_r))
-       write(6,*)'ntypr for this pot',ntypr
+        if (rang==0) write(6,*)'ntypr for this pot',ntypr
        read(lupotin,*) rue
        rue=rue*A2cm
        if (rang==0)    write(6,*) 'Types d_atomes pour ce potentiel:'
@@ -143,8 +143,8 @@ contains
 
           typ_and_pot(iti,ipotentiel)=.true.
           if (rang/=0) cycle
-          write(6,*)'type        cm      catom    ty'
-          write (6, '(I4,E12.3,F9.3,A5)') iti,cm(iti),catom(iti),ty(iti)
+           if (rang==0)write(6,*)'type        cm      catom    ty'
+           if (rang==0) write (6, '(I4,E12.3,F9.3,A5)') iti,cm(iti),catom(iti),ty(iti)
        end do
        !lecture des roff des paires EAM
        ipair=0
@@ -157,7 +157,7 @@ contains
              ind_pair(ipair)=ipr
              if (rang==0) write(6,*)'paire l active ipotentiel: ',ipr, ipotentiel
              if(lue_paire(ipr).eqv..true.) then
-                write(6,*) rang,'paire l lue deux fois ', ipr,iti,itj
+                 if (rang==0) write(6,*) rang,'paire l lue deux fois ', ipr,iti,itj
                 stop
              end if
              read (lupotin,*) roff1(ipr),roff2(ipr)
