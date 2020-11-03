@@ -166,7 +166,7 @@ contains
                fire_dt, fire_nstep, fire_alph,atdml%im)
 
        ELSE
-          call trempe (atdml%xp, atdml%xpp, atdml%vp, atdml%fp, atdml%ielat, atdml%iwmax, atdml%ityp,atdml%im)
+          call trempe (atdml%xp, atdml%xpp, atdml%vp, atdml%fp, atdml%ityp,atdml%im)
        END IF
 
     case default

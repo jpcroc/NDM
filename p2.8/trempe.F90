@@ -3,14 +3,14 @@ module trempe_mod
 
   implicit none
 contains
-  subroutine trempe(xp, xpp, vp, fp, ielat, iwmax, ityp,im)
+  subroutine trempe(xp, xpp, vp, fp, ityp,im)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
     USE var_pot, ONLY:cm,ntyp
-    USE calctemp_mod,only: calctemp
+!    USE calctemp_mod,only: calctemp
 
     implicit none
     !-----------------------------------------------
@@ -19,8 +19,6 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer,allocatable  :: ielat(:)
-    integer,allocatable   :: iwmax(:)
     integer,allocatable   :: ityp(:)
     real(double),allocatable   :: xp(:,:)
     real(double) ,allocatable  :: xpp(:,:)

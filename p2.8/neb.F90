@@ -7,7 +7,8 @@ module neb_mod
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
        &erg2ev,indi,itesauv,lpkbar,ltabvois,nebtype,potist,sig,unitp,potist,sigtot,angst,nvois,itetabvois,rang,&
-       &celsize ,at,bg,zl,zls2,nzl,volu,normat,fnam,lenfnam
+       &celsize ,at,bg,zl,zls2,nzl,volu,normat,fnam,lenfnam,sig,lfire,itesauv,itetabvois,iteanaposneb,maxneb,&
+       &nebrelaxation
 
   
 !  USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,fp,ielat,num_at_glob
@@ -17,8 +18,10 @@ module neb_mod
   use var_pot,only:coord
   use rasmol_mod,only:rasmol
   use calfoberend_mod,only:dynlangevin
-
-  use neb_module
+  use sauvegardet_mod,only:sauvegardet
+  use neb_module,only:cellneb,atneb,sigpath,boxneb,npath,enepath,nebtype,enepathev,reaction_coord,&
+       &lvzeroneb,dragtest,nebtest,force_neb,formax,init_neb,find_relax,bruit_neb,build_s_path_drag,&
+       &force_projection,build_s_path_neb,force_projection_neb
   USE caltabi_mod,only: caltabi
 
 #ifdef PARANEB
@@ -81,14 +84,9 @@ contains
      end do
      call init_neb(atneb(1)%im,atneb(1)%imm)
      do ii=1,npath
-!        write(6,*)'NNNNNNNNNNNNNNEEEEEEEEEEEEEEEEBBBBBBBBBBBB',ii
-!        call atneb(ii)%print
-!       call cellneb(ii)%print
-!       call boxneb%print
-           !       call atneb(ii)%print
-       call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
-       if (ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii))
-    end do
+        call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
+        if (ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii))
+     end do
 !    call cellneb(npath)%print
     if(lPkbar) then
        unitP=1.0d-9  ;     cunitP='kbar'
@@ -145,10 +143,20 @@ contains
        if (rang==0) write(6,*)'NEB: relaxation NEB pour TOUS les atomes'
     end if
 
+    
     if (neb_noise.eq.1) then
        if (rang==0) write(6,*)'NEB: We apply a random noise on the atoms '
        call bruit_neb(atneb(1)%im)
     end if
+
+     do ii=1,npath
+!        write(6,*)'NNNNNNNNNNNNNNEEEEEEEEEEEEEEEEBBBBBBBBBBBB',ii
+!        call atneb(ii)%print
+!       call cellneb(ii)%print
+!       call boxneb%print
+           !       call atneb(ii)%print
+    end do
+
 #ifdef PARANEB
     CALL MPI_BARRIER(MPI_COMM_space,ierr)
 #endif
@@ -204,7 +212,7 @@ contains
 
     case (1)
        if (rang==0) write(6,*) 'NEB: !!!!-------this is DRAG----------!!!!!!'
-       call build_s_path_drag(im,imm)
+       call build_s_path_drag(atneb(1)%im,atneb(1)%imm)
 
        do ii=2,npath-1
 #ifdef PARANEB
@@ -220,18 +228,20 @@ contains
              do while (dragtest==0)
                 it=it+1
                 if (lperiod)    call periodbox (boxneb,atneb(ii))
+                
                 call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
                 if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
                      &call caltabi(atneb(ii)%atom_config,cellneb(ii))
                 CALL CalFo(sig,potist,atneb(ii),cellneb(ii),boxneb) 
+
                 call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp,atneb(ii)%imm,atneb(ii)%im)
+
                 IF (lFire) THEN
                    call trempe_fire(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ielat, &
                         &atneb(ii)%iwmax, atneb(ii)%ityp, &
                         fire_dt(ii), fire_nstep(ii), fire_alph(ii),atneb(ii)%im)
                 ELSE
-                   call trempe(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp, atneb(ii)%fp, atneb(ii)%ielat, &
-                        &atneb(ii)%iwmax, atneb(ii)%ityp,atneb(ii)%im)
+                   call trempe(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp, atneb(ii)%fp, atneb(ii)%ityp,atneb(ii)%im)
                 ENDIF
                 !             call analyse  
                 call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
@@ -317,8 +327,7 @@ contains
                         &atneb(ii)%iwmax, atneb(ii)%ityp, &
                         fire_dt(ii), fire_nstep(ii), fire_alph(ii),atneb(ii)%im)
                 ELSE
-                   call trempe(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp, atneb(ii)%fp, atneb(ii)%ielat,&
-                        &atneb(ii)%iwmax, atneb(ii)%ityp,atneb(ii)%im)
+                   call trempe(atneb(ii)%xp, atneb(ii)%xpp, atneb(ii)%vp, atneb(ii)%fp, atneb(ii)%ityp,atneb(ii)%im)
                 ENDIF
 
 !                call analyse

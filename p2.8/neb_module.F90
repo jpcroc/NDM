@@ -146,7 +146,6 @@ end if
     open(unit=831,file='distimages')
     deplamax=0
     idepmax=0
-    if(rang==0)write(6,*)'im',atneb(1)%im
     do i=1,im
        depla=1d8*sqrt(dxx(1,i)**2+dxx(2,i)**2+dxx(3,i)**2)
        write(831,*)i,depla
@@ -334,7 +333,6 @@ end if
     integer  :: iph,ia,ic,imm,im
     real(double)  :: dxx(3,imm),rcm_loc(3)
 
-
     dxx(:,:)=atneb(npath)%xp(:,:) - atneb(1)%xp(:,:)
 !    dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
 
@@ -353,6 +351,7 @@ end if
 
     do iph=2,npath-1
        do ia=1,im
+
           if (icontrainte(ia).eq.1) then
              s_path(1,ia,iph)= dxx(1,ia) -  rcm_loc(1)*cm(atneb(1)%ityp(ia))/masstot 
              s_path(2,ia,iph)= dxx(2,ia) -  rcm_loc(2)*cm(atneb(1)%ityp(ia))/masstot
@@ -390,7 +389,7 @@ end if
        end if
     end do
     do ipath=2,npath
-       atneb(ipath)%lgul(:)=atneb(ipath)%lgul(:)
+       atneb(ipath)%lgul(:)=atneb(1)%lgul(:)
     end do
     
     return
@@ -419,7 +418,6 @@ end if
 
     lbd=0
     do ia=1,im
-
        if (atneb(ipath)%lgul(ia)) then
           lbd = lbd + DOT_PRODUCT(s_path(:,ia,ipath),fp(:,ia))
        end if
