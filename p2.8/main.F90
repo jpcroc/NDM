@@ -16,6 +16,9 @@ program ndm
 #ifdef PARA
   USE mod_para,only:MPI_COMM_space,myid,nprocs
   USE init_mpi_mod,only: init_mpi
+  USE NEB_module,only:init_mpi_neb
+#else
+  USE mod_para,only:myid
 #endif
 
 #ifdef MAB
@@ -29,47 +32,23 @@ program ndm
  USE mod_mpi_ml
  USE init_mpi_ml_mod,only: init_mpi_ml
  USE gen_init_mpi_mod,only: gen_init_mpi
-
 #endif
-
-#ifdef PARANEB
- use paraneb_mod
-#endif 
 
  
   implicit none
-  !-----------------------------------------------
-  !   G l o b a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   V a r i a b l e s
-  !-----------------------------------------------
   character :: a1*20
-  !-----------------------------------------------
   !
   !Initialisation MPI
 #ifdef PARA
   call init_MPI()
 
- PRINT *, 'Process ', myid, ' of ', nprocs, ' is alive'
-  rang = myid
+ PRINT *, 'Process ', rang, ' of ', nprocs, ' is alive'
+!  rang = myid
   parallele = .true.
 #else
-  rang = 0
+  rang = 0;myid=0
   parallele = .false.
 #endif
-
-#ifdef PARANEB
-  call init_mpi_neb
-
- PRINT *, 'NEB Process ', myid, ' of ', nprocs, ' is alive'
-  rang = myid
-!  parallele = .true.
-#endif
-
 
 #if defined PARAML || defined PARAPH || defined MAB
   call gen_init_mpi
@@ -135,6 +114,12 @@ program ndm
   !     write(6,*) 'main -> readdm'
   call readdm
 
+#ifdef PARA
+  if (dmtype==9) then
+     call init_mpi_neb
+  end if
+#endif  
+  
   call prog
 
 #if defined PARAPH || defined MAB

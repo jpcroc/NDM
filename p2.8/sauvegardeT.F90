@@ -61,7 +61,7 @@ contains
     if (rang==0) then
 
        lucout = 87
-       write (6, *) ' sauvegarde it=', it, fnamcout,im_glob,imm_glob
+       write (6, *) ' sauvegarde it=', it, fnamcout
        open(unit=lucout, file=fnamcout, form='unformatted', status='unknown')
        write (lucout) formatsauv
        write (lucout) boxndm%at

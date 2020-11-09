@@ -137,7 +137,7 @@ contains
                   &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
              call caltabtC(celndm,atdml,lperiod,boxndm)
              if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
-                call caltabi(atdml%atom_config,celndm)
+                call caltabi(atdml%atom_config,celndm,boxndm)
              end if
              call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
                   &xpp=xpp)

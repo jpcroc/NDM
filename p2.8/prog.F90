@@ -71,8 +71,8 @@ contains
        atdml=>atdmd
     end if
     im=0 ; nvois=0
+
     call atdml%init(im,imm,ltabvois,nvois,lsigat,lprteat,llangevin,lax)
-    
 #ifdef PARA
     temps_init_deb = MPI_Wtime()
 #endif
@@ -97,7 +97,7 @@ contains
 
     ! Affichage du temps d'initialisation
 #ifdef PARA
-    if (myid==0) then
+    if (rang==0) then
        print *, 'Temps d''initialisation : ', MPI_Wtime() - temps_deb
     endif
 #endif
@@ -134,7 +134,7 @@ contains
 
        call gcII ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     case (9)
-       if (.not.parallele)   call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     case(11)
        if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
 !       call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)

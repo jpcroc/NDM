@@ -100,7 +100,6 @@ contains
        end select
     end if
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
-    write(6,*)'post calfo'
     if (l2t)then
        if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     else
@@ -184,7 +183,7 @@ contains
        endif
 
     if (ltabvois.and.mod(it,itetabvois)==0) then
-       call caltabi(atdml%atom_config,celndm)
+       call caltabi(atdml%atom_config,celndm,boxndm)
     end if
 
     

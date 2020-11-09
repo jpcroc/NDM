@@ -1,7 +1,7 @@
 module neb_module
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:iseed,neb_noise_scale,npath,lrestart,npath,deltarmax,kspring,lpathfromgin,&
+  USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,im_glob,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois,fnamcout,igen,lprteat
   USE constrconf_mod,only:constr_2gin,gin2ndm,config2data,read_cin
@@ -21,6 +21,12 @@ module neb_module
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm,initbox
   USE setcell,only:setcellconf,setnox
   USE sauvegardeT_mod,only:sauvegardeT
+#ifdef PARA
+  use mod_para,only::grp_world,nprocs,myid,MPI_COMM_space
+#else
+  use mod_para,only:myid
+#endif
+  use paraconfig,only:para_config,commconstr
   implicit none
 
 
@@ -34,9 +40,12 @@ module neb_module
   real(double), dimension(:,:,:),allocatable,save:: s_path,force_neb,bruitneb 
   real(double)                                   :: forctot,formax,formaxperp,formaxparl,masstot
   logical:: lvzeroneb
-  type(atom_config_d),allocatable,save::atneb(:)
-  type(cell_config),allocatable,save:: cellneb(:)
+  type(atom_config_d),allocatable,save,target::atneb(:)
+  type(cell_config),allocatable,save,target:: cellneb(:)
   type(box_config)::boxneb
+  type(para_config)::paraneb
+
+
 contains
   
 
@@ -146,6 +155,7 @@ end if
     open(unit=831,file='distimages')
     deplamax=0
     idepmax=0
+    if(rang==0)write(6,*)'im',atneb(1)%im
     do i=1,im
        depla=1d8*sqrt(dxx(1,i)**2+dxx(2,i)**2+dxx(3,i)**2)
        write(831,*)i,depla
@@ -229,6 +239,7 @@ end if
           !CRC RESTE ITYP...
        END IF
        atneb(iph)%xpp(:,:)= atneb(iph)%xp(:,:)
+       atneb(iph)%vp=0
     end do
 
     masstot=SUM(cm(atneb(1)%ityp(1:im)))
@@ -333,6 +344,7 @@ end if
     integer  :: iph,ia,ic,imm,im
     real(double)  :: dxx(3,imm),rcm_loc(3)
 
+
     dxx(:,:)=atneb(npath)%xp(:,:) - atneb(1)%xp(:,:)
 !    dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
 
@@ -351,7 +363,6 @@ end if
 
     do iph=2,npath-1
        do ia=1,im
-
           if (icontrainte(ia).eq.1) then
              s_path(1,ia,iph)= dxx(1,ia) -  rcm_loc(1)*cm(atneb(1)%ityp(ia))/masstot 
              s_path(2,ia,iph)= dxx(2,ia) -  rcm_loc(2)*cm(atneb(1)%ityp(ia))/masstot
@@ -418,6 +429,7 @@ end if
 
     lbd=0
     do ia=1,im
+
        if (atneb(ipath)%lgul(ia)) then
           lbd = lbd + DOT_PRODUCT(s_path(:,ia,ipath),fp(:,ia))
        end if
@@ -686,5 +698,30 @@ end if
   !debug stop
   
   end subroutine bruit_neb
+
+
+  subroutine init_mpi_neb()
+    ! Routine d'initialisation de MPI pour la NEB
+#ifdef PARA
+
+    write(6,*)'INPNEB', rang,nprocs
+    paraneb%np_orig=nprocs
+    paraneb%rang_orig=rang
+    paraneb%grp_orig=grp_world
+
+    paraneb%nimage=npath-2
+        
+    call commconstr(paraneb)
+    myid=paraneb%rgim
+    MPI_COMM_space=paraneb%comm_image
+
+#else
+    paraneb%np_orig=1
+    paraneb%rang_orig=0
+    paraneb%npim=1
+    myid=0
+    paraneb%lmaster=.true.
+#endif    
+  end subroutine init_mpi_neb
 
 end module neb_module

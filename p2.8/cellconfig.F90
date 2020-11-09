@@ -1,9 +1,8 @@
-! nox,noy,noz, natperc doivent être connus pour l'instant
-
 module cellconfig
   USE T_kind_param_m
   use atomconfig,only : atom_config
   use boxconfig,only:box_config
+  use paraconfig,only:para_config
 
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
@@ -13,7 +12,6 @@ module cellconfig
      integer::natperc !nombre (max) d'atomes par cellule
      integer(long)::icaltabt 
      integer,allocatable::nato (:) ! nombre d'atomes dans la cellule ko
-
      integer,allocatable:: ncel (:,:) ! ncel(ko,i1)=numéro de la ième cellule voisine de la cellule ko
      integer,allocatable:: atincel (:,:) ! atincel(i,k)= indice du ième atome de la cellule k
      integer,allocatable:: deltadist(:,:,:) !gestion des conditions périodiques entre les cellules (voisinage de bords de boites)
@@ -376,7 +374,7 @@ contains
        celndm%sigc=sigc
        celndm%tempc=tempc
     end if
-#ifdef PARA=1
+#ifdef PARA
     celndm%proc_cell=proc_cell
 #endif    
 
@@ -397,7 +395,7 @@ contains
        natperc=celndm%natperc
        allocate(ncel(0:noxyz,0:26));allocate(nato(0:noxyz));allocate(atincel(natperc,0:noxyz));allocate(deltadist(3,0:26,noxyz))
 
-#ifdef PARA=1
+#ifdef PARA
            if (present(proc_cell))allocate(proc_cell(nsize))
 #endif       
     else
@@ -425,7 +423,7 @@ contains
        tempc(:)=celndm%tempc(:)
     end if
 !    call celndm%dealloc
-#ifdef PARA=1
+#ifdef PARA
     if (present(proc_cell))proc_cell=celndm%proc_cell
 #endif    
   end subroutine cellconfig2ndm
@@ -474,6 +472,8 @@ contains
 !    write(6,*)'deltadist',cellv%deltadist
 
   end subroutine cellprint
+
+
 end module cellconfig
 
 

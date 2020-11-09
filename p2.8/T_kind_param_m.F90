@@ -6,6 +6,9 @@ module T_kind_param_m
   integer, parameter :: short = 2
   integer, parameter :: long = 8
   integer, parameter :: double = 8
+#ifdef PARA
+  integer, parameter :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
+#endif
   integer, parameter :: extended = 16
   integer, parameter :: double_ext = 32
   integer, parameter :: dble_complex = 8

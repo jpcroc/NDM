@@ -5,7 +5,7 @@ module rasmol_mod
        &cunitP,it,lcasca,timel,unitP,at,fnam,bg,erg2ev,lenfnam,eatom,dmtype,umass
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
-    USE paraneb_mod
+!    USE paraneb_mod
     !USE tab_imm_m,only:num_at_glob,ityp,xp
     use atomconfig,only: atom_config,atom_config_d,atom_config_e
     use boxconfig,only:box_config
@@ -22,17 +22,15 @@ contains
     !namefr est la racine nom du fichier (par défaut celui de name.in
     !rty est un tableau     character*3,intent(in), dimension(1:atmol%im),optional  :: rty qui donne les symboles des atomes. utile pour utiliser d'autres symboles que les symboles chimiques associés aux types des atomes. En l'absence de rty, on utilise les symboles des types des atomes.
     !ivisu dans gen_com_m : 1 :.mol, 4=.cfg ; 2=.xred
-
-    
+   
  
 
     USE T_kind_param_m, ONLY:  double
-
-
-
 #ifdef PARA
     USE mpi
     USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+#else
+    USE mod_para,only:myid
 #endif
     ! ****************************************************************
 
@@ -121,7 +119,7 @@ contains
 
 
 #ifdef PARA
-    rgloc=rang
+    rgloc=myid
 #else
     rgloc=0
 #endif    
@@ -139,7 +137,7 @@ contains
     !    if (ldesinteg)iksp=1
     luvisu = 86
     luvisu2 = 87
-#ifdef PARANEB    
+#ifdef PARA   
     luvisu = 86+rang
     luvisu2 = 87+rang
 #endif    

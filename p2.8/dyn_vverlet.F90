@@ -118,7 +118,7 @@ contains
     end if
 
     if (ltabvois.and.mod(it,itetabvois)==0) then
-       call caltabi(atdml%atom_config,celndm)
+       call caltabi(atdml%atom_config,celndm,boxndm)
     end if
 
 

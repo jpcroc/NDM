@@ -2,16 +2,17 @@
 module caltabi_mod
   USE notperiod_mod,only: notperiod
   USE gen_com_m, ONLY:decal_bc,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,&
-       &nvois,rang,rvois,at,bg,indi2
+       &nvois,rang,rvois,indi2
   use atomconfig,only: atom_config
   USE cellconfig,only:cell_config
+  use boxconfig,only:box_config
   implicit none
         contains
 
 
 
 ! *****************************************************************
-subroutine caltabi(atvois,celvois)
+subroutine caltabi(atvois,celvois,boxndm)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -30,8 +31,9 @@ subroutine caltabi(atvois,celvois)
   !----------------------------------------------1-
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
-  type(atom_config), intent(inout)::atvois
+  class(atom_config), intent(inout)::atvois
   type(cell_config), intent(in)::celvois
+  type(box_config),intent(in)::boxndm
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -44,21 +46,22 @@ subroutine caltabi(atvois,celvois)
   real(double), dimension(1:npair) :: rvois2
 
   real(double), dimension(3) :: xpi, dx, ds  
-
+  real(double),dimension(3,3)::at,bg
   integer :: iti, & !type de i
        koo, & !cel de i
        ncelvois,ko1, & !cel voisine de i
        i1,i2,itemp
-
+  
 
   real(double),dimension(:,:),allocatable :: xpnp  ! MODIF Cosmin                            
-
+  at=boxndm%at ; bg=boxndm%bg
   !
   !-----------------------------------------------
   ! --------------------------
   !   OUVERTURE BOUCLE SUR I
   ! --------------------------
-    if(celvois%icaltabt.ne.atvois%icaltabt) then
+
+  if(celvois%icaltabt.ne.atvois%icaltabt) then
        write (6,*)'incoherence dans icaltabt'
        stop
     end if
@@ -147,7 +150,7 @@ subroutine caltabi(atvois,celvois)
      maxvoi = iw           
   !*************construction par celulle ****************
   else 
-     !write(*,*) 'THE fist passage .........'
+!     write(*,*) 'THE fist passage .........'
      do i = 1, atvois%im
         iwo=iw
         koo = atvois%ielat(i)                          ! Numero de la cellule
@@ -197,7 +200,7 @@ subroutine caltabi(atvois,celvois)
               if (r2>rvois2(ll)) cycle
               iw = iw+1
               iwph = iwph+1
-                                !write(6,*)i,koo,ko1,j,iw, at,bg
+!              write(6,*)i,koo,ko1,j,iw, at,bg,sqrt(r2)
               atvois%indi(iw) = j
               indi2(iwph) = j
            end do loop_j !i2
@@ -211,7 +214,7 @@ subroutine caltabi(atvois,celvois)
              if (itemp>ivoismax) ivoismax=itemp
         end if 
 
-        !         write(449,*)'NVIJ',i,nvij,iw       
+!                 write(6,*)'NVIJ',i,nvij,iw       
        !debug write(*,*) 'caltaabi calling', i, iwmax(i), iwmax2(i), rvois2(:)
      end do ! fin i
      maxvoi=iw

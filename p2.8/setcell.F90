@@ -181,11 +181,12 @@ contains
           nvat=max(Int(nvperat*1.3),10)
        end if
 
-       if(rang==0)         write (6, *) 'Nvois= ', nvois
+       if(rang==0)         write (6, *) 'Nvois= ', nvois,im_glob,nvperat,rvois,boxcf%volu,voluperat
        atcf%nvois=nvois
+       if(allocated(atcf%indi))deallocate(atcf%indi)
        allocate(atcf%indi(nvois))
        allocate(indi2(nvois))
-
+       if (.not.allocated(atcf%iwmax))allocate(atcf%iwmax(atcf%imm))
     end if
   end subroutine setcellconf
 end module setcell

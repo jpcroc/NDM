@@ -6,6 +6,7 @@ module mod_para
   USE cellconfig,only:cell_config,ndm2cellconfig,cellconfig2ndm
 !  use mpi
   implicit none
+  integer :: myid 			! numero de process mis là pour être utilisé en sequentiel
 #ifdef PARA
   include 'mpif.h'
   integer :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
@@ -14,11 +15,11 @@ module mod_para
 
   !Entiers :
   integer :: MPI_COMM_space
-  integer :: myid 			! numero de process
+
   integer :: nprocs 			! nombre de process
   integer :: ierr 			! erreur MPI
   integer,dimension(MPI_STATUS_SIZE):: status  ! statut de la communication
-
+  integer:: grp_world
   integer :: nbr_proc_voisin            ! nbre de processeurs voisins du processeur courant
 
   !Tableaux specifiques :

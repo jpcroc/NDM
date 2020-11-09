@@ -117,7 +117,7 @@ contains
     call caltabtC(celcg,atcg,lperiod,boxndm)
     if (ltabvois.and.mod(it,itetabvois)==0) then
 
-       call caltabi(atcg%atom_config,celcg)
+       call caltabi(atcg%atom_config,celcg,boxndm)
 
     end if
        call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)

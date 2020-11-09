@@ -12,6 +12,8 @@ module controleT_mod
   USE atomconfig,only:atom_config,atom_config_d!,ndm2config,config2ndm
   USE cellconfig, only:cell_config!,ndm2cellconfig,cellconfig2ndm,caltabtC
   USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
+  USE mod_para,only:myid
+
   implicit none
 contains
   ! ***********************************************************
@@ -557,10 +559,10 @@ contains
 
           fpn=fpmax*erg2eV/angst
           !if (rang==0)     write(6,*)
-          if (rang==0)      write(6,'("TR: force max, energy",i6,3E20.10)') it,fpn, potist*erg2eV
-          if ( rang==0)     write (6, *) 'energie ',potist*erg2eV
+          if (myid==0)      write(6,'("TR: force max, energy",i6,3E20.10)') it,fpn, potist*erg2eV
+          if ( myid==0)     write (6, *) 'energie ',potist*erg2eV
           !if (rang==0)     write(6,'(a,2g20.12)')'force max cgs  ev/Ang ',fpmax, fpn
-          if((rang==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot))
+          if((myid==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot))
           if (fpn.le.fpstop)then
              if (sigstop.ge.0) then
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) call endrunT(atdml,celndm,boxndm)
@@ -587,16 +589,16 @@ contains
 
 
           fpn=fpmax*erg2eV/angst
-          if (rang==0)      write(6,*)
-          if (rang==0)      write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ',fpmax, fpn
-          if((rang==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot))
+          if (myid==0)      write(6,*)
+          if (myid==0)      write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ',fpmax, fpn
+          if((myid==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot))
           if (fpn.le.fsumstop) then
              if (sigstop.ge.0) then
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) call endrunT(atdml,celndm,boxndm)
              else
                 call endrunT(atdml,celndm,boxndm)
              end if
-             if (rang==0)      write(6,*)
+             if (myid==0)      write(6,*)
           end if
        end if
        !     if (rang==0) write (6, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
@@ -607,13 +609,13 @@ contains
 
        if (it==1) then
           if (lEev.EQV..true.) then 
-             if (rang==0) write(6,*)'Resultats en eV, Ang'
+             if (myid==0) write(6,*)'Resultats en eV, Ang'
           else
-             if (rang==0) write(6,*)'Resultats en cgs'
+             if (myid==0) write(6,*)'Resultats en cgs'
           end if
-          if (rang==0)      write(*,'(70("="))')
-          if (rang==0)      write(*,'("CG:     ","iter",10(" "),"epsi",14(" "),"Fmax",14(" "), "Energy")')
-          if (rang==0)      write(*,'(70("="))')
+          if (myid==0)      write(*,'(70("="))')
+          if (myid==0)      write(*,'("CG:     ","iter",10(" "),"epsi",14(" "),"Fmax",14(" "), "Energy")')
+          if (myid==0)      write(*,'(70("="))')
        end if
 
 
@@ -641,30 +643,30 @@ contains
           if (lEev.EQV..true.) then 
              forctot = forctot*erg2eV/angst
              formax  = formax*erg2eV/angst
-             if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
+             if (myid==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
              if (fpstop>0) then   
                 if (formax.le.fpstop) then
-                   if (rang==0) write(6,*)'force par atome  max  ev/Ang ', formax
-                   if (rang==0) write (6, *) 'energie ', potist*erg2eV
+                   if (myid==0) write(6,*)'force par atome  max  ev/Ang ', formax
+                   if (myid==0) write (6, *) 'energie ', potist*erg2eV
                    if (it.le.1) xp(:,:)=ax(:,:)
                    call endrunT(atdml,celndm,boxndm)
                 end if
              end if
              if (fsumstop>0) then   
                 if (forctot.le.fsumstop) then
-                   if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
-                   if (rang==0) write(6, *) 'energie ', potist*erg2eV
+                   if (myid==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
+                   if (myid==0) write(6, *) 'energie ', potist*erg2eV
                    if (it.le.1) xp(:,:)=ax(:,:)
                    call endrunT(atdml,celndm,boxndm)
                 end if
              end if
 
           else
-             if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
+             if (myid==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
              if (fpstop>0) then   
                 if (formax.le.fpstop) then
-                   if (rang==0) write(6,*)'force par atome  max cgs ',formax
-                   if (rang==0) write (6, *) 'energie ', potist
+                   if (myid==0) write(6,*)'force par atome  max cgs ',formax
+                   if (myid==0) write (6, *) 'energie ', potist
                    if (it.le.1) xp(:,:)=ax(:,:)
                    call endrunT(atdml,celndm,boxndm)
 
@@ -673,8 +675,8 @@ contains
 
              if (fsumstop>0) then   
                 if (forctot.le.fsumstop) then
-                   if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
-                   if (rang==0) write (6, *) 'energie ', potist
+                   if (myid==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
+                   if (myid==0) write (6, *) 'energie ', potist
                    if (it.le.1) xp(:,:)=ax(:,:)
                    call endrunT(atdml,celndm,boxndm)
                 end if

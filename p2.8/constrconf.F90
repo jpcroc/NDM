@@ -1,7 +1,6 @@
 module constrconf_mod
 !    USE period_mod,only:period
   !  USE divid_mod, only:divid
-  USE setcell,only: setnox
 #ifdef PARA
   USE decoupage_mod,only: decoupage
 #endif
@@ -155,8 +154,8 @@ contains
 
        ! open fichier .gin
        fnamgin = fnam(1:lenfnam)//'.gin'
-       call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax)
 
+       call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax)
        do iti=1,ntyp
           na(iti)=count(atrcf%ityp(1:atrcf%im)==iti)
        end do
@@ -172,9 +171,7 @@ contains
              atrcf%ax(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           end if
        end select
-!       write(6,*)'POSTCONSTR3'
-!       stop
-       !#endif
+
     end if
 
     
@@ -184,9 +181,6 @@ contains
        write(6,*)
        write (6, *) '-------- boite de simulation ------'
        write (6, *) 'nombre d atomes =', im_glob
-       !      write(6,*)'taille de la boite ZL ', zl(1),zl(2),zl(3)
-!       write (6, '(A,3F11.4)') 'taille de la boite ZL ', 1D+08*zl(1), 1D+08*&
-!            zl(2), 1D+08*zl(3)
        do i=1,3
           write(6,'(A,I2,3F15.6)')'vecteur ',i, (boxrcf%at(ic,i)*1.0d8,ic=1,3)
        end do
@@ -194,10 +188,6 @@ contains
           if (na(iti)==0) cycle
           write (6, *) na(iti), ' atomes de type', iti
        end do
-       !           write (6, *) '----------------------------------'
-
-       !      write(6,*)'sortie de config.f'
-
     endif                                  ! fin rang=0
 
     ! ----------------------------------------------------------
@@ -292,11 +282,13 @@ contains
        write (6, *) rang,'imm trop petit',imloc,imm_glob
        call arret_ndm
     endif
+
     if (present(imm))then
-       call atrcf%init(imloc,immin=imm)
+
+       call atrcf%init(imloc,immin=imm,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois)
        
     else
-       call atrcf%init(imloc)
+       call atrcf%init(imloc,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois)
     end if
     
 !    imtot=imloc
@@ -321,28 +313,29 @@ contains
     return
   end subroutine constr_2gin
 
-  subroutine repartition(atcomp,atrep,boxrep,cellrep,nab)
+  subroutine repartition(atcomp,atrep,boxrep,cellrep,nab,div)
 #ifdef PARA
     use mod_para,only:myid
 #endif
+    use paraconfig,only:para_config
     class(atom_config)::atrep
     class(atom_config),intent(in)::atcomp
     type(cell_config)::cellrep
     type(box_config)::boxrep
     integer,optional, dimension(:), allocatable   :: nab
-
+    type (para_config),optional::div
+    
     integer::i,icomp,k,iti,im,ic,numcell,numproc
     real(double)::xt(3),xpici,cpp
+    
 #ifdef PARA  
 
-!    write(6,*)rang,'REP',imm,im_glob,imm_glob
-!    call atcomp%print
-!    imtot=atrep%im
+
        if (atrep%im>imm_glob) then
           write (6, *) rang,'imm trop petit'
           call arret_ndm
        endif
-!       im_glob=imtot
+
        i=0;im=0
        do icomp=1,atcomp%im
           xt(:)=atcomp%xp(:,icomp)
@@ -367,10 +360,10 @@ contains
              if (present(nab)) nab(i)=icomp
              atrep%xp(:,i)=xt(:)
              atrep%ityp(i)=iti
+             div%proc_at(i)=myid
           endif
        end do
        atrep%im=im
-!    write(6,*)rang,'REP2',imm,im_glob,imm_glob,atrep%im
 #endif
        return
      end subroutine repartition
@@ -567,9 +560,9 @@ contains
   end subroutine convert_cell
 
   subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum)
-    class(atom_config),intent(out)::at2b
-    type(cell_config),intent(out)::cel2b
-    type(box_config),intent(out)::box2b
+    class(atom_config)::at2b
+    type(cell_config)::cel2b
+    type(box_config)::box2b
     integer,intent(out)::imtot
     character,intent(in) :: fnamg*80
     real(double),intent(in)::rum
@@ -594,7 +587,6 @@ contains
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
     imtot=COMPatrcf%im
     im_glob=COMPatrcf%im
-!    write(6,*)'GIN2NDM',size(at2b%xp)
    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
     call repartition(COMPatrcf,at2b,box2b,cel2b)
     
@@ -608,8 +600,7 @@ contains
     end if
     call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
-!    im=at2b%im
-    !    imtot=atrcf%im
+
     im_glob=at2b%im
 #endif             
 
@@ -814,26 +805,12 @@ contains
        endif
        atcinr%im=im_gr
 
-       !                    write(6,*)im
        read (lucin, err=456) ibuffer   !ityp muet
-       !       atcinr%ityp(1:im_gr)=ibuffer(1:im_gr)
-
-       !       if (rang==0) write (6, *) 'types'
        read (lucin, err=456) buffer    ! xp
        atcinr%xp(1:3,1:im_gr)=buffer(1:3,1:im_gr)
 
-       !       formcin:select case (fmt_cin)
-       !       case (0) formcin
-       !          do i=1,im_gr
-       !             atcinr%num_at_glob(1:im_gr) = i
-       !          enddo
-       !       case(1) formcin
        read (lucin, err=456) ibuffer
        atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
-       !       case default  formcin
-       !          if (rang.eq.0) write(6,*) 'precisez le format fmt_cin'
-       !          call arret_ndm
-       !       end select formcin
 
     case(3)
         if (.not.present(atcinr))then
@@ -848,7 +825,6 @@ contains
        endif
        atcinr%im=imic
 
-       !                    write(6,*)im
        read (lucin, err=456) ibuffer   !ityp
        do i_loc=1,imic
           atcinr%ityp(i_loc)=ibuffer(icible(i_loc))
@@ -860,13 +836,8 @@ contains
 
        select case (fmt_cin) !num_at_glob muet
        case (0) 
-       !   do i=1,im_gr
-       !      atcinr%num_at_glob(1:im_gr) = i
-       !   enddo
        case(1) 
           read (lucin, err=456) ibuffer
-       !   atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
-       !   if (rang==0) write (6, *) 'num_at_glob'
        end select
 
 
@@ -885,9 +856,6 @@ contains
              do i_loc=1,imic
                 atcinr%vp(:,i_loc)=buffer(:,icible(i_loc))
              enddo
-
-             !             read (lucin, err=456) buffer                     !former positions
-             !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
              read (lucin, err=456) buffer                     !ax inutile
           end if
        type is (atom_config_e)
@@ -916,13 +884,6 @@ contains
           end if
        end select
        read (lucin, err=456) oldtstep
-       !  Si l'option de redemarrage (lrestart) n'est pas activee
-       !  alors les positions d'origine ax deviennent les xp du fichier .cin
-       !       if (.not.lrestart) then
-       !          atcinr%ax(:,:im) = atcinr%xp(:,:im)
-       !          if (lsuivinonpbc) axnonpbc(:,:im)=ax(:,:im)
-       !       endif
-
 
        if (lrestart) then
           read (lucin, err=456) tmean, pmean, it, timel

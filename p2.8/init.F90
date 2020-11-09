@@ -93,6 +93,7 @@ contains
     integer :: i, lufilmpaf,itapp,ipotcont,j,lenfn2,ipath,ierr
     !-----------------------------------------------
     character*2::extension
+
     tmean = 0.0
     pmean = 0.0
     timel = 0.0
@@ -267,13 +268,12 @@ contains
        write(6,*)' -------------------------------------------------------------------'
        write(6,*)'             definition des rayons de coupure'
     end if
-       call param_det
+    call param_det
        ! rumax défini en ce point
 #endif 
 
-       if (dmtype.ne.9) then
-          call constrconf(atdml,boxndm,celndm)
-
+    if (dmtype.ne.9) then
+       call constrconf(atdml,boxndm,celndm)
 #ifdef PARA
        temps_config=MPI_Wtime()-temps_config_deb
 #endif
@@ -389,7 +389,6 @@ contains
 
     
     if (dmtype.ne.9) then
-
 !   call neigcel
 #ifdef PARA
         CALL MPI_BARRIER(MPI_COMM_space,ierr)
@@ -419,7 +418,7 @@ contains
        call caltabtC(celndm,atdml,lperiod,boxndm)
 
        if (ltabvois) then
-          call caltabi(atdml,celndm)
+          call caltabi(atdml,celndm,boxndm)
        end if
 
 !       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
@@ -528,7 +527,7 @@ contains
        !                &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
                    call caltabtC(celndm,atdml,lperiod,boxndm)
        if (ltabvois) then
-          call caltabi(atdml,celndm)
+          call caltabi(atdml,celndm,boxndm)
        end if
 !       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
 !            &xpp=xpp)

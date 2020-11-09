@@ -1,10 +1,18 @@
 module atomconfig
   USE T_kind_param_m
+
+#ifdef PARA
+  use mpi
+  USE mod_para,only:ierr,status,NDM_MPI_REAL_DOUBLE
+
+#endif
+  use paraconfig,only:para_config  
+
   implicit none
   integer:: incr=20 ! incrément des tailles de tableau 
   type atom_config ! type minimal des configurations atomiques. Tous les composants seront toujours alloué (im_glob seulement si PARA)
      integer::im=0,imm=0
-     integer(long)::icaltabt 
+    integer(long)::icaltabt 
      real(double),allocatable:: xp(:,:)
      real(double),allocatable::fp(:,:)
      integer,allocatable::ityp(:)
@@ -15,22 +23,26 @@ module atomconfig
      integer,allocatable:: indi(:) ! indice de tous les voisins
      logical, allocatable:: lgul(:)
      integer,allocatable::num_at_glob(:)
+#ifdef PARA
+     integer,allocatable::proc_at(:) ! tableau de taille im_glob total indiquant le numéro du proc qui gère l'atome
+#endif     
    contains
      procedure, pass::init=>init_atom_config
      procedure, pass::copy_atom=>copy_atom_config
      procedure, pass::dealloc=>dealloc_atom_config
+     procedure, pass::vers_master=>vers_master_atom !(atcfloc,atcfcomp,div)
+     procedure, pass::master2loc=>master2loc_atom !(atcfcomp,atcfloc,div)
      procedure, pass::copy_config
      procedure, pass::print
      procedure, pass::pack
      procedure, pass::fab
      procedure, pass::add2conf
      procedure, pass::extend
-     !#ifdef PARA
+
      !     procedure, pass::send2proc=>s2p_atom
      !     procedure, pass::send2all=>s2a_atom
      !     procedure, pass::recv=>rcv_atom
      !
-     !#endif     
   end type atom_config
 
   type, extends (atom_config):: atom_config_d ! type dynamique des configurations atomiques(+vp/+xpp). vp et xpp seront toujours allouées
@@ -69,44 +81,81 @@ module atomconfig
 contains
   !initialisations
   
-  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,lsigat,lprteat,lLangevin,lax)
-    class(atom_config),intent(out)::atconf
+  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,lsigat,lprteat,lLangevin,lax,lreallocate)
+    class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
-    logical,optional, intent(in)::ltabvois,lsigat,lprteat,lLangevin,lax
+    logical,optional, intent(in)::ltabvois,lsigat,lprteat,lLangevin,lax,lreallocate
     integer, optional::nvois,immin
 
-    logical ::ltbv
+    logical ::ltbv,lrealloc
+    if (present(lreallocate))lrealloc=lreallocate
     ltbv=.false.
-    if (atconf%im.ne.0) then
-       write(6,*)'atconf already allocated ; cannot be directly initiated ;  first deallocate'
-       stop
-    end if
     atconf%im=imin       
     if (present(immin))then
        atconf%imm=immin
     else
        atconf%imm=imin
     end if
-
-    allocate(atconf%xp(3,atconf%imm));allocate(atconf%fp(3,atconf%imm));allocate(atconf%ityp(atconf%imm))
-    allocate(atconf%ielat(atconf%imm));allocate(atconf%lgul(atconf%imm));allocate(atconf%num_at_glob(atconf%imm))
+    if(lrealloc) then
+       if (allocated(atconf%xp))then
+          deallocate(atconf%xp);deallocate(atconf%fp);deallocate(atconf%ityp)
+          deallocate(atconf%ielat);deallocate(atconf%lgul);deallocate(atconf%num_at_glob)
+#ifdef PARA
+          deallocate(atconf%proc_at)
+#endif    
+       end if
+    end if
+    if (.not.allocated(atconf%xp))then
+       allocate(atconf%xp(3,atconf%imm));allocate(atconf%fp(3,atconf%imm));allocate(atconf%ityp(atconf%imm))
+       allocate(atconf%ielat(atconf%imm));allocate(atconf%lgul(atconf%imm));allocate(atconf%num_at_glob(atconf%imm))
+#ifdef PARA
+       allocate(atconf%proc_at(atconf%imm))
+#endif    
+       
+    end if
     atconf%ityp=0;atconf%xp=0;atconf%fp=0;atconf%ielat=0; atconf%lgul=.false.;atconf%num_at_glob=0
-    if(present(ltabvois)) ltbv=ltabvois
+#ifdef PARA
+    atconf%proc_at=-1
+#endif    
+    if(present(ltabvois)) then
+       ltbv=ltabvois
+    endif
     if(ltbv)then
        atconf%ltabvois=.true.
-       allocate(atconf%iwmax(atconf%imm)); atconf%iwmax=0
+       if ((lrealloc).and.(allocated(atconf%iwmax)))deallocate(atconf%iwmax)
        if (nvois.ne.0) then
-          atconf%nvois=nvois
-          allocate(atconf%indi(nvois))
+          if (.not.(allocated(atconf%iwmax)))then
+             allocate(atconf%iwmax(atconf%imm)); atconf%iwmax=0
+          endif
+          if ((lrealloc).and.(allocated(atconf%iwmax)))deallocate(atconf%iwmax)
+          if(.not.allocated(atconf%indi))then
+             atconf%nvois=nvois
+             if (nvois.ne.0)then
+                allocate(atconf%indi(nvois))
+                atconf%indi=0
+             end if
+          end if
        end if
+    else
+       atconf%ltabvois=.false.
     end if
     select type (atconf)
     type is (atom_config_d)
        !       write(6,*)'init_d'
-       allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
+       if ((lrealloc).and.(allocated(atconf%vp)))then
+          deallocate(atconf%vp); deallocate(atconf%xpp)
+       end if
+       if (.not.allocated(atconf%vp))then
+          allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
+       end if
        atconf%vp=0;atconf%xpp=0
     type is (atom_config_e)
-       allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
+       if ((lrealloc).and.(allocated(atconf%vp)))then
+          deallocate(atconf%vp); deallocate(atconf%xpp)
+       end if
+       if (.not.allocated(atconf%vp))then
+          allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
+       end if
        atconf%vp=0;atconf%xpp=0
        atconf%lprteat=.false.
        atconf%lsigat=.false.
@@ -118,18 +167,27 @@ contains
        if(present(lax)) atconf%lax=lax
        !       write(6,*)'init_e',atconf%lprteat,atconf%lsigat
        if(atconf%lprteat)then
-          allocate(atconf%eat(atconf%imm))
+          if ((lrealloc).and.(allocated(atconf%eat)))deallocate(atconf%eat)
+          if (.not.allocated(atconf%eat))allocate(atconf%eat(atconf%imm))
           atconf%eat=0
        end if
        if(atconf%lsigat)then
-          allocate(atconf%sigat(3,3,atconf%imm));atconf%sigat=0
+          if ((lrealloc).and.(allocated(atconf%sigat)))deallocate(atconf%sigat)
+          if (.not.allocated(atconf%sigat)) allocate(atconf%sigat(3,3,atconf%imm))
+          atconf%sigat=0
        end if
        if(atconf%llangevin)then
-          allocate(atconf%Glangv(3,atconf%imm));atconf%Glangv=0
+          if ((lrealloc).and.(allocated(atconf%Glangv)))deallocate(atconf%glangv)
+          if (.not.allocated(atconf%Glangv))allocate(atconf%Glangv(3,atconf%imm))
+          atconf%Glangv=0
        end if
        if(atconf%lax)then
-          allocate(atconf%ax(3,atconf%imm));atconf%ax=0
+          if ((lrealloc).and.(allocated(atconf%ax)))deallocate(atconf%ax)
+          if (.not.allocated(atconf%ax))allocate(atconf%ax(3,atconf%imm))
+          atconf%ax=0
        end if
+
+
     end select
   end subroutine init_atom_config
 
@@ -159,6 +217,9 @@ contains
     atcible%fp(:,j)=atsource%fp(:,i)
     atcible%ityp(j)=atsource%ityp(i)
     atcible%num_at_glob(j)=atsource%num_at_glob(i)
+#ifdef PARA
+    atcible%proc_at(j)=atsource%proc_at(i)
+#endif    
     atcible%ielat(j)=atsource%ielat(i)
     atcible%lgul(j)=atsource%lgul(i)
     if ((atcible%ltabvois).and.(atsource%ltabvois))then
@@ -166,6 +227,7 @@ contains
        atcible%iwmax(j)=nvj+atsource%iwmax(j-1)
        do iw=1,nvj
           idwj=iw+atcible%iwmax(j-1); idwi=iw+atsource%iwmax(i-1)
+
           atcible%indi(idwj)=atsource%indi(idwi)
        end do
     end if
@@ -284,6 +346,10 @@ contains
     atcible%lgul(1:atsource%imm)=atsource%lgul(1:atsource%imm)
     atcible%ityp(1:atsource%imm)=atsource%ityp(1:atsource%imm)
     atcible%num_at_glob(1:atsource%imm)=atsource%num_at_glob(1:atsource%imm)
+#ifdef PARA
+    atcible%proc_at(1:atsource:imm)=atsource%proc_at(1:asource%imm)
+#endif    
+    
     atcible%ltabvois=atsource%ltabvois
     if ((atsource%ltabvois).and.(atcible%ltabvois)) then
        atcible%iwmax(1:atsource%imm)=atsource%iwmax(1:atsource%imm)
@@ -317,6 +383,10 @@ contains
     if(allocated(atconf%xp))then
        deallocate(atconf%xp);deallocate(atconf%fp);deallocate(atconf%ielat)
        deallocate(atconf%ityp); deallocate(atconf%lgul); deallocate(atconf%num_at_glob)
+#ifdef PARA
+    dellocate(atconf%proc_at)
+#endif    
+       
     end if
     if (allocated (atconf%iwmax))deallocate (atconf%iwmax)
     if (allocated (atconf%indi))deallocate (atconf%indi)
@@ -444,7 +514,7 @@ contains
     type is (atom_config_e)
        call atcible%init(imtrf,imtrf,atsource%ltabvois,size(atsource%indi),lsigat=atsource%lsigat,lprteat=atsource%lprteat,&
             &llangevin=atsource%llangevin,lax=atsource%lax)
-       class is (atom_config)
+    class is (atom_config)
        call atcible%init(imtrf,imtrf,atsource%ltabvois,size(atsource%indi))
     end select
     i2=0
@@ -605,6 +675,12 @@ contains
        do i=ideb,im
           write(6,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
        end do
+#ifdef PARA
+       do i=ideb,im
+          write(6,*)'%proc_at= ', i,atprt%proc_at
+       end do
+#endif    
+       
        if (iw==0) return
        do i=ideb,im
           write(6,*)'%fp= ', i,atprt%fp(:,i)
@@ -857,8 +933,179 @@ contains
     end select
   end subroutine config2ndm
 
+    subroutine vers_master_atom(atcfloc,atcfcomp,div)
+    class(atom_config),intent(in)::atcfloc
+    class(atom_config)::atcfcomp
+    type(para_config)::div
+#ifdef PARA
+    integer::idmaster,idloc,icomm,npim ! proc master,proclocal ,communicateur
 
 
+    real(double),allocatable::buffer(:,:)
+    integer,allocatable:: ibuffer(:)
+    logical,allocatable::lbuffer(:)
+    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3
+    integer::imcomp,imtot,proc_source,npim
+    idmaster=0
+    idloc=div%rgim
+    npim=div%npim
+    icomm=div%comm_image
+    
+    if (idloc==idmaster) then
+!       allocate(buffer(3,atloc%im));allocate(ibuffer(atloc%im));allocate(lbuffer(atloc%im))
+       imtot=0
+       do iproc=0,npim-1
+          ! Pour le processeur maitre il n'y a rien a faire
+          ! reception des donnees des autres processeurs
+          if (iproc==idmaster) then
+             imrecv=atcfloc%im
+             imtot=imtot+imrecv
+             ideb=1;ifin=imrecv
+             atcfcomp%xp(1:3,ideb:ifin)=atcfloc%xp(1:3,1:imrecv)
+             atcfcomp%fp(1:3,ideb:ifin)=atcfloc%fp(1:3,1:imrecv)
+             atcfcomp%num_at_glob(ideb:ifin)=atcfloc%num_at_glob(1:imrecv)
+             atcfcomp%ityp(ideb:ifin)=atcfloc%ityp(1:imrecv)
+             if allocated(atloc%lgul)  atcfcomp%lgul(ideb:ifin)=atcfloc%lgul(1:imrecv)
+             atcfcomp%proc_at(ideb,ifin)=atcfloc%proc_at(1:imrecv)
+          else
+             if (allocated(buffer)) then
+                deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer)
+             end if
+             call MPI_RECV(imrecv,1, MPI_INTEGER,  MPI_ANY_SOURCE, 10001, icomm, status, ierr)
+             imtot=imtot+imrecv
+             proc_source = status(MPI_SOURCE)
+             imrecv3=3*imrecv
+             allocate(buffer(3,imrecv))
+             allocate(ibuffer(imrecv))
+             allocate(lbuffer(imrecv))
+             ideb=ifin+1; ifin=ideb+imrecv
+
+             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10002, icomm, status, ierr)
+             atcfcomp%xp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10002, icomm, status, ierr)
+             atcfcomp%fp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10003, icomm, status, ierr)
+             atcfcomp%num_at_glob(ideb:ifin)=ibuffer(1:imrecv)
+             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10003, icomm, status, ierr)
+             atcfcomp%ityp(ideb:ifin)=ibuffer(1:imrecv)
+             if (allocated(atloc%lgul))then
+                call MPI_RECV(lbuffer(1:imrecv),imrecv, MPI_LOGICAL, proc_source, 10003, icomm, status, ierr)
+                atcfcomp%lgul(ideb:ifin)=ibuffer(1:imrecv)
+             end if
+             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10003, icomm, status, ierr)
+             atcfcomp%proc_at(ideb:ifin)=ibuffer(1:imrecv)
+          end if
+       end do
+       if (imtot.ne.atcomp%im) then
+          write(6,*)'atomes perdus ?',imtot,atcomp%im
+          call MPI_finalize(ierr)
+          stop
+       end if
+    else
+       imloc=atloc%im;imloc3=3*imloc
+       call MPI_SEND(imloc, 1,   MPI_INTEGER,idmaster ,10001,icomm,ierr)
+       call MPI_SEND(atloc%xp(1:3,1:imloc, imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10002,icomm,ierr)
+       call MPI_SEND(atloc%fp(1:3,1:imloc, imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10003,icomm,ierr)
+       call MPI_SEND(atloc%num_at_glob(1:imloc), imloc, MPI_INTEGER, idmaster, 10004, icomm, status, ierr)
+       call MPI_SEND(atloc%ityp(1:imloc), imloc, MPI_INTEGER, idmaster, 10005, icomm, status, ierr)
+       if allocated(atloc%lgul)      &
+            &call MPI_SEND(atloc%lgul(1:imloc), imloc, MPI_LOGICAL, idmaster, 10006, icomm, status, ierr)
+       call MPI_SEND(atloc%proc_at(1:imloc), imloc, MPI_INTEGER, idmaster, 10007, icomm, status, ierr)
+    end if
+#endif       
+       
+    return
+  end subroutine vers_master_atom
+
+  subroutine master2loc_atom(atcfcomp,atcfloc,div)
+
+    class(atom_config),intent(in)::atcfloc
+    class(atom_config)::atcfcomp
+    type(para_config)::div
+#ifdef PARA
+    integer::idmaster,idloc,icomm,npim ! proc master,proclocal ,communicateur
+
+
+    real(double),allocatable::buffer(:,:)
+    integer,allocatable:: ibuffer(:)
+    logical,allocatable::lbuffer(:)
+    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3
+    integer::imcomp,imtot,proc_source,ic
+    logical,allocatable::mask(:,:)
+    
+    idmaster=0
+    idloc=div%rgim
+    npim=div%npim
+    icomm=div%comm_image
+    allocate(mask(3,atcomp%im))
+
+    if (idloc==idmaster) then
+
+       imtot=0
+       do iproc=0,npim-1
+          ! Pour le processeur maitre il n'y a rien a faire
+          ! reception des donnees des autres processeurs
+          do ic=1,3
+             mask(ic,atcomp%(1:im))=(atcomp%proc_at(1:atcomp%im)==iproc)
+          end do
+          ns=count(atcomp%proc_at(:)==iproc)
+          if (iproc==idmaster) then
+             atloc%xp=reshape(pack(atcomp%xp(:,1:atcomp%im),mask),(/3,ns/))
+             atloc%fp=reshape(pack(atcomp%fp(:,1:atcomp%im),mask),(/3,ns/))
+             atloc%num_at_glob=pack(atcomp%num_at_glob(:,1:atcomp%im),mask)
+             atloc%ityp=pack(atcomp%ityp(:,1:atcomp%im),mask)
+             if allocated(atloc%lgul)  atloc%lgul=pack(atcomp%lgul(:,1:atcomp%im),mask)
+             atloc%proc_at(1:ns)=idmaster ! on EST dans idmaster
+             atloc%im=ns
+          else
+             if (allocated(buffer)) then
+                deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer)
+             end if
+             allocate(buffer(3,ns));allocate(ibuffer(ns));allocate(lbuffer(ns))
+             call MPI_SEND(ns, 1,   MPI_INTEGER,iproc,10001,icomm,ierr)
+             buffer=reshape(pack(atcomp%xp(:,1:atcomp%im),mask),(/3,ns/))
+             call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,10002,icomm,ierr)
+             buffer=reshape(pack(atcomp%fp(:,1:atcomp%im),mask),(/3,ns/))
+             call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,10003,icomm,ierr)
+             
+             ibuffer=pack(atcomp%num_at_glob(:,1:atcomp%im))
+             call MPI_SEND(buffer, ns, MPI_INTEGER,iproc ,10004,icomm,ierr)                          
+             ibuffer=pack(atcomp%ityp(:,1:atcomp%im))
+             call MPI_SEND(ibuffer, ns, MPI_INTEGER,iproc ,10005,icomm,ierr)                          
+
+             if allocated(atloc%lgul) then
+                lbuffer=pack(atcomp%lgul(:,1:atcomp%im))
+                call MPI_SEND(lbuffer, ns, MPI_LOGICAL,iproc ,10006,icomm,ierr)                          
+             end if
+          end if
+       end do
+       
+    else
+       call MPI_RECV(imrecv,1, MPI_INTEGER, idmaster, 10001, icomm, status, ierr)
+       atloc%im=imrecv;imrecv3=3*imrecv
+       allocate(buffer(3,imrecv));allocate(ibuffer(imrecv));allocate(lbuffer(imrecv))
+       
+       call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 10002, icomm, status, ierr)
+       atloc%xp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
+       call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 10003, icomm, status, ierr)
+       atloc%fp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
+       
+       call MPI_RECV(ibuffer,imrecv, MPI_INTEGER, idmaster, 10004, icomm, status, ierr)
+       atloc%num_at_glob(1:imrecv)=ibuffer(1:imrecv)
+       call MPI_RECV(ibuffer,imrecv, MPI_INTEGER, idmaster, 10005, icomm, status, ierr)
+       atloc%ityp(1:imrecv)=ibuffer(1:imrecv)
+       if allocated(atloc%lgul) then
+          call MPI_RECV(lbuffer,imrecv, MPI_LOGICAL, idmaster, 10006, icomm, status, ierr)
+          atloc%lgul(1:imrecv)=lbuffer(1:imrecv)
+       end if
+       atloc%proc_at(1:imrev)=idloc
+    end if
+    return
+#endif           
+  end subroutine master2loc_atom
+ 
+
+    
 end module atomconfig
 
 

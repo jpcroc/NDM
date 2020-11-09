@@ -1,13 +1,13 @@
-nettoyer le merdier myid
-INTEGRER DECOUP dans la version sequentielle avec un ldecoup
+
+INTEGRER DECOUP dans la version sequentielle avec un ldecoup ET METTRE DECOUP3D en version para_config ET intégrer les variables associées dans un type (spacepara_config ?)
+rasmol a mettre en version paraconfig
+programmer parallel replica
+
 Faire une version de base dmtype, simple qui fonctionne
 paralléliser
 paralléliser mixte
-rè-introduire les fonctionalités pas à pas:gcII,pr2 !!
--period ?? remplacer par periodbox
-
-automatiser les transferts entre procs pour gérer automatiquement ax, eat, etc... et ne transférer que si besoin. 
-séparer les routines en deux : constructions des vecteurs à transférer et transfert effectif des vecteurs
+rè-introduire les fonctionalités pas à pas:
+-period ??
 
 1/EATOM NE FONCTIONNE PAS ; ax ne fonctionne pas
 2/RVOIS lconstrtot,ldemitab a intégrer dans le type atom_config ?

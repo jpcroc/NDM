@@ -69,35 +69,6 @@ contains
        return
     endif
 
-    ! temperature is down enough ?
-    if (itetemp>0) then
-       if (mod(it,itetemp)==0) then
-          if (temp<=tempstop) then
-             write (6, *) 'temperature < tempstop '
-             call endrun
-             call DeallocateAll
-             !#ifdef para
-             !        call MPI_FINALIZE(code)
-             !#endif
-
-             stop
-          endif
-       endif
-    endif
-    ! crÃ©ation de DP
-
-
-
-
-
-    ! change in time step ? itetimestep >0
-    if (itetimestep>0) then
-       if (mod(it,itetimestep)==0) call deftimestep 
-    endif
-
-
-
-
     select case (nebtype)
 
     case(1)

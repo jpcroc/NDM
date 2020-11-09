@@ -1,33 +1,48 @@
-#ifdef PARA
 module init_mpi_mod
-        implicit none
-        contains
-subroutine init_mpi()
-  use mpi
-  use mod_para,only:ierr,nprocs,temps_deb,MPI_COMM_space,myid
+
+
+#ifdef PARA
+  use T_kind_param_m, ONLY:   double,NDM_MPI_REAL_DOUBLE
+#else
+  use T_kind_param_m, ONLY:  double
+#endif  
+!  use atomconfig,only: atom_config
 
   implicit none
+contains
+#ifdef PARA
+  subroutine init_mpi()
+    use mpi
+    use mod_para,only:ierr,nprocs,temps_deb,MPI_COMM_space,rang,grp_world
 
-  ! Routine d'initialisation de MPI pour le code NDM
+    implicit none
+
+    ! Routine d'initialisation de MPI pour le code NDM
 
 
-  !--------------------------------------------------
-  !Variables de la routine
+    !--------------------------------------------------
+    !Variables de la routine
 
-  !--------------------------------------------------
-  !Variables locales
+    !--------------------------------------------------
+    !Variables locales
 
-  !--------------------------------------------------
-  !Corps de la routine
+    !--------------------------------------------------
+    !Corps de la routine
 
-  call MPI_INIT(ierr)
-  call MPI_COMM_RANK( MPI_COMM_WORLD, myid, ierr )
-  call MPI_COMM_SIZE( MPI_COMM_WORLD, nprocs, ierr )
-  MPI_COMM_space=MPI_COMM_WORLD
-  temps_deb = MPI_Wtime()
+    call MPI_INIT(ierr)
+    call MPI_COMM_RANK( MPI_COMM_WORLD, rang, ierr )
+    call MPI_COMM_SIZE( MPI_COMM_WORLD, nprocs, ierr )
+    call MPI_COMM_GROUP( MPI_COMM_WORLD, grp_world, ierr )
+    !  MPI_COMM_space=MPI_COMM_WORLD
+    temps_deb = MPI_Wtime()
 
-end subroutine init_mpi
-end module
+  end subroutine init_mpi
 
 #endif
+
+
+    
+end module init_mpi_mod
+
+
 
