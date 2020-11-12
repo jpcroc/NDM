@@ -1,5 +1,5 @@
 module jqmod
-  USE T_kind_param_m
+  USE T_kind_param_m,only:double
   USE gen_com_m, ONLY:
   integer,save ::icall
   real(double) :: jqf,jqfk,jqfp

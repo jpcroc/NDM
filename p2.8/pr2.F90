@@ -48,7 +48,7 @@ module Parrinello_Rahman
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,maj_atomes_frt_ftm
+  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocs,maj_atomes_frt_ftm
 !  USE mod_para,only:MPI_COMM_space,
 #endif
   USE calfo_mod,only: calfo
@@ -63,7 +63,11 @@ module Parrinello_Rahman
 
    USE caltabt_mod,only: caltabt
   implicit none
-  ! Vecteurs de la boîte et leurs dérivées
+!#ifdef PARA
+ ! include 'mpif.h'
+! integer, dimension( MPI_STATUS_SIZE) :: statut2
+!#endif
+   ! Vecteurs de la boîte et leurs dérivées
   real(double), dimension(3,3), save , private :: h, hDot
   real(double), dimension(3,3), save , private :: trh, invh, invtrh, Gmat, invGmat, Gdot
   real(double), save, private :: invVolu

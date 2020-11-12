@@ -28,10 +28,11 @@ subroutine endrunT(atdml,celndm,boxndm)
   USE T_kind_param_m, ONLY:  double
   USE tab_imm_m,only:posmoyx,ityp,xp,num_at_glob,fp,vp,iwmax
 #ifdef PARA
-  use mpi
-  USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,temps_dmloop_deb,temps_dmloop,&
-       &temps_config,temps_deb
 !  use mpi
+  USE mod_para,only:MPI_COMM_space,nprocs,myid,temps_dmloop_deb,temps_dmloop,&
+       &temps_config,temps_deb
+  use Tpara,only:NDM_MPI_real_double
+  !  use mpi
 !  USE mod_para,only:MPI_COMM_space,MPI_INTEGER, MPI_ANY_SOURCE, MPI_COMM_space, status,ierr,nprocs,MPI_SOURCE,NDM_MPI_REAL_DOUBLE,MPI_SUM,myid,proc_cell,MPI_LOGICAL,MPI_Wtime&
 !       &, temps_dmloop,temps_dmloop_deb
 #endif
@@ -46,6 +47,11 @@ subroutine endrunT(atdml,celndm,boxndm)
   ! ****************************************************************
 
   implicit none
+#ifdef PARA
+  include 'mpif.h'
+ integer, dimension( MPI_STATUS_SIZE) :: statut2
+#endif
+  
     type(box_config)::boxndm
     class(atom_config)::atdml
     type(cell_config):: celndm
@@ -117,12 +123,12 @@ subroutine endrunT(atdml,celndm,boxndm)
            ! Pour le processeur maitre il n'y a rien a faire
            ! reception des donnees des autres processeurs
            if (iproc.ne.0) then
-              call MPI_RECV(im,               1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_space, status, ierr)
-              proc_source = status(MPI_SOURCE)
-              call MPI_RECV(xp(1:3,1:im),     3*im, NDM_MPI_REAL_DOUBLE, proc_source, 10002, MPI_COMM_space, status, ierr)
-              call MPI_RECV(ityp(1:im),       im,   MPI_INTEGER,         proc_source, 10003, MPI_COMM_space, status, ierr)
-              call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_space, status, ierr)
-              call MPI_RECV(eatom(1:im),       im,  NDM_MPI_REAL_DOUBLE ,proc_source, 10005, MPI_COMM_space, status, ierr)
+              call MPI_RECV(im,               1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_space, statut2, ierr)
+              proc_source = statut2(MPI_SOURCE)
+              call MPI_RECV(xp(1:3,1:im),     3*im, NDM_MPI_REAL_DOUBLE, proc_source, 10002, MPI_COMM_space, statut2, ierr)
+              call MPI_RECV(ityp(1:im),       im,   MPI_INTEGER,         proc_source, 10003, MPI_COMM_space, statut2, ierr)
+              call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_space, statut2, ierr)
+              call MPI_RECV(eatom(1:im),       im,  NDM_MPI_REAL_DOUBLE ,proc_source, 10005, MPI_COMM_space, statut2, ierr)
            endif
            write (10, '(i6,i3,4g20.8)') (num_at_glob(i),ityp(i),(xp(j,i)*angst,j=1,3),eatom(i)*erg2eV,i=1,im)
            write(6,*)'ZERO',iproc

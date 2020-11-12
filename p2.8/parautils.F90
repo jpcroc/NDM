@@ -2,11 +2,11 @@ module parautils
 
   use paraconfig,only:para_config
 #ifdef PARA
-  use T_kind_param_m, ONLY:   double,NDM_MPI_REAL_DOUBLE
+  use Tpara,only:NDM_MPI_REAL_DOUBLE
   USE mod_para,only:maj_atomes_frt_ftm
-#else
+#endif
   use T_kind_param_m, ONLY:  double
-#endif  
+
   use atomconfig,only: atom_config,atom_config_d
   USE boxconfig,only:box_config
   USE cellconfig,only:cell_config,caltabtC
@@ -17,10 +17,10 @@ module parautils
 contains
   subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod)
     USE setcell,only:setcellconf
-    class(atom_config),intent(in),target::atcomp
+    class(atom_config_d),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
     type(box_config)::box
-    class(atom_config),pointer::atloc
+    class(atom_config_d),pointer::atloc
     type(cell_config),pointer::celloc
     type(para_config),intent(in)::div
     real(double),intent(in)::rum
@@ -45,7 +45,7 @@ contains
     type(cell_config),target::cellcomp
     type(box_config)::box
     type(para_config)::div
-    type(atom_config_d),pointer::atloc
+    class(atom_config_d),pointer::atloc
     type(cell_config),pointer::celloc
     logical,intent(in)::lperiod
     logical,optional,intent(in)::ltabvois
@@ -56,23 +56,30 @@ contains
     
     if(present(lchg))lchange=lchg
 
+
+#ifdef PARA
     if (lchange) then
        if (div%npim.gt.1) then
           call atcomp%atom_config%master2loc(atloc,div)
-#ifdef PARA          
           call maj_atomes_frt_ftm(atloc,celloc)
-#endif          
        else
           nullify(atloc);atloc=>atcomp
-          nullify(celloc);celloc=>cellcomp
+          nullify(celloc);celloc=>cellcomp                 
        end if
-
     end if
+#else
+    nullify(atloc);atloc=>atcomp
+    nullify(celloc);celloc=>cellcomp
+       
+#endif          
+
+  
     call caltabtC(celloc,atloc,lperiod,box)
     if (present(ltabvois)) then
        if (ltabvois.and.((it==1).or.(mod(it,itetabvois)==0)))&
             &call caltabi(atloc,celloc,box)
     end if
+
     CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.) 
     
 !#ifdef PARA

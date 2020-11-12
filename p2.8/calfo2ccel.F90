@@ -15,9 +15,13 @@ contains
     USE jqmod
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE
+    USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE
 #endif
     implicit none
+!#ifdef PARA
+!  include "mpif.h"
+
+!#endif
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e r s
     !-----------------------------------------------

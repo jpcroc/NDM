@@ -2,13 +2,16 @@ module paraconfig
 
 
 #ifdef PARA
-  use T_kind_param_m, ONLY:   double,NDM_MPI_REAL_DOUBLE
-#else
+  use Tpara,only:NDM_MPI_REAL_DOUBLE
+
+#endif
   use T_kind_param_m, ONLY:  double
-#endif  
-!  use atomconfig,only: atom_config
+
 
   implicit none
+#ifdef PARA
+ include 'mpif.h'
+#endif  
   type para_config
      integer :: rgim ! rang du proc dans l'image
      integer:: image ! n° de l'image

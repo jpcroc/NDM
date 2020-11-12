@@ -1,20 +1,27 @@
 module mod_para
+#ifdef PARA
+  use Tpara,only: NDM_MPI_REAL_DOUBLE
+  
+#endif
+  use T_kind_param_m, ONLY:  double 
 
-  use T_kind_param_m, ONLY:  double
   use gen_com_m ,only:l2t,rang
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e,ndm2config,config2ndm
   USE cellconfig,only:cell_config,ndm2cellconfig,cellconfig2ndm
-!  use mpi
+
+  !  use mpi
   implicit none
   integer :: myid 			! numero de process mis là pour être utilisé en sequentiel
 #ifdef PARA
+
   include 'mpif.h'
-  integer :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
+
+  integer::MPI_COMM_space
 
   ! Module de declaration des variables MPI pour le code NDM
 
   !Entiers :
-  integer :: MPI_COMM_space
+
 
   integer :: nprocs 			! nombre de process
   integer :: ierr 			! erreur MPI

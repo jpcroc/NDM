@@ -43,7 +43,7 @@ module Parrinello_Rahman_Nose
 
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs
+  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocs
 
 #endif
  

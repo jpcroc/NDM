@@ -156,6 +156,7 @@ contains
        fnamgin = fnam(1:lenfnam)//'.gin'
 
        call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax)
+
        do iti=1,ntyp
           na(iti)=count(atrcf%ityp(1:atrcf%im)==iti)
        end do
@@ -335,7 +336,6 @@ contains
           write (6, *) rang,'imm trop petit'
           call arret_ndm
        endif
-
        i=0;im=0
        do icomp=1,atcomp%im
           xt(:)=atcomp%xp(:,icomp)
@@ -353,14 +353,17 @@ contains
           iti = atcomp%ityp(icomp)
           call coord_to_cell(xt,numcell,boxrep%bg,cellrep%nox,cellrep%noy,cellrep%noz)
           numproc=cellrep%proc_cell(numcell)
+          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+             
           if (numproc == myid) then
+
              i=i+1
              im=im+1
              atrep%num_at_glob(i)=atcomp%num_at_glob(icomp)
              if (present(nab)) nab(i)=icomp
              atrep%xp(:,i)=xt(:)
              atrep%ityp(i)=iti
-             div%proc_at(i)=myid
+             atrep%proc_at(i)=myid
           endif
        end do
        atrep%im=im
@@ -584,12 +587,14 @@ contains
 #ifdef PARA
     ncore=0
     call  decoupage(nprocs,ncore,cel2b,at2b)
+
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
     imtot=COMPatrcf%im
     im_glob=COMPatrcf%im
    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
-    call repartition(COMPatrcf,at2b,box2b,cel2b)
-    
+    write(6,*)'GINC1',rang,at2b%im,at2b%imm
+   call repartition(COMPatrcf,at2b,box2b,cel2b)
+    write(6,*)'GINC2',rang,at2b%im,at2b%imm
 #else
     if (ldecoup) then
        open(123, file='decoup.dat', status='old')

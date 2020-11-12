@@ -30,8 +30,8 @@ module calfo_mod
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE
-
+  USE mod_para,only:MPI_COMM_space
+  use Tpara,only:NDM_MPI_real_double
 #endif
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only: read_lammps,calcforce_lammps2

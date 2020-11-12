@@ -16,7 +16,7 @@ program ndm
 #ifdef PARA
   USE mod_para,only:MPI_COMM_space,myid,nprocs
   USE init_mpi_mod,only: init_mpi
-  USE NEB_module,only:init_mpi_neb
+  USE neb_module,only:init_mpi_neb
 #else
   USE mod_para,only:myid
 #endif
@@ -43,7 +43,7 @@ program ndm
   call init_MPI()
 
  PRINT *, 'Process ', rang, ' of ', nprocs, ' is alive'
-!  rang = myid
+  myid=rang
   parallele = .true.
 #else
   rang = 0;myid=0
@@ -114,11 +114,6 @@ program ndm
   !     write(6,*) 'main -> readdm'
   call readdm
 
-#ifdef PARA
-  if (dmtype==9) then
-     call init_mpi_neb
-  end if
-#endif  
   
   call prog
 

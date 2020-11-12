@@ -571,7 +571,6 @@ contains
           fnamcout = fnam(1:lenfnam)//'.cout'
           call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
        end if
-       !  call sauvegarde
        if (itmax==0) call arret_ndm
 
        if(iteanapos>0)then

@@ -34,7 +34,7 @@ contains
   USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_para,temps_debpara,maj_atomes_frt_ftm
+  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocs,temps_para,temps_debpara,maj_atomes_frt_ftm
 
 #endif
     implicit none

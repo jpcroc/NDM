@@ -1,11 +1,11 @@
 
 module paraneb_mod
-#ifdef PARANEB
+#ifdef PARA
   USE T_kind_param_m, ONLY:  double
   USE mpi
   implicit none
 
-  include 'mpif.h'
+!  include 'mpif.h'
   integer :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
 
   ! Module de declaration des variables MPI pour le code NDM
@@ -37,8 +37,8 @@ contains
     !Corps de la routine
 
     call MPI_INIT(ierr)
-    call MPI_COMM_RANK( MPI_COMM_space, myid, ierr )
-    call MPI_COMM_SIZE( MPI_COMM_space, nprocs, ierr )
+    call MPI_COMM_RANK( MPI_COMM_WORLD, myid, ierr )
+    call MPI_COMM_SIZE( MPI_COMM_WORLD, nprocs, ierr )
     write(6,*)'INPNEB', myid,nprocs
 
     temps_deb = MPI_Wtime()

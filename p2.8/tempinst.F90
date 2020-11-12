@@ -14,7 +14,7 @@ contains
     USE var_pot, ONLY:cm
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,nprocs,myid,NDM_MPI_REAl_DOUBLE
 
 #endif
     !-----------------------------------------------

@@ -17,8 +17,8 @@ contains
   USE force_tersoff_facteurs
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,maj_fp_frt
-
+  USE mod_para,only:MPI_COMM_space,maj_fp_frt
+  use Tpara,only:NDM_MPI_real_double
 #endif
 
 

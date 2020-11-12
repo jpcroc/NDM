@@ -2,10 +2,10 @@ module init_mpi_mod
 
 
 #ifdef PARA
-  use T_kind_param_m, ONLY:   double,NDM_MPI_REAL_DOUBLE
-#else
+  use Tpara, ONLY:   NDM_MPI_REAL_DOUBLE
+#endif
   use T_kind_param_m, ONLY:  double
-#endif  
+
 !  use atomconfig,only: atom_config
 
   implicit none
@@ -35,6 +35,7 @@ contains
     call MPI_COMM_GROUP( MPI_COMM_WORLD, grp_world, ierr )
     !  MPI_COMM_space=MPI_COMM_WORLD
     temps_deb = MPI_Wtime()
+
 
   end subroutine init_mpi
 

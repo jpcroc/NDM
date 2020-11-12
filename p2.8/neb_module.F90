@@ -22,7 +22,7 @@ module neb_module
   USE setcell,only:setcellconf,setnox
   USE sauvegardeT_mod,only:sauvegardeT
 #ifdef PARA
-  use mod_para,only::grp_world,nprocs,myid,MPI_COMM_space
+  use mod_para,only:grp_world,nprocs,myid,MPI_COMM_space
 #else
   use mod_para,only:myid
 #endif
@@ -141,7 +141,7 @@ end if
     integer::imm,im
     real(double)  :: dxx(3,imm)
     !-----------------------------------------------
-    integer :: iph,ic,non_contr,i,idepmax,itread
+    integer :: iph,i,idepmax,itread
     real(double),dimension(:,:), allocatable   :: fp_buffer
     real(double)::deplamax,depla
     CHARACTER(len=80) :: ginFile
@@ -267,11 +267,10 @@ end if
     !-----------------------------------------------
     implicit none
     integer  :: ip,ia,im,imm
-    real(double) :: e_i,e_i_p,e_i_m,dE_max, dE_min,norm,       &
+    real(double) :: e_i,e_i_p,e_i_m,dE_max, dE_min,      &
          Rtemp_p,Rtemp_m, temp_m,temp_p
     real(double), dimension(3) :: tg_p(3),tg_m(3),Rtemp(3)
-    real(double),dimension(3,npath)   :: rcm_loc
-    real(double),dimension(3,imm)     :: dxx
+
 
 
     do ip=2,npath-1
@@ -424,7 +423,7 @@ end if
     real(double)  :: fp(3,imm)      
     !-----------------------------------------------
     integer       :: ia
-    real(double)  :: lbd,rcm_loc(3)
+    real(double)  :: lbd
     !-----------------------------------------------
 
     lbd=0
@@ -457,11 +456,8 @@ end if
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     integer::imm,im
-    integer  :: ielat(imm)
-    integer  :: iwmax(imm)
     integer  :: ityp(imm)
     real(double)  :: xp(3,imm)
-    real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
     real(double)  :: fp(3,imm)      
     !-----------------------------------------------
@@ -499,12 +495,10 @@ end if
 !    USE tab_imm_m,only:xp,xpp,vp,fp,ielat,iwmax,ityp,num_at_glob
     USE gen_com_m, ONLY:imm
 
-    integer :: ic, ip,lucin,icintype,typmax,i,typmin,itread,fmt_cin,formatsauv,iti,lat(3)
+    integer ::  ip,lucin,itread,fmt_cin,formatsauv,iti
     character :: extension*9
     character :: fnamneb*80
-    real(double)::atg(3,3)
     type(atom_config)::atrgin
-    type(box_config)::boxrgin
     call allocate_neb(0,imm)
 
     if (igen==1) then 

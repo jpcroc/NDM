@@ -1,6 +1,7 @@
 module boxconfig
   USE T_kind_param_m
   use recips_mod,only:recips,calcvol
+  use atomconfig,only:atom_config,atom_config_d,atom_config_e
   implicit none
   type box_config
      real(double):: at(3,3)
@@ -97,7 +98,7 @@ contains
      USE cryst_to_cart_mod,only: cryst_to_cart
      USE T_kind_param_m, ONLY:  double
      USE gen_com_m, ONLY:lperiod,zero
-     use atomconfig,only:atom_config,atom_config_d,atom_config_e
+
      !  USE tab_imm_m,only:
 
     USE gen_com_m, ONLY:low_limit,zero

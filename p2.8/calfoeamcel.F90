@@ -14,12 +14,18 @@ module calfoeamcel_mod
   USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,eamglue,eamrho,rue_pot,&
        &typ_and_pot,typ_pot_pair,ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,ipo,eamrep,eamrep,&
   &eamglue,eamglue,eamrho
-#ifdef PARA
-  use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,maj_tabdensity_ftm
 
-#endif
+#ifdef PARA
+  !  use mpi
+  use Tpara,only:NDM_MPI_real_double
+  USE mod_para,only:MPI_COMM_space,maj_tabdensity_ftm
   implicit none
+  include 'mpif.h'
+
+#else
+  implicit none
+#endif
+
 
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s

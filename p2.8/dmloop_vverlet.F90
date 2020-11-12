@@ -39,7 +39,7 @@ contains
 
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
+    USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocs,temps_debpara,temps_para
 
 #endif
     implicit none
@@ -54,7 +54,7 @@ contains
 #ifdef PARA
     ! declarations supplementaires pour MPI
     real(double), dimension(3,3,noxyz) :: sigc_tot
-
+    integer::ierr2
 #endif
 
     !-----------------------------------------------
@@ -136,10 +136,10 @@ contains
 
        !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        !  sig=sig_tot
-       call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
        sigkine=sigkine_tot
        if (allocated(sigc)) then
-          call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+          call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
           sigc=sigc_tot
        end if
 #endif

@@ -23,13 +23,18 @@ module neb_mod
        &lvzeroneb,dragtest,nebtest,force_neb,formax,init_neb,find_relax,bruit_neb,build_s_path_drag,&
        &force_projection,build_s_path_neb,force_projection_neb,paraneb
   USE caltabi_mod,only: caltabi
-
+ USE decoupage_mod,only: decoupage
   USE parautils,only:initloc,pointer_caltabt_calfo
   
-!#ifdef PARA
-!  USE paraneb_mod
-!#endif
-  implicit none 
+#ifdef PARA
+  use mod_para,only:MPI_COMM_space, nprocs,myid,NDM_MPI_REAl_DOUBLE
+#endif
+  implicit none
+#ifdef PARA
+  include 'mpif.h'
+   integer, dimension( MPI_STATUS_SIZE) :: statut2
+
+#endif
 contains
   subroutine neb 
     !-----------------------------------------------
@@ -60,8 +65,10 @@ contains
     INTEGER, dimension(:), allocatable :: fire_nstep,iter
     !    type(atom_config_d)::atdml
     !    type(cell_config)::celndm
-    type(atom_config_d),pointer::atnebloc
+    class(atom_config_d),pointer::atnebloc
     type(cell_config),pointer::cellnebloc
+    type(atom_config_d),target::atnebld
+
 
 #ifdef PARA    
     real(double),allocatable:: enepathev_tot(:),enepath_tot(:),sigpath_tot(:,:,:),rc_tot(:)
@@ -116,12 +123,14 @@ contains
     end do
     !????
 #ifdef PARA
-    if (paraneb%npim.gt.1) then 
-       call  decoupage(paraneb%npim,nprocs,0,cellneb(paraneb%image+2),atneb(paraneb%image+2))
-    endif
     ii=paraneb%image+2
     !    write(6,*)'GIN2NDM',size(at2b%xp)
-    call initloc(atneb(ii),cellneb(ii),atnebloc,celnebloc,boxneb,paraneb,rumax,lperiod) !initloc contient caltabtc sur atloc
+    atnebloc=>atnebld
+    if (paraneb%npim.gt.1) then 
+       call  decoupage(paraneb%npim,0,cellneb(paraneb%image+2),atneb(paraneb%image+2))
+    endif
+
+    call initloc(atneb(ii),cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod) !initloc contient caltabtc sur atloc
 
 
 !!$       call cellneb(ii)%copy_cell(celnebloc)
@@ -191,6 +200,7 @@ contains
 #ifdef PARA
        if ((ii==paraneb%image+2).or.((ii==1).and.(paraneb%image==0)).or.((ii==npath).and.(paraneb%image==paraneb%npim-1))) then
 #endif
+
           call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
                &lperiod,ltabvois,it,itetabvois,lchg=.false.)
 
@@ -366,19 +376,19 @@ contains
 
 #ifdef PARA
                    if (paraneb%rgmas.lt.paraneb%nimage-1) call MPI_SEND(enepath(ii), 1,   NDM_MPI_REAL_DOUBLE,   paraneb%rgmas+1,10001,paraneb%comm_master,ierr)
-                   if (paraneb%rgmas.gt.0)  call MPI_RECV(enepath(ii-1),1,   NDM_MPI_REAL_DOUBLE,   paraneb%rgmas-1,10001,paraneb%comm_master,status,ierr)
+                   if (paraneb%rgmas.gt.0)  call MPI_RECV(enepath(ii-1),1,   NDM_MPI_REAL_DOUBLE,   paraneb%rgmas-1,10001,paraneb%comm_master,statut2,ierr)
 
                    if (paraneb%rgmas.lt.nprocs-1)    call MPI_SEND(atneb(ii)%xp(1:3,1:im), 3*im,   NDM_MPI_REAL_DOUBLE,  paraneb%rgmas+1,10002,paraneb%comm_master,ierr)
                    if (paraneb%rgmas.gt.0)                 call MPI_RECV(atneb(ii-1)%xp(1:3,1:im),3*im,   NDM_MPI_REAL_DOUBLE,   &
-                        &paraneb%rgmas-1,10002,paraneb%comm_master,status,ierr)
+                        &paraneb%rgmas-1,10002,paraneb%comm_master,statut2,ierr)
 
                    if (paraneb%rgmas.gt.0) call MPI_SEND(enepath(ii), 1,   NDM_MPI_REAL_DOUBLE,   paraneb%rgmas-1,10003,paraneb%comm_master,ierr)
                    if (paraneb%rgmas.lt.nprocs-1)    call MPI_RECV(enepath(ii+1),1,   NDM_MPI_REAL_DOUBLE,   paraneb%rgmas+1,10003,&
-                        paraneb%comm_master,status,ierr)
+                        paraneb%comm_master,statut2,ierr)
 
                    if (paraneb%rgmas.gt.0)  call MPI_SEND(atneb(ii)%xp(1:3,1:im), 3*im,   NDM_MPI_REAL_DOUBLE,  paraneb%rgmas-1,10004,paraneb%comm_master,ierr)
                    if (paraneb%rgmas.lt.nprocs-1)   call MPI_RECV(atneb(ii+1)%xp(1:3,1:im),3*im,   NDM_MPI_REAL_DOUBLE,   paraneb%rgmas+1,10004,&
-                        paraneb%comm_master,status,ierr)
+                        paraneb%comm_master,statut2,ierr)
 
                    enepathev(:)=enepath(:)*erg2ev
                    !             stop
@@ -482,21 +492,21 @@ contains
              ! Pour le processeur maitre il n'y a rien a faire
              ! reception des donnees des autres processeurs
              !          if (iproc.ne.0) then
-             call MPI_RECV(enertrf,               1,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10001, paraneb%comm_master, status, ierr)
-             proc_source = status(MPI_SOURCE)
+             call MPI_RECV(enertrf,               1,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10001, paraneb%comm_master, statut2, ierr)
+             proc_source = statut2(MPI_SOURCE)
              enepath(proc_source+2)=enertrf
-             call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10002, paraneb%comm_master, status, ierr)
-             proc_source = status(MPI_SOURCE)
+             call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10002, paraneb%comm_master, statut2, ierr)
+             proc_source = statut2(MPI_SOURCE)
              sigpath(:,:,proc_source+2)=sigpathtrf(:,:)
-             call MPI_RECV(rc_trf,1,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10005, paraneb%comm_master, status, ierr)
-             proc_source = status(MPI_SOURCE)
+             call MPI_RECV(rc_trf,1,NDM_MPI_REAL_DOUBLE,      MPI_ANY_SOURCE, 10005, paraneb%comm_master, statut2, ierr)
+             proc_source = statut2(MPI_SOURCE)
              reaction_coord(proc_source+2)=rc_trf
 
              !          endif
           end do
-          call MPI_RECV(enertrf,               1,NDM_MPI_REAL_DOUBLE,   nprocs-1, 10003, paraneb%comm_master, status, ierr)
+          call MPI_RECV(enertrf,               1,NDM_MPI_REAL_DOUBLE,   nprocs-1, 10003, paraneb%comm_master, statut2, ierr)
           enepath(npath)=enertrf
-          call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,    nprocs-1, 10004, paraneb%comm_master, status, ierr)
+          call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,    nprocs-1, 10004, paraneb%comm_master, statut2, ierr)
           sigpath(:,:,npath)=sigpathtrf(:,:)
 
 

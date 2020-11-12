@@ -75,24 +75,21 @@ contains
        buffer(:,1:im) = atdml%xp(:,1:im)
        pt_im(0)=1
        next_pt = pt_im(0) + im_loc(0)
-!       write(6,*)'P1 RANG',rang
+
        do i_proc=1,nprocs-1
           call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_space, status, ierr)
+
           proc_source = status(MPI_SOURCE)
           im_loc(proc_source)=im_temp
           pt_im(proc_source)=next_pt
           next_pt = pt_im(proc_source) + im_loc(proc_source)
           call MPI_RECV(ibuffer(pt_im(proc_source):pt_im(proc_source)+im_temp-1),    im_loc(proc_source),   &
                MPI_INTEGER,         proc_source, 11002, MPI_COMM_space, status, ierr)
-!!$          call mpi_barrier(MPI_COMM_space,ierr)
-!!$          call MPI_FINALIZE(ierr)
-!!$          stop
          call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
               NDM_MPI_REAL_DOUBLE, proc_source, 11003, MPI_COMM_space, status, ierr)
        enddo
        write (lucout) ibuffer  ! Ecriture ityp
        write (lucout) buffer   ! Ecriture xp
-
 
        ibuffer(1:im) = atdml%num_at_glob(1:im)
        do i_proc=1,nprocs-1
@@ -189,7 +186,6 @@ contains
 
     else ! rang different de 0 :
 #ifdef PARA
-
        call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
       call MPI_SEND(atdml%ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
        call MPI_SEND(atdml%xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_space,ierr)
