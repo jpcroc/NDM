@@ -15,8 +15,9 @@ contains
     USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE
-
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
+#else
+  USE mod_para,only:nprocspace
 #endif
     ! ewald reciproque
     ! **************************************************************
@@ -114,10 +115,14 @@ contains
 #ifdef PARA
                 ! Reduction MPI en interne de la boucle. Prefere au stockage dans des tableaux
                 ! (pour scalar et hbv il faudrait ajouter des dimensions ncoux/y/z)
-                call MPI_ALLREDUCE(scacos,scacos_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-                scacos = scacos_glob
-                call MPI_ALLREDUCE(scasin,scasin_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-                scasin = scasin_glob
+                if (nprocspace.gt.1) then
+                   call MPI_ALLREDUCE(scacos,scacos_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,&
+                        &MPI_COMM_space,ierr)
+                   scacos = scacos_glob
+                   call MPI_ALLREDUCE(scasin,scasin_glob,1,NDM_MPI_REAL_DOUBLE,&
+                        MPI_SUM,MPI_COMM_space,ierr)
+                   scasin = scasin_glob
+                end if
 #endif
                 do i = 1, im
                    iti = ityp(i)

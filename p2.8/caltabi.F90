@@ -20,7 +20,6 @@ subroutine caltabi(atvois,celvois,boxndm)
 
 
   USE var_pot, ONLY:ipotentiel,npair,ipo
-  USE tab_imm_m,only:iwmax2
   !           version du 4 juin 2010, 14h38 - last chaged by MCM
   ! *****************************************************************
 
@@ -143,7 +142,6 @@ subroutine caltabi(atvois,celvois,boxndm)
            indi2(iw) = j
         end do
         atvois%iwmax(i) = iw
-        iwmax2(i) = iw
         nvij=iw-iwo
 
      end do   ! atvois%im 
@@ -207,15 +205,9 @@ subroutine caltabi(atvois,celvois,boxndm)
 
         end do !ncelvois
         atvois%iwmax(i) = iw
-        iwmax2(i)= iwph
         nvij=iw-iwo
-        if (i>1) then
-             itemp= iwmax2(i)-iwmax2(i-1)
-             if (itemp>ivoismax) ivoismax=itemp
-        end if 
 
 !                 write(6,*)'NVIJ',i,nvij,iw       
-       !debug write(*,*) 'caltaabi calling', i, iwmax(i), iwmax2(i), rvois2(:)
      end do ! fin i
      maxvoi=iw
 

@@ -58,12 +58,6 @@ contains
     ! last iteration ?
     if (it>=itmax) then
        if (rang==0) write (6, *) '*******Derniere iteration PAS CONVERGE !!**** '
-       !     call endrun
-       !     call DeallocateAll
-       !#ifdef para
-       !        call MPI_FINALIZE(code)
-       !#endif
-       !     stop
        dragtest=1
        nebtest(ii)=1
        return

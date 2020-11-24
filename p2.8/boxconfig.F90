@@ -10,7 +10,7 @@ module boxconfig
      integer(long)::icaltabt 
 
    contains
-     procedure, pass::print=>cellprint
+     procedure, pass::print=>boxprint
   end type box_config
 contains
   subroutine initbox(boxnew,at,zl)
@@ -83,13 +83,13 @@ contains
     return
   end subroutine boxconfig2ndm
 
-  subroutine cellprint(boxprt)
+  subroutine boxprint(boxprt)
     class(box_config)::boxprt
      write(6,*)'boxprt at',boxprt%at(:,:)
      write(6,*)'boxprt bg',boxprt%bg(:,:)
      write(6,*)'boxprt volu',boxprt%volu
      write(6,*)'boxprt icaltabt',boxprt%icaltabt
-   end subroutine cellprint
+   end subroutine boxprint
 
    subroutine periodbox(box,atcf)
      !-----------------------------------------------

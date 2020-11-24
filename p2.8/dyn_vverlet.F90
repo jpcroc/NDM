@@ -28,7 +28,9 @@ contains
 #ifdef PARA
     use mpi
 
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para,maj_atomes_frt_ftm
+    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,temps_debpara,temps_para,maj_atomes_frt_ftm,nprocspace
+#else
+    USE mod_para,only:nprocspace
 #endif
     USE caltabi_mod,only:caltabi
     USE elec_cell, ONLY:TTlangevin
@@ -123,11 +125,13 @@ contains
 
 
 #ifdef PARA
-    temps_debpara=MPI_Wtime()
-    ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-    call maj_atomes_frt_ftm(atdml,celndm)
-    temps_para=temps_para+MPI_Wtime()-temps_debpara
-    if (ltranche) call layer
+    if (nprocspace.gt.1) then
+       temps_debpara=MPI_Wtime()
+       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+       call maj_atomes_frt_ftm(atdml,celndm)
+       temps_para=temps_para+MPI_Wtime()-temps_debpara
+       if (ltranche) call layer
+    end if
 #endif
 
 

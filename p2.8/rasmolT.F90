@@ -1,19 +1,20 @@
 ! ****************************************************************
-module rasmol_mod
+module rasmolT_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:rang,ivisu,sigat,ldesinteg,lpkbar,im_glob,&
        &cunitP,it,lcasca,timel,unitP,at,fnam,bg,erg2ev,lenfnam,eatom,dmtype,umass
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
-!    USE paraneb_mod
-    !USE tab_imm_m,only:num_at_glob,ityp,xp
-    use atomconfig,only: atom_config,atom_config_d,atom_config_e
-    use boxconfig,only:box_config
-    implicit none
-    integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when we
+  !    USE paraneb_mod
+  !USE tab_imm_m,only:num_at_glob,ityp,xp
+  use atomconfig,only: atom_config,atom_config_d,atom_config_e
+  use paraconfig,only:para_config
+  use boxconfig,only:box_config
+  implicit none
+  integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when we
 contains
 
-  subroutine rasmol(atmol,boxmol,itapp,namefr,rty)
+  subroutine rasmolT(atmol,boxmol,itapp,namefr,rty)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -22,8 +23,8 @@ contains
     !namefr est la racine nom du fichier (par défaut celui de name.in
     !rty est un tableau     character*3,intent(in), dimension(1:atmol%im),optional  :: rty qui donne les symboles des atomes. utile pour utiliser d'autres symboles que les symboles chimiques associés aux types des atomes. En l'absence de rty, on utilise les symboles des types des atomes.
     !ivisu dans gen_com_m : 1 :.mol, 4=.cfg ; 2=.xred
-   
- 
+
+
 
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
@@ -48,10 +49,10 @@ contains
     integer :: rgloc,im,imm,j,ic
 
     character*3, dimension(:), allocatable  :: tyw
-    real(double)::xp(3,atmol%im)
+    real(double),allocatable::xp(:,:)
     real(double),allocatable::sigat(:,:,:),eat(:)
-    integer:: num_at_glob(atmol%im)
-    integer::ityp(atmol%im)
+    integer,allocatable:: num_at_glob(:)
+    integer,allocatable::ityp(:)
 
 #ifdef PARA
     integer :: iproc
@@ -62,31 +63,56 @@ contains
     real(double),allocatable::sigat_loc(:,:,:),eat_loc(:)
     integer :: im_loc
     integer :: proc_source
-#endif
 
+    type(para_config)::div
+#endif
+    type(atom_config)::atcomp
     integer :: i, luvisu, luvisu2, iti,lenfn2
     real(double) :: xp1, xp2, xp3,at(3,3),bg(3,3),pat
     character :: extension*9
 
+#ifdef PARA
+    if (nprocspace.gt.1) then
+       call atcomp%init(im_glob)
+       div%rgim=myid
+       div%npim=nprocspace
+       div%comm_image=MPI_COMM_space
+       call atmol%vers_master(atcomp,div)
+       im =atcomp%im
+       imm=atcomp%im
+       rgloc=myid
+    else
+       rgloc=0
+       call atcomp%init(atmol%im)
+       call atmol%copy_config(atcomp,lrescl=.true.)
+       im=atmol%im
+       imm=atmol%imm
+    end if
+#else
+    call atcomp%init(atmol%im,ltabvois=.false.)
+    call atmol%copy_config(atcomp,lrescl=.true.)
+    im=atmol%im
+    imm=atmol%imm
+#endif  
 
-    
-    im=atmol%im; imm=atmol%imm
+
     at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8
-    xp(1:3,1:atmol%im)=atmol%xp(1:3,1:atmol%im)*1d8
-    num_at_glob(1:atmol%im)=atmol%num_at_glob(1:atmol%im)
-    ityp(1:im)=atmol%ityp(1:im)
-    allocate(tyw(1:atmol%imm))
+    allocate(xp(3,im));allocate(ityp(im));allocate(num_at_glob(imm))
+    xp(1:3,1:atmol%im)=atcomp%xp(1:3,1:atmol%im)*1d8
+    num_at_glob(1:atmol%im)=atcomp%num_at_glob(1:atmol%im)
+    ityp(1:im)=atcomp%ityp(1:im)
+    allocate(tyw(imm))
     tyw='000'
     !    do i=1,im
     !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
     !    end do
     if (present (rty))then
-       tyw(1:atmol%im)=rty(1:atmol%im)
+       tyw(1:im)=rty(1:im)
     else
-!       do i=1,im
-!          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
-!       end do
-       tyw(1:atmol%im)=ty(atmol%ityp(1:atmol%im))
+       !       do i=1,im
+       !          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
+       !       end do
+       tyw(1:im)=ty(ityp(1:im))
     end if
 
 
@@ -97,9 +123,9 @@ contains
           sigat=0
           sigat(:,:,1:im)=atmol%sigat(:,:,:1:im)
        end if
-       
+
        if(atmol%lprteat) then
-          
+
           allocate (eat(im)) ; eat=0; eat(1:im)=atmol%eat(1:im)
        end if
     end select
@@ -116,13 +142,6 @@ contains
     !    if (dmtype==17) then 
     !       call redefine_ty() 
     !    end if
-
-
-#ifdef PARA
-    rgloc=myid
-#else
-    rgloc=0
-#endif    
     !
     if(lPkbar) then
        unitP=1.0d-9
@@ -135,12 +154,6 @@ contains
     !    iksp=-1
     !    if (lcasca) iksp=iko
     !    if (ldesinteg)iksp=1
-    luvisu = 86
-    luvisu2 = 87
-#ifdef PARA   
-    luvisu = 86+rang
-    luvisu2 = 87+rang
-#endif    
 
     !      write (*, *) 'entree dans rasmol.f',im
 
@@ -154,6 +167,12 @@ contains
     ! de l'iteration vers fichier tampon relu sous format caractere.
 
     if(rgloc==0) then
+       luvisu = 86
+       luvisu2 = 87
+#ifdef PARA   
+       luvisu = 86+rang
+       luvisu2 = 87+rang
+#endif    
 
        ! TJ: change the formatting so that files are well listed.
 
@@ -182,7 +201,7 @@ contains
              open(luvisu, file=namef, form='formatted', &
                   status='unknown')
 
-             write (luvisu, '(I9,A,I7,A,F12.6)') im_glob, ' IT =', itapp, ' Time = ', timel
+             write (luvisu, '(I9,A,I7,A,F12.6)') im, ' IT =', itapp, ' Time = ', timel
 
              write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
              !at=at/1.d8
@@ -222,12 +241,8 @@ contains
              end if
           end if
           open(luvisu, file=namef, form='formatted', status='unknown')
-#ifdef PARA
-          write(luvisu,'(a,i0)')'Number of particles = ', im_glob
-#else
           write(luvisu,'(a,i0)')'Number of particles = ', im
 
-#endif
 
 
 
@@ -243,143 +258,50 @@ contains
           call cryst_to_cart (im, xp,  bg,  -1) !cart vers cryst
 
        end select
-
-    end if
-    !if(itapp==0) open (file='filmtot.mol',unit=47)
-    !if(itapp==0) open (file='filmtot.mol',unit=47)
-    !      write (47, 134) im
-    !      write (47, *) 'IT =', itapp, '    Time = ', timel
-
-
-
-#ifdef PARA
-    ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
-
-
-
-    if (myid==0) then
-       ! Copie des tableaux xp,num_at_glob et ityp locaux 
-       allocate(xp_loc(3,imm))
-       allocate(ityp_loc(imm))
-       allocate(num_at_glob_loc(imm))
-       allocate(tyw_loc(imm))
-       xp_loc = xp
-       ityp_loc = ityp
-       num_at_glob_loc = num_at_glob
-       im_loc = im
-       tyw_loc=tyw
-       select type (atmol)
-       type is (atom_config_e)
-          if (atmol%lprteat) then
-             allocate (eat_loc(imm))
-             eat_loc=eat
-          end if
-          if (atmol%lsigat)then
-             allocate (sigat_loc(3,3,imm))
-             sigat_loc=sigat
-          end if
-       end select
-       ! Boucle sur les processeurs
-       do iproc=0,nprocspace-1
-          ! Pour le processeur maitre il n'y a rien a faire
-          ! reception des donnees des autres processeurs
-          if (iproc.ne.0) then
-             call MPI_RECV(im,               1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_space, status, ierr)
-             proc_source = status(MPI_SOURCE)
-             call MPI_RECV(xp(1:3,1:im),     3*im, NDM_MPI_REAL_DOUBLE, proc_source, 10002, MPI_COMM_space, status, ierr)
-             call MPI_RECV(ityp(1:im),       im,   MPI_INTEGER,         proc_source, 10003, MPI_COMM_space, status, ierr)
-             call MPI_RECV(num_at_glob(1:im),im,   MPI_INTEGER,         proc_source, 10004, MPI_COMM_space, status, ierr)
-             call MPI_RECV(tyw(1:im),3*im,   MPI_CHARACTER,         proc_source, 10004, MPI_COMM_space, status, ierr)
+       do i = 1, im
+          xp1 = xp(1,i)
+          xp2 = xp(2,i)
+          xp3 = xp(3,i)
+          select case (ivisu)
+          case(1)
+             !                write (6,*) 't',tyw(i)
+             !                write(6,*)'x', xp1,xp2, xp3
+             write (luvisu, '(A,3f10.4)',advance='no') tyw(i),xp1, xp2, xp3
              select type (atmol)
              type is (atom_config_e)
-                if (atmol%lprteat) call MPI_RECV(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,  proc_source, 10005, MPI_COMM_space, &
-                     &status, ierr)
-                if (atmol%lsigat) call MPI_RECV(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE,proc_source, 10006, &
-                     &MPI_COMM_space, status, ierr)
-             end select
-!       select type (atmol)
-!       type is (atom_config_e)
-!          if (atmol%lprteat) call MPI_send(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10005, MPI_COMM_space, status, ierr)
-!          if (atmol%lsigat) call MPI_send(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10006, MPI_COMM_space, status, ierr)
-!       end select
-
-          endif
-#endif
-          do i = 1, im
-             xp1 = xp(1,i)
-             xp2 = xp(2,i)
-             xp3 = xp(3,i)
-             select case (ivisu)
-             case(1)
-!                write (6,*) 't',tyw(i)
-!                write(6,*)'x', xp1,xp2, xp3
-                write (luvisu, '(A,3f10.4)',advance='no') tyw(i),xp1, xp2, xp3
-                select type (atmol)
-                type is (atom_config_e)
-                   if (atmol%lsigat) then
-                      if(it.eq.0)then
-                         pat=0.0
-                      else
-                         pat=unitP*(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
-                      end if
-                      write (luvisu, '(D14.5)',advance='no') pat
+                if (atmol%lsigat) then
+                   if(it.eq.0)then
+                      pat=0.0
+                   else
+                      pat=unitP*(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
                    end if
-                   if (atmol%lprteat) write (luvisu, '(D14.5)',advance='no') eat(i)*erg2ev
-                end select
-#ifdef PARA
-                write (luvisu, '(I9)')  num_at_glob(i)
-#else
-                write (luvisu, '(I9)')  i
-#endif
-             case(3)                    
-                write (luvisu,'(3es15.6,2x,2a)') xp1, xp2, xp3, ' ! ', tyw(i)
-             case(4)
-                WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
-                WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
-                write(luvisu, '(3(g24.16,1x))') xp(:,i)
-
+                   write (luvisu, '(D14.5)',advance='no') pat
+                end if
+                if (atmol%lprteat) write (luvisu, '(D14.5)',advance='no') eat(i)*erg2ev
              end select
-             !               write (47, 135) tyw(i),xp1, xp2, xp3
-             !end if
-
-
-          end do
-
 #ifdef PARA
-       enddo  ! fin de boucle sur les processeurs
-       ! Le processeur maitre recupere ses donnees locales
-       xp = xp_loc
-       ityp = ityp_loc
-       num_at_glob = num_at_glob_loc
-       im = im_loc
-       deallocate(xp_loc)
-       deallocate(ityp_loc)
-       deallocate(num_at_glob_loc)
-       select type (atmol)
-       type is (atom_config_e)
-          
-          if (atmol%lprteat) then
-             eat=eat_loc
-             deallocate (eat_loc)
-          end if
-          if (atmol%lsigat)then
-             sigat=sigat_loc
-             deallocate (sigat_loc)
-          end if
-       end select
-    else ! Les autres processeurs envoient leurs donnees locales
-       call MPI_SEND(im,               1,   MPI_INTEGER,        0,10001,MPI_COMM_space,ierr)
-       call MPI_SEND(xp(1:3,1:im),     3*im,NDM_MPI_REAL_DOUBLE,0,10002,MPI_COMM_space,ierr)
-       call MPI_SEND(ityp(1:im),       im,  MPI_INTEGER,        0,10003,MPI_COMM_space,ierr)
-       call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_space,ierr)
-       select type (atmol)
-       type is (atom_config_e)
-          if (atmol%lprteat) call MPI_SEND(eat(1:im),im,  NDM_MPI_REAL_DOUBLE  ,    proc_source, 10005, MPI_COMM_space,  ierr)
-          if (atmol%lsigat) call MPI_SEND(sigat(:,:,1:im),9*im,  NDM_MPI_REAL_DOUBLE  ,         proc_source, 10006, &
-               &MPI_COMM_space,  ierr)
-       end select
-    endif
+             write (luvisu, '(I9)')  num_at_glob(i)
+#else
+             write (luvisu, '(I9)')  i
 #endif
+          case(3)                    
+             write (luvisu,'(3es15.6,2x,2a)') xp1, xp2, xp3, ' ! ', tyw(i)
+          case(4)
+             WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
+             WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
+             write(luvisu, '(3(g24.16,1x))') xp(:,i)
+
+          end select
+          !               write (47, 135) tyw(i),xp1, xp2, xp3
+          !end if
+
+
+       end do
+       close(luvisu)
+    end if
+
+
+    !if(itapp==0) open (file='filmtot.mol',unit=47)
 
 
     ! -------------------------------------------------------------
@@ -407,12 +329,12 @@ contains
 801 format(a8)
 901 format(a9)
 
-    if(rgloc==0)      close(luvisu)
+
 
     return
-  end subroutine rasmol
+  end subroutine rasmolT
 
 
 
 
-end module rasmol_mod
+end module rasmolT_mod

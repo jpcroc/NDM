@@ -10,7 +10,7 @@ module calctemp_mod
   USE cellconfig,only : cell_config
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE,nprocspace
 #endif
 
   ! *************************************************************
@@ -134,34 +134,36 @@ subroutine calctemp(temp,kine,atcf, cellcf)
   end do
 
 #ifdef PARA
-  call MPI_ALLREDUCE(kine,kinetot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-  kine=kinetot
-  call MPI_ALLREDUCE(sumtat2,sumtat2tot,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-  sumtat2=sumtat2tot
+  if (nprocspace.gt.1) then
+     call MPI_ALLREDUCE(kine,kinetot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+     kine=kinetot
+     call MPI_ALLREDUCE(sumtat2,sumtat2tot,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+     sumtat2=sumtat2tot
 !  call MPI_ALLREDUCE(vx2(1:ntyp,1:3),vx2_glob(1:ntyp,1:3),ntyp*3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
 !  vx2=vx2_glob
-  if (allocated(cellcf%tempc)) then
-     call MPI_ALLREDUCE(cellcf%tempc,tempc_tot,cellcf%noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-     cellcf%tempc=tempc_tot
-  end if
-  if (l2T.eqv..true.) then
-     call MPI_ALLREDUCE(ecell%tempIon,tempiontot,nex*ney*nez,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-     ecell(:,:,:)%tempIon=tempiontot(:,:,:)
-     niontot=0
-     call MPI_ALLREDUCE(ecell%nIon,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
-     ecell(:,:,:)%nIon=niontot(:,:,:)
-     niontot=0
-     call MPI_ALLREDUCE(ecell%nIonS,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
-     ecell(:,:,:)%nIonS=niontot(:,:,:)
+     if (allocated(cellcf%tempc)) then
+        call MPI_ALLREDUCE(cellcf%tempc,tempc_tot,cellcf%noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+        cellcf%tempc=tempc_tot
+     end if
+     if (l2T.eqv..true.) then
+        call MPI_ALLREDUCE(ecell%tempIon,tempiontot,nex*ney*nez,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+        ecell(:,:,:)%tempIon=tempiontot(:,:,:)
+        niontot=0
+        call MPI_ALLREDUCE(ecell%nIon,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
+        ecell(:,:,:)%nIon=niontot(:,:,:)
+        niontot=0
+        call MPI_ALLREDUCE(ecell%nIonS,niontot,nex*ney*nez,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
+        ecell(:,:,:)%nIonS=niontot(:,:,:)
+        
+        call MPI_ALLREDUCE(tempEP,tempEptot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+        tempEP=tempEPtot
+        call MPI_ALLREDUCE(nats,natstot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
+        nats=natstot
+        
 
-     call MPI_ALLREDUCE(tempEP,tempEptot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-     tempEP=tempEPtot
-     call MPI_ALLREDUCE(nats,natstot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
-     nats=natstot
-     
-
-     deallocate(tempiontot)
-     deallocate(niontot)
+        deallocate(tempiontot)
+        deallocate(niontot)
+     end if
   end if
 #endif
 
@@ -186,11 +188,16 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 !     if( allocated(free)) then
 !        temp = temp/float(imfree)
 !     else
-  temp = sumtat2/float(im_glob)
+  if (nprocspace.gt.1) then
+     temp = sumtat2/float(im_glob)
+deallocate(tempc_tot)
+  else
+     temp = sumtat2/float(atcf%im)
+  end if
   !     end if
-  deallocate(tempc_tot)
+ 
 #else
-        temp = sumtat2/float(atcf%im)
+     temp = sumtat2/float(atcf%im)
         
 #endif
 

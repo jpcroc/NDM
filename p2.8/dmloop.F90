@@ -26,7 +26,9 @@ module dmloop_mod
   use var_pot, only: cm! iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
 #ifdef PARA
   use mpi
-  use mod_para,only:NDM_MPI_REAL_DOUBLE,MPI_COMM_space,ierr
+  use mod_para,only:NDM_MPI_REAL_DOUBLE,MPI_COMM_space,ierr,nprocspace
+#else
+  
 #endif
   
   implicit none
@@ -133,12 +135,13 @@ contains
        sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
 
 #ifdef PARA
+    if (nprocspace.gt.1) then
 
        !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        !  sig=sig_tot
        call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        sigkine=sigkine_tot
-
+    end if
 #endif
 
        sigtot = sigkine+sig

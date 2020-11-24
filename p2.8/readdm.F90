@@ -38,7 +38,7 @@ contains
     use neb_module,only: lvzeroneb
     USE montecarlo_mod, ONLY: pas_lambda_mc
 #ifdef PARA
-    USE mod_para,only:MPI_COMM_space,NPROCS
+    USE mod_para,only:MPI_COMM_space,NPROCSpace
 #endif
 
     ! *****************************************************************
@@ -371,21 +371,7 @@ contains
        stop
     end if
 
-    imm_glob = imm
-#ifdef PARA
-    ! En parallele, on initialise le nombre maximum d'atomes d'un
-    ! processus au nombre d'atomes locaux. Plus tard ce nombre sera
-    ! complete par le nombre maximal d'atomes fantomes
-    ! On suppose que la concentration max ne depasse pas 20%  de 
-    ! la concentration moyenne
-    imm      = min( imm_glob, int(1.2 * imm_glob / nprocs) )
-    if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
-#endif
-
-
-
-
-    if (rang == 0) then
+   if (rang == 0) then
        if (imm <= 0) then
           write (6, *) rang,'nombre d''atomes nul-> stop'
           call arret_ndm
@@ -489,9 +475,9 @@ contains
           if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
        end if
        select case(dmtype)
-       case(2,4,3)
+       case(2,4,3,9)
        case default 
-          if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=2,3,4'
+          if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=2,3,4,9'
           if (rang==0) write(*,*) 'Stop in readdm'
           call arret_ndm
        end select

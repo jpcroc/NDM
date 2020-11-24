@@ -9,7 +9,7 @@ module analyseT_mod
   USE calcdigr_mod,only: calcdigr
   USE calcangle_mod,only: calcangle
   USE bondval_mod,only: bondval
-  USE rasmol_mod,only: rasmol
+  USE rasmolT_mod,only: rasmolT
   USE rdf_mod,only: rdf
   USE prtplz_mod,only: prtplz
   USE sauvegardeT_mod,only:sauvegardeT
@@ -470,7 +470,7 @@ contains
 !    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
 !         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp,eat=eatom)
 !    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-         call rasmol(atdml,boxndm,it)
+         call rasmolT(atdml,boxndm,it)
           if (l2T) call  eleccellmol
 
        end if

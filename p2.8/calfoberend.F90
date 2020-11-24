@@ -8,8 +8,10 @@ contains
   subroutine calfoberend(im,imm,xp, vp, fp,ityp)
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE
-
+    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace,ndm_mpi_real_double,ierr
+!    include 'mpif.h'
+#else
+  USE mod_para,only:nprocspace
 #endif
 
     integer::im,imm
@@ -27,14 +29,15 @@ contains
     enddo
 
 #ifdef PARA
-    call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    mv2 = mv2_glob
-    tempm1=mv2/(3.d0*float(im_glob)*bk)
-
+    if (nprocspace.gt.1) then
+       call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       mv2 = mv2_glob
+       tempm1=mv2/(3.d0*float(im_glob)*bk)
+    else
+       tempm1=mv2/(3.d0*float(im)*bk)
+    end if
 #else
     tempm1=mv2/(3.d0*float(im)*bk)
-
-
 #endif
 
 

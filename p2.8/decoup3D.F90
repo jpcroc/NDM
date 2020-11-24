@@ -12,8 +12,9 @@ contains
     USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE,res_cpu,coord_max,coord_min
 !    use tab_imm_m,only:realloc_all_tab_imm
 #endif
+    USE mod_para,only:myid,nprocspace
     USE gen_com_m, ONLY:cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
-         &nb_cell_x,nb_cell_y,nb_cell_z,rang,ldecoup,ltabvois,lsigat,lprteat,llangevin,lax
+         &nb_cell_x,nb_cell_y,nb_cell_z,rang,ldecoup,ltabvois,lsigat,lprteat,llangevin,lax,imm_loc
 
     integer :: nbr_cpuIN !Egal aussi au nombre de zone qu'on d�coupera dans la boite
     integer::ncore ! nb de coeur par noeud
@@ -49,11 +50,12 @@ contains
     integer :: num_cpu
     integer :: kx,ky,kz,koo
     integer :: cellules_max
-    integer :: imm_loc,nbr_cpu,nox,noy,noz,noxyz,imm
+    integer :: nbr_cpu,nox,noy,noz,noxyz,imm
     integer :: ii,jj,kk,nbr_cpumin,iudecoup !indice de boucle
-
+    integer,save::icall=0
     nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
-    write(6,*)'NOX',nox,noxyz
+    icall=icall+1
+
 #ifdef PARA
     nbr_cpumin=nbr_cpuin
 #else
@@ -64,8 +66,9 @@ contains
     stop
  end if
 #endif
-
- loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
+    if (nprocspace.gt.1) then
+    write(6,*)'NOX',nox,noxyz,icall,rang,myid
+       loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
 
 
 
@@ -95,7 +98,7 @@ contains
              enddo
           enddo
        enddo
-       allocate(decoup(nb_sol,3))
+       if (.not.allocated(decoup))allocate(decoup(nb_sol,3))
        nb_sol = 0
        do ii=1,nbr_cpu
           do jj=1,nbr_cpu
@@ -114,11 +117,11 @@ contains
              enddo
           enddo
        enddo
-       allocate(specifs(nb_sol,7))
+       if (.not.allocated(specifs))allocate(specifs(nb_sol,7))
 
-       allocate(res_cpu(0:nbr_cpu-1,3))
-       allocate(coord_min(0:nbr_cpu-1,3))
-       allocate(coord_max(0:nbr_cpu-1,3))
+       if (.not.allocated(res_cpu))allocate(res_cpu(0:nbr_cpu-1,3))
+       if (.not.allocated(coord_min))allocate(coord_min(0:nbr_cpu-1,3))
+       if (.not.allocated(coord_max))allocate(coord_max(0:nbr_cpu-1,3))
 
 
        !print *,'Voici les cas possibles :'
@@ -308,7 +311,7 @@ contains
 #ifdef PARA
        ! On est dans le code de calcul NDM, on realloue les tableaux sur le
        ! nombre d'atomes en tenant compte des cellules fantomes
-
+       write(6,*)'POINT',rang,icall
 
        cellules_max=0
        do ii = 0,nbr_cpu-1
@@ -353,7 +356,8 @@ contains
 #endif
 
     enddo loop1
-
+ write(6,*)'OUT DECOUP',rang,myid, icall
+ end if
 
 
 

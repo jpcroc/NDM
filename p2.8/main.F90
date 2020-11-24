@@ -18,7 +18,7 @@ program ndm
   USE init_mpi_mod,only: init_mpi
   USE neb_module,only:init_mpi_neb
 #else
-  USE mod_para,only:myid
+  USE mod_para,only:myid,nprocs,nprocspace
 #endif
 
 #ifdef MAB
@@ -46,7 +46,7 @@ program ndm
   myid=rang
   parallele = .true.
 #else
-  rang = 0;myid=0
+  rang = 0;myid=0; nprocs=1;nprocspace=1
   parallele = .false.
 #endif
 

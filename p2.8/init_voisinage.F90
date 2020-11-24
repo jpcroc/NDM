@@ -13,7 +13,7 @@ subroutine init_voisinage (cellv)
   use tab_imm_m
 !  use mod_para,only:MPI_COMM_space,
 !  USE mpi
-  use mod_para,only:MPI_COMM_space, nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_voisin,nbr_proc_voisin,nbr_cell_ftm,&
+  use mod_para,only:MPI_COMM_space, nprocspace,myid,NDM_MPI_REAl_DOUBLE,proc_voisin,nbr_proc_voisin,nbr_cell_ftm,&
        &NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
 
   implicit none
@@ -34,11 +34,11 @@ subroutine init_voisinage (cellv)
   integer :: num_proc_vois
 
   ! intialisations preliminaires
-  allocate(proc_voisin(min(nprocs,26)))
+  allocate(proc_voisin(min(nprocspace,26)))
   proc_voisin(:)=-1
   nbr_proc_voisin = 0
   nbr_cell_ftm  = 0
-  allocate(nbr_cell_frontiere(min(nprocs,26)))
+  allocate(nbr_cell_frontiere(min(nprocspace,26)))
   nbr_cell_frontiere(:) = 0
   ! Calcul du nombre de cellules frontieres
   nb_internes = max(res_cpu(myid,1)-2,0) * max(res_cpu(myid,2)-2,0) * max(res_cpu(myid,3)-2,0)

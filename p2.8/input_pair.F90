@@ -9,6 +9,7 @@ module input_pair_mod
 !       &ipo_2_pair_tab,npotmax,npair,ntrip,ntyp,r8p,rumax,lue_typ,cm,ty,catom,q,bm,shel,ty,lue_typ,ipo,&
 !       &lue_paire,ipo3c,catom,lue_trip,typ_pot_pair,rue_pair,lu_roff_pair ,roff1, roff2,ray,ro,dip,pm,a_factor
 
+  use mod_para,only:nprocspace
   implicit none
 contains
   ! **********************************************************************
@@ -148,10 +149,13 @@ contains
 
        read (lupotin, *) iewald, l3c
 #ifdef PARA
-       if (iewald==2) then
-          iewald=1
-          write(6,*)'IEWALD MIS A 1'
-       endif
+           if (nprocspace.gt.1) then
+
+              if (iewald==2) then
+                 iewald=1
+                 write(6,*)'IEWALD MIS A 1'
+              endif
+           end if
 #endif
 
        if (iewald==0) then

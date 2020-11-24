@@ -39,8 +39,9 @@ contains
 
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocs,temps_debpara,temps_para
-
+    USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,temps_debpara,temps_para
+#else
+  USE mod_para,only:nprocspace
 #endif
     implicit none
     type(box_config)::boxndm
@@ -136,12 +137,15 @@ contains
 
        !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        !  sig=sig_tot
+       
+    if (nprocspace.gt.1) then
        call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
        sigkine=sigkine_tot
        if (allocated(sigc)) then
-          call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
+          call MPI_ALLREDUCE(sigc,sigc_tot, 9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
           sigc=sigc_tot
        end if
+    end if
 #endif
        sigtot = sigkine+sig
     end if

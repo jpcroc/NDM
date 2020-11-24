@@ -11,7 +11,7 @@ module mod_para
 
   !  use mpi
   implicit none
-  integer :: myid 			! numero de process mis là pour être utilisé en sequentiel
+  integer :: myid,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
 #ifdef PARA
 
   include 'mpif.h'
@@ -23,7 +23,7 @@ module mod_para
   !Entiers :
 
 
-  integer :: nprocs 			! nombre de process
+
   integer :: ierr 			! erreur MPI
   integer,dimension(MPI_STATUS_SIZE):: status  ! statut de la communication
   integer:: grp_world
@@ -40,11 +40,11 @@ module mod_para
   integer :: resultat(4) 		!stocke le resultat du meilleur decoupage
 
   integer, allocatable :: res_cpu(:,:)   	!stocke le nombre de cellules de chaques decoupages pour le meilleur decoupage
-  !res_cpu est initialisé dans decoup3D à (0:nprocs-1,3)
+  !res_cpu est initialisé dans decoup3D à (0:nprocspace-1,3)
   integer, allocatable :: coord_min(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z
-  !initialisée à (0:nprocs-1,3) dans decoup3D
+  !initialisée à (0:nprocspace-1,3) dans decoup3D
   integer, allocatable :: coord_max(:,:)	!stocke la "coordonnée" de la derniere cellule du découpage selon x,y,z
-  !initialisée à (0:nprocs-1,3) dans decoup3D
+  !initialisée à (0:nprocspace-1,3) dans decoup3D
 
   integer, allocatable :: proc_cell(:)          !proc_cell(i) : Numero du proc associe a la cellule i
   integer, allocatable :: proc_voisin(:)        ! liste des processeurs voisins du processeur courant
@@ -134,22 +134,6 @@ contains
     call ndm2config (atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,nvois,vp,xpp,ldeall=.true.)
     call ndm2cellconfig(cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=proc_cell)
 
-!!$#ifdef PARA
-!!$          CALL MPI_BARRIER(MPI_COMM_space,ierr)
-!!$          do i=0,nprocs-1
-!!$             if (myid==i) then
-!!$                write(6,*)
-!!$                write(6,*)'PPPPPPPPPPRRRRRRRRRTTTTTT',myid
-!!$
-!!$#endif
-!!$                call atcf%print
-!!$                call cellcf%print
-!!$!                call boxndm%print
-!!$#ifdef PARA                
-!!$             end if
-!!$             CALL MPI_BARRIER(MPI_COMM_space,ierr)
-!!$          end do
-!!$#endif
 
 end subroutine maj_atomes_frt_ftm
 

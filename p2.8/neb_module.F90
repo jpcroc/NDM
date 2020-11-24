@@ -10,7 +10,7 @@ module neb_module
 !  USE config_mod,only: config
   USE recips_mod,only: recips
   USE sauveposition_mod,only: sauveposition
-  USE rasmol_mod,only: rasmol
+  USE rasmolT_mod,only: rasmolT
   use var_pot,only:ntyp,na,ipotentiel,cm,rumax
   USE dynalloccell,only:deallocateall
   !-----------------------------------------------
@@ -22,9 +22,9 @@ module neb_module
   USE setcell,only:setcellconf,setnox
   USE sauvegardeT_mod,only:sauvegardeT
 #ifdef PARA
-  use mod_para,only:grp_world,nprocs,myid,MPI_COMM_space
+  use mod_para,only:grp_world,nprocs,myid,MPI_COMM_space,nprocspace,ierr
 #else
-  use mod_para,only:myid
+  use mod_para,only:myid,nprocspace
 #endif
   use paraconfig,only:para_config,commconstr
   implicit none
@@ -155,7 +155,6 @@ end if
     open(unit=831,file='distimages')
     deplamax=0
     idepmax=0
-    if(rang==0)write(6,*)'im',atneb(1)%im
     do i=1,im
        depla=1d8*sqrt(dxx(1,i)**2+dxx(2,i)**2+dxx(3,i)**2)
        write(831,*)i,depla
@@ -222,7 +221,7 @@ end if
           IF (ok ) THEN
              ! Load NEB image ip in file *.<ip>.gin
           if(rang==0)write(6,*)'FNAMneb  ',iph,ginfile
-          call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,im_glob,rumax)
+          call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,im_glob,rumax,lrepartition=.false.)
             do i=1,im
                atneb(iph)%num_at_glob(i)=i
             end do
@@ -232,11 +231,11 @@ end if
             STOP '< Load_NEB_Image_Gin >'
          END IF
        ELSE
-
+!          WRITE(6,*)'yyyyyyyyyyyyyyyyyy',RANG,IPH
           atneb(iph)%xp(:,:)=atneb(1)%xp(:,:)+dxx(:,:)*dble(iph -1) / dble(npath-1)
           atneb(iph)%ityp(:)=atneb(1)%ityp(:)
           atneb(iph)%num_at_glob(:)=atneb(1)%num_at_glob(:)
-          !CRC RESTE ITYP...
+          
        END IF
        atneb(iph)%xpp(:,:)= atneb(iph)%xp(:,:)
        atneb(iph)%vp=0
@@ -250,9 +249,7 @@ end if
     end if
 
     icontrainte(:)=1
-    allocate (fp_buffer(3,imm))
 
-    deallocate(fp_buffer)     
 
     return
 
@@ -498,9 +495,8 @@ end if
     integer ::  ip,lucin,itread,fmt_cin,formatsauv,iti
     character :: extension*9
     character :: fnamneb*80
-    type(atom_config)::atrgin
+!    type(atom_config)::atrgin
     call allocate_neb(0,imm)
-
     if (igen==1) then 
        itread=1;fmt_cin=2
        if (lrestart) then
@@ -540,7 +536,7 @@ end if
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
              call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout)
-             call rasmol(atneb(1),boxneb,1)
+             call rasmolT(atneb(1),boxneb,1)
           endif
           
           fnamneb='fin_'//fnam(1:lenfnam)//'.cin'
@@ -560,14 +556,15 @@ end if
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
              call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout)
-             call rasmol(atneb(npath),boxneb,npath)
+             call rasmolT(atneb(npath),boxneb,npath)
           endif
           
        end if
     else
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
-       if(rang==0)write(6,*)'FNAMneb 1 ',fnamneb
-       call gin2ndm(atneb(1),cellneb(1),boxneb,fnamneb,im_glob,rumax)
+       write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,im_glob
+       call gin2ndm(atneb(1),cellneb(1),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.)
+!       call atneb(1)%print
 !!$       call read_gin(boxrgin,atrgin,fnamneb,lat)
 !!$       do ic=1,3
 !!$          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
@@ -596,16 +593,19 @@ end if
 !          call cellneb(1)%print
 !          call boxneb%print
           if (rang==0)then
-             formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
+             formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout'
              call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout)
-             call rasmol(atneb(1),boxneb,1)
+!             call atneb(1)%print
+             call rasmolT(atneb(1),boxneb,1)
           endif
-
+!          call mpi_finalize(ierr)
+!          stop
           
        fnamneb='fin_'//fnam(1:lenfnam)//'.gin'
-       if(rang==0)write(6,*)'FNAMneb npath ',fnamneb
-       call gin2ndm(atneb(npath),cellneb(npath),boxneb,fnamneb,im_glob,rumax)
-
+       write(6,*)'FNAMneb npath ',fnamneb,rang,myid
+       call gin2ndm(atneb(npath),cellneb(npath),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.)
+!       call cellneb(npath)%print
+!       stop
 !!$       call read_gin(boxrgin,atrgin,fnamneb,lat)
 !!$       do ic=1,3
 !!$          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
@@ -632,10 +632,10 @@ end if
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
              call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout)
-             call rasmol(atneb(npath),boxneb,1)
+             call rasmolT(atneb(npath),boxneb,1)
           endif
 
-       call atrgin%dealloc
+!       call atrgin%dealloc
        end if
 
     !#ifdef LAMMPS_VERSION
@@ -704,17 +704,21 @@ end if
     paraneb%grp_orig=grp_world
 
     paraneb%nimage=npath-2
-        
+
     call commconstr(paraneb)
+!    call paraneb%print(rang)
+!    call MPI_finalize(ierr)
+!    stop
     myid=paraneb%rgim
     MPI_COMM_space=paraneb%comm_image
-
+    nprocspace=paraneb%npim
 #else
     paraneb%np_orig=1
     paraneb%rang_orig=0
     paraneb%npim=1
     myid=0
     paraneb%lmaster=.true.
+    nprocspace=1
 #endif    
   end subroutine init_mpi_neb
 

@@ -12,7 +12,9 @@ module setcell
   USE atomconfig,only: atom_config
   USE boxconfig,only:box_config
   USE cellconfig,only:cell_config
-
+#ifdef PARA
+  use mod_para,only:nprocspace
+#endif
   implicit none
 contains
 
@@ -58,9 +60,12 @@ contains
        ! ==== MODIF CLOUET 2 ====================
        if (izonr<3) then
 #ifdef PARA
-          write(6,*)'trop petite boite pour para'
-          call arret_ndm
+          if (nprocspace.gt.1) then
+             write(6,*)'trop petite boite pour para'
+             call arret_ndm
+          end if
 #endif
+             
           if (rang==0) then
              WRITE(6,'(a)') "Boite trop petite: le nombre de cellules est fixe a son minimum"
           endif
@@ -152,7 +157,7 @@ contains
          write(6,*) 'natperc im/noxyz', natperc, im_glob/celscf%noxyz
     celscf%natperc=natperc
     allocate(celscf%atincel(celscf%natperc,0:celscf%noxyz))
-    
+    celscf%atincel=0
     if (rang==0)  write(6,*)'ltabvois,lconstrtot',atcf%ltabvois,lconstrtot
 
     if (atcf%ltabvois) then

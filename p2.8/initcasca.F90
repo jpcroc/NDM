@@ -18,7 +18,10 @@ contains
     ! *******************************************************************
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,ierr
+    USE mod_para,only:MPI_COMM_space,ierr,nprocspace
+#else
+    use mod_para,only:nprocspace
+    
 #endif
 
 
@@ -238,18 +241,23 @@ contains
     vmax = sqrt(vmax2)
 
 #ifdef PARA
-    max_loc(1)=vmax
-    max_loc(2)=rang
-    max_loc(3)=0.5+ityp(imax)
-    call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_space,ierr)
-    vmax = max_glob(1)
-    ityp_max=int(max_glob(3))
-
+        if (nprocspace.gt.1) then
+           max_loc(1)=vmax
+           max_loc(2)=rang
+           max_loc(3)=0.5+ityp(imax)
+           call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_space,ierr)
+           vmax = max_glob(1)
+           ityp_max=int(max_glob(3))
+        else
+           if (rang==0) then
+              write (6, *) 'Vitesse maximale sur I=', imax, vmax
+           endif
+        end if
 #else
-    if (rang==0) then
-       write (6, *) 'Vitesse maximale sur I=', imax, vmax
-    endif
-
+           if (rang==0) then
+              write (6, *) 'Vitesse maximale sur I=', imax, vmax
+           endif
+           
 #endif
 
 

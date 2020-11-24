@@ -76,6 +76,7 @@ contains
     else
        cell%natperc=0
     end if
+    cell%icaltabt=0
     !write(6,*) 'nox', cell%nox
     cell%ltpcel=ltpcel
     call dealloc_cel(cell)
@@ -94,17 +95,26 @@ contains
     nsize=cell%noxyz
     if (nsize.ne.0) then
        allocate(cell%ncel(0:nsize,0:26))
+       cell%ncel=0
        allocate(cell%nato(0:nsize))
+       cell%nato=0
        allocate(cell%deltadist(3,0:26,nsize))
+       cell%deltadist=0
        if (cell%ltpcel) then
           allocate(cell%sigc(3,3,nsize))
+          cell%sigc=0
           allocate(cell%tempc(nsize))
+          cell%tempc=0
        end if
-       if (cell%natperc.ne.0)       allocate(cell%atincel(cell%natperc,0:nsize))
+       if (cell%natperc.ne.0)   then
+          allocate(cell%atincel(cell%natperc,0:nsize))
+          cell%atincel=0
+       end if
 #ifdef PARA
-       allocate(cell%proc_cell(nsize))
+          allocate(cell%proc_cell(nsize))
+          cell%proc_cell=-1
 #endif       
-    end if
+       end if
     return
   end subroutine allocatecelN
 
@@ -247,11 +257,12 @@ contains
 
     icaltabt=icaltabt+1
 !       write(6,*)'caltabt',icaltabt
-!    call atcf%print
+
     cell%nato(0:cell%noxyz) = 0
     cell%atincel(1:cell%natperc,0:cell%noxyz) = 0
-
+    
     !  -------- cas sans cellule  -----------
+
     if (cell%noxyz==1) then
        cell%nato(1) = atcf%im
        do i = 1, atcf%im
@@ -260,7 +271,8 @@ contains
        end do
     else
 
-       ALLOCATE(xpnp(3,atcf%imm))        
+       ALLOCATE(xpnp(3,atcf%imm))
+    
        if (lperiod) then            
           xpnp(:,:)=atcf%xp(:,:)         
        else                         
@@ -279,6 +291,7 @@ contains
 
        !     if (it.gt.1000) write(6,*)'CALTABT',it
        !       write(6,*)'caltabt icaltabt im',icaltabt,atcf%im
+
        do i = 1, atcf%im
           !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
           aux = xpnp(1,i)*cell%nox

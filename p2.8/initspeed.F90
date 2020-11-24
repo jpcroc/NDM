@@ -13,7 +13,9 @@ module initspeed_mod
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para,nprocspace
+#else
+    USE mod_para,only:nprocspace
 #endif
 
 !  USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm
@@ -283,8 +285,10 @@ contains
              end do
              ka=0.5*bk*tinit 
 #ifdef PARA
-             call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-             kinx(ic)=kinx_glob
+             if (nprocspace.gt.1) then
+                call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+                kinx(ic)=kinx_glob
+             end if
 #endif          
              !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
           end do
@@ -307,12 +311,14 @@ contains
           enddo
 
 #ifdef PARA
-          call MPI_ALLREDUCE(totmass,  totmass_glob,  1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          call MPI_ALLREDUCE(scom(1:3),scom_glob(1:3),3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          call MPI_ALLREDUCE(pav(1:3), pav_glob(1:3), 3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          totmass = totmass_glob
-          scom = scom_glob
-          pav  = pav_glob
+     if (nprocspace.gt.1) then
+        call MPI_ALLREDUCE(totmass,  totmass_glob,  1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+        call MPI_ALLREDUCE(scom(1:3),scom_glob(1:3),3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+        call MPI_ALLREDUCE(pav(1:3), pav_glob(1:3), 3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+        totmass = totmass_glob
+        scom = scom_glob
+        pav  = pav_glob
+     end if
 #endif          
 
           do ia = 1, 3
@@ -348,8 +354,11 @@ contains
                 end do
 
 #ifdef PARA
-                call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-                kinx(ic)=kinx_glob
+     if (nprocspace.gt.1) then
+               
+        call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+        kinx(ic)=kinx_glob
+     end if
 #endif          
 
                 if (rang==0)write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
@@ -407,6 +416,8 @@ contains
              ainer(2,1) = ainer(1,2)
 
 #ifdef PARA
+    if (nprocspace.gt.1) then
+             
              call MPI_ALLREDUCE(ainer(1:3,1:3), ainer_glob(1:3,1:3), 9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
              ainer = ainer_glob
              call MPI_ALLREDUCE(prx, prx_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
@@ -415,6 +426,7 @@ contains
              pry = pry_glob
              call MPI_ALLREDUCE(prz, prz_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
              prz = prz_glob
+          end if
 #endif          
 
              if (rang==0) then

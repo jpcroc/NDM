@@ -23,7 +23,9 @@ USE arret_ndm_mod,only: arret_ndm
 USE caltabi_mod,only: caltabi
 #ifdef PARA
 USE mpi
-use mod_para,only:MPI_COMM_space, status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,maj_atomes_frt_ftm
+use mod_para,only:MPI_COMM_space, status,ierr,myid,NDM_MPI_REAl_DOUBLE,maj_atomes_frt_ftm,nprocspace
+#else
+use mod_para,only:nprocspace
 #endif
   USE tab_imm_m,only : xp, fp,num_at_glob,ax,vp,xpp,ityp,ielat,iwmax,bruitmd
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
@@ -83,26 +85,6 @@ contains
           end do
        END IF
     end if
-!#ifdef PARA
-!    write(extension,'(i2.2)') rang
-!    lenfn2=2   
-!    open(unit=606, file='xp_local.'//extension(1:lenfn2)//'.csv', form='formatted', &
-!             status='unknown')
-!    do i=1,im_glob
-!       !       write(6,*)rang,i,xp_all(:,i)
-!       write(606,'(2I2,I6,3G18.9)') rang,ncalls,i,xp_local(:,i)
-!    end do
-!    call mpi_barrier(MPI_COMM_space,ierr)
-!#else
-!     open(unit=606, file='xp_local.SEQ.csv', form='formatted', &
-!             status='unknown')
-!    do i=1,im_glob
-!       !       write(6,*)rang,i,xp_all(:,i)
-!       write(606,'(2I2,I6,3G18.9)') rang,ncalls,i,xp_local(:,i)
-!    end do
-!#endif
-    
-!    write(6,*)'taillesP', size(xp_local),size(xp)
     xp=0
     call zero2all(xp_local,xp,ityp_local)
 !      write(6,*)'CALL W',it
@@ -129,7 +111,9 @@ contains
     !    end do
 #ifdef PARA
        write(6,*)'pas dev'
-    call maj_atomes_frt_ftm(atcg,celcg)
+       if (nprocspace.gt.1) then
+          call maj_atomes_frt_ftm(atcg,celcg)
+       end if
 #endif
 
     !back to internal units and JP world.......................................
@@ -173,28 +157,10 @@ contains
     call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
     
-!    call calfo
-!    open(unit=606, file='fpG.csv', form='formatted', &
-!             status='unknown')
-!    do i=1,im_glob
-!      !       write(6,*)rang,i,xp_all(:,i)
-!       write(606,'(I6,3G22.13)') i,fp(:,i)
-!    end do
-
-!#ifdef PARA
-!    lenfn2=2
-!    write(extension,'(i2.2)') rang
-!    open(unit=625, file='FORC.'//extension(1:lenfn2)//'.csv', form='formatted', &
-!         status='unknown')
-!#else    
-!    open(unit=625, file='FORC.SEQ.csv', form='formatted', &
-!         status='unknown')
-!#endif
-!    do i=1,im
-!       write(625,'(2I2,2I6,3G18.9)') rang, ncalls,i,num_at_glob(i),fp(:,i)
-!    end do
 #ifdef PARA
-    call mpi_barrier(MPI_COMM_space,ierr)
+    if (nprocspace.gt.1) then
+       call mpi_barrier(MPI_COMM_space,ierr)
+    end if
 #endif    
 !   stop
 
@@ -214,11 +180,13 @@ contains
 !        END IF
 !        write(6,*)'FF ', forctot,formax
 #ifdef PARA
+    if (nprocspace.gt.1) then
         call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
         formax=fpmax_glob
         forctot=forctot**2
         call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
         forctot=sqrt(fpmax_glob)
+     end if
 #endif
 
         if (lEev.EQV..true.) then 

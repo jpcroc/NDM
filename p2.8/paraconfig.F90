@@ -27,6 +27,8 @@ module paraconfig
      integer:: comm_orig ! communicatuer à diviser
      integer:: rang_orig ! rang dans le comm à diviser
      integer::np_orig ! pombre de procs dans le comm à dvisier
+   contains
+     procedure, pass::print
 
 
   end type para_config
@@ -39,7 +41,18 @@ module paraconfig
 
 #endif
 contains
-
+  subroutine print(paraprt,rang)
+    class(para_config),intent(in)::paraprt
+    integer,intent(in)::rang
+    write(6,*)'PARAPRT',rang,paraprt%rang_orig
+    write(6,*)'NIMAGE',rang,paraprt%nimage
+    write(6,*)'IMAGE',rang,paraprt%image
+    write(6,*)'NPIMAGE',rang,paraprt%npim
+    write(6,*)'RGIMAGE',rang,paraprt%rgim
+    write(6,*)'LMASTER',rang,paraprt%lmaster
+    if (paraprt%lmaster)write(6,*)'RGMASTER',rang,paraprt%rgmas
+  end subroutine print
+    
   subroutine commconstr(div)
     type(para_config)::div
 #ifdef PARA
@@ -146,7 +159,7 @@ contains
     integer::img,ierr,isp
     integer, dimension( MPI_STATUS_SIZE) :: statut
 
-    if (not(allocated(xrecv)))allocate(xrecv(1:nel))
+    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
     !     write(6,*)div
     !    if (div%lmaster) then
     !       write(6,*)'PRE',div%lmaster,div%rang_orig,div%rgim,div%rgmas
@@ -189,7 +202,7 @@ contains
     integer::img,ierr,isp
     integer, dimension( MPI_STATUS_SIZE) :: statut
 
-    if (not(allocated(xrecv)))allocate(xrecv(1:nel))
+    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
     !     write(6,*)div
     !    if (div%lmaster) then
     !       write(6,*)'PRE',div%lmaster,div%rang_orig,div%rgim,div%rgmas
@@ -230,7 +243,7 @@ contains
     integer::img,ierr,isp
     integer, dimension( MPI_STATUS_SIZE) :: statut
 
-    if (not(allocated(xrecv)))allocate(xrecv(1:nel))
+    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
     !     write(6,*)div
     !    if (div%lmaster) then
     !       write(6,*)'PRE',div%lmaster,div%rang_orig,div%rgim,div%rgmas

@@ -12,6 +12,13 @@ module controle_mod
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
   USE boxconfig,only:box_config,ndm2boxconfig
+#ifdef PARA
+  use mpi
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
+#else
+  USE mod_para,only:nprocspace
+#endif
+
   implicit none
 contains
   ! ***********************************************************
@@ -396,10 +403,12 @@ contains
                         i))/(3.0*bk)
                 end do
 #ifdef PARA
-                call MPI_ALLREDUCE(tcou,tcou_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-                tcou = tcou_glob
-                call MPI_ALLREDUCE(nacou,nacou_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
-                nacou = nacou_glob
+                if (nprocspace.gt.1) then
+                   call MPI_ALLREDUCE(tcou,tcou_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+                   tcou = tcou_glob
+                   call MPI_ALLREDUCE(nacou,nacou_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
+                   nacou = nacou_glob
+                end if
 #endif
 
                 !     write(6,*) 'it, nacou, tcou=',it,nacou,tcou
@@ -597,8 +606,10 @@ contains
           fpmax = MaxVal( Abs(fp(:,1:im)) )
           !        END IF
 #ifdef PARA
-          call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
-          fpmax=fpmax_glob
+          if (nprocspace.gt.1) then
+             call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
+             fpmax=fpmax_glob
+          end if
 #endif
 
           fpn=fpmax*erg2eV/angst
@@ -626,9 +637,11 @@ contains
           !           fpmax=sqrt( SUM(fp(:,1:im)**2) )
           !        END IF
 #ifdef PARA
-          fpmax=fpmax**2
-          call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          fpmax=sqrt(fpmax_glob)
+          if (nprocspace.gt.1) then
+             fpmax=fpmax**2
+             call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+             fpmax=sqrt(fpmax_glob)
+          end if
 #endif
 
 
@@ -677,11 +690,13 @@ contains
           formax = MaxVal( Abs(fp(:,1:im)) )
           !        END IF
 #ifdef PARA
-          call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
-          formax=fpmax_glob
-          forctot=forctot**2
-          call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          forctot=sqrt(fpmax_glob)
+          if (nprocspace.gt.1) then
+             call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
+             formax=fpmax_glob
+             forctot=forctot**2
+             call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+             forctot=sqrt(fpmax_glob)
+          end if
 #endif
 
           if (lEev.EQV..true.) then 

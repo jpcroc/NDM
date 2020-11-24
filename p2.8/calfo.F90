@@ -28,11 +28,13 @@ module calfo_mod
   USE calfocommon ! stocke des variables LOCALES sig et potist eat sigat etc.
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
-#ifdef PARA
-  use mpi
-  USE mod_para,only:MPI_COMM_space
-  use Tpara,only:NDM_MPI_real_double
-#endif
+!#ifdef PARA
+!  use mpi
+!  USE mod_para,only:MPI_COMM_space,nprocspace,NDM_MPI_real_double
+
+!#else
+!    USE mod_para,only:nprocspace
+!#endif
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only: read_lammps,calcforce_lammps2
   use vars_lammps

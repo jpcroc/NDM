@@ -17,8 +17,10 @@ contains
   USE force_tersoff_facteurs
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,maj_fp_frt
+  USE mod_para,only:MPI_COMM_space,maj_fp_frt,nprocspace
   use Tpara,only:NDM_MPI_real_double
+#else
+  USE mod_para,only:nprocspace
 #endif
 
 
@@ -377,6 +379,8 @@ contains
   call cryst_to_cart(imm,xp,at,1)
 
 #ifdef PARA
+      if (nprocspace.gt.1) then
+
   call MPI_ALLREDUCE(potisTersoff,potisTersoff_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   potisTersoff=potisTersoff_tot
   !     call MPI_ALLREDUCE(jq,    jq_tot,    3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
@@ -387,12 +391,14 @@ contains
      call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      sigc=sigc_tot
   endif
-
+end if
 #endif
 
 
 #ifdef PARA
-  call maj_fp_frt
+    if (nprocspace.gt.1) then
+       call maj_fp_frt
+    end if
 #endif
   !  write(6,*)sig
   !  write(6,*)

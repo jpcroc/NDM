@@ -25,7 +25,7 @@ module init_mod
   USE initcdp_mod,only: initcdp
   USE initcasca_mod,only: initcasca
   USE deftimestep_mod,only: deftimestep
-  USE rasmol_mod,only: rasmol
+  USE rasmolT_mod,only: rasmolT
   USE prtplz_mod,only: prtplz
   USE neb_module,only: constrconfNEB,atneb,cellneb,boxneb
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm,atom_config_e
@@ -80,7 +80,11 @@ contains
 
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,TEMPS_INPUT_DEB,TEMPS_INPUT,TEMPS_CONFIG_DEB,TEMPS_CONFIG,MYID,NBR_PROC_VOISIN,TEMPS_INITSPEED_DEB,TEMPS_INITSPEED,nprocs
+    USE mod_para,only:MPI_COMM_space,TEMPS_INPUT_DEB,TEMPS_INPUT,TEMPS_CONFIG_DEB,TEMPS_CONFIG,MYID,&
+         &NBR_PROC_VOISIN,TEMPS_INITSPEED_DEB,TEMPS_INITSPEED,nprocspace
+#else
+    use mod_para,only:nprocspace
+    
 #endif
 
     ! **************************************************************
@@ -311,7 +315,7 @@ contains
     if (dmtype.ne.9)then  !pas NEB
        if (iterasmol>=0) then
           itapp=-1
-          call rasmol (atdml,boxndm,itapp)
+          call rasmolT (atdml,boxndm,itapp)
        end if
 !       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
 !            &xpp=xpp)
@@ -391,18 +395,21 @@ contains
     if (dmtype.ne.9) then
 !   call neigcel
 #ifdef PARA
-        CALL MPI_BARRIER(MPI_COMM_space,ierr)
-
-   call init_voisinage(celndm)
-
-       
-
-    if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
-    write(6,*) 'Le proc ',myid,' a ',nbr_proc_voisin,' processeur voisin'
-    !  do i=1,nbr_proc_voisin
-    !     WRITE(6,*) 'Le proc ',myid,' envoit ',nbr_cell_frontiere(i),' vers le proc ',proc_voisin(i)
-    !  enddo
-    !  WRITE(6,*) 'Le proc ',myid,' recoit ',nbr_cell_ftm,' cell. fantome de ses voisins'
+       if (nprocspace.gt.1) then
+          
+          CALL MPI_BARRIER(MPI_COMM_space,ierr)
+          
+          call init_voisinage(celndm)
+          
+          
+          
+          if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
+          write(6,*) 'Le proc ',myid,' a ',nbr_proc_voisin,' processeur voisin'
+          !  do i=1,nbr_proc_voisin
+          !     WRITE(6,*) 'Le proc ',myid,' envoit ',nbr_cell_frontiere(i),' vers le proc ',proc_voisin(i)
+          !  enddo
+          !  WRITE(6,*) 'Le proc ',myid,' recoit ',nbr_cell_ftm,' cell. fantome de ses voisins'
+       end if
 #endif
 
     ! !!! compcr non pris en charge en parallele !!!
@@ -479,7 +486,7 @@ contains
              !         call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
              !    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
              !         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-             call rasmol (atdml,boxndm,itapp)
+             call rasmolT (atdml,boxndm,itapp)
 
 
           end if
@@ -552,22 +559,6 @@ contains
           fnamcout = fnam(1:lenfnam)//'.0.cout'
           call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
        else
-!!$#ifdef PARA
-!!$          CALL MPI_BARRIER(MPI_COMM_space,ierr)
-!!$          do i=0,nprocs-1
-!!$             if (myid==i) then
-!!$                write(6,*)
-!!$                write(6,*)'PPPPPPPPPPRRRRRRRRRTTTTTT',myid
-!!$
-!!$#endif
-!!$                call atdml%print
-!!$                call celndm%print
-!!$                call boxndm%print
-!!$#ifdef PARA                
-!!$             end if
-!!$             CALL MPI_BARRIER(MPI_COMM_space,ierr)
-!!$          end do
-!!$#endif
           fnamcout = fnam(1:lenfnam)//'.cout'
           call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
        end if

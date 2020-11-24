@@ -323,14 +323,14 @@ contains
 
     logical :: lstop
     if (lrescl) then
-       if (atcible%imm.ne.atsource%imm) then
+!       if (atcible%imm.ne.atsource%imm) then
           call atcible%dealloc
           call atcible%init(atsource%im,atsource%imm,atcible%ltabvois,size(atsource%indi))
           atcible%icaltabt=atsource%icaltabt    
           !          if ((atcible%ltabvois).and.(atsource%ltabvois)) then
           !             allocate (atcible%indi(size(atsource%indi)))
           !          end if
-       end if
+!       end if
     else
        lstop=.false.
        if ((atcible%im.lt.atsource%im).or.(atcible%imm.lt.atsource%imm)) lstop=.true.
@@ -355,7 +355,8 @@ contains
     atcible%proc_at(1:atsource%imm)=atsource%proc_at(1:atsource%imm)
 #endif    
     
-    atcible%ltabvois=atsource%ltabvois
+    !    atcible%ltabvois=atsource%ltabvois
+!    write(6,*)atcible%ltabvois,atsource%ltabvois
     if ((atsource%ltabvois).and.(atcible%ltabvois)) then
        atcible%iwmax(1:atsource%imm)=atsource%iwmax(1:atsource%imm)
        atcible%indi(1:atsource%iwmax(atsource%imm))=atsource%indi(1:atsource%iwmax(atsource%imm))
@@ -602,22 +603,23 @@ contains
 
 
 
-  subroutine print(atprt,i1,i2,iwr)
+  subroutine print(atprt,i1,i2,iwr,unit)
     class(atom_config), intent(in)::atprt
-    integer,optional,intent(in)::i1,i2,iwr
+    integer,optional::i1,i2,iwr,unit
     !    type(atom_config_d):: td
     !    type(atom_config_e):: te
     integer::i,im,ifin,ideb,ist,ifn,iw
     !    write(6,*)
     write(6,*)'in print'
+    if (.Not.present(unit))unit=6
     im=atprt%im
     iw=1
     if (present(iwr))iw=iwr
 
-    write(6,*)'im = ',atprt%im
-    write(6,*)'imm = ',atprt%imm
-    write(6,*)'icaltabt = ',atprt%icaltabt
-    write(6,*)'ltabvois ', atprt%ltabvois
+    write(unit,*)'im = ',atprt%im
+    write(unit,*)'imm = ',atprt%imm
+    write(unit,*)'icaltabt = ',atprt%icaltabt
+    write(unit,*)'ltabvois ', atprt%ltabvois
 
     if (present(i1))then
        ideb=i1
@@ -635,76 +637,76 @@ contains
     end if
     if (allocated(atprt%xp)) then
        do i=ideb,im
-          write(6,*)'%xp= ', i,atprt%xp(:,i)
+          write(unit,*)'%xp= ', i,atprt%xp(:,i)
        end do
        do i=ideb,im
-          write(6,*)'%ityp= ', i,atprt%ityp(i)
+          write(unit,*)'%ityp= ', i,atprt%ityp(i)
        end do
        do i=ideb,im
-          write(6,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
+          write(unit,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
        end do
 #ifdef PARA
        do i=ideb,im
-          write(6,*)'%proc_at= ', i,atprt%proc_at
+          write(unit,*)'%proc_at= ', i,atprt%proc_at(i)
        end do
 #endif    
        
        if (iw==0) return
        do i=ideb,im
-          write(6,*)'%fp= ', i,atprt%fp(:,i)
+          write(unit,*)'%fp= ', i,atprt%fp(:,i)
        end do
        do i=ideb,im
-          write(6,*)'%ielat= ', i,atprt%ielat(i)
+          write(unit,*)'%ielat= ', i,atprt%ielat(i)
        end do
        !       if (extends_type_of(atprt,td)) then
-       !          write(6,*)'prt_d'
+       !          write(unit,*)'prt_d'
        !          do i=1,im
-       !             write(6,*)'%vp= ', atprt%vp(:,i)
+       !             write(unit,*)'%vp= ', atprt%vp(:,i)
        !          end do
        !          do i=1,im
-       !             write(6,*)'%xpp= ', atprt%xpp(:,i)
+       !             write(unit,*)'%xpp= ', atprt%xpp(:,i)
        !          end do
        !       end if
        !       if (same_type_as(atprt,te))then
        !                    if (atprt%lsigat) then
        !             do i=1,im
-       !                write(6,*)'%sigat= ', atprt%sigat(:,:,i)
+       !                write(unit,*)'%sigat= ', atprt%sigat(:,:,i)
        !             end do
        !          end if
        !          if (atprt%lprteat) then
        !             do i=1,im
-       !                write(6,*)'%eat= ', atprt%eat(i)
+       !                write(unit,*)'%eat= ', atprt%eat(i)
        !             end do
        !          end if
        !       end if
 
        select type (atprt)
           class is (atom_config_d)
-          write(6,*)'prt_d'
+          write(unit,*)'prt_d'
           do i=ideb,im
-             write(6,*)'%vp= ', i,atprt%vp(:,i)
+             write(unit,*)'%vp= ', i,atprt%vp(:,i)
           end do
           do i=ideb,im
-             write(6,*)'%xpp= ', i,atprt%xpp(:,i)
+             write(unit,*)'%xpp= ', i,atprt%xpp(:,i)
           end do
           class is (atom_config_e)
-          write(6,*)'prt_e'
+          write(unit,*)'prt_e'
           do i=ideb,im
-             write(6,*)'%vp= ', i,atprt%vp(:,i)
+             write(unit,*)'%vp= ', i,atprt%vp(:,i)
           end do
           do i=ideb,im
-             write(6,*)'%xpp= ', i,atprt%xpp(:,i)
+             write(unit,*)'%xpp= ', i,atprt%xpp(:,i)
           end do
 
 
           if (atprt%lsigat) then
              do i=ideb,im
-                write(6,*)'%sigat= ',i, atprt%sigat(:,:,i)
+                write(unit,*)'%sigat= ',i, atprt%sigat(:,:,i)
              end do
           end if
           if (atprt%lprteat) then
              do i=ideb,im
-                write(6,*)'%eat= ', i,atprt%eat(i)
+                write(unit,*)'%eat= ', i,atprt%eat(i)
              end do
           end if
        end select
@@ -712,7 +714,7 @@ contains
 
        if (atprt%ltabvois) then
           do i=ideb,im
-             write(6,*)'%iwmax= ', i,atprt%iwmax(i)
+             write(unit,*)'%iwmax= ', i,atprt%iwmax(i)
           end do
 
           if (allocated(atprt%indi))then
@@ -728,7 +730,7 @@ contains
              end if
 
              do i=ist,ifn,100
-                write(6,*)'indi', i,atprt%indi(i)
+                write(unit,*)'indi', i,atprt%indi(i)
              end do
           end if
        end if
@@ -958,7 +960,7 @@ contains
              atcfcomp%ityp(ideb:ifin)=ibuffer(1:imrecv)
              if (allocated(atcfloc%lgul))then
                 call MPI_RECV(lbuffer(1:imrecv),imrecv, MPI_LOGICAL, proc_source, 10003, icomm, status, ierr)
-                atcfcomp%lgul(ideb:ifin)=ibuffer(1:imrecv)
+                atcfcomp%lgul(ideb:ifin)=lbuffer(1:imrecv)
              end if
              call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10003, icomm, status, ierr)
              atcfcomp%proc_at(ideb:ifin)=ibuffer(1:imrecv)
@@ -1034,7 +1036,7 @@ contains
                    atcfloc%fp(:,iloc)=atcfcomp%fp(:,i)
                    atcfloc%num_at_glob(iloc)=atcfcomp%num_at_glob(i)
                    atcfloc%ityp(i)=atcfcomp%ityp(i)
-                   atcfloc%lgul(iloc)=atcfcomp%ityp(i)
+                   atcfloc%lgul(iloc)=atcfcomp%lgul(i)
                    atcfloc%proc_at(iloc)=idmaster
                 end if
              end do

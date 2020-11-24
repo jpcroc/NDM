@@ -12,7 +12,9 @@ module sauvegardeT_mod
 #ifdef PARA
 
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myid,NDM_MPI_REAl_DOUBLE
+#else
+USE mod_para,only:nprocspace    ,myid
          
 #endif
 
@@ -40,8 +42,8 @@ contains
 #ifdef PARA
     integer,dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable   :: buffer
-    integer,      dimension(0:nprocs-1)   :: im_loc
-    integer,      dimension(0:nprocs-1)   :: pt_im
+    integer,      dimension(0:nprocspace-1)   :: im_loc
+    integer,      dimension(0:nprocspace-1)   :: pt_im
     integer :: next_pt
     integer :: i_proc
     integer :: proc_source
@@ -58,98 +60,122 @@ contains
 
     formatsauvmod = mod(formatsauv,2)
     im =atdml%im
-    if (rang==0) then
+ !      write (6, *) ' sauvegarde it=', it, rang,fnamcout
+    if (myid==0) then
 
        lucout = 87
-       write (6, *) ' sauvegarde it=', it, fnamcout
+!       write (6, *) ' sauvegarde it=', it, rang,fnamcout
        open(unit=lucout, file=fnamcout, form='unformatted', status='unknown')
        write (lucout) formatsauv
        write (lucout) boxndm%at
        write (lucout) im_glob
 #ifdef PARA
-
-       im_loc(0)=im
-       ibuffer=0
-       ibuffer(1:im)  = atdml%ityp(1:im)
-       buffer=0
-       buffer(:,1:im) = atdml%xp(:,1:im)
-       pt_im(0)=1
-       next_pt = pt_im(0) + im_loc(0)
-
-       do i_proc=1,nprocs-1
-          call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_space, status, ierr)
-
-          proc_source = status(MPI_SOURCE)
-          im_loc(proc_source)=im_temp
-          pt_im(proc_source)=next_pt
-          next_pt = pt_im(proc_source) + im_loc(proc_source)
-          call MPI_RECV(ibuffer(pt_im(proc_source):pt_im(proc_source)+im_temp-1),    im_loc(proc_source),   &
-               MPI_INTEGER,         proc_source, 11002, MPI_COMM_space, status, ierr)
-         call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
-              NDM_MPI_REAL_DOUBLE, proc_source, 11003, MPI_COMM_space, status, ierr)
-       enddo
-       write (lucout) ibuffer  ! Ecriture ityp
-       write (lucout) buffer   ! Ecriture xp
-
-       ibuffer(1:im) = atdml%num_at_glob(1:im)
-       do i_proc=1,nprocs-1
-          call MPI_RECV(ibuffer(pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),im_loc(i_proc), &
-               MPI_INTEGER, i_proc, 11004, MPI_COMM_space, status, ierr)
-       enddo
-       write (lucout) ibuffer   ! Ecriture num_at_glob
-
+       if (nprocspace.gt.1) then
+          im_loc(0)=im
+          ibuffer=0
+          ibuffer(1:im)  = atdml%ityp(1:im)
+          buffer=0
+          buffer(:,1:im) = atdml%xp(:,1:im)
+          pt_im(0)=1
+          next_pt = pt_im(0) + im_loc(0)
+          
+          do i_proc=1,nprocspace-1
+             call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_space, status, ierr)
+             
+             proc_source = status(MPI_SOURCE)
+             im_loc(proc_source)=im_temp
+             pt_im(proc_source)=next_pt
+             next_pt = pt_im(proc_source) + im_loc(proc_source)
+             call MPI_RECV(ibuffer(pt_im(proc_source):pt_im(proc_source)+im_temp-1),    im_loc(proc_source),   &
+                  MPI_INTEGER,         proc_source, 11002, MPI_COMM_space, status, ierr)
+             call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
+                  NDM_MPI_REAL_DOUBLE, proc_source, 11003, MPI_COMM_space, status, ierr)
+          enddo
+          write (lucout) ibuffer  ! Ecriture ityp
+          write (lucout) buffer   ! Ecriture xp
+          
+          ibuffer(1:im) = atdml%num_at_glob(1:im)
+          do i_proc=1,nprocspace-1
+             call MPI_RECV(ibuffer(pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),im_loc(i_proc), &
+                  MPI_INTEGER, i_proc, 11004, MPI_COMM_space, status, ierr)
+          enddo
+          write (lucout) ibuffer   ! Ecriture num_at_glob
+          
+          if (formatsauvmod==1) then
+             lwax=.false.
+             select type(atdml)
+             type is (atom_config_d)
+                buffer(:,1:im) = atdml%xpp(:,1:im)
+                do i_proc=1,nprocspace-1
+                   call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
+                        NDM_MPI_REAL_DOUBLE, i_proc, 11005, MPI_COMM_space, status, ierr)
+                enddo
+                write (lucout) buffer   ! Ecriture xpp
+                
+                buffer(:,1:im) = atdml%vp(:,1:im)
+                do i_proc=1,nprocspace-1
+                   call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
+                        NDM_MPI_REAL_DOUBLE, i_proc, 11006, MPI_COMM_space, status, ierr)
+                enddo
+                write (lucout) buffer   ! Ecriture vp
+             type is (atom_config_e)
+                buffer(:,1:im) = atdml%xpp(:,1:im)
+                do i_proc=1,nprocspace-1
+                   call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
+                        NDM_MPI_REAL_DOUBLE, i_proc, 11005, MPI_COMM_space, status, ierr)
+                enddo
+                write (lucout) buffer   ! Ecriture xpp
+                
+                buffer(:,1:im) = atdml%vp(:,1:im)
+                do i_proc=1,nprocspace-1
+                   call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
+                        NDM_MPI_REAL_DOUBLE, i_proc, 11006, MPI_COMM_space, status, ierr)
+                enddo
+                write (lucout) buffer   ! Ecriture vp
+                if (atdml%lax)then
+                   buffer(:,1:im) = atdml%ax(:,1:im)
+                   do i_proc=1,nprocspace-1
+                      call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
+                           NDM_MPI_REAL_DOUBLE, i_proc, 11007, MPI_COMM_space, status, ierr)
+                   enddo
+                   write (lucout) buffer   ! Ecriture ax
+                end if
+             end select
+             if (.not.lwax)then
+                buffer(:,1:im) = atdml%xp(:,1:im)
+                do i_proc=1,nprocspace-1
+                   call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
+                        NDM_MPI_REAL_DOUBLE, i_proc, 11008, MPI_COMM_space, status, ierr)
+                enddo
+                write (lucout) buffer   ! Ecriture xpp
+                
+             end if
+             write (lucout) tstep
+             write (lucout) tmean, pmean, it, timel
+          endif
+       else
+                 write (lucout) atdml%ityp
+       write (lucout) atdml%xp
+       write (lucout) atdml%num_at_glob
        if (formatsauvmod==1) then
           lwax=.false.
-          select type(atdml)
+          select type (atdml)
           type is (atom_config_d)
-             buffer(:,1:im) = atdml%xpp(:,1:im)
-             do i_proc=1,nprocs-1
-              call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
-                   NDM_MPI_REAL_DOUBLE, i_proc, 11005, MPI_COMM_space, status, ierr)
-             enddo
-             write (lucout) buffer   ! Ecriture xpp
-             
-             buffer(:,1:im) = atdml%vp(:,1:im)
-             do i_proc=1,nprocs-1
-                call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
-                     NDM_MPI_REAL_DOUBLE, i_proc, 11006, MPI_COMM_space, status, ierr)
-             enddo
-             write (lucout) buffer   ! Ecriture vp
+             write (lucout) atdml%xpp
+             write (lucout) atdml%vp
           type is (atom_config_e)
-             buffer(:,1:im) = atdml%xpp(:,1:im)
-             do i_proc=1,nprocs-1
-             call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
-                  NDM_MPI_REAL_DOUBLE, i_proc, 11005, MPI_COMM_space, status, ierr)
-             enddo
-             write (lucout) buffer   ! Ecriture xpp
-             
-             buffer(:,1:im) = atdml%vp(:,1:im)
-             do i_proc=1,nprocs-1
-                call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
-                     NDM_MPI_REAL_DOUBLE, i_proc, 11006, MPI_COMM_space, status, ierr)
-             enddo
-             write (lucout) buffer   ! Ecriture vp
+             write (lucout) atdml%xpp
+             write (lucout) atdml%vp
              if (atdml%lax)then
-                buffer(:,1:im) = atdml%ax(:,1:im)
-                do i_proc=1,nprocs-1
-                call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
-                     NDM_MPI_REAL_DOUBLE, i_proc, 11007, MPI_COMM_space, status, ierr)
-                enddo
-                write (lucout) buffer   ! Ecriture ax
+                write (lucout) atdml%ax
+                lwax=.true.
              end if
           end select
-          if (.not.lwax)then
-             buffer(:,1:im) = atdml%xp(:,1:im)
-             do i_proc=1,nprocs-1
-                call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
-                     NDM_MPI_REAL_DOUBLE, i_proc, 11008, MPI_COMM_space, status, ierr)
-             enddo
-             write (lucout) buffer   ! Ecriture xpp
-
-          end if
+          if (.not.lwax)write (lucout) atdml%xp
           write (lucout) tstep
           write (lucout) tmean, pmean, it, timel
        endif
+    end if
 #else
        !
        ! Partie sequentielle de la sauvegarde :
@@ -178,6 +204,7 @@ contains
           write (lucout) tstep
           write (lucout) tmean, pmean, it, timel
        endif
+
 #endif
 
        close(unit=lucout)
@@ -186,33 +213,39 @@ contains
 
     else ! rang different de 0 :
 #ifdef PARA
-       call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
-      call MPI_SEND(atdml%ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
-       call MPI_SEND(atdml%xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_space,ierr)
-       call MPI_SEND(atdml%num_at_glob(1:im), im,    MPI_INTEGER,0,11004,MPI_COMM_space,ierr)
-
-       if (formatsauvmod==1) then
-          lwax=.false.
-          select type (atdml)
-          type is (atom_config_d)
-            call MPI_SEND(atdml%xpp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11005,MPI_COMM_space,ierr)
-            call MPI_SEND(atdml%vp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11006,MPI_COMM_space,ierr)
-          type is (atom_config_e)
-             if (atdml%lax)then
-                lwax=.true.
-               call MPI_SEND(atdml%ax(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11007,MPI_COMM_space,ierr)
-             end if
-          end select
-         if (.not.lwax)call MPI_SEND(atdml%xp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11008,MPI_COMM_space,ierr)
+          if (nprocspace.gt.1) then
+             
+             call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
+             call MPI_SEND(atdml%ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
+             call MPI_SEND(atdml%xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_space,ierr)
+             call MPI_SEND(atdml%num_at_glob(1:im), im,    MPI_INTEGER,0,11004,MPI_COMM_space,ierr)
+             
+             if (formatsauvmod==1) then
+                lwax=.false.
+                select type (atdml)
+                type is (atom_config_d)
+                   call MPI_SEND(atdml%xpp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11005,MPI_COMM_space,ierr)
+                   call MPI_SEND(atdml%vp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11006,MPI_COMM_space,ierr)
+                type is (atom_config_e)
+                   if (atdml%lax)then
+                      lwax=.true.
+                      call MPI_SEND(atdml%ax(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11007,MPI_COMM_space,ierr)
+                   end if
+                end select
+                if (.not.lwax)call MPI_SEND(atdml%xp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11008,MPI_COMM_space,ierr)
+             endif
+          end if
+#endif
        endif
-#endif
-    endif
 #ifdef PARA
-    deallocate (buffer)
-    deallocate (ibuffer)
+              if (nprocspace.gt.1) then
+
+                 deallocate (buffer)
+                 deallocate (ibuffer)
+              end if
 #endif
 
-
+!    write (6, *) ' OUT sauvegarde it=', it,rang, myid,fnamcout
     return
   end subroutine sauvegardeT
 
@@ -226,8 +259,8 @@ contains
 #ifdef PARA
     integer,dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable   :: buffer
-    integer,      dimension(0:nprocs-1)   :: im_loc
-    integer,      dimension(0:nprocs-1)   :: pt_im
+    integer,      dimension(0:nprocspace-1)   :: im_loc
+    integer,      dimension(0:nprocspace-1)   :: pt_im
     integer :: next_pt
     integer :: i_proc
     integer :: proc_source
@@ -263,7 +296,7 @@ contains
        buffer(:,1:im) = xp(:,1:im)
        pt_im(0)=1
        next_pt = pt_im(0) + im_loc(0)
-       do i_proc=1,nprocs-1
+       do i_proc=1,nprocspace-1
           call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_space, status, ierr)
           proc_source = status(MPI_SOURCE)
           im_loc(proc_source)=im_temp

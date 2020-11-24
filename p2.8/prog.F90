@@ -21,7 +21,8 @@ module prog_mod
 #if defined ML || defined PARAML    
   USE ml_main_mod,only: ml_main
 #endif
-      USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+
   implicit none
 contains
   subroutine prog
@@ -31,7 +32,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,im,imm,indi,ltabvois,parallele,potist,rang,sig,nvois ,&
          &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize,&
-             &at,bg,zl,zls2,nzl,volu,normat,lax,lprteat,lsigat
+             &at,bg,zl,zls2,nzl,volu,normat,lax,lprteat,lsigat,imm_glob
 
     USE tab_imm_m
     
@@ -39,7 +40,11 @@ contains
 
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,TEMPS_INIT_DEB,TEMPS_INIT,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm,myid
+    USE mod_para,only:MPI_COMM_space,TEMPS_INIT_DEB,TEMPS_INIT,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm,myid,&
+         &nprocspace
+    USE neb_module,only:init_mpi_neb
+#else
+    USE mod_para,only:nprocspace
 #endif
 
     implicit none
@@ -64,15 +69,33 @@ contains
     !-----------------------------------------------
 
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
-    call alloc_all_tab_imm(imm)
+!    call alloc_all_tab_imm(imm)
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin))then
        atdml=>atdme
     else
        atdml=>atdmd
     end if
     im=0 ; nvois=0
+    imm_glob = imm
+    if (dmtype.ne.9) then
 
-    call atdml%init(im,imm,ltabvois,nvois,lsigat,lprteat,llangevin,lax)
+#ifdef PARA
+    ! En parallele, on initialise le nombre maximum d'atomes d'un
+    ! processus au nombre d'atomes locaux. Plus tard ce nombre sera
+    ! complete par le nombre maximal d'atomes fantomes
+    ! On suppose que la concentration max ne depasse pas 20%  de 
+    ! la concentration moyenne
+    imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
+    if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
+#endif
+       
+       call atdml%init(im,imm,ltabvois,nvois,lsigat,lprteat,llangevin,lax)
+    else
+#ifdef PARA
+       call init_mpi_neb
+#endif
+    end if
+    
 #ifdef PARA
     temps_init_deb = MPI_Wtime()
 #endif
@@ -89,9 +112,9 @@ contains
 
 #ifdef PARA
     ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-
-    call maj_atomes_frt_ftm(atdml,celndm)
-
+    if (nprocspace.gt.1) then
+       call maj_atomes_frt_ftm(atdml,celndm)
+    end if
 
 
 
@@ -124,13 +147,13 @@ contains
           call dmloop(atdml,celndm,boxndm)
        else
 #ifdef PARA
+          if (nprocspace.gt.1) then
           if(rang==0) write (6,*)'DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION'
                  call dmloop_vverlet (atdml,celndm,boxndm)
-
+              end if
 #endif
        endif
     case (3,30)
-       !    stop
 
        call gcII ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
     case (9)

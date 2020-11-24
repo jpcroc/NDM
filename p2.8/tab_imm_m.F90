@@ -9,7 +9,6 @@ module tab_imm_m
 
   integer, dimension(:), allocatable       :: ielat  ! numero de cellule
   integer, dimension(:), allocatable       :: iwmax  ! indice du dernier voisin
-  integer, dimension(:), allocatable       :: iwmax2  ! indice du dernier voisin pour les constantes de force (only phondy)
   integer, dimension(:), allocatable       :: ityp   ! types 
   real(double),dimension(:,:), allocatable :: xp     ! positions 
   real(double),dimension(:,:), allocatable :: xpp    ! positions precedentes
@@ -60,7 +59,6 @@ contains
     allocate(ielat(nb_imm))
     ielat = 0
     allocate(iwmax(nb_imm))
-    allocate(iwmax2(nb_imm))
     iwmax = 0
     allocate(ityp(nb_imm))
     ityp  = 0
@@ -175,9 +173,7 @@ contains
        ielat(1:old_nb_imm) = ibuff
        ibuff = iwmax
        deallocate(iwmax)
-       deallocate(iwmax2)
        allocate(iwmax(new_nb_imm))
-       allocate(iwmax2(new_nb_imm))
        iwmax = 0
        iwmax(1:old_nb_imm) = ibuff
 
@@ -216,7 +212,6 @@ contains
     if (allocated(bruitmd))      deallocate(bruitmd)
     if (allocated(ielat))       deallocate(ielat)
     if (allocated(iwmax))       deallocate(iwmax)
-    if (allocated(iwmax2))      deallocate(iwmax2)
     if (allocated(ityp))        deallocate(ityp)
     if (allocated(num_at_glob)) deallocate(num_at_glob)
     if (lsuivinonpbc) then

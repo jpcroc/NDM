@@ -27,8 +27,9 @@ module gen_com_m
 
   integer :: ivoismax
 
-  integer :: imm                 !imm taille des tableaux dependant du nombre d'atome
-  integer :: imm_glob
+  integer :: imm                 !imm taille des tableaux dependant du nombre d'atome mélange par proc et pas par proc, à remplacer par les deux suivants
+  integer :: imm_glob ! taille complète des tableaux 
+  integer:: imm_loc ! taille des conf atomique par proc 
 
 
   real(double),parameter :: pi=3.141592654D0, bk= 1.380622D-16, &

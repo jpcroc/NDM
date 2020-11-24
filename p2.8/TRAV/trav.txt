@@ -1,4 +1,4 @@
-
+initloc et pointer_caltabt_calfo ne fonctionne que pour atom_config_d
 INTEGRER DECOUP dans la version sequentielle avec un ldecoup ET METTRE DECOUP3D en version para_config ET intégrer les variables associées dans un type (spacepara_config ?)
 rasmol a mettre en version paraconfig
 programmer parallel replica

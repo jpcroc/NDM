@@ -20,7 +20,7 @@ module constrconf_mod
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs
+    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace
 #endif
 
 
@@ -49,7 +49,7 @@ contains
     type(box_config)::boxrgin
     type(atom_config)::atrgin
 #ifndef PARA
-    integer :: nprocs
+    integer :: nprocspace=1
 #endif
     integer,      dimension(:), allocatable   :: num_at_buff
     integer, dimension(:),allocatable     :: ibuffer
@@ -69,7 +69,7 @@ contains
 
     if (rang==0) then
        write(6,*)
-       write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-',imm,imm_glob,nprocs
+       write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-',imm,imm_glob,nprocspace
        write(6,*)
     endif
 
@@ -100,7 +100,8 @@ contains
           na(iti)=count(COMPatrcf%ityp(1:COMPatrcf%im)==iti)
        end do
        ncore=0
-       call  decoupage(nprocs,ncore,cellrcf,atrcf)
+
+       call  decoupage(nprocspace,ncore,cellrcf,atrcf)
        allocate(num_at_buff(imm_glob))
        im_glob=COMPatrcf%im
        
@@ -119,9 +120,9 @@ contains
           end if
           call setnox(boxrcf,cellrcf,rumax)
           open(123, file='decoup.dat', status='old')
-          read (123, *) nprocs,ncore
+          read (123, *) nprocspace,ncore
           close(123)         
-          call  decoupage(nprocs,ncore,cellrcf)
+          call  decoupage(nprocspace,ncore,cellrcf)
           stop
        else
           itread=1
@@ -332,10 +333,10 @@ contains
 #ifdef PARA  
 
 
-       if (atrep%im>imm_glob) then
-          write (6, *) rang,'imm trop petit'
-          call arret_ndm
-       endif
+!       if (atrep%im>imm_glob) then
+!          write (6, *) rang,'imm trop petit'
+!          call arret_ndm
+!       endif
        i=0;im=0
        do icomp=1,atcomp%im
           xt(:)=atcomp%xp(:,icomp)
@@ -353,16 +354,14 @@ contains
           iti = atcomp%ityp(icomp)
           call coord_to_cell(xt,numcell,boxrep%bg,cellrep%nox,cellrep%noy,cellrep%noz)
           numproc=cellrep%proc_cell(numcell)
-          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-             
           if (numproc == myid) then
-
              i=i+1
              im=im+1
-             atrep%num_at_glob(i)=atcomp%num_at_glob(icomp)
+             call atcomp%copy_atom(icomp,atrep,i)
+!             atrep%num_at_glob(i)=atcomp%num_at_glob(icomp)
              if (present(nab)) nab(i)=icomp
              atrep%xp(:,i)=xt(:)
-             atrep%ityp(i)=iti
+!             atrep%ityp(i)=iti
              atrep%proc_at(i)=myid
           endif
        end do
@@ -562,18 +561,24 @@ contains
     return
   end subroutine convert_cell
 
-  subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum)
+  subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum,lrepartition)
     class(atom_config)::at2b
     type(cell_config)::cel2b
     type(box_config)::box2b
     integer,intent(out)::imtot
     character,intent(in) :: fnamg*80
     real(double),intent(in)::rum
+    logical,optional,intent(in)::lrepartition
+    logical::lrepart
     type (atom_config)::COMPatrcf
     type(atom_config)::atrgin
     type(box_config)::boxrgin
     real(double)::atg(3,3)
     integer::lat(3),ic,ncore,npr,ierr
+!    write(6,*)'GINC0',rang
+    lrepart=.true.
+    if(present(lrepartition))lrepart=lrepartition
+    
     call read_gin(boxrgin,atrgin,fnamg,lat)
     do ic=1,3
        atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
@@ -581,20 +586,27 @@ contains
     call initbox(box2b,atg)
     
     call setnox(box2b,cel2b,rum)
+
     if (rang==0) then
        write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
     end if
 #ifdef PARA
     ncore=0
-    call  decoupage(nprocs,ncore,cel2b,at2b)
-
+    call  decoupage(nprocspace,ncore,cel2b,at2b)
+!    call MPI_finalize(ierr)
+!    stop
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
     imtot=COMPatrcf%im
     im_glob=COMPatrcf%im
    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
-    write(6,*)'GINC1',rang,at2b%im,at2b%imm
-   call repartition(COMPatrcf,at2b,box2b,cel2b)
-    write(6,*)'GINC2',rang,at2b%im,at2b%imm
+   write(6,*)'GINC11',rang,at2b%im,at2b%imm,nprocspace
+   write(6,*)'GINC12',rang,compatrcf%im,compatrcf%imm
+   if ((nprocspace.gt.1).and.(lrepart)) then
+      call repartition(COMPatrcf,at2b,box2b,cel2b)
+   else
+      call compatrcf%copy_config(at2b, lrescl=.true.)
+      write(6,*)'GIN2NDM',at2b%im,at2b%imm
+   end if
 #else
     if (ldecoup) then
        open(123, file='decoup.dat', status='old')
@@ -611,6 +623,7 @@ contains
 
 
     call setcellconf(cel2b,at2b,box2b,im_glob,rum)
+    write(6,*)'GINC2',rang,at2b%im,at2b%imm
     return
 
   end subroutine gin2ndm
@@ -626,7 +639,7 @@ contains
 #ifdef PARA
     !    use mpi
     USE var_pot, ONLY:ntyp
-    !    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,proc_cell
+
 #endif
     USE gen_com_m,only: it,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
     implicit none
@@ -957,8 +970,8 @@ contains
     at=at*1d-8
     call initbox(boxrg,at)
     read (lugin, *) imcell               !number of atoms in UC
-    if (imcell>imm) then
-       if(rang==0)               write (6, *) 'trop d_atomes dans la cel. unite'
+    if (imcell>imm_glob) then
+       if(rang==0)               write (6, *) 'trop d_atomes dans la cel. unite',imm_glob,imcell
        call arret_ndm
     endif
     call atrg%init(imcell)

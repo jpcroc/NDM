@@ -131,7 +131,7 @@
 module gcmodII_mod
 #ifdef PARA
 !  use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,nprocs,status
+  USE mod_para,only:MPI_COMM_space,ierr,nprocspace,status
 
 #endif  
   implicit none
@@ -334,10 +334,12 @@ contains
 95                    WORK = DMAX1(WORK,DABS(X(I)-W(IXOPT+I)))                          
                       IF (WORK.GT.0.0D0) then
 #ifdef PARA
-                         iopt=1
-                         do ip=1,nprocs-1
+                            if (nprocspace.gt.1) then
+                        iopt=1
+                         do ip=1,nprocspace-1
                             call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
                          end do
+                      end if
 #endif                         
 
                          GO TO 5     !!!!!!!!!!!      !!!!!!!!!!!!                                      
@@ -482,22 +484,28 @@ contains
 9005                                 if (do_print) print 3030,NCALLS
 3030                                 FORMAT ("NCALLS",I5)
 #ifdef PARA
+     if (nprocspace.gt.1) then
+                                    
                                      iopt=0
-                                     do ip=1,nprocs-1
+                                     do ip=1,nprocspace-1
                                         call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
                                      end do
+                                  end if
 #endif                                     
                                      RETURN                                                            
 !                                  END DO
                                   else
 #ifdef PARA
-   call MPI_RECV(iopt,  1, MPI_INTEGER, 0, 10001, MPI_COMM_space, status, ierr)
-   select case (iopt)
-   case (0)
-      return
-   case(1)
-      goto 5
-   end select
+     if (nprocspace.gt.1) then
+                                    
+        call MPI_RECV(iopt,  1, MPI_INTEGER, 0, 10001, MPI_COMM_space, status, ierr)
+        select case (iopt)
+        case (0)
+           return
+        case(1)
+           goto 5
+        end select
+     end if
 #endif
 endif
  end subroutine ZXCGRII 

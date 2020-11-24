@@ -222,9 +222,9 @@ contains
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,proc_cell
-
-
+    USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE,proc_cell,nprocspace
+#else
+    USE mod_para,only:nprocspace
 #endif
 
     real(double)  :: xp(3,imm)
@@ -248,13 +248,17 @@ contains
     if (i2t==0)then 
        elosscel(:)=0
 #ifdef PARA
-    allocate (elosscel_tot(noxyz))
+           if (nprocspace.gt.1) then
+              allocate (elosscel_tot(noxyz))
+           end if
 #endif
 
     end if
     do ko = 1, noxyz
 #ifdef PARA
-       if (proc_cell(ko).ne.myid) cycle
+       if (nprocspace.gt.1) then
+          if (proc_cell(ko).ne.myid) cycle
+       end if
 #endif
        if (nato(ko)==0) cycle
        call nox_2_nex(ko,ixyze)
@@ -284,8 +288,9 @@ contains
                 if (nv1.gt.ngrdel) then
                    if (rang.eq.0)  write(6,*)'elstop velocity > 49, rebuild elstop.in'
 #ifdef PARA
-	            call MPI_FINALIZE(ierr)
-#endif 
+                      call MPI_FINALIZE(ierr)
+#endif
+
 
                    stop
                 end if
@@ -366,10 +371,13 @@ contains
        end do
     end do
 #ifdef PARA
-    if (i2T==0)then
-       call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       elosscel=elosscel_tot
-       deallocate (elosscel_tot)
+    if (nprocspace.gt.1) then
+       if (i2T==0)then
+          call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,&
+               &MPI_SUM,MPI_COMM_space,ierr)
+          elosscel=elosscel_tot
+          deallocate (elosscel_tot)
+       end if
     end if
 #endif 
 

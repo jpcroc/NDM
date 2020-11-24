@@ -48,7 +48,9 @@ module Parrinello_Rahman
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocs,maj_atomes_frt_ftm
+  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,maj_atomes_frt_ftm,nprocspace
+#else
+    USE mod_para,only:nprocspace
 !  USE mod_para,only:MPI_COMM_space,
 #endif
   USE calfo_mod,only: calfo
@@ -140,8 +142,10 @@ contains
     IF (wbox==0.0) THEN
        wbox = sum(0.5*cm(ityp(:im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
-  call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-  wbox=wbox_tot
+       if (nprocspace.gt.1) then
+          call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+          wbox=wbox_tot
+       end if
 #endif
 
 
@@ -285,8 +289,10 @@ contains
     sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 
 #ifdef PARA
-    call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    sigkine=sigkine_tot
+        if (nprocspace.gt.1) then
+           call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+           sigkine=sigkine_tot
+        end if
 
 #endif
 
@@ -406,45 +412,49 @@ contains
 
 
 #ifdef PARA
-    zl(1) = Sqrt( Sum(at(1:3,1)**2 ) )
-    zl(2) = Sqrt( Sum(at(1:3,2)**2 ) )
-    zl(3) = Sqrt( Sum(at(1:3,3)**2 ) )
-    volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
-    zls2(1:3) = 0.5d0*zl(1:3)
-    call caltabt(im,xp,ielat)
-    !  temps_debpara=MPI_Wtime()
-    ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-    write(6,*)'A DEV' ! pas programmé
-    stop
-    call maj_atomes_frt_ftm(atpr,celndm)
-    !  temps_para=temps_para+MPI_Wtime()-temps_debpara
-
-
-    if (iewald>0) then
-
-       ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
-       auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
-       pi2 = pi*pi
+    if (nprocspace.gt.1) then
+       zl(1) = Sqrt( Sum(at(1:3,1)**2 ) )
+       zl(2) = Sqrt( Sum(at(1:3,2)**2 ) )
+       zl(3) = Sqrt( Sum(at(1:3,3)**2 ) )
        volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
-       fact = pi2/alpha**2
-       fact1 = auxe/2./pi/volu
-       fact2 = auxe*2./volu
-       do nb1 = -ncoucx, ncoucx
-          do nb2 = -ncoucy, ncoucy
-             do nb3 = -ncoucz, ncoucz
-                if (nb1==0.and.nb2==0.and.nb3==0) cycle
-                hk2 = nb1*nb1/zl(1)**2+nb2*nb2/zl(2)**2+nb3*nb3/zl(3)**2
-                ex = exp((-hk2*fact))/hk2
-                ex1 = ex*fact1
-                ex2 = ex*fact2
-                tabv3(nb1,nb2,nb3) = ex1
-                tabf3(:,nb1,nb2,nb3) = ex2*q(:)
+       zls2(1:3) = 0.5d0*zl(1:3)
+       call caltabt(im,xp,ielat)
+       !  temps_debpara=MPI_Wtime()
+       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+       write(6,*)'A DEV' ! pas programmé
+       stop
+       call maj_atomes_frt_ftm(atpr,celndm)
+       !  temps_para=temps_para+MPI_Wtime()-temps_debpara
+       
+       
+       if (iewald>0) then
+          
+          ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
+          auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
+          pi2 = pi*pi
+          volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
+          fact = pi2/alpha**2
+          fact1 = auxe/2./pi/volu
+          fact2 = auxe*2./volu
+          do nb1 = -ncoucx, ncoucx
+             do nb2 = -ncoucy, ncoucy
+                do nb3 = -ncoucz, ncoucz
+                   if (nb1==0.and.nb2==0.and.nb3==0) cycle
+                   hk2 = nb1*nb1/zl(1)**2+nb2*nb2/zl(2)**2+nb3*nb3/zl(3)**2
+                   ex = exp((-hk2*fact))/hk2
+                   ex1 = ex*fact1
+                   ex2 = ex*fact2
+                   tabv3(nb1,nb2,nb3) = ex1
+                   tabf3(:,nb1,nb2,nb3) = ex2*q(:)
+                end do
              end do
           end do
-       end do
-
-    endif
-
+          
+       endif
+    else
+      CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
+     
+    end if
 
 
 #else
@@ -526,8 +536,10 @@ contains
        enddo
        sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 #ifdef PARA
-       call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       sigkine=sigkine_tot
+       if (nprocspace.gt.1) then
+          call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+          sigkine=sigkine_tot
+       end if
 #endif
        ! Contrainte totale à l'instant t+dt
        sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )

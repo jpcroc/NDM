@@ -1,5 +1,11 @@
 module tempinst_mod
   USE gen_com_m, ONLY:imm,bk,im_glob
+#ifdef PARA
+    USE mpi
+    USE mod_para,only:MPI_COMM_space,nprocspace,myid,NDM_MPI_REAl_DOUBLE
+
+#endif
+
   implicit none
 contains
   !c******************************************************************
@@ -12,11 +18,6 @@ contains
     USE T_kind_param_m
     
     USE var_pot, ONLY:cm
-#ifdef PARA
-    USE mpi
-    USE mod_para,only:MPI_COMM_space,nprocs,myid,NDM_MPI_REAl_DOUBLE
-
-#endif
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
@@ -39,10 +40,13 @@ contains
     enddo
 
 #ifdef PARA
+    if (nprocspace.gt.1)then 
     call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     mv2 = mv2_glob
     tempinst=mv2/(3.d0*float(im_glob)*bk)
-
+    else
+       tempinst=mv2/(3.d0*float(im)*bk)
+    end if
 #else
     tempinst=mv2/(3.d0*float(im)*bk)
 

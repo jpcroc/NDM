@@ -13,7 +13,7 @@ contains
 #ifdef PARA
   subroutine init_mpi()
     use mpi
-    use mod_para,only:ierr,nprocs,temps_deb,MPI_COMM_space,rang,grp_world
+    use mod_para,only:ierr,nprocs,temps_deb,MPI_COMM_space,rang,grp_world,nprocspace
 
     implicit none
 
@@ -35,7 +35,7 @@ contains
     call MPI_COMM_GROUP( MPI_COMM_WORLD, grp_world, ierr )
     !  MPI_COMM_space=MPI_COMM_WORLD
     temps_deb = MPI_Wtime()
-
+    nprocspace=nprocs
 
   end subroutine init_mpi
 

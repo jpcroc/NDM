@@ -43,7 +43,9 @@ module Parrinello_Rahman_Nose
 
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocs
+  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
+#else
+  use mod_para,only:nprocspace
 
 #endif
  
@@ -108,8 +110,10 @@ contains
     IF (wbox==0.0) THEN
        wbox = sum(0.5*cm(ityp(:im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
+           if (nprocspace.gt.1) then
   call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   wbox=wbox_tot
+end if
 #endif
     END IF
     if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la boîte pour Parrinello-Rahman: wbox=',wbox
@@ -336,8 +340,10 @@ contains
     enddo
     sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 #ifdef PARA
+        if (nprocspace.gt.1) then
     call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     sigkine=sigkine_tot
+ end if
 
 #endif
 

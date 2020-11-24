@@ -34,8 +34,10 @@ contains
   USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocs,temps_para,temps_debpara,maj_atomes_frt_ftm
-
+  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,temps_para,temps_debpara,maj_atomes_frt_ftm,&
+       &nprocspace
+#else
+  use mod_para,only:nprocspace
 #endif
     implicit none
 
@@ -95,6 +97,8 @@ contains
        call prNose(xp,xpp,vp,fp,ityp)
 
 #ifdef PARA
+       if (nprocspace.gt.1) then
+          
        zl(1) = Sqrt( Sum(at(1:3,1)**2 ) )
        zl(2) = Sqrt( Sum(at(1:3,2)**2 ) )
        zl(3) = Sqrt( Sum(at(1:3,3)**2 ) )
@@ -139,7 +143,10 @@ contains
           end do
 
        endif
-
+    else
+           CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
+   
+    end if
 #else
 
        CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)

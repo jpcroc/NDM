@@ -15,13 +15,11 @@ contains
     USE jqmod
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE
+    USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
+#else
+    USE mod_para,only:nprocspace
 #endif
     implicit none
-!#ifdef PARA
-!  include "mpif.h"
-
-!#endif
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -118,22 +116,27 @@ contains
              l = ipo(iti,itj)
              if (typ_pot_pair(l).ne.ipotentiel) cycle
 
-#ifdef PARA
+!#ifdef PARA
              ! Methode pour ne prendre qu'une seule fois en compte
              ! le couple i,j en paralle :
              ! - i est necesairement local (boucle i<=im)
              ! - si j est local on ne retient que le couple i<j
              ! - si j n'est pas local, le couple n'est par definition
              !   pris qu'une fois puisque i est local
-             if (j.le.im) then
-                ! les deux atomes sont locaux
-                if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme déja calculé
+             if (nprocspace.gt.1) then
+                if (j.le.im) then
+                   ! les deux atomes sont locaux
+                   if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme déja calculé
+                else
+                   ! j n'est pas local, on fait le calcul normal           
+                endif
              else
-                ! j n'est pas local, on fait le calcul normal           
-             endif
-#else
-             if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme déja calculé
-#endif
+                if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme déja calculé
+             end if
+             
+!#else
+!             if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme déja calculé
+!#endif
 
              if (noxyz.ne.1) then
                 c1 = c1p-xpnp(1,j)
@@ -190,21 +193,6 @@ contains
              fp(1,i) = fp(1,i)+f1
              fp(2,i) = fp(2,i)+f2
              fp(3,i) = fp(3,i)+f3
-
-
-
-
-             !           if (allocated (free)) then
-             !              if (free(i).EQV..true.)potis1 = potis1+deltaepot
-             !#ifdef PARA
-             !              if (j.le.im) then
-             !#endif
-             !                 if (free(j).EQV..true.)potis1 = potis1+deltaepot
-             !#ifdef PARA
-             !              endif
-             !#endif
-
-             !           else
              potis1 = potis1+deltaepot
 #ifdef PARA
              if (j.le.im) then
@@ -226,15 +214,17 @@ contains
                 jqf=0.0
                 eat(i) = eat(i)+deltaepot
 #ifdef PARA
-                if (j.le.im) then
-                   eat(j) = eat(j)+deltaepot
-                   do ic=1,3
-                      jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
-                   end do
-                else
-                   do ic=1,3
-                      jqf=jqf-0.5*(ra(ic)*(vp(ic,i)))
-                   end do
+                if (nprocspace.gt.1) then
+                   if (j.le.im) then
+                      eat(j) = eat(j)+deltaepot
+                      do ic=1,3
+                         jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
+                      end do
+                   else
+                      do ic=1,3
+                         jqf=jqf-0.5*(ra(ic)*(vp(ic,i)))
+                      end do
+                   end if
                 end if
 #else
                 eat(j) = eat(j)+deltaepot
@@ -300,17 +290,18 @@ contains
     end do ! fin i
 
 #ifdef PARA
-    call MPI_ALLREDUCE(potis1,potis1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    potis1=potis1_tot
-    call MPI_ALLREDUCE(potis2,potis2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    potis2=potis2_tot
-    call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    sig=sig_tot
-    if (associated(sigc)) then
-       call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       sigc=sigc_tot
-    endif
-
+    if (nprocspace.gt.1) then
+       call MPI_ALLREDUCE(potis1,potis1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       potis1=potis1_tot
+       call MPI_ALLREDUCE(potis2,potis2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       potis2=potis2_tot
+       call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       sig=sig_tot
+       if (associated(sigc)) then
+          call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+          sigc=sigc_tot
+       endif
+    end if
 
 #endif
 

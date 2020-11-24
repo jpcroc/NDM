@@ -19,8 +19,9 @@ contains
     USE work_cgII,only: funct
 #ifdef PARA
 
-    use mod_para,only:nprocs,MPI_COMM_space ,ierr,status,NDM_MPI_REAL_DOUBLE
-
+    use mod_para,only:nprocspace,MPI_COMM_space ,ierr,status,NDM_MPI_REAL_DOUBLE
+#else
+    use mod_para,only:nprocspace
 #endif
     ! *************************************************************
     ! xp positions des atomes
@@ -95,6 +96,7 @@ contains
 !    write(6,*)'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT,rang'
 !    write(6,*)rang,im,imm,im_glob,imm_glob
 
+    if (nprocspace.gt.1) then
 
     NGC=3*imm_glob
     allocate (X(NGC),G(NGC),W(6*NGC))
@@ -103,11 +105,11 @@ contains
     allocate(ityp_all(imm_glob))
     xp_all=0
     if (rang==0) then
-       do iproc=0,nprocs-1
+       do iproc=0,nprocspace-1
           ! Pour le processeur maitre il n'y a rien a faire
           ! reception des donnees des autres processeurs
           if (iproc.ne.0) then
-             call MPI_RECV(im,               1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_space, status, ierr)
+             call MPI_RECV(im,   1,    MPI_INTEGER,      MPI_ANY_SOURCE, 10001, MPI_COMM_space, status, ierr)
              proc_source = status(MPI_SOURCE)
              call MPI_RECV(xp(1:3,1:im),     3*im, NDM_MPI_REAL_DOUBLE, proc_source, 10002, MPI_COMM_space, status, ierr)
              call MPI_RECV(ityp(1:im),       im,   MPI_INTEGER,         proc_source, 10003, MPI_COMM_space, status, ierr)
@@ -166,6 +168,43 @@ contains
 !    end do
 !    call mpi_barrier(MPI_COMM_space,ierr)
 !    stop
+ else
+    allocate(xp_all(3,imm))
+    allocate(fp_all(3,imm))
+    allocate(ityp_all(imm))
+
+!    write(6,*)'preGC0A',xp(:,1),xp_all(:,1),it,'dmtype ',dmtype
+    !New GC settings ....:
+    NGC=3*imm
+
+    allocate (X(NGC),G(NGC),W(6*NGC))
+    do i=1,im
+       IF (dmtype.EQ.30) THEN
+          ! Variables = reduced coordinates
+          if (mdcg_noise==0) then
+
+             X(3*i-2:3*i) = MatMul( xp(1:3,i), bg)
+          else
+             xp(1:3,i)= xp(1:3,i)+bruitmd(1:3,i)
+             X(3*i-2:3*i) = MatMul( xp(1:3,i), bg)
+          end if
+       ELSE
+          ! Variables = cartesian coordinates (in A)
+          if (mdcg_noise==0) then
+             X(3*i-2:3*i) = xp(1:3,i)*angst
+          else
+             xp(1:3,i)= xp(1:3,i)+bruitmd(1:3,i)
+             X(3*i-2:3*i) = (xp(1:3,i)+bruitmd(1:3,i))*angst
+          end if
+       END IF
+          xp_all(:,i)=xp(:,i)
+          ityp_all(i)=ityp(i)
+
+    end do
+!    write(6,*)'preGC0B',xp(:,1),xp_all(:,1),it,'dmtype ',dmtype
+    X(3*im+1:3*imm)=0.d0
+    ims=imm
+ end if
 #else
     allocate(xp_all(3,imm))
     allocate(fp_all(3,imm))

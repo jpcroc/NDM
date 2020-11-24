@@ -1,8 +1,11 @@
 module arret_ndm_mod
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE,temps_initspeed,temps_para,temps_dmloop,temps_init,temps_input,&
+    USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE,temps_initspeed,&
+         &temps_para,temps_dmloop,temps_init,temps_input,&
          &temps_config,temps_deb
+    use gen_com_m ,only:rang
+   
 #endif
         implicit none
         contains
@@ -32,7 +35,7 @@ subroutine arret_ndm()
 !  temps_dmloop=MPI_Wtime() - temps_dmloop_deb
 
   temps_exe = MPI_Wtime() - temps_deb
-  if (myid==0) then
+  if (rang==0) then
      print *, 'Temps d''execution : ', temps_exe
      print *, 'Temps d''init      : ', temps_init
      print *, 'Temps d''input     : ', temps_input

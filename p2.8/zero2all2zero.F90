@@ -2,9 +2,12 @@ module zero2all2zero_mod
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
 !  use mpi
-  USE mod_para,only:nprocs,MPI_COMM_space,ierr,status,NDM_MPI_REAL_DOUBLE
-
+  USE mod_para,only:nprocspace,MPI_COMM_space,ierr,status,NDM_MPI_REAL_DOUBLE
+#else
+  USE mod_para,only:nprocspace
 #endif
+
+
   USE gen_com_m, ONLY:imm_glob,imm,bg,at,im,rang,cell_debx,cell_deby,cell_debz,im_glob,zero,nox,noy,noz,&
        &cell_finx,cell_finy,cell_finz,low_limit
   USE tab_imm_m,only:ityp,num_at_glob
@@ -29,6 +32,9 @@ contains
 !    write(6,*)'tailles', size(vectall),size(vectp)
 #ifdef PARA
     real(double)::vectin(3,imm_glob)
+
+        if (nprocspace.gt.1) then
+
     vectin=vectall
     call cryst_to_cart (im_glob, vectin, bg, -1) !cart vers cryst
     !    if (rang==0) then !envoi vectall à tous
@@ -98,7 +104,9 @@ contains
 
 !    write(6,*)"rg im",rang,im
 
-
+ else
+        vectp(:,:) =  vectall(:,:)
+     end if
 #else
 
     vectp(:,:) =  vectall(:,:)
@@ -116,8 +124,10 @@ contains
 
 #ifdef PARA
 
+    if (nprocspace.gt.1) then
+
     if (rang==0) then
-       do iproc=0,nprocs-1
+       do iproc=0,nprocspace-1
           ! Pour le processeur maitre il n'y a rien a faire
           ! reception des donnees des autres processeurs
           if (iproc.ne.0) then
@@ -149,7 +159,9 @@ contains
        !      X=0
     end if
 
-
+ else
+    vectall(:,:) =  vectp(:,:)
+ end if
 #else    
     vectall(:,:) =  vectp(:,:)
 #endif

@@ -14,8 +14,10 @@ module eloss
   !  USE var_pot, ONLY:
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
-
+  USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE
+#else
+  use mod_para,only : nprocspace
+  
 #endif 
 
   ! **************************************************************
@@ -132,7 +134,9 @@ contains
 
 
   subroutine calceloss(im,fp,vp,ityp,ielat,num_at_glob)
-
+#ifdef PARA
+    use mod_para,only : nprocspace
+#endif
   integer,intent(in)::im
   real(double),intent(inout),allocatable,dimension(:,:)::fp
     real(double),intent(inout),allocatable,dimension(:,:)::vp
@@ -145,7 +149,10 @@ contains
 
 #ifdef PARA
     real(double), allocatable,dimension(:)::elosscel_tot
-    if (allocated(elosscel)) allocate (elosscel_tot(noxyz))
+    
+    if (nprocspace.gt.1) then
+       if (allocated(elosscel)) allocate (elosscel_tot(noxyz))
+    end if
 #endif
     icall=icall+1
     if (icall==1) then
@@ -219,20 +226,23 @@ contains
     end do
     !	write(6,*)'RG el',rang,elosselec,elosselec1
 #ifdef PARA
-    elosselectot=0
-    elosselectot1=0
-    call MPI_ALLREDUCE(elosselec,elosselectot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    call MPI_ALLREDUCE(elosselec1,elosselectot1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    !if l2T
-    if (allocated(elosscel)) then
-       call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       elosscel=elosscel_tot
-       deallocate (elosscel_tot)
+    if (nprocspace.gt.1) then
+       elosselectot=0
+       elosselectot1=0
+       call MPI_ALLREDUCE(elosselec,elosselectot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       call MPI_ALLREDUCE(elosselec1,elosselectot1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       !if l2T
+       if (allocated(elosscel)) then
+          call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,&
+               &MPI_SUM,MPI_COMM_space,ierr)
+          elosscel=elosscel_tot
+          deallocate (elosscel_tot)
+       end if
+    else
+       elosselectot=elosselec
+       elosselectot1=elosselec1
     end if
-
 #else
-    elosselectot=elosselec
-    elosselectot1=elosselec1
 
 #endif
 !  write(6,*)'TEST electronic losses ', elosselectot, elosselectot1

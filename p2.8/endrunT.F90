@@ -6,7 +6,7 @@ module endrunT_mod
         USE arret_ndm_mod,only:arret_ndm
         USE sauvegardeT_mod,only:sauvegardeT,cin2gin
         USE rdf_mod,only:rdf
-        USE rasmol_mod,only:rasmol
+        USE rasmolT_mod,only:rasmolT
         USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,sigat,cunitP,erg2eV,itdes,&
              &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
              &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,eatomtotm,&
@@ -28,13 +28,11 @@ subroutine endrunT(atdml,celndm,boxndm)
   USE T_kind_param_m, ONLY:  double
   USE tab_imm_m,only:posmoyx,ityp,xp,num_at_glob,fp,vp,iwmax
 #ifdef PARA
-!  use mpi
+
   USE mod_para,only:MPI_COMM_space,nprocs,myid,temps_dmloop_deb,temps_dmloop,&
-       &temps_config,temps_deb
-  use Tpara,only:NDM_MPI_real_double
-  !  use mpi
-!  USE mod_para,only:MPI_COMM_space,MPI_INTEGER, MPI_ANY_SOURCE, MPI_COMM_space, status,ierr,nprocs,MPI_SOURCE,NDM_MPI_REAL_DOUBLE,MPI_SUM,myid,proc_cell,MPI_LOGICAL,MPI_Wtime&
-!       &, temps_dmloop,temps_dmloop_deb
+       &temps_config,temps_deb,nprocspace,NDM_MPI_real_double
+#else
+  use mod_para,only:nprocspace
 #endif
 #if defined ML && defined PARAML
  USE time_measure
@@ -107,6 +105,8 @@ subroutine endrunT(atdml,celndm,boxndm)
      if (rang==0)open(unit=10, file='xiei.dat', status='unknown')
 #ifdef PARA
      ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
+    if (nprocspace.gt.1) then
+
      if (myid==0) then
         ! Copie des tableaux xp,num_at_glob et ityp locaux 
         allocate(xp_loc(3,imm))
@@ -119,7 +119,7 @@ subroutine endrunT(atdml,celndm,boxndm)
         im_loc = im
         eatom_loc=eatom
         ! Boucle sur les processeurs
-        do iproc=0,nprocs-1
+        do iproc=0,nprocspace-1
            ! Pour le processeur maitre il n'y a rien a faire
            ! reception des donnees des autres processeurs
            if (iproc.ne.0) then
@@ -151,7 +151,33 @@ subroutine endrunT(atdml,celndm,boxndm)
         call MPI_SEND(eatom(1:im),im,  NDM_MPI_REAL_DOUBLE ,     0,10005,MPI_COMM_space,ierr)
         write(6,*)'NZ',myid
      endif
+  else
+     if (lprteattotm.EQV..true.) then
 
+!        if (allocated(free))then
+!           do i=1,im
+!              if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3), & 
+!              eatomtotm(i)*erg2eV-eatref(ityp(i))
+!           end do
+!        else
+           do i=1,im
+              write (10,'(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatomtotm(i)*erg2eV-eatref(ityp(i))
+           end do
+!        end if
+
+     else
+ !       if (allocated(free))then
+ !          do i=1,im
+ !             if (free(i).EQV..true.) write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatom(i)*erg2eV
+ !          end do
+ !       else
+           do i=1,im
+              write (10, '(i6,i3,4g20.8)') i,ityp(i),(xp(j,i)*angst,j=1,3),eatom(i)*erg2eV
+           end do
+ !       end if
+     end if
+
+  end if
 #else
      if (lprteattotm.EQV..true.) then
 
@@ -243,7 +269,7 @@ subroutine endrunT(atdml,celndm,boxndm)
   type is (atom_config_d)
      call analyseT(atdml,celndm,boxndm)
   end select
-  if (iterasmol.GE.0) call rasmol (atdml,boxndm,it)
+  if (iterasmol.GE.0) call rasmolT (atdml,boxndm,it)
   if (.not.parallele.and.iteanapos>=0) call anapos (it)
 
   ! Ecriture d'un fichier atomeye

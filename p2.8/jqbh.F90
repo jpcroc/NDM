@@ -12,8 +12,8 @@ subroutine jqbh (xp,xpp,vp,ityp)
   USE var_pot, ONLY:cm
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE
- 
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
+
 #endif
   implicit none
   !-----------------------------------------------
@@ -155,6 +155,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
 
 #ifdef PARA 
+    if (nprocspace.gt.1) then
      do i = 1, im
 !        if(free(i))then
            if (xp(1,i)<cinf) then
@@ -171,7 +172,17 @@ subroutine jqbh (xp,xpp,vp,ityp)
      call MPI_ALLREDUCE(nacou1,nacou1_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
      nacou1=nacou1_tot
 !     write(6,*)'ecou1B', rang,nacou1,ecou1
+  else
 
+     do i = 1, im
+        if (xp(1,i)<cinf) then
+           nacou1 = nacou1+1
+           ecou1 = ecou1+0.5*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(&
+                i))
+           loc(i)=.true.
+        end if
+     end do
+  end if
 #else
 
      do i = 1, im
@@ -207,6 +218,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      call cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
 
 #ifdef PARA
+    if (nprocspace.gt.1) then
      do i = 1, im
 !        if (free(i))then
            if (xp(1,i).gt.csup)then
@@ -223,6 +235,16 @@ subroutine jqbh (xp,xpp,vp,ityp)
      call MPI_ALLREDUCE(nacou2,nacou2_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
      nacou2=nacou2_tot
 !     write(6,*)'ecou2B', rang,nacou2,ecou2
+  else
+     do i = 1, im
+        if (xp(1,i).gt.csup)then
+           nacou2 = nacou2+1
+           ecou2 = ecou2+(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(&
+                i))*0.5
+           loc(i)=.true.
+        end if
+     end do
+  end if
 #else
 
      do i = 1, im
@@ -254,6 +276,8 @@ subroutine jqbh (xp,xpp,vp,ityp)
      call cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
 
 #ifdef PARA
+    if (nprocspace.gt.1) then
+     
      temptra(:)=0.
      nattr(:)=0
      do i=1,im
@@ -270,7 +294,18 @@ subroutine jqbh (xp,xpp,vp,ityp)
      call MPI_ALLREDUCE(nattr,nattr_tot,ntr,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
      nattr=nattr_tot
 !     write(6,*)'temptra2', rang,temptra,nattr
-
+  else
+     temptra(:)=0.
+     nattr(:)=0
+     crulinv=1-crul
+     do i=1,im
+        if((xp(1,i).lt.crul).or.(xp(1,i).gt.crulinv))cycle
+        indtr=1+Int(ntr*(xp(1,i)-crul)/(1-2*crul))
+!              write(6,*)i,indtr,xp(1,i), (xp(1,i)-crul)/(1-2*crul)
+        nattr(indtr)=nattr(indtr)+1
+        temptra(indtr)=temptra(indtr)+ (vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(i))/(3.*bk*ittherm)
+     end do
+  end if
 #else
      temptra(:)=0.
      nattr(:)=0
