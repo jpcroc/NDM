@@ -21,8 +21,8 @@ contains
     type(atom_config_d),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
     type(box_config)::box
-    type(atom_config_d)::atloc
-    type(cell_config)::celloc
+    type(atom_config_d),pointer::atloc
+    type(cell_config),pointer::celloc
     type(para_config),intent(in)::div
     real(double),intent(in)::rum
     logical::lperiod
@@ -33,8 +33,8 @@ contains
        call repartition(atcomp,atloc,box,celloc,div=div) ! mettre les éléments de la répartition dans un type
     call setcellconf(celloc,atloc,box,atcomp%im,rum)
     else
-       atloc=atcomp
-       celloc=cellcomp
+       atloc=>atcomp
+       celloc=>cellcomp
     end if
     call caltabtC(celloc,atloc,lperiod,box)
      end subroutine initloc
@@ -47,8 +47,8 @@ contains
     type(cell_config),target::cellcomp
     type(box_config)::box
     type(para_config)::div
-    type(atom_config_d)::atloc
-    type(cell_config)::celloc
+    type(atom_config_d),pointer::atloc
+    type(cell_config),pointer::celloc
     logical,intent(in)::lperiod
     logical,optional,intent(in)::ltabvois
     integer,optional,intent(in)::itetabvois,it,ii
@@ -64,15 +64,15 @@ contains
        if (div%npim.gt.1) then
           call atcomp%master2loc(atloc,div)
        else
-          atloc=atcomp
-          celloc=cellcomp                 
+          atloc=>atcomp
+          celloc=>cellcomp                 
        end if
     end if
 
     
 #else
-    atloc=atcomp
-    celloc=cellcomp
+    atloc=>atcomp
+    celloc=>cellcomp
 
 #endif
 
@@ -98,9 +98,8 @@ contains
     if (div%npim.gt.1) then
        call atloc%vers_master(atcomp,div)
     else
-       atcomp=atloc
-!    
-       cellcomp=celloc
+!       atcomp=atloc    
+!       cellcomp=celloc
     end if
     
 #else

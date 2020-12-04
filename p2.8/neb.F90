@@ -1,5 +1,5 @@
 module neb_mod
-  USE calfo_mod,only: calfo
+ USE calfo_mod,only: calfo
   USE analyse_mod,only: analyse
   USE trempe_mod,only: trempe
   USE neb_controle_mod,only:neb_controle
@@ -62,10 +62,8 @@ contains
     ! Variables for Fire quench algorithm
     REAL(double), dimension(:), allocatable :: fire_dt, fire_alph
     INTEGER, dimension(:), allocatable :: fire_nstep,iter
-    !    type(atom_config_d)::atdml
-    !    type(cell_config)::celndm
-    type(atom_config_d)::atnebloc
-    type(cell_config)::cellnebloc
+    type(atom_config_d),pointer::atnebloc
+    type(cell_config),pointer::cellnebloc
     type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
     type(atom_config_d),target::atcible
     integer::iun,i,ic
@@ -80,8 +78,8 @@ contains
     allocate(enepathev_tot(npath));    allocate(enepath_tot(npath)); allocate(sigpath_tot(3,3,npath))
     allocate(rc_tot(npath)); allocate (nebtest_tot(npath)); allocate(iter_tot(npath))
     enepathev_tot=0;enepath_tot=0 ; iter_tot=0
-!    cellnebloc=>cellcible
-!    atnebloc=>atcible
+    cellnebloc=>cellcible
+    atnebloc=>atcible
 #endif    
 
 
