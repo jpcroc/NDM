@@ -131,8 +131,6 @@ contains
     call finalisation_envoi_atomes(ne)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
     call ndm2config (atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,nvois,vp,xpp,ldeall=.true.,lgul=lgul)
     call ndm2cellconfig(cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=proc_cell)
-!    call atcf%print(unit=1850+rang)
-flush(6)
 
 end subroutine maj_atomes_frt_ftm
 

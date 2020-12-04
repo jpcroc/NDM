@@ -22,6 +22,8 @@ contains
     !itapp est l'itération (apprente) en cours
     !namefr est la racine nom du fichier (par défaut celui de name.in
     !rty est un tableau     character*3,intent(in), dimension(1:atmol%im),optional  :: rty qui donne les symboles des atomes. utile pour utiliser d'autres symboles que les symboles chimiques associés aux types des atomes. En l'absence de rty, on utilise les symboles des types des atomes.
+    !latcomp= en PARA latcomp=.true.=> atmol est une cofiguration complète/latcomp=false=>atmol est distributé sur comm_space
+    !lw0= .true. seul le proc 0 écrit la configuration
     !ivisu dans gen_com_m : 1 :.mol, 4=.cfg ; 2=.xred ; 5 =.gin
 
 
@@ -29,7 +31,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE,rang
 #else
     USE mod_para,only:myidsp
 #endif
@@ -76,7 +78,7 @@ contains
     character :: extension*9
 
 #ifdef PARA
-    write(6,*)'rAsmol',im_glob
+    write(6,*)'IN rasmol'
     if (present(latcomp))latcompin=latcomp
 
     if (present (lw0))lw0in=lw0

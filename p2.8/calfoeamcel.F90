@@ -3,7 +3,6 @@ module calfoeamcel_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:angst,nvat,it,low_limit,lperiod,zero
   USE calfocommon
-  use debug,only : ii
   implicit none
 contains
   !----------------------------------------------------------------------

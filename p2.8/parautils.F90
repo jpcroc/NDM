@@ -27,16 +27,10 @@ contains
     real(double),intent(in)::rum
     logical::lperiod
     integer::ierr,iun
-!    call mpi_barrier(mpi_comm_world,ierr)
     if (div%npim.gt.1) then
        call cellcomp%copy_cell(celloc)
        call decoupage(div%npim,0,celloc,atloc)
-!          iun=2500+div%rang_orig
-!          call celloc%print(unit=iun)
-!       write(6,*)'DIV',div
        call repartition(atcomp,atloc,box,celloc,div=div) ! mettre les éléments de la répartition dans un type
-!    iun=2010+div%rang_orig
-!    call atloc%print(unit=iun)
     call setcellconf(celloc,atloc,box,atcomp%im,rum)
     else
        atloc=atcomp
@@ -99,29 +93,18 @@ contains
 #endif
        
        CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
- !      write(6,*)'PTT5',atcomp%xpp(1,1),atloc%xpp(1,1)
- !      write(6,*)'POSTCALFO',div%rang_orig
     
 #ifdef PARA
     if (div%npim.gt.1) then
        call atloc%vers_master(atcomp,div)
-!       write(6,*)'PTT6',atcomp%xpp(1,1),atloc%xpp(1,1)
-!       call atcomp%print(unit=1350+div%rang_orig)
-!       if (div%lmaster) then
-!          iun=div%rang_orig+2200
-!          call atcomp%print(unit=iun)
-!       end if
     else
        atcomp=atloc
 !    
        cellcomp=celloc
-!       iun=div%rang_orig+2100
-!       call atcomp%print(unit=iun)
     end if
     
 #else
     atcomp=atloc
-!    call atcomp%print(unit=1249)
     cellcomp=celloc
 #endif
     return

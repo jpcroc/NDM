@@ -602,7 +602,7 @@ contains
     !    call MPI_finalize(ierr)
     !    stop
     COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
-    write(6,*)'IMMGLOBIMMGLOB',imm_glob
+!    write(6,*)'IMMGLOBIMMGLOB',imm_glob
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
     imtot=COMPatrcf%im
     im_glob=COMPatrcf%im

@@ -153,11 +153,14 @@ contains
           write(6,*)'NPMPB',npm,div%nimage
           stop
        end if
-       write(6,*)'RGM',div%rang_orig, div%rgmas
+      write(6,*)'RGM',div%rang_orig, div%rgmas
     end if
 
     div%nimage=div%nimage
 #endif
+!        call MPI_BARRIER(div%comm_orig)
+!        call mpi_finalize(ierr)
+!        stop
     return
 
   end subroutine commconstr

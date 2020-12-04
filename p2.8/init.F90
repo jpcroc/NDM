@@ -241,7 +241,6 @@ contains
           select type(atdml)
              class is (atom_config_d)
              call initspeed(atdml,im_glob,boxndm)
-             !      call atdml%print          
           end select
           if (iterasmol>=0) then
              itapp=0

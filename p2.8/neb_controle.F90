@@ -69,7 +69,7 @@ contains
        if (lEev.EQV..true.) then 
           forctot = sqrt(SUM(fp(1:3,1:im)**2))*erg2eV/angst
           formax  = sqrt(MAXVAL(fp(1,:im)**2+fp(2,1:im)**2+fp(3,1:im)**2))*erg2eV/angst
-                      write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
+!                      write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
           write(400+rang,*)it,forctot,formax
           flush(400+rang)
           if (fpstop>0) then   

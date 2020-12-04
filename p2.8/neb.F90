@@ -29,7 +29,6 @@ module neb_mod
   use mod_para,only: NDM_MPI_REAl_DOUBLE
   USE init_vois_mod,only: init_voisinage
 #endif
-  use debug,only:ii
   implicit none
 #ifdef PARA
   include 'mpif.h'
@@ -56,8 +55,7 @@ contains
     !-----------------------------------------------
 
     logical::lmaster
-    integer :: ineb,it_neb_inter,ipath
-!    integer :: ineb,ii,it_neb_inter,ipath
+    integer :: ineb,ii,it_neb_inter,ipath
     real(double)  :: a_local,forneb
     character::fnamcout*80,extension*9
     integer::formatsauv,i1
@@ -245,53 +243,21 @@ contains
              dragtest=0
              do while (dragtest==0)
                 it=it+1
-#ifdef PARA
-             if (paraneb%lmaster) then
-#endif
-                iun=paraneb%rang_orig+2010
-!                call atneb(ii)%print(unit=iun,natg1=1,natg2=2049)
-#ifdef PARA
-             endif
-#endif
 
                 if ((lperiod).and.(lmaster))    call periodbox (boxneb,atneb(ii))
                 call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
                      &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,ii=ii)
-#ifdef PARA
-             if (paraneb%lmaster) then
-#endif
-                iun=paraneb%rang_orig+2020
-!                call atneb(ii)%print(unit=iun,natg1=1,natg2=2049)
-#ifdef PARA
-             endif
-#endif
                 
 #ifdef PARA
                 if (paraneb%lmaster) then
 #endif
                    call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp,atneb(ii)%imm,atneb(ii)%im)
-#ifdef PARA
-             if (paraneb%lmaster) then
-#endif
-                iun=paraneb%rang_orig+2030
-!                call atneb(ii)%print(unit=iun,natg1=1,natg2=2049)
-#ifdef PARA
-             endif
-#endif
 
                    IF (lFire) THEN
                       call trempe_fire(atneb(ii),fire_dt(ii), fire_nstep(ii), fire_alph(ii))
                    ELSE
                       call trempe(atneb(ii))
                    ENDIF
-#ifdef PARA
-             if (paraneb%lmaster) then
-#endif
-                iun=paraneb%rang_orig+2400
-!                call atneb(ii)%print(unit=iun,natg1=1,natg2=2049)
-#ifdef PARA
-             endif
-#endif
                    
                    call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
 
@@ -299,8 +265,8 @@ contains
                 end if
 
                 call MPI_BCAST(dragtest, 1,MPI_INTEGER, 0,paraneb%comm_image,ierr)
-                CALL MPI_BARRIER(paraneb%comm_image,ierr)
-                write(6,*)'DGT',ii,it,rang,dragtest
+!                CALL MPI_BARRIER(paraneb%comm_image,ierr)
+                if (mod(it,10)==0) write(6,*)'image it ',ii,it
 #endif
              end do   ! end do for a while
              if (lmaster) then 
@@ -316,24 +282,22 @@ contains
 
 
     end do      !end ii,npath
-    write(6,*)'OUTLOOP',rang
-    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+
+
 
 #ifdef PARA
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
        if(lmaster) then
-          write(6,*)'iterA',iter
           call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           call MPI_ALLREDUCE(sigpath,sigpath_tot,9*npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           call MPI_ALLREDUCE(iter,iter_tot,npath,MPI_INTEGER,MPI_SUM,paraneb%comm_master,ierr)
           enepathev(:)=enepathev_tot ; enepath=enepath_tot;sigpath=sigpath_tot;iter=iter_tot
-          write(6,*)'iterP',iter
        end if
    
 #endif
        if (rang==0) then
           do ii= 2,npath-1
-             write(6,*)
              !             write(*,*) 'NEB: THIS IS THE DRAG IMAGE=====================', ii
              write(*,*) 'NEB: THIS IS THE DRAG IMAGE=====================', ii,iter(ii)
              write(*,*) 'NEB: THE ENERGY OF THIS IMAGE===================', enePATHev(ii)
@@ -344,7 +308,6 @@ contains
                   0.5*unitP*(sigPath(1,2,ii)+sigPath(2,1,ii))
           end do
        end if
-       write(6,*)'OUTPRINT',rang
 
     case(2)
        if (rang==0) write(6,*)'NEB: -------this is NEB--V2-------'
@@ -453,13 +416,14 @@ contains
 
           end do      ! end ii,path
 
-
+!          write(6,*)'OUTloop',rang
 #ifdef PARA
-          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+!          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
           if (lmaster) then
              call MPI_ALLREDUCE(nebtest,nebtest_tot,npath,MPI_INTEGER,MPI_SUM,paraneb%comm_master,ierr)
              nebtest=nebtest_tot
           end if
+          call MPI_BCAST(nebtest, npath,MPI_INTEGER, 0,paraneb%comm_image,ierr)
 #endif
 
           if (SUM(nebtest(2:npath-1))==(npath-2)) then
@@ -492,17 +456,21 @@ contains
     reaction_coord(npath)=1
     a_local=SUM((atneb(npath)%xp(:,:)-atneb(1)%xp(:,:))**2)
     !    a_local=SUM((xp_n(:,:,npath)-xp_n(:,:,1))**2) 
-    ! 
+    !
+
+    
     do ii=2,npath-1
 #ifdef PARA
-       if ((ii==1).or.(ii==npath)) cycle
-       if ((paraneb%lmaster).and.(ii==paraneb%rgmas+2)) then
+!       if ((ii==1).or.(ii==npath)) cycle
+       if ((paraneb%lmaster).and.(ii==paraneb%image+2)) then
+          
 #endif
+
           formatsauv = 2
           write(extension,'(i9.9)') ii
           fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-          call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout)
-          call rasmolT(atneb(ii),boxneb,ii)
+          call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp=.true.)
+          call rasmolT(atneb(ii),boxneb,ii,latcomp=.true.)
           if (iteanaposneb.gt.0) call anapos(ii)
           !	 
           reaction_coord(ii) = SUM((atneb(ii)%xp(:,:)-atneb(1)%xp(:,:))*(atneb(npath)%xp(:,:)-atneb(1)%xp(:,:)))/a_local
@@ -514,9 +482,10 @@ contains
 
     end do
 
+!    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
     if (lmaster) then 
 #ifdef PARA
-       CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+
 
        if (paraneb%rgmas==0) then
           do iproc=1,paraneb%nimage-1
@@ -592,6 +561,7 @@ contains
        if (rang==0) print*,'MAX-1      :',maxval(enePATHev)-enePATHev(1)
        if (rang==0) print*,'MAX-NPATH  :',maxval(enePATHev)-enePATHev(npath)
     end if
+    
 #ifdef PARA
     call mpi_barrier(mpi_comm_world,ierr)
 #endif

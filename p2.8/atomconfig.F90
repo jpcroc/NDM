@@ -1107,7 +1107,6 @@ contains
              allocate(ibuffer(imrecv))
              allocate(lbuffer(imrecv))
              ideb=ifin+1; ifin=ideb+imrecv-1
-             write(6,*)'IDEBIFIN',div%rang_orig,ideb,ifin,imrecv
              call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10002, icomm, status, ierr)
              atcfcomp%xp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
              call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10003, icomm, status, ierr)

@@ -28,7 +28,8 @@ contains
     !-----------------------------------------------
     !   M o d u l e s
 
-
+    !latcomp= en PARA latcomp=.true.=> atmol est une cofiguration complète/latcomp=false=>atmol est distributé sur comm_space
+    !lw0= .true. seul le proc 0 écrit la configuration
 
     implicit none
     type(box_config)::boxndm
