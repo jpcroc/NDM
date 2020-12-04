@@ -17,12 +17,8 @@ module dmloop_mod
   USE calfoberend_mod,only:calfoberend
   USE caltabi_mod,only: caltabi
 
-  USE gen_com_m,only: dmtype,it,itesauv,ltabvois, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
-       &ltabvois, itetabvois,lperiod ! indi,it,itesauv,ltabvois,potist,rang,sig,nvois,&
-  !             &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize,lsigat,l2t,ltpcel,&
-  !             &sigc,sigkine,sigat,sigtot,itesigma,ltberendsen,volu,itesigma,&
-  !             &at,bg,zl,zls2,nzl,volu,normat
-
+  USE gen_com_m,only: dmtype,it,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
+       & itetabvois,lperiod 
   use var_pot, only: cm! iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
 #ifdef PARA
   use mpi
@@ -88,11 +84,6 @@ contains
     write(6,*)'***** ITERATION  ****', it
 
     ! appel de la routine generale des forces
-    !  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-    !  call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-    !  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-    !       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-!    call celndm%print
     if (itesigma>0)      test_sigma=(mod(it,itesigma)==0)
     if (test_sigma) then
        sig(:,:)=0.d0 ; if (celndm%ltpcel.EQV..true.) celndm%sigc=0
@@ -148,27 +139,20 @@ contains
     end if
     if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
 
-    !  write(6,*)'dml potist ',potist,atdml%potist
-    !    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    !    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
-    !    indi=indiCF
-
-    !  call calfo
     select case (dmtype)
 
     case(1)
-       call dyn  (atdml%xp,atdml%xpp,atdml%vp,atdml%fp,atdml%ityp,atdml%im)
+       call dyn  (atdml)
 
       
 !       if (lcorrelvp) call correlvp(atdml%xp,atdml%xpp,atdml%vp,atdml%ax,atdml%fp,atdml%ax, atdml%ityp)
 
     case (2) 
        IF (lFire) THEN
-          call trempe_fire (atdml%xp, atdml%xpp, atdml%vp,  atdml%fp, atdml%ielat, atdml%iwmax, atdml%ityp, &
-               fire_dt, fire_nstep, fire_alph,atdml%im)
+          call trempe_fire (atdml,fire_dt, fire_nstep, fire_alph)
 
        ELSE
-          call trempe (atdml%xp, atdml%xpp, atdml%vp, atdml%fp, atdml%ityp,atdml%im)
+          call trempe (atdml)
        END IF
 
     case default
@@ -179,13 +163,14 @@ contains
 
     call analyseT (atdml,celndm,boxndm)
 
+
        if (itab/=0) then
           if (mod(it,itab)==0) then
              call caltabtC(celndm,atdml,lperiod,boxndm)
           endif
        endif
 
-    if (ltabvois.and.mod(it,itetabvois)==0) then
+    if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
        call caltabi(atdml%atom_config,celndm,boxndm)
     end if
 

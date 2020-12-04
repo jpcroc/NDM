@@ -5,13 +5,13 @@ module calfo3c_mod
   implicit none 
 contains
   ! *****************************************************************
-  subroutine calfo3c(im,imm,xp,  vp,  fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
+  subroutine calfo3c(im,imm,xp,  vp,  fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu,sigc)
     !version du 20.11.2001
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:lperiod,ltpcel,potcp,precexp,sigc
+    USE gen_com_m, ONLY:lperiod,ltpcel,potcp,precexp
 
     USE var_pot, ONLY:r3cm2,ipo3c,ipo,coup3c2,ipo,coup3c2,coup3c,coup3c,gam,lamb,cangle,c3c
     implicit none
@@ -23,7 +23,7 @@ contains
     !-----------------------------------------------
     integer , intent(in) :: im,imm
     integer , intent(in) :: ielat(imm),ityp(imm)
-
+    real(double),allocatable::sigc(:,:,:)
     real(double) , intent(inout) :: xp(3,imm)
     real(double)  :: vp(3,imm)
     real(double)  :: ax(3,imm)

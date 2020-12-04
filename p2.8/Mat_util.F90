@@ -6,9 +6,11 @@ module Mat_utils_mod
      module procedure fillbuffer3Dreal
   end interface fillbuffer3D
   interface fillbuffer1D
-     module procedure fillbuffer1Dinteger,fillbuffer1Dlogical
+     module procedure fillbuffer1Dinteger,fillbuffer1Dlogical,fillbuffer1Dreal
   end interface fillbuffer1D
-     
+  interface fillbuffer9D
+     module procedure fillbuffer9Dreal
+  end interface fillbuffer9D
 contains
   !**********************************************************************
   subroutine matscl(a,s,b)
@@ -180,18 +182,18 @@ contains
   end function detmat
 
   !**********************************************************************
-  subroutine boxmat
+  subroutine boxmat(at,volu)
     !     Sets up matrices allocated with the MD box.
     !----------------------------------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY: at, ati, volu
+    USE gen_com_m, ONLY: ati
     ! *********************************************************************
     implicit none
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
+    real(double), dimension(3,3) :: at
+    real(double)::volu
+    
     real(double), dimension(3,3) :: atit, sgm, ah
 
     !-----Areal tensor, SGM
@@ -430,21 +432,43 @@ contains
 
   subroutine fillbuffer3Dreal(buf,vect,masq)
     real(double),allocatable,intent(in)::vect(:,:)
-    real(double),allocatable,intent(out)::buf(:,:)
+    real(double),allocatable::buf(:,:)
     logical, allocatable,intent(in)::masq(:)
     integer::i,iloc
     iloc=0
+    buf=0
+!    write(6,*)'masq',size(masq),size(vect),size(buf)
     do i=1,size(masq)
+ !      write(6,*)i,masq(i),vect(:,i),iloc
        if (masq(i))then
           iloc=iloc+1
           buf(:,iloc)=vect(:,i)
        end if
     end do
+
   end subroutine fillbuffer3Dreal
+  
+  subroutine fillbuffer9Dreal(buf,vect,masq)
+    real(double),allocatable,intent(in)::vect(:,:,:)
+    real(double),allocatable::buf(:,:,:)
+    logical, allocatable,intent(in)::masq(:)
+    integer::i,iloc
+    iloc=0
+    buf=0
+!    write(6,*)'masq',size(masq),size(vect),size(buf)
+    do i=1,size(masq)
+ !      write(6,*)i,masq(i),vect(:,i),iloc
+       if (masq(i))then
+          iloc=iloc+1
+          buf(:,:,iloc)=vect(:,:,i)
+       end if
+    end do
+
+  end subroutine fillbuffer9Dreal
 
   subroutine fillbuffer1Dinteger(ibuf,vect,masq)
     integer,allocatable,intent(in)::vect(:)
-    integer,allocatable,intent(out)::ibuf(:)
+    integer,allocatable::ibuf(:)
     logical, allocatable,intent(in)::masq(:)
     integer::i,iloc
     iloc=0
@@ -455,10 +479,23 @@ contains
        end if
     end do
   end subroutine fillbuffer1Dinteger
+  subroutine fillbuffer1Dreal(rbuf,vect,masq)
+    real(double),allocatable,intent(in)::vect(:)
+    real(double),allocatable::rbuf(:)
+    logical, allocatable,intent(in)::masq(:)
+    integer::i,iloc
+    iloc=0
+    do i=1,size(masq)
+       if (masq(i))then
+          iloc=iloc+1
+          rbuf(iloc)=vect(i)
+       end if
+    end do
+  end subroutine fillbuffer1Dreal
 
   subroutine fillbuffer1Dlogical(lbuf,vect,masq)
     logical,allocatable,intent(in)::vect(:)
-    logical,allocatable,intent(out)::lbuf(:)
+    logical,allocatable::lbuf(:)
     logical, allocatable,intent(in)::masq(:)
     integer::i,iloc
     iloc=0

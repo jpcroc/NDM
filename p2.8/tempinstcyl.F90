@@ -1,5 +1,6 @@
 module tempinstcyl_mod
-  USE gen_com_m, ONLY:imm,bk,ncyl,cyl
+  USE gen_com_m, ONLY:ncyl,cyl,bk
+  use temp_com,only:imm
   implicit none
 contains
   !c******************************************************************

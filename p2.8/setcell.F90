@@ -1,10 +1,10 @@
 module setcell
 #ifndef ML
-  USE param_det_mod,only: param_det
 #endif
-    USE T_kind_param_m, ONLY:  double
+  USE T_kind_param_m, ONLY:  double
+  USE read_val,only:nox,noy,noz,rvois
   USE arret_ndm_mod,only: arret_ndm
-  USE gen_com_m, ONLY:indi2,lconstrtot,ldemitab,lconstrtot,nvat,pi,rang,rvois,lrctest,nox,noy,noz,ltpcel!itab,lconstrtot,lrctest,natperc,nvois,nvperat,rvois,nzl,&
+  USE gen_com_m, ONLY:lconstrtot,ldemitab,lconstrtot,nvat,pi,rang,lrctest,ltpcel!itab,lconstrtot,lrctest,natperc,nvois,nvperat,rvois,nzl,&
 !       &at,indi2,bg,celsize,rang,volu,pi,indi,nvat,nox,noy,noz,noxyz,ldemitab,&
 !       &im, im_glob,zl,ltabvois,normat,noxy
     USE var_pot, ONLY:lpotentiel,rue_pot !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
@@ -147,7 +147,7 @@ contains
 !    write(6,*)im_glob
     natperc= INT(im_glob/celscf%noxyz)
        nvat=10*natperc
-       natperc=max(int(2*natperc),10)     ! MODIF Clouet
+       natperc=max(int(10*natperc),10)     ! MODIF Clouet
 !    ELSE                          ! MODIF Clouet
 !       nvat=10*natperc       ! MODIF Clouet
 !    END IF                        ! MODIF Clouet
@@ -156,6 +156,7 @@ contains
     if (rang==0) &
          write(6,*) 'natperc im/noxyz', natperc, im_glob/celscf%noxyz
     celscf%natperc=natperc
+    if (allocated(celscf%atincel))deallocate(celscf%atincel)
     allocate(celscf%atincel(celscf%natperc,0:celscf%noxyz))
     celscf%atincel=0
     if (rang==0)  write(6,*)'ltabvois,lconstrtot',atcf%ltabvois,lconstrtot
@@ -174,7 +175,7 @@ contains
 
           call arret_ndm
        endif
-       if(.not.lconstrtot)rumax=rvois
+!       if(.not.lconstrtot)rumax=rvois
        !write(*,*) 'DEBUG IN DIVID volu, im', volu, im
        voluperat=boxcf%volu/im_glob
        nvperat=4*Pi*(rvois+1.0d-8)**3/(3*voluperat)
@@ -190,7 +191,7 @@ contains
        atcf%nvois=nvois
        if(allocated(atcf%indi))deallocate(atcf%indi)
        allocate(atcf%indi(nvois))
-       allocate(indi2(nvois))
+!       allocate(indi2(nvois))
        if (.not.allocated(atcf%iwmax))allocate(atcf%iwmax(atcf%imm))
     end if
   end subroutine setcellconf

@@ -1,7 +1,8 @@
 module calcdepla2_mod
+  USE temp_com,only:zls2,at,bg ! A EFFACER
   USE var_pot, ONLY:ntyp,nad,ty
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:zls2,tdepla2,it,timel,at, bg,rang
+  USE gen_com_m, ONLY:tdepla2,it,timel,rang
   implicit none
 contains
   ! *******************************************************************
@@ -12,7 +13,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
 
     use tab_imm_m,only:num_at_glob
 #endif
@@ -97,7 +98,7 @@ contains
     call MPI_ALLREDUCE(ndeplatot,ndeplatot_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
 
     ! Allocation des tableaux d'emission/reception
-    if (myid==0) then
+    if (myidsp==0) then
        allocate(ityp_depla(ndeplatot_glob))
        allocate(xp_depla(1:3,ndeplatot_glob))
        allocate(indic_depla(ndeplatot_glob))
@@ -115,7 +116,7 @@ contains
 
     ! Recuperation par l'ensemble des procs des diffÃ©rents deplacements
 
-    if (myid==0) then
+    if (myidsp==0) then
        do i=1,nprocs-1
           call MPI_RECV(ndeplatot_tmp,1,MPI_INTEGER,MPI_ANY_SOURCE,14001,MPI_COMM_space,status,ierr)
           if (ndeplatot_tmp.ne.0) then

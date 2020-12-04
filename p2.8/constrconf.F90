@@ -4,7 +4,8 @@ module constrconf_mod
 #ifdef PARA
   USE decoupage_mod,only: decoupage
 #endif
-  USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,im_glob,imm,imm_glob,ldecoup,lperiod,lrestart,rang,&
+  USE read_val,only:imm,rvois
+  USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,im_glob,imm_glob,ldecoup,lperiod,lrestart,rang,&
        &lvpread,zero,low_limit !at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
   !       &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat,cell_debx,cell_deby,cell_debz,&
   !       &cell_finx,cell_finy,cell_finz,low_limit,llangevin,lsuivinonpbc
@@ -20,7 +21,7 @@ module constrconf_mod
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace
+    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace,rang
 #endif
 
 
@@ -104,7 +105,6 @@ contains
        call  decoupage(nprocspace,ncore,cellrcf,atrcf)
        allocate(num_at_buff(imm_glob))
        im_glob=COMPatrcf%im
-       
        call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
        itread=3
        call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,imm_glob) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
@@ -231,7 +231,6 @@ contains
 
     implicit none
 
-    !       version du 10 janvier 2007
     !
     ! Cette routine retourne dans cell le numero de cellule
     ! contenant les coordonnees tab_coord
@@ -244,14 +243,29 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: kx, ky, kz
-    real(double) :: aux, auy, auz
+    integer :: kx, ky, kz,k
+    real(double) :: aux, auy, auz,cpp,xpici
     real(double) :: coord_loc(3)   ! permet de ne pas ecraser coord
     ! lors de l'appel a cryst_to_cart                       
     !-----------------------------------------------
 
     coord_loc(:) = tab_coord(:)
+
+    
     call cryst_to_cart (1, coord_loc, bg, -1) !cart vers cryst
+    do k=1,3
+       xpici=coord_loc(k)
+       if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
+          if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
+             coord_loc(k)=zero
+          else
+             cpp  = Dble(Floor(coord_loc(k)))
+             coord_loc(k) = xpici     - cpp
+          end if
+       end if
+    end do
+
+
 
     aux = coord_loc(1)*nox
     auy = coord_loc(2)*noy
@@ -260,7 +274,7 @@ contains
     kx = int(aux)
     ky = int(auy)
     kz = int(auz)
-
+    
     cell = 1+kx+nox*(ky+noy*kz)
 
     return
@@ -278,6 +292,7 @@ contains
 
     integer::i,ia,ib,ic,icell,imloc,ncore
 
+    real(double)::rvN
     !imtot=lat(1)*lat(2)*lat(3)*atrgin%im
     imloc=lat(1)*lat(2)*lat(3)*atrgin%im
     if (imloc>imm_glob) then
@@ -285,17 +300,21 @@ contains
        call arret_ndm
     endif
 
+    if (rvois.gT.0)then
+       rvn=rvois
+    else
+       rvn=0
+    end if
     if (present(imm))then
 
-       call atrcf%init(imloc,immin=imm,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois)
+       call atrcf%init(imloc,immin=imm,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn)
        
     else
-       call atrcf%init(imloc,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois)
+       call atrcf%init(imloc,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn)
     end if
     
 !    imtot=imloc
     i=0
-    write(6,*)
     do ia = 1,lat(1)
        do ib = 1,lat(2)
           do ic = 1,lat(3)
@@ -306,8 +325,7 @@ contains
                 atrcf%xp(3,i) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
                 atrcf%num_at_glob(i)=i
                 atrcf%ityp(i)=atrgin%ityp(icell)
-                !                   write(6,*)'constr',i,atrcf%xp(:,i)
-             end do
+              end do
           end do
        end do
     end do
@@ -317,7 +335,7 @@ contains
 
   subroutine repartition(atcomp,atrep,boxrep,cellrep,nab,div)
 #ifdef PARA
-    use mod_para,only:myid
+    use mod_para,only:myidsp
 #endif
     use paraconfig,only:para_config
     class(atom_config)::atrep
@@ -327,34 +345,21 @@ contains
     integer,optional, dimension(:), allocatable   :: nab
     type (para_config),optional::div
     
-    integer::i,icomp,k,iti,im,ic,numcell,numproc
+    integer::i,icomp,k,iti,im,ic,numcell,numproc,iun
     real(double)::xt(3),xpici,cpp
     
 #ifdef PARA  
 
 
-!       if (atrep%im>imm_glob) then
-!          write (6, *) rang,'imm trop petit'
-!          call arret_ndm
-!       endif
        i=0;im=0
        do icomp=1,atcomp%im
+
+
           xt(:)=atcomp%xp(:,icomp)
-          do k=1,3
-             xpici=xt(k)
-             if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
-                if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
-                   xt(k)=zero
-                else
-                   cpp  = Dble(Floor(atcomp%xp(ic,i)))
-                   xt(k) = xpici     - cpp
-                end if
-             end if
-          end do
           iti = atcomp%ityp(icomp)
           call coord_to_cell(xt,numcell,boxrep%bg,cellrep%nox,cellrep%noy,cellrep%noz)
           numproc=cellrep%proc_cell(numcell)
-          if (numproc == myid) then
+          if (numproc == myidsp) then
              i=i+1
              im=im+1
              call atcomp%copy_atom(icomp,atrep,i)
@@ -362,7 +367,7 @@ contains
              if (present(nab)) nab(i)=icomp
              atrep%xp(:,i)=xt(:)
 !             atrep%ityp(i)=iti
-             atrep%proc_at(i)=myid
+             atrep%proc_at(i)=myidsp
           endif
        end do
        atrep%im=im
@@ -575,7 +580,6 @@ contains
     type(box_config)::boxrgin
     real(double)::atg(3,3)
     integer::lat(3),ic,ncore,npr,ierr
-!    write(6,*)'GINC0',rang
     lrepart=.true.
     if(present(lrepartition))lrepart=lrepartition
     
@@ -592,20 +596,21 @@ contains
     end if
 #ifdef PARA
     ncore=0
+!   if ((nprocspace.gt.1).and.(lrepart)) then
     call  decoupage(nprocspace,ncore,cel2b,at2b)
-!    call MPI_finalize(ierr)
-!    stop
+! end if
+    !    call MPI_finalize(ierr)
+    !    stop
+    COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
+    write(6,*)'IMMGLOBIMMGLOB',imm_glob
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
     imtot=COMPatrcf%im
     im_glob=COMPatrcf%im
    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
-   write(6,*)'GINC11',rang,at2b%im,at2b%imm,nprocspace
-   write(6,*)'GINC12',rang,compatrcf%im,compatrcf%imm
    if ((nprocspace.gt.1).and.(lrepart)) then
       call repartition(COMPatrcf,at2b,box2b,cel2b)
    else
       call compatrcf%copy_config(at2b, lrescl=.true.)
-      write(6,*)'GIN2NDM',at2b%im,at2b%imm
    end if
 #else
     if (ldecoup) then
@@ -623,7 +628,6 @@ contains
 
 
     call setcellconf(cel2b,at2b,box2b,im_glob,rum)
-    write(6,*)'GINC2',rang,at2b%im,at2b%imm
     return
 
   end subroutine gin2ndm

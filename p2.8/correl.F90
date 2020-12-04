@@ -1,6 +1,7 @@
 module correl_mod
   USE T_kind_param_m
-  USE gen_com_m, ONLY:imm,im,it,rang,timel
+  USE temp_com,only:imm,im
+  USE gen_com_m, ONLY:it,rang,timel
   implicit none
 contains
   subroutine correlvp(xp, xpp, vp, ax,fp, ityp)

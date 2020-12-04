@@ -1,7 +1,6 @@
 module montecarlo_mod
-  USE gen_com_m,only:  at, bg, lperiod, timel,& 
-                      &tstep, timel,tstep, sig, potist,&
-             &at,bg,zl,zls2,nzl,volu,normat
+  USE gen_com_m,only:  lperiod, timel,tstep, timel,tstep, sig, potist
+  use temp_com,only:at,bg,zl,zls2,nzl,volu,normat
   USE atomconfig,only:atom_config,atom_config_d
   USE period_mod,only: period 
   USE cellconfig, only:cell_config, caltabtC
@@ -78,7 +77,7 @@ lperiod = .true.
    call cryst_to_cart(1,cart_vec_nplus1,at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
 
    !copie du syst n dans n+1 et addition de la n+1eme particule
-   call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois)
+   call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois,rvois=config_atom_n%rvois)
 
    config_atom_nplus1%ltabvois=config_atom_n%ltabvois
    call config_atom_n%copy_config(config_atom_nplus1,lrescl=.false.)

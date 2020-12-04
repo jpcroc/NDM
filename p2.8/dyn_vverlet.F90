@@ -2,8 +2,8 @@ module dyn_vverlet_mod
   USE calfo_mod,only: calfo
   USE calfoberend_mod,only: calfoberend 
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,ltranche,bg,&
-       &l2T,llangevin,lsuivinonpbc,itesigma,it,itetabvois,ltabvois,ltberendsen,potist,sig,timel,tstep
+  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,ltranche,&
+       &l2T,llangevin,lsuivinonpbc,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
   USE cellconfig, only:cell_config,caltabtC!,ndm2cellconfig,cellconfig2ndm
   USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
@@ -119,7 +119,7 @@ contains
        endif
     end if
 
-    if (ltabvois.and.mod(it,itetabvois)==0) then
+    if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
        call caltabi(atdml%atom_config,celndm,boxndm)
     end if
 

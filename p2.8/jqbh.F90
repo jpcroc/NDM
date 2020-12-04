@@ -1,8 +1,9 @@
 module jqbh_mod
         USE tempinst_mod,only: tempinst
         USE cryst_to_cart_mod,only: cryst_to_cart
-        USE gen_com_m, ONLY:at,bg,epcoud,epsil,erg2ev,erg2joule,im,it,ittherm,kthg,njqbh,ntr,&
-             &rang,rulayer,tstep,nzl,zl,zls2,imm,bk
+        USE gen_com_m, ONLY:epcoud,epsil,erg2ev,erg2joule,it,ittherm,kthg,njqbh,ntr,&
+             &rang,rulayer,tstep,bk
+        USE temp_com,only:imm,at,bg,im,zl,nzl,zls2
 
         implicit none
         contains

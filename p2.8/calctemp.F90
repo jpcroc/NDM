@@ -10,7 +10,7 @@ module calctemp_mod
   USE cellconfig,only : cell_config
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE,nprocspace
+    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace
 #endif
 
   ! *************************************************************
@@ -83,7 +83,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 
 #ifdef PARA
 
-     if (cellcf%proc_cell(ko).ne.myid) cycle
+     if (cellcf%proc_cell(ko).ne.myidsp) cycle
 #endif
 
      if (L2T)     call nox_2_nex(ko,ixyze)

@@ -379,6 +379,7 @@ contains
 
           k=Int(rij/ktor)
           drk=rij-k*ktor
+          ll = ipo(iti,itj)
           if (typ_pot_pair(ll).ne.12) cycle
           if (i.gt.j) then  !terme de repulsion deja calculé
              ll = ipo(iti,itj)

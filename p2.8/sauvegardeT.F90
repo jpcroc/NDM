@@ -2,7 +2,7 @@ module sauvegardeT_mod
 
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:rang,formatsauv,im_glob,it,itesauvinter,&
-         &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
+         &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
 
     USE elec_cell, ONLY : sauveelec
     USE cryst_to_cart_mod,only: cryst_to_cart
@@ -12,9 +12,9 @@ module sauvegardeT_mod
 #ifdef PARA
 
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 #else
-USE mod_para,only:nprocspace    ,myid
+USE mod_para,only:nprocspace    ,myidsp
          
 #endif
 
@@ -24,7 +24,7 @@ USE mod_para,only:nprocspace    ,myid
 
 contains
   ! ********************************************************************
-  subroutine sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+  subroutine sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp,lw0)
     !-----------------------------------------------
     !   M o d u l e s
 
@@ -34,11 +34,14 @@ contains
     type(box_config)::boxndm
     class(atom_config)::atdml
     type(cell_config):: celndm
-
+    character::fnamcout*80
+    logical, optional,intent(in):: latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
+    logical, optional,intent(in):: lw0 ! seul le rang=0 écrit (implique latcomp=.true.)
+    
     integer :: lucout, formatsauvmod,i,formatsauv,im
     character :: extension*9
     logical :: lwax
-    character::fnamcout*80
+    
 #ifdef PARA
     integer,dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable   :: buffer
@@ -48,29 +51,50 @@ contains
     integer :: i_proc
     integer :: proc_source
     integer :: im_temp
-    allocate (buffer(3,imm_glob))
-    allocate (ibuffer(imm_glob))
-
+    logical :: latcompin=.false.
+    logical :: lw0in=.false.
 #endif
     !-----------------------------------------------
     !      include 'pot.com'
     !      include 'potdyn.com'
     !      include 'dyn.com'
     !    open du fichier .cout
-
+    
     formatsauvmod = mod(formatsauv,2)
     im =atdml%im
- !      write (6, *) ' sauvegarde it=', it, rang,fnamcout
-    if (myid==0) then
+    !      write (6, *) ' sauvegarde it=', it, rang,fnamcout
+    if (myidsp==0) then
 
        lucout = 87
-!       write (6, *) ' sauvegarde it=', it, rang,fnamcout
+       !       write (6, *) ' sauvegarde it=', it, rang,fnamcout
        open(unit=lucout, file=fnamcout, form='unformatted', status='unknown')
        write (lucout) formatsauv
        write (lucout) boxndm%at
        write (lucout) im_glob
+    end if
 #ifdef PARA
-       if (nprocspace.gt.1) then
+    if (present (latcomp))latcompin=latcomp
+
+    if (present (lw0))lw0in=lw0
+    if (lw0in) then
+       if(latcompin.eqv..false.) then
+          write(6,*)'comment sauvegarder seulement rang0 si latcomp=.false. ?'
+          stop
+       end if
+       if (rang==0) then
+          latcompin=.true.
+       else
+          latcompin=.false. !latcompin intègre lw0 et rang=0
+       end if
+    end if
+       
+    if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
+       allocate (buffer(3,imm_glob))
+       allocate (ibuffer(imm_glob))
+    end if
+    
+    if (myidsp==0) then
+       if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
           im_loc(0)=im
           ibuffer=0
           ibuffer(1:im)  = atdml%ityp(1:im)
@@ -78,10 +102,10 @@ contains
           buffer(:,1:im) = atdml%xp(:,1:im)
           pt_im(0)=1
           next_pt = pt_im(0) + im_loc(0)
-          
+
           do i_proc=1,nprocspace-1
              call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_space, status, ierr)
-             
+
              proc_source = status(MPI_SOURCE)
              im_loc(proc_source)=im_temp
              pt_im(proc_source)=next_pt
@@ -93,14 +117,14 @@ contains
           enddo
           write (lucout) ibuffer  ! Ecriture ityp
           write (lucout) buffer   ! Ecriture xp
-          
+
           ibuffer(1:im) = atdml%num_at_glob(1:im)
           do i_proc=1,nprocspace-1
              call MPI_RECV(ibuffer(pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),im_loc(i_proc), &
                   MPI_INTEGER, i_proc, 11004, MPI_COMM_space, status, ierr)
           enddo
           write (lucout) ibuffer   ! Ecriture num_at_glob
-          
+
           if (formatsauvmod==1) then
              lwax=.false.
              select type(atdml)
@@ -111,7 +135,7 @@ contains
                         NDM_MPI_REAL_DOUBLE, i_proc, 11005, MPI_COMM_space, status, ierr)
                 enddo
                 write (lucout) buffer   ! Ecriture xpp
-                
+
                 buffer(:,1:im) = atdml%vp(:,1:im)
                 do i_proc=1,nprocspace-1
                    call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
@@ -125,7 +149,7 @@ contains
                         NDM_MPI_REAL_DOUBLE, i_proc, 11005, MPI_COMM_space, status, ierr)
                 enddo
                 write (lucout) buffer   ! Ecriture xpp
-                
+
                 buffer(:,1:im) = atdml%vp(:,1:im)
                 do i_proc=1,nprocspace-1
                    call MPI_RECV(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),3*im_loc(i_proc), &
@@ -148,109 +172,116 @@ contains
                         NDM_MPI_REAL_DOUBLE, i_proc, 11008, MPI_COMM_space, status, ierr)
                 enddo
                 write (lucout) buffer   ! Ecriture xpp
-                
+
              end if
              write (lucout) tstep
              write (lucout) tmean, pmean, it, timel
           endif
        else
-                 write (lucout) atdml%ityp
-       write (lucout) atdml%xp
-       write (lucout) atdml%num_at_glob
-       if (formatsauvmod==1) then
-          lwax=.false.
-          select type (atdml)
-          type is (atom_config_d)
-             write (lucout) atdml%xpp
-             write (lucout) atdml%vp
-          type is (atom_config_e)
-             write (lucout) atdml%xpp
-             write (lucout) atdml%vp
-             if (atdml%lax)then
-                write (lucout) atdml%ax
-                lwax=.true.
-             end if
-          end select
-          if (.not.lwax)write (lucout) atdml%xp
-          write (lucout) tstep
-          write (lucout) tmean, pmean, it, timel
-       endif
-    end if
-#else
-       !
-       ! Partie sequentielle de la sauvegarde :
-       !
-       !     do i=1,im
-       !        write(1004,*)i,num_at_glob(i),xp(1,i)
-       !     enddo
-       write (lucout) atdml%ityp
-       write (lucout) atdml%xp
-       write (lucout) atdml%num_at_glob
-       if (formatsauvmod==1) then
-          lwax=.false.
-          select type (atdml)
-          type is (atom_config_d)
-             write (lucout) atdml%xpp
-             write (lucout) atdml%vp
-          type is (atom_config_e)
-             write (lucout) atdml%xpp
-             write (lucout) atdml%vp
-             if (atdml%lax)then
-                write (lucout) atdml%ax
-                lwax=.true.
-             end if
-          end select
-          if (.not.lwax)write (lucout) atdml%xp
-          write (lucout) tstep
-          write (lucout) tmean, pmean, it, timel
-       endif
-
-#endif
+          write (lucout) atdml%ityp
+          write (lucout) atdml%xp
+          write (lucout) atdml%num_at_glob
+          if (formatsauvmod==1) then
+             lwax=.false.
+             select type (atdml)
+             type is (atom_config_d)
+                write (lucout) atdml%xpp
+                write (lucout) atdml%vp
+             type is (atom_config_e)
+                write (lucout) atdml%xpp
+                write (lucout) atdml%vp
+                if (atdml%lax)then
+                   write (lucout) atdml%ax
+                   lwax=.true.
+                end if
+             end select
+             if (.not.lwax)write (lucout) atdml%xp
+             write (lucout) tstep
+             write (lucout) tmean, pmean, it, timel
+          endif
+       end if
 
        close(unit=lucout)
 
        if (l2T)call sauveelec
 
-    else ! rang different de 0 :
-#ifdef PARA
-          if (nprocspace.gt.1) then
-             
-             call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
-             call MPI_SEND(atdml%ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
-             call MPI_SEND(atdml%xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_space,ierr)
-             call MPI_SEND(atdml%num_at_glob(1:im), im,    MPI_INTEGER,0,11004,MPI_COMM_space,ierr)
-             
-             if (formatsauvmod==1) then
-                lwax=.false.
-                select type (atdml)
-                type is (atom_config_d)
-                   call MPI_SEND(atdml%xpp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11005,MPI_COMM_space,ierr)
-                   call MPI_SEND(atdml%vp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11006,MPI_COMM_space,ierr)
-                type is (atom_config_e)
-                   if (atdml%lax)then
-                      lwax=.true.
-                      call MPI_SEND(atdml%ax(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11007,MPI_COMM_space,ierr)
-                   end if
-                end select
-                if (.not.lwax)call MPI_SEND(atdml%xp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11008,MPI_COMM_space,ierr)
-             endif
+    else ! myidsp different de 0 :
+
+       if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
+
+          call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
+          call MPI_SEND(atdml%ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
+          call MPI_SEND(atdml%xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_space,ierr)
+          call MPI_SEND(atdml%num_at_glob(1:im), im,    MPI_INTEGER,0,11004,MPI_COMM_space,ierr)
+
+          if (formatsauvmod==1) then
+             lwax=.false.
+             select type (atdml)
+             type is (atom_config_d)
+                call MPI_SEND(atdml%xpp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11005,MPI_COMM_space,ierr)
+                call MPI_SEND(atdml%vp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11006,MPI_COMM_space,ierr)
+             type is (atom_config_e)
+                if (atdml%lax)then
+                   lwax=.true.
+                   call MPI_SEND(atdml%ax(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11007,MPI_COMM_space,ierr)
+                end if
+             end select
+             if (.not.lwax)call MPI_SEND(atdml%xp(1:3,1:im), 3*im,NDM_MPI_REAL_DOUBLE,0,11008,MPI_COMM_space,ierr)
+          endif
+       end if
+    endif
+
+    if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
+       deallocate (buffer)
+       deallocate (ibuffer)
+    end if
+
+
+#else
+    ! sauvegarde SEQ
+    !
+    ! Partie sequentielle de la sauvegarde :
+    !
+    !     do i=1,im
+    !        write(1004,*)i,num_at_glob(i),xp(1,i)
+    !     enddo
+    write (lucout) atdml%ityp
+    write (lucout) atdml%xp
+    write (lucout) atdml%num_at_glob
+    if (formatsauvmod==1) then
+       lwax=.false.
+       select type (atdml)
+       type is (atom_config_d)
+          write (lucout) atdml%xpp
+          write (lucout) atdml%vp
+       type is (atom_config_e)
+          write (lucout) atdml%xpp
+          write (lucout) atdml%vp
+          if (atdml%lax)then
+             write (lucout) atdml%ax
+             lwax=.true.
           end if
-#endif
-       endif
-#ifdef PARA
-              if (nprocspace.gt.1) then
-
-                 deallocate (buffer)
-                 deallocate (ibuffer)
-              end if
+       end select
+       if (.not.lwax)write (lucout) atdml%xp
+       write (lucout) tstep
+       write (lucout) tmean, pmean, it, timel
+    endif
+    close(unit=lucout)
 #endif
 
-!    write (6, *) ' OUT sauvegarde it=', it,rang, myid,fnamcout
+
+
+    if (l2T)call sauveelec
+
+
+
+    !    write (6, *) ' OUT sauvegarde it=', it,rang, myidsp,fnamcout
     return
   end subroutine sauvegardeT
 
   subroutine cin2gin
-    USE gen_com_m, ONLY:at,bg,im,im_glob,imm,rang,at,fnamcout,formatsauv,im_glob,it,itesauvinter,&
+  USE temp_com,only:at,bg,im,volu,imm ! A EFFACER
+  USE gen_com_m, ONLY:im_glob,rang,fnamcout,formatsauv,im_glob,it,itesauvinter,&
          &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
     USE tab_imm_m,only:xp,vp,fp,xpp,ax,ityp,num_at_glob
     integer :: lugout,i

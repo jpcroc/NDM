@@ -34,6 +34,17 @@ module paraconfig
   end type para_config
 
 #ifdef PARA
+  type para_space_config
+     integer, allocatable :: res_cpu(:,:)   	!stocke le nombre de cellules de chaques decoupages pour le meilleur decoupage
+     integer, allocatable :: proc_cell(:)          !proc_cell(i) : Numero du proc associe a la cellule i
+     integer, allocatable :: proc_voisin(:)        ! liste des processeurs voisins du processeur courant
+     integer, allocatable :: cell_frontiere(:,:)   ! (i,j) jeme cellule frontiere associee au ieme processeur voisin
+     integer, allocatable :: nbr_cell_frontiere(:) ! nbre de cellules frontieres associees au ieme processeur voisin
+     integer :: nbr_cell_ftm                       ! nbr de cellules fantomes du processeur courant
+     integer, allocatable :: cell_ftm(:)           ! liste des cellules fantomes du processeur courant
+     integer :: nbr_proc_voisin            ! nbre de processeurs voisins du processeur courant
+  end type para_space_config
+
   
   interface distribue
      module procedure distribuereal, distribueinteger,distribuedouble

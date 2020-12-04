@@ -1,6 +1,7 @@
 module calpo_ew_mod
+  USE temp_com,only:volu,bg ! A EFFACER
   USE moduli_mod,only: moduli
-  USE gen_com_m, ONLY:pi,volu,zero,bg,tabf3,tabv3
+  USE gen_com_m, ONLY:pi,zero,tabf3,tabv3
   USE var_pot, ONLY:alpha,auxe,iewald,kpme,kpmex,kpmey,kpmez,ncoucx,ncoucy,ncoucz,nf1,&
        &nf2,nf3,nff,nfft1,nfft2,nfft3,npoint,ntable,pterm,volterm,table,q
   implicit none

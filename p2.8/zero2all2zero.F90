@@ -7,8 +7,8 @@ module zero2all2zero_mod
   USE mod_para,only:nprocspace
 #endif
 
-
-  USE gen_com_m, ONLY:imm_glob,imm,bg,at,im,rang,cell_debx,cell_deby,cell_debz,im_glob,zero,nox,noy,noz,&
+use temp_com,only: imm,at,bg,im,nox,noy,noz
+  USE gen_com_m, ONLY:imm_glob,rang,cell_debx,cell_deby,cell_debz,im_glob,zero,&
        &cell_finx,cell_finy,cell_finz,low_limit
   USE tab_imm_m,only:ityp,num_at_glob
   USE cryst_to_cart_mod,only: cryst_to_cart

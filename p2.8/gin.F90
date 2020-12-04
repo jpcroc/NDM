@@ -1,5 +1,5 @@
 MODULE gin_mod
-  USE gen_com_m, ONLY : imm
+  USE temp_com, ONLY : imm
 CONTAINS
   SUBROUTINE ReadGin(xp, iTyp, im, at, inp)
 

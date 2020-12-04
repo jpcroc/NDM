@@ -98,9 +98,9 @@ contains
 #ifdef paraTersoff
     ! MPI
 
-    deb=1+Int(im*sqrt(float(myid)/nb_procs))
-    fin=Int(im*sqrt(float(myid+1)/nb_procs))
-    if (it==1) write(6,*)'rang deb Fin nb d_at  ',myid,deb,fin,fin-deb+1
+    deb=1+Int(im*sqrt(float(myidsp)/nb_procs))
+    fin=Int(im*sqrt(float(myidsp+1)/nb_procs))
+    if (it==1) write(6,*)'rang deb Fin nb d_at  ',myidsp,deb,fin,fin-deb+1
     Tloop1at1:  do i=Deb,Fin
 
 

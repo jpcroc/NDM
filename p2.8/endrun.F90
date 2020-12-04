@@ -2,17 +2,16 @@ module endrun_mod
         USE analyse_mod,only:analyse
         USE adf_mod,only:adf
         USE spebc_fin_mod,only:spebc_fin
-        USE desinteg_insert_mod,only:desinteg_insert
         USE arret_ndm_mod,only:arret_ndm
         USE sauvegardeT_mod,only:sauvegardeT,cin2gin
         USE rdf_mod,only:rdf
         USE rasmol_mod,only:rasmol
-        USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,sigat,cunitP,erg2eV,itdes,&
+        USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,itdes,&
              &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
-             &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,eatomtotm,&
-             &lwgin,nstepdes, lposmoy,l2T,angst,&
-             &celsize,indi,ltabvois,normat,nvois,nzl,volu,zls2,fnamcout,formatsauv
-        use var_pot, only: eatref,eatref,eatref
+             &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,&
+             &lwgin,nstepdes, lposmoy,l2T,angst,fnamcout,formatsauv
+        USE temp_com,only:imm,at,bg,im ,nzl,volu,zls2,nvois,indi,celsize,eatomtotm,sigat,normat,ltabvois
+        use var_pot, only: eatref
           USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
           USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
           use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
@@ -30,10 +29,10 @@ subroutine endrun
 #ifdef PARA
 
     use Tpara,only:NDM_MPI_real_double
-    USE mod_para,only:MPI_COMM_space,nprocs,myid,temps_dmloop_deb,temps_dmloop,&
+    USE mod_para,only:MPI_COMM_space,nprocs,myidsp,temps_dmloop_deb,temps_dmloop,&
        &temps_config,temps_deb,nprocspace
 !  use mpi
-!  USE mod_para,only:MPI_COMM_space,MPI_INTEGER, MPI_ANY_SOURCE, MPI_COMM_space, status,ierr,nprocs,MPI_SOURCE,NDM_MPI_REAL_DOUBLE,MPI_SUM,myid,proc_cell,MPI_LOGICAL,MPI_Wtime&
+!  USE mod_para,only:MPI_COMM_space,MPI_INTEGER, MPI_ANY_SOURCE, MPI_COMM_space, status,ierr,nprocs,MPI_SOURCE,NDM_MPI_REAL_DOUBLE,MPI_SUM,myidsp,proc_cell,MPI_LOGICAL,MPI_Wtime&
     !       &, temps_dmloop,temps_dmloop_deb
 #else
     use mod_para,only:nprocspace
@@ -121,7 +120,7 @@ subroutine endrun
 #ifdef PARA
      if (nprocspace.gt.1) then
         ! Le processeur maitre recoit les information des autres processeurs pour les ecrire sur fichier
-        if (myid==0) then
+        if (myidsp==0) then
            ! Copie des tableaux xp,num_at_glob et ityp locaux 
            allocate(xp_loc(3,imm))
            allocate(ityp_loc(imm))
@@ -167,7 +166,7 @@ subroutine endrun
            call MPI_SEND(ityp(1:im),       im,  MPI_INTEGER,        0,10003,MPI_COMM_space,ierr)
            call MPI_SEND(num_at_glob(1:im),im,  MPI_INTEGER,        0,10004,MPI_COMM_space,ierr)
            call MPI_SEND(eatom(1:im),im,  NDM_MPI_REAL_DOUBLE ,     0,10005,MPI_COMM_space,ierr)
-           write(6,*)'NZ',myid
+           write(6,*)'NZ',myidsp
         endif
      else
      if (lprteattotm.EQV..true.) then

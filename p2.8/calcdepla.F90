@@ -1,7 +1,8 @@
 module calcdepla_mod
+  USE temp_com,only:zls2,at,bg ! A EFFACER
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:ntyp,nad,ty
-  USE gen_com_m, ONLY:zls2,tdepla,lfilmext,it,timel,at,bg,iko,lcasca,lfilm,rang
+  USE gen_com_m, ONLY:tdepla,lfilmext,it,timel,iko,lcasca,lfilm,rang
         implicit none 
         contains
 ! *******************************************************************
@@ -14,7 +15,7 @@ subroutine calcdepla(im,xp,ielat,ityp,ax)
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
     use tab_imm_m,only:num_at_glob
 #endif
   ! pas de conditions periodiques sur xp-ax
@@ -113,7 +114,7 @@ subroutine calcdepla(im,xp,ielat,ityp,ax)
   call MPI_ALLREDUCE(ndeplatot,ndeplatot_glob,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
 
   ! Allocation des tableaux d'emission/reception
-  if (myid==0) then
+  if (myidsp==0) then
      allocate(ityp_depla(ndeplatot_glob))
      allocate(xp_depla(1:3,ndeplatot_glob))
      allocate(indic_depla(ndeplatot_glob))
@@ -134,7 +135,7 @@ subroutine calcdepla(im,xp,ielat,ityp,ax)
 
   ! Recuperation par l'ensemble des procs des différents deplacements
 
-  if (myid==0) then
+  if (myidsp==0) then
      do i=1,nprocs-1
         call MPI_RECV(ndeplatot_tmp,1,MPI_INTEGER,MPI_ANY_SOURCE,13001,MPI_COMM_space,status,ierr)
         if (ndeplatot_tmp.ne.0) then
@@ -213,13 +214,13 @@ end if
            endif
         enddo
         ! Emission/reception des infos vers le proc 0
-        if (est_present==1.and.myid==0) then
+        if (est_present==1.and.myidsp==0) then
            xp_iko(:) = xp(:,i)
            ityp_iko = ityp(i)
         else if (est_present==1) then
            call MPI_SEND(xp(:,i),3,NDM_MPI_REAL_DOUBLE,0,13006,MPI_COMM_space,ierr)
            call MPI_SEND(ityp(i),1,MPI_INTEGER,0,13007,MPI_COMM_space,ierr)
-        else if (myid==0) then
+        else if (myidsp==0) then
            call MPI_RECV(xp_iko(:),3,NDM_MPI_REAL_DOUBLE,MPI_ANY_SOURCE,13006,MPI_COMM_space,status,ierr)
            call MPI_RECV(ityp_iko,1,MPI_INTEGER,MPI_ANY_SOURCE,13007,MPI_COMM_space,status,ierr)
         endif

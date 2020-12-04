@@ -1,6 +1,7 @@
 module eloss
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,tempc,l2T,erg2eV,iko,noxyz
+  USE temp_com,only:noxyz,tempc ! A EFFACER
+  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,l2T,erg2eV,iko!,noxyz
   USE var_pot, ONLY:ntyp,cm,gamlt
 
 
@@ -14,7 +15,7 @@ module eloss
   !  USE var_pot, ONLY:
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE
+  USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE
 #else
   use mod_para,only : nprocspace
   

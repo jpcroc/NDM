@@ -1,5 +1,6 @@
 module sauveposition_mod
-  USE gen_com_m, ONLY:at,fnamcoutxp,im_glob,lcasca,rang,fnam,lenfnam,im,imm_glob
+  USE gen_com_m, ONLY:fnamcoutxp,im_glob,lcasca,rang,fnam,lenfnam,imm_glob
+  USE temp_com,only:at,im
 
   implicit none
 contains 

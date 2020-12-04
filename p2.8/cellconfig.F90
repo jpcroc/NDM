@@ -129,7 +129,9 @@ contains
     if (allocated(cell%deltadist))  deallocate(cell%deltadist)
     if (allocated(cell%sigc))  deallocate(cell%sigc)
     if (allocated(cell%tempc))  deallocate(cell%tempc)
-
+#ifdef PARA
+    if (allocated(cell%proc_cell))  deallocate(cell%proc_cell)
+#endif
     return
 
   end subroutine dealloc_cel
@@ -406,8 +408,9 @@ contains
        nox=celndm%nox ;noy=celndm%noy;noz=celndm%noz
        noxyz=nox*noy*noz;nsize=noxyz
        natperc=celndm%natperc
-       allocate(ncel(0:noxyz,0:26));allocate(nato(0:noxyz));allocate(atincel(natperc,0:noxyz));allocate(deltadist(3,0:26,noxyz))
-
+       allocate(ncel(0:noxyz,0:26));allocate(atincel(natperc,0:noxyz));allocate(deltadist(3,0:26,noxyz))
+       if (allocated(nato)) deallocate(nato)
+       allocate(nato(0:noxyz))
 #ifdef PARA
            if (present(proc_cell))allocate(proc_cell(nsize))
 #endif       
@@ -468,18 +471,21 @@ contains
   end subroutine copy_cell
 
 
-  subroutine cellprint(cellv)
+  subroutine cellprint(cellv,unit)
     class(cell_config)::cellv
-    integer::i,ic
-    write(6,*)'in cellprint'
-    write(6,*)'nox noy noz noxyz',cellv%nox,cellv%noy,cellv%noz,cellv%noxyz
-    write(6,*)'natperc',cellv%natperc
-    write(6,*)'celsize',cellv%celsize
-    write(6,*)'icaltabt',cellv%icaltabt
-    write(6,*)'nato',cellv%nato
+    integer,intent(in),optional::unit
+    integer::i,ic,un
+    un=6
+    if (present(unit))un=unit
+    write(un,*)'in cellprint'
+    write(un,*)'nox noy noz noxyz',cellv%nox,cellv%noy,cellv%noz,cellv%noxyz
+    write(un,*)'natperc',cellv%natperc
+    write(un,*)'celsize',cellv%celsize
+    write(un,*)'icaltabt',cellv%icaltabt
+    write(un,*)'nato',cellv%nato
     if (allocated(cellv%atincel))then 
        do i=1,cellv%noxyz
-          write(6,*)'atincel',i,cellv%atincel(:,i)
+          write(un,*)'atincel',i,cellv%atincel(:,i)
        end do
     end if
 !    write(6,*)'deltadist',cellv%deltadist

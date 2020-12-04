@@ -1,7 +1,8 @@
 module bondval_mod
+  USE temp_com,only:ncel,noxyz,at,bg,imm,deltadist,atincel,nato !A EFFACER
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,it,atincel,ncel,rang,fnam,deltadist,lperiod,noxyz,nato,lenfnam
+  USE gen_com_m, ONLY:it,rang,fnam,lperiod,lenfnam
   USE var_pot, ONLY:ntyp,ty
   implicit none
 

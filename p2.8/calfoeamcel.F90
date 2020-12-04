@@ -3,7 +3,7 @@ module calfoeamcel_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:angst,nvat,it,low_limit,lperiod,zero
   USE calfocommon
-
+  use debug,only : ii
   implicit none
 contains
   !----------------------------------------------------------------------
@@ -285,9 +285,13 @@ contains
     if (nprocspace.gt.1) then
        call maj_tabdensity_ftm(tabdensity,imm,nato,num_at_glob)
     end if
+!    write(3000+i,*)it
+!    do i=1,im
+!       write(6,*)i,num_at_glob(i),tabdensity(i)
+!    end do
 #endif
 
-
+!    tabdensity=0
     !boucle des forces
 
     loop3at1: do i=1,im

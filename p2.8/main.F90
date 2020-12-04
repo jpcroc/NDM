@@ -8,17 +8,17 @@ program ndm
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: fnam,lenfnam,parallele,rang
+  USE gen_com_m, ONLY: fnam,lenfnam,parallele,rang,low_limit
 
   USE prog_mod,only: prog
   USE readdm_mod,only: readdm
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
-  USE mod_para,only:MPI_COMM_space,myid,nprocs
+  USE mod_para,only:MPI_COMM_space,myidsp,nprocs
   USE init_mpi_mod,only: init_mpi
   USE neb_module,only:init_mpi_neb
 #else
-  USE mod_para,only:myid,nprocs,nprocspace
+  USE mod_para,only:myidsp,nprocs,nprocspace
 #endif
 
 #ifdef MAB
@@ -42,11 +42,11 @@ program ndm
 #ifdef PARA
   call init_MPI()
 
- PRINT *, 'Process ', rang, ' of ', nprocs, ' is alive'
-  myid=rang
+ PRINT *, 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
+  myidsp=rang
   parallele = .true.
 #else
-  rang = 0;myid=0; nprocs=1;nprocspace=1
+  rang = 0;myidsp=0; nprocs=1;nprocspace=1
   parallele = .false.
 #endif
 

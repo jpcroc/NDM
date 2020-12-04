@@ -7,14 +7,15 @@ module suivinonpbc
   ! ********************************************************************
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:at,fnamcoutnonpbcxp,fnamcoutxp,im_glob,rang,imd,zero,imd,fnam,lenfnam,&
-  &fmt_cin,half,ides,igen,imm_glob,lalea,lrestart,lvpread,nitmax,oldtstep,rsep,two,usdh,dilat,im
+  USE temp_com,only:at,bg,im
+  USE gen_com_m, ONLY:fnamcoutnonpbcxp,fnamcoutxp,im_glob,rang,zero,fnam,lenfnam,&
+  &fmt_cin,half,ides,igen,imm_glob,lalea,lrestart,lvpread,nitmax,oldtstep,rsep,two,usdh,dilat
 
   USE tab_imm_m,only:ityp,xpnonpbc,tmpsuivi,axnonpbc,num_at_glob
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
 
 #endif
 
@@ -29,7 +30,7 @@ subroutine init_suivinonpbc
 implicit none
 integer ::i
 !
- DO i=1,imd
+ DO i=1,im
   tmpsuivi(1:3,i) = zero
   xpnonpbc(1:3,i)=axnonpbc(1:3,i)
  END DO
@@ -40,7 +41,7 @@ subroutine reset_suivinonpbc
 implicit none
 integer :: i 
 !
- DO i=1,imd  
+ DO i=1,im  
  xpnonpbc(1:3,i)= xpnonpbc(1:3,i) + tmpsuivi(1:3,i)
  tmpsuivi(1:3,i) = zero 
  END DO

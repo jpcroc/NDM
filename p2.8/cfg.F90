@@ -21,8 +21,9 @@ CONTAINS
     ! nAux_real : nombre de proprietes auxiliaires au format REAL
     ! aux_real(1:nAux_real,:) : proprietes auxiliaires au format REAL
     ! aux_title(1:nAux_int+nAux_real) : nom des proprietes correspondantes
+  USE temp_com,only:imm ! A EFFACER
   USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY: imm, umass
+    USE gen_com_m, ONLY: umass
     USE var_pot, ONLY:ntyp,cm,ty
     USE Mat_utils_mod
     IMPLICIT NONE

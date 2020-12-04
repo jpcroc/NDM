@@ -8,7 +8,7 @@ module initspeed_mod
   USE arret_ndm_mod,only: arret_ndm
   USE period_mod,only: period
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
-       &lvpread,noxyz,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,mdcg_noise_scale,&
+       &lvpread,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,mdcg_noise_scale,&
        neb_noise_scale,bk,mdcg_noise! enleve im, im_glog
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
@@ -107,8 +107,6 @@ contains
     real(double), dimension(3) :: vt1,  scom, pav,kinx
     real(double), dimension(3,3) :: ainer, aineri
     real(double), dimension(3,ntyp) :: vav
-    ! ym      real(double), dimension(3,nce) :: sigkinec
-    real(double), dimension(3,noxyz) :: sigkinec
     integer  :: i_glob
     integer  :: est_local
     integer :: seed_size

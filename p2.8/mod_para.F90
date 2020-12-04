@@ -11,7 +11,7 @@ module mod_para
 
   !  use mpi
   implicit none
-  integer :: myid,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
+  integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
 #ifdef PARA
 
   include 'mpif.h'
@@ -56,13 +56,16 @@ module mod_para
 
   integer :: nb_var_int                              ! nbr de variables entieres a envoyer lors des echanges entre proc
   integer :: nb_var_dbl                              ! nbr de variables reelles a envoyer lors des echanges entre proc
+  integer :: nb_var_lgc                              ! nbr de variables logical a envoyer lors des echanges entre proc
   integer, allocatable :: send_nb_val(:)             ! buffer d'envoi du nombre de valeurs envoyees
   integer, allocatable :: send_buff_int(:,:,:)       ! buffer d'envoi des variables entieres
+  logical, allocatable :: send_buff_lgc(:,:,:)       ! buffer d'envoi des variables logical
   real(double), allocatable :: send_buff_dbl(:,:,:)  ! buffer d'envoi des variables reelles
 
-  integer, allocatable :: recv_nb_val(:)             ! buffer d'envoi du nombre de valeurs envoyees
-  integer, allocatable :: recv_buff_int(:,:,:)       ! buffer d'envoi des variables entieres
-  real(double), allocatable :: recv_buff_dbl(:,:,:)  ! buffer d'envoi des variables reelles
+  integer, allocatable :: recv_nb_val(:)             ! buffer de receptio du nombre de valeurs envoyees
+  integer, allocatable :: recv_buff_int(:,:,:)       ! buffer de reception des variables entieres
+  logical, allocatable :: recv_buff_lgc(:,:,:)       ! buffer de reception des variables logical
+  real(double), allocatable :: recv_buff_dbl(:,:,:)  ! buffer de reception des variables reelles
 
   integer, allocatable :: send_rqst(:,:)              ! tableau pour stocker les requetes en envoi
   integer, allocatable :: recv_rqst(:,:)              ! tableau pour stocker les requetes en reception
@@ -80,6 +83,7 @@ module mod_para
 
   real(double), allocatable,dimension(:,:)::xp,vp,fp,xpp,ax,glangv
   real(double),allocatable::eat(:),sigat(:,:,:)
+  logical, allocatable::lgul(:)
   integer,allocatable,dimension(:)::ityp,ielat,iwmax,num_at_glob,indi
   logical ::llangevin,lprteat,lsigat,ltbv,lax
   integer::im,imm,nvois
@@ -107,33 +111,28 @@ contains
     implicit none
     type(cell_config)::cellcf
     class(atom_config)::atcf
-    integer::i
+    integer::i,ne
     ltbv=atcf%ltabvois ;
     lsigat=.false.; lprteat=.false. ; llangevin=.false.;lax=.false.
     select type (atcf)
     type is (atom_config_e)
        lsigat=atcf%lsigat;lprteat=atcf%lprteat; llangevin=atcf%llangevin;lax=atcf%lax
     end select
-    call config2ndm(atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall=.true.)
+    call config2ndm(atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall=.true.,lgul=lgul)
     call cellconfig2ndm (cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,proc_cell)
-    ! On envoit les atomes qui n'appartiennent plus au processeur courant
-    call envoi_atomes_fantomes
-    ! On recoit les nouveaux atomes locaux
-    call reception_nouveaux_atomes
-    ! On retire les atomes qui ne sont plus locaux
-    call elimine_atomes_fantomes
-    ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
-    call finalisation_envoi_atomes
-    ! On envoit les atomes frontieres aux processeurs voisins
-    call envoi_atomes_frontieres
-    ! On receptionne les nouveaux atomes fantomes
-    call reception_atomes_fantomes
-    ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
-    call finalisation_envoi_atomes
-    xpp=0;fp=0
-    call ndm2config (atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,nvois,vp,xpp,ldeall=.true.)
+    call envoi_atomes_fantomes ! On envoit les atomes qui n'appartiennent plus au processeur courant (qui sont passés  dans des cellules fantomes) caltabt les a mis dans ces cellules fantomes alors qu'ils étaient locaus avant
+    call reception_nouveaux_atomes ! On recoit les nouveaux atomes locaux (qui viennent des fantomes des procs voisins)
+    call elimine_atomes_fantomes ! On retire les atomes qui ne sont plus locaux (qui ont été envoyés par envoi_atomes_fantomes)
+    ne=4
+    call finalisation_envoi_atomes(ne)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
+! En ce point les atomes du proc local sont à jours
+    call envoi_atomes_frontieres     ! On envoit les atomes frontieres aux processeurs voisins
+    call reception_atomes_fantomes     ! On receptionne les nouveaux atomes fantomes
+    call finalisation_envoi_atomes(ne)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
+    call ndm2config (atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,nvois,vp,xpp,ldeall=.true.,lgul=lgul)
     call ndm2cellconfig(cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=proc_cell)
-
+!    call atcf%print(unit=1850+rang)
+flush(6)
 
 end subroutine maj_atomes_frt_ftm
 
@@ -147,7 +146,7 @@ end subroutine maj_atomes_frt_ftm
 !    use tab_imm_m
 
     implicit none
-    integer::imm
+    integer::imm,ne
     integer,intent(in)::num_at_glob(imm)
     real(double) :: tabdensity(imm)
     integer::natr(:)
@@ -160,7 +159,8 @@ end subroutine maj_atomes_frt_ftm
     call reception_tabdensity_fantomes(tabdensity,imm,num_at_glob)
 
     ! Finalisation de l'envoi pour liberer les buffers d'envoi (identique a l'envoi des atomes)
-    call finalisation_envoi_atomes
+    ne=3
+    call finalisation_envoi_atomes(ne)
 
   end subroutine maj_tabdensity_ftm
 
@@ -174,7 +174,7 @@ end subroutine maj_atomes_frt_ftm
 !    use tab_imm_m
 
     implicit none
-
+    integer::ne
  
     ! On envoit les atomes fantomes vers les processeurs voisins
     call envoi_fp_fantomes
@@ -183,7 +183,8 @@ end subroutine maj_atomes_frt_ftm
     call reception_fp_frontieres
 
     ! Finalisation de l'envoi pour liberer les buffers d'envoi (identique a l'envoi des atomes)
-    call finalisation_envoi_atomes
+    ne=3
+    call finalisation_envoi_atomes(ne)
 
   end subroutine maj_fp_frt
 
@@ -204,7 +205,7 @@ end subroutine maj_atomes_frt_ftm
     integer :: procv,cellf,n_at,i_at
 
     ! Premier passage a vide pour allouer les buffers au plus juste
-
+!    write(6,*)'envoi_atomes_fantomes',rang,nbr_proc_voisin
     nb_at_max=0
     ! Boucle sur les processeurs voisins
     do nproc_voisin=1,nbr_proc_voisin
@@ -228,10 +229,11 @@ end subroutine maj_atomes_frt_ftm
     call MPI_ALLREDUCE(nb_at_max,nb_at_max_tot,1,MPI_INTEGER,MPI_MAX,MPI_COMM_space,ierr)
     nb_at_max=nb_at_max_tot
     ! petite manip pour eviter le cas nb_at_max=0
-    nb_at_max = max(nb_at_max,1)
+    nb_at_max = max(nb_at_max,1) ! nb max d'atomes dans les cellules fantomes autour du proc courant
 
     ! Allocation des buffers
     nb_var_int = 3
+    nb_var_lgc=1
 !    nb_var_int = 4 avec iwmax aucun intérêt
 !LPARAFULLSEND
 !    nb_var_dbl = 15
@@ -241,7 +243,7 @@ end subroutine maj_atomes_frt_ftm
 !!$    nb_var_dbl = 9
 !!$ end if
 !    nb_var_dbl = 9 avec ax
-    nb_var_dbl = 6
+    nb_var_dbl = 12  ! DEGUEU A CHANGER ! 
   if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
      nb_var_dbl = nb_var_dbl+3
   end if
@@ -249,12 +251,14 @@ end subroutine maj_atomes_frt_ftm
 
     allocate(send_nb_val(nbr_proc_voisin))
     allocate(send_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
+    allocate(send_buff_lgc(nb_var_lgc,nb_at_max,nbr_proc_voisin))
     allocate(send_buff_dbl(nb_var_dbl,nb_at_max,nbr_proc_voisin))
-    allocate(send_rqst(nbr_proc_voisin,3))
-    allocate(recv_nb_val(nbr_proc_voisin))
+    allocate(send_rqst(nbr_proc_voisin,4))
+    allocate(recv_nb_val(nbr_proc_voisin))   ! nombre effectif d'atomes reçus du proc voisin
     allocate(recv_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
     allocate(recv_buff_dbl(nb_var_dbl,nb_at_max,nbr_proc_voisin))
-    allocate(recv_rqst(nbr_proc_voisin,3))
+    allocate(recv_buff_lgc(nb_var_lgc,nb_at_max,nbr_proc_voisin))
+    allocate(recv_rqst(nbr_proc_voisin,4))
 
     ! Preparation des receptions
     do nproc_voisin= 1, nbr_proc_voisin
@@ -264,6 +268,8 @@ end subroutine maj_atomes_frt_ftm
             MPI_COMM_space, recv_rqst(nproc_voisin,2), ierr)
        call MPI_IRECV(recv_buff_dbl(1,1,nproc_voisin), nb_var_dbl*nb_at_max, NDM_MPI_REAL_DOUBLE, procv, 1003, &
             MPI_COMM_space, recv_rqst(nproc_voisin,3), ierr)
+       call MPI_IRECV(recv_buff_lgc(1,1,nproc_voisin), nb_var_lgc*nb_at_max, MPI_LOGICAL, procv, 1004, &
+            MPI_COMM_space, recv_rqst(nproc_voisin,4), ierr)
     enddo
 
 
@@ -285,6 +291,8 @@ end subroutine maj_atomes_frt_ftm
                 ! On complete le buffer
                 send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1
 
+                send_buff_lgc(1,send_nb_val(nproc_voisin),nproc_voisin) = lgul(i_at)
+                
                 send_buff_int(1,send_nb_val(nproc_voisin),nproc_voisin) = ityp(i_at)
                 send_buff_int(2,send_nb_val(nproc_voisin),nproc_voisin) = ielat(i_at)
 !                send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = iwmax(i_at)
@@ -314,24 +322,26 @@ end subroutine maj_atomes_frt_ftm
 !!$                send_buff_dbl(18,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(3,i_at)
 !!$
 !!$               end if
-               if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
+
+                   send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = xpp(1,i_at)
+                   send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = xpp(2,i_at)
+                   send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = xpp(3,i_at)
+                   send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = fp(1,i_at)
+                   send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = fp(2,i_at)
+                   send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = fp(3,i_at)
+
+                if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
                   send_buff_dbl(nb_var_dbl-2,send_nb_val(nproc_voisin),nproc_voisin) = Glangv(1,i_at)
                   send_buff_dbl(nb_var_dbl-1,send_nb_val(nproc_voisin),nproc_voisin) = Glangv(2,i_at)
                   send_buff_dbl(nb_var_dbl,send_nb_val(nproc_voisin),nproc_voisin) = Glangv(3,i_at)
                end if
 
-!LPARAFULLSEND
-!                   send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpp(1,i_at)
-!                   send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = xpp(2,i_at)
-!                   send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = xpp(3,i_at)
-!                   send_buff_dbl(13,send_nb_val(nproc_voisin),nproc_voisin) = fp(1,i_at)
-!                   send_buff_dbl(14,send_nb_val(nproc_voisin),nproc_voisin) = fp(2,i_at)
-!                   send_buff_dbl(15,send_nb_val(nproc_voisin),nproc_voisin) = fp(3,i_at)
 
              enddo  ! fin de boucle sur les atomes
 
           endif
        enddo    ! fin de boucle sur les cellules fantomes
+!       write(6,*)'nouveaux ATOMOUTP',rang,myidsp, im,send_nb_val(nproc_voisin),procv
 
        ! On envoit les buffers vers le processeur
        call MPI_ISSEND(send_nb_val(nproc_voisin),      1,   MPI_INTEGER,        &
@@ -342,6 +352,8 @@ end subroutine maj_atomes_frt_ftm
 
        call MPI_ISSEND(send_buff_dbl(1,1,nproc_voisin),nb_var_dbl*nb_at_max,NDM_MPI_REAL_DOUBLE,&
             procv,1003,MPI_COMM_space,send_rqst(nproc_voisin,3),ierr)
+       call MPI_ISSEND(send_buff_lgc(1,1,nproc_voisin),nb_var_lgc*nb_at_max,MPI_LOGICAL,        &
+            procv,1004,MPI_COMM_space,send_rqst(nproc_voisin,4),ierr)
 
     enddo    ! fin de boucle sur les processeurs
 
@@ -375,8 +387,10 @@ end subroutine maj_atomes_frt_ftm
 
        call MPI_WAIT(recv_rqst(ind_recv,2), status, ierr)
        call MPI_WAIT(recv_rqst(ind_recv,3), status, ierr)
+       call MPI_WAIT(recv_rqst(ind_recv,4), status, ierr)
 
        ! recopie des infos dans les tableaux locaux
+!       write(6,*)'nouveaux ATOMINTP',rang,myidsp, im,recv_nb_val(ind_recv),proc_source
        do i_at = 1, recv_nb_val(ind_recv)
 
           ! On ajoute un atome a la liste
@@ -384,7 +398,7 @@ end subroutine maj_atomes_frt_ftm
 !          imd = imd + 1
 !          imf = imf + 1
 !          imana = imana + 1
-
+          lgul(im)        = recv_buff_lgc(1,i_at,ind_recv)
 
           ! mise a jour des variables entieres
           ityp(im)        = recv_buff_int(1,i_at,ind_recv)
@@ -428,13 +442,12 @@ end subroutine maj_atomes_frt_ftm
 
 !          if(lfrozen)free(im)=.true.
 !LPARAFULLSEND
-!          xpp(1,im) = recv_buff_dbl(10,i_at,ind_recv)
-!          xpp(2,im) = recv_buff_dbl(11,i_at,ind_recv)
-!          xpp(3,im) = recv_buff_dbl(12,i_at,ind_recv)
-!          fp(1,im) = recv_buff_dbl(13,i_at,ind_recv)
-!          fp(2,im) = recv_buff_dbl(14,i_at,ind_recv)
-!          fp(3,im) = recv_buff_dbl(15,i_at,ind_recv)
-
+          xpp(1,im) = recv_buff_dbl(7,i_at,ind_recv)
+          xpp(2,im) = recv_buff_dbl(8,i_at,ind_recv)
+          xpp(3,im) = recv_buff_dbl(9,i_at,ind_recv)
+          fp(1,im) = recv_buff_dbl(10,i_at,ind_recv)
+          fp(2,im) = recv_buff_dbl(11,i_at,ind_recv)
+          fp(3,im) = recv_buff_dbl(12,i_at,ind_recv)
        enddo
 
     enddo   ! fin de boucle sur les processeurs voisins
@@ -474,7 +487,7 @@ end subroutine maj_atomes_frt_ftm
     nb_at_a_eliminer = 0
     do i_at = 1, im
        koo = ielat(i_at)
-       if (proc_cell(koo).ne.myid) then
+       if (proc_cell(koo).ne.myidsp) then
           nb_at_a_eliminer = nb_at_a_eliminer + 1
           at_a_eliminer(nb_at_a_eliminer) = i_at
        endif
@@ -508,14 +521,16 @@ end subroutine maj_atomes_frt_ftm
           if ( i_new.ne.i_at ) then
              xp(:,i_new)  = xp(:,i_at)
 !LPARAFULLSEND
-!             xpp(:,i_new) = xpp(:,i_at)
+             xpp(:,i_new) = xpp(:,i_at)
              vp(:,i_new)  = vp(:,i_at)
+
 !             ax(:,i_new)  = ax(:,i_at)
 !!$	     if (lsuivinonpbc)  xpnonpbc(:,i_new)  = xpnonpbc(:,i_at)
 !!$	     if (lsuivinonpbc)  tmpsuivi(:,i_new)  = tmpsuivi(:,i_at)
 !!$	     if (lsuivinonpbc)  axnonpbc(:,i_new)  = axnonpbc(:,i_at)
-!             fp(:,i_new)  = fp(:,i_at)
-!             if(lfrozen)free(i_new)=free(i_at)
+             fp(:,i_new)  = fp(:,i_at)
+
+             !             if(lfrozen)free(i_new)=free(i_at)
 
              ityp(i_new)        = ityp(i_at)
              ielat(i_new)       = ielat(i_at)
@@ -552,8 +567,8 @@ end subroutine maj_atomes_frt_ftm
 
     ! On verifie qu'il n'y a plus d'atomes a l'exterieur du domaine local
     do koo=1,noxyz
-       if (proc_cell(koo).ne.myid .and. nato(koo).ne.0) print *,'ERREUR !!!',&
-            myid,'possede encore',nato(koo),'at. dans la cellule',koo
+       if (proc_cell(koo).ne.myidsp .and. nato(koo).ne.0) print *,'ERREUR !!!',&
+            myidsp,'possede encore',nato(koo),'at. dans la cellule',koo
     enddo
 
   end subroutine elimine_atomes_fantomes
@@ -594,6 +609,7 @@ end subroutine maj_atomes_frt_ftm
 
     ! Allocation des buffers
     nb_var_int = 4
+    nb_var_lgc = 1
 !LPARAFULLSEND
 !    nb_var_dbl = 15
 !!$   if  (lsuivinonpbc) then
@@ -601,15 +617,17 @@ end subroutine maj_atomes_frt_ftm
 !!$    else  
 !!$    nb_var_dbl = 9
 !!$   end if 
-    nb_var_dbl = 9
+    nb_var_dbl = 12
     allocate(send_nb_val(nbr_proc_voisin))
     allocate(send_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
+    allocate(send_buff_lgc(nb_var_lgc,nb_at_max,nbr_proc_voisin))
     allocate(send_buff_dbl(nb_var_dbl,nb_at_max,nbr_proc_voisin))
-    allocate(send_rqst(nbr_proc_voisin,3))
+    allocate(send_rqst(nbr_proc_voisin,4))
     allocate(recv_nb_val(nbr_proc_voisin))
     allocate(recv_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
+    allocate(recv_buff_lgc(nb_var_lgc,nb_at_max,nbr_proc_voisin))
     allocate(recv_buff_dbl(nb_var_dbl,nb_at_max,nbr_proc_voisin))
-    allocate(recv_rqst(nbr_proc_voisin,3))
+    allocate(recv_rqst(nbr_proc_voisin,4))
 
     ! Preparation des receptions
     do nproc_voisin = 1, nbr_proc_voisin
@@ -619,6 +637,9 @@ end subroutine maj_atomes_frt_ftm
             MPI_COMM_space, recv_rqst(nproc_voisin,2), ierr)
        call MPI_IRECV(recv_buff_dbl(1,1,nproc_voisin), nb_var_dbl*nb_at_max, NDM_MPI_REAL_DOUBLE, procv, 2003, &
             MPI_COMM_space, recv_rqst(nproc_voisin,3), ierr)
+       call MPI_IRECV(recv_buff_lgc(1,1,nproc_voisin), nb_var_lgc*nb_at_max, MPI_LOGICAL, procv, 2004, &
+            MPI_COMM_space, recv_rqst(nproc_voisin,4), ierr)
+
     enddo
 
 
@@ -638,6 +659,8 @@ end subroutine maj_atomes_frt_ftm
 
              ! On complete le buffer
              send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1
+
+             send_buff_lgc(1,send_nb_val(nproc_voisin),nproc_voisin) = lgul(i_at)
 
              send_buff_int(1,send_nb_val(nproc_voisin),nproc_voisin) = ityp(i_at)
              send_buff_int(2,send_nb_val(nproc_voisin),nproc_voisin) = ielat(i_at)
@@ -671,12 +694,12 @@ end subroutine maj_atomes_frt_ftm
 !!$	      end if
              	     
 !LPARAFULLSEND
-!             send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpp(1,i_at)
-!             send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = xpp(2,i_at)
-!             send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = xpp(3,i_at)
-!             send_buff_dbl(13,send_nb_val(nproc_voisin),nproc_voisin) = fp(1,i_at)
-!             send_buff_dbl(14,send_nb_val(nproc_voisin),nproc_voisin) = fp(2,i_at)
-!             send_buff_dbl(15,send_nb_val(nproc_voisin),nproc_voisin) = fp(3,i_at)
+             send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = xpp(1,i_at)
+             send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = xpp(2,i_at)
+             send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = xpp(3,i_at)
+             send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = fp(1,i_at)
+             send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = fp(2,i_at)
+             send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = fp(3,i_at)
 
           enddo
 
@@ -691,6 +714,9 @@ end subroutine maj_atomes_frt_ftm
 
        call MPI_ISEND(send_buff_dbl(1,1,nproc_voisin),nb_var_dbl*nb_at_max,NDM_MPI_REAL_DOUBLE,&
             procv,2003,MPI_COMM_space,send_rqst(nproc_voisin,3),ierr)
+       call MPI_ISEND(send_buff_lgc(1,1,nproc_voisin),nb_var_lgc*nb_at_max,MPI_LOGICAL,        &
+            procv,2004,MPI_COMM_space,send_rqst(nproc_voisin,4),ierr)
+
 
     enddo   ! fin de boucle sur les processeurs voisins
 
@@ -701,19 +727,20 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure en charge d'attendre la fin des envois des atomes (frontieres
   ! ou fantomes) et la liberation des buffers d'envoi
 
-  subroutine finalisation_envoi_atomes
+  subroutine finalisation_envoi_atomes(ne)
 
     USE T_kind_param_m, ONLY:  double
 !    use tab_imm_m
 
     implicit none
 
+    integer,intent(in)::ne
     integer :: nproc_voisin
 
     integer, allocatable :: send_status(:,:,:)
 
 
-    allocate(send_status(MPI_STATUS_SIZE,nbr_proc_voisin,3))
+    allocate(send_status(MPI_STATUS_SIZE,nbr_proc_voisin,4))
 
     ! Attente de finalisation des envois 
 
@@ -721,6 +748,7 @@ end subroutine maj_atomes_frt_ftm
        call MPI_Wait( send_rqst(nproc_voisin,1), send_status(1,nproc_voisin,1), ierr )
        call MPI_Wait( send_rqst(nproc_voisin,2), send_status(1,nproc_voisin,2), ierr )
        call MPI_Wait( send_rqst(nproc_voisin,3), send_status(1,nproc_voisin,3), ierr )
+       if (ne==4) call MPI_Wait( send_rqst(nproc_voisin,4), send_status(1,nproc_voisin,4), ierr )
     enddo
 
     ! Liberation des buffers
@@ -729,11 +757,13 @@ end subroutine maj_atomes_frt_ftm
     deallocate(send_rqst)
     deallocate(send_nb_val)
     deallocate(send_buff_int)
+    if (ne==4)deallocate(send_buff_lgc)
     deallocate(send_buff_dbl)
 
     deallocate(recv_rqst)
     deallocate(recv_nb_val)
     deallocate(recv_buff_int)
+    if (ne==4)    deallocate(recv_buff_lgc)
     deallocate(recv_buff_dbl)
 
   end subroutine finalisation_envoi_atomes
@@ -772,6 +802,7 @@ end subroutine maj_atomes_frt_ftm
        ! Reception des nouveaux atomes issus de ce processeur voisin
        call MPI_WAIT(recv_rqst(ind_recv,2), status, ierr)
        call MPI_WAIT(recv_rqst(ind_recv,3), status, ierr)
+       call MPI_WAIT(recv_rqst(ind_recv,4), status, ierr)
 
        ! recopie des infos dans les tableaux locaux au niveau des atomes fantomes
        do i_at = 1, recv_nb_val(ind_recv)
@@ -780,6 +811,8 @@ end subroutine maj_atomes_frt_ftm
           pt_at_ftm = pt_at_ftm + 1
 
           ! mise a jour des variables entieres
+          lgul(pt_at_ftm)  = recv_buff_lgc(1,i_at,ind_recv)
+          
           ityp(pt_at_ftm)  = recv_buff_int(1,i_at,ind_recv)
           ielat(pt_at_ftm) = recv_buff_int(2,i_at,ind_recv)
 !          iwmax(pt_at_ftm) = recv_buff_int(3,i_at,ind_recv)
@@ -817,12 +850,12 @@ end subroutine maj_atomes_frt_ftm
 !!$	  
 	  
 !LPARAFULLSEND
-!          xpp(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv)
-!          xpp(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv)
-!          xpp(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
-!          fp(1,pt_at_ftm) = recv_buff_dbl(13,i_at,ind_recv)
-!          fp(2,pt_at_ftm) = recv_buff_dbl(14,i_at,ind_recv)
-!          fp(3,pt_at_ftm) = recv_buff_dbl(15,i_at,ind_recv)
+          xpp(1,pt_at_ftm) = recv_buff_dbl(7,i_at,ind_recv)
+          xpp(2,pt_at_ftm) = recv_buff_dbl(8,i_at,ind_recv)
+          xpp(3,pt_at_ftm) = recv_buff_dbl(9,i_at,ind_recv)
+          fp(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv)
+          fp(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv)
+          fp(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
 
        enddo
 
@@ -860,6 +893,7 @@ end subroutine maj_atomes_frt_ftm
        enddo
        nb_at_max = max(nb_at_max, nb_at)
     enddo
+
     call MPI_ALLREDUCE(nb_at_max,nb_at_max_tot,1,MPI_INTEGER,MPI_MAX,MPI_COMM_space,ierr)
     nb_at_max=nb_at_max_tot
     ! petite manip pour eviter le cas nb_at_max=0
@@ -874,7 +908,7 @@ end subroutine maj_atomes_frt_ftm
     allocate(recv_buff_int(1,nb_at_max,nbr_proc_voisin))
     allocate(recv_buff_dbl(1,nb_at_max,nbr_proc_voisin))
     allocate(recv_rqst(nbr_proc_voisin,3))
-
+    
     ! Preparation des receptions
     do nproc_voisin = 1, nbr_proc_voisin
        procv = proc_voisin(nproc_voisin)
@@ -885,7 +919,11 @@ end subroutine maj_atomes_frt_ftm
             MPI_COMM_space, recv_rqst(nproc_voisin,3), ierr)
     enddo
 
-
+!    write(6,*)'nbr_proc_voisin',rang,nbr_proc_voisin
+!    write(6,*)'proc_voisin',rang,proc_voisin(1:nbr_proc_voisin)
+!    write(6,*)'nbr_cell_frontiere',rang,nbr_cell_frontiere(1)
+!    write(6,*)'cell_frontiere',rang,cell_frontiere(1,1)
+    
     ! On boucle sur les processeurs voisins
     do nproc_voisin = 1, nbr_proc_voisin
        procv = proc_voisin(nproc_voisin)
@@ -895,10 +933,10 @@ end subroutine maj_atomes_frt_ftm
        ! On boucle sur les cellules frontieres associees au processeur
        do ncell_front = 1, nbr_cell_frontiere(nproc_voisin)
           koo = cell_frontiere(nproc_voisin,ncell_front)
-
           ! On copie le contenu de la cellule dans le buffer d'envoi
           do n_at = 1, nato(koo)
              i_at = atincel(n_at,koo)
+
 
              ! On complete le buffer
              send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1
@@ -910,7 +948,7 @@ end subroutine maj_atomes_frt_ftm
           enddo
 
        enddo   ! fin de boucle sur les cellules
-
+!stop
        ! On envoit les buffers vers le processeur
        call MPI_ISEND(send_nb_val(nproc_voisin),      1,   MPI_INTEGER,        &
             procv,3001,MPI_COMM_space,send_rqst(nproc_voisin,1),ierr)
@@ -975,9 +1013,9 @@ end subroutine maj_atomes_frt_ftm
              endif
           enddo
           if (ind_loc==-1) then
-             print *,myid,'!!!Pb!!! Reception du proc',proc_source,'d''un atome fantome inexistant'
+             print *,myidsp,'!!!Pb!!! Reception du proc',proc_source,'d''un atome fantome inexistant'
              temps_exe = MPI_Wtime() - temps_deb
-             if (myid==0) then
+             if (myidsp==0) then
                 print *, 'Temps d''execution : ', temps_exe
                 print *, 'Temps d''init      : ', temps_init
                 print *, 'Temps d''input     : ', temps_input
@@ -1147,9 +1185,9 @@ end subroutine maj_atomes_frt_ftm
              endif
           enddo
           if (ind_loc==-1) then
-             print *,myid,'!!!Pb!!! Reception du proc',proc_source,'d''un atome non local'
+             print *,myidsp,'!!!Pb!!! Reception du proc',proc_source,'d''un atome non local'
              temps_exe = MPI_Wtime() - temps_deb
-             if (myid==0) then
+             if (myidsp==0) then
                 print *, 'Temps d''execution : ', temps_exe
                 print *, 'Temps d''init      : ', temps_init
                 print *, 'Temps d''input     : ', temps_input

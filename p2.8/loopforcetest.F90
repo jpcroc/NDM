@@ -17,10 +17,10 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:cunite,cunitp,deltax,erg2ev,rang,unite,unitp,ltabvois,imm,im,potist,sig,indi,nvois,&
-       nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize,&
-       &at,bg,zl,zls2,nzl,volu,normat
-
+  USE gen_com_m, ONLY:cunite,cunitp,deltax,erg2ev,rang,unite,unitp,potist,sig
+  use temp_com,only:im,imm,nox,noy,noz,natperc,atincel,deltadist,celsize,at,bg,zl,zls2,nzl,volu,normat,&
+       &im,imm,ltabvois,nvois,indi,nato,ncel,noxyz
+  
   USE var_pot, ONLY:nad,na,ntyp,gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu
   implicit none
   !-----------------------------------------------

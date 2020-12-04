@@ -23,12 +23,12 @@ module gen_com_m
   integer :: rang, rangph, rangml, rangmab, ja_phondy, ja_ml
   logical :: parallele
 
-  integer :: natperc                        ! nb d'atome par cel
+!  integer :: natperc                        ! nb d'atome par cel
 
   integer :: ivoismax
 
-  integer :: imm                 !imm taille des tableaux dependant du nombre d'atome mélange par proc et pas par proc, à remplacer par les deux suivants
-  integer :: imm_glob ! taille complète des tableaux 
+!  integer :: imm                 !imm taille des tableaux dependant du nombre d'atome mélange par proc et pas par proc, à remplacer par les deux suivants
+!  integer :: imm_glob ! taille complète des tableaux 
   integer:: imm_loc ! taille des conf atomique par proc 
 
 
@@ -51,15 +51,15 @@ module gen_com_m
   real(double) :: A2cm =1.0d-8     !conversion A->cm
 
 
-  integer :: im						! nb local d'atomes (=global en sequentiel)
-  integer :: im_glob					! nb global d'atomes
+!  integer :: im						! nb local d'atomes (=global en sequentiel)
+  integer :: im_glob,imm_glob					! nb global d'atomes
 
 
-  real(double), dimension(3) :: zl, zls2,nzl    ! largeur de la boite et largeur sur 2
-  real(double) :: volu      ! volume
+!
+!  real(double) :: volu      ! volume
 !  integer, dimension(3) :: lat      ! generation: nb de repetition de cel unite
-  real(double), dimension(3,3) :: at, bg ! at : vecteurs de base de la boite (BOND en cm) bg: vecteur du reseau reciproque
-  real(double), dimension(3,3) :: h0     ! Vecteurs de base de la boite de reference en A (Parrinello, Rahman)
+!  real(double), dimension(3,3) :: at, bg ! at : vecteurs de base de la boite (BOND en cm) bg: vecteur du reseau reciproque
+!  real(double), dimension(3,3) :: h0     ! Vecteurs de base de la boite de reference en A (Parrinello, Rahman)
   logical :: lUcell                 ! affiche l'energie potentielle de la boite
   ! (cela suppose que h0 corresponde a l'etat de reference pour lequelle la contrainte est nulle)     
 
@@ -80,22 +80,19 @@ module gen_com_m
 !  logical, dimension(:,:), allocatable :: Frozen ! Frozen(ix,i)=.true. si la coordonnee ix de l'atome i est gelee
   integer::imFree,imFirstFrozen ! nb d'atoems libres
 
-  real(double), dimension(3) :: normat ! norme de at
+!  real(double), dimension(3) :: normat ! norme de at
 
 
 
-  integer, dimension(:,:), allocatable :: ncel  ! ncel(i,j) indice de la jeme cel voisines de la cel i
-
-  integer, dimension(:), allocatable :: nato    ! nb d'atome dans la ieme cel
-
-  integer, dimension(:,:),allocatable :: atincel	! last (i,j) numero du ieme atome de la jeme cel
-
-  integer, dimension(:,:,:),allocatable :: deltadist ! decalage a appliquer sur la cel
-  integer :: nox, noy, noz, noxy, noxyz	     !nb de cel suivant x y z et total (DOIT REMPLACER nce)
+!!$  integer, dimension(:,:), allocatable :: ncel  ! ncel(i,j) indice de la jeme cel voisines de la cel i
+!!$  integer, dimension(:), allocatable :: nato    ! nb d'atome dans la ieme cel
+!!$  integer, dimension(:,:),allocatable :: atincel	! last (i,j) numero du ieme atome de la jeme cel
+!!$  integer, dimension(:,:,:),allocatable :: deltadist ! decalage a appliquer sur la cel
+!  integer :: nox, noy, noz, noxy, noxyz	     !nb de cel suivant x y z et total (DOIT REMPLACER nce)
   integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
   integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
   integer :: nb_cell_x, nb_cell_y, nb_cell_z     !nb de cel locales suivant x y z
-  real(double), dimension(3) :: celsize	     ! taille des cel
+!  real(double), dimension(3) :: celsize	     ! taille des cel
 
 
   integer :: it, itmax, nitmax,igen ! iteration courante, finale , type de generation
@@ -117,7 +114,7 @@ module gen_com_m
   real(double):: potisP,potis1, potis2, potis3, potis0, potcp ! energie potentielle de paire
   real(double) :: potisTersoff ! energie potentielle de tersoff
 
-  INTEGER::imd ! HISTORIQUE A DEGAGER LE PLUS TOT POSSIBLE
+!  INTEGER::imd ! HISTORIQUE A DEGAGER LE PLUS TOT POSSIBLE
 
   real(double) :: oldtstep  
   real(double) :: tstep, usdh, timel  
@@ -130,8 +127,8 @@ module gen_com_m
   real(double), dimension(3,3) :: sigtot
   real(double), dimension(3,3) :: sigkine
 
-  real(double), dimension(:,:,:),allocatable :: sigc ! contrainte par cel
-  real(double), dimension(:,:,:),allocatable :: sigat ! contrainte par atome
+!  real(double), dimension(:,:,:),allocatable :: sigc ! contrainte par cel
+!  real(double), dimension(:,:,:),allocatable :: sigat ! contrainte par atome
   logical :: lEparat  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ﾂｩnergie par atome,calcul bond valence
   integer:: itebdv ! frequence de calcul des bond valence
   logical :: ljqbh ! calcul de la conductivitﾃδｩ thermique par la mﾃδｩthode directe
@@ -145,8 +142,8 @@ module gen_com_m
   real(double):: fpstop ! critere de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
   real(double):: sigstop ! critere de conv. sur les composantes de contraintes  pour les trempes UNITE = kbar
   real(double):: fsumstop ! critere de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
-  real(double),allocatable::eatom(:) ! energie par atome
-  real(double),allocatable::eatomtotm(:) ! energie par atome
+!  real(double),allocatable::eatom(:) ! energie par atome
+!  real(double),allocatable::eatomtotm(:) ! energie par atome
   logical :: lPrtSigat, lprteat, lprtfat,lprteattotm  ! calcul et ecriture de la contrainte, l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
   logical :: lsigatcel !ecriture de la contrainte atomique moyenne sur cellule
   logical :: lsigat ! la contrainte atomique est calcul馥 (rendu vrai par lprtsigat ou lsigatcel)
@@ -204,11 +201,11 @@ module gen_com_m
   real(double) :: pist, temp, pmean, tmean, kine, kinemean ! pression temp et moyennes associees
   real(double) :: tempEP ! temperature for slow moving atoms (EP=elec-phon)
 
-  integer :: nvois   ! nb de voisins max dans toute la boite = nb d'atome * nb de voisins (/2)
-  integer, allocatable,dimension(:) :: indi ! table des voisins
-  integer, allocatable, dimension(:) :: indi2 ! table de voision pour les constantes de force
-  real(double) :: rvois ! rayon de la table des voisins
-  logical :: ltabvois      ! table des voisins ?
+!  integer :: nvois   ! nb de voisins max dans toute la boite = nb d'atome * nb de voisins (/2)
+!  integer, allocatable,dimension(:) :: indi ! table des voisins
+!  integer, allocatable, dimension(:) :: indi2 ! table de voision pour les constantes de force
+!  real(double) :: rvois ! rayon de la table des voisins
+!  logical :: ltabvois      ! table des voisins ?
   logical :: lconstrtot ! construction par double boucle (T) ou par cel (F)
   logical :: ldemitab ! construction d'une demi-table (T) ou d'une table complete (F)
   character :: nature*6 ! element chimique
@@ -358,7 +355,7 @@ module gen_com_m
 !      definis dans le fichier .din
 ! ----------------------------------------------------------------------------------
   
-  real(double), dimension (:),allocatable ::tempc,tempcm,celpm1,tm1,celpp,tcp,pmc,patcel,patcelmax
+!  real(double), dimension (:),allocatable ::tempc,tempcm,celpm1,tm1,celpp,tcp,pmc,patcel,patcelmax
   real(double), dimension (:,:,:),allocatable ::sigatcel
   integer, dimension (:),allocatable ::natchk
   logical, dimension (:),allocatable ::lprtcel(:)

@@ -1,7 +1,7 @@
 module scalebox_mod
-  USE gen_com_m, ONLY:dmtype,itetabvois,lpr,ltabvois,noxy,nvat,pi,volu,zl,zls2,celsize,imm,im,it,&
-       &lperiod,nox,noy,noz,rang,at,indi,nvois,bg
-  USE dynalloccell
+  USE gen_com_m, ONLY:dmtype,itetabvois,lpr,nvat,pi,it,lperiod,rang
+   USE temp_com,only:volu,zl,zls2,celsize,im,im,nox,noy,noz,at,indi,bg,nvois,ltabvois,imm,im,natperc,noxy
+   USE dynalloccell
   USE neigcel_mod,only: neigcel
   USE period_mod,only: period
   USE recips_mod,only: recips ,calcvol
@@ -128,6 +128,8 @@ contains
        if (dmtype.ne.9) then
           if (rang==0)       write(6,*) ' natperc ', natperc
        end if
+       write(6,*)'BOUFFON!'
+       stop
        call DynamicalAllocationCell
        call neigcel  
 

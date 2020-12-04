@@ -1,8 +1,7 @@
 !****************************************************************
 module caltabi_mod
   USE notperiod_mod,only: notperiod
-  USE gen_com_m, ONLY:decal_bc,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,&
-       &nvois,rang,rvois,indi2
+  USE gen_com_m, ONLY:decal_bc,it,ivoismax,lconstrtot,ldecal_bc,ldemitab,lperiod,rang
   use atomconfig,only: atom_config
   USE cellconfig,only:cell_config
   use boxconfig,only:box_config
@@ -73,7 +72,7 @@ subroutine caltabi(atvois,celvois,boxndm)
      rvois2(2)=(3.5d-8)**2
      rvois2(3)=(2.8d-8)**2
   else
-     rvois2(:)=rvois**2
+     rvois2(:)=atvois%rvois**2
   end if
 
   nvij=0
@@ -129,9 +128,9 @@ subroutine caltabi(atvois,celvois,boxndm)
            if (r2>rvois2(ll)) cycle
 
            iw = iw+1
-           IF (iw.GT.nVois) THEN
+           IF (iw.GT.atvois%nVois) THEN
                    WRITE(0,'(a,i0)') 'Indice iw du tableau de voisin plus grand&
-                        & que le max, nVois = ', nVois
+                        & que le max, nVois = ', atvois%nVois
 !                   WRITE(0,'(a)') 'Augmentez le nombre moyen de voisins par&
 !                        & atome dans le fichier *.din'
                    WRITE(0,'(a,i0)') 'truc étrange dans setcellconf'
@@ -139,7 +138,7 @@ subroutine caltabi(atvois,celvois,boxndm)
            END IF
 
            atvois%indi(iw) = j
-           indi2(iw) = j
+!           indi2(iw) = j
         end do
         atvois%iwmax(i) = iw
         nvij=iw-iwo
@@ -170,7 +169,7 @@ subroutine caltabi(atvois,celvois,boxndm)
                 else
                  if(j.eq.i) then
                    iwph=iwph+1
-                   indi2(iwph) = j
+!                   indi2(iwph) = j
                    cycle
                  end if
                end if
@@ -200,7 +199,7 @@ subroutine caltabi(atvois,celvois,boxndm)
               iwph = iwph+1
 !              write(6,*)i,koo,ko1,j,iw, at,bg,sqrt(r2)
               atvois%indi(iw) = j
-              indi2(iwph) = j
+!              indi2(iwph) = j
            end do loop_j !i2
 
         end do !ncelvois

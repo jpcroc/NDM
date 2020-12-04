@@ -1,5 +1,6 @@
 module sauveforce_mod
-  USE gen_com_m, ONLY:at,fnamcoutfp,im_glob,lcasca,rang,fnam,lenfnam,im,imm_glob
+  USE temp_com,only:at,im ! A EFFACER
+  USE gen_com_m, ONLY:fnamcoutfp,im_glob,lcasca,rang,fnam,lenfnam,imm_glob
 
   implicit none
 contains

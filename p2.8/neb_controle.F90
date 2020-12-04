@@ -53,7 +53,6 @@ contains
     !
     !
 
-    !     write(6,*) 'entree controle'
 
     ! last iteration ?
     if (it>=itmax) then
@@ -70,7 +69,9 @@ contains
        if (lEev.EQV..true.) then 
           forctot = sqrt(SUM(fp(1:3,1:im)**2))*erg2eV/angst
           formax  = sqrt(MAXVAL(fp(1,:im)**2+fp(2,1:im)**2+fp(3,1:im)**2))*erg2eV/angst
-          !            write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
+                      write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
+          write(400+rang,*)it,forctot,formax
+          flush(400+rang)
           if (fpstop>0) then   
              if (formax.le.fpstop) then
                 write(6,*)'force par atome  max  ev/Ang ', formax
@@ -117,7 +118,7 @@ contains
        if (lEev.EQV..true.) then 
           forctot = sqrt(SUM(fp(1:3,1:im)**2))*erg2eV/angst
           formax  = sqrt(MAXVAL(fp(1,1:im)**2+fp(2,1:im)**2+fp(3,1:im)**2))*erg2eV/angst
-
+          write(400+rang,*)it,forctot,formax
           
 !          formaxperp  = sqrt(MAXVAL(fp_par(1,:)**2+fp_par(2,:)**2+     &
 !               fp_par(3,:)**2))*erg2eV/angst

@@ -1,4 +1,6 @@
 module posana
+  USE temp_com,only:at,bg,ncel,atincel,nato,zl,deltadist,im,imm,natperc,nox,noxyz,noy,noz,&! A EFFACER
+       &eatom,eatomtotm ! A EFFACER
   USE T_kind_param_m
   USE caltabt_mod,only: caltabt
   USE sic
@@ -7,8 +9,7 @@ module posana
   USE recips_mod,only: recips
   use notperiod_mod, only: notperiod
   use cryst_to_cart_mod,only:cryst_to_cart
-  USE gen_com_m, ONLY: at,zl,atincel,ncel,deltadist,fnam,im,imm,rang,lperiod,pi,bg,nato,noxyz,npath,ibound,im_glob,&
-       &dmtype,eatom,decal_bc,noy,nox,noz,ldecal_bc,lenfnam,it,zl,nato,imm_glob,natperc,timel
+  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,ibound,dmtype,decal_bc,ldecal_bc,lenfnam,it,timel,im_glob,imm_glob
   !USE configcr_mod,only: configcr
 !  USE atomconfig
   USE tab_imm_m,only:xp,ityp,ielat,ax,xpp

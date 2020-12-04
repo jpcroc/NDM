@@ -3,7 +3,7 @@ module controle_mod
   USE dynalloccell
   USE tempinst_mod,only: tempinst,andersenth
   USE jqbh_mod,only: jqbh
-  USE desinteg_insert_mod,only: desinteg_insert
+
   USE period_mod,only: period
   USE caltabi_mod,only: caltabi
   USE heat_mod,only: heat
@@ -30,11 +30,12 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:deltaestop,epcou,fpstop,fsumstop,ibordcou,itab,itederive,iteheat,itetabvois,indi,&
+    USE gen_com_m, ONLY:deltaestop,epcou,fpstop,fsumstop,ibordcou,itab,itederive,iteheat,itetabvois,&
          &landerscou,lastcool,lcdp,ljqbh,lprtrp,ltandersen,maxtcel,nbmoye,nuandersen,sigstop,tcooling,&
-         &tempstop,tfroi,timemax,ttol,angst,bk,cunite,cunitp,dmtype,erg2ev,iko,im,imm,it,itdes,itetemp,itetimestep,&
-         &itmax,ldesinteg,leev,lperiod,lpkbar,ltabvois,nstepdes,potist,sigtot,tcou,temp,text,tfcou,timel,tstep,unite,&
-         &unitp,zl,bg,nvois,nox,noy,noz,celsize,at,bg,volu,normat,nzl,zls2
+         &tempstop,tfroi,timemax,ttol,angst,bk,cunite,cunitp,dmtype,erg2ev,iko,it,itdes,itetemp,itetimestep,&
+         &itmax,ldesinteg,leev,lperiod,lpkbar,nstepdes,potist,sigtot,tcou,temp,text,tfcou,timel,tstep,unite,&
+         &unitp
+    USE temp_com,only:imm,at,bg,im,zl,nox,noy,noz,volu,normat,zls2,celsize,im,indi,nzl,natperc,nvois,ltabvois
 
     USE var_pot, ONLY:
     USE tab_imm_m,only:xp,vp,ax,ityp,xpp,fp,iwmax,ielat
@@ -749,7 +750,6 @@ contains
 
 
 
-    if ((ldesinteg.EQV..true.).and.(itdes==nstepdes))call desinteg_insert
     if ((iteheat.gt.0).and.(mod(it,iteheat)==0))call heat(im,xp,vp,ityp)
 
 

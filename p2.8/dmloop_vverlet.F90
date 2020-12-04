@@ -12,9 +12,8 @@ module dmloop_vverlet_mod
   USE cellconfig, only:cell_config!,ndm2cellconfig,cellconfig2ndm
   USE boxconfig,only:box_config!,boxconfig2ndm,ndm2boxconfig
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,at,ecyl,ev2erg,lgc,rang,rayonc,&
-       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,sigat,sigc&
-       &,noxyz,lsuivinonpbc
+  USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,ecyl,ev2erg,lgc,rang,rayonc,&
+       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lsuivinonpbc
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
@@ -54,7 +53,7 @@ contains
     !    real(double) :: temptyp(ntyp)
 #ifdef PARA
     ! declarations supplementaires pour MPI
-    real(double), dimension(3,3,noxyz) :: sigc_tot
+    real(double), dimension(3,3,celndm%noxyz) :: sigc_tot
     integer::ierr2
 #endif
 
@@ -70,11 +69,6 @@ contains
 
     if (lsuivinonpbc) call init_suivinonpbc()
     ! Appel de la routine generale des forces
-    !    call calfo
-    !  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-    !      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-    !  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-    !       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
     test_sigma=(mod(it,itesigma)==0)
 
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
@@ -84,8 +78,6 @@ contains
        if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     end if
     if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
-    !    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    !    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
 
 
 
@@ -123,12 +115,12 @@ contains
              end if
           end select
           if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
-             sigc(1:3,1,atdml%ielat(ilocal)) = sigc(1:3,1,atdml%ielat(ilocal)) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*noxyz/volu
-             sigc(1:3,2,atdml%ielat(ilocal)) = sigc(1:3,2,atdml%ielat(ilocal)) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*noxyz/volu
-             sigc(1:3,3,atdml%ielat(ilocal)) = sigc(1:3,3,atdml%ielat(ilocal)) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*noxyz/volu
+             celndm%sigc(1:3,1,atdml%ielat(ilocal)) = celndm%sigc(1:3,1,atdml%ielat(ilocal)) + &
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyz/volu
+             celndm%sigc(1:3,2,atdml%ielat(ilocal)) = celndm%sigc(1:3,2,atdml%ielat(ilocal)) + &
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyz/volu
+             celndm%sigc(1:3,3,atdml%ielat(ilocal)) = celndm%sigc(1:3,3,atdml%ielat(ilocal)) + &
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyz/volu
           end if
        end do
        sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
@@ -141,9 +133,9 @@ contains
     if (nprocspace.gt.1) then
        call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
        sigkine=sigkine_tot
-       if (allocated(sigc)) then
-          call MPI_ALLREDUCE(sigc,sigc_tot, 9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
-          sigc=sigc_tot
+       if (allocated(celndm%sigc)) then
+          call MPI_ALLREDUCE(celndm%sigc,sigc_tot, 9*celndm%noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
+          celndm%sigc=sigc_tot
        end if
     end if
 #endif

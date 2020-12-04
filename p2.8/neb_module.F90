@@ -3,7 +3,8 @@ module neb_module
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,im_glob,lenfnam,rang,zero,lcontr,&
-       &angst,lenfnam,angst,erg2ev,normat,ltabvois,nvois,fnamcout,igen,lprteat
+       &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat
+  use read_val,only:rvois,ltabvois
   USE constrconf_mod,only:constr_2gin,gin2ndm,config2data,read_cin
     use cryst_to_cart_mod,only:cryst_to_cart
   USE contrainte,only:contr
@@ -21,10 +22,11 @@ module neb_module
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm,initbox
   USE setcell,only:setcellconf,setnox
   USE sauvegardeT_mod,only:sauvegardeT
+    USE init_pot_mod,only:init_pot  ,init_pot2
 #ifdef PARA
-  use mod_para,only:grp_world,nprocs,myid,MPI_COMM_space,nprocspace,ierr
+  use mod_para,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world
 #else
-  use mod_para,only:myid,nprocspace
+  use mod_para,only:myidsp,nprocspace
 #endif
   use paraconfig,only:para_config,commconstr
   implicit none
@@ -32,9 +34,6 @@ module neb_module
 
   integer, save                                  :: dragtest
   integer,dimension(:),allocatable,save          :: nebtest,icontrainte !irelax,
-!  integer,dimension(:,:),allocatable,save        :: ielat_n, iwmax_n, ityp_n
-!  real(double),dimension(:,:,:),allocatable,save ::  xp_n, xpp_n, vp_n, fp_n
-!  real(double),dimension(:,:),allocatable        :: fp_par,fp_perp
   real(double), dimension(:),allocatable, save   :: enePATH,enePATHev,norms,reaction_coord
   real(double), dimension(:,:,:), allocatable, save :: sigPATH  ! Stress tensor
   real(double), dimension(:,:,:),allocatable,save:: s_path,force_neb,bruitneb 
@@ -49,20 +48,37 @@ module neb_module
 contains
   
 
+  subroutine init_neb0
+    
+    call init_pot
+    
+#ifdef LAMMPS_VERSION
+
+    if ((ipotentiel==-10).or.(ipotentiel==-11))then
+       firsttime_lammps=.true.
+       allocate (posa(3*im),  forca(3*im))
+       call read_lammps()
+    end if
+#endif
+    call constrconfNEB
+    call init_pot2(boxneb)
+  end subroutine init_neb0
   
   subroutine allocate_neb(im,imm)
     implicit none
     integer::im,imm
- !   integer ip2
- !   allocate(atneb(npath)) !   do ip2=1,npath
- !      call atneb(ip2)%init_atom_config(im,ltabvois,nvois)
-    !   end do
-    integer ipath
+    integer ipath,nv
+    real(double)::rv
     allocate(atneb(npath))
     allocate(cellneb(npath))
-
+    nv=0
+    rv=0
+    if (rvois.gt.0) then
+       rv=rvois
+    end if
+      
     do ipath=1,npath
-       call atneb(ipath)%init(im,imm,ltabvois,nvois,lprteat=lprteat)
+       call atneb(ipath)%init(im,imm,ltabvois,nv,rv,lprteat=lprteat)
     end do
 
          allocate (icontrainte(imm),reaction_coord(npath))
@@ -231,16 +247,18 @@ end if
             STOP '< Load_NEB_Image_Gin >'
          END IF
        ELSE
-!          WRITE(6,*)'yyyyyyyyyyyyyyyyyy',RANG,IPH
           atneb(iph)%xp(:,:)=atneb(1)%xp(:,:)+dxx(:,:)*dble(iph -1) / dble(npath-1)
           atneb(iph)%ityp(:)=atneb(1)%ityp(:)
           atneb(iph)%num_at_glob(:)=atneb(1)%num_at_glob(:)
-          
+!           call rasmolT(atneb(iph),boxneb,iph)
+         
        END IF
        atneb(iph)%xpp(:,:)= atneb(iph)%xp(:,:)
        atneb(iph)%vp=0
-    end do
+       !if ((iph.ne.1).and.(iph.ne.npath))
 
+    end do
+!    stop
     masstot=SUM(cm(atneb(1)%ityp(1:im)))
     if  (nebtype>=2) then
        if (rang==0) write(*,'(" NEB: The kspring is in the eV/A^2                          :", f12.5)')  kspring
@@ -388,10 +406,8 @@ end if
 
 
        deltaR=deltaR*angst*angst
-       write(6,*)ia,deltar,deltarmax
        if (deltaR>deltaRmax) then
           atneb(1)%lgul(ia)=.true.
-!          irelax(ia)=1
           if (rang==0) write(*,*) 'NEB:    relaxation de l atome no ',ia,' deltaR= ',sqrt(deltaR)
        end if
     end do
@@ -425,7 +441,6 @@ end if
 
     lbd=0
     do ia=1,im
-
        if (atneb(ipath)%lgul(ia)) then
           lbd = lbd + DOT_PRODUCT(s_path(:,ia,ipath),fp(:,ia))
        end if
@@ -438,7 +453,7 @@ end if
        end if
     end do
 
-    if(lcontr) call contr (xp,vp,fp,ityp)      
+!    if(lcontr) call contr (xp,vp,fp,ityp)      
 
     return
 
@@ -490,7 +505,7 @@ end if
     USE T_kind_param_m, ONLY:  double
     !    USE gen_com_m, ONLY:im,imm,nvois,
 !    USE tab_imm_m,only:xp,xpp,vp,fp,ielat,iwmax,ityp,num_at_glob
-    USE gen_com_m, ONLY:imm
+    USE read_val, ONLY:imm,ltabvois
 
     integer ::  ip,lucin,itread,fmt_cin,formatsauv,iti
     character :: extension*9
@@ -515,7 +530,7 @@ end if
              do iti=1,ntyp
                 na(iti)=count(atneb(ip)%ityp(1:atneb(ip)%im).eq.iti)
              end do
-             close(lucin)
+!             close(lucin)
           end do
        else ! pas restart
           fnamneb='deb_'//fnam(1:lenfnam)//'.cin'
@@ -564,23 +579,9 @@ end if
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
        write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,im_glob
        call gin2ndm(atneb(1),cellneb(1),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.)
-!       call atneb(1)%print
-!!$       call read_gin(boxrgin,atrgin,fnamneb,lat)
-!!$       do ic=1,3
-!!$          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
-!!$       end do
-!!$       call initbox(boxneb,atg)
-!!$
-!!$       call setnox(boxneb,cellneb(1),rumax)
-!!$       if (rang==0) then
-!!$          write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxneb%volu,' cm3 ',boxneb%volu*1d24,' Ang3'
-!!$       end if
-!!$       
-!!$       call constr_2gin (atneb(1),boxneb,cellneb(1),atrgin,boxrgin,lat,im_glob)
-!!$       call cryst_to_cart (atneb(1)%imm, atneb(1)%xp, boxneb%at, 1)
+
 
        atneb(:)%im=atneb(1)%im
-!       call atneb(1)%print(iwr=0)
           atneb(1)%xpp=atneb(1)%xp
           atneb(1)%ielat=0
           atneb(1)%fp(:,:)= 0 !fp(:,:)
@@ -589,36 +590,22 @@ end if
              atneb(1)%iwmax=0 !iwmax(:)
              atneb(1)%indi=0
           end if
-!          call setcellconf(cellneb(1),atneb(1),boxneb,im_glob,rumax)
-!          call cellneb(1)%print
-!          call boxneb%print
+
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout'
-             call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout)
-!             call atneb(1)%print
-             call rasmolT(atneb(1),boxneb,1)
+             call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout,latcomp=.true.,lw0=.true.)
+             call rasmolT(atneb(1),boxneb,1,latcomp=.true.,lw0=.true.)
           endif
-!          call mpi_finalize(ierr)
-!          stop
           
-       fnamneb='fin_'//fnam(1:lenfnam)//'.gin'
-       write(6,*)'FNAMneb npath ',fnamneb,rang,myid
+          fnamneb='fin_'//fnam(1:lenfnam)//'.gin'
+#ifdef PARA
+          call mpi_barrier(mpi_comm_world,ierr)
+
+#endif
+          
+          write(6,*)'FNAMneb npath ',fnamneb,rang,myidsp
+
        call gin2ndm(atneb(npath),cellneb(npath),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.)
-!       call cellneb(npath)%print
-!       stop
-!!$       call read_gin(boxrgin,atrgin,fnamneb,lat)
-!!$       do ic=1,3
-!!$          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
-!!$       end do
-!!$       call initbox(boxneb,atg)
-!!$       call setnox(boxneb,cellneb(npath),rumax)
-!!$!       if (rang==0) then
-!!$!          write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
-!!$!       end if
-!!$       
-!!$       call constr_2gin (atneb(npath),boxneb,cellneb(npath),atrgin,boxrgin,lat,im_glob)
-!!$       call cryst_to_cart (atneb(npath)%imm, atneb(npath)%xp, boxneb%at, 1)
-!       call atneb(npath)%print(iwr=0)
        atneb(:)%im=atneb(npath)%im
           atneb(npath)%xpp=atneb(npath)%xp
           atneb(npath)%ielat=0
@@ -628,31 +615,31 @@ end if
              atneb(npath)%iwmax=0 !iwmax(:)
              atneb(npath)%indi=0
           end if
-!          call setcellconf(cellneb(npath),atneb(npath),boxneb,im_glob,rumax)
+
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
-             call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout)
-             call rasmolT(atneb(npath),boxneb,1)
+             call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=.true.,lw0=.true.)
+             call rasmolT(atneb(npath),boxneb,npath,latcomp=.true.,lw0=.true.)
           endif
 
-!       call atrgin%dealloc
-       end if
 
-    !#ifdef LAMMPS_VERSION
+       end if
+#ifdef LAMMPS_VERSION
 
     if((ipotentiel==-10).or.(ipotentiel==-11)) then
-       if(rang==0)write(6,*)'write configuration to conf.lmp'
-       call config2data (atneb(1)%imm,atneb(1)%im,atneb(1)%xp,atneb(1)%ityp,boxneb%at,ntyp)
+       if(rang==0)then
+          write(6,*)'write configuration to conf.lmp'
+          call config2data (atneb(1)%imm,atneb(1)%im,atneb(1)%xp,atneb(1)%ityp,boxneb%at,ntyp)
+       end if
     end if
-    !#endif     
-
+#endif     
 
 
   end subroutine constrconfNEB
   
   
   subroutine bruit_neb (im)
-  implicit none
+    implicit none
    integer    :: ia, ip,im
    integer, dimension(2) :: iseedt
    real(double)  :: zr1,zr2,zr3,zr4,totalbruit
@@ -688,8 +675,7 @@ end if
   do ip=1,npath
      atneb(ip)%xp(1:3,1:im) = atneb(ip)%xp(1:3,1:im) + bruitneb(1:3,1:im,ip)
   end do
-  !debug write(*,*) xp_n(1,5,4), bruitneb(1,5,4)
-  !debug stop
+
   
   end subroutine bruit_neb
 
@@ -706,17 +692,15 @@ end if
     paraneb%nimage=npath-2
 
     call commconstr(paraneb)
-!    call paraneb%print(rang)
-!    call MPI_finalize(ierr)
-!    stop
-    myid=paraneb%rgim
+
+    myidsp=paraneb%rgim
     MPI_COMM_space=paraneb%comm_image
     nprocspace=paraneb%npim
 #else
     paraneb%np_orig=1
     paraneb%rang_orig=0
     paraneb%npim=1
-    myid=0
+    myidsp=0
     paraneb%lmaster=.true.
     nprocspace=1
 #endif    

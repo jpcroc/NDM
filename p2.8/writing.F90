@@ -1,6 +1,6 @@
 module writing_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:imm,at,bg
+  USE temp_com, ONLY:imm,at,bg
   implicit none
 contains
   subroutine writing (file_num, file_name, grandeur)

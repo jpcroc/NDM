@@ -1,8 +1,8 @@
 module tempinst_mod
-  USE gen_com_m, ONLY:imm,bk,im_glob
+  USE gen_com_m, ONLY:bk,im_glob
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,nprocspace,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 
 #endif
 
@@ -27,7 +27,6 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-
     real(double) ::  mv2,v2
 #ifdef PARA
     real(double) :: mv2_glob

@@ -1,7 +1,8 @@
 module sauvegarde_mod
 
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:at,bg,im,im_glob,imm,rang,at,fnamcout,formatsauv,im_glob,it,itesauvinter,&
+    USE temp_com,only:at,bg,im,imm
+    USE gen_com_m, ONLY:im_glob,rang,fnamcout,formatsauv,im_glob,it,itesauvinter,&
          &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
     USE tab_imm_m,only:xp,vp,fp,xpp,ax,ityp,num_at_glob
     USE elec_cell, ONLY : sauveelec
@@ -9,7 +10,7 @@ module sauvegarde_mod
 #ifdef PARA
 
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
          
 #endif
 

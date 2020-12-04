@@ -1,8 +1,9 @@
 module initcasca_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE period_mod,only: period
-  USE gen_com_m, ONLY:at,bg,depmaxts,dmtype,ecgs,eko,iko,im,im_glob,imm,lderive,lperiod,ltranche,&
+  USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,im_glob,lderive,lperiod,ltranche,&
        &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T
+  use temp_com,only:at,bg,im,imm
   implicit none
 contains
   ! *************** initialisation de la cascade **********************

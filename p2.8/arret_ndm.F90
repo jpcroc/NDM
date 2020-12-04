@@ -1,7 +1,7 @@
 module arret_ndm_mod
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE,temps_initspeed,&
+    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,temps_initspeed,&
          &temps_para,temps_dmloop,temps_init,temps_input,&
          &temps_config,temps_deb
     use gen_com_m ,only:rang
@@ -35,15 +35,15 @@ subroutine arret_ndm()
 !  temps_dmloop=MPI_Wtime() - temps_dmloop_deb
 
   temps_exe = MPI_Wtime() - temps_deb
-  if (rang==0) then
-     print *, 'Temps d''execution : ', temps_exe
-     print *, 'Temps d''init      : ', temps_init
-     print *, 'Temps d''input     : ', temps_input
-     print *, 'Temps de config   : ', temps_config
-     print *, 'Temps d''initspeed : ', temps_initspeed
-     print *, 'Temps para estime : ', temps_para
-     print *, 'Temps dmloop : ', temps_dmloop
-  endif
+!!$  if (rang==0) then
+!!$     print *, 'Temps d''execution : ', temps_exe
+!!$     print *, 'Temps d''init      : ', temps_init
+!!$     print *, 'Temps d''input     : ', temps_input
+!!$     print *, 'Temps de config   : ', temps_config
+!!$     print *, 'Temps d''initspeed : ', temps_initspeed
+!!$     print *, 'Temps para estime : ', temps_para
+!!$     print *, 'Temps dmloop : ', temps_dmloop
+!!$  endif
   call MPI_FINALIZE(ierr)
 #endif
 

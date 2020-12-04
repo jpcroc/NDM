@@ -1,7 +1,7 @@
 module creadp_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:imm,at,bg,im,im_glob,it
-
+  USE gen_com_m, ONLY:im_glob,it
+  USE temp_com,only:imm,at,bg,im
   implicit none
 contains
   subroutine creadp(xp, xpp, ityp,vp)

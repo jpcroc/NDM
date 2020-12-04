@@ -12,7 +12,7 @@ module prog_mod
   USE dmloop_mod,only: dmloop
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
-  USE neb_module,only:boxneb
+  USE neb_module,only:boxneb,init_neb0
 
   USE montecarlo_mod, only: montecarlo
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
@@ -30,17 +30,17 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dmtype,im,imm,indi,ltabvois,parallele,potist,rang,sig,nvois ,&
-         &nox,noy,noz,noxyz,natperc,nato,ncel,atincel,deltadist,celsize,&
-             &at,bg,zl,zls2,nzl,volu,normat,lax,lprteat,lsigat,imm_glob
+    USE gen_com_m, ONLY:parallele,potist,rang,sig&
+         &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax
 
+    use read_val,only:imm,ltabvois,rvois
     USE tab_imm_m
     
 !    USE montecarlo_mod, ONLY: config_atom_n, cells_n
 
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,TEMPS_INIT_DEB,TEMPS_INIT,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm,myid,&
+    USE mod_para,only:MPI_COMM_space,TEMPS_INIT_DEB,TEMPS_INIT,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm,myidsp,&
          &nprocspace
     USE neb_module,only:init_mpi_neb
 #else
@@ -49,13 +49,14 @@ contains
 
     implicit none
     character :: extension*2
-    integer::lenfn2,i,ko
+    integer::lenfn2,i,ko,im,nvois
     class(atom_config_d),pointer::atdml
 !    type(atom_config),target:: atdm
     type(atom_config_d),target:: atdmd
     type(atom_config_e),target:: atdme
     type(cell_config)::celndm
     type(box_config)::boxndm
+    real(double)::rv
 
 
     !-----------------------------------------------
@@ -80,7 +81,7 @@ contains
     if (dmtype.ne.9) then
 
 #ifdef PARA
-    ! En parallele, on initialise le nombre maximum d'atomes d'un
+    ! En parallle, on initialise le nombre maximum d'atomes d'un
     ! processus au nombre d'atomes locaux. Plus tard ce nombre sera
     ! complete par le nombre maximal d'atomes fantomes
     ! On suppose que la concentration max ne depasse pas 20%  de 
@@ -88,22 +89,15 @@ contains
     imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
     if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
 #endif
-       
-       call atdml%init(im,imm,ltabvois,nvois,lsigat,lprteat,llangevin,lax)
+    if (ltabvois) then
+       rv=rvois
     else
-#ifdef PARA
-       call init_mpi_neb
-#endif
+       rv=0
     end if
-    
-#ifdef PARA
-    temps_init_deb = MPI_Wtime()
-#endif
-    ! Initilisation
+
+    call atdml%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
+    ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
     call init(atdml,boxndm,celndm)
-#ifdef PARA
-    temps_init=MPI_Wtime()-temps_init_deb
-#endif
 
 #ifdef DECOUP
     ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
@@ -111,28 +105,10 @@ contains
 #endif
 
 #ifdef PARA
-    ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-    if (nprocspace.gt.1) then
-       call maj_atomes_frt_ftm(atdml,celndm)
-    end if
-
-
-
-    ! Affichage du temps d'initialisation
-#ifdef PARA
-    if (rang==0) then
-       print *, 'Temps d''initialisation : ', MPI_Wtime() - temps_deb
-    endif
+       if (nprocspace.gt.1) then
+          call maj_atomes_frt_ftm(atdml,celndm)
+       end if
 #endif
-
-#endif
-
-#ifdef PARA
-    temps_dmloop_deb = MPI_Wtime()
-#endif
-    ! Actuellement uniquement le cas dmloop_vverlet est traite en parallele
-
-
     select case (dmtype) 
     case(5)
        if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
@@ -156,17 +132,11 @@ contains
     case (3,30)
 
        call gcII ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-    case (9)
-        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+
+
     case(11)
        if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
-!       call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-!       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!       call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!            &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        CALL CalFo(sig,potist,atdml,celndm,boxndm) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-!       call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-!    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
        call analyseT(atdml,celndm,boxndm)
        call controleT(atdml,celndm,boxndm)
        call endrunT(atdml,celndm,boxndm)
@@ -198,12 +168,30 @@ contains
 
 
     case (15)
-!       call ndm2cellconfig(cells_n,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!       call ndm2config(config_atom_n,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-!         &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
        call montecarlo(atdml,celndm,boxndm)
 
     end select
+
+
+
+       
+    else
+#ifdef PARA
+       call init_mpi_neb
+#endif
+
+       call init_neb0 
+       
+       call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       
+
+    end if
+    
+    ! Initilisation
+
+    ! Actuellement uniquement le cas dmloop_vverlet est traite en parallele
+
+
 
 
   end subroutine prog

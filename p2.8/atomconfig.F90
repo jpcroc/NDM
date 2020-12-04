@@ -1,6 +1,6 @@
 module atomconfig
   USE T_kind_param_m,only:double,long,ierr
-  USE Mat_utils_mod,only: fillbuffer3D,fillbuffer1D
+  USE Mat_utils_mod,only: fillbuffer3D,fillbuffer1D,fillbuffer9D
 #ifdef PARA
   USE Tpara,only:NDM_MPI_REAL_DOUBLE 
 
@@ -24,6 +24,7 @@ include 'mpif.h'
      logical :: ltabvois
      integer,allocatable:: iwmax(:) ! indice du dernier voisin de i
      integer:: nvois ! taille du tableau des voisins si ltabvois=.true.
+     real(double)::rvois ! rayon des voisins
      integer,allocatable:: indi(:) ! indice de tous les voisins
      logical, allocatable:: lgul(:)
      integer,allocatable::num_at_glob(:)
@@ -85,13 +86,17 @@ include 'mpif.h'
 contains
   !initialisations
   
-  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,lsigat,lprteat,lLangevin,lax,lreallocate)
+  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lsigat,lprteat,lLangevin,lax,lreallocate)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
     logical,optional, intent(in)::ltabvois,lsigat,lprteat,lLangevin,lax,lreallocate
     integer, optional::nvois,immin
-
+    real(double),optional::rvois
+    integer::nv
     logical ::ltbv,lrealloc
+    real(double)::rv
+    nv=0 ;  if(present(nvois))nv=nvois
+    rv=0;  if(present(rvois))rv=rvois
     lrealloc=.false.
     if (present(lreallocate))lrealloc=lreallocate
     ltbv=.false.
@@ -127,23 +132,28 @@ contains
     endif
     if(ltbv)then
        atconf%ltabvois=.true.
+       atconf%rvois=rv
+!       if (rvois.le.0) then
+!          write(6,*)'ltavois=TRUE et rvois=0 stop'
+!          stop
+!       end if
        if ((lrealloc).and.(allocated(atconf%iwmax)))deallocate(atconf%iwmax)
-       if (nvois.ne.0) then
-          if (.not.(allocated(atconf%iwmax)))then
-             allocate(atconf%iwmax(atconf%imm)); atconf%iwmax=0
-          endif
-          if ((lrealloc).and.(allocated(atconf%iwmax)))deallocate(atconf%iwmax)
-          if(.not.allocated(atconf%indi))then
-             atconf%nvois=nvois
-             if (nvois.ne.0)then
-                allocate(atconf%indi(nvois))
-                atconf%indi=0
-             end if
+ !      if (nv.ne.0) then
+       if (.not.(allocated(atconf%iwmax)))then
+          allocate(atconf%iwmax(atconf%imm)); atconf%iwmax=0
+       endif
+       if(.not.allocated(atconf%indi))then
+          atconf%nvois=nv
+          if (nv.ne.0)then
+             allocate(atconf%indi(nv))
+             atconf%indi=0
           end if
        end if
+       !     end if
     else
        atconf%ltabvois=.false.
     end if
+
     select type (atconf)
     type is (atom_config_d)
        !       write(6,*)'init_d'
@@ -194,6 +204,7 @@ contains
 
 
     end select
+    atconf%icaltabt=0
   end subroutine init_atom_config
 
   !copie d'un élément
@@ -228,15 +239,31 @@ contains
     atcible%ielat(j)=atsource%ielat(i)
     atcible%lgul(j)=atsource%lgul(i)
     if ((atcible%ltabvois).and.(atsource%ltabvois))then
-       nvj=atsource%iwmax(i)-atsource%iwmax(i-1)
-       atcible%iwmax(j)=nvj+atsource%iwmax(j-1)
+       if (i.gt.1) then
+          nvj=atsource%iwmax(i)-atsource%iwmax(i-1)
+       else
+          nvj=atsource%iwmax(i)
+       end if
+       if (j.gt.1) then
+          atcible%iwmax(j)=nvj+atsource%iwmax(j-1)
+       else
+          atcible%iwmax(j)=nvj
+       end if
        do iw=1,nvj
-          idwj=iw+atcible%iwmax(j-1); idwi=iw+atsource%iwmax(i-1)
-
-          atcible%indi(idwj)=atsource%indi(idwi)
+          if (i.gt.1) then
+             idwi=iw+atsource%iwmax(i-1)
+          else
+             idwi=iw
+          end if
+          if (j.gt.1) then
+             idwj=iw+atcible%iwmax(j-1)
+          else
+             idwj=iw
+          end if
+             
+             atcible%indi(idwj)=atsource%indi(idwi)
        end do
     end if
-
 
   end subroutine copy_atom_config
 
@@ -248,20 +275,23 @@ contains
     type(atom_config_d):: attemp_d
     type(atom_config_e):: attemp_e
     integer::imcn,nvois,immcn
+    real(double)::rvois
     immcn=atcf%imm+iadd
     imcn=atcf%im+iadd
     if (atcf%ltabvois)then
        nvois=int(1.1*imcn/atcf%im)*size(atcf%indi)
+       rvois=atcf%rvois
     else
        nvois=0
+       rvois=0
     end if
     select type(atcf)
     type is (atom_config)
-       call attemp%init(imcn,immcn,atcf%ltabvois,nvois)
+       call attemp%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
     type is (atom_config_d)
-       call attemp_d%init(imcn,immcn,atcf%ltabvois,nvois)
+       call attemp_d%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
     type is (atom_config_e)
-       call attemp_e%init(imcn,immcn,atcf%ltabvois,nvois,atcf%lsigat,atcf%lprteat, atcf%llangevin,atcf%lax)
+       call attemp_e%init(imcn,immcn,atcf%ltabvois,nvois,rvois,atcf%lsigat,atcf%lprteat, atcf%llangevin,atcf%lax)
     end select
     call atcf%copy_config(attemp,lrescl=.false.)
     call attemp%copy_config(atcf,lrescl=.true.)
@@ -320,22 +350,27 @@ contains
     class(atom_config),intent(in)::atsource
     class(atom_config)::atcible
     logical,intent(in)::lrescl
-
+    integer::nvois
+    real(double)::rvois
     logical :: lstop
     if (lrescl) then
 !       if (atcible%imm.ne.atsource%imm) then
-          call atcible%dealloc
-          call atcible%init(atsource%im,atsource%imm,atcible%ltabvois,size(atsource%indi))
+       call atcible%dealloc
+       if (atsource%ltabvois)then
+          nvois=atsource%nvois; rvois=atsource%rvois
+       else
+          nvois=0;rvois=0
+       end if
+          call atcible%init(atsource%im,atsource%imm,atcible%ltabvois,nvois,rvois)
           atcible%icaltabt=atsource%icaltabt    
-          !          if ((atcible%ltabvois).and.(atsource%ltabvois)) then
-          !             allocate (atcible%indi(size(atsource%indi)))
-          !          end if
-!       end if
+
     else
        lstop=.false.
        if ((atcible%im.lt.atsource%im).or.(atcible%imm.lt.atsource%imm)) lstop=.true.
+
        if (atcible%ltabvois) then
           if (size(atcible%indi).lt.size(atsource%indi)) lstop=.true.
+          if (atcible%nvois.lt.atsource%nvois)lstop=.true.
        end if
        if (lstop)then
           write(6,*)'(atcible%im < atsource%im  ou size(atcible%indi)<size(atsource%indi) )et lrescl = false ; pas possible'
@@ -345,7 +380,7 @@ contains
     !    atcible%im=atsource%im si rescale a deje été fait. Si pas rescale n'a pas a être fait. 
     !    atcible%imm=atsource%imm
     !    atcible%icaltabt=atsource%icaltabt    
-    atcible%xp(:,1:atsource%imm)=atsource%xp(:,1:atsource%imm)
+    atcible%xp(1:3,1:atsource%imm)=atsource%xp(1:3,1:atsource%imm)
     atcible%fp(:,1:atsource%imm)=atsource%fp(:,1:atsource%imm)
     atcible%ielat(1:atsource%imm)=atsource%ielat(1:atsource%imm)
     atcible%lgul(1:atsource%imm)=atsource%lgul(1:atsource%imm)
@@ -355,11 +390,9 @@ contains
     atcible%proc_at(1:atsource%imm)=atsource%proc_at(1:atsource%imm)
 #endif    
     
-    !    atcible%ltabvois=atsource%ltabvois
-!    write(6,*)atcible%ltabvois,atsource%ltabvois
     if ((atsource%ltabvois).and.(atcible%ltabvois)) then
        atcible%iwmax(1:atsource%imm)=atsource%iwmax(1:atsource%imm)
-       atcible%indi(1:atsource%iwmax(atsource%imm))=atsource%indi(1:atsource%iwmax(atsource%imm))
+       atcible%indi(1:atsource%nvois)=atsource%indi(1:atsource%nvois)
     end if
     ! atsource et atcible sont au moins_d
     select type (atsource)
@@ -423,6 +456,8 @@ contains
     type(atom_config_d)::atd
     type(atom_config_e)::ate
     integer::i,imn,immn
+    real(double)::rvois
+    integer::nvois
 
     if (at2pack%ityp(at2pack%imm).ne.0) return
     do i=at2pack%imm-1,1,-1
@@ -441,9 +476,15 @@ contains
     else
        immn=imn
     end if
+    if (at2pack%ltabvois)then
+       nvois=at2pack%nvois; rvois=at2pack%rvois
+    else
+       nvois=0;rvois=0
+    end if
+
     select type (at2pack)
     type is (atom_config)
-       call at%init(imn,immn,at2pack%ltabvois,size(at2pack%indi))
+       call at%init(imn,immn,at2pack%ltabvois,nvois,rvois)
        do i=1,immn
           call at2pack%copy_atom(i,at,i)
        end do
@@ -451,7 +492,7 @@ contains
        call at%copy_config(at2pack,lrescl=.true.)
 
     type is(atom_config_d)
-       call atd%init(imn,immn,at2pack%ltabvois,size(at2pack%indi))
+       call atd%init(imn,immn,at2pack%ltabvois,nvois,rvois)
        do i=1,immn
           call at2pack%copy_atom(i,atd,i)
        end do
@@ -459,7 +500,7 @@ contains
        call atd%copy_config(at2pack,lrescl=.true.)
 
     type is(atom_config_e)
-       call ate%init(imn,immn,at2pack%ltabvois,size(at2pack%indi),at2pack%lsigat,at2pack%lprteat,llangevin=at2pack%llangevin,&
+       call ate%init(imn,immn,at2pack%ltabvois,nvois,rvois,at2pack%lsigat,at2pack%lprteat,llangevin=at2pack%llangevin,&
             &lax=at2pack%lax)
        do i=1,immn
           call at2pack%copy_atom(i,ate,i)
@@ -475,16 +516,24 @@ contains
     class(atom_config),intent(out)::atcible
 
     integer::i2,imtrf,i
-    call atcible%dealloc 
+    integer::nvois
+    real(double)::rvois
 
+    call atcible%dealloc 
+       if (atsource%ltabvois)then
+          nvois=atsource%nvois; rvois=atsource%rvois
+
+       else
+          nvois=0;rvois=0
+       end if
     imtrf=COUNT(atsource%lgul(1:atsource%im))
 
     select type (atsource)
     type is (atom_config_e)
-       call atcible%init(imtrf,imtrf,atsource%ltabvois,size(atsource%indi),lsigat=atsource%lsigat,lprteat=atsource%lprteat,&
+       call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois,lsigat=atsource%lsigat,lprteat=atsource%lprteat,&
             &llangevin=atsource%llangevin,lax=atsource%lax)
     class is (atom_config)
-       call atcible%init(imtrf,imtrf,atsource%ltabvois,size(atsource%indi))
+       call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
     end select
     i2=0
     do i=1,atsource%im
@@ -514,6 +563,8 @@ contains
     type(atom_config):: atcor
     type(atom_config_d):: atcor_d
     type(atom_config_e):: atcor_e
+    integer::nvois
+    real(double)::rvois
     ldal=.false.
     lext=.true.
 
@@ -529,25 +580,32 @@ contains
     immcib=atcible%imm
     imnew=imsrc+imcib
     immnew=immsrc+immcib
+    if (atsource%ltabvois)then
+       nvois=int(1.1*imcib/atsource%im)*size(atsource%indi)
+       rvois=atsource%rvois
+    else
+       nvois=0
+       rvois=0
+    end if
 
     if(atcible%imm==0) then
        select type (atsource)
        type is (atom_config_e)
-          call atcible%init(imsrc,immsrc,atsource%ltabvois,size(atsource%indi),lsigat=atsource%lsigat,&
+          call atcible%init(imsrc,immsrc,atsource%ltabvois,nvois,rvois,lsigat=atsource%lsigat,&
                &lprteat=atsource%lprteat,llangevin=atsource%llangevin,lax=atsource%lax)
           class is (atom_config)
-          call atcible%init(imsrc,immsrc,atsource%ltabvois,size(atsource%indi))
+          call atcible%init(imsrc,immsrc,atsource%ltabvois,nvois,rvois)
        end select
     else
        select type(atcible)
        type is (atom_config)
-          call atcor%init(imcib,immcib,atcible%ltabvois,size(atcible%indi))
+          call atcor%init(imcib,immcib,atcible%ltabvois,nvois,rvois)
           call atcible%copy_config(atcor,.false.)
        type is (atom_config_d)
-          call atcor_d%init(imcib,immcib,atcible%ltabvois,size(atcible%indi))
+          call atcor_d%init(imcib,immcib,atcible%ltabvois,nvois,rvois)
           call atcible%copy_config(atcor_d,.false.)
        type is (atom_config_e)
-          call atcor_e%init(imcib,immcib,atcible%ltabvois,size(atcible%indi),atcible%lsigat,atcible%lprteat,&
+          call atcor_e%init(imcib,immcib,atcible%ltabvois,nvois,rvois,atcible%lsigat,atcible%lprteat,&
                &llangevin=atcible%llangevin,lax=atcible%lax)
           call atcible%copy_config(atcor_e,.false.)
        end select
@@ -567,7 +625,7 @@ contains
     do i=1,atsource%im
        i2=imcib+i
        call atsource%copy_atom(i,atcible,i2,lextend=.false.)
-    end do
+     end do
 
     select type(atcible)
     type is (atom_config)
@@ -603,24 +661,93 @@ contains
 
 
 
-  subroutine print(atprt,i1,i2,iwr,unit)
-    class(atom_config), intent(in)::atprt
-    integer,optional::i1,i2,iwr,unit
+  subroutine print(atin,i1,i2,iwr,unit,natg1,natg2)
+    class(atom_config), intent(in)::atin
+    integer,optional::i1,i2,iwr,unit,natg1,natg2
     !    type(atom_config_d):: td
     !    type(atom_config_e):: te
-    integer::i,im,ifin,ideb,ist,ifn,iw
+    integer::i,im,ifin,ideb,ist,ifn,iw,natpr,ig,iprt
     !    write(6,*)
-    write(6,*)'in print'
+    class (atom_config),allocatable::atprt
+!    write(6,*)'in print',atin%im,atin%imm
     if (.Not.present(unit))unit=6
-    im=atprt%im
-    iw=1
-    if (present(iwr))iw=iwr
 
+    iw=1
+       select type (atin)
+       type is (atom_config)
+          allocate(atom_config::atprt)
+       type is (atom_config_d)
+          allocate(atom_config_d::atprt)
+       type is (atom_config_e)
+          allocate(atom_config_e::atprt)
+       end select
+
+    if (present(iwr))iw=iwr
+    if (present(natg1)) then
+       if (present(natg2)) then
+          natpr=natg2-natg1+1
+          if (natpr.lT.1) stop
+       else
+          natg2=natg1
+       end if
+       iprt=0
+       do ig=natg1,natg2
+          do i=1,atin%im
+             if(atin%num_at_glob(i)==ig) then
+                iprt=iprt+1
+                if (iprt.gt.natpr) then
+                   write(6,*)'num_at_glob multiples ?'
+                   stop
+                end if
+             end if
+          end do
+       end do
+       natpr=iprt 
+       call atprt%init(natpr,rvois=0.d0)
+      im=atprt%im
+       iprt=0
+       do ig=natg1,natg2
+          do i=1,atin%im
+             if(atin%num_at_glob(i)==ig) then
+                iprt=iprt+1
+                if (iprt.gt.natpr) then
+                   write(6,*)'num_at_glob multiples ?'
+                   stop
+                end if
+                call atin%copy_atom(i,atprt,iprt)
+             end if
+          end do
+       end do
+       im=atprt%im
+       iprt=0
+       do ig=natg1,natg2
+          do i=1,atin%im
+             if(atin%num_at_glob(i)==ig) then
+                iprt=iprt+1
+!                write(6,*)iprt,ig,i
+                if (iprt.gt.natpr) then
+                   write(6,*)'num_at_glob multiples ?'
+                   stop
+                end if
+                call atin%copy_atom(i,atprt,iprt)
+             end if
+          end do
+       end do
+       im=atprt%im
+    else
+       call atin%copy_config(atprt,lrescl=.true.)
+       im=atin%im
+    end if
+          
+
+    
     write(unit,*)'im = ',atprt%im
     write(unit,*)'imm = ',atprt%imm
     write(unit,*)'icaltabt = ',atprt%icaltabt
     write(unit,*)'ltabvois ', atprt%ltabvois
-
+    write(6,*)
+    ideb=1
+    ifin=atprt%im
     if (present(i1))then
        ideb=i1
     else
@@ -735,13 +862,13 @@ contains
           end if
        end if
     end if
-    write(6,*)'out print'
-    write(6,*)
+!    write(6,*)'out print'
+!    write(6,*)
   end subroutine print
 !MANQUE SIG AU MINIMUM
 
   subroutine ndm2config (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois,vp,xpp,&
-       &lprteatR,eat,lsigatR,sigat,llangevinR,glangv,laxR,ax,ldeall)
+       &lprteatR,eat,lsigatR,sigat,llangevinR,glangv,laxR,ax,ldeall,lgul)
     class(atom_config)::atndm
     integer,intent(in)::im,imm
     real(double),intent(inout),allocatable,dimension(:,:):: xp,fp
@@ -755,8 +882,11 @@ contains
     real(double),optional,intent(inout),allocatable:: eat(:),sigat(:,:,:),glangv(:,:),ax(:,:)
 
     logical,intent(in),optional ::lprteatR,lsigatR,llangevinR,laxR
+    logical,allocatable,optional::lgul(:)
     logical ::lprteat,lsigat ,ltbv,llangevin,lax
     logical,optional,intent(in)::ldeall
+
+    real(double)::rvois
     
     logical::ldealloc
 
@@ -773,9 +903,9 @@ contains
     select type(atndm)
        !    type is (atom_config)
        class is (atom_config)
-       call atndm%init(im,imm,ltabvois,nvois)
+       call atndm%init(im,imm,ltabvois,nvois,rvois=0.d0)
     type is (atom_config_e)
-       call atndm%init(im,imm,ltabvois,nvois,lsigat,lprteat,llangevin,lax)
+       call atndm%init(im,imm,ltabvois,nvois,rvois=0.d0,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
     end select
 
     atndm%icaltabt=0
@@ -783,7 +913,9 @@ contains
     atndm%fp(:,1:imm)=fp(:,1:imm)
     atndm%ityp(1:imm)=ityp(1:imm)
     atndm%ielat(1:im)=ielat(1:im)
+    if (present(lgul))atndm%lgul(1:imm)=lgul(1:imm)
     if (ldealloc) deallocate(xp,fp,ityp,ielat)
+    if (present(lgul))deallocate(lgul)
     if (present(num_at_glob))then
        atndm%num_at_glob(1:imm)=num_at_glob(1:imm)
        if (ldealloc) deallocate(num_at_glob)
@@ -831,12 +963,12 @@ contains
 
   end subroutine ndm2config
 
-  subroutine config2ndm (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall)
+  subroutine config2ndm (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall,lgul)
     class(atom_config),intent(inout)::atndm
     integer,intent(out)::im
     integer,intent(out)::imm
     real(double),intent(out),allocatable:: xp(:,:),fp(:,:)
-
+    logical,allocatable,optional::lgul(:)
     integer,intent(out),dimension(:),allocatable::ityp,num_at_glob,ielat
     logical, intent(out)::ltabvois
     integer, optional,intent(out),allocatable ::iwmax(:)
@@ -861,10 +993,12 @@ contains
     if (.not.(allocated(xp)))then
        allocate(xp(3,imm));allocate(fp(3,imm));allocate(vp(3,imm));allocate(xpp(3,imm))
        allocate(ityp(imm));allocate(ielat(imm));allocate(num_at_glob(imm))
+       if (present(lgul))allocate(lgul(imm))
     end if
     xp(:,1:imm)=atndm%xp(:,1:imm)
     fp(:,1:imm)=atndm%fp(:,1:imm)
     ityp(1:imm)=atndm%ityp(1:imm)
+    if (present(lgul))lgul(1:imm)=atndm%lgul(1:imm)
     num_at_glob(1:imm)=atndm%num_at_glob(1:imm)
     ielat(1:imm)=atndm%ielat(1:imm)
     ltabvois=atndm%ltabvois
@@ -911,10 +1045,10 @@ contains
     integer::idmaster,idloc,icomm ! proc master,proclocal ,communicateur
 
 
-    real(double),allocatable::buffer(:,:)
+    real(double),allocatable::buffer(:,:),buffer9(:,:,:),buffer1(:)
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
-    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3
+    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3,imrecv9,imloc9
     integer::imcomp,imtot,proc_source,npim
     idmaster=0
     idloc=div%rgim
@@ -924,6 +1058,7 @@ contains
     if (idloc==idmaster) then
        !       allocate(buffer(3,atloc%im));allocate(ibuffer(atloc%im));allocate(lbuffer(atloc%im))
        imtot=0
+       ifin=0
        do iproc=0,npim-1
           ! Pour le processeur maitre il n'y a rien a faire
           ! reception des donnees des autres processeurs
@@ -936,34 +1071,83 @@ contains
              atcfcomp%num_at_glob(ideb:ifin)=atcfloc%num_at_glob(1:imrecv)
              atcfcomp%ityp(ideb:ifin)=atcfloc%ityp(1:imrecv)
              if( allocated(atcfloc%lgul))  atcfcomp%lgul(ideb:ifin)=atcfloc%lgul(1:imrecv)
-             atcfcomp%proc_at(ideb:ifin)=atcfloc%proc_at(1:imrecv)
+             atcfcomp%proc_at(ideb:ifin)=idmaster ! atcfloc%proc_at(1:imrecv)
+             select type(atcfloc)
+             class is (atom_config_d)
+                select type (atcfcomp)
+                class is (atom_config_d)
+                   atcfcomp%vp(1:3,ideb:ifin)=atcfloc%vp(1:3,1:imrecv)
+                   atcfcomp%xpp(1:3,ideb:ifin)=atcfloc%xpp(1:3,1:imrecv)
+                end select
+             type is (atom_config_e)
+                select type (atcfcomp)
+                class is (atom_config_e)
+                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+                      atcfcomp%sigat(1:3,1:3,ideb:ifin)=atcfloc%sigat(1:3,1:3,1:imrecv)
+                   endif
+                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+                      atcfcomp%eat(ideb:ifin)=atcfloc%eat(1:imrecv)
+                   endif
+                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+                      atcfcomp%glangv(:,ideb:ifin)=atcfloc%glangv(:,1:imrecv)
+                   endif
+                end select
+             end select
           else
              if (allocated(buffer)) then
-                deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer)
+                deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer);deallocate(buffer1)
              end if
              call MPI_RECV(imrecv,1, MPI_INTEGER,  MPI_ANY_SOURCE, 10001, icomm, status, ierr)
              imtot=imtot+imrecv
              proc_source = status(MPI_SOURCE)
-             imrecv3=3*imrecv
+             imrecv3=3*imrecv; imrecv9=3*imrecv3
              allocate(buffer(3,imrecv))
+             allocate(buffer9(3,3,imrecv))
+             allocate(buffer1(imrecv))
              allocate(ibuffer(imrecv))
              allocate(lbuffer(imrecv))
-             ideb=ifin+1; ifin=ideb+imrecv
-
+             ideb=ifin+1; ifin=ideb+imrecv-1
+             write(6,*)'IDEBIFIN',div%rang_orig,ideb,ifin,imrecv
              call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10002, icomm, status, ierr)
              atcfcomp%xp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
-             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10002, icomm, status, ierr)
+             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10003, icomm, status, ierr)
              atcfcomp%fp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
-             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10003, icomm, status, ierr)
+             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10004, icomm, status, ierr)
              atcfcomp%num_at_glob(ideb:ifin)=ibuffer(1:imrecv)
-             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10003, icomm, status, ierr)
+             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10005, icomm, status, ierr)
              atcfcomp%ityp(ideb:ifin)=ibuffer(1:imrecv)
              if (allocated(atcfloc%lgul))then
-                call MPI_RECV(lbuffer(1:imrecv),imrecv, MPI_LOGICAL, proc_source, 10003, icomm, status, ierr)
+                call MPI_RECV(lbuffer(1:imrecv),imrecv, MPI_LOGICAL, proc_source, 10006, icomm, status, ierr)
                 atcfcomp%lgul(ideb:ifin)=lbuffer(1:imrecv)
              end if
-             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10003, icomm, status, ierr)
-             atcfcomp%proc_at(ideb:ifin)=ibuffer(1:imrecv)
+
+             atcfcomp%proc_at(ideb:ifin)=proc_source !  ibuffer(1:imrecv)
+             select type(atcfloc)
+             class is (atom_config_d)
+                select type(atcfcomp)
+                class is (atom_config_d)
+                   call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10007, icomm, status, ierr)
+                   atcfcomp%vp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+                   call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10008, icomm, status, ierr)
+                   atcfcomp%xpp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+                end select
+             type is (atom_config_e)
+                select type(atcfcomp)
+                class is (atom_config_e)
+                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+                      call MPI_RECV(buffer9(1:3,1:3,1:imrecv),imrecv9, NDM_MPI_REAL_DOUBLE, proc_source, 10009, icomm, status, ierr)
+                      atcfcomp%sigat(1:3,1:3,ideb:ifin)=buffer9(1:3,1:3,1:imrecv)
+                   endif
+                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+                      call MPI_RECV(buffer1(1:imrecv),imrecv, NDM_MPI_REAL_DOUBLE, proc_source, 10010, icomm, status, ierr)
+                      atcfcomp%eat(ideb:ifin)=buffer1(1:imrecv)
+                   endif
+                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+                      call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10011, icomm, status, ierr)
+                      atcfcomp%glangv(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+                   endif
+                end select
+             end select
           end if
        end do
        if (imtot.ne.atcfcomp%im) then
@@ -972,7 +1156,7 @@ contains
           stop
        end if
     else
-       imloc=atcfloc%im;imloc3=3*imloc
+       imloc=atcfloc%im;imloc3=3*imloc; imloc9=3*imloc3
        call MPI_SEND(imloc, 1,   MPI_INTEGER,idmaster ,10001,icomm,ierr)
        call MPI_SEND(atcfloc%xp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10002,icomm,ierr)
        call MPI_SEND(atcfloc%fp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10003,icomm,ierr)
@@ -980,7 +1164,28 @@ contains
        call MPI_SEND(atcfloc%ityp(1:imloc), imloc, MPI_INTEGER, idmaster, 10005, icomm, status, ierr)
        if (allocated(atcfloc%lgul))     &
             &call MPI_SEND(atcfloc%lgul(1:imloc), imloc, MPI_LOGICAL, idmaster, 10006, icomm, status, ierr)
-       call MPI_SEND(atcfloc%proc_at(1:imloc), imloc, MPI_INTEGER, idmaster, 10007, icomm, status, ierr)
+       select type(atcfloc)
+       class is (atom_config_d)
+          select type(atcfcomp)
+          class is (atom_config_d)
+             call MPI_SEND(atcfloc%vp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10007,icomm,ierr)
+             call MPI_SEND(atcfloc%xpp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10008,icomm,ierr)
+          end select
+       type is (atom_config_e)
+          select type(atcfcomp)
+          class is (atom_config_e)
+             if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+                call MPI_SEND(atcfloc%sigat(1:3,1:3,1:imloc), imloc9, NDM_MPI_REAL_DOUBLE,idmaster ,10009,icomm,ierr)
+             endif
+             if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+                call MPI_SEND(atcfloc%eat(1:imloc), imloc, NDM_MPI_REAL_DOUBLE,idmaster ,10010,icomm,ierr)
+             endif
+             if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+                call MPI_SEND(atcfloc%glangv(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10011,icomm,ierr)
+             endif
+          end select
+       end select
+       
     end if
 #endif       
 
@@ -996,11 +1201,11 @@ contains
     integer::idmaster,idloc,icomm,npim ! proc master,proclocal ,communicateur
 
 
-    real(double),allocatable::buffer(:,:)
+    real(double),allocatable::buffer(:,:),buffer9(:,:,:),buffer1(:)
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
-    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3
-    integer::imcomp,imtot,proc_source,ic,ns,iloc,i
+    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3,imrecv9
+    integer::imcomp,imtot,proc_source,ic,ns,iloc,i,iu
     logical,allocatable::mask(:)
 !    real(double),allocatable::rbuf(:)
 !    integer,allocatable::ibuf(:)
@@ -1023,9 +1228,13 @@ contains
 !          do ic=1,3
 !             mask(ic,1:atcfcomp%im)=(atcfcomp%proc_at(1:atcfcomp%im)==iproc)
 !          end do
-          mask(:)=(atcfcomp%proc_at(1:atcfcomp%im)==iproc)
-          ns=count(atcfcomp%proc_at(:)==iproc)
-         
+          mask(:)=(atcfcomp%proc_at(1:imcomp)==iproc)
+          ns=count(atcfcomp%proc_at(1:imcomp)==iproc)
+          
+!          write(6,*)'NSTRF',ns,idloc,div%rang_orig
+!          do i=1,imcomp
+!             write(6,*)'PROCFFFF',div%rang_orig,i,iproc,atcfcomp%proc_at(i),mask(i)
+!          end do
           if (iproc==idmaster) then
 
              iloc=0
@@ -1035,64 +1244,136 @@ contains
                    atcfloc%xp(:,iloc)=atcfcomp%xp(:,i)
                    atcfloc%fp(:,iloc)=atcfcomp%fp(:,i)
                    atcfloc%num_at_glob(iloc)=atcfcomp%num_at_glob(i)
-                   atcfloc%ityp(i)=atcfcomp%ityp(i)
+                   atcfloc%ityp(iloc)=atcfcomp%ityp(i)
                    atcfloc%lgul(iloc)=atcfcomp%lgul(i)
                    atcfloc%proc_at(iloc)=idmaster
+                   select type(atcfloc)
+                   class is (atom_config_d)
+                      select type (atcfcomp)
+                      class is (atom_config_d)
+                         atcfloc%vp(:,iloc)=atcfcomp%vp(:,i)
+                         atcfloc%xpp(:,iloc)=atcfcomp%xpp(:,i)
+                      end select
+                   type is (atom_config_e)
+                      select type (atcfcomp)
+                      class is (atom_config_e)
+                         if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+                            atcfloc%sigat(:,:,iloc)=atcfcomp%sigat(:,:,i)
+                         endif
+                         if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+                            atcfloc%eat(iloc)=atcfcomp%eat(i)
+                         endif
+                         if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+                            atcfloc%glangv(:,iloc)=atcfcomp%glangv(:,i)
+                         endif
+                      end select
+                   end select
                 end if
              end do
              atcfloc%im=ns
-
-             
-!!$             atcfloc%xp=reshape(rbuf,(/3,ns/))
-!!$             atcfloc%fp=reshape(pack(atcfcomp%fp(:,1:atcfcomp%im),mask),(/3,ns/))
-!!$             atcfloc%num_at_glob=pack(atcfcomp%num_at_glob(:,1:atcfcomp%im),mask)
-!!$             atcfloc%ityp=pack(atcfcomp%ityp(:,1:atcfcomp%im),mask)
-!!$             if (allocated(atcfloc%lgul))  atcfloc%lgul=pack(atcfcomp%lgul(:,1:atcfcomp%im),mask)
-!!$             atcfloc%proc_at(1:ns)=idmaster ! on EST dans idmaster
-!!$             atcfloc%im=ns
           else
+!             write(6,*)'NSTRF',ns
              if (allocated(buffer)) then
                 deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer)
              end if
              allocate(buffer(3,ns));allocate(ibuffer(ns));allocate(lbuffer(ns))
-             call MPI_SEND(ns, 1,   MPI_INTEGER,iproc,10001,icomm,ierr)
+
+             call MPI_SEND(ns, 1,   MPI_INTEGER,iproc,20001,icomm,ierr)
              call fillbuffer3D(buffer,atcfcomp%xp,mask)
-             call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,10002,icomm,ierr)
+             call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20002,icomm,ierr)
              call fillbuffer3D(buffer,atcfcomp%fp,mask)
-             call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,10003,icomm,ierr)
+             call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20003,icomm,ierr)
              call fillbuffer1D(ibuffer,atcfcomp%num_at_glob,mask)
-             call MPI_SEND(buffer, ns, MPI_INTEGER,iproc ,10004,icomm,ierr)
+             call MPI_SEND(ibuffer, ns, MPI_INTEGER,iproc ,20004,icomm,ierr)
              call fillbuffer1D(ibuffer,atcfcomp%ityp,mask)
-             call MPI_SEND(ibuffer, ns, MPI_INTEGER,iproc ,10005,icomm,ierr)                          
+             call MPI_SEND(ibuffer, ns, MPI_INTEGER,iproc ,20005,icomm,ierr)                          
              if (allocated(atcfloc%lgul)) then
                 call fillbuffer1D(lbuffer,atcfcomp%lgul,mask)
-                call MPI_SEND(lbuffer, ns, MPI_LOGICAL,iproc ,10006,icomm,ierr)                          
+                call MPI_SEND(lbuffer, ns, MPI_LOGICAL,iproc ,20006,icomm,ierr)                          
              end if
+             select type(atcfloc)
+             class is (atom_config_d)
+                select type (atcfcomp)
+                class is (atom_config_d)
+                   call fillbuffer3D(buffer,atcfcomp%vp,mask)
+                   call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20007,icomm,ierr)
+                   call fillbuffer3D(buffer,atcfcomp%xpp,mask)
+                   call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20008,icomm,ierr)
+                end select
+             type is (atom_config_e)
+                select type (atcfcomp)
+                class is (atom_config_e)
+                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+                      allocate(buffer9(3,3,ns))
+                      call fillbuffer9D(buffer9,atcfcomp%sigat,mask)
+                      call MPI_SEND(buffer9, 9*ns, NDM_MPI_REAL_DOUBLE,iproc ,20009,icomm,ierr)
+                   endif
+                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+                      allocate(buffer1(ns))
+                      call fillbuffer1D(buffer1,atcfcomp%eat,mask)
+                      call MPI_SEND(buffer1, ns, NDM_MPI_REAL_DOUBLE,iproc ,20010,icomm,ierr)
+                   endif
+                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+                      call fillbuffer3D(buffer,atcfcomp%glangv,mask)
+                      call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20011,icomm,ierr)
+                   endif
+                end select
+             end select
           end if
        end do
        
     else
-       call MPI_RECV(imrecv,1, MPI_INTEGER, idmaster, 10001, icomm, status, ierr)
-       atcfloc%im=imrecv;imrecv3=3*imrecv
+       call MPI_RECV(imrecv,1, MPI_INTEGER, idmaster, 20001, icomm, status, ierr)
+       atcfloc%im=imrecv;imrecv3=3*imrecv;imrecv9=9*imrecv
        allocate(buffer(3,imrecv));allocate(ibuffer(imrecv));allocate(lbuffer(imrecv))
        
-       call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 10002, icomm, status, ierr)
+       call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20002, icomm, status, ierr)
        atcfloc%xp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
-       call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 10003, icomm, status, ierr)
+       call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20003, icomm, status, ierr)
        atcfloc%fp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
        
-       call MPI_RECV(ibuffer,imrecv, MPI_INTEGER, idmaster, 10004, icomm, status, ierr)
+       call MPI_RECV(ibuffer,imrecv, MPI_INTEGER, idmaster, 20004, icomm, status, ierr)
        atcfloc%num_at_glob(1:imrecv)=ibuffer(1:imrecv)
-       call MPI_RECV(ibuffer,imrecv, MPI_INTEGER, idmaster, 10005, icomm, status, ierr)
+       call MPI_RECV(ibuffer,imrecv, MPI_INTEGER, idmaster, 20005, icomm, status, ierr)
        atcfloc%ityp(1:imrecv)=ibuffer(1:imrecv)
        if (allocated(atcfloc%lgul) )then
-          call MPI_RECV(lbuffer,imrecv, MPI_LOGICAL, idmaster, 10006, icomm, status, ierr)
+          call MPI_RECV(lbuffer,imrecv, MPI_LOGICAL, idmaster, 20006, icomm, status, ierr)
           atcfloc%lgul(1:imrecv)=lbuffer(1:imrecv)
        end if
        atcfloc%proc_at(1:imrecv)=idloc
+             select type(atcfloc)
+             class is (atom_config_d)
+                select type (atcfcomp)
+                class is (atom_config_d)
+                   call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20007, icomm, status, ierr)
+                   atcfloc%vp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
+                   call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20008, icomm, status, ierr)
+                   atcfloc%xpp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
+                end select
+             type is (atom_config_e)
+                select type (atcfcomp)
+                class is (atom_config_e)
+                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+                   call MPI_RECV(buffer9,imrecv9, NDM_MPI_REAL_DOUBLE, idmaster, 20009, icomm, status, ierr)
+                   atcfloc%sigat(1:3,1:3,1:imrecv)=buffer9(1:3,1:3,1:imrecv)
+                   endif
+                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+                   call MPI_RECV(buffer1,imrecv, NDM_MPI_REAL_DOUBLE, idmaster, 20010, icomm, status, ierr)
+                   atcfloc%eat(1:imrecv)=buffer1(1:imrecv)
+                   endif
+                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+                      call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20011, icomm, status, ierr)
+                      atcfloc%glangv(1:3,1:imrecv)=buffer(1:3,1:imrecv)
+
+                   endif
+                end select
+             end select
     end if
+
+    
     return
-#endif           
+#endif
+ 
   end subroutine master2loc_atom
  
 

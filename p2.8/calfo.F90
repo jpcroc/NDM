@@ -17,7 +17,7 @@ module calfo_mod
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:ldecal_bc,parallele,potis0,potis2,potisp&
-       &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang,imm_glob
+       &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang
 
   USE contrainte,only:initcontr,contr
 !  USE jqmod,only:jq
@@ -170,7 +170,7 @@ contains
                 ! !!! le cas parallele n'est pas pris en compte !!!
                 if (.not.parallele.and.l3c) call calfo3c (atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%ielat, atcf%ityp,&
                         &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
-                           &boxcf%at,boxcf%bg,boxcf%volu)
+                           &boxcf%at,boxcf%bg,boxcf%volu,celcf%sigc)
 
                 ! !!! le cas parallele n'est pas pris en compte !!!
                 !potentiels EAM

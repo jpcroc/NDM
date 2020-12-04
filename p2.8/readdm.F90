@@ -1,6 +1,10 @@
 ! *****************************************************************
 module readdm_mod
-  implicit none
+
+
+  use temp_com,only:h0
+  use read_val
+    implicit none
 contains
 
 
@@ -15,25 +19,24 @@ contains
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,ittherm,kappa,kspr,kspring,kthg,&
          &lalea,lanczos_step,landerscou,lastcool,lbulle,lcdp,lconstrtot,lcorrelvp,lderive,ldislo,lfire,&
          &lgc,lhcyl,lheat,ljqbh,lpathfromgin,lpcon2,lpconxyz,lprtrp,lprtzlm,lrctest,lrestart,ltandersen,&
-         &ltcon,lvpread,maxneb,mdcg_noise_scale,natperc,nbmoye,neb_noise,neb_noise_scale,nebrelaxation,&
+         &ltcon,lvpread,maxneb,mdcg_noise_scale,nbmoye,neb_noise,neb_noise_scale,nebrelaxation,&
          &nebtype,nhoover,niteration,nitmax,njqbh,npath,ntr,nuandersen,pext,rayonc,rheat,rsep,&
-         &rskin,rulayer,rvois,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
+         &rskin,rulayer,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
          &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wbox,wnose,xko,xx0,yko,yy0,&
          &zko,zz0,dilat,dilat,dilat,dilat,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fdbkcoef,fnemd,&
-         &formatsauv,h0,ibound,iko,imm,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,iteplz,&
+         &formatsauv,ibound,iko,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,iteplz,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itespebcout,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
          &lcasca,lcontr,ldecal_bc,ldemitab,ldesinteg,ldyn2d,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lpr,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
-         &lsuivinonpbc,ltabvois,ltberendsen,lthoover,ltnose,ltpcel,ltranche,lucell,lwgin,mdcg_noise,nfda,nox,noy,noz,nplz,&
+         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,ltranche,lucell,lwgin,mdcg_noise,nfda,nplz,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
          &,tpseuils,tstep,typspr,unite,unitp,user_strainrate,user_stress_yz,xpspr,lenfnam,fnam,position_conversion_lammps&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup
-
+    use read_val
 
     USE var_pot, ONLY:gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
-    USE endrun_mod,only: endrun
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
     USE montecarlo_mod, ONLY: pas_lambda_mc
@@ -78,7 +81,7 @@ contains
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
          fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
-         rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,natperc,iteanaposneb,ntyp,&
+         rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,&
          lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
          mdcg_noise, lforcetabulate,ivisu,ibound,USEr_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
@@ -291,7 +294,6 @@ contains
     ltriclin=.true.
     lprtfat=.false.
 
-    natperc=-1   
     iteanaposneb=0
     lbulle=.false.
     ldesinteg=.false.    ! calcul du delta F de la desintegration d'un atome
@@ -694,7 +696,7 @@ contains
        end do lpt
        if (.not.tpot) then
           if (rang==0) write(6,*)'probleme ipotentiel npotentiel',ipotentiel,lpotentiel
-          call endrun 
+          stop 
        end if
     end if
     !  if ((all(lpotentiel)==.false.).and.(ipotentiel==-1)) then

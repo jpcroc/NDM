@@ -16,15 +16,15 @@ module analyseT_mod
  USE sauveforce_mod,only: sauveforce
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel
-  use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,h0,iteanapos,iteangle,itebdv,&
+  use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
-       &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,ltabvois,lthoover,ltnose,ltpcel,lucell,&
-       &nfda,parallele,patcel,patcelmax,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,sigatcel,&
-       &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,tempc,tcp,lprtcel,pmc,pmc,tempc,tempc,celpp,&
-       &celpp,tcp,tcp,lprtcel,tempc,tcp,pmc,celpp,natchk,natchk,sigc,celpm1,tm1,tpseuils,tpseuils,tpseuils,tpseuils,&
-       &sigtot,eatomtotm,volu,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
-       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,sigat,celsize,nvois,&
-       &normat,nzl,zls2, itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam
+       &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
+       &nfda,parallele,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,&
+       &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,&
+       &natchk,tpseuils,&
+       &sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
+       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,&
+       & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam
 
   USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
@@ -96,13 +96,6 @@ contains
     !-----------------------------------------------
     !
     !
-    !      logical:: lEev=.false., lPkbar=.false.
-    !        write(6,*)'analyse',itetemp,it
-
-!    call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-!    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
     ! MPI
     if (rang==0) then
        !          write(6,*)'analyse -> sauvegarde'
@@ -138,12 +131,6 @@ contains
        !          write(6,*)'sauvposition -> control'
     endif                                   ! fin rang=0
 
-
-
-!    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!         &iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-!    call boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxndm)
     if(lEev) then
        unitE=erg2eV
        cunitE='  eV'
@@ -176,10 +163,9 @@ contains
              atdml%lgul=.false.
              celtyp=celndm
              where(atdml%ityp(1:atdml%im)==iti)
-                atdml%lgul=.true.
+                atdml%lgul(1:atdml%im)=.true.
              end where
              call atdml%fab(attyp)
-
              call caltabtC(celtyp,attyp,lperiod,boxndm)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              call celtyp%dealloc ; call attyp%dealloc
@@ -276,7 +262,7 @@ contains
                    write(6,*)'b',at(1,2),at(2,2),at(3,2)
                    write(6,*)'c',at(1,3),at(2,3),at(3,3)
 
-                   Call MatInv(h0, invh0)
+                   Call MatInv(boxndm%h0, invh0)
                    Transformation=MatMul(at,invh0)
                    ! Strain tensor (Lagrange definition)
                    strain = 0.5d0*MatMul(Transformation,Transpose(Transformation))
@@ -313,11 +299,11 @@ contains
                    tab = fteta*dacos((a1*b1+a2*b2+a3*b3)/(amod*bmod))
                    amod=amod*1.0d8 ; bmod=bmod*1.0d8 ; cmod=cmod*1.0d8
                    if(it<=1) then
-                      volumean=volu
+                      volumean=boxndm%volu
                       amodmean=amod ; bmodmean=bmod ; cmodmean=cmod
                       tcamean=tca; tabmean=tab; tbcmean=tbc
                    else
-                      volumean=(volumean*(it/itetemp-1)+volu)/(it/itetemp)
+                      volumean=(volumean*(it/itetemp-1)+boxndm%volu)/(it/itetemp)
                       amodmean=(amodmean*(it/itetemp-1)+amod)/(it/itetemp)
                       bmodmean=(bmodmean*(it/itetemp-1)+bmod)/(it/itetemp)
                       cmodmean=(cmodmean*(it/itetemp-1)+cmod)/(it/itetemp)
@@ -331,7 +317,7 @@ contains
                    write(6,'(I10,G10.3,A,2F11.4)') it,timel,'*ang_bc,m  ',tbc,tbcmean
                    write(6,'(I10,G10.3,A,2F11.4)') it,timel,'*ang_ca,m  ',tca,tcamean
                    write(6,'(I10,G10.3,A,2F11.4)') it,timel,'*ang_ab,m  ',tab,tabmean
-                   write(6,'(I10,G10.3,A,2G21.12)') it,timel,'*volume  ',volu*1d24,volumean*1d24
+                   write(6,'(I10,G10.3,A,2G21.12)') it,timel,'*volume  ',boxndm%volu*1d24,volumean*1d24
 
                 endif    ! if (lpr)
 
@@ -466,10 +452,6 @@ contains
 
     if (iterasmol>0) then     
        if (mod(it,iterasmol)==0) then
-!     call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-!    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-!         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp,eat=eatom)
-!    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
          call rasmolT(atdml,boxndm,it)
           if (l2T) call  eleccellmol
 
@@ -481,15 +463,15 @@ contains
     !     write(6,*)'sortie ssprogramme analyse'
     !crcmit      call flush(6)
 
-
-    if (lprteattotm.EQV..true.) then
-       if (ncalceattotm==0)eatomtotm(:)=0.
-       ncalceattotm=ncalceattotm+1
-       do i=1,im
-          eatomtotm(i)=(eatom(i)+(ncalceattotm-1)*eatomtotm(i))/ncalceattotm
-       end do
-       !     write(912,*)ncalceattotm,eatomtotm(1)*erg2eV,eatom(1)*erg2eV
-    end if
+!!$
+!!$    if (lprteattotm.EQV..true.) then
+!!$       if (ncalceattotm==0)eatomtotm(:)=0.
+!!$       ncalceattotm=ncalceattotm+1
+!!$       do i=1,im
+!!$          eatomtotm(i)=(eatom(i)+(ncalceattotm-1)*eatomtotm(i))/ncalceattotm
+!!$       end do
+!!$       !     write(912,*)ncalceattotm,eatomtotm(1)*erg2eV,eatom(1)*erg2eV
+!!$    end if
 
     !  if (lbulle) then
     !     if (parallele) then
@@ -500,61 +482,61 @@ contains
     !  end if
     !  write(6,*) 'sortie canalyse',it,im
 
-    if (mod(it,itesigma)==0) then
-       if (lsigatcel)then
-          natchk(:)=0
-          sigatcel=0 ; patcel=0 ; patcelmax=0
-          do i=1,im
-             koo = ielat(i)                          ! Numero de la cellule
-             iti = ityp(i)
-             natchk(koo)=natchk(koo)+1
-             sigatcel(:,:,koo)=sigatcel(:,:,koo)+sigat(:,:,i)
-             ptest=0
-             do ic=1,3
-                ptest=ptest+sigat(ic,ic,i)/3
-             end do
-             ptest=abs(ptest)
-             patcelmax(koo)=max(patcelmax(koo),ptest)
-          end do
-          do koo=1,noxyz
-             sigatcel(:,:,koo)=sigatcel(:,:,koo)/natchk(koo)
-             do ic=1,3
-                patcel(koo)= patcel(koo)+sigatcel(ic,ic,koo)/3.0
-             end do
-             if (natchk(koo).ne.nato(koo)) then
-                write(6,*)'nato ? koo natcchk nato', koo, natchk(koo), nato (koo)
-                stop
-
-             end if
-          end do
-
-
-          !        write (6, *) '------valeurs par cellules-------',it
-          write(extension,'(i9.9)') it
-          lenfn2 = 9
-          open(luvisuc, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.CEL.mol', form='formatted', &
-               status='unknown')
-          write (luvisuc, '(I9,A,I7,A,D15.6)') noxyz , ' IT =', it, ' Time = ', timel
-          at=at*1.d8
-          write (luvisuc,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
-          at=at/1.d8
-          do kx=0,nox-1
-             do ky=0,noy-1
-                do kz=0,noz-1
-                   koo=1+kx+nox*(ky+noy*kz)
-                   xb(1)=float(kx)/float(nox)*at(1,1)+float(ky)/float(noy)*at(1,2)+float(kz)/float(noz)*at(1,3)
-                   xb(2)=float(kx)/float(nox)*at(2,1)+float(ky)/float(noy)*at(2,2)+float(kz)/float(noz)*at(2,3)
-                   xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
-                   xb=xb*1d8
-                   write (luvisuc, 149) 'Au',xb(1), xb(2),xb(3),patcel(koo)*unitP,patcelmax(koo)*unitP,nato(koo)
-                end do
-             end do
-          end do
-          close (luvisuc)
-148       format(A,3I4,3E15.5,1E15.7,I4)
-149       format(A,3E15.5,2E15.7,I4)
-       end if
-    end if
+!!$    if (mod(it,itesigma)==0) then
+!!$       if (lsigatcel)then
+!!$          natchk(:)=0
+!!$          sigatcel=0 ; patcel=0 ; patcelmax=0
+!!$          do i=1,im
+!!$             koo = ielat(i)                          ! Numero de la cellule
+!!$             iti = ityp(i)
+!!$             natchk(koo)=natchk(koo)+1
+!!$             sigatcel(:,:,koo)=sigatcel(:,:,koo)+sigat(:,:,i)
+!!$             ptest=0
+!!$             do ic=1,3
+!!$                ptest=ptest+sigat(ic,ic,i)/3
+!!$             end do
+!!$             ptest=abs(ptest)
+!!$             patcelmax(koo)=max(patcelmax(koo),ptest)
+!!$          end do
+!!$          do koo=1,noxyz
+!!$             sigatcel(:,:,koo)=sigatcel(:,:,koo)/natchk(koo)
+!!$             do ic=1,3
+!!$                patcel(koo)= patcel(koo)+sigatcel(ic,ic,koo)/3.0
+!!$             end do
+!!$             if (natchk(koo).ne.nato(koo)) then
+!!$                write(6,*)'nato ? koo natcchk nato', koo, natchk(koo), nato (koo)
+!!$                stop
+!!$
+!!$             end if
+!!$          end do
+!!$
+!!$
+!!$          !        write (6, *) '------valeurs par cellules-------',it
+!!$          write(extension,'(i9.9)') it
+!!$          lenfn2 = 9
+!!$          open(luvisuc, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.CEL.mol', form='formatted', &
+!!$               status='unknown')
+!!$          write (luvisuc, '(I9,A,I7,A,D15.6)') noxyz , ' IT =', it, ' Time = ', timel
+!!$          at=at*1.d8
+!!$          write (luvisuc,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
+!!$          at=at/1.d8
+!!$          do kx=0,nox-1
+!!$             do ky=0,noy-1
+!!$                do kz=0,noz-1
+!!$                   koo=1+kx+nox*(ky+noy*kz)
+!!$                   xb(1)=float(kx)/float(nox)*at(1,1)+float(ky)/float(noy)*at(1,2)+float(kz)/float(noz)*at(1,3)
+!!$                   xb(2)=float(kx)/float(nox)*at(2,1)+float(ky)/float(noy)*at(2,2)+float(kz)/float(noz)*at(2,3)
+!!$                   xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
+!!$                   xb=xb*1d8
+!!$                   write (luvisuc, 149) 'Au',xb(1), xb(2),xb(3),patcel(koo)*unitP,patcelmax(koo)*unitP,nato(koo)
+!!$                end do
+!!$             end do
+!!$          end do
+!!$          close (luvisuc)
+!!$148       format(A,3I4,3E15.5,1E15.7,I4)
+!!$149       format(A,3E15.5,2E15.7,I4)
+!!$       end if
+!!$    end if
     return
   end subroutine analyseT
 end module analyseT_mod

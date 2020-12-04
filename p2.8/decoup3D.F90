@@ -3,24 +3,26 @@ module decoupage_mod
   USE T_kind_param_m, ONLY:  double
   USE cellconfig,only:cell_config
   USE atomconfig,only: atom_config
+  USE read_val,only:rvois
   implicit none
 contains
   subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec)
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE,res_cpu,coord_max,coord_min
+    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,res_cpu!,coord_max,coord_min
 !    use tab_imm_m,only:realloc_all_tab_imm
 #endif
-    USE mod_para,only:myid,nprocspace
+    USE mod_para,only:myidsp,nprocspace
     USE gen_com_m, ONLY:cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
-         &nb_cell_x,nb_cell_y,nb_cell_z,rang,ldecoup,ltabvois,lsigat,lprteat,llangevin,lax,imm_loc
+         &nb_cell_x,nb_cell_y,nb_cell_z,rang,ldecoup,lsigat,lprteat,llangevin,lax,imm_loc
 
+    use read_val,only:ltabvois
     integer :: nbr_cpuIN !Egal aussi au nombre de zone qu'on d�coupera dans la boite
     integer::ncore ! nb de coeur par noeud
     type(cell_config)::celdec
     class(atom_config),optional:: atdec
-
+    integer, allocatable :: coord_min(:,:),coord_max(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z
     integer:: nnoeuds
     integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
     integer :: num_sol !iteration du decoupage possible
@@ -32,7 +34,7 @@ contains
     real(double), allocatable :: specifs(:,:) 
 
 #ifndef PARA
-    integer, allocatable :: coord_min(:,:),coord_max(:,:),res_cpu(:,:)
+    integer, allocatable :: res_cpu(:,:)
 #endif
 
     integer :: messages,messages_max,messages_min
@@ -67,7 +69,6 @@ contains
  end if
 #endif
     if (nprocspace.gt.1) then
-    write(6,*)'NOX',nox,noxyz,icall,rang,myid
        loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
 
 
@@ -260,7 +261,7 @@ contains
 
 
 #ifdef PARA
-       if (myid == 0) then
+       if (myidsp == 0) then
 #endif
           Print *,'-----------------------------------------------'
           print *,'          FIN DU CALCUL DU DECOUPAGE :         '
@@ -311,14 +312,12 @@ contains
 #ifdef PARA
        ! On est dans le code de calcul NDM, on realloue les tableaux sur le
        ! nombre d'atomes en tenant compte des cellules fantomes
-       write(6,*)'POINT',rang,icall
 
        cellules_max=0
        do ii = 0,nbr_cpu-1
           cellules_max = max(cellules_max,(res_cpu(ii,1)+2) * (res_cpu(ii,2)+2)* (res_cpu(ii,3)+2))
        enddo
        cellules_max = min (cellules_max, noxyz)
-!       write(6,*)'decoup',imm_glob,int(1.2 * imm_glob * cellules_max / noxyz) 
        imm_loc = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
        ! Le processeur maitre recupere la valeur maximale des imm des
        ! differents processeurs afin de pouvoir receptionner les tableaux
@@ -328,18 +327,19 @@ contains
 
        !     print *,'test4' 
        im0=0 ; nvois0=0
+!       write(6,*)'IMMMDEC',rang,imm
        call atdec%dealloc
-       call atdec%init(im0,imm,ltabvois,nvois0,lsigat,lprteat,llangevin,lax)
+       call atdec%init(im0,imm,ltabvois,nvois0,rvois,lsigat,lprteat,llangevin,lax)
 !       call realloc_all_tab_imm(imm)
 
        !     print *,'test4' 
        ! Initialisation des donnees geometriques qui serviront pour le reste du code :
-       cell_debx= coord_min(myid,1)
-       cell_finx= coord_max(myid,1)
-       cell_deby= coord_min(myid,2)
-       cell_finy= coord_max(myid,2)
-       cell_debz= coord_min(myid,3)
-       cell_finz= coord_max(myid,3)
+       cell_debx= coord_min(myidsp,1)
+       cell_finx= coord_max(myidsp,1)
+       cell_deby= coord_min(myidsp,2)
+       cell_finy= coord_max(myidsp,2)
+       cell_debz= coord_min(myidsp,3)
+       cell_finz= coord_max(myidsp,3)
        nb_cell_x= cell_finx - cell_debx + 1
        nb_cell_y= cell_finy - cell_deby + 1
        nb_cell_z= cell_finz - cell_debz + 1
@@ -356,7 +356,6 @@ contains
 #endif
 
     enddo loop1
- write(6,*)'OUT DECOUP',rang,myid, icall
  end if
 
 

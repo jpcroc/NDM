@@ -13,11 +13,11 @@ subroutine init_voisinage (cellv)
   use tab_imm_m
 !  use mod_para,only:MPI_COMM_space,
 !  USE mpi
-  use mod_para,only:MPI_COMM_space, nprocspace,myid,NDM_MPI_REAl_DOUBLE,proc_voisin,nbr_proc_voisin,nbr_cell_ftm,&
+  use mod_para,only:MPI_COMM_space, nprocspace,myidsp,NDM_MPI_REAl_DOUBLE,proc_voisin,nbr_proc_voisin,nbr_cell_ftm,&
        &NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
 
   implicit none
-  type(cell_config)::cellv
+  type(cell_config),intent(in)::cellv
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
@@ -41,12 +41,12 @@ subroutine init_voisinage (cellv)
   allocate(nbr_cell_frontiere(min(nprocspace,26)))
   nbr_cell_frontiere(:) = 0
   ! Calcul du nombre de cellules frontieres
-  nb_internes = max(res_cpu(myid,1)-2,0) * max(res_cpu(myid,2)-2,0) * max(res_cpu(myid,3)-2,0)
-  nb_frontieres = res_cpu(myid,1)*res_cpu(myid,2)*res_cpu(myid,3) - nb_internes
+  nb_internes = max(res_cpu(myidsp,1)-2,0) * max(res_cpu(myidsp,2)-2,0) * max(res_cpu(myidsp,3)-2,0)
+  nb_frontieres = res_cpu(myidsp,1)*res_cpu(myidsp,2)*res_cpu(myidsp,3) - nb_internes
   allocate(cell_frontiere(size(nbr_cell_frontiere,1),nb_frontieres))
   cell_frontiere(:,:) = 0
-  nb_fantomes_max = (res_cpu(myid,1) + 2) * (res_cpu(myid,2) + 2) * (res_cpu(myid,3) + 2) 
-  nb_fantomes_max = nb_fantomes_max - res_cpu(myid,1)*res_cpu(myid,2)*res_cpu(myid,3)
+  nb_fantomes_max = (res_cpu(myidsp,1) + 2) * (res_cpu(myidsp,2) + 2) * (res_cpu(myidsp,3) + 2) 
+  nb_fantomes_max = nb_fantomes_max - res_cpu(myidsp,1)*res_cpu(myidsp,2)*res_cpu(myidsp,3)
   allocate(cell_ftm(nb_fantomes_max))
 
   ! Calcul du nombre de cellules fantomes 
@@ -54,7 +54,7 @@ subroutine init_voisinage (cellv)
   ! boucle sur toutes les cellules
   do cell=1,cellv%noxyz
 
-     if ( cellv%proc_cell(cell)==myid ) then
+     if ( cellv%proc_cell(cell)==myidsp ) then
         ! si la cellule est locale
 
         do icell=1,26
@@ -64,7 +64,7 @@ subroutine init_voisinage (cellv)
            if (cell_vois/=0) then
               ! si la cellule voisine existe
 
-              if ( cellv%proc_cell(cell_vois)/=myid ) then
+              if ( cellv%proc_cell(cell_vois)/=myidsp ) then
                  ! Si la cellule voisine n'est pas locale
 
                  ! on stocke le processeur voisin si il n'est
@@ -107,7 +107,7 @@ subroutine init_voisinage (cellv)
 
            cell_vois = cellv%ncel(cell,icell)
            if (cell_vois/=0) then
-              if ( cellv%proc_cell(cell_vois)==myid ) then
+              if ( cellv%proc_cell(cell_vois)==myidsp ) then
 
                  ! il s'agit bien d'une cellule fantome car une cellule voisine est
                  ! locale

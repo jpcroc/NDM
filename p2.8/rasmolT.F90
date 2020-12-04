@@ -1,8 +1,8 @@
 ! ****************************************************************
 module rasmolT_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:rang,ivisu,sigat,ldesinteg,lpkbar,im_glob,&
-       &cunitP,it,lcasca,timel,unitP,at,fnam,bg,erg2ev,lenfnam,eatom,dmtype,umass
+  USE gen_com_m, ONLY:rang,ivisu,ldesinteg,lpkbar,im_glob,&
+       &cunitP,it,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
   !    USE paraneb_mod
@@ -14,7 +14,7 @@ module rasmolT_mod
   integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when we
 contains
 
-  subroutine rasmolT(atmol,boxmol,itapp,namefr,rty)
+  subroutine rasmolT(atmol,boxmol,itapp,namefr,rty,latcomp,lw0)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -22,16 +22,16 @@ contains
     !itapp est l'itération (apprente) en cours
     !namefr est la racine nom du fichier (par défaut celui de name.in
     !rty est un tableau     character*3,intent(in), dimension(1:atmol%im),optional  :: rty qui donne les symboles des atomes. utile pour utiliser d'autres symboles que les symboles chimiques associés aux types des atomes. En l'absence de rty, on utilise les symboles des types des atomes.
-    !ivisu dans gen_com_m : 1 :.mol, 4=.cfg ; 2=.xred
+    !ivisu dans gen_com_m : 1 :.mol, 4=.cfg ; 2=.xred ; 5 =.gin
 
 
 
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 #else
-    USE mod_para,only:myid
+    USE mod_para,only:myidsp
 #endif
     ! ****************************************************************
 
@@ -44,7 +44,9 @@ contains
     type(box_config),intent(in)::boxmol
     character*3,intent(in), dimension(1:atmol%im),optional  :: rty
     character(len=*), optional ::namefr
-
+    logical,optional::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
+    logical, optional,intent(in):: lw0 ! seul le rang=0 écrit (implique latcomp=.true.)
+    
     character*80::namef
     integer :: rgloc,im,imm,j,ic
 
@@ -63,8 +65,10 @@ contains
     real(double),allocatable::sigat_loc(:,:,:),eat_loc(:)
     integer :: im_loc
     integer :: proc_source
-
+    logical::latcompin=.false.
     type(para_config)::div
+    logical :: lw0in=.false.
+
 #endif
     type(atom_config)::atcomp
     integer :: i, luvisu, luvisu2, iti,lenfn2
@@ -72,15 +76,32 @@ contains
     character :: extension*9
 
 #ifdef PARA
-    if (nprocspace.gt.1) then
+    write(6,*)'rAsmol',im_glob
+    if (present(latcomp))latcompin=latcomp
+
+    if (present (lw0))lw0in=lw0
+    if (lw0in) then
+       if(latcompin.eqv..false.) then
+          write(6,*)'comment sauvegarder seulement rang0 si latcomp=.false. ?'
+          stop
+       end if
+       if (rang==0) then
+          latcompin=.true.
+       else
+          latcompin=.false. !latcompin intègre lw0 et rang=0
+       end if
+    end if
+
+    
+    if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
        call atcomp%init(im_glob)
-       div%rgim=myid
+       div%rgim=myidsp
        div%npim=nprocspace
        div%comm_image=MPI_COMM_space
        call atmol%vers_master(atcomp,div)
        im =atcomp%im
        imm=atcomp%im
-       rgloc=myid
+       rgloc=myidsp
     else
        rgloc=0
        call atcomp%init(atmol%im)
@@ -89,7 +110,8 @@ contains
        imm=atmol%imm
     end if
 #else
-    call atcomp%init(atmol%im,ltabvois=.false.)
+    rgloc=0
+    call atcomp%init(atmol%im,ltabvois=.false.,nvois=0)
     call atmol%copy_config(atcomp,lrescl=.true.)
     im=atmol%im
     imm=atmol%imm
@@ -165,7 +187,6 @@ contains
 
     ! conversion entier-->alphanumerique par transfert du nombre
     ! de l'iteration vers fichier tampon relu sous format caractere.
-
     if(rgloc==0) then
        luvisu = 86
        luvisu2 = 87
@@ -181,15 +202,40 @@ contains
           if (itapp < 0  )   extension='iiiiiiiii' 
           if (itapp >= 0 )   write(extension,'(i9.9)') itapp
        end if
+       
 
 
 
        select case (ivisu)
+       case(5)
+          if (present(namefr))then
+             if (present(itapp)) then
+                namef=namefr(1:len(namefr))//'.'//extension(1:lenfn2)//'.newgin'
+             else
+                !                write(6,*)'BINGO'
+                namef=namefr(1:len(namefr))//'.newgin'
+             end if
+          else
+             if (present(itapp)) then
+                namef=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.newgin'
+             else
+                namef=fnam(1:lenfnam)//'.newgin'
+             end if
+          end if
+          open(luvisu, file=namef, form='formatted', &
+               status='unknown')
+          write (luvisu,*)' 1 1 1 '
+          write (luvisu,'(3F12.6)')at(1,1),at(2,1),at(3,1)
+          write (luvisu,'(3F12.6)')at(1,2),at(2,2),at(3,2)
+          write (luvisu,'(3F12.6)')at(1,3),at(2,3),at(3,3)
+          write (luvisu,*) atcomp%im
+          call cryst_to_cart (im, xp,  bg,  -1) !cart vers cryst          
        case (1)
           if (present(namefr))then
              if (present(itapp)) then
                 namef=namefr(1:len(namefr))//'.'//extension(1:lenfn2)//'.mol'
              else
+!                write(6,*)'BINGO'
                 namef=namefr(1:len(namefr))//'.mol'
              end if
           else
@@ -198,14 +244,20 @@ contains
              else
                 namef=fnam(1:lenfnam)//'.mol'
              end if
-             open(luvisu, file=namef, form='formatted', &
-                  status='unknown')
-
-             write (luvisu, '(I9,A,I7,A,F12.6)') im, ' IT =', itapp, ' Time = ', timel
-
-             write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
-             !at=at/1.d8
           end if
+
+          open(luvisu, file=namef, form='formatted', &
+               status='unknown')
+          
+          if (present(itapp))then
+             write (luvisu, '(I9,A,I7,A,F12.6)') im, ' IT =', itapp, ' Time = ', timel
+          else
+             write (luvisu, '(I9,A,I7,A,F12.6)') im
+          end if
+          
+          write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
+          !at=at/1.d8
+
        case (2)
        case(3) 
           if (present(namefr))then
@@ -284,6 +336,8 @@ contains
 #else
              write (luvisu, '(I9)')  i
 #endif
+          case(5)                    
+             write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, ityp(i)
           case(3)                    
              write (luvisu,'(3es15.6,2x,2a)') xp1, xp2, xp3, ' ! ', tyw(i)
           case(4)

@@ -1,17 +1,18 @@
 module calccoordo_mod
-        USE notperiod_mod,only: notperiod
-        USE cryst_to_cart_mod,only: cryst_to_cart
-        USE gen_com_m, ONLY: rang,atincel,nato,noxyz,it,timel,at,deltadist,bg,lperiod,ncel
-        implicit none
-        contains
-subroutine calccoordo(im,imm,ityp,xp,ielat)
+  USE temp_com,only:atincel,nato,noxyz,at,deltadist,bg,ncel !A EFFACER
+  USE notperiod_mod,only: notperiod
+  USE cryst_to_cart_mod,only: cryst_to_cart
+  USE gen_com_m, ONLY: rang,it,timel,lperiod
+  implicit none
+contains
+  subroutine calccoordo(im,imm,ityp,xp,ielat)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
 
 #endif
   USE var_pot, ONLY:ntyp,rc,nad

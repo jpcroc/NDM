@@ -1,5 +1,6 @@
 module rdf_mod
-  USE gen_com_m, ONLY:it,pi,rang,timel,im,nrdf,linstantrdf,rcrdf,volu
+  USE temp_com,only:volu,im ! A EFFACER
+  USE gen_com_m, ONLY:it,pi,rang,timel,nrdf,linstantrdf,rcrdf
   implicit none 
 contains
 

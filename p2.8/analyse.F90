@@ -1,4 +1,6 @@
 module analyse_mod
+  USE temp_com,only:h0, volu,zls2,nzl, normat, nvois, celsize,eatomtotm,patcel,patcelmax,tempc,tcp,pmc,celpp,&
+       &pm1,sigat,pmc,tempc,sigc,celpm1,tm1,ltabvois ! A EFFACER
   USE Mat_utils_mod
   USE spebc_fin_mod,only: spebc_fin
   USE adf_mod,only: adf
@@ -15,15 +17,13 @@ module analyse_mod
 
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel
-  use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,h0,iteanapos,iteangle,itebdv,&
+  use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
-       &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,ltabvois,lthoover,ltnose,ltpcel,lucell,&
-       &nfda,parallele,patcel,patcelmax,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,sigatcel,&
-       &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,tempc,tcp,lprtcel,pmc,pmc,tempc,tempc,celpp,&
-       &celpp,tcp,tcp,lprtcel,tempc,tcp,pmc,celpp,natchk,natchk,sigc,celpm1,tm1,tpseuils,tpseuils,tpseuils,tpseuils,&
-       &sigtot,eatomtotm,volu,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
-       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,sigat,celsize,nvois,&
-       &normat,nzl,zls2
+       &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
+       &nfda,parallele,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,sigatcel,&
+       &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,lprtcel,natchk,natchk,tpseuils,&
+       &sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
+       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout
 
   USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm

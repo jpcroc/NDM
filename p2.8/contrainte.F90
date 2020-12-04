@@ -1,7 +1,8 @@
 module contrainte
+  USE temp_com,only:at,bg,im,imm ! A EFFACER
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:imm,dmtype,im,at,bg
+  USE gen_com_m, ONLY:dmtype
   USE var_pot, ONLY:cm
   implicit none
 
@@ -138,7 +139,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY : im, imm
+!    USE gen_com_m, ONLY : im, imm
     implicit none
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e r s

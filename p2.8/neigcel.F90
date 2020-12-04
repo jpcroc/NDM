@@ -1,5 +1,7 @@
 module neigcel_mod
-  USE gen_com_m, ONLY:deltadist,nox,noxyz,noy,noz,ncel
+!  USE gen_com_m, ONLY:deltadist,nox,noxyz,noy,noz,ncel
+  USE temp_com,only:deltadist,nox,noy,noz,ncel,noxyz
+
   implicit none
 contains
   !**************************************************************

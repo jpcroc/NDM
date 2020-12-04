@@ -1,14 +1,15 @@
 #ifndef ML
 module param_det_mod
         USE arret_ndm_mod,only: arret_ndm
-        USE endrun_mod,only: endrun
-        USE gen_com_m, ONLY:lopt,zl,zero,rang,pi,itab,ltabvois,rvois
+        USE gen_com_m, ONLY:lopt,zero,rang,pi,itab
         USE var_pot, ONLY:kpme,kpmex,kpmey,kpmez,n2max,ncouc3,ncoucx,ncoucy,ncoucz,npair,&
              &npotentiel,nvecttot,precis,rue_pair,typ_pot_pair,ipotentiel,alpha,iewald,csive,&
              &ngrid,r3cm2,rumax,r3cm
+        use boxconfig,only:box_config
+        use read_val,only:ltabvois,rvois
         implicit none
         contains
-subroutine param_det
+subroutine param_det(boxndm)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -32,9 +33,10 @@ subroutine param_det
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
+  type(box_config)::boxndm
   integer :: nc1,l
   real(double) :: zlm, pparam, k00x, k00y, k00z,k001,rue
-  real(double) :: ruex, ruey, ruez, pparax, pparay, pparaz
+  real(double) :: ruex, ruey, ruez, pparax, pparay, pparaz,zl(3)
 #ifdef ixia
   real(double) :: alpha_ixia
 #endif
@@ -43,13 +45,13 @@ subroutine param_det
   if (npotentiel.ne.1)then
      if ((iewald.gt.0).and.(ncouc3==0)) then
         if (rang==0)  write(6,*)'npot>1 + ewald+ncouc3=0 : stop'
-        call endrun
+        stop
      end if
      do l=1,npair
         if ((typ_pot_pair(l).lt.10).and.(typ_pot_pair(l).ne.2)) then
            if (rue_pair(l)==0) then
               if (rang==0)  write(6,*)'npot>1 + pot paire +ruepaire l =0 : stop',l
-              call endrun
+              stop
            end if
         end if
      end do
@@ -67,6 +69,8 @@ subroutine param_det
 
         !  rue=rue*1.d-8
         alpha=alpha*1.d8
+!        write(6,*)'ZL',zl
+        zl=boxndm%normat
         zlm=max(zl(1),zl(2),zl(3))
         k001=2.d0*pi/zlm
 
@@ -563,6 +567,8 @@ subroutine param_det
 #else
     rumax = max(rumax,maxval(rue_pair))
     csive=rumax/float(ngrid)
+!    write(6,*)'RUMAX',rumax,csive,rue_pair
+!    stop
 #endif
 
     !     if(l3c) then

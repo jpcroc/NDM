@@ -1,9 +1,9 @@
 module calcangle_mod
+  USE temp_com,only:ncel,noxyz,at,bg,deltadist,atincel,nato !A EFFACER
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:fda,ntyp,contmax
-  USE gen_com_m, ONLY:lperiod,noxyz,thetamin,thetamax,cont888,rcangle,atincel,&
-       &ncel,at,bg,deltadist,nato,noxyz,rang
+  USE gen_com_m, ONLY:lperiod,thetamin,thetamax,cont888,rcangle,rang
   implicit none
 contains
   subroutine calcangle(im,imm,ityp,xp,ielat)
@@ -13,7 +13,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
 
 #endif
 

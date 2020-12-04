@@ -1,6 +1,7 @@
 module Hcyl_mod
   USE tempinstcyl_mod,only: tempinstcyl 
-  USE gen_com_m, ONLY:at,ecyl,ev2erg,im,lgc,rang,rayonc,tstep,vdc,pc,vdc,bk,ncyl,cyl,imm
+  USE gen_com_m, ONLY:ecyl,ev2erg,lgc,rang,rayonc,tstep,vdc,pc,vdc,bk,ncyl,cyl
+use temp_com,only:at,imm,im
   USE period_mod,only: period
   implicit none
 contains

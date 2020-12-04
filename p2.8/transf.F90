@@ -1,5 +1,5 @@
 module transf_mod
-  USE gen_com_m, ONLY:im,imm
+  USE temp_com, ONLY:im,imm
   implicit none 
 contains
   ! **************************************************************

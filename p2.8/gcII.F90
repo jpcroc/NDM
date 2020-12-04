@@ -13,8 +13,9 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:bg,itetemp2,imm_glob,dmtype,rang,im,it,itmax,mdcg_noise,&
-         &angst,erg2ev,imm,potist,im_glob
+    USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,&
+         &angst,erg2ev,potist,im_glob
+    use temp_com,only:imm,at,bg,im
     USE var_pot, ONLY:nad,na,ntyp
     USE work_cgII,only: funct
 #ifdef PARA

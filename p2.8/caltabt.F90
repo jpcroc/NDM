@@ -9,8 +9,9 @@ subroutine caltabt(im,xp,ielat)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
+  USE temp_com,only:at,bg,natperc,nox,noy,noz,noxyz,nato,atincel ! A EFFACER
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:nato,atincel,bg,natperc,nox,noy,noz,lperiod,noxyz,at,bg
+  USE gen_com_m, ONLY:lperiod
 !  USE atomconfig
   !          Version du 01 fevrier 2001
   ! ******************************************************************

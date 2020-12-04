@@ -35,15 +35,15 @@ module Parrinello_Rahman
   !     J. Chem. Phys., 1985, 82, 4243-4247
   ! [4] Nosé, S. 
   !     A Molecular Dynamics Method for Simulations in the Canonical Ensemble
-  !     Mol. Phys., 1984, 52, 255-268
-
+  !     Mol. Phys., 1984, 52, 255-268tabv
   USE T_kind_param_m
-  USE gen_com_m, ONLY:ecellpr,h0,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,wbox,erg2ev,&
-       &h0,kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover,zhoover,zhoover,&
-       &zhoover,zhoover,zhoover,zhoover,zhoover, ihbox0,tbox, bk,im,imm,indi,ltabvois,potist,sig,sigkine,sigtot,&
-       &text,tstep,volu,at,im_glob,it,ltabvois,potist,rang,sig,text,tstep,volu,sigkine,bg,nvois,zls2,tabf3,tabv3,&
-       &pi,zl,nox,noy,noz,noxyz,natperc,ncel,atincel,deltadist,celsize,nato,l2t,ltberendsen,normat,nzl
- 
+  USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,wbox,erg2ev,&
+       &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover, ihbox0,tbox, bk,&
+       &potist,sig,sigkine,sigtot,text,tstep,im_glob,it,potist,rang,sig,text,tstep,sigkine,tabf3,tabv3,&
+       &pi,l2t,ltberendsen
+  USE temp_com,only:volu,zl,zls2,celsize,im,im,nox,noy,noz,at,indi,bg,nvois,ltabvois,imm,im,natperc,noxy,&
+       &normat, h0,deltadist,ncel,noxyz,nzl,atincel,nato
+
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q
   USE recips_mod,only: recips,calcvol
 #ifdef PARA

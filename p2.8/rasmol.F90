@@ -1,8 +1,9 @@
 ! ****************************************************************
 module rasmol_mod
+  USE temp_com,only: at,bg,eatom,sigat ! A EFFACER
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:rang,ivisu,sigat,ldesinteg,lpkbar,im_glob,&
-       &cunitP,it,lcasca,timel,unitP,at,fnam,bg,erg2ev,lenfnam,eatom,dmtype,umass
+  USE gen_com_m, ONLY:rang,ivisu,ldesinteg,lpkbar,cunitP,it,lcasca,timel,unitP,fnam,erg2ev,lenfnam&
+       &,dmtype,umass,im_glob
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
 !    USE paraneb_mod
@@ -28,9 +29,9 @@ contains
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myid,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 #else
-    USE mod_para,only:myid
+    USE mod_para,only:myidsp
 #endif
     ! ****************************************************************
 
@@ -119,7 +120,7 @@ contains
 
 
 #ifdef PARA
-    rgloc=myid
+    rgloc=myidsp
 #else
     rgloc=0
 #endif    
@@ -257,7 +258,7 @@ contains
 
 
 
-    if (myid==0) then
+    if (myidsp==0) then
        ! Copie des tableaux xp,num_at_glob et ityp locaux 
        allocate(xp_loc(3,imm))
        allocate(ityp_loc(imm))

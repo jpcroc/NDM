@@ -1,7 +1,8 @@
 module heat_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
-          USE gen_com_m, ONLY:at,bg,bk,eheat,lperiod,rheat,theat
+        USE gen_com_m, ONLY:bk,eheat,lperiod,rheat,theat
+        USE temp_com,only:at,bg
         implicit none
         contains
 ! *************************************************************

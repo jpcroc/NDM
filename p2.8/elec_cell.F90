@@ -1,7 +1,8 @@
 module elec_cell
   USE T_kind_param_m
-  USE gen_com_m, ONLY: nox,noy,noz, noxyz,nzl,bk,imm,nato,atincel,im_glob,tstep,erg2eV,pi,rang,&
-       &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,it,igen,lrestart,itesauvinter
+  USE temp_com,only: nox,noy,noz, noxyz,nzl,nato,atincel,imm
+  USE gen_com_m, ONLY: bk,tstep,erg2eV,pi,rang,&
+       &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter,im_glob
   USE var_pot, ONLY:cm
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
   !
@@ -222,7 +223,7 @@ contains
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,myid,NDM_MPI_REAl_DOUBLE,proc_cell,nprocspace
+    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,proc_cell,nprocspace
 #else
     USE mod_para,only:nprocspace
 #endif
@@ -257,7 +258,7 @@ contains
     do ko = 1, noxyz
 #ifdef PARA
        if (nprocspace.gt.1) then
-          if (proc_cell(ko).ne.myid) cycle
+          if (proc_cell(ko).ne.myidsp) cycle
        end if
 #endif
        if (nato(ko)==0) cycle

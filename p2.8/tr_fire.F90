@@ -7,6 +7,7 @@ MODULE FireModule
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:tstep,usdh,tstep
+  use atomconfig,only:atom_config_d
   ! --- Paramètres de l'algorithme fire -----------------------
   real(double), parameter, private :: finc=1.1
   real(double), parameter, private :: fdec=0.5
@@ -34,21 +35,14 @@ SUBROUTINE init_trempe_fire(dt, nstep, alph)
 END SUBROUTINE init_trempe_fire
 
 ! **************************************************************
-subroutine trempe_fire(xp, xpp, vp, fp, ielat, iwmax, ityp, &
-        dt, nstep, alph,im)
+subroutine trempe_fire(atdml, dt, nstep, alph)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE gen_com_m, ONLY:
   USE var_pot, ONLY:ntyp,cm
   implicit none
-    integer,allocatable  :: ielat(:)
-    integer,allocatable   :: iwmax(:)
-    integer,allocatable   :: ityp(:)
-    real(double),allocatable   :: xp(:,:)
-    real(double) ,allocatable  :: xpp(:,:)
-    real(double) ,allocatable  :: vp(:,:)
-    real(double),allocatable   :: fp(:,:)
+  class(atom_config_d)::atdml
     integer::im
   REAL(double), intent(inout) :: dt
   INTEGER, intent(inout) :: nstep
@@ -60,15 +54,15 @@ subroutine trempe_fire(xp, xpp, vp, fp, ielat, iwmax, ityp, &
 
   real(double), dimension(ntyp) :: aux
   real(double), dimension(1:3) :: xprov
-
+  im=atdml%im
   ! 1/ Intégration de l'équation de mouvement
   aux(:ntyp) = dt**2/(2.d0*cm(:ntyp))
   usdh = 1.d0/(2.d0*dt)
   DO i=1, im
-     xprov(:) = xp(:,i) + vp(:,i)*dt + fp(:,i)*aux(iTyp(i))   
-     vp(:,i) = (xprov(:) - xpp(:,i))*usdh
-     xpp(:,i) = xp(:,i)
-     xp(:,i) = xprov(:)
+     xprov(:) = atdml%xp(:,i) + atdml%vp(:,i)*dt + atdml%fp(:,i)*aux(atdml%iTyp(i))   
+     atdml%vp(:,i) = (xprov(:) - atdml%xpp(:,i))*usdh
+     atdml%xpp(:,i) = atdml%xp(:,i)
+     atdml%xp(:,i) = xprov(:)
   END DO
 
   
@@ -77,19 +71,19 @@ subroutine trempe_fire(xp, xpp, vp, fp, ielat, iwmax, ityp, &
   ! 2/ Renormalisation des vitesses par l'algorithme fire
 
   ! Puissance dissipée
-  pScal = Sum( vp(:,1:im)*fp(:,1:im) )
+  pScal = Sum( atdml%vp(:,1:im)*atdml%fp(:,1:im) )
 
   ! Modification du vecteur vitesse
   if (pScal.gt.0) then
 
           ! Norme du vecteur force
-          norme_de_fp = Sqrt( Sum( fp(:,1:im)**2 ) )
+          norme_de_fp = Sqrt( Sum( atdml%fp(:,1:im)**2 ) )
 
           ! Norme du vecteur vitesse
-          norme_de_vp = Sqrt( Sum( vp(:,1:im)**2 ) )
+          norme_de_vp = Sqrt( Sum( atdml%vp(:,1:im)**2 ) )
 
           ! Nouveau vecteur vitesse
-          vp(:,1:im) = (1.d0-alph)*vp(:,1:im) + alph*norme_de_vp/norme_de_fp*fp(:,1:im)
+          atdml%vp(:,1:im) = (1.d0-alph)*atdml%vp(:,1:im) + alph*norme_de_vp/norme_de_fp*atdml%fp(:,1:im)
 
           nStep = nStep + 1
           if (nStep.gt.nStepMin) then
@@ -97,7 +91,7 @@ subroutine trempe_fire(xp, xpp, vp, fp, ielat, iwmax, ityp, &
                   alph=alph*f_alph
           end if
   else
-          vp(:,:)=0.
+          atdml%vp(:,:)=0.
           dt=dt*fdec
           alph=alph_start
           nstep=0

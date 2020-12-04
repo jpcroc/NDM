@@ -1,5 +1,6 @@
 module deftimestep_mod
-  USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,im,imm,it,itetimestep,lcasca,lperiod,oldtstep,&
+  USE temp_com,only:im,imm ! A EFFACER
+  USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,it,itetimestep,lcasca,lperiod,oldtstep,&
        &rang,timel,tsmin,tstep,two,usdh,vmax,l2T
         implicit none
         contains
@@ -16,7 +17,7 @@ subroutine deftimestep
   USE period_mod,only: period
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,myid,nprocspace
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,myidsp,nprocspace
 #else
   USE mod_para,only:nprocspace
 #endif
@@ -73,7 +74,7 @@ subroutine deftimestep
 #ifdef PARA
   if (nprocspace.gt.1) then
      max_loc(1)=vmax2
-     max_loc(2)=myid
+     max_loc(2)=myidsp
      !  max_loc(3)=0.5+ityp(imax)
      call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_space,ierr)
      vmax2 = max_glob(1)

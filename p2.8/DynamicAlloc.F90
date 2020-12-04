@@ -1,7 +1,6 @@
 module dynalloccell
-  USE gen_com_m, ONLY:l2t,lsigatcel,ltpcel,tempstopcel,tabv3,tabf3,sigc,tempcm,deltadist,nato,atincel,&
-       &ncel,natchk,noxyz,pmc, tcp, celpp,tcp, lprtcel,tempc,tm1,patcelmax,zero,elossCel,&
-       &patcelmax, celpm1,patcel,sigatcel,natperc
+  use temp_com,only: ncel,nato,atincel,deltadist,sigc,tempc,tempcm,noxyz
+  USE gen_com_m, ONLY:l2t,lsigatcel,ltpcel,tempstopcel,tabv3,tabf3,natchk, lprtcel,zero,elossCel
   USE var_pot, ONLY:iewald,ncoucx,ncoucy,ncoucz,ntyp,na,cm,ipo,catom,ty,pot,rc,lue_paire,lue_typ,lue_trip,dip,pm,roff1,&
        &roff2,a_factor,r8p,ray,bm,shel,awat,bwat,qwat,potw,bspw,cspw,bspw,eamrep,eamrep_d,eamglue,eamglue_d,eamrho,eamrho_d,&
        &lamb,gam,cangle, coup3c,ipo3c, coup3c2,l3ctyp,l3cpair,coord,digr,fda,nad,nas,nai,lu_roff_pair,lue_typ,&
@@ -15,12 +14,12 @@ contains
     USE eloss, ONLY :tcelec
     implicit none
 
-    allocate(ncel(0:noxyz,0:26))
-    allocate(nato(0:noxyz))
-    allocate(atincel(natperc,0:noxyz))
-    allocate(deltadist(3,0:26,noxyz))
+!    allocate(ncel(0:noxyz,0:26))
+!    allocate(nato(0:noxyz))
+!    allocate(atincel(natperc,0:noxyz))
+!    allocate(deltadist(3,0:26,noxyz))
     if (lTPcel.EQV..true.)then
-       allocate(sigc(3,3,noxyz)); sigc(:,:,:noxyz)=0.
+!       allocate(sigc(3,3,noxyz)); sigc(:,:,:noxyz)=0.
     endif
     if (iewald.ge.1) then
        allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
@@ -30,30 +29,30 @@ contains
     ncel(:noxyz,:26) = zero                 ! et petite initialisation
 
     if((ltpcel.eqv..true.).or.(tempstopcel.gt.0).or.(tcelec.gt.0)) then
-       allocate (tempc(noxyz))
-       allocate (tempcm(noxyz))
-       allocate(celpm1(noxyz))
+!       allocate (tempc(noxyz))
+!       allocate (tempcm(noxyz))
+!       allocate(celpm1(noxyz))
        !        allocate(celpm2(noxyz))
-       allocate(tm1(noxyz))
+!       allocate(tm1(noxyz))
        !        allocate(tm2(noxyz))
-       allocate(celpp(noxyz))
+!       allocate(celpp(noxyz))
        !        allocate(celpp2(noxyz))
-       allocate(tcp(noxyz))
+!       allocate(tcp(noxyz))
        !        allocate(tcp2(noxyz))
-       allocate(pmc(noxyz))
+!       allocate(pmc(noxyz))
 
-       allocate (lprtcel(noxyz))
+!       allocate (lprtcel(noxyz))
 
     end if
     if (l2T.eqv..true.)then
-       if (.not.allocated(tempc))     allocate (tempc(noxyz))
-       allocate (elossCel(noxyz))
+ !      if (.not.allocated(tempc))     allocate (tempc(noxyz))
+ !      allocate (elossCel(noxyz))
     endif
     if (lsigatcel.eqv..true.) then
-       allocate (patcel(noxyz))
-       allocate (patcelmax(noxyz))
-       allocate (sigatcel(3,3,noxyz))
-       allocate (natchk(noxyz))
+ !      allocate (patcel(noxyz))
+ !      allocate (patcelmax(noxyz))
+ !      allocate (sigatcel(3,3,noxyz))
+ !      allocate (natchk(noxyz))
     end if
 
 

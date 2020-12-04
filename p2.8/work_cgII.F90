@@ -1,13 +1,12 @@
 module work_cgII
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: im, imm,at, inv_angst, lperiod, rang,indi,itmax,leev,ltabvois,sig, &
+  USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
        it, itesauv, itesauvposition, itesauvforce,itmax, &
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
-       dmtype, potist,im_glob,nox,noy,noz,cell_finx,cell_finy,cell_finz,noxyz,nvois,&
-       &natperc,nato,ncel,atincel,deltadist,celsize,bg,mdcg_noise,&
-       &at,bg,zl,zls2,nzl,volu,normat
-
+       dmtype, potist,im_glob,cell_finx,cell_finy,cell_finz,mdcg_noise
+  use temp_com,only: zl,zls2,nzl,volu,at,bg,normat,nato,atincel,deltadist,im,indi,celsize,nox,noy,noz,noxyz,&
+       &natperc,ltabvois,imm,ncel,nvois
 !  USE controle_mod,only: controle
   USE calfo_mod,only: calfo
   USE analyse_mod,only: analyse
@@ -23,7 +22,7 @@ USE arret_ndm_mod,only: arret_ndm
 USE caltabi_mod,only: caltabi
 #ifdef PARA
 USE mpi
-use mod_para,only:MPI_COMM_space, status,ierr,myid,NDM_MPI_REAl_DOUBLE,maj_atomes_frt_ftm,nprocspace
+use mod_para,only:MPI_COMM_space, status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,maj_atomes_frt_ftm,nprocspace
 #else
 use mod_para,only:nprocspace
 #endif

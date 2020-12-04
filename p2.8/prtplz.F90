@@ -1,6 +1,7 @@
 module prtplz_mod
+  USE temp_com,only:at,imm,bg,im,zl ! A EFFACER
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:at,bg,itmax,iteplz,nplz,zl,imm,it,im
+  USE gen_com_m, ONLY:itmax,iteplz,nplz,it
   implicit none
 contains
 
