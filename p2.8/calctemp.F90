@@ -10,7 +10,9 @@ module calctemp_mod
   USE cellconfig,only : cell_config
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace
+    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace,rang
+#else
+    USE mod_para,only:rang
 #endif
 
   ! *************************************************************
@@ -29,7 +31,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
   
   integer :: ic, i, iti, ko, i2,kx,ky,kz,koo,ixe,iye,ize
   real(double) :: sumtat2
-  real(double) :: vpn2,tat,ekin
+  real(double) :: vpn2,tat,ekin,kinecl
 !  real(double), dimension(ntyp,3) :: vx2
   integer::ixyze(3),nats
   ! ym      real(double), dimension(ntyp,nce) :: v2c
@@ -76,13 +78,14 @@ subroutine calctemp(temp,kine,atcf, cellcf)
   tempEP=0
 #ifdef PARA
   allocate(tempc_tot(cellcf%noxyz))
-#endif  
-  do ko = 1, cellcf%noxyz
+#endif
 
+  do ko = 1, cellcf%noxyz
+     kinecl=0
      if (cellcf%nato(ko)==0) cycle
 
 #ifdef PARA
-
+     
      if (cellcf%proc_cell(ko).ne.myidsp) cycle
 #endif
 
@@ -94,6 +97,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
         if (atcf%num_at_glob(i).gt.im_glob) cycle
         vpn2 = atcf%vp(1,i)**2+atcf%vp(2,i)**2+atcf%vp(3,i)**2
         kine=kine+vpn2*0.5*cm(atcf%ityp(i))
+        kinecl=kinecl+vpn2*0.5*cm(atcf%ityp(i))
         tat=vpn2*cm(atcf%ityp(i))/(3.0*bk)
         sumtat2 = sumtat2+tat
         
@@ -119,20 +123,12 @@ subroutine calctemp(temp,kine,atcf, cellcf)
               tempEP=tempEP+vpn2*cm(atcf%ityp(i))/(3.0*bk)
            end select
         end if
-        !       write(6,'(I4,D21.12)')i,vpn2
-        
-!        if (ltpcel) then
-!           if(tempmaxat(ityp(i)).lt.vpn2)tempmaxat(ityp(i))=vpn2
-!        end if
-!        vx2(ityp(i),:) = vx2(ityp(i),:)+vp(:,i)**2
         if ((cellcf%ltpcel).or.(tcelec.gt.0))then
            cellcf%tempc(ko)=cellcf%tempc(ko)+tat/cellcf%nato(ko)
         end if
      end do
 
-
   end do
-
 #ifdef PARA
   if (nprocspace.gt.1) then
      call MPI_ALLREDUCE(kine,kinetot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
@@ -185,9 +181,6 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 
 
 #ifdef PARA
-!     if( allocated(free)) then
-!        temp = temp/float(imfree)
-!     else
   if (nprocspace.gt.1) then
      temp = sumtat2/float(im_glob)
 deallocate(tempc_tot)
@@ -198,7 +191,6 @@ deallocate(tempc_tot)
  
 #else
      temp = sumtat2/float(atcf%im)
-        
 #endif
 
        

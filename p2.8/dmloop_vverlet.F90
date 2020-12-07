@@ -4,9 +4,9 @@ module dmloop_vverlet_mod
   USE controleT_mod,only: controleT
   USE dyn_vverlet_mod,only: dyn_vverlet
 !  USE calctemp_mod,only: calctemp
-  USE sauvegardeT_mod,only: sauvegardeT
-  USE sauveposition_mod,only: sauveposition
-  USE sauveforce_mod,only: sauveforce
+!  USE sauvegardeT_mod,only: sauvegardeT
+!  USE sauveposition_mod,only: sauveposition
+!  USE sauveforce_mod,only: sauveforce
   USE correl_mod,only: correlvp
   USE atomconfig,only : atom_config_d, atom_config_e
   USE cellconfig, only:cell_config

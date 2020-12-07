@@ -1,7 +1,6 @@
 module dmloop_lpr_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
-  USE sauvegarde_mod,only: sauvegarde
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod
@@ -65,7 +64,7 @@ contains
        call initlpr(atpr,celndm,boxndm)
     END IF
 
-    call analyseT(atpr,celndm,boxndm)
+!    call analyseT(atpr,celndm,boxndm)
 
     ! MD loop -------------------------------------------------------------
 1   continue
@@ -98,7 +97,7 @@ contains
 
        temps_debpara=MPI_Wtime()
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       write(6,*)'pas dev'; stop
+
        call maj_atomes_frt_ftm(atpr,celndm)
        temps_para=temps_para+MPI_Wtime()-temps_debpara
 
@@ -145,15 +144,15 @@ contains
     call analyseT(atpr,celndm,boxndm)
 
 
-    if (itesauv.GT.0) then
-       if (mod(it,itesauv)==0) call sauvegarde
-    endif
-    if (itesauvposition.GT.0) then
-       if (mod(it,itesauvposition)==0) call sauveposition (it)
-    endif
-    if (itesauvforce.GT.0) then
-       if (mod(it,itesauvforce)==0) call sauveforce (it)
-    endif
+!!$    if (itesauv.GT.0) then
+!!$       if (mod(it,itesauv)==0) call sauvegarde
+!!$    endif
+!!$    if (itesauvposition.GT.0) then
+!!$       if (mod(it,itesauvposition)==0) call sauveposition (it)
+!!$    endif
+!!$    if (itesauvforce.GT.0) then
+!!$       if (mod(it,itesauvforce)==0) call sauveforce (it)
+!!$    endif
 
 
      call controleT(atpr,celndm,boxndm)

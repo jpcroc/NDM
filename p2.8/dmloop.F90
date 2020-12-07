@@ -4,10 +4,7 @@ module dmloop_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
   USE trempe_mod,only: trempe
-  USE sauvegardeT_mod,only: sauvegardeT
   USE correl_mod,only: correlvp
-  USE sauveforce_mod,only: sauveforce
-  USE sauveposition_mod,only: sauveposition
   USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC

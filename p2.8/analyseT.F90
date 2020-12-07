@@ -96,7 +96,7 @@ contains
     !
     !
     ! MPI
-    if (rang==0) then
+!    if (rang==0) then
        !          write(6,*)'analyse -> sauvegarde'
        if (itesauv.GT.0) then
           if (mod(it,itesauv)==0) then 
@@ -128,7 +128,7 @@ contains
           if (mod(it,itesauvforce)==0) call sauveforce ( it)
        endif
        !          write(6,*)'sauvposition -> control'
-    endif                                   ! fin rang=0
+!    endif                                   ! fin rang=0
 
     if(lEev) then
        unitE=erg2eV

@@ -26,7 +26,7 @@ contains
     integer:: nnoeuds
     integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
     integer :: num_sol !iteration du decoupage possible
-    integer :: test
+    integer :: test,ko
 
     integer::im0,nvois0
     integer, allocatable :: decoup(:,:) !tableau comprenant l'ensemble des decoupages 
@@ -357,7 +357,15 @@ contains
 
     enddo loop1
  end if
-
+!!$
+!!$#ifdef PARA
+!!$ do ko=1,celdec%noxyz
+!!$    write(200+rang,*)ko,celdec%proc_cell(ko)
+!!$ end do
+!!$ call mpi_finalize(ierr)
+!!$ stop
+!!$#endif
+ 
 
 
 
