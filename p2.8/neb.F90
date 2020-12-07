@@ -338,10 +338,6 @@ contains
                    if (lperiod)    call periodbox (boxneb,atneb(ii))
                    call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
                         &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,ii=ii)
-!!$                   call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
-!!$                   if (ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0)))&
-!!$                        &call caltabi(atneb(ii)%atom_config,cellneb(ii))
-!!$                   CALL CalFo(sig,potist,atneb(ii),cellneb(ii),boxneb)
                    if (lmaster) then
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
                       &atneb(ii)%imm,atneb(ii)%im)

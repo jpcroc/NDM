@@ -115,7 +115,7 @@ contains
     case(4,10)
        call dmloop_vverlet (atdml,celndm,boxndm)
     case(8)
-       call dmloop_lpr 
+       call dmloop_lpr (atdml,celndm,boxndm)
     case (1)
        if (.not.parallele)  call dmloop (atdml,celndm,boxndm)
     case (2)
@@ -165,34 +165,15 @@ contains
     case (18) 
        call ml
 #endif
-
-
     case (15)
        call montecarlo(atdml,celndm,boxndm)
-
     end select
-
-
-
-       
     else
 #ifdef PARA
        call init_mpi_neb
 #endif
-
        call init_neb0 
-       
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-       
-
     end if
-    
-    ! Initilisation
-
-    ! Actuellement uniquement le cas dmloop_vverlet est traite en parallele
-
-
-
-
   end subroutine prog
 end module

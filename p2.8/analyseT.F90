@@ -15,20 +15,19 @@ module analyseT_mod
   USE sauvegardeT_mod,only:sauvegardeT
  USE sauveforce_mod,only: sauveforce
 
-  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel
+  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,na
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
        &nfda,parallele,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,&
-       &natchk,tpseuils,&
-       &sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
-       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,&
-       & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam
+       &natchk,tpseuils,sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
+       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,lperiod,pi,rang,timel,&
+       & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,im_glob,it,l2T
 
-  USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm,caltabtC
-  USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
-  use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
+  USE cellconfig,only:cell_config, caltabtC
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e
+  use boxconfig,only: box_config
   implicit none
 contains
   ! ************************************************
@@ -41,11 +40,11 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    use tab_imm_m
+!    use tab_imm_m
 
-    USE fcc_module
-    USE cfg_module
-    USE posana
+!    USE fcc_module
+!    USE cfg_module
+!    USE posana
     use elec_cell, only : Eelec,Teavg,Tecmax,ietm,eleccellmol
     use eloss, only : ibrake, elosselectot1, elosselectot
     implicit none
@@ -227,13 +226,13 @@ contains
                 !*! ---------------------------------- APPEL DE LA ROUTINE D'ECRITURE -------------
                 ! ------------------------------------ DES FICHIERS DE SORTIE, DANS LE ------------
                 ! ------------------------------------ CAS DES CL CONTROLEES EN CONTRAINTE --------
-                IF (ibound==2 .OR. ibound==3) THEN
-                   IF(flag_fin.EQV..true.) THEN
-                      Call spebc_fin (.true.)
-                   ELSE IF(itespebcout > 0. .AND. (mod(it,itespebcout)==0 .OR. it==1)) THEN
-                      Call spebc_fin (.false.)
-                   END IF
-                END IF
+!!$                IF (ibound==2 .OR. ibound==3) THEN
+!!$                   IF(flag_fin.EQV..true.) THEN
+!!$                      Call spebc_fin (.true.)
+!!$                   ELSE IF(itespebcout > 0. .AND. (mod(it,itespebcout)==0 .OR. it==1)) THEN
+!!$                      Call spebc_fin (.false.)
+!!$                   END IF
+!!$                END IF
                 !*!
 
 
@@ -258,12 +257,12 @@ contains
                            (potist+kine+EcellPR)*unitE,cunitE
                    END IF
                    write(6,*) 'Box tensor'
-                   write(6,*)'a',at(1,1),at(2,1),at(3,1)
-                   write(6,*)'b',at(1,2),at(2,2),at(3,2)
-                   write(6,*)'c',at(1,3),at(2,3),at(3,3)
+                   write(6,*)'a',boxndm%at(1,1),boxndm%at(2,1),boxndm%at(3,1)
+                   write(6,*)'b',boxndm%at(1,2),boxndm%at(2,2),boxndm%at(3,2)
+                   write(6,*)'c',boxndm%at(1,3),boxndm%at(2,3),boxndm%at(3,3)
 
                    Call MatInv(boxndm%h0, invh0)
-                   Transformation=MatMul(at,invh0)
+                   Transformation=MatMul(boxndm%at,invh0)
                    ! Strain tensor (Lagrange definition)
                    strain = 0.5d0*MatMul(Transformation,Transpose(Transformation))
                    DO i=1, 3
@@ -281,15 +280,15 @@ contains
 
 
 
-                   a1 = at(1,1)
-                   a2 = at(2,1)
-                   a3 = at(3,1)
-                   b1 = at(1,2)
-                   b2 = at(2,2)
-                   b3 = at(3,2)
-                   c1 = at(1,3)
-                   c2 = at(2,3)
-                   c3 = at(3,3)
+                   a1 = boxndm%at(1,1)
+                   a2 = boxndm%at(2,1)
+                   a3 = boxndm%at(3,1)
+                   b1 = boxndm%at(1,2)
+                   b2 = boxndm%at(2,2)
+                   b3 = boxndm%at(3,2)
+                   c1 = boxndm%at(1,3)
+                   c2 = boxndm%at(2,3)
+                   c3 = boxndm%at(3,3)
                    amod = dsqrt(a1**2+a2**2+a3**2)
                    bmod = dsqrt(b1**2+b2**2+b3**2)
                    cmod = dsqrt(c1**2+c2**2+c3**2)

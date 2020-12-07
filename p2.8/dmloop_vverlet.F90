@@ -8,9 +8,9 @@ module dmloop_vverlet_mod
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
   USE correl_mod,only: correlvp
-  USE atomconfig,only : atom_config_d, atom_config_e!,ndm2config, config2ndm
-  USE cellconfig, only:cell_config!,ndm2cellconfig,cellconfig2ndm
-  USE boxconfig,only:box_config!,boxconfig2ndm,ndm2boxconfig
+  USE atomconfig,only : atom_config_d, atom_config_e
+  USE cellconfig, only:cell_config
+  USE boxconfig,only:box_config
   use var_pot,only:ntyp
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,ecyl,ev2erg,lgc,rang,rayonc,&
        &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lsuivinonpbc
@@ -116,11 +116,11 @@ contains
           end select
           if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
              celndm%sigc(1:3,1,atdml%ielat(ilocal)) = celndm%sigc(1:3,1,atdml%ielat(ilocal)) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyz/volu
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyz/boxndm%volu
              celndm%sigc(1:3,2,atdml%ielat(ilocal)) = celndm%sigc(1:3,2,atdml%ielat(ilocal)) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyz/volu
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyz/boxndm%volu
              celndm%sigc(1:3,3,atdml%ielat(ilocal)) = celndm%sigc(1:3,3,atdml%ielat(ilocal)) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyz/volu
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyz/boxndm%volu
           end if
        end do
        sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu

@@ -1,37 +1,37 @@
 module dmloop_lpr_mod
-  USE analyse_mod,only: analyse
-  USE controle_mod,only: controle 
+  USE analyseT_mod,only: analyseT
+  USE controleT_mod,only: controleT
   USE sauvegarde_mod,only: sauvegarde
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod
   USE calfo_mod,only: calfo
 
-  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtc
-  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
+  USE atomconfig,only : atom_config_d
+  USE cellconfig, only:cell_config,caltabtc
+  USE boxconfig,only:box_config
 
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
-  USE elec_cell, ONLY :i2t       
+  USE elec_cell, ONLY :i2t
 USE calfoberend_mod,only:calfoberend
 
 #ifdef PARA
   USE recips_mod,only: recips
 #endif
-  implicit none 
+  implicit none
 contains
   ! boucle de DM pour velocity Verlet
   ! ************************************************
 
-  subroutine dmloop_lpr
+  subroutine dmloop_lpr(atpr,celndm,boxndm)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE Parrinello_Rahman
     USE Parrinello_Rahman_Nose
-  USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
+
 #ifdef PARA
   use mpi
   USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,temps_para,temps_debpara,maj_atomes_frt_ftm,&
@@ -41,11 +41,10 @@ contains
 #endif
     implicit none
 
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
-    ! MPI
 
+    type(box_config)::boxndm
+    class(atom_config_d)::atpr
+    type(cell_config):: celndm
 #ifdef PARA
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
@@ -55,67 +54,52 @@ contains
     !real(double), external :: calcvol
 
 #endif
-    type(atom_config_d)::atdml
-    type(cell_config):: celndm
-    type(box_config)::boxndm
 
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 
 
     ! Initialization -------------------------------------------------------
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
-       call initlprNose(xp,xpp,vp,ityp)
+       call initlprNose(atpr,celndm,boxndm)
     ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
-       call initlpr(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
+       call initlpr(atpr,celndm,boxndm)
     END IF
 
-    call analyse 
+    call analyseT(atpr,celndm,boxndm)
 
     ! MD loop -------------------------------------------------------------
-1   continue 
+1   continue
     it = it+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
-  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-      call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-  call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=.true.)
+  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.)
 
-!  CALL CalFo(sig,potist,atdml,celndm)
+!  CALL CalFo(sig,potist,atpr,celndm)
       if (l2t)then
-       if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+       if (i2t==1)  call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
     else
-       if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+       if(ibrake.gt.0) call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
     end if
-    if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
-!  write(6,*)'dml potist ',potist,atdml%potist
-    call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
+    if (lTberendsen) call calfoberend(atpr%im,atpr%imm,atpr%xp,atpr%vp,atpr%fp,atpr%ityp)
+!  write(6,*)'dml potist ',potist,atpr%potist
 
 
-       
-       call prNose(xp,xpp,vp,fp,ityp)
+
+       call prNose(atpr,celndm,boxndm)
 
 #ifdef PARA
        if (nprocspace.gt.1) then
-          
-       zl(1) = Sqrt( Sum(at(1:3,1)**2 ) )
-       zl(2) = Sqrt( Sum(at(1:3,2)**2 ) )
-       zl(3) = Sqrt( Sum(at(1:3,3)**2 ) )
-       volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
-       zls2(1:3) = 0.5d0*zl(1:3)
-             call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-             call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,i&
-                  &wmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-             call caltabtC(celndm,atdml,lperiod,boxndm)
-             call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,&
-                  &xpp=xpp)
-             call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
+
+       boxndm%zl(1) = Sqrt( Sum(boxndm%at(1:3,1)**2 ) )
+       boxndm%zl(2) = Sqrt( Sum(boxndm%at(1:3,2)**2 ) )
+       boxndm%zl(3) = Sqrt( Sum(boxndm%at(1:3,3)**2 ) )
+       boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
+       boxndm%zls2(1:3) = 0.5d0*boxndm%zl(1:3)
+             call caltabtC(celndm,atpr,lperiod,boxndm)
 
        temps_debpara=MPI_Wtime()
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        write(6,*)'pas dev'; stop
-       call maj_atomes_frt_ftm(atdml,celndm)
+       call maj_atomes_frt_ftm(atpr,celndm)
        temps_para=temps_para+MPI_Wtime()-temps_debpara
 
 
@@ -124,15 +108,15 @@ contains
           ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
           auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
           pi2 = pi*pi
-          volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
+          boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
           fact = pi2/alpha**2
-          fact1 = auxe/2./pi/volu
-          fact2 = auxe*2./volu
+          fact1 = auxe/2./pi/boxndm%volu
+          fact2 = auxe*2./boxndm%volu
           do nb1 = -ncoucx, ncoucx
              do nb2 = -ncoucy, ncoucy
                 do nb3 = -ncoucz, ncoucz
                    if (nb1==0.and.nb2==0.and.nb3==0) cycle
-                   hk2 = nb1*nb1/zl(1)**2+nb2*nb2/zl(2)**2+nb3*nb3/zl(3)**2
+                   hk2 = nb1*nb1/boxndm%zl(1)**2+nb2*nb2/boxndm%zl(2)**2+nb3*nb3/boxndm%zl(3)**2
                    ex = exp((-hk2*fact))/hk2
                    ex1 = ex*fact1
                    ex2 = ex*fact2
@@ -144,21 +128,21 @@ contains
 
        endif
     else
-           CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
-   
+           CALL ScaleBox(atpr,celndm,boxndm)
+
     end if
 #else
 
-       CALL ScaleBox(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
+       CALL ScaleBox(atpr,celndm,boxndm)
 
 #endif
        timel=timel+fNose*tstep
     ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
-       call pr(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
+       call pr(atpr,celndm,boxndm)
        timel=timel+tstep
     END IF
 
-    call analyse 
+    call analyseT(atpr,celndm,boxndm)
 
 
     if (itesauv.GT.0) then
@@ -172,7 +156,7 @@ contains
     endif
 
 
-    call controle
+     call controleT(atpr,celndm,boxndm)
 
     go to 1
 

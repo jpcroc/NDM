@@ -43,15 +43,15 @@ subroutine caltabi(atvois,celvois,boxndm)
   REAL(double) :: r2
   real(double), dimension(1:npair) :: rvois2
 
-  real(double), dimension(3) :: xpi, dx, ds  
+  real(double), dimension(3) :: xpi, dx, ds
   real(double),dimension(3,3)::at,bg
   integer :: iti, & !type de i
        koo, & !cel de i
        ncelvois,ko1, & !cel voisine de i
        i1,i2,itemp
-  
 
-  real(double),dimension(:,:),allocatable :: xpnp  ! MODIF Cosmin                            
+
+  real(double),dimension(:,:),allocatable :: xpnp  ! MODIF Cosmin
   at=boxndm%at ; bg=boxndm%bg
   !
   !-----------------------------------------------
@@ -63,7 +63,7 @@ subroutine caltabi(atvois,celvois,boxndm)
        write (6,*)'incoherence dans icaltabt'
        stop
     end if
-    
+
   iw = 0
   iwph = 0
 
@@ -76,14 +76,14 @@ subroutine caltabi(atvois,celvois,boxndm)
   end if
 
   nvij=0
-  
+
   ALLOCATE(xpnp(3,atvois%imm))
   if (lperiod) then
     xpnp(:,:)=atvois%xp(:,:)
    else
    call notperiod(atvois%imm,atvois%xp,xpnp,at,bg)
-  end if  
-  
+  end if
+
   !write(*,*) 'caltabi_inside  ', rvois, rvois2
   !*************construction par double boucle ****************
   if(lconstrtot) then  !construction par double boucle
@@ -105,16 +105,16 @@ subroutine caltabi(atvois,celvois,boxndm)
            dx(:) = xpi(:) - xpnp(:,j)
            ds(:) = MatMul( dx(:), bg(:,:) )
 
-       
 
-          IF (ldecal_bc.EQV..TRUE.) THEN !*!  
+
+          IF (ldecal_bc.EQV..TRUE.) THEN !*!
         IF (ds(1)>0.5) THEN
           ds(3) = ds(3) - decal_bc
         ELSE IF (ds(1) < -0.5) THEN
           ds(3) = ds(3) + decal_bc
         END IF
       END IF !*!
-           
+
        if ((ds(1)>0.5d0).or.(ds(1)<-0.5d0))   ds(1) = ds(1)-dble(Nint(ds(1)))
            if ((ds(2)>0.5d0).or.(ds(2)<-0.5d0))   ds(2) = ds(2)-dble(Nint(ds(2)))
            if ((ds(3)>0.5d0).or.(ds(3)<-0.5d0))   ds(3) = ds(3)-dble(Nint(ds(3)))
@@ -122,7 +122,7 @@ subroutine caltabi(atvois,celvois,boxndm)
            dx(:) = MatMul( at(:,:), ds(:) )
            r2 = Sum( dx(:)**2 )
 
-           itj=atvois%ityp(j) 
+           itj=atvois%ityp(j)
            ll=ipo(iti,itj)
 
            if (r2>rvois2(ll)) cycle
@@ -143,15 +143,15 @@ subroutine caltabi(atvois,celvois,boxndm)
         atvois%iwmax(i) = iw
         nvij=iw-iwo
 
-     end do   ! atvois%im 
-     maxvoi = iw           
+     end do   ! atvois%im
+     maxvoi = iw
   !*************construction par celulle ****************
-  else 
+  else
 !     write(*,*) 'THE fist passage .........'
      do i = 1, atvois%im
         iwo=iw
         koo = atvois%ielat(i)                          ! Numero de la cellule
-        iti=atvois%ityp(i) 
+        iti=atvois%ityp(i)
         xpi(:) = xpnp(:,i)
 !        write(6,*)'atome i',i,iti
         ncelvois = min(celvois%noxyz,27)-1
@@ -163,7 +163,7 @@ subroutine caltabi(atvois,celvois,boxndm)
            loop_j: do i2 = 1, celvois%nato(ko1)
               j = celvois%atincel(i2,ko1)
 !                                write(6,*)'j ',j
-               
+
                if(ldemitab) then
                    if(j.le.i) cycle !terme deja calcule
                 else
@@ -173,7 +173,7 @@ subroutine caltabi(atvois,celvois,boxndm)
                    cycle
                  end if
                end if
-            
+
                itj=atvois%ityp(j)
                ll=ipo(iti,itj)
 
@@ -206,18 +206,18 @@ subroutine caltabi(atvois,celvois,boxndm)
         atvois%iwmax(i) = iw
         nvij=iw-iwo
 
-!                 write(6,*)'NVIJ',i,nvij,iw       
+!                 write(6,*)'NVIJ',i,nvij,iw
      end do ! fin i
      maxvoi=iw
 
 
-  endif ! lconstrtot 
-   
+  endif ! lconstrtot
+
 !     write(*,*) 'maxvoi', maxvoi,ivoismax
    if ((rang==0).and.(it.le.100)) then
 !           write(6,*)'IT ',it,'  VOISINS ',maxvoi,' par atome ',float(maxvoi)/float(atvois%im)
    endif
-  DEALLOCATE (xpnp)  
+  DEALLOCATE (xpnp)
   return
 end subroutine caltabi
 end module

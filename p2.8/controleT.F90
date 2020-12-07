@@ -131,7 +131,7 @@ contains
 
     ! change in time step ? itetimestep >0
     if (itetimestep>0) then
-       if (mod(it,itetimestep)==0) call deftimestep 
+       if (mod(it,itetimestep)==0) call deftimestep
     endif
 
 
@@ -139,8 +139,8 @@ contains
 
     case(2,10,8)
        if ((lprtrp.EQV..false.).and.((dmtype==10).or.(dmtype==8))) goto 123
-       if ((fpstop>0.0).AND.(it.GE.1)) then 
-          
+       if ((fpstop>0.0).AND.(it.GE.1)) then
+
           fpmax=sqrt( MAXVAL( Sum(atdml%fp(1:3,1:atdml%im)**2,1) ) )
           fpSmax = MaxVal( Abs(atdml%fp(:,1:atdml%im)) )
 #ifdef PARA
@@ -167,7 +167,7 @@ contains
           end if
        end if
 
-       if ((fsumstop>0.0).AND.(it.GE.1)) then 
+       if ((fsumstop>0.0).AND.(it.GE.1)) then
           !        IF (lFrozen) THEN
           !fpmax=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
           !           fpmax=sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
@@ -204,7 +204,7 @@ contains
 
 
        if (it==1) then
-          if (lEev.EQV..true.) then 
+          if (lEev.EQV..true.) then
              if (myidsp==0) write(6,*)'Resultats en eV, Ang'
           else
              if (myidsp==0) write(6,*)'Resultats en cgs'
@@ -222,7 +222,7 @@ contains
           !forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
           !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
           !           forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
-          !           formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) ) 
+          !           formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) )
           !        ELSE
           forctot=sqrt( SUM(atdml%fp(1:3,1:atdml%im)**2) )
           !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
@@ -240,18 +240,18 @@ contains
           end if
 #endif
 
-          if (lEev.EQV..true.) then 
+          if (lEev.EQV..true.) then
              forctot = forctot*erg2eV/angst
              formax  = formax*erg2eV/angst
              if (myidsp==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
-             if (fpstop>0) then   
+             if (fpstop>0) then
                 if (formax.le.fpstop) then
                    if (myidsp==0) write(6,*)'force par atome  max  ev/Ang ', formax
                    if (myidsp==0) write (6, *) 'energie ', potist*erg2eV
                    call endrunT(atdml,celndm,boxndm)
                 end if
              end if
-             if (fsumstop>0) then   
+             if (fsumstop>0) then
                 if (forctot.le.fsumstop) then
                    if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
                    if (myidsp==0) write(6, *) 'energie ', potist*erg2eV
@@ -261,7 +261,7 @@ contains
 
           else
              if (myidsp==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
-             if (fpstop>0) then   
+             if (fpstop>0) then
                 if (formax.le.fpstop) then
                    if (myidsp==0) write(6,*)'force par atome  max cgs ',formax
                    if (myidsp==0) write (6, *) 'energie ', potist
@@ -270,7 +270,7 @@ contains
                 end if
              end if
 
-             if (fsumstop>0) then   
+             if (fsumstop>0) then
                 if (forctot.le.fsumstop) then
                    if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
                    if (myidsp==0) write (6, *) 'energie ', potist

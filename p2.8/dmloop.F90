@@ -9,10 +9,10 @@ module dmloop_mod
   USE sauveforce_mod,only: sauveforce
   USE sauveposition_mod,only: sauveposition
   USE gen_com_m, ONLY:itesauvforce,itesauvposition,lcorrelvp,lfire
-  USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,caltabtC!,ndm2cellconfig,cellconfig2ndm
-  USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
-  USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+  USE cellconfig, only:cell_config,caltabtC
+  USE boxconfig,only:box_config,periodbox
+  USE eloss, ONLY : calceloss,ibrake 
   USE elec_cell, ONLY :i2t       
   USE calfoberend_mod,only:calfoberend
   USE caltabi_mod,only: caltabi

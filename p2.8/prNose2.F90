@@ -17,16 +17,16 @@ module Parrinello_Rahman_Nose
   !
   ! En résumé, l'algorithme est basé sur les équations (3.2), (3.3) et (3.4) de [3]
   !
-  ! [1] Parrinello, M. & Rahman, 
+  ! [1] Parrinello, M. & Rahman,
   !     A. Polymorphic Transitions in Single rcystals: A New Molecular Dynamics Method
   !     J. Appl. Phys., 1981, 52, 7182-7190
-  ! [2] Ray, J.R. & Rahman, A. 
+  ! [2] Ray, J.R. & Rahman, A.
   !     Statistical Ensembles and Molecular Dynamics Studies of Anisotropic Solids
   !     J. Chem. Phys., 1984, 80, 4423-4428
-  ! [3] Ray, J.R. & Rahman, A. 
-  !     Statistical Ensembles and Molecular Dynamics Studies of Anisotropic Solids. II 
+  ! [3] Ray, J.R. & Rahman, A.
+  !     Statistical Ensembles and Molecular Dynamics Studies of Anisotropic Solids. II
   !     J. Chem. Phys., 1985, 82, 4243-4247
-  ! [4] Nosé, S. 
+  ! [4] Nosé, S.
   !     A Molecular Dynamics Method for Simulations in the Canonical Ensemble
   !     Mol. Phys., 1984, 52, 255-268
 
@@ -35,12 +35,14 @@ module Parrinello_Rahman_Nose
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
        &tstep,ucell,unose,wbox,wnose,enose,erg2ev,fnose,im_glob,it,kcell,knose,leev,&
        &lucell,rang,timel,tstep,unose,wbox,wnose,sigkine,rang,sig,bk
-  USE temp_com,only:h0,im,volu,at,bg,imm
+!  USE temp_com,only:h0,im,volu,at,bg,imm
   USE var_pot, ONLY:cm
-  USE tempinst_mod,only: tempinst
+  USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
   USE recips_mod,only: recips,calcvol
-
+  USE boxconfig,only:box_config
+  use atomconfig,only:atom_config_d
+  use cellconfig,only:cell_config
 #ifdef PARA
   use mpi
   USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
@@ -48,7 +50,7 @@ module Parrinello_Rahman_Nose
   use mod_para,only:nprocspace
 
 #endif
- 
+
   implicit none
 
   real(double), dimension(3,3), save , private ::h,trh,invh,invtrh,Gmat,invGmat,Area,hnew,hlast,hold,invhold
@@ -69,10 +71,10 @@ module Parrinello_Rahman_Nose
 
 contains
 
-  subroutine initlprNose(xp,xpp,vp,ityp)
-
-    real(double), intent(in) :: xp(3,imm), vp(3,imm), xpp(3,imm)
-    integer, intent(in)  :: ityp(imm)
+  subroutine initlprNose(atpr,celndm,boxndm)
+    type(box_config)::boxndm
+    class(atom_config_d)::atpr
+    type(cell_config):: celndm
 
     real(double), dimension(1:3,1:3) :: maux2
     real(double), external :: detmat
@@ -87,7 +89,7 @@ contains
 #endif
 
     ! Calcul de la température initiale
-    temp0=tempinst(vp,ityp,im,imm)
+    temp0=tempinstT(atpr)
 
     if (rang==0) WRITE(6,*)
     if (rang==0) WRITE(6,'(a)') 'Algorithme de Parrinello-Rahman couplé au thermostat de Nosé (V2)'
@@ -96,19 +98,19 @@ contains
     if (rang==0) WRITE(6,*)
     IF (lUcell) THEN
        if (rang==0) WRITE(6,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0(1:3,2)
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0(1:3,3)
+       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*boxndm%h0(1:3,1)
+       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*boxndm%h0(1:3,2)
+       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*boxndm%h0(1:3,3)
        if (rang==0) WRITE(6,*)
     ELSE
-       h0 = at
+       boxndm%h0 = boxndm%at
     END IF
     if (rang==0) WRITE(6,'(a)') "Repère actuel  (A):"
-    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*at(1:3,1)
-    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*at(1:3,2)
-    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*at(1:3,3)
+    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
+    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*boxndm%at(1:3,2)
+    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*boxndm%at(1:3,3)
     IF (wbox==0.0) THEN
-       wbox = sum(0.5*cm(ityp(:im)))       ! La moitié de la masse totale des atomes
+       wbox = sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
            if (nprocspace.gt.1) then
   call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
@@ -130,24 +132,24 @@ end if
        wNose = gNose*bk*10.d0*tstep**2/1.d-2**2
     END IF
     if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la boîte pour thermostat de Nosé: wNose=',wNose
-    if (rang==0) WRITE(6,'(a,g20.12)')'Nombre de degrés de liberté: gNose=',gNose              
+    if (rang==0) WRITE(6,'(a,g20.12)')'Nombre de degrés de liberté: gNose=',gNose
 
 
     ! État de référence défini par la matrice h0
     !   Cet état de référence doit correspondre à un tenseur de contrainte nul.
     !   Il n'est utile que pour calculer la déformation et l'énergie potentielle
     !   de la boîte.
-    volu0 = calcvol(h0(1:3,1),h0(1:3,2),h0(1:3,3))
+    volu0 = calcvol(boxndm%h0(1:3,1),boxndm%h0(1:3,2),boxndm%h0(1:3,3))
     invVolu0 = 1.d0/volu0
-    trh0=Transpose(h0)
-    CALL MatInv(h0,invh0)
+    trh0=Transpose(boxndm%h0)
+    CALL MatInv(boxndm%h0,invh0)
     invtrh0=Transpose(invh0)
 
     ! Vecteurs de la boîte et matrice inverse
-    h = at 
+    h = boxndm%at
 
     ! Coordonnées réduites des atomes
-    allocate(sp(3,imm),sdot(3,imm),sold(3,imm),snew(3,imm))
+    allocate(sp(3,atpr%imm),sdot(3,atpr%imm),sold(3,atpr%imm),snew(3,atpr%imm))
 
     ! Initialisation de la vitesse de la boîte
     !if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', temp0, ' K'
@@ -183,7 +185,7 @@ end if
     ENose = KNose + UNose
     fNose=1.d0
     fold = fNose - fpoint*tstep
-    if (rang==0) WRITE(6,'(3(a,g22.12))') 'fNose = ', fNose, '  fold = ', fold, '  fpoint = ', fpoint  
+    if (rang==0) WRITE(6,'(3(a,g22.12))') 'fNose = ', fNose, '  fold = ', fold, '  fpoint = ', fpoint
     if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé pour la température ', &
          0.d0, ' K'
     !if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé pour la température ', &
@@ -199,17 +201,19 @@ end if
 
   !-----------------------------------------------
 
-  subroutine prNose(xp,xpp,vp,fp,ityp)
+  subroutine prNose(atpr,celndm,boxndm)
 
     implicit none
-    integer, intent(in)  :: ityp(imm)
-    real(double), intent(inout)  :: xp(3,imm), xpp(3,imm), vp(3,imm), fp(3,imm)
+    type(box_config)::boxndm
+    class(atom_config_d)::atpr
+    type(cell_config):: celndm
+
 
     real(double),dimension(3,3)::maux1,maux2,mf,mfi, grsig
     REAL(double), dimension(1:3,1:3) ::  Gpoint
     real(double):: diff,tdiff, invVolu, fNose2, f2point
-    integer:: i,j,ia, iter 
-    !real(double) , external ::  calcvol 
+    integer:: i,j,ia, iter
+    !real(double) , external ::  calcvol
 
     ! Parameter for Parrinello-Rahman self consistency loop
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
@@ -224,7 +228,7 @@ end if
     fNose2=fNose*fNose
 
     ! Vecteurs de la boîte
-    h(:,:)=at(:,:)
+    h(:,:)=boxndm%at(:,:)
     trh=Transpose(h)
     ! Métrique de la boîte
     Gmat = MatMul(trh,h)
@@ -232,14 +236,14 @@ end if
     call MatInv(h,invh)
     call MatInv(hold,invhold)
     invtrh = Transpose(invh)
-    volu = calcvol(h(1:3,1),h(1:3,2),h(1:3,3))
-    invVolu = 1.d0/volu
-    Area(:,:)=volu*invtrh(:,:)    ! Correspond à sigma dans l'article de Parrinello Rahman
+    boxndm%volu = calcvol(h(1:3,1),h(1:3,2),h(1:3,3))
+    invVolu = 1.d0/boxndm%volu
+    Area(:,:)=boxndm%volu*invtrh(:,:)    ! Correspond à sigma dans l'article de Parrinello Rahman
 
     ! Déduit de la tension thermodynamique correspondant à la contrainte imposée
     ! la matrice grsig
     ! éq. 2.22 et 2.26 dans l'article de Ray et Rahman
-    grsig = volu * MatMul(invh, MatMul( sigext, invtrh) )
+    grsig = boxndm%volu * MatMul(invh, MatMul( sigext, invtrh) )
 
     ! Strain tensor (Eq. 2.16)
     epsi=0.5d0*MatMul( MatMul( invtrh0, Gmat ), invh0 )
@@ -248,19 +252,19 @@ end if
     END DO
 
     ! Thermodynamic tension (Eq. 2.22)
-    tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
+    tension = invVolu0*MatMul( MatMul( boxndm%h0, grsig), trh0 )
 
     ! Potential energy of the cell (Eq. 2.25)
     maux1 = MatMul( tension, epsi )
     Ucell = volu0*( maux1(1,1) + maux1(2,2) + maux1(3,3) )
 
     ! Coordonnées réduites des atomes
-    sp(1:3,1:imm) = MatMul(invh(1:3,1:3), xp(1:3,1:imm) )
-    sold(1:3,1:imm) = MatMul( invhold(1:3,1:3), xpp(1:3,1:imm) )
+    sp(1:3,1:atpr%imm) = MatMul(invh(1:3,1:3), atpr%xp(1:3,1:atpr%imm) )
+    sold(1:3,1:atpr%imm) = MatMul( invhold(1:3,1:3), atpr%xpp(1:3,1:atpr%imm) )
     ! snew est le propagé de s avec seulement fp unc==uncorrected
-    do ia = 1,imm
-       snew(1:3,ia) = -sold(1:3,ia) + 2.d0*sp(1:3,ia) & 
-            + tstep**2/(fNose2*cm(ityp(ia)))*MatMul( invH(1:3,1:3), fp(1:3,ia))
+    do ia = 1,atpr%im
+       snew(1:3,ia) = -sold(1:3,ia) + 2.d0*sp(1:3,ia) &
+            + tstep**2/(fNose2*cm(atpr%ityp(ia)))*MatMul( invH(1:3,1:3), atpr%fp(1:3,ia))
     enddo
 
     ! Compute initial guess for Parrinello-Rahman and Nosé
@@ -327,15 +331,15 @@ end if
     enddo
     call matinv(mf,mfi)
     mfi = 0.5d0/tstep*mfi
-    sdot(1:3,1:im) = MatMul(mfi(1:3,1:3), snew(1:3,1:im) - sold(1:3,1:im) )
+    sdot(1:3,1:atpr%im) = MatMul(mfi(1:3,1:3), snew(1:3,1:atpr%im) - sold(1:3,1:atpr%im) )
 
     ! avec ce sdot on peut calculer la vitesse des particules
-    vp(1:3,1:imm) = fNose*MatMul(h(1:3,1:3),sdot(1:3,1:imm)) 
+    atpr%vp(1:3,1:atpr%imm) = fNose*MatMul(h(1:3,1:3),sdot(1:3,1:atpr%imm))
     !  ... la contrainte thermique associée
     sigkine(:,:)=0.d0
-    do ia = 1, im
+    do ia = 1, atpr%im
        do j = 1,3
-          sigkine(1:3,j) = sigkine(1:3,j) + cm(ityp(ia))*vp(1:3,ia)*vp(j,ia)
+          sigkine(1:3,j) = sigkine(1:3,j) + cm(atpr%ityp(ia))*atpr%vp(1:3,ia)*atpr%vp(j,ia)
        enddo
     enddo
     sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
@@ -348,7 +352,7 @@ end if
 #endif
 
     ! ... et l'énergie cinétique
-    kine = 0.5d0*volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
+    kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
 
     ! Contrainte totale
     sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
@@ -360,7 +364,7 @@ end if
             - wbox/(tstep*tbox)*hpoint(:,:)
     else
        whpointpoint(:,:) = MatMul(sigtot,Area) - MatMul(h, grsig)&
-            - 2.d0*wbox*fNose*fpoint*hpoint(:,:)  
+            - 2.d0*wbox*fNose*fpoint*hpoint(:,:)
     end if
     hnew(:,:) = 2.d0*h(:,:) - hold(:,:) + whpointpoint(:,:)*tstep**2/(fNose2*wbox)
 
@@ -379,7 +383,7 @@ end if
     endif
     ! --- de fNose
     diff = abs( fnew - flast )
-    tdiff = abs( flast ) 
+    tdiff = abs( flast )
     if (tdiff .eq. 0.0d0) then
        if (diff .gt. tol) goto 10
     else
@@ -388,26 +392,26 @@ end if
 
     ! Ici hnew et fnew sont convergés
 !!$  if (rang==0) WRITE(6,'(a,i0)') 'PR: iter = ', iter
-    snew(1:3,1:imm) = sold(1:3,1:imm) + 2.d0*tstep*sdot(1:3,1:imm)
+    snew(1:3,1:atpr%imm) = sold(1:3,1:atpr%imm) + 2.d0*tstep*sdot(1:3,1:atpr%imm)
 
-    ! Save current atomic positions as old ones, 
+    ! Save current atomic positions as old ones,
     !   and next positions as current ones
     !on connait hdot et sdot
-    sold(1:3,1:imm) = sp(1:3,1:imm)
-    sp(1:3,1:imm) = snew(1:3,1:imm)
+    sold(1:3,1:atpr%imm) = sp(1:3,1:atpr%imm)
+    sp(1:3,1:atpr%imm) = snew(1:3,1:atpr%imm)
 
     hold = h
     h = hnew
     fold = fNose
     fNose = fnew
 
-    ! Transform back to absolute coordinates 
-    at(:,:) =  h(:,:)
-    call recips (at(1:3,1), at(1:3,2), at(1:3,3), bg(1:3,1), bg(1:3,2), bg(1:3,3))
-    volu = calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
+    ! Transform back to absolute coordinates
+    boxndm%at(:,:) =  h(:,:)
+    call recips (boxndm%at(1:3,1), boxndm%at(1:3,2), boxndm%at(1:3,3), boxndm%bg(1:3,1), boxndm%bg(1:3,2), boxndm%bg(1:3,3))
+    boxndm%volu = calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
 
-    xp(1:3,1:imm) = MatMul(h(1:3,1:3), sp(1:3,1:imm) )
-    xpp(1:3,1:imm) = MatMul(hold(1:3,1:3), sold(1:3,1:imm) )
+    atpr%xp(1:3,1:atpr%imm) = MatMul(h(1:3,1:3), sp(1:3,1:atpr%imm) )
+    atpr%xpp(1:3,1:atpr%imm) = MatMul(hold(1:3,1:3), sold(1:3,1:atpr%imm) )
 
     ! Total energy of the cell
     EcellPR = Kcell + Ucell

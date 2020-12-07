@@ -49,10 +49,9 @@ contains
     type(para_config)::div
     type(atom_config_d),pointer::atloc
     type(cell_config),pointer::celloc
-    logical,intent(in)::lperiod
     logical,optional,intent(in)::ltabvois
     integer,optional,intent(in)::itetabvois,it,ii
-    
+    logical::lperiod
     logical,optional::lchg
     integer::ierr,i
     logical::lchange=.true.

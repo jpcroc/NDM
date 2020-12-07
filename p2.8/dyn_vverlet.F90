@@ -5,8 +5,8 @@ module dyn_vverlet_mod
   USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,ltranche,&
        &l2T,llangevin,lsuivinonpbc,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,caltabtC!,ndm2cellconfig,cellconfig2ndm
-  USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
+  USE cellconfig, only:cell_config,caltabtC
+  USE boxconfig,only:box_config,periodbox
   use var_pot,only : cm
   USE eloss, only:ibrake, calceloss
 #ifdef PARA
