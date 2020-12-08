@@ -31,12 +31,11 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:parallele,potist,rang,sig&
-         &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax
+         &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin
 
     use read_val,only:imm,ltabvois,rvois
-    USE tab_imm_m
-    
-!    USE montecarlo_mod, ONLY: config_atom_n, cells_n
+
+    !    USE montecarlo_mod, ONLY: config_atom_n, cells_n
 
 #ifdef PARA
     use mpi
@@ -50,14 +49,14 @@ contains
     implicit none
     character :: extension*2
     integer::lenfn2,i,ko,im,nvois
-    class(atom_config_d),pointer::atdml
-!    type(atom_config),target:: atdm
+    class(atom_config),pointer::atdml
+    type(atom_config),target:: atdm
     type(atom_config_d),target:: atdmd
     type(atom_config_e),target:: atdme
     type(cell_config)::celndm
     type(box_config)::boxndm
     real(double)::rv
-
+    logical ::latcomp=.false.
 
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e rs
@@ -70,104 +69,121 @@ contains
     !-----------------------------------------------
 
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
-!    call alloc_all_tab_imm(imm)
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin))then
        atdml=>atdme
     else
-       atdml=>atdmd
+       if ((dmtype==3).or.(dmtype==30)) then
+          atdml=>atdm
+       else
+
+          atdml=>atdmd
+       end if
     end if
     im=0 ; nvois=0
-    imm_glob = imm
+    imm_glob=imm
     if (dmtype.ne.9) then
 
 #ifdef PARA
-    ! En parallle, on initialise le nombre maximum d'atomes d'un
-    ! processus au nombre d'atomes locaux. Plus tard ce nombre sera
-    ! complete par le nombre maximal d'atomes fantomes
-    ! On suppose que la concentration max ne depasse pas 20%  de 
-    ! la concentration moyenne
-    imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
-    if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
+       ! En parallle, on initialise le nombre maximum d'atomes d'un
+       ! processus au nombre d'atomes locaux. Plus tard ce nombre sera
+       ! complete par le nombre maximal d'atomes fantomes
+       ! On suppose que la concentration max ne depasse pas 20%  de 
+       ! la concentration moyenne
+       imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
+       if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
 #endif
-    if (ltabvois) then
-       rv=rvois
-    else
-       rv=0
-    end if
+       if (ltabvois) then
+          rv=rvois
+       else
+          rv=0
+       end if
 
-    call atdml%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
-    ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-    call init(atdml,boxndm,celndm)
+       call atdml%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
+       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+       call init(atdml,boxndm,celndm)
 
 #ifdef DECOUP
-    ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
-    return
+       ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
+       return
 #endif
-
+       select type (atdml)
+       type is (atom_config)
+          select case (dmtype) 
+          case(3,30)
+             call gcII (atdm,celndm,boxndm) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
+          case default
+             write(6,*)'incohérence entre type(atom_config) et dmtype'
+             stop
+          end select
+          class is (atom_config_d)
 #ifdef PARA
-       if (nprocspace.gt.1) then
-          call maj_atomes_frt_ftm(atdml,celndm)
-       end if
+          if ((dmtype.ne.3).and.(dmtype.ne.30))then
+             if (nprocspace.gt.1) then
+                call maj_atomes_frt_ftm(atdml,celndm)
+             end if
+          end if
 #endif
-    select case (dmtype) 
-    case(5)
-       if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
-    case(4,10)
-       call dmloop_vverlet (atdml,celndm,boxndm)
-    case(8)
-       call dmloop_lpr (atdml,celndm,boxndm)
-    case (1)
-       if (.not.parallele)  call dmloop (atdml,celndm,boxndm)
-    case (2)
-       if (.not.parallele)  then
-          call dmloop(atdml,celndm,boxndm)
-       else
+          select case (dmtype) 
+          case(5)
+             write(6,*)'loopforcetest pas NDM2020' ; stop
+             !       if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
+          case(4,10)
+             call dmloop_vverlet (atdml,celndm,boxndm)
+          case(8)
+             call dmloop_lpr (atdml,celndm,boxndm)
+          case (1)
+             if (.not.parallele)  call dmloop (atdml,celndm,boxndm)
+          case (2)
+             if (.not.parallele)  then
+                call dmloop(atdml,celndm,boxndm)
+             else
 #ifdef PARA
-          if (nprocspace.gt.1) then
-          if(rang==0) write (6,*)'DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION'
-                 call dmloop_vverlet (atdml,celndm,boxndm)
-              end if
+                if (nprocspace.gt.1) then
+                   if(rang==0) write (6,*)'DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION'
+                   call dmloop_vverlet (atdml,celndm,boxndm)
+                end if
 #endif
-       endif
-    case (3,30)
+             endif
+          case (3,30)
+             write(6,*)'incohérence entre type(atom_config_d) et dmtype=GC'
+             stop
 
-       call gcII ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-
-
-    case(11)
-       if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
-       CALL CalFo(sig,potist,atdml,celndm,boxndm) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-       call analyseT(atdml,celndm,boxndm)
-       call controleT(atdml,celndm,boxndm)
-       call endrunT(atdml,celndm,boxndm)
+          case(11)
+             if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
+             CALL CalFo(sig,potist,atdml,celndm,boxndm) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+             call analyseT(atdml,celndm,boxndm)
+             call controleT(atdml,celndm,boxndm)
+             latcomp=.false.
+             call endrunT(atdml,celndm,boxndm,latcomp)
 
 #ifdef ART    
-    case (12) 
-       call art90
+          case (12) 
+             call art90
 #endif
 
 #ifdef SUNDAE    
-    case (16) 
-       call sundae
+          case (16) 
+             call sundae
 #endif
 
 #ifdef MAB    
-    case (17) 
-       call mab
+          case (17) 
+             call mab
 #endif
 
 #if defined PHONDY || defined PARAPH    
-    case (7) 
-       call phondy
+          case (7) 
+             call phondy
 #endif
 
 #if defined ML || defined PARAML    
-    case (18) 
-       call ml
+          case (18) 
+             call ml
 #endif
-    case (15)
-       call montecarlo(atdml,celndm,boxndm)
-    end select
+          case (15)
+             call montecarlo(atdml,celndm,boxndm)
+          end select
+       end select
     else
 #ifdef PARA
        call init_mpi_neb

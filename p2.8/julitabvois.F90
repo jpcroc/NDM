@@ -9,7 +9,7 @@ module calfojuli_mod
 
 
 !----------------------------------------------------------------------
-SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi,at,bg,volu)
+SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
   !tentaive de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
 
@@ -24,7 +24,6 @@ SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi,at,bg,volu)
   ! eam variables
   integer,intent(in)::im,imm
   integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
-  real(double),intent(in),allocatable  :: vp(:,:)
   real(double),intent(inout),allocatable  :: xp(:,:)
   real(double) , intent(inout),allocatable :: fp(:,:)
     real(double),intent(in),dimension(3,3)::at,bg
@@ -365,17 +364,17 @@ SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi,at,bg,volu)
 
 
            ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
-           if (lcalcjq) then
-              jqf=0.0
-              eat(i)=eat(i)+0.5*Erep
-              eat(j)=eat(j)+0.5*Erep
-              do ic=1,3
-                 jqf=jqf-0.5*(dErep*gradij(ic)*(vp(ic,i)+vp(ic,j)))
-              end do
-              do ic=1,3
-                 jq(ic)=jq(ic)+jqf*gradij(ic)*rij
-              end do
-           end if
+!!$           if (lcalcjq) then
+!!$              jqf=0.0
+!!$              eat(i)=eat(i)+0.5*Erep
+!!$              eat(j)=eat(j)+0.5*Erep
+!!$              do ic=1,3
+!!$                 jqf=jqf-0.5*(dErep*gradij(ic)*(vp(ic,i)+vp(ic,j)))
+!!$              end do
+!!$              do ic=1,3
+!!$                 jq(ic)=jq(ic)+jqf*gradij(ic)*rij
+!!$              end do
+!!$           end if
 
 
            !if ((i==1).or.(j==1))  write(6,*)'f1 ',fp(1,1),fp(2,1),fp(3,1)
@@ -402,16 +401,16 @@ SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi,at,bg,volu)
               end do
            end if
 
-
-           if(lcalcjq) then
-              jqf=0.0
-              do ic=1,3
-                 jqf=jqf+dEembi*drhoj*gradij(ic)*vp(ic,j)
-              end do
-              do ic=1,3
-                 jq(ic)=jq(ic)-jqf*gradij(ic)*rij
-              end do
-           end if
+!!$
+!!$           if(lcalcjq) then
+!!$              jqf=0.0
+!!$              do ic=1,3
+!!$                 jqf=jqf+dEembi*drhoj*gradij(ic)*vp(ic,j)
+!!$              end do
+!!$              do ic=1,3
+!!$                 jq(ic)=jq(ic)-jqf*gradij(ic)*rij
+!!$              end do
+!!$           end if
 
            !if ((i==1).or.(j==1))  write(6,*)'f 2 ',fp(1,1),fp(2,1),fp(3,1)
            !             auxt=dEembi*drhoj*gradij(1)
@@ -436,15 +435,15 @@ SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi,at,bg,volu)
               end if
 
 
-              if(lcalcjq) then
-                 jqf=0.0
-                 do ic=1,3
-                    jqf=jqf+dEembi*aux1*drhoj*gradij(ic)*vp(ic,j)
-                 end do
-                 do ic=1,3
-                    jq(ic)=jq(ic)-jqf*gradij(ic)*rij
-                 end do
-              end if
+!!$              if(lcalcjq) then
+!!$                 jqf=0.0
+!!$                 do ic=1,3
+!!$                    jqf=jqf+dEembi*aux1*drhoj*gradij(ic)*vp(ic,j)
+!!$                 end do
+!!$                 do ic=1,3
+!!$                    jq(ic)=jq(ic)-jqf*gradij(ic)*rij
+!!$                 end do
+!!$              end if
 
 
            end if
@@ -509,22 +508,22 @@ SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi,at,bg,volu)
            sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
 
 
-           if(lcalcjq) then
-              jqf=0.0
-              do ic=1,3
-                 jqf=jqf+aux1*vp(ic,l)*(aux2(ic)+aux3(ic))/ril
-              end do
-              do ic=1,3
-                 jq(ic)=jq(ic)-jqf*gradil(ic)*ril
-              end do
-              jqf=0.0
-              do ic=1,3
-                 jqf=jqf+aux1*vp(ic,j)*aux4(ic)/rij
-              end do
-              do ic=1,3
-                 jq(ic)=jq(ic)-jqf*gradij(ic)*rij
-              end do
-           end if
+!!$           if(lcalcjq) then
+!!$              jqf=0.0
+!!$              do ic=1,3
+!!$                 jqf=jqf+aux1*vp(ic,l)*(aux2(ic)+aux3(ic))/ril
+!!$              end do
+!!$              do ic=1,3
+!!$                 jq(ic)=jq(ic)-jqf*gradil(ic)*ril
+!!$              end do
+!!$              jqf=0.0
+!!$              do ic=1,3
+!!$                 jqf=jqf+aux1*vp(ic,j)*aux4(ic)/rij
+!!$              end do
+!!$              do ic=1,3
+!!$                 jq(ic)=jq(ic)-jqf*gradij(ic)*rij
+!!$              end do
+!!$           end if
 
         end do loopvli2
 
@@ -610,23 +609,23 @@ SUBROUTINE calfojuli(im,imm,xp,  vp,  fp, iwmax, ityp,indi,at,bg,volu)
            sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
            sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
 
-
-           if(lcalcjq) then
-              jqf=0.0
-              do ic=1,3
-                 jqf=jqf+(aux1*aux4(ic)/rij-aux1*(aux2(ic)+aux3(ic)/rjl))*vp(ic,j)
-              end do
-              do ic=1,3
-                 jq(ic)=jq(ic)-jqf*gradij(ic)*rij
-              end do
-              jqf=0.0
-              do ic=1,3
-                 jqf=jqf+(aux1*(aux2(ic)+aux3(ic))/rjl)*vp(ic,l)
-              end do
-              do ic=1,3
-                 jq(ic)=jq(ic)-jqf*(gradij(ic)*rij+gradjl(ic)*rjl)
-              end do
-           end if
+!!$
+!!$           if(lcalcjq) then
+!!$              jqf=0.0
+!!$              do ic=1,3
+!!$                 jqf=jqf+(aux1*aux4(ic)/rij-aux1*(aux2(ic)+aux3(ic)/rjl))*vp(ic,j)
+!!$              end do
+!!$              do ic=1,3
+!!$                 jq(ic)=jq(ic)-jqf*gradij(ic)*rij
+!!$              end do
+!!$              jqf=0.0
+!!$              do ic=1,3
+!!$                 jqf=jqf+(aux1*(aux2(ic)+aux3(ic))/rjl)*vp(ic,l)
+!!$              end do
+!!$              do ic=1,3
+!!$                 jq(ic)=jq(ic)-jqf*(gradij(ic)*rij+gradjl(ic)*rjl)
+!!$              end do
+!!$           end if
 
 
         end do loopvjk2

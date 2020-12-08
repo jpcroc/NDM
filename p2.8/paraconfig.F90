@@ -164,6 +164,29 @@ contains
     return
 
   end subroutine commconstr
+
+
+  subroutine initparapuresp(div,rg,mpicsp,nps)
+    type(para_config)::div
+    integer,intent(in)::rg,nps
+    integer,intent(in)::mpicsp
+#ifdef PARA
+    div%image=0
+    div%nimage=1
+    div%rgim=rg
+    div%comm_image=mpicsp
+    div%comm_orig=mpicsp
+    if (rg==0)then
+       div%lmaster=.true.
+       div%rgmas=0
+       div%comm_master=-1
+    else
+       div%lmaster=.false.
+    end if
+    div%rang_orig=rg
+    div%npim=nps
+#endif
+  end subroutine initparapuresp
 #ifdef PARA
   subroutine distribuereal(div,x,nel,xrecv)
     integer::nel

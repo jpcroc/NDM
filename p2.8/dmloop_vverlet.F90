@@ -3,10 +3,6 @@ module dmloop_vverlet_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
   USE dyn_vverlet_mod,only: dyn_vverlet
-!  USE calctemp_mod,only: calctemp
-!  USE sauvegardeT_mod,only: sauvegardeT
-!  USE sauveposition_mod,only: sauveposition
-!  USE sauveforce_mod,only: sauveforce
   USE correl_mod,only: correlvp
   USE atomconfig,only : atom_config_d, atom_config_e
   USE cellconfig, only:cell_config
@@ -32,7 +28,6 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE Parrinello_Rahman
-    !    USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
     USE suivinonpbc
 
 
@@ -143,7 +138,6 @@ contains
     end if
     call analyseT (atdml,celndm,boxndm)
     call controleT(atdml,celndm,boxndm)
-
 
     go to 1
 

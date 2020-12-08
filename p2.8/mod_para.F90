@@ -106,7 +106,6 @@ contains
   subroutine maj_atomes_frt_ftm(atcf,cellcf)
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
     type(cell_config)::cellcf
@@ -141,7 +140,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine maj_tabdensity_ftm(tabdensity,imm,natR,num_at_glob) !appelée dans calfoeamcel
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
     integer::imm,ne
@@ -169,7 +167,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine maj_fp_frt !appelée SEULEMENT dans force_tersoff_cel !
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
     integer::ne
@@ -193,7 +190,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine envoi_atomes_fantomes ! seulement maj_atomes_frt_ftm
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
 
@@ -365,7 +361,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine reception_nouveaux_atomes !seulment MAJ
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
 
@@ -465,7 +460,6 @@ end subroutine maj_atomes_frt_ftm
 
     USE T_kind_param_m, ONLY:  double
 
-!    use tab_imm_m
 
     implicit none
 
@@ -579,7 +573,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine envoi_atomes_frontieres
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
 
@@ -728,7 +721,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine finalisation_envoi_atomes(ne)
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
 
@@ -774,7 +766,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine reception_atomes_fantomes !seulement MAJ
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
 
@@ -868,7 +859,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine envoi_tabdensity_frontieres(tabdensity,imm,num_at_glob)
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
     integer::imm
@@ -969,7 +959,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine reception_tabdensity_fantomes(tabdensity,imm,num_at_glob)
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
     implicit none
     integer::imm
     integer,intent(in)::num_at_glob(imm)
@@ -1046,7 +1035,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine envoi_fp_fantomes
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
 
     implicit none
 
@@ -1146,7 +1134,6 @@ end subroutine maj_atomes_frt_ftm
   subroutine reception_fp_frontieres
 
     USE T_kind_param_m, ONLY:  double
-!    use tab_imm_m
     implicit none
 
     integer :: nb_at_recv

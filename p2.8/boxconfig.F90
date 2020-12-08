@@ -100,8 +100,6 @@ contains
      USE T_kind_param_m, ONLY:  double
      USE gen_com_m, ONLY:lperiod,zero
 
-     !  USE tab_imm_m,only:
-
     USE gen_com_m, ONLY:low_limit,zero
 
      ! *****************************************************************

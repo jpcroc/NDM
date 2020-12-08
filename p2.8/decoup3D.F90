@@ -11,7 +11,6 @@ contains
 #ifdef PARA
     USE mpi
     USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,res_cpu!,coord_max,coord_min
-!    use tab_imm_m,only:realloc_all_tab_imm
 #endif
     USE mod_para,only:myidsp,nprocspace
     USE gen_com_m, ONLY:cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
@@ -330,7 +329,6 @@ contains
 !       write(6,*)'IMMMDEC',rang,imm
        call atdec%dealloc
        call atdec%init(im0,imm,ltabvois,nvois0,rvois,lsigat,lprteat,llangevin,lax)
-!       call realloc_all_tab_imm(imm)
 
        !     print *,'test4' 
        ! Initialisation des donnees geometriques qui serviront pour le reste du code :

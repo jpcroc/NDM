@@ -1,16 +1,14 @@
 module scalebox_mod
   USE gen_com_m, ONLY:dmtype,itetabvois,lpr,nvat,pi,it,rang,lperiod
-   !USE temp_com,only:volu,zl,zls2,celsize,im,im,nox,noy,noz,at,indi,bg,nvois,ltabvois,imm,im,natperc,noxy
+
    USE dynalloccell
   USE neigcel_mod,only: neigcel
-!  USE period_mod,only: period
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
   USE boxconfig, only:box_config,ndm2boxconfig,periodbox
 
-  USE tab_imm_m,only:num_at_glob
   implicit none
 contains
   ! ******************************************************************

@@ -5,7 +5,7 @@ module calfo3c_mod
   implicit none 
 contains
   ! *****************************************************************
-  subroutine calfo3c(im,imm,xp,  vp,  fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu,sigc)
+  subroutine calfo3c(im,imm,xp, fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu,sigc)
     !version du 20.11.2001
     !-----------------------------------------------
     !   M o d u l e s
@@ -25,7 +25,6 @@ contains
     integer , intent(in) :: ielat(imm),ityp(imm)
     real(double),allocatable::sigc(:,:,:)
     real(double) , intent(inout) :: xp(3,imm)
-    real(double)  :: vp(3,imm)
     real(double)  :: ax(3,imm)
     real(double) , intent(inout) :: fp(3,imm)
 

@@ -6,7 +6,7 @@ module calfo2ctabvois_mod
   implicit none
 contains
   ! **********************************************************
-  subroutine calfo2ctabvois(im,imm,xp,  vp, fp,  iwmax, ityp,indi,at,bg,volu )
+  subroutine calfo2ctabvois(im,imm,xp,   fp,  iwmax, ityp,indi,at,bg,volu )
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -26,7 +26,6 @@ contains
     !-----------------------------------------------
     integer,intent(in)::im,imm
     integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
-    real(double),intent(in),allocatable  :: vp(:,:)
     real(double),intent(inout),allocatable  :: xp(:,:)
     real(double) , intent(inout),allocatable :: fp(:,:)
     real(double),intent(in),dimension(3,3)::at,bg
@@ -148,18 +147,18 @@ contains
              eat(j) = eat(j)+deltaepot
              !              end if
           end if
-          if (lcalcjq) then
-             jqf=0.0
-             eat(i) = eat(i)+deltaepot
-             eat(j) = eat(j)+deltaepot
-
-             do ic=1,3
-                jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
-             end do
-             do ic=1,3
-                jq(ic)=jq(ic)-jqf*dxp(ic)
-             end do
-          end if
+!!$          if (lcalcjq) then
+!!$             jqf=0.0
+!!$             eat(i) = eat(i)+deltaepot
+!!$             eat(j) = eat(j)+deltaepot
+!!$
+!!$             do ic=1,3
+!!$                jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
+!!$             end do
+!!$             do ic=1,3
+!!$                jq(ic)=jq(ic)-jqf*dxp(ic)
+!!$             end do
+!!$          end if
 
           if (test_sigma) then
              partsig=phu/volu

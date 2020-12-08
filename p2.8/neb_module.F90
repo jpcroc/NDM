@@ -503,8 +503,6 @@ end if
 
   subroutine constrconfNEB !(xp, xpp, vp,  fp, ielat, iwmax, ityp)
     USE T_kind_param_m, ONLY:  double
-    !    USE gen_com_m, ONLY:im,imm,nvois,
-!    USE tab_imm_m,only:xp,xpp,vp,fp,ielat,iwmax,ityp,num_at_glob
     USE read_val, ONLY:imm,ltabvois
 
     integer ::  ip,lucin,itread,fmt_cin,formatsauv,iti

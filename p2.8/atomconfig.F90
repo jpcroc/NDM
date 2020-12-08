@@ -745,7 +745,7 @@ contains
     write(unit,*)'imm = ',atprt%imm
     write(unit,*)'icaltabt = ',atprt%icaltabt
     write(unit,*)'ltabvois ', atprt%ltabvois
-    write(6,*)
+!    write(6,*)
     ideb=1
     ifin=atprt%im
     if (present(i1))then
@@ -960,6 +960,15 @@ contains
           if (ldealloc) deallocate(ax)
        end if
     end select
+!    type is (atom_config_d)
+       if (present(vp))then
+!          atndm%vp(:,1:imm)=vp(:,1:imm)
+          if (ldealloc) deallocate(vp)
+       end if
+       if(present(xpp))then
+!          atndm%xpp(:,1:imm)=xpp(:,1:imm)
+          if (ldealloc) deallocate(xpp)
+       end if
 
   end subroutine ndm2config
 
@@ -995,6 +1004,7 @@ contains
        allocate(ityp(imm));allocate(ielat(imm));allocate(num_at_glob(imm))
        if (present(lgul))allocate(lgul(imm))
     end if
+    vp=0;xpp=0
     xp(:,1:imm)=atndm%xp(:,1:imm)
     fp(:,1:imm)=atndm%fp(:,1:imm)
     ityp(1:imm)=atndm%ityp(1:imm)
@@ -1095,7 +1105,7 @@ contains
              end select
           else
              if (allocated(buffer)) then
-                deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer);deallocate(buffer1)
+                deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer);deallocate(buffer1);deallocate(buffer9)
              end if
              call MPI_RECV(imrecv,1, MPI_INTEGER,  MPI_ANY_SOURCE, 10001, icomm, status, ierr)
              imtot=imtot+imrecv
@@ -1186,6 +1196,7 @@ contains
        end select
        
     end if
+    call MPI_barrier(icomm,ierr)
 #endif       
 
     return
@@ -1211,7 +1222,7 @@ contains
 !    logical, allocatable::lbuf(:)
 
     
-    
+
     idmaster=0
     idloc=div%rgim
     npim=div%npim
@@ -1239,7 +1250,9 @@ contains
              iloc=0
              do i=1,imcomp
                 if (mask(i))then
+
                    iloc=iloc+1
+!                   write(6,*)'IL',i,iproc,iloc,atcfcomp%xp(:,i),atcfloc%xp(:,iloc)
                    atcfloc%xp(:,iloc)=atcfcomp%xp(:,i)
                    atcfloc%fp(:,iloc)=atcfcomp%fp(:,i)
                    atcfloc%num_at_glob(iloc)=atcfcomp%num_at_glob(i)
@@ -1368,7 +1381,6 @@ contains
                 end select
              end select
     end if
-
     
     return
 #endif

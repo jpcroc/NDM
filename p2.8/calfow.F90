@@ -7,7 +7,7 @@ module calfow_mod
   implicit none
 contains
   ! ***************************************************************
-  SUBROUTINE CALFOW(im,imm,xp,vp,fp,ielat,ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
+  SUBROUTINE CALFOW(im,imm,xp,fp,ielat,ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
     !     calcule des forces a 2 corps dans le pot de Watanabe
     !     version Avril 2001  
     ! ***************************************************************
@@ -23,8 +23,7 @@ contains
     integer,intent(in)::im,imm
     integer,allocatable  :: ielat(:),ityp(:) 
     !    integer  :: ityp(imm)
-    real(double),allocatable  :: xp(:,:),vp(:,:),fp(:,:) 
-    !    real(double)  :: vp(3,imm) 
+    real(double),allocatable  :: xp(:,:),fp(:,:) 
     !    real(double)  :: fp(3,imm)
     real(double),intent(in),dimension(3,3)::at,bg
     real(double),intent(in)::volu

@@ -2,293 +2,215 @@ module work_cgII
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
-       it, itesauv, itesauvposition, itesauvforce,itmax, &
+       it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
-       dmtype, potist,im_glob,cell_finx,cell_finy,cell_finz,mdcg_noise
-  use temp_com,only: zl,zls2,nzl,volu,at,bg,normat,nato,atincel,deltadist,im,indi,celsize,nox,noy,noz,noxyz,&
-       &natperc,ltabvois,imm,ncel,nvois
-!  USE controle_mod,only: controle
-  USE calfo_mod,only: calfo
-  USE analyse_mod,only: analyse
-  USE sauvegarde_mod,only: sauvegarde
-  USE sauveposition_mod,only: sauveposition
-  USE sauveforce_mod,only: sauveforce
-!  USE config_mod,only: config
-  USE zero2all2zero_mod,only: zero2all,all2zero
-  use period_mod,only:period
-  USE endrun_mod,only: endrun
- USE dynalloccell,only:deallocateall
-USE arret_ndm_mod,only: arret_ndm
-USE caltabi_mod,only: caltabi
+       dmtype, potist,cell_finx,cell_finy,cell_finz,mdcg_noise,formatsauv
+  USE sauvegardeT_mod,only: sauvegardeT
+  USE endrunT_mod,only: endrunT
+  USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
 USE mpi
 use mod_para,only:MPI_COMM_space, status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,maj_atomes_frt_ftm,nprocspace
 #else
 use mod_para,only:nprocspace
 #endif
-  USE tab_imm_m,only : xp, fp,num_at_glob,ax,vp,xpp,ityp,ielat,iwmax,bruitmd
-  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
-  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
-
+  USE atomconfig,only : atom_config
+  USE cellconfig, only:cell_config
+  USE boxconfig,only:box_config
+  use paraconfig,only:para_config,initparapuresp
+  USE parautils,only:initcomp,pointer_caltabt_calfo
   
   implicit none
-
-
+  
+  type(box_config)::boxcg
+  type(atom_config)::atcgcomp
+  type(cell_config)::cellcgcomp
+  class(atom_config),pointer::atcgloc
+  type(cell_config),pointer::cellcgloc
+  type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
+  type(atom_config),target::atcible
+  type(para_config)::gcpara
+  
 contains
 
-  subroutine FUNCT(N,X,F,G,NCALLS,                      &
-       xp_local,  fp_local,   ityp_local,ims)
+  subroutine FUNCT(N,X,F,G,NCALLS)
 
     real(double),intent(in):: X(N)
     real(double),intent(out)::G(N),F
-    integer,intent(in) ::N,NCALLS,ims
+    integer,intent(in) ::N,NCALLS
     integer ::i
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer,intent(inout)  :: ityp_local(ims)
-    real(double),intent(out)  :: xp_local(3,ims)
-    real(double),intent(out)  :: fp_local(3,ims)
     !-----------------------------------------------
     !-----------------------------------------------
     integer::iproc,proc_source,cellx,celly,cellz
-    integer::nag(imm)
     real(double)::aux,auy,auz
     character :: extension*2
-    integer::lenfn2,ko
+    integer::lenfn2,ko,i1
     real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
+    logical::lover
 
-    type(atom_config_d)::atcg
-    type(cell_config):: celcg
-    type(box_config)::boxndm
+    logical:: lchg,latcomp
 
-!    write(6,*)'entree funct', it,ncalls
+    latcomp=.true.
+    lover=.false.
+!    write(6,*)'entree funct', it,ncalls,rang
     it=NCALLS-1
 
-!    IF (3*ims.NE.N) THEN
-!       WRITE(0,'(a,i0)') "3*imm = ", 3*ims
-!       WRITE(0,'(a,i0)') "N     = ", N
-!       STOP "< work_cgII >"
-!    END IF
-    xp_local=0
-    fp_local=0
-    if (rang==0) then
+    !    IF (3*ims.NE.N) THEN
+    !       WRITE(0,'(a,i0)') "3*imm = ", 3*ims
+    !       WRITE(0,'(a,i0)') "N     = ", N
+    !       STOP "< work_cgII >"
+    !    END IF
+    if (gcpara%rgim==0) then
        IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
-          do i=1,im_glob
-             xp_local(1:3,i) = MatMul( at, X(3*i-2:3*i) )
+          do i=1,atcgcomp%im
+             i1=atcgcomp%num_at_glob(i)             
+             atcgcomp%xp(1:3,i) = MatMul( boxcg%at, X(3*i1-2:3*i1) )
           end do
        ELSE ! Variables = cartesian coordinates (in A)
-          do i=1,im_glob
-             xp_local(1:3,i)=X(3*i-2:3*i)*inv_angst
+          do i=1,atcgcomp%im
+             i1=atcgcomp%num_at_glob(i)             
+             atcgcomp%xp(1:3,i) = X(3*i1-2:3*i1)*inv_angst
           end do
        END IF
     end if
-    xp=0
-    call zero2all(xp_local,xp,ityp_local)
-!      write(6,*)'CALL W',it
-#ifndef PARA
-    call period (imm,xp)
-#endif    
 
-    call  ndm2cellconfig(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-    call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-         &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-    call caltabtC(celcg,atcg,lperiod,boxndm)
-    if (ltabvois.and.mod(it,itetabvois)==0) then
 
-       call caltabi(atcg%atom_config,celcg,boxndm)
+    lchg=.true.
+    call pointer_caltabt_calfo(sig,potist,atcgcomp,cellcgcomp,boxcg,atcgloc,cellcgloc,gcpara,lperiod,&
+         &atcgcomp%ltabvois,it,itetabvois,lchg) 
 
-    end if
-       call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-       call cellconfig2ndm(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !sans doute inutile
-    
-!    call period
-    !    do ko=1,noxyz
-    !       write(6,*)'0rg cel nat',rang, ko,nato(ko)
-    !    end do
-#ifdef PARA
-       write(6,*)'pas dev'
-       if (nprocspace.gt.1) then
-          call maj_atomes_frt_ftm(atcg,celcg)
+    if (it==1) then
+       if (lEev.EQV..true.) then 
+          if (rang==0) write(6,*)'Resultats en eV, Ang'
+       else
+          if (rang==0) write(6,*)'Resultats en cgs'
        end if
-#endif
-
-    !back to internal units and JP world.......................................
-
-
-    if (lperiod)          call period  (imm,xp)
-!    call controle
-     if (it==1) then
-        if (lEev.EQV..true.) then 
-           if (rang==0) write(6,*)'Resultats en eV, Ang'
-        else
-           if (rang==0) write(6,*)'Resultats en cgs'
-        end if
-        if (rang==0)      write(*,'(70("="))')
-        if (rang==0)      write(*,'("CG:     ","iter",10(" "),"epsi",14(" "),"Fmax",14(" "), "Energy")')
-        if (rang==0)      write(*,'(70("="))')
-     end if
-
-
-     !debug     write(*,*) 'DEBUG ALL IT IN CONTROLE',it
-
-    
-
-
-!do ko=1,noxyz
-!    write(6,*)'1rg cel nat',rang, ko,nato(ko)
-    !end do
-!     write(6,*)'im_glob', im_glob
-!    open(unit=607, file='xpG.csv', form='formatted', &
-!             status='unknown')
-!    do i=1,im_glob
-!      !       write(6,*)rang,i,xp_all(:,i)
-!       write(607,'(I6,3G22.13)') i,xp(:,i)
-!    end do
-  call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-  call ndm2cellconfig(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
-  call ndm2config(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
-       &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atcg,celcg,boxndm)
-!  write(6,*)'dml potist ',potist,atdml%potist
-    call config2ndm(atcg,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    call cellconfig2ndm(celcg,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
-    
+       if (rang==0)      write(*,'(70("="))')
+       if (rang==0)      write(*,'("CG:     ","iter",10(" "),"epsi",14(" "),"Fmax",14(" "), "Energy")')
+       if (rang==0)      write(*,'(70("="))')
+    end if
+    !    end if
 #ifdef PARA
     if (nprocspace.gt.1) then
        call mpi_barrier(MPI_COMM_space,ierr)
     end if
 #endif    
-!   stop
+    IF (it.GE.1) THEN
+       forctot=sqrt( SUM(atcgcomp%fp(1:3,1:atcgcomp%im)**2) )
+       formax = MaxVal( Abs(atcgcomp%fp(:,1:atcgcomp%im)) )
+!!$#ifdef PARA
+!!$    if (nprocspace.gt.1) then
+!!$        call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
+!!$        formax=fpmax_glob
+!!$        forctot=forctot**2
+!!$        call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+!!$        forctot=sqrt(fpmax_glob)
+!!$     end if
+!!$#endif
+       lover=.false.
+       if (gcpara%rgim==0)then
 
-    !do ko=1,noxyz
-!    write(6,*)'2rg cel 1nat',rang, ko,nato(ko)
-! end do
-     IF (it.GE.1) THEN
-!        IF (lFrozen) THEN
-           !forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
-           !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
-!           forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozcalfoen(:,1:im) ) )
-!           formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) ) 
-!        ELSE
-           forctot=sqrt( SUM(fp(1:3,1:im)**2) )
-           !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
-           formax = MaxVal( Abs(fp(:,1:im)) )
-!        END IF
-!        write(6,*)'FF ', forctot,formax
+          if (lEev.EQV..true.) then 
+             forctot = forctot*erg2eV/angst
+             formax  = formax*erg2eV/angst
+             if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
+             !           if (rang==0) write(*,'("GC: ",3E20.10)') forctot, formax, potist*erg2eV
+             if (fpstop>0) then   
+                if (formax.le.fpstop) then
+                   if (rang==0) write(6,*)'force par atome  max  ev/Ang ', formax
+                   if (rang==0) write (6, *) 'energie ', potist*erg2eV
+                   !                 if (it.le.1) xp(:,:)=ax(:,:)
+                   lover=.true.
+                end if
+             end if
+             if (fsumstop>0) then   
+                if (forctot.le.fsumstop) then
+                   if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
+                   if (rang==0) write(6, *) 'energie ', potist*erg2eV
+                   !                 if (it.le.1) xp(:,:)=ax(:,:)
+                   lover=.true.
+                   !call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp)
+                end if
+             end if
+
+          else
+             if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
+             if (fpstop>0) then   
+                if (formax.le.fpstop) then
+                   if (rang==0) write(6,*)'force par atome  max cgs ',formax
+                   if (rang==0) write (6, *) 'energie ', potist
+
+                   lover=.true.
+                   !call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp)
+
+                end if
+             end if
+
+             if (fsumstop>0) then   
+                if (forctot.le.fsumstop) then
+                   if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
+                   if (rang==0) write (6, *) 'energie ', potist
+                   lover=.true.
+                   !call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp)
+                end if
+             end if
+
+          end if
+       end if
+        
+    end IF! it .ge.1
 #ifdef PARA
-    if (nprocspace.gt.1) then
-        call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
-        formax=fpmax_glob
-        forctot=forctot**2
-        call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-        forctot=sqrt(fpmax_glob)
-     end if
+    call MPI_BCAST(lover, 1,MPI_LOGICAL, 0,gcpara%comm_image,ierr)
 #endif
+!    write(6,*)'LOVER',lover,rang,it
+       if (it>=itmax) then
+          if (rang==0) write (6, *) '*******Derniere iteration **** '
+          lover=.true.
 
-        if (lEev.EQV..true.) then 
-           forctot = forctot*erg2eV/angst
-           formax  = formax*erg2eV/angst
-           if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
-!           if (rang==0) write(*,'("GC: ",3E20.10)') forctot, formax, potist*erg2eV
-           if (fpstop>0) then   
-              if (formax.le.fpstop) then
-                 if (rang==0) write(6,*)'force par atome  max  ev/Ang ', formax
-                 if (rang==0) write (6, *) 'energie ', potist*erg2eV
-                 if (it.le.1) xp(:,:)=ax(:,:)
-                 call endrun
-              end if
-           end if
-           if (fsumstop>0) then   
-              if (forctot.le.fsumstop) then
-                 if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
-                 if (rang==0) write(6, *) 'energie ', potist*erg2eV
-                 if (it.le.1) xp(:,:)=ax(:,:)
-                 call endrun
-              end if
-           end if
-
-        else
-           if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
-           if (fpstop>0) then   
-              if (formax.le.fpstop) then
-                 if (rang==0) write(6,*)'force par atome  max cgs ',formax
-                 if (rang==0) write (6, *) 'energie ', potist
-                 if (it.le.1) xp(:,:)=ax(:,:)
-                 call endrun
-
-              end if
-           end if
-
-           if (fsumstop>0) then   
-              if (forctot.le.fsumstop) then
-                 if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
-                 if (rang==0) write (6, *) 'energie ', potist
-                 if (it.le.1) xp(:,:)=ax(:,:)
-                 call endrun
-              end if
-           end if
-
-        end if
-     end if ! it .ge.1
-
-    
-  if (it>=itmax) then
-     if (rang==0) write (6, *) '*******Derniere iteration **** '
-     call endrun
-     call DeallocateAll
-
-     call arret_ndm
-
-  endif
+       endif
 
 
 
 
+       if (lover) then
 
+          call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp)
+          !     call DeallocateAll
 
-     call all2zero(fp_local,fp)
+          call arret_ndm
+       end if
+       
+       if (rang==0)then
 
+       fnamcout = fnam(1:lenfnam)//'.cout'
 
-    call analyse 
-
-
-    if (it.ne.0) then
-!       if (rang==0) then
+       if (it.ne.0) then
+          !       if (rang==0) then
           !           write(6,*)'work_cg_II analyse -> sauvegarde',it
           if (itesauv.GT.0) then
-             if (mod(it,itesauv)==0) call sauvegarde 
+             if (mod(it,itesauv)==0) call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp=latcomp)
           endif
+       end if
+       !go to into eV, ang and GC world............................................      
+          F=potist*erg2eV
 
-          !            write(6,*)'work_cg_II analyse -> sauveposition',it
-          if (itesauvposition.GT.0) then
-             if (mod(it,itesauvposition)==0) call sauveposition ( it)
-          endif
-          if (itesauvforce.GT.0) then
-             if (mod(it,itesauvforce)==0) call sauveforce ( it)
-          endif
-          !            write(6,*)'work_cg_II sauvposition -> control',it
- !      endif                                   ! fin rang=0
-    end if
-    !go to into eV, ang and GC world............................................      
+          G(:)=0.d0
+          IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
+             do i=1,atcgcomp%im
+                i1=atcgcomp%num_at_glob(i)
+                G(3*i1-2:3*i1)=-MatMul(atcgcomp%fp(:,i),boxcg%at)*erg2eV
+             end do
+          ELSE ! Variables = cartesian coordinates (in A)
+             do i=1,atcgcomp%im
+                i1=atcgcomp%num_at_glob(i)
+                G(3*i1-2:3*i1)=-1*atcgcomp%fp(:,i)*erg2eV/angst
+             end do
+          END IF
 
-    if (rang==0)then
-       F=potist*erg2eV
-
-
-       IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
-          do i=1,im_glob
-             G(3*i-2:3*i)=-MatMul(fp_local(:,i), at)*erg2eV
-          end do
-       ELSE ! Variables = cartesian coordinates (in A)
-          do i=1,im_glob
-             G(3*i-2:3*i)=-fp_local(1:3,i)*erg2eV/angst
-          end do
-       END IF
-       G(3*im_glob+1:N)=0.d0
-    end if
+       end if
 
     return
   end subroutine FUNCT

@@ -6,7 +6,7 @@ module calfo2ccel_mod
   implicit none
 contains
   ! ***************************************************************
-  subroutine calfo2ccel(im,imm,xp, vp,  fp,  ityp,ielat,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
+  subroutine calfo2ccel(im,imm,xp,   fp,  ityp,ielat,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -28,7 +28,7 @@ contains
     !-----------------------------------------------
     integer,intent(in)::im,imm
     integer , intent(in),allocatable :: ielat(:),ityp(:),num_at_glob(:)
-    real(double),intent(in),allocatable  :: xp(:,:),vp(:,:)
+    real(double),intent(in),allocatable  :: xp(:,:)
     real(double) , intent(inout),allocatable :: fp(:,:)
 
     integer,intent(in)::noxyz,natperc
@@ -209,33 +209,33 @@ contains
              fp(1,j) = fp(1,j)-f1
              fp(2,j) = fp(2,j)-f2
              fp(3,j) = fp(3,j)-f3
-
-             if (lcalcjq) then
-                jqf=0.0
-                eat(i) = eat(i)+deltaepot
-#ifdef PARA
-                if (nprocspace.gt.1) then
-                   if (j.le.im) then
-                      eat(j) = eat(j)+deltaepot
-                      do ic=1,3
-                         jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
-                      end do
-                   else
-                      do ic=1,3
-                         jqf=jqf-0.5*(ra(ic)*(vp(ic,i)))
-                      end do
-                   end if
-                end if
-#else
-                eat(j) = eat(j)+deltaepot
-                do ic=1,3
-                   jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
-                end do
-                do ic=1,3
-                   jq(ic)=jq(ic)-jqf*cv(1,ic)
-                end do
-#endif
-             end if
+!!$
+!!$             if (lcalcjq) then
+!!$                jqf=0.0
+!!$                eat(i) = eat(i)+deltaepot
+!!$#ifdef PARA
+!!$                if (nprocspace.gt.1) then
+!!$                   if (j.le.im) then
+!!$                      eat(j) = eat(j)+deltaepot
+!!$                      do ic=1,3
+!!$                         jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
+!!$                      end do
+!!$                   else
+!!$                      do ic=1,3
+!!$                         jqf=jqf-0.5*(ra(ic)*(vp(ic,i)))
+!!$                      end do
+!!$                   end if
+!!$                end if
+!!$#else
+!!$                eat(j) = eat(j)+deltaepot
+!!$                do ic=1,3
+!!$                   jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
+!!$                end do
+!!$                do ic=1,3
+!!$                   jq(ic)=jq(ic)-jqf*cv(1,ic)
+!!$                end do
+!!$#endif
+!!$             end if
 
              if (lprteat) then
                 !              if (allocated (free)) then

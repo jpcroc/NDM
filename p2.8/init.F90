@@ -10,7 +10,7 @@ module init_mod
   USE neigcel_mod,only: neigcel
   USE dynalloccell
   USE initspeed_mod,only: initspeed
-  USE sauvegardeT_mod,only: sauvegardeT,cin2gin
+  USE sauvegardeT_mod,only: sauvegardeT!,cin2gin
   USE heat_mod,only: heat
   USE caltabi_mod,only: caltabi
   USE creadp_mod,only: creadp
@@ -156,7 +156,7 @@ contains
           if (rang==0) write (6, *) 'generation terminee'
           call arret_ndm
        case (2)
-          call cin2gin
+!          call cin2gin
           call arret_ndm
 
        case (3)

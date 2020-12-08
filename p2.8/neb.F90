@@ -3,7 +3,6 @@ module neb_mod
   USE analyse_mod,only: analyse
   USE trempe_mod,only: trempe
   USE neb_controle_mod,only:neb_controle
-!  USE scalebox_mod,only: scalebox
   USE sauveforce_mod,only: sauveforce
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
        &erg2ev,itesauv,lpkbar,nebtype,sig,unitp,potist,angst,itetabvois,rang,&
@@ -11,7 +10,6 @@ module neb_mod
        &nebrelaxation,lperiod
 
   
-!  USE tab_imm_m,only: xp,xpp,vp,ityp,iwmax,fp,ielat,num_at_glob
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config,caltabtC
   USE boxconfig,only:box_config,periodbox
@@ -62,7 +60,7 @@ contains
     ! Variables for Fire quench algorithm
     REAL(double), dimension(:), allocatable :: fire_dt, fire_alph
     INTEGER, dimension(:), allocatable :: fire_nstep,iter
-    type(atom_config_d),pointer::atnebloc
+    class(atom_config),pointer::atnebloc
     type(cell_config),pointer::cellnebloc
     type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
     type(atom_config_d),target::atcible
@@ -244,7 +242,7 @@ contains
 
                 if ((lperiod).and.(lmaster))    call periodbox (boxneb,atneb(ii))
                 call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
-                     &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,ii=ii)
+                     &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.)
                 
 #ifdef PARA
                 if (paraneb%lmaster) then
@@ -337,7 +335,7 @@ contains
 
                    if (lperiod)    call periodbox (boxneb,atneb(ii))
                    call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
-                        &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,ii=ii)
+                        &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.)
                    if (lmaster) then
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
                       &atneb(ii)%imm,atneb(ii)%im)

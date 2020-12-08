@@ -280,99 +280,99 @@ contains
     return
   end subroutine sauvegardeT
 
-  subroutine cin2gin
-  USE temp_com,only:at,bg,im,volu,imm ! A EFFACER
-  USE gen_com_m, ONLY:im_glob,rang,fnamcout,formatsauv,im_glob,it,itesauvinter,&
-         &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
-    USE tab_imm_m,only:xp,vp,fp,xpp,ax,ityp,num_at_glob
-    integer :: lugout,i
-    character :: extension*9
-    character :: fnamgout*80
-#ifdef PARA
-    integer,dimension(:),allocatable     :: ibuffer
-    real(double), dimension(:,:),allocatable   :: buffer
-    integer,      dimension(0:nprocspace-1)   :: im_loc
-    integer,      dimension(0:nprocspace-1)   :: pt_im
-    integer :: next_pt
-    integer :: i_proc
-    integer :: proc_source
-    integer :: im_temp
-
-    allocate (buffer(3,imm_glob))
-    allocate (ibuffer(imm_glob))
-
-#endif
-
-    if (rang==0) then
-       fnamgout = fnam(1:lenfnam)//'.newgin'
-
-
-
-       lugout = 877
-       write (6, *) ' ecriture newgin', fnamgout
-       open(unit=lugout, file=fnamgout, form='formatted', status='unknown')
-       write(lugout,*)'1 1 1 '
-       at=at*1d8
-       write(lugout,*)at(1,1),at(2,1),at(3,1) !a
-       write(lugout,*)at(1,2),at(2,2),at(3,2) !b
-       write(lugout,*)at(1,3),at(2,3),at(3,3) !c
-       at=at*1d-8
-      write(lugout,*)im_glob
-
-
-#ifdef PARA
-       im_loc(0)=im
-       ibuffer=0
-       ibuffer(1:im)  = ityp(1:im)
-       buffer=0
-       buffer(:,1:im) = xp(:,1:im)
-       pt_im(0)=1
-       next_pt = pt_im(0) + im_loc(0)
-       do i_proc=1,nprocspace-1
-          call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_space, status, ierr)
-          proc_source = status(MPI_SOURCE)
-          im_loc(proc_source)=im_temp
-          pt_im(proc_source)=next_pt
-          next_pt = pt_im(proc_source) + im_loc(proc_source)
-          call MPI_RECV(ibuffer(pt_im(proc_source):pt_im(proc_source)+im_temp-1),    im_loc(proc_source),   &
-               MPI_INTEGER,         proc_source, 11002, MPI_COMM_space, status, ierr)
-          call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
-               NDM_MPI_REAL_DOUBLE, proc_source, 11003, MPI_COMM_space, status, ierr)
-       enddo
-       call cryst_to_cart(im_glob,buffer,bg,-1) !cart vers cryst
-
-       do i=1,im_glob
-          write(lugout,'(3F18.11,I6)')buffer(1,i),buffer(2,i),buffer(3,i),ibuffer(i) !coordonnes reduites des
-       enddo
-#else
-       !
-       ! Partie sequentielle de la sauvegarde :
-       call cryst_to_cart(imm,xp,bg,-1) !cart vers cryst
-       do i=1,im
-!          write(6,*)xp(1,i),xp(2,i),xp(3,i),ityp(i) !coordonnes reduites des
-          write(lugout,'(3F21.11,I6)')xp(1,i),xp(2,i),xp(3,i),ityp(i) !coordonnes reduites des
-       enddo
-       call cryst_to_cart(imm,xp,at,1) !cart vers cryst
-#endif
-
-       close(unit=lugout)
-
-
-    else ! rang different de 0 :
-#ifdef PARA
-       call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
-
-       call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
-       call MPI_SEND(xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_space,ierr)
-#endif
-    endif
-#ifdef PARA
-    deallocate (buffer)
-    deallocate (ibuffer)
-#endif
-
-    return
-  end subroutine cin2gin
+!!$  subroutine cin2gin
+!!$    use tab_imm_m
+!!$  USE temp_com,only:at,bg,im,volu,imm ! A EFFACER
+!!$  USE gen_com_m, ONLY:im_glob,rang,fnamcout,formatsauv,im_glob,it,itesauvinter,&
+!!$         &pmean,rang,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
+!!$    integer :: lugout,i
+!!$    character :: extension*9
+!!$    character :: fnamgout*80
+!!$#ifdef PARA
+!!$    integer,dimension(:),allocatable     :: ibuffer
+!!$    real(double), dimension(:,:),allocatable   :: buffer
+!!$    integer,      dimension(0:nprocspace-1)   :: im_loc
+!!$    integer,      dimension(0:nprocspace-1)   :: pt_im
+!!$    integer :: next_pt
+!!$    integer :: i_proc
+!!$    integer :: proc_source
+!!$    integer :: im_temp
+!!$
+!!$    allocate (buffer(3,imm_glob))
+!!$    allocate (ibuffer(imm_glob))
+!!$
+!!$#endif
+!!$
+!!$    if (rang==0) then
+!!$       fnamgout = fnam(1:lenfnam)//'.newgin'
+!!$
+!!$
+!!$
+!!$       lugout = 877
+!!$       write (6, *) ' ecriture newgin', fnamgout
+!!$       open(unit=lugout, file=fnamgout, form='formatted', status='unknown')
+!!$       write(lugout,*)'1 1 1 '
+!!$       at=at*1d8
+!!$       write(lugout,*)at(1,1),at(2,1),at(3,1) !a
+!!$       write(lugout,*)at(1,2),at(2,2),at(3,2) !b
+!!$       write(lugout,*)at(1,3),at(2,3),at(3,3) !c
+!!$       at=at*1d-8
+!!$      write(lugout,*)im_glob
+!!$
+!!$
+!!$#ifdef PARA
+!!$       im_loc(0)=im
+!!$       ibuffer=0
+!!$       ibuffer(1:im)  = ityp(1:im)
+!!$       buffer=0
+!!$       buffer(:,1:im) = xp(:,1:im)
+!!$       pt_im(0)=1
+!!$       next_pt = pt_im(0) + im_loc(0)
+!!$       do i_proc=1,nprocspace-1
+!!$          call MPI_RECV(im_temp,1, MPI_INTEGER, MPI_ANY_SOURCE, 11001, MPI_COMM_space, status, ierr)
+!!$          proc_source = status(MPI_SOURCE)
+!!$          im_loc(proc_source)=im_temp
+!!$          pt_im(proc_source)=next_pt
+!!$          next_pt = pt_im(proc_source) + im_loc(proc_source)
+!!$          call MPI_RECV(ibuffer(pt_im(proc_source):pt_im(proc_source)+im_temp-1),    im_loc(proc_source),   &
+!!$               MPI_INTEGER,         proc_source, 11002, MPI_COMM_space, status, ierr)
+!!$          call MPI_RECV(buffer(1:3,pt_im(proc_source):pt_im(proc_source)+im_temp-1),3*im_loc(proc_source), &
+!!$               NDM_MPI_REAL_DOUBLE, proc_source, 11003, MPI_COMM_space, status, ierr)
+!!$       enddo
+!!$       call cryst_to_cart(im_glob,buffer,bg,-1) !cart vers cryst
+!!$
+!!$       do i=1,im_glob
+!!$          write(lugout,'(3F18.11,I6)')buffer(1,i),buffer(2,i),buffer(3,i),ibuffer(i) !coordonnes reduites des
+!!$       enddo
+!!$#else
+!!$       !
+!!$       ! Partie sequentielle de la sauvegarde :
+!!$       call cryst_to_cart(imm,xp,bg,-1) !cart vers cryst
+!!$       do i=1,im
+!!$!          write(6,*)xp(1,i),xp(2,i),xp(3,i),ityp(i) !coordonnes reduites des
+!!$          write(lugout,'(3F21.11,I6)')xp(1,i),xp(2,i),xp(3,i),ityp(i) !coordonnes reduites des
+!!$       enddo
+!!$       call cryst_to_cart(imm,xp,at,1) !cart vers cryst
+!!$#endif
+!!$
+!!$       close(unit=lugout)
+!!$
+!!$
+!!$    else ! rang different de 0 :
+!!$#ifdef PARA
+!!$       call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
+!!$
+!!$       call MPI_SEND(ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
+!!$       call MPI_SEND(xp(1:3,1:im),3*im,NDM_MPI_REAL_DOUBLE,0,11003,MPI_COMM_space,ierr)
+!!$#endif
+!!$    endif
+!!$#ifdef PARA
+!!$    deallocate (buffer)
+!!$    deallocate (ibuffer)
+!!$#endif
+!!$
+!!$    return
+!!$  end subroutine cin2gin
 
 
 

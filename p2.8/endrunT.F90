@@ -3,7 +3,7 @@ module endrunT_mod
   USE adf_mod,only:adf
   USE spebc_fin_mod,only:spebc_fin
   USE arret_ndm_mod,only:arret_ndm
-  USE sauvegardeT_mod,only:sauvegardeT,cin2gin
+  USE sauvegardeT_mod,only:sauvegardeT!,cin2gin
   USE rdf_mod,only:rdf
   USE rasmolT_mod,only:rasmolT
   USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,itdes,&
@@ -20,7 +20,7 @@ module endrunT_mod
   implicit none
 contains
   ! ****************************************************************
-  subroutine endrunT(atdml,celndm,boxndm)
+  subroutine endrunT(atdml,celndm,boxndm,latcomp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -52,6 +52,7 @@ contains
     type(box_config)::boxndm
     class(atom_config)::atdml
     type(cell_config):: celndm
+    logical,intent(in)::latcomp
 
 
     integer :: i,j, n, nAux_real
@@ -245,13 +246,13 @@ contains
  temps_dmloop=MPI_Wtime() - temps_dmloop_deb
 #endif
 
- if (lWgin.eqv..true.) call cin2gin
+! if (lWgin.eqv..true.) call cin2gin
  IF (iteSauv.GE.0) then
     !    call boxndm%print
     !    call celndm%print
     !     call atdml%print
     formatsauv=3;fnamcout= fnam(1:lenfnam)//'.cout'
-    call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)     ! Modif E. Clouet: sauvegarde seulement si voulu
+    call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)     ! Modif E. Clouet: sauvegarde seulement si voulu
     if (l2T.and.rang==0) call sauveelec
  end IF
 
@@ -272,57 +273,9 @@ contains
  !  end select
 
 
- if (iterasmol.GE.0) call rasmolT (atdml,boxndm,it)
+ if (iterasmol.GE.0) call rasmolT (atdml,boxndm,it,latcomp=latcomp)
  if (.not.parallele.and.iteanapos>=0) call anapos (it)
 
- ! Ecriture d'un fichier atomeye
-!!$ if (itecfg.GE.0) then
-!!$
-!!$    WRITE(out_file,'(2a,i0,a)') fnam(1:lenfnam),'.', it, '.cfg'
-!!$    OPEN(file=out_file, unit=60, action='write')
-!!$
-!!$    !        if (dmtype==17)  CALL redefine_ty()
-!!$
-!!$    IF (lPrtEat.OR.lPrtSigat) THEN       ! Energy and/or stress per atom
-!!$       select type (atdml)
-!!$       type is (atom_config_e)
-!!$          if (atdml%lsigat) then
-!!$             nAux_real=0
-!!$             IF (lPrtEat)   nAux_real = nAux_real + 1
-!!$             IF (lPrtSigat) nAux_real = nAux_real + 6
-!!$             IF (Allocated(aux_real)) DeAllocate(aux_real)
-!!$             Allocate(aux_real(nAux_real,1:im))
-!!$             IF (Allocated(aux_title)) DeAllocate(aux_title)
-!!$             Allocate(aux_title(nAux_real))
-!!$             n=0
-!!$             IF (lPrtEat) THEN
-!!$                aux_title(n+1)="Energy per atom (eV)"
-!!$                aux_real(n+1,1:im)=Eatom(1:im)*erg2eV
-!!$                n = n+1
-!!$             END IF
-!!$             IF (lPrtSigat) THEN
-!!$                aux_title(n+1) = 'Stress Sxx'
-!!$                aux_title(n+2) = '       Syy'
-!!$                aux_title(n+3) = '       Szz'
-!!$                aux_title(n+4) = '       Syz'
-!!$                aux_title(n+5) = '       Sxz'
-!!$                aux_title(n+6) = '       Sxy (' // cunitP // ')'
-!!$                aux_real(n+1,1:im) = atdml%sigat(1,1,1:im)*unitP
-!!$                aux_real(n+2,1:im) = atdml%sigat(2,2,1:im)*unitP
-!!$                aux_real(n+3,1:im) = atdml%sigat(3,3,1:im)*unitP
-!!$                aux_real(n+4,1:im) = 0.5d0*( atdml%sigat(2,3,1:im) + atdml%sigat(3,2,1:im) )*unitP
-!!$                aux_real(n+5,1:im) = 0.5d0*( atdml%sigat(1,3,1:im) + atdml%sigat(3,1,1:im) )*unitP
-!!$                aux_real(n+6,1:im) = 0.5d0*( atdml%sigat(1,2,1:im) + atdml%sigat(2,1,1:im) )*unitP
-!!$             END IF
-!!$             CALL WriteCfg(xp, ityp, im, at, 60, nAux_real=nAux_real, aux_real=aux_real, aux_title=aux_title)
-!!$             DEALLOCATE(aux_real, aux_title)
-!!$          end if
-!!$       end select
-!!$    ELSE
-!!$       CALL WriteCfg(xp, ityp, im, at, 60)
-!!$    END IF
-!!$    CLOSE(60)
-!!$ endif
  call arret_ndm
 
 

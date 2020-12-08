@@ -1,6 +1,4 @@
 module constrconf_mod
-!    USE period_mod,only:period
-  !  USE divid_mod, only:divid
 #ifdef PARA
   USE decoupage_mod,only: decoupage
 #endif
@@ -15,7 +13,6 @@ module constrconf_mod
     USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig,only:cell_config
   USE boxconfig,only:box_config,initbox,periodbox
-!  USE read_conf,only:read_cin,read_gin
   USE setcell,only:setnox,setcellconf
   USE decoupage_mod,only: decoupage
   USE T_kind_param_m, ONLY:  double
@@ -36,9 +33,6 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
 
-    !    USE tab_imm_m,only:xp,ax,glangv,vp,xpp
-    !    USE suivinonpbc
-    !    USE read_conf_mod
 
     implicit none
 

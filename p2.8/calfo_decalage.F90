@@ -5,7 +5,7 @@ module calfo_decalage_mod
         implicit none 
         contains
 !----------------------------------------------------------------------
-SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi,at,bg,volu)
+SUBROUTINE calfo_decalage(im,imm,xp,  fp,  iwmax, ityp,indi,at,bg,volu)
   !tentative de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
   USE gen_com_m, ONLY:angst,decal_bc,it,ldemitab,low_limit,&
@@ -27,7 +27,6 @@ SUBROUTINE calfo_decalage(im,imm,xp, vp,  fp,  iwmax, ityp,indi,at,bg,volu)
     integer  :: indi(:)
   integer  :: ityp(:)
   real(double)  :: xp(:,:)
-  real(double)  :: vp(:,:)
   real(double)  :: fp(:,:)
     real(double),intent(in),dimension(3,3)::at,bg
     real(double),intent(in)::volu

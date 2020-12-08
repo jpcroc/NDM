@@ -37,7 +37,6 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    !  USE tab_imm_m,only:xp,xpp,vp,fp,iwmax,ityp,ielat,num_at_glob,ax
     USE FireModule
 
     implicit none
@@ -171,11 +170,10 @@ contains
        call caltabi(atdml%atom_config,celndm,boxndm)
     end if
 
-    
     call controleT(atdml,celndm,boxndm)
 
 
-    !     write(6,*)' controle ->'
+    
 
 
     go to 1

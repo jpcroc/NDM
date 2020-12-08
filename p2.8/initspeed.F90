@@ -1,6 +1,6 @@
 module initspeed_mod
-!  USE tab_imm_m,only:xp,vp,xpp,ityp,ax,bruitmd
-    USE tab_imm_m,only:bruitmd
+
+
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: MatInv
   USE tempinst_mod,only: tempinst
@@ -24,7 +24,7 @@ module initspeed_mod
   implicit none
 contains
   ! *********************************************************************
-  subroutine bruit_xp (xp,im)
+  subroutine bruit_xp (xp,bruitmd,im)
     USE T_kind_param_m, ONLY:  double
 
     !-----------------------------------------------
@@ -32,13 +32,14 @@ contains
     !-----------------------------------------------
     implicit none
 
-    real(double), allocatable::xp(:,:)
+    real(double), allocatable::xp(:,:),bruitmd(:,:)
     integer::im
     
     integer    :: ia, ip,seed_size
     integer, dimension(:),allocatable :: iseedt
     real(double)  :: zr1,zr2,zr3,zr4,totalbruit
 
+    if (.not.allocated(bruitmd))allocate(bruitmd(3,im))
     call random_seed(size=seed_size)
     allocate(iseedt(seed_size))
     call system_clock (iseed)
@@ -107,6 +108,7 @@ contains
     real(double), dimension(3) :: vt1,  scom, pav,kinx
     real(double), dimension(3,3) :: ainer, aineri
     real(double), dimension(3,ntyp) :: vav
+    real(double),allocatable::bruitmd(:,:)
     integer  :: i_glob
     integer  :: est_local
     integer :: seed_size
@@ -145,7 +147,7 @@ contains
              goto 66
           else
              vp=0.0 
-             call bruit_xp(atcf%xp,im)
+             call bruit_xp(atcf%xp,bruitmd,atcf%im)
              xp(1:3,1:im) = xp(1:3,1:im) + bruitmd(1:3,1:im)
              goto 66
           end if

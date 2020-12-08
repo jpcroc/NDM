@@ -51,7 +51,7 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    class(atom_config_d),intent(inout),target::atcf
+    class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(in),target::celcf
     type(box_config),intent(in)::boxcf
     !-----------------------------------------------
@@ -64,7 +64,7 @@ contains
 !    integer::im
 !    integer, intent(in) ::imm
     real(double),intent(out)::potistcf,sigcf(3,3)
-    real(double),dimension(:,:),allocatable:: xp,vp,fp,xpp
+    real(double),dimension(:,:),allocatable:: xp,fp,xpp
 !    integer,dimension(:),allocatable::ityp,ielat
 !    logical::ltabvois
 !    integer,allocatable ::iwmax(:)
@@ -140,10 +140,10 @@ contains
                 select case (ipotentiel)
                 case(0,1,3,4,5,6,7)
                    if (atcf%ltabvois) then
-                      call calfo2ctabvois (atcf%im,atcf%imm,atcf%xp, atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
+                      call calfo2ctabvois (atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
                            &boxcf%at,boxcf%bg,boxcf%volu)
                    else
-                      call calfo2ccel (atcf%im,atcf%imm,atcf%xp, atcf%vp,  atcf%fp, atcf%ityp,atcf%ielat,atcf%num_at_glob,&
+                      call calfo2ccel (atcf%im,atcf%imm,atcf%xp,  atcf%fp, atcf%ityp,atcf%ielat,atcf%num_at_glob,&
                            &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
                            &boxcf%at,boxcf%bg,boxcf%volu)
 
@@ -160,7 +160,7 @@ contains
                 case(2)
                    ! !!! le cas parallele n'est pas pris en compte !!!
 
-                   if (.not.parallele) call calfow(atcf%im,atcf%imm,atcf%xp,  atcf%vp, atcf%fp, atcf%ielat, atcf%ityp,&
+                   if (.not.parallele) call calfow(atcf%im,atcf%imm,atcf%xp,  atcf%fp, atcf%ielat, atcf%ityp,&
                         &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
                            &boxcf%at,boxcf%bg,boxcf%volu)
 
@@ -168,7 +168,7 @@ contains
                 end select
 
                 ! !!! le cas parallele n'est pas pris en compte !!!
-                if (.not.parallele.and.l3c) call calfo3c (atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%ielat, atcf%ityp,&
+                if (.not.parallele.and.l3c) call calfo3c (atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%ielat, atcf%ityp,&
                         &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
                            &boxcf%at,boxcf%bg,boxcf%volu,celcf%sigc)
 
@@ -179,10 +179,10 @@ contains
                 case(12)
                    ! !!! le cas parallele n'est pas pris en compte !!!
                    if (atcf%ltabvois) then 
-                      call calfojuli(atcf%im,atcf%imm,atcf%xp,  atcf%vp, atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
+                      call calfojuli(atcf%im,atcf%imm,atcf%xp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
                            &boxcf%at,boxcf%bg,boxcf%volu)
                    else
-                      call calfojulicel(atcf%im,atcf%imm,atcf%xp,  atcf%vp, atcf%fp, atcf%ielat, atcf%ityp,&
+                      call calfojulicel(atcf%im,atcf%imm,atcf%xp,  atcf%fp, atcf%ielat, atcf%ityp,&
                       &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
                            &boxcf%at,boxcf%bg,boxcf%volu)
 
@@ -190,11 +190,11 @@ contains
                 case(13,14,15)
                    if (atcf%ltabvois) then
                       ! !!! le cas parallele n'est pas pris en compte !!!
-                      if (.not.parallele) call force_tersoff (atcf%im,atcf%imm,atcf%xp,  atcf%vp, atcf%fp, atcf%iwmax, &
+                      if (.not.parallele) call force_tersoff (atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%iwmax, &
                            &atcf%ityp,atcf%indi,boxcf%at,boxcf%bg,boxcf%volu,boxcf%zl)
 
                    else
-                      call force_tersoff_cel(atcf%im,atcf%imm,atcf%xp,  atcf%vp, atcf%fp, &
+                      call force_tersoff_cel(atcf%im,atcf%imm,atcf%xp,   atcf%fp, &
                            &atcf%ielat, atcf%ityp,celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,&
                            &celcf%deltadist,boxcf%at,boxcf%bg,boxcf%volu)
 
@@ -205,15 +205,15 @@ contains
                       ! !!! le cas parallele n'est pas pris en compte !!!
                       if (.not.parallele) then
                          IF(ldecal_bc.EQV..FALSE.) THEN
-                            call calfoeamtabvois(atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
+                            call calfoeamtabvois(atcf%im,atcf%imm,atcf%xp,    atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
                                  &boxcf%at,boxcf%bg,boxcf%volu)
                          ELSE IF (ldecal_bc.EQV..TRUE.) THEN !*!
-                            call calfo_decalage(atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
+                            call calfo_decalage(atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
                                  &boxcf%at,boxcf%bg,boxcf%volu)
                          END IF
                       end if
                    else
-                      call calfoeamcel(atcf%im,atcf%imm,atcf%xp,  atcf%vp,  atcf%fp, atcf%ielat, atcf%ityp,atcf%num_at_glob,&
+                      call calfoeamcel(atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%ielat, atcf%ityp,atcf%num_at_glob,&
                            &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
                            &celcf%nox,celcf%noy,celcf%noz,boxcf%at,boxcf%bg,boxcf%volu)
      

@@ -129,6 +129,8 @@
 !                   G                                                    
 
 module gcmodII_mod
+
+
 #ifdef PARA
 !  use mpi
   USE mod_para,only:MPI_COMM_space,ierr,nprocspace,status
@@ -140,21 +142,17 @@ module gcmodII_mod
 #endif  
 contains
 
-  SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS, &
-       xp_all,  fp_all, ityp_all,ims)
+  SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS)
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dfpred,rang
     !  USE gen_com_m, ONLY:
     !                                  SPECIFICATIONS FOR ARGUMENTS         
 
-    INTEGER            N,MAXFN,IER   ,ims,iopt                              
+    INTEGER            N,MAXFN,IER,iopt                              
     DOUBLE PRECISION   ACC,X(N),G(N),F,W(6*N)                    
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer  :: ityp_all(ims)
-    double precision  :: xp_all(3,ims)
-    double precision  :: fp_all(3,ims)
     !-----------------------------------------------
     integer criterion
     integer NCALLS
@@ -210,303 +208,312 @@ contains
 
     do_print=.true.      
 
-    IF (3*ims.NE.N) THEN
-       WRITE(0,'(a,i0)') "3*ims = ", 3*ims
-       WRITE(0,'(a,i0)') "N     = ", N
-       STOP "< ZXCGRII >"
-    END IF
 
 
 5   NCALLS = NCALLS+1 
-
-   CALL FUNCT (N,X,F,G,NCALLS,                       &
-         xp_all, fp_all,  ityp_all,ims)                                
+!    if (rang==0) then
+!       write(6,*)'X1',x
+!       write(6,*)'G1',G
+!    end if
+    CALL FUNCT (N,X,F,G,NCALLS)                                
 
 
 
     if (rang==0) then
-
+!       write(6,*)'X',x
+!       write(6,*)'G',G
+       
        if (NCALLS .eq. 1) then
           !cos	if (do_print) print 3000, F
           !cos 3000    FORMAT ("ZXCGR Starting energy = ", F20.10)
        end if
        IF (NCALLS.GE.2) GO TO 20                                         
-10     DO 15 I=1,N                                                       
-15        W(I) = -G(I)                                                      
-          ITERRS = 0                                                        
-          IF (ITERC.GT.0) GO TO 80                                          
-          !                                  SET SUM TO G SQUARED. GMIN AND GNEW  
-          !                                    ARE THE OLD AND THE NEW            
-          !                                    DIRECTIONAL DERIVATIVES ALONG THE  
-          !                                    CURRENT SEARCH DIRECTION. LET FCH  
-          !                                    BE THE DIFFERENCE BETWEEN F AND    
-          !                                    THE PREVIOUS BEST VALUE OF THE     
-          !                                    OBJECTIVE FUNCTION.                
-20        GNEW = 0.0D0                                                      
-          SUM = 0.0D0                                                       
-          g_elem_max = 0.0
-          DO 25 I=1,N                                                       
-             GNEW = GNEW+W(I)*G(I)                                          
-             if (G(I)**2 .gt. g_elem_max) g_elem_max = G(I)**2
-25           SUM = SUM+G(I)**2                                                 
-             IF (NCALLS.EQ.1) GO TO 35                                         
-             FCH = F-FMIN                                                      
-             !                                  STORE THE VALUES OF X, F AND G, IF   
-             !                                    THEY ARE THE BEST THAT HAVE BEEN   
-             !                                    CALCULATED SO FAR, AND NOTE G      
-             !                                    SQUARED AND THE VALUE OF NCALLS.   
-             !                                    TEST FOR CONVERGENCE.              
-             IF (FCH) 35,30,50                                                 
-30           IF (GNEW/GMIN.LT.-1.0D0) GO TO 45                                 
-35           FMIN = F                                                          
-             GSQRD = SUM                                                       
-             NFOPT = NCALLS                                                    
-             DO 40 I=1,N                                                       
-                W(IXOPT+I) = X(I)                                              
-40              W(IGOPT+I) = G(I)                                                 
-45              continue !cos    if (do_print) print 3010, ITERC,NCALLS, sqrt(SUM), F
-                !cos 3010 FORMAT ("ZXCGR:",2I5,2F20.10)
-                IF ((SUM.LE.ACC .and. criterion.eq.0) .or.                 &
-                     (g_elem_max.LE.ACC .and. criterion.eq.1)) GO TO 9005      
-                !                                  TEST IF THE VALUE OF MAXFN ALLOWS    
-                !                                    ANOTHER CALL OF FUNCT.             
-50              IF (NCALLS.NE.MAXFN) GO TO 55                                     
-                IER = 131                                                         
-                GO TO 9000                                                        
-55              IF (NCALLS.GT.1) GO TO 100                                        
-                !                                  SET DFPr TO THE ESTIMATE OF THE      
-                !                                    REDUCTION IN F GIVEN IN THE        
-                !                                    ARGUMENT LIST, IN ORDER THAT THE   
-                !                                    INITIAL CHANGE TO THE PARAMETERS   
-                !                                    IS OF A SUITABLE SIZE. THE VALUE   
-                !                                    OF STMIN IS USUALLY THE            
-                !                                    STEP-LENGTH OF THE MOST RECENT     
-                !                                    LINE SEARCH THAT GIVES THE LEAST   
-                !                                    CALCULATED VALUE OF F.             
-                DFPR = dfpred                                                    
-                STMIN = dfpred/GSQRD                                              
-                !      if (do_print) print *, "DFPR, STMIN = ", DFPR, STMIN
-                !                                  BEGIN THE ITERATION                  
-80              ITERC = ITERC+1                                                   
-                !                                  STORE THE INITIAL FUNCTION VALUE AND 
-                !                                    GRADIENT, CALCULATE THE INITIAL    
-                !                                    DIRECTIONAL DERIVATIVE, AND BRANCH 
-                !                                    IF ITS VALUE IS NOT NEGATIVE. SET  
-                !                                    SBOUND TO MINUS ONE TO INDICATE    
-                !                                    THAT A BOUND ON THE STEP IS NOT    
-                !                                    KNOWN YET, AND SET NFBEG TO THE    
-                !                                    CURRENT VALUE OF NCALLS. THE       
-                !                                    PARAMETER IRETRY SHOWS THE NUMBER  
-                !                                    OF ATTEMPTS AT SATISFYING THE BETA 
-                !                                    CONDITION.                         
-                FINIT = F                                                         
-                GINIT = 0.0D0                                                     
-                DO 85 I=1,N                                                       
-                   W(IGINIT+I) = G(I)                                             
-85                 GINIT = GINIT+W(I)*G(I)                                           
-                   !      if (do_print) print *, "GINIT = ", GINIT
-                   IF (GINIT.GE.0.0D0) GO TO 165                                     
-                   GMIN = GINIT                                                      
-                   SBOUND = -1.0D0                                                   
-                   NFBEG = NCALLS                                                    
-                   IRETRY = -1                                                       
-                   !                                  SET STEPCH SO THAT THE INITIAL       
-                   !                                    STEP-LENGTH IS CONSISTENT WITH THE 
-                   !                                    PREDICTED REDUCTION IN F, SUBJECT  
-                   !                                    TO THE CONDITION THAT IT DOES NOT  
-                   !                                    EXCEED THE STEP-LENGTH OF THE      
-                   !                                    PREVIOUS ITERATION. LET STMIN BE   
-                   !                                    THE STEP TO THE LEAST CALCULATED   
-                   !                                    VALUE OF F.                        
-                   !      if (do_print) print *, "setting STEPCH ", STMIN, DFPR/GINIT
-                   STEPCH = DMIN1(STMIN,DABS(DFPR/GINIT))                            
-                   STMIN = 0.0D0                                                     
-                   !                                  CALL SUBROUTINE FUNCT AT THE VALUE   
-                   !                                    OF X THAT IS DEFINED BY THE NEW    
-                   !                                    CHANGE TO THE STEP-LENGTH, AND LET 
-                   !                                    THE NEW STEP-LENGTH BE STEP. THE   
-                   !                                    VARIABLE WORK IS USED AS WORK      
-                   !                                    SPACE.                             
-90                 STEP = STMIN+STEPCH                                               
-                   WORK = 0.0D0                                                      
-                   DO 95 I=1,N                                                       
-                      X(I) = W(IXOPT+I)+STEPCH*W(I)                                  
-95                    WORK = DMAX1(WORK,DABS(X(I)-W(IXOPT+I)))                          
-                      IF (WORK.GT.0.0D0) then
+10     DO I=1,N                                                       
+          W(I) = -G(I)
+       end DO
+       ITERRS = 0                                                        
+       IF (ITERC.GT.0) GO TO 80                                          
+       !                                  SET SUM TO G SQUARED. GMIN AND GNEW  
+       !                                    ARE THE OLD AND THE NEW            
+       !                                    DIRECTIONAL DERIVATIVES ALONG THE  
+       !                                    CURRENT SEARCH DIRECTION. LET FCH  
+       !                                    BE THE DIFFERENCE BETWEEN F AND    
+       !                                    THE PREVIOUS BEST VALUE OF THE     
+       !                                    OBJECTIVE FUNCTION.                
+20     GNEW = 0.0D0                                                      
+       SUM = 0.0D0                                                       
+       g_elem_max = 0.0
+       DO I=1,N                                                       
+          GNEW = GNEW+W(I)*G(I)                                          
+          if (G(I)**2 .gt. g_elem_max) g_elem_max = G(I)**2
+25        SUM = SUM+G(I)**2
+       end DO
+       IF (NCALLS.EQ.1) GO TO 35                                         
+       FCH = F-FMIN                                                      
+       !                                  STORE THE VALUES OF X, F AND G, IF   
+       !                                    THEY ARE THE BEST THAT HAVE BEEN   
+       !                                    CALCULATED SO FAR, AND NOTE G      
+       !                                    SQUARED AND THE VALUE OF NCALLS.   
+       !                                    TEST FOR CONVERGENCE.              
+       IF (FCH) 35,30,50                                                 
+30     IF (GNEW/GMIN.LT.-1.0D0) GO TO 45                                 
+35     FMIN = F                                                          
+       GSQRD = SUM                                                       
+       NFOPT = NCALLS                                                    
+       DO I=1,N                                                       
+          W(IXOPT+I) = X(I)                                              
+40        W(IGOPT+I) = G(I)
+       end DO
+45     continue !cos    if (do_print) print 3010, ITERC,NCALLS, sqrt(SUM), F
+       !cos 3010 FORMAT ("ZXCGR:",2I5,2F20.10)
+       IF ((SUM.LE.ACC .and. criterion.eq.0) .or.                 &
+            (g_elem_max.LE.ACC .and. criterion.eq.1)) GO TO 9005      
+       !                                  TEST IF THE VALUE OF MAXFN ALLOWS    
+       !                                    ANOTHER CALL OF FUNCT.             
+50     IF (NCALLS.NE.MAXFN) GO TO 55                                     
+       IER = 131                                                         
+       GO TO 9000                                                        
+55     IF (NCALLS.GT.1) GO TO 100                                        
+       !                                  SET DFPr TO THE ESTIMATE OF THE      
+       !                                    REDUCTION IN F GIVEN IN THE        
+       !                                    ARGUMENT LIST, IN ORDER THAT THE   
+       !                                    INITIAL CHANGE TO THE PARAMETERS   
+       !                                    IS OF A SUITABLE SIZE. THE VALUE   
+       !                                    OF STMIN IS USUALLY THE            
+       !                                    STEP-LENGTH OF THE MOST RECENT     
+       !                                    LINE SEARCH THAT GIVES THE LEAST   
+       !                                    CALCULATED VALUE OF F.             
+       DFPR = dfpred                                                    
+       STMIN = dfpred/GSQRD                                              
+       !      if (do_print) print *, "DFPR, STMIN = ", DFPR, STMIN
+       !                                  BEGIN THE ITERATION                  
+80     ITERC = ITERC+1                                                   
+       !                                  STORE THE INITIAL FUNCTION VALUE AND 
+       !                                    GRADIENT, CALCULATE THE INITIAL    
+       !                                    DIRECTIONAL DERIVATIVE, AND BRANCH 
+       !                                    IF ITS VALUE IS NOT NEGATIVE. SET  
+       !                                    SBOUND TO MINUS ONE TO INDICATE    
+       !                                    THAT A BOUND ON THE STEP IS NOT    
+       !                                    KNOWN YET, AND SET NFBEG TO THE    
+       !                                    CURRENT VALUE OF NCALLS. THE       
+       !                                    PARAMETER IRETRY SHOWS THE NUMBER  
+       !                                    OF ATTEMPTS AT SATISFYING THE BETA 
+       !                                    CONDITION.                         
+       FINIT = F                                                         
+       GINIT = 0.0D0                                                     
+       DO  I=1,N                                                       
+          W(IGINIT+I) = G(I)                                             
+85        GINIT = GINIT+W(I)*G(I)
+       end DO
+       !      if (do_print) print *, "GINIT = ", GINIT
+       IF (GINIT.GE.0.0D0) GO TO 165                                     
+       GMIN = GINIT                                                      
+       SBOUND = -1.0D0                                                   
+       NFBEG = NCALLS                                                    
+       IRETRY = -1                                                       
+       !                                  SET STEPCH SO THAT THE INITIAL       
+       !                                    STEP-LENGTH IS CONSISTENT WITH THE 
+       !                                    PREDICTED REDUCTION IN F, SUBJECT  
+       !                                    TO THE CONDITION THAT IT DOES NOT  
+       !                                    EXCEED THE STEP-LENGTH OF THE      
+       !                                    PREVIOUS ITERATION. LET STMIN BE   
+       !                                    THE STEP TO THE LEAST CALCULATED   
+       !                                    VALUE OF F.                        
+       !      if (do_print) print *, "setting STEPCH ", STMIN, DFPR/GINIT
+       STEPCH = DMIN1(STMIN,DABS(DFPR/GINIT))                            
+       STMIN = 0.0D0                                                     
+       !                                  CALL SUBROUTINE FUNCT AT THE VALUE   
+       !                                    OF X THAT IS DEFINED BY THE NEW    
+       !                                    CHANGE TO THE STEP-LENGTH, AND LET 
+       !                                    THE NEW STEP-LENGTH BE STEP. THE   
+       !                                    VARIABLE WORK IS USED AS WORK      
+       !                                    SPACE.                             
+90     STEP = STMIN+STEPCH                                               
+       WORK = 0.0D0                                                      
+       DO  I=1,N                                                       
+          X(I) = W(IXOPT+I)+STEPCH*W(I)                                  
+95        WORK = DMAX1(WORK,DABS(X(I)-W(IXOPT+I)))
+       end DO
+       IF (WORK.GT.0.0D0) then
 #ifdef PARA
-                            if (nprocspace.gt.1) then
-                        iopt=1
-                         do ip=1,nprocspace-1
-                            call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
-                         end do
-                      end if
+          if (nprocspace.gt.1) then
+             iopt=1
+             do ip=1,nprocspace-1
+                call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
+             end do
+          end if
 #endif                         
 
-                         GO TO 5     !!!!!!!!!!!      !!!!!!!!!!!!                                      
-                      end IF
-                         !                                  TERMINATE THE LINE SEARCH IF STEPCH  
-                      !                                    IS EFFECTIVELY ZERO.               
-                      IF (NCALLS.GT.NFBEG+1) GO TO 115                                  
-                      IF (DABS(GMIN/GINIT)-0.2D0) 170,170,115                           
-                      !                                  LET SPLN BE THE QUADRATIC SPLINE     
-                      !                                    THAT INTERPOLATES THE CALCULATED   
-                      !                                    FUNCTION VALUES AND DIRECTIONAL    
-                      !                                    DERIVATIVES AT THE POINTS STMIN    
-                      !                                    AND STEP OF THE LINE SEARCH, WHERE 
-                      !                                    THE KNOT OF THE SPLINE IS AT       
-                      !                                    0.5*(STMIN+STEP). REVISE STMIN,    
-                      !                                    GMIN AND SBOUND, AND SET DDSPLN TO 
-                      !                                    THE SECOND DERIVATIVE OF SPLN AT   
-                      !                                    THE NEW STMIN. HOWEVER, IF FCH IS  
-                      !                                    ZERO, IT IS ASSUMED THAT THE       
-                      !                                    MAXIMUM ACCURACY IS ALMOST         
-                      !                                    ACHIEVED, SO DDSPLN IS CALCULATED  
-                      !                                    USING ONLY THE CHANGE IN THE       
-                      !                                    GRADIENT.                          
-100                   WORK = (FCH+FCH)/STEPCH-GNEW-GMIN                                 
-                      DDSPLN = (GNEW-GMIN)/STEPCH                                       
-                      IF (NCALLS.GT.NFOPT) SBOUND = STEP                                
-                      IF (NCALLS.GT.NFOPT) GO TO 105                                    
-                      IF (GMIN*GNEW.LE.0.0D0) SBOUND = STMIN                            
-                      STMIN = STEP                                                      
-                      GMIN = GNEW                                                       
-                      STEPCH = -STEPCH                                                  
-105                   IF (FCH.NE.0.0D0) DDSPLN = DDSPLN+(WORK+WORK)/STEPCH              
-                      !                                                                       
-                      !                                  TEST FOR CONVERGENCE OF THE LINE     
-                      !                                    SEARCH, BUT FORCE AT LEAST TWO     
-                      !                                    STEPS TO BE TAKEN IN ORDER NOT TO  
-                      !                                    LOSE QUADRATIC TERMINATION.        
-                      IF (GMIN.EQ.0.0D0) GO TO 170                                      
-                      IF (NCALLS.LE.NFBEG+1) GO TO 120                                  
-                      IF (DABS(GMIN/GINIT).LE.0.2D0) GO TO 170                          
-                      !                                  APPLY THE TEST THAT DEPENDS ON THE   
-                      !                                    PARAMETER MAXLIN.                  
-110                   IF (NCALLS.LT.NFOPT+MAXLIN) GO TO 120                             
-115                   IER = 129                                                         
-                      GO TO 170                                                         
-                      !                                  SET STEPCH TO THE GREATEST CHANGE TO 
-                      !                                    THE CURRENT VALUE OF STMIN THAT IS 
-                      !                                    ALLOWED BY THE BOUND ON THE LINE   
-                      !                                    SEARCH. SET GSPLN TO THE GRADIENT  
-                      !                                    OF THE QUADRATIC SPLINE AT         
-                      !                                    (STMIN+STEPCH). HENCE CALCULATE    
-                      !                                    THE VALUE OF STEPCH THAT MINIMIZES 
-                      !                                    THE SPLINE FUNCTION, AND THEN      
-                      !                                    OBTAIN THE NEW FUNCTION AND        
-                      !                                    GRADIENT VECTOR, FOR HIS VALUE OF 
-                      !                                    THE CHANGE TO THE STEP-LENGTH.     
-120                   STEPCH = 0.5D0*(SBOUND-STMIN)                                     
-                      IF (SBOUND.LT.-0.5D0) STEPCH = 9.0D0*STMIN                        
-                      GSPLN = GMIN+STEPCH*DDSPLN                                        
-                      IF (GMIN*GSPLN.LT.0.0D0) STEPCH = STEPCH*GMIN/(GMIN-GSPLN)        
-                      GO TO 90                                                          
-                      !                                  CALCULATE THE VALUE OF BETA THAT     
-                      !                                    OCCURS IN THE NEW SEARCH           
-                      !                                    DIRECTION.                         
-125                   SUM = 0.0D0                                                       
-                      g_elem_max = 0.0D0
-                      DO 130 I=1,N                                                      
-                         if (G(I)*W(IGINIT+I) .gt. g_elem_max) g_elem_max = G(I)*W(IGINIT+I)
-130                      SUM = SUM+G(I)*W(IGINIT+I)                                        
-                         BETA = (GSQRD-SUM)/(GMIN-GINIT)                                   
-                         !                                  TEST THAT THE NEW SEARCH DIRECTION   
-                         !                                    CAN BE MADE DOWNHILL. IF IT        
-                         !                                    CANNOT, THEN MAKE ONE ATTEMPT TO   
-                         !                                    IMPROVE THE ACCURACY OF THE LINE   
-                         !                                    SEARCH.                            
-                         IF (DABS(BETA*GMIN).LE.0.2D0*GSQRD) GO TO 135                     
-                         IRETRY = IRETRY+1                                                 
-                         IF (IRETRY.LE.0) GO TO 110                                        
-                         !                                  APPLY THE TEST THAT DEPENDS ON THE   
-                         !                                    PARAMETER MXFCON.                  
-                         !                                    SET DFPR TO THE PREDICTED          
-                         !                                    REDUCTION IN F ON THE NEXT         
-                         !                                    ITERATION.                         
-135                      IF (F.LT.FINIT) ITERFM = ITERC                                    
-                         IF (ITERC.LT.ITERFM+MXFCON) GO TO 140                             
-                         IER = 132                                                         
-                         GO TO 9000                                                        
-140                      DFPR = STMIN*GINIT                                                
-                         !                                  BRANCH IF A RESTART PROCEDURE IS     
-                         !                                    REQUIRED DUE TO THE ITERATION      
-                         !                                    NUMBER OR DUE TO THE SCALAR        
-                         !                                    PRODUCT OF CONSECUTIVE GRADIENTS.  
-                         IF (IRETRY.GT.0) GO TO 10                                         
-                         IF (ITERRS.EQ.0) GO TO 155                                        
-                         IF (ITERC-ITERRS.GE.N) GO TO 155                                  
-                         IF (DABS(SUM).GE.0.2D0*GSQRD) GO TO 155                           
-                         !                                  CALCULATE THE VALUE OF GAMA THAT     
-                         !                                    OCCURS IN THE NEW SEARCH           
-                         !                                    DIRECTION, AND SET SUM TO A SCALAR 
-                         !                                    PRODUCT FOR THE TEST BELOW. THE    
-                         !                                    VALUE OF GAMDEN IS SET BY THE      
-                         !                                    RESTART PROCEDURE.                 
-                         GAMA = 0.0D0                                                      
-                         SUM = 0.0D0                                                       
-                         g_elem_max = 0.0D0
-                         DO 145 I=1,N                                                      
-                            if (G(I)*W(IRSDX+I) .gt. g_elem_max) g_elem_max = G(I)*W(IRSDX+I)
-                            GAMA = GAMA+G(I)*W(IRSDG+I)                                    
-145                         SUM = SUM+G(I)*W(IRSDX+I)                                         
-                            GAMA = GAMA/GAMDEN                                                
-                            !                                  RESTART IF THE NEW SEARCH DIRECTION  
-                            !                                    IS NOT SUFFICIENTLY DOWNHILL.      
-                            !                                                                       
-                            IF (DABS(BETA*GMIN+GAMA*SUM).GE.0.2D0*GSQRD) GO TO 155            
-                            !                                                                       
-                            !                                  CALCULATE THE NEW SEARCH DIRECTION.  
-                            DO 150 I=1,N                                                      
-150                            W(I) = -G(I)+BETA*W(I)+GAMA*W(IRSDX+I)                            
-                               GO TO 80                                                          
-                               !                                  APPLY THE RESTART PROCEDURE.         
-155                            GAMDEN = GMIN-GINIT                                               
-                               DO 160 I=1,N                                                      
-                                  W(IRSDX+I) = W(I)                                              
-                                  W(IRSDG+I) = G(I)-W(IGINIT+I)                                  
-160                               W(I) = -G(I)+BETA*W(I)                                            
-                                  ITERRS = ITERC                                                    
-                                  GO TO 80                                                          
-                                  !                                  SET IER TO INDICATE THAT THE SEARCH  
-                                  !                                    DIRECTION IS UPHILL.               
-165                               IER = 130                                                         
-                                  !                                  ENSURE THAT F, X AND G ARE OPTIMAL.  
-170                               IF (NCALLS.EQ.NFOPT) GO TO 180                                    
-                                  F = FMIN                                                          
-                                  DO 175 I=1,N                                                      
-                                     X(I) = W(IXOPT+I)                                              
-175                                  G(I) = W(IGOPT+I)                                                 
-180                                  IF (IER.EQ.0) GO TO 125                                           
-9000                                 CONTINUE                                                          
-                                     !      CALL UERTST (IER,'ZXCGR ')                                        
-                                     if (do_print) print 3020
-3020                                 FORMAT ("came from 9000")
-9005                                 if (do_print) print 3030,NCALLS
-3030                                 FORMAT ("NCALLS",I5)
+          GO TO 5     !!!!!!!!!!!      !!!!!!!!!!!!                                      
+       end IF
+       !                                  TERMINATE THE LINE SEARCH IF STEPCH  
+       !                                    IS EFFECTIVELY ZERO.               
+       IF (NCALLS.GT.NFBEG+1) GO TO 115                                  
+       IF (DABS(GMIN/GINIT)-0.2D0) 170,170,115                           
+       !                                  LET SPLN BE THE QUADRATIC SPLINE     
+       !                                    THAT INTERPOLATES THE CALCULATED   
+       !                                    FUNCTION VALUES AND DIRECTIONAL    
+       !                                    DERIVATIVES AT THE POINTS STMIN    
+       !                                    AND STEP OF THE LINE SEARCH, WHERE 
+       !                                    THE KNOT OF THE SPLINE IS AT       
+       !                                    0.5*(STMIN+STEP). REVISE STMIN,    
+       !                                    GMIN AND SBOUND, AND SET DDSPLN TO 
+       !                                    THE SECOND DERIVATIVE OF SPLN AT   
+       !                                    THE NEW STMIN. HOWEVER, IF FCH IS  
+       !                                    ZERO, IT IS ASSUMED THAT THE       
+       !                                    MAXIMUM ACCURACY IS ALMOST         
+       !                                    ACHIEVED, SO DDSPLN IS CALCULATED  
+       !                                    USING ONLY THE CHANGE IN THE       
+       !                                    GRADIENT.                          
+100    WORK = (FCH+FCH)/STEPCH-GNEW-GMIN                                 
+       DDSPLN = (GNEW-GMIN)/STEPCH                                       
+       IF (NCALLS.GT.NFOPT) SBOUND = STEP                                
+       IF (NCALLS.GT.NFOPT) GO TO 105                                    
+       IF (GMIN*GNEW.LE.0.0D0) SBOUND = STMIN                            
+       STMIN = STEP                                                      
+       GMIN = GNEW                                                       
+       STEPCH = -STEPCH                                                  
+105    IF (FCH.NE.0.0D0) DDSPLN = DDSPLN+(WORK+WORK)/STEPCH              
+       !                                                                       
+       !                                  TEST FOR CONVERGENCE OF THE LINE     
+       !                                    SEARCH, BUT FORCE AT LEAST TWO     
+       !                                    STEPS TO BE TAKEN IN ORDER NOT TO  
+       !                                    LOSE QUADRATIC TERMINATION.        
+       IF (GMIN.EQ.0.0D0) GO TO 170                                      
+       IF (NCALLS.LE.NFBEG+1) GO TO 120                                  
+       IF (DABS(GMIN/GINIT).LE.0.2D0) GO TO 170                          
+       !                                  APPLY THE TEST THAT DEPENDS ON THE   
+       !                                    PARAMETER MAXLIN.                  
+110    IF (NCALLS.LT.NFOPT+MAXLIN) GO TO 120                             
+115    IER = 129                                                         
+       GO TO 170                                                         
+       !                                  SET STEPCH TO THE GREATEST CHANGE TO 
+       !                                    THE CURRENT VALUE OF STMIN THAT IS 
+       !                                    ALLOWED BY THE BOUND ON THE LINE   
+       !                                    SEARCH. SET GSPLN TO THE GRADIENT  
+       !                                    OF THE QUADRATIC SPLINE AT         
+       !                                    (STMIN+STEPCH). HENCE CALCULATE    
+       !                                    THE VALUE OF STEPCH THAT MINIMIZES 
+       !                                    THE SPLINE FUNCTION, AND THEN      
+       !                                    OBTAIN THE NEW FUNCTION AND        
+       !                                    GRADIENT VECTOR, FOR HIS VALUE OF 
+       !                                    THE CHANGE TO THE STEP-LENGTH.     
+120    STEPCH = 0.5D0*(SBOUND-STMIN)                                     
+       IF (SBOUND.LT.-0.5D0) STEPCH = 9.0D0*STMIN                        
+       GSPLN = GMIN+STEPCH*DDSPLN                                        
+       IF (GMIN*GSPLN.LT.0.0D0) STEPCH = STEPCH*GMIN/(GMIN-GSPLN)        
+       GO TO 90                                                          
+       !                                  CALCULATE THE VALUE OF BETA THAT     
+       !                                    OCCURS IN THE NEW SEARCH           
+       !                                    DIRECTION.                         
+125    SUM = 0.0D0                                                       
+       g_elem_max = 0.0D0
+       DO  I=1,N                                                      
+          if (G(I)*W(IGINIT+I) .gt. g_elem_max) g_elem_max = G(I)*W(IGINIT+I)
+130       SUM = SUM+G(I)*W(IGINIT+I)
+       end DO
+       BETA = (GSQRD-SUM)/(GMIN-GINIT)                                   
+       !                                  TEST THAT THE NEW SEARCH DIRECTION   
+       !                                    CAN BE MADE DOWNHILL. IF IT        
+       !                                    CANNOT, THEN MAKE ONE ATTEMPT TO   
+       !                                    IMPROVE THE ACCURACY OF THE LINE   
+       !                                    SEARCH.                            
+       IF (DABS(BETA*GMIN).LE.0.2D0*GSQRD) GO TO 135                     
+       IRETRY = IRETRY+1                                                 
+       IF (IRETRY.LE.0) GO TO 110                                        
+       !                                  APPLY THE TEST THAT DEPENDS ON THE   
+       !                                    PARAMETER MXFCON.                  
+       !                                    SET DFPR TO THE PREDICTED          
+       !                                    REDUCTION IN F ON THE NEXT         
+       !                                    ITERATION.                         
+135    IF (F.LT.FINIT) ITERFM = ITERC                                    
+       IF (ITERC.LT.ITERFM+MXFCON) GO TO 140                             
+       IER = 132                                                         
+       GO TO 9000                                                        
+140    DFPR = STMIN*GINIT                                                
+       !                                  BRANCH IF A RESTART PROCEDURE IS     
+       !                                    REQUIRED DUE TO THE ITERATION      
+       !                                    NUMBER OR DUE TO THE SCALAR        
+       !                                    PRODUCT OF CONSECUTIVE GRADIENTS.  
+       IF (IRETRY.GT.0) GO TO 10                                         
+       IF (ITERRS.EQ.0) GO TO 155                                        
+       IF (ITERC-ITERRS.GE.N) GO TO 155                                  
+       IF (DABS(SUM).GE.0.2D0*GSQRD) GO TO 155                           
+       !                                  CALCULATE THE VALUE OF GAMA THAT     
+       !                                    OCCURS IN THE NEW SEARCH           
+       !                                    DIRECTION, AND SET SUM TO A SCALAR 
+       !                                    PRODUCT FOR THE TEST BELOW. THE    
+       !                                    VALUE OF GAMDEN IS SET BY THE      
+       !                                    RESTART PROCEDURE.                 
+       GAMA = 0.0D0                                                      
+       SUM = 0.0D0                                                       
+       g_elem_max = 0.0D0
+       DO  I=1,N                                                      
+          if (G(I)*W(IRSDX+I) .gt. g_elem_max) g_elem_max = G(I)*W(IRSDX+I)
+          GAMA = GAMA+G(I)*W(IRSDG+I)                                    
+145       SUM = SUM+G(I)*W(IRSDX+I)
+       end DO
+       GAMA = GAMA/GAMDEN                                                
+       !                                  RESTART IF THE NEW SEARCH DIRECTION  
+       !                                    IS NOT SUFFICIENTLY DOWNHILL.      
+       !                                                                       
+       IF (DABS(BETA*GMIN+GAMA*SUM).GE.0.2D0*GSQRD) GO TO 155            
+       !                                                                       
+       !                                  CALCULATE THE NEW SEARCH DIRECTION.  
+       DO I=1,N                                                      
+150       W(I) = -G(I)+BETA*W(I)+GAMA*W(IRSDX+I)
+       end DO
+       GO TO 80                                                          
+       !                                  APPLY THE RESTART PROCEDURE.         
+155    GAMDEN = GMIN-GINIT                                               
+       DO  I=1,N                                                      
+          W(IRSDX+I) = W(I)                                              
+          W(IRSDG+I) = G(I)-W(IGINIT+I)                                  
+160       W(I) = -G(I)+BETA*W(I)
+       end DO
+       ITERRS = ITERC                                                    
+       GO TO 80                                                          
+       !                                  SET IER TO INDICATE THAT THE SEARCH  
+       !                                    DIRECTION IS UPHILL.               
+165    IER = 130                                                         
+       !                                  ENSURE THAT F, X AND G ARE OPTIMAL.  
+170    IF (NCALLS.EQ.NFOPT) GO TO 180                                    
+       F = FMIN                                                          
+       DO  I=1,N                                                      
+          X(I) = W(IXOPT+I)                                              
+175       G(I) = W(IGOPT+I)
+       end DO
+180    IF (IER.EQ.0) GO TO 125                                           
+9000   CONTINUE                                                          
+       !      CALL UERTST (IER,'ZXCGR ')                                        
+       if (do_print) print 3020
+3020   FORMAT ("came from 9000")
+9005   if (do_print) print 3030,NCALLS
+3030   FORMAT ("NCALLS",I5)
 #ifdef PARA
-     if (nprocspace.gt.1) then
-                                    
-                                     iopt=0
-                                     do ip=1,nprocspace-1
-                                        call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
-                                     end do
-                                  end if
+       if (nprocspace.gt.1) then
+
+          iopt=0
+          do ip=1,nprocspace-1
+             call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
+          end do
+       end if
 #endif                                     
-                                     RETURN                                                            
-!                                  END DO
-                                  else
+       RETURN                                                            
+       !END DO
+    else
 #ifdef PARA
-     if (nprocspace.gt.1) then
-                                    
-        call MPI_RECV(iopt,  1, MPI_INTEGER, 0, 10001, MPI_COMM_space, status, ierr)
-        select case (iopt)
-        case (0)
-           return
-        case(1)
-           goto 5
-        end select
-     end if
+       if (nprocspace.gt.1) then
+
+          call MPI_RECV(iopt,  1, MPI_INTEGER, 0, 10001, MPI_COMM_space, status, ierr)
+          select case (iopt)
+          case (0)
+             return
+          case(1)
+             goto 5
+          end select
+       end if
 #endif
-endif
- end subroutine ZXCGRII 
+    endif
+  end subroutine ZXCGRII
    end module

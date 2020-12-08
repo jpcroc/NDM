@@ -6,7 +6,7 @@ module calfoeamcel_mod
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfoeamcel(im,imm,xp,  vp,  fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,&
+  SUBROUTINE calfoeamcel(im,imm,xp,   fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,&
        &nox,noy,noz,at,bg,volu)
 
     USE T_kind_param_m
@@ -32,7 +32,7 @@ contains
     !-----------------------------------------------
     ! eam variables
     integer,intent(in)::im,imm
-    real(double),intent(inout),allocatable,dimension(:,:)::xp,vp,fp
+    real(double),intent(inout),allocatable,dimension(:,:)::xp,fp
     integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
 
     integer,intent(in)::noxyz,natperc,nox,noy,noz

@@ -3,7 +3,6 @@ module calctemp_mod
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:ntyp,cm,na
   USE gen_com_m, ONLY:erg2ev,im_glob,tempEP,bk,l2t
-!  USE tab_imm_m,only:ityp,vp,num_at_glob
   USE elec_cell, ONLY: ecell,i2T,nex,ney,nez,nox_2_nex
   USE eloss, ONLY : tcelec,ecelec
   USE atomconfig,only: atom_config_d

@@ -3,7 +3,7 @@ module endrun_mod
         USE adf_mod,only:adf
         USE spebc_fin_mod,only:spebc_fin
         USE arret_ndm_mod,only:arret_ndm
-        USE sauvegardeT_mod,only:sauvegardeT,cin2gin
+        USE sauvegardeT_mod,only:sauvegardeT!,cin2gin
         USE rdf_mod,only:rdf
         USE rasmol_mod,only:rasmol
         USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,itdes,&
@@ -264,7 +264,7 @@ subroutine endrun
   temps_dmloop=MPI_Wtime() - temps_dmloop_deb
 #endif
 
-  if (lWgin.eqv..true.) call cin2gin
+!  if (lWgin.eqv..true.) call cin2gin
   IF (iteSauv.GE.0) then
      call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)     ! Modif E. Clouet: sauvegarde seulement si voulu
      if (l2T.and.rang==0) call sauveelec

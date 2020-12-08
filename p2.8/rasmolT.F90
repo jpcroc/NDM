@@ -5,8 +5,6 @@ module rasmolT_mod
        &cunitP,it,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
-  !    USE paraneb_mod
-  !USE tab_imm_m,only:num_at_glob,ityp,xp
   use atomconfig,only: atom_config,atom_config_d,atom_config_e
   use paraconfig,only:para_config
   use boxconfig,only:box_config

@@ -14,7 +14,6 @@ contains
     
     USE var_pot, ONLY:ntyp,cm
     USE jqmod
-!    USE tab_imm_m,only:ax,xp,vp,xpp,fp,ityp
     USE tempinst_mod,only: tempinst
 
 !#ifdef PARA

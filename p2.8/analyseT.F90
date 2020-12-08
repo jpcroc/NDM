@@ -40,11 +40,6 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-!    use tab_imm_m
-
-!    USE fcc_module
-!    USE cfg_module
-!    USE posana
     use elec_cell, only : Eelec,Teavg,Tecmax,ietm,eleccellmol
     use eloss, only : ibrake, elosselectot1, elosselectot
     implicit none

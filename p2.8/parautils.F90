@@ -9,7 +9,7 @@
   USE decoupage_mod,only: decoupage
 
   use atomconfig,only: atom_config,atom_config_d
-  USE boxconfig,only:box_config
+  USE boxconfig,only:box_config,periodbox
   USE cellconfig,only:cell_config,caltabtC
   use calfo_mod,only:calfo
   use constrconf_mod,only:repartition
@@ -21,7 +21,7 @@ contains
     type(atom_config_d),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
     type(box_config)::box
-    type(atom_config_d),pointer::atloc
+    class(atom_config),pointer::atloc
     type(cell_config),pointer::celloc
     type(para_config),intent(in)::div
     real(double),intent(in)::rum
@@ -37,20 +37,54 @@ contains
        celloc=>cellcomp
     end if
     call caltabtC(celloc,atloc,lperiod,box)
-     end subroutine initloc
+  end subroutine initloc
   
-  subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,lperiod,ltabvois,it,itetabvois,lchg,ii)
+  subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod)
+    
+    class(atom_config),intent(in)::atlocin
+    type(cell_config),intent(in)::cellocin
+    class(atom_config)::atcomp
+    type(cell_config)::cellcomp
+    type(box_config)::box
+    type(para_config),intent(in)::div
+    integer::ierr,iun
+    logical::lperiod
+
+    if (div%npim.gt.1) then
+       call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
+!       call atlocin%print(unit=500+div%rang_orig)
+!       flush(500+div%rang_orig)
+       call atlocin%vers_master(atcomp,div)
+       !call atcomp%print(unit=600+div%rang_orig)
+       !flush(600+div%rang_orig)
+       !call mpi_finalize(ierr)
+       !stop
+       if (div%rgim==0) then
+          call caltabtC(cellcomp,atcomp,lperiod,box)
+       end if
+    else
+       call atlocin%copy_config(atcomp,lrescl=.false.)
+       cellcomp=cellocin
+       call caltabtC(cellcomp,atcomp,lperiod,box)
+       if (atlocin%ltabvois) then
+          call caltabi(atcomp,cellcomp,box)
+       end if
+    
+    end if
+  end subroutine initcomp
+  
+  subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,lperiod,ltabvois,it,itetabvois,lchg)
 
     
     real(double)::sig(3,3),potist
-    type(atom_config_d),target::atcomp
+    class(atom_config),target::atcomp
     type(cell_config),target::cellcomp
     type(box_config)::box
     type(para_config)::div
-    type(atom_config_d),pointer::atloc
+    class(atom_config),pointer::atloc
     type(cell_config),pointer::celloc
     logical,optional,intent(in)::ltabvois
-    integer,optional,intent(in)::itetabvois,it,ii
+    integer,optional,intent(in)::itetabvois,it
     logical::lperiod
     logical,optional::lchg
     integer::ierr,i
@@ -62,19 +96,21 @@ contains
     if (lchange) then
        if (div%npim.gt.1) then
           call atcomp%master2loc(atloc,div)
+!          call atloc%print(unit=800+div%rang_orig)
+ !         call celloc%print(900+div%rang_orig)
+  !        flush(800+div%rang_orig)
        else
           atloc=>atcomp
           celloc=>cellcomp                 
        end if
     end if
 
-    
 #else
     atloc=>atcomp
     celloc=>cellcomp
 
 #endif
-
+    if (lperiod)   call periodbox (box,atloc)
 
     call caltabtC(celloc,atloc,lperiod,box)
     if (present(ltabvois)) then
@@ -90,9 +126,9 @@ contains
 
 !    end if
 #endif
-       
+!!$    
        CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
-    
+
 #ifdef PARA
     if (div%npim.gt.1) then
        call atloc%vers_master(atcomp,div)
@@ -102,9 +138,10 @@ contains
     end if
     
 #else
-    atcomp=atloc
-    cellcomp=celloc
+!    atcomp=atloc
+!    cellcomp=celloc
 #endif
+!write(6,*)'finPCTCF',div%rang_orig
     return
   end subroutine pointer_caltabt_calfo
 

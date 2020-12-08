@@ -5,7 +5,7 @@ module force_tersoff_mod
   implicit none
 contains
   ! ***************************************************************
-  subroutine force_tersoff (im,imm,xp,  vp,  fp,  iwmax, ityp,indi,at,bg,volu,zl)
+  subroutine force_tersoff (im,imm,xp,    fp,  iwmax, ityp,indi,at,bg,volu,zl)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -30,7 +30,6 @@ contains
     !-----------------------------------------------
     integer,intent(in)::im,imm
     integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
-    real(double),intent(in),allocatable  :: vp(:,:)
     real(double),intent(inout),allocatable  :: xp(:,:)
     real(double) , intent(inout),allocatable :: fp(:,:)
     real(double),intent(in),dimension(3,3)::at,bg
@@ -213,9 +212,9 @@ contains
                          fp(l,i) = fp(l,i) + paire_ij
                          fp(l,j) = fp(l,j) - paire_ij
                          if(lnemd) fpnemd(l)=fpnemd(l)+paire_ij*XijdotF
-                         if (lcalcjq) then
-                            Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
-                         end if
+!!$                         if (lcalcjq) then
+!!$                            Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
+!!$                         end if
 
                          !Contrainte
                          if (test_sigma.EQV..true.) then 
@@ -239,9 +238,9 @@ contains
                          fp(l,i) = fp(l,i) + paire_ij
                          fp(l,j) = fp(l,j) - paire_ij
                          if(lnemd) fpnemd(l)=fpnemd(l)+paire_ij*XijdotF
-                         if (lcalcjq) then
-                            Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
-                         end if
+!!$                         if (lcalcjq) then
+!!$                            Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
+!!$                         end if
                          !Contrainte
                          if (test_sigma.EQV..true.) then  
                             do m=1,3
@@ -313,10 +312,10 @@ contains
                             if(lnemd) fpnemd(l)=fpnemd(l)+triplet_ik*XikdotF
 
                             !Flux
-                            if (lcalcjq) then
-                               Scal_FijVj=Scal_FijVj - triplet_ij*vp(l,j)
-                               Scal_FikVk=Scal_FikVk - triplet_ik*vp(l,k)
-                            end if
+!!$                            if (lcalcjq) then
+!!$                               Scal_FijVj=Scal_FijVj - triplet_ij*vp(l,j)
+!!$                               Scal_FikVk=Scal_FikVk - triplet_ik*vp(l,k)
+!!$                            end if
                             !Contrainte
                             !write(6,*)'sig AV l',l
                             !write(6,*)sig

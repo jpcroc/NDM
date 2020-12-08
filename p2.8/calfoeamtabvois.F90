@@ -8,7 +8,7 @@ module calfoeamtabvois_mod
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfoeamtabvois(im,imm,xp, vp,  fp,  iwmax, ityp,indi,at,bg,volu)
+  SUBROUTINE calfoeamtabvois(im,imm,xp,   fp,  iwmax, ityp,indi,at,bg,volu)
     !tentative de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
     USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,eamglue,eamglue_d,&
@@ -28,7 +28,6 @@ contains
     integer,allocatable  :: iwmax(:),indi(:)
     integer  :: ityp(:)
     real(double)  :: xp(:,:)
-    real(double)  :: vp(:,:)
     real(double)  :: fp(:,:)
     real(double),intent(in),dimension(3,3)::at,bg
     real(double),intent(in)::volu
@@ -252,16 +251,16 @@ contains
                 fpnemd(ic,j)=fpnemd(ic,j) +0.5*(dFemb+dErep)*gradij(ic)*XijdotF
              end do
           end if
-          if(lcalcjq) then
-             jqf=0.0
-             do ic=1,3
-                jqf = jqf + ( dFemb*vp(ic,j) + 0.5*dErep*(vp(ic,i)+vp(ic,j)) )*gradij(ic)
-             end do
-             do ic=1,3
-                jq(ic) = jq(ic) - jqf*gradij(ic)*r
-             end do
-          end if
-
+!!$          if(lcalcjq) then
+!!$             jqf=0.0
+!!$             do ic=1,3
+!!$                jqf = jqf + ( dFemb*vp(ic,j) + 0.5*dErep*(vp(ic,i)+vp(ic,j)) )*gradij(ic)
+!!$             end do
+!!$             do ic=1,3
+!!$                jq(ic) = jq(ic) - jqf*gradij(ic)*r
+!!$             end do
+!!$          end if
+!!$
           if (test_sigma) then                   
              IF (ldemitab) THEN
                 sig(1:3,1) = sig(1:3,1) + inv_volu*fij(1:3)*dxp(1)

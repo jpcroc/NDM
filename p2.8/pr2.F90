@@ -41,8 +41,7 @@ module Parrinello_Rahman
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigkine,sigtot,text,tstep,im_glob,it,potist,rang,sig,text,tstep,sigkine,tabf3,tabv3,&
        &pi,l2t,ltberendsen,lperiod
-!  USE temp_com,only:volu,zl,zls2,celsize,im,im,nox,noy,noz,at,indi,bg,nvois,ltabvois,imm,im,natperc,noxy,&
-!       &normat, h0,deltadist,ncel,noxyz,nzl,atincel,nato
+
 
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q
   USE recips_mod,only: recips,calcvol
