@@ -963,11 +963,11 @@ contains
 !    type is (atom_config_d)
        if (present(vp))then
 !          atndm%vp(:,1:imm)=vp(:,1:imm)
-          if (ldealloc) deallocate(vp)
+          if ((ldealloc).and.allocated(vp)) deallocate(vp)
        end if
        if(present(xpp))then
 !          atndm%xpp(:,1:imm)=xpp(:,1:imm)
-          if (ldealloc) deallocate(xpp)
+          if  ((ldealloc).and.allocated(xpp)) deallocate(xpp)
        end if
 
   end subroutine ndm2config
