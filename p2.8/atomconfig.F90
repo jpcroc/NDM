@@ -1047,6 +1047,8 @@ contains
     end select
   end subroutine config2ndm
 
+
+  
   subroutine vers_master_atom(atcfloc,atcfcomp,div)
     class(atom_config),intent(in)::atcfloc
     class(atom_config)::atcfcomp
@@ -1057,52 +1059,90 @@ contains
 
     real(double),allocatable::buffer(:,:),buffer9(:,:,:),buffer1(:)
     integer,allocatable:: ibuffer(:)
+    integer,allocatable::nag(:)
     logical,allocatable::lbuffer(:)
-    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3,imrecv9,imloc9
-    integer::imcomp,imtot,proc_source,npim
+    integer::imloc,imloc3,iproc,imrecv,icomp,imrecv3,imrecv9,imloc9
+    integer::imcomp,imtot,proc_source,npim,iloc
     idmaster=0
     idloc=div%rgim
     npim=div%npim
     icomm=div%comm_image
-
+!    write(6,*)'IN L2M',div%rang_orig,npim
     if (idloc==idmaster) then
        !       allocate(buffer(3,atloc%im));allocate(ibuffer(atloc%im));allocate(lbuffer(atloc%im))
        imtot=0
-       ifin=0
+!       ifin=0
        do iproc=0,npim-1
+!          write(6,*)'IPROC',iproc
           ! Pour le processeur maitre il n'y a rien a faire
           ! reception des donnees des autres processeurs
           if (iproc==idmaster) then
              imrecv=atcfloc%im
              imtot=imtot+imrecv
-             ideb=1;ifin=imrecv
-             atcfcomp%xp(1:3,ideb:ifin)=atcfloc%xp(1:3,1:imrecv)
-             atcfcomp%fp(1:3,ideb:ifin)=atcfloc%fp(1:3,1:imrecv)
-             atcfcomp%num_at_glob(ideb:ifin)=atcfloc%num_at_glob(1:imrecv)
-             atcfcomp%ityp(ideb:ifin)=atcfloc%ityp(1:imrecv)
-             if( allocated(atcfloc%lgul))  atcfcomp%lgul(ideb:ifin)=atcfloc%lgul(1:imrecv)
-             atcfcomp%proc_at(ideb:ifin)=idmaster ! atcfloc%proc_at(1:imrecv)
-             select type(atcfloc)
-             class is (atom_config_d)
-                select type (atcfcomp)
+             allocate(nag(imrecv))
+             nag(1:imrecv)=atcfloc%num_at_glob(1:imrecv)
+             do iloc=1,imrecv
+!                write(6,*)'L2M',iproc,iloc,nag(iloc)
+                atcfcomp%num_at_glob(nag(iloc))=nag(iloc)
+                atcfcomp%xp(1:3,nag(iloc))=atcfloc%xp(1:3,iloc)
+                atcfcomp%fp(1:3,nag(iloc))=atcfloc%fp(1:3,iloc)
+                atcfcomp%ityp(nag(iloc))=atcfloc%ityp(iloc)
+                if( allocated(atcfloc%lgul))  atcfcomp%lgul(nag(iloc))=atcfloc%lgul(iloc)
+                atcfcomp%proc_at(nag(iloc))=idmaster 
+                select type(atcfloc)
                 class is (atom_config_d)
-                   atcfcomp%vp(1:3,ideb:ifin)=atcfloc%vp(1:3,1:imrecv)
-                   atcfcomp%xpp(1:3,ideb:ifin)=atcfloc%xpp(1:3,1:imrecv)
+                   select type (atcfcomp)
+                   class is (atom_config_d)
+                      atcfcomp%vp(1:3,nag(iloc))=atcfloc%vp(1:3,iloc)
+                      atcfcomp%xpp(1:3,nag(iloc))=atcfloc%xpp(1:3,iloc)
+                   end select
+                type is (atom_config_e)
+                   select type (atcfcomp)
+                   class is (atom_config_e)
+                      if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+                         atcfcomp%sigat(1:3,1:3,nag(iloc))=atcfloc%sigat(1:3,1:3,iloc)
+                      endif
+                      if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+                         atcfcomp%eat(nag(iloc))=atcfloc%eat(iloc)
+                      endif
+                      if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+                         atcfcomp%glangv(:,nag(iloc))=atcfloc%glangv(:,iloc)
+                      endif
+                   end select
                 end select
-             type is (atom_config_e)
-                select type (atcfcomp)
-                class is (atom_config_e)
-                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
-                      atcfcomp%sigat(1:3,1:3,ideb:ifin)=atcfloc%sigat(1:3,1:3,1:imrecv)
-                   endif
-                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
-                      atcfcomp%eat(ideb:ifin)=atcfloc%eat(1:imrecv)
-                   endif
-                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
-                      atcfcomp%glangv(:,ideb:ifin)=atcfloc%glangv(:,1:imrecv)
-                   endif
-                end select
-             end select
+             end do
+             deallocate(nag)
+
+!!$             
+!!$             imtot=imtot+imrecv
+!!$             ideb=1;ifin=imrecv
+!!$             atcfcomp%xp(1:3,ideb:ifin)=atcfloc%xp(1:3,1:imrecv)
+!!$             atcfcomp%fp(1:3,ideb:ifin)=atcfloc%fp(1:3,1:imrecv)
+!!$             atcfcomp%num_at_glob(ideb:ifin)=atcfloc%num_at_glob(1:imrecv)
+!!$             atcfcomp%ityp(ideb:ifin)=atcfloc%ityp(1:imrecv)
+!!$             if( allocated(atcfloc%lgul))  atcfcomp%lgul(ideb:ifin)=atcfloc%lgul(1:imrecv)
+!!$             atcfcomp%proc_at(ideb:ifin)=idmaster ! atcfloc%proc_at(1:imrecv)
+!!$             select type(atcfloc)
+!!$             class is (atom_config_d)
+!!$                select type (atcfcomp)
+!!$                class is (atom_config_d)
+!!$                   atcfcomp%vp(1:3,ideb:ifin)=atcfloc%vp(1:3,1:imrecv)
+!!$                   atcfcomp%xpp(1:3,ideb:ifin)=atcfloc%xpp(1:3,1:imrecv)
+!!$                end select
+!!$             type is (atom_config_e)
+!!$                select type (atcfcomp)
+!!$                class is (atom_config_e)
+!!$                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+!!$                      atcfcomp%sigat(1:3,1:3,ideb:ifin)=atcfloc%sigat(1:3,1:3,1:imrecv)
+!!$                   endif
+!!$                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+!!$                      atcfcomp%eat(ideb:ifin)=atcfloc%eat(1:imrecv)
+!!$                   endif
+!!$                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+!!$                      atcfcomp%glangv(:,ideb:ifin)=atcfloc%glangv(:,1:imrecv)
+!!$                   endif
+!!$                end select
+!!$             end select
           else
              if (allocated(buffer)) then
                 deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer);deallocate(buffer1);deallocate(buffer9)
@@ -1111,65 +1151,155 @@ contains
              imtot=imtot+imrecv
              proc_source = status(MPI_SOURCE)
              imrecv3=3*imrecv; imrecv9=3*imrecv3
+             allocate(nag(imrecv))
              allocate(buffer(3,imrecv))
              allocate(buffer9(3,3,imrecv))
              allocate(buffer1(imrecv))
              allocate(ibuffer(imrecv))
              allocate(lbuffer(imrecv))
-             ideb=ifin+1; ifin=ideb+imrecv-1
-             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10002, icomm, status, ierr)
-             atcfcomp%xp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
-             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10003, icomm, status, ierr)
-             atcfcomp%fp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+
              call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10004, icomm, status, ierr)
-             atcfcomp%num_at_glob(ideb:ifin)=ibuffer(1:imrecv)
+             nag(1:imrecv)=ibuffer(1:imrecv)
+!             atcfcomp%num_at_glob(ideb:ifin)=ibuffer(1:imrecv)
+ !            ideb=ifin+1; ifin=ideb+imrecv-1
+             do iloc=1,imrecv
+                atcfcomp%num_at_glob(nag(iloc))=nag(iloc)
+             end do
+
+             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10002, icomm, status, ierr)
+             do iloc=1,imrecv
+                atcfcomp%xp(1:3,nag(iloc))=buffer(1:3,iloc)
+             end do
+                
+             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10003, icomm, status, ierr)
+             do iloc=1,imrecv
+                atcfcomp%fp(1:3,nag(iloc))=buffer(1:3,iloc)
+             end do
+
+!!$             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10004, icomm, status, ierr)
+!!$             do iloc=1,imrecv
+!!$                atcfcomp%num_at_glob(nag(iloc))=ibuffer(iloc)
+!!$             end do
+             
              call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10005, icomm, status, ierr)
-             atcfcomp%ityp(ideb:ifin)=ibuffer(1:imrecv)
+             do iloc=1,imrecv
+                atcfcomp%ityp(nag(iloc))=ibuffer(iloc)
+             end do
              if (allocated(atcfloc%lgul))then
                 call MPI_RECV(lbuffer(1:imrecv),imrecv, MPI_LOGICAL, proc_source, 10006, icomm, status, ierr)
-                atcfcomp%lgul(ideb:ifin)=lbuffer(1:imrecv)
+                do iloc=1,imrecv
+                   atcfcomp%lgul(nag(iloc))=lbuffer(iloc)
+                end do
              end if
-
-             atcfcomp%proc_at(ideb:ifin)=proc_source !  ibuffer(1:imrecv)
+             do iloc=1,imrecv
+                atcfcomp%proc_at(nag(iloc))=proc_source !  ibuffer(1:imrecv)
+             end do
              select type(atcfloc)
              class is (atom_config_d)
                 select type(atcfcomp)
                 class is (atom_config_d)
                    call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10007, icomm, status, ierr)
-                   atcfcomp%vp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+                   do iloc=1,imrecv
+                      atcfcomp%vp(1:3,nag(iloc))=buffer(1:3,iloc)
+                   end do
                    call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10008, icomm, status, ierr)
-                   atcfcomp%xpp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+                   do iloc=1,imrecv
+                      atcfcomp%xpp(1:3,nag(iloc))=buffer(1:3,iloc)
+                   end do
                 end select
              type is (atom_config_e)
                 select type(atcfcomp)
                 class is (atom_config_e)
                    if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
                       call MPI_RECV(buffer9(1:3,1:3,1:imrecv),imrecv9, NDM_MPI_REAL_DOUBLE, proc_source, 10009, icomm, status, ierr)
-                      atcfcomp%sigat(1:3,1:3,ideb:ifin)=buffer9(1:3,1:3,1:imrecv)
+                      do iloc=1,imrecv
+                         atcfcomp%sigat(1:3,1:3,nag(iloc))=buffer9(1:3,1:3,iloc)
+                      end do
                    endif
                    if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
                       call MPI_RECV(buffer1(1:imrecv),imrecv, NDM_MPI_REAL_DOUBLE, proc_source, 10010, icomm, status, ierr)
-                      atcfcomp%eat(ideb:ifin)=buffer1(1:imrecv)
+                      do iloc=1,imrecv
+                         atcfcomp%eat(nag(iloc))=buffer1(iloc)
+                      end do
                    endif
                    if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
                       call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10011, icomm, status, ierr)
-                      atcfcomp%glangv(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+                      do iloc=1,imrecv
+                         atcfcomp%glangv(1:3,nag(iloc))=buffer(1:3,iloc)
+                      end do
                    endif
                 end select
              end select
+             deallocate(nag)
           end if
        end do
+
+
+!!$       
+!!$             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10002, icomm, status, ierr)
+!!$             do iloc=1,imrecv
+!!$                
+!!$             atcfcomp%xp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+!!$             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10003, icomm, status, ierr)
+!!$             atcfcomp%fp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+!!$             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10004, icomm, status, ierr)
+!!$             atcfcomp%num_at_glob(ideb:ifin)=ibuffer(1:imrecv)
+!!$             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10005, icomm, status, ierr)
+!!$             atcfcomp%ityp(ideb:ifin)=ibuffer(1:imrecv)
+!!$             if (allocated(atcfloc%lgul))then
+!!$                call MPI_RECV(lbuffer(1:imrecv),imrecv, MPI_LOGICAL, proc_source, 10006, icomm, status, ierr)
+!!$                atcfcomp%lgul(ideb:ifin)=lbuffer(1:imrecv)
+!!$             end if
+!!$
+!!$             atcfcomp%proc_at(ideb:ifin)=proc_source !  ibuffer(1:imrecv)
+!!$             select type(atcfloc)
+!!$             class is (atom_config_d)
+!!$                select type(atcfcomp)
+!!$                class is (atom_config_d)
+!!$                   call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10007, icomm, status, ierr)
+!!$                   atcfcomp%vp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+!!$                   call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10008, icomm, status, ierr)
+!!$                   atcfcomp%xpp(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+!!$                end select
+!!$             type is (atom_config_e)
+!!$                select type(atcfcomp)
+!!$                class is (atom_config_e)
+!!$                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+!!$                      call MPI_RECV(buffer9(1:3,1:3,1:imrecv),imrecv9, NDM_MPI_REAL_DOUBLE, proc_source, 10009, icomm, status, ierr)
+!!$                      atcfcomp%sigat(1:3,1:3,ideb:ifin)=buffer9(1:3,1:3,1:imrecv)
+!!$                   endif
+!!$                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+!!$                      call MPI_RECV(buffer1(1:imrecv),imrecv, NDM_MPI_REAL_DOUBLE, proc_source, 10010, icomm, status, ierr)
+!!$                      atcfcomp%eat(ideb:ifin)=buffer1(1:imrecv)
+!!$                   endif
+!!$                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+!!$                      call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10011, icomm, status, ierr)
+!!$                      atcfcomp%glangv(1:3,ideb:ifin)=buffer(1:3,1:imrecv)
+!!$                   endif
+!!$                end select
+!!$             end select
+!!$          end if
+!!$       end do
+!!$
+
        if (imtot.ne.atcfcomp%im) then
-          write(6,*)'atomes perdus ?',imtot,atcfcomp%im
+          write(6,*)'atomes perdus ?',idloc, imtot,atcfcomp%im,div%rang_orig
           call MPI_finalize(ierr)
           stop
        end if
+       do icomp=1,imtot
+          if (atcfcomp%num_at_glob(icomp).ne.icomp) then
+             write(6,*)'atomes mal rangés L2M ?',idloc, icomp,atcfcomp%num_at_glob(icomp)
+             call MPI_finalize(ierr)
+             stop
+          end if
+       end do
     else
        imloc=atcfloc%im;imloc3=3*imloc; imloc9=3*imloc3
        call MPI_SEND(imloc, 1,   MPI_INTEGER,idmaster ,10001,icomm,ierr)
+       call MPI_SEND(atcfloc%num_at_glob(1:imloc), imloc, MPI_INTEGER, idmaster, 10004, icomm, status, ierr)
        call MPI_SEND(atcfloc%xp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10002,icomm,ierr)
        call MPI_SEND(atcfloc%fp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10003,icomm,ierr)
-       call MPI_SEND(atcfloc%num_at_glob(1:imloc), imloc, MPI_INTEGER, idmaster, 10004, icomm, status, ierr)
        call MPI_SEND(atcfloc%ityp(1:imloc), imloc, MPI_INTEGER, idmaster, 10005, icomm, status, ierr)
        if (allocated(atcfloc%lgul))     &
             &call MPI_SEND(atcfloc%lgul(1:imloc), imloc, MPI_LOGICAL, idmaster, 10006, icomm, status, ierr)
@@ -1202,6 +1332,9 @@ contains
     return
   end subroutine vers_master_atom
 
+
+
+  
   subroutine master2loc_atom(atcfcomp,atcfloc,div)
 
     class(atom_config)::atcfloc
@@ -1209,28 +1342,35 @@ contains
     type(para_config)::div
 #ifdef PARA
     integer::idmaster,idloc,icomm,npim ! proc master,proclocal ,communicateur
-
-
     real(double),allocatable::buffer(:,:),buffer9(:,:,:),buffer1(:)
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
-    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3,imrecv9
+    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3,imrecv9,icomp
     integer::imcomp,imtot,proc_source,ic,ns,iloc,i,iu
     logical,allocatable::mask(:)
 !    real(double),allocatable::rbuf(:)
 !    integer,allocatable::ibuf(:)
 !    logical, allocatable::lbuf(:)
+    !     write(6,*)'IN M2L',div%rang_orig
 
     
-
     idmaster=0
     idloc=div%rgim
     npim=div%npim
     icomm=div%comm_image
-    allocate(mask(atcfcomp%im))
     imcomp=atcfcomp%im
-    if (idloc==idmaster) then
 
+    
+    if (idloc==idmaster) then
+    allocate(mask(atcfcomp%im))
+    do icomp=1,atcfcomp%im
+          if (atcfcomp%num_at_glob(icomp).ne.icomp) then
+             write(6,*)'atomes mal rangés M2L?',icomp,atcfcomp%num_at_glob(icomp)
+             call MPI_finalize(ierr)
+             stop
+          end if
+       end do
+       
        imtot=0
        do iproc=0,npim-1
           ! Pour le processeur maitre il n'y a rien a faire

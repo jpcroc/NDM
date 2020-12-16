@@ -191,6 +191,7 @@ contains
                &lperiod,atneb(ii)%ltabvois,it,itetabvois,lchg=.false.)
        
        if (lmaster) then
+          
              call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
 !!!!!!!!!!!          broadcast de dragtest nebtest(ii) ou non ?
              enePATH(ii)=potist
@@ -247,7 +248,13 @@ contains
 #ifdef PARA
                 if (paraneb%lmaster) then
 #endif
+!                   call atneb(ii)%print(unit=100+ii,natg1=1,natg2=2049)
+!                   flush(100+ii)
                    call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp,atneb(ii)%imm,atneb(ii)%im)
+!                   call atneb(ii)%print(unit=300+ii,natg1=1,natg2=2049)
+!                   flush(300+ii)
+!                   call atneb(ii)%print(unit=400+ii)
+!                   flush(400+ii)
 
                    IF (lFire) THEN
                       call trempe_fire(atneb(ii),fire_dt(ii), fire_nstep(ii), fire_alph(ii))
@@ -263,6 +270,13 @@ contains
                 call MPI_BCAST(dragtest, 1,MPI_INTEGER, 0,paraneb%comm_image,ierr)
 !                CALL MPI_BARRIER(paraneb%comm_image,ierr)
                 if (mod(it,10)==0) write(6,*)'image it ',ii,it
+!                if (paraneb%lmaster) then
+!                   call atneb(ii)%print(unit=200+ii,natg1=1,natg2=2049)
+!                   flush(200+ii)
+!                end if
+!                   call mpi_finalize(ierr)
+!                   stop
+
 #endif
              end do   ! end do for a while
              if (lmaster) then 

@@ -1,0 +1,102 @@
+module cellconfig
+  USE T_kind_param_m
+  use atomconfig,only : atom_config
+
+
+  implicit none
+  !  integer:: incr=20 ! incrément des tailles de tableau 
+
+  type cell_config
+     integer:: nox,noy,noz,noxyz !nombre de cellules suivant a,b,c et produit
+     integer::natperc !nombre (max) d'atomes par cellule
+     integer(long)::icaltabt !indice de l'appel à caltabt; vérifier égal pour cellconfig et atomconfig dans caltabi et calfo
+     integer,allocatable::nato (:) ! nombre d'atomes dans la cellule ko
+
+     integer,allocatable:: ncel (:,:) ! ncel(ko,i1)=numéro de la ième cellule voisine de la cellule ko
+     integer,allocatable:: atincel (:,:) ! atincel(i,k)= indice du ième atome de la cellule k
+     integer,allocatable:: deltadist(:,:,:) !gestion des conditions périodiques entre les cellules (voisinage de bords de boites)
+
+     real(double):: celsize(3)
+
+#ifdef PARA
+     integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
+     integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
+     integer :: nb_cell_x, nb_cell_y, nb_cell_z     !nb de cel locales suivant x y z     
+#endif     
+
+   contains
+     procedure, pass::init=>init_cel
+     procedure, pass::dealloc=>dealloc_cel
+     procedure, pass::print=>cellprint
+
+  end type cell_config
+
+!  type,extends(cell_config)::  cel_config_e ! des tas de tableaux annexes par toujours alloués car le plus souvent inutiles
+!     integer::iewald !pilote les tableux de la sommation d'Ewald
+!     real(double), allocatable:: tabv3,tabf3
+!     real(double),allocatable::sigc(:,:,:)! contrainte par cellule
+!     logical:: ltpcel ! écriture des quantités par cellules
+!     real(double)::tempstopcel ! température d'arrêt de la cellule
+!     integer::istopcel ! diverses versions de tempstopcel
+!     real(double),allocatable,dimension(:):: eatcel,tempc,tempcm,celpm1,tm1,celpp,tcp,pmc
+!     logical::lprtcel ! ecriture des résultats seulement sur certaines cellules.
+!     
+!     logical :: l2T ! cellule pour modèles à 2T
+!     real(double),allocatable:: elossCel(:)
+!     
+!     logical :: lsigatcel ! moyenne des contraintes atomiques par cellule ?
+!     integer, allocatable:: natchk(:)
+!     real(double), allocatable::patcel(:),patcelmax, sigatcel(:,:,:)
+!   contains
+!     procedure, pass::init=>init_cel_e
+!     procedure, pass::dealloc=>dealloc_cel_e
+!     
+!  end type cel_config_e
+  
+  
+contains
+
+
+  
+  subroutine init_cel(cell)
+    class(cell_config)::cell
+initialise la cellule:
+    call allocatecelN(cell)
+    call neigcelN(cell)
+    return
+
+  end subroutine init_cel
+
+subroutine allocatecelN(cell)
+    class(cell_config)::cell
+alloue les tableaux(utilisation interne)
+
+  subroutine dealloc_cel(cell)
+    class(cell_config)::cell
+désalloue
+
+  subroutine neigcelN(cell)
+    class(cell_config)::cell
+    return
+  end subroutine neigcelN
+initialise les voisinages de cellules
+
+   subroutine caltabtC (cell,atcf,lperiod,boxcf)
+    USE notperiod_mod,only: notperiod
+    USE cryst_to_cart_mod,only: cryst_to_cart
+    class(cell_config), intent(inout):: cell
+    class(atom_config),intent(inout)::atcf
+    type(box_config),intent(inout)::boxcf
+    logical,intent(in)::lperiod
+
+répartit les atomes atcf dans la cellule cell sans la boite boxcf
+lperiod est là pour remmetre les atomes dans le conditions périodiques
+
+
+
+  ! copie d'une config entière vers config de base
+  subroutine copy_cell (cellsource,cellcible)
+  
+  subroutine cellprint(cellv,unit)
+
+imprime la cellule dans l'unité iunit (défaut=6)

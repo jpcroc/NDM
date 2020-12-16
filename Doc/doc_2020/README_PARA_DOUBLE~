@@ -1,0 +1,77 @@
+Explications sur la parallélisation double espace*NEB
+
+il y a un master pour chaque image qui gère la configuration atomique complète ed cette image (atneb/atcomp) et des slaves qui calcule les forces sur une portion spatiale de cette image (atnebloc/atloc)
+
+Pour faire une para double il faut
+-initialiser les communicateurs (init_mpi_neb et commconstr)
+- initialiser les découpages (decoupage) et les voisinages init_voisinage
+- construire les conf atomiques locales (initloc) et répartir les atomes entre procs spatiaux (call repartition dans initloc)
+- a chaque pas pointer_caltabt_calfo renvoie les atcomp vers les atloc (master2loc), met à jour les atloc , calcule les forces, reconstruit atcomp
+
+Gestion des communicateurs :
+1/init_mpi_neb
+initialise Les communicateurs de chaque image paraneb
+type(para_config) ::paraneb
+	  myidsp=paraneb%rgim
+	  MPI_COMM_space=paraneb%comm_image
+	  nprocspace=paraneb%npim ! si =1 pas de paralélisation d'espace pour cette image si>1 paralélisation d'espace pour cette image
+et le communicateurs entre masters
+         paraneb%comm_master
+
+2/ constrconfneb (via init_neb0)
+construit les images 1 et npath.
+appele decoupage qui définit la forme du découpage à partir de nox,noy,noz initialisee les variables "MPI space" 
+
+3/ initneb
+construit les autres images
+
+4/init_voisinage
+calcule le nombre de cellule voisines de chaque proc, les cellules fantomes etc.
+
+5/ Quand les configurations atomiques sont prêtes :
+Une image (ii) est gérée par un groupe de proc (tels que définis par paraneb%image=ii)
+On entre dans la parallisation spatiale : Chaque groupe de proc ne va plus gérer qu'une image
+
+call initloc(atneb(ii),cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod)
+  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod)
+initloc est dans parautils
+atncomp et cellcomp sont les images complètes gérées par le master du  groupe
+cellloc et atloc sont les distributions de ces images sur les procs.
+	   Si nprocpsace=1 (paraneb%npim=1) atloc pointe sur atcomp
+	   Si nprocpsace>1 (paraneb%npim>1) atloc est la répartition spatiale entre procs de atcomp (call repartition)
+
+En sortie deinitloc atloc est la portion de atneb gérée par le proc courant
+
+
+Cycle de travail:
+
+On modifie les positions complètes (atneb/atcomp), on gère les arrêts
+On appele pointer_caltabt_calfo entrée atcomp à jour SUR LE MASTER ; sortie forces sur atcomp
+retour
+
+call  pointer_caltabt_calfo
+subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,lperiod,ltabvois,it,itetabvois,lchg,ii)
+si on a modifié les poistionsatcomp  depuis le dernier appel de pointer_caltabt_calfo ou initloc, (lchange=true)
+   atcomp%master2loc renvoie les portions de atcomp (atloc) vers leurs procs d'origine
+   calltabtC répartir les atloc
+   maj_atomes_frt_ftm(atloc,celloc) transfère les atloc entre procs et met à jour les fantomes
+   CalFo calcule les forces
+   atloc%vers_master(atcomp,div) reconstruit atcomp à partir des atloc
+
+en sortie les forces sur atcop sont à jour SUR LE MASTER
+
+Le master de l'image modifie les positions, éventuellement en communiquant entre matsers/images (cas NEB)
+Si le matser décide un arrêt il faut signaler l'arrêt aux slave par un MPI_BCAST(dragtest, 1,MPI_INTEGER, 0,paraneb%comm_image,ierr)
+
+En fin de calcul on peut tout rapatrier au master général (rang=0) à partir des masters de chaque image
+
+
+*************
+para GC.
+PARRA GC ressemble à paraNEB avec quelques différences:
+-Pour l'instant ne fonctionne que pour une image, d'où initparapuresp dans paraconfig qui initialise une para_config purement spatiale (pas *image) avec une seule image
+-Quand on arrive dans GC, la configuration atomique a DEJA été répartie entre les atomes. il faut donc reconstruire la configuration totale via parautils/initcomp et pointer les atloc/celloc sur les atin et cellin de début de routine. Ensuite on peut gérer atcomp et atloc comme dans NEB à coup de pointer_caltabt_calfo
+
+***
+PARA MGCC :
+il va falloir faire un init séparé avec non répartition des atcf ?
