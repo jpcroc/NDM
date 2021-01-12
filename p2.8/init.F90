@@ -41,9 +41,10 @@ module init_mod
 
   USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,formatsauv,ibound,igen,ilangevin,it,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lhcyl,lperiod,lrestart,ltranche,pmean,rang,timel,two,im_glob,&
-       &itmax,tmean,tstep,usdh
+       &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp
 use read_val,only:ltabvois
-  implicit none
+USE var_pot, ONLY:ipotentiel
+implicit none
 
 contains
   ! **************************************************************
@@ -79,6 +80,7 @@ contains
     integer :: i, lufilmpaf,itapp,j,lenfn2,ipath,ierr
     !-----------------------------------------------
     character*2::extension
+    logical :: lrepart
 
     tmean = 0.0
     pmean = 0.0
@@ -120,8 +122,12 @@ contains
        temps_config_deb = MPI_Wtime()
 #endif
 
-
-       call constrconf(atdml,boxndm,celndm)
+       if ((ipotentiel==-10).or.(ipotentiel==-11))then
+          lrepart=.false.
+       else
+          lrepart=.true.
+       end if
+       call constrconf(atdml,boxndm,celndm,lrepart)
 #ifdef PARA
        temps_config=MPI_Wtime()-temps_config_deb
 #endif
@@ -136,7 +142,7 @@ contains
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
-       allocate (posa(3*im),  forca(3*im))
+       allocate (posa(3*atdml%im),  forca(3*atdml%im))
        call read_lammps()
     end if
 #endif  
@@ -144,7 +150,7 @@ contains
 
        if (iterasmol>=0) then
           itapp=-1
-          call rasmolT (atdml,boxndm,itapp)
+          call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
        end if
 
 
@@ -152,7 +158,7 @@ contains
        select case (igen)
        case (-1)
           formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
-          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
           if (rang==0) write (6, *) 'generation terminee'
           call arret_ndm
        case (2)
@@ -162,13 +168,14 @@ contains
        case (3)
           call transf
           formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
-          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
           if (rang==0) write (6, *) 'modification terminee'
           call arret_ndm
        case default
        end select
 #ifdef PARA
-       if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+
           
           CALL MPI_BARRIER(MPI_COMM_space,ierr)
           
@@ -244,8 +251,7 @@ contains
           end select
           if (iterasmol>=0) then
              itapp=0
-             call rasmolT (atdml,boxndm,itapp)
-
+             call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
 
           end if
        end if
@@ -290,10 +296,10 @@ contains
 
        if (lcasca) then
           fnamcout = fnam(1:lenfnam)//'.0.cout'
-          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
        else
           fnamcout = fnam(1:lenfnam)//'.cout'
-          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
        end if
        if (itmax==0) call arret_ndm
 

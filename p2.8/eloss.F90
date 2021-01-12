@@ -1,7 +1,7 @@
 module eloss
   USE T_kind_param_m, ONLY:  double
   USE temp_com,only:noxyz,tempc ! A EFFACER
-  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,l2T,erg2eV,iko!,noxyz
+  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,l2T,erg2eV,iko,lspacendm!,noxyz
   USE var_pot, ONLY:ntyp,cm,gamlt
 
 
@@ -151,7 +151,7 @@ contains
 #ifdef PARA
     real(double), allocatable,dimension(:)::elosscel_tot
     
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        if (allocated(elosscel)) allocate (elosscel_tot(noxyz))
     end if
 #endif
@@ -227,7 +227,7 @@ contains
     end do
     !	write(6,*)'RG el',rang,elosselec,elosselec1
 #ifdef PARA
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        elosselectot=0
        elosselectot1=0
        call MPI_ALLREDUCE(elosselec,elosselectot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)

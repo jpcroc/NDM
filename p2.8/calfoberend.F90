@@ -2,7 +2,7 @@ module calfoberend_mod
 !  USE tempinst_mod,only: tempinst
   USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:gamlt,cm
-  USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text,im_glob
+  USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text,im_glob,lspaceNDM
   implicit none
 contains
   subroutine calfoberend(im,imm,xp, vp, fp,ityp)
@@ -29,7 +29,8 @@ contains
     enddo
 
 #ifdef PARA
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+
        call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        mv2 = mv2_glob
        tempm1=mv2/(3.d0*float(im_glob)*bk)

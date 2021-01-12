@@ -31,11 +31,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,itmax,it,&
-         &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV!itab, ltabvois, itetabvois!deltaestop,epcou,fpstop,fsumstop,ibordcou,itab,itederive,iteheat,itetabvois,indi,&
-    !         &landerscou,lastcool,lcdp,ljqbh,lprtrp,ltandersen,maxtcel,nbmoye,nuandersen,sigstop,tcooling,&
-    !         &tempstop,tfroi,timemax,ttol,angst,bk,cunite,cunitp,dmtype,erg2ev,iko,im,imm,it,itdes,itetemp,itetimestep,&
-    !         &itmax,ldesinteg,leev,lperiod,lpkbar,ltabvois,nstepdes,potist,sigtot,tcou,temp,text,tfcou,timel,tstep,unite,!&
-    !         &unitp,zl,bg,nvois,nox,noy,noz,celsize
+         &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp
 
     USE var_pot, ONLY:
     USE suivinonpbc
@@ -58,7 +54,7 @@ contains
     real(double) :: potistmean,potistdif
     real(double),save :: potist1000
     real, allocatable,save :: potiststock(:)
-    logical :: latcomp
+
 #ifdef PARA
     real(double) :: tcou_glob
     integer      :: nacou_glob
@@ -74,7 +70,6 @@ contains
 
     if (it>=itmax) then
        if (rang==0) write (6, *) '*******Derniere iteration **** '
-       latcomp=.false.
        call endrunT(atdml,celndm,boxndm,latcomp)
        write (6, *) 'predeal '
        !       call DeallocateAll
@@ -85,7 +80,6 @@ contains
 
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
-       latcomp=.false.
        call endrunT(atdml,celndm,boxndm,latcomp)
        !       call DeallocateAll
 
@@ -112,7 +106,6 @@ contains
        if (mod(it,itetemp)==0) then
           if (temp<=tempstop) then
              if (rang==0)  write (6, *) 'temperature < tempstop '
-             latcomp=.false.
              call endrunT(atdml,celndm,boxndm,latcomp)
 
              call arret_ndm
@@ -121,7 +114,6 @@ contains
           if (tempstopcel.gt.0) then
              if (maxtcel<=tempstopcel) then
                 write (6, *) 'temperature dans toutes les cels < tempstopcel '
-                latcomp=.false.
                 call endrunT(atdml,celndm,boxndm,latcomp)
 
                 call arret_ndm
@@ -146,7 +138,7 @@ contains
           fpmax=sqrt( MAXVAL( Sum(atdml%fp(1:3,1:atdml%im)**2,1) ) )
           fpSmax = MaxVal( Abs(atdml%fp(:,1:atdml%im)) )
 #ifdef PARA
-          if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
              fpmax=fpmax_glob
              call MPI_ALLREDUCE(fpSmax,fpSmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
@@ -165,11 +157,9 @@ contains
           if (fpn.le.fpstop)then
              if (sigstop.ge.0) then
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) then
-                   latcomp=.false.
                    call endrunT(atdml,celndm,boxndm,latcomp)
                 endif
              else
-                latcomp=.false.
                 call endrunT(atdml,celndm,boxndm,latcomp)
              end if
 
@@ -185,7 +175,7 @@ contains
           fpSmax=sqrt( SUM(atdml%fp(:,1:atdml%im)**2) )
           !        END IF
 #ifdef PARA
-          if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              fpSmax=fpSmax**2
              fpmax_glob=0
              call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
@@ -201,11 +191,9 @@ contains
           if (fpn.le.fsumstop) then
              if (sigstop.ge.0) then
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) then
-                   latcomp=.false.
                    call endrunT(atdml,celndm,boxndm,latcomp)
                 end if
              else
-                latcomp=.false.
                 call endrunT(atdml,celndm,boxndm,latcomp)
              end if
              if (myidsp==0)      write(6,*)
@@ -243,7 +231,7 @@ contains
           formax = MaxVal( Abs(atdml%fp(:,1:atdml%im)) )
           !        END IF
 #ifdef PARA
-          if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              fpmax_glob=0
              call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
              formax=fpmax_glob
@@ -262,7 +250,6 @@ contains
                 if (formax.le.fpstop) then
                    if (myidsp==0) write(6,*)'force par atome  max  ev/Ang ', formax
                    if (myidsp==0) write (6, *) 'energie ', potist*erg2eV
-                   latcomp=.false.
                    call endrunT(atdml,celndm,boxndm,latcomp)
                 end if
              end if
@@ -270,7 +257,6 @@ contains
                 if (forctot.le.fsumstop) then
                    if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
                    if (myidsp==0) write(6, *) 'energie ', potist*erg2eV
-                   latcomp=.false.
                    call endrunT(atdml,celndm,boxndm,latcomp)
                 end if
              end if
@@ -281,7 +267,6 @@ contains
                 if (formax.le.fpstop) then
                    if (myidsp==0) write(6,*)'force par atome  max cgs ',formax
                    if (myidsp==0) write (6, *) 'energie ', potist
-                   latcomp=.false.
                    call endrunT(atdml,celndm,boxndm,latcomp)
 
                 end if
@@ -291,7 +276,6 @@ contains
                 if (forctot.le.fsumstop) then
                    if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
                    if (myidsp==0) write (6, *) 'energie ', potist
-                   latcomp=.false.
                    call endrunT(atdml,celndm,boxndm,latcomp)
                 end if
              end if

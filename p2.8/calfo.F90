@@ -20,21 +20,11 @@ module calfo_mod
        &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang
 
   USE contrainte,only:initcontr,contr
-!  USE jqmod,only:jq
-!  USE strain_bc_mod,only:strain_bc
-!  USE stress_bc_mod,only:stress_bc
   USE force_tersoff_mod,only:force_tersoff
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE calfocommon ! stocke des variables LOCALES sig et potist eat sigat etc.
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
-!#ifdef PARA
-!  use mpi
-!  USE mod_para,only:MPI_COMM_space,nprocspace,NDM_MPI_real_double
-
-!#else
-!    USE mod_para,only:nprocspace
-!#endif
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only: read_lammps,calcforce_lammps2
   use vars_lammps

@@ -1,0 +1,8 @@
+#!/bin/csh
+foreach temp (`ls -1 *F90 *f Makefil* */*.F90`)
+	echo $temp
+	rm -f rd
+	diff   $temp /home/croc/NDM/ndm2021/$temp >rd
+	if  ( -s  rd )    diff  /home/croc/NDM/ndm2021/$temp  $temp
+
+end

@@ -7,7 +7,7 @@ module neb_mod
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
        &erg2ev,itesauv,lpkbar,nebtype,sig,unitp,potist,angst,itetabvois,rang,&
        &fnam,lenfnam,lfire,itesauv,itetabvois,iteanaposneb,maxneb,&
-       &nebrelaxation,lperiod
+       &nebrelaxation,lperiod,lspacendm,latcomp
 
   
   USE atomconfig,only:atom_config,atom_config_d
@@ -80,7 +80,7 @@ contains
     atnebloc=>atcible
 #endif    
 
-
+    latcomp=.true.! NEB=> latcomp=.true.
     allocate (iter(npath))
     do ii=1,npath
        if ((ii.ne.1).and.(ii.ne.npath))then
@@ -92,7 +92,7 @@ contains
  
 #ifdef PARA
     lmaster=paraneb%lmaster
-       if (paraneb%npim.gt.1) then
+       if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
           call init_voisinage(cellneb(1))
        end if
 
@@ -214,9 +214,11 @@ contains
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
     
     if (paraneb%lmaster) then
-       call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
-       call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
-       enepathev(:)=enepathev_tot ; enepath=enepath_tot
+       if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
+          call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
+          enepathev(:)=enepathev_tot ; enepath=enepath_tot
+       end if
     end if
 #endif
 
@@ -246,25 +248,27 @@ contains
                      &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.)
                 
 #ifdef PARA
-                if (paraneb%lmaster) then
+
+                   if (paraneb%lmaster) then
 #endif
 !                   call atneb(ii)%print(unit=100+ii,natg1=1,natg2=2049)
 !                   flush(100+ii)
-                   call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp,atneb(ii)%imm,atneb(ii)%im)
+           call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp,atneb(ii)%imm,atneb(ii)%im)
 !                   call atneb(ii)%print(unit=300+ii,natg1=1,natg2=2049)
 !                   flush(300+ii)
 !                   call atneb(ii)%print(unit=400+ii)
 !                   flush(400+ii)
 
-                   IF (lFire) THEN
-                      call trempe_fire(atneb(ii),fire_dt(ii), fire_nstep(ii), fire_alph(ii))
-                   ELSE
-                      call trempe(atneb(ii))
-                   ENDIF
-                   
-                   call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
+                      IF (lFire) THEN
+                         call trempe_fire(atneb(ii),fire_dt(ii), fire_nstep(ii), fire_alph(ii))
+                      ELSE
+                         call trempe(atneb(ii))
+                      ENDIF
+                      
+                      call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
 
 #ifdef PARA
+
                 end if
 
                 call MPI_BCAST(dragtest, 1,MPI_INTEGER, 0,paraneb%comm_image,ierr)
@@ -298,13 +302,14 @@ contains
 #ifdef PARA
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
        if(lmaster) then
+       if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
           call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           call MPI_ALLREDUCE(sigpath,sigpath_tot,9*npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           call MPI_ALLREDUCE(iter,iter_tot,npath,MPI_INTEGER,MPI_SUM,paraneb%comm_master,ierr)
           enepathev(:)=enepathev_tot ; enepath=enepath_tot;sigpath=sigpath_tot;iter=iter_tot
        end if
-   
+    end if
 #endif
        if (rang==0) then
           do ii= 2,npath-1
@@ -403,14 +408,14 @@ contains
                          formatsauv = 2
                          write(extension,'(i9.9)') ii
                          fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-                         call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout)
+                         call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp=latcomp)
                       end if
                    end if
 
                    !debug          print'("NEB: ",2i5,3E14.5,E20.10,i3)', ineb, ii,  formax,       &
                    !debug	            formaxperp, formaxparl, potist*erg2eV,nebtest(ii)
-                   forneb = SQRT(MAXVAL(force_neb(1,:,ii)**2 + force_neb(2,:,ii)**2         &
-                        + force_neb(3,:,ii)**2))*erg2eV/angst 
+                   forneb = SQRT(MAXVAL(atneb(ii)%force_neb(1,:)**2 + atneb(ii)%force_neb(2,:)**2         &
+                        + atneb(ii)%force_neb(3,:)**2))*erg2eV/angst 
                    print'("NEB: ",2i5, 2g14.5,g20.10,i3,g15.8)', ineb, ii,  formax, forneb,       &
                         potist*erg2eV,nebtest(ii),potist*erg2eV-enepathev(1)
                    ! 
@@ -426,8 +431,10 @@ contains
 #ifdef PARA
 !          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
           if (lmaster) then
-             call MPI_ALLREDUCE(nebtest,nebtest_tot,npath,MPI_INTEGER,MPI_SUM,paraneb%comm_master,ierr)
-             nebtest=nebtest_tot
+             if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+                call MPI_ALLREDUCE(nebtest,nebtest_tot,npath,MPI_INTEGER,MPI_SUM,paraneb%comm_master,ierr)
+                nebtest=nebtest_tot
+             end if
           end if
           call MPI_BCAST(nebtest, npath,MPI_INTEGER, 0,paraneb%comm_image,ierr)
 #endif
@@ -475,8 +482,8 @@ contains
           formatsauv = 2
           write(extension,'(i9.9)') ii
           fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-          call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp=.true.)
-          call rasmolT(atneb(ii),boxneb,ii,latcomp=.true.)
+          call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp)
+          call rasmolT(atneb(ii),boxneb,ii,latcomp=latcomp)
           if (iteanaposneb.gt.0) call anapos(ii)
           !	 
           reaction_coord(ii) = SUM((atneb(ii)%xp(:,:)-atneb(1)%xp(:,:))*(atneb(npath)%xp(:,:)-atneb(1)%xp(:,:)))/a_local

@@ -22,7 +22,7 @@ module analyseT_mod
        &nfda,parallele,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,&
        &natchk,tpseuils,sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
-       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,lperiod,pi,rang,timel,&
+       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,lperiod,pi,rang,timel,latcomp,&
        & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,im_glob,it,l2T
 
   USE cellconfig,only:cell_config, caltabtC
@@ -106,7 +106,7 @@ contains
              else
                 fnamcout = fnam(1:lenfnam)//'.cout'
              end if
-             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
           end if
        endif
 
@@ -115,7 +115,7 @@ contains
              formatsauv = 2
              write(extension,'(i9.9)') it
              fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout)
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
           end if
        endif
        
@@ -446,7 +446,7 @@ contains
 
     if (iterasmol>0) then     
        if (mod(it,iterasmol)==0) then
-         call rasmolT(atdml,boxndm,it)
+         call rasmolT(atdml,boxndm,it,latcomp=latcomp)
           if (l2T) call  eleccellmol
 
        end if

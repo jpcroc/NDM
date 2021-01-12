@@ -4,7 +4,7 @@ module constrconf_mod
 #endif
   USE read_val,only:imm,rvois
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,im_glob,imm_glob,ldecoup,lperiod,lrestart,rang,&
-       &lvpread,zero,low_limit !at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
+       &lvpread,zero,low_limit,lspacendm !at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
   !       &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat,cell_debx,cell_deby,cell_debz,&
   !       &cell_finx,cell_finy,cell_finz,low_limit,llangevin,lsuivinonpbc
   USE var_pot, ONLY:na,ntyp,rumax,ipotentiel
@@ -15,6 +15,7 @@ module constrconf_mod
   USE boxconfig,only:box_config,initbox,periodbox
   USE setcell,only:setnox,setcellconf
   USE decoupage_mod,only: decoupage
+    USE Mat_utils_mod,only: Matinv_gen,is_upper_triangular
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     use mpi
@@ -24,7 +25,7 @@ module constrconf_mod
 
   implicit none
 contains
-  subroutine constrconf (atrcf,boxrcf,cellrcf)
+  subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart)
     !********************************************************************
     !             CONSTRUCTION DE LA BOITE DE SIMULATION
     !********************************************************************
@@ -39,6 +40,8 @@ contains
     class(atom_config),intent(inout)::atrcf
     type(cell_config),intent(out)::cellrcf
     type(box_config),intent(out)::boxrcf
+    logical::lrepart
+
     integer :: i, icell, iti
 
     type(box_config)::boxrgin
@@ -57,20 +60,24 @@ contains
     character :: fnamcin*80, fnamgin*80
     integer::itread
 
-    
+
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
     !---------------------------------------------------
-
     if (rang==0) then
        write(6,*)
        write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-',imm,imm_glob,nprocspace
        write(6,*)
     endif
+!    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!       lrepart=.true.
+!    else
+!       lrepart=.false.
+!    end if
 
     if (igen.ge.1) then
-    allocate (ibuffer(imm_glob))
-    allocate (buffer(3,imm_glob))
+       allocate (ibuffer(imm_glob))
+       allocate (buffer(3,imm_glob))
        if(rang==0)               write(6,*)'********** reading configuration from file********'
        if (lrestart) then
           fnamcin = fnam(1:lenfnam)//'.cout'
@@ -85,24 +92,38 @@ contains
        !  - la deuxieme pour lire uniquement les positions propres au
        !    processeur
 
-       itread=2
-       call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
-       if (rang==0) then
-          write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart.eqv..true.)) then
+
+          itread=2
+          call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+          if (rang==0) then
+             write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
+          end if
+          call setnox(boxrcf,cellrcf,rumax)
+          do iti=1,ntyp
+             na(iti)=count(COMPatrcf%ityp(1:COMPatrcf%im)==iti)
+          end do
+          ncore=0
+
+          call  decoupage(nprocspace,ncore,cellrcf,atrcf)
+          allocate(num_at_buff(imm_glob))
+          im_glob=COMPatrcf%im
+          call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
+          itread=3
+          call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,imm_glob) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
+       else
+          itread=1
+          call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
+          im_glob=atrcf%im
+          if (rang==0) then
+             write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
+          end if
+          call setnox(boxrcf,cellrcf,rumax)
+          !          CALL fin allocation CELL et FIN DIVID
+          do iti=1,ntyp
+             na(iti)=count(atrcf%ityp(1:atrcf%im).eq.iti)
+          end do
        end if
-       call setnox(boxrcf,cellrcf,rumax)
-       do iti=1,ntyp
-          na(iti)=count(COMPatrcf%ityp(1:COMPatrcf%im)==iti)
-       end do
-       ncore=0
-
-       call  decoupage(nprocspace,ncore,cellrcf,atrcf)
-       allocate(num_at_buff(imm_glob))
-       im_glob=COMPatrcf%im
-       call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
-       itread=3
-       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,imm_glob) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
-
 #else
 
 
@@ -134,8 +155,8 @@ contains
 
 #endif
        call setcellconf(cellrcf,atrcf,boxrcf,im_glob,rumax)
-    deallocate (ibuffer)
-    deallocate (buffer)
+       deallocate (ibuffer)
+       deallocate (buffer)
 
        !-----------------------------------------------------
        ! BUILDING OF THE CRISTAL FROM .GIN FILE
@@ -150,7 +171,7 @@ contains
        ! open fichier .gin
        fnamgin = fnam(1:lenfnam)//'.gin'
 
-       call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax)
+       call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax,lrepart)
 
        do iti=1,ntyp
           na(iti)=count(atrcf%ityp(1:atrcf%im)==iti)
@@ -170,7 +191,7 @@ contains
 
     end if
 
-    
+
 
     if (rang==0) then
 
@@ -215,6 +236,72 @@ contains
 
 
   end subroutine constrconf
+  subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum,lrepartition)
+    class(atom_config)::at2b
+    type(cell_config)::cel2b
+    type(box_config)::box2b
+    integer,intent(out)::imtot
+    character,intent(in) :: fnamg*80
+    real(double),intent(in)::rum
+    logical,optional,intent(in)::lrepartition
+    logical::lrepart
+    type (atom_config)::COMPatrcf
+    type(atom_config)::atrgin
+    type(box_config)::boxrgin
+    real(double)::atg(3,3)
+    integer::lat(3),ic,ncore,npr,ierr
+    lrepart=.true.
+    if(present(lrepartition))lrepart=lrepartition
+    
+    call read_gin(boxrgin,atrgin,fnamg,lat)
+    do ic=1,3
+       atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
+    end do
+    call initbox(box2b,atg)
+    
+    call setnox(box2b,cel2b,rum)
+
+    if (rang==0) then
+       write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
+    end if
+#ifdef PARA
+    ncore=0
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!   if ((nprocspace.gt.1).and.(lrepart)) then
+    call  decoupage(nprocspace,ncore,cel2b,at2b)
+ end if
+    !    call MPI_finalize(ierr)
+    !    stop
+    COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
+!    write(6,*)'IMMGLOBIMMGLOB',imm_glob
+    call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
+    imtot=COMPatrcf%im
+    im_glob=COMPatrcf%im
+   call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
+   if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
+      call repartition(COMPatrcf,at2b,box2b,cel2b)
+   else
+      call compatrcf%copy_config(at2b, lrescl=.true.)
+   end if
+#else
+    if (ldecoup) then
+       open(123, file='decoup.dat', status='old')
+       read (123, *) npr,ncore
+       close(123)         
+       call  decoupage(npr,ncore,cel2b)
+       stop
+    end if
+    call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
+    call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
+
+    im_glob=at2b%im
+#endif             
+
+
+    call setcellconf(cel2b,at2b,box2b,im_glob,rum)
+    return
+
+  end subroutine gin2ndm
   
   subroutine coord_to_cell(tab_coord, cell,bg,nox,noy,noz)
     !-----------------------------------------------
@@ -374,7 +461,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY : position_conversion_lammps
     USE var_pot, ONLY:q,ipotentiel
-    USE Mat_utils_mod,only: Matinv,is_upper_triangular
+
     implicit none
     integer,intent(in)::imm,im,ntyp
     real(double),intent(in)::xp(3,imm),at(3,3)
@@ -387,28 +474,28 @@ contains
     real(double), dimension(3) :: tmp_coord_i,new_tmp_coord_i
 
     !  if ((at(2,1).ne.0).or.(at(3,1).ne.0).or.(at(3,2).ne.0))then
-    write(6,*)
-    write(6,*)'LAMMPS BOX BUILT FROM NDM'
-    write(6,*)'transforms NDM box to lamps shaped box if needed'
-    write(6,*)
-    !     stop
-    ! endif
+    if (rang==0) then 
+       write(6,*)
+       write(6,*)'LAMMPS BOX BUILD FROM NDM'
+       write(6,*)'transforms NDM box to lamps shaped box if needed'
+       write(6,*)
+    endif
 
     open(63,file='conf.lmp',status='unknown')
     write(63,*)
 
     call is_upper_triangular(at,upper)
-    write(6,*)'upper ? ',upper
+   ! if (rang==0) write(6,*)'upper ? ',upper
     if (.not.upper) then
        call convert_cell (at,at_lammps,passage)
-       call matinv(passage, passage_inv)
-       do ic=1,3
-          write(6,*)passage(:,ic)
-       end do
-       write(6,*)
-       do ic=1,3
-          write(6,*)passage_inv(:,ic)
-       end do
+       call matinv_gen(passage, passage_inv)
+    !   do ic=1,3
+    !      write(6,*)passage(:,ic)
+    !   end do
+     !  write(6,*)
+     !  do ic=1,3
+     !     write(6,*)passage_inv(:,ic)
+     !  end do
     else
        at_lammps=at
        passage(:,:)=0
@@ -456,14 +543,15 @@ contains
     else 
        stop 'ADD FORMAT'
     endif
-    write(6,*)
-    write(6,*) " a = (xhi-xlo,0,0); b = (xy,yhi-ylo,0); c = (xz,yz,zhi-zlo). "
-    write(6,'(f22.16,a,f22.16,a)')xlo,' ',xhi,' xlo xhi'
-    write(6,'(f22.16,a,f22.16,a)')ylo,' ',yhi,' ylo yhi'
-    write(6,'(f22.16,a,f22.16,a)')zlo,' ',zhi,' zlo zhi'
-    write(6,'(f22.16,a,f22.16,a,f22.16,a)')xy,' ',xz,' ',yz,' xy xz yz'
-    write(6,*)
-
+    if (rang==0) then
+       write(6,*)
+       write(6,*) " a = (xhi-xlo,0,0); b = (xy,yhi-ylo,0); c = (xz,yz,zhi-zlo). "
+       write(6,'(f22.16,a,f22.16,a)')xlo,' ',xhi,' xlo xhi'
+       write(6,'(f22.16,a,f22.16,a)')ylo,' ',yhi,' ylo yhi'
+       write(6,'(f22.16,a,f22.16,a)')zlo,' ',zhi,' zlo zhi'
+       write(6,'(f22.16,a,f22.16,a,f22.16,a)')xy,' ',xz,' ',yz,' xy xz yz'
+       write(6,*)
+    end if
 
     write(63,"(I1,A)") ntyp, ' atom types' 
     write(63,*) 
@@ -546,7 +634,7 @@ contains
        !trans = np.array([np.cross(B, C), np.cross(C, A), np.cross(A, B)])
        !trans = trans / volume
        !coord_transform = np.dot(tri_mat , trans)
-       call matinv(mat_ini,inv_mat_ini)
+       call matinv_gen(mat_ini,inv_mat_ini)
        transform = matmul(new_mat,inv_mat_ini)
 
     else
@@ -560,71 +648,6 @@ contains
     return
   end subroutine convert_cell
 
-  subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum,lrepartition)
-    class(atom_config)::at2b
-    type(cell_config)::cel2b
-    type(box_config)::box2b
-    integer,intent(out)::imtot
-    character,intent(in) :: fnamg*80
-    real(double),intent(in)::rum
-    logical,optional,intent(in)::lrepartition
-    logical::lrepart
-    type (atom_config)::COMPatrcf
-    type(atom_config)::atrgin
-    type(box_config)::boxrgin
-    real(double)::atg(3,3)
-    integer::lat(3),ic,ncore,npr,ierr
-    lrepart=.true.
-    if(present(lrepartition))lrepart=lrepartition
-    
-    call read_gin(boxrgin,atrgin,fnamg,lat)
-    do ic=1,3
-       atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
-    end do
-    call initbox(box2b,atg)
-    
-    call setnox(box2b,cel2b,rum)
-
-    if (rang==0) then
-       write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
-    end if
-#ifdef PARA
-    ncore=0
-!   if ((nprocspace.gt.1).and.(lrepart)) then
-    call  decoupage(nprocspace,ncore,cel2b,at2b)
-! end if
-    !    call MPI_finalize(ierr)
-    !    stop
-    COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
-!    write(6,*)'IMMGLOBIMMGLOB',imm_glob
-    call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
-    imtot=COMPatrcf%im
-    im_glob=COMPatrcf%im
-   call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
-   if ((nprocspace.gt.1).and.(lrepart)) then
-      call repartition(COMPatrcf,at2b,box2b,cel2b)
-   else
-      call compatrcf%copy_config(at2b, lrescl=.true.)
-   end if
-#else
-    if (ldecoup) then
-       open(123, file='decoup.dat', status='old')
-       read (123, *) npr,ncore
-       close(123)         
-       call  decoupage(npr,ncore,cel2b)
-       stop
-    end if
-    call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
-    call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
-
-    im_glob=at2b%im
-#endif             
-
-
-    call setcellconf(cel2b,at2b,box2b,im_glob,rum)
-    return
-
-  end subroutine gin2ndm
 
   subroutine read_cin(boxcin,itread,atcinr,immr,fnamcin,lres,fmtcin,icible,imic)
     !itread 0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement

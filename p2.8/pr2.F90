@@ -40,7 +40,7 @@ module Parrinello_Rahman
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,wbox,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigkine,sigtot,text,tstep,im_glob,it,potist,rang,sig,text,tstep,sigkine,tabf3,tabv3,&
-       &pi,l2t,ltberendsen,lperiod
+       &pi,l2t,ltberendsen,lperiod,lspaceNDM
 
 
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q
@@ -132,7 +132,7 @@ contains
     IF (wbox==0.0) THEN
        wbox = sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
-       if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
           wbox=wbox_tot
        end if
@@ -273,7 +273,7 @@ contains
     sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 
 #ifdef PARA
-        if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
            call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
            sigkine=sigkine_tot
         end if
@@ -389,7 +389,7 @@ contains
 
 
 #ifdef PARA
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        boxndm%zl(1) = Sqrt( Sum(boxndm%at(1:3,1)**2 ) )
        boxndm%zl(2) = Sqrt( Sum(boxndm%at(1:3,2)**2 ) )
        boxndm%zl(3) = Sqrt( Sum(boxndm%at(1:3,3)**2 ) )
@@ -508,7 +508,7 @@ contains
        enddo
        sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 #ifdef PARA
-       if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
           sigkine=sigkine_tot
        end if

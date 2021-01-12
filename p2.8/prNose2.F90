@@ -34,7 +34,7 @@ module Parrinello_Rahman_Nose
   USE T_kind_param_m
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
        &tstep,ucell,unose,wbox,wnose,enose,erg2ev,fnose,im_glob,it,kcell,knose,leev,&
-       &lucell,rang,timel,tstep,unose,wbox,wnose,sigkine,rang,sig,bk
+       &lucell,rang,timel,tstep,unose,wbox,wnose,sigkine,rang,sig,bk,lspaceNDM
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
@@ -111,7 +111,7 @@ contains
     IF (wbox==0.0) THEN
        wbox = sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
-           if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
   call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
   wbox=wbox_tot
 end if
@@ -343,7 +343,7 @@ end if
     enddo
     sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 #ifdef PARA
-        if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     sigkine=sigkine_tot
  end if

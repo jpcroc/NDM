@@ -1,7 +1,7 @@
 module deftimestep_mod
   USE temp_com,only:im,imm ! A EFFACER
   USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,it,itetimestep,lcasca,lperiod,oldtstep,&
-       &rang,timel,tsmin,tstep,two,usdh,vmax,l2T
+       &rang,timel,tsmin,tstep,two,usdh,vmax,l2T,lspaceNDM
         implicit none
         contains
 ! *********************************************************************
@@ -72,7 +72,7 @@ subroutine deftimestep
   end do
 
 #ifdef PARA
-  if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
      max_loc(1)=vmax2
      max_loc(2)=myidsp
      !  max_loc(3)=0.5+ityp(imax)

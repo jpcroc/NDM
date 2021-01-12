@@ -365,11 +365,16 @@ module gen_com_m
   real(double)::potiszbl ! energie pot de ZBl quand ajoute independement 
   
   logical :: l2T
- real(double), dimension (:),allocatable ::elossCel
-character (len=15):: units_lammps
-real(double)::rskin,position_conversion_lammps, energy_conversion_lammps, pressure_conversion_lammps ! epaisseur pour lammps (equivalent rvois-rue)
+  real(double), dimension (:),allocatable ::elossCel
+
+  logical ::lspaceNDM ! TRUE= para space NDM/ false= paraspace LAMMPS
+  character (len=15):: units_lammps
+  real(double)::rskin,position_conversion_lammps, energy_conversion_lammps, pressure_conversion_lammps ! epaisseur pour lammps (equivalent rvois-rue)
  real(kind=8) , allocatable, dimension(:)  ::  posa, forca
  logical :: firsttime_lammps
  integer:: iverbose ! verbosity (0 = pas de détails, défaut, 1 = détails)
 
+
+ logical :: latcomp ! masters (myidsp=0) have the complete positions (for sauvegardeT), rasmolT
+ 
 end module gen_com_m

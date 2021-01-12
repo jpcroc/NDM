@@ -2,16 +2,15 @@
 MODULE vars_lammps
   USE T_kind_param_m, ONLY:  double
   use LAMMPS
-  type (C_ptr) :: lmp 
+  type (C_ptr) :: lmp
   !old not workingversion
   integer :: comm_lammps, orig_group
-  integer, dimension(:), allocatable :: lammps_comm, lammps_group 
-  !Characteristic of each  group 
+  integer, dimension(:), allocatable :: lammps_comm, lammps_group
+  !Characteristic of each  group
   integer, dimension(:),allocatable :: lammps_size, lammps_rank, all_rang
   integer :: no_of_lammps_group
-  integer :: no_procs_of_lammps_group = 1
-  integer :: ranks(1),new_group, new_comm
   integer :: w_rang, w_size
+  integer::MPI_COMM_lammps
 end MODULE !vars_lammps
 
 
@@ -26,27 +25,44 @@ subroutine read_lammps
   use gen_com_m, ONLY: rang,firsttime_lammps
   use LAMMPS
   use vars_lammps
+#ifdef PARA
+  use mod_para, only: nprocspace,mpi_comm_space
+#else
+  use mod_para, only: nprocspace
+#endif
   character*128 :: INPUT_LAMMPS_FILE
-!  type (C_ptr) :: lmp 
+!  type (C_ptr) :: lmp
 
+   INPUT_LAMMPS_FILE='in.lammps'
+#ifdef PARA
+   if (nprocspace==1) then
+    call lammps_open_no_mpi('lmp -log none -screen none', lmp)
+    if (rang==0) write(*,*) "before init potential lammps"
+    call lammps_file (lmp, INPUT_LAMMPS_FILE)
+    if (rang==0) write(*,*) "after init potential lammps"
+    if (rang==0) write(*,*) "init potential lammps"
+    if (rang==0)   write(*,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
+  else
+     !call define_communicators_lammps
+     call MPI_COMM_DUP(MPI_COMM_SPACE,MPI_COMM_lammps,ierr)     
+    call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
+    call lammps_file (lmp, INPUT_LAMMPS_FILE)
+  end if
+#else
 
-   INPUT_LAMMPS_FILE='in.lammps' 
-   call lammps_open_no_mpi('lmp -log none -screen none', lmp)
-   if (rang==0) write(*,*) "before init potential lammps"
-   call lammps_file (lmp, INPUT_LAMMPS_FILE)
-   if (rang==0) write(*,*) "after init potential lammps"
+    call lammps_open_no_mpi('lmp -log none -screen none', lmp)
+    if (rang==0) write(*,*) "before init potential lammps SEQ"
+    call lammps_file (lmp, INPUT_LAMMPS_FILE)
+    if (rang==0) write(*,*) "after init potential lammps"
+    if (rang==0) write(*,*) "init potential lammps"
+    if (rang==0)   write(*,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
+#endif
 
-   if (rang==0) write(*,*) "init potential lammps"
-
-
-
-   if (rang==0)   write(*,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
-   firsttime_lammps= .TRUE.
-
-   write(*,'("NDM: LAMMPS force field init done")')
+  firsttime_lammps= .TRUE.
+  if (rang==0)write(*,'("NDM: LAMMPS force field init done")')
+!  stop
 
  end subroutine read_lammps
-
 
 
 subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
@@ -81,7 +97,7 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
   integer :: itemp,iti,ic
   logical::lrun0
   real*8 :: rdiff
-  
+
 !  box(:) = boxl(:)
 
   if (allocated(pos_lammps)) deallocate (pos_lammps)
@@ -92,12 +108,12 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
      if (num /= im) then
         write(*,*) 'Big problem: gin and lammps files contain different number of atoms'
         stop
-     end if 
+     end if
      call lammps_gather_atoms(lmp, 'type', 1, lammps_types)
 !     write(6,*)'calfolammps1'
      if (num /= size(lammps_types)) then
         write(*,*) 'WARNING:  the atoms type is not correctly read in the LAMMPS wrapper ndm_lammps'
-     end if 
+     end if
 !     write(6,*)'calfolammps1.1'
      do i=1,im
         if (ityp(i).ne.lammps_types(i)) then
@@ -139,7 +155,7 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
         lrun0=.true.
      end if
   end if
-  
+
  if (lrun0.eqv..true.)then
      call lammps_command (lmp, 'run 0')
      lrun0=.false.
@@ -153,7 +169,7 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
   ! Extract energy from LAMMPS
   call lammps_extract_compute (energy, lmp, 'thermo_pe',0,0)
 !     write(6,*)'calfolammps5'
-  potislammps=energy*energy_conversion_lammps 
+  potislammps=energy*energy_conversion_lammps
   if (mod(it,itesigma)==0) then
      call lammps_extract_compute (p_tensor, lmp, 'thermo_press',0,1)
 !     write(6,*)'calfolammps6'
@@ -169,8 +185,8 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
      sig(3,1)=sig(1,3)
      sig(3,2)=sig(2,3)
   end if
-  
-  ! Extract forces from LAMMPS  
+
+  ! Extract forces from LAMMPS
   !v call lammps_gather_atoms (lmp, 'f', 3, force_lammps)
   call lammps_extract_atom (for_tmp, lmp, 'f')
 
@@ -193,12 +209,12 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
 !  write(6,*)'fp1',fp(:,1), 'Z'
 !  write(6,*)'fp2',fp(:,2)
 !  write(6,*)'fp3',fp(:,3)
-!  do i=1, NATOMS    
+!  do i=1, NATOMS
 !     tmp_force(i)          = force_lammps(3*i-2)*energy_conversion_lammps*position_conversion_lammps
 !     tmp_force(i+NATOMS)   = force_lammps(3*i-1)*energy_conversion_lammps*position_conversion_lammps
 !     tmp_force(i+NATOMS*2) = force_lammps(3*i  )*energy_conversion_lammps*position_conversion_lammps
 !  enddo
-  ! call mpi_barrier(MPI_COMM_WORLD,codeph) 
+  ! call mpi_barrier(MPI_COMM_WORLD,codeph)
   return
 end subroutine calcforce_lammps2
 

@@ -2,7 +2,7 @@ module calctemp_mod
 
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:ntyp,cm,na
-  USE gen_com_m, ONLY:erg2ev,im_glob,tempEP,bk,l2t
+  USE gen_com_m, ONLY:erg2ev,im_glob,tempEP,bk,l2t,lspaceNDM
   USE elec_cell, ONLY: ecell,i2T,nex,ney,nez,nox_2_nex
   USE eloss, ONLY : tcelec,ecelec
   USE atomconfig,only: atom_config_d
@@ -85,7 +85,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 
 #ifdef PARA
      
-     if (cellcf%proc_cell(ko).ne.myidsp) cycle
+     if ((lspaceNDM).and.(cellcf%proc_cell(ko).ne.myidsp)) cycle
 #endif
 
      if (L2T)     call nox_2_nex(ko,ixyze)
@@ -129,7 +129,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 
   end do
 #ifdef PARA
-  if (nprocspace.gt.1) then
+  if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
      call MPI_ALLREDUCE(kine,kinetot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      kine=kinetot
      call MPI_ALLREDUCE(sumtat2,sumtat2tot,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
@@ -180,7 +180,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 
 
 #ifdef PARA
-  if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.))then 
      temp = sumtat2/float(im_glob)
 deallocate(tempc_tot)
   else

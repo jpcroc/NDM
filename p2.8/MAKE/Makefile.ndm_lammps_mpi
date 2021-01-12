@@ -24,14 +24,16 @@ SHELL = /bin/sh
   ARFLAGS = -rc
 
 
-  LAMMPS_USER_PATH="/home/trochet/mylammps"
+  #LAMMPS_USER_PATH="/home/trochet/mylammps"
+  #LAMMPS_USER_PATH="/home/marinica/Flow/lammps_milady.git/"
+  LAMMPS_USER_PATH="/home/marinica/Flow/lammps.git/"
   LAMMPS_LIBNAME= mpi
 
 # Compiler flags setting 
  
   #F90FLAGS = -g -traceback 
   #CFLAGS =
-  #C++FLAGS = 
+  C++FLAGS = 
 
 # ---------------------------------------------------------------------
 # NDM-specific settings
@@ -74,9 +76,13 @@ SHELL = /bin/sh
 # LIB = name of LAMMPS library
   LAMMPS_INC  =-I${LAMMPS_USER_PATH}/src
   LAMMPS_PATH =-L${LAMMPS_USER_PATH}/src
+  #LAMMPS_LIB  = ${LAMMPS_USER_PATH}/src/liblammps_${LAMMPS_LIBNAME}.a
   LAMMPS_LIB  = ${LAMMPS_USER_PATH}/src/liblammps_${LAMMPS_LIBNAME}.a
   #MEAM=${LAMMPS_USER_PATH}/lib/meam/libmeam.a
-  #VORONOI=${LAMMPS_USER_PATH}/lib/voronoi/lib/libvoro++.a
+  #VORONOI=${LAMMPS_USER_PATH}/lib/libvoro++.a
+  #GSL=${LAMMPS_USER_PATH}/lib/libgsl.a
+  #PLUMED=${LAMMPS_USER_PATH}/lib/libplumed.a
+  #MILADY=${LAMMPS_USER_PATH}/lib/milady/libmilady.a
   #ATC= ${LAMMPS_USER_PATH}/lib/atc/libatc.a
   #QMMM= ${LAMMPS_USER_PATH}/lib/qmmm/libqmmm.a
   #COLVARS=${LAMMPS_USER_PATH}/lib/colvars/libcolvars.a
@@ -87,7 +93,7 @@ SHELL = /bin/sh
   #QUIP_HOME=${HOME}/Flow/QUIPnew/
   #QUIP=${QUIP_HOME}/build/linux_x86_64_ifort_icc_mpi/libquip.a
   #LAMMPS_OPTIONAL_LIB = ${PYTHON} ${MEAM} ${VORONOI} ${ATC} ${COLVARS} ${REAX} ${QMMM} ${POEMS} ${QUIP} ${AWPMD}
-  LAMMPS_OPTIONAL_LIB = #${MEAM}  ${QUIP} 
+  LAMMPS_OPTIONAL_LIB = ${MILADY}  #${MEAM}  ${QUIP} 
 
 
 # ML library, REQUIRED if -DML
@@ -138,7 +144,9 @@ SHELL = /bin/sh
 
   MKL_INC  = #-I/opt/intel/mkl/include/intel64/lp64
   MKL_PATH = #-L/opt/intel/mkl/lib
-  MKL_LIB  = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 
+
+  #MKL_LIB  = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64
+  MKL_LIB=${MKLROOT}/lib/intel64/libmkl_scalapack_lp64.a -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_intel_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_blacs_openmpi_lp64.a -Wl,--end-group -liomp5 -lpthread -lm -ldl
 # ---------------------------------------------------------------------
 # build rules and dependencies
 # no need to edit this section
@@ -151,10 +159,10 @@ SHELL = /bin/sh
   ${PHONDY_PATH} ${PARAPH_PATH} 
   EXTRA_LIB   = ${MKL_LIB} ${MPI_LIB} ${FFTW_LIB} ${LAMMPS_LIB}  \
   ${MAB_LIB} ${ART_LIB} ${ML_LIB} ${PARAML_LIB}  \
-  ${PHONDY_LIB} ${PARAPH_LIB}
+  ${PHONDY_LIB} ${PARAPH_LIB}  ${LAMMPS_OPTIONAL_LIB}
 
 
-  LIBS = ${EXTRA_PATH} ${EXTRA_LIB} -lstdc++   
+  LIBS = ${EXTRA_PATH} ${EXTRA_LIB} -lstdc++ -lgfortran  
   CLIBS =
 
 # Path to src files
@@ -178,7 +186,7 @@ vpath %.h   ${CODE_PATH}
 %.o: %.F90
 	$(F90) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
 %.o: %.cpp
-	$(C++) -c ${EXTRA_INC} $(C++FLAGS) $< -o $@ 
+	$(C++) -c ${LAMMPS_INC}  $(C++FLAGS) $< -o $@ 
 
 # Link target
 

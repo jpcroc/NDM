@@ -9,11 +9,11 @@ module initspeed_mod
   USE period_mod,only: period
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
        &lvpread,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,mdcg_noise_scale,&
-       neb_noise_scale,bk,mdcg_noise! enleve im, im_glog
+       neb_noise_scale,bk,mdcg_noise,lspacendm,latcomp! enleve im, im_glog
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para,nprocspace
+  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para,nprocspace,myidsp
 #else
     USE mod_para,only:nprocspace
 #endif
@@ -214,18 +214,18 @@ contains
           ! call random_seed(iseedt(1))
 
           call random_seed(size=seed_size)
-          write(6,*)'seed_size',seed_size
+          if (rang==0)write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
           !          iseedt = 0
 
 
           if (iseed==0)  then
              call system_clock (iseed)
-             write(6,*)'iseed pour tirage des vitesses',iseed
+             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
              iseedt(:)=iseed
 
           else
-             write(6,*)'iseed pour tirage des vitesses',iseed
+             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
              iseedt(:)=iseed
           end if
 
@@ -285,7 +285,7 @@ contains
              end do
              ka=0.5*bk*tinit 
 #ifdef PARA
-             if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
                 call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
                 kinx(ic)=kinx_glob
              end if
@@ -311,7 +311,7 @@ contains
           enddo
 
 #ifdef PARA
-     if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
         call MPI_ALLREDUCE(totmass,  totmass_glob,  1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
         call MPI_ALLREDUCE(scom(1:3),scom_glob(1:3),3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
         call MPI_ALLREDUCE(pav(1:3), pav_glob(1:3), 3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
@@ -354,7 +354,7 @@ contains
                 end do
 
 #ifdef PARA
-     if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                
         call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
         kinx(ic)=kinx_glob
@@ -416,7 +416,7 @@ contains
              ainer(2,1) = ainer(1,2)
 
 #ifdef PARA
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              
              call MPI_ALLREDUCE(ainer(1:3,1:3), ainer_glob(1:3,1:3), 9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
              ainer = ainer_glob
@@ -471,6 +471,9 @@ contains
        endif
 
     endif
+
+
+    
     !     write(6,*)'sortie initspeed'
 
     tempsauv=tempinst(vp,ityp,im,imm)
@@ -508,6 +511,12 @@ contains
        atcf%xp=xp;atcf%xpp=xpp; atcf%vp=vp; atcf%ityp=ityp;
        deallocate(ityp);deallocate(xp);deallocate(xpp);deallocate(vp)
 
+#ifdef PARA
+       if ((latcomp).and.(nprocspace.gt.1)) then ! les procs masters myidsp=0 ont toutes les positions., Il faut passer aux autres procs les nouvelles atcf
+          call atcf%send2all(0,mpi_comm_space)
+       end if
+#endif          
+       
     return
 
 

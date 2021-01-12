@@ -44,9 +44,9 @@ include 'mpif.h'
      procedure, pass::add2conf
      procedure, pass::extend
 
-     !     procedure, pass::send2proc=>s2p_atom
-     !     procedure, pass::send2all=>s2a_atom
-     !     procedure, pass::recv=>rcv_atom
+     procedure, pass::send2proc=>s2p_atom
+     procedure, pass::send2all=>s2a_atom
+     procedure, pass::recv=>rcv_atom
      !
   end type atom_config
 
@@ -56,10 +56,11 @@ include 'mpif.h'
    contains
      procedure, pass::copy_atom=>copy_atom_d
      procedure, pass::dealloc=>dealloc_atom_config_d
+     procedure, pass::switch_atom
      !#ifdef PARA
-     !     procedure, pass::send2proc=>s2p_atom_d
-     !     procedure, pass::send2all=>s2a_atom_d
-     !     procedure, pass::recv=>rcv_atom_d
+     procedure, pass::send2proc=>s2p_atom_d
+     procedure, pass::send2all=>s2a_atom_d
+     procedure, pass::recv=>rcv_atom_d
      !#endif     
   end type atom_config_d
   
@@ -76,9 +77,9 @@ include 'mpif.h'
      procedure, pass::copy_atom=>copy_atom_e
      procedure, pass::dealloc=>dealloc_atom_config_e
      !#ifdef PARA
-     !     procedure, pass::send2proc=>s2p_atom_e
-     !     procedure, pass::send2all=>s2a_atom_e
-     !     procedure, pass::recv=>rcv_atom_e
+     procedure, pass::send2proc=>s2p_atom_e
+     procedure, pass::send2all=>s2a_atom_e
+     procedure, pass::recv=>rcv_atom_e
      
      !#endif     
   end type atom_config_e
@@ -155,7 +156,7 @@ contains
     end if
 
     select type (atconf)
-    type is (atom_config_d)
+    class is (atom_config_d)
        !       write(6,*)'init_d'
        if ((lrealloc).and.(allocated(atconf%vp)))then
           deallocate(atconf%vp); deallocate(atconf%xpp)
@@ -165,13 +166,13 @@ contains
        end if
        atconf%vp=0;atconf%xpp=0
     type is (atom_config_e)
-       if ((lrealloc).and.(allocated(atconf%vp)))then
-          deallocate(atconf%vp); deallocate(atconf%xpp)
-       end if
-       if (.not.allocated(atconf%vp))then
-          allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
-       end if
-       atconf%vp=0;atconf%xpp=0
+!       if ((lrealloc).and.(allocated(atconf%vp)))then
+!          deallocate(atconf%vp); deallocate(atconf%xpp)
+!       end if
+!       if (.not.allocated(atconf%vp))then
+!          allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
+!       end if
+!       atconf%vp=0;atconf%xpp=0
        atconf%lprteat=.false.
        atconf%lsigat=.false.
        atconf%lLangevin=.false.
@@ -344,7 +345,270 @@ contains
     end select
   end subroutine copy_atom_e
 
+  subroutine s2p_atom (atcf, rgcib,comm,caracT)
+    class(atom_config):: atcf
+    integer,intent(in)::rgcib,comm
+    integer:: size1,size3,sizeV,ierr
+    character(len=26),optional,intent(in)::caracT
+    character(len=26)::carac
+    
+!x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    size1=atcf%imm;size3=3*size1
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlp'
+    else
+       carac=caracT
+    end if
 
+    if(index('n',carac).ne.0)    call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
+    if(index('i',carac).ne.0)    call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
+    if(index('e',carac).ne.0)    call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
+    if(index('p',carac).ne.0)    call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
+    if(index('l',carac).ne.0)    call MPI_SEND(atcf%proc_at, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
+    if(index('x',carac).ne.0)    call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
+    if(index('f',carac).ne.0)    call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
+    if (atcf%ltabvois) then
+       sizeV=size(atcf%indi)
+       if(index('w',carac).ne.0)    call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
+       if(index('d',carac).ne.0)    call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
+    end if
+#endif
+  end subroutine s2p_atom
+
+  subroutine s2p_atom_d (atcf, rgcib,comm,caracT)
+    class(atom_config_d):: atcf
+    integer,intent(in)::rgcib,comm
+    integer:: size1,size3,sizeV,ierr
+    character(len=26),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+!voir au dessus + v=vp,r=xpp
+    
+
+    size1=atcf%imm;size3=3*size1
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvr'
+    else
+       carac=caracT
+    end if
+    call s2p_atom(atcf,rgcib,comm,carac)
+    if(index('v',carac).ne.0)    call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
+    if(index('r',carac).ne.0)    call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+#endif
+  end subroutine s2p_atom_d
+
+    subroutine s2p_atom_e (atcf, rgcib,comm,caracT)
+    class(atom_config_e):: atcf
+    integer,intent(in)::rgcib,comm
+    integer:: size1,size3,sizeV,ierr
+    character(len=26),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+!voir au dessus + v=vp,r=xpp
+!voir au dessus + u=eat,g=glangv;a=ax;s=sigat
+    
+
+    size1=atcf%imm;size3=3*size1
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugas'
+    else
+       carac=caracT
+    end if
+    call s2p_atom_d(atcf,rgcib,comm,carac)
+    if (atcf%lprteat)then
+    if(index('u',carac).ne.0) call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)       
+    end if
+    if (atcf%llangevin)then
+    if(index('g',carac).ne.0)  call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)     
+    end if
+    if (atcf%lax)then
+     if(index('a',carac).ne.0)call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)           
+    end if
+    if (atcf%lsigat)then
+     if(index('s',carac).ne.0) call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)          
+    end if
+#endif
+  end subroutine s2p_atom_e
+
+  subroutine rcv_atom (atcf, rgem,comm,caracT)
+    class(atom_config):: atcf
+    integer,intent(in)::rgem,comm
+    integer:: size1,size3,sizeV,ierr
+    character(len=26),optional,intent(in)::caracT
+    character(len=26)::carac
+    
+!x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    size1=atcf%imm;size3=3*size1
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlp'
+    else
+       carac=caracT
+    end if
+
+    if(index('n',carac).ne.0)    call MPI_RECV(atcf%num_at_glob, size1, MPI_INTEGER, rgem,104,comm,status,ierr)
+    if(index('i',carac).ne.0)    call MPI_RECV(atcf%ityp, size1, MPI_INTEGER, rgem,105,comm,ierr)
+    if(index('e',carac).ne.0)    call MPI_RECV(atcf%ielat, size1, MPI_INTEGER, rgem,106,comm,status,ierr)
+    if(index('p',carac).ne.0)    call MPI_RECV(atcf%proc_at, size1, MPI_INTEGER, rgem,102,comm,status,ierr)
+    if(index('l',carac).ne.0)    call MPI_RECV(atcf%proc_at, size1, MPI_LOGICAL, rgem,103,comm,status,ierr)
+    if(index('x',carac).ne.0)    call MPI_RECV(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgem,100,comm,status,ierr)
+    if(index('f',carac).ne.0)    call MPI_RECV(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgem,101,comm,status,ierr)
+    if (atcf%ltabvois) then
+       sizeV=size(atcf%indi)
+       if(index('w',carac).ne.0)    call MPI_RECV(atcf%iwmax, size1, MPI_INTEGER, rgem,107,comm,status,ierr)
+       if(index('d',carac).ne.0)    call MPI_RECV(atcf%indi, sizeV, MPI_INTEGER, rgem,108,comm,status,ierr)
+    end if
+#endif
+  end subroutine rcv_atom
+
+  subroutine rcv_atom_d (atcf, rgem,comm,caracT)
+    class(atom_config_d):: atcf
+    integer,intent(in)::rgem,comm
+    integer:: size1,size3,sizeV,ierr
+    character(len=26),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+!voir au dessus + v=vp,r=xpp
+    
+
+    size1=atcf%imm;size3=3*size1
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvr'
+    else
+       carac=caracT
+    end if
+    call rcv_atom(atcf,rgem,comm,carac)
+    if(index('v',carac).ne.0)    call MPI_RECV(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgem,109,comm,status,ierr)
+    if(index('r',carac).ne.0)    call MPI_RECV(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgem,110,comm,status,ierr)
+#endif
+  end subroutine rcv_atom_d
+
+    subroutine rcv_atom_e (atcf, rgem,comm,caracT)
+    class(atom_config_e):: atcf
+    integer,intent(in)::rgem,comm
+    integer:: size1,size3,sizeV,ierr
+    character(len=26),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+!voir au dessus + v=vp,r=xpp
+!voir au dessus + u=eat,g=glangv;a=ax;s=sigat
+    
+
+    size1=atcf%imm;size3=3*size1
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugas'
+    else
+       carac=caracT
+    end if
+    call rcv_atom_d(atcf,rgem,comm,carac)
+    if (atcf%lprteat)then
+    if(index('u',carac).ne.0) call MPI_RECV(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgem,111,comm,status,ierr)       
+    end if
+    if (atcf%llangevin)then
+    if(index('g',carac).ne.0)  call MPI_RECV(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgem,112,comm,status,ierr)     
+    end if
+    if (atcf%lax)then
+     if(index('a',carac).ne.0)call MPI_RECV(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgem,113,comm,status,ierr)           
+    end if
+    if (atcf%lsigat)then
+     if(index('s',carac).ne.0) call MPI_RECV(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgem,114,comm,status,ierr)          
+    end if
+#endif
+  end subroutine rcv_atom_e
+
+  
+  subroutine s2a_atom(atcf,rgemet,comm,caracT)
+    class(atom_config)::atcf
+    integer,intent(in)::rgemet,comm
+    integer:: size1,size3,sizeV
+    character(len=26),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+    
+    size1=atcf%imm;size3=3*size1
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlp'
+    else
+       carac=caracT
+    end if
+    if(index('n',carac).ne.0) call MPI_BCAST(atcf%num_at_glob, size1,MPI_INTEGER, rgemet,comm,ierr)
+    if(index('i',carac).ne.0) call MPI_BCAST(atcf%ityp, size1,MPI_INTEGER, rgemet,comm,ierr)
+    if(index('e',carac).ne.0)call MPI_BCAST(atcf%ielat, size1,MPI_INTEGER, rgemet,comm,ierr)
+    if(index('p',carac).ne.0)call MPI_BCAST(atcf%proc_at, size1,MPI_INTEGER, rgemet,comm,ierr)
+    if(index('l',carac).ne.0)call MPI_BCAST(atcf%lgul, size1,MPI_LOGICAl, rgemet,comm,ierr)
+    if(index('x',carac).ne.0)call MPI_BCAST(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    if(index('f',carac).ne.0)call MPI_BCAST(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    if (atcf%ltabvois) then
+       sizeV=size(atcf%indi)
+       if(index('w',carac).ne.0)call MPI_BCAST(atcf%iwmax, size1,MPI_INTEGER, rgemet,comm,ierr)
+       if(index('d',carac).ne.0)call MPI_BCAST(atcf%indi, sizeV,MPI_INTEGER, rgemet,comm,ierr)
+    end if
+#endif
+  end subroutine s2a_atom
+  
+  subroutine s2a_atom_d(atcf,rgemet,comm,caracT)
+    class(atom_config_d)::atcf
+    integer,intent(in)::rgemet,comm
+    integer:: size1,size3,sizeV
+    character(len=26),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+!voir au dessus + v=vp,r=xpp
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvr'
+    else
+       carac=caracT
+    end if
+    
+    call s2a_atom(atcf,rgemet,comm,carac)
+    size1=atcf%imm;size3=3*size1
+#ifdef PARA
+    if(index('r',carac).ne.0)    call MPI_BCAST(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    if(index('v',carac).ne.0)    call MPI_BCAST(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+#endif
+  end subroutine s2a_atom_d
+
+  
+  subroutine s2a_atom_e(atcf,rgemet,comm,caracT)
+    class(atom_config_e)::atcf
+    integer,intent(in)::rgemet,comm
+    integer:: size1,size3,sizeV
+    character(len=26),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+!voir au dessus + v=vp,r=xpp
+!voir au dessus + u=eat,g=glangv;a=ax;s=sigat
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugas'
+    else
+       carac=caracT
+    end if
+
+    call s2a_atom_d(atcf,rgemet,comm,carac)
+    size1=atcf%imm;size3=3*size1
+#ifdef PARA
+    if (atcf%lprteat)then
+    if(index('u',carac).ne.0)       call MPI_BCAST(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    end if
+    if (atcf%llangevin)then
+    if(index('g',carac).ne.0)       call MPI_BCAST(atcf%Glangv, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    end if
+    if (atcf%lax)then
+     if(index('a',carac).ne.0)      call MPI_BCAST(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    end if
+    if (atcf%lsigat)then
+     if(index('s',carac).ne.0)      call MPI_BCAST(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    end if
+#endif
+  end subroutine s2a_atom_e
+
+    
   ! copie d'une config entière vers config de base
   subroutine copy_config (atsource,atcible,lrescl)
     class(atom_config),intent(in)::atsource
@@ -449,6 +713,49 @@ contains
 
   end subroutine dealloc_atom_config_e
 
+
+
+  !on inverse deux atomes dans la configuration
+  subroutine switch_atom(atsource,ind_switch_1, ind_switch_2)
+    class(atom_config_d)::atsource
+    type(atom_config_d):: intermediaire
+    integer :: ind_switch_1, ind_switch_2
+    logical :: lex = .true.
+
+
+    select type (atsource)
+    type is (atom_config_d)
+     call atsource%copy_config(intermediaire, lex)
+
+     atsource%xp(:,ind_switch_1)=intermediaire%xp(:,ind_switch_2)
+     atsource%fp(:,ind_switch_1)=intermediaire%fp(:,ind_switch_2)
+     atsource%ielat(ind_switch_1)=intermediaire%ielat(ind_switch_2)
+     atsource%lgul(ind_switch_1)=intermediaire%lgul(ind_switch_2)
+     atsource%ityp(ind_switch_1)=intermediaire%ityp(ind_switch_2)
+     atsource%num_at_glob(ind_switch_1)=intermediaire%num_at_glob(ind_switch_2)
+     ! faut il changer des trucs concernant ltabvois ? iwmax ? ou indi ?
+     atsource%vp(:,ind_switch_1)=intermediaire%vp(:,ind_switch_2)
+     atsource%xpp(:,ind_switch_1)=intermediaire%xpp(:,ind_switch_2)
+
+     atsource%xp(:,ind_switch_2)=intermediaire%xp(:,ind_switch_1)
+     atsource%fp(:,ind_switch_2)=intermediaire%fp(:,ind_switch_1)
+     atsource%ielat(ind_switch_2)=intermediaire%ielat(ind_switch_1)
+     atsource%lgul(ind_switch_2)=intermediaire%lgul(ind_switch_1)
+     atsource%ityp(ind_switch_2)=intermediaire%ityp(ind_switch_1)
+     atsource%num_at_glob(ind_switch_2)=intermediaire%num_at_glob(ind_switch_1)
+     ! faut il changer des trucs concernant ltabvois ? iwmax ? ou indi ?
+     atsource%vp(:,ind_switch_2)=intermediaire%vp(:,ind_switch_1)
+     atsource%xpp(:,ind_switch_2)=intermediaire%xpp(:,ind_switch_1)
+    end select
+  end subroutine
+
+
+
+
+  
+#ifdef PARA  
+  
+#endif
   subroutine pack(at2pack,imm_in)
     class(atom_config),intent(inout):: at2pack
     integer,optional, intent(in):: imm_in
