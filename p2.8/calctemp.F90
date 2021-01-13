@@ -132,7 +132,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
   if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
      call MPI_ALLREDUCE(kine,kinetot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      kine=kinetot
-     call MPI_ALLREDUCE(sumtat2,sumtat2tot,ntyp,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+     call MPI_ALLREDUCE(sumtat2,sumtat2tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
      sumtat2=sumtat2tot
 !  call MPI_ALLREDUCE(vx2(1:ntyp,1:3),vx2_glob(1:ntyp,1:3),ntyp*3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
 !  vx2=vx2_glob

@@ -973,11 +973,12 @@ contains
     integer,optional::i1,i2,iwr,unit,natg1,natg2
     !    type(atom_config_d):: td
     !    type(atom_config_e):: te
-    integer::i,im,ifin,ideb,ist,ifn,iw,natpr,ig,iprt
+    integer::i,im,ifin,ideb,ist,ifn,iw,natpr,ig,iprt,unitw
     !    write(6,*)
     class (atom_config),allocatable::atprt
 !    write(6,*)'in print',atin%im,atin%imm
-    if (.Not.present(unit))unit=6
+    unitw=6
+    if (present(unit))unitw=unit
 
     iw=1
        select type (atin)
@@ -1048,10 +1049,10 @@ contains
           
 
     
-    write(unit,*)'im = ',atprt%im
-    write(unit,*)'imm = ',atprt%imm
-    write(unit,*)'icaltabt = ',atprt%icaltabt
-    write(unit,*)'ltabvois ', atprt%ltabvois
+    write(unitw,*)'im = ',atprt%im
+    write(unitw,*)'imm = ',atprt%imm
+    write(unitw,*)'icaltabt = ',atprt%icaltabt
+    write(unitw,*)'ltabvois ', atprt%ltabvois
 !    write(6,*)
     ideb=1
     ifin=atprt%im
@@ -1071,26 +1072,26 @@ contains
     end if
     if (allocated(atprt%xp)) then
        do i=ideb,im
-          write(unit,*)'%xp= ', i,atprt%xp(:,i)
+          write(unitw,*)'%xp= ', i,atprt%xp(:,i)
        end do
        do i=ideb,im
-          write(unit,*)'%ityp= ', i,atprt%ityp(i)
+          write(unitw,*)'%ityp= ', i,atprt%ityp(i)
        end do
        do i=ideb,im
-          write(unit,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
+          write(unitw,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
        end do
 #ifdef PARA
        do i=ideb,im
-          write(unit,*)'%proc_at= ', i,atprt%proc_at(i)
+          write(unitw,*)'%proc_at= ', i,atprt%proc_at(i)
        end do
 #endif    
        
        if (iw==0) return
        do i=ideb,im
-          write(unit,*)'%fp= ', i,atprt%fp(:,i)
+          write(unitw,*)'%fp= ', i,atprt%fp(:,i)
        end do
        do i=ideb,im
-          write(unit,*)'%ielat= ', i,atprt%ielat(i)
+          write(unitw,*)'%ielat= ', i,atprt%ielat(i)
        end do
        !       if (extends_type_of(atprt,td)) then
        !          write(unit,*)'prt_d'
@@ -1116,31 +1117,31 @@ contains
 
        select type (atprt)
           class is (atom_config_d)
-          write(unit,*)'prt_d'
+          write(unitw,*)'prt_d'
           do i=ideb,im
-             write(unit,*)'%vp= ', i,atprt%vp(:,i)
+             write(unitw,*)'%vp= ', i,atprt%vp(:,i)
           end do
           do i=ideb,im
-             write(unit,*)'%xpp= ', i,atprt%xpp(:,i)
+             write(unitw,*)'%xpp= ', i,atprt%xpp(:,i)
           end do
           class is (atom_config_e)
-          write(unit,*)'prt_e'
+          write(unitw,*)'prt_e'
           do i=ideb,im
-             write(unit,*)'%vp= ', i,atprt%vp(:,i)
+             write(unitw,*)'%vp= ', i,atprt%vp(:,i)
           end do
           do i=ideb,im
-             write(unit,*)'%xpp= ', i,atprt%xpp(:,i)
+             write(unitw,*)'%xpp= ', i,atprt%xpp(:,i)
           end do
 
 
           if (atprt%lsigat) then
              do i=ideb,im
-                write(unit,*)'%sigat= ',i, atprt%sigat(:,:,i)
+                write(unitw,*)'%sigat= ',i, atprt%sigat(:,:,i)
              end do
           end if
           if (atprt%lprteat) then
              do i=ideb,im
-                write(unit,*)'%eat= ', i,atprt%eat(i)
+                write(unitw,*)'%eat= ', i,atprt%eat(i)
              end do
           end if
        end select
@@ -1148,7 +1149,7 @@ contains
 
        if (atprt%ltabvois) then
           do i=ideb,im
-             write(unit,*)'%iwmax= ', i,atprt%iwmax(i)
+             write(unitw,*)'%iwmax= ', i,atprt%iwmax(i)
           end do
 
           if (allocated(atprt%indi))then
@@ -1164,7 +1165,7 @@ contains
              end if
 
              do i=ist,ifn,100
-                write(unit,*)'indi', i,atprt%indi(i)
+                write(unitw,*)'indi', i,atprt%indi(i)
              end do
           end if
        end if

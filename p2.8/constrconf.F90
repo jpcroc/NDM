@@ -173,9 +173,6 @@ contains
 
        call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax,lrepart)
 
-       do iti=1,ntyp
-          na(iti)=count(atrcf%ityp(1:atrcf%im)==iti)
-       end do
 
        if (lperiod.EQV..true.) call periodbox (boxrcf,atrcf)
 
@@ -249,10 +246,10 @@ contains
     type(atom_config)::atrgin
     type(box_config)::boxrgin
     real(double)::atg(3,3)
-    integer::lat(3),ic,ncore,npr,ierr
+    integer::lat(3),ic,ncore,npr,ierr,iti
     lrepart=.true.
     if(present(lrepartition))lrepart=lrepartition
-    
+    write(6,*)'LLLLLLLLRRRRRRRR',lrepartition
     call read_gin(boxrgin,atrgin,fnamg,lat)
     do ic=1,3
        atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
@@ -275,6 +272,10 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
 !    write(6,*)'IMMGLOBIMMGLOB',imm_glob
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
+    do iti=1,ntyp
+       na(iti)=count(COMPatrcf%ityp(1:COMPatrcf%im)==iti)
+    end do
+
     imtot=COMPatrcf%im
     im_glob=COMPatrcf%im
    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)

@@ -66,14 +66,11 @@ contains
     cellcgloc=>celcgin
     atcgloc=>atcgin
     boxcg=boxndm
-
+!    call atcgin%print(unit=10+rang)
     !    stop
 
     nad(:ntyp) = na(:ntyp)
 
-    if (mdcg_noise /= 0 ) then
-       call bruit_xp (atcgin%xp,bruitmd,atcgin%im)
-    end if
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -90,6 +87,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     atcgcomp=atcgin
     cellcgcomp=celcgin
 #endif
+    if (mdcg_noise /= 0 ) then
+       call bruit_xp (atcgcomp%xp,bruitmd,atcgcomp%im)
+    end if
 
        NGC=3*atcgcomp%im
        allocate (X(NGC),G(NGC),W(6*NGC))
