@@ -15,21 +15,24 @@ end MODULE !vars_lammps
 
 
 module lammps_util_mod
-        use gen_com_m
+  use gen_com_m, ONLY: rang,firsttime_lammps
+  !use gen_com_m,only:
         use LAMMPS
         use vars_lammps
-        implicit none
-        contains
-
-subroutine read_lammps
-  use gen_com_m, ONLY: rang,firsttime_lammps
-  use LAMMPS
-  use vars_lammps
 #ifdef PARA
-  use mod_para, only: nprocspace,mpi_comm_space
+  use mod_para, only: nprocspace,mpi_comm_space,ierr,mpi_comm_world
 #else
   use mod_para, only: nprocspace
 #endif
+
+        implicit none
+
+      contains
+
+subroutine read_lammps
+
+  use LAMMPS
+  use vars_lammps
   character*128 :: INPUT_LAMMPS_FILE
 !  type (C_ptr) :: lmp
 
@@ -131,7 +134,8 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
 	pos_lammps(3*i-2) = xp(1,i)/position_conversion_lammps
 	pos_lammps(3*i-1) = xp(2,i)/position_conversion_lammps
 	pos_lammps(3*i  ) = xp(3,i)/position_conversion_lammps
-  enddo
+!        write(500+rang,*) rang,i,pos_lammps(3*i-2),pos_lammps(3*i-1),pos_lammps(3*i  )
+enddo
 !     write(6,*)'calfolammps2'
 
   ! Put the coordinates to LAMMPS
@@ -151,7 +155,7 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
      end do
      if (rdiff.ge.rskin) then
         axlmp(:,:)=xp(:,:)
-        write(6,*)'LRUN0'
+!        write(6,*)'LRUN0'
         lrun0=.true.
      end if
   end if
@@ -187,24 +191,41 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
   end if
 
   ! Extract forces from LAMMPS
-  !v call lammps_gather_atoms (lmp, 'f', 3, force_lammps)
-  call lammps_extract_atom (for_tmp, lmp, 'f')
-
-!       write(6,*)'calfolammps7'
+   call lammps_gather_atoms (lmp, 'f', 3, force_lammps)
+ ! call lammps_extract_atom (for_tmp, lmp, 'f')
+!!$En séquentiel, gather_atoms et extract_atom donnent la même chose.
+!!$En parallèle :
+!!$1/extract_atom donne des choses différentes sur chaque proc
+!!$2/gather_atoms donne des choses égales sur tous les procs
+!!$3/gather_atoms donne des choses égales au gather ou extract du séquentiel
+!!$4/Il semble que ce qui change dans les différents extract_atoms soit l'ordre des atomes (on dirait, il y a des nombres qui se ressemblent). Il faut peut-être els réarranger selon un indice interproc inconnu.
+!  do i=1,im
+!     write(1000+rang,*)i,force_lammps(3*i-2),force_lammps(3*i-1),force_lammps(3*i)
+!     write(1100+rang,*)i,for_tmp(1,i),for_tmp(2,i),for_tmp(3,i)
+!  end do
+!#ifdef PARA  
+!  call MPI_barrier(MPI_COMM_lammps,ierr)
+!  call MPI_finalize(ierr)
+!#endif
+!  stop
+!         write(6,*)'calfolammps7'
 !    call lammps_extract_atom (vel_tmp, lmp, 'v')
 !  write(6,*) vel_tmp
 
  ! if (allocated(force_lammps)) deallocate(force_lammps)
  ! allocate(force_lammps(3*im))
 
-  do i=1,im
-     fp(1,i)=for_tmp(1,i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
-     fp(2,i)=for_tmp(2,i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
-     fp(3,i)=for_tmp(3,i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
+do i=1,im
+   
+     fp(1,i)=force_lammps(3*i-2)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
+     fp(2,i)=force_lammps(3*i-1)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
+     fp(3,i)=force_lammps(3*i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
 !     force_lammps(3*i-2)=for_tmp(1,i)
 !     force_lammps(3*i-1)=for_tmp(2,i)
 !     force_lammps(3*i  )=for_tmp(3,i)
+!     write(6,*)rang,i,fp(:,i)
   end do
+!  write(6,*)rang,fp(:,1:767)
 !  write(6,*)
 !  write(6,*)'fp1',fp(:,1), 'Z'
 !  write(6,*)'fp2',fp(:,2)

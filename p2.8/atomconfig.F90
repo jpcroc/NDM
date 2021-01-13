@@ -2,7 +2,8 @@ module atomconfig
   USE T_kind_param_m,only:double,long,ierr
   USE Mat_utils_mod,only: fillbuffer3D,fillbuffer1D,fillbuffer9D
 #ifdef PARA
-  USE Tpara,only:NDM_MPI_REAL_DOUBLE 
+  USE Tpara,only:NDM_MPI_REAL_DOUBLE
+  use gen_com_m,only:rang
 
 
 #endif
@@ -361,17 +362,17 @@ contains
        carac=caracT
     end if
 
-    if(index('n',carac).ne.0)    call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
-    if(index('i',carac).ne.0)    call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
-    if(index('e',carac).ne.0)    call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
-    if(index('p',carac).ne.0)    call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
-    if(index('l',carac).ne.0)    call MPI_SEND(atcf%proc_at, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
-    if(index('x',carac).ne.0)    call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
-    if(index('f',carac).ne.0)    call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
+    if(scan('n',carac).ne.0)    call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
+    if(scan('i',carac).ne.0)    call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
+    if(scan('e',carac).ne.0)    call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
+    if(scan('p',carac).ne.0)    call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
+    if(scan('l',carac).ne.0)    call MPI_SEND(atcf%proc_at, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
+    if(scan('x',carac).ne.0)    call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
+    if(scan('f',carac).ne.0)    call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
     if (atcf%ltabvois) then
        sizeV=size(atcf%indi)
-       if(index('w',carac).ne.0)    call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
-       if(index('d',carac).ne.0)    call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
+       if(scan('w',carac).ne.0)    call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
+       if(scan('d',carac).ne.0)    call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
     end if
 #endif
   end subroutine s2p_atom
@@ -394,8 +395,8 @@ contains
        carac=caracT
     end if
     call s2p_atom(atcf,rgcib,comm,carac)
-    if(index('v',carac).ne.0)    call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
-    if(index('r',carac).ne.0)    call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+    if(scan('v',carac).ne.0)    call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
+    if(scan('r',carac).ne.0)    call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
 #endif
   end subroutine s2p_atom_d
 
@@ -419,16 +420,16 @@ contains
     end if
     call s2p_atom_d(atcf,rgcib,comm,carac)
     if (atcf%lprteat)then
-    if(index('u',carac).ne.0) call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)       
+    if(scan('u',carac).ne.0) call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)       
     end if
     if (atcf%llangevin)then
-    if(index('g',carac).ne.0)  call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)     
+    if(scan('g',carac).ne.0)  call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)     
     end if
     if (atcf%lax)then
-     if(index('a',carac).ne.0)call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)           
+     if(scan('a',carac).ne.0)call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)           
     end if
     if (atcf%lsigat)then
-     if(index('s',carac).ne.0) call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)          
+     if(scan('s',carac).ne.0) call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)          
     end if
 #endif
   end subroutine s2p_atom_e
@@ -449,17 +450,17 @@ contains
        carac=caracT
     end if
 
-    if(index('n',carac).ne.0)    call MPI_RECV(atcf%num_at_glob, size1, MPI_INTEGER, rgem,104,comm,status,ierr)
-    if(index('i',carac).ne.0)    call MPI_RECV(atcf%ityp, size1, MPI_INTEGER, rgem,105,comm,ierr)
-    if(index('e',carac).ne.0)    call MPI_RECV(atcf%ielat, size1, MPI_INTEGER, rgem,106,comm,status,ierr)
-    if(index('p',carac).ne.0)    call MPI_RECV(atcf%proc_at, size1, MPI_INTEGER, rgem,102,comm,status,ierr)
-    if(index('l',carac).ne.0)    call MPI_RECV(atcf%proc_at, size1, MPI_LOGICAL, rgem,103,comm,status,ierr)
-    if(index('x',carac).ne.0)    call MPI_RECV(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgem,100,comm,status,ierr)
-    if(index('f',carac).ne.0)    call MPI_RECV(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgem,101,comm,status,ierr)
+    if(scan('n',carac).ne.0)    call MPI_RECV(atcf%num_at_glob, size1, MPI_INTEGER, rgem,104,comm,status,ierr)
+    if(scan('i',carac).ne.0)    call MPI_RECV(atcf%ityp, size1, MPI_INTEGER, rgem,105,comm,ierr)
+    if(scan('e',carac).ne.0)    call MPI_RECV(atcf%ielat, size1, MPI_INTEGER, rgem,106,comm,status,ierr)
+    if(scan('p',carac).ne.0)    call MPI_RECV(atcf%proc_at, size1, MPI_INTEGER, rgem,102,comm,status,ierr)
+    if(scan('l',carac).ne.0)    call MPI_RECV(atcf%proc_at, size1, MPI_LOGICAL, rgem,103,comm,status,ierr)
+    if(scan('x',carac).ne.0)    call MPI_RECV(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgem,100,comm,status,ierr)
+    if(scan('f',carac).ne.0)    call MPI_RECV(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgem,101,comm,status,ierr)
     if (atcf%ltabvois) then
        sizeV=size(atcf%indi)
-       if(index('w',carac).ne.0)    call MPI_RECV(atcf%iwmax, size1, MPI_INTEGER, rgem,107,comm,status,ierr)
-       if(index('d',carac).ne.0)    call MPI_RECV(atcf%indi, sizeV, MPI_INTEGER, rgem,108,comm,status,ierr)
+       if(scan('w',carac).ne.0)    call MPI_RECV(atcf%iwmax, size1, MPI_INTEGER, rgem,107,comm,status,ierr)
+       if(scan('d',carac).ne.0)    call MPI_RECV(atcf%indi, sizeV, MPI_INTEGER, rgem,108,comm,status,ierr)
     end if
 #endif
   end subroutine rcv_atom
@@ -482,8 +483,8 @@ contains
        carac=caracT
     end if
     call rcv_atom(atcf,rgem,comm,carac)
-    if(index('v',carac).ne.0)    call MPI_RECV(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgem,109,comm,status,ierr)
-    if(index('r',carac).ne.0)    call MPI_RECV(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgem,110,comm,status,ierr)
+    if(scan('v',carac).ne.0)    call MPI_RECV(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgem,109,comm,status,ierr)
+    if(scan('r',carac).ne.0)    call MPI_RECV(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgem,110,comm,status,ierr)
 #endif
   end subroutine rcv_atom_d
 
@@ -507,16 +508,16 @@ contains
     end if
     call rcv_atom_d(atcf,rgem,comm,carac)
     if (atcf%lprteat)then
-    if(index('u',carac).ne.0) call MPI_RECV(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgem,111,comm,status,ierr)       
+    if(scan('u',carac).ne.0) call MPI_RECV(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgem,111,comm,status,ierr)       
     end if
     if (atcf%llangevin)then
-    if(index('g',carac).ne.0)  call MPI_RECV(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgem,112,comm,status,ierr)     
+    if(scan('g',carac).ne.0)  call MPI_RECV(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgem,112,comm,status,ierr)     
     end if
     if (atcf%lax)then
-     if(index('a',carac).ne.0)call MPI_RECV(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgem,113,comm,status,ierr)           
+     if(scan('a',carac).ne.0)call MPI_RECV(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgem,113,comm,status,ierr)           
     end if
     if (atcf%lsigat)then
-     if(index('s',carac).ne.0) call MPI_RECV(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgem,114,comm,status,ierr)          
+     if(scan('s',carac).ne.0) call MPI_RECV(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgem,114,comm,status,ierr)          
     end if
 #endif
   end subroutine rcv_atom_e
@@ -537,17 +538,21 @@ contains
     else
        carac=caracT
     end if
-    if(index('n',carac).ne.0) call MPI_BCAST(atcf%num_at_glob, size1,MPI_INTEGER, rgemet,comm,ierr)
-    if(index('i',carac).ne.0) call MPI_BCAST(atcf%ityp, size1,MPI_INTEGER, rgemet,comm,ierr)
-    if(index('e',carac).ne.0)call MPI_BCAST(atcf%ielat, size1,MPI_INTEGER, rgemet,comm,ierr)
-    if(index('p',carac).ne.0)call MPI_BCAST(atcf%proc_at, size1,MPI_INTEGER, rgemet,comm,ierr)
-    if(index('l',carac).ne.0)call MPI_BCAST(atcf%lgul, size1,MPI_LOGICAl, rgemet,comm,ierr)
-    if(index('x',carac).ne.0)call MPI_BCAST(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
-    if(index('f',carac).ne.0)call MPI_BCAST(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    write(6,*)'carac',carac
+    if(scan('n',carac).ne.0) call MPI_BCAST(atcf%num_at_glob, size1,MPI_INTEGER, rgemet,comm,ierr)
+    if(scan('i',carac).ne.0) call MPI_BCAST(atcf%ityp, size1,MPI_INTEGER, rgemet,comm,ierr)
+    if(scan('e',carac).ne.0)call MPI_BCAST(atcf%ielat, size1,MPI_INTEGER, rgemet,comm,ierr)
+    if(scan('p',carac).ne.0)call MPI_BCAST(atcf%proc_at, size1,MPI_INTEGER, rgemet,comm,ierr)
+    if(scan('l',carac).ne.0)call MPI_BCAST(atcf%lgul, size1,MPI_LOGICAl, rgemet,comm,ierr)
+    if(scan('x',carac).ne.0)then
+!       write(6,*)'la aussi',rang
+       call MPI_BCAST(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    end if
+    if(scan('f',carac).ne.0)call MPI_BCAST(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
     if (atcf%ltabvois) then
        sizeV=size(atcf%indi)
-       if(index('w',carac).ne.0)call MPI_BCAST(atcf%iwmax, size1,MPI_INTEGER, rgemet,comm,ierr)
-       if(index('d',carac).ne.0)call MPI_BCAST(atcf%indi, sizeV,MPI_INTEGER, rgemet,comm,ierr)
+       if(scan('w',carac).ne.0)call MPI_BCAST(atcf%iwmax, size1,MPI_INTEGER, rgemet,comm,ierr)
+       if(scan('d',carac).ne.0)call MPI_BCAST(atcf%indi, sizeV,MPI_INTEGER, rgemet,comm,ierr)
     end if
 #endif
   end subroutine s2a_atom
@@ -569,8 +574,8 @@ contains
     call s2a_atom(atcf,rgemet,comm,carac)
     size1=atcf%imm;size3=3*size1
 #ifdef PARA
-    if(index('r',carac).ne.0)    call MPI_BCAST(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
-    if(index('v',carac).ne.0)    call MPI_BCAST(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    if(scan('r',carac).ne.0)    call MPI_BCAST(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    if(scan('v',carac).ne.0)    call MPI_BCAST(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
 #endif
   end subroutine s2a_atom_d
 
@@ -594,16 +599,16 @@ contains
     size1=atcf%imm;size3=3*size1
 #ifdef PARA
     if (atcf%lprteat)then
-    if(index('u',carac).ne.0)       call MPI_BCAST(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    if(scan('u',carac).ne.0)       call MPI_BCAST(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
     end if
     if (atcf%llangevin)then
-    if(index('g',carac).ne.0)       call MPI_BCAST(atcf%Glangv, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+    if(scan('g',carac).ne.0)       call MPI_BCAST(atcf%Glangv, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
     end if
     if (atcf%lax)then
-     if(index('a',carac).ne.0)      call MPI_BCAST(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+     if(scan('a',carac).ne.0)      call MPI_BCAST(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
     end if
     if (atcf%lsigat)then
-     if(index('s',carac).ne.0)      call MPI_BCAST(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
+     if(scan('s',carac).ne.0)      call MPI_BCAST(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
     end if
 #endif
   end subroutine s2a_atom_e

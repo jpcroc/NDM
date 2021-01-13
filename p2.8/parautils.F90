@@ -95,6 +95,7 @@ contains
     if(present(lchg))lchange=lchg
 #ifdef PARA
     if (lchange) then
+!       write(6,*)'NPIM',div%npim
        if (div%npim.gt.1)then
           if (lspaceNDM.eqv..true.) then
              call atcomp%master2loc(atloc,div)
@@ -102,14 +103,17 @@ contains
  !         call celloc%print(900+div%rang_orig)
           !        flush(800+div%rang_orig)
           else
+!             write(6,*)'PASSE LA'
              call atcomp%send2all(0,div%comm_image)
+           atloc=>atcomp
+          celloc=>cellcomp                 
           end if
        else
           atloc=>atcomp
           celloc=>cellcomp                 
        end if
     end if
-
+!    call atcomp%print(unit=50+div%rgim)
 #else
     atloc=>atcomp
     celloc=>cellcomp
@@ -131,9 +135,10 @@ contains
 
 !    end if
 #endif
-!!$    
+!!$
+    call atloc%print(unit=200+div%rgim)
        CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
-
+       call atloc%print(unit=300+div%rgim)
 #ifdef PARA
     if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    if (div%npim.gt.1) then

@@ -486,17 +486,14 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     write(63,*)
 
     call is_upper_triangular(at,upper)
-   ! if (rang==0) write(6,*)'upper ? ',upper
+    if (rang==0) write(6,*)'upper ? ',upper
     if (.not.upper) then
        call convert_cell (at,at_lammps,passage)
        call matinv_gen(passage, passage_inv)
-    !   do ic=1,3
-    !      write(6,*)passage(:,ic)
-    !   end do
+       do ic=1,3
+          write(6,*)passage(:,ic)
+       end do
      !  write(6,*)
-     !  do ic=1,3
-     !     write(6,*)passage_inv(:,ic)
-     !  end do
     else
        at_lammps=at
        passage(:,:)=0
@@ -505,8 +502,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        end do
        passage_inv(:,:)=passage(:,:)
     end if
-
-
     !building  lammps header
     xlo = 0.d0
     ylo = 0.d0

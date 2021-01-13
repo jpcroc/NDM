@@ -1342,6 +1342,7 @@ contains
        write(6,*)'Pour utiliser la methode MCGC, indiquer une valeur pour le pas lambda d integration'
        stop
     end if    
+    write(6,*)'PCL',position_conversion_lammps
 
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
