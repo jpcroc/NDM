@@ -136,9 +136,9 @@ contains
 !    end if
 #endif
 !!$
-    call atloc%print(unit=200+div%rgim)
+!    call atloc%print(unit=200+div%rgim)
        CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
-       call atloc%print(unit=300+div%rgim)
+!       call atloc%print(unit=300+div%rgim)
 #ifdef PARA
     if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    if (div%npim.gt.1) then

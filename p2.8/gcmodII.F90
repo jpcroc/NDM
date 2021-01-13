@@ -216,19 +216,19 @@ contains
 !       write(6,*)'X1',x
 !       write(6,*)'G1',G
     !    end if
-    write(6,*)'funct',rang,ncalls
+!    write(6,*)'funct',rang,ncalls
     CALL FUNCT (N,X,F,G,NCALLS)
-    unitw=ncalls+rang*10+100
-    write(6,*)'unitw',unitw
-    write(unitw,*)'F',F
-    write(unitw,*)'X',X
-    write(unitw,*)'G',G
+ !   unitw=ncalls+rang*10+100
+ !   write(6,*)'unitw',unitw
+ !   write(unitw,*)'F',F
+ !   write(unitw,*)'X',X
+ !   write(unitw,*)'G',G
     
 #ifdef PARA
     call MPI_barrier(mpi_comm_space,ierr)
 #endif
     
-    write(6,*)'functBACK',rang,ncalls
+!    write(6,*)'functBACK',rang,ncalls
 
 
 

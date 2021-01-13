@@ -125,7 +125,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        
        it = 0
        efinal = 0.0
-           call atcgcomp%print(unit=10+rang)
+!           call atcgcomp%print(unit=10+rang)
        CALL ZXCGRII(FUNCT,NGC,ACC,itmax,X,G,F,W,IER,criterion,NCALLS)       
        
        deallocate (X,G,W)

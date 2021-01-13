@@ -538,7 +538,6 @@ contains
     else
        carac=caracT
     end if
-    write(6,*)'carac',carac
     if(scan('n',carac).ne.0) call MPI_BCAST(atcf%num_at_glob, size1,MPI_INTEGER, rgemet,comm,ierr)
     if(scan('i',carac).ne.0) call MPI_BCAST(atcf%ityp, size1,MPI_INTEGER, rgemet,comm,ierr)
     if(scan('e',carac).ne.0)call MPI_BCAST(atcf%ielat, size1,MPI_INTEGER, rgemet,comm,ierr)
