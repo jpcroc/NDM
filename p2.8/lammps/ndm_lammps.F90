@@ -29,17 +29,20 @@ module lammps_util_mod
 
       contains
 
-subroutine read_lammps
+subroutine read_lammps(inplammps)
 
   use LAMMPS
   use vars_lammps
-  character*128 :: INPUT_LAMMPS_FILE
+  character(*),optional :: inplammps
+    character*128 :: INPUT_LAMMPS_FILE
 !  type (C_ptr) :: lmp
 
-   INPUT_LAMMPS_FILE='in.lammps'
+    INPUT_LAMMPS_FILE='in.lammps'
+    if (present(inplammps))  INPUT_LAMMPS_FILE=inplammps
 #ifdef PARA
    if (nprocspace==1) then
     call lammps_open_no_mpi('lmp -log none -screen none', lmp)
+    write(*,*) "LAMMPS OPEN_NO_MPI_",rang
     if (rang==0) write(*,*) "before init potential lammps"
     call lammps_file (lmp, INPUT_LAMMPS_FILE)
     if (rang==0) write(*,*) "after init potential lammps"
@@ -48,12 +51,14 @@ subroutine read_lammps
   else
      !call define_communicators_lammps
      call MPI_COMM_DUP(MPI_COMM_SPACE,MPI_COMM_lammps,ierr)     
-    call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
+     call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
+     write(*,*) "LAMMPS OPEN_MPI_",rang
     call lammps_file (lmp, INPUT_LAMMPS_FILE)
   end if
 #else
 
     call lammps_open_no_mpi('lmp -log none -screen none', lmp)
+    write(*,*) "LAMMPS OPEN_NO_MPI-SEQ"
     if (rang==0) write(*,*) "before init potential lammps SEQ"
     call lammps_file (lmp, INPUT_LAMMPS_FILE)
     if (rang==0) write(*,*) "after init potential lammps"
@@ -106,14 +111,14 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
   if (allocated(pos_lammps)) deallocate (pos_lammps)
   allocate(pos_lammps(3*im), stat=ierr)
   if (firsttime_lammps) then
-!     write(6,*)'calfolammps0'
+!     write(6,*)'calfolammps0',rang
      num=lammps_get_natoms(lmp)
      if (num /= im) then
         write(*,*) 'Big problem: gin and lammps files contain different number of atoms'
         stop
      end if
      call lammps_gather_atoms(lmp, 'type', 1, lammps_types)
-!     write(6,*)'calfolammps1'
+!     write(6,*)'calfolammps1',rang
      if (num /= size(lammps_types)) then
         write(*,*) 'WARNING:  the atoms type is not correctly read in the LAMMPS wrapper ndm_lammps'
      end if
@@ -128,6 +133,7 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
      if(.not.allocated(axlmp))allocate(axlmp(3,im))
 !     write(6,*)'calfolammps1.2.1'
      axlmp(:,1:im)=xp(:,1:im)
+     firsttime_lammps=.false.
   endif
 !     write(6,*)'calfolammps1.3'
   do i=1, im
@@ -136,12 +142,12 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
 	pos_lammps(3*i  ) = xp(3,i)/position_conversion_lammps
 !        write(500+rang,*) rang,i,pos_lammps(3*i-2),pos_lammps(3*i-1),pos_lammps(3*i  )
 enddo
-!     write(6,*)'calfolammps2'
+!     write(6,*)'calfolammps2',rang
 
   ! Put the coordinates to LAMMPS
-
+!     write(100+rang,*)'X',pos_lammps
   call lammps_scatter_atoms (lmp, 'x',  pos_lammps)
-!     write(6,*)'calfolammps3'
+ !    write(6,*)'calfolammps3',rang
 
   ! Call LAMMPS to compute energy and forces
   if (firsttime_lammps) then
@@ -167,7 +173,7 @@ enddo
     call lammps_command (lmp, 'run 1 pre no post yes')
  end if
 !  call lammps_command (lmp, 'run 0')
-!     write(6,*)'calfolammps4'
+!     write(6,*)'calfolammps4',rang
 
 
   ! Extract energy from LAMMPS
@@ -191,7 +197,7 @@ enddo
   end if
 
   ! Extract forces from LAMMPS
-   call lammps_gather_atoms (lmp, 'f', 3, force_lammps)
+  call lammps_gather_atoms (lmp, 'f', 3, force_lammps)
  ! call lammps_extract_atom (for_tmp, lmp, 'f')
 !!$En séquentiel, gather_atoms et extract_atom donnent la même chose.
 !!$En parallèle :
@@ -199,43 +205,13 @@ enddo
 !!$2/gather_atoms donne des choses égales sur tous les procs
 !!$3/gather_atoms donne des choses égales au gather ou extract du séquentiel
 !!$4/Il semble que ce qui change dans les différents extract_atoms soit l'ordre des atomes (on dirait, il y a des nombres qui se ressemblent). Il faut peut-être els réarranger selon un indice interproc inconnu.
-!  do i=1,im
-!     write(1000+rang,*)i,force_lammps(3*i-2),force_lammps(3*i-1),force_lammps(3*i)
-!     write(1100+rang,*)i,for_tmp(1,i),for_tmp(2,i),for_tmp(3,i)
-!  end do
-!#ifdef PARA  
-!  call MPI_barrier(MPI_COMM_lammps,ierr)
-!  call MPI_finalize(ierr)
-!#endif
-!  stop
-!         write(6,*)'calfolammps7'
-!    call lammps_extract_atom (vel_tmp, lmp, 'v')
-!  write(6,*) vel_tmp
-
- ! if (allocated(force_lammps)) deallocate(force_lammps)
- ! allocate(force_lammps(3*im))
 
 do i=1,im
    
      fp(1,i)=force_lammps(3*i-2)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
      fp(2,i)=force_lammps(3*i-1)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
      fp(3,i)=force_lammps(3*i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
-!     force_lammps(3*i-2)=for_tmp(1,i)
-!     force_lammps(3*i-1)=for_tmp(2,i)
-!     force_lammps(3*i  )=for_tmp(3,i)
-!     write(6,*)rang,i,fp(:,i)
   end do
-!  write(6,*)rang,fp(:,1:767)
-!  write(6,*)
-!  write(6,*)'fp1',fp(:,1), 'Z'
-!  write(6,*)'fp2',fp(:,2)
-!  write(6,*)'fp3',fp(:,3)
-!  do i=1, NATOMS
-!     tmp_force(i)          = force_lammps(3*i-2)*energy_conversion_lammps*position_conversion_lammps
-!     tmp_force(i+NATOMS)   = force_lammps(3*i-1)*energy_conversion_lammps*position_conversion_lammps
-!     tmp_force(i+NATOMS*2) = force_lammps(3*i  )*energy_conversion_lammps*position_conversion_lammps
-!  enddo
-  ! call mpi_barrier(MPI_COMM_WORLD,codeph)
   return
 end subroutine calcforce_lammps2
 

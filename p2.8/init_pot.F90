@@ -40,7 +40,7 @@ contains
     end if
 
     !#ifdef LAMMPS_VERSION
-    firsttime_lammps=.true.
+!    firsttime_lammps=.true.
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        call init_potential_simple(rue_lammps,rumax)
     else

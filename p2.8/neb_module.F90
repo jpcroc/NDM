@@ -56,16 +56,26 @@ contains
   
 
   subroutine init_neb0
-    
+    character:: inplmp
     call init_pot
     
     call constrconfNEB
+    flush(6)
+#ifdef PARA
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    write(6,*)'PostBAR',rang
+#endif
+   
 #ifdef LAMMPS_VERSION
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
        allocate (posa(3*atneb(1)%im),  forca(3*atneb(1)%im))
+!       inplmp="in.lammps."//paraneb%image
+!       write(6,*)"inplmp",inplmp
+!       call read_lammps(inplammps=inplmp)
        call read_lammps()
+       write(6,*)'OUT READL',rang
     end if
 #endif
 
@@ -246,8 +256,10 @@ end if
           IF (ok ) THEN
              ! Load NEB image ip in file *.<ip>.gin
           if(rang==0)write(6,*)'FNAMneb  ',iph,ginfile
+    write(6,*)'ing2n',rang
           call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,im_glob,rumax,lrepartition=.false.)
-            do i=1,im
+    write(6,*)'outg2n',rang
+          do i=1,im
                atneb(iph)%num_at_glob(i)=i
             end do
          ELSE
@@ -276,7 +288,6 @@ end if
     end if
 
     icontrainte(:)=1
-
 
     return
 
@@ -641,7 +652,6 @@ end if
        end if
     end if
 #endif     
-
 
   end subroutine constrconfNEB
   

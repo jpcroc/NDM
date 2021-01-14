@@ -40,7 +40,7 @@ contains
   end subroutine initloc
   
   subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod)
-    
+
     class(atom_config),intent(in)::atlocin
     type(cell_config),intent(in)::cellocin
     class(atom_config)::atcomp
@@ -50,11 +50,11 @@ contains
     integer::ierr,iun
     logical::lperiod
 
-       if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
-!    if (div%npim.gt.1) then
+    if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+       !    if (div%npim.gt.1) then
        call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
-!       call atlocin%print(unit=500+div%rang_orig)
-!       flush(500+div%rang_orig)
+       !       call atlocin%print(unit=500+div%rang_orig)
+       !       flush(500+div%rang_orig)
        call atlocin%vers_master(atcomp,div)
        !call atcomp%print(unit=600+div%rang_orig)
        !flush(600+div%rang_orig)
@@ -70,7 +70,7 @@ contains
        if (atlocin%ltabvois) then
           call caltabi(atcomp,cellcomp,box)
        end if
-    
+
     end if
   end subroutine initcomp
   
@@ -103,18 +103,21 @@ contains
  !         call celloc%print(900+div%rang_orig)
           !        flush(800+div%rang_orig)
           else
-!             write(6,*)'PASSE LA'
+
              call atcomp%send2all(0,div%comm_image)
-           atloc=>atcomp
-          celloc=>cellcomp                 
+             atloc=>atcomp
+             celloc=>cellcomp                 
           end if
        else
+
           atloc=>atcomp
           celloc=>cellcomp                 
        end if
     end if
+    
 !    call atcomp%print(unit=50+div%rgim)
 #else
+
     atloc=>atcomp
     celloc=>cellcomp
 
@@ -136,7 +139,8 @@ contains
 !    end if
 #endif
 !!$
-!    call atloc%print(unit=200+div%rgim)
+    !    call atloc%print(unit=200+div%rgim)
+!    write(6,*)'precalf',div%rang_orig
        CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
 !       call atloc%print(unit=300+div%rgim)
 #ifdef PARA

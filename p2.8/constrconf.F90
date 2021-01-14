@@ -249,7 +249,6 @@ contains
     integer::lat(3),ic,ncore,npr,ierr,iti
     lrepart=.true.
     if(present(lrepartition))lrepart=lrepartition
-    write(6,*)'LLLLLLLLRRRRRRRR',lrepartition
     call read_gin(boxrgin,atrgin,fnamg,lat)
     do ic=1,3
        atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
@@ -268,7 +267,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     call  decoupage(nprocspace,ncore,cel2b,at2b)
  end if
     !    call MPI_finalize(ierr)
-    !    stop
+ !    stop
     COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
 !    write(6,*)'IMMGLOBIMMGLOB',imm_glob
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
