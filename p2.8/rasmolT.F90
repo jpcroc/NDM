@@ -1,7 +1,7 @@
 ! ****************************************************************
 module rasmolT_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:rang,ivisu,ldesinteg,lpkbar,im_glob,&
+  USE gen_com_m, ONLY:rang,ivisu,ldesinteg,lpkbar,im_glob,lspaceNDM,&
        &cunitP,it,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
@@ -44,7 +44,7 @@ contains
     type(box_config),intent(in)::boxmol
     character*3,intent(in), dimension(1:atmol%im),optional  :: rty
     character(len=*), optional ::namefr
-    logical,optional::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
+    logical,intent(in)::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
     logical, optional,intent(in):: lw0 ! seul le rang=0 écrit (implique latcomp=.true.)
     
     character*80::namef
@@ -77,7 +77,7 @@ contains
 
 #ifdef PARA
     write(6,*)'IN rasmol'
-    if (present(latcomp))latcompin=latcomp
+    latcompin=latcomp
 
     if (present (lw0))lw0in=lw0
     if (lw0in) then
@@ -93,7 +93,7 @@ contains
     end if
 
     
-    if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(latcompin.eqv..false.)) then
        call atcomp%init(im_glob)
        div%rgim=myidsp
        div%npim=nprocspace

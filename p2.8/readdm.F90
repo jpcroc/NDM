@@ -9,7 +9,7 @@ contains
 
 
   subroutine readdm
-    !-----------------------------------------------
+   !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
@@ -31,7 +31,7 @@ contains
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,ltranche,lucell,lwgin,mdcg_noise,nfda,nplz,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
          &,tpseuils,tstep,typspr,unite,unitp,user_strainrate,user_stress_yz,xpspr,lenfnam,fnam,position_conversion_lammps&
-         &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup
+         &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp
     use read_val
 
     USE var_pot, ONLY:gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
@@ -75,7 +75,7 @@ contains
          ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
-         maxorder,  lalea, rsep, ipotentiel,&
+         maxorder,  lalea, rsep, ipotentiel,lpotentiel,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
@@ -97,7 +97,7 @@ contains
 
     fnamdin = fnam(1:lenfnam)//'.din'
     ! variables de dynamique
-
+    lspaceNDM=.true.
     imm = 0                     !dimensionnement des tableaux atomiques
     itab = 10                   !period of cell repartition
     itetabvois = 10             !periode de calcul de la table des voisins
@@ -701,7 +701,7 @@ contains
     end if
     !  if ((all(lpotentiel)==.false.).and.(ipotentiel==-1)) then
     !  end if
-
+    
     if (ipotentiel.ge.0) lpotentiel(ipotentiel)=.true.
     npotentiel=0
     do ipotcont=0,npotmax
@@ -732,6 +732,11 @@ contains
        call arret_ndm
     end if
 
+    if ((ipotentiel==-10).or.(ipotentiel==-11))then
+       lspaceNDM=.false. ; latcomp=.true.
+       if (rang==0) write(6,*)'POTENTIELS LAMMPS ; PARA_SPACE VERSION=LAMMPS NOT NDM !!'
+    end if
+    
     if(lcalcjq) then
        !     fnamjqbis = fnam(1:lenfnam)//'.E_xp'
        fnamjq = fnam(1:lenfnam)//'.jq'

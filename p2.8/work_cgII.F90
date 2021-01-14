@@ -4,7 +4,7 @@ module work_cgII
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
        it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
-       dmtype, potist,cell_finx,cell_finy,cell_finz,mdcg_noise,formatsauv
+       dmtype, potist,cell_finx,cell_finy,cell_finz,mdcg_noise,formatsauv,lspaceNDM,latcomp
   USE sauvegardeT_mod,only: sauvegardeT
   USE endrunT_mod,only: endrunT
   USE arret_ndm_mod,only: arret_ndm
@@ -51,11 +51,11 @@ contains
     real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
     logical::lover
 
-    logical:: lchg,latcomp
+    logical:: lchg
 
-    latcomp=.true.
+    latcomp=.true. ! GC ==> latcomp=.true.
     lover=.false.
-!    write(6,*)'entree funct', it,ncalls,rang
+
     it=NCALLS-1
 
     !    IF (3*ims.NE.N) THEN
@@ -79,9 +79,14 @@ contains
 
 
     lchg=.true.
+!    call atcgcomp%print(unit=20+rang)
+!    write(6,*)'CPCC',rang,ncalls
     call pointer_caltabt_calfo(sig,potist,atcgcomp,cellcgcomp,boxcg,atcgloc,cellcgloc,gcpara,lperiod,&
          &atcgcomp%ltabvois,it,itetabvois,lchg) 
-
+!    call atcgcomp%print(unit=100*rang+ncalls)
+!    call MPI_finalize(ierr)
+!    stop
+    
     if (it==1) then
        if (lEev.EQV..true.) then 
           if (rang==0) write(6,*)'Resultats en eV, Ang'
@@ -94,10 +99,12 @@ contains
     end if
     !    end if
 #ifdef PARA
-    if (nprocspace.gt.1) then
+if (nprocspace.gt.1) then
        call mpi_barrier(MPI_COMM_space,ierr)
     end if
-#endif    
+#endif
+!    write(6,*)'bar',rang,ncalls
+    
     IF (it.GE.1) THEN
        forctot=sqrt( SUM(atcgcomp%fp(1:3,1:atcgcomp%im)**2) )
        formax = MaxVal( Abs(atcgcomp%fp(:,1:atcgcomp%im)) )
@@ -163,8 +170,12 @@ contains
         
     end IF! it .ge.1
 #ifdef PARA
-    call MPI_BCAST(lover, 1,MPI_LOGICAL, 0,gcpara%comm_image,ierr)
+if (nprocspace.gt.1) then
+   call MPI_BCAST(lover, 1,MPI_LOGICAL, 0,gcpara%comm_image,ierr)
+end if
 #endif
+!    write(6,*)'lover',rang,ncalls,lover
+
 !    write(6,*)'LOVER',lover,rang,it
        if (it>=itmax) then
           if (rang==0) write (6, *) '*******Derniere iteration **** '
@@ -191,7 +202,7 @@ contains
           !       if (rang==0) then
           !           write(6,*)'work_cg_II analyse -> sauvegarde',it
           if (itesauv.GT.0) then
-             if (mod(it,itesauv)==0) call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp=latcomp)
+             if (mod(it,itesauv)==0) call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp)
           endif
        end if
        !go to into eV, ang and GC world............................................      

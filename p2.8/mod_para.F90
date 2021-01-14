@@ -11,6 +11,18 @@ module mod_para
 
   !  use mpi
   implicit none
+
+  type para_space_config
+     integer, allocatable :: res_cpu(:,:)   	!stocke le nombre de cellules de chaques decoupages pour le meilleur decoupage
+     integer, allocatable :: proc_cell(:)          !proc_cell(i) : Numero du proc associe a la cellule i
+     integer, allocatable :: proc_voisin(:)        ! liste des processeurs voisins du processeur courant
+     integer, allocatable :: cell_frontiere(:,:)   ! (i,j) jeme cellule frontiere associee au ieme processeur voisin
+     integer, allocatable :: nbr_cell_frontiere(:) ! nbre de cellules frontieres associees au ieme processeur voisin
+     integer :: nbr_cell_ftm                       ! nbr de cellules fantomes du processeur courant
+     integer, allocatable :: cell_ftm(:)           ! liste des cellules fantomes du processeur courant
+     integer :: nbr_proc_voisin            ! nbre de processeurs voisins du processeur courant
+  end type para_space_config
+  
   integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
 #ifdef PARA
 
@@ -33,17 +45,17 @@ module mod_para
 
   !Tableaux liés au decoupage :
 
-  integer :: nbr_cell_max		!plus grand nombre de cellules sur tous les processeurs
-  integer :: nbr_atom_max		!plus grand nombre d'atomes sur tous les processeurs
-  integer :: nbr_cell_max_vois		!plus grand nombre de cellules voisines à un processeur
-  integer :: nbr_atom_max_vois		!plus grand nombre d'atomes sur toutes les cellules voisines à un processeur
-  integer :: resultat(4) 		!stocke le resultat du meilleur decoupage
+!!$  integer :: nbr_cell_max		!plus grand nombre de cellules sur tous les processeurs
+!!$  integer :: nbr_atom_max		!plus grand nombre d'atomes sur tous les processeurs
+!!$  integer :: nbr_cell_max_vois		!plus grand nombre de cellules voisines à un processeur
+!!$  integer :: nbr_atom_max_vois		!plus grand nombre d'atomes sur toutes les cellules voisines à un processeur
+!!$  integer :: resultat(4) 		!stocke le resultat du meilleur decoupage
 
   integer, allocatable :: res_cpu(:,:)   	!stocke le nombre de cellules de chaques decoupages pour le meilleur decoupage
   !res_cpu est initialisé dans decoup3D à (0:nprocspace-1,3)
-  integer, allocatable :: coord_min(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z
+  integer, allocatable :: coord_min(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z ! A METTRE DANS DECOUP
   !initialisée à (0:nprocspace-1,3) dans decoup3D
-  integer, allocatable :: coord_max(:,:)	!stocke la "coordonnée" de la derniere cellule du découpage selon x,y,z
+  integer, allocatable :: coord_max(:,:)	!stocke la "coordonnée" de la derniere cellule du découpage selon x,y,z! A METTRE DANS DECOUP
   !initialisée à (0:nprocspace-1,3) dans decoup3D
 
   integer, allocatable :: proc_cell(:)          !proc_cell(i) : Numero du proc associe a la cellule i

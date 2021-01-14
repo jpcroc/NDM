@@ -7,13 +7,13 @@ module neb_mod
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
        &erg2ev,itesauv,lpkbar,nebtype,sig,unitp,potist,angst,itetabvois,rang,&
        &fnam,lenfnam,lfire,itesauv,itetabvois,iteanaposneb,maxneb,&
-       &nebrelaxation,lperiod
+       &nebrelaxation,lperiod,lspacendm,latcomp
 
   
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config,caltabtC
   USE boxconfig,only:box_config,periodbox
-  use var_pot,only:coord,rumax
+  use var_pot,only:coord,rumax,ipotentiel
   use rasmolT_mod,only:rasmolT
   use calfoberend_mod,only:dynlangevin
   use sauvegardeT_mod,only:sauvegardet
@@ -65,6 +65,7 @@ contains
     type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
     type(atom_config_d),target::atcible
     integer::iun,i,ic
+    logical::lchange
 
 #ifdef PARA    
     real(double),allocatable:: enepathev_tot(:),enepath_tot(:),sigpath_tot(:,:,:),rc_tot(:)
@@ -80,21 +81,21 @@ contains
     atnebloc=>atcible
 #endif    
 
-
+    latcomp=.true.! NEB=> latcomp=.true.
     allocate (iter(npath))
     do ii=1,npath
        if ((ii.ne.1).and.(ii.ne.npath))then
           cellneb(ii)=cellneb(1)
        end if
     end do
-!APRES    
+    !APRES    
     call init_neb(atneb(1)%im,atneb(1)%imm)
- 
+    write(6,*)'outinit',rang
 #ifdef PARA
     lmaster=paraneb%lmaster
-       if (paraneb%npim.gt.1) then
-          call init_voisinage(cellneb(1))
-       end if
+    if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+       call init_voisinage(cellneb(1))
+    end if
 
 
 #else
@@ -106,7 +107,7 @@ contains
 
     end if
     !ENCORE AVANT
-    
+
     !on connait atneb(ii),cellneb(ii) et boxneb
     if (nebrelaxation==1) then
        if (rang==0) write(6,*)'NEB: nebrelaxation == 1'
@@ -123,9 +124,9 @@ contains
     !????
     do ii=1,npath
        if (lperiod)    call periodbox (boxneb,atneb(ii))
-      
+
     end do
-!AVANT
+    !AVANT
 
     if(lPkbar) then
        unitP=1.0d-9  ;     cunitP='kbar'
@@ -168,30 +169,35 @@ contains
        END DO
     END IF
 
-      it=1
-      !????
+    it=1
 #ifdef PARA
-      CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    write(6,*)'PostBAR',rang
 #endif
-      do i1=1,npath
+    do i1=1,npath
 #ifdef PARA
 
-       if ((i1==paraneb%image+2).or.((i1==1).and.(paraneb%image==0)).or.((i1==npath).and.(paraneb%image==paraneb%nimage-1))) then
+!       if (i1==paraneb%image+2) then
+          if ((i1==paraneb%image+2).or.((i1==1).and.(paraneb%image==0)).or.((i1==npath).and.(paraneb%image==paraneb%nimage-1))) then
           ii=i1
           if (i1==npath)ii=npath-1
           if (i1==npath-1)ii=npath
-
-                call initloc(atneb(ii),cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod) !initloc contient caltabtc sur atloc
+          call initloc(atneb(ii),cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod) !initloc contient caltabtc sur atloc
+          if (ipotentiel.lt.0) then
+             lchange=.true.
+          else
+             lchange=.false.
+          end if
 #else    
-       ii=i1
-       call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
-       if (atneb(ii)%ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii),boxneb)
+          lchange=.false.
+          ii=i1
+          call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
+          if (atneb(ii)%ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii),boxneb)
 #endif    
-       call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
-               &lperiod,atneb(ii)%ltabvois,it,itetabvois,lchg=.false.)
-       
-       if (lmaster) then
-          
+          call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
+               &lperiod,atneb(ii)%ltabvois,it,itetabvois,lchg=lchange)
+          if (lmaster) then
+
              call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
 !!!!!!!!!!!          broadcast de dragtest nebtest(ii) ou non ?
              enePATH(ii)=potist
@@ -207,16 +213,18 @@ contains
 
 
     end do
-    
-    
+
+
 #ifdef PARA
 
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-    
+
     if (paraneb%lmaster) then
-       call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
-       call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
-       enepathev(:)=enepathev_tot ; enepath=enepath_tot
+       if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
+          call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
+          enepathev(:)=enepathev_tot ; enepath=enepath_tot
+       end if
     end if
 #endif
 
@@ -232,9 +240,13 @@ contains
 #ifdef PARA
           if (ii==paraneb%image+2) then
              enepath(2:npath-1)=0; enepathev(2:npath-1)=0
-             if (paraneb%image.ne.0) then
-                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
-             end if
+             write(6,*)'IM EN',paraneb%image,enepath
+!             if (paraneb%image.ne.0) then
+!                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
+!             end if
+!             if ((paraneb%image.ne.0).and.(paraneb%image.ne.npath)) then
+!                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
+!             end if
 #endif
              it=0; iter(ii)=0
              dragtest=0
@@ -244,38 +256,40 @@ contains
                 if ((lperiod).and.(lmaster))    call periodbox (boxneb,atneb(ii))
                 call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
                      &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.)
-                
+
 #ifdef PARA
+
                 if (paraneb%lmaster) then
 #endif
-!                   call atneb(ii)%print(unit=100+ii,natg1=1,natg2=2049)
-!                   flush(100+ii)
+                   !                   call atneb(ii)%print(unit=100+ii,natg1=1,natg2=2049)
+                   !                   flush(100+ii)
                    call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp,atneb(ii)%imm,atneb(ii)%im)
-!                   call atneb(ii)%print(unit=300+ii,natg1=1,natg2=2049)
-!                   flush(300+ii)
-!                   call atneb(ii)%print(unit=400+ii)
-!                   flush(400+ii)
+                   !                   call atneb(ii)%print(unit=300+ii,natg1=1,natg2=2049)
+                   !                   flush(300+ii)
+                   !                   call atneb(ii)%print(unit=400+ii)
+                   !                   flush(400+ii)
 
                    IF (lFire) THEN
                       call trempe_fire(atneb(ii),fire_dt(ii), fire_nstep(ii), fire_alph(ii))
                    ELSE
                       call trempe(atneb(ii))
                    ENDIF
-                   
+
                    call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
 
 #ifdef PARA
+
                 end if
 
                 call MPI_BCAST(dragtest, 1,MPI_INTEGER, 0,paraneb%comm_image,ierr)
-!                CALL MPI_BARRIER(paraneb%comm_image,ierr)
+                !                CALL MPI_BARRIER(paraneb%comm_image,ierr)
                 if (mod(it,10)==0) write(6,*)'image it ',ii,it
-!                if (paraneb%lmaster) then
-!                   call atneb(ii)%print(unit=200+ii,natg1=1,natg2=2049)
-!                   flush(200+ii)
-!                end if
-!                   call mpi_finalize(ierr)
-!                   stop
+                !                if (paraneb%lmaster) then
+                !                   call atneb(ii)%print(unit=200+ii,natg1=1,natg2=2049)
+                !                   flush(200+ii)
+                !                end if
+                !                   call mpi_finalize(ierr)
+                !                   stop
 
 #endif
              end do   ! end do for a while
@@ -284,27 +298,28 @@ contains
                 enePATHev(ii)=potist*erg2ev
                 sigPATH(:,:,ii) = sig(:,:)      ! Contrainte
              end if
-          iter(ii)=it
+             iter(ii)=it
 #ifdef PARA
 
-       end if
+          end if
 #endif
 
 
-    end do      !end ii,npath
+       end do      !end ii,npath
 
 
 
 #ifdef PARA
-    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+       CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
        if(lmaster) then
-          call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
-          call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
-          call MPI_ALLREDUCE(sigpath,sigpath_tot,9*npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
-          call MPI_ALLREDUCE(iter,iter_tot,npath,MPI_INTEGER,MPI_SUM,paraneb%comm_master,ierr)
-          enepathev(:)=enepathev_tot ; enepath=enepath_tot;sigpath=sigpath_tot;iter=iter_tot
+          if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+             call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
+             call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
+             call MPI_ALLREDUCE(sigpath,sigpath_tot,9*npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
+             call MPI_ALLREDUCE(iter,iter_tot,npath,MPI_INTEGER,MPI_SUM,paraneb%comm_master,ierr)
+             enepathev(:)=enepathev_tot ; enepath=enepath_tot;sigpath=sigpath_tot;iter=iter_tot
+          end if
        end if
-   
 #endif
        if (rang==0) then
           do ii= 2,npath-1
@@ -352,7 +367,7 @@ contains
                         &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.)
                    if (lmaster) then
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
-                      &atneb(ii)%imm,atneb(ii)%im)
+                           &atneb(ii)%imm,atneb(ii)%im)
 
                       IF (lFire) THEN
                          ! CRC nettoyer ces appels !                   !
@@ -403,14 +418,14 @@ contains
                          formatsauv = 2
                          write(extension,'(i9.9)') ii
                          fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-                         call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout)
+                         call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp=latcomp)
                       end if
                    end if
 
                    !debug          print'("NEB: ",2i5,3E14.5,E20.10,i3)', ineb, ii,  formax,       &
                    !debug	            formaxperp, formaxparl, potist*erg2eV,nebtest(ii)
-                   forneb = SQRT(MAXVAL(force_neb(1,:,ii)**2 + force_neb(2,:,ii)**2         &
-                        + force_neb(3,:,ii)**2))*erg2eV/angst 
+                   forneb = SQRT(MAXVAL(atneb(ii)%force_neb(1,:)**2 + atneb(ii)%force_neb(2,:)**2         &
+                        + atneb(ii)%force_neb(3,:)**2))*erg2eV/angst 
                    print'("NEB: ",2i5, 2g14.5,g20.10,i3,g15.8)', ineb, ii,  formax, forneb,       &
                         potist*erg2eV,nebtest(ii),potist*erg2eV-enepathev(1)
                    ! 
@@ -422,12 +437,14 @@ contains
 
           end do      ! end ii,path
 
-!          write(6,*)'OUTloop',rang
+          !          write(6,*)'OUTloop',rang
 #ifdef PARA
-!          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+          !          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
           if (lmaster) then
-             call MPI_ALLREDUCE(nebtest,nebtest_tot,npath,MPI_INTEGER,MPI_SUM,paraneb%comm_master,ierr)
-             nebtest=nebtest_tot
+             if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+                call MPI_ALLREDUCE(nebtest,nebtest_tot,npath,MPI_INTEGER,MPI_SUM,paraneb%comm_master,ierr)
+                nebtest=nebtest_tot
+             end if
           end if
           call MPI_BCAST(nebtest, npath,MPI_INTEGER, 0,paraneb%comm_image,ierr)
 #endif
@@ -464,19 +481,19 @@ contains
     !    a_local=SUM((xp_n(:,:,npath)-xp_n(:,:,1))**2) 
     !
 
-    
+
     do ii=2,npath-1
 #ifdef PARA
-!       if ((ii==1).or.(ii==npath)) cycle
+       !       if ((ii==1).or.(ii==npath)) cycle
        if ((paraneb%lmaster).and.(ii==paraneb%image+2)) then
-          
+
 #endif
 
           formatsauv = 2
           write(extension,'(i9.9)') ii
           fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-          call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp=.true.)
-          call rasmolT(atneb(ii),boxneb,ii,latcomp=.true.)
+          call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp)
+          call rasmolT(atneb(ii),boxneb,ii,latcomp=latcomp)
           if (iteanaposneb.gt.0) call anapos(ii)
           !	 
           reaction_coord(ii) = SUM((atneb(ii)%xp(:,:)-atneb(1)%xp(:,:))*(atneb(npath)%xp(:,:)-atneb(1)%xp(:,:)))/a_local
@@ -488,7 +505,7 @@ contains
 
     end do
 
-!    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    !    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
     if (lmaster) then 
 #ifdef PARA
 
@@ -567,11 +584,11 @@ contains
        if (rang==0) print*,'MAX-1      :',maxval(enePATHev)-enePATHev(1)
        if (rang==0) print*,'MAX-NPATH  :',maxval(enePATHev)-enePATHev(npath)
     end if
-    
+
 #ifdef PARA
     call mpi_barrier(mpi_comm_world,ierr)
 #endif
-    
+
     return
 
   end subroutine neb

@@ -2,7 +2,7 @@ module jqbh_mod
         USE tempinst_mod,only: tempinst
         USE cryst_to_cart_mod,only: cryst_to_cart
         USE gen_com_m, ONLY:epcoud,epsil,erg2ev,erg2joule,it,ittherm,kthg,njqbh,ntr,&
-             &rang,rulayer,tstep,bk
+             &rang,rulayer,tstep,bk,lspaceNDM
         USE temp_com,only:imm,at,bg,im,zl,nzl,zls2
 
         implicit none
@@ -156,7 +156,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
 
 
 #ifdef PARA 
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
      do i = 1, im
 !        if(free(i))then
            if (xp(1,i)<cinf) then
@@ -219,7 +219,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      call cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
 
 #ifdef PARA
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
      do i = 1, im
 !        if (free(i))then
            if (xp(1,i).gt.csup)then
@@ -277,7 +277,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
      call cryst_to_cart (imm, xp, bg, -1) !cart vers cryst
 
 #ifdef PARA
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
      
      temptra(:)=0.
      nattr(:)=0

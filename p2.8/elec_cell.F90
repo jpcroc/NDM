@@ -1,7 +1,7 @@
 module elec_cell
   USE T_kind_param_m
   USE temp_com,only: nox,noy,noz, noxyz,nzl,nato,atincel,imm
-  USE gen_com_m, ONLY: bk,tstep,erg2eV,pi,rang,&
+  USE gen_com_m, ONLY: bk,tstep,erg2eV,pi,rang,lspacendm,&
        &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter,im_glob
   USE var_pot, ONLY:cm
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
@@ -249,7 +249,7 @@ contains
     if (i2t==0)then 
        elosscel(:)=0
 #ifdef PARA
-           if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
               allocate (elosscel_tot(noxyz))
            end if
 #endif
@@ -257,7 +257,7 @@ contains
     end if
     do ko = 1, noxyz
 #ifdef PARA
-       if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           if (proc_cell(ko).ne.myidsp) cycle
        end if
 #endif
@@ -372,7 +372,7 @@ contains
        end do
     end do
 #ifdef PARA
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        if (i2T==0)then
           call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,&
                &MPI_SUM,MPI_COMM_space,ierr)

@@ -4,9 +4,7 @@ module setcell
   USE T_kind_param_m, ONLY:  double
   USE read_val,only:nox,noy,noz,rvois
   USE arret_ndm_mod,only: arret_ndm
-  USE gen_com_m, ONLY:lconstrtot,ldemitab,lconstrtot,nvat,pi,rang,lrctest,ltpcel!itab,lconstrtot,lrctest,natperc,nvois,nvperat,rvois,nzl,&
-!       &at,indi2,bg,celsize,rang,volu,pi,indi,nvat,nox,noy,noz,noxyz,ldemitab,&
-!       &im, im_glob,zl,ltabvois,normat,noxy
+  USE gen_com_m, ONLY:lconstrtot,ldemitab,lconstrtot,nvat,pi,rang,lrctest,ltpcel,lspacendm
     USE var_pot, ONLY:lpotentiel,rue_pot !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
   USE recips_mod,only:recips,calcvol,distmin
   USE atomconfig,only: atom_config
@@ -60,7 +58,7 @@ contains
        ! ==== MODIF CLOUET 2 ====================
        if (izonr<3) then
 #ifdef PARA
-          if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              write(6,*)'trop petite boite pour para'
              call arret_ndm
           end if

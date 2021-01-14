@@ -1,7 +1,9 @@
 #!/bin/csh
 foreach temp (`ls -1 *F90 `)
 	cp $temp $temp.OR
-	sed -e /notperiod/s/xpnp\)/xpnp,at,bg\)/g <  $temp  > tmp
-	mv tmp $temp
+	sed -e /lNDM\.eqv/s/lNDM/lspacendm/g <  $temp  > tmp
+        sed -e /lndmspace/s/lndmspace/lspaceNDM/g <  tmp  > tmp2
+	        sed -e /lNDMspace/s/lNDMspace/lspaceNDM/g <  tmp2 > tmp3
+		mv tmp3 $temp
 
 end

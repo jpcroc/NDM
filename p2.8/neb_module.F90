@@ -3,7 +3,8 @@ module neb_module
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,im_glob,lenfnam,rang,zero,lcontr,&
-       &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat
+       &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
+       &posa, forca,latcomp
   use read_val,only:rvois,ltabvois
   USE constrconf_mod,only:constr_2gin,gin2ndm,config2data,read_cin
     use cryst_to_cart_mod,only:cryst_to_cart
@@ -29,9 +30,15 @@ module neb_module
   use mod_para,only:myidsp,nprocspace
 #endif
   use paraconfig,only:para_config,commconstr
+#ifdef LAMMPS_VERSION
+  use lammps_util_mod,only:read_lammps
+#endif
   implicit none
 
-
+  type, extends (atom_config_d):: atom_config_neb
+     real(double),allocatable,dimension(:,:)::s_path,force_neb
+  end type atom_config_neb
+  
   integer, save                                  :: dragtest
   integer,dimension(:),allocatable,save          :: nebtest,icontrainte !irelax,
   real(double), dimension(:),allocatable, save   :: enePATH,enePATHev,norms,reaction_coord
@@ -39,7 +46,7 @@ module neb_module
   real(double), dimension(:,:,:),allocatable,save:: s_path,force_neb,bruitneb 
   real(double)                                   :: forctot,formax,formaxperp,formaxparl,masstot
   logical:: lvzeroneb
-  type(atom_config_d),allocatable,save,target::atneb(:)
+  type(atom_config_neb),allocatable,save,target::atneb(:)
   type(cell_config),allocatable,save,target:: cellneb(:)
   type(box_config)::boxneb
   type(para_config)::paraneb
@@ -49,18 +56,29 @@ contains
   
 
   subroutine init_neb0
-    
+    character:: inplmp
     call init_pot
     
+    call constrconfNEB
+    flush(6)
+#ifdef PARA
+    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    write(6,*)'PostBAR',rang
+#endif
+   
 #ifdef LAMMPS_VERSION
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
-       allocate (posa(3*im),  forca(3*im))
+       allocate (posa(3*atneb(1)%im),  forca(3*atneb(1)%im))
+!       inplmp="in.lammps."//paraneb%image
+!       write(6,*)"inplmp",inplmp
+!       call read_lammps(inplammps=inplmp)
        call read_lammps()
+       write(6,*)'OUT READL',rang
     end if
 #endif
-    call constrconfNEB
+
     call init_pot2(boxneb)
   end subroutine init_neb0
   
@@ -78,14 +96,15 @@ contains
     end if
       
     do ipath=1,npath
-       call atneb(ipath)%init(im,imm,ltabvois,nv,rv,lprteat=lprteat)
+       call atneb(ipath)%atom_config_d%init(im,imm,ltabvois,nv,rv,lprteat=lprteat)
+       allocate(atneb(ipath)%s_path(3,imm),atneb(ipath)%force_neb(3,imm))
     end do
 
          allocate (icontrainte(imm),reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
     allocate  (sigPATH(3,3,npath))    ! Stress tensor for each image
 
-    allocate  (s_path(3,imm,npath),force_neb(3,imm,npath))
+!    allocate  (s_path(3,imm,npath),force_neb(3,imm,npath))
     allocate  (bruitneb(3,imm,npath))
 
     return
@@ -237,8 +256,10 @@ end if
           IF (ok ) THEN
              ! Load NEB image ip in file *.<ip>.gin
           if(rang==0)write(6,*)'FNAMneb  ',iph,ginfile
+    write(6,*)'ing2n',rang
           call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,im_glob,rumax,lrepartition=.false.)
-            do i=1,im
+    write(6,*)'outg2n',rang
+          do i=1,im
                atneb(iph)%num_at_glob(i)=i
             end do
          ELSE
@@ -250,7 +271,7 @@ end if
           atneb(iph)%xp(:,:)=atneb(1)%xp(:,:)+dxx(:,:)*dble(iph -1) / dble(npath-1)
           atneb(iph)%ityp(:)=atneb(1)%ityp(:)
           atneb(iph)%num_at_glob(:)=atneb(1)%num_at_glob(:)
-!           call rasmolT(atneb(iph),boxneb,iph)
+
          
        END IF
        atneb(iph)%xpp(:,:)= atneb(iph)%xp(:,:)
@@ -267,7 +288,6 @@ end if
     end if
 
     icontrainte(:)=1
-
 
     return
 
@@ -330,12 +350,12 @@ end if
              !
           end if
 
-          s_path(:,ia,ip)=Rtemp(:)  
+          atneb(ip)%s_path(:,ia)=Rtemp(:)  
           !
        end do     !loop over ia
        !
-       norms(ip)=SUM(s_path(:,:,ip)**2)
-       force_neb(:,:,ip)=kspring*(dsqrt(temp_p)-dsqrt(temp_m))	
+       norms(ip)=SUM(atneb(ip)%s_path(:,:)**2)
+       atneb(ip)%force_neb(:,:)=kspring*(dsqrt(temp_p)-dsqrt(temp_m))	
        !
     end do    ! loop over ip
 
@@ -355,15 +375,16 @@ end if
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    integer  :: iph,ia,ic,imm,im
+    integer  :: iph,ia,ic,imm,im,ip
     real(double)  :: dxx(3,imm),rcm_loc(3)
 
 
     dxx(:,:)=atneb(npath)%xp(:,:) - atneb(1)%xp(:,:)
 !    dxx(:,:)=xp_n(:,:,npath) - xp_n(:,:,1)
 
-
-    s_path(:,:,:)=0.d0
+    do ip=1,npath
+       atneb(ip)%s_path(1:3,1:atneb(1)%imm)=0.d0
+    end do
     rcm_loc(:)=0.d0
 
 
@@ -378,12 +399,12 @@ end if
     do iph=2,npath-1
        do ia=1,im
           if (icontrainte(ia).eq.1) then
-             s_path(1,ia,iph)= dxx(1,ia) -  rcm_loc(1)*cm(atneb(1)%ityp(ia))/masstot 
-             s_path(2,ia,iph)= dxx(2,ia) -  rcm_loc(2)*cm(atneb(1)%ityp(ia))/masstot
-             s_path(3,ia,iph)= dxx(3,ia) -  rcm_loc(3)*cm(atneb(1)%ityp(ia))/masstot
+             atneb(iph)%s_path(1,ia)= dxx(1,ia) -  rcm_loc(1)*cm(atneb(1)%ityp(ia))/masstot 
+             atneb(iph)%s_path(2,ia)= dxx(2,ia) -  rcm_loc(2)*cm(atneb(1)%ityp(ia))/masstot
+             atneb(iph)%s_path(3,ia)= dxx(3,ia) -  rcm_loc(3)*cm(atneb(1)%ityp(ia))/masstot
           end if
        end do
-       norms(iph) = SUM(s_path(:,:,iph)**2)
+       norms(iph) = SUM(atneb(iph)%s_path(:,:)**2)
     end do
 
     return
@@ -442,14 +463,14 @@ end if
     lbd=0
     do ia=1,im
        if (atneb(ipath)%lgul(ia)) then
-          lbd = lbd + DOT_PRODUCT(s_path(:,ia,ipath),fp(:,ia))
+          lbd = lbd + DOT_PRODUCT(atneb(ipath)%s_path(:,ia),fp(:,ia))
        end if
     end do
 
 
     do ia=1,im
        if (atneb(ipath)%lgul(ia)) then
-          fp(:,ia) =fp(:,ia) - s_path(:,ia,ipath)*lbd/norms(ipath)
+          fp(:,ia) =fp(:,ia) - atneb(ipath)%s_path(:,ia)*lbd/norms(ipath)
        end if
     end do
 
@@ -480,15 +501,15 @@ end if
     lbd=0
     do ia=1,im      
        if (atneb(ipath)%lgul(ia)) then
-          lbd = lbd + DOT_PRODUCT(s_path(:,ia,ipath),fp(:,ia))
+          lbd = lbd + DOT_PRODUCT(atneb(ipath)%s_path(:,ia),fp(:,ia))
        end if
     end do
     do ia=1,im
 
        if (atneb(ipath)%lgul(ia)) then
           !
-          fp(:,ia) =fp(:,ia) -  s_path(:,ia,ipath)*lbd/norms(ipath)  &
-               + force_neb(:,ia,ipath)*s_path(:,ia,ipath) / dsqrt(norms(ipath))
+          fp(:,ia) =fp(:,ia) -  atneb(ipath)%s_path(:,ia)*lbd/norms(ipath)  &
+               + atneb(ipath)%force_neb(:,ia)*atneb(ipath)%s_path(:,ia) / dsqrt(norms(ipath))
           ! 	
        end if
 
@@ -548,8 +569,8 @@ end if
           call setcellconf(cellneb(1),atneb(1),boxneb,im_glob,rumax)
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
-             call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout)
-             call rasmolT(atneb(1),boxneb,1)
+             call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout,latcomp=latcomp)
+             call rasmolT(atneb(1),boxneb,1,latcomp=latcomp)
           endif
           
           fnamneb='fin_'//fnam(1:lenfnam)//'.cin'
@@ -568,8 +589,8 @@ end if
           call setcellconf(cellneb(npath),atneb(npath),boxneb,im_glob,rumax)
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
-             call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout)
-             call rasmolT(atneb(npath),boxneb,npath)
+             call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=latcomp)
+             call rasmolT(atneb(npath),boxneb,npath,latcomp=latcomp)
           endif
           
        end if
@@ -632,7 +653,6 @@ end if
     end if
 #endif     
 
-
   end subroutine constrconfNEB
   
   
@@ -692,6 +712,7 @@ end if
     call commconstr(paraneb)
 
     myidsp=paraneb%rgim
+    call MPI_COMM_free(mpi_comm_space,ierr)
     MPI_COMM_space=paraneb%comm_image
     nprocspace=paraneb%npim
 #else

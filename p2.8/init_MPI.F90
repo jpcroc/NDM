@@ -33,7 +33,8 @@ contains
     call MPI_COMM_RANK( MPI_COMM_WORLD, rang, ierr )
     call MPI_COMM_SIZE( MPI_COMM_WORLD, nprocs, ierr )
     call MPI_COMM_GROUP( MPI_COMM_WORLD, grp_world, ierr )
-    !  MPI_COMM_space=MPI_COMM_WORLD
+    call MPI_COMM_DUP(MPI_COMM_WORLD,MPI_COMM_SPACE,ierr)
+!    MPI_COMM_space=MPI_COMM_WORLD
     temps_deb = MPI_Wtime()
     nprocspace=nprocs
 

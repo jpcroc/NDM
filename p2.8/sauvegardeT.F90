@@ -1,7 +1,7 @@
 module sauvegardeT_mod
 
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:rang,formatsauv,im_glob,it,itesauvinter,&
+    USE gen_com_m, ONLY:rang,formatsauv,im_glob,it,itesauvinter,lspaceNDM,&
          &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
 
     USE elec_cell, ONLY : sauveelec
@@ -36,7 +36,7 @@ contains
     class(atom_config)::atdml
     type(cell_config):: celndm
     character::fnamcout*80
-    logical, optional,intent(in):: latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
+    logical, intent(in):: latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
     logical, optional,intent(in):: lw0 ! seul le rang=0 écrit (implique latcomp=.true.)
     
     integer :: lucout, formatsauvmod,i,formatsauv,im
@@ -74,7 +74,7 @@ contains
        write (lucout) im_glob
     end if
 #ifdef PARA
-    if (present (latcomp))latcompin=latcomp
+    latcompin=latcomp
 
     if (present (lw0))lw0in=lw0
     if (lw0in) then
@@ -85,17 +85,17 @@ contains
        if (rang==0) then
           latcompin=.true.
        else
-          latcompin=.false. !latcompin intègre lw0 et rang=0
+          latcompin=.false. !dans la suite latcompin intègre lw0 et rang=0 (NB on est dans ce if dans le cas lw0in=T)
        end if
     end if
        
-    if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(latcompin.eqv..false.)) then
        allocate (buffer(3,imm_glob))
        allocate (ibuffer(imm_glob))
     end if
     
     if (myidsp==0) then
-       if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(latcompin.eqv..false.)) then
           im_loc(0)=im
           ibuffer=0
           ibuffer(1:im)  = atdml%ityp(1:im)
@@ -179,27 +179,29 @@ contains
              write (lucout) tmean, pmean, it, timel
           endif
        else
-          write (lucout) atdml%ityp
-          write (lucout) atdml%xp
-          write (lucout) atdml%num_at_glob
-          if (formatsauvmod==1) then
-             lwax=.false.
-             select type (atdml)
-             type is (atom_config_d)
-                write (lucout) atdml%xpp
-                write (lucout) atdml%vp
-             type is (atom_config_e)
-                write (lucout) atdml%xpp
-                write (lucout) atdml%vp
-                if (atdml%lax)then
-                   write (lucout) atdml%ax
-                   lwax=.true.
-                end if
-             end select
-             if (.not.lwax)write (lucout) atdml%xp
-             write (lucout) tstep
-             write (lucout) tmean, pmean, it, timel
-          endif
+          if ((lw0in.eqv..false.).or.(lw0in.eqv..true.).and.(rang==0)) then
+             write (lucout) atdml%ityp
+             write (lucout) atdml%xp
+             write (lucout) atdml%num_at_glob
+             if (formatsauvmod==1) then
+                lwax=.false.
+                select type (atdml)
+                type is (atom_config_d)
+                   write (lucout) atdml%xpp
+                   write (lucout) atdml%vp
+                type is (atom_config_e)
+                   write (lucout) atdml%xpp
+                   write (lucout) atdml%vp
+                   if (atdml%lax)then
+                      write (lucout) atdml%ax
+                      lwax=.true.
+                   end if
+                end select
+                if (.not.lwax)write (lucout) atdml%xp
+                write (lucout) tstep
+                write (lucout) tmean, pmean, it, timel
+             endif
+          end if
        end if
 
        close(unit=lucout)
@@ -208,7 +210,7 @@ contains
 
     else ! myidsp different de 0 :
 
-       if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(latcompin.eqv..false.)) then
 
           call MPI_SEND(im,          1,   MPI_INTEGER,        0,11001,MPI_COMM_space,ierr)
           call MPI_SEND(atdml%ityp(1:im),  im,  MPI_INTEGER,        0,11002,MPI_COMM_space,ierr)
@@ -232,7 +234,7 @@ contains
        end if
     endif
 
-    if ((nprocspace.gt.1).and.(latcompin.eqv..false.)) then
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(latcompin.eqv..false.)) then
        deallocate (buffer)
        deallocate (ibuffer)
     end if

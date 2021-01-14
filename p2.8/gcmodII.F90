@@ -133,8 +133,9 @@ module gcmodII_mod
 
 #ifdef PARA
 !  use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,nprocspace,status
-
+  USE mod_para,only:MPI_COMM_space,ierr,nprocspace,status,myidsp
+#else
+  USE mod_para,only:nprocspace,myidsp
 #endif  
   implicit none
 #ifdef PARA
@@ -144,7 +145,7 @@ contains
 
   SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS)
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dfpred,rang
+    USE gen_com_m, ONLY:dfpred,rang,lspacendm
     !  USE gen_com_m, ONLY:
     !                                  SPECIFICATIONS FOR ARGUMENTS         
 
@@ -155,7 +156,7 @@ contains
     !-----------------------------------------------
     !-----------------------------------------------
     integer criterion
-    integer NCALLS
+    integer NCALLS,unitw
     logical do_print, do_print_verbose
     !                                  SPECIFICATIONS FOR LOCAL VARIABLES   
     INTEGER            MAXLIN,MXFCON,I,IGINIT,IGOPT,IRETRY,IRSDG,         &
@@ -214,12 +215,24 @@ contains
 !    if (rang==0) then
 !       write(6,*)'X1',x
 !       write(6,*)'G1',G
-!    end if
-    CALL FUNCT (N,X,F,G,NCALLS)                                
+    !    end if
+!    write(6,*)'funct',rang,ncalls
+    CALL FUNCT (N,X,F,G,NCALLS)
+ !   unitw=ncalls+rang*10+100
+ !   write(6,*)'unitw',unitw
+ !   write(unitw,*)'F',F
+ !   write(unitw,*)'X',X
+ !   write(unitw,*)'G',G
+    
+#ifdef PARA
+    call MPI_barrier(mpi_comm_space,ierr)
+#endif
+    
+!    write(6,*)'functBACK',rang,ncalls
 
 
 
-    if (rang==0) then
+    if (myidsp==0) then
 !       write(6,*)'X',x
 !       write(6,*)'G',G
        
@@ -336,7 +349,7 @@ contains
        end DO
        IF (WORK.GT.0.0D0) then
 #ifdef PARA
-          if (nprocspace.gt.1) then
+if (nprocspace.gt.1) then
              iopt=1
              do ip=1,nprocspace-1
                 call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
@@ -491,7 +504,7 @@ contains
 9005   if (do_print) print 3030,NCALLS
 3030   FORMAT ("NCALLS",I5)
 #ifdef PARA
-       if (nprocspace.gt.1) then
+if (nprocspace.gt.1) then
 
           iopt=0
           do ip=1,nprocspace-1
@@ -503,7 +516,7 @@ contains
        !END DO
     else
 #ifdef PARA
-       if (nprocspace.gt.1) then
+if (nprocspace.gt.1) then
 
           call MPI_RECV(iopt,  1, MPI_INTEGER, 0, 10001, MPI_COMM_space, status, ierr)
           select case (iopt)

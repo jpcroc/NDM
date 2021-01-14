@@ -13,11 +13,16 @@ module prog_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
-
+  USE var_pot
   USE montecarlo_mod, only: montecarlo
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE gen_com_m, ONLY:parallele,potist,rang,sig,lspaceNDM&
+       &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin,latcomp
+  
+  use read_val,only:imm,ltabvois,rvois
+
 #if defined ML || defined PARAML    
   USE ml_main_mod,only: ml_main
 #endif
@@ -30,10 +35,6 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:parallele,potist,rang,sig&
-         &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin
-
-    use read_val,only:imm,ltabvois,rvois
 
     !    USE montecarlo_mod, ONLY: config_atom_n, cells_n
 
@@ -56,7 +57,6 @@ contains
     type(cell_config)::celndm
     type(box_config)::boxndm
     real(double)::rv
-    logical ::latcomp=.false.
 
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e rs
@@ -89,8 +89,10 @@ contains
        ! complete par le nombre maximal d'atomes fantomes
        ! On suppose que la concentration max ne depasse pas 20%  de 
        ! la concentration moyenne
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
        if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
+    endif
 #endif
        if (ltabvois) then
           rv=rvois
@@ -118,7 +120,7 @@ contains
           class is (atom_config_d)
 #ifdef PARA
           if ((dmtype.ne.3).and.(dmtype.ne.30))then
-             if (nprocspace.gt.1) then
+             if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                 call maj_atomes_frt_ftm(atdml,celndm)
              end if
           end if
@@ -138,8 +140,8 @@ contains
                 call dmloop(atdml,celndm,boxndm)
              else
 #ifdef PARA
-                if (nprocspace.gt.1) then
-                   if(rang==0) write (6,*)'DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION'
+                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+                   if(rang==0) write (6,*)'DMTYPE 2 +PARAspaceNDM=DMLOOP_VVERLET_+OPTION'
                    call dmloop_vverlet (atdml,celndm,boxndm)
                 end if
 #endif
@@ -153,7 +155,6 @@ contains
              CALL CalFo(sig,potist,atdml,celndm,boxndm) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              call analyseT(atdml,celndm,boxndm)
              call controleT(atdml,celndm,boxndm)
-             latcomp=.false.
              call endrunT(atdml,celndm,boxndm,latcomp)
 
 #ifdef ART    

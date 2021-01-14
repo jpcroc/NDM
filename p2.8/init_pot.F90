@@ -6,7 +6,7 @@ module init_pot_mod
   USE tersoff_zbl_mod,only: tersoff_zbl
   USE gen_com_m, ONLY:firsttime_lammps,parallele,rang,umass,A2cm
   USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive,npotentiel,&
-       &typ_pot_pair,rue_pair,catom,cm,iewald,ipo,lu_roff_pair,lue_paire,lue_typ,ntyp,roff1,roff2,ty,typ_pot_pair,q
+       &typ_pot_pair,rue_pair,catom,cm,iewald,ipo,lu_roff_pair,lue_paire,lue_typ,ntyp,roff1,roff2,ty,typ_pot_pair,q,rue_lammps
   
   USE eam,only:inputeam
   USE eamerco,only:inputeamerco
@@ -40,9 +40,9 @@ contains
     end if
 
     !#ifdef LAMMPS_VERSION
-    firsttime_lammps=.true.
+!    firsttime_lammps=.true.
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
-       call init_potential_simple
+       call init_potential_simple(rue_lammps,rumax)
     else
        !#endif  
 
@@ -209,7 +209,7 @@ contains
 
   end subroutine init_pot2
     
-  subroutine init_potential_simple
+  subroutine init_potential_simple(rue,rum)
     USE T_kind_param_m, ONLY:  double
 !    USE gen_com_m, ONLY: rang,A2cm,umass
 !    USE var_pot, ONLY: ntyp, npair, ntrip,cm,catom, ty,rue_pair,ipotentiel,q
@@ -219,7 +219,7 @@ contains
     implicit none
     integer :: i,error, beggin,  endding,lupotin
     character ::  fnampotin*80
-    real(double)::rue
+    real(double)::rue,rum
 
     fnampotin = 'simple.potin'
     lupotin = 95
@@ -246,7 +246,7 @@ contains
 
     end select
     cm(:ntyp) = cm(:ntyp)*umass
-
+    rumax=max(rumax,rue)
     close (lupotin)
 
   end subroutine init_potential_simple

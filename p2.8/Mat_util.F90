@@ -88,6 +88,40 @@ contains
   end subroutine mattrp
 
   !----------------------------------------------------------------------
+subroutine matinv_gen(A, B)
+!use tools
+implicit none
+real(double), dimension(3,3), intent(in) :: A
+real(double), dimension(3,3), intent(out) :: B
+real(double) :: invdet
+invdet=1.d0/matdet(A)
+
+b(1,1) = a(2,2)*a(3,3) - a(2,3)*a(3,2)
+b(2,1) = a(2,3)*a(3,1) - a(2,1)*a(3,3)
+b(3,1) = a(2,1)*a(3,2) - a(2,2)*a(3,1)
+
+b(1,2) = a(3,2)*a(1,3) - a(3,3)*a(1,2)
+b(2,2) = a(3,3)*a(1,1) - a(3,1)*a(1,3)
+b(3,2) = a(3,1)*a(1,2) - a(3,2)*a(1,1)
+
+b(1,3) = a(1,2)*a(2,3) - a(1,3)*a(2,2)
+b(2,3) = a(1,3)*a(2,1) - a(1,1)*a(2,3)
+b(3,3) = a(1,1)*a(2,2) - a(1,2)*a(2,1)
+b(1:3,1:3)=b(1:3,1:3)*invdet
+
+return
+end subroutine matinv_gen
+FUNCTION matdet(A) result(det)
+implicit none
+real(double), dimension(:,:), intent(in) :: A
+real(double) :: det
+IF ( (size(A,1).NE.3).AND.(size(A,2).NE.3) ) &
+    STOP '< MatDet >: size of matrix to invert should be equal to 3'
+det =  a(1,1)*a(2,2)*a(3,3) + a(1,2)*a(2,3)*a(3,1) &
+       + a(1,3)*a(2,1)*a(3,2) - a(1,3)*a(2,2)*a(3,1) &
+        - a(1,1)*a(2,3)*a(3,2) - a(1,2)*a(2,1)*a(3,3)
+END FUNCTION matdet
+
   subroutine matinv(a, ai)
     !  Invert a 3-by-3 matrix a, and store the result in ai
     !-----------------------------------------------

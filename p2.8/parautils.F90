@@ -7,7 +7,7 @@
 #endif
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage
-
+  use gen_com_m,only:lspacendm
   use atomconfig,only: atom_config,atom_config_d
   USE boxconfig,only:box_config,periodbox
   USE cellconfig,only:cell_config,caltabtC
@@ -18,7 +18,7 @@
 contains
   subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod)
     USE setcell,only:setcellconf
-    type(atom_config_d),intent(in),target::atcomp
+    class(atom_config_d),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
     type(box_config)::box
     class(atom_config),pointer::atloc
@@ -27,11 +27,11 @@ contains
     real(double),intent(in)::rum
     logical::lperiod
     integer::ierr,iun
-    if (div%npim.gt.1) then
+    if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
        call cellcomp%copy_cell(celloc)
        call decoupage(div%npim,0,celloc,atloc)
        call repartition(atcomp,atloc,box,celloc,div=div) ! mettre les éléments de la répartition dans un type
-    call setcellconf(celloc,atloc,box,atcomp%im,rum)
+       call setcellconf(celloc,atloc,box,atcomp%im,rum)
     else
        atloc=>atcomp
        celloc=>cellcomp
@@ -40,7 +40,7 @@ contains
   end subroutine initloc
   
   subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod)
-    
+
     class(atom_config),intent(in)::atlocin
     type(cell_config),intent(in)::cellocin
     class(atom_config)::atcomp
@@ -50,10 +50,11 @@ contains
     integer::ierr,iun
     logical::lperiod
 
-    if (div%npim.gt.1) then
+    if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+       !    if (div%npim.gt.1) then
        call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
-!       call atlocin%print(unit=500+div%rang_orig)
-!       flush(500+div%rang_orig)
+       !       call atlocin%print(unit=500+div%rang_orig)
+       !       flush(500+div%rang_orig)
        call atlocin%vers_master(atcomp,div)
        !call atcomp%print(unit=600+div%rang_orig)
        !flush(600+div%rang_orig)
@@ -69,7 +70,7 @@ contains
        if (atlocin%ltabvois) then
           call caltabi(atcomp,cellcomp,box)
        end if
-    
+
     end if
   end subroutine initcomp
   
@@ -94,18 +95,29 @@ contains
     if(present(lchg))lchange=lchg
 #ifdef PARA
     if (lchange) then
-       if (div%npim.gt.1) then
-          call atcomp%master2loc(atloc,div)
+!       write(6,*)'NPIM',div%npim
+       if (div%npim.gt.1)then
+          if (lspaceNDM.eqv..true.) then
+             call atcomp%master2loc(atloc,div)
 !          call atloc%print(unit=800+div%rang_orig)
  !         call celloc%print(900+div%rang_orig)
-  !        flush(800+div%rang_orig)
+          !        flush(800+div%rang_orig)
+          else
+
+             call atcomp%send2all(0,div%comm_image)
+             atloc=>atcomp
+             celloc=>cellcomp                 
+          end if
        else
+
           atloc=>atcomp
           celloc=>cellcomp                 
        end if
     end if
-
+    
+!    call atcomp%print(unit=50+div%rgim)
 #else
+
     atloc=>atcomp
     celloc=>cellcomp
 
@@ -120,17 +132,20 @@ contains
 
 #ifdef PARA
 !    if (lchange) then  ! même sans changement il faut mettre à jour pour initialisze les tableaux NDM like de mod_para pour maj_tab_density
-    if (div%npim.gt.1) then
+    if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
        call maj_atomes_frt_ftm(atloc,celloc)
     end if
 
 !    end if
 #endif
-!!$    
+!!$
+    !    call atloc%print(unit=200+div%rgim)
+!    write(6,*)'precalf',div%rang_orig
        CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
-
+!       call atloc%print(unit=300+div%rgim)
 #ifdef PARA
-    if (div%npim.gt.1) then
+    if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+!    if (div%npim.gt.1) then
        call atloc%vers_master(atcomp,div)
     else
 !       atcomp=atloc    

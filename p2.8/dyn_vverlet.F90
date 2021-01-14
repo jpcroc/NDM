@@ -3,7 +3,8 @@ module dyn_vverlet_mod
   USE calfoberend_mod,only: calfoberend 
   use var_pot,only:ntyp
   USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,ltranche,&
-       &l2T,llangevin,lsuivinonpbc,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep
+       &l2T,llangevin,lsuivinonpbc,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep,&
+       lspaceNDM
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
   USE cellconfig, only:cell_config,caltabtC
   USE boxconfig,only:box_config,periodbox
@@ -124,7 +125,7 @@ contains
 
 
 #ifdef PARA
-    if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        temps_debpara=MPI_Wtime()
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        call maj_atomes_frt_ftm(atdml,celndm)
@@ -143,6 +144,7 @@ contains
     if (itesigma>0) test_sigma=(mod(it,itesigma)==0)
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
 
+    
     if (l2t)then
        if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     else

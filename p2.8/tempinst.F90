@@ -1,5 +1,5 @@
 module tempinst_mod
-  USE gen_com_m, ONLY:bk,im_glob
+  USE gen_com_m, ONLY:bk,im_glob,lspacendm
 #ifdef PARA
     USE mpi
     USE mod_para,only:MPI_COMM_space,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
@@ -39,7 +39,7 @@ contains
     enddo
 
 #ifdef PARA
-    if (nprocspace.gt.1)then 
+    if ((lspaceNDM).and.(nprocspace.gt.1))then 
     call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     mv2 = mv2_glob
     tempinst=mv2/(3.d0*float(im_glob)*bk)

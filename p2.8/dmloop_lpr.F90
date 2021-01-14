@@ -3,7 +3,7 @@ module dmloop_lpr_mod
   USE controleT_mod,only: controleT
   USE sauveposition_mod,only: sauveposition
   USE sauveforce_mod,only: sauveforce
-  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod
+  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod,lspacendm
   USE calfo_mod,only: calfo
 
   USE atomconfig,only : atom_config_d
@@ -86,7 +86,7 @@ contains
        call prNose(atpr,celndm,boxndm)
 
 #ifdef PARA
-       if (nprocspace.gt.1) then
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
        boxndm%zl(1) = Sqrt( Sum(boxndm%at(1:3,1)**2 ) )
        boxndm%zl(2) = Sqrt( Sum(boxndm%at(1:3,2)**2 ) )
