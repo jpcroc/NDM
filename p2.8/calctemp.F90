@@ -47,7 +47,8 @@ subroutine calctemp(temp,kine,atcf, cellcf)
 
 
     if(cellcf%icaltabt.ne.atcf%icaltabt) then
-       write (6,*)'incoherence dans icaltabt'
+       write (6,*)'incoherence dans icaltabt calctemp'
+       write(6,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
        stop
     end if
   

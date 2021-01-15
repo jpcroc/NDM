@@ -144,7 +144,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     if (itesigma>0) test_sigma=(mod(it,itesigma)==0)
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
 
-    
     if (l2t)then
        if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     else

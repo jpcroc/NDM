@@ -41,9 +41,7 @@ contains
   end subroutine init_mpi
 
 #endif
-
-
-    
+   
 end module init_mpi_mod
 
 

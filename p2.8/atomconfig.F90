@@ -2,7 +2,7 @@ module atomconfig
   USE T_kind_param_m,only:double,long,ierr
   USE Mat_utils_mod,only: fillbuffer3D,fillbuffer1D,fillbuffer9D
 #ifdef PARA
-  USE Tpara,only:NDM_MPI_REAL_DOUBLE
+  USE Tpara,only:NDM_MPI_REAL_DOUBLE 
   use gen_com_m,only:rang
 
 
@@ -350,7 +350,7 @@ contains
     class(atom_config):: atcf
     integer,intent(in)::rgcib,comm
     integer:: size1,size3,sizeV,ierr
-    character(len=26),optional,intent(in)::caracT
+    character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     
 !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
@@ -381,7 +381,7 @@ contains
     class(atom_config_d):: atcf
     integer,intent(in)::rgcib,comm
     integer:: size1,size3,sizeV,ierr
-    character(len=26),optional,intent(in)::caracT
+    character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
 !voir au dessus + v=vp,r=xpp
@@ -404,7 +404,7 @@ contains
     class(atom_config_e):: atcf
     integer,intent(in)::rgcib,comm
     integer:: size1,size3,sizeV,ierr
-    character(len=26),optional,intent(in)::caracT
+    character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
 !voir au dessus + v=vp,r=xpp
@@ -438,7 +438,7 @@ contains
     class(atom_config):: atcf
     integer,intent(in)::rgem,comm
     integer:: size1,size3,sizeV,ierr
-    character(len=26),optional,intent(in)::caracT
+    character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     
 !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
@@ -469,7 +469,7 @@ contains
     class(atom_config_d):: atcf
     integer,intent(in)::rgem,comm
     integer:: size1,size3,sizeV,ierr
-    character(len=26),optional,intent(in)::caracT
+    character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
 !voir au dessus + v=vp,r=xpp
@@ -492,7 +492,7 @@ contains
     class(atom_config_e):: atcf
     integer,intent(in)::rgem,comm
     integer:: size1,size3,sizeV,ierr
-    character(len=26),optional,intent(in)::caracT
+    character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
 !voir au dessus + v=vp,r=xpp
@@ -527,7 +527,7 @@ contains
     class(atom_config)::atcf
     integer,intent(in)::rgemet,comm
     integer:: size1,size3,sizeV
-    character(len=26),optional,intent(in)::caracT
+    character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
     
@@ -560,7 +560,7 @@ contains
     class(atom_config_d)::atcf
     integer,intent(in)::rgemet,comm
     integer:: size1,size3,sizeV
-    character(len=26),optional,intent(in)::caracT
+    character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
 !voir au dessus + v=vp,r=xpp
@@ -583,7 +583,7 @@ contains
     class(atom_config_e)::atcf
     integer,intent(in)::rgemet,comm
     integer:: size1,size3,sizeV
-    character(len=26),optional,intent(in)::caracT
+    character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
 !voir au dessus + v=vp,r=xpp

@@ -54,7 +54,6 @@ contains
     real(double) :: potistmean,potistdif
     real(double),save :: potist1000
     real, allocatable,save :: potiststock(:)
-
 #ifdef PARA
     real(double) :: tcou_glob
     integer      :: nacou_glob

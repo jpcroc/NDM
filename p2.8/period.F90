@@ -46,7 +46,8 @@ contains
     !      iperiod=iperiod+1
 
     !      write(*,*) 'PBC PBC PBC capitala tarii e ....             period',iperiod
-
+    write(6,*)'call period pas periodbox par defaut stop'
+    stop
     IF (ldecal_bc.EQV..FALSE.) THEN
 
        call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst

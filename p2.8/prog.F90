@@ -14,7 +14,7 @@ module prog_mod
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
-  USE montecarlo_mod, only: montecarlo
+  USE montecarlo_mod, only: montecarlo,config_atom_n,cells_n,boxmcgc,init_mpi_mcgc
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
@@ -35,6 +35,10 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
+    USE gen_com_m, ONLY:parallele,potist,rang,sig,lspaceNDM&
+         &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin
+
+    use read_val,only:imm,ltabvois,rvois
 
     !    USE montecarlo_mod, ONLY: config_atom_n, cells_n
 
@@ -46,7 +50,7 @@ contains
 #else
     USE mod_para,only:nprocspace
 #endif
-
+    USE neb_module,only:init_mpi_neb
     implicit none
     character :: extension*2
     integer::lenfn2,i,ko,im,nvois
@@ -69,6 +73,7 @@ contains
     !-----------------------------------------------
 
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
+    !probablement inutile pour dmtype=9 ou 15
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin))then
        atdml=>atdme
     else
@@ -81,7 +86,9 @@ contains
     end if
     im=0 ; nvois=0
     imm_glob=imm
-    if (dmtype.ne.9) then
+    select case(dmtype)
+    case default
+       !if (dmtype.ne.9) then
 
 #ifdef PARA
        ! En parallle, on initialise le nombre maximum d'atomes d'un
@@ -90,9 +97,9 @@ contains
        ! On suppose que la concentration max ne depasse pas 20%  de 
        ! la concentration moyenne
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-       imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
-       if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
-    endif
+          imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
+          if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
+       endif
 #endif
        if (ltabvois) then
           rv=rvois
@@ -141,7 +148,7 @@ contains
              else
 #ifdef PARA
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-                   if(rang==0) write (6,*)'DMTYPE 2 +PARAspaceNDM=DMLOOP_VVERLET_+OPTION'
+                   if(rang==0) write (6,*)'DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION'
                    call dmloop_vverlet (atdml,celndm,boxndm)
                 end if
 #endif
@@ -181,16 +188,48 @@ contains
           case (18) 
              call ml
 #endif
-          case (15)
-             call montecarlo(atdml,celndm,boxndm)
+             !          case (15)
+             !             call montecarlo(atdml,celndm,boxndm)
           end select
        end select
-    else
-#ifdef PARA
+    case(9)
+       !#ifdef PARA
        call init_mpi_neb
-#endif
+       !#endif
        call init_neb0 
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-    end if
+    case(15)
+       !#ifdef PARA
+       call init_mpi_MCGC
+       !#endif
+#ifdef PARA
+       ! En parallle, on initialise le nombre maximum d'atomes d'un
+       ! processus au nombre d'atomes locaux. Plus tard ce nombre sera
+       ! complete par le nombre maximal d'atomes fantomes
+       ! On suppose que la concentration max ne depasse pas 20%  de 
+       ! la concentration moyenne
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
+          if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
+       endif
+#endif
+       if (ltabvois) then
+          rv=rvois
+       else
+          rv=0
+       end if
+
+       call config_atom_n%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
+       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+       call init(config_atom_n,boxndm,cells_n)
+
+#ifdef PARA
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call maj_atomes_frt_ftm(config_atom_n,cells_n)
+       end if
+#endif
+       boxmcgc=boxndm
+       call montecarlo
+    end select
   end subroutine prog
-end module
+end module prog_mod

@@ -180,28 +180,28 @@ contains
           endif
        else
           if ((lw0in.eqv..false.).or.(lw0in.eqv..true.).and.(rang==0)) then
-             write (lucout) atdml%ityp
-             write (lucout) atdml%xp
-             write (lucout) atdml%num_at_glob
-             if (formatsauvmod==1) then
-                lwax=.false.
-                select type (atdml)
-                type is (atom_config_d)
-                   write (lucout) atdml%xpp
-                   write (lucout) atdml%vp
-                type is (atom_config_e)
-                   write (lucout) atdml%xpp
-                   write (lucout) atdml%vp
-                   if (atdml%lax)then
-                      write (lucout) atdml%ax
-                      lwax=.true.
-                   end if
-                end select
-                if (.not.lwax)write (lucout) atdml%xp
-                write (lucout) tstep
-                write (lucout) tmean, pmean, it, timel
+          write (lucout) atdml%ityp
+          write (lucout) atdml%xp
+          write (lucout) atdml%num_at_glob
+          if (formatsauvmod==1) then
+             lwax=.false.
+             select type (atdml)
+             type is (atom_config_d)
+                write (lucout) atdml%xpp
+                write (lucout) atdml%vp
+             type is (atom_config_e)
+                write (lucout) atdml%xpp
+                write (lucout) atdml%vp
+                if (atdml%lax)then
+                   write (lucout) atdml%ax
+                   lwax=.true.
+                end if
+             end select
+             if (.not.lwax)write (lucout) atdml%xp
+             write (lucout) tstep
+             write (lucout) tmean, pmean, it, timel
              endif
-          end if
+          endif
        end if
 
        close(unit=lucout)

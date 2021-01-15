@@ -60,7 +60,7 @@ subroutine caltabi(atvois,celvois,boxndm)
   ! --------------------------
 
   if(celvois%icaltabt.ne.atvois%icaltabt) then
-       write (6,*)'incoherence dans icaltabt'
+       write (6,*)'incoherence dans icaltabt caltabi'
        stop
     end if
 

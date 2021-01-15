@@ -221,11 +221,11 @@ contains
 
           if (iseed==0)  then
              call system_clock (iseed)
-             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
+             write(6,*)'iseed pour tirage des vitesses',iseed
              iseedt(:)=iseed
 
           else
-             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
+             write(6,*)'iseed pour tirage des vitesses',iseed
              iseedt(:)=iseed
           end if
 
@@ -471,9 +471,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        endif
 
     endif
-
-
-    
     !     write(6,*)'sortie initspeed'
 
     tempsauv=tempinst(vp,ityp,im,imm)
@@ -516,7 +513,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call atcf%send2all(0,mpi_comm_space)
        end if
 #endif          
-       
+
     return
 
 

@@ -65,7 +65,7 @@ contains
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
     write(6,*)'PostBAR',rang
 #endif
-   
+    
 #ifdef LAMMPS_VERSION
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
@@ -256,10 +256,8 @@ end if
           IF (ok ) THEN
              ! Load NEB image ip in file *.<ip>.gin
           if(rang==0)write(6,*)'FNAMneb  ',iph,ginfile
-    write(6,*)'ing2n',rang
           call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,im_glob,rumax,lrepartition=.false.)
-    write(6,*)'outg2n',rang
-          do i=1,im
+            do i=1,im
                atneb(iph)%num_at_glob(i)=i
             end do
          ELSE
@@ -271,7 +269,7 @@ end if
           atneb(iph)%xp(:,:)=atneb(1)%xp(:,:)+dxx(:,:)*dble(iph -1) / dble(npath-1)
           atneb(iph)%ityp(:)=atneb(1)%ityp(:)
           atneb(iph)%num_at_glob(:)=atneb(1)%num_at_glob(:)
-
+!           call rasmolT(atneb(iph),boxneb,iph)
          
        END IF
        atneb(iph)%xpp(:,:)= atneb(iph)%xp(:,:)
@@ -288,6 +286,7 @@ end if
     end if
 
     icontrainte(:)=1
+
 
     return
 
@@ -529,7 +528,7 @@ end if
     integer ::  ip,lucin,itread,fmt_cin,formatsauv,iti
     character :: extension*9
     character :: fnamneb*80
-!    type(atom_config)::atrgin
+    !    type(atom_config)::atrgin
     call allocate_neb(0,imm)
     if (igen==1) then 
        itread=1;fmt_cin=2
@@ -549,8 +548,10 @@ end if
              do iti=1,ntyp
                 na(iti)=count(atneb(ip)%ityp(1:atneb(ip)%im).eq.iti)
              end do
-!             close(lucin)
+             !             close(lucin)
+             call setcellconf(cellneb(1),atneb(1),boxneb,im_glob,rumax)
           end do
+          !          call setcellconf(cellneb(1),atneb(1),boxneb,im_glob,rumax)
        else ! pas restart
           fnamneb='deb_'//fnam(1:lenfnam)//'.cin'
           if(rang==0)write(6,*)'FNAMneb 1 ',fnamneb
@@ -560,7 +561,7 @@ end if
           atneb(1)%ielat=0
           atneb(1)%fp(:,:)= 0 !fp(:,:)
           atneb(1)%vp(:,:)=0 !vp(:,:)
-          
+
           if (atneb(1)%ltabvois) then
              atneb(1)%iwmax=0 !iwmax(:)
              atneb(1)%indi=0
@@ -572,7 +573,7 @@ end if
              call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout,latcomp=latcomp)
              call rasmolT(atneb(1),boxneb,1,latcomp=latcomp)
           endif
-          
+
           fnamneb='fin_'//fnam(1:lenfnam)//'.cin'
           if(rang==0)write(6,*)'FNAMneb npath ',fnamneb
           call read_cin(boxneb,itread,atneb(npath),imm,fnamneb,lrestart,fmt_cin)
@@ -592,7 +593,7 @@ end if
              call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=latcomp)
              call rasmolT(atneb(npath),boxneb,npath,latcomp=latcomp)
           endif
-          
+
        end if
     else
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
@@ -601,48 +602,48 @@ end if
 
 
        atneb(:)%im=atneb(1)%im
-          atneb(1)%xpp=atneb(1)%xp
-          atneb(1)%ielat=0
-          atneb(1)%fp(:,:)= 0 !fp(:,:)
-          atneb(1)%vp(:,:)=0 !vp(:,:)
-          if (atneb(1)%ltabvois) then
-             atneb(1)%iwmax=0 !iwmax(:)
-             atneb(1)%indi=0
-          end if
+       atneb(1)%xpp=atneb(1)%xp
+       atneb(1)%ielat=0
+       atneb(1)%fp(:,:)= 0 !fp(:,:)
+       atneb(1)%vp(:,:)=0 !vp(:,:)
+       if (atneb(1)%ltabvois) then
+          atneb(1)%iwmax=0 !iwmax(:)
+          atneb(1)%indi=0
+       end if
 
-          if (rang==0)then
-             formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout'
-             call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout,latcomp=.true.,lw0=.true.)
-             call rasmolT(atneb(1),boxneb,1,latcomp=.true.,lw0=.true.)
-          endif
-          
-          fnamneb='fin_'//fnam(1:lenfnam)//'.gin'
+       if (rang==0)then
+          formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout'
+          call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout,latcomp=.true.,lw0=.true.)
+          call rasmolT(atneb(1),boxneb,1,latcomp=.true.,lw0=.true.)
+       endif
+
+       fnamneb='fin_'//fnam(1:lenfnam)//'.gin'
 #ifdef PARA
-          call mpi_barrier(mpi_comm_world,ierr)
+       call mpi_barrier(mpi_comm_world,ierr)
 
 #endif
-          
-          write(6,*)'FNAMneb npath ',fnamneb,rang,myidsp
+
+       write(6,*)'FNAMneb npath ',fnamneb,rang,myidsp
 
        call gin2ndm(atneb(npath),cellneb(npath),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.)
        atneb(:)%im=atneb(npath)%im
-          atneb(npath)%xpp=atneb(npath)%xp
-          atneb(npath)%ielat=0
-          atneb(npath)%fp(:,:)= 0 !fp(:,:)
-          atneb(npath)%vp(:,:)=0 !vp(:,:)
-          if (atneb(npath)%ltabvois) then
-             atneb(npath)%iwmax=0 !iwmax(:)
-             atneb(npath)%indi=0
-          end if
-
-          if (rang==0)then
-             formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
-             call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=.true.,lw0=.true.)
-             call rasmolT(atneb(npath),boxneb,npath,latcomp=.true.,lw0=.true.)
-          endif
-
-
+       atneb(npath)%xpp=atneb(npath)%xp
+       atneb(npath)%ielat=0
+       atneb(npath)%fp(:,:)= 0 !fp(:,:)
+       atneb(npath)%vp(:,:)=0 !vp(:,:)
+       if (atneb(npath)%ltabvois) then
+          atneb(npath)%iwmax=0 !iwmax(:)
+          atneb(npath)%indi=0
        end if
+
+       if (rang==0)then
+          formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
+          call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=.true.,lw0=.true.)
+          call rasmolT(atneb(npath),boxneb,npath,latcomp=.true.,lw0=.true.)
+       endif
+
+
+    end if
 #ifdef LAMMPS_VERSION
 
     if((ipotentiel==-10).or.(ipotentiel==-11)) then
@@ -652,6 +653,7 @@ end if
        end if
     end if
 #endif     
+
 
   end subroutine constrconfNEB
   

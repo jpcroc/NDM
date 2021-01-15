@@ -44,7 +44,7 @@ module init_mod
        &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp
 use read_val,only:ltabvois
 USE var_pot, ONLY:ipotentiel
-implicit none
+  implicit none
 
 contains
   ! **************************************************************

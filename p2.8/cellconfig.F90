@@ -324,7 +324,7 @@ contains
           IF (cell%nato(koo).GT.cell%natperc) THEN
              WRITE(0,'(a)') 'You need to increase the maximal number of atoms per cell'
              WRITE(0,'(a,i0)') 'current value: natperc=', cell%natperc
-             STOP '< Caltabt >'
+             STOP '< CaltabtC >'
           END IF
           ! ==== Fin MODIF Clouet =================
           cell%atincel(cell%nato(koo),koo) = i

@@ -72,7 +72,7 @@ contains
        sigc=>celcf%sigc
     end if
     if(celcf%icaltabt.ne.atcf%icaltabt) then
-       write (6,*)'incoherence dans icaltabt'
+       write (6,*)'incoherence dans icaltabt calfo'
        stop
     end if
     

@@ -79,14 +79,9 @@ contains
 
 
     lchg=.true.
-!    call atcgcomp%print(unit=20+rang)
-!    write(6,*)'CPCC',rang,ncalls
     call pointer_caltabt_calfo(sig,potist,atcgcomp,cellcgcomp,boxcg,atcgloc,cellcgloc,gcpara,lperiod,&
          &atcgcomp%ltabvois,it,itetabvois,lchg) 
-!    call atcgcomp%print(unit=100*rang+ncalls)
-!    call MPI_finalize(ierr)
-!    stop
-    
+
     if (it==1) then
        if (lEev.EQV..true.) then 
           if (rang==0) write(6,*)'Resultats en eV, Ang'
@@ -102,9 +97,7 @@ contains
 if (nprocspace.gt.1) then
        call mpi_barrier(MPI_COMM_space,ierr)
     end if
-#endif
-!    write(6,*)'bar',rang,ncalls
-    
+#endif    
     IF (it.GE.1) THEN
        forctot=sqrt( SUM(atcgcomp%fp(1:3,1:atcgcomp%im)**2) )
        formax = MaxVal( Abs(atcgcomp%fp(:,1:atcgcomp%im)) )
@@ -174,8 +167,6 @@ if (nprocspace.gt.1) then
    call MPI_BCAST(lover, 1,MPI_LOGICAL, 0,gcpara%comm_image,ierr)
 end if
 #endif
-!    write(6,*)'lover',rang,ncalls,lover
-
 !    write(6,*)'LOVER',lover,rang,it
        if (it>=itmax) then
           if (rang==0) write (6, *) '*******Derniere iteration **** '
