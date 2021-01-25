@@ -9,7 +9,7 @@ module tempinstT_mod
   implicit none
 contains
   !c******************************************************************
-  function tempinstT(atcf)
+  function tempinstT(atcf,kine,latcomp) 
     !c******************************************************************
 
     !-----------------------------------------------
@@ -23,6 +23,10 @@ contains
     !-----------------------------------------------
     class(atom_config_d),intent(in)::atcf
     real(double)::  tempinstT
+    real(double),optional::kine
+    logical,optional:: latcomp
+    logical latc
+    real(double)::kinetot
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
@@ -31,17 +35,26 @@ contains
     real(double) :: mv2_glob
 #endif
     integer :: i
+
+    latc=.false.
+    if (present(latcomp))latc=latcomp
+
     mv2=0.0
     do i = 1,atcf%im
        v2= atcf%vp(1,i)**2+ atcf%vp(2,i)**2+ atcf%vp(3,i)**2
        mv2= mv2 + cm(atcf%ityp(i))*v2
+       if (present(kine))kine=kine+v2*0.5*cm(atcf%ityp(i))
     enddo
 
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+    if ((lspaceNDM).and.(nprocspace.gt.1).and.(latc.eqv..false.))then 
     call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
     mv2 = mv2_glob
     tempinstT=mv2/(3.d0*float(im_glob)*bk)
+       if(present(kine)) then
+          call MPI_ALLREDUCE(kine,kinetot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+          kine=kinetot
+       end if
     else
        tempinstT=mv2/(3.d0*float(atcf%im)*bk)
     end if

@@ -1,6 +1,6 @@
 module calcdepla2_mod
-  USE temp_com,only:zls2,at,bg ! A EFFACER
-  USE var_pot, ONLY:ntyp,nad,ty
+  USE temp_com,only:zls2,at,bg ,nad ! A EFFACER
+  USE var_pot, ONLY:ntyp,ty
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:tdepla2,it,timel,rang
   implicit none

@@ -93,32 +93,19 @@ contains
 #ifdef PARAPH
     rang=rangph
 #endif
-
-
 #ifdef PARA
     temps_input_deb = MPI_Wtime()
 #endif
 
-
-
     call init_pot
-    
-
-    !  if (rang == 0)  write(6,*)'cm',cm
     usdh = 1/(two*tstep)
-    !endif
-
     if (ibrake.gt.0) then
        call initeloss
     end if
     it=0
-
     !<---------setting the configuration by reading gin / cin file --------------
-
-
 #ifdef PARA
        temps_input=MPI_Wtime()-temps_input_deb
-
        temps_config_deb = MPI_Wtime()
 #endif
 
@@ -131,29 +118,22 @@ contains
 #ifdef PARA
        temps_config=MPI_Wtime()-temps_config_deb
 #endif
-
        call init_pot2(boxndm)
-
 #ifdef DECOUP
        ! Pas la peine d'aller plus loin dans l'initialisation
        return
 #endif
 #ifdef LAMMPS_VERSION
-
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
        allocate (posa(3*atdml%im),  forca(3*atdml%im))
        call read_lammps()
     end if
 #endif  
-
-
        if (iterasmol>=0) then
           itapp=-1
           call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
        end if
-
-
        !<---------setting the configuration by generation gin / cin file --------------
        select case (igen)
        case (-1)
@@ -175,32 +155,19 @@ contains
        end select
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-
-          
           CALL MPI_BARRIER(MPI_COMM_space,ierr)
-          
           call init_voisinage(celndm)
-          
-          
           
           if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
           write(6,*) 'Le proc ',myidsp,' a ',nbr_proc_voisin,' processeur voisin'
        end if
 #endif
-
     !<---------end setting the cell diviion ----------------------
-
-
-
        if (ltranche) call layer
-       nad(:ntyp) = na(:ntyp)
-
        call caltabtC(celndm,atdml,lperiod,boxndm)
-
        if (ltabvois) then
           call caltabi(atdml,celndm,boxndm)
        end if
-
 
 #ifdef ML
        ! MiLaDy

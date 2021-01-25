@@ -1,13 +1,13 @@
 module correl_mod
   USE T_kind_param_m
-  USE temp_com,only:imm,im
+  USE temp_com,only:imm,im,na
   USE gen_com_m, ONLY:it,rang,timel
   implicit none
 contains
   subroutine correlvp(xp, xpp, vp, ax,fp, ityp)
 
 
-    USE var_pot, ONLY:ntyp,na,ty,cm
+    USE var_pot, ONLY:ntyp,ty,cm
     integer , intent(in)  :: ityp(imm)
     real(double) , intent(in)  :: xp(3,imm)
     real(double) , intent(in)  :: xpp(3,imm)

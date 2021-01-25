@@ -13,7 +13,7 @@ module neb_module
   USE recips_mod,only: recips
   USE sauveposition_mod,only: sauveposition
   USE rasmolT_mod,only: rasmolT
-  use var_pot,only:ntyp,na,ipotentiel,cm,rumax
+  use var_pot,only:ntyp,ipotentiel,cm,rumax
   USE dynalloccell,only:deallocateall
   !-----------------------------------------------
   USE atomconfig,only:atom_config,atom_config_d
@@ -545,9 +545,6 @@ end if
              atneb(ip)%xpp(:,:)=atneb(ip)%xp(:,:) !xpp(:,:)
              call setnox(boxneb,cellneb(ip),rumax)
              !          CALL fin allocation CELL et FIN DIVID
-             do iti=1,ntyp
-                na(iti)=count(atneb(ip)%ityp(1:atneb(ip)%im).eq.iti)
-             end do
              !             close(lucin)
              call setcellconf(cellneb(1),atneb(1),boxneb,im_glob,rumax)
           end do

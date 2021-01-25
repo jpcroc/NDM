@@ -477,7 +477,7 @@ contains
           if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
        end if
        select case(dmtype)
-       case(2,4,3,9)
+       case(2,4,3,9,15)
        case default 
           if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=2,3,4,9'
           if (rang==0) write(*,*) 'Stop in readdm'

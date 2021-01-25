@@ -31,19 +31,29 @@ subroutine init_voisinage (cellv)
   integer :: num_proc_vois
 
   ! intialisations preliminaires
+  if( allocated(proc_voisin)) deallocate(proc_voisin)
   allocate(proc_voisin(min(nprocspace,26)))
+  
   proc_voisin(:)=-1
   nbr_proc_voisin = 0
   nbr_cell_ftm  = 0
+
+  if (allocated(nbr_cell_frontiere)) deallocate(nbr_cell_frontiere)
   allocate(nbr_cell_frontiere(min(nprocspace,26)))
+
   nbr_cell_frontiere(:) = 0
   ! Calcul du nombre de cellules frontieres
   nb_internes = max(res_cpu(myidsp,1)-2,0) * max(res_cpu(myidsp,2)-2,0) * max(res_cpu(myidsp,3)-2,0)
   nb_frontieres = res_cpu(myidsp,1)*res_cpu(myidsp,2)*res_cpu(myidsp,3) - nb_internes
+
+  if (allocated(cell_frontiere )) deallocate(cell_frontiere )
   allocate(cell_frontiere(size(nbr_cell_frontiere,1),nb_frontieres))
+
   cell_frontiere(:,:) = 0
   nb_fantomes_max = (res_cpu(myidsp,1) + 2) * (res_cpu(myidsp,2) + 2) * (res_cpu(myidsp,3) + 2) 
   nb_fantomes_max = nb_fantomes_max - res_cpu(myidsp,1)*res_cpu(myidsp,2)*res_cpu(myidsp,3)
+
+  if( allocated(cell_ftm )) deallocate(cell_ftm )
   allocate(cell_ftm(nb_fantomes_max))
 
   ! Calcul du nombre de cellules fantomes 

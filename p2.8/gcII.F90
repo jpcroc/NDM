@@ -20,7 +20,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,&
          &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp
-    USE var_pot, ONLY:nad,na,ntyp
+    USE var_pot, ONLY:ntyp
     USE work_cgII,only: funct
 #ifdef PARA
     use paraconfig,only:para_config,initparapuresp
@@ -68,7 +68,6 @@ contains
 
     !    stop
 
-    nad(:ntyp) = na(:ntyp)
 
 
 #ifdef PARA

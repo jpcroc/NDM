@@ -4,7 +4,7 @@ module initspeed_mod
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: MatInv
   USE tempinst_mod,only: tempinst
-  USE calctemp_mod,only: calctemp
+!  USE calctemp_mod,only: calctemp
   USE arret_ndm_mod,only: arret_ndm
   USE period_mod,only: period
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
@@ -15,7 +15,7 @@ module initspeed_mod
   use mpi
   USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,temps_debpara,temps_para,nprocspace,myidsp
 #else
-    USE mod_para,only:nprocspace
+    USE mod_para,only:nprocspace,myidsp
 #endif
 
 !  USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm
@@ -64,7 +64,7 @@ contains
        totalbruit=totalbruit + bruitmd(1,ia)**2 + bruitmd(2,ia)**2 + bruitmd(3,ia)**2
     end do
 
-    if (rang==0)  write(6,*) 'ISEED for MD, NORM of the noise ',iseed, neb_noise_scale, totalbruit
+    if (myidsp==0)  write(6,*) 'ISEED for MD, NORM of the noise ',iseed, neb_noise_scale, totalbruit
     bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale * xp(1:3,1:im) / (sqrt(totalbruit))
 
   end subroutine bruit_xp
@@ -158,7 +158,7 @@ contains
     if (lvpread) then
        !       oldtstep=1.0d-15
        tempsauv=tempinst(vp,ityp,im,imm)
-       if (rang==0) write(6,*)'tempsauv ',tempsauv
+       if (myidsp==0) write(6,*)'tempsauv ',tempsauv
 
        xpp(:,:im) = xp(:,:im)-(xp(:,:im)-xpp(:,:im))*tstep/oldtstep
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep
@@ -214,7 +214,7 @@ contains
           ! call random_seed(iseedt(1))
 
           call random_seed(size=seed_size)
-          if (rang==0)write(6,*)'seed_size',seed_size
+          if (myidsp==0)write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
           !          iseedt = 0
 
@@ -276,7 +276,7 @@ contains
              !             endif
           end do
           tempsauv=tempinst(vp,ityp,im,imm)
-          if (rang==0) write(6,*)'temperature MI initspeed ',tempsauv
+          if (myidsp==0) write(6,*)'temperature positions lues initspeed ',tempsauv
           kinx(:)=0.d0
           do ic=1,3
              do i=1,im
@@ -474,7 +474,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     !     write(6,*)'sortie initspeed'
 
     tempsauv=tempinst(vp,ityp,im,imm)
-    if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
+    if (myidsp==0) write(6,*)'temperature fin initspeed ',tempsauv
 
 
     if (tempdeplainit.gt.0)then
@@ -501,7 +501,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              !             decx(ityp(i))=decx(ityp(i))+(sd*grnd)**2
           end do
        end do
-       !       write(6,*)'decx',decx(1)/na(1),decx(2)/na(2)
        if (lperiod.EQV..true.) call periodbox (boxndm,atcf)
     end if
 66  continue

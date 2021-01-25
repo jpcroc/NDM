@@ -93,7 +93,6 @@ contains
     integer::ierr,i
     logical::lchange=.true.
     integer::iun
-    
     if(present(lchg))lchange=lchg
 #ifdef PARA
     if (lchange) then
@@ -140,7 +139,7 @@ contains
        CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
 
 #ifdef PARA
-    if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+       if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    if (div%npim.gt.1) then
        call atloc%vers_master(atcomp,div)
     else

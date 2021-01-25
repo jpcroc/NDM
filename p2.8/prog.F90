@@ -14,7 +14,8 @@ module prog_mod
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
-  USE montecarlo_mod, only: montecarlo,config_atom_n,cells_n,boxmcgc,init_mpi_mcgc
+  USE montecarlo_mod, only: montecarlo,config_atom_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1
+  USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
@@ -43,7 +44,7 @@ contains
     !    USE montecarlo_mod, ONLY: config_atom_n, cells_n
 
 #ifdef PARA
-    use mpi
+!    use mpi
     USE mod_para,only:MPI_COMM_space,TEMPS_INIT_DEB,TEMPS_INIT,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm,myidsp,&
          &nprocspace
     USE neb_module,only:init_mpi_neb
@@ -52,7 +53,10 @@ contains
 #endif
     USE neb_module,only:init_mpi_neb
     implicit none
-    character :: extension*2
+#ifdef PARA
+ include 'mpif.h'
+#endif
+ character :: extension*2
     integer::lenfn2,i,ko,im,nvois
     class(atom_config),pointer::atdml
     type(atom_config),target:: atdm
@@ -198,6 +202,7 @@ contains
        !#endif
        call init_neb0 
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+       
     case(15)
        !#ifdef PARA
        call init_mpi_MCGC
@@ -218,18 +223,14 @@ contains
        else
           rv=0
        end if
-
        call config_atom_n%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       call init(config_atom_n,boxndm,cells_n)
-
-#ifdef PARA
-       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call maj_atomes_frt_ftm(config_atom_n,cells_n)
-       end if
-#endif
        boxmcgc=boxndm
+
+       call init_simple(config_atom_n,cells_n,boxmcgc) 
+       call initNP1 ! initialise la configuration N+1 
        call montecarlo
+       
     end select
   end subroutine prog
 end module prog_mod

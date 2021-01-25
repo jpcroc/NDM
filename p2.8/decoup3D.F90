@@ -261,52 +261,54 @@ contains
 
 #ifdef PARA
        if (myidsp == 0) then
+          
 #endif
-          Print *,'-----------------------------------------------'
-          print *,'          FIN DU CALCUL DU DECOUPAGE :         '
-          print *
-          print *,'Nbre de cellule suivant x :',nox
-          print *,'Nbre de cellule suivant y :',noy
-          print *,'Nbre de cellule suivant z :',noz
-          print *
-          print *,'Le cas choisit :',decoup(solution,1),decoup(solution,2),decoup(solution,3)
-          print *,'Nombre de cellules max echg  par proc :',nbr_cpu,int(specifs(solution,2))
-          print *,'Taux d''equilibrage :', nbr_cpu,specifs(solution,1) 
-          print *,'valeur ',nbr_cpu, specifs(solution,3)
-
-          !     print *,'Nbre Min/Max de cel. echangees dans les conf. :', messages_min , messages_max
-          print *,'Nbre Min/Max de cel. locales. :', int(specifs(solution,4)),int(specifs(solution,5))
-          print *,'Nbre Min/Max de cel. fantomes. :',int(specifs(solution,6)),int(specifs(solution,7))
-          print *,'locmin/fantomax :',nbr_cpu,specifs(solution,4)/specifs(solution,7)
-
-
-
+          if (icall==1) then 
+             Print *,'-----------------------------------------------'
+             print *,'          FIN DU CALCUL DU DECOUPAGE :         '
+             print *
+             print *,'Nbre de cellule suivant x :',nox
+             print *,'Nbre de cellule suivant y :',noy
+             print *,'Nbre de cellule suivant z :',noz
+             print *
+             print *,'Le cas choisit :',decoup(solution,1),decoup(solution,2),decoup(solution,3)
+             print *,'Nombre de cellules max echg  par proc :',nbr_cpu,int(specifs(solution,2))
+             print *,'Taux d''equilibrage :', nbr_cpu,specifs(solution,1) 
+             print *,'valeur ',nbr_cpu, specifs(solution,3)
+             
+             !     print *,'Nbre Min/Max de cel. echangees dans les conf. :', messages_min , messages_max
+             print *,'Nbre Min/Max de cel. locales. :', int(specifs(solution,4)),int(specifs(solution,5))
+             print *,'Nbre Min/Max de cel. fantomes. :',int(specifs(solution,6)),int(specifs(solution,7))
+             print *,'locmin/fantomax :',nbr_cpu,specifs(solution,4)/specifs(solution,7)
+             
+             
+             
 #ifndef PARA
-          iudecoup=1023
-          open (unit=1023,file='decoup_out')
+             iudecoup=1023
+             open (unit=1023,file='decoup_out')
 #else
-          iudecoup=6
+             iudecoup=6
 #endif
 #ifndef PARA
-
-          write(iudecoup,*)'Taille des decoupages'
-          do ii=0,nbr_cpu-1
-             write(iudecoup,*)'Decoupage',ii,':',res_cpu(ii,1:3)
-          enddo
-          write(iudecoup,*)'----------------------------------------------'
-          do ii = 0,nbr_cpu-1   
-             write(iudecoup,*)'Debut/Fin en x pour ii',ii,'egal',coord_min(ii,1),coord_max(ii,1)
-             write(iudecoup,*)'Debut/Fin en y pour ii',ii,'egal',coord_min(ii,2),coord_max(ii,2)
-             write(iudecoup,*)'Debut/Fin en z pour ii',ii,'egal',coord_min(ii,3),coord_max(ii,3)
-             write(iudecoup,*)
-          enddo
-          write(iudecoup,*)'-----------------------------------------------'
-
+             
+             write(iudecoup,*)'Taille des decoupages'
+             do ii=0,nbr_cpu-1
+                write(iudecoup,*)'Decoupage',ii,':',res_cpu(ii,1:3)
+             enddo
+             write(iudecoup,*)'----------------------------------------------'
+             do ii = 0,nbr_cpu-1   
+                write(iudecoup,*)'Debut/Fin en x pour ii',ii,'egal',coord_min(ii,1),coord_max(ii,1)
+                write(iudecoup,*)'Debut/Fin en y pour ii',ii,'egal',coord_min(ii,2),coord_max(ii,2)
+                write(iudecoup,*)'Debut/Fin en z pour ii',ii,'egal',coord_min(ii,3),coord_max(ii,3)
+                write(iudecoup,*)
+             enddo
+             write(iudecoup,*)'-----------------------------------------------'
+             
 #endif
+          end if
 #ifdef PARA
        endif
 #endif
-
 
 #ifdef PARA
        ! On est dans le code de calcul NDM, on realloue les tableaux sur le
@@ -327,9 +329,10 @@ contains
        !     print *,'test4' 
        im0=0 ; nvois0=0
 !       write(6,*)'IMMMDEC',rang,imm
-       call atdec%dealloc
-       call atdec%init(im0,imm,ltabvois,nvois0,rvois,lsigat,lprteat,llangevin,lax)
-
+       if (present(atdec)) then 
+          call atdec%dealloc
+          call atdec%init(im0,imm,ltabvois,nvois0,rvois,lsigat,lprteat,llangevin,lax)
+       end if
        !     print *,'test4' 
        ! Initialisation des donnees geometriques qui serviront pour le reste du code :
        cell_debx= coord_min(myidsp,1)

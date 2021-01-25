@@ -1,7 +1,9 @@
 module temp_com
   USE T_kind_param_m
   implicit none
-  
+
+
+  integer,allocatable::na(:),nas(:),nad(:)
   integer :: imm,im
 !  integer :: im_glob,imm_glob ! taille complète des tableaux 
   integer:: imm_loc ! taille des conf atomique par proc 

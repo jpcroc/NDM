@@ -2,10 +2,10 @@ module alloc_typ_mod
   USE var_pot, ONLY:digr,ntyp,rumax,lpotentiel,ipo3c,l3cpair,l3ctyp,coup3c2,gam,lamb,&
        &cangle,eamglue,eamglue_d,eamrho,eamrho_d,eamrep,eamrep_d,dspf,bspf,cspf,dspg,cspg,&
        &cm,catom, ipo,ty,q,pot_d,rc,zz,lue_paire,lu_roff_pair,rue_pair,lue_typ,lue_trip,&
-       &ro,dip,pm,coord,r8p,roff1,roff2,pot,rclu,a_factor,fda,gamlt,nad,nai,shel,&
+       &ro,dip,pm,coord,r8p,roff1,roff2,pot,rclu,a_factor,fda,gamlt,shel,&
        &Dmorse,amorse,Remorse,ietaij,capHij,capwij,capDij,Awat,Bwat,pwat,qwat,rawat,&
-       &rawat2,potw,bspw,cspw,dspw,gz,fcr,bspg,contmax,ngrid,nkmax,npair,ntrip,na,&
-       &typ_pot_pair,nas,ray,bm,coup3c,c3c
+       &rawat2,potw,bspw,cspw,dspw,gz,fcr,bspg,contmax,ngrid,nkmax,npair,ntrip,&
+       &typ_pot_pair,ray,bm,coup3c,c3c
   implicit none 
 contains
 
@@ -21,7 +21,6 @@ contains
     ncall=ncall+1
     if (ncall==1) then
        rumax=0.
-       allocate(na(ntyp))
        allocate(ipo(ntyp,ntyp))
        ! initialisation de ipo
        k = 0
@@ -75,7 +74,7 @@ contains
        end if
     endif
 
-    allocate(nad(ntyp)) ; allocate(nas(ntyp)) ; allocate(nai(ntyp))
+
 
     !  end if
 

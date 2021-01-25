@@ -32,6 +32,9 @@ contains
     real(double) :: mv2_glob
 #endif
     integer :: i
+
+
+
     mv2=0.0
     do i = 1,im
        v2= vp(1,i)**2+ vp(2,i)**2+ vp(3,i)**2
@@ -40,9 +43,9 @@ contains
 
 #ifdef PARA
     if ((lspaceNDM).and.(nprocspace.gt.1))then 
-    call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    mv2 = mv2_glob
-    tempinst=mv2/(3.d0*float(im_glob)*bk)
+       call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+       mv2 = mv2_glob
+       tempinst=mv2/(3.d0*float(im_glob)*bk)
     else
        tempinst=mv2/(3.d0*float(im)*bk)
     end if

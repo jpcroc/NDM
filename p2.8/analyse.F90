@@ -145,7 +145,7 @@ contains
           call calctemp (temp,kine,atdml,celndm)
           
           do iti=1,ntyp
-             if (na(iti)==0) cycle
+!             if (na(iti)==0) cycle
              atdml%lgul=.false.
              celtyp=celndm
              where(atdml%ityp==iti)
@@ -340,7 +340,7 @@ contains
           if (rang==0) then
              write (6, *)
              do iti = 1, ntyp
-                if (na(iti)==0) cycle
+!                if (na(iti)==0) cycle
                 if (mod(it,itetemp2)==0) then
                    write (6, '(A,I2,A,F12.2)') &
                         '*temp instantanee des atomes de type', iti, ' = ', &

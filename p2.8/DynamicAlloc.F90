@@ -1,9 +1,9 @@
 module dynalloccell
   use temp_com,only: ncel,nato,atincel,deltadist,sigc,tempc,tempcm,noxyz
   USE gen_com_m, ONLY:l2t,lsigatcel,ltpcel,tempstopcel,tabv3,tabf3,natchk, lprtcel,zero,elossCel
-  USE var_pot, ONLY:iewald,ncoucx,ncoucy,ncoucz,ntyp,na,cm,ipo,catom,ty,pot,rc,lue_paire,lue_typ,lue_trip,dip,pm,roff1,&
+  USE var_pot, ONLY:iewald,ncoucx,ncoucy,ncoucz,ntyp,cm,ipo,catom,ty,pot,rc,lue_paire,lue_typ,lue_trip,dip,pm,roff1,&
        &roff2,a_factor,r8p,ray,bm,shel,awat,bwat,qwat,potw,bspw,cspw,bspw,eamrep,eamrep_d,eamglue,eamglue_d,eamrho,eamrho_d,&
-       &lamb,gam,cangle, coup3c,ipo3c, coup3c2,l3ctyp,l3cpair,coord,digr,fda,nad,nas,nai,lu_roff_pair,lue_typ,&
+       &lamb,gam,cangle, coup3c,ipo3c, coup3c2,l3ctyp,l3cpair,coord,digr,fda,lu_roff_pair,lue_typ,&
        &typ_pot_pair,lue_trip,rue_pair,ipo,q,ro,rawat,dspw
   implicit none 
 contains
@@ -87,7 +87,6 @@ subroutine DeallocateAll
   if(allocated(sigc))deallocate(sigc)
   if(allocated(tabv3))deallocate(tabv3)
   if(allocated(tabF3))deallocate(tabf3)
-  deallocate(na)
   deallocate(ipo)
   deallocate(cm)
   deallocate(catom)
@@ -133,9 +132,6 @@ subroutine DeallocateAll
   if(allocated(coord))deallocate(coord)
   if(allocated(digr))deallocate(digr)
   if(allocated(fda))deallocate(fda)
-  if(allocated(nad))deallocate(nad)
-  if(allocated(nas))deallocate(nas)
-  if(allocated(nai))deallocate(nai)
 
 
   if(allocated(lue_paire))deallocate (lue_paire)

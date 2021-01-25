@@ -1,5 +1,5 @@
 module calccoordo_mod
-  USE temp_com,only:atincel,nato,noxyz,at,deltadist,bg,ncel !A EFFACER
+  USE temp_com,only:atincel,nato,noxyz,at,deltadist,bg,ncel,nad !A EFFACER
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY: rang,it,timel,lperiod
@@ -15,7 +15,7 @@ contains
     USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
 
 #endif
-  USE var_pot, ONLY:ntyp,rc,nad
+  USE var_pot, ONLY:ntyp,rc
   implicit none
     integer,intent(in)::im,imm
     real(double),intent(in),allocatable::xp(:,:)

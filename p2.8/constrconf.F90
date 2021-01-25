@@ -7,7 +7,7 @@ module constrconf_mod
        &lvpread,zero,low_limit,lspacendm !at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
   !       &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat,cell_debx,cell_deby,cell_debz,&
   !       &cell_finx,cell_finy,cell_finz,low_limit,llangevin,lsuivinonpbc
-  USE var_pot, ONLY:na,ntyp,rumax,ipotentiel
+  USE var_pot, ONLY:ntyp,rumax,ipotentiel
     use cryst_to_cart_mod,only:cryst_to_cart
     USE arret_ndm_mod,only: arret_ndm
     USE atomconfig,only:atom_config,atom_config_d,atom_config_e
@@ -25,25 +25,18 @@ module constrconf_mod
 
   implicit none
 contains
-  subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart)
+  subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart,filename)
     !********************************************************************
     !             CONSTRUCTION DE LA BOITE DE SIMULATION
     !********************************************************************
-
-    !-----------------------------------------------
-    !   M o d u l e s
-    !-----------------------------------------------
-
-
     implicit none
-
     class(atom_config),intent(inout)::atrcf
     type(cell_config),intent(out)::cellrcf
     type(box_config),intent(out)::boxrcf
     logical::lrepart
-
+    character(len=*),optional::filename
+    character*80::filenom
     integer :: i, icell, iti
-
     type(box_config)::boxrgin
     type(atom_config)::atrgin
 #ifndef PARA
@@ -59,11 +52,14 @@ contains
 #endif
     character :: fnamcin*80, fnamgin*80
     integer::itread
+    integer::nati
 
     
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
     !---------------------------------------------------
+    filenom=fnam(1:lenfnam)
+    if (present(filename))filenom=filename
 
     if (rang==0) then
        write(6,*)
@@ -96,9 +92,6 @@ contains
           write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
        end if
        call setnox(boxrcf,cellrcf,rumax)
-       do iti=1,ntyp
-          na(iti)=count(COMPatrcf%ityp(1:COMPatrcf%im)==iti)
-       end do
        ncore=0
 
        call  decoupage(nprocspace,ncore,cellrcf,atrcf)
@@ -110,6 +103,10 @@ contains
     else
           itread=1
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
+          if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+             call  decoupage(nprocspace,ncore,cellrcf)
+          end if
+             
           im_glob=atrcf%im
           if (rang==0) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -141,9 +138,6 @@ contains
           end if
           call setnox(boxrcf,cellrcf,rumax)
           !          CALL fin allocation CELL et FIN DIVID
-          do iti=1,ntyp
-             na(iti)=count(atrcf%ityp(1:atrcf%im).eq.iti)
-          end do
        end if
 
 #endif
@@ -192,8 +186,8 @@ contains
           write(6,'(A,I2,3F15.6)')'vecteur ',i, (boxrcf%at(ic,i)*1.0d8,ic=1,3)
        end do
        do iti = 1, ntyp
-          if (na(iti)==0) cycle
-          write (6, *) na(iti), ' atomes de type', iti
+          nati=count(atrcf%ityp==iti)
+          if (nati.ne.0) write (6, *) nati, ' atomes de type', iti
        end do
     endif                                  ! fin rang=0
 
@@ -258,18 +252,18 @@ contains
     end if
 #ifdef PARA
     ncore=0
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-!   if ((nprocspace.gt.1).and.(lrepart)) then
-    call  decoupage(nprocspace,ncore,cel2b,at2b)
- end if
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       if (lrepart) then
+          call  decoupage(nprocspace,ncore,cel2b,at2b)
+       else
+          call  decoupage(nprocspace,ncore,cel2b)
+       end if
+    end if
     !    call MPI_finalize(ierr)
     !    stop
     COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
 !    write(6,*)'IMMGLOBIMMGLOB',imm_glob
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
-    do iti=1,ntyp
-       na(iti)=count(COMPatrcf%ityp(1:COMPatrcf%im)==iti)
-    end do
 
     imtot=COMPatrcf%im
     im_glob=COMPatrcf%im
@@ -453,7 +447,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
      end subroutine repartition
           
   
-  subroutine config2data (imm,im,xp,ityp,at,ntyp)
+  subroutine config2data (imm,im,xp,ityp,at,ntyp,filename)
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY : position_conversion_lammps
     USE var_pot, ONLY:q,ipotentiel
@@ -462,6 +456,8 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     integer,intent(in)::imm,im,ntyp
     real(double),intent(in)::xp(3,imm),at(3,3)
     integer,intent(in)::ityp(imm)
+    character(*),optional :: filename
+    character*80::file
 
     logical lrotated,upper
     real(double)::xhi,yhi,zhi,xy,xz,yz,xlo,ylo,zlo
@@ -469,6 +465,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     integer::ic,i
     real(double), dimension(3) :: tmp_coord_i,new_tmp_coord_i
 
+    file='conf.lmp'
+    if (present(filename))file=filename
+    
     !  if ((at(2,1).ne.0).or.(at(3,1).ne.0).or.(at(3,2).ne.0))then
     if (rang==0) then 
     write(6,*)
@@ -477,7 +476,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     write(6,*)
     endif
 
-    open(63,file='conf.lmp',status='unknown')
+    open(63,file=file,status='unknown')
     write(63,*)
 
     call is_upper_triangular(at,upper)

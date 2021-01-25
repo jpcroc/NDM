@@ -1,5 +1,5 @@
 module rdf_mod
-  USE temp_com,only:volu,im ! A EFFACER
+  USE temp_com,only:volu,im,nad ! A EFFACER
   USE gen_com_m, ONLY:it,pi,rang,timel,nrdf,linstantrdf,rcrdf
   implicit none 
 contains
@@ -9,7 +9,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE var_pot, ONLY:coord,ty,nad,gdertot,nkmax,digr,ntyp
+    USE var_pot, ONLY:coord,ty,gdertot,nkmax,digr,ntyp
 
     !      USE coordo_m
     !******************************************************************

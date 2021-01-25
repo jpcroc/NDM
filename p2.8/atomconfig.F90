@@ -48,6 +48,7 @@ include 'mpif.h'
      procedure, pass::send2proc=>s2p_atom
      procedure, pass::send2all=>s2a_atom
      procedure, pass::recv=>rcv_atom
+     procedure, pass::zero=>zero_atom
      !
   end type atom_config
 
@@ -62,6 +63,7 @@ include 'mpif.h'
      procedure, pass::send2proc=>s2p_atom_d
      procedure, pass::send2all=>s2a_atom_d
      procedure, pass::recv=>rcv_atom_d
+     procedure, pass::zero=>zero_atom_d
      !#endif     
   end type atom_config_d
   
@@ -81,7 +83,8 @@ include 'mpif.h'
      procedure, pass::send2proc=>s2p_atom_e
      procedure, pass::send2all=>s2a_atom_e
      procedure, pass::recv=>rcv_atom_e
-     
+     procedure, pass::zero=>zero_atom_e
+   
      !#endif     
   end type atom_config_e
   
@@ -361,12 +364,11 @@ contains
     else
        carac=caracT
     end if
-
     if(scan('n',carac).ne.0)    call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
     if(scan('i',carac).ne.0)    call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
     if(scan('e',carac).ne.0)    call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
     if(scan('p',carac).ne.0)    call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
-    if(scan('l',carac).ne.0)    call MPI_SEND(atcf%proc_at, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
+    if(scan('l',carac).ne.0)    call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
     if(scan('x',carac).ne.0)    call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
     if(scan('f',carac).ne.0)    call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
     if (atcf%ltabvois) then
@@ -434,6 +436,58 @@ contains
 #endif
   end subroutine s2p_atom_e
 
+
+  subroutine zero_atom (atcf)
+    class(atom_config):: atcf
+
+    atcf%num_at_glob=0
+    atcf%ityp=0
+    atcf%ielat=0
+#ifdef PARA
+    atcf%proc_at=0
+#endif
+    atcf%lgul=.false.
+    atcf%xp=0.
+    atcf%fp=0.
+    
+    if (atcf%ltabvois) then
+       atcf%iwmax=0
+       atcf%indi=0
+    end if
+
+  end subroutine zero_atom
+  subroutine zero_atom_d (atcf)
+    class(atom_config_d):: atcf
+
+    call zero_atom(atcf)
+    atcf%vp=0.
+    atcf%xpp=0.
+  end subroutine zero_atom_d
+
+  subroutine zero_atom_e (atcf)
+    class(atom_config_e):: atcf
+
+    call zero_atom_d(atcf)
+
+    if (atcf%lprteat)then
+
+       atcf%eat=0
+    end if
+    if (atcf%llangevin)then
+       atcf%glangv=0
+    end if
+    if (atcf%lax)then
+       atcf%ax=0
+    end if
+    if (atcf%lsigat)then
+       atcf%sigat=0
+    end if
+
+
+  end subroutine zero_atom_e
+  
+
+
   subroutine rcv_atom (atcf, rgem,comm,caracT)
     class(atom_config):: atcf
     integer,intent(in)::rgem,comm
@@ -449,12 +503,11 @@ contains
     else
        carac=caracT
     end if
-
     if(scan('n',carac).ne.0)    call MPI_RECV(atcf%num_at_glob, size1, MPI_INTEGER, rgem,104,comm,status,ierr)
-    if(scan('i',carac).ne.0)    call MPI_RECV(atcf%ityp, size1, MPI_INTEGER, rgem,105,comm,ierr)
+    if(scan('i',carac).ne.0)    call MPI_RECV(atcf%ityp, size1, MPI_INTEGER, rgem,105,comm,status,ierr)
     if(scan('e',carac).ne.0)    call MPI_RECV(atcf%ielat, size1, MPI_INTEGER, rgem,106,comm,status,ierr)
     if(scan('p',carac).ne.0)    call MPI_RECV(atcf%proc_at, size1, MPI_INTEGER, rgem,102,comm,status,ierr)
-    if(scan('l',carac).ne.0)    call MPI_RECV(atcf%proc_at, size1, MPI_LOGICAL, rgem,103,comm,status,ierr)
+    if(scan('l',carac).ne.0)    call MPI_RECV(atcf%lgul, size1, MPI_LOGICAL, rgem,103,comm,status,ierr)
     if(scan('x',carac).ne.0)    call MPI_RECV(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgem,100,comm,status,ierr)
     if(scan('f',carac).ne.0)    call MPI_RECV(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgem,101,comm,status,ierr)
     if (atcf%ltabvois) then
@@ -822,30 +875,35 @@ contains
 
   end subroutine pack
 
-  subroutine fab (atsource,atcible) ! construit atsource à partir de lgul de atcible , ecrase atcible
+  subroutine fab (atsource,atcible,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
     class(atom_config),intent(in)::atsource
     class(atom_config),intent(out)::atcible
-
+    logical, optional::lrescl
+    logical::lrescale=.true.
     integer::i2,imtrf,i
     integer::nvois
     real(double)::rvois
 
-    call atcible%dealloc 
+    if (present(lrescl))lrescale=lrescl
+    if (lrescale) then
+       call atcible%dealloc 
        if (atsource%ltabvois)then
           nvois=atsource%nvois; rvois=atsource%rvois
-
+          
        else
           nvois=0;rvois=0
        end if
-    imtrf=COUNT(atsource%lgul(1:atsource%im))
+       imtrf=COUNT(atsource%lgul(1:atsource%im))
 
-    select type (atsource)
-    type is (atom_config_e)
-       call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois,lsigat=atsource%lsigat,lprteat=atsource%lprteat,&
-            &llangevin=atsource%llangevin,lax=atsource%lax)
-    class is (atom_config)
-       call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
-    end select
+       select type (atsource)
+       type is (atom_config_e)
+          call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois,lsigat=atsource%lsigat,lprteat=atsource%lprteat,&
+               &llangevin=atsource%llangevin,lax=atsource%lax)
+       class is (atom_config)
+          call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
+       end select
+    end if
+    call atcible%zero
     i2=0
     do i=1,atsource%im
        if(atsource%lgul(i)) then
@@ -1379,7 +1437,6 @@ contains
     idloc=div%rgim
     npim=div%npim
     icomm=div%comm_image
-!    write(6,*)'IN L2M',div%rang_orig,npim
     if (idloc==idmaster) then
        !       allocate(buffer(3,atloc%im));allocate(ibuffer(atloc%im));allocate(lbuffer(atloc%im))
        imtot=0

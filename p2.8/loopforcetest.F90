@@ -21,7 +21,7 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
   use temp_com,only:im,imm,nox,noy,noz,natperc,atincel,deltadist,celsize,at,bg,zl,zls2,nzl,volu,normat,&
        &im,imm,ltabvois,nvois,indi,nato,ncel,noxyz
   
-  USE var_pot, ONLY:nad,na,ntyp,gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu
+  USE var_pot, ONLY:ntyp,gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu
   implicit none
   !-----------------------------------------------
   !   G l o b a l   P a r a m e t e r s
@@ -62,7 +62,6 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
   ! MPI
   if (rang==0) write (6, *) '***** test des forces  ****'
 
-  nad(:ntyp) = na(:ntyp)
 
 
 

@@ -15,7 +15,7 @@ module analyseT_mod
   USE sauvegardeT_mod,only:sauvegardeT
  USE sauveforce_mod,only: sauveforce
 
-  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,na
+  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
@@ -153,12 +153,12 @@ contains
        if (mod(it,itetemp)==0) then
           call calctemp (temp,kine,atdml,celndm)
           do iti=1,ntyp
-             if (na(iti)==0) cycle
              atdml%lgul=.false.
              celtyp=celndm
              where(atdml%ityp(1:atdml%im)==iti)
                 atdml%lgul(1:atdml%im)=.true.
              end where
+             if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
              call atdml%fab(attyp)
              call caltabtC(celtyp,attyp,lperiod,boxndm)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
@@ -345,7 +345,7 @@ contains
           if (rang==0) then
              write (6, *)
              do iti = 1, ntyp
-                if (na(iti)==0) cycle
+                if (count(atdml%ityp==iti)==0) cycle
                 if (mod(it,itetemp2)==0) then
                    write (6, '(A,I2,A,F12.2)') &
                         '*temp instantanee des atomes de type', iti, ' = ', &

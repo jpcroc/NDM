@@ -1,7 +1,7 @@
 module adf_mod
   USE gen_com_m, ONLY:cont888,it,linstantfda,nfda,pi,rang,thetamax,thetamin,timel
-  USE var_pot, ONLY:ntyp,nad,ty,fda,nad,ty
-
+  USE var_pot, ONLY:ntyp,ty,fda,ty
+  USE temp_com, ONLY:nas,nad
   implicit none
 contains
   subroutine adf

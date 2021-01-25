@@ -1,10 +1,10 @@
 module posana
   USE temp_com,only:at,bg,ncel,atincel,nato,zl,deltadist,im,imm,natperc,nox,noxyz,noy,noz,&! A EFFACER
-       &eatom,eatomtotm ! A EFFACER
+       &eatom,eatomtotm,na,nas,nad ! A EFFACER
   USE T_kind_param_m
   USE caltabt_mod,only: caltabt
   USE sic
-  USE var_pot, ONLY:nas,rclu,ty,na,rc,ntyp
+  USE var_pot, ONLY:rclu,ty,rc,ntyp
   USE period_mod,only: period
   USE recips_mod,only: recips
   use notperiod_mod, only: notperiod

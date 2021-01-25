@@ -404,23 +404,32 @@ contains
     real(double),intent(out),optional,allocatable::sigc(:,:,:),tempc(:)
     integer,optional,allocatable::proc_cell(:)
     integer::nsize
-    if (.not.allocated(ncel))then
+!    if (.not.allocated(ncel))then
        nox=celndm%nox ;noy=celndm%noy;noz=celndm%noz
        noxyz=nox*noy*noz;nsize=noxyz
        natperc=celndm%natperc
+       if(allocated(ncel)) deallocate(ncel)
+       if(allocated(atincel)) deallocate(atincel)
+       if(allocated(deltadist)) deallocate(deltadist)
        allocate(ncel(0:noxyz,0:26));allocate(atincel(natperc,0:noxyz));allocate(deltadist(3,0:26,noxyz))
        if (allocated(nato)) deallocate(nato)
        allocate(nato(0:noxyz))
 #ifdef PARA
-           if (present(proc_cell))allocate(proc_cell(nsize))
-#endif       
-    else
-       if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
-          write(6,*)'incohérence entre noxyz et celndm%noxyz'
-          write(6,*)nox,celndm%nox,natperc,celndm%natperc
-          stop
+       if (present(proc_cell))then
+          if(allocated(proc_cell)) deallocate(proc_cell)
+          allocate(proc_cell(nsize))
        end if
-    end if
+#endif       
+!    else
+!       if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
+!          write(6,*)'incohérence entre noxyz et celndm%noxyz'
+!          write(6,*)nox,celndm%nox,natperc,celndm%natperc
+!#ifdef PARA
+!          call MPI_finalize(ierr)
+!#endif         
+!          stop
+!       end if
+!        end if
     if (celndm%ltpcel)then
        ltpcel=celndm%ltpcel
        if (ltpcel) then

@@ -14,7 +14,7 @@ module var_pot
   integer :: ntrip						! = ntyp*ntyp *(ntyp+1)/2
 
 
-  integer, dimension(:), allocatable  :: na			! nb d'atomes par type
+!  integer, dimension(:), allocatable  :: na			! nb d'atomes par type
   integer, dimension(:,:), allocatable  :: ipo			! indice des paires d'atomes
   real(double), dimension(:), allocatable :: cm, cm_buffer, catom, q, rc	! masse, numero atomique, charge ionique, rayon de coup.
   character , dimension(:), allocatable  :: ty*3
@@ -114,7 +114,7 @@ module var_pot
   real(double) :: rhomin=1d30,rhomax=0
 
   real(double), allocatable, dimension(:,:,:) :: digr, coord
-  integer, dimension(:), allocatable :: nad, nas, nai  ! fracture
+
 
   real(double),allocatable, dimension(:,:,:,:) :: fda
 

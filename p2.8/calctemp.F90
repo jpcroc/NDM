@@ -1,7 +1,7 @@
 module calctemp_mod
 
   USE T_kind_param_m, ONLY:  double
-  USE var_pot, ONLY:ntyp,cm,na
+  USE var_pot, ONLY:ntyp,cm
   USE gen_com_m, ONLY:erg2ev,im_glob,tempEP,bk,l2t,lspaceNDM
   USE elec_cell, ONLY: ecell,i2T,nex,ney,nez,nox_2_nex
   USE eloss, ONLY : tcelec,ecelec
@@ -27,6 +27,7 @@ subroutine calctemp(temp,kine,atcf, cellcf)
   class(atom_config_d),intent(in)::atcf
   type(cell_config),intent(inout)::cellcf
   real(double),intent(out)::temp,kine
+
   
   integer :: ic, i, iti, ko, i2,kx,ky,kz,koo,ixe,iye,ize
   real(double) :: sumtat2
