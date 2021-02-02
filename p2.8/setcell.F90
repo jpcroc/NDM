@@ -16,14 +16,17 @@ module setcell
   implicit none
 contains
 
-  subroutine setnox(boxsn,celsn,rum)
+  subroutine setnox(boxsn,celsn,rum,lverbose)
 
     type(box_config),intent(in)::boxsn
     type(cell_config)::celsn
     real(double),intent(in)::rum
     integer::izonr,ic
-
+    logical,intent(in),optional::lverbose
+    logical::lverb=.true.
     real(double)::rut,zlmin,zlm2
+    if (present(lverbose)) lverb=lverbose
+    
     zlmin = distmin(boxsn%at(1,1),boxsn%at(1,2))
     zlm2 = distmin(boxsn%at(1,1),boxsn%at(1,3))
     zlmin = min(zlmin,zlm2)
@@ -40,7 +43,7 @@ contains
     if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
      izonr = int(zlmin/rut)
     ! MPI
-    if (rang==0) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
+    if ((rang==0).and.(lverb)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
     if (izonr<2) then
        write (6, *) 'trop petite boite !!!'
        !cosboite  stop
@@ -49,12 +52,12 @@ contains
           stop
        endif
     end if
-    if (rang==0) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz
+     if ((rang==0).and.(lverb)) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz
     
     if (nox<=0.or.noy<=0.or.noz<=0) then
        ! détermination de nox noy noz qui ne sont pas donnes dans .din
        !
-       if (rang==0) write (6, *) 'calcul de nox noy noz !!!'
+        if ((rang==0).and.(lverb))write (6, *) 'calcul de nox noy noz !!!'
        ! ==== MODIF CLOUET 2 ====================
        if (izonr<3) then
 #ifdef PARA
@@ -64,14 +67,14 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           end if
 #endif
              
-          if (rang==0) then
+           if ((rang==0).and.(lverb)) then
              WRITE(6,'(a)') "Boite trop petite: le nombre de cellules est fixe a son minimum"
           endif
        endif
        nox = int(boxsn%nzl(1)/rum)
        noy = int(boxsn%nzl(2)/rum)
        noz = int(boxsn%nzl(3)/rum)
-       if (rang==0) THEN
+         if ((rang==0).and.(lverb)) THEN
           write (6,'(a)') 'nox noy noz calcules a partir de ru'
           WRITE(6,'(2(a,g12.4),a,i0)') '  nox = Int( ', boxsn%nzl(1),'/',rum,') = ', nox
           WRITE(6,'(2(a,g12.4),a,i0)') '  noy = Int( ', boxsn%nzl(2),'/',rum,') = ', noy
@@ -87,7 +90,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           !             lconstrtot=.TRUE.
           if (rang==0) write(6,*)'!!!!!!!!!!Envisager ltabvois = true !!!!!!!!!!!!!!'
        END IF
-       if (rang==0) write (6,'(a,3(i0,1x))') 'nox noy noz apres correction = '&
+       if ((rang==0).and.(lverb)) write (6,'(a,3(i0,1x))') 'nox noy noz apres correction = '&
             , nox, noy, noz
        ! ==== FIN MODIF CLOUET 2 ================
 !       celsn%nox=nox
@@ -114,7 +117,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
     endif
     call celsn%init(nox,noy,noz,ltpc=ltpcel)
-    if (rang==0) write(6,'(A,3G15.7)') 'celsizes ',celsn%celsize(:)
+     if ((rang==0).and.(lverb)) write(6,'(A,3G15.7)') 'celsizes ',celsn%celsize(:)
     ! nox noy et noz sont determines
 
 !    celsn%noxyz = nox*noy*noz
@@ -122,7 +125,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
   end subroutine setnox
 
 
-  subroutine setcellconf(celscf,atcf,boxcf,im_glob,rumax)
+  subroutine setcellconf(celscf,atcf,boxcf,im_glob,rumax,lverbose)
     type(cell_config)::celscf
     class(atom_config)::atcf
     type(box_config),intent(in)::boxcf
@@ -131,6 +134,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
     integer::natperc,izonr2,nvois,nvperat
     real(double)::rm2,zlm2,zlmin,voluperat
+    logical,intent(in),optional::lverbose
+    logical::lverb=.true.
+    if (present(lverbose)) lverb=lverbose
     zlmin = distmin(boxcf%at(1,1),boxcf%at(1,2))
     zlm2 = distmin(boxcf%at(1,1),boxcf%at(1,3))
     zlmin = min(zlmin,zlm2)
@@ -151,13 +157,13 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    END IF                        ! MODIF Clouet
 
 
-    if (rang==0) &
+    if ((rang==0).and.(lverb)) &
          write(6,*) 'natperc im/noxyz', natperc, im_glob/celscf%noxyz
     celscf%natperc=natperc
     if (allocated(celscf%atincel))deallocate(celscf%atincel)
     allocate(celscf%atincel(celscf%natperc,0:celscf%noxyz))
     celscf%atincel=0
-    if (rang==0)  write(6,*)'ltabvois,lconstrtot',atcf%ltabvois,lconstrtot
+  if ((rang==0).and.(lverb))  write(6,*)'ltabvois,lconstrtot',atcf%ltabvois,lconstrtot
 
     if (atcf%ltabvois) then
        if (rumax>rvois) then

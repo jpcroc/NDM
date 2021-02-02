@@ -29,9 +29,9 @@ contains
     integer::ierr,iun
     if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
        call cellcomp%copy_cell(celloc)
-       call decoupage(div%npim,0,celloc,atloc)
+       call decoupage(div%npim,0,celloc,atloc,lverbose=.false.)
        call repartition(atcomp,atloc,box,celloc,div=div) ! mettre les éléments de la répartition dans un type
-       call setcellconf(celloc,atloc,box,atcomp%im,rum)
+       call setcellconf(celloc,atloc,box,atcomp%im,rum,lverbose=.false.)
     else
        atloc=>atcomp
        celloc=>cellcomp
@@ -104,9 +104,12 @@ contains
  !         call celloc%print(900+div%rang_orig)
           !        flush(800+div%rang_orig)
           else
+             write(6,*)'preS2A',div%rang_orig
              call atcomp%send2all(0,div%comm_image)
+             write(6,*)'postS2A',div%rang_orig
              atloc=>atcomp
-             celloc=>cellcomp                 
+             celloc=>cellcomp
+       
           end if
        else
           atloc=>atcomp
@@ -119,6 +122,7 @@ contains
     celloc=>cellcomp
 
 #endif
+!    call atloc%print(unit=100+div%rang_orig)
     if (lperiod)   call periodbox (box,atloc)
 
     call caltabtC(celloc,atloc,lperiod,box)
@@ -135,9 +139,8 @@ contains
 
 !    end if
 #endif
-!!$    
-       CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
-
+!!$
+    CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
 #ifdef PARA
        if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    if (div%npim.gt.1) then

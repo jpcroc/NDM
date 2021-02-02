@@ -67,7 +67,7 @@ subroutine define_communicators ()
    do i=0, no_of_lammps_group-1
      beggin  = no_procs_of_lammps_group*i
      endding = no_procs_of_lammps_group*(i+1)-1
-     call MPI_GROUP_INCL(orig_group,no_procs_of_lammps_group, all_rang(beggin:endding),lammps_group(i),codeph)
+     call MPI_GROUP_INCL(group,no_procs_of_lammps_group, all_rang(beggin:endding),lammps_group(i),codeph)
      call MPI_COMM_CREATE(MPI_COMM_WORLD,lammps_group(i),lammps_comm(i),codeph)
      if (any(all_rang(beggin:endding) == rangph)) then
         call MPI_GROUP_SIZE(lammps_group(i),lammps_size(i),codeph)

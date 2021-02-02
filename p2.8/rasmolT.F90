@@ -76,7 +76,6 @@ contains
     character :: extension*9
 
 #ifdef PARA
-    write(6,*)'IN rasmol'
     latcompin=latcomp
 
     if (present (lw0))lw0in=lw0

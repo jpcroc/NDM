@@ -26,7 +26,7 @@ module calfo_mod
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
 #ifdef LAMMPS_VERSION
-  use lammps_util_mod,only: read_lammps,calcforce_lammps2
+  use lammps_util_mod,only: calcforce_lammps2 !, init_lammps
   use vars_lammps
 #endif
   implicit none

@@ -127,7 +127,7 @@ contains
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
        allocate (posa(3*atdml%im),  forca(3*atdml%im))
-       call read_lammps()
+       call init_lammps()
     end if
 #endif  
        if (iterasmol>=0) then

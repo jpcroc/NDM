@@ -39,7 +39,7 @@ contains
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
-    USE montecarlo_mod, ONLY: pas_lambda_mc
+    USE montecarlo_mod, ONLY: pas_lambda_mc,distminat
 #ifdef PARA
     USE mod_para,only:MPI_COMM_space,NPROCSpace
 #endif
@@ -86,7 +86,7 @@ contains
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
          mdcg_noise, lforcetabulate,ivisu,ibound,USEr_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,lax,ldecoup
+         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,lax,ldecoup,distminat
 
 
     !
@@ -353,11 +353,12 @@ contains
     lvzeroneb=.false. ! si true , met vp à 0 ente chaque iteration neb (comportement pre ndm2020), defaut = false==> calcul plus rapide
 
     pas_lambda_mc = -100 !valeur negative par defaut pour que l'utilisateur la change
-
+    distminat=-1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
     read (ludin, nml=input)
+    distminat=distminat*1d-8
     tsmin=tsmin*1d-15
     depmaxts=depmaxts*1d-8
     if ((l2T).and.(tsmin==2d-15)) then

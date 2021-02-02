@@ -29,39 +29,49 @@ module lammps_util_mod
 
       contains
 
-subroutine read_lammps(inplammps)
+subroutine init_lammps(inplammps)
 
   use LAMMPS
   use vars_lammps
   character(*),optional :: inplammps
-    character*128 :: INPUT_LAMMPS_FILE
+  character*128 :: INPUT_LAMMPS_FILE
+  integer::num,npl
+  integer::grp_space
 !  type (C_ptr) :: lmp
 
     INPUT_LAMMPS_FILE='in.lammps'
     if (present(inplammps))  INPUT_LAMMPS_FILE=inplammps
 #ifdef PARA
-   if (nprocspace==1) then
-    call lammps_open_no_mpi('lmp -log none -screen none', lmp)
-    write(*,*) "LAMMPS OPEN_NO_MPI_",rang
-    if (rang==0) write(*,*) "before init potential lammps"
-    call lammps_file (lmp, INPUT_LAMMPS_FILE)
-    if (rang==0) write(*,*) "after init potential lammps"
-    if (rang==0) write(*,*) "init potential lammps"
-    if (rang==0)   write(*,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
-  else
-     !call define_communicators_lammps
-     call MPI_COMM_DUP(MPI_COMM_SPACE,MPI_COMM_lammps,ierr)     
+!!$   if (nprocspace==1) then
+!!$    call lammps_open_no_mpi('lmp -log none -screen none', lmp)
+!!$    write(*,*) "LAMMPS OPEN_NO_MPI_",rang,INPUT_LAMMPS_FILE
+!!$    if (rang==0) write(*,*) "before init potential lammps"
+!!$    
+!!$    call lammps_file (lmp, INPUT_LAMMPS_FILE)
+!!$    num=lammps_get_natoms(lmp)
+!!$     write(6,*)'NATLAMMPSP1',rang,num
+!!$     
+!!$    if (rang==0) write(*,*) "after init potential lammps"
+!!$    if (rang==0) write(*,*) "init potential lammps"
+!!$    if (rang==0)   write(*,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
+!!$  else
+    !call define_communicators_lammps
+    call MPI_COMM_Group (MPI_COMM_SPACE,grp_space,ierr)
+    call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_lammps)
+    call MPI_COMM_SIZE( MPI_COMM_lammps, npl, ierr )
      call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
      write(*,*) "LAMMPS OPEN_MPI_",rang
-    call lammps_file (lmp, INPUT_LAMMPS_FILE)
-  end if
+     call lammps_file (lmp, INPUT_LAMMPS_FILE)
+     num=lammps_get_natoms(lmp)
+
+!!$  end if
 #else
 
     call lammps_open_no_mpi('lmp -log none -screen none', lmp)
     write(*,*) "LAMMPS OPEN_NO_MPI-SEQ"
-    if (rang==0) write(*,*) "before init potential lammps SEQ"
     call lammps_file (lmp, INPUT_LAMMPS_FILE)
-    if (rang==0) write(*,*) "after init potential lammps"
+     num=lammps_get_natoms(lmp)
+     if (rang==0) write(*,*) "after init potential lammps"
     if (rang==0) write(*,*) "init potential lammps"
     if (rang==0)   write(*,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
 #endif
@@ -70,7 +80,7 @@ subroutine read_lammps(inplammps)
   if (rang==0)write(*,'("NDM: LAMMPS force field init done")')
 !  stop
 
- end subroutine read_lammps
+end subroutine init_lammps
 
 
 subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
@@ -111,45 +121,35 @@ subroutine calcforce_lammps2 (im,imm,xp,ityp,fp,potislammps)
   if (allocated(pos_lammps)) deallocate (pos_lammps)
   allocate(pos_lammps(3*im), stat=ierr)
   if (firsttime_lammps) then
-!     write(6,*)'calfolammps0',rang
      num=lammps_get_natoms(lmp)
      if (num /= im) then
-        write(*,*) 'Big problem: gin and lammps files contain different number of atoms'
+        write(*,*) 'Big problem: gin and lammps files contain different number of atoms',rang,im,num
         stop
      end if
      call lammps_gather_atoms(lmp, 'type', 1, lammps_types)
-!     write(6,*)'calfolammps1',rang
      if (num /= size(lammps_types)) then
         write(*,*) 'WARNING:  the atoms type is not correctly read in the LAMMPS wrapper ndm_lammps'
+!        stop
      end if
-!     write(6,*)'calfolammps1.1'
      do i=1,im
         if (ityp(i).ne.lammps_types(i)) then
-           write(6,*)'erreur de transmission de type atome ',i,' type ndm lammps ',ityp(i),lammps_types(i)
            stop
         end if
      end do
-!     write(6,*)'calfolammps1.2',im
      if(.not.allocated(axlmp))allocate(axlmp(3,im))
-!     write(6,*)'calfolammps1.2.1'
      axlmp(:,1:im)=xp(:,1:im)
-     firsttime_lammps=.false.
+
   endif
-!     write(6,*)'calfolammps1.3'
   do i=1, im
-	pos_lammps(3*i-2) = xp(1,i)/position_conversion_lammps
-	pos_lammps(3*i-1) = xp(2,i)/position_conversion_lammps
-	pos_lammps(3*i  ) = xp(3,i)/position_conversion_lammps
-!        write(500+rang,*) rang,i,pos_lammps(3*i-2),pos_lammps(3*i-1),pos_lammps(3*i  )
-enddo
-!     write(6,*)'calfolammps2',rang
+     pos_lammps(3*i-2) = xp(1,i)/position_conversion_lammps
+     pos_lammps(3*i-1) = xp(2,i)/position_conversion_lammps
+     pos_lammps(3*i  ) = xp(3,i)/position_conversion_lammps
+  enddo
 
   ! Put the coordinates to LAMMPS
-!     write(100+rang,*)'X',pos_lammps
   call lammps_scatter_atoms (lmp, 'x',  pos_lammps)
- !    write(6,*)'calfolammps3',rang
-
   ! Call LAMMPS to compute energy and forces
+  lrun0=.true.
   if (firsttime_lammps) then
      lrun0=.true.
   else
@@ -161,28 +161,23 @@ enddo
      end do
      if (rdiff.ge.rskin) then
         axlmp(:,:)=xp(:,:)
-!        write(6,*)'LRUN0'
         lrun0=.true.
      end if
   end if
-
  if (lrun0.eqv..true.)then
      call lammps_command (lmp, 'run 0')
      lrun0=.false.
  else
     call lammps_command (lmp, 'run 1 pre no post yes')
  end if
+ firsttime_lammps=.false.
 !  call lammps_command (lmp, 'run 0')
-!     write(6,*)'calfolammps4',rang
-
 
   ! Extract energy from LAMMPS
   call lammps_extract_compute (energy, lmp, 'thermo_pe',0,0)
-!     write(6,*)'calfolammps5'
   potislammps=energy*energy_conversion_lammps
   if (mod(it,itesigma)==0) then
      call lammps_extract_compute (p_tensor, lmp, 'thermo_press',0,1)
-!     write(6,*)'calfolammps6'
 !  pot_energy = energy*energy_conversion_lammps
 !     write (6,*)p_tensor
       sig(1,1)=p_tensor(1)*pressure_conversion_lammps
@@ -204,8 +199,7 @@ enddo
 !!$1/extract_atom donne des choses différentes sur chaque proc
 !!$2/gather_atoms donne des choses égales sur tous les procs
 !!$3/gather_atoms donne des choses égales au gather ou extract du séquentiel
-!!$4/Il semble que ce qui change dans les différents extract_atoms soit l'ordre des atomes (on dirait, il y a des nombres qui se ressemblent). Il faut peut-être els réarranger selon un indice interproc inconnu.
-
+!!$4/Il semble que ce qui change dans les différents extract_atoms soit l'ordre des atomes (on dirait, il y a des nombres qui se ressemblent). Il faut peut-être les réarranger selon un indice interproc inconnu.
 do i=1,im
    
      fp(1,i)=force_lammps(3*i-2)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)

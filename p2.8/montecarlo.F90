@@ -1,7 +1,7 @@
 module montecarlo_mod
   USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, potist,itetabvois,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
-       &lspaceNDM,rang,it
+       &lspaceNDM,rang,it,firsttime_lammps,posa,forca
 !  USE tab_imm_m, only:xp, xpp, fp, vp, num_at_glob, ityp, ielat, iwmax
   USE atomconfig,only:atom_config,atom_config_d, config2ndm, switch_atom
   USE period_mod,only: period 
@@ -15,7 +15,8 @@ module montecarlo_mod
   USE rasmolT_mod,only: rasmolT
   use paraconfig,only:para_config,commconstr
 #ifdef PARA
-  use mod_para,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,maj_atomes_frt_ftm
+  use mod_para,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,maj_atomes_frt_ftm,&
+       &NDM_MPI_REAL_DOUBLE
   USE init_vois_mod,only: init_voisinage
 #else
   use mod_para,only:myidsp,nprocspace
@@ -25,11 +26,15 @@ module montecarlo_mod
   USE parautils,only:initloc,pointer_caltabt_calfo
   USE calctemp_mod,only:calctemp
   USE constrconf_mod,only:config2data
+#ifdef LAMMPS_VERSION
+  use lammps_util_mod
+  use vars_lammps
+#endif  
   implicit none
 
   type(para_config)::paramcgc
 
-
+ real(double)::distminat
   type(atom_config_d)::config_atom_n !type derive atom_config du systeme a n atomes
   type(atom_config_d)::config_atom_nplus1 !type derive atom_config du systeme a n+1 atomes
 
@@ -92,7 +97,6 @@ contains
     !########################################################################################################################
 
     !initialisation variables 
-    write(6,*)'MONTECARLO',rang,lspaceNDM
     !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation     
 #ifdef PARA
     cellmcgcloc=>cellcible
@@ -127,15 +131,10 @@ contains
     acceptance_rate_1 = 0.0
 
 
-    !defintion de la boite du syst a N atomes
-    !    call ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxndm)
-    !    call caltabtC(cells_n,config_atom_n,lperiod,bg)
-    !call cells_n%print
 
 
 #ifdef PARA
     if(paramcgc%image==0) then !procs N
-
        call initloc(config_atom_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod) !initloc contient caltabtc sur atloc
        call pointer_caltabt_calfo(sig,potist,config_atom_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
             &lperiod,config_atom_n%ltabvois,it,itetabvois,lchg=.false.)
@@ -144,6 +143,7 @@ contains
        call pointer_caltabt_calfo(sig,potist,config_atom_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
             &lperiod,config_atom_nplus1%ltabvois,it,itetabvois,lchg=.false.)
     end if
+    call MPI_Barrier(MPI_COMM_SPACE,ierr)
     !en ce point chacun des deux masters a les forces de son paquet datomes
     if (lmaster) then ! on est dans l'un des 2 masters
        rgcib=0;rgem=1
@@ -221,10 +221,11 @@ contains
           !choisir l'at a retirer ou ajouter + preparation des syst N et N+1 pour etre prets pour le langevin (cad decoupage cellules + calcul forces + melange des forces - se fait dans cette sous routine)
        end if !master general
        call ajout_retrait(config_atom_n,config_atom_nplus1,cells_n,cells_nplus1,boxmcgc,direction)
-!       if (paramcgc%rang_orig==0) then
-          call analyse_montecarlo(config_atom_n,cells_n,boxmcgc, 'UO2_syst_n_before_test')
-          call analyse_montecarlo(config_atom_nplus1,cells_nplus1,boxmcgc, 'UO2_syst_nplus1_before_test')
-!       end if
+
+       call analyse_montecarlo(config_atom_n,cells_n,boxmcgc, 'UO2_syst_n_before_test')
+       call analyse_montecarlo(config_atom_nplus1,cells_nplus1,boxmcgc, 'UO2_syst_nplus1_before_test')
+
+          !       end if
        ! pas de langevin
        call langevin(config_atom_n,config_atom_nplus1,cells_n,cells_nplus1,boxmcgc,direction)
 
@@ -338,14 +339,11 @@ subroutine ajout_retrait(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
   if (direc == 0) then ! ajout d'une particule en N+1
      if (paramcgc%rang_orig==0) then
         !tirer une position aleatoire pour le N+1eme atome
-        call atom_supp(cart_vec_nplus1)
+        call atom_supp(cart_vec_nplus1,boxmcgc,atconf_N)
         
         call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
-!          call atconf_N%print(unit=60+rang)
-!          call atconf_Nplus1%print(unit=70+rang)
 !POURQOI CA ? Le systm        
         !copie du syst n dans n+1 
-!       call copy_nplus1_xp(atconf_N,atconf_Nplus1)
         call atconf_N%copy_config(atconf_Nplus1,lrescl=.false.)        
     !addition de la n+1eme particule
         atconf_Nplus1%xp(1:3,atconf_Nplus1%im) = cart_vec_nplus1(1:3,1)
@@ -419,21 +417,17 @@ subroutine ajout_retrait(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
         if (paramcgc%rang_orig==0) then
            call indice_alea(atconf_Nplus1,indice)
 !          call atconf_Nplus1%switch_atom(indice,atconf_Nplus1%im)
-!          call atconf_N%print(unit=30+rang)
-           call atconf_Nplus1%print(unit=40+rang)
-!           call copy_n_xp(atconf_N,atconf_Nplus1)
            call boucle_copy_atom(atconf_N,atconf_Nplus1)           
         end if
 #ifdef PARA
     if(paramcgc%image==0) then !procs N
-       
        call initloc(atconf_n,cel_n,atmcgcloc,cellmcgcloc,box,paramcgc,rumax,lperiod) !initloc contient caltabtc sur atloc
        call pointer_caltabt_calfo(sig,potist,atconf_n,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
-               &lperiod,atconf_n%ltabvois,it,itetabvois,lchg=.false.)
+            &lperiod,atconf_n%ltabvois,it,itetabvois,lchg=.false.)
     else !procs N+1
        call initloc(atconf_nplus1,cel_nplus1,atmcgcloc,cellmcgcloc,box,paramcgc,rumax,lperiod) !initloc contient caltabtc sur atloc
        call pointer_caltabt_calfo(sig,potist,atconf_nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
-               &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=.false.)
+            &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=.false.)
     end if
     !en ce point chacun des deux masters a les forces de son paquet datomes
     if (lmaster) then ! on est dans l'un des 2 masters
@@ -566,10 +560,12 @@ subroutine analyse_montecarlo(atdml,celndm,box,name_file)
   type(box_config)::box
 
   character(len=*) :: name_file
+  if (paramcgc%rang_orig==0) then
 
+  
   if (itetemp>0) then
      if (mod(it,itetemp)==0) then
-        call calctemp (temp,kine,atdml,celndm)
+        call calctemp (temp,kine,atdml,celndm,latcomp=.true.)
      end if
   end if
 
@@ -586,11 +582,11 @@ subroutine analyse_montecarlo(atdml,celndm,box,name_file)
      end if
   end if
 
-  if(paramcgc%image==0)then
-     write(6,*)name_file
-     write (6, '(I10,G10.3,A,f0.3)') it,timel,'*Temp instantanee = ',temp  
-  end if
-
+!  if(paramcgc%image==0)then
+!     write(6,*)name_file
+!     write (6, '(I10,G10.3,A,f0.3)') it,timel,'*Temp instantanee = ',temp  
+!  end if
+end if
 end subroutine analyse_montecarlo
 
 
@@ -622,24 +618,51 @@ end subroutine calcul_U
 
 
 
-subroutine atom_supp(vecteur)
-  
+subroutine atom_supp(vecteur,box,atcf)
+
   implicit none
+  type(box_config)::box
+  class(atom_config)::atcf
 
   real(double), dimension(3,1) :: vecteur
-  real(double) :: x_nplus1, y_nplus1, z_nplus1 !position initiale aleatoire de la N+1eme particule
+  real(double) :: x_nplus1, y_nplus1, z_nplus1,distati,distatM !position initiale aleatoire de la N+1eme particule
+  integer::itry,i
 
-  call random_number(x_nplus1)
-  call random_number(y_nplus1)
-  call random_number(z_nplus1)
+  if (rang==0) then 
 
-  vecteur(1,1) = x_nplus1
-  vecteur(2,1) = y_nplus1
-  vecteur(3,1) = z_nplus1
+     itry=1 
+1    continue
 
-  
+     call random_number(x_nplus1)
+     call random_number(y_nplus1)
+     call random_number(z_nplus1)
+
+     vecteur(1,1) = x_nplus1
+     vecteur(2,1) = y_nplus1
+     vecteur(3,1) = z_nplus1
+     call cryst_to_cart(1, vecteur,box%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+
+     if (distminat.gt.0) then
+        distatm=100
+        do i=1,config_atom_n%im
+           call distat(atcf%xp(:,i),vecteur, boxmcgc,distati)
+           if (distatm.gt.distati) distatm=distati
+
+        end do
+        !     write(66,*)itry,distatM
+        if (distatM.lt.distminat) then
+           itry=itry+1
+           goto 1
+        end if
+        write(6,*)'ITRY',itry
+     end if
+  end if
+#ifdef PARA
+  call MPI_BCAST(vecteur, 3, NDM_MPI_REAL_DOUBLE, 0,MPI_COMM_WORLD,ierr) 
+#endif
+
 end subroutine atom_supp
-
+   
 
 
 
@@ -703,7 +726,7 @@ subroutine langevin(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
      QEff   = 0.0
      dWEff  = 0.0
      WEff   = 0.0
-
+     Ek_n =0
      DO i=1, atconf_Nplus1%im
         do ic=1,3
            Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
@@ -744,7 +767,7 @@ subroutine langevin(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
            Ek_n_plus1 = 0.0  
            Ek_n_1s4 = 0.0
            Ek_n_3s4 = 0.0
-
+write(6,*) 'lambda_mc' ,lambda_mc
            ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
 
            ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
@@ -899,7 +922,7 @@ subroutine langevin(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
            ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
            timel = timel+tstep
 
-           !write(6,*) 'lambda_mc' ,lambda_mc
+           write(6,*) 'lambda_mc' ,lambda_mc
            !write(6,*) 'avant langevin atconf_Nplus1%vp(:,23)=' ,atconf_Nplus1%vp(:,23)
 
            rga=exp((-gamlg)*tstep/2)
@@ -1084,13 +1107,13 @@ end subroutine langevin
     ! Routine d'initialisation de MPI pour la NEB
 #ifdef PARA
 
-
     paramcgc%np_orig=nprocs
     paramcgc%rang_orig=rang
-    paramcgc%grp_orig=grp_world
-
+!    paramcgc%grp_orig=grp_world
     paramcgc%nimage=2
-
+!    paramcgc%comm_orig=MPI_COMM_WORLD
+    call MPI_COMM_DUP(MPI_COMM_WORLD,paramcgc%comm_orig,ierr)
+    call MPI_COMM_GROUP(paramcgc%comm_orig,paramcgc%grp_orig,ierr)
     call commconstr(paramcgc)
 
     myidsp=paramcgc%rgim
@@ -1106,28 +1129,48 @@ end subroutine langevin
 #endif    
   end subroutine init_mpi_MCGC
 
+  subroutine distat(xi,x0,box,dist)
+    type(box_config),intent(in)::box
+    real(double), dimension(3),intent(in)::xi,x0
+    real(double),dimension(3)::dx
+    real(double)::dist
+    real(double),dimension (3,2)::xat
+    integer::ns=2
+    xat(:,1)=xi(:)
+    xat(:,2)=x0(:)
+    call cryst_to_cart (ns,xat,box%bg,-1)
+    dx(1:3)=xat(1:3,1)-xat(1:3,2)
+    WHERE ( (dx.GT.0.5d0).OR.(dx.LT.-0.5d0) )
+       dx(1:3) = dx(1:3) - Dble(Nint(dx(1:3)))
+    END WHERE
+    dx = MatMul(box%at,dx)
+    dist = sqrt(Sum( dx(1:3)**2 ))
+    return
+  end subroutine distat
 
+    
+  
   subroutine initNP1
 
     real(double), dimension(3,1) :: cart_vec_nplus1
-
+    real(double)::distati
+    integer::i
     !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
-    call atom_supp(cart_vec_nplus1)
+    call atom_supp(cart_vec_nplus1,boxmcgc,config_atom_n)
 
-    call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+!FAIT DANS atom_supp
+!    call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
 
     !copie du syst n dans n+1 
     call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois)
     config_atom_nplus1%ltabvois=config_atom_n%ltabvois
     call config_atom_n%copy_config(config_atom_nplus1,lrescl=.false.)
 
-    !write(6,*) 'config_atom_n%vp(:,56) =' ,config_atom_n%vp(:,56)
-    !write(6,*) 'config_atom_nplus1%vp(:,56) =' ,config_atom_nplus1%vp(:,56)
 
     !addition de la n+1eme particule
     config_atom_nplus1%xp(1:3,config_atom_nplus1%im) = cart_vec_nplus1(1:3,1)
     config_atom_nplus1%fp(1:3,config_atom_nplus1%im) = 0
-    config_atom_nplus1%xpp(1:3,config_atom_nplus1%im) = 0
+    config_atom_nplus1%xpp(1:3,config_atom_nplus1%im) =     config_atom_nplus1%xp(1:3,config_atom_nplus1%im) 
     config_atom_nplus1%ityp(config_atom_nplus1%im) = 1
     config_atom_nplus1%num_at_glob(config_atom_nplus1%im) = config_atom_nplus1%im
     call init_vitesse(config_atom_nplus1,param = 0)
@@ -1151,12 +1194,41 @@ end subroutine langevin
     end if
     !       call MPI_BARRIER(MPI_COMM_WORLD)
 #endif
+
+
     if((ipotentiel==-10).or.(ipotentiel==-11)) then
        if (paramcgc%rang_orig==0) then
           write(6,*)'write configuration N+1  to confNP1.lmp'
           call config2data (config_atom_nplus1%imm,config_atom_nplus1%im,&
-               config_atom_nplus1%xp,config_atom_nplus1%ityp,boxmcgc%at,ntyp,filename='confNP1.lmp')
+               config_atom_nplus1%xp,config_atom_nplus1%ityp,boxmcgc%at,ntyp,filename='conf.lmp.NP1')
        end if
+
+#ifdef PARA
+#ifdef LAMMPS_VERSION
+    if(paramcgc%image==0) then !procs N
+       firsttime_lammps=.true.
+       allocate (posa(3*config_atom_n%im),  forca(3*config_atom_n%im))
+
+       call init_lammps('in.lammps.N')
+    else !procs N+1
+       firsttime_lammps=.true.
+       allocate (posa(3*config_atom_nplus1%im),  forca(3*config_atom_nplus1%im))
+       call init_lammps('in.lammps.NP1')
+
+    end if
+
+       
+#else
+       write(6,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'
+       call MPI_FINALIZE(ierr)
+       stop
+#endif
+       
+#else
+       write(6,*)'Ipotentiel<0 (lammps) et NON para en MCGC : stop'
+       stop
+#endif       
+
     end if
   end subroutine initNP1
 

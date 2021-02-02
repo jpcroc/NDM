@@ -19,7 +19,7 @@ module calctemp_mod
   implicit none
         contains
 ! *************************************************************
-subroutine calctemp(temp,kine,atcf, cellcf)
+subroutine calctemp(temp,kine,atcf, cellcf,latcomp)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -27,8 +27,10 @@ subroutine calctemp(temp,kine,atcf, cellcf)
   class(atom_config_d),intent(in)::atcf
   type(cell_config),intent(inout)::cellcf
   real(double),intent(out)::temp,kine
+  logical, optional::latcomp
 
-  
+  logical:: latc=.false.
+   
   integer :: ic, i, iti, ko, i2,kx,ky,kz,koo,ixe,iye,ize
   real(double) :: sumtat2
   real(double) :: vpn2,tat,ekin,kinecl
@@ -46,7 +48,98 @@ subroutine calctemp(temp,kine,atcf, cellcf)
   real(double):: tempEPtot
 #endif
 
+  if (present(latcomp)) latc=latcomp
 
+  if (latc) then
+    if(cellcf%icaltabt.ne.atcf%icaltabt) then
+       write (6,*)'incoherence dans icaltabt calctemp'
+       write(6,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
+       stop
+    end if
+  
+  if ((cellcf%ltpcel).or.(tcelec.gt.0)) then
+     !     allocate (tempc(noxyz))
+     !     allocate (tempcm(noxyz))
+     cellcf%tempc(:)=0.
+  endif
+  temp = 0.0
+  kine = 0.0
+  sumtat2 = 0.0
+!  vx2(:ntyp,:) = 0.0
+
+
+  if (l2t)then
+     ecell(:,:,:)%tempIon=0
+     ecell(:,:,:)%nIon=0
+     ecell(:,:,:)%nIonS=0
+     nats=0
+  end if
+
+  tempEP=0
+
+  do ko = 1, cellcf%noxyz
+     kinecl=0
+     if (cellcf%nato(ko)==0) cycle
+
+     if (L2T)     call nox_2_nex(ko,ixyze)
+
+     do i2 = 1, cellcf%nato(ko)
+
+        i = cellcf%atincel(i2,ko)
+        if (atcf%num_at_glob(i).gt.im_glob) cycle
+        vpn2 = atcf%vp(1,i)**2+atcf%vp(2,i)**2+atcf%vp(3,i)**2
+        kine=kine+vpn2*0.5*cm(atcf%ityp(i))
+        kinecl=kinecl+vpn2*0.5*cm(atcf%ityp(i))
+        tat=vpn2*cm(atcf%ityp(i))/(3.0*bk)
+        sumtat2 = sumtat2+tat
+        
+        !calculation of ionic temperature and number of ions in the electronic cell (only slow moving ions)  
+        if (l2T.eqv..true.) then
+           select case(i2t)
+           case(1)
+              ecell(ixyze(1),ixyze(2),ixyze(3))%nIon= ecell(ixyze(1),ixyze(2),ixyze(3))%nIon+1
+              ekin=0.5*erg2ev*vpn2*cm(atcf%ityp(i))
+              if (ekin.lt.Ecelec) then
+                 ecell(ixyze(1),ixyze(2),ixyze(3))%tempIon=ecell(ixyze(1),ixyze(2),ixyze(3))%tempIon&
+                      &+vpn2*cm(atcf%ityp(i))/(3.0*bk)
+                 ecell(ixyze(1),ixyze(2),ixyze(3))%nIonS= ecell(ixyze(1),ixyze(2),ixyze(3))%nIonS+1
+                 nats=nats+1
+                 tempEP=tempEP+vpn2*cm(atcf%ityp(i))/(3.0*bk)
+              end if
+           case(0)
+              ecell(ixyze(1),ixyze(2),ixyze(3))%tempIon=ecell(ixyze(1),ixyze(2),ixyze(3))%tempIon&
+                   &+vpn2*cm(atcf%ityp(i))/(3.0*bk)
+                 ecell(ixyze(1),ixyze(2),ixyze(3))%nIonS= ecell(ixyze(1),ixyze(2),ixyze(3))%nIonS+1
+              ecell(ixyze(1),ixyze(2),ixyze(3))%nIon= ecell(ixyze(1),ixyze(2),ixyze(3))%nIon+1
+              nats=nats+1
+              tempEP=tempEP+vpn2*cm(atcf%ityp(i))/(3.0*bk)
+           end select
+        end if
+        if ((cellcf%ltpcel).or.(tcelec.gt.0))then
+           cellcf%tempc(ko)=cellcf%tempc(ko)+tat/cellcf%nato(ko)
+        end if
+     end do
+
+  end do
+  if (l2T.eqv..true.) then
+     do ixe=1,nex
+        do iye=1,ney
+           do ize=1,nez
+              if (ecell(ixe,iye,ize)%nIonS.gt.0) then
+                 ecell(ixe,iye,ize)%tempIon=ecell(ixe,iye,ize)%tempIon/ecell(ixe,iye,ize)%nIonS
+              end if
+           end do
+        end do
+     end  do
+        tempEP=tempEP/nats
+  end if
+
+
+  temp = sumtat2/float(atcf%im)
+
+
+else  !LATC/LATCOMP=.TRUE.
+  
     if(cellcf%icaltabt.ne.atcf%icaltabt) then
        write (6,*)'incoherence dans icaltabt calctemp'
        write(6,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
@@ -193,7 +286,7 @@ deallocate(tempc_tot)
 #else
      temp = sumtat2/float(atcf%im)
 #endif
-
+  end if
        
      return
    end subroutine calctemp

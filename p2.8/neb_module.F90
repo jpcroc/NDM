@@ -31,7 +31,7 @@ module neb_module
 #endif
   use paraconfig,only:para_config,commconstr
 #ifdef LAMMPS_VERSION
-  use lammps_util_mod,only:read_lammps
+  use lammps_util_mod,only:init_lammps
 #endif
   implicit none
 
@@ -63,7 +63,6 @@ contains
     flush(6)
 #ifdef PARA
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-    write(6,*)'PostBAR',rang
 #endif
     
 #ifdef LAMMPS_VERSION
@@ -74,7 +73,7 @@ contains
 !       inplmp="in.lammps."//paraneb%image
 !       write(6,*)"inplmp",inplmp
 !       call read_lammps(inplammps=inplmp)
-       call read_lammps()
+       call init_lammps()
        write(6,*)'OUT READL',rang
     end if
 #endif
@@ -704,8 +703,8 @@ end if
     write(6,*)'INPNEB', rang,nprocs
     paraneb%np_orig=nprocs
     paraneb%rang_orig=rang
-    paraneb%grp_orig=grp_world
-
+    call MPI_COMM_DUP(MPI_COMM_WORLD,paraneb%comm_orig,ierr)
+    call MPI_COMM_GROUP(paraneb%comm_orig,paraneb%grp_orig,ierr)
     paraneb%nimage=npath-2
 
     call commconstr(paraneb)

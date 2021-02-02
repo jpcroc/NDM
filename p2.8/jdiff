@@ -2,7 +2,7 @@
 foreach temp (`ls -1 *F90 *f Makefil* */*.F90`)
 	echo $temp
 	rm -f rd
-	diff   $temp /home/croc/NDM/ndm2021/$temp >rd
-	if  ( -s  rd )    diff  /home/croc/NDM/ndm2021/$temp  $temp
+	diff   $temp /volatile/home/jcrocombette/DM/codesndm/GIT2021/NDM/p2.8/$temp >rd
+	if  ( -s  rd )    meld /volatile/home/jcrocombette/DM/codesndm/GIT2021/NDM/p2.8/$temp  $temp
 
 end

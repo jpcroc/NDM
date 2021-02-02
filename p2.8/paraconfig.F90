@@ -1,3 +1,4 @@
+
 module paraconfig
 
 
@@ -10,8 +11,8 @@ module paraconfig
 
   implicit none
 #ifdef PARA
- include 'mpif.h'
-#endif  
+  include 'mpif.h'
+#endif
   type para_config
      integer :: rgim ! rang du proc dans l'image
      integer:: image ! n° de l'image
@@ -42,18 +43,6 @@ module paraconfig
 
 #endif
 contains
-  subroutine print(paraprt,rang)
-    class(para_config),intent(in)::paraprt
-    integer,intent(in)::rang
-    write(6,*)'PARAPRT',rang,paraprt%rang_orig
-    write(6,*)'NIMAGE',rang,paraprt%nimage
-    write(6,*)'IMAGE',rang,paraprt%image
-    write(6,*)'NPIMAGE',rang,paraprt%npim
-    write(6,*)'RGIMAGE',rang,paraprt%rgim
-    write(6,*)'LMASTER',rang,paraprt%lmaster
-    if (paraprt%lmaster)write(6,*)'RGMASTER',rang,paraprt%rgmas
-  end subroutine print
-    
   subroutine commconstr(div)
     type(para_config)::div
 #ifdef PARA
@@ -62,8 +51,9 @@ contains
     integer::ierr,ip
 
     integer::imt,imp,ipi,ipt,npi,npim,imasters,npm,reste,npr
-    integer::clef, couleur
-
+    integer::clef, couleur,nimage,img,image
+    integer,allocatable::npimg(:),GL(:),CL(:),procim(:),ipimg(:,:)
+    nimage=div%nimage
     if (div%nimage.gt.div%np_orig) then
        write(6,*)' division para impossible nimage > nprocs'
        stop
@@ -71,9 +61,10 @@ contains
     end if
     reste=mod(div%np_orig,div%nimage)
     allocate(rgmasters(div%nimage))
-
+    allocate(ipimg(nimage,div%np_orig))
+    allocate(npimg(nimage))
+    allocate(GL(0:nimage-1));allocate(CL(0:nimage-1))
     if (reste==0) then
-
        npim=div%np_orig/div%nimage            ! nb de proc par image
        div%image=int(div%rang_orig/npim) !quel image pour le proc
        div%rgim=mod(div%rang_orig,npim) ! quel rang dans le comm de l'image
@@ -82,10 +73,14 @@ contains
        if (div%rgim==0) then
           div%lmaster=.true.
        end if
-
        ipi=0
        imasters=0
+       npimg(:)=0
+       ipimg(:,:)=-1
        do ip=0,div%np_orig-1
+          image=1+int(ip/npim)
+          npimg(image)=npimg(image)+1
+          ipimg(image,npimg(image))=ip
           ipt=mod(ip,npim)
           if (ipt==0) then
              imasters=imasters+1
@@ -96,8 +91,10 @@ contains
        clef=div%rang_orig
 
     else
+     
        npim=div%np_orig/div%nimage
        npr=npim*(div%nimage-1)
+
 
        if (div%rang_orig.lt.npr) then
           div%npim=npim
@@ -114,7 +111,21 @@ contains
        end if
        ipi=0
        imasters=0
+
        do ip=0,div%np_orig-1
+          if (ip.lt.npr) then
+             image=1+int(ip/nimage)
+          else
+             image=nimage
+          end if
+          npimg(image)=npimg(image)+1
+          ipimg(image,npimg(image))=ip
+          ipt=mod(ip,npim)
+          if (ipt==0) then
+             imasters=imasters+1
+             rgmasters(imasters)=ip
+          end if
+          
           ipt=mod(ip,npim)
           if (ipt==0) then
              imasters=imasters+1
@@ -124,15 +135,25 @@ contains
        couleur=div%image
        clef=div%rang_orig
     end if
-    call MPI_COMM_SPLIT (div%comm_orig,couleur,clef,div%comm_image,ierr)
-    call MPI_COMM_SIZE( div%comm_image, npi, ierr )
-    call MPI_COMM_RANK(div%comm_image, div%rgim,ierr)
-    write(6,*)'RGI', div%rang_orig,div%rgim,div%lmaster,div%image
+Cl=0;GL=0
+    do img=1,nimage
+       if (div%rang_orig==0) write(6,*)img,ipimg(img,1:npimg(img))
+       call MPI_GROUP_INCL(div%grp_orig,npimg(img),ipimg(img,1:npimg(img)),GL(img-1),ierr)
+       call MPI_COMM_CREATE(div%comm_orig,GL(img-1),CL(img-1),ierr)
+    end do
+!    write(6,*)'TOTO', div%rang_orig,CL
+!    write(6,*)'TATA', div%rang_orig,GL
+!    write(6,*)'IMG',div%image,CL(div%image)
+    call MPI_COMM_DUP(CL(div%image),div%comm_image,ierr)
+
+    
+!!$    call MPI_COMM_SPLIT (div%comm_orig,couleur,clef,div%comm_image,ierr)
+!!$    call MPI_COMM_SIZE( div%comm_image, npi, ierr )
+!!$    call MPI_COMM_RANK(div%comm_image, div%rgim,ierr)
+    write(6,*)'RGI', div%rang_orig,div%rgim,div%lmaster,div%image,div%comm_image,CL(div%image)
 
     call MPI_BARRIER(div%comm_orig)
-
-
-
+    
     call MPI_GROUP_INCL(div%grp_orig,div%nimage,rgmasters,div%grp_master,ierr)
     call MPI_COMM_CREATE(div%comm_orig,div%grp_master,div%comm_master,ierr)
 
@@ -307,6 +328,18 @@ contains
 
 #endif
 
+  subroutine print(paraprt,rang)
+    class(para_config),intent(in)::paraprt
+    integer,intent(in)::rang
+    write(6,*)'PARAPRT',rang,paraprt%rang_orig
+    write(6,*)'NIMAGE',rang,paraprt%nimage
+    write(6,*)'IMAGE',rang,paraprt%image
+    write(6,*)'NPIMAGE',rang,paraprt%npim
+    write(6,*)'RGIMAGE',rang,paraprt%rgim
+    write(6,*)'LMASTER',rang,paraprt%lmaster
+    if (paraprt%lmaster)write(6,*)'RGMASTER',rang,paraprt%rgmas
+  end subroutine print
+    
 
 
     

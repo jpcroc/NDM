@@ -6,7 +6,7 @@ module decoupage_mod
   USE read_val,only:rvois
   implicit none
 contains
-  subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec)
+  subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose)
 
 #ifdef PARA
     USE mpi
@@ -21,6 +21,8 @@ contains
     integer::ncore ! nb de coeur par noeud
     type(cell_config)::celdec
     class(atom_config),optional:: atdec
+    logical,optional::lverbose
+    logical::lverb=.true.
     integer, allocatable :: coord_min(:,:),coord_max(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z
     integer:: nnoeuds
     integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
@@ -56,7 +58,7 @@ contains
     integer,save::icall=0
     nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
     icall=icall+1
-
+    if (present(lverbose))lverb=lverbose
 #ifdef PARA
     nbr_cpumin=nbr_cpuin
 #else
@@ -75,7 +77,7 @@ contains
 
        nb_sol = 0
 
-       if (rang==0) then
+       if ((rang==0).and.(lverb)) then
 
           print *
           print *
@@ -132,7 +134,7 @@ contains
        !print *
 
        if (nb_sol==0) then
-          if (rang==0) then
+       if ((rang==0).and.(lverb)) then
              print *,'!!! Pas de possibilite de decoupage pour la configuration demandee !!!'
              print *,'!!! nx / ny / nz / nb_cpu :',nox,noy,noz,nbr_cpu
 
@@ -153,7 +155,7 @@ contains
 
        endif
 
-       if (rang==0) print *,'Nbre de solutions possibles : ',nb_sol
+       if ((rang==0).and.(lverb))  print *,'Nbre de solutions possibles : ',nb_sol
 
        ! On scanne l'ensemble des solutions proposees pour en calculer 
        ! l'equilibrage de charge et le nombre de cellules fantomes
@@ -207,7 +209,7 @@ contains
           if (specifs(num_sol,3)>specifs(solution,3)) solution = num_sol
        enddo
 
-       if (rang==0) write(6,'(A,4I5,F10.4)')'LE MEILLEUR DECOUPAGE :',nbr_cpu, decoup(solution,1), & 
+       if ((rang==0).and.(lverb)) write(6,'(A,4I5,F10.4)')'LE MEILLEUR DECOUPAGE :',nbr_cpu, decoup(solution,1), & 
             decoup(solution,2), decoup(solution,3),specifs(solution,3)
 
        !Calcul des xmin, ymin, zmin pour chaque decoupage
@@ -263,7 +265,7 @@ contains
        if (myidsp == 0) then
           
 #endif
-          if (icall==1) then 
+          if ((icall==1).and.(lverb)) then 
              Print *,'-----------------------------------------------'
              print *,'          FIN DU CALCUL DU DECOUPAGE :         '
              print *

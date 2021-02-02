@@ -90,7 +90,6 @@ contains
     end do
     !APRES    
     call init_neb(atneb(1)%im,atneb(1)%imm)
-    write(6,*)'outinit',rang
 #ifdef PARA
     lmaster=paraneb%lmaster
     if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -172,7 +171,6 @@ contains
     it=1
 #ifdef PARA
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-    write(6,*)'PostBAR',rang
 #endif
     do i1=1,npath
 #ifdef PARA
@@ -240,7 +238,6 @@ contains
 #ifdef PARA
           if (ii==paraneb%image+2) then
              enepath(2:npath-1)=0; enepathev(2:npath-1)=0
-             write(6,*)'IM EN',paraneb%image,enepath
 !             if (paraneb%image.ne.0) then
 !                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
 !             end if
@@ -283,7 +280,6 @@ contains
 
                 call MPI_BCAST(dragtest, 1,MPI_INTEGER, 0,paraneb%comm_image,ierr)
                 !                CALL MPI_BARRIER(paraneb%comm_image,ierr)
-                if (mod(it,10)==0) write(6,*)'image it ',ii,it
                 !                if (paraneb%lmaster) then
                 !                   call atneb(ii)%print(unit=200+ii,natg1=1,natg2=2049)
                 !                   flush(200+ii)
