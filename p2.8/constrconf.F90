@@ -48,7 +48,7 @@ contains
     integer::ncore,ic
 
 #ifdef PARA
-    type (atom_config)::COMPatrcf
+    type (atom_config_d)::COMPatrcf
 #endif
     character :: fnamcin*80, fnamgin*80
     integer::itread
@@ -99,7 +99,7 @@ contains
        im_glob=COMPatrcf%im
        call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
        itread=3
-       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,imm_glob) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
+       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,atrcf%im) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
     else
           itread=1
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
@@ -843,6 +843,7 @@ contains
           if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
           call arret_ndm
        endif
+       call atcinr%init(im_gr,immr)
        atcinr%im=im_gr
 
        read (lucin, err=456) ibuffer   !ityp muet
@@ -863,7 +864,9 @@ contains
           if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
           call arret_ndm
        endif
-       atcinr%im=imic
+       write(6,*)'IM',rang,immr,im_gr,imic,atcinr%im,atcinr%imm
+       write(300+rang,*)icible
+       !       atcinr%im=imic
 
        read (lucin, err=456) ibuffer   !ityp
        do i_loc=1,imic
