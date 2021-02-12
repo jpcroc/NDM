@@ -237,11 +237,17 @@ contains
     type(atom_config)::atrgin
     type(box_config)::boxrgin
     real(double)::atg(3,3)
-    integer::lat(3),ic,ncore,npr,ierr,iti
+    integer::lat(3),ic,ncore,npr,ierr,iti,itread
     lrepart=.true.
     if(present(lrepartition))lrepart=lrepartition
     
-    call read_gin(boxrgin,atrgin,fnamg,lat)
+    if (ldecoup) then
+       itread=0
+    else
+       itread=1
+    end if
+       
+    call read_gin(boxrgin,atrgin,fnamg,lat,itread=itread)
     do ic=1,3
        atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
     end do
@@ -955,7 +961,7 @@ contains
    !******************************************************************************************************
   !******************************************************************************************************
   
-  subroutine read_gin (boxrg,atrg,fnamgin,latr)
+  subroutine read_gin (boxrg,atrg,fnamgin,latr,itread)
     USE T_kind_param_m, ONLY:  double
 
 
@@ -965,16 +971,18 @@ contains
     type(atom_config),intent(out)::atrg
     type(box_config),intent(out)::boxrg
     integer,intent(out)::latr(3)
-
+    integer,optional,intent(in)::itread
+    
+    integer::itr=1
 !    real(double)::rumax_init,alpha_init
     integer ,     dimension(:),   allocatable :: itypc
     real(double), dimension(:,:), allocatable :: xc
     real(double),dimension(:,:),allocatable :: tmpxc
-
     real(double)::at(3,3)
 
     integer ::  lugin, imcell, la, lb, lc, icell,ic,i,ia,ib
-    
+
+    if(present(itread))itr=itread
     !  si coordonnees reduites
 
     if (rang==0) write (6, *) '**********construction du reseau************'
@@ -995,6 +1003,7 @@ contains
     at=at*1d-8
     call initbox(boxrg,at)
     read (lugin, *) imcell               !number of atoms in UC
+    if (itr==0) return
     if (imcell>imm_glob) then
        if(rang==0)               write (6, *) 'trop d_atomes dans la cel. unite',imm_glob,imcell
        call arret_ndm
