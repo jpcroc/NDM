@@ -69,7 +69,19 @@ contains
     stop
  end if
 #endif
-    if (nprocspace.gt.1) then
+#ifndef PARA
+ if (ldecoup) then
+    write(6,*)'DECOUP TEST from 2 to ', nbr_cpuIN,' with ',ncore ,' per node'
+    write(6,*)'results are in decoup_out, grep MEILLEUR'
+ end if
+    
+    iudecoup=1023
+    open (unit=1023,file='decoup_out')
+#else
+             iudecoup=6
+#endif
+
+ if ((nprocspace.gt.1).or.(ldecoup)) then
        loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
 
 
@@ -79,11 +91,11 @@ contains
 
        if ((rang==0).and.(lverb)) then
 
-          print *
-          print *
-          print *,'-----------------------------------------------------------'
-          print *,'Procedure de decoupage pour une boite de taille  :',nox,noy,noz
-          print *,'sur ',nbr_cpu,' cpus',ncore
+          write(iudecoup,*)
+          write(iudecoup,*)
+          write(iudecoup,*)'-----------------------------------------------------------'
+          write(iudecoup,*)'Procedure de decoupage pour une boite de taille  :',nox,noy,noz
+          write(iudecoup,*)'sur ',nbr_cpu,' cpus',ncore
        endif
 
        do ii=1,nbr_cpu
@@ -126,21 +138,21 @@ contains
        if (.not.allocated(coord_max))allocate(coord_max(0:nbr_cpu-1,3))
 
 
-       !print *,'Voici les cas possibles :'
-       !print *,'-------------------------'
+       !write(iudecoup,*),'Voici les cas possibles :'
+       !write(iudecoup,*),'-------------------------'
        do ii=1,nb_sol
-          !   print *,decoup(ii,:)
+          !   write(iudecoup,*),decoup(ii,:)
        enddo
-       !print *
+       !write(iudecoup,*)
 
        if (nb_sol==0) then
        if ((rang==0).and.(lverb)) then
-             print *,'!!! Pas de possibilite de decoupage pour la configuration demandee !!!'
-             print *,'!!! nx / ny / nz / nb_cpu :',nox,noy,noz,nbr_cpu
+             write(iudecoup,*),'!!! Pas de possibilite de decoupage pour la configuration demandee !!!'
+             write(iudecoup,*),'!!! nx / ny / nz / nb_cpu :',nox,noy,noz,nbr_cpu
 
           endif
 #ifdef PARA
-          print *,'!!! Arret du programme !!!'
+          write(iudecoup,*),'!!! Arret du programme !!!'
           call arret_ndm
 #else
           deallocate(decoup)
@@ -155,7 +167,7 @@ contains
 
        endif
 
-       if ((rang==0).and.(lverb))  print *,'Nbre de solutions possibles : ',nb_sol
+       if ((rang==0).and.(lverb))  write(iudecoup,*),'Nbre de solutions possibles : ',nb_sol
 
        ! On scanne l'ensemble des solutions proposees pour en calculer 
        ! l'equilibrage de charge et le nombre de cellules fantomes
@@ -209,7 +221,7 @@ contains
           if (specifs(num_sol,3)>specifs(solution,3)) solution = num_sol
        enddo
 
-       if ((rang==0).and.(lverb)) write(6,'(A,4I5,F10.4)')'LE MEILLEUR DECOUPAGE :',nbr_cpu, decoup(solution,1), & 
+       if ((rang==0).and.(lverb)) write(iudecoup,'(A,4I5,F10.4)')'LE_MEILLEUR_DECOUPAGE :',nbr_cpu, decoup(solution,1), & 
             decoup(solution,2), decoup(solution,3),specifs(solution,3)
 
        !Calcul des xmin, ymin, zmin pour chaque decoupage
@@ -265,32 +277,27 @@ contains
        if (myidsp == 0) then
           
 #endif
+
           if ((icall==1).and.(lverb)) then 
-             Print *,'-----------------------------------------------'
-             print *,'          FIN DU CALCUL DU DECOUPAGE :         '
-             print *
-             print *,'Nbre de cellule suivant x :',nox
-             print *,'Nbre de cellule suivant y :',noy
-             print *,'Nbre de cellule suivant z :',noz
-             print *
-             print *,'Le cas choisit :',decoup(solution,1),decoup(solution,2),decoup(solution,3)
-             print *,'Nombre de cellules max echg  par proc :',nbr_cpu,int(specifs(solution,2))
-             print *,'Taux d''equilibrage :', nbr_cpu,specifs(solution,1) 
-             print *,'valeur ',nbr_cpu, specifs(solution,3)
+             write(iudecoup,*)'-----------------------------------------------'
+             write(iudecoup,*)'          FIN DU CALCUL DU DECOUPAGE :         '
+             write(iudecoup,*)
+             write(iudecoup,*)'Nbre de cellule suivant x :',nox
+             write(iudecoup,*)'Nbre de cellule suivant y :',noy
+             write(iudecoup,*)'Nbre de cellule suivant z :',noz
+             write(iudecoup,*)
+             write(iudecoup,*)'Le cas choisit :',decoup(solution,1),decoup(solution,2),decoup(solution,3)
+             write(iudecoup,*)'Nombre de cellules max echg  par proc :',nbr_cpu,int(specifs(solution,2))
+             write(iudecoup,*)'Taux d''equilibrage :', nbr_cpu,specifs(solution,1) 
+             write(iudecoup,*)'valeur ',nbr_cpu, specifs(solution,3)
              
-             !     print *,'Nbre Min/Max de cel. echangees dans les conf. :', messages_min , messages_max
-             print *,'Nbre Min/Max de cel. locales. :', int(specifs(solution,4)),int(specifs(solution,5))
-             print *,'Nbre Min/Max de cel. fantomes. :',int(specifs(solution,6)),int(specifs(solution,7))
-             print *,'locmin/fantomax :',nbr_cpu,specifs(solution,4)/specifs(solution,7)
+             !     write(iudecoup,*)'Nbre Min/Max de cel. echangees dans les conf. :', messages_min , messages_max
+             write(iudecoup,*)'Nbre Min/Max de cel. locales. :', int(specifs(solution,4)),int(specifs(solution,5))
+             write(iudecoup,*)'Nbre Min/Max de cel. fantomes. :',int(specifs(solution,6)),int(specifs(solution,7))
+             write(iudecoup,*)'locmin/fantomax :',nbr_cpu,specifs(solution,4)/specifs(solution,7)
              
              
              
-#ifndef PARA
-             iudecoup=1023
-             open (unit=1023,file='decoup_out')
-#else
-             iudecoup=6
-#endif
 #ifndef PARA
              
              write(iudecoup,*)'Taille des decoupages'
@@ -328,14 +335,14 @@ contains
        imm = imm_loc
        call MPI_REDUCE(imm_loc,imm,1,MPI_INTEGER,MPI_MAX,0,MPI_COMM_space,ierr)
 
-       !     print *,'test4' 
+       !     write(iudecoup,*)'test4' 
        im0=0 ; nvois0=0
 !       write(6,*)'IMMMDEC',rang,imm
        if (present(atdec)) then 
           call atdec%dealloc
           call atdec%init(im0,imm,ltabvois,nvois0,rvois,lsigat,lprteat,llangevin,lax)
        end if
-       !     print *,'test4' 
+       !     write(iudecoup,*)'test4' 
        ! Initialisation des donnees geometriques qui serviront pour le reste du code :
        cell_debx= coord_min(myidsp,1)
        cell_finx= coord_max(myidsp,1)
@@ -360,6 +367,8 @@ contains
 
     enddo loop1
  end if
+ if (ldecoup) stop
+ return
 !!$
 !!$#ifdef PARA
 !!$ do ko=1,celdec%noxyz

@@ -864,8 +864,8 @@ contains
           if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
           call arret_ndm
        endif
-       write(6,*)'IM',rang,immr,im_gr,imic,atcinr%im,atcinr%imm
-       write(300+rang,*)icible
+!       write(6,*)'IM',rang,immr,im_gr,imic,atcinr%im,atcinr%imm
+!       write(300+rang,*)icible
        !       atcinr%im=imic
 
        read (lucin, err=456) ibuffer   !ityp
