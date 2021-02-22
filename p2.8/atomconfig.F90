@@ -779,31 +779,35 @@ contains
     integer :: ind_switch_1, ind_switch_2
     logical :: lex = .true.
 
+    call intermediaire%init(imin=2)
+    call atsource%copy_atom(ind_switch_1,intermediaire,1)
+    call atsource%copy_atom(ind_switch_2,intermediaire,2)
+    call intermediaire%copy_atom(2,atsource,ind_switch_1)
+    call intermediaire%copy_atom(1,atsource,ind_switch_2)
 
-    select type (atsource)
-    type is (atom_config_d)
-     call atsource%copy_config(intermediaire, lex)
-
-     atsource%xp(:,ind_switch_1)=intermediaire%xp(:,ind_switch_2)
-     atsource%fp(:,ind_switch_1)=intermediaire%fp(:,ind_switch_2)
-     atsource%ielat(ind_switch_1)=intermediaire%ielat(ind_switch_2)
-     atsource%lgul(ind_switch_1)=intermediaire%lgul(ind_switch_2)
-     atsource%ityp(ind_switch_1)=intermediaire%ityp(ind_switch_2)
-     atsource%num_at_glob(ind_switch_1)=intermediaire%num_at_glob(ind_switch_2)
-     ! faut il changer des trucs concernant ltabvois ? iwmax ? ou indi ?
-     atsource%vp(:,ind_switch_1)=intermediaire%vp(:,ind_switch_2)
-     atsource%xpp(:,ind_switch_1)=intermediaire%xpp(:,ind_switch_2)
-
-     atsource%xp(:,ind_switch_2)=intermediaire%xp(:,ind_switch_1)
-     atsource%fp(:,ind_switch_2)=intermediaire%fp(:,ind_switch_1)
-     atsource%ielat(ind_switch_2)=intermediaire%ielat(ind_switch_1)
-     atsource%lgul(ind_switch_2)=intermediaire%lgul(ind_switch_1)
-     atsource%ityp(ind_switch_2)=intermediaire%ityp(ind_switch_1)
-     atsource%num_at_glob(ind_switch_2)=intermediaire%num_at_glob(ind_switch_1)
-     ! faut il changer des trucs concernant ltabvois ? iwmax ? ou indi ?
-     atsource%vp(:,ind_switch_2)=intermediaire%vp(:,ind_switch_1)
-     atsource%xpp(:,ind_switch_2)=intermediaire%xpp(:,ind_switch_1)
-    end select
+!!$        select type (atsource)
+!!$    type is (atom_config_d)
+!!$     call atsource%copy_config(intermediaire, lex)
+!!$     atsource%xp(:,ind_switch_1)=intermediaire%xp(:,2)
+!!$     atsource%fp(:,ind_switch_1)=intermediaire%fp(:,2)
+!!$     atsource%ielat(ind_switch_1)=intermediaire%ielat(ind_switch_2)
+!!$     atsource%lgul(ind_switch_1)=intermediaire%lgul(ind_switch_2)
+!!$     atsource%ityp(ind_switch_1)=intermediaire%ityp(ind_switch_2)
+!!$     atsource%num_at_glob(ind_switch_1)=intermediaire%num_at_glob(ind_switch_2)
+!!$     ! faut il changer des trucs concernant ltabvois ? iwmax ? ou indi ?
+!!$     atsource%vp(:,ind_switch_1)=intermediaire%vp(:,ind_switch_2)
+!!$     atsource%xpp(:,ind_switch_1)=intermediaire%xpp(:,ind_switch_2)
+!!$
+!!$     atsource%xp(:,ind_switch_2)=intermediaire%xp(:,ind_switch_1)
+!!$     atsource%fp(:,ind_switch_2)=intermediaire%fp(:,ind_switch_1)
+!!$     atsource%ielat(ind_switch_2)=intermediaire%ielat(ind_switch_1)
+!!$     atsource%lgul(ind_switch_2)=intermediaire%lgul(ind_switch_1)
+!!$     atsource%ityp(ind_switch_2)=intermediaire%ityp(ind_switch_1)
+!!$     atsource%num_at_glob(ind_switch_2)=intermediaire%num_at_glob(ind_switch_1)
+!!$     ! faut il changer des trucs concernant ltabvois ? iwmax ? ou indi ?
+!!$     atsource%vp(:,ind_switch_2)=intermediaire%vp(:,ind_switch_1)
+!!$     atsource%xpp(:,ind_switch_2)=intermediaire%xpp(:,ind_switch_1)
+!!$    end select
   end subroutine
 
 

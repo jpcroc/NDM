@@ -297,15 +297,15 @@ contains
           acceptance_rate_1 = (real(n_accepted_1)/real(n_gen_1))*1.0d2
 
        end if
-          call analyse_montecarlo(config_atom_n,cells_n,boxmcgc, 'UO2_syst_n_after_test')
-          call analyse_montecarlo(config_atom_nplus1,cells_nplus1,boxmcgc, 'UO2_syst_nplus1_after_test')
-          it = it +1
-
+       call analyse_montecarlo(config_atom_n,cells_n,boxmcgc, 'UO2_syst_n_after_test')
+       call analyse_montecarlo(config_atom_nplus1,cells_nplus1,boxmcgc, 'UO2_syst_nplus1_after_test')
+       it = it +1
+       
        if (direction == 0) then
-             direction = 1
-          else
-             direction = 0
-          end if      
+          direction = 1
+       else
+          direction = 0
+       end if
     END DO
 
     write(*,*) ' taux d acceptation final   : ', acceptance_rate,  ' %'
@@ -350,7 +350,6 @@ subroutine ajout_retrait(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
         atconf_Nplus1%xpp(1:3,atconf_Nplus1%im) = cart_vec_nplus1(1:3,1)
         atconf_Nplus1%fp(1:3,atconf_Nplus1%im) = 0
         atconf_Nplus1%ityp(atconf_Nplus1%im) = 1
-
         atconf_Nplus1%ielat(atconf_Nplus1%im) = -1
         call init_vitesse(atconf_Nplus1,param = 1)
         nag=maxval(atconf_Nplus1%num_at_glob(1:atconf_Nplus1%im-1))
