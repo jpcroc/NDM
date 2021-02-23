@@ -24,7 +24,7 @@ module neb_mod
   USE parautils,only:initloc,pointer_caltabt_calfo
 
 #ifdef PARA
-  use mod_para,only: NDM_MPI_REAl_DOUBLE
+  use Tpara,only: NDM_MPI_REAl_DOUBLE
   USE init_vois_mod,only: init_voisinage
 #endif
   implicit none

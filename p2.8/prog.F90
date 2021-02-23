@@ -45,11 +45,11 @@ contains
 
 #ifdef PARA
 !    use mpi
-    USE mod_para,only:MPI_COMM_space,TEMPS_INIT_DEB,TEMPS_INIT,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm,myidsp,&
-         &nprocspace
+    USE Tpara,only:MPI_COMM_space,myidsp,nprocspace
+    USE mod_para,only:TEMPS_INIT_DEB,TEMPS_INIT,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm
     USE neb_module,only:init_mpi_neb
 #else
-    USE mod_para,only:nprocspace
+    USE Tpara,only:nprocspace
 #endif
     USE neb_module,only:init_mpi_neb
     implicit none

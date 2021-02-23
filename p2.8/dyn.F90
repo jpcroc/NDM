@@ -16,10 +16,6 @@ contains
     USE jqmod
     USE tempinst_mod,only: tempinst
 
-!#ifdef PARA
-!    USE mod_para,only:MPI_COMM_space
-!#endif
-
     implicit none
 
     class(atom_config_d)::atdml

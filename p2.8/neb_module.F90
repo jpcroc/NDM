@@ -25,9 +25,9 @@ module neb_module
   USE sauvegardeT_mod,only:sauvegardeT
     USE init_pot_mod,only:init_pot  ,init_pot2
 #ifdef PARA
-  use mod_para,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world
+  use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world
 #else
-  use mod_para,only:myidsp,nprocspace
+  use Tpara,only:myidsp,nprocspace
 #endif
   use paraconfig,only:para_config,commconstr
 #ifdef LAMMPS_VERSION

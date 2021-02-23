@@ -3,21 +3,11 @@ module eloss
   USE temp_com,only:noxyz,tempc ! A EFFACER
   USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,l2T,erg2eV,iko,lspacendm!,noxyz
   USE var_pot, ONLY:ntyp,cm,gamlt
-
-
-
-  !  USE eam,ONLY:
-  !  USE eamerco,ONLY:
-  !  USE SMjuli,ONLY:
-  !  USE jqmod,ONLY:
-  !  USE neb_mod,only: nebule,ONLY:
-  !  USE defcdp, ONLY :
-  !  USE var_pot, ONLY:
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE
+  USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE
 #else
-  use mod_para,only : nprocspace
+  use Tpara,only : nprocspace
   
 #endif 
 

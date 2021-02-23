@@ -16,10 +16,10 @@ contains
   USE force_tersoff_facteurs
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,maj_fp_frt,nprocspace
-  use Tpara,only:NDM_MPI_real_double
+  USE mod_para,only:maj_fp_frt
+  use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace
 #else
-  USE mod_para,only:nprocspace
+  USE Tpara,only:nprocspace
 #endif
 
 

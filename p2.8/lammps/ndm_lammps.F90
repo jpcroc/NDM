@@ -20,9 +20,9 @@ module lammps_util_mod
         use LAMMPS
         use vars_lammps
 #ifdef PARA
-  use mod_para, only: nprocspace,mpi_comm_space,ierr,mpi_comm_world
+  use Tpara, only: nprocspace,mpi_comm_space,ierr,mpi_comm_world
 #else
-  use mod_para, only: nprocspace
+  use Tpara, only: nprocspace
 #endif
 
         implicit none

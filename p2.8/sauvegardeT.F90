@@ -12,9 +12,9 @@ module sauvegardeT_mod
 #ifdef PARA
 
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
+    USE Tpara,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 #else
-USE mod_para,only:nprocspace    ,myidsp
+USE Tpara,only:nprocspace    ,myidsp
          
 #endif
 

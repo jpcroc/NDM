@@ -13,7 +13,9 @@ contains
 #ifdef PARA
   subroutine init_mpi()
     use mpi
-    use mod_para,only:ierr,nprocs,temps_deb,MPI_COMM_space,rang,grp_world,nprocspace
+    use gen_com_m,only:rang
+    use Tpara,only:ierr,nprocs,MPI_COMM_space,grp_world,nprocspace,myidsp
+    use mod_para,only:temps_deb
 
     implicit none
 

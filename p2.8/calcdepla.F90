@@ -15,7 +15,7 @@ subroutine calcdepla(im,xp,ielat,ityp,ax)
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
+    USE Tpara,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
     use tab_imm_m,only:num_at_glob
 #endif
   ! pas de conditions periodiques sur xp-ax

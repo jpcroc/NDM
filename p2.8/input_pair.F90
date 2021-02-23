@@ -4,7 +4,7 @@ module input_pair_mod
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:a2cm,e2on4pieps0,ecgs,ev2erg,lopt,rang,tstep,two,umass,usdh,lspaceNDM
   USE var_pot
-  use mod_para,only:nprocspace
+  use Tpara,only:nprocspace
   implicit none
 contains
   ! **********************************************************************

@@ -13,7 +13,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
   USE var_pot, ONLY:cm
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
 
 #endif
   implicit none

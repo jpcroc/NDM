@@ -8,10 +8,10 @@ contains
   subroutine calfoberend(im,imm,xp, vp, fp,ityp)
 #ifdef PARA
   use mpi
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace,ndm_mpi_real_double,ierr
+    USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace,ndm_mpi_real_double,ierr
 !    include 'mpif.h'
 #else
-  USE mod_para,only:nprocspace
+  USE Tpara,only:nprocspace
 #endif
 
     integer::im,imm

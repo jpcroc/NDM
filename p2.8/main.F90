@@ -14,11 +14,11 @@ program ndm
   USE readdm_mod,only: readdm
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
-  USE mod_para,only:MPI_COMM_space,myidsp,nprocs
+  USE Tpara,only:MPI_COMM_space,myidsp,nprocs
   USE init_mpi_mod,only: init_mpi
   USE neb_module,only:init_mpi_neb
 #else
-  USE mod_para,only:myidsp,nprocs,nprocspace
+  USE Tpara,only:myidsp,nprocs,nprocspace
 #endif
 
 #ifdef MAB

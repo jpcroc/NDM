@@ -15,7 +15,7 @@ contains
     USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs
+  USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs
 
 #endif
 

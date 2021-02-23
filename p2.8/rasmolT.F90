@@ -2,7 +2,7 @@
 module rasmolT_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:rang,ivisu,ldesinteg,lpkbar,im_glob,lspaceNDM,&
-       &cunitP,it,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass
+       &cunitP,it,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass,rang
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
   use atomconfig,only: atom_config,atom_config_d,atom_config_e
@@ -29,9 +29,9 @@ contains
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE,rang
+    USE Tpara,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 #else
-    USE mod_para,only:myidsp
+    USE Tpara,only:myidsp
 #endif
     ! ****************************************************************
 

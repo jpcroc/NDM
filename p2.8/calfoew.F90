@@ -15,9 +15,9 @@ contains
     USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
 #else
-  USE mod_para,only:nprocspace
+  USE Tpara,only:nprocspace
 #endif
     ! ewald reciproque
     ! **************************************************************

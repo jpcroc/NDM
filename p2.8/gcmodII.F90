@@ -133,9 +133,9 @@ module gcmodII_mod
 
 #ifdef PARA
 !  use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,nprocspace,status,myidsp
+  USE Tpara,only:MPI_COMM_space,ierr,nprocspace,status,myidsp
 #else
-  USE mod_para,only:nprocspace,myidsp
+  USE Tpara,only:nprocspace,myidsp
 #endif  
   implicit none
 #ifdef PARA

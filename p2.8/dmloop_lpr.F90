@@ -33,10 +33,11 @@ contains
 
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,temps_para,temps_debpara,maj_atomes_frt_ftm,&
-       &nprocspace
+  USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE mod_para,only:temps_para,temps_debpara,maj_atomes_frt_ftm
+
 #else
-  use mod_para,only:nprocspace
+  use Tpara,only:nprocspace
 #endif
     implicit none
 

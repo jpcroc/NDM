@@ -44,9 +44,9 @@ module Parrinello_Rahman_Nose
   use cellconfig,only:cell_config
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
 #else
-  use mod_para,only:nprocspace
+  use Tpara,only:nprocspace
 
 #endif
 

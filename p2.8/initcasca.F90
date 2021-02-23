@@ -20,9 +20,9 @@ contains
     ! *******************************************************************
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,ierr,nprocspace
+    USE Tpara,only:MPI_COMM_space,ierr,nprocspace
 #else
-    use mod_para,only:nprocspace
+    use Tpara,only:nprocspace
     
 #endif
 

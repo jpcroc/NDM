@@ -2,16 +2,15 @@ module calctemp_mod
 
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:ntyp,cm
-  USE gen_com_m, ONLY:erg2ev,im_glob,tempEP,bk,l2t,lspaceNDM
+  USE gen_com_m, ONLY:erg2ev,im_glob,tempEP,bk,l2t,lspaceNDM,rang
   USE elec_cell, ONLY: ecell,i2T,nex,ney,nez,nox_2_nex
   USE eloss, ONLY : tcelec,ecelec
   USE atomconfig,only: atom_config_d
   USE cellconfig,only : cell_config
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace,rang
+    USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace
 #else
-    USE mod_para,only:rang
 #endif
 
   ! *************************************************************

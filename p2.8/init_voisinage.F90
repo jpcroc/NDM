@@ -10,8 +10,8 @@ subroutine init_voisinage (cellv)
   !   M o d u l e s
   !-----------------------------------------------
   use gen_com_m,only:
-  use mod_para,only:MPI_COMM_space, nprocspace,myidsp,NDM_MPI_REAl_DOUBLE,proc_voisin,nbr_proc_voisin,nbr_cell_ftm,&
-       &NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
+  use Tpara,only:MPI_COMM_space, nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
+  use mod_para,only:proc_voisin,nbr_proc_voisin,nbr_cell_ftm,NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
 
   implicit none
   type(cell_config),intent(in)::cellv

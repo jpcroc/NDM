@@ -28,9 +28,10 @@ contains
 #ifdef PARA
     use mpi
 
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,temps_debpara,temps_para,maj_atomes_frt_ftm,nprocspace
+    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace
+    USE mod_para,only:temps_debpara,temps_para,maj_atomes_frt_ftm
 #else
-    USE mod_para,only:nprocspace
+    USE Tpara,only:nprocspace
 #endif
     USE caltabi_mod,only:caltabi
     USE elec_cell, ONLY:TTlangevin

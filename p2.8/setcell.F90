@@ -11,7 +11,7 @@ module setcell
   USE boxconfig,only:box_config
   USE cellconfig,only:cell_config
 #ifdef PARA
-  use mod_para,only:nprocspace
+  use Tpara,only:nprocspace
 #endif
   implicit none
 contains

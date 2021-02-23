@@ -1,6 +1,7 @@
 module mod_para
 #ifdef PARA
-  use Tpara,only: NDM_MPI_REAL_DOUBLE
+  use Tpara,only: NDM_MPI_REAL_DOUBLE,MPI_COMM_space, myidsp,nprocspace,nprocs,ierr,status			! numero de process mis là pour être utilisé en sequentiel
+
   
 #endif
   use T_kind_param_m, ONLY:  double 
@@ -12,32 +13,14 @@ module mod_para
   !  use mpi
   implicit none
 
-  type para_space_config
-     integer, allocatable :: res_cpu(:,:)   	!stocke le nombre de cellules de chaques decoupages pour le meilleur decoupage
-     integer, allocatable :: proc_cell(:)          !proc_cell(i) : Numero du proc associe a la cellule i
-     integer, allocatable :: proc_voisin(:)        ! liste des processeurs voisins du processeur courant
-     integer, allocatable :: cell_frontiere(:,:)   ! (i,j) jeme cellule frontiere associee au ieme processeur voisin
-     integer, allocatable :: nbr_cell_frontiere(:) ! nbre de cellules frontieres associees au ieme processeur voisin
-     integer :: nbr_cell_ftm                       ! nbr de cellules fantomes du processeur courant
-     integer, allocatable :: cell_ftm(:)           ! liste des cellules fantomes du processeur courant
-     integer :: nbr_proc_voisin            ! nbre de processeurs voisins du processeur courant
-  end type para_space_config
-  
-  integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
+ 
+!  integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
 #ifdef PARA
 
   include 'mpif.h'
 
-  integer::MPI_COMM_space
+!  integer :: ierr 			! erreur MPI
 
-  ! Module de declaration des variables MPI pour le code NDM
-
-  !Entiers :
-
-
-
-  integer :: ierr 			! erreur MPI
-  integer,dimension(MPI_STATUS_SIZE):: status  ! statut de la communication
   integer:: grp_world
   integer :: nbr_proc_voisin            ! nbre de processeurs voisins du processeur courant
 

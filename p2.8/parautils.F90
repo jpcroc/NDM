@@ -2,8 +2,7 @@
 
   use paraconfig,only:para_config
 #ifdef PARA
-  use Tpara,only:NDM_MPI_REAL_DOUBLE
-  USE mod_para,only:maj_atomes_frt_ftm,mpi_comm_world
+  USE mod_para,only:maj_atomes_frt_ftm
 #endif
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage

@@ -223,9 +223,10 @@ contains
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,proc_cell,nprocspace
+    USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace
+    USE mod_para,only:proc_cell
 #else
-    USE mod_para,only:nprocspace
+    USE Tpara,only:nprocspace
 #endif
 
     real(double)  :: xp(3,imm)

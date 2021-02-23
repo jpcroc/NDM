@@ -29,10 +29,6 @@ contains
 #ifdef PARA
  USE mod_para,only:temps_dmloop,temps_dmloop_deb
 
-!!$    MPI_COMM_space,nprocs,myidsp,temps_dmloop_deb,temps_dmloop,&
-!!$         &temps_config,temps_deb,nprocspace,NDM_MPI_real_double
-!!$#else
-!!$    use mod_para,only:nprocspace
 #endif
 #if defined ML && defined PARAML
     USE time_measure

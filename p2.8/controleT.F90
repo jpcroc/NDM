@@ -11,12 +11,11 @@ module controleT_mod
   USE atomconfig,only:atom_config,atom_config_d!,ndm2config,config2ndm
   USE cellconfig, only:cell_config!,ndm2cellconfig,cellconfig2ndm,caltabtC
   USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
-  USE mod_para,only:myidsp
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace,myidsp
 #else
-  USE mod_para,only:nprocspace
+  USE Tpara,only:nprocspace,myidsp
 #endif
 
   implicit none

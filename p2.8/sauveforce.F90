@@ -13,7 +13,7 @@ contains
     USE tab_imm_m,only:fp,xp,ityp,num_at_glob
     USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
-    USE mod_para,only:MPI_COMM_space,nprocs,ierr,status,NDM_MPI_REAL_DOUBLE
+    USE Tpara,only:MPI_COMM_space,nprocs,ierr,status,NDM_MPI_REAL_DOUBLE
     USE mpi
 #endif
 

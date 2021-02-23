@@ -41,7 +41,7 @@ contains
     use neb_module,only: lvzeroneb
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat
 #ifdef PARA
-    USE mod_para,only:MPI_COMM_space,NPROCSpace
+    USE Tpara,only:MPI_COMM_space,NPROCSpace
 #endif
 
     ! *****************************************************************

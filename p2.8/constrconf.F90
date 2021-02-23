@@ -4,9 +4,7 @@ module constrconf_mod
 #endif
   USE read_val,only:imm,rvois
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,im_glob,imm_glob,ldecoup,lperiod,lrestart,rang,&
-       &lvpread,zero,low_limit,lspacendm !at,bg,zls2,tstep,oldtstep,tmean,timel,nox,noy,noz,im,imm,&
-  !       &it,itmax,ldesinteg,lperiod,pmean,zl,xpspr,nzl,normat,cell_debx,cell_deby,cell_debz,&
-  !       &cell_finx,cell_finy,cell_finz,low_limit,llangevin,lsuivinonpbc
+       &lvpread,zero,low_limit,lspacendm,rang
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
     use cryst_to_cart_mod,only:cryst_to_cart
     USE arret_ndm_mod,only: arret_ndm
@@ -19,7 +17,7 @@ module constrconf_mod
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace,rang
+    USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace
 #endif
 
 
@@ -414,7 +412,7 @@ contains
 
   subroutine repartition(atcomp,atrep,boxrep,cellrep,nab,div)
 #ifdef PARA
-    use mod_para,only:myidsp
+    use Tpara,only:myidsp
 #endif
     use paraconfig,only:para_config
     class(atom_config)::atrep

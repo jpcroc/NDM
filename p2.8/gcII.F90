@@ -25,9 +25,9 @@ contains
 #ifdef PARA
     use paraconfig,only:para_config,initparapuresp
     USE parautils,only:initcomp
-    use mod_para,only:nprocspace,MPI_COMM_space ,ierr,status,NDM_MPI_REAL_DOUBLE
+    use Tpara,only:nprocspace,MPI_COMM_space ,ierr,status,NDM_MPI_REAL_DOUBLE
 #else
-    use mod_para,only:nprocspace
+    use Tpara,only:nprocspace
 #endif
 #ifdef PARA
 

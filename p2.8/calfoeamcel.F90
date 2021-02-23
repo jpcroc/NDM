@@ -17,13 +17,13 @@ contains
 
 #ifdef PARA
     !  use mpi
-    use Tpara,only:NDM_MPI_real_double
-    USE mod_para,only:MPI_COMM_space,maj_tabdensity_ftm,nprocspace
+    use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace
+    USE mod_para,only:maj_tabdensity_ftm
 
     include 'mpif.h'
 
 #else
-    USE mod_para,only:nprocspace
+    USE Tpara,only:nprocspace
 #endif
 
 

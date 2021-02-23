@@ -15,11 +15,11 @@ module montecarlo_mod
   USE rasmolT_mod,only: rasmolT
   use paraconfig,only:para_config,commconstr
 #ifdef PARA
-  use mod_para,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,maj_atomes_frt_ftm,&
-       &NDM_MPI_REAL_DOUBLE
+  use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,NDM_MPI_REAL_DOUBLE
+  use mod_para,only:maj_atomes_frt_ftm
   USE init_vois_mod,only: init_voisinage
 #else
-  use mod_para,only:myidsp,nprocspace
+  use Tpara,only:myidsp,nprocspace
 #endif
   use read_val,only:rvois,ltabvois
   use var_pot,only:ipotentiel,rumax

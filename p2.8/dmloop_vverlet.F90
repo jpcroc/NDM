@@ -33,9 +33,10 @@ contains
 
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,temps_debpara,temps_para
+    USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE
+    USE mod_para,only:temps_debpara,temps_para
 #else
-  USE mod_para,only:nprocspace
+  USE Tpara,only:nprocspace
 #endif
     implicit none
     type(box_config)::boxndm

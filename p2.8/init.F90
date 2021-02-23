@@ -63,10 +63,11 @@ contains
 
 #ifdef PARA
     use mpi
-    USE mod_para,only:MPI_COMM_space,TEMPS_INPUT_DEB,TEMPS_INPUT,TEMPS_CONFIG_DEB,TEMPS_CONFIG,myidsp,&
-         &NBR_PROC_VOISIN,TEMPS_INITSPEED_DEB,TEMPS_INITSPEED,nprocspace
+    USE Tpara,only:MPI_COMM_space,myidsp,nprocspace
+    USE mod_para,only:TEMPS_INPUT_DEB,TEMPS_INPUT,TEMPS_CONFIG_DEB,TEMPS_CONFIG,&
+         &NBR_PROC_VOISIN,TEMPS_INITSPEED_DEB,TEMPS_INITSPEED
 #else
-    use mod_para,only:nprocspace
+    use Tpara,only:nprocspace
     
 #endif
 

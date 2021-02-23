@@ -1,9 +1,9 @@
 module arret_ndm_mod
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,temps_initspeed,&
-         &temps_para,temps_dmloop,temps_init,temps_input,&
-         &temps_config,temps_deb
+!    use TPara,only: MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE
+    USE mod_para,only:temps_initspeed,temps_para,temps_dmloop,temps_init,temps_input,temps_config,temps_deb,&
+         &MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE
     use gen_com_m ,only:rang
    
 #endif

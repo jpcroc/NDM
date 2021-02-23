@@ -10,9 +10,10 @@ contains
 
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,res_cpu!,coord_max,coord_min
+    USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE!,coord_max,coord_min
+    USE mod_para,only:res_cpu!,coord_max,coord_min
 #endif
-    USE mod_para,only:myidsp,nprocspace
+    USE Tpara,only:myidsp,nprocspace
     USE gen_com_m, ONLY:cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
          &nb_cell_x,nb_cell_y,nb_cell_z,rang,ldecoup,lsigat,lprteat,llangevin,lax,imm_loc
 

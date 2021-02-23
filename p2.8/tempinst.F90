@@ -2,7 +2,7 @@ module tempinst_mod
   USE gen_com_m, ONLY:bk,im_glob,lspacendm
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
+    USE Tpara,only:MPI_COMM_space,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 
 #endif
 

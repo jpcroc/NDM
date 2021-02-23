@@ -10,9 +10,10 @@ module work_cgII
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
 USE mpi
-use mod_para,only:MPI_COMM_space, status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,maj_atomes_frt_ftm,nprocspace
+use Tpara,only:MPI_COMM_space, status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace
+use mod_para,only:maj_atomes_frt_ftm
 #else
-use mod_para,only:nprocspace
+use Tpara,only:nprocspace
 #endif
   USE atomconfig,only : atom_config
   USE cellconfig, only:cell_config

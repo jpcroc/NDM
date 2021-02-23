@@ -19,7 +19,7 @@ module dmloop_mod
   use var_pot, only: cm! iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
 #ifdef PARA
   use mpi
-  use mod_para,only:NDM_MPI_REAL_DOUBLE,MPI_COMM_space,ierr,nprocspace
+  use Tpara,only:NDM_MPI_REAL_DOUBLE,MPI_COMM_space,ierr,nprocspace
 #else
   
 #endif
