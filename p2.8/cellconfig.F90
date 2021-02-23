@@ -1,6 +1,6 @@
 module cellconfig
   USE T_kind_param_m
-  use atomconfig,only : atom_config
+  use atomconfig,only : atom_config,atom_config_d,atom_config_e
   use boxconfig,only:box_config
   use paraconfig,only:para_config
 
@@ -34,28 +34,27 @@ module cellconfig
 
   end type cell_config
 
-  !  type,extends(cell_config)::  cel_config_e ! des tas de tableaux annexes par toujours alloués car le plus souvent inutiles
-  !     integer::iewald !pilote les tableux de la sommation d'Ewald
-  !     real(double), allocatable:: tabv3,tabf3
-  !     real(double),allocatable::sigc(:,:,:)! contrainte par cellule
-  !     logical:: ltpcel ! écriture des quantités par cellules
-  !     real(double)::tempstopcel ! température d'arrêt de la cellule
-  !     integer::istopcel ! diverses versions de tempstopcel
-  !     real(double),allocatable,dimension(:):: eatcel,tempc,tempcm,celpm1,tm1,celpp,tcp,pmc
-  !     logical::lprtcel ! ecriture des résultats seulement sur certaines cellules.
-  !     
-  !     logical :: l2T ! cellule pour modèles à 2T
-  !     real(double),allocatable:: elossCel(:)
-  !     
-  !     logical :: lsigatcel ! moyenne des contraintes atomiques par cellule ?
-  !     integer, allocatable:: natchk(:)
-  !     real(double), allocatable::patcel(:),patcelmax, sigatcel(:,:,:)
-  !   contains
-  !     procedure, pass::init=>init_cel_e
-  !     procedure, pass::dealloc=>dealloc_cel_e
-  !     
-  !  end type cel_config_e
-
+  type systeme
+     type(atom_config)::atcf
+     type(cell_config)::cellcf
+     type(box_config)::box
+     type(para_config)::paracf
+     integer::ipotentiel
+  end type systeme
+  type systeme_d
+     type(atom_config_d)::atcf
+     type(cell_config)::cellcf
+     type(box_config)::box
+     type(para_config)::paracf
+     integer::ipotentiel
+  end type systeme_d
+  type systeme_e
+     type(atom_config_e)::atcf
+     type(cell_config)::cellcf
+     type(box_config)::box
+     type(para_config)::paracf
+     integer::ipotentiel
+  end type systeme_e
 
 contains
 

@@ -218,7 +218,7 @@ contains
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
     if (paraneb%lmaster) then
-       if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+       if (paraneb%npim.gt.1) then
           call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           enepathev(:)=enepathev_tot ; enepath=enepath_tot
@@ -344,8 +344,8 @@ contains
           !   
           call build_s_path_neb(atneb(1)%im,atneb(1)%imm)
           ! 
-          if (rang==0) print'("NEB:===============================================")'
-          if (rang==0) print'("NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable")'
+          if (rang==0) write(6,*)'("NEB:===============================================")'
+          if (rang==0) write(6,*)'("NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable")'
           do ii=2,npath-1
 #ifdef PARA
              if (ii==paraneb%image+2) then
@@ -422,7 +422,7 @@ contains
                    !debug	            formaxperp, formaxparl, potist*erg2eV,nebtest(ii)
                    forneb = SQRT(MAXVAL(atneb(ii)%force_neb(1,:)**2 + atneb(ii)%force_neb(2,:)**2         &
                         + atneb(ii)%force_neb(3,:)**2))*erg2eV/angst 
-                   print'("NEB: ",2i5, 2g14.5,g20.10,i3,g15.8)', ineb, ii,  formax, forneb,       &
+                   write(6,'(A,2i5, 2g14.5,g20.10,i3,g15.8)')  'NEB: ', ineb, ii,  formax, forneb,       &
                         potist*erg2eV,nebtest(ii),potist*erg2eV-enepathev(1)
                    ! 
                 endif

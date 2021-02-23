@@ -96,17 +96,11 @@ contains
     if(present(lchg))lchange=lchg
 #ifdef PARA
     if (lchange) then
-!       write(6,*)'NPIM',div%npim
        if (div%npim.gt.1)then
           if (lspaceNDM.eqv..true.) then
              call atcomp%master2loc(atloc,div)
-!          call atloc%print(unit=800+div%rang_orig)
- !         call celloc%print(900+div%rang_orig)
-          !        flush(800+div%rang_orig)
           else
-             write(6,*)'preS2A',div%rang_orig
              call atcomp%send2all(0,div%comm_image)
-             write(6,*)'postS2A',div%rang_orig
              atloc=>atcomp
              celloc=>cellcomp
        
