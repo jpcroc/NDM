@@ -29,13 +29,12 @@ subroutine endrun
 #ifdef PARA
 
     use Tpara,only:NDM_MPI_real_double
-    USE mod_para,only:MPI_COMM_space,nprocs,myidsp,temps_dmloop_deb,temps_dmloop,&
-       &temps_config,temps_deb,nprocspace
+    USE Tpara,only:MPI_COMM_space,nprocs,myidsp,nprocspace
 !  use mpi
 !  USE mod_para,only:MPI_COMM_space,MPI_INTEGER, MPI_ANY_SOURCE, MPI_COMM_space, status,ierr,nprocs,MPI_SOURCE,NDM_MPI_REAL_DOUBLE,MPI_SUM,myidsp,proc_cell,MPI_LOGICAL,MPI_Wtime&
     !       &, temps_dmloop,temps_dmloop_deb
 #else
-    use mod_para,only:nprocspace
+    use Tpara,only:nprocspace
 #endif
 #if defined ML && defined PARAML
  USE time_measure
@@ -260,9 +259,6 @@ subroutine endrun
 
      write (6, *) '####### END OF RUN  ######## = ', it, '  time = ', timel
   endif
-#ifdef PARA
-  temps_dmloop=MPI_Wtime() - temps_dmloop_deb
-#endif
 
 !  if (lWgin.eqv..true.) call cin2gin
   IF (iteSauv.GE.0) then

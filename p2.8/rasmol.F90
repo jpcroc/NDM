@@ -29,9 +29,9 @@ contains
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE mod_para,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
+    USE Tpara,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 #else
-    USE mod_para,only:myidsp
+    USE Tpara,only:myidsp
 #endif
     ! ****************************************************************
 

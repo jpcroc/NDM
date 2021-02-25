@@ -218,7 +218,7 @@ contains
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
     if (paraneb%lmaster) then
-       if (paraneb%npim.gt.1) then
+       if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
           call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           enepathev(:)=enepathev_tot ; enepath=enepath_tot

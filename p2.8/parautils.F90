@@ -15,7 +15,7 @@
    USE caltabi_mod,only: caltabi
   implicit none
 contains
-  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod)
+  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib)
     USE setcell,only:setcellconf
     class(atom_config_d),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
@@ -25,8 +25,16 @@ contains
     type(para_config),intent(in)::div
     real(double),intent(in)::rum
     logical::lperiod
+    logical,optional,intent(in)::ldistrib
+    logical::ldistr
     integer::ierr,iun
+    ldistr=.false.
+    if (present(ldistrib))ldistr=ldistrib
+    
     if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+       if (ldistr) then
+          call atcomp%send2all(0,div%comm_image)
+       endif
        call cellcomp%copy_cell(celloc)
        call decoupage(div%npim,0,celloc,atloc,lverbose=.false.)
        call repartition(atcomp,atloc,box,celloc,div=div) ! mettre les éléments de la répartition dans un type

@@ -49,7 +49,7 @@ module Parrinello_Rahman
   use mpi
   USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,maj_atomes_frt_ftm,nprocspace
 #else
-    USE mod_para,only:nprocspace
+    USE Tpara,only:nprocspace
 #endif
   USE calfo_mod,only: calfo
   USE scalebox_mod,only: scalebox

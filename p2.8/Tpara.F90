@@ -4,9 +4,10 @@ module Tpara
   integer, parameter :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
   integer::MPI_COMM_space
   integer:: grp_world
+  integer,dimension(MPI_STATUS_SIZE):: status  ! statut de la communication
 #endif
   integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
-  integer,dimension(MPI_STATUS_SIZE):: status  ! statut de la communication
+
   integer::ierr
   type para_space_config
      integer, allocatable :: res_cpu(:,:)   	!stocke le nombre de cellules de chaques decoupages pour le meilleur decoupage
