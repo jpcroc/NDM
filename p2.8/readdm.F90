@@ -354,7 +354,7 @@ contains
 
     pas_lambda_mc = -100 !valeur negative par defaut pour que l'utilisateur la change
     n_path = 10 !valeur par defaut du nb de chemin dans le MCGC (a modifier qd valeur optimisée trouvée)
-
+    distminat=-1
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
