@@ -165,7 +165,7 @@ contains
        Deb=1 !Test
        Fin=im !Test
 
-       call epme (Deb,Fin,sige,im,xp,fp,ityp)
+       call epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
 
        if (test_sigma) then
              do i1 = 1, 3

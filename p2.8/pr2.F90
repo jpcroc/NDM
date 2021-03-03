@@ -429,7 +429,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 !!$
 !!$       endif
        if (iewald==1.or.iewald==2) then
-          call calpo_ew(boxndm)
+          call calpo_ew(boxndm,atpr%imm)
        end if
 
     else

@@ -110,7 +110,7 @@ contains
           lrepart=.true.
        end if
        call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
-       call init_pot2(boxndm)
+       call init_pot2(boxndm,atdml%imm)
 #ifdef DECOUP
        ! Pas la peine d'aller plus loin dans l'initialisation
        return

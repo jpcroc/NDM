@@ -1,12 +1,12 @@
 module epme_mod
-  USE temp_com,only:volu,bg ! A EFFACER
+!  USE temp_com,only:volu,bg ! A EFFACER
   USE moduli_mod,only: moduli
     USE gen_com_m, ONLY:it,itesigma,pi,potis3,zero
         implicit none 
         contains
 !                   Version du 10/12/2001
 ! ***********************************************************
-subroutine epme (Deb,Fin,sige,im,xp,fp,ityp)
+subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -24,7 +24,7 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp)
   !#endif
 
 
-  real(double), dimension(3,3) :: sige
+  real(double), dimension(3,3) :: sige,bg
   !-----------------------------------------------
   !   L o c a l   P a r a m e t e r s
   !-----------------------------------------------
@@ -35,7 +35,7 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp)
   real(double), dimension(im) :: scalar
   integer :: deb, fin
   real(double),intent(inout),allocatable::fp(:,:)
-  real(double),intent(in)::xp(:,:)
+  real(double),intent(in)::xp(:,:),volu
   integer,intent(in),allocatable::ityp(:)
     
   real(double) :: potisewg, hbn2  

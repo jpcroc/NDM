@@ -147,7 +147,7 @@ contains
 
 
 
-  subroutine init_pot2(boxndm)
+  subroutine init_pot2(boxndm,immT)
     use boxconfig,only:box_config
       USE calpo_ew_mod,only: calpo_ew
     implicit none
@@ -156,6 +156,7 @@ contains
 #else
     
     type(box_config)::boxndm
+    integer,intent(in)::immT
     integer::ipotcont
 
     if (rang==0)then
@@ -178,7 +179,7 @@ contains
        case(0:9)
           call calpo
           if (iewald==1.or.iewald==2) then
-             call calpo_ew(boxndm)
+             call calpo_ew(boxndm,immT)
           end if
 
        case(10:12)

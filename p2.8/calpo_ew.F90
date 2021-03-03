@@ -7,7 +7,7 @@ module calpo_ew_mod
   use boxconfig,only:box_config
   implicit none
 contains
-  subroutine calpo_ew(boxndm)
+  subroutine calpo_ew(boxndm,immT)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -16,6 +16,7 @@ contains
     USE dynallocPME
     implicit none
     type(box_config)::boxndm
+    integer,intent(in)::immT
     real(double) :: pi2, fact, fact1, fact2, hk2, ex, ex1, ex2 ,hbv(3)
     integer ::nb1,nb2,nb3,nv
     ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
@@ -60,7 +61,7 @@ contains
     if (iewald==2) then
 
        ntable=4*kpme+15
-       call DynamicalAllocationPME   ! Allocation dynamique de memoire
+       call DynamicalAllocationPME(immT)   ! Allocation dynamique de memoire
        nfft1=kpmex  ! Nombre de points de la grille
        nfft2=kpmey
        nfft3=kpmez

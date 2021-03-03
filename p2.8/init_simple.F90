@@ -78,7 +78,7 @@ contains
 !       lrepart=.true.
 !    end if
     call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc)
-    call init_pot2(boxndm)
+    call init_pot2(boxndm,atdml%imm)
 
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then

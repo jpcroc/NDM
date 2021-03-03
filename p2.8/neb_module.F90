@@ -79,7 +79,7 @@ contains
     end if
 #endif
 
-    call init_pot2(boxneb)
+    call init_pot2(boxneb,atneb(1)%imm)
   end subroutine init_neb0
   
   subroutine allocate_neb(im,imm)
