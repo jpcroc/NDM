@@ -1,12 +1,13 @@
 module calpo_ew_mod
-  USE temp_com,only:volu,bg ! A EFFACER
   USE moduli_mod,only: moduli
-  USE gen_com_m, ONLY:pi,zero,tabf3,tabv3
+  USE gen_com_m, ONLY:pi,zero
   USE var_pot, ONLY:alpha,auxe,iewald,kpme,kpmex,kpmey,kpmez,ncoucx,ncoucy,ncoucz,nf1,&
-       &nf2,nf3,nff,nfft1,nfft2,nfft3,npoint,ntable,pterm,volterm,table,q
+       &nf2,nf3,nff,nfft1,nfft2,nfft3,npoint,ntable,pterm,volterm,table,q,nb1v,nb2v,nb3v,&
+       &nvecttot,tabf3,tabv3
+  use boxconfig,only:box_config
   implicit none
 contains
-  subroutine calpo_ew
+  subroutine calpo_ew(boxndm)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -14,20 +15,21 @@ contains
 
     USE dynallocPME
     implicit none
+    type(box_config)::boxndm
     real(double) :: pi2, fact, fact1, fact2, hk2, ex, ex1, ex2 ,hbv(3)
-    integer ::nb1,nb2,nb3
+    integer ::nb1,nb2,nb3,nv
     ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
     pi2 = pi*pi
     !         volu = zl(1)*zl(2)*zl(3)
     fact = pi2/alpha**2
-    fact1 = auxe/2./pi/volu
-    fact2 = auxe*2./volu
+    fact1 = auxe/2./pi/boxndm%volu
+    fact2 = auxe*2./boxndm%volu
 
     do nb1 = -ncoucx, ncoucx
        do nb2 = -ncoucy, ncoucy
           do nb3 = -ncoucz, ncoucz
              if (nb1==0.and.nb2==0.and.nb3==0) cycle
-             hbv(:) = bg(:,1)*nb1+bg(:,2)*nb2+bg(:,3)*nb3
+             hbv(:) = boxndm%bg(:,1)*nb1+boxndm%bg(:,2)*nb2+boxndm%bg(:,3)*nb3
              hk2 =hbv(1)**2+hbv(2)**2+hbv(3)**2
              ex = exp((-hk2*fact))/hk2
              ex1 = ex*fact1
@@ -38,6 +40,19 @@ contains
        end do
     end do
 
+    nv=0
+    allocate (nb1v(nvecttot));  allocate (nb2v(nvecttot));allocate (nb3v(nvecttot))
+       ! repartition des vecteurs du RRec.
+       do nb1 = -ncoucx, ncoucx
+          do nb2 = -ncoucy, ncoucy
+             do nb3 = -ncoucz, ncoucz
+                if (nb2==0.and.nb3==0.and.nb1==0) cycle
+                nv=nv+1
+                nb1v(nv)=nb1; nb2v(nv)=nb2; nb3v(nv)=nb3
+             enddo
+          enddo
+       enddo
+       if (nv.ne.nvecttot) stop
 
 
     ! Traitement du cas PME
@@ -61,7 +76,7 @@ contains
        nf3=(nfft3+1)/2
 
        pterm=(pi/alpha)**2
-       volterm=pi*volu
+       volterm=pi*boxndm%volu
 
        call moduli !Initialisation des tableaux bsmod1, bsmod2, bsmod3
 

@@ -39,17 +39,18 @@ module Parrinello_Rahman
   USE T_kind_param_m
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,wbox,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover, ihbox0,tbox, bk,&
-       &potist,sig,sigkine,sigtot,text,tstep,im_glob,it,potist,rang,sig,text,tstep,sigkine,tabf3,tabv3,&
+       &potist,sig,sigkine,sigtot,text,tstep,im_glob,it,potist,rang,sig,text,tstep,sigkine,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM
 
 
-  USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q
+  USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,maj_atomes_frt_ftm,nprocspace
+  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,maj_atomes_frt_ftm
+  use Tpara, only:nprocspace
 #else
-    USE Tpara,only:nprocspace
+  use Tpara, only:nprocspace
 #endif
   USE calfo_mod,only: calfo
   USE scalebox_mod,only: scalebox
@@ -60,6 +61,8 @@ module Parrinello_Rahman
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t
   USE calfoberend_mod,only:calfoberend
+  use Tpara,only:para_space_config
+    USE calpo_ew_mod,only: calpo_ew
 
    implicit none
 !#ifdef PARA
@@ -92,9 +95,10 @@ module Parrinello_Rahman
 
 contains
 
-  subroutine initlpr (atpr,celndm,boxndm)
+  subroutine initlpr (atpr,celndm,boxndm,psc)
 
     implicit none
+    type(para_space_config)::psc
     type(box_config)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
@@ -108,6 +112,7 @@ contains
     real(double)::wbox_tot
     real(double) sigkine_tot(3,3)
 #endif
+
 
 
     IF(RANG==0) WRITE(6,*)
@@ -254,7 +259,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
 
     ! Forces à l'instant initial
-  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.)
+  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
       if (l2t)then
        if (i2t==1)  call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
     else
@@ -291,7 +296,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
   !-----------------------------------------------
 
-  subroutine pr (atpr,celndm,boxndm)
+  subroutine pr (atpr,celndm,boxndm,psc)
 
     implicit none
     ! Variables utiles
@@ -307,6 +312,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     type(atom_config_d)::atpr
     type(cell_config):: celndm
     type(box_config)::boxndm
+    type(para_space_config)::psc
 
 #ifdef PARA
     real(double)::wbox_tot
@@ -395,38 +401,37 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
        boxndm%zls2(1:3) = 0.5d0*boxndm%zl(1:3)
        call caltabtC(celndm,atpr,lperiod,boxndm)
-       !  temps_debpara=MPI_Wtime()
-       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       !write(6,*)'A DEV' ! pas programmé
-       !stop
-       call maj_atomes_frt_ftm(atpr,celndm)
-       !  temps_para=temps_para+MPI_Wtime()-temps_debpara
+       call maj_atomes_frt_ftm(atpr,celndm,psc)
 
 
-       if (iewald>0) then
+!!$       if (iewald>0) then
+!!$
+!!$          ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
+!!$          auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
+!!$          pi2 = pi*pi
+!!$          boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
+!!$          fact = pi2/alpha**2
+!!$          fact1 = auxe/2./pi/boxndm%volu
+!!$          fact2 = auxe*2./boxndm%volu
+!!$          do nb1 = -ncoucx, ncoucx
+!!$             do nb2 = -ncoucy, ncoucy
+!!$                do nb3 = -ncoucz, ncoucz
+!!$                   if (nb1==0.and.nb2==0.and.nb3==0) cycle
+!!$                   hk2 = nb1*nb1/boxndm%zl(1)**2+nb2*nb2/boxndm%zl(2)**2+nb3*nb3/boxndm%zl(3)**2
+!!$                   ex = exp((-hk2*fact))/hk2
+!!$                   ex1 = ex*fact1
+!!$                   ex2 = ex*fact2
+!!$                   tabv3(nb1,nb2,nb3) = ex1
+!!$                   tabf3(:,nb1,nb2,nb3) = ex2*q(:)
+!!$                end do
+!!$             end do
+!!$          end do
+!!$
+!!$       endif
+       if (iewald==1.or.iewald==2) then
+          call calpo_ew(boxndm)
+       end if
 
-          ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
-          auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
-          pi2 = pi*pi
-          boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
-          fact = pi2/alpha**2
-          fact1 = auxe/2./pi/boxndm%volu
-          fact2 = auxe*2./boxndm%volu
-          do nb1 = -ncoucx, ncoucx
-             do nb2 = -ncoucy, ncoucy
-                do nb3 = -ncoucz, ncoucz
-                   if (nb1==0.and.nb2==0.and.nb3==0) cycle
-                   hk2 = nb1*nb1/boxndm%zl(1)**2+nb2*nb2/boxndm%zl(2)**2+nb3*nb3/boxndm%zl(3)**2
-                   ex = exp((-hk2*fact))/hk2
-                   ex1 = ex*fact1
-                   ex2 = ex*fact2
-                   tabv3(nb1,nb2,nb3) = ex1
-                   tabf3(:,nb1,nb2,nb3) = ex2*q(:)
-                end do
-             end do
-          end do
-
-       endif
     else
       CALL ScaleBox(atpr,celndm,boxndm)
 
@@ -441,7 +446,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
 
     ! Calcul des forces et des contraintes à l'instant t+dt
-  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.)
+  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
       if (l2t)then
        if (i2t==1)  call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
     else

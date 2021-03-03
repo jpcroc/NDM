@@ -3,8 +3,8 @@ module param_det_mod
         USE arret_ndm_mod,only: arret_ndm
         USE gen_com_m, ONLY:lopt,zero,rang,pi,itab
         USE var_pot, ONLY:kpme,kpmex,kpmey,kpmez,n2max,ncouc3,ncoucx,ncoucy,ncoucz,npair,&
-             &npotentiel,nvecttot,precis,rue_pair,typ_pot_pair,ipotentiel,alpha,iewald,csive,&
-             &ngrid,r3cm2,rumax,r3cm
+             &npotentiel,nvecttot,precisew,rue_pair,typ_pot_pair,ipotentiel,alpha,iewald,csive,&
+             &ngrid,r3cm2,rumax,r3cm,tabv3,tabf3,ntyp
         use boxconfig,only:box_config
         use read_val,only:ltabvois,rvois
         implicit none
@@ -107,11 +107,11 @@ subroutine param_det(boxndm)
 
 !        if (.not. lopt) then
 
-           if (precis == zero) then
+           if (precisew == zero) then
 
               if (rue == zero .and. alpha==zero .and. ncouc3==0 .and. nc1 ==0) then
-                 precis=1.0d-3
-                 pparam=-log(precis)
+                 precisew=1.0d-3
+                 pparam=-log(precisew)
                  rue=12.0d-8
                  alpha=dsqrt(pparam)/rue
                  if (iewald/=0) then
@@ -124,8 +124,8 @@ subroutine param_det(boxndm)
 
               if (rue == zero .and. alpha==zero .and. ncouc3/=0) then
                  if (iewald/=0) then
-                    precis=1.0d-3
-                    pparam=-log(precis)
+                    precisew=1.0d-3
+                    pparam=-log(precisew)
                     ruex=2.d0*pparam/ncouc3/k00x
                     ruey=2.d0*pparam/ncouc3/k00y
                     ruez=2.d0*pparam/ncouc3/k00z
@@ -143,8 +143,8 @@ subroutine param_det(boxndm)
 
               if (rue == zero .and. alpha==zero .and. ncouc3==0 .and. nc1/=0) then
                  if (iewald/=0) then
-                    precis=1.0d-3
-                    pparam=-log(precis)
+                    precisew=1.0d-3
+                    pparam=-log(precisew)
                     ruex=2.d0*pparam/ncoucx/k00x
                     ruey=2.d0*pparam/ncoucy/k00y
                     ruez=2.d0*pparam/ncoucz/k00z
@@ -158,8 +158,8 @@ subroutine param_det(boxndm)
               endif
 
               if (rue == zero .and. alpha/=zero .and. ncouc3==0 .and. nc1==0) then
-                 precis=1.0d-3
-                 pparam=-log(precis)
+                 precisew=1.0d-3
+                 pparam=-log(precisew)
                  rue=dsqrt(pparam)/alpha
                  if (iewald/=0) then
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
@@ -170,8 +170,8 @@ subroutine param_det(boxndm)
               endif
 
               if (rue /= zero .and. alpha==zero .and. ncouc3==0 .and. nc1==0) then
-                 precis=1.0d-3
-                 pparam=-log(precis)
+                 precisew=1.0d-3
+                 pparam=-log(precisew)
                  alpha=dsqrt(pparam)/rue
                  if (iewald/=0) then
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
@@ -273,10 +273,10 @@ subroutine param_det(boxndm)
 
               !         endif
 
-           else !  if (precis /= zero) then
+           else !  if (precisew /= zero) then
 
               if (rue == zero .and. alpha==zero .and. ncouc3==0 .and. nc1==0) then
-                 pparam=-log(precis)
+                 pparam=-log(precisew)
                  rue=12.0d-8
                  alpha=dsqrt(pparam)/rue
                  if (iewald/=0) then
@@ -290,7 +290,7 @@ subroutine param_det(boxndm)
 
               if (rue == zero .and. alpha==zero .and. ncouc3/=0) then
                  if (iewald/=0) then
-                    pparam=-log(precis)
+                    pparam=-log(precisew)
                     ruex=2.d0*pparam/ncouc3/k00x
                     ruey=2.d0*pparam/ncouc3/k00y
                     ruez=2.d0*pparam/ncouc3/k00z
@@ -308,7 +308,7 @@ subroutine param_det(boxndm)
 
               if (rue == zero .and. alpha==zero .and. ncouc3==0 .and. nc1/=0) then
                  if (iewald/=0) then
-                    pparam=-log(precis)
+                    pparam=-log(precisew)
                     ruex=2.d0*pparam/ncoucx/k00x
                     ruey=2.d0*pparam/ncoucy/k00y
                     ruez=2.d0*pparam/ncoucz/k00z
@@ -322,7 +322,7 @@ subroutine param_det(boxndm)
               endif
 
               if (rue == zero .and. alpha/=zero .and. ncouc3==0 .and. nc1==0) then
-                 pparam=-log(precis)
+                 pparam=-log(precisew)
                  rue=dsqrt(pparam)/alpha
                  if (iewald/=0) then
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
@@ -334,7 +334,7 @@ subroutine param_det(boxndm)
               endif
 
               if (rue /= zero .and. alpha==zero .and. ncouc3==0 .and. nc1==0) then
-                 pparam=-log(precis)
+                 pparam=-log(precisew)
                  alpha=dsqrt(pparam)/rue
                  if (iewald/=0) then
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
@@ -348,7 +348,7 @@ subroutine param_det(boxndm)
               if (rue /= zero .and. alpha/=zero .and. ncouc3==0 .and. nc1==0) then
                  if (rang==0) &
                       write(6,*) 'Seuls la precision et rue sont pris en compte'
-                 pparam=-log(precis)
+                 pparam=-log(precisew)
                  alpha=dsqrt(pparam)/rue
                  if (iewald/=0) then
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
@@ -363,7 +363,7 @@ subroutine param_det(boxndm)
                  if (iewald/=0) then
                     if (rang==0) &
                          write(6,*) 'Seuls la precision et rue sont pris en compte'
-                    pparam=-log(precis)
+                    pparam=-log(precisew)
                     alpha=dsqrt(pparam)/rue
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
                     ncoucy=int(2.d0*pparam/rue/k00y)+1
@@ -379,7 +379,7 @@ subroutine param_det(boxndm)
                  if (iewald/=0) then
                     if (rang==0) &
                          write(6,*) 'Seuls la precision et rue sont pris en compte'
-                    pparam=-log(precis)
+                    pparam=-log(precisew)
                     alpha=dsqrt(pparam)/rue
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
                     ncoucy=int(2.d0*pparam/rue/k00y)+1
@@ -395,7 +395,7 @@ subroutine param_det(boxndm)
                  if (iewald/=0) then
                     if (rang==0) &
                          write(6,*) 'Seuls la precision et alpha sont pris en compte'
-                    pparam=-log(precis)
+                    pparam=-log(precisew)
                     rue=dsqrt(pparam)/alpha
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
                     ncoucy=int(2.d0*pparam/rue/k00y)+1
@@ -411,7 +411,7 @@ subroutine param_det(boxndm)
                  if (iewald/=0) then
                     if (rang==0) &
                          write(6,*) 'Seuls la precision et alpha sont pris en compte'
-                    pparam=-log(precis)
+                    pparam=-log(precisew)
                     rue=dsqrt(pparam)/alpha
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
                     ncoucy=int(2.d0*pparam/rue/k00y)+1
@@ -427,7 +427,7 @@ subroutine param_det(boxndm)
                  if (iewald/=0) then
                     if (rang==0) &
                          write(6,*) 'Seuls la precision et rue sont pris en compte'
-                    pparam=-log(precis)
+                    pparam=-log(precisew)
                     alpha=dsqrt(pparam)/rue
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
                     ncoucy=int(2.d0*pparam/rue/k00y)+1
@@ -443,7 +443,7 @@ subroutine param_det(boxndm)
                  if (iewald/=0) then
                     if (rang==0)  &
                          write(6,*) 'Seuls la precision et rue sont pris en compte'
-                    pparam=-log(precis)
+                    pparam=-log(precisew)
                     alpha=dsqrt(pparam)/rue
                     ncoucx=int(2.d0*pparam/rue/k00x)+1
                     ncoucy=int(2.d0*pparam/rue/k00y)+1
@@ -454,7 +454,7 @@ subroutine param_det(boxndm)
                  endif
                  goto 1
               endif
-
+              
            endif
 
 
@@ -484,12 +484,18 @@ subroutine param_det(boxndm)
            if (rang==0) then
               if (iewald/=0) then
                  write(6,*) 'RUE=',rue,' ALPHA=',alpha,' NCOUC=',ncoucx,ncoucy,ncoucz,&
-                      ' PRECIS =',precis
+                      ' PRECISEW =',precisew
+                 write(6,*)'ncoucx_y_z',ncoucx,ncoucy,ncoucz
+
+                 
               else
                  write(6,*) 'RUE=',rue,' ALPHA=',alpha
               endif
            endif   ! rang = 0
-
+           if (iewald/=0) then
+              allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
+              allocate (tabf3(ntyp,-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
+           end if
 !!$        else ! boucle if (.not. lopt)
 !!$
 !!$
@@ -506,16 +512,16 @@ subroutine param_det(boxndm)
 !!$              stop
 !!$           endif
 !!$
-!!$           if (precis == zero) then
-!!$              precis=1.0d-3
-!!$              pparam=-log(precis)
+!!$           if (precisew == zero) then
+!!$              precisew=1.0d-3
+!!$              pparam=-log(precisew)
 !!$              rue=dsqrt(pparam)/alpha_ixia
 !!$              ncoucx=int(2.d0*pparam/rue/k00x)+1
 !!$              ncoucy=int(2.d0*pparam/rue/k00y)+1
 !!$              ncoucz=int(2.d0*pparam/rue/k00z)+1
 !!$
-!!$           else !  if (precis /= zero) then
-!!$              pparam=-log(precis)
+!!$           else !  if (precisew /= zero) then
+!!$              pparam=-log(precisew)
 !!$              rue=dsqrt(pparam)/alpha_ixia
 !!$              ncoucx=int(2.d0*pparam/rue/k00x)+1
 !!$              ncoucy=int(2.d0*pparam/rue/k00y)+1
@@ -535,7 +541,7 @@ subroutine param_det(boxndm)
 !!$
 !!$           if (rang==0)  write(6,*) 'RUE=',rue,' ALPHA='&
 !!$                ,alpha,' NCOUC=',ncoucx,ncoucy,ncoucz,&
-!!$                ' PRECIS =',precis
+!!$                ' PRECISEW =',precisew
 !!$
 !!$#else
 !!$           write (6,*) rang,'Optimisation de Ewald non prevue pour cette machine'

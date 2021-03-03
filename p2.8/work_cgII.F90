@@ -4,25 +4,26 @@ module work_cgII
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
        it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
-       dmtype, potist,cell_finx,cell_finy,cell_finz,mdcg_noise,formatsauv,lspaceNDM,latcomp
+       dmtype, potist,mdcg_noise,formatsauv,lspaceNDM,latcomp
   USE sauvegardeT_mod,only: sauvegardeT
   USE endrunT_mod,only: endrunT
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
 USE mpi
-use Tpara,only:MPI_COMM_space, status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace
+use Tpara,only:MPI_COMM_space, status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace,para_space_config
 use mod_para,only:maj_atomes_frt_ftm
 #else
-use Tpara,only:nprocspace
+use Tpara,only:nprocspace,para_space_config
 #endif
   USE atomconfig,only : atom_config
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
   use paraconfig,only:para_config,initparapuresp
   USE parautils,only:initcomp,pointer_caltabt_calfo
-  
+
+
   implicit none
-  
+
   type(box_config)::boxcg
   type(atom_config)::atcgcomp
   type(cell_config)::cellcgcomp
@@ -34,8 +35,8 @@ use Tpara,only:nprocspace
   
 contains
 
-  subroutine FUNCT(N,X,F,G,NCALLS)
-
+  subroutine FUNCT(N,X,F,G,NCALLS,psc)
+    type(para_space_config)::psc
     real(double),intent(in):: X(N)
     real(double),intent(out)::G(N),F
     integer,intent(in) ::N,NCALLS
@@ -81,7 +82,7 @@ contains
 
     lchg=.true.
     call pointer_caltabt_calfo(sig,potist,atcgcomp,cellcgcomp,boxcg,atcgloc,cellcgloc,gcpara,lperiod,&
-         &atcgcomp%ltabvois,it,itetabvois,lchg) 
+         &atcgcomp%ltabvois,it,itetabvois,lchg,psc) 
 
     if (it==1) then
        if (lEev.EQV..true.) then 
@@ -181,7 +182,6 @@ end if
        if (lover) then
 
           call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp)
-          !     call DeallocateAll
 
           call arret_ndm
        end if

@@ -4,6 +4,7 @@ module loopforcetest_mod
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
+  use Tpara,only:para_space_config
 
         implicit none
         contains
@@ -12,7 +13,7 @@ module loopforcetest_mod
 !          Version MPI du 21 fevrier 2001
 ! ************************************************
 
-subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
+subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob,psc)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -31,6 +32,7 @@ subroutine loopforcetest(xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
   !-----------------------------------------------
   integer,allocatable, dimension(:)  :: ielat,iwmax,ityp,num_at_glob
   real(double),allocatable,dimension(:,:)  :: xp,fp,vp,ax,xpp
+  type(para_space_config)::psc
   !  integer  :: iwmax(imm)
 !  integer  :: ityp(imm),num_at_glob(imm)
 
@@ -86,7 +88,7 @@ test_force=2
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml,celndm,boxndm)
+  CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
@@ -111,7 +113,7 @@ test_force=2
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml,celndm,boxndm)
+  CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
@@ -139,7 +141,7 @@ test_force=2
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml,celndm,boxndm)
+  CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite
@@ -155,7 +157,7 @@ test_force=2
       call ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize)
   call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,&
        &iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
-  CALL CalFo(sig,potist,atdml,celndm,boxndm)
+  CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc)
 !  write(6,*)'dml potist ',potist,atdml%potist
     call config2ndm(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     call cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize) !inutile (calfo ne change pas celndm) mais laissé par sécurite

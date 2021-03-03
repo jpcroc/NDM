@@ -89,9 +89,6 @@ module gen_com_m
 !!$  integer, dimension(:,:),allocatable :: atincel	! last (i,j) numero du ieme atome de la jeme cel
 !!$  integer, dimension(:,:,:),allocatable :: deltadist ! decalage a appliquer sur la cel
 !  integer :: nox, noy, noz, noxy, noxyz	     !nb de cel suivant x y z et total (DOIT REMPLACER nce)
-  integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
-  integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
-  integer :: nb_cell_x, nb_cell_y, nb_cell_z     !nb de cel locales suivant x y z
 !  real(double), dimension(3) :: celsize	     ! taille des cel
 
 
@@ -211,8 +208,6 @@ module gen_com_m
   character :: nature*6 ! element chimique
   integer :: nvat
   !EWALD
-  real(double), dimension(:,:,:),allocatable :: tabv3
-  real(double), dimension(:,:,:,:),allocatable :: tabf3
 
 
   logical :: lalea  ! preparation d'une configuration aleatoire

@@ -6,7 +6,6 @@ module neb_controle_mod
   USE deftimestep_mod,only: deftimestep
   USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,nebtype,temp,rang,potist,leev,itmax,itetimestep,itetemp,&
        &angst,erg2ev,it
-  USE dynalloccell,only:deallocateall
   implicit none
 contains
 

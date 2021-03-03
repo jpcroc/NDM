@@ -5,7 +5,7 @@ module elec_cell
        &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter,im_glob
   USE var_pot, ONLY:cm
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
-  !
+  use Tpara,only:para_space_config  !
   implicit none
   type :: ecelltype
      real(double)::temp
@@ -218,17 +218,17 @@ contains
   end subroutine readelec
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine TTlangevin(xp, vp, fp,ityp,il,num_at_glob)
+  subroutine TTlangevin(xp, vp, fp,ityp,il,num_at_glob,psc)
 
 
 #ifdef PARA
     USE mpi
     USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace
-    USE mod_para,only:proc_cell
+!    USE mod_para,only:proc_cell
 #else
     USE Tpara,only:nprocspace
 #endif
-
+    type(para_space_config)::psc
     real(double)  :: xp(3,imm)
     real(double)  :: vp(3,imm)
     real(double)  :: fp(3,imm)
@@ -259,7 +259,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     do ko = 1, noxyz
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-          if (proc_cell(ko).ne.myidsp) cycle
+          if (psc%proc_cell(ko).ne.myidsp) cycle
        end if
 #endif
        if (nato(ko)==0) cycle

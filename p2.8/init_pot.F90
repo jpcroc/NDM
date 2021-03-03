@@ -149,6 +149,7 @@ contains
 
   subroutine init_pot2(boxndm)
     use boxconfig,only:box_config
+      USE calpo_ew_mod,only: calpo_ew
     implicit none
 #ifdef ML
 
@@ -176,6 +177,10 @@ contains
        select case(ipotentiel)
        case(0:9)
           call calpo
+          if (iewald==1.or.iewald==2) then
+             call calpo_ew(boxndm)
+          end if
+
        case(10:12)
           call calpoeam
        case(13,14,15)

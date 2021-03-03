@@ -1,10 +1,10 @@
 module dynalloccell
   use temp_com,only: ncel,nato,atincel,deltadist,sigc,tempc,tempcm,noxyz
-  USE gen_com_m, ONLY:l2t,lsigatcel,ltpcel,tempstopcel,tabv3,tabf3,natchk, lprtcel,zero,elossCel
+  USE gen_com_m, ONLY:l2t,lsigatcel,ltpcel,tempstopcel,natchk, lprtcel,zero,elossCel
   USE var_pot, ONLY:iewald,ncoucx,ncoucy,ncoucz,ntyp,cm,ipo,catom,ty,pot,rc,lue_paire,lue_typ,lue_trip,dip,pm,roff1,&
        &roff2,a_factor,r8p,ray,bm,shel,awat,bwat,qwat,potw,bspw,cspw,bspw,eamrep,eamrep_d,eamglue,eamglue_d,eamrho,eamrho_d,&
        &lamb,gam,cangle, coup3c,ipo3c, coup3c2,l3ctyp,l3cpair,coord,digr,fda,lu_roff_pair,lue_typ,&
-       &typ_pot_pair,lue_trip,rue_pair,ipo,q,ro,rawat,dspw
+       &typ_pot_pair,lue_trip,rue_pair,ipo,q,ro,rawat,dspw,tabf3,tabv3
   implicit none 
 contains
   subroutine DynamicalAllocationCell
@@ -13,7 +13,8 @@ contains
 
     USE eloss, ONLY :tcelec
     implicit none
-
+    write(6,*)'Vous n avez rien à faire ici'
+    stop
 !    allocate(ncel(0:noxyz,0:26))
 !    allocate(nato(0:noxyz))
 !    allocate(atincel(natperc,0:noxyz))
@@ -21,10 +22,11 @@ contains
     if (lTPcel.EQV..true.)then
 !       allocate(sigc(3,3,noxyz)); sigc(:,:,:noxyz)=0.
     endif
-    if (iewald.ge.1) then
-       allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
-       allocate (tabf3(ntyp,-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
-    end if
+!    if (iewald.ge.1) then
+!       write(6,*)'ncoucx',ncoucx
+!       allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
+!       allocate (tabf3(ntyp,-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
+!    end if
 
     ncel(:noxyz,:26) = zero                 ! et petite initialisation
 
@@ -58,21 +60,21 @@ contains
 
   end subroutine DynamicalAllocationCell
 
-subroutine Deallocatecel
-  USE gen_com_m, ONLY:
-
-  implicit none
-  if(allocated(ncel))deallocate(ncel)
-  if(allocated(nato))deallocate(nato)
-  if(allocated(atincel))deallocate(atincel)
-  if(allocated(deltadist))deallocate(deltadist)
-  if(allocated(sigc))deallocate(sigc)
-  if (iewald.ge.1) then
-     deallocate (tabv3)
-     deallocate (tabf3)
-  end if
-
-end subroutine Deallocatecel
+!!$subroutine Deallocatecel
+!!$  USE gen_com_m, ONLY:
+!!$
+!!$  implicit none
+!!$  if(allocated(ncel))deallocate(ncel)
+!!$  if(allocated(nato))deallocate(nato)
+!!$  if(allocated(atincel))deallocate(atincel)
+!!$  if(allocated(deltadist))deallocate(deltadist)
+!!$  if(allocated(sigc))deallocate(sigc)
+!!$  if (iewald.ge.1) then
+!!$     deallocate (tabv3)
+!!$     deallocate (tabf3)
+!!$  end if
+!!$
+!!$end subroutine Deallocatecel
 
 subroutine DeallocateAll
 

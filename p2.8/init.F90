@@ -38,6 +38,7 @@ module init_mod
   use lammps_util_mod
   use vars_lammps
 #endif
+  use Tpara,only:para_space_config
 
   USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,formatsauv,ibound,igen,ilangevin,it,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lhcyl,lperiod,lrestart,ltranche,pmean,rang,timel,two,im_glob,&
@@ -48,7 +49,7 @@ USE var_pot, ONLY:ipotentiel
 
 contains
   ! **************************************************************
-  subroutine init(atdml,boxndm,celndm)
+  subroutine init(atdml,boxndm,celndm,psc)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -64,8 +65,7 @@ contains
 #ifdef PARA
     use mpi
     USE Tpara,only:MPI_COMM_space,myidsp,nprocspace
-    USE mod_para,only:TEMPS_INPUT_DEB,TEMPS_INPUT,TEMPS_CONFIG_DEB,TEMPS_CONFIG,&
-         &NBR_PROC_VOISIN,TEMPS_INITSPEED_DEB,TEMPS_INITSPEED
+!    USE mod_para,only:NBR_PROC_VOISIN
 #else
     use Tpara,only:nprocspace
     
@@ -77,6 +77,7 @@ contains
     class(atom_config)::atdml
     type(cell_config),intent(out)::celndm
     type(box_config),intent(out)::boxndm
+    type(para_space_config)::psc
 
     integer :: i, lufilmpaf,itapp,j,lenfn2,ipath,ierr
     !-----------------------------------------------
@@ -94,9 +95,6 @@ contains
 #ifdef PARAPH
     rang=rangph
 #endif
-#ifdef PARA
-    temps_input_deb = MPI_Wtime()
-#endif
 
     call init_pot
     usdh = 1/(two*tstep)
@@ -105,20 +103,13 @@ contains
     end if
     it=0
     !<---------setting the configuration by reading gin / cin file --------------
-#ifdef PARA
-       temps_input=MPI_Wtime()-temps_input_deb
-       temps_config_deb = MPI_Wtime()
-#endif
 
        if ((ipotentiel==-10).or.(ipotentiel==-11))then
           lrepart=.false.
        else
           lrepart=.true.
        end if
-       call constrconf(atdml,boxndm,celndm,lrepart)
-#ifdef PARA
-       temps_config=MPI_Wtime()-temps_config_deb
-#endif
+       call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
        call init_pot2(boxndm)
 #ifdef DECOUP
        ! Pas la peine d'aller plus loin dans l'initialisation
@@ -157,10 +148,10 @@ contains
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           CALL MPI_BARRIER(MPI_COMM_space,ierr)
-          call init_voisinage(celndm)
+          call init_voisinage(celndm,psc)
           
           if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
-          write(6,*) 'Le proc ',myidsp,' a ',nbr_proc_voisin,' processeur voisin'
+          write(6,*) 'Le proc ',myidsp,' a ',psc%nbr_proc_voisin,' processeur voisin'
        end if
 #endif
     !<---------end setting the cell diviion ----------------------
@@ -208,9 +199,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
        if (.not.lrestart) then
           !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
-#ifdef PARA
-          temps_initspeed_deb = MPI_Wtime()
-#endif
 
           ! input and initialization of 2T
           select type(atdml)
@@ -229,18 +217,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        end if
        !end init the speed using Maxwell proba density-----------------
 
-
-
-#ifdef PARA
-       temps_initspeed=MPI_Wtime()-temps_initspeed_deb
-#endif
-
        if ((itetimestep>0).and.(.not.lcasca)) call deftimestep
-
-
-!       if (lcontr) call initcontr(xp,xpp,vp,ax,ityp)
-
-
        if (lcasca) then
           call initcasca
 114       format(a3,1x,3(f10.4,1x),i5)

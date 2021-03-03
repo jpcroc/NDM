@@ -9,7 +9,8 @@ module neb_mod
        &fnam,lenfnam,lfire,itesauv,itetabvois,iteanaposneb,maxneb,&
        &nebrelaxation,lperiod,lspacendm,latcomp
 
-  
+  use Tpara,only:para_space_config
+
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config,caltabtC
   USE boxconfig,only:box_config,periodbox
@@ -19,7 +20,7 @@ module neb_mod
   use sauvegardeT_mod,only:sauvegardet
   use neb_module,only:cellneb,atneb,sigpath,boxneb,npath,enepath,nebtype,enepathev,reaction_coord,&
        &lvzeroneb,dragtest,nebtest,force_neb,formax,init_neb,find_relax,bruit_neb,build_s_path_drag,&
-       &force_projection,build_s_path_neb,force_projection_neb,paraneb
+       &force_projection,build_s_path_neb,force_projection_neb,paraneb,pscneb
   USE caltabi_mod,only: caltabi
   USE parautils,only:initloc,pointer_caltabt_calfo
 
@@ -93,7 +94,7 @@ contains
 #ifdef PARA
     lmaster=paraneb%lmaster
     if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
-       call init_voisinage(cellneb(1))
+       call init_voisinage(cellneb(1),pscneb)
     end if
 
 
@@ -180,7 +181,7 @@ contains
           ii=i1
           if (i1==npath)ii=npath-1
           if (i1==npath-1)ii=npath
-          call initloc(atneb(ii),cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod) !initloc contient caltabtc sur atloc
+          call initloc(atneb(ii),cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod,psc=pscneb) !initloc contient caltabtc sur atloc
           if (ipotentiel.lt.0) then
              lchange=.true.
           else
@@ -193,7 +194,7 @@ contains
           if (atneb(ii)%ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii),boxneb)
 #endif    
           call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
-               &lperiod,atneb(ii)%ltabvois,it,itetabvois,lchg=lchange)
+               &lperiod,atneb(ii)%ltabvois,it,itetabvois,lchg=lchange,psc=pscneb)
           if (lmaster) then
 
              call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
@@ -218,7 +219,7 @@ contains
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
     if (paraneb%lmaster) then
-       if ((paraneb%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+       if (paraneb%npim.gt.1) then
           call MPI_ALLREDUCE(enepathev,enepathev_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           call MPI_ALLREDUCE(enepath,enepath_tot,npath,NDM_MPI_REAL_DOUBLE,MPI_SUM,paraneb%comm_master,ierr)
           enepathev(:)=enepathev_tot ; enepath=enepath_tot
@@ -252,7 +253,7 @@ contains
 
                 if ((lperiod).and.(lmaster))    call periodbox (boxneb,atneb(ii))
                 call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
-                     &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.)
+                     &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,psc=pscneb)
 
 #ifdef PARA
 
@@ -358,9 +359,9 @@ contains
                    it_neb_inter=it_neb_inter+1
                    it=it_neb_inter
 
-                   if (lperiod)    call periodbox (boxneb,atneb(ii))
+                   if (lperiod)   call periodbox (boxneb,atneb(ii))
                    call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
-                        &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.)
+                        &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,psc=pscneb)
                    if (lmaster) then
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
                            &atneb(ii)%imm,atneb(ii)%im)

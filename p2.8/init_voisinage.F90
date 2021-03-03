@@ -1,20 +1,22 @@
 #ifdef PARA
 module init_vois_mod
   use cellconfig,only:cell_config
+  use Tpara,only:para_space_config
   implicit none
 
   
         contains
-subroutine init_voisinage (cellv)
+subroutine init_voisinage (cellv,psc)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   use gen_com_m,only:
   use Tpara,only:MPI_COMM_space, nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
-  use mod_para,only:proc_voisin,nbr_proc_voisin,nbr_cell_ftm,NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
+!  use mod_para,only:nbr_cell_ftm,NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
 
   implicit none
   type(cell_config),intent(in)::cellv
+  type(para_space_config)::psc ! para_space_config 
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
@@ -31,30 +33,30 @@ subroutine init_voisinage (cellv)
   integer :: num_proc_vois
 
   ! intialisations preliminaires
-  if( allocated(proc_voisin)) deallocate(proc_voisin)
-  allocate(proc_voisin(min(nprocspace,26)))
+  if( allocated(psc%proc_voisin)) deallocate(psc%proc_voisin)
+  allocate(psc%proc_voisin(min(nprocspace,26)))
   
-  proc_voisin(:)=-1
-  nbr_proc_voisin = 0
-  nbr_cell_ftm  = 0
+  psc%proc_voisin(:)=-1
+  psc%nbr_proc_voisin = 0
+  psc%nbr_cell_ftm  = 0
 
-  if (allocated(nbr_cell_frontiere)) deallocate(nbr_cell_frontiere)
-  allocate(nbr_cell_frontiere(min(nprocspace,26)))
+  if (allocated(psc%nbr_cell_frontiere)) deallocate(psc%nbr_cell_frontiere)
+  allocate(psc%nbr_cell_frontiere(min(nprocspace,26)))
 
-  nbr_cell_frontiere(:) = 0
+  psc%nbr_cell_frontiere(:) = 0
   ! Calcul du nombre de cellules frontieres
-  nb_internes = max(res_cpu(myidsp,1)-2,0) * max(res_cpu(myidsp,2)-2,0) * max(res_cpu(myidsp,3)-2,0)
-  nb_frontieres = res_cpu(myidsp,1)*res_cpu(myidsp,2)*res_cpu(myidsp,3) - nb_internes
+  nb_internes = max(psc%res_cpu(myidsp,1)-2,0) * max(psc%res_cpu(myidsp,2)-2,0) * max(psc%res_cpu(myidsp,3)-2,0)
+  nb_frontieres = psc%res_cpu(myidsp,1)*psc%res_cpu(myidsp,2)*psc%res_cpu(myidsp,3) - nb_internes
 
-  if (allocated(cell_frontiere )) deallocate(cell_frontiere )
-  allocate(cell_frontiere(size(nbr_cell_frontiere,1),nb_frontieres))
+  if (allocated(psc%cell_frontiere )) deallocate(psc%cell_frontiere )
+  allocate(psc%cell_frontiere(size(psc%nbr_cell_frontiere,1),nb_frontieres))
 
-  cell_frontiere(:,:) = 0
-  nb_fantomes_max = (res_cpu(myidsp,1) + 2) * (res_cpu(myidsp,2) + 2) * (res_cpu(myidsp,3) + 2) 
-  nb_fantomes_max = nb_fantomes_max - res_cpu(myidsp,1)*res_cpu(myidsp,2)*res_cpu(myidsp,3)
+  psc%cell_frontiere(:,:) = 0
+  nb_fantomes_max = (psc%res_cpu(myidsp,1) + 2) * (psc%res_cpu(myidsp,2) + 2) * (psc%res_cpu(myidsp,3) + 2) 
+  nb_fantomes_max = nb_fantomes_max - psc%res_cpu(myidsp,1)*psc%res_cpu(myidsp,2)*psc%res_cpu(myidsp,3)
 
-  if( allocated(cell_ftm )) deallocate(cell_ftm )
-  allocate(cell_ftm(nb_fantomes_max))
+  if( allocated(psc%cell_ftm )) deallocate(psc%cell_ftm )
+  allocate(psc%cell_ftm(nb_fantomes_max))
 
   ! Calcul du nombre de cellules fantomes 
 
@@ -77,29 +79,29 @@ subroutine init_voisinage (cellv)
                  ! on stocke le processeur voisin si il n'est
                  ! pas deja connu
                  est_present=0
-                 do i=1,nbr_proc_voisin
-                    if ( proc_voisin(i)==cellv%proc_cell(cell_vois) ) then
+                 do i=1,psc%nbr_proc_voisin
+                    if ( psc%proc_voisin(i)==cellv%proc_cell(cell_vois) ) then
                        est_present=1
                        num_proc_vois=i
                     endif
                  enddo
                  if (est_present==0) then
-                    nbr_proc_voisin = nbr_proc_voisin + 1
-                    proc_voisin(nbr_proc_voisin) = cellv%proc_cell(cell_vois)
-                    num_proc_vois = nbr_proc_voisin
+                    psc%nbr_proc_voisin = psc%nbr_proc_voisin + 1
+                    psc%proc_voisin(psc%nbr_proc_voisin) = cellv%proc_cell(cell_vois)
+                    num_proc_vois = psc%nbr_proc_voisin
                  endif
 
                  ! on stocke la cellule courante comme cellule
                  ! a emettre si elle n'est pas deja connue
                  est_present=0
-                 do i=1,nbr_cell_frontiere(num_proc_vois)
-                    if (cell_frontiere(num_proc_vois,i)==cell) then
+                 do i=1,psc%nbr_cell_frontiere(num_proc_vois)
+                    if (psc%cell_frontiere(num_proc_vois,i)==cell) then
                        est_present=1
                     endif
                  enddo
                  if (est_present==0) then 
-                    nbr_cell_frontiere(num_proc_vois) = nbr_cell_frontiere(num_proc_vois) + 1
-                    cell_frontiere(num_proc_vois,nbr_cell_frontiere(num_proc_vois)) = cell
+                    psc%nbr_cell_frontiere(num_proc_vois) = psc%nbr_cell_frontiere(num_proc_vois) + 1
+                    psc%cell_frontiere(num_proc_vois,psc%nbr_cell_frontiere(num_proc_vois)) = cell
                  endif
 
               endif ! la cellule voisine n'est pas locale
@@ -120,12 +122,12 @@ subroutine init_voisinage (cellv)
                  ! locale
                  ! on regarde si elle n'est pas deja presente et on l'ajoute
                  est_present=0
-                 do i_cell_ftm=1,nbr_cell_ftm
-                    if (cell_ftm(i_cell_ftm)==cell) est_present=1 
+                 do i_cell_ftm=1,psc%nbr_cell_ftm
+                    if (psc%cell_ftm(i_cell_ftm)==cell) est_present=1 
                  enddo
                  if (est_present==0) then
-                    nbr_cell_ftm = nbr_cell_ftm + 1
-                    cell_ftm(nbr_cell_ftm) = cell
+                    psc%nbr_cell_ftm = psc%nbr_cell_ftm + 1
+                    psc%cell_ftm(psc%nbr_cell_ftm) = cell
                  endif
 
               endif ! la cellule voisine est locale

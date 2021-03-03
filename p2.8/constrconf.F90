@@ -19,11 +19,12 @@ module constrconf_mod
     use mpi
     USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace
 #endif
+  use Tpara,only:para_space_config
 
 
   implicit none
 contains
-  subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart,filename)
+  subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart,filename,psc)
     !********************************************************************
     !             CONSTRUCTION DE LA BOITE DE SIMULATION
     !********************************************************************
@@ -37,6 +38,7 @@ contains
     integer :: i, icell, iti
     type(box_config)::boxrgin
     type(atom_config)::atrgin
+    type(para_space_config)::psc
 #ifndef PARA
     integer :: nprocspace=1
 #endif
@@ -92,7 +94,7 @@ contains
        call setnox(boxrcf,cellrcf,rumax)
        ncore=0
 
-       call  decoupage(nprocspace,ncore,cellrcf,atrcf)
+       call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc)
        allocate(num_at_buff(imm_glob))
        im_glob=COMPatrcf%im
        call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
@@ -102,7 +104,7 @@ contains
           itread=1
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-             call  decoupage(nprocspace,ncore,cellrcf)
+             call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
           end if
              
           im_glob=atrcf%im
@@ -125,7 +127,7 @@ contains
           open(123, file='decoup.dat', status='old')
           read (123, *) nprocspace,ncore
           close(123)         
-          call  decoupage(nprocspace,ncore,cellrcf)
+          call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
           stop
        else
           itread=1
@@ -156,7 +158,7 @@ contains
        ! open fichier .gin
        fnamgin = fnam(1:lenfnam)//'.gin'
 
-       call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax,lrepart)
+       call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax,lrepart,psc)
 
 
        if (lperiod.EQV..true.) call periodbox (boxrcf,atrcf)
@@ -222,8 +224,9 @@ contains
   end subroutine constrconf
   
 
-    subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum,lrepartition)
-    class(atom_config)::at2b
+    subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum,lrepartition,psc)
+      type(para_space_config)::psc
+      class(atom_config)::at2b
     type(cell_config)::cel2b
     type(box_config)::box2b
     integer,intent(out)::imtot
@@ -260,9 +263,9 @@ contains
     ncore=0
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        if (lrepart) then
-          call  decoupage(nprocspace,ncore,cel2b,at2b)
+          call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc)
        else
-          call  decoupage(nprocspace,ncore,cel2b)
+          call  decoupage(nprocspace,ncore,cel2b,psc=psc)
        end if
     end if
     !    call MPI_finalize(ierr)
@@ -284,7 +287,7 @@ contains
        open(123, file='decoup.dat', status='old')
        read (123, *) npr,ncore
        close(123)         
-       call  decoupage(npr,ncore,cel2b)
+       call  decoupage(npr,ncore,cel2b,psc=psc)
        stop
     end if
     call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)

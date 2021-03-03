@@ -1,7 +1,7 @@
 module calpo_mod
   USE spline_mod,only: cspline
   USE zieg2_mod,only: zieg2
-  USE calpo_ew_mod,only: calpo_ew
+
   USE dervbeest_mod,only: deriVBEEST,maxVBEEST,potvbeest
 
   USE arret_ndm_mod,only: arret_ndm
@@ -17,10 +17,6 @@ module calpo_mod
   
   implicit none
 contains
-  ! ***********************************************************
-  !    Sous-programme de calcul de potentiels de paires
-  !                Version du 29/11/2000
-  ! ***********************************************************
 
   subroutine calpo
     !-----------------------------------------------
@@ -616,9 +612,6 @@ contains
 
 
 
-    if (iewald==1.or.iewald==2) then
-       call calpo_ew
-    end if
 
     return
   end subroutine calpo

@@ -14,6 +14,7 @@ module dmloop_vverlet_mod
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
 USE calfoberend_mod,only:calfoberend
+  use Tpara,only:para_space_config
 
 
   implicit none 
@@ -21,7 +22,7 @@ contains
   ! boucle de DM pour velocity Verlet
   ! ************************************************
 
-  subroutine dmloop_vverlet(atdml,celndm,boxndm)
+  subroutine dmloop_vverlet(atdml,celndm,boxndm,psc)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -34,11 +35,11 @@ contains
 #ifdef PARA
     use mpi
     USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE
-    USE mod_para,only:temps_debpara,temps_para
 #else
   USE Tpara,only:nprocspace
 #endif
     implicit none
+    type(para_space_config)::psc
     type(box_config)::boxndm
     class(atom_config_d)::atdml
     type(cell_config):: celndm
@@ -59,15 +60,12 @@ contains
     ! MPI
     logical :: test_sigma
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****'
-#ifdef PARA
-    temps_para=0.
-#endif
 
     if (lsuivinonpbc) call init_suivinonpbc()
     ! Appel de la routine generale des forces
     test_sigma=(mod(it,itesigma)==0)
 
-    CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
+    CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
     if (l2t)then
        if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     else
@@ -85,7 +83,7 @@ contains
 
 
     if (ldesinteg)itdes=itdes+1
-    call dyn_vverlet(atdml,celndm,boxndm)
+    call dyn_vverlet(atdml,celndm,boxndm,psc)
     ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
 
     if (test_sigma) then

@@ -14,7 +14,6 @@ module initspeed_mod
 #ifdef PARA
   use mpi
   USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,nprocspace,myidsp
-  USE mod_para,only:temps_debpara,temps_para
 #else
     USE Tpara,only:nprocspace,myidsp
 #endif

@@ -1,7 +1,7 @@
 module epme_mod
   USE temp_com,only:volu,bg ! A EFFACER
   USE moduli_mod,only: moduli
-    USE gen_com_m, ONLY:it,itesigma,pi,potis3,zero,tabv3
+    USE gen_com_m, ONLY:it,itesigma,pi,potis3,zero
         implicit none 
         contains
 !                   Version du 10/12/2001
@@ -14,7 +14,7 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp)
   use moduli_mod,only:bspline
 
   USE var_pot, ONLY:alpha,auxe,maxorder,kpmex,kpmey,kpmez,ncoucx,ncoucy,ncoucz,nf1,nf2,nf3,nff,nfft1,nfft2,nfft3,&
-       &npoint,pterm,volterm,fr1,fr2,fr3,iiim,q,bsmod3,iiim,ijim,ikim,bsmod2,de3,bsmod1,de2,de1
+       &npoint,pterm,volterm,fr1,fr2,fr3,iiim,q,bsmod3,iiim,ijim,ikim,bsmod2,de3,bsmod1,de2,de1,tabv3
   USE fft_com_m
 
   implicit none

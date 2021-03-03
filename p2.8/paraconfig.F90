@@ -43,7 +43,6 @@ module paraconfig
 
 #endif
 contains
-    
   subroutine commconstr(div)
     type(para_config)::div
 #ifdef PARA

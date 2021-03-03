@@ -3,7 +3,7 @@ module cellconfig
   use atomconfig,only : atom_config,atom_config_d,atom_config_e
   use boxconfig,only:box_config
   use paraconfig,only:para_config
-
+  use Tpara,only:para_space_config
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
@@ -35,24 +35,27 @@ module cellconfig
   end type cell_config
 
   type systeme
-     type(atom_config)::atcf
-     type(cell_config)::cellcf
-     type(box_config)::box
-     type(para_config)::paracf
+     type(atom_config),pointer::atcf
+     type(cell_config),pointer::cellcf
+     type(box_config),pointer::box
+     type(para_config),pointer::paracf
+
      integer::ipotentiel
   end type systeme
   type systeme_d
-     type(atom_config_d)::atcf
-     type(cell_config)::cellcf
-     type(box_config)::box
-     type(para_config)::paracf
+     type(atom_config_d),pointer::atcf
+     type(cell_config),pointer::cellcf
+     type(box_config),pointer::box
+     type(para_config),pointer::paracf
+     type(para_space_config)::psc
      integer::ipotentiel
   end type systeme_d
   type systeme_e
-     type(atom_config_e)::atcf
-     type(cell_config)::cellcf
-     type(box_config)::box
-     type(para_config)::paracf
+     type(atom_config_e),pointer::atcf
+     type(cell_config),pointer::cellcf
+     type(box_config),pointer::box
+     type(para_config),pointer::paracf
+     type(para_space_config)::psc
      integer::ipotentiel
   end type systeme_e
 
@@ -321,7 +324,7 @@ contains
           !          write(6,*)'caltabt', koo,i,cell%nato(koo)        ! DEBUG
           ! ==== MODIF Clouet =====================
           IF (cell%nato(koo).GT.cell%natperc) THEN
-             WRITE(0,'(a)') 'You need to increase the maximal number of atoms per cell'
+             WRITE(0,'(a)') 'caltabtC : You need to increase the maximal number of atoms per cell'
              WRITE(0,'(a,i0)') 'current value: natperc=', cell%natperc
              STOP '< CaltabtC >'
           END IF

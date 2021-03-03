@@ -6,18 +6,19 @@ module decoupage_mod
   USE read_val,only:rvois
   implicit none
 contains
-  subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose)
+  subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose,psc)
 
 #ifdef PARA
     USE mpi
-    USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE!,coord_max,coord_min
-    USE mod_para,only:res_cpu!,coord_max,coord_min
+    USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config!,coord_max,coord_min
+!    USE mod_para,only:res_cpu,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,nb_cell_x,nb_cell_y,nb_cell_z
 #endif
-    USE Tpara,only:myidsp,nprocspace
-    USE gen_com_m, ONLY:cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,imm_glob,&
-         &nb_cell_x,nb_cell_y,nb_cell_z,rang,ldecoup,lsigat,lprteat,llangevin,lax,imm_loc
+    USE Tpara,only:myidsp,nprocspace,para_space_config
+    USE gen_com_m, ONLY:imm_glob,rang,ldecoup,lsigat,lprteat,llangevin,lax,imm_loc
 
     use read_val,only:ltabvois
+        type(para_space_config)::psc
+
     integer :: nbr_cpuIN !Egal aussi au nombre de zone qu'on d�coupera dans la boite
     integer::ncore ! nb de coeur par noeud
     type(cell_config)::celdec
@@ -34,10 +35,6 @@ contains
     integer, allocatable :: decoup(:,:) !tableau comprenant l'ensemble des decoupages 
     !possibles en fct des 3 dimensions
     real(double), allocatable :: specifs(:,:) 
-
-#ifndef PARA
-    integer, allocatable :: res_cpu(:,:)
-#endif
 
     integer :: messages,messages_max,messages_min
     integer :: tailleminx,tailleminy,tailleminz   ! nbre de cellule min
@@ -134,7 +131,7 @@ contains
        enddo
        if (.not.allocated(specifs))allocate(specifs(nb_sol,7))
 
-       if (.not.allocated(res_cpu))allocate(res_cpu(0:nbr_cpu-1,3))
+       if (.not.allocated(psc%res_cpu))allocate(psc%res_cpu(0:nbr_cpu-1,3))
        if (.not.allocated(coord_min))allocate(coord_min(0:nbr_cpu-1,3))
        if (.not.allocated(coord_max))allocate(coord_max(0:nbr_cpu-1,3))
 
@@ -159,7 +156,7 @@ contains
           deallocate(decoup)
           deallocate(specifs)
 
-          deallocate(res_cpu)
+          deallocate(psc%res_cpu)
           deallocate(coord_min)
           deallocate(coord_max)
 
@@ -253,9 +250,9 @@ contains
                 coord_max(num_cpu,3) = coord_min(num_cpu,3) + tailleminz -1
                 if (kk<=restez) coord_max(num_cpu,3) = coord_max(num_cpu,3) + 1
 
-                res_cpu(num_cpu,1) = coord_max(num_cpu,1) - coord_min(num_cpu,1) + 1
-                res_cpu(num_cpu,2) = coord_max(num_cpu,2) - coord_min(num_cpu,2) + 1
-                res_cpu(num_cpu,3) = coord_max(num_cpu,3) - coord_min(num_cpu,3) + 1
+                psc%res_cpu(num_cpu,1) = coord_max(num_cpu,1) - coord_min(num_cpu,1) + 1
+                psc%res_cpu(num_cpu,2) = coord_max(num_cpu,2) - coord_min(num_cpu,2) + 1
+                psc%res_cpu(num_cpu,3) = coord_max(num_cpu,3) - coord_min(num_cpu,3) + 1
 
 #ifdef PARA
                 ! On affecte ces cellules au processeur concerne
@@ -303,7 +300,7 @@ contains
              
              write(iudecoup,*)'Taille des decoupages'
              do ii=0,nbr_cpu-1
-                write(iudecoup,*)'Decoupage',ii,':',res_cpu(ii,1:3)
+                write(iudecoup,*)'Decoupage',ii,':',psc%res_cpu(ii,1:3)
              enddo
              write(iudecoup,*)'----------------------------------------------'
              do ii = 0,nbr_cpu-1   
@@ -326,7 +323,7 @@ contains
 
        cellules_max=0
        do ii = 0,nbr_cpu-1
-          cellules_max = max(cellules_max,(res_cpu(ii,1)+2) * (res_cpu(ii,2)+2)* (res_cpu(ii,3)+2))
+          cellules_max = max(cellules_max,(psc%res_cpu(ii,1)+2) * (psc%res_cpu(ii,2)+2)* (psc%res_cpu(ii,3)+2))
        enddo
        cellules_max = min (cellules_max, noxyz)
        imm_loc = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
@@ -345,15 +342,15 @@ contains
        end if
        !     write(iudecoup,*)'test4' 
        ! Initialisation des donnees geometriques qui serviront pour le reste du code :
-       cell_debx= coord_min(myidsp,1)
-       cell_finx= coord_max(myidsp,1)
-       cell_deby= coord_min(myidsp,2)
-       cell_finy= coord_max(myidsp,2)
-       cell_debz= coord_min(myidsp,3)
-       cell_finz= coord_max(myidsp,3)
-       nb_cell_x= cell_finx - cell_debx + 1
-       nb_cell_y= cell_finy - cell_deby + 1
-       nb_cell_z= cell_finz - cell_debz + 1
+       psc%cell_debx= coord_min(myidsp,1)
+       psc%cell_finx= coord_max(myidsp,1)
+       psc%cell_deby= coord_min(myidsp,2)
+       psc%cell_finy= coord_max(myidsp,2)
+       psc%cell_debz= coord_min(myidsp,3)
+       psc%cell_finz= coord_max(myidsp,3)
+       psc%nb_cell_x= psc%cell_finx - psc%cell_debx + 1
+       psc%nb_cell_y= psc%cell_finy - psc%cell_deby + 1
+       psc%nb_cell_z= psc%cell_finz - psc%cell_debz + 1
 #endif
 !#endif
 
@@ -361,7 +358,7 @@ contains
        deallocate(decoup)
        deallocate(specifs)
 
-       deallocate(res_cpu)
+       deallocate(psc%res_cpu)
        deallocate(coord_min)
        deallocate(coord_max)
 #endif

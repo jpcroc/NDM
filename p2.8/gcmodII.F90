@@ -133,9 +133,9 @@ module gcmodII_mod
 
 #ifdef PARA
 !  use mpi
-  USE Tpara,only:MPI_COMM_space,ierr,nprocspace,status,myidsp
+  USE Tpara,only:MPI_COMM_space,ierr,nprocspace,status,myidsp,para_space_config
 #else
-  USE Tpara,only:nprocspace,myidsp
+  USE Tpara,only:nprocspace,myidsp,para_space_config
 #endif  
   implicit none
 #ifdef PARA
@@ -143,13 +143,14 @@ module gcmodII_mod
 #endif  
 contains
 
-  SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS)
+  SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS,psc)
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dfpred,rang,lspacendm
     !  USE gen_com_m, ONLY:
     !                                  SPECIFICATIONS FOR ARGUMENTS         
 
-    INTEGER            N,MAXFN,IER,iopt                              
+    type(para_space_config)::psc
+   INTEGER            N,MAXFN,IER,iopt                              
     DOUBLE PRECISION   ACC,X(N),G(N),F,W(6*N)                    
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
@@ -217,7 +218,7 @@ contains
 !       write(6,*)'G1',G
 !    end if
 !    write(6,*)'funct',rang,ncalls
-    CALL FUNCT (N,X,F,G,NCALLS)                                
+    CALL FUNCT (N,X,F,G,NCALLS,psc)                                
  !   unitw=ncalls+rang*10+100
  !   write(6,*)'unitw',unitw
  !   write(unitw,*)'F',F

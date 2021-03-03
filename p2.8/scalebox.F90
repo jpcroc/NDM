@@ -91,7 +91,7 @@ contains
     end if
 
     if ((celndm%nox.ne.noxn).or.(celndm%noy.ne.noyn).or.(celndm%noz.ne.nozn).or.((dmtype.eq.9).and.(it==1)))then
-       call Deallocatecel
+!       call Deallocatecel !fait dans %init
        celndm%nox=noxn; celndm%noy=noyn; celndm%noz=nozn
 
        if (dmtype.ne.9) then
@@ -118,7 +118,7 @@ contains
        end if
 !       write(6,*)'BOUFFON!'
 !       stop
-      call celndm%init(celndm%nox,celndm%noy,celndm%noz,celndm%natperc)
+      call celndm%init(celndm%nox,celndm%noy,celndm%noz,celndm%natperc) !contient dealloc
 !       call DynamicalAllocationCell
 !       call neigcel
 

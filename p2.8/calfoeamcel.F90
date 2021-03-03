@@ -7,7 +7,7 @@ module calfoeamcel_mod
 contains
   !----------------------------------------------------------------------
   SUBROUTINE calfoeamcel(im,imm,xp,   fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,&
-       &nox,noy,noz,at,bg,volu)
+       &nox,noy,noz,at,bg,volu,psc)
 
     USE T_kind_param_m
 
@@ -17,14 +17,15 @@ contains
 
 #ifdef PARA
     !  use mpi
-    use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace
+    use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace,para_space_config
     USE mod_para,only:maj_tabdensity_ftm
 
     include 'mpif.h'
 
 #else
-    USE Tpara,only:nprocspace
+    USE Tpara,only:nprocspace,para_space_config
 #endif
+
 
 
     !-----------------------------------------------
@@ -34,7 +35,7 @@ contains
     integer,intent(in)::im,imm
     real(double),intent(inout),allocatable,dimension(:,:)::xp,fp
     integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
-
+    type(para_space_config)::psc
     integer,intent(in)::noxyz,natperc,nox,noy,noz
     integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
     real(double),intent(in),dimension(3,3)::at,bg
@@ -282,7 +283,7 @@ contains
 
 #ifdef PARA
     if (nprocspace.gt.1) then
-       call maj_tabdensity_ftm(tabdensity,imm,nato,num_at_glob)
+       call maj_tabdensity_ftm(tabdensity,imm,nato,num_at_glob,psc)
     end if
 !    write(3000+i,*)it
 !    do i=1,im

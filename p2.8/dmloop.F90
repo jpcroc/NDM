@@ -23,7 +23,8 @@ module dmloop_mod
 #else
   
 #endif
-  
+   use Tpara,only:nprocspace,para_space_config
+
   implicit none
 contains
   ! ************************************************
@@ -31,7 +32,7 @@ contains
   !          Version MPI du 21 fevrier 2001
   ! ************************************************
 
-  subroutine dmloop (atdml,celndm,boxndm)
+  subroutine dmloop (atdml,celndm,boxndm,psc)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -49,6 +50,7 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
+    type(para_space_config)::psc
     integer :: i, iti,ilocal
     REAL(double) :: fire_dt, fire_alph
     INTEGER :: fire_nstep
@@ -88,7 +90,7 @@ contains
           if(atdml%lSigat) atdml%sigat(:,:,:)=0. ;
        end select
     end if
-    CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
+    CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
     if (l2t)then
        if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     else

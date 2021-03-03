@@ -54,7 +54,7 @@ contains
 
 
     !Stillinger Weber Vashista
-    real(double)::capHijlu,capDijlu,capWijlu,c3cr
+    real(double)::capHijlu,capDijlu,capWijlu,c3cr,precis
     integer:: ietaijlu
     !-----------------------------------------------
     !   E x t e r n a l   F u n c t i o n s
@@ -73,7 +73,8 @@ contains
     r3cm=0.0
     rue = 0.0
     alpha = 0.0
-    precis = 0.0
+    precis=0.0
+    precisew = 0.0
     ncouc3 = 0
     ncoucx = 0
     ncoucy = 0
@@ -181,7 +182,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           ipotrep=2
        end select
        read (lupotin, nml=ewald)            ! lecture de la namelist ewald
-
+       precisew=precis
        ! MPI
 
 

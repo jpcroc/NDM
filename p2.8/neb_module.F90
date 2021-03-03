@@ -14,7 +14,6 @@ module neb_module
   USE sauveposition_mod,only: sauveposition
   USE rasmolT_mod,only: rasmolT
   use var_pot,only:ntyp,ipotentiel,cm,rumax
-  USE dynalloccell,only:deallocateall
   !-----------------------------------------------
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config,init_cel
@@ -29,6 +28,7 @@ module neb_module
 #else
   use Tpara,only:myidsp,nprocspace
 #endif
+  use Tpara,only:para_space_config
   use paraconfig,only:para_config,commconstr
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only:init_lammps
@@ -50,13 +50,14 @@ module neb_module
   type(cell_config),allocatable,save,target:: cellneb(:)
   type(box_config)::boxneb
   type(para_config)::paraneb
-
+  type(para_space_config)::pscneb
 
 contains
   
 
   subroutine init_neb0
     character:: inplmp
+
     call init_pot
     
     call constrconfNEB
@@ -255,7 +256,7 @@ end if
           IF (ok ) THEN
              ! Load NEB image ip in file *.<ip>.gin
           if(rang==0)write(6,*)'FNAMneb  ',iph,ginfile
-          call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,im_glob,rumax,lrepartition=.false.)
+          call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,im_glob,rumax,lrepartition=.false.,psc=pscneb)
             do i=1,im
                atneb(iph)%num_at_glob(i)=i
             end do
@@ -594,7 +595,7 @@ end if
     else
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
        write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,im_glob
-       call gin2ndm(atneb(1),cellneb(1),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.)
+       call gin2ndm(atneb(1),cellneb(1),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.,psc=pscneb)
 
 
        atneb(:)%im=atneb(1)%im
@@ -621,7 +622,7 @@ end if
 
        write(6,*)'FNAMneb npath ',fnamneb,rang,myidsp
 
-       call gin2ndm(atneb(npath),cellneb(npath),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.)
+       call gin2ndm(atneb(npath),cellneb(npath),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.,psc=pscneb)
        atneb(:)%im=atneb(npath)%im
        atneb(npath)%xpp=atneb(npath)%xp
        atneb(npath)%ielat=0

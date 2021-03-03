@@ -9,6 +9,7 @@ module dmloop_lpr_mod
   USE atomconfig,only : atom_config_d
   USE cellconfig, only:cell_config,caltabtc
   USE boxconfig,only:box_config
+  use Tpara,only:para_space_config
 
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
@@ -23,7 +24,7 @@ contains
   ! boucle de DM pour velocity Verlet
   ! ************************************************
 
-  subroutine dmloop_lpr(atpr,celndm,boxndm)
+  subroutine dmloop_lpr(atpr,celndm,boxndm,psc)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -34,14 +35,14 @@ contains
 #ifdef PARA
   use mpi
   USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
-  USE mod_para,only:temps_para,temps_debpara,maj_atomes_frt_ftm
+  USE mod_para,only:maj_atomes_frt_ftm
 
 #else
   use Tpara,only:nprocspace
 #endif
     implicit none
 
-
+    type(para_space_config)::psc
     type(box_config)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
@@ -62,7 +63,7 @@ contains
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
        call initlprNose(atpr,celndm,boxndm)
     ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
-       call initlpr(atpr,celndm,boxndm)
+       call initlpr(atpr,celndm,boxndm,psc)
     END IF
 
 !    call analyseT(atpr,celndm,boxndm)
@@ -71,7 +72,7 @@ contains
 1   continue
     it = it+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
-  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.)
+  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
 
 !  CALL CalFo(sig,potist,atpr,celndm)
       if (l2t)then
@@ -96,11 +97,9 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        boxndm%zls2(1:3) = 0.5d0*boxndm%zl(1:3)
              call caltabtC(celndm,atpr,lperiod,boxndm)
 
-       temps_debpara=MPI_Wtime()
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
 
-       call maj_atomes_frt_ftm(atpr,celndm)
-       temps_para=temps_para+MPI_Wtime()-temps_debpara
+       call maj_atomes_frt_ftm(atpr,celndm,psc)
 
 
        if (iewald>0) then
@@ -138,7 +137,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 #endif
        timel=timel+fNose*tstep
     ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
-       call pr(atpr,celndm,boxndm)
+       call pr(atpr,celndm,boxndm,psc)
        timel=timel+tstep
     END IF
 

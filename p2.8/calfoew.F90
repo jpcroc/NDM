@@ -1,6 +1,6 @@
 module calfoew_mod
   USE epme_mod,only: epme
-  USE gen_com_m, ONLY:tabf3,pi,potis3,zero,tabv3
+  USE gen_com_m, ONLY:pi,potis3,zero
   USE calfocommon
   implicit none
 contains
@@ -12,7 +12,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q
+    USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q,nb1v,nb2v,nb3v,tabv3,tabf3
 #ifdef PARA
   use mpi
   USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
@@ -55,7 +55,7 @@ contains
     real(double), dimension(3,3) :: sige
 
     !parallelisation de ewald classique
-    integer,dimension(nvecttot) :: nb1v,nb2v,nb3v ! tableaux des vecteurs du RRec
+
     integer :: nv,debv,finv,ii
     real (double)::potis3p
     real (double), dimension (3,3) :: sigep
@@ -67,18 +67,6 @@ contains
     sige = 0.0
     select case (iewald)
     case (1)
-       nv=0
-       ! repartition des vecteurs du RRec.
-       do nb1 = -ncoucx, ncoucx
-          do nb2 = -ncoucy, ncoucy
-             do nb3 = -ncoucz, ncoucz
-                if (nb2==0.and.nb3==0.and.nb1==0) cycle
-                nv=nv+1
-                nb1v(nv)=nb1; nb2v(nv)=nb2; nb3v(nv)=nb3
-             enddo
-          enddo
-       enddo
-       if (nv.ne.nvecttot) stop
 
        debv=1
        finv=nvecttot
@@ -124,6 +112,7 @@ contains
                    scasin = scasin_glob
                 end if
 #endif
+
                 do i = 1, im
                    iti = ityp(i)
                    phu = tabf3(iti,nb1,nb2,nb3)*(sin(scalar(i))*scacos-&

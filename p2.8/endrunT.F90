@@ -26,10 +26,6 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE tab_imm_m,only:posmoyx,ityp,xp,num_at_glob,fp,vp,iwmax
-#ifdef PARA
- USE mod_para,only:temps_dmloop,temps_dmloop_deb
-
-#endif
 #if defined ML && defined PARAML
     USE time_measure
 #endif
@@ -101,9 +97,6 @@ contains
 
     write (6, *) '####### END OF RUN  ######## = ', it, '  time = ', timel
  endif
-#ifdef PARA
- temps_dmloop=MPI_Wtime() - temps_dmloop_deb
-#endif
 
 ! if (lWgin.eqv..true.) call cin2gin
  IF (iteSauv.GE.0) then

@@ -55,10 +55,15 @@ module var_pot
   real(double),allocatable::rue_pair(:)
   real(double),allocatable::rue_pot(:)
   real(double)::rue_lammps
+  integer,dimension(:),allocatable :: nb1v,nb2v,nb3v ! tableaux des vecteurs du RRec
+
   integer :: ncouc3 ! nombre de couche dans la sommation d'Ewald
+    real(double), dimension(:,:,:),allocatable :: tabv3
+  real(double), dimension(:,:,:,:),allocatable :: tabf3
+
   integer :: n2max  ! valeur de ncouc3 au carre
   integer :: ncoucx, ncoucy, ncoucz,nvecttot !couches en x y et z de la sommation d'Ewald
-  real(double) :: precis ! precision du calcul de la sommation d'Ewald
+  real(double) :: precisew ! precision du calcul de la sommation d'Ewald
 
   ! 2 corps watanabe
   real (kind=double) :: & ! 2 corps

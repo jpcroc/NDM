@@ -14,7 +14,7 @@ module prog_mod
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
-  USE montecarlo_mod, only: montecarlo,config_atom_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1
+  USE montecarlo_mod, only: montecarlo,config_atom_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
@@ -45,11 +45,11 @@ contains
 
 #ifdef PARA
 !    use mpi
-    USE Tpara,only:MPI_COMM_space,myidsp,nprocspace
-    USE mod_para,only:TEMPS_INIT_DEB,TEMPS_INIT,TEMPS_DEB,TEMPS_DMLOOP_DEB,maj_atomes_frt_ftm
+    USE Tpara,only:MPI_COMM_space,myidsp,nprocspace,para_space_config
+    USE mod_para,only:maj_atomes_frt_ftm
     USE neb_module,only:init_mpi_neb
 #else
-    USE Tpara,only:nprocspace
+    USE Tpara,only:nprocspace,para_space_config
 #endif
     USE neb_module,only:init_mpi_neb
     implicit none
@@ -64,6 +64,7 @@ contains
     type(atom_config_e),target:: atdme
     type(cell_config)::celndm
     type(box_config)::boxndm
+    type(para_space_config)::psc0
     real(double)::rv
 
     !-----------------------------------------------
@@ -113,7 +114,7 @@ contains
 
        call atdml%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       call init(atdml,boxndm,celndm)
+       call init(atdml,boxndm,celndm,psc0)
 
 #ifdef DECOUP
        ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
@@ -123,7 +124,7 @@ contains
        type is (atom_config)
           select case (dmtype) 
           case(3,30)
-             call gcII (atdm,celndm,boxndm) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
+             call gcII (atdm,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
           case default
              write(6,*)'incohérence entre type(atom_config) et dmtype'
              stop
@@ -132,7 +133,7 @@ contains
 #ifdef PARA
           if ((dmtype.ne.3).and.(dmtype.ne.30))then
              if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-                call maj_atomes_frt_ftm(atdml,celndm)
+                call maj_atomes_frt_ftm(atdml,celndm,psc0)
              end if
           end if
 #endif
@@ -141,19 +142,19 @@ contains
              write(6,*)'loopforcetest pas NDM2020' ; stop
              !       if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
           case(4,10)
-             call dmloop_vverlet (atdml,celndm,boxndm)
+             call dmloop_vverlet (atdml,celndm,boxndm,psc0)
           case(8)
-             call dmloop_lpr (atdml,celndm,boxndm)
+             call dmloop_lpr (atdml,celndm,boxndm,psc0)
           case (1)
-             if (.not.parallele)  call dmloop (atdml,celndm,boxndm)
+             if (.not.parallele)  call dmloop (atdml,celndm,boxndm,psc0)
           case (2)
              if (.not.parallele)  then
-                call dmloop(atdml,celndm,boxndm)
+                call dmloop(atdml,celndm,boxndm,psc0)
              else
 #ifdef PARA
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                    if(rang==0) write (6,*)'DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION'
-                   call dmloop_vverlet (atdml,celndm,boxndm)
+                   call dmloop_vverlet (atdml,celndm,boxndm,psc0)
                 end if
 #endif
              endif
@@ -163,7 +164,7 @@ contains
 
           case(11)
              if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
-             CALL CalFo(sig,potist,atdml,celndm,boxndm) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
+             CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc0) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              call analyseT(atdml,celndm,boxndm)
              call controleT(atdml,celndm,boxndm)
              call endrunT(atdml,celndm,boxndm,latcomp)
@@ -227,7 +228,7 @@ contains
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        boxmcgc=boxndm
 
-       call init_simple(config_atom_n,cells_n,boxmcgc) 
+       call init_simple(config_atom_n,cells_n,boxmcgc,psc=pscgc) 
        call initNP1 ! initialise la configuration N+1 
        call montecarlo
        

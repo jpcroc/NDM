@@ -24,11 +24,12 @@ module init_simple_mod
        &lspacendm, posa, forca,latcomp
   use read_val,only:ltabvois
   USE var_pot, ONLY:ipotentiel
+  use Tpara,only:para_space_config
   implicit none
 
 contains
   ! **************************************************************
-  subroutine init_simple(atdml,celndm,boxndm,filename)
+  subroutine init_simple(atdml,celndm,boxndm,filename,psc)
 
 
 
@@ -47,8 +48,7 @@ contains
 #ifdef PARA
     use mpi
     USE Tpara,only:MPI_COMM_space,myidsp,nprocspace
-    USE mod_para,only:TEMPS_INPUT_DEB,TEMPS_INPUT,TEMPS_CONFIG_DEB,TEMPS_CONFIG,NBR_PROC_VOISIN,&
-         &TEMPS_INITSPEED_DEB,TEMPS_INITSPEED
+
 #else
     use Tpara,only:nprocspace
 
@@ -57,7 +57,8 @@ contains
     ! **************************************************************
 
     implicit none
-    class(atom_config)::atdml
+     type(para_space_config)::psc
+   class(atom_config)::atdml
     type(cell_config),intent(out)::celndm
     type(box_config),intent(out)::boxndm
     character(*),optional::filename
@@ -76,16 +77,16 @@ contains
 !    else
 !       lrepart=.true.
 !    end if
-    call constrconf(atdml,boxndm,celndm,lrepart,filenomIS)
+    call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc)
     call init_pot2(boxndm)
 
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        CALL MPI_BARRIER(MPI_COMM_space,ierr)
-       call init_voisinage(celndm)
+       call init_voisinage(celndm,psc)
 
        if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
-       write(6,*) 'Le proc ',myidsp,' a ',nbr_proc_voisin,' processeur voisin'
+       write(6,*) 'Le proc ',myidsp,' a ',psc%nbr_proc_voisin,' processeur voisin'
     end if
 #endif
     !<---------end setting the cell diviion ----------------------

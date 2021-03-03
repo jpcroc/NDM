@@ -6,7 +6,7 @@ module force_tersoff_cel_mod
 contains
 ! ***************************************************************
   subroutine force_tersoff_cel(im,imm,xp,   fp, ielat, ityp,noxyz,natperc,atincel,nato,ncel,deltadist,&
-       &at,bg,volu)
+       &at,bg,volu,psc)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
@@ -17,9 +17,9 @@ contains
 #ifdef PARA
   use mpi
   USE mod_para,only:maj_fp_frt
-  use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace
+  use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace,para_space_config
 #else
-  USE Tpara,only:nprocspace
+  USE Tpara,only:nprocspace,para_space_config
 #endif
 
 
@@ -30,6 +30,7 @@ contains
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
   !-----------------------------------------------
+  type(para_space_config)::psc
   integer,intent(in)::im,imm
   integer , intent(in),allocatable :: ielat(:),ityp(:)
   real(double) , intent(inout),allocatable :: fp(:,:),xp(:,:)
@@ -395,7 +396,7 @@ end if
 
 #ifdef PARA
     if (nprocspace.gt.1) then
-       call maj_fp_frt
+       call maj_fp_frt(psc)
     end if
 #endif
   !  write(6,*)sig

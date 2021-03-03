@@ -14,7 +14,7 @@ module controle_mod
   USE boxconfig,only:box_config,ndm2boxconfig
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
 #else
   USE Tpara,only:nprocspace
 #endif

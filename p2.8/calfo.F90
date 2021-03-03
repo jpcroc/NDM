@@ -29,6 +29,7 @@ module calfo_mod
   use lammps_util_mod,only: calcforce_lammps2 !, init_lammps
   use vars_lammps
 #endif
+  use Tpara,only:para_space_config
   implicit none
 contains
   ! ************************************************
@@ -36,7 +37,7 @@ contains
   !routine d'appel des routines de forces
   ! ************************************************
 
-  subroutine calfo (sigcf,potistcf,atcf,celcf,boxcf,t_sigma)
+  subroutine calfo (sigcf,potistcf,atcf,celcf,boxcf,t_sigma,psc)
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
@@ -44,6 +45,7 @@ contains
     class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(in),target::celcf
     type(box_config),intent(in)::boxcf
+    type(para_space_config)::psc
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -186,7 +188,7 @@ contains
                    else
                       call force_tersoff_cel(atcf%im,atcf%imm,atcf%xp,   atcf%fp, &
                            &atcf%ielat, atcf%ityp,celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,&
-                           &celcf%deltadist,boxcf%at,boxcf%bg,boxcf%volu)
+                           &celcf%deltadist,boxcf%at,boxcf%bg,boxcf%volu,psc)
 
                    endif
                    potist=potist+potisTersoff+potiszbl
@@ -205,7 +207,7 @@ contains
                    else
                       call calfoeamcel(atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%ielat, atcf%ityp,atcf%num_at_glob,&
                            &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
-                           &celcf%nox,celcf%noy,celcf%noz,boxcf%at,boxcf%bg,boxcf%volu)
+                           &celcf%nox,celcf%noy,celcf%noz,boxcf%at,boxcf%bg,boxcf%volu,psc)
      
                    endif
                    potist=potist+potiseam

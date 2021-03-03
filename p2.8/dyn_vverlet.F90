@@ -13,10 +13,11 @@ module dyn_vverlet_mod
 #ifdef PARA
   USE layer_mod,only: layer
 #endif
+  use Tpara,only:para_space_config
   implicit none
 contains
   ! *************************************************************
-  subroutine dyn_vverlet(atdml,celndm,boxndm)
+  subroutine dyn_vverlet(atdml,celndm,boxndm,psc)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -29,7 +30,7 @@ contains
     use mpi
 
     USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace
-    USE mod_para,only:temps_debpara,temps_para,maj_atomes_frt_ftm
+    USE mod_para,only:maj_atomes_frt_ftm
 #else
     USE Tpara,only:nprocspace
 #endif
@@ -44,6 +45,7 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
+    type(para_space_config)::psc
     type(box_config)::boxndm
     class(atom_config_d)::atdml
     type(cell_config):: celndm
@@ -84,7 +86,7 @@ contains
        call dynlangevin(atdml%im,atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il)
     elseif (l2T) then
        il=2*(ilangevin-1)+1
-       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il,atdml%num_at_glob)
+       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il,atdml%num_at_glob,psc)
     else
        DO i=1, atdml%im
           atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(atdml%iTyp(i))*atdml%fp(1:3,i)
@@ -109,9 +111,6 @@ contains
     if (lperiod)  call periodbox (boxndm,atdml)
 
     ! repartition des atomes dans la nouvelle boite
-
-
-
     if (.not.lpr) then
        if (itab/=0) then
           if (mod(it,itab)==0) then
@@ -119,7 +118,6 @@ contains
           endif
        endif
     end if
-
     if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
        call caltabi(atdml%atom_config,celndm,boxndm)
     end if
@@ -127,10 +125,8 @@ contains
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       temps_debpara=MPI_Wtime()
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       call maj_atomes_frt_ftm(atdml,celndm)
-       temps_para=temps_para+MPI_Wtime()-temps_debpara
+       call maj_atomes_frt_ftm(atdml,celndm,psc)
        if (ltranche) call layer
     end if
 #endif
@@ -143,7 +139,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     ! Force calculation
     jq=0.0
     if (itesigma>0) test_sigma=(mod(it,itesigma)==0)
-    CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma)
+    CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
 
     if (l2t)then
        if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
@@ -173,7 +169,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call dynlangevin(atdml%im,atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il)
     elseif (l2T) then
        il=2*(ilangevin-1)+2
-       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il,atdml%num_at_glob)
+       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il,atdml%num_at_glob,psc)
     else
        DO i=1, atdml%im
           atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(atdml%iTyp(i))*atdml%fp(1:3,i)

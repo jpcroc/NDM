@@ -4,7 +4,9 @@ module Tpara
   integer, parameter :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
   integer::MPI_COMM_space
   integer:: grp_world
-  integer,dimension(MPI_STATUS_SIZE):: status  ! statut de la communication
+  integer,dimension(MPI_STATUS_SIZE):: status
+#else
+   integer:: status 
 #endif
   integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
 
@@ -18,8 +20,11 @@ module Tpara
      integer :: nbr_cell_ftm                       ! nbr de cellules fantomes du processeur courant
      integer, allocatable :: cell_ftm(:)           ! liste des cellules fantomes du processeur courant
      integer :: nbr_proc_voisin            ! nbre de processeurs voisins du processeur courant
+     integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
+     integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
+     integer :: nb_cell_x, nb_cell_y, nb_cell_z     !nb de cel locales suivant x y z
   end type para_space_config
 
-  type(para_space_config)::psc0
-  
+
+
 end module Tpara

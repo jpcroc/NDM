@@ -80,18 +80,18 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           WRITE(6,'(2(a,g12.4),a,i0)') '  noy = Int( ', boxsn%nzl(2),'/',rum,') = ', noy
           WRITE(6,'(2(a,g12.4),a,i0)') '  noz = Int( ', boxsn%nzl(3),'/',rum,') = ', noz
        END IF
-       IF (nox.LT.3) nox=3
-       IF (noy.LT.3) noy=3
-       IF (noz.LT.3) noz=3
-
-       IF ( (nox.LE.3).AND.(noy.LE.3).AND.(noz.LE.3) ) THEN
-          nox=1 ; noy=1 ; noz=1
-          !             ltabvois=.TRUE.
-          !             lconstrtot=.TRUE.
-          if (rang==0) write(6,*)'!!!!!!!!!!Envisager ltabvois = true !!!!!!!!!!!!!!'
-       END IF
+       IF (nox.LT.3) nox=1
+       IF (noy.LT.3) noy=1
+       IF (noz.LT.3) noz=1
        if ((rang==0).and.(lverb)) write (6,'(a,3(i0,1x))') 'nox noy noz apres correction = '&
             , nox, noy, noz
+
+!       IF ( (nox.LE.3).AND.(noy.LE.3).AND.(noz.LE.3) ) THEN
+!          nox=1 ; noy=1 ; noz=1
+!          !             ltabvois=.TRUE.
+          !             lconstrtot=.TRUE.
+!          if (rang==0) write(6,*)'!!!!!!!!!!Envisager ltabvois = true !!!!!!!!!!!!!!'
+!       END IF
        ! ==== FIN MODIF CLOUET 2 ================
 !       celsn%nox=nox
 !       celsn%noy=noy

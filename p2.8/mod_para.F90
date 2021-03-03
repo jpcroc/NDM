@@ -1,6 +1,6 @@
 module mod_para
 #ifdef PARA
-  use Tpara,only: NDM_MPI_REAL_DOUBLE,MPI_COMM_space, myidsp,nprocspace,nprocs,ierr,status			! numero de process mis là pour être utilisé en sequentiel
+  use Tpara,only: NDM_MPI_REAL_DOUBLE,MPI_COMM_space, myidsp,nprocspace,nprocs,ierr,status,para_space_config			! numero de process mis là pour être utilisé en sequentiel
 
   
 #endif
@@ -21,33 +21,12 @@ module mod_para
 
 !  integer :: ierr 			! erreur MPI
 
-  integer:: grp_world
-  integer :: nbr_proc_voisin            ! nbre de processeurs voisins du processeur courant
+
+!!$  integer :: nbr_proc_voisin            ! nbre de processeurs voisins du processeur courant
 
   !Tableaux specifiques :
 
   !Tableaux liés au decoupage :
-
-!!$  integer :: nbr_cell_max		!plus grand nombre de cellules sur tous les processeurs
-!!$  integer :: nbr_atom_max		!plus grand nombre d'atomes sur tous les processeurs
-!!$  integer :: nbr_cell_max_vois		!plus grand nombre de cellules voisines à un processeur
-!!$  integer :: nbr_atom_max_vois		!plus grand nombre d'atomes sur toutes les cellules voisines à un processeur
-!!$  integer :: resultat(4) 		!stocke le resultat du meilleur decoupage
-
-  integer, allocatable :: res_cpu(:,:)   	!stocke le nombre de cellules de chaques decoupages pour le meilleur decoupage
-  !res_cpu est initialisé dans decoup3D à (0:nprocspace-1,3)
-  integer, allocatable :: coord_min(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z ! A METTRE DANS DECOUP
-  !initialisée à (0:nprocspace-1,3) dans decoup3D
-  integer, allocatable :: coord_max(:,:)	!stocke la "coordonnée" de la derniere cellule du découpage selon x,y,z! A METTRE DANS DECOUP
-  !initialisée à (0:nprocspace-1,3) dans decoup3D
-
-  integer, allocatable :: proc_cell(:)          !proc_cell(i) : Numero du proc associe a la cellule i
-  integer, allocatable :: proc_voisin(:)        ! liste des processeurs voisins du processeur courant
-  integer, allocatable :: cell_frontiere(:,:)   ! (i,j) jeme cellule frontiere associee au ieme processeur voisin
-  integer, allocatable :: nbr_cell_frontiere(:) ! nbre de cellules frontieres associees au ieme processeur voisin
-
-  integer :: nbr_cell_ftm                       ! nbr de cellules fantomes du processeur courant
-  integer, allocatable :: cell_ftm(:)           ! liste des cellules fantomes du processeur courant
 
   integer :: nb_var_int                              ! nbr de variables entieres a envoyer lors des echanges entre proc
   integer :: nb_var_dbl                              ! nbr de variables reelles a envoyer lors des echanges entre proc
@@ -64,17 +43,6 @@ module mod_para
 
   integer, allocatable :: send_rqst(:,:)              ! tableau pour stocker les requetes en envoi
   integer, allocatable :: recv_rqst(:,:)              ! tableau pour stocker les requetes en reception
-
-  real(double) :: temps_deb
-
-  ! Variables pour faire des mesures de temps dans le code
-
-  real(double) :: temps_init_deb, temps_init
-  real(double) :: temps_initspeed_deb, temps_initspeed
-  real(double) :: temps_dmloop_deb, temps_dmloop
-  real(double) :: temps_input_deb, temps_input
-  real(double) :: temps_config_deb, temps_config
-  real(double) :: temps_para,temps_debpara,temps_finpara
 
   real(double), allocatable,dimension(:,:)::xp,vp,fp,xpp,ax,glangv
   real(double),allocatable::eat(:),sigat(:,:,:)
@@ -98,14 +66,17 @@ contains
   ! les processeurs. Elle prend en compte la nouvelle repartition dans 
   ! les cellules suite a l'appel a caltabt
 
-  subroutine maj_atomes_frt_ftm(atcf,cellcf)
+  subroutine maj_atomes_frt_ftm(atcf,cellcf,psc)
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
     type(cell_config)::cellcf
     class(atom_config)::atcf
+    type(para_space_config)::psc
+
     integer::i,ne
+     
     ltbv=atcf%ltabvois ;
     lsigat=.false.; lprteat=.false. ; llangevin=.false.;lax=.false.
     select type (atcf)
@@ -113,18 +84,18 @@ contains
        lsigat=atcf%lsigat;lprteat=atcf%lprteat; llangevin=atcf%llangevin;lax=atcf%lax
     end select
     call config2ndm(atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall=.true.,lgul=lgul)
-    call cellconfig2ndm (cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,proc_cell)
-    call envoi_atomes_fantomes ! On envoit les atomes qui n'appartiennent plus au processeur courant (qui sont passés  dans des cellules fantomes) caltabt les a mis dans ces cellules fantomes alors qu'ils étaient locaus avant
-    call reception_nouveaux_atomes ! On recoit les nouveaux atomes locaux (qui viennent des fantomes des procs voisins)
-    call elimine_atomes_fantomes ! On retire les atomes qui ne sont plus locaux (qui ont été envoyés par envoi_atomes_fantomes)
+    call cellconfig2ndm (cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,psc%proc_cell)
+    call envoi_atomes_fantomes(psc) ! On envoit les atomes qui n'appartiennent plus au processeur courant (qui sont passés  dans des cellules fantomes) caltabt les a mis dans ces cellules fantomes alors qu'ils étaient locaus avant
+    call reception_nouveaux_atomes(psc) ! On recoit les nouveaux atomes locaux (qui viennent des fantomes des procs voisins)
+    call elimine_atomes_fantomes(psc) ! On retire les atomes qui ne sont plus locaux (qui ont été envoyés par envoi_atomes_fantomes)
     ne=4
-    call finalisation_envoi_atomes(ne)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
+    call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
 ! En ce point les atomes du proc local sont à jours
-    call envoi_atomes_frontieres     ! On envoit les atomes frontieres aux processeurs voisins
-    call reception_atomes_fantomes     ! On receptionne les nouveaux atomes fantomes
-    call finalisation_envoi_atomes(ne)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
+    call envoi_atomes_frontieres(psc)     ! On envoit les atomes frontieres aux processeurs voisins
+    call reception_atomes_fantomes (psc)    ! On receptionne les nouveaux atomes fantomes
+    call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
     call ndm2config (atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,nvois,vp,xpp,ldeall=.true.,lgul=lgul)
-    call ndm2cellconfig(cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=proc_cell)
+    call ndm2cellconfig(cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=psc%proc_cell)
 
 end subroutine maj_atomes_frt_ftm
 
@@ -132,7 +103,7 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure pour la mise a jour des valeurs tabdensity des atomes 
   ! fantomes sur les processeurs.
 
-  subroutine maj_tabdensity_ftm(tabdensity,imm,natR,num_at_glob) !appelée dans calfoeamcel
+  subroutine maj_tabdensity_ftm(tabdensity,imm,natR,num_at_glob,psc) !appelée dans calfoeamcel
 
     USE T_kind_param_m, ONLY:  double
 
@@ -141,17 +112,18 @@ end subroutine maj_atomes_frt_ftm
     integer,intent(in)::num_at_glob(imm)
     real(double) :: tabdensity(imm)
     integer::natr(:)
+    type(para_space_config)::psc
     nato=natr 
 
     ! On envoit les atomes frontieres aux processeurs voisins
-    call envoi_tabdensity_frontieres(tabdensity,imm,num_at_glob)
+    call envoi_tabdensity_frontieres(tabdensity,imm,num_at_glob,psc)
 
     ! On receptionne les nouveaux atomes fantomes
-    call reception_tabdensity_fantomes(tabdensity,imm,num_at_glob)
+    call reception_tabdensity_fantomes(tabdensity,imm,num_at_glob,psc)
 
     ! Finalisation de l'envoi pour liberer les buffers d'envoi (identique a l'envoi des atomes)
     ne=3
-    call finalisation_envoi_atomes(ne)
+    call finalisation_envoi_atomes(ne,psc)
 
   end subroutine maj_tabdensity_ftm
 
@@ -159,22 +131,23 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure pour la mise a jour des valeurs fp des atomes frontieres
   ! du processeur courant avec leurs contributions des processeurs voisins
  
-  subroutine maj_fp_frt !appelée SEULEMENT dans force_tersoff_cel !
+  subroutine maj_fp_frt(psc) !appelée SEULEMENT dans force_tersoff_cel !
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
     integer::ne
- 
+     type(para_space_config)::psc
+
     ! On envoit les atomes fantomes vers les processeurs voisins
-    call envoi_fp_fantomes
+    call envoi_fp_fantomes(psc)
 
     ! On receptionne les contributions des processeurs voisins
-    call reception_fp_frontieres
+    call reception_fp_frontieres(psc)
 
     ! Finalisation de l'envoi pour liberer les buffers d'envoi (identique a l'envoi des atomes)
     ne=3
-    call finalisation_envoi_atomes(ne)
+    call finalisation_envoi_atomes(ne,psc)
 
   end subroutine maj_fp_frt
 
@@ -182,12 +155,12 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure dont le but est l'envoi des atomes qui sont sorti du domaine
   ! courant pour etre pris en charge par leur nouveau processeur
 
-  subroutine envoi_atomes_fantomes ! seulement maj_atomes_frt_ftm
+  subroutine envoi_atomes_fantomes(psc) ! seulement maj_atomes_frt_ftm
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
-
+    type(para_space_config)::psc
     integer :: nb_at, nb_at_max, nb_at_max_tot
     integer :: nproc_voisin
     integer :: ncell_ftm
@@ -197,17 +170,17 @@ end subroutine maj_atomes_frt_ftm
 !    write(6,*)'envoi_atomes_fantomes',rang,nbr_proc_voisin
     nb_at_max=0
     ! Boucle sur les processeurs voisins
-    do nproc_voisin=1,nbr_proc_voisin
-       procv = proc_voisin(nproc_voisin)
+    do nproc_voisin=1,psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
 
        nb_at = 0
 
        ! Boucle sur les cellules fantomes
-       do ncell_ftm=1,nbr_cell_ftm
-          cellf = cell_ftm(ncell_ftm)
+       do ncell_ftm=1,psc%nbr_cell_ftm
+          cellf = psc%cell_ftm(ncell_ftm)
 
           ! Sommation des atomes de la cellule
-          if (proc_cell(cellf)==procv) nb_at = nb_at + nato(cellf)
+          if (psc%proc_cell(cellf)==procv) nb_at = nb_at + nato(cellf)
 
        enddo ! fin boucle sur les cellules
 
@@ -238,20 +211,20 @@ end subroutine maj_atomes_frt_ftm
   end if
 
 
-    allocate(send_nb_val(nbr_proc_voisin))
-    allocate(send_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
-    allocate(send_buff_lgc(nb_var_lgc,nb_at_max,nbr_proc_voisin))
-    allocate(send_buff_dbl(nb_var_dbl,nb_at_max,nbr_proc_voisin))
-    allocate(send_rqst(nbr_proc_voisin,4))
-    allocate(recv_nb_val(nbr_proc_voisin))   ! nombre effectif d'atomes reçus du proc voisin
-    allocate(recv_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
-    allocate(recv_buff_dbl(nb_var_dbl,nb_at_max,nbr_proc_voisin))
-    allocate(recv_buff_lgc(nb_var_lgc,nb_at_max,nbr_proc_voisin))
-    allocate(recv_rqst(nbr_proc_voisin,4))
+    allocate(send_nb_val(psc%nbr_proc_voisin))
+    allocate(send_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_buff_lgc(nb_var_lgc,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_buff_dbl(nb_var_dbl,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_rqst(psc%nbr_proc_voisin,4))
+    allocate(recv_nb_val(psc%nbr_proc_voisin))   ! nombre effectif d'atomes reçus du proc voisin
+    allocate(recv_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_buff_dbl(nb_var_dbl,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_buff_lgc(nb_var_lgc,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_rqst(psc%nbr_proc_voisin,4))
 
     ! Preparation des receptions
-    do nproc_voisin= 1, nbr_proc_voisin
-       procv = proc_voisin(nproc_voisin)
+    do nproc_voisin= 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
        call MPI_IRECV(recv_nb_val(nproc_voisin), 1, MPI_INTEGER, procv, 1001, MPI_COMM_space, recv_rqst(nproc_voisin,1), ierr)
        call MPI_IRECV(recv_buff_int(1,1,nproc_voisin), nb_var_int*nb_at_max, MPI_INTEGER, procv, 1002, &
             MPI_COMM_space, recv_rqst(nproc_voisin,2), ierr)
@@ -263,15 +236,15 @@ end subroutine maj_atomes_frt_ftm
 
 
     ! On boucle sur les processeurs voisins
-    do nproc_voisin= 1, nbr_proc_voisin
-       procv = proc_voisin(nproc_voisin)
+    do nproc_voisin= 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
 
        send_nb_val(nproc_voisin) = 0
 
        ! On boucle sur les cellules fantomes associees a ce processeur voisin
-       do ncell_ftm= 1, nbr_cell_ftm
-          cellf = cell_ftm(ncell_ftm)
-          if (proc_cell(cellf)==procv) then
+       do ncell_ftm= 1, psc%nbr_cell_ftm
+          cellf = psc%cell_ftm(ncell_ftm)
+          if (psc%proc_cell(cellf)==procv) then
 
              ! On boucle sur les atomes de cette cellule
              do n_at= 1, nato(cellf)
@@ -353,12 +326,12 @@ end subroutine maj_atomes_frt_ftm
   !------------------------------------------------------------------------!
   ! Procedure dont le but est la reception des nouveaux atomes locaux
 
-  subroutine reception_nouveaux_atomes !seulment MAJ
+  subroutine reception_nouveaux_atomes(psc) !seulment MAJ
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
-
+    type(para_space_config)::psc
     integer :: nb_at_recv
     integer :: proc_source
     integer :: i_at
@@ -366,10 +339,10 @@ end subroutine maj_atomes_frt_ftm
     integer :: ind_recv
 
     ! On boucle sur les processeurs voisins
-    do nproc_voisin=1,nbr_proc_voisin
+    do nproc_voisin=1,psc%nbr_proc_voisin
 
-       call MPI_WAITANY(nbr_proc_voisin,recv_rqst(:,1),ind_recv,status,ierr)
-       proc_source = proc_voisin(ind_recv)
+       call MPI_WAITANY(psc%nbr_proc_voisin,recv_rqst(:,1),ind_recv,status,ierr)
+       proc_source = psc%proc_voisin(ind_recv)
 
        ! Reception des nouveaux atomes issus de ce processeur voisin
 
@@ -451,13 +424,13 @@ end subroutine maj_atomes_frt_ftm
   ! a la mise a jour des atomes fantomes realisees dans 
   ! reception_atomes_fantomes
 
-  subroutine elimine_atomes_fantomes
+  subroutine elimine_atomes_fantomes(psc)
 
     USE T_kind_param_m, ONLY:  double
 
 
     implicit none
-
+    type(para_space_config)::psc
     integer :: i_at
     integer :: i_new
     integer :: j_at
@@ -474,7 +447,7 @@ end subroutine maj_atomes_frt_ftm
     nb_at_a_eliminer = 0
     do i_at = 1, im
        koo = ielat(i_at)
-       if (proc_cell(koo).ne.myidsp) then
+       if (psc%proc_cell(koo).ne.myidsp) then
           nb_at_a_eliminer = nb_at_a_eliminer + 1
           at_a_eliminer(nb_at_a_eliminer) = i_at
        endif
@@ -554,7 +527,7 @@ end subroutine maj_atomes_frt_ftm
 
     ! On verifie qu'il n'y a plus d'atomes a l'exterieur du domaine local
     do koo=1,noxyz
-       if (proc_cell(koo).ne.myidsp .and. nato(koo).ne.0) print *,'ERREUR !!!',&
+       if (psc%proc_cell(koo).ne.myidsp .and. nato(koo).ne.0) print *,'ERREUR !!!',&
             myidsp,'possede encore',nato(koo),'at. dans la cellule',koo
     enddo
 
@@ -565,12 +538,12 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure en charge de l'envoi des atomes frontieres du processeur 
   ! courant vers les processeurs voisins concernes
 
-  subroutine envoi_atomes_frontieres
+  subroutine envoi_atomes_frontieres(psc)
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
-
+    type(para_space_config)::psc
     integer :: nproc_voisin
     integer :: ncell_front
     integer :: procv
@@ -581,10 +554,10 @@ end subroutine maj_atomes_frt_ftm
 
     ! Boucle a vide pour determiner au mieux la taille du buffer d'envoi 
     nb_at_max = 0
-    do nproc_voisin = 1, nbr_proc_voisin
+    do nproc_voisin = 1, psc%nbr_proc_voisin
        nb_at=0
-       do ncell_front = 1, nbr_cell_frontiere(nproc_voisin)
-          nb_at = nb_at + nato(cell_frontiere(nproc_voisin,ncell_front))
+       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
+          nb_at = nb_at + nato(psc%cell_frontiere(nproc_voisin,ncell_front))
        enddo
        nb_at_max = max(nb_at_max, nb_at)
     enddo
@@ -604,20 +577,20 @@ end subroutine maj_atomes_frt_ftm
 !!$    nb_var_dbl = 9
 !!$   end if 
     nb_var_dbl = 12
-    allocate(send_nb_val(nbr_proc_voisin))
-    allocate(send_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
-    allocate(send_buff_lgc(nb_var_lgc,nb_at_max,nbr_proc_voisin))
-    allocate(send_buff_dbl(nb_var_dbl,nb_at_max,nbr_proc_voisin))
-    allocate(send_rqst(nbr_proc_voisin,4))
-    allocate(recv_nb_val(nbr_proc_voisin))
-    allocate(recv_buff_int(nb_var_int,nb_at_max,nbr_proc_voisin))
-    allocate(recv_buff_lgc(nb_var_lgc,nb_at_max,nbr_proc_voisin))
-    allocate(recv_buff_dbl(nb_var_dbl,nb_at_max,nbr_proc_voisin))
-    allocate(recv_rqst(nbr_proc_voisin,4))
+    allocate(send_nb_val(psc%nbr_proc_voisin))
+    allocate(send_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_buff_lgc(nb_var_lgc,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_buff_dbl(nb_var_dbl,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_rqst(psc%nbr_proc_voisin,4))
+    allocate(recv_nb_val(psc%nbr_proc_voisin))
+    allocate(recv_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_buff_lgc(nb_var_lgc,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_buff_dbl(nb_var_dbl,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_rqst(psc%nbr_proc_voisin,4))
 
     ! Preparation des receptions
-    do nproc_voisin = 1, nbr_proc_voisin
-       procv = proc_voisin(nproc_voisin)
+    do nproc_voisin = 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
        call MPI_IRECV(recv_nb_val(nproc_voisin), 1, MPI_INTEGER, procv, 2001, MPI_COMM_space, recv_rqst(nproc_voisin,1), ierr)
        call MPI_IRECV(recv_buff_int(1,1,nproc_voisin), nb_var_int*nb_at_max, MPI_INTEGER, procv, 2002, &
             MPI_COMM_space, recv_rqst(nproc_voisin,2), ierr)
@@ -630,14 +603,14 @@ end subroutine maj_atomes_frt_ftm
 
 
     ! On boucle sur les processeurs voisins
-    do nproc_voisin = 1, nbr_proc_voisin
-       procv = proc_voisin(nproc_voisin)
+    do nproc_voisin = 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
 
        send_nb_val(nproc_voisin) = 0
 
        ! On boucle sur les cellules frontieres associees au processeur
-       do ncell_front = 1, nbr_cell_frontiere(nproc_voisin)
-          koo = cell_frontiere(nproc_voisin,ncell_front)
+       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
+          koo = psc%cell_frontiere(nproc_voisin,ncell_front)
 
           ! On copie le contenu de la cellule dans le buffer d'envoi
           do n_at = 1, nato(koo)
@@ -713,23 +686,23 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure en charge d'attendre la fin des envois des atomes (frontieres
   ! ou fantomes) et la liberation des buffers d'envoi
 
-  subroutine finalisation_envoi_atomes(ne)
+  subroutine finalisation_envoi_atomes(ne,psc)
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
-
+    type(para_space_config)::psc
     integer,intent(in)::ne
     integer :: nproc_voisin
 
     integer, allocatable :: send_status(:,:,:)
 
 
-    allocate(send_status(MPI_STATUS_SIZE,nbr_proc_voisin,4))
+    allocate(send_status(MPI_STATUS_SIZE,psc%nbr_proc_voisin,4))
 
     ! Attente de finalisation des envois 
 
-    do nproc_voisin= 1, nbr_proc_voisin
+    do nproc_voisin= 1, psc%nbr_proc_voisin
        call MPI_Wait( send_rqst(nproc_voisin,1), send_status(1,nproc_voisin,1), ierr )
        call MPI_Wait( send_rqst(nproc_voisin,2), send_status(1,nproc_voisin,2), ierr )
        call MPI_Wait( send_rqst(nproc_voisin,3), send_status(1,nproc_voisin,3), ierr )
@@ -758,12 +731,12 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure en charge de la reception des nouveaux atomes fantomes en 
   ! provenance des processeurs voisins
 
-  subroutine reception_atomes_fantomes !seulement MAJ
+  subroutine reception_atomes_fantomes(psc) !seulement MAJ
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
-
+    type(para_space_config)::psc
     integer :: nb_at_recv
     integer :: proc_source
     integer :: i_at
@@ -778,10 +751,10 @@ end subroutine maj_atomes_frt_ftm
     pt_at_ftm = im
 
     ! On boucle sur les processeurs voisins
-    do nproc_voisin=1,nbr_proc_voisin
+    do nproc_voisin=1,psc%nbr_proc_voisin
 
-       call MPI_WAITANY(nbr_proc_voisin,recv_rqst(:,1),ind_recv,status,ierr)
-       proc_source = proc_voisin(ind_recv)
+       call MPI_WAITANY(psc%nbr_proc_voisin,recv_rqst(:,1),ind_recv,status,ierr)
+       proc_source = psc%proc_voisin(ind_recv)
 
        ! Reception des nouveaux atomes issus de ce processeur voisin
        call MPI_WAIT(recv_rqst(ind_recv,2), status, ierr)
@@ -851,11 +824,12 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure dont le but est l'envoi des valeurs de tabdensity pour les 
   ! atomes frontieres
 
-  subroutine envoi_tabdensity_frontieres(tabdensity,imm,num_at_glob)
+  subroutine envoi_tabdensity_frontieres(tabdensity,imm,num_at_glob,psc)
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
+    type(para_space_config)::psc
     integer::imm
     integer :: nproc_voisin
     integer :: ncell_front
@@ -869,10 +843,10 @@ end subroutine maj_atomes_frt_ftm
     
     ! Boucle a vide pour determiner au mieux la taille du buffer d'envoi 
     nb_at_max = 0
-    do nproc_voisin = 1, nbr_proc_voisin
+    do nproc_voisin = 1, psc%nbr_proc_voisin
        nb_at=0
-       do ncell_front = 1, nbr_cell_frontiere(nproc_voisin)
-          nb_at = nb_at + nato(cell_frontiere(nproc_voisin,ncell_front))
+       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
+          nb_at = nb_at + nato(psc%cell_frontiere(nproc_voisin,ncell_front))
        enddo
        nb_at_max = max(nb_at_max, nb_at)
     enddo
@@ -883,18 +857,18 @@ end subroutine maj_atomes_frt_ftm
     nb_at_max = max(nb_at_max,1)
 
     ! Allocation des buffers
-    allocate(send_nb_val(nbr_proc_voisin))
-    allocate(send_buff_int(1,nb_at_max,nbr_proc_voisin))
-    allocate(send_buff_dbl(1,nb_at_max,nbr_proc_voisin))
-    allocate(send_rqst(nbr_proc_voisin,3))
-    allocate(recv_nb_val(nbr_proc_voisin))
-    allocate(recv_buff_int(1,nb_at_max,nbr_proc_voisin))
-    allocate(recv_buff_dbl(1,nb_at_max,nbr_proc_voisin))
-    allocate(recv_rqst(nbr_proc_voisin,3))
+    allocate(send_nb_val(psc%nbr_proc_voisin))
+    allocate(send_buff_int(1,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_buff_dbl(1,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_rqst(psc%nbr_proc_voisin,3))
+    allocate(recv_nb_val(psc%nbr_proc_voisin))
+    allocate(recv_buff_int(1,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_buff_dbl(1,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_rqst(psc%nbr_proc_voisin,3))
     
     ! Preparation des receptions
-    do nproc_voisin = 1, nbr_proc_voisin
-       procv = proc_voisin(nproc_voisin)
+    do nproc_voisin = 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
        call MPI_IRECV(recv_nb_val(nproc_voisin), 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, recv_rqst(nproc_voisin,1), ierr)
        call MPI_IRECV(recv_buff_int(1,1,nproc_voisin), nb_at_max, MPI_INTEGER, procv, 3002, &
             MPI_COMM_space, recv_rqst(nproc_voisin,2), ierr)
@@ -902,20 +876,20 @@ end subroutine maj_atomes_frt_ftm
             MPI_COMM_space, recv_rqst(nproc_voisin,3), ierr)
     enddo
 
-!    write(6,*)'nbr_proc_voisin',rang,nbr_proc_voisin
-!    write(6,*)'proc_voisin',rang,proc_voisin(1:nbr_proc_voisin)
+!    write(6,*)'psc%nbr_proc_voisin',rang,psc%nbr_proc_voisin
+!    write(6,*)'proc_voisin',rang,proc_voisin(1:psc%nbr_proc_voisin)
 !    write(6,*)'nbr_cell_frontiere',rang,nbr_cell_frontiere(1)
 !    write(6,*)'cell_frontiere',rang,cell_frontiere(1,1)
     
     ! On boucle sur les processeurs voisins
-    do nproc_voisin = 1, nbr_proc_voisin
-       procv = proc_voisin(nproc_voisin)
+    do nproc_voisin = 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
 
        send_nb_val(nproc_voisin) = 0
 
        ! On boucle sur les cellules frontieres associees au processeur
-       do ncell_front = 1, nbr_cell_frontiere(nproc_voisin)
-          koo = cell_frontiere(nproc_voisin,ncell_front)
+       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
+          koo = psc%cell_frontiere(nproc_voisin,ncell_front)
           ! On copie le contenu de la cellule dans le buffer d'envoi
           do n_at = 1, nato(koo)
              i_at = atincel(n_at,koo)
@@ -951,10 +925,11 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure en charge de la reception des tabdensity des atomes fantomes
   ! en provenance des processeurs voisins
 
-  subroutine reception_tabdensity_fantomes(tabdensity,imm,num_at_glob)
+  subroutine reception_tabdensity_fantomes(tabdensity,imm,num_at_glob,psc)
 
     USE T_kind_param_m, ONLY:  double
     implicit none
+    type(para_space_config)::psc
     integer::imm
     integer,intent(in)::num_at_glob(imm)
     integer :: nb_at_recv
@@ -967,17 +942,16 @@ end subroutine maj_atomes_frt_ftm
     integer :: ind_loc,ftm_at
 
     real(double) :: tabdensity(imm)
-    real(double) :: temps_exe
 
     ! On place le pointeur de stockage des atomes fantomes a la suite des 
     ! atomes locaux
     pt_at_ftm = im
 
     ! On boucle sur les processeurs voisins
-    do nproc_voisin=1,nbr_proc_voisin
+    do nproc_voisin=1,psc%nbr_proc_voisin
 
-       call MPI_WAITANY(nbr_proc_voisin,recv_rqst(:,1),ind_recv,status,ierr)
-       proc_source = proc_voisin(ind_recv)
+       call MPI_WAITANY(psc%nbr_proc_voisin,recv_rqst(:,1),ind_recv,status,ierr)
+       proc_source = psc%proc_voisin(ind_recv)
 
        ! Reception des tabdensity issus de ce processeur voisin
        call MPI_WAIT(recv_rqst(ind_recv,2), status, ierr)
@@ -996,16 +970,6 @@ end subroutine maj_atomes_frt_ftm
           enddo
           if (ind_loc==-1) then
              print *,myidsp,'!!!Pb!!! Reception du proc',proc_source,'d''un atome fantome inexistant'
-             temps_exe = MPI_Wtime() - temps_deb
-             if (myidsp==0) then
-                print *, 'Temps d''execution : ', temps_exe
-                print *, 'Temps d''init      : ', temps_init
-                print *, 'Temps d''input     : ', temps_input
-                print *, 'Temps de config   : ', temps_config
-                print *, 'Temps d''initspeed : ', temps_initspeed
-                print *, 'Temps para estime : ', temps_para
-                print *, 'Temps dmloop : ', temps_dmloop
-             endif
              call MPI_FINALIZE(ierr)
              stop 
              !call arret_ndm
@@ -1027,12 +991,12 @@ end subroutine maj_atomes_frt_ftm
   ! atomes frontieres afin qu'elles soient sommees sur les processeurs
   ! possedant les atomes
 
-  subroutine envoi_fp_fantomes
+  subroutine envoi_fp_fantomes(psc)
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
-
+    type(para_space_config)::psc
     integer :: nproc_voisin
     integer :: ncell_ftm
     integer :: procv
@@ -1043,11 +1007,11 @@ end subroutine maj_atomes_frt_ftm
 
     ! Boucle a vide pour determiner au mieux la taille du buffer d'envoi 
     nb_at_max = 0
-    do nproc_voisin = 1, nbr_proc_voisin
+    do nproc_voisin = 1, psc%nbr_proc_voisin
        nb_at=0
-       do ncell_ftm = 1, nbr_cell_ftm
-          if (proc_cell(cell_ftm(ncell_ftm)).eq.proc_voisin(nproc_voisin)) then
-             nb_at = nb_at + nato(cell_ftm(ncell_ftm))
+       do ncell_ftm = 1, psc%nbr_cell_ftm
+          if (psc%proc_cell(psc%cell_ftm(ncell_ftm)).eq.psc%proc_voisin(nproc_voisin)) then
+             nb_at = nb_at + nato(psc%cell_ftm(ncell_ftm))
           endif
        enddo
        nb_at_max = max(nb_at_max, nb_at)
@@ -1058,18 +1022,18 @@ end subroutine maj_atomes_frt_ftm
     nb_at_max = max(nb_at_max,1)
 
     ! Allocation des buffers
-    allocate(send_nb_val(nbr_proc_voisin))
-    allocate(send_buff_int(1,nb_at_max,nbr_proc_voisin))
-    allocate(send_buff_dbl(3,nb_at_max,nbr_proc_voisin))
-    allocate(send_rqst(nbr_proc_voisin,3))
-    allocate(recv_nb_val(nbr_proc_voisin))
-    allocate(recv_buff_int(1,nb_at_max,nbr_proc_voisin))
-    allocate(recv_buff_dbl(3,nb_at_max,nbr_proc_voisin))
-    allocate(recv_rqst(nbr_proc_voisin,3))
+    allocate(send_nb_val(psc%nbr_proc_voisin))
+    allocate(send_buff_int(1,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_buff_dbl(3,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_rqst(psc%nbr_proc_voisin,3))
+    allocate(recv_nb_val(psc%nbr_proc_voisin))
+    allocate(recv_buff_int(1,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_buff_dbl(3,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_rqst(psc%nbr_proc_voisin,3))
 
     ! Preparation des receptions
-    do nproc_voisin = 1, nbr_proc_voisin
-       procv = proc_voisin(nproc_voisin)
+    do nproc_voisin = 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
        call MPI_IRECV(recv_nb_val(nproc_voisin), 1, MPI_INTEGER, procv, 4001, MPI_COMM_space, recv_rqst(nproc_voisin,1), ierr)
        call MPI_IRECV(recv_buff_int(1,1,nproc_voisin), nb_at_max, MPI_INTEGER, procv, 4002, &
             MPI_COMM_space, recv_rqst(nproc_voisin,2), ierr)
@@ -1079,17 +1043,17 @@ end subroutine maj_atomes_frt_ftm
 
 
     ! On boucle sur les processeurs voisins
-    do nproc_voisin = 1, nbr_proc_voisin
-       procv = proc_voisin(nproc_voisin)
+    do nproc_voisin = 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
 
        send_nb_val(nproc_voisin) = 0
 
        ! On boucle sur les cellules fantomes susceptibles d'appartenir au processeur
-       do ncell_ftm = 1, nbr_cell_ftm
-          koo = cell_ftm(ncell_ftm)
+       do ncell_ftm = 1, psc%nbr_cell_ftm
+          koo = psc%cell_ftm(ncell_ftm)
 
           ! appartient-elle au processeur voisin courant?
-          if (proc_cell(koo).eq.procv) then
+          if (psc%proc_cell(koo).eq.procv) then
 
              ! On copie le contenu de la cellule dans le buffer d'envoi
              do n_at = 1, nato(koo)
@@ -1126,11 +1090,11 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure en charge de la reception des fp des atomes fantomes en
   ! provenance des processeurs voisins pour etre sommees en local
 
-  subroutine reception_fp_frontieres
+  subroutine reception_fp_frontieres(psc)
 
     USE T_kind_param_m, ONLY:  double
     implicit none
-
+    type(para_space_config)::psc
     integer :: nb_at_recv
     integer :: proc_source
     integer :: i_at
@@ -1138,14 +1102,13 @@ end subroutine maj_atomes_frt_ftm
     integer :: ind_recv
     integer :: nb_at_max,nb_at,koo
     integer :: ind_loc,i_at_loc,ind_glob
-    real(double) :: temps_exe
 
  
     ! On boucle sur les processeurs voisins
-    do nproc_voisin=1,nbr_proc_voisin
+    do nproc_voisin=1,psc%nbr_proc_voisin
 
-       call MPI_WAITANY(nbr_proc_voisin,recv_rqst(:,1),ind_recv,status,ierr)
-       proc_source = proc_voisin(ind_recv)
+       call MPI_WAITANY(psc%nbr_proc_voisin,recv_rqst(:,1),ind_recv,status,ierr)
+       proc_source = psc%proc_voisin(ind_recv)
 
        ! Reception des tabdensity issus de ce processeur voisin
        call MPI_WAIT(recv_rqst(ind_recv,2), status, ierr)
@@ -1166,16 +1129,6 @@ end subroutine maj_atomes_frt_ftm
           enddo
           if (ind_loc==-1) then
              print *,myidsp,'!!!Pb!!! Reception du proc',proc_source,'d''un atome non local'
-             temps_exe = MPI_Wtime() - temps_deb
-             if (myidsp==0) then
-                print *, 'Temps d''execution : ', temps_exe
-                print *, 'Temps d''init      : ', temps_init
-                print *, 'Temps d''input     : ', temps_input
-                print *, 'Temps de config   : ', temps_config
-                print *, 'Temps d''initspeed : ', temps_initspeed
-                print *, 'Temps para estime : ', temps_para
-                print *, 'Temps dmloop : ', temps_dmloop
-             endif
              call MPI_FINALIZE(ierr)
              stop 
              stop

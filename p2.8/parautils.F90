@@ -4,6 +4,7 @@
 #ifdef PARA
   USE mod_para,only:maj_atomes_frt_ftm
 #endif
+  use Tpara,only:para_space_config
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage
   use gen_com_m,only:lspacendm
@@ -15,28 +16,21 @@
    USE caltabi_mod,only: caltabi
   implicit none
 contains
-  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib)
+  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,psc)
     USE setcell,only:setcellconf
     class(atom_config_d),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
     type(box_config)::box
+    type(para_space_config)::psc
     class(atom_config),pointer::atloc
     type(cell_config),pointer::celloc
     type(para_config),intent(in)::div
     real(double),intent(in)::rum
     logical::lperiod
-    logical,optional,intent(in)::ldistrib
-    logical::ldistr
     integer::ierr,iun
-    ldistr=.false.
-    if (present(ldistrib))ldistr=ldistrib
-    
     if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
-       if (ldistr) then
-          call atcomp%send2all(0,div%comm_image)
-       endif
        call cellcomp%copy_cell(celloc)
-       call decoupage(div%npim,0,celloc,atloc,lverbose=.false.)
+       call decoupage(div%npim,0,celloc,atloc,lverbose=.false.,psc=psc)
        call repartition(atcomp,atloc,box,celloc,div=div) ! mettre les éléments de la répartition dans un type
        call setcellconf(celloc,atloc,box,atcomp%im,rum,lverbose=.false.)
     else
@@ -58,6 +52,7 @@ contains
     type(para_config),intent(in)::div
     integer::ierr,iun
     logical::lperiod
+
 
        if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    if (div%npim.gt.1) then
@@ -83,9 +78,9 @@ contains
     end if
   end subroutine initcomp
   
-  subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,lperiod,ltabvois,it,itetabvois,lchg)
+  subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,lperiod,ltabvois,it,itetabvois,lchg,psc)
 
-    
+    type(para_space_config)::psc    
     real(double)::sig(3,3),potist
     class(atom_config),target::atcomp
     type(cell_config),target::cellcomp
@@ -135,13 +130,13 @@ contains
 #ifdef PARA
 !    if (lchange) then  ! même sans changement il faut mettre à jour pour initialisze les tableaux NDM like de mod_para pour maj_tab_density
     if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
-       call maj_atomes_frt_ftm(atloc,celloc)
+       call maj_atomes_frt_ftm(atloc,celloc,psc)
     end if
 
 !    end if
 #endif
 !!$
-    CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
+    CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.,psc=psc)
 #ifdef PARA
        if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    if (div%npim.gt.1) then

@@ -8,12 +8,13 @@ module gcII_mod
   USE cellconfig,only:cell_config
   USE boxconfig,only:box_config
   USE endrunT_mod,only:endrunT
+  use Tpara,only:para_space_config
   implicit none
 
   
 contains
   ! *************************************************************
-  subroutine  gcII  (atcgin,celcgin,boxndm)
+  subroutine  gcII  (atcgin,celcgin,boxndm,psc)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -38,6 +39,7 @@ contains
     type(atom_config),target::atcgin
     type(cell_config),target::celcgin
     type(box_config)::boxndm
+     type(para_space_config)::psc
 
     integer :: n,  i, igc
     real(double) :: efinal
@@ -123,7 +125,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        
        it = 0
        efinal = 0.0
-       CALL ZXCGRII(FUNCT,NGC,ACC,itmax,X,G,F,W,IER,criterion,NCALLS)       
+       CALL ZXCGRII(FUNCT,NGC,ACC,itmax,X,G,F,W,IER,criterion,NCALLS,psc)       
        
        deallocate (X,G,W)
 
