@@ -39,7 +39,7 @@ contains
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
-    USE montecarlo_mod, ONLY: pas_lambda_mc,distminat
+    USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
 #endif
@@ -86,7 +86,7 @@ contains
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
          mdcg_noise, lforcetabulate,ivisu,ibound,USEr_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,lax,ldecoup,distminat
+         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat
 
 
     !
@@ -353,6 +353,7 @@ contains
     lvzeroneb=.false. ! si true , met vp à 0 ente chaque iteration neb (comportement pre ndm2020), defaut = false==> calcul plus rapide
 
     pas_lambda_mc = -100 !valeur negative par defaut pour que l'utilisateur la change
+    n_path = -100 !valeur negative par defaut pour que l'utilisateur la change
     distminat=-1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -509,7 +510,8 @@ contains
     end if
 
 
-    if (dmtype.EQ.11) itmax=1
+    if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.9)) itmax=1
+
     if (itmax < 0) then
        if (rang==0) write (6, *) rang,'wrong itmax < 0 '
        call arret_ndm

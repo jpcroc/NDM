@@ -181,7 +181,7 @@ contains
                 write (6, *) '----------valeurs instantanees------------'
 
 
-                write (6, '(I10,G10.3,A,G21.12,A)') it, timel, '*Epot = ', potist*unitE, cunitE
+                write (6, '(I10,G10.3,A,G27.18,A)') it, timel, '*Epot = ', potist*unitE, cunitE
                 do ipot=1,npotmax
                    if (lpotentiel(ipot).eqv..true.) then
                       select case (ipot)
@@ -201,7 +201,7 @@ contains
                 write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel,'*Ec = ',kine*unitE, cunitE, &
                      '  (', temp, ' K)'
 
-                write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
+                write (6,'(I10,G10.3,A,G27.18,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
                 If (l2T) then
 
                    write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Eelec = ',Eelec*unitE, cunitE                 

@@ -52,7 +52,7 @@ contains
 #endif
     character :: fnamcin*80, fnamgin*80
     integer::itread
-    integer::nati
+    integer::nati,natitot
 
     
     !-----------------------------------------------------
@@ -185,11 +185,22 @@ contains
        do i=1,3
           write(6,'(A,I2,3F15.6)')'vecteur ',i, (boxrcf%at(ic,i)*1.0d8,ic=1,3)
        end do
+    endif                                  ! fin rang=0
+
        do iti = 1, ntyp
           nati=count(atrcf%ityp==iti)
+#ifdef PARA
+       if ((nprocspace.gt.1).and.(lspaceNDM)) then
+          call MPI_ALLREDUCE(nati,natitot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
+          nati=natitot         
+       end if
+#endif
+       if(rang==0) then
           if (nati.ne.0) write (6, *) nati, ' atomes de type', iti
+       end if
+
        end do
-    endif                                  ! fin rang=0
+
 
     ! ----------------------------------------------------------
     !  CONDITIONS PERIODIQUES : REMETTRE LES ATOMES DANS BOITE

@@ -1,5 +1,5 @@
 module montecarlo_mod
-  USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, potist,itetabvois,&
+  USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, itetabvois,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
        &lspaceNDM,rang,it,firsttime_lammps,posa,forca
 !  USE tab_imm_m, only:xp, xpp, fp, vp, num_at_glob, ityp, ielat, iwmax
@@ -16,7 +16,7 @@ module montecarlo_mod
   use paraconfig,only:para_config,commconstr
 #ifdef PARA
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
-       &NDM_MPI_REAL_DOUBLE,para_space_config
+       &NDM_MPI_REAL_DOUBLE,para_space_config,status
   use mod_para,only:maj_atomes_frt_ftm
   USE init_vois_mod,only: init_voisinage
 #else
@@ -47,6 +47,8 @@ module montecarlo_mod
   integer::  pas_lambda_mc
   real(double) :: lambda_mc !lambda compris entre 0 et 1
 
+  integer :: n_path ! nb de chemin d'insertion, a definir dans .din, par defaut 10
+
   real(double), dimension(3,3) :: sig_n, sig_nplus1
   real(double) :: potist_n, potist_nplus1
   real(double) :: Weff
@@ -56,7 +58,9 @@ module montecarlo_mod
     type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
     type(atom_config_d),target::atcible
     integer::rgcib,rgem !(cible et emeteur e confN+1)
-contains 
+    integer, dimension(12) :: seed 
+
+  contains 
 
   
   subroutine montecarlo
@@ -79,7 +83,7 @@ contains
     integer :: n_accepted, n_accepted_0, n_accepted_1
     integer :: n_gen, n_gen_0, n_gen_1
 
-    integer :: i_path, n_path
+    integer :: i_path
 
     real(double) :: theta
     real(double) :: beta
@@ -88,7 +92,7 @@ contains
     real(double) :: ln_xalea, ln_Wprec, ln_W, ln_xprob
     real(double) :: acceptance_rate, acceptance_rate_0, acceptance_rate_1
 
-    integer, dimension(12) :: seed 
+
     integer :: n
 
 
@@ -117,7 +121,6 @@ contains
     lextend = .true.
     lperiod = .true.
 
-    n_path = 100
     theta = 0.5
     beta = 1.0/(bk*Text)
 
@@ -136,39 +139,41 @@ contains
 
 #ifdef PARA
     if(paramcgc%image==0) then !procs N
-       call initloc(config_atom_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod,psc=pscgc) !initloc contient caltabtc sur atloc
-       call pointer_caltabt_calfo(sig,potist,config_atom_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-            &lperiod,config_atom_n%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
+       call initloc(config_atom_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod,psc=pscgc,ldistrib=.true.) !initloc contient caltabtc sur atloc
+    call pointer_caltabt_calfo(sig,potist_n,config_atom_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
+         &lperiod,config_atom_n%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
+!!$       call pointer_caltabt_calfo(sig,potist_n,config_atom_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
+!!$            &lperiod,config_atom_n%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
     else !procs N+1
-       call initloc(config_atom_nplus1,cells_nplus1,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod,psc=pscgc) !initloc contient caltabtc sur atloc
-       call pointer_caltabt_calfo(sig,potist,config_atom_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
+       call initloc(config_atom_nplus1,cells_nplus1,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod,psc=pscgc,ldistrib=.true.) !initloc contient caltabtc sur atloc
+       call pointer_caltabt_calfo(sig,potist_nplus1,config_atom_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
             &lperiod,config_atom_nplus1%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
     end if
     call MPI_Barrier(MPI_COMM_SPACE,ierr)
     !en ce point chacun des deux masters a les forces de son paquet datomes
-    if (lmaster) then ! on est dans l'un des 2 masters
+    if (lmaster) then ! on est dans l'un des 2 masters7
        rgcib=0;rgem=1
        if(paramcgc%image==1) then !on est dans le master de N+1
           call config_atom_nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
+          call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1000,paramcgc%comm_master,ierr)
        else !on est dans le master de N qui est le master général
           call config_atom_nplus1%recv(rgem,paramcgc%comm_master,'f')
+          call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1000,paramcgc%comm_master,status,ierr)
        end if
     end if
     !en ce point le master général (rang_orig=0) a les forces de N et N+1    
 #else
-    call pointer_caltabt_calfo(sig,potist,config_atom_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
+    call pointer_caltabt_calfo(sig,potist_n,config_atom_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,config_atom_n%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
-    call pointer_caltabt_calfo(sig,potist,config_atom_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
+    call pointer_caltabt_calfo(sig,potist_nplus1,config_atom_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,config_atom_nplus1%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
-    !    call caltabtC(cells_n,config_atom_n,lperiod,boxmcgc)
-    !    call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,boxmcgc)
-    !    CALL CalFo(sig_n,potist_n,config_atom_n,cells_n,boxmcgc) 
-    !    CALL CalFo(sig_nplus1,potist_nplus1,config_atom_nplus1,cells_nplus1,boxmcgc)
+
 
 #endif
     !initialisation pour le dyn_vverlet
     !calcul des forces des systemes N et N+1
     ! melange des forces des deux systemes N et N+1
+    if (lmaster) write(6,*)'POTnn+1',rang,potist_n,potist_nplus1
     if (paramcgc%rang_orig==0) then
        DO i=1,config_atom_n%im
           config_atom_nplus1%fp(:,i) = (1-lambda_mc)*config_atom_n%fp(:,i) + lambda_mc*config_atom_nplus1%fp(:,i)
@@ -195,7 +200,7 @@ contains
        xprob = 1
        Wprec = + W
 
-
+       write(*,*) 'W0', W
 
        seed(1) = 152533
        call random_seed(PUT=seed(1:12))
@@ -206,7 +211,20 @@ contains
     !########################################################################################################################
     
     DO i_path = 1, n_path ! boucle à faire pour tous les procs
+       if (direction == 0) then
+          lambda_mc = 0.0
+       endif
+       if (direction == 1) then
+          lambda_mc = 1.0 
+       endif
+
        if (paramcgc%rang_orig==0) then !!master general
+
+          write(*,*) ' '
+          write(*,*) ' '
+          write(*,*) ' '
+          write(*,*) 'Numéro de chemin', i_path,direction
+
           call random_number(xalea)
           ln_xalea  = log(xalea)
           config_atom_nplus1%vp(:,:)   = - config_atom_nplus1%vp(:,:) !à chaque retour dans la boucle, on change de direction
@@ -219,14 +237,17 @@ contains
              lambda_mc = 1.0 
              call config_atom_nplus1%copy_config(config_atom_new_1, lrescl=.true.)
           endif
-          !choisir l'at a retirer ou ajouter + preparation des syst N et N+1 pour etre prets pour le langevin (cad decoupage cellules + calcul forces + melange des forces - se fait dans cette sous routine)
+
        end if !master general
+
+          !choisir l'at a retirer ou ajouter + preparation des syst N et N+1 pour etre prets pour le langevin (cad decoupage cellules + calcul forces + melange des forces - se fait dans cette sous routine)
+
        call ajout_retrait(config_atom_n,config_atom_nplus1,cells_n,cells_nplus1,boxmcgc,direction)
 
        call analyse_montecarlo(config_atom_n,cells_n,boxmcgc, 'UO2_syst_n_before_test')
+       call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,boxmcgc)
        call analyse_montecarlo(config_atom_nplus1,cells_nplus1,boxmcgc, 'UO2_syst_nplus1_before_test')
 
-          !       end if
        ! pas de langevin
        call langevin(config_atom_n,config_atom_nplus1,cells_n,cells_nplus1,boxmcgc,direction)
 
@@ -288,17 +309,13 @@ contains
 
           end if
 
-!!$          if (direction == 0) then
-!!$             direction = 1
-!!$          else
-!!$             direction = 0
-!!$          end if
           acceptance_rate   = (real(n_accepted)/real(n_gen))*1.0d2
           acceptance_rate_0 = (real(n_accepted_0)/real(n_gen_0))*1.0d2
           acceptance_rate_1 = (real(n_accepted_1)/real(n_gen_1))*1.0d2
 
        end if
        call analyse_montecarlo(config_atom_n,cells_n,boxmcgc, 'UO2_syst_n_after_test')
+       call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,boxmcgc)
        call analyse_montecarlo(config_atom_nplus1,cells_nplus1,boxmcgc, 'UO2_syst_nplus1_after_test')
        it = it +1
        
@@ -309,9 +326,11 @@ contains
        end if
     END DO
 
+    if (paramcgc%rang_orig==0) then
     write(*,*) ' taux d acceptation final   : ', acceptance_rate,  ' %'
     write(*,*) ' taux d acceptation alpha 0 : ', acceptance_rate_0,' %'
     write(*,*) ' taux d acceptation alpha 1 : ', acceptance_rate_1,' %'
+    end if
 
   end subroutine montecarlo
 
@@ -331,7 +350,7 @@ subroutine ajout_retrait(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
   real(double), dimension(3,1) :: cart_vec_nplus1
-  integer :: indice, i,nag
+  integer :: indice, i,nag,rgcib,rgem
 
   lperiod = .true.
 
@@ -340,12 +359,12 @@ subroutine ajout_retrait(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
   if (direc == 0) then ! ajout d'une particule en N+1
      if (paramcgc%rang_orig==0) then
         !tirer une position aleatoire pour le N+1eme atome
-        call atom_supp(cart_vec_nplus1,boxmcgc,atconf_N)
+        call atom_supp(cart_vec_nplus1)
         
         call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
 !POURQOI CA ? Le systm        
         !copie du syst n dans n+1 
-        call atconf_N%copy_config(atconf_Nplus1,lrescl=.false.)        
+        call boucle_copy_atom(atconf_N,atconf_Nplus1, sens= .false.)        
     !addition de la n+1eme particule
         atconf_Nplus1%xp(1:3,atconf_Nplus1%im) = cart_vec_nplus1(1:3,1)
         atconf_Nplus1%xpp(1:3,atconf_Nplus1%im) = cart_vec_nplus1(1:3,1)
@@ -358,36 +377,49 @@ subroutine ajout_retrait(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
 
      end if
 !repreparer les config pour le prochain langevin
-
+ 
         ! redecouper les cellules N et N+1
 #ifdef PARA
-    if(paramcgc%image==0) then !procs N
-       
-       call initloc(atconf_n,cel_n,atmcgcloc,cellmcgcloc,box,paramcgc,rumax,lperiod,psc=pscgc) !initloc contient caltabtc sur atloc
-       call pointer_caltabt_calfo(sig,potist,atconf_n,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
+     
+     rgcib=1;rgem=0
+     if(paramcgc%image==0) then !procs N
+        if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%comm_master)
+        call atconf_Nplus1%print(unit=100,i1=6140,i2=6145)
+       call initloc(atconf_n,cel_n,atmcgcloc,cellmcgcloc,box,paramcgc,rumax,lperiod,ldistrib=.true.,psc=pscgc) !initloc contient caltabtc sur atloc
+       call pointer_caltabt_calfo(sig,potist_n,atconf_n,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
                &lperiod,atconf_n%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
+
     else !procs N+1
-       call initloc(atconf_nplus1,cel_nplus1,atmcgcloc,cellmcgcloc,box,paramcgc,rumax,lperiod,psc=pscgc) !initloc contient caltabtc sur atloc
-       call pointer_caltabt_calfo(sig,potist,atconf_nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
+        if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%comm_master)
+        call atconf_Nplus1%print(unit=200,i1=6140,i2=6145)
+        call initloc(atconf_nplus1,cel_nplus1,atmcgcloc,cellmcgcloc,box,paramcgc,rumax,lperiod,ldistrib=.true.,psc=pscgc) !initloc contient caltabtc sur atloc
+       call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
                &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
     end if
     !en ce point chacun des deux masters a les forces de son paquet datomes
     if (lmaster) then ! on est dans l'un des 2 masters
        rgcib=0;rgem=1
        if(paramcgc%image==1) then !on est dans le master de N+1
-         call atconf_nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
+          call atconf_Nplus1%print(unit=201,i1=6140,i2=6145)
+          call config_atom_nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
+          call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1001,paramcgc%comm_master,ierr)
        else !on est dans le master de N qui est le master général
-          call atconf_nplus1%recv(rgem,paramcgc%comm_master,'f')
+          call config_atom_nplus1%recv(rgem,paramcgc%comm_master,'f')
+          call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1001,paramcgc%comm_master,status,ierr)
+          call atconf_Nplus1%print(unit=101,i1=6140,i2=6145)
        end if
     end if
+
 !en ce point le master général (rang_orig=0) a les forces de N et N+1    
 #else
-    call pointer_caltabt_calfo(sig,potist,atconf_n,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
+    call pointer_caltabt_calfo(sig,potist_n,atconf_n,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,atconf_n%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)    
-    call pointer_caltabt_calfo(sig,potist,atconf_nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
+    call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
-#endif
+    call atconf_Nplus1%print(unit=50,i1=6140,i2=6145)
 
+#endif
+    if (lmaster)     write(6,*)'POTnn+1 AJ 0',rang,potist_n,potist_nplus1
 !!$        
 !!$    call caltabtC(cel_Nplus1,atconf_Nplus1,lperiod,boxmcgc)
 !!$    call caltabtC(cel_N,atconf_N,lperiod,boxmcgc)
@@ -416,35 +448,44 @@ subroutine ajout_retrait(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
  if (direc == 1) then ! retrait d'une particule alea, la placer en N+1eme position, copier le syst pour le syst à N
         if (paramcgc%rang_orig==0) then
            call indice_alea(atconf_Nplus1,indice)
-!          call atconf_Nplus1%switch_atom(indice,atconf_Nplus1%im)
-           call boucle_copy_atom(atconf_N,atconf_Nplus1)           
+           call atconf_Nplus1%switch_atom(indice,atconf_Nplus1%im)
+!           call atconf_Nplus1%print(unit=40+rang)
+
+          !on copie les N nouveaux premiers atomes du syst N+1 dans le systeme N
+           call boucle_copy_atom(atconf_N,atconf_Nplus1, sens = .true.)           
         end if
 #ifdef PARA
-    if(paramcgc%image==0) then !procs N
-       call initloc(atconf_n,cel_n,atmcgcloc,cellmcgcloc,box,paramcgc,rumax,lperiod,psc=pscgc) !initloc contient caltabtc sur atloc
-       call pointer_caltabt_calfo(sig,potist,atconf_n,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
+        rgcib=1;rgem=0
+        if(paramcgc%image==0) then !procs N
+           if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%comm_master)
+           call initloc(atconf_n,cel_n,atmcgcloc,cellmcgcloc,box,paramcgc,rumax,lperiod,psc=pscgc) !initloc contient caltabtc sur atloc
+           call pointer_caltabt_calfo(sig,potist_n,atconf_n,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
             &lperiod,atconf_n%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
     else !procs N+1
+       if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%comm_master)
        call initloc(atconf_nplus1,cel_nplus1,atmcgcloc,cellmcgcloc,box,paramcgc,rumax,lperiod,psc=pscgc) !initloc contient caltabtc sur atloc
-       call pointer_caltabt_calfo(sig,potist,atconf_nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
+       call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
             &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
     end if
     !en ce point chacun des deux masters a les forces de son paquet datomes
     if (lmaster) then ! on est dans l'un des 2 masters
        rgcib=0;rgem=1
        if(paramcgc%image==1) then !on est dans le master de N+1
-         call atconf_nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
+          call config_atom_nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
+          call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1003,paramcgc%comm_master,ierr)
        else !on est dans le master de N qui est le master général
-          call atconf_nplus1%recv(rgem,paramcgc%comm_master,'f')
+          call config_atom_nplus1%recv(rgem,paramcgc%comm_master,'f')
+          call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1003,paramcgc%comm_master,status,ierr)
        end if
     end if
 !en ce point le master général (rang_orig=0) a les forces de N et N+1    
 #else
-    call pointer_caltabt_calfo(sig,potist,atconf_n,cel_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
+    call pointer_caltabt_calfo(sig,potist_n,atconf_n,cel_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,atconf_n%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)    
-    call pointer_caltabt_calfo(sig,potist,atconf_nplus1,cel_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
+    call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cel_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=.false.,psc=pscgc)
 #endif
+
 !!$
 !!$
 !!$!repreparer les config pour le prochain langevin
@@ -458,7 +499,9 @@ subroutine ajout_retrait(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
 !!$    CALL CalFo(sig_nplus1,potist_nplus1,atconf_Nplus1,cel_Nplus1,box)
 
     ! melange des forces des deux systemes N et N+1
+if (lmaster)         write(6,*)'POTnn+1 AJ 1',rang,potist_n,potist_nplus1
     if (paramcgc%rang_orig==0) then
+
        DO i=1,atconf_N%im
           atconf_Nplus1%fp(:,i) = (1-lambda_mc)*atconf_N%fp(:,i) + lambda_mc*atconf_Nplus1%fp(:,i)
        END DO
@@ -475,7 +518,7 @@ subroutine ajout_retrait(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
 end subroutine ajout_retrait
 
 
-subroutine init_vitesse(config, param)
+subroutine init_vitesse(config, param) !juste pour le N+1eme atome
   implicit none
   type(atom_config_d)::config
   real(double) :: v0, v1, z1, z2, z3, z4
@@ -487,7 +530,7 @@ subroutine init_vitesse(config, param)
     v0 = sqrt(2.D0*bk*Text)
   end if
 
-  do i = 1, config%im
+  i = config%im
 
     call random_number(z1)
     call random_number(z2)
@@ -503,27 +546,34 @@ subroutine init_vitesse(config, param)
     config%vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
     config%vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
 
-  end do
+
 
 
 end subroutine init_vitesse
 
 
 
-
-subroutine boucle_copy_atom(config_n,config_nplus1)
+subroutine boucle_copy_atom(config_n,config_nplus1, sens)
   implicit none
  
   type(atom_config_d)::config_n, config_nplus1
   integer :: i
+  logical :: sens
+
+  if (sens) then
 
   DO i=1, config_n%im
     call config_nplus1%copy_atom(i,config_n,i,lextend=.false.)
   END DO
 
+  else
+   DO i=1, config_n%im
+     call config_n%copy_atom(i,config_nplus1,i,lextend=.false.)
+   END DO
+
+  end if
 
 end subroutine boucle_copy_atom
-
 
 subroutine indice_alea(config, ind)
 
@@ -543,7 +593,9 @@ subroutine indice_alea(config, ind)
     ind = ( (config%im - 1) * rand ) + 1 
   end do 
   
-  write(*,*) 'atome supprimé', ind
+!  if(paramcgc%rang_orig==0)then
+!    write(*,*) 'atome supprimé', ind
+!  end if
 
 end subroutine indice_alea
 
@@ -589,14 +641,6 @@ subroutine analyse_montecarlo(atdml,celndm,box,name_file)
 end if
 end subroutine analyse_montecarlo
 
-
-
-
-
-
-
-
-
 subroutine calcul_U(atdml,celndm,box,potist,U_ini)
 
   use tempinstT_mod,only:tempinstT
@@ -607,66 +651,40 @@ subroutine calcul_U(atdml,celndm,box,potist,U_ini)
   type(box_config)::box
   real(double) :: U_ini, potist,Ti
 
+  if (paramcgc%rang_orig==0) then
   Ti=tempinstT(atdml,kine,latcomp=.true.)
   
   U_ini = potist + kine
+  end if
 end subroutine calcul_U
 
 
 
 
-
-
-
-subroutine atom_supp(vecteur,box,atcf)
-
+subroutine atom_supp(vecteur)
+  
   implicit none
-  type(box_config)::box
-  class(atom_config)::atcf
 
   real(double), dimension(3,1) :: vecteur
-  real(double) :: x_nplus1, y_nplus1, z_nplus1,distati,distatM !position initiale aleatoire de la N+1eme particule
-  integer::itry,i
+  real(double) :: x_nplus1, y_nplus1, z_nplus1 !position initiale aleatoire de la N+1eme particule
+  seed(1) = 152533
+  call random_seed(PUT=seed(1:12))
 
-  if (rang==0) then 
+  call random_number(x_nplus1)
+  call random_number(y_nplus1)
+  call random_number(z_nplus1)
 
-     itry=1 
-1    continue
+  vecteur(1,1) = x_nplus1
+  vecteur(2,1) = y_nplus1
+  vecteur(3,1) = z_nplus1
 
-     call random_number(x_nplus1)
-     call random_number(y_nplus1)
-     call random_number(z_nplus1)
+  
+!  if(paramcgc%rang_orig==0)then
+!    write(*,*) 'vecteur ajouté', vecteur
+!  end if
 
-     vecteur(1,1) = x_nplus1
-     vecteur(2,1) = y_nplus1
-     vecteur(3,1) = z_nplus1
-     call cryst_to_cart(1, vecteur,box%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
-
-     if (distminat.gt.0) then
-        distatm=100
-        do i=1,config_atom_n%im
-           call distat(atcf%xp(:,i),vecteur, boxmcgc,distati)
-           if (distatm.gt.distati) distatm=distati
-
-        end do
-        !     write(66,*)itry,distatM
-        if (distatM.lt.distminat) then
-           itry=itry+1
-           goto 1
-        end if
-        write(6,*)'ITRY',itry
-     end if
-  end if
-#ifdef PARA
-  call MPI_BCAST(vecteur, 3, NDM_MPI_REAL_DOUBLE, 0,MPI_COMM_WORLD,ierr) 
-#endif
-
+  
 end subroutine atom_supp
-   
-
-
-
-
 
 subroutine noise(var)
 
@@ -716,7 +734,6 @@ subroutine langevin(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
   integer::rgcib,rgem
 
   !initialisation des energies
-  
   if (paramcgc%rang_orig==0) then ! Master général
 
      U_0 = 0.0
@@ -726,19 +743,17 @@ subroutine langevin(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
      QEff   = 0.0
      dWEff  = 0.0
      WEff   = 0.0
-     Ek_n =0
+     Ek_n = 0.0
+
      DO i=1, atconf_Nplus1%im
         do ic=1,3
            Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
         enddo
      ENDDO
-     call calcul_U(atconf_N,cel_N,boxmcgc,potist_n, U_0)
-     call calcul_U(atconf_Nplus1,cel_Nplus1,boxmcgc,potist_nplus1, U_1)
 
+     U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
 
-     U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
-
-     H_l_ini = (Ek_n/2) + U_l_n 
+     H_l_ini = Ek_n + U_l_n 
      H_l_n     = H_l_ini
 
      !write(6,*) 'U_1 - nrj pot et Ek_n' , (U_1-potist_nplus1), Ek_n
@@ -767,13 +782,14 @@ subroutine langevin(atconf_N, atconf_Nplus1, cel_N, cel_Nplus1, box, direc)
            Ek_n_plus1 = 0.0  
            Ek_n_1s4 = 0.0
            Ek_n_3s4 = 0.0
-write(6,*) 'lambda_mc' ,lambda_mc
+           write(6,*) 'lambda_mc D0' ,rang,lambda_mc
            ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
 
            ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
            timel = timel+tstep
            rga=exp((-gamlg)*tstep/2)
            call noise(Gl)
+           Gl=0
            DO i=1, atconf_Nplus1%im
               do ic=1,3
                  Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
@@ -819,28 +835,30 @@ write(6,*) 'lambda_mc' ,lambda_mc
            end if
         end if
         if(paramcgc%image==0) then !procs N
-           call pointer_caltabt_calfo(sig,potist,atconf_N,cel_N,box,atmcgcloc,cellmcgcloc,paramcgc,&
+           call pointer_caltabt_calfo(sig,potist_n,atconf_N,cel_N,box,atmcgcloc,cellmcgcloc,paramcgc,&
                 &lperiod,atconf_N%ltabvois,it,itetabvois,psc=pscgc)
         else !procs N+1
-           call pointer_caltabt_calfo(sig,potist,atconf_Nplus1,cel_Nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
+           call pointer_caltabt_calfo(sig,potist_nplus1,atconf_Nplus1,cel_Nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
                 &lperiod,atconf_nplus1%ltabvois,it,itetabvois,psc=pscgc)
         end if
+
         !en ce point chacun des deux masters a les forces de son paquet datomes
         if (lmaster) then ! on est dans l'un des 2 masters
            rgcib=0;rgem=1
-           if(paramcgc%image==1) then !on est dans le master de N+1
-              call atconf_nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
-           else !on est dans le master de N qui est le master général
-
-              call atconf_nplus1%recv(rgem,paramcgc%comm_master,'f')
-           end if
+       if(paramcgc%image==1) then !on est dans le master de N+1
+          call config_atom_nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
+          call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1004,paramcgc%comm_master,ierr)
+       else !on est dans le master de N qui est le master général
+          call config_atom_nplus1%recv(rgem,paramcgc%comm_master,'f')
+          call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1004,paramcgc%comm_master,status,ierr)
+       end if
         end if
 
 #else
         
-    call pointer_caltabt_calfo(sig,potist,atconf_N,cel_N,box,atmcgcloc,cellmcgcloc,paramcgc,&
+    call pointer_caltabt_calfo(sig,potist_n,atconf_N,cel_N,box,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,atconf_N%ltabvois,it,itetabvois,psc=pscgc)
-    call pointer_caltabt_calfo(sig,potist,atconf_Nplus1,cel_Nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
+    call pointer_caltabt_calfo(sig,potist_nplus1,atconf_Nplus1,cel_Nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,atconf_N%ltabvois,it,itetabvois,psc=pscgc)
 !Nouvelles positions
 !!$        call caltabtC(cel_N,atconf_N,lperiod,boxmcgc)
@@ -850,9 +868,11 @@ write(6,*) 'lambda_mc' ,lambda_mc
 !!$        CALL CalFo(sig_nplus1,potist_nplus1,atconf_Nplus1,cel_Nplus1,box)
 
 #endif
-        if (paramcgc%rang_orig==0) then
+ if (lmaster)        write(6,*)'POTnn+1 L0',rang,potist_n,potist_nplus1
+    if (paramcgc%rang_orig==0) then
+
            !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
-           U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
+           U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
            ! melange des forces des deux systemes N et N+1
            DO i=1,atconf_N%im
               atconf_Nplus1%fp(:,i) = (1-lambda_mc)*atconf_N%fp(:,i) + lambda_mc*atconf_Nplus1%fp(:,i)
@@ -864,6 +884,7 @@ write(6,*) 'lambda_mc' ,lambda_mc
            END DO
            ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
            call noise(Gl)
+           Gl=0
            DO i=1, atconf_Nplus1%im
               do ic=1,3
                  atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
@@ -885,13 +906,15 @@ write(6,*) 'lambda_mc' ,lambda_mc
         end if !master general
 
         !A FAIRE POUR TOUS LES PROCS car pilote l'arrêt     
+
+        !incrementation de lambda    
         lambda_mc = lambda_mc + (1./pas_lambda_mc)
         if (paramcgc%rang_orig==0) then !master general
            !calcul des energies et travail et chaleur efficaces
            U_l_n_m1 = U_l_n
            H_l_n_m1 = H_l_n
-           H_l_n    = Ek_n_plus1/2  + U_l_n
-           dQEff  = (Ek_n_1s4-Ek_n)/2 + (Ek_n_plus1-Ek_n_3s4)/2
+           H_l_n    = Ek_n_plus1  + U_l_n
+           dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
            QEff   = QEff + dQEff
            dWEff  = H_l_n - H_l_n_m1 - dQEff
            WEff   = WEff + dWEff
@@ -911,51 +934,28 @@ write(6,*) 'lambda_mc' ,lambda_mc
      DO WHILE (lambda_mc > 0)
 
         if (paramcgc%rang_orig==0) then
-
            Ek_n = 0.0
            Ek_n_plus1 = 0.0  
            Ek_n_1s4 = 0.0
            Ek_n_3s4 = 0.0
-
            ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
-
            ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
            timel = timel+tstep
-
-           write(6,*) 'lambda_mc' ,lambda_mc
+           write(6,*) 'lambda_mc D1' ,rang,lambda_mc
            !write(6,*) 'avant langevin atconf_Nplus1%vp(:,23)=' ,atconf_Nplus1%vp(:,23)
-
            rga=exp((-gamlg)*tstep/2)
-
            call noise(Gl)
-
+           Gl=0
            DO i=1, atconf_Nplus1%im
-
               do ic=1,3
-
                  Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
-
-
                  atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
                       &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*bk*Text*&
                       &(1-rga))/cm(atconf_Nplus1%ityp(i))
-                 !write(6,*) 'rga=' , rga
-                 !write(6,*) 'bruit=' ,Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*bk*Text*&
-                 !                                                  &(1-rga))/cm(atconf_Nplus1%ityp(i))
-
-                 !write(6,*) 'sans fp atconf_Nplus1%vp(:,1)=' ,atconf_Nplus1%vp(:,1)
-
                  Ek_n_1s4 = Ek_n_1s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*&
                       &cm(atconf_Nplus1%ityp(i))
-
-                 !write(6,*) 'fp*dt=' , aux(atconf_Nplus1%ityp(i))*atconf_Nplus1%fp(ic,i)
-
                  atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
                       &*atconf_Nplus1%fp(ic,i)
-
-                 !write(6,*) 'atconf_Nplus1%vp(:,1)=' ,atconf_Nplus1%vp(:,1)
-                 !write(6,*) 'atconf_Nplus1%fp(:,1)=' ,atconf_Nplus1%fp(:,1)
-
               end do
            END DO
 
@@ -982,33 +982,35 @@ write(6,*) 'lambda_mc' ,lambda_mc
 #ifdef PARA
         if (lmaster) then ! on est dans l'un des 2 masters
            rgcib=1;rgem=0
-           if(paramcgc%image==0) then !on est dans le master général
-              call atconf_Nplus1%send2proc(rgcib,paramcgc%comm_master)
-           else !on est dans le master de N+1
-              call atconf_Nplus1%recv(rgem,paramcgc%comm_master)
+           if(paramcgc%image==0) then !on est dans le master de N+1
+              call config_atom_nplus1%send2proc(rgcib,paramcgc%comm_master)
+           else !on est dans le master de N qui est le master général
+              call config_atom_nplus1%recv(rgem,paramcgc%comm_master)
            end if
         end if
         if(paramcgc%image==0) then !procs N
-           call pointer_caltabt_calfo(sig,potist,atconf_N,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
+           call pointer_caltabt_calfo(sig,potist_N,atconf_N,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
                 &lperiod,atconf_N%ltabvois,it,itetabvois,psc=pscgc)
         else !procs N+1
-           call pointer_caltabt_calfo(sig,potist,atconf_Nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
+           call pointer_caltabt_calfo(sig,potist_Nplus1,atconf_Nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
                 &lperiod,atconf_Nplus1%ltabvois,it,itetabvois,psc=pscgc)
         end if
         !en ce point chacun des deux masters a les forces de son paquet datomes
         if (lmaster) then ! on est dans l'un des 2 masters
            rgcib=0;rgem=1
            if(paramcgc%image==1) then !on est dans le master de N+1
-              call atconf_Nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
+              call config_atom_nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
+              call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1002,paramcgc%comm_master,ierr)
            else !on est dans le master de N qui est le master général
-              call atconf_Nplus1%recv(rgem,paramcgc%comm_master,'f')
+              call config_atom_nplus1%recv(rgem,paramcgc%comm_master,'f')
+              call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1002,paramcgc%comm_master,status,ierr)
            end if
         end if
 
 #else
-        call pointer_caltabt_calfo(sig,potist,atconf_N,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
+        call pointer_caltabt_calfo(sig,potist_N,atconf_N,cel_n,box,atmcgcloc,cellmcgcloc,paramcgc,&
              &lperiod,atconf_N%ltabvois,it,itetabvois,psc=pscgc)
-        call pointer_caltabt_calfo(sig,potist,atconf_Nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
+        call pointer_caltabt_calfo(sig,potist_Nplus1,atconf_Nplus1,cel_nplus1,box,atmcgcloc,cellmcgcloc,paramcgc,&
              &lperiod,atconf_Nplus1%ltabvois,it,itetabvois,psc=pscgc)        ! repartition des atomes des syst N et N+1 avec les nouvelles positions
 
         ! repartition des atomes des syst N et N+1 avec les nouvelles positions
@@ -1019,9 +1021,11 @@ write(6,*) 'lambda_mc' ,lambda_mc
 !!$        CALL CalFo(sig_nplus1,potist_nplus1,atconf_Nplus1,cel_Nplus1,box)
 
 #endif
+ if (lmaster)          write(6,*)'POTnn+1',rang,potist_n,potist_nplus1
         if (paramcgc%rang_orig==0) then
+
            !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
-           U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
+           U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
 
            ! melange des forces des deux systemes N et N+1
            DO i=1,atconf_N%im
@@ -1040,7 +1044,7 @@ write(6,*) 'lambda_mc' ,lambda_mc
 
            ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
            call noise(Gl)
-
+           Gl=0
            DO i=1, atconf_Nplus1%im
               do ic=1,3
                  atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
@@ -1080,9 +1084,8 @@ write(6,*) 'lambda_mc' ,lambda_mc
            !calcul des energies et travail et chaleur efficaces
            U_l_n_m1 = U_l_n
            H_l_n_m1 = H_l_n
-           H_l_n    = Ek_n_plus1/2  + U_l_n
-
-           dQEff  = (Ek_n_1s4-Ek_n)/2 + (Ek_n_plus1-Ek_n_3s4)/2
+           H_l_n    = Ek_n_plus1  + U_l_n
+           dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
            QEff   = QEff + dQEff
            dWEff  = H_l_n - H_l_n_m1 - dQEff
            WEff   = WEff + dWEff
@@ -1156,37 +1159,61 @@ end subroutine langevin
     real(double)::distati
     integer::i
     !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
-    call atom_supp(cart_vec_nplus1,boxmcgc,config_atom_n)
-
+    lmaster=paramcgc%lmaster
+    if (paramcgc%rang_orig==0) then
+       
+       call atom_supp(cart_vec_nplus1)
+       
 !FAIT DANS atom_supp
 !    call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
 
-    !copie du syst n dans n+1 
-    call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois)
-    config_atom_nplus1%ltabvois=config_atom_n%ltabvois
-    call config_atom_n%copy_config(config_atom_nplus1,lrescl=.false.)
+       !copie du syst n dans n+1 
+       call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois)
+       config_atom_nplus1%ltabvois=config_atom_n%ltabvois
+       !call config_atom_n%copy_config(config_atom_nplus1,lrescl=.false.)
+       call boucle_copy_atom(config_atom_n,config_atom_nplus1, sens= .false.)
+       
+       !addition de la n+1eme particule
+       config_atom_nplus1%xp(1:3,config_atom_nplus1%im) = cart_vec_nplus1(1:3,1)
+       config_atom_nplus1%fp(1:3,config_atom_nplus1%im) = 0
+       config_atom_nplus1%xpp(1:3,config_atom_nplus1%im) =     config_atom_nplus1%xp(1:3,config_atom_nplus1%im) 
+       config_atom_nplus1%ityp(config_atom_nplus1%im) = 1
+       config_atom_nplus1%num_at_glob(config_atom_nplus1%im) = config_atom_nplus1%im
+       call init_vitesse(config_atom_nplus1,param = 0)
+       !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
+       call cells_nplus1%init(cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+       call cells_n%copy_cell(cells_nplus1)
+    else
+       call config_atom_nplus1%init(config_atom_n%im+1,config_atom_n%imm,config_atom_n%ltabvois)
+       call cells_nplus1%init(cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+       call cells_n%copy_cell(cells_nplus1)
+    end if
 
 
-    !addition de la n+1eme particule
-    config_atom_nplus1%xp(1:3,config_atom_nplus1%im) = cart_vec_nplus1(1:3,1)
-    config_atom_nplus1%fp(1:3,config_atom_nplus1%im) = 0
-    config_atom_nplus1%xpp(1:3,config_atom_nplus1%im) =     config_atom_nplus1%xp(1:3,config_atom_nplus1%im) 
-    config_atom_nplus1%ityp(config_atom_nplus1%im) = 1
-    config_atom_nplus1%num_at_glob(config_atom_nplus1%im) = config_atom_nplus1%im
-    call init_vitesse(config_atom_nplus1,param = 0)
-    !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
-    call cells_nplus1%init(cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
-    call cells_n%copy_cell(cells_nplus1)
-
-    call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,boxmcgc)
-
+    
 #ifdef PARA
+     rgcib=1;rgem=0
+    if (lmaster) then 
+       if(paramcgc%image==0) then !procs N
+          write(6,*)'RANG SEND ',rang
+          call  config_atom_nplus1%send2proc(rgcib,paramcgc%comm_master)
+       else !procs N+1
+          call  config_atom_nplus1%recv(rgem,paramcgc%comm_master)
+          write(6,*)'RANG RECV ',rang
+       end if
+    end if
+    
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        if(paramcgc%image==0) then !procs N
+          call config_atom_nplus1%print(unit=200+rang)
           call init_voisinage(cells_n,pscgc)
           !?          call maj_atomes_frt_ftm(config_atom_n,cells_n)
-
+          
        else !procs N+1
+          call config_atom_nplus1%send2all(0,paramcgc%comm_image)
+          call config_atom_nplus1%print(unit=200+rang)
+          call cells_nplus1%print(unit=250+rang)
+          call caltabtC(cells_nplus1,config_atom_nplus1,lperiod,boxmcgc)
           call init_voisinage(cells_nplus1,pscgc)
           !?          call maj_atomes_frt_ftm(config_atom_nplus1,cells_nplus1)
        end if
@@ -1200,7 +1227,7 @@ end subroutine langevin
        if (paramcgc%rang_orig==0) then
           write(6,*)'write configuration N+1  to confNP1.lmp'
           call config2data (config_atom_nplus1%imm,config_atom_nplus1%im,&
-               config_atom_nplus1%xp,config_atom_nplus1%ityp,boxmcgc%at,ntyp,filename='conf.lmp.NP1')
+               config_atom_nplus1%xp,config_atom_nplus1%ityp,boxmcgc%at,ntyp,filename='confNP1.lmp')
        end if
 
 #ifdef PARA

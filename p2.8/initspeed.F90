@@ -131,6 +131,7 @@ contains
 
     !    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
 
+    if (rang==0) write(6,*)
     im=atcf%im ; imm=atcf%imm
     allocate(xp(3,imm));  allocate(xpp(3,imm));  allocate(vp(3,imm));    allocate(ityp(im))
     xp=atcf%xp;xpp=atcf%xpp; vp=atcf%vp; ityp=atcf%ityp;
@@ -327,9 +328,9 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           enddo
 
           if (rang==0) then
-             write (6,*) 'center of mass = ',scom(1)*1d8,&
-                  scom(2)*1d8,scom(3)*1d8
-             write (6,*) 'Momentum/atom  = ',pav(1),pav(2),pav(3)
+!             write (6,*) 'center of mass = ',scom(1)*1d8,&
+!                  scom(2)*1d8,scom(3)*1d8
+!             write (6,*) 'Momentum/atom  = ',pav(1),pav(2),pav(3)
           endif
 
           !         Shift velocities to make the total momemtum zero
@@ -429,11 +430,11 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           end if
 #endif          
 
-             if (rang==0) then
-                write(6,997) (ainer(1,ib),ib=1,3),prx
-                write(6,997) (ainer(2,ib),ib=1,3),pry
-                write(6,997) (ainer(3,ib),ib=1,3),prz
-             endif
+!             if (rang==0) then
+!                write(6,997) (ainer(1,ib),ib=1,3),prx
+!                write(6,997) (ainer(2,ib),ib=1,3),pry
+!                write(6,997) (ainer(3,ib),ib=1,3),prz
+!             endif
 997          format('Inertia/anglm = ',3e12.4,5x,e12.4)
 
              !         calculate  angular velocity
@@ -511,7 +512,8 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        if ((latcomp).and.(nprocspace.gt.1)) then ! les procs masters myidsp=0 ont toutes les positions., Il faut passer aux autres procs les nouvelles atcf
           call atcf%send2all(0,mpi_comm_space)
        end if
-#endif          
+#endif
+       if (rang==0) write(6,*)
 
     return
 

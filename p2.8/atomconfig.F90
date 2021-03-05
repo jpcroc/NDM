@@ -1034,9 +1034,12 @@ contains
 
 
 
-  subroutine print(atin,i1,i2,iwr,unit,natg1,natg2)
+  subroutine print(atin,i1,i2,iwr,unit,natg1,natg2,caracT)
     class(atom_config), intent(in)::atin
     integer,optional::i1,i2,iwr,unit,natg1,natg2
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+    
     !    type(atom_config_d):: td
     !    type(atom_config_e):: te
     integer::i,im,ifin,ideb,ist,ifn,iw,natpr,ig,iprt,unitw
@@ -1044,6 +1047,12 @@ contains
     class (atom_config),allocatable::atprt
 !    write(6,*)'in print',atin%im,atin%imm
     unitw=6
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvfrugas'
+    else
+       carac=caracT
+    end if
+    
     if (present(unit))unitw=unit
 
     iw=1
@@ -1137,28 +1146,40 @@ contains
        endif
     end if
     if (allocated(atprt%xp)) then
+    if(scan('x',carac).ne.0)then
        do i=ideb,im
           write(unitw,*)'%xp= ', i,atprt%xp(:,i)
        end do
+    end if
+    if(scan('i',carac).ne.0)then
        do i=ideb,im
           write(unitw,*)'%ityp= ', i,atprt%ityp(i)
        end do
+    end if
+    if(scan('n',carac).ne.0)then
        do i=ideb,im
           write(unitw,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
        end do
+    end if
 #ifdef PARA
+    if(scan('p',carac).ne.0)then
        do i=ideb,im
           write(unitw,*)'%proc_at= ', i,atprt%proc_at(i)
        end do
+    end if
 #endif    
        
        if (iw==0) return
-       do i=ideb,im
-          write(unitw,*)'%fp= ', i,atprt%fp(:,i)
-       end do
-       do i=ideb,im
-          write(unitw,*)'%ielat= ', i,atprt%ielat(i)
-       end do
+       if(scan('f',carac).ne.0)then
+          do i=ideb,im
+             write(unitw,*)'%fp= ', i,atprt%fp(:,i)
+          end do
+       end if
+       if(scan('e',carac).ne.0)then
+          do i=ideb,im
+             write(unitw,*)'%ielat= ', i,atprt%ielat(i)
+          end do
+       end if
        !       if (extends_type_of(atprt,td)) then
        !          write(unit,*)'prt_d'
        !          do i=1,im
@@ -1183,32 +1204,44 @@ contains
 
        select type (atprt)
           class is (atom_config_d)
-          write(unitw,*)'prt_d'
-          do i=ideb,im
-             write(unitw,*)'%vp= ', i,atprt%vp(:,i)
-          end do
-          do i=ideb,im
-             write(unitw,*)'%xpp= ', i,atprt%xpp(:,i)
-          end do
+             write(unitw,*)'prt_d'
+             if(scan('v',carac).ne.0)then
+                do i=ideb,im
+                   write(unitw,*)'%vp= ', i,atprt%vp(:,i)
+                end do
+             end if
+             if(scan('r',carac).ne.0)then
+                do i=ideb,im
+                   write(unitw,*)'%xpp= ', i,atprt%xpp(:,i)
+                end do
+             end if
           class is (atom_config_e)
-          write(unitw,*)'prt_e'
-          do i=ideb,im
-             write(unitw,*)'%vp= ', i,atprt%vp(:,i)
-          end do
-          do i=ideb,im
-             write(unitw,*)'%xpp= ', i,atprt%xpp(:,i)
-          end do
+             write(unitw,*)'prt_e'
+             if(scan('v',carac).ne.0)then
+                do i=ideb,im
+                   write(unitw,*)'%vp= ', i,atprt%vp(:,i)
+                end do
+             end if
+             if(scan('r',carac).ne.0)then
+                do i=ideb,im
+                   write(unitw,*)'%xpp= ', i,atprt%xpp(:,i)
+                end do
+             end if
 
 
-          if (atprt%lsigat) then
-             do i=ideb,im
-                write(unitw,*)'%sigat= ',i, atprt%sigat(:,:,i)
-             end do
-          end if
+             if (atprt%lsigat) then
+                if(scan('g',carac).ne.0)then
+                   do i=ideb,im
+                      write(unitw,*)'%sigat= ',i, atprt%sigat(:,:,i)
+                   end do
+                end if
+             end if
           if (atprt%lprteat) then
+             if(scan('u',carac).ne.0)then
              do i=ideb,im
                 write(unitw,*)'%eat= ', i,atprt%eat(i)
              end do
+          end if
           end if
        end select
 

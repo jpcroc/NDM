@@ -12,12 +12,12 @@ FAIT:
 0.8/LAMMPS
 1.5/decoup
 1.2/NEB*LAMMPS*PARADOUBLE
+1.8/mettre un objet paraspace et privatiser les variables
 
 A FAIRE
 
 1.1/SYSTEME COMPLET Work in Porgress
 
-1.8/mettre un objet paraspace et privatiser les variables 
 2/Ewald en paraspace
 2.5/version 2T
 3/ version trempe avec master2loc épisodique voir comment transporter les variables périphériques (type atom atomconfig etendu?
@@ -29,7 +29,7 @@ soit une liste complète, soit un seul FAIT AVEC ES CARACTERES
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
 7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos
-7.1/anapos...
+7.1/anapos... et Fossati
 7.2/supprimer les routines non NDM2021
 7.5/ version avec retour non systématique au proc master
 8/Programmer parallel replica
@@ -38,6 +38,7 @@ soit une liste complète, soit un seul FAIT AVEC ES CARACTERES
 11/programmer potentiel Cooper
 12/retravailler les potentiels en général
 13/ tests formels
+14/ Milady
 
 ----HISTORIQUE:
 rasmol a mettre en version paraconfig (FAIT ?)
