@@ -42,7 +42,7 @@ program ndm
 #ifdef PARA
   call init_MPI()
 
- PRINT *, 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
+ write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
   myidsp=rang
   parallele = .true.
 #else

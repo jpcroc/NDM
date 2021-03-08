@@ -35,7 +35,7 @@ contains
     integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
     real(double),intent(in),dimension(3,3)::at,bg
     real(double),intent(in)::volu
-
+    integer,save::icallc=0
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -58,9 +58,17 @@ contains
     !
     !
     ! *** Initialisations ***
-
     real(double),allocatable :: xpnp(:,:)
+    integer::rang
+
+
+#ifdef PARA
+    call MPI_COMM_RANK( MPI_COMM_WORLD, rang, ierr )
+#else
+    rang=-1
+#endif
     allocate(xpnp(3,imm))
+    icallc=icallc+1
     ! Initialisation des termes du potentiel
     !  potis2 = zero
     !  potis0 = zero
@@ -290,7 +298,9 @@ contains
     end do ! fin i
 
 #ifdef PARA
+
     if (nprocspace.gt.1) then
+
        call MPI_ALLREDUCE(potis1,potis1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
        potis1=potis1_tot
        call MPI_ALLREDUCE(potis2,potis2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
@@ -307,7 +317,6 @@ contains
 
 
     ! fin du calcul du terme de paire dans l'espace direct
-
     deallocate ( xpnp)
     return
   end subroutine calfo2ccel

@@ -17,8 +17,8 @@ FAIT:
 A FAIRE
 
 1.1/SYSTEME COMPLET Work in Porgress
-
 2/Ewald en paraspace
+2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine 
 2.5/version 2T
 3/ version trempe avec master2loc épisodique voir comment transporter les variables périphériques (type atom atomconfig etendu?
 4/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas) 

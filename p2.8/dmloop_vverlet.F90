@@ -14,7 +14,8 @@ module dmloop_vverlet_mod
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
 USE calfoberend_mod,only:calfoberend
-  use Tpara,only:para_space_config
+use Tpara,only:para_space_config
+use endrunT_mod,only:endrunT
 
 
   implicit none 
@@ -72,8 +73,10 @@ contains
        if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     end if
     if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
-
-
+    if (it==0) then
+       call analyseT (atdml,celndm,boxndm)
+       call endrunT(atdml,celndm,boxndm,.true.)
+    end if
 
 
     !  call analyse

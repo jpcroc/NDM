@@ -54,12 +54,12 @@ contains
 
 
     ! last iteration ?
-    if (it>=itmax) then
-       if (rang==0) write (6, *) '*******Derniere iteration PAS CONVERGE !!**** '
-       dragtest=1
-       nebtest(ii)=1
-       return
-    endif
+!    if (it>=itmax) then
+!       if (rang==0) write (6, *) '*******Derniere iteration PAS CONVERGE !!**** '
+!       dragtest=1
+!       nebtest(ii)=1
+!       return
+!    endif
 
     select case (nebtype)
 

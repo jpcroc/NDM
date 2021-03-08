@@ -430,7 +430,7 @@ contains
 #endif
     use paraconfig,only:para_config
     class(atom_config)::atrep
-    class(atom_config),intent(in)::atcomp
+    class(atom_config)::atcomp
     type(cell_config)::cellrep
     type(box_config)::boxrep
     integer,optional, dimension(:), allocatable   :: nab
@@ -459,6 +459,7 @@ contains
              atrep%xp(:,i)=xt(:)
 !             atrep%ityp(i)=iti
              atrep%proc_at(i)=myidsp
+             atcomp%proc_at(i)=myidsp
           endif
        end do
        atrep%im=im

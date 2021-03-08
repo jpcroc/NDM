@@ -65,13 +65,7 @@ contains
        if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    if (div%npim.gt.1) then
        call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
-!       call atlocin%print(unit=500+div%rang_orig)
-!       flush(500+div%rang_orig)
        call atlocin%vers_master(atcomp,div)
-       !call atcomp%print(unit=600+div%rang_orig)
-       !flush(600+div%rang_orig)
-       !call mpi_finalize(ierr)
-       !stop
        if (div%rgim==0) then
           call caltabtC(cellcomp,atcomp,lperiod,box)
        end if
@@ -120,13 +114,11 @@ contains
           celloc=>cellcomp                 
        end if
     end if
-
 #else
     atloc=>atcomp
     celloc=>cellcomp
 
 #endif
-!    call atloc%print(unit=100+div%rang_orig)
     if (lperiod)   call periodbox (box,atloc)
 
     call caltabtC(celloc,atloc,lperiod,box)
@@ -147,18 +139,14 @@ contains
     CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.,psc=psc)
 #ifdef PARA
        if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
-!    if (div%npim.gt.1) then
-       call atloc%vers_master(atcomp,div)
-    else
-!       atcomp=atloc    
-!       cellcomp=celloc
-    end if
+          call atloc%vers_master(atcomp,div)
+          
+       end if
     
 #else
 !    atcomp=atloc
 !    cellcomp=celloc
 #endif
-!write(6,*)'finPCTCF',div%rang_orig
     return
   end subroutine pointer_caltabt_calfo
 

@@ -91,7 +91,9 @@ contains
     !
     !
     ! MPI
-!    if (rang==0) then
+
+    if (itmax==0) itetemp=0
+    !    if (rang==0) then
        !          write(6,*)'analyse -> sauvegarde'
        if (itesauv.GT.0) then
           if (mod(it,itesauv)==0) then 
@@ -181,7 +183,7 @@ contains
                 write (6, *) '----------valeurs instantanees------------'
 
 
-                write (6, '(I10,G10.3,A,G27.18,A)') it, timel, '*Epot = ', potist*unitE, cunitE
+                write (6, '(I10,G10.3,A,G25.16,A)') it, timel, '*Epot = ', potist*unitE, cunitE
                 do ipot=1,npotmax
                    if (lpotentiel(ipot).eqv..true.) then
                       select case (ipot)
@@ -201,7 +203,7 @@ contains
                 write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel,'*Ec = ',kine*unitE, cunitE, &
                      '  (', temp, ' K)'
 
-                write (6,'(I10,G10.3,A,G27.18,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
+                write (6,'(I10,G10.3,A,G25.16,A)') it,timel,'*Etot = ',(kine+potist)*unitE, cunitE
                 If (l2T) then
 
                    write (6,'(I10,G10.3,A,G21.12,A)') it,timel,'*Eelec = ',Eelec*unitE, cunitE                 
