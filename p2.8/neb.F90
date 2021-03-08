@@ -190,8 +190,8 @@ contains
 #else    
           lchange=.false.
           ii=i1
-          call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
-          if (atneb(ii)%ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii),boxneb)
+!          call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
+!          if (atneb(ii)%ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii),boxneb)
 #endif    
           call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
                &lperiod,atneb(ii)%ltabvois,it,itetabvois,lchg=lchange,psc=pscneb)

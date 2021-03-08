@@ -39,8 +39,10 @@ module cellconfig
      type(cell_config),pointer::cellcf
      type(box_config),pointer::box
      type(para_config),pointer::paracf
-
-     integer::ipotentiel
+     type(para_space_config)::psc
+     real(double)::potist,sig(3,3),rum
+     integer::it,itetabvois
+     logical ::lperiod,ltabvois
   end type systeme
   type systeme_d
      type(atom_config_d),pointer::atcf
@@ -48,7 +50,10 @@ module cellconfig
      type(box_config),pointer::box
      type(para_config),pointer::paracf
      type(para_space_config)::psc
-     integer::ipotentiel
+     real(double)::potist,sig(3,3),rum
+     integer::it,itetabvois
+     logical ::lperiod,ltabvois
+
   end type systeme_d
   type systeme_e
      type(atom_config_e),pointer::atcf
@@ -56,7 +61,10 @@ module cellconfig
      type(box_config),pointer::box
      type(para_config),pointer::paracf
      type(para_space_config)::psc
-     integer::ipotentiel
+     real(double)::potist,sig(3,3),rum
+     integer::it,itetabvois
+     logical ::lperiod,ltabvois
+
   end type systeme_e
 
 contains

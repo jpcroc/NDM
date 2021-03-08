@@ -14,7 +14,7 @@ module prog_mod
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
-  USE montecarlo_mod, only: montecarlo,config_atom_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc
+  USE montecarlo_mod, only: montecarlo,atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
@@ -41,7 +41,6 @@ contains
 
     use read_val,only:imm,ltabvois,rvois
 
-    !    USE montecarlo_mod, ONLY: config_atom_n, cells_n
 
 #ifdef PARA
 !    use mpi
@@ -224,11 +223,11 @@ contains
        else
           rv=0
        end if
-       call config_atom_n%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
+       call atconf_n%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        boxmcgc=boxndm
 
-       call init_simple(config_atom_n,cells_n,boxmcgc,psc=pscgc) 
+       call init_simple(atconf_n,cells_n,boxmcgc,psc=pscgc) 
        call initNP1 ! initialise la configuration N+1 
        call montecarlo
        

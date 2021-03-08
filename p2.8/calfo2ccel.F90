@@ -35,7 +35,6 @@ contains
     integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
     real(double),intent(in),dimension(3,3)::at,bg
     real(double),intent(in)::volu
-    integer,save::icallc=0
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -59,16 +58,8 @@ contains
     !
     ! *** Initialisations ***
     real(double),allocatable :: xpnp(:,:)
-    integer::rang
 
-
-#ifdef PARA
-    call MPI_COMM_RANK( MPI_COMM_WORLD, rang, ierr )
-#else
-    rang=-1
-#endif
     allocate(xpnp(3,imm))
-    icallc=icallc+1
     ! Initialisation des termes du potentiel
     !  potis2 = zero
     !  potis0 = zero
@@ -76,7 +67,6 @@ contains
     !  potis1 = zero
     !  potist = zero
 
-    ! write(6,*)'PARA-T R I I ',rang,im,imm
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
     else 

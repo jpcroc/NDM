@@ -424,7 +424,7 @@ contains
     return
   end subroutine constr_2gin
 
-  subroutine repartition(atcomp,atrep,boxrep,cellrep,nab,div)
+  subroutine repartition(atcomp,atrep,boxrep,cellrep,nab)
 #ifdef PARA
     use Tpara,only:myidsp
 #endif
@@ -434,8 +434,6 @@ contains
     type(cell_config)::cellrep
     type(box_config)::boxrep
     integer,optional, dimension(:), allocatable   :: nab
-    type (para_config),optional::div
-    
     integer::i,icomp,k,iti,im,ic,numcell,numproc,iun
     real(double)::xt(3),xpici,cpp
     

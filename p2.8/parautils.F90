@@ -39,7 +39,7 @@ contains
        endif
        call cellcomp%copy_cell(celloc)
        call decoupage(div%npim,0,celloc,atloc,lverbose=.false.,psc=psc)
-       call repartition(atcomp,atloc,box,celloc,div=div) ! mettre les éléments de la répartition dans un type
+       call repartition(atcomp,atloc,box,celloc) ! mettre les éléments de la répartition dans un type
        call setcellconf(celloc,atloc,box,atcomp%im,rum,lverbose=.false.)
     else
        atloc=>atcomp
