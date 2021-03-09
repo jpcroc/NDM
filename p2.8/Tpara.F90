@@ -2,6 +2,7 @@ module Tpara
 #ifdef PARA
   use mpi
   integer, parameter :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
+  integer, parameter :: NDM_MPI_COMPLEX_DOUBLE = MPI_COMPLEX16
   integer::MPI_COMM_space
   integer:: grp_world
   integer,dimension(MPI_STATUS_SIZE):: status

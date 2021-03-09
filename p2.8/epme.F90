@@ -1,7 +1,7 @@
 module epme_mod
 !  USE temp_com,only:volu,bg ! A EFFACER
   USE moduli_mod,only: moduli
-    USE gen_com_m, ONLY:it,itesigma,pi,potis3,zero
+    USE gen_com_m, ONLY:it,itesigma,pi,potis3,zero,lspacendm,rang
         implicit none 
         contains
 !                   Version du 10/12/2001
@@ -16,7 +16,11 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
   USE var_pot, ONLY:alpha,auxe,maxorder,kpmex,kpmey,kpmez,ncoucx,ncoucy,ncoucz,nf1,nf2,nf3,nff,nfft1,nfft2,nfft3,&
        &npoint,pterm,volterm,fr1,fr2,fr3,iiim,q,bsmod3,iiim,ijim,ikim,bsmod2,de3,bsmod1,de2,de1,tabv3
   USE fft_com_m
-
+#ifdef PARA
+  Use Tpara,only: NDM_MPI_COMPLEX_DOUBLE,nprocspace,mpi_comm_space
+  use mpi
+#endif
+  
   implicit none
 
   !#ifdef para2c
@@ -52,11 +56,17 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
   real(double)  :: e, denom, eterm, produc, struc2
   real(double)  :: dn1, dn2, dn3, dt1, dt2, dt3
   logical :: lvect
-  integer :: nbatom
-
+  integer :: nbatom,qgridsize
+#ifdef PARA
+  complex(double), dimension(:,:,:), allocatable :: qgridtot
+#endif  
 
   allocate (qgrid(kpmex,kpmey,kpmez))
-
+#ifdef PARA
+  allocate (qgridtot(kpmex,kpmey,kpmez))
+#endif
+  
+qgridsize=kpmex*kpmey*kpmez
   ! *** Initialisation
   !          fp = zero !Test
   nbatom=Fin-Deb+1
@@ -70,7 +80,7 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
   theta3(:maxorder,Deb:Fin)=zero
   dtheta3(:maxorder,Deb:Fin)=zero
 
-  !     write(6,*)'deb fin ',deb,fin !TestJM
+  write(6,*)'deb fin ',rang, deb,fin !TestJM
   do i=Deb,Fin
 
      xi=xp(1,i)
@@ -120,7 +130,7 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
               t1=theta1(it1,m)
               i=iiim(it1,m)
               produc=t3*t2*t1*q(ityp(m))
-              !            write(6,*)i,j,k
+
               !      write(6,*)kpmex,kpmey,kpmez
               qgrid(i,j,k)=qgrid(i,j,k)+produc
 
@@ -128,27 +138,17 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
         enddo
      enddo
   enddo
-
-
+#ifdef PARA
+  if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+     call MPI_ALLREDUCE(qgrid,qgridtot,qgridsize,NDM_MPI_COMPLEX_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+     qgrid=qgridtot
+  end if
+     
+#endif
+  
   ! *** Calcul de la transformee de Fourier discrete de qgrid() ***
 
-
-  ! appel de la fft codees dans fft_inter
-
-  !DEBUG_WITH_INTEL
-  !>call fft_inter('cald') !Calcul avec la FFT sequentielle
-  !     call fftfront (nfft1,nfft2,nfft3,kpmex,kpmey,kpmez,kpme,&
-  !     ntable,table,qgrid)
-
-
-  ! *** FFT vectorisee Fujitsu***
-  !      call DFTCBM (ARPME,AIPME,NDIM,IDIM,WORK,TWORK,MODE,INIT,IFAIL)
-
-
   e=zero
-
-
-
 
   do i=1,npoint-1
 

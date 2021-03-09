@@ -145,13 +145,13 @@ contains
 
        read (lupotin, *) iewald, l3c
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
-              if (iewald==2) then
-                 iewald=1
-                 write(6,*)'IEWALD MIS A 1'
-              endif
-           end if
+!              if (iewald==2) then
+!                 iewald=1
+!                 write(6,*)'IEWALD MIS A 1'
+!              endif
+!           end if
 #endif
 
        if (iewald==0) then
