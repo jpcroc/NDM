@@ -13,14 +13,16 @@ FAIT:
 1.5/decoup
 1.2/NEB*LAMMPS*PARADOUBLE
 1.8/mettre un objet paraspace et privatiser les variables
+2/Ewald en paraspace
+3/ version trempe avec master2loc épisodique voir comment transporter les variables périphériques (type atom atomconfig etendu? A été très facile ! J'ai oublié ce que je voulais dire avec ce point
 
 A FAIRE
 
 1.1/SYSTEME COMPLET Work in Porgress
-2/Ewald en paraspace
-2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine 
+
+	   2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine : abandonné car algo déêndant, voir cependant calfoMCGC
 2.5/version 2T
-3/ version trempe avec master2loc épisodique voir comment transporter les variables périphériques (type atom atomconfig etendu?
+
 4/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas) 
 5/réécrire paraspace  en version atomconfig y compris avec extend
 et écrire des transferts simples de variables atom et varibales cellconfig et boxconfig
@@ -35,10 +37,13 @@ soit une liste complète, soit un seul FAIT AVEC ES CARACTERES
 8/Programmer parallel replica
 9/documenter atomconfig et ajouter des routines intégrantes (par exemple appel calctemp)
 10/programmer le calcul des forcs pou un ensemble d'atomes plongé dans un ensemble plus grand
+10.1/oaralèllisme OPENMP like avec le point 10.
 11/programmer potentiel Cooper
 12/retravailler les potentiels en général
 13/ tests formels
 14/ Milady
+
+
 
 ----HISTORIQUE:
 rasmol a mettre en version paraconfig (FAIT ?)
