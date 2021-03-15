@@ -5,7 +5,7 @@ module elec_cell
        &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter,im_glob
   USE var_pot, ONLY:cm
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
-  use Tpara,only:para_space_config  !
+  use Tpara,only:para_space_config ,ierr !
   implicit none
   type :: ecelltype
      real(double)::temp
@@ -223,7 +223,7 @@ contains
 
 #ifdef PARA
     USE mpi
-    USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace
+    USE Tpara,only:COMM_space,myidsp,nprocspace
 !    USE mod_para,only:proc_cell
 #else
     USE Tpara,only:nprocspace
@@ -241,19 +241,11 @@ contains
     !langevin codé à partir du poly de Gabriel Stolz page 84, dans une version avec expoentielle comme Manuel et Cosmin
     ! adapted to 2T model
     integer :: ixyze(3)
-#ifdef PARA
-    real(double), allocatable,dimension(:)::elosscel_tot
-#endif
 
   
 
     if (i2t==0)then 
        elosscel(:)=0
-#ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-              allocate (elosscel_tot(noxyz))
-           end if
-#endif
 
     end if
     do ko = 1, noxyz
@@ -374,11 +366,8 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     end do
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       if (i2T==0)then
-          call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,&
-               &MPI_SUM,MPI_COMM_space,ierr)
-          elosscel=elosscel_tot
-          deallocate (elosscel_tot)
+   if (i2T==0)then
+      call comm_space%sum(elosscel)
        end if
     end if
 #endif 

@@ -17,7 +17,7 @@ contains
 #ifdef PARA
   use mpi
   USE mod_para,only:maj_fp_frt
-  use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace,para_space_config,ierr
+  use Tpara,only:COMM_space,nprocspace,para_space_config
 #else
   USE Tpara,only:nprocspace,para_space_config
 #endif
@@ -56,13 +56,13 @@ contains
   real(double) , dimension(15,6) :: tmp
   real(double) , dimension(15,3) :: tmp1
   real(double) , dimension(1,3) :: cvij, cvik
-#ifdef PARA
-  real(double) :: potist_tot, ER1_tot, ER2_tot, ER3_tot 
-  real(double), dimension(3)   :: jq_tot
-  real(double), dimension(3,3) :: sig_tot
-  real(double) :: potisTersoff_tot
-  real(double), dimension(3,3,noxyz) :: sigc_tot
-#endif
+!!$#ifdef PARA
+!!$  real(double) :: potist_tot, ER1_tot, ER2_tot, ER3_tot 
+!!$  real(double), dimension(3)   :: jq_tot
+!!$  real(double), dimension(3,3) :: sig_tot
+!!$  real(double) :: potisTersoff_tot
+!!$  real(double), dimension(3,3,noxyz) :: sigc_tot
+!!$#endif
   real(double):: coupR(npair)
 
   real(double) :: phu,sk,dr
@@ -379,16 +379,10 @@ contains
 
 #ifdef PARA
       if (nprocspace.gt.1) then
-
-  call MPI_ALLREDUCE(potisTersoff,potisTersoff_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-  potisTersoff=potisTersoff_tot
-  !     call MPI_ALLREDUCE(jq,    jq_tot,    3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-  !     jq=jq_tot
-  call MPI_ALLREDUCE(sig,   sig_tot,   9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-  sig=sig_tot  
+         call comm_space%sum(potisTersoff)
+         call comm_space%sum(sig)
   if (associated(sigc)) then
-     call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-     sigc=sigc_tot
+     call comm_space%sum(sigc)
   endif
 end if
 #endif

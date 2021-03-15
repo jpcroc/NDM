@@ -15,7 +15,7 @@ contains
     USE jqmod
 #ifdef PARA
     use mpi
-    USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace,ierr
+    USE Tpara,only:COMM_space,nprocspace
 #else
     USE Tpara,only:nprocspace
 #endif
@@ -46,12 +46,6 @@ contains
     real(double) :: aux, alp, f1, f2, f3,  c1, c2&
          , c3, c1p,c2p,c3p, sk, r, phu, c1abs,c2abs,c3abs, ra(3),cv(1,3)
     real(double) :: dr,deltaepot,fcontr
-#ifdef PARA
-    real(double) :: potis1_tot, potis2_tot
-    real(double) :: deltaF_tot,deltaEpot_tot,deltaEspr_tot,Espr_tot,deltafcomp
-    real(double), dimension(3,3) :: sig_tot
-    real(double), dimension(3,3,noxyz) :: sigc_tot
-#endif
 
     !-----------------------------------------------
     !
@@ -207,34 +201,7 @@ contains
              fp(1,j) = fp(1,j)-f1
              fp(2,j) = fp(2,j)-f2
              fp(3,j) = fp(3,j)-f3
-!!$
-!!$             if (lcalcjq) then
-!!$                jqf=0.0
-!!$                eat(i) = eat(i)+deltaepot
-!!$#ifdef PARA
-!!$                if (nprocspace.gt.1) then
-!!$                   if (j.le.im) then
-!!$                      eat(j) = eat(j)+deltaepot
-!!$                      do ic=1,3
-!!$                         jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
-!!$                      end do
-!!$                   else
-!!$                      do ic=1,3
-!!$                         jqf=jqf-0.5*(ra(ic)*(vp(ic,i)))
-!!$                      end do
-!!$                   end if
-!!$                end if
-!!$#else
-!!$                eat(j) = eat(j)+deltaepot
-!!$                do ic=1,3
-!!$                   jqf=jqf-0.5*(ra(ic)*(vp(ic,i)+vp(ic,j)))
-!!$                end do
-!!$                do ic=1,3
-!!$                   jq(ic)=jq(ic)-jqf*cv(1,ic)
-!!$                end do
-!!$#endif
-!!$             end if
-
+!!
              if (lprteat) then
                 !              if (allocated (free)) then
                 !                 if (free(i).EQV..true.)eat(i) = eat(i)+deltaepot
@@ -290,16 +257,12 @@ contains
 #ifdef PARA
 
     if (nprocspace.gt.1) then
-
-       call MPI_ALLREDUCE(potis1,potis1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       potis1=potis1_tot
-       call MPI_ALLREDUCE(potis2,potis2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       potis2=potis2_tot
-       call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       sig=sig_tot
+       call comm_space%sum(potis1)
+       call comm_space%sum(potis2)
+       call comm_space%sum(sig)
        if (associated(sigc)) then
-          call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          sigc=sigc_tot
+          call comm_space%sum(sigc)
+
        endif
     end if
 

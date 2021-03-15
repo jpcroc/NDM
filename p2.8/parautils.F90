@@ -4,7 +4,7 @@
 #ifdef PARA
   USE mod_para,only:maj_atomes_frt_ftm
 #endif
-  use Tpara,only:para_space_config
+  use Tpara,only:para_space_config,mpi_comm_world
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage
   use gen_com_m,only:lspacendm
@@ -33,12 +33,12 @@ contains
     ldistr=.false.
     if (present(ldistrib))ldistr=ldistrib
     
-    if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        if (ldistr) then
-          call atcomp%send2all(0,div%comm_image)
+          call atcomp%send2all(0,div%mpi_image%comm)
        endif
        call cellcomp%copy_cell(celloc)
-       call decoupage(div%npim,0,celloc,atloc,lverbose=.false.,psc=psc)
+       call decoupage(div%mpi_image%nproc,0,celloc,atloc,lverbose=.false.,psc=psc)
        call repartition(atcomp,atloc,box,celloc) ! mettre les éléments de la répartition dans un type
        call setcellconf(celloc,atloc,box,atcomp%im,rum,lverbose=.false.)
     else
@@ -62,11 +62,11 @@ contains
     logical::lperiod
 
 
-       if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
-!    if (div%npim.gt.1) then
+       if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
+!    if (div%mpi_image%nproc.gt.1) then
        call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
        call atlocin%vers_master(atcomp,div)
-       if (div%rgim==0) then
+       if (div%mpi_image%rank==0) then
           call caltabtC(cellcomp,atcomp,lperiod,box)
        end if
     else
@@ -100,11 +100,12 @@ contains
     if(present(lchg))lchange=lchg
 #ifdef PARA
     if (lchange) then
-       if (div%npim.gt.1)then
+       if (div%mpi_image%nproc.gt.1)then
+
           if (lspaceNDM.eqv..true.) then
              call atcomp%master2loc(atloc,div)
           else
-             call atcomp%send2all(0,div%comm_image)
+             call atcomp%send2all(0,div%mpi_image%comm)
              atloc=>atcomp
              celloc=>cellcomp
        
@@ -129,20 +130,23 @@ contains
 
 #ifdef PARA
 !    if (lchange) then  ! même sans changement il faut mettre à jour pour initialisze les tableaux NDM like de mod_para pour maj_tab_density
-    if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+
+    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        call maj_atomes_frt_ftm(atloc,celloc,psc)
     end if
 
 !    end if
 #endif
 !!$
+
     CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.,psc=psc)
 #ifdef PARA
-       if ((div%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+
+       if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
           call atloc%vers_master(atcomp,div)
           
        end if
-    
+             
 #else
 !    atcomp=atloc
 !    cellcomp=celloc

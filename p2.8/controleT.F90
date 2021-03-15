@@ -13,7 +13,7 @@ module controleT_mod
   USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
 #ifdef PARA
   use mpi
-  USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace,myidsp
+  USE Tpara,only:COMM_space,nprocspace,myidsp
 #else
   USE Tpara,only:nprocspace,myidsp
 #endif
@@ -53,13 +53,6 @@ contains
     real(double) :: potistmean,potistdif
     real(double),save :: potist1000
     real, allocatable,save :: potiststock(:)
-#ifdef PARA
-    real(double) :: tcou_glob
-    integer      :: nacou_glob
-    real(double) :: fpmax_glob,fpsmax_glob
-    real(double) :: forctot_glob
-    real(double) :: formax_glob
-#endif
     save ltc
     !-----------------------------------------------
     !
@@ -136,11 +129,9 @@ contains
           fpmax=sqrt( MAXVAL( Sum(atdml%fp(1:3,1:atdml%im)**2,1) ) )
           fpSmax = MaxVal( Abs(atdml%fp(:,1:atdml%im)) )
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-             call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
-             fpmax=fpmax_glob
-             call MPI_ALLREDUCE(fpSmax,fpSmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
-             fpSmax=fpSmax_glob
+          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+             call comm_space%sum(fpmax)
+             call comm_space%sum(fpsmax)
           end if
 #endif
 
@@ -173,11 +164,10 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           fpSmax=sqrt( SUM(atdml%fp(:,1:atdml%im)**2) )
           !        END IF
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              fpSmax=fpSmax**2
-             fpmax_glob=0
-             call MPI_ALLREDUCE(fpmax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-             fpSmax=sqrt(fpmax_glob)
+             call comm_space%sum(fpsmax)
+             fpsmax=sqrt(fpsmax)
           end if
 #endif
 
@@ -229,14 +219,11 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           formax = MaxVal( Abs(atdml%fp(:,1:atdml%im)) )
           !        END IF
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-             fpmax_glob=0
-             call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
-             formax=fpmax_glob
+          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+             call comm_space%sum(formax)
              forctot=forctot**2
-             fpmax_glob=0
-             call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-             forctot=sqrt(fpmax_glob)
+             call comm_space%sum(forctot)
+             forctot=sqrt(forctot)
           end if
 #endif
 

@@ -65,7 +65,7 @@ contains
     !       WRITE(0,'(a,i0)') "N     = ", N
     !       STOP "< work_cgII >"
     !    END IF
-    if (gcpara%rgim==0) then
+    if (gcpara%mpi_image%rank==0) then
        IF (dmtype.EQ.30) THEN ! Variables = reduced coordinates
           do i=1,atcgcomp%im
              i1=atcgcomp%num_at_glob(i)             
@@ -104,7 +104,7 @@ if (nprocspace.gt.1) then
        forctot=sqrt( SUM(atcgcomp%fp(1:3,1:atcgcomp%im)**2) )
        formax = MaxVal( Abs(atcgcomp%fp(:,1:atcgcomp%im)) )
        lover=.false.
-       if (gcpara%rgim==0)then
+       if (gcpara%mpi_image%rank==0)then
 
           if (lEev.EQV..true.) then 
              forctot = forctot*erg2eV/angst
@@ -157,7 +157,7 @@ if (nprocspace.gt.1) then
     end IF! it .ge.1
 #ifdef PARA
 if (nprocspace.gt.1) then
-   call MPI_BCAST(lover, 1,MPI_LOGICAL, 0,gcpara%comm_image,ierr)
+   call MPI_BCAST(lover, 1,MPI_LOGICAL, 0,gcpara%mpi_image%comm,ierr)
 end if
 #endif
 !    write(6,*)'LOVER',lover,rang,it

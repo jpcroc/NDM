@@ -35,7 +35,7 @@ contains
 
 #ifdef PARA
     use mpi
-    USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE
+    USE Tpara,only:COMM_space,nprocspace
 #else
   USE Tpara,only:nprocspace
 #endif
@@ -49,11 +49,6 @@ contains
     integer::ilocal
     real(double) sigkine_tot(3,3)
     !    real(double) :: temptyp(ntyp)
-#ifdef PARA
-    ! declarations supplementaires pour MPI
-    real(double), dimension(3,3,celndm%noxyz) :: sigc_tot
-    integer::ierr2
-#endif
 
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
@@ -123,16 +118,13 @@ contains
        sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
 
 #ifdef PARA
+       call comm_space%sum(sig)
 
-       !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       !  sig=sig_tot
        
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
-       sigkine=sigkine_tot
+   call comm_space%sum(sigkine)
        if (allocated(celndm%sigc)) then
-          call MPI_ALLREDUCE(celndm%sigc,sigc_tot, 9*celndm%noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr2)
-          celndm%sigc=sigc_tot
+          call comm_space%sum(celndm%sigc)
        end if
     end if
 #endif

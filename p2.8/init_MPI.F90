@@ -1,9 +1,6 @@
 module init_mpi_mod
 
 
-#ifdef PARA
-  use Tpara, ONLY:   NDM_MPI_REAL_DOUBLE
-#endif
   use T_kind_param_m, ONLY:  double
 
 !  use atomconfig,only: atom_config
@@ -14,7 +11,7 @@ contains
   subroutine init_mpi()
     use mpi
     use gen_com_m,only:rang
-    use Tpara,only:ierr,nprocs,MPI_COMM_space,grp_world,nprocspace,myidsp,comm_space
+    use Tpara,only:ierr,nprocs,MPI_COMM_space,grp_world,nprocspace,myidsp,comm_space,NDM_MPI_REAL_DOUBLE
 
 
     implicit none

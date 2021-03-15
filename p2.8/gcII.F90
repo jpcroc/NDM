@@ -94,7 +94,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        NGC=3*atcgcomp%im
        allocate (X(NGC),G(NGC),W(6*NGC))
        X=0;G=0;W=0
-       if (gcpara%rgim==0)  then   
+       if (gcpara%mpi_image%rank==0)  then   
           do i=1,atcgcomp%im
              i1=atcgcomp%num_at_glob(i)
              

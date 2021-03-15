@@ -5,7 +5,7 @@ module eloss
   USE var_pot, ONLY:ntyp,cm,gamlt
 #ifdef PARA
   use mpi
-  USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE
+  USE Tpara,only:COMM_space,myidsp,NDM_MPI_REAl_DOUBLE,ierr
 #else
   use Tpara,only : nprocspace
   
@@ -138,13 +138,6 @@ contains
     integer::koo,i,nv1,ic,iti
     integer, save:: icall=0
 
-#ifdef PARA
-    real(double), allocatable,dimension(:)::elosscel_tot
-    
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       if (allocated(elosscel)) allocate (elosscel_tot(noxyz))
-    end if
-#endif
     icall=icall+1
     if (icall==1) then
         elosselec=0
@@ -218,25 +211,17 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     !	write(6,*)'RG el',rang,elosselec,elosselec1
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       elosselectot=0
-       elosselectot1=0
-       call MPI_ALLREDUCE(elosselec,elosselectot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       call MPI_ALLREDUCE(elosselec1,elosselectot1,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
+   call comm_space%sum(elosselec)
+   call comm_space%sum(elosselec1)
        !if l2T
        if (allocated(elosscel)) then
-          call MPI_ALLREDUCE(elosscel,elosscel_tot,noxyz,NDM_MPI_REAL_DOUBLE,&
-               &MPI_SUM,MPI_COMM_space,ierr)
-          elosscel=elosscel_tot
-          deallocate (elosscel_tot)
+          call comm_space%sum(elosscel)
        end if
-    else
-       elosselectot=elosselec
-       elosselectot1=elosselec1
     end if
 #else
 
 #endif
-!  write(6,*)'TEST electronic losses ', elosselectot, elosselectot1
+!  write(6,*)'TEST electronic losses ', elosselec, elosselec1
 
 
   end subroutine calceloss

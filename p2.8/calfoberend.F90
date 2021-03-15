@@ -8,7 +8,7 @@ contains
   subroutine calfoberend(im,imm,xp, vp, fp,ityp)
 #ifdef PARA
   use mpi
-    USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace,ndm_mpi_real_double,ierr
+    USE Tpara,only:COMM_space,nprocspace
 !    include 'mpif.h'
 #else
   USE Tpara,only:nprocspace
@@ -30,9 +30,7 @@ contains
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-
-       call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       mv2 = mv2_glob
+   call comm_space%sum(mv2)
        tempm1=mv2/(3.d0*float(im_glob)*bk)
     else
        tempm1=mv2/(3.d0*float(im)*bk)

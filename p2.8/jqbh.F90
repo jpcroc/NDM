@@ -13,7 +13,7 @@ subroutine jqbh (xp,xpp,vp,ityp)
   USE var_pot, ONLY:cm
 #ifdef PARA
   use mpi
-  USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE Tpara,only:COMM_space,nprocspace
 
 #endif
   implicit none
@@ -38,13 +38,6 @@ subroutine jqbh (xp,xpp,vp,ityp)
   real(double),allocatable,save :: temptr(:)
   real(double),allocatable,save :: temptra(:)
   integer,allocatable,save::nattr(:)
-#ifdef PARA 
-  real(double) :: ecou1_tot,ecou2_tot
-  integer::nacou1_tot,nacou2_tot
-  real(double),allocatable,save :: temptra_tot(:)
-  integer,allocatable,save::nattr_tot(:)
-
-#endif
   character*15:: fnamtr
   character(len=2) :: extension
   logical :: loc(imm)
@@ -67,10 +60,6 @@ subroutine jqbh (xp,xpp,vp,ityp)
      allocate (temptr(ntr))
      allocate (temptra(ntr))
      allocate (nattr(ntr))
-#ifdef PARA
-     allocate (temptra_tot(ntr))
-     allocate (nattr_tot(ntr))
-#endif
      temptr(:)=0. ; nattr(:)=0 ; temptra(:)=0
      if (rang==0) then
         do i=1,ntr
@@ -167,12 +156,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
            end if
 !        end if
      end do
-!     write(6,*)'ecou1', rang,nacou1,ecou1
-     call MPI_ALLREDUCE(ecou1,ecou1_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-     ecou1=ecou1_tot
-     call MPI_ALLREDUCE(nacou1,nacou1_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
-     nacou1=nacou1_tot
-!     write(6,*)'ecou1B', rang,nacou1,ecou1
+     !     write(6,*)'ecou1', rang,nacou1,ecou1
+     call comm_space%sum(ecou1)
+     call comm_space%sum(nacou1)
   else
 
      do i = 1, im
@@ -230,12 +216,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
            end if
 !        end if
      end do
-!     write(6,*)'ecou2', rang,nacou2,ecou2
-     call MPI_ALLREDUCE(ecou2,ecou2_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-     ecou2=ecou2_tot
-     call MPI_ALLREDUCE(nacou2,nacou2_tot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
-     nacou2=nacou2_tot
-!     write(6,*)'ecou2B', rang,nacou2,ecou2
+     !     write(6,*)'ecou2', rang,nacou2,ecou2
+     call comm_space%sum(ecou1)
+     call comm_space%sum(nacou2)
   else
      do i = 1, im
         if (xp(1,i).gt.csup)then
@@ -289,11 +272,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
         temptra(indtr)=temptra(indtr)+ (vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)*cm(ityp(i))/(3.*bk*ittherm)
 !		endif
      end do
-!     write(6,*)'temptra', rang,temptra,nattr
-     call MPI_ALLREDUCE(temptra,temptra_tot,ntr,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-     temptra=temptra_tot
-     call MPI_ALLREDUCE(nattr,nattr_tot,ntr,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
-     nattr=nattr_tot
+     !     write(6,*)'temptra', rang,temptra,nattr
+     call comm_space%sum(temptra)
+     call comm_space%sum(nattr)
 !     write(6,*)'temptra2', rang,temptra,nattr
   else
      temptra(:)=0.

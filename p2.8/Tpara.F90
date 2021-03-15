@@ -12,7 +12,7 @@ module Tpara
 #else
    integer:: status 
 #endif
-  integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
+  integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiesl
 
   integer::ierr
   type para_space_config
@@ -34,6 +34,7 @@ module Tpara
     integer    :: comm       ! MPI communicator
     integer    :: nproc      ! number of procs in the communicator comm
     integer    :: rank       ! index           in the communicator comm
+    integer    :: group       ! group          in the communicator comm
   contains
     procedure :: init => mpic_init
     procedure :: barrier => mpic_barrier
@@ -43,6 +44,7 @@ module Tpara
     generic :: sum  => mpic_sum_dp
     generic :: sum  => mpic_sum_cdp
     generic :: sum  => mpic_sum_i
+    generic::maxloc=>mpic_maxloc_dp
     procedure :: mpic_sum_dp
     procedure :: mpic_sum_cdp
     procedure :: mpic_sum_i
@@ -55,18 +57,22 @@ module Tpara
     ! max
     generic :: max  => mpic_max_dp
     generic :: max  => mpic_max_i
+    procedure::mpic_maxloc_dp
     procedure :: mpic_max_dp
     procedure :: mpic_max_i
     ! and
     procedure :: and => mpic_and_l
     ! broadcast
     generic :: bcast  => mpic_bcast_dp
+    generic :: bcast  => mpic_bcast_i
     generic :: bcast  => mpic_bcast_cdp
     procedure :: mpic_bcast_dp
+    procedure:: mpic_bcast_i
     procedure :: mpic_bcast_cdp
   end type mpi_communicator
 
   type(mpi_communicator)::comm_space
+!  type(mpi_communicator)::mpi_world
 
 contains
 
@@ -85,6 +91,7 @@ subroutine mpic_init(mpic,comm_in)
   mpic%comm = comm_in
   call MPI_COMM_SIZE(mpic%comm,mpic%nproc,ierror)
   call MPI_COMM_RANK(mpic%comm,mpic%rank,ierror)
+  call MPI_COMM_GROUP(mpic%comm, mpic%group, ierr )
 #else
   mpic%comm  = 1
   mpic%nproc = 1
@@ -138,7 +145,7 @@ end subroutine mpic_sum_dp
 subroutine mpic_sum_cdp(mpic,array)
   implicit none
   class(mpi_communicator),intent(in) :: mpic
-  complex(ext_complex),intent(inout) :: array(..)
+  complex(double),intent(inout) :: array(..)
   !=====
   integer :: nsize
   integer :: ierror=0
@@ -173,7 +180,7 @@ subroutine mpic_sum_i(mpic,array)
   nsize = SIZE(array)
 
 #if defined(PARA)
-  call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER8, MPI_SUM, mpic%comm, ierror)
+  call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_SUM, mpic%comm, ierror)
 #endif
   if( ierror /= 0 ) then
     write(6,*) 'error in MPI_ALLREDUCE'
@@ -181,6 +188,34 @@ subroutine mpic_sum_i(mpic,array)
 
 end subroutine mpic_sum_i
 
+!=========================================================================
+subroutine mpic_maxloc_dp(mpic,array)
+  implicit none
+  class(mpi_communicator),intent(in) :: mpic
+  real(double),intent(inout) :: array(2)
+  real(double)::array_glob(2)
+  !=====
+  integer :: nsize
+  integer :: ierror=0
+  !=====
+
+  if( mpic%nproc == 1 ) return
+
+!  nsize = SIZE(array)
+
+#if defined(PARA)
+  call MPI_ALLREDUCE(array,array_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPIc%COMM,ierr)
+  !  call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, mpic%comm, ierror)
+  array=array_glob
+#endif
+  if( ierror /= 0 ) then
+    write(6,*) 'error in MPI_ALLREDUCE'
+  endif
+
+end subroutine mpic_maxloc_dp
+
+
+!=========================================================================
 
 !=========================================================================
 subroutine mpic_max_dp(mpic,array)
@@ -326,6 +361,29 @@ subroutine mpic_bcast_dp(mpic,rank,array)
 
 end subroutine mpic_bcast_dp
 
+subroutine mpic_bcast_i(mpic,rank,array)
+  implicit none
+  class(mpi_communicator),intent(in) :: mpic
+  integer,intent(in)     :: rank
+  integer,intent(inout) :: array(..)
+  !=====
+  integer :: nsize
+  integer :: ierror=0
+  !=====
+
+  if( mpic%nproc == 1 ) return
+
+  nsize = SIZE(array)
+
+#if defined(PARA)
+  call MPI_BCAST(array,nsize,MPI_INTEGER,rank,mpic%comm,ierror)
+#endif
+  if( ierror /= 0 ) then
+    write(6,*) 'error in MPI_BCAST I'
+  endif
+
+end subroutine mpic_bcast_i
+
 
 !=========================================================================
 subroutine mpic_bcast_cdp(mpic,rank,array)
@@ -430,9 +488,9 @@ end subroutine mpic_bcast_cdp
 !!$
 !!$#if defined(PARA)
 !!$if (present(tag)) then
-!!$   call MPI_SEND( array, nsize,  MPI_INTEGER8, rgcib, tag,mpic%comm, ierror)
+!!$   call MPI_SEND( array, nsize,  MPI_INTEGER, rgcib, tag,mpic%comm, ierror)
 !!$else
-!!$   call MPI_SEND( array, nsize,  MPI_INTEGER8, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
+!!$   call MPI_SEND( array, nsize,  MPI_INTEGER, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
 !!$end if
 !!$#endif
 !!$  if( ierror /= 0 ) then
@@ -517,9 +575,9 @@ end subroutine mpic_bcast_cdp
 !!$  nsize = SIZE(array)
 !!$#if defined(PARA)
 !!$if (present(tag)) then
-!!$   call MPI_SEND( array, nsize,MPI_INTEGER8, rgem, tag,mpic%comm, status,ierror)
+!!$   call MPI_SEND( array, nsize,MPI_INTEGER, rgem, tag,mpic%comm, status,ierror)
 !!$else
-!!$   call MPI_SEND( array, nsize,MPI_INTEGER8, rgem, MPI_ANY_TAG,mpic%comm,status, ierror)
+!!$   call MPI_SEND( array, nsize,MPI_INTEGER, rgem, MPI_ANY_TAG,mpic%comm,status, ierror)
 !!$end if
 !!$#endif
 !!$  if( ierror /= 0 ) then

@@ -107,7 +107,7 @@ module montecarlo_mod
     cellmcgcloc=>cellcible
     atmcgcloc=>atcible
     lmaster=paramcgc%lmaster
-    if ((paramcgc%npim.gt.1).and.(lspaceNDM.eqv..true.)) then
+    if ((paramcgc%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        call init_voisinage(cells_n,pscgc)
     end if
 #else
@@ -142,7 +142,7 @@ module montecarlo_mod
     !calcul des forces des systemes N et N+1
     ! melange des forces des deux systemes N et N+1
 
-    if (paramcgc%rang_orig==0) then
+    if (paramcgc%mpi_orig%rank==0) then
        ! sauvegarde du système
        call atconf_n%copy_config(config_atom_old_0, lrescl=.true.)
     end if
@@ -150,7 +150,7 @@ module montecarlo_mod
     !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
 
     call langevin(direction)
-    if (paramcgc%rang_orig==0) then
+    if (paramcgc%mpi_orig%rank==0) then
        call atconf_nplus1%copy_config(config_atom_old_1, lrescl=.true.)
 
        W = WEff
@@ -175,7 +175,7 @@ module montecarlo_mod
           lambda_mc = 1.0 
        endif
 
-       if (paramcgc%rang_orig==0) then !!master general
+       if (paramcgc%mpi_orig%rank==0) then !!master general
 
           write(*,*) ' '
           write(*,*) ' '
@@ -200,14 +200,14 @@ module montecarlo_mod
           !choisir l'at a retirer ou ajouter + preparation des syst N et N+1 pour etre prets pour le langevin (cad decoupage cellules + calcul forces + melange des forces - se fait dans cette sous routine)
 
        call ajout_retrait(direction)
-if (paramcgc%rang_orig==0) then
+if (paramcgc%mpi_orig%rank==0) then
        call analyse_montecarlo(atconf_n,cells_n,boxmcgc, 'UO2_syst_n_before_test')
        call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc)
        call analyse_montecarlo(atconf_nplus1,cells_nplus1,boxmcgc, 'UO2_syst_nplus1_before_test')
        ! pas de langevin
     end if
        call langevin(direction)
-       if (paramcgc%rang_orig==0) then
+       if (paramcgc%mpi_orig%rank==0) then
           if (direction == 0) then
              W = +WEff
              n_gen_0 = n_gen_0 + 1
@@ -284,7 +284,7 @@ if (paramcgc%rang_orig==0) then
        end if
     END DO
 
-    if (paramcgc%rang_orig==0) then
+    if (paramcgc%mpi_orig%rank==0) then
     write(*,*) ' taux d acceptation final   : ', acceptance_rate,  ' %'
     write(*,*) ' taux d acceptation alpha 0 : ', acceptance_rate_0,' %'
     write(*,*) ' taux d acceptation alpha 1 : ', acceptance_rate_1,' %'
@@ -317,7 +317,7 @@ subroutine ajout_retrait(direc)
 !######################################### Direction 0 vers 1 (ajout) ##########################################
 
   if (direc == 0) then ! ajout d'une particule en N+1
-     if (paramcgc%rang_orig==0) then
+     if (paramcgc%mpi_orig%rank==0) then
         !tirer une position aleatoire pour le N+1eme atome
         call atom_supp(cart_vec_nplus1)
         
@@ -341,9 +341,9 @@ subroutine ajout_retrait(direc)
 #ifdef PARA
      rgcib=1;rgem=0
      if(paramcgc%image==0) then !procs N
-        if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%comm_master)    
+        if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master%comm)    
      else !procs N+1
-        if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%comm_master)
+        if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%mpi_master%comm)
      end if
 #endif
 
@@ -356,7 +356,7 @@ subroutine ajout_retrait(direc)
 
 
  if (direc == 1) then ! retrait d'une particule alea, la placer en N+1eme position, copier le syst pour le syst à N
-        if (paramcgc%rang_orig==0) then
+        if (paramcgc%mpi_orig%rank==0) then
            call indice_alea(atconf_Nplus1,indice)
            call atconf_Nplus1%switch_atom(indice,atconf_Nplus1%im)
 
@@ -367,9 +367,9 @@ subroutine ajout_retrait(direc)
         
         rgcib=1;rgem=0
         if(paramcgc%image==0) then !procs N
-           if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%comm_master)
+           if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master%comm)
         else !procs N+1
-           if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%comm_master)
+           if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%mpi_master%comm)
         end if
 #endif
   
@@ -472,7 +472,7 @@ subroutine analyse_montecarlo(atdml,celndm,box,name_file)
   type(box_config)::box
 
   character(len=*) :: name_file
-  if (paramcgc%rang_orig==0) then
+  if (paramcgc%mpi_orig%rank==0) then
 
   
   if (itetemp>0) then
@@ -500,7 +500,7 @@ subroutine calcul_U(atdml,celndm,box,potist,U_ini)
   type(box_config)::box
   real(double) :: U_ini, potist,Ti
 
-  if (paramcgc%rang_orig==0) then
+  if (paramcgc%mpi_orig%rank==0) then
   Ti=tempinstT(atdml,kine,latcomp=.true.)
   
   U_ini = potist + kine
@@ -565,7 +565,7 @@ subroutine langevin( direc)
   logical::lchange,ldistrib
 
   !initialisation des energies
-  if (paramcgc%rang_orig==0) then ! Master général
+  if (paramcgc%mpi_orig%rank==0) then ! Master général
 
      U_0 = 0.0
      U_1 = 0.0
@@ -607,7 +607,7 @@ subroutine langevin( direc)
   if (direc == 0) then
      DO WHILE (lambda_mc <= 1)
 
-        if (paramcgc%rang_orig==0) then ! Master général
+        if (paramcgc%mpi_orig%rank==0) then ! Master général
 
            Ek_n = 0.0
            Ek_n_plus1 = 0.0  
@@ -658,9 +658,9 @@ subroutine langevin( direc)
         if (lmaster) then ! on est dans l'un des 2 masters
            rgcib=1;rgem=0
            if(paramcgc%image==0) then !on est dans le master général
-              call atconf_Nplus1%send2proc(rgcib,paramcgc%comm_master,'x')
+              call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master%comm,'x')
            else !on est dans le master de N+1
-              call atconf_Nplus1%recv(rgem,paramcgc%comm_master,'x')
+              call atconf_Nplus1%recv(rgem,paramcgc%mpi_master%comm,'x')
            end if
         end if
 #endif        
@@ -668,7 +668,7 @@ subroutine langevin( direc)
         call calfoMCGC(iloc,lchange,ldistrib)
 
 
-    if (paramcgc%rang_orig==0) then
+    if (paramcgc%mpi_orig%rank==0) then
            !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
            U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
            call noise(Gl)
@@ -696,7 +696,7 @@ subroutine langevin( direc)
 
         !incrementation de lambda    
         lambda_mc = lambda_mc + (1./pas_lambda_mc)
-        if (paramcgc%rang_orig==0) then !master general
+        if (paramcgc%mpi_orig%rank==0) then !master general
            !calcul des energies et travail et chaleur efficaces
            U_l_n_m1 = U_l_n
            H_l_n_m1 = H_l_n
@@ -720,7 +720,7 @@ subroutine langevin( direc)
   if (direc == 1) then
      DO WHILE (lambda_mc > 0)
 
-        if (paramcgc%rang_orig==0) then
+        if (paramcgc%mpi_orig%rank==0) then
            Ek_n = 0.0
            Ek_n_plus1 = 0.0  
            Ek_n_1s4 = 0.0
@@ -769,16 +769,16 @@ subroutine langevin( direc)
         if (lmaster) then ! on est dans l'un des 2 masters
            rgcib=1;rgem=0
            if(paramcgc%image==0) then !on est dans le master général
-              call atconf_Nplus1%send2proc(rgcib,paramcgc%comm_master,'x')
+              call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master%comm,'x')
            else !on est dans le master de N+1
-              call atconf_Nplus1%recv(rgem,paramcgc%comm_master,'x')
+              call atconf_Nplus1%recv(rgem,paramcgc%mpi_master%comm,'x')
            end if
         end if
 #endif        
         iloc=0;ldistrib=.false.;lchange=.true.
         call calfoMCGC(iloc,lchange,ldistrib)
 
-        if (paramcgc%rang_orig==0) then
+        if (paramcgc%mpi_orig%rank==0) then
 
            !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
            U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
@@ -819,7 +819,7 @@ subroutine langevin( direc)
            !incrementation de lambda
         end if
         lambda_mc = lambda_mc - (1./pas_lambda_mc)
-        if (paramcgc%rang_orig==0) then
+        if (paramcgc%mpi_orig%rank==0) then
            !calcul des energies et travail et chaleur efficaces
            U_l_n_m1 = U_l_n
            H_l_n_m1 = H_l_n
@@ -844,25 +844,25 @@ end subroutine langevin
     ! Routine d'initialisation de MPI pour la NEB
 #ifdef PARA
 
-    paramcgc%np_orig=nprocs
-    paramcgc%rang_orig=rang
-!    paramcgc%grp_orig=grp_world
+    paramcgc%mpi_orig%nproc=nprocs
+    paramcgc%mpi_orig%rank=rang
+!    paramcgc%mpi_orig%group=grp_world
     paramcgc%nimage=2
-!    paramcgc%comm_orig=MPI_COMM_WORLD
-    call MPI_COMM_DUP(MPI_COMM_WORLD,paramcgc%comm_orig,ierr)
-    call MPI_COMM_GROUP(paramcgc%comm_orig,paramcgc%grp_orig,ierr)
+!    paramcgc%mpi_orig%comm=MPI_COMM_WORLD
+    call MPI_COMM_DUP(MPI_COMM_WORLD,paramcgc%mpi_orig%comm,ierr)
+    call MPI_COMM_GROUP(paramcgc%mpi_orig%comm,paramcgc%mpi_orig%group,ierr)
     call commconstr(paramcgc)
 
-    myidsp=paramcgc%rgim
+    myidsp=paramcgc%mpi_image%rank
     call MPI_COMM_free(mpi_comm_space,ierr)
-    MPI_COMM_space=paramcgc%comm_image
+    MPI_COMM_space=paramcgc%mpi_image%comm
     call comm_space%init(MPI_COMM_SPACE)
-    nprocspace=paramcgc%npim
+    nprocspace=paramcgc%mpi_image%nproc
     if (nprocspace==1) parallele=.false.
 #else
-    paramcgc%np_orig=1
-    paramcgc%rang_orig=0
-    paramcgc%npim=1
+    paramcgc%mpi_orig%nproc=1
+    paramcgc%mpi_orig%rank=0
+    paramcgc%mpi_image%nproc=1
     myidsp=0
     paramcgc%lmaster=.true.
     nprocspace=1
@@ -897,7 +897,7 @@ end subroutine langevin
     integer::i
     !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
     lmaster=paramcgc%lmaster
-    if (paramcgc%rang_orig==0) then
+    if (paramcgc%mpi_orig%rank==0) then
        
        call atom_supp(cart_vec_nplus1)
        call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
@@ -932,9 +932,9 @@ end subroutine langevin
      rgcib=1;rgem=0
     if (lmaster) then 
        if(paramcgc%image==0) then !procs N
-          call  atconf_nplus1%send2proc(rgcib,paramcgc%comm_master)
+          call  atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master%comm)
        else !procs N+1
-          call  atconf_nplus1%recv(rgem,paramcgc%comm_master)
+          call  atconf_nplus1%recv(rgem,paramcgc%mpi_master%comm)
        end if
     end if
     
@@ -944,7 +944,7 @@ end subroutine langevin
           !?          call maj_atomes_frt_ftm(atconf_n,cells_n)
           
        else !procs N+1
-          call atconf_nplus1%send2all(0,paramcgc%comm_image)
+          call atconf_nplus1%send2all(0,paramcgc%mpi_image%comm)
           call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc)
           call init_voisinage(cells_nplus1,pscgc)
           !?          call maj_atomes_frt_ftm(atconf_nplus1,cells_nplus1)
@@ -955,7 +955,7 @@ end subroutine langevin
 
 
     if((ipotentiel==-10).or.(ipotentiel==-11)) then
-       if (paramcgc%rang_orig==0) then
+       if (paramcgc%mpi_orig%rank==0) then
           write(6,*)'write configuration N+1  to confNP1.lmp'
           call config2data (atconf_nplus1%imm,atconf_nplus1%im,&
                atconf_nplus1%xp,atconf_nplus1%ityp,boxmcgc%at,ntyp,filename='confNP1.lmp')
@@ -1015,11 +1015,11 @@ end subroutine langevin
     if (lmaster) then ! on est dans l'un des 2 masters7
        rgcib=0;rgem=1
        if(paramcgc%image==1) then !on est dans le master de N+1
-          call atconf_nplus1%send2proc(rgcib,paramcgc%comm_master,'f')
-          call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1000,paramcgc%comm_master,ierr)
+          call atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master%comm,'f')
+          call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1000,paramcgc%mpi_master%comm,ierr)
        else !on est dans le master de N qui est le master général
-          call atconf_nplus1%recv(rgem,paramcgc%comm_master,'f')
-          call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1000,paramcgc%comm_master,status,ierr)
+          call atconf_nplus1%recv(rgem,paramcgc%mpi_master%comm,'f')
+          call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1000,paramcgc%mpi_master%comm,status,ierr)
        end if
     end if
     !en ce point le master général (rang_orig=0) a les forces de N et N+1    
@@ -1032,7 +1032,7 @@ end subroutine langevin
 
 #endif
 
-    if (paramcgc%rang_orig==0) then
+    if (paramcgc%mpi_orig%rank==0) then
        DO i=1,atconf_n%im
           atconf_nplus1%fp(:,i) = (1-lambda_mc)*atconf_n%fp(:,i) + lambda_mc*atconf_nplus1%fp(:,i)
        END DO

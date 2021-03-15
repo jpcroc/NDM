@@ -94,9 +94,9 @@ contains
     
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(latcompin.eqv..false.)) then
        call atcomp%init(im_glob)
-       div%rgim=myidsp
-       div%npim=nprocspace
-       div%comm_image=MPI_COMM_space
+       div%mpi_image%rank=myidsp
+       div%mpi_image%nproc=nprocspace
+       div%mpi_image%comm=MPI_COMM_space
        call atmol%vers_master(atcomp,div)
        im =atcomp%im
        imm=atcomp%im

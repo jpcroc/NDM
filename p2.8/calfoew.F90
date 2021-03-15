@@ -15,7 +15,7 @@ contains
     USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q,nb1v,nb2v,nb3v,tabv3,tabf3
 #ifdef PARA
   use mpi
-  USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE Tpara,only:COMM_space,nprocspace
 #else
   USE Tpara,only:nprocspace
 #endif
@@ -49,9 +49,6 @@ contains
     real(double) :: potisewg, hbn2, &
          hbv(3),phu
     real(double) :: scacos,scasin
-#ifdef PARA
-    real(double) :: scacos_glob, scasin_glob
-#endif
     real(double), dimension(3,3) :: sige
 
     !parallelisation de ewald classique
@@ -104,12 +101,8 @@ contains
                 ! Reduction MPI en interne de la boucle. Prefere au stockage dans des tableaux
                 ! (pour scalar et hbv il faudrait ajouter des dimensions ncoux/y/z)
                 if (nprocspace.gt.1) then
-                   call MPI_ALLREDUCE(scacos,scacos_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,&
-                        &MPI_COMM_space,ierr)
-                   scacos = scacos_glob
-                   call MPI_ALLREDUCE(scasin,scasin_glob,1,NDM_MPI_REAL_DOUBLE,&
-                        MPI_SUM,MPI_COMM_space,ierr)
-                   scasin = scasin_glob
+                   call comm_space%sum(scacos)
+                   call comm_space%sum(scasin)
                 end if
 #endif
 

@@ -19,7 +19,7 @@ module dmloop_mod
   use var_pot, only: cm! iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
 #ifdef PARA
   use mpi
-  use Tpara,only:NDM_MPI_REAL_DOUBLE,MPI_COMM_space,ierr
+  use Tpara,only:COMM_space,ierr
   USE mod_para,only:maj_atomes_frt_ftm
 #else
   
@@ -60,10 +60,6 @@ contains
     class(atom_config_d)::atdml
     type(cell_config):: celndm
     type(box_config)::boxndm
-#ifdef PARA
-    real(double), dimension(3,3) :: sig_tot,sigkine_tot
-
-#endif
     logical:: test_sigma=.false.
 
 
@@ -124,11 +120,8 @@ contains
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-
-       !  call MPI_ALLREDUCE(sig,sig_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       !  sig=sig_tot
-       call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       sigkine=sigkine_tot
+   call comm_space%sum(sig)
+   call comm_space%sum(sigkine)
     end if
 #endif
 

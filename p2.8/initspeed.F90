@@ -13,7 +13,7 @@ module initspeed_mod
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
   use mpi
-  USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocs,nprocspace,myidsp
+  USE Tpara,only:COMM_space,nprocs,nprocspace,myidsp
 #else
     USE Tpara,only:nprocspace,myidsp
 #endif
@@ -115,15 +115,6 @@ contains
     integer::iti
     real(double)::sd,grnd,theta,fhi ! ,decx(2)
 
-#ifdef PARA
-    real(double) :: kinx_glob
-    real(double), dimension(3)   :: scom_glob, pav_glob
-    real(double), dimension(3,3) :: ainer_glob
-    real(double) :: totmass_glob
-    real(double) :: prx_glob
-    real(double) :: pry_glob
-    real(double) :: prz_glob
-#endif
     !-----------------------------------------------
     !  external fucntions
     !-----------------------------------------------
@@ -286,9 +277,8 @@ contains
              end do
              ka=0.5*bk*tinit 
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-                call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-                kinx(ic)=kinx_glob
+             if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+                call comm_space%sum(kinx)
              end if
 #endif          
              !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
@@ -312,13 +302,10 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           enddo
 
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-        call MPI_ALLREDUCE(totmass,  totmass_glob,  1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-        call MPI_ALLREDUCE(scom(1:3),scom_glob(1:3),3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-        call MPI_ALLREDUCE(pav(1:3), pav_glob(1:3), 3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-        totmass = totmass_glob
-        scom = scom_glob
-        pav  = pav_glob
+          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+             call comm_space%sum(totmass)
+             call comm_space%sum(scom)
+             call comm_space%sum(pav)
      end if
 #endif          
 
@@ -356,9 +343,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-               
-        call MPI_ALLREDUCE(kinx(ic),kinx_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-        kinx(ic)=kinx_glob
+           call comm_space%sum(kinx) 
      end if
 #endif          
 
@@ -417,16 +402,11 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              ainer(2,1) = ainer(1,2)
 
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-             
-             call MPI_ALLREDUCE(ainer(1:3,1:3), ainer_glob(1:3,1:3), 9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-             ainer = ainer_glob
-             call MPI_ALLREDUCE(prx, prx_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-             prx = prx_glob
-             call MPI_ALLREDUCE(pry, pry_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-             pry = pry_glob
-             call MPI_ALLREDUCE(prz, prz_glob, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-             prz = prz_glob
+             if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+                call comm_space%sum(ainer)
+                call comm_space%sum(prx)
+                call comm_space%sum(pry)
+                call comm_space%sum(prz)  
           end if
 #endif          
 
@@ -510,7 +490,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
 #ifdef PARA
        if ((latcomp).and.(nprocspace.gt.1)) then ! les procs masters myidsp=0 ont toutes les positions., Il faut passer aux autres procs les nouvelles atcf
-          call atcf%send2all(0,mpi_comm_space)
+          call atcf%send2all(0,comm_space%comm)
        end if
 #endif
        if (rang==0) write(6,*)

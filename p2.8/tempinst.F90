@@ -2,7 +2,7 @@ module tempinst_mod
   USE gen_com_m, ONLY:bk,im_glob,lspacendm
 #ifdef PARA
     USE mpi
-    USE Tpara,only:MPI_COMM_space,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE,ierr
+    USE Tpara,only:COMM_space,nprocspace,myidsp
 
 #endif
 
@@ -28,9 +28,6 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     real(double) ::  mv2,v2
-#ifdef PARA
-    real(double) :: mv2_glob
-#endif
     integer :: i
 
 
@@ -43,8 +40,7 @@ contains
 
 #ifdef PARA
     if ((lspaceNDM).and.(nprocspace.gt.1))then 
-       call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       mv2 = mv2_glob
+       call comm_space%sum(mv2)
        tempinst=mv2/(3.d0*float(im_glob)*bk)
     else
        tempinst=mv2/(3.d0*float(im)*bk)

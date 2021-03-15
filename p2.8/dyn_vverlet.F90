@@ -29,8 +29,8 @@ contains
 #ifdef PARA
     use mpi
 
-    USE mod_para,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace
-    USE mod_para,only:maj_atomes_frt_ftm
+    USE mod_para,only:nprocspace,maj_atomes_frt_ftm
+ 
 #else
     USE Tpara,only:nprocspace
 #endif
@@ -55,9 +55,6 @@ contains
     !-----------------------------------------------
     !real(double), external :: tempinst
     real(double)::eatommoy
-#ifdef PARA
-    real(double)::jq_tot(3)
-#endif
 
 
     logical::test_sigma=.false.
@@ -175,32 +172,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(atdml%iTyp(i))*atdml%fp(1:3,i)
        END DO
     end if
-
-    !    if (allocated(eatom))  eatom(1:im)=eatom(1:im)+0.5*cm(ityp(1:im))*(atdml%vp(1,1:im)**2+atdml%vp(2,1:im)**2+atdml%vp(3,1:im)**2)
-
-    !    if (lcalcjq) then
-    !       jqp=jq ; jqk=0.0 !; expvect(:)=0.0
-    !       do i=1,imnd
-    !          !        eatom(i)=eatom(i)+0.5*cm(ityp(i))*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)
-    !          expvect(:)=expvect(:)+eatom(i)*xpp(:,i)
-    !          do ic=1,3
-    !             jqk(ic)=jqk(ic)+eatom(i)*atdml%vp(ic,i)
-    !             !               jq(ic)=jq(ic)+eatom(i)*vp(ic,i)
-    !          end do
-    !       end do
-    !       jq=jqp+jqk
-
-    !#ifdef PARA
-    !       call MPI_ALLREDUCE(jq,jq_tot,3,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    !       jq=jq_tot
-    !#endif
-
-
-
-    !      if(rang==0)write(65,'(I8,3D16.8)')it-1,jq(1),jq(2),jq(3)
-    !         write(66,'(I8,3D15.6)')it-1,expvect(1),expvect(2),expvect(3)
-    ! end if
-
 
 
     return

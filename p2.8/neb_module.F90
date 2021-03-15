@@ -702,28 +702,30 @@ end if
 #ifdef PARA
 
     write(6,*)'INPNEB', rang,nprocs
-    paraneb%np_orig=nprocs
-    paraneb%rang_orig=rang
-    call MPI_COMM_DUP(MPI_COMM_WORLD,paraneb%comm_orig,ierr)
-    call MPI_COMM_GROUP(paraneb%comm_orig,paraneb%grp_orig,ierr)
+    paraneb%mpi_orig%nproc=nprocs
+    paraneb%mpi_orig%rank=rang
+    call MPI_COMM_DUP(MPI_COMM_WORLD,paraneb%mpi_orig%comm,ierr)
+    call MPI_COMM_GROUP(paraneb%mpi_orig%comm,paraneb%mpi_orig%group,ierr)
     paraneb%nimage=npath-2
 
     call commconstr(paraneb)
 
-    myidsp=paraneb%rgim
+    myidsp=paraneb%mpi_image%rank
     call MPI_COMM_free(mpi_comm_space,ierr)
-    MPI_COMM_space=paraneb%comm_image
-    nprocspace=paraneb%npim
+    MPI_COMM_space=paraneb%mpi_image%comm
+    nprocspace=paraneb%mpi_image%nproc
+    call comm_space%init(MPI_COMM_SPACE)
     if (nprocspace==1) parallele=.false.
 #else
-    paraneb%np_orig=1
-    paraneb%rang_orig=0
-    paraneb%npim=1
+    paraneb%mpi_orig%nproc=1
+    paraneb%mpi_orig%rank=0
+    paraneb%mpi_image%nproc=1
     myidsp=0
     paraneb%lmaster=.true.
     nprocspace=1
     call comm_space%init(MPI_COMM_SPACE)
-#endif    
+#endif
+    write(6,*)'PARANEB',paraneb%mpi_orig%comm,paraneb%mpi_master%comm,paraneb%mpi_image%comm
   end subroutine init_mpi_neb
 
 end module neb_module

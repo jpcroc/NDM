@@ -17,7 +17,7 @@ module constrconf_mod
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     use mpi
-    USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace
+    USE Tpara,only:COMM_space,nprocspace
 #endif
   use Tpara,only:para_space_config,nprocspace
 
@@ -52,7 +52,7 @@ contains
 #endif
     character :: fnamcin*80, fnamgin*80
     integer::itread
-    integer::nati,natitot
+    integer::nati
 
     
     !-----------------------------------------------------
@@ -191,8 +191,7 @@ contains
           nati=count(atrcf%ityp==iti)
 #ifdef PARA
        if ((nprocspace.gt.1).and.(lspaceNDM)) then
-          call MPI_ALLREDUCE(nati,natitot,1,MPI_INTEGER,MPI_SUM,MPI_COMM_space,ierr)
-          nati=natitot         
+          call comm_space%sum(nati)
        end if
 #endif
        if(rang==0) then

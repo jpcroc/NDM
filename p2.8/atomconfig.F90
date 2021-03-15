@@ -1417,9 +1417,9 @@ contains
     integer::imloc,imloc3,iproc,imrecv,icomp,imrecv3,imrecv9,imloc9
     integer::imcomp,imtot,proc_source,npim,iloc
     idmaster=0
-    idloc=div%rgim
-    npim=div%npim
-    icomm=div%comm_image
+    idloc=div%mpi_image%rank
+    npim=div%mpi_image%nproc
+    icomm=div%mpi_image%comm
     if (idloc==idmaster) then
        !       allocate(buffer(3,atloc%im));allocate(ibuffer(atloc%im));allocate(lbuffer(atloc%im))
        imtot=0
@@ -1550,7 +1550,7 @@ contains
 
 
        if (imtot.ne.atcfcomp%im) then
-          write(6,*)'atomes perdus ?',idloc, imtot,atcfcomp%im,div%rang_orig
+          write(6,*)'atomes perdus ?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
           call MPI_finalize(ierr)
           stop
        end if
@@ -1614,9 +1614,9 @@ contains
     integer::imcomp,imtot,proc_source,ic,ns,iloc,i,iu
     logical,allocatable::mask(:)
     idmaster=0
-    idloc=div%rgim
-    npim=div%npim
-    icomm=div%comm_image
+    idloc=div%mpi_image%rank
+    npim=div%mpi_image%nproc
+    icomm=div%mpi_image%comm
     imcomp=atcfcomp%im
 
     

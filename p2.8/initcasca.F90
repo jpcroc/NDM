@@ -20,7 +20,7 @@ contains
     ! *******************************************************************
 #ifdef PARA
     use mpi
-    USE Tpara,only:MPI_COMM_space,ierr,nprocspace
+    USE Tpara,only:nprocspace,comm_space
 #else
     use Tpara,only:nprocspace
     
@@ -52,8 +52,7 @@ contains
     integer, dimension(:), allocatable :: iseedt
 
 #ifdef PARA
-    real(double), dimension(3) :: max_loc,max_glob,max_typ
-    real(double), dimension(1) :: max_typl,max_typG
+    real(double), dimension(2) :: max_loc
     integer :: ityp_max
 #endif
 
@@ -245,11 +244,10 @@ contains
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
            max_loc(1)=vmax
-           max_loc(2)=rang
-           max_loc(3)=0.5+ityp(imax)
-           call MPI_ALLREDUCE(max_loc,max_glob,1,MPI_2DOUBLE_PRECISION,MPI_MAXLOC,MPI_COMM_space,ierr)
-           vmax = max_glob(1)
-           ityp_max=int(max_glob(3))
+           max_loc(2)=0.5+ityp(imax)
+           call comm_space%maxloc(max_loc)
+           vmax = max_loc(1)
+           ityp_max=int(max_loc(2))
         else
            if (rang==0) then
               write (6, *) 'Vitesse maximale sur I=', imax, vmax

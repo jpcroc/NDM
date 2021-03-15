@@ -282,10 +282,12 @@ contains
 
 
 #ifdef PARA
+
     if (nprocspace.gt.1) then
        call maj_tabdensity_ftm(tabdensity,imm,nato,num_at_glob,psc)
     end if
-!    write(3000+i,*)it
+
+    !    write(3000+i,*)it
 !    do i=1,im
 !       write(6,*)i,num_at_glob(i),tabdensity(i)
 !    end do
@@ -409,6 +411,7 @@ contains
 
 
 #ifdef PARA
+
     if (nprocspace.gt.1) then
        call comm_space%sum(potisrep)
        call comm_space%sum(potisglue)
@@ -422,6 +425,7 @@ contains
 #endif
 
     potiseam=potisglue+potisrep
+
     return
   end SUBROUTINE calfoeamcel
 end module calfoeamcel_mod

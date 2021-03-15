@@ -17,7 +17,7 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
        &npoint,pterm,volterm,fr1,fr2,fr3,iiim,q,bsmod3,iiim,ijim,ikim,bsmod2,de3,bsmod1,de2,de1,tabv3
   USE fft_com_m
 #ifdef PARA
-  Use Tpara,only: NDM_MPI_COMPLEX_DOUBLE,nprocspace,mpi_comm_space,ierr
+  Use Tpara,only: nprocspace,comm_space
   use mpi
 #endif
   
@@ -57,14 +57,8 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
   real(double)  :: dn1, dn2, dn3, dt1, dt2, dt3
   logical :: lvect
   integer :: nbatom,qgridsize
-#ifdef PARA
-  complex(double), dimension(:,:,:), allocatable :: qgridtot
-#endif  
 
   allocate (qgrid(kpmex,kpmey,kpmez))
-#ifdef PARA
-  allocate (qgridtot(kpmex,kpmey,kpmez))
-#endif
   
 qgridsize=kpmex*kpmey*kpmez
   ! *** Initialisation
@@ -140,8 +134,7 @@ qgridsize=kpmex*kpmey*kpmez
   enddo
 #ifdef PARA
   if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-     call MPI_ALLREDUCE(qgrid,qgridtot,qgridsize,NDM_MPI_COMPLEX_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-     qgrid=qgridtot
+     call comm_space%sum(qgrid)
   end if
      
 #endif

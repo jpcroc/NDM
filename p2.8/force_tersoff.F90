@@ -57,17 +57,6 @@ contains
     !-----------------------------------------------
     !INIALISATION
 
-#ifdef paraTersoff
-
-
-
-    ! declarations supplementaires pour MPI
-    real(double), dimension (3,im) :: fpTemp
-    real(double) ::  potistTemp
-    real(double) :: sigTemp (3,3)
-    integer :: Fin,Deb
-    real(double) :: div
-#endif
 
     select case (ipotentiel) 
     case(13)
@@ -94,19 +83,8 @@ contains
 
     idv = 0
 
-#ifdef paraTersoff
-    ! MPI
-
-    deb=1+Int(im*sqrt(float(myidsp)/nb_procs))
-    fin=Int(im*sqrt(float(myidsp+1)/nb_procs))
-    if (it==1) write(6,*)'rang deb Fin nb d_at  ',myidsp,deb,fin,fin-deb+1
-    Tloop1at1:  do i=Deb,Fin
-
-
-#else
        ! Sequentiel
        Tloop1at1:  do i=1,im
-#endif
           ! Sequentiel
 
           if (lnemd) fpnemd(:)=0.
@@ -395,36 +373,6 @@ contains
 
 
 
-#ifdef paraTersoff
-       CALL MPI_BARRIER(MPI_COMM_space,code)
-
-       CALL MPI_ALLREDUCE(fp,fpTemp,3*im,MPI_DOUBLE_PRECISION,&
-            MPI_SUM,MPI_COMM_space,code)
-       !      fp(:,1:im)=fpTemp(:,1:im)
-       fp=fpTemp
-
-       CALL MPI_ALLREDUCE(potisTersoff,potisTersoffTemp,1,MPI_DOUBLE_PRECISION,&
-            MPI_SUM,MPI_COMM_space,code)
-
-       potisTersoff=potisTersoffTemp
-
-       ! MPI : collecte generale et somme des contraintes calcules par les process
-       if(test_sigma)then
-          CALL MPI_ALLREDUCE(sig,sigTemp,9,MPI_DOUBLE_PRECISION,&
-               MPI_SUM,MPI_COMM_space,code)
-          sig=sigTemp
-       end if
-
-       !  if (lcalcjq) then
-       !     CALL MPI_ALLREDUCE(jq,jqTemp,3,MPI_DOUBLE_PRECISION,&
-       !          MPI_SUM,MPI_COMM_space,code)
-       !     jq=jqTemp
-       !     CALL MPI_ALLREDUCE(eatom,eatomTemp,imm,MPI_DOUBLE_PRECISION,&
-       !          MPI_SUM,MPI_COMM_space,code)
-       !     eatom=eatomTemp
-       !  end if
-
-#endif
 
 
 
