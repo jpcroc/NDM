@@ -2,7 +2,7 @@ module tempinstT_mod
   USE gen_com_m, ONLY:bk,im_glob,lspaceNDM
 #ifdef PARA
     USE mpi
-    USE Tpara,only:MPI_COMM_space,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
+    USE Tpara,only:COMM_space,nprocspace
 
 #endif
     use atomconfig,only:atom_config_d
@@ -31,9 +31,6 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     real(double) ::  mv2,v2
-#ifdef PARA
-    real(double) :: mv2_glob
-#endif
     integer :: i
 
     latc=.false.
@@ -48,12 +45,11 @@ contains
 
 #ifdef PARA
     if ((lspaceNDM).and.(nprocspace.gt.1).and.(latc.eqv..false.))then 
-    call MPI_ALLREDUCE(mv2,mv2_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    mv2 = mv2_glob
+    call comm_space%sum(mv2)
+!    mv2 = mv2_glob
     tempinstT=mv2/(3.d0*float(im_glob)*bk)
        if(present(kine)) then
-          call MPI_ALLREDUCE(kine,kinetot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          kine=kinetot
+          call comm_space%sum(kine)
        end if
     else
        tempinstT=mv2/(3.d0*float(atcf%im)*bk)

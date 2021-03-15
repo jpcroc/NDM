@@ -17,7 +17,7 @@ contains
 #ifdef PARA
   use mpi
   USE mod_para,only:maj_fp_frt
-  use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace,para_space_config
+  use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace,para_space_config,ierr
 #else
   USE Tpara,only:nprocspace,para_space_config
 #endif

@@ -47,8 +47,8 @@ module Parrinello_Rahman
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
   use mpi
-  USE mod_para,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,maj_atomes_frt_ftm
-  use Tpara, only:nprocspace
+  USE mod_para,only:maj_atomes_frt_ftm
+  use Tpara, only:nprocspace,ierr,comm_space
 #else
   use Tpara, only:nprocspace
 #endif
@@ -108,10 +108,6 @@ contains
     !real(double), external :: calcvol
     real(double):: unitE
     character*5 :: cunitE
-#ifdef PARA
-    real(double)::wbox_tot
-    real(double) sigkine_tot(3,3)
-#endif
 
 
 
@@ -137,8 +133,7 @@ contains
        wbox = sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          wbox=wbox_tot
+          call comm_space%sum(wbox)
        end if
 #endif
 
@@ -278,9 +273,8 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-           call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-           sigkine=sigkine_tot
-        end if
+   call comm_space%sum(sigkine)
+end if
 
 #endif
 
@@ -315,8 +309,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     type(para_space_config)::psc
 
 #ifdef PARA
-    real(double)::wbox_tot
-    real(double) sigkine_tot(3,3)
     integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
     real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1, fact2, hk2, ex, ex1, ex2
 
@@ -513,8 +505,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          sigkine=sigkine_tot
+          call comm_space%sum(sigkine)
        end if
 #endif
        ! Contrainte totale à l'instant t+dt

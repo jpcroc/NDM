@@ -12,5 +12,5 @@ module T_kind_param_m
   integer, parameter :: double_ext = 32
   integer, parameter :: dble_complex = 8
   integer, parameter :: ext_complex = 16
-  integer::ierr,status
+
 end module T_kind_param_m

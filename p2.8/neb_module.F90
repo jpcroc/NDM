@@ -4,7 +4,7 @@ module neb_module
   USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,im_glob,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
-       &posa, forca,latcomp
+       &posa, forca,latcomp,parallele
   use read_val,only:rvois,ltabvois
   USE constrconf_mod,only:constr_2gin,gin2ndm,config2data,read_cin
     use cryst_to_cart_mod,only:cryst_to_cart
@@ -24,7 +24,7 @@ module neb_module
   USE sauvegardeT_mod,only:sauvegardeT
     USE init_pot_mod,only:init_pot  ,init_pot2
 #ifdef PARA
-  use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world
+  use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,comm_space
 #else
   use Tpara,only:myidsp,nprocspace
 #endif
@@ -714,6 +714,7 @@ end if
     call MPI_COMM_free(mpi_comm_space,ierr)
     MPI_COMM_space=paraneb%comm_image
     nprocspace=paraneb%npim
+    if (nprocspace==1) parallele=.false.
 #else
     paraneb%np_orig=1
     paraneb%rang_orig=0
@@ -721,6 +722,7 @@ end if
     myidsp=0
     paraneb%lmaster=.true.
     nprocspace=1
+    call comm_space%init(MPI_COMM_SPACE)
 #endif    
   end subroutine init_mpi_neb
 

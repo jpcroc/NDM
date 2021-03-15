@@ -103,15 +103,6 @@ if (nprocspace.gt.1) then
     IF (it.GE.1) THEN
        forctot=sqrt( SUM(atcgcomp%fp(1:3,1:atcgcomp%im)**2) )
        formax = MaxVal( Abs(atcgcomp%fp(:,1:atcgcomp%im)) )
-!!$#ifdef PARA
-!!$    if (nprocspace.gt.1) then
-!!$        call MPI_ALLREDUCE(formax,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_MAX,MPI_COMM_space,ierr)
-!!$        formax=fpmax_glob
-!!$        forctot=forctot**2
-!!$        call MPI_ALLREDUCE(forctot,fpmax_glob,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-!!$        forctot=sqrt(fpmax_glob)
-!!$     end if
-!!$#endif
        lover=.false.
        if (gcpara%rgim==0)then
 

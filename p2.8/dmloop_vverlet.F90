@@ -9,7 +9,7 @@ module dmloop_vverlet_mod
   USE boxconfig,only:box_config
   use var_pot,only:ntyp
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,ecyl,ev2erg,lgc,rang,rayonc,&
-       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lsuivinonpbc,lspaceNDM
+       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lsuivinonpbc,lspaceNDM,itmax
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
@@ -73,7 +73,7 @@ contains
        if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
     end if
     if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
-    if (it==0) then
+    if (itmax==0) then
        call analyseT (atdml,celndm,boxndm)
        call endrunT(atdml,celndm,boxndm,.true.)
     end if

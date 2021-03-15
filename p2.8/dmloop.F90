@@ -19,7 +19,8 @@ module dmloop_mod
   use var_pot, only: cm! iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
 #ifdef PARA
   use mpi
-  use Tpara,only:NDM_MPI_REAL_DOUBLE,MPI_COMM_space,ierr,nprocspace
+  use Tpara,only:NDM_MPI_REAL_DOUBLE,MPI_COMM_space,ierr
+  USE mod_para,only:maj_atomes_frt_ftm
 #else
   
 #endif
@@ -70,7 +71,7 @@ contains
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VERLET STD ***'
 
     ! Initialization
-    IF ((dmtype.EQ.2).AND.lFire) THEN
+    IF ((dmtype.EQ.21).AND.lFire) THEN
        CALL init_trempe_fire(fire_dt, fire_nstep, fire_alph)
     END IF
 
@@ -78,8 +79,6 @@ contains
 1   continue
     it = it+1
 
-    write(6,*)
-    write(6,*)'***** ITERATION  ****', it
 
     ! appel de la routine generale des forces
     if (itesigma>0)      test_sigma=(mod(it,itesigma)==0)
@@ -145,7 +144,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
       
 !       if (lcorrelvp) call correlvp(atdml%xp,atdml%xpp,atdml%vp,atdml%ax,atdml%fp,atdml%ax, atdml%ityp)
 
-    case (2) 
+    case (21) 
        IF (lFire) THEN
           call trempe_fire (atdml,fire_dt, fire_nstep, fire_alph)
 
@@ -171,7 +170,14 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
        call caltabi(atdml%atom_config,celndm,boxndm)
     end if
+#ifdef PARA
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+       call maj_atomes_frt_ftm(atdml,celndm,psc)
+    end if
+#endif
 
+    
     call controleT(atdml,celndm,boxndm)
 
 

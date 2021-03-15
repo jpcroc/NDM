@@ -21,7 +21,6 @@ module gen_com_m
 
 
   integer :: rang, rangph, rangml, rangmab, ja_phondy, ja_ml
-  logical :: parallele
 
 !  integer :: natperc                        ! nb d'atome par cel
 
@@ -30,7 +29,7 @@ module gen_com_m
 !  integer :: imm                 !imm taille des tableaux dependant du nombre d'atome mélange par proc et pas par proc, à remplacer par les deux suivants
 !  integer :: imm_glob ! taille complète des tableaux 
   integer:: imm_loc ! taille des conf atomique par proc 
-
+  logical :: parallele
 
   real(double),parameter :: pi=3.141592654D0, bk= 1.380622D-16, &
        ecgs=1.6021764631580d-12, &  !debugCOS 1.6021892D-12, &

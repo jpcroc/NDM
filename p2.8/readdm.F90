@@ -457,7 +457,7 @@ contains
        end if
        if (njqbh==5) read(94,*) kthg
     end if
-
+    if (dmtype==2) dmtype=21
 
     if (lrestart) then
        igen = 1
@@ -479,9 +479,9 @@ contains
           if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
        end if
        select case(dmtype)
-       case(2,4,3,9,15)
+       case(21,22,4,3,9,15,1)
        case default 
-          if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=2,3,4,9'
+          if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,3,4,9,1'
           if (rang==0) write(*,*) 'Stop in readdm'
           call arret_ndm
        end select
@@ -688,7 +688,7 @@ contains
     endif
 
 
-    if((lTberendsen).and.( (dmtype.EQ.2).OR.(dmtype.EQ.3).OR.(dmtype.EQ.30) ) ) stop
+    if((lTberendsen).and.( (dmtype.EQ.21).OR.(dmtype.EQ.22).OR.(dmtype.EQ.3).OR.(dmtype.EQ.30) ) ) stop
     if (ipotentiel==-1) then
        tpot=.false.
        lpt:     do i=1,npotmax
@@ -748,7 +748,7 @@ contains
     end if
 
     if (itetimestep>0)  then
-       if ((dmtype.eq.1).or.(dmtype.eq.2).or.(dmtype.eq.4)) then
+       if ((dmtype.eq.1).or.(dmtype.eq.21).or.(dmtype.eq.22).or.(dmtype.eq.4)) then
           if (rang==0) write(6,*) 'The time step changed each', itetimestep,' steps'
        else 
           if (rang==0) write(6,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
@@ -778,7 +778,7 @@ contains
 
 
     if (lpr) then
-       if (dmtype==2) lprtrp=.true.
+       if ((dmtype==22).or.(dmtype==21)) lprtrp=.true.
        dmtype=8
        itesigma=1
        if (pext.ne.0.) then
@@ -900,8 +900,10 @@ contains
     select case (dmtype)
     case (1)
        if (rang==0) write (6, '(a)') '     DYNAMIQUE MOLECULAIRE VERLET STANDARD'
-    case (2)
-       if (rang==0) write (6, '(a)') '     TREMPE RAPIDE'
+    case (21)
+       if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Verlet std'
+    case (22)
+       if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Velocity Verlet '
     case (3)
        if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE sur les coordonnees CARTESIENNES'
     case (30)
@@ -1055,7 +1057,7 @@ contains
        end if
     end if
 
-    if ( (dmtype==2).or.(dmtype==3).or.(dmtype==30).or.(dmtype==9).or.(dmtype==10) ) then    
+    if ( (dmtype==21).or.(dmtype==22).or.(dmtype==3).or.(dmtype==30).or.(dmtype==9).or.(dmtype==10) ) then    
        if ( (fpstop<0).and.(fsumstop<0)) then
           if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
           if (rang==0) write(6,*) 'STOP in readdm'

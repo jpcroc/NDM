@@ -14,7 +14,7 @@ program ndm
   USE readdm_mod,only: readdm
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
-  USE Tpara,only:MPI_COMM_space,myidsp,nprocs
+  USE Tpara,only:MPI_COMM_space,myidsp,nprocspace,nprocs
   USE init_mpi_mod,only: init_mpi
   USE neb_module,only:init_mpi_neb
 #else
@@ -44,7 +44,11 @@ program ndm
 
  write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
   myidsp=rang
-  parallele = .true.
+  if (nprocspace==1) then
+     parallele=.false.
+  else
+     parallele = .true.
+  end if
 #else
   rang = 0;myidsp=0; nprocs=1;nprocspace=1
   parallele = .false.

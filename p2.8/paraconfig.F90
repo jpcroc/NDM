@@ -3,7 +3,7 @@ module paraconfig
 
 
 #ifdef PARA
-  use Tpara,only:NDM_MPI_REAL_DOUBLE
+  use Tpara,only:NDM_MPI_REAL_DOUBLE,mpi_communicator
 
 #endif
   use T_kind_param_m, ONLY:  double
@@ -13,7 +13,7 @@ module paraconfig
 #ifdef PARA
   include 'mpif.h'
 #endif
-  type para_config
+  type :: para_config
      integer :: rgim ! rang du proc dans l'image
      integer:: image ! n° de l'image
      integer:: npim ! nb de procs de l'image
@@ -28,6 +28,7 @@ module paraconfig
      integer:: comm_orig ! communicatuer à diviser
      integer:: rang_orig ! rang dans le comm à diviser
      integer::np_orig ! pombre de procs dans le comm à dvisier
+     type(mpi_communicator)::comm_imageT,comm_masterT
    contains
      procedure, pass::print
 

@@ -9,7 +9,7 @@ module neb_mod
        &fnam,lenfnam,lfire,itesauv,itetabvois,iteanaposneb,maxneb,&
        &nebrelaxation,lperiod,lspacendm,latcomp
 
-  use Tpara,only:para_space_config
+  use Tpara,only:para_space_config,ierr
 
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config,caltabtC

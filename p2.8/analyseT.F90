@@ -19,7 +19,7 @@ module analyseT_mod
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
-       &nfda,parallele,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,&
+       &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,&
        &natchk,tpseuils,sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
        &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,lperiod,pi,rang,timel,latcomp,&
@@ -455,84 +455,6 @@ contains
     endif
 
 
-
-    !     write(6,*)'sortie ssprogramme analyse'
-    !crcmit      call flush(6)
-
-!!$
-!!$    if (lprteattotm.EQV..true.) then
-!!$       if (ncalceattotm==0)eatomtotm(:)=0.
-!!$       ncalceattotm=ncalceattotm+1
-!!$       do i=1,im
-!!$          eatomtotm(i)=(eatom(i)+(ncalceattotm-1)*eatomtotm(i))/ncalceattotm
-!!$       end do
-!!$       !     write(912,*)ncalceattotm,eatomtotm(1)*erg2eV,eatom(1)*erg2eV
-!!$    end if
-
-    !  if (lbulle) then
-    !     if (parallele) then
-    !        write(6,*)' test pos He pas para'
-    !        stop
-    !     end if
-    !     call test_position_He(xp,at,ityp,rang,imm,im,it,ldesinteg,num_at_glob,nstepdes,itmax)
-    !  end if
-    !  write(6,*) 'sortie canalyse',it,im
-
-!!$    if (mod(it,itesigma)==0) then
-!!$       if (lsigatcel)then
-!!$          natchk(:)=0
-!!$          sigatcel=0 ; patcel=0 ; patcelmax=0
-!!$          do i=1,im
-!!$             koo = ielat(i)                          ! Numero de la cellule
-!!$             iti = ityp(i)
-!!$             natchk(koo)=natchk(koo)+1
-!!$             sigatcel(:,:,koo)=sigatcel(:,:,koo)+sigat(:,:,i)
-!!$             ptest=0
-!!$             do ic=1,3
-!!$                ptest=ptest+sigat(ic,ic,i)/3
-!!$             end do
-!!$             ptest=abs(ptest)
-!!$             patcelmax(koo)=max(patcelmax(koo),ptest)
-!!$          end do
-!!$          do koo=1,noxyz
-!!$             sigatcel(:,:,koo)=sigatcel(:,:,koo)/natchk(koo)
-!!$             do ic=1,3
-!!$                patcel(koo)= patcel(koo)+sigatcel(ic,ic,koo)/3.0
-!!$             end do
-!!$             if (natchk(koo).ne.nato(koo)) then
-!!$                write(6,*)'nato ? koo natcchk nato', koo, natchk(koo), nato (koo)
-!!$                stop
-!!$
-!!$             end if
-!!$          end do
-!!$
-!!$
-!!$          !        write (6, *) '------valeurs par cellules-------',it
-!!$          write(extension,'(i9.9)') it
-!!$          lenfn2 = 9
-!!$          open(luvisuc, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.CEL.mol', form='formatted', &
-!!$               status='unknown')
-!!$          write (luvisuc, '(I9,A,I7,A,D15.6)') noxyz , ' IT =', it, ' Time = ', timel
-!!$          at=at*1.d8
-!!$          write (luvisuc,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
-!!$          at=at/1.d8
-!!$          do kx=0,nox-1
-!!$             do ky=0,noy-1
-!!$                do kz=0,noz-1
-!!$                   koo=1+kx+nox*(ky+noy*kz)
-!!$                   xb(1)=float(kx)/float(nox)*at(1,1)+float(ky)/float(noy)*at(1,2)+float(kz)/float(noz)*at(1,3)
-!!$                   xb(2)=float(kx)/float(nox)*at(2,1)+float(ky)/float(noy)*at(2,2)+float(kz)/float(noz)*at(2,3)
-!!$                   xb(3)=float(kx)/float(nox)*at(3,1)+float(ky)/float(noy)*at(3,2)+float(kz)/float(noz)*at(3,3)
-!!$                   xb=xb*1d8
-!!$                   write (luvisuc, 149) 'Au',xb(1), xb(2),xb(3),patcel(koo)*unitP,patcelmax(koo)*unitP,nato(koo)
-!!$                end do
-!!$             end do
-!!$          end do
-!!$          close (luvisuc)
-!!$148       format(A,3I4,3E15.5,1E15.7,I4)
-!!$149       format(A,3E15.5,2E15.7,I4)
-!!$       end if
-!!$    end if
     return
   end subroutine analyseT
 end module analyseT_mod

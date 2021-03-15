@@ -1,8 +1,8 @@
 module atomconfig
-  USE T_kind_param_m,only:double,long,ierr
+  USE T_kind_param_m,only:double,long
   USE Mat_utils_mod,only: fillbuffer3D,fillbuffer1D,fillbuffer9D
 #ifdef PARA
-  USE Tpara,only:NDM_MPI_REAL_DOUBLE 
+  USE Tpara,only:NDM_MPI_REAL_DOUBLE,ierr
   use gen_com_m,only:rang
 
 

@@ -1,7 +1,7 @@
 module montecarlo_mod
   USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, itetabvois,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
-       &lspaceNDM,rang,it,firsttime_lammps,posa,forca,erg2ev
+       &lspaceNDM,rang,it,firsttime_lammps,posa,forca,erg2ev,parallele
 !  USE tab_imm_m, only:xp, xpp, fp, vp, num_at_glob, ityp, ielat, iwmax
   USE atomconfig,only:atom_config,atom_config_d, config2ndm, switch_atom
   USE period_mod,only: period 
@@ -16,7 +16,7 @@ module montecarlo_mod
   use paraconfig,only:para_config,commconstr
 #ifdef PARA
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
-       &NDM_MPI_REAL_DOUBLE,para_space_config,status
+       &NDM_MPI_REAL_DOUBLE,para_space_config,status,comm_space
   use mod_para,only:maj_atomes_frt_ftm
   USE init_vois_mod,only: init_voisinage
 #else
@@ -854,8 +854,11 @@ end subroutine langevin
     call commconstr(paramcgc)
 
     myidsp=paramcgc%rgim
+    call MPI_COMM_free(mpi_comm_space,ierr)
     MPI_COMM_space=paramcgc%comm_image
+    call comm_space%init(MPI_COMM_SPACE)
     nprocspace=paramcgc%npim
+    if (nprocspace==1) parallele=.false.
 #else
     paramcgc%np_orig=1
     paramcgc%rang_orig=0

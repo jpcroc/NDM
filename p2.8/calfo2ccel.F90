@@ -15,7 +15,7 @@ contains
     USE jqmod
 #ifdef PARA
     use mpi
-    USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
+    USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace,ierr
 #else
     USE Tpara,only:nprocspace
 #endif

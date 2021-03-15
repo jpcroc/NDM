@@ -14,22 +14,13 @@ contains
   subroutine init_mpi()
     use mpi
     use gen_com_m,only:rang
-    use Tpara,only:ierr,nprocs,MPI_COMM_space,grp_world,nprocspace,myidsp
+    use Tpara,only:ierr,nprocs,MPI_COMM_space,grp_world,nprocspace,myidsp,comm_space
 
 
     implicit none
 
     ! Routine d'initialisation de MPI pour le code NDM
 
-
-    !--------------------------------------------------
-    !Variables de la routine
-
-    !--------------------------------------------------
-    !Variables locales
-
-    !--------------------------------------------------
-    !Corps de la routine
 
     call MPI_INIT(ierr)
     call MPI_COMM_RANK( MPI_COMM_WORLD, rang, ierr )
@@ -38,7 +29,7 @@ contains
     call MPI_COMM_DUP(MPI_COMM_WORLD,MPI_COMM_SPACE,ierr)
 !    MPI_COMM_space=MPI_COMM_WORLD
     nprocspace=nprocs
-
+    call comm_space%init(MPI_COMM_SPACE)
   end subroutine init_mpi
 
 #endif

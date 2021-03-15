@@ -19,7 +19,7 @@ module prog_mod
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
-  USE gen_com_m, ONLY:parallele,potist,rang,sig,lspaceNDM&
+  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM&
        &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin,latcomp
   
   use read_val,only:imm,ltabvois,rvois
@@ -139,24 +139,16 @@ contains
           select case (dmtype) 
           case(5)
              write(6,*)'loopforcetest pas NDM2020' ; stop
-             !       if (.not.parallele)    call loopforcetest (xp, xpp, vp, ax, fp, ielat, iwmax, ityp,num_at_glob)
           case(4,10)
              call dmloop_vverlet (atdml,celndm,boxndm,psc0)
           case(8)
              call dmloop_lpr (atdml,celndm,boxndm,psc0)
           case (1)
-             if (.not.parallele)  call dmloop (atdml,celndm,boxndm,psc0)
-          case (2)
-             if (.not.parallele)  then
-                call dmloop(atdml,celndm,boxndm,psc0)
-             else
-#ifdef PARA
-                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-                   if(rang==0) write (6,*)'DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION'
-                   call dmloop_vverlet (atdml,celndm,boxndm,psc0)
-                end if
-#endif
-             endif
+              call dmloop (atdml,celndm,boxndm,psc0)
+          case (21)
+             call dmloop(atdml,celndm,boxndm,psc0)
+          case(22)
+             call dmloop_vverlet (atdml,celndm,boxndm,psc0)
           case (3,30)
              write(6,*)'incohérence entre type(atom_config_d) et dmtype=GC'
              stop

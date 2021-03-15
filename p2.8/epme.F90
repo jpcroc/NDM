@@ -17,7 +17,7 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
        &npoint,pterm,volterm,fr1,fr2,fr3,iiim,q,bsmod3,iiim,ijim,ikim,bsmod2,de3,bsmod1,de2,de1,tabv3
   USE fft_com_m
 #ifdef PARA
-  Use Tpara,only: NDM_MPI_COMPLEX_DOUBLE,nprocspace,mpi_comm_space
+  Use Tpara,only: NDM_MPI_COMPLEX_DOUBLE,nprocspace,mpi_comm_space,ierr
   use mpi
 #endif
   

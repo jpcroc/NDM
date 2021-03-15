@@ -44,7 +44,7 @@ module Parrinello_Rahman_Nose
   use cellconfig,only:cell_config
 #ifdef PARA
   use mpi
-  USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE Tpara,only:COMM_space,nprocspace
 #else
   use Tpara,only:nprocspace
 
@@ -82,10 +82,6 @@ contains
     real(double)::temp0, unitE
     character*5 :: cunitE
 
-#ifdef PARA
-    real(double)::wbox_tot
-
-#endif
 
     ! Calcul de la température initiale
     temp0=tempinstT(atpr)
@@ -112,8 +108,7 @@ contains
        wbox = sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-  call MPI_ALLREDUCE(wbox,wbox_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-  wbox=wbox_tot
+  call comm_space%sum(wbox)
 end if
 #endif
     END IF
@@ -218,10 +213,6 @@ end if
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
 
-#ifdef PARA
-    real(double)::wbox_tot
-    real(double) sigkine_tot(3,3)
-#endif
 
     ! Paramètres du thermostat
     fNose2=fNose*fNose
@@ -344,8 +335,7 @@ end if
     sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-    call MPI_ALLREDUCE(sigkine,sigkine_tot,9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-    sigkine=sigkine_tot
+   call comm_space%sum(sigkine)
  end if
 
 #endif

@@ -71,7 +71,7 @@ contains
     
 
 
-    if (dmtype==2) then
+    if (dmtype==22) then
        do i = 1, atdml%im
           do ic = 1, 3
              if (atdml%vp(ic,i)*atdml%fp(ic,i)<0) then

@@ -17,7 +17,7 @@ contains
 
 #ifdef PARA
     !  use mpi
-    use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocspace,para_space_config
+    use Tpara,only:nprocspace,para_space_config,ierr,comm_space
     USE mod_para,only:maj_tabdensity_ftm
 
     include 'mpif.h'
@@ -66,14 +66,14 @@ contains
 
     real(double) :: tabdensity(imm)
 
-#ifdef PARA
+!#ifdef PARA
     ! declarations supplementaires pour MPI
-    real(double) ::  potisglue_tot
-    real(double) ::  potisrep_tot
-    real(double), dimension(3,3) :: sig_tot
-    real(double), dimension(3,3,noxyz) :: sigc_tot
+!    real(double) ::  potisglue_tot
+!    real(double) ::  potisrep_tot
+!    real(double), dimension(3,3) :: sig_tot
+!    real(double), dimension(3,3,noxyz) :: sigc_tot
 
-#endif
+!#endif
 
     real(double) :: xpnp(3,imm)
     real(double)::rue
@@ -410,16 +410,12 @@ contains
 
 #ifdef PARA
     if (nprocspace.gt.1) then
-       CALL MPI_ALLREDUCE(potisrep, potisrep_tot, 1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       potisrep=potisrep_tot
-       CALL MPI_ALLREDUCE(potisglue,potisglue_tot,1,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-       potisglue=potisglue_tot
+       call comm_space%sum(potisrep)
+       call comm_space%sum(potisglue)
        if (test_sigma) then 
-          call MPI_ALLREDUCE(sig,      sig_tot,      9,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-          sig=sig_tot
+       call comm_space%sum(sig)
           if (associated(sigc)) then
-             call MPI_ALLREDUCE(sigc,      sigc_tot,      9*noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-             sigc=sigc_tot
+             call comm_space%sum(sigc)
           endif
        endif
     end if

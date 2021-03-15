@@ -19,7 +19,7 @@ module constrconf_mod
     use mpi
     USE Tpara,only:MPI_COMM_space,ierr,NDM_MPI_REAL_DOUBLE,status,nprocspace
 #endif
-  use Tpara,only:para_space_config
+  use Tpara,only:para_space_config,nprocspace
 
 
   implicit none
@@ -39,9 +39,9 @@ contains
     type(box_config)::boxrgin
     type(atom_config)::atrgin
     type(para_space_config)::psc
-#ifndef PARA
-    integer :: nprocspace=1
-#endif
+!#ifndef PARA
+!    integer :: nprocspace=1
+!#endif
     integer,      dimension(:), allocatable   :: num_at_buff
     integer, dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable    :: buffer
