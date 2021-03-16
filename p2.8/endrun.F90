@@ -30,7 +30,7 @@ subroutine endrun
 
     use Tpara,only:NDM_MPI_real_double,MPI_COMM_space,nprocs,myidsp,nprocspace,ierr
 
-!  use mpi
+  use mpi
 !  USE mod_para,only:MPI_COMM_space,MPI_INTEGER, MPI_ANY_SOURCE, MPI_COMM_space, status,ierr,nprocs,MPI_SOURCE,NDM_MPI_REAL_DOUBLE,MPI_SUM,myidsp,proc_cell,MPI_LOGICAL,MPI_Wtime&
 #else
     use Tpara,only:nprocspace
@@ -47,7 +47,6 @@ subroutine endrun
 
   implicit none
 #ifdef PARA
-  include 'mpif.h'
     integer,dimension(MPI_STATUS_SIZE):: status2  ! statut de la communication
 
 #endif

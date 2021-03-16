@@ -2,6 +2,7 @@ module atomconfig
   USE T_kind_param_m,only:double,long
   USE Mat_utils_mod,only: fillbuffer3D,fillbuffer1D,fillbuffer9D
 #ifdef PARA
+  use mpi
   USE Tpara,only:NDM_MPI_REAL_DOUBLE,ierr
   use gen_com_m,only:rang
 
@@ -11,7 +12,6 @@ module atomconfig
 
   implicit none
 #ifdef PARA
-include 'mpif.h'
   integer,dimension(MPI_STATUS_SIZE):: status  ! statut de la communication
 #endif
 
@@ -1562,12 +1562,12 @@ contains
     else
        imloc=atcfloc%im;imloc3=3*imloc; imloc9=3*imloc3
        call MPI_SEND(imloc, 1,   MPI_INTEGER,idmaster ,10001,icomm,ierr)
-       call MPI_SEND(atcfloc%num_at_glob(1:imloc), imloc, MPI_INTEGER, idmaster, 10004, icomm, status, ierr)
+       call MPI_SEND(atcfloc%num_at_glob(1:imloc), imloc, MPI_INTEGER, idmaster, 10004, icomm, ierr)
        call MPI_SEND(atcfloc%xp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10002,icomm,ierr)
        call MPI_SEND(atcfloc%fp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10003,icomm,ierr)
-       call MPI_SEND(atcfloc%ityp(1:imloc), imloc, MPI_INTEGER, idmaster, 10005, icomm, status, ierr)
+       call MPI_SEND(atcfloc%ityp(1:imloc), imloc, MPI_INTEGER, idmaster, 10005, icomm, ierr)
        if (allocated(atcfloc%lgul))     &
-            &call MPI_SEND(atcfloc%lgul(1:imloc), imloc, MPI_LOGICAL, idmaster, 10006, icomm, status, ierr)
+            &call MPI_SEND(atcfloc%lgul(1:imloc), imloc, MPI_LOGICAL, idmaster, 10006, icomm, ierr)
        select type(atcfloc)
        class is (atom_config_d)
           select type(atcfcomp)

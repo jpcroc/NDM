@@ -6,7 +6,6 @@ module gen_com_m
 #ifdef PARA
 
   ! Declarations MPI
-  !      include 'mpif.h'
   ! option pour realiser une trace Vampir
   !     include 'VT.inc'
   !      integer rang,code,nb_procs

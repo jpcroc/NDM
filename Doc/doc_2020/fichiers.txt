@@ -1,0 +1,260 @@
+********************************************************************
+fichiers d'entrées  (voir description détaillée ci-dessous)
+name.in : contient le NOM du job
+NOM.din : options de dynamique
+NOM.GIN ou NOM.CIN : descrition de la boite, positions et types des atomes
+'potentiel'.potin : description du potentiel
+
+******************************************************************************
+******** fichier NOM.din *******
+exemple :*-----------------
+
+ &input
+	igen=0 !(*) =0 lecture .gin; =1 lecture .cin/cout 
+	imm=7000 !(*) nombre max d'atomes (taille des tableaux)
+	dmtype=15 !(*) type de DM (4= Velocity Verlet; 3= GC ; 2=trempe rapide, 1= verlet std, etc.
+	tinit=400! (*) si .gin	! temperature initiale
+
+	itmax=3 ! nombre max d'itarations
+	itetemp=1 ! période sortie des température et énergies 
+	itesigma ! période sortie des pressions 
+ &end
+fin ex :*-------
+
+
+
+
+c'est le fichier qui donne les options du calculs de dynamique moleculaire.
+Il est constitue d'une "name list". Une name list est un ensemble de donnees
+ lues par le code.
+L'ordre de ces donnes n'est pas important, une donnee peut apparaitre ou non
+dans la liste.
+Pour la plupart des donnes des valeurs par defauts sont incluses dans le
+programme.
+Cependant certaines donnes DOIVENT etre precisees.
+****  imm = 0                     !dimensionnement des tableaux atomiques
+      itab = 10                   !period of cell repartition
+      itetabvois = 10             !periode de calcul de la table des voisins
+      tempstop = -1.0             !temperature of run stop
+**** dmtype = 0 type of calculation : 1 -> MD; 2-> quench (trempe); 4-> Velocity Verlet ; 5 test des forces ; 6 analyse des positions en fin de cascade ; 7calcul des phonons, 8=PR;9= NEB
+      ttol = 0.0                  !max tolerance for temperature in %
+      tfroi = -1.0                !imposed temperature
+      tstep = 1.0                 !timestep in 10^-15 sec unit
+      itetimestep = -1            !period of check in timestep
+      tsfact = 10.0               !change in time step factor
+      tinit = -1.0                !initial temperature
+      tcooling = -1.0             !cooling rate
+      tfcou = -1.0                !temperature of the border of the box
+      epcou = -1.0                !width of the border of the box
+      lcasca = .FALSE.            !cascade Y/N
+      lfissure = .FALSE.          !crack Y/N
+****  itmax = -1                  !maximum number of iterations
+      itederive = -1              !"derive" correction
+****  igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 modification de cin puis stop
+      lrestart = .FALSE.          !if T : restarting from an interrupt job
+      tgc = 0.0                   ! threshold for CG calculation
+      ltabvois = .FALSE.          ! methode de la table des voisins
+      lconstrtot=.TRUE.           !!construction de la table des voisins T=double boucle F=via cel.
+      rvois = 0.0                 ! rayon de la table des voisins
+      ltpcel = .FALSE.            ! output of temperature and stress in each cell
+
+
+
+      itesauv = 100               !period for saving
+      itesauvposition = 0         !periode pour sauvegarde des positions en binaire
+      formatsauv = 3              !format of saving 0 MCortho; 1 DMortho ; 2 MC triclin; 1 DM triclin
+      dfpred = 1.0D-11            ! eguess for GC calculations and quenching
+      nox = -1
+      noy = -1
+      noz = -1
+      noxsm = -1
+      noysm = -1
+      nozsm = -1
+      ltranche = .FALSE.          ! existence d'une trache gelée
+      rulayer=0.0                 ! largeur de la tranche gelée par 
+      ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
+      lpr=.false.                 ! parinnelo rahman à contrainte constante
+      sigext = 0.0                ! Symetric tensor related to the external stress
+      h0(1:3,1:3) = 0.d0          ! Vecteurs de base de la boîte de référence en A (Parrinello, Rahman)
+      lUcell=.false.              ! affiche l'énergie potentielle de la boîte
+                                  ! (celà suppose que h0 correspond à l'état de
+                                  ! référence, ie état pour laquelle la
+                                  ! contrainte est nulle)
+      lpcon = .FALSE.             !algorithm a pression constante à la hache
+      lpcon2 = .FALSE.            !amortissement de la deformation de la boite
+
+      pext = 0.0                  !pression  par defaut
+      wbox = 0.0                  !masse de la boite (par defaut egale a 0.5*masse totale
+      wNose = 0.0                 ! masse de la boite pour thermostat de Nose (par defaut egale a wbox)
+      tbox = 1000.0                !"temps" de la boite
+      lTcon=.false.               !algorithme a temperature constante
+      lTberendsen=.false.               !algorithme a temperature constante
+      tauTcon=200.0
+      Text=-1.
+      lTNose=.false.              ! algorithme à température constante de Nosé
+      lTHoover=.false.            ! algorithme à température constante de Hoover
+      nHoover=1
+      iteTconst =itetemp
+      ltriclin = .FALSE.          ! reseau quelconque
+      lginread = .TRUE.           ! creation du reseau par lecture de coordonnes reduites
+      lalea = .FALSE.             ! structure initiale aleatoire
+      rsep = 1.0               !Distance de separation pour le tirage aleatoire
+      ipotentiel = 1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2 ; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff Nguyen, 10 eam
+
+! PME
+      maxorder=10                                ! Ordre du developpement maximal de la PME
+      lpotrep=.false.           ! dans calpo brache une repulsion de Ziegler (lpotrep=false) ou  polynomiale (lpotrep=.TRUE.)
+      lvpread=.true.
+      dilat(:)=0.0
+      lderive=.false.
+      lTandersen=.false.       ! température constante à la Andersen
+      nuandersen=1.0d14        !fréquence de tirage aléatoire des vitesses en Hz (valeur élevée = pour cascades)
+      landerscou=.false.       ! Andersen seulement sur les bords
+      lLangevin=.false.        ! Langevin MD
+      gamlang =-1.0            ! Gamma de Langevin
+      iko=-1
+      lcdp=.false.             ! algorithme d'accumulation de défauts ponctuels
+      ldislo=.false. ! calcul de dislocation
+      epcoudis= 0.0 !epaisseur de la couche avec ajout de force pour dislo
+      fdislo=0.0     ! force appliquée aux atomes de bords 
+      lnemd=.false.  ! Kth par la méthode NEMD Evans, P7229
+      fnemd=0
+      fpstop =-1.0 ! critère de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
+      fsumstop =-1.0 ! critère de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
+      lcontr=.false. ! dynamique contrainte (routine contrainte)
+      iseed=0 ! si <>0 controle le tirage aléatoire des vitesses
+
+
+!variables d'analyse
+
+      itetemp = 20                !period of temperature calculation
+      itesigma = -1               !period of stress calculation
+      itedepla = -100              !period of displacement cal.
+      tdepla = 1.0                !threshold for displacement
+      tdepla2 = -1.0              !second seuil pour calcul des atomes deplaces
+      lfilm = .FALSE.             !film making of displaced atoms
+      lfilmext = .FALSE.          !film par iteration des atomes deplaces
+      itecoordo = -100             !period of coordination calculation
+      itean = -1                  !general control for analysis
+      iterdf = -1                 !period of RDF calc. : -1 never ; 0 : nrdf last iterations; +iterdf every iterdf iterations
+      linstantrdf = .FALSE.       !F: calculates and prints the average of the RDF, T : calculent RDFrdf iterations
+      linstantfda = .FALSE.       !F: calculates and prints the average of the RDF, T : calcuatent RDFrdf iterations
+      nrdf = 0
+      nfda=0
+
+      lprtzlm = .FALSE.           ! plot du nombres d'atomes par tranche suivant z
+      lEev=.false.
+      lPkbar=.false.
+! definition des rayons de coupure pour le calcul des coordinences autour de chaque type atomique
+      deltax=0.0
+      rclu(:)=2.0
+      
+
+      iterasmol = -1                             ! <0 --> genere aucun fichier positions pour logiciel rasmol
+      iteangle = -1                              ! pilote creation de fichier positions pour
+                            ! >=0 debut et fin d'execution
+
+      lufilm = 89
+      lufilmpaf = 79
+      ludin = 94
+      lcorrelvp=.false.
+      lcalcjq=.false.
+      lsigat=.false.             ! calul et affichage de la contrainte atomique
+      lEparat=.false.             ! calul et affichage de l'energie par atom
+      itebdv=-1  ! frequence de calcul des bond valence
+      itetemp2=-1   ! frequence d'ecriture de la température dans fichier séparé
+      itecompcr=-1  ! fréquence de comparaison avec cristal de référence
+
+      lperiod=.true. ! conditions periodiques
+      lprteat=.false. ! conditions periodiques
+      ngrid = 50000  ! taille de la grille des potentiels
+      itecfg=-1   ! écriture de fichiers .cfg pour AtomEye
+!---inNEB
+        nebtype=2        ! drag methos is the default     
+        nebrelaxation=2  ! We relax all the atoms if nebrelaxation==1 only
+                         ! the most "deplaced" atoms      
+        npath = 14       ! 20 image of the neb is the default
+	maxneb = 700     ! the MAX of NEB steps
+        kspring = 1.0    ! the default value for the spring
+        deltaRmax=1.d-2
+
+    iteanaposneb=0
+    lbulle=.false.
+    ldesinteg=.false.    ! calcul du delta F de la desintegration d'un atome
+    nstepdes=-1
+    ides=1
+    kspr=10.0
+    xpspr(:)=-1000.
+    typspr=0
+    tempdes=-1.0
+    lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep. 
+    lposmoy=.false.       ! writes the average position and energy of the atoms in a .mol file
+    eatref(:)=0.
+
+    lheat=.false.
+    rheat=0.
+    Theat=0.0
+    Eheat=0.
+    ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG a préférer à itecfg 
+
+    ! management of the specific boundary conditions (free or rigid)  ---------------------------   !*!
+    ibound = 0	! ( ibound = 0 <=> no spe BoundC, ibound = 1 <=> strain controlled BoundC, ibound = 2 <=> stress controlled BoundC)		!*!
+    USEr_strainrate = 0.	! crystal strainrate (ibound=1)			!*!
+    USEr_stress_yz  = 0.	! stress on the surface (ibound=2)		!*!
+    fdbkcoef	  = 0.  ! feedback coefficient for the correction of applied stress (ibound=3)   !*! 
+    decal_bc = 0.
+    ldecal_bc = .false.
+    itespebcout = -1      ! on n'��ｽｩcrit pas de .cfg pour le film
+    ldyn2D = .false.      ! par d��ｽｩfaut : bords libres selon Y
+    !   ----------------------------------------------------------------------------------------    !*!
+
+    !.... in SUNDAE
+    kappa = 1e6
+    niteration=10000
+    lanczos_step=1.0d-3
+    !.... in SUNDAE 
+
+    tempdeplainit=-1
+    debyetemp=-1
+    lprtpot=.false.
+    ibrake =0   ! if =1 electronic slowing for cascades (acting on all atoms)
+    ngrdel=500
+
+    timemax=1d20
+    tpseuils(:)=0 ! 1:Tmin; 2:abs(T') ; 3: abs(T'') ; 1:abs(P); 2:abs(P') ; 3: abs(P'')
+
+    lrctest=.true.
+    tcelec=0 ! temp鬧ｻature de coupure pour les pertes 鬧脇ctroniques
+    Ecelec=0 ! temp鬧ｻature de coupure pour les pertes 鬧脇ctroniques
+
+
+    l2T=.false. ! 2T model
+    depmaxts=0.02
+    tsmin=2.0
+
+    units_lammps='metal'
+    lWgin=.false. ! =true écrit un fichier .newgin à la fin
+    lvzeroneb=.false. ! si true , met vp à 0 ente chaque iteration neb (comportement pre ndm2020), defaut = false==> calcul plus rapide
+! MCGC :
+    pas_lambda_mc = -100 !valeur negative par defaut pour que l'utilisateur la change
+    n_path = -100 !valeur negative par defaut pour que l'utilisateur la change
+    distminat=-1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
+
+
+!dmtype = type of calculation : 1 -> MD
+    !                               2 -> quench (trempe) or fire quench
+    !                               3 -> gradient conjugue sur les coordonnes cartesiennes
+    !                              30 -> gradient conjugue sur les coordonnes reduites
+    !                               4 -> Velocity Verlet 
+    !                               5 -> test des forces 
+    !                               6 -> analyse des positions en fin de cascade 
+    !                               7 -> calcul des phonons
+    !                               8 -> PR
+    !                               9 -> NEB
+    !                              10 -> PARIN RAHMAN 
+    !                              11 -> UN SEUL CALCUL DE FORCES
+    !                              12 -> ART
+    !                              16 -> SUNDAE
+    !                              17 -> MAB
+    !                              18 -> ML
+    !                              15 -> montecarlo_mcgc

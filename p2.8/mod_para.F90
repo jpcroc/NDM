@@ -1,6 +1,7 @@
 module mod_para
 #ifdef PARA
   use Tpara,only: NDM_MPI_REAL_DOUBLE,MPI_COMM_space, myidsp,nprocspace,nprocs,ierr,status,para_space_config			! numero de process mis là pour être utilisé en sequentiel
+   use mpi
 
   
 #endif
@@ -10,14 +11,13 @@ module mod_para
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e,ndm2config,config2ndm
   USE cellconfig,only:cell_config,ndm2cellconfig,cellconfig2ndm
 
-  !  use mpi
+
   implicit none
 
  
 !  integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiel
 #ifdef PARA
 
-  include 'mpif.h'
 
 !  integer :: ierr 			! erreur MPI
 
@@ -695,23 +695,23 @@ end subroutine maj_atomes_frt_ftm
     integer,intent(in)::ne
     integer :: nproc_voisin
 
-    integer, allocatable :: send_status(:,:,:)
+!    integer, allocatable :: send_status(:,:,:)
 
 
-    allocate(send_status(MPI_STATUS_SIZE,psc%nbr_proc_voisin,4))
+!    allocate(send_status(MPI_STATUS_SIZE,psc%nbr_proc_voisin,4))
 
     ! Attente de finalisation des envois 
 
     do nproc_voisin= 1, psc%nbr_proc_voisin
-       call MPI_Wait( send_rqst(nproc_voisin,1), send_status(1,nproc_voisin,1), ierr )
-       call MPI_Wait( send_rqst(nproc_voisin,2), send_status(1,nproc_voisin,2), ierr )
-       call MPI_Wait( send_rqst(nproc_voisin,3), send_status(1,nproc_voisin,3), ierr )
-       if (ne==4) call MPI_Wait( send_rqst(nproc_voisin,4), send_status(1,nproc_voisin,4), ierr )
+       call MPI_Wait( send_rqst(nproc_voisin,1), status, ierr )
+       call MPI_Wait( send_rqst(nproc_voisin,2), status, ierr )
+       call MPI_Wait( send_rqst(nproc_voisin,3), status, ierr )
+       if (ne==4) call MPI_Wait( send_rqst(nproc_voisin,4), status, ierr )
     enddo
 
     ! Liberation des buffers
 
-    deallocate(send_status)
+!    deallocate(send_status)
     deallocate(send_rqst)
     deallocate(send_nb_val)
     deallocate(send_buff_int)

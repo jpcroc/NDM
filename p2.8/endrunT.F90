@@ -35,10 +35,11 @@ contains
     !       version MPI du 07 f if (allocated(eatom)) eatom(:)=0
 
     ! ****************************************************************
-
+    use mpi
+    
     implicit none
 #ifdef PARA
-    include 'mpif.h'
+
     integer, dimension( MPI_STATUS_SIZE) :: statut2
 #endif
 

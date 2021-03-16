@@ -25,12 +25,12 @@ module neb_mod
   USE parautils,only:initloc,pointer_caltabt_calfo
 
 #ifdef PARA
+  use mpi
   use Tpara,only: NDM_MPI_REAl_DOUBLE,mpi_communicator,comm_space
   USE init_vois_mod,only: init_voisinage
 #endif
   implicit none
 #ifdef PARA
-  include 'mpif.h'
    integer, dimension( MPI_STATUS_SIZE) :: statut2
 
 #endif

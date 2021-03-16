@@ -16,11 +16,10 @@ contains
          &eamglue,eamglue,eamrho
 
 #ifdef PARA
-    !  use mpi
+      use mpi
     use Tpara,only:nprocspace,para_space_config,ierr,comm_space
     USE mod_para,only:maj_tabdensity_ftm
 
-    include 'mpif.h'
 
 #else
     USE Tpara,only:nprocspace,para_space_config

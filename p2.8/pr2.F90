@@ -66,7 +66,6 @@ module Parrinello_Rahman
 
    implicit none
 !#ifdef PARA
- ! include 'mpif.h'
 ! integer, dimension( MPI_STATUS_SIZE) :: statut2
 !#endif
    ! Vecteurs de la boîte et leurs dérivées

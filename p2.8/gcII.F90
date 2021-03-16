@@ -32,8 +32,7 @@ contains
 #endif
 #ifdef PARA
 
-
-    include "mpif.h" 
+    use mpi
 #endif
 
     type(atom_config),target::atcgin

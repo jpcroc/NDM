@@ -43,7 +43,7 @@ contains
 
 
 #ifdef PARA
-!    use mpi
+    use mpi
     USE Tpara,only:MPI_COMM_space,myidsp,nprocspace,para_space_config
     USE mod_para,only:maj_atomes_frt_ftm
     USE neb_module,only:init_mpi_neb
@@ -52,9 +52,6 @@ contains
 #endif
     USE neb_module,only:init_mpi_neb
     implicit none
-#ifdef PARA
- include 'mpif.h'
-#endif
  character :: extension*2
     integer::lenfn2,i,ko,im,nvois
     class(atom_config),pointer::atdml

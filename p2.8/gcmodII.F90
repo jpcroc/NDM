@@ -132,15 +132,13 @@ module gcmodII_mod
 
 
 #ifdef PARA
-!  use mpi
+  use mpi
   USE Tpara,only:MPI_COMM_space,ierr,nprocspace,status,myidsp,para_space_config
 #else
   USE Tpara,only:nprocspace,myidsp,para_space_config
 #endif  
   implicit none
-#ifdef PARA
-  include 'mpif.h'
-#endif  
+
 contains
 
   SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS,psc)
@@ -353,7 +351,7 @@ contains
 if (nprocspace.gt.1) then
              iopt=1
              do ip=1,nprocspace-1
-                call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
+                call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space,  ierr)
              end do
           end if
 #endif                         
@@ -509,7 +507,7 @@ if (nprocspace.gt.1) then
 
           iopt=0
           do ip=1,nprocspace-1
-             call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, status, ierr)
+             call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, ierr)
           end do
        end if
 #endif                                     

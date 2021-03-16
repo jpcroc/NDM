@@ -12,11 +12,9 @@ subroutine arret_ndm()
 
   USE T_kind_param_m
 
-  !USE mpi
+  
   implicit none
-#ifdef PARA  
-  include "mpif.h"
-#endif
+
 
   ! Routine d'arret du code NDM
 

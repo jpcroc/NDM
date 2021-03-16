@@ -3,6 +3,7 @@ module paraconfig
 
 
 #ifdef PARA
+  use mpi
   use Tpara,only:NDM_MPI_REAL_DOUBLE,mpi_communicator
 
 #endif
@@ -11,23 +12,9 @@ module paraconfig
 
   implicit none
 #ifdef PARA
-  include 'mpif.h'
+
 #endif
   type :: para_config
-!!$     integer :: rgim ! rang du proc dans l'image %mpi_image%rank -> %mpi_image%rang
-!!$
-!!$     integer:: npim ! nb de procs de l'image %mpi_image%nproc -> %mpi_image%nproc
-!!$
-!!$     integer:: comm_image ! communicateur associé à l'image (peuvent être égaux pour toutes les imags, ça n'est pas le problème). %mpi_image%comm -> %mpi_image%comm
-!!$
-!!$     integer:: grp_master ! %mpi_master%group -> %mpi_master%group
-!!$     integer:: rgmas ! rang parmi les masters %mpi_master%rank-> %mpi_master%rang
-!!$     integer:: comm_master ! communicateur associé aux master, défini si master ->mpi_master%comm
-!!$
-!!$     integer:: grp_orig ! groupe du comm à diviser %mpi_orig%group
-!!$     integer:: comm_orig ! communicatuer à diviser %mpi_orig%comm
-!!$     integer:: rang_orig ! rang dans le comm à diviser %mpi_orig%rang
-!!$     integer::np_orig ! nombre de procs dans le comm à dvisier  %mpi_orig%nproc
      type(mpi_communicator)::mpi_image,mpi_master,mpi_orig
      integer:: image ! n° de l'image
      integer::nimage ! = %mpi_master%nproc
@@ -156,7 +143,7 @@ Cl=0;GL=0
 !!$    call MPI_COMM_RANK(div%mpi_image%comm, div%mpi_image%rank,ierr)
     write(6,*)'RGI', div%mpi_orig%rank,div%mpi_image%rank,div%lmaster,div%image,div%mpi_image%comm,CL(div%image)
 
-    call MPI_BARRIER(div%mpi_orig%comm)
+    call MPI_BARRIER(div%mpi_orig%comm,ierr)
     
     call MPI_GROUP_INCL(div%mpi_orig%group,div%nimage,rgmasters,div%mpi_master%group,ierr)
     call MPI_COMM_CREATE(div%mpi_orig%comm,div%mpi_master%group,div%mpi_master%comm,ierr)
