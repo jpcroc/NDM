@@ -1,7 +1,6 @@
 module tempinstT_mod
   USE gen_com_m, ONLY:bk,im_glob,lspaceNDM
 #ifdef PARA
-    USE mpi
     USE Tpara,only:COMM_space,nprocspace
 
 #endif

@@ -16,7 +16,6 @@ subroutine deftimestep
   USE arret_ndm_mod,only: arret_ndm
   USE period_mod,only: period
 #ifdef PARA
-  use mpi
   USE Tpara,only:myidsp,nprocspace,comm_space
 #else
   USE Tpara,only:nprocspace

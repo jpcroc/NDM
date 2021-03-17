@@ -33,8 +33,7 @@ contains
     USE Parrinello_Rahman_Nose
 
 #ifdef PARA
-  use mpi
-  USE Tpara,only:MPI_COMM_space,NDM_MPI_REAL_DOUBLE,nprocspace
+  USE Tpara,only:nprocspace
   USE mod_para,only:maj_atomes_frt_ftm
 
 #else

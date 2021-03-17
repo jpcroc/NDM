@@ -5,7 +5,7 @@ module elec_cell
        &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter,im_glob
   USE var_pot, ONLY:cm
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
-  use Tpara,only:para_space_config ,ierr !
+  use Tpara,only:para_space_config ,endmpi !
   implicit none
   type :: ecelltype
      real(double)::temp
@@ -222,7 +222,6 @@ contains
 
 
 #ifdef PARA
-    USE mpi
     USE Tpara,only:COMM_space,myidsp,nprocspace
 !    USE mod_para,only:proc_cell
 #else
@@ -282,7 +281,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
                 if (nv1.gt.ngrdel) then
                    if (rang.eq.0)  write(6,*)'elstop velocity > 49, rebuild elstop.in'
 #ifdef PARA
-                      call MPI_FINALIZE(ierr)
+                      call endMPI
 #endif
 
 

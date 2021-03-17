@@ -9,8 +9,7 @@ module work_cgII
   USE endrunT_mod,only: endrunT
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
-USE mpi
-use Tpara,only:MPI_COMM_space, status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,nprocspace,para_space_config
+use Tpara,only:COMM_space,myidsp,nprocspace,para_space_config
 use mod_para,only:maj_atomes_frt_ftm
 #else
 use Tpara,only:nprocspace,para_space_config
@@ -97,7 +96,7 @@ contains
     !    end if
 #ifdef PARA
 if (nprocspace.gt.1) then
-       call mpi_barrier(MPI_COMM_space,ierr)
+       call COMM_space%barrier
     end if
 #endif    
     IF (it.GE.1) THEN
@@ -157,7 +156,7 @@ if (nprocspace.gt.1) then
     end IF! it .ge.1
 #ifdef PARA
 if (nprocspace.gt.1) then
-   call MPI_BCAST(lover, 1,MPI_LOGICAL, 0,gcpara%mpi_image%comm,ierr)
+   call gcpara%mpi_image%BCAST(0,lover)
 end if
 #endif
 !    write(6,*)'LOVER',lover,rang,it

@@ -18,7 +18,6 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
   USE fft_com_m
 #ifdef PARA
   Use Tpara,only: nprocspace,comm_space
-  use mpi
 #endif
   
   implicit none

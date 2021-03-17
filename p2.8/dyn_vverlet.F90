@@ -27,10 +27,7 @@ contains
     USE suivinonpbc
     USE elec_cell,ONLY: dynelec,i2t
 #ifdef PARA
-    use mpi
-
     USE mod_para,only:nprocspace,maj_atomes_frt_ftm
- 
 #else
     USE Tpara,only:nprocspace
 #endif

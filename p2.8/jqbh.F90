@@ -12,7 +12,6 @@ subroutine jqbh (xp,xpp,vp,ityp)
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:cm
 #ifdef PARA
-  use mpi
   USE Tpara,only:COMM_space,nprocspace
 
 #endif

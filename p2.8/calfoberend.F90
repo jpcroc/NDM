@@ -6,7 +6,6 @@ module calfoberend_mod
 contains
   subroutine calfoberend(im,imm,xp, vp, fp,ityp)
 #ifdef PARA
-  use mpi
     USE Tpara,only:COMM_space,nprocspace
 #else
   USE Tpara,only:nprocspace

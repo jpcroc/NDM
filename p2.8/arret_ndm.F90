@@ -1,8 +1,7 @@
 module arret_ndm_mod
 #ifdef PARA
-    USE mpi
-!    use TPara,only: MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE
-    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE
+    USE Tpara,only:endmpi
+!    USE mod_para,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE
     use gen_com_m ,only:rang
    
 #endif
@@ -28,7 +27,7 @@ subroutine arret_ndm()
   !Corps de la routine
 
 #ifdef PARA
-  call MPI_FINALIZE(ierr)
+  call endMPI
 #endif
 
   stop

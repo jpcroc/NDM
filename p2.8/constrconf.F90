@@ -16,7 +16,6 @@ module constrconf_mod
     USE Mat_utils_mod,only: Matinv_gen,is_upper_triangular
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
-    use mpi
     USE Tpara,only:COMM_space,nprocspace
 #endif
   use Tpara,only:para_space_config,nprocspace
@@ -278,10 +277,7 @@ contains
           call  decoupage(nprocspace,ncore,cel2b,psc=psc)
        end if
     end if
-    !    call MPI_finalize(ierr)
-    !    stop
     COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
-!    write(6,*)'IMMGLOBIMMGLOB',imm_glob
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
 
     imtot=COMPatrcf%im
@@ -675,7 +671,6 @@ contains
     USE T_kind_param_m, ONLY:  double
     !    USE suivinonpbc
 #ifdef PARA
-    !    use mpi
     USE var_pot, ONLY:ntyp
 
 #endif

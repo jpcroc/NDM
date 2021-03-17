@@ -15,34 +15,37 @@ FAIT:
 1.8/mettre un objet paraspace et privatiser les variables
 2/Ewald en paraspace
 3/ version trempe avec master2loc épisodique voir comment transporter les variables périphériques (type atom atomconfig etendu? A été très facile ! J'ai oublié ce que je voulais dire avec ce point
+2.9/ intégrer mpi_communicator a la fabien (voir ci-dessous)
 
 A FAIRE
+2.95/ modifier atomconfig%send2proc 
 
 1.1/SYSTEME COMPLET Work in Porgress
-
-	   2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine : abandonné car algo déêndant, voir cependant calfoMCGC
-2.5/version 2T
-
-4/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas) 
-5/réécrire paraspace  en version atomconfig y compris avec extend
+	   2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine : abandonné car algo dépendant, voir cependant calfoMCGC
+3/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas). LE PILOTER FINEMENT SUR LES DONNEES A TRANSMETTRE 
+3.1/réécrire paraspace en version atomconfig y compris avec extend BOF
 et écrire des transferts simples de variables atom et varibales cellconfig et boxconfig
-soit une liste complète, soit un seul FAIT AVEC ES CARACTERES
+soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
 (quelles données transférer gérées par un tableau de logicals l(i)=.true. on transfère la données i/ L(i)= false on l’initialise à 0)
+
+4/supprimer les routines non NDM2021	et faire une TODO list afférente
+5/version 2T
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
 7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos
 7.1/anapos... et Fossati
-7.2/supprimer les routines non NDM2021
-7.5/ version avec retour non systématique au proc master
+
+7.5/ version NEB  avec retour non systématique au proc master ? Est-ce possible ? 
 8/Programmer parallel replica
 9/documenter atomconfig et ajouter des routines intégrantes (par exemple appel calctemp)
 10/programmer le calcul des forcs pou un ensemble d'atomes plongé dans un ensemble plus grand
-10.1/oaralèllisme OPENMP like avec le point 10.
+10.1/paralèllisme OPENMP like avec le point 10.
 11/programmer potentiel Cooper
 12/retravailler les potentiels en général
 13/ tests formels
 14/ Milady
 
+***
 
 
 ----HISTORIQUE:

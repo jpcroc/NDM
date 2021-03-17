@@ -16,7 +16,6 @@ contains
          &eamglue,eamglue,eamrho
 
 #ifdef PARA
-      use mpi
     use Tpara,only:nprocspace,para_space_config,ierr,comm_space
     USE mod_para,only:maj_tabdensity_ftm
 
@@ -56,24 +55,8 @@ contains
     REAL(double) :: Femb
     real(double) :: rk, drk,ktor, inv_ktor, ktorho, inv_ktorho
     real(double) :: densityi !densite totale sur i
-
-    !  integer ::nvi,iw
-    !  integer, dimension(nvat) :: jvi
-    !  real(double), dimension (nvat) ::rij
-    !  real(double), dimension (1:3,nvat) ::dxpij
     integer :: izero
-
     real(double) :: tabdensity(imm)
-
-!#ifdef PARA
-    ! declarations supplementaires pour MPI
-!    real(double) ::  potisglue_tot
-!    real(double) ::  potisrep_tot
-!    real(double), dimension(3,3) :: sig_tot
-!    real(double), dimension(3,3,noxyz) :: sigc_tot
-
-!#endif
-
     real(double) :: xpnp(3,imm)
     real(double)::rue
 

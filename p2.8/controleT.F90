@@ -12,7 +12,6 @@ module controleT_mod
   USE cellconfig, only:cell_config!,ndm2cellconfig,cellconfig2ndm,caltabtC
   USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
 #ifdef PARA
-  use mpi
   USE Tpara,only:COMM_space,nprocspace,myidsp
 #else
   USE Tpara,only:nprocspace,myidsp

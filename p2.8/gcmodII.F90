@@ -132,8 +132,7 @@ module gcmodII_mod
 
 
 #ifdef PARA
-  use mpi
-  USE Tpara,only:MPI_COMM_space,ierr,nprocspace,status,myidsp,para_space_config
+  USE Tpara,only:COMM_space,nprocspace,myidsp,para_space_config
 #else
   USE Tpara,only:nprocspace,myidsp,para_space_config
 #endif  
@@ -224,7 +223,7 @@ contains
  !   write(unitw,*)'G',G
 
 #ifdef PARA
-    call MPI_barrier(mpi_comm_space,ierr)
+    call comm_space%barrier
 #endif
 
 !    write(6,*)'functBACK',rang,ncalls
@@ -351,7 +350,7 @@ contains
 if (nprocspace.gt.1) then
              iopt=1
              do ip=1,nprocspace-1
-                call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space,  ierr)
+                call comm_space%send(iopt,ip,1001)
              end do
           end if
 #endif                         
@@ -507,7 +506,7 @@ if (nprocspace.gt.1) then
 
           iopt=0
           do ip=1,nprocspace-1
-             call MPI_SEND(iopt,  1, MPI_INTEGER, ip, 10001, MPI_COMM_space, ierr)
+             call comm_space%send(iopt,ip,1001)
           end do
        end if
 #endif                                     
@@ -517,7 +516,7 @@ if (nprocspace.gt.1) then
 #ifdef PARA
 if (nprocspace.gt.1) then
 
-          call MPI_RECV(iopt,  1, MPI_INTEGER, 0, 10001, MPI_COMM_space, status, ierr)
+   call comm_space%recv(iopt,0,1001)
           select case (iopt)
           case (0)
              return

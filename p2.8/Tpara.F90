@@ -37,6 +37,7 @@ module Tpara
     integer    :: group       ! group          in the communicator comm
   contains
     procedure :: init => mpic_init
+    procedure :: probe => mpic_probe
     procedure :: barrier => mpic_barrier
     ! sum
     generic :: send  => mpic_send_dp,mpic_send_cdp,mpic_send_i
@@ -49,12 +50,12 @@ module Tpara
     procedure :: mpic_sum_cdp
     procedure :: mpic_sum_i
     procedure:: mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_recv_dp,mpic_recv_cdp,mpic_recv_i
-    ! min
+    ! min ALLREDUCE !!
     generic :: min  => mpic_min_dp
     generic :: min  => mpic_min_i
     procedure :: mpic_min_dp
     procedure :: mpic_min_i
-    ! max
+    ! max ALLREDUCE !!
     generic :: max  => mpic_max_dp
     generic :: max  => mpic_max_i
     procedure::mpic_maxloc_dp
@@ -64,9 +65,10 @@ module Tpara
     procedure :: and => mpic_and_l
     ! broadcast
     generic :: bcast  => mpic_bcast_dp
+    generic :: bcast  => mpic_bcast_l
     generic :: bcast  => mpic_bcast_i
     generic :: bcast  => mpic_bcast_cdp
-    procedure :: mpic_bcast_dp
+    procedure :: mpic_bcast_dp,mpic_bcast_l
     procedure:: mpic_bcast_i
     procedure :: mpic_bcast_cdp
   end type mpi_communicator
@@ -76,6 +78,13 @@ module Tpara
 
 contains
 
+  subroutine endmpi
+#ifdef PARA    
+    call MPI_finalize(ierr)
+#endif
+    return
+  end subroutine endmpi
+  
 
 !=========================================================================
 subroutine mpic_init(mpic,comm_in)
@@ -99,6 +108,40 @@ subroutine mpic_init(mpic,comm_in)
 #endif
 
 end subroutine mpic_init
+
+
+!=========================================================================
+subroutine mpic_probe(mpic,tag,sourceout,sourcein)
+  implicit none
+
+  class(mpi_communicator),intent(inout) :: mpic
+  integer,intent(in)                    :: tag
+  integer,optional,intent(in)::sourcein
+  integer,optional,intent(out)::sourceout
+  integer,dimension(MPI_STATUS_SIZE):: statut
+
+  !=====
+  integer :: ierror
+  !=====
+ierror=0
+#if defined(PARA)
+  if (present(sourcein)) then
+     call MPI_PROBE(sourcein, tag, mpic%comm,statut,ierror)
+     sourceout=statut(MPI_SOURCE)
+     if (sourceout.ne.sourcein) then
+          write(6,*) 'error in mpic_probe sourceout<> sourcein',sourceout,sourcein
+       endif
+  else
+     call MPI_PROBE(MPI_ANY_SOURCE, tag, mpic%comm,statut,ierror)
+     sourceout=statut(MPI_SOURCE)
+  end if
+  
+#endif
+  if( ierror /= 0 ) then
+    write(6,*) 'error in mpic_probe'
+  endif
+
+end subroutine mpic_probe
 
 
 !=========================================================================
@@ -361,6 +404,7 @@ subroutine mpic_bcast_dp(mpic,rank,array)
 
 end subroutine mpic_bcast_dp
 
+
 subroutine mpic_bcast_i(mpic,rank,array)
   implicit none
   class(mpi_communicator),intent(in) :: mpic
@@ -383,6 +427,29 @@ subroutine mpic_bcast_i(mpic,rank,array)
   endif
 
 end subroutine mpic_bcast_i
+
+subroutine mpic_bcast_l(mpic,rank,array)
+  implicit none
+  class(mpi_communicator),intent(in) :: mpic
+  integer,intent(in)     :: rank
+  logical,intent(inout) :: array(..)
+  !=====
+  integer :: nsize
+  integer :: ierror=0
+  !=====
+
+  if( mpic%nproc == 1 ) return
+
+  nsize = SIZE(array)
+
+#if defined(PARA)
+  call MPI_BCAST(array,nsize,MPI_LOGICAL,rank,mpic%comm,ierror)
+#endif
+  if( ierror /= 0 ) then
+    write(6,*) 'error in MPI_BCAST L'
+  endif
+
+end subroutine mpic_bcast_l
 
 
 !=========================================================================

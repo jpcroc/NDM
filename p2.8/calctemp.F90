@@ -8,7 +8,6 @@ module calctemp_mod
   USE atomconfig,only: atom_config_d
   USE cellconfig,only : cell_config
 #ifdef PARA
-    USE mpi
     USE Tpara,only:myidsp,nprocspace,comm_space
 #else
 #endif

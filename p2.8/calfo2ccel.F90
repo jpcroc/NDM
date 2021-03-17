@@ -14,7 +14,6 @@ contains
     USE gen_com_m , ONLY:lcalcjq,lperiod,pi,potis1,potis2
     USE jqmod
 #ifdef PARA
-    use mpi
     USE Tpara,only:COMM_space,nprocspace
 #else
     USE Tpara,only:nprocspace

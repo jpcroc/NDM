@@ -28,9 +28,9 @@ module paraconfig
 #ifdef PARA
 
   
-  interface distribue
-     module procedure distribuereal, distribueinteger,distribuedouble
-  end interface distribue
+!!$  interface distribue
+!!$     module procedure distribuereal, distribueinteger,distribuedouble
+!!$  end interface distribue
 
 #endif
 contains
@@ -171,13 +171,14 @@ Cl=0;GL=0
   subroutine initparapuresp(div,rg,mpicsp,nps)
     type(para_config)::div
     integer,intent(in)::rg,nps
-    integer,intent(in)::mpicsp
+    type(mpi_communicator),intent(in)::mpicsp
+!    integer,intent(in)::mpicsp
 #ifdef PARA
     div%image=0
     div%nimage=1
     div%mpi_image%rank=rg
-    div%mpi_image%comm=mpicsp
-    div%mpi_orig%comm=mpicsp
+    div%mpi_image%comm=mpicsp%comm
+    div%mpi_orig%comm=mpicsp%comm
     if (rg==0)then
        div%lmaster=.true.
        div%mpi_master%rank=0
@@ -189,135 +190,135 @@ Cl=0;GL=0
     div%mpi_image%nproc=nps
 #endif
   end subroutine initparapuresp
-#ifdef PARA
-  subroutine distribuereal(div,x,nel,xrecv)
-    integer::nel
-    type(para_config)::div
-    real::x(0:div%nimage-1,nel)
-    real,allocatable::xrecv(:)
-    integer::img,ierr,isp
-    integer, dimension( MPI_STATUS_SIZE) :: statut
-
-    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
-    !     write(6,*)div
-    !    if (div%lmaster) then
-    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
-    !    else
-    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
-    !    end if
-    if (div%mpi_orig%rank==0) then
-       xrecv(:)=x(0,:)
-       write(6,*)'rg0 ',xrecv
-       do img=1,div%nimage-1
-          !           write(6,*)'send 0->',img,x(img,:)
-          call MPI_SEND (x(img,1:nel),nel, MPI_REAL ,img,100, div%mpi_master%comm,ierr)
-       end do
-       do isp=1,div%mpi_image%nproc-1
-          call MPI_SEND(x(0,1:nel),nel,MPI_REAL,isp,102,div%mpi_image%comm,ierr)
-       end do
-    else
-       if (div%lmaster) then
-          call MPI_RECV(xrecv(1:nel),nel,MPI_REAL,0,100,div%mpi_master%comm,statut,ierr)
-          !           write(6,*)'recv->',xrecv(:),div%mpi_master%rank
-          do isp=1,div%mpi_image%nproc-1
-             call MPI_SEND(xrecv(1:nel),nel,MPI_REAL,isp,101,div%mpi_image%comm,ierr)
-          end do
-       else
-          if (div%image==0) then 
-             call MPI_RECV(xrecv(1:nel),nel,MPI_REAL,0,102,div%mpi_image%comm,statut,ierr)
-          else
-             call MPI_RECV(xrecv(1:nel),nel,MPI_REAL,0,101,div%mpi_image%comm,statut,ierr)
-          end if
-       end if
-    end if
-
-  end subroutine distribuereal
-
-  subroutine distribuedouble(div,x,nel,xrecv)
-    integer::nel
-    type(para_config)::div
-    real::x(0:div%nimage-1,nel)
-    real(double),allocatable::xrecv(:)
-    integer::img,ierr,isp
-    integer, dimension( MPI_STATUS_SIZE) :: statut
-
-    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
-    !     write(6,*)div
-    !    if (div%lmaster) then
-    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
-    !    else
-    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
-    !    end if
-    if (div%mpi_orig%rank==0) then
-       xrecv(:)=x(0,:)
-       write(6,*)'rg0 ',xrecv
-       do img=1,div%nimage-1
-          !           write(6,*)'send 0->',img,x(img,:)
-          call MPI_SEND (x(img,1:nel),nel, NDM_MPI_REAL_DOUBLE ,img,100, div%mpi_master%comm,ierr)
-       end do
-       do isp=1,div%mpi_image%nproc-1
-          call MPI_SEND(x(0,1:nel),nel,NDM_MPI_REAL_DOUBLE,isp,102,div%mpi_image%comm,ierr)
-       end do
-    else
-       if (div%lmaster) then
-          call MPI_RECV(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,0,100,div%mpi_master%comm,statut,ierr)
-          !           write(6,*)'recv->',xrecv(:),div%mpi_master%rank
-          do isp=1,div%mpi_image%nproc-1
-             call MPI_SEND(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,isp,101,div%mpi_image%comm,ierr)
-          end do
-       else
-          if (div%image==0) then 
-             call MPI_RECV(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,0,102,div%mpi_image%comm,statut,ierr)
-          else
-             call MPI_RECV(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,0,101,div%mpi_image%comm,statut,ierr)
-          end if
-       end if
-    end if
-  end subroutine distribuedouble
-  subroutine distribueinteger(div,x,nel,xrecv)
-    integer::nel
-    type(para_config)::div
-    integer::x(0:div%nimage-1,nel)
-    integer,allocatable::xrecv(:)
-    integer::img,ierr,isp
-    integer, dimension( MPI_STATUS_SIZE) :: statut
-
-    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
-    !     write(6,*)div
-    !    if (div%lmaster) then
-    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
-    !    else
-    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
-    !    end if
-    if (div%mpi_orig%rank==0) then
-       xrecv(:)=x(0,:)
-       write(6,*)'rg0 ',xrecv
-       do img=1,div%nimage-1
-          !           write(6,*)'send 0->',img,x(img,:)
-          call MPI_SEND (x(img,1:nel),nel, MPI_INTEGER ,img,200, div%mpi_master%comm,ierr)
-       end do
-       do isp=1,div%mpi_image%nproc-1
-          call MPI_SEND(x(0,1:nel),nel,MPI_INTEGER,isp,202,div%mpi_image%comm,ierr)
-       end do
-    else
-       if (div%lmaster) then
-          call MPI_RECV(xrecv(1:nel),nel,MPI_INTEGER,0,200,div%mpi_master%comm,statut,ierr)
-          !           write(6,*)'recv->',xrecv(:),div%mpi_master%rank
-          do isp=1,div%mpi_image%nproc-1
-             call MPI_SEND(xrecv(1:nel),nel,MPI_INTEGER,isp,201,div%mpi_image%comm,ierr)
-          end do
-       else
-          if (div%image==0) then 
-             call MPI_RECV(xrecv(1:nel),nel,MPI_INTEGER,0,202,div%mpi_image%comm,statut,ierr)
-          else
-             call MPI_RECV(xrecv(1:nel),nel,MPI_INTEGER,0,201,div%mpi_image%comm,statut,ierr)
-          end if
-       end if
-    end if
-  end subroutine distribueinteger
-
-
-#endif
+!!$#ifdef PARA
+!!$  subroutine distribuereal(div,x,nel,xrecv)
+!!$    integer::nel
+!!$    type(para_config)::div
+!!$    real::x(0:div%nimage-1,nel)
+!!$    real,allocatable::xrecv(:)
+!!$    integer::img,ierr,isp
+!!$    integer, dimension( MPI_STATUS_SIZE) :: statut
+!!$
+!!$    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
+!!$    !     write(6,*)div
+!!$    !    if (div%lmaster) then
+!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
+!!$    !    else
+!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
+!!$    !    end if
+!!$    if (div%mpi_orig%rank==0) then
+!!$       xrecv(:)=x(0,:)
+!!$       write(6,*)'rg0 ',xrecv
+!!$       do img=1,div%nimage-1
+!!$          !           write(6,*)'send 0->',img,x(img,:)
+!!$          call MPI_SEND (x(img,1:nel),nel, MPI_REAL ,img,100, div%mpi_master%comm,ierr)
+!!$       end do
+!!$       do isp=1,div%mpi_image%nproc-1
+!!$          call MPI_SEND(x(0,1:nel),nel,MPI_REAL,isp,102,div%mpi_image%comm,ierr)
+!!$       end do
+!!$    else
+!!$       if (div%lmaster) then
+!!$          call MPI_RECV(xrecv(1:nel),nel,MPI_REAL,0,100,div%mpi_master%comm,statut,ierr)
+!!$          !           write(6,*)'recv->',xrecv(:),div%mpi_master%rank
+!!$          do isp=1,div%mpi_image%nproc-1
+!!$             call MPI_SEND(xrecv(1:nel),nel,MPI_REAL,isp,101,div%mpi_image%comm,ierr)
+!!$          end do
+!!$       else
+!!$          if (div%image==0) then 
+!!$             call MPI_RECV(xrecv(1:nel),nel,MPI_REAL,0,102,div%mpi_image%comm,statut,ierr)
+!!$          else
+!!$             call MPI_RECV(xrecv(1:nel),nel,MPI_REAL,0,101,div%mpi_image%comm,statut,ierr)
+!!$          end if
+!!$       end if
+!!$    end if
+!!$
+!!$  end subroutine distribuereal
+!!$
+!!$  subroutine distribuedouble(div,x,nel,xrecv)
+!!$    integer::nel
+!!$    type(para_config)::div
+!!$    real::x(0:div%nimage-1,nel)
+!!$    real(double),allocatable::xrecv(:)
+!!$    integer::img,ierr,isp
+!!$    integer, dimension( MPI_STATUS_SIZE) :: statut
+!!$
+!!$    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
+!!$    !     write(6,*)div
+!!$    !    if (div%lmaster) then
+!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
+!!$    !    else
+!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
+!!$    !    end if
+!!$    if (div%mpi_orig%rank==0) then
+!!$       xrecv(:)=x(0,:)
+!!$       write(6,*)'rg0 ',xrecv
+!!$       do img=1,div%nimage-1
+!!$          !           write(6,*)'send 0->',img,x(img,:)
+!!$          call MPI_SEND (x(img,1:nel),nel, NDM_MPI_REAL_DOUBLE ,img,100, div%mpi_master%comm,ierr)
+!!$       end do
+!!$       do isp=1,div%mpi_image%nproc-1
+!!$          call MPI_SEND(x(0,1:nel),nel,NDM_MPI_REAL_DOUBLE,isp,102,div%mpi_image%comm,ierr)
+!!$       end do
+!!$    else
+!!$       if (div%lmaster) then
+!!$          call MPI_RECV(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,0,100,div%mpi_master%comm,statut,ierr)
+!!$          !           write(6,*)'recv->',xrecv(:),div%mpi_master%rank
+!!$          do isp=1,div%mpi_image%nproc-1
+!!$             call MPI_SEND(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,isp,101,div%mpi_image%comm,ierr)
+!!$          end do
+!!$       else
+!!$          if (div%image==0) then 
+!!$             call MPI_RECV(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,0,102,div%mpi_image%comm,statut,ierr)
+!!$          else
+!!$             call MPI_RECV(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,0,101,div%mpi_image%comm,statut,ierr)
+!!$          end if
+!!$       end if
+!!$    end if
+!!$  end subroutine distribuedouble
+!!$  subroutine distribueinteger(div,x,nel,xrecv)
+!!$    integer::nel
+!!$    type(para_config)::div
+!!$    integer::x(0:div%nimage-1,nel)
+!!$    integer,allocatable::xrecv(:)
+!!$    integer::img,ierr,isp
+!!$    integer, dimension( MPI_STATUS_SIZE) :: statut
+!!$
+!!$    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
+!!$    !     write(6,*)div
+!!$    !    if (div%lmaster) then
+!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
+!!$    !    else
+!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
+!!$    !    end if
+!!$    if (div%mpi_orig%rank==0) then
+!!$       xrecv(:)=x(0,:)
+!!$       write(6,*)'rg0 ',xrecv
+!!$       do img=1,div%nimage-1
+!!$          !           write(6,*)'send 0->',img,x(img,:)
+!!$          call MPI_SEND (x(img,1:nel),nel, MPI_INTEGER ,img,200, div%mpi_master%comm,ierr)
+!!$       end do
+!!$       do isp=1,div%mpi_image%nproc-1
+!!$          call MPI_SEND(x(0,1:nel),nel,MPI_INTEGER,isp,202,div%mpi_image%comm,ierr)
+!!$       end do
+!!$    else
+!!$       if (div%lmaster) then
+!!$          call MPI_RECV(xrecv(1:nel),nel,MPI_INTEGER,0,200,div%mpi_master%comm,statut,ierr)
+!!$          !           write(6,*)'recv->',xrecv(:),div%mpi_master%rank
+!!$          do isp=1,div%mpi_image%nproc-1
+!!$             call MPI_SEND(xrecv(1:nel),nel,MPI_INTEGER,isp,201,div%mpi_image%comm,ierr)
+!!$          end do
+!!$       else
+!!$          if (div%image==0) then 
+!!$             call MPI_RECV(xrecv(1:nel),nel,MPI_INTEGER,0,202,div%mpi_image%comm,statut,ierr)
+!!$          else
+!!$             call MPI_RECV(xrecv(1:nel),nel,MPI_INTEGER,0,201,div%mpi_image%comm,statut,ierr)
+!!$          end if
+!!$       end if
+!!$    end if
+!!$  end subroutine distribueinteger
+!!$
+!!$
+!!$#endif
 
   subroutine print(paraprt,rang)
     class(para_config),intent(in)::paraprt

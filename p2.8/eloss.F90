@@ -4,8 +4,7 @@ module eloss
   USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,l2T,erg2eV,iko,lspacendm!,noxyz
   USE var_pot, ONLY:ntyp,cm,gamlt
 #ifdef PARA
-  use mpi
-  USE Tpara,only:COMM_space,myidsp,NDM_MPI_REAl_DOUBLE,ierr
+  USE Tpara,only:COMM_space,myidsp,endmpi
 #else
   use Tpara,only : nprocspace
   
@@ -107,10 +106,8 @@ contains
           if (nv1.gt.ngrdel) then
              write(6,*)'elstop velocity > 49, rebuild elstop.in,nv1',nv1
 #ifdef PARA
-	            call MPI_FINALIZE(ierr)
+             call endMPI
 #endif 
-
-
              stop
           end if
           f1=elstopforce(i,2,nv1)-(elstopforce(i,2,nv1)-elstopforce(i,2,nv1-1))*(nv1-vnlt/v1)
@@ -164,7 +161,7 @@ contains
           if (nv1.gt.ngrdel) then
              write(6,*)'elstop velocity > 49, rebuild elstop.in'
 #ifdef PARA
-	            call MPI_FINALIZE(ierr)
+             call endMPI
 #endif 
             stop
           end if

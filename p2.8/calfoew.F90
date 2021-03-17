@@ -14,7 +14,6 @@ contains
 
     USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q,nb1v,nb2v,nb3v,tabv3,tabf3
 #ifdef PARA
-  use mpi
   USE Tpara,only:COMM_space,nprocspace
 #else
   USE Tpara,only:nprocspace

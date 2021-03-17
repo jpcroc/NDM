@@ -25,15 +25,11 @@ module neb_mod
   USE parautils,only:initloc,pointer_caltabt_calfo
 
 #ifdef PARA
-  use mpi
-  use Tpara,only: NDM_MPI_REAl_DOUBLE,mpi_communicator,comm_space
+  use mpi ! utile pour barrière générale
+  use Tpara,only: comm_space
   USE init_vois_mod,only: init_voisinage
 #endif
   implicit none
-#ifdef PARA
-   integer, dimension( MPI_STATUS_SIZE) :: statut2
-
-#endif
 contains
   subroutine neb 
     !-----------------------------------------------
@@ -219,10 +215,8 @@ contains
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
     
     if (paraneb%lmaster) then
-!       if (paraneb%mpi_image%nproc.gt.1) then
           call paraneb%mpi_master%sum(enepath)
           call paraneb%mpi_master%sum(enepathev)
-!       end if
     end if
 #endif
 
@@ -277,8 +271,7 @@ contains
 #ifdef PARA
 
                 end if
-!                call paraneb%mpi_master%bcast(dragtest)
-                call MPI_BCAST(dragtest, 1,MPI_INTEGER, 0,paraneb%mpi_image%comm,ierr)
+                call paraneb%mpi_image%bcast(0,dragtest)
 
 #endif
              end do   ! end do for a while
@@ -301,12 +294,10 @@ contains
 #ifdef PARA
        CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
        if(lmaster) then
-!          if ((paraneb%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
              call paraneb%mpi_master%sum(enepath)
              call paraneb%mpi_master%sum(enepathev)
              call paraneb%mpi_master%sum(sigpath)
              call paraneb%mpi_master%sum(iter)
-!          end if
        end if
 #endif
        if (rang==0) then
@@ -375,32 +366,23 @@ contains
                    sigPATH(:,:,ii) = sig(:,:)      ! Contrainte
 
 #ifdef PARA
-                   if (paraneb%mpi_master%rank.lt.paraneb%nimage-1) call MPI_SEND(enepath(ii), 1,   NDM_MPI_REAL_DOUBLE,   &
-                        &paraneb%mpi_master%rank+1,10001,paraneb%mpi_master%comm,ierr)
+                   if (paraneb%mpi_master%rank.lt.paraneb%nimage-1) then
+                      call paraneb%mpi_master%send(enepath(ii),paraneb%mpi_master%rank+1,10001)
+                   end if
                    if (paraneb%mpi_master%rank.gt.0) &
-                        &call MPI_RECV(enepath(ii-1),1, NDM_MPI_REAL_DOUBLE,   paraneb%mpi_master%rank-1,10001,&
-                        &paraneb%mpi_master%comm,statut2,ierr)
-
+                        & call paraneb%mpi_master%recv(enepath(ii-1),paraneb%mpi_master%rank-1,10001)
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1)   &
-                        &call MPI_SEND(atneb(ii)%xp(1:3,1:im), 3*im,   NDM_MPI_REAL_DOUBLE,  &
-                        &paraneb%mpi_master%rank+1,10002,paraneb%mpi_master%comm,ierr)
-                   if (paraneb%mpi_master%rank.gt.0)  call MPI_RECV(atneb(ii-1)%xp(1:3,1:im),3*im,   NDM_MPI_REAL_DOUBLE,   &
-                        &paraneb%mpi_master%rank-1,10002,paraneb%mpi_master%comm,statut2,ierr)
-
+                        &call paraneb%mpi_master%send(atneb(ii)%xp(1:3,1:im),paraneb%mpi_master%rank+1,10002)
+                   if (paraneb%mpi_master%rank.gt.0)  &
+                        &call paraneb%mpi_master%recv(atneb(ii-1)%xp(1:3,1:im),paraneb%mpi_master%rank-1,10002)
                    if (paraneb%mpi_master%rank.gt.0) &
-                        &call MPI_SEND(enepath(ii), 1,   NDM_MPI_REAL_DOUBLE,   paraneb%mpi_master%rank-1,10003,&
-                        &paraneb%mpi_master%comm,ierr)
+                     & call paraneb%mpi_master%send(enepath(ii),paraneb%mpi_master%rank-1,10003)
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1)&
-                        &call MPI_RECV(enepath(ii+1),1, NDM_MPI_REAL_DOUBLE,paraneb%mpi_master%rank+1,10003,&
-                        paraneb%mpi_master%comm,statut2,ierr)
-
-                   if (paraneb%mpi_master%rank.gt.0)  call MPI_SEND(atneb(ii)%xp(1:3,1:im), 3*im,   NDM_MPI_REAL_DOUBLE,  &
-                        &paraneb%mpi_master%rank-1,10004,paraneb%mpi_master%comm,ierr)
+                        & call paraneb%mpi_master%recv(enepath(ii+1),paraneb%mpi_master%rank+1,10003)
+                   if (paraneb%mpi_master%rank.gt.0)  &
+                        &call paraneb%mpi_master%send(atneb(ii)%xp(1:3,1:im),paraneb%mpi_master%rank-1,10004)
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1) &
-                        &call MPI_RECV(atneb(ii+1)%xp(1:3,1:im),3*im,   NDM_MPI_REAL_DOUBLE,   &
-                        &paraneb%mpi_master%rank+1,10004,&
-                        paraneb%mpi_master%comm,statut2,ierr)
-
+                         &call paraneb%mpi_master%recv(atneb(ii+1)%xp(1:3,1:im),paraneb%mpi_master%rank+1,10004)
                    enepathev(:)=enepath(:)*erg2ev
                    !             stop
 #endif             
@@ -432,13 +414,12 @@ contains
 
           !          write(6,*)'OUTloop',rang
 #ifdef PARA
-          !          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
           if (lmaster) then
                call paraneb%mpi_master%sum(nebtest)
 
           end if
 
-          call MPI_BCAST(nebtest, npath,MPI_INTEGER, 0,paraneb%mpi_image%comm,ierr)          
+          call paraneb%mpi_image%bcast(0,nebtest)
 #endif
           if (SUM(nebtest(2:npath-1))==(npath-2)) then
              if (rang==0) print'("NEB:=== bye,bye sweety is finished=================")'
@@ -496,7 +477,6 @@ contains
 
     end do
 
-    !    CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
     if (lmaster) then 
 #ifdef PARA
 
@@ -506,41 +486,33 @@ contains
              ! Pour le processeur maitre il n'y a rien a faire
              ! reception des donnees des autres processeurs
              !          if (iproc.ne.0) then
-             call MPI_RECV(enertrf, 1,NDM_MPI_REAL_DOUBLE,   MPI_ANY_SOURCE, 10001, paraneb%mpi_master%comm, statut2, ierr)
-             proc_source = statut2(MPI_SOURCE)
+             call  paraneb%mpi_master%probe(10001,sourceout=proc_source)
+             call  paraneb%mpi_master%recv (enertrf,proc_source,10001)
              enepath(proc_source+2)=enertrf
-             call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,  MPI_ANY_SOURCE, 10002, paraneb%mpi_master%comm, statut2, ierr)
-             proc_source = statut2(MPI_SOURCE)
+
+             call  paraneb%mpi_master%probe(10002,sourceout=proc_source)
+             call  paraneb%mpi_master%recv (sigpathtrf,proc_source,10002)
              sigpath(:,:,proc_source+2)=sigpathtrf(:,:)
-             call MPI_RECV(rc_trf,1,NDM_MPI_REAL_DOUBLE,  MPI_ANY_SOURCE, 10005, paraneb%mpi_master%comm, statut2, ierr)
-             proc_source = statut2(MPI_SOURCE)
+
+             call  paraneb%mpi_master%probe(10005,sourceout=proc_source)
+             call  paraneb%mpi_master%recv (rc_trf,proc_source,10005)
              reaction_coord(proc_source+2)=rc_trf
-
-             !          endif
           end do
-          call MPI_RECV(enertrf,  1,NDM_MPI_REAL_DOUBLE,paraneb%nimage-1, 10003, paraneb%mpi_master%comm, statut2, ierr)
+          call  paraneb%mpi_master%recv (enertrf,paraneb%nimage-1,10003)
+          call  paraneb%mpi_master%recv (sigpathtrf,paraneb%nimage-1,10004)
           enepath(npath)=enertrf
-          call MPI_RECV(sigpathtrf,9,NDM_MPI_REAL_DOUBLE,paraneb%nimage-1, 10004, paraneb%mpi_master%comm, statut2, ierr)
           sigpath(:,:,npath)=sigpathtrf(:,:)
-
-
        else ! Les autres processeurs envoient leurs donnees locales
-          call MPI_SEND(enepath(paraneb%mpi_master%rank+2), 1,   NDM_MPI_REAL_DOUBLE, 0,10001,paraneb%mpi_master%comm,ierr)
-          call MPI_SEND(sigpath(:,:,paraneb%mpi_master%rank+2),9,   NDM_MPI_REAL_DOUBLE,  0,10002,paraneb%mpi_master%comm,ierr)
-          call MPI_SEND(reaction_coord(paraneb%mpi_master%rank+2), 1,   NDM_MPI_REAL_DOUBLE, 0,10005,paraneb%mpi_master%comm,ierr)       
+          call paraneb%mpi_master%send(enepath(paraneb%mpi_master%rank+2), 0,10001)
+          call paraneb%mpi_master%send(sigpath(:,:,paraneb%mpi_master%rank+2), 0,10002)
+          call paraneb%mpi_master%send(reaction_coord(paraneb%mpi_master%rank+2), 0,10005)
           if (paraneb%mpi_master%rank==paraneb%nimage-1)then
-             call MPI_SEND(enepath(npath), 1,   NDM_MPI_REAL_DOUBLE,  0,10003,paraneb%mpi_master%comm,ierr)
-             call MPI_SEND(sigpath(:,:,npath), 9,   NDM_MPI_REAL_DOUBLE,   0,10004,paraneb%mpi_master%comm,ierr)
+             call paraneb%mpi_master%send(enepath(npath), 0,10003)
+             call paraneb%mpi_master%send(sigpath(:,:,npath), 0,10004)
           end if
        endif
-
        enepathev(:)=enepath(:)*erg2ev
-
-
-
 #endif
-
-
        if (rang==0) WRITE(*,'(3a)') "NEB:--IMAGE-----REACT-COORD------ENERGY------ENERGY-ENERGY(1)&
             &-------------STRESS-sVoigt(1:6)-(units:-", cunitP, ")"
        do ii=1,npath

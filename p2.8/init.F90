@@ -63,9 +63,7 @@ contains
     USE eloss, ONLY : ibrake,ecelec,initeloss
 
 #ifdef PARA
-    use mpi
-    USE Tpara,only:MPI_COMM_space,myidsp,nprocspace
-!    USE mod_para,only:NBR_PROC_VOISIN
+    USE Tpara,only:COMM_space,myidsp,nprocspace
 #else
     use Tpara,only:nprocspace
     
@@ -147,7 +145,7 @@ contains
        end select
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          CALL MPI_BARRIER(MPI_COMM_space,ierr)
+          CALL comm_space%BARRIER
           call init_voisinage(celndm,psc)
           
           if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'

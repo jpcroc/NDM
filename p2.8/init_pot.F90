@@ -219,9 +219,6 @@ contains
     USE T_kind_param_m, ONLY:  double
 !    USE gen_com_m, ONLY: rang,A2cm,umass
 !    USE var_pot, ONLY: ntyp, npair, ntrip,cm,catom, ty,rue_pair,ipotentiel,q
-#ifdef PARA
-    USE mpi
-#endif
     implicit none
     integer :: i,error, beggin,  endding,lupotin
     character ::  fnampotin*80

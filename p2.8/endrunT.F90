@@ -32,17 +32,8 @@ contains
     USE posana,only:
     USE cfg_module,only:
     USE elec_cell, ONLY:  sauveelec
-    !       version MPI du 07 f if (allocated(eatom)) eatom(:)=0
-
-    ! ****************************************************************
-    use mpi
     
     implicit none
-#ifdef PARA
-
-    integer, dimension( MPI_STATUS_SIZE) :: statut2
-#endif
-
     type(box_config)::boxndm
     class(atom_config)::atdml
     type(cell_config):: celndm

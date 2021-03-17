@@ -19,7 +19,6 @@ contains
     USE elec_cell, ONLY : necycle,etstep,necyclemin
     ! *******************************************************************
 #ifdef PARA
-    use mpi
     USE Tpara,only:nprocspace,comm_space
 #else
     use Tpara,only:nprocspace
@@ -152,7 +151,6 @@ contains
     z2 = yko/znorm
     z3 = zko/znorm
 
-    ! MPI
     if (rang==0) then
        write (6, 576) z1, z2, z3
 576    format('Direction du projectile ',3(f8.4,1x))

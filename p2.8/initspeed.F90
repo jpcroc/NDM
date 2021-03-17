@@ -12,7 +12,6 @@ module initspeed_mod
        neb_noise_scale,bk,mdcg_noise,lspacendm,latcomp! enleve im, im_glog
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
-  use mpi
   USE Tpara,only:COMM_space,nprocs,nprocspace,myidsp
 #else
     USE Tpara,only:nprocspace,myidsp
@@ -161,7 +160,6 @@ contains
           !        return
        else
           ! velocities are read from file and rescaled
-          ! MPI
           if (rang==0) write (6, *) 'scaling read velocities at TINIT = ', &
                tinit, 'K'
           !   tempsauv=tempinst(vp,ityp)
@@ -192,25 +190,11 @@ contains
           endif
        else
           !  a starting temperature is given
-          ! MPI
-
           if (rang==0) write (6, *) 'random velocities at TINIT = ', tinit, &
                'K'
-
-          !          if (iseed==0)  iseed=1
-
-
-          !  call system_clock (iseed)
-          !   iseedt(1)=iseed
-
-          ! call random_seed(iseedt(1))
-
           call random_seed(size=seed_size)
           if (myidsp==0)write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
-          !          iseedt = 0
-
-
           if (iseed==0)  then
              call system_clock (iseed)
              write(6,*)'iseed pour tirage des vitesses',iseed

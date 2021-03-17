@@ -26,13 +26,9 @@ contains
 #ifdef PARA
     use paraconfig,only:para_config,initparapuresp
     USE parautils,only:initcomp
-    use Tpara,only:nprocspace,MPI_COMM_space ,ierr,status,NDM_MPI_REAL_DOUBLE
+    use Tpara,only:nprocspace,COMM_space
 #else
     use Tpara,only:nprocspace
-#endif
-#ifdef PARA
-
-    use mpi
 #endif
 
     type(atom_config),target::atcgin
@@ -74,10 +70,10 @@ contains
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     call atcgcomp%init(im_glob,imm_glob)
-    call initparapuresp(gcpara,rang,mpi_comm_space,nprocspace)
+    call initparapuresp(gcpara,rang,comm_space,nprocspace)
     call initcomp(atcgcomp,cellcgcomp,atcgin,celcgin,boxcg,gcpara,lperiod)
  else
-    call initparapuresp(gcpara,rang,mpi_comm_space,nprocspace)
+    call initparapuresp(gcpara,rang,comm_space,nprocspace)
     atcgcomp=atcgin
     cellcgcomp=celcgin
  end if

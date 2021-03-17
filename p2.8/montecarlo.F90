@@ -223,8 +223,8 @@ if (paramcgc%mpi_orig%rank==0) then
           ln_xprob  = - dlog(1 + dexp(ln_Wprec-ln_W))
           xprob     = dexp(ln_xprob)
 
-          write(*,*) 'Wprec', Wprec, 'ln_Wprec', ln_Wprec,Wprec*erg2eV
-          write(*,*) 'W', W, 'ln_W', ln_W,W*erg2eV
+          write(6,*) 'Wprec', Wprec, 'ln_Wprec', ln_Wprec,'Wprec eV',Wprec*erg2eV
+          write(6,*) 'W', W, 'ln_W', ln_W,'W eV', W*erg2eV
 
           if (ln_xprob > ln_xalea) then    
 !!!!!!!!!!!!!!!!!!!!!!!!!! ACCEPTATION   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1016,10 +1016,12 @@ end subroutine langevin
        rgcib=0;rgem=1
        if(paramcgc%image==1) then !on est dans le master de N+1
           call atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master%comm,'f')
-          call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1000,paramcgc%mpi_master%comm,ierr)
+!          call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1000,paramcgc%mpi_master%comm,ierr)
+          call paramcgc%mpi_master%send(potist_nplus1,rgcib,1000)
        else !on est dans le master de N qui est le master général
           call atconf_nplus1%recv(rgem,paramcgc%mpi_master%comm,'f')
-          call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1000,paramcgc%mpi_master%comm,status,ierr)
+          call paramcgc%mpi_master%recv(potist_nplus1,rgem,1000)
+!          call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1000,paramcgc%mpi_master%comm,status,ierr)
        end if
     end if
     !en ce point le master général (rang_orig=0) a les forces de N et N+1    

@@ -18,19 +18,16 @@ module dmloop_mod
        & itetabvois,lperiod,lspaceNDM
   use var_pot, only: cm! iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
 #ifdef PARA
-  use mpi
-  use Tpara,only:COMM_space,ierr
   USE mod_para,only:maj_atomes_frt_ftm
 #else
   
 #endif
-   use Tpara,only:nprocspace,para_space_config
+   use Tpara,only:nprocspace,para_space_config,comm_space
 
   implicit none
 contains
   ! ************************************************
   !           Sous-programme dmloop.f
-  !          Version MPI du 21 fevrier 2001
   ! ************************************************
 
   subroutine dmloop (atdml,celndm,boxndm,psc)
@@ -63,7 +60,6 @@ contains
     logical:: test_sigma=.false.
 
 
-    ! MPI
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VERLET STD ***'
 
     ! Initialization

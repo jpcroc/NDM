@@ -15,7 +15,6 @@ contains
   USE jqmod
   USE force_tersoff_facteurs
 #ifdef PARA
-  use mpi
   USE mod_para,only:maj_fp_frt
   use Tpara,only:COMM_space,nprocspace,para_space_config
 #else

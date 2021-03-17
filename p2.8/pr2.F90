@@ -46,7 +46,6 @@ module Parrinello_Rahman
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
-  use mpi
   USE mod_para,only:maj_atomes_frt_ftm
   use Tpara, only:nprocspace,ierr,comm_space
 #else
@@ -65,9 +64,6 @@ module Parrinello_Rahman
     USE calpo_ew_mod,only: calpo_ew
 
    implicit none
-!#ifdef PARA
-! integer, dimension( MPI_STATUS_SIZE) :: statut2
-!#endif
    ! Vecteurs de la boîte et leurs dérivées
   real(double), dimension(3,3), save , private :: h, hDot
   real(double), dimension(3,3), save , private :: trh, invh, invtrh, Gmat, invGmat, Gdot

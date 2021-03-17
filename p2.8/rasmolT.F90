@@ -28,8 +28,7 @@ contains
 
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
-    USE mpi
-    USE Tpara,only:MPI_COMM_space,status,ierr,nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
+    USE Tpara,only:COMM_space,nprocspace,myidsp
 #else
     USE Tpara,only:myidsp
 #endif
@@ -96,7 +95,7 @@ contains
        call atcomp%init(im_glob)
        div%mpi_image%rank=myidsp
        div%mpi_image%nproc=nprocspace
-       div%mpi_image%comm=MPI_COMM_space
+       div%mpi_image%comm=COMM_space%comm
        call atmol%vers_master(atcomp,div)
        im =atcomp%im
        imm=atcomp%im

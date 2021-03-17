@@ -43,8 +43,7 @@ contains
 
 
 #ifdef PARA
-    use mpi
-    USE Tpara,only:MPI_COMM_space,myidsp,nprocspace,para_space_config
+    USE Tpara,only:nprocspace,para_space_config
     USE mod_para,only:maj_atomes_frt_ftm
     USE neb_module,only:init_mpi_neb
 #else

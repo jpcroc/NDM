@@ -43,7 +43,6 @@ module Parrinello_Rahman_Nose
   use atomconfig,only:atom_config_d
   use cellconfig,only:cell_config
 #ifdef PARA
-  use mpi
   USE Tpara,only:COMM_space,nprocspace
 #else
   use Tpara,only:nprocspace

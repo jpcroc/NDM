@@ -34,7 +34,6 @@ contains
 
 
 #ifdef PARA
-    use mpi
     USE Tpara,only:COMM_space,nprocspace
 #else
   USE Tpara,only:nprocspace
@@ -53,7 +52,6 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    ! MPI
     logical :: test_sigma
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****'
 
