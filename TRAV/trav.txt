@@ -18,6 +18,7 @@ FAIT:
 2.9/ intégrer mpi_communicator a la fabien (voir ci-dessous)
 
 A FAIRE
+2.94/ faire pointer myidsp, nprocsspace et MPI_COMM_SPACE sur les variables de comm_space
 2.95/ modifier atomconfig%send2proc 
 
 1.1/SYSTEME COMPLET Work in Porgress

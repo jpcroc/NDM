@@ -341,9 +341,9 @@ subroutine ajout_retrait(direc)
 #ifdef PARA
      rgcib=1;rgem=0
      if(paramcgc%image==0) then !procs N
-        if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master%comm)    
+        if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master)    
      else !procs N+1
-        if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%mpi_master%comm)
+        if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%mpi_master)
      end if
 #endif
 
@@ -367,9 +367,9 @@ subroutine ajout_retrait(direc)
         
         rgcib=1;rgem=0
         if(paramcgc%image==0) then !procs N
-           if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master%comm)
+           if (lmaster)   call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master)
         else !procs N+1
-           if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%mpi_master%comm)
+           if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%mpi_master)
         end if
 #endif
   
@@ -658,9 +658,9 @@ subroutine langevin( direc)
         if (lmaster) then ! on est dans l'un des 2 masters
            rgcib=1;rgem=0
            if(paramcgc%image==0) then !on est dans le master général
-              call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master%comm,'x')
+              call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
            else !on est dans le master de N+1
-              call atconf_Nplus1%recv(rgem,paramcgc%mpi_master%comm,'x')
+              call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
            end if
         end if
 #endif        
@@ -769,9 +769,9 @@ subroutine langevin( direc)
         if (lmaster) then ! on est dans l'un des 2 masters
            rgcib=1;rgem=0
            if(paramcgc%image==0) then !on est dans le master général
-              call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master%comm,'x')
+              call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
            else !on est dans le master de N+1
-              call atconf_Nplus1%recv(rgem,paramcgc%mpi_master%comm,'x')
+              call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
            end if
         end if
 #endif        
@@ -932,9 +932,9 @@ end subroutine langevin
      rgcib=1;rgem=0
     if (lmaster) then 
        if(paramcgc%image==0) then !procs N
-          call  atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master%comm)
+          call  atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master)
        else !procs N+1
-          call  atconf_nplus1%recv(rgem,paramcgc%mpi_master%comm)
+          call  atconf_nplus1%recv(rgem,paramcgc%mpi_master)
        end if
     end if
     
@@ -1015,11 +1015,11 @@ end subroutine langevin
     if (lmaster) then ! on est dans l'un des 2 masters7
        rgcib=0;rgem=1
        if(paramcgc%image==1) then !on est dans le master de N+1
-          call atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master%comm,'f')
+          call atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master,'f')
 !          call MPI_SEND(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgcib,1000,paramcgc%mpi_master%comm,ierr)
           call paramcgc%mpi_master%send(potist_nplus1,rgcib,1000)
        else !on est dans le master de N qui est le master général
-          call atconf_nplus1%recv(rgem,paramcgc%mpi_master%comm,'f')
+          call atconf_nplus1%recv(rgem,paramcgc%mpi_master,'f')
           call paramcgc%mpi_master%recv(potist_nplus1,rgem,1000)
 !          call MPI_RECV(potist_nplus1, 1,NDM_MPI_REAL_DOUBLE,rgem,1000,paramcgc%mpi_master%comm,status,ierr)
        end if
