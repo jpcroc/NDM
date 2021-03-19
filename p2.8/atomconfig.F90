@@ -81,7 +81,8 @@ module atomconfig
    
      !#endif     
   end type atom_config_e
-  
+
+  private ::buffersizes
 contains
   !initialisations
   
@@ -355,306 +356,146 @@ contains
     else
        carac=caracT
     end if
-    nvi=0; sizeI=0
+   
+    nvi=0
+    sizeI=0
     Iposf(:)=0
     nvR=0; sizeR=0
     Rposf(:)=0
-    nvl=0; sizel=0
+    nvl=0
+    sizel=0
     lposf(:)=0
-    if(scan('n',carac).ne.0)  then
-       nvi=nvi+1
-       Iposf(nvi)=Iposf(nvi-1)+size1
-!       write(6,*)'nvi iposf natg', nvi, iposf(nvi)
-!       call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
-    end if
-    if(scan('i',carac).ne.0) then
-       !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
-       nvi=nvi+1
-       Iposf(nvi)=Iposf(nvi-1)+size1
-!       write(6,*)'nvi iposf ityp', nvi, iposf(nvi)
-    end if
-    if(scan('e',carac).ne.0) then
-       !       call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
-       nvi=nvi+1
-       Iposf(nvi)=Iposf(nvi-1)+size1
-!       write(6,*)'nvi iposf ielat', nvi, iposf(nvi)
-    end if
-    if(scan('p',carac).ne.0) then
-       nvi=nvi+1
-       Iposf(nvi)=Iposf(nvi-1)+size1
-!       write(6,*)'nvi iposf proc_at', nvi, iposf(nvi)
-       !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
-    end if
-    if(scan('l',carac).ne.0)  then
-          !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
-       nvl=nvl+1
-       lposf(nvl)=lposf(nvl-1)+size1
-    end if
-    if(scan('x',carac).ne.0)   then
-       nvR=nvR+1
-       Rposf(nvR)=Rposf(nvR-1)+size3
-!       call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
-    end if
-    if(scan('f',carac).ne.0) then
-       nvR=nvR+1
-       Rposf(nvR)=Rposf(nvR-1)+size3
-       !call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
-    end if
-    
-    if (atcf%ltabvois) then
-       sizeV=size(atcf%indi)
-       if(scan('w',carac).ne.0) then
-          nvi=nvi+1
-        Iposf(nvi)=Iposf(nvi-1)+size1
-!          call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
-       end if
-       if(scan('d',carac).ne.0) then
-          nvi=nvi+1
-          Iposf(nvi)=Iposf(nvi-1)+sizeV
-!          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
-       end if
-    end if
 
-    select type (atcf)
-    class is  (atom_config_d)
-       if(scan('v',carac).ne.0) then
-          nvR=nvR+1
-       Rposf(nvR)=Rposf(nvR-1)+size3
-          !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
-       end if
-       if(scan('r',carac).ne.0) then
-       nvR=nvR+1
-        Rposf(nvR)=Rposf(nvR-1)+size3
-       !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
-       end if
-    end select
-    select type (atcf)
-    class is  (atom_config_e)
-       if (atcf%lprteat)then
-          if(scan('u',carac).ne.0) then
-             nvR=nvR+1
-             Rposf(nvR)=Rposf(nvR-1)+size1
-             !call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)
-          end if
-       end if
-       if (atcf%llangevin)then
-          if(scan('g',carac).ne.0) then
-             nvR=nvR+1
-             Rposf(nvR)=Rposf(nvR-1)+size3
-             !call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)
-          end if
-       end if
-       if (atcf%lax)then
-          if(scan('a',carac).ne.0) then
-             nvR=nvR+1
-             Rposf(nvR)=Rposf(nvR-1)+size3
-             !call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)
-          end if
-       end if
-       if (atcf%lsigat)then
-          if(scan('s',carac).ne.0) then
-             nvR=nvR+1
-             Rposf(nvR)=Rposf(nvR-1)+size9
-             !call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)
-          end if
-       end if
-    end select
-!****************************************************
-    sizeI=Iposf(nvI);    sizeR=Rposf(nvR);    sizel=Lposf(nvl)
+    call buffersizes(atcf,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac)
     allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR)); 
-
-    ibi=0;ibl=0;ibr=0
-    ivi=0;ivl=0;ivR=0
-    csi=0;csl=0;csr=0
-!****************************************************
-    if(scan('n',carac).ne.0)  then
-       ivi=ivi+1
-       do ip=1,size1
-          ib=Iposf(ivi-1)+ip
-          ibuffer(ib)=atcf%num_at_glob(ip)
-          csi=csi+1
-       end do
-!       call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
-    end if
-    if(scan('i',carac).ne.0) then
-       !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
-       ivi=ivi+1
-       do ip=1,size1
-          ib=Iposf(ivi-1)+ip
-          ibuffer(ib)=atcf%ityp(ip)
-          csi=csi+1
-       end do
-    end if
-    if(scan('e',carac).ne.0) then
-       !       call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
-       ivi=ivi+1
-       do ip=1,size1
-          ib=Iposf(ivi-1)+ip
-          ibuffer(ib)=atcf%ielat(ip)
-          csi=csi+1
-       end do
-    end if
-    if(scan('p',carac).ne.0) then
-       ivi=ivi+1
-       do ip=1,size1
-          ib=Iposf(ivi-1)+ip
-          ibuffer(ib)=atcf%proc_at(ip)
-          csi=csi+1
-       end do
-       !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
-    end if
-    if(scan('l',carac).ne.0)  then
-          !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
-       ivl=ivl+1
-       do ip=1,size1
-          ib=Lposf(ivi-1)+ip
-          Lbuffer(ib)=atcf%lgul(ip)
-          csl=csl+1
-       end do
-    end if
-    if(scan('x',carac).ne.0)   then
-       ivR=ivR+1
-       do ip=1,size1
-          do ic=1,3
-             ib=Rposf(ivR-1)+3*(ip-1)+ic
-             rbuffer(ib)=atcf%xp(ic,ip)
-             csR=csR+1
-          end do
-       end do
-!       call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
-    end if
-    if(scan('f',carac).ne.0) then
-       ivR=ivR+1
-       do ip=1,size1
-          do ic=1,3
-             ib=Rposf(ivR-1)+3*(ip-1)+ic
-             rbuffer(ib)=atcf%fp(ic,ip)
-             csR=csR+1
-          end do
-       end do
-       !call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
-    end if
+    call buildbuff(atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf)
     
-    if (atcf%ltabvois) then
-       sizeV=size(atcf%indi)
-       if(scan('w',carac).ne.0) then
-          ivi=ivi+1
-          do ip=1,size1
-             ib=Iposf(ivi-1)+ip
-             ibuffer(ib)=atcf%iwmax(ip)
-             csi=csi+1
-          end do
-       
-!          call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
-       end if
-       if(scan('d',carac).ne.0) then
-          ivi=ivi+1
-          do ip=1,sizeV
-             ib=Iposf(ivi-1)+ip
-             ibuffer(ib)=atcf%indi(ip)
-             csi=csi+1
-          end do
-!          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
-       end if
-    end if
-
-    select type (atcf)
-    class is  (atom_config_d)
-       if(scan('v',carac).ne.0) then
-          ivR=ivR+1
-          do ip=1,size1
-             do ic=1,3
-             ib=Rposf(ivR-1)+3*(ip-1)+ic
-             rbuffer(ib)=atcf%vp(ic,ip)
-             csR=csR+1
-             end do
-          end do
-          !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
-       end if
-
-       if(scan('r',carac).ne.0) then
-          ivR=ivR+1
-          do ip=1,size1
-             do ic=1,3
-                ib=Rposf(ivR-1)+3*(ip-1)+ic
-                rbuffer(ib)=atcf%xpp(ic,ip)
-                csR=csR+1
-             end do
-          end do
-       !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
-       end if
-    end select
-    select type (atcf)
-    class is  (atom_config_e)
-       if (atcf%lprteat)then
-          if(scan('u',carac).ne.0) then
-             ivR=ivR+1
-             do ip=1,size1
-                ib=Lposf(ivR-1)+ip
-                Rbuffer(ib)=atcf%eat(ip)
-                csR=csR+1
-             end do
-             !call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)
-          end if
-       end if
-       if (atcf%llangevin)then
-          if(scan('g',carac).ne.0) then
-             ivR=ivR+1
-             do ip=1,size1
-                do ic=1,3
-                   ib=Rposf(ivR-1)+3*(ip-1)+ic
-                   rbuffer(ib)=atcf%glangv(ic,ip)
-                   csR=csR+1
-                end do
-             end do
-             !call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)
-          end if
-       end if
-       if (atcf%lax)then
-          if(scan('a',carac).ne.0) then
-             ivR=ivR+1
-             do ip=1,size1
-                do ic=1,3
-                   ib=Rposf(ivR-1)+3*(ip-1)+ic
-                   rbuffer(ib)=atcf%ax(ic,ip)
-                   csR=csR+1
-                end do
-             end do
-             !call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)
-          end if
-       end if
-       if (atcf%lsigat)then
-          if(scan('s',carac).ne.0) then
-          ivR=ivR+1
-          do ip=1,size1
-             do ic=1,3
-                do ic2=1,3
-                ib=Rposf(ivR-1)+(ip-1)*9+(ic-1)*3+ic2
-                rbuffer(ib)=atcf%sigat(ic,ic2,ip)
-                csR=csR+1
-             end do
-          end do
-       end do
-             !call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)
-          end if
-       end if
-    end select
     csT(1)=csi
     csT(2)=csl
     csT(3)=csR
-!    write(6,*)'CST',cst
     call mpic%send (cst,rgcib,112)
-!    write(6,*)'p1'
     if (csi.ne.0)call mpic%send(ibuffer,rgcib,114)
-!    write(6,*)'p2'
     if (csl.ne.0)call mpic%send(lbuffer,rgcib,115)
-!    write(6,*)'p3'
     if (csR.ne.0)call mpic%send(Rbuffer,rgcib,116)
-!    write(6,*)'p4'
+
 #endif
   end subroutine s2p_atom
 
 
+
+  subroutine rcv_atom (atcf, rgem,mpic,caracT)
+    class(atom_config):: atcf
+    type(mpi_communicator),intent(in)::mpic
+    integer,intent(in)::rgem
+    integer:: size1,size3,sizeV,size9
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer, dimension (0:26):: Ipos1,Iposf,Rpos1,Rposf,Lpos1,Lposf
+    integer,allocatable:: ibuffer(:)
+    logical,allocatable::lbuffer(:)
+    real(double),allocatable::rbuffer(:)
+    integer:: cst(3)
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat    
+    size1=atcf%imm;size3=3*size1;size9=3*size3
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugas'
+    else
+       carac=caracT
+    end if
+
+    nvi=0; sizeI=0
+    Ipos1(:)=0;Iposf(:)=0
+    nvR=0; sizeR=0
+    Rpos1(:)=0;Rposf(:)=0
+    nvl=0; sizel=0
+    lpos1(:)=0;lposf(:)=0
+    ivi=0;ivl=0;ivr=0
+
+    call buffersizes(atcf,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac)
+    allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR)); 
+    call mpic%recv (cst,rgem,112)
+    if (cst(1).ne.sizeI) then
+       write(6,*)'erreur CST1 ',sizeI,cst(1)
+       stop
+    end if
+    if (cst(2).ne.sizel) then
+       write(6,*)'erreur CST2 ',sizel,cst(2)
+       stop
+    end if
+    if (cst(3).ne.sizeR) then
+       write(6,*)'erreur CST3 ',sizer,cst(3)
+       stop
+   end if
+   
+    if (cst(1).ne.0)call mpic%recv(ibuffer,rgem,114)
+    if (cst(2).ne.0)call mpic%recv(lbuffer,rgem,115)
+    if (cst(3).ne.0)call mpic%recv(Rbuffer,rgem,116)
+
+    call copybuff (atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,atcf%imm)
+
+    return
+
+#endif
+  end subroutine rcv_atom
+
+
+
+  subroutine s2a_atom(atcf,rgemet,mpic,caracT)
+    type(mpi_communicator),intent(in)::mpic
+    class(atom_config)::atcf
+    integer,intent(in)::rgemet
+    integer:: size1,size3,sizeV,size9
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat    
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer, dimension (0:26):: Iposf,Rposf,Lposf
+    integer,allocatable:: ibuffer(:)
+    logical,allocatable::lbuffer(:)
+    real(double),allocatable::rbuffer(:)
+    integer:: cst(3)
+
+
+    size1=atcf%imm;size3=3*size1; size9=3*size3
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugas'
+    else
+       carac=caracT
+    end if
+   
+    nvi=0
+    sizeI=0
+    Iposf(:)=0
+    nvR=0; sizeR=0
+    Rposf(:)=0
+    nvl=0
+    sizel=0
+    lposf(:)=0
+
+    call buffersizes(atcf,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac)
+    allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR)); 
+    call buildbuff(atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf)
+    
+    csT(1)=csi
+    csT(2)=csl
+    csT(3)=csR
+    call mpic%bcast (rgemet,cst)
+    if (csi.ne.0)call mpic%bcast(rgemet,ibuffer)
+    if (csl.ne.0)call mpic%bcast(rgemet,lbuffer)
+    if (csR.ne.0)call mpic%bcast(rgemet,Rbuffer)
+
+    call copybuff (atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,atcf%imm)
+
+#endif
+  end subroutine s2a_atom
+  
 
   subroutine zero_atom (atcf)
     class(atom_config):: atcf
@@ -705,466 +546,6 @@ contains
 
   end subroutine zero_atom_e
   
-
-
-  subroutine rcv_atom (atcf, rgem,mpic,caracT)
-    class(atom_config):: atcf
-    type(mpi_communicator),intent(in)::mpic
-    integer,intent(in)::rgem
-    integer:: size1,size3,sizeV,size9
-    character(len=*),optional,intent(in)::caracT
-    character(len=26)::carac
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
-    integer, dimension (0:26):: Ipos1,Iposf,Rpos1,Rposf,Lpos1,Lposf
-    integer,allocatable:: ibuffer(:)
-    logical,allocatable::lbuffer(:)
-    real(double),allocatable::rbuffer(:)
-    integer:: cst(3)
-    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
-    size1=atcf%imm;size3=3*size1;size9=3*size3
-#ifdef PARA
-    if (.not.present(caracT)) then
-       carac='xfniewdlpvrugas'
-    else
-       carac=caracT
-    end if
-
-    nvi=0; sizeI=0
-    Ipos1(:)=0;Iposf(:)=0
-    nvR=0; sizeR=0
-    Rpos1(:)=0;Rposf(:)=0
-    nvl=0; sizel=0
-    lpos1(:)=0;lposf(:)=0
-    ivi=0;ivl=0;ivr=0
-    if(scan('n',carac).ne.0)  then
-       nvi=nvi+1
-       Iposf(nvi)=Iposf(nvi-1)+size1
-!       call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
-    end if
-    if(scan('i',carac).ne.0) then
-       !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
-       nvi=nvi+1
-       Iposf(nvi)=Iposf(nvi-1)+size1
-    end if
-    if(scan('e',carac).ne.0) then
-       !       call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
-       nvi=nvi+1
-       Iposf(nvi)=Iposf(nvi-1)+size1
-    end if
-    if(scan('p',carac).ne.0) then
-       nvi=nvi+1
-       Iposf(nvi)=Iposf(nvi-1)+size1
-       !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
-    end if
-    if(scan('l',carac).ne.0)  then
-          !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
-       nvl=nvl+1
-       lposf(nvl)=lposf(nvl-1)+size1
-    end if
-    if(scan('x',carac).ne.0)   then
-       nvR=nvR+1
-       Rposf(nvR)=Rposf(nvR-1)+size3
-!       call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
-    end if
-    if(scan('f',carac).ne.0) then
-       nvR=nvR+1
-       Rposf(nvR)=Rposf(nvR-1)+size3
-       !call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
-    end if
-    
-    if (atcf%ltabvois) then
-       sizeV=size(atcf%indi)
-       if(scan('w',carac).ne.0) then
-          nvi=nvi+1
-        Iposf(nvi)=Iposf(nvi-1)+size1
-!          call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
-       end if
-       if(scan('d',carac).ne.0) then
-          nvi=nvi+1
-          Iposf(nvi)=Iposf(nvi-1)+sizeV
-!          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
-       end if
-    end if
-
-    select type (atcf)
-    class is  (atom_config_d)
-       if(scan('v',carac).ne.0) then
-          nvR=nvR+1
-       Rposf(nvR)=Rposf(nvR-1)+size3
-          !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
-       end if
-       if(scan('r',carac).ne.0) then
-       nvR=nvR+1
-        Rposf(nvR)=Rposf(nvR-1)+size3
-       !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
-       end if
-    end select
-    select type (atcf)
-    class is  (atom_config_e)
-       if (atcf%lprteat)then
-          if(scan('u',carac).ne.0) then
-             nvR=nvR+1
-             Rposf(nvR)=Rposf(nvR-1)+size1
-             !call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)
-          end if
-       end if
-       if (atcf%llangevin)then
-          if(scan('g',carac).ne.0) then
-             nvR=nvR+1
-             Rposf(nvR)=Rposf(nvR-1)+size3
-             !call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)
-          end if
-       end if
-       if (atcf%lax)then
-          if(scan('a',carac).ne.0) then
-             nvR=nvR+1
-             Rposf(nvR)=Rposf(nvR-1)+size3
-             !call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)
-          end if
-       end if
-       if (atcf%lsigat)then
-          if(scan('s',carac).ne.0) then
-             nvR=nvR+1
-             Rposf(nvR)=Rposf(nvR-1)+size9
-             !call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)
-          end if
-       end if
-    end select
-!****************************************************
-    sizeI=Iposf(nvI);    sizeR=Rposf(nvR);    sizel=Lposf(nvl)
-    allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR)); 
-!    write(6,*)'sizes',sizeI,sizeL,sizeR
-    call mpic%recv (cst,rgem,112)
-!    write(6,*)'R1',cst
-    if (cst(1).ne.sizeI) then
-       write(6,*)'erreur CST1 ',sizeI,cst(1)
-!       call endmpi
-       stop
-    end if
-    if (cst(2).ne.sizel) then
-       write(6,*)'erreur CST2 ',sizel,cst(2)
-!       call endmpi
-       stop
-    end if
-    if (cst(3).ne.sizeR) then
-       write(6,*)'erreur CST3 ',sizer,cst(3)
-!       call endmpi
-       stop
-    end if
-
-    if (nvi.ne.0)call mpic%recv(ibuffer,rgem,114)
-!    write(6,*)'R2'
-    if (nvl.ne.0)call mpic%recv(lbuffer,rgem,115)
-!    write(6,*)'R3'
-    if (nvR.ne.0)call mpic%recv(Rbuffer,rgem,116)
-!    write(6,*)'R4'
-    csi=0;csl=0;csr=0
-    if(scan('n',carac).ne.0)  then
-       ivi=ivi+1
-       do ip=1,size1
-          ib=Iposf(ivi-1)+ip
-          atcf%num_at_glob(ip)=ibuffer(ib)
-          csi=csi+1
-       end do
-       !       call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
-    end if
-    if(scan('i',carac).ne.0) then
-       !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
-       ivi=ivi+1
-       do ip=1,size1
-          ib=Iposf(ivi-1)+ip
-          atcf%ityp(ip)=ibuffer(ib)
-          csi=csi+1
-       end do
-    end if
-    if(scan('e',carac).ne.0) then
-       !       call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
-       ivi=ivi+1
-       do ip=1,size1
-          ib=Iposf(ivi-1)+ip
-          atcf%ielat(ip)=ibuffer(ib)
-          csi=csi+1
-       end do
-    end if
-    if(scan('p',carac).ne.0) then
-       ivi=ivi+1
-       do ip=1,size1
-          ib=Iposf(ivi-1)+ip
-          atcf%proc_at(ip)=ibuffer(ib)
-          csi=csi+1
-       end do
-       !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
-    end if
-    if(scan('l',carac).ne.0)  then
-       !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
-       ivl=ivl+1
-       do ip=1,size1
-          ib=Lposf(ivi-1)+ip
-          atcf%lgul(ip)=Lbuffer(ib)
-          csl=csl+1
-       end do
-    end if
-    if(scan('x',carac).ne.0)   then
-       ivR=ivR+1
-       do ip=1,size1
-          do ic=1,3
-             ib=Rposf(ivR-1)+3*(ip-1)+ic
-             atcf%xp(ic,ip)=rbuffer(ib)
-             csR=csR+1
-          end do
-       end do
-       !       call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
-    end if
-    if(scan('f',carac).ne.0) then
-       ivR=ivR+1
-       do ip=1,size1
-          do ic=1,3
-             ib=Rposf(ivR-1)+3*(ip-1)+ic
-             atcf%fp(ic,ip)=rbuffer(ib)
-             csR=csR+1
-          end do
-       end do
-       !call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
-    end if
-
-    if (atcf%ltabvois) then
-       sizeV=size(atcf%indi)
-       if(scan('w',carac).ne.0) then
-          ivi=ivi+1
-          do ip=1,size1
-             ib=Iposf(ivi-1)+ip
-             atcf%iwmax(ip)=ibuffer(ib)
-             csi=csi+1
-          end do
-
-          !          call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
-       end if
-       if(scan('d',carac).ne.0) then
-          ivi=ivi+1
-          do ip=1,sizeV
-             ib=Iposf(ivi-1)+ip
-             atcf%indi(ip)=ibuffer(ib)
-             csi=csi+1
-          end do
-          !          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
-       end if
-    end if
-
-    select type (atcf)
-       class is  (atom_config_d)
-       if(scan('v',carac).ne.0) then
-          ivR=ivR+1
-          do ip=1,size1
-             do ic=1,3
-                ib=Rposf(ivR-1)+3*(ip-1)+ic
-                atcf%vp(ic,ip)=rbuffer(ib)
-                csR=csR+1
-             end do
-          end do
-          !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
-       end if
-
-       if(scan('r',carac).ne.0) then
-          ivR=ivR+1
-          do ip=1,size1
-             do ic=1,3
-                ib=Rposf(ivR-1)+3*(ip-1)+ic
-                atcf%xpp(ic,ip)= rbuffer(ib)
-                csR=csR+1
-             end do
-          end do
-          !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
-       end if
-    end select
-    select type (atcf)
-       class is  (atom_config_e)
-       if (atcf%lprteat)then
-          if(scan('u',carac).ne.0) then
-             ivR=ivR+1
-             do ip=1,size1
-                ib=Lposf(ivR-1)+ip
-                atcf%eat(ip)=Rbuffer(ib)
-                csR=csR+1
-             end do
-             !call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)
-          end if
-       end if
-       if (atcf%llangevin)then
-          if(scan('g',carac).ne.0) then
-             ivR=ivR+1
-             do ip=1,size1
-                do ic=1,3
-                   ib=Rposf(ivR-1)+3*(ip-1)+ic
-                   atcf%glangv(ic,ip)=rbuffer(ib)
-                   csR=csR+1
-                end do
-             end do
-             !call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)
-          end if
-       end if
-       if (atcf%lax)then
-          if(scan('a',carac).ne.0) then
-             ivR=ivR+1
-             do ip=1,size1
-                do ic=1,3
-                   ib=Rposf(ivR-1)+3*(ip-1)+ic
-                   atcf%ax(ic,ip)= rbuffer(ib)
-                   csR=csR+1
-                end do
-             end do
-             !call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)
-          end if
-       end if
-       if (atcf%lsigat)then
-          if(scan('s',carac).ne.0) then
-             ivR=ivR+1
-             do ip=1,size1
-                do ic=1,3
-                   do ic2=1,3
-                      ib=Rposf(ivR-1)+(ip-1)*9+(ic-1)*3+ic2
-                      atcf%sigat(ic,ic2,ip)=rbuffer(ib)
-                      csR=csR+1
-                   end do
-                end do
-             end do
-             !call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)
-          end if
-       end if
-    end select
-
-    if (csi.ne.sizeI) then
-       write(6,*)'erreur CSI ',sizeI,csi
-!       call endmpi
-       stop
-    end if
-    if (csr.ne.sizer) then
-       write(6,*)'erreur CSR ',sizeR,csr
-!       call endmpi
-       stop
-    end if
-    if (csl.ne.sizel) then
-       write(6,*)'erreur CSL ',sizel,csl
-!       call endmpi
-       stop
-    end if
-
-
-
-
-
-#endif
-  end subroutine rcv_atom
-!!$
-!!$  subroutine rcv_atom_d (atcf, rgem,comm,caracT)
-!!$    class(atom_config_d):: atcf
-!!$    integer,intent(in)::rgem,comm
-!!$    integer:: size1,size3,sizeV,ierr
-!!$    character(len=*),optional,intent(in)::caracT
-!!$    character(len=26)::carac
-!!$    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
-!!$!voir au dessus + v=vp,r=xpp
-!!$    size1=atcf%imm;size3=3*size1
-!!$#ifdef PARA
-!!$    if (.not.present(caracT)) then
-!!$       carac='xfniewdlpvr'
-!!$    else
-!!$       carac=caracT
-!!$    end if
-!!$    call rcv_atom(atcf,rgem,comm,carac)
-!!$    if(scan('v',carac).ne.0)    call MPI_RECV(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgem,109,comm,status,ierr)
-!!$    if(scan('r',carac).ne.0)    call MPI_RECV(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgem,110,comm,status,ierr)
-!!$#endif
-!!$  end subroutine rcv_atom_d
-!!$
-!!$    subroutine rcv_atom_e (atcf, rgem,comm,caracT)
-!!$    class(atom_config_e):: atcf
-!!$    integer,intent(in)::rgem,comm
-!!$    integer:: size1,size3,sizeV,ierr
-!!$    character(len=*),optional,intent(in)::caracT
-!!$    character(len=26)::carac
-!!$    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
-!!$!voir au dessus + v=vp,r=xpp
-!!$!voir au dessus + u=eat,g=glangv;a=ax;s=sigat
-!!$    
-!!$
-!!$    size1=atcf%imm;size3=3*size1
-!!$#ifdef PARA
-!!$    if (.not.present(caracT)) then
-!!$       carac='xfniewdlpvrugas'
-!!$    else
-!!$       carac=caracT
-!!$    end if
-!!$    call rcv_atom_d(atcf,rgem,comm,carac)
-!!$    if (atcf%lprteat)then
-!!$    if(scan('u',carac).ne.0) call MPI_RECV(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgem,111,comm,status,ierr)       
-!!$    end if
-!!$    if (atcf%llangevin)then
-!!$    if(scan('g',carac).ne.0)  call MPI_RECV(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgem,112,comm,status,ierr)     
-!!$    end if
-!!$    if (atcf%lax)then
-!!$     if(scan('a',carac).ne.0)call MPI_RECV(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgem,113,comm,status,ierr)           
-!!$    end if
-!!$    if (atcf%lsigat)then
-!!$     if(scan('s',carac).ne.0) call MPI_RECV(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgem,114,comm,status,ierr)          
-!!$    end if
-!!$#endif
-!!$  end subroutine rcv_atom_e
-!!$
-  
-  subroutine s2a_atom(atcf,rgemet,comm,caracT)
-    class(atom_config)::atcf
-    integer,intent(in)::rgemet,comm
-    integer:: size1,size3,sizeV
-    character(len=*),optional,intent(in)::caracT
-    character(len=26)::carac
-    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
-    
-    size1=atcf%imm;size3=3*size1
-#ifdef PARA
-    if (.not.present(caracT)) then
-       carac='xfniewdlp'
-    else
-       carac=caracT
-    end if
-    if(scan('n',carac).ne.0) call MPI_BCAST(atcf%num_at_glob, size1,MPI_INTEGER, rgemet,comm,ierr)
-    if(scan('i',carac).ne.0) call MPI_BCAST(atcf%ityp, size1,MPI_INTEGER, rgemet,comm,ierr)
-    if(scan('e',carac).ne.0)call MPI_BCAST(atcf%ielat, size1,MPI_INTEGER, rgemet,comm,ierr)
-    if(scan('p',carac).ne.0)call MPI_BCAST(atcf%proc_at, size1,MPI_INTEGER, rgemet,comm,ierr)
-    if(scan('l',carac).ne.0)call MPI_BCAST(atcf%lgul, size1,MPI_LOGICAl, rgemet,comm,ierr)
-    if(scan('x',carac).ne.0)then
-       call MPI_BCAST(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
-    end if
-    if(scan('f',carac).ne.0)call MPI_BCAST(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
-    if (atcf%ltabvois) then
-       sizeV=size(atcf%indi)
-       if(scan('w',carac).ne.0)call MPI_BCAST(atcf%iwmax, size1,MPI_INTEGER, rgemet,comm,ierr)
-       if(scan('d',carac).ne.0)call MPI_BCAST(atcf%indi, sizeV,MPI_INTEGER, rgemet,comm,ierr)
-    end if
-
-    select type (atcf)
-    class is  (atom_config_d)
-    if(scan('r',carac).ne.0)    call MPI_BCAST(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
-    if(scan('v',carac).ne.0)    call MPI_BCAST(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)       
-    end select
-
-    select type (atcf)
-    class is  (atom_config_e)
-    if (atcf%lprteat)then
-    if(scan('u',carac).ne.0)       call MPI_BCAST(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
-    end if
-    if (atcf%llangevin)then
-    if(scan('g',carac).ne.0)       call MPI_BCAST(atcf%Glangv, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
-    end if
-    if (atcf%lax)then
-     if(scan('a',carac).ne.0)      call MPI_BCAST(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
-    end if
-    if (atcf%lsigat)then
-     if(scan('s',carac).ne.0)      call MPI_BCAST(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgemet,comm,ierr)
-    end if
-
-    end select
-#endif
-  end subroutine s2a_atom
     
   ! copie d'une config entière vers config de base
   subroutine copy_config (atsource,atcible,lrescl)
@@ -1285,7 +666,6 @@ contains
     call intermediaire%copy_atom(1,atsource,ind_switch_2)
     atsource%num_at_glob(ind_switch_1)=nag1
     atsource%num_at_glob(ind_switch_2)=nag2
-    
   end subroutine
 
 
@@ -1475,7 +855,7 @@ contains
 
     do i=1,atsource%im
        i2=imcib+i
-       call atsource%copy_atom(i,atcible,i2,lextend=.false.)
+       call atsource%copy_atom(i,atcible,i,lextend=.false.)
      end do
 
     select type(atcible)
@@ -1885,24 +1265,41 @@ contains
 
 
   
-  subroutine vers_master_atom(atcfloc,atcfcomp,div)
+  subroutine vers_master_atom(atcfloc,atcfcomp,div,caracT)
     class(atom_config),intent(in)::atcfloc
     class(atom_config)::atcfcomp
     type(para_config)::div
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+
 #ifdef PARA
     integer::idmaster,idloc,icomm ! proc master,proclocal ,communicateur
 
-
-    real(double),allocatable::buffer(:,:),buffer9(:,:,:),buffer1(:)
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
-    integer,allocatable::nag(:)
     logical,allocatable::lbuffer(:)
+    real(double),allocatable::rbuffer(:)
+    integer:: cst(3)
+    type(mpi_communicator)::mpic
+
+
+    integer,allocatable::nag(:)
     integer::imloc,imloc3,iproc,imrecv,icomp,imrecv3,imrecv9,imloc9
     integer::imcomp,imtot,proc_source,npim,iloc
+    logical,allocatable::mask(:)
+
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugas'
+    else
+       carac=caracT//'np'
+    end if
+
+    
     idmaster=0
     idloc=div%mpi_image%rank
     npim=div%mpi_image%nproc
-    icomm=div%mpi_image%comm
+    mpic=div%mpi_image
     if (idloc==idmaster) then
        !       allocate(buffer(3,atloc%im));allocate(ibuffer(atloc%im));allocate(lbuffer(atloc%im))
        imtot=0
@@ -1949,85 +1346,44 @@ contains
              deallocate(nag)
 
           else
-             if (allocated(buffer)) then
-                deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer);deallocate(buffer1);deallocate(buffer9)
+             if (allocated(ibuffer)) then
+                deallocate(rbuffer);deallocate(ibuffer);deallocate(lbuffer)
              end if
-             call MPI_RECV(imrecv,1, MPI_INTEGER,  MPI_ANY_SOURCE, 10001, icomm, status, ierr)
+             call  mpic%probe(11001,sourceout=proc_source)
+             call mpic%RECV(imrecv,proc_source, 11001)
+             call mpic%recv (cst,proc_source,312)
              imtot=imtot+imrecv
-             proc_source = status(MPI_SOURCE)
-             imrecv3=3*imrecv; imrecv9=3*imrecv3
              allocate(nag(imrecv))
-             allocate(buffer(3,imrecv))
-             allocate(buffer9(3,3,imrecv))
-             allocate(buffer1(imrecv))
-             allocate(ibuffer(imrecv))
-             allocate(lbuffer(imrecv))
-
-             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10004, icomm, status, ierr)
-             nag(1:imrecv)=ibuffer(1:imrecv)
+             call mpic%RECV(nag(1:imrecv), proc_source,10004)
              do iloc=1,imrecv
                 atcfcomp%num_at_glob(nag(iloc))=nag(iloc)
              end do
 
-             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10002, icomm, status, ierr)
-             do iloc=1,imrecv
-                atcfcomp%xp(1:3,nag(iloc))=buffer(1:3,iloc)
-             end do
-                
-             call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10003, icomm, status, ierr)
-             do iloc=1,imrecv
-                atcfcomp%fp(1:3,nag(iloc))=buffer(1:3,iloc)
-             end do
-             call MPI_RECV(ibuffer(1:imrecv),imrecv, MPI_INTEGER, proc_source, 10005, icomm, status, ierr)
-             do iloc=1,imrecv
-                atcfcomp%ityp(nag(iloc))=ibuffer(iloc)
-             end do
-             if (allocated(atcfloc%lgul))then
-                call MPI_RECV(lbuffer(1:imrecv),imrecv, MPI_LOGICAL, proc_source, 10006, icomm, status, ierr)
-                do iloc=1,imrecv
-                   atcfcomp%lgul(nag(iloc))=lbuffer(iloc)
-                end do
+             call buffersizes (atcfloc,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,imrecv)
+             if (cst(1).ne.sizeI) then
+                write(6,*)'erreur CST1B ',sizeI,cst(1)
+                stop
              end if
+             if (cst(2).ne.sizel) then
+                write(6,*)'erreur CST2B ',sizel,cst(2)
+                stop
+             end if
+             if (cst(3).ne.sizeR) then
+                write(6,*)'erreur CST3B ',sizer,cst(3)
+                stop
+             end if
+             allocate(Rbuffer(sizeR));allocate(ibuffer(sizeI));allocate(lbuffer(sizeL))
+             if (cst(1).ne.0)call mpic%recv(ibuffer,proc_source,314)
+             if (cst(2).ne.0)call mpic%recv(lbuffer,proc_source,315)
+             if (cst(3).ne.0)call mpic%recv(Rbuffer,proc_source,316)
+             call distribnag(nag,imrecv,atcfcomp,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf)
              do iloc=1,imrecv
                 atcfcomp%proc_at(nag(iloc))=proc_source !  ibuffer(1:imrecv)
              end do
-             select type(atcfloc)
-             class is (atom_config_d)
-                select type(atcfcomp)
-                class is (atom_config_d)
-                   call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10007, icomm, status, ierr)
-                   do iloc=1,imrecv
-                      atcfcomp%vp(1:3,nag(iloc))=buffer(1:3,iloc)
-                   end do
-                   call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10008, icomm, status, ierr)
-                   do iloc=1,imrecv
-                      atcfcomp%xpp(1:3,nag(iloc))=buffer(1:3,iloc)
-                   end do
-                end select
-             type is (atom_config_e)
-                select type(atcfcomp)
-                class is (atom_config_e)
-                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
-                      call MPI_RECV(buffer9(1:3,1:3,1:imrecv),imrecv9, NDM_MPI_REAL_DOUBLE, proc_source, 10009, icomm, status, ierr)
-                      do iloc=1,imrecv
-                         atcfcomp%sigat(1:3,1:3,nag(iloc))=buffer9(1:3,1:3,iloc)
-                      end do
-                   endif
-                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
-                      call MPI_RECV(buffer1(1:imrecv),imrecv, NDM_MPI_REAL_DOUBLE, proc_source, 10010, icomm, status, ierr)
-                      do iloc=1,imrecv
-                         atcfcomp%eat(nag(iloc))=buffer1(iloc)
-                      end do
-                   endif
-                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
-                      call MPI_RECV(buffer(1:3,1:imrecv),imrecv3, NDM_MPI_REAL_DOUBLE, proc_source, 10011, icomm, status, ierr)
-                      do iloc=1,imrecv
-                         atcfcomp%glangv(1:3,nag(iloc))=buffer(1:3,iloc)
-                      end do
-                   endif
-                end select
-             end select
+
              deallocate(nag)
+             
+
           end if
        end do
 
@@ -2044,37 +1400,26 @@ contains
        end do
     else
        imloc=atcfloc%im;imloc3=3*imloc; imloc9=3*imloc3
-       call MPI_SEND(imloc, 1,   MPI_INTEGER,idmaster ,10001,icomm,ierr)
-       call MPI_SEND(atcfloc%num_at_glob(1:imloc), imloc, MPI_INTEGER, idmaster, 10004, icomm, ierr)
-       call MPI_SEND(atcfloc%xp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10002,icomm,ierr)
-       call MPI_SEND(atcfloc%fp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10003,icomm,ierr)
-       call MPI_SEND(atcfloc%ityp(1:imloc), imloc, MPI_INTEGER, idmaster, 10005, icomm, ierr)
-       if (allocated(atcfloc%lgul))     &
-            &call MPI_SEND(atcfloc%lgul(1:imloc), imloc, MPI_LOGICAL, idmaster, 10006, icomm, ierr)
-       select type(atcfloc)
-       class is (atom_config_d)
-          select type(atcfcomp)
-          class is (atom_config_d)
-             call MPI_SEND(atcfloc%vp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10007,icomm,ierr)
-             call MPI_SEND(atcfloc%xpp(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10008,icomm,ierr)
-          end select
-       type is (atom_config_e)
-          select type(atcfcomp)
-          class is (atom_config_e)
-             if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
-                call MPI_SEND(atcfloc%sigat(1:3,1:3,1:imloc), imloc9, NDM_MPI_REAL_DOUBLE,idmaster ,10009,icomm,ierr)
-             endif
-             if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
-                call MPI_SEND(atcfloc%eat(1:imloc), imloc, NDM_MPI_REAL_DOUBLE,idmaster ,10010,icomm,ierr)
-             endif
-             if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
-                call MPI_SEND(atcfloc%glangv(1:3,1:imloc), imloc3, NDM_MPI_REAL_DOUBLE,idmaster ,10011,icomm,ierr)
-             endif
-          end select
-       end select
-       
+       allocate(mask(atcfloc%imm))
+       mask=.false.
+       mask(1:atcfloc%im)=.true.
+       call buffersizes (atcfloc,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,imloc) ! ns car on transfère seulement ns atomes vers atcfloc
+       allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR));
+       call buildbuff(atcfloc,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,mask,imloc)
+       csT(1)=csi
+       csT(2)=csl
+       csT(3)=csR
+       call mpic%SEND(imloc,idmaster,11001)
+       call mpic%send (cst,idmaster,312)
+       allocate(nag(imloc))
+       nag(1:imloc)=atcfloc%num_at_glob(1:imloc)
+       call mpic%SEND(nag, idmaster, 10004)
+       deallocate(nag)
+       if (csi.ne.0)call mpic%send(ibuffer,idmaster,314)
+       if (csl.ne.0)call mpic%send(lbuffer,idmaster,315)
+       if (csR.ne.0)call mpic%send(Rbuffer,idmaster,316)
     end if
-    call MPI_barrier(icomm,ierr)
+    call mpic%barrier
 #endif       
 
     return
@@ -2083,44 +1428,63 @@ contains
 
 
   
-  subroutine master2loc_atom(atcfcomp,atcfloc,div)
+  subroutine master2loc_atom(atcfcomp,atcfloc,div,caracT)
 
     class(atom_config)::atcfloc
     class(atom_config)::atcfcomp
     type(para_config)::div
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat
 #ifdef PARA
     integer::idmaster,idloc,icomm,npim ! proc master,proclocal ,communicateur
-    real(double),allocatable::buffer(:,:),buffer9(:,:,:),buffer1(:)
+    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3,imrecv9,icomp
+    integer::imcomp,imtot,proc_source,ns,iloc,i,iu
+    logical,allocatable::mask(:)
+
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
-    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3,imrecv9,icomp
-    integer::imcomp,imtot,proc_source,ic,ns,iloc,i,iu
-    logical,allocatable::mask(:)
+    real(double),allocatable::rbuffer(:)
+    integer:: cst(3)
+    type(mpi_communicator)::mpic
+
+
+
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugas'
+    else
+       carac=caracT//'np'
+       
+    end if
+
     idmaster=0
     idloc=div%mpi_image%rank
     npim=div%mpi_image%nproc
-    icomm=div%mpi_image%comm
+    mpic=div%mpi_image
     imcomp=atcfcomp%im
 
-    
+
     if (idloc==idmaster) then
-    allocate(mask(atcfcomp%im))
-    do icomp=1,atcfcomp%im
+       allocate(mask(atcfcomp%imm))
+       do icomp=1,atcfcomp%im
           if (atcfcomp%num_at_glob(icomp).ne.icomp) then
              write(6,*)'atomes mal rangés M2L?',icomp,atcfcomp%num_at_glob(icomp)
           end if
        end do
-       
+
        imtot=0
        do iproc=0,npim-1
-          mask(:)=(atcfcomp%proc_at(1:imcomp)==iproc)
+          mask(:)=.false.
+          mask(1:imcomp)=(atcfcomp%proc_at(1:imcomp)==iproc)
           ns=count(atcfcomp%proc_at(1:imcomp)==iproc)
           if (iproc==idmaster) then
-
              iloc=0
              do i=1,imcomp
                 if (mask(i))then
-
                    iloc=iloc+1
                    atcfloc%xp(:,iloc)=atcfcomp%xp(:,i)
                    atcfloc%fp(:,iloc)=atcfcomp%fp(:,i)
@@ -2129,15 +1493,15 @@ contains
                    atcfloc%lgul(iloc)=atcfcomp%lgul(i)
                    atcfloc%proc_at(iloc)=idmaster
                    select type(atcfloc)
-                   class is (atom_config_d)
-                      select type (atcfcomp)
                       class is (atom_config_d)
+                      select type (atcfcomp)
+                         class is (atom_config_d)
                          atcfloc%vp(:,iloc)=atcfcomp%vp(:,i)
                          atcfloc%xpp(:,iloc)=atcfcomp%xpp(:,i)
                       end select
                    type is (atom_config_e)
                       select type (atcfcomp)
-                      class is (atom_config_e)
+                         class is (atom_config_e)
                          if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
                             atcfloc%sigat(:,:,iloc)=atcfcomp%sigat(:,:,i)
                          endif
@@ -2153,110 +1517,907 @@ contains
              end do
              atcfloc%im=ns
           else
-             if (allocated(buffer)) then
-                deallocate(buffer);deallocate(ibuffer);deallocate(lbuffer)
+             if (allocated(ibuffer)) then
+                deallocate(ibuffer);deallocate(rbuffer);deallocate(lbuffer)
              end if
-             allocate(buffer(3,ns));allocate(ibuffer(ns));allocate(lbuffer(ns))
+             call buffersizes (atcfcomp,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,ns) ! ns car on transfère seulement ns atomes vers atcfloc
+             allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR));
+             call buildbuff(atcfcomp,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,mask,ns)
+             csT(1)=csi
+             csT(2)=csl
+             csT(3)=csR
+!             write(6,*)'SEND',div%image,iproc,ns,cst
+             call mpic%SEND(ns,iproc,20001)
+             call mpic%send (cst,iproc,212)
+             if (csi.ne.0)call mpic%send(ibuffer,iproc,214)
+             if (csl.ne.0)call mpic%send(lbuffer,iproc,215)
+             if (csR.ne.0)call mpic%send(Rbuffer,iproc,216)
 
-             call MPI_SEND(ns, 1,   MPI_INTEGER,iproc,20001,icomm,ierr)
-             call fillbuffer3D(buffer,atcfcomp%xp,mask)
-             call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20002,icomm,ierr)
-             call fillbuffer3D(buffer,atcfcomp%fp,mask)
-             call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20003,icomm,ierr)
-             call fillbuffer1D(ibuffer,atcfcomp%num_at_glob,mask)
-             call MPI_SEND(ibuffer, ns, MPI_INTEGER,iproc ,20004,icomm,ierr)
-             call fillbuffer1D(ibuffer,atcfcomp%ityp,mask)
-             call MPI_SEND(ibuffer, ns, MPI_INTEGER,iproc ,20005,icomm,ierr)                          
-             if (allocated(atcfloc%lgul)) then
-                call fillbuffer1D(lbuffer,atcfcomp%lgul,mask)
-                call MPI_SEND(lbuffer, ns, MPI_LOGICAL,iproc ,20006,icomm,ierr)                          
-             end if
-             select type(atcfloc)
-             class is (atom_config_d)
-                select type (atcfcomp)
-                class is (atom_config_d)
-                   call fillbuffer3D(buffer,atcfcomp%vp,mask)
-                   call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20007,icomm,ierr)
-                   call fillbuffer3D(buffer,atcfcomp%xpp,mask)
-                   call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20008,icomm,ierr)
-                end select
-             type is (atom_config_e)
-                select type (atcfcomp)
-                class is (atom_config_e)
-                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
-                      allocate(buffer9(3,3,ns))
-                      call fillbuffer9D(buffer9,atcfcomp%sigat,mask)
-                      call MPI_SEND(buffer9, 9*ns, NDM_MPI_REAL_DOUBLE,iproc ,20009,icomm,ierr)
-                   endif
-                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
-                      allocate(buffer1(ns))
-                      call fillbuffer1D(buffer1,atcfcomp%eat,mask)
-                      call MPI_SEND(buffer1, ns, NDM_MPI_REAL_DOUBLE,iproc ,20010,icomm,ierr)
-                   endif
-                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
-                      call fillbuffer3D(buffer,atcfcomp%glangv,mask)
-                      call MPI_SEND(buffer, 3*ns, NDM_MPI_REAL_DOUBLE,iproc ,20011,icomm,ierr)
-                   endif
-                end select
-             end select
           end if
        end do
-       
-    else
-       call MPI_RECV(imrecv,1, MPI_INTEGER, idmaster, 20001, icomm, status, ierr)
-       atcfloc%im=imrecv;imrecv3=3*imrecv;imrecv9=9*imrecv
-       allocate(buffer(3,imrecv));allocate(ibuffer(imrecv));allocate(lbuffer(imrecv))
-       
-       call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20002, icomm, status, ierr)
-       atcfloc%xp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
-       call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20003, icomm, status, ierr)
-       atcfloc%fp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
-       
-       call MPI_RECV(ibuffer,imrecv, MPI_INTEGER, idmaster, 20004, icomm, status, ierr)
-       atcfloc%num_at_glob(1:imrecv)=ibuffer(1:imrecv)
-       call MPI_RECV(ibuffer,imrecv, MPI_INTEGER, idmaster, 20005, icomm, status, ierr)
-       atcfloc%ityp(1:imrecv)=ibuffer(1:imrecv)
-       if (allocated(atcfloc%lgul) )then
-          call MPI_RECV(lbuffer,imrecv, MPI_LOGICAL, idmaster, 20006, icomm, status, ierr)
-          atcfloc%lgul(1:imrecv)=lbuffer(1:imrecv)
-       end if
-       atcfloc%proc_at(1:imrecv)=idloc
-             select type(atcfloc)
-             class is (atom_config_d)
-                select type (atcfcomp)
-                class is (atom_config_d)
-                   call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20007, icomm, status, ierr)
-                   atcfloc%vp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
-                   call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20008, icomm, status, ierr)
-                   atcfloc%xpp(1:3,1:imrecv)=buffer(1:3,1:imrecv)
-                end select
-             type is (atom_config_e)
-                select type (atcfcomp)
-                class is (atom_config_e)
-                   if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
-                   call MPI_RECV(buffer9,imrecv9, NDM_MPI_REAL_DOUBLE, idmaster, 20009, icomm, status, ierr)
-                   atcfloc%sigat(1:3,1:3,1:imrecv)=buffer9(1:3,1:3,1:imrecv)
-                   endif
-                   if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
-                   call MPI_RECV(buffer1,imrecv, NDM_MPI_REAL_DOUBLE, idmaster, 20010, icomm, status, ierr)
-                   atcfloc%eat(1:imrecv)=buffer1(1:imrecv)
-                   endif
-                   if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
-                      call MPI_RECV(buffer,imrecv3, NDM_MPI_REAL_DOUBLE, idmaster, 20011, icomm, status, ierr)
-                      atcfloc%glangv(1:3,1:imrecv)=buffer(1:3,1:imrecv)
 
-                   endif
-                end select
-             end select
+    else
+     
+       call mpic%recv(imrecv, idmaster, 20001)
+       call mpic%recv (cst,idmaster,212)
+       call buffersizes (atcfloc,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,atcfloc%im) ! pas de ns car on reçoit tous les atomes de atloc
+!       write(6,*)'RECV',div%image,idloc,imrecv,cst
+!       write(6,*)'atcfloc',atcfloc%im,atcfloc%imm,sizeI,sizel,sizer
+       if (atcfloc%im.ne.imrecv) then
+          write(6,*)'ERREUR M2L', atcfloc%im,imrecv
+          stop
+       end if
+       if (cst(1).ne.sizeI) then
+          write(6,*)'erreur CST1B ',sizeI,cst(1)
+          stop
+       end if
+       if (cst(2).ne.sizel) then
+          write(6,*)'erreur CST2B ',sizel,cst(2)
+          stop
+       end if
+       if (cst(3).ne.sizeR) then
+          write(6,*)'erreur CST3B ',sizer,cst(3)
+          stop
+       end if
+       
+       allocate(Rbuffer(sizeR));allocate(ibuffer(sizeI));allocate(lbuffer(sizeL))
+       if (cst(1).ne.0)call mpic%recv(ibuffer,idmaster,214)
+       if (cst(2).ne.0)call mpic%recv(lbuffer,idmaster,215)
+       if (cst(3).ne.0)call mpic%recv(Rbuffer,idmaster,216)
+       call copybuff (atcfloc,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,atcfloc%im)
+
     end if
-    
+
     return
 #endif
- 
+
   end subroutine master2loc_atom
  
 
+  subroutine buffersizes (atcf,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,nmask)
+    integer, intent(out)::sizeI,sizel,sizer
+    integer, intent(out),dimension (0:26):: Iposf,Rposf,Lposf
+    class(atom_config),intent(in)::atcf
+     character(len=26),intent(in)::carac
+    integer,intent(in),optional::nmask
+    integer::nmaskV
+    integer:: size1,size3,sizeV,size9,iat
+    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    !    integer, dimension (0:26):: Iposf,Rposf,Lposf
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+
+    if (present(nmask))then
+       nmaskV=nmask
+    else
+       nmaskV=atcf%imm
+    end if
+
+    size1=nmaskV;size3=3*size1; size9=3*size3
+
+    nvi=0; sizeI=0
+    Iposf(:)=0
+    nvR=0; sizeR=0
+    Rposf(:)=0
+    nvl=0; sizel=0
+    lposf(:)=0
+    if(scan('n',carac).ne.0)  then
+       nvi=nvi+1
+       Iposf(nvi)=Iposf(nvi-1)+size1
+!       call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
+    end if
+    if(scan('i',carac).ne.0) then
+       !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
+       nvi=nvi+1
+       Iposf(nvi)=Iposf(nvi-1)+size1
+ !      write(6,*)'nvi iposf ityp', nvi, iposf(nvi)
+    end if
+    if(scan('e',carac).ne.0) then
+       !       call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
+       nvi=nvi+1
+       Iposf(nvi)=Iposf(nvi-1)+size1
+!       write(6,*)'nvi iposf ielat', nvi, iposf(nvi)
+    end if
+    if(scan('p',carac).ne.0) then
+       nvi=nvi+1
+       Iposf(nvi)=Iposf(nvi-1)+size1
+!       write(6,*)'nvi iposf proc_at', nvi, iposf(nvi)
+       !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
+    end if
+    if(scan('l',carac).ne.0)  then
+          !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
+       nvl=nvl+1
+       lposf(nvl)=lposf(nvl-1)+size1
+    end if
+    if(scan('x',carac).ne.0)   then
+       nvR=nvR+1
+       Rposf(nvR)=Rposf(nvR-1)+size3
+!       call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
+    end if
+    if(scan('f',carac).ne.0) then
+       nvR=nvR+1
+       Rposf(nvR)=Rposf(nvR-1)+size3
+       !call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
+    end if
     
+    if (atcf%ltabvois) then
+       sizeV=size(atcf%indi)
+       if(scan('w',carac).ne.0) then
+          nvi=nvi+1
+        Iposf(nvi)=Iposf(nvi-1)+size1
+!          call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
+       end if
+       if(scan('d',carac).ne.0) then
+          nvi=nvi+1
+          Iposf(nvi)=Iposf(nvi-1)+sizeV
+!          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
+       end if
+    end if
+
+    select type (atcf)
+    class is  (atom_config_d)
+       if(scan('v',carac).ne.0) then
+          nvR=nvR+1
+       Rposf(nvR)=Rposf(nvR-1)+size3
+          !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
+       end if
+       if(scan('r',carac).ne.0) then
+       nvR=nvR+1
+        Rposf(nvR)=Rposf(nvR-1)+size3
+       !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+       end if
+    end select
+    select type (atcf)
+    class is  (atom_config_e)
+       if (atcf%lprteat)then
+          if(scan('u',carac).ne.0) then
+             nvR=nvR+1
+             Rposf(nvR)=Rposf(nvR-1)+size1
+             !call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)
+          end if
+       end if
+       if (atcf%llangevin)then
+          if(scan('g',carac).ne.0) then
+             nvR=nvR+1
+             Rposf(nvR)=Rposf(nvR-1)+size3
+             !call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)
+          end if
+       end if
+       if (atcf%lax)then
+          if(scan('a',carac).ne.0) then
+             nvR=nvR+1
+             Rposf(nvR)=Rposf(nvR-1)+size3
+             !call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)
+          end if
+       end if
+       if (atcf%lsigat)then
+          if(scan('s',carac).ne.0) then
+             nvR=nvR+1
+             Rposf(nvR)=Rposf(nvR-1)+size9
+             !call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)
+          end if
+       end if
+    end select
+!****************************************************
+    sizeI=Iposf(nvI);    sizeR=Rposf(nvR);    sizel=Lposf(nvl)
+
+
+    return
+  end subroutine buffersizes
+
+  subroutine buildbuff(atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,maskR,nmask)
+     integer, intent(in)::sizeI,sizel,sizer
+    integer, intent(in),dimension (0:26):: Iposf,Rposf,Lposf
+    class(atom_config),intent(in)::atcf
+     character(len=26),intent(in)::carac
+    integer,allocatable,intent(inout):: ibuffer(:)
+    logical,allocatable,intent(inout)::lbuffer(:)
+    integer,intent(out)::csi,csr,csl
+    real(double),allocatable,intent(inout)::rbuffer(:)
+    logical, optional,intent(in)::maskR(:)
+
+   logical,allocatable :: mask(:)
+    integer:: size1,size3,sizeV,size9,iat
+    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
+    integer,intent(in),optional::nmask
+    integer::nmaskV
+
+    allocate(mask(atcf%imm))
+    
+    if (present(nmask))then
+       nmaskV=nmask
+    else
+       nmaskV=atcf%imm
+    end if
+    if (present(maskR))then
+       mask(:)=maskR(:)
+    else
+       mask=.true.
+    end if
+    
+
+    size1=nmaskV;size3=3*size1; size9=3*size3
+   
+
+
+    ibi=0;ibl=0;ibr=0
+    ivi=0;ivl=0;ivR=0
+    csi=0;csl=0;csr=0
+    !****************************************************
+!    write(6,*)'CARAC',carac
+    if(scan('n',carac).ne.0)  then
+       ivi=ivi+1
+       ip=0
+       do iat=1,atcf%imm
+          if (mask(iat).eqv..true.) then
+             ip=ip+1
+             ib=Iposf(ivi-1)+ip
+             ibuffer(ib)=atcf%num_at_glob(iat)
+             csi=csi+1
+          end if
+       end do
+!       call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
+    end if
+    if(scan('i',carac).ne.0) then
+       !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
+       ivi=ivi+1
+       ip=0
+       do iat=1,atcf%imm
+          if (mask(iat).eqv..true.) then
+             ip=ip+1
+             ib=Iposf(ivi-1)+ip
+             ibuffer(ib)=atcf%ityp(iat)
+             csi=csi+1
+          end if
+       end do
+    end if
+    if(scan('e',carac).ne.0) then
+       !       call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
+       ivi=ivi+1
+       ip=0
+       do iat=1,atcf%imm
+          if (mask(iat).eqv..true.) then
+             ip=ip+1
+             ib=Iposf(ivi-1)+ip
+             ibuffer(ib)=atcf%ielat(iat)
+             csi=csi+1
+          end if
+       end do
+    end if
+    if(scan('p',carac).ne.0) then
+       ivi=ivi+1
+       ip=0
+       do iat=1,atcf%imm
+          if (mask(iat).eqv..true.) then
+             ip=ip+1
+             ib=Iposf(ivi-1)+ip
+             ibuffer(ib)=atcf%proc_at(iat)
+             csi=csi+1
+          end if
+       end do
+       !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
+    end if
+    if(scan('l',carac).ne.0)  then
+       !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
+       ivl=ivl+1
+       ip=0
+       do iat=1,atcf%imm
+          if (mask(iat).eqv..true.) then
+             ip=ip+1
+             ib=Lposf(ivl-1)+ip
+             Lbuffer(ib)=atcf%lgul(iat)
+             csl=csl+1
+          end if
+       end do
+    end if
+    if(scan('x',carac).ne.0)   then
+       ivR=ivR+1
+       ip=0
+       do iat=1,atcf%imm
+          if (mask(iat).eqv..true.) then
+             do ic=1,3
+                ip=ip+1
+                ib=Rposf(ivR-1)+ip
+                rbuffer(ib)=atcf%xp(ic,iat)
+                csR=csR+1
+             end do
+          end if
+       end do
+!       call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
+    end if
+    if(scan('f',carac).ne.0) then
+       ivR=ivR+1
+       ip=0
+       do iat=1,atcf%imm
+          if (mask(iat).eqv..true.) then
+             do ic=1,3
+                ip=ip+1
+                ib=Rposf(ivR-1)+ip
+                rbuffer(ib)=atcf%fp(ic,iat)
+                csR=csR+1
+             end do
+          end if
+       end do
+       !call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
+    end if
+    
+    if (atcf%ltabvois) then
+
+       if(scan('w',carac).ne.0) then
+          if (any(mask(1:atcf%im).eqv..false.))then
+             write(6,*)'trf latbavois et conf incomplète stop'
+             stop
+          end if
+          ivi=ivi+1
+          do ip=1,size1
+             ib=Iposf(ivi-1)+ip
+             ibuffer(ib)=atcf%iwmax(iat)
+             csi=csi+1
+          end do
+      
+!          call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
+       end if
+       if(scan('d',carac).ne.0) then
+          sizeV=size(atcf%indi)
+          ivi=ivi+1
+          do ip=1,sizeV
+             ib=Iposf(ivi-1)+ip
+             ibuffer(ib)=atcf%indi(iat)
+             csi=csi+1
+          end do
+!          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
+       end if
+    end if
+
+    select type (atcf)
+    class is  (atom_config_d)
+       if(scan('v',carac).ne.0) then
+          ivR=ivR+1
+          ip=0
+          do iat=1,atcf%imm
+             if (mask(iat).eqv..true.) then
+                do ic=1,3
+                   ip=ip+1
+                   ib=Rposf(ivR-1)+ip
+                   rbuffer(ib)=atcf%vp(ic,iat)
+                   csR=csR+1
+                end do
+             end if
+          end do
+          !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
+       end if
+
+       if(scan('r',carac).ne.0) then
+          ivR=ivR+1
+          ip=0
+          do iat=1,atcf%imm
+             if (mask(iat).eqv..true.) then
+                do ic=1,3
+                   ip=ip+1
+                   ib=Rposf(ivR-1)+ip
+                   rbuffer(ib)=atcf%xpp(ic,iat)
+                   csR=csR+1
+                end do
+             end if
+          end do
+       !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+       end if
+    end select
+    select type (atcf)
+    class is  (atom_config_e)
+       if (atcf%lprteat)then
+          if(scan('u',carac).ne.0) then
+          ivR=ivR+1
+          ip=0
+          do iat=1,atcf%imm
+             if (mask(iat).eqv..true.) then
+                ip=ip+1
+                ib=Rposf(ivR-1)+ip
+                rbuffer(ib)=atcf%eat(iat)
+                csR=csR+1
+             end if
+          end do
+             !call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)
+          end if
+       end if
+       if (atcf%llangevin)then
+          if(scan('g',carac).ne.0) then
+             ivR=ivR+1
+             ip=0
+             do iat=1,atcf%imm
+                if (mask(iat).eqv..true.) then
+                   do ic=1,3
+                      ip=ip+1
+                      ib=Rposf(ivR-1)+ip
+                      rbuffer(ib)=atcf%glangv(ic,ip)
+                      csR=csR+1
+                   end do
+                end if
+             end do
+             !call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)
+          end if
+       end if
+       if (atcf%lax)then
+          if(scan('a',carac).ne.0) then
+             !call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)
+             ivR=ivR+1
+             ip=0
+             do iat=1,atcf%imm
+                if (mask(iat).eqv..true.) then
+                   do ic=1,3
+                      ip=ip+1
+                      ib=Rposf(ivR-1)+ip
+                      rbuffer(ib)=atcf%ax(ic,ip)
+                      csR=csR+1
+                   end do
+                end if
+             end do
+          end if
+       end if
+       if (atcf%lsigat)then
+          if(scan('s',carac).ne.0) then
+             ivR=ivR+1
+             ip=0
+             do iat=1,atcf%imm
+                if (mask(iat).eqv..true.) then
+                   do ic=1,3
+                      do ic2=1,3
+                         ip=ip+1
+                         ib=Rposf(ivR-1)+ip
+                         rbuffer(ib)=atcf%sigat(ic,ic2,iat)
+                         csR=csR+1
+                      end do
+                   end do
+                end if
+             end do
+             !call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)
+          end if
+       end if
+       
+    end select
+    if (csi.ne.sizeI) then
+       write(6,*)'erreur CSI 2',sizeI,csi
+!       call endmpi
+       stop
+    end if
+    if (csr.ne.sizer) then
+       write(6,*)'erreur CSR ',sizeR,csr
+!       call endmpi
+       stop
+    end if
+    if (csl.ne.sizel) then
+       write(6,*)'erreur CSL ',sizel,csl
+!       call endmpi
+       stop
+    end if
+
+    return
+  end subroutine buildbuff
+
+  
+  subroutine copybuff(atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,immax)
+     integer, intent(in)::sizeI,sizel,sizer,immax
+    integer, intent(in),dimension (0:26):: Iposf,Rposf,Lposf
+    class(atom_config),intent(inout)::atcf
+     character(len=26),intent(in)::carac
+    integer,allocatable,intent(in):: ibuffer(:)
+    logical,allocatable,intent(in)::lbuffer(:)
+    integer,intent(out)::csi,csr,csl
+    real(double),allocatable,intent(in)::rbuffer(:)
+
+    integer:: size1,size3,sizeV,size9
+    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
+
+
+    size1=immax;size3=3*size1; size9=3*size3
+    ibi=0;ibl=0;ibr=0
+    ivi=0;ivl=0;ivR=0
+    csi=0;csl=0;csr=0
+
+
+    if(scan('n',carac).ne.0)  then
+       ivi=ivi+1
+       do ip=1,size1
+          ib=Iposf(ivi-1)+ip
+          atcf%num_at_glob(ip)=ibuffer(ib)
+          csi=csi+1
+       end do
+       !       call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
+    end if
+    if(scan('i',carac).ne.0) then
+       !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
+       ivi=ivi+1
+       do ip=1,size1
+          ib=Iposf(ivi-1)+ip
+          atcf%ityp(ip)=ibuffer(ib)
+          csi=csi+1
+       end do
+    end if
+    if(scan('e',carac).ne.0) then
+       !       call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
+       ivi=ivi+1
+       do ip=1,size1
+          ib=Iposf(ivi-1)+ip
+          atcf%ielat(ip)=ibuffer(ib)
+          csi=csi+1
+       end do
+    end if
+    if(scan('p',carac).ne.0) then
+       ivi=ivi+1
+       do ip=1,size1
+          ib=Iposf(ivi-1)+ip
+          atcf%proc_at(ip)=ibuffer(ib)
+          csi=csi+1
+       end do
+       !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
+    end if
+    if(scan('l',carac).ne.0)  then
+       !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
+       ivl=ivl+1
+       do ip=1,size1
+          ib=Lposf(ivi-1)+ip
+          atcf%lgul(ip)=Lbuffer(ib)
+          csl=csl+1
+       end do
+    end if
+    if(scan('x',carac).ne.0)   then
+       ivR=ivR+1
+       do ip=1,size1
+          do ic=1,3
+             ib=Rposf(ivR-1)+3*(ip-1)+ic
+             atcf%xp(ic,ip)=rbuffer(ib)
+             csR=csR+1
+          end do
+       end do
+       !       call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
+    end if
+    if(scan('f',carac).ne.0) then
+       ivR=ivR+1
+       do ip=1,size1
+          do ic=1,3
+             ib=Rposf(ivR-1)+3*(ip-1)+ic
+             atcf%fp(ic,ip)=rbuffer(ib)
+             csR=csR+1
+          end do
+       end do
+       !call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
+    end if
+
+    if (atcf%ltabvois) then
+       sizeV=size(atcf%indi)
+       if(scan('w',carac).ne.0) then
+          ivi=ivi+1
+          do ip=1,size1
+             ib=Iposf(ivi-1)+ip
+             atcf%iwmax(ip)=ibuffer(ib)
+             csi=csi+1
+          end do
+
+          !          call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
+       end if
+       if(scan('d',carac).ne.0) then
+          ivi=ivi+1
+          do ip=1,sizeV
+             ib=Iposf(ivi-1)+ip
+             atcf%indi(ip)=ibuffer(ib)
+             csi=csi+1
+          end do
+          !          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
+       end if
+    end if
+
+    select type (atcf)
+       class is  (atom_config_d)
+       if(scan('v',carac).ne.0) then
+          ivR=ivR+1
+          do ip=1,size1
+             do ic=1,3
+                ib=Rposf(ivR-1)+3*(ip-1)+ic
+                atcf%vp(ic,ip)=rbuffer(ib)
+                csR=csR+1
+             end do
+          end do
+          !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
+       end if
+
+       if(scan('r',carac).ne.0) then
+          ivR=ivR+1
+          do ip=1,size1
+             do ic=1,3
+                ib=Rposf(ivR-1)+3*(ip-1)+ic
+                atcf%xpp(ic,ip)= rbuffer(ib)
+                csR=csR+1
+             end do
+          end do
+          !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+       end if
+    end select
+    select type (atcf)
+       class is  (atom_config_e)
+       if (atcf%lprteat)then
+          if(scan('u',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                ib=Lposf(ivR-1)+ip
+                atcf%eat(ip)=Rbuffer(ib)
+                csR=csR+1
+             end do
+             !call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)
+          end if
+       end if
+       if (atcf%llangevin)then
+          if(scan('g',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                do ic=1,3
+                   ib=Rposf(ivR-1)+3*(ip-1)+ic
+                   atcf%glangv(ic,ip)=rbuffer(ib)
+                   csR=csR+1
+                end do
+             end do
+             !call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)
+          end if
+       end if
+       if (atcf%lax)then
+          if(scan('a',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                do ic=1,3
+                   ib=Rposf(ivR-1)+3*(ip-1)+ic
+                   atcf%ax(ic,ip)= rbuffer(ib)
+                   csR=csR+1
+                end do
+             end do
+             !call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)
+          end if
+       end if
+       if (atcf%lsigat)then
+          if(scan('s',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                do ic=1,3
+                   do ic2=1,3
+                      ib=Rposf(ivR-1)+(ip-1)*9+(ic-1)*3+ic2
+                      atcf%sigat(ic,ic2,ip)=rbuffer(ib)
+                      csR=csR+1
+                   end do
+                end do
+             end do
+             !call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)
+          end if
+       end if
+    end select
+
+    if (csi.ne.sizeI) then
+       write(6,*)'erreur CSI 1 ',sizeI,csi
+!       call endmpi
+       stop
+    end if
+    if (csr.ne.sizer) then
+       write(6,*)'erreur CSR ',sizeR,csr
+!       call endmpi
+       stop
+    end if
+    if (csl.ne.sizel) then
+       write(6,*)'erreur CSL ',sizel,csl
+!       call endmpi
+       stop
+    end if
+
+  end subroutine copybuff
+
+
+  subroutine distribnag(nag,immax,atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf)
+    integer,intent(in),allocatable::nag(:)
+    integer, intent(in)::sizeI,sizel,sizer,immax
+    integer, intent(in),dimension (0:26):: Iposf,Rposf,Lposf
+    class(atom_config),intent(inout)::atcf
+     character(len=26),intent(in)::carac
+    integer,allocatable,intent(in):: ibuffer(:)
+    logical,allocatable,intent(in)::lbuffer(:)
+    integer,intent(out)::csi,csr,csl
+    real(double),allocatable,intent(in)::rbuffer(:)
+
+    integer:: size1,size3,sizeV,size9
+    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
+
+
+    size1=immax;size3=3*size1; size9=3*size3
+    ibi=0;ibl=0;ibr=0
+    ivi=0;ivl=0;ivR=0
+    csi=0;csl=0;csr=0
+
+
+    if(scan('n',carac).ne.0)  then
+       ivi=ivi+1
+       do ip=1,size1
+          ib=Iposf(ivi-1)+ip
+          atcf%num_at_glob(nag(ip))=ibuffer(ib)
+          csi=csi+1
+       end do
+       !       call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
+    end if
+    if(scan('i',carac).ne.0) then
+       !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
+       ivi=ivi+1
+       do ip=1,size1
+          ib=Iposf(ivi-1)+ip
+          atcf%ityp(nag(ip))=ibuffer(ib)
+          csi=csi+1
+       end do
+    end if
+    if(scan('e',carac).ne.0) then
+       !       call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
+       ivi=ivi+1
+       do ip=1,size1
+          ib=Iposf(ivi-1)+ip
+          atcf%ielat(nag(ip))=ibuffer(ib)
+          csi=csi+1
+       end do
+    end if
+    if(scan('p',carac).ne.0) then
+       ivi=ivi+1
+       do ip=1,size1
+          ib=Iposf(ivi-1)+ip
+          atcf%proc_at(nag(ip))=ibuffer(ib)
+          csi=csi+1
+       end do
+       !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
+    end if
+    if(scan('l',carac).ne.0)  then
+       !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
+       ivl=ivl+1
+       do ip=1,size1
+          ib=Lposf(ivi-1)+ip
+          atcf%lgul(nag(ip))=Lbuffer(ib)
+          csl=csl+1
+       end do
+    end if
+    if(scan('x',carac).ne.0)   then
+       ivR=ivR+1
+       do ip=1,size1
+          do ic=1,3
+             ib=Rposf(ivR-1)+3*(ip-1)+ic
+             atcf%xp(ic,nag(ip))=rbuffer(ib)
+             csR=csR+1
+          end do
+       end do
+       !       call MPI_SEND(atcf%xp, size3, NDM_MPI_REAL_DOUBLE, rgcib,100,comm,ierr)
+    end if
+    if(scan('f',carac).ne.0) then
+       ivR=ivR+1
+       do ip=1,size1
+          do ic=1,3
+             ib=Rposf(ivR-1)+3*(ip-1)+ic
+             atcf%fp(ic,nag(ip))=rbuffer(ib)
+             csR=csR+1
+          end do
+       end do
+       !call MPI_SEND(atcf%fp, size3, NDM_MPI_REAL_DOUBLE, rgcib,101,comm,ierr)
+    end if
+
+    if (atcf%ltabvois) then
+       sizeV=size(atcf%indi)
+       if(scan('w',carac).ne.0) then
+          ivi=ivi+1
+          do ip=1,size1
+             ib=Iposf(ivi-1)+ip
+             atcf%iwmax(nag(ip))=ibuffer(ib)
+             csi=csi+1
+          end do
+
+          !          call MPI_SEND(atcf%iwmax, size1, MPI_INTEGER, rgcib,107,comm,ierr)
+       end if
+       if(scan('d',carac).ne.0) then
+          ivi=ivi+1
+          do ip=1,sizeV
+             ib=Iposf(ivi-1)+ip
+             atcf%indi(nag(ip))=ibuffer(ib)
+             csi=csi+1
+          end do
+          !          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
+       end if
+    end if
+
+    select type (atcf)
+       class is  (atom_config_d)
+       if(scan('v',carac).ne.0) then
+          ivR=ivR+1
+          do ip=1,size1
+             do ic=1,3
+                ib=Rposf(ivR-1)+3*(ip-1)+ic
+                atcf%vp(ic,nag(ip))=rbuffer(ib)
+                csR=csR+1
+             end do
+          end do
+          !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
+       end if
+
+       if(scan('r',carac).ne.0) then
+          ivR=ivR+1
+          do ip=1,size1
+             do ic=1,3
+                ib=Rposf(ivR-1)+3*(ip-1)+ic
+                atcf%xpp(ic,nag(ip))= rbuffer(ib)
+                csR=csR+1
+             end do
+          end do
+          !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+       end if
+    end select
+    select type (atcf)
+       class is  (atom_config_e)
+       if (atcf%lprteat)then
+          if(scan('u',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                ib=Lposf(ivR-1)+ip
+                atcf%eat(nag(ip))=Rbuffer(ib)
+                csR=csR+1
+             end do
+             !call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)
+          end if
+       end if
+       if (atcf%llangevin)then
+          if(scan('g',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                do ic=1,3
+                   ib=Rposf(ivR-1)+3*(ip-1)+ic
+                   atcf%glangv(ic,nag(ip))=rbuffer(ib)
+                   csR=csR+1
+                end do
+             end do
+             !call MPI_SEND(atcf%glangv, size3, NDM_MPI_REAL_DOUBLE, rgcib,112,comm,ierr)
+          end if
+       end if
+       if (atcf%lax)then
+          if(scan('a',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                do ic=1,3
+                   ib=Rposf(ivR-1)+3*(ip-1)+ic
+                   atcf%ax(ic,nag(ip))= rbuffer(ib)
+                   csR=csR+1
+                end do
+             end do
+             !call MPI_SEND(atcf%ax, size3, NDM_MPI_REAL_DOUBLE, rgcib,113,comm,ierr)
+          end if
+       end if
+       if (atcf%lsigat)then
+          if(scan('s',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                do ic=1,3
+                   do ic2=1,3
+                      ib=Rposf(ivR-1)+(ip-1)*9+(ic-1)*3+ic2
+                      atcf%sigat(ic,ic2,nag(ip))=rbuffer(ib)
+                      csR=csR+1
+                   end do
+                end do
+             end do
+             !call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)
+          end if
+       end if
+    end select
+
+    if (csi.ne.sizeI) then
+       write(6,*)'erreur CSIC 1 ',sizeI,csi
+!       call endmpi
+       stop
+    end if
+    if (csr.ne.sizer) then
+       write(6,*)'erreur CSRC ',sizeR,csr
+!       call endmpi
+       stop
+    end if
+    if (csl.ne.sizel) then
+       write(6,*)'erreur CSLC ',sizel,csl
+!       call endmpi
+       stop
+    end if
+
+  end subroutine distribnag
+  
 end module atomconfig
 
 

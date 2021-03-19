@@ -35,7 +35,7 @@ contains
     
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        if (ldistr) then
-          call atcomp%send2all(0,div%mpi_image%comm)
+          call atcomp%send2all(0,div%mpi_image)
        endif
        call cellcomp%copy_cell(celloc)
        call decoupage(div%mpi_image%nproc,0,celloc,atloc,lverbose=.false.,psc=psc)
@@ -105,7 +105,7 @@ contains
           if (lspaceNDM.eqv..true.) then
              call atcomp%master2loc(atloc,div)
           else
-             call atcomp%send2all(0,div%mpi_image%comm)
+             call atcomp%send2all(0,div%mpi_image)
              atloc=>atcomp
              celloc=>cellcomp
        

@@ -944,7 +944,7 @@ end subroutine langevin
           !?          call maj_atomes_frt_ftm(atconf_n,cells_n)
           
        else !procs N+1
-          call atconf_nplus1%send2all(0,paramcgc%mpi_image%comm)
+          call atconf_nplus1%send2all(0,paramcgc%mpi_image)
           call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc)
           call init_voisinage(cells_nplus1,pscgc)
           !?          call maj_atomes_frt_ftm(atconf_nplus1,cells_nplus1)

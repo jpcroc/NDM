@@ -474,7 +474,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
 #ifdef PARA
        if ((latcomp).and.(nprocspace.gt.1)) then ! les procs masters myidsp=0 ont toutes les positions., Il faut passer aux autres procs les nouvelles atcf
-          call atcf%send2all(0,comm_space%comm)
+          call atcf%send2all(0,comm_space)
        end if
 #endif
        if (rang==0) write(6,*)
