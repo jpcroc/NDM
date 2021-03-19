@@ -4,8 +4,9 @@ module paraconfig
 
 #ifdef PARA
   use mpi
-  use Tpara,only:NDM_MPI_REAL_DOUBLE,mpi_communicator
-
+  use Tpara,only:mpi_communicator
+#else
+  use Tpara,only:mpi_communicator
 #endif
   use T_kind_param_m, ONLY:  double
 

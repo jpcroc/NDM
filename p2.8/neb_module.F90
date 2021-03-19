@@ -26,7 +26,7 @@ module neb_module
 #ifdef PARA
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,comm_space
 #else
-  use Tpara,only:myidsp,nprocspace
+  use Tpara,only:myidsp,nprocspace,comm_space
 #endif
   use Tpara,only:para_space_config
   use paraconfig,only:para_config,commconstr
@@ -723,7 +723,10 @@ end if
     myidsp=0
     paraneb%lmaster=.true.
     nprocspace=1
-    call comm_space%init(MPI_COMM_SPACE)
+  comm_space%comm  = 1
+  comm_space%nproc = 1
+  comm_space%rank  = 0
+
 #endif
     write(6,*)'PARANEB',paraneb%mpi_orig%comm,paraneb%mpi_master%comm,paraneb%mpi_image%comm
   end subroutine init_mpi_neb

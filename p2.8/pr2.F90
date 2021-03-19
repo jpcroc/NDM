@@ -391,30 +391,30 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        call maj_atomes_frt_ftm(atpr,celndm,psc)
 
 
-!!$       if (iewald>0) then
-!!$
-!!$          ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
-!!$          auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
-!!$          pi2 = pi*pi
-!!$          boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
-!!$          fact = pi2/alpha**2
-!!$          fact1 = auxe/2./pi/boxndm%volu
-!!$          fact2 = auxe*2./boxndm%volu
-!!$          do nb1 = -ncoucx, ncoucx
-!!$             do nb2 = -ncoucy, ncoucy
-!!$                do nb3 = -ncoucz, ncoucz
-!!$                   if (nb1==0.and.nb2==0.and.nb3==0) cycle
-!!$                   hk2 = nb1*nb1/boxndm%zl(1)**2+nb2*nb2/boxndm%zl(2)**2+nb3*nb3/boxndm%zl(3)**2
-!!$                   ex = exp((-hk2*fact))/hk2
-!!$                   ex1 = ex*fact1
-!!$                   ex2 = ex*fact2
-!!$                   tabv3(nb1,nb2,nb3) = ex1
-!!$                   tabf3(:,nb1,nb2,nb3) = ex2*q(:)
-!!$                end do
-!!$             end do
-!!$          end do
-!!$
-!!$       endif
+       if (iewald>0) then
+
+          ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
+          auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
+          pi2 = pi*pi
+          boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
+          fact = pi2/alpha**2
+          fact1 = auxe/2./pi/boxndm%volu
+          fact2 = auxe*2./boxndm%volu
+          do nb1 = -ncoucx, ncoucx
+             do nb2 = -ncoucy, ncoucy
+                do nb3 = -ncoucz, ncoucz
+                   if (nb1==0.and.nb2==0.and.nb3==0) cycle
+                   hk2 = nb1*nb1/boxndm%zl(1)**2+nb2*nb2/boxndm%zl(2)**2+nb3*nb3/boxndm%zl(3)**2
+                   ex = exp((-hk2*fact))/hk2
+                   ex1 = ex*fact1
+                   ex2 = ex*fact2
+                   tabv3(nb1,nb2,nb3) = ex1
+                   tabf3(:,nb1,nb2,nb3) = ex2*q(:)
+                end do
+             end do
+          end do
+
+       endif
        if (iewald==1.or.iewald==2) then
           call calpo_ew(boxndm,atpr%imm)
        end if

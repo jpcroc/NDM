@@ -12,7 +12,7 @@ module Tpara
 #else
    integer:: status 
 #endif
-   integer :: nprocs 			! numero de process mis là pour être utilisé en sequentiesl
+   integer,target :: nprocs 			! numero de process mis là pour être utilisé en sequentiesl
    integer,pointer :: myidsp,nprocspace 			! numero de process mis là pour être utilisé en sequentiesl
 
   integer::ierr
@@ -38,6 +38,7 @@ module Tpara
     integer    :: group       ! group          in the communicator comm
   contains
     procedure :: init => mpic_init
+    procedure :: init0 => mpic_init0
     procedure :: probe => mpic_probe
     procedure :: barrier => mpic_barrier
     ! sum
@@ -112,6 +113,24 @@ subroutine mpic_init(mpic,comm_in)
 
 end subroutine mpic_init
 
+!=========================================================================
+subroutine mpic_init0(mpic)
+  implicit none
+
+  class(mpi_communicator),intent(inout) :: mpic
+  !=====
+  integer :: ierror
+  !=====
+
+#if defined(PARA)
+#else
+  mpic%comm  = 1
+  mpic%nproc = 1
+  mpic%rank  = 0
+#endif
+
+end subroutine mpic_init0
+
 
 !=========================================================================
 subroutine mpic_probe(mpic,tag,sourceout,sourcein)
@@ -121,13 +140,15 @@ subroutine mpic_probe(mpic,tag,sourceout,sourcein)
   integer,intent(in)                    :: tag
   integer,optional,intent(in)::sourcein
   integer,optional,intent(out)::sourceout
+  integer :: ierror
+#if defined(PARA)
   integer,dimension(MPI_STATUS_SIZE):: statut
 
   !=====
-  integer :: ierror
+
   !=====
 ierror=0
-#if defined(PARA)
+
   if (present(sourcein)) then
      call MPI_PROBE(sourcein, tag, mpic%comm,statut,ierror)
      sourceout=statut(MPI_SOURCE)

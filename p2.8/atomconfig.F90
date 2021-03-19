@@ -8,7 +8,8 @@ module atomconfig
 
 
 #endif
-  use paraconfig,only:para_config  
+  use paraconfig,only:para_config
+  use Tpara,only:mpi_communicator,endmpi
 
   implicit none
 #ifdef PARA
@@ -1783,6 +1784,7 @@ contains
           end if
        end do
     end if
+#ifdef PARA
     if(scan('p',carac).ne.0) then
        ivi=ivi+1
        ip=0
@@ -1796,6 +1798,7 @@ contains
        end do
        !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
     end if
+#endif
     if(scan('l',carac).ne.0)  then
        !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
        ivl=ivl+1
@@ -2041,6 +2044,7 @@ contains
           csi=csi+1
        end do
     end if
+#ifdef PARA
     if(scan('p',carac).ne.0) then
        ivi=ivi+1
        do ip=1,size1
@@ -2050,6 +2054,8 @@ contains
        end do
        !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
     end if
+#endif
+    
     if(scan('l',carac).ne.0)  then
        !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
        ivl=ivl+1
@@ -2254,6 +2260,7 @@ contains
           csi=csi+1
        end do
     end if
+#ifdef PARA
     if(scan('p',carac).ne.0) then
        ivi=ivi+1
        do ip=1,size1
@@ -2263,6 +2270,8 @@ contains
        end do
        !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
     end if
+#endif
+    
     if(scan('l',carac).ne.0)  then
        !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
        ivl=ivl+1

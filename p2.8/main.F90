@@ -50,7 +50,10 @@ program ndm
      parallele = .true.
   end if
 #else
-  rang = 0;myidsp=0; nprocs=1;nprocspace=1
+  rang = 0
+  myidsp=>rang
+  nprocs=1
+  nprocspace=>nprocs
   parallele = .false.
 #endif
 

@@ -3,8 +3,9 @@
   use paraconfig,only:para_config
 #ifdef PARA
   USE mod_para,only:maj_atomes_frt_ftm
+    use Tpara,only:mpi_comm_world
 #endif
-  use Tpara,only:para_space_config,mpi_comm_world
+  use Tpara,only:para_space_config
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage
   use gen_com_m,only:lspacendm
@@ -112,8 +113,8 @@ contains
        caracm2l='xfniewdlpvrugas'
        caracvm=caracm2l
     else
-       caracm2l=caracT//'npf'
-       caracvm=caracT//'npx'       
+       caracm2l=caracT//'npft'
+       caracvm=caracT//'npxt'       
     end if
 
     if(present(lchg))lchange=lchg
