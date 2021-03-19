@@ -50,7 +50,7 @@ contains
 
   end subroutine initloc
   
-  subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod)
+  subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod,caracT)
     
     class(atom_config),intent(in)::atlocin
     type(cell_config),intent(in)::cellocin
@@ -58,14 +58,21 @@ contains
     type(cell_config)::cellcomp
     type(box_config)::box
     type(para_config),intent(in)::div
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
     integer::ierr,iun
     logical::lperiod
 
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugas'
+    else
+       carac=caracT//'np'       
+    end if
 
        if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    if (div%mpi_image%nproc.gt.1) then
        call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
-       call atlocin%vers_master(atcomp,div)
+       call atlocin%vers_master(atcomp,div,carac)
        if (div%mpi_image%rank==0) then
           call caltabtC(cellcomp,atcomp,lperiod,box)
        end if
@@ -80,7 +87,7 @@ contains
     end if
   end subroutine initcomp
   
-  subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,lperiod,ltabvois,it,itetabvois,lchg,psc)
+  subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,lperiod,ltabvois,it,itetabvois,lchg,psc,caracT)
 
     type(para_space_config)::psc    
     real(double)::sig(3,3),potist
@@ -94,9 +101,21 @@ contains
     integer,optional,intent(in)::itetabvois,it
     logical::lperiod
     logical,optional::lchg
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::caracm2l,caracvm
+
     integer::ierr,i
     logical::lchange=.true.
     integer::iun
+
+    if (.not.present(caracT)) then
+       caracm2l='xfniewdlpvrugas'
+       caracvm=caracm2l
+    else
+       caracm2l=caracT//'npf'
+       caracvm=caracT//'npx'       
+    end if
+
     if(present(lchg))lchange=lchg
 #ifdef PARA
     if (lchange) then

@@ -38,9 +38,6 @@ contains
     type(box_config)::boxrgin
     type(atom_config)::atrgin
     type(para_space_config)::psc
-!#ifndef PARA
-!    integer :: nprocspace=1
-!#endif
     integer,      dimension(:), allocatable   :: num_at_buff
     integer, dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable    :: buffer

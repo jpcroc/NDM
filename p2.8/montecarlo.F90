@@ -33,7 +33,7 @@ module montecarlo_mod
 #endif  
   implicit none
 
-  type(para_config)::paramcgc
+  type(para_config),target::paramcgc
   type(para_space_config)::pscgc
  real(double)::distminat
   type(atom_config_d)::atconf_n !type derive atom_config du systeme a n atomes
@@ -853,11 +853,11 @@ end subroutine langevin
     call MPI_COMM_GROUP(paramcgc%mpi_orig%comm,paramcgc%mpi_orig%group,ierr)
     call commconstr(paramcgc)
 
-    myidsp=paramcgc%mpi_image%rank
+    myidsp=>paramcgc%mpi_image%rank
     call MPI_COMM_free(mpi_comm_space,ierr)
     MPI_COMM_space=paramcgc%mpi_image%comm
     call comm_space%init(MPI_COMM_SPACE)
-    nprocspace=paramcgc%mpi_image%nproc
+    nprocspace=>paramcgc%mpi_image%nproc
     if (nprocspace==1) parallele=.false.
 #else
     paramcgc%mpi_orig%nproc=1

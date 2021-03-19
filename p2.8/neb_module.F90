@@ -49,7 +49,7 @@ module neb_module
   type(atom_config_neb),allocatable,save,target::atneb(:)
   type(cell_config),allocatable,save,target:: cellneb(:)
   type(box_config)::boxneb
-  type(para_config)::paraneb
+  type(para_config),target::paraneb
   type(para_space_config)::pscneb
 
 contains
@@ -710,10 +710,10 @@ end if
 
     call commconstr(paraneb)
 
-    myidsp=paraneb%mpi_image%rank
+    myidsp=>paraneb%mpi_image%rank
     call MPI_COMM_free(mpi_comm_space,ierr)
     MPI_COMM_space=paraneb%mpi_image%comm
-    nprocspace=paraneb%mpi_image%nproc
+    nprocspace=>paraneb%mpi_image%nproc
     call comm_space%init(MPI_COMM_SPACE)
     if (nprocspace==1) parallele=.false.
 #else

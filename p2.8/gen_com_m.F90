@@ -19,7 +19,7 @@ module gen_com_m
   integer::nvperat
 
 
-  integer :: rang, rangph, rangml, rangmab, ja_phondy, ja_ml
+  integer,target :: rang, rangph, rangml, rangmab, ja_phondy, ja_ml
 
 !  integer :: natperc                        ! nb d'atome par cel
 

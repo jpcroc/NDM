@@ -43,7 +43,7 @@ program ndm
   call init_MPI()
 
  write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
-  myidsp=rang
+  myidsp=>rang
   if (nprocspace==1) then
      parallele=.false.
   else

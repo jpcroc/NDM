@@ -58,7 +58,6 @@ contains
 
 
 #endif
-!    PROBLEME AVEC NUM_AT_GLOB DANS INITCOMP (VERS_MASTER ?)
     cellcgloc=>celcgin
     atcgloc=>atcgin
     boxcg=boxndm

@@ -25,8 +25,9 @@ contains
     call MPI_COMM_GROUP( MPI_COMM_WORLD, grp_world, ierr )
     call MPI_COMM_DUP(MPI_COMM_WORLD,MPI_COMM_SPACE,ierr)
 !    MPI_COMM_space=MPI_COMM_WORLD
-    nprocspace=nprocs
+
     call comm_space%init(MPI_COMM_SPACE)
+    nprocspace=>comm_space%nproc
   end subroutine init_mpi
 
 #endif

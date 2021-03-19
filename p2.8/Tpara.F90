@@ -12,7 +12,8 @@ module Tpara
 #else
    integer:: status 
 #endif
-  integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiesl
+   integer :: nprocs 			! numero de process mis là pour être utilisé en sequentiesl
+   integer,pointer :: myidsp,nprocspace 			! numero de process mis là pour être utilisé en sequentiesl
 
   integer::ierr
   type para_space_config
@@ -74,7 +75,7 @@ module Tpara
     procedure :: mpic_bcast_cdp
   end type mpi_communicator
 
-  type(mpi_communicator)::comm_space
+  type(mpi_communicator),target::comm_space
 !  type(mpi_communicator)::mpi_world
 
 contains

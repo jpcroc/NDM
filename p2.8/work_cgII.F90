@@ -81,7 +81,7 @@ contains
 
     lchg=.true.
     call pointer_caltabt_calfo(sig,potist,atcgcomp,cellcgcomp,boxcg,atcgloc,cellcgloc,gcpara,lperiod,&
-         &atcgcomp%ltabvois,it,itetabvois,lchg,psc) 
+         &atcgcomp%ltabvois,it,itetabvois,lchg,psc,'xft') 
 
     if (it==1) then
        if (lEev.EQV..true.) then 
