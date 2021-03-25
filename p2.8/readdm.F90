@@ -22,7 +22,7 @@ contains
          &ltcon,lvpread,maxneb,mdcg_noise_scale,nbmoye,neb_noise,neb_noise_scale,nebrelaxation,&
          &nebtype,nhoover,niteration,nitmax,njqbh,npath,ntr,nuandersen,pext,rayonc,rheat,rsep,&
          &rskin,rulayer,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
-         &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wbox,wnose,xko,xx0,yko,yy0,&
+         &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
          &zko,zz0,dilat,dilat,dilat,dilat,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fdbkcoef,fnemd,&
          &formatsauv,ibound,iko,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,iteplz,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itespebcout,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
@@ -33,7 +33,7 @@ contains
          &,tpseuils,tstep,typspr,unite,unitp,user_strainrate,user_stress_yz,xpspr,lenfnam,fnam,position_conversion_lammps&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp
     use read_val
-
+    use WGC_mod,only:ndir,nstep,betaguess
     USE var_pot, ONLY:gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
@@ -72,7 +72,7 @@ contains
          tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, itespebcout,  &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
-         ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wbox, wNose, lpcon2, lpconxyz, tbox, &
+         ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wboxf, wNose, lpcon2, lpconxyz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
          maxorder,  lalea, rsep, ipotentiel,lpotentiel,&
@@ -86,7 +86,7 @@ contains
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
          mdcg_noise, lforcetabulate,ivisu,ibound,USEr_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat
+         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,ndir,nstep,betaguess
 
 
     !
@@ -94,7 +94,9 @@ contains
     !
     if (rang.eq.0) write(6,*) '>>>>>>>>>>> entree readdm'
 
-
+    ndir=50   !nombre de direction dans steepest descent
+    nstep=50  ! nombre de pas dans la minimisation sur une ligne en steepes descent
+    betaguess=1d-7
     fnamdin = fnam(1:lenfnam)//'.din'
     ! variables de dynamique
     lspaceNDM=.true.
@@ -106,8 +108,11 @@ contains
     dmtype = 0  
     !dmtype = type of calculation : 1 -> MD
     !                               2 -> quench (trempe) or fire quench
-    !                               3 -> gradient conjugue sur les coordonnes cartesiennes
-    !                              30 -> gradient conjugue sur les coordonnes reduites
+    !                               3 -> gradient conjugue générique pointe vers 31 par défaut 
+    !                              30 -> VIEUX gradient conjugue sur les coordonnes reduites
+    !                              31 -> VIEUX gradient conjugue sur les coordonnes cartesiennes
+    !                              32 -> steepest descent
+    !                              33 -> gradient conjugue
     !                               4 -> Velocity Verlet 
     !                               5 -> test des forces 
     !                               6 -> analyse des positions en fin de cascade 
@@ -177,7 +182,7 @@ contains
 
 
     pext = 0.0                  !pression  par defaut
-    wbox = 0.0                  ! masse de la boite pour Parrinello-Rahman (par defaut egale a 0.5*masse totale
+    wboxf = 1.0                  ! facteur masse de la boite pour Parrinello-Rahman (par defaut egale a 0.5*masse totale
     wNose = 0.0                 ! masse de la boite pour thermostat de Nose (par defaut egale a wbox)
     tbox = 1000.0               !"temps" de la boite
     lTcon=.false.               !algorithme a temperature constante
@@ -479,7 +484,7 @@ contains
           if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
        end if
        select case(dmtype)
-       case(21,22,4,3,9,15,1)
+       case(21,22,4,3,9,15,1,30,31)
        case default 
           if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,3,4,9,1'
           if (rang==0) write(*,*) 'Stop in readdm'
@@ -688,7 +693,11 @@ contains
     endif
 
 
-    if((lTberendsen).and.( (dmtype.EQ.21).OR.(dmtype.EQ.22).OR.(dmtype.EQ.3).OR.(dmtype.EQ.30) ) ) stop
+    if((lTberendsen).and.( (dmtype.EQ.21).OR.(dmtype.EQ.22).OR.(dmtype.EQ.3).OR.(dmtype.EQ.30)&
+       &.OR.(dmtype.EQ.31).OR.(dmtype.EQ.32).OR.(dmtype.EQ.33) )) then
+       write(6,*) 'Berendsen pas possible';stop
+    end if
+
     if (ipotentiel==-1) then
        tpot=.false.
        lpt:     do i=1,npotmax
@@ -778,8 +787,16 @@ contains
 
 
     if (lpr) then
-       if ((dmtype==22).or.(dmtype==21)) lprtrp=.true.
+       select case(dmtype)
+       case(21,22)
+          lprtrp=.true.
+       case default
        dmtype=8
+       case (3,30)
+          dmtype=30!GC
+          lEev=.true.
+          if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
+       end select
        itesigma=1
        if (pext.ne.0.) then
           if (rang==0) write(6,*)'SIGEXT', sigext
@@ -898,6 +915,9 @@ contains
     if (rang==0) write (6, '(a,I2)') ' -------- caracteristiques du run DM--------', dmtype
 
     select case (dmtype)
+    case(111)
+       if (rang==0) write (6,'(a)') '|=========       ONE STEP           ===============|'
+
     case (1)
        if (rang==0) write (6, '(a)') '     DYNAMIQUE MOLECULAIRE VERLET STANDARD'
     case (21)
@@ -905,9 +925,14 @@ contains
     case (22)
        if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Velocity Verlet '
     case (3)
-       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE sur les coordonnees CARTESIENNES'
+       if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE par défaut = 31 sur les coordonnees cartésiennes '
+       dmtype=31
     case (30)
-       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE sur les coordonnees REDUITES'
+       if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE sur les coordonnees REDUITES'
+    case (32)
+       if (rang==0) write (6, '(a)') '     STEEPEST DESCENT'
+    case (33)
+       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE '
     case (4)
        if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
     case (5)
@@ -1057,7 +1082,9 @@ contains
        end if
     end if
 
-    if ( (dmtype==21).or.(dmtype==22).or.(dmtype==3).or.(dmtype==30).or.(dmtype==9).or.(dmtype==10) ) then    
+    if ( (dmtype==21).or.(dmtype==22).or.(dmtype==3).or.(dmtype==30).or.(dmtype==32)&
+         &.or.(dmtype==33).or.(dmtype==31).or.(dmtype==9)&
+         &.or.(dmtype==10) ) then    
        if ( (fpstop<0).and.(fsumstop<0)) then
           if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
           if (rang==0) write(6,*) 'STOP in readdm'
@@ -1199,7 +1226,7 @@ contains
     end if
 
 
-    if ( ( (dmtype==3).OR.(dmtype==30) ) &
+    if ( ( (dmtype==3).OR.(dmtype==30).or.(dmtype==32).or.(dmtype==33).or.(dmtype==31) ) &
          .and.(fpstop.le.0.0).and.(fsumstop.le.0.0)) then
        if (rang==0) write(6,*) rang,'critere de conv. sur la force par atome max negative' 
        if (rang==0) write(6,*) rang,'fpstop', fpstop

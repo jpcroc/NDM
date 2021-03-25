@@ -1,0 +1,35 @@
+***
+Il faut avoir fortdepend installé https://pypi.org/project/fortdepend/
+pip install fortdepend
+
+
+**
+dans /MAKE il y a des fichiers makefile Makefile.arch 
+
+
+make arch ARGS=1          build NDM where arch is one of:
+
+# ndm_lammps_mpi PARA=1 LAMMPS=1		: NDM with LAMMPS with OPENMPI code with Intel Compiler on Gatsby cluster Linux arch
+# ndm_lammps_serial LAMMPS=1			: NDM with LAMMPS code with Intel Compiler on Gatsby cluster Linux arch
+# ndm_lammps_serial LAMMPS=1			: NDM with LAMMPS code with Intel Compiler on Gatsby cluster Linux arch
+# ndm_lammps_serial_gfortran LAMMPS=1 		: NDM code with GNU Compiler on Gatsby cluster Linux arch
+# ndm_ml ML=1  					: NDM + MILADI code with Intel Compiler on Gatsby cluster Linux arch
+# ndm_mpi PARA=1 				: NDM + OPENMPI  with Intel Compiler on Gatsby cluster Linux arch
+# ndm_mpi PARA=1 				: NDM + OPENMPI  with Intel Compiler on Gatsby cluster Linux arch
+# ndm_mpi_gfortran PARA=1 			: NDM with OPENMPI code with GNU Compiler on Gatsby cluster Linux arch
+# ndm_mpi_gfortran PARA=1 			: NDM with OPENMPI code with GNU Compiler on Gatsby cluster Linux arch
+# ndm_serial 					: NDM code with Intel Compiler on Gatsby cluster Linux arch
+# ndm_serial 					: NDM code with Intel Compiler on Gatsby cluster Linux arch
+# ndm_serial_gfortran 				: NDM code with GNU Compiler on Gatsby cluster Linux arch
+# template = TEMPLATE COPY THIS FILE WITH A NEW EXTENSION AND ASSIGN VARIABLE AT YOUR NEED
+
+make clean-arch          delete object folder and executable of arch
+make softclean-arch      only delete executable of arch
+make clean-all           delete object folder and executable of all arch
+make softclean-all       only delete executable of all arch
+make tar                 create NDM.tar.gz of src dir and packages
+
+
+On peut faire
+make -j  arch ARGS=1 pour paralléliser la compilation
+make -f M2 pour ne pas passer par fortdepend après une modification mineure (aucun changement de use)

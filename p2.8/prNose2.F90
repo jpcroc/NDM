@@ -33,8 +33,8 @@ module Parrinello_Rahman_Nose
 
   USE T_kind_param_m
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
-       &tstep,ucell,unose,wbox,wnose,enose,erg2ev,fnose,im_glob,it,kcell,knose,leev,&
-       &lucell,rang,timel,tstep,unose,wbox,wnose,sigkine,rang,sig,bk,lspaceNDM
+       &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,im_glob,it,kcell,knose,leev,&
+       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
@@ -66,6 +66,7 @@ module Parrinello_Rahman_Nose
 
   ! Nombre de degrés de liberté
   REAL(double), save, private :: gNose
+  real(double)::wbox
 
 contains
 
@@ -103,14 +104,12 @@ contains
     if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
     if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*boxndm%at(1:3,2)
     if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*boxndm%at(1:3,3)
-    IF (wbox==0.0) THEN
-       wbox = sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
+       wbox =wboxf*sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
   call comm_space%sum(wbox)
 end if
 #endif
-    END IF
     if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la boîte pour Parrinello-Rahman: wbox=',wbox
 
     ! Nombre de degrés de liberté pour le thermostat de Nosé

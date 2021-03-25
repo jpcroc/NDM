@@ -1,0 +1,34 @@
+Un type pour gérer les divisions de communicateurs. Modèle implicte mpi_comm_world se divise en images neb et il y a un comminicateurs entre masters de chaque images
+
+
+subroutine commconstr(div)
+A partir d'un communicateur d'entrée le divise en %nimage communciteurs, pas forcément de même nombre de procs chacun
+cas simple         div%npim=div%np_orig/div%nimage            ! nb de proc par image en fonction du nombre de procs d'origine et du nombre d'image)
+       div%image=int(div%rang_orig/npim) !quel image pour le proc
+       div%rgim=mod(div%rang_orig,npim) ! quel rang dans le comm de l'image
+
+
+
+MODULE PARAUTILS
+module qui gère les routines MPI de division spatiale ET gère aussi les calculs séries
+Ca a été séparé de paraconfig car ça suppose une division SPATIALE (au contraire de paraconfig qui fonctionne pour n'importe quelle division)
+
+subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod)
+Crée pour chaque proc 
+Si calcul série : atloc=> atcomp; celloc= cellcomp
+Si calcul para MAIS (div%npim==1) (cad il n'y a PAS de division spatiale) atloc=> atcomp; celloc= cellcomp
+Si calcul avec %npim >1 (para léllisme spatial) construit celloc; construit atloc par répartition entre procs spatiaux de atcomp
+Au final appelle toujouts calctabtC (atloc, celloc)
+
+subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod)
+A l'inverse du précédent consrtuit atcomp à partir des atloc de chaque proc. Sert quand l'nitialisation a déja répartir les atomes entre procs et qu'on veut reconsrtuire atcomp (voir cas du Gradien Conjugué )
+
+subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,lperiod,ltabvois,it,itetabvois,lchg)
+Routine de calcul des forces en parallélisation spatiale et mixte si on a un master qui contient tous les atomes à chaque pas. Fonctionne aussi en série
+SI calcul série OU %npim=1 (pas de paralélisme spatiale) appele simple calcyabtC et calfo
+
+SI calcul para spatial :  call atcomp%master2loc(atloc,div)  envoie les atomes vers leur proc local d'origine
+    call caltabtC(celloc,atloc,lperiod,box) répartir entre cellules 
+       call maj_atomes_frt_ftm(atloc,celloc) !fait les trabsferts entre prics spatiaux
+       CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
+       call atloc%vers_master(atcomp,div) ! renvoie les atomeslocaux vers le master

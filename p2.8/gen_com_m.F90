@@ -175,7 +175,7 @@ module gen_com_m
   !itesauvinter=sauvegarde reguliere .cout.it qui n'efface pas les fichiers .cout precedent
   logical::lWgin ! ecriture finale de .newgin
   real(double), dimension(3) :: vh ! vitesse de la boite
-  real(double) :: pext, wbox, tbox ! pext poids de la boite temps d'amortissment de la boite
+  real(double) :: pext, wboxf, tbox ! pext poids de la boite temps d'amortissment de la boite
   logical ::  lpcon2,lprtzlm ! pression constante sans et avec amortissement
   logical ::  lpconxyz      ! pression constante - buy only the diagonal term of box matrix can  change. 
   logical :: lTcon, lTberendsen,lTandersen,lTNose,lTHoover,landerscou ! temp constante (3 algorithmes differents)

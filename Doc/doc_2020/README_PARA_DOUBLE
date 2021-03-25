@@ -1,8 +1,44 @@
-Explications sur la parallélisation double espace*NEB
+PARALLELISATION
 
-il y a un master pour chaque image qui gère la configuration atomique complète de cette image (atneb/atcomp) et des slaves qui calcule les forces sur une portion spatiale de cette image (atnebloc/atloc)
 
-Pour la configuration complète sur les masters, ON DOIT AVOIR a l'initialisation  atcfcomp%num_at_glob(i)i quelque soit i <=atcfcomp%im
+***
+éxécution en parallélisation SPATIALE SIMPLE (velocity verlet dmtype=4, GC dmtype=3, trempe rapie dmtype=2)
+
+Le programme se débrouille pour paralléliser au mieux. Mais il est utile de prendre un diviseur de nox/noy/noz (voir plus loin) calculés par le code ::
+---
+nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.8566E-06/  0.6000E-07) = 14
+  noy = Int(   0.8566E-06/  0.6000E-07) = 14
+  noz = Int(   0.8566E-06/  0.6000E-07) = 14
+nox noy noz apres correction = 14 14 14
+----
+On peut aussi imposer nox=12,noy=2,noz=12 dans le fichier .din
+
+nox = INT("taille suivant a" / rayon de coupure) = nombre de cellules suivant a. Idem y et z
+
+*****
+
+exécution en parallélisation double espace*NEB
+
+Le nombre de procs (NPROCS) doit être un diviseur du "nombre d'images-2" (les extrémités ne sont pas relaxées).
+NPROCSSPACE= NPROCS/(NIMAGE-2) peut être égal à 1 ou être un diviseur de nox/noy/noz
+
+******
+
+PARALELISATION AVEC LAMMPS
+
+NPROCSPACE peut prendre n'importe quelle valeur >= 1 LAMMPS se débrouille (vérifier les performances).
+
+****
+
+
+Explications sur la programmation de la parallélisation double espace*NEB 
+
+il y a un "master" pour chaque image qui gère la configuration atomique complète de cette image (atneb/atcomp) et des "esclaves" qui calculent les forces sur une portion spatiale de cette image (atnebloc/atloc)
+
+Pour la configuration complète sur les masters, ON DOIT AVOIR a l'initialisation  atcfcomp%num_at_glob(i)=i quelque soit i <=atcfcomp%im
 
 Pour faire une para double il faut
 -initialiser les communicateurs (init_mpi_neb et commconstr)
@@ -76,4 +112,4 @@ PARRA GC ressemble à paraNEB avec quelques différences:
 
 ***
 PARA MGCC :
-il va falloir faire un init séparé avec non répartition des atcf ?
+ proche de paraneb, mais avec un "big master" qui gère atconf_N et atconf_N+1 et un sous master qui gère seulement atconf_N+1

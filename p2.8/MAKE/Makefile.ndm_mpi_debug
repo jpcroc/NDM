@@ -1,4 +1,4 @@
-# ndm_mpi PARA=1 				: NDM + OPENMPI  with Intel Compiler on Gatsby cluster Linux arch
+# ndm_mpi_debug PARA=1 				: NDM + OPENMPI  with Intel Compiler on Gatsby cluster Linux arch with debug options
 # (last time compiled & tested with exemple : 18 Feb. 2020 by Mickael Trochet)
 #
 # add this module in your .bashrc or charge them before compilation and executions.

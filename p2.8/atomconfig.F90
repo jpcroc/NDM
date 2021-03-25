@@ -888,12 +888,12 @@ contains
 
 
 
-  subroutine print(atin,i1,i2,iwr,unit,natg1,natg2,caracT)
+  subroutine print(atin,i1,i2,unit,natg1,natg2,caracT)
     class(atom_config), intent(in)::atin
-    integer,optional::i1,i2,iwr,unit,natg1,natg2
+    integer,optional::i1,i2,unit,natg1,natg2
     character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
-    integer::i,im,ifin,ideb,ist,ifn,iw,natpr,ig,iprt,unitw
+    integer::i,im,ifin,ideb,ist,ifn,natpr,ig,iprt,unitw
     class (atom_config),allocatable::atprt
     unitw=6
     if (.not.present(caracT)) then
@@ -903,7 +903,7 @@ contains
     end if
     if (present(unit))unitw=unit
 
-    iw=1
+
        select type (atin)
        type is (atom_config)
           allocate(atom_config::atprt)
@@ -913,7 +913,6 @@ contains
           allocate(atom_config_e::atprt)
        end select
 
-    if (present(iwr))iw=iwr
     if (present(natg1)) then
        if (present(natg2)) then
           natpr=natg2-natg1+1
@@ -1016,7 +1015,6 @@ contains
     end if
 #endif    
        
-       if (iw==0) return
        if(scan('f',carac).ne.0)then
           do i=ideb,im
              write(unitw,*)'%fp= ', i,atprt%num_at_glob(i),atprt%fp(:,i)

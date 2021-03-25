@@ -23,12 +23,12 @@ module prog_mod
        &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin,latcomp
   
   use read_val,only:imm,ltabvois,rvois
-
+  use NGC_mod,only:ngc
 #if defined ML || defined PARAML    
   USE ml_main_mod,only: ml_main
 #endif
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
-
+  use one_calc_mod,only:one_calc
   implicit none
 contains
   subroutine prog
@@ -77,7 +77,7 @@ contains
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin))then
        atdml=>atdme
     else
-       if ((dmtype==3).or.(dmtype==30)) then
+       if ((dmtype==3).or.(dmtype==30).or.(dmtype==32).or.(dmtype==33).or.(dmtype==31)) then
           atdml=>atdm
        else
 
@@ -115,23 +115,37 @@ contains
        ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
        return
 #endif
-       select type (atdml)
-       type is (atom_config)
-          select case (dmtype) 
-          case(3,30)
-             call gcII (atdm,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
-          case default
-             write(6,*)'incohérence entre type(atom_config) et dmtype'
-             stop
-          end select
-          class is (atom_config_d)
+!!$       select type (atdml)
+!!$       type is (atom_config)
 #ifdef PARA
-          if ((dmtype.ne.3).and.(dmtype.ne.30))then
+       if ((dmtype.ne.3).and.(dmtype.ne.30).and.(dmtype.ne.31).and.(dmtype.ne.32).and.(dmtype.ne.33))then
              if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                 call maj_atomes_frt_ftm(atdml,celndm,psc0)
              end if
           end if
 #endif
+
+       write(6,*)'TOTA',dmtype
+       
+       select type(atdml)
+       type is (atom_config)
+
+
+
+          select case (dmtype) 
+          case(3,30,31)
+
+             call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
+          case(32,33)
+             call NGC(atdml,celndm,boxndm,psc0)
+          end select
+          class is (atom_config_d)
+!!$          case default
+!!$             write(6,*)'incohérence entre type(atom_config) et dmtype'
+!!$             stop
+!!$          end select
+!!$          class is (atom_config_d)
+!!$          select case (dmtype) 
           select case (dmtype) 
           case(5)
              write(6,*)'loopforcetest pas NDM2020' ; stop
@@ -145,10 +159,13 @@ contains
              call dmloop(atdml,celndm,boxndm,psc0)
           case(22)
              call dmloop_vverlet (atdml,celndm,boxndm,psc0)
-          case (3,30)
-             write(6,*)'incohérence entre type(atom_config_d) et dmtype=GC'
-             stop
+!!$          case (3,30)
+!!$             write(6,*)'incohérence entre type(atom_config_d) et dmtype=GC'
+!!$             stop
 
+          case(111)
+             if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION V2 ****'
+             CALL one_calc(atdml,celndm,boxndm,psc=psc0) 
           case(11)
              if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
              CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc0) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
@@ -182,7 +199,11 @@ contains
 #endif
              !          case (15)
              !             call montecarlo(atdml,celndm,boxndm)
+          case default
+             write(6,*)'WTF dmtype',dmtype
           end select
+
+          
        end select
     case(9)
        !#ifdef PARA

@@ -84,12 +84,16 @@ contains
     return
   end subroutine boxconfig2ndm
 
-  subroutine boxprint(boxprt)
+  subroutine boxprint(boxprt,unit)
     class(box_config)::boxprt
-     write(6,*)'boxprt at',boxprt%at(:,:)
-     write(6,*)'boxprt bg',boxprt%bg(:,:)
-     write(6,*)'boxprt volu',boxprt%volu
-     write(6,*)'boxprt icaltabt',boxprt%icaltabt
+    integer,optional::unit
+    integer::unitw
+    unitw=6
+    if (present(unit))unitw=unit
+     write(unitw,*)'boxprt at',boxprt%at(:,:)
+     write(unitw,*)'boxprt bg',boxprt%bg(:,:)
+     write(unitw,*)'boxprt volu',boxprt%volu
+     write(unitw,*)'boxprt icaltabt',boxprt%icaltabt
    end subroutine boxprint
 
    subroutine periodbox(box,atcf)

@@ -22,7 +22,12 @@
      procedure, pass::fab ! crée une extraite d'une autre à partir du MASK lgul
      procedure, pass::add2conf ! ajoute les éléments d'une configuration à la suite des éléments déja présents (<>copy_config)
      procedure, pass::extend ! étend la taille d'une configuration
-
+     procedure, pass::send2proc=>s2p_atom ! envoi des éléments de la configuration vers un proc selon un communicateur
+     procedure, pass::send2all=>s2a_atom ! envoi des éléments de la configuration vers tous les procs d'un communicateur
+     procedure, pass::recv=>rcv_atom ! reçoit des éléments de la configuration depuis un proc selon un communicateur
+     procedure, pass::zero=>zero_atom ! met une conf à zéro
+     procedure, pass::vers_master=>vers_master_atom !(atcfloc,atcfcomp,div) envoi les configurations spatiales locales vers le master
+     procedure, pass::master2loc=>master2loc_atom !(atcfcomp,atcfloc,div)  ! distribue la configuration complète vers lesprocs locauxde la parallélisation spatiale
 
   end type atom_config
 
@@ -88,15 +93,24 @@ lrescl : T ou F
 ****
 
 call atcf%extend(iadd) ! étend la taille de atcf de iadd (en préservant les éléments déja là) ne devrait pas servir en dehors de ce module
-
 ***
-  subroutine pack(at2pack,imm_in) définit imcomme le plus garnd idice tel que ityp<>0 et met imm à cet indice si immin n'est pas précisé
+  subroutine pack(at2pack,imm_in) redimensionne les tableaux par IMM= MAX (le plus grand indice tel que ityp<>0, IMM_IN)
+    class(atom_config),intent(inout):: at2pack
+    integer,optional, intent(in):: imm_in
   
 ****
 call atsource%fab(atcible) ! crée atcible (désalloue/init) et met les éléments de atsouce tels que %lgul=.true.
-
+  subroutine fab (atsource,atcible,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
+    class(atom_config),intent(in)::atsource
+    class(atom_config),intent(out)::atcible
+    logical, optional::lrescl    
 ****
-call atsource%add2conf(atcible,ldealloc) ! ajoute asource à la fin de atcible. Si ldealloc désalloue atsource)
+call atsource%add2conf(atcible,ldealloc) ! ajoute asource à la fin de atcible. Si ldealloc désalloue atsource (défaut non)  si lextend on étend atcible si besoin( défaut oui)
+  subroutine add2conf (atsource,atcible,lextend,ldealloc)
+    class(atom_config),intent(inout)::atsource
+    class(atom_config),intent(inout)::atcible
+    logical,optional,intent(in)::ldealloc,lextend
+
 ***
 routines provisoires de passage entre ndm et atomconfig 
 subroutine ndm2config (atndm,im,imm,potist,sig,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi)
@@ -121,8 +135,66 @@ distribue la configuraion complète atcfcomp du proc master (0 de div%comm_image
 
 
 **
-subroutine print(atin,i1,i2,iwr,unit,natg1,natg2)
-imprime atin par défaut entièrement sur unité 6
+call atdml%print
+subroutine print(atin,i1,i2,unit,natg1,natg2,caracT) ! impressionde atin (sert au debuggage)
+ par défaut imprime atin entièrement sur unité 6 
 SI present(iunit ) imprime dans cette unité
 SI présent de i1 (et i2) entre i1 (et i2)
-SI présent natg1 (natg2) imprime (depuis) i/%num_at_glob=natg1 (jusqu'à i/%num_at_glob=natg2 
+SI présent natg1 (natg2) imprime (depuis) i/%num_at_glob=natg1 (jusqu'à i/%num_at_glob=natg2)
+
+    class(atom_config), intent(in)::atin
+    integer,optional::i1,i2,iwr,unit,natg1,natg2
+    character(len=*),optional,intent(in)::caracT
+caracT	=  quoi imprimer (voir send2proc)
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat
+
+****
+call atmol%vers_master(atcomp,div,'ixnlus')
+subroutine vers_master_atom(atcfloc,atcfcomp,div,caracT)  ! div est une configuration parallèle spatiale (voir README_PARA_DOUBLE)
+    class(atom_config),intent(in)::atcfloc
+    class(atom_config)::atcfcomp
+    type(para_config)::div
+    character(len=*),optional,intent(in)::caracT    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat
+
+
+*****
+
+subroutine master2loc_atom(atcfcomp,atcfloc,div,caracT)
+
+    class(atom_config)::atcfloc
+    class(atom_config)::atcfcomp
+    type(para_config)::div
+    character(len=*),optional,intent(in)::caracT
+
+***
+NE PAS CONFONDRE ATCONF%SEND ET MPI_COMM%SEND  ET DE MÊME RECV
+**
+
+ call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
+subroutine rcv_atom (atcf, rgem,mpic,caracT)
+    class(atom_config):: atcf
+    type(mpi_communicator),intent(in)::mpic
+    integer,intent(in)::rgem              ! rang qui émet 
+    integer:: size1,size3,sizeV,size9
+    character(len=*),optional,intent(in)::caracT
+
+***
+call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
+    class(atom_config):: atcf
+    type(mpi_communicator),intent(in)::mpic
+    integer,intent(in)::rgcib
+
+***
+
+  call atconf_nplus1%send2all(0,paramcgc%mpi_image)
+
+subroutine s2a_atom(atcf,rgemet,mpic,caracT)
+    type(mpi_communicator),intent(in)::mpic
+    class(atom_config)::atcf
+    integer,intent(in)::rgemet
+
+***

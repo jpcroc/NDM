@@ -1,0 +1,69 @@
+Tpara
+
+définit les types
+type mpi_communicator gestion générale de MPI
+et
+type para_space_config gestion de la parallélisation spatiale
+  type mpi_communicator
+    integer    :: comm       ! MPI communicator
+    integer    :: nproc      ! number of procs in the communicator comm
+    integer    :: rank       ! index           in the communicator comm
+    integer    :: group       ! group          in the communicator comm
+  contains
+    procedure :: init => mpic_init
+    procedure :: init0 => mpic_init0
+    procedure :: probe => mpic_probe
+    procedure :: barrier => mpic_barrier
+    ! sum
+    generic :: send  => mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_send_l
+    generic :: recv  => mpic_recv_dp,mpic_recv_cdp,mpic_recv_i,mpic_recv_l
+    generic :: sum  => mpic_sum_dp
+    generic :: sum  => mpic_sum_cdp
+    generic :: sum  => mpic_sum_i
+    generic::maxloc=>mpic_maxloc_dp
+    procedure :: mpic_sum_dp
+    procedure :: mpic_sum_cdp
+    procedure :: mpic_sum_i
+    procedure:: mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_send_l
+    procedure:: mpic_recv_dp,mpic_recv_cdp,mpic_recv_i,mpic_recv_l
+    ! min ALLREDUCE !!
+    generic :: min  => mpic_min_dp
+    generic :: min  => mpic_min_i
+    procedure :: mpic_min_dp
+    procedure :: mpic_min_i
+    ! max ALLREDUCE !!
+    generic :: max  => mpic_max_dp
+    generic :: max  => mpic_max_i
+    procedure::mpic_maxloc_dp
+    procedure :: mpic_max_dp
+    procedure :: mpic_max_i
+    ! and
+    procedure :: and => mpic_and_l
+    ! broadcast
+    generic :: bcast  => mpic_bcast_dp
+    generic :: bcast  => mpic_bcast_l
+    generic :: bcast  => mpic_bcast_i
+    generic :: bcast  => mpic_bcast_cdp
+    procedure :: mpic_bcast_dp,mpic_bcast_l
+    procedure:: mpic_bcast_i
+    procedure :: mpic_bcast_cdp
+  end type mpi_communicator
+VOIR TPARA
+
+*****
+  type para_space_config
+     integer, allocatable :: res_cpu(:,:)   	!stocke le nombre de cellules de chaques decoupages pour le meilleur decoupage
+     integer, allocatable :: proc_cell(:)          !proc_cell(i) : Numero du proc associe a la cellule i
+     integer, allocatable :: proc_voisin(:)        ! liste des processeurs voisins du processeur courant
+     integer, allocatable :: cell_frontiere(:,:)   ! (i,j) jeme cellule frontiere associee au ieme processeur voisin
+     integer, allocatable :: nbr_cell_frontiere(:) ! nbre de cellules frontieres associees au ieme processeur voisin
+     integer :: nbr_cell_ftm                       ! nbr de cellules fantomes du processeur courant
+     integer, allocatable :: cell_ftm(:)           ! liste des cellules fantomes du processeur courant
+     integer :: nbr_proc_voisin            ! nbre de processeurs voisins du processeur courant
+     integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
+     integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
+     integer :: nb_cell_x, nb_cell_y, nb_cell_z     !nb de cel locales suivant x y z
+  end type para_space_config
+
+
+******

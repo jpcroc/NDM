@@ -27,7 +27,7 @@ module Parrinello_Rahman
   ! [1] Parrinello, M. & Rahman,
   !     A. Polymorphic Transitions in Single rcystals: A New Molecular Dynamics Method
   !     J. Appl. Phys., 1981, 52, 7182-7190
-  ! [2] Ray, J.R. & Rahman, A.
+  ! [2] Ray, J.R. & Rahman, A.controleT
   !     Statistical Ensembles and Molecular Dynamics Studies of Anisotropic Solids
   !     J. Chem. Phys., 198bulk.crcin4, 80, 4423-4428
   ! [3] Ray, J.R. & Rahman, A.
@@ -37,8 +37,8 @@ module Parrinello_Rahman
   !     A Molecular Dynamics Method for Simulations in the Canonical Ensemble
   !     Mol. Phys., 1984, 52, 255-268tabv
   USE T_kind_param_m
-  USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,wbox,erg2ev,&
-       &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wbox,wnose,zhoover, ihbox0,tbox, bk,&
+  USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,erg2ev,&
+       &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigkine,sigtot,text,tstep,im_glob,it,potist,rang,sig,text,tstep,sigkine,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM
 
@@ -81,7 +81,7 @@ module Parrinello_Rahman
 
   ! Nombre de degrés de liberté
   REAL(double), save, private :: gNose
-
+  real(double)::wbox
   ! Variables uniquement nécessaires au calcul de l'énergie potentielle de la
   ! boîte
   real(double), dimension(3,3), save , private ::trh0,invh0,invtrh0,epsi, tension
@@ -124,8 +124,7 @@ contains
     IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
     IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*boxndm%at(1:3,2)
     IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*boxndm%at(1:3,3)
-    IF (wbox==0.0) THEN
-       wbox = sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
+       wbox =wboxf*sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call comm_space%sum(wbox)
@@ -133,7 +132,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 #endif
 
 
-    END IF
     IF(RANG==0) WRITE(6,'(a,g20.12)')'Masse de la boîte pour Parrinello-Rahman: wbox=',wbox
 
     ! État de référence défini par la matrice h0

@@ -82,35 +82,6 @@ program ndm
 
 
 
-  if (rang==0) write(6,*)'*** NDM859 ***'
-#ifdef ART
-  if (rang==0) write(6,*)'*** NDM859+ ART ***'
-#endif
-
-#ifdef PHONDY
-  if (rang==0) write(6,*)'*** NDMP859 +  PHONDY ***'
-#endif
-
-
-!if MAB .....
-#ifdef MAB
-  rangmab=0
-  if (rang==0) write(6,*)'*** NDMP859 +   MAB ***'
-#if defined ML && defined PARAML
-  if (rang==0) write(6,*)'*** NDMP859 +   MAB + ML + PARAML ***'
-  call init_mpi_mab()
-  rang=rangmab
-#endif
-#ifdef LAMMPS_VERSION
-  call init_mpi_mab()
-#endif
-#endif
-!endif MAB ......
-
-#ifdef ML
-  if (rang==0) write(6,*)'*** NDMP859 +   ML ***'
-#endif
-
 
 
 

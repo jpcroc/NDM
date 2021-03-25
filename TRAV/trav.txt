@@ -16,18 +16,23 @@ FAIT:
 2/Ewald en paraspace
 3/ version trempe avec master2loc épisodique voir comment transporter les variables périphériques (type atom atomconfig etendu? A été très facile ! J'ai oublié ce que je voulais dire avec ce point
 2.9/ intégrer mpi_communicator a la fabien (voir ci-dessous)
+2.94/ faire pointer myidsp, nprocsspace et MPI_COMM_SPACE sur les variables de comm_space (fait plus ou moins pas toujours simple)
+2.95/ modifier atomconfig%send2proc
+3/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas). LE PILOTER FINEMENT SUR LES DONNEES A TRANSMETTRE 
+
 
 A FAIRE
-2.94/ faire pointer myidsp, nprocsspace et MPI_COMM_SPACE sur les variables de comm_space
-2.95/ modifier atomconfig%send2proc 
 
 1.1/SYSTEME COMPLET Work in Porgress
-	   2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine : abandonné car algo dépendant, voir cependant calfoMCGC
-3/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas). LE PILOTER FINEMENT SUR LES DONNEES A TRANSMETTRE 
+ 2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine : abandonné car algo dépendant, voir cependant calfoMCGC
 3.1/réécrire paraspace en version atomconfig y compris avec extend BOF
 et écrire des transferts simples de variables atom et varibales cellconfig et boxconfig
 soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
 (quelles données transférer gérées par un tableau de logicals l(i)=.true. on transfère la données i/ L(i)= false on l’initialise à 0)
+
+
+3.5/ GC
+3.6/ suppriemr %xpp du type de base
 
 4/supprimer les routines non NDM2021	et faire une TODO list afférente
 5/version 2T
