@@ -4,16 +4,16 @@ module WGC_mod
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
        it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
-       dmtype, potist,mdcg_noise,formatsauv,lspaceNDM,latcomp,sigstop,sigext,ihbox0,unitP
+       dmtype, potist,mdcg_noise,formatsauv,lspaceNDM,latcomp,sigstop,sigext,ihbox0,unitP,lpr
   USE sauvegardeT_mod,only: sauvegardeT
   USE endrunT_mod,only: endrunT
   USE arret_ndm_mod,only: arret_ndm
   USE initspeed_mod,only: bruit_xp
 #ifdef PARA
-use Tpara,only:COMM_space,myidsp,nprocspace,para_space_config
-use mod_para,only:maj_atomes_frt_ftm
+  use Tpara,only:COMM_space,myidsp,nprocspace,para_space_config
+  use mod_para,only:maj_atomes_frt_ftm
 #else
-use Tpara,only:nprocspace,para_space_config
+  use Tpara,only:nprocspace,para_space_config
 #endif
   USE atomconfig,only : atom_config
   USE cellconfig, only:cell_config
@@ -23,8 +23,8 @@ use Tpara,only:nprocspace,para_space_config
   USE Mat_utils_mod,only:  MatInv
   USE scalebox_mod,only: scalebox
   USE boxconfig,only:box_config,periodbox,initbox
- USE recips_mod,only: recips ,calcvol
-USE cryst_to_cart_mod,only: cryst_to_cart
+  USE recips_mod,only: recips ,calcvol
+  USE cryst_to_cart_mod,only: cryst_to_cart
 
   implicit none
 
@@ -38,13 +38,13 @@ USE cryst_to_cart_mod,only: cryst_to_cart
   type(atom_config),target::atcible
   type(para_config)::gcpara
   real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h,sigsym
-    real(double),allocatable,dimension (:)::R,F
+  real(double),allocatable,dimension (:)::R,F
   integer::N,ndir,nstep,ityprel
-  real(double)::betaguess,V
-  integer::ncalls
+  real(double)::betaguess,V,betaV,betaP,beta
+  integer::ncalls,nextsauv
   logical::lvm
   real(double)::fpstop0
-  
+
 contains
 
   subroutine initsteep
@@ -54,7 +54,11 @@ contains
     select case(ityprel)
 
     case(1)
+       fpstop=fpstop0
        N=atcgcomp%im*3
+       if (allocated (R).or.allocated(F)) then
+          deallocate(R,F)
+       end if
        allocate(R(N))
        allocate(F(N))
        if (mdcg_noise /= 0 ) then
@@ -74,10 +78,13 @@ contains
        end do
 
     case(2)
-       unitP=1d-9
-       fpstop0=fpstop
+       if (allocated (R).or.allocated(F)) then
+          deallocate(R,F)
+       end if
+
+
+
        fpstop=(sigstop/unitP)*(boxcg%volu**0.6666666)
-       write(6,*)'SIGSTOP==FPSTOP=',fpstop
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1) 
        N=9
        allocate(R(N))
@@ -150,8 +157,8 @@ contains
           end do
        end do
        if (fsigmax.le.fpstop) lover=.true.
-!       write(6,*)sigmax,sigstop
-!       if (sigmax.le.sigstop) lover=.true.
+       !       write(6,*)sigmax,sigstop
+       !       if (sigmax.le.sigstop) lover=.true.
     case(1)
        forctot=sqrt( SUM(Ft(:)**2))
        formax=0
@@ -188,11 +195,20 @@ contains
           end if
 
        end select
+       if (lvm)then
+          if (NCALLS.ge.nextsauv) then
+             formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout'
+             call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp=.true.)
+             nextsauv=NCALLS+itesauv
+          end if
+
+       end if
     end if
 
   end subroutine test_conv
 
-  subroutine final_tconv
+  subroutine final_tconv(lover)
+    logical,intent(out)::lover
     real(double):: forctot,sigmax,formax
     integer::i1,i2,i
     forctot=sqrt( SUM(atcgcomp%fp(:,:)**2))
@@ -212,52 +228,70 @@ contains
     forctot = forctot*erg2eV/angst
     formax  = formax*erg2eV/angst
 
-    write(6,*)'END CG FORCE MAX       FORCETOT      SIGMAX'
+    write(6,*)'  FORCE MAX            FORCETOT            SIGMAX'
     write(6,'(3E20.11)')formax,forctot,sigmax
+    !    write(6,'(3E20.11)')fpstop,fsumstop,sigstop
+    write(6,*)
+    lover=.false.
+    if (lpr) then
+       if (fpstop.gT.0) then
+          if ((formax.le.fpstop).and.(sigmax.le.sigstop))lover=.true.
+       end if
+       if (fsumstop.gT.0) then
+          if ((forctot.le.fsumstop).and.(sigmax.le.sigstop))lover=.true.
+       end if
+    else
+       if (fpstop.gT.0) then
+          if (formax.le.fpstop)lover=.true.
+       end if
+       if (fsumstop.gT.0) then
+          if (forctot.le.fsumstop)lover=.true.
+       end if
+    end if
     return
   end subroutine final_tconv
-    
 
-  
+
+
   subroutine back2NDM( N,R,V,F,lover)
     integer,intent(in)::N
     real(double),intent(in)::F(N),R(N),V
-    logical :: lover
+    logical,intent(out) :: lover
 
     integer::i,i1,i2,ip
 
     select case(ityprel)
     case(1)
-    if (lover) then
-       potist=V
-       do i=1,atcgcomp%im
-          i1=atcgcomp%num_at_glob(i)             
-          atcgcomp%fp(1:3,i)=F(3*i1-2:3*i1)
-          atcgcomp%xp(1:3,i)=R(3*i1-2:3*i1)
-       end do
-    else
-       atcgcomp=atcgmin
-    end if
- case(2)
-    if (lover) then
-       ip=0
-       do i1=1,3
-          do i2=1,3
-             ip=ip+1
-             h(i1,i2)=R(ip)
+       if (lover) then
+          potist=V
+          do i=1,atcgcomp%im
+             i1=atcgcomp%num_at_glob(i)             
+             atcgcomp%fp(1:3,i)=F(3*i1-2:3*i1)
+             atcgcomp%xp(1:3,i)=R(3*i1-2:3*i1)
           end do
-       end do
-       call initbox(boxcg,h)
-       call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
-       potist=V
-    else
-       boxcg=boxcgmin
-       call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
-    end if
- end select
+       else
+          atcgcomp=atcgmin
+       end if
+    case(2)
+       if (lover) then
+          ip=0
+          do i1=1,3
+             do i2=1,3
+                ip=ip+1
+                h(i1,i2)=R(ip)
+             end do
+          end do
+          call initbox(boxcg,h)
+          call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
+          potist=V
+       else
+          boxcg=boxcgmin
+          call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
+       end if
+    end select
     return
   end subroutine back2NDM
-    
+
   subroutine setV_F(N,R,V,F,lover)
 
     real(double),intent(in):: R(N)
@@ -308,6 +342,7 @@ contains
          &atcgcomp%ltabvois,it,itetabvois,lchg,pscCG,'xft') 
     V=potist
     NCALLS=NCALLS+1
+    sigsym = 0.5d0*(sig + Transpose(sig) )
     select case (ityprel)
     case(1)
        do i=1,atcgcomp%im
@@ -316,12 +351,12 @@ contains
           !       write(6,*)'FORCES',i,i1,F(3*i1-2:3*i1)
        end do
     case(2)
-       sigsym = 0.5d0*(sig + Transpose(sig) )
-!       do i1=1,3
-!       write(6,*)'SIG ',sigsym(:,i1)*unitP
-!       end do
-!       Pre=(sig(1,1)+sig(2,2)+sig(3,3))/3
-!       write(6,'(A,G15.7)')'pression',Pre*unitP
+
+       !       do i1=1,3
+       !       write(6,*)'SIG ',sigsym(:,i1)*unitP
+       !       end do
+       !       Pre=(sig(1,1)+sig(2,2)+sig(3,3))/3
+       !       write(6,'(A,G15.7)')'pression',Pre*unitP
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1) 
        h(:,:)=boxcg%at(:,:)
        trh=Transpose(h)
@@ -342,10 +377,10 @@ contains
 
     call test_conv(N,F,lover,V,R)    
 
-       !       do i=1,N
+    !       do i=1,N
     !       write(6,*)'R_F',i,R(i),F(i)
     !    end do 
     return
   end subroutine SETV_F
-  
+
 end module WGC_mod

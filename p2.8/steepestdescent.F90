@@ -3,7 +3,7 @@ module steepestdescent_mod
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:rang
 
-  use WGC_mod,only:setV_F,nstep,ndir,betaguess,test_conv,ncalls,lvm
+  use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm
 
   !  real(double),allocatable,dimension (:,:)::X,R,G,H,F
 
@@ -22,7 +22,7 @@ contains
     real(double),dimension(N)::R0,F0,R1
     real(double)::V0,Vb,Vbs2
     logical ::lok
-    beta =betaguess
+    
 !    write(6,*)'betainit',beta
     call setV_F (N,R,V,F,lover)
 !    write(6,*)'post sVF0',V
@@ -44,9 +44,9 @@ contains
 !       write(6,*)'callmindir',idir,beta,V0
        call mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK)
 
-       write(6,*)'minimization idirection; lOVER;  beta ',idir,lover,beta
+       write(6,*)'                      >>> minimization idirection; lOVER;  beta ',idir,lover,beta
        if (lover) then
-          write(6,*)
+!          write(6,*)
           write(6,*)'*************************************'
           if (lok) then
              write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
@@ -69,12 +69,12 @@ contains
     logical,intent(in)::lorig
 
     integer::idir,i
-    real(double)::beta,forctot,formax,gamma
+    real(double)::forctot,formax,gamma
     real(double),dimension(N)::R0,F0,R1,G,H
-    real(double)::V0,Vb,Vbs2,alpha,gigi,xixi
+    real(double)::V0,Vb,Vbs2,gigi,xixi
     logical ::lok
-    alpha =betaguess
-    write(6,*)'betainit',beta
+    
+!    write(6,*)'betainit',beta
     call setV_F (N,R,V,F,lover)
 !    write(6,*)'post sVF0',V
 !    call test_conv(N,F,lover,V,R)
@@ -94,12 +94,13 @@ contains
 !       write(6,*)
 !       write(6,*)'**************************'
 !       write(6,*)'callmindir',idir,beta,V0
-       call mindir(lover,alpha,N,R0,V0,H,R,V,F,lOK)
+       call mindir(lover,beta,N,R0,V0,H,R,V,F,lOK)
 
-       write(6,*)'minimization idirection; lOVER;  beta ',idir,lover,alpha
+       write(6,*)'                      >>> minimization idirection; lOVER;  beta ',idir,lover,beta
+!       write(6,*)'minimization idirection; lOVER;  beta ',idir,lover,beta
        if (lover) then
-          write(6,*)
-          write(6,*)'*************************************'
+!          write(6,*)
+!          write(6,*)'*************************************'
           if (lok) then
              write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
              return
@@ -159,6 +160,7 @@ contains
        call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbs2,Vbs2,Fbs2)
        if (lover) then
 !          write(6,*)'betaS2 relaxed'
+          beta=beta/2
           if (VBS2.GT.V0) then
              V=V0;F=F0;R=R0
 !             write(6,*)'STOP BETAS2 '
@@ -250,10 +252,11 @@ contains
        call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbetatest,Vbetatest,Fbetatest)
        if (lover) then
 !          write(6,*)'PARABOLIC relaxed'
+          beta=betatest
           return
        end if
        if (ldir) then
- !         write(6,*)'PARABOLIC line search over'
+!          write(6,*)'PARABOLIC line search over'
           beta=betatest
           if (Vbetatest.GT.V0) then
              V=V0;R=R0;F=F0
@@ -297,7 +300,7 @@ contains
        beta=(a+b)/2
        c=beta
        Rbeta(:)=R0(:)+beta*F0(:)
-       write(6,'(A,E15.5)')'mindir4 beta',beta
+!       write(6,'(A,E15.5)')'mindir4 beta',beta
        call setV_F(N,Rbeta,Vbeta,Fbeta,lover)
  !      write(6,*)'mindir3 beta',beta,Vbeta
        call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbeta,Vbeta,Fbeta)
@@ -308,7 +311,8 @@ contains
           return
        end if
        if (ldir) then
- !         write(6,*)'BINARY line search over'
+!          write(6,*)'BINARY line search over'
+       
           if (Vbeta.GT.V0) then
              V=V0;R=R0;F=F0
              lover=.true.

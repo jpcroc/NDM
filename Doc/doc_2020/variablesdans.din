@@ -207,12 +207,16 @@
     distminat=-1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
     mdcg_noise_scale=0.001      ! this will affect the 4th digit
    mdcg_noise=1                ! 0 without noise, 1 with noise
-
+    betaguess=1d-7    ! estimation pour le GC dmtype 32-34
 
 !dmtype = type of calculation : 1 -> MD
     !                               2 -> quench (trempe) or fire quench
-    !                               3 -> gradient conjugue sur les coordonnes cartesiennes
-    !                              30 -> gradient conjugue sur les coordonnes reduites
+    !                               3 -> gradient conjugue générique pointe vers 31 par défaut 
+    !                              30 -> VIEUX gradient conjugue sur les coordonnes reduites
+    !                              31 -> VIEUX gradient conjugue sur les coordonnes cartesiennes
+    !                              32 -> steepest descent
+    !                              33 -> gradient conjugue
+    !                              33 -> gradient conjugue modifié Fletcher-Reeves
     !                               4 -> Velocity Verlet 
     !                               5 -> test des forces 
     !                               6 -> analyse des positions en fin de cascade 

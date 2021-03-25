@@ -10,21 +10,10 @@ module NGC_mod
   USE Mat_utils_mod,only:  MatInv
 
   use WGC_mod,only:atcgcomp,atcgloc,boxcg,cellcgcomp,cellcgloc,F,ityprel,N,R,pscCG,V,ncalls,betaguess,&
-       &initsteep,back2ndm,final_tconv
-
-
-  implicit none
-
-
-contains
-  ! *************************************************************
-  subroutine  NGC  (atcgin,celcgin,boxndm,psc)
-    !-----------------------------------------------
-    !   M o d u l e s
-    !-----------------------------------------------
+       &initsteep,back2ndm,final_tconv,nextsauv,fpstop0,betaV,betaP,beta
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,&
-         &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp,lpr,dfpred,itesauv
+         &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp,lpr,dfpred,itesauv,unitP,fpstop
     USE var_pot, ONLY:ntyp
     use steepestdescent_mod, only: steepestdescent,conjugategradient
 #ifdef PARA
@@ -36,11 +25,22 @@ contains
 #endif
     USE cryst_to_cart_mod,only: cryst_to_cart
 
+
+  implicit none
+
+
+contains
+  ! *************************************************************
+  subroutine  NGC  (atcgin,celcgin,boxndm,psc)
+    !-----------------------------------------------
+    !   M o d u l e s
+    !-----------------------------------------------
+
     type(atom_config),target::atcgin
     type(cell_config),target::celcgin
     type(box_config)::boxndm
     type(para_space_config)::psc
-    logical ::lover,lorig
+    logical ::lover
 
     !-----------------------------------------------
     !
@@ -58,10 +58,13 @@ contains
     cellcgloc=>celcgin
     atcgloc=>atcgin
     boxcg=boxndm
-
+    unitP=1d-9
+    fpstop0=fpstop
     !    stop
 
-    !    write(6,*)'IN NGC'
+    write(6,*)'IN NGC',betaguess
+    betaV=betaguess
+    betaP=betaguess/3
 
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -80,18 +83,64 @@ contains
 #endif
 
     NCALLS=0
+    if (itesauv.gt.0)    nextsauv=itesauv
+
+    if (lpr) then
+       do it=1,10
+          ityprel=1
+          beta=betaV
+          call pilotcg(ityprel)
+          call final_tconv(lover)
+          betaV=beta
+          if (lover) exit
+          ityprel=2
+          beta=betaP
+          call pilotcg(ityprel)
+          call final_tconv(lover)
+          betaP=beta
+          if (lover) exit
+       end do
+    else
+       ityprel=1
+       call pilotcg(ityprel)
+       call final_tconv(lover)
+    end if
+     if (lover) then
+       if (rang==0) then
+          write(6,*) 'MIMIMUM REACHED after ',ncalls,' force calculations'
+          write(6,*) '*****************ENERGY erg eV ',Potist,Potist*erg2eV
+       end if
+    else
+       if (rang==0) then
+          write(6,*) 'MIMIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
+          write(6,*) 'ENERGY erg eV ***',Potist,Potist*erg2eV
+       end if
+    end if
+   latcomp=.true.
+    itesauv=0
+    call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
+
+    return
+
+  end subroutine NGC
+
+  subroutine pilotCG (ityprel)
+    integer,intent(in)::ityprel
+    logical ::lover,lorig
+    
+    select case(ityprel)
+    case(2)
 
 
-
-    if (lpr)  then
-       ityprel=2
        call initsteep
        select case (dmtype)
        case(32)
-          write(6,*)'***STEEPEST DESCENT*** beta init', betaguess
+          write(6,'(A,E15.8,A,E12.6)')'******STEEPEST DESCENT  VARIABLE VOLUME  *** beta init', beta,&
+               &' SIGSTOP=>FPSTOP=',fpstop
           write(6,*)' NCALLS    ENERGY(erg)         ENERGY (eV)        FORCTOT/SIG      &
                &      SIGMA      ***          energy gain erg eV'
           !       call initsteep
+!          write(6,*)'SIGSTOP==FPSTOP=',fpstop
           call steepestdescent(N,R,V,F,lover)
 
        case(33,34)
@@ -100,18 +149,21 @@ contains
           else
              lorig=.true.
           end if
-          write(6,*)'***CONJUGATE GRADIENT*** beta init', betaguess
+          write(6,'(A,E15.8,A,E12.6)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta,&
+               &' SIGSTOP=>FPSTOP=',fpstop
+!          write(6,'(A,E15.8)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta
           write(6,*)' NCALLS    ENERGY(erg)         ENERGY (eV)        FORCTOT/SIG     &
                &    SIGMA        ***          energy gain erg eV'
+!                 write(6,*)'SIGSTOP==FPSTOP=',fpstop
           call conjugategradient(N,R,V,F,lover,lorig)
        end select
-    else
-       ityprel=1
+     
+    case(1)
        call initsteep
 
        select case (dmtype)
        case(32)
-          write(6,*)'***STEEPEST DESCENT*** beta init', betaguess
+          write(6,'(A,E15.8)')'******STEEPEST DESCENT*** beta init', beta
           write(6,*)' NCALLS    ENERGY(erg)         ENERGY (eV)        FORCTOT      &
                &  FORMAX (eV/Ang)      ***          energy gain erg eV'
           !       call initsteep
@@ -123,36 +175,18 @@ contains
           else
              lorig=.true.
           end if
-          write(6,*)'***CONJUGATE GRADIENT*** beta init', betaguess
+          write(6,'(A,E15.8)')'******CONJUGATE GRADIENT*** beta init', beta
           write(6,*)' NCALLS    ENERGY(erg)         ENERGY (eV)        FORCTOT     &
                &   FORMAX (eV/Ang)      ***          energy gain erg eV'
           call conjugategradient(N,R,V,F,lover,lorig)
        end select
-    end if
-    write(6,*)
+    end select
+!    write(6,*)
     call back2NDM(N,R,V,F,lover)
     !       write(6,*)'Post back2ndmT',lover
 
-    if (lover) then
-       if (rang==0) then
-          write(6,*) 'MIMIMUM REACHED after ',ncalls,' force calculations'
-          write(6,*) '*****************ENERGY erg eV ',Potist,Potist*erg2eV
-       end if
-    else
-       if (rang==0) then
-          write(6,*) 'MIMIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
-          write(6,*) 'ENERGY erg eV ***',Potist,Potist*erg2eV
-       end if
-    end if
-    call final_tconv
-    latcomp=.true.
-    itesauv=0
-    call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
 
-    return
-
-  end subroutine NGC
-
+  end subroutine pilotCG
 
 end module NGC_mod
 
