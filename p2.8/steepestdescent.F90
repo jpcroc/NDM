@@ -61,11 +61,12 @@ contains
     return
   end subroutine steepestdescent
 
-  subroutine conjugategradient(N,R,V,F,lover)
+  subroutine conjugategradient(N,R,V,F,lover,lorig)
     integer::N
     real(double),dimension(:)::R,F
     real(double)::V
     logical ::lover
+    logical,intent(in)::lorig
 
     integer::idir,i
     real(double)::beta,forctot,formax,gamma
@@ -110,10 +111,17 @@ contains
        
        xixi=0
        gigi=0
-       do i=1,N
-          xixi=xixi+F(i)*F(i)
-          gigi=gigi+G(i)*G(i)
-       end do
+       if (lorig) then
+          do i=1,N
+             xixi=xixi+F(i)*F(i)
+             gigi=gigi+G(i)*G(i)
+          end do
+       else
+          do i=1,N
+             xixi=xixi+(F(i)+G(i))*F(i)
+             gigi=gigi+G(i)*G(i)
+          end do
+       end if
        gamma=xixi/gigi
        G(:)=F(:)
        H(:)=G(:)+gamma*H(:)

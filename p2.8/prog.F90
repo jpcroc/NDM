@@ -77,7 +77,7 @@ contains
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin))then
        atdml=>atdme
     else
-       if ((dmtype==3).or.(dmtype==30).or.(dmtype==32).or.(dmtype==33).or.(dmtype==31)) then
+       if ((dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==33).or.(dmtype==31)) then
           atdml=>atdm
        else
 
@@ -118,7 +118,7 @@ contains
 !!$       select type (atdml)
 !!$       type is (atom_config)
 #ifdef PARA
-       if ((dmtype.ne.3).and.(dmtype.ne.30).and.(dmtype.ne.31).and.(dmtype.ne.32).and.(dmtype.ne.33))then
+       if ((dmtype.ne.30).and.(dmtype.ne.31).and.(dmtype.ne.32).and.(dmtype.ne.34).and.(dmtype.ne.33))then
              if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                 call maj_atomes_frt_ftm(atdml,celndm,psc0)
              end if
@@ -133,10 +133,10 @@ contains
 
 
           select case (dmtype) 
-          case(3,30,31)
+          case(30,31)
 
              call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
-          case(32,33)
+          case(32,33,34)
              call NGC(atdml,celndm,boxndm,psc0)
           end select
           class is (atom_config_d)

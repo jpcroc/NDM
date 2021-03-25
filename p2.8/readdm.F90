@@ -113,6 +113,7 @@ contains
     !                              31 -> VIEUX gradient conjugue sur les coordonnes cartesiennes
     !                              32 -> steepest descent
     !                              33 -> gradient conjugue
+    !                              33 -> gradient conjugue modifié Fletcher-Reeves
     !                               4 -> Velocity Verlet 
     !                               5 -> test des forces 
     !                               6 -> analyse des positions en fin de cascade 
@@ -694,7 +695,7 @@ contains
 
 
     if((lTberendsen).and.( (dmtype.EQ.21).OR.(dmtype.EQ.22).OR.(dmtype.EQ.3).OR.(dmtype.EQ.30)&
-       &.OR.(dmtype.EQ.31).OR.(dmtype.EQ.32).OR.(dmtype.EQ.33) )) then
+       &.OR.(dmtype.EQ.31).OR.(dmtype.EQ.32).OR.(dmtype.EQ.34).OR.(dmtype.EQ.33) )) then
        write(6,*) 'Berendsen pas possible';stop
     end if
 
@@ -792,8 +793,7 @@ contains
           lprtrp=.true.
        case default
        dmtype=8
-       case (3,30)
-          dmtype=30!GC
+       case (3,30,31,32,33,34)
           lEev=.true.
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
        end select
@@ -926,13 +926,15 @@ contains
        if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Velocity Verlet '
     case (3)
        if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE par défaut = 31 sur les coordonnees cartésiennes '
-       dmtype=31
+       dmtype=33
     case (30)
        if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE sur les coordonnees REDUITES'
     case (32)
        if (rang==0) write (6, '(a)') '     STEEPEST DESCENT'
     case (33)
-       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE '
+       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE STANDARD '
+    case (34)
+       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE FLETCHER-REEVES'
     case (4)
        if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
     case (5)
@@ -1083,7 +1085,7 @@ contains
     end if
 
     if ( (dmtype==21).or.(dmtype==22).or.(dmtype==3).or.(dmtype==30).or.(dmtype==32)&
-         &.or.(dmtype==33).or.(dmtype==31).or.(dmtype==9)&
+         &.or.(dmtype==33).or.(dmtype==31).or.(dmtype==34).or.(dmtype==9)&
          &.or.(dmtype==10) ) then    
        if ( (fpstop<0).and.(fsumstop<0)) then
           if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
@@ -1226,7 +1228,7 @@ contains
     end if
 
 
-    if ( ( (dmtype==3).OR.(dmtype==30).or.(dmtype==32).or.(dmtype==33).or.(dmtype==31) ) &
+    if ( ( (dmtype==3).OR.(dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==33).or.(dmtype==31) ) &
          .and.(fpstop.le.0.0).and.(fsumstop.le.0.0)) then
        if (rang==0) write(6,*) rang,'critere de conv. sur la force par atome max negative' 
        if (rang==0) write(6,*) rang,'fpstop', fpstop
