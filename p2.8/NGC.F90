@@ -10,7 +10,7 @@ module NGC_mod
   USE Mat_utils_mod,only:  MatInv
 
   use WGC_mod,only:atcgcomp,atcgloc,boxcg,cellcgcomp,cellcgloc,F,ityprel,N,R,pscCG,V,ncalls,betaguess,&
-       &initsteep,back2ndm,final_tconv,nextsauv,fpstop0,betaV,betaP,beta
+       &initsteep,back2ndm,final_tconv,nextsauv,fpstop0,betaV,betaP,beta,gcpara,lchg,set_pointers_gc
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,&
          &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp,lpr,dfpred,itesauv,unitP,fpstop
@@ -18,7 +18,7 @@ module NGC_mod
     use steepestdescent_mod, only: steepestdescent,conjugategradient
 #ifdef PARA
     use paraconfig,only:para_config,initparapuresp
-    USE parautils,only:initcomp
+    USE parautils,only:initcomp,WORKER_TAG,tolstoi,STOP_TAG
     use Tpara,only:nprocspace,COMM_space
 #else
     use Tpara,only:nprocspace
@@ -62,10 +62,12 @@ contains
     fpstop0=fpstop
     !    stop
 
-    write(6,*)'IN NGC',betaguess
+    lchg=.true.
+
+    if (rang==0 )write(6,*)'IN NGC',betaguess
     betaV=betaguess
     betaP=betaguess/3
-
+    it=0
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atcgcomp%init(im_glob,imm_glob)
@@ -82,42 +84,57 @@ contains
     cellcgcomp=celcgin
 #endif
 
-    NCALLS=0
-    if (itesauv.gt.0)    nextsauv=itesauv
+    call set_pointers_gc ! initilisations des pointers pour tolstoi et calfo
+#ifdef PARA
+    if (gcpara%lmaster.neqv..true.) then
+       call tolstoi (WORKER_TAG,gcpara,'xft') 
+    else
+#endif       
 
-    if (lpr) then
-       do it=1,10
-          ityprel=1
+       NCALLS=0
+       if (itesauv.gt.0)    nextsauv=itesauv
+
+       if (lpr) then
+          do it=1,10
+             ityprel=1
+             beta=betaV
+             call pilotcg(ityprel)
+             call final_tconv(lover)
+             betaV=beta
+             if (lover) exit
+            ityprel=2
+             beta=betaP
+             call pilotcg(ityprel)
+             call final_tconv(lover)
+             betaP=beta
+             if (lover) exit
+          end do
+       else
           beta=betaV
+          ityprel=1
           call pilotcg(ityprel)
           call final_tconv(lover)
-          betaV=beta
-          if (lover) exit
-          ityprel=2
-          beta=betaP
-          call pilotcg(ityprel)
-          call final_tconv(lover)
-          betaP=beta
-          if (lover) exit
-       end do
-    else
-       ityprel=1
-       call pilotcg(ityprel)
-       call final_tconv(lover)
-    end if
-     if (lover) then
-       if (rang==0) then
-          write(6,*) 'MIMIMUM REACHED after ',ncalls,' force calculations'
-          write(6,*) '*****************ENERGY erg eV ',Potist,Potist*erg2eV
        end if
-    else
-       if (rang==0) then
-          write(6,*) 'MIMIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
-          write(6,*) 'ENERGY erg eV ***',Potist,Potist*erg2eV
+       if (lover) then
+          if (rang==0) then
+             write(6,*) 'MIMIMUM REACHED after ',ncalls,' force calculations'
+             write(6,*) '*****************ENERGY erg eV ',Potist,Potist*erg2eV
+          end if
+       else
+          if (rang==0) then
+             write(6,*) 'MIMIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
+             write(6,*) 'ENERGY erg eV ***',Potist,Potist*erg2eV
+          end if
        end if
+
+#ifdef PARA
+       call tolstoi (STOP_TAG,gcpara,'xft') ! make servants return
     end if
-   latcomp=.true.
+#endif
+    
+    latcomp=.true.
     itesauv=0
+    call atcgcomp%print(unit=100+rang)
     call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
 
     return

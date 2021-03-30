@@ -109,6 +109,7 @@ contains
 
        call atdml%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+       latcomp=.false.
        call init(atdml,boxndm,celndm,psc0)
 
 #ifdef DECOUP
@@ -125,7 +126,6 @@ contains
           end if
 #endif
 
-       write(6,*)'TOTA',dmtype
        
        select type(atdml)
        type is (atom_config)

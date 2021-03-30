@@ -90,7 +90,8 @@ module gen_com_m
 !  real(double), dimension(3) :: celsize	     ! taille des cel
 
 
-  integer :: it, itmax, nitmax,igen ! iteration courante, finale , type de generation
+  integer,target :: it
+  integer:: itmax, nitmax,igen ! iteration courante, finale , type de generation
   real(double)::timemax ! temps max simul
   integer :: lenfnam
   integer :: fmt_cin
@@ -105,7 +106,7 @@ module gen_com_m
 
 
 
-  real(double) :: potist ! energie potentielle totale
+  real(double),target :: potist ! energie potentielle totale
   real(double):: potisP,potis1, potis2, potis3, potis0, potcp ! energie potentielle de paire
   real(double) :: potisTersoff ! energie potentielle de tersoff
 
@@ -118,7 +119,7 @@ module gen_com_m
   integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codﾃｩ, ivisu=2=xred
   real(double)::rcangle,rcrdf
 
-  real(double), dimension(3,3) :: sig ! contrainte
+  real(double), dimension(3,3),target :: sig ! contrainte
   real(double), dimension(3,3) :: sigtot
   real(double), dimension(3,3) :: sigkine
 
@@ -162,7 +163,8 @@ module gen_com_m
   real(double)::tempdeplainit,debyetemp
   logical :: lvpread  ! vitesse lue dans le fichier .cin
   integer:: iseed ! graine du gerateur aleatoire des vitesses
-  integer :: dmtype, itab, itetabvois, itetimestep, itederive ! type dynamique, periode de repartition entre cel, periode de calc. tab des voisins, periode de chgt du pas en temps, poeriode de correction de la derive
+  integer :: dmtype, itab, itetimestep, itederive ! type dynamique, periode de repartition entre cel, periode de calc. tab des voisins, periode de chgt du pas en temps, poeriode de correction de la derive
+  integer,target :: itetabvois
   real(double):: depmaxts,tsmin
   real(double) :: tempstop, tempstopcel,ttol, tfroi, tcooling, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
        tsfact, vmax, tgc, dfpred ! gestion du pas en temps
@@ -271,7 +273,7 @@ module gen_com_m
   integer, allocatable :: latdebord(:)
 
   logical :: lcontr    ! dynamique contrainte (routine contrainte)
-  logical :: lperiod   ! conditions periodiques
+  logical,target :: lperiod   ! conditions periodiques
   logical :: lsuivinonpbc
 
 

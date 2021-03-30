@@ -96,7 +96,7 @@ contains
 
     ndir=50   !nombre de direction dans steepest descent
     nstep=50  ! nombre de pas dans la minimisation sur une ligne en steepes descent
-    betaguess=1d-7
+    betaguess=1d-6
     fnamdin = fnam(1:lenfnam)//'.din'
     ! variables de dynamique
     lspaceNDM=.true.

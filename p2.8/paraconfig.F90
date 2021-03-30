@@ -189,6 +189,18 @@ Cl=0;GL=0
     end if
     div%mpi_orig%rank=rg
     div%mpi_image%nproc=nps
+#else
+    div%image=0
+    div%nimage=1
+    div%mpi_image%rank=0
+    if (rg==0)then
+       div%lmaster=.true.
+       div%mpi_master%rank=0
+       div%mpi_master%comm=-1
+    else
+       div%lmaster=.false.
+    end if
+    
 #endif
   end subroutine initparapuresp
 !!$#ifdef PARA

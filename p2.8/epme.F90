@@ -73,7 +73,7 @@ qgridsize=kpmex*kpmey*kpmez
   theta3(:maxorder,Deb:Fin)=zero
   dtheta3(:maxorder,Deb:Fin)=zero
 
-  write(6,*)'deb fin ',rang, deb,fin !TestJM
+!  write(6,*)'deb fin ',rang, deb,fin !TestJM
   do i=Deb,Fin
 
      xi=xp(1,i)

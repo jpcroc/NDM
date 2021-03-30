@@ -7,10 +7,11 @@ module init_mpi_mod
 
   implicit none
 contains
-#ifdef PARA
+
   subroutine init_mpi()
-    use mpi
     use gen_com_m,only:rang
+#ifdef PARA
+    use mpi
     use Tpara,only:ierr,nprocs,MPI_COMM_space,grp_world,nprocspace,myidsp,comm_space,NDM_MPI_REAL_DOUBLE
 
 
@@ -28,9 +29,10 @@ contains
 
     call comm_space%init(MPI_COMM_SPACE)
     nprocspace=>comm_space%nproc
+#endif
   end subroutine init_mpi
 
-#endif
+
    
 end module init_mpi_mod
 

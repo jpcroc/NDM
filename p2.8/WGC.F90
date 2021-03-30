@@ -19,7 +19,7 @@ module WGC_mod
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
   use paraconfig,only:para_config,initparapuresp
-  USE parautils,only:initcomp,pointer_caltabt_calfo
+  USE parautils,only:initcomp,depeche_mode
   USE Mat_utils_mod,only:  MatInv
   USE scalebox_mod,only: scalebox
   USE boxconfig,only:box_config,periodbox,initbox
@@ -28,15 +28,17 @@ module WGC_mod
 
   implicit none
 
-  type(box_config)::boxcg,boxcgmin
-  type(atom_config)::atcgcomp,atcgmin
-  type(cell_config)::cellcgcomp
-  type(para_space_config)::pscCG
+  type(box_config)::boxcgmin
+  type(box_config),target::boxcg
+  type(atom_config),target::atcgcomp
+  type(atom_config)::atcgmin
+  type(cell_config),target::cellcgcomp
+  type(para_space_config),target::pscCG
   class(atom_config),pointer::atcgloc
   type(cell_config),pointer::cellcgloc
   type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
   type(atom_config),target::atcible
-  type(para_config)::gcpara
+  type(para_config),target::gcpara
   real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h,sigsym
   real(double),allocatable,dimension (:)::R,F
   integer::N,ndir,nstep,ityprel
@@ -44,7 +46,7 @@ module WGC_mod
   integer::ncalls,nextsauv
   logical::lvm
   real(double)::fpstop0
-
+  logical,target:: lchg
 contains
 
   subroutine initsteep
@@ -168,6 +170,7 @@ contains
 
        forctot = forctot*erg2eV/angst
        formax  = formax*erg2eV/angst
+!       write(6,'(A,4E20.11)')'TEST', forctot,formax
        if (fpstop>0) then   
           if (formax.le.fpstop) then
              lover=.true.
@@ -313,7 +316,7 @@ contains
     real(double)::volu
 
     real(double) :: invVolu,pre,x
-    logical:: lchg
+    logical :: lchgbox
 
 
     select case(ityprel)
@@ -323,6 +326,7 @@ contains
           i1=atcgcomp%num_at_glob(i)
           atcgcomp%xp(1:3,i) = R(3*i1-2:3*i1)
        end do
+       lchgbox=.false.
     case(2)
        ip=0
        do i1=1,3
@@ -332,14 +336,14 @@ contains
           end do
        end do
        call initbox(boxcg,h)
+!       write(6,*)'R',R
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
-
+       lchgbox=.true.
     end select
 
     if (lperiod)  call periodbox (boxcg,atcgcomp)
-    lchg=.true.
-    call pointer_caltabt_calfo(sig,potist,atcgcomp,cellcgcomp,boxcg,atcgloc,cellcgloc,gcpara,lperiod,&
-         &atcgcomp%ltabvois,it,itetabvois,lchg,pscCG,'xft') 
+
+    call depeche_mode (gcpara,'xft',lchgbox)
     V=potist
     NCALLS=NCALLS+1
     sigsym = 0.5d0*(sig + Transpose(sig) )
@@ -352,7 +356,7 @@ contains
        end do
     case(2)
 
-       !       do i1=1,3
+      !       do i1=1,3
        !       write(6,*)'SIG ',sigsym(:,i1)*unitP
        !       end do
        !       Pre=(sig(1,1)+sig(2,2)+sig(3,3))/3
@@ -383,4 +387,27 @@ contains
     return
   end subroutine SETV_F
 
+
+  subroutine set_pointers_GC
+    use parautils,only: psc_p,sig_p,potist_p,atcomp_p,cellcomp_p,box_p,div_p,atloc_p,celloc_p,ltabvois_p,&
+         &itetabvois_p,it_p,lperiod_p,lchg_p
+    character,target::carac(3)
+    carac='xft'
+    psc_p=>pscCG
+    sig_p=>sig
+    potist_p=>potist
+    atcomp_p=>atcgcomp
+    cellcomp_p=>cellcgcomp
+    box_p=>boxcg
+    div_p=>gcpara
+    atloc_p=>atcgloc
+    celloc_p=>cellcgloc
+    ltabvois_p=>atcgcomp%ltabvois
+    itetabvois_p=>itetabvois
+    it_p=>it
+    lperiod_p=>lperiod
+    lchg_p=>lchg
+  end subroutine set_pointers_GC
+
+  
 end module WGC_mod

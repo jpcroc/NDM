@@ -78,6 +78,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
  end if
 
 #else
+!    call initparapuresp(gcpara,rang,comm_space,nprocspace)
     atcgcomp=atcgin
     cellcgcomp=celcgin
 #endif

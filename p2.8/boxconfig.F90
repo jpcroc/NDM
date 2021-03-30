@@ -2,6 +2,7 @@ module boxconfig
   USE T_kind_param_m
   use recips_mod,only:recips,calcvol
   use atomconfig,only:atom_config,atom_config_d,atom_config_e
+  use Tpara,only:mpi_communicator,endmpi
   implicit none
   type box_config
      real(double):: at(3,3),h0(3,3)
@@ -11,8 +12,29 @@ module boxconfig
 
    contains
      procedure, pass::print=>boxprint
+     procedure, pass::master2slave=>boxmaster2slave
   end type box_config
 contains
+
+  subroutine boxmaster2slave(box,rgem,mpic)
+
+    type(mpi_communicator),intent(in)::mpic
+    class(box_config)::box
+    integer,intent(in)::rgem
+    real(double)::atl(3,3)
+    atl=box%at(:,:)
+    call mpic%bcast(rgem,atl)
+    if (mpic%rank.ne.rgem) then 
+       call initbox(box,atl)
+    end if
+    return
+  end subroutine boxmaster2slave
+
+    
+
+    
+    
+  
   subroutine initbox(boxnew,at,zl)
     type(box_config),intent(out)::boxnew
     real(double),intent(in),optional::at(3,3)

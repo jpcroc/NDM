@@ -18,8 +18,8 @@ FAIT:
 2.9/ intégrer mpi_communicator a la fabien (voir ci-dessous)
 2.94/ faire pointer myidsp, nprocsspace et MPI_COMM_SPACE sur les variables de comm_space (fait plus ou moins pas toujours simple)
 2.95/ modifier atomconfig%send2proc
-3/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas). LE PILOTER FINEMENT SUR LES DONNEES A TRANSMETTRE 
-
+3/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas). LE PILOTER FINEMENT SUR LES DONNEES A TRANSMETTRE*/ master_and_servants à la Michael Trochet 
+3.5/ GC
 
 A FAIRE
 
@@ -31,11 +31,12 @@ soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
 (quelles données transférer gérées par un tableau de logicals l(i)=.true. on transfère la données i/ L(i)= false on l’initialise à 0)
 
 
-3.5/ GC
-3.6/ suppriemr %xpp du type de base
 
+3.6/ suppriemr %xpp du type de base
 4/supprimer les routines non NDM2021	et faire une TODO list afférente
+4.5/ PR en lammps !!!
 5/version 2T
+5.5/ création de PF
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
 7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos

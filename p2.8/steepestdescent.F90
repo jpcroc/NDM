@@ -18,7 +18,7 @@ contains
     logical ::lover
 
     integer::idir
-    real(double)::beta,forctot,formax
+    real(double)::forctot,formax
     real(double),dimension(N)::R0,F0,R1
     real(double)::V0,Vb,Vbs2
     logical ::lok
@@ -30,12 +30,12 @@ contains
 !    call test_conv(N,F,lover,V,R)
 !    write(6,*)'posttconf0',lover,V
     if (lover) then
-       write(6,*)'NO NEED TO RELAX'
+       if (rang==0)write(6,*)'NO NEED TO RELAX'
        return
     end if
 
     do idir=1,ndir
-       write(6,*)
+       if (rang==0)       write(6,*)
        R0(1:N)=R(1:N)
        F0(1:N)=F(1:N)
        V0=V
@@ -44,15 +44,15 @@ contains
 !       write(6,*)'callmindir',idir,beta,V0
        call mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK)
 
-       write(6,*)'                      >>> minimization idirection; lOVER;  beta ',idir,lover,beta
+       if (rang==0)       write(6,*)'                      >>> minimization idirection; lOVER;  beta ',idir,lover,beta
        if (lover) then
 !          write(6,*)
-          write(6,*)'*************************************'
+       if (rang==0)           write(6,*)'*************************************'
           if (lok) then
-             write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+       if (rang==0)             write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
              return
           else
-             write(6,*)'NOT RELAXED!!!!!!!'
+       if (rang==0)             write(6,*)'NOT RELAXED!!!!!!!'
              call test_conv(N,F,lover,V,R)
           end if
        end if
@@ -74,20 +74,20 @@ contains
     real(double)::V0,Vb,Vbs2,gigi,xixi
     logical ::lok
     
-!    write(6,*)'betainit',beta
+    write(6,*)'betainit',beta
     call setV_F (N,R,V,F,lover)
 !    write(6,*)'post sVF0',V
 !    call test_conv(N,F,lover,V,R)
 !    call test_conv(N,F,lover,V,R)
     if (lover) then
-       write(6,*)'NO NEED TO RELAX'
+       if (rang==0)       write(6,*)'NO NEED TO RELAX'
        return
     end if
   
     G=F
     H=F
     do idir=1,ndir
-       write(6,*)
+!       if (rang==0)       write(6,*)
        R0(1:N)=R(1:N)
 !       H0(1:N)=H(1:N)
        V0=V
@@ -96,16 +96,16 @@ contains
 !       write(6,*)'callmindir',idir,beta,V0
        call mindir(lover,beta,N,R0,V0,H,R,V,F,lOK)
 
-       write(6,*)'                      >>> minimization idirection; lOVER;  beta ',idir,lover,beta
+       if (rang==0)       write(6,*)'                      >>> minimization idirection; lOVER;  beta ',idir,lover,beta
 !       write(6,*)'minimization idirection; lOVER;  beta ',idir,lover,beta
        if (lover) then
 !          write(6,*)
 !          write(6,*)'*************************************'
           if (lok) then
-             write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+       if (rang==0)             write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
              return
           else
-             write(6,*)'NOT RELAXED!!!!!!!'
+       if (rang==0)             write(6,*)'NOT RELAXED!!!!!!!'
              call test_conv(N,F,lover,V,R)
           end if
        end if
@@ -147,7 +147,9 @@ contains
     logical ::ldir
     lOK=.true.
     normF02=SUM(F0(:)**2)
-
+!    write(6,*)
+!    write(6,*)'normF02',normF02
+!        write(6,*)
     beta=beta*10
     do i=1,nstep
 !       write(6,*)
@@ -169,12 +171,12 @@ contains
           return
        end if
        if (ldir) then
-!          write(6,*)'line search over: betas2'
-          beta=beta/2
+          write(6,*)'line search over: betas2'
+          beta=beta/3
           if (VBS2.GT.V0) then
              V=V0;F=F0;R=R0
              lover=.true.
-!             write(6,*)'STOP BETAS2 line'
+             write(6,*)'STOP BETAS2 line'
              lok=.false.
           end if
 
@@ -189,10 +191,10 @@ contains
     do i=1,nstep
 !       write(6,*)'mindir2 beta',beta
        call setV_F (N,Rbeta,Vbeta,Fbeta,lover)
-!       write(6,*)'mindir1 beta',lover, beta,Vbeta
+!       write(6,*)'mindir2 beta',lover, beta,Vbeta
        call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbeta,Vbeta,Fbeta)
        if (lover) then
-!          write(6,*)'beta relaxed'
+          write(6,*)'beta relaxed'
           if ((VBS2.lt.Vbeta).or.(V0.lt.Vbeta)) then
              if (V0.LT.VBS2) then
                 V=V0;R=R0;F=F0
@@ -235,23 +237,23 @@ contains
     vb=vbeta ; Vmin=Vbs2
     Va=V0
     Vc=Vbs2
- !   write(6,*)'V',Va,Vb,Vc
+!   write(6,*)'V',Va,Vb,Vc
     do istep=1,nstep
        AA=(vc-va)/((c-a)*(c-b))-(VB-VA)/((b-a)*(c-b))
        BB=(VB-VA)/(b-a) -AA*(b+a)
        betatest=-0.5*BB/AA     
 !       betatest=b-0.5*( ((b-a)**2)*(Vb-Vc)-(((b-c)**2)*(Vb-Va)))/ ((b-a)*(vb-vc)-(b-c)*(vb-va))
        Rbetatest(:)=R0(:)+betatest*F0(:)
-!      write(6,*)'mindir3 beta',betatest
+!      write(6,*)'mindir3 beta IN',betatest
        call setV_F(N,Rbetatest,Vbetatest,Fbetatest,lover)
- !      write(6,*)'mindir3 beta',betatest,Vbetatest
+!      write(6,*)'mindir3 beta OUT',betatest,Vbetatest
        If (Vbetatest.gt.Vmin) then
-!          write(6,*)'PARABOLIC SERACH FAILURE SWITHING TO BINARY'
+          write(6,*)'PARABOLIC SERACH FAILURE SWITHING TO BINARY'
           exit ! recherche parabolique en échec
        end If
        call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbetatest,Vbetatest,Fbetatest)
        if (lover) then
-!          write(6,*)'PARABOLIC relaxed'
+          write(6,*)'PARABOLIC relaxed'
           beta=betatest
           return
        end if
@@ -276,8 +278,9 @@ contains
        end if
     end do
     ! debut de la recherche binaire      
- !      write(6,*)
- !      write(6,*)'BINARY START'
+    !      write(6,*)
+!    return
+!      write(6,*)'BINARY START'
 
     a=0 ; b=beta ; c=beta/2
     vb=vbeta ; Vmin=Vbs2
@@ -302,12 +305,12 @@ contains
        Rbeta(:)=R0(:)+beta*F0(:)
 !       write(6,'(A,E15.5)')'mindir4 beta',beta
        call setV_F(N,Rbeta,Vbeta,Fbeta,lover)
- !      write(6,*)'mindir3 beta',beta,Vbeta
+!      write(6,*)'mindir4 beta',beta,Vbeta
        call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbeta,Vbeta,Fbeta)
 
        Vc=Vbeta
        if (lover) then
- !         write(6,*)'BINARY relaxed'
+!          write(6,*)'BINARY relaxed'
           return
        end if
        if (ldir) then
@@ -342,6 +345,8 @@ contains
     real(double)::scal
 
     integer::i
+!    write(6,*)
+!    write(6,*)'checkline'
     ldir=.false.
     if (lover) then
        R=Rt

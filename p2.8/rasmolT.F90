@@ -12,7 +12,7 @@ module rasmolT_mod
   integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when we
 contains
 
-  subroutine rasmolT(atmol,boxmol,itapp,namefr,rty,latcomp,lw0)
+  subroutine rasmolT(atmol,boxmol,itapp,namefr,rty,latcomp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -21,7 +21,7 @@ contains
     !namefr est la racine nom du fichier (par défaut celui de name.in
     !rty est un tableau     character*3,intent(in), dimension(1:atmol%im),optional  :: rty qui donne les symboles des atomes. utile pour utiliser d'autres symboles que les symboles chimiques associés aux types des atomes. En l'absence de rty, on utilise les symboles des types des atomes.
     !latcomp= en PARA latcomp=.true.=> atmol est une cofiguration complète/latcomp=false=>atmol est distributé sur comm_space
-    !lw0= .true. seul le proc 0 écrit la configuration
+    !lw0= .true. supprimé seul le proc 0 écrit la configuration
     !ivisu dans gen_com_m : 1 :.mol, 4=.cfg ; 2=.xred ; 5 =.gin
 
 
@@ -44,7 +44,6 @@ contains
     character*3,intent(in), dimension(1:atmol%im),optional  :: rty
     character(len=*), optional ::namefr
     logical,intent(in)::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
-    logical, optional,intent(in):: lw0 ! seul le rang=0 écrit (implique latcomp=.true.)
     
     character*80::namef
     integer :: rgloc,im,imm,j,ic
@@ -64,9 +63,7 @@ contains
     real(double),allocatable::sigat_loc(:,:,:),eat_loc(:)
     integer :: im_loc
     integer :: proc_source
-    logical::latcompin=.false.
     type(para_config)::div
-    logical :: lw0in=.false.
 
 #endif
     type(atom_config)::atcomp
@@ -75,37 +72,37 @@ contains
     character :: extension*9
 
 #ifdef PARA
-    latcompin=latcomp
+!    latcompin=latcomp
+!    if (latcompin) then 
+!       if (rang==0) then
+!          latcompin=.true.
+!       else
+!          latcompin=.false. !latcompin intègre lw0 et rang=0
+!       end if
+!    end if
 
-    if (present (lw0))lw0in=lw0
-    if (lw0in) then
-       if(latcompin.eqv..false.) then
-          write(6,*)'comment sauvegarder seulement rang0 si latcomp=.false. ?'
+    if (latcomp.eqv..false.) then
+       
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call atcomp%init(im_glob)
+          div%mpi_image%rank=myidsp
+          div%mpi_image%nproc=nprocspace
+          div%mpi_image%comm=COMM_space%comm
+          call atmol%vers_master(atcomp,div,'ixnlus')
+          im =atcomp%im
+          imm=atcomp%im
+          rgloc=myidsp
+       else
+          write(6,*)'latcomp=false et (nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) ??? stop'
           stop
        end if
-       if (rang==0) then
-          latcompin=.true.
-       else
-          latcompin=.false. !latcompin intègre lw0 et rang=0
-       end if
-    end if
-
-    
-    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(latcompin.eqv..false.)) then
-       call atcomp%init(im_glob)
-       div%mpi_image%rank=myidsp
-       div%mpi_image%nproc=nprocspace
-       div%mpi_image%comm=COMM_space%comm
-       call atmol%vers_master(atcomp,div,'ixnlus')
-       im =atcomp%im
-       imm=atcomp%im
-       rgloc=myidsp
     else
-       rgloc=0
-       call atcomp%init(atmol%im)
-       call atmol%copy_config(atcomp,lrescl=.true.)
-       im=atmol%im
-       imm=atmol%imm
+       if (rgloc==0) then
+          call atcomp%init(atmol%im)
+          call atmol%copy_config(atcomp,lrescl=.true.)
+          im=atmol%im
+          imm=atmol%imm
+       end if
     end if
 #else
     rgloc=0
@@ -115,26 +112,28 @@ contains
     imm=atmol%imm
 #endif  
 
+    if(rgloc==0) then
 
-    at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8
-    allocate(xp(3,im));allocate(ityp(im));allocate(num_at_glob(imm))
-    xp(1:3,1:atmol%im)=atcomp%xp(1:3,1:atmol%im)*1d8
-    num_at_glob(1:atmol%im)=atcomp%num_at_glob(1:atmol%im)
-    ityp(1:im)=atcomp%ityp(1:im)
-    allocate(tyw(imm))
-    tyw='000'
-    !    do i=1,im
-    !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
-    !    end do
-    if (present (rty))then
-       tyw(1:im)=rty(1:im)
-    else
-       !       do i=1,im
-       !          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
-       !       end do
-       tyw(1:im)=ty(ityp(1:im))
-    end if
-
+       at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8
+       allocate(xp(3,im));allocate(ityp(im));allocate(num_at_glob(imm))
+       xp(1:3,1:atmol%im)=atcomp%xp(1:3,1:atmol%im)*1d8
+       num_at_glob(1:atmol%im)=atcomp%num_at_glob(1:atmol%im)
+       ityp(1:im)=atcomp%ityp(1:im)
+!       call atcomp%print
+       allocate(tyw(imm))
+       tyw='000'
+       !    do i=1,im
+       !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
+       !    end do
+       if (present (rty))then
+          tyw(1:im)=rty(1:im)
+       else
+          !       do i=1,im
+          !          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
+          !       end do
+          tyw(1:im)=ty(ityp(1:im))
+       end if
+       
 
     select type (atmol)
     type is (atom_config_e)
@@ -185,7 +184,7 @@ contains
 
     ! conversion entier-->alphanumerique par transfert du nombre
     ! de l'iteration vers fichier tampon relu sous format caractere.
-    if(rgloc==0) then
+
        luvisu = 86
        luvisu2 = 87
 #ifdef PARA   

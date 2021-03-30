@@ -418,7 +418,6 @@ subroutine mpic_bcast_dp(mpic,rank,array)
   if( mpic%nproc == 1 ) return
 
   nsize = SIZE(array)
-
 #if defined(PARA)
   call MPI_BCAST(array,nsize,MPI_DOUBLE_PRECISION,rank,mpic%comm,ierror)
 #endif
