@@ -208,7 +208,7 @@
     type(para_config),intent(in)::div
     integer::newtag
 
-    do 
+    do
        call div%mpi_image%barrier !Servants wait for the master
        if (div%lmaster) newtag=tag  ! master is there from depeche_mode
        call div%mpi_image%bcast(0,newtag) ! all have newtag
@@ -248,7 +248,6 @@
     if (div%lmaster) then  ! Go in tolstoi get the servants
        call tolstoi(FORCE_TAG,div,carac)
     end if
-
     call div%mpi_image%bcast(0,lchgbox)
     !    call div%mpi_image%bcast(0,box_p%at) CA MARCHE PAS AVEC LE POINTEUR !
     if (lchgbox)then

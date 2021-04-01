@@ -80,6 +80,7 @@ contains
 !          latcompin=.false. !latcompin intègre lw0 et rang=0
 !       end if
 !    end if
+          rgloc=myidsp
 
     if (latcomp.eqv..false.) then
        

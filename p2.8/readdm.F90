@@ -242,8 +242,8 @@ contains
     nfda=0
 
     lprtzlm = .FALSE.           ! plot du nombres d'atomes par tranche suivant z
-    lEev=.false.
-    lPkbar=.false.
+    lEev=.true.
+    lPkbar=.true.
     ! definition des rayons de coupure pour le calcul des coordinences autour de chaque type atomique
     deltax=0.0
     rclu(:)=2.0

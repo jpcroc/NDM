@@ -10,9 +10,9 @@ module NGC_mod
   USE Mat_utils_mod,only:  MatInv
 
   use WGC_mod,only:atcgcomp,atcgloc,boxcg,cellcgcomp,cellcgloc,F,ityprel,N,R,pscCG,V,ncalls,betaguess,&
-       &initsteep,back2ndm,final_tconv,nextsauv,fpstop0,betaV,betaP,beta,gcpara,lchg,set_pointers_gc
+       &initsteep,back2ndm,final_tconv,nextsauv,nextmol,fpstop0,betaV,betaP,beta,gcpara,lchg,set_pointers_gc
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,&
+    USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,iterasmol,&
          &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp,lpr,dfpred,itesauv,unitP,fpstop
     USE var_pot, ONLY:ntyp
     use steepestdescent_mod, only: steepestdescent,conjugategradient
@@ -93,6 +93,7 @@ contains
 
        NCALLS=0
        if (itesauv.gt.0)    nextsauv=itesauv
+       if (iterasmol.gt.0)    nextsauv=iterasmol
 
        if (lpr) then
           do it=1,10
@@ -134,7 +135,7 @@ contains
     
     latcomp=.true.
     itesauv=0
-    call atcgcomp%print(unit=100+rang)
+!    call atcgcomp%print(unit=100+rang)
     call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
 
     return

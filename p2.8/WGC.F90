@@ -3,7 +3,7 @@ module WGC_mod
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
        it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
-       inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
+       inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, iterasmol,&
        dmtype, potist,mdcg_noise,formatsauv,lspaceNDM,latcomp,sigstop,sigext,ihbox0,unitP,lpr
   USE sauvegardeT_mod,only: sauvegardeT
   USE endrunT_mod,only: endrunT
@@ -25,7 +25,8 @@ module WGC_mod
   USE boxconfig,only:box_config,periodbox,initbox
   USE recips_mod,only: recips ,calcvol
   USE cryst_to_cart_mod,only: cryst_to_cart
-
+  USE rasmolT_mod,only: rasmolT
+  
   implicit none
 
   type(box_config)::boxcgmin
@@ -40,10 +41,10 @@ module WGC_mod
   type(atom_config),target::atcible
   type(para_config),target::gcpara
   real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h,sigsym
-  real(double),allocatable,dimension (:)::R,F
+  real(double),allocatable,dimension (:)::R,F,Rmin
   integer::N,ndir,nstep,ityprel
   real(double)::betaguess,V,betaV,betaP,beta
-  integer::ncalls,nextsauv
+  integer::ncalls,nextsauv,nextmol
   logical::lvm
   real(double)::fpstop0
   logical,target:: lchg
@@ -59,9 +60,10 @@ contains
        fpstop=fpstop0
        N=atcgcomp%im*3
        if (allocated (R).or.allocated(F)) then
-          deallocate(R,F)
+          deallocate(R,F,Rmin)
        end if
        allocate(R(N))
+       allocate(Rmin(N))
        allocate(F(N))
        if (mdcg_noise /= 0 ) then
           call bruit_xp (atcgcomp%xp,bruitmd,atcgcomp%im)
@@ -78,10 +80,10 @@ contains
           atcgcomp%xp(1:3,i)= atcgcomp%xp(1:3,i)+bruitmd(1:3,i)
           R(3*i1-2:3*i1) = atcgcomp%xp(1:3,i)
        end do
-
+       Rmin=R
     case(2)
        if (allocated (R).or.allocated(F)) then
-          deallocate(R,F)
+          deallocate(R,F,Rmin)
        end if
 
 
@@ -90,6 +92,7 @@ contains
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1) 
        N=9
        allocate(R(N))
+       allocate(Rmin(N))
        allocate(F(N))
        R(:)=0;V=0;F(:)=0
        boxcgmin=boxcg
@@ -100,22 +103,22 @@ contains
              R(ip)=boxcg%at(i1,i2)
           end do
        end do
-
+       Rmin=R
     end select
   end subroutine initsteep
 
-  subroutine test_conv(Nt,Ft,lover,Vt,Rt )
+  subroutine test_conv(Nt,Ft,lover,Vt,Rt,lvm )
     integer,intent(in)::Nt
     real(double),intent(in)::Ft(Nt)
     real(double),intent(in),optional::Rt(Nt)
     real(double),optional::Vt
     logical::lover
+    logical,optional::lvm
     real(double)::Vminabs=1d16
 
     real(double)::forctot,formax,deltaV,sigmax,fsigmax
     integer::i,i1,i2,ip
-    lvm=.false.
-    !    write(6,*)'FT',ft
+    if (present(lvm))lvm=.false.
     forctot=sqrt( SUM(Ft(:)**2))
     formax=0
 
@@ -204,10 +207,13 @@ contains
              call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp=.true.)
              nextsauv=NCALLS+itesauv
           end if
-
+          if (NCALLS.ge.nextmol) then
+             call rasmolT(atcgcomp,boxcg,it,latcomp=.true.)
+             nextmol=NCALLS+iterasmol
+          end if
        end if
     end if
-
+    return
   end subroutine test_conv
 
   subroutine final_tconv(lover)
@@ -295,12 +301,12 @@ contains
     return
   end subroutine back2NDM
 
-  subroutine setV_F(N,R,V,F,lover)
+  subroutine setV_F(N,R,V,F,lover,lvm)
 
     real(double),intent(in):: R(N)
     real(double),intent(out)::V
     real(double),intent(out)::F(N)
-    logical,intent(out)::lover
+    logical,intent(out)::lover,lvm
     integer,intent(in) ::N
 
     !-----------------------------------------------
@@ -342,7 +348,6 @@ contains
     end select
 
     if (lperiod)  call periodbox (boxcg,atcgcomp)
-
     call depeche_mode (gcpara,'xft',lchgbox)
     V=potist
     NCALLS=NCALLS+1
@@ -379,11 +384,11 @@ contains
        end do
     end select
 
-    call test_conv(N,F,lover,V,R)    
+    call test_conv(N,F,lover,V,R,lvm)    
 
     !       do i=1,N
     !       write(6,*)'R_F',i,R(i),F(i)
-    !    end do 
+    !    end do
     return
   end subroutine SETV_F
 
