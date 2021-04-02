@@ -10,7 +10,7 @@ module NGC_mod
   USE Mat_utils_mod,only:  MatInv
 
   use WGC_mod,only:atcgcomp,atcgloc,boxcg,cellcgcomp,cellcgloc,F,ityprel,N,R,pscCG,V,ncalls,betaguess,&
-       &initsteep,back2ndm,final_tconv,nextsauv,nextmol,fpstop0,betaV,betaP,beta,gcpara,lchg,set_pointers_gc
+       &initsteep,back2ndm,final_tconv,nextsauv,nextmol,fpstop0,fpstopsig,betaV,betaP,beta,gcpara,lchg,set_pointers_gc
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,iterasmol,&
          &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp,lpr,dfpred,itesauv,unitP,fpstop
@@ -41,7 +41,7 @@ contains
     type(box_config)::boxndm
     type(para_space_config)::psc
     logical ::lover
-
+	integer::irel
     !-----------------------------------------------
     !
     !
@@ -96,18 +96,20 @@ contains
        if (iterasmol.gt.0)    nextsauv=iterasmol
 
        if (lpr) then
-          do it=1,10
+          do irel=1,10
              ityprel=1
              beta=betaV
              call pilotcg(ityprel)
              call final_tconv(lover)
-             betaV=beta
+ write(6,*)'loverout1',lover,irel 
+          betaV=beta
              if (lover) exit
             ityprel=2
              beta=betaP
              call pilotcg(ityprel)
              call final_tconv(lover)
-             betaP=beta
+             betaP=beta 
+write(6,*)'loverout2',lover,irel
              if (lover) exit
           end do
        else
@@ -174,6 +176,7 @@ contains
                &    SIGMA        ***          energy gain erg eV'
 !                 write(6,*)'SIGSTOP==FPSTOP=',fpstop
           call conjugategradient(N,R,V,F,lover,lorig)
+write(6,*)'loverin',lover	
        end select
      
     case(1)

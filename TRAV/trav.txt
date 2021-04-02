@@ -24,6 +24,9 @@ FAIT:
 A FAIRE
 
 ***/vérifier sauvegardes
+CODER xyz
+SAUVEGARDE PARA
+debuggage LPR
 
 1.1/SYSTEME COMPLET Work in Porgress
 2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine : abandonné car algo dépendant, voir cependant calfoMCGC

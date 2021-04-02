@@ -46,7 +46,7 @@ module WGC_mod
   real(double)::betaguess,V,betaV,betaP,beta
   integer::ncalls,nextsauv,nextmol
   logical::lvm
-  real(double)::fpstop0
+  real(double)::fpstop0,fpstopsig
   logical,target:: lchg
 contains
 
@@ -89,6 +89,7 @@ contains
 
 
        fpstop=(sigstop/unitP)*(boxcg%volu**0.6666666)
+	fpstopsig=fpstop
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1) 
        N=9
        allocate(R(N))
@@ -239,12 +240,12 @@ contains
 
     write(6,*)'  FORCE MAX            FORCETOT            SIGMAX'
     write(6,'(3E20.11)')formax,forctot,sigmax
-    !    write(6,'(3E20.11)')fpstop,fsumstop,sigstop
+        write(6,'(A,3E20.11)')'seuils',fpstop0,fsumstop,sigstop
     write(6,*)
     lover=.false.
     if (lpr) then
        if (fpstop.gT.0) then
-          if ((formax.le.fpstop).and.(sigmax.le.sigstop))lover=.true.
+          if ((formax.le.fpstop0).and.(sigmax.le.sigstop))lover=.true.
        end if
        if (fsumstop.gT.0) then
           if ((forctot.le.fsumstop).and.(sigmax.le.sigstop))lover=.true.
