@@ -116,7 +116,7 @@ contains
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-   call comm_space%sum(sig)
+
    call comm_space%sum(sigkine)
     end if
 #endif

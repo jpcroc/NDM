@@ -82,7 +82,8 @@ contains
 
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart.eqv..true.)) then
 
-       itread=2
+          itread=1
+          call compatrcf%init(immin=imm_glob,imin=0)
        call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
        if (rang==0) then
           write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -94,8 +95,8 @@ contains
        allocate(num_at_buff(imm_glob))
        im_glob=COMPatrcf%im
        call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
-       itread=3
-       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,atrcf%im) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
+!       itread=3
+!       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,atrcf%im) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
     else
           itread=1
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
