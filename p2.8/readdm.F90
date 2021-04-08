@@ -924,11 +924,13 @@ contains
        if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Verlet std'
     case (22)
        if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Velocity Verlet '
-    case (3)
+    case (30)
        if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE par défaut = 31 sur les coordonnees cartésiennes '
-       dmtype=33
     case (30)
        if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE sur les coordonnees REDUITES'
+    case (3)
+       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE STANDARD '
+       dmtype=33
     case (32)
        if (rang==0) write (6, '(a)') '     STEEPEST DESCENT'
     case (33)
