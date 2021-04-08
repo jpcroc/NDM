@@ -14,10 +14,10 @@ exemple :*-----------------
 	imm=7000 !(*) nombre max d'atomes (taille des tableaux)
 	dmtype=15 !(*) type de DM (4= Velocity Verlet; 3= GC ; 2=trempe rapide, 1= verlet std, etc.
 	tinit=400! (*) si .gin	! temperature initiale
-
+	itesauv=100 ! crée un fichier .cout tous les 100 pas
 	itmax=3 ! nombre max d'itarations
 	itetemp=1 ! période sortie des température et énergies 
-	itesigma ! période sortie des pressions 
+	itesigma=10 ! période sortie des pressions 
  &end
 fin ex :*-------
 
@@ -33,7 +33,7 @@ Pour la plupart des donnes des valeurs par defauts sont incluses dans le
 programme.
 Cependant certaines donnes DOIVENT etre precisees.
 exemples
-Calcul DM NVE
+---Calcul DM NVE
 &input
 	ipotentiel=10 !****   type de potentiel
 	imm=2000  !****  taille des tableaux sur les atomes
@@ -46,16 +46,16 @@ Calcul DM NVE
         lPkbar=.true. ! pressions en kbar
 	itesigma=1  ! fréquence d'écriture des contraintes
 	iterasmol=10 ! écriture des positions dans des fichiers    
-ivisu=1 ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG a préférer à itecfg ; ivisu=5 .newgin
+ivisu=1 ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG  ; ivisu=5 .newgin = format .gin
 
-	lperiod=.true. ! poistions réduites entre 0 et 1
+	lperiod=.true. ! positions réduites entre 0 et 1 (défaut)
 	ltabvois=.false. ! calcul des forces par la table des voisins (pas para) fréquence de calcul itetabvois=10
  &end
 
-Calcul DM NPT
+---Calcul DM NPT
 &input
 	lpr=.true. (Parrinello Rahman)
-	lpcon2=.true. freinage des oscillations de la boite (utile pour l'équilibrage)
+	lpcon2=.true. (défaut .false.) freinage des oscillations de la boite (utile pour l'équilibrage)
 	LThoover=.true./lTnose=.true/Ltberendsen=.true. Algo température constante
 	text = température visée
 	
@@ -70,7 +70,7 @@ Calcul DM NPT
         lPkbar=.true. ! pressions en kbar
 	itesigma=1  ! fréquence d'écriture des contraintes
 	iterasmol=10 ! écriture des positions dans des fichiers    
-ivisu=1 ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG a préférer à itecfg ; ivisu=5 .newgin
+ivisu=1 ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG  ; ivisu=5 .newgin
 
 	lperiod=.true. ! poistions réduites entre 0 et 1
 	ltabvois=.false. ! calcul des forces par la table des voisins (pas para) fréquence de calcul itetabvois=10
@@ -85,20 +85,32 @@ gradient conjugué
 	dmtype=3 ! GC
 	fpstop=0.02 !critère d'arrêt max sur les forces eV/Ang  ! fpsumstop somme des forces 
 	mdcg_noise=0  ! mdcg_noise=1 ! 0 without noise, 1 with noise mdcg_noise_scale=0.001 ! this will affect the 4th digit  mdcg_noise=1 
-	     
-
+	
+	ndir=20 ! nombre de directions de GC
+	nstep=10, nombre de pas de recherche pour minimiser dans une direction (donc ici 200 évaluations de forces au max)
 	iterasmol=10 , ivisu=5
 	igen=0 ! on lit des gin (1 on part de .cin)
 	imm=2100 !allocation des tableaux 
-	itmax=100 ! nb max d'itérations
-	lEeV=.true.
-	tinit=100
-	itetemp=1
+	lEeV=.true., lpkbar=.true
 
+	lpr=.true. , sigstop=0.1 ! GC à forme de boite variable (voir ci-dessous) et contraintes drrêt en KBAR
 &end
+dmtype pour gradient conjugué
+    case (3) '     GRADIENT CONJUGUE STANDARD '
+       dmtype=33
+    case (32) '     STEEPEST DESCENT'
+    case (33) '     GRADIENT CONJUGUE STANDARD '
+    case (34) '     GRADIENT CONJUGUE FLETCHER-REEVES'
+       case(2) 	    '     TREMPE RAPIDE'
+
+Si LPR=.TRUE. :
+relaxations enchainées : positions, formes,positions, formes etc.
+Chaque étape de position s'arrête quand fpstop ou fpsumstop est atteint
+Chaque étape de forme de boite position s'arrête quand sigstop fpstop ou fpsumstop sont est atteint
+lednchainement s'arrête quand à la fin d'une étape les deux critères sont atteints
 
 
-NEB :
+---NEB :
  &input
 	ipotentiel=11 !Aluminium Ercolessi
 	dmtype=9 ! NEB
