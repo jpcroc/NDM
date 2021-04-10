@@ -43,6 +43,7 @@ module atomconfig
      procedure, pass::print
      procedure, pass::pack
      procedure, pass::fab
+     procedure, pass::backto
      procedure, pass::add2conf
      procedure, pass::extend
 
@@ -738,9 +739,10 @@ contains
 
   end subroutine pack
 
-  subroutine fab (atsource,atcible,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
+  subroutine fab (atsource,atcible,lback,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
     class(atom_config),intent(in)::atsource
     class(atom_config),intent(out)::atcible
+    logical::lback
     logical, optional::lrescl
     logical::lrescale=.true.
     integer::i2,imtrf,i
@@ -772,6 +774,7 @@ contains
        if(atsource%lgul(i)) then
           i2=i2+1
           call atsource%copy_atom(i,atcible,i2,lextend=.false.)
+          if (lback) atcible%num_at_glob(i2)=i
        end if
     end do
     if (i2.ne.imtrf) then
@@ -780,7 +783,19 @@ contains
     end if
   end subroutine fab
 
+  subroutine backto(atfab,atback)
+    class(atom_config),intent(in)::atfab
+    class(atom_config)::atback
+    integer::i2,imtrf,i
+    do i=1,atfab%im
+       i2=atfab%num_at_glob(i)
+       imtrf=atback%num_at_glob(i2)
+       call atfab%copy_atom(i,atback,i2,lextend=.false.)
+       atback%num_at_glob(i2)=imtrf
+    end do
+  end subroutine backto
 
+    
   subroutine add2conf (atsource,atcible,lextend,ldealloc)
     class(atom_config),intent(inout)::atsource
     class(atom_config),intent(inout)::atcible

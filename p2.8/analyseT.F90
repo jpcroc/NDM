@@ -150,7 +150,6 @@ contains
     !        write(112,'(I10,G15.6,F12.2)')it,timel,temp2
     !     end if
     !  end if
- 
     if (itetemp>0) then
        if (mod(it,itetemp)==0) then
           call calctemp (temp,kine,atdml,celndm)
@@ -161,7 +160,7 @@ contains
                 atdml%lgul(1:atdml%im)=.true.
              end where
              if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
-             call atdml%fab(attyp)
+             call atdml%fab(attyp,lback=.false.)
              call caltabtC(celtyp,attyp,lperiod,boxndm)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              call celtyp%dealloc ; call attyp%dealloc

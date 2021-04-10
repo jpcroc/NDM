@@ -924,7 +924,7 @@ contains
        if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Verlet std'
     case (22)
        if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Velocity Verlet '
-    case (30)
+    case (31)
        if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE par défaut = 31 sur les coordonnees cartésiennes '
     case (30)
        if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE sur les coordonnees REDUITES'

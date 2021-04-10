@@ -151,7 +151,7 @@ contains
              where(atdml%ityp==iti)
                 atdml%lgul=.true.
              end where
-             call atdml%fab(attyp)
+             call atdml%fab(attyp,.false.)
              !write(6,*)'nbat',count(atdml%ityp==iti),na(iti),attyp%im,attyp%ityp
              call caltabtC(celtyp,attyp,lperiod,boxndm)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
