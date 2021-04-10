@@ -19,7 +19,8 @@
      procedure, pass::copy_config ! copie toute une config dans une autre 
      procedure, pass::print ! print dégueu
      procedure, pass::pack ! efface les éléments de type 0 à la fin des tableaux la config
-     procedure, pass::fab ! crée une extraite d'une autre à partir du MASK lgul
+     procedure, pass::fab ! crée une config atcfextr extraite d'une autre à partir du MASK lgul
+     procedure, pass::backto ! reverse la config crée par atextr dans atomconfig de départ (voir ci-dessous)
      procedure, pass::add2conf ! ajoute les éléments d'une configuration à la suite des éléments déja présents (<>copy_config)
      procedure, pass::extend ! étend la taille d'une configuration
      procedure, pass::send2proc=>s2p_atom ! envoi des éléments de la configuration vers un proc selon un communicateur
@@ -100,11 +101,18 @@ call atcf%extend(iadd) ! étend la taille de atcf de iadd (en préservant les é
   
 ****
 call atsource%fab(atcible) ! crée atcible (désalloue/init) et met les éléments de atsouce tels que %lgul=.true.
-  subroutine fab (atsource,atcible,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
+  subroutine fab (atsource,atcible,lback lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
     class(atom_config),intent(in)::atsource
     class(atom_config),intent(out)::atcible
-    logical, optional::lrescl    
+    logical, optional::lrescl
+        logical::lback ! =.true. pour utiliser backto (change num_at_glob); =false copie aussi num_at_glob, backto inutilisable	
 ****
+  subroutine backto(atfab,atback) ! reverse atfab dans atback via atfab%num_at_glob
+    class(atom_config),intent(in)::atfab  ! config construite par %fab
+    class(atom_config)::atback ! config d'origine
+
+
+***
 call atsource%add2conf(atcible,ldealloc) ! ajoute asource à la fin de atcible. Si ldealloc désalloue atsource (défaut non)  si lextend on étend atcible si besoin( défaut oui)
   subroutine add2conf (atsource,atcible,lextend,ldealloc)
     class(atom_config),intent(inout)::atsource
