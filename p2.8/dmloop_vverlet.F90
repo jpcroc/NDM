@@ -116,7 +116,7 @@ contains
        sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
 
 #ifdef PARA
-!       call comm_space%sum(sig)
+       call comm_space%sum(sig)
 
        
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
