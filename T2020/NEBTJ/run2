@@ -1,0 +1,132 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=neb.din                                                                         
+
+ Pas de conditions periodiques
+
+ -------- caracteristiques du run DM-------- 9
+      DRAG OR NEB DYNAMICS 
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=          -1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=        1000  itab=           1  itetimestep=          -1
+tinit=      -1.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+ init_e
+ init_e
+ init_e
+ FNAM deb_neb                                                                         
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+DIVID appel rumax   0        5.56
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.3226E-06/  0.5558E-07) = 5
+  noy = Int(   0.3226E-06/  0.5558E-07) = 5
+  noz = Int(   0.3226E-06/  0.5558E-07) = 5
+nox noy noz apres correction = 5 5 5
+celsizes   0.6451200E-07  0.6451200E-07  0.6451200E-07
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:        2049
+ Nombre de mailles creees :            1           1           1           1
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+taille de la boite ZL     32.2560    32.2560    32.2560
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+
+ sauvegarde positions it=           1 neb.coutposition.000000001                                                      
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+DIVID appel rumax   0        5.56
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ nox,noy,noz dans .din =           5           5           5
+celsizes   0.6451200E-07  0.6451200E-07  0.6451200E-07
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:        2049
+ Nombre de mailles creees :            1           1           1           1
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+taille de la boite ZL     32.2560    32.2560    32.2560
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+
+ sauvegarde positions it=           3 neb.coutposition.000000003                                                      
+ nox,noy,noz deuxième passage  =           5           5           5
+celsizes   0.6451200E-07  0.6451200E-07  0.6451200E-07
+ natperc im/noxyz          80          16
+ ltabvois,lconstrtot F F
+
+  TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! 
+ -------------------------------------------------------------------
+
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ 1ER CALL init
+ init_e
+ temperature fin initspeed    0.0000000000000000     
+
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0x7f69bb141cc2
+#1  0x7f69bb140f90
+#2  0x7f69ba8724af
+#3  0x4bc099
+#4  0x532f80
+#5  0x46cc5e
+#6  0x51c17b
+#7  0x51c1b7
+#8  0x7f69ba85d82f
+#9  0x4019d8
+#10  0xffffffffffffffff

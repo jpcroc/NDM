@@ -3,7 +3,7 @@ module dyn_vverlet_mod
   USE calfoberend_mod,only: calfoberend 
   use var_pot,only:ntyp
   USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,&
-       &l2T,llangevin,lsuivinonpbc,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep,&
+       &l2T,llangevin,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep,&
        lspaceNDM
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
   USE cellconfig, only:cell_config,caltabtC
@@ -21,7 +21,6 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE jqmod
-    USE suivinonpbc
     USE elec_cell,ONLY: dynelec,i2t
 #ifdef PARA
     USE mod_para,only:nprocspace,maj_atomes_frt_ftm
@@ -94,11 +93,6 @@ contains
 
 
     !conditions periodiques
-    if (lsuivinonpbc) then
-       DO i=1,atdml%im
-          tmpsuivi(1:3,i)=tmpsuivi(1:3,i)+tstep*atdml%vp(1:3,i)
-       END DO
-    end if
     if (lperiod)  call periodbox (boxndm,atdml)
 
     ! repartition des atomes dans la nouvelle boite

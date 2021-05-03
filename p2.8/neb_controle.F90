@@ -1,6 +1,5 @@
 module neb_controle_mod
   USE dynalloccell,only:
-  USE sauveposition_mod,only: sauveposition
   USE recips_mod,only: recips
   USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,nebtype,temp,rang,potist,leev,itmax,itetimestep,itetemp,&
        &angst,erg2ev,it

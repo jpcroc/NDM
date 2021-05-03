@@ -1,0 +1,76 @@
+ >>>>>>>>>>> entree readdm
+ nom fichier din=Albulk.din                                                                      
+
+ -------- caracteristiques du run DM--------30
+     GRADIENT CONJUGUE sur les coordonnees REDUITES
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         150  itab=           1  itetimestep=          -1
+tinit=       0.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        2100        2100           1
+
+ **********construction du reseau************
+ repetition de mailles           2           2           2
+ BIP   5.5580544182181004E-008
+ izonr,zlmin,rut           1   14.000000000000002        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.1750000E-07  0.2016000E-07  0.2016000E-07
+Albulk.gin                                                                      volume= 0.45519667D-21 cm3  0.45519667D+03 Ang3
+ natperc im/noxyz          10           0
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =          32
+vecteur  1       7.000000       0.000000       0.000000
+vecteur  2       0.000000       8.064000       0.000000
+vecteur  3       0.000000       0.000000       8.064000
+          32  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ IN GC2
+ IN GC
+ Resultats en eV, Ang
+=====================================================================================
+CG:     iter          epsi              Fmax              delta_Stress      Energy  
+=====================================================================================
+GC:      0    0.1889271464E-13    0.4216194601E-14    0.2835688612E+03   -0.8381022985E+02
+GC:      1    0.3204510760E+01    0.8525637107E+00    0.1278451868E+03   -0.6778532918E+02
+GC:      2    0.3283827391E+01    0.9801918165E+00    0.7513550011E+02   -0.6603637678E+02
+GC:      3    0.4233167290E+01    0.1317390950E+01    0.1597311124E+03   -0.8158648861E+02
+GC:      4    0.4233433708E+01    0.1317461700E+01    0.1597425953E+03   -0.8158611192E+02
+GC:      5    0.4233508500E+01    0.1317481562E+01    0.1597458189E+03   -0.8158600617E+02
+ GOTO9000 3
+came from 9000
+NCALLS    6
+ DEBUG after GCII ... just SAY HALLO
+
+
+ ####### END OF RUN  ######## =            5   time =    0.0000000000000000     

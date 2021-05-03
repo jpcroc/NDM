@@ -1,0 +1,78 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=trppara.din                                                                     
+
+ Pas de conditions periodiques
+
+ -------- caracteristiques du run DM-------- 3
+     GRADIENT CONJUGUE sur les coordonnees CARTESIENNES
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     100.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        2100        2100           1
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+trppara.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ Resultats en eV, Ang
+======================================================================
+CG:     iter          epsi              Fmax              Energy
+======================================================================
+GC:      1    0.4271114027E+02    0.3003986342E+02   -0.6858753893E+04
+GC:      2    0.4368009362E+02    0.3279985040E+02   -0.6859788200E+04
+GC:      3    0.4560299695E+02    0.3366339917E+02   -0.6858566761E+04
+GC:      4    0.2065474717E+02    0.1100668016E+02   -0.6871025820E+04
+GC:      5    0.1387594419E+01    0.7467739473E+00   -0.6881864586E+04
+GC:      6    0.1387594419E+01    0.7467739473E+00   -0.6881864586E+04
+GC:      7    0.1387484948E+01    0.7464440508E+00   -0.6881864587E+04
+GC:      8    0.1387484948E+01    0.7464440508E+00   -0.6881864587E+04
+GC:      9    0.1387483277E+01    0.7464389227E+00   -0.6881864587E+04
+GC:     10    0.1387483277E+01    0.7464389227E+00   -0.6881864587E+04
+GC:     11    0.1387483319E+01    0.7464390497E+00   -0.6881864587E+04
+GC:     12    0.1387483301E+01    0.7464389950E+00   -0.6881864587E+04
+GC:     13    0.1387483301E+01    0.7464389944E+00   -0.6881864587E+04
+GC:     14    0.1387483301E+01    0.7464389944E+00   -0.6881864587E+04
+GC:     15    0.1387483301E+01    0.7464389944E+00   -0.6881864587E+04

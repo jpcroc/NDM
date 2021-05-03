@@ -1,0 +1,39 @@
+ &input
+	lpr=.true.
+	ipotentiel=11 !Aluminium Ercolessi
+	dmtype=4 ! 
+	tinit=300.,itesauv=4
+	igen=0 ! on lit des gin (1 on part de .cin)
+	imm=2100 !allocation des tableaux 
+	itmax=100 ! nb max d'itérations
+	itetemp=5,itesigma=5
+	lperiod=.true. ! 
+	lEeV=.true.,lpkbar=.true.
+	iseed=1
+	nox=4,noy=4,noz=4	
+
+
+&end
+ltabvois=.true.,rvois=6.5,itetabvois=10	
+	fpstop=0.08 !critère d'arrêt eV/Ang
+	mdcg_noise=0	     
+
+  lPathFromGin = .FALSE.      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
+ !---inNEB
+  nebtype=2        ! NEB method is the default     
+  nebrelaxation=2  ! We relax all the atoms if nebrelaxation==1 only
+  ! the most "deplaced" atoms      
+  npath = 15       ! 15 images of the neb is the default
+  maxneb = 700     ! the MAX of NEB steps
+  
+  kspring = 1.0    ! the default value for the spring
+
+deltaRmax=1.d-2
+  neb_noise_scale=0.001      ! this will affect the 4th digit
+  mdcg_noise_scale=0.001      ! this will affect the 4th digit
+  ! x + x*neb_noise_scale*random,
+  ! where "random" is a random number between 
+  ! 0 and 1  
+  neb_noise=0                 ! 0 without noise, 1 with noise
+  mdcg_noise=0                ! 0 without noise, 1 with noise
+  !      	lperiod=.false.  ! pas de conditions periodiques

@@ -1,0 +1,7 @@
+name.in : contient le nom du run, ex UO2
+UO2.din : options DM
+UO2.gin : positions en clair
+UO2.cin : positions en binaires (issues du codes) avec en + : vitesses des atomes et valeurs moyennes ; permet de redémmarrer à la fin d'un run
+pair_tab.potin : fichier potentiel de paires
+
+UO2.out fichier de sortie

@@ -1,0 +1,105 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=Febulk.din                                                                      
+
+ -------- caracteristiques du run DM-------- 1
+     DYNAMIQUE MOLECULAIRE VERLET STANDARD
+ generation du crystal ; puis run
+ IPOTENTIEL          10
+     DEMI-TABLE DES VOISINS rvois    6.1000000000000004E-008
+
+      ANALYSES 
+ itetemp=           1  itesigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=          10  itetimestep=          -1
+tinit=     600.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ Types d_atomes :
+   1   55.847   26.000  Fe 
+ROFF1_2   -0.100   -0.200
+ nptmax in the max number of points on grid        250000
+ EAM           1           1
+ EAM number of points in potin and the step      250000   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       250000   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+DIVID appel rumax   0        6.00
+ rumax devient rvois pour le dimmensionnement en cel        6.10        6.00
+ izonr,zlmin,rut           4   57.106360000000002        12.000000000000002     
+volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.2855E-06/  0.6100E-07) = 4
+  noy = Int(   0.2855E-06/  0.6100E-07) = 4
+  noz = Int(   0.2855E-06/  0.6100E-07) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:           2
+ Nombre de mailles creees :           10          10          10        1000
+
+ -------- boite de simulation ------
+ nombre d atomes =        2000
+taille de la boite ZL     28.5532    28.5532    28.5532
+vecteur  1      28.553180       0.000000       0.000000
+vecteur  2       0.000000      28.553180       0.000000
+vecteur  3       0.000000       0.000000      28.553180
+        2000  atomes de type           1
+
+ nox,noy,noz deuxième passage  =           4           4           4
+celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
+ natperc im/noxyz         775          31
+ ltabvois,lconstrtot T F
+volumeperat= 0.116D-22
+Rvois= 0.610D-07
+ NVperat=          128
+ Nvois=       384000
+
+  TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! 
+ -------------------------------------------------------------------
+
+ paire            1
+ calpoeam RHO MIN:   -6.3326263587307293E-021
+ calpoeam RHO MAX:    12.174708979468400     
+ calpoeam Rhomin Rhomax    0.0000000000000000        170.44524392885501     
+ calpoeam ktorho and the inverse:    8.5222621964427502E-003   117.33973643962830     
+ 1ER CALL init
+ random velocities at TINIT =    600.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses           1
+ temperature MI initspeed    617.37254804393035     
+ center of mass =    13.562760499999868        13.562760499999863        13.562760499999863     
+ Momentum/atom  =   -3.9544652854943193E-020   1.4705177938357707E-020  -5.7704804335838003E-020
+Inertia/anglm =   0.2513E-32 -0.9448E-35 -0.9448E-35      -0.4902E-23
+Inertia/anglm =  -0.9448E-35  0.2513E-32 -0.9448E-35       0.3525E-24
+Inertia/anglm =  -0.9448E-35 -0.9448E-35  0.2513E-32      -0.1405E-22
+ temperature fin initspeed    617.13283762353421     
+ sortie init
+ ***** PREMIERE ITERATION  ****

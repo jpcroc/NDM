@@ -1,7 +1,7 @@
 module tab_imm_m
   !
   USE T_kind_param_m
-  USE gen_com_m, ONLY: lsuivinonpbc,lposmoy,mdcg_noise,llangevin,l2T
+  USE gen_com_m, ONLY: mdcg_noise,llangevin,l2T
   !$ USE OMP_LIB
   ! 
   ! Module contenant les tableaux dimmensionnes sur le
@@ -14,12 +14,8 @@ module tab_imm_m
   real(double),dimension(:,:), allocatable :: xpp    ! positions precedentes
   real(double),dimension(:,:), allocatable :: vp     ! vitesses
   real(double),dimension(:,:), allocatable :: ax     ! positions d'origine
-  real(double),dimension(:,:), allocatable :: posmoyx     ! positions moyennes
   real(double),dimension(:,:), allocatable :: fp     ! forces 
   real(double),dimension(:,:), allocatable :: bruitmd     ! bruitmd 
-  real(double),dimension(:,:), allocatable :: xpnonpbc    ! only in the case, lsuivinonpbc  
-  real(double),dimension(:,:), allocatable :: axnonpbc    ! only in the case, lsuivinonpbc  
-  real(double),dimension(:,:), allocatable :: tmpsuivi    ! only in the case, lsuivinonpbc  
   real(double),dimension(:,:), allocatable :: Glangv    ! random noise langevin
 
   integer, dimension(:), allocatable       :: num_at_glob ! numero global d'un atome
@@ -41,10 +37,6 @@ contains
     vp = 0.0
     allocate(ax(3,nb_imm))
     ax = 0.0
-    if (lposmoy.eqv..true.) then
-       allocate(posmoyx(3,nb_imm))
-       posmoyx = 0.0
-    end if
      if ((llangevin.eqv..true.).or.(l2T.eqv..true.)) then
         allocate(Glangv(3,nb_imm))
      end if
@@ -65,14 +57,6 @@ contains
     allocate(num_at_glob(nb_imm))
     num_at_glob  = 0
 
-    if (lsuivinonpbc) then
-      allocate(xpnonpbc(3,nb_imm))
-      xpnonpbc = 0.0
-      allocate(axnonpbc(3,nb_imm))
-      axnonpbc = 0.0
-      allocate(tmpsuivi(3,nb_imm))
-      tmpsuivi = 0.0
-    end if  
     
 
   end subroutine alloc_all_tab_imm
@@ -125,27 +109,6 @@ contains
        allocate(ax(3,new_nb_imm))
        ax = 0
        ax(:,1:old_nb_imm) = rbuff
-       if (lsuivinonpbc) then
-       ! 
-	rbuff = xpnonpbc
-        deallocate(xpnonpbc)
-        allocate(xpnonpbc(3,new_nb_imm))
-        xpnonpbc = 0
-        xpnonpbc(:,1:old_nb_imm) = rbuff
-       ! 
-	rbuff = axnonpbc
-        deallocate(axnonpbc)
-        allocate(axnonpbc(3,new_nb_imm))
-        axnonpbc = 0
-        axnonpbc(:,1:old_nb_imm) = rbuff
-        !
-        rbuff = tmpsuivi
-        deallocate(tmpsuivi)
-        allocate(tmpsuivi(3,new_nb_imm))
-        tmpsuivi = 0
-        tmpsuivi(:,1:old_nb_imm) = rbuff
-       !
-       end if
        rbuff = fp
        deallocate(fp)
        allocate(fp(3,new_nb_imm))
@@ -214,18 +177,6 @@ contains
     if (allocated(iwmax))       deallocate(iwmax)
     if (allocated(ityp))        deallocate(ityp)
     if (allocated(num_at_glob)) deallocate(num_at_glob)
-    if (lsuivinonpbc) then
-      if (allocated(xpnonpbc))  deallocate(xpnonpbc)
-    end if 
-
-    if (lsuivinonpbc) then 
-      if (allocated(axnonpbc))  deallocate(axnonpbc)
-    end if 
-
-    if (lsuivinonpbc) then 
-            if (allocated(tmpsuivi)) deallocate(tmpsuivi)
-    end if 
-
     if (llangevin) then 
        if(allocated(Glangv)) deallocate(Glangv)
     end if 

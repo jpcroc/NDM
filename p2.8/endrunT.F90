@@ -8,7 +8,7 @@ module endrunT_mod
   USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,itdes,&
        &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
        &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,&
-       &lwgin,nstepdes, lposmoy,l2T,angst,dmtype,it,lenfnam,rang,timel,&
+       &lwgin,nstepdes, l2T,angst,dmtype,it,lenfnam,rang,timel,&
        &formatsauv,fnamcout,fnam,lspaceNDM
   use var_pot, only: eatref,eatref,eatref
   USE cellconfig,only:cell_config,caltabtC
@@ -24,7 +24,6 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE tab_imm_m,only:posmoyx,ityp,xp,num_at_glob,fp,vp,iwmax
 #if defined ML && defined PARAML
     USE time_measure
 #endif

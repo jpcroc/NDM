@@ -1,0 +1,126 @@
+ Process            0  of           12  is alive   2.2204460492503132E-058
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=trppara.din                                                                     
+
+ Pas de conditions periodiques
+
+ -------- caracteristiques du run DM-------- 3
+     GRADIENT CONJUGUE sur les coordonnees CARTESIENNES
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     100.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+ IMM PARA =          210        2100
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-         210        2100          12
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ Process            1  of           12  is alive   2.2204460492503132E-058
+ Process            2  of           12  is alive   2.2204460492503132E-058
+ Process            8  of           12  is alive   2.2204460492503132E-058
+ Process            6  of           12  is alive   2.2204460492503132E-058
+ Process            9  of           12  is alive   2.2204460492503132E-058
+ Process            3  of           12  is alive   2.2204460492503132E-058
+ Process            5  of           12  is alive   2.2204460492503132E-058
+ Process            4  of           12  is alive   2.2204460492503132E-058
+ Process            7  of           12  is alive   2.2204460492503132E-058
+ Process           10  of           12  is alive   2.2204460492503132E-058
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+trppara.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur           12  cpus           0
+ Nbre de solutions possibles :            9
+LE_MEILLEUR_DECOUPAGE :   12    2    2    3    0.4071
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           2           2           3
+ Nombre de cellules max echg  par proc :          12          56
+ Taux d'equilibrage :          12  0.50000000000000000     
+ valeur           12  0.40714285714285714     
+ Nbre Min/Max de cel. locales. :           4           8
+ Nbre Min/Max de cel. fantomes. :          44          56
+ locmin/fantomax :          12   7.1428571428571425E-002
+ Process           11  of           12  is alive   2.2204460492503132E-058
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+         315  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ Le proc            8  a           11  processeur voisin
+ Le proc            6  a           11  processeur voisin
+ Le proc            7  a           11  processeur voisin
+ NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR
+ Le proc            0  a           11  processeur voisin
+ Le proc            4  a           11  processeur voisin
+ Le proc            5  a           11  processeur voisin
+ Le proc            9  a           11  processeur voisin
+ Le proc            1  a           11  processeur voisin
+ Le proc            3  a           11  processeur voisin
+ Le proc           11  a           11  processeur voisin
+ Le proc            2  a           11  processeur voisin
+ Le proc           10  a           11  processeur voisin
+ Resultats en eV, Ang
+======================================================================
+CG:     iter          epsi              Fmax              Energy
+======================================================================
+GC:      1    0.7306505510E+00    0.3115476823E+00   -0.6881938539E+04
+GC:      2    0.5830286951E+00    0.1593972116E+00   -0.6881961445E+04
+GC:      3    0.2555464035E+00    0.4706334739E-01   -0.6881983446E+04
+GC:      4    0.2850336307E+00    0.8692278504E-01   -0.6881985223E+04
+GC:      5    0.1972815608E+00    0.6135856889E-01   -0.6881990919E+04
+GC:      6    0.2028713045E+00    0.6441254797E-01   -0.6881990924E+04
+GC:      7    0.1735180795E+00    0.5010456793E-01   -0.6881992778E+04
+GC:      8    0.1266643756E+00    0.2818157607E-01   -0.6881992999E+04
+GC:      9    0.8341155622E-01    0.2061730926E-01   -0.6881993913E+04
+GC:     10    0.9470380135E-01    0.2847671235E-01   -0.6881993966E+04
+GC:     11    0.5422828931E-01    0.9079928413E-02   -0.6881994643E+04
+ force par atome  max  ev/Ang    9.0799284130716942E-003
+ energie   -6881.9946432240458     
+
+
+ ####### END OF RUN  ######## =           11   time =    0.0000000000000000     

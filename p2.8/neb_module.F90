@@ -11,7 +11,6 @@ module neb_module
   USE contrainte,only:contr
 !  USE config_mod,only: config
   USE recips_mod,only: recips
-  USE sauveposition_mod,only: sauveposition
   USE rasmolT_mod,only: rasmolT
   use var_pot,only:ntyp,ipotentiel,cm,rumax
   !-----------------------------------------------

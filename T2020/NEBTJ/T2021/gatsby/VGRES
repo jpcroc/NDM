@@ -1,0 +1,769 @@
+==21436== Memcheck, a memory error detector
+==21436== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==21436== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==21436== Command: /volatile/home/jcrocombette/DM/codesndm/v2021g/rundm90_ndm_mpi_gfortran_debug
+==21436== 
+==21435== Memcheck, a memory error detector
+==21435== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==21435== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==21435== Command: /volatile/home/jcrocombette/DM/codesndm/v2021g/rundm90_ndm_mpi_gfortran_debug
+==21435== 
+==21437== Memcheck, a memory error detector
+==21437== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==21437== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==21437== Command: /volatile/home/jcrocombette/DM/codesndm/v2021g/rundm90_ndm_mpi_gfortran_debug
+==21437== 
+==21440== Memcheck, a memory error detector
+==21440== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==21440== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==21440== Command: /volatile/home/jcrocombette/DM/codesndm/v2021g/rundm90_ndm_mpi_gfortran_debug
+==21440== 
+==21438== Memcheck, a memory error detector
+==21438== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==21438== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==21438== Command: /volatile/home/jcrocombette/DM/codesndm/v2021g/rundm90_ndm_mpi_gfortran_debug
+==21438== 
+==21439== Memcheck, a memory error detector
+==21439== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==21439== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==21439== Command: /volatile/home/jcrocombette/DM/codesndm/v2021g/rundm90_ndm_mpi_gfortran_debug
+==21439== 
+==21435== Thread 3:
+==21435== Syscall param writev(vector[...]) points to uninitialised byte(s)
+==21435==    at 0x59E00BD: ??? (syscall-template.S:84)
+==21435==    by 0x8F6F81E: OPAL_MCA_PMIX3X_pmix_ptl_base_send_handler (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21435==    by 0x604D7F2: event_persist_closure (event.c:1321)
+==21435==    by 0x604D7F2: event_process_active_single_queue (event.c:1365)
+==21435==    by 0x604D7F2: event_process_active (event.c:1440)
+==21435==    by 0x604D7F2: opal_libevent2022_event_base_loop (event.c:1644)
+==21435==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21435==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21435==  Address 0xde43ddf is 127 bytes inside a block of size 5,120 alloc'd
+==21435==    at 0x4C2FD5F: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21435==    by 0x8F4D36A: OPAL_MCA_PMIX3X_pmix_bfrop_buffer_extend (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21435==    by 0x8F51667: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_byte (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21435==    by 0x8F51F8C: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_buf (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21435==    by 0x8F5185A: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21435==    by 0x8EC1CBF: _commitfn (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21435==    by 0x604DDA0: event_process_active_single_queue (event.c:1370)
+==21435==    by 0x604DDA0: event_process_active (event.c:1440)
+==21435==    by 0x604DDA0: opal_libevent2022_event_base_loop (event.c:1644)
+==21435==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21435==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21435==  Uninitialised value was created by a stack allocation
+==21435==    at 0xD27B606: mca_btl_base_vader_modex_send (in /usr/local/gopenmpi/lib/openmpi/mca_btl_vader.so)
+==21435== 
+==21437== Thread 3:
+==21437== Syscall param writev(vector[...]) points to uninitialised byte(s)
+==21437==    at 0x59E00BD: ??? (syscall-template.S:84)
+==21437==    by 0x8F6F81E: OPAL_MCA_PMIX3X_pmix_ptl_base_send_handler (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21437==    by 0x604D7F2: event_persist_closure (event.c:1321)
+==21437==    by 0x604D7F2: event_process_active_single_queue (event.c:1365)
+==21437==    by 0x604D7F2: event_process_active (event.c:1440)
+==21437==    by 0x604D7F2: opal_libevent2022_event_base_loop (event.c:1644)
+==21437==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21437==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21437==  Address 0xde439cf is 127 bytes inside a block of size 5,120 alloc'd
+==21437==    at 0x4C2FD5F: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21437==    by 0x8F4D36A: OPAL_MCA_PMIX3X_pmix_bfrop_buffer_extend (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21437==    by 0x8F51667: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_byte (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21437==    by 0x8F51F8C: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_buf (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21437==    by 0x8F5185A: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21437==    by 0x8EC1CBF: _commitfn (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21437==    by 0x604DDA0: event_process_active_single_queue (event.c:1370)
+==21437==    by 0x604DDA0: event_process_active (event.c:1440)
+==21437==    by 0x604DDA0: opal_libevent2022_event_base_loop (event.c:1644)
+==21437==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21437==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21437==  Uninitialised value was created by a stack allocation
+==21437==    at 0xD27B606: mca_btl_base_vader_modex_send (in /usr/local/gopenmpi/lib/openmpi/mca_btl_vader.so)
+==21437== 
+==21438== Thread 3:
+==21438== Syscall param writev(vector[...]) points to uninitialised byte(s)
+==21438==    at 0x59E00BD: ??? (syscall-template.S:84)
+==21438==    by 0x8F6F81E: OPAL_MCA_PMIX3X_pmix_ptl_base_send_handler (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21438==    by 0x604D7F2: event_persist_closure (event.c:1321)
+==21438==    by 0x604D7F2: event_process_active_single_queue (event.c:1365)
+==21438==    by 0x604D7F2: event_process_active (event.c:1440)
+==21438==    by 0x604D7F2: opal_libevent2022_event_base_loop (event.c:1644)
+==21438==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21438==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21438==  Address 0xde439cf is 127 bytes inside a block of size 5,120 alloc'd
+==21438==    at 0x4C2FD5F: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21438==    by 0x8F4D36A: OPAL_MCA_PMIX3X_pmix_bfrop_buffer_extend (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21438==    by 0x8F51667: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_byte (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21438==    by 0x8F51F8C: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_buf (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21438==    by 0x8F5185A: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21438==    by 0x8EC1CBF: _commitfn (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21438==    by 0x604DDA0: event_process_active_single_queue (event.c:1370)
+==21438==    by 0x604DDA0: event_process_active (event.c:1440)
+==21438==    by 0x604DDA0: opal_libevent2022_event_base_loop (event.c:1644)
+==21438==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21438==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21438==  Uninitialised value was created by a stack allocation
+==21438==    at 0xD27B606: mca_btl_base_vader_modex_send (in /usr/local/gopenmpi/lib/openmpi/mca_btl_vader.so)
+==21438== 
+==21436== Thread 3:
+==21436== Syscall param writev(vector[...]) points to uninitialised byte(s)
+==21436==    at 0x59E00BD: ??? (syscall-template.S:84)
+==21436==    by 0x8F6F81E: OPAL_MCA_PMIX3X_pmix_ptl_base_send_handler (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21436==    by 0x604D7F2: event_persist_closure (event.c:1321)
+==21436==    by 0x604D7F2: event_process_active_single_queue (event.c:1365)
+==21436==    by 0x604D7F2: event_process_active (event.c:1440)
+==21436==    by 0x604D7F2: opal_libevent2022_event_base_loop (event.c:1644)
+==21436==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21436==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21436==  Address 0xde439cf is 127 bytes inside a block of size 5,120 alloc'd
+==21436==    at 0x4C2FD5F: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21436==    by 0x8F4D36A: OPAL_MCA_PMIX3X_pmix_bfrop_buffer_extend (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21436==    by 0x8F51667: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_byte (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21436==    by 0x8F51F8C: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_buf (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21436==    by 0x8F5185A: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21436==    by 0x8EC1CBF: _commitfn (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21436==    by 0x604DDA0: event_process_active_single_queue (event.c:1370)
+==21436==    by 0x604DDA0: event_process_active (event.c:1440)
+==21436==    by 0x604DDA0: opal_libevent2022_event_base_loop (event.c:1644)
+==21436==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21436==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21436==  Uninitialised value was created by a stack allocation
+==21436==    at 0xD27B606: mca_btl_base_vader_modex_send (in /usr/local/gopenmpi/lib/openmpi/mca_btl_vader.so)
+==21436== 
+==21440== Thread 3:
+==21440== Syscall param writev(vector[...]) points to uninitialised byte(s)
+==21440==    at 0x59E00BD: ??? (syscall-template.S:84)
+==21440==    by 0x8F6F81E: OPAL_MCA_PMIX3X_pmix_ptl_base_send_handler (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x604D7F2: event_persist_closure (event.c:1321)
+==21440==    by 0x604D7F2: event_process_active_single_queue (event.c:1365)
+==21440==    by 0x604D7F2: event_process_active (event.c:1440)
+==21440==    by 0x604D7F2: opal_libevent2022_event_base_loop (event.c:1644)
+==21440==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21440==  Address 0xde439cf is 127 bytes inside a block of size 5,120 alloc'd
+==21440==    at 0x4C2FD5F: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21440==    by 0x8F4D36A: OPAL_MCA_PMIX3X_pmix_bfrop_buffer_extend (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x8F51667: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_byte (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x8F51F8C: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_buf (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x8F5185A: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x8EC1CBF: _commitfn (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x604DDA0: event_process_active_single_queue (event.c:1370)
+==21440==    by 0x604DDA0: event_process_active (event.c:1440)
+==21440==    by 0x604DDA0: opal_libevent2022_event_base_loop (event.c:1644)
+==21440==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21440==  Uninitialised value was created by a stack allocation
+==21440==    at 0xD27B606: mca_btl_base_vader_modex_send (in /usr/local/gopenmpi/lib/openmpi/mca_btl_vader.so)
+==21440== 
+==21439== Thread 3:
+==21439== Syscall param writev(vector[...]) points to uninitialised byte(s)
+==21439==    at 0x59E00BD: ??? (syscall-template.S:84)
+==21439==    by 0x8F6F81E: OPAL_MCA_PMIX3X_pmix_ptl_base_send_handler (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21439==    by 0x604D7F2: event_persist_closure (event.c:1321)
+==21439==    by 0x604D7F2: event_process_active_single_queue (event.c:1365)
+==21439==    by 0x604D7F2: event_process_active (event.c:1440)
+==21439==    by 0x604D7F2: opal_libevent2022_event_base_loop (event.c:1644)
+==21439==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21439==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21439==  Address 0xde439cf is 127 bytes inside a block of size 5,120 alloc'd
+==21439==    at 0x4C2FD5F: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21439==    by 0x8F4D36A: OPAL_MCA_PMIX3X_pmix_bfrop_buffer_extend (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21439==    by 0x8F51667: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_byte (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21439==    by 0x8F51F8C: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack_buf (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21439==    by 0x8F5185A: OPAL_MCA_PMIX3X_pmix_bfrops_base_pack (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21439==    by 0x8EC1CBF: _commitfn (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21439==    by 0x604DDA0: event_process_active_single_queue (event.c:1370)
+==21439==    by 0x604DDA0: event_process_active (event.c:1440)
+==21439==    by 0x604DDA0: opal_libevent2022_event_base_loop (event.c:1644)
+==21439==    by 0x8F0E42D: progress_engine (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21439==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21439==  Uninitialised value was created by a stack allocation
+==21439==    at 0xD27B606: mca_btl_base_vader_modex_send (in /usr/local/gopenmpi/lib/openmpi/mca_btl_vader.so)
+==21439== 
+ Process            1  of            6  is alive   2.2204460492503132E-058
+ Process            4  of            6  is alive   2.2204460492503132E-058
+ Process            3  of            6  is alive   2.2204460492503132E-058
+ INPNEB           1           6
+ Process            5  of            6  is alive   2.2204460492503132E-058
+ Process            0  of            6  is alive   2.2204460492503132E-058
+ Process            2  of            6  is alive   2.2204460492503132E-058
+ *** NDM859 ***
+ INPNEB           3           6
+ >>>>>>>>>>> entree readdm
+ nom fichier din=neb.din                                                                         
+ INPNEB           4           6
+ INPNEB           2           6
+
+ Pas de conditions periodiques
+
+ INPNEB           5           6
+ -------- caracteristiques du run DM-------- 9
+      DRAG OR NEB DYNAMICS 
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=          -1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=          60  itab=           1  itetimestep=          -1
+tinit=      -1.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+ INPNEB           0           6
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ FNAMneb 1 deb_neb.gin                                                                                2           0
+ FNAMneb 1 deb_neb.gin                                                                                2           0
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+ FNAMneb 1 deb_neb.gin                                                                                2           0
+ FNAMneb 1 deb_neb.gin                                                                                2           0
+ FNAMneb 1 deb_neb.gin                                                                                2           0
+ FNAMneb 1 deb_neb.gin                                                                                2           0
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+ -----------------------------------------------
+ Nbre Min/Max de cel. fantomes. :         112         112
+           FIN DU CALCUL DU DECOUPAGE :         
+deb_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+
+ Nbre de cellule suivant x :           4
+ locmin/fantomax :           2  0.28571428571428570     
+
+ Nbre de cellule suivant y :           4
+
+ -----------------------------------------------------------
+ Nbre de cellule suivant z :           4
+
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Nbre de solutions possibles :            3
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ locmin/fantomax :           2  0.28571428571428570     
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ -----------------------------------------------
+ Nbre de cellule suivant y :           4
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant z :           4
+ Nbre de cellule suivant x :           4
+
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ IMMGLOBIMMGLOB        2100
+ Le cas choisit :           1           1           2
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ IMMGLOBIMMGLOB        2100
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ IMMGLOBIMMGLOB        2100
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ IMMGLOBIMMGLOB        2100
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ IMMGLOBIMMGLOB        2100
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+ rAsmol        2049
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ IMMGLOBIMMGLOB        2100
+ FNAMneb npath fin_neb.gin                                                                                5           0
+ FNAMneb npath fin_neb.gin                                                                                3           0
+ FNAMneb npath fin_neb.gin                                                                                1           0
+ FNAMneb npath fin_neb.gin                                                                                2           0
+ FNAMneb npath fin_neb.gin                                                                                4           0
+ FNAMneb npath fin_neb.gin                                                                                0           0
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+fin_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ IMMGLOBIMMGLOB        2100
+ IMMGLOBIMMGLOB        2100
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ IMMGLOBIMMGLOB        2100
+ IMMGLOBIMMGLOB        2100
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+ rAsmol        2049
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ IMMGLOBIMMGLOB        2100
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ IMMGLOBIMMGLOB        2100
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ NEB: deplacement max entre configurations =    1.1183600829524103       pour l atome         2049
+ NEB: nebrelaxation /= 1
+ NEB: relaxation NEB pour TOUS les atomes
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+ -----------------------------------------------
+
+           FIN DU CALCUL DU DECOUPAGE :         
+ Le cas choisit :           1           1           2
+
+ Nombre de cellules max echg  par proc :           2         112
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Taux d'equilibrage :           2   1.0000000000000000     
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ valeur            2  0.92857142857142860     
+ Nombre de cellules max echg  par proc :           2         112
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ locmin/fantomax :           2  0.28571428571428570     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ -----------------------------------------------
+ locmin/fantomax :           2  0.28571428571428570     
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+ MAJ1           1
+ MAJ1           0
+ MAJ1           2
+ MAJ2           0
+ MAJ1           3
+ MAJ1           5
+ MAJ1           4
+ MAJ2           1
+ MAJ2           2
+ MAJ2           5
+ MAJ3           0
+ MAJ2           3
+ MAJ2           4
+ MAJ3           1
+ MAJ3           2
+ MAJ4           1
+ MAJ3           5
+ MAJ5           1
+ MAJ6           1
+ MAJ4           5
+ MAJ5           5
+ MAJ3           4
+ MAJ6           5
+ MAJ3           3
+ MAJ4           3
+ MAJ5           3
+ MAJ6           3
+==21438== 
+==21438== Process terminating with default action of signal 15 (SIGTERM)
+==21438==    at 0x59DE80D: ??? (syscall-template.S:84)
+==21438==    by 0x6056A87: poll (poll2.h:46)
+==21438==    by 0x6056A87: poll_dispatch (poll.c:165)
+==21438==    by 0x604D1CE: opal_libevent2022_event_base_loop (event.c:1630)
+==21438==    by 0x60078BD: progress_engine (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21438==    by 0x62E66B9: start_thread (pthread_create.c:333)
+==21438== 
+==21438== HEAP SUMMARY:
+==21438==     in use at exit: 11,529,302 bytes in 10,380 blocks
+==21438==   total heap usage: 39,537 allocs, 29,157 frees, 21,326,909 bytes allocated
+==21438== 
+==21439== 
+==21439== Process terminating with default action of signal 15 (SIGTERM)
+==21439==    at 0x59CD8E7: sched_yield (syscall-template.S:84)
+==21439==    by 0x5CFA3B4: ompi_request_default_wait_any (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21439==    by 0x5D3EB4E: PMPI_Waitany (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21439==    by 0x4E8A79A: PMPI_WAITANY (in /usr/local/gopenmpi/lib/libmpi_mpifh.so.40.20.2)
+==21439==    by 0x5EB3D6: __mod_para_MOD_reception_nouveaux_atomes (mod_para.F90:387)
+==21439==    by 0x5F281D: __mod_para_MOD_maj_atomes_frt_ftm (mod_para.F90:122)
+==21439==    by 0x61B1A7: __parautils_MOD_pointer_caltabt_calfo (parautils.F90:95)
+==21439==    by 0x5886AF: __neb_mod_MOD_neb (neb.F90:197)
+==21439==    by 0x414A53: __prog_mod_MOD_prog (prog.F90:185)
+==21439==    by 0x5BC84F: MAIN__ (main.F90:118)
+==21439==    by 0x5BC879: main (main.F90:10)
+==21439== 
+==21439== HEAP SUMMARY:
+==21439==     in use at exit: 11,582,075 bytes in 10,414 blocks
+==21439==   total heap usage: 39,584 allocs, 29,170 frees, 21,378,198 bytes allocated
+==21439== 
+==21440== 
+==21440== Process terminating with default action of signal 15 (SIGTERM)
+==21440==    at 0x59CD8E5: sched_yield (syscall-template.S:84)
+==21440==    by 0x5CFA094: ompi_request_default_wait (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x5D55340: ompi_coll_base_sendrecv_actual (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x5D55B54: ompi_coll_base_allreduce_intra_recursivedoubling (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x5D0F459: PMPI_Allreduce (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x4E7F49A: MPI_ALLREDUCE (in /usr/local/gopenmpi/lib/libmpi_mpifh.so.40.20.2)
+==21440==    by 0x5E5D2D: __mod_para_MOD_envoi_atomes_frontieres (mod_para.F90:609)
+==21440==    by 0x5F293B: __mod_para_MOD_maj_atomes_frt_ftm (mod_para.F90:130)
+==21440==    by 0x61B1A7: __parautils_MOD_pointer_caltabt_calfo (parautils.F90:95)
+==21440==    by 0x5886AF: __neb_mod_MOD_neb (neb.F90:197)
+==21440==    by 0x414A53: __prog_mod_MOD_prog (prog.F90:185)
+==21440==    by 0x5BC84F: MAIN__ (main.F90:118)
+==21440== 
+==21440== HEAP SUMMARY:
+==21440==     in use at exit: 11,529,302 bytes in 10,380 blocks
+==21440==   total heap usage: 39,537 allocs, 29,157 frees, 21,326,893 bytes allocated
+==21440== 
+==21440== Thread 1:
+==21440== 1 bytes in 1 blocks are definitely lost in loss record 2 of 8,249
+==21440==    at 0x4C2DB8F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21440==    by 0x596E509: strdup (strdup.c:42)
+==21440==    by 0xE4CEF42: ???
+==21440==    by 0xDAB85FF: ???
+==21440==    by 0x602DEA2: mca_base_framework_components_register (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21440==    by 0x602E2F5: mca_base_framework_register (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21440==    by 0x602E350: mca_base_framework_open (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21440==    by 0x5D7F4E6: ompi_mpi_init (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x5D2916D: PMPI_Init (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x4E85F57: mpi_init (in /usr/local/gopenmpi/lib/libmpi_mpifh.so.40.20.2)
+==21440==    by 0x5BC5C0: __init_mpi_mod_MOD_init_mpi (init_MPI.F90:32)
+==21440==    by 0x5BC626: MAIN__ (main.F90:43)
+==21440== 
+==21440== 79 (64 direct, 15 indirect) bytes in 1 blocks are definitely lost in loss record 6,388 of 8,249
+==21440==    at 0x4C2DB8F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21440==    by 0xCA5A239: mca_mpool_hugepage_open (in /usr/local/gopenmpi/lib/openmpi/mca_mpool_hugepage.so)
+==21440==    by 0x6023962: mca_base_framework_components_open (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21440==    by 0x6098281: mca_mpool_base_open (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21440==    by 0x602E3C4: mca_base_framework_open (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21440==    by 0x5D7F480: ompi_mpi_init (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x5D2916D: PMPI_Init (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x4E85F57: mpi_init (in /usr/local/gopenmpi/lib/libmpi_mpifh.so.40.20.2)
+==21440==    by 0x5BC5C0: __init_mpi_mod_MOD_init_mpi (init_MPI.F90:32)
+==21440==    by 0x5BC626: MAIN__ (main.F90:43)
+==21440==    by 0x5BC879: main (main.F90:10)
+==21440== 
+==21440== 88 (24 direct, 64 indirect) bytes in 1 blocks are definitely lost in loss record 6,525 of 8,249
+==21440==    at 0x4C2DB8F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21440==    by 0x606161A: opal_hwloc201_hwloc_bitmap_alloc (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21440==    by 0x679039F: orte_ess_base_proc_binding (in /usr/local/gopenmpi/lib/libopen-rte.so.40.20.2)
+==21440==    by 0x823BE31: rte_init (in /usr/local/gopenmpi/lib/openmpi/mca_ess_pmi.so)
+==21440==    by 0x67C6AF5: orte_init (in /usr/local/gopenmpi/lib/libopen-rte.so.40.20.2)
+==21440==    by 0x5D7F167: ompi_mpi_init (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x5D2916D: PMPI_Init (in /usr/local/gopenmpi/lib/libmpi.so==21436== 
+==21436== Process terminating with default action of signal 15 (SIGTERM)
+==21436==    at 0x59CD8E7: sched_yield (syscall-template.S:84)
+==21436==    by 0x5CFA094: ompi_request_default_wait (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21436==    by 0x5D55340: ompi_coll_base_sendrecv_actual (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21436==    by 0x5D55B54: ompi_coll_base_allreduce_intra_recursivedoubling (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21436==    by 0x5D0F459: PMPI_Allreduce (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21436==    by 0x4E7F49A: MPI_ALLREDUCE (in /usr/local/gopenmpi/lib/libmpi_mpifh.so.40.20.2)
+==21436==    by 0x5E5D2D: __mod_para_MOD_envoi_atomes_frontieres (mod_para.F90:609)
+==21436==    by 0x5F293B: __mod_para_MOD_maj_atomes_frt_ftm (mod_para.F90:130)
+==21436==    by 0x61B1A7: __parautils_MOD_pointer_caltabt_calfo (parautils.F90:95)
+==21436==    by 0x5886AF: __neb_mod_MOD_neb (neb.F90:197)
+==21436==    by 0x414A53: __prog_mod_MOD_prog (prog.F90:185)
+==21436==    by 0x5BC84F: MAIN__ (main.F90:118)
+==21436== 
+==21436== HEAP SUMMARY:
+==21436==     in use at exit: 11,529,302 bytes in 10,380 blocks
+==21436==   total heap usage: 39,561 allocs, 29,181 frees, 21,329,213 bytes allocated
+==21436== 
+==21437== 
+==21437== Process terminating with default action of signal 15 (SIGTERM)
+==21437==    at 0x59CD8E7: sched_yield (syscall-template.S:84)
+==21437==    by 0x5CFA3B4: ompi_request_default_wait_any (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21437==    by 0x5D3EB4E: PMPI_Waitany (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21437==    by 0x4E8A79A: PMPI_WAITANY (in /usr/local/gopenmpi/lib/libmpi_mpifh.so.40.20.2)
+==21437==    by 0x5EB3D6: __mod_para_MOD_reception_nouveaux_atomes (mod_para.F90:387)
+==21437==    by 0x5F281D: __mod_para_MOD_maj_atomes_frt_ftm (mod_para.F90:122)
+==21437==    by 0x61B1A7: __parautils_MOD_pointer_caltabt_calfo (parautils.F90:95)
+==21437==    by 0x5886AF: __neb_mod_MOD_neb (neb.F90:197)
+==21437==    by 0x414A53: __prog_mod_MOD_prog (prog.F90:185)
+==21437==    by 0x5BC84F: MAIN__ (main.F90:118)
+==21437==    by 0x5BC879: main (main.F90:10)
+==21437== 
+==21437== HEAP SUMMARY:
+==21437==     in use at exit: 11,582,075 bytes in 10,414 blocks
+==21437==   total heap usage: 39,584 allocs, 29,170 frees, 21,378,214 bytes allocated
+==21437== 
+==21435== 
+==21435== Process terminating with default action of signal 15 (SIGTERM)
+==21435==    at 0x59CD8E5: sched_yield (syscall-template.S:84)
+==21435==    by 0x5CFA3B4: ompi_request_default_wait_any (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21435==    by 0x5D3EB4E: PMPI_Waitany (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21435==    by 0x4E8A79A: PMPI_WAITANY (in /usr/local/gopenmpi/lib/libmpi_mpifh.so.40.20.2)
+==21435==    by 0x5EB3D6: __mod_para_MOD_reception_nouveaux_atomes (mod_para.F90:387)
+==21435==    by 0x5F281D: __mod_para_MOD_maj_atomes_frt_ftm (mod_para.F90:122)
+==21435==    by 0x61B1A7: __parautils_MOD_pointer_caltabt_calfo (parautils.F90:95)
+==21435==    by 0x5886AF: __neb_mod_MOD_neb (neb.F90:197)
+==21435==    by 0x414A53: __prog_mod_MOD_prog (prog.F90:185)
+==21435==    by 0x5BC84F: MAIN__ (main.F90:118)
+==21435==    by 0x5BC879: main (main.F90:10)
+==21435== 
+==21435== HEAP SUMMARY:
+==21435==     in use at exit: 11,645,221 bytes in 10,450 blocks
+==21435==   total heap usage: 39,776 allocs, 29,326 frees, 22,236,541 bytes allocated
+==21435== 
+.40.20.2)
+==21440==    by 0x4E85F57: mpi_init (in /usr/local/gopenmpi/lib/libmpi_mpifh.so.40.20.2)
+==21440==    by 0x5BC5C0: __init_mpi_mod_MOD_init_mpi (init_MPI.F90:32)
+==21440==    by 0x5BC626: MAIN__ (main.F90:43)
+==21440==    by 0x5BC879: main (main.F90:10)
+==21440== 
+==21440== 272 bytes in 1 blocks are possibly lost in loss record 7,763 of 8,249
+==21440==    at 0x4C2FB55: calloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21440==    by 0x40138E4: allocate_dtv (dl-tls.c:322)
+==21440==    by 0x40138E4: _dl_allocate_tls (dl-tls.c:539)
+==21440==    by 0x62E726E: allocate_stack (allocatestack.c:588)
+==21440==    by 0x62E726E: pthread_create@@GLIBC_2.2.5 (pthread_create.c:539)
+==21440==    by 0x60081C5: opal_thread_start (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21440==    by 0x6007B4E: opal_progress_thread_init (in /usr/local/gopenmpi/lib/libopen-pal.so.40.20.2)
+==21440==    by 0x823A8C6: rte_init (in /usr/local/gopenmpi/lib/openmpi/mca_ess_pmi.so)
+==21440==    by 0x67C6AF5: orte_init (in /usr/local/gopenmpi/lib/libopen-rte.so.40.20.2)
+==21440==    by 0x5D7F167: ompi_mpi_init (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x5D2916D: PMPI_Init (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x4E85F57: mpi_init (in /usr/local/gopenmpi/lib/libmpi_mpifh.so.40.20.2)
+==21440==    by 0x5BC5C0: __init_mpi_mod_MOD_init_mpi (init_MPI.F90:32)
+==21440==    by 0x5BC626: MAIN__ (main.F90:43)
+==21440== 
+==21440== 272 bytes in 1 blocks are possibly lost in loss record 7,764 of 8,249
+==21440==    at 0x4C2FB55: calloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==21440==    by 0x40138E4: allocate_dtv (dl-tls.c:322)
+==21440==    by 0x40138E4: _dl_allocate_tls (dl-tls.c:539)
+==21440==    by 0x62E726E: allocate_stack (allocatestack.c:588)
+==21440==    by 0x62E726E: pthread_create@@GLIBC_2.2.5 (pthread_create.c:539)
+==21440==    by 0x8E8E9D5: OPAL_MCA_PMIX3X_pmix_thread_start (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x8F0E6D1: pmix_progress_thread_init (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x8F0DC9A: OPAL_MCA_PMIX3X_pmix_rte_init (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x8EC62DD: OPAL_MCA_PMIX3X_PMIx_Init (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x8E6E240: pmix3x_client_init (in /usr/local/gopenmpi/lib/openmpi/mca_pmix_pmix3x.so)
+==21440==    by 0x823A960: rte_init (in /usr/local/gopenmpi/lib/openmpi/mca_ess_pmi.so)
+==21440==    by 0x67C6AF5: orte_init (in /usr/local/gopenmpi/lib/libopen-rte.so.40.20.2)
+==21440==    by 0x5D7F167: ompi_mpi_init (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440==    by 0x5D2916D: PMPI_Init (in /usr/local/gopenmpi/lib/libmpi.so.40.20.2)
+==21440== 
+==21440== LEAK SUMMARY:
+==21440==    definitely lost: 89 bytes in 3 blocks
+==21440==    indirectly lost: 79 bytes in 2 blocks
+==21440==      possibly lost: 544 bytes in 2 blocks
+==21440==    still reachable: 11,528,590 bytes in 10,373 blocks
+==21440==         suppressed: 0 bytes in 0 blocks
+==21440== Reachable blocks (those to which a pointer was found) are not shown.
+==21440== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==21440== 
+==21440== For counts of detected and suppressed errors, rerun with: -v
+==21440== ERROR SUMMARY: 6 errors from 6 contexts (suppressed: 0 from 0)

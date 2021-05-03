@@ -1,0 +1,23 @@
+ &input
+
+        ipotentiel=10
+	imm=54000
+	igen=0
+	dmtype=3, fpstop=0.05,sigstop=2,lpr=.true.,betaguess=5d-6
+	iseed=1
+	itetemp=1
+	lEev=.true.
+	itmax=1000,tinit=300.0
+	lEparat=.true.,
+        lPkbar=.true. 	
+	lperiod=.true.
+	itetabvois=10000
+	ltabvois=.false.
+	iterasmol=0, ivisu=5
+        
+ &end
+
+	rvois=7.9
+, fpstop=0.2   ! 7 ph ; 3 CG
+	ndir=200
+	betaguess=1d-8

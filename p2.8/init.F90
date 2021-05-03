@@ -3,7 +3,6 @@ module init_mod
   use init_pot_mod,only:init_pot,init_pot2
   USE setcell,only:setcellconf
   USE contrainte,only:initcontr
-  USE sauveposition_mod,only:sauveposition
   USE transf_mod,only: transf
   USE neigcel_mod,only: neigcel
   USE dynalloccell
@@ -219,7 +218,7 @@ contains
 114       format(a3,1x,3(f10.4,1x),i5)
           if(iteanapos>0)then
              itapp=0
-             call sauveposition (itapp)
+!             call sauveposition (itapp)
           end if
        end if
     end select
@@ -246,7 +245,7 @@ contains
 
     if(iteanapos>0)then
        itapp=0
-       call sauveposition (itapp)
+!       call sauveposition (itapp)
     end if
 
 

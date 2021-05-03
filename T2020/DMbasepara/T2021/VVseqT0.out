@@ -1,0 +1,200 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=Febulk.din                                                                      
+
+ -------- caracteristiques du run DM-------- 4
+      DYNAMIQUE MOLECULAIRE VELOCITY VERLET
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=           3  itab=           1  itetimestep=          -1
+tinit=       0.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ Types d_atomes :
+   1   55.847   26.000  Fe 
+ROFF1_2   -0.100   -0.200
+ nptmax in the max number of points on grid        250000
+ EAM           1           1
+ EAM number of points in potin and the step      250000   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       250000   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-       55000       55000           1
+
+ **********construction du reseau************
+ repetition de mailles          30          30          30
+ izonr,zlmin,rut          14   171.31908000000001        12.000000000000002     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.8566E-06/  0.6000E-07) = 14
+  noy = Int(   0.8566E-06/  0.6000E-07) = 14
+  noz = Int(   0.8566E-06/  0.6000E-07) = 14
+nox noy noz apres correction = 14 14 14
+celsizes   0.6118539E-07  0.6118539E-07  0.6118539E-07
+Febulk.gin                                                                      volume= 0.62853174D-18 cm3  0.62853174D+06 Ang3
+ natperc im/noxyz         190          19
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =       54000
+vecteur  1      85.659540       0.000000       0.000000
+vecteur  2       0.000000      85.659540       0.000000
+vecteur  3       0.000000       0.000000      85.659540
+       54000  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam RHO MIN:    0.0000000000000000     
+ calpoeam RHO MAX:    12.174708979468400     
+ calpoeam Rhomin Rhomax    0.0000000000000000        170.44524392885501     
+ calpoeam ktorho and the inverse:    8.5222621964427502E-003   117.33973643962830     
+
+ random velocities at TINIT =    9.9999999999999998E-013 K
+ seed_size          12
+ iseed pour tirage des vitesses           1
+ temperature positions lues initspeed    9.9908823701561197E-013
+ temperature fin initspeed    9.9905924035777669E-013
+
+ ***** PREMIERE ITERATION  VVERLET****
+
+
+<<<<<<<<  ITERATION =      1  time =   0.1000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1 0.100E-14*Epot =    -222450.2661048412      eV 
+    *energie PAIRE EAM =     8417.27631336      eV 
+    *energie GLUE  =    -230867.542418      eV 
+         1 0.100E-14*Ec =    0.696131595762E-11  eV   (.000 K)
+         1 0.100E-14*Etot =    -222450.2661048412      eV 
+
+         1 0.100E-14*Epot/at =    -4.11944937231      eV 
+
+         1 0.100E-14*Temp instantanee = .000
+
+*temp instantanee des atomes de type 1 =         0.00
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.32004657      0.3512250260E-14  0.1292210072E-15
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.4582339898E-14  -38.32004657      0.4887115210E-15
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.7706694305E-16  0.5753245205E-15  -38.32004657    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =  0.1177943158E-13 -0.8156362227E-16 -0.1141318464E-16
+2 sigma cinetique (1,2) (2,2) (3,2) = -0.8156362227E-16  0.1182929832E-13 -0.7581801045E-16
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1141318464E-16 -0.7581801045E-16  0.1188114556E-13
+
+1 sigma total (1,1) (2,1) (3,1) =  -38.32004657      0.3430686637E-14  0.1178078226E-15
+2 sigma total (1,2) (2,2) (3,2) =  0.4500776275E-14  -38.32004657      0.4128935106E-15
+3 sigma total (1,3) (2,3) (3,3) =  0.6565375841E-16  0.4995065100E-15  -38.32004657    
+
+         1 0.100E-14*Pression =    -38.320    
+ pression totale  potentiel = cinetique =
+   -38.320       -38.320       0.11830E-13
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.00
+*pression moyenne =    -38.320    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      2  time =   0.2000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         2 0.200E-14*Epot =    -222450.2661048401      eV 
+    *energie PAIRE EAM =     8417.27631336      eV 
+    *energie GLUE  =    -230867.542418      eV 
+         2 0.200E-14*Ec =    0.692535394912E-11  eV   (.000 K)
+         2 0.200E-14*Etot =    -222450.2661048401      eV 
+
+         2 0.200E-14*Epot/at =    -4.11944937231      eV 
+
+         2 0.200E-14*Temp instantanee = .000
+
+*temp instantanee des atomes de type 1 =         0.00
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.32004657      0.4668254405E-15  0.1373700798E-16
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.6086193025E-15  -38.32004657      0.3662426025E-15
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.2658925951E-15  0.1876614988E-15  -38.32004657    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =  0.1171856574E-13 -0.8137782770E-16 -0.1122769099E-16
+2 sigma cinetique (1,2) (2,2) (3,2) = -0.8137782770E-16  0.1176831790E-13 -0.7546921325E-16
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1122769099E-16 -0.7546921325E-16  0.1181965189E-13
+
+1 sigma total (1,1) (2,1) (3,1) =  -38.32004657      0.3854476128E-15  0.2509316989E-17
+2 sigma total (1,2) (2,2) (3,2) =  0.5272414748E-15  -38.32004657      0.2907733892E-15
+3 sigma total (1,3) (2,3) (3,3) = -0.2771202860E-15  0.1121922855E-15  -38.32004657    
+
+         2 0.200E-14*Pression =    -38.320    
+ pression totale  potentiel = cinetique =
+   -38.320       -38.320       0.11769E-13
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.00
+*pression moyenne =    -38.320    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      3  time =   0.3000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         3 0.300E-14*Epot =    -222450.2661048417      eV 
+    *energie PAIRE EAM =     8417.27631336      eV 
+    *energie GLUE  =    -230867.542418      eV 
+         3 0.300E-14*Ec =    0.686576100282E-11  eV   (.000 K)
+         3 0.300E-14*Etot =    -222450.2661048417      eV 
+
+         3 0.300E-14*Epot/at =    -4.11944937231      eV 
+
+         3 0.300E-14*Temp instantanee = .000
+
+*temp instantanee des atomes de type 1 =         0.00
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.32004657     -0.1185247675E-13 -0.2165324986E-16
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.1097447239E-13  -38.32004657      0.1634471118E-15
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.7869675756E-16  0.3164168447E-15  -38.32004657    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =  0.1161770567E-13 -0.8106837448E-16 -0.1092097880E-16
+2 sigma cinetique (1,2) (2,2) (3,2) = -0.8106837448E-16  0.1166726637E-13 -0.7489066513E-16
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1092097880E-16 -0.7489066513E-16  0.1171774934E-13
+
+1 sigma total (1,1) (2,1) (3,1) =  -38.32004657     -0.1193354512E-13 -0.3257422866E-16
+2 sigma total (1,2) (2,2) (3,2) = -0.1105554076E-13  -38.32004657      0.8855644672E-16
+3 sigma total (1,3) (2,3) (3,3) = -0.8961773636E-16  0.2415261796E-15  -38.32004657    
+
+         3 0.300E-14*Pression =    -38.320    
+ pression totale  potentiel = cinetique =
+   -38.320       -38.320       0.11668E-13
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.00
+*pression moyenne =    -38.320    
+ --------------------------------------
+ *******Derniere iteration **** 
+
+
+ ####### END OF RUN  ######## =            3   time =    3.0000000000000002E-015

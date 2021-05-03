@@ -1,0 +1,135 @@
+ >>>>>>>>>>> entree readdm
+ nom fichier din=UO2.din                                                                         
+
+ -------- caracteristiques du run DM-------- 4
+      DYNAMIQUE MOLECULAIRE VELOCITY VERLET
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=          20  itab=           1  itetimestep=          -1
+tinit=     300.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           7
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL PAIRE TABULE -----------
+ -*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ CM, masse,type
+   1    0.000    8.000  O  
+   2    0.000   92.000  U  
+ nb de paires grille           3       50000
+ paire l active  ipotentiel:            3           7
+ paire l active  ipotentiel:            2           7
+ paire l active  ipotentiel:            1           7
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        7000        7000           1
+
+ **********construction du reseau************
+ repetition de mailles           8           8           8
+ izonr,zlmin,rut           7   87.488000000000000        11.699999999999999     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.4374E-06/  0.1170E-06) = 3
+  noy = Int(   0.4374E-06/  0.1170E-06) = 3
+  noz = Int(   0.4374E-06/  0.1170E-06) = 3
+nox noy noz apres correction = 3 3 3
+celsizes   0.1458133E-06  0.1458133E-06  0.1458133E-06
+UO2.gin                                                                         volume= 0.83705786D-19 cm3  0.83705786D+05 Ang3
+ natperc im/noxyz        2270         227
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        6144
+vecteur  1      43.744000       0.000000       0.000000
+vecteur  2       0.000000      43.744000       0.000000
+vecteur  3       0.000000       0.000000      43.744000
+        4096  atomes de type           1
+        2048  atomes de type           2
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+
+ random velocities at TINIT =    300.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature positions lues initspeed    305.53953793436199     
+ temperature fin initspeed    305.39358286366684     
+
+ ***** PREMIERE ITERATION  VVERLET****
+
+
+<<<<<<<<  ITERATION =      1  time =   0.1000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1 0.100E-14*Epot =    -40178.80483207192      eV 
+    *energie paire 2 corps =    -40178.8048321      eV 
+         1 0.100E-14*Ec =     81.3019899938      eV   (102.375 K)
+         1 0.100E-14*Etot =    -40097.50284207809      eV 
+
+         1 0.100E-14*Temp instantanee = 102.375
+
+*temp instantanee des atomes de type 1 =         0.00
+*temp instantanee des atomes de type 2 =       307.13
+ ----------valeurs moyennes------------
+*temperature moyenne =       102.38
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      2  time =   0.2000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         2 0.200E-14*Epot =    -40178.66102786009      eV 
+    *energie paire 2 corps =    -40178.6610279      eV 
+         2 0.200E-14*Ec =     81.1554593533      eV   (102.191 K)
+         2 0.200E-14*Etot =    -40097.50556850679      eV 
+
+         2 0.200E-14*Temp instantanee = 102.191
+
+*temp instantanee des atomes de type 1 =         0.00
+*temp instantanee des atomes de type 2 =       306.57
+ ----------valeurs moyennes------------
+*temperature moyenne =       102.28
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      3  time =   0.3000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         3 0.300E-14*Epot =    -40178.42027701939      eV 
+    *energie paire 2 corps =    -40178.4202770      eV 
+         3 0.300E-14*Ec =     80.9118959108      eV   (101.884 K)
+         3 0.300E-14*Etot =    -40097.50838110855      eV 
+
+         3 0.300E-14*Temp instantanee = 101.884
+
+*temp instantanee des atomes de type 1 =         0.00
+*temp instantanee des atomes de type 2 =       305.65
+ ----------valeurs moyennes------------
+*temperature moyenne =       102.15
+ --------------------------------------

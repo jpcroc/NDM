@@ -1,0 +1,506 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=UO2.din                                                                         
+
+ -------- caracteristiques du run DM-------- 4
+      DYNAMIQUE MOLECULAIRE VELOCITY VERLET
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=          20  itab=           1  itetimestep=          -1
+tinit=     300.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           7
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL PAIRE TABULE -----------
+ -*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ CM, masse,type
+   1    0.000    8.000  O  
+   2    0.000   92.000  U  
+ nb de paires grille           3       50000
+ paire l active  ipotentiel:            3           7
+ paire l active  ipotentiel:            2           7
+ paire l active  ipotentiel:            1           7
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles           8           8           8
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+DIVID appel rumax   0       11.70
+ izonr,zlmin,rut           7   87.488000000000000        11.699999999999999     
+volume= 0.83705786D-19 cm3  0.83705786D+05 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.4374E-06/  0.1170E-06) = 3
+  noy = Int(   0.4374E-06/  0.1170E-06) = 3
+  noz = Int(   0.4374E-06/  0.1170E-06) = 3
+ !!!!!!!!!!Envisager ltabvois = true !!!!!!!!!!!!!!
+nox noy noz apres correction = 1 1 1
+celsizes   0.4374400E-06  0.4374400E-06  0.4374400E-06
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:          12
+ Nombre de mailles creees :            8           8           8         512
+
+ -------- boite de simulation ------
+ nombre d atomes =        6144
+taille de la boite ZL     43.7440    43.7440    43.7440
+vecteur  1      43.744000       0.000000       0.000000
+vecteur  2       0.000000      43.744000       0.000000
+vecteur  3       0.000000       0.000000      43.744000
+        4096  atomes de type           1
+        2048  atomes de type           2
+
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+ nox,noy,noz deuxième passage  =           1           1           1
+celsizes   0.4374400E-06  0.4374400E-06  0.4374400E-06
+ natperc im/noxyz      153600        6144
+ ltabvois,lconstrtot F F
+
+  TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! 
+ -------------------------------------------------------------------
+
+ 1ER CALL init
+ random velocities at TINIT =    300.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature MI initspeed    305.53953793436199     
+ center of mass =    21.350491460170478        21.350491460170534        21.350491460170520     
+ Momentum/atom  =   -1.6699632827313789E-020  -6.9228578033335698E-022  -2.5012431475901250E-020
+Inertia/anglm =   0.2920E-31 -0.1792E-34 -0.1792E-34       0.8480E-23
+Inertia/anglm =  -0.1792E-34  0.2920E-31 -0.1792E-34       0.4451E-23
+Inertia/anglm =  -0.1792E-34 -0.1792E-34  0.2920E-31       0.1058E-21
+ temperature fin initspeed    305.39358286366684     
+ sortie init
+ ***** PREMIERE ITERATION  ****
+
+
+<<<<<<<<  ITERATION =      1  time =   0.1000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1 0.100E-14*Epot =    -40178.8035170      eV 
+    *energie paire 2 corps =    -40178.8035170      eV 
+         1 0.100E-14*Ec =     241.926926124      eV   (304.633 K)
+         1 0.100E-14*Etot =    -39936.8765909      eV 
+
+         1 0.100E-14*Temp instantanee = 304.633
+
+*temp instantanee des atomes de type 1 =       303.39
+*temp instantanee des atomes de type 2 =       307.13
+ ----------valeurs moyennes------------
+*temperature moyenne =       304.63
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      2  time =   0.2000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         2 0.200E-14*Epot =    -40177.0012658      eV 
+    *energie paire 2 corps =    -40177.0012658      eV 
+         2 0.200E-14*Ec =     240.126508646      eV   (302.366 K)
+         2 0.200E-14*Etot =    -39936.8747571      eV 
+
+         2 0.200E-14*Temp instantanee = 302.366
+
+*temp instantanee des atomes de type 1 =       300.26
+*temp instantanee des atomes de type 2 =       306.57
+ ----------valeurs moyennes------------
+*temperature moyenne =       303.50
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      3  time =   0.3000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         3 0.300E-14*Epot =    -40174.0337706      eV 
+    *energie paire 2 corps =    -40174.0337706      eV 
+         3 0.300E-14*Ec =     237.162217269      eV   (298.634 K)
+         3 0.300E-14*Etot =    -39936.8715533      eV 
+
+         3 0.300E-14*Temp instantanee = 298.634
+
+*temp instantanee des atomes de type 1 =       295.12
+*temp instantanee des atomes de type 2 =       305.65
+ ----------valeurs moyennes------------
+*temperature moyenne =       301.88
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      4  time =   0.4000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         4 0.400E-14*Epot =    -40169.9545803      eV 
+    *energie paire 2 corps =    -40169.9545803      eV 
+         4 0.400E-14*Ec =     233.087408791      eV   (293.503 K)
+         4 0.400E-14*Etot =    -39936.8671715      eV 
+
+         4 0.400E-14*Temp instantanee = 293.503
+
+*temp instantanee des atomes de type 1 =       288.07
+*temp instantanee des atomes de type 2 =       304.38
+ ----------valeurs moyennes------------
+*temperature moyenne =       299.78
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      5  time =   0.5000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         5 0.500E-14*Epot =    -40164.8364589      eV 
+    *energie paire 2 corps =    -40164.8364589      eV 
+         5 0.500E-14*Ec =     227.975111323      eV   (287.065 K)
+         5 0.500E-14*Etot =    -39936.8613476      eV 
+
+         5 0.500E-14*Temp instantanee = 287.065
+
+*temp instantanee des atomes de type 1 =       279.22
+*temp instantanee des atomes de type 2 =       302.75
+ ----------valeurs moyennes------------
+*temperature moyenne =       297.24
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      6  time =   0.6000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         6 0.600E-14*Epot =    -40158.7682461      eV 
+    *energie paire 2 corps =    -40158.7682461      eV 
+         6 0.600E-14*Ec =     221.916330541      eV   (279.436 K)
+         6 0.600E-14*Etot =    -39936.8519155      eV 
+
+         6 0.600E-14*Temp instantanee = 279.436
+
+*temp instantanee des atomes de type 1 =       268.76
+*temp instantanee des atomes de type 2 =       300.78
+ ----------valeurs moyennes------------
+*temperature moyenne =       294.27
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      7  time =   0.7000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         7 0.700E-14*Epot =    -40151.8504534      eV 
+    *energie paire 2 corps =    -40151.8504534      eV 
+         7 0.700E-14*Ec =     215.018247328      eV   (270.750 K)
+         7 0.700E-14*Etot =    -39936.8322061      eV 
+
+         7 0.700E-14*Temp instantanee = 270.750
+
+*temp instantanee des atomes de type 1 =       256.88
+*temp instantanee des atomes de type 2 =       298.49
+ ----------valeurs moyennes------------
+*temperature moyenne =       290.91
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      8  time =   0.8000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         8 0.800E-14*Epot =    -40144.2025292      eV 
+    *energie paire 2 corps =    -40144.2025292      eV 
+         8 0.800E-14*Ec =     207.401198636      eV   (261.159 K)
+         8 0.800E-14*Etot =    -39936.8013305      eV 
+
+         8 0.800E-14*Temp instantanee = 261.159
+
+*temp instantanee des atomes de type 1 =       243.80
+*temp instantanee des atomes de type 2 =       295.88
+ ----------valeurs moyennes------------
+*temperature moyenne =       287.19
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      9  time =   0.9000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         9 0.900E-14*Epot =    -40135.9562991      eV 
+    *energie paire 2 corps =    -40135.9562991      eV 
+         9 0.900E-14*Ec =     199.195986443      eV   (250.827 K)
+         9 0.900E-14*Etot =    -39936.7603127      eV 
+
+         9 0.900E-14*Temp instantanee = 250.827
+
+*temp instantanee des atomes de type 1 =       229.76
+*temp instantanee des atomes de type 2 =       292.97
+ ----------valeurs moyennes------------
+*temperature moyenne =       283.15
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     10  time =   0.1000000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        10 0.100E-13*Epot =    -40127.2522105      eV 
+    *energie paire 2 corps =    -40127.2522105      eV 
+        10 0.100E-13*Ec =     190.540617117      eV   (239.928 K)
+        10 0.100E-13*Etot =    -39936.7115934      eV 
+
+        10 0.100E-13*Temp instantanee = 239.928
+
+*temp instantanee des atomes de type 1 =       215.00
+*temp instantanee des atomes de type 2 =       289.78
+ ----------valeurs moyennes------------
+*temperature moyenne =       278.83
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     11  time =   0.1100000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        11 0.110E-13*Epot =    -40118.2324380      eV 
+    *energie paire 2 corps =    -40118.2324380      eV 
+        11 0.110E-13*Ec =     181.576456654      eV   (228.640 K)
+        11 0.110E-13*Etot =    -39936.6559813      eV 
+
+        11 0.110E-13*Temp instantanee = 228.640
+
+*temp instantanee des atomes de type 1 =       199.80
+*temp instantanee des atomes de type 2 =       286.32
+ ----------valeurs moyennes------------
+*temperature moyenne =       274.27
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     12  time =   0.1200000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        12 0.120E-13*Epot =    -40109.0494080      eV 
+    *energie paire 2 corps =    -40109.0494080      eV 
+        12 0.120E-13*Ec =     172.446637172      eV   (217.144 K)
+        12 0.120E-13*Etot =    -39936.6027708      eV 
+
+        12 0.120E-13*Temp instantanee = 217.144
+
+*temp instantanee des atomes de type 1 =       184.41
+*temp instantanee des atomes de type 2 =       282.62
+ ----------valeurs moyennes------------
+*temperature moyenne =       269.51
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     13  time =   0.1300000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        13 0.130E-13*Epot =    -40099.8404915      eV 
+    *energie paire 2 corps =    -40099.8404915      eV 
+        13 0.130E-13*Ec =     163.293153260      eV   (205.618 K)
+        13 0.130E-13*Etot =    -39936.5473382      eV 
+
+        13 0.130E-13*Temp instantanee = 205.618
+
+*temp instantanee des atomes de type 1 =       169.08
+*temp instantanee des atomes de type 2 =       278.69
+ ----------valeurs moyennes------------
+*temperature moyenne =       264.59
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     14  time =   0.1400000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        14 0.140E-13*Epot =    -40090.7499250      eV 
+    *energie paire 2 corps =    -40090.7499250      eV 
+        14 0.140E-13*Ec =     154.254460963      eV   (194.236 K)
+        14 0.140E-13*Etot =    -39936.4954641      eV 
+
+        14 0.140E-13*Temp instantanee = 194.236
+
+*temp instantanee des atomes de type 1 =       154.08
+*temp instantanee des atomes de type 2 =       274.56
+ ----------valeurs moyennes------------
+*temperature moyenne =       259.57
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     15  time =   0.1500000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        15 0.150E-13*Epot =    -40081.9070521      eV 
+    *energie paire 2 corps =    -40081.9070521      eV 
+        15 0.150E-13*Ec =     145.462908990      eV   (183.166 K)
+        15 0.150E-13*Etot =    -39936.4441431      eV 
+
+        15 0.150E-13*Temp instantanee = 183.166
+
+*temp instantanee des atomes de type 1 =       139.63
+*temp instantanee des atomes de type 2 =       270.23
+ ----------valeurs moyennes------------
+*temperature moyenne =       254.47
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     16  time =   0.1600000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        16 0.160E-13*Epot =    -40073.4432497      eV 
+    *energie paire 2 corps =    -40073.4432497      eV 
+        16 0.160E-13*Ec =     137.042471513      eV   (172.563 K)
+        16 0.160E-13*Etot =    -39936.4007782      eV 
+
+        16 0.160E-13*Temp instantanee = 172.563
+
+*temp instantanee des atomes de type 1 =       125.98
+*temp instantanee des atomes de type 2 =       265.73
+ ----------valeurs moyennes------------
+*temperature moyenne =       249.35
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     17  time =   0.1700000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        17 0.170E-13*Epot =    -40065.4676519      eV 
+    *energie paire 2 corps =    -40065.4676519      eV 
+        17 0.170E-13*Ec =     129.106437454      eV   (162.570 K)
+        17 0.170E-13*Etot =    -39936.3612144      eV 
+
+        17 0.170E-13*Temp instantanee = 162.570
+
+*temp instantanee des atomes de type 1 =       113.31
+*temp instantanee des atomes de type 2 =       261.08
+ ----------valeurs moyennes------------
+*temperature moyenne =       244.25
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     18  time =   0.1800000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        18 0.180E-13*Epot =    -40058.0805846      eV 
+    *energie paire 2 corps =    -40058.0805846      eV 
+        18 0.180E-13*Ec =     121.754765334      eV   (153.313 K)
+        18 0.180E-13*Etot =    -39936.3258193      eV 
+
+        18 0.180E-13*Temp instantanee = 153.313
+
+*temp instantanee des atomes de type 1 =       101.82
+*temp instantanee des atomes de type 2 =       256.30
+ ----------valeurs moyennes------------
+*temperature moyenne =       239.20
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     19  time =   0.1900000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        19 0.190E-13*Epot =    -40051.3650060      eV 
+    *energie paire 2 corps =    -40051.3650060      eV 
+        19 0.190E-13*Ec =     115.072325389      eV   (144.899 K)
+        19 0.190E-13*Etot =    -39936.2926807      eV 
+
+        19 0.190E-13*Temp instantanee = 144.899
+
+*temp instantanee des atomes de type 1 =        91.65
+*temp instantanee des atomes de type 2 =       251.40
+ ----------valeurs moyennes------------
+*temperature moyenne =       234.23
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     20  time =   0.2000000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        20 0.200E-13*Epot =    -40045.3914593      eV 
+    *energie paire 2 corps =    -40045.3914593      eV 
+        20 0.200E-13*Ec =     109.126834005      eV   (137.412 K)
+        20 0.200E-13*Etot =    -39936.2646253      eV 
+
+        20 0.200E-13*Temp instantanee = 137.412
+
+*temp instantanee des atomes de type 1 =        82.92
+*temp instantanee des atomes de type 2 =       246.40
+ ----------valeurs moyennes------------
+*temperature moyenne =       229.39
+ --------------------------------------
+ *******Derniere iteration **** 
+
+
+ ####### END OF RUN  ######## =           20   time =    2.0000000000000000E-014
+  sauvegarde it=          20 UO2.cout                                                                        
+
+
+<<<<<<<<  ITERATION =     20  time =   0.2000000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        20 0.200E-13*Epot =    -40045.3914593      eV 
+    *energie paire 2 corps =    -40045.3914593      eV 
+        20 0.200E-13*Ec =     109.126834005      eV   (137.412 K)
+        20 0.200E-13*Etot =    -39936.2646253      eV 
+
+        20 0.200E-13*Temp instantanee = 137.412
+
+*temp instantanee des atomes de type 1 =        82.92
+*temp instantanee des atomes de type 2 =       246.40
+ ----------valeurs moyennes------------
+*temperature moyenne =       224.79
+ --------------------------------------

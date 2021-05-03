@@ -1,0 +1,847 @@
+ Process            0  of            2  is alive   2.2204460492503132E-058
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ Process            1  of            2  is alive   2.2204460492503132E-058
+ nom fichier din=trppara.din                                                                     
+
+ Pas de conditions periodiques
+
+ -------- caracteristiques du run DM-------- 2
+     TREMPE RAPIDE
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=       0.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+ IMM PARA =         1260        2100
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        1260        2100           2
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+trppara.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        1024  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ Le proc            1  a            1  processeur voisin
+ NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR
+ Le proc            0  a            1  processeur voisin
+ DMTYPE 2 +PARA=DMLOOP_VVERLET_+OPTION
+ ***** PREMIERE ITERATION  VVERLET****
+
+
+<<<<<<<<  ITERATION =      1  time =   0.1000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1 0.100E-14*Epot =    -6881.86492831      eV 
+    *energie PAIRE EAM =    -1437.53255428      eV 
+    *energie GLUE  =    -5444.33237403      eV 
+         1 0.100E-14*Ec =    0.343928688582E-03  eV   (.001 K)
+         1 0.100E-14*Etot =    -6881.86458438      eV 
+
+         1 0.100E-14*Temp instantanee = .001
+
+*temp instantanee des atomes de type 1 =         0.00
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.00
+ --------------------------------------
+TR: force max, energy     1    0.7463714774E+00   -0.6881864928E+04
+ energie   -6881.8649283072746     
+
+
+<<<<<<<<  ITERATION =      2  time =   0.2000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         2 0.200E-14*Epot =    -6881.86595601      eV 
+    *energie PAIRE EAM =    -1437.53360670      eV 
+    *energie GLUE  =    -5444.33234932      eV 
+         2 0.200E-14*Ec =    0.137069871222E-02  eV   (.005 K)
+         2 0.200E-14*Etot =    -6881.86458532      eV 
+
+         2 0.200E-14*Temp instantanee = .005
+
+*temp instantanee des atomes de type 1 =         0.01
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.00
+ --------------------------------------
+TR: force max, energy     2    0.7417799369E+00   -0.6881865956E+04
+ energie   -6881.8659560145943     
+
+
+<<<<<<<<  ITERATION =      3  time =   0.3000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         3 0.300E-14*Epot =    -6881.86765232      eV 
+    *energie PAIRE EAM =    -1437.53534425      eV 
+    *energie GLUE  =    -5444.33230807      eV 
+         3 0.300E-14*Ec =    0.306555518919E-02  eV   (.012 K)
+         3 0.300E-14*Etot =    -6881.86458676      eV 
+
+         3 0.300E-14*Temp instantanee = .012
+
+*temp instantanee des atomes de type 1 =         0.01
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.01
+ --------------------------------------
+TR: force max, energy     3    0.7341906161E+00   -0.6881867652E+04
+ energie   -6881.8676523153335     
+
+
+<<<<<<<<  ITERATION =      4  time =   0.4000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         4 0.400E-14*Epot =    -6881.86999282      eV 
+    *energie PAIRE EAM =    -1437.53774265      eV 
+    *energie GLUE  =    -5444.33225017      eV 
+         4 0.400E-14*Ec =    0.540399620679E-02  eV   (.020 K)
+         4 0.400E-14*Etot =    -6881.86458882      eV 
+
+         4 0.400E-14*Temp instantanee = .020
+
+*temp instantanee des atomes de type 1 =         0.02
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.01
+ --------------------------------------
+TR: force max, energy     4    0.7235168673E+00   -0.6881869993E+04
+ energie   -6881.8699928164178     
+
+
+<<<<<<<<  ITERATION =      5  time =   0.5000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         5 0.500E-14*Epot =    -6881.87294385      eV 
+    *energie PAIRE EAM =    -1437.54076838      eV 
+    *energie GLUE  =    -5444.33217546      eV 
+         5 0.500E-14*Ec =    0.835215464433E-02  eV   (.032 K)
+         5 0.500E-14*Etot =    -6881.86459169      eV 
+
+         5 0.500E-14*Temp instantanee = .032
+
+*temp instantanee des atomes de type 1 =         0.03
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.01
+ --------------------------------------
+TR: force max, energy     5    0.7098814776E+00   -0.6881872944E+04
+ energie   -6881.8729438467153     
+
+
+<<<<<<<<  ITERATION =      6  time =   0.6000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         6 0.600E-14*Epot =    -6881.87646305      eV 
+    *energie PAIRE EAM =    -1437.54437928      eV 
+    *energie GLUE  =    -5444.33208378      eV 
+         6 0.600E-14*Ec =    0.118678860357E-01  eV   (.045 K)
+         6 0.600E-14*Etot =    -6881.86459517      eV 
+
+         6 0.600E-14*Temp instantanee = .045
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.02
+ --------------------------------------
+TR: force max, energy     6    0.6934689131E+00   -0.6881876463E+04
+ energie   -6881.8764630540854     
+
+
+<<<<<<<<  ITERATION =      7  time =   0.7000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         7 0.700E-14*Epot =    -6881.88050042      eV 
+    *energie PAIRE EAM =    -1437.54852556      eV 
+    *energie GLUE  =    -5444.33197485      eV 
+         7 0.700E-14*Ec =    0.159012966561E-01  eV   (.060 K)
+         7 0.700E-14*Etot =    -6881.86459912      eV 
+
+         7 0.700E-14*Temp instantanee = .060
+
+*temp instantanee des atomes de type 1 =         0.06
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.02
+ --------------------------------------
+TR: force max, energy     7    0.6742783501E+00   -0.6881880500E+04
+ energie   -6881.8805004151800     
+
+
+<<<<<<<<  ITERATION =      8  time =   0.8000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         8 0.800E-14*Epot =    -6881.88499889      eV 
+    *energie PAIRE EAM =    -1437.55315045      eV 
+    *energie GLUE  =    -5444.33184844      eV 
+         8 0.800E-14*Ec =    0.203955568675E-01  eV   (.077 K)
+         8 0.800E-14*Etot =    -6881.86460333      eV 
+
+         8 0.800E-14*Temp instantanee = .077
+
+*temp instantanee des atomes de type 1 =         0.08
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.03
+ --------------------------------------
+TR: force max, energy     8    0.6524320958E+00   -0.6881884999E+04
+ energie   -6881.8849988857910     
+
+
+<<<<<<<<  ITERATION =      9  time =   0.9000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         9 0.900E-14*Epot =    -6881.88989548      eV 
+    *energie PAIRE EAM =    -1437.55819121      eV 
+    *energie GLUE  =    -5444.33170428      eV 
+         9 0.900E-14*Ec =    0.252878313928E-01  eV   (.095 K)
+         9 0.900E-14*Etot =    -6881.86460765      eV 
+
+         9 0.900E-14*Temp instantanee = .095
+
+*temp instantanee des atomes de type 1 =         0.10
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.04
+ --------------------------------------
+TR: force max, energy     9    0.6280762900E+00   -0.6881889895E+04
+ energie   -6881.8898954834049     
+
+
+<<<<<<<<  ITERATION =     10  time =   0.1000000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        10 0.100E-13*Epot =    -6881.89512334      eV 
+    *energie PAIRE EAM =    -1437.56358164      eV 
+    *energie GLUE  =    -5444.33154169      eV 
+        10 0.100E-13*Ec =    0.305033478207E-01  eV   (.115 K)
+        10 0.100E-13*Etot =    -6881.86461999      eV 
+
+        10 0.100E-13*Temp instantanee = .115
+
+*temp instantanee des atomes de type 1 =         0.12
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.05
+ --------------------------------------
+TR: force max, energy    10    0.6013059119E+00   -0.6881895123E+04
+ energie   -6881.8951233362532     
+
+
+<<<<<<<<  ITERATION =     11  time =   0.1100000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        11 0.110E-13*Epot =    -6881.90061237      eV 
+    *energie PAIRE EAM =    -1437.56925228      eV 
+    *energie GLUE  =    -5444.33136008      eV 
+        11 0.110E-13*Ec =    0.359745750905E-01  eV   (.136 K)
+        11 0.110E-13*Etot =    -6881.86463779      eV 
+
+        11 0.110E-13*Temp instantanee = .136
+
+*temp instantanee des atomes de type 1 =         0.14
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.05
+ --------------------------------------
+TR: force max, energy    11    0.5723859759E+00   -0.6881900612E+04
+ energie   -6881.9006123655845     
+
+
+<<<<<<<<  ITERATION =     12  time =   0.1200000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        12 0.120E-13*Epot =    -6881.90628933      eV 
+    *energie PAIRE EAM =    -1437.57512938      eV 
+    *energie GLUE  =    -5444.33115995      eV 
+        12 0.120E-13*Ec =    0.416468336069E-01  eV   (.157 K)
+        12 0.120E-13*Etot =    -6881.86464250      eV 
+
+        12 0.120E-13*Temp instantanee = .157
+
+*temp instantanee des atomes de type 1 =         0.16
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.06
+ --------------------------------------
+TR: force max, energy    12    0.5414147601E+00   -0.6881906289E+04
+ energie   -6881.9062893287646     
+
+
+<<<<<<<<  ITERATION =     13  time =   0.1300000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        13 0.130E-13*Epot =    -6881.91207913      eV 
+    *energie PAIRE EAM =    -1437.58113807      eV 
+    *energie GLUE  =    -5444.33094107      eV 
+        13 0.130E-13*Ec =    0.474321291060E-01  eV   (.179 K)
+        13 0.130E-13*Etot =    -6881.86464700      eV 
+
+        13 0.130E-13*Temp instantanee = .179
+
+*temp instantanee des atomes de type 1 =         0.18
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.07
+ --------------------------------------
+TR: force max, energy    13    0.5085140263E+00   -0.6881912079E+04
+ energie   -6881.9120791338009     
+
+
+<<<<<<<<  ITERATION =     14  time =   0.1400000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        14 0.140E-13*Epot =    -6881.91790662      eV 
+    *energie PAIRE EAM =    -1437.58720339      eV 
+    *energie GLUE  =    -5444.33070323      eV 
+        14 0.140E-13*Ec =    0.532548489325E-01  eV   (.201 K)
+        14 0.140E-13*Etot =    -6881.86465177      eV 
+
+        14 0.140E-13*Temp instantanee = .201
+
+*temp instantanee des atomes de type 1 =         0.20
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.08
+ --------------------------------------
+TR: force max, energy    14    0.4736313556E+00   -0.6881917907E+04
+ energie   -6881.9179066203196     
+
+
+<<<<<<<<  ITERATION =     15  time =   0.1500000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        15 0.150E-13*Epot =    -6881.92369789      eV 
+    *energie PAIRE EAM =    -1437.59325287      eV 
+    *energie GLUE  =    -5444.33044502      eV 
+        15 0.150E-13*Ec =    0.590346833103E-01  eV   (.223 K)
+        15 0.150E-13*Etot =    -6881.86466321      eV 
+
+        15 0.150E-13*Temp instantanee = .223
+
+*temp instantanee des atomes de type 1 =         0.22
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.09
+ --------------------------------------
+TR: force max, energy    15    0.4373703709E+00   -0.6881923698E+04
+ energie   -6881.9236978905910     
+
+
+<<<<<<<<  ITERATION =     16  time =   0.1600000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        16 0.160E-13*Epot =    -6881.92938181      eV 
+    *energie PAIRE EAM =    -1437.59921474      eV 
+    *energie GLUE  =    -5444.33016707      eV 
+        16 0.160E-13*Ec =    0.647051120078E-01  eV   (.244 K)
+        16 0.160E-13*Etot =    -6881.86467670      eV 
+
+        16 0.160E-13*Temp instantanee = .244
+
+*temp instantanee des atomes de type 1 =         0.24
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.10
+ --------------------------------------
+TR: force max, energy    16    0.3996249762E+00   -0.6881929382E+04
+ energie   -6881.9293818076258     
+
+
+<<<<<<<<  ITERATION =     17  time =   0.1700000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        17 0.170E-13*Epot =    -6881.93489197      eV 
+    *energie PAIRE EAM =    -1437.60502257      eV 
+    *energie GLUE  =    -5444.32986939      eV 
+        17 0.170E-13*Ec =    0.701577327100E-01  eV   (.265 K)
+        17 0.170E-13*Etot =    -6881.86473423      eV 
+
+        17 0.170E-13*Temp instantanee = .265
+
+*temp instantanee des atomes de type 1 =         0.26
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.11
+ --------------------------------------
+TR: force max, energy    17    0.3607974372E+00   -0.6881934892E+04
+ energie   -6881.9348919673394     
+
+
+<<<<<<<<  ITERATION =     18  time =   0.1800000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        18 0.180E-13*Epot =    -6881.94016429      eV 
+    *energie PAIRE EAM =    -1437.61061246      eV 
+    *energie GLUE  =    -5444.32955183      eV 
+        18 0.180E-13*Ec =    0.754179003173E-01  eV   (.285 K)
+        18 0.180E-13*Etot =    -6881.86474639      eV 
+
+        18 0.180E-13*Temp instantanee = .285
+
+*temp instantanee des atomes de type 1 =         0.28
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.12
+ --------------------------------------
+TR: force max, energy    18    0.3210051674E+00   -0.6881940164E+04
+ energie   -6881.9401642859884     
+
+
+<<<<<<<<  ITERATION =     19  time =   0.1900000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        19 0.190E-13*Epot =    -6881.94514045      eV 
+    *energie PAIRE EAM =    -1437.61592585      eV 
+    *energie GLUE  =    -5444.32921461      eV 
+        19 0.190E-13*Ec =    0.803888743984E-01  eV   (.304 K)
+        19 0.190E-13*Etot =    -6881.86475158      eV 
+
+        19 0.190E-13*Temp instantanee = .304
+
+*temp instantanee des atomes de type 1 =         0.30
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.13
+ --------------------------------------
+TR: force max, energy    19    0.2803569804E+00   -0.6881945140E+04
+ energie   -6881.9451404542051     
+
+
+<<<<<<<<  ITERATION =     20  time =   0.2000000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        20 0.200E-13*Epot =    -6881.94976836      eV 
+    *energie PAIRE EAM =    -1437.62091053      eV 
+    *energie GLUE  =    -5444.32885783      eV 
+        20 0.200E-13*Ec =    0.850137062998E-01  eV   (.321 K)
+        20 0.200E-13*Etot =    -6881.86475465      eV 
+
+        20 0.200E-13*Temp instantanee = .321
+
+*temp instantanee des atomes de type 1 =         0.32
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.14
+ --------------------------------------
+TR: force max, energy    20    0.2391276033E+00   -0.6881949768E+04
+ energie   -6881.9497683604923     
+
+
+<<<<<<<<  ITERATION =     21  time =   0.2100000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        21 0.210E-13*Epot =    -6881.95400429      eV 
+    *energie PAIRE EAM =    -1437.62552147      eV 
+    *energie GLUE  =    -5444.32848282      eV 
+        21 0.210E-13*Ec =    0.891955438752E-01  eV   (.337 K)
+        21 0.210E-13*Etot =    -6881.86480875      eV 
+
+        21 0.210E-13*Temp instantanee = .337
+
+*temp instantanee des atomes de type 1 =         0.34
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.15
+ --------------------------------------
+TR: force max, energy    21    0.1979255498E+00   -0.6881954004E+04
+ energie   -6881.9540042920107     
+
+
+<<<<<<<<  ITERATION =     22  time =   0.2200000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        22 0.220E-13*Epot =    -6881.95781583      eV 
+    *energie PAIRE EAM =    -1437.62971803      eV 
+    *energie GLUE  =    -5444.32809780      eV 
+        22 0.220E-13*Ec =    0.928234858134E-01  eV   (.350 K)
+        22 0.220E-13*Etot =    -6881.86499234      eV 
+
+        22 0.220E-13*Temp instantanee = .350
+
+*temp instantanee des atomes de type 1 =         0.35
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.16
+ --------------------------------------
+TR: force max, energy    22    0.1566579336E+00   -0.6881957816E+04
+ energie   -6881.9578158305249     
+
+
+<<<<<<<<  ITERATION =     23  time =   0.2300000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        23 0.230E-13*Epot =    -6881.96117571      eV 
+    *energie PAIRE EAM =    -1437.63348163      eV 
+    *energie GLUE  =    -5444.32769408      eV 
+        23 0.230E-13*Ec =    0.961470332778E-01  eV   (.363 K)
+        23 0.230E-13*Etot =    -6881.86502867      eV 
+
+        23 0.230E-13*Temp instantanee = .363
+
+*temp instantanee des atomes de type 1 =         0.36
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.17
+ --------------------------------------
+TR: force max, energy    23    0.1154479043E+00   -0.6881961176E+04
+ energie   -6881.9611757059592     
+
+
+<<<<<<<<  ITERATION =     24  time =   0.2400000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        24 0.240E-13*Epot =    -6881.96406262      eV 
+    *energie PAIRE EAM =    -1437.63679150      eV 
+    *energie GLUE  =    -5444.32727111      eV 
+        24 0.240E-13*Ec =    0.990009386123E-01  eV   (.374 K)
+        24 0.240E-13*Etot =    -6881.86506168      eV 
+
+        24 0.240E-13*Temp instantanee = .374
+
+*temp instantanee des atomes de type 1 =         0.37
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.18
+ --------------------------------------
+TR: force max, energy    24    0.1065903025E+00   -0.6881964063E+04
+ energie   -6881.9640626164364     
+
+
+<<<<<<<<  ITERATION =     25  time =   0.2500000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        25 0.250E-13*Epot =    -6881.96650089      eV 
+    *energie PAIRE EAM =    -1437.63963976      eV 
+    *energie GLUE  =    -5444.32686113      eV 
+        25 0.250E-13*Ec =    0.972753314433E-01  eV   (.367 K)
+        25 0.250E-13*Etot =    -6881.86922556      eV 
+
+        25 0.250E-13*Temp instantanee = .367
+
+*temp instantanee des atomes de type 1 =         0.37
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.18
+ --------------------------------------
+TR: force max, energy    25    0.1127944432E+00   -0.6881966501E+04
+ energie   -6881.9665008891534     
+
+
+<<<<<<<<  ITERATION =     26  time =   0.2600000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        26 0.260E-13*Epot =    -6881.96850862      eV 
+    *energie PAIRE EAM =    -1437.64205689      eV 
+    *energie GLUE  =    -5444.32645174      eV 
+        26 0.260E-13*Ec =    0.986199892507E-01  eV   (.372 K)
+        26 0.260E-13*Etot =    -6881.86988863      eV 
+
+        26 0.260E-13*Temp instantanee = .372
+
+*temp instantanee des atomes de type 1 =         0.37
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.19
+ --------------------------------------
+TR: force max, energy    26    0.1188348651E+00   -0.6881968509E+04
+ energie   -6881.9685086230656     
+
+
+<<<<<<<<  ITERATION =     27  time =   0.2700000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        27 0.270E-13*Epot =    -6881.97024443      eV 
+    *energie PAIRE EAM =    -1437.64401693      eV 
+    *energie GLUE  =    -5444.32622750      eV 
+        27 0.270E-13*Ec =    0.473690848125E-01  eV   (.179 K)
+        27 0.270E-13*Etot =    -6881.92287535      eV 
+
+        27 0.270E-13*Temp instantanee = .179
+
+*temp instantanee des atomes de type 1 =         0.18
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.19
+ --------------------------------------
+TR: force max, energy    27    0.1158671763E+00   -0.6881970244E+04
+ energie   -6881.9702444319355     
+
+
+<<<<<<<<  ITERATION =     28  time =   0.2800000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        28 0.280E-13*Epot =    -6881.97187304      eV 
+    *energie PAIRE EAM =    -1437.64573113      eV 
+    *energie GLUE  =    -5444.32614191      eV 
+        28 0.280E-13*Ec =    0.369883843721E-01  eV   (.140 K)
+        28 0.280E-13*Etot =    -6881.93488465      eV 
+
+        28 0.280E-13*Temp instantanee = .140
+
+*temp instantanee des atomes de type 1 =         0.14
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.19
+ --------------------------------------
+TR: force max, energy    28    0.1125881369E+00   -0.6881971873E+04
+ energie   -6881.9718730387358     
+
+
+<<<<<<<<  ITERATION =     29  time =   0.2900000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        29 0.290E-13*Epot =    -6881.97340700      eV 
+    *energie PAIRE EAM =    -1437.64735547      eV 
+    *energie GLUE  =    -5444.32605153      eV 
+        29 0.290E-13*Ec =    0.384119943553E-01  eV   (.145 K)
+        29 0.290E-13*Etot =    -6881.93499500      eV 
+
+        29 0.290E-13*Temp instantanee = .145
+
+*temp instantanee des atomes de type 1 =         0.15
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.19
+ --------------------------------------
+TR: force max, energy    29    0.1089773522E+00   -0.6881973407E+04
+ energie   -6881.9734069954138     
+
+
+<<<<<<<<  ITERATION =     30  time =   0.3000000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        30 0.300E-13*Epot =    -6881.97483836      eV 
+    *energie PAIRE EAM =    -1437.64888332      eV 
+    *energie GLUE  =    -5444.32595504      eV 
+        30 0.300E-13*Ec =    0.393908322823E-01  eV   (.149 K)
+        30 0.300E-13*Etot =    -6881.93544753      eV 
+
+        30 0.300E-13*Temp instantanee = .149
+
+*temp instantanee des atomes de type 1 =         0.15
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.19
+ --------------------------------------
+TR: force max, energy    30    0.1050282111E+00   -0.6881974838E+04
+ energie   -6881.9748383610213     
+
+
+<<<<<<<<  ITERATION =     31  time =   0.3100000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        31 0.310E-13*Epot =    -6881.97616064      eV 
+    *energie PAIRE EAM =    -1437.65031120      eV 
+    *energie GLUE  =    -5444.32584944      eV 
+        31 0.310E-13*Ec =    0.400879804880E-01  eV   (.151 K)
+        31 0.310E-13*Etot =    -6881.93607266      eV 
+
+        31 0.310E-13*Temp instantanee = .151
+
+*temp instantanee des atomes de type 1 =         0.15
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.18
+ --------------------------------------
+TR: force max, energy    31    0.1008385570E+00   -0.6881976161E+04
+ energie   -6881.9761606410548     
+
+
+<<<<<<<<  ITERATION =     32  time =   0.3200000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        32 0.320E-13*Epot =    -6881.97737020      eV 
+    *energie PAIRE EAM =    -1437.65163163      eV 
+    *energie GLUE  =    -5444.32573857      eV 
+        32 0.320E-13*Ec =    0.406689508579E-01  eV   (.154 K)
+        32 0.320E-13*Etot =    -6881.93670125      eV 
+
+        32 0.320E-13*Temp instantanee = .154
+
+*temp instantanee des atomes de type 1 =         0.15
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.18
+ --------------------------------------
+TR: force max, energy    32    0.9641263817E-01   -0.6881977370E+04
+ energie   -6881.9773702016082     
+
+
+<<<<<<<<  ITERATION =     33  time =   0.3300000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        33 0.330E-13*Epot =    -6881.97848749      eV 
+    *energie PAIRE EAM =    -1437.65285239      eV 
+    *energie GLUE  =    -5444.32563510      eV 
+        33 0.330E-13*Ec =    0.389614387178E-01  eV   (.147 K)
+        33 0.330E-13*Etot =    -6881.93952605      eV 
+
+        33 0.330E-13*Temp instantanee = .147
+
+*temp instantanee des atomes de type 1 =         0.15
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.18
+ --------------------------------------
+TR: force max, energy    33    0.9177623642E-01   -0.6881978487E+04
+ energie   -6881.9784874916722     
+
+
+<<<<<<<<  ITERATION =     34  time =   0.3400000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        34 0.340E-13*Epot =    -6881.97950617      eV 
+    *energie PAIRE EAM =    -1437.65398030      eV 
+    *energie GLUE  =    -5444.32552586      eV 
+        34 0.340E-13*Ec =    0.397331353403E-01  eV   (.150 K)
+        34 0.340E-13*Etot =    -6881.93977303      eV 
+
+        34 0.340E-13*Temp instantanee = .150
+
+*temp instantanee des atomes de type 1 =         0.15
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.18
+ --------------------------------------
+TR: force max, energy    34    0.8702814911E-01   -0.6881979506E+04
+ energie   -6881.9795061667510     
+
+
+<<<<<<<<  ITERATION =     35  time =   0.3500000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        35 0.350E-13*Epot =    -6881.98043552      eV 
+    *energie PAIRE EAM =    -1437.65499902      eV 
+    *energie GLUE  =    -5444.32543650      eV 
+        35 0.350E-13*Ec =    0.368149259058E-01  eV   (.139 K)
+        35 0.350E-13*Etot =    -6881.94362059      eV 
+
+        35 0.350E-13*Temp instantanee = .139
+
+*temp instantanee des atomes de type 1 =         0.14
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.18
+ --------------------------------------
+TR: force max, energy    35    0.8210253563E-01   -0.6881980436E+04
+ energie   -6881.9804355161514     
+
+
+<<<<<<<<  ITERATION =     36  time =   0.3600000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        36 0.360E-13*Epot =    -6881.98128666      eV 
+    *energie PAIRE EAM =    -1437.65592670      eV 
+    *energie GLUE  =    -5444.32535996      eV 
+        36 0.360E-13*Ec =    0.365629233690E-01  eV   (.138 K)
+        36 0.360E-13*Etot =    -6881.94472374      eV 
+
+        36 0.360E-13*Temp instantanee = .138
+
+*temp instantanee des atomes de type 1 =         0.14
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.18
+ --------------------------------------
+TR: force max, energy    36    0.7706901642E-01   -0.6881981287E+04
+ energie   -6881.9812866605143     
+
+
+ ####### END OF RUN  ######## =           36   time =    3.6000000000000004E-014

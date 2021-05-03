@@ -1,0 +1,818 @@
+==6983== Memcheck, a memory error detector
+==6983== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==6983== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==6983== Command: ../../../codesndm/ndm2020/rundm90_ndm_serial_gfortran_debug
+==6983== 
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=neb.din                                                                         
+
+ Pas de conditions periodiques
+
+ -------- caracteristiques du run DM-------- 9
+      DRAG OR NEB DYNAMICS 
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=          -1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=        1000  itab=           1  itetimestep=          -1
+tinit=      -1.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+ FNAM deb_neb                                                                         
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+DIVID appel rumax   0        5.56
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.3226E-06/  0.5558E-07) = 5
+  noy = Int(   0.3226E-06/  0.5558E-07) = 5
+  noz = Int(   0.3226E-06/  0.5558E-07) = 5
+nox noy noz apres correction = 5 5 5
+celsizes   0.6451200E-07  0.6451200E-07  0.6451200E-07
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:        2049
+ Nombre de mailles creees :            1           1           1           1
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+taille de la boite ZL     32.2560    32.2560    32.2560
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+ sauvegarde positions it=           1 neb.coutposition.000000001                                                      
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+DIVID appel rumax   0        5.56
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ nox,noy,noz dans .din =           5           5           5
+celsizes   0.6451200E-07  0.6451200E-07  0.6451200E-07
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:        2049
+ Nombre de mailles creees :            1           1           1           1
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+taille de la boite ZL     32.2560    32.2560    32.2560
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+ sauvegarde positions it=           9 neb.coutposition.000000009                                                      
+ nox,noy,noz deuxième passage  =           5           5           5
+celsizes   0.6451200E-07  0.6451200E-07  0.6451200E-07
+ natperc im/noxyz          80          16
+ ltabvois,lconstrtot F F
+
+  TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! 
+ -------------------------------------------------------------------
+
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ 1ER CALL init
+ temperature fin initspeed    0.0000000000000000     
+ sortie init
+ im        2049
+ NEB: deplacement max entre configurations =    1.1183600851246447       pour l atome         2049
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x405ABA: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:160)
+==6983==    by 0x542ABE: __neb_mod_MOD_neb (neb.F90:165)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x405B37: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:160)
+==6983==    by 0x542ABE: __neb_mod_MOD_neb (neb.F90:165)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x405CB8: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:162)
+==6983==    by 0x542ABE: __neb_mod_MOD_neb (neb.F90:165)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x405D98: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:162)
+==6983==    by 0x542ABE: __neb_mod_MOD_neb (neb.F90:165)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x404A6B: __trempe_mod_MOD_trempe (trempe.F90:48)
+==6983==    by 0x544553: __neb_mod_MOD_neb (neb.F90:328)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x40590B: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:158)
+==6983==    by 0x5445BD: __neb_mod_MOD_neb (neb.F90:337)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x4059A2: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:158)
+==6983==    by 0x5445BD: __neb_mod_MOD_neb (neb.F90:337)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x405ABA: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:160)
+==6983==    by 0x5445BD: __neb_mod_MOD_neb (neb.F90:337)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x405B37: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:160)
+==6983==    by 0x5445BD: __neb_mod_MOD_neb (neb.F90:337)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x405CB8: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:162)
+==6983==    by 0x5445BD: __neb_mod_MOD_neb (neb.F90:337)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x405D98: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:162)
+==6983==    by 0x5445BD: __neb_mod_MOD_neb (neb.F90:337)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x405DFD: __neb_controle_mod_MOD_neb_controle (neb_controle.F90:165)
+==6983==    by 0x5445BD: __neb_mod_MOD_neb (neb.F90:337)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x537D5D: __notperiod_mod_MOD_notperiod (notperiod.F90:60)
+==6983==    by 0x507122: __cellconfig_MOD_caltabtc (cellconfig.F90:237)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x537D70: __notperiod_mod_MOD_notperiod (notperiod.F90:60)
+==6983==    by 0x507122: __cellconfig_MOD_caltabtc (cellconfig.F90:237)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x537D83: __notperiod_mod_MOD_notperiod (notperiod.F90:61)
+==6983==    by 0x507122: __cellconfig_MOD_caltabtc (cellconfig.F90:237)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x537DEA: __notperiod_mod_MOD_notperiod (notperiod.F90:65)
+==6983==    by 0x507122: __cellconfig_MOD_caltabtc (cellconfig.F90:237)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x507274: __cellconfig_MOD_caltabtc (cellconfig.F90:260)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x50729A: __cellconfig_MOD_caltabtc (cellconfig.F90:261)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x5072C0: __cellconfig_MOD_caltabtc (cellconfig.F90:262)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x507313: __cellconfig_MOD_caltabtc (cellconfig.F90:267)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x50731A: __cellconfig_MOD_caltabtc (cellconfig.F90:267)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x5075D7: __cellconfig_MOD_caltabtc (cellconfig.F90:274)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x5075DD: __cellconfig_MOD_caltabtc (cellconfig.F90:274)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x507605: __cellconfig_MOD_caltabtc (cellconfig.F90:277)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x5077A1: __cellconfig_MOD_caltabtc (cellconfig.F90:283)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x5077AE: __cellconfig_MOD_caltabtc (cellconfig.F90:283)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x50727C: __cellconfig_MOD_caltabtc (cellconfig.F90:260)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x5072A2: __cellconfig_MOD_caltabtc (cellconfig.F90:261)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x5072C8: __cellconfig_MOD_caltabtc (cellconfig.F90:262)
+==6983==    by 0x5440C2: __neb_mod_MOD_neb (neb.F90:310)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x537D5D: __notperiod_mod_MOD_notperiod (notperiod.F90:60)
+==6983==    by 0x489B8E: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:94)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x537D70: __notperiod_mod_MOD_notperiod (notperiod.F90:60)
+==6983==    by 0x489B8E: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:94)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x537D83: __notperiod_mod_MOD_notperiod (notperiod.F90:61)
+==6983==    by 0x489B8E: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:94)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x537DEA: __notperiod_mod_MOD_notperiod (notperiod.F90:65)
+==6983==    by 0x489B8E: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:94)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x489CDB: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:122)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x489E6D: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:124)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A0D7: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:162)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A0FA: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:162)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A140: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:164)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A163: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:164)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A1A9: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:166)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A1CC: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:166)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A464: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:185)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A4CE: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:191)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A4E0: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:191)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48A5D0: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:194)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48A6C4: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:204)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48A70A: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:204)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48A750: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:204)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48A796: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:204)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48A83A: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:206)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48A880: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:206)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48A8C6: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:206)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48A90C: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:206)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48A9EA: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:216)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48AA30: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:216)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48AA76: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:216)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48AABC: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:216)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48ABE8: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:226)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48AC2E: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:226)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48AC90: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:226)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48B747: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:268)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48B931: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:274)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48B977: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:274)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48B9BD: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:274)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48BA03: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:274)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48BAEA: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:284)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48BB30: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:284)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48BB92: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:284)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48BD04: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:306)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48BE96: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:307)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C100: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:334)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C123: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:334)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C169: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:336)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C18C: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:336)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C1D2: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:338)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C1F5: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:338)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C48D: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:357)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C4FB: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:364)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C541: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:368)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Conditional jump or move depends on uninitialised value(s)
+==6983==    at 0x48C553: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:368)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48C6E9: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:375)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48C72F: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:375)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48C791: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:375)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48C808: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:375)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48C84E: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:375)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== Use of uninitialised value of size 8
+==6983==    at 0x48C8B0: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:375)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== 
+==6983== More than 10000000 total errors detected.  I'm not reporting any more.
+==6983== Final error counts will be inaccurate.  Go fix your program!
+==6983== Rerun with --error-limit=no to disable this cutoff.  Note
+==6983== that errors may occur in your program without prior warning from
+==6983== Valgrind, because errors are no longer being displayed.
+==6983== 
+==6983== 
+==6983== Process terminating with default action of signal 2 (SIGINT)
+==6983==    at 0x5708540: free (malloc.c:2941)
+==6983==    by 0x48BF32: __calfoeamcel_mod_MOD_calfoeamcel (calfoeamcel.F90:307)
+==6983==    by 0x4E678A: __calfo_mod_MOD_calfo (calfo.F90:207)
+==6983==    by 0x5441A3: __neb_mod_MOD_neb (neb.F90:313)
+==6983==    by 0x4815A6: __prog_mod_MOD_prog (prog.F90:119)
+==6983==    by 0x537BDD: MAIN__ (main.F90:138)
+==6983==    by 0x537C19: main (main.F90:10)
+==6983== 
+==6983== HEAP SUMMARY:
+==6983==     in use at exit: 10,402,448 bytes in 271 blocks
+==6983==   total heap usage: 9,305,719 allocs, 9,305,448 frees, 251,244,974 bytes allocated
+==6983== 
+==6983== LEAK SUMMARY:
+==6983==    definitely lost: 0 bytes in 0 blocks
+==6983==    indirectly lost: 0 bytes in 0 blocks
+==6983==      possibly lost: 0 bytes in 0 blocks
+==6983==    still reachable: 10,402,448 bytes in 271 blocks
+==6983==         suppressed: 0 bytes in 0 blocks
+==6983== Rerun with --leak-check=full to see details of leaked memory
+==6983== 
+==6983== For counts of detected and suppressed errors, rerun with: -v
+==6983== Use --track-origins=yes to see where uninitialised values come from
+==6983== ERROR SUMMARY: 10000000 errors from 86 contexts (suppressed: 0 from 0)

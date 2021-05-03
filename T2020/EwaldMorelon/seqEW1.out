@@ -1,0 +1,138 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=UO2M.din                                                                        
+
+ -------- caracteristiques du run DM-------- 4
+      DYNAMIQUE MOLECULAIRE VELOCITY VERLET
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         200  itab=           1  itetimestep=          -1
+tinit=     300.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           4
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL UO2 -----------
+ -*-*-*-*-* SOMMATION D-EWALD CLASSIQUE *-*-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ numero, charge, CM, masse,type
+   1    3.227    0.000   92.000  U4 
+   2   -1.614    0.000    8.000  O  
+ nb de paires            3
+ Specificite de l interaction O-O 
+ Polynome de degre 5 a           1  =    7.6897260437499795E-010
+ Polynome de degre 5 a           2  =  -0.21990352609782496     
+ Polynome de degre 5 a           3  =    25029569.208040804     
+ Polynome de degre 5 a           4  =   -1413068370858535.0     
+ Polynome de degre 5 a           5  =    3.9483235669834178E+022
+ Polynome de degre 5 a           6  =   -4.3651297738739712E+029
+ Polynome de degre 3 b           1  =    6.8434030216057097E-011
+ Polynome de degre 3 b           2  =   -8.8585203517277111E-003
+ Polynome de degre 3 b           3  =    368470.57398966170     
+ Polynome de degre 3 b           4  =   -5000773412106.8848     
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        7000        7000           1
+
+ **********construction du reseau************
+ repetition de mailles           8           8           8
+ izonr,zlmin,rut           7   87.488000000000000        11.000000000000000     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.4374E-06/  0.1100E-06) = 3
+  noy = Int(   0.4374E-06/  0.1100E-06) = 3
+  noz = Int(   0.4374E-06/  0.1100E-06) = 3
+nox noy noz apres correction = 3 3 3
+celsizes   0.1458133E-06  0.1458133E-06  0.1458133E-06
+UO2M.gin                                                                        volume= 0.83705786D-19 cm3  0.83705786D+05 Ang3
+ natperc im/noxyz        2270         227
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        6144
+vecteur  1      43.744000       0.000000       0.000000
+vecteur  2       0.000000      43.744000       0.000000
+vecteur  3       0.000000       0.000000      43.744000
+        4096  atomes de type           1
+        2048  atomes de type           2
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1000000000000001E-007  ALPHA=   42056000.000000000       NCOUC=           8           8           8  PRECISEW =   0.0000000000000000     
+ ncoucx_y_z           8           8           8
+ nvecttot        4912
+
+
+
+
+ ATTENTION!!! UO2 === Oxygène = TYPE 2!!!!
+
+
+
+
+
+ random velocities at TINIT =    300.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature positions lues initspeed    305.53953793436199     
+ temperature fin initspeed    305.59828712954567     
+
+ ***** PREMIERE ITERATION  VVERLET****
+
+
+<<<<<<<<  ITERATION =      0  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         0  0.00    *Epot =    -122534.6022237182      eV 
+    *energie paire 2 corps =    -122622.814502      eV 
+    *energie pot coul recip =     88.2122785503      eV 
+         0  0.00    *Ec =     242.693320614      eV   (305.598 K)
+         0  0.00    *Etot =    -122291.9089031045      eV 
+
+         0  0.00    *Temp instantanee = 305.598
+
+*temp instantanee des atomes de type 1 =       304.27
+*temp instantanee des atomes de type 2 =       308.25
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =   2165.069344      0.3166496754E-14 -0.2434104681E-13
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.4246830940E-15   2165.069344      0.1259148121E-14
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.2374500036E-13  0.3650784492E-15   2165.069344    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   0.000000000       0.000000000       0.000000000    
+2 sigma cinetique (1,2) (2,2) (3,2) =   0.000000000       0.000000000       0.000000000    
+3 sigma cinetique (1,3) (2,3) (3,3) =   0.000000000       0.000000000       0.000000000    
+
+1 sigma total (1,1) (2,1) (3,1) =   0.000000000       0.000000000       0.000000000    
+2 sigma total (1,2) (2,2) (3,2) =   0.000000000       0.000000000       0.000000000    
+3 sigma total (1,3) (2,3) (3,3) =   0.000000000       0.000000000       0.000000000    
+
+         0  0.00    *Pression =     2165.1    
+ pression totale  potentiel = cinetique =
+    2165.1        2165.1        0.0000    
+ ----------valeurs moyennes------------
+*temperature moyenne =       305.60
+*pression moyenne =     2165.1    
+ --------------------------------------
+
+
+ ####### END OF RUN  ######## =            0   time =    0.0000000000000000     

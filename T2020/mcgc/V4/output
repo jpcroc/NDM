@@ -1,0 +1,300 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=UO2.din                                                                         
+
+ -------- caracteristiques du run DM--------15
+      CALCUL MONTE CARLO GRAND CANONIQUE 
+
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     100.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           7
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL PAIRE TABULE -----------
+ -*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ CM, masse,type
+   1    0.000    8.000  O  
+   2    0.000   92.000  U  
+ nb de paires grille           3       50000
+ paire l active  ipotentiel:            3           7
+ paire l active  ipotentiel:            2           7
+ paire l active  ipotentiel:            1           7
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+DIVID appel rumax   0       11.70
+ izonr,zlmin,rut           9   109.36000000000000        11.699999999999999     
+volume= 0.16348786D-18 cm3  0.16348786D+06 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.5468E-06/  0.1170E-06) = 4
+  noy = Int(   0.5468E-06/  0.1170E-06) = 4
+  noz = Int(   0.5468E-06/  0.1170E-06) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.1367000E-06  0.1367000E-06  0.1367000E-06
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:          12
+ Nombre de mailles creees :           10          10          10        1000
+
+ -------- boite de simulation ------
+ nombre d atomes =       12000
+taille de la boite ZL     54.6800    54.6800    54.6800
+vecteur  1      54.680000       0.000000       0.000000
+vecteur  2       0.000000      54.680000       0.000000
+vecteur  3       0.000000       0.000000      54.680000
+        8000  atomes de type           1
+        4000  atomes de type           2
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+ nox,noy,noz deuxième passage  =           4           4           4
+celsizes   0.1367000E-06  0.1367000E-06  0.1367000E-06
+ natperc im/noxyz         935         187
+ ltabvois,lconstrtot F F
+
+  TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! 
+ -------------------------------------------------------------------
+
+ 1ER CALL init
+ random velocities at TINIT =    100.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature MI initspeed    100.89343427448630     
+ center of mass =    26.818491460165305        26.818491460166069        26.818491460166321     
+ Momentum/atom  =   -4.3702785748029050E-021  -8.8444157980233027E-021  -2.9829209709430006E-021
+Inertia/anglm =   0.8920E-31 -0.3500E-34 -0.3500E-34       0.2622E-23
+Inertia/anglm =  -0.3500E-34  0.8920E-31 -0.3500E-34      -0.5482E-22
+Inertia/anglm =  -0.3500E-34 -0.3500E-34  0.8920E-31       0.2521E-22
+ temperature fin initspeed    100.87643001453579     
+ sortie init
+ lambda_mc=   9.9999997764825821E-003
+         0 0.100E-14*Temp instantanee = 100.615
+ lambda_mc=   1.9999999552965164E-002
+         1 0.200E-14*Temp instantanee = 99.859
+ lambda_mc=   2.9999999329447746E-002
+         2 0.300E-14*Temp instantanee = 98.615
+ lambda_mc=   3.9999999105930328E-002
+         3 0.400E-14*Temp instantanee = 96.905
+ lambda_mc=   4.9999998882412910E-002
+         4 0.500E-14*Temp instantanee = 94.761
+ lambda_mc=   5.9999998658895493E-002
+         5 0.600E-14*Temp instantanee = 92.220
+ lambda_mc=   6.9999998435378075E-002
+         6 0.700E-14*Temp instantanee = 89.329
+ lambda_mc=   7.9999998211860657E-002
+         7 0.800E-14*Temp instantanee = 86.139
+ lambda_mc=   8.9999997988343239E-002
+         8 0.900E-14*Temp instantanee = 82.705
+ lambda_mc=   9.9999997764825821E-002
+         9 0.100E-13*Temp instantanee = 79.086
+ lambda_mc=  0.10999999754130840     
+        10 0.110E-13*Temp instantanee = 75.343
+ lambda_mc=  0.11999999731779099     
+        11 0.120E-13*Temp instantanee = 71.539
+ lambda_mc=  0.12999999709427357     
+        12 0.130E-13*Temp instantanee = 67.733
+ lambda_mc=  0.13999999687075615     
+        13 0.140E-13*Temp instantanee = 63.985
+ lambda_mc=  0.14999999664723873     
+        14 0.150E-13*Temp instantanee = 60.351
+ lambda_mc=  0.15999999642372131     
+        15 0.160E-13*Temp instantanee = 56.880
+ lambda_mc=  0.16999999620020390     
+        16 0.170E-13*Temp instantanee = 53.619
+ lambda_mc=  0.17999999597668648     
+        17 0.180E-13*Temp instantanee = 50.608
+ lambda_mc=  0.18999999575316906     
+        18 0.190E-13*Temp instantanee = 47.880
+ lambda_mc=  0.19999999552965164     
+        19 0.200E-13*Temp instantanee = 45.460
+ lambda_mc=  0.20999999530613422     
+        20 0.210E-13*Temp instantanee = 43.366
+ lambda_mc=  0.21999999508261681     
+        21 0.220E-13*Temp instantanee = 41.608
+ lambda_mc=  0.22999999485909939     
+        22 0.230E-13*Temp instantanee = 40.187
+ lambda_mc=  0.23999999463558197     
+        23 0.240E-13*Temp instantanee = 39.098
+ lambda_mc=  0.24999999441206455     
+        24 0.250E-13*Temp instantanee = 38.328
+ lambda_mc=  0.25999999418854713     
+        25 0.260E-13*Temp instantanee = 37.857
+ lambda_mc=  0.26999999396502972     
+        26 0.270E-13*Temp instantanee = 37.660
+ lambda_mc=  0.27999999374151230     
+        27 0.280E-13*Temp instantanee = 37.705
+ lambda_mc=  0.28999999351799488     
+        28 0.290E-13*Temp instantanee = 37.960
+ lambda_mc=  0.29999999329447746     
+        29 0.300E-13*Temp instantanee = 38.388
+ lambda_mc=  0.30999999307096004     
+        30 0.310E-13*Temp instantanee = 38.952
+ lambda_mc=  0.31999999284744263     
+        31 0.320E-13*Temp instantanee = 39.617
+ lambda_mc=  0.32999999262392521     
+        32 0.330E-13*Temp instantanee = 40.346
+ lambda_mc=  0.33999999240040779     
+        33 0.340E-13*Temp instantanee = 41.104
+ lambda_mc=  0.34999999217689037     
+        34 0.350E-13*Temp instantanee = 41.858
+ lambda_mc=  0.35999999195337296     
+        35 0.360E-13*Temp instantanee = 42.581
+ lambda_mc=  0.36999999172985554     
+        36 0.370E-13*Temp instantanee = 43.245
+ lambda_mc=  0.37999999150633812     
+        37 0.380E-13*Temp instantanee = 43.831
+ lambda_mc=  0.38999999128282070     
+        38 0.390E-13*Temp instantanee = 44.320
+ lambda_mc=  0.39999999105930328     
+        39 0.400E-13*Temp instantanee = 44.702
+ lambda_mc=  0.40999999083578587     
+        40 0.410E-13*Temp instantanee = 44.968
+ lambda_mc=  0.41999999061226845     
+        41 0.420E-13*Temp instantanee = 45.116
+ lambda_mc=  0.42999999038875103     
+        42 0.430E-13*Temp instantanee = 45.147
+ lambda_mc=  0.43999999016523361     
+        43 0.440E-13*Temp instantanee = 45.067
+ lambda_mc=  0.44999998994171619     
+        44 0.450E-13*Temp instantanee = 44.884
+ lambda_mc=  0.45999998971819878     
+        45 0.460E-13*Temp instantanee = 44.611
+ lambda_mc=  0.46999998949468136     
+        46 0.470E-13*Temp instantanee = 44.264
+ lambda_mc=  0.47999998927116394     
+        47 0.480E-13*Temp instantanee = 43.858
+ lambda_mc=  0.48999998904764652     
+        48 0.490E-13*Temp instantanee = 43.413
+ lambda_mc=  0.49999998882412910     
+        49 0.500E-13*Temp instantanee = 42.948
+ lambda_mc=  0.50999998860061169     
+        50 0.510E-13*Temp instantanee = 42.482
+ lambda_mc=  0.51999998837709427     
+        51 0.520E-13*Temp instantanee = 42.034
+ lambda_mc=  0.52999998815357685     
+        52 0.530E-13*Temp instantanee = 41.622
+ lambda_mc=  0.53999998793005943     
+        53 0.540E-13*Temp instantanee = 41.262
+ lambda_mc=  0.54999998770654202     
+        54 0.550E-13*Temp instantanee = 40.969
+ lambda_mc=  0.55999998748302460     
+        55 0.560E-13*Temp instantanee = 40.753
+ lambda_mc=  0.56999998725950718     
+        56 0.570E-13*Temp instantanee = 40.622
+ lambda_mc=  0.57999998703598976     
+        57 0.580E-13*Temp instantanee = 40.584
+ lambda_mc=  0.58999998681247234     
+        58 0.590E-13*Temp instantanee = 40.639
+ lambda_mc=  0.59999998658895493     
+        59 0.600E-13*Temp instantanee = 40.789
+ lambda_mc=  0.60999998636543751     
+        60 0.610E-13*Temp instantanee = 41.028
+ lambda_mc=  0.61999998614192009     
+        61 0.620E-13*Temp instantanee = 41.350
+ lambda_mc=  0.62999998591840267     
+        62 0.630E-13*Temp instantanee = 41.746
+ lambda_mc=  0.63999998569488525     
+        63 0.640E-13*Temp instantanee = 42.206
+ lambda_mc=  0.64999998547136784     
+        64 0.650E-13*Temp instantanee = 42.716
+ lambda_mc=  0.65999998524785042     
+        65 0.660E-13*Temp instantanee = 43.261
+ lambda_mc=  0.66999998502433300     
+        66 0.670E-13*Temp instantanee = 43.828
+ lambda_mc=  0.67999998480081558     
+        67 0.680E-13*Temp instantanee = 44.399
+ lambda_mc=  0.68999998457729816     
+        68 0.690E-13*Temp instantanee = 44.961
+ lambda_mc=  0.69999998435378075     
+        69 0.700E-13*Temp instantanee = 45.499
+ lambda_mc=  0.70999998413026333     
+        70 0.710E-13*Temp instantanee = 45.999
+ lambda_mc=  0.71999998390674591     
+        71 0.720E-13*Temp instantanee = 46.449
+ lambda_mc=  0.72999998368322849     
+        72 0.730E-13*Temp instantanee = 46.839
+ lambda_mc=  0.73999998345971107     
+        73 0.740E-13*Temp instantanee = 47.162
+ lambda_mc=  0.74999998323619366     
+        74 0.750E-13*Temp instantanee = 47.411
+ lambda_mc=  0.75999998301267624     
+        75 0.760E-13*Temp instantanee = 47.583
+ lambda_mc=  0.76999998278915882     
+        76 0.770E-13*Temp instantanee = 47.678
+ lambda_mc=  0.77999998256564140     
+        77 0.780E-13*Temp instantanee = 47.697
+ lambda_mc=  0.78999998234212399     
+        78 0.790E-13*Temp instantanee = 47.644
+ lambda_mc=  0.79999998211860657     
+        79 0.800E-13*Temp instantanee = 47.526
+ lambda_mc=  0.80999998189508915     
+        80 0.810E-13*Temp instantanee = 47.349
+ lambda_mc=  0.81999998167157173     
+        81 0.820E-13*Temp instantanee = 47.124
+ lambda_mc=  0.82999998144805431     
+        82 0.830E-13*Temp instantanee = 46.862
+ lambda_mc=  0.83999998122453690     
+        83 0.840E-13*Temp instantanee = 46.574
+ lambda_mc=  0.84999998100101948     
+        84 0.850E-13*Temp instantanee = 46.273
+ lambda_mc=  0.85999998077750206     
+        85 0.860E-13*Temp instantanee = 45.972
+ lambda_mc=  0.86999998055398464     
+        86 0.870E-13*Temp instantanee = 45.682
+ lambda_mc=  0.87999998033046722     
+        87 0.880E-13*Temp instantanee = 45.415
+ lambda_mc=  0.88999998010694981     
+        88 0.890E-13*Temp instantanee = 45.183
+ lambda_mc=  0.89999997988343239     
+        89 0.900E-13*Temp instantanee = 44.994
+ lambda_mc=  0.90999997965991497     
+        90 0.910E-13*Temp instantanee = 44.858
+ lambda_mc=  0.91999997943639755     
+        91 0.920E-13*Temp instantanee = 44.779
+ lambda_mc=  0.92999997921288013     
+        92 0.930E-13*Temp instantanee = 44.763
+ lambda_mc=  0.93999997898936272     
+        93 0.940E-13*Temp instantanee = 44.812
+ lambda_mc=  0.94999997876584530     
+        94 0.950E-13*Temp instantanee = 44.926
+ lambda_mc=  0.95999997854232788     
+        95 0.960E-13*Temp instantanee = 45.104
+ lambda_mc=  0.96999997831881046     
+        96 0.970E-13*Temp instantanee = 45.343
+ lambda_mc=  0.97999997809529305     
+        97 0.980E-13*Temp instantanee = 45.638
+ lambda_mc=  0.98999997787177563     
+        98 0.990E-13*Temp instantanee = 45.981
+ lambda_mc=  0.99999997764825821     
+        99 0.100E-12*Temp instantanee = 46.365

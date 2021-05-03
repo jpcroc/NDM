@@ -1,0 +1,278 @@
+ Process            1  of            9  is alive
+ Process            3  of            9  is alive
+ Process            5  of            9  is alive
+ Process            7  of            9  is alive
+ Process            0  of            9  is alive
+ *** NDM859 ***
+ Process            4  of            9  is alive
+ Process            6  of            9  is alive
+ Process            8  of            9  is alive
+ Process            2  of            9  is alive
+ >>>>>>>>>>> entree readdm
+ nom fichier din=
+ Febulk.din                                                                     
+  
+ IMM PARA =         7333       55000
+ 
+ -------- caracteristiques du run DM-------- 4
+      DYNAMIQUE MOLECULAIRE VELOCITY VERLET
+ generation du crystal ; puis run
+ 
+      ANALYSES 
+ itetemp=           1  itesigma=           1
+ 
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=           3  itab=           1  itetimestep=          -1
+tinit=     600.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+ 
+ 
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ 
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+ 
+ 
+ POTENTIEL EAM
+ 
+ Types d_atomes :
+   1   55.847   26.000  Fe 
+ROFF1_2   -0.100   -0.200
+ nptmax in the max number of points on grid        250000
+ EAM           1           1
+ EAM number of points in potin and the step      250000  6.817837029000000E-004
+ dens           1           1
+ RHO potin points and the step:       250000  2.400000000000000E-005
+ paire eam ; paire complete           1           1
+ rep
+ NOX          14        2744
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ 
+ Nbre de cellule suivant x :          14
+ Nbre de cellule suivant y :          14
+ Nbre de cellule suivant z :          14
+ 
+ Le cas choisit :           1           3           3
+ Nombre de cellules max echg  par proc :           9         434
+ Taux d'equilibrage :           9  0.639999985694885     
+ valeur            9  0.591612888920692     
+ Nbre Min/Max de cel. locales. :         224         350
+ Nbre Min/Max de cel. fantomes. :         352         434
+ locmin/fantomax :           9  0.516129032258065     
+ NOX          14        2744
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ 
+ Nbre de cellule suivant x :          14
+ Nbre de cellule suivant y :          14
+ Nbre de cellule suivant z :          14
+ 
+ Le cas choisit :           1           3           3
+ Nombre de cellules max echg  par proc :           9         434
+ Taux d'equilibrage :           9  0.639999985694885     
+ valeur            9  0.591612888920692     
+ Nbre Min/Max de cel. locales. :         224         350
+ Nbre Min/Max de cel. fantomes. :         352         434
+ locmin/fantomax :           9  0.516129032258065     
+ NOX          14        2744
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ 
+ Nbre de cellule suivant x :          14
+ Nbre de cellule suivant y :          14
+ Nbre de cellule suivant z :          14
+ 
+ Le cas choisit :           1           3           3
+ Nombre de cellules max echg  par proc :           9         434
+ Taux d'equilibrage :           9  0.639999985694885     
+ valeur            9  0.591612888920692     
+ Nbre Min/Max de cel. locales. :         224         350
+ Nbre Min/Max de cel. fantomes. :         352         434
+ locmin/fantomax :           9  0.516129032258065     
+ NOX          14        2744
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ 
+ Nbre de cellule suivant x :          14
+ Nbre de cellule suivant y :          14
+ Nbre de cellule suivant z :          14
+ 
+ Le cas choisit :           1           3           3
+ Nombre de cellules max echg  par proc :           9         434
+ Taux d'equilibrage :           9  0.639999985694885     
+ valeur            9  0.591612888920692     
+ Nbre Min/Max de cel. locales. :         224         350
+ Nbre Min/Max de cel. fantomes. :         352         434
+ locmin/fantomax :           9  0.516129032258065     
+ 
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ 
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        7333       55000
+           9
+ 
+ **********construction du reseau************
+ repetition de mailles          30          30          30
+ izonr,zlmin,rut          14   171.319080000000        12.0000000000000     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.8566E-06/  0.6000E-07) = 14
+  noy = Int(   0.8566E-06/  0.6000E-07) = 14
+  noz = Int(   0.8566E-06/  0.6000E-07) = 14
+nox noy noz apres correction = 14 14 14
+ 
+ 
+ 
+ 
+celsizes   0.6118539E-07  0.6118539E-07  0.6118539E-07
+Febulk.gin                                                                      volume= 0.62853174D-18 cm3  0.62853174D+06 Ang3
+ NOX          14        2744
+ 
+ 
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :          14          14
+          14
+ sur            9  cpus           0
+ Nbre de solutions possibles :            6
+LE MEILLEUR DECOUPAGE :    9    1    3    3    0.5916
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ 
+ Nbre de cellule suivant x :          14
+ Nbre de cellule suivant y :          14
+ Nbre de cellule suivant z :          14
+ 
+ Le cas choisit :           1           3           3
+ Nombre de cellules max echg  par proc :           9         434
+ Taux d'equilibrage :           9  0.639999985694885     
+ valeur            9  0.591612888920692     
+ Nbre Min/Max de cel. locales. :         224         350
+ Nbre Min/Max de cel. fantomes. :         352         434
+ locmin/fantomax :           9  0.516129032258065     
+ NOX          14        2744
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ 
+ Nbre de cellule suivant x :          14
+ Nbre de cellule suivant y :          14
+ Nbre de cellule suivant z :          14
+ 
+ Le cas choisit :           1           3           3
+ Nombre de cellules max echg  par proc :           9         434
+ Taux d'equilibrage :           9  0.639999985694885     
+ valeur            9  0.591612888920692     
+ Nbre Min/Max de cel. locales. :         224         350
+ Nbre Min/Max de cel. fantomes. :         352         434
+ locmin/fantomax :           9  0.516129032258065     
+ NOX          14        2744
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ 
+ Nbre de cellule suivant x :          14
+ Nbre de cellule suivant y :          14
+ Nbre de cellule suivant z :          14
+ 
+ Le cas choisit :           1           3           3
+ Nombre de cellules max echg  par proc :           9         434
+ Taux d'equilibrage :           9  0.639999985694885     
+ valeur            9  0.591612888920692     
+ Nbre Min/Max de cel. locales. :         224         350
+ Nbre Min/Max de cel. fantomes. :         352         434
+ locmin/fantomax :           9  0.516129032258065     
+ NOX          14        2744
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ NOX          14        2744
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ 
+ Nbre de cellule suivant x :          14
+ Nbre de cellule suivant y :          14
+ Nbre de cellule suivant z :          14
+ 
+ Le cas choisit :           1           3           3
+ Nombre de cellules max echg  par proc :           9         434
+ Taux d'equilibrage :           9  0.639999985694885     
+ valeur            9  0.591612888920692     
+ Nbre Min/Max de cel. locales. :         224         350
+ Nbre Min/Max de cel. fantomes. :         352         434
+ locmin/fantomax :           9  0.516129032258065     
+ 
+ Nbre de cellule suivant x :          14
+ Nbre de cellule suivant y :          14
+ Nbre de cellule suivant z :          14
+ 
+ Le cas choisit :           1           3           3
+ Nombre de cellules max echg  par proc :           9         434
+ Taux d'equilibrage :           9  0.639999985694885     
+ valeur            9  0.591612888920692     
+ Nbre Min/Max de cel. locales. :         224         350
+ Nbre Min/Max de cel. fantomes. :         352         434
+ locmin/fantomax :           9  0.516129032258065     
+ 
+ 
+ 
+ 
+ 
+ natperc im/noxyz          38          19
+ ltabvois,lconstrtot F F
+ 
+ -------- boite de simulation ------
+ nombre d atomes =       54000
+vecteur  1      85.659540       0.000000       0.000000
+vecteur  2       0.000000      85.659540       0.000000
+vecteur  3       0.000000       0.000000      85.659540
+        7260  atomes de type           1
+ paire            1
+ calpoeam RHO MIN:  -6.332626358730729E-021
+ calpoeam RHO MAX:    12.1747089794684     
+ calpoeam Rhomin Rhomax   0.000000000000000E+000   170.445243928855     
+ calpoeam ktorho and the inverse:   8.522262196442750E-003
+   117.339736439628     
+ Le proc            0  a            8  processeur voisin
+ Le proc            0  a            8  processeur voisin
+ Le proc            0  a            8  processeur voisin
+ Le proc            0  a            8  processeur voisin
+ Le proc            0  a            8  processeur voisin
+ Le proc            0  a            8  processeur voisin
+ Le proc            0  a            8  processeur voisin
+ NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR
+ Le proc            0  a            8  processeur voisin
+ Le proc            0  a            8  processeur voisin
+ seed_size           2
+ iseed pour tirage des vitesses           1
+ seed_size           2
+ iseed pour tirage des vitesses           1
+ seed_size           2
+ iseed pour tirage des vitesses           1
+ seed_size           2
+ iseed pour tirage des vitesses           1
+ seed_size           2
+ iseed pour tirage des vitesses           1
+ seed_size           2
+ iseed pour tirage des vitesses           1
+ seed_size           2
+ iseed pour tirage des vitesses           1
+ random velocities at TINIT =    600.000000000000      K
+ seed_size           2
+ iseed pour tirage des vitesses           1
+ seed_size           2
+ iseed pour tirage des vitesses           1
+ temperature MI initspeed    728.510784183047     
+ center of mass =    42.1159405000056        14.9904195000013     
+   14.9904195000013     
+ Momentum/atom  =   5.083395995565922E-020 -7.724222897381349E-021
+  2.457507910781673E-020
+Inertia/anglm =   0.9939E-31 -0.3087E-33 -0.3087E-33      -0.1660E-22
+Inertia/anglm =  -0.3087E-33  0.4200E-30 -0.3087E-33       0.4070E-21
+Inertia/anglm =  -0.3087E-33 -0.3087E-33  0.4200E-30      -0.3109E-23
+ temperature fin initspeed    728.426210806133     
+  sauvegarde it=           0 
+ Febulk.cout                                                                    
+  

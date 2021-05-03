@@ -1,0 +1,178 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=neb.din                                                                         
+
+ Pas de conditions periodiques
+
+ -------- caracteristiques du run DM-------- 9
+      DRAG OR NEB DYNAMICS 
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=          -1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=        1000  itab=           1  itetimestep=          -1
+tinit=      -1.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+ FNAM deb_neb                                                                         
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+DIVID appel rumax   0        5.56
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.3226E-06/  0.5558E-07) = 5
+  noy = Int(   0.3226E-06/  0.5558E-07) = 5
+  noz = Int(   0.3226E-06/  0.5558E-07) = 5
+nox noy noz apres correction = 5 5 5
+celsizes   0.6451200E-07  0.6451200E-07  0.6451200E-07
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:        2049
+ Nombre de mailles creees :            1           1           1           1
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+taille de la boite ZL     32.2560    32.2560    32.2560
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+
+ sauvegarde positions it=           1 neb.coutposition.000000001                                                      
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+DIVID appel rumax   0        5.56
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ nox,noy,noz dans .din =           5           5           5
+celsizes   0.6451200E-07  0.6451200E-07  0.6451200E-07
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:        2049
+ Nombre de mailles creees :            1           1           1           1
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+taille de la boite ZL     32.2560    32.2560    32.2560
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+
+ sauvegarde positions it=           9 neb.coutposition.000000009                                                      
+ nox,noy,noz deuxième passage  =           5           5           5
+celsizes   0.6451200E-07  0.6451200E-07  0.6451200E-07
+ natperc im/noxyz          80          16
+ ltabvois,lconstrtot F F
+
+  TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! 
+ -------------------------------------------------------------------
+
+ DIV          16          80
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ 1ER CALL init
+ maxnato          32
+ temperature fin initspeed    0.0000000000000000     
+ sortie init
+ im        2049
+ NEB: deplacement max entre configurations =    1.1183600851246447       pour l atome         2049
+ NEB: The kspring is in the eV/A^2                          :     1.00000
+ NEB: The kspring is in the NDM internal units (copyright)  : 16021.76463
+ NEB: The number of atoms which are not included in the DRAG CONTRAINT :     0
+ NEB: nebrelaxation /= 1
+ NEB: relaxation NEB pour TOUS les atomes
+    1      -6882.1477            0.0000000    
+    2      -6882.0919           0.55789555E-01
+    3      -6881.9849           0.16278921    
+    4      -6881.8954           0.25231842    
+    5      -6881.8646           0.28311426    
+    6      -6881.8953           0.25234938    
+    7      -6881.9848           0.16284423    
+    8      -6882.0919           0.55840991E-01
+    9      -6882.1477           0.12049079E-04
+ NEB: -------this is NEB--V2-------
+ NEB: The MAX steps in NEB        :         100
+NEB:===============================================
+NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable
+NEB:     1    2   0.33092       0.16476E-14    -6882.094523      0 0.53169040E-01
+NEB:     1    3   0.54243       0.52294E-14    -6881.990875      0 0.15681725    
+NEB:     1    4   0.68616       0.14327E-15    -6881.904258      0 0.24343360    
+NEB:     1    5   0.73367       0.61607E-14    -6881.874552      0 0.27314042    
+NEB:     1    6   0.68615       0.63040E-14    -6881.904228      0 0.24346412    
+NEB:     1    7   0.54240       0.52294E-14    -6881.990821      0 0.15687091    
+NEB:     1    8   0.33088       0.16476E-14    -6882.094473      0 0.53218788E-01
+NEB:===============================================
+NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable
+NEB:     2    2   0.30673       0.54999E-04    -6882.097831      0 0.49861003E-01
+NEB:     2    3   0.49913       0.14837E-04    -6881.998328      0 0.14936402    
+NEB:     2    4   0.62877       0.74736E-05    -6881.915279      0 0.23241343    
+NEB:     2    5   0.67170       0.10922E-06    -6881.886894      0 0.26079756    
+NEB:     2    6   0.62877       0.73273E-05    -6881.915249      0 0.23244303    
+NEB:     2    7   0.49912       0.14640E-04    -6881.998276      0 0.14941552    
+NEB:     2    8   0.30671       0.55506E-04    -6882.097784      0 0.49908298E-01
+NEB:===============================================
+NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable
+NEB:     3    2   0.28453       0.13706E-03    -6882.100752      0 0.46940343E-01
+NEB:     3    3   0.45986       0.41669E-05    -6882.004817      0 0.14287508    
+NEB:     3    4   0.57701       0.49830E-04    -6881.924795      0 0.22289708    
+NEB:     3    5   0.61589       0.10275E-05    -6881.897521      0 0.25017104    
+NEB:     3    6   0.57701       0.50773E-04    -6881.924766      0 0.22292557    
+NEB:     3    7   0.45987       0.39948E-05    -6882.004768      0 0.14292426    
+NEB:     3    8   0.28452       0.13774E-03    -6882.100707      0 0.46985114E-01
+NEB:===============================================
+NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable
+NEB:     4    2   0.26416       0.24118E-03    -6882.103340      0 0.44351875E-01
+NEB:     4    3   0.42423       0.21203E-04    -6882.010492      0 0.13719975    
+NEB:     4    4   0.53027       0.11666E-03    -6881.933052      0 0.21463959    
+NEB:     4    5   0.56558       0.10841E-05    -6881.906714      0 0.24097782    
+NEB:     4    6   0.53028       0.11762E-03    -6881.933025      0 0.21466688    
+NEB:     4    7   0.42424       0.21365E-04    -6882.010445      0 0.13724661    
+NEB:     4    8   0.26417       0.24219E-03    -6882.103298      0 0.44394164E-01
+NEB:===============================================
+NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable
+NEB:     5    2   0.24550       0.36453E-03    -6882.105643      0 0.42049249E-01
+NEB:     5    3   0.39187       0.56050E-04    -6882.015479      0 0.13221324    
+NEB:     5    4   0.48823       0.20194E-03    -6881.940253      0 0.20743907    
+NEB:     5    5   0.52019       0.11438E-05    -6881.914706      0 0.23298609    
+NEB:     5    6   0.48824       0.20287E-03    -6881.940227      0 0.20746514    
+NEB:     5    7   0.39189       0.56095E-04    -6882.015434      0 0.13225785    

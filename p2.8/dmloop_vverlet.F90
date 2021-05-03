@@ -8,8 +8,8 @@ module dmloop_vverlet_mod
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY: itesauvforce,itesauvposition,lcorrelvp,ecyl,ev2erg,lgc,rang,rayonc,&
-       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lsuivinonpbc,lspaceNDM,itmax
+  USE gen_com_m, ONLY: itesauvposition,lcorrelvp,ecyl,ev2erg,lgc,rang,rayonc,&
+       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lspaceNDM,itmax
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
@@ -30,13 +30,12 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE Parrinello_Rahman
-    USE suivinonpbc
 
 
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
 #else
-  USE Tpara,only:nprocspace
+    USE Tpara,only:nprocspace
 #endif
     implicit none
     type(para_space_config)::psc
@@ -55,7 +54,6 @@ contains
     logical :: test_sigma
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****'
 
-    if (lsuivinonpbc) call init_suivinonpbc()
     ! Appel de la routine generale des forces
     test_sigma=(mod(it,itesigma)==0)
 

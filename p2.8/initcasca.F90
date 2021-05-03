@@ -12,7 +12,6 @@ module initcasca_mod
     USE cellconfig, only:cell_config,caltabtC
     use boxconfig,only:box_config,periodbox
     USE var_pot, ONLY:cm
-!    USE tab_imm_m,only:xp,xpp,ax,vp,ityp,NUM_AT_GLOB
     USE elec_cell, ONLY : necycle,etstep,necyclemin
     ! *******************************************************************
 #ifdef PARA

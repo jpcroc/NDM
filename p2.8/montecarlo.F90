@@ -2,7 +2,6 @@ module montecarlo_mod
   USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, itetabvois,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
        &lspaceNDM,rang,it,firsttime_lammps,posa,forca,erg2ev,parallele
-!  USE tab_imm_m, only:xp, xpp, fp, vp, num_at_glob, ityp, ielat, iwmax
   USE atomconfig,only:atom_config,atom_config_d, config2ndm, switch_atom
   USE period_mod,only: period 
   USE cellconfig, only:cell_config, cellconfig2ndm, caltabtC

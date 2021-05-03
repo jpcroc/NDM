@@ -14,7 +14,7 @@ module controleT_mod
 #else
   USE Tpara,only:nprocspace,myidsp
 #endif
-
+ USE arret_ndm_mod,only: arret_ndm
   implicit none
 contains
   ! ***********************************************************
@@ -26,11 +26,10 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,itmax,it,&
+    USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,itmax,it,rang,&
          &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp
 
     USE var_pot, ONLY:
-    USE suivinonpbc
     USE cryst_to_cart_mod,only: cryst_to_cart
     USE notperiod_mod,only: notperiod
     USE defcdp, ONLY :itecdp

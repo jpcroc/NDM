@@ -1,9 +1,7 @@
 module dmloop_lpr_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
-  USE sauveposition_mod,only: sauveposition
-  USE sauveforce_mod,only: sauveforce
-  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod,lspacendm
+  USE gen_com_m, ONLY:  itesauvposition,itesauv,ltnose,lperiod,lspacendm
   USE calfo_mod,only: calfo
 
   USE atomconfig,only : atom_config_d
@@ -142,16 +140,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
     call analyseT(atpr,celndm,boxndm)
 
-
-!!$    if (itesauv.GT.0) then
-!!$       if (mod(it,itesauv)==0) call sauvegarde
-!!$    endif
-!!$    if (itesauvposition.GT.0) then
-!!$       if (mod(it,itesauvposition)==0) call sauveposition (it)
-!!$    endif
-!!$    if (itesauvforce.GT.0) then
-!!$       if (mod(it,itesauvforce)==0) call sauveforce (it)
-!!$    endif
 
 
      call controleT(atpr,celndm,boxndm)

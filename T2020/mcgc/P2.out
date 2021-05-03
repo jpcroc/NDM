@@ -1,0 +1,147 @@
+ Process            0  of            2  is alive   2.2204460492503132E-058
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=UO2.din                                                                         
+
+ -------- caracteristiques du run DM--------15
+      CALCUL MONTE CARLO GRAND CANONIQUE 
+
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     500.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           7
+ fmt_cin           1
+ RGI           0           0 T           0
+ RGM           0           0
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL PAIRE TABULE -----------
+ -*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ CM, masse,type
+   1    0.000    8.000  O  
+   2    0.000   92.000  U  
+ nb de paires grille           3       50000
+ paire l active  ipotentiel:            3           7
+ Process            1  of            2  is alive   2.2204460492503132E-058
+ RGI           1           0 T           1
+ RGM           1           1
+ paire l active  ipotentiel:            2           7
+ paire l active  ipotentiel:            1           7
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-       12500       12500           1
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+ izonr,zlmin,rut           9   109.36000000000000        11.699999999999999     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.5468E-06/  0.1170E-06) = 4
+  noy = Int(   0.5468E-06/  0.1170E-06) = 4
+  noz = Int(   0.5468E-06/  0.1170E-06) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.1367000E-06  0.1367000E-06  0.1367000E-06
+UO2.gin                                                                         volume= 0.16348786D-18 cm3  0.16348786D+06 Ang3
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =       12000
+vecteur  1      54.680000       0.000000       0.000000
+vecteur  2       0.000000      54.680000       0.000000
+vecteur  3       0.000000       0.000000      54.680000
+        8000  atomes de type           1
+        4000  atomes de type           2
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+ random velocities at TINIT =    500.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature positions lues initspeed    504.46717137242803     
+ center of mass =    26.818491460165305        26.818491460166069        26.818491460166321     
+ Momentum/atom  =   -9.7722399738701048E-021  -1.9776714945653183E-020  -6.6700140625382345E-021
+Inertia/anglm =   0.8920E-31 -0.3500E-34 -0.3500E-34       0.5864E-23
+Inertia/anglm =  -0.3500E-34  0.8920E-31 -0.3500E-34      -0.1226E-21
+Inertia/anglm =  -0.3500E-34 -0.3500E-34  0.8920E-31       0.5637E-22
+ temperature fin initspeed    504.38215007268133     
+ caltabt                    1
+ caltabt                    2
+ MONTECARLO           0 T
+ MC           0
+ caltabt                    3
+ FVMX0           0       12000       12000
+ caltabt                    4
+ nvecttot           0
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature positions lues initspeed    504.46717137242803     
+ temperature fin initspeed    504.38215007268133     
+ caltabt                    1
+ caltabt                    2
+ MONTECARLO           1 T
+ MC           1
+ caltabt                    3
+ FVMX0           1       12001       12001
+ caltabt                    4
+ PN+2
+ PN+2
+ PL
+ IL           1
+ PL3           1
+ PL
+ IL           0
+ PL3           0
+ PL0           1
+ PL0           0
+ PL2           1
+ FVMX0           1       12001       12001
+ PL2           0
+ FVMX0           0       12000       12000
+ caltabt                    5
+ caltabt                    5
+ PL2           1
+ PL2           0
+ POINT1           1  0.20000000298023224     
+ POINT1           0  0.20000000298023224     
+ PL0           1
+ PL0           0
+ PL2           1
+ PL2           0
+ FVMX0           1       12001       12001
+ FVMX0           0       12000       12000
+ caltabt                    6
+ caltabt                    6
+ PL2           1
+ PL2           0
+ POINT1           1  0.30000000447034836     
+ POINT1           0  0.30000000447034836     
+ PL0           1
+ PL0           0
+ PL2           1
+ PL2           0
+ FVMX0           1       12001       12001
+ FVMX0           0       12000       12000
+ caltabt                    7
+ caltabt                    7

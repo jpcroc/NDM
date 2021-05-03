@@ -198,13 +198,6 @@ end subroutine maj_atomes_frt_ftm
     nb_var_lgc=1
 !    nb_var_int = 4 avec iwmax aucun intérêt
 !LPARAFULLSEND
-!    nb_var_dbl = 15
-!!$   if (lsuivinonpbc) then
-!!$    nb_var_dbl = 18
-!!$   else 
-!!$    nb_var_dbl = 9
-!!$ end if
-!    nb_var_dbl = 9 avec ax
     nb_var_dbl = 12  ! DEGUEU A CHANGER ! 
   if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
      nb_var_dbl = nb_var_dbl+3
@@ -270,20 +263,6 @@ end subroutine maj_atomes_frt_ftm
                 send_buff_dbl(5,send_nb_val(nproc_voisin),nproc_voisin) = vp(2,i_at)
                 send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = vp(3,i_at)
                 
-!!$               if (lsuivinonpbc) then 
-!!$		send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(1,i_at)
-!!$                send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(2,i_at)
-!!$                send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(3,i_at)
-!!$
-!!$		send_buff_dbl(13,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(1,i_at)
-!!$                send_buff_dbl(14,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(2,i_at)
-!!$                send_buff_dbl(15,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(3,i_at)
-!!$
-!!$		send_buff_dbl(16,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(1,i_at)
-!!$                send_buff_dbl(17,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(2,i_at)
-!!$                send_buff_dbl(18,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(3,i_at)
-!!$
-!!$               end if
 
                    send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = xpp(1,i_at)
                    send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = xpp(2,i_at)
@@ -382,19 +361,6 @@ end subroutine maj_atomes_frt_ftm
           vp(2,im) = recv_buff_dbl(5,i_at,ind_recv) 
           vp(3,im) = recv_buff_dbl(6,i_at,ind_recv) 
 	  
-!!$	  if (lsuivinonpbc) then
-!!$           xpnonpbc(1,im) = recv_buff_dbl(10,i_at,ind_recv)
-!!$           xpnonpbc(2,im) = recv_buff_dbl(11,i_at,ind_recv)
-!!$           xpnonpbc(3,im) = recv_buff_dbl(12,i_at,ind_recv)
-!!$ 
-!!$           tmpsuivi(1,im) = recv_buff_dbl(13,i_at,ind_recv)
-!!$           tmpsuivi(2,im) = recv_buff_dbl(14,i_at,ind_recv)
-!!$           tmpsuivi(3,im) = recv_buff_dbl(15,i_at,ind_recv)
-!!$ 
-!!$           axnonpbc(1,im) = recv_buff_dbl(16,i_at,ind_recv)
-!!$           axnonpbc(2,im) = recv_buff_dbl(17,i_at,ind_recv)
-!!$           axnonpbc(3,im) = recv_buff_dbl(18,i_at,ind_recv)
-!!$        end if
         if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
             Glangv(1,im)= recv_buff_dbl(nb_var_dbl-2,i_at,ind_recv)
             Glangv(2,im)= recv_buff_dbl(nb_var_dbl-1,i_at,ind_recv)
@@ -483,10 +449,6 @@ end subroutine maj_atomes_frt_ftm
              xpp(:,i_new) = xpp(:,i_at)
              vp(:,i_new)  = vp(:,i_at)
 
-!             ax(:,i_new)  = ax(:,i_at)
-!!$	     if (lsuivinonpbc)  xpnonpbc(:,i_new)  = xpnonpbc(:,i_at)
-!!$	     if (lsuivinonpbc)  tmpsuivi(:,i_new)  = tmpsuivi(:,i_at)
-!!$	     if (lsuivinonpbc)  axnonpbc(:,i_new)  = axnonpbc(:,i_at)
              fp(:,i_new)  = fp(:,i_at)
 
 
@@ -569,11 +531,6 @@ end subroutine maj_atomes_frt_ftm
     nb_var_lgc = 1
 !LPARAFULLSEND
 !    nb_var_dbl = 15
-!!$   if  (lsuivinonpbc) then
-!!$    nb_var_dbl = 18
-!!$    else  
-!!$    nb_var_dbl = 9
-!!$   end if 
     nb_var_dbl = 12
     allocate(send_nb_val(psc%nbr_proc_voisin))
     allocate(send_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
@@ -634,21 +591,6 @@ end subroutine maj_atomes_frt_ftm
              send_buff_dbl(5,send_nb_val(nproc_voisin),nproc_voisin) = vp(2,i_at)
              send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = vp(3,i_at)
 	     
-!!$	      if (lsuivinonpbc) then
-!!$              !
-!!$	       send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(1,i_at)
-!!$               send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(2,i_at)
-!!$               send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = xpnonpbc(3,i_at)
-!!$	      !
-!!$	       send_buff_dbl(13,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(1,i_at)
-!!$               send_buff_dbl(14,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(2,i_at)
-!!$               send_buff_dbl(15,send_nb_val(nproc_voisin),nproc_voisin) = tmpsuivi(3,i_at)
-!!$	      !
-!!$	       send_buff_dbl(16,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(1,i_at)
-!!$               send_buff_dbl(17,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(2,i_at)
-!!$               send_buff_dbl(18,send_nb_val(nproc_voisin),nproc_voisin) = axnonpbc(3,i_at)
-!!$	      !
-!!$	      end if
              	     
 !LPARAFULLSEND
              send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = xpp(1,i_at)
@@ -787,22 +729,6 @@ end subroutine maj_atomes_frt_ftm
           vp(1,pt_at_ftm) = recv_buff_dbl(4,i_at,ind_recv) 
           vp(2,pt_at_ftm) = recv_buff_dbl(5,i_at,ind_recv) 
           vp(3,pt_at_ftm) = recv_buff_dbl(6,i_at,ind_recv) 
-!!$	  if (lsuivinonpbc) then
-!!$          !
-!!$	   xpnonpbc(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv)
-!!$           xpnonpbc(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv)
-!!$           xpnonpbc(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
-!!$	  !
-!!$	   tmpsuivi(1,pt_at_ftm) = recv_buff_dbl(13,i_at,ind_recv)
-!!$           tmpsuivi(2,pt_at_ftm) = recv_buff_dbl(14,i_at,ind_recv)
-!!$           tmpsuivi(3,pt_at_ftm) = recv_buff_dbl(15,i_at,ind_recv)
-!!$	  !
-!!$	   axnonpbc(1,pt_at_ftm) = recv_buff_dbl(16,i_at,ind_recv)
-!!$           axnonpbc(2,pt_at_ftm) = recv_buff_dbl(17,i_at,ind_recv)
-!!$           axnonpbc(3,pt_at_ftm) = recv_buff_dbl(18,i_at,ind_recv)
-!!$	  !
-!!$	  end if
-!!$	  
 	  
 !LPARAFULLSEND
           xpp(1,pt_at_ftm) = recv_buff_dbl(7,i_at,ind_recv)

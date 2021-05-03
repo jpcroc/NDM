@@ -2,7 +2,7 @@ module work_cgII
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
-       it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
+       it, itesauv, itesauvposition, itmax, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
        dmtype, potist,mdcg_noise,formatsauv,lspaceNDM,latcomp
   USE sauvegardeT_mod,only: sauvegardeT

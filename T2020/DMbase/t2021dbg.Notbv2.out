@@ -1,0 +1,528 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=Febulk.din                                                                      
+
+ -------- caracteristiques du run DM-------- 1
+     DYNAMIQUE MOLECULAIRE VERLET STANDARD
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     600.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ Types d_atomes :
+   1   55.847   26.000  Fe 
+ROFF1_2   -0.100   -0.200
+ nptmax in the max number of points on grid        250000
+ EAM           1           1
+ EAM number of points in potin and the step      250000   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       250000   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+DIVID appel rumax   0        6.00
+ izonr,zlmin,rut           4   57.106360000000002        12.000000000000002     
+volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.2855E-06/  0.6000E-07) = 4
+  noy = Int(   0.2855E-06/  0.6000E-07) = 4
+  noz = Int(   0.2855E-06/  0.6000E-07) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:           2
+ Nombre de mailles creees :           10          10          10        1000
+
+ -------- boite de simulation ------
+ nombre d atomes =        2000
+taille de la boite ZL     28.5532    28.5532    28.5532
+vecteur  1      28.553180       0.000000       0.000000
+vecteur  2       0.000000      28.553180       0.000000
+vecteur  3       0.000000       0.000000      28.553180
+        2000  atomes de type           1
+
+ nox,noy,noz deuxième passage  =           4           4           4
+celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
+ natperc im/noxyz          46          31
+ ltabvois,lconstrtot F F
+
+  TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! 
+ -------------------------------------------------------------------
+
+ DIV          31          46
+ paire            1
+ calpoeam RHO MIN:   -6.3326263587307293E-021
+ calpoeam RHO MAX:    12.174708979468400     
+ calpoeam Rhomin Rhomax    0.0000000000000000        170.44524392885501     
+ calpoeam ktorho and the inverse:    8.5222621964427502E-003   117.33973643962830     
+ 1ER CALL init
+ random velocities at TINIT =    600.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses           1
+ temperature MI initspeed    617.37254804393035     
+ center of mass =    13.562760499999868        13.562760499999863        13.562760499999863     
+ Momentum/atom  =   -3.9544652854943193E-020   1.4705177938357707E-020  -5.7704804335838003E-020
+Inertia/anglm =   0.2513E-32 -0.9448E-35 -0.9448E-35      -0.4902E-23
+Inertia/anglm =  -0.9448E-35  0.2513E-32 -0.9448E-35       0.3525E-24
+Inertia/anglm =  -0.9448E-35 -0.9448E-35  0.2513E-32      -0.1405E-22
+ temperature fin initspeed    617.13283762353421     
+ sortie init
+ ***** PREMIERE ITERATION  ****
+
+
+<<<<<<<<  ITERATION =      1  time =   0.1000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1 0.100E-14*Epot =    -8238.89873925      eV 
+    *energie PAIRE EAM =     311.750979937      eV 
+    *energie GLUE  =    -8550.64971919      eV 
+         1 0.100E-14*Ec =     159.538076886      eV   (617.133 K)
+         1 0.100E-14*Etot =    -8079.36066237      eV 
+
+         1 0.100E-14*Epot/at =    -4.11944936963      eV 
+
+         1 0.100E-14*Temp instantanee = 617.133
+
+*temp instantanee des atomes de type 1 =       617.13
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.33511065     -0.1448392868E-13 -0.2406537533E-14
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.1400709152E-13  -38.33511065     -0.1996755600E-14
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.2790242434E-14 -0.2339482307E-14  -38.33511065    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   7.370430262      0.2939324567     -0.1336397979    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2939324567       7.153531305      0.4769249670E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1336397979      0.4769249670E-01   7.436488996    
+
+1 sigma total (1,1) (2,1) (3,1) =  -30.96468039      0.2939324567     -0.1336397979    
+2 sigma total (1,2) (2,2) (3,2) =  0.2939324567      -31.18157935      0.4769249670E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.1336397979      0.4769249670E-01  -30.89862166    
+
+         1 0.100E-14*Pression =    -31.015    
+ pression totale  potentiel = cinetique =
+   -31.015       -38.335        7.3202    
+ ----------valeurs moyennes------------
+*temperature moyenne =       617.13
+*pression moyenne =    -31.015    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      2  time =   0.2000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         2 0.200E-14*Epot =    -8238.63270811      eV 
+    *energie PAIRE EAM =     312.026688946      eV 
+    *energie GLUE  =    -8550.65939706      eV 
+         2 0.200E-14*Ec =     159.272200306      eV   (616.104 K)
+         2 0.200E-14*Etot =    -8079.36050781      eV 
+
+         2 0.200E-14*Epot/at =    -4.11931635406      eV 
+
+         2 0.200E-14*Temp instantanee = 616.104
+
+*temp instantanee des atomes de type 1 =       616.10
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.33667829     -0.3196561663E-03  0.4747137314E-03
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.3196561663E-03  -38.33445486      0.1088825681E-03
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.4747137314E-03  0.1088825681E-03  -38.33575034    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   7.370430262      0.2939324567     -0.1336397979    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2939324567       7.153531305      0.4769249670E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1336397979      0.4769249670E-01   7.436488996    
+
+1 sigma total (1,1) (2,1) (3,1) =  -30.96624802      0.2936128006     -0.1331650842    
+2 sigma total (1,2) (2,2) (3,2) =  0.2936128006      -31.18092356      0.4780137927E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.1331650842      0.4780137927E-01  -30.89926135    
+
+         2 0.200E-14*Pression =    -31.015    
+ pression totale  potentiel = cinetique =
+   -31.015       -38.336        7.3202    
+ ----------valeurs moyennes------------
+*temperature moyenne =       616.62
+*pression moyenne =    -31.015    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      3  time =   0.3000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         3 0.300E-14*Epot =    -8237.83698370      eV 
+    *energie PAIRE EAM =     312.851321570      eV 
+    *energie GLUE  =    -8550.68830527      eV 
+         3 0.300E-14*Ec =     158.476916389      eV   (613.028 K)
+         3 0.300E-14*Etot =    -8079.36006731      eV 
+
+         3 0.300E-14*Epot/at =    -4.11891849185      eV 
+
+         3 0.300E-14*Temp instantanee = 613.028
+
+*temp instantanee des atomes de type 1 =       613.03
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.34135521     -0.1283592952E-02  0.1889111070E-02
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.1283592952E-02  -38.33247091      0.4214681534E-03
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.1889111070E-02  0.4214681534E-03  -38.33766004    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   7.358304958      0.2934000391     -0.1333449167    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2934000391       7.141378611      0.4758319502E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1333449167      0.4758319502E-01   7.424169026    
+
+1 sigma total (1,1) (2,1) (3,1) =  -30.98305026      0.2921164462     -0.1314558056    
+2 sigma total (1,2) (2,2) (3,2) =  0.2921164462      -31.19109230      0.4800466317E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.1314558056      0.4800466317E-01  -30.91349101    
+
+         3 0.300E-14*Pression =    -31.029    
+ pression totale  potentiel = cinetique =
+   -31.029       -38.337        7.3080    
+ ----------valeurs moyennes------------
+*temperature moyenne =       615.42
+*pression moyenne =    -31.020    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      4  time =   0.4000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         4 0.400E-14*Epot =    -8236.51864156      eV 
+    *energie PAIRE EAM =     314.217409182      eV 
+    *energie GLUE  =    -8550.73605074      eV 
+         4 0.400E-14*Ec =     157.159402220      eV   (607.932 K)
+         4 0.400E-14*Etot =    -8079.35923934      eV 
+
+         4 0.400E-14*Epot/at =    -4.11825932078      eV 
+
+         4 0.400E-14*Temp instantanee = 607.932
+
+*temp instantanee des atomes de type 1 =       607.93
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.34694930     -0.2887803873E-02  0.3919746038E-02
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.2887803873E-02  -38.32700595      0.8414541801E-03
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.3919746038E-02  0.8414541801E-03  -38.33868482    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   7.322033463      0.2918041800     -0.1324659749    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2918041800       7.105032447      0.4725194602E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1324659749      0.4725194602E-01   7.387315683    
+
+1 sigma total (1,1) (2,1) (3,1) =  -31.02491584      0.2889163762     -0.1285462289    
+2 sigma total (1,2) (2,2) (3,2) =  0.2889163762      -31.22197350      0.4809340020E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.1285462289      0.4809340020E-01  -30.95136913    
+
+         4 0.400E-14*Pression =    -31.066    
+ pression totale  potentiel = cinetique =
+   -31.066       -38.338        7.2715    
+ ----------valeurs moyennes------------
+*temperature moyenne =       613.55
+*pression moyenne =    -31.031    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      5  time =   0.5000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         5 0.500E-14*Epot =    -8234.69053483      eV 
+    *energie PAIRE EAM =     316.111436600      eV 
+    *energie GLUE  =    -8550.80197143      eV 
+         5 0.500E-14*Ec =     155.332618742      eV   (600.865 K)
+         5 0.500E-14*Etot =    -8079.35791609      eV 
+
+         5 0.500E-14*Epot/at =    -4.11734526741      eV 
+
+         5 0.500E-14*Temp instantanee = 600.865
+
+*temp instantanee des atomes de type 1 =       600.87
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.34131545     -0.4219805579E-02  0.5645878038E-02
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.4219805579E-02  -38.30571027      0.1311828282E-02
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.5645878038E-02  0.1311828282E-02  -38.32649185    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   7.261937705      0.2891515514     -0.1310176251    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2891515514       7.044831865      0.4669273310E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1310176251      0.4669273310E-01   7.326255915    
+
+1 sigma total (1,1) (2,1) (3,1) =  -31.07937774      0.2849317458     -0.1253717470    
+2 sigma total (1,2) (2,2) (3,2) =  0.2849317458      -31.26087840      0.4800456139E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.1253717470      0.4800456139E-01  -31.00023594    
+
+         5 0.500E-14*Pression =    -31.113    
+ pression totale  potentiel = cinetique =
+   -31.113       -38.325        7.2110    
+ ----------valeurs moyennes------------
+*temperature moyenne =       611.01
+*pression moyenne =    -31.048    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      6  time =   0.6000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         6 0.600E-14*Epot =    -8232.37226236      eV 
+    *energie PAIRE EAM =     318.512889478      eV 
+    *energie GLUE  =    -8550.88515184      eV 
+         6 0.600E-14*Ec =     153.016084072      eV   (591.904 K)
+         6 0.600E-14*Etot =    -8079.35617829      eV 
+
+         6 0.600E-14*Epot/at =    -4.11618613118      eV 
+
+         6 0.600E-14*Temp instantanee = 591.904
+
+*temp instantanee des atomes de type 1 =       591.90
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.30820886     -0.3931357078E-02  0.6554891755E-02
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.3931357078E-02  -38.25223716      0.1420460168E-02
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.6554891755E-02  0.1420460168E-02  -38.28517661    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   7.178605162      0.2854603863     -0.1290234998    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2854603863       6.961382201      0.4590167717E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1290234998      0.4590167717E-01   7.241580983    
+
+1 sigma total (1,1) (2,1) (3,1) =  -31.12960370      0.2815290293     -0.1224686080    
+2 sigma total (1,2) (2,2) (3,2) =  0.2815290293      -31.29085495      0.4732213734E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.1224686080      0.4732213734E-01  -31.04359563    
+
+         6 0.600E-14*Pression =    -31.155    
+ pression totale  potentiel = cinetique =
+   -31.155       -38.282        7.1272    
+ ----------valeurs moyennes------------
+*temperature moyenne =       607.83
+*pression moyenne =    -31.066    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      7  time =   0.7000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         7 0.700E-14*Epot =    -8229.58917242      eV 
+    *energie PAIRE EAM =     321.396213676      eV 
+    *energie GLUE  =    -8550.98538609      eV 
+         7 0.700E-14*Ec =     150.234951933      eV   (581.146 K)
+         7 0.700E-14*Etot =    -8079.35422048      eV 
+
+         7 0.700E-14*Epot/at =    -4.11479458621      eV 
+
+         7 0.700E-14*Temp instantanee = 581.146
+
+*temp instantanee des atomes de type 1 =       581.15
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.23227608      0.2514094536E-03  0.7713108411E-02
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.2514094536E-03  -38.15104487      0.2358339088E-02
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.7713108411E-02  0.2358339088E-02  -38.19962961    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   7.072923029      0.2807651118     -0.1265150492    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2807651118       6.855589004      0.4487601200E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1265150492      0.4487601200E-01   7.134184818    
+
+1 sigma total (1,1) (2,1) (3,1) =  -31.15935305      0.2810165212     -0.1188019408    
+2 sigma total (1,2) (2,2) (3,2) =  0.2810165212      -31.29545587      0.4723435109E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.1188019408      0.4723435109E-01  -31.06544479    
+
+         7 0.700E-14*Pression =    -31.173    
+ pression totale  potentiel = cinetique =
+   -31.173       -38.194        7.0209    
+ ----------valeurs moyennes------------
+*temperature moyenne =       604.02
+*pression moyenne =    -31.081    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      8  time =   0.8000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         8 0.800E-14*Epot =    -8226.37032671      eV 
+    *energie PAIRE EAM =     324.736680584      eV 
+    *energie GLUE  =    -8551.10700729      eV 
+         8 0.800E-14*Ec =     147.018200628      eV   (568.703 K)
+         8 0.800E-14*Etot =    -8079.35212608      eV 
+
+         8 0.800E-14*Epot/at =    -4.11318516335      eV 
+
+         8 0.800E-14*Temp instantanee = 568.703
+
+*temp instantanee des atomes de type 1 =       568.70
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.09770203      0.8552620275E-02  0.1098914430E-01
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.8552620275E-02  -37.98627247      0.6269296777E-02
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.1098914430E-01  0.6269296777E-02  -38.05411653    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   6.946030474      0.2751027402     -0.1235322593    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2751027402       6.728613808      0.4360493305E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1235322593      0.4360493305E-01   7.005229132    
+
+1 sigma total (1,1) (2,1) (3,1) =  -31.15167155      0.2836553605     -0.1125431150    
+2 sigma total (1,2) (2,2) (3,2) =  0.2836553605      -31.25765866      0.4987422983E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.1125431150      0.4987422983E-01  -31.04888740    
+
+         8 0.800E-14*Pression =    -31.153    
+ pression totale  potentiel = cinetique =
+   -31.153       -38.046        6.8933    
+ ----------valeurs moyennes------------
+*temperature moyenne =       599.60
+*pression moyenne =    -31.090    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      9  time =   0.9000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         9 0.900E-14*Epot =    -8222.74724469      eV 
+    *energie PAIRE EAM =     328.513221313      eV 
+    *energie GLUE  =    -8551.26046600      eV 
+         9 0.900E-14*Ec =     143.397294465      eV   (554.696 K)
+         9 0.900E-14*Etot =    -8079.34995023      eV 
+
+         9 0.900E-14*Epot/at =    -4.11137362235      eV 
+
+         9 0.900E-14*Temp instantanee = 554.696
+
+*temp instantanee des atomes de type 1 =       554.70
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -37.88824899      0.1926772987E-01  0.1562531329E-01
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.1926772987E-01  -37.74347409      0.1276210492E-01
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.1562531329E-01  0.1276210492E-01  -37.83366060    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   6.799237514      0.2685059735     -0.1201292633    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2685059735       6.581789244      0.4205865061E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1201292633      0.4205865061E-01   6.856060149    
+
+1 sigma total (1,1) (2,1) (3,1) =  -31.08901148      0.2877737034     -0.1045039500    
+2 sigma total (1,2) (2,2) (3,2) =  0.2877737034      -31.16168484      0.5482075553E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.1045039500      0.5482075553E-01  -30.97760046    
+
+         9 0.900E-14*Pression =    -31.076    
+ pression totale  potentiel = cinetique =
+   -31.076       -37.822        6.7457    
+ ----------valeurs moyennes------------
+*temperature moyenne =       594.61
+*pression moyenne =    -31.088    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     10  time =   0.1000000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        10 0.100E-13*Epot =    -8218.75308076      eV 
+    *energie PAIRE EAM =     332.709323685      eV 
+    *energie GLUE  =    -8551.46240444      eV 
+        10 0.100E-13*Ec =     139.405299010      eV   (539.254 K)
+        10 0.100E-13*Etot =    -8079.34778175      eV 
+
+        10 0.100E-13*Epot/at =    -4.10937654038      eV 
+
+        10 0.100E-13*Temp instantanee = 539.254
+
+*temp instantanee des atomes de type 1 =       539.25
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -37.58406323      0.3483306987E-01  0.2091910028E-01
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.3483306987E-01  -37.40495404      0.2295407063E-01
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.2091910028E-01  0.2295407063E-01  -37.52055076    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   6.633971319      0.2610226398     -0.1163644250    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2610226398       6.416562950      0.4020316030E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1163644250      0.4020316030E-01   6.688134126    
+
+1 sigma total (1,1) (2,1) (3,1) =  -30.95009191      0.2958557097     -0.9544532468E-01
+2 sigma total (1,2) (2,2) (3,2) =  0.2958557097      -30.98839109      0.6315723094E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.9544532468E-01  0.6315723094E-01  -30.83241664    
+
+        10 0.100E-13*Pression =    -30.924    
+ pression totale  potentiel = cinetique =
+   -30.924       -37.503        6.5796    
+ ----------valeurs moyennes------------
+*temperature moyenne =       589.08
+*pression moyenne =    -31.072    
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     11  time =   0.1100000E-13
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        11 0.110E-13*Epot =    -8214.42177867      eV 
+    *energie PAIRE EAM =     337.313941685      eV 
+    *energie GLUE  =    -8551.73572035      eV 
+        11 0.110E-13*Ec =     135.076171869      eV   (522.508 K)
+        11 0.110E-13*Etot =    -8079.34560680      eV 
+
+        11 0.110E-13*Epot/at =    -4.10721088933      eV 
+
+        11 0.110E-13*Temp instantanee = 522.508
+
+*temp instantanee des atomes de type 1 =       522.51
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -37.16674334      0.5729684390E-01  0.2538360864E-01
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.5729684390E-01  -36.95219223      0.3612330868E-01
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.2538360864E-01  0.3612330868E-01  -37.09597530    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   6.451734948      0.2527098502     -0.1122891904    
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.2527098502       6.234460302      0.3801426581E-01
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1122891904      0.3801426581E-01   6.502974113    
+
+1 sigma total (1,1) (2,1) (3,1) =  -30.71500839      0.3100066941     -0.8690558178E-01
+2 sigma total (1,2) (2,2) (3,2) =  0.3100066941      -30.71773193      0.7413757449E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.8690558178E-01  0.7413757449E-01  -30.59300119    
+
+        11 0.110E-13*Pression =    -30.675    
+ pression totale  potentiel = cinetique =
+   -30.675       -37.072        6.3964    
+ ----------valeurs moyennes------------
+*temperature moyenne =       583.02
+*pression moyenne =    -31.036    
+ --------------------------------------

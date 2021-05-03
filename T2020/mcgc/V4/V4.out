@@ -1,0 +1,143 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=UO2.din                                                                         
+
+ -------- caracteristiques du run DM--------15
+      CALCUL MONTE CARLO GRAND CANONIQUE 
+
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     500.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           7
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL PAIRE TABULE -----------
+ -*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ CM, masse,type
+   1    0.000    8.000  O  
+   2    0.000   92.000  U  
+ nb de paires grille           3       50000
+ paire l active  ipotentiel:            3           7
+ paire l active  ipotentiel:            2           7
+ paire l active  ipotentiel:            1           7
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+DIVID appel rumax   0       11.70
+ izonr,zlmin,rut           9   109.36000000000000        11.699999999999999     
+volume= 0.16348786D-18 cm3  0.16348786D+06 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.5468E-06/  0.1170E-06) = 4
+  noy = Int(   0.5468E-06/  0.1170E-06) = 4
+  noz = Int(   0.5468E-06/  0.1170E-06) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.1367000E-06  0.1367000E-06  0.1367000E-06
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:          12
+ Nombre de mailles creees :           10          10          10        1000
+
+ -------- boite de simulation ------
+ nombre d atomes =       12000
+taille de la boite ZL     54.6800    54.6800    54.6800
+vecteur  1      54.680000       0.000000       0.000000
+vecteur  2       0.000000      54.680000       0.000000
+vecteur  3       0.000000       0.000000      54.680000
+        8000  atomes de type           1
+        4000  atomes de type           2
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+ nox,noy,noz deuxième passage  =           4           4           4
+celsizes   0.1367000E-06  0.1367000E-06  0.1367000E-06
+ natperc im/noxyz         935         187
+ ltabvois,lconstrtot F F
+
+  TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! 
+ -------------------------------------------------------------------
+
+ 1ER CALL init
+ random velocities at TINIT =    500.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature MI initspeed    504.46717137242803     
+ center of mass =    26.818491460165305        26.818491460166069        26.818491460166321     
+ Momentum/atom  =   -9.7722399738701048E-021  -1.9776714945653183E-020  -6.6700140625382345E-021
+Inertia/anglm =   0.8920E-31 -0.3500E-34 -0.3500E-34       0.5864E-23
+Inertia/anglm =  -0.3500E-34  0.8920E-31 -0.3500E-34      -0.1226E-21
+Inertia/anglm =  -0.3500E-34 -0.3500E-34  0.8920E-31       0.5637E-22
+ temperature fin initspeed    504.38215007268133     
+ sortie init
+ atome supprimé        7619
+ Wprec  -8.9489809147931125E-011 ln_Wprec  -1296.3694501164132     
+ W  -1.1791321333617646E-010 ln_W  -1708.1172592668588     
+  REJECTION, direction=           1   LN_XPROB   -411.74780915044562        XPROB    1.5142533746759064E-179   XALEA   0.41970208992609770     
+ Wprec  -8.9489809147931125E-011 ln_Wprec   1296.3694501164132     
+ W  -2.0840914958419005E-010 ln_W   3019.0616922545064     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.39685638211951146     
+ atome supprimé       11914
+ Wprec  -2.0840914958419005E-010 ln_Wprec  -3019.0616922545064     
+ W  -1.0579934892633082E-010 ln_W  -1532.6331019834658     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    8.6686698154876951E-002
+ Wprec  -1.0579934892633082E-010 ln_Wprec   1532.6331019834658     
+ W   2.2765424279967592E-010 ln_W  -3297.8504297291497     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.66888192659838119     
+ atome supprimé        9526
+ Wprec  -1.0579934892633082E-010 ln_Wprec  -1532.6331019834658     
+ W  -3.8759391583734322E-011 ln_W  -561.47724118164604     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.42041699655412645     
+ Wprec  -3.8759391583734322E-011 ln_Wprec   561.47724118164604     
+ W  -8.0283264480346861E-011 ln_W   1163.0013788038559     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.59559719173983883     
+ atome supprimé        9775
+ Wprec  -8.0283264480346861E-011 ln_Wprec  -1163.0013788038559     
+ W  -9.6914548092685891E-011 ln_W  -1403.9258840245323     
+  REJECTION, direction=           1   LN_XPROB   -240.92450522067634        XPROB    2.3324740859735481E-105   XALEA   0.12653318854918549     
+ Wprec  -8.0283264480346861E-011 ln_Wprec   1163.0013788038559     
+ W  -1.3287024171939774E-010 ln_W   1924.7881276612677     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.56615521610013142     
+ atome supprimé        2219
+ Wprec  -1.3287024171939774E-010 ln_Wprec  -1924.7881276612677     
+ W  -8.0361359877008871E-011 ln_W  -1164.1326862386500     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.78900186451650445     
+ Wprec  -8.0361359877008871E-011 ln_Wprec   1164.1326862386500     
+ W   6.9683686138422484E-010 ln_W  -10094.535091925594     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA    4.6560886688314262E-002
+ atome supprimé        3932
+ Wprec  -8.0361359877008871E-011 ln_Wprec  -1164.1326862386500     
+ W  -3.6300104979693772E-011 ln_W  -525.85146375610088     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.99346518922369709     
+ Wprec  -3.6300104979693772E-011 ln_Wprec   525.85146375610088     
+ W  -4.4069466440261994E-011 ln_W   638.40017673573209     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.47944029421751644     
+ atome supprimé        7307

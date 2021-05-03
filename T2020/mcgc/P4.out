@@ -1,0 +1,3115 @@
+ Process            0  of            4  is alive   2.2204460492503132E-058
+ *** NDM859 ***
+ Process            1  of            4  is alive   2.2204460492503132E-058
+ Process            2  of            4  is alive   2.2204460492503132E-058
+ >>>>>>>>>>> entree readdm
+ nom fichier din=UO2.din                                                                         
+
+ -------- caracteristiques du run DM--------15
+      CALCUL MONTE CARLO GRAND CANONIQUE 
+
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     500.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           7
+ fmt_cin           1
+ RGI           2           0 T           1
+ RGM           2           1
+ RGI           1           1 F           0
+ Process            3  of            4  is alive   2.2204460492503132E-058
+ RGI           3           1 F           1
+ RGI           0           0 T           0
+ RGM           0           0
+ IMM PARA =         7500       12500
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL PAIRE TABULE -----------
+ -*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ CM, masse,type
+   1    0.000    8.000  O  
+   2    0.000   92.000  U  
+ nb de paires grille           3       50000
+ paire l active  ipotentiel:            3           7
+ paire l active  ipotentiel:            2           7
+ paire l active  ipotentiel:            1           7
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        7500       12500           2
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+ izonr,zlmin,rut           9   109.36000000000000        11.699999999999999     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.5468E-06/  0.1170E-06) = 4
+  noy = Int(   0.5468E-06/  0.1170E-06) = 4
+  noz = Int(   0.5468E-06/  0.1170E-06) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.1367000E-06  0.1367000E-06  0.1367000E-06
+UO2.gin                                                                         volume= 0.16348786D-18 cm3  0.16348786D+06 Ang3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =       12000
+vecteur  1      54.680000       0.000000       0.000000
+vecteur  2       0.000000      54.680000       0.000000
+vecteur  3       0.000000       0.000000      54.680000
+        8000  atomes de type           1
+        4000  atomes de type           2
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+ nvecttot           0
+ NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR
+ Le proc            0  a            1  processeur voisin
+ Le proc            1  a            1  processeur voisin
+ iseed pour tirage des vitesses          11
+ random velocities at TINIT =    500.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature positions lues initspeed    1008.9343427448561     
+ center of mass =    26.818491460165305        26.818491460166069        26.818491460166321     
+ Momentum/atom  =   -1.9544479947740210E-020  -3.9553429891306366E-020  -1.3340028125076469E-020
+Inertia/anglm =   0.1784E-30 -0.7000E-34 -0.7000E-34       0.9370E-23
+Inertia/anglm =  -0.7000E-34  0.1784E-30 -0.7000E-34      -0.2446E-21
+Inertia/anglm =  -0.7000E-34 -0.7000E-34  0.1784E-30       0.1145E-21
+ temperature fin initspeed    1008.8094894047294     
+ caltabt                    1
+ caltabt                    1
+ caltabt                    2
+ MONTECARLO           0 T
+ MC           0
+ caltabt                    2
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ MONTECARLO           1 T
+ MC           1
+ natperc im/noxyz        1870         187
+ caltabt                    3
+ ltabvois,lconstrtot F F
+ caltabt                    3
+ FVMX0           1        6000       12000
+ FVMX0           0        6000       12000
+ caltabt                    4
+ caltabt                    4
+ C2N           1
+ C2N           0
+ nvecttot           0
+ nvecttot           0
+ Le proc            1  a            1  processeur voisin
+ Le proc            0  a            1  processeur voisin
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ iseed pour tirage des vitesses          11
+ temperature positions lues initspeed    1008.9343427448561     
+ temperature fin initspeed    1008.8094894047294     
+ caltabt                    1
+ caltabt                    1
+ caltabt                    2
+ MONTECARLO           3 T
+ MC           3
+ caltabt                    3
+ FVMX0           3        6000       12001
+ caltabt                    4
+ C2N           3
+ caltabt                    2
+ MONTECARLO           2 T
+ MC           2
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ caltabt                    3
+ FVMX0           2        6001       12001
+ caltabt                    4
+ C2N           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PN+2
+ PN+2
+ PL
+ IL           1           0
+ PL3           1
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PN+2
+ PN+2
+ PL
+ IL           3           0
+ PL3           3
+ PL
+ IL           2           0
+ PL3           2
+ PL
+ IL           0           0
+ PL3           0
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ PL2           2
+ FVMX0           2        6001       12001
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                    5
+ caltabt                    5
+ caltabt                    5
+ PL2           3
+ FVMX0           3        6000       12001
+ C2N           1
+ C2N           2
+ caltabt                    5
+ C2N           0
+ C2N           3
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.20000000298023224     
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ PL2           2
+ POINT1           2  0.20000000298023224     
+ PL2           0
+ POINT1           1  0.20000000298023224     
+ POINT1           0  0.20000000298023224     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ PL2           3
+ FVMX0           3        6000       12001
+ caltabt                    6
+ caltabt                    6
+ C2N           1
+ C2N           3
+ PL2           2
+ FVMX0           2        6001       12001
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                    6
+ caltabt                    6
+ C2N           0
+ C2N           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.30000000447034836     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.30000000447034836     
+ PL2           2
+ POINT1           2  0.30000000447034836     
+ PL2           0
+ POINT1           0  0.30000000447034836     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ PL2           2
+ FVMX0           2        6001       12001
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                    7
+ C2N           1
+ caltabt                    7
+ caltabt                    7
+ PL2           3
+ FVMX0           3        6000       12001
+ C2N           2
+ C2N           0
+ caltabt                    7
+ C2N           3
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.40000000596046448     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.40000000596046448     
+ PL2           2
+ POINT1           2  0.40000000596046448     
+ PL2           0
+ POINT1           0  0.40000000596046448     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ PL2           2
+ FVMX0           2        6001       12001
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                    8
+ caltabt                    8
+ caltabt                    8
+ C2N           1
+ C2N           2
+ C2N           0
+ PL2           3
+ FVMX0           3        6000       12001
+ caltabt                    8
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.50000000745058060     
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.50000000745058060     
+ PL2           2
+ POINT1           2  0.50000000745058060     
+ PL2           0
+ POINT1           0  0.50000000745058060     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           2
+ PL0           0
+ PL2           2
+ PL2           0
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                    9
+ caltabt                    9
+ caltabt                    9
+ caltabt                    9
+ C2N           1
+ C2N           3
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.60000000894069672     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.60000000894069672     
+ PL2           0
+ PL2           2
+ POINT1           2  0.60000000894069672     
+ POINT1           0  0.60000000894069672     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           0
+ caltabt                   10
+ caltabt                   10
+ PL0           2
+ C2N           1
+ C2N           3
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   10
+ caltabt                   10
+ C2N           0
+ C2N           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.70000001043081284     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.70000001043081284     
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           0
+ PL2           2
+ POINT1           2  0.70000001043081284     
+ POINT1           0  0.70000001043081284     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           2
+ PL0           0
+ PL2           2
+ FVMX0           2        6001       12001
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                   11
+ caltabt                   11
+ C2N           1
+ C2N           3
+ caltabt                   11
+ C2N           2
+ caltabt                   11
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.80000001192092896     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.80000001192092896     
+ PL2           0
+ PL2           2
+ POINT1           2  0.80000001192092896     
+ POINT1           0  0.80000001192092896     
+ PL0           2
+ PL0           0
+ PL2           1
+ FVMX0           1        6000       12000
+ PL2           3
+ FVMX0           3        6000       12001
+ caltabt                   12
+ caltabt                   12
+ C2N           3
+ C2N           1
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   12
+ caltabt                   12
+ C2N           2
+ C2N           0
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.90000001341104507     
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.90000001341104507     
+ PL2           0
+ PL2           2
+ POINT1           2  0.90000001341104507     
+ POINT1           0  0.90000001341104507     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ PL2           2
+ FVMX0           2        6001       12001
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                   13
+ caltabt                   13
+ caltabt                   13
+ C2N           0
+ C2N           2
+ C2N           1
+ PL2           3
+ FVMX0           3        6000       12001
+ caltabt                   13
+ C2N           3
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3   1.0000000149011612     
+ POINT2           3   1.0000000149011612     
+ POSTLANGEVIN
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1   1.0000000149011612     
+ POINT2           1   1.0000000149011612     
+ POSTLANGEVIN
+ PL2           0
+ PL2           2
+ POINT1           2   1.0000000149011612     
+ POINT2           2   1.0000000149011612     
+ POSTLANGEVIN
+ POINT1           0   1.0000000149011612     
+ POINT2           0   1.0000000149011612     
+ POSTLANGEVIN
+ PRE AJOUTRETRAIT           0
+ atome supprimé        9261
+ PRE AJOUTRETRAIT           1
+ PRE AJOUTRETRAIT           2
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ PRE AJOUTRETRAIT           3
+ caltabt                   14
+ FVMX0           1        6000       12000
+ caltabt                   15
+ caltabt                   14
+ caltabt                   14
+ C2N           1
+ FVMX0           2        6001       12001
+ FVMX0           3        6000       12001
+ caltabt                   15
+ caltabt                   15
+ C2N           2
+ C2N           3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+ caltabt                   14
+ FVMX0           0        6000       12000
+ caltabt                   15
+ C2N           0
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ POST AJOUTRETRAIT           3
+ FVMX           0        6000       12000
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ IN L2M           0           2
+ POST AJOUTRETRAIT           1
+ POST AJOUTRETRAIT           2
+         0  0.00    *Temp instantanee = 504.405
+         0  0.00    *Temp instantanee = .000
+ P4N           3
+ IL           3           1
+ PL3           3
+ POINT3           3  0.89999997615814209     
+ POINT4           3  0.89999997615814209     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+         0  0.00    *Temp instantanee = 504.405
+         0  0.00    *Temp instantanee = .000
+ P4N           2
+ IL           2           1
+ PL3           2
+ POINT3           2  0.89999997615814209     
+ POINT4           2  0.89999997615814209     
+ avantENVOI           2
+ POST AJOUTRETRAIT           0
+         0  0.00    *Temp instantanee = 488.024
+         0 0.900E-14*Temp instantanee = 488.024
+         0  0.00    *Temp instantanee = .000
+ P4N           1
+ IL           1           1
+ PL3           1
+ POINT3           1  0.89999997615814209     
+ POINT4           1  0.89999997615814209     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+         0 0.900E-14*Temp instantanee = .000
+ P4N           0
+ IL           0           1
+ caltabt                   16
+ caltabt                   16
+ PL3           0
+ POINT3           0  0.89999997615814209     
+ POINT4           0  0.89999997615814209     
+ C2N           1
+ C2N           3
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   16
+ caltabt                   16
+ C2N           2
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.79999997466802597     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   17
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           0  0.79999997466802597     
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ POINT4           1  0.79999997466802597     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   17
+ C2N           1
+ POINT4           2  0.79999997466802597     
+ avantENVOI           2
+ avantENVOI           0
+ ENVOI
+ ENVOI
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                   17
+ C2N           0
+ caltabt                   17
+ C2N           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.69999997317790985     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   18
+ C2N           3
+ FVMX           0        6000       12000
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ IN L2M           0           2
+ POINT4           1  0.69999997317790985     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2  0.69999997317790985     
+ avantENVOI           2
+ caltabt                   18
+ C2N           1
+ POINT4           0  0.69999997317790985     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   18
+ caltabt                   18
+ C2N           2
+ C2N           0
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ POINT4           3  0.59999997168779373     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   19
+ C2N           3
+ FVMX           0        6000       12000
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ IN L2M           0           2
+ POINT4           1  0.59999997168779373     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2  0.59999997168779373     
+ avantENVOI           2
+ caltabt                   19
+ C2N           1
+ POINT4           0  0.59999997168779373     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   19
+ caltabt                   19
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.49999997019767761     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   20
+ C2N           1
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.49999997019767761     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ POINT4           2  0.49999997019767761     
+ avantENVOI           2
+ caltabt                   20
+ C2N           3
+ POINT4           0  0.49999997019767761     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   20
+ C2N           2
+ caltabt                   20
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.39999996870756149     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   21
+ C2N           1
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.39999996870756149     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ POINT4           2  0.39999996870756149     
+ avantENVOI           2
+ caltabt                   21
+ C2N           3
+ POINT4           0  0.39999996870756149     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   21
+ caltabt                   21
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.29999996721744537     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   22
+ C2N           1
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.29999996721744537     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ POINT4           2  0.29999996721744537     
+ avantENVOI           2
+ caltabt                   22
+ C2N           3
+ POINT4           0  0.29999996721744537     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   22
+ caltabt                   22
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.19999996572732925     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   23
+ C2N           1
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ POINT4           3  0.19999996572732925     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ POINT4           2  0.19999996572732925     
+ avantENVOI           2
+ caltabt                   23
+ C2N           3
+ POINT4           0  0.19999996572732925     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   23
+ caltabt                   23
+ C2N           2
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3   9.9999964237213135E-002
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   24
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ POINT4           1   9.9999964237213135E-002
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2   9.9999964237213135E-002
+ avantENVOI           2
+ caltabt                   24
+ C2N           1
+ POINT4           0   9.9999964237213135E-002
+ avantENVOI           0
+ ENVOI
+ ENVOI
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                   24
+ caltabt                   24
+ C2N           0
+ C2N           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+         0  0.00    *Temp instantanee = 504.405
+         0  0.00    *Temp instantanee = 504.405
+         0  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           3
+         0  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           2
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ caltabt                   25
+ FVMX0           3        6000       12001
+ caltabt                   25
+ caltabt                   26
+ FVMX0           2        6001       12001
+ C2N           3
+ caltabt                   26
+ C2N           2
+ Wprec   1.1099014661477624E-009 ln_Wprec   16078.281617238641     
+ W   9.9177326681466732E-010 ln_W   14367.050022593690     
+  REJECTION, direction=           1   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.48848327202361985     
+ caltabt                   25
+         0  0.00    *Temp instantanee = 504.405
+         0  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           1
+         9 0.180E-13*Temp instantanee = 504.405
+         9 0.180E-13*Temp instantanee = .000
+ PRE AJOUTRETRAIT           0
+ caltabt                   25
+ FVMX0           1        6000       12000
+ caltabt                   26
+ C2N           1
+ NAGP1       12001
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+ caltabt                   26
+ FVMX0           0        6000       12000
+ caltabt                   27
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POST AJOUTRETRAIT           1
+ FVMX           2        6001       12001
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ IN L2M           2           2
+ POST AJOUTRETRAIT           3
+ POST AJOUTRETRAIT           2
+         1  0.00    *Temp instantanee = 504.405
+         1  0.00    *Temp instantanee = 504.405
+         1  0.00    *Temp instantanee = .000
+ P4N           3
+ IL           3           0
+ PL3           3
+         1  0.00    *Temp instantanee = .000
+ P4N           2
+ IL           2           0
+ PL3           2
+ POST AJOUTRETRAIT           0
+         1  0.00    *Temp instantanee = 504.405
+         1  0.00    *Temp instantanee = .000
+ P4N           1
+ IL           1           0
+ PL3           1
+        10 0.180E-13*Temp instantanee = 504.405
+        10 0.180E-13*Temp instantanee = .000
+ P4N           0
+ IL           0           0
+ PL3           0
+ PL2           1
+ FVMX0           1        6000       12000
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           2
+ PL0           0
+ caltabt                   27
+ caltabt                   27
+ C2N           3
+ C2N           1
+ PL2           2
+ PL2           0
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                   28
+ caltabt                   27
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.20000000298023224     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.20000000298023224     
+ PL2           0
+ PL2           2
+ POINT1           2  0.20000000298023224     
+ POINT1           0  0.20000000298023224     
+ PL2           3
+ FVMX0           3        6000       12001
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ caltabt                   28
+ caltabt                   28
+ C2N           3
+ C2N           1
+ PL2           2
+ PL2           0
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                   29
+ caltabt                   28
+ C2N           0
+ C2N           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.30000000447034836     
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.30000000447034836     
+ PL2           0
+ PL2           2
+ POINT1           2  0.30000000447034836     
+ POINT1           0  0.30000000447034836     
+ PL0           2
+ PL0           0
+ PL2           2
+ PL2           0
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                   30
+ caltabt                   29
+ C2N           0
+ C2N           2
+ PL2           3
+ FVMX0           3        6000       12001
+ PL2           1
+ FVMX0           1        6000       12000
+ caltabt                   29
+ caltabt                   29
+ C2N           3
+ C2N           1
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.40000000596046448     
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.40000000596046448     
+ PL2           0
+ POINT1           0  0.40000000596046448     
+ PL2           2
+ POINT1           2  0.40000000596046448     
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           0
+ PL2           1
+ FVMX0           1        6000       12000
+ caltabt                   30
+ caltabt                   30
+ C2N           3
+ C2N           1
+ PL0           2
+ PL2           0
+ PL2           2
+ FVMX0           2        6001       12001
+ FVMX0           0        6000       12000
+ caltabt                   30
+ caltabt                   31
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.50000000745058060     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.50000000745058060     
+ PL2           0
+ PL2           2
+ POINT1           2  0.50000000745058060     
+ POINT1           0  0.50000000745058060     
+ PL2           3
+ FVMX0           3        6000       12001
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           0
+ caltabt                   31
+ caltabt                   31
+ C2N           3
+ C2N           1
+ PL0           2
+ PL2           0
+ PL2           2
+ FVMX0           2        6001       12001
+ FVMX0           0        6000       12000
+ caltabt                   31
+ caltabt                   32
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.60000000894069672     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.60000000894069672     
+ PL2           2
+ POINT1           2  0.60000000894069672     
+ PL2           0
+ POINT1           0  0.60000000894069672     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           0
+ caltabt                   32
+ caltabt                   32
+ C2N           3
+ C2N           1
+ PL0           2
+ PL2           2
+ FVMX0           2        6001       12001
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                   32
+ caltabt                   33
+ C2N           2
+ C2N           0
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.70000001043081284     
+ FVMX           0        6000       12000
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.70000001043081284     
+ PL2           2
+ POINT1           2  0.70000001043081284     
+ PL2           0
+ POINT1           0  0.70000001043081284     
+ PL2           3
+ FVMX0           3        6000       12001
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ caltabt                   33
+ caltabt                   33
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   33
+ PL2           0
+ C2N           3
+ C2N           1
+ FVMX0           0        6000       12000
+ C2N           2
+ caltabt                   34
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.80000001192092896     
+ FVMX           0        6000       12000
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.80000001192092896     
+ PL2           2
+ POINT1           2  0.80000001192092896     
+ PL2           0
+ POINT1           0  0.80000001192092896     
+ PL2           3
+ FVMX0           3        6000       12001
+ caltabt                   34
+ PL2           1
+ FVMX0           1        6000       12000
+ caltabt                   34
+ PL0           2
+ PL0           0
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   34
+ C2N           2
+ C2N           3
+ C2N           1
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                   35
+ C2N           0
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.90000001341104507     
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.90000001341104507     
+ PL2           0
+ PL2           2
+ POINT1           2  0.90000001341104507     
+ POINT1           0  0.90000001341104507     
+ PL2           3
+ FVMX0           3        6000       12001
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           0
+ caltabt                   35
+ caltabt                   35
+ C2N           3
+ C2N           1
+ PL0           2
+ PL2           0
+ PL2           2
+ FVMX0           2        6001       12001
+ FVMX0           0        6000       12000
+ caltabt                   35
+ caltabt                   36
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1   1.0000000149011612     
+ POINT2           1   1.0000000149011612     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3   1.0000000149011612     
+ POINT2           3   1.0000000149011612     
+ PL2           2
+ POINT1           2   1.0000000149011612     
+ POINT2           2   1.0000000149011612     
+ PL2           0
+         1  0.00    *Temp instantanee = 504.405
+         1  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           3
+         1  0.00    *Temp instantanee = 504.405
+         1  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           2
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ caltabt                   36
+ caltabt                   36
+ FVMX0           3        6000       12001
+ FVMX0           2        6001       12001
+ caltabt                   37
+ caltabt                   37
+ C2N           2
+ C2N           3
+ POINT1           0   1.0000000149011612     
+ POINT2           0   1.0000000149011612     
+ Wprec   1.1099014661477624E-009 ln_Wprec  -16078.281617238641     
+ W   5.6203846379672377E-010 ln_W  -8141.8152658254585     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.31432903536114742     
+         1  0.00    *Temp instantanee = 373.462
+        10 0.270E-13*Temp instantanee = 373.462
+         1  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           1
+        10 0.270E-13*Temp instantanee = .000
+ PRE AJOUTRETRAIT           0
+ atome supprimé       11064
+ caltabt                   36
+ FVMX0           1        6000       12000
+ caltabt                   37
+ C2N           1
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+ caltabt                   37
+ FVMX0           0        6000       12000
+ caltabt                   38
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POST AJOUTRETRAIT           3
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POST AJOUTRETRAIT           1
+ POST AJOUTRETRAIT           2
+ POST AJOUTRETRAIT           0
+         2  0.00    *Temp instantanee = 373.462
+        11 0.270E-13*Temp instantanee = 373.462
+         2  0.00    *Temp instantanee = .000
+ P4N           1
+ IL           1           1
+ PL3           1
+ POINT3           1  0.89999997615814209     
+ POINT4           1  0.89999997615814209     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+        11 0.270E-13*Temp instantanee = .000
+ P4N           0
+ IL           0           1
+ caltabt                   38
+ PL3           0
+ POINT3           0  0.89999997615814209     
+ POINT4           0  0.89999997615814209     
+ C2N           1
+ avantENVOI           0
+         2  0.00    *Temp instantanee = 504.405
+         2  0.00    *Temp instantanee = .000
+ P4N           3
+ IL           3           1
+ PL3           3
+ POINT3           3  0.89999997615814209     
+ POINT4           3  0.89999997615814209     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+         2  0.00    *Temp instantanee = 504.405
+         2  0.00    *Temp instantanee = .000
+ P4N           2
+ IL           2           1
+ PL3           2
+ POINT3           2  0.89999997615814209     
+ POINT4           2  0.89999997615814209     
+ avantENVOI           2
+ ENVOI
+ ENVOI
+ FVMX0           2        6001       12001
+ FVMX0           0        6000       12000
+ caltabt                   38
+ caltabt                   39
+ C2N           2
+ caltabt                   38
+ C2N           0
+ C2N           3
+ FVMX           0        6000       12000
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ IN L2M           0           2
+ POINT4           1  0.79999997466802597     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   39
+ C2N           1
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           2  0.79999997466802597     
+ avantENVOI           2
+ POINT4           0  0.79999997466802597     
+ POINT4           3  0.79999997466802597     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   39
+ C2N           3
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   39
+ caltabt                   40
+ C2N           2
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.69999997317790985     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   40
+ C2N           3
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.69999997317790985     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2  0.69999997317790985     
+ avantENVOI           2
+ caltabt                   40
+ C2N           1
+ POINT4           0  0.69999997317790985     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   40
+ caltabt                   41
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.59999997168779373     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   41
+ C2N           1
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.59999997168779373     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ POINT4           2  0.59999997168779373     
+ avantENVOI           2
+ caltabt                   41
+ C2N           3
+ POINT4           0  0.59999997168779373     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   41
+ caltabt                   42
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.49999997019767761     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   42
+ C2N           1
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.49999997019767761     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   42
+ C2N           3
+ POINT4           2  0.49999997019767761     
+ avantENVOI           2
+ POINT4           0  0.49999997019767761     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   42
+ caltabt                   43
+ C2N           2
+ C2N           0
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ POINT4           3  0.39999996870756149     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   43
+ C2N           3
+ FVMX           0        6000       12000
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ IN L2M           0           2
+ POINT4           1  0.39999996870756149     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2  0.39999996870756149     
+ avantENVOI           2
+ caltabt                   43
+ C2N           1
+ POINT4           0  0.39999996870756149     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   43
+ caltabt                   44
+ C2N           2
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ POINT4           3  0.29999996721744537     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ caltabt                   44
+ POINT4           1  0.29999996721744537     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ C2N           3
+ POINT4           2  0.29999996721744537     
+ avantENVOI           2
+ caltabt                   44
+ C2N           1
+ POINT4           0  0.29999996721744537     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   44
+ C2N           2
+ caltabt                   45
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.19999996572732925     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   45
+ C2N           3
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.19999996572732925     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2  0.19999996572732925     
+ avantENVOI           2
+ caltabt                   45
+ C2N           1
+ POINT4           0  0.19999996572732925     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ caltabt                   45
+ C2N           2
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   46
+ C2N           0
+ FVMX           3        6000       12001
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ IN L2M           3           2
+ POINT4           3   9.9999964237213135E-002
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   46
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ POINT4           1   9.9999964237213135E-002
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2   9.9999964237213135E-002
+ avantENVOI           2
+ caltabt                   46
+ C2N           1
+ POINT4           0   9.9999964237213135E-002
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   46
+ caltabt                   47
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           3        6000       12001
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ IN L2M           3           2
+         2  0.00    *Temp instantanee = 504.405
+         2  0.00    *Temp instantanee = 504.405
+         2  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           2
+         2  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           3
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ caltabt                   47
+ caltabt                   47
+ FVMX0           3        6000       12001
+ caltabt                   48
+ C2N           3
+ Wprec   5.6203846379672377E-010 ln_Wprec   8141.8152658254585     
+ W   5.1334229410563246E-010 ln_W   7436.3916279131072     
+  REJECTION, direction=           1   LN_XPROB   -705.42363791235130        XPROB    4.3491726726673412E-307   XALEA   0.95045874935394159     
+ FVMX0           2        6001       12001
+ caltabt                   48
+ caltabt                   48
+         2  0.00    *Temp instantanee = 504.405
+         2  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           1
+        20 0.360E-13*Temp instantanee = 504.405
+        20 0.360E-13*Temp instantanee = .000
+ PRE AJOUTRETRAIT           0
+ caltabt                   47
+ FVMX0           1        6000       12000
+ caltabt                   48
+ C2N           1
+ C2N           2
+ NAGP1       12001
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+ caltabt                   49
+ FVMX0           0        6000       12000
+ caltabt                   50
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POST AJOUTRETRAIT           1
+ FVMX           3        6000       12001
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ IN L2M           3           2
+ POST AJOUTRETRAIT           3
+ POST AJOUTRETRAIT           2
+ POST AJOUTRETRAIT           0
+         3  0.00    *Temp instantanee = 504.405
+         3  0.00    *Temp instantanee = 504.405
+         3  0.00    *Temp instantanee = 504.405
+         3  0.00    *Temp instantanee = .000
+ P4N           1
+ IL           1           0
+ PL3           1
+        21 0.360E-13*Temp instantanee = 504.405
+        21 0.360E-13*Temp instantanee = .000
+ P4N           0
+ IL           0           0
+         3  0.00    *Temp instantanee = .000
+ P4N           2
+ IL           2           0
+ PL3           2
+         3  0.00    *Temp instantanee = .000
+ P4N           3
+ IL           3           0
+ PL3           3
+ PL3           0
+ PL2           3
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ FVMX0           3        6000       12001
+ caltabt                   49
+ caltabt                   49
+ C2N           1
+ C2N           3
+ PL2           2
+ FVMX0           2        6001       12001
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                   51
+ caltabt                   49
+ C2N           0
+ C2N           2
+ FVMX           3        6000       12001
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.20000000298023224     
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.20000000298023224     
+ PL2           0
+ PL2           2
+ POINT1           2  0.20000000298023224     
+ POINT1           0  0.20000000298023224     
+ PL0           2
+ PL0           0
+ PL2           2
+ FVMX0           2        6001       12001
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                   52
+ caltabt                   50
+ C2N           2
+ C2N           0
+ PL2           3
+ PL2           1
+ FVMX0           1        6000       12000
+ FVMX0           3        6000       12001
+ caltabt                   50
+ caltabt                   50
+ C2N           1
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.30000000447034836     
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ PL2           2
+ POINT1           2  0.30000000447034836     
+ PL2           0
+ POINT1           3  0.30000000447034836     
+ POINT1           0  0.30000000447034836     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL2           3
+ PL0           0
+ FVMX0           3        6000       12001
+ caltabt                   51
+ caltabt                   51
+ C2N           1
+ C2N           3
+ PL0           2
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   53
+ caltabt                   51
+ C2N           0
+ C2N           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.40000000596046448     
+ FVMX           2        6001       12001
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.40000000596046448     
+ PL2           0
+ PL2           2
+ POINT1           2  0.40000000596046448     
+ POINT1           0  0.40000000596046448     
+ PL0           2
+ PL0           0
+ PL2           2
+ PL2           0
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                   54
+ caltabt                   52
+ C2N           2
+ C2N           0
+ PL2           1
+ FVMX0           1        6000       12000
+ PL2           3
+ FVMX0           3        6000       12001
+ caltabt                   52
+ caltabt                   52
+ C2N           1
+ C2N           3
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.50000000745058060     
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ PL2           0
+ POINT1           1  0.50000000745058060     
+ POINT1           0  0.50000000745058060     
+ PL2           2
+ POINT1           2  0.50000000745058060     
+ PL2           3
+ FVMX0           3        6000       12001
+ PL2           1
+ PL0           0
+ FVMX0           1        6000       12000
+ caltabt                   53
+ caltabt                   53
+ C2N           3
+ C2N           1
+ PL0           2
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   53
+ caltabt                   55
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.60000000894069672     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.60000000894069672     
+ PL2           0
+ PL2           2
+ POINT1           2  0.60000000894069672     
+ POINT1           0  0.60000000894069672     
+ PL2           3
+ FVMX0           3        6000       12001
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ PL2           2
+ PL2           0
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                   54
+ C2N           2
+ caltabt                   54
+ caltabt                   56
+ C2N           1
+ C2N           0
+ caltabt                   54
+ C2N           3
+ FVMX           1        6000       12000
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.70000001043081284     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.70000001043081284     
+ PL2           0
+ PL2           2
+ POINT1           2  0.70000001043081284     
+ POINT1           0  0.70000001043081284     
+ PL2           1
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           0
+ FVMX0           1        6000       12000
+ caltabt                   55
+ caltabt                   55
+ C2N           3
+ C2N           1
+ PL0           2
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   55
+ caltabt                   57
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.80000001192092896     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.80000001192092896     
+ PL2           2
+ POINT1           2  0.80000001192092896     
+ PL2           0
+ POINT1           0  0.80000001192092896     
+ PL2           1
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           0
+ FVMX0           1        6000       12000
+ caltabt                   56
+ caltabt                   56
+ C2N           3
+ C2N           1
+ PL0           2
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   58
+ caltabt                   56
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.90000001341104507     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.90000001341104507     
+ PL2           2
+ POINT1           2  0.90000001341104507     
+ PL2           0
+ POINT1           0  0.90000001341104507     
+ PL2           1
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           0
+ FVMX0           1        6000       12000
+ caltabt                   57
+ caltabt                   57
+ C2N           3
+ C2N           1
+ PL0           2
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   59
+ caltabt                   57
+ C2N           2
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3   1.0000000149011612     
+ POINT2           3   1.0000000149011612     
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1   1.0000000149011612     
+ POINT2           1   1.0000000149011612     
+ PL2           0
+ PL2           2
+ POINT1           2   1.0000000149011612     
+ POINT2           2   1.0000000149011612     
+         3  0.00    *Temp instantanee = 504.405
+         3  0.00    *Temp instantanee = 504.405
+         3  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           3
+         3  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           2
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ caltabt                   58
+ caltabt                   58
+ FVMX0           3        6000       12001
+ FVMX0           2        6001       12001
+ caltabt                   59
+ caltabt                   59
+ C2N           3
+ C2N           2
+ POINT1           0   1.0000000149011612     
+ POINT2           0   1.0000000149011612     
+ Wprec   5.6203846379672377E-010 ln_Wprec  -8141.8152658254585     
+ W   5.6143911144816375E-010 ln_W  -8133.1329132545152     
+ ACCEPTATION, direction=           0   LN_XPROB   -1.6953734332415129E-004   XPROB   0.99983047702731909        XALEA   0.64190877703034832     
+         3  0.00    *Temp instantanee = 372.473
+         3  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           1
+        21 0.450E-13*Temp instantanee = 372.473
+        21 0.450E-13*Temp instantanee = .000
+ PRE AJOUTRETRAIT           0
+ atome supprimé        4800
+ caltabt                   58
+ FVMX0           1        6000       12000
+ caltabt                   59
+ C2N           1
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+ caltabt                   60
+ FVMX0           0        6000       12000
+ caltabt                   61
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POST AJOUTRETRAIT           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POST AJOUTRETRAIT           0
+        22 0.450E-13*Temp instantanee = 372.473
+        22 0.450E-13*Temp instantanee = .000
+ P4N           0
+ IL           0           1
+ PL3           0
+ POINT3           0  0.89999997615814209     
+ POINT4           0  0.89999997615814209     
+ POST AJOUTRETRAIT           2
+         4  0.00    *Temp instantanee = 504.405
+         4  0.00    *Temp instantanee = .000
+ P4N           2
+ IL           2           1
+ PL3           2
+ POINT3           2  0.89999997615814209     
+ POINT4           2  0.89999997615814209     
+ avantENVOI           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ POST AJOUTRETRAIT           1
+         4  0.00    *Temp instantanee = 372.473
+         4  0.00    *Temp instantanee = .000
+ P4N           1
+ IL           1           1
+ PL3           1
+ POINT3           1  0.89999997615814209     
+ POINT4           1  0.89999997615814209     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   60
+ C2N           1
+         4  0.00    *Temp instantanee = 504.405
+         4  0.00    *Temp instantanee = .000
+ P4N           3
+ IL           3           1
+ PL3           3
+ POINT3           3  0.89999997615814209     
+ POINT4           3  0.89999997615814209     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   60
+ C2N           3
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   60
+ C2N           2
+ caltabt                   62
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.79999997466802597     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   61
+ C2N           3
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.79999997466802597     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2  0.79999997466802597     
+ avantENVOI           2
+ caltabt                   61
+ C2N           1
+ POINT4           0  0.79999997466802597     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   61
+ C2N           2
+ caltabt                   63
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.69999997317790985     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   62
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ POINT4           2  0.69999997317790985     
+ avantENVOI           2
+ POINT4           1  0.69999997317790985     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   62
+ C2N           1
+ POINT4           0  0.69999997317790985     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   62
+ caltabt                   64
+ C2N           2
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.59999997168779373     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   63
+ C2N           3
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.59999997168779373     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2  0.59999997168779373     
+ avantENVOI           2
+ caltabt                   63
+ C2N           1
+ POINT4           0  0.59999997168779373     
+ avantENVOI           0
+ ENVOI
+ ENVOI
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                   65
+ caltabt                   63
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POINT4           1  0.49999997019767761     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   64
+ C2N           1
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.49999997019767761     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ POINT4           2  0.49999997019767761     
+ avantENVOI           2
+ caltabt                   64
+ C2N           3
+ POINT4           0  0.49999997019767761     
+ avantENVOI           0
+ ENVOI
+ ENVOI
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ caltabt                   66
+ caltabt                   64
+ C2N           2
+ C2N           0
+ FVMX           3        6000       12001
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ IN L2M           3           2
+ POINT4           3  0.39999996870756149     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   65
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ POINT4           1  0.39999996870756149     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2  0.39999996870756149     
+ avantENVOI           2
+ caltabt                   65
+ C2N           1
+ POINT4           0  0.39999996870756149     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   65
+ caltabt                   67
+ C2N           2
+ C2N           0
+ FVMX           3        6000       12001
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ IN L2M           3           2
+ POINT4           3  0.29999996721744537     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   66
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ POINT4           1  0.29999996721744537     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ POINT4           2  0.29999996721744537     
+ avantENVOI           2
+ caltabt                   66
+ C2N           1
+ POINT4           0  0.29999996721744537     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   66
+ caltabt                   68
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ IN L2M           1           2
+ POINT4           1  0.19999996572732925     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   67
+ C2N           1
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.19999996572732925     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ POINT4           2  0.19999996572732925     
+ avantENVOI           2
+ caltabt                   67
+ C2N           3
+ POINT4           0  0.19999996572732925     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   67
+ caltabt                   69
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ IN L2M           1           2
+ POINT4           1   9.9999964237213135E-002
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   68
+ C2N           1
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3   9.9999964237213135E-002
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   68
+ C2N           3
+ POINT4           2   9.9999964237213135E-002
+ avantENVOI           2
+ POINT4           0   9.9999964237213135E-002
+ avantENVOI           0
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   70
+ C2N           0
+ ENVOI
+ FVMX0           2        6001       12001
+ caltabt                   68
+ C2N           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+         4  0.00    *Temp instantanee = 504.405
+         4  0.00    *Temp instantanee = 504.405
+         4  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           2
+         4  0.00    *Temp instantanee = .000
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ PRE AJOUTRETRAIT           3
+ caltabt                   69
+ caltabt                   69
+ FVMX0           2        6001       12001
+ FVMX0           3        6000       12001
+ caltabt                   70
+ caltabt                   70
+ C2N           2
+ C2N           3
+ Wprec   5.6143911144816375E-010 ln_Wprec   8133.1329132545152     
+ W   5.1334507909482845E-010 ln_W   7436.4319718913421     
+  REJECTION, direction=           1   LN_XPROB   -696.70094136317311        XPROB    2.6707032146890002E-303   XALEA   0.27969037226263971     
+ caltabt                   71
+         4  0.00    *Temp instantanee = 504.405
+         4  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           1
+        31 0.540E-13*Temp instantanee = 504.405
+        31 0.540E-13*Temp instantanee = .000
+ PRE AJOUTRETRAIT           0
+ caltabt                   69
+ FVMX0           1        6000       12000
+ caltabt                   70
+ C2N           1
+ NAGP1       12001
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+ caltabt                   72
+ FVMX0           0        6000       12000
+ caltabt                   73
+ C2N           0
+ FVMX           3        6000       12001
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ IN L2M           3           2
+ POST AJOUTRETRAIT           3
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ POST AJOUTRETRAIT           1
+ POST AJOUTRETRAIT           0
+         5  0.00    *Temp instantanee = 504.405
+         5  0.00    *Temp instantanee = .000
+ P4N           1
+ IL           1           0
+ PL3           1
+        32 0.540E-13*Temp instantanee = 504.405
+        32 0.540E-13*Temp instantanee = .000
+ P4N           0
+ IL           0           0
+ PL3           0
+ POST AJOUTRETRAIT           2
+         5  0.00    *Temp instantanee = 504.405
+         5  0.00    *Temp instantanee = 504.405
+         5  0.00    *Temp instantanee = .000
+         5  0.00    *Temp instantanee = .000
+ P4N           2
+ IL           2           0
+ PL3           2
+ P4N           3
+ IL           3           0
+ PL3           3
+ PL0           2
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           0
+ PL2           3
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   71
+ caltabt                   74
+ caltabt                   71
+ FVMX0           3        6000       12001
+ C2N           1
+ C2N           2
+ C2N           0
+ caltabt                   71
+ C2N           3
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.20000000298023224     
+ FVMX           3        6000       12001
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ IN L2M           3           2
+ PL2           3
+ PL2           0
+ PL2           2
+ POINT1           2  0.20000000298023224     
+ POINT1           3  0.20000000298023224     
+ POINT1           0  0.20000000298023224     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL2           3
+ PL0           0
+ FVMX0           3        6000       12001
+ caltabt                   72
+ C2N           1
+ caltabt                   72
+ C2N           3
+ PL0           2
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ caltabt                   75
+ FVMX0           2        6001       12001
+ caltabt                   72
+ C2N           0
+ C2N           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.30000000447034836     
+ FVMX           2        6001       12001
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.30000000447034836     
+ PL2           0
+ PL2           2
+ POINT1           2  0.30000000447034836     
+ POINT1           0  0.30000000447034836     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ caltabt                   73
+ PL2           2
+ PL2           0
+ FVMX0           0        6000       12000
+ C2N           1
+ caltabt                   76
+ FVMX0           2        6001       12001
+ caltabt                   73
+ C2N           0
+ C2N           2
+ PL2           3
+ FVMX0           3        6000       12001
+ caltabt                   73
+ C2N           3
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ PL2           1
+ POINT1           1  0.40000000596046448     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.40000000596046448     
+ PL2           0
+ PL2           2
+ POINT1           2  0.40000000596046448     
+ POINT1           0  0.40000000596046448     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL0           0
+ caltabt                   74
+ PL2           2
+ PL2           0
+ FVMX0           0        6000       12000
+ FVMX0           2        6001       12001
+ C2N           1
+ caltabt                   77
+ caltabt                   74
+ C2N           0
+ C2N           2
+ PL2           3
+ FVMX0           3        6000       12001
+ caltabt                   74
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.50000000745058060     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.50000000745058060     
+ PL2           0
+ PL2           2
+ POINT1           2  0.50000000745058060     
+ POINT1           0  0.50000000745058060     
+ PL2           1
+ FVMX0           1        6000       12000
+ PL0           2
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           0
+ caltabt                   75
+ caltabt                   75
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ C2N           1
+ C2N           3
+ FVMX0           2        6001       12001
+ caltabt                   78
+ caltabt                   75
+ C2N           0
+ C2N           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.60000000894069672     
+ FVMX           1        6000       12000
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ IN L2M           1           2
+ PL2           1
+ PL2           2
+ POINT1           2  0.60000000894069672     
+ PL2           0
+ POINT1           1  0.60000000894069672     
+ POINT1           0  0.60000000894069672     
+ PL2           1
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           0
+ FVMX0           1        6000       12000
+ caltabt                   76
+ C2N           3
+ caltabt                   76
+ C2N           1
+ PL0           2
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   79
+ caltabt                   76
+ C2N           2
+ C2N           0
+ FVMX           1        6000       12000
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.70000001043081284     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.70000001043081284     
+ PL2           2
+ POINT1           2  0.70000001043081284     
+ PL2           0
+ POINT1           0  0.70000001043081284     
+ PL2           1
+ PL0           0
+ FVMX0           1        6000       12000
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           2
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   77
+ caltabt                   80
+ caltabt                   77
+ C2N           3
+ caltabt                   77
+ C2N           2
+ C2N           0
+ C2N           1
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.80000001192092896     
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3  0.80000001192092896     
+ PL2           0
+ PL2           2
+ POINT1           2  0.80000001192092896     
+ POINT1           0  0.80000001192092896     
+ PL0           2
+ PL2           2
+ FVMX0           2        6001       12001
+ PL0           0
+ PL2           0
+ FVMX0           0        6000       12000
+ caltabt                   81
+ PL2           1
+ FVMX0           1        6000       12000
+ C2N           0
+ caltabt                   78
+ C2N           1
+ caltabt                   78
+ C2N           2
+ PL2           3
+ FVMX0           3        6000       12001
+ caltabt                   78
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ POINT1           1  0.90000001341104507     
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ PL2           3
+ POINT1           3  0.90000001341104507     
+ PL2           2
+ POINT1           2  0.90000001341104507     
+ PL2           0
+ POINT1           0  0.90000001341104507     
+ PL2           1
+ PL2           3
+ FVMX0           3        6000       12001
+ PL0           0
+ FVMX0           1        6000       12000
+ caltabt                   79
+ C2N           3
+ caltabt                   79
+ C2N           1
+ PL0           2
+ PL2           0
+ FVMX0           0        6000       12000
+ PL2           2
+ FVMX0           2        6001       12001
+ caltabt                   82
+ C2N           0
+ caltabt                   79
+ C2N           2
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ PL2           3
+ POINT1           3   1.0000000149011612     
+ POINT2           3   1.0000000149011612     
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ PL2           1
+ PL2           2
+ POINT1           2   1.0000000149011612     
+ POINT2           2   1.0000000149011612     
+ PL2           0
+         5  0.00    *Temp instantanee = 504.405
+         5  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           3
+         5  0.00    *Temp instantanee = 504.405
+         5  0.00    *Temp instantanee = .000
+ PRE AJOUTRETRAIT           2
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ caltabt                   80
+ FVMX0           3        6000       12001
+ caltabt                   80
+ FVMX0           2        6001       12001
+ POINT1           1   1.0000000149011612     
+ caltabt                   81
+ caltabt                   81
+ C2N           2
+ POINT2           1   1.0000000149011612     
+ C2N           3
+ POINT1           0   1.0000000149011612     
+ POINT2           0   1.0000000149011612     
+ Wprec   5.6143911144816375E-010 ln_Wprec  -8133.1329132545152     
+ W   5.6520377109273042E-010 ln_W  -8187.6686173729004     
+  REJECTION, direction=           0   LN_XPROB   -54.535704118385183        XPROB    2.0674957937917299E-024   XALEA    8.2400729114492366E-002
+ caltabt                   83
+         5  0.00    *Temp instantanee = 373.538
+        32 0.630E-13*Temp instantanee = 373.538
+         5  0.00    *Temp instantanee = .000
+        32 0.630E-13*Temp instantanee = .000
+ PRE AJOUTRETRAIT           1
+ PRE AJOUTRETRAIT           0
+ atome supprimé        9130
+ caltabt                   80
+ FVMX0           1        6000       12000
+ caltabt                   81
+ C2N           1
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE MEILLEUR DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+ caltabt                   84
+ FVMX0           0        6000       12000
+ caltabt                   85
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POST AJOUTRETRAIT           3
+ FVMX           1        6000       12000
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ IN L2M           1           2
+ POST AJOUTRETRAIT           1
+ POST AJOUTRETRAIT           2
+         6  0.00    *Temp instantanee = 504.405
+         6  0.00    *Temp instantanee = .000
+ P4N           3
+ IL           3           1
+ PL3           3
+ POINT3           3  0.89999997615814209     
+ POINT4           3  0.89999997615814209     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ POST AJOUTRETRAIT           0
+         6  0.00    *Temp instantanee = 504.405
+         6  0.00    *Temp instantanee = .000
+ P4N           2
+ IL           2           1
+ PL3           2
+ POINT3           2  0.89999997615814209     
+ POINT4           2  0.89999997615814209     
+ avantENVOI           2
+ caltabt                   82
+ C2N           3
+        33 0.630E-13*Temp instantanee = 372.473
+         6  0.00    *Temp instantanee = 372.473
+        33 0.630E-13*Temp instantanee = .000
+ P4N           0
+ IL           0           1
+         6  0.00    *Temp instantanee = .000
+ P4N           1
+ PL3           0
+ POINT3           0  0.89999997615814209     
+ POINT4           0  0.89999997615814209     
+ IL           1           1
+ PL3           1
+ POINT3           1  0.89999997615814209     
+ POINT4           1  0.89999997615814209     
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   82
+ C2N           1
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   82
+ C2N           2
+ caltabt                   86
+ C2N           0
+ FVMX           3        6000       12001
+ IN L2M           3           2
+ FVMX           2        6001       12001
+ IN L2M           2           2
+ POINT4           3  0.79999997466802597     
+ avantENVOI           3
+ ENVOI
+ FVMX0           3        6000       12001
+ caltabt                   83
+ C2N           3
+ FVMX           0        6000       12000
+ IN L2M           0           2
+ FVMX           1        6000       12000
+ IN L2M           1           2
+ POINT4           1  0.79999997466802597     
+ POINT4           2  0.79999997466802597     
+ avantENVOI           2
+ avantENVOI           1
+ ENVOI
+ FVMX0           1        6000       12000
+ caltabt                   83
+ C2N           1
+ POINT4           0  0.79999997466802597     
+ avantENVOI           0
+ ENVOI
+ FVMX0           2        6001       12001
+ ENVOI
+ FVMX0           0        6000       12000
+ caltabt                   83
+ caltabt                   87
+ C2N           2
+ C2N           0

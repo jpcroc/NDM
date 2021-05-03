@@ -42,8 +42,9 @@ debuggage LPR+ LPR lammps
 
 4/supprimer les routines non NDM2021 (use temp_com)	et faire une TODO list afférente
 4.05/ supprimer tab_imm_m et les USE  qui vont avec
-4.1/ relire tout gen_comm_m et enlever tout ce qui ne seert à rien!
-4.5/ PR en lammps !!!
+4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien!
+4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig pilté comme send2all etc.
+4.5/ PR en lammps !!!x
 5/version 2T
 5.5/ création de PF avec DM NVT ou trempe ,rapide ou GC 
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.

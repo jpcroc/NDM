@@ -1,0 +1,90 @@
+ Process            0  of            4  is alive   2.2204460492503132E-058
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=trppara.din                                                                     
+
+ Pas de conditions periodiques
+
+ -------- caracteristiques du run DM-------- 3
+     GRADIENT CONJUGUE sur les coordonnees CARTESIENNES
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     100.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+ IMM PARA =          630        2100
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-         630        2100           4
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ Process            1  of            4  is alive   2.2204460492503132E-058
+ Process            2  of            4  is alive   2.2204460492503132E-058
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+trppara.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            4  cpus           0
+ Nbre de solutions possibles :            6
+LE MEILLEUR DECOUPAGE :    4    1    2    2    0.9200
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ Process            3  of            4  is alive   2.2204460492503132E-058
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+         570  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ Le proc            3  a            3  processeur voisin
+ Le proc            2  a            3  processeur voisin
+ NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR
+ Le proc            0  a            3  processeur voisin
+ Le proc            1  a            3  processeur voisin

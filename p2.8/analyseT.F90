@@ -11,7 +11,6 @@ module analyseT_mod
   USE rasmolT_mod,only: rasmolT
   USE rdf_mod,only: rdf
   USE sauvegardeT_mod,only:sauvegardeT
- USE sauveforce_mod,only: sauveforce
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,fnose,iteanapos,iteangle,itebdv,&
@@ -20,8 +19,8 @@ module analyseT_mod
        &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,&
        &natchk,tpseuils,sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
-       &ldesinteg,itmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,&
-       & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,im_glob,it,l2T
+       &ldesinteg,itmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0&
+       & ,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,im_glob,it,l2T
 
   USE cellconfig,only:cell_config, caltabtC
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
@@ -71,7 +70,7 @@ contains
     REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
     CHARACTER(len=20), dimension(:), allocatable :: aux_title
     CHARACTER(len=100) :: out_file
-    integer,save::ncalceattotm=0, nposmoy=0
+    integer,save::ncalceattotm=0
     integer::ipot, nAux_real, n
 
     !  real(double)::celpP,celpp2,Tcp,Tcp2  
@@ -119,9 +118,6 @@ contains
           end if
        endif
        
-       if (itesauvforce.GT.0) then
-          if (mod(it,itesauvforce)==0) call sauveforce ( it)
-       endif
        !          write(6,*)'sauvposition -> control'
 !    endif                                   ! fin rang=0
 
@@ -247,7 +243,7 @@ contains
                    write(6,*)'b',boxndm%at(1,2),boxndm%at(2,2),boxndm%at(3,2)
                    write(6,*)'c',boxndm%at(1,3),boxndm%at(2,3),boxndm%at(3,3)
 
-                   Call MatInv(boxndm%h0, invh0)
+                   Call MatInv(h0, invh0)
                    Transformation=MatMul(boxndm%at,invh0)
                    ! Strain tensor (Lagrange definition)
                    strain = 0.5d0*MatMul(Transformation,Transpose(Transformation))

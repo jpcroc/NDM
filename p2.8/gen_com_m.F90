@@ -124,7 +124,6 @@ module gen_com_m
   logical :: lsigatcel !ecriture de la contrainte atomique moyenne sur cellule
   logical :: lsigat ! la contrainte atomique est calcul馥 (rendu vrai par lprtsigat ou lsigatcel)
   logical :: lax ! stockage positions initiales
-  logical :: lposmoy ! ecrit a la fin la position moyenne des atomes
   real(double) :: tdepla, tdepla2 ! seuils de deplacement
   logical :: lfilm, linstantrdf,linstantfda, lrestart, ltpcel, lfilmext !film, RDF, restart, moyenne par cel
   logical:: ldecoup !if T: cherche les nombres de procs optimums, voir decoup3D (ne marche su'en séquentiel (évidemment)) 
@@ -150,9 +149,11 @@ module gen_com_m
        tsfact, vmax, tgc, dfpred ! gestion du pas en temps
   real(double)::maxtcel
   real(double) :: deltaestop ! decroissance de la temperature moyenne
+  real(double)::h0(3,3)
+  
   integer :: nbmoye
   integer :: ibordcou
-  integer :: itesauv, formatsauv, itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde format de sauvegarde periode 
+  integer :: itesauv, formatsauv, itesauvposition, itesauvinter  ! periode de sauvegarde format de sauvegarde periode 
                                                                               ! de d'ecriture des positions et/ou forces en formatted ; 
   !itesauvinter=sauvegarde reguliere .cout.it qui n'efface pas les fichiers .cout precedent
   logical::lWgin ! ecriture finale de .newgin
@@ -254,7 +255,6 @@ module gen_com_m
 
   logical :: lcontr    ! dynamique contrainte (routine contrainte)
   logical,target :: lperiod   ! conditions periodiques
-  logical :: lsuivinonpbc
 
 
   !---inNEB

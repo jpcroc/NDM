@@ -1,0 +1,1105 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=UO2.din                                                                         
+
+ -------- caracteristiques du run DM--------15
+      CALCUL MONTE CARLO GRAND CANONIQUE 
+
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     500.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           7
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL PAIRE TABULE -----------
+ -*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ CM, masse,type
+   1    0.000    8.000  O  
+   2    0.000   92.000  U  
+ nb de paires grille           3       50000
+ paire l active  ipotentiel:            3           7
+ paire l active  ipotentiel:            2           7
+ paire l active  ipotentiel:            1           7
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+DIVID appel rumax   0       11.70
+ izonr,zlmin,rut           9   109.36000000000000        11.699999999999999     
+volume= 0.16348786D-18 cm3  0.16348786D+06 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.5468E-06/  0.1170E-06) = 4
+  noy = Int(   0.5468E-06/  0.1170E-06) = 4
+  noz = Int(   0.5468E-06/  0.1170E-06) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.1367000E-06  0.1367000E-06  0.1367000E-06
+ retour à la construction de la boite
+
+  Lecture imcell
+ atomes par maille:          12
+ Nombre de mailles creees :           10          10          10        1000
+
+ -------- boite de simulation ------
+ nombre d atomes =       12000
+taille de la boite ZL     54.6800    54.6800    54.6800
+vecteur  1      54.680000       0.000000       0.000000
+vecteur  2       0.000000      54.680000       0.000000
+vecteur  3       0.000000       0.000000      54.680000
+        8000  atomes de type           1
+        4000  atomes de type           2
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+ nox,noy,noz deuxième passage  =           4           4           4
+celsizes   0.1367000E-06  0.1367000E-06  0.1367000E-06
+ natperc im/noxyz         935         187
+ ltabvois,lconstrtot F F
+
+  TABLEAUX DIMENSIONES POUR UNE BOITE UNIFORME !! 
+ -------------------------------------------------------------------
+
+ 1ER CALL init
+ random velocities at TINIT =    500.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature MI initspeed    504.46717137242803     
+ center of mass =    26.818491460165305        26.818491460166069        26.818491460166321     
+ Momentum/atom  =   -9.7722399738701048E-021  -1.9776714945653183E-020  -6.6700140625382345E-021
+Inertia/anglm =   0.8920E-31 -0.3500E-34 -0.3500E-34       0.5864E-23
+Inertia/anglm =  -0.3500E-34  0.8920E-31 -0.3500E-34      -0.1226E-21
+Inertia/anglm =  -0.3500E-34 -0.3500E-34  0.8920E-31       0.5637E-22
+ temperature fin initspeed    504.38215007268133     
+ sortie init
+ Wprec  -8.9489809147931125E-011 ln_Wprec  -1296.3694501164132     
+ W  -9.2198959162590442E-011 ln_W  -1335.6148049587860     
+  REJECTION, direction=           1   LN_XPROB   -39.245354842372763        XPROB    9.0356406717584069E-018   XALEA   0.75039332561771210     
+         0 0.180E-13*Temp instantanee = 504.382
+         0 0.180E-13*Temp instantanee = 453.559
+ Wprec  -8.9489809147931125E-011 ln_Wprec   1296.3694501164132     
+ W  -1.9431860656913623E-010 ln_W   2814.9429252776827     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.93811321567919381     
+         1 0.270E-13*Temp instantanee = 349.044
+         1 0.270E-13*Temp instantanee = 349.576
+ Wprec  -1.9431860656913623E-010 ln_Wprec  -2814.9429252776827     
+ W  -8.7389312407576146E-011 ln_W  -1265.9411831417456     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    9.4027985404889769E-003
+         2 0.360E-13*Temp instantanee = 417.534
+         2 0.360E-13*Temp instantanee = 418.014
+ Wprec  -8.7389312407576146E-011 ln_Wprec   1265.9411831417456     
+ W  -3.3707741060186166E-011 ln_W   488.29789848613405     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.36946653897311033     
+         3 0.450E-13*Temp instantanee = 316.606
+         3 0.450E-13*Temp instantanee = 349.576
+ Wprec  -8.7389312407576146E-011 ln_Wprec  -1265.9411831417456     
+ W  -3.8485108898710055E-011 ln_W  -557.50392067792711     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.77737802137305767     
+         4 0.540E-13*Temp instantanee = 406.785
+         4 0.540E-13*Temp instantanee = 407.215
+ Wprec  -3.8485108898710055E-011 ln_Wprec   557.50392067792711     
+ W  -7.1032883516445048E-011 ln_W   1028.9982850692666     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    9.1267781888035637E-002
+         5 0.630E-13*Temp instantanee = 310.464
+         5 0.630E-13*Temp instantanee = 310.901
+ Wprec  -7.1032883516445048E-011 ln_Wprec  -1028.9982850692666     
+ W  -1.0457128099102813E-010 ln_W  -1514.8430343863581     
+  REJECTION, direction=           1   LN_XPROB   -485.84474931709155        XPROB    1.0007055534378969E-211   XALEA   0.32070980987091224     
+         6 0.720E-13*Temp instantanee = 406.785
+         6 0.720E-13*Temp instantanee = 368.971
+ Wprec  -7.1032883516445048E-011 ln_Wprec   1028.9982850692666     
+ W  -9.0976193192055000E-011 ln_W   1317.9015428126597     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    7.1677076843708720E-002
+         7 0.810E-13*Temp instantanee = 282.856
+         7 0.810E-13*Temp instantanee = 291.500
+ Wprec  -9.0976193192055000E-011 ln_Wprec  -1317.9015428126597     
+ W  -7.7352214485627083E-011 ln_W  -1120.5415310726191     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.24415027711273396     
+         8 0.900E-13*Temp instantanee = 338.432
+         8 0.900E-13*Temp instantanee = 344.616
+ Wprec  -7.7352214485627083E-011 ln_Wprec   1120.5415310726191     
+ W  -3.4636365027200786E-011 ln_W   501.75015358585892     
+  REJECTION, direction=           0   LN_XPROB   -618.79137748676021        XPROB    1.8294447923059647E-269   XALEA   0.56159144555837903     
+         9 0.990E-13*Temp instantanee = 267.985
+         9 0.990E-13*Temp instantanee = 291.500
+ Wprec  -7.7352214485627083E-011 ln_Wprec  -1120.5415310726191     
+ W  -2.0815658815097365E-011 ln_W  -301.54030306770954     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.60966969410159544     
+        10 0.108E-12*Temp instantanee = 343.956
+        10 0.108E-12*Temp instantanee = 350.562
+ Wprec  -2.0815658815097365E-011 ln_Wprec   301.54030306770954     
+ W  -4.8747695981698190E-011 ln_W   706.17005931671656     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    3.6538389518998460E-002
+        11 0.117E-12*Temp instantanee = 256.266
+        11 0.117E-12*Temp instantanee = 262.947
+ Wprec  -4.8747695981698190E-011 ln_Wprec  -706.17005931671656     
+ W  -6.4852114110051579E-011 ln_W  -939.46227294728862     
+  REJECTION, direction=           1   LN_XPROB   -233.29221363057206        XPROB    4.8136992088205671E-102   XALEA   0.66554828406441358     
+        12 0.126E-12*Temp instantanee = 343.956
+        12 0.126E-12*Temp instantanee = 330.070
+ Wprec  -4.8747695981698190E-011 ln_Wprec   706.17005931671656     
+ W  -9.6098596291616993E-011 ln_W   1392.1058231958782     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.49960111434836929     
+        13 0.135E-12*Temp instantanee = 242.607
+        13 0.135E-12*Temp instantanee = 248.002
+ Wprec  -9.6098596291616993E-011 ln_Wprec  -1392.1058231958782     
+ W  -6.2041163368105873E-011 ln_W  -898.74220993299934     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.40709973745018047     
+        14 0.144E-12*Temp instantanee = 306.470
+        14 0.144E-12*Temp instantanee = 310.938
+ Wprec  -6.2041163368105873E-011 ln_Wprec   898.74220993299934     
+ W  -5.7575338125743402E-011 ln_W   834.04926367598671     
+  REJECTION, direction=           0   LN_XPROB   -64.692946257012636        XPROB    8.0206658314864454E-029   XALEA   0.23301568990912802     
+        15 0.153E-12*Temp instantanee = 222.947
+        15 0.153E-12*Temp instantanee = 248.002
+ Wprec  -6.2041163368105873E-011 ln_Wprec  -898.74220993299934     
+ W  -1.8330631689697442E-011 ln_W  -265.54164267551062     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    9.5856115733610192E-002
+        16 0.162E-12*Temp instantanee = 307.028
+        16 0.162E-12*Temp instantanee = 311.449
+ Wprec  -1.8330631689697442E-011 ln_Wprec   265.54164267551062     
+ W  -4.7721248047461621E-011 ln_W   691.30070428345516     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.47403186210477077     
+        17 0.171E-12*Temp instantanee = 225.983
+        17 0.171E-12*Temp instantanee = 230.482
+ Wprec  -4.7721248047461621E-011 ln_Wprec  -691.30070428345516     
+ W  -8.7461452313470186E-011 ln_W  -1266.9862180013095     
+  REJECTION, direction=           1   LN_XPROB   -575.68551371785429        XPROB    9.6151946538996413E-251   XALEA   0.72971541096035197     
+        18 0.180E-12*Temp instantanee = 307.028
+        18 0.180E-12*Temp instantanee = 288.146
+ Wprec  -4.7721248047461621E-011 ln_Wprec   691.30070428345516     
+ W   1.2070236979674354E-011 ln_W  -174.85216054320958     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.79220274477143526     
+        19 0.189E-12*Temp instantanee = 213.537
+        19 0.189E-12*Temp instantanee = 230.482
+ Wprec  -4.7721248047461621E-011 ln_Wprec  -691.30070428345516     
+ W  -5.8868109048601811E-011 ln_W  -852.77663326532263     
+  REJECTION, direction=           1   LN_XPROB   -161.47592898186747        XPROB    7.4455208300189686E-071   XALEA   0.95802030637731572     
+        20 0.198E-12*Temp instantanee = 307.028
+        20 0.198E-12*Temp instantanee = 287.776
+ Wprec  -4.7721248047461621E-011 ln_Wprec   691.30070428345516     
+ W  -7.6216777583905518E-011 ln_W   1104.0933374074225     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.64583340881482088     
+        21 0.207E-12*Temp instantanee = 207.848
+        21 0.207E-12*Temp instantanee = 212.390
+ Wprec  -7.6216777583905518E-011 ln_Wprec  -1104.0933374074225     
+ W  -6.0305952005171545E-011 ln_W  -873.60554887828164     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.83578610732735625     
+        22 0.216E-12*Temp instantanee = 271.462
+        22 0.216E-12*Temp instantanee = 274.743
+ Wprec  -6.0305952005171545E-011 ln_Wprec   873.60554887828164     
+ W  -5.5653219184802372E-011 ln_W   806.20501751822542     
+  REJECTION, direction=           0   LN_XPROB   -67.400531360056220        XPROB    5.3495980634853711E-030   XALEA   0.31623349065128603     
+        23 0.225E-12*Temp instantanee = 194.245
+        23 0.225E-12*Temp instantanee = 212.390
+ Wprec  -6.0305952005171545E-011 ln_Wprec  -873.60554887828164     
+ W  -5.0195313585432187E-011 ln_W  -727.14057266119460     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.59799270775138924     
+        24 0.234E-12*Temp instantanee = 262.843
+        24 0.234E-12*Temp instantanee = 266.527
+ Wprec  -5.0195313585432187E-011 ln_Wprec   727.14057266119460     
+ W   1.7518526907786362E-011 ln_W  -253.77731062935925     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.46473918537296122     
+        25 0.243E-12*Temp instantanee = 194.412
+        25 0.243E-12*Temp instantanee = 212.390
+ Wprec  -5.0195313585432187E-011 ln_Wprec  -727.14057266119460     
+ W  -5.0906848490335837E-011 ln_W  -737.44802690868084     
+  REJECTION, direction=           1   LN_XPROB   -10.307487630246916        XPROB    3.3382203469289004E-005   XALEA   0.74232065455907081     
+        26 0.252E-12*Temp instantanee = 262.843
+        26 0.252E-12*Temp instantanee = 267.080
+ Wprec  -5.0195313585432187E-011 ln_Wprec   727.14057266119460     
+ W   1.5199240269861455E-011 ln_W  -220.17960411845465     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.82469184954205665     
+        27 0.261E-12*Temp instantanee = 203.565
+        27 0.261E-12*Temp instantanee = 212.390
+ Wprec  -5.0195313585432187E-011 ln_Wprec  -727.14057266119460     
+ W  -7.0875682639303332E-011 ln_W  -1026.7210378989084     
+  REJECTION, direction=           1   LN_XPROB   -299.58046523771384        XPROB    7.8317183606888108E-131   XALEA   0.73781329231462567     
+        28 0.270E-12*Temp instantanee = 262.843
+        28 0.270E-12*Temp instantanee = 266.676
+ Wprec  -5.0195313585432187E-011 ln_Wprec   727.14057266119460     
+ W  -4.3418695113753794E-011 ln_W   628.97295731567067     
+  REJECTION, direction=           0   LN_XPROB   -98.167615345523927        XPROB    2.3245899391356919E-043   XALEA   0.20027736074544800     
+        29 0.279E-12*Temp instantanee = 192.404
+        29 0.279E-12*Temp instantanee = 212.390
+ Wprec  -5.0195313585432187E-011 ln_Wprec  -727.14057266119460     
+ W  -2.5218914432172942E-011 ln_W  -365.32685169688654     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.55442761571077070     
+        30 0.288E-12*Temp instantanee = 272.146
+        30 0.288E-12*Temp instantanee = 275.436
+ Wprec  -2.5218914432172942E-011 ln_Wprec   365.32685169688654     
+ W  -6.9007491737097783E-011 ln_W   999.65800540767543     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.75200222167017772     
+        31 0.297E-12*Temp instantanee = 193.252
+        31 0.297E-12*Temp instantanee = 195.734
+ Wprec  -6.9007491737097783E-011 ln_Wprec  -999.65800540767543     
+ W  -9.0264793999225625E-011 ln_W  -1307.5960545207251     
+  REJECTION, direction=           1   LN_XPROB   -307.93804911304971        XPROB    1.8374033427796752E-134   XALEA   0.44208381772057692     
+        32 0.306E-12*Temp instantanee = 272.146
+        32 0.306E-12*Temp instantanee = 255.974
+ Wprec  -6.9007491737097783E-011 ln_Wprec   999.65800540767543     
+ W  -9.2268309973970334E-012 ln_W   133.66194363695541     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.37599235733927217     
+        33 0.315E-12*Temp instantanee = 183.224
+        33 0.315E-12*Temp instantanee = 195.734
+ Wprec  -6.9007491737097783E-011 ln_Wprec  -999.65800540767543     
+ W  -6.7930687148459256E-011 ln_W  -984.05917258249190     
+ ACCEPTATION, direction=           1   LN_XPROB   -1.6807880185111538E-007   XPROB   0.99999983192121222        XALEA   0.32099632133505873     
+        34 0.324E-12*Temp instantanee = 253.618
+        34 0.324E-12*Temp instantanee = 255.627
+ Wprec  -6.7930687148459256E-011 ln_Wprec   984.05917258249190     
+ W   1.0318782541483460E-010 ln_W  -1494.8019865659769     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.30289729198895754     
+        35 0.333E-12*Temp instantanee = 184.588
+        35 0.333E-12*Temp instantanee = 195.734
+ Wprec  -6.7930687148459256E-011 ln_Wprec  -984.05917258249190     
+ W  -7.0995886333614947E-011 ln_W  -1028.4623355793974     
+  REJECTION, direction=           1   LN_XPROB   -44.403162996905507        XPROB    5.1993772717082552E-020   XALEA   0.85934668359134503     
+        36 0.342E-12*Temp instantanee = 253.618
+        36 0.342E-12*Temp instantanee = 255.151
+ Wprec  -6.7930687148459256E-011 ln_Wprec   984.05917258249190     
+ W  -3.0829527227407386E-013 ln_W   4.4660344724924546     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.77879185114532390     
+        37 0.351E-12*Temp instantanee = 182.188
+        37 0.351E-12*Temp instantanee = 195.734
+ Wprec  -6.7930687148459256E-011 ln_Wprec  -984.05917258249190     
+ W  -6.5709322892278003E-011 ln_W  -951.87999165996200     
+ ACCEPTATION, direction=           1   LN_XPROB   -1.0658141036401446E-014   XPROB   0.99999999999998934        XALEA   0.69595762441092868     
+        38 0.360E-12*Temp instantanee = 253.625
+        38 0.360E-12*Temp instantanee = 255.541
+ Wprec  -6.5709322892278003E-011 ln_Wprec   951.87999165996200     
+ W   6.8184800391124439E-010 ln_W  -9877.4031401968732     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.72972123533951039     
+        39 0.369E-12*Temp instantanee = 215.462
+        39 0.369E-12*Temp instantanee = 195.734
+ Wprec  -6.5709322892278003E-011 ln_Wprec  -951.87999165996200     
+ W  -1.1659992559768997E-010 ln_W  -1689.0926784839003     
+  REJECTION, direction=           1   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.62662678115016446     
+        40 0.378E-12*Temp instantanee = 253.625
+        40 0.378E-12*Temp instantanee = 262.783
+ Wprec  -6.5709322892278003E-011 ln_Wprec   951.87999165996200     
+ W   1.4576284700745746E-010 ln_W  -2111.5532999975007     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.78397226738808756     
+        41 0.387E-12*Temp instantanee = 192.570
+        41 0.387E-12*Temp instantanee = 195.734
+ Wprec  -6.5709322892278003E-011 ln_Wprec  -951.87999165996200     
+ W  -6.5645208210725606E-011 ln_W  -950.95121200046947     
+ ACCEPTATION, direction=           1   LN_XPROB  -0.33291985878984254        XPROB   0.71682763928829385        XALEA   0.21627404143594398     
+        42 0.396E-12*Temp instantanee = 261.814
+        42 0.396E-12*Temp instantanee = 263.820
+ Wprec  -6.5645208210725606E-011 ln_Wprec   950.95121200046947     
+ W   2.4931248453701465E-011 ln_W  -361.15965780208438     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.50203158487565447     
+        43 0.405E-12*Temp instantanee = 194.191
+        43 0.405E-12*Temp instantanee = 195.734
+ Wprec  -6.5645208210725606E-011 ln_Wprec  -950.95121200046947     
+ W  -6.8998497699854277E-011 ln_W  -999.52771576657881     
+  REJECTION, direction=           1   LN_XPROB   -48.576503766109340        XPROB    8.0074173410739826E-022   XALEA   0.54259494185162271     
+        44 0.414E-12*Temp instantanee = 261.814
+        44 0.414E-12*Temp instantanee = 261.363
+ Wprec  -6.5645208210725606E-011 ln_Wprec   950.95121200046947     
+ W   2.9700393697816207E-011 ln_W  -430.24656564673325     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.26769188658762078     
+        45 0.423E-12*Temp instantanee = 186.066
+        45 0.423E-12*Temp instantanee = 195.734
+ Wprec  -6.5645208210725606E-011 ln_Wprec  -950.95121200046947     
+ W  -7.5147191933578044E-011 ln_W  -1088.5990797420011     
+  REJECTION, direction=           1   LN_XPROB   -137.64786774153163        XPROB    1.6606977379297596E-060   XALEA   0.71431906558043534     
+        46 0.432E-12*Temp instantanee = 261.814
+        46 0.432E-12*Temp instantanee = 256.172
+ Wprec  -6.5645208210725606E-011 ln_Wprec   950.95121200046947     
+ W  -7.1539752604174715E-011 ln_W   1036.3409043775155     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.31895378911857031     
+        47 0.441E-12*Temp instantanee = 183.789
+        47 0.441E-12*Temp instantanee = 185.599
+ Wprec  -7.1539752604174715E-011 ln_Wprec  -1036.3409043775155     
+ W  -8.4623571519514442E-011 ln_W  -1225.8760402125192     
+  REJECTION, direction=           1   LN_XPROB   -189.53513583500376        XPROB    4.8521741531483306E-083   XALEA   0.33097701435631521     
+        48 0.450E-12*Temp instantanee = 261.814
+        48 0.450E-12*Temp instantanee = 240.615
+ Wprec  -7.1539752604174715E-011 ln_Wprec   1036.3409043775155     
+ W   1.6939333876282149E-011 ln_W  -245.38699044752508     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.40500585940774791     
+        49 0.459E-12*Temp instantanee = 176.571
+        49 0.459E-12*Temp instantanee = 185.599
+ Wprec  -7.1539752604174715E-011 ln_Wprec  -1036.3409043775155     
+ W  -6.8780908463215070E-011 ln_W  -996.37566927392243     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.15182266431693814     
+        50 0.468E-12*Temp instantanee = 239.777
+        50 0.468E-12*Temp instantanee = 241.290
+ Wprec  -6.8780908463215070E-011 ln_Wprec   996.37566927392243     
+ W   2.3174493958564600E-010 ln_W  -3357.1091810161797     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.98633435913691103     
+        51 0.477E-12*Temp instantanee = 182.358
+        51 0.477E-12*Temp instantanee = 185.599
+ Wprec  -6.8780908463215070E-011 ln_Wprec  -996.37566927392243     
+ W  -8.2304645549726867E-011 ln_W  -1192.2835584211589     
+  REJECTION, direction=           1   LN_XPROB   -195.90788914723646        XPROB    8.2848525231174208E-086   XALEA   0.23419563555451339     
+        52 0.486E-12*Temp instantanee = 239.777
+        52 0.486E-12*Temp instantanee = 241.894
+ Wprec  -6.8780908463215070E-011 ln_Wprec   996.37566927392243     
+ W  -4.0808151631361821E-011 ln_W   591.15603881963091     
+  REJECTION, direction=           0   LN_XPROB   -405.21963045429152        XPROB    1.0359780047343602E-176   XALEA    9.6108909901635453E-003
+        53 0.495E-12*Temp instantanee = 176.439
+        53 0.495E-12*Temp instantanee = 185.599
+ Wprec  -6.8780908463215070E-011 ln_Wprec  -996.37566927392243     
+ W  -6.8173783676827898E-011 ln_W  -987.58072342506341     
+ ACCEPTATION, direction=           1   LN_XPROB   -1.5148535679673341E-004   XPROB   0.99984852611653052        XALEA   0.38283381249080506     
+        54 0.504E-12*Temp instantanee = 239.569
+        54 0.504E-12*Temp instantanee = 241.044
+ Wprec  -6.8173783676827898E-011 ln_Wprec   987.58072342506341     
+ W   6.8595049091643837E-012 ln_W  -99.368326872444214     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.16144634460433149     
+        55 0.513E-12*Temp instantanee = 176.709
+        55 0.513E-12*Temp instantanee = 185.599
+ Wprec  -6.8173783676827898E-011 ln_Wprec  -987.58072342506341     
+ W  -6.8932812639700989E-011 ln_W  -998.57618725039856     
+  REJECTION, direction=           1   LN_XPROB   -10.995480602829124        XPROB    1.6777353232496244E-005   XALEA    5.3506990110395170E-002
+        56 0.522E-12*Temp instantanee = 239.569
+        56 0.522E-12*Temp instantanee = 241.112
+ Wprec  -6.8173783676827898E-011 ln_Wprec   987.58072342506341     
+ W   5.7736278858622610E-011 ln_W  -836.38068723550123     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.79443106728570223     
+        57 0.531E-12*Temp instantanee = 187.387
+        57 0.531E-12*Temp instantanee = 185.599
+ Wprec  -6.8173783676827898E-011 ln_Wprec  -987.58072342506341     
+ W  -6.8472604566048638E-011 ln_W  -991.90950985930453     
+  REJECTION, direction=           1   LN_XPROB   -4.3418838246115481        XPROB    1.3011992788224404E-002   XALEA   0.43661897898710900     
+        58 0.540E-12*Temp instantanee = 239.569
+        58 0.540E-12*Temp instantanee = 246.798
+ Wprec  -6.8173783676827898E-011 ln_Wprec   987.58072342506341     
+ W   5.5046670761540785E-010 ln_W  -7974.1842099489631     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.73123023374396434     
+        59 0.549E-12*Temp instantanee = 183.338
+        59 0.549E-12*Temp instantanee = 185.599
+ Wprec  -6.8173783676827898E-011 ln_Wprec  -987.58072342506341     
+ W  -5.9234745694302116E-011 ln_W  -858.08781396069480     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.72726765728289555     
+        60 0.558E-12*Temp instantanee = 246.024
+        60 0.558E-12*Temp instantanee = 247.433
+ Wprec  -5.9234745694302116E-011 ln_Wprec   858.08781396069480     
+ W  -2.8159392239529398E-011 ln_W   407.92327283687206     
+  REJECTION, direction=           0   LN_XPROB   -450.16454112382274        XPROB    3.1334577366636059E-196   XALEA   0.31780559723058233     
+        61 0.567E-12*Temp instantanee = 175.012
+        61 0.567E-12*Temp instantanee = 185.599
+ Wprec  -5.9234745694302116E-011 ln_Wprec  -858.08781396069480     
+ W  -4.0743756129426808E-011 ln_W  -590.22319113308072     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.29960689303086574     
+        62 0.576E-12*Temp instantanee = 244.946
+        62 0.576E-12*Temp instantanee = 246.402
+ Wprec  -4.0743756129426808E-011 ln_Wprec   590.22319113308072     
+ W   2.1911720173590340E-010 ln_W  -3174.1809378077910     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.23320438768616603     
+        63 0.585E-12*Temp instantanee = 184.024
+        63 0.585E-12*Temp instantanee = 185.599
+ Wprec  -4.0743756129426808E-011 ln_Wprec  -590.22319113308072     
+ W  -6.0981908226343675E-011 ln_W  -883.39760233204561     
+  REJECTION, direction=           1   LN_XPROB   -293.17441119896489        XPROB    4.7421029813764452E-128   XALEA   0.84178569314267526     
+        64 0.594E-12*Temp instantanee = 244.946
+        64 0.594E-12*Temp instantanee = 247.110
+ Wprec  -4.0743756129426808E-011 ln_Wprec   590.22319113308072     
+ W  -4.8249312694832909E-011 ln_W   698.95036722336613     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.22185081173236743     
+        65 0.603E-12*Temp instantanee = 177.198
+        65 0.603E-12*Temp instantanee = 177.783
+ Wprec  -4.8249312694832909E-011 ln_Wprec  -698.95036722336613     
+ W  -8.9817458619688042E-011 ln_W  -1301.1158538642444     
+  REJECTION, direction=           1   LN_XPROB   -602.16548664087827        XPROB    3.0398486365248123E-262   XALEA   0.29075832320237960     
+        66 0.612E-12*Temp instantanee = 244.946
+        66 0.612E-12*Temp instantanee = 234.024
+ Wprec  -4.8249312694832909E-011 ln_Wprec   698.95036722336613     
+ W  -2.6704572905912230E-011 ln_W   386.84843361777854     
+  REJECTION, direction=           0   LN_XPROB   -312.10193360558759        XPROB    2.8566198110359896E-136   XALEA   0.20900286883321562     
+        67 0.621E-12*Temp instantanee = 173.875
+        67 0.621E-12*Temp instantanee = 177.783
+ Wprec  -4.8249312694832909E-011 ln_Wprec  -698.95036722336613     
+ W  -8.2102023427914377E-011 ln_W  -1189.3483289113801     
+  REJECTION, direction=           1   LN_XPROB   -490.39796168801399        XPROB    1.0540744883888912E-213   XALEA   0.96079371716412565     
+        68 0.630E-12*Temp instantanee = 244.946
+        68 0.630E-12*Temp instantanee = 235.514
+ Wprec  -4.8249312694832909E-011 ln_Wprec   698.95036722336613     
+ W  -3.8067953926992676E-011 ln_W   551.46092017934927     
+  REJECTION, direction=           0   LN_XPROB   -147.48944704401686        XPROB    8.8337887588096637E-065   XALEA   0.91535418853135353     
+        69 0.639E-12*Temp instantanee = 171.023
+        69 0.639E-12*Temp instantanee = 177.783
+ Wprec  -4.8249312694832909E-011 ln_Wprec  -698.95036722336613     
+ W  -7.5402022067532353E-011 ln_W  -1092.2906062272273     
+  REJECTION, direction=           1   LN_XPROB   -393.34023900386114        XPROB    1.4945301822984073E-171   XALEA    3.3538212221880248E-002
+        70 0.648E-12*Temp instantanee = 244.946
+        70 0.648E-12*Temp instantanee = 235.041
+ Wprec  -4.8249312694832909E-011 ln_Wprec   698.95036722336613     
+ W  -2.9751344989806468E-011 ln_W   430.98465749215160     
+  REJECTION, direction=           0   LN_XPROB   -267.96570973121453        XPROB    4.2069846212572785E-117   XALEA   0.97160262254988894     
+        71 0.657E-12*Temp instantanee = 173.084
+        71 0.657E-12*Temp instantanee = 177.783
+ Wprec  -4.8249312694832909E-011 ln_Wprec  -698.95036722336613     
+ W  -8.0014508041783408E-011 ln_W  -1159.1081127460436     
+  REJECTION, direction=           1   LN_XPROB   -460.15774552267749        XPROB    1.4322878718046960E-200   XALEA   0.61023442524329519     
+        72 0.666E-12*Temp instantanee = 244.946
+        72 0.666E-12*Temp instantanee = 234.736
+ Wprec  -4.8249312694832909E-011 ln_Wprec   698.95036722336613     
+ W   5.3276112536261476E-011 ln_W  -771.76971736306496     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.93324439839927198     
+        73 0.675E-12*Temp instantanee = 174.591
+        73 0.675E-12*Temp instantanee = 177.783
+ Wprec  -4.8249312694832909E-011 ln_Wprec  -698.95036722336613     
+ W  -8.3997349654084728E-011 ln_W  -1216.8044497926983     
+  REJECTION, direction=           1   LN_XPROB   -517.85408256933215        XPROB    1.2555369809363317E-225   XALEA   0.42820340528507206     
+        74 0.684E-12*Temp instantanee = 244.946
+        74 0.684E-12*Temp instantanee = 235.726
+ Wprec  -4.8249312694832909E-011 ln_Wprec   698.95036722336613     
+ W  -5.1757957892390040E-011 ln_W   749.77738863193599     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.87269338927903928     
+        75 0.693E-12*Temp instantanee = 172.149
+        75 0.693E-12*Temp instantanee = 173.563
+ Wprec  -5.1757957892390040E-011 ln_Wprec  -749.77738863193599     
+ W  -7.8742719467066476E-011 ln_W  -1140.6846981587498     
+  REJECTION, direction=           1   LN_XPROB   -390.90730952681383        XPROB    1.7025996385484674E-170   XALEA   0.32738598589007994     
+        76 0.702E-12*Temp instantanee = 244.946
+        76 0.702E-12*Temp instantanee = 225.359
+ Wprec  -5.1757957892390040E-011 ln_Wprec   749.77738863193599     
+ W  -3.2679970500110121E-011 ln_W   473.40938359826401     
+  REJECTION, direction=           0   LN_XPROB   -276.36800503367198        XPROB    9.4384447790931533E-121   XALEA   0.56711531760537648     
+        77 0.711E-12*Temp instantanee = 166.366
+        77 0.711E-12*Temp instantanee = 173.563
+ Wprec  -5.1757957892390040E-011 ln_Wprec  -749.77738863193599     
+ W  -4.7209443084272753E-011 ln_W  -683.88658277606407     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.61191841816001302     
+        78 0.720E-12*Temp instantanee = 233.945
+        78 0.720E-12*Temp instantanee = 235.052
+ Wprec  -4.7209443084272753E-011 ln_Wprec   683.88658277606407     
+ W  -3.3472148060317016E-011 ln_W   484.88504544063494     
+  REJECTION, direction=           0   LN_XPROB   -199.00153733542913        XPROB    3.7560420437981432E-087   XALEA   0.91617056340297043     
+        79 0.729E-12*Temp instantanee = 166.098
+        79 0.729E-12*Temp instantanee = 173.563
+ Wprec  -4.7209443084272753E-011 ln_Wprec  -683.88658277606407     
+ W  -6.5663250017439201E-011 ln_W  -951.21256965975044     
+  REJECTION, direction=           1   LN_XPROB   -267.32598688368637        XPROB    7.9762549485990943E-117   XALEA   0.62357502215389227     
+        80 0.738E-12*Temp instantanee = 233.945
+        80 0.738E-12*Temp instantanee = 224.601
+ Wprec  -4.7209443084272753E-011 ln_Wprec   683.88658277606407     
+ W   2.7495811655170499E-011 ln_W  -398.31049563414894     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.62854089447186745     
+        81 0.747E-12*Temp instantanee = 170.713
+        81 0.747E-12*Temp instantanee = 173.563
+ Wprec  -4.7209443084272753E-011 ln_Wprec  -683.88658277606407     
+ W  -7.5777384350393356E-011 ln_W  -1097.7281884598876     
+  REJECTION, direction=           1   LN_XPROB   -413.84160568382356        XPROB    1.8658394426078352E-180   XALEA   0.32161490343736920     
+        82 0.756E-12*Temp instantanee = 233.945
+        82 0.756E-12*Temp instantanee = 224.761
+ Wprec  -4.7209443084272753E-011 ln_Wprec   683.88658277606407     
+ W  -7.0628457207311211E-011 ln_W   1023.1396748322309     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    7.7750371847823518E-002
+        83 0.765E-12*Temp instantanee = 164.849
+        83 0.765E-12*Temp instantanee = 165.871
+ Wprec  -7.0628457207311211E-011 ln_Wprec  -1023.1396748322309     
+ W  -7.6471510243781941E-011 ln_W  -1107.7834518612906     
+  REJECTION, direction=           1   LN_XPROB   -84.643777029059720        XPROB    1.7364996848564984E-037   XALEA    5.5639937690129537E-002
+        84 0.774E-12*Temp instantanee = 233.945
+        84 0.774E-12*Temp instantanee = 214.822
+ Wprec  -7.0628457207311211E-011 ln_Wprec   1023.1396748322309     
+ W  -6.1095476492582488E-011 ln_W   885.04277771297996     
+  REJECTION, direction=           0   LN_XPROB   -138.09689711925091        XPROB    1.0599359273404678E-060   XALEA   0.23875179012188652     
+        85 0.783E-12*Temp instantanee = 160.454
+        85 0.783E-12*Temp instantanee = 165.871
+ Wprec  -7.0628457207311211E-011 ln_Wprec  -1023.1396748322309     
+ W  -6.5905060941966760E-011 ln_W  -954.71549695668705     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.93235979516456891     
+        86 0.792E-12*Temp instantanee = 214.169
+        86 0.792E-12*Temp instantanee = 214.958
+ Wprec  -6.5905060941966760E-011 ln_Wprec   954.71549695668705     
+ W  -3.3051831250148137E-011 ln_W   478.79624184096934     
+  REJECTION, direction=           0   LN_XPROB   -475.91925511571770        XPROB    2.0459436672760929E-207   XALEA   0.60132890149289242     
+        87 0.801E-12*Temp instantanee = 160.147
+        87 0.801E-12*Temp instantanee = 165.871
+ Wprec  -6.5905060941966760E-011 ln_Wprec  -954.71549695668705     
+ W  -6.5511390360313183E-011 ln_W  -949.01269660070875     
+ ACCEPTATION, direction=           1   LN_XPROB   -3.3310545428757946E-003   XPROB   0.99667448726424634        XALEA   0.36521109650607930     
+        88 0.810E-12*Temp instantanee = 213.848
+        88 0.810E-12*Temp instantanee = 214.638
+ Wprec  -6.5511390360313183E-011 ln_Wprec   949.01269660070875     
+ W  -3.3783086887374516E-011 ln_W   489.38937504073550     
+  REJECTION, direction=           0   LN_XPROB   -459.62332155997325        XPROB    2.4441490825016472E-200   XALEA   0.53692435170112696     
+        89 0.819E-12*Temp instantanee = 158.347
+        89 0.819E-12*Temp instantanee = 165.871
+ Wprec  -6.5511390360313183E-011 ln_Wprec  -949.01269660070875     
+ W  -6.1859969085350675E-011 ln_W  -896.11738890660411     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.22817642890336842     
+        90 0.828E-12*Temp instantanee = 213.868
+        90 0.828E-12*Temp instantanee = 214.714
+ Wprec  -6.1859969085350675E-011 ln_Wprec   896.11738890660411     
+ W   6.6782546398224351E-011 ln_W  -967.42694811794036     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.68941847104054477     
+        91 0.837E-12*Temp instantanee = 168.288
+        91 0.837E-12*Temp instantanee = 165.871
+ Wprec  -6.1859969085350675E-011 ln_Wprec  -896.11738890660411     
+ W  -8.3796427916019109E-011 ln_W  -1213.8938524233151     
+  REJECTION, direction=           1   LN_XPROB   -317.77646351671103        XPROB    9.8047249717738550E-139   XALEA   0.99469432104075484     
+        92 0.846E-12*Temp instantanee = 213.868
+        92 0.846E-12*Temp instantanee = 214.359
+ Wprec  -6.1859969085350675E-011 ln_Wprec   896.11738890660411     
+ W  -4.5411914967115281E-011 ln_W   657.84718724046525     
+  REJECTION, direction=           0   LN_XPROB   -238.27020166613886        XPROB    3.3156311750976347E-104   XALEA   0.44721300383216656     
+        93 0.855E-12*Temp instantanee = 159.801
+        93 0.855E-12*Temp instantanee = 165.871
+ Wprec  -6.1859969085350675E-011 ln_Wprec  -896.11738890660411     
+ W  -4.0072466320791717E-011 ln_W  -580.49873637812118     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.37821329111433477     
+        94 0.864E-12*Temp instantanee = 219.686
+        94 0.864E-12*Temp instantanee = 220.453
+ Wprec  -4.0072466320791717E-011 ln_Wprec   580.49873637812118     
+ W   1.8859410172032653E-010 ln_W  -2732.0164638884003     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.50774061116336777     
+        95 0.873E-12*Temp instantanee = 161.897
+        95 0.873E-12*Temp instantanee = 165.871
+ Wprec  -4.0072466320791717E-011 ln_Wprec  -580.49873637812118     
+ W  -6.9075906079199581E-011 ln_W  -1000.6490709144078     
+  REJECTION, direction=           1   LN_XPROB   -420.15033453628666        XPROB    3.3964728008502160E-183   XALEA   0.59131382379259689     
+        96 0.882E-12*Temp instantanee = 219.686
+        96 0.882E-12*Temp instantanee = 214.179
+ Wprec  -4.0072466320791717E-011 ln_Wprec   580.49873637812118     
+ W  -4.3514047312751616E-011 ln_W   630.35425066023311     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.13213347264599096     
+        97 0.891E-12*Temp instantanee = 162.807
+        97 0.891E-12*Temp instantanee = 164.596
+ Wprec  -4.3514047312751616E-011 ln_Wprec  -630.35425066023311     
+ W  -4.2424715984583915E-011 ln_W  -614.57395267616937     
+ ACCEPTATION, direction=           1   LN_XPROB   -1.4018567345787683E-007   XPROB   0.99999985981433637        XALEA   0.57525037642663468     
+        98 0.900E-12*Temp instantanee = 212.565
+        98 0.900E-12*Temp instantanee = 213.983
+ Wprec  -4.2424715984583915E-011 ln_Wprec   614.57395267616937     
+ W  -2.2162902707698443E-011 ln_W   321.05678031638558     
+  REJECTION, direction=           0   LN_XPROB   -293.51717235978379        XPROB    3.3659813109611012E-128   XALEA   0.97048701061411546     
+        99 0.909E-12*Temp instantanee = 157.961
+        99 0.909E-12*Temp instantanee = 164.596
+ Wprec  -4.2424715984583915E-011 ln_Wprec  -614.57395267616937     
+ W  -5.4177764455473449E-011 ln_W  -784.83124932781675     
+  REJECTION, direction=           1   LN_XPROB   -170.25729665164738        XPROB    1.1433930825244081E-074   XALEA   0.49007783552831086     
+       100 0.918E-12*Temp instantanee = 212.565
+       100 0.918E-12*Temp instantanee = 206.415
+ Wprec  -4.2424715984583915E-011 ln_Wprec   614.57395267616937     
+ W  -5.7333736767012098E-011 ln_W   830.54937219618546     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.46882491030262596     
+       101 0.927E-12*Temp instantanee = 158.398
+       101 0.927E-12*Temp instantanee = 159.777
+ Wprec  -5.7333736767012098E-011 ln_Wprec  -830.54937219618546     
+ W  -5.9407195346797767E-011 ln_W  -860.58595831151126     
+  REJECTION, direction=           1   LN_XPROB   -30.036586115325893        XPROB    9.0214510063921422E-014   XALEA   0.50833063184738247     
+       102 0.936E-12*Temp instantanee = 212.565
+       102 0.936E-12*Temp instantanee = 197.037
+ Wprec  -5.7333736767012098E-011 ln_Wprec   830.54937219618546     
+ W  -6.2037424899224644E-011 ln_W   898.68805363415390     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    9.7764143965969108E-002
+       103 0.945E-12*Temp instantanee = 154.009
+       103 0.945E-12*Temp instantanee = 156.029
+ Wprec  -6.2037424899224644E-011 ln_Wprec  -898.68805363415390     
+ W  -5.3740618779347803E-011 ln_W  -778.49865900076634     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.21516293720165569     
+       104 0.954E-12*Temp instantanee = 188.630
+       104 0.954E-12*Temp instantanee = 190.252
+ Wprec  -5.3740618779347803E-011 ln_Wprec   778.49865900076634     
+ W   1.2579169455159934E-011 ln_W  -182.22467054936013     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.13767879302286268     
+       105 0.963E-12*Temp instantanee = 151.893
+       105 0.963E-12*Temp instantanee = 156.029
+ Wprec  -5.3740618779347803E-011 ln_Wprec  -778.49865900076634     
+ W  -2.4464235138216201E-011 ln_W  -354.39439815121301     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    1.7520649191906990E-002
+       106 0.972E-12*Temp instantanee = 194.698
+       106 0.972E-12*Temp instantanee = 196.216
+ Wprec  -2.4464235138216201E-011 ln_Wprec   354.39439815121301     
+ W  -3.7931600634715418E-011 ln_W   549.48567579997155     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.56400867261201371     
+       107 0.981E-12*Temp instantanee = 150.229
+       107 0.981E-12*Temp instantanee = 151.687
+ Wprec  -3.7931600634715418E-011 ln_Wprec  -549.48567579997155     
+ W  -5.8797905280337887E-011 ln_W  -851.75964572979262     
+  REJECTION, direction=           1   LN_XPROB   -302.27396992982108        XPROB    5.2976448050764438E-132   XALEA    3.0764572849314442E-002
+       108 0.990E-12*Temp instantanee = 194.698
+       108 0.990E-12*Temp instantanee = 189.757
+ Wprec  -3.7931600634715418E-011 ln_Wprec   549.48567579997155     
+ W  -1.7576242332252209E-011 ln_W   254.61338921518285     
+  REJECTION, direction=           0   LN_XPROB   -294.87228658478870        XPROB    8.6814660262415434E-129   XALEA   0.38744594205051430     
+       109 0.999E-12*Temp instantanee = 151.679
+       109 0.999E-12*Temp instantanee = 151.687
+ Wprec  -3.7931600634715418E-011 ln_Wprec  -549.48567579997155     
+ W  -6.2351402452747477E-011 ln_W  -903.23640290749358     
+  REJECTION, direction=           1   LN_XPROB   -353.75072710752204        XPROB    2.3335184980854586E-154   XALEA   0.66457116531876437     
+       110 0.101E-11*Temp instantanee = 194.698
+       110 0.101E-11*Temp instantanee = 190.400
+ Wprec  -3.7931600634715418E-011 ln_Wprec   549.48567579997155     
+ W   5.0792033654545440E-010 ln_W  -7357.8479344158559     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.53559002229950026     
+       111 0.102E-11*Temp instantanee = 161.127
+       111 0.102E-11*Temp instantanee = 151.687
+ Wprec  -3.7931600634715418E-011 ln_Wprec  -549.48567579997155     
+ W  -8.2422366495488083E-011 ln_W  -1193.9888904492045     
+  REJECTION, direction=           1   LN_XPROB   -644.50321464923297        XPROB    1.2468388012551108E-280   XALEA   0.16496428567517718     
+       112 0.103E-11*Temp instantanee = 194.698
+       112 0.103E-11*Temp instantanee = 189.266
+ Wprec  -3.7931600634715418E-011 ln_Wprec   549.48567579997155     
+ W  -5.9403472890070648E-012 ln_W   86.053203396832217     
+  REJECTION, direction=           0   LN_XPROB   -463.43247240313934        XPROB    5.4179438589476790E-202   XALEA   0.77079856670888036     
+       113 0.104E-11*Temp instantanee = 148.665
+       113 0.104E-11*Temp instantanee = 151.687
+ Wprec  -3.7931600634715418E-011 ln_Wprec  -549.48567579997155     
+ W  -5.5159810619714099E-011 ln_W  -799.05739036049113     
+  REJECTION, direction=           1   LN_XPROB   -249.57171456051958        XPROB    4.0962035274902146E-109   XALEA   0.83641661829810066     
+       114 0.104E-11*Temp instantanee = 194.698
+       114 0.104E-11*Temp instantanee = 189.475
+ Wprec  -3.7931600634715418E-011 ln_Wprec   549.48567579997155     
+ W   5.3829908030193884E-011 ln_W  -779.79212311833192     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.16687810209241072     
+       115 0.105E-11*Temp instantanee = 156.312
+       115 0.105E-11*Temp instantanee = 151.687
+ Wprec  -3.7931600634715418E-011 ln_Wprec  -549.48567579997155     
+ W  -7.3111393935208917E-011 ln_W  -1059.1080532572844     
+  REJECTION, direction=           1   LN_XPROB   -509.62237745731284        XPROB    4.7186049164762466E-222   XALEA   0.36274853882830316     
+       116 0.106E-11*Temp instantanee = 194.698
+       116 0.106E-11*Temp instantanee = 189.400
+ Wprec  -3.7931600634715418E-011 ln_Wprec   549.48567579997155     
+ W  -8.7489055876807575E-012 ln_W   126.73860894119835     
+  REJECTION, direction=           0   LN_XPROB   -422.74706685877322        XPROB    2.5309386760510280E-184   XALEA    3.7070582196162882E-002
+       117 0.107E-11*Temp instantanee = 150.163
+       117 0.107E-11*Temp instantanee = 151.687
+ Wprec  -3.7931600634715418E-011 ln_Wprec  -549.48567579997155     
+ W  -5.8933152551630421E-011 ln_W  -853.71886804107749     
+  REJECTION, direction=           1   LN_XPROB   -304.23319224110594        XPROB    7.4679843278408714E-133   XALEA   0.97994391363877309     
+       118 0.108E-11*Temp instantanee = 194.698
+       118 0.108E-11*Temp instantanee = 189.881
+ Wprec  -3.7931600634715418E-011 ln_Wprec   549.48567579997155     
+ W   2.9797117986538637E-011 ln_W  -431.64773539084035     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.86169364192845244     
+       119 0.109E-11*Temp instantanee = 152.968
+       119 0.109E-11*Temp instantanee = 151.687
+ Wprec  -3.7931600634715418E-011 ln_Wprec  -549.48567579997155     
+ W  -6.5332856625144762E-011 ln_W  -946.42641686348270     
+  REJECTION, direction=           1   LN_XPROB   -396.94074106351115        XPROB    4.0815630863942304E-173   XALEA   0.19170296447445290     
+       120 0.110E-11*Temp instantanee = 194.698
+       120 0.110E-11*Temp instantanee = 189.848
+ Wprec  -3.7931600634715418E-011 ln_Wprec   549.48567579997155     
+ W   1.2447278849126504E-010 ln_W  -1803.1407364400254     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.87006286003446442     
+       121 0.111E-11*Temp instantanee = 155.411
+       121 0.111E-11*Temp instantanee = 151.687
+ Wprec  -3.7931600634715418E-011 ln_Wprec  -549.48567579997155     
+ W  -7.0383674973927760E-011 ln_W  -1019.5937044886690     
+  REJECTION, direction=           1   LN_XPROB   -470.10802868869746        XPROB    6.8340356830642580E-205   XALEA   0.34901987599498996     
+       122 0.112E-11*Temp instantanee = 194.698
+       122 0.112E-11*Temp instantanee = 190.124
+ Wprec  -3.7931600634715418E-011 ln_Wprec   549.48567579997155     
+ W   4.3546864407610973E-011 ln_W  -630.82964645805987     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.48997423121322792     
+       123 0.113E-11*Temp instantanee = 149.746
+       123 0.113E-11*Temp instantanee = 151.687
+ Wprec  -3.7931600634715418E-011 ln_Wprec  -549.48567579997155     
+ W  -3.3128513602592837E-011 ln_W  -479.90707960025031     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.35904562517240801     
+       124 0.113E-11*Temp instantanee = 195.044
+       124 0.113E-11*Temp instantanee = 196.211
+ Wprec  -3.3128513602592837E-011 ln_Wprec   479.90707960025031     
+ W  -3.4206472324190289E-011 ln_W   495.52263145437763     
+ ACCEPTATION, direction=           0   LN_XPROB   -1.6529204859894955E-007   XPROB   0.99999983470796505        XALEA   0.73171604988451588     
+       125 0.114E-11*Temp instantanee = 148.588
+       125 0.114E-11*Temp instantanee = 149.476
+ Wprec  -3.4206472324190289E-011 ln_Wprec  -495.52263145437763     
+ W  -6.4035885346697647E-011 ln_W  -927.63819998084409     
+  REJECTION, direction=           1   LN_XPROB   -432.11556852646646        XPROB    2.1606928981032951E-188   XALEA   0.62340382085847879     
+       126 0.115E-11*Temp instantanee = 195.044
+       126 0.115E-11*Temp instantanee = 190.819
+ Wprec  -3.4206472324190289E-011 ln_Wprec   495.52263145437763     
+ W  -4.7911464749743490E-011 ln_W   694.05622610306784     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.14153133391123207     
+       127 0.116E-11*Temp instantanee = 145.117
+       127 0.116E-11*Temp instantanee = 146.473
+ Wprec  -4.7911464749743490E-011 ln_Wprec  -694.05622610306784     
+ W  -5.7661190377664728E-011 ln_W  -835.29293865612351     
+  REJECTION, direction=           1   LN_XPROB   -141.23671255305567        XPROB    4.5885460655511786E-062   XALEA   0.59802307876890071     
+       128 0.117E-11*Temp instantanee = 195.044
+       128 0.117E-11*Temp instantanee = 184.059
+ Wprec  -4.7911464749743490E-011 ln_Wprec   694.05622610306784     
+ W  -6.1338299998068759E-011 ln_W   888.56037348483164     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.12430677995499029     
+       129 0.118E-11*Temp instantanee = 141.697
+       129 0.118E-11*Temp instantanee = 142.306
+ Wprec  -6.1338299998068759E-011 ln_Wprec  -888.56037348483164     
+ W  -5.8062677356998220E-011 ln_W  -841.10896910230633     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.68671378408742167     
+       130 0.119E-11*Temp instantanee = 179.128
+       130 0.119E-11*Temp instantanee = 179.576
+ Wprec  -5.8062677356998220E-011 ln_Wprec   841.10896910230633     
+ W   8.5020698047233780E-012 ln_W  -123.16289041784613     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.32735147090174976     
+       131 0.120E-11*Temp instantanee = 142.861
+       131 0.120E-11*Temp instantanee = 142.306
+ Wprec  -5.8062677356998220E-011 ln_Wprec  -841.10896910230633     
+ W  -3.6790064038020731E-011 ln_W  -532.94912058508021     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.94777948469950346     
+       132 0.121E-11*Temp instantanee = 185.075
+       132 0.121E-11*Temp instantanee = 185.559
+ Wprec  -3.6790064038020731E-011 ln_Wprec   532.94912058508021     
+ W   9.8434786977347498E-012 ln_W  -142.59484055352948     
+  REJECTION, direction=           0   LN_XPROB   -675.54396113860969        XPROB    4.1208366026349325E-294   XALEA   0.36788919714176360     
+       133 0.122E-11*Temp instantanee = 143.024
+       133 0.122E-11*Temp instantanee = 142.306
+ Wprec  -3.6790064038020731E-011 ln_Wprec  -532.94912058508021     
+ W  -3.6866123723412914E-011 ln_W  -534.05093824975859     
+  REJECTION, direction=           1   LN_XPROB   -1.3886993558412202        XPROB   0.24939947374036345        XALEA   0.83546479346739100     
+       134 0.122E-11*Temp instantanee = 185.075
+       134 0.122E-11*Temp instantanee = 185.303
+ Wprec  -3.6790064038020731E-011 ln_Wprec   532.94912058508021     
+ W   3.5076801841312248E-011 ln_W  -508.13042007605628     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.52207543189787453     
+       135 0.123E-11*Temp instantanee = 150.733
+       135 0.123E-11*Temp instantanee = 142.306
+ Wprec  -3.6790064038020731E-011 ln_Wprec  -532.94912058508021     
+ W  -7.7877310595906760E-011 ln_W  -1128.1481911183041     
+  REJECTION, direction=           1   LN_XPROB   -595.19907053322390        XPROB    3.2235026641122893E-259   XALEA    7.6744125893599691E-003
+       136 0.124E-11*Temp instantanee = 185.075
+       136 0.124E-11*Temp instantanee = 178.468
+ Wprec  -3.6790064038020731E-011 ln_Wprec   532.94912058508021     
+ W  -1.8926771717019086E-011 ln_W   274.17746084039061     
+  REJECTION, direction=           0   LN_XPROB   -258.77165974468960        XPROB    4.1390064190599087E-113   XALEA   0.18110866551500993     
+       137 0.125E-11*Temp instantanee = 145.840
+       137 0.125E-11*Temp instantanee = 142.306
+ Wprec  -3.6790064038020731E-011 ln_Wprec  -532.94912058508021     
+ W  -6.6460750666208347E-011 ln_W  -962.76534295713600     
+  REJECTION, direction=           1   LN_XPROB   -429.81622237205579        XPROB    2.1537058678979108E-187   XALEA   0.82656008850060136     
+       138 0.126E-11*Temp instantanee = 185.075
+       138 0.126E-11*Temp instantanee = 178.996
+ Wprec  -3.6790064038020731E-011 ln_Wprec   532.94912058508021     
+ W  -4.0486198164608887E-011 ln_W   586.49214867804346     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.87769214954733066     
+       139 0.127E-11*Temp instantanee = 143.831
+       139 0.127E-11*Temp instantanee = 143.864
+ Wprec  -4.0486198164608887E-011 ln_Wprec  -586.49214867804346     
+ W  -5.5367619068871459E-011 ln_W  -802.06775017161044     
+  REJECTION, direction=           1   LN_XPROB   -215.57560149356698        XPROB    2.3807063940616738E-094   XALEA    5.2121988613571424E-002
+       140 0.128E-11*Temp instantanee = 185.075
+       140 0.128E-11*Temp instantanee = 177.473
+ Wprec  -4.0486198164608887E-011 ln_Wprec   586.49214867804346     
+ W  -4.7055732206184521E-011 ln_W   681.65989251488850     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.11533897295277462     
+       141 0.129E-11*Temp instantanee = 142.514
+       141 0.129E-11*Temp instantanee = 142.735
+ Wprec  -4.7055732206184521E-011 ln_Wprec  -681.65989251488850     
+ W  -5.1105544394763784E-011 ln_W  -740.32638035267848     
+  REJECTION, direction=           1   LN_XPROB   -58.666487837789987        XPROB    3.3225234850079194E-026   XALEA   0.52480475450369424     
+       142 0.130E-11*Temp instantanee = 185.075
+       142 0.130E-11*Temp instantanee = 173.841
+ Wprec  -4.7055732206184521E-011 ln_Wprec   681.65989251488850     
+ W  -5.6865693559042878E-011 ln_W   823.76919329176098     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    8.1758038544542000E-002
+       143 0.131E-11*Temp instantanee = 139.739
+       143 0.131E-11*Temp instantanee = 139.904
+ Wprec  -5.6865693559042878E-011 ln_Wprec  -823.76919329176098     
+ W  -4.9539937614853224E-011 ln_W  -717.64664933418737     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    2.7967090109499937E-002
+       144 0.131E-11*Temp instantanee = 170.411
+       144 0.131E-11*Temp instantanee = 170.538
+ Wprec  -4.9539937614853224E-011 ln_Wprec   717.64664933418737     
+ W   1.4877583117552269E-010 ln_W  -2155.2000645437010     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.78746215296425082     
+       145 0.132E-11*Temp instantanee = 146.669
+       145 0.132E-11*Temp instantanee = 139.904
+ Wprec  -4.9539937614853224E-011 ln_Wprec  -717.64664933418737     
+ W  -4.0969473095055216E-011 ln_W  -593.49297773112721     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.45280022734908631     
+       146 0.133E-11*Temp instantanee = 176.458
+       146 0.133E-11*Temp instantanee = 176.586
+ Wprec  -4.0969473095055216E-011 ln_Wprec   593.49297773112721     
+ W   1.2537139793498308E-012 ln_W  -18.161581944222689     
+  REJECTION, direction=           0   LN_XPROB   -611.65455967534990        XPROB    2.3003816893691719E-266   XALEA   0.61122288857299267     
+       147 0.134E-11*Temp instantanee = 142.435
+       147 0.134E-11*Temp instantanee = 139.904
+ Wprec  -4.0969473095055216E-011 ln_Wprec  -593.49297773112721     
+ W  -5.5489340774188102E-011 ln_W  -803.83103810004627     
+  REJECTION, direction=           1   LN_XPROB   -210.33806036891906        XPROB    4.4806502748653392E-092   XALEA   0.88822043257987549     
+       148 0.135E-11*Temp instantanee = 176.458
+       148 0.135E-11*Temp instantanee = 169.769
+ Wprec  -4.0969473095055216E-011 ln_Wprec   593.49297773112721     
+ W   4.8333688852378123E-012 ln_W  -70.017265916924586     
+  REJECTION, direction=           0   LN_XPROB   -663.51024364805176        XPROB    6.9368530954875688E-289   XALEA   0.78772756882931427     
+       149 0.136E-11*Temp instantanee = 140.554
+       149 0.136E-11*Temp instantanee = 139.904
+ Wprec  -4.0969473095055216E-011 ln_Wprec  -593.49297773112721     
+ W  -5.1065227267530814E-011 ln_W  -739.74233740344300     
+  REJECTION, direction=           1   LN_XPROB   -146.24935967231579        XPROB    3.0528826618802754E-064   XALEA   0.24519983432395087     
+       150 0.137E-11*Temp instantanee = 176.458
+       150 0.137E-11*Temp instantanee = 169.817
+ Wprec  -4.0969473095055216E-011 ln_Wprec   593.49297773112721     
+ W  -4.2195219896635770E-011 ln_W   611.24942086444764     
+ ACCEPTATION, direction=           0   LN_XPROB   -1.9430086017875764E-008   XPROB   0.99999998056991413        XALEA    9.1287996978697161E-002
+       151 0.138E-11*Temp instantanee = 138.626
+       151 0.138E-11*Temp instantanee = 138.932
+ Wprec  -4.2195219896635770E-011 ln_Wprec  -611.24942086444764     
+ W  -2.0516795458308558E-011 ln_W  -297.21090143875091     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.35782641893230083     
+       152 0.139E-11*Temp instantanee = 171.906
+       152 0.139E-11*Temp instantanee = 172.171
+ Wprec  -2.0516795458308558E-011 ln_Wprec   297.21090143875091     
+ W   5.8222076513238775E-010 ln_W  -8434.1806103681920     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.37514490238085596     
+       153 0.140E-11*Temp instantanee = 141.105
+       153 0.140E-11*Temp instantanee = 138.932
+ Wprec  -2.0516795458308558E-011 ln_Wprec  -297.21090143875091     
+ W  -5.0511459296771528E-011 ln_W  -731.72033035503603     
+  REJECTION, direction=           1   LN_XPROB   -434.50942891628512        XPROB    1.9722078664774184E-189   XALEA   0.23965966146794382     
+       154 0.140E-11*Temp instantanee = 171.906
+       154 0.140E-11*Temp instantanee = 165.079
+ Wprec  -2.0516795458308558E-011 ln_Wprec   297.21090143875091     
+ W   4.4433967588624068E-011 ln_W  -643.68042213761726     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.49449191045769214     
+       155 0.141E-11*Temp instantanee = 146.033
+       155 0.141E-11*Temp instantanee = 138.932
+ Wprec  -2.0516795458308558E-011 ln_Wprec  -297.21090143875091     
+ W  -3.7439893707944038E-011 ln_W  -542.36269895661576     
+  REJECTION, direction=           1   LN_XPROB   -245.15179751786485        XPROB    3.4035106141449985E-107   XALEA   0.60356371753537674     
+       156 0.142E-11*Temp instantanee = 171.906
+       156 0.142E-11*Temp instantanee = 171.669
+ Wprec  -2.0516795458308558E-011 ln_Wprec   297.21090143875091     
+ W  -1.2246778649566347E-011 ln_W   177.40958277597122     
+  REJECTION, direction=           0   LN_XPROB   -119.80131866277969        XPROB    9.3529449900462715E-053   XALEA   0.32709624702302942     
+       157 0.143E-11*Temp instantanee = 140.097
+       157 0.143E-11*Temp instantanee = 138.932
+ Wprec  -2.0516795458308558E-011 ln_Wprec  -297.21090143875091     
+ W  -4.7518560998096577E-011 ln_W  -688.36453421858516     
+  REJECTION, direction=           1   LN_XPROB   -391.15363277983425        XPROB    1.3308702201721908E-170   XALEA   0.16982148572681166     
+       158 0.144E-11*Temp instantanee = 171.906
+       158 0.144E-11*Temp instantanee = 165.505
+ Wprec  -2.0516795458308558E-011 ln_Wprec   297.21090143875091     
+ W  -2.9307770524145262E-011 ln_W   424.55893827775105     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.79783940640335782     
+       159 0.145E-11*Temp instantanee = 139.487
+       159 0.145E-11*Temp instantanee = 139.741
+ Wprec  -2.9307770524145262E-011 ln_Wprec  -424.55893827775105     
+ W  -4.3523502515725309E-011 ln_W  -630.49122085154818     
+  REJECTION, direction=           1   LN_XPROB   -205.93228257379712        XPROB    3.6706758325336950E-090   XALEA   0.10519349767776809     
+       160 0.146E-11*Temp instantanee = 171.906
+       160 0.146E-11*Temp instantanee = 164.792
+ Wprec  -2.9307770524145262E-011 ln_Wprec   424.55893827775105     
+ W   8.3055641045573548E-012 ln_W  -120.31626476410422     
+  REJECTION, direction=           0   LN_XPROB   -544.87520304185523        XPROB    2.3105001072197107E-237   XALEA    7.7045437028212538E-002
+       161 0.147E-11*Temp instantanee = 139.909
+       161 0.147E-11*Temp instantanee = 139.741
+ Wprec  -2.9307770524145262E-011 ln_Wprec  -424.55893827775105     
+ W  -1.8940097511241652E-011 ln_W  -274.37050128480718     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.31247127214822368     
+       162 0.148E-11*Temp instantanee = 170.959
+       162 0.148E-11*Temp instantanee = 171.185
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   1.6062297163201983E-010 ln_W  -2326.8203988060432     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.96232508621573076     
+       163 0.149E-11*Temp instantanee = 145.970
+       163 0.149E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -3.2643280168300271E-011 ln_W  -472.87787922110863     
+  REJECTION, direction=           1   LN_XPROB   -198.50737793630145        XPROB    6.1566029371079502E-087   XALEA   0.18409029553373679     
+       164 0.149E-11*Temp instantanee = 170.959
+       164 0.149E-11*Temp instantanee = 170.951
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   2.0404867606766104E-010 ln_W  -2955.8948947309409     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.92951940175393344     
+       165 0.150E-11*Temp instantanee = 144.492
+       165 0.150E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -5.3935523563833787E-011 ln_W  -781.32209343084185     
+  REJECTION, direction=           1   LN_XPROB   -506.95159214603467        XPROB    6.8190039012254109E-221   XALEA   0.50756798107364687     
+       166 0.151E-11*Temp instantanee = 170.959
+       166 0.151E-11*Temp instantanee = 164.814
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W  -5.0496317962522502E-012 ln_W   73.150098959052514     
+  REJECTION, direction=           0   LN_XPROB   -201.22040232575466        XPROB    4.0840365822627869E-088   XALEA   0.33576162542662913     
+       167 0.152E-11*Temp instantanee = 145.931
+       167 0.152E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -5.7507965626119655E-011 ln_W  -833.07329053310252     
+  REJECTION, direction=           1   LN_XPROB   -558.70278924829540        XPROB    2.2827671041240421E-243   XALEA   0.71030284092056561     
+       168 0.153E-11*Temp instantanee = 170.959
+       168 0.153E-11*Temp instantanee = 165.086
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   2.3582828628860653E-010 ln_W  -3416.2614573519259     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA    9.6346808586708299E-002
+       169 0.154E-11*Temp instantanee = 145.262
+       169 0.154E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -5.6253324480763594E-011 ln_W  -814.89827745412708     
+  REJECTION, direction=           1   LN_XPROB   -540.52777616931985        XPROB    1.7855396318058585E-235   XALEA   0.99508905872398878     
+       170 0.155E-11*Temp instantanee = 170.959
+       170 0.155E-11*Temp instantanee = 164.990
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   1.0072838075165857E-009 ln_W  -14591.739194603384     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.16151892544929891     
+       171 0.156E-11*Temp instantanee = 176.937
+       171 0.156E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -1.2656912707002916E-010 ln_W  -1833.5087673531084     
+  REJECTION, direction=           1   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.15905227810218336     
+       172 0.157E-11*Temp instantanee = 170.959
+       172 0.157E-11*Temp instantanee = 165.875
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W  -1.4588902381070784E-011 ln_W   211.33811254739942     
+  REJECTION, direction=           0   LN_XPROB   -63.032388737407757        XPROB    4.2206699291238032E-028   XALEA   0.65606853663161002     
+       173 0.158E-11*Temp instantanee = 144.771
+       173 0.158E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -5.4827136052168220E-011 ln_W  -794.23819194780640     
+  REJECTION, direction=           1   LN_XPROB   -519.86769066299917        XPROB    1.6762184835131954E-226   XALEA   0.68016779466695665     
+       174 0.158E-11*Temp instantanee = 170.959
+       174 0.158E-11*Temp instantanee = 164.929
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W  -1.3445644150836419E-011 ln_W   194.77661736284688     
+  REJECTION, direction=           0   LN_XPROB   -79.593883921960298        XPROB    2.7090400114895586E-035   XALEA   0.39098699532918313     
+       175 0.159E-11*Temp instantanee = 144.840
+       175 0.159E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -3.0160141253613162E-011 ln_W  -436.90657187286837     
+  REJECTION, direction=           1   LN_XPROB   -162.53607058806119        XPROB    2.5791786989545781E-071   XALEA   0.98808868642472403     
+       176 0.160E-11*Temp instantanee = 170.959
+       176 0.160E-11*Temp instantanee = 170.843
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   3.4108739756796565E-011 ln_W  -494.10685555925613     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.97944588567037794     
+       177 0.161E-11*Temp instantanee = 146.493
+       177 0.161E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -5.8901322207601343E-011 ln_W  -853.25776653713103     
+  REJECTION, direction=           1   LN_XPROB   -578.88726525232391        XPROB    3.9125063629404151E-252   XALEA   0.63501489380860499     
+       178 0.162E-11*Temp instantanee = 170.959
+       178 0.162E-11*Temp instantanee = 165.131
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   1.6284346121030018E-010 ln_W  -2358.9869089482881     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.51793408315386735     
+       179 0.163E-11*Temp instantanee = 153.297
+       179 0.163E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -4.9485087116366957E-011 ln_W  -716.85207270877845     
+  REJECTION, direction=           1   LN_XPROB   -442.48157142397127        XPROB    6.8029172251141385E-193   XALEA   0.49128498979540036     
+       180 0.164E-11*Temp instantanee = 170.959
+       180 0.164E-11*Temp instantanee = 172.059
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W  -9.7247525254433195E-012 ln_W   140.87494658846984     
+  REJECTION, direction=           0   LN_XPROB   -133.49555469633734        XPROB    1.0558864988072207E-058   XALEA   0.49788626163544425     
+       181 0.165E-11*Temp instantanee = 142.802
+       181 0.165E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -5.1062187472756447E-011 ln_W  -739.69830225443957     
+  REJECTION, direction=           1   LN_XPROB   -465.32780096963239        XPROB    8.1414875429995308E-203   XALEA   0.28284983477150583     
+       182 0.166E-11*Temp instantanee = 170.959
+       182 0.166E-11*Temp instantanee = 165.255
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   1.0279825175922496E-010 ln_W  -1489.1585351997137     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.83982631963808840     
+       183 0.167E-11*Temp instantanee = 150.208
+       183 0.167E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -6.7597017006699214E-011 ln_W  -979.22555205840865     
+  REJECTION, direction=           1   LN_XPROB   -704.85505077360153        XPROB    7.6796408025959768E-307   XALEA   0.64268423853248857     
+       184 0.167E-11*Temp instantanee = 170.959
+       184 0.167E-11*Temp instantanee = 164.813
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   2.1156113982083578E-011 ln_W  -306.47221298926974     
+  REJECTION, direction=           0   LN_XPROB   -580.84271427407691        XPROB    5.5362327112116616E-253   XALEA    5.3840266484769916E-002
+       185 0.168E-11*Temp instantanee = 147.122
+       185 0.168E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -6.0929380015581570E-011 ln_W  -882.63666688755609     
+  REJECTION, direction=           1   LN_XPROB   -608.26616560274897        XPROB    6.8133508027815213E-265   XALEA   0.49501037327256081     
+       186 0.169E-11*Temp instantanee = 170.959
+       186 0.169E-11*Temp instantanee = 165.289
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W  -1.2435820645567502E-011 ln_W   180.14808753688558     
+  REJECTION, direction=           0   LN_XPROB   -94.222413747921593        XPROB    1.2015051528118818E-041   XALEA   0.42252569223241754     
+       187 0.170E-11*Temp instantanee = 144.237
+       187 0.170E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -2.9030150032296309E-011 ln_W  -420.53726555561639     
+  REJECTION, direction=           1   LN_XPROB   -146.16676427080921        XPROB    3.3157428327402015E-064   XALEA   0.13732412297242147     
+       188 0.171E-11*Temp instantanee = 170.959
+       188 0.171E-11*Temp instantanee = 171.376
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   6.8895393085048680E-011 ln_W  -998.03411918756444     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.59090537801194176     
+       189 0.172E-11*Temp instantanee = 154.070
+       189 0.172E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -7.5666528033421659E-011 ln_W  -1096.1222989843948     
+  REJECTION, direction=           1   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.45823889163173515     
+       190 0.173E-11*Temp instantanee = 170.959
+       190 0.173E-11*Temp instantanee = 164.710
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   1.5218353361750129E-010 ln_W  -2204.5648065509790     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.38792403530914354     
+       191 0.174E-11*Temp instantanee = 157.394
+       191 0.174E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -8.3617084257870236E-011 ln_W  -1211.2958399601084     
+  REJECTION, direction=           1   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.31191698773421939     
+       192 0.175E-11*Temp instantanee = 170.959
+       192 0.175E-11*Temp instantanee = 165.580
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W  -1.5955998198039956E-011 ln_W   231.14216922575415     
+  REJECTION, direction=           0   LN_XPROB   -43.228332059053031        XPROB    1.6833480679758628E-019   XALEA   0.41747977683187620     
+       193 0.176E-11*Temp instantanee = 144.946
+       193 0.176E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -5.4461323932332620E-011 ln_W  -788.93895551907212     
+  REJECTION, direction=           1   LN_XPROB   -514.56845423426489        XPROB    3.3555194813687414E-224   XALEA   0.24918151453591819     
+       194 0.176E-11*Temp instantanee = 170.959
+       194 0.176E-11*Temp instantanee = 165.154
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W   3.4517156126264507E-010 ln_W  -5000.2326670536186     
+  REJECTION, direction=           0   LN_XPROB                  -Infinity   XPROB    0.0000000000000000        XALEA   0.86432199820645916     
+       195 0.177E-11*Temp instantanee = 154.802
+       195 0.177E-11*Temp instantanee = 139.741
+ Wprec  -1.8940097511241652E-011 ln_Wprec  -274.37050128480718     
+ W  -5.2619341328514802E-011 ln_W  -762.25558231745981     
+  REJECTION, direction=           1   LN_XPROB   -487.88508103265264        XPROB    1.3007729726143361E-212   XALEA   0.75401148481205149     
+       196 0.178E-11*Temp instantanee = 170.959
+       196 0.178E-11*Temp instantanee = 170.841
+ Wprec  -1.8940097511241652E-011 ln_Wprec   274.37050128480718     
+ W  -2.2788884022225110E-011 ln_W   330.12488606186355     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    8.2664494369267483E-002
+       197 0.179E-11*Temp instantanee = 141.802
+       197 0.179E-11*Temp instantanee = 141.935
+ Wprec  -2.2788884022225110E-011 ln_Wprec  -330.12488606186355     
+ W  -4.4627605640924418E-011 ln_W  -646.48550640109192     
+  REJECTION, direction=           1   LN_XPROB   -316.36062033922838        XPROB    4.0395063501486856E-138   XALEA   0.57389506639287968     
+       198 0.180E-11*Temp instantanee = 170.959
+       198 0.180E-11*Temp instantanee = 168.321
+ Wprec  -2.2788884022225110E-011 ln_Wprec   330.12488606186355     
+ W  -2.6141558875745996E-011 ln_W   378.69248607868042     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.21675337625308255     
+       199 0.181E-11*Temp instantanee = 140.420
+       199 0.181E-11*Temp instantanee = 140.731
+  taux d acceptation final   :    28.499999642372131       %
+  taux d acceptation alpha 0 :    25.999999046325684       %
+  taux d acceptation alpha 1 :    31.000000238418579       %
+Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG IEEE_OVERFLOW_FLAG IEEE_UNDERFLOW_FLAG IEEE_DENORMAL
+

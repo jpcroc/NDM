@@ -1,0 +1,145 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=dm.din                                                                          
+
+ Pas de conditions periodiques
+ TEMPERATURE CONSTANTE A LA :lTHoover 
+
+ -------- caracteristiques du run DM-------- 8
+      PARRINELLO RAHMAN AUTOCOHERENT 
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=        1000  itab=           1  itetimestep=          -1
+tinit=       0.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        2100        2100           1
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+dm.gin                                                                          volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ temperature fin initspeed    0.0000000000000000     
+ ***** PREMIERE ITERATION  ****
+
+ Algorithme de Parrinello-Rahman (V2)
+  -> la vitesse de la boîte ne prend pas en compte la dérivée du tenseur h
+
+Repère actuel  (A):
+ h (1:3,1) = 32.25600 .00000 .00000
+ h (1:3,2) = .00000 32.25600 .00000
+ h (1:3,3) = .00000 .00000 32.25600
+Masse de la boîte pour Parrinello-Rahman: wbox=  0.458881755876E-19
+Initialisation de la vitesse de la boîte pour la température .000 K
+      0 0.000D+00*Kcell =    0.000000000000D+00  eV   (.000 K)
+
+Thermostat de Nosé-Hoover (V2)
+  -> l'énergie cinétique des atomes et de la boîte est thermalisée
+Masse de la boîte pour thermostat de Nosé-Hoover: wHoover=  0.848668343400E-37
+Nombre de degrés de liberté: gNose=   6147.00000000    
+Nombre de thermostats: nHoover=1
+Initialisation du thermostat de Nosé-Hoover pour la température 300.000 K
+      0 0.000D+00*KNose =    0.129257484904D-01  eV   (300.000 K)
+
+
+
+<<<<<<<<  ITERATION =      0  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         0  0.00    *Epot =    -6881.86458404      eV 
+    *energie PAIRE EAM =    -1437.53220179      eV 
+    *energie GLUE  =    -5444.33238225      eV 
+         0  0.00    *Ec =     0.00000000000      eV   (.000 K)
+         0  0.00    *Etot =    -6881.86458404      eV 
+
+         0  0.00    *Temp instantanee = .000
+ NPT With Parrinello-Rahman
+         0  0.00    *Kcell =     0.00000000000      eV   (.000 K)
+ Box tensor
+ a   3.2256000000000000E-007   0.0000000000000000        0.0000000000000000     
+ b   0.0000000000000000        3.2256000000000000E-007   0.0000000000000000     
+ c   0.0000000000000000        0.0000000000000000        3.2256000000000000E-007
+Strain (Lagrange def.):
+  e(1:3,1) =    0.00000       0.00000       0.00000    
+  e(1:3,2) =    0.00000       0.00000       0.00000    
+  e(1:3,3) =    0.00000       0.00000       0.00000    
+Rotation:
+  r(1:3,1) =    0.00000       0.00000       0.00000    
+  r(1:3,2) =    0.00000       0.00000       0.00000    
+  r(1:3,3) =    0.00000       0.00000       0.00000    
+         0  0.00    *l_a,m      32.2560000        32.2560000    
+         0  0.00    *l_b,m      32.2560000        32.2560000    
+         0  0.00    *l_c,m      32.2560000        32.2560000    
+         0  0.00    *ang_bc,m      90.0000    90.0000
+         0  0.00    *ang_ca,m      90.0000    90.0000
+         0  0.00    *ang_ab,m      90.0000    90.0000
+         0  0.00    *volume      33560.7402332        33560.7402332    
+Thermostat de Nose-Hoover
+         0  0.00    *KNose =    0.129257484904E-01  eV   (300.000 K)
+      0  0.00    *zHoover(1) =      698600706970.    
+
+*temp instantanee des atomes de type 1 =         0.00
+
+ * stress en d/cm2
+1 sigma potentiel (1,1) (2,1) (3,1) =   793882394.2       43280885.09      -2657.740171    
+2 sigma potentiel (1,2) (2,2) (3,2) =   43280885.09       793804615.7      -19773.74953    
+3 sigma potentiel (1,3) (2,3) (3,3) =  -2657.740172      -19773.74953       845879389.4    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =   0.000000000       0.000000000       0.000000000    
+2 sigma cinetique (1,2) (2,2) (3,2) =   0.000000000       0.000000000       0.000000000    
+3 sigma cinetique (1,3) (2,3) (3,3) =   0.000000000       0.000000000       0.000000000    
+
+1 sigma total (1,1) (2,1) (3,1) =   793882394.2       43280885.09      -2657.740172    
+2 sigma total (1,2) (2,2) (3,2) =   43280885.09       793804615.7      -19773.74953    
+3 sigma total (1,3) (2,3) (3,3) =  -2657.740172      -19773.74953       845879389.4    
+
+         0  0.00    *Pression =    0.81119E+09
+ pression totale  potentiel = cinetique =
+   0.81119E+09   0.81119E+09    0.0000    
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.00
+*pression moyenne =    0.81119E+09
+ --------------------------------------
+ IT =           1 chgt nox noy noz  =            5           5           5
+  natperc           48

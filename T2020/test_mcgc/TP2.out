@@ -1,0 +1,201 @@
+ Process            0  of            2  is alive   2.2204460492503132E-058
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ Process            1  of            2  is alive   2.2204460492503132E-058
+ nom fichier din=UO2.din                                                                         
+
+ -------- caracteristiques du run DM--------15
+      CALCUL MONTE CARLO GRAND CANONIQUE 
+
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=           1  itab=           1  itetimestep=          -1
+tinit=     400.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           7
+ fmt_cin           1
+           1           0
+           2           1
+ RGI           1           0 T           1           6           5
+ RGI           0           0 T           0           6           5
+ RGM           1           1
+ RGM           0           0
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL PAIRE TABULE -----------
+ -*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ CM, masse,type
+   1    0.000    8.000  O  
+   2    0.000   92.000  U  
+ nb de paires grille           3       50000
+ paire l active  ipotentiel:            3           7
+ paire l active  ipotentiel:            2           7
+ paire l active  ipotentiel:            1           7
+ nvecttot           0
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature positions lues initspeed    407.38605057914845     
+ temperature fin initspeed    407.19144381822343     
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        7000        7000           1
+
+ **********construction du reseau************
+ repetition de mailles           8           8           8
+ izonr,zlmin,rut           7   87.488000000000000        11.699999999999999     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.4374E-06/  0.1170E-06) = 3
+  noy = Int(   0.4374E-06/  0.1170E-06) = 3
+  noz = Int(   0.4374E-06/  0.1170E-06) = 3
+nox noy noz apres correction = 3 3 3
+celsizes   0.1458133E-06  0.1458133E-06  0.1458133E-06
+UO2.gin                                                                         volume= 0.83705786D-19 cm3  0.83705786D+05 Ang3
+ natperc im/noxyz        2270         227
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        6144
+vecteur  1      43.744000       0.000000       0.000000
+vecteur  2       0.000000      43.744000       0.000000
+vecteur  3       0.000000       0.000000      43.744000
+        4096  atomes de type           1
+        2048  atomes de type           2
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+
+ random velocities at TINIT =    400.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature positions lues initspeed    407.38605057914845     
+ temperature fin initspeed    407.19144381822343     
+
+ lambda_mc D0           0  0.10000000149011612     
+ lambda_mc D0           0  0.20000000298023224     
+ lambda_mc D0           0  0.30000000447034836     
+ lambda_mc D0           0  0.40000000596046448     
+ lambda_mc D0           0  0.50000000745058060     
+ lambda_mc D0           0  0.60000000894069672     
+ lambda_mc D0           0  0.70000001043081284     
+ lambda_mc D0           0  0.80000001192092896     
+ lambda_mc D0           0  0.90000001341104507     
+ W0   4.8375390886825175E-011   30.193547339644439     
+  
+  
+  
+ Numéro de chemin           1           1
+ lambda_mc D1           0  0.89999997615814209     
+ lambda_mc D1           0  0.79999997466802597     
+ lambda_mc D1           0  0.69999997317790985     
+ lambda_mc D1           0  0.59999997168779373     
+ lambda_mc D1           0  0.49999997019767761     
+ lambda_mc D1           0  0.39999996870756149     
+ lambda_mc D1           0  0.29999996721744537     
+ lambda_mc D1           0  0.19999996572732925     
+ lambda_mc D1           0   9.9999964237213135E-002
+ Wprec   4.8375390886825175E-011 ln_Wprec   437.98547762190861      Wprec eV   30.193547339644439     
+ W  -9.4655975786638444E-012 ln_W  -85.700481184059115      W eV  -5.9079619482154291     
+  REJECTION, direction=           1   LN_XPROB   -523.68595880596774        XPROB    3.6819496079912980E-228   XALEA   0.30901699449860309     
+  
+  
+  
+ Numéro de chemin           2           0
+ lambda_mc D0           0  0.10000000149011612     
+ lambda_mc D0           0  0.20000000298023224     
+ lambda_mc D0           0  0.30000000447034836     
+ lambda_mc D0           0  0.40000000596046448     
+ lambda_mc D0           0  0.50000000745058060     
+ lambda_mc D0           0  0.60000000894069672     
+ lambda_mc D0           0  0.70000001043081284     
+ lambda_mc D0           0  0.80000001192092896     
+ lambda_mc D0           0  0.90000001341104507     
+ Wprec   4.8375390886825175E-011 ln_Wprec  -437.98547762190861      Wprec eV   30.193547339644439     
+ W   4.5195852928924622E-011 ln_W  -409.19829005445212      W eV   28.209035626350722     
+ ACCEPTATION, direction=           0   LN_XPROB   -3.1463720517871989E-013   XPROB   0.99999999999968536        XALEA   0.42901894447111621     
+  
+  
+  
+ Numéro de chemin           3           1
+ lambda_mc D1           0  0.89999997615814209     
+ lambda_mc D1           0  0.79999997466802597     
+ lambda_mc D1           0  0.69999997317790985     
+ lambda_mc D1           0  0.59999997168779373     
+ lambda_mc D1           0  0.49999997019767761     
+ lambda_mc D1           0  0.39999996870756149     
+ lambda_mc D1           0  0.29999996721744537     
+ lambda_mc D1           0  0.19999996572732925     
+ lambda_mc D1           0   9.9999964237213135E-002
+ Wprec   4.5195852928924622E-011 ln_Wprec   409.19829005445212      Wprec eV   28.209035626350722     
+ W  -9.3755292499102575E-012 ln_W  -84.885012424746392      W eV  -5.8517457130973218     
+  REJECTION, direction=           1   LN_XPROB   -494.08330247919849        XPROB    2.6445277753225670E-215   XALEA   0.59337071629992921     
+  
+  
+  
+ Numéro de chemin           4           0
+ lambda_mc D0           0  0.10000000149011612     
+ lambda_mc D0           0  0.20000000298023224     
+ lambda_mc D0           0  0.30000000447034836     
+ lambda_mc D0           0  0.40000000596046448     
+ lambda_mc D0           0  0.50000000745058060     
+ lambda_mc D0           0  0.60000000894069672     
+ lambda_mc D0           0  0.70000001043081284     
+ lambda_mc D0           0  0.80000001192092896     
+ lambda_mc D0           0  0.90000001341104507     
+ Wprec   4.5195852928924622E-011 ln_Wprec  -409.19829005445212      Wprec eV   28.209035626350722     
+ W   4.8375390886970397E-011 ln_W  -437.98547762322346      W eV   30.193547339735080     
+  REJECTION, direction=           0   LN_XPROB   -28.787187568771660        XPROB    3.1469025139600505E-013   XALEA   0.10768776902859534     
+  
+  
+  
+ Numéro de chemin           5           1
+ lambda_mc D1           0  0.89999997615814209     
+ lambda_mc D1           0  0.79999997466802597     
+ lambda_mc D1           0  0.69999997317790985     
+ lambda_mc D1           0  0.59999997168779373     
+ lambda_mc D1           0  0.49999997019767761     
+ lambda_mc D1           0  0.39999996870756149     
+ lambda_mc D1           0  0.29999996721744537     
+ lambda_mc D1           0  0.19999996572732925     
+ lambda_mc D1           0   9.9999964237213135E-002
+ Wprec   4.5195852928924622E-011 ln_Wprec   409.19829005445212      Wprec eV   28.209035626350722     
+ W  -9.3755292499102575E-012 ln_W  -84.885012424746392      W eV  -5.8517457130973218     
+  REJECTION, direction=           1   LN_XPROB   -494.08330247919849        XPROB    2.6445277753225670E-215   XALEA   0.59337071629992921     
+  
+  
+  
+ Numéro de chemin           6           0
+ lambda_mc D0           0  0.10000000149011612     
+ lambda_mc D0           0  0.20000000298023224     
+ lambda_mc D0           0  0.30000000447034836     
+ lambda_mc D0           0  0.40000000596046448     
+ lambda_mc D0           0  0.50000000745058060     
+ lambda_mc D0           0  0.60000000894069672     
+ lambda_mc D0           0  0.70000001043081284     
+ lambda_mc D0           0  0.80000001192092896     
+ lambda_mc D0           0  0.90000001341104507     
+ Wprec   4.5195852928924622E-011 ln_Wprec  -409.19829005445212      Wprec eV   28.209035626350722     
+ W   4.8375390886970397E-011 ln_W  -437.98547762322346      W eV   30.193547339735080     
+  REJECTION, direction=           0   LN_XPROB   -28.787187568771660        XPROB    3.1469025139600505E-013   XALEA   0.10768776902859534     
+  taux d acceptation final   :    16.666667163372040       %
+  taux d acceptation alpha 0 :    33.333334326744080       %
+  taux d acceptation alpha 1 :    0.0000000000000000       %

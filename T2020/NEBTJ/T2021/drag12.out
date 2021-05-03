@@ -1,0 +1,410 @@
+ Process            2  of           12  is alive   2.2204460492503132E-058
+ INPNEB           2          12
+ Process            3  of           12  is alive   2.2204460492503132E-058
+ INPNEB           3          12
+ Process            6  of           12  is alive   2.2204460492503132E-058
+ Process            8  of           12  is alive   2.2204460492503132E-058
+ INPNEB           8          12
+ Process            4  of           12  is alive   2.2204460492503132E-058
+ Process            5  of           12  is alive   2.2204460492503132E-058
+ INPNEB           5          12
+ Process            7  of           12  is alive   2.2204460492503132E-058
+ INPNEB           7          12
+ Process            0  of           12  is alive   2.2204460492503132E-058
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=neb.din                                                                         
+
+ Pas de conditions periodiques
+
+ -------- caracteristiques du run DM-------- 9
+      DRAG OR NEB DYNAMICS 
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=          -1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=          60  itab=           1  itetimestep=          -1
+tinit=      -1.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+ INPNEB           0          12
+ Process            1  of           12  is alive   2.2204460492503132E-058
+ INPNEB           4          12
+ INPNEB           6          12
+ INPNEB           1          12
+ Process            9  of           12  is alive   2.2204460492503132E-058
+ Process           11  of           12  is alive   2.2204460492503132E-058
+ INPNEB           9          12
+ INPNEB          11          12
+ Process           10  of           12  is alive   2.2204460492503132E-058
+ INPNEB          10          12
+ RGI           0           0 T           0
+ RGI           2           2 F           0
+ RGI           6           2 F           1
+ RGI           4           0 T           1
+ RGI          10           2 F           2
+ RGI           7           3 F           1
+ RGI           3           3 F           0
+ RGI           1           1 F           0
+ RGI           9           1 F           2
+ RGI           5           1 F           1
+ RGI          11           3 F           2
+ RGI           8           0 T           2
+ RGM           0           0
+
+ RGM           8           2
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ RGM           4           1
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+deb_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            4  cpus           0
+ Nbre de solutions possibles :            6
+LE MEILLEUR DECOUPAGE :    4    1    2    2    0.9200
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ -----------------------------------------------
+ FNAMneb 1 deb_neb.gin                                                                                4           0
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+ IN rasmol
+ FNAMneb npath fin_neb.gin                                                                                8           0
+ FNAMneb npath fin_neb.gin                                                                                4           0
+ FNAMneb npath fin_neb.gin                                                                               10           2
+ FNAMneb npath fin_neb.gin                                                                               11           3
+ FNAMneb npath fin_neb.gin                                                                                5           1
+ FNAMneb npath fin_neb.gin                                                                                9           1
+ FNAMneb npath fin_neb.gin                                                                                1           1
+ FNAMneb npath fin_neb.gin                                                                                0           0
+ **********construction du reseau************
+ FNAMneb npath fin_neb.gin                                                                                6           2
+ repetition de mailles           1           1           1
+ FNAMneb npath fin_neb.gin                                                                                7           3
+ FNAMneb npath fin_neb.gin                                                                                3           3
+ FNAMneb npath fin_neb.gin                                                                                2           2
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+ -----------------------------------------------
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+           FIN DU CALCUL DU DECOUPAGE :         
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+fin_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            4  cpus           0
+ Nbre de solutions possibles :            6
+LE MEILLEUR DECOUPAGE :    4    1    2    2    0.9200
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+ IN rasmol
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ NEB: deplacement max entre configurations =    1.1183600829524103       pour l atome         2049
+ NEB: nebrelaxation /= 1
+ NEB: relaxation NEB pour TOUS les atomes
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant z :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+
+ Le cas choisit :           1           2           2
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ sur            4  cpus           0
+ Nbre de solutions possibles :            6
+LE MEILLEUR DECOUPAGE :    4    1    2    2    0.9200
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            4  cpus           0
+ Nbre de solutions possibles :            6
+LE MEILLEUR DECOUPAGE :    4    1    2    2    0.9200
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+ NEB: !!!!-------this is DRAG----------!!!!!!
+ image it            3          10
+ image it            3          10
+ image it            3          10
+ image it            3          10
+ image it            2          10
+ image it            2          10
+ image it            2          10
+ image it            2          10
+ image it            4          10
+ image it            4          10
+ image it            4          10
+ image it            4          10
+ image it            3          20
+ image it            3          20
+ image it            3          20
+ image it            3          20
+ image it            4          20
+ image it            4          20
+ image it            4          20
+ image it            4          20
+ image it            2          20
+ image it            2          20
+ image it            2          20
+ image it            2          20
+ image it            4          30
+ image it            4          30
+ image it            4          30
+ image it            4          30
+ image it            3          30
+ image it            3          30
+ image it            3          30
+ image it            3          30
+ image it            2          30
+ image it            2          30
+ image it            2          30
+ image it            2          30
+ image it            4          40
+ image it            4          40
+ image it            4          40
+ image it            4          40
+ force par atome  max  ev/Ang    7.8937863964867475E-002
+ energie   -6881.9840939380756     
+ image it            3          40
+ image it            3          40
+ image it            3          40
+ image it            3          40
+ image it            2          40
+ image it            2          40
+ image it            2          40
+ image it            2          40
+ image it            4          50
+ image it            4          50
+ image it            4          50
+ image it            4          50
+ image it            2          50
+ image it            2          50
+ image it            2          50
+ image it            2          50
+ *******Derniere iteration PAS CONVERGE !!**** 
+ image it            2          60
+ image it            2          60
+ image it            2          60
+ image it            2          60
+ image it            4          60
+ image it            4          60
+ image it            4          60
+ image it            4          60
+ NEB: THIS IS THE DRAG IMAGE=====================           2          60
+ NEB: THE ENERGY OF THIS IMAGE===================  -6882.0989932362245     
+NEB: stress tensor in Voigt notation (units: d/cm2 ):
+      0.82863463E+09      0.77819801E+09      0.80251901E+09      -57012.137           3760.4334           19398124.    
+ NEB: THIS IS THE DRAG IMAGE=====================           3          40
+ NEB: THE ENERGY OF THIS IMAGE===================  -6881.9840939380756     
+NEB: stress tensor in Voigt notation (units: d/cm2 ):
+      0.81592103E+09      0.81597633E+09      0.81814100E+09      -8366.6230          -13824.255           35523817.    
+ NEB: THIS IS THE DRAG IMAGE=====================           4          60
+ NEB: THE ENERGY OF THIS IMAGE===================  -6882.0989632653645     
+NEB: stress tensor in Voigt notation (units: d/cm2 ):
+      0.77813755E+09      0.82860571E+09      0.80249285E+09       31591.308           19095.717           19392752.    
+ IN rasmol
+ IN rasmol
+ IN rasmol
+NEB:--IMAGE-----REACT-COORD------ENERGY------ENERGY-ENERGY(1)-------------STRESS-sVoigt(1:6)-(units:-d/cm2)
+    1       0.0000000           -6882.1477            0.0000000           0.82344326E+09       0.78652994E+09       0.78652994E+09        1041.9918            9674.8382            9674.8382    
+    2      0.72985075           -6882.0990           0.48706922E-01       0.82863463E+09       0.77819801E+09       0.80251901E+09       -57012.137            3760.4334            19398124.    
+    3       2.3045434           -6881.9841           0.16360622           0.81592103E+09       0.81597633E+09       0.81814100E+09       -8366.6230           -13824.255            35523817.    
+    4      0.30790921           -6882.0990           0.48736893E-01       0.77813755E+09       0.82860571E+09       0.80249285E+09        31591.308            19095.717            19392752.    
+    5       1.0000000           -6882.1477           0.11995146E-04       0.78653755E+09       0.82351736E+09       0.78656961E+09        14372.761            6719.4940           -5537.5263    
+ -------------------------------------------
+          Min .. et .. Max
+E: -6882.148     -6881.984    
+          1 .. et .. NPATH
+B: -6882.148     -6882.148    
+les diffs
+ 1-NPATH    :  -1.1995146451226901E-005
+ -------------------------------------------
+ MAX-1      :  0.16360621995772817     
+ MAX-NPATH  :  0.16359422481127694     

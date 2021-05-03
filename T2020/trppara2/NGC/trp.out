@@ -1,0 +1,1968 @@
+ >>>>>>>>>>> entree readdm
+ nom fichier din=trppara.din                                                                     
+
+ Pas de conditions periodiques
+
+ -------- caracteristiques du run DM--------21
+     TREMPE RAPIDE Verlet std
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=       0.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        2100        2100           1
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ BIP   5.5580544182181004E-008
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+trppara.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+
+ temperature fin initspeed    0.0000000000000000     
+
+ TOTA          21
+ ***** PREMIERE ITERATION  VERLET STD ***
+
+
+<<<<<<<<  ITERATION =      1  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1  0.00    *Epot =   -0.1102379302933096E-07 erg 
+    *energie PAIRE EAM =   -0.230102704974E-08 erg 
+    *energie GLUE  =   -0.872276597959E-08 erg 
+         1  0.00    *Ec =    0.222441814934E-14 erg   (.005 K)
+         1  0.00    *Etot =   -0.1102379080491281E-07 erg 
+
+         1  0.00    *Temp instantanee = .005
+
+*temp instantanee des atomes de type 1 =         0.01
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.01
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      2  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         2  0.00    *Epot =   -0.1102381077248331E-07 erg 
+    *energie PAIRE EAM =   -0.230104474037E-08 erg 
+    *energie GLUE  =   -0.872276603211E-08 erg 
+         2  0.00    *Ec =    0.199416251254E-13 erg   (.047 K)
+         2  0.00    *Etot =   -0.1102379083085818E-07 erg 
+
+         2  0.00    *Temp instantanee = .047
+
+*temp instantanee des atomes de type 1 =         0.05
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.03
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      3  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         3  0.00    *Epot =   -0.1102384584440502E-07 erg 
+    *energie PAIRE EAM =   -0.230107970877E-08 erg 
+    *energie GLUE  =   -0.872276613563E-08 erg 
+         3  0.00    *Ec =    0.549627199260E-13 erg   (.130 K)
+         3  0.00    *Etot =   -0.1102379088168509E-07 erg 
+
+         3  0.00    *Temp instantanee = .130
+
+*temp instantanee des atomes de type 1 =         0.13
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.06
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      4  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         4  0.00    *Epot =   -0.1102389743204401E-07 erg 
+    *energie PAIRE EAM =   -0.230113114488E-08 erg 
+    *energie GLUE  =   -0.872276628717E-08 erg 
+         4  0.00    *Ec =    0.106476572567E-12 erg   (.251 K)
+         4  0.00    *Etot =   -0.1102379095547144E-07 erg 
+
+         4  0.00    *Temp instantanee = .251
+
+*temp instantanee des atomes de type 1 =         0.25
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.11
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      5  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         5  0.00    *Epot =   -0.1102396435342714E-07 erg 
+    *energie PAIRE EAM =   -0.230119787110E-08 erg 
+    *energie GLUE  =   -0.872276648233E-08 erg 
+         5  0.00    *Ec =    0.173304027397E-12 erg   (.408 K)
+         5  0.00    *Etot =   -0.1102379104939974E-07 erg 
+
+         5  0.00    *Temp instantanee = .408
+
+*temp instantanee des atomes de type 1 =         0.41
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.17
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      6  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         6  0.00    *Epot =   -0.1102404510150455E-07 erg 
+    *energie PAIRE EAM =   -0.230127838601E-08 erg 
+    *energie GLUE  =   -0.872276671549E-08 erg 
+         6  0.00    *Ec =    0.253941578637E-12 erg   (.598 K)
+         6  0.00    *Etot =   -0.1102379115992592E-07 erg 
+
+         6  0.00    *Temp instantanee = .598
+
+*temp instantanee des atomes de type 1 =         0.60
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.24
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      7  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         7  0.00    *Epot =   -0.1102413789882259E-07 erg 
+    *energie PAIRE EAM =   -0.230137091890E-08 erg 
+    *energie GLUE  =   -0.872276697992E-08 erg 
+         7  0.00    *Ec =    0.346615626293E-12 erg   (.817 K)
+         7  0.00    *Etot =   -0.1102379128319630E-07 erg 
+
+         7  0.00    *Temp instantanee = .817
+
+*temp instantanee des atomes de type 1 =         0.82
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.32
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      8  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         8  0.00    *Epot =   -0.1102424076160372E-07 erg 
+    *energie PAIRE EAM =   -0.230147349373E-08 erg 
+    *energie GLUE  =   -0.872276726787E-08 erg 
+         8  0.00    *Ec =    0.449347161083E-12 erg   (1.059 K)
+         8  0.00    *Etot =   -0.1102379141444264E-07 erg 
+
+         8  0.00    *Temp instantanee = 1.059
+
+*temp instantanee des atomes de type 1 =         1.06
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.41
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =      9  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         9  0.00    *Epot =   -0.1102435156957582E-07 erg 
+    *energie PAIRE EAM =   -0.230158399833E-08 erg 
+    *energie GLUE  =   -0.872276757125E-08 erg 
+         9  0.00    *Ec =    0.560011349635E-12 erg   (1.320 K)
+         9  0.00    *Etot =   -0.1102379155822619E-07 erg 
+
+         9  0.00    *Temp instantanee = 1.320
+
+*temp instantanee des atomes de type 1 =         1.32
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.52
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     10  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        10  0.00    *Epot =   -0.1102446813990410E-07 erg 
+    *energie PAIRE EAM =   -0.230170025932E-08 erg 
+    *energie GLUE  =   -0.872276788058E-08 erg 
+        10  0.00    *Ec =    0.676445637143E-12 erg   (1.594 K)
+        10  0.00    *Etot =   -0.1102379169426696E-07 erg 
+
+        10  0.00    *Temp instantanee = 1.594
+
+*temp instantanee des atomes de type 1 =         1.59
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.62
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     11  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        11  0.00    *Epot =   -0.1102458829823152E-07 erg 
+    *energie PAIRE EAM =   -0.230182011048E-08 erg 
+    *energie GLUE  =   -0.872276818775E-08 erg 
+        11  0.00    *Ec =    0.796422926783E-12 erg   (1.877 K)
+        11  0.00    *Etot =   -0.1102379187530474E-07 erg 
+
+        11  0.00    *Temp instantanee = 1.877
+
+*temp instantanee des atomes de type 1 =         1.88
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.74
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     12  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        12  0.00    *Epot =   -0.1102470995311217E-07 erg 
+    *energie PAIRE EAM =   -0.230194146826E-08 erg 
+    *energie GLUE  =   -0.872276848485E-08 erg 
+        12  0.00    *Ec =    0.917943531238E-12 erg   (2.163 K)
+        12  0.00    *Etot =   -0.1102379200958093E-07 erg 
+
+        12  0.00    *Temp instantanee = 2.163
+
+*temp instantanee des atomes de type 1 =         2.16
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.86
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     13  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        13  0.00    *Epot =   -0.1102483114204079E-07 erg 
+    *energie PAIRE EAM =   -0.230206237739E-08 erg 
+    *energie GLUE  =   -0.872276876465E-08 erg 
+        13  0.00    *Ec =    0.103891567769E-11 erg   (2.448 K)
+        13  0.00    *Etot =   -0.1102379222636310E-07 erg 
+
+        13  0.00    *Temp instantanee = 2.448
+
+*temp instantanee des atomes de type 1 =         2.45
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.98
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     14  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        14  0.00    *Epot =   -0.1102494998876293E-07 erg 
+    *energie PAIRE EAM =   -0.230218097232E-08 erg 
+    *energie GLUE  =   -0.872276901644E-08 erg 
+        14  0.00    *Ec =    0.115752221597E-11 erg   (2.728 K)
+        14  0.00    *Etot =   -0.1102379246654696E-07 erg 
+
+        14  0.00    *Temp instantanee = 2.728
+
+*temp instantanee des atomes de type 1 =         2.73
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.10
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     15  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        15  0.00    *Epot =   -0.1102506471574127E-07 erg 
+    *energie PAIRE EAM =   -0.230229548181E-08 erg 
+    *energie GLUE  =   -0.872276923393E-08 erg 
+        15  0.00    *Ec =    0.127210230264E-11 erg   (2.998 K)
+        15  0.00    *Etot =   -0.1102379261343864E-07 erg 
+
+        15  0.00    *Temp instantanee = 2.998
+
+*temp instantanee des atomes de type 1 =         3.00
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.23
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     16  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        16  0.00    *Epot =   -0.1102517373506898E-07 erg 
+    *energie PAIRE EAM =   -0.230240432715E-08 erg 
+    *energie GLUE  =   -0.872276940792E-08 erg 
+        16  0.00    *Ec =    0.138095393217E-11 erg   (3.254 K)
+        16  0.00    *Etot =   -0.1102379278113681E-07 erg 
+
+        16  0.00    *Temp instantanee = 3.254
+
+*temp instantanee des atomes de type 1 =         3.25
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.36
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     17  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        17  0.00    *Epot =   -0.1102527568535708E-07 erg 
+    *energie PAIRE EAM =   -0.230250615204E-08 erg 
+    *energie GLUE  =   -0.872276953332E-08 erg 
+        17  0.00    *Ec =    0.148279549950E-11 erg   (3.494 K)
+        17  0.00    *Etot =   -0.1102379288985758E-07 erg 
+
+        17  0.00    *Temp instantanee = 3.494
+
+*temp instantanee des atomes de type 1 =         3.49
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.48
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     18  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        18  0.00    *Epot =   -0.1102536943800638E-07 erg 
+    *energie PAIRE EAM =   -0.230259983412E-08 erg 
+    *energie GLUE  =   -0.872276960389E-08 erg 
+        18  0.00    *Ec =    0.157646461792E-11 erg   (3.715 K)
+        18  0.00    *Etot =   -0.1102379297338846E-07 erg 
+
+        18  0.00    *Temp instantanee = 3.715
+
+*temp instantanee des atomes de type 1 =         3.72
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.61
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     19  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        19  0.00    *Epot =   -0.1102545410855992E-07 erg 
+    *energie PAIRE EAM =   -0.230268449246E-08 erg 
+    *energie GLUE  =   -0.872276961610E-08 erg 
+        19  0.00    *Ec =    0.166086670722E-11 erg   (3.914 K)
+        19  0.00    *Etot =   -0.1102379324185270E-07 erg 
+
+        19  0.00    *Temp instantanee = 3.914
+
+*temp instantanee des atomes de type 1 =         3.91
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.73
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     20  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        20  0.00    *Epot =   -0.1102552907182830E-07 erg 
+    *energie PAIRE EAM =   -0.230275950040E-08 erg 
+    *energie GLUE  =   -0.872276957143E-08 erg 
+        20  0.00    *Ec =    0.173562756550E-11 erg   (4.090 K)
+        20  0.00    *Etot =   -0.1102379344426280E-07 erg 
+
+        20  0.00    *Temp instantanee = 4.090
+
+*temp instantanee des atomes de type 1 =         4.09
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.85
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     21  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        21  0.00    *Epot =   -0.1102559396990332E-07 erg 
+    *energie PAIRE EAM =   -0.230282450959E-08 erg 
+    *energie GLUE  =   -0.872276946031E-08 erg 
+        21  0.00    *Ec =    0.159921316871E-11 erg   (3.769 K)
+        21  0.00    *Etot =   -0.1102399475673461E-07 erg 
+
+        21  0.00    *Temp instantanee = 3.769
+
+*temp instantanee des atomes de type 1 =         3.77
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.94
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     22  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        22  0.00    *Epot =   -0.1102565302364956E-07 erg 
+    *energie PAIRE EAM =   -0.230288368465E-08 erg 
+    *energie GLUE  =   -0.872276933900E-08 erg 
+        22  0.00    *Ec =    0.154370184047E-11 erg   (3.638 K)
+        22  0.00    *Etot =   -0.1102410932180909E-07 erg 
+
+        22  0.00    *Temp instantanee = 3.638
+
+*temp instantanee des atomes de type 1 =         3.64
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.01
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     23  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        23  0.00    *Epot =   -0.1102570595522656E-07 erg 
+    *energie PAIRE EAM =   -0.230293670378E-08 erg 
+    *energie GLUE  =   -0.872276925145E-08 erg 
+        23  0.00    *Ec =    0.155741240101E-11 erg   (3.670 K)
+        23  0.00    *Etot =   -0.1102414854282555E-07 erg 
+
+        23  0.00    *Temp instantanee = 3.670
+
+*temp instantanee des atomes de type 1 =         3.67
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.09
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     24  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        24  0.00    *Epot =   -0.1102575319513244E-07 erg 
+    *energie PAIRE EAM =   -0.230298411167E-08 erg 
+    *energie GLUE  =   -0.872276908346E-08 erg 
+        24  0.00    *Ec =    0.152108435022E-11 erg   (3.585 K)
+        24  0.00    *Etot =   -0.1102423211078222E-07 erg 
+
+        24  0.00    *Temp instantanee = 3.585
+
+*temp instantanee des atomes de type 1 =         3.58
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.15
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     25  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        25  0.00    *Epot =   -0.1102579590522534E-07 erg 
+    *energie PAIRE EAM =   -0.230302696097E-08 erg 
+    *energie GLUE  =   -0.872276894426E-08 erg 
+        25  0.00    *Ec =    0.151737949099E-11 erg   (3.576 K)
+        25  0.00    *Etot =   -0.1102427852573435E-07 erg 
+
+        25  0.00    *Temp instantanee = 3.576
+
+*temp instantanee des atomes de type 1 =         3.58
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.21
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     26  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        26  0.00    *Epot =   -0.1102583427927359E-07 erg 
+    *energie PAIRE EAM =   -0.230306546444E-08 erg 
+    *energie GLUE  =   -0.872276881483E-08 erg 
+        26  0.00    *Ec =    0.154670788157E-11 erg   (3.645 K)
+        26  0.00    *Etot =   -0.1102428757139202E-07 erg 
+
+        26  0.00    *Temp instantanee = 3.645
+
+*temp instantanee des atomes de type 1 =         3.65
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.26
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     27  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        27  0.00    *Epot =   -0.1102586837031109E-07 erg 
+    *energie PAIRE EAM =   -0.230309977383E-08 erg 
+    *energie GLUE  =   -0.872276859648E-08 erg 
+        27  0.00    *Ec =    0.151457545772E-11 erg   (3.569 K)
+        27  0.00    *Etot =   -0.1102435379485337E-07 erg 
+
+        27  0.00    *Temp instantanee = 3.569
+
+*temp instantanee des atomes de type 1 =         3.57
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.31
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     28  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        28  0.00    *Epot =   -0.1102589878803413E-07 erg 
+    *energie PAIRE EAM =   -0.230313015551E-08 erg 
+    *energie GLUE  =   -0.872276863253E-08 erg 
+        28  0.00    *Ec =    0.148828316470E-11 erg   (3.507 K)
+        28  0.00    *Etot =   -0.1102441050486943E-07 erg 
+
+        28  0.00    *Temp instantanee = 3.507
+
+*temp instantanee des atomes de type 1 =         3.51
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.35
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     29  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        29  0.00    *Epot =   -0.1102592589757071E-07 erg 
+    *energie PAIRE EAM =   -0.230315709109E-08 erg 
+    *energie GLUE  =   -0.872276880648E-08 erg 
+        29  0.00    *Ec =    0.150316622536E-11 erg   (3.542 K)
+        29  0.00    *Etot =   -0.1102442273134535E-07 erg 
+
+        29  0.00    *Temp instantanee = 3.542
+
+*temp instantanee des atomes de type 1 =         3.54
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.39
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     30  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        30  0.00    *Epot =   -0.1102594973402359E-07 erg 
+    *energie PAIRE EAM =   -0.230318080556E-08 erg 
+    *energie GLUE  =   -0.872276892847E-08 erg 
+        30  0.00    *Ec =    0.151239071826E-11 erg   (3.564 K)
+        30  0.00    *Etot =   -0.1102443734330533E-07 erg 
+
+        30  0.00    *Temp instantanee = 3.564
+
+*temp instantanee des atomes de type 1 =         3.56
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.43
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     31  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        31  0.00    *Epot =   -0.1102597013707803E-07 erg 
+    *energie PAIRE EAM =   -0.230320114429E-08 erg 
+    *energie GLUE  =   -0.872276899278E-08 erg 
+        31  0.00    *Ec =    0.152620192201E-11 erg   (3.597 K)
+        31  0.00    *Etot =   -0.1102444393515602E-07 erg 
+
+        31  0.00    *Temp instantanee = 3.597
+
+*temp instantanee des atomes de type 1 =         3.60
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.47
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     32  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        32  0.00    *Epot =   -0.1102598694692398E-07 erg 
+    *energie PAIRE EAM =   -0.230321795143E-08 erg 
+    *energie GLUE  =   -0.872276899549E-08 erg 
+        32  0.00    *Ec =    0.153865633127E-11 erg   (3.626 K)
+        32  0.00    *Etot =   -0.1102444829059271E-07 erg 
+
+        32  0.00    *Temp instantanee = 3.626
+
+*temp instantanee des atomes de type 1 =         3.63
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.51
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     33  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        33  0.00    *Epot =   -0.1102600012888389E-07 erg 
+    *energie PAIRE EAM =   -0.230323115973E-08 erg 
+    *energie GLUE  =   -0.872276896915E-08 erg 
+        33  0.00    *Ec =    0.155010629652E-11 erg   (3.653 K)
+        33  0.00    *Etot =   -0.1102445002258737E-07 erg 
+
+        33  0.00    *Temp instantanee = 3.653
+
+*temp instantanee des atomes de type 1 =         3.65
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.54
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     34  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        34  0.00    *Epot =   -0.1102600965991469E-07 erg 
+    *energie PAIRE EAM =   -0.230324077090E-08 erg 
+    *energie GLUE  =   -0.872276888902E-08 erg 
+        34  0.00    *Ec =    0.155942597022E-11 erg   (3.675 K)
+        34  0.00    *Etot =   -0.1102445023394447E-07 erg 
+
+        34  0.00    *Temp instantanee = 3.675
+
+*temp instantanee des atomes de type 1 =         3.67
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.57
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     35  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        35  0.00    *Epot =   -0.1102601551079596E-07 erg 
+    *energie PAIRE EAM =   -0.230324674846E-08 erg 
+    *energie GLUE  =   -0.872276876233E-08 erg 
+        35  0.00    *Ec =    0.666630174907E-12 erg   (1.571 K)
+        35  0.00    *Etot =   -0.1102534888062105E-07 erg 
+
+        35  0.00    *Temp instantanee = 1.571
+
+*temp instantanee des atomes de type 1 =         1.57
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.55
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     36  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        36  0.00    *Epot =   -0.1102602159489558E-07 erg 
+    *energie PAIRE EAM =   -0.230325289024E-08 erg 
+    *energie GLUE  =   -0.872276870466E-08 erg 
+        36  0.00    *Ec =    0.163029025654E-12 erg   (.384 K)
+        36  0.00    *Etot =   -0.1102585856586993E-07 erg 
+
+        36  0.00    *Temp instantanee = .384
+
+*temp instantanee des atomes de type 1 =         0.38
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.49
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     37  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        37  0.00    *Epot =   -0.1102602792973254E-07 erg 
+    *energie PAIRE EAM =   -0.230325931861E-08 erg 
+    *energie GLUE  =   -0.872276861112E-08 erg 
+        37  0.00    *Ec =    0.843057498846E-13 erg   (.199 K)
+        37  0.00    *Etot =   -0.1102594362398265E-07 erg 
+
+        37  0.00    *Temp instantanee = .199
+
+*temp instantanee des atomes de type 1 =         0.20
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.42
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     38  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        38  0.00    *Epot =   -0.1102603438535997E-07 erg 
+    *energie PAIRE EAM =   -0.230326588449E-08 erg 
+    *energie GLUE  =   -0.872276850087E-08 erg 
+        38  0.00    *Ec =    0.824031901459E-13 erg   (.194 K)
+        38  0.00    *Etot =   -0.1102595198216982E-07 erg 
+
+        38  0.00    *Temp instantanee = .194
+
+*temp instantanee des atomes de type 1 =         0.19
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.37
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     39  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        39  0.00    *Epot =   -0.1102604094049269E-07 erg 
+    *energie PAIRE EAM =   -0.230327253472E-08 erg 
+    *energie GLUE  =   -0.872276840577E-08 erg 
+        39  0.00    *Ec =    0.878157215311E-13 erg   (.207 K)
+        39  0.00    *Etot =   -0.1102595312477115E-07 erg 
+
+        39  0.00    *Temp instantanee = .207
+
+*temp instantanee des atomes de type 1 =         0.21
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.31
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     40  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        40  0.00    *Epot =   -0.1102604753016204E-07 erg 
+    *energie PAIRE EAM =   -0.230327922376E-08 erg 
+    *energie GLUE  =   -0.872276830640E-08 erg 
+        40  0.00    *Ec =    0.929907265945E-13 erg   (.219 K)
+        40  0.00    *Etot =   -0.1102595453943545E-07 erg 
+
+        40  0.00    *Temp instantanee = .219
+
+*temp instantanee des atomes de type 1 =         0.22
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.26
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     41  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        41  0.00    *Epot =   -0.1102605410006085E-07 erg 
+    *energie PAIRE EAM =   -0.230328590419E-08 erg 
+    *energie GLUE  =   -0.872276819587E-08 erg 
+        41  0.00    *Ec =    0.925640736487E-13 erg   (.218 K)
+        41  0.00    *Etot =   -0.1102596153598720E-07 erg 
+
+        41  0.00    *Temp instantanee = .218
+
+*temp instantanee des atomes de type 1 =         0.22
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.21
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     42  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        42  0.00    *Epot =   -0.1102606060991638E-07 erg 
+    *energie PAIRE EAM =   -0.230329257245E-08 erg 
+    *energie GLUE  =   -0.872276803747E-08 erg 
+        42  0.00    *Ec =    0.926229884455E-13 erg   (.218 K)
+        42  0.00    *Etot =   -0.1102596798692793E-07 erg 
+
+        42  0.00    *Temp instantanee = .218
+
+*temp instantanee des atomes de type 1 =         0.22
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.16
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     43  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        43  0.00    *Epot =   -0.1102606701853663E-07 erg 
+    *energie PAIRE EAM =   -0.230329909557E-08 erg 
+    *energie GLUE  =   -0.872276792296E-08 erg 
+        43  0.00    *Ec =    0.921725327531E-13 erg   (.217 K)
+        43  0.00    *Etot =   -0.1102597484600388E-07 erg 
+
+        43  0.00    *Temp instantanee = .217
+
+*temp instantanee des atomes de type 1 =         0.22
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.12
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     44  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        44  0.00    *Epot =   -0.1102607329890014E-07 erg 
+    *energie PAIRE EAM =   -0.230330541302E-08 erg 
+    *energie GLUE  =   -0.872276788588E-08 erg 
+        44  0.00    *Ec =    0.961368372238E-13 erg   (.227 K)
+        44  0.00    *Etot =   -0.1102597716206291E-07 erg 
+
+        44  0.00    *Temp instantanee = .227
+
+*temp instantanee des atomes de type 1 =         0.23
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.07
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     45  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        45  0.00    *Epot =   -0.1102607940695802E-07 erg 
+    *energie PAIRE EAM =   -0.230331156157E-08 erg 
+    *energie GLUE  =   -0.872276784538E-08 erg 
+        45  0.00    *Ec =    0.100066797568E-12 erg   (.236 K)
+        45  0.00    *Etot =   -0.1102597934016045E-07 erg 
+
+        45  0.00    *Temp instantanee = .236
+
+*temp instantanee des atomes de type 1 =         0.24
+ ----------valeurs moyennes------------
+*temperature moyenne =         2.03
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     46  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        46  0.00    *Epot =   -0.1102608530406229E-07 erg 
+    *energie PAIRE EAM =   -0.230331750188E-08 erg 
+    *energie GLUE  =   -0.872276780219E-08 erg 
+        46  0.00    *Ec =    0.104461208259E-12 erg   (.246 K)
+        46  0.00    *Etot =   -0.1102598084285403E-07 erg 
+
+        46  0.00    *Temp instantanee = .246
+
+*temp instantanee des atomes de type 1 =         0.25
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.99
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     47  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        47  0.00    *Epot =   -0.1102609095080006E-07 erg 
+    *energie PAIRE EAM =   -0.230332318581E-08 erg 
+    *energie GLUE  =   -0.872276776499E-08 erg 
+        47  0.00    *Ec =    0.107521704320E-12 erg   (.253 K)
+        47  0.00    *Etot =   -0.1102598342909574E-07 erg 
+
+        47  0.00    *Temp instantanee = .253
+
+*temp instantanee des atomes de type 1 =         0.25
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.96
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     48  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        48  0.00    *Epot =   -0.1102609631775007E-07 erg 
+    *energie PAIRE EAM =   -0.230332859276E-08 erg 
+    *energie GLUE  =   -0.872276772499E-08 erg 
+        48  0.00    *Ec =    0.111230987552E-12 erg   (.262 K)
+        48  0.00    *Etot =   -0.1102598508676252E-07 erg 
+
+        48  0.00    *Temp instantanee = .262
+
+*temp instantanee des atomes de type 1 =         0.26
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.92
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     49  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        49  0.00    *Epot =   -0.1102610137264064E-07 erg 
+    *energie PAIRE EAM =   -0.230333369824E-08 erg 
+    *energie GLUE  =   -0.872276767440E-08 erg 
+        49  0.00    *Ec =    0.113420737423E-12 erg   (.267 K)
+        49  0.00    *Etot =   -0.1102598795190322E-07 erg 
+
+        49  0.00    *Temp instantanee = .267
+
+*temp instantanee des atomes de type 1 =         0.27
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.89
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     50  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        50  0.00    *Epot =   -0.1102610609883391E-07 erg 
+    *energie PAIRE EAM =   -0.230333848320E-08 erg 
+    *energie GLUE  =   -0.872276761563E-08 erg 
+        50  0.00    *Ec =    0.114850208608E-12 erg   (.271 K)
+        50  0.00    *Etot =   -0.1102599124862531E-07 erg 
+
+        50  0.00    *Temp instantanee = .271
+
+*temp instantanee des atomes de type 1 =         0.27
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.85
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     51  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        51  0.00    *Epot =   -0.1102611049081046E-07 erg 
+    *energie PAIRE EAM =   -0.230334294017E-08 erg 
+    *energie GLUE  =   -0.872276755064E-08 erg 
+        51  0.00    *Ec =    0.104564939784E-12 erg   (.246 K)
+        51  0.00    *Etot =   -0.1102600592587067E-07 erg 
+
+        51  0.00    *Temp instantanee = .246
+
+*temp instantanee des atomes de type 1 =         0.25
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.82
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     52  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        52  0.00    *Epot =   -0.1102611462292698E-07 erg 
+    *energie PAIRE EAM =   -0.230334709073E-08 erg 
+    *energie GLUE  =   -0.872276753220E-08 erg 
+        52  0.00    *Ec =    0.103601796615E-12 erg   (.244 K)
+        52  0.00    *Etot =   -0.1102601102113037E-07 erg 
+
+        52  0.00    *Temp instantanee = .244
+
+*temp instantanee des atomes de type 1 =         0.24
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.79
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     53  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        53  0.00    *Epot =   -0.1102611845631546E-07 erg 
+    *energie PAIRE EAM =   -0.230335095201E-08 erg 
+    *energie GLUE  =   -0.872276750430E-08 erg 
+        53  0.00    *Ec =    0.107150357675E-12 erg   (.253 K)
+        53  0.00    *Etot =   -0.1102601130595779E-07 erg 
+
+        53  0.00    *Temp instantanee = .253
+
+*temp instantanee des atomes de type 1 =         0.25
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.76
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     54  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        54  0.00    *Epot =   -0.1102612196669703E-07 erg 
+    *energie PAIRE EAM =   -0.230335449755E-08 erg 
+    *energie GLUE  =   -0.872276746915E-08 erg 
+        54  0.00    *Ec =    0.109870252177E-12 erg   (.259 K)
+        54  0.00    *Etot =   -0.1102601209644485E-07 erg 
+
+        54  0.00    *Temp instantanee = .259
+
+*temp instantanee des atomes de type 1 =         0.26
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.74
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     55  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        55  0.00    *Epot =   -0.1102612513618306E-07 erg 
+    *energie PAIRE EAM =   -0.230335771139E-08 erg 
+    *energie GLUE  =   -0.872276742479E-08 erg 
+        55  0.00    *Ec =    0.111833798352E-12 erg   (.264 K)
+        55  0.00    *Etot =   -0.1102601330238471E-07 erg 
+
+        55  0.00    *Temp instantanee = .264
+
+*temp instantanee des atomes de type 1 =         0.26
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.71
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     56  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        56  0.00    *Epot =   -0.1102612795104376E-07 erg 
+    *energie PAIRE EAM =   -0.230336057748E-08 erg 
+    *energie GLUE  =   -0.872276737356E-08 erg 
+        56  0.00    *Ec =    0.111008142463E-12 erg   (.262 K)
+        56  0.00    *Etot =   -0.1102601694290130E-07 erg 
+
+        56  0.00    *Temp instantanee = .262
+
+*temp instantanee des atomes de type 1 =         0.26
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.68
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     57  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        57  0.00    *Epot =   -0.1102613042714903E-07 erg 
+    *energie PAIRE EAM =   -0.230336310861E-08 erg 
+    *energie GLUE  =   -0.872276731854E-08 erg 
+        57  0.00    *Ec =    0.112304954781E-12 erg   (.265 K)
+        57  0.00    *Etot =   -0.1102601812219424E-07 erg 
+
+        57  0.00    *Temp instantanee = .265
+
+*temp instantanee des atomes de type 1 =         0.26
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.66
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     58  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        58  0.00    *Epot =   -0.1102613255317804E-07 erg 
+    *energie PAIRE EAM =   -0.230336529642E-08 erg 
+    *energie GLUE  =   -0.872276725676E-08 erg 
+        58  0.00    *Ec =    0.114113114076E-12 erg   (.269 K)
+        58  0.00    *Etot =   -0.1102601844006396E-07 erg 
+
+        58  0.00    *Temp instantanee = .269
+
+*temp instantanee des atomes de type 1 =         0.27
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.63
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     59  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        59  0.00    *Epot =   -0.1102613432584914E-07 erg 
+    *energie PAIRE EAM =   -0.230336713725E-08 erg 
+    *energie GLUE  =   -0.872276718859E-08 erg 
+        59  0.00    *Ec =    0.115222470339E-12 erg   (.272 K)
+        59  0.00    *Etot =   -0.1102601910337880E-07 erg 
+
+        59  0.00    *Temp instantanee = .272
+
+*temp instantanee des atomes de type 1 =         0.27
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.61
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     60  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        60  0.00    *Epot =   -0.1102613574696164E-07 erg 
+    *energie PAIRE EAM =   -0.230336863314E-08 erg 
+    *energie GLUE  =   -0.872276711382E-08 erg 
+        60  0.00    *Ec =    0.921254680875E-13 erg   (.217 K)
+        60  0.00    *Etot =   -0.1102604362149356E-07 erg 
+
+        60  0.00    *Temp instantanee = .217
+
+*temp instantanee des atomes de type 1 =         0.22
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.59
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     61  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        61  0.00    *Epot =   -0.1102613695937788E-07 erg 
+    *energie PAIRE EAM =   -0.230336991637E-08 erg 
+    *energie GLUE  =   -0.872276704300E-08 erg 
+        61  0.00    *Ec =    0.600881803581E-13 erg   (.142 K)
+        61  0.00    *Etot =   -0.1102607687119753E-07 erg 
+
+        61  0.00    *Temp instantanee = .142
+
+*temp instantanee des atomes de type 1 =         0.14
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.56
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     62  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        62  0.00    *Epot =   -0.1102613811869547E-07 erg 
+    *energie PAIRE EAM =   -0.230337113592E-08 erg 
+    *energie GLUE  =   -0.872276698277E-08 erg 
+        62  0.00    *Ec =    0.520392480966E-13 erg   (.123 K)
+        62  0.00    *Etot =   -0.1102608607944737E-07 erg 
+
+        62  0.00    *Temp instantanee = .123
+
+*temp instantanee des atomes de type 1 =         0.12
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.54
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     63  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        63  0.00    *Epot =   -0.1102613917038512E-07 erg 
+    *energie PAIRE EAM =   -0.230337225153E-08 erg 
+    *energie GLUE  =   -0.872276691885E-08 erg 
+        63  0.00    *Ec =    0.414710497977E-13 erg   (.098 K)
+        63  0.00    *Etot =   -0.1102609769933533E-07 erg 
+
+        63  0.00    *Temp instantanee = .098
+
+*temp instantanee des atomes de type 1 =         0.10
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.52
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     64  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        64  0.00    *Epot =   -0.1102614015908720E-07 erg 
+    *energie PAIRE EAM =   -0.230337331399E-08 erg 
+    *energie GLUE  =   -0.872276684510E-08 erg 
+        64  0.00    *Ec =    0.364712259877E-13 erg   (.086 K)
+        64  0.00    *Etot =   -0.1102610368786121E-07 erg 
+
+        64  0.00    *Temp instantanee = .086
+
+*temp instantanee des atomes de type 1 =         0.09
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.50
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     65  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        65  0.00    *Epot =   -0.1102614109633139E-07 erg 
+    *energie PAIRE EAM =   -0.230337432196E-08 erg 
+    *energie GLUE  =   -0.872276677437E-08 erg 
+        65  0.00    *Ec =    0.229605934489E-13 erg   (.054 K)
+        65  0.00    *Etot =   -0.1102611813573794E-07 erg 
+
+        65  0.00    *Temp instantanee = .054
+
+*temp instantanee des atomes de type 1 =         0.05
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.47
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     66  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        66  0.00    *Epot =   -0.1102614202531807E-07 erg 
+    *energie PAIRE EAM =   -0.230337532749E-08 erg 
+    *energie GLUE  =   -0.872276669782E-08 erg 
+        66  0.00    *Ec =    0.173141910644E-13 erg   (.041 K)
+        66  0.00    *Etot =   -0.1102612471112701E-07 erg 
+
+        66  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.45
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     67  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        67  0.00    *Epot =   -0.1102614294884782E-07 erg 
+    *energie PAIRE EAM =   -0.230337633266E-08 erg 
+    *energie GLUE  =   -0.872276661618E-08 erg 
+        67  0.00    *Ec =    0.161823596200E-13 erg   (.038 K)
+        67  0.00    *Etot =   -0.1102612676648820E-07 erg 
+
+        67  0.00    *Temp instantanee = .038
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.43
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     68  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        68  0.00    *Epot =   -0.1102614387138730E-07 erg 
+    *energie PAIRE EAM =   -0.230337733012E-08 erg 
+    *energie GLUE  =   -0.872276654127E-08 erg 
+        68  0.00    *Ec =    0.163960788187E-13 erg   (.039 K)
+        68  0.00    *Etot =   -0.1102612747530849E-07 erg 
+
+        68  0.00    *Temp instantanee = .039
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.41
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     69  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        69  0.00    *Epot =   -0.1102614478849243E-07 erg 
+    *energie PAIRE EAM =   -0.230337832068E-08 erg 
+    *energie GLUE  =   -0.872276646781E-08 erg 
+        69  0.00    *Ec =    0.165663220329E-13 erg   (.039 K)
+        69  0.00    *Etot =   -0.1102612822217039E-07 erg 
+
+        69  0.00    *Temp instantanee = .039
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.39
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     70  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        70  0.00    *Epot =   -0.1102614569671451E-07 erg 
+    *energie PAIRE EAM =   -0.230337928520E-08 erg 
+    *energie GLUE  =   -0.872276641151E-08 erg 
+        70  0.00    *Ec =    0.169395477423E-13 erg   (.040 K)
+        70  0.00    *Etot =   -0.1102612875716676E-07 erg 
+
+        70  0.00    *Temp instantanee = .040
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.37
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     71  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        71  0.00    *Epot =   -0.1102614659281546E-07 erg 
+    *energie PAIRE EAM =   -0.230338020677E-08 erg 
+    *energie GLUE  =   -0.872276638604E-08 erg 
+        71  0.00    *Ec =    0.160031720916E-13 erg   (.038 K)
+        71  0.00    *Etot =   -0.1102613058964337E-07 erg 
+
+        71  0.00    *Temp instantanee = .038
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.35
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     72  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        72  0.00    *Epot =   -0.1102614748716713E-07 erg 
+    *energie PAIRE EAM =   -0.230338106918E-08 erg 
+    *energie GLUE  =   -0.872276641799E-08 erg 
+        72  0.00    *Ec =    0.162003486413E-13 erg   (.038 K)
+        72  0.00    *Etot =   -0.1102613128681849E-07 erg 
+
+        72  0.00    *Temp instantanee = .038
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.33
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     73  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        73  0.00    *Epot =   -0.1102614836931330E-07 erg 
+    *energie PAIRE EAM =   -0.230338191997E-08 erg 
+    *energie GLUE  =   -0.872276644934E-08 erg 
+        73  0.00    *Ec =    0.167947674062E-13 erg   (.040 K)
+        73  0.00    *Etot =   -0.1102613157454589E-07 erg 
+
+        73  0.00    *Temp instantanee = .040
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.32
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     74  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        74  0.00    *Epot =   -0.1102614923564218E-07 erg 
+    *energie PAIRE EAM =   -0.230338275538E-08 erg 
+    *energie GLUE  =   -0.872276648026E-08 erg 
+        74  0.00    *Ec =    0.172740086805E-13 erg   (.041 K)
+        74  0.00    *Etot =   -0.1102613196163350E-07 erg 
+
+        74  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.30
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     75  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        75  0.00    *Epot =   -0.1102615008255855E-07 erg 
+    *energie PAIRE EAM =   -0.230338357046E-08 erg 
+    *energie GLUE  =   -0.872276651210E-08 erg 
+        75  0.00    *Ec =    0.175085650233E-13 erg   (.041 K)
+        75  0.00    *Etot =   -0.1102613257399353E-07 erg 
+
+        75  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.28
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     76  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        76  0.00    *Epot =   -0.1102615090763878E-07 erg 
+    *energie PAIRE EAM =   -0.230338436783E-08 erg 
+    *energie GLUE  =   -0.872276653981E-08 erg 
+        76  0.00    *Ec =    0.173753344467E-13 erg   (.041 K)
+        76  0.00    *Etot =   -0.1102613353230433E-07 erg 
+
+        76  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.27
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     77  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        77  0.00    *Epot =   -0.1102615170818417E-07 erg 
+    *energie PAIRE EAM =   -0.230338515278E-08 erg 
+    *energie GLUE  =   -0.872276655540E-08 erg 
+        77  0.00    *Ec =    0.175691132486E-13 erg   (.041 K)
+        77  0.00    *Etot =   -0.1102613413907093E-07 erg 
+
+        77  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.25
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     78  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        78  0.00    *Epot =   -0.1102615248219631E-07 erg 
+    *energie PAIRE EAM =   -0.230338592566E-08 erg 
+    *energie GLUE  =   -0.872276655654E-08 erg 
+        78  0.00    *Ec =    0.179861824465E-13 erg   (.042 K)
+        78  0.00    *Etot =   -0.1102613449601386E-07 erg 
+
+        78  0.00    *Temp instantanee = .042
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.23
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     79  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        79  0.00    *Epot =   -0.1102615322742239E-07 erg 
+    *energie PAIRE EAM =   -0.230338667057E-08 erg 
+    *energie GLUE  =   -0.872276655685E-08 erg 
+        79  0.00    *Ec =    0.182095697849E-13 erg   (.043 K)
+        79  0.00    *Etot =   -0.1102613501785260E-07 erg 
+
+        79  0.00    *Temp instantanee = .043
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.22
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     80  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        80  0.00    *Epot =   -0.1102615394222635E-07 erg 
+    *energie PAIRE EAM =   -0.230338738407E-08 erg 
+    *energie GLUE  =   -0.872276655816E-08 erg 
+        80  0.00    *Ec =    0.167732013143E-13 erg   (.040 K)
+        80  0.00    *Etot =   -0.1102613716902504E-07 erg 
+
+        80  0.00    *Temp instantanee = .040
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.20
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     81  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        81  0.00    *Epot =   -0.1102615463357618E-07 erg 
+    *energie PAIRE EAM =   -0.230338808048E-08 erg 
+    *energie GLUE  =   -0.872276655310E-08 erg 
+        81  0.00    *Ec =    0.166853017711E-13 erg   (.039 K)
+        81  0.00    *Etot =   -0.1102613794827441E-07 erg 
+
+        81  0.00    *Temp instantanee = .039
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.19
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     82  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        82  0.00    *Epot =   -0.1102615529590263E-07 erg 
+    *energie PAIRE EAM =   -0.230338874814E-08 erg 
+    *energie GLUE  =   -0.872276654777E-08 erg 
+        82  0.00    *Ec =    0.171772926670E-13 erg   (.040 K)
+        82  0.00    *Etot =   -0.1102613811860996E-07 erg 
+
+        82  0.00    *Temp instantanee = .040
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.18
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     83  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        83  0.00    *Epot =   -0.1102615592736572E-07 erg 
+    *energie PAIRE EAM =   -0.230338938656E-08 erg 
+    *energie GLUE  =   -0.872276654081E-08 erg 
+        83  0.00    *Ec =    0.175636408732E-13 erg   (.041 K)
+        83  0.00    *Etot =   -0.1102613836372485E-07 erg 
+
+        83  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.16
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     84  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        84  0.00    *Epot =   -0.1102615652647420E-07 erg 
+    *energie PAIRE EAM =   -0.230338999357E-08 erg 
+    *energie GLUE  =   -0.872276653290E-08 erg 
+        84  0.00    *Ec =    0.171713710734E-13 erg   (.040 K)
+        84  0.00    *Etot =   -0.1102613935510312E-07 erg 
+
+        84  0.00    *Temp instantanee = .040
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.15
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     85  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        85  0.00    *Epot =   -0.1102615709551673E-07 erg 
+    *energie PAIRE EAM =   -0.230339057055E-08 erg 
+    *energie GLUE  =   -0.872276652497E-08 erg 
+        85  0.00    *Ec =    0.170776390385E-13 erg   (.040 K)
+        85  0.00    *Etot =   -0.1102614001787769E-07 erg 
+
+        85  0.00    *Temp instantanee = .040
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.14
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     86  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        86  0.00    *Epot =   -0.1102615763448681E-07 erg 
+    *energie PAIRE EAM =   -0.230339111315E-08 erg 
+    *energie GLUE  =   -0.872276652134E-08 erg 
+        86  0.00    *Ec =    0.172008939243E-13 erg   (.041 K)
+        86  0.00    *Etot =   -0.1102614043359288E-07 erg 
+
+        86  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.12
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     87  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        87  0.00    *Epot =   -0.1102615814275331E-07 erg 
+    *energie PAIRE EAM =   -0.230339162589E-08 erg 
+    *energie GLUE  =   -0.872276651686E-08 erg 
+        87  0.00    *Ec =    0.175046290894E-13 erg   (.041 K)
+        87  0.00    *Etot =   -0.1102614063812423E-07 erg 
+
+        87  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.11
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     88  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        88  0.00    *Epot =   -0.1102615862045451E-07 erg 
+    *energie PAIRE EAM =   -0.230339211283E-08 erg 
+    *energie GLUE  =   -0.872276650763E-08 erg 
+        88  0.00    *Ec =    0.176467005150E-13 erg   (.042 K)
+        88  0.00    *Etot =   -0.1102614097375400E-07 erg 
+
+        88  0.00    *Temp instantanee = .042
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.10
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     89  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        89  0.00    *Epot =   -0.1102615906779146E-07 erg 
+    *energie PAIRE EAM =   -0.230339257031E-08 erg 
+    *energie GLUE  =   -0.872276649748E-08 erg 
+        89  0.00    *Ec =    0.175950515604E-13 erg   (.041 K)
+        89  0.00    *Etot =   -0.1102614147273990E-07 erg 
+
+        89  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.09
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     90  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        90  0.00    *Epot =   -0.1102615948576130E-07 erg 
+    *energie PAIRE EAM =   -0.230339299257E-08 erg 
+    *energie GLUE  =   -0.872276649319E-08 erg 
+        90  0.00    *Ec =    0.175364442076E-13 erg   (.041 K)
+        90  0.00    *Etot =   -0.1102614194931709E-07 erg 
+
+        90  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.08
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     91  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        91  0.00    *Epot =   -0.1102615987564129E-07 erg 
+    *energie PAIRE EAM =   -0.230339339056E-08 erg 
+    *energie GLUE  =   -0.872276648508E-08 erg 
+        91  0.00    *Ec =    0.173244814043E-13 erg   (.041 K)
+        91  0.00    *Etot =   -0.1102614255115988E-07 erg 
+
+        91  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.06
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     92  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        92  0.00    *Epot =   -0.1102616023799238E-07 erg 
+    *energie PAIRE EAM =   -0.230339376505E-08 erg 
+    *energie GLUE  =   -0.872276647295E-08 erg 
+        92  0.00    *Ec =    0.174906247826E-13 erg   (.041 K)
+        92  0.00    *Etot =   -0.1102614274736760E-07 erg 
+
+        92  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.05
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     93  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        93  0.00    *Epot =   -0.1102616057296000E-07 erg 
+    *energie PAIRE EAM =   -0.230339411357E-08 erg 
+    *energie GLUE  =   -0.872276645939E-08 erg 
+        93  0.00    *Ec =    0.177454791244E-13 erg   (.042 K)
+        93  0.00    *Etot =   -0.1102614282748088E-07 erg 
+
+        93  0.00    *Temp instantanee = .042
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.04
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     94  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        94  0.00    *Epot =   -0.1102616088112197E-07 erg 
+    *energie PAIRE EAM =   -0.230339443619E-08 erg 
+    *energie GLUE  =   -0.872276644493E-08 erg 
+        94  0.00    *Ec =    0.178893846948E-13 erg   (.042 K)
+        94  0.00    *Etot =   -0.1102614299173728E-07 erg 
+
+        94  0.00    *Temp instantanee = .042
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.03
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     95  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        95  0.00    *Epot =   -0.1102616116350882E-07 erg 
+    *energie PAIRE EAM =   -0.230339473498E-08 erg 
+    *energie GLUE  =   -0.872276642853E-08 erg 
+        95  0.00    *Ec =    0.173513243829E-13 erg   (.041 K)
+        95  0.00    *Etot =   -0.1102614381218444E-07 erg 
+
+        95  0.00    *Temp instantanee = .041
+
+*temp instantanee des atomes de type 1 =         0.04
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.02
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     96  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        96  0.00    *Epot =   -0.1102616142238786E-07 erg 
+    *energie PAIRE EAM =   -0.230339501969E-08 erg 
+    *energie GLUE  =   -0.872276640269E-08 erg 
+        96  0.00    *Ec =    0.773760788332E-14 erg   (.018 K)
+        96  0.00    *Etot =   -0.1102615368477997E-07 erg 
+
+        96  0.00    *Temp instantanee = .018
+
+*temp instantanee des atomes de type 1 =         0.02
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.01
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     97  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        97  0.00    *Epot =   -0.1102616169015495E-07 erg 
+    *energie PAIRE EAM =   -0.230339531633E-08 erg 
+    *energie GLUE  =   -0.872276637383E-08 erg 
+        97  0.00    *Ec =    0.438055912096E-14 erg   (.010 K)
+        97  0.00    *Etot =   -0.1102615730959583E-07 erg 
+
+        97  0.00    *Temp instantanee = .010
+
+*temp instantanee des atomes de type 1 =         0.01
+ ----------valeurs moyennes------------
+*temperature moyenne =         1.00
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     98  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        98  0.00    *Epot =   -0.1102616195943127E-07 erg 
+    *energie PAIRE EAM =   -0.230339560961E-08 erg 
+    *energie GLUE  =   -0.872276634982E-08 erg 
+        98  0.00    *Ec =    0.424832099655E-14 erg   (.010 K)
+        98  0.00    *Etot =   -0.1102615771111027E-07 erg 
+
+        98  0.00    *Temp instantanee = .010
+
+*temp instantanee des atomes de type 1 =         0.01
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.99
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =     99  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        99  0.00    *Epot =   -0.1102616223034244E-07 erg 
+    *energie PAIRE EAM =   -0.230339589958E-08 erg 
+    *energie GLUE  =   -0.872276633076E-08 erg 
+        99  0.00    *Ec =    0.421075541764E-14 erg   (.010 K)
+        99  0.00    *Etot =   -0.1102615801958702E-07 erg 
+
+        99  0.00    *Temp instantanee = .010
+
+*temp instantanee des atomes de type 1 =         0.01
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.98
+ --------------------------------------
+
+
+<<<<<<<<  ITERATION =    100  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+       100  0.00    *Epot =   -0.1102616250145623E-07 erg 
+    *energie PAIRE EAM =   -0.230339619422E-08 erg 
+    *energie GLUE  =   -0.872276630723E-08 erg 
+       100  0.00    *Ec =    0.422216818914E-14 erg   (.010 K)
+       100  0.00    *Etot =   -0.1102615827928804E-07 erg 
+
+       100  0.00    *Temp instantanee = .010
+
+*temp instantanee des atomes de type 1 =         0.01
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.97
+ --------------------------------------
+ *******Derniere iteration **** 
+
+
+ ####### END OF RUN  ######## =          100   time =    0.0000000000000000     

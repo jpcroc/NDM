@@ -1,0 +1,139 @@
+ >>>>>>>>>>> entree readdm
+ nom fichier din=trppara.din                                                                     
+
+ -------- caracteristiques du run DM--------32
+     STEEPEST DESCENT
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=       0.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          11
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM ERCOLESI
+
+ Types d_atomes :
+   1   26.982   13.000  Al 
+    0.900    2.200
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-        2100        2100           1
+
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ BIP   5.5580544182181004E-008
+ izonr,zlmin,rut           5   64.512000000000000        11.116108836436201     
+ nox,noy,noz dans .din =           4           4           4
+celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
+trppara.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+ natperc im/noxyz         320          32
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2049
+vecteur  1      32.256000       0.000000       0.000000
+vecteur  2       0.000000      32.256000       0.000000
+vecteur  3       0.000000       0.000000      32.256000
+        2049  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam Minrho Maxrho   -1.4711099804881778        9.2672924683822253E-002
+ calpoeam Rhomin Rhomax   -20.595539726834488        1.2974209455735115     
+ calpoeam ktorho and the inverse:    1.0946480336204000E-003   913.53564733737801     
+ TOTA          32
+ IN NGC
+ PRE STEEPEST
+
+ betainit   6.0000000000000002E-006
+ FORCE EVALUATION           1  -6881.8645840431618     
+
+ NOUVEAU VMIN  -1.1025961459194575E-008
+
+ FORCETESTS   1.3880331970931097       0.74801359339087914        8.0000000000000002E-002 -0.10000000149011612     
+ posttconf0 F  -1.1025961459194575E-008
+
+ **************************
+ callmindir           1   6.0000000000000002E-006  -1.1025961459194575E-008
+
+ mindir1 betaS2   3.0000000000000001E-006
+ FORCE EVALUATION           2  -6881.9348386498923     
+
+ NOUVEAU VMIN  -1.1026074019471907E-008
+
+ FORCETESTS  0.77090912015665247       0.34315931464839800        8.0000000000000002E-002 -0.10000000149011612     
+ mindir1 betaS2   3.0000000000000001E-006  -1.1026074019471907E-008
+ DIFF BS2  -1.1256027733229939E-013
+ FORCETESTS  0.72084039941456213       0.38846219136301668        8.0000000000000002E-002 -0.10000000149011612     
+
+ BS2 OK-> BETA
+ mindir2 beta   6.0000000000000002E-006
+ FORCE EVALUATION           3  -6881.9611797554080     
+
+ NOUVEAU VMIN  -1.1026116222571178E-008
+
+ FORCETESTS  0.56121170245529772       0.15059407787271228        8.0000000000000002E-002 -0.10000000149011612     
+ mindir1 beta   6.0000000000000002E-006  -1.1026116222571178E-008
+ FORCETESTS   7.2701660642780733E-002   3.9179056046195322E-002   8.0000000000000002E-002 -0.10000000149011612     
+ line search over: beta
+ postmindir lOVER  beta            1 F   6.0000000000000002E-006
+
+ **************************
+ callmindir           2   6.0000000000000002E-006  -1.1026116222571178E-008
+
+ mindir1 betaS2   3.0000000000000001E-006
+ FORCE EVALUATION           4  -6881.9733673751698     
+
+ NOUVEAU VMIN  -1.1026135749288702E-008
+
+ FORCETESTS  0.37178673428153136        8.7282075150605834E-002   8.0000000000000002E-002 -0.10000000149011612     
+ mindir1 betaS2   3.0000000000000001E-006  -1.1026135749288702E-008
+ DIFF BS2  -1.9526717524756835E-014
+ FORCETESTS  0.34296679853471540        9.2030812152221350E-002   8.0000000000000002E-002 -0.10000000149011612     
+
+ BS2 OK-> BETA
+ mindir2 beta   6.0000000000000002E-006
+ FORCE EVALUATION           5  -6881.9796967594120     
+
+ NOUVEAU VMIN  -1.1026145890079162E-008
+
+ FORCETESTS  0.31096483580601370       0.12848957477893322        8.0000000000000002E-002 -0.10000000149011612     
+ mindir1 beta   6.0000000000000002E-006  -1.1026145890079162E-008
+ FORCETESTS  0.12661948741086840        3.3976741511148510E-002   8.0000000000000002E-002 -0.10000000149011612     
+ line search over: beta
+ postmindir lOVER  beta            2 F   6.0000000000000002E-006
+
+ **************************
+ callmindir           3   6.0000000000000002E-006  -1.1026145890079162E-008
+
+ mindir1 betaS2   3.0000000000000001E-006
+ FORCE EVALUATION           6  -6881.9837010779993     
+
+ NOUVEAU VMIN  -1.1026152305704153E-008
+
+ FORCETESTS  0.23769494395183630        7.0590637018712196E-002   8.0000000000000002E-002 -0.10000000149011612     
+ mindir1 betaS2   3.0000000000000001E-006  -1.1026152305704153E-008
+ DIFF BS2  -6.4156249905162872E-015
+ betaS2 relaxed
+ postmindir lOVER  beta            3 T   6.0000000000000002E-006
+ RELAXED AFTER            3  DIRECTIONS
+ Post back2ndmT T
+ MIMIMUM REACHED after            6  force calculations
+ ********************ENERGY  -1.1026152305704153E-008
+
+
+ ####### END OF RUN  ######## =            0   time =    0.0000000000000000     

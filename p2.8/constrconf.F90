@@ -4,7 +4,7 @@ module constrconf_mod
 #endif
   USE read_val,only:imm,rvois
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,im_glob,imm_glob,ldecoup,lperiod,lrestart,rang,&
-       &lvpread,zero,low_limit,lspacendm,rang
+       &lvpread,zero,low_limit,lspacendm,rang,h0
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
     use cryst_to_cart_mod,only:cryst_to_cart
     USE arret_ndm_mod,only: arret_ndm
@@ -197,7 +197,7 @@ contains
 
        end do
 
-
+       if (all(h0==0 )) h0=boxrcf%at
     ! ----------------------------------------------------------
     !  CONDITIONS PERIODIQUES : REMETTRE LES ATOMES DANS BOITE
     ! ----------------------------------------------------------
@@ -667,7 +667,6 @@ contains
     !fmtcin=1 avec num_at_glob (optional)
     !icible tableau de taille imic qui donne les atomes à lire (utile pour para), optionel
     USE T_kind_param_m, ONLY:  double
-    !    USE suivinonpbc
 #ifdef PARA
     USE var_pot, ONLY:ntyp
 
@@ -819,12 +818,6 @@ contains
           end if
        end select
        read (lucin, err=456) oldtstep
-       !  Si l'option de redemarrage (lrestart) n'est pas activee
-       !  alors les positions d'origine ax deviennent les xp du fichier .cin
-       !       if (.not.lrestart) then
-       !          atcinr%ax(:,:im) = atcinr%xp(:,:im)
-       !          if (lsuivinonpbc) axnonpbc(:,:im)=ax(:,:im)
-       !       endif
 
 
        if (lrestart) then

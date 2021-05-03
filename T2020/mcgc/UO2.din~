@@ -1,0 +1,42 @@
+ &input
+	igen=0 !(*) =0 lecture .gin; =1 lecture .cin/cout 
+	imm=12500 !(*) nombre max d'atomes (taille des tableaux
+	dmtype=15 !(*) type de DM (4= Velocity Verlet; 3= GC ; 2=trempe rapide
+	tinit=500! (*) si .gin	! temperature initiale
+
+        pas_lambda_mc = 10 ! parametre permettant de decouper le nombre d'etape pour l'insertion         
+        Text = 250	
+	iterasmol = 1 ! sortira un cfg tous les iterasmol pas
+        ivisu = 4 !permet de sortir des cfg
+
+	itmax=100 ! (*)nombre max d'itarations
+	ipotentiel=7 ! (*) type de potentiel
+	itetemp=1 ! periode d'ecriture de la température
+	!itesigma=1 ! periode d'ecriture de la contrainte 
+	!itecfg=1 ! pérdiode d'écriture de la configuration .cfg
+	leEv=.true., lPKbar=.true. ! energies en eV ; pression kbar
+	itesauv =1 !period d'écriture du fichiers .cout (écrase le pr précédent)
+	iseed=11 ! graine aléatoire (si pas précisé= horloge machine)
+	ltabvois = .false. !, rvois = 12.7 ! table des voisins et rayon de coupure
+
+&end
+
+
+fpstop =0.05 ! force max sur atome pour arrêt relaxation (eV/Ang)
+fpsumstop = 0.1 ! force totale pour arrêt relaxation (eV/ang)
+
+itesauvposition =10 !période de sauvegarde des positions seules (.cout najoute des ficheirs
+lWgin =.true. écrit un fichier .newgin à la fin
+tempdeplainit=300.0,debyetemp=398.0 ! déplacement initial
+
+ltabvois = .true. , rvois = 12.7 ! table des voisins et rayon de coupure
+itetabvois=10 ! période de recalcul de la table des voisins.
+
+lrestart=.true. ! lit un fichier .cout
+
+lpr=.true. !Pcst
+lpcon2=.true. !amortisseur ds oscillations de boite
+lThoover=.true. ! T constante à la Hoover (il en existe plusieurs autres)
+Text= ! température visée
+
+

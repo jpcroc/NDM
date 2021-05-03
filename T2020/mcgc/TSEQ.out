@@ -1,0 +1,170 @@
+ *** NDM859 ***
+ >>>>>>>>>>> entree readdm
+ nom fichier din=UO2.din                                                                         
+
+ -------- caracteristiques du run DM--------15
+      CALCUL MONTE CARLO GRAND CANONIQUE 
+
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  itesigma=          -1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         100  itab=           1  itetimestep=          -1
+tinit=     500.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel           7
+ fmt_cin           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL DE PAIRES 
+
+
+ ----------- POTENTIEL PAIRE TABULE -----------
+ -*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-
+ -*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-
+ CM, masse,type
+   1    0.000    8.000  O  
+   2    0.000   92.000  U  
+ nb de paires grille           3       50000
+ paire l active  ipotentiel:            3           7
+ paire l active  ipotentiel:            2           7
+ paire l active  ipotentiel:            1           7
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-       12500       12500           1
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+ izonr,zlmin,rut           9   109.36000000000000        11.699999999999999     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.5468E-06/  0.1170E-06) = 4
+  noy = Int(   0.5468E-06/  0.1170E-06) = 4
+  noz = Int(   0.5468E-06/  0.1170E-06) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.1367000E-06  0.1367000E-06  0.1367000E-06
+UO2.gin                                                                         volume= 0.16348786D-18 cm3  0.16348786D+06 Ang3
+ natperc im/noxyz        1870         187
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =       12000
+vecteur  1      54.680000       0.000000       0.000000
+vecteur  2       0.000000      54.680000       0.000000
+vecteur  3       0.000000       0.000000      54.680000
+        8000  atomes de type           1
+        4000  atomes de type           2
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ Paramtres utilises pour le traitement de EWALD :
+ RUE=   1.1699999999999999E-007  ALPHA=   22463768.246824499     
+ nvecttot           0
+ random velocities at TINIT =    500.00000000000000      K
+ seed_size          12
+ iseed pour tirage des vitesses          11
+ temperature MI initspeed    504.46717137242803     
+ center of mass =    26.818491460165305        26.818491460166069        26.818491460166321     
+ Momentum/atom  =   -9.7722399738701048E-021  -1.9776714945653183E-020  -6.6700140625382345E-021
+Inertia/anglm =   0.8920E-31 -0.3500E-34 -0.3500E-34       0.5864E-23
+Inertia/anglm =  -0.3500E-34  0.8920E-31 -0.3500E-34      -0.1226E-21
+Inertia/anglm =  -0.3500E-34 -0.3500E-34  0.8920E-31       0.5637E-22
+ temperature fin initspeed    504.38215007268133     
+ atome supprimé       10761
+ Wprec  -1.0647637352949839E-010 ln_Wprec  -1542.4406322584805     
+ W  -1.0718588393080835E-010 ln_W  -1552.7187590927620     
+  REJECTION, direction=           1   LN_XPROB   -10.278161210552661        XPROB    3.4375680336962584E-005   XALEA   0.10756439584245292     
+ Wprec  -1.0647637352949839E-010 ln_Wprec   1542.4406322584805     
+ W  -2.2096890613900294E-010 ln_W   3201.0051431746406     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.22654055232937587     
+ atome supprimé        2457
+ Wprec  -2.2096890613900294E-010 ln_Wprec  -3201.0051431746406     
+ W  -9.4687967524620363E-011 ln_W  -1371.6711384378978     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.31321410258843863     
+ Wprec  -9.4687967524620363E-011 ln_Wprec   1371.6711384378978     
+ W  -8.7846681408486139E-011 ln_W   1272.5667330882188     
+  REJECTION, direction=           0   LN_XPROB   -99.104405349678927        XPROB    9.1096905457275232E-044   XALEA   0.58365540817366646     
+ atome supprimé        2298
+ Wprec  -9.4687967524620363E-011 ln_Wprec  -1371.6711384378978     
+ W  -1.1908493643045649E-011 ln_W  -172.50911028573569     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    3.4489567248628950E-002
+ Wprec  -1.1908493643045649E-011 ln_Wprec   172.50911028573569     
+ W  -7.7476101337740033E-011 ln_W   1122.3361838032429     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    9.3380580453316431E-002
+ atome supprimé         235
+ Wprec  -7.7476101337740033E-011 ln_Wprec  -1122.3361838032429     
+ W  -7.6842425504592802E-011 ln_W  -1113.1566135349547     
+ ACCEPTATION, direction=           1   LN_XPROB   -1.0311952264229615E-004   XPROB   0.99989688579399294        XALEA   0.47984765042067046     
+ Wprec  -7.6842425504592802E-011 ln_Wprec   1113.1566135349547     
+ W  -6.2766554100471213E-011 ln_W   909.25038280530384     
+  REJECTION, direction=           0   LN_XPROB   -203.90623072965082        XPROB    2.7838713942727993E-089   XALEA   0.74384696555579366     
+ atome supprimé        9143
+ Wprec  -7.6842425504592802E-011 ln_Wprec  -1113.1566135349547     
+ W  -3.4791064498617995E-011 ln_W  -503.99116483176419     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA    1.7514155484979477E-002
+ Wprec  -3.4791064498617995E-011 ln_Wprec   503.99116483176419     
+ W  -5.9470970075071274E-011 ln_W   861.50981333154584     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.80589625965971545     
+ atome supprimé        4846
+ Wprec  -5.9470970075071274E-011 ln_Wprec  -861.50981333154584     
+ W  -5.4105156065974119E-011 ln_W  -783.77942790965403     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.73013589177985827     
+ Wprec  -5.4105156065974119E-011 ln_Wprec   783.77942790965403     
+ W  -6.3464783193063006E-011 ln_W   919.36508607081453     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.44803718417101579     
+ atome supprimé       11457
+ Wprec  -6.3464783193063006E-011 ln_Wprec  -919.36508607081453     
+ W  -6.6139233433509081E-011 ln_W  -958.10777219990814     
+  REJECTION, direction=           1   LN_XPROB   -38.742686129093613        XPROB    1.4937062563323154E-017   XALEA   0.69883542007126631     
+ Wprec  -6.3464783193063006E-011 ln_Wprec   919.36508607081453     
+ W  -1.2149877859659657E-010 ln_W   1760.0585619611534     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.23577057386946565     
+ atome supprimé        2880
+ Wprec  -1.2149877859659657E-010 ln_Wprec  -1760.0585619611534     
+ W  -6.8115280495785262E-011 ln_W  -986.73323322075498     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.13731500145793674     
+ Wprec  -6.8115280495785262E-011 ln_Wprec   986.73323322075498     
+ W  -5.5941703712705560E-011 ln_W   810.38406910371646     
+  REJECTION, direction=           0   LN_XPROB   -176.34916411703853        XPROB    2.5854201885244778E-077   XALEA    8.9889923209697908E-002
+ atome supprimé        2937
+ Wprec  -6.8115280495785262E-011 ln_Wprec  -986.73323322075498     
+ W  -2.4669413973565907E-011 ln_W  -357.36666478682662     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.87522504035701043     
+ Wprec  -2.4669413973565907E-011 ln_Wprec   357.36666478682662     
+ W  -6.2684130008028282E-011 ln_W   908.05636891239283     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.14582145517772305     
+ atome supprimé        7843
+ Wprec  -6.2684130008028282E-011 ln_Wprec  -908.05636891239283     
+ W  -6.3017781039415968E-011 ln_W  -912.88971259933521     
+  REJECTION, direction=           1   LN_XPROB   -4.8412720357937502        XPROB    7.8970023902085913E-003   XALEA   0.52422282776895957     
+ Wprec  -6.2684130008028282E-011 ln_Wprec   908.05636891239283     
+ W  -1.0490519478165586E-010 ln_W   1519.6801844625952     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.42245290925448509     
+ atome supprimé       10461
+ Wprec  -1.0490519478165586E-010 ln_Wprec  -1519.6801844625952     
+ W  -5.3868167409561496E-011 ln_W  -780.34635707038558     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.45567140929864003     
+ Wprec  -5.3868167409561496E-011 ln_Wprec   780.34635707038558     
+ W  -4.9168301147557769E-011 ln_W   712.26304010160300     
+  REJECTION, direction=           0   LN_XPROB   -68.083316968782583        XPROB    2.7026582373790784E-030   XALEA   0.63789527092535958     
+ atome supprimé       10831
+ Wprec  -5.3868167409561496E-011 ln_Wprec  -780.34635707038558     
+ W  -3.1693500751428446E-011 ln_W  -459.11916152905644     
+ ACCEPTATION, direction=           1   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.62304679719377121     
+ Wprec  -3.1693500751428446E-011 ln_Wprec   459.11916152905644     
+ W  -5.1185037104961107E-011 ln_W   741.47792958479738     
+ ACCEPTATION, direction=           0   LN_XPROB   -0.0000000000000000        XPROB    1.0000000000000000        XALEA   0.99062433458220922     
+ atome supprimé        7943
+ Wprec  -5.1185037104961107E-011 ln_Wprec  -741.47792958479738     
+ W  -5.1124122397294553E-011 ln_W  -740.59550546484923     
+  REJECTION, direction=           1   LN_XPROB  -0.34626601057599704        XPROB   0.70732430633242915        XALEA   0.72911906275141558     

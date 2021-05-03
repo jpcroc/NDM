@@ -34,7 +34,7 @@ module Parrinello_Rahman_Nose
   USE T_kind_param_m
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
        &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,im_glob,it,kcell,knose,leev,&
-       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM
+       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
@@ -93,12 +93,12 @@ contains
     if (rang==0) WRITE(6,*)
     IF (lUcell) THEN
        if (rang==0) WRITE(6,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*boxndm%h0(1:3,1)
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*boxndm%h0(1:3,2)
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*boxndm%h0(1:3,3)
+       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
+       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0(1:3,2)
+       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0(1:3,3)
        if (rang==0) WRITE(6,*)
     ELSE
-       boxndm%h0 = boxndm%at
+       h0 = boxndm%at
     END IF
     if (rang==0) WRITE(6,'(a)') "Repère actuel  (A):"
     if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
@@ -131,10 +131,10 @@ end if
     !   Cet état de référence doit correspondre à un tenseur de contrainte nul.
     !   Il n'est utile que pour calculer la déformation et l'énergie potentielle
     !   de la boîte.
-    volu0 = calcvol(boxndm%h0(1:3,1),boxndm%h0(1:3,2),boxndm%h0(1:3,3))
+    volu0 = calcvol(h0(1:3,1),h0(1:3,2),h0(1:3,3))
     invVolu0 = 1.d0/volu0
-    trh0=Transpose(boxndm%h0)
-    CALL MatInv(boxndm%h0,invh0)
+    trh0=Transpose(h0)
+    CALL MatInv(h0,invh0)
     invtrh0=Transpose(invh0)
 
     ! Vecteurs de la boîte et matrice inverse
@@ -240,7 +240,7 @@ end if
     END DO
 
     ! Thermodynamic tension (Eq. 2.22)
-    tension = invVolu0*MatMul( MatMul( boxndm%h0, grsig), trh0 )
+    tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
 
     ! Potential energy of the cell (Eq. 2.25)
     maux1 = MatMul( tension, epsi )
