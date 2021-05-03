@@ -2,7 +2,7 @@ module dyn_vverlet_mod
   USE calfo_mod,only: calfo
   USE calfoberend_mod,only: calfoberend 
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,ltranche,&
+  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,&
        &l2T,llangevin,lsuivinonpbc,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep,&
        lspaceNDM
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
@@ -10,9 +10,6 @@ module dyn_vverlet_mod
   USE boxconfig,only:box_config,periodbox
   use var_pot,only : cm
   USE eloss, only:ibrake, calceloss
-#ifdef PARA
-  USE layer_mod,only: layer
-#endif
   use Tpara,only:para_space_config
   implicit none
 contains
@@ -121,7 +118,6 @@ contains
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        call maj_atomes_frt_ftm(atdml,celndm,psc)
-       if (ltranche) call layer
     end if
 #endif
 

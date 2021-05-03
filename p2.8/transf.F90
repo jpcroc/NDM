@@ -1,18 +1,19 @@
 module transf_mod
-  USE temp_com, ONLY:im,imm,na
+  USE atomconfig,only:atom_config
   implicit none 
 contains
   ! **************************************************************
-  subroutine transf
+  subroutine transf (atcf)
     !routine de transformation de la boite : ajouter, enlever, transformer des atomes,
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m
+   class(atom_config)::atcf
 
-    USE var_pot, ONLY:ntyp
-    USE tab_imm_m,only:xp,ityp,vp,ax,xpp
-    implicit none
+
+
+
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
@@ -33,58 +34,45 @@ contains
        write(6,*)'verifications des positions atomiques ? o/n'
        read (5,*) rep
        if (rep.eq.'o') then
-          call poscheck(xp,ityp,im,imm)
+          call poscheck(atcf%xp,atcf%ityp,atcf%im,atcf%imm)
        endif
 
        write(6,*)'numero de l_atome ?'
        read(5,*) iv
-       write(6,*)'atome no ',iv,' de type',ityp(iv),'situe en'
-       write(6,*) xp(1,iv)*1d+08,xp(2,iv)*1d+08,xp(3,iv)*1d+08
+       write(6,*)'atome no ',iv,' de type',atcf%ityp(iv),'situe en'
+       write(6,*) atcf%xp(1,iv)*1d+08,atcf%xp(2,iv)*1d+08,atcf%xp(3,iv)*1d+08
 
        write(6,*)'nouveau type de l_atome ?'
        read(5,*)itii
-       na(ityp(iv))=na(ityp(iv))-1
-       ityp(iv)=itii
-       na(itii)=na(itii)+1
+       atcf%ityp(iv)=itii
 
     case (2)
 2      continue       
        write(6,*)'verifications des positions atomiques ? o/n'
        read (5,*) rep
        if (rep.eq.'o') then
-          call poscheck(xp,ityp,im,imm)
+          call poscheck(atcf%xp,atcf%ityp,atcf%im,atcf%imm)
        endif
 
        write(6,*)'indiquer l indice de l_atome a supprimer '
        read(5,*)iv
-       write(6,*)'atome no ',iv,' de type',ityp(iv),'situe en'
-       write(6,*)xp(1,iv)*1d+08,xp(2,iv)*1d+08,xp(3,iv)*1d+08
+       write(6,*)'atome no ',iv,' de type',atcf%ityp(iv),'situe en'
+       write(6,*)atcf%xp(1,iv)*1d+08,atcf%xp(2,iv)*1d+08,atcf%xp(3,iv)*1d+08
 
-       do i=iv+1,im
-          ityp(i-1)=ityp(i)
+       do i=iv+1,atcf%im
+          atcf%ityp(i-1)=atcf%ityp(i)
           do ic=1,3
-             xp(ic,i-1)=xp(ic,i)
-             if (icintype.eq.1) then
-                xpp(ic, i-1)=xpp(ic,i)
-                vp(ic,i-1)=vp(ic, i)
-                ax(ic, i-1)=ax(ic,i)
-             endif
+             atcf%xp(ic,i-1)=atcf%xp(ic,i)
           enddo
        enddo
-       im=im-1
-       do i=1,ntyp
-          na(i)=0
-       enddo
-       do i=1,im
-          na(ityp(i))=na(ityp(i))+1
-       enddo
+       atcf%im=atcf%im-1
 
     case (3)
 12     continue       
        write(6,*)'verifications des positions atomiques ? o/n'
        read (5,*) rep
        if (rep.eq.'o') then
-          call poscheck(xp,ityp,im,imm)
+          call poscheck(atcf%xp,atcf%ityp,atcf%im,atcf%imm)
        endif
 
        write(6,*)'type de l_atome ?'
@@ -94,14 +82,10 @@ contains
        do ic=1,3
           xii(ic)=xii(ic)*1d-08
        enddo
-       im=im+1
-       xp(:,im)=xii(:)
-       xpp(:,im)=xii(:)
-       ax(:,im)=xii(:)
-       vp(:,im)=0.0
-       ityp(im)=itii
-       na(itii)=na(itii)+1
-       if(im.gt.imm) then
+       atcf%im=atcf%im+1
+       atcf%xp(:,atcf%im)=xii(:)
+       atcf%ityp(atcf%im)=itii
+       if(atcf%im.gt.atcf%imm) then
           write(6,*)'im> imm' 
           stop
        end if

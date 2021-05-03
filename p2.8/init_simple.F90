@@ -6,7 +6,6 @@ module init_simple_mod
 !  USE dynalloccell
   USE initspeed_mod,only: initspeed
   USE caltabi_mod,only: caltabi
-  USE prtplz_mod,only: prtplz
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC,init_cel
   use boxconfig,only: box_config

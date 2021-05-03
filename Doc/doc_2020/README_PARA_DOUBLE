@@ -1,4 +1,4 @@
-PARALLELISATION
+PARALLELISATION GUIDE ET EXEMPLES
 
 
 ***
@@ -36,7 +36,7 @@ NPROCSPACE peut prendre n'importe quelle valeur >= 1 LAMMPS se débrouille (vér
 
 Explications sur la programmation de la parallélisation double espace*NEB 
 
-il y a un "master" pour chaque image qui gère la configuration atomique complète de cette image (atneb/atcomp) et des "esclaves" qui calculent les forces sur une portion spatiale de cette image (atnebloc/atloc)
+il y a un "master" pour chaque image qui gère la configuration atomique complète de cette image (atneb/atcomp) et des "esclaves" qui calculent les forces sur une portion spatiale de cette image (atnebloc/atloc). Il n'y a pas de BIG MASTER
 
 Pour la configuration complète sur les masters, ON DOIT AVOIR a l'initialisation  atcfcomp%num_at_glob(i)=i quelque soit i <=atcfcomp%im
 
@@ -104,12 +104,35 @@ Si le matser décide un arrêt il faut signaler l'arrêt aux slave par un MPI_BC
 En fin de calcul on peut tout rapatrier au master général (rang=0) à partir des masters de chaque image
 
 
-*************
-para GC.
-PARRA GC ressemble à paraNEB avec quelques différences:
--Pour l'instant ne fonctionne que pour une image, d'où initparapuresp dans paraconfig qui initialise une para_config purement spatiale (pas *image) avec une seule image
--Quand on arrive dans GC, la configuration atomique a DEJA été répartie entre les atomes. il faut donc reconstruire la configuration totale via parautils/initcomp et pointer les atloc/celloc sur les atin et cellin de début de routine. Ensuite on peut gérer atcomp et atloc comme dans NEB à coup de pointer_caltabt_calfo
-
 ***
 PARA MGCC :
  proche de paraneb, mais avec un "big master" qui gère atconf_N et atconf_N+1 et un sous master qui gère seulement atconf_N+1
+
+****
+NGC ET WGC programmation avec master et slave à la Mickael Trochet
+
+Il y a dans parautils 
+une routime tolstoi qui :
+    -pour les slaves :stocke les slaves et attend le signal du master pour les envoyer dans depeche_mode
+    -pour le master débloque les slave et retourne à depeche_mode
+une routine depêche_mode qui :
+    -pourle master va dans tolstoi puis calcule les forces
+    -pour les slaves calcule les forces
+
+
+Dans NGC
+appel très tôt de tolstoi pour les slaves,
+appel final de tolstoi pour le master à la fin du calcul
+dans WGC
+appel de depeche_mode pour le master
+
+**** initcasca
+exemple simple de rapatriement des atomes distribués sur le proc master; modification sur le matser et redistribution des atomes modifiés sur les procs
+Certainement pas optima, mais comme on ne le fait qu'une fois, ce n'est pas grave
+
+
+*************
+para GC. c'est le vieux GC
+PARRA GC ressemble à paraNEB avec quelques différences:
+-Pour l'instant ne fonctionne que pour une image, d'où initparapuresp dans paraconfig qui initialise une para_config purement spatiale (pas *image) avec une seule image
+-Quand on arrive dans GC, la configuration atomique a DEJA été répartie entre les atomes. il faut donc reconstruire la configuration totale via parautils/initcomp et pointer les atloc/celloc sur les atin et cellin de début de routine. Ensuite on peut gérer atcomp et atloc comme dans NEB à coup de pointer_caltabt_calfo

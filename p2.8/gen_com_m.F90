@@ -61,7 +61,6 @@ module gen_com_m
   logical :: lUcell                 ! affiche l'energie potentielle de la boite
   ! (cela suppose que h0 corresponde a l'etat de reference pour lequelle la contrainte est nulle)     
 
-  logical :: lfrozen    ! .true.: certains atomes sont bloques (pas de dynamique)
   logical :: lbulle    ! .true.: bulle
   logical :: ldesinteg    ! .true.: insertion appelle init_insert
   logical :: lrctest    ! .true.: test sur rc ; false pas de test
@@ -73,23 +72,6 @@ module gen_com_m
   real(double):: kspr,xpspr(3),Espr,deltaEspr,xpspr0(3),tempdes
   integer:: typspr
 
-
-!  logical, dimension(:), allocatable :: Free ! free(i)=.true. si l'atome i compte dans l'energie 
-!  logical, dimension(:,:), allocatable :: Frozen ! Frozen(ix,i)=.true. si la coordonnee ix de l'atome i est gelee
-  integer::imFree,imFirstFrozen ! nb d'atoems libres
-
-!  real(double), dimension(3) :: normat ! norme de at
-
-
-
-!!$  integer, dimension(:,:), allocatable :: ncel  ! ncel(i,j) indice de la jeme cel voisines de la cel i
-!!$  integer, dimension(:), allocatable :: nato    ! nb d'atome dans la ieme cel
-!!$  integer, dimension(:,:),allocatable :: atincel	! last (i,j) numero du ieme atome de la jeme cel
-!!$  integer, dimension(:,:,:),allocatable :: deltadist ! decalage a appliquer sur la cel
-!  integer :: nox, noy, noz, noxy, noxyz	     !nb de cel suivant x y z et total (DOIT REMPLACER nce)
-!  real(double), dimension(3) :: celsize	     ! taille des cel
-
-
   integer,target :: it
   integer:: itmax, nitmax,igen ! iteration courante, finale , type de generation
   real(double)::timemax ! temps max simul
@@ -97,8 +79,6 @@ module gen_com_m
   integer :: fmt_cin
 
   character :: fnam*80, fnamout*80, fnamcout*80, fnamcoutxp*80,fnamcoutfp*80, fnamcoutnonpbcxp*80
-  logical :: ltranche ! surface
-  integer:: iteplz,nplz ! distribution suivant des tranches en z
   real(double):: rulayer
 
   integer :: imgs, imgi, itefrac !fracture IMD nombre d'atomes sur lesquels on fait la dynamique normale
@@ -303,53 +283,6 @@ module gen_com_m
   real(double)  :: kappa,text_teledyn,lanczos_step
   integer       :: niteration,nchemin_teledyn
 
-
-  ! ------------- c o n d.   a u x   l i m i t e s   s p e c i f i q u e s ----------
-  integer :: ibound         !*utilisat0 of specific bound condit0 (free or rigid)  !*!
-  real(double) :: thickness	    ! epaisseur de la surface (ibound = 1, 2 ou 3)
-  real(double) :: gap		    ! gap entre surface sup et surface inf
-  real(double) :: thick_cryst       ! epaisseur de la surface (en coord. cristallines)
-  real(double) :: layer_surf        ! aire de la surface XZ
-  real(double) :: Lx_cm
-  real(double) :: Lz_cm
-  integer      :: i_surfINF
-  integer      :: i_surfSUP
-  integer      :: i_surfMAX
-  integer      :: i_surfMIN
-  real(double) :: y_max
-  real(double) :: y_min
-  real(double) :: y_2nd_max
-  integer, dimension(:), allocatable  :: b2sINF ! appartenance a la surface infﾃｩrieure !*!
-  integer, dimension(:), allocatable  :: b2sSUP ! appartenance a la surface supﾃｩrieure !*!
-  logical      :: flag_fin
-  real(double) :: ef_strain
-  logical      :: ldecal_bc
-  real(double) :: decal_bc		! pour les dislocations vis - decalage selon X
-				! pour des potentiels EAM (implemente pour calfoeamtabvois)
-  integer      :: itespebcout   ! frequence a laquelle on genere des .cfg (films mvt de dislo)
-  real(double) :: inXMdis1
-  real(double) :: inXMdis2
-  logical      :: ldyn2D        ! .true. ->  dynamique 2D   ;    .false. ->  bords libres (par defaut)
-
-! cas ibound = 1 :
-  real(double):: USEr_strainrate   !*strain rate choosen by the user	     !*!
-  real(double):: speed_USEr 	   ! surface atom speed (depends on user_strainrate)!*!
-
-! cas ibound = 2 :
-  real(double):: USEr_stress_yz	   !*stress applied on the cryst. surface	     !*!
-
-! cas ibound = 3 : 
- !real(double):: USEr_strainrate   !*est aussi necessaire		     !*!
- !real(double):: USEr_strainrate   !*est aussi necessaire		     !*!
-  real(double):: currentstress     ! stress applied - corrected at each time step !*!
-  real(double):: fdbkcoef	   !*coef de la boucle de feedback de correct0 de currentstress
-  real(double):: forceatsup        ! force on sup. surface atom (stress controlled) !*!
-  real(double):: forceatinf        ! force on inf. surface atom (stress controlled) !*!
-
-!      RQ:  les parametres comportant une * devant leur description doivent etre
-!      definis dans le fichier .din
-! ----------------------------------------------------------------------------------
-  
 !  real(double), dimension (:),allocatable ::tempc,tempcm,celpm1,tm1,celpp,tcp,pmc,patcel,patcelmax
   real(double), dimension (:,:,:),allocatable ::sigatcel
   integer, dimension (:),allocatable ::natchk

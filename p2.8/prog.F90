@@ -1,8 +1,6 @@
 module prog_mod
   USE init_mod,only: init
   USE calfo_mod,only: calfo
-  USE analyse_mod,only: analyse
-  USE controle_mod,only: controle
   USE endrunT_mod,only: endrunT
   USE neb_mod,only: neb
   USE dmloop_lpr_mod,only: dmloop_lpr
@@ -37,7 +35,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:parallele,potist,rang,sig,lspaceNDM&
-         &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin
+         &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin,itetimestep
 
     use read_val,only:imm,ltabvois,rvois
 
@@ -76,11 +74,12 @@ contains
     !probablement inutile pour dmtype=9 ou 15
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin))then
        atdml=>atdme
+    elseif(itetimestep.gt.0) then
+       atdml=>atdmd
     else
        if ((dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==33).or.(dmtype==31)) then
           atdml=>atdm
        else
-
           atdml=>atdmd
        end if
     end if

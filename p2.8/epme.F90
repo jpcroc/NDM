@@ -1,5 +1,4 @@
 module epme_mod
-!  USE temp_com,only:volu,bg ! A EFFACER
   USE moduli_mod,only: moduli
     USE gen_com_m, ONLY:it,itesigma,pi,potis3,zero,lspacendm,rang
         implicit none 

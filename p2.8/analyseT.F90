@@ -1,6 +1,5 @@
 module analyseT_mod
   USE Mat_utils_mod
-  USE spebc_fin_mod,only: spebc_fin
   USE adf_mod,only: adf
   USE calctemp_mod,only: calctemp
   USE calcdepla_mod,only: calcdepla
@@ -11,18 +10,17 @@ module analyseT_mod
   USE bondval_mod,only: bondval
   USE rasmolT_mod,only: rasmolT
   USE rdf_mod,only: rdf
-  USE prtplz_mod,only: prtplz
   USE sauvegardeT_mod,only:sauvegardeT
  USE sauveforce_mod,only: sauveforce
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp
-  use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,flag_fin,fnose,iteanapos,iteangle,itebdv,&
+  use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,fnose,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
        &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,&
        &natchk,tpseuils,sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
-       &ldesinteg,itmax,cunitp,erg2ev,iteplz,itespebcout,lperiod,pi,rang,timel,latcomp,&
+       &ldesinteg,itmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,&
        & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,im_glob,it,l2T
 
   USE cellconfig,only:cell_config, caltabtC
@@ -222,14 +220,6 @@ contains
                 !*! ---------------------------------- APPEL DE LA ROUTINE D'ECRITURE -------------
                 ! ------------------------------------ DES FICHIERS DE SORTIE, DANS LE ------------
                 ! ------------------------------------ CAS DES CL CONTROLEES EN CONTRAINTE --------
-!!$                IF (ibound==2 .OR. ibound==3) THEN
-!!$                   IF(flag_fin.EQV..true.) THEN
-!!$                      Call spebc_fin (.true.)
-!!$                   ELSE IF(itespebcout > 0. .AND. (mod(it,itespebcout)==0 .OR. it==1)) THEN
-!!$                      Call spebc_fin (.false.)
-!!$                   END IF
-!!$                END IF
-                !*!
 
 
                 if (lEparat) then

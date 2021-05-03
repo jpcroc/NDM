@@ -1,7 +1,6 @@
 module endrunT_mod
   USE analyseT_mod,only:analyseT
   USE adf_mod,only:adf
-  USE spebc_fin_mod,only:spebc_fin
   USE arret_ndm_mod,only:arret_ndm
   USE sauvegardeT_mod,only:sauvegardeT!,cin2gin
   USE rdf_mod,only:rdf
@@ -9,7 +8,7 @@ module endrunT_mod
   USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,itdes,&
        &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
        &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,&
-       &lwgin,nstepdes, lposmoy,l2T,angst,dmtype,ibound,it,lenfnam,rang,timel,&
+       &lwgin,nstepdes, lposmoy,l2T,angst,dmtype,it,lenfnam,rang,timel,&
        &formatsauv,fnamcout,fnam,lspaceNDM
   use var_pot, only: eatref,eatref,eatref
   USE cellconfig,only:cell_config,caltabtC
@@ -69,7 +68,6 @@ contains
     IF (iteSigma.GE.0) iteSigma=1
 
     !flag_fin = .true. !*!
-    if(ibound.ne.0) Call spebc_fin (.true.) !*!
 
 
 

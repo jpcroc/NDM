@@ -401,7 +401,6 @@ end subroutine maj_atomes_frt_ftm
             Glangv(3,im)= recv_buff_dbl(nb_var_dbl,i_at,ind_recv)
         end if
 
-!          if(lfrozen)free(im)=.true.
 !LPARAFULLSEND
           xpp(1,im) = recv_buff_dbl(7,i_at,ind_recv)
           xpp(2,im) = recv_buff_dbl(8,i_at,ind_recv)
@@ -490,7 +489,6 @@ end subroutine maj_atomes_frt_ftm
 !!$	     if (lsuivinonpbc)  axnonpbc(:,i_new)  = axnonpbc(:,i_at)
              fp(:,i_new)  = fp(:,i_at)
 
-             !             if(lfrozen)free(i_new)=free(i_at)
 
              ityp(i_new)        = ityp(i_at)
              ielat(i_new)       = ielat(i_at)

@@ -7,7 +7,6 @@ module calfo_mod
   USE calfo2ccel_mod,only:calfo2ccel
   USE calfo3c_mod,only:calfo3c
   USE calfow_mod,only:calfow
-  USE calfo_decalage_mod,only:calfo_decalage
   USE calfoeamtabvois_mod,only:calfoeamtabvois
   USE calfoeamcel_mod,only:calfoeamcel
   USE calfojuli_mod,only:calfojuli
@@ -16,7 +15,7 @@ module calfo_mod
   use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:ldecal_bc,parallele,potis0,potis2,potisp&
+  USE gen_com_m, ONLY:parallele,potis0,potis2,potisp&
        &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang
 
   USE contrainte,only:initcontr,contr
@@ -196,13 +195,8 @@ contains
                    if (atcf%ltabvois) then
                       ! !!! le cas parallele n'est pas pris en compte !!!
                       if (.not.parallele) then
-                         IF(ldecal_bc.EQV..FALSE.) THEN
-                            call calfoeamtabvois(atcf%im,atcf%imm,atcf%xp,    atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
-                                 &boxcf%at,boxcf%bg,boxcf%volu)
-                         ELSE IF (ldecal_bc.EQV..TRUE.) THEN !*!
-                            call calfo_decalage(atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
-                                 &boxcf%at,boxcf%bg,boxcf%volu)
-                         END IF
+                         call calfoeamtabvois(atcf%im,atcf%imm,atcf%xp,    atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
+                              &boxcf%at,boxcf%bg,boxcf%volu)
                       end if
                    else
                       call calfoeamcel(atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%ielat, atcf%ityp,atcf%num_at_glob,&
@@ -235,9 +229,6 @@ contains
 !!       if(ltranche) atcf%fp(:,imd+1:im)=0.0
 !    end if
 
-!    if (lFrozen.EQV..true.) then
-!       WHERE (Frozen(:,1:im)) atcf%fp(:,1:im)=0.d0
-!    endif
 
     sigcf=sig;potistcf=potist
     nullify(eat);nullify(sigat)

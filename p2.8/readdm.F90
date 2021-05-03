@@ -13,7 +13,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:a2cm,debyetemp,decal_bc,deltaestop,deltarmax,deltax,depmaxts,dfpred,eheat,eko,&
+    USE gen_com_m, ONLY:a2cm,debyetemp,deltaestop,deltarmax,deltax,depmaxts,dfpred,eheat,eko,&
          &epcou,epcoud,epcoudis,epsil,ev2erg,fdislo,fmt_cin,fpstop,fsumstop,gamlg,hessianorder,ibordcou,&
          &ides,igen,ilangevin,imm_glob,iseed,itab,iteanaposneb,itederive,iteheat,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,ittherm,kappa,kspr,kspring,kthg,&
@@ -23,15 +23,15 @@ contains
          &nebtype,nhoover,niteration,nitmax,njqbh,npath,ntr,nuandersen,pext,rayonc,rheat,rsep,&
          &rskin,rulayer,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
          &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
-         &zko,zz0,dilat,dilat,dilat,dilat,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fdbkcoef,fnemd,&
-         &formatsauv,ibound,iko,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,iteplz,&
-         &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itespebcout,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
-         &lcasca,lcontr,ldecal_bc,ldemitab,ldesinteg,ldyn2d,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
+         &zko,zz0,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
+         &formatsauv,iko,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,&
+         &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
+         &lcasca,lcontr,ldemitab,ldesinteg,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lpr,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
-         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,ltranche,lucell,lwgin,mdcg_noise,nfda,nplz,&
+         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
-         &,tpseuils,tstep,typspr,unite,unitp,user_strainrate,user_stress_yz,xpspr,lenfnam,fnam,position_conversion_lammps&
-         &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp
+         &,tpseuils,tstep,typspr,unite,unitp,xpspr,lenfnam,fnam,position_conversion_lammps&
+         &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess
     USE var_pot, ONLY:gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
@@ -69,22 +69,22 @@ contains
 
     namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
          tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
-         tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, itespebcout,  &
+         tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
-         ltranche, rulayer,iterasmol, lpcon, lprtzlm,pext, wboxf, wNose, lpcon2, lpconxyz, tbox, &
+          rulayer,iterasmol, lpcon, lprtzlm,pext, wboxf, wNose, lpcon2, lpconxyz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
-         lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, ldecal_bc, ldyn2D, &
+         lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder,  lalea, rsep, ipotentiel,lpotentiel,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
-         fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,iteplz,nplz,ngrid,lperiod,&
+         fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
          rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,&
          lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
-         mdcg_noise, lforcetabulate,ivisu,ibound,USEr_strainrate,user_stress_yz,fdbkcoef, decal_bc,&
+         mdcg_noise, lforcetabulate,ivisu,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,ndir,nstep,betaguess
 
@@ -165,8 +165,6 @@ contains
     nox = -1
     noy = -1
     noz = -1
-    ltranche = .FALSE.          ! existence d'une trache gelee
-    rulayer=0.0                 ! largeur de la tranche gelee par 
     ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
     lpr=.false.                 ! parinnelo rahman �あ contrainte constante
     sigext = 0.0                ! Symetric tensor related to the external stress
@@ -241,7 +239,6 @@ contains
     nrdf = 0
     nfda=0
 
-    lprtzlm = .FALSE.           ! plot du nombres d'atomes par tranche suivant z
     lEev=.true.
     lPkbar=.true.
     ! definition des rayons de coupure pour le calcul des coordinences autour de chaque type atomique
@@ -260,8 +257,6 @@ contains
     lcalcjq=.false.
     lEparat=.false.             ! calul et affichage de l'energie par atom
     itebdv=-1  ! frequence de calcul des bond valence
-    iteplz=0
-    nplz=1000
     itetemp2=-1   ! frequence d'ecriture de la temperature dans fichier separe
     itecompcr=-1  ! remplacee par iteanapos
     iteanapos=-1  ! frequence de comparaison avec cristal de reference
@@ -319,15 +314,6 @@ contains
     Eheat=0.
     ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG a préférer à itecfg 
 
-    ! management of the specific boundary conditions (free or rigid)  ---------------------------   !*!
-    ibound = 0	! ( ibound = 0 <=> no spe BoundC, ibound = 1 <=> strain controlled BoundC, ibound = 2 <=> stress controlled BoundC)		!*!
-    USEr_strainrate = 0.	! crystal strainrate (ibound=1)			!*!
-    USEr_stress_yz  = 0.	! stress on the surface (ibound=2)		!*!
-    fdbkcoef	  = 0.  ! feedback coefficient for the correction of applied stress (ibound=3)   !*! 
-    decal_bc = 0.
-    ldecal_bc = .false.
-    itespebcout = -1      ! on n'��ｽｩcrit pas de .cfg pour le film
-    ldyn2D = .false.      ! par d��ｽｩfaut : bords libres selon Y
     !   ----------------------------------------------------------------------------------------    !*!
 
     !.... in SUNDAE
@@ -451,18 +437,6 @@ contains
        end if
     end if
 
-    if(ljqbh) then
-       !     open(unit=59,file='temptranche.mol')
-       dmtype=1
-       read(94,*)njqbh, epsil, epcoud,ittherm,ntr
-       if (parallele) then
-          if (njqbh.ne.4) then
-             write(6,*)'njqbh  doit etre =4 en para'
-             call arret_ndm
-          end if
-       end if
-       if (njqbh==5) read(94,*) kthg
-    end if
     if (dmtype==2) dmtype=21
 
     if (lrestart) then
@@ -827,6 +801,7 @@ contains
     if (lcasca) then
        read (ludin, *) iko, eko, xko, yko, zko , xx0, yy0, zz0
        if (lrestart) lcasca=.false.
+       lax=.true.
        !     xx0=xx0*1.D-8
        !     yy0=yy0*1.D-8
        !     zz0=zz0*1.D-8
@@ -996,13 +971,6 @@ contains
        stop
     end select
 
-    if (ltranche) then
-       if (rang==0) write (6, '(a)') '******************* TRANCHE GELEE !!! *****'
-       !     rulayer=rulayer*1.0d-8
-
-
-
-    end if
 
 
     if (lcontr)  write (6, '(a)') '******************* CONTRAINTE !!! *****'

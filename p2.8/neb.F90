@@ -1,6 +1,5 @@
 module neb_mod
  USE calfo_mod,only: calfo
-  USE analyse_mod,only: analyse
   USE trempe_mod,only: trempe
   USE neb_controle_mod,only:neb_controle
   USE sauveforce_mod,only: sauveforce

@@ -2,11 +2,8 @@ module controle_mod
   USE endrun_mod,only: endrun 
   USE dynalloccell
   USE tempinst_mod,only: tempinst,andersenth
-  USE jqbh_mod,only: jqbh
-
   USE period_mod,only: period
   USE caltabi_mod,only: caltabi
-  USE heat_mod,only: heat
   USE creadp_mod,only: creadp
   USE deftimestep_mod,only: deftimestep
   USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm
@@ -30,7 +27,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:deltaestop,epcou,fpstop,fsumstop,ibordcou,itab,itederive,iteheat,itetabvois,&
+    USE gen_com_m, ONLY:deltaestop,epcou,fpstop,fsumstop,ibordcou,itab,itederive,itetabvois,&
          &landerscou,lastcool,lcdp,ljqbh,lprtrp,ltandersen,maxtcel,nbmoye,nuandersen,sigstop,tcooling,&
          &tempstop,tfroi,timemax,ttol,angst,bk,cunite,cunitp,dmtype,erg2ev,iko,it,itdes,itetemp,itetimestep,&
          &itmax,ldesinteg,leev,lperiod,lpkbar,nstepdes,potist,sigtot,tcou,temp,text,tfcou,timel,tstep,unite,&
@@ -330,18 +327,6 @@ contains
 
     endif                                      !dmtype=1 end here
 
-
-
-
-    if (ljqbh) then
-       if (lperiod) then
-          call jqbh(xp,xpp,vp,ityp)
-       else 
-          write(*,*) 'No implementation for ljqbh .true. and lperiod .false.'
-          write(*,*) 'Stop in controle'
-          stop        
-       end if
-    end if
 
     ! change in time step ? itetimestep >0
     if (itetimestep>0) then
@@ -748,14 +733,6 @@ contains
     case default
     end select
 
-
-
-    if ((iteheat.gt.0).and.(mod(it,iteheat)==0))call heat(im,xp,vp,ityp)
-
-
-
-
-    !
     return
   end subroutine controle
 end module controle_mod

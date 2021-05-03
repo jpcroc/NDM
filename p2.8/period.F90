@@ -9,7 +9,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:DECAL_bc,ldecal_bc,low_limit,lperiod,zero
+    USE gen_com_m, ONLY:low_limit,lperiod,zero
 
     !       version du 09 decembre 2003
 
@@ -48,7 +48,6 @@ contains
     !      write(*,*) 'PBC PBC PBC capitala tarii e ....             period',iperiod
     write(6,*)'call period pas periodbox par defaut stop'
     stop
-    IF (ldecal_bc.EQV..FALSE.) THEN
 
        call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
        if(present(xpp))      call cryst_to_cart (imm, xpp, bg,  -1)
@@ -72,25 +71,6 @@ contains
        if(present(xpp))      call cryst_to_cart (imm, xpp, at,  1)
        if(present(ax))      call cryst_to_cart (imm, ax , at,  1)
 
-    ELSE IF (ldecal_bc.EQV..TRUE.) THEN
-
-       call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
-       if(present(xpp))         call cryst_to_cart (imm, xpp, bg,  -1)
-       do i=1,imm
-          XP(3,i)  = XP(3,i)  - DECAL_bc*int(XP(1,i))
-
-          if(present(xpp))		XPP(1,i) = XPP(1,i) - int(XP(1,i))
-          XP(1,i) = XP(1,i) - int(XP(1,i))
-
-          if(present(xpp))		XPP(2,i) = XPP(2,i) - int(XP(2,i))
-          XP(2,i) = XP(2,i) - int(XP(2,i))
-
-          if(present(xpp))		XPP(3,i) = XPP(3,i) - int(XP(3,i))
-          XP(3,i) = XP(3,i) - int(XP(3,i))
-       end do
-       call cryst_to_cart (imm, xp , at,  1)  !cryst vers cart
-       if(present(xpp))       call cryst_to_cart (imm, xpp, at,  1)
-    END IF
 
 
     !  if (rang==0) write(6,*)'PARA-T sortie period'

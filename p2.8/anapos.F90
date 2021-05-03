@@ -9,7 +9,7 @@ module posana
   USE recips_mod,only: recips
   use notperiod_mod, only: notperiod
   use cryst_to_cart_mod,only:cryst_to_cart
-  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,ibound,dmtype,decal_bc,ldecal_bc,lenfnam,it,timel,im_glob,imm_glob
+  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,dmtype,lenfnam,it,timel,im_glob,imm_glob
   !USE configcr_mod,only: configcr
 !  USE atomconfig
   USE tab_imm_m,only:xp,ityp,ielat,ax,xpp
@@ -331,15 +331,6 @@ contains
              c2 = xpnp(2,i)-xpnp(2,j)
              c3 = xpnp(3,i)-xpnp(3,j)
 
-             if (ldecal_bc .eqv. .true.) then
-                if (ibound.gt.1) then		
-                   IF (c1>0.5) THEN
-                      c3 = c3 - decal_bc
-                   ELSE IF (c1 < -0.5) THEN
-                      c3 = C3 + decal_bc
-                   END IF
-                end if
-             end if
 
              c1 = c1+sum(at(1,:)*deltadist(:,i1,koo))
              c2 = c2+sum(at(2,:)*deltadist(:,i1,koo))

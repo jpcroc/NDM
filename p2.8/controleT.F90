@@ -2,10 +2,8 @@ module controleT_mod
   USE endrunT_mod,only: endrunT
   USE dynalloccell
   USE tempinst_mod,only: tempinst,andersenth
-  USE jqbh_mod,only: jqbh
   USE period_mod,only: period
   USE caltabi_mod,only: caltabi
-  USE heat_mod,only: heat
   USE creadp_mod,only: creadp
   USE deftimestep_mod,only: deftimestep
   USE atomconfig,only:atom_config,atom_config_d!,ndm2config,config2ndm
@@ -115,7 +113,7 @@ contains
 
     ! change in time step ? itetimestep >0
     if (itetimestep>0) then
-       if (mod(it,itetimestep)==0) call deftimestep
+       if (mod(it,itetimestep)==0) call deftimestep(atdml,boxndm)
     endif
 
 
@@ -156,12 +154,7 @@ contains
        end if
 
        if ((fsumstop>0.0).AND.(it.GE.1)) then
-          !        IF (lFrozen) THEN
-          !fpmax=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
-          !           fpmax=sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
-          !        ELSE
           fpSmax=sqrt( SUM(atdml%fp(:,1:atdml%im)**2) )
-          !        END IF
 #ifdef PARA
           if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              fpSmax=fpSmax**2
@@ -207,16 +200,8 @@ contains
        !debug     write(*,*) 'DEBUG ALL IT IN CONTROLE',it
 
        IF (it.GE.1) THEN
-          !        IF (lFrozen) THEN
-          !forctot=sqrt( Sum( SUM(fp(1:3,1:im)**2,1), Free(1:im) ) )
-          !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1), Free(1:im) ) )
-          !           forctot = sqrt( SUM( fp(:,1:im)**2, .NOT.Frozen(:,1:im) ) )
-          !           formax = MaxVal( Abs(fp(:,1:im)), .NOT.Frozen(:,1:im) )
-          !        ELSE
           forctot=sqrt( SUM(atdml%fp(1:3,1:atdml%im)**2) )
-          !formax=sqrt( MAXVAL( Sum(fp(1:3,1:im)**2,1) ) )
           formax = MaxVal( Abs(atdml%fp(:,1:atdml%im)) )
-          !        END IF
 #ifdef PARA
           if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              call comm_space%sum(formax)
@@ -269,13 +254,6 @@ contains
 
     case default
     end select
-
-!!$
-!!$
-!!$    if ((iteheat.gt.0).and.(mod(it,iteheat)==0))call heat(im,xp,vp,ityp)
-!!$
-
-
 
     !
     return

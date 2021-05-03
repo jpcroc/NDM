@@ -1,6 +1,4 @@
 module gcII_mod
-  USE endrun_mod,only: endrun
-  USE analyse_mod,only: analyse
   USE initspeed_mod,only: initspeed,bruit_xp
   USE gcmodII_mod,only: ZXCGRII
   USE work_cgII,only: atcgcomp,cellcgcomp,atcgloc,cellcgloc,cellcible,atcible,boxcg,gcpara

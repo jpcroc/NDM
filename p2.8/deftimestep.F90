@@ -1,44 +1,34 @@
 module deftimestep_mod
-  USE temp_com,only:im,imm ! A EFFACER
   USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,it,itetimestep,lcasca,lperiod,oldtstep,&
        &rang,timel,tsmin,tstep,two,usdh,vmax,l2T,lspaceNDM
+  use atomconfig, only : atom_config_d
+  USE boxconfig,only:box_config,periodbox
         implicit none
         contains
 ! *********************************************************************
-subroutine deftimestep
+subroutine deftimestep(atcf,box)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:cm
-  USE tab_imm_m,only:ityp,vp,xp,xpp,ax,fp,num_at_glob
   USE elec_cell, ONLY:  etstep, necycle, necyclemin
   USE arret_ndm_mod,only: arret_ndm
-  USE period_mod,only: period
+
 #ifdef PARA
   USE Tpara,only:myidsp,nprocspace,comm_space
 #else
   USE Tpara,only:nprocspace
 #endif
-  !         version paraseq du 21 fevrier 2001
-  ! *********************************************************************
 
   implicit none
-  !-----------------------------------------------
-  !   G l o b a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   D u m m y   A r g u m e n t s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   P a r a m e t e r s
-  !-----------------------------------------------
-  !-----------------------------------------------
-  !   L o c a l   V a r i a b l e s
-  !-----------------------------------------------
-  integer :: i, iti, ic, expos, imax,ikoloc
+  class (atom_config_d)::atcf
+  type(box_config)::box
+
+
+    integer :: i, iti, ic, expos, imax,ikoloc
   real(double) :: tifac1, tifac2, lts, tseuil, vmax2,depmaxts2
-  real(double), dimension(imm) :: vpmod2
+  real(double), dimension(:),allocatable :: vpmod2
   real(double) :: tmaxv, tmod, vpmod
   real(double) :: tv1
 #ifdef PARA
@@ -56,14 +46,14 @@ subroutine deftimestep
   ! ce pas vaut tseuil=1.0d-10/1,0*vmax
   ! pour ne pas tout melanger on ne prend que des pas en temps
   ! egaux a 2.0 ou 5.0 ou 10 * 10 **-qqch
-
+  allocate (vpmod2(atcf%imm))
       depmaxts2=depmaxts*1.125
 !  if (it.le.2) return
   vmax2 = 0.0
   imax = 0
-  vpmod2(:im) = vp(1,:im)**2+vp(2,:im)**2+vp(3,:im)**2
+  vpmod2(:atcf%im) = atcf%vp(1,:atcf%im)**2+atcf%vp(2,:atcf%im)**2+atcf%vp(3,:atcf%im)**2
 
-  do i = 1, im
+  do i = 1, atcf%im
      if (vpmod2(i)<=vmax2) cycle
      vmax2 = vpmod2(i)
      imax = i
@@ -76,18 +66,18 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
      !  max_loc(3)=0.5+ityp(imax)
      call comm_space%maxloc(max_loc)
      vmax2 = max_loc(1)
-     ityp_max=ityp(int(max_loc(2)))
+     ityp_max=atcf%ityp(int(max_loc(2)))
      !  ityp_max=int(max_glob(3))
      
      
      
-     tmaxv = 1./3./bk*cm(ityp_max)*vmax2
+     tmaxv = 1./3./bk*cm(atcf%ityp_max)*vmax2
      !tmaxv=0
   else
-     tmaxv = 1./3./bk*cm(ityp(imax))*vmax2
+     tmaxv = 1./3./bk*cm(atcf%ityp(imax))*vmax2
   end if
 #else
-  tmaxv = 1./3./bk*cm(ityp(imax))*vmax2
+  tmaxv = 1./3./bk*cm(atcf%ityp(imax))*vmax2
 #endif
  
   vmax = sqrt(vmax2)
@@ -112,7 +102,7 @@ ikoloc=iko
 #endif
 
   if (ikoloc.gt.0) then
-     tmod = 1./3./bk*cm(ityp(ikoloc))*vpmod2(ikoloc)
+     tmod = 1./3./bk*cm(atcf%ityp(ikoloc))*vpmod2(ikoloc)
      vpmod = sqrt(vpmod2(ikoloc))
      if (rang==0) write (6, *) 'Vitesse du projectile =', it, iko, vpmod, &
           tmod
@@ -198,12 +188,12 @@ endif
            endif                                ! rang=0
            usdh = 1/(two*tstep)
            if (it==0) then
-              fp(:,:im) = 0.D0
+              atcf%fp(:,:atcf%im) = 0.D0
            endif
-           do i = 1, im
-              xp(:,i) = xpp(:,i)+tstep*vp(:,i)+tstep**2/cm(ityp(i))/two*fp(:,i)
+           do i = 1, atcf%im
+              atcf%xp(:,i) = atcf%xpp(:,i)+tstep*atcf%vp(:,i)+tstep**2/cm(atcf%ityp(i))/two*atcf%fp(:,i)
            end do
-           if (lperiod) call period (imm,xp,xpp,ax)
+           if (lperiod) call periodbox (box,atcf)
         endif
      else                                       ! cad si tstep >= 2.10-15s
         tstep = oldtstep
@@ -222,12 +212,12 @@ endif
            endif                                ! rang=0
            usdh = 1/(two*tstep)
            if (it==0) then
-              fp(:,:im) = 0.D0
+              atcf%fp(:,:atcf%im) = 0.D0
            endif
-           do i = 1, im
-              xp(:,i) = xpp(:,i)+tstep*vp(:,i)+tstep**2/cm(ityp(i))/two*fp(:,i)
+           do i = 1,atcf%im
+              atcf%xp(:,i) = atcf%xpp(:,i)+tstep*atcf%vp(:,i)+tstep**2/cm(atcf%ityp(i))/two*atcf%fp(:,i)
            end do
-           if (lperiod) call period (imm,xp,xpp,ax)
+           if (lperiod) call periodbox (box,atcf)
            
         else                                       ! cad si tstep >= 2.10-15s
            tstep = oldtstep

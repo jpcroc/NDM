@@ -13,7 +13,6 @@ module analyse_mod
   USE bondval_mod,only: bondval
   USE rasmol_mod,only: rasmol
   USE rdf_mod,only: rdf
-  USE prtplz_mod,only: prtplz
 
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel
@@ -748,9 +747,6 @@ contains
     endif
 
 
-    if(iteplz>0.and.(.not.parallele)) then
-       call prtplz(xp,ityp)
-    end if
     if (lposmoy.eqv..true.) then
        nposmoy=nposmoy+1
        do i=1,im

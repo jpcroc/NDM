@@ -1,6 +1,4 @@
 module NGC_mod
-  USE endrun_mod,only: endrun
-  USE analyse_mod,only: analyse
   USE atomconfig,only:atom_config
   USE cellconfig,only:cell_config
   USE boxconfig,only:box_config

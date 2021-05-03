@@ -1,41 +1,47 @@
 module initcasca_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE period_mod,only: period
-  USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,im_glob,lderive,lperiod,ltranche,&
-       &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T,&
-       lspacendm
-  use temp_com,only:at,bg,im,imm
-  implicit none
-contains
-  ! *************** initialisation de la cascade **********************
-  subroutine initcasca
-    !-----------------------------------------------
-    !   M o d u l e s
-    !-----------------------------------------------
-    USE T_kind_param_m, ONLY:  double
 
+  USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,lderive,lperiod,&
+       &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T,&
+       lspacendm,im_glob,imm_glob
+!  use temp_com,only:at,bg,im,imm
+  use constrconf_mod,only:repartition
+
+    USE T_kind_param_m, ONLY:  double
+    use atomconfig,only:atom_config_e,atom_config_d
+    USE cellconfig, only:cell_config,caltabtC
+    use boxconfig,only:box_config,periodbox
     USE var_pot, ONLY:cm
-    USE tab_imm_m,only:xp,xpp,ax,vp,ityp,NUM_AT_GLOB
+!    USE tab_imm_m,only:xp,xpp,ax,vp,ityp,NUM_AT_GLOB
     USE elec_cell, ONLY : necycle,etstep,necyclemin
     ! *******************************************************************
 #ifdef PARA
     USE Tpara,only:nprocspace,comm_space
+    use paraconfig,only:para_config,initparapuresp
+    USE parautils,only:initcomp
 #else
     use Tpara,only:nprocspace
-    
+
+
 #endif
+
+
+  implicit none
+contains
+  ! *************** initialisation de la cascade **********************
+  subroutine initcasca (atcf,celndm,boxndm)
+    !-----------------------------------------------
+    !   M o d u l e s
+    !-----------------------------------------------
 
 
     implicit none
     !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
+    class(atom_config_d),target::atcf
+    type(box_config):: boxndm
+    type(cell_config),target::celndm
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
@@ -44,75 +50,103 @@ contains
 
     integer :: iti, expos, imax
     real(double) :: tifac1, tifac2, lts, tseuil, vmax2
-    real(double), dimension(imm) :: vpmod2
+    real(double), dimension(imm_glob) :: vpmod2
     real(double) :: masstot, vpi(3)
 
     integer :: seed_size,isl
     integer, dimension(:), allocatable :: iseedt
 
+
 #ifdef PARA
     real(double), dimension(2) :: max_loc
     integer :: ityp_max
-#endif
-
-#if PARA
-    ikoloc=0
-    do i=1,im
-       if (num_at_glob(i)==iko) ikoloc=i
-    end do
+    type(atom_config_e)::atcfcasc
+    type(para_config),target::Cpara
+    type(cell_config),target::celcasc
 
 #else
-    ikoloc=iko
-#endif
+    type(atom_config_e),pointer::atcfcasc
+    type(cell_config),pointer::celcasc
+#endif    
+
+
+    select type (atcf)
+       type is (atom_config_e) 
+
+    
+
+#ifdef PARA
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       call atcfcasc%init(im_glob,imm_glob)
+       call initparapuresp(Cpara,rang,comm_space,nprocspace)
+       call initcomp(atcfcasc,celcasc,atcf,celndm,boxndm,Cpara,lperiod)
+    else
+       call initparapuresp(cpara,rang,comm_space,nprocspace)
+       atcfcasc=atcf
+       celcasc=celndm
+    end if
+
+#else
+    atcfcasc=>atcf
+    celcasc=>celndm
+#endif    
+
+!!$    
+!!$#if PARA
+!!$    ikoloc=0
+!!$    do i=1,im
+!!$       if (num_at_glob(i)==iko) ikoloc=i
+!!$    end do
+!!$
+!!$#else
+!!$    ikoloc=iko
+!!$#endif
 
     !-----------------------------------------------
     ! --- Translation de l'atome IKO au centre de la boite de simulation ---
-    if (ikoloc.gt.0) then
+    !    if (ikoloc.gt.0) then
+    if (rang==0) then
+       
        write (6, *) 'initialisation de la cascade'
-       write(6,*)'ATOME ',iko, '  TYPE ',ityp(ikoloc)
+       write(6,*)'ATOM ',iko, '  TYPE ',atcfcasc%ityp(iko), ' energy=',eko
        if (iko>im_glob) then
           write (6, *) 'wrong input cascade iko eko ', iko, eko
           stop
        endif
-    endif                                      ! rang=0
+!    endif                                      ! rang=0
 
     if (xx0.ge.0) then
-#if PARA
-#else
 
        znorm=sqrt(xx0**2+yy0**2+zz0**2)
        if (znorm==0) then
           xx0=0.25 ; yy0=0.25 ; zz0=0.25
        end if
 
-       call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
-       call cryst_to_cart (imm, ax, bg, -1)    !cart vers cryst
+       call cryst_to_cart (atcfcasc%imm, atcfcasc%xp, boxndm%bg, -1)    !cart vers cryst
+       if (.not.atcf%lax) then
+          write(6,*) 'no ax and casca stop'
+          stop
+       end if
+       call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%bg, -1)    !cart vers cryst
        !debug write(6,*)xp(1,ikoloc),xx0
-       if (ltranche) then
-          t1 = 0.
-          t2 = 0.
-          t3 = 0.
-       else
-          t1 = xp(1,ikoloc)-xx0
-          t2 = xp(2,ikoloc)-yy0
-          t3 = xp(3,ikoloc)-zz0
-       endif
+          t1 = atcfcasc%xp(1,iko)-xx0
+          t2 = atcfcasc%xp(2,iko)-yy0
+          t3 = atcfcasc%xp(3,iko)-zz0
 
        !      write(6,*)'t1 t2 t3 zl', t1,t2,t3,zl(1),zl(2),zl(3)
-       xpp(1,:im) = xpp(1,:im)-t1
-       xpp(2,:im) = xpp(2,:im)-t2
-       xpp(3,:im) = xpp(3,:im)-t3
-       xp(1,:im) = xp(1,:im)-t1
-       xp(2,:im) = xp(2,:im)-t2
-       xp(3,:im) = xp(3,:im)-t3
-       ax(1,:im) = ax(1,:im)-t1
-       ax(2,:im) = ax(2,:im)-t2
-       ax(3,:im) = ax(3,:im)-t3
+       atcfcasc%xpp(1,:atcfcasc%im) = atcfcasc%xpp(1,:atcfcasc%im)-t1
+       atcfcasc%xpp(2,:atcfcasc%im) = atcfcasc%xpp(2,:atcfcasc%im)-t2
+       atcfcasc%xpp(3,:atcfcasc%im) = atcfcasc%xpp(3,:atcfcasc%im)-t3
+       atcfcasc%xp(1,:atcfcasc%im) = atcfcasc%xp(1,:atcfcasc%im)-t1
+       atcfcasc%xp(2,:atcfcasc%im) = atcfcasc%xp(2,:atcfcasc%im)-t2
+       atcfcasc%xp(3,:atcfcasc%im) = atcfcasc%xp(3,:atcfcasc%im)-t3
+       atcfcasc%ax(1,:atcfcasc%im) = atcfcasc%ax(1,:atcfcasc%im)-t1
+       atcfcasc%ax(2,:atcfcasc%im) = atcfcasc%ax(2,:atcfcasc%im)-t2
+       atcfcasc%ax(3,:atcfcasc%im) = atcfcasc%ax(3,:atcfcasc%im)-t3
 
-       call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
-       call cryst_to_cart (imm, ax, at, 1)     !cryst vers cart
-       if (lperiod)       call period  (imm,xp,xpp,ax)
-#endif
+       call cryst_to_cart (atcfcasc%imm, atcfcasc%xp, boxndm%at, 1)     !cryst vers cart
+       call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%at, 1)     !cryst vers cart
+       if (lperiod)       call periodbox  (boxndm,atcfcasc)
 
        !  write(6,*)xp(1,iko)
        !                                                !Conditions periodiques
@@ -157,39 +191,16 @@ contains
     endif
 
 577 format('Positions initiales du projectile (A) ',3(f8.4,1x))
-#if PARA
-    ikoloc=0
-    do i=1,im
-       if (num_at_glob(i)==iko) ikoloc=i
-    end do
-
-    if (ikoloc.gt.0) then
-       write(6,*)'IKO dans processeur', rang,ikoloc
-       write (6, 577) xp(1:3,ikoloc)*1.0d8     
-
-       aux1 = sqrt(eko*ecgs*2./cm(ityp(ikoloc)))    !Vitesse en cgs
-       vp(1,ikoloc) = vp(1,ikoloc)+z1*aux1
-       vp(2,ikoloc) = vp(2,ikoloc)+z2*aux1
-       vp(3,ikoloc) = vp(3,ikoloc)+z3*aux1
-575    continue
-       xpp(1,ikoloc) = xp(1,ikoloc)-vp(1,ikoloc)*tstep
-       xpp(2,ikoloc) = xp(2,ikoloc)-vp(2,ikoloc)*tstep
-       xpp(3,ikoloc) = xp(3,ikoloc)-vp(3,ikoloc)*tstep
-       !                                                !Conditions periodiques
-
-    end if
-
-#else
-    write (6, 577) xp(1:3,iko)*1.0d8     
+    write (6, 577) atcfcasc%xp(1:3,iko)*1.0d8     
     write(6,'("Positions initiales du projectile (CRYST)",3(f8.4,1x))') xx0,yy0,zz0
-    aux1 = sqrt(eko*ecgs*2./cm(ityp(iko)))    !Vitesse en cgs
-    vp(1,iko) = vp(1,iko)+z1*aux1
-    vp(2,iko) = vp(2,iko)+z2*aux1
-    vp(3,iko) = vp(3,iko)+z3*aux1
+    aux1 = sqrt(eko*ecgs*2./cm(atcfcasc%ityp(iko)))    !Vitesse en cgs
+    atcfcasc%vp(1,iko) = atcfcasc%vp(1,iko)+z1*aux1
+    atcfcasc%vp(2,iko) = atcfcasc%vp(2,iko)+z2*aux1
+    atcfcasc%vp(3,iko) = atcfcasc%vp(3,iko)+z3*aux1
 575 continue
-    xpp(1,iko) = xp(1,iko)-vp(1,iko)*tstep
-    xpp(2,iko) = xp(2,iko)-vp(2,iko)*tstep
-    xpp(3,iko) = xp(3,iko)-vp(3,iko)*tstep
+    atcfcasc%xpp(1,iko) = atcfcasc%xp(1,iko)-atcfcasc%vp(1,iko)*tstep
+    atcfcasc%xpp(2,iko) = atcfcasc%xp(2,iko)-atcfcasc%vp(2,iko)*tstep
+    atcfcasc%xpp(3,iko) = atcfcasc%xp(3,iko)-atcfcasc%vp(3,iko)*tstep
 
     !                                                !Conditions periodiques
 
@@ -197,23 +208,24 @@ contains
     ! correction de la derive par ajout d'une impulsion inverse sur les autres atomes
     if (lderive) then
        masstot=0
-       do i=1,im
+       do i=1,atcfcasc%im
           if(i==iko)cycle
-          masstot=masstot+cm(ityp(i))
+          masstot=masstot+cm(atcfcasc%ityp(i))
        end do
-       vpi(:)=-(vp(:,iko)*cm(ityp(iko))/masstot)
-       do i=1,im
+       vpi(:)=-(atcfcasc%vp(:,iko)*cm(atcfcasc%ityp(iko))/masstot)
+       do i=1,atcfcasc%im
           if(i==iko)cycle
-          vp(:,i)=vp(:,i)+vpi(:)
-          xpp(:,i)=xpp(:,i)-vpi(:)*tstep
+          atcfcasc%vp(:,i)=atcfcasc%vp(:,i)+vpi(:)
+          atcfcasc%xpp(:,i)=atcfcasc%xpp(:,i)-vpi(:)*tstep
        end do
     end if
 
 
-    if (lperiod)       call period  (im,xp,xpp,ax)
+    if (lperiod)       call periodbox  (boxndm,atcfcasc)
 
-#endif
 
+
+    
     ! --- Modification de la vitesse de l'atome accelere ---
 
 
@@ -229,9 +241,9 @@ contains
     !goto 121
     vmax2 = 0.0
     imax = 0
-    vpmod2(:im) = vp(1,:im)**2+vp(2,:im)**2+vp(3,:im)**2
+    vpmod2(:atcfcasc%im) = atcfcasc%vp(1,:atcfcasc%im)**2+atcfcasc%vp(2,:atcfcasc%im)**2+atcfcasc%vp(3,:atcfcasc%im)**2
 
-    do i = 1, im
+    do i = 1, atcfcasc%im
        if (vpmod2(i)<=vmax2) cycle
        vmax2 = vpmod2(i)
        imax = i
@@ -239,24 +251,10 @@ contains
 
     vmax = sqrt(vmax2)
 
-#ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-           max_loc(1)=vmax
-           max_loc(2)=0.5+ityp(imax)
-           call comm_space%maxloc(max_loc)
-           vmax = max_loc(1)
-           ityp_max=int(max_loc(2))
-        else
-           if (rang==0) then
-              write (6, *) 'Vitesse maximale sur I=', imax, vmax
-           endif
-        end if
-#else
            if (rang==0) then
               write (6, *) 'Vitesse maximale sur I=', imax, vmax
            endif
            
-#endif
 
 
 
@@ -317,14 +315,25 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     ! redefinition des positions atomiques suite au changement de pas de temps
     if (dmtype==1) then
        if (tstep/=oldtstep) then
-          do i = 1, im
-             xpp(1,i) = xp(1,i)-vp(1,i)*tstep
-             xpp(2,i) = xp(2,i)-vp(2,i)*tstep
-             xpp(3,i) = xp(3,i)-vp(3,i)*tstep
+          do i = 1, atcfcasc%im
+             atcfcasc%xpp(1,i) = atcfcasc%xp(1,i)-atcfcasc%vp(1,i)*tstep
+             atcfcasc%xpp(2,i) = atcfcasc%xp(2,i)-atcfcasc%vp(2,i)*tstep
+             atcfcasc%xpp(3,i) = atcfcasc%xp(3,i)-atcfcasc%vp(3,i)*tstep
           end do
        endif
     endif
 121 continue
-    return
+
+ end if
+#ifdef PARA
+ call atcfcasc%send2all(0,Cpara%mpi_image)
+ call repartition(atcfcasc,atcf,boxndm,celndm)
+#endif
+ call caltabtC(celndm,atcf,lperiod,boxndm)
+ 
+! renvoi vers les autres procs
+end select
+
+ return
   end subroutine initcasca
 end module initcasca_mod

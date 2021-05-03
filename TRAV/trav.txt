@@ -20,28 +20,32 @@ FAIT:
 2.95/ modifier atomconfig%send2proc
 3/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas). LE PILOTER FINEMENT SUR LES DONNEES A TRANSMETTRE*/ master_and_servants à la Michael Trochet 
 3.5/ GC
-
-A FAIRE
-
-***/vérifier sauvegardes
-CODER xyz
 SAUVEGARDE PARA
-debuggage LPR
 
+****
+EN STANDBY, A FAIRE DANS UN DEUXIEME TEMPS :
 1.1/SYSTEME COMPLET Work in Porgress
 2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine : abandonné car algo dépendant, voir cependant calfoMCGC
 3.1/réécrire paraspace en version atomconfig y compris avec extend BOF
 et écrire des transferts simples de variables atom et varibales cellconfig et boxconfig
 soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
 (quelles données transférer gérées par un tableau de logicals l(i)=.true. on transfère la données i/ L(i)= false on l’initialise à 0)
-
-
-
 3.6/ suppriemr %xpp du type de base
-4/supprimer les routines non NDM2021	et faire une TODO list afférente
+
+
+***
+A FAIRE
+CODER dauvegarde xyz
+debuggage LPR+ LPR lammps
+
+
+
+4/supprimer les routines non NDM2021 (use temp_com)	et faire une TODO list afférente
+4.05/ supprimer tab_imm_m et les USE  qui vont avec
+4.1/ relire tout gen_comm_m et enlever tout ce qui ne seert à rien!
 4.5/ PR en lammps !!!
 5/version 2T
-5.5/ création de PF
+5.5/ création de PF avec DM NVT ou trempe ,rapide ou GC 
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
 7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos
