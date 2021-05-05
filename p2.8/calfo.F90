@@ -18,7 +18,6 @@ module calfo_mod
   USE gen_com_m, ONLY:parallele,potis0,potis2,potisp&
        &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang
 
-  USE contrainte,only:initcontr,contr
   USE force_tersoff_mod,only:force_tersoff
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE calfocommon ! stocke des variables LOCALES sig et potist eat sigat etc.
@@ -118,7 +117,7 @@ contains
        !     boxl(2)=at(2,2)/A2cm
        !     boxl(3)=at(3,3)/A2cm
 
-       call calcforce_lammps2(atcf%im,atcf%imm,atcf%xp,atcf%ityp,atcf%fp,potist)
+       call calcforce_lammps2(boxcf%at,atcf%im,atcf%imm,atcf%xp,atcf%ityp,atcf%fp,potist,sig)
 
     else
 #endif  
@@ -216,19 +215,6 @@ contains
 #ifdef LAMMPS_VERSION
     endif
 #endif  
-    ! !!! le cas parallele n'est pas pris en compte !!!
-
-
-
-
-
-
-    ! A MODULARISER
-!    if (.not.parallele) then
-!       if(lcontr) call contr (atcf%xp,atcf%vp,atcf%fp,atcf%ityp)
-!!       if(ltranche) atcf%fp(:,imd+1:im)=0.0
-!    end if
-
 
     sigcf=sig;potistcf=potist
     nullify(eat);nullify(sigat)

@@ -1,10 +1,8 @@
 module dynallocPME
-!  USE temp_com,only:imm ! A EFFACER
         implicit none
         contains
 subroutine DynamicalAllocationPME(immT)
 
-  !  USE gen_com_m, ONLY:imm
   
   USE var_pot, ONLY:bsmod1,bsmod2,bsmod3,table,iiim,ijim,ikim,fr1,fr2,fr3,de1,de2,de3,kpmex,kpmey,kpmez,maxorder,ntable
   implicit none

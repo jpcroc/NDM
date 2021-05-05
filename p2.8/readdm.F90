@@ -1,5 +1,8 @@
 ! *****************************************************************
 module readdm_mod
+
+
+  use temp_com,only:h0
   use read_val
     implicit none
 contains
@@ -13,7 +16,7 @@ contains
     USE gen_com_m, ONLY:a2cm,debyetemp,deltaestop,deltarmax,deltax,depmaxts,dfpred,eheat,eko,&
          &epcou,epcoud,epcoudis,epsil,ev2erg,fdislo,fmt_cin,fpstop,fsumstop,gamlg,hessianorder,ibordcou,&
          &ides,igen,ilangevin,imm_glob,iseed,itab,iteanaposneb,itederive,iteheat,&
-         &itesauvposition,itetabvois,itetconst,itetimestep,ittherm,kappa,kspr,kspring,kthg,&
+         &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,ittherm,kappa,kspr,kspring,kthg,&
          &lalea,lanczos_step,landerscou,lastcool,lbulle,lcdp,lconstrtot,lcorrelvp,lderive,ldislo,lfire,&
          &lgc,lhcyl,lheat,ljqbh,lpathfromgin,lpcon2,lpconxyz,lprtrp,lprtzlm,lrctest,lrestart,ltandersen,&
          &ltcon,lvpread,maxneb,mdcg_noise_scale,nbmoye,neb_noise,neb_noise_scale,nebrelaxation,&
@@ -24,10 +27,10 @@ contains
          &formatsauv,iko,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
          &lcasca,lcontr,ldemitab,ldesinteg,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
-         &llangevin,lnemd,lperiod,lpkbar,lpr,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
-         &ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,&
+         &llangevin,lnemd,lperiod,lpkbar,lposmoy,lpr,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
+         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
-         &,tpseuils,tstep,typspr,unite,unitp,xpspr,lenfnam,fnam,position_conversion_lammps,h0&
+         &,tpseuils,tstep,typspr,unite,unitp,xpspr,lenfnam,fnam,position_conversion_lammps&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess
@@ -70,7 +73,7 @@ contains
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
           rulayer,iterasmol, lpcon, lprtzlm,pext, wboxf, wNose, lpcon2, lpconxyz, tbox, &
-         iteangle,  itesauvposition, lfilmext, tdepla2, &
+         iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder,  lalea, rsep, ipotentiel,lpotentiel,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
@@ -79,7 +82,7 @@ contains
          fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
          rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,&
-         lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,&
+         lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
          mdcg_noise, lforcetabulate,ivisu,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
@@ -154,6 +157,7 @@ contains
 
     itesauv = 1000               !period for saving
     itesauvposition = 0         !periode pour sauvegarde des positions en binaire
+    itesauvforce = 0            !periode pour sauvegarde des forces en binaire
     itesauvinter=0
     formatsauv = 3              !format of saving always triclin 3 copmplete ; 2 positions only
     fmt_cin=1                  !format des fichiers .cin 0 : initiale, 1 = para
@@ -300,6 +304,8 @@ contains
     xpspr(:)=-1000.
     typspr=0
     tempdes=-1.0
+    lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep. 
+    lposmoy=.false.       ! writes the average position and energy of the atoms in a .mol file
     eatref(:)=0.
 
     lheat=.false.
@@ -546,6 +552,10 @@ contains
     if(dmtype==9) lprteat=.true.
     if(dmtype==12) lprteat=.true.
     if(dmtype==16) lprteat=.true.
+    if (lposmoy.EQV..true.) then 
+       lprteattotm=.true.
+       write(6,*)'LPOSMOY, stocke les positions moyennes dans posmoyx et les ecrit a la fin avec les energies moyennes'
+    end if
     if (lprteattotm.EQV..true.) then
        lprteat=.true.
        write(6,*)'LPRTEATTOTM calcule les energies moyenne de chaque atome et les ecrit en retranchant eatref en eV (=0 par defaut)'
@@ -915,6 +925,7 @@ contains
     case (9)
        if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS ' 
        itesauvposition=-1
+       itesauvforce=-1
        itetemp=-1;itesigma=-1
     case (10)
        if (rang==0) write (6,'(a)') '      TREMPE FIRE '
@@ -1072,6 +1083,24 @@ contains
        end if
     end if
 
+    if ( (.not.lperiod).and.(itesauvposition>0).and.lsuivinonpbc) then  
+       if (rang==0) write(6,*)' lsuivinonpbc will be turn to FALSE'
+       lsuivinonpbc=.false.
+    end if
+    if (lsuivinonpbc) then
+
+       if (dmtype.ne.4) then
+          if (rang==0) write(6,*) 'lsuivinonpbc is implemented only with velocity verlet'
+          if (rang==0) write(6,*) 'Or dmtype=4. Change and restart until there I will stop for you.'
+          stop 
+       end if
+
+       if (itesauvposition<=0) then
+          if (rang==0) write(6,*) 'itesauvpostion MUST be positive if you want lsuivinonpbc TRUE'
+          if (rang==0) write(6,*) 'STOP in readdm'
+          stop
+       end if
+    end if
     if (lforcetabulate) then
        if (ipotentiel/=10) then
           write(*,*) 'There is no implementation for lforcetabulate TRUE and ipotentiel ', ipotentiel

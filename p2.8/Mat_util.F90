@@ -540,5 +540,68 @@ END FUNCTION matdet
        end if
     end do
   end subroutine fillbuffer1Dlogical
+  !---------------------------------------------------
+  subroutine convert_cell(mat_ini,new_mat,transform)
+
+
+
+    implicit none
+    real(kind(0.d0)), dimension(3,3), intent(in) :: mat_ini
+    real(kind(0.d0)), dimension(3,3), intent(out) :: new_mat, transform
+
+    !internal
+    real(kind(0.d0)), dimension(3,3) :: transit_cell,inv_mat_ini
+    real(kind(0.d0)), dimension(3) :: A,B,C, Ahat,AxBhat
+    real(kind(0.d0)) :: volume
+    logical :: upper, right
+    integer :: i
+
+    !matrix is already transpose
+    transit_cell = mat_ini
+    !write(*,*) 'transpose matrix is :',transit_cell
+
+    call is_upper_triangular(transit_cell,upper)
+    if (.not.upper) then
+       ! rotate bases into triangular matrix
+       new_mat(:,:) = 0.d0
+       A = transit_cell(:,1)
+       B = transit_cell(:,2)
+       C = transit_cell(:,3)
+       call right_hand_basis(A,B,C,right)
+
+       if (.not.right) then
+          write(*,*)"WARNING: your reper is not right handed."
+          write(*,*)"WARNING: This is a critical issue. The LAMMPS results are wrong !!!!!"
+          stop
+       end if
+
+       new_mat(1,1) = norme(A)
+       Ahat = A / norme(A)
+       AxBhat = cross_product(A, B) / norme(cross_product(A, B))
+       new_mat(1,2) = dot_product(B, Ahat)
+       new_mat(2,2) = norme(cross_product(Ahat, B))
+       new_mat(1,3) = dot_product(C,Ahat)
+       new_mat(2,3) = dot_product(C,cross_product(AxBhat, Ahat))
+       new_mat(3,3) = abs(dot_product(C, AxBhat))
+       !create and save the transformation for coordinates
+       !volume = matdet(mat_ini)
+       !trans = np.array([np.cross(B, C), np.cross(C, A), np.cross(A, B)])
+       !trans = trans / volume
+       !coord_transform = np.dot(tri_mat , trans)
+       call matinv_gen(mat_ini,inv_mat_ini)
+       transform = matmul(new_mat,inv_mat_ini)
+
+    else
+       new_mat = mat_ini
+       transform(:,:) = 0.d0
+       do i=1,3
+          transform(i,i) = 1.d0
+       enddo
+
+    endif
+    return
+  end subroutine convert_cell
+
+
 
 end module Mat_utils_mod

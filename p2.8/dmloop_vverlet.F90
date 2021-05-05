@@ -3,12 +3,11 @@ module dmloop_vverlet_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
   USE dyn_vverlet_mod,only: dyn_vverlet
-  USE correl_mod,only: correlvp
   USE atomconfig,only : atom_config_d, atom_config_e
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY: itesauvposition,lcorrelvp,ecyl,ev2erg,lgc,rang,rayonc,&
+  USE gen_com_m, ONLY: itesauvforce,itesauvposition,ecyl,ev2erg,lgc,rang,rayonc,&
        &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lspaceNDM,itmax
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
@@ -35,7 +34,7 @@ contains
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
 #else
-    USE Tpara,only:nprocspace
+  USE Tpara,only:nprocspace
 #endif
     implicit none
     type(para_space_config)::psc

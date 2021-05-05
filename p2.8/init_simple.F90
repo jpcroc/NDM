@@ -2,8 +2,6 @@ module init_simple_mod
 
   use init_pot_mod,only:init_pot,init_pot2
   USE setcell,only:setcellconf
-  USE neigcel_mod,only: neigcel
-!  USE dynalloccell
   USE initspeed_mod,only: initspeed
   USE caltabi_mod,only: caltabi
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e

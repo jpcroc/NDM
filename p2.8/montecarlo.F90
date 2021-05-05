@@ -3,7 +3,6 @@ module montecarlo_mod
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
        &lspaceNDM,rang,it,firsttime_lammps,posa,forca,erg2ev,parallele
   USE atomconfig,only:atom_config,atom_config_d, config2ndm, switch_atom
-  USE period_mod,only: period 
   USE cellconfig, only:cell_config, cellconfig2ndm, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
   USE calfo_mod,only: calfo
@@ -25,11 +24,15 @@ module montecarlo_mod
   use var_pot,only:ipotentiel,rumax
   USE parautils,only:initloc,pointer_caltabt_calfo
   USE calctemp_mod,only:calctemp
-  USE constrconf_mod,only:config2data
+
 #ifdef LAMMPS_VERSION
-  use lammps_util_mod
   use vars_lammps
+   use lammps_util_mod,only:init_lammps
 #endif  
+   use config2data_mod,only:config2data
+
+ 
+
   implicit none
 
   type(para_config),target::paramcgc

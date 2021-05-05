@@ -2,7 +2,7 @@ module neb_mod
  USE calfo_mod,only: calfo
   USE trempe_mod,only: trempe
   USE neb_controle_mod,only:neb_controle
-  USE gen_com_m, ONLY:iteanaposneb,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
+  USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
        &erg2ev,itesauv,lpkbar,nebtype,sig,unitp,potist,angst,itetabvois,rang,&
        &fnam,lenfnam,lfire,itesauv,itetabvois,iteanaposneb,maxneb,&
        &nebrelaxation,lperiod,lspacendm,latcomp

@@ -4,8 +4,7 @@ module dmloop_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
   USE trempe_mod,only: trempe
-  USE correl_mod,only: correlvp
-  USE gen_com_m, ONLY:itesauvposition,lcorrelvp,lfire
+  USE gen_com_m, ONLY:itesauvforce,itesauvposition,lfire
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC
   USE boxconfig,only:box_config,periodbox
@@ -131,7 +130,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call dyn  (atdml)
 
       
-!       if (lcorrelvp) call correlvp(atdml%xp,atdml%xpp,atdml%vp,atdml%ax,atdml%fp,atdml%ax, atdml%ityp)
 
     case (21) 
        IF (lFire) THEN

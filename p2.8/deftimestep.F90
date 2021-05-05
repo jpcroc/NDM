@@ -71,7 +71,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
      
      
      
-     tmaxv = 1./3./bk*cm(atcf%ityp_max)*vmax2
+     tmaxv = 1./3./bk*cm(ityp_max)*vmax2
      !tmaxv=0
   else
      tmaxv = 1./3./bk*cm(atcf%ityp(imax))*vmax2
@@ -93,8 +93,8 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
   if (lcasca) then
 #if PARA
   ikoloc=0
-  do i=1,im
-     if (num_at_glob(i)==iko) ikoloc=i
+  do i=1,atcf%im
+     if (atcf%num_at_glob(i)==iko) ikoloc=i
   end do
   
 #else

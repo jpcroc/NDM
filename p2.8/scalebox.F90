@@ -1,8 +1,6 @@
 module scalebox_mod
   USE gen_com_m, ONLY:dmtype,itetabvois,lpr,nvat,pi,it,rang,lperiod
 
-   USE dynalloccell
-  USE neigcel_mod,only: neigcel
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
@@ -17,7 +15,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE var_pot, ONLY:alpha,auxe,rumax
+    USE var_pot, ONLY:alpha,auxe,rumax,tabv3,tabf3,ncoucx,ncoucy,ncoucz,iewald,q
 
     !           (version du 09 juin 2000)
     ! ******************************************************************
@@ -119,8 +117,6 @@ contains
 !       write(6,*)'BOUFFON!'
 !       stop
       call celndm%init(celndm%nox,celndm%noy,celndm%noz,celndm%natperc) !contient dealloc
-!       call DynamicalAllocationCell
-!       call neigcel
 
     end if
              call caltabtC(celndm,atpr,lperiod,boxndm)

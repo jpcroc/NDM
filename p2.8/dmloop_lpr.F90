@@ -1,7 +1,7 @@
 module dmloop_lpr_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
-  USE gen_com_m, ONLY:  itesauvposition,itesauv,ltnose,lperiod,lspacendm
+  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod,lspacendm
   USE calfo_mod,only: calfo
 
   USE atomconfig,only : atom_config_d

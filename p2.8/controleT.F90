@@ -1,6 +1,5 @@
 module controleT_mod
   USE endrunT_mod,only: endrunT
-  USE dynalloccell
   USE tempinst_mod,only: tempinst,andersenth
   USE period_mod,only: period
   USE caltabi_mod,only: caltabi
@@ -15,6 +14,7 @@ module controleT_mod
   USE Tpara,only:nprocspace,myidsp
 #endif
  USE arret_ndm_mod,only: arret_ndm
+
   implicit none
 contains
   ! ***********************************************************
@@ -26,8 +26,8 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,itmax,it,rang,&
-         &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp
+    USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,itmax,it,&
+         &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang
 
     USE var_pot, ONLY:
     USE cryst_to_cart_mod,only: cryst_to_cart

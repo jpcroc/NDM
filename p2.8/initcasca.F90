@@ -4,7 +4,6 @@ module initcasca_mod
   USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,lderive,lperiod,&
        &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T,&
        lspacendm,im_glob,imm_glob
-!  use temp_com,only:at,bg,im,imm
   use constrconf_mod,only:repartition
 
     USE T_kind_param_m, ONLY:  double

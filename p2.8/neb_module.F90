@@ -6,10 +6,8 @@ module neb_module
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
        &posa, forca,latcomp,parallele
   use read_val,only:rvois,ltabvois
-  USE constrconf_mod,only:constr_2gin,gin2ndm,config2data,read_cin
+  USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin
     use cryst_to_cart_mod,only:cryst_to_cart
-  USE contrainte,only:contr
-!  USE config_mod,only: config
   USE recips_mod,only: recips
   USE rasmolT_mod,only: rasmolT
   use var_pot,only:ntyp,ipotentiel,cm,rumax
@@ -32,6 +30,7 @@ module neb_module
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only:init_lammps
 #endif
+  use config2data_mod,only:config2data  
   implicit none
 
   type, extends (atom_config_d):: atom_config_neb
@@ -472,7 +471,6 @@ end if
        end if
     end do
 
-!    if(lcontr) call contr (xp,vp,fp,ityp)      
 
     return
 
@@ -513,7 +511,6 @@ end if
 
     end do
 
-    if(lcontr) call contr (xp,vp,fp,ityp)      
 
     return
 

@@ -5,7 +5,7 @@ module boxconfig
   use Tpara,only:mpi_communicator,endmpi
   implicit none
   type box_config
-     real(double):: at(3,3)
+     real(double):: at(3,3),h0(3,3)
      real(double):: bg(3,3)
      real(double):: zl(3),zls2(3),nzl(3),volu,normat(3),normbg(3)
      integer(long)::icaltabt 
@@ -69,6 +69,7 @@ contains
     end do
     boxnew%zls2 = boxnew%zl/2.0
     boxnew%volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
+    boxnew%h0=at
     return
   end subroutine initbox
 

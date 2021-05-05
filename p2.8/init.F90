@@ -2,15 +2,11 @@ module init_mod
 
   use init_pot_mod,only:init_pot,init_pot2
   USE setcell,only:setcellconf
-  USE contrainte,only:initcontr
   USE transf_mod,only: transf
-  USE neigcel_mod,only: neigcel
-  USE dynalloccell
   USE initspeed_mod,only: initspeed
   USE sauvegardeT_mod,only: sauvegardeT!,cin2gin
   USE caltabi_mod,only: caltabi
   USE creadp_mod,only: creadp
-  USE correl_mod,only: correlvp
   USE initcdp_mod,only: initcdp
   USE initcasca_mod,only: initcasca
   USE deftimestep_mod,only: deftimestep
@@ -20,6 +16,7 @@ module init_mod
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC,init_cel
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
   USE constrconf_mod, only :constrconf
+ USE arret_ndm_mod,only: arret_ndm
 
 #ifdef PARA
   USE init_vois_mod,only: init_voisinage
@@ -35,7 +32,7 @@ module init_mod
 
   USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,formatsauv,igen,ilangevin,it,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lhcyl,lperiod,lrestart,pmean,rang,timel,two,im_glob,&
-       &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp
+       &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp,l2T
 use read_val,only:ltabvois
 USE var_pot, ONLY:ipotentiel
   implicit none
@@ -216,10 +213,6 @@ contains
           end select
 
 114       format(a3,1x,3(f10.4,1x),i5)
-          if(iteanapos>0)then
-             itapp=0
-!             call sauveposition (itapp)
-          end if
        end if
     end select
 
@@ -243,10 +236,6 @@ contains
     end if
     if (itmax==0) call arret_ndm
 
-    if(iteanapos>0)then
-       itapp=0
-!       call sauveposition (itapp)
-    end if
 
 
 

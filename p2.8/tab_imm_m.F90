@@ -1,7 +1,7 @@
 module tab_imm_m
   !
   USE T_kind_param_m
-  USE gen_com_m, ONLY: mdcg_noise,llangevin,l2T
+  USE gen_com_m, ONLY: lposmoy,mdcg_noise,llangevin,l2T
   !$ USE OMP_LIB
   ! 
   ! Module contenant les tableaux dimmensionnes sur le
@@ -14,6 +14,7 @@ module tab_imm_m
   real(double),dimension(:,:), allocatable :: xpp    ! positions precedentes
   real(double),dimension(:,:), allocatable :: vp     ! vitesses
   real(double),dimension(:,:), allocatable :: ax     ! positions d'origine
+  real(double),dimension(:,:), allocatable :: posmoyx     ! positions moyennes
   real(double),dimension(:,:), allocatable :: fp     ! forces 
   real(double),dimension(:,:), allocatable :: bruitmd     ! bruitmd 
   real(double),dimension(:,:), allocatable :: Glangv    ! random noise langevin
@@ -37,6 +38,10 @@ contains
     vp = 0.0
     allocate(ax(3,nb_imm))
     ax = 0.0
+    if (lposmoy.eqv..true.) then
+       allocate(posmoyx(3,nb_imm))
+       posmoyx = 0.0
+    end if
      if ((llangevin.eqv..true.).or.(l2T.eqv..true.)) then
         allocate(Glangv(3,nb_imm))
      end if
@@ -177,6 +182,7 @@ contains
     if (allocated(iwmax))       deallocate(iwmax)
     if (allocated(ityp))        deallocate(ityp)
     if (allocated(num_at_glob)) deallocate(num_at_glob)
+
     if (llangevin) then 
        if(allocated(Glangv)) deallocate(Glangv)
     end if 

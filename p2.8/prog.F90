@@ -4,7 +4,6 @@ module prog_mod
   USE endrunT_mod,only: endrunT
   USE neb_mod,only: neb
   USE dmloop_lpr_mod,only: dmloop_lpr
-  USE loopforcetest_mod,only: loopforcetest
   USE gcII_mod,only: gcII
   USE dmloop_vverlet_mod,only: dmloop_vverlet
   USE dmloop_mod,only: dmloop
