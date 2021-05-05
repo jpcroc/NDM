@@ -9,7 +9,7 @@
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage
   use gen_com_m,only:lspacendm
-  use atomconfig,only: atom_config,atom_config_d
+  use atomconfig,only: atom_config,atom_config_d,atom_config_e
   USE boxconfig,only:box_config,periodbox,initbox
   USE cellconfig,only:cell_config,caltabtC
   use calfo_mod,only:calfo
@@ -70,7 +70,7 @@
 
   end subroutine initloc
   
-  subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod,caracT)
+  subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod,caracT,lorder)
     
     class(atom_config),intent(in)::atlocin
     type(cell_config),intent(in)::cellocin
@@ -80,9 +80,16 @@
     type(para_config),intent(in)::div
     character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
-    integer::ierr,iun
+    logical,optional::lorder
+    class(atom_config),pointer::atcdes
+    type(atom_config),target::atb
+    type(atom_config_d),target::atd
+    type(atom_config_e),target::ate
+    logical::lord
+    integer::ierr,iun,i,j
     logical::lperiod
-
+    lord=.false.
+    if (present(lorder))lord=lorder
     if (.not.present(caracT)) then
        carac='xfniewdlpvrugas'
     else
@@ -90,12 +97,42 @@
     end if
 
        if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
-!    if (div%mpi_image%nproc.gt.1) then
-       call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
-       call atlocin%vers_master(atcomp,div,carac)
-       if (div%mpi_image%rank==0) then
-          call caltabtC(cellcomp,atcomp,lperiod,box)
-       end if
+          !    if (div%mpi_image%nproc.gt.1) then
+          if (lord) then
+             call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
+             select type (atcomp)
+             type is (atom_config)
+                atb=atcomp
+                atcdes=>atb
+             type is (atom_config_d)
+                atd=atcomp
+                atcdes=>atd
+             type is (atom_config_e)
+                ate=atcomp
+                atcdes=> ate
+             end select
+             call atlocin%vers_master(atcdes,div,carac)
+
+             if (div%mpi_image%rank==0) then
+                
+                call atcdes%print
+                do i=1,atcdes%im
+                   j=atcdes%num_at_glob(i)
+                   call atcdes%copy_atom(i,atcomp,j)
+                end do
+                
+                
+                call caltabtC(cellcomp,atcomp,lperiod,box)
+             end if
+             
+          else
+             call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
+             call atlocin%vers_master(atcomp,div,carac)
+             if (div%mpi_image%rank==0) then
+                call caltabtC(cellcomp,atcomp,lperiod,box)
+             end if
+             
+          end if
     else
        call atlocin%copy_config(atcomp,lrescl=.false.)
        cellcomp=cellocin

@@ -27,7 +27,7 @@ contains
          &formatsauv,iko,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
          &lcasca,lcontr,ldemitab,ldesinteg,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
-         &llangevin,lnemd,lperiod,lpkbar,lposmoy,lpr,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
+         &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
          &,tpseuils,tstep,typspr,unite,unitp,xpspr,lenfnam,fnam,position_conversion_lammps&
@@ -58,7 +58,7 @@ contains
     !-----------------------------------------------
     integer :: ludin, lufilm, lufilmpaf,  i,itean, ic, iThermo,itecompcr,ipotcont
     character :: fnamdin*80
-    logical :: lginread,ltriclin,lpcon,lfissure,tpot
+    logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr
 
     !  integer :: imFree     ! nb d'atomes libres
     !-----------------------------------------------
@@ -166,7 +166,8 @@ contains
     noy = -1
     noz = -1
     ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
-    lpr=.false.                 ! parinnelo rahman �あ contrainte constante
+    lprahman=.false.                 ! parinnelo rahman �あ contrainte constante
+    lpr=lprahman
     sigext = 0.0                ! Symetric tensor related to the external stress
     !=== Modif Emmanuel Clouet ================
     h0(1:3,1:3) = 0.d0          ! Vecteurs de base de la bite de reference en A (Parrinello, Rahman)
@@ -351,6 +352,7 @@ contains
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
     read (ludin, nml=input)
+    lprahman=lpr
     distminat=distminat*1d-8
     tsmin=tsmin*1d-15
     depmaxts=depmaxts*1d-8
@@ -751,7 +753,7 @@ contains
 
     ! end check
     if (lpconxyz) then
-       if (.NOT.lpr) then
+       if (.NOT.lprahman) then
           if (rang==0) then
              write(6,*) 'lpconxyz can be USEd ONLY is with PR dynamics or lpr=.true'
              write(6,*) 'stop in <readdm>'
@@ -761,7 +763,7 @@ contains
     end if
 
 
-    if (lpr) then
+    if (lprahman) then
        select case(dmtype)
        case(21,22)
           lprtrp=.true.

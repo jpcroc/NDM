@@ -2,7 +2,7 @@ module dyn_vverlet_mod
   USE calfo_mod,only: calfo
   USE calfoberend_mod,only: calfoberend 
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lpr,&
+  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lprahman,&
        &l2T,llangevin,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep,&
        lspaceNDM
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
@@ -96,7 +96,7 @@ contains
     if (lperiod)  call periodbox (boxndm,atdml)
 
     ! repartition des atomes dans la nouvelle boite
-    if (.not.lpr) then
+    if (.not.lprahman) then
        if (itab/=0) then
           if (mod(it,itab)==0) then
              call caltabtC(celndm,atdml,lperiod,boxndm)

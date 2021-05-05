@@ -1,0 +1,28 @@
+ &input
+	lpr=.true.
+        ipotentiel=10
+	imm=2000
+	igen=1
+	dmtype=4   ! 7 ph ; 3 CG
+	lvpread=.true.
+	itmax=10
+	itetemp=1,itesigma=1
+	lEev=.true. 
+	lEparat=.true.,
+        lPkbar=.true. 	
+	itesigma=1
+
+	ltriclin=.true.
+
+	lconstrtot=.false.
+	lperiod=.true.
+
+        
+ &end
+	itetabvois=10
+	ltabvois=.true. ,	rvois=6.1
+	lpr=.true.
+	rvois=7.9
+	iterasmol=10,ivisu=1,lprteat=.false.
+	tinit=600
+	iseed=1
