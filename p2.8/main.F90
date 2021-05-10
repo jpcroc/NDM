@@ -14,7 +14,7 @@ program ndm
   USE readdm_mod,only: readdm
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
-  USE Tpara,only:MPI_COMM_space,myidsp,nprocspace,nprocs
+  USE Tpara,only:MPI_COMM_space,myidsp,nprocspace,nprocs,mpi_comm_world
   USE init_mpi_mod,only: init_mpi
   USE neb_module,only:init_mpi_neb
 #else
@@ -37,12 +37,14 @@ program ndm
  
   implicit none
   character :: a1*20
+  integer::ierr
   !
   !Initialisation MPI
 #ifdef PARA
   call init_MPI()
 
- write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
+  write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
+    call MPI_BARRIER(MPI_COMM_WORLD,ierr)
   myidsp=>rang
   if (nprocspace==1) then
      parallele=.false.

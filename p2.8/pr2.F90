@@ -40,7 +40,7 @@ module Parrinello_Rahman
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigkine,sigtot,text,tstep,im_glob,it,potist,rang,sig,text,tstep,sigkine,&
-       &pi,l2t,ltberendsen,lperiod,lspaceNDM
+       &pi,l2t,ltberendsen,lperiod,lspaceNDM,imm_glob
 
 
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3
@@ -56,13 +56,13 @@ module Parrinello_Rahman
   USE Mat_utils_mod,only:  MatInv
   USE atomconfig,only : atom_config_d
   USE cellconfig, only:cell_config,caltabtc
-  USE boxconfig,only:box_config
+  USE boxconfig,only:box_config,periodbox
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t
   USE calfoberend_mod,only:calfoberend
   use Tpara,only:para_space_config
-    USE calpo_ew_mod,only: calpo_ew
-
+  USE calpo_ew_mod,only: calpo_ew
+  USE calctemp_mod,only: calctemp
    implicit none
    ! Vecteurs de la boîte et leurs dérivées
   real(double), dimension(3,3), save , private :: h, hDot
@@ -282,8 +282,11 @@ end if
   end subroutine initlpr
 
   !-----------------------------------------------
+  !-----------------------------------------------
+    !-----------------------------------------------
 
   subroutine pr (atpr,celndm,boxndm,psc)
+    use paraconfig,only:para_config,initparapuresp
 
     implicit none
     ! Variables utiles
@@ -296,10 +299,11 @@ end if
     ! Parameter for Parrinello-Rahman self consistency loop
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
-    type(atom_config_d)::atpr
-    type(cell_config):: celndm
+    type(atom_config_d),target::atpr
+    type(cell_config),target:: celndm
     type(box_config)::boxndm
     type(para_space_config)::psc
+    real(double)::T1,kin1
 
 #ifdef PARA
     integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
@@ -307,7 +311,6 @@ end if
 
 
 #endif
-
     if (lprtrp) then
        do i = 1, atpr%im
           do ic = 1, 3
@@ -367,6 +370,7 @@ end if
     ! Coordonnées réelles à l'instant t+dt
     atpr%xpp(:,1:atpr%im) = atpr%xp(:,1:atpr%im)
     atpr%xp(:,1:atpr%im) = MatMul( h, sp(:,1:atpr%im) )
+
     boxndm%at(:,:) = h(:,:)                            ! Vecteur de périodicité
     call recips (h(:,1),h(:,2),h(:,3), boxndm%bg(:,1),boxndm%bg(:,2),boxndm%bg(:,3)) ! Vecteurs réciproques
    boxndm%volu = calcvol(h(1:3,1),h(1:3,2),h(1:3,3))  ! Volume
@@ -379,7 +383,9 @@ end if
 
 
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
+       if (lperiod)    call periodbox (boxndm,atpr)
        boxndm%zl(1) = Sqrt( Sum(boxndm%at(1:3,1)**2 ) )
        boxndm%zl(2) = Sqrt( Sum(boxndm%at(1:3,2)**2 ) )
        boxndm%zl(3) = Sqrt( Sum(boxndm%at(1:3,3)**2 ) )
@@ -387,6 +393,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        boxndm%zls2(1:3) = 0.5d0*boxndm%zl(1:3)
        call caltabtC(celndm,atpr,lperiod,boxndm)
        call maj_atomes_frt_ftm(atpr,celndm,psc)
+       sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
 
 
        if (iewald>0) then
@@ -439,7 +446,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     end if
     if (lTberendsen) call calfoberend(atpr%im,atpr%imm,atpr%xp,atpr%vp,atpr%fp,atpr%ityp)
 
-
     ! Calcul de la viscosité à l'instant ...
     DO i=1, nHoover
        zNew(i) = zOld(i) + 2.d0*zDot(i)*tstep    ! ... t+dt
@@ -460,7 +466,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) )*( hdot(:,:)*ihbox0(:,:) &
             + tstep/(2.d0*wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) ) )*ihbox0(:,:)
     END IF
-
     ! Estimation de la dérivée du tenseur Gmat à l'instant t+dt
     DO i=1, 3
        DO j=1, 3
@@ -470,7 +475,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
     ! Cycle autocohérent (hdot -> sdot -> sigkine -> hdot)
     DO iter=1, Max_Iter
-
        ! Valeurs de la dernière itération du cycle d'autocohérence
        hdot_last(:,:) = hdot_new(:,:)*ihbox0(:,:)
 
@@ -487,7 +491,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
        ! Vitesse des atomes à l'instant t+dt
        atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot_new(:,1:atpr%im) )
-
        !  Contrainte thermique à l'instant t+dt
        sigkine(:,:)=0.d0
        do ia = 1, atpr%im
@@ -497,13 +500,13 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        enddo
        sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call comm_space%sum(sigkine)
        end if
 #endif
        ! Contrainte totale à l'instant t+dt
        sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
-
        ! Dérivée du tenseur h à l'instant t+dt
        IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
           hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) + 0.5d0/tbox )*( hdot(:,:)*ihbox0(:,:) &
@@ -534,7 +537,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     ! Valeurs convergées de hdot et sdot à l'instant t+dt
     hdot(:,:) = hdot_new(:,:)*ihbox0(:,:)
     sdot(:,:) = sdot_new(:,:)
-
     IF (iter.GE.Max_Iter) THEN
        WRITE(0,'(a,i0,a)') 'Maximal number of iterations (', Max_Iter, &
             ') in Parrinello-Rahman / Nosé-Hoover self consistency loop has been reached'
@@ -570,7 +572,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     ! Énergie cinétique de la cellule (Eq. 2.14, Ref.2)
     Kcell = 0.5d0*wbox*Sum( hDot(1:3,1:3)**2 )
     EcellPR = Kcell + Ucell
-
+    
     IF (lTHoover) THEN
        ! Dérivée de la viscosité et énergie cinétique du thermostat
        zDot(1) = (2.d0*(kine + Kcell) - gNose*bk*Text)/wHoover(1) &
@@ -592,6 +594,8 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        !UNose = Sum( UHoover(1:nHoover) )           ! t+dt
        !ENose = KNose + UNose                       ! t+dt
     END IF
+    call calctemp(T1,kin1,atpr,celndm)
+    
 
   end subroutine pr
 

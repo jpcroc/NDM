@@ -4,7 +4,7 @@ module WGC_mod
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
        it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, iterasmol,&
-       dmtype, potist,mdcg_noise,formatsauv,lspaceNDM,latcomp,sigstop,sigext,ihbox0,unitP,lpr
+       dmtype, potist,mdcg_noise,formatsauv,lspaceNDM,latcomp,sigstop,sigext,ihbox0,unitP,lprahman
   USE sauvegardeT_mod,only: sauvegardeT
   USE endrunT_mod,only: endrunT
   USE arret_ndm_mod,only: arret_ndm
@@ -243,7 +243,7 @@ contains
         write(6,'(A,3E20.11)')'seuils',fpstop0,fsumstop,sigstop
     write(6,*)
     lover=.false.
-    if (lpr) then
+    if (lprahman) then
        if (fpstop.gT.0) then
           if ((formax.le.fpstop0).and.(sigmax.le.sigstop))lover=.true.
        end if

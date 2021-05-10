@@ -112,7 +112,7 @@ contains
     end if
     !????
     do ii=1,npath
-       if (lperiod)    call periodbox (boxneb,atneb(ii))
+       if (lperiod)    call periodbox (boxneb,atneb(ii)%atom_config_d)
 
     end do
     !AVANT
@@ -173,7 +173,7 @@ contains
           ii=i1
           if (i1==npath)ii=npath-1
           if (i1==npath-1)ii=npath
-          call initloc(atneb(ii),cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod,psc=pscneb) !initloc contient caltabtc sur atloc
+          call initloc(atneb(ii)%atom_config_d,cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod,psc=pscneb) !initloc contient caltabtc sur atloc
           if (ipotentiel.lt.0) then
              lchange=.true.
           else
@@ -186,7 +186,7 @@ contains
 !          if (atneb(ii)%ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii),boxneb)
 #endif    
           
-          call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
+          call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
                &lperiod,atneb(ii)%ltabvois,it,itetabvois,lchg=lchange,psc=pscneb)
 
           if (lmaster) then
@@ -242,8 +242,9 @@ contains
              do while (dragtest==0)
                 it=it+1
 
-                if ((lperiod).and.(lmaster))    call periodbox (boxneb,atneb(ii))
-                call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
+                if ((lperiod).and.(lmaster))    call periodbox (boxneb,atneb(ii)%atom_config_d)
+                call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,&
+                     &atnebloc,cellnebloc,paraneb,lperiod,&
                      &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,psc=pscneb)
 
 #ifdef PARA
@@ -339,8 +340,9 @@ contains
                    it_neb_inter=it_neb_inter+1
                    it=it_neb_inter
 
-                   if (lperiod)   call periodbox (boxneb,atneb(ii))
-                   call pointer_caltabt_calfo(sig,potist,atneb(ii),cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
+                   if (lperiod)   call periodbox (boxneb,atneb(ii)%atom_config_d)
+                   call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),&
+                        &boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
                         &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,psc=pscneb)
                    if (lmaster) then
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
@@ -391,7 +393,7 @@ contains
                          formatsauv = 2
                          write(extension,'(i9.9)') ii
                          fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-                         call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp=latcomp)
+                         call sauvegardet(atneb(ii)%atom_config_d, cellneb(ii),boxneb,formatsauv,fnamcout,latcomp=latcomp)
                       end if
                    end if
 
@@ -462,8 +464,8 @@ contains
           formatsauv = 2
           write(extension,'(i9.9)') ii
           fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-          call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp)
-          call rasmolT(atneb(ii),boxneb,ii,latcomp=latcomp)
+          call sauvegardet(atneb(ii)%atom_config_d, cellneb(ii),boxneb,formatsauv,fnamcout,latcomp)
+          call rasmolT(atneb(ii)%atom_config_d,boxneb,ii,latcomp=latcomp)
           if (iteanaposneb.gt.0) call anapos(ii)
           !	 
           reaction_coord(ii) = SUM((atneb(ii)%xp(:,:)-atneb(1)%xp(:,:))*(atneb(npath)%xp(:,:)-atneb(1)%xp(:,:)))/a_local

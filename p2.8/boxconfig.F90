@@ -164,10 +164,12 @@ contains
 
 
      call cryst_to_cart (atcf%imm, atcf%xp,  box%bg,  -1) !cart vers cryst
+!        call atcf%print (unit=10)
      select type (atcf)
      type is (atom_config_d)
         call cryst_to_cart (atcf%imm, atcf%xpp, box%bg,  -1)
      type is (atom_config_e)
+
         call cryst_to_cart (atcf%imm, atcf%xpp, box%bg,  -1)
         if(atcf%lax)      call cryst_to_cart (atcf%imm, atcf%ax,  box%bg,  -1)
      end select

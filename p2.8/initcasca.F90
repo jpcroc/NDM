@@ -75,6 +75,7 @@ contains
 
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       call atcf%Eegal(atcfcasc)
        call atcfcasc%init(im_glob,imm_glob)
        call initparapuresp(Cpara,rang,comm_space,nprocspace)
        call initcomp(atcfcasc,celcasc,atcf,celndm,boxndm,Cpara,lperiod)

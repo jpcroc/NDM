@@ -196,7 +196,7 @@ module gen_com_m
 
   ! NVT, NPT ensembles
   !      logical :: lnose, lnosepar,lpr ! lnose =Tcst  la Nose ; lnosepar=T&P cst a la Nose Parinello Rahman
-  logical :: lpr,lprtrp ! l Parinello Rahman
+  logical :: lprahman,lprtrp ! l Parinello Rahman
   !      real(double) :: tomega, tbomega ! mass fictive du thermostat et du piston
   real(double), dimension(3,3) :: att, ati    !vitesse de la forme de la boite ; ati=(at^-1)
   real(double), dimension(3,3) :: ihbox0      ! the degree of freebom of the box. If is 1 everywhere all the shape  can change.

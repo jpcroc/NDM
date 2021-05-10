@@ -338,7 +338,7 @@ contains
 !       write(6,*)'IMMMDEC',rang,imm
        if (present(atdec)) then 
           call atdec%dealloc
-          call atdec%init(im0,imm,ltabvois,nvois0,rvois,lsigat,lprteat,llangevin,lax)
+          call atdec%init(im0,imm,ltabvois,nvois0,rvois)
        end if
        !     write(iudecoup,*)'test4' 
        ! Initialisation des donnees geometriques qui serviront pour le reste du code :

@@ -47,13 +47,11 @@ contains
     integer::ncore,ic
 
 #ifdef PARA
-    type (atom_config_d)::COMPatrcf
+    class (atom_config),allocatable::COMPatrcf
 #endif
     character :: fnamcin*80, fnamgin*80
     integer::itread
     integer::nati
-
-    
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
     !---------------------------------------------------
@@ -86,6 +84,7 @@ contains
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart.eqv..true.)) then
 
           itread=1
+          call atrcf%deftype(compatrcf)
           call compatrcf%init(immin=imm_glob,imin=0)
        call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
        if (rang==0) then
@@ -153,7 +152,6 @@ contains
 
 
        lvpread=.false.
-
 
        ! open fichier .gin
        fnamgin = fnam(1:lenfnam)//'.gin'
@@ -380,6 +378,7 @@ contains
     integer::i,ia,ib,ic,icell,imloc,ncore
 
     real(double)::rvN
+    logical :: lprteattrf
     !imtot=lat(1)*lat(2)*lat(3)*atrgin%im
     imloc=lat(1)*lat(2)*lat(3)*atrgin%im
     if (imloc>imm_glob) then
@@ -392,6 +391,12 @@ contains
     else
        rvn=0
     end if
+
+    lprteattrf=.false.
+    select type (atrcf)
+    type is (atom_config_e)
+       lprteattrf=atrcf%lprteat
+    end select
     if (present(imm))then
 
        call atrcf%init(imloc,immin=imm,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn)
@@ -588,10 +593,8 @@ contains
           if (icintypemod==1) then
              read (lucin, err=456) buffer                     !xpp
              atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
-             write(6,*)'xpp'
              read (lucin, err=456) buffer                     !vp
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
-             write(6,*)'vp'
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
              read (lucin, err=456) buffer                     !ax inutile

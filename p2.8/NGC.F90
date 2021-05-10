@@ -11,7 +11,7 @@ module NGC_mod
        &initsteep,back2ndm,final_tconv,nextsauv,nextmol,fpstop0,fpstopsig,betaV,betaP,beta,gcpara,lchg,set_pointers_gc
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,iterasmol,&
-         &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp,lpr,dfpred,itesauv,unitP,fpstop
+         &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp,lprahman,dfpred,itesauv,unitP,fpstop
     USE var_pot, ONLY:ntyp
     use steepestdescent_mod, only: steepestdescent,conjugategradient
 #ifdef PARA
@@ -93,7 +93,7 @@ contains
        if (itesauv.gt.0)    nextsauv=itesauv
        if (iterasmol.gt.0)    nextsauv=iterasmol
 
-       if (lpr) then
+       if (lprahman) then
           do irel=1,10
              ityprel=1
              beta=betaV

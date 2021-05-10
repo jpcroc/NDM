@@ -15,7 +15,7 @@ module analyseT_mod
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,fnose,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
-       &lambdades,leev,leparat,linstantfda,lpr,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
+       &lambdades,leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
        &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,&
        &natchk,tpseuils,sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
@@ -225,7 +225,7 @@ contains
 
                 if (tfcou>0.0) write (6, '(A,G15.4)') '*temperature externe = ', tcou
 
-                IF (lpr) THEN
+                IF (lprahman) THEN
                    write(6,*) 'NPT With Parrinello-Rahman'
                    write(6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') it,timel,'*Kcell = ',Kcell*unitE,cunitE, &
                         '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
@@ -297,7 +297,7 @@ contains
                    write(6,'(I10,G10.3,A,2F11.4)') it,timel,'*ang_ab,m  ',tab,tabmean
                    write(6,'(I10,G10.3,A,2G21.12)') it,timel,'*volume  ',boxndm%volu*1d24,volumean*1d24
 
-                endif    ! if (lpr)
+                endif    ! if (lprahman)
 
                 IF (lTNose) THEN
                    WRITE(6,'(a)') 'Thermostat de Nose'
@@ -419,12 +419,15 @@ contains
        endif
     endif
 
-
-
-
-
-
-
+!!$    select type (atdml)
+!!$    type is (atom_config_e)
+!!$       write(6,*)'prteat'
+!!$       if (lprteat) then
+!!$          do i=1,atdml%im
+!!$             write(6,*)atdml%eat(i)
+!!$          end do
+!!$       end if
+!!$    end select
 
     ! ecriture de rasmol
 

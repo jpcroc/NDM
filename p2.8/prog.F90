@@ -26,6 +26,8 @@ module prog_mod
 #endif
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
   use one_calc_mod,only:one_calc
+  use d_at_at_mod
+
   implicit none
 contains
   subroutine prog
@@ -73,6 +75,10 @@ contains
     !probablement inutile pour dmtype=9 ou 15
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin))then
        atdml=>atdme
+       atdme%lax=lax
+       atdme%lsigat=lsigat
+       atdme%lprteat=lprteat
+       atdme%llangevin=llangevin
     elseif(itetimestep.gt.0) then
        atdml=>atdmd
     else
@@ -104,11 +110,12 @@ contains
        else
           rv=0
        end if
+       
+       call atdml%init(im,imm,ltabvois,nvois,rvois=rv)
 
-       call atdml%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       latcomp=.false.
-       call init(atdml,boxndm,celndm,psc0)
+          latcomp=.false.
+          call init(atdml,boxndm,celndm,psc0)
 
 #ifdef DECOUP
        ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
@@ -160,7 +167,8 @@ contains
 !!$          case (3,30)
 !!$             write(6,*)'incohérence entre type(atom_config_d) et dmtype=GC'
 !!$             stop
-
+          case(112)
+             call d_at_at(atdml,celndm,boxndm)
           case(111)
              if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION V2 ****'
              CALL one_calc(atdml,celndm,boxndm,psc=psc0) 
@@ -230,7 +238,7 @@ contains
        else
           rv=0
        end if
-       call atconf_n%init(im,imm,ltabvois,nvois,rvois=rv,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
+       call atconf_n%init(im,imm,ltabvois,nvois,rvois=rv)
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        boxmcgc=boxndm
 

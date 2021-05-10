@@ -35,6 +35,7 @@ module atomconfig
 #endif     
    contains
      procedure, pass::init=>init_atom_config
+     procedure, pass::Eegal
      procedure, pass::copy_atom=>copy_atom_b
      procedure, pass::dealloc=>dealloc_atom_config
      procedure, pass::vers_master=>vers_master_atom !(atcfloc,atcfcomp,div)
@@ -46,11 +47,13 @@ module atomconfig
      procedure, pass::backto
      procedure, pass::add2conf
      procedure, pass::extend
-
+     procedure, pass::deftype
      procedure, pass::send2proc=>s2p_atom
      procedure, pass::send2all=>s2a_atom
      procedure, pass::recv=>rcv_atom
      procedure, pass::zero=>zero_atom
+     procedure, pass::switch_atom
+
      !
   end type atom_config
 
@@ -60,7 +63,6 @@ module atomconfig
    contains
      procedure, pass::copy_atom=>copy_atom_d
      procedure, pass::dealloc=>dealloc_atom_config_d
-     procedure, pass::switch_atom
      !#ifdef PARA
      procedure, pass::zero=>zero_atom_d
      !#endif     
@@ -88,10 +90,10 @@ module atomconfig
 contains
   !initialisations
   
-  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lsigat,lprteat,lLangevin,lax,lreallocate)
+  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
-    logical,optional, intent(in)::ltabvois,lsigat,lprteat,lLangevin,lax,lreallocate
+    logical,optional, intent(in)::ltabvois,lreallocate
     integer, optional::nvois,immin
     real(double),optional::rvois
     integer::nv
@@ -151,7 +153,7 @@ contains
     end if
 
     select type (atconf)
-    class is (atom_config_d)
+    type is (atom_config_d)
        if ((lrealloc).and.(allocated(atconf%vp)))then
           deallocate(atconf%vp); deallocate(atconf%xpp)
        end if
@@ -160,21 +162,21 @@ contains
        end if
        atconf%vp=0;atconf%xpp=0
     type is (atom_config_e)
-!       if ((lrealloc).and.(allocated(atconf%vp)))then
+       if ((lrealloc).and.(allocated(atconf%vp)))then
+          deallocate(atconf%vp); deallocate(atconf%xpp)
+       end if
+       if (.not.allocated(atconf%vp))then
+          allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
+       end if
+       atconf%vp=0;atconf%xpp=0
+       
+       !       if ((lrealloc).and.(allocated(atconf%vp)))then
 !          deallocate(atconf%vp); deallocate(atconf%xpp)
 !       end if
 !       if (.not.allocated(atconf%vp))then
 !          allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
 !       end if
 !       atconf%vp=0;atconf%xpp=0
-       atconf%lprteat=.false.
-       atconf%lsigat=.false.
-       atconf%lLangevin=.false.
-       atconf%lax=.false.
-       if(present(lprteat)) atconf%lprteat=lprteat
-       if(present(lsigat)) atconf%lsigat=lsigat
-       if(present(lLangevin)) atconf%lLangevin=lLangevin
-       if(present(lax)) atconf%lax=lax
        if(atconf%lprteat)then
           if ((lrealloc).and.(allocated(atconf%eat)))deallocate(atconf%eat)
           if (.not.allocated(atconf%eat))allocate(atconf%eat(atconf%imm))
@@ -264,10 +266,10 @@ contains
   subroutine extend(atcf,iadd)
     class(atom_config),intent(inout)::atcf
     integer,intent(in)::iadd
-
-    type(atom_config):: attemp
-    type(atom_config_d):: attemp_d
-    type(atom_config_e):: attemp_e
+    class (atom_config),allocatable::attemp
+!!$    type(atom_config):: attemp_b
+!!$    type(atom_config_d):: attemp_d
+!!$    type(atom_config_e):: attemp_e
     integer::imcn,nvois,immcn
     real(double)::rvois
     immcn=atcf%imm+iadd
@@ -279,14 +281,20 @@ contains
        nvois=0
        rvois=0
     end if
-    select type(atcf)
-    type is (atom_config)
-       call attemp%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
-    type is (atom_config_d)
-       call attemp_d%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
-    type is (atom_config_e)
-       call attemp_e%init(imcn,immcn,atcf%ltabvois,nvois,rvois,atcf%lsigat,atcf%lprteat, atcf%llangevin,atcf%lax)
-    end select
+    call atcf%deftype(attemp)
+    call attemp%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
+!!$    select type(atcf)
+!!$    type is (atom_config)
+!!$       call attemp_b%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
+!!$       attemp=>attemp_b
+!!$    type is (atom_config_d)
+!!$       call attemp_d%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
+!!$       attemp=>attemp_d
+!!$    type is (atom_config_e)
+!!$       call atcf%Eegal(attemp_e)
+!!$       call attemp_e%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
+!!$       attemp=>attemp_e
+!!$    end select
     call atcf%copy_config(attemp,lrescl=.false.)
     call attemp%copy_config(atcf,lrescl=.true.)
 
@@ -548,7 +556,21 @@ contains
 
   end subroutine zero_atom_e
   
-    
+  subroutine Eegal(atsource,atcible)
+    class (atom_config),intent(in)::atsource
+    class(atom_config)::atcible
+    select type (atcible)
+    type is (atom_config_e)
+       select type (atsource)
+       type is (atom_config_e)
+          atcible%lax=atsource%lax
+          atcible%lprteat=atsource%lprteat
+          atcible%llangevin=atsource%llangevin
+          atcible%lsigat=atsource%lsigat
+       end select
+    end select
+  end subroutine Eegal
+  
   ! copie d'une config entière vers config de base
   subroutine copy_config (atsource,atcible,lrescl)
     class(atom_config),intent(in)::atsource
@@ -557,6 +579,8 @@ contains
     integer::nvois
     real(double)::rvois
     logical :: lstop
+    call atsource%Eegal(atcible)
+
     if (lrescl) then
 !       if (atcible%imm.ne.atsource%imm) then
        call atcible%dealloc
@@ -565,8 +589,8 @@ contains
        else
           nvois=0;rvois=0
        end if
-          call atcible%init(atsource%im,atsource%imm,atcible%ltabvois,nvois,rvois)
-          atcible%icaltabt=atsource%icaltabt    
+       call atcible%init(atsource%im,atsource%imm,atcible%ltabvois,nvois,rvois)
+       atcible%icaltabt=atsource%icaltabt   
 
     else
        lstop=.false.
@@ -599,7 +623,9 @@ contains
     select type (atsource)
        class is (atom_config_d)
        select type (atcible)
-          class is (atom_config_d)
+       class is (atom_config_d)
+!          write(6,*)'cible',atcible%imm,atcible%im,size(atcible%vp)
+!          write(6,*)'source',atsource%imm,atsource%im,size(atsource%vp)
           atcible%vp(:,1:atsource%imm)=atsource%vp(:,1:atsource%imm)
           atcible%xpp(:,1:atsource%imm)=atsource%xp(:,1:atsource%imm)
        end select
@@ -650,15 +676,27 @@ contains
 
   end subroutine dealloc_atom_config_e
 
-
-
+  subroutine deftype(atsource,atcible)  ! initilizeacible to the type of atsource, inluding the values of lax, lpreeat, etc.
+    class(atom_config),intent(in)::atsource
+    class(atom_config),allocatable::atcible
+       select type (atsource)
+       class is (atom_config)
+          allocate(atom_config::atcible)
+       class is (atom_config_d)
+          allocate(atom_config_d::atcible)
+       class is (atom_config_e)
+          allocate(atom_config_e::atcible)
+       end select
+       call atsource%Eegal(atcible)
+     end subroutine deftype
+     
   !on inverse deux atomes dans la configuration
   subroutine switch_atom(atsource,ind_switch_1, ind_switch_2)
-    class(atom_config_d)::atsource
-    type(atom_config_d):: intermediaire
+    class(atom_config)::atsource
+    class(atom_config),allocatable:: intermediaire
     integer :: ind_switch_1, ind_switch_2,nag1,nag2
     logical :: lex = .true.
-
+    call atsource%deftype(intermediaire)
     call intermediaire%init(imin=2)
     nag1=atsource%num_at_glob(ind_switch_1)
     nag2=atsource%num_at_glob(ind_switch_2)
@@ -680,9 +718,10 @@ contains
   subroutine pack(at2pack,imm_in)
     class(atom_config),intent(inout):: at2pack
     integer,optional, intent(in):: imm_in
-    type(atom_config)::at
-    type(atom_config_d)::atd
-    type(atom_config_e)::ate
+    class(atom_config),allocatable::at
+!!$    type(atom_config)::at
+!!$    type(atom_config_d)::atd
+!!$    type(atom_config_e)::ate
     integer::i,imn,immn
     real(double)::rvois
     integer::nvois
@@ -710,32 +749,40 @@ contains
        nvois=0;rvois=0
     end if
 
-    select type (at2pack)
-    type is (atom_config)
-       call at%init(imn,immn,at2pack%ltabvois,nvois,rvois)
-       do i=1,immn
-          call at2pack%copy_atom(i,at,i)
-       end do
-       call at2pack%dealloc
-       call at%copy_config(at2pack,lrescl=.true.)
-
-    type is(atom_config_d)
-       call atd%init(imn,immn,at2pack%ltabvois,nvois,rvois)
-       do i=1,immn
-          call at2pack%copy_atom(i,atd,i)
-       end do
-       call at2pack%dealloc
-       call atd%copy_config(at2pack,lrescl=.true.)
-
-    type is(atom_config_e)
-       call ate%init(imn,immn,at2pack%ltabvois,nvois,rvois,at2pack%lsigat,at2pack%lprteat,llangevin=at2pack%llangevin,&
-            &lax=at2pack%lax)
-       do i=1,immn
-          call at2pack%copy_atom(i,ate,i)
-       end do
-       call at2pack%dealloc
-       call ate%copy_config(at2pack,lrescl=.true.)
-    end select
+    call at2pack%deftype(at)
+    call at%init(imn,immn,at2pack%ltabvois,nvois,rvois)
+    do i=1,immn
+       call at2pack%copy_atom(i,at,i)
+    end do
+    call at2pack%dealloc
+    call at%copy_config(at2pack,lrescl=.true.)
+    
+!!$    select type (at2pack)
+!!$    type is (atom_config)
+!!$       call at%init(imn,immn,at2pack%ltabvois,nvois,rvois)
+!!$       do i=1,immn
+!!$          call at2pack%copy_atom(i,at,i)
+!!$       end do
+!!$       call at2pack%dealloc
+!!$       call at%copy_config(at2pack,lrescl=.true.)
+!!$
+!!$    type is(atom_config_d)
+!!$       call atd%init(imn,immn,at2pack%ltabvois,nvois,rvois)
+!!$       do i=1,immn
+!!$          call at2pack%copy_atom(i,atd,i)
+!!$       end do
+!!$       call at2pack%dealloc
+!!$       call atd%copy_config(at2pack,lrescl=.true.)
+!!$
+!!$    type is(atom_config_e)
+!!$       call ate%init(imn,immn,at2pack%ltabvois,nvois,rvois,at2pack%lsigat,at2pack%lprteat,llangevin=at2pack%llangevin,&
+!!$            &lax=at2pack%lax)
+!!$       do i=1,immn
+!!$          call at2pack%copy_atom(i,ate,i)
+!!$       end do
+!!$       call at2pack%dealloc
+!!$       call ate%copy_config(at2pack,lrescl=.true.)
+!!$    end select
 
   end subroutine pack
 
@@ -760,15 +807,26 @@ contains
        end if
        imtrf=COUNT(atsource%lgul(1:atsource%im))
 
-       select type (atsource)
-       type is (atom_config_e)
-          call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois,lsigat=atsource%lsigat,lprteat=atsource%lprteat,&
-               &llangevin=atsource%llangevin,lax=atsource%lax)
-       class is (atom_config)
-          call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
-       end select
+       call atsource%Eegal(atcible)
+       call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
+       
+!!$       select type (atsource)
+!!$       type is (atom_config_e)
+!!$          select type (atcible)
+!!$          type is (atom_config_e)
+!!$             atcible%lprteat=atsource%lprteat
+!!$             atcible%lllangevin=atsource%llangevin
+!!$             atcible%lsigat=atsource%lsigat
+!!$             atcible%lax=atsource%lax
+!!$          end select
+!!$          call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois,lsigat=atsource%lsigat,&
+!!$               &llangevin=atsource%llangevin,lax=atsource%lax)
+!!$       class is (atom_config)
+!!$          call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
+!!$       end select
     end if
-    call atcible%zero
+
+       call atcible%zero
     i2=0
     do i=1,atsource%im
        if(atsource%lgul(i)) then
@@ -781,6 +839,7 @@ contains
        write(6,*)'WTF ?'
        stop
     end if
+
   end subroutine fab
 
   subroutine backto(atfab,atback)
@@ -807,9 +866,7 @@ contains
     logical :: lext ! par defaut on etend atcible si besoin
 
     integer::i2,i,imcib,imnew,immcib,imsrc,immsrc,immnew
-    type(atom_config):: atcor
-    type(atom_config_d):: atcor_d
-    type(atom_config_e):: atcor_e
+    class(atom_config),allocatable:: atcor
     integer::nvois
     real(double)::rvois
     ldal=.false.
@@ -836,26 +893,8 @@ contains
     end if
 
     if(atcible%imm==0) then
-       select type (atsource)
-       type is (atom_config_e)
-          call atcible%init(imsrc,immsrc,atsource%ltabvois,nvois,rvois,lsigat=atsource%lsigat,&
-               &lprteat=atsource%lprteat,llangevin=atsource%llangevin,lax=atsource%lax)
-          class is (atom_config)
-          call atcible%init(imsrc,immsrc,atsource%ltabvois,nvois,rvois)
-       end select
+       call atcible%init(imsrc,immsrc,atcible%ltabvois,nvois,rvois)
     else
-       select type(atcible)
-       type is (atom_config)
-          call atcor%init(imcib,immcib,atcible%ltabvois,nvois,rvois)
-          call atcible%copy_config(atcor,.false.)
-       type is (atom_config_d)
-          call atcor_d%init(imcib,immcib,atcible%ltabvois,nvois,rvois)
-          call atcible%copy_config(atcor_d,.false.)
-       type is (atom_config_e)
-          call atcor_e%init(imcib,immcib,atcible%ltabvois,nvois,rvois,atcible%lsigat,atcible%lprteat,&
-               &llangevin=atcible%llangevin,lax=atcible%lax)
-          call atcible%copy_config(atcor_e,.false.)
-       end select
        if (lext) then
           if (atcible%imm.lt.immnew)   call atcible%extend(immnew)
        else
@@ -874,30 +913,6 @@ contains
        call atsource%copy_atom(i,atcible,i,lextend=.false.)
      end do
 
-    select type(atcible)
-    type is (atom_config)
-       do i=atcor%im+1,atcor%imm
-          i2=imcib+imsrc+i
-          call atcor%copy_atom(i,atcible,i2,lextend=.false.)
-       end do
-    type is (atom_config_d)
-       do i=atcor_d%im+1,atcor_d%imm
-          i2=imcib+imsrc+i
-          call atcor_d%copy_atom(i,atcible,i2,lextend=.false.)
-       end do
-
-    type is (atom_config_e)
-       do i=atcor_e%im+1,atcor_e%imm
-          i2=imcib+imsrc+i
-          call atcor_e%copy_atom(i,atcible,i2,lextend=.false.)
-       end do
-
-    end select
-
-    do i=atsource%im+1,atsource%imm
-       i2=immcib+imsrc+i
-       call atsource%copy_atom(i,atcible,i2,lextend=.false.)
-    end do
     if (ldal) call atsource%dealloc
   end subroutine add2conf
 
@@ -918,16 +933,25 @@ contains
     end if
     if (present(unit))unitw=unit
 
+!!$   write(6,*)'IN PRINT'
+!!$    select type (atin)
+!!$    class is (atom_config)
+!!$       write(6,*)'ATCFIN',rang
+!!$    class is (atom_config_d)
+!!$       write(6,*)'ATCF_DIN',rang
+!!$    class is (atom_config_e)
+!!$       write(6,*)'ATCF_EIN',rang
+!!$    end select
 
-       select type (atin)
-       type is (atom_config)
-          allocate(atom_config::atprt)
-       type is (atom_config_d)
-          allocate(atom_config_d::atprt)
-       type is (atom_config_e)
-          allocate(atom_config_e::atprt)
-       end select
-
+    call atin%deftype(atprt)
+!!$    select type (atprt)
+!!$    class is (atom_config)
+!!$       write(6,*)'ATCF',rang
+!!$    class is (atom_config_d)
+!!$       write(6,*)'ATCF_D',rang
+!!$    class is (atom_config_e)
+!!$       write(6,*)'ATCF_E',rang
+!!$    end select
     if (present(natg1)) then
        if (present(natg2)) then
           natpr=natg2-natg1+1
@@ -1146,7 +1170,11 @@ contains
        class is (atom_config)
        call atndm%init(im,imm,ltabvois,nvois,rvois=0.d0)
     type is (atom_config_e)
-       call atndm%init(im,imm,ltabvois,nvois,rvois=0.d0,lsigat=lsigat,lprteat=lprteat,llangevin=llangevin,lax=lax)
+       atndm%llangevin=llangevin
+       atndm%lax=lax
+       atndm%lprteat=lprteat
+       atndm%lsigat=lsigat
+       call atndm%init(im,imm,ltabvois,nvois,rvois=0.d0)
     end select
 
     atndm%icaltabt=0
@@ -1342,7 +1370,9 @@ contains
                       atcfcomp%vp(1:3,nag(iloc))=atcfloc%vp(1:3,iloc)
                       atcfcomp%xpp(1:3,nag(iloc))=atcfloc%xpp(1:3,iloc)
                    end select
-                type is (atom_config_e)
+                end select
+                select type(atcfloc)
+                class is (atom_config_e)
                    select type (atcfcomp)
                    class is (atom_config_e)
                       if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
@@ -1507,15 +1537,17 @@ contains
                    atcfloc%lgul(iloc)=atcfcomp%lgul(i)
                    atcfloc%proc_at(iloc)=idmaster
                    select type(atcfloc)
-                      class is (atom_config_d)
+                   class is (atom_config_d)
                       select type (atcfcomp)
-                         class is (atom_config_d)
+                      class is (atom_config_d)
                          atcfloc%vp(:,iloc)=atcfcomp%vp(:,i)
                          atcfloc%xpp(:,iloc)=atcfcomp%xpp(:,i)
                       end select
-                   type is (atom_config_e)
+                   end select
+                   select type(atcfloc)
+                   class is (atom_config_e)
                       select type (atcfcomp)
-                         class is (atom_config_e)
+                      class is (atom_config_e)
                          if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
                             atcfloc%sigat(:,:,iloc)=atcfcomp%sigat(:,:,i)
                          endif

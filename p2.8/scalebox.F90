@@ -1,5 +1,5 @@
 module scalebox_mod
-  USE gen_com_m, ONLY:dmtype,itetabvois,lpr,nvat,pi,it,rang,lperiod
+  USE gen_com_m, ONLY:dmtype,itetabvois,lprahman,nvat,pi,it,rang,lperiod
 
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
@@ -61,7 +61,7 @@ contains
     ! ---------------------------------------------------------------
     ! Recalcul des quantites dependantes de la dimension
     ! ---------------------------------------------------------------
-    if (lpr) then
+    if (lprahman) then
        boxndm%zl(1) = Sqrt( Sum(boxndm%at(1:3,1)**2 ) )
        boxndm%zl(2) = Sqrt( Sum(boxndm%at(1:3,2)**2 ) )
        boxndm%zl(3) = Sqrt( Sum(boxndm%at(1:3,3)**2 ) )
@@ -89,6 +89,7 @@ contains
     end if
 
     if ((celndm%nox.ne.noxn).or.(celndm%noy.ne.noyn).or.(celndm%noz.ne.nozn).or.((dmtype.eq.9).and.(it==1)))then
+       write(6,*)'CHGT NOX'
 !       call Deallocatecel !fait dans %init
        celndm%nox=noxn; celndm%noy=noyn; celndm%noz=nozn
 
@@ -118,7 +119,7 @@ contains
 !       stop
       call celndm%init(celndm%nox,celndm%noy,celndm%noz,celndm%natperc) !contient dealloc
 
-    end if
+   end if
              call caltabtC(celndm,atpr,lperiod,boxndm)
              if (atpr%ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
                 call caltabi(atpr%atom_config,celndm,boxndm)

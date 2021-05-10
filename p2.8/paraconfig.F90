@@ -129,7 +129,7 @@ contains
     end if
 Cl=0;GL=0
     do img=1,nimage
-       if (div%mpi_orig%rank==0) write(6,*)img,ipimg(img,1:npimg(img))
+!       if (div%mpi_orig%rank==0) write(6,*)img,ipimg(img,1:npimg(img))
        call MPI_GROUP_INCL(div%mpi_orig%group,npimg(img),ipimg(img,1:npimg(img)),GL(img-1),ierr)
        call MPI_COMM_CREATE(div%mpi_orig%comm,GL(img-1),CL(img-1),ierr)
     end do
@@ -142,7 +142,11 @@ Cl=0;GL=0
 !!$    call MPI_COMM_SPLIT (div%mpi_orig%comm,couleur,clef,div%mpi_image%comm,ierr)
 !!$    call MPI_COMM_SIZE( div%mpi_image%comm, npi, ierr )
 !!$    call MPI_COMM_RANK(div%mpi_image%comm, div%mpi_image%rank,ierr)
-    write(6,*)'RGI', div%mpi_orig%rank,div%mpi_image%rank,div%lmaster,div%image,div%mpi_image%comm,CL(div%image)
+    if (div%mpi_orig%rank==0)then
+       write(6,*)'*************MPI DIVISION**************'
+       write(6,*)'orig_rank rank_in_image LMASTER Image'
+    end if
+    write(6,*) div%mpi_orig%rank,div%mpi_image%rank,div%lmaster,div%image
 
     call MPI_BARRIER(div%mpi_orig%comm,ierr)
     
@@ -156,9 +160,13 @@ Cl=0;GL=0
           write(6,*)'NPMPB',npm,div%nimage
           stop
        end if
-      write(6,*)'RGM',div%mpi_orig%rank, div%mpi_master%rank
+      write(6,*)'Ranks among masters',div%mpi_orig%rank, div%mpi_master%rank
     end if
-
+    call MPI_BARRIER(div%mpi_orig%comm,ierr)
+    if (div%mpi_orig%rank==0)then
+       write(6,*)'*************MPI DIVISION**************'
+    end if
+    call MPI_BARRIER(div%mpi_orig%comm,ierr)
     div%nimage=div%nimage
 #endif
 !        call MPI_BARRIER(div%mpi_orig%comm)
