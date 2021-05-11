@@ -1,11 +1,13 @@
 module elec_cell
   USE T_kind_param_m
-  USE temp_com,only: nox,noy,noz, noxyz,nzl,nato,atincel,imm
   USE gen_com_m, ONLY: bk,tstep,erg2eV,pi,rang,lspacendm,&
        &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter,im_glob
   USE var_pot, ONLY:cm
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
   use Tpara,only:para_space_config ,endmpi !
+  use atomconfig,only:atom_config_e
+  use cellconfig,only:cell_config
+  use boxconfig,only:box_config
   implicit none
   type :: ecelltype
      real(double)::temp
@@ -58,7 +60,9 @@ module elec_cell
   real(double),allocatable, dimension (:,:,:,:)::xb
 contains
 
-  subroutine readelec
+  subroutine readelec(celndm,boxndm)
+    type (cell_config)::celndm
+    type (box_config)::boxndm
     integer:: luelec=654
     integer::ic
     integer::ix,iy,iz
@@ -98,9 +102,9 @@ contains
     KeC=KeC*joule2erg*1d-2
     deltaxyz=deltaxyz*1d-8
     if (rang.eq.0)    write(6,*)nexov,neyov
-    if(nexov==0)nex=nox
-    if(neyov==0)ney=noy
-    if(nezov==0)nez=noz
+    if(nexov==0)nex=celndm%nox
+    if(neyov==0)ney=celndm%noy
+    if(nezov==0)nez=celndm%noz
     if (ibc==-1) then
        if (rang.eq.0)       write(6,*)'ibc=-1, stop'
        stop
@@ -111,17 +115,17 @@ contains
     !       nzl(ic)=1.0/normat(ic)
     !    enddo
 
-    cellside(1)=nzl(1)/nexov
+    cellside(1)=boxndm%nzl(1)/nexov
     nexmp=1+int(deltaxyz(1)/cellside(1))
     nex=2*nexmp+nexov
     deltaxyz(1)=nexmp*cellside(1)
 
-    cellside(2)=nzl(2)/neyov
+    cellside(2)=boxndm%nzl(2)/neyov
     neymp=1+int(deltaxyz(2)/cellside(2))
     ney=2*neymp+neyov
     deltaxyz(2)=neymp*cellside(2)
 
-    cellside(3)=nzl(3)/nezov
+    cellside(3)=boxndm%nzl(3)/nezov
     nezmp=1+int(deltaxyz(3)/cellside(3))
     nez=2*nezmp+nezov
     deltaxyz(3)=nezmp*cellside(3)
@@ -218,7 +222,7 @@ contains
   end subroutine readelec
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine TTlangevin(xp, vp, fp,ityp,il,num_at_glob,psc)
+  subroutine TTlangevin(atdml,il,psc,celndm)
 
 
 #ifdef PARA
@@ -228,12 +232,10 @@ contains
     USE Tpara,only:nprocspace
 #endif
     type(para_space_config)::psc
-    real(double)  :: xp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: fp(3,imm)
-    real(double)  :: Gl(3,imm)
-    integer  :: ityp(imm),num_at_glob(imm)
+    type(cell_config)::celndm
     integer::il
+    class (atom_config_e)::atdml
+
     real(double)::rga
     integer :: i,ic,ko,i2,nv1
     real(double) :: u1,u2,gamlat,ekin,vpn2,v1,f1,vn,Gep
@@ -247,23 +249,23 @@ contains
        elosscel(:)=0
 
     end if
-    do ko = 1, noxyz
+    do ko = 1, celndm%noxyz
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           if (psc%proc_cell(ko).ne.myidsp) cycle
        end if
 #endif
-       if (nato(ko)==0) cycle
-       call nox_2_nex(ko,ixyze)
+       if (celndm%nato(ko)==0) cycle
+       call nox_2_nex(ko,ixyze,celndm)
        call GepT(Gep,ecell(ixyze(1),ixyze(2),ixyze(3))%temp)
-       do i2 = 1, nato(ko)
-          i = atincel(i2,ko)
-          if (num_at_glob(i).gt.im_glob) cycle
+       do i2 = 1, celndm%nato(ko)
+          i = celndm%atincel(i2,ko)
+          if (atdml%num_at_glob(i).gt.im_glob) cycle
           select case (i2t)
           case(1)
              !check for velcocity
-             vpn2 = vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
-             ekin=0.5*erg2ev*vpn2*cm(ityp(i))
+             vpn2 = atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2
+             ekin=0.5*erg2ev*vpn2*cm(atdml%ityp(i))
              if (ekin.gt.Ecelec) then
                 gamlat=0
              else
@@ -271,11 +273,11 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
                 !if(i==1) write(6,*)'gamf',VeCell,Gep,bk,ecell(ixyze(1),ixyze(2),ixyze(3))%Nion
              end if
           case(0)
-             vpn2 = vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
-             ekin=0.5*erg2ev*vpn2*cm(ityp(i))
+             vpn2 = atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2
+             ekin=0.5*erg2ev*vpn2*cm(atdml%ityp(i))
              if (ekin.gt.Ecelec) then
                 vn=sqrt(vpn2)
-                v1=elstopforce(ityp(i),1,1)
+                v1=elstopforce(atdml%ityp(i),1,1)
                 !           write(6,*)v1,vn
                 nv1=1+INT(vn/v1)
                 if (nv1.gt.ngrdel) then
@@ -287,12 +289,13 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
                    stop
                 end if
-                f1=elstopforce(ityp(i),2,nv1)-(elstopforce(ityp(i),2,nv1)-elstopforce(ityp(i),2,nv1-1))*(nv1-vn/v1)
+                f1=elstopforce(atdml%ityp(i),2,nv1)&
+                 &-(elstopforce(atdml%ityp(i),2,nv1)-elstopforce(atdml%ityp(i),2,nv1-1))*(nv1-vn/v1)
                 do ic=1,3
-                   elosscel(ko)=elosscel(ko)+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)
+                   elosscel(ko)=elosscel(ko)+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)
                 end do
 
-                gamlat=f1/(cm(ityp(i))*vn)
+                gamlat=f1/(cm(atdml%ityp(i))*vn)
                 if (timel.gt.t_cpl) then
                    gamlat=gamlat+VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion)
                 end if
@@ -324,11 +327,11 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
                 !  write(6,*)'ct',cm(ityp(1)),tstep
                 call random_number(u1)
                 call random_number(u2)
-                Gl(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
+                Atdml%Glangv(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
                 !if (i==1)write(6,*) vp(ic,i)
 
-                vp(ic,i) = vp(ic,i)*rga+ fp(ic,i)*tstep/(cm(ityp(i))*2)+Gl(ic,i)*&
-                     &sqrt(cm(ityp(i))*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%temp*(1-rga))/cm(ityp(i))
+                atdml%vp(ic,i) = atdml%vp(ic,i)*rga+ atdml%fp(ic,i)*tstep/(cm(atdml%ityp(i))*2)+Atdml%Glangv(ic,i)*&
+                     &sqrt(cm(atdml%ityp(i))*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%temp*(1-rga))/cm(atdml%ityp(i))
                 !if (i==1)write(6,*) vp(ic,i)
 
              end do
@@ -348,8 +351,8 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
                 !if (i==1)write(6,*) vp(ic,i)
 
 
-                vp(ic,i) = vp(ic,i)*rga+ fp(ic,i)*tstep/(cm(ityp(i))*2)+Gl(ic,i)*&
-                     &sqrt(cm(ityp(i))*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%temp*(1-rga))/cm(ityp(i))
+                atdml%vp(ic,i) = atdml%vp(ic,i)*rga+ atdml%fp(ic,i)*tstep/(cm(atdml%ityp(i))*2)+Atdml%Glangv(ic,i)*&
+                     &sqrt(cm(atdml%ityp(i))*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%temp*(1-rga))/cm(atdml%ityp(i))
                 !if (i==1)write(6,*) vp(ic,i)
 
 
@@ -376,11 +379,11 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine dynelec
+  subroutine dynelec(celndm)
     integer::ite,iex,iey,iez,iet
     real(double)nexttemp (nex,ney,nez)
-
-    call calc_Qi2e
+    type (cell_config)::celndm
+    call calc_Qi2e(celndm)
     do ite=1,necycle
        call Tevolv(ite)
     end do
@@ -405,15 +408,15 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine calc_Qi2e
-
+  subroutine calc_Qi2e(celndm)
+    type (cell_config)::celndm
     integer::ko,ixe,iye,ize
     integer :: ixyze(3)
     real(double)::Gep
     ecell(:,:,:)%Qi2e=0
     !ES stopping
-    do ko=1,noxyz
-       call nox_2_nex(ko,ixyze)
+    do ko=1,celndm%noxyz
+       call nox_2_nex(ko,ixyze,celndm)
        !       if (elosscel(ko).ne.0) then
        !          write(6,'(4I3)')ko,ixyze(:)
        !          write(6,*)'ko',elosscel(ko)
@@ -686,26 +689,27 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine nox_2_nex (ko,ixyze)
+  subroutine nox_2_nex (ko,ixyze,celndm)
     integer,intent(in)::ko
     integer,intent(out)::ixyze(3)
+    type(cell_config)::celndm
     integer::kx,ky,kz,koc
     koc=ko
     !    write(6,*)'ko',ko
-    kx=mod(koc-1,nox)+1
-    koc=(koc-kx)/nox
+    kx=mod(koc-1,celndm%nox)+1
+    koc=(koc-kx)/celndm%nox
     !    write(6,*)'kx koc',kx,koc
-    ky=mod(koc,noy)+1
+    ky=mod(koc,celndm%noy)+1
     !    write(6,*)'ky,koc',ky,(koc-ky+1)/noy
-    kz=(koc-ky+1)/noy+1
+    kz=(koc-ky+1)/celndm%noz+1
     !    write(6,*)'kz',kz
 
     !    write(6,*)'ko,kx,ky,kz'
     !    write(6,*)ko,kx,ky,kz
 
-    ixyze(1)=1+(kx-1)*nexov/nox+nexmp
-    ixyze(2)=1+(ky-1)*neyov/noy+neymp
-    ixyze(3)=1+(kz-1)*nezov/noz+nezmp
+    ixyze(1)=1+(kx-1)*nexov/celndm%nox+nexmp
+    ixyze(2)=1+(ky-1)*neyov/celndm%noy+neymp
+    ixyze(3)=1+(kz-1)*nezov/celndm%noz+nezmp
 
 
     !    write(6,*)'           ',ixyze

@@ -58,9 +58,9 @@ contains
 
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
     if (l2t)then
-       if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+       if (i2t==1)  call calceloss(celndm,atdml)
     else
-       if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+       if(ibrake.gt.0) call calceloss(celndm,atdml)
     end if
     if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
     if (itmax==0) then

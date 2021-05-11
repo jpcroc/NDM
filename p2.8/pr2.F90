@@ -40,7 +40,7 @@ module Parrinello_Rahman
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigkine,sigtot,text,tstep,im_glob,it,potist,rang,sig,text,tstep,sigkine,&
-       &pi,l2t,ltberendsen,lperiod,lspaceNDM,imm_glob
+       &pi,l2t,ltberendsen,lperiod,lspaceNDM,imm_glob,h0
 
 
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3
@@ -113,12 +113,12 @@ contains
 
     IF (lUcell) THEN
        IF(RANG==0) WRITE(6,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
-       IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*boxndm%h0(1:3,1)
-       IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*boxndm%h0(1:3,2)
-       IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*boxndm%h0(1:3,3)
+       IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
+       IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0(1:3,2)
+       IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0(1:3,3)
        IF(RANG==0) WRITE(6,*)
     ELSE
-       boxndm%h0 = boxndm%at
+       h0 = boxndm%at
     END IF
     IF(RANG==0) WRITE(6,'(a)') "Repère actuel  (A):"
     IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
@@ -138,10 +138,10 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     !   Cet état de référence doit correspondre à un tenseur de contrainte nul.
     !   Il n'est utile que pour calculer la déformation et l'énergie potentielle
     !   de la boîte.
-    volu0 = calcvol(boxndm%h0(1:3,1),boxndm%h0(1:3,2),boxndm%h0(1:3,3))
+    volu0 = calcvol(h0(1:3,1),h0(1:3,2),h0(1:3,3))
     invVolu0 = 1.d0/volu0
-    trh0=Transpose(boxndm%h0)
-    CALL MatInv(boxndm%h0,invh0)
+    trh0=Transpose(h0)
+    CALL MatInv(h0,invh0)
     invtrh0=Transpose(invh0)
 
     ! Vecteurs de la boîte et grandeurs associées à l'instant initial
@@ -249,9 +249,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     ! Forces à l'instant initial
   CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
       if (l2t)then
-       if (i2t==1)  call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+       if (i2t==1)  call calceloss (celndm,atpr)
     else
-       if(ibrake.gt.0) call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+       if(ibrake.gt.0) call calceloss(celndm,atpr)
     end if
 
 
@@ -440,9 +440,9 @@ end if
     ! Calcul des forces et des contraintes à l'instant t+dt
   CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
       if (l2t)then
-       if (i2t==1)  call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+       if (i2t==1)  call calceloss(celndm,atpr)
     else
-       if(ibrake.gt.0) call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+       if(ibrake.gt.0) call calceloss(celndm,atpr)
     end if
     if (lTberendsen) call calfoberend(atpr%im,atpr%imm,atpr%xp,atpr%vp,atpr%fp,atpr%ityp)
 
@@ -564,7 +564,7 @@ end if
 
     ! Tension thermodynamique (Eq. 2.22 et 2.26, Ref.2)
     grsig = boxndm%volu * MatMul(invh, MatMul( sigext, invtrh) )
-    tension = invVolu0*MatMul( MatMul( boxndm%h0, grsig), trh0 )
+    tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
 
     ! Énergie potentielle de la cellule (Eq. 2.25, Ref.2)
     Ucell = volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )

@@ -70,7 +70,7 @@ subroutine calctemp(temp,kine,atcf, cellcf,latcomp)
      kinecl=0
      if (cellcf%nato(ko)==0) cycle
 
-     if (L2T)     call nox_2_nex(ko,ixyze)
+     if (L2T)     call nox_2_nex(ko,ixyze,cellcf)
 
      do i2 = 1, cellcf%nato(ko)
 
@@ -164,7 +164,7 @@ else  !LATC/LATCOMP=.TRUE.
      if ((lspaceNDM).and.(cellcf%proc_cell(ko).ne.myidsp)) cycle
 #endif
 
-     if (L2T)     call nox_2_nex(ko,ixyze)
+     if (L2T)  call nox_2_nex(ko,ixyze,cellcf)
 
      do i2 = 1, cellcf%nato(ko)
 

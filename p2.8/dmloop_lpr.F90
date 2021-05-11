@@ -72,10 +72,10 @@ contains
   CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
 
 !  CALL CalFo(sig,potist,atpr,celndm)
-      if (l2t)then
-       if (i2t==1)  call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+  if (l2t)then
+       if (i2t==1)  call calceloss (celndm,atpr)
     else
-       if(ibrake.gt.0) call calceloss (atpr%im,atpr%fp,atpr%vp,atpr%ityp,atpr%ielat,atpr%num_at_glob)
+       if(ibrake.gt.0) call calceloss(celndm,atpr)
     end if
     if (lTberendsen) call calfoberend(atpr%im,atpr%imm,atpr%xp,atpr%vp,atpr%fp,atpr%ityp)
 !  write(6,*)'dml potist ',potist,atpr%potist

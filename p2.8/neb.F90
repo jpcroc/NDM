@@ -14,7 +14,6 @@ module neb_mod
   USE boxconfig,only:box_config,periodbox
   use var_pot,only:coord,rumax,ipotentiel
   use rasmolT_mod,only:rasmolT
-  use calfoberend_mod,only:dynlangevin
   use sauvegardeT_mod,only:sauvegardet
   use neb_module,only:cellneb,atneb,sigpath,boxneb,npath,enepath,nebtype,enepathev,reaction_coord,&
        &lvzeroneb,dragtest,nebtest,force_neb,formax,init_neb,find_relax,bruit_neb,build_s_path_drag,&

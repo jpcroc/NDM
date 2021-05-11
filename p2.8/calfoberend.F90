@@ -54,16 +54,11 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
   end subroutine calfoberend
 
-  subroutine dynlangevin(im,xp, vp, fp,ityp,il)
+  subroutine dynlangevin(atdml,il)
     USE gen_com_m, ONLY:
     USE var_pot, ONLY:
-
-    integer::im
-    real(double)  :: xp(3,im)
-    real(double)  :: vp(3,im)
-    real(double)  :: fp(3,im)
-    real(double)  :: Gl(3,im)
-    integer  :: ityp(im)
+    use atomconfig,only:atom_config_e
+    class (atom_config_e)::atdml
     integer::il
     real(double)::rga
     integer :: i,ic
@@ -72,24 +67,26 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     select case (il)
     case(1)
        !     write(6,*)'rga',rga,Gl(ic,i)*sqrt(cm(ityp(1))*bk*text*(1-rga**2))/cm(ityp(1)),vp(1,1)
-       do i=1,im
-          rga=exp(-gamlt(ityp(i))*tstep/2)
+       do i=1,atdml%im
+          rga=exp(-gamlt(atdml%ityp(i))*tstep/2)
           !        write(6,'(A,2G15.7)')'gamstd ',gamlt(ityp(i)),rga
           do ic=1,3
              !  write(6,*)'ct',cm(ityp(1)),tstep
              call random_number(u1)
              call random_number(u2)
-             Gl(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
-             vp(ic,i) = vp(ic,i)*rga+ fp(ic,i)*tstep/(cm(ityp(i))*2)+Gl(ic,i)*sqrt(cm(ityp(i))*bk*text*(1-rga))/cm(ityp(i))
+             atdml%Glangv(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
+             atdml%vp(ic,i) = atdml%vp(ic,i)*rga+ atdml%fp(ic,i)*tstep/(cm(atdml%ityp(i))*2)&
+                  &+atdml%Glangv(ic,i)*sqrt(cm(atdml%ityp(i))*bk*text*(1-rga))/cm(atdml%ityp(i))
 
           end do
        end do
     case(2)
 
-       do i=1,im
-          rga=exp(-gamlt(ityp(i))*tstep/2)
+       do i=1,atdml%im
+          rga=exp(-gamlt(atdml%ityp(i))*tstep/2)
           do ic=1,3
-             vp(ic,i) = vp(ic,i)*rga+ fp(ic,i)*tstep/(cm(ityp(i))*2)+Gl(ic,i)*sqrt(cm(ityp(i))*bk*text*(1-rga))/cm(ityp(i))
+             atdml%vp(ic,i) = atdml%vp(ic,i)*rga+ atdml%fp(ic,i)*tstep/(cm(atdml%ityp(i))*2)&
+                  &+atdml%Glangv(ic,i)*sqrt(cm(atdml%ityp(i))*bk*text*(1-rga))/cm(atdml%ityp(i))
           end do
        end do
     case default 

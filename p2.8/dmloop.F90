@@ -81,11 +81,11 @@ contains
        end select
     end if
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
-    if (l2t)then
-       if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
-    else
-       if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
-    end if
+!!$    if (l2t)then
+!!$       if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+!!$    else
+       if(ibrake.gt.0) call calceloss (celndm,atdml)
+!!$    end if
 
     if (test_sigma) then                   
        sigkine=0.

@@ -1,7 +1,6 @@
 module eloss
   USE T_kind_param_m, ONLY:  double
-  USE temp_com,only:noxyz,tempc ! A EFFACER
-  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,l2T,erg2eV,iko,lspacendm!,noxyz
+  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,l2T,erg2eV,iko,lspacendm
   USE var_pot, ONLY:ntyp,cm,gamlt
 #ifdef PARA
   USE Tpara,only:COMM_space,myidsp,endmpi
@@ -9,7 +8,8 @@ module eloss
   use Tpara,only : nprocspace
   
 #endif 
-
+  use atomconfig,only:atom_config_d
+  use cellconfig,only:cell_config
   ! **************************************************************
 
   implicit none
@@ -42,6 +42,7 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
+
 
     integer::i,j,j1,j2,j0,npr,k,nv1,iti
     real(double)::vel,vel2,sp,vnlt,v1,f1
@@ -121,14 +122,12 @@ contains
 
 
 
-  subroutine calceloss(im,fp,vp,ityp,ielat,num_at_glob)
+  subroutine calceloss(celndm,atdml)
+    type (cell_config),intent(in)::celndm
+    type(atom_config_d)::atdml
 #ifdef PARA
     use mod_para,only : nprocspace
 #endif
-  integer,intent(in)::im
-  real(double),intent(inout),allocatable,dimension(:,:)::fp
-    real(double),intent(inout),allocatable,dimension(:,:)::vp
-  integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
 
     
     real(double)::ekin,vn,v1,f1,eta,etavc,f1vc,vc
@@ -142,20 +141,20 @@ contains
      endif
 
     if (L2T.eqv..true.)     elosscel(:)=0
-    do i=1,im
+    do i=1,atdml%im
        if(tcelec.gt.0) then
-          koo = ielat(i)                          ! Numero de la cellule
-          if (tempc(koo).le.tcelec) cycle
+          koo = atdml%ielat(i)                          ! Numero de la cellule
+          if (celndm%tempc(koo).le.tcelec) cycle
        end if
 
-       vn= vp(1,i)**2+vp(2,i)**2+vp(3,i)**2
-       ekin=0.5*erg2ev*vn*cm(ityp(i))
+       vn= atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2
+       ekin=0.5*erg2ev*vn*cm(atdml%ityp(i))
        if (ekin.gt.Ecelec) then
 
 
           !	write(6,*)'RG',rang,i,ekin
           vn=sqrt(vn)
-          v1=elstopforce(ityp(i),1,1)
+          v1=elstopforce(atdml%ityp(i),1,1)
           !           write(6,*)v1,vn
           nv1=1+INT(vn/v1)
           if (nv1.gt.ngrdel) then
@@ -165,14 +164,15 @@ contains
 #endif 
             stop
           end if
-          f1=elstopforce(ityp(i),2,nv1)-(elstopforce(ityp(i),2,nv1)-elstopforce(ityp(i),2,nv1-1))*(nv1-vn/v1)
+          f1=elstopforce(atdml%ityp(i),2,nv1)-(elstopforce(atdml%ityp(i),2,nv1)-&
+               &elstopforce(atdml%ityp(i),2,nv1-1))*(nv1-vn/v1)
           !           write (6,'(A,4G15.7)')'felstop ',f1,vn, vn/v1,elstopforce(ityp(i),2,nv1)
           if (f1.le.0) then
              write(6,*)'f1<0 ?', f1
              stop
           end if
           if (ibrake==2) then
-             iti=ityp(i)
+             iti=atdml%ityp(i)
 !	     write(6,*)rang,i,iti
              eta=f1/vn
              vc=sqrt(2*Ecelec*ev2erg/cm(iti))
@@ -186,16 +186,16 @@ contains
           !           write(6,*)
           end if
           do ic=1,3
-             fp(ic,i)=fp(ic,i)-vp(ic,i)*f1/vn
+             atdml%fp(ic,i)=atdml%fp(ic,i)-atdml%vp(ic,i)*f1/vn
              !              Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)
-             Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)*erg2ev
+             Elosselec=Elosselec+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)*erg2ev
              if (L2T.eqv..true.) then
-                elosscel(ielat(i))=elosscel(ielat(i))+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)
+                elosscel(atdml%ielat(i))=elosscel(atdml%ielat(i))+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)
              end if
-             if (num_at_glob(i)==iko)then 
+             if (atdml%num_at_glob(i)==iko)then 
 
                 !                write(6,*)'elfp',fp(ic,i)
-                Elosselec1=Elosselec1+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)*erg2ev
+                Elosselec1=Elosselec1+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)*erg2ev
              end if
           end do
           !                 write (6,*)'felstop',f1,vn                

@@ -16,7 +16,7 @@ module prog_mod
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
   USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
-  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM&
+  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t&
        &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin,latcomp
   
   use read_val,only:imm,ltabvois,rvois
@@ -73,12 +73,12 @@ contains
 
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
     !probablement inutile pour dmtype=9 ou 15
-    if ((lax).or.(lsigat).or.(lprteat).or.(llangevin))then
+    if ((lax).or.(lsigat).or.(lprteat).or.(llangevin).or.(l2t))then
        atdml=>atdme
        atdme%lax=lax
        atdme%lsigat=lsigat
        atdme%lprteat=lprteat
-       atdme%llangevin=llangevin
+       if ((llangevin).or.(l2t)) atdme%llangevin=.true.
     elseif(itetimestep.gt.0) then
        atdml=>atdmd
     else

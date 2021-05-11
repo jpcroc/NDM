@@ -71,17 +71,24 @@ contains
        end do
     end if
 
-    if (lLangevin) then
-       il=2*(ilangevin-1)+1
-       call dynlangevin(atdml%im,atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il)
-    elseif (l2T) then
-       il=2*(ilangevin-1)+1
-       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il,atdml%num_at_glob,psc)
-    else
+    select type (atdml)
+    class is (atom_config_e)
+       if (lLangevin) then
+          il=2*(ilangevin-1)+1
+          call dynlangevin(atdml,il)
+       elseif (l2T) then
+          il=2*(ilangevin-1)+1
+          call TTlangevin(atdml,il,psc,celndm)
+       else
+          DO i=1, atdml%im
+             atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(atdml%iTyp(i))*atdml%fp(1:3,i)
+          END DO
+       end if
+    class default
        DO i=1, atdml%im
           atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(atdml%iTyp(i))*atdml%fp(1:3,i)
        END DO
-    end if
+    end select
 
 
     !step 2  Coordinate update, x(t)-> x(t+dt)
@@ -117,7 +124,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
 
     if (l2T) then
-       call dynelec
+       call dynelec(celndm)
     end if
 
     ! Force calculation
@@ -126,9 +133,9 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
 
     if (l2t)then
-       if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+       if (i2t==1)  call calceloss(celndm,atdml)
     else
-       if(ibrake.gt.0) call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
+       if(ibrake.gt.0) call calceloss(celndm,atdml)
     end if
     if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
     !  write(6,*)'dml potist ',potist,atdml%potist
@@ -148,17 +155,25 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
 
     ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
-    if (llangevin.eqv..true.) then
-       il=2*(ilangevin-1)+2
-       call dynlangevin(atdml%im,atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il)
-    elseif (l2T) then
-       il=2*(ilangevin-1)+2
-       call TTlangevin(atdml%xp,atdml%vp,atdml%fp,atdml%ityp,il,atdml%num_at_glob,psc)
-    else
+    select type (atdml)
+    class is (atom_config_e)
+       if (lLangevin) then
+          il=2*(ilangevin-1)+2
+          call dynlangevin(atdml,il)
+       elseif (l2T) then
+          il=2*(ilangevin-1)+3
+          call TTlangevin(atdml,il,psc,celndm)
+       else
+          DO i=1, atdml%im
+             atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(atdml%iTyp(i))*atdml%fp(1:3,i)
+          END DO
+       end if
+    class default
        DO i=1, atdml%im
           atdml%vp(1:3,i) = atdml%vp(1:3,i) + aux(atdml%iTyp(i))*atdml%fp(1:3,i)
        END DO
-    end if
+    end select
+
 
 
     return

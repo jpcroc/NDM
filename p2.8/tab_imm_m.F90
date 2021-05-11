@@ -183,9 +183,6 @@ contains
     if (allocated(ityp))        deallocate(ityp)
     if (allocated(num_at_glob)) deallocate(num_at_glob)
 
-    if (llangevin) then 
-       if(allocated(Glangv)) deallocate(Glangv)
-    end if 
 
   end subroutine dealloc_all_tab_imm
 end module tab_imm_m

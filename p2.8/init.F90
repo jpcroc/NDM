@@ -163,7 +163,7 @@ contains
 
 
     if (L2T.eqv..true.) then
-       call readelec
+       call readelec(celndm,boxndm)
        if (rang==0) write(6,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
        dmtype=4
        ibrake=1
