@@ -2,18 +2,18 @@ module Tpara
   use T_kind_param_m
 #ifdef PARA
   use mpi
-
- integer, parameter :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
+!   include 'mpif.h'
+  integer, parameter :: NDM_MPI_REAL_DOUBLE = MPI_REAL8
+  integer, parameter :: NDM_MPI_LOGICAL = MPI_LOGICAL
   integer, parameter :: NDM_MPI_COMPLEX_DOUBLE = MPI_COMPLEX16
   integer::MPI_COMM_space
   integer:: grp_world
   integer,dimension(MPI_STATUS_SIZE):: status
-
+!  include 'mpif.h'
 #else
    integer:: status 
 #endif
-   integer,target :: nprocs 			! numero de process mis là pour être utilisé en sequentiesl
-   integer,pointer :: myidsp,nprocspace 			! numero de process mis là pour être utilisé en sequentiesl
+  integer :: myidsp,nprocspace,nprocs 			! numero de process mis là pour être utilisé en sequentiesl
 
   integer::ierr
   type para_space_config
@@ -35,15 +35,13 @@ module Tpara
     integer    :: comm       ! MPI communicator
     integer    :: nproc      ! number of procs in the communicator comm
     integer    :: rank       ! index           in the communicator comm
-    integer    :: group       ! group          of the communicator comm
+    integer    :: group       ! group          in the communicator comm
   contains
     procedure :: init => mpic_init
-    procedure :: init0 => mpic_init0
-    procedure :: probe => mpic_probe
     procedure :: barrier => mpic_barrier
     ! sum
-    generic :: send  => mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_send_l
-    generic :: recv  => mpic_recv_dp,mpic_recv_cdp,mpic_recv_i,mpic_recv_l
+!!$    generic :: send  => mpic_send_dp,mpic_send_cdp,mpic_send_i
+!!$    generic :: recv  => mpic_recv_dp,mpic_recv_cdp,mpic_recv_i
     generic :: sum  => mpic_sum_dp
     generic :: sum  => mpic_sum_cdp
     generic :: sum  => mpic_sum_i
@@ -51,14 +49,13 @@ module Tpara
     procedure :: mpic_sum_dp
     procedure :: mpic_sum_cdp
     procedure :: mpic_sum_i
-    procedure:: mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_send_l
-    procedure:: mpic_recv_dp,mpic_recv_cdp,mpic_recv_i,mpic_recv_l
-    ! min ALLREDUCE !!
+!!$    procedure:: mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_recv_dp,mpic_recv_cdp,mpic_recv_i
+    ! min
     generic :: min  => mpic_min_dp
     generic :: min  => mpic_min_i
     procedure :: mpic_min_dp
     procedure :: mpic_min_i
-    ! max ALLREDUCE !!
+    ! max
     generic :: max  => mpic_max_dp
     generic :: max  => mpic_max_i
     procedure::mpic_maxloc_dp
@@ -68,27 +65,18 @@ module Tpara
     procedure :: and => mpic_and_l
     ! broadcast
     generic :: bcast  => mpic_bcast_dp
-    generic :: bcast  => mpic_bcast_l
     generic :: bcast  => mpic_bcast_i
     generic :: bcast  => mpic_bcast_cdp
-    procedure :: mpic_bcast_dp,mpic_bcast_l
+    procedure :: mpic_bcast_dp
     procedure:: mpic_bcast_i
     procedure :: mpic_bcast_cdp
   end type mpi_communicator
 
-  type(mpi_communicator),target::comm_space
+  type(mpi_communicator)::comm_space
 !  type(mpi_communicator)::mpi_world
 
 contains
 
-  subroutine endmpi
-#ifdef PARA    
-    call MPI_finalize(ierr)
-    stop
-#endif
-    return
-  end subroutine endmpi
-  
 
 !=========================================================================
 subroutine mpic_init(mpic,comm_in)
@@ -112,60 +100,6 @@ subroutine mpic_init(mpic,comm_in)
 #endif
 
 end subroutine mpic_init
-
-!=========================================================================
-subroutine mpic_init0(mpic)
-  implicit none
-
-  class(mpi_communicator),intent(inout) :: mpic
-  !=====
-  integer :: ierror
-  !=====
-
-#if defined(PARA)
-#else
-  mpic%comm  = 1
-  mpic%nproc = 1
-  mpic%rank  = 0
-#endif
-
-end subroutine mpic_init0
-
-
-!=========================================================================
-subroutine mpic_probe(mpic,tag,sourceout,sourcein)
-  implicit none
-
-  class(mpi_communicator),intent(inout) :: mpic
-  integer,intent(in)                    :: tag
-  integer,optional,intent(in)::sourcein
-  integer,optional,intent(out)::sourceout
-  integer :: ierror
-#if defined(PARA)
-  integer,dimension(MPI_STATUS_SIZE):: statut
-
-  !=====
-
-  !=====
-ierror=0
-
-  if (present(sourcein)) then
-     call MPI_PROBE(sourcein, tag, mpic%comm,statut,ierror)
-     sourceout=statut(MPI_SOURCE)
-     if (sourceout.ne.sourcein) then
-          write(6,*) 'error in mpic_probe sourceout<> sourcein',sourceout,sourcein
-       endif
-  else
-     call MPI_PROBE(MPI_ANY_SOURCE, tag, mpic%comm,statut,ierror)
-     sourceout=statut(MPI_SOURCE)
-  end if
-  
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in mpic_probe'
-  endif
-
-end subroutine mpic_probe
 
 
 !=========================================================================
@@ -418,6 +352,7 @@ subroutine mpic_bcast_dp(mpic,rank,array)
   if( mpic%nproc == 1 ) return
 
   nsize = SIZE(array)
+
 #if defined(PARA)
   call MPI_BCAST(array,nsize,MPI_DOUBLE_PRECISION,rank,mpic%comm,ierror)
 #endif
@@ -426,7 +361,6 @@ subroutine mpic_bcast_dp(mpic,rank,array)
   endif
 
 end subroutine mpic_bcast_dp
-
 
 subroutine mpic_bcast_i(mpic,rank,array)
   implicit none
@@ -450,29 +384,6 @@ subroutine mpic_bcast_i(mpic,rank,array)
   endif
 
 end subroutine mpic_bcast_i
-
-subroutine mpic_bcast_l(mpic,rank,array)
-  implicit none
-  class(mpi_communicator),intent(in) :: mpic
-  integer,intent(in)     :: rank
-  logical,intent(inout) :: array(..)
-  !=====
-  integer :: nsize
-  integer :: ierror=0
-  !=====
-
-  if( mpic%nproc == 1 ) return
-
-  nsize = SIZE(array)
-
-#if defined(PARA)
-  call MPI_BCAST(array,nsize,MPI_LOGICAL,rank,mpic%comm,ierror)
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in MPI_BCAST L'
-  endif
-
-end subroutine mpic_bcast_l
 
 
 !=========================================================================
@@ -498,239 +409,184 @@ subroutine mpic_bcast_cdp(mpic,rank,array)
   endif
 
 end subroutine mpic_bcast_cdp
+
 !!$
-
-!=========================================================================
-subroutine mpic_send_dp(mpic,array,rgcib,tag)
-  implicit none
-  class(mpi_communicator),intent(in) :: mpic
-  real(double),intent(in) :: array(..)
-  integer,intent(in)::rgcib
-  integer,optional,intent(in)::tag
-  !=====
-  integer :: nsize,tagv
-  integer :: ierror=0
-  !=====
-  
-  if( mpic%nproc == 1 ) return
-
-  nsize = SIZE(array)
-
-#if defined(PARA)
-if (present(tag)) then
-   call MPI_SEND( array, nsize,  NDM_MPI_REAL_DOUBLE, rgcib, tag,mpic%comm, ierror)
-else
-   call MPI_SEND( array, nsize,  NDM_MPI_REAL_DOUBLE, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
-end if
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in MPI_SEND_DP'
-  endif
-
-end subroutine mpic_send_dp
-
-subroutine mpic_send_l(mpic,array,rgcib,tag)
-  implicit none
-  class(mpi_communicator),intent(in) :: mpic
-  logical,intent(in) :: array(..)
-  integer,intent(in)::rgcib
-  integer,optional,intent(in)::tag
-  !=====
-  integer :: nsize,tagv
-  integer :: ierror=0
-  !=====
-  
-  if( mpic%nproc == 1 ) return
-
-  nsize = SIZE(array)
-
-#if defined(PARA)
-if (present(tag)) then
-   call MPI_SEND( array, nsize, MPI_LOGICAL, rgcib, tag,mpic%comm, ierror)
-else
-   call MPI_SEND( array, nsize,  MPI_LOGICAL, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
-end if
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in MPI_SEND_DP'
-  endif
-
-end subroutine mpic_send_l
-
-
-!=========================================================================
-subroutine mpic_send_cdp(mpic,array,rgcib,tag)
-  implicit none
-  class(mpi_communicator),intent(in) :: mpic
-  complex(ext_complex),intent(in) :: array(..)
-  integer,intent(in)::rgcib
-  integer,optional,intent(in)::tag
-  !=====
-  integer :: nsize,tagv
-  integer :: ierror=0
-  !=====
-  
-  if( mpic%nproc == 1 ) return
-
-  nsize = SIZE(array)
-
-#if defined(PARA)
-if (present(tag)) then
-   call MPI_SEND( array, nsize, MPI_DOUBLE_COMPLEX, rgcib, tag,mpic%comm, ierror)
-else
-   call MPI_SEND( array, nsize,NDM_MPI_REAL_DOUBLE, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
-end if
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in MPI_SEND_CDP'
-  endif
-
-end subroutine mpic_send_cdp
-
-
-!=========================================================================
-subroutine mpic_send_i(mpic,array,rgcib,tag)
-  implicit none
-  class(mpi_communicator),intent(in) :: mpic
-  integer,intent(inout) :: array(..)
-  integer,intent(in)::rgcib
-  integer,optional,intent(in)::tag
-  !=====
-  integer :: nsize,tagv
-  integer :: ierror=0
-  !=====
-  
-  if( mpic%nproc == 1 ) return
-
-  nsize = SIZE(array)
-
-#if defined(PARA)
-if (present(tag)) then
-   call MPI_SEND( array, nsize,  MPI_INTEGER, rgcib, tag,mpic%comm, ierror)
-else
-   call MPI_SEND( array, nsize,  MPI_INTEGER, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
-end if
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in MPI_SEND_I'
-  endif
-
-end subroutine mpic_send_i
-
-
-!=========================================================================
-subroutine mpic_recv_dp(mpic,array,rgem,tag)
-  implicit none
-  class(mpi_communicator),intent(in) :: mpic
-  real(double),intent(inout) :: array(..)
-  integer,intent(in)::rgem
-  integer,optional,intent(in)::tag
-  !=====
-  integer :: nsize
-  integer :: ierror=0
-  !=====
-
-  if( mpic%nproc == 1 ) return
-
-  nsize = SIZE(array)
-#if defined(PARA)
-if (present(tag)) then
-   call MPI_RECV( array, nsize, NDM_MPI_REAL_DOUBLE, rgem, tag,mpic%comm, status,ierror)
-else
-   call MPI_RECV( array, nsize, NDM_MPI_REAL_DOUBLE, rgem, MPI_ANY_TAG,mpic%comm,status, ierror)
-end if
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in MPI_RECV_DP'
-  endif
-
-end subroutine mpic_recv_dp
-
-subroutine mpic_recv_l(mpic,array,rgem,tag)
-  implicit none
-  class(mpi_communicator),intent(in) :: mpic
-  logical,intent(inout) :: array(..)
-  integer,intent(in)::rgem
-  integer,optional,intent(in)::tag
-  !=====
-  integer :: nsize
-  integer :: ierror=0
-  !=====
-
-  if( mpic%nproc == 1 ) return
-
-  nsize = SIZE(array)
-#if defined(PARA)
-if (present(tag)) then
-   call MPI_RECV( array, nsize, MPI_LOGICAL, rgem, tag,mpic%comm, status,ierror)
-else
-   call MPI_RECV( array, nsize, MPI_LOGICAL, rgem, MPI_ANY_TAG,mpic%comm,status, ierror)
-end if
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in MPI_RECV_DP'
-  endif
-
-end subroutine mpic_recv_l
-
-
-!=========================================================================
-subroutine mpic_recv_cdp(mpic,array,rgem,tag)
-  implicit none
-  class(mpi_communicator),intent(in) :: mpic
-  complex(ext_complex),intent(inout) :: array(..)
-  integer,intent(in)::rgem
-  integer,optional,intent(in)::tag
-  !=====
-  integer :: nsize
-  integer :: ierror=0
-  !=====
-
-  if( mpic%nproc == 1 ) return
-
-  nsize = SIZE(array)
-#if defined(PARA)
-if (present(tag)) then
-   call MPI_RECV( array, nsize, MPI_DOUBLE_COMPLEX,rgem, tag,mpic%comm, status,ierror)
-else
-   call MPI_RECV( array, nsize, MPI_DOUBLE_COMPLEX, rgem, MPI_ANY_TAG,mpic%comm,status, ierror)
-end if
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in MPI_RECV_CDP'
-  endif
-
-end subroutine mpic_recv_cdp
-
-
-!=========================================================================
-subroutine mpic_recv_i(mpic,array,rgem,tag)
-  implicit none
-  class(mpi_communicator),intent(in) :: mpic
-  integer,intent(inout) :: array(..)
-  integer,intent(in)::rgem
-  integer,optional,intent(in)::tag
-  !=====
-  integer :: nsize
-  integer :: ierror=0
-  !=====
-
-  if( mpic%nproc == 1 ) return
-
-  nsize = SIZE(array)
-#if defined(PARA)
-if (present(tag)) then
-   call MPI_RECV( array, nsize,MPI_INTEGER, rgem, tag,mpic%comm, status,ierror)
-else
-   call MPI_RECV( array, nsize,MPI_INTEGER, rgem, MPI_ANY_TAG,mpic%comm,status, ierror)
-end if
-#endif
-  if( ierror /= 0 ) then
-    write(6,*) 'error in MPI_RECV_I'
-  endif
-
-end subroutine mpic_recv_i
-
+!!$!=========================================================================
+!!$subroutine mpic_send_dp(mpic,array,rgcib,tag)
+!!$  implicit none
+!!$  class(mpi_communicator),intent(in) :: mpic
+!!$  real(double),intent(inout) :: array(..)
+!!$  integer,intent(in)::rgcib
+!!$  integer,optional,intent(in)::tag
+!!$  !=====
+!!$  integer :: nsize,tagv
+!!$  integer :: ierror=0
+!!$  !=====
+!!$  
+!!$  if( mpic%nproc == 1 ) return
+!!$
+!!$  nsize = SIZE(array)
+!!$
+!!$#if defined(PARA)
+!!$if (present(tag)) then
+!!$   call MPI_SEND( array, nsize,  NDM_MPI_REAL_DOUBLE, rgcib, tag,mpic%comm, ierror)
+!!$else
+!!$   call MPI_SEND( array, nsize,  NDM_MPI_REAL_DOUBLE, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
+!!$end if
+!!$#endif
+!!$  if( ierror /= 0 ) then
+!!$    write(6,*) 'error in MPI_SEND_DP'
+!!$  endif
+!!$
+!!$end subroutine mpic_send_dp
+!!$
+!!$
+!!$!=========================================================================
+!!$subroutine mpic_send_cdp(mpic,array,rgcib,tag)
+!!$  implicit none
+!!$  class(mpi_communicator),intent(in) :: mpic
+!!$  complex(ext_complex),intent(inout) :: array(..)
+!!$  integer,intent(in)::rgcib
+!!$  integer,optional,intent(in)::tag
+!!$  !=====
+!!$  integer :: nsize,tagv
+!!$  integer :: ierror=0
+!!$  !=====
+!!$  
+!!$  if( mpic%nproc == 1 ) return
+!!$
+!!$  nsize = SIZE(array)
+!!$
+!!$#if defined(PARA)
+!!$if (present(tag)) then
+!!$   call MPI_SEND( array, nsize, MPI_DOUBLE_COMPLEX, rgcib, tag,mpic%comm, ierror)
+!!$else
+!!$   call MPI_SEND( array, nsize,NDM_MPI_REAL_DOUBLE, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
+!!$end if
+!!$#endif
+!!$  if( ierror /= 0 ) then
+!!$    write(6,*) 'error in MPI_SEND_CDP'
+!!$  endif
+!!$
+!!$end subroutine mpic_send_cdp
+!!$
+!!$
+!!$!=========================================================================
+!!$subroutine mpic_send_i(mpic,array,rgcib,tag)
+!!$  implicit none
+!!$  class(mpi_communicator),intent(in) :: mpic
+!!$  integer,intent(inout) :: array(..)
+!!$  integer,intent(in)::rgcib
+!!$  integer,optional,intent(in)::tag
+!!$  !=====
+!!$  integer :: nsize,tagv
+!!$  integer :: ierror=0
+!!$  !=====
+!!$  
+!!$  if( mpic%nproc == 1 ) return
+!!$
+!!$  nsize = SIZE(array)
+!!$
+!!$#if defined(PARA)
+!!$if (present(tag)) then
+!!$   call MPI_SEND( array, nsize,  MPI_INTEGER, rgcib, tag,mpic%comm, ierror)
+!!$else
+!!$   call MPI_SEND( array, nsize,  MPI_INTEGER, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
+!!$end if
+!!$#endif
+!!$  if( ierror /= 0 ) then
+!!$    write(6,*) 'error in MPI_SEND_I'
+!!$  endif
+!!$
+!!$end subroutine mpic_send_i
+!!$
+!!$
+!!$!=========================================================================
+!!$subroutine mpic_recv_dp(mpic,array,rgem,tag)
+!!$  implicit none
+!!$  class(mpi_communicator),intent(in) :: mpic
+!!$  real(double),intent(inout) :: array(..)
+!!$  integer,intent(in)::rgem
+!!$  integer,optional,intent(in)::tag
+!!$  !=====
+!!$  integer :: nsize
+!!$  integer :: ierror=0
+!!$  !=====
+!!$
+!!$  if( mpic%nproc == 1 ) return
+!!$
+!!$  nsize = SIZE(array)
+!!$#if defined(PARA)
+!!$if (present(tag)) then
+!!$   call MPI_SEND( array, nsize, NDM_MPI_REAL_DOUBLE, rgem, tag,mpic%comm, status,ierror)
+!!$else
+!!$   call MPI_SEND( array, nsize, NDM_MPI_REAL_DOUBLE, rgem, MPI_ANY_TAG,mpic%comm,status, ierror)
+!!$end if
+!!$#endif
+!!$  if( ierror /= 0 ) then
+!!$    write(6,*) 'error in MPI_RECV_DP'
+!!$  endif
+!!$
+!!$end subroutine mpic_recv_dp
+!!$
+!!$
+!!$!=========================================================================
+!!$subroutine mpic_recv_cdp(mpic,array,rgem,tag)
+!!$  implicit none
+!!$  class(mpi_communicator),intent(in) :: mpic
+!!$  complex(ext_complex),intent(inout) :: array(..)
+!!$  integer,intent(in)::rgem
+!!$  integer,optional,intent(in)::tag
+!!$  !=====
+!!$  integer :: nsize
+!!$  integer :: ierror=0
+!!$  !=====
+!!$
+!!$  if( mpic%nproc == 1 ) return
+!!$
+!!$  nsize = SIZE(array)
+!!$#if defined(PARA)
+!!$if (present(tag)) then
+!!$   call MPI_SEND( array, nsize, MPI_DOUBLE_COMPLEX,rgem, tag,mpic%comm, status,ierror)
+!!$else
+!!$   call MPI_SEND( array, nsize, MPI_DOUBLE_COMPLEX, rgem, MPI_ANY_TAG,mpic%comm,status, ierror)
+!!$end if
+!!$#endif
+!!$  if( ierror /= 0 ) then
+!!$    write(6,*) 'error in MPI_RECV_CDP'
+!!$  endif
+!!$
+!!$end subroutine mpic_recv_cdp
+!!$
+!!$
+!!$!=========================================================================
+!!$subroutine mpic_recv_i(mpic,array,rgem,tag)
+!!$  implicit none
+!!$  class(mpi_communicator),intent(in) :: mpic
+!!$  integer,intent(inout) :: array(..)
+!!$  integer,intent(in)::rgem
+!!$  integer,optional,intent(in)::tag
+!!$  !=====
+!!$  integer :: nsize
+!!$  integer :: ierror=0
+!!$  !=====
+!!$
+!!$  if( mpic%nproc == 1 ) return
+!!$
+!!$  nsize = SIZE(array)
+!!$#if defined(PARA)
+!!$if (present(tag)) then
+!!$   call MPI_SEND( array, nsize,MPI_INTEGER, rgem, tag,mpic%comm, status,ierror)
+!!$else
+!!$   call MPI_SEND( array, nsize,MPI_INTEGER, rgem, MPI_ANY_TAG,mpic%comm,status, ierror)
+!!$end if
+!!$#endif
+!!$  if( ierror /= 0 ) then
+!!$    write(6,*) 'error in MPI_RECV_I'
+!!$  endif
+!!$
+!!$end subroutine mpic_recv_i
+!!$
 
 
 

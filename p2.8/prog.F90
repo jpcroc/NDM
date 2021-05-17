@@ -220,7 +220,7 @@ contains
        
     case(15)
        !#ifdef PARA
-       call init_mpi_MCGC
+       call init_mpi_MCGC ! PARAPATH
        !#endif
 #ifdef PARA
        ! En parallle, on initialise le nombre maximum d'atomes d'un
@@ -237,14 +237,16 @@ contains
           rv=rvois
        else
           rv=0
-       end if
+       end if ! PARAPATH
        call atconf_n%init(im,imm,ltabvois,nvois,rvois=rv)
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        boxmcgc=boxndm
 
        call init_simple(atconf_n,cells_n,boxmcgc,psc=pscgc) 
-       call initNP1 ! initialise la configuration N+1 
+       call initNP1 ! initialise la configuration N+1
+              !END PARAPATH
        call montecarlo
+
        
     end select
   end subroutine prog

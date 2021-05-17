@@ -21,6 +21,10 @@ FAIT:
 3/voir si master2loc est spatial. Le despatialiser (je crois qu'il ne l'est pas). LE PILOTER FINEMENT SUR LES DONNEES A TRANSMETTRE*/ master_and_servants à la Michael Trochet 
 3.5/ GC
 SAUVEGARDE PARA
+debuggage LPR+ LPR lammps
+4/supprimer les routines non NDM2021 (use temp_com)	et faire une TODO list afférente
+4.5/ PR en lammps !!!x
+5/version 2T
 
 ****
 EN STANDBY, A FAIRE DANS UN DEUXIEME TEMPS :
@@ -36,26 +40,23 @@ soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
 ***
 A FAIRE
 CODER dauvegarde xyz
-debuggage LPR+ LPR lammps
 
 
-
-4/supprimer les routines non NDM2021 (use temp_com)	et faire une TODO list afférente
-4.05/ supprimer tab_imm_m et les USE  qui vont avec
-4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien!
+4.05/ supprimer tab_imm_m et les USE  qui vont avec (OK sauf analyses des positions)
+4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien! (en cours)
 4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig pilté comme send2all etc.
-4.5/ PR en lammps !!!x
-5/version 2T
+
+4.7/MONTECARLO avec para en plus 
+
 5.5/ création de PF avec DM NVT ou trempe ,rapide ou GC 
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
 7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos
 7.1/anapos... et Fossati
-
 7.5/ version NEB  avec retour non systématique au proc master ? Est-ce possible ? 
 8/Programmer parallel replica
 9/documenter atomconfig et ajouter des routines intégrantes (par exemple appel calctemp)
-10/programmer le calcul des forcs pou un ensemble d'atomes plongé dans un ensemble plus grand
+10/programmer le calcul des forces pou un ensemble d'atomes plongé dans un ensemble plus grand
 10.1/paralèllisme OPENMP like avec le point 10.
 11/programmer potentiel Cooper
 12/retravailler les potentiels en général
