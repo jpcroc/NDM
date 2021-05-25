@@ -3,7 +3,13 @@ module input_pair_mod
   USE alloc_typ_mod,only: alloc_typ
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:a2cm,e2on4pieps0,ecgs,ev2erg,lopt,rang,tstep,two,umass,usdh,lspaceNDM
-  USE var_pot
+  USE var_pot,only:typ_and_pot,cm,catom,ty,q,zz,lue_typ, ipotentiel,npotentiel,lue_paire,ipo,lue_trip,ipo3c, poly3,&
+       &shel,ray,bm,xsi,sigmawat,rumax,rp5p3,rbp5,r3cm2,r3cm,precisew,poly5,pot_pair_tab,ntyp,ntrip,npair,rp3c,npotmax,&
+       &ncoucx,ncoucy,ncoucz,ngr,ncouc3,l3c,lambda,kpmey,kpmex,kpmez,ipotrep,ipo_2_pair_tab,gm1,gm2,gm3,gm4,gm5,gR,gD,&
+       &r8p,evA62ergcm6,epswat,alpha,c3c,l3cpair,coup3c2,l3ctyp,cangle,gam,lamb,capWij,ietaij,iewald,eta,coup3c,capDij,&
+       &capHij,rue_pair,sigmawat,rawat,qwat,bwat,awat,rawat2,pwat,lu_roff_pair,roff2,roff1,ro,typ_pot_pair,amorse,remorse,&
+       &dmorse,dip,a_factor,pm
+
   use Tpara,only:nprocspace
   implicit none
 contains
@@ -83,6 +89,7 @@ contains
     kpmey = 0
     kpmez = 0
     lopt=.FALSE.
+    
 
     if (rang==0) write (6, *)
     select case (ipotentiel)
@@ -203,7 +210,7 @@ contains
              npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
              call  alloc_typ
           end if
-
+          
           !types
           if (npotentiel .gt.1)then
              if (iewald==0) then

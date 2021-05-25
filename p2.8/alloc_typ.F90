@@ -42,6 +42,7 @@ contains
        allocate(rc(ntyp))
        rc(1:ntyp)=rclu(1:ntyp)*1.d-8
        allocate(zz(npair))
+       zz=0
        allocate(lue_paire(npair))
        allocate(lu_roff_pair(npair))
        lu_roff_pair(:)=.false.

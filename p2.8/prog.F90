@@ -11,7 +11,8 @@ module prog_mod
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
-  USE montecarlo_mod, only: montecarlo,atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc
+  USE montecarlo_mod, only: montecarlo,atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc,config_atom_n&
+       &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
@@ -238,6 +239,20 @@ contains
        else
           rv=0
        end if ! PARAPATH
+
+       allocate (config_atom_n(nparapath))
+       allocate (config_atom_nplus1(nparapath))
+       allocate (config_cells_n(nparapath))
+       allocate (config_cells_nplus1(nparapath))
+       
+       
+       if (nparapath==1) then
+
+          atconf_n=> config_atom_n(1)
+          cells_n=>config_cells_n(1)
+          atconf_nplus1=>config_atom_nplus1(1)
+          cells_nplus1=>config_cells_nplus1(1)
+          
        call atconf_n%init(im,imm_glob,ltabvois,nvois,rvois=rv)
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        boxmcgc=boxndm
@@ -246,7 +261,7 @@ contains
        call initNP1 ! initialise la configuration N+1
               !END PARAPATH
        call montecarlo
-
+    end if
        
     end select
   end subroutine prog
