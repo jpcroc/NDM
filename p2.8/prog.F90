@@ -61,7 +61,8 @@ contains
     type(box_config)::boxndm
     type(para_space_config)::psc0
     real(double)::rv
-
+    integer::ipp
+    logical::linitpot
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e rs
     !-----------------------------------------------
@@ -246,22 +247,33 @@ contains
        allocate (config_cells_nplus1(nparapath))
        
        
-       if (nparapath==1) then
-
-          atconf_n=> config_atom_n(1)
-          cells_n=>config_cells_n(1)
-          atconf_nplus1=>config_atom_nplus1(1)
-          cells_nplus1=>config_cells_nplus1(1)
+!       if (nparapath==1) then
+       do ipp=1,nparapath
+          atconf_n=> config_atom_n(ipp)
+          cells_n=>config_cells_n(ipp)
+          atconf_nplus1=>config_atom_nplus1(ipp)
+          cells_nplus1=>config_cells_nplus1(ipp)
           
-       call atconf_n%init(im,imm_glob,ltabvois,nvois,rvois=rv)
-       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       boxmcgc=boxndm
+          call atconf_n%init(im,imm_glob,ltabvois,nvois,rvois=rv)
+          ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+          boxmcgc=boxndm
+          if (ipp==1) then
+             linitpot=.true.
+          else
+             linitpot=.false.
+          end if
+          call init_simple(atconf_n,cells_n,boxmcgc,psc=pscgc,linitpot=linitpot) 
 
-       call init_simple(atconf_n,cells_n,boxmcgc,psc=pscgc) 
-       call initNP1 ! initialise la configuration N+1
-              !END PARAPATH
-       call montecarlo
-    end if
+
+       call initNP1(ipp) ! initialise la configuration N+1
+    end do
+       !END PARAPATH
+    atconf_n=> config_atom_n(1)
+    cells_n=>config_cells_n(1)
+    atconf_nplus1=>config_atom_nplus1(1)
+    cells_nplus1=>config_cells_nplus1(1)
+
+    call montecarlo
        
     end select
   end subroutine prog

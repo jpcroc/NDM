@@ -26,7 +26,7 @@ module init_simple_mod
 
 contains
   ! **************************************************************
-  subroutine init_simple(atdml,celndm,boxndm,filename,psc)
+  subroutine init_simple(atdml,celndm,boxndm,filename,psc,linitpot)
 
 
 
@@ -58,6 +58,9 @@ contains
     type(cell_config),intent(out)::celndm
     type(box_config),intent(out)::boxndm
     character(*),optional::filename
+    logical, optional::linitpot
+    
+    logical::linitpotW=.true.
     character*80::filenomIS
     integer :: i, lufilmpaf,itapp,j,lenfn2,ipath,ierr
     !-----------------------------------------------
@@ -66,7 +69,8 @@ contains
 
     filenomIS=fnam(1:lenfnam)
     if (present(filename))filenomIS=filename
-    call init_pot
+    if (present(linitpot))linitpotW=linitpot
+    if (linitpotW)call init_pot
     usdh = 1/(two*tstep)
 !    if ((ipotentiel==-10).or.(ipotentiel==-11))then
        lrepart=.false. !TOUJOURS FALSE, repartition plus tard

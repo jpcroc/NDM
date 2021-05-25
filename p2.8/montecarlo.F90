@@ -1320,15 +1320,17 @@ end subroutine distat
 
 
 
-subroutine initNP1 !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_n
+subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_n
 
- real(double), dimension(3,1) :: cart_vec_nplus1
- real(double)::distati
- integer::i
- !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
- lmaster=paramcgc%lmaster
+  integer,intent(in)::ipp
+  real(double), dimension(3,1) :: cart_vec_nplus1
+  real(double)::distati
+  integer::i
+  character :: extension*4
+  !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
+  lmaster=paramcgc%lmaster
  if (paramcgc%mpi_orig%rank==0) then
-
+    
     call atom_supp(cart_vec_nplus1)
     !write(*,*) 'cart_vec_nplus1', cart_vec_nplus1(:,1)
     !cart_vec_nplus1(1,1) = 0.03125 +0.125
@@ -1391,8 +1393,10 @@ subroutine initNP1 !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_n
  if((ipotentiel==-10).or.(ipotentiel==-11)) then
     if (paramcgc%mpi_orig%rank==0) then
        write(6,*)'write configuration N+1  to confNP1.lmp'
+       write(extension,'(i4.4)') ipp
+       
        call config2data (atconf_nplus1%imm,atconf_nplus1%im,&
-            atconf_nplus1%xp,atconf_nplus1%ityp,boxmcgc%at,ntyp,filename='confNP1.lmp') ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
+            atconf_nplus1%xp,atconf_nplus1%ityp,boxmcgc%at,ntyp,filename='confNP1.'//extension//'.lmp') ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
     end if
 
 #ifdef PARA
