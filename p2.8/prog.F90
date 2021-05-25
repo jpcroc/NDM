@@ -238,7 +238,7 @@ contains
        else
           rv=0
        end if ! PARAPATH
-       call atconf_n%init(im,imm,ltabvois,nvois,rvois=rv)
+       call atconf_n%init(im,imm_glob,ltabvois,nvois,rvois=rv)
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        boxmcgc=boxndm
 

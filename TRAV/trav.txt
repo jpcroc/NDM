@@ -1,3 +1,6 @@
+INITSPEED ET TEMPINST
+
+
 gérer im_glob !
 
 !!!vérifier que la lecture écriture des .cin .cout fonctionne
