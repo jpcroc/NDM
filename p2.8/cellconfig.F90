@@ -3,7 +3,7 @@ module cellconfig
   use atomconfig,only : atom_config,atom_config_d,atom_config_e
   use boxconfig,only:box_config
   use paraconfig,only:para_config
-  use Tpara,only:para_space_config
+  use Tpara,only:para_space_config,mpi_communicator
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
@@ -31,7 +31,9 @@ module cellconfig
      procedure, pass::dealloc=>dealloc_cel
      procedure, pass::copy_cell
      procedure, pass::print=>cellprint
-
+     procedure, pass::send2proc=>cells2p
+     procedure, pass::send2all=>cells2a
+     procedure, pass::recv=>cellrecv
   end type cell_config
 
   type systeme
@@ -511,6 +513,332 @@ contains
 
   end subroutine cellprint
 
+
+
+  subroutine cells2p(cell,rgcib,mpic)
+    class(cell_config)::cell
+    type(mpi_communicator),intent(in)::mpic
+    integer,intent(in)::rgcib
+    integer::nvi,nvr,sizeI,sizeR,ibi,ibr,nsize,ip,ip2,ip3
+    integer,allocatable:: ibuffer(:)
+    real(double),allocatable::rbuffer(:)
+
+    sizeI=6+size(cell%nato)+size(cell%ncel)+size(cell%atincel)+size(cell%deltadist)
+#ifdef PARA
+    sizeI=sizeI+9+size(cell%proc_cell)
+#endif
+    nsize=cell%noxyz
+    sizeR=3
+    if (cell%ltpcel) sizer=sizer+size(cell%sigc)+size(cell%tempc)
+
+    allocate (ibuffer(sizeI)) ; allocate (rbuffer(sizeR))
+    ibuffer(1)=cell%nox; ibuffer(2)=cell%noy ; ibuffer(3)=cell%noz
+    ibuffer(4)=cell%noxyz
+    ibuffer(5)=cell%natperc
+    ibuffer(6)=int(cell%icaltabt)
+    ibi=6
+    do ip=0,nsize
+       ibi=ibi+1
+       ibuffer(ibi)=cell%nato(ip)
+    end do
+    do ip=0,nsize
+       do ip2=0,26
+          ibi=ibi+1
+          ibuffer(ibi)=cell%ncel(ip,ip2)
+       end do
+    end do
+    do ip=1,nsize
+       do ip2=0,26
+          do ip3=1,3
+             ibi=ibi+1
+             ibuffer(ibi)=cell%deltadist(ip3,ip2,ip)
+          end do
+       end do
+    end do
+    do ip=0,nsize
+       do ip2=1,cell%natperc
+          ibi=ibi+1
+          ibuffer(ibi)=cell%atincel(ip2,ip)
+       end do
+    end do
+#ifdef PARA
+    do ip=1,nsize
+       ibi=ibi+1
+       ibuffer(ibi)=cell%proc_cell(ip)
+    end do
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_debx
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_deby
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_debz
+
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_finx
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_finy
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_finz
+
+    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_x
+    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_y
+    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_z
+   
+#endif
+    rbuffer(1)=cell%celsize(1);     rbuffer(2)=cell%celsize(2) ;    rbuffer(3)=cell%celsize(3)
+    ibr=3
+    if (cell%ltpcel) then
+       do ip=1,nsize
+          do ip2=1,3
+             do ip3=1,3
+                ibR=ibr+1
+                rbuffer(ibr)=cell%sigc(ip2,ip3,ip)
+             end do
+          end do
+       end do
+       do ip=1,nsize
+          ibr=ibr+1
+          rbuffer(ibr)=cell%tempc(ip)
+       end do
+    end if
+    call mpic%send(ibuffer,rgcib,201)
+    call mpic%send(cell%ltpcel,rgcib,202)
+    call mpic%send(rbuffer,rgcib,203)
+  end subroutine cells2p
+    
+
+  subroutine cellrecv(cell,rgem,mpic)
+    class(cell_config)::cell
+    type(mpi_communicator),intent(in)::mpic
+    integer,intent(in)::rgem
+    integer::sizeI,sizeR,ibi,ibr,nsize,ip,ip2,ip3
+    integer,allocatable:: ibuffer(:)
+    real(double),allocatable::rbuffer(:)
+
+
+    sizeI=6+size(cell%nato)+size(cell%ncel)+size(cell%atincel)+size(cell%deltadist)
+#ifdef PARA
+    sizeI=sizeI+9+size(cell%proc_cell)
+#endif
+    nsize=cell%noxyz
+    sizeR=3
+    if (cell%ltpcel) sizer=sizer+size(cell%sigc)+size(cell%tempc)
+
+
+    allocate (ibuffer(sizeI)) ; allocate (rbuffer(sizeR))
+
+    call mpic%recv(ibuffer,rgem,201)
+    call mpic%recv(cell%ltpcel,rgem,202)
+    call mpic%recv(rbuffer,rgem,203)
+    
+    cell%nox=ibuffer(1); cell%noy=ibuffer(2) ; cell%noz=ibuffer(3)
+    cell%noxyz=ibuffer(4)
+    cell%natperc=ibuffer(5)
+    cell%icaltabt=ibuffer(6)
+    ibi=6
+    do ip=0,nsize
+       ibi=ibi+1
+       cell%nato(ip)=ibuffer(ibi)
+    end do
+    do ip=0,nsize
+       do ip2=0,26
+          ibi=ibi+1
+          cell%ncel(ip,ip2)=ibuffer(ibi)
+       end do
+    end do
+    do ip=1,nsize
+       do ip2=0,26
+          do ip3=1,3
+             ibi=ibi+1
+             cell%deltadist(ip3,ip2,ip)=ibuffer(ibi)
+          end do
+       end do
+    end do
+    do ip=0,nsize
+       do ip2=1,cell%natperc
+          ibi=ibi+1
+          cell%atincel(ip2,ip)=ibuffer(ibi)
+       end do
+    end do
+#ifdef PARA
+    do ip=1,nsize
+       ibi=ibi+1
+       cell%proc_cell(ip)=ibuffer(ibi)
+    end do
+    ibi=ibi+1; cell%cell_debx=ibuffer(ibi)
+    ibi=ibi+1; cell%cell_deby=ibuffer(ibi)
+    ibi=ibi+1; cell%cell_debz=ibuffer(ibi)
+
+    ibi=ibi+1; cell%cell_finx=ibuffer(ibi)
+    ibi=ibi+1; cell%cell_finy=ibuffer(ibi)
+    ibi=ibi+1; cell%cell_finz=ibuffer(ibi)
+
+    ibi=ibi+1; cell%nb_cell_x=ibuffer(ibi)
+    ibi=ibi+1; cell%nb_cell_y=ibuffer(ibi)
+    ibi=ibi+1; cell%nb_cell_z=ibuffer(ibi)
+   
+#endif
+    cell%celsize(1)=rbuffer(1);     cell%celsize(2)=rbuffer(2) ;    cell%celsize(3)=rbuffer(3)
+    ibr=3
+    if (cell%ltpcel) then
+       do ip=1,nsize
+          do ip2=1,3
+             do ip3=1,3
+                ibR=ibr+1
+                cell%sigc(ip2,ip3,ip)=rbuffer(ibr)
+             end do
+          end do
+       end do
+       do ip=1,nsize
+          ibr=ibr+1
+          cell%tempc(ip)=rbuffer(ibr)
+       end do
+    end if
+  end subroutine cellrecv
+    
+  subroutine cells2a(cell,rgem,mpic)
+    type(mpi_communicator),intent(in)::mpic
+    class(cell_config)::cell
+    integer,intent(in)::rgem
+    integer::sizeI,sizeR,ibi,ibr,nsize,ip,ip2,ip3
+    integer,allocatable:: ibuffer(:)
+    real(double),allocatable::rbuffer(:)
+
+    sizeI=6+size(cell%nato)+size(cell%ncel)+size(cell%atincel)+size(cell%deltadist)
+#ifdef PARA
+    sizeI=sizeI+9+size(cell%proc_cell)
+#endif
+    nsize=cell%noxyz
+    sizeR=3
+    if (cell%ltpcel) sizer=sizer+size(cell%sigc)+size(cell%tempc)
+!    write(6,*)'sizes',sizer,sizei,cell%ltpcel
+    allocate (ibuffer(sizeI)) ; allocate (rbuffer(sizeR))
+    ibuffer(1)=cell%nox; ibuffer(2)=cell%noy ; ibuffer(3)=cell%noz
+    ibuffer(4)=cell%noxyz
+    ibuffer(5)=cell%natperc
+    ibuffer(6)=int(cell%icaltabt)
+    ibi=6
+    do ip=0,nsize
+       ibi=ibi+1
+       ibuffer(ibi)=cell%nato(ip)
+    end do
+    do ip=0,nsize
+       do ip2=0,26
+          ibi=ibi+1
+          ibuffer(ibi)=cell%ncel(ip,ip2)
+       end do
+    end do
+    do ip=1,nsize
+       do ip2=0,26
+          do ip3=1,3
+             ibi=ibi+1
+             ibuffer(ibi)=cell%deltadist(ip3,ip2,ip)
+          end do
+       end do
+    end do
+    do ip=0,nsize
+       do ip2=1,cell%natperc
+          ibi=ibi+1
+          ibuffer(ibi)=cell%atincel(ip2,ip)
+       end do
+    end do
+#ifdef PARA
+    do ip=1,nsize
+       ibi=ibi+1
+       ibuffer(ibi)=cell%proc_cell(ip)
+    end do
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_debx
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_deby
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_debz
+
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_finx
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_finy
+    ibi=ibi+1; ibuffer(ibi)=cell%cell_finz
+
+    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_x
+    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_y
+    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_z
+   
+#endif
+    rbuffer(1)=cell%celsize(1);     rbuffer(2)=cell%celsize(2) ;    rbuffer(3)=cell%celsize(3)
+    ibr=3
+    if (cell%ltpcel) then
+       do ip=1,nsize
+          do ip2=1,3
+             do ip3=1,3
+                ibR=ibr+1
+                rbuffer(ibr)=cell%sigc(ip2,ip3,ip)
+             end do
+          end do
+       end do
+       do ip=1,nsize
+          ibr=ibr+1
+          rbuffer(ibr)=cell%tempc(ip)
+       end do
+    end if
+    call mpic%bcast(rgem,ibuffer)
+    call mpic%bcast(rgem,cell%ltpcel)
+    call mpic%bcast(rgem,rbuffer)
+    ibi=0;ibr=0
+        cell%nox=ibuffer(1); cell%noy=ibuffer(2) ; cell%noz=ibuffer(3)
+    cell%noxyz=ibuffer(4)
+    cell%natperc=ibuffer(5)
+    cell%icaltabt=ibuffer(6)
+    ibi=6
+    do ip=0,nsize
+       ibi=ibi+1
+       cell%nato(ip)=ibuffer(ibi)
+    end do
+    do ip=0,nsize
+       do ip2=0,26
+          ibi=ibi+1
+          cell%ncel(ip,ip2)=ibuffer(ibi)
+       end do
+    end do
+    do ip=1,nsize
+       do ip2=0,26
+          do ip3=1,3
+             ibi=ibi+1
+             cell%deltadist(ip3,ip2,ip)=ibuffer(ibi)
+          end do
+       end do
+    end do
+    do ip=0,nsize
+       do ip2=1,cell%natperc
+          ibi=ibi+1
+          cell%atincel(ip2,ip)=ibuffer(ibi)
+       end do
+    end do
+#ifdef PARA
+    do ip=1,nsize
+       ibi=ibi+1
+       cell%proc_cell(ip)=ibuffer(ibi)
+    end do
+    ibi=ibi+1; cell%cell_debx=ibuffer(ibi)
+    ibi=ibi+1; cell%cell_deby=ibuffer(ibi)
+    ibi=ibi+1; cell%cell_debz=ibuffer(ibi)
+
+    ibi=ibi+1; cell%cell_finx=ibuffer(ibi)
+    ibi=ibi+1; cell%cell_finy=ibuffer(ibi)
+    ibi=ibi+1; cell%cell_finz=ibuffer(ibi)
+
+    ibi=ibi+1; cell%nb_cell_x=ibuffer(ibi)
+    ibi=ibi+1; cell%nb_cell_y=ibuffer(ibi)
+    ibi=ibi+1; cell%nb_cell_z=ibuffer(ibi)
+   
+#endif
+    cell%celsize(1)=rbuffer(1);     cell%celsize(2)=rbuffer(2) ;    cell%celsize(3)=rbuffer(3)
+    ibr=3
+    if (cell%ltpcel) then
+       do ip=1,nsize
+          do ip2=1,3
+             do ip3=1,3
+                ibR=ibr+1
+                cell%sigc(ip2,ip3,ip)=rbuffer(ibr)
+             end do
+          end do
+       end do
+       do ip=1,nsize
+          ibr=ibr+1
+          cell%tempc(ip)=rbuffer(ibr)
+       end do
+    end if
+    
+  end subroutine cells2a
 
 end module cellconfig
 

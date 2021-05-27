@@ -193,15 +193,15 @@ contains
           if (rang==0) write (6, *) 'random velocities at TINIT = ', tinit, &
                'K'
           call random_seed(size=seed_size)
-          if (myidsp==0)write(6,*)'seed_size',seed_size
+          if (rang==0)write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
           if (iseed==0)  then
              call system_clock (iseed)
-             write(6,*)'iseed pour tirage des vitesses',iseed
+             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
              iseedt(:)=iseed
 
           else
-             write(6,*)'iseed pour tirage des vitesses',iseed
+             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
              iseedt(:)=iseed
           end if
 
@@ -252,7 +252,7 @@ contains
              !             endif
           end do
           tempsauv=tempinst(vp,ityp,im,imm)
-          if (myidsp==0) write(6,*)'temperature positions lues initspeed ',tempsauv
+          if (rang==0) write(6,*)'temperature positions lues initspeed ',tempsauv
           kinx(:)=0.d0
           do ic=1,3
              do i=1,im
@@ -439,7 +439,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     !     write(6,*)'sortie initspeed'
 
     tempsauv=tempinst(vp,ityp,im,imm)
-    if (myidsp==0) write(6,*)'temperature fin initspeed ',tempsauv
+    if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
 
 
     if (tempdeplainit.gt.0)then

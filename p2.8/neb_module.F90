@@ -708,10 +708,10 @@ end if
 
     call commconstr(paraneb)
 
-    myidsp=>paraneb%mpi_image%rank
+    myidsp=paraneb%mpi_image%rank
     call MPI_COMM_free(mpi_comm_space,ierr)
     MPI_COMM_space=paraneb%mpi_image%comm
-    nprocspace=>paraneb%mpi_image%nproc
+    nprocspace=paraneb%mpi_image%nproc
     call comm_space%init(MPI_COMM_SPACE)
     if (nprocspace==1) parallele=.false.
 #else

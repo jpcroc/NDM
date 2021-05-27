@@ -45,7 +45,7 @@ program ndm
 
   write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
     call MPI_BARRIER(MPI_COMM_WORLD,ierr)
-  myidsp=>rang
+  myidsp=rang
   if (nprocspace==1) then
      parallele=.false.
   else
@@ -53,9 +53,9 @@ program ndm
   end if
 #else
   rang = 0
-  myidsp=>rang
+  myidsp=rang
   nprocs=1
-  nprocspace=>nprocs
+  nprocspace=nprocs
   parallele = .false.
 #endif
 

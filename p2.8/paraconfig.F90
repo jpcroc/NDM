@@ -143,10 +143,10 @@ Cl=0;GL=0
 !!$    call MPI_COMM_SIZE( div%mpi_image%comm, npi, ierr )
 !!$    call MPI_COMM_RANK(div%mpi_image%comm, div%mpi_image%rank,ierr)
     if (div%mpi_orig%rank==0)then
-       write(6,*)'*************MPI DIVISION**************'
-       write(6,*)'orig_rank rank_in_image LMASTER Image'
+!       write(6,*)'*************MPI DIVISION**************'
+!       write(6,*)'orig_rank rank_in_image LMASTER Image'
     end if
-    write(6,*) div%mpi_orig%rank,div%mpi_image%rank,div%lmaster,div%image
+!    write(6,*) div%mpi_orig%rank,div%mpi_image%rank,div%lmaster,div%image
 
     call MPI_BARRIER(div%mpi_orig%comm,ierr)
     
@@ -160,43 +160,51 @@ Cl=0;GL=0
           write(6,*)'NPMPB',npm,div%nimage
           stop
        end if
-      write(6,*)'Ranks among masters',div%mpi_orig%rank, div%mpi_master%rank
+       div%mpi_master%nproc=npm
+!      write(6,*)'Ranks among masters',div%mpi_orig%rank, div%mpi_master%rank
     end if
     call MPI_BARRIER(div%mpi_orig%comm,ierr)
     if (div%mpi_orig%rank==0)then
-       write(6,*)'*************MPI DIVISION**************'
+!       write(6,*)'*************MPI DIVISION**************'
     end if
     call MPI_BARRIER(div%mpi_orig%comm,ierr)
     div%nimage=div%nimage
 #endif
-!        call MPI_BARRIER(div%mpi_orig%comm)
-!        call mpi_finalize(ierr)
-!        stop
+
+!!$        call mpi_finalize(ierr)
+!!$        stop
     return
 
   end subroutine commconstr
 
 
-  subroutine initparapuresp(div,rg,mpicsp,nps)
+  subroutine initparapuresp(div,rg,mpicsp)
     type(para_config)::div
-    integer,intent(in)::rg,nps
+    integer,intent(in)::rg!,nps
     type(mpi_communicator),intent(in)::mpicsp
 !    integer,intent(in)::mpicsp
 #ifdef PARA
     div%image=0
     div%nimage=1
+    
     div%mpi_image%rank=rg
     div%mpi_image%comm=mpicsp%comm
+    div%mpi_image%group=mpicsp%group
+    div%mpi_image%nproc=mpicsp%nproc
+
     div%mpi_orig%comm=mpicsp%comm
+    div%mpi_orig%rank=rg
+    div%mpi_orig%nproc=mpicsp%nproc
+    div%mpi_orig%group=mpicsp%group
+    
     if (rg==0)then
        div%lmaster=.true.
        div%mpi_master%rank=0
        div%mpi_master%comm=-1
+       div%mpi_master%nproc=1
     else
        div%lmaster=.false.
     end if
-    div%mpi_orig%rank=rg
-    div%mpi_image%nproc=nps
 #else
     div%image=0
     div%nimage=1
@@ -205,6 +213,7 @@ Cl=0;GL=0
        div%lmaster=.true.
        div%mpi_master%rank=0
        div%mpi_master%comm=-1
+       div%mpi_master%nproc=1
     else
        div%lmaster=.false.
     end if
@@ -344,13 +353,15 @@ Cl=0;GL=0
   subroutine print(paraprt,rang)
     class(para_config),intent(in)::paraprt
     integer,intent(in)::rang
-    write(6,*)'PARAPRT',rang,paraprt%mpi_orig%rank
-    write(6,*)'NIMAGE',rang,paraprt%nimage
-    write(6,*)'IMAGE',rang,paraprt%image
-    write(6,*)'NPIMAGE',rang,paraprt%mpi_image%nproc
-    write(6,*)'RGIMAGE',rang,paraprt%mpi_image%rank
-    write(6,*)'LMASTER',rang,paraprt%lmaster
-    if (paraprt%lmaster)write(6,*)'RGMASTER',rang,paraprt%mpi_master%rank
+    write(rang+100,*)'rang rank comm group nproc'
+    write(rang+100,*)'ORIG',rang,paraprt%mpi_orig%rank,paraprt%mpi_orig%comm,paraprt%mpi_orig%group,paraprt%mpi_orig%nproc
+    write(rang+100,*)'NIMAGE',rang,paraprt%nimage
+    write(rang+100,*)'IMAGEnum',rang,paraprt%image
+    write(rang+100,*)'LMASTER',rang,paraprt%lmaster
+    write(rang+100,*)'IMAGEcom',rang,paraprt%mpi_image%rank,paraprt%mpi_image%comm,paraprt%mpi_image%group,paraprt%mpi_image%nproc
+    if (paraprt%lmaster)write(rang+100,*)'MASTER',rang,paraprt%mpi_master%rank,paraprt%mpi_master%comm,&
+         &paraprt%mpi_master%group,paraprt%mpi_master%nproc
+    flush(rang+100)
   end subroutine print
     
 

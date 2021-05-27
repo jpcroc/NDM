@@ -77,10 +77,10 @@ contains
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atcf%Eegal(atcfcasc)
        call atcfcasc%init(im_glob,imm_glob)
-       call initparapuresp(Cpara,rang,comm_space,nprocspace)
+       call initparapuresp(Cpara,rang,comm_space)
        call initcomp(atcfcasc,celcasc,atcf,celndm,boxndm,Cpara,lperiod)
     else
-       call initparapuresp(cpara,rang,comm_space,nprocspace)
+       call initparapuresp(cpara,rang,comm_space)
        atcfcasc=atcf
        celcasc=celndm
     end if

@@ -235,6 +235,8 @@ contains
           if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
        endif
 #endif
+!!$ call MPI_FINALIZE(imm)
+!!$ stop
        if (ltabvois) then
           rv=rvois
        else

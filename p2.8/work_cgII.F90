@@ -17,7 +17,7 @@ use Tpara,only:nprocspace,para_space_config
   USE atomconfig,only : atom_config
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
-  use paraconfig,only:para_config,initparapuresp
+  use paraconfig,only:para_config
   USE parautils,only:initcomp,pointer_caltabt_calfo
 
 

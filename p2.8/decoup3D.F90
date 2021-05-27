@@ -272,7 +272,7 @@ contains
 
 
 #ifdef PARA
-       if (myidsp == 0) then
+       if (rang == 0) then
           
 #endif
 

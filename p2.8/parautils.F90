@@ -292,7 +292,7 @@
        call div%mpi_image%bcast(0,atl)
        call initbox(box_p,atl)
     end if
-    call atcomp_p%print(unit=div%mpi_image%rank+100,caract='px')
+!    call atcomp_p%print(unit=div%mpi_image%rank+100,caract='px')
     call pointer_caltabt_calfo(sig_p,potist_p,atcomp_p,cellcomp_p,box_p,atloc_p,celloc_p,div_p,lperiod_p,&
          &ltabvois_p,it_p,itetabvois_p,lchg_p,psc_p,carac)
     it_p=it_p+1

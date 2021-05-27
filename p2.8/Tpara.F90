@@ -13,7 +13,7 @@ module Tpara
    integer:: status 
 #endif
    integer,target :: nprocs 			! numero de process mis là pour être utilisé en sequentiesl
-   integer,pointer :: myidsp,nprocspace 			! numero de process mis là pour être utilisé en sequentiesl
+   integer :: myidsp,nprocspace 			! numero de process mis là pour être utilisé en sequentiesl
 
   integer::ierr
   type para_space_config
@@ -41,6 +41,7 @@ module Tpara
     procedure :: init0 => mpic_init0
     procedure :: probe => mpic_probe
     procedure :: barrier => mpic_barrier
+    procedure :: print
     ! sum
     generic :: send  => mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_send_l
     generic :: recv  => mpic_recv_dp,mpic_recv_cdp,mpic_recv_i,mpic_recv_l
@@ -77,7 +78,7 @@ module Tpara
   end type mpi_communicator
 
   type(mpi_communicator),target::comm_space
-!  type(mpi_communicator)::mpi_world
+  type(mpi_communicator)::mpi_world
 
 contains
 
@@ -88,8 +89,13 @@ contains
 #endif
     return
   end subroutine endmpi
-  
 
+  subroutine print (mpic,unit)
+    class(mpi_communicator),intent(in) :: mpic
+    integer,intent(in)::unit
+    write(unit,*)'MPICOMM rank comm group nproc',mpic%rank,mpic%comm,mpic%group,mpic%nproc
+    flush(unit)
+  end subroutine print
 !=========================================================================
 subroutine mpic_init(mpic,comm_in)
   implicit none
@@ -414,7 +420,7 @@ subroutine mpic_bcast_dp(mpic,rank,array)
   integer :: nsize
   integer :: ierror=0
   !=====
-
+!  write(6,*)'INBCAST', mpic%nproc
   if( mpic%nproc == 1 ) return
 
   nsize = SIZE(array)

@@ -552,7 +552,7 @@ subroutine param_det(boxndm)
 !!$        endif ! fin de la boucle if (.not. lopt)
 
         nvecttot=(2*ncoucx+1)*(2*ncoucy+1)*(2*ncoucz+1)-1
-        write(6,*)'nvecttot',nvecttot
+!        write(6,*)'nvecttot',nvecttot
 
 
 

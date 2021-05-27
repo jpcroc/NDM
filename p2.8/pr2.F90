@@ -286,7 +286,6 @@ end if
     !-----------------------------------------------
 
   subroutine pr (atpr,celndm,boxndm,psc)
-    use paraconfig,only:para_config,initparapuresp
 
     implicit none
     ! Variables utiles

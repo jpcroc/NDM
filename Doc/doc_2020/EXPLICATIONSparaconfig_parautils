@@ -1,4 +1,4 @@
-Un tye pour gérer les divisions de communicateurs. Modèle implicte mpi_comm_world se divise en images neb et il y a un comminicateurs entre masters de chaque images
+Un tye pour gérer les divisions de communicateurs. Modèle implicte mpi_comm_world se divise en images neb et il y a un communicateurs entre masters de chaque images
 
 type para_config
      integer :: rgim ! rang du proc dans l'image
@@ -55,3 +55,17 @@ SI calcul para spatial :  call atcomp%master2loc(atloc,div)  envoie les atomes v
        call maj_atomes_frt_ftm(atloc,celloc) !fait les trabsferts entre prics spatiaux
        CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.)
        call atloc%vers_master(atcomp,div) ! renvoie les atomeslocaux vers le master
+***
+
+Version MASTER AND SERVANT
+
+Dans le programme principal construire atcomp etc
+    if (gcpara%lmaster.neqv..true.) then
+       call tolstoi (WORKER_TAG,gcpara,'xft')
+    else !MASTER
+      travaille sur atcomp
+    call depeche_mode (gcpara,'xft',lchgbox) pour déclencher le calcul de forces en para
+
+  à la fin call tolstoi (STOP_TAG,gcpara,'xft') ! make servants return
+
+       

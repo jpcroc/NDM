@@ -69,10 +69,10 @@ contains
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atcgcomp%init(im_glob,imm_glob)
-       call initparapuresp(gcpara,rang,comm_space,nprocspace)
+       call initparapuresp(gcpara,rang,comm_space)
        call initcomp(atcgcomp,cellcgcomp,atcgin,celcgin,boxcg,gcpara,lperiod)
     else
-       call initparapuresp(gcpara,rang,comm_space,nprocspace)
+       call initparapuresp(gcpara,rang,comm_space)
        atcgcomp=atcgin
        cellcgcomp=celcgin
     end if

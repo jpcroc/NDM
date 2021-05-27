@@ -943,7 +943,18 @@ contains
        if (rang==0) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
        if (rang==0) write (6,*)
-
+       if ((lparapath).and.(nparapath.le.1)) then
+          write(6,*)'lparapath ET nparapath=1 stop'
+          stop
+       end if
+#ifdef PARA
+#else
+       if (lparapath) then
+          write(6,*)'lparapath=true et sequentiel==> lparapath=.false.'
+          lparapath=.false.
+       end if
+#endif
+       
 #ifdef ART    
     case (12)
        if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
