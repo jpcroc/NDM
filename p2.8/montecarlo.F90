@@ -275,7 +275,7 @@ contains
 !!$ stop
 
           call config_cells_n(ipch)%send2all(ipch-1,parapath%mpi_master)
-          call config_cells_n(ipch)%send2all(ipch-1,parapath%mpi_master)
+          call config_cells_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
        end if
 #endif          
 
@@ -371,7 +371,7 @@ contains
           call config_atom_n(ipch)%send2all(ipch-1,parapath%mpi_master)
           call config_atom_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
           call config_cells_n(ipch)%send2all(ipch-1,parapath%mpi_master)
-          call config_cells_n(ipch)%send2all(ipch-1,parapath%mpi_master)
+          call config_cells_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
        end if
 #endif          
           
@@ -529,7 +529,7 @@ contains
 !!!!! diviser par le nombre de chemin!!!!!
           f_cumul(direc) = f_cumul(direc) / real(n_gen)
           f2_cumul(direc) = f2_cumul(direc) / real(n_gen)
-          fminusf_cumul(direc) = fminusf_cumul(direc) / (real(n_gen*2.0d2))
+          fminusf_cumul(direc) = fminusf_cumul(direc) / (real(n_gen*2.0))
 
           f_wr_cumul(direc) = f_wr_cumul(direc) / real(n_gen)
           f2_wr_cumul(direc) = f2_wr_cumul(direc) / real(n_gen)
@@ -604,7 +604,7 @@ contains
 
  END DO !end do sur la boucle des chemins
 
- if (lbigmaster) then
+ if (lmegamaster) then
     write(*,*) ' taux d acceptation final   : ', acceptance_rate,  ' %'
     write(*,*) ' taux d acceptation alpha 0 : ', acceptance_rate_0,' %'
     write(*,*) ' taux d acceptation alpha 1 : ', acceptance_rate_1,' %'
