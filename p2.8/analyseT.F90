@@ -1,25 +1,23 @@
 module analyseT_mod
   USE Mat_utils_mod
-  USE adf_mod,only: adf
   USE calctemp_mod,only: calctemp
   USE calcdepla_mod,only: calcdepla
   USE calcdepla2_mod,only: calcdepla2
   USE calccoordo_mod,only: calccoordo
-  USE calcdigr_mod,only: calcdigr
-  USE calcangle_mod,only: calcangle
+  USE calcdigr_mod,only: calcdigr,initrdf,rdfT,rdf0
+  USE calcangle_mod,only: calcangle,adf0,initadf,adfT
   USE bondval_mod,only: bondval
   USE rasmolT_mod,only: rasmolT
-  USE rdf_mod,only: rdf
   USE sauvegardeT_mod,only:sauvegardeT
 
-  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp
+  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,fnose,iteanapos,iteangle,itebdv,&
        &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &lambdades,leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
-       &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,&
-       &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,&
-       &natchk,tpseuils,sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,&
-       &ldesinteg,itmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,&
+       &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
+       &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
+       &natchk,tpseuils,sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
+       &ldesinteg,itmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,&
        & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,im_glob,it,l2T
 
   USE cellconfig,only:cell_config, caltabtC
@@ -84,11 +82,11 @@ contains
     real(double),save::CminpP2,CmaxpP2,CmintP2,CmaxtP2
     real(double),save::timelm1=0
     integer::koo
-    !-----------------------------------------------
-    !
-    !
-    ! MPI
+    
+    logical,save::linitrdf=.false.,linitadf=.false.
 
+
+    
     if (itmax==0) itetemp=0
     !    if (rang==0) then
        !          write(6,*)'analyse -> sauvegarde'
@@ -440,6 +438,47 @@ contains
     endif
 
 
+
+  if (iterdf>0) then
+     if (linitrdf.eqv..false.) then
+        call initrdf(rdf0,nkmax,rcrdf,linstantrdf,'00')
+        linitrdf=.true.
+     end if
+
+     if (mod(it,iterdf)==0) then
+        call calcdigr (atdml,celndm,boxndm,rdf0)
+        if (rdf0%linstantrdf) then
+           call rdfT(rdf0)
+           rdf0%nrdf = 0
+        endif
+     endif
+  else if (iterdf==0) then
+     if (itmax-it<nrdf) then
+        call calcdigr (atdml,celndm,boxndm,rdf0)
+     endif
+  endif
+
+  if (iteangle>0) then
+     if (linitadf.eqv..false.) then
+        call initadf(adf0,contmax,rcangle,linstantfda,'00',thetamax,thetamin)
+        linitadf=.true.
+     end if
+
+     if (mod(it,iteangle)==0) then
+        call calcangle(atdml,celndm,boxndm,adf0)
+        if (adf0%linstantfda) then
+           call adfT(adf0)
+           adf0%nfda = 0
+        endif
+     endif
+  else if (iteangle==0) then
+     if (itmax-it<nfda) then
+        call calcangle(atdml,celndm,boxndm,adf0)
+     endif
+  endif
+  
+
+    
     return
   end subroutine analyseT
 end module analyseT_mod

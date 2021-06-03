@@ -118,12 +118,12 @@ module var_pot
   real(double),dimension(:,:,:),allocatable :: eamrep_d,eamrho_d,eamglue_d ! tableaux des splines du pot_d EAM 
   real(double) :: rhomin=1d30,rhomax=0
 
-  real(double), allocatable, dimension(:,:,:) :: digr, coord
+!  real(double), allocatable, dimension(:,:,:) :: digr, coord
 
 
   real(double),allocatable, dimension(:,:,:,:) :: fda
 
-  real(double), dimension(nkmax) :: gdertot,strucfactot,strucfactneu
+  real(double), dimension(nkmax) :: strucfactot,strucfactneu ! gdertot,
 
   !PME
   integer :: kpmex, kpmey, kpmez   !taille de grille de PME

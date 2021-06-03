@@ -1,9 +1,9 @@
 module endrunT_mod
   USE analyseT_mod,only:analyseT
-  USE adf_mod,only:adf
+  use calcangle_mod,only:adft,adf0
   USE arret_ndm_mod,only:arret_ndm
   USE sauvegardeT_mod,only:sauvegardeT!,cin2gin
-  USE rdf_mod,only:rdf
+  USE calcdigr_mod,only: rdfT,rdf0
   USE rasmolT_mod,only:rasmolT
   USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,itdes,&
        &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
@@ -15,7 +15,7 @@ module endrunT_mod
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e!, ndm2config, config2ndm
   use boxconfig,only: box_config!,ndm2boxconfig,boxconfig2ndm
   use posana,only:anapos
-
+  
   implicit none
 contains
   ! ****************************************************************
@@ -97,12 +97,13 @@ contains
     if (l2T.and.rang==0) call sauveelec
  end IF
 
- if (.not.linstantrdf) then
-    if (iterdf>=0) call rdf
+ if (.not.rdf0%linstantrdf) then
+    if (iterdf>=0) call rdfT (rdf0)
  endif
 
  if (.not.linstantfda) then
-    if (iteangle>=0) call adf
+    if (iteangle>=0) call adfT(adf0)
+
  endif
  if ((dmtype==2).or.(dmtype==3).or.(dmtype==30)) then
     it=0

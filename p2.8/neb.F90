@@ -12,7 +12,7 @@ module neb_mod
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config,caltabtC
   USE boxconfig,only:box_config,periodbox
-  use var_pot,only:coord,rumax,ipotentiel
+  use var_pot,only:rumax,ipotentiel
   use rasmolT_mod,only:rasmolT
   use sauvegardeT_mod,only:sauvegardet
   use neb_module,only:cellneb,atneb,sigpath,boxneb,npath,enepath,nebtype,enepathev,reaction_coord,&

@@ -2,7 +2,7 @@
 module readdm_mod
 
 
-  use temp_com,only:h0
+
   use read_val
     implicit none
 contains
@@ -28,13 +28,13 @@ contains
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
          &lcasca,lcontr,ldemitab,ldesinteg,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
-         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,&
+         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
          &,tpseuils,tstep,typspr,unite,unitp,xpspr,lenfnam,fnam,position_conversion_lammps&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess
-    USE var_pot, ONLY:gdertot,lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
+    USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
@@ -355,6 +355,9 @@ contains
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
     read (ludin, nml=input)
+
+    rcangle=rcangle*1d-8
+    rcrdf=rcrdf*1d-8
     lprahman=lpr
     distminat=distminat*1d-8
     tsmin=tsmin*1d-15
@@ -860,7 +863,6 @@ contains
        !         lurdfout = 88
        !         fnamrdfout = fnam(1:lenfnam)//'.rdfout'
        !         open(unit=lurdfout, file=fnamrdfout, status='unknown')
-       gdertot=0.0
        if (iterdf > 0) nrdf = 0
        if (iteangle > 0) nfda = 0
     endif
