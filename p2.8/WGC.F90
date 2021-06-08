@@ -266,7 +266,7 @@ contains
   subroutine back2NDM( N,R,V,F,lover)
     integer,intent(in)::N
     real(double),intent(in)::F(N),R(N),V
-    logical,intent(out) :: lover
+    logical,intent(in) :: lover
 
     integer::i,i1,i2,ip
 

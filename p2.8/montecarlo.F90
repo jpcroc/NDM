@@ -146,7 +146,7 @@ contains
 !!$    seed(i) = 152+rang*10*i*100
 !!$ end do
  call random_seed!(PUT=seed(1:12))
-
+ write(6,*)'IN MONTECARLO',rang
 
 #ifdef PARA
     cellmcgcloc=>cellcible
@@ -242,8 +242,9 @@ contains
 
           call lambda(direction, nstep = 0, protocol_name = 'MCP') !initialisation du lambda a 0 pour le premier melange des forces
           iloc=1;lchange=.false.;ldistrib=.true.
+          write(6,*)'precalfo',rang
           call calfoMCGC(iloc,lchange,ldistrib) 
-
+          write(6,*)'postcalfo',rang
           ! on relaxe le systeme initial 
           !call langevin(direction, protocol = 'eql') ! sinon deplace l'atome N+1
 
@@ -1394,7 +1395,7 @@ if (lparapath) then
 !   call parapath%print(unit=1000)
   
 else
-   call mpi_world%print(unit=50+rang)
+!   call mpi_world%print(unit=50+rang)
    call initparapuresp(parapath,rang,mpi_WORLD)
 end if
 
@@ -1428,7 +1429,6 @@ paramcgc%mpi_orig%nproc= parapath%mpi_image%nproc ! =parapath%mpi_orig%nproc/npa
  lmegamaster=.false.
  if (parapath%mpi_orig%rank==0) lmegamaster=.true.
 
- call paramcgc%print(rang+100)
 #else
 
  parapath%mpi_orig%nproc=1
@@ -1481,6 +1481,8 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
   integer::i
   character :: extension*4
   logical ::lc2d
+  character*80::namef
+  logical::lwrite
   !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
 
   if (lbigmaster) then
@@ -1552,12 +1554,16 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
      if (lc2d) then
 
         if (lbigmaster) then
-           write(6,*)'write configuration N+1  to confNP1.lmp'
-           write(extension,'(i4.4)') ipp
-
-           call config2data (atconf_nplus1%imm,atconf_nplus1%im,&
-                atconf_nplus1%xp,atconf_nplus1%ityp,boxmcgc%at,ntyp,filename='confNP1.'//extension//'.lmp') ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
+           write(6,*)'write configuration N+1  to confNP1.XXX.lmp'
+           lwrite=.true.
+        else
+           lwrite=.false.
         end if
+        write(extension,'(i4.4)') ipp
+
+        call config2data (atconf_nplus1%imm,atconf_nplus1%im,&
+             atconf_nplus1%xp,atconf_nplus1%ityp,boxmcgc%at,ntyp,lwrite,filename='confNP1.'//extension//'.lmp') ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
+
 
 #ifdef PARA
 #ifdef LAMMPS_VERSION
@@ -1577,19 +1583,20 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
            end if
            !          end if
         else
-
+!           write(6,*)'COUCOU',rang
            if(paramcgc%image==0) then !procs N
               firsttime_lammps=.true.
               allocate (posa(3*atconf_n%im),  forca(3*atconf_n%im))
 
-              call init_lammps('in.lammps.N')
+              call init_lammps(iopt=1)
            else !procs N+1
               firsttime_lammps=.true.
               allocate (posa(3*atconf_nplus1%im),  forca(3*atconf_nplus1%im))
-              call init_lammps('in.lammps.NP1')
+              call init_lammps(iopt=2)
            end if
         end if
 
+!           write(6,*)'POSTC',rang
 
 #else
      write(6,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'

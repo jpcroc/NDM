@@ -52,6 +52,7 @@ contains
     character :: fnamcin*80, fnamgin*80
     integer::itread
     integer::nati
+    logical::lwrite
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
     !---------------------------------------------------
@@ -210,10 +211,15 @@ contains
     !#ifdef LAMMPS_VERSION
 
     if((ipotentiel==-10).or.(ipotentiel==-11)) then
-       if(rang==0)then
-          write(6,*)'write configuration to conf.lmp RANG 0 !'
-          call config2data (imm,atrcf%im,atrcf%xp,atrcf%ityp,boxrcf%at,ntyp)
+!       if(rang==0)then
+       !          write(6,*)'write configuration to conf.lmp RANG 0 !'
+       if (rang==0) then
+          lwrite=.true.
+       else
+          lwrite=.false.
        end if
+          call config2data (imm,atrcf%im,atrcf%xp,atrcf%ityp,boxrcf%at,ntyp,lwrite)
+!       end if
     end if
     !#endif     
 
@@ -297,8 +303,8 @@ contains
     end if
     call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
-
     im_glob=at2b%im
+    imtot=im_glob
 #endif             
 
 

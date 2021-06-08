@@ -38,18 +38,31 @@ module lammps_util_mod
 
 
 #ifdef LAMMPS_VERSION
-subroutine init_lammps(inplammps)
+subroutine init_lammps(inplammps,iopt)
 
   use LAMMPS
   use vars_lammps
+  integer,optional::iopt
   character(*),optional :: inplammps
   character*128 :: INPUT_LAMMPS_FILE
   integer::num,npl
   integer::grp_space
+  integer::ioptR
 !  type (C_ptr) :: lmp
 
-    INPUT_LAMMPS_FILE='in.lammps'
-    if (present(inplammps))  INPUT_LAMMPS_FILE=inplammps
+  INPUT_LAMMPS_FILE='in.lammps'
+  ioptR=0
+  if (present(iopt))ioptr=iopt
+  select case (ioptr)
+  case(0)
+     INPUT_LAMMPS_FILE='in.lammps'
+  case(1)
+     INPUT_LAMMPS_FILE='in.lammps.N'
+  case(2)
+     INPUT_LAMMPS_FILE='in.lammps.NP1'
+  end select
+     
+!    if (present(inplammps))  INPUT_LAMMPS_FILE=inplammps
 #ifdef PARA
 !!$   if (nprocspace==1) then
 !!$    call lammps_open_no_mpi('lmp -log none -screen none', lmp)
@@ -69,10 +82,11 @@ subroutine init_lammps(inplammps)
     call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_lammps)
     call MPI_COMM_SIZE( MPI_COMM_lammps, npl, ierr )
      call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
-     write(*,*) "LAMMPS OPEN_MPI_",rang
+     write(*,*) "LAMMPS OPEN_MPI_",rang, INPUT_LAMMPS_FILE
      call lammps_file (lmp, INPUT_LAMMPS_FILE)
+!     write(*,*) "LAMMPS file",rang
      num=lammps_get_natoms(lmp)
-
+ !    write(*,*) "natom",rang,num
 !!$  end if
 #else
 
@@ -120,12 +134,12 @@ end subroutine init_lammps
   double precision, dimension(:), allocatable :: force_lammps
   double precision, dimension(:,:), allocatable,save :: axlmp
   real(kind=8),dimension(3) :: box
-  integer :: itemp,iti,ic
+  integer :: itemp,iti,ic,im3,ip
   logical::lrun0
   real*8 :: rdiff
+  double precision, dimension(3) :: tmp_coord_i,new_tmp_coord_i
 
 !  box(:) = boxl(:)
-
   if (allocated(pos_lammps)) deallocate (pos_lammps)
   allocate(pos_lammps(3*im), stat=ierr)
   if (firsttime_lammps) then
@@ -148,15 +162,29 @@ end subroutine init_lammps
      axlmp(:,1:im)=xp(:,1:im)
 
   endif
-    call at2xhixlo(at,xp,pos_lammps,im,imm)
-!!$    do i=1, im
-!!$       pos_lammps(3*i-2) = xp(1,i)/position_conversion_lammps
-!!$       pos_lammps(3*i-1) = xp(2,i)/position_conversion_lammps
-!!$       pos_lammps(3*i  ) = xp(3,i)/position_conversion_lammps
-!!$    enddo
+  im3=3*im
+  call at2xhixlo(at,xp,pos_lammps,im,imm,im3)
+!!$  do i=1, im
+!!$     pos_lammps(3*i-2) = xp(1,i)/position_conversion_lammps
+!!$     pos_lammps(3*i-1) = xp(2,i)/position_conversion_lammps
+!!$     pos_lammps(3*i  ) = xp(3,i)/position_conversion_lammps
+!!$  enddo
+!!$  ip=0
+!!$  write(60+rang,*)rang,passage
+!!$  do i=1,im
+!!$     do iC=1,3
+!!$        tmp_coord_i(ic) = xp(ic,i)
+!!$     end do
+!!$!     new_tmp_coord_i = matmul(passage,tmp_coord_i)/position_conversion_lammps
+!!$          new_tmp_coord_i(:) = xp(:,i)/position_conversion_lammps
+!!$     do ic=1,3
+!!$        ip=ip+1
+!!$        pos_lammps(ip) = new_tmp_coord_i(ic)
+!!$     end do
+!!$  end do
 
-  ! Put the coordinates to LAMMPS
-  call lammps_scatter_atoms (lmp, 'x',  pos_lammps)
+    ! Put the coordinates to LAMMPS
+   call lammps_scatter_atoms (lmp, 'x',  pos_lammps)
   ! Call LAMMPS to compute energy and forces
   lrun0=.true.
   if (firsttime_lammps) then
@@ -230,84 +258,87 @@ end subroutine init_lammps
 !!$       fp(3,i)=force_lammps(3*i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
 !!$    end do
 
-!  write(6,*)fp
 
   return
 end subroutine calcforce_lammps2
 
-  subroutine at2xhixlo (at,xp,pos_lammps,im,imm)
-    USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY : position_conversion_lammps
-    !       USE var_pot, ONLY:q,ipotentiel
-    USE Mat_utils_mod,only: Matinv_gen,is_upper_triangular,convert_cell
-    implicit none
-    integer,intent(in)::imm,im
-    real(double),intent(in)::xp(3,imm),at(3,3)
-!    integer,intent(in)::ityp(imm)
-    double precision, dimension(:),intent(out) :: pos_lammps
-    real(double), dimension(3,3)::at_lammps
-    character :: commande*300
+subroutine at2xhixlo (at,xp,pos_lammps,im,imm,im3)
+  USE T_kind_param_m, ONLY:  double
+  USE gen_com_m, ONLY : position_conversion_lammps
+  !       USE var_pot, ONLY:q,ipotentiel
+  USE Mat_utils_mod,only: Matinv_gen,is_upper_triangular,convert_cell
+  implicit none
+  integer,intent(in)::imm,im,im3
+  real(double),intent(in),allocatable::xp(:,:)
+  real(double),intent(in)::at(3,3)
+  !    integer,intent(in)::ityp(imm)
+  double precision, dimension(im3) :: pos_lammps
+  
+  real(double), dimension(3,3)::at_lammps
+  character :: commande*300
 
-    logical lrotated,upper
-    real(double)::xhi,yhi,zhi,xy,xz,yz,xlo,ylo,zlo,QTOT
-    integer::ic,i,ip
-    real(double), dimension(3) :: tmp_coord_i,new_tmp_coord_i
+  logical lrotated,upper
+  real(double)::xhi,yhi,zhi,xy,xz,yz,xlo,ylo,zlo,QTOT
+  integer::ic,i,ip
+  real(double), dimension(3) :: tmp_coord_i,new_tmp_coord_i
 
-!    write(6,*)'atprec', atprec
-!    write(6,*)'at', at
-    
-    if (any(atprec.ne.at)) then ! NDM box has changed
-       atprec=at
-       call is_upper_triangular(at,upper)
-       if (.not.upper) then
-          call convert_cell (at,at_lammps,passage)
-          call matinv_gen(passage, passage_inv)
-          !  write(6,*)
-       else
-          at_lammps=at
-          passage(:,:)=0
-          do ic=1,3
-             passage(ic,ic)=1
-          end do
-          passage_inv(:,:)=passage(:,:)
-       end if
+!  write(6,*)'inatx',rang,at,atprec
+  if (any(atprec.ne.at)) then ! NDM box has changed
+     
+     atprec=at
+     call is_upper_triangular(at,upper)
+     if (.not.upper) then
+        call convert_cell (at,at_lammps,passage)
+        call matinv_gen(passage, passage_inv)
+     else
+        at_lammps=at
+        passage(:,:)=0
+        do ic=1,3
+           passage(ic,ic)=1
+        end do
+        passage_inv(:,:)=passage(:,:)
+     end if
 
-!       if (any(old_passage.ne.passage)) then
-          !building  lammps header
-          xlo = 0.d0
-          ylo = 0.d0
-          zlo = 0.d0
-          xhi = at_lammps(1,1)/position_conversion_lammps
-          yhi = at_lammps(2,2)/position_conversion_lammps
-          zhi = at_lammps(3,3)/position_conversion_lammps
-          xy = at_lammps(1,2)/position_conversion_lammps
-          xz = at_lammps(1,3)/position_conversion_lammps
-          yz = at_lammps(2,3)/position_conversion_lammps
-          
-          write(commande,'(A,2E15.8,A,2E15.8,A,2E15.8,A,1E15.8,A,1E15.8,A,1E15.8)')'change_box all x final',xlo,xhi,&
-               &       ' y final ',ylo,yhi, ' z final ',zlo,zhi,' xy final ',xy,' xz final ', xz,' yz final ',yz
-          ! NO need to remap as the next thing will be to update the positions
-!          write(commande,'(A,2E15.8,A,2E15.8,A,2E15.8,A,1E15.8,A,1E15.8,A,1E15.8,A)')'change_box all x final',xlo,xhi,&
-!               &       ' y final ',ylo,yhi, ' z final ',zlo,zhi,' xy final ',xy,' xz final ', xz,' yz final ',yz,' remap'
-          
-!          write(6,*)commande
-          call lammps_command (lmp, commande) !change lammps box
-          !       update lammps
-       end if
-       
-    ip=0
-    do i=1,im
-       do iC=1,3
-          tmp_coord_i(ic) = xp(ic,i)
-       end do
-       new_tmp_coord_i = matmul(passage,tmp_coord_i)/position_conversion_lammps
-       do ic=1,3
-          ip=ip+1
-          pos_lammps(ip) = new_tmp_coord_i(ic)
-       end do
-    end do
+     !       if (any(old_passage.ne.passage)) then
+     !building  lammps header
+     xlo = 0.d0
+     ylo = 0.d0
+     zlo = 0.d0
+     xhi = at_lammps(1,1)/position_conversion_lammps
+     yhi = at_lammps(2,2)/position_conversion_lammps
+     zhi = at_lammps(3,3)/position_conversion_lammps
+     xy = at_lammps(1,2)/position_conversion_lammps
+     xz = at_lammps(1,3)/position_conversion_lammps
+     yz = at_lammps(2,3)/position_conversion_lammps
 
-  end subroutine at2xhixlo
+     write(commande,'(A,2E15.8,A,2E15.8,A,2E15.8,A,1E15.8,A,1E15.8,A,1E15.8)')'change_box all x final',xlo,xhi,&
+          &       ' y final ',ylo,yhi, ' z final ',zlo,zhi,' xy final ',xy,' xz final ', xz,' yz final ',yz
+     ! NO need to remap as the next thing will be to update the positions
+     !          write(commande,'(A,2E15.8,A,2E15.8,A,2E15.8,A,1E15.8,A,1E15.8,A,1E15.8,A)')'change_box all x final',xlo,xhi,&
+     !               &       ' y final ',ylo,yhi, ' z final ',zlo,zhi,' xy final ',xy,' xz final ', xz,' yz final ',yz,' remap'
+
+     call lammps_command (lmp, commande) !change lammps box
+  end if
+!!$    do i=1, im
+!!$     pos_lammps(3*i-2) = xp(1,i)/position_conversion_lammps
+!!$     pos_lammps(3*i-1) = xp(2,i)/position_conversion_lammps
+!!$     pos_lammps(3*i  ) = xp(3,i)/position_conversion_lammps
+!!$  enddo
+!!$
+  ip=0
+  do i=1,im
+     do iC=1,3
+        tmp_coord_i(ic) = xp(ic,i)
+     end do
+     new_tmp_coord_i = matmul(passage,tmp_coord_i)/position_conversion_lammps
+     do ic=1,3
+        ip=ip+1
+        pos_lammps(ip) = new_tmp_coord_i(ic)
+     end do
+  end do
+
+
+end subroutine at2xhixlo
 
 end module lammps_util_mod
 

@@ -3,14 +3,14 @@ module config2data_mod
   
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: Matinv,is_upper_triangular,convert_cell
-  USE gen_com_m, ONLY : position_conversion_lammps,rang,energy_conversion_lammps
+  USE gen_com_m, ONLY : position_conversion_lammps,energy_conversion_lammps
 
     implicit none
     real(double), dimension(3,3)::passage,passage_inv
 !  real(double), dimension(3,3)::old_passage
   real(double), dimension(3,3)::atprec
 contains
-  subroutine config2data (imm,im,xp,ityp,at,ntyp,filename)
+  subroutine config2data (imm,im,xp,ityp,at,ntyp,lwrite,filename)
     USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:q,ipotentiel
 
@@ -18,6 +18,7 @@ contains
     integer,intent(in)::imm,im,ntyp
     real(double),intent(in)::xp(3,imm),at(3,3)
     integer,intent(in)::ityp(imm)
+    logical,intent(in)::lwrite
     character(*),optional :: filename
     character*80::file
 
@@ -31,17 +32,18 @@ contains
 
     !  if ((at(2,1).ne.0).or.(at(3,1).ne.0).or.(at(3,2).ne.0))then
 
-    open(63,file=file,status='unknown')
-    write(63,*)
     atprec=at
+    if (lwrite) then 
+       open(63,file=file,status='unknown')
+       write(63,*)
+    end if
     call is_upper_triangular(at,upper)
-    if (rang==0) write(6,*)'upper ? ',upper
     if (.not.upper) then
        call convert_cell (at,at_lammps,passage)
        call matinv(passage, passage_inv)
-       do ic=1,3
-          write(6,*)passage(:,ic)
-       end do
+!!$       do ic=1,3
+!!$          write(6,*)passage(:,ic)
+!!$       end do
        !  write(6,*)
     else
        at_lammps=at
@@ -52,7 +54,7 @@ contains
        passage_inv(:,:)=passage(:,:)
     end if
 
-!    old_passage=passage
+    !    old_passage=passage
     !building  lammps header
     xlo = 0.d0
     ylo = 0.d0
@@ -70,27 +72,26 @@ contains
     !  xz=at(1,1)*at(1,3)/(xhi*zhi*position_conversion_lammps*position_conversion_lammps)
     !  xy=at(1,1)*at(1,2)/(xhi*yhi*position_conversion_lammps*position_conversion_lammps)
     !  yz=(at(1,2)*at(1,3)+at(2,2)*at(2,3))/(yhi*zhi*position_conversion_lammps*position_conversion_lammps)
-
-    if(IM.lt.10)then
-       write(63,"(I1,A)") IM,' atoms'
-    elseif((IM.lt.100).and.(IM.gt.10))then
-       write(63,"(I2,A)") IM,' atoms'
-    elseif((IM.lt.1000).and.(IM.gt.100))then
-       write(63,"(I3,A)") IM,' atoms' 
-    elseif((IM.lt.10000).and.(IM.gt.1000))then
-       write(63,"(I4,A)") IM,' atoms'       
-    elseif((IM.lt.100000).and.(IM.gt.10000))then
-       write(63,"(I5,A)") IM,' atoms'         
-    elseif((IM.lt.1000000).and.(IM.gt.100000))then
-       write(63,"(I6,A)") IM,' atoms'         
-    elseif((IM.lt.10000000).and.(IM.gt.1000000))then
-       write(63,"(I7,A)") IM,' atoms'        
-    elseif((IM.lt.100000000).and.(IM.gt.10000000))then
-       write(63,"(I8,A)") IM,' atoms'         
-    else 
-       stop 'ADD FORMAT'
-    endif
-    if (rang==0) then
+    if (lwrite) then 
+       if(IM.lt.10)then
+          write(63,"(I1,A)") IM,' atoms'
+       elseif((IM.lt.100).and.(IM.gt.10))then
+          write(63,"(I2,A)") IM,' atoms'
+       elseif((IM.lt.1000).and.(IM.gt.100))then
+          write(63,"(I3,A)") IM,' atoms' 
+       elseif((IM.lt.10000).and.(IM.gt.1000))then
+          write(63,"(I4,A)") IM,' atoms'       
+       elseif((IM.lt.100000).and.(IM.gt.10000))then
+          write(63,"(I5,A)") IM,' atoms'         
+       elseif((IM.lt.1000000).and.(IM.gt.100000))then
+          write(63,"(I6,A)") IM,' atoms'         
+       elseif((IM.lt.10000000).and.(IM.gt.1000000))then
+          write(63,"(I7,A)") IM,' atoms'        
+       elseif((IM.lt.100000000).and.(IM.gt.10000000))then
+          write(63,"(I8,A)") IM,' atoms'         
+       else 
+          stop 'ADD FORMAT'
+       endif
        write(6,*)
        write(6,*) " a = (xhi-xlo,0,0); b = (xy,yhi-ylo,0); c = (xz,yz,zhi-zlo). "
        write(6,'(f22.16,a,f22.16,a)')xlo,' ',xhi,' xlo xhi'
@@ -98,18 +99,18 @@ contains
        write(6,'(f22.16,a,f22.16,a)')zlo,' ',zhi,' zlo zhi'
        write(6,'(f22.16,a,f22.16,a,f22.16,a)')xy,' ',xz,' ',yz,' xy xz yz'
        write(6,*)
+
+
+       write(63,"(I1,A)") ntyp, ' atom types' 
+       write(63,*) 
+       write(63,'(f22.16,a,f22.16,a)')xlo,' ',xhi,' xlo xhi'
+       write(63,'(f22.16,a,f22.16,a)')ylo,' ',yhi,' ylo yhi'
+       write(63,'(f22.16,a,f22.16,a)')zlo,' ',zhi,' zlo zhi'
+       write(63,'(f22.16,a,f22.16,a,f22.16,a)')xy,' ',xz,' ',yz,' xy xz yz'
+       write(63,*)
+       write(63,"(A)")'Atoms'
+       write(63,*)
     end if
-
-    write(63,"(I1,A)") ntyp, ' atom types' 
-    write(63,*) 
-    write(63,'(f22.16,a,f22.16,a)')xlo,' ',xhi,' xlo xhi'
-    write(63,'(f22.16,a,f22.16,a)')ylo,' ',yhi,' ylo yhi'
-    write(63,'(f22.16,a,f22.16,a)')zlo,' ',zhi,' zlo zhi'
-    write(63,'(f22.16,a,f22.16,a,f22.16,a)')xy,' ',xz,' ',yz,' xy xz yz'
-    write(63,*)
-    write(63,"(A)")'Atoms'
-    write(63,*)
-
 
     select case (ipotentiel)
 
@@ -117,7 +118,7 @@ contains
        do i=1,im
           tmp_coord_i = xp(:,i)
           new_tmp_coord_i = matmul(passage,tmp_coord_i)/position_conversion_lammps
-          write(63,'(I8,a,I2,a,f22.15,a,f22.15,a,f22.15)')i,' ',ityp(i),' ',new_tmp_coord_i(1),' '&
+          if (lwrite)  write(63,'(I8,a,I2,a,f22.15,a,f22.15,a,f22.15)')i,' ',ityp(i),' ',new_tmp_coord_i(1),' '&
                &,new_tmp_coord_i(2),' ',new_tmp_coord_i(3)
 
           !        write(63,"(I8,I6,F21.12,F20.12,F20.12)") i,ityp(i),&
@@ -131,13 +132,14 @@ contains
        do i=1,im
           tmp_coord_i = xp(:,i)
           new_tmp_coord_i = matmul(passage,tmp_coord_i)/position_conversion_lammps
-          write(63,'(I8,a,I2,a,F20.12,a,f22.15,a,f22.15,a,f22.15)')i,' ',ityp(i),' ',q(ityp(i))-QTOT/im,&
+          if (lwrite)    write(63,'(I8,a,I2,a,F20.12,a,f22.15,a,f22.15,a,f22.15)')i,' ',ityp(i),' ',q(ityp(i))-QTOT/im,&
                &' ',new_tmp_coord_i(1),' ',new_tmp_coord_i(2),' ',new_tmp_coord_i(3)
           !        write(63,"(I8,I6,F20.12,F20.12,F20.12,F20.12)") i,ityp(i),&
           !             & q(ityp(i)), xp(1,i)/position_conversion_lammps,xp(2,i)/position_conversion_lammps,xp(3,i)/position_conversion_lammps
        end do
     end select
-    close (63)
+    if (lwrite)    close (63)
+
   end subroutine config2data
 
 

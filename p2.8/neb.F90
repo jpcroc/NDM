@@ -169,7 +169,7 @@ contains
 
 !       if (i1==paraneb%image+2) then
           if ((i1==paraneb%image+2).or.((i1==1).and.(paraneb%image==0)).or.((i1==npath).and.(paraneb%image==paraneb%nimage-1))) then
-          ii=i1
+             ii=i1
           if (i1==npath)ii=npath-1
           if (i1==npath-1)ii=npath
           call initloc(atneb(ii)%atom_config_d,cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod,psc=pscneb) !initloc contient caltabtc sur atloc
@@ -228,6 +228,7 @@ contains
        do ii=2,npath-1
 #ifdef PARA
           if (ii==paraneb%image+2) then
+             
              enepath(2:npath-1)=0; enepathev(2:npath-1)=0
 !             if (paraneb%image.ne.0) then
 !                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0

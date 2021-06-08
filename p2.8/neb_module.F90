@@ -73,7 +73,7 @@ contains
 !       write(6,*)"inplmp",inplmp
 !       call read_lammps(inplammps=inplmp)
        call init_lammps()
-       write(6,*)'OUT READL',rang
+
     end if
 #endif
 
@@ -97,7 +97,7 @@ contains
        call atneb(ipath)%atom_config_d%init(im,imm,ltabvois,nv,rv)
        allocate(atneb(ipath)%s_path(3,imm),atneb(ipath)%force_neb(3,imm))
     end do
-    call atneb(1)%atom_config_d%print(unit=100+rang)
+
 
     allocate (icontrainte(imm),reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
@@ -525,6 +525,7 @@ end if
     integer ::  ip,lucin,itread,fmt_cin,formatsauv,iti
     character :: extension*9
     character :: fnamneb*80
+    logical::lwrite
     !    type(atom_config)::atrgin
 !    write(6,*)'IMM NEB',imm
     call allocate_neb(0,imm)
@@ -642,11 +643,15 @@ end if
 #ifdef LAMMPS_VERSION
 
     if((ipotentiel==-10).or.(ipotentiel==-11)) then
-       if(rang==0)then
+       if(paraneb%mpi_orig%rank==0)then
           write(6,*)'write configuration to conf.lmp'
-          call config2data (atneb(1)%imm,atneb(1)%im,atneb(1)%xp,atneb(1)%ityp,boxneb%at,ntyp)
+          lwrite=.true.
+       else
+          lwrite=.false.
        end if
+       call config2data (atneb(1)%imm,atneb(1)%im,atneb(1)%xp,atneb(1)%ityp,boxneb%at,ntyp,lwrite)
     end if
+ 
 #endif     
 
 
