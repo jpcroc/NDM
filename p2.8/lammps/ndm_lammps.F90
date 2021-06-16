@@ -1,4 +1,3 @@
-
 MODULE vars_lammps
   USE T_kind_param_m, ONLY:  double
   use LAMMPS
@@ -62,7 +61,7 @@ subroutine init_lammps(inplammps,iopt)
      INPUT_LAMMPS_FILE='in.lammps.NP1'
   end select
      
-!    if (present(inplammps))  INPUT_LAMMPS_FILE=inplammps
+    if (present(inplammps))  INPUT_LAMMPS_FILE=inplammps
 #ifdef PARA
 !!$   if (nprocspace==1) then
 !!$    call lammps_open_no_mpi('lmp -log none -screen none', lmp)
@@ -84,9 +83,9 @@ subroutine init_lammps(inplammps,iopt)
      call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
      write(*,*) "LAMMPS OPEN_MPI_",rang, INPUT_LAMMPS_FILE
      call lammps_file (lmp, INPUT_LAMMPS_FILE)
-!     write(*,*) "LAMMPS file",rang
      num=lammps_get_natoms(lmp)
- !    write(*,*) "natom",rang,num
+     write(6,*)'NATOM LAMMPS',  INPUT_LAMMPS_FILE,num
+
 !!$  end if
 #else
 
@@ -101,7 +100,7 @@ subroutine init_lammps(inplammps,iopt)
 
   firsttime_lammps= .TRUE.
   if (rang==0)write(*,'("NDM: LAMMPS force field init done")')
-!  stop
+
 
 end subroutine init_lammps
 
@@ -109,7 +108,6 @@ end subroutine init_lammps
   subroutine calcforce_lammps2 (at,im,imm,xp,ityp,fp,potislammps,sigl)
   use vars_lammps
   use LAMMPS
-!  use tab_imm_m, ONLY: ityp,xp,fp
   use var_pot,only:ntyp,cm
 !  use mod_para_phondy
 !  use mpi
@@ -138,8 +136,14 @@ end subroutine init_lammps
   logical::lrun0
   real*8 :: rdiff
   double precision, dimension(3) :: tmp_coord_i,new_tmp_coord_i
+  character :: commande*300
+!!$  integer,save::icall=0
+!!$  integer::idd
+!!$  icall=icall+1
+!!$  idd=1000+rang*100+icall
+  !  box(:) = boxl(:)
+!  write(6,*)'IN CALFOLLAMPS',rang,xp(3,im)
 
-!  box(:) = boxl(:)
   if (allocated(pos_lammps)) deallocate (pos_lammps)
   allocate(pos_lammps(3*im), stat=ierr)
   if (firsttime_lammps) then
@@ -148,84 +152,57 @@ end subroutine init_lammps
         write(*,*) 'Big problem: gin and lammps files contain different number of atoms',rang,im,num
         stop
      end if
+     
      call lammps_gather_atoms(lmp, 'type', 1, lammps_types)
+
      if (num /= size(lammps_types)) then
         write(*,*) 'WARNING:  the atoms type is not correctly read in the LAMMPS wrapper ndm_lammps'
-!        stop
+        stop
      end if
      do i=1,im
         if (ityp(i).ne.lammps_types(i)) then
            stop
         end if
      end do
-     if(.not.allocated(axlmp))allocate(axlmp(3,im))
-     axlmp(:,1:im)=xp(:,1:im)
+!!$     if(.not.allocated(axlmp))allocate(axlmp(3,im))
+!!$     axlmp(:,1:im)=xp(:,1:im)
 
   endif
   im3=3*im
-  call at2xhixlo(at,xp,pos_lammps,im,imm,im3)
-!!$  do i=1, im
-!!$     pos_lammps(3*i-2) = xp(1,i)/position_conversion_lammps
-!!$     pos_lammps(3*i-1) = xp(2,i)/position_conversion_lammps
-!!$     pos_lammps(3*i  ) = xp(3,i)/position_conversion_lammps
-!!$  enddo
-!!$  ip=0
-!!$  write(60+rang,*)rang,passage
-!!$  do i=1,im
-!!$     do iC=1,3
-!!$        tmp_coord_i(ic) = xp(ic,i)
-!!$     end do
-!!$!     new_tmp_coord_i = matmul(passage,tmp_coord_i)/position_conversion_lammps
-!!$          new_tmp_coord_i(:) = xp(:,i)/position_conversion_lammps
-!!$     do ic=1,3
-!!$        ip=ip+1
-!!$        pos_lammps(ip) = new_tmp_coord_i(ic)
-!!$     end do
-!!$  end do
 
+
+  call at2xhixlo(at,xp,pos_lammps,im,imm,im3)
+!write(1000+idd,*)pos_lammps
     ! Put the coordinates to LAMMPS
-   call lammps_scatter_atoms (lmp, 'x',  pos_lammps)
+  call lammps_scatter_atoms (lmp, 'x',  pos_lammps)
+!  call lammps_command (lmp, 'dump md all custom 1  toto id x y z type ')
+
+!!$       write(commande,'(A,2E15.8,A,2E15.8,A,2E15.8,A,1E15.8,A,1E15.8,A,1E15.8)')'change_box all x final',xlo,xhi,&
+!!$          &       ' y final ',ylo,yhi, ' z final ',zlo,zhi,' xy final ',xy,' xz final ', xz,' yz final ',yz
+
+!       write(commande,'(A, I4, A, I4, A)')'dump ', idd,' all custom 1 pos.',idd,' id x y z type'
+
+!     call lammps_command (lmp, commande) !change lammps box
+
   ! Call LAMMPS to compute energy and forces
-  lrun0=.true.
-  if (firsttime_lammps) then
-     lrun0=.true.
-  else
-     rdiff=0
-     do i=1,im
-        do ic=1,3
-           rdiff=max(abs(axlmp(ic,i)-xp(ic,i))*1d8,rdiff)
-        end do
-     end do
-     if (rdiff.ge.rskin) then
-        axlmp(:,:)=xp(:,:)
-        lrun0=.true.
-     end if
-  end if
-    if (lrun0.eqv..true.)then ! check pour LPR
-     call lammps_command (lmp, 'run 0')
-     lrun0=.false.
- else
-    call lammps_command (lmp, 'run 1 pre no post yes')
- end if
+  lrun0=.false.
+! COSMIN DIT QUE LRUN0=TRUE EST SOUCE D'ERREURS PERVERSES
+!  call lammps_command (lmp, 'run 1 pre yes post yes')
+  call lammps_command (lmp, 'run 0 ')
+!!$  if (lrun0.eqv..true.)then ! check pour LPR
+!!$
+!!$     lrun0=.false.
+!!$ else
+!!$    call lammps_command (lmp, 'run 1 pre no post yes')
+!!$ end if
  firsttime_lammps=.false.
-!  call lammps_command (lmp, 'run 0')
+
 
   ! Extract energy from LAMMPS
   call lammps_extract_compute (energy, lmp, 'thermo_pe',0,0)
   potislammps=energy*energy_conversion_lammps
   if (mod(it,itesigma)==0) then
      call lammps_extract_compute (p_tensor, lmp, 'thermo_press',0,1)
-!  pot_energy = energy*energy_conversion_lammps
-!     write (6,*)p_tensor
-!!$       sig(1,1)=p_tensor(1)*pressure_conversion_lammps
-!!$       sig(2,2)=p_tensor(2)*pressure_conversion_lammps
-!!$       sig(3,3)=p_tensor(3)*pressure_conversion_lammps
-!!$       sig(1,2)=p_tensor(4)*pressure_conversion_lammps
-!!$       sig(1,3)=p_tensor(5)*pressure_conversion_lammps
-!!$       sig(2,3)=p_tensor(6)*pressure_conversion_lammps
-!!$       sig(2,1)=sig(1,2)
-!!$       sig(3,1)=sig(1,3)
-!!$       sig(3,2)=sig(2,3)
        
        sig_lammps(1,1)=p_tensor(1)
        sig_lammps(2,2)=p_tensor(2)
@@ -252,11 +229,6 @@ end subroutine init_lammps
    
     call flmp2fndm (fp,force_lammps,im,imm)
     
-!!$    do i=1,im
-!!$       fp(1,i)=force_lammps(3*i-2)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
-!!$       fp(2,i)=force_lammps(3*i-1)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
-!!$       fp(3,i)=force_lammps(3*i)*energy_conversion_lammps/position_conversion_lammps ! / (A2cm*erg2ev)
-!!$    end do
 
 
   return

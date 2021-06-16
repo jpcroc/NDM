@@ -51,7 +51,7 @@ contains
 #endif
     USE neb_module,only:init_mpi_neb
     implicit none
- character :: extension*2
+    character :: extension*2
     integer::lenfn2,i,ko,im,nvois
     class(atom_config),pointer::atdml
     type(atom_config),target:: atdm
@@ -112,12 +112,11 @@ contains
        else
           rv=0
        end if
-       
+
        call atdml%init(im,imm,ltabvois,nvois,rvois=rv)
 
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-          latcomp=.false.
-          call init(atdml,boxndm,celndm,psc0)
+       call init(atdml,boxndm,celndm,psc0)
 
 #ifdef DECOUP
        ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
@@ -127,13 +126,13 @@ contains
 !!$       type is (atom_config)
 #ifdef PARA
        if ((dmtype.ne.30).and.(dmtype.ne.31).and.(dmtype.ne.32).and.(dmtype.ne.34).and.(dmtype.ne.33))then
-             if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-                call maj_atomes_frt_ftm(atdml,celndm,psc0)
-             end if
+          if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+             call maj_atomes_frt_ftm(atdml,celndm,psc0)
           end if
+       end if
 #endif
 
-       
+
        select type(atdml)
        type is (atom_config)
 
@@ -146,7 +145,7 @@ contains
           case(32,33,34)
              call NGC(atdml,celndm,boxndm,psc0)
           end select
-          class is (atom_config_d)
+       class is (atom_config_d)
 !!$          case default
 !!$             write(6,*)'incohérence entre type(atom_config) et dmtype'
 !!$             stop
@@ -161,7 +160,7 @@ contains
           case(8)
              call dmloop_lpr (atdml,celndm,boxndm,psc0)
           case (1)
-              call dmloop (atdml,celndm,boxndm,psc0)
+             call dmloop (atdml,celndm,boxndm,psc0)
           case (21)
              call dmloop(atdml,celndm,boxndm,psc0)
           case(22)
@@ -211,7 +210,7 @@ contains
              write(6,*)'WTF dmtype',dmtype
           end select
 
-          
+
        end select
     case(9)
        !#ifdef PARA
@@ -219,7 +218,7 @@ contains
        !#endif
        call init_neb0 
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-       
+
     case(15)
        !#ifdef PARA
        call init_mpi_MCGC ! PARAPATH
@@ -247,15 +246,15 @@ contains
        allocate (config_atom_nplus1(nparapath))
        allocate (config_cells_n(nparapath))
        allocate (config_cells_nplus1(nparapath))
-       
-       
-!       if (nparapath==1) then
+
+
+       !       if (nparapath==1) then
        do ipp=1,nparapath
           atconf_n=> config_atom_n(ipp)
           cells_n=>config_cells_n(ipp)
           atconf_nplus1=>config_atom_nplus1(ipp)
           cells_nplus1=>config_cells_nplus1(ipp)
-          
+
           call atconf_n%init(im,imm_glob,ltabvois,nvois,rvois=rv)
           ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
           boxmcgc=boxndm
@@ -266,17 +265,16 @@ contains
           end if
           call init_simple(atconf_n,cells_n,boxmcgc,psc=pscgc,linitpot=linitpot) 
 
-
-       call initNP1(ipp) ! initialise la configuration N+1
-    end do
+          call initNP1(ipp) ! initialise la configuration N+1
+       end do
        !END PARAPATH
-    atconf_n=> config_atom_n(1)
-    cells_n=>config_cells_n(1)
-    atconf_nplus1=>config_atom_nplus1(1)
-    cells_nplus1=>config_cells_nplus1(1)
+       atconf_n=> config_atom_n(1)
+       cells_n=>config_cells_n(1)
+       atconf_nplus1=>config_atom_nplus1(1)
+       cells_nplus1=>config_cells_nplus1(1)
 
-    call montecarlo
-       
+       call montecarlo
+
     end select
   end subroutine prog
 end module prog_mod

@@ -95,6 +95,7 @@ contains
           rgloc=myidsp
        else
           write(6,*)'latcomp=false et (nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) ??? stop'
+          write(6,*)latcomp,nprocspace,lspaceNDM
           stop
        end if
     else

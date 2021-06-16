@@ -10,6 +10,7 @@ module config2data_mod
 !  real(double), dimension(3,3)::old_passage
   real(double), dimension(3,3)::atprec
 contains
+!FOR ALL PROCESSES: XP MUST CONTAIN moTHE ACTUAL COORDINATES   
   subroutine config2data (imm,im,xp,ityp,at,ntyp,lwrite,filename)
     USE T_kind_param_m, ONLY:  double
     USE var_pot, ONLY:q,ipotentiel

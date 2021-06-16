@@ -64,6 +64,7 @@ contains
     !  real(double)::vn,v1,f1,ekin
     !  integer::nv1,koo
     logical,optional, intent(in)  ::t_sigma
+
     ltpcel=.false.
     test_sigma=.false.
     if (present(t_sigma))test_sigma=t_sigma
@@ -218,6 +219,7 @@ contains
 
     sigcf=sig;potistcf=potist
     nullify(eat);nullify(sigat)
+
     return
   end subroutine calfo
 
