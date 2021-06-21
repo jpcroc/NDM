@@ -64,7 +64,8 @@ contains
     end do
 
     if (myidsp==0)  write(6,*) 'ISEED for MD, NORM of the noise ',iseed, neb_noise_scale, totalbruit
-    bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale * xp(1:3,1:im) / (sqrt(totalbruit))
+!    bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale * xp(1:3,1:im) / (sqrt(totalbruit))
+    bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale  / (sqrt(totalbruit))
 
   end subroutine bruit_xp
 

@@ -150,8 +150,8 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    write(6,*)celscf%noxyz
 !    write(6,*)im_glob
     natperc= INT(im_glob/celscf%noxyz)
-       nvat=10*natperc
-       natperc=max(int(10*natperc),10)     ! MODIF Clouet
+       nvat=3*natperc
+       natperc=max(int(2*natperc),10)     ! MODIF Clouet
 !    ELSE                          ! MODIF Clouet
 !       nvat=10*natperc       ! MODIF Clouet
 !    END IF                        ! MODIF Clouet

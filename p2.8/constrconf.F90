@@ -819,6 +819,14 @@ contains
     do i = 1, imcell
        read (lugin, *) atrg%xp(1,i), atrg%xp(2,i), atrg%xp(3,i),atrg%ityp(i)
     end do
+    if (any(atrg%xp (1:3,1:imcell)==0)) then
+       if (rang==0) write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6'
+       atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)+1e-6
+    end if
+    if (any(atrg%xp (1:3,1:imcell)==1)) then
+       if (rang==0) write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
+       atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)-1e-7
+    end if
     if (lperiod) then
        do i=1,imcell
           WHERE ( (atrg%xp(:,i).LT.0.d0).OR.(atrg%xp(:,i).GE.1.d0) )

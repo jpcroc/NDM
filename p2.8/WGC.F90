@@ -40,7 +40,7 @@ module WGC_mod
   type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
   type(atom_config),target::atcible
   type(para_config),target::gcpara
-  real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h,sigsym
+  real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h!,sigsym
   real(double),allocatable,dimension (:)::R,F,Rmin
   integer::N,ndir,nstep,ityprel
   real(double)::betaguess,V,betaV,betaP,beta
@@ -117,10 +117,10 @@ contains
     logical,optional::lvm
     real(double)::Vminabs=1d16
 
-    real(double)::forctot,formax,deltaV,sigmax,fsigmax
-    integer::i,i1,i2,ip
+    real(double)::forctot,formax,deltaV,sigmax,fsigmax,FM2,FT2,sigm2
+    integer::i,i1,i2,ip,ic
     if (present(lvm))lvm=.false.
-    forctot=sqrt( SUM(Ft(:)**2))
+
     formax=0
 
     lover=.false.
@@ -153,19 +153,37 @@ contains
     end if
     select case (ityprel)
     case(2)
+       ft2=sqrt( SUM(atcgcomp%fp(:,:)**2))
+       fm2=0
+       do i=1,atcgcomp%im
+          do ic=1,3
+             fm2=max(fm2,abs(atcgcomp%fp(ic,i)))
+          end do
+       enddo
+       ft2 = ft2*erg2eV/angst
+       fm2  = fm2*erg2eV/angst
+       do i=1,N
+          formax = Max( formax,Abs(Ft(i)))
+       end do
+
        Fsigmax=0;sigmax=0
        do ip=1,9
           Fsigmax=max(Fsigmax,abs(Ft(ip)))
        end do
        do i1=1,3
           do i2=1,3
-             sigmax=max(sigmax,abs(unitP*sigsym(i1,i2)))
+             sigmax=max(sigmax,abs(unitP*sig(i1,i2)))
           end do
        end do
+       sigm2=sigmax
        if (fsigmax.le.fpstop) lover=.true.
-       !       write(6,*)sigmax,sigstop
-       !       if (sigmax.le.sigstop) lover=.true.
     case(1)
+       sigm2=0
+       do i1=1,3
+          do i2=1,3
+             sigm2=max(sigm2,abs(unitP*sig(i1,i2)))
+          end do
+       end do
        forctot=sqrt( SUM(Ft(:)**2))
        formax=0
        do i=1,N
@@ -174,7 +192,9 @@ contains
 
        forctot = forctot*erg2eV/angst
        formax  = formax*erg2eV/angst
-!       write(6,'(A,4E20.11)')'TEST', forctot,formax
+       ft2=forctot
+       fm2=formax
+
        if (fpstop>0) then   
           if (formax.le.fpstop) then
              lover=.true.
@@ -186,19 +206,20 @@ contains
           end if
        end if
     end select
+!    write(6,*)'MAX',ft2,fm2,sigm2
     if (present(Vt)) then
        select case(ityprel)
        case(1)
           if(lvm) then
-             write(6,'(I4,4E20.11,A, 2E20.11)')ncalls, Vt,Vt*erg2eV ,forctot,formax,' ****', deltaV, deltaV*erg2eV
+             write(6,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2,' ****', deltaV*erg2eV
           else
-             write(6,'(I4,4E20.11)')ncalls, Vt,Vt*erg2eV ,forctot,formax
+             write(6,'(I4,4E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2
           end if
        case(2)
           if(lvm) then
-             write(6,'(I4,4E20.11,A, 2E20.11)')ncalls, Vt,Vt*erg2eV ,Fsigmax, sigmax, ' ****', deltaV, deltaV*erg2eV
+             write(6,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax, sigmax, ' ****', deltaV*erg2eV
           else
-             write(6,'(I4,4E20.11)')ncalls, Vt,Vt*erg2eV ,Fsigmax,sigmax
+             write(6,'(I4,5E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax,sigmax
           end if
 
        end select
@@ -231,16 +252,16 @@ contains
     end do
     do i=1,3
        do i2=1,3
-          sigmax = Max( sigmax,Abs(unitp*sigsym(i,i2)))
+          sigmax = Max( sigmax,Abs(unitp*sig(i,i2)))
        end do
     end do
 
     forctot = forctot*erg2eV/angst
     formax  = formax*erg2eV/angst
-
+    write(6,*)
     write(6,*)'  FORCE MAX            FORCETOT            SIGMAX'
     write(6,'(3E20.11)')formax,forctot,sigmax
-        write(6,'(A,3E20.11)')'seuils',fpstop0,fsumstop,sigstop
+        write(6,'(A,3E20.11)')'thresholds',fpstop0,fsumstop,sigstop
     write(6,*)
     lover=.false.
     if (lprahman) then
@@ -318,13 +339,12 @@ contains
     integer::iproc,proc_source,cellx,celly,cellz
     real(double)::aux,auy,auz
     character :: extension*2
-    integer::lenfn2,ko,i1,i,i2,ip
+    integer::lenfn2,ko,i1,i,i2,ip,ic
     real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
-    real(double)::volu
+    real(double)::volu,Press
 
-    real(double) :: invVolu,pre,x
+    real(double) :: invVolu,pre,x,fmax
     logical :: lchgbox
-
 
     select case(ityprel)
     case(1)
@@ -343,8 +363,9 @@ contains
           end do
        end do
        call initbox(boxcg,h)
-!       write(6,*)'R',R
+
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
+
        lchgbox=.true.
     end select
 
@@ -352,22 +373,17 @@ contains
     call depeche_mode (gcpara,'xft',lchgbox)
     V=potist
     NCALLS=NCALLS+1
-    sigsym = 0.5d0*(sig + Transpose(sig) )
     select case (ityprel)
     case(1)
        do i=1,atcgcomp%im
           i1=atcgcomp%num_at_glob(i)
           F(3*i1-2:3*i1)=atcgcomp%fp(1:3,i)
-          !       write(6,*)'FORCES',i,i1,F(3*i1-2:3*i1)
+
        end do
     case(2)
+       call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1)
 
-      !       do i1=1,3
-       !       write(6,*)'SIG ',sigsym(:,i1)*unitP
-       !       end do
-       !       Pre=(sig(1,1)+sig(2,2)+sig(3,3))/3
-       !       write(6,'(A,G15.7)')'pression',Pre*unitP
-       call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1) 
+
        h(:,:)=boxcg%at(:,:)
        trh=Transpose(h)
        call MatInv(h,invh)
@@ -375,7 +391,8 @@ contains
        volu = calcvol(h(1:3,1),h(1:3,2),h(1:3,3))
        invVolu = 1.d0/volu
 
-       forcebox(:,:)=MatMul( sigsym(:,:) , invtrh(:,:) )*volu
+       forcebox(:,:)=MatMul( sig(:,:) , invtrh(:,:) )*volu
+       Press=(sig(1,1)+sig(2,2)+sig(3,3))/3
        ip=0
        do i1=1,3
           do i2=1,3

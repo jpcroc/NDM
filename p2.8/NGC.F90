@@ -114,7 +114,7 @@ write(6,*)'loverout2',lover,irel
           beta=betaV
           ityprel=1
           call pilotcg(ityprel)
-          call final_tconv(lover)
+              call final_tconv(lover)
        end if
        if (lover) then
           if (rang==0) then
@@ -145,46 +145,18 @@ write(6,*)'loverout2',lover,irel
   subroutine pilotCG (ityprel)
     integer,intent(in)::ityprel
     logical ::lover,lorig
-    
+
+
+    write(6,*)'PILOTCG',atcgcomp%xp(:,5)
     select case(ityprel)
-    case(2)
-
-
-       call initsteep
-       select case (dmtype)
-       case(32)
-          write(6,'(A,E15.8,A,E12.6)')'******STEEPEST DESCENT  VARIABLE VOLUME  *** beta init', beta,&
-               &' SIGSTOP=>FPSTOP=',fpstop
-          write(6,*)' NCALLS    ENERGY(erg)         ENERGY (eV)        FORCTOT/SIG      &
-               &      SIGMA      ***          energy gain erg eV'
-          !       call initsteep
-!          write(6,*)'SIGSTOP==FPSTOP=',fpstop
-          call steepestdescent(N,R,V,F,lover)
-
-       case(33,34)
-          if (dmtype==34) then
-             lorig=.false.
-          else
-             lorig=.true.
-          end if
-          write(6,'(A,E15.8,A,E12.6)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta,&
-               &' SIGSTOP=>FPSTOP=',fpstop
-!          write(6,'(A,E15.8)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta
-          write(6,*)' NCALLS    ENERGY(erg)         ENERGY (eV)        FORCTOT/SIG     &
-               &    SIGMA        ***          energy gain erg eV'
-!                 write(6,*)'SIGSTOP==FPSTOP=',fpstop
-          call conjugategradient(N,R,V,F,lover,lorig)
-write(6,*)'loverin',lover	
-       end select
-     
     case(1)
        call initsteep
-
+       write(6,*)'INITSTEEP1',atcgcomp%xp(:,5)
        select case (dmtype)
        case(32)
           write(6,'(A,E15.8)')'******STEEPEST DESCENT*** beta init', beta
-          write(6,*)' NCALLS    ENERGY(erg)         ENERGY (eV)        FORCTOT      &
-               &  FORMAX (eV/Ang)      ***          energy gain erg eV'
+          write(6,*)' NCALLS    ENERGY (eV)        FORCTOT      &
+               &  FORMAX (eV/Ang)   SIGMAX (kbar)   *** energy gain  eV'
           !       call initsteep
           call steepestdescent(N,R,V,F,lover)
 
@@ -195,13 +167,43 @@ write(6,*)'loverin',lover
              lorig=.true.
           end if
           write(6,'(A,E15.8)')'******CONJUGATE GRADIENT*** beta init', beta
-          write(6,*)' NCALLS    ENERGY(erg)         ENERGY (eV)        FORCTOT     &
-               &   FORMAX (eV/Ang)      ***          energy gain erg eV'
+          write(6,*)' NCALLS         ENERGY (eV)        FORCTOT     &
+               &   FORMAX (eV/Ang)    SIGMAX (kbar)    *** energy gain  eV'
           call conjugategradient(N,R,V,F,lover,lorig)
        end select
+
+    case(2)
+       call initsteep
+       select case (dmtype)
+       case(32)
+          write(6,'(A,E15.8,A,E12.6)')'******STEEPEST DESCENT  VARIABLE VOLUME  *** beta init', beta,&
+               &' SIGSTOP=>FPSTOP=',fpstop
+          write(6,*)' NCALLS       ENERGY (eV)      FORCTOT  FORMAX       &
+               &      SIGMA(kbar)      ***          energy gain  eV'
+          !       call initsteep
+!          write(6,*)'SIGSTOP==FPSTOP=',fpstop
+          call steepestdescent(N,R,V,F,lover)
+
+       case(33,34)
+          if (dmtype==34) then
+             lorig=.false.
+          else
+             lorig=.true.
+          end if
+          write(6,'(A,E15.8,A,E12.6)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta
+          write(6,*)' SIGSTOP=>FPSTOP=',fpstop
+!          write(6,'(A,E15.8)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta
+          write(6,*)' NCALLS      ENERGY (eV)        FORCTOT  FORMAX      &
+               &    SIGMA(kbar)        ***          energy gain eV'
+!                 write(6,*)'SIGSTOP==FPSTOP=',fpstop
+          call conjugategradient(N,R,V,F,lover,lorig)
+
+       end select
+     
     end select
 !    write(6,*)
     call back2NDM(N,R,V,F,lover)
+
     !       write(6,*)'Post back2ndmT',lover
 
 

@@ -110,7 +110,7 @@ contains
        celndm%natperc= INT(atpr%im/celndm%noxyz)
 
        celndm%natperc=max(3*celndm%natperc,10)
-       nvat=10*celndm%natperc
+       nvat=3*celndm%natperc
 
        if (dmtype.ne.9) then
           if (rang==0)       write(6,*) ' natperc ', celndm%natperc
