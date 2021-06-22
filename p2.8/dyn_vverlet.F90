@@ -11,6 +11,7 @@ module dyn_vverlet_mod
   use var_pot,only : cm
   USE eloss, only:ibrake, calceloss
   use Tpara,only:para_space_config
+  USE parautils,only:driver_caltabt_DM
   implicit none
 contains
   ! *************************************************************
@@ -99,39 +100,44 @@ contains
     END DO
 
 
-    !conditions periodiques
-    if (lperiod)  call periodbox (boxndm,atdml)
+!!$    !conditions periodiques
+!!$    if (lperiod)  call periodbox (boxndm,atdml)
+!!$
+!!$    ! repartition des atomes dans la nouvelle boite
+!!$    if (.not.lprahman) then
+!!$       if (itab/=0) then
+!!$          if (mod(it,itab)==0) then
+!!$             call caltabtC(celndm,atdml,lperiod,boxndm)
+!!$          endif
+!!$       endif
+!!$    end if
+!!$    if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
+!!$       call caltabi(atdml%atom_config,celndm,boxndm)
+!!$    end if
+!!$
+!!$
+!!$#ifdef PARA
+!!$if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+!!$       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+!!$       call maj_atomes_frt_ftm(atdml,celndm,psc)
+!!$    end if
+!!$#endif
+!!$
+!!$
+!!$    ! Force calculation
+!!$
+    call  driver_caltabt_DM(sig,potist,atdml,celndm,boxndm,psc,lperiod)
 
-    ! repartition des atomes dans la nouvelle boite
-    if (.not.lprahman) then
-       if (itab/=0) then
-          if (mod(it,itab)==0) then
-             call caltabtC(celndm,atdml,lperiod,boxndm)
-          endif
-       endif
-    end if
-    if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
-       call caltabi(atdml%atom_config,celndm,boxndm)
-    end if
-
-
-#ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       call maj_atomes_frt_ftm(atdml,celndm,psc)
-    end if
-#endif
-
-
+  ! a été déplacé après calfo . Etait situé juste avant calfo :
     if (l2T) then
        call dynelec(celndm)
     end if
-
-    ! Force calculation
+  ! Force calculation
     jq=0.0
     if (itesigma>0) test_sigma=(mod(it,itesigma)==0)
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
 
+    
     if (l2t)then
        if (i2t==1)  call calceloss(celndm,atdml)
     else

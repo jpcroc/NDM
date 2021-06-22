@@ -1,54 +1,73 @@
-Un tye pour gérer les divisions de communicateurs. Modèle implicte mpi_comm_world se divise en images neb et il y a un communicateurs entre masters de chaque images
+1/Gestion des communications dans un communicateurs :
+copié de Fabien bruneval ; rien à voir avec NDM
+Voir Tpara.F89
+Il existe un type pour les communicateurs MPI.
+Les appels à MPI sont remplacés par les appels à %send, %recv, %bcast, etc.
+  type mpi_communicator
+    integer    :: comm       ! MPI communicator
+    integer    :: nproc      ! number of procs in the communicator comm
+    integer    :: rank       ! index           in the communicator comm
+    integer    :: group       ! group          of the communicator comm
+  contains
+    generic :: init,send,recv,sum,max_locmin,bcast
+  end type mpi_communicator
 
-type para_config
-     integer :: rgim ! rang du proc dans l'image
+exemples :  
+  type(mpi_communicator),target::comm_space ! communicateur spatial de NDM
+  type(mpi_communicator)::mpi_world    ! mpi_world%comm=MPI_COMM_WORLD
+
+2/ gestion des communications spatailes de NDM (Tpara.F90 et mod_para.F90)
+Il existe un type qui gère les paramètres de communications spatials NDM:
+type para_space_config
+L'initialisation a lieu dans decoupage et repartition. Les communications ont lieu dans mod_para
+l'objet classie de type para_space_config s'appelle "psc"
+
+
+
+3/PARACONFIG : gestionde la division des communicateurs ! Peut marcher pour n'importe quelle division de communicateur, rien à voir avec NDM
+il existe un tye pour gérer les divisions de communicateurs. Modèle implicte mpi_comm_world se divise en images neb avec chacune leur communicateurs et il y a un communicateurs entre masters de chaque images
+  type :: para_config
+     type(mpi_communicator)::mpi_image,mpi_master,mpi_orig
      integer:: image ! n° de l'image
-     integer:: npim ! nb de procs de l'image
-     integer:: grp_master !
-!     integer:: npmas ! nb de procs masters=nb d'image
-     integer::nimage
-     integer:: rgmas ! rang parmi les masters
-     integer:: comm_image ! communicateur associé à l'image (peuvent être égaux pour toutes les imags, ça n'est pas le problème).
-     integer:: comm_master ! communicateur associé aux master, défini si master
+     integer::nimage ! = %mpi_master%nproc
      logical :: lmaster ! .true. si master
-     integer:: grp_orig ! groupe du comm à diviser
-     integer:: comm_orig ! communicatuer à diviser
-     integer:: rang_orig ! rang dans le comm à diviser
-     integer::np_orig ! pombre de procs dans le comm à dvisier
-   contains
-     procedure, pass::print
-
-
   end type para_config
 
 subroutine commconstr(div)
-A partir d'un communicateur d'entrée le divise en %nimage communciteurs, pas forcément de même nombre de procs chacun
+A partir d'un communicateur d'entrée (div%mpi_orig, prédéfini)  le divise en %nimage communicateurs (%nimage prédéfini), pas forcément de même nombre de procs chacun
 cas simple         div%npim=div%np_orig/div%nimage            ! nb de proc par image en fonction du nombre de procs d'origine et du nombre d'image)
        div%image=int(div%rang_orig/npim) !quel image pour le proc
        div%rgim=mod(div%rang_orig,npim) ! quel rang dans le comm de l'image
 
 
 subroutine initparapuresp(div,rg,mpicsp,nps)
-cas trivial où il n'y a pas de division. le communicateur interne à l'unique image (%nimage=1) est le comminicateur d'entrée (mpicsp (=MPI_CMM_WORLD)
+cas trivial où il n'y a pas de division. le communicateur 'interne' à l'unique image (%nimage=1) est le communicateur d'entrée 
+
+4/MODULE PARAUTILS
+module qui gère les routines MPI de calculs de forces en division spatiale ET gère aussi les calculs séries pour les calculs plus parallèlisé que la simple DM. Ca a été séparé de paraconfig car ça suppose une division SPATIALE (au contraire de paraconfig qui fonctionne pour n'importe quelle division).
+
+Pour la DM simple voir dmloop ou dmloop_vvverlet (point 6 de ce fichier)
+
+Utilise atloc et celloc pour stcoker les portions de atcomp et cellcomp de chaque processeurs. Ecriture un peu lourde, mais devrait permettre de changger de répartition spatiale à la vollée.
 
 
-MODULE PARAUTILS
-module qui gère les routines MPI de division spatiale ET gère aussi les calculs séries
-Ca a été séparé de paraconfig car ça suppose une division SPATIALE (au contraire de paraconfig qui fonctionne pour n'importe quelle division)
+*/subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib,psc)
+-Crée pour chaque proc atloc, celloc à partir de atcomp. Si ldistrib, commence par bcast de atcomp
+-Si calcul avec %npim >1 (paraléllisme spatial) construit celloc; construit atloc par répartition entre procs spatiaux de atcomp
+autres cas : calcul série OU calcul para MAIS (div%npim==1) (cad il n'y a PAS de division spatiale) OU calcul LAMMPS: atloc=> atcomp; celloc= cellcomp ; 
+-Au final appelle toujouts calctabtC (atloc, celloc)
 
-subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod)
-Crée pour chaque proc 
-Si calcul série : atloc=> atcomp; celloc= cellcomp
-Si calcul para MAIS (div%npim==1) (cad il n'y a PAS de division spatiale) atloc=> atcomp; celloc= cellcomp
-Si calcul avec %npim >1 (para léllisme spatial) construit celloc; construit atloc par répartition entre procs spatiaux de atcomp
-Au final appelle toujouts calctabtC (atloc, celloc)
+*/subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod)
+A l'inverse du précédent consrtuit atcomp à partir des atloc de chaque proc. Sert quand l'initialisation a déja réparti les atomes entre procs et qu'on veut reconsrtuire atcomp (voir cas du Gradien Conjugué )
 
-subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod)
-A l'inverse du précédent consrtuit atcomp à partir des atloc de chaque proc. Sert quand l'nitialisation a déja répartir les atomes entre procs et qu'on veut reconsrtuire atcomp (voir cas du Gradien Conjugué )
-
-subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,lperiod,ltabvois,it,itetabvois,lchg)
+*/subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,&
+       &lperiod,ltabvois,it,itetabvois,lchg,psc,caracT)
 Routine de calcul des forces en parallélisation spatiale et mixte si on a un master qui contient tous les atomes à chaque pas. Fonctionne aussi en série
-SI calcul série OU %npim=1 (pas de paralélisme spatiale) appele simple calcyabtC et calfo
+
+it et itetabvois ne sont là que pour recaluler la table des voisins en séquentiel
+lchg indique que les atomes ont changés depuis le dernier appel. Si lchg=.true. la routine met à jour les atclo de chaque proc (voir %master2loc)
+
+SI calcul série OU %npim=1 (pas de paralélisme spatiale) appele simple calctabtC et calfo
 
 SI calcul para spatial :  call atcomp%master2loc(atloc,div)  envoie les atomes vers leur proc local d'origine
     call caltabtC(celloc,atloc,lperiod,box) répartir entre cellules 
@@ -57,15 +76,25 @@ SI calcul para spatial :  call atcomp%master2loc(atloc,div)  envoie les atomes v
        call atloc%vers_master(atcomp,div) ! renvoie les atomeslocaux vers le master
 ***
 
-Version MASTER AND SERVANT
+l'appel direct de initloc et pointer_caltabt_calfo doit être fait par tous les procs concernés.
+Exemples  NEB, montecarlo
 
-Dans le programme principal construire atcomp etc
+
+5/Version MASTER AND SERVANT à la Mickael Trochet
+
+VOIR NGC/WGC
+Le mastser a les positions complètes et fait tous les calculs. les servants ne sont utilisés que pour  le calcul de forces 
+
+Dans le programme principal construire atcomp et tous les pointeurs (voir set_pointers_gc qui définit atcomp_p entre autres)
     if (gcpara%lmaster.neqv..true.) then
        call tolstoi (WORKER_TAG,gcpara,'xft')
     else !MASTER
       travaille sur atcomp
-    call depeche_mode (gcpara,'xft',lchgbox) pour déclencher le calcul de forces en para
+à un moment
+call depeche_mode (gcpara,'xft',lchgbox) pour déclencher le calcul de forces en para
+les forces sont calculées sur atcomp_p 
 
-  à la fin call tolstoi (STOP_TAG,gcpara,'xft') ! make servants return
+tout à la fin call tolstoi (STOP_TAG,gcpara,'xft') ! make servants return
 
-       
+6/ DM de "base" pas besoin de rapatrier les atconf sur le master à chaque pas. Seuls les atomes qui changent de procs sont échangés entre les procs. pas vraiment de proc maitre sauf pour les affichages.
+La séquence period/caltabtC/maj_at_frontière/caltabi a été regroupée dans  driver_caltabt_DM dans parautils

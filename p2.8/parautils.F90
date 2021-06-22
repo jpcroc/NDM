@@ -309,6 +309,50 @@
     return ! master returns to "main", servants return to tolstoi to wait for next call
   end subroutine depeche_mode
     
+
+subroutine driver_caltabt_DM(sigcf,potistcf,atcf,celcf,boxcf,psc,lperiod)
+
+  use Tpara,only:nprocspace
+  use gen_com_m,only:it,itetabvois,itesigma
+    class(atom_config_d),intent(inout),target::atcf
+    type(cell_config),intent(inout),target::celcf
+    type(box_config),intent(inout)::boxcf
+    type(para_space_config)::psc
+    real(double),intent(out)::potistcf,sigcf(3,3)
+    logical,intent(in)::lperiod
+
+    logical  ::test_sigma
+    
+    !conditions periodiques
+    if (lperiod)  call periodbox (boxcf,atcf)
+
+    ! repartition des atomes dans la nouvelle boite
+!!$    if (.not.lprahman) then
+!!$       if (itab/=0) then
+!!$          if (mod(it,itab)==0) then
+             call caltabtC(celcf,atcf,lperiod,boxcf)
+!!$          endif
+!!$       endif
+!!$    end if
+    if (atcf%ltabvois.and.mod(it,itetabvois)==0) then
+       call caltabi(atcf%atom_config,celcf,boxcf)
+    end if
+
+
+#ifdef PARA
+if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+       call maj_atomes_frt_ftm(atcf,celcf,psc)
+    end if
+#endif
+
+
+!!$    ! Force calculation
+!!$!    jq=0.0
+!!$    if (itesigma>0) test_sigma=(mod(it,itesigma)==0)
+!!$    CALL CalFo(sigcf,potistcf,atcf,celcf,boxcf,t_sigma=test_sigma,psc=psc)
+    return
+  end subroutine driver_caltabt_DM
     
 end module parautils
 

@@ -12,6 +12,7 @@ module dmloop_mod
   USE elec_cell, ONLY :i2t       
   USE calfoberend_mod,only:calfoberend
   USE caltabi_mod,only: caltabi
+  USE parautils,only:driver_caltabt_DM
 
   USE gen_com_m,only: dmtype,it,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
        & itetabvois,lperiod,lspaceNDM
@@ -142,28 +143,26 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        write (6, *) 'ne sait pas quoi faire stop'
        stop
     end select
-    if (lperiod)       call periodbox(boxndm,atdml)
 
-    call analyseT (atdml,celndm,boxndm)
+!!$    if (lperiod)       call periodbox(boxndm,atdml)
+!!$       if (itab/=0) then
+!!$          if (mod(it,itab)==0) then
+!!$             call caltabtC(celndm,atdml,lperiod,boxndm)
+!!$          endif
+!!$       endif
+!!$
+!!$    if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
+!!$       call caltabi(atdml%atom_config,celndm,boxndm)
+!!$    end if
+!!$#ifdef PARA
+!!$if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+!!$       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+!!$       call maj_atomes_frt_ftm(atdml,celndm,psc)
+!!$    end if
+!!$#endif
+    call  driver_caltabt_DM(sig,potist,atdml,celndm,boxndm,psc,lperiod)
 
-
-       if (itab/=0) then
-          if (mod(it,itab)==0) then
-             call caltabtC(celndm,atdml,lperiod,boxndm)
-          endif
-       endif
-
-    if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
-       call caltabi(atdml%atom_config,celndm,boxndm)
-    end if
-#ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       call maj_atomes_frt_ftm(atdml,celndm,psc)
-    end if
-#endif
-
-    
+    call analyseT (atdml,celndm,boxndm)    
     call controleT(atdml,celndm,boxndm)
 
 
