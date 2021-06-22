@@ -56,6 +56,7 @@ type(atom_config_mc),allocatable,target::config_atom_nplus1(:) !type derive atom
 type(cell_config),allocatable,target:: config_cells_n(:) !type derive cell_config du systeme a n atomes
 type(cell_config),allocatable,target:: config_cells_nplus1(:) !type derive cell_config du systeme a n+1 atomes
 
+type(atom_config_mc):: config_atom_old_0, config_atom_old_1, config_atom_new_0, config_atom_new_1 !config intermediaire pour suivre l'evolution des systemes: 0 -> syst N, 1 -> syst N+1.
 
 type(box_config)::boxmcgc
 
@@ -94,46 +95,29 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
 
-    type(atom_config_mc):: config_atom_old_0, config_atom_old_1, config_atom_new_0, config_atom_new_1 !config intermediaire pour suivre l'evolution des systemes: 0 -> syst N, 1 -> syst N+1.
-
 
     integer :: i,ic
     logical :: lextend
 
-    integer :: direction, direc, dir
+    integer :: direction
     integer :: n_accepted, n_accepted_0, n_accepted_1
     integer :: n_gen, n_gen_0, n_gen_1
+    real(double) :: acceptance_rate, acceptance_rate_0, acceptance_rate_1
 
     integer :: i_path,ipp,ipch
     real(double)::zr1
 
-
-    real(double) :: biais
-    real(double) :: theta
-    real(double) :: beta, beta_eV
-
-    real(double) :: W, Wprec, xprob, xalea
-    real(double) :: ln_xalea, ln_Wprec, ln_W, ln_xprob
-    real(double) :: acceptance_rate, acceptance_rate_0, acceptance_rate_1
-
     integer :: n,iloc
-    integer :: acceptation, premier_accept
+    integer :: acceptation, test_acc
 
-    real(double) :: Wprecedent !sauvegarde Wprec pour posttraitement
+    real(double) :: W, Wprec, Wprecedent !sauvegarde Wprec pour posttraitement
     real(double) :: mu_moy, mu_wrmc, mu_NC, mu_DC
 
-    real(double) :: contribut_accepte(0:1), f2(0:1), fminusf(0:1)
-    real(double) :: f_cumul(0:1), f2_cumul(0:1), fminusf_cumul(0:1)
-    real(double) :: f_wr(0:1), f2_wr(0:1), fminusf_wr(0:1)
-    real(double) :: f_wr_cumul(0:1), f2_wr_cumul(0:1), fminusf_wr_cumul(0:1)
-    real(double) :: f_cumul_inte(0:1), f2_cumul_inte(0:1), fminusf_cumul_inte(0:1)
-    real(double) :: f_wr_cumul_inte(0:1), f2_wr_cumul_inte(0:1), fminusf_wr_cumul_inte(0:1)
-
-    real(double) :: b_opt(0:1), b_wr_opt(0:1), est_opt(0:1), est_opt_bwr(0:1)
     real(double),allocatable:: Weff_npp(:)
-    real(double), dimension(nparapath+1) :: xprob_i
 
     logical :: lchange,ldistrib,lcalc
+    
+    real(double), dimension(2,22):: pot_cumul ! pour le calcul du pot chimique
 
     !########################################################################################################################
     !                                             Initialisation
@@ -162,15 +146,8 @@ contains
     lmaster=.true.
 #endif    
 
-
-
-
     lextend = .true.
     lperiod = .true.
-
-    theta = 0.5
-    beta = 1.0/(bk*Text)
-    beta_eV = 1.0/((8.617333262145E-5)*Text)
 
     n_accepted   = 0
     n_accepted_0 = 0
@@ -186,31 +163,10 @@ contains
     mu_wrmc = 0.0
     mu_NC = 0.0
     mu_DC = 0.0
-    contribut_accepte(:) = 0.0
-    f2(:) = 0.0
-    fminusf(:) = 0.0
-    f_wr(:) = 0.0
-    f2_wr(:) = 0.0
-    fminusf_wr(:) = 0.0
-    f_cumul(:) = 0.0
-    f2_cumul(:) = 0.0
-    fminusf_cumul(:) = 0.0
-    f_wr_cumul(:) = 0.0
-    f2_wr_cumul(:) = 0.0
-    fminusf_wr_cumul(:) = 0.0
-    b_opt(:) = 0.0
-    b_wr_opt(:) = 0.0 
-    est_opt(:) = 0.0
-    est_opt_bwr(:) = 0.0
-    f_cumul_inte(:) = 0.0
-    f2_cumul_inte(:) = 0.0
-    fminusf_cumul_inte(:) = 0.0
-    f_wr_cumul_inte(:) = 0.0
-    f2_wr_cumul_inte(:) = 0.0
-    fminusf_wr_cumul_inte(:) = 0.0
 
-    xprob_i(:) = 0.0
-    premier_accept = 0    
+    test_acc = 0    
+
+    pot_cumul(:,:) = 0.0
 
     !deplacé !
     if (lbigmaster) then
@@ -247,29 +203,13 @@ contains
 
           call lambda(direction, nstep = 0, protocol_name = 'MCP') !initialisation du lambda a 0 pour le premier melange des forces
           iloc=1;lchange=.false.;ldistrib=.true.
-!!$          write(200+rang,*)'CALFODEBMC'   
-!!$          write(300+rang,*)'CALFODEBMC'   
-          
-          call calfoMCGC(iloc,lchange,ldistrib) 
+          call calfoMCGC(iloc,lchange,ldistrib)
 
-!!$          call atconf_n%print(i1=767,unit=200+rang)
-!!$          call atconf_nplus1%print(i1=767,unit=300+rang)
-
-!!$          write(500+rang,*)'postcalfo',rang
-!!$          write(600+rang,*)'postcalfo',rang
-          ! on relaxe le systeme initial 
-          !call langevin(direction, protocol = 'eql') ! sinon deplace l'atome N+1
-
-!!$ if (lbigmaster) then
-!!$    ! sauvegarde du système
-!!$    call atconf_n%copy_config(config_atom_old_0, lrescl=.true.)
-!!$    !call analyse_montecarlo(atconf_n,cells_n,boxmcgc, 'syst_UO2n_postinit')
-!!$ end if
         
           !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
           call langevin(direction, protocol = 'MCP')
-!          write(6,*)'postlang',rang,ipp
           weff_npp(ipp)=Weff
+          if (lbigmaster)write(6,*)'Weff', Weff
           !if (lbigmaster)write(6,*)'potist', ipp,potist_n,potist_nplus1
        end if
     end do
@@ -330,10 +270,9 @@ contains
        
        W = WEff
        !W = Work
-       xprob = 1
        Wprec = + W
        Wprecedent = Wprec
-       write(*,*) 'W0', W,W*erg2eV
+       if (lmegamaster) write(*,*) 'W0', W,W*erg2eV
 
 
 
@@ -345,7 +284,7 @@ contains
     !########################################################################################################################
 
     DO i_path = 1, n_path ! boucle à faire pour tous les procs
-       if (lmegamaster) write(6,*)'PATH',i_path
+       !if (lmegamaster) write(6,*)'PATH',i_path
        Weff_npp(:)=0
        if (lbigmaster) then
           config_atom_nplus1(ipch)%vp(:,:)   = - config_atom_nplus1(ipch)%vp(:,:) !à chaque retour dans la boucle, on change de direction
@@ -356,7 +295,7 @@ contains
           if (direction == 1) then
              call config_atom_nplus1(ipch)%copy_config(config_atom_new_1, lrescl=.true.)
           endif
-       end if
+       end if !if lbigmaster
        do ipp=1,nparapath
           lcalc=.false.
           if (lparapath) then
@@ -366,23 +305,13 @@ contains
           end if
 
           if (lcalc) then
-             if (lbigmaster)write(6,*)'parapath',rang,ipp
+             !if (lbigmaster)write(6,*)'parapath',rang,ipp
              atconf_n=> config_atom_n(ipp)
              cells_n=>config_cells_n(ipp)
              atconf_nplus1=>config_atom_nplus1(ipp)
              cells_nplus1=>config_cells_nplus1(ipp)
 
-             if (lbigmaster) then !!master general
 
-                !!          write(*,*) ' '
-                !!          write(*,*) ' '
-                !!          write(*,*) ' '
-                !!          write(*,*) 'Numéro de chemin', i_path,direction
-
-                call random_number(xalea)
-                ln_xalea  = log(xalea)
-                
-             end if !fin master general
              !choisir l'at a retirer ou ajouter + preparation des syst N et N+1 pour etre prets pour le langevin (cad decoupage cellules + calcul forces + melange des forces - se fait dans cette sous routine)
              call ajout_retrait(direction)
 !             write(6,*)'CALC3',rang,ipp,i_path
@@ -390,256 +319,69 @@ contains
              call langevin(direction, protocol = 'MCP')
 !             if (lbigmaster) write(6,*)'potist', ipp,potist_n,potist_nplus1
 !             write(6,*)'CALC4',rang,ipp,i_path
-             Weff_npp(ipp)=weff
+             if (direction == 0) then
+               Weff_npp(ipp)= +weff
+             else
+               Weff_npp(ipp)= -weff
+             end if !sur direction
           end if
 !!$          call mpi_finalize(ierr)
 !!$          stop
-       end do
+       end do !boucle nparapath
        if ((lbigmaster).and.(lparapath)) then
           call parapath%mpi_master%sum(weff_npp)
        end if
-       if (lbigmaster) then !master general
-          if (lmegamaster) then
-             if (nparapath.gt.1) then
-                !call calcul_chemin(Weff_npp, xprob_i, Wprec, direction, theta)
-                !call choix_chemin(xprob_i, ipch)
-                call random_number(zr1)
-                ipch=1+int(nparapath*zr1) ! choix aléatoire débile
-                write(6,*)'chemin choisi',ipch,i_path
-             else
-                ipch=1
-             end if
-          end if
-          call parapath%mpi_master%bcast(0,ipch)
-          Weff=weff_npp(ipch)
-#ifdef PARA
-       if (lparapath) then 
-          call config_atom_n(ipch)%send2all(ipch-1,parapath%mpi_master)
-          call config_atom_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
-          call config_cells_n(ipch)%send2all(ipch-1,parapath%mpi_master)
-          call config_cells_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
-       end if
-#endif          
-          
-          do ipp=1,nparapath
-             config_cells_n(ipp)= config_cells_n(ipch)
-             config_cells_nplus1(ipp)= config_cells_nplus1(ipch)
-             config_atom_n(ipp)=config_atom_n(ipch)
-             config_atom_nplus1(ipp)=config_atom_nplus1(ipch)
-          end do
-      
 
-      !call analyse_montecarlo(config_atom_n(ipch),config_cells_n(ipch),boxmcgc, 'UO2_syst_n_after_lang')
-       if (direction == 0) then
-          W = +WEff
-          !W = +Work
-          n_gen_0 = n_gen_0 + 1
-          atconf_nplus1=>config_atom_nplus1(ipch)
-          call calcul_proba
-          call config_atom_nplus1(ipch)%copy_config(config_atom_new_1, lrescl=.true.)      
-       else
-          W = -WEff
-          !W = - Work
-          n_gen_1 = n_gen_1 + 1
-          call config_atom_n(ipch)%copy_config(config_atom_new_0, lrescl=.true.)      
-       endif
        n_gen = n_gen + 1
-       ln_Wprec  = (+beta*(direction-theta)*Wprec)
-       ln_W      = (+beta*(direction-theta)*W)
        if (direction == 0) then
-          biais = 1
+         n_gen_0 = n_gen_0 + 1
        else
-          biais = config_atom_nplus1(ipch)%proba(config_atom_nplus1(ipch)%im)/config_atom_old_1%proba(atconf_nplus1%im)
+         n_gen_1 = n_gen_1 + 1
        end if
-       !ln_xprob  = - dlog(1 + (dexp(ln_Wprec-ln_W)/biais))
-       ln_xprob  = - dlog(1 + dexp(ln_Wprec-ln_W)) 
-       xprob     = dexp(ln_xprob)
 
-       if (lmegamaster) write(*,*) 'WeV', W*erg2eV, 'WpreceV', Wprec*erg2eV,'XPROB', xprob, 'XALEA', xalea
-       !call analyse_montecarlo(config_atom_n(ipch),config_cells_n(ipch),boxmcgc, 'UO2_syst_n_beforetest')
-       if (ln_xprob > ln_xalea) then    
-!!!!!!!!!!!!!!!!!!!!!!!!!! ACCEPTATION   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          if (lmegamaster) write(*,*) 'ACCEPTATION, direction=', direction,'W', W*erg2eV, &
-               &'Wprec', Wprec*erg2eV, '  LN_XPROB ', ln_xprob, '  XPROB ', xprob, '  XALEA ', xalea
-
-          premier_accept = 1
-
-          if (direction == 0) then
-             n_accepted_0 = n_accepted_0 + 1
-          else
-             n_accepted_1 = n_accepted_1 + 1
-          endif
-
-!!!!!!!Calcul de mu!!!!!!!!
-!!!!! Calcul d'une moyenne classique / estimateur WR/NC !!!!!!!!!
-          contribut_accepte(0) = dexp(beta*W*0.5)
-          f2(0) = dexp(beta*W)
-          fminusf(0) =(dexp(beta*W*0.5) - dexp(beta*Wprecedent*0.5))**2 
-
-          contribut_accepte(1) = dexp(-beta*W*0.5)
-          f2(1) = dexp(-beta*W)
-          fminusf(1) =(dexp(-beta*W*0.5) - dexp(-beta*Wprecedent*0.5))**2
-!!!!!!!!!! fin calcul mu !!!!!!!!!!!
-
-          n_accepted = n_accepted + 1
-          Wprec = + W 
-          dir = direction
-          acceptation = 1
-
-          call config_atom_new_0%copy_config(config_atom_old_0, lrescl=.true.)
-          call config_atom_new_1%copy_config(config_atom_old_1, lrescl=.true.)          
-
+!!!!!!!!!!!!!!!!!!!!!! TEST D'ACCEPTATION !!!!!!!!!!!!!!!!!!!
+       if (nparapath.gt.1) then 
+         call multiproposal(Weff_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
+               & .false., mu_moy, mu_wrmc, mu_NC, mu_DC, pot_cumul)
        else
-!!!!!!!!!!!!!!!!!!!!!!!!!! REFUS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          if (lmegamaster) write(*,*) ' REJECTION, direction=', direction, 'W', W*erg2eV, &
-               &'Wprec', Wprec*erg2eV, '  LN_XPROB ', ln_xprob, '  XPROB ', xprob, '  XALEA ', xalea
-!          write(6,*)'IPCH',ipch,'rang',rang
-          !on accepte le sens opposé - changer des signes des vitesses 
-          config_atom_old_0%vp(:,:)   = - config_atom_old_0%vp(:,:)
-          config_atom_old_1%vp(:,:)   = - config_atom_old_1%vp(:,:)
-
-          acceptation = 0
-          if (direction == 0) then
-             call config_atom_old_1%copy_config(config_atom_nplus1(ipch), lrescl=.false.)
-             call caltabtC(config_cells_nplus1(ipch),config_atom_nplus1(ipch),lperiod,boxmcgc)
-          end if
-
-          if (direction == 1) then
-             call config_atom_old_0%copy_config(config_atom_n(ipch), lrescl=.false.)
-             call caltabtC(config_cells_n(ipch),config_atom_n(ipch),lperiod,boxmcgc)
-          end if
-
-!!!!!!!Calcul de mu!!!!!!!!
-!!!!! Calcul d'une moyenne classique / estimateur WR/NC !!!!!!!!!
-          contribut_accepte(0) = dexp(beta*Wprecedent*0.5)
-          f2(0) = dexp(beta*Wprecedent)
-          fminusf(0) = 0.0
-
-          contribut_accepte(1) = dexp(-beta*Wprecedent*0.5)
-          f2(1) = dexp(-beta*Wprecedent)
-          fminusf(1) = 0.0
-!!!!!!!!!! fin calcul mu !!!!!!!!!!!
-
-       end if !test sur xprob
-
-
-       if (nparapath.gt.1) then
-          do ipp=1,nparapath
-             config_cells_n(ipp)= config_cells_n(ipch)
-             config_cells_nplus1(ipp)= config_cells_nplus1(ipch)
-             config_atom_n(ipp)=config_atom_n(ipch)
-             config_atom_nplus1(ipp)=config_atom_nplus1(ipch)
-          end do
+         call monoproposal(Weff_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
+              & .false., mu_moy, mu_wrmc, mu_NC, mu_DC, pot_cumul)
        end if
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
 
+       if (acceptation == 1) then
+        n_accepted = n_accepted + 1
+        if (direction == 0) then
+          n_accepted_0 = n_accepted_0 + 1
+        else 
+          n_accepted_1 = n_accepted_1 + 1
+        end if
+      end if 
 
+  !    if (i_path == 1) then
+  !      if (lmegamaster) write(*,'(A)') 'acceptation  num_chemin  direction &
+  !      &  WeV   WprecedenteV  mu_moy   mu_WRMC  mu_NC  mu_DC'  ! proba_acc proba_refus
+  !    end if
 
-       acceptance_rate   = (real(n_accepted)/real(n_gen))*1.0d2
-       acceptance_rate_0 = (real(n_accepted_0)/real(n_gen_0))*1.0d2
-       acceptance_rate_1 = (real(n_accepted_1)/real(n_gen_1))*1.0d2
-goto 2
-       
-!!!!! Calcul de mu !!!!!!
-!!!!! Calcul estimateur WR/DC !!!!!!!!!
-       f_wr(0) = xprob*dexp(beta*W*0.5) + (1.0-xprob)*dexp(beta*Wprecedent*0.5)
-       f2_wr(0) = xprob*dexp(beta*W)&
-            & + (1.0-xprob)*dexp(beta*Wprecedent)
-       fminusf_wr(0) = (1.0-xprob) * xprob * ( dexp(beta*W*0.5)&
-            & - dexp(beta*Wprecedent*0.5) )**2
+  !    if (lmegamaster) write(*,'(3I5, 12G20.13)') acceptation, i_path, direction&
+  !    &, Weff_npp(ipch)*erg2eV, Wprecedent*erg2eV, mu_moy, mu_wrmc, mu_NC, mu_DC!, xprob, 1-xprob
 
-       f_wr(1) = xprob*dexp(-beta*W*0.5) + (1.0-xprob)*dexp(-beta*Wprecedent*0.5)
-       f2_wr(1) = xprob*dexp(-beta*W)&
-            & + (1.0-xprob)*dexp(-beta*Wprecedent)
-       fminusf_wr(1) = (1.0-xprob) * xprob * ( dexp(-beta*W*0.5)&
-            & - dexp(-beta*Wprecedent*0.5) )**2
-       !write(*,*) 'contribut_accepte', contribut_accepte(0), contribut_accepte(1)
-       !write(*,*) 'f_wr', f_wr(direction)
+      !write(*,*) i_path, dir, W*erg2eV, Wprecedent*erg2eV, xprob, 1-xprob, acceptation, Wprecedent,&
+      !        &  W
 
-       !write(*,*) 'f2_wr', f2_wr(direction)
-       !write(*,*) 'f2', f2(direction)
+      Wprecedent = Wprec
+      it = it + 1
 
-       !write(*,*) 'f_wr**2', f_wr(direction)**2
-       !write(*,*) 'contribut_accepte**2', contribut_accepte(direction)**2
+      if (direction == 0) then
+         direction = 1
+      else
+         direction = 0
+      end if
 
-       !write(*,*) 'fminusf_wr', fminusf_wr(direction)
-       !write(*,*) 'fminusf', fminusf(direction)
+      acceptance_rate   = (real(n_accepted)/real(n_gen))*1.0d2
+      acceptance_rate_0 = (real(n_accepted_0)/real(n_gen_0))*1.0d2
+      acceptance_rate_1 = (real(n_accepted_1)/real(n_gen_1))*1.0d2
 
-!!!!! formation des sommes !!!!
-       DO direc = 0,1
-          f_cumul(direc) = f_cumul(direc) + contribut_accepte(direc)
-          f2_cumul(direc) = f2_cumul(direc) + f2(direc)
-          fminusf_cumul(direc) = fminusf_cumul(direc) + fminusf(direc)
-
-          f_wr_cumul(direc) = f_wr_cumul(direc) + f_wr(direc)
-          f2_wr_cumul(direc) = f2_wr_cumul(direc) + f2_wr(direc)
-          fminusf_wr_cumul(direc) = fminusf_wr_cumul(direc) + fminusf_wr(direc)
-
-
-!!!!! diviser par le nombre de chemin!!!!!
-          f_cumul_inte(direc) = f_cumul(direc) / real(n_gen)
-          f2_cumul_inte(direc) = f2_cumul(direc) / real(n_gen)
-          fminusf_cumul_inte(direc) = fminusf_cumul(direc) / (real(n_gen*2.0))
-       
-          f_wr_cumul_inte(direc) = f_wr_cumul(direc) / real(n_gen)
-          f2_wr_cumul_inte(direc) = f2_wr_cumul(direc) / real(n_gen)
-          write(6,*)'FMIN',rang, fminusf_wr_cumul(direc) , real(n_gen),  f2_wr_cumul(direc),f2_wr(direc)
-          fminusf_wr_cumul_inte(direc) = fminusf_wr_cumul(direc) / real(n_gen)
-
-
-!!!!! calcul de la variable de contrôle !!!!
-          if (premier_accept == 1) then
-            b_opt(direc)=(f2_cumul_inte(direc)-f_cumul_inte(direc)**2)&
-               & / fminusf_cumul_inte(direc)
-            b_wr_opt(direc)=(f2_wr_cumul_inte(direc)-f_wr_cumul_inte(direc)**2)&
-               & / fminusf_wr_cumul_inte(direc)
-
-
-!!!!! calcul de l'estimateur NC et DC !!!!!!
-            est_opt(direc) = b_opt(direc)*f_wr_cumul_inte(direc) &
-               & + (1.0-b_opt(direc))*f_cumul_inte(direc)
-            est_opt_bwr(direc) = b_wr_opt(direc)*f_wr_cumul_inte(direc) &
-               & + (1.0-b_wr_opt(direc))*f_cumul_inte(direc)
-          end if
-       END DO
-       !write(*,*) 'direc b_opt et b_wr_opt', direction, est_opt(0), est_opt_bwr(0)
-       !write(*,*) 'direc b_opt et b_wr_opt', direction, est_opt(1), est_opt_bwr(1)
-
-!!!! calcul de mu!!!!!
-       if (premier_accept == 1) then
-          mu_moy = -(1/beta_eV)*dlog(f_cumul_inte(1) / f_cumul_inte(0)) !estimateur simple Im(f)
-          mu_wrmc = -(1/beta_eV)*dlog(f_wr_cumul_inte(1) / f_wr_cumul_inte(0)) !estimateur WRMC (moyenne des Wgen pondérée par les proba)
-          mu_NC = -(1/beta_eV)*dlog(est_opt(1) / est_opt(0))  !estimateur NC Jnc,M(f)
-          mu_DC = -(1/beta_eV)*dlog(est_opt_bwr(1) / est_opt_bwr(0)) !estimateur DC Jdc,M(f)
-       end if
-!!!!!!!!!! fin calcul mu !!!!!!!!!!!          
-
-       if (i_path == 1) then
-         if (lmegamaster) write(*,'(A)') 'acceptation  num_chemin  direction b_opt(0) b_opt(1) b_wr_opt(0) b_wr_opt(1)&
-         & mu_moy   mu_WRMC  mu_NC  mu_DC   WeV   WprecedenteV  proba_acc proba_refus'
-       end if
-
-       if (lmegamaster) write(*,'(3I5, 12G20.13)') acceptation, i_path, direction, b_opt(0), b_opt(1), b_wr_opt(0), b_wr_opt(1)&
-       &, mu_moy, mu_wrmc, mu_NC, mu_DC, W*erg2eV, Wprecedent*erg2eV, xprob, 1-xprob
-
-       !write(*,*) i_path, direction, W*erg2eV, Wprecedent*erg2eV, xprob, 1-xprob, acceptation, Wprecedent,&
-       !        &  W
-2 continue
-       Wprecedent = Wprec
-
-       !call analyse_montecarlo(atconf_n,cells_n,boxmcgc, 'UO2_syst_n_after_test')
-       !call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc)
-       !call analyse_montecarlo(atconf_nplus1,cells_nplus1,boxmcgc, 'UO2_syst_nplus1_after_test')
-       !call analyse_montecarlo(atconf_nplus1,cells_nplus1,boxmcgc, 'syst_UO2nplus1_finboucle')
-       !call analyse_montecarlo(config_atom_n(ipch),config_cells_n(ipch),boxmcgc, 'UO2_syst_n_aftertest')
-    end if !fin master general
-
-    it = it +1
-
-    if (direction == 0) then
-       direction = 1
-    else
-       direction = 0
-    end if
 
  END DO !end do sur la boucle des chemins
 
@@ -655,8 +397,479 @@ goto 2
     !call analyse_montecarlo(atconf_nplus1,cells_nplus1,boxmcgc, 'syst_UO2nplus1_out')
     write(*,'(A, G15.7)') 'mu_moy',mu_moy ,'mu_wrmc', mu_wrmc, 'mu_NC', mu_NC, 'mu_DC', mu_DC
  end if
-stop
+!stop
 end subroutine montecarlo
+
+
+subroutine monoproposal(travail_npp, Wprece, Wpreced, ipchemin, dir, accepta, premier_accept, &
+                       &ngen, lbiais, pot_moy, pot_wrmc, pot_NC, pot_DC,tab_cumul)
+
+implicit none 
+
+real(double), dimension(nparapath) :: travail_npp
+real(double) :: Wprece ! Wprec
+real(double) :: Wpreced !sauvegarde Wprec pour posttraitement
+integer :: ipchemin, dir, accepta, ngen
+logical :: lbiais
+integer ::  premier_accept
+real(double) :: pot_moy, pot_wrmc, pot_NC, pot_DC
+
+
+real(double) :: biais
+real(double) :: W, xprob, xalea
+real(double) :: ln_xalea, ln_Wprec, ln_W, ln_xprob
+real(double) :: theta, beta
+real(double), dimension(nparapath+1) :: xprob_i ! naparapath = 1 dans le cas du monoproposal
+logical :: lextend, lperiod 
+real(double), dimension(2,22) :: tab_cumul
+
+   theta = 0.5
+   beta = 1.0/(bk*Text)    
+   lextend = .true.
+   lperiod = .true.
+   xprob_i(:) = 0.0
+
+   if (lbigmaster) then !master general
+      if (lmegamaster) then
+        ipchemin=1
+      end if ! mega master   
+      Weff=travail_npp(ipchemin)  
+      W = Weff ! le signe a ete inversé precedemment
+
+       if (dir == 0) then
+          !W = +Work
+          atconf_nplus1=>config_atom_nplus1(ipchemin)
+          call calcul_proba
+          call config_atom_nplus1(ipchemin)%copy_config(config_atom_new_1, lrescl=.true.)      
+       else
+          !W = - Work
+          call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)      
+       endif
+
+       if (lbiais) then
+         if (dir == 0) then
+            biais = 1.0
+         else
+            biais = config_atom_nplus1(ipchemin)%proba(config_atom_nplus1(ipchemin)%im)&
+                   &/config_atom_old_1%proba(config_atom_nplus1(ipchemin)%im)
+          end if
+       else
+         biais = 1.0 
+       end if ! sur biais
+
+       ln_Wprec  = (+beta*(dir-theta)*Wprece)
+       ln_W      = (+beta*(dir-theta)*W)
+       ln_xprob  = - dlog(1 + (dexp(ln_Wprec-ln_W)/biais)) !avec biais
+       !ln_xprob  = - dlog(1 + dexp(ln_Wprec-ln_W))   !sans biais
+       xprob     = dexp(ln_xprob)
+       xprob_i(1) = xprob   !proba d'accpeter W
+       xprob_i(2) = 1.0 - xprob !proba d'accepter Wprec
+       call random_number(xalea)
+       ln_xalea  = log(xalea)
+       write(*,*), 'xalea', xalea
+           
+       if (lmegamaster) write(*,*) 'WeV', W*erg2eV, 'WpreceV', Wprece*erg2eV,'XPROB', xprob, 'XALEA', xalea
+     
+       if (ln_xprob > ln_xalea) then    
+
+!!!!!!!!!!!!!!!!!!!!!!!!!! ACCEPTATION   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          !if (lmegamaster) write(*,*) 'ACCEPTATION, direction=', dir,'W', W*erg2eV, &
+          !     &'Wprec', Wprece*erg2eV, '  LN_XPROB ', ln_xprob, '  XPROB ', xprob, '  XALEA ', xalea
+
+          premier_accept = 1
+          Wprece = + W 
+          accepta = 1
+
+          !!!!! etape 1 pot chimique !!!!!!!!!
+          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+              & 1, travail_npp, xprob_i, Wpreced)
+
+          call config_atom_new_0%copy_config(config_atom_old_0, lrescl=.true.)
+          call config_atom_new_1%copy_config(config_atom_old_1, lrescl=.true.)          
+
+       else
+!!!!!!!!!!!!!!!!!!!!!!!!!! REFUS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          !if (lmegamaster) write(*,*) ' REJECTION, direction=', dir, 'W', W*erg2eV, &
+          !     &'Wprec', Wprece*erg2eV, '  LN_XPROB ', ln_xprob, '  XPROB ', xprob, '  XALEA ', xalea
+
+          !on accepte le sens opposé - changer des signes des vitesses 
+          config_atom_old_0%vp(:,:)   = - config_atom_old_0%vp(:,:)
+          config_atom_old_1%vp(:,:)   = - config_atom_old_1%vp(:,:)
+
+          accepta = 0
+          if (dir == 0) then
+             call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
+             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgc)
+          else
+             call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
+             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgc)
+          end if
+
+          !!!!! etape 2 pot chimique !!!!!!!!!
+          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+               & 2, travail_npp, xprob_i, Wpreced)
+        
+       end if !test sur xprob         
+
+       !!!!! etape 3 pot chimique !!!!!!!!!
+       call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+              & 3, travail_npp, xprob_i, Wpreced)
+
+    end if !fin master general
+
+end subroutine monoproposal
+
+
+
+
+subroutine multiproposal(travail_npp, Wprece, Wpreced, ipchemin, dir, accepta, premier_accept, ngen,&
+                    & lbiais, pot_moy, pot_wrmc, pot_NC, pot_DC, tab_cumul)
+
+implicit none 
+
+real(double), dimension(nparapath) :: travail_npp
+real(double) :: Wprece ! Wprec
+real(double) :: Wpreced !sauvegarde Wprec pour posttraitement
+integer :: ipchemin, dir, accepta, ngen,  premier_accept
+logical :: lbiais
+real(double) :: pot_moy, pot_wrmc, pot_NC, pot_DC
+
+
+real(double) :: biais
+real(double) :: W, xprob, xalea
+real(double) :: theta, beta
+integer :: ipp
+real(double), dimension(nparapath+1) :: xprob_i
+logical :: lextend, lperiod
+real(double), dimension(2,22) :: tab_cumul
+
+   theta = 0.5
+   beta = 1.0/(bk*Text)
+   lextend = .true.
+   lperiod = .true.
+   xprob_i(:) = 0.0
+
+ if (lbigmaster) then !master general
+     
+     if (lmegamaster) then
+        call calcul_chemin(travail_npp, xprob_i, Wprece, dir, theta, ipchemin, lbiais) 
+        call choix_chemin(xprob_i, ipchemin)
+        write(6,*)'chemin choisi',ipchemin
+     end if !megamaster
+   
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ACCEPTATION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     if (ipchemin.le.nparapath) then ! si ipchemin <= nparapath: on choisit une des configs generees
+       call parapath%mpi_master%bcast(0,ipchemin)
+
+       if (lmegamaster) write(*,*) 'ACCEPTATION WeV', travail_npp(ipchemin)*erg2eV, 'WpreceV',&
+        & Wprece*erg2eV,'XPROB', xprob_i(ipchemin)
+#ifdef PARA
+       if (lparapath) then 
+          call config_atom_n(ipchemin)%send2all(ipchemin-1,parapath%mpi_master)
+          call config_atom_nplus1(ipchemin)%send2all(ipchemin-1,parapath%mpi_master)
+          call config_cells_n(ipchemin)%send2all(ipchemin-1,parapath%mpi_master)
+          call config_cells_nplus1(ipchemin)%send2all(ipchemin-1,parapath%mpi_master)
+       end if
+#endif          
+          
+       do ipp=1,nparapath
+          config_cells_n(ipp)= config_cells_n(ipchemin)
+          config_cells_nplus1(ipp)= config_cells_nplus1(ipchemin)
+          config_atom_n(ipp)=config_atom_n(ipchemin)
+          config_atom_nplus1(ipp)=config_atom_nplus1(ipchemin)
+       end do
+
+       if (dir == 0) then
+          atconf_nplus1=>config_atom_nplus1(ipchemin)
+          call calcul_proba
+          call config_atom_nplus1(ipchemin)%copy_config(config_atom_new_1, lrescl=.true.)
+       else
+          call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)
+       end if
+
+       Weff=travail_npp(ipchemin) ! il y a deja eu le changement de signe
+       Wprece = Weff
+       accepta = 1
+       premier_accept = 1
+
+       !!!!! etape 1 pot chimique !!!!!!!!!
+       call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+            & 1, travail_npp, xprob_i, Wpreced)
+
+
+       call config_atom_new_0%copy_config(config_atom_old_0, lrescl=.true.)
+       call config_atom_new_1%copy_config(config_atom_old_1, lrescl=.true.)       
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   REFUS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     else ! si ipchemin > nparapath: on choisit la config prec
+
+       if (lmegamaster) write(*,*) 'REFUS WeV', Wprece*erg2eV, 'WpreceV', Wprece*erg2eV,'XPROB', xprob_i(ipchemin)
+       config_atom_old_0%vp(:,:)   = - config_atom_old_0%vp(:,:)
+       config_atom_old_1%vp(:,:)   = - config_atom_old_1%vp(:,:)
+
+       accepta = 0
+       ipchemin = 1 ! là où on recopie la configuration precedente, par defaut on ecrase le chemin 1
+       call parapath%mpi_master%bcast(0,ipchemin) !on envoie le nouveau ipchemin a tous les procs, là où chemin prec va etre mis
+       if (dir == 0) then
+         call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
+         call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgc)
+       else
+         call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
+         call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgc)
+       end if   
+
+!on envoie l'ancienne conf a tous les procs
+#ifdef PARA
+       if (lparapath) then 
+          call config_atom_n(ipchemin)%send2all(ipchemin-1,parapath%mpi_master)
+          call config_atom_nplus1(ipchemin)%send2all(ipchemin-1,parapath%mpi_master)
+          call config_cells_n(ipchemin)%send2all(ipchemin-1,parapath%mpi_master)
+          call config_cells_nplus1(ipchemin)%send2all(ipchemin-1,parapath%mpi_master)
+       end if
+#endif          
+
+!pour chaque procs, on copie l'ancienne conf dans tous les chemins          
+       do ipp=1,nparapath
+          config_cells_n(ipp)= config_cells_n(ipchemin)
+          config_cells_nplus1(ipp)= config_cells_nplus1(ipchemin)
+          config_atom_n(ipp)=config_atom_n(ipchemin)
+          config_atom_nplus1(ipp)=config_atom_nplus1(ipchemin)
+       end do     
+  
+       !!!!! etape 2 pot chimique !!!!!!!!!
+       call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+           & 2, travail_npp, xprob_i, Wpreced)
+
+     end if !test sur ipchemin. acceptation ou refus (W ou Wprec)
+
+     !!!!! etape 3 pot chimique !!!!!!!!!
+     call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+         & 3, travail_npp, xprob_i, Wpreced)
+
+  end if !fin master general
+
+end subroutine multiproposal
+
+
+subroutine potentiel_chimique(cumul, moy, wrmc, NC, DC, prem_accept, nb_gen, chemin, etape,&
+                 & liste_travail, liste_proba, Wprecedent)
+   
+   implicit none
+   real(double), dimension(nparapath) :: liste_travail
+   real(double), dimension(nparapath+1) :: liste_proba
+   real(double), dimension(2,22) :: cumul
+   real(double) :: moy, wrmc, NC, DC, Wprecedent
+   integer :: prem_accept, etape, nb_gen, chemin
+   !etape correspond a l'etape du pot a laquelle on est:
+   !etape == 1: on est dans l'acceptation
+   !etape == 2: on est dans le refus
+   !etape == 3: on est apres le test 
+
+   real(double) :: beta, beta_eV
+
+   real(double),dimension(2) :: contribut_accepte, f2, fminusf
+   real(double),dimension(2) :: f_cumul, f2_cumul, fminusf_cumul
+   real(double),dimension(2) :: f_wr, f2_wr, fminusf_wr
+   real(double),dimension(2) :: f_wr_cumul, f2_wr_cumul, fminusf_wr_cumul
+   real(double),dimension(2) :: f_cumul_inte, f2_cumul_inte, fminusf_cumul_inte
+   real(double),dimension(2) :: f_wr_cumul_inte, f2_wr_cumul_inte, fminusf_wr_cumul_inte
+
+   real(double),dimension(2) :: b_opt, b_wr_opt, est_opt, est_opt_bwr
+   integer :: direc, ip
+   real(double), dimension(nparapath+1) :: liste_travaux ! contient les Weff des chemins + Wprec en dernier element
+
+if (lmegamaster) then
+   beta = 1.0/(bk*Text)
+   beta_eV = 1.0/((8.617333262145E-5)*Text)
+   
+   liste_travaux(1:nparapath) = liste_travail(1:nparapath)
+   liste_travaux(nparapath+1) =  Wprecedent
+
+   contribut_accepte(1:2) = cumul(:,1)
+   f2(1:2) = cumul(:,2)
+   fminusf(1:2) = cumul(:,3)
+   f_wr(1:2) = cumul(:,4)
+   f2_wr(1:2) = cumul(:,5)
+   fminusf_wr(1:2) = cumul(:,6)
+   f_cumul(1:2) = cumul(:,7)
+   f2_cumul(1:2) = cumul(:,8)
+   fminusf_cumul(1:2) = cumul(:,9)
+   f_wr_cumul(1:2) = cumul(:,10)
+   f2_wr_cumul(1:2) = cumul(:,11)
+   fminusf_wr_cumul(1:2) = cumul(:,12)
+   b_opt(1:2) = cumul(:,13)
+   b_wr_opt(1:2) = cumul(:,14) 
+   est_opt(1:2) = cumul(:,15)
+   est_opt_bwr(1:2) = cumul(:,16)
+   f_cumul_inte(1:2) = cumul(:,17)
+   f2_cumul_inte(1:2) = cumul(:,18)
+   fminusf_cumul_inte(1:2) = cumul(:,19)
+   f_wr_cumul_inte(1:2) = cumul(:,20)
+   f2_wr_cumul_inte(1:2) = cumul(:,21)
+   fminusf_wr_cumul_inte(1:2) = cumul(:,22)
+  
+  if (etape == 1) then
+     contribut_accepte(1) = dexp(beta*liste_travaux(chemin)*0.5)
+     f2(1) = dexp(beta*liste_travaux(chemin))
+     fminusf(1) =(dexp(beta*liste_travaux(chemin)*0.5) - dexp(beta*liste_travaux(nparapath+1)*0.5))**2 
+
+     contribut_accepte(2) = dexp(-beta*liste_travaux(chemin)*0.5)
+     f2(2) = dexp(-beta*liste_travaux(chemin))
+     fminusf(2) =(dexp(-beta*liste_travaux(chemin)*0.5) - dexp(-beta*liste_travaux(nparapath+1)*0.5))**2
+     !write(*,*) 'acceptation', contribut_accepte 
+     cumul(:,1) = contribut_accepte(1:2) 
+     cumul(:,2) = f2(1:2) 
+     cumul(:,3) = fminusf(1:2) 
+     cumul(:,4) = f_wr(1:2) 
+     cumul(:,5) = f2_wr(1:2) 
+     cumul(:,6) = fminusf_wr(1:2) 
+     cumul(:,7) = f_cumul(1:2) 
+     cumul(:,8) = f2_cumul(1:2) 
+     cumul(:,9) = fminusf_cumul(1:2) 
+     cumul(:,10) = f_wr_cumul(1:2) 
+     cumul(:,11) = f2_wr_cumul(1:2) 
+     cumul(:,12) = fminusf_wr_cumul(1:2) 
+     cumul(:,13) = b_opt(1:2) 
+     cumul(:,14) = b_wr_opt(1:2) 
+     cumul(:,15) = est_opt(1:2) 
+     cumul(:,16) = est_opt_bwr(1:2) 
+     cumul(:,17) = f_cumul_inte(1:2) 
+     cumul(:,18) = f2_cumul_inte(1:2) 
+     cumul(:,19) = fminusf_cumul_inte(1:2) 
+     cumul(:,20) = f_wr_cumul_inte(1:2) 
+     cumul(:,21) = f2_wr_cumul_inte(1:2) 
+     cumul(:,22) = fminusf_wr_cumul_inte(1:2)
+  end if
+
+  if (etape == 2) then
+     contribut_accepte(1) = dexp(beta*liste_travaux(nparapath+1)*0.5)
+     f2(1) = dexp(beta*liste_travaux(nparapath+1))
+     fminusf(1) = 0.0
+
+     contribut_accepte(2) = dexp(-beta*liste_travaux(nparapath+1)*0.5)
+     f2(2) = dexp(-beta*liste_travaux(nparapath+1))
+     fminusf(2) = 0.0
+
+     !write(*,*) 'refus', contribut_accepte, cumul(1:2,1)
+     cumul(:,1) = contribut_accepte(1:2) 
+     cumul(:,2) = f2(1:2) 
+     cumul(:,3) = fminusf(1:2) 
+     cumul(:,4) = f_wr(1:2) 
+     cumul(:,5) = f2_wr(1:2) 
+     cumul(:,6) = fminusf_wr(1:2) 
+     cumul(:,7) = f_cumul(1:2) 
+     cumul(:,8) = f2_cumul(1:2) 
+     cumul(:,9) = fminusf_cumul(1:2) 
+     cumul(:,10) = f_wr_cumul(1:2) 
+     cumul(:,11) = f2_wr_cumul(1:2) 
+     cumul(:,12) = fminusf_wr_cumul(1:2) 
+     cumul(:,13) = b_opt(1:2) 
+     cumul(:,14) = b_wr_opt(1:2) 
+     cumul(:,15) = est_opt(1:2) 
+     cumul(:,16) = est_opt_bwr(1:2) 
+     cumul(:,17) = f_cumul_inte(1:2) 
+     cumul(:,18) = f2_cumul_inte(1:2) 
+     cumul(:,19) = fminusf_cumul_inte(1:2) 
+     cumul(:,20) = f_wr_cumul_inte(1:2) 
+     cumul(:,21) = f2_wr_cumul_inte(1:2) 
+     cumul(:,22) = fminusf_wr_cumul_inte(1:2)
+  end if
+
+  if (etape == 3) then
+!!!!! Calcul estimateur WR/DC !!!!!!!!!
+       f_wr(:) = 0.0
+       f2_wr(:) = 0.0
+       fminusf_wr(:) = 0.0
+
+       DO ip = 1, nparapath+1
+         if (liste_proba(ip) .ne. 0.0) then !permet d'eviter lorsqu'un W trop grand est genere qu'il fasse devenir NaN le potchi
+           f_wr(1) = f_wr(1) + liste_proba(ip)*dexp(beta*liste_travaux(ip)*0.5) 
+           f2_wr(1) = f2_wr(1) + liste_proba(ip)*dexp(beta*liste_travaux(ip))
+           
+           f_wr(2) = f_wr(2) + liste_proba(ip)*dexp(-beta*liste_travaux(ip)*0.5) 
+           f2_wr(2) = f2_wr(2) + liste_proba(ip)*dexp(-beta*liste_travaux(ip))
+           !if (lmegamaster) write(*,*) 'proba' ,liste_proba(ip), 'WeV', liste_travaux(ip)*erg2eV, 'W', liste_travaux(ip)
+         end if
+       END DO
+       fminusf_wr(1) = f2_wr(1) -f_wr(1)**2
+       fminusf_wr(2) = f2_wr(2) -f_wr(2)**2
+       !if (lmegamaster) write(*,*) 'f_wr', f_wr, 'f2_wr', f2_wr, 'fminusf_wr', fminusf_wr
+
+!!!!! formation des sommes !!!!
+       DO direc = 1,2
+          f_cumul(direc) = f_cumul(direc) + contribut_accepte(direc)
+          f2_cumul(direc) = f2_cumul(direc) + f2(direc)
+          fminusf_cumul(direc) = fminusf_cumul(direc) + fminusf(direc)
+
+          f_wr_cumul(direc) = f_wr_cumul(direc) + f_wr(direc)
+          f2_wr_cumul(direc) = f2_wr_cumul(direc) + f2_wr(direc)
+          fminusf_wr_cumul(direc) = fminusf_wr_cumul(direc) + fminusf_wr(direc)
+
+
+!!!!! diviser par le nombre de chemin!!!!!
+          f_cumul_inte(direc) = f_cumul(direc) / real(nb_gen)
+          f2_cumul_inte(direc) = f2_cumul(direc) / real(nb_gen)
+          fminusf_cumul_inte(direc) = fminusf_cumul(direc) / (real(nb_gen*2.0))
+       
+          f_wr_cumul_inte(direc) = f_wr_cumul(direc) / real(nb_gen)
+          f2_wr_cumul_inte(direc) = f2_wr_cumul(direc) / real(nb_gen)
+          fminusf_wr_cumul_inte(direc) = fminusf_wr_cumul(direc) / real(nb_gen)
+
+!!!!! calcul de la variable de contrôle !!!!
+          if (prem_accept == 1) then
+            b_opt(direc)=(f2_cumul_inte(direc)-f_cumul_inte(direc)**2)&
+               & / fminusf_cumul_inte(direc)
+            b_wr_opt(direc)=(f2_wr_cumul_inte(direc)-f_wr_cumul_inte(direc)**2)&
+               & / fminusf_wr_cumul_inte(direc)
+
+
+!!!!! calcul de l'estimateur NC et DC !!!!!!
+            est_opt(direc) = b_opt(direc)*f_wr_cumul_inte(direc) &
+               & + (1.0-b_opt(direc))*f_cumul_inte(direc)
+            est_opt_bwr(direc) = b_wr_opt(direc)*f_wr_cumul_inte(direc) &
+               & + (1.0-b_wr_opt(direc))*f_cumul_inte(direc)
+          end if
+       END DO
+
+       !write(*,*) 'f_cumul', f_cumul, 'f2_cumul', f2_cumul, 'fminusf_cumul', fminusf_cumul
+       !write(*,*) 'f_wr_cumul', f_wr_cumul, 'f2_wr_cumul', f2_wr_cumul, 'fminusf_wr_cumul', fminusf_wr_cumul
+       !write(*,*) 'b_opt', b_opt, 'b_wr_opt', b_wr_opt, 'est_opt',   est_opt, 'est_wr_opt', est_opt_bwr
+       !write(*,*) 'direc b_opt et b_wr_opt', dir, est_opt(1), est_opt_bwr(1)
+
+!!!! calcul de mu!!!!!
+       if (prem_accept == 1) then
+          moy = -(1/beta_eV)*dlog(f_cumul_inte(2) / f_cumul_inte(1)) !estimateur simple Im(f)
+          wrmc = -(1/beta_eV)*dlog(f_wr_cumul_inte(2) / f_wr_cumul_inte(1)) !estimateur WRMC (moyenne des Wgen pondérée par les proba)
+          NC = -(1/beta_eV)*dlog(est_opt(2) / est_opt(1))  !estimateur NC Jnc,M(f)
+          DC = -(1/beta_eV)*dlog(est_opt_bwr(2) / est_opt_bwr(1)) !estimateur DC Jdc,M(f)
+       end if
+!!!!!!!!!! fin calcul mu !!!!!!!!!!!
+       cumul(:,1) = contribut_accepte(1:2) 
+       cumul(:,2) = f2(1:2) 
+       cumul(:,3) = fminusf(1:2) 
+       cumul(:,4) = f_wr(1:2) 
+       cumul(:,5) = f2_wr(1:2) 
+       cumul(:,6) = fminusf_wr(1:2) 
+       cumul(:,7) = f_cumul(1:2) 
+       cumul(:,8) = f2_cumul(1:2) 
+       cumul(:,9) = fminusf_cumul(1:2) 
+       cumul(:,10) = f_wr_cumul(1:2) 
+       cumul(:,11) = f2_wr_cumul(1:2) 
+       cumul(:,12) = fminusf_wr_cumul(1:2) 
+       cumul(:,13) = b_opt(1:2) 
+       cumul(:,14) = b_wr_opt(1:2) 
+       cumul(:,15) = est_opt(1:2) 
+       cumul(:,16) = est_opt_bwr(1:2) 
+       cumul(:,17) = f_cumul_inte(1:2) 
+       cumul(:,18) = f2_cumul_inte(1:2) 
+       cumul(:,19) = fminusf_cumul_inte(1:2) 
+       cumul(:,20) = f_wr_cumul_inte(1:2) 
+       cumul(:,21) = f2_wr_cumul_inte(1:2) 
+       cumul(:,22) = fminusf_wr_cumul_inte(1:2) 
+  end if
+
+end if !if lmegamaster
+end subroutine potentiel_chimique
 
 
 subroutine ajout_retrait(direc)
@@ -689,7 +902,7 @@ subroutine ajout_retrait(direc)
        !cart_vec_nplus1(1,1) = 0.03125 +0.125 !0.61999346353817297                
        !cart_vec_nplus1(2,1) = 0.03125 +0.125 !0.73351583558252054                 
        !cart_vec_nplus1(3,1) = 0.03125 +0.125 !0.18351953714045011
-!       call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+       !call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
        !write(*,*) 'atome supplementaire', cart_vec_nplus1
        !copie du syst n dans n+1 
        !call analyse_montecarlo(atconf_n,cells_n,boxmcgc, 'UO2_syst_n_before')
@@ -740,13 +953,14 @@ subroutine ajout_retrait(direc)
 
  if (direc == 1) then ! retrait d'une particule alea, la placer en N+1eme position, copier le syst pour le syst à N
     if (lbigmaster) then
-       !call indice_alea(atconf_Nplus1,indice)
-       ! write(*,*) 'indice et coord atome a retirer', indice,  atconf_Nplus1%xp(:,indice)
- 
-       call atom_biais(atconf_Nplus1,indice)
+       !SANS BIAIS
+       call indice_alea(atconf_Nplus1,indice)
+       !AVEC BIAIS
+       !call atom_biais(atconf_Nplus1,indice)
+
        call atconf_Nplus1%switch_atom(indice,atconf_Nplus1%im)
        call calcul_proba
-
+       !write(*,*) 'coord atome a retirer',  atconf_Nplus1%xp(:,atconf_Nplus1%im)
        !on copie les N nouveaux premiers atomes du syst N+1 dans le systeme N
        call boucle_copy_atom(atconf_N,atconf_Nplus1, sens = .true.)  
 
@@ -857,23 +1071,35 @@ subroutine fct_alpha(dist, dist_alpha)
  dist_alpha = 1.0-(1.0/( (dexp( ((dist/0.8)-1.0) * 3.0)) +1.0) )
 end subroutine fct_alpha
 
-subroutine calcul_chemin(travail, proba,Wp, dir, the)
+subroutine calcul_chemin(travail, proba,Wp, dir, the, ind_chemin, lbias)
 real(double), dimension(nparapath+1) :: proba
 real(double), dimension(nparapath) :: travail
-real(double) :: Wp, sum_expW, beta, the
-integer :: i, dir
+real(double) :: Wp, sum_expW, beta, the, biais
+integer :: i, dir, ind_chemin
+logical :: lbias
 
 beta = 1.0/(bk*Text)
 sum_expW = 0.0
 
+if (lbias) then
+  if (dir == 0) then
+      biais = 1.0
+  else
+      biais = config_atom_nplus1(ind_chemin)%proba(config_atom_nplus1(ind_chemin)%im)&
+         &/config_atom_old_1%proba(config_atom_nplus1(ind_chemin)%im)
+  end if
+else
+  biais = 1.0
+end if
+
 !calcul de la somme des expW
 DO i = 1, nparapath
-  sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)-Wp))
+  sum_expW = sum_expW + biais*exp(beta*(dir-the)*(travail(i)-Wp))
 END DO
 
 !attribution d'une proba pour chaque chemin
 DO i = 1, nparapath
-  proba(i) = exp(beta*(dir-the)*(travail(i)-Wp)) / (1.0 + sum_expW)
+  proba(i) = biais*exp(beta*(dir-the)*(travail(i)-Wp)) / (1.0 + sum_expW)
 END DO
 !proba de tirer l'ancien chemin
 proba(nparapath+1) = 1.0 / (1.0 + sum_expW)
@@ -924,9 +1150,6 @@ subroutine init_vitesse(config, param) !juste pour le N+1eme atome
  config%vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
  config%vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
  config%vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
-
-
-
 
 end subroutine init_vitesse
 
@@ -1058,7 +1281,7 @@ subroutine atom_supp(vecteur)
  dist=0
 1 continue
  itry=itry+1
- if (itry.gt.1) write(6,*)'INSER',rang,itry,dist
+ !if (itry.gt.1) write(6,*)'INSER',rang,itry,dist
  do i=1,rang+1
     call random_number(x_nplus1)
     call random_number(y_nplus1)
@@ -1238,17 +1461,16 @@ subroutine langevin( direc, protocol) !LANGEVININ
        if (lmaster) then ! on est dans l'un des 2 masters
           rgcib=1;rgem=0
           if(paramcgc%image==0) then !on est dans le master général
-             call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master)
+             call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
           else !on est dans le master de N+1
-             call atconf_Nplus1%recv(rgem,paramcgc%mpi_master)
+             call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
           end if
        end if
 #endif        
        iloc=0;ldistrib=.false.;lchange=.true.
 !!$       write(200+rang,*)'LLANG dir 0'
-!!$       write(300+rang,*)'LLANG dir 0'   
+!!$       write(300+rang,*)'LLANG dir 0'
        call calfoMCGC(iloc,lchange,ldistrib)
-
        if (lbigmaster) then
           !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
           U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
@@ -1366,9 +1588,9 @@ subroutine langevin( direc, protocol) !LANGEVININ
        if (lmaster) then ! on est dans l'un des 2 masters
           rgcib=1;rgem=0
           if(paramcgc%image==0) then !on est dans le master général
-             call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master)
+             call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
           else !on est dans le master de N+1
-             call atconf_Nplus1%recv(rgem,paramcgc%mpi_master)
+             call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
           end if
        end if
 #endif        

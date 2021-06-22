@@ -53,7 +53,7 @@ A FAIRE
 5/version sans PBC/period 
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
-7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos
+BOF : a part fp il n'y a rien à enlever   	7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos
 
 7.5/ version NEB  avec retour non systématique au proc master ? Est-ce possible ? Est-ce utile ?
 8/Programmer parallel replica

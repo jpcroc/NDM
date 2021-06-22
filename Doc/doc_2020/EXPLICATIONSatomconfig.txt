@@ -29,6 +29,9 @@
      procedure, pass::zero=>zero_atom ! met une conf à zéro
      procedure, pass::vers_master=>vers_master_atom !(atcfloc,atcfcomp,div) envoi les configurations spatiales locales vers le master
      procedure, pass::master2loc=>master2loc_atom !(atcfcomp,atcfloc,div)  ! distribue la configuration complète vers lesprocs locauxde la parallélisation spatiale
+     procedure, pass::switch_atom ! intervertit deux atomes de atcf
+     procedure, pass::deftype ! initialise cible to the type of atsource, inluding the values of lax, lprteat, etc.
+     procedure, pass::Eegal  ! pour atom_config_e initialise les variables logiques comme le modèle
 
   end type atom_config
 

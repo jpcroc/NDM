@@ -1,7 +1,6 @@
 module dyn_mod
   USE gen_com_m, ONLY:cunite,erg2ev,fnemd,it,itetconst,lcalcjq,leev,lnemd,lperiod,&
        &ltcon,text,timel,tstep,unite,usdh,bk
-  USE tempinst_mod,only: tempinst
   use atomconfig,only:atom_config_d,atom_config_e
   implicit none
 contains
@@ -14,7 +13,6 @@ contains
     
     USE var_pot, ONLY:ntyp,cm
     USE jqmod
-    USE tempinst_mod,only: tempinst
 
     implicit none
 
@@ -23,7 +21,6 @@ contains
     real(double), dimension(ntyp) :: aux
     real(double) :: xprov ,vv
     real(double), save :: tmoyinst, imesureT
-    !real(double), external :: tempinst
     real(double) :: tempavant,tmoy
     real(double) :: deltaE
     real(double):: eatommoy
@@ -98,31 +95,6 @@ end select
     end if
  end if
 end select
-    ! temp const moyenne depuis le dernier rescale
-!!$    if(lTcon) then
-!!$       tempavant=tempinst(vp,ityp,im, size(ityp))
-!!$       tmoyinst = tmoyinst +tempavant 
-!!$       imesureT = imesureT + 1
-!!$       if(mod(it,iteTconst).eq.0) then
-!!$          write(6,*)
-!!$          tmoy=tmoyinst/imesureT 
-!!$          write(6,'(A,3F12.2)')'> Temperature Constante = Text, Tmoy, Tinst ', Text,tmoy,tempavant
-!!$
-!!$
-!!$          deltaE=(tmoy-Text)*3*bk*unitE
-!!$          write(6,'(A,I0,D21.12,A)')'IT   modification d_energie par atome ',it,deltaE,&
-!!$               &cunitE
-!!$          !       write(6,'(A,I,D21.12,A)')'IT , modification d_energie par atome ',IT,deltaE, cunitE
-!!$          write(6,*)
-!!$
-!!$          vv = sqrt(Text/(tmoy))
-!!$          xpp(:,:im) = xp(:,:im)-(xp(:,:im)-xpp(:,:im))*vv
-!!$          vp(:,:im) = vp(:,:im)*vv
-!!$          tmoyinst=0.
-!!$          imesureT=0
-!!$       endif
-!!$    endif
-
 
     return
   end subroutine dyn

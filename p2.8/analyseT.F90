@@ -59,7 +59,6 @@ contains
     real(double) :: a1, a2, a3, b1, b2, b3, c1, c2, c3
     real(double) :: fteta, tbc, tca, tab, amod, bmod, cmod,kinetyp
     real(double) ::  alat
-    real(double), external :: tempinst
     real(double), save :: volumean,amodmean,bmodmean,cmodmean,tcamean,tabmean,tbcmean
     real(double), dimension(3,3) :: transformation, strain, rotation, invh0
 
@@ -131,14 +130,6 @@ contains
        cunitP='d/cm2'
     endif
 
-    ! calcul de la temperature
-    ! calcul de la temperature
-    !  if (itetemp2>0) then
-    !     if (mod(it,itetemp2)==0) then
-    !        temp2=tempinst(vp,ityp)
-    !        write(112,'(I10,G15.6,F12.2)')it,timel,temp2
-    !     end if
-    !  end if
     if (itetemp>0) then
        if (mod(it,itetemp)==0) then
           call calctemp (temp,kine,atdml,celndm)

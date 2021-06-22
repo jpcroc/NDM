@@ -122,7 +122,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
        sigtot = sigkine+sig
     end if
-    if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
+    if (lTberendsen) call calfoberend(atdml)
 
     select case (dmtype)
 
