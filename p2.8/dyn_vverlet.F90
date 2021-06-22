@@ -1,6 +1,6 @@
 module dyn_vverlet_mod
   USE calfo_mod,only: calfo
-  USE calfoberend_mod,only: calfoberend 
+  USE calfoberend_mod,only: calfoberend, dynlangevin
   use var_pot,only:ntyp
   USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lprahman,&
        &l2T,llangevin,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep,&
@@ -31,7 +31,6 @@ contains
     USE caltabi_mod,only:caltabi
     USE elec_cell, ONLY:TTlangevin
     !    USE Parrinello_Rahman
-    use calfoberend_mod,only:dynlangevin
     use period_mod,only:period
     implicit none
     !-----------------------------------------------
@@ -47,7 +46,6 @@ contains
     real(double), dimension(ntyp) :: aux
     real(double), save :: tmoyinst, imesureT
     !-----------------------------------------------
-    !real(double), external :: tempinst
     real(double)::eatommoy
 
 
@@ -143,7 +141,7 @@ contains
     else
        if(ibrake.gt.0) call calceloss(celndm,atdml)
     end if
-    if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
+    if (lTberendsen) call calfoberend(atdml)
     !  write(6,*)'dml potist ',potist,atdml%potist
 
 

@@ -77,8 +77,6 @@ contains
 
     real(double), dimension(1:3,1:3) :: maux2
     real(double), external :: detmat
-    !real(double), external :: calcvol
-    !real(double):: tempinst
     real(double)::temp0, unitE
     character*5 :: cunitE
 

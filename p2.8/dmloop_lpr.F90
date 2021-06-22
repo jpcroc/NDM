@@ -77,7 +77,7 @@ contains
     else
        if(ibrake.gt.0) call calceloss(celndm,atpr)
     end if
-    if (lTberendsen) call calfoberend(atpr%im,atpr%imm,atpr%xp,atpr%vp,atpr%fp,atpr%ityp)
+    if (lTberendsen) call calfoberend(atpr)
 !  write(6,*)'dml potist ',potist,atpr%potist
 
 

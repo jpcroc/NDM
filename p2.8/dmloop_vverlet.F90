@@ -62,7 +62,7 @@ contains
     else
        if(ibrake.gt.0) call calceloss(celndm,atdml)
     end if
-    if (lTberendsen) call calfoberend(atdml%im,atdml%imm,atdml%xp,atdml%vp,atdml%fp,atdml%ityp)
+    if (lTberendsen) call calfoberend(atdml)
     if (itmax==0) then
        call analyseT (atdml,celndm,boxndm)
        call endrunT(atdml,celndm,boxndm,.true.)

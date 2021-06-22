@@ -1,28 +1,24 @@
 module calfoberend_mod
+  use atomconfig,only:atom_config_d
   USE T_kind_param_m, ONLY:  double
-    USE var_pot, ONLY:gamlt,cm
+  use tempinstT_mod,only:tempinstT
+  USE var_pot, ONLY:gamlt,cm
   USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text,im_glob,lspaceNDM
   implicit none
 contains
-  subroutine calfoberend(im,imm,xp, vp, fp,ityp)
+  subroutine calfoberend(atcf)
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
 #else
-  USE Tpara,only:nprocspace
+    USE Tpara,only:nprocspace
 #endif
-
-    integer::im,imm
-    real(double)  :: xp(3,imm)
-    real(double)  :: vp(3,imm)
-    real(double)  :: fp(3,imm)
-    integer  :: ityp(imm)
+    class(atom_config_d)::atcf
     integer :: i,ic
-    !real(double), external :: tempinst
     real(double) :: gamb,fact,tempm1,mv2,v2,mv2_glob
 
-    do i = 1,im
-       v2= vp(1,i)**2+ vp(2,i)**2+ vp(3,i)**2
-       mv2= mv2 + cm(ityp(i))*v2
+    do i = 1,atcf%im
+       v2= atcf%vp(1,i)**2+ atcf%vp(2,i)**2+ atcf%vp(3,i)**2
+       mv2= mv2 + cm(atcf%ityp(i))*v2
     enddo
 
 #ifdef PARA
@@ -30,24 +26,24 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
    call comm_space%sum(mv2)
        tempm1=mv2/(3.d0*float(im_glob)*bk)
     else
-       tempm1=mv2/(3.d0*float(im)*bk)
+       tempm1=mv2/(3.d0*float(atcf%im)*bk)
     end if
 #else
-    tempm1=mv2/(3.d0*float(im)*bk)
+    tempm1=mv2/(3.d0*float(atcf%im)*bk)
 #endif
 
 
-!    tempm1=tempinst(im,vp,ityp)
+    tempm1=tempinstT(atcf)
 
     !      write(6,*)'jy suis'
     gamb=1./(2.*tauTcon)
     !      write(6,*)gamb,text,tempm1
 
-    do i=1,im
-       fact=cm(ityp(i))*gamb*(Text/tempm1-1.0)
+    do i=1,atcf%im
+       fact=cm(atcf%ityp(i))*gamb*(Text/tempm1-1.0)
        do ic=1,3
           !            write(6,*)fp(ic,i),fact*vp(ic,i)
-          fp(ic,i)=fp(ic,i)+fact*vp(ic,i)
+          atcf%fp(ic,i)=atcf%fp(ic,i)+fact*atcf%vp(ic,i)
        end do
 
     end do

@@ -443,7 +443,7 @@ end if
     else
        if(ibrake.gt.0) call calceloss(celndm,atpr)
     end if
-    if (lTberendsen) call calfoberend(atpr%im,atpr%imm,atpr%xp,atpr%vp,atpr%fp,atpr%ityp)
+    if (lTberendsen) call calfoberend(atpr)
 
     ! Calcul de la viscosité à l'instant ...
     DO i=1, nHoover
