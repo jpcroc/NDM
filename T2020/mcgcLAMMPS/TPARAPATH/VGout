@@ -1,0 +1,818 @@
+==1682969== Memcheck, a memory error detector
+==1682969== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1682969== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==1682969== Command: mpirun -np 2 /home/croc/NDM/ndm2021/rundm90_ndm_lammps_mpi_debug
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x515F397: mca_base_open (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x513C1C7: opal_init_util (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x4ED470E: orte_submit_init (orted_submit.c:284)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x51BA0B4: hwloc_look_linuxfs (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E0AFF: hwloc_discover (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E052E: opal_hwloc201_hwloc_topology_load (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x519E66B: opal_hwloc_base_get_topology (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xA501D18: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x51B9E84: hwloc_look_linuxfs (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E0AFF: hwloc_discover (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E052E: opal_hwloc201_hwloc_topology_load (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x519E66B: opal_hwloc_base_get_topology (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xA501D18: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x51BC34E: hwloc__read_fd_as_cpumask (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51BBD88: look_sysfscpu (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51BA867: hwloc_look_linuxfs (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E0AFF: hwloc_discover (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E052E: opal_hwloc201_hwloc_topology_load (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x519E66B: opal_hwloc_base_get_topology (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xA501D18: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x51BC34E: hwloc__read_fd_as_cpumask (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51BBA8A: look_sysfscpu (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51BA867: hwloc_look_linuxfs (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E0AFF: hwloc_discover (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E052E: opal_hwloc201_hwloc_topology_load (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x519E66B: opal_hwloc_base_get_topology (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xA501D18: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x51BC34E: hwloc__read_fd_as_cpumask (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51BB108: look_sysfscpu (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51BA867: hwloc_look_linuxfs (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E0AFF: hwloc_discover (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E052E: opal_hwloc201_hwloc_topology_load (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x519E66B: opal_hwloc_base_get_topology (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xA501D18: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x51BEDE9: look_sysfsnode (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51B9AD2: hwloc_look_linuxfs (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E0AFF: hwloc_discover (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E052E: opal_hwloc201_hwloc_topology_load (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x519E66B: opal_hwloc_base_get_topology (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xA501D18: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x51B2383: opal_hwloc201_hwloc_linux_get_tid_cpubind (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51CD0B2: hwloc_look_x86 (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51CC2EA: hwloc_x86_discover (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E0AFF: hwloc_discover (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E052E: opal_hwloc201_hwloc_topology_load (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x519E66B: opal_hwloc_base_get_topology (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xA501D18: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x51C2741: hwloc_linux_backend_get_pci_busid_cpuset (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51B0095: hwloc__pci_find_busid_parent (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51AFF68: opal_hwloc201_hwloc_pci_belowroot_apply_locality (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E0E66: hwloc_discover (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x51E052E: opal_hwloc201_hwloc_topology_load (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x519E66B: opal_hwloc_base_get_topology (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xA501D18: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x4048BA: __intel_sse2_strcat (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x517B5E8: opal_os_path (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x517F0BA: opal_path_access (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x517EFFD: opal_path_find (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x517ED5C: opal_path_findv (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xAF1BD2A: orte_plm_rsh_search (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_plm_rsh.so)
+==1682969==    by 0xAF1B862: rsh_component_query (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_plm_rsh.so)
+==1682969==    by 0x515EE5D: mca_base_select (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x4EA5418: orte_plm_base_select (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500A1A: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x40488B: __intel_sse2_strcat (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x517B5E8: opal_os_path (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x517F0BA: opal_path_access (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x517EFFD: opal_path_find (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x517ED5C: opal_path_findv (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xAF1BD2A: orte_plm_rsh_search (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_plm_rsh.so)
+==1682969==    by 0xAF1B862: rsh_component_query (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_plm_rsh.so)
+==1682969==    by 0x515EE5D: mca_base_select (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x4EA5418: orte_plm_base_select (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500A1A: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x40488B: __intel_sse2_strcat (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x517AEC5: opal_os_dirpath_create (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x4E6B42F: orte_session_dir (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500B2A: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0xB1D5044: OPAL_MCA_PMIX3X_pmix_mca_base_open (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1B9D16: OPAL_MCA_PMIX3X_pmix_rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A094F: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0xB1EC7A0: pdlopen_foreachfile (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3ADF: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_add (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3C78: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D5310: OPAL_MCA_PMIX3X_pmix_mca_base_open (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1B9D16: OPAL_MCA_PMIX3X_pmix_rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A094F: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969== 
+==1682969== Use of uninitialised value of size 8
+==1682969==    at 0xB1EC7AC: pdlopen_foreachfile (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3ADF: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_add (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3C78: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D5310: OPAL_MCA_PMIX3X_pmix_mca_base_open (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1B9D16: OPAL_MCA_PMIX3X_pmix_rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A094F: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969== 
+==1682969== Use of uninitialised value of size 8
+==1682969==    at 0xB1EC7B6: pdlopen_foreachfile (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3ADF: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_add (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3C78: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D5310: OPAL_MCA_PMIX3X_pmix_mca_base_open (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1B9D16: OPAL_MCA_PMIX3X_pmix_rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A094F: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969== 
+==1682969== Use of uninitialised value of size 8
+==1682969==    at 0xB1EC7E5: pdlopen_foreachfile (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3ADF: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_add (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3C78: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D5310: OPAL_MCA_PMIX3X_pmix_mca_base_open (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1B9D16: OPAL_MCA_PMIX3X_pmix_rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A094F: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969== 
+==1682969== Use of uninitialised value of size 8
+==1682969==    at 0xB1EC7EF: pdlopen_foreachfile (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3ADF: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_add (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3C78: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D5310: OPAL_MCA_PMIX3X_pmix_mca_base_open (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1B9D16: OPAL_MCA_PMIX3X_pmix_rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A094F: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969== 
+==1682969== Use of uninitialised value of size 8
+==1682969==    at 0xB1EC810: pdlopen_foreachfile (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3ADF: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_add (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3C78: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D5310: OPAL_MCA_PMIX3X_pmix_mca_base_open (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1B9D16: OPAL_MCA_PMIX3X_pmix_rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A094F: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x4047E3: __intel_sse2_strrchr (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xB1EC799: pdlopen_foreachfile (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3ADF: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_add (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D3C78: OPAL_MCA_PMIX3X_pmix_mca_base_component_repository_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1D5310: OPAL_MCA_PMIX3X_pmix_mca_base_open (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1B9D16: OPAL_MCA_PMIX3X_pmix_rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A094F: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xC497C8D: ds21_assign_module (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_ds21.so)
+==1682969==    by 0xB1EB4F0: OPAL_MCA_PMIX3X_pmix_gds_base_assign_module (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A0BBA: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xCABEC7D: ds12_assign_module (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_ds12.so)
+==1682969==    by 0xB1EB4F0: OPAL_MCA_PMIX3X_pmix_gds_base_assign_module (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A0BBA: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xC8ADA2D: hash_assign_module (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_hash.so)
+==1682969==    by 0xB1EB4F0: OPAL_MCA_PMIX3X_pmix_gds_base_assign_module (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1A0BBA: OPAL_MCA_PMIX3X_PMIx_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB151CBC: pmix3x_server_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E83995: pmix_server_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA500C6C: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Thread 2:
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xC8B583C: hash_store (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_hash.so)
+==1682969==    by 0xB1924EA: _store_internal (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Thread 1:
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x4048BA: __intel_sse2_strcat (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x517B5E8: opal_os_path (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x517F142: opal_path_access (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x517ED5C: opal_path_findv (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0xAF1EE46: rsh_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_plm_rsh.so)
+==1682969==    by 0xA5012D6: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Use of uninitialised value of size 8
+==1682969==    at 0x10D3CDD8: init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_rtc_hwloc.so)
+==1682969==    by 0x4EC3A19: orte_rtc_base_select (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0xA501928: rte_init (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_ess_hnp.so)
+==1682969==    by 0x4ECBE82: orte_init (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4ED4EB5: orte_submit_init (orted_submit.c:570)
+==1682969==    by 0x4021CE: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x4EA66AF: orte_plm_base_set_slots (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4EA64D6: orte_plm_base_daemons_reported (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0x4022A8: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x40477C: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x4EA66AF: orte_plm_base_set_slots (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4EA64D6: orte_plm_base_daemons_reported (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0x4022A8: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0xCEC64C1: generate_node_regex (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_preg_native.so)
+==1682969==    by 0xB1F5A12: OPAL_MCA_PMIX3X_pmix_preg_base_generate_node_regex (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB14EB6C: pmix3x_server_gen_regex (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E84DC8: orte_pmix_server_register_nspace (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4EA132A: orte_odls_base_default_construct_child_list (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x10B37B9D: orte_odls_default_launch_local_procs (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_odls_default.so)
+==1682969==    by 0x4E7F694: orte_daemon_recv (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4EC1225: orte_rml_base_process_msg (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0x4022A8: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0xCEC7146: generate_ppn (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_preg_native.so)
+==1682969==    by 0xB1F5AB2: OPAL_MCA_PMIX3X_pmix_preg_base_generate_ppn (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB14EC3C: pmix3x_server_gen_ppn (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x4E84EC8: orte_pmix_server_register_nspace (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4EA132A: orte_odls_base_default_construct_child_list (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x10B37B9D: orte_odls_default_launch_local_procs (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_odls_default.so)
+==1682969==    by 0x4E7F694: orte_daemon_recv (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4EC1225: orte_rml_base_process_msg (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0x4022A8: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Warning: noted but unhandled ioctl 0x5441 with no size/direction hints.
+==1682969==    This could cause spurious value errors to appear.
+==1682969==    See README_MISSING_SYSCALL_OR_IOCTL for guidance on writing a proper wrapper.
+==1683110== Warning: invalid file descriptor 1024 in syscall close()
+==1683110== Warning: invalid file descriptor 1025 in syscall close()
+==1683110== Warning: invalid file descriptor 1026 in syscall close()
+==1683110== Warning: invalid file descriptor 1027 in syscall close()
+==1683110==    Use --log-fd=<number> to select an alternative log fd.
+==1683110== Warning: invalid file descriptor 1028 in syscall close()
+==1683110== Warning: invalid file descriptor 1029 in syscall close()
+==1683111== Warning: invalid file descriptor 1024 in syscall close()
+==1683111== Warning: invalid file descriptor 1025 in syscall close()
+==1683111== Warning: invalid file descriptor 1026 in syscall close()
+==1683111== Warning: invalid file descriptor 1027 in syscall close()
+==1683111==    Use --log-fd=<number> to select an alternative log fd.
+==1683111== Warning: invalid file descriptor 1028 in syscall close()
+==1683111== Warning: invalid file descriptor 1029 in syscall close()
+==1682969== Thread 2:
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xC497C8D: ds21_assign_module (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_ds21.so)
+==1682969==    by 0xB1EB4F0: OPAL_MCA_PMIX3X_pmix_gds_base_assign_module (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xC080543: connection_handler (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_ptl_tcp.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x40477C: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xC497C8D: ds21_assign_module (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_ds21.so)
+==1682969==    by 0xB1EB4F0: OPAL_MCA_PMIX3X_pmix_gds_base_assign_module (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xC080543: connection_handler (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_ptl_tcp.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xCABEC7D: ds12_assign_module (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_ds12.so)
+==1682969==    by 0xB1EB4F0: OPAL_MCA_PMIX3X_pmix_gds_base_assign_module (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xC080543: connection_handler (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_ptl_tcp.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x40477C: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xCABEC7D: ds12_assign_module (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_ds12.so)
+==1682969==    by 0xB1EB4F0: OPAL_MCA_PMIX3X_pmix_gds_base_assign_module (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xC080543: connection_handler (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_ptl_tcp.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xC8ADA2D: hash_assign_module (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_hash.so)
+==1682969==    by 0xB1EB4F0: OPAL_MCA_PMIX3X_pmix_gds_base_assign_module (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xC080543: connection_handler (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_ptl_tcp.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x40477C: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xC8ADA2D: hash_assign_module (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_gds_hash.so)
+==1682969==    by 0xB1EB4F0: OPAL_MCA_PMIX3X_pmix_gds_base_assign_module (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xC080543: connection_handler (in /soft/openmpi-intel-4.0.2/lib/pmix/mca_ptl_tcp.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xB1AF689: pmix_server_job_ctrl (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB19EB1B: server_switchyard (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB19DEE1: pmix_server_message_handler (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1FC968: OPAL_MCA_PMIX3X_pmix_ptl_base_process_msg (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Invalid read of size 16
+==1682969==    at 0x404637: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xC6A0F06: _store_data_for_rank (in /soft/openmpi-intel-4.0.2/lib/libmca_common_dstore.so.1.0.1)
+==1682969==    by 0xC69F7E5: _dstore_store_nolock (in /soft/openmpi-intel-4.0.2/lib/libmca_common_dstore.so.1.0.1)
+==1682969==    by 0xC69F581: pmix_common_dstor_store (in /soft/openmpi-intel-4.0.2/lib/libmca_common_dstore.so.1.0.1)
+==1682969==    by 0xB1A205A: pmix_server_commit (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB19F177: server_switchyard (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB19DEE1: pmix_server_message_handler (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1FC968: OPAL_MCA_PMIX3X_pmix_ptl_base_process_msg (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==  Address 0xb69d0b3 is 3 bytes inside a block of size 12 alloc'd
+==1682969==    at 0x4C30EDB: malloc (vg_replace_malloc.c:309)
+==1682969==    by 0xB1EAB2D: OPAL_MCA_PMIX3X_pmix_bfrops_base_unpack_string (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1EB332: OPAL_MCA_PMIX3X_pmix_bfrops_base_unpack_kval (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1E75C8: OPAL_MCA_PMIX3X_pmix_bfrops_base_unpack (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xC69FFFD: _store_data_for_rank (in /soft/openmpi-intel-4.0.2/lib/libmca_common_dstore.so.1.0.1)
+==1682969==    by 0xC69F7E5: _dstore_store_nolock (in /soft/openmpi-intel-4.0.2/lib/libmca_common_dstore.so.1.0.1)
+==1682969==    by 0xC69F581: pmix_common_dstor_store (in /soft/openmpi-intel-4.0.2/lib/libmca_common_dstore.so.1.0.1)
+==1682969==    by 0xB1A205A: pmix_server_commit (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB19F177: server_switchyard (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB19DEE1: pmix_server_message_handler (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1FC968: OPAL_MCA_PMIX3X_pmix_ptl_base_process_msg (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0xB1A2F90: pmix_server_fence (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB19E405: server_switchyard (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB19DEE1: pmix_server_message_handler (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1FC968: OPAL_MCA_PMIX3X_pmix_ptl_base_process_msg (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+ Process            0  of            2  is alive  2.220446049250313E-058
+ >>>>>>>>>>> entree readdm
+ nom fichier din=
+ UO2.din                                                                        
+  
+ POTENTIELS LAMMPS ; PARA_SPACE VERSION=LAMMPS NOT NDM !!
+ 
+ -------- caracteristiques du run DM--------15
+      CALCUL MONTE CARLO GRAND CANONIQUE 
+ LPARAPATH NPARAPATH F           1
+ 
+ generation du crystal ; puis run
+ 
+      ANALYSES 
+ itetemp=          20  itesigma=          -1
+ 
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=           1  itab=           1  itetimestep=          -1
+tinit=     500.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+ 
+ 
+ nb de potentiels           0
+ fmt_cin           1
+ Process            1  of            2  is alive  2.220446049250313E-058
+ 
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+ 
+   1   15.999    8.000  O     -1.614
+   2  238.030   92.000  U      3.227
+ 
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-         850         850
+           1
+ 
+ **********construction du reseau************
+ repetition de mailles           4           4           4
+ izonr,zlmin,rut           3   43.7440000000000        11.0000000000000     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.2187E-06/  0.1100E-06) = 1
+  noy = Int(   0.2187E-06/  0.1100E-06) = 1
+  noz = Int(   0.2187E-06/  0.1100E-06) = 1
+nox noy noz apres correction = 1 1 1
+celsizes   0.2187200E-06  0.2187200E-06  0.2187200E-06
+UO2.gin                                                                         volume= 0.10463223D-19 cm3  0.10463223D+05 Ang3
+ natperc im/noxyz        7680         768
+ ltabvois,lconstrtot F F
+ 
+ -------- boite de simulation ------
+ nombre d atomes =         768
+vecteur  1      21.872000       0.000000       0.000000
+vecteur  2       0.000000      21.872000       0.000000
+vecteur  3       0.000000       0.000000      21.872000
+         512  atomes de type           1
+         256  atomes de type           2
+ 
+  a = (xhi-xlo,0,0); b = (xy,yhi-ylo,0); c = (xz,yz,zhi-zlo). 
+    0.0000000000000000    21.8719999999999999 xlo xhi
+    0.0000000000000000    21.8719999999999999 ylo yhi
+    0.0000000000000000    21.8719999999999999 zlo zhi
+    0.0000000000000000     0.0000000000000000     0.0000000000000000 xy xz yz
+ 
+forrtl: warning (406): fort: (1): In call to MPI_GROUP_INCL, an array temporary was created for argument #3
+
+Image              PC                Routine            Line        Source             
+rundm90_ndm_lammp  00000000012FC1E6  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  000000000071FD50  paraconfig_mp_com         133  paraconfig.F90
+rundm90_ndm_lammp  0000000000B5D08A  montecarlo_mod_mp        1431  montecarlo.F90
+rundm90_ndm_lammp  000000000085EE81  prog_mod_mp_prog_         225  prog.F90
+rundm90_ndm_lammp  0000000000B08249  MAIN__                     98  main.F90
+rundm90_ndm_lammp  000000000045FDA2  Unknown               Unknown  Unknown
+libc-2.28.so       00007F378BCE86A3  __libc_start_main     Unknown  Unknown
+rundm90_ndm_lammp  000000000045FCAE  Unknown               Unknown  Unknown
+forrtl: warning (406): fort: (1): In call to MPI_GROUP_INCL, an array temporary was created for argument #3
+
+Image              PC                Routine            Line        Source             
+rundm90_ndm_lammp  00000000012FC1E6  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  000000000071FD50  paraconfig_mp_com         133  paraconfig.F90
+rundm90_ndm_lammp  0000000000B5D08A  montecarlo_mod_mp        1431  montecarlo.F90
+rundm90_ndm_lammp  000000000085EE81  prog_mod_mp_prog_         225  prog.F90
+rundm90_ndm_lammp  0000000000B08249  MAIN__                     98  main.F90
+rundm90_ndm_lammp  000000000045FDA2  Unknown               Unknown  Unknown
+libc-2.28.so       00007F378BCE86A3  __libc_start_main     Unknown  Unknown
+rundm90_ndm_lammp  000000000045FCAE  Unknown               Unknown  Unknown
+ 
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ 
+ random velocities at TINIT =    500.000000000000      K
+ seed_size           2
+forrtl: warning (406): fort: (1): In call to MPI_GROUP_INCL, an array temporary was created for argument #3
+
+Image              PC                Routine            Line        Source             
+rundm90_ndm_lammp  00000000012FC1E6  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  000000000071FD50  paraconfig_mp_com         133  paraconfig.F90
+rundm90_ndm_lammp  0000000000B5D08A  montecarlo_mod_mp        1431  montecarlo.F90
+rundm90_ndm_lammp  000000000085EE81  prog_mod_mp_prog_         225  prog.F90
+rundm90_ndm_lammp  0000000000B08249  MAIN__                     98  main.F90
+rundm90_ndm_lammp  000000000045FDA2  Unknown               Unknown  Unknown
+libc-2.28.so       00007FE837BA66A3  __libc_start_main     Unknown  Unknown
+rundm90_ndm_lammp  000000000045FCAE  Unknown               Unknown  Unknown
+forrtl: warning (406): fort: (1): In call to MPI_GROUP_INCL, an array temporary was created for argument #3
+
+Image              PC                Routine            Line        Source             
+rundm90_ndm_lammp  00000000012FC1E6  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  000000000071FD50  paraconfig_mp_com         133  paraconfig.F90
+rundm90_ndm_lammp  0000000000B5D08A  montecarlo_mod_mp        1431  montecarlo.F90
+rundm90_ndm_lammp  000000000085EE81  prog_mod_mp_prog_         225  prog.F90
+rundm90_ndm_lammp  0000000000B08249  MAIN__                     98  main.F90
+rundm90_ndm_lammp  000000000045FDA2  Unknown               Unknown  Unknown
+libc-2.28.so       00007FE837BA66A3  __libc_start_main     Unknown  Unknown
+rundm90_ndm_lammp  000000000045FCAE  Unknown               Unknown  Unknown
+ iseed pour tirage des vitesses          11
+ temperature positions lues initspeed    501.073103902953     
+ temperature fin initspeed    501.898692297725     
+ 
+ INSER           0           1  0.000000000000000E+000
+ INSER           0           2  9.836581634291184E-009
+ INSER           0           3  5.037823317803576E-009
+ COUCOU           1
+ write configuration N+1  to confNP1.XXX.lmp
+ 
+  a = (xhi-xlo,0,0); b = (xy,yhi-ylo,0); c = (xz,yz,zhi-zlo). 
+    0.0000000000000000    21.8719999999999999 xlo xhi
+    0.0000000000000000    21.8719999999999999 ylo yhi
+    0.0000000000000000    21.8719999999999999 zlo zhi
+    0.0000000000000000     0.0000000000000000     0.0000000000000000 xy xz yz
+ 
+ COUCOU           0
+ LAMMPS OPEN_MPI_           1 
+ in.lammps.NP1                                                                  
+                                                  
+ LAMMPS OPEN_MPI_           0 
+ in.lammps.N                                                                    
+                                                  
+NDM: LAMMPS force field init done
+ POSTC           0
+ IN MONTECARLO           0
+ POSTC           1
+ IN MONTECARLO           1
+ outcfmc           1           1
+ postcalfo           1
+ outcfmc           0           1
+ postcalfo           0
+ outcfmc           1           2
+ outcfmc           0           2
+ outcfmc           1           3
+ outcfmc           0           3
+ outcfmc           1           4
+ PATH           1           1           1
+ outcfmc           0           4
+ W0  1.635460063238597E-009   1020.77399140853     
+ PATH           1           0           1
+ outcfmc           1           5
+ outcfmc           0           5
+ outcfmc           1           6
+ outcfmc           0           6
+ outcfmc           1           7
+ outcfmc           0           7
+ outcfmc           1           8
+ PATH           2           1           0
+ outcfmc           0           8
+ WeV   257.287601176375      WpreceV   1020.77399140853      XPROB
+  0.000000000000000E+000 XALEA  0.358666825800519     
+acceptation  num_chemin  direction b_opt(0) b_opt(1) b_wr_opt(0) b_wr_opt(1) mu_moy   mu_WRMC  mu_NC  mu_DC   WeV   WprecedenteV  proba_acc proba_refus
+    0    1    1  0.000000000000      0.000000000000      0.000000000000      0.000000000000      0.000000000000      0.000000000000      0.000000000000      0.000000000000      257.2876011764      1020.773991409      0.000000000000      1.000000000000    
+ PATH           2           0           0
+ INSER           0           1  0.000000000000000E+000
+ outcfmc           1           9
+ outcfmc           0           9
+ outcfmc           1          10
+ outcfmc           0          10
+forrtl: severe (174): SIGSEGV, segmentation fault occurred
+Image              PC                Routine            Line        Source             
+rundm90_ndm_lammp  00000000013048F3  Unknown               Unknown  Unknown
+libpthread-2.28.s  00007FE8396D8DD0  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000001131A96  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000001136445  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000001138BA9  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  000000000118AC15  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000E19265  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000DEA286  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000DE8216  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000DE8FB9  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000CDE975  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000CBC502  lammps_mp_lammps_         316  LAMMPS.F90
+rundm90_ndm_lammp  0000000000CCC31E  lammps_util_mod_m         219  ndm_lammps.F90
+rundm90_ndm_lammp  0000000000AD4B52  calfo_mod_mp_calf         120  calfo.F90
+rundm90_ndm_lammp  00000000004D7FFD  parautils_mp_poin         224  parautils.F90
+rundm90_ndm_lammp  0000000000B6385E  montecarlo_mod_mp        1653  montecarlo.F90
+rundm90_ndm_lammp  0000000000B4B546  montecarlo_mod_mp        1180  montecarlo.F90
+rundm90_ndm_lammp  0000000000B2A1E5  montecarlo_mod_mp         361  montecarlo.F90
+rundm90_ndm_lammp  0000000000860D42  prog_mod_mp_prog_         277  prog.F90
+rundm90_ndm_lammp  0000000000B08249  MAIN__                     98  main.F90
+rundm90_ndm_lammp  000000000045FDA2  Unknown               Unknown  Unknown
+libc-2.28.so       00007FE837BA66A3  __libc_start_main     Unknown  Unknown
+rundm90_ndm_lammp  000000000045FCAE  Unknown               Unknown  Unknown
+forrtl: severe (174): SIGSEGV, segmentation fault occurred
+Image              PC                Routine            Line        Source             
+rundm90_ndm_lammp  00000000013048F3  Unknown               Unknown  Unknown
+libpthread-2.28.s  00007F378D81ADD0  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000001131A96  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000001136445  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000001138BA9  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  000000000118AC15  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000E19265  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000DEA286  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000DE8216  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000DE8FB9  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000CDE975  Unknown               Unknown  Unknown
+rundm90_ndm_lammp  0000000000CBC502  lammps_mp_lammps_         316  LAMMPS.F90
+rundm90_ndm_lammp  0000000000CCC31E  lammps_util_mod_m         219  ndm_lammps.F90
+rundm90_ndm_lammp  0000000000AD4B52  calfo_mod_mp_calf         120  calfo.F90
+rundm90_ndm_lammp  00000000004D7FFD  parautils_mp_poin         224  parautils.F90
+rundm90_ndm_lammp  0000000000B633A3  montecarlo_mod_mp        1647  montecarlo.F90
+rundm90_ndm_lammp  0000000000B4B546  montecarlo_mod_mp        1180  montecarlo.F90
+rundm90_ndm_lammp  0000000000B2A1E5  montecarlo_mod_mp         361  montecarlo.F90
+rundm90_ndm_lammp  0000000000860D42  prog_mod_mp_prog_         277  prog.F90
+rundm90_ndm_lammp  0000000000B08249  MAIN__                     98  main.F90
+rundm90_ndm_lammp  000000000045FDA2  Unknown               Unknown  Unknown
+libc-2.28.so       00007F378BCE86A3  __libc_start_main     Unknown  Unknown
+rundm90_ndm_lammp  000000000045FCAE  Unknown               Unknown  Unknown
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x404651: __intel_sse2_strncmp (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0xB142963: pmix3x_value_unload (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB141EF8: pmix3x_event_hdlr (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB15D7E3: pmix_invoke_local_event_hdlr (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0xB1600BF: _notify_client_event (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0xB1BAF81: progress_engine (in /soft/openmpi-intel-4.0.2/lib/openmpi/mca_pmix_pmix3x.so)
+==1682969==    by 0x60052DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==1682969==    by 0x6318E82: clone (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Thread 1:
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x40488B: __intel_sse2_strcat (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x5180184: opal_show_help_vstring (in /soft/openmpi-intel-4.0.2/lib/libopen-pal.so.40.20.2)
+==1682969==    by 0x4E6D7CB: orte_show_help (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4E5C216: orte_print_aborted_job (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4E5C531: orte_quit (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0x4022A8: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+==1682969== Conditional jump or move depends on uninitialised value(s)
+==1682969==    at 0x40448E: __intel_sse2_strchr (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x4E6CE62: get_tli (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4E6DD72: show_help (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4E6DBEF: orte_show_help_norender (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4E6D7E4: orte_show_help (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4E5C216: orte_print_aborted_job (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x4E5C531: orte_quit (in /soft/openmpi-intel-4.0.2/lib/libopen-rte.so.40.20.2)
+==1682969==    by 0x518FC4F: event_process_active_single_queue (event.c:1370)
+==1682969==    by 0x518F51F: event_process_active (event.c:1440)
+==1682969==    by 0x518F51F: opal_libevent2022_event_base_loop (event.c:1644)
+==1682969==    by 0x4022A8: orterun (in /soft/openmpi-intel-4.0.2/bin/orterun)
+==1682969==    by 0x62406A2: (below main) (in /usr/lib64/libc-2.28.so)
+==1682969== 
+--------------------------------------------------------------------------
+mpirun detected that one or more processes exited with non-zero status, thus causing
+the job to be terminated. The first process to do so was:
+
+  Process name: [[39219,1],0]
+  Exit code:    174
+--------------------------------------------------------------------------
+==1682969== 
+==1682969== HEAP SUMMARY:
+==1682969==     in use at exit: 9,449 bytes in 56 blocks
+==1682969==   total heap usage: 26,760 allocs, 26,704 frees, 6,569,726 bytes allocated
+==1682969== 
+==1682969== LEAK SUMMARY:
+==1682969==    definitely lost: 5,421 bytes in 9 blocks
+==1682969==    indirectly lost: 3,396 bytes in 34 blocks
+==1682969==      possibly lost: 0 bytes in 0 blocks
+==1682969==    still reachable: 632 bytes in 13 blocks
+==1682969==         suppressed: 0 bytes in 0 blocks
+==1682969== Rerun with --leak-check=full to see details of leaked memory
+==1682969== 
+==1682969== Use --track-origins=yes to see where uninitialised values come from
+==1682969== For lists of detected and suppressed errors, rerun with: -s
+==1682969== ERROR SUMMARY: 400 errors from 42 contexts (suppressed: 0 from 0)

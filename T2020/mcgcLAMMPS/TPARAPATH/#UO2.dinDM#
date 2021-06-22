@@ -1,0 +1,20 @@
+&input
+
+        ipotentiel=-11
+	imm=1000
+	igen=0
+	dmtype=15
+
+        tinit=300.0
+	
+	itmax=5,
+	itetemp=1,itesigma=1
+	lEev=.true. 
+	lEparat=.true.,
+        lPkbar=.true. 	
+	itecfg=-5
+
+	ltriclin=.true.
+
+        
+ &end

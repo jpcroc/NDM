@@ -1,0 +1,2167 @@
+units		metal
+atom_style	charge
+atom_modify     map array
+atom_modify sort 0 0.0
+dimension       3
+boundary        p p p
+
+read_data	conf.lmp
+Reading data file ...
+  triclinic box = (0.0000000 0.0000000 0.0000000) to (21.872000 21.872000 21.872000) with tilt (0.0000000 0.0000000 0.0000000)
+  1 by 2 by 2 MPI processor grid
+  reading atoms ...
+  768 atoms
+  read_data CPU = 0.002 seconds
+
+mass		1 16.00
+group    	Oxy type 1
+512 atoms in group Oxy
+compute   	chargeOxy Oxy property/atom q
+compute   	q_Oxy Oxy reduce ave c_chargeOxy
+
+mass            2 238.03
+group           U type 2
+256 atoms in group U
+compute         chargeU U property/atom q
+compute         q_U U reduce ave c_chargeU
+
+compute		chargeall all property/atom q
+compute		qall all reduce sum c_chargeall
+
+#velocity	all create 300.0 277387
+
+pair_style	smtbq
+pair_coeff	* * ./ffield.smtbq.uo2 O U
+Reading potential file ./ffield.smtbq.uo2 with DATE: 2015-10-22
+
+
+
+
+timestep        0.0002
+
+
+thermo		1
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Neighbor list info ...
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 13
+  ghost atom cutoff = 13
+  binsize = 6.5, bins = 4 4 4
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair smtbq, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5759.5184            0   -5759.5184   -17045.415 
+Loop time of 2.85125e-06 on 4 procs for 0 steps with 768 atoms
+
+157.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.851e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         192 max         192 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+Nghost:        4773.00 ave        4773 max        4773 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128512.0 ave      128512 max      128512 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 514048
+Ave neighs/atom = 669.33333
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5759.2738            0   -5759.2738   -16951.736 
+Loop time of 2.70375e-06 on 4 procs for 0 steps with 768 atoms
+
+138.7% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.704e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         187 min
+Histogram: 1 1 0 1 0 0 0 0 0 1
+Nghost:        4773.00 ave        4778 max        4765 min
+Histogram: 1 0 0 0 0 0 1 0 1 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128512.0 ave      133760 max      125232 min
+Histogram: 1 1 0 1 0 0 0 0 0 1
+
+Total # of neighbors = 514048
+Ave neighs/atom = 669.33333
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5758.5557            0   -5758.5557   -16683.793 
+Loop time of 2.16275e-06 on 4 procs for 0 steps with 768 atoms
+
+173.4% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.163e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         188 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4765 min
+Histogram: 1 0 0 0 0 0 0 1 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128512.0 ave      133760 max      125888 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 514050
+Ave neighs/atom = 669.33594
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5757.3923            0   -5757.3923    -16247.64 
+Loop time of 2.40375e-06 on 4 procs for 0 steps with 768 atoms
+
+166.4% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.404e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         188 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4765 min
+Histogram: 1 0 0 0 0 0 0 1 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128541.0 ave      133798 max      125911 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 514164
+Ave neighs/atom = 669.48438
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5755.8364            0   -5755.8364   -15656.804 
+Loop time of 2.4715e-06 on 4 procs for 0 steps with 768 atoms
+
+141.6% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.471e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         188 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4765 min
+Histogram: 1 0 0 0 0 0 0 1 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128666.0 ave      133942 max      126028 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 514666
+Ave neighs/atom = 670.13802
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5753.9438            0   -5753.9438   -14934.059 
+Loop time of 2.1955e-06 on 4 procs for 0 steps with 768 atoms
+
+182.2% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.196e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         188 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4765 min
+Histogram: 1 0 0 0 0 0 0 1 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128864.0 ave      134142 max      126212 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 515454
+Ave neighs/atom = 671.16406
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5751.7808            0   -5751.7808   -14101.159 
+Loop time of 2.34875e-06 on 4 procs for 0 steps with 768 atoms
+
+170.3% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.349e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         189 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4765 min
+Histogram: 1 0 0 0 0 0 0 0 0 3
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129079.0 ave      134360 max      127079 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 516316
+Ave neighs/atom = 672.28646
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5749.4056            0   -5749.4056    -13173.54 
+Loop time of 2.13525e-06 on 4 procs for 0 steps with 768 atoms
+
+199.0% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.135e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4766 min
+Histogram: 1 0 0 0 0 0 0 0 0 3
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129289.0 ave      133919 max      127296 min
+Histogram: 2 1 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 517156
+Ave neighs/atom = 673.38021
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5746.9005            0   -5746.9005   -12172.522 
+Loop time of 2.41625e-06 on 4 procs for 0 steps with 768 atoms
+
+165.5% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.416e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4766 min
+Histogram: 1 0 0 0 0 0 0 0 0 3
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129458.0 ave      134124 max      127456 min
+Histogram: 2 1 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 517834
+Ave neighs/atom = 674.26302
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5744.3365            0   -5744.3365   -11129.071 
+Loop time of 2.45075e-06 on 4 procs for 0 steps with 768 atoms
+
+173.4% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.451e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4766 min
+Histogram: 1 0 0 0 0 0 0 0 0 3
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129604.0 ave      134268 max      127592 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 518414
+Ave neighs/atom = 675.01823
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5741.7813            0   -5741.7813   -10059.611 
+Loop time of 2.8545e-06 on 4 procs for 0 steps with 768 atoms
+
+148.9% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.854e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         188 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4765 min
+Histogram: 1 0 0 0 0 0 0 0 2 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129735.0 ave      135063 max      127059 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 518940
+Ave neighs/atom = 675.70312
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5728.4531            0   -5728.4531   -8012.0786 
+Loop time of 2.31175e-06 on 4 procs for 0 steps with 768 atoms
+
+194.7% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.312e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         188 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4772.00 ave        4779 max        4767 min
+Histogram: 1 0 0 2 0 0 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129734.0 ave      135058 max      127044 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 518936
+Ave neighs/atom = 675.69792
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5728.5932            0   -5728.5932   -8266.3653 
+Loop time of 2.56875e-06 on 4 procs for 0 steps with 768 atoms
+
+175.2% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.569e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4772.00 ave        4778 max        4768 min
+Histogram: 1 0 0 2 0 0 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129611.0 ave      134274 max      127581 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 518444
+Ave neighs/atom = 675.05729
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5728.1523            0   -5728.1523   -8310.9058 
+Loop time of 2.4485e-06 on 4 procs for 0 steps with 768 atoms
+
+173.6% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.449e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4772.00 ave        4777 max        4768 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129456.0 ave      134109 max      127476 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 517822
+Ave neighs/atom = 674.24740
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5727.1937            0   -5727.1937   -8189.2403 
+Loop time of 2.1915e-06 on 4 procs for 0 steps with 768 atoms
+
+182.5% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.192e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4772.00 ave        4777 max        4768 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129298.0 ave      133936 max      127330 min
+Histogram: 2 1 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 517194
+Ave neighs/atom = 673.42969
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5726.0923            0   -5726.0923   -8030.8284 
+Loop time of 2.43e-06 on 4 procs for 0 steps with 768 atoms
+
+164.6% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.43e-06   |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         189 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Nghost:        4772.00 ave        4777 max        4767 min
+Histogram: 1 0 0 0 0 2 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129100.0 ave      134369 max      127125 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 516398
+Ave neighs/atom = 672.39323
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5725.6904            0   -5725.6904   -8076.9403 
+Loop time of 2.34e-06 on 4 procs for 0 steps with 768 atoms
+
+170.9% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.34e-06   |            |       |100.00
+
+Nlocal:        192.000 ave         201 max         188 min
+Histogram: 2 1 0 0 0 0 0 0 0 1
+Nghost:        4772.00 ave        4777 max        4766 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128899.0 ave      134826 max      126273 min
+Histogram: 2 1 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 515596
+Ave neighs/atom = 671.34896
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5726.9174            0   -5726.9174     -8552.35 
+Loop time of 2.18475e-06 on 4 procs for 0 steps with 768 atoms
+
+183.1% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.185e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         187 min
+Histogram: 1 0 0 2 0 0 0 0 0 1
+Nghost:        4772.00 ave        4776 max        4768 min
+Histogram: 1 0 1 0 0 0 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128716.0 ave      133332 max      125437 min
+Histogram: 1 0 0 2 0 0 0 0 0 1
+
+Total # of neighbors = 514866
+Ave neighs/atom = 670.39844
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0      -5730.1            0      -5730.1   -9538.4952 
+Loop time of 2.29625e-06 on 4 procs for 0 steps with 768 atoms
+
+174.2% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.296e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         186 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+Nghost:        4772.00 ave        4775 max        4768 min
+Histogram: 1 0 1 0 0 0 0 0 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128586.0 ave      133186 max      124666 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+
+Total # of neighbors = 514342
+Ave neighs/atom = 669.71615
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5734.5331            0   -5734.5331   -10861.793 
+Loop time of 2.449e-06 on 4 procs for 0 steps with 768 atoms
+
+163.3% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.449e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         195 max         188 min
+Histogram: 1 0 0 0 0 1 0 1 0 1
+Nghost:        4772.00 ave        4775 max        4768 min
+Histogram: 1 0 0 0 0 1 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128526.0 ave      130482 max      125929 min
+Histogram: 1 0 0 0 0 1 0 1 0 1
+
+Total # of neighbors = 514104
+Ave neighs/atom = 669.40625
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5739.0305            0   -5739.0305   -12217.559 
+Loop time of 2.28575e-06 on 4 procs for 0 steps with 768 atoms
+
+164.1% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.286e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         196 max         189 min
+Histogram: 1 0 1 0 1 0 0 0 0 1
+Nghost:        4772.00 ave        4778 max        4769 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128520.0 ave      131136 max      126545 min
+Histogram: 1 0 1 0 1 0 0 0 0 1
+
+Total # of neighbors = 514078
+Ave neighs/atom = 669.37240
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5742.7184            0   -5742.7184   -13350.747 
+Loop time of 2.15375e-06 on 4 procs for 0 steps with 768 atoms
+
+185.7% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.154e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         188 min
+Histogram: 2 0 0 0 0 0 1 0 0 1
+Nghost:        4772.00 ave        4779 max        4767 min
+Histogram: 1 1 0 0 0 1 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128521.0 ave      132453 max      125883 min
+Histogram: 2 0 0 0 0 0 1 0 0 1
+
+Total # of neighbors = 514084
+Ave neighs/atom = 669.38021
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5759.5184            0   -5759.5184   -17045.415 
+Loop time of 2.37675e-06 on 4 procs for 0 steps with 768 atoms
+
+168.3% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.377e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         192 max         192 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+Nghost:        4773.00 ave        4773 max        4773 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128512.0 ave      128512 max      128512 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 514048
+Ave neighs/atom = 669.33333
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0    -5759.274            0    -5759.274   -16952.069 
+Loop time of 2.729e-06 on 4 procs for 0 steps with 768 atoms
+
+164.9% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.729e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4766 min
+Histogram: 1 0 0 0 0 0 0 0 1 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128512.0 ave      133104 max      126544 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 514048
+Ave neighs/atom = 669.33333
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5758.5547            0   -5758.5547   -16684.442 
+Loop time of 2.26525e-06 on 4 procs for 0 steps with 768 atoms
+
+176.6% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.265e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         188 min
+Histogram: 1 1 0 0 0 1 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4767 min
+Histogram: 1 0 0 0 0 1 0 0 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128512.0 ave      132448 max      125888 min
+Histogram: 1 1 0 0 0 1 0 0 0 1
+
+Total # of neighbors = 514050
+Ave neighs/atom = 669.33594
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5757.3878            0   -5757.3878    -16247.86 
+Loop time of 2.1755e-06 on 4 procs for 0 steps with 768 atoms
+
+149.4% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.176e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         188 min
+Histogram: 1 1 0 0 0 1 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4767 min
+Histogram: 1 0 0 0 0 1 0 0 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128542.0 ave      132485 max      125912 min
+Histogram: 1 1 0 0 1 0 0 0 0 1
+
+Total # of neighbors = 514166
+Ave neighs/atom = 669.48698
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5755.8072            0   -5755.8072   -15650.951 
+Loop time of 2.49125e-06 on 4 procs for 0 steps with 768 atoms
+
+170.6% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.491e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         188 min
+Histogram: 1 0 1 0 1 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4767 min
+Histogram: 1 0 0 0 0 0 1 0 1 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128666.0 ave      132627 max      126027 min
+Histogram: 1 1 0 0 1 0 0 0 0 1
+
+Total # of neighbors = 514664
+Ave neighs/atom = 670.13542
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5753.8599            0   -5753.8599    -14916.86 
+Loop time of 2.2815e-06 on 4 procs for 0 steps with 768 atoms
+
+164.4% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.282e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         188 min
+Histogram: 1 0 1 0 1 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4767 min
+Histogram: 1 0 0 0 0 0 1 0 1 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128873.0 ave      132838 max      126222 min
+Histogram: 1 1 0 0 1 0 0 0 0 1
+
+Total # of neighbors = 515492
+Ave neighs/atom = 671.21354
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5751.6053            0   -5751.6053   -14054.664 
+Loop time of 2.396e-06 on 4 procs for 0 steps with 768 atoms
+
+177.4% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.396e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         188 min
+Histogram: 1 1 0 0 0 1 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4767 min
+Histogram: 1 0 0 0 0 1 0 0 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129096.0 ave      133070 max      126442 min
+Histogram: 2 0 0 0 0 1 0 0 0 1
+
+Total # of neighbors = 516384
+Ave neighs/atom = 672.37500
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5749.0974            0   -5749.0974     -13087.9 
+Loop time of 2.36425e-06 on 4 procs for 0 steps with 768 atoms
+
+179.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.364e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4766 min
+Histogram: 1 0 0 0 0 0 0 0 1 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129288.0 ave      133925 max      127282 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 517150
+Ave neighs/atom = 673.37240
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5746.3796            0   -5746.3796   -12023.264 
+Loop time of 2.15225e-06 on 4 procs for 0 steps with 768 atoms
+
+174.2% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.152e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         189 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4767 min
+Histogram: 1 0 0 0 0 0 0 1 1 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129448.0 ave      133451 max      127451 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 517792
+Ave neighs/atom = 674.20833
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5743.5043            0   -5743.5043    -10877.61 
+Loop time of 2.25475e-06 on 4 procs for 0 steps with 768 atoms
+
+188.5% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.255e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         189 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4767 min
+Histogram: 1 0 0 0 0 0 0 1 1 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129596.0 ave      133602 max      127603 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 518382
+Ave neighs/atom = 674.97656
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5740.5236            0   -5740.5236   -9669.3665 
+Loop time of 2.29975e-06 on 4 procs for 0 steps with 768 atoms
+
+184.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.3e-06    |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         190 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4775 max        4767 min
+Histogram: 1 0 0 0 0 0 0 0 0 3
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129704.0 ave      133713 max      128354 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 518816
+Ave neighs/atom = 675.54167
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5730.2379            0   -5730.2379   -8130.8754 
+Loop time of 2.05225e-06 on 4 procs for 0 steps with 768 atoms
+
+194.9% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.052e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         189 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+Nghost:        4776.50 ave        4782 max        4771 min
+Histogram: 1 0 0 1 0 0 1 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129702.0 ave      133690 max      127630 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 518806
+Ave neighs/atom = 675.52865
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5731.4415            0   -5731.4415   -8974.0264 
+Loop time of 2.3775e-06 on 4 procs for 0 steps with 768 atoms
+
+168.2% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.377e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         188 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+Nghost:        4776.50 ave        4783 max        4770 min
+Histogram: 1 0 0 0 1 1 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129594.0 ave      134246 max      126843 min
+Histogram: 1 1 0 1 0 0 0 0 0 1
+
+Total # of neighbors = 518378
+Ave neighs/atom = 674.97135
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5732.0144            0   -5732.0144   -9692.6859 
+Loop time of 2.3215e-06 on 4 procs for 0 steps with 768 atoms
+
+172.3% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.321e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         188 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+Nghost:        4776.50 ave        4783 max        4770 min
+Histogram: 1 0 0 0 1 1 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129452.0 ave      134098 max      126721 min
+Histogram: 1 1 0 1 0 0 0 0 0 1
+
+Total # of neighbors = 517808
+Ave neighs/atom = 674.22917
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5731.9981            0   -5731.9981   -10296.054 
+Loop time of 2.343e-06 on 4 procs for 0 steps with 768 atoms
+
+181.4% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.343e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         187 min
+Histogram: 1 1 0 0 0 1 0 0 0 1
+Nghost:        4776.50 ave        4784 max        4770 min
+Histogram: 1 0 0 0 2 0 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129294.0 ave      133920 max      125905 min
+Histogram: 1 1 0 0 0 1 0 0 0 1
+
+Total # of neighbors = 517178
+Ave neighs/atom = 673.40885
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5731.8022            0   -5731.8022   -10850.453 
+Loop time of 2.4305e-06 on 4 procs for 0 steps with 768 atoms
+
+185.1% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.43e-06   |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         187 min
+Histogram: 2 0 0 0 1 0 0 0 0 1
+Nghost:        4776.50 ave        4784 max        4769 min
+Histogram: 1 0 0 0 1 1 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129130.0 ave      134404 max      125743 min
+Histogram: 2 0 0 0 1 0 0 0 0 1
+
+Total # of neighbors = 516522
+Ave neighs/atom = 672.55469
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5732.0973            0   -5732.0973   -11424.877 
+Loop time of 2.23675e-06 on 4 procs for 0 steps with 768 atoms
+
+178.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.237e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         201 max         186 min
+Histogram: 1 0 1 1 0 0 0 0 0 1
+Nghost:        4776.50 ave        4785 max        4768 min
+Histogram: 1 0 0 0 1 1 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128918.0 ave      134847 max      124884 min
+Histogram: 1 0 1 1 0 0 0 0 0 1
+
+Total # of neighbors = 515674
+Ave neighs/atom = 671.45052
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5733.5937            0   -5733.5937    -12087.64 
+Loop time of 2.3645e-06 on 4 procs for 0 steps with 768 atoms
+
+190.3% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.365e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         201 max         187 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+Nghost:        4776.50 ave        4784 max        4768 min
+Histogram: 1 0 0 0 0 2 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128712.0 ave      134624 max      125339 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+
+Total # of neighbors = 514850
+Ave neighs/atom = 670.37760
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5736.3745            0   -5736.3745    -12835.31 
+Loop time of 2.20425e-06 on 4 procs for 0 steps with 768 atoms
+
+170.1% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.204e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         187 min
+Histogram: 2 0 0 0 0 1 0 0 0 1
+Nghost:        4776.50 ave        4784 max        4769 min
+Histogram: 1 0 0 0 1 0 1 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128574.0 ave      133816 max      125218 min
+Histogram: 2 0 0 0 0 1 0 0 0 1
+
+Total # of neighbors = 514296
+Ave neighs/atom = 669.65625
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5739.8332            0   -5739.8332   -13592.058 
+Loop time of 2.45025e-06 on 4 procs for 0 steps with 768 atoms
+
+183.7% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.45e-06   |            |       |100.00
+
+Nlocal:        192.000 ave         195 max         190 min
+Histogram: 2 0 0 0 0 0 1 0 0 1
+Nghost:        4776.50 ave        4781 max        4774 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128528.0 ave      130476 max      127154 min
+Histogram: 2 0 0 0 0 0 1 0 0 1
+
+Total # of neighbors = 514110
+Ave neighs/atom = 669.41406
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5743.0951            0   -5743.0951   -14240.403 
+Loop time of 2.42725e-06 on 4 procs for 0 steps with 768 atoms
+
+175.1% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.427e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         196 max         185 min
+Histogram: 1 0 0 0 0 0 1 0 0 2
+Nghost:        4776.50 ave        4786 max        4773 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128518.0 ave      131120 max      123865 min
+Histogram: 1 0 0 0 0 0 1 0 0 2
+
+Total # of neighbors = 514074
+Ave neighs/atom = 669.36719
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0    -5745.542            0    -5745.542   -14678.241 
+Loop time of 2.302e-06 on 4 procs for 0 steps with 768 atoms
+
+173.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.302e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         193 max         191 min
+Histogram: 1 0 0 0 0 2 0 0 0 1
+Nghost:        4776.50 ave        4780 max        4772 min
+Histogram: 1 0 0 0 0 0 2 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128518.0 ave      129243 max      127804 min
+Histogram: 1 0 0 0 1 1 0 0 0 1
+
+Total # of neighbors = 514074
+Ave neighs/atom = 669.36719
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5759.5184            0   -5759.5184   -17045.415 
+Loop time of 2.50375e-06 on 4 procs for 0 steps with 768 atoms
+
+149.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.504e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         192 max         192 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+Nghost:        4773.00 ave        4773 max        4773 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128512.0 ave      128512 max      128512 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 514048
+Ave neighs/atom = 669.33333
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5759.2747            0   -5759.2747    -16952.11 
+Loop time of 2.57875e-06 on 4 procs for 0 steps with 768 atoms
+
+164.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.579e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         188 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4766 min
+Histogram: 1 0 0 0 0 0 1 0 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128512.0 ave      133104 max      125888 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+
+Total # of neighbors = 514048
+Ave neighs/atom = 669.33333
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5758.5556            0   -5758.5556   -16683.864 
+Loop time of 2.31e-06 on 4 procs for 0 steps with 768 atoms
+
+173.2% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.31e-06   |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         188 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4766 min
+Histogram: 1 0 0 0 0 0 1 0 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128512.0 ave      133104 max      125888 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+
+Total # of neighbors = 514050
+Ave neighs/atom = 669.33594
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5757.3964            0   -5757.3964    -16247.88 
+Loop time of 2.92825e-06 on 4 procs for 0 steps with 768 atoms
+
+145.1% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.928e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         188 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4766 min
+Histogram: 1 0 0 0 0 0 1 0 0 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128542.0 ave      133138 max      125915 min
+Histogram: 2 0 0 1 0 0 0 0 0 1
+
+Total # of neighbors = 514166
+Ave neighs/atom = 669.48698
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5755.8443            0   -5755.8443   -15654.581 
+Loop time of 2.28175e-06 on 4 procs for 0 steps with 768 atoms
+
+175.3% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.282e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4766 min
+Histogram: 1 0 0 0 0 0 0 0 0 3
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128666.0 ave      133282 max      126683 min
+Histogram: 2 1 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 514662
+Ave neighs/atom = 670.13281
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5753.9546            0   -5753.9546   -14926.483 
+Loop time of 2.2555e-06 on 4 procs for 0 steps with 768 atoms
+
+177.3% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.256e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4766 min
+Histogram: 1 0 0 0 0 0 0 0 1 2
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     128870.0 ave      133493 max      126855 min
+Histogram: 2 0 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 515482
+Ave neighs/atom = 671.20052
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5751.8027            0   -5751.8027   -14085.064 
+Loop time of 2.137e-06 on 4 procs for 0 steps with 768 atoms
+
+175.5% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.137e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         200 max         189 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4765 min
+Histogram: 1 0 0 0 0 0 0 0 0 3
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129086.0 ave      134378 max      127084 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 516342
+Ave neighs/atom = 672.32031
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5749.4495            0   -5749.4495   -13142.619 
+Loop time of 2.1805e-06 on 4 procs for 0 steps with 768 atoms
+
+183.4% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.181e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         199 max         189 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4766 min
+Histogram: 1 0 0 0 0 0 0 0 0 3
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129279.0 ave      133929 max      127266 min
+Histogram: 1 2 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 517116
+Ave neighs/atom = 673.32812
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5746.9518            0   -5746.9518   -12125.116 
+Loop time of 2.4075e-06 on 4 procs for 0 steps with 768 atoms
+
+166.1% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.408e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         189 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+Nghost:        4773.00 ave        4776 max        4767 min
+Histogram: 1 0 0 0 0 0 0 1 1 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129465.0 ave      133480 max      127458 min
+Histogram: 1 1 1 0 0 0 0 0 0 1
+
+Total # of neighbors = 517860
+Ave neighs/atom = 674.29688
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5744.3555            0   -5744.3555   -11038.653 
+Loop time of 2.11275e-06 on 4 procs for 0 steps with 768 atoms
+
+189.3% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.113e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         188 min
+Histogram: 1 0 1 0 1 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4767 min
+Histogram: 1 0 0 0 0 0 1 0 1 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129616.0 ave      133636 max      126932 min
+Histogram: 1 1 0 0 1 0 0 0 0 1
+
+Total # of neighbors = 518462
+Ave neighs/atom = 675.08073
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5741.7162            0   -5741.7162   -9909.5344 
+Loop time of 2.467e-06 on 4 procs for 0 steps with 768 atoms
+
+182.4% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.467e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         198 max         188 min
+Histogram: 1 0 1 0 1 0 0 0 0 1
+Nghost:        4773.00 ave        4777 max        4767 min
+Histogram: 1 0 0 0 0 0 1 0 1 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129724.0 ave      133728 max      127059 min
+Histogram: 1 1 0 0 1 0 0 0 0 1
+
+Total # of neighbors = 518896
+Ave neighs/atom = 675.64583
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0    -5728.546            0    -5728.546   -7701.2305 
+Loop time of 2.27475e-06 on 4 procs for 0 steps with 768 atoms
+
+208.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.275e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         196 max         187 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+Nghost:        4773.75 ave        4780 max        4767 min
+Histogram: 1 0 0 1 0 0 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129733.0 ave      132430 max      126352 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+
+Total # of neighbors = 518932
+Ave neighs/atom = 675.69271
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5727.4763            0   -5727.4763   -7014.2461 
+Loop time of 2.5725e-06 on 4 procs for 0 steps with 768 atoms
+
+174.9% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.573e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         196 max         187 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+Nghost:        4773.75 ave        4780 max        4767 min
+Histogram: 1 0 0 1 0 0 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129831.0 ave      132531 max      126441 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+
+Total # of neighbors = 519324
+Ave neighs/atom = 676.20312
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5726.2937            0   -5726.2937   -6298.5223 
+Loop time of 2.37675e-06 on 4 procs for 0 steps with 768 atoms
+
+178.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.377e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         196 max         187 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+Nghost:        4773.75 ave        4780 max        4767 min
+Histogram: 1 0 0 1 0 0 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129901.0 ave      132607 max      126505 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+
+Total # of neighbors = 519604
+Ave neighs/atom = 676.56771
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5725.0479            0   -5725.0479   -5563.0764 
+Loop time of 2.2395e-06 on 4 procs for 0 steps with 768 atoms
+
+189.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.239e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         196 max         187 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+Nghost:        4773.75 ave        4780 max        4767 min
+Histogram: 1 0 0 1 0 0 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     129960.0 ave      132690 max      126560 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+
+Total # of neighbors = 519838
+Ave neighs/atom = 676.87240
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5723.7956            0   -5723.7956   -4817.0015 
+Loop time of 2.39075e-06 on 4 procs for 0 steps with 768 atoms
+
+188.2% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.391e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         196 max         187 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+Nghost:        4773.75 ave        4780 max        4767 min
+Histogram: 1 0 0 1 0 0 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     130016.0 ave      132746 max      126615 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+
+Total # of neighbors = 520064
+Ave neighs/atom = 677.16667
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0    -5722.609            0    -5722.609   -4084.3608 
+Loop time of 2.2855e-06 on 4 procs for 0 steps with 768 atoms
+
+186.0% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.285e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         197 max         187 min
+Histogram: 1 0 0 0 0 2 0 0 0 1
+Nghost:        4771.50 ave        4778 max        4764 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     130062.0 ave      133469 max      126659 min
+Histogram: 1 0 0 0 1 1 0 0 0 1
+
+Total # of neighbors = 520250
+Ave neighs/atom = 677.40885
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5721.5553            0   -5721.5553   -3391.8997 
+Loop time of 2.338e-06 on 4 procs for 0 steps with 768 atoms
+
+181.8% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.338e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         197 max         188 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+Nghost:        4771.50 ave        4777 max        4764 min
+Histogram: 1 0 0 0 0 1 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     130092.0 ave      133505 max      127345 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+
+Total # of neighbors = 520370
+Ave neighs/atom = 677.56510
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5720.6804            0   -5720.6804   -2747.3274 
+Loop time of 2.63475e-06 on 4 procs for 0 steps with 768 atoms
+
+180.3% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.635e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         197 max         188 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+Nghost:        4771.50 ave        4777 max        4764 min
+Histogram: 1 0 0 0 0 1 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     130120.0 ave      133533 max      127370 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+
+Total # of neighbors = 520478
+Ave neighs/atom = 677.70573
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0    -5720.046            0    -5720.046     -2168.81 
+Loop time of 2.4405e-06 on 4 procs for 0 steps with 768 atoms
+
+163.9% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.44e-06   |            |       |100.00
+
+Nlocal:        192.000 ave         197 max         188 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+Nghost:        4771.50 ave        4777 max        4764 min
+Histogram: 1 0 0 0 0 1 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     130146.0 ave      133553 max      127399 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+
+Total # of neighbors = 520586
+Ave neighs/atom = 677.84635
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5719.6987            0   -5719.6987   -1682.6878 
+Loop time of 2.3185e-06 on 4 procs for 0 steps with 768 atoms
+
+172.5% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.319e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         197 max         188 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+Nghost:        4771.50 ave        4777 max        4764 min
+Histogram: 1 0 0 0 0 1 0 1 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     130163.0 ave      133566 max      127426 min
+Histogram: 1 0 0 1 1 0 0 0 0 1
+
+Total # of neighbors = 520652
+Ave neighs/atom = 677.93229
+Neighbor list builds = 0
+Dangerous builds = 0
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Per MPI rank memory allocation (min/avg/max) = 5.302 | 5.302 | 5.302 Mbytes
+Step Temp E_pair E_mol TotEng Press 
+       0            0   -5719.6845            0   -5719.6845   -1303.7971 
+Loop time of 2.1785e-06 on 4 procs for 0 steps with 768 atoms
+
+195.1% CPU use with 4 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.179e-06  |            |       |100.00
+
+Nlocal:        192.000 ave         196 max         188 min
+Histogram: 1 0 0 0 0 2 0 0 0 1
+Nghost:        4771.50 ave        4777 max        4765 min
+Histogram: 1 0 0 0 0 1 1 0 0 1
+Neighs:        0.00000 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+FullNghs:     130169.0 ave      132901 max      127430 min
+Histogram: 1 0 0 0 1 1 0 0 0 1
+
+Total # of neighbors = 520676
+Ave neighs/atom = 677.96354
+Neighbor list builds = 0
+Dangerous builds = 0
