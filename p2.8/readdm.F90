@@ -39,7 +39,7 @@ contains
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
-    USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath
+    USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc,Wsave
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
 #endif
@@ -84,10 +84,10 @@ contains
          rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,&
          lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
          eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
-         mdcg_noise, lforcetabulate,ivisu,&
+         mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,ndir,nstep,betaguess,&
-         &nparapath,lparapath
+         &nparapath,lparapath,Wsave
 
 
     !
@@ -107,6 +107,8 @@ contains
     tempstop = -1.0             !temperature of run stop
     tempstopcel = -1.0             !temperature of run stop
     dmtype = 0  
+    idirectionmcgc=-2
+    Wsave=0
     !dmtype = type of calculation : 1 -> MD
     !                               2 -> quench (trempe) or fire quench
     !                               3 -> gradient conjugue générique pointe vers 31 par défaut 
@@ -948,6 +950,19 @@ contains
        if ((lparapath).and.(nparapath.le.1)) then
           write(6,*)'lparapath ET nparapath=1 stop'
           stop
+       end if
+       if ((lrestart).and.(.not.((idirectionmcgc==0).or.(idirectionmcgc==1)))) then
+          write(6,*)'set idirectionmcgc to 0 or 1 '
+          stop
+       end if
+       if ((lrestart).and.(Wsave==0))then
+          write(6,*)'give Wsave (eV) '
+          stop
+       end if
+       if (lrestart) then
+          if (rang==0) then
+             write(6,*)'MCGC restart Wsave, idirectionmcgc ', Wsave,idirectionmcgc
+          end if
        end if
 #ifdef PARA
 #else

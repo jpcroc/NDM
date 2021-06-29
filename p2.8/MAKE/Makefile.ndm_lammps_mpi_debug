@@ -42,7 +42,7 @@ SHELL = /bin/sh
 
 # NDM ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
-  OPTIONS  =  -fast -g -traceback
+  OPTIONS  =  -O3 -g -traceback
   NDM_INC  =  -DLAMMPS_VERSION -DPARA # HERE ONLY mod IF NDM SERIAL WITH NO EXTERNAL LIBS 
 
 # MPI library, REQUIRED if -DPARA

@@ -1,4 +1,4 @@
-# ndm_mpi_debug PARA=1 				: NDM + OPENMPI  with Intel Compiler on Gatsby cluster Linux arch with debug options
+# ndm_mpi PARA=1 				: NDM + OPENMPI  with Intel Compiler on Gatsby cluster Linux arch
 # (last time compiled & tested with exemple : 18 Feb. 2020 by Mickael Trochet)
 #
 # add this module in your .bashrc or charge them before compilation and executions.
@@ -16,8 +16,8 @@ SHELL = /bin/sh
 
   C++ = mpic++
   CC  = mpicc
-  F77 = mpif77  -cpp  -warn all -check all
-  F90 = mpif90  -cpp  -warn all -check all
+  F77 = mpif77  -cpp # -warn all -check all
+  F90 = mpif90  -cpp # -warn all -check all
   LINK = ${F90}
   SIZE = size
   ARCHIVE = ar
@@ -36,7 +36,7 @@ SHELL = /bin/sh
 
 # NDM ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
-  OPTIONS  = -O0 -g  -warn all -check all #-traceback 
+  OPTIONS  = -O3 -g #-traceback # -fast
   NDM_INC  = -DPARA # HERE DEFINE MACRO NEEDED IF NDM SERIAL WITH NO EXTERNAL LIBS 
 
 # MPI library, REQUIRED if -DPARA
@@ -135,7 +135,7 @@ SHELL = /bin/sh
 
   MKL_INC  = #-I/opt/intel/mkl/include/intel64/lp64
   MKL_PATH = #-L/opt/intel/mkl/lib
-  MKL_LIB  = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 
+  MKL_LIB  = # -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 
 # ---------------------------------------------------------------------
 # build rules and dependencies
 # no need to edit this section

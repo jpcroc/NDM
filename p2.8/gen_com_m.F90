@@ -83,7 +83,7 @@ module gen_com_m
 
   integer :: imgs, imgi, itefrac !fracture IMD nombre d'atomes sur lesquels on fait la dynamique normale
   real(double) :: cougel, zincr !fracture
-
+integer::idirectionmcgc
 
 
   real(double),target :: potist ! energie potentielle totale
