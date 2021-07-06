@@ -227,7 +227,6 @@ contains
 
 #ifdef PARA
     USE Tpara,only:COMM_space,myidsp,nprocspace
-!    USE mod_para,only:proc_cell
 #else
     USE Tpara,only:nprocspace
 #endif
@@ -252,7 +251,7 @@ contains
     do ko = 1, celndm%noxyz
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-          if (psc%proc_cell(ko).ne.myidsp) cycle
+          if (celndm%proc_cell(ko).ne.myidsp) cycle
        end if
 #endif
        if (celndm%nato(ko)==0) cycle

@@ -18,7 +18,6 @@ module Tpara
   integer::ierr
   type para_space_config
      integer, allocatable :: res_cpu(:,:)   	!stocke le nombre de cellules de chaques decoupages pour le meilleur decoupage
-     integer, allocatable :: proc_cell(:)          !proc_cell(i) : Numero du proc associe a la cellule i
      integer, allocatable :: proc_voisin(:)        ! liste des processeurs voisins du processeur courant
      integer, allocatable :: cell_frontiere(:,:)   ! (i,j) jeme cellule frontiere associee au ieme processeur voisin
      integer, allocatable :: nbr_cell_frontiere(:) ! nbre de cellules frontieres associees au ieme processeur voisin
@@ -28,6 +27,8 @@ module Tpara
      integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
      integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
      integer :: nb_cell_x, nb_cell_y, nb_cell_z     !nb de cel locales suivant x y z
+   contains
+     procedure::print=>printpsc
   end type para_space_config
 
 
@@ -738,6 +739,51 @@ end if
 end subroutine mpic_recv_i
 
 
+  subroutine printpsc(psc,unit)
+    class(para_space_config),intent(in)::psc
+    integer, optional::unit
+    integer::unitw
+    if (present(unit) )then
+       unitw=unit
+    else
+       unitw=6
+    end if
+    if (allocated(psc%res_cpu))then
+       write(unitw,*)'res_cpu',psc%res_cpu
+    else
+       write(unitw,*)'res_cpu NOT ALLOCATED'
+    end if
+!!$    if (allocated(psc%proc_cell))then
+!!$       write(unitw,*)'proc_cell',psc%proc_cell
+!!$    else
+!!$       write(unitw,*)'proc_cell NOT ALLOCATED'
+!!$    end if
+    if (allocated(psc%proc_voisin))then
+       write(unitw,*)'proc_voisin',psc%proc_voisin
+    else
+       write(unitw,*)'proc_voisin NOT ALLOCATED'
+    end if
+    if (allocated(psc%cell_frontiere))then
+       write(unitw,*)'cell_frontiere',psc%cell_frontiere
+    else
+       write(unitw,*)'cell_frontiere NOT ALLOCATED'
+    end if
+    if (allocated(psc%nbr_cell_frontiere))then
+       write(unitw,*)'nbr_cell_frontiere',psc%nbr_cell_frontiere
+    else
+       write(unitw,*)'nbr_cell_frontiere NOT ALLOCATED'
+    end if
+    write(unitw,*)'nbr_cell_ftm',psc%nbr_cell_ftm
+    if(allocated(psc%cell_ftm))then
+       write(unitw,*)'cell_ftm',psc%cell_ftm
+    else
+       write(unitw,*)'cell_ftm NOT ALLOCATED'
+    end if
+    write(unitw,*)'nbr_proc_voisin',psc%nbr_proc_voisin
+    write(unitw,*)'cell_deb', psc%cell_debx, psc%cell_deby, psc%cell_debz     !numero de la premiere cellule locale suivant x, y et z
+    write(unitw,*)'cell_fin', psc%cell_finx, psc%cell_finy, psc%cell_finz     !numero de la premiere cellule locale suivant x, y et z
+    write(unitw,*)'nbr_cell', psc%nb_cell_x, psc%nb_cell_y, psc%nb_cell_z     !nb de cel locales suivant x y z
+  end subroutine printpsc
 
 
 end module Tpara

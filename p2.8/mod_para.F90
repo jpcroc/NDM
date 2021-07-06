@@ -51,7 +51,7 @@ module mod_para
   logical ::llangevin,lprteat,lsigat,ltbv,lax
   integer::im,imm,nvois
   integer:: nox,noy,noz,natperc,noxyz
-  integer,allocatable::ncel(:,:),nato(:),atincel(:,:),deltadist(:,:,:)
+  integer,allocatable::ncel(:,:),nato(:),atincel(:,:),deltadist(:,:,:),proc_cell(:)
   real(double)::celsize(3)
   logical::ltpcel
   real(double),allocatable::sigc(:,:,:),tempc(:)
@@ -84,7 +84,8 @@ contains
        lsigat=atcf%lsigat;lprteat=atcf%lprteat; llangevin=atcf%llangevin;lax=atcf%lax
     end select
     call config2ndm(atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall=.true.,lgul=lgul)
-    call cellconfig2ndm (cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,psc%proc_cell)
+
+    call cellconfig2ndm (cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,proc_cell)
     call envoi_atomes_fantomes(psc) ! On envoit les atomes qui n'appartiennent plus au processeur courant (qui sont passés  dans des cellules fantomes) caltabt les a mis dans ces cellules fantomes alors qu'ils étaient locaus avant
     call reception_nouveaux_atomes(psc) ! On recoit les nouveaux atomes locaux (qui viennent des fantomes des procs voisins)
     call elimine_atomes_fantomes(psc) ! On retire les atomes qui ne sont plus locaux (qui ont été envoyés par envoi_atomes_fantomes)
@@ -95,7 +96,7 @@ contains
     call reception_atomes_fantomes (psc)    ! On receptionne les nouveaux atomes fantomes
     call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
     call ndm2config (atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,nvois,vp,xpp,ldeall=.true.,lgul=lgul)
-    call ndm2cellconfig(cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=psc%proc_cell)
+    call ndm2cellconfig(cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=proc_cell)
 
 end subroutine maj_atomes_frt_ftm
 
@@ -180,8 +181,8 @@ end subroutine maj_atomes_frt_ftm
           cellf = psc%cell_ftm(ncell_ftm)
 
           ! Sommation des atomes de la cellule
-          if (psc%proc_cell(cellf)==procv) nb_at = nb_at + nato(cellf)
-
+          if (proc_cell(cellf)==procv) nb_at = nb_at + nato(cellf)
+          
        enddo ! fin boucle sur les cellules
 
        ! calcul du max des atomes a envoyer
@@ -244,12 +245,11 @@ end subroutine maj_atomes_frt_ftm
        ! On boucle sur les cellules fantomes associees a ce processeur voisin
        do ncell_ftm= 1, psc%nbr_cell_ftm
           cellf = psc%cell_ftm(ncell_ftm)
-          if (psc%proc_cell(cellf)==procv) then
+          if (proc_cell(cellf)==procv) then
 
              ! On boucle sur les atomes de cette cellule
              do n_at= 1, nato(cellf)
                 i_at = atincel(n_at,cellf)
-
                 ! On complete le buffer
                 send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1
 
@@ -446,7 +446,7 @@ end subroutine maj_atomes_frt_ftm
     nb_at_a_eliminer = 0
     do i_at = 1, im
        koo = ielat(i_at)
-       if (psc%proc_cell(koo).ne.myidsp) then
+       if (proc_cell(koo).ne.myidsp) then
           nb_at_a_eliminer = nb_at_a_eliminer + 1
           at_a_eliminer(nb_at_a_eliminer) = i_at
        endif
@@ -525,7 +525,7 @@ end subroutine maj_atomes_frt_ftm
 
     ! On verifie qu'il n'y a plus d'atomes a l'exterieur du domaine local
     do koo=1,noxyz
-       if (psc%proc_cell(koo).ne.myidsp .and. nato(koo).ne.0) print *,'ERREUR !!!',&
+       if (proc_cell(koo).ne.myidsp .and. nato(koo).ne.0) print *,'ERREUR !!!',&
             myidsp,'possede encore',nato(koo),'at. dans la cellule',koo
     enddo
 
@@ -1008,7 +1008,7 @@ end subroutine maj_atomes_frt_ftm
     do nproc_voisin = 1, psc%nbr_proc_voisin
        nb_at=0
        do ncell_ftm = 1, psc%nbr_cell_ftm
-          if (psc%proc_cell(psc%cell_ftm(ncell_ftm)).eq.psc%proc_voisin(nproc_voisin)) then
+          if (proc_cell(psc%cell_ftm(ncell_ftm)).eq.psc%proc_voisin(nproc_voisin)) then
              nb_at = nb_at + nato(psc%cell_ftm(ncell_ftm))
           endif
        enddo
@@ -1051,7 +1051,7 @@ end subroutine maj_atomes_frt_ftm
           koo = psc%cell_ftm(ncell_ftm)
 
           ! appartient-elle au processeur voisin courant?
-          if (psc%proc_cell(koo).eq.procv) then
+          if (proc_cell(koo).eq.procv) then
 
              ! On copie le contenu de la cellule dans le buffer d'envoi
              do n_at = 1, nato(koo)

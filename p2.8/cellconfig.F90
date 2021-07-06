@@ -20,9 +20,6 @@ module cellconfig
      real(double):: celsize(3)
 #ifdef PARA
      integer,allocatable::proc_cell(:)
-     integer :: cell_debx, cell_deby, cell_debz     !numero de la premiere cellule locale suivant x, y et z
-     integer :: cell_finx, cell_finy, cell_finz     !numero de la derniere cellule locale  suivant x, y et z
-     integer :: nb_cell_x, nb_cell_y, nb_cell_z     !nb de cel locales suivant x y z     
      
 #endif     
 
@@ -503,14 +500,24 @@ contains
     write(un,*)'natperc',cellv%natperc
     write(un,*)'celsize',cellv%celsize
     write(un,*)'icaltabt',cellv%icaltabt
-    write(un,*)'nato',cellv%nato
+    do i=1,cellv%noxyz
+       write(un,*)'nato',i,cellv%nato(i)
+    end do
     if (allocated(cellv%atincel))then 
        do i=1,cellv%noxyz
           write(un,*)'atincel',i,cellv%atincel(:,i)
        end do
     end if
 !    write(6,*)'deltadist',cellv%deltadist
-
+#ifdef PARA
+    if (allocated(cellv%proc_cell))then 
+       do i=1,cellv%noxyz
+          write(un,*)'proc_cell',i,cellv%proc_cell(i)
+       end do
+    end if
+#endif
+    
+    
   end subroutine cellprint
 
 
@@ -525,7 +532,7 @@ contains
 
     sizeI=6+size(cell%nato)+size(cell%ncel)+size(cell%atincel)+size(cell%deltadist)
 #ifdef PARA
-    sizeI=sizeI+9+size(cell%proc_cell)
+    sizeI=sizeI+size(cell%proc_cell)
 #endif
     nsize=cell%noxyz
     sizeR=3
@@ -566,17 +573,17 @@ contains
        ibi=ibi+1
        ibuffer(ibi)=cell%proc_cell(ip)
     end do
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_debx
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_deby
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_debz
-
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_finx
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_finy
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_finz
-
-    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_x
-    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_y
-    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_z
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_debx
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_deby
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_debz
+!!$
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_finx
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_finy
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_finz
+!!$
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_x
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_y
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_z
    
 #endif
     rbuffer(1)=cell%celsize(1);     rbuffer(2)=cell%celsize(2) ;    rbuffer(3)=cell%celsize(3)
@@ -612,7 +619,7 @@ contains
 
     sizeI=6+size(cell%nato)+size(cell%ncel)+size(cell%atincel)+size(cell%deltadist)
 #ifdef PARA
-    sizeI=sizeI+9+size(cell%proc_cell)
+    sizeI=sizeI+size(cell%proc_cell)
 #endif
     nsize=cell%noxyz
     sizeR=3
@@ -659,17 +666,17 @@ contains
        ibi=ibi+1
        cell%proc_cell(ip)=ibuffer(ibi)
     end do
-    ibi=ibi+1; cell%cell_debx=ibuffer(ibi)
-    ibi=ibi+1; cell%cell_deby=ibuffer(ibi)
-    ibi=ibi+1; cell%cell_debz=ibuffer(ibi)
-
-    ibi=ibi+1; cell%cell_finx=ibuffer(ibi)
-    ibi=ibi+1; cell%cell_finy=ibuffer(ibi)
-    ibi=ibi+1; cell%cell_finz=ibuffer(ibi)
-
-    ibi=ibi+1; cell%nb_cell_x=ibuffer(ibi)
-    ibi=ibi+1; cell%nb_cell_y=ibuffer(ibi)
-    ibi=ibi+1; cell%nb_cell_z=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_debx=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_deby=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_debz=ibuffer(ibi)
+!!$
+!!$    ibi=ibi+1; cell%cell_finx=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_finy=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_finz=ibuffer(ibi)
+!!$
+!!$    ibi=ibi+1; cell%nb_cell_x=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%nb_cell_y=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%nb_cell_z=ibuffer(ibi)
    
 #endif
     cell%celsize(1)=rbuffer(1);     cell%celsize(2)=rbuffer(2) ;    cell%celsize(3)=rbuffer(3)
@@ -700,7 +707,7 @@ contains
 
     sizeI=6+size(cell%nato)+size(cell%ncel)+size(cell%atincel)+size(cell%deltadist)
 #ifdef PARA
-    sizeI=sizeI+9+size(cell%proc_cell)
+    sizeI=sizeI+size(cell%proc_cell)
 #endif
     nsize=cell%noxyz
     sizeR=3
@@ -741,17 +748,17 @@ contains
        ibi=ibi+1
        ibuffer(ibi)=cell%proc_cell(ip)
     end do
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_debx
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_deby
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_debz
-
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_finx
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_finy
-    ibi=ibi+1; ibuffer(ibi)=cell%cell_finz
-
-    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_x
-    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_y
-    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_z
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_debx
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_deby
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_debz
+!!$
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_finx
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_finy
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%cell_finz
+!!$
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_x
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_y
+!!$    ibi=ibi+1; ibuffer(ibi)=cell%nb_cell_z
    
 #endif
     rbuffer(1)=cell%celsize(1);     rbuffer(2)=cell%celsize(2) ;    rbuffer(3)=cell%celsize(3)
@@ -808,17 +815,17 @@ contains
        ibi=ibi+1
        cell%proc_cell(ip)=ibuffer(ibi)
     end do
-    ibi=ibi+1; cell%cell_debx=ibuffer(ibi)
-    ibi=ibi+1; cell%cell_deby=ibuffer(ibi)
-    ibi=ibi+1; cell%cell_debz=ibuffer(ibi)
-
-    ibi=ibi+1; cell%cell_finx=ibuffer(ibi)
-    ibi=ibi+1; cell%cell_finy=ibuffer(ibi)
-    ibi=ibi+1; cell%cell_finz=ibuffer(ibi)
-
-    ibi=ibi+1; cell%nb_cell_x=ibuffer(ibi)
-    ibi=ibi+1; cell%nb_cell_y=ibuffer(ibi)
-    ibi=ibi+1; cell%nb_cell_z=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_debx=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_deby=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_debz=ibuffer(ibi)
+!!$
+!!$    ibi=ibi+1; cell%cell_finx=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_finy=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%cell_finz=ibuffer(ibi)
+!!$
+!!$    ibi=ibi+1; cell%nb_cell_x=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%nb_cell_y=ibuffer(ibi)
+!!$    ibi=ibi+1; cell%nb_cell_z=ibuffer(ibi)
    
 #endif
     cell%celsize(1)=rbuffer(1);     cell%celsize(2)=rbuffer(2) ;    cell%celsize(3)=rbuffer(3)
