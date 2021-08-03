@@ -44,9 +44,9 @@ contains
     character*3,intent(in), dimension(1:atmol%im),optional  :: rty
     character(len=*), optional ::namefr
     logical,intent(in)::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
-    
-    character*80::namef
-    integer :: rgloc,im,imm,j,ic
+
+    character*80::namef,nameo,end_name
+    integer :: rgloc,im,imm,j,ic,e_c,e_c0
 
     character*3, dimension(:), allocatable  :: tyw
     real(double),allocatable::xp(:,:)
@@ -66,30 +66,30 @@ contains
     type(para_config)::div
 
 #endif
-    type(atom_config)::atcomp
+    type(atom_config_e)::atcomp
     integer :: i, luvisu, luvisu2, iti,lenfn2
     real(double) :: xp1, xp2, xp3,at(3,3),bg(3,3),pat
     character :: extension*9
 
 #ifdef PARA
-!    latcompin=latcomp
-!    if (latcompin) then 
-!       if (rang==0) then
-!          latcompin=.true.
-!       else
-!          latcompin=.false. !latcompin intègre lw0 et rang=0
-!       end if
-!    end if
-          rgloc=myidsp
+    !    latcompin=latcomp
+    !    if (latcompin) then 
+    !       if (rang==0) then
+    !          latcompin=.true.
+    !       else
+    !          latcompin=.false. !latcompin intègre lw0 et rang=0
+    !       end if
+    !    end if
+    rgloc=myidsp
 
     if (latcomp.eqv..false.) then
-       
+
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call atcomp%init(im_glob)
           div%mpi_image%rank=myidsp
           div%mpi_image%nproc=nprocspace
           div%mpi_image%comm=COMM_space%comm
-          call atmol%vers_master(atcomp,div,'ixnlus')
+          call atmol%vers_master(atcomp,div,'ixnlusv')
           im =atcomp%im
           imm=atcomp%im
           rgloc=myidsp
@@ -121,7 +121,7 @@ contains
        xp(1:3,1:atmol%im)=atcomp%xp(1:3,1:atmol%im)*1d8
        num_at_glob(1:atmol%im)=atcomp%num_at_glob(1:atmol%im)
        ityp(1:im)=atcomp%ityp(1:im)
-!       call atcomp%print
+       !       call atcomp%print
        allocate(tyw(imm))
        tyw='000'
        !    do i=1,im
@@ -135,57 +135,57 @@ contains
           !       end do
           tyw(1:im)=ty(ityp(1:im))
        end if
-       
-
-    select type (atmol)
-    type is (atom_config_e)
-       if(atmol%lsigat) then
-          allocate (sigat(3,3,imm))
-          sigat=0
-          sigat(:,:,1:im)=atmol%sigat(:,:,:1:im)
-       end if
-
-       if(atmol%lprteat) then
-
-          allocate (eat(im)) ; eat=0; eat(1:im)=atmol%eat(1:im)
-       end if
-    end select
 
 
+       select type (atmol)
+       type is (atom_config_e)
+          if(atmol%lsigat) then
+             allocate (sigat(3,3,imm))
+             sigat=0
+             sigat(:,:,1:im)=atmol%sigat(:,:,:1:im)
+          end if
 
-    ! Notes about V_sim:
-    ! * works if at(:,:) "encompasses" all the system (no duplication of lattice cells)
-    ! * at(:,1) must be along x and at(:,2) must have no component along z.
-    !   Otherwise a rotation matrix should be coded.
-    !-----------------------------------------------
-    !
-    !
-    !    if (dmtype==17) then 
-    !       call redefine_ty() 
-    !    end if
-    !
-    if(lPkbar) then
-       unitP=1.0d-9
-       cunitP='kbar'
-    else
-       unitP=1.0
-       cunitP='d/cm2'
-    endif
+          if(atmol%lprteat) then
 
-    !    iksp=-1
-    !    if (lcasca) iksp=iko
-    !    if (ldesinteg)iksp=1
+             allocate (eat(im)) ; eat=0; eat(1:im)=atmol%eat(1:im)
+          end if
+       end select
 
-    !      write (*, *) 'entree dans rasmol.f',im
 
-    ! ****ouverture fichier sortie pour traitement images rasmol****
-    !if(rgloc==0)       OPEN(luvisu,file='donnrasmol',form='formatted', &
-    !       status='unknown')
-    !   la fonction char ne marche que pour de faibles valeurs de it!!!!
-    !     open(luvisu,file='donn_rasmolit.'//char(48+it),form='formatted',status='unknown')
 
-    ! conversion entier-->alphanumerique par transfert du nombre
-    ! de l'iteration vers fichier tampon relu sous format caractere.
+       ! Notes about V_sim:
+       ! * works if at(:,:) "encompasses" all the system (no duplication of lattice cells)
+       ! * at(:,1) must be along x and at(:,2) must have no component along z.
+       !   Otherwise a rotation matrix should be coded.
+       !-----------------------------------------------
+       !
+       !
+       !    if (dmtype==17) then 
+       !       call redefine_ty() 
+       !    end if
+       !
+       if(lPkbar) then
+          unitP=1.0d-9
+          cunitP='kbar'
+       else
+          unitP=1.0
+          cunitP='d/cm2'
+       endif
+
+       !    iksp=-1
+       !    if (lcasca) iksp=iko
+       !    if (ldesinteg)iksp=1
+
+       !      write (*, *) 'entree dans rasmol.f',im
+
+       ! ****ouverture fichier sortie pour traitement images rasmol****
+       !if(rgloc==0)       OPEN(luvisu,file='donnrasmol',form='formatted', &
+       !       status='unknown')
+       !   la fonction char ne marche que pour de faibles valeurs de it!!!!
+       !     open(luvisu,file='donn_rasmolit.'//char(48+it),form='formatted',status='unknown')
+
+       ! conversion entier-->alphanumerique par transfert du nombre
+       ! de l'iteration vers fichier tampon relu sous format caractere.
 
        luvisu = 86
        luvisu2 = 87
@@ -198,128 +198,75 @@ contains
 
        lenfn2 = 9
        if (present(itapp))then
-          if (itapp < 0  )   extension='iiiiiiiii' 
-          if (itapp >= 0 )   write(extension,'(i9.9)') itapp
+          select case(itapp)
+          case(-1)
+               extension='iiiiiiiii' 
+               !          if (itapp < 0  )
+            case(999999999)
+               extension='fffffffff'
+            case default
+               write(extension,'(i9.9)') itapp
+            end select
+       else
+          extension='ooooooooo'
        end if
-       
 
-
+       if (present(namefr)) then
+          nameo=namefr(1:len(namefr))
+       else
+          nameo=fnam(1:lenfnam)
+       end if
+       select case (ivisu)
+       case(5)
+          end_name='.newgin'
+       case (1)
+          end_name='.mol'
+       case(3)
+          end_name='.xred'
+       case(4)
+          end_name='.cfg'
+       case(40,41,42)
+          end_name='.xfg'
+       end select
+       if (present(itapp))then
+          call openfilemol( luvisu,nameo,end_name,extension)
+       else
+          call openfilemol( luvisu,nameo,end_name)
+       end if
 
        select case (ivisu)
        case(5)
-          if (present(namefr))then
-             if (present(itapp)) then
-                namef=namefr(1:len(namefr))//'.'//extension(1:lenfn2)//'.newgin'
-             else
-                !                write(6,*)'BINGO'
-                namef=namefr(1:len(namefr))//'.newgin'
-             end if
-          else
-             if (present(itapp)) then
-                namef=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.newgin'
-             else
-                namef=fnam(1:lenfnam)//'.newgin'
-             end if
-          end if
-          open(luvisu, file=namef, form='formatted', &
-               status='unknown')
           write (luvisu,*)' 1 1 1 '
           write (luvisu,'(3F12.6)')at(1,1),at(2,1),at(3,1)
           write (luvisu,'(3F12.6)')at(1,2),at(2,2),at(3,2)
           write (luvisu,'(3F12.6)')at(1,3),at(2,3),at(3,3)
           write (luvisu,*) atcomp%im
-          call cryst_to_cart (im, xp,  bg,  -1) !cart vers cryst          
+          call cryst_to_cart (im, xp,  bg,  -1) !cart vers cryst
+          do i = 1, im
+             xp1 = xp(1,i)
+             xp2 = xp(2,i)
+             xp3 = xp(3,i)
+             write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, ityp(i)
+          end do
        case (1)
-          if (present(namefr))then
-             if (present(itapp)) then
-                namef=namefr(1:len(namefr))//'.'//extension(1:lenfn2)//'.mol'
-             else
-!                write(6,*)'BINGO'
-                namef=namefr(1:len(namefr))//'.mol'
-             end if
-          else
-             if (present(itapp)) then
-                namef=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.mol'
-             else
-                namef=fnam(1:lenfnam)//'.mol'
-             end if
-          end if
 
-          open(luvisu, file=namef, form='formatted', &
-               status='unknown')
-          
           if (present(itapp))then
              write (luvisu, '(I9,A,I7,A,F12.6)') im, ' IT =', itapp, ' Time = ', timel
           else
              write (luvisu, '(I9,A,I7,A,F12.6)') im
           end if
-          
+
           write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
           !at=at/1.d8
-
-       case (2)
-       case(3) 
-          if (present(namefr))then
-             if (present(itapp)) then
-                namef=namefr(1:len(namefr))//'.'//extension(1:lenfn2)//'.xred'
-             else
-                namef=namefr(1:len(namefr))//'.xred'
-             end if
-          else
-             if (present(itapp)) then
-                namef=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.xred'
-             else
-                namef=fnam(1:lenfnam)//'.xred'
-             end if
-          end if
-          open(luvisu, file=namef, form='formatted', status='unknown')
-
-
-          write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
-          call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
-       case(4) 
-          if (present(namefr))then
-             if (present(itapp)) then
-                namef=namefr(1:len(namefr))//'.'//extension(1:lenfn2)//'.cfg'
-             else
-                namef=namefr(1:len(namefr))//'.cfg'
-             end if
-          else
-             if (present(itapp)) then
-                namef=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.cfg'
-             else
-                namef=fnam(1:lenfnam)//'.cfg'
-             end if
-          end if
-          open(luvisu, file=namef, form='formatted', status='unknown')
-          write(luvisu,'(a,i0)')'Number of particles = ', im
-
-
-
-
-          write(luvisu,'(a)')'A = 1.000 Angstrom (basic length-scale)'
-          do j=1,3
-             write(luvisu,'(a,i0)') '# Unit cell vector #', j    
-             do ic=1,3
-                write(luvisu,'(A,I1,A,I1,A,g16.8,A)')'H0(',j,',',ic,') = ',at(ic,j),' A'
-             end do
-          end do
-          write(luvisu,'(A)')'.NO_VELOCITY.'              
-          write(luvisu,'(A,I0)')'entry_count = ', 3
-          call cryst_to_cart (im, xp,  bg,  -1) !cart vers cryst
-
-       end select
-       do i = 1, im
-          xp1 = xp(1,i)
-          xp2 = xp(2,i)
-          xp3 = xp(3,i)
-          select case (ivisu)
-          case(1)
+          do i = 1, im
+             xp1 = xp(1,i)
+             xp2 = xp(2,i)
+             xp3 = xp(3,i)
              !                write (6,*) 't',tyw(i)
              !                write(6,*)'x', xp1,xp2, xp3
              write (luvisu, '(A,3f10.4)',advance='no') tyw(i),xp1, xp2, xp3
              select type (atmol)
-             type is (atom_config_e)
+             class is (atom_config_e)
                 if (atmol%lsigat) then
                    if(it.eq.0)then
                       pat=0.0
@@ -335,21 +282,116 @@ contains
 #else
              write (luvisu, '(I9)')  i
 #endif
-          case(5)                    
-             write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, ityp(i)
-          case(3)                    
+          end do
+!       case (2)
+       case(3) 
+          write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
+          call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
+          do i = 1, im
+             xp1 = xp(1,i)
+             xp2 = xp(2,i)
+             xp3 = xp(3,i)
              write (luvisu,'(3es15.6,2x,2a)') xp1, xp2, xp3, ' ! ', tyw(i)
-          case(4)
-             WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
-             WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
-             write(luvisu, '(3(g24.16,1x))') xp(:,i)
+          end do
+          
+       case(4,40,41,42) 
 
-          end select
-          !               write (47, 135) tyw(i),xp1, xp2, xp3
-          !end if
-
-
-       end do
+          write(luvisu,'(a,i0)')'Number of particles = ', im
+          write(luvisu,'(a)')'A = 1.000 Angstrom (basic length-scale)'
+          do j=1,3
+             write(luvisu,'(a,i0)') '# Unit cell vector #', j    
+             do ic=1,3
+                write(luvisu,'(A,I1,A,I1,A,g16.8,A)')'H0(',j,',',ic,') = ',at(ic,j),' A'
+             end do
+          end do
+          if (ivisu.le.40) then
+             write(luvisu,'(A)')'.NO_VELOCITY.'
+             write(luvisu,'(A,I0)')'entry_count = ', 3
+          else
+             e_c=6
+             select case(ivisu)
+             case(41) !RAS
+             case(42)
+                select type (atmol)
+                class is (atom_config_e)
+                   if (atmol%lprteat) e_c=e_c+1
+                   if (atmol%lsigat) e_c=e_c+9
+                end select
+             end select
+             write(luvisu,'(A,I0)')'entry_count = ', e_c
+             select case(ivisu)
+             case(41) !RAS
+             case(42)
+                e_c0=-1
+                select type (atmol)
+                class is (atom_config_e)
+                   if (atmol%lprteat) then
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = eat'
+                   end if
+                   if (atmol%lsigat)then
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigxx'
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigxy'
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigxz'
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigyx'
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigyy'
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigyz'
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigzx'
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigzy'
+                      e_c0=e_c0+1
+                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigzz'
+                   end if
+                end select
+             end select
+          end if
+          call cryst_to_cart (im, xp,  bg,  -1) !cart vers cryst
+          do i=1,im
+             select case(ivisu)
+             case(4)
+                WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
+                WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
+                write(luvisu, '(3(g20.12,1x))') xp(:,i)
+             case(40,41,42)
+                if (i==1) then
+                   WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
+                   WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
+                else
+                   if (ityp(i).ne.ityp(i-1)) then
+                      WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
+                      WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
+                   end if
+                end if
+                write (luvisu, '(3(g20.12,1x))',advance='no') xp(:,i)
+                select case(ivisu)
+                case(41)
+                   write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
+                case(42)
+                   write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
+                   select type (atmol)
+                   class is (atom_config_e)
+                      if (atmol%lprteat) then
+                         write(luvisu,'(g20.12)',advance='no')atcomp%eat*erg2ev
+                      end if
+                      if (atmol%lsigat)then
+                         write(luvisu,'(9g20.12)',advance='no')atcomp%sigat(1,1,i),atcomp%sigat(1,2,i),atcomp%sigat(1,3,i),&
+                              &atcomp%sigat(2,1,i),atcomp%sigat(2,2,i),atcomp%sigat(2,3,i),&
+                              &atcomp%sigat(3,1,i),atcomp%sigat(3,2,i),atcomp%sigat(3,3,i)
+                      end if
+                   end select
+                end select
+                write(luvisu,'(A)')' '
+             end select
+          end do
+       end select
+       
        close(luvisu)
     end if
 
@@ -387,7 +429,21 @@ contains
     return
   end subroutine rasmolT
 
+  subroutine openfilemol(luvisu,nameo,end_name,ext)
+    integer,intent(in)::luvisu
+    integer::lenfn2
+    character(len=*),intent(in)::nameo,end_name
+    character(len=9),optional::ext
 
-
-
+    character*80::namef
+    if (present(ext)) then
+       namef=trim(nameo)//'.'//trim(ext)//trim(end_name)
+!              namef=nameo(1:len(nameo))//'.'//ext//'.'//end_name
+    else
+       namef=trim(nameo)//'.'//trim(end_name)
+    end if
+    write(6,*)'atom config file name ',namef
+    open(luvisu, file=namef, form='formatted', &
+         status='unknown')
+  end subroutine openfilemol
 end module rasmolT_mod

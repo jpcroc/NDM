@@ -115,7 +115,7 @@ contains
  !  end select
 
 
- if (iterasmol.GE.0) call rasmolT (atdml,boxndm,it,latcomp=latcomp)
+ if (iterasmol.GE.0) call rasmolT (atdml,boxndm,999999999,latcomp=latcomp)
  if (.not.parallele.and.iteanapos>=0) call anapos (it)
 
  call arret_ndm
