@@ -66,7 +66,7 @@ contains
     type(para_config)::div
 
 #endif
-    type(atom_config_e)::atcomp
+    class(atom_config),allocatable::atcomp
     integer :: i, luvisu, luvisu2, iti,lenfn2
     real(double) :: xp1, xp2, xp3,at(3,3),bg(3,3),pat
     character :: extension*9
@@ -81,7 +81,7 @@ contains
     !       end if
     !    end if
     rgloc=myidsp
-
+    call atmol%deftype(atcomp)
     if (latcomp.eqv..false.) then
 
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -107,6 +107,7 @@ contains
        end if
     end if
 #else
+    call atmol%deftype(atcomp)
     rgloc=0
     call atcomp%init(atmol%im,ltabvois=.false.,nvois=0)
     call atmol%copy_config(atcomp,lrescl=.true.)
@@ -372,15 +373,21 @@ contains
                 write (luvisu, '(3(g20.12,1x))',advance='no') xp(:,i)
                 select case(ivisu)
                 case(41)
-                   write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
+                   select type (atcomp)
+                   class is (atom_config_d)
+                      write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
+                   end select
                 case(42)
-                   write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
-                   select type (atmol)
+                   select type (atcomp)
+                   class is (atom_config_d)
+                      write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
+                   end select
+                   select type (atcomp)
                    class is (atom_config_e)
-                      if (atmol%lprteat) then
+                      if (atcomp%lprteat) then
                          write(luvisu,'(g20.12)',advance='no')atcomp%eat*erg2ev
                       end if
-                      if (atmol%lsigat)then
+                      if (atcomp%lsigat)then
                          write(luvisu,'(9g20.12)',advance='no')atcomp%sigat(1,1,i),atcomp%sigat(1,2,i),atcomp%sigat(1,3,i),&
                               &atcomp%sigat(2,1,i),atcomp%sigat(2,2,i),atcomp%sigat(2,3,i),&
                               &atcomp%sigat(3,1,i),atcomp%sigat(3,2,i),atcomp%sigat(3,3,i)
