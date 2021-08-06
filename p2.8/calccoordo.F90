@@ -1,9 +1,11 @@
 module calccoordo_mod
+  USE T_kind_param_m, ONLY:  double
   USE temp_com,only:atincel,nato,noxyz,at,deltadist,bg,ncel,nad !A EFFACER
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY: rang,it,timel,lperiod
   implicit none
+  real(double)::rclu(20)
 contains
   subroutine calccoordo(im,imm,ityp,xp,ielat)
   !-----------------------------------------------
@@ -15,7 +17,7 @@ contains
     USE Tpara,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
 
 #endif
-  USE var_pot, ONLY:ntyp,rc
+  USE var_pot, ONLY:ntyp
   implicit none
     integer,intent(in)::im,imm
     real(double),intent(in),allocatable::xp(:,:)
@@ -31,9 +33,14 @@ contains
   integer :: nci_glob
 #endif
 
-  real(double),allocatable :: xpnp(:,:)
+  real(double),allocatable :: xpnp(:,:),rccoordo(:)
 
-  allocate(xpnp(3,imm))
+  integer,save::icall=0
+  icall=icall+1
+  if (icall==1) then
+     rccoordo(1:ntyp)=rclu(1:ntyp)*1d-8
+  end if
+     allocate(xpnp(3,imm))
   !
 
   !      write(6,*)'entree calcoordo'
@@ -84,7 +91,7 @@ contains
 
            !               if (r2.le.3.0d-15)               write(6,*)i,j,r2
 
-           if (r2<rc(ityp(i)))then
+           if (r2<rccoordo(ityp(i)))then
               dnco(ityp(i),ityp(j)) = dnco(ityp(i),ityp(j))+1
               nci=nci+1
            end if
@@ -119,7 +126,7 @@ contains
      end do
      do i1 = 1, ntyp
         if (nad(i1)==0) cycle
-        write (6, *) 'rayon autour des type ', i1, ' = ', rc(i1)*1D+8
+        write (6, *) 'rayon autour des type ', i1, ' = ', rccoordo(i1)*1D+8
      end do
   endif
 

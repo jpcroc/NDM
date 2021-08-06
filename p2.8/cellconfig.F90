@@ -311,8 +311,9 @@ contains
           kx = int(aux)
           ky = int(auy)
           kz = int(auz)
-!          write(*,*) i, cell%nox,cell%noy,cell%noz, kx,ky,kz
-!          write(*,*) i, aux,auy,auz, xpnp(2,i), xpnp(3,i), xpnp(4,i)
+!!$          write(*,*) i, cell%nox,cell%noy,cell%noz, kx,ky,kz
+!!$          write(*,*) i, aux,auy,auz, xpnp(1,i), xpnp(2,i), xpnp(3,i)
+!!$          write(6,*)
           kx = Modulo(kx,cell%nox)
           ky = Modulo(ky,cell%noy)
           kz = Modulo(kz,cell%noz)
@@ -846,6 +847,9 @@ contains
     end if
     
   end subroutine cells2a
+
+
+    
 
 end module cellconfig
 

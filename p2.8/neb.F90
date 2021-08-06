@@ -372,17 +372,17 @@ contains
                    if (paraneb%mpi_master%rank.gt.0) &
                         & call paraneb%mpi_master%recv(enepath(ii-1),paraneb%mpi_master%rank-1,10001)
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1)   &
-                        &call paraneb%mpi_master%send(atneb(ii)%xp(1:3,1:im),paraneb%mpi_master%rank+1,10002)
+                        &call paraneb%mpi_master%send(atneb(ii)%xp(1:3,1:atneb(ii)%im),paraneb%mpi_master%rank+1,10002)
                    if (paraneb%mpi_master%rank.gt.0)  &
-                        &call paraneb%mpi_master%recv(atneb(ii-1)%xp(1:3,1:im),paraneb%mpi_master%rank-1,10002)
+                        &call paraneb%mpi_master%recv(atneb(ii-1)%xp(1:3,1:atneb(ii)%im),paraneb%mpi_master%rank-1,10002)
                    if (paraneb%mpi_master%rank.gt.0) &
                      & call paraneb%mpi_master%send(enepath(ii),paraneb%mpi_master%rank-1,10003)
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1)&
                         & call paraneb%mpi_master%recv(enepath(ii+1),paraneb%mpi_master%rank+1,10003)
                    if (paraneb%mpi_master%rank.gt.0)  &
-                        &call paraneb%mpi_master%send(atneb(ii)%xp(1:3,1:im),paraneb%mpi_master%rank-1,10004)
+                        &call paraneb%mpi_master%send(atneb(ii)%xp(1:3,1:atneb(ii)%im),paraneb%mpi_master%rank-1,10004)
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1) &
-                         &call paraneb%mpi_master%recv(atneb(ii+1)%xp(1:3,1:im),paraneb%mpi_master%rank+1,10004)
+                         &call paraneb%mpi_master%recv(atneb(ii+1)%xp(1:3,1:atneb(ii)%im),paraneb%mpi_master%rank+1,10004)
                    enepathev(:)=enepath(:)*erg2ev
                    !             stop
 #endif             
@@ -466,7 +466,7 @@ contains
           fnamcout = fnam(1:lenfnam)//'.cout.'//extension
           call sauvegardet(atneb(ii)%atom_config_d, cellneb(ii),boxneb,formatsauv,fnamcout,latcomp)
           call rasmolT(atneb(ii)%atom_config_d,boxneb,ii,latcomp=latcomp)
-          if (iteanaposneb.gt.0) call anapos(ii)
+          if (iteanaposneb.gt.0) call anapos (atneb(ii),cellneb(ii),boxneb,ii)
           !	 
           reaction_coord(ii) = SUM((atneb(ii)%xp(:,:)-atneb(1)%xp(:,:))*(atneb(npath)%xp(:,:)-atneb(1)%xp(:,:)))/a_local
           !          reaction_coord(ii) = SUM((xp_n(:,:,ii)-xp_n(:,:,1))*(xp_n(:,:,npath)-xp_n(:,:,1)))/a_local 

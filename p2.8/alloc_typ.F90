@@ -1,8 +1,8 @@
 module alloc_typ_mod
   USE var_pot, ONLY:ntyp,rumax,lpotentiel,ipo3c,l3cpair,l3ctyp,coup3c2,gam,lamb,&
        &cangle,eamglue,eamglue_d,eamrho,eamrho_d,eamrep,eamrep_d,dspf,bspf,cspf,dspg,cspg,&
-       &cm,catom, ipo,ty,q,pot_d,rc,zz,lue_paire,lu_roff_pair,rue_pair,lue_typ,lue_trip,&
-       &ro,dip,pm,r8p,roff1,roff2,pot,rclu,a_factor,fda,gamlt,shel,&
+       &cm,catom, ipo,ty,q,pot_d,zz,lue_paire,lu_roff_pair,rue_pair,lue_typ,lue_trip,&
+       &ro,dip,pm,r8p,roff1,roff2,pot,a_factor,fda,gamlt,shel,&
        &Dmorse,amorse,Remorse,ietaij,capHij,capwij,capDij,Awat,Bwat,pwat,qwat,rawat,&
        &rawat2,potw,bspw,cspw,dspw,gz,fcr,bspg,contmax,ngrid,nkmax,npair,ntrip,&
        &typ_pot_pair,ray,bm,coup3c,c3c
@@ -39,8 +39,8 @@ contains
 
        allocate(q(ntyp))
        q(:)=0
-       allocate(rc(ntyp))
-       rc(1:ntyp)=rclu(1:ntyp)*1.d-8
+!!$       allocate(rc(ntyp))
+!!$       rc(1:ntyp)=rclu(1:ntyp)*1.d-8
        allocate(zz(npair))
        zz=0
        allocate(lue_paire(npair))
@@ -70,11 +70,13 @@ contains
           allocate (gamlt(ntyp))
           if (gamlg.ge.0) gamlt(:)=gamlg
        end if
-    endif
+!!$       if (iteccordo.GT.0) then
+!!$          allocate(rccordo(ntyp))
+!!$       endif
 
 
 
-    !  end if
+    end if
 
 
     ipot_loc=0

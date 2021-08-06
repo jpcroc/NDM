@@ -16,12 +16,12 @@ module var_pot
 
 !  integer, dimension(:), allocatable  :: na			! nb d'atomes par type
   integer, dimension(:,:), allocatable  :: ipo			! indice des paires d'atomes
-  real(double), dimension(:), allocatable :: cm, cm_buffer, catom, q, rc	! masse, numero atomique, charge ionique, rayon de coup.
+  real(double), dimension(:), allocatable :: cm, cm_buffer, catom, q	! masse, numero atomique, charge ionique, rayon de coup.
   character , dimension(:), allocatable  :: ty*3
   character , dimension(:), allocatable  :: ty_buffer*3
   real(double),dimension(:),allocatable::gamlt(:)
 
-  real(double)::rclu(20), eatref(20)   ! rayon et energie des types d'atomes
+  real(double):: eatref(20)   ! rayon et energie des types d'atomes
 
   integer :: ipotentiel,npotentiel    ! type du potentiel COURANT 1=BMH, 2=buckingham 3=watanabe,4=UO2; etc...
   logical :: lpotentiel (0:npotmax)

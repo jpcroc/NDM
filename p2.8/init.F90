@@ -223,7 +223,7 @@ contains
     end if
 
     if (dmtype==6) then
-       call anapos(it)
+       call anapos (atdml,celndm,boxndm,it)
        call arret_ndm
     end if
 

@@ -34,12 +34,13 @@ contains
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess
-    USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,rclu,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
+    USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc,Wsave
+    use calccoordo_mod,only:rclu
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
 #endif
@@ -317,7 +318,10 @@ contains
     rheat=0.
     Theat=0.0
     Eheat=0.
-    ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG a préférer à itecfg 
+    ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG, ivisu=6 xfg
+    !4==> 40= pas de vitesses; 41 vitesses
+    !6==> 60= pas de vitesses; 61 vitesses
+    
 
     !   ----------------------------------------------------------------------------------------    !*!
 
@@ -376,7 +380,8 @@ contains
        write(6,*) 'utilisez ivisu=4 pour sortir des .cfg'
        stop
     end if
-
+    if (ivisu==4) ivisu=40
+    if (ivisu==6) ivisu=60
    if (rang == 0) then
        if (imm <= 0) then
           write (6, *) rang,'nombre d''atomes nul-> stop'

@@ -237,10 +237,10 @@ contains
 
   end subroutine constrconf
   
-
-    subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum,lrepartition,psc)
-      type(para_space_config)::psc
-      class(atom_config)::at2b
+  
+  subroutine gin2ndm(at2b,cel2b,box2b,fnamg,imtot,rum,lrepartition,psc)
+    type(para_space_config),optional::psc
+    class(atom_config)::at2b
     type(cell_config)::cel2b
     type(box_config)::box2b
     integer,intent(out)::imtot

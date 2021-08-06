@@ -9,10 +9,10 @@ module rasmolT_mod
   use paraconfig,only:para_config
   use boxconfig,only:box_config
   implicit none
-  integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when we
+  integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when 
 contains
 
-  subroutine rasmolT(atmol,boxmol,itapp,namefr,rty,latcomp)
+  subroutine rasmolT(atmol,boxmol,itapp,namefr,rty,latcomp,ivisumol,naux,charaux,vaux)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -21,30 +21,30 @@ contains
     !namefr est la racine nom du fichier (par défaut celui de name.in
     !rty est un tableau     character*3,intent(in), dimension(1:atmol%im),optional  :: rty qui donne les symboles des atomes. utile pour utiliser d'autres symboles que les symboles chimiques associés aux types des atomes. En l'absence de rty, on utilise les symboles des types des atomes.
     !latcomp= en PARA latcomp=.true.=> atmol est une cofiguration complète/latcomp=false=>atmol est distributé sur comm_space
-    !lw0= .true. supprimé seul le proc 0 écrit la configuration
     !ivisu dans gen_com_m : 1 :.mol, 4=.cfg ; 2=.xred ; 5 =.gin
-
-
-
+!    naux=nb de carac auxiliaires,characaux string de description des carac ,vaux valeurs des auxiliaires
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace,myidsp
 #else
     USE Tpara,only:myidsp
 #endif
-    ! ****************************************************************
 
     implicit none
-
-
-
     integer,intent(in),optional  :: itapp
     class(atom_config),intent(in)::atmol
     type(box_config),intent(in)::boxmol
     character*3,intent(in), dimension(1:atmol%im),optional  :: rty
     character(len=*), optional ::namefr
     logical,intent(in)::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
+    integer, optional:: ivisumol
 
+    integer,optional::naux
+    character(len=*),optional::charaux(:)
+    real(double),optional::vaux(:,:) !aux value (naux,im)
+    logical::laux
+    integer::nauxV
+    integer::ivisum
     character*80::namef,nameo,end_name
     integer :: rgloc,im,imm,j,ic,e_c,e_c0
 
@@ -70,6 +70,20 @@ contains
     integer :: i, luvisu, luvisu2, iti,lenfn2
     real(double) :: xp1, xp2, xp3,at(3,3),bg(3,3),pat
     character :: extension*9
+    integer::iax
+    if (present(ivisumol)) then
+       ivisum=ivisumol
+    else
+       ivisum=ivisu
+    end if
+
+    if (present(naux).and.(naux.gt.0)) then
+       laux=.true.
+       nauxV=naux
+    else
+       laux=.false.
+       nauxV=0
+    end if
 
 #ifdef PARA
     !    latcompin=latcomp
@@ -83,7 +97,10 @@ contains
     rgloc=myidsp
     call atmol%deftype(atcomp)
     if (latcomp.eqv..false.) then
-
+       if (laux) then
+          write(6,*)'laux TRUE et latcomp FAUX  stop (FLEMME)'
+          stop
+       end if
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call atcomp%init(im_glob)
           div%mpi_image%rank=myidsp
@@ -138,33 +155,20 @@ contains
        end if
 
 
-       select type (atmol)
-       type is (atom_config_e)
-          if(atmol%lsigat) then
-             allocate (sigat(3,3,imm))
-             sigat=0
-             sigat(:,:,1:im)=atmol%sigat(:,:,:1:im)
-          end if
+!!$       select type (atmol)
+!!$       type is (atom_config_e)
+!!$          if(atmol%lsigat) then
+!!$             allocate (sigat(3,3,imm))
+!!$             sigat=0
+!!$             sigat(:,:,1:im)=atmol%sigat(:,:,:1:im)
+!!$          end if
+!!$
+!!$          if(atmol%lprteat) then
+!!$
+!!$             allocate (eat(im)) ; eat=0; eat(1:im)=atmol%eat(1:im)
+!!$          end if
+!!$       end select
 
-          if(atmol%lprteat) then
-
-             allocate (eat(im)) ; eat=0; eat(1:im)=atmol%eat(1:im)
-          end if
-       end select
-
-
-
-       ! Notes about V_sim:
-       ! * works if at(:,:) "encompasses" all the system (no duplication of lattice cells)
-       ! * at(:,1) must be along x and at(:,2) must have no component along z.
-       !   Otherwise a rotation matrix should be coded.
-       !-----------------------------------------------
-       !
-       !
-       !    if (dmtype==17) then 
-       !       call redefine_ty() 
-       !    end if
-       !
        if(lPkbar) then
           unitP=1.0d-9
           cunitP='kbar'
@@ -217,17 +221,20 @@ contains
        else
           nameo=fnam(1:lenfnam)
        end if
-       select case (ivisu)
+       select case (ivisum)
        case(5)
           end_name='.newgin'
        case (1)
           end_name='.mol'
        case(3)
           end_name='.xred'
-       case(4)
+       case(40,41)
           end_name='.cfg'
-       case(40,41,42)
+       case(60,61)
           end_name='.xfg'
+       case default
+          write(6,*)'wrong ivisu',ivisum,ivisu
+          stop
        end select
        if (present(itapp))then
           call openfilemol( luvisu,nameo,end_name,extension)
@@ -235,9 +242,17 @@ contains
           call openfilemol( luvisu,nameo,end_name)
        end if
 
-       select case (ivisu)
+       select case (ivisum)
        case(5)
-          write (luvisu,*)' 1 1 1 '
+          write (luvisu,'(A)',advance='no')' 1 1 1 !'
+          if (laux) then
+             if (present(charaux)) then
+                do iax=1,naux
+                   write(luvisu,'(A)',advance='no')trim(charaux(iax))
+                end do
+             end if
+          end if
+          write(luvisu,*)' '
           write (luvisu,'(3F12.6)')at(1,1),at(2,1),at(3,1)
           write (luvisu,'(3F12.6)')at(1,2),at(2,2),at(3,2)
           write (luvisu,'(3F12.6)')at(1,3),at(2,3),at(3,3)
@@ -247,15 +262,31 @@ contains
              xp1 = xp(1,i)
              xp2 = xp(2,i)
              xp3 = xp(3,i)
-             write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, ityp(i)
+             if (laux) then
+                write (luvisu,'(3es15.6,I3)',advance='no') xp1, xp2, xp3, ityp(i)
+                do iax=1,naux
+                   write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
+                end do
+                write(luvisu,*)' '
+             else
+                write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, ityp(i)
+             end if
           end do
        case (1)
 
           if (present(itapp))then
-             write (luvisu, '(I9,A,I7,A,F12.6)') im, ' IT =', itapp, ' Time = ', timel
+             write (luvisu, '(I9,A,I7,A,F12.6)',advance='no') im, ' IT =', itapp, ' Time = ', timel
           else
-             write (luvisu, '(I9,A,I7,A,F12.6)') im
+             write (luvisu, '(I9,A,I7,A,F12.6)',advance='no') im
           end if
+          if (laux) then
+             if (present(charaux)) then
+                do iax=1,naux
+                   write(luvisu,'(A)',advance='no')trim(charaux(iax))
+                end do
+             end if
+          end if
+          write(luvisu,*)' '
 
           write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
           !at=at/1.d8
@@ -266,23 +297,31 @@ contains
              !                write (6,*) 't',tyw(i)
              !                write(6,*)'x', xp1,xp2, xp3
              write (luvisu, '(A,3f10.4)',advance='no') tyw(i),xp1, xp2, xp3
-             select type (atmol)
-             class is (atom_config_e)
-                if (atmol%lsigat) then
-                   if(it.eq.0)then
-                      pat=0.0
-                   else
-                      pat=unitP*(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
-                   end if
-                   write (luvisu, '(D14.5)',advance='no') pat
-                end if
-                if (atmol%lprteat) write (luvisu, '(D14.5)',advance='no') eat(i)*erg2ev
-             end select
+!!$             select type (atmol)
+!!$             class is (atom_config_e)
+!!$                if (atmol%lsigat) then
+!!$                   if(it.eq.0)then
+!!$                      pat=0.0
+!!$                   else
+!!$                      pat=unitP*(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
+!!$                   end if
+!!$                   write (luvisu, '(D14.5)',advance='no') pat
+!!$                end if
+!!$                if (atmol%lprteat) write (luvisu, '(D14.5)',advance='no') eat(i)*erg2ev
+!!$             end select
 #ifdef PARA
-             write (luvisu, '(I9)')  num_at_glob(i)
+             write (luvisu, '(I9)',advance='no')  num_at_glob(i)
 #else
-             write (luvisu, '(I9)')  i
+             write (luvisu, '(I9)',advance='no')  i
 #endif
+             if (laux) then
+                do iax=1,naux
+                   write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
+                end do
+             end if
+             write(luvisu,*)' '
+
+             
           end do
 !       case (2)
        case(3) 
@@ -295,7 +334,7 @@ contains
              write (luvisu,'(3es15.6,2x,2a)') xp1, xp2, xp3, ' ! ', tyw(i)
           end do
           
-       case(4,40,41,42) 
+       case(40,41,60,61) 
 
           write(luvisu,'(a,i0)')'Number of particles = ', im
           write(luvisu,'(a)')'A = 1.000 Angstrom (basic length-scale)'
@@ -305,62 +344,39 @@ contains
                 write(luvisu,'(A,I1,A,I1,A,g16.8,A)')'H0(',j,',',ic,') = ',at(ic,j),' A'
              end do
           end do
-          if (ivisu.le.40) then
+          if ((ivisum==40).or.(ivisum==60)) then
              write(luvisu,'(A)')'.NO_VELOCITY.'
-             write(luvisu,'(A,I0)')'entry_count = ', 3
+             write(luvisu,'(A,I0)')'entry_count = ', 3+nauxV
+
           else
-             e_c=6
-             select case(ivisu)
-             case(41) !RAS
-             case(42)
-                select type (atmol)
-                class is (atom_config_e)
-                   if (atmol%lprteat) e_c=e_c+1
-                   if (atmol%lsigat) e_c=e_c+9
-                end select
-             end select
-             write(luvisu,'(A,I0)')'entry_count = ', e_c
-             select case(ivisu)
-             case(41) !RAS
-             case(42)
-                e_c0=-1
-                select type (atmol)
-                class is (atom_config_e)
-                   if (atmol%lprteat) then
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = eat'
-                   end if
-                   if (atmol%lsigat)then
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigxx'
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigxy'
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigxz'
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigyx'
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigyy'
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigyz'
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigzx'
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigzy'
-                      e_c0=e_c0+1
-                      write(luvisu,'(A,I0,A)')'auxiliary[',e_c0,'] = sigzz'
-                   end if
-                end select
-             end select
+             write(luvisu,'(A,I0)')'entry_count = ', 6+nauxV
+             if ((laux).and.(present(charaux))) then
+                do iax=1,naux
+                   write(luvisu,'(A,I0,A,A)')'auxiliary[',iax,'] = ',trim(charaux(iax))
+                end do
+             end if
           end if
           call cryst_to_cart (im, xp,  bg,  -1) !cart vers cryst
           do i=1,im
-             select case(ivisu)
-             case(4)
+             select case(ivisum)
+             case(40,41)
                 WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
                 WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
-                write(luvisu, '(3(g20.12,1x))') xp(:,i)
-             case(40,41,42)
+                write(luvisu, '(3(g20.12,1x))',advance='no') xp(:,i)
+                if (ivisum==41) then
+                   select type (atcomp)
+                   class is (atom_config_d)
+                      write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
+                   end select
+                end if
+                if (laux) then
+                   do iax=1,naux
+                      write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
+                   end do
+                end if
+                write(luvisu,*)' '
+                 
+             case(60,61)
                 if (i==1) then
                    WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
                    WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
@@ -370,31 +386,20 @@ contains
                       WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
                    end if
                 end if
-                write (luvisu, '(3(g20.12,1x))',advance='no') xp(:,i)
-                select case(ivisu)
-                case(41)
+
+                write(luvisu, '(3(g20.12,1x))',advance='no') xp(:,i)
+                if (ivisum==61) then
                    select type (atcomp)
                    class is (atom_config_d)
                       write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
                    end select
-                case(42)
-                   select type (atcomp)
-                   class is (atom_config_d)
-                      write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
-                   end select
-                   select type (atcomp)
-                   class is (atom_config_e)
-                      if (atcomp%lprteat) then
-                         write(luvisu,'(g20.12)',advance='no')atcomp%eat*erg2ev
-                      end if
-                      if (atcomp%lsigat)then
-                         write(luvisu,'(9g20.12)',advance='no')atcomp%sigat(1,1,i),atcomp%sigat(1,2,i),atcomp%sigat(1,3,i),&
-                              &atcomp%sigat(2,1,i),atcomp%sigat(2,2,i),atcomp%sigat(2,3,i),&
-                              &atcomp%sigat(3,1,i),atcomp%sigat(3,2,i),atcomp%sigat(3,3,i)
-                      end if
-                   end select
-                end select
-                write(luvisu,'(A)')' '
+                end if
+                if (laux) then
+                   do iax=1,naux
+                      write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
+                   end do
+                end if
+                write(luvisu,*)' '
              end select
           end do
        end select
@@ -443,13 +448,14 @@ contains
     character(len=9),optional::ext
 
     character*80::namef
+!    write(6,*)'name o end_name ',nameo, ' ; ',end_name
     if (present(ext)) then
        namef=trim(nameo)//'.'//trim(ext)//trim(end_name)
 !              namef=nameo(1:len(nameo))//'.'//ext//'.'//end_name
     else
-       namef=trim(nameo)//'.'//trim(end_name)
+       namef=trim(nameo)//trim(end_name)
     end if
-    write(6,*)'atom config file name ',namef
+    write(6,*)'atomic output file name ',namef
     open(luvisu, file=namef, form='formatted', &
          status='unknown')
   end subroutine openfilemol
