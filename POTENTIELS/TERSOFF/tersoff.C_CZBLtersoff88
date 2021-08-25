@@ -1,0 +1,8 @@
+1 1 ! ntyp        fichiers Tersoff   Paramètres de Tersoff
+12.011 'C'       ! masse symbole
+3.4879 2.2119 0.0 1.3936d3 3.467d2  ! lambda1 lambda2 lambda3 (Ang-1) A B (eV) 
+1.8 2.1  !R D1 (Ang)
+1.5724E-7 0.72751 3.8049E+4 4.384 -0.057058 0.0 ! beta n c d h (sans dim.)
+1 1
+6
+1 0.8 1.0 ! roff1 roff2

@@ -1,0 +1,23 @@
+0 .false.				!logical input for Ewald summation and three-body terms
+ &ewald
+   rue=12.0
+  precis=1.0d-3
+ &end
+6
+3.050  47.90   22.0 'Ti'   ! Q (Ti) --> (Ti type 1)
+-1.700 15.9994 8.0  'O '   ! Q (O)  --> (o type 2) ;  CM (masse);  numero atomique ; symbole
+2.900  57.25  64 'Gd'      ! Q (Gd) --> (Gd type 3)
+2.900  138.9055 57 'La'    ! Q (la) --> (La type 4)
+3.050  91.22   40.0 'Zr'   ! Q (Zr) --> (zr type 5)
+4.0  238.03  92.0 'U '     ! Q (U)
+6  !  nb de paires a lire   (indices de i et j , Aij, rij, Cij)
+1 2  456.312812 0.372864 0.0  0.9 1.0 ! Ti-O
+2 2  22764.0 0.149 27.89  0.9 1.0    ! O-O
+2 3  1442.952736 0.353092 0.0 0.9 1.0 ! Gd-O
+2 4  2178.185487 0.344766 0.0 0.9 1.0 ! La-O
+2 5  7685.971156 0.241810 0.0 0.9 1.0 ! Zr-O
+2 6 895.5898 0.42512 65.4 1.1 1.3 ! O-U  (Karakasidis 1994)
+
+
+
+

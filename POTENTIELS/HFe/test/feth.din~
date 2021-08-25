@@ -1,0 +1,21 @@
+ &input
+	ipotentiel=10
+	imm=250000
+	dmtype=1
+	igen=0
+	itmax=600
+        itesigma=100
+        tinit=600.0,tstep=1.0, lTberendsen=.true.,tauTcon=50.0,Text=300.0
+	itetemp=1
+	itab=15
+	itesauv=100,itedepla=-1,itecoordo=-1
+	lEev=.true., lEparat=.true.,itetabvois=1000
+	rvois=6.0,ltabvois=.true.,lconstrtot=.false.,lpcon=.true.lpcon2=.true
+ &end
+
+
+,lconstrtot=.true., 
+,rvois=7.0,ltabvois=.true.
+, lPkbar=.true.,lpcon2=.true.
+
+

@@ -1,0 +1,11 @@
+2 !nb de types ! Potentiel SW a la Vashista pour les paires JAP 101 103515 (07)
+1.201 28.086  14.0 'Si'   ! (Si)  CM (masse);  numero atomique ; symbole
+-1.201 12.011 6 'C'       ! masse symbole
+7.35 5.0 3.0    ! rc lambda xsi
+3 !  nb de paires a lire   (indices de i et j , etaij,Hij(eV.Ang**eta),Dij(e2.Ang**3,Wij(eV.Ang**6)
+1 1 7 23.67291 2.1636 0. 
+1 2 9 447.09026 1.0818 61.4694 
+2 2 7 471.74538 0 0 
+9.003 1.0 2.9 -0.33333333 5.0 ! 3 corps commun à tous les triplets lambda gamma rc cos_angle_parfait facteur C
+
+

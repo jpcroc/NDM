@@ -1,0 +1,6 @@
+2 ! spline+Zieg Si 2 spline seul
+1  ! on donne  2 On donne npas et max (on en sort le pas pour une grille régulière entre 0 et max de npas pa)
+50000 11.7  le npas et le max
+2 le nombre de pas dans le fichier lu
+54 92 Si Zieg les masses atomiques 
+8.0 10.0 Si Zieg les distances de raccord

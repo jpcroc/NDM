@@ -1,0 +1,22 @@
+1 .false.				!logical input for Ewald summation and three-body terms
+ &ewald
+   rue=14.0
+   precis=0.01
+ &end
+3
+1.2 24.3050   12.0 'Mg'   ! 
+-1.2 15.9994 8.0  'O '   ! Q (O)  --> (o type 2) ;  CM (masse);  numero atomique ; symbole
+1.8  26.981538  13 'Al'      ! 
+6  !  nb de paires a lire   (indices de i et j , Aij, rij, Cij)
+2 2  560.934340813 0.360  4.200 0.9 1.0 !O-O
+3 3  366.05512605  0.220 0.000 0.9 1.0 ! Al-Al
+1 1 99.666148065 0.360  0.000 0.9 1.0 ! Mg-Mg
+2 3 463.258384923 0.29   0.000  0.9 1.0 !Al-O
+1 2 236.444845717 0.36   0.000 0.9 1.0 !Mg-O 
+1 3 158.518478816 0.29   0.000  0.9 1.0 !Mg-Al
+2 ! nb de paires Morse à lire
+1 2  1.01939 2.0000 1.800
+2 3 0.94042 2.0000 1.800
+
+
+

@@ -29,6 +29,8 @@ debuggage LPR+ LPR lammps
 4.5/ PR en lammps !!!x
 5/version 2T
 4.7/MONTECARLO avec para en plus
+7.1/anapos... et Fossati coder vitesses en cfg
+4.05/ supprimer tab_imm_m et les USE temp_com qui vont avec (OK sauf analyses des positions et creationd e défauts)
 
 ****
 EN STANDBY, A FAIRE DANS UN DEUXIEME TEMPS :
@@ -43,14 +45,13 @@ soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
 
 ***
 A FAIRE
+3.2/ corriger PMEwald
 3.7/CODER sauvegarde xyz
-7.1/anapos... et Fossati coder vitesses en cfg
-
-4.05/ supprimer tab_imm_m et les USE  qui vont avec (OK sauf analyses des positions)
 4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien! (en cours)
-4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig pilté comme send2all etc.
-4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC 
+4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig piloté comme send2all etc.
+**>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC 
 5/version sans PBC/period 
+5.5/ coder le calcul des depla via anpos à la volée sans lecture de analyse.in et/ou crcin de même bondval !
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
 BOF : a part fp il n'y a rien à enlever   	7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos

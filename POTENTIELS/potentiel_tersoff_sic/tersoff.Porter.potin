@@ -1,0 +1,9 @@
+2 1.0086 ! ntyp        fichiers Tersoff   Paramètres de Tersoff
+28.086 'Si'       ! masse symbole
+2.4799 1.7322 0.0 1.8308d3 4.7118d2  ! lambda1 lambda2 lambda3 (Ang-1) A B (eV) 
+2.5 2.65  !R D1 (Ang)  2.7 3.0  !R D1 (Ang) TERSOFF DONNE 2.7 3.0MAIS CELA ENTRAINE DES INTERACTIONS 2ND VOISINS
+1.1000E-6 0.78734 1.0039E+5 16.217 -0.59825 0.0 ! beta n c d h (sans dim.)
+12.011 'C'       ! masse symbole
+3.4653 2.3064 0.0 1.5448d3 3.8963d2  ! lambda1 lambda2 lambda3 (Ang-1) A B (eV) 
+1.8 2.1  !R D1 (Ang)
+4.1612E-6 0.99054 1.9981E+4 7.034 -0.39953 0.0 ! beta n c d h (sans dim.)

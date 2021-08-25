@@ -1,0 +1,6 @@
+2  ! on donne le pas et le max vis� (on en sort npas pour une grille r�guli�re entre 0 et max de npas pas ) 
+1 ! spline+Zieg Si 2 spline seul
+10000 6.0 le pas et le max ou le npas et le max
+10000 le nombre de pas dans le fichier lu
+1 26  Si Zieg les masses atomiques 
+1.4 1.6 Si Zieg les distances de raccord

@@ -1,0 +1,9 @@
+2
+6.00000
+55.847 26 'Fe'
+1.008 1.8 'H'
+  -1.0 -1.5  ! raccordement Ziegler (en Ang)
+  -1.0 -1.5  ! raccordement Ziegler (en Ang)
+  -1.0 -1.5  ! raccordement Ziegler (en Ang)
+10000
+

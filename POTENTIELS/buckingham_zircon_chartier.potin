@@ -1,0 +1,22 @@
+2 .false.				!logical input for Ewald summation and three-body terms
+ &ewald
+   rue=10.0
+   alpha=0.420560
+   ncouc3=6
+
+ &end
+6
+2.0  28.086   14.0 'Si'   ! Q (Ti) --> (Ti type 1)
+-1.45 15.9994 8.0  'O '   ! Q (O)  --> (o type 2) ;  CM (masse);  numero atomique ; symbole
+3.0  57.25  64 'Gd'      ! Q (Gd) --> (Gd type 3)
+3.0  138.9055 57 'La'    ! Q (la) --> (La type 4)
+3.8  91.22   40.0 'Zr'   ! Q (Zr) --> (zr type 5)
+4.0  238.03  92.0 'U '     ! Q (U)
+3 !  nb de paires a lire   (indices de i et j , Aij, rij, Cij)
+1 2  1277.0 0.227225 0.0  0.9 1.1 ! Si-O
+2 2  1755.0 0.306820 27.89  0.9 1.0    ! O-O
+2 5  1967.0 0.305004 0.0  0.9 1.1 ! Zr-O
+
+
+
+
