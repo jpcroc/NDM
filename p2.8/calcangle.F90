@@ -1,6 +1,5 @@
 module calcangle_mod
   USE T_kind_param_m, ONLY:  double
-  USE temp_com,only:ncel,noxyz,at,bg,deltadist,atincel,nato !A EFFACER
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:ntyp,ty
@@ -108,7 +107,7 @@ contains
              c21 = c21+sum(boxadf%at(2,:)*celadf%deltadist(:,i1,koo))
              c31 = c31+sum(boxadf%at(3,:)*celadf%deltadist(:,i1,koo))
 
-             if (noxyz.ne.1) then
+             if (celadf%noxyz.ne.1) then
                 if (abs(c11)>rc2(atadf%ityp(i),atadf%ityp(j))) cycle
                 if (abs(c21)>rc2(atadf%ityp(i),atadf%ityp(j))) cycle
                 if (abs(c31)>rc2(atadf%ityp(i),atadf%ityp(j))) cycle
@@ -130,17 +129,17 @@ contains
              dij2=c11**2+c21**2+c31**2
              if(dij2>rc22(atadf%ityp(i),atadf%ityp(j))) cycle
              do i3 = 0,26
-                ko2 = ncel(koo,i3)
+                ko2 = celadf%ncel(koo,i3)
                 do i4 = 1, celadf%nato(ko2)
                    k = celadf%atincel(i4,ko2)
                    if(j==i.or.k==i.or.j==k) cycle                 
                    c12 = xpnp(1,i)-xpnp(1,k) 
                    c22 = xpnp(2,i)-xpnp(2,k) 
                    c32 = xpnp(3,i)-xpnp(3,k)
-                   c12 = c12+sum(at(1,:)*celadf%deltadist(:,i1,koo))
-                   c22 = c22+sum(at(2,:)*celadf%deltadist(:,i1,koo))
-                   c32 = c32+sum(at(3,:)*celadf%deltadist(:,i1,koo))
-                   if (noxyz.ne.1) then
+                   c12 = c12+sum(boxadf%at(1,:)*celadf%deltadist(:,i1,koo))
+                   c22 = c22+sum(boxadf%at(2,:)*celadf%deltadist(:,i1,koo))
+                   c32 = c32+sum(boxadf%at(3,:)*celadf%deltadist(:,i1,koo))
+                   if (celadf%noxyz.ne.1) then
                       if (abs(c12)>rc2(atadf%ityp(i),atadf%ityp(k))) cycle
                       if (abs(c22)>rc2(atadf%ityp(i),atadf%ityp(k))) cycle
                       if (abs(c32)>rc2(atadf%ityp(i),atadf%ityp(k))) cycle

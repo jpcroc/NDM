@@ -3,7 +3,7 @@ module calfojulicel_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:nvat,fnemd,lcalcjq,lnemd,lperiod,zero
   USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot,ngrid,npair,&
-       &eamrep,ipo,typ_pot_pair,eamglue,eamrho
+       &eamrep,ipo,typ_pot_pair,eamglue,eamrho,ntyp
         USE calfocommon
   implicit none
 contains
@@ -29,7 +29,8 @@ contains
     integer ::iti,itj,itl,ic !types
     integer :: ll !paires
     integer :: k ! position dans les splines
-    real(double) :: rk, drk,ktor, ktorho !pour splines
+    real(double) :: rk, drk,ktor
+    real(double),allocatable::ktorho(:) !pour splines
     real(double) :: cv(1,3)
 
 
@@ -88,7 +89,8 @@ contains
     end do
 
     ktor=rue/ngrid
-    ktorho=(rhomax-rhomin)/ngrid
+    allocate(ktorho(ntyp))
+    ktorho(:)=(rhomax(:)-rhomin(:))/ngrid
     !  fp(:,:) = 0.0
 
     jq(:)=0.
@@ -351,10 +353,10 @@ contains
 
 
        ! calcul et stockage de Eembi et dEembi
-       k=Int((densityi-rhomin)/ktorho)
+       k=Int((densityi-rhomin(iti))/ktorho(iti))
        k=max(k,3) ; k=min(k,ngrid-3)
        !       write(6,*)'i rhoitot densityi ',i,rhoitot,densityi
-       drk=densityi-(rhomin+k*ktorho)
+       drk=densityi-(rhomin(iti)+k*ktorho(iti))
        !       write(6,*)i,iti,k
        Eembi=eamglue(1,iti,k)+eamglue(2,iti,k)*drk+eamglue(3,iti,k)*drk**2+eamglue(4,iti,k)*drk**3
        dEembi=eamglue(2,iti,k)+2.0*eamglue(3,iti,k)*drk+3.0*eamglue(4,iti,k)*drk**2

@@ -63,11 +63,11 @@ contains
              call input_pair
           else
              select case(ipotentiel)
-             case(10)
+             case(10,16)
                 if (rang.eq.0) then
                    write(6,*)
-
                    write(6,*)'POTENTIEL EAM'
+                   if(ipotentiel==16)write(6,*)'+ CHARGE = CRG'
                    write(6,*)
                 end if
                 call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue_pot(ipotentiel),rumax,&
@@ -149,7 +149,7 @@ contains
 
   subroutine init_pot2(boxndm,immT)
     use boxconfig,only:box_config
-      USE calpo_ew_mod,only: calpo_ew
+    USE calpo_ew_mod,only: calpo_ew
     implicit none
 #ifdef ML
 
@@ -182,8 +182,12 @@ contains
              call calpo_ew(boxndm,immT)
           end if
 
-       case(10:12)
+       case(10,11,12,16)
           call calpoeam
+          if ((ipotentiel==16).and.(iewald.gt.0)) then
+             call calpo_ew(boxndm,immT)
+          end if
+
        case(13,14,15)
           if (.not.parallele) then
              if (maxval(roff1).gt.0) call tersoff_zbl

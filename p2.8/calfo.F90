@@ -191,7 +191,7 @@ contains
 
                    endif
                    potist=potist+potisTersoff+potiszbl
-                case (10,11)
+                case (10,11,16)
                    if (atcf%ltabvois) then
                       ! !!! le cas parallele n'est pas pris en compte !!!
                       if (.not.parallele) then
@@ -205,6 +205,12 @@ contains
      
                    endif
                    potist=potist+potiseam
+                   if (iewald.ge.1)then
+                      call calfoew(atcf%im,atcf%imm,atcf%xp,atcf%fp,atcf%ityp,celcf%noxyz,boxcf%at,&
+                           &boxcf%bg,boxcf%volu)
+                      potist=potist+potis3
+                   end if
+                                      
 #ifdef ML
                 case (20)
                    call md_calfo_ml
@@ -219,7 +225,7 @@ contains
 
     sigcf=sig;potistcf=potist
     nullify(eat);nullify(sigat)
-
+!    call atcf%print
     return
   end subroutine calfo
 

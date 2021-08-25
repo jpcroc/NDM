@@ -6,7 +6,7 @@ module endrunT_mod
   USE calcdigr_mod,only: rdfT,rdf0
   USE rasmolT_mod,only:rasmolT
   USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,itdes,&
-       &iteanapos,iteangle,itecfg,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
+       &iteanapos,iteangle,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
        &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,&
        &lwgin,nstepdes, lposmoy,l2T,angst,dmtype,it,lenfnam,rang,timel,&
        &formatsauv,fnamcout,fnam,lspaceNDM
@@ -28,7 +28,6 @@ contains
     USE time_measure
 #endif
     USE posana,only:
-    USE cfg_module,only:
     USE elec_cell, ONLY:  sauveelec
     
     implicit none

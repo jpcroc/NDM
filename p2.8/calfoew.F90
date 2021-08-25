@@ -53,7 +53,6 @@ contains
     !parallelisation de ewald classique
 
     integer :: nv,debv,finv,ii
-    real (double)::potis3p
     real (double), dimension (3,3) :: sigep
     !  real(double), dimension (3,imm) :: fpewp
 
@@ -69,7 +68,6 @@ contains
 
        !     fpewp(:,:)=0.0
        sigep(:,:)=0.0
-       potis3p=0.0
 
 
        ! *** Somme sur les vecteurs NB1,NB2,NB3

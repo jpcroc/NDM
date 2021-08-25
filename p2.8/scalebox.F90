@@ -128,7 +128,6 @@ contains
     if (iewald>0) then
 
        ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
-       auxe = 23.06134575D-20                  ! en erg.cm (charge electron^2/4*pi*permitivite vide)
        pi2 = pi*pi
        !volu = zl(1)*zl(2)*zl(3)
        boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))

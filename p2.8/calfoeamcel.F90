@@ -1,7 +1,7 @@
 module calfoeamcel_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:angst,nvat,it,low_limit,lperiod,zero
+  USE gen_com_m, ONLY:angst,nvat,it,low_limit,lperiod,zero,potis2,pi
   USE calfocommon
   implicit none
 contains
@@ -11,9 +11,9 @@ contains
 
     USE T_kind_param_m
 
-    USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,eamglue,eamrho,rue_pot,&
-         &typ_and_pot,typ_pot_pair,ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,ipo,eamrep,eamrep,&
-         &eamglue,eamglue,eamrho
+    USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rue_pot,&
+         &typ_and_pot,typ_pot_pair,ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,&
+         &eamglue,alpha,zz,ntyp
 
 #ifdef PARA
     use Tpara,only:nprocspace,para_space_config,ierr,comm_space
@@ -53,25 +53,29 @@ contains
     real(double) :: rhoi,rhoj ! densite de i sur j et j sur i
     real(double) :: Erep,dErep ! potentiel et gradient de la repulsion de paire ij
     REAL(double) :: Femb
-    real(double) :: rk, drk,ktor, inv_ktor, ktorho, inv_ktorho
+    real(double) :: rk, drk,ktor, inv_ktor
+    real(double),dimension(:),allocatable::ktorho(:), inv_ktorho(:)
     real(double) :: densityi !densite totale sur i
     integer :: izero
     real(double) :: tabdensity(imm)
     real(double) :: xpnp(3,imm)
-    real(double)::rue
+    real(double)::rue,alp,aux
 
     rue=rue_pot(ipotentiel)
+    aux = 23.06134575D-20
+    alp = alpha/sqrt(pi)*aux
+    allocate(ktorho(ntyp))
+    allocate(inv_ktorho(ntyp))
 
     ktor=rue/ngrid
     inv_ktor=1.d0/ktor
-    ktorho=(rhomax-rhomin)/ngrid
-    inv_ktorho = 1.d0/ktorho
+    ktorho(:)=(rhomax(:)-rhomin(:))/ngrid
+    inv_ktorho(:) = 1.d0/ktorho(:)
 
     tabdensity(:)=0.
     potisrep=0.
     potisglue=0.
     rue2=rue**2
-
 
     if (lperiod) then
        xpnp(:,:)=xp(:,:)
@@ -88,19 +92,21 @@ contains
        !     nvi=0
        densityi=0.0 ; dEembi=0.0
        koo = ielat(i)                          ! Numero de la cellule
-
-
        iti = ityp(i)
+       if (ipotentiel==16) then
+          l=ipo(iti,iti)
+          potis2=potis2-zz(l)*alp
+       end if
+
        ncelvois = min(noxyz,27)-1
        ! pour chaque cel. voisine
        loop1cel:   do i1 = 0, ncelvois
+
           ko1 = ncel(koo,i1)
           cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
           ! pour chaque atome ds la cel. voisine
-
           loop1at2: do i2 = 1, nato(ko1)
              j = atincel(i2,ko1)
-
              if (typ_pot_pair(ipo(ityp(i),ityp(j))).ne.ipotentiel) cycle
 
 
@@ -182,7 +188,9 @@ contains
              tabdensity(i)=tabdensity(i)+rhoj
              rhoi = eamrho(1,iti,k) + drk*( eamrho(2,iti,k) + drk*( eamrho(3,iti,k) + drk*eamrho(4,iti,k) ) )  !rho de i sur j
              tabdensity(j)=tabdensity(j)+rhoi
-
+!!$             write(100,'(2I3,3G17.8)')i,j,r,tabdensity(i),tabdensity(j)
+!!$             write(100,'(2I3,4G17.8)')i,j,eamrho(1,iti,k) , eamrho(2,iti,k),eamrho(3,iti,k),eamrho(4,iti,k)
+!!$             write(100,'(2I3,4G17.8)')i,j,eamrho(1,itj,k) , eamrho(2,itj,k),eamrho(3,itj,k),eamrho(4,itj,k)
              !           nvi=nvi+1
              !           dxpij(1:3,nvi)=dxp(1:3)
              !           jvi(nvi)=j
@@ -241,14 +249,16 @@ contains
     loop2at1: do i=1,im
        if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
        iti=ityp(i)
-       k=Int((tabdensity(i)-rhomin)*inv_ktorho)
+       k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
+!       write(110,'(2I8,3G17.8)')i,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        if(k.gt.ngrid) then
           write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
           write(6,*)'densityi',k,ngrid,densityi
           stop
        end if
-       drk=tabdensity(i)-(rhomin+k*ktorho)
+       drk=tabdensity(i)-(rhomin(iti)+k*ktorho(iti))
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
+!       write(120,'(2I8,4G17.8)')i,k, eamglue(1,iti,k) , eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
 
        !     if (allocated (free)) then
        !        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eat(i)=eat(i)+Eembi
@@ -260,6 +270,7 @@ contains
 
        tabdensity(i) = eamglue(2,iti,k) + drk*( 2.0*eamglue(3,iti,k) + 3.0*drk*eamglue(4,iti,k) )
     end do loop2at1
+    
 
 
 

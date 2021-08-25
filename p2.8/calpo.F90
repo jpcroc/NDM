@@ -37,7 +37,6 @@ contains
     !-----------------------------------------------
 
     integer :: i, l, k, j
-    real(double) :: auxpi
     real(double), dimension(npair) :: sigp
     real(double) :: bmh, r, r2, r3, r4, r5, r6, r8
     real(double), dimension(npair) :: pau
@@ -112,8 +111,7 @@ contains
 
 
     ! Definitions de constantes (a trier)
-    auxe = 23.06134575D-20                    ! en erg.cm (charge electron^2/4*pi*permitivite vide)
-    auxpi = 2.0/sqrt(pi)                      ! utile  ???
+!    auxe = 23.06134575D-20                    ! en erg.cm (charge electron^2/4*pi*permitivite vide)
     !      alpha = 1.D0/(eta*1.0D-08)
     factor = (2.0D0*alpha)/sqrt(pi)
 555 format(1x,'Q =',f5.1,3x,'RAY =',f6.2,3x,'BM =',f7.4,3x,'N=',f4.1)

@@ -1,6 +1,5 @@
 module calcdigr_mod
-!  USE temp_com,only:noxyz,ncel,atincel,at,nato,deltadist,celsize,bg,nad! A EFFACER
-    USE T_kind_param_m, ONLY:  double
+  USE T_kind_param_m, ONLY:  double
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:lperiod,rang,rcrdf,it,pi,timel,lspacendm

@@ -1,11 +1,13 @@
 module eam
   USE T_kind_param_m
-  USE gen_com_m, ONLY: A2cm,rang
-  USE var_pot, ONLY:rhomin,rhomax,lforcetabulate
+  USE gen_com_m, ONLY: A2cm,rang,lopt,ev2erg
+  USE var_pot, ONLY:rhomin,rhomax,lforcetabulate,q,alpha,precisew,ncouc3,ncoucx,ncoucy,ncoucz,&
+       &  kpmex, kpmey, kpmez,ipotrep
   USE spline_mod,only: cspline
   USE alloc_typ_mod,only: alloc_typ
   USE arret_ndm_mod,only: arret_ndm
 
+  USE calerf_mod
   implicit none
 
   !Eamtype, Reptype et DensityType definissent les éléments dont sont censés dépendre 
@@ -14,7 +16,12 @@ module eam
   !différents types. La liste des coefficients est definie dans les types.
   ! la valeur des coefficients pour ces dfférents types sont définis dans les
   ! routines generRho, generEAm, generRep. Ils sont ensuite utilisé dans les routines extrapolate
-
+  type crg_T
+     real(double),allocatable,dimension(:):: D,gam,A,rho,C,r0,G,n,densmax
+   contains
+     procedure,pass::alloc=> alloc_crg
+  end type crg_T
+  
   type :: EamT
      real(double),dimension (:),allocatable :: feam,xg
      real(double)::deltaEAM
@@ -65,11 +72,29 @@ module eam
 
   public ::  extrapolateRho, extrapolateRep, extrapolateEam,inputeam
 
+  type(crg_T)::crg
 
   !  real(double) :: deltaEAM,deltaREP,deltaRHO
 contains
 
+  subroutine alloc_crg(crg,ntyp)
+    class(crg_T)::crg
+    integer,intent(in)::ntyp
 
+    integer::npair
+    npair=ntyp*(ntyp+1)/2
+    
+    allocate(crg%G(ntyp))
+    allocate(crg%densmax(ntyp))
+    allocate(crg%n(ntyp))
+    
+    allocate(crg%D(npair))
+    allocate(crg%gam(npair))
+    allocate(crg%A(npair))
+    allocate(crg%rho(npair))
+    allocate(crg%C(npair))
+    allocate(crg%r0(npair))
+  end subroutine alloc_crg
   !---------------------------------------------------------------------------
   subroutine inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,&
        rue,rumax,iewald,l3c,r3cm,roff1,roff2,typ_and_pot,&
@@ -98,73 +123,149 @@ contains
     integer:: i,iti,n,npt,ipr
     integer :: lupotin=95
     character ::  fnampotin*80
-    real(double) :: xdum,cmr,catomr,drk,erep
+    real(double) :: xdum,cmr,catomr,drk,erep,precis,qr,maxrho
     integer,allocatable :: typtyp(:),ind_pair(:)
     integer::itir,npair_r,ipair,ntypr,j,itj,k
     character :: tyr*3
+    namelist /ewald/ rue, alpha, precis, ncouc3, ncoucx, ncoucy, ncoucz,&
+         kpmex, kpmey, kpmez, lopt,iewald,ipotrep
+    !EWALD
+    !  rumax=0.0
+    r3cm=0.0
+    rue = 0.0
+    alpha = 0.0
+    precis=0.0
+    precisew = 0.0
+    ncouc3 = 0
+    ncoucx = 0
+    ncoucy = 0
+    ncoucz = 0
+    kpmex = 0
+    kpmey = 0
+    kpmez = 0
+    lopt=.FALSE.
+    if (ipotentiel==10) then
+       ipotrep=1
+    else
+       ipotrep=0
+    end if
 
     !    real(double):: deltaEAM, deltaRHO,deltaREP
+    select case (ipotentiel)
+    case(10)
+       fnampotin = 'eamtab.potin'
+    case(16)
+       fnampotin = 'CRG.potin'
+    end select
 
-    fnampotin = 'eamtab.potin'
-    rhomin=1d30;rhomax=0
     lupotin = 95
     open(unit=lupotin, file=fnampotin, status='old')
 
     iewald=0; l3c=.false.; r3cm=0.
 
 
-!PAIR PART 
+    !PAIR PART 
     if (npotentiel.gt.1) then
-       read(lupotin,*)ntypr
-       allocate (typtyp(ntypr))
-       npair_r=  ntypr*(ntypr+1)/2 
-       allocate (ind_pair(npair_r))
-        if (rang==0) write(6,*)'ntypr for this pot',ntypr
-       read(lupotin,*) rue
-       rue=rue*A2cm
-       if (rang==0)    write(6,*) 'Types d_atomes pour ce potentiel:'
-       do i = 1, ntypr
-          read (lupotin,*) cmr,catomr,tyr,iti
-          typtyp(i)=iti
-          if (lue_typ(iti).eqv..true.) then 
-             if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
-             !if (cmr*umass.ne.cm(iti))then 
-             if (abs(cmr*umass-cm(iti)) > 100.d0*spacing(cm(iti))) then
-                if (rang==0)write(6,*) 'pb avec cm'
-                stop
-             end if
-             if (tyr.ne.ty(iti))then
-                if (rang==0)write(6,*) 'pb avec ty'
-                stop
-             end if
-          else
-             cm(iti)=cmr*umass;ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.
-          endif
-
-          typ_and_pot(iti,ipotentiel)=.true.
-          if (rang/=0) cycle
-           if (rang==0)write(6,*)'type        cm      catom    ty'
-           if (rang==0) write (6, '(I4,E12.3,F9.3,A5)') iti,cm(iti),catom(iti),ty(iti)
-       end do
-       !lecture des roff des paires EAM
-       ipair=0
-       do i=1,ntypr
-          iti=typtyp(i)
-          do j=i,ntypr       
-             itj=typtyp(j)
-             ipr=ipo(iti,itj)
-             ipair=ipair+1
-             ind_pair(ipair)=ipr
-             if (rang==0) write(6,*)'paire l active ipotentiel: ',ipr, ipotentiel
-             if(lue_paire(ipr).eqv..true.) then
-                 if (rang==0) write(6,*) rang,'paire l lue deux fois ', ipr,iti,itj
-                stop
-             end if
-             read (lupotin,*) roff1(ipr),roff2(ipr)
-             if (rang==0) write(6,*)'roff1 et 2 pour cette paire',ipair,ipr,roff1(ipr),roff2(ipr)
-             lu_roff_pair(ipr)=.true.;typ_pot_pair(ipr)=ipotentiel
-          end do
-       end do
+       write(6,*)'NON!'
+       stop
+!!$       read(lupotin,*)ntypr 
+!!$       allocate (typtyp(ntypr))
+!!$       npair_r=  ntypr*(ntypr+1)/2 
+!!$       allocate (ind_pair(npair_r))
+!!$       if (rang==0) write(6,*)'ntypr for this pot',ntypr
+!!$       select case(ipotentiel)
+!!$       case(16)
+!!$          read (lupotin, nml=ewald)            ! lecture de la namelist ewald
+!!$          if (iewald==0) then
+!!$             if (rang==0)then
+!!$                write (6, *) '-*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-'
+!!$                write (6, *) '-*-*-*-* IPOTENTIEL=16. STOP ! ipotentiel-> 10 ! *-*-*-*-'
+!!$             end if
+!!$             call arret_ndm
+!!$          elseif (iewald==1) then
+!!$             if (rang==0) then
+!!$                write (6, *) '-*-*-*-*-* SOMMATION D-EWALD CLASSIQUE *-*-*-*-*-'
+!!$                if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
+!!$             end if
+!!$          elseif (iewald==2) then
+!!$             if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'
+!!$             if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
+!!$          else
+!!$             write (6, *) rang, 'Valeur de iewald erronee : iewald=',iewald
+!!$             call arret_ndm
+!!$          endif
+!!$
+!!$          precisew=precis
+!!$          if (rue==0) then
+!!$             if (rang==0) write (6, *) '-*-*-*-*-* RUE must be NON ZERO *-*-*-*-*-'
+!!$             call arret_ndm
+!!$          end if
+!!$
+!!$       case(10)
+!!$          read(lupotin,*) rue
+!!$       end select
+!!$
+!!$       rue=rue*A2cm
+!!$       if (rang==0)    write(6,*) 'Types d_atomes pour ce potentiel:'
+!!$       if (iewald==0) then
+!!$          if (rang==0) write (6, *) 'CM, masse,type, NUMERO DU TYPE D ATOME'
+!!$       else
+!!$          if (rang==0) write (6, *) 'CHARGE,CM, masse,type, NUMERO DU TYPE D ATOME'
+!!$       end if
+!!$       do i = 1, ntypr
+!!$          select case(ipotentiel)
+!!$          case(10)
+!!$             read (lupotin,*) cmr,catomr,tyr,iti
+!!$          case(16)
+!!$             read (lupotin,*) qr,catomr,tyr,iti
+!!$          end select
+!!$          typtyp(i)=iti
+!!$          if (lue_typ(iti).eqv..true.) then 
+!!$             if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
+!!$             !if (cmr*umass.ne.cm(iti))then 
+!!$             if (abs(cmr*umass-cm(iti)) > 100.d0*spacing(cm(iti))) then
+!!$                if (rang==0)write(6,*) 'pb avec cm'
+!!$                stop
+!!$             end if
+!!$             if (tyr.ne.ty(iti))then
+!!$                if (rang==0)write(6,*) 'pb avec ty'
+!!$                stop
+!!$             end if
+!!$             if(iewald.ne.0) q(iti)=qr
+!!$          else
+!!$             cm(iti)=cmr*umass;ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.
+!!$             if(iewald.ne.0) q(iti)=qr
+!!$          endif
+!!$          typ_and_pot(iti,ipotentiel)=.true.
+!!$          if (rang/=0) cycle
+!!$          if (rang==0)write(6,*)'type        cm      catom    ty'
+!!$          if (rang==0) write (6, '(I4,E12.3,F9.3,A5)') iti,cm(iti),catom(iti),ty(iti)
+!!$          if((iewald.ne.0) .and.(rang==0)) write(6,*)'charge = ',q(iti)
+!!$       end do
+!!$       !lecture des roff des paires EAM
+!!$
+!!$       ipair=0
+!!$       do i=1,ntypr
+!!$          iti=typtyp(i)
+!!$          do j=i,ntypr       
+!!$             itj=typtyp(j)
+!!$             ipr=ipo(iti,itj)
+!!$             ipair=ipair+1
+!!$             ind_pair(ipair)=ipr
+!!$             if (rang==0) write(6,*)'paire l active ipotentiel: ',ipr, ipotentiel
+!!$             if(lue_paire(ipr).eqv..true.) then
+!!$                if (rang==0) write(6,*) rang,'paire l lue deux fois ', ipr,iti,itj
+!!$                stop
+!!$             end if
+!!$             if (ipotrep==1) then
+!!$                read (lupotin,*) roff1(ipr),roff2(ipr)
+!!$             else
+!!$                roff1=-1 ; roff2=-2
+!!$             end if
+!!$             if (rang==0) write(6,*)'roff1 et 2 pour cette paire',ipair,ipr,roff1(ipr),roff2(ipr)
+!!$             lu_roff_pair(ipr)=.true.;typ_pot_pair(ipr)=ipotentiel
+!!$          end do
+!!$       end do
 
     else
        read(lupotin,*)ntyp
@@ -174,25 +275,66 @@ contains
        npair_r=npair
        allocate (ind_pair(npair_r))
        call  alloc_typ
-       read(lupotin,*) rue
+       rhomin(:)=1d30;rhomax(:)=0
+       select case(ipotentiel)
+       case(10)
+          read(lupotin,*) rue
+       case(16)
+          call crg%alloc(ntyp)
+          read (lupotin, nml=ewald)            ! lecture de la namelist ewald
+          if (iewald==0) then
+             if (rang==0)then
+                write (6, *) '-*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-'
+                write (6, *) '-*-*-*-* IPOTENTIEL=16. STOP ! ipotentiel-> 10 ! *-*-*-*-'
+             end if
+!             call arret_ndm
+          elseif (iewald==1) then
+             if (rang==0) then
+                write (6, *) '-*-*-*-*-* SOMMATION D-EWALD CLASSIQUE *-*-*-*-*-'
+                if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
+             end if
+          elseif (iewald==2) then
+             if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'
+             if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
+          else
+             write (6, *) rang, 'Valeur de iewald erronee : iewald=',iewald
+             call arret_ndm
+          endif
+
+          precisew=precis
+          if (rue==0) then
+             if (rang==0) write (6, *) '-*-*-*-*-* RUE must be NON ZERO *-*-*-*-*-'
+             call arret_ndm
+          end if
+       end select
        rue=rue*A2cm
        if (rang==0)    write(6,*) 'Types d_atomes :'
        do i = 1, ntyp
           typtyp(i)=i
-          read (lupotin,*) cm(i),catom(i),ty(i)
+          select case(ipotentiel)
+          case(10)
+             read (lupotin,*) cm(i),catom(i),ty(i)
+          case(16)
+             read (lupotin,*) q(i),cm(i),catom(i),ty(i)
+          end select
           if (rang/=0) cycle
           write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
+          if((ipotentiel==16) .and.(rang==0)) write(6,*)'charge = ',q(i)
        end do
        do i = 1, npair
           ind_pair(i)=i
-          read (lupotin,*) roff1(i),roff2(i)
-          if (rang/=0) cycle
-          write (6, '(A,2F9.3)') 'ROFF1_2', roff1(i),roff2(i)
+          if (ipotrep.gt.0) then
+             read (lupotin,*) roff1(i),roff2(i)
+             lu_roff_pair(1:npair)=.true.
+             if (rang==0) write (6, '(A,2F9.3)') 'ROFF1_2', roff1(i),roff2(i)
+          else
+             roff1=-1; roff2=-2
+             lu_roff_pair(1:npair)=.false.
+          end if
        end do
-
        roff1=roff1*A2cm
        roff2=roff2*A2cm
-       lu_roff_pair(1:npair)=.true. ;typ_pot_pair(:)=ipotentiel
+       typ_pot_pair(:)=ipotentiel
        cm(:ntyp) = cm(:ntyp)*umass
        allocate (typ_and_pot(ntyp,npotmax))
        typ_and_pot(:,:)=.false.
@@ -202,6 +344,7 @@ contains
 
 
     read(lupotin,*)nptmax
+
     if (rang==0) write(6,*)'nptmax in the max number of points on grid  ',nptmax
     allocate(rhotyp(ntyp)) 
     allocate(embtyp(ntyp)) 
@@ -210,194 +353,233 @@ contains
     allocate(SPembtyp(ntyp)) 
     allocate(SPreppair(npair)) 
 
-   if (lforcetabulate) then
-    allocate(rhotyp_d(ntyp)) 
-    allocate(embtyp_d(ntyp)) 
-    allocate(reppair_d(npair)) 
-    allocate(SPrhotyp_d(ntyp)) 
-    allocate(SPembtyp_d(ntyp)) 
-    allocate(SPreppair_d(npair))
-  end if 
+    if (lforcetabulate) then
+       allocate(rhotyp_d(ntyp)) 
+       allocate(embtyp_d(ntyp)) 
+       allocate(reppair_d(npair)) 
+       allocate(SPrhotyp_d(ntyp)) 
+       allocate(SPembtyp_d(ntyp)) 
+       allocate(SPreppair_d(npair))
+    end if
 
-!EMBD EAM PART
-    do itir=1,ntypr
-       iti=typtyp(itir)
-       !lecture de Glue
-       read(lupotin,*)n
-       if (rang==0) write(6,*)'EAM',n,iti
-       if(n.ne.itir)then
-          write(6,*) rang,' ordre de lecture de EAM stop'
-          call arret_ndm
-       end if
-       read(lupotin,*)npt,embtyp(iti)%deltaEAM
-       if (lforcetabulate) embtyp_d(iti)%deltaEAM=embtyp(iti)%deltaEAM
-       if (rang==0) write(6,*)'EAM number of points in potin and the step',npt,embtyp(iti)%deltaEAM     
-       if(npt.gt.nptmax)then
-          write(6,*) rang,'nb de points de grille  EAM stop'
-          call arret_ndm
-       end if
-     
+    do iti=1,ntyp
        allocate(embtyp(iti)%xg(nptmax)) 
        allocate(embtyp(iti)%feam(nptmax)) 
        allocate(SPembtyp(iti)%beam(nptmax)) 
        allocate(SPembtyp(iti)%ceam(nptmax)) 
        allocate(SPembtyp(iti)%deam(nptmax)) 
 
-      if (lforcetabulate) then
-       allocate(embtyp_d(iti)%xg(nptmax)) 
-       allocate(embtyp_d(iti)%feam(nptmax)) 
-       allocate(SPembtyp_d(iti)%beam(nptmax)) 
-       allocate(SPembtyp_d(iti)%ceam(nptmax)) 
-       allocate(SPembtyp_d(iti)%deam(nptmax))
-      end if
-! write(6,*)'NPT NPTMAX',npt,nptmax
-       do i=1,nptmax
-          if(i.le.npt) then
-             !newCOS
-            if (lforcetabulate) then
-             read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),embtyp_d(iti)%feam(i)
-            else 
-             read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i)
-            end if
-          else
-             embtyp(iti)%xg(i)=(i-npt)*embtyp(iti)%deltaEAM+ embtyp(iti)%xg(i)
-             embtyp(iti)%feam(i)=embtyp(iti)%feam(npt)
-             !newCOS
-             if (lforcetabulate) then
-                embtyp_d(iti)%feam(i)=embtyp_d(iti)%feam(npt)
-             end if
-          end if
-
-       end do
-       rhomin=min(rhomin,embtyp(iti)%xg(1))
-       rhomax=max(rhomax,embtyp(iti)%xg(npt))
-!       write(6,*)'rhomin rhomax',rhomin,rhomax
-
-       call cspline (nptmax,embtyp(iti)%xg,embtyp(iti)%feam,SPembtyp(iti)%beam,SPembtyp(iti)%ceam,SPembtyp(iti)%deam)
        if (lforcetabulate) then
-        embtyp_d(iti)%xg=embtyp(iti)%xg
-        call cspline (nptmax,embtyp_d(iti)%xg,embtyp_d(iti)%feam,SPembtyp_d(iti)%beam,SPembtyp_d(iti)%ceam,SPembtyp_d(iti)%deam)
+          allocate(embtyp_d(iti)%xg(nptmax)) 
+          allocate(embtyp_d(iti)%feam(nptmax)) 
+          allocate(SPembtyp_d(iti)%beam(nptmax)) 
+          allocate(SPembtyp_d(iti)%ceam(nptmax)) 
+          allocate(SPembtyp_d(iti)%deam(nptmax))
        end if
 
-
-
-
-!DENS PART
-       !lecture de dens
-       read(lupotin,*)n
-       if (rang==0) write(6,*)'dens',n,iti
-       if(n.ne.itir)then
-          write(6,*) rang,' ordre de lecture de EAM densstop'
-          call arret_ndm
-       end if
-       !     rhotyp(iti)%toto=iti
-       read(lupotin,*)npt,rhotyp(iti)%deltaRHO
-       if (lforcetabulate) rhotyp_d(iti)%deltaRHO=rhotyp(iti)%deltaRHO
-
-       if (rang==0) write(6,*)'RHO potin points and the step: ', npt,rhotyp(iti)%deltaRHO
-       if(npt.ne.nptmax)then
-          write(6,*) rang,'nb de points de grille  EAM stop'
-          call arret_ndm
-       end if
-     
        allocate(rhotyp(iti)%xd(nptmax)) 
        allocate(rhotyp(iti)%rho(nptmax)) 
        allocate(SPrhotyp(iti)%brho(nptmax)) 
        allocate(SPrhotyp(iti)%crho(nptmax)) 
        allocate(SPrhotyp(iti)%drho(nptmax)) 
-      
-      if (lforcetabulate) then
-       allocate(rhotyp_d(iti)%xd(nptmax)) 
-       allocate(rhotyp_d(iti)%rho(nptmax)) 
-       allocate(SPrhotyp_d(iti)%brho(nptmax)) 
-       allocate(SPrhotyp_d(iti)%crho(nptmax)) 
-       allocate(SPrhotyp_d(iti)%drho(nptmax)) 
-      end if
-     do i=1,nptmax
-          if(i.le.npt) then
-            if (lforcetabulate) then
-             read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),rhotyp_d(iti)%rho(i)
-            else 
-             read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i)
-            end if
-           else
-             rhotyp(iti)%xd(i)=(i-npt)*rhotyp(iti)%deltaRHO+ rhotyp(iti)%xd(npt)
-             rhotyp(iti)%rho(i)=rhotyp(iti)%rho(npt)
-            if (lforcetabulate) then
-              rhotyp_d(iti)%rho(i)=rhotyp_d(iti)%rho(npt)
-            end if 
-          end if
 
-       end do
-        call cspline (nptmax,rhotyp(iti)%xd,rhotyp(iti)%rho,  SPrhotyp(iti)%brho,  SPrhotyp(iti)%crho,  SPrhotyp(iti)%drho  )
        if (lforcetabulate) then
-        rhotyp_d(iti)%xd=rhotyp(iti)%xd
-        call cspline (nptmax,rhotyp_d(iti)%xd,rhotyp_d(iti)%rho,SPrhotyp_d(iti)%brho,SPrhotyp_d(iti)%crho,SPrhotyp_d(iti)%drho)
+          allocate(rhotyp_d(iti)%xd(nptmax)) 
+          allocate(rhotyp_d(iti)%rho(nptmax)) 
+          allocate(SPrhotyp_d(iti)%brho(nptmax)) 
+          allocate(SPrhotyp_d(iti)%crho(nptmax)) 
+          allocate(SPrhotyp_d(iti)%drho(nptmax)) 
        end if
     end do
-
-!PAIR PART 
-
-    do ipair=1,npair_r
-       read(lupotin,*)n
-       if(n.ne.ipair)then
-          write(6,*) rang, ' ordre de lecture de EAM rep stop'
-          call arret_ndm
-       end if
-       ipr=ind_pair(ipair)
-       if (rang==0) write(6,*)'paire eam ; paire complete',n,ipr
-       if (rang==0) write(6,*)'rep'
-
-       read(lupotin,*)npt,reppair(ipr)%deltaREP
-       if (lforcetabulate) reppair_d(ipr)%deltaREP=reppair(ipr)%deltaREP
-
-       if(npt.gt.nptmax)then
-          write(6,*) rang,'nb de points de grille  EAM stop'
-          call arret_ndm
-       end if
+    do ipr=1,npair
        allocate(reppair(ipr)%xr(nptmax)) 
        allocate(reppair(ipr)%potr(nptmax)) 
        allocate(SPreppair(ipr)%bpotr(nptmax)) 
        allocate(SPreppair(ipr)%cpotr(nptmax)) 
        allocate(SPreppair(ipr)%dpotr(nptmax)) 
-       
-  
-      if (lforcetabulate) then
-       allocate(reppair_d(ipr)%xr(nptmax)) 
-       allocate(reppair_d(ipr)%potr(nptmax)) 
-       allocate(SPreppair_d(ipr)%bpotr(nptmax)) 
-       allocate(SPreppair_d(ipr)%cpotr(nptmax)) 
-       allocate(SPreppair_d(ipr)%dpotr(nptmax)) 
-      end if
 
-       do i=1,nptmax
-          if(i.le.npt) then
-           if (lforcetabulate) then        
-             read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),reppair_d(ipr)%potr(i)
-           else
-             read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i)
-           end if
-          else
-             reppair(ipr)%xr(i)=(i-npt)*reppair(ipr)%deltaREP+ reppair(ipr)%xr(i)
-             reppair(ipr)%potr(i)=reppair(ipr)%potr(npt)
-             if (lforcetabulate) then
-              reppair_d(ipr)%potr(i)=reppair_d(ipr)%potr(npt)
-             end if
 
-          end if
-       end do
-       call cspline (nptmax,reppair(ipr)%xr,reppair(ipr)%potr,SPreppair(ipr)%bpotr,& 
-             SPreppair(ipr)%cpotr,SPreppair(ipr)%dpotr)
        if (lforcetabulate) then
-        reppair_d(ipr)%xr=reppair(ipr)%xr
-        call cspline (nptmax,reppair_d(ipr)%xr,reppair_d(ipr)%potr,SPreppair_d(ipr)%bpotr,&
-            SPreppair_d(ipr)%cpotr,SPreppair_d(ipr)%dpotr)
+          allocate(reppair_d(ipr)%xr(nptmax)) 
+          allocate(reppair_d(ipr)%potr(nptmax)) 
+          allocate(SPreppair_d(ipr)%bpotr(nptmax)) 
+          allocate(SPreppair_d(ipr)%cpotr(nptmax)) 
+          allocate(SPreppair_d(ipr)%dpotr(nptmax)) 
        end if
-
     end do
 
+    select case(ipotentiel)
+    case(10)
+
+       !EMBD EAM PART
+       do itir=1,ntypr
+          iti=typtyp(itir)
+          !lecture de Glue
+          read(lupotin,*)n
+          if (rang==0) write(6,*)'EAM',n,iti
+          if(n.ne.itir)then
+             write(6,*) rang,' ordre de lecture de EAM stop'
+             call arret_ndm
+          end if
+
+          ! write(6,*)'NPT NPTMAX',npt,nptmax
+          read(lupotin,*)npt,embtyp(iti)%deltaEAM
+          if (lforcetabulate) embtyp_d(iti)%deltaEAM=embtyp(iti)%deltaEAM
+          if (rang==0) write(6,*)'EAM number of points in potin and the step',npt,embtyp(iti)%deltaEAM     
+          if(npt.gt.nptmax)then
+             write(6,*) rang,'nb de points de grille  EAM stop'
+             call arret_ndm
+          end if
+          do i=1,nptmax
+             if(i.le.npt) then
+                !newCOS
+                if (lforcetabulate) then
+                   read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i),embtyp_d(iti)%feam(i)
+                else 
+                   read(lupotin,*)embtyp(iti)%xg(i),embtyp(iti)%feam(i)
+                end if
+             else
+                embtyp(iti)%xg(i)=(i-npt)*embtyp(iti)%deltaEAM+ embtyp(iti)%xg(i)
+                embtyp(iti)%feam(i)=embtyp(iti)%feam(npt)
+                !newCOS
+                if (lforcetabulate) then
+                   embtyp_d(iti)%feam(i)=embtyp_d(iti)%feam(npt)
+                end if
+             end if
+
+          end do
+          rhomin(iti)=min(rhomin(iti),embtyp(iti)%xg(1))
+          rhomax(iti)=max(rhomax(iti),embtyp(iti)%xg(npt))
+          !       write(6,*)'rhomin rhomax',rhomin,rhomax
+
+          call cspline (nptmax,embtyp(iti)%xg,embtyp(iti)%feam,SPembtyp(iti)%beam,SPembtyp(iti)%ceam,SPembtyp(iti)%deam)
+          if (lforcetabulate) then
+             embtyp_d(iti)%xg=embtyp(iti)%xg
+             call cspline (nptmax,embtyp_d(iti)%xg,embtyp_d(iti)%feam,SPembtyp_d(iti)%beam,&
+                  &SPembtyp_d(iti)%ceam,SPembtyp_d(iti)%deam)
+          end if
+
+
+
+
+          !DENS PART
+          !lecture de dens
+          read(lupotin,*)n
+          if (rang==0) write(6,*)'dens',n,iti
+          if(n.ne.itir)then
+             write(6,*) rang,' ordre de lecture de EAM densstop'
+             call arret_ndm
+          end if
+          !     rhotyp(iti)%toto=iti
+          read(lupotin,*)npt,rhotyp(iti)%deltaRHO
+          if (lforcetabulate) rhotyp_d(iti)%deltaRHO=rhotyp(iti)%deltaRHO
+
+          if (rang==0) write(6,*)'RHO potin points and the step: ', npt,rhotyp(iti)%deltaRHO
+          if(npt.ne.nptmax)then
+             write(6,*) rang,'nb de points de grille  EAM stop'
+             call arret_ndm
+          end if
+
+          do i=1,nptmax
+             if(i.le.npt) then
+                if (lforcetabulate) then
+                   read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i),rhotyp_d(iti)%rho(i)
+                else 
+                   read(lupotin,*)rhotyp(iti)%xd(i),rhotyp(iti)%rho(i)
+                end if
+             else
+                rhotyp(iti)%xd(i)=(i-npt)*rhotyp(iti)%deltaRHO+ rhotyp(iti)%xd(npt)
+                rhotyp(iti)%rho(i)=rhotyp(iti)%rho(npt)
+                if (lforcetabulate) then
+                   rhotyp_d(iti)%rho(i)=rhotyp_d(iti)%rho(npt)
+                end if
+             end if
+
+          end do
+          call cspline (nptmax,rhotyp(iti)%xd,rhotyp(iti)%rho,  SPrhotyp(iti)%brho,  SPrhotyp(iti)%crho,  SPrhotyp(iti)%drho  )
+          if (lforcetabulate) then
+             rhotyp_d(iti)%xd=rhotyp(iti)%xd
+             call cspline (nptmax,rhotyp_d(iti)%xd,rhotyp_d(iti)%rho,SPrhotyp_d(iti)%brho,SPrhotyp_d(iti)%crho,SPrhotyp_d(iti)%drho)
+          end if
+       end do
+
+       !PAIR PART 
+
+       do ipair=1,npair_r
+          read(lupotin,*)n
+          if(n.ne.ipair)then
+             write(6,*) rang, ' ordre de lecture de EAM rep stop'
+             call arret_ndm
+          end if
+          ipr=ind_pair(ipair)
+
+          if (rang==0) write(6,*)'paire eam ; paire complete',n,ipr
+          if (rang==0) write(6,*)'rep'
+
+          read(lupotin,*)npt,reppair(ipr)%deltaREP
+          if (lforcetabulate) reppair_d(ipr)%deltaREP=reppair(ipr)%deltaREP
+
+          if(npt.gt.nptmax)then
+             write(6,*) rang,'nb de points de grille  EAM stop'
+             call arret_ndm
+          end if
+
+          do i=1,nptmax
+             if(i.le.npt) then
+                if (lforcetabulate) then        
+                   read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i),reppair_d(ipr)%potr(i)
+                else
+                   read(lupotin,*)reppair(ipr)%xr(i),reppair(ipr)%potr(i)
+                end if
+             else
+                reppair(ipr)%xr(i)=(i-npt)*reppair(ipr)%deltaREP+ reppair(ipr)%xr(i)
+                reppair(ipr)%potr(i)=reppair(ipr)%potr(npt)
+                if (lforcetabulate) then
+                   reppair_d(ipr)%potr(i)=reppair_d(ipr)%potr(npt)
+                end if
+
+             end if
+          end do
+          call cspline (nptmax,reppair(ipr)%xr,reppair(ipr)%potr,SPreppair(ipr)%bpotr,& 
+               SPreppair(ipr)%cpotr,SPreppair(ipr)%dpotr)
+          if (lforcetabulate) then
+             reppair_d(ipr)%xr=reppair(ipr)%xr
+             call cspline (nptmax,reppair_d(ipr)%xr,reppair_d(ipr)%potr,SPreppair_d(ipr)%bpotr,&
+                  SPreppair_d(ipr)%cpotr,SPreppair_d(ipr)%dpotr)
+          end if
+
+       end do
+    case(16)
+       rhomin(:)=0
+       do itir=1,ntypr
+          iti=typtyp(itir)
+          read(lupotin,*)n
+          if (rang==0) write(6,*)'EAM',n,iti
+          if(n.ne.itir)then
+             write(6,*) rang,' ordre de lecture de EAM stop'
+             call arret_ndm
+          end if
+          read(lupotin,*)crg%G(iti),crg%n(iti),crg%densmax(iti)
+          rhomax(iti)=crg%densmax(iti)
+          rhomin(iti)=0
+       end do
+!       crg%G(:)=crg%G(:)*ev2erg
+       do ipair=1,npair_r
+          read(lupotin,*)n
+          if(n.ne.ipair)then
+             write(6,*) rang, ' ordre de lecture de EAM rep stop'
+             call arret_ndm
+          end if
+          ipr=ind_pair(ipair)
+          read(lupotin,*)crg%D(ipr),crg%gam(ipr),crg%A(ipr),crg%rho(ipr),crg%C(ipr),crg%R0(ipr)
+       end do
+!       crg%D(:)=crg%D(:)*ev2erg
+!       crg%A(:)=crg%A(:)*ev2erg
+!       crg%C(:)=crg%C(:)*ev2erg*1d48
+       
+    end select
     close(lupotin)
-!if(allocated* (typ_and_pot).eqv..false.), i.e. if npotentiel==1 
+    !if(allocated* (typ_and_pot).eqv..false.), i.e. if npotentiel==1 
     if(allocated (typ_and_pot).eqv..false.) then
        allocate (typ_and_pot(ntyp,npotmax))
        typ_and_pot(:,:)=.false.
@@ -410,6 +592,60 @@ contains
 
   end subroutine inputeam
 
+
+  subroutine extrapolateRepCRG(rcm,l,Erep)
+    integer,intent(in)::l
+    real(double),intent(in)::rcm
+
+    real(double),intent(out)::Erep
+
+    real(double)::r,fhi_M,fhi_B,damp
+    real(double):: rc,wc,rd
+
+    rc=0.7; wc=10.0
+    r=rcm/A2cm
+
+    fhi_M=crg%D(l)*(exp(-2*crg%gam(l)*(r-crg%r0(l)))-2*exp(-1*crg%gam(l)*(r-crg%r0(l))))
+
+    rd=(r-rc)*wc
+    call calerf(rd,damp,0)
+    damp=0.5*(1+erf(rd))
+!    damp=1
+    if (crg%rho(l).ne.0) then
+       fhi_B=crg%A(l)*exp(-1*r/crg%rho(l))
+    else
+       fhi_B=0
+    end if
+    fhi_B=fhi_B-damp*crg%C(l)/r**6
+
+    Erep=ev2erg*(fhi_B+fhi_M)
+
+  end subroutine extrapolateRepCRG
+
+  subroutine extrapolateRhoCRG(rcm,iti,rho)
+    integer,intent(in)::iti
+    real(double),intent(in)::rcm
+
+    real(double),intent(out)::rho
+
+    real(double)::r,damp
+    real(double):: rc,wc,rd
+
+    rc=1.5; wc=20.0
+    r=rcm/A2cm
+
+    rd=(r-rc)*wc
+    call calerf(rd,damp,0)
+    damp=0.5*(1+erf(rd))
+    if (crg%n(iti).ne.0) then
+       rho=crg%n(iti)*(damp/r**8+(1-damp)/rc**8)
+    else
+       rho=0
+    end if
+!    write(6,*)r,rho,damp
+  end subroutine extrapolateRhoCRG
+
+  
   !-------------------------------------------
 
   subroutine extrapolateRho(density,SPdensity, r2, rho)

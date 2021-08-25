@@ -24,7 +24,7 @@ contains
          &rskin,rulayer,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
          &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
          &zko,zz0,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
-         &formatsauv,iko,iteanapos,iteangle,itebdv,itecfg,itecoordo,itedepla,itefcc,&
+         &formatsauv,iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,itefcc,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
          &lcasca,lcontr,ldemitab,ldesinteg,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
@@ -60,7 +60,7 @@ contains
     integer :: ludin, lufilm, lufilmpaf,  i,itean, ic, iThermo,itecompcr,ipotcont
     character :: fnamdin*80
     logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr
-
+    integer::itecfg
     !  integer :: imFree     ! nb d'atomes libres
     !-----------------------------------------------
     !
@@ -378,7 +378,7 @@ contains
     if (itecfg.gt.0) then
        write(6,*)'ITECFG desactive, reactivez (in readdm )"at your own risks"'
        write(6,*) 'utilisez ivisu=4 pour sortir des .cfg'
-       stop
+       ivisu=40
     end if
     if (ivisu==4) ivisu=40
     if (ivisu==6) ivisu=60
@@ -698,7 +698,7 @@ contains
        end do lpt
        if (.not.tpot) then
           if (rang==0) write(6,*)'probleme ipotentiel npotentiel',ipotentiel,lpotentiel
-          stop 
+       stop
        end if
     end if
     !  if ((all(lpotentiel)==.false.).and.(ipotentiel==-1)) then
@@ -1275,6 +1275,9 @@ contains
           write(6,*)'ipotentiel',ipotentiel
           !        write(6,*)lpotentiel
        else
+          write(6,*)'npotentiel buggué stop'
+          stop
+          
           do ipotcont=1,npotmax
              if (lpotentiel(ipotcont).EQV..true.)write(6,*)'potentiel actif', ipotcont
           end do

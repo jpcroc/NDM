@@ -6,7 +6,6 @@ module initspeed_mod
   USE tempinst_mod,only: tempinst
 !  USE calctemp_mod,only: calctemp
   USE arret_ndm_mod,only: arret_ndm
-  USE period_mod,only: period
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
        &lvpread,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,mdcg_noise_scale,&
        neb_noise_scale,bk,mdcg_noise,lspacendm,latcomp! enleve im, im_glog
@@ -178,17 +177,18 @@ contains
 
        if (tinit<=0) then
           ! velocities are not read and no starting temperature is given
-          if (dmtype==1 .or. dmtype==4) then                  !DM run
-             write (6, *) rang,'no way to initiate the velocities stop'
-             call arret_ndm
-          else                                 !quench run
+!!$          if (dmtype==1 .or. dmtype==4) then                  !DM run
+!!$             write (6, *) rang,'no way to initiate the velocities stop'
+!!$             call arret_ndm
+!!$          else                                 !quench run
              vp(1,:im) = 0.0
              vp(2,:im) = 0.0
              vp(3,:im) = 0.0
              xpp(1,:im) = xp(1,:im)
              xpp(2,:im) = xp(2,:im)
              xpp(3,:im) = xp(3,:im)
-          endif
+!          endif
+          if (rang==0) write (6, *) 'ZERO VELOCITY '
        else
           !  a starting temperature is given
           if (rang==0) write (6, *) 'random velocities at TINIT = ', tinit, &

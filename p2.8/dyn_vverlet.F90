@@ -31,7 +31,6 @@ contains
     USE caltabi_mod,only:caltabi
     USE elec_cell, ONLY:TTlangevin
     !    USE Parrinello_Rahman
-    use period_mod,only:period
     implicit none
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s

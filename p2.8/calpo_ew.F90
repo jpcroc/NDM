@@ -25,7 +25,7 @@ contains
     fact = pi2/alpha**2
     fact1 = auxe/2./pi/boxndm%volu
     fact2 = auxe*2./boxndm%volu
-
+    write(6,*)'KPME',kpme
     do nb1 = -ncoucx, ncoucx
        do nb2 = -ncoucy, ncoucy
           do nb3 = -ncoucz, ncoucz

@@ -2,7 +2,7 @@ module calfoeamtabvois_mod
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:angst,fnemd,it,lcalcjq,ldemitab,&
-       &lnemd,low_limit,lperiod,zero
+       &lnemd,low_limit,lperiod,zero,potis2,pi
         USE calfocommon
 
   implicit none
@@ -11,8 +11,8 @@ contains
   SUBROUTINE calfoeamtabvois(im,imm,xp,   fp,  iwmax, ityp,indi,at,bg,volu)
     !tentative de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
-    USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamrho,eamglue,eamglue_d,&
-         &eamglue,ipo,eamrep,eamrep_d,eamrho_d,eamrho_d,eamrep,eamrho,eamrho,rue_pot
+    USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamglue_d,&
+         &eamglue,ipo,eamrep,eamrep_d,eamrho_d,rue_pot,alpha,zz,ntyp
 
     USE jqmod
     implicit none
@@ -47,15 +47,20 @@ contains
     real(double) :: rhoi,rhoj, drhoi, drhoj ! densite de i sur j et j sur i et leurs derivees radiales
     REAL(double) :: Femb, dFemb
     real(double):: fpnemd(3,im),fpnemdmoy(3), XijdotF
-    real(double) :: drk, ktor, inv_ktor, ktorho, inv_ktorho
+    real(double) :: drk, ktor, inv_ktor
+    real(double),dimension(:),allocatable::ktorho(:), inv_ktorho(:)
     real(double), dimension(3) :: fij
     real(double) :: inv_volu, inv_atomic_volu
-
     real(double) :: densityi,tabdensity(imm)
-
     real(double)::rue,rue2
 
+    real(double)::aux,alp
+    
     real(double), dimension(:,:), allocatable :: xpnp
+    aux = 23.06134575D-20
+    alp = alpha/sqrt(pi)*aux
+    allocate(ktorho(ntyp))
+    allocate(inv_ktorho(ntyp))
 
     !  write(6,*)'eamtabvois'
     rue=rue_pot(ipotentiel)
@@ -64,8 +69,8 @@ contains
     !  end if
     ktor=rue/ngrid
     inv_ktor=1.d0/ktor
-    ktorho=(rhomax-rhomin)/ngrid
-    inv_ktorho = 1.d0/ktorho
+    ktorho(:)=(rhomax(:)-rhomin(:))/ngrid
+    inv_ktorho(:) = 1.d0/ktorho(:)
     tabdensity(:)=0.
     !  fp(:,:) = 0.0
     !  sig(:,:)=0.
@@ -99,6 +104,12 @@ contains
 
 
        iti = ityp(i)
+       if (ipotentiel==16) then
+          l = ipo(iti,iti)
+          ! --- Calcul du second potentiel de la somme d'Ewald ---
+          potis2 = potis2-zz(l)*alp
+       end if
+             
        iw1 = iw2+1
        iw2 = iwmax(i)
        loopvois :do iw = iw1, iw2
@@ -144,13 +155,13 @@ contains
     ! calcul et stockage de Eembi et dEembi
     loop2at1: do i=1,im
        iti=ityp(i)
-       k=Int((tabdensity(i)-rhomin)*inv_ktorho)
+       k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
        if(k.gt.ngrid) then
           write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
-          write(6,*)'densityi',k,ngrid,tabdensity(i), rhomin, inv_ktorho, densityi
+          write(6,*)'densityi',k,ngrid,tabdensity(i), rhomin(iti), inv_ktorho(iti), densityi
           stop
        end if
-       drk=tabdensity(i)-(rhomin+k*ktorho)
+       drk=tabdensity(i)-(rhomin(iti)+k*ktorho(iti))
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
 !       if( allocated (free)) then
 !          if( ( (lprteat.EQV..true.).or.(lcalcjq.EQV..true.) ).and.( free(i).EQV..true.)) eat(i)=eat(i)+Eembi

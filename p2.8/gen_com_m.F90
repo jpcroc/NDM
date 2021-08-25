@@ -95,7 +95,7 @@ integer::idirectionmcgc
   real(double) :: oldtstep  
   real(double) :: tstep, usdh, timel  
   integer :: itetemp, itesigma, itedepla, itecoordo, iterdf, nrdf, & 
-       iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc,itecfg
+       iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc
   integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codﾃｩ, ivisu=2=xred
   real(double)::rcangle,rcrdf
 

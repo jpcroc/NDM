@@ -58,9 +58,9 @@ subroutine param_det(boxndm)
 
   else
      rue=0
-     if ((ipotentiel.lt.10).and.(ipotentiel.ne.2)) then
+     if (((ipotentiel.lt.10).and.(ipotentiel.ne.2)).or.(ipotentiel==16)) then
         do l=1,npair
-           if (typ_pot_pair(l).lt.10) then
+           if ((typ_pot_pair(l).lt.10).or.(typ_pot_pair(l)==16)) then
               rue=max(rue,rue_pair(l))
            end if
         end do

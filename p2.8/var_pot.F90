@@ -116,7 +116,7 @@ module var_pot
   real(double) :: potisrep, potisglue,potiseam ! energie potentielle EAM
   real(double),dimension(:,:,:),allocatable :: eamrep,eamrho,eamglue       ! tableaux des splines du pot EAM 
   real(double),dimension(:,:,:),allocatable :: eamrep_d,eamrho_d,eamglue_d ! tableaux des splines du pot_d EAM 
-  real(double) :: rhomin=1d30,rhomax=0
+  real(double),dimension(:),allocatable :: rhomin,rhomax
 
 !  real(double), allocatable, dimension(:,:,:) :: digr, coord
 
@@ -133,7 +133,8 @@ module var_pot
   integer :: nfft1, nfft2, nfft3  ! ~kpmex
   integer :: nff, nf1, nf2, nf3
   integer :: ntable      ! pour fftfront
-  real(double) :: pterm, volterm, auxe ! constantes pour PME
+  real(double) :: pterm, volterm
+  real(double),parameter::auxe=23.06134575D-20 ! constantes pour PME
   real(double), dimension(:),allocatable :: bsmod1   !bspline
   real(double), dimension(:),allocatable :: bsmod2
   real(double), dimension(:),allocatable :: bsmod3

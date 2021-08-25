@@ -1,6 +1,5 @@
 module calfo2ctabvois_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE calerf_mod,only: calerf
   USE potrep_mod,only: potrep
   USE calfocommon
   implicit none

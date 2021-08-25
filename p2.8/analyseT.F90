@@ -1,8 +1,6 @@
 module analyseT_mod
   USE Mat_utils_mod
   USE calctemp_mod,only: calctemp
-  USE calcdepla_mod,only: calcdepla
-  USE calcdepla2_mod,only: calcdepla2
   USE calccoordo_mod,only: calccoordo
   USE calcdigr_mod,only: calcdigr,initrdf,rdfT,rdf0
   USE calcangle_mod,only: calcangle,adf0,initadf,adfT
@@ -12,12 +10,12 @@ module analyseT_mod
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,fnose,iteanapos,iteangle,itebdv,&
-       &itecfg,itecoordo,itedepla,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
+       &itecoordo,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &lambdades,leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
        &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
-       &natchk,tpseuils,sigtot,unitP,tdepla2,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
-       &ldesinteg,itmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,&
+       &natchk,tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
+       &ldesinteg,itmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,parallele,&
        & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,im_glob,it,l2T
 
   USE cellconfig,only:cell_config, caltabtC
@@ -173,6 +171,10 @@ contains
                       case(10:12)
                          write(6,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
                          write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
+                      case(16)
+                         write(6,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
+                         write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
+                         write(6,'(A,G21.12,A)')'    *energie EWALD  = ',potis3*unitE, cunitE
                       case(13)
                          write(6,'(A,G21.12,A)')'    *energie Tersoff = ',potisTersoff*unitE, cunitE
                          If (potisZBL.ne.0)write(6,'(A,G21.12,A)')'    *energie ZBL = ',potisZBL*unitE, cunitE
@@ -467,8 +469,9 @@ contains
         call calcangle(atdml,celndm,boxndm,adf0)
      endif
   endif
-  
-
+  if (itebdv>0) then
+     if (.not.parallele.and.mod(it,itebdv)==0) call bondval(atdml,celndm,boxndm)
+  end if
     
     return
   end subroutine analyseT

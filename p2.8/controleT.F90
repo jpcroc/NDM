@@ -1,6 +1,5 @@
 module controleT_mod
   USE endrunT_mod,only: endrunT
-  USE period_mod,only: period
   USE caltabi_mod,only: caltabi
   USE creadp_mod,only: creadp
   USE deftimestep_mod,only: deftimestep

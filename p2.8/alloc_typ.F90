@@ -5,7 +5,7 @@ module alloc_typ_mod
        &ro,dip,pm,r8p,roff1,roff2,pot,a_factor,fda,gamlt,shel,&
        &Dmorse,amorse,Remorse,ietaij,capHij,capwij,capDij,Awat,Bwat,pwat,qwat,rawat,&
        &rawat2,potw,bspw,cspw,dspw,gz,fcr,bspg,contmax,ngrid,nkmax,npair,ntrip,&
-       &typ_pot_pair,ray,bm,coup3c,c3c
+       &typ_pot_pair,ray,bm,coup3c,c3c,rhomin,rhomax
   implicit none 
 contains
 
@@ -128,8 +128,20 @@ contains
           end if
           allocate(eamglue(4,ntyp,0:ngrid+1))
           allocate(eamglue_d(4,ntyp,0:ngrid+1))
+          allocate(rhomax(ntyp))
+          allocate(rhomin(ntyp))
        end if
     end do
+    if (lpotentiel (16).eqv..true.) then
+       allocate(eamrep(4,npair,0:ngrid+1))
+       allocate(eamrho(4,npair,0:ngrid+1))
+       allocate(eamglue(4,ntyp,0:ngrid+1))
+       allocate(eamrep_d(4,npair,0:ngrid+1))
+       allocate(eamrho_d(4,ntyp,0:ngrid+1))
+       allocate(eamglue_d(4,ntyp,0:ngrid+1))
+       allocate(rhomax(ntyp))
+       allocate(rhomin(ntyp))
+    end if
     !  if (l3c) then
     allocate(lamb(ntrip)) ; allocate(cangle(ntrip))
     allocate(gam(ntrip,npair)) ; allocate(coup3c(ntrip,npair))

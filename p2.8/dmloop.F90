@@ -16,7 +16,7 @@ module dmloop_mod
 
   USE gen_com_m,only: dmtype,it,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
        & itetabvois,lperiod,lspaceNDM
-  use var_pot, only: cm! iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
+  use var_pot, only: cm
 #ifdef PARA
   USE mod_para,only:maj_atomes_frt_ftm
 #else

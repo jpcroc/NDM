@@ -1,12 +1,9 @@
 module posana
-!  USE temp_com,only:at,bg,ncel,atincel,nato,zl,deltadist,im,imm,natperc,nox,noxyz,noy,noz,&! A EFFACER
-!       &eatom,eatomtotm,na,nas,nad ! A EFFACER
   USE T_kind_param_m
   use setnoxsimple_mod,only:setnoxsimple
-  USE caltabt_mod,only: caltabt
   USE sic
   USE var_pot, ONLY:ty,ntyp,rumax
-  USE period_mod,only: period
+!  USE period_mod,only: period
   USE recips_mod,only: recips
   use notperiod_mod, only: notperiod
   use cryst_to_cart_mod,only:cryst_to_cart
@@ -18,7 +15,6 @@ module posana
   USE constrconf_mod,only:gin2ndm,read_cin
   use vect_dist_mod,only:vect_dist
   implicit none
-!  USE tab_imm_m,only:xp,ityp,ielat,ax,xpp
 
   CHARACTER(len=89) :: fnamcr,namecr
     logical :: lcomp, & ! comparaison ou non avec un cristal de dÃ©part
