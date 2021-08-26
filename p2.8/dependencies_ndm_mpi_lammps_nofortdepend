@@ -18,8 +18,6 @@ ndm :  \
 	boxconfig.o \
 	calcangle.o \
 	calccoordo.o \
-	calcdepla.o \
-	calcdepla2.o \
 	calcdigr.o \
 	calctemp.o \
 	calfo.o \
@@ -36,10 +34,8 @@ ndm :  \
 	calpo_ew.o \
 	calpoeam.o \
 	caltabi.o \
-	caltabt.o \
 	caltabtcr.o \
 	cellconfig.o \
-	cfg.o \
 	config2data.o \
 	constrconf.o \
 	controleT.o \
@@ -96,7 +92,6 @@ ndm :  \
 	paraconfig.o \
 	param_det.o \
 	parautils.o \
-	period.o \
 	potrep.o \
 	pr2.o \
 	prNose2.o \
@@ -108,9 +103,9 @@ ndm :  \
 	sauvegardeT.o \
 	scalebox.o \
 	setcell.o \
+	setnoxsimple.o \
 	spline.o \
 	steepestdescent.o \
-	tab_imm_m.o \
 	temp_com.o \
 	tempinst.o \
 	tempinstT.o \
@@ -120,6 +115,7 @@ ndm :  \
 	trempe.o \
 	vanbeest.o \
 	var_pot.o \
+	vect_dist_mod.o \
 	work_cgII.o \
 	zieg2.o
 
@@ -180,12 +176,6 @@ WGC.o :  \
 	sauvegardeT.o \
 	scalebox.o
 
-adf.o :  \
-	T_kind_param_m.o \
-	gen_com_m.o \
-	temp_com.o \
-	var_pot.o
-
 alloc_typ.o :  \
 	gen_com_m.o \
 	var_pot.o
@@ -200,8 +190,6 @@ analyseT.o :  \
 	boxconfig.o \
 	calcangle.o \
 	calccoordo.o \
-	calcdepla.o \
-	calcdepla2.o \
 	calcdigr.o \
 	calctemp.o \
 	cellconfig.o \
@@ -215,16 +203,18 @@ analyseT.o :  \
 anapos.o :  \
 	T_kind_param_m.o \
 	anasic.o \
-	caltabt.o \
+	atomconfig.o \
+	boxconfig.o \
 	caltabtcr.o \
+	cellconfig.o \
+	constrconf.o \
 	cryst_to_car.o \
 	gen_com_m.o \
-	notperiod.o \
-	period.o \
+	rasmolT.o \
 	recips.o \
-	tab_imm_m.o \
-	temp_com.o \
-	var_pot.o
+	setnoxsimple.o \
+	var_pot.o \
+	vect_dist_mod.o
 
 anasic.o :  \
 	extension.o \
@@ -244,11 +234,13 @@ atomconfig.o :  \
 
 bondval.o :  \
 	T_kind_param_m.o \
+	atomconfig.o \
+	boxconfig.o \
+	cellconfig.o \
 	cryst_to_car.o \
 	gen_com_m.o \
-	notperiod.o \
-	temp_com.o \
-	var_pot.o
+	var_pot.o \
+	vect_dist_mod.o
 
 boxconfig.o :  \
 	T_kind_param_m.o \
@@ -266,36 +258,20 @@ calcangle.o :  \
 	cellconfig.o \
 	cryst_to_car.o \
 	gen_com_m.o \
-	notperiod.o \
-	temp_com.o \
-	var_pot.o
+	var_pot.o \
+	vect_dist_mod.o
 
 calccoordo.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	atomconfig.o \
+	boxconfig.o \
+	cellconfig.o \
 	cryst_to_car.o \
 	gen_com_m.o \
 	notperiod.o \
-	temp_com.o \
-	var_pot.o
-
-calcdepla.o :  \
-	T_kind_param_m.o \
-	Tpara.o \
-	cryst_to_car.o \
-	gen_com_m.o \
-	tab_imm_m.o \
-	temp_com.o \
-	var_pot.o
-
-calcdepla2.o :  \
-	T_kind_param_m.o \
-	Tpara.o \
-	cryst_to_car.o \
-	gen_com_m.o \
-	tab_imm_m.o \
-	temp_com.o \
-	var_pot.o
+	var_pot.o \
+	vect_dist_mod.o
 
 calcdigr.o :  \
 	T_kind_param_m.o \
@@ -306,7 +282,8 @@ calcdigr.o :  \
 	cryst_to_car.o \
 	gen_com_m.o \
 	notperiod.o \
-	var_pot.o
+	var_pot.o \
+	vect_dist_mod.o
 
 calctemp.o :  \
 	T_kind_param_m.o \
@@ -355,7 +332,6 @@ calfo2ctabvois.o :  \
 	T_kind_param_m.o \
 	calfocommon.o \
 	cryst_to_car.o \
-	erf.o \
 	gen_com_m.o \
 	jqmod.o \
 	potrep.o \
@@ -374,6 +350,7 @@ calfoberend.o :  \
 	Tpara.o \
 	atomconfig.o \
 	gen_com_m.o \
+	tempinstT.o \
 	var_pot.o
 
 calfocommon.o :  \
@@ -453,13 +430,6 @@ caltabi.o :  \
 	notperiod.o \
 	var_pot.o
 
-caltabt.o :  \
-	T_kind_param_m.o \
-	cryst_to_car.o \
-	gen_com_m.o \
-	notperiod.o \
-	temp_com.o
-
 caltabtcr.o :  \
 	T_kind_param_m.o \
 	cryst_to_car.o
@@ -472,13 +442,6 @@ cellconfig.o :  \
 	cryst_to_car.o \
 	notperiod.o \
 	paraconfig.o
-
-cfg.o :  \
-	Mat_util.o \
-	T_kind_param_m.o \
-	gen_com_m.o \
-	temp_com.o \
-	var_pot.o
 
 config2data.o :  \
 	Mat_util.o \
@@ -518,8 +481,6 @@ controleT.o :  \
 	endrunT.o \
 	gen_com_m.o \
 	notperiod.o \
-	period.o \
-	tempinst.o \
 	var_pot.o
 
 creadp.o :  \
@@ -540,7 +501,8 @@ d_at_at.o :  \
 	cellconfig.o \
 	cryst_to_car.o \
 	gen_com_m.o \
-	notperiod.o
+	notperiod.o \
+	vect_dist_mod.o
 
 decoup3D.o :  \
 	T_kind_param_m.o \
@@ -580,6 +542,7 @@ dmloop.o :  \
 	eloss.o \
 	gen_com_m.o \
 	mod_para.o \
+	parautils.o \
 	tr_fire.o \
 	trempe.o \
 	var_pot.o
@@ -625,7 +588,6 @@ dyn.o :  \
 	atomconfig.o \
 	gen_com_m.o \
 	jqmod.o \
-	tempinst.o \
 	var_pot.o
 
 dyn_vverlet.o :  \
@@ -642,7 +604,7 @@ dyn_vverlet.o :  \
 	gen_com_m.o \
 	jqmod.o \
 	mod_para.o \
-	period.o \
+	parautils.o \
 	var_pot.o
 
 eamerco.o :  \
@@ -654,6 +616,7 @@ eamtab.o :  \
 	T_kind_param_m.o \
 	alloc_typ.o \
 	arret_ndm.o \
+	erf.o \
 	gen_com_m.o \
 	spline.o \
 	var_pot.o
@@ -687,7 +650,6 @@ endrunT.o :  \
 	calcangle.o \
 	calcdigr.o \
 	cellconfig.o \
-	cfg.o \
 	elec_cell.o \
 	gen_com_m.o \
 	rasmolT.o \
@@ -706,11 +668,6 @@ erf.o :  \
 	T_kind_param_m.o
 
 extension.o : 
-
-fcc.o :  \
-	T_kind_param_m.o \
-	cryst_to_car.o \
-	temp_com.o
 
 fft_com_m.o :  \
 	T_kind_param_m.o
@@ -880,7 +837,6 @@ initspeed.o :  \
 	atomconfig.o \
 	boxconfig.o \
 	gen_com_m.o \
-	period.o \
 	tempinst.o \
 	var_pot.o
 
@@ -925,7 +881,6 @@ julitabvois.o :  \
 	var_pot.o
 
 LAMMPS.o : 
-
 
 ndm_lammps.o :  \
 	Mat_util.o \
@@ -973,6 +928,7 @@ montecarlo.o :  \
 	caltabi.o \
 	cellconfig.o \
 	config2data.o \
+	constrconf.o \
 	cryst_to_car.o \
 	gen_com_m.o \
 	init_voisinage.o \
@@ -983,6 +939,7 @@ montecarlo.o :  \
 	parautils.o \
 	rasmolT.o \
 	read_val.o \
+	sauvegardeT.o \
 	tempinstT.o \
 	var_pot.o
 
@@ -1082,12 +1039,6 @@ parautils.o :  \
 	paraconfig.o \
 	setcell.o
 
-period.o :  \
-	T_kind_param_m.o \
-	cryst_to_car.o \
-	gen_com_m.o \
-	temp_com.o
-
 potrep.o :  \
 	T_kind_param_m.o \
 	var_pot.o
@@ -1160,8 +1111,6 @@ rasmolT.o :  \
 	paraconfig.o \
 	var_pot.o
 
-rdf.o : 
-
 read_val.o :  \
 	T_kind_param_m.o
 
@@ -1170,6 +1119,7 @@ readdm.o :  \
 	Tpara.o \
 	WGC.o \
 	arret_ndm.o \
+	calccoordo.o \
 	eloss.o \
 	gen_com_m.o \
 	jqmod.o \
@@ -1213,6 +1163,17 @@ setcell.o :  \
 	recips.o \
 	var_pot.o
 
+setnoxsimple.o :  \
+	T_kind_param_m.o \
+	Tpara.o \
+	atomconfig.o \
+	boxconfig.o \
+	cellconfig.o \
+	gen_com_m.o \
+	read_val.o \
+	recips.o \
+	var_pot.o
+
 spline.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o
@@ -1220,10 +1181,6 @@ spline.o :  \
 steepestdescent.o :  \
 	T_kind_param_m.o \
 	WGC.o \
-	gen_com_m.o
-
-tab_imm_m.o :  \
-	T_kind_param_m.o \
 	gen_com_m.o
 
 temp_com.o :  \
@@ -1274,6 +1231,14 @@ vanbeest.o :  \
 var_pot.o :  \
 	T_kind_param_m.o
 
+vect_dist_mod.o :  \
+	T_kind_param_m.o \
+	atomconfig.o \
+	boxconfig.o \
+	cellconfig.o \
+	cryst_to_car.o \
+	notperiod.o
+
 work_cgII.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
@@ -1289,4 +1254,5 @@ work_cgII.o :  \
 	sauvegardeT.o
 
 zieg2.o :  \
-	T_kind_param_m.o
+	T_kind_param_m.o \
+	var_pot.o

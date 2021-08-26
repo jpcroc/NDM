@@ -6,7 +6,9 @@ module calcdigr_mod
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
   USE cellconfig,only:cell_config, caltabtC
-    USE var_pot, ONLY:ntyp,ty !nkmax,ntyp,digr,gdertot
+  USE var_pot, ONLY:ntyp,ty !nkmax,ntyp,digr,gdertot
+  use vect_dist_mod,only:vect_dist
+
 #ifdef PARA
     USE mpi
     USE Tpara,only:COMM_space,nprocspace
@@ -74,11 +76,13 @@ contains
 
     integer :: i, iti, itj, i1, i2, icell, kx, ky, kz, koo, ko1, j, &
          ic, k, m,m1,n,iti1,iti2
-    real(double) :: rij, c1, c2, c3, x1, x2, x3, rmax2,rmax, incre
+    real(double) :: rij,  x1, x2, x3, rmax2,rmax, incre
     real(double) :: rspace2,invincre
     real(double) :: aaa, bbb, ccc,cv(1,3)
-    real(double),allocatable :: xpnp(:,:)
     real(double),allocatable::digrtemp(:,:,:)
+    logical::linter
+    real(double)::cx(3)
+    
     allocate(digrtemp(ntyp,ntyp,rdfc%nkmax))
     digrtemp=0
     rmax=rdfc%rcrdf
@@ -110,15 +114,6 @@ contains
     incre = rmax/rdfc%nkmax
     invincre = 1/incre
     if (rang==0) write(6,*) 'nkmax incre',rdfc%nkmax,incre
-    allocate (xpnp(3,atrdf%imm))
-
-    if (lperiod) then
-       xpnp=atrdf%xp
-    else
-       allocate (xpnp(3,atrdf%imm))
-       call notperiod(atrdf%im,atrdf%xp,xpnp,boxrdf%at,boxrdf%bg)
-    end if
-
     do i = 1, atrdf%im
        koo = atrdf%ielat(i)
        do i1 = 0, 26
@@ -127,36 +122,8 @@ contains
              j = celrdf%atincel(i2,ko1)
              if(j==i) cycle 
 
-             c1 = xpnp(1,i)-xpnp(1,j) 
-             c2 = xpnp(2,i)-xpnp(2,j) 
-             c3 = xpnp(3,i)-xpnp(3,j) 
-
-             c1 = c1+sum(boxrdf%at(1,:)*celrdf%deltadist(:,i1,koo))
-             c2 = c2+sum(boxrdf%at(2,:)*celrdf%deltadist(:,i1,koo))
-             c3 = c3+sum(boxrdf%at(3,:)*celrdf%deltadist(:,i1,koo))
-             if (celrdf%noxyz.ne.1) then
-                if (abs(c1)>rmax) cycle
-                if (abs(c2)>rmax) cycle
-                if (abs(c3)>rmax) cycle 
-             else
-                cv(1,1) = c1
-                cv(1,2) = c2
-                cv(1,3) = c3
-                call cryst_to_cart (1, cv, boxrdf%bg, -1) !cryst vers cart sur cv
-                WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-                   cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-                END WHERE
-                call cryst_to_cart (1, cv, boxrdf%at, 1) !cryst vers cart sur cv
-                c1=cv(1,1)
-                c2=cv(1,2)
-                c3=cv(1,3)
-             end if
-             if ((c1**2+c2**2+c3**2)> rmax2) cycle
-
-
-
-             rij = sqrt(c1*c1+c2*c2+c3*c3)   
-
+             call vect_dist(atrdf,celrdf,boxrdf,i,j,rum=rmax,dist=rij,linter=linter,lperiod=lperiod)
+             if (.not.linter) cycle
 
              k= int(rij*invincre)
 
@@ -167,7 +134,7 @@ contains
        end do
    end do
     !------------------------------------------------
-    ! Calcul de la RDF total
+    ! Calcul de la RDF totale
     !------------------------------------------------
    do iti1=1,ntyp
        rdfc%nad(iti1)=count(atrdf%ityp==iti1)

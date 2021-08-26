@@ -7,6 +7,7 @@ module calccoordo_mod
   use boxconfig,only:box_config
   USE cellconfig,only:cell_config, caltabtC
   USE var_pot, ONLY:ntyp!,ty !nkmax,ntyp,digr,gdertot
+  use vect_dist_mod,only:vect_dist
 
   implicit none
   real(double)::rclu(20)
@@ -29,22 +30,23 @@ contains
     integer,allocatable::na(:)
   integer :: i, iti, itj, i1, i2, koo, ko1, j, ic,nci,ip,ll
   real(double), dimension(ntyp,ntyp) :: dnco
-  real(double) :: r2, c1, c2, c3,cv(1,3),x1,x2,x3
-  real(double):: a1, a2, a3
 
 #ifdef PARA
   real(double), dimension(ntyp,ntyp) :: dnco_glob
   integer :: nci_glob
 #endif
 
-  real(double),allocatable :: xpnp(:,:),rccoordo(:)
+  real(double),allocatable :: rccoordo(:)
 
   integer,save::icall=0
+
+  logical::linter
+  real(double)::cx(3)
+  
   icall=icall+1
   if (icall==1) then
      rccoordo(1:ntyp)=rclu(1:ntyp)*1d-8
   end if
-     allocate(xpnp(3,atcf%imm))
      allocate (na(ntyp))
 
     do i=1,atcf%im
@@ -57,13 +59,11 @@ contains
   write (6, *) '--------- Coordinations ----------------'
   dnco(:ntyp,:ntyp) = 0
 
-
-
-  if (lperiod) then
-     xpnp(:,:)=atcf%xp(:,:)
-  else 
-     call notperiod(atcf%imm,atcf%xp,xpnp,boxcf%at,boxcf%bg)
-  end if
+!!$  if (lperiod) then
+!!$     xpnp(:,:)=atcf%xp(:,:)
+!!$  else 
+!!$     call notperiod(atcf%imm,atcf%xp,xpnp,boxcf%at,boxcf%bg)
+!!$  end if
 
   do i = 1,atcf%im
      koo = atcf%ielat(i)
@@ -75,42 +75,14 @@ contains
         do i2 = 1, celcf%nato(ko1)
            j = celcf%atincel(i2,ko1)
            if (i==j) cycle
-           c1 = xpnp(1,i)-xpnp(1,j)
-           c2 = xpnp(2,i)-xpnp(2,j)
-           c3 = xpnp(3,i)-xpnp(3,j)
-              c1 = c1+sum(boxcf%at(1,:)*celcf%deltadist(:,i1,koo))
-              c2 = c2+sum(boxcf%at(2,:)*celcf%deltadist(:,i1,koo))
-              c3 = c3+sum(boxcf%at(3,:)*celcf%deltadist(:,i1,koo))
-           if (celcf%noxyz.eq.1) then
-              cv(1,1) = c1
-              cv(1,2) = c2
-              cv(1,3) = c3
-              call cryst_to_cart (1, cv, boxcf%bg, -1) !cryst vers cart sur cv
-              WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-                 cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-              END WHERE
-              call cryst_to_cart (1, cv, boxcf%at, 1) !cryst vers cart sur cv
-              c1=cv(1,1)
-              c2=cv(1,2)
-              c3=cv(1,3)
-              
-           end if
-              
-           r2 = sqrt(c1*c1+c2*c2+c3*c3)
 
-           !               if (r2.le.3.0d-15)               write(6,*)i,j,r2
-
-           if (r2<rccoordo(atcf%ityp(i)))then
+           call vect_dist(atcf,celcf,boxcf,i,j,rum=rccoordo(atcf%ityp(i)),linter=linter,lperiod=lperiod)
+           if (linter)then
               dnco(atcf%ityp(i),atcf%ityp(j)) = dnco(atcf%ityp(i),atcf%ityp(j))+1
               nci=nci+1
            end if
-           !               if (r2>=rc(ityp(j))) cycle
-           !               dnco(ityp(j),ityp(i)) = dnco(ityp(i),ityp(j))+1
-
         end do
      end do
-           !   write(6,*)i,nci
-
   end do
 
 #ifdef PARA
@@ -139,7 +111,7 @@ contains
      end do
   endif
 
-  deallocate (xpnp)
+
   return
 
 end subroutine calccoordo

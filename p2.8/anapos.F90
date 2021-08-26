@@ -5,7 +5,6 @@ module posana
   USE var_pot, ONLY:ty,ntyp,rumax
 !  USE period_mod,only: period
   USE recips_mod,only: recips
-  use notperiod_mod, only: notperiod
   use cryst_to_cart_mod,only:cryst_to_cart
   USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,dmtype,lenfnam,it,timel,ivisu
   USE atomconfig,only:atom_config
@@ -369,11 +368,6 @@ contains
     !    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     
 
-    !    if (lperiod) then
-    !       xpnp(:,:)=atcf%xp(:,:)
-    !    else 
-    !       call notperiod(im,atcf%xp,xpnp,boxcf%at,boxcf%bg)
-    !    end if
 
     natvityp(:,:)=0
     ntetmax=-1

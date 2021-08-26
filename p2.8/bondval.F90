@@ -1,12 +1,11 @@
 module bondval_mod
-  USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:it,rang,fnam,lperiod,lenfnam,parallele
   USE var_pot, ONLY:ntyp,ty
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
   USE cellconfig,only:cell_config, caltabtC
-
+  USE vect_dist_mod
   implicit none
 
 contains
@@ -23,17 +22,13 @@ contains
 
     integer :: i,k,i1,j,iti,itj,i2
     integer :: ncelvois,koo,ko1,lenfn2
-
     real(double)::c1p,c2p,c3p,cv(1,3),ra(3),c1,c2,c3
-
     real(double),allocatable::bdv(:)
-    real(double) :: R,xx,dcut2,dis
-
-    real(double),allocatable :: xpnp(:,:)
-
+    real(double) :: R,xx,dcut,dis
     character :: extension*9
-    !APARA
-    allocate(xpnp(3,atbv%imm))
+
+    logical::linter
+    
 
     if(rang==0) then
 
@@ -49,33 +44,20 @@ contains
 
     end if
 
-    dcut2=(5.0d-8)**2
+    dcut=(5.0d-8)
 
     allocate(bdv(atbv%im))
 
 
     bdv(:)=0.
 
-    if (lperiod) then
-       xpnp(:,:)=atbv%xp(:,:)
-    else 
-       call notperiod(atbv%imm,atbv%xp,xpnp,boxbv%at,boxbv%bg)
-    end if
-
-
 
     do i = 1, atbv%im
        koo = atbv%ielat(i)                          ! Numero de la cellule
        iti=atbv%ityp(i)
        ncelvois = min(celbv%noxyz,27)-1
-
        do i1 = 0, ncelvois
           ko1 = celbv%ncel(koo,i1)
-
-          c1p = xpnp(1,i)+sum(boxbv%at(1,:)*celbv%deltadist(:,i1,koo))
-          c2p = xpnp(2,i)+sum(boxbv%at(2,:)*celbv%deltadist(:,i1,koo))
-          c3p = xpnp(3,i)+sum(boxbv%at(3,:)*celbv%deltadist(:,i1,koo))
-          ! pour chaque atome ds la cel. voisine
           do i2 = 1, celbv%nato(ko1)
              j = celbv%atincel(i2,ko1)
 
@@ -83,41 +65,13 @@ contains
              if (iti.eq.itj) cycle 
 
              if((trim(ty(iti)).ne.'O').and.((trim(ty(itj)).ne.'O'))) cycle
-             c1 = c1p-xpnp(1,j)
-             c2 = c2p-xpnp(2,j)
-             c3 = c3p-xpnp(3,j)
-             if (celbv%noxyz.eq.1) then
-                cv(1,1) = c1
-                cv(1,2) = c2
-                cv(1,3) = c3
-                call cryst_to_cart (1, cv, boxbv%bg, -1) !cryst vers cart sur cv
-                WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-                   cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-                END WHERE
-                call cryst_to_cart (1, cv, boxbv%at, 1) !cryst vers cart sur cv
-                c1=cv(1,1)
-                c2=cv(1,2)
-                c3=cv(1,3)
+             call vect_dist(atbv,celbv,boxbv,i,j,indcv=i1,lperiod=lperiod,rum=dcut,dist=dis,linter=linter)
 
-             end if
-
-             !           c1 = c1p-xpnp(1,j)
-             !           c2 = c2p-xpnp(2,j)
-             !           c3 = c3p-xpnp(3,j)
-
-             dis = c1*c1+c2*c2+c3*c3
-
-
-             if (dis>dcut2) cycle
-             dis=sqrt(dis)
-
+             if (.not.linter) cycle
 
 
              R = 0.0
-
-
              ! selection de la constante pour chaque atome central
-
 
              IF ( trim(ty(atbv%ityp(j)))  .EQ.  'H' .OR. trim(ty(atbv%ityp(i))) .EQ. 'H') &
                   &        R = 0.95
@@ -280,7 +234,6 @@ contains
     end if
 
     deallocate(bdv)
-    deallocate (xpnp)
 
 200 format(i2)
 300 format(i3)

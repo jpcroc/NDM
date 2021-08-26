@@ -66,10 +66,8 @@ ndm :  \
 	gcmodII.o \
 	gen_com_m.o \
 	init.o \
-	init_MPI.o \
 	init_pot.o \
 	init_simple.o \
-	init_voisinage.o \
 	initcasca.o \
 	initcdp.o \
 	initspeed.o \
@@ -78,8 +76,9 @@ ndm :  \
 	jqmod.o \
 	julicel.o \
 	julitabvois.o \
+	LAMMPS.o \
+	ndm_lammps.o \
 	main.o \
-	mod_para.o \
 	moduli.o \
 	montecarlo.o \
 	neb.o \
@@ -135,8 +134,6 @@ NGC.o :  \
 	cryst_to_car.o \
 	endrunT.o \
 	gen_com_m.o \
-	paraconfig.o \
-	parautils.o \
 	recips.o \
 	steepestdescent.o \
 	var_pot.o
@@ -166,7 +163,6 @@ WGC.o :  \
 	endrunT.o \
 	gen_com_m.o \
 	initspeed.o \
-	mod_para.o \
 	paraconfig.o \
 	parautils.o \
 	rasmolT.o \
@@ -219,15 +215,12 @@ anasic.o :  \
 	gen_com_m.o
 
 arret_ndm.o :  \
-	T_kind_param_m.o \
-	Tpara.o \
-	gen_com_m.o
+	T_kind_param_m.o
 
 atomconfig.o :  \
 	Mat_util.o \
 	T_kind_param_m.o \
 	Tpara.o \
-	gen_com_m.o \
 	paraconfig.o
 
 bondval.o :  \
@@ -250,7 +243,6 @@ boxconfig.o :  \
 
 calcangle.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -261,7 +253,6 @@ calcangle.o :  \
 
 calccoordo.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -273,7 +264,6 @@ calccoordo.o :  \
 
 calcdigr.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -285,7 +275,6 @@ calcdigr.o :  \
 
 calctemp.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	atomconfig.o \
 	cellconfig.o \
 	elec_cell.o \
@@ -312,6 +301,8 @@ calfo.o :  \
 	gen_com_m.o \
 	julicel.o \
 	julitabvois.o \
+	ndm_lammps.o \
+	ndm_lammps.o \
 	var_pot.o
 
 calfo2ccel.o :  \
@@ -358,7 +349,6 @@ calfoeamcel.o :  \
 	calfocommon.o \
 	cryst_to_car.o \
 	gen_com_m.o \
-	mod_para.o \
 	notperiod.o \
 	var_pot.o
 
@@ -537,7 +527,6 @@ dmloop.o :  \
 	elec_cell.o \
 	eloss.o \
 	gen_com_m.o \
-	mod_para.o \
 	parautils.o \
 	tr_fire.o \
 	trempe.o \
@@ -556,10 +545,8 @@ dmloop_lpr.o :  \
 	elec_cell.o \
 	eloss.o \
 	gen_com_m.o \
-	mod_para.o \
 	pr2.o \
-	prNose2.o \
-	recips.o
+	prNose2.o
 
 dmloop_vverlet.o :  \
 	T_kind_param_m.o \
@@ -599,7 +586,6 @@ dyn_vverlet.o :  \
 	eloss.o \
 	gen_com_m.o \
 	jqmod.o \
-	mod_para.o \
 	parautils.o \
 	var_pot.o
 
@@ -633,7 +619,6 @@ eloss.o :  \
 	atomconfig.o \
 	cellconfig.o \
 	gen_com_m.o \
-	mod_para.o \
 	var_pot.o
 
 endrunT.o :  \
@@ -654,7 +639,6 @@ endrunT.o :  \
 
 epme.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	fft_com_m.o \
 	gen_com_m.o \
 	moduli.o \
@@ -685,7 +669,6 @@ force_tersoff_cel.o :  \
 	force_tersoff_facteurs.o \
 	gen_com_m.o \
 	jqmod.o \
-	mod_para.o \
 	var_pot.o
 
 force_tersoff_facteurs.o :  \
@@ -702,8 +685,6 @@ gcII.o :  \
 	gcmodII.o \
 	gen_com_m.o \
 	initspeed.o \
-	paraconfig.o \
-	parautils.o \
 	var_pot.o \
 	work_cgII.o
 
@@ -734,10 +715,11 @@ init.o :  \
 	eloss.o \
 	gen_com_m.o \
 	init_pot.o \
-	init_voisinage.o \
 	initcasca.o \
 	initcdp.o \
 	initspeed.o \
+	ndm_lammps.o \
+	ndm_lammps.o \
 	neb_module.o \
 	rasmolT.o \
 	read_val.o \
@@ -748,7 +730,6 @@ init.o :  \
 
 init_MPI.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	gen_com_m.o
 
 init_MPI_mab.o : 
@@ -789,16 +770,14 @@ init_simple.o :  \
 	eloss.o \
 	gen_com_m.o \
 	init_pot.o \
-	init_voisinage.o \
 	initspeed.o \
+	ndm_lammps.o \
+	ndm_lammps.o \
 	read_val.o \
 	setcell.o \
 	var_pot.o
 
-init_voisinage.o :  \
-	Tpara.o \
-	cellconfig.o \
-	gen_com_m.o
+init_voisinage.o : 
 
 initcasca.o :  \
 	T_kind_param_m.o \
@@ -810,8 +789,6 @@ initcasca.o :  \
 	cryst_to_car.o \
 	elec_cell.o \
 	gen_com_m.o \
-	paraconfig.o \
-	parautils.o \
 	var_pot.o
 
 initcdp.o :  \
@@ -872,19 +849,27 @@ julitabvois.o :  \
 	notperiod.o \
 	var_pot.o
 
+LAMMPS.o : 
+
+ndm_lammps.o :  \
+	Mat_util.o \
+	T_kind_param_m.o \
+	Tpara.o \
+	config2data.o \
+	gen_com_m.o \
+	LAMMPS.o \
+	var_pot.o
+
 main.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
 	arret_ndm.o \
 	gen_com_m.o \
-	init_MPI.o \
-	neb_module.o \
 	prog.o \
 	readdm.o
 
 mod_para.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	atomconfig.o \
 	cellconfig.o \
 	gen_com_m.o
@@ -912,8 +897,8 @@ montecarlo.o :  \
 	constrconf.o \
 	cryst_to_car.o \
 	gen_com_m.o \
-	init_voisinage.o \
-	mod_para.o \
+	ndm_lammps.o \
+	ndm_lammps.o \
 	paraconfig.o \
 	parautils.o \
 	rasmolT.o \
@@ -932,7 +917,6 @@ neb.o :  \
 	caltabi.o \
 	cellconfig.o \
 	gen_com_m.o \
-	init_voisinage.o \
 	neb_controle.o \
 	neb_module.o \
 	parautils.o \
@@ -959,6 +943,7 @@ neb_module.o :  \
 	cryst_to_car.o \
 	gen_com_m.o \
 	init_pot.o \
+	ndm_lammps.o \
 	paraconfig.o \
 	rasmolT.o \
 	read_val.o \
@@ -1013,7 +998,6 @@ parautils.o :  \
 	constrconf.o \
 	decoup3D.o \
 	gen_com_m.o \
-	mod_para.o \
 	paraconfig.o \
 	setcell.o
 
@@ -1035,7 +1019,6 @@ pr2.o :  \
 	elec_cell.o \
 	eloss.o \
 	gen_com_m.o \
-	mod_para.o \
 	recips.o \
 	scalebox.o \
 	var_pot.o
@@ -1071,7 +1054,6 @@ prog.o :  \
 	gen_com_m.o \
 	init.o \
 	init_simple.o \
-	mod_para.o \
 	montecarlo.o \
 	neb.o \
 	neb_module.o \
@@ -1094,7 +1076,6 @@ read_val.o :  \
 
 readdm.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	WGC.o \
 	arret_ndm.o \
 	calccoordo.o \
@@ -1131,7 +1112,6 @@ scalebox.o :  \
 
 setcell.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
@@ -1143,7 +1123,6 @@ setcell.o :  \
 
 setnoxsimple.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -1166,13 +1145,11 @@ temp_com.o :  \
 
 tempinst.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	gen_com_m.o \
 	var_pot.o
 
 tempinstT.o :  \
 	T_kind_param_m.o \
-	Tpara.o \
 	atomconfig.o \
 	gen_com_m.o \
 	var_pot.o
@@ -1226,7 +1203,6 @@ work_cgII.o :  \
 	cellconfig.o \
 	endrunT.o \
 	gen_com_m.o \
-	mod_para.o \
 	paraconfig.o \
 	parautils.o \
 	sauvegardeT.o
