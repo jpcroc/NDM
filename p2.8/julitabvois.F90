@@ -2,14 +2,18 @@ module calfojuli_mod
         USE notperiod_mod,only: notperiod
         USE cryst_to_cart_mod,only: cryst_to_cart
         USE calfocommon
-        USE gen_com_m, ONLY:nvat,fnemd,lcalcjq,lnemd,lperiod,&
-             zero
+        USE gen_com_m, ONLY:nvat,fnemd,lcalcjq,lnemd,lperiod, zero
+        use vect_dist_mod,only:vect_dist
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+  USE cellconfig, only : cell_config
+  use boxconfig,only: box_config
+
         implicit none
       contains
 
 
 !----------------------------------------------------------------------
-SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
+SUBROUTINE calfojuli(atcf,celcf,boxcf)
   !tentaive de calfoeam avec une seule grande boucle sur i
   USE T_kind_param_m
 
@@ -17,17 +21,9 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
   USE SMjuli
   USE jqmod
   implicit none
-
-  !-----------------------------------------------
-  !   D u m m y   A r g u m e n t s
-  !-----------------------------------------------
-  ! eam variables
-  integer,intent(in)::im,imm
-  integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
-  real(double),intent(inout),allocatable  :: xp(:,:)
-  real(double) , intent(inout),allocatable :: fp(:,:)
-    real(double),intent(in),dimension(3,3)::at,bg
-    real(double),intent(in)::volu
+  class(atom_config),intent(inout)::atcf
+  type(cell_config),intent(in)::celcf
+  type(box_config),intent(in)::boxcf
  
   !local variables
   integer :: i,j,l !atomes
@@ -72,22 +68,20 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
 
 
   !    real(double) ::  alphaPbeta,beta
-  real(double) :: rcut2 (npair)
+  real(double) :: rcut2 (npair),rcut(npair)
   real(double) :: rhoitot,fpi
   real(double) :: tdepcos
-
   real(double)::rue
-  real(double), dimension(:,:), allocatable :: xpnp
-
-
-  real(double):: fpnemd(3,im),fpnemdmoy(3), XijdotF,XildotF,XjldotF
+  real(double):: fpnemd(3,atcf%im),fpnemdmoy(3), XijdotF,XildotF,XjldotF
+  real(double)::dxp(3),dxpjl(3)
+  logical::linter,linterjl
 
   rue=rue_pot(ipotentiel)
   fpnemd=0
 
   do l=1,npair
      rcut2(l)=(reppairjl(l)%rc*1.0d-8)**2
-     !       write(6,*)l,sqrt(rcut2(l))
+     rcut(l)=(reppairjl(l)%rc*1.0d-8)
   end do
   allocate(ktorho(ntyp))
   ktor=rue/ngrid
@@ -97,64 +91,32 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
 
   jq(:)=0.
   !  if (allocated(eat)) eat(:)=0.
-
-
   potist = zero
   potisrep=0.;potisglue=0.
   rue2=rue**2
   !    iw2=0
-
-  ALLOCATE(xpnp(3,imm))
-  if (lperiod) then
-   xpnp(:,:)=xp(:,:)
-  else
-   call notperiod(imm,xp,xpnp,at,bg)
-  end if
-   
-  call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
-
-
-  loop1at1: do i=1,im
+  loop1at1: do i=1,atcf%im
 
      ! --- Calcul de la densite sur i ---    
      nvi=0.
      rhoitot=0.
-     iti = ityp(i)
+     iti = atcf%ityp(i)
 !            write(6,*)'i iti = ',i,iti
      densityi=0.0 ;Eembi=0.0; dEembi=0.0
      if (i==1) then
         iw1 = 1
      else
-        iw1=iwmax(i-1)+1
+        iw1=atcf%iwmax(i-1)+1
      end if
-     iw2 = iwmax(i)
+     iw2 = atcf%iwmax(i)
      loopvois :do iw = iw1, iw2
-        j = indi(iw)
-        itj=ityp(j)
-
-
-        c1ij = xpnp(1,i)-xpnp(1,j)
-        c2ij = xpnp(2,i)-xpnp(2,j)
-        c3ij = xpnp(3,i)-xpnp(3,j)
-        if (c1ij>0.5) c1ij = c1ij-1.
-        if (c1ij<(-0.5)) c1ij = c1ij+1.
-        if (c2ij>0.5) c2ij = c2ij-1.
-        if (c2ij<(-0.5)) c2ij = c2ij+1.
-        if (c3ij>0.5) c3ij = c3ij-1.
-        if (c3ij<(-0.5)) c3ij = c3ij+1.
-        cv(1,1) = c1ij
-        cv(1,2) = c2ij
-        cv(1,3) = c3ij
-        call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-        r2ij = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-        c1ij= cv(1,1) 
-        c2ij =cv(1,2) 
-        c3ij =cv(1,3) 
-
-        itj=ityp(j)
-        if (r2ij>rcut2(ipo(iti,itj))) cycle
-
-        rij=sqrt(r2ij)
+        j = atcf%indi(iw)
+        itj=atcf%ityp(j)
+        ll=ipo(iti,itj)
+        call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp, lperiod=boxcf%lperiod,rum=rcut(ll)&
+             &,linter=linter,dist=rij)
+        if (.not.linter) cycle
+        
         !          write(6,*)'i iti j  itj r ',i,iti,j,itj
         k=Int(rij/ktor)
         !       write(6,*)'k ',k
@@ -163,18 +125,8 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
         rhoj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de j sur i
         drhoj=eamrho(2,ll,k)+2.0*eamrho(3,ll,k)*drk+3.0*eamrho(4,ll,k)*drk**2  !rho' de j sur i
 
-        !          write(6,*)'i j rij rh',i,j,rij,rhoj
-        !          if (iti==1.and.itj==1) then
-        !             trh=exp(czz*(dzz-rij/1.0d-8)+kzz/(rij/1.0d-8-rczz))
-        !          else
-        !             trh=exp(2.0*(czc*(dzc-rij/1.0d-8)+kzc/(rij/1.0d-8-rczc)))
-        !          end if
-        !          write(6,*)'i jrij trh',i,j,rij,trh
-
-
-
         nvi=nvi+1
-        Vc1ij(nvi)=c1ij ; Vc2ij(nvi)=c2ij ; Vc3ij(nvi)=c3ij
+        Vc1ij(nvi)=dxp(1) ; Vc2ij(nvi)=dxp(2) ; Vc3ij(nvi)=dxp(3)
         jvi(nvi)=j
         Vrij(nvi)=rij
         rhojsi(nvi)=rhoj
@@ -187,10 +139,10 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
      sij(:)=0.
      loopvj1 : do iw=1,nvi
         j=jvi(iw)
-        itj=ityp(j)
+        itj=atcf%ityp(j)
         !          if((itj==2).and.(iti==2))cycle
-        if(ityp(j).ne.iti) then
-           itj=ityp(j)
+        if(atcf%ityp(j).ne.iti) then
+           itj=atcf%ityp(j)
            !        write(6,*)'i j dis ',i,j,Vrij(iw)
            c1ij=Vc1ij(iw) ;c2ij= Vc2ij(iw); c3ij=Vc3ij(iw)
            rij=Vrij(iw)
@@ -200,7 +152,7 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
            !voisins l de i de type itj
            loopvli1 : do iwl=1,nvi
               l=jvi(iwl)
-              itl=ityp(l)
+              itl=atcf%ityp(l)
               !
               IF (L==J)cycle
               !
@@ -227,44 +179,21 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
            if (j==1) then
               iw1j=1
            else
-              iw1j=iwmax(j-1)+1
+              iw1j=atcf%iwmax(j-1)+1
            endif
-           iw2j=iwmax(j)
+           iw2j=atcf%iwmax(j)
 
            loopvjk1 :do iwl = iw1j, iw2j          
-              l = indi(iwl)
+              l = atcf%indi(iwl)
               !                write(6,*)'i j l',i,j,l
-              itl=ityp(l)
+              itl=atcf%ityp(l)
               if(itl==itj) cycle 
-              !
               IF (L==I)cycle
-              !
+              call vect_dist(atcf,celcf,boxcf,j,l,VJI=dxpjl, lperiod=boxcf%lperiod&
+                   &,rum=rcut(ipo(itj,itl)),linter=linterjl,dist=rjl)
+              if (.not.linterjl)cycle
+              c1jl=dxpjl(1);              c2jl=dxpjl(2);              c3jl=dxpjl(3);
 
-              c1jl = xpnp(1,j)-xpnp(1,l)
-              c2jl = xpnp(2,j)-xpnp(2,l)
-              c3jl = xpnp(3,j)-xpnp(3,l)
-              if (c1jl>0.5) c1jl = c1jl-1.
-              if (c1jl<(-0.5)) c1jl = c1jl+1.
-              if (c2jl>0.5) c2jl = c2jl-1.
-              if (c2jl<(-0.5)) c2jl = c2jl+1.
-              if (c3jl>0.5) c3jl = c3jl-1.
-              if (c3jl<(-0.5)) c3jl = c3jl+1.
-              cv(1,1) = c1jl
-              cv(1,2) = c2jl
-              cv(1,3) = c3jl
-              call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-              r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-              c1jl=cv(1,1)
-              c2jl=cv(1,2) 
-              c3jl=cv(1,3)
-
-
-
-              if (r2jl>rcut2(ipo(itj,itl))) cycle               
-              !                write(6,*)'K i iti j itj l itl ',i,iti,j,itj,l,itl                
-              !                if (r2jl>rue2) cycle
-              rjl=sqrt(r2jl)
-              !       write(6,*)'k ',k
               k=Int(rjl/ktor)
               drk=rjl-k*ktor
               ll = ipo(itj,itl)
@@ -324,7 +253,7 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
         c1ij=Vc1ij(iw) ;c2ij= Vc2ij(iw); c3ij=Vc3ij(iw)
         rij=Vrij(iw)
         gradij(1)=c1ij/rij ; gradij(2)=c2ij/rij ; gradij(3)=c3ij/rij
-        itj=ityp(j)
+        itj=atcf%ityp(j)
 
         k=Int(rij/ktor)
         drk=rij-k*ktor
@@ -335,22 +264,10 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
            !             Erep=0. ; dErep=0.
            Erep=2.0*eamrep(1,ll,k)+eamrep(2,ll,k)*drk+eamrep(3,ll,k)*drk**2+eamrep(4,ll,k)*drk**3
            dErep=2.0*(eamrep(2,ll,k)+2.0*eamrep(3,ll,k)*drk+3.0*eamrep(4,ll,k)*drk**2)
-           !             write(6,*)'i iti j itj rij Erep',i,iti,j,itj,rij,Erep
-           !             write(6,*)
-           !          write(6,*)'i iti j  itj r ',i,iti,j,itj
-           !          write(6,*)'i j rij erep',i,j,rij,erep
-           !          if (iti==1.and.itj==1) then
-           !             trh=exp(azz*(bzz-rij/1.0d-8)+kzz/(rij/1.0d-8-rczz))*ev2erg
-           !          else
-           !             trh=exp((azc*(bzc-rij/1.0d-8)+kzc/(rij/1.0d-8-rczc)))*ev2erg
-           !          end if
-           !          write(6,*)'i jrij terp',i,j,rij,trh
-           
-
            potist=potist+Erep
            potisrep=potisrep+Erep
-           fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
-           fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
+           atcf%fp(1:3,i)=atcf%fp(1:3,i)-dErep*gradij(1:3)
+           atcf%fp(1:3,j)=atcf%fp(1:3,j)+dErep*gradij(1:3)
            if (lnemd) then
               XijdotF=c1ij*Fnemd
               do ic=1,3
@@ -359,27 +276,9 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
               end do
            end if
 
-           sig(1:3,1) = sig(1:3,1) -dErep*gradij(1:3)*c1ij/volu
-           sig(1:3,2) = sig(1:3,2) -dErep*gradij(1:3)*c2ij/volu
-           sig(1:3,3) = sig(1:3,3) -dErep*gradij(1:3)*c3ij/volu
-     
-
-
-           ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
-!!$           if (lcalcjq) then
-!!$              jqf=0.0
-!!$              eat(i)=eat(i)+0.5*Erep
-!!$              eat(j)=eat(j)+0.5*Erep
-!!$              do ic=1,3
-!!$                 jqf=jqf-0.5*(dErep*gradij(ic)*(vp(ic,i)+vp(ic,j)))
-!!$              end do
-!!$              do ic=1,3
-!!$                 jq(ic)=jq(ic)+jqf*gradij(ic)*rij
-!!$              end do
-!!$           end if
-
-
-           !if ((i==1).or.(j==1))  write(6,*)'f1 ',fp(1,1),fp(2,1),fp(3,1)
+           sig(1:3,1) = sig(1:3,1) -dErep*gradij(1:3)*c1ij/boxcf%volu
+           sig(1:3,2) = sig(1:3,2) -dErep*gradij(1:3)*c2ij/boxcf%volu
+           sig(1:3,3) = sig(1:3,3) -dErep*gradij(1:3)*c3ij/boxcf%volu
         end if  !i>j
 
         !          if((itj==2).and.(iti==2))cycle
@@ -388,12 +287,12 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
         drhoj=drhojsi(iw)
         if(itj==iti) then
            ! terme standard
-           fp(1:3,i)=fp(1:3,i)-dEembi*drhoj*gradij(1:3)
-           fp(1:3,j)=fp(1:3,j)+dEembi*drhoj*gradij(1:3)
+           atcf%fp(1:3,i)=atcf%fp(1:3,i)-dEembi*drhoj*gradij(1:3)
+           atcf%fp(1:3,j)=atcf%fp(1:3,j)+dEembi*drhoj*gradij(1:3)
 
-           sig(1:3,1) = sig(1:3,1) -dEembi*drhoj*gradij(1:3)*c1ij/volu
-           sig(1:3,2) = sig(1:3,2) -dEembi*drhoj*gradij(1:3)*c2ij/volu
-           sig(1:3,3) = sig(1:3,3) -dEembi*drhoj*gradij(1:3)*c3ij/volu
+           sig(1:3,1) = sig(1:3,1) -dEembi*drhoj*gradij(1:3)*c1ij/boxcf%volu
+           sig(1:3,2) = sig(1:3,2) -dEembi*drhoj*gradij(1:3)*c2ij/boxcf%volu
+           sig(1:3,3) = sig(1:3,3) -dEembi*drhoj*gradij(1:3)*c3ij/boxcf%volu
 
            if (lnemd) then
               XijdotF=c1ij*Fnemd
@@ -402,31 +301,16 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
                  fpnemd(ic,j)=fpnemd(ic,j) +0.5*dEembi*drhoj*gradij(ic)*XijdotF
               end do
            end if
-
-!!$
-!!$           if(lcalcjq) then
-!!$              jqf=0.0
-!!$              do ic=1,3
-!!$                 jqf=jqf+dEembi*drhoj*gradij(ic)*vp(ic,j)
-!!$              end do
-!!$              do ic=1,3
-!!$                 jq(ic)=jq(ic)-jqf*gradij(ic)*rij
-!!$              end do
-!!$           end if
-
-           !if ((i==1).or.(j==1))  write(6,*)'f 2 ',fp(1,1),fp(2,1),fp(3,1)
-           !             auxt=dEembi*drhoj*gradij(1)
-           !             write(6,*)'auxt 1 ', auxt
         else
            !terme quasi-standard sans d(sij)
            if (ecrsij(iw).ne.0) then
               aux1=ecrsij(iw)*(1.0+sqrt(sij(iw)/rhoj))
-              fp(1:3,i)=fp(1:3,i)-dEembi*aux1*drhoj*gradij(1:3)
-              fp(1:3,j)=fp(1:3,j)+dEembi*aux1*drhoj*gradij(1:3)
+              atcf%fp(1:3,i)=atcf%fp(1:3,i)-dEembi*aux1*drhoj*gradij(1:3)
+              atcf%fp(1:3,j)=atcf%fp(1:3,j)+dEembi*aux1*drhoj*gradij(1:3)
 
-              sig(1:3,1) = sig(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/volu
-              sig(1:3,2) = sig(1:3,2) -dEembi*aux1*drhoj*gradij(1:3)*c2ij/volu
-              sig(1:3,3) = sig(1:3,3) -dEembi*aux1*drhoj*gradij(1:3)*c3ij/volu
+              sig(1:3,1) = sig(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/boxcf%volu
+              sig(1:3,2) = sig(1:3,2) -dEembi*aux1*drhoj*gradij(1:3)*c2ij/boxcf%volu
+              sig(1:3,3) = sig(1:3,3) -dEembi*aux1*drhoj*gradij(1:3)*c3ij/boxcf%volu
 
               if (lnemd) then
                  XijdotF=c1ij*Fnemd
@@ -435,18 +319,6 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
                     fpnemd(ic,j)=fpnemd(ic,j) +0.5*dEembi*aux1*drhoj*gradij(ic)*XijdotF
                  end do
               end if
-
-
-!!$              if(lcalcjq) then
-!!$                 jqf=0.0
-!!$                 do ic=1,3
-!!$                    jqf=jqf+dEembi*aux1*drhoj*gradij(ic)*vp(ic,j)
-!!$                 end do
-!!$                 do ic=1,3
-!!$                    jq(ic)=jq(ic)-jqf*gradij(ic)*rij
-!!$                 end do
-!!$              end if
-
 
            end if
         end if
@@ -462,7 +334,7 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
         !voisins l de i de type itj
         loopvli2 : do iwl=1,nvi
            l=jvi(iwl)
-           itl=ityp(l)
+           itl=atcf%ityp(l)
 
            if(itl.eq.iti) cycle 
            IF (L==J)cycle
@@ -479,10 +351,10 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
            aux3(1:3)=beta*((tdepcos)**(beta-1.))*rholsi*(gradij(1:3)-costetlij*gradil(1:3))
            aux4(1:3)=beta*((tdepcos)**(beta-1.))*rholsi*(gradil(1:3)-costetlij*gradij(1:3))
 
-           fp(1:3,i)=fp(1:3,i)-aux1*(aux2(1:3)+aux3(1:3))/ril
-           fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/ril
-           fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
-           fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
+           atcf%fp(1:3,i)=atcf%fp(1:3,i)-aux1*(aux2(1:3)+aux3(1:3))/ril
+           atcf%fp(1:3,l)=atcf%fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/ril
+           atcf%fp(1:3,i)=atcf%fp(1:3,i)-aux1*aux4(1:3)/rij
+           atcf%fp(1:3,j)=atcf%fp(1:3,j)+aux1*aux4(1:3)/rij
 
 
 
@@ -497,17 +369,14 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
 
               end do
            end if
-
-
-
            
-           sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c1il/volu
-           sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c2il/volu
-           sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c3il/volu
+           sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c1il/boxcf%volu
+           sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c2il/boxcf%volu
+           sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c3il/boxcf%volu
            
-           sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/volu
-           sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
-           sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
+           sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/boxcf%volu
+           sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/boxcf%volu
+           sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/boxcf%volu
 
 
 !!$           if(lcalcjq) then
@@ -535,35 +404,19 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
         if (j==1) then
            iw1j=1
         else
-           iw1j=iwmax(j-1)+1
+           iw1j=atcf%iwmax(j-1)+1
         endif
-        iw2j=iwmax(j)             
+        iw2j=atcf%iwmax(j)             
         loopvjk2 :do iwl = iw1j, iw2j          
-           l = indi(iwl)
-           itl=ityp(l)
+           l = atcf%indi(iwl)
+           itl=atcf%ityp(l)
            IF (L==I)cycle
            if(itl==itj) cycle                 
-           c1jl = xpnp(1,j)-xpnp(1,l)
-           c2jl = xpnp(2,j)-xpnp(2,l)
-           c3jl = xpnp(3,j)-xpnp(3,l)
-           if (c1jl>0.5) c1jl = c1jl-1.
-           if (c1jl<(-0.5)) c1jl = c1jl+1.
-           if (c2jl>0.5) c2jl = c2jl-1.
-           if (c2jl<(-0.5)) c2jl = c2jl+1.
-           if (c3jl>0.5) c3jl = c3jl-1.
-           if (c3jl<(-0.5)) c3jl = c3jl+1.
-           cv(1,1) = c1jl
-           cv(1,2) = c2jl
-           cv(1,3) = c3jl
-           call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-           r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-           c1jl=cv(1,1)
-           c2jl=cv(1,2) 
-           c3jl=cv(1,3)                   
 
-           if (r2jl>rcut2(ipo(itj,itl))) cycle               
-           !                if (r2jl>rue2) cycle
-           rjl=sqrt(r2jl)
+           call vect_dist(atcf,celcf,boxcf,j,l,VJI=dxpjl, lperiod=boxcf%lperiod,rum=rcut(ipo(itj,itl))&
+                &,linter=linterjl,dist=rjl)
+              if (.not.linterjl)cycle
+              c1jl=dxpjl(1);              c2jl=dxpjl(2);              c3jl=dxpjl(3);
            gradjl(1)=c1jl/rjl ; gradjl(2)=c2jl/rjl ; gradjl(3)=c3jl/rjl
            !       write(6,*)'k ',k
            k=Int(rjl/ktor)
@@ -582,10 +435,10 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
            aux3(1:3)=beta*((tdepcos)**(beta-1.))*rholsj*(-1.*gradij(1:3)-costetijl*gradjl(1:3))
            aux4(1:3)=-1.0*beta*((tdepcos)**(beta-1.))*rholsj*(gradjl(1:3)+costetijl*gradij(1:3))
 
-           fp(1:3,j)=fp(1:3,j)-aux1*(aux2(1:3)+aux3(1:3))/rjl
-           fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/rjl
-           fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
-           fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
+           atcf%fp(1:3,j)=atcf%fp(1:3,j)-aux1*(aux2(1:3)+aux3(1:3))/rjl
+           atcf%fp(1:3,l)=atcf%fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/rjl
+           atcf%fp(1:3,i)=atcf%fp(1:3,i)-aux1*aux4(1:3)/rij
+           atcf%fp(1:3,j)=atcf%fp(1:3,j)+aux1*aux4(1:3)/rij
 
            if (lnemd) then
               XijdotF=c1ij*Fnemd
@@ -602,14 +455,14 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
 
 
 
-           sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/volu
-           sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/volu
-           sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/volu
+           sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/boxcf%volu
+           sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/boxcf%volu
+           sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/boxcf%volu
 
 
-           sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/volu
-           sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
-           sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
+           sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/boxcf%volu
+           sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/boxcf%volu
+           sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/boxcf%volu
 
 !!$
 !!$           if(lcalcjq) then
@@ -645,17 +498,17 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
   end do loop1at1
   if (lnemd) then
      fpnemdmoy=0
-     do i=1,im   
+     do i=1,atcf%im   
         do l=1,3
-           fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(im)
+           fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(atcf%im)
         enddo
      end do
 
-     do i=1,im
+     do i=1,atcf%im
 !        write(6,*)'A',i,fp(:,i)
         do l=1,3
-           fp(l,i)=fp(l,i)-fpnemdmoy(l)
-           fp(l,i)=fp(l,i)+fpnemd(l,i)
+           atcf%fp(l,i)=atcf%fp(l,i)-fpnemdmoy(l)
+           atcf%fp(l,i)=atcf%fp(l,i)+fpnemd(l,i)
         enddo
 !        write(6,*)'B',i,fp(:,i)
      end do
@@ -666,7 +519,7 @@ SUBROUTINE calfojuli(im,imm,xp, fp, iwmax, ityp,indi,at,bg,volu)
 
 
 
-  deALLOCATE(xpnp)
+
 
   !  write(6,*)'f8 ',fp(1,1),fp(2,1),fp(3,1)
   return

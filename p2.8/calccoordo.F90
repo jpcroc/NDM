@@ -59,11 +59,6 @@ contains
   write (6, *) '--------- Coordinations ----------------'
   dnco(:ntyp,:ntyp) = 0
 
-!!$  if (lperiod) then
-!!$     xpnp(:,:)=atcf%xp(:,:)
-!!$  else 
-!!$     call notperiod(atcf%imm,atcf%xp,xpnp,boxcf%at,boxcf%bg)
-!!$  end if
 
   do i = 1,atcf%im
      koo = atcf%ielat(i)

@@ -2,10 +2,16 @@ module calfo3c_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE notperiod_mod,only: notperiod
   USE calfocommon
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+  USE cellconfig, only : cell_config
+  use boxconfig,only: box_config
+  use vect_dist_mod,only:vect_dist
+
+
   implicit none 
 contains
   ! *****************************************************************
-  subroutine calfo3c(im,imm,xp, fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu,sigc)
+  subroutine calfo3c(atcf,celcf,boxcf)!(im,imm,xp, fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
     !version du 20.11.2001
     !-----------------------------------------------
     !   M o d u l e s
@@ -16,35 +22,14 @@ contains
     USE var_pot, ONLY:r3cm2,ipo3c,ipo,coup3c2,ipo,coup3c2,coup3c,coup3c,gam,lamb,cangle,c3c
     implicit none
     !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    integer , intent(in) :: im,imm
-    integer , intent(in) :: ielat(imm),ityp(imm)
-    real(double),allocatable::sigc(:,:,:)
-    real(double) , intent(inout) :: xp(3,imm)
-    real(double)  :: ax(3,imm)
-    real(double) , intent(inout) :: fp(3,imm)
-
-    integer,intent(in)::noxyz,natperc
-    integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
-    real(double),intent(in),dimension(3,3)::at,bg
-    real(double),intent(in)::volu
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
-
-
-
-
-
+    class(atom_config),intent(inout)::atcf
+    type(cell_config),intent(in)::celcf
+    type(box_config),intent(in)::boxcf
     integer :: i,koo,i1,ko1,ko3,j,i2,k,i3, &
          iti,itj,itk,itrip,lj,lk,ic
 
     real(double) :: &
-         x1,x2,x3,c1,c2,c3,r2,        &
+         x1,x2,x3,r2,r,        &
          pscal,pscal2,pror2,pror,tetjik,cosi,cosi2,c2osi, &
          tcp31,tcp32, &
          tcp1,tcp2,tcp3,tcp4,tcp5,tcpx1,tcpx2,tcpy1, &
@@ -52,10 +37,10 @@ contains
          Rayij,Rayik,inv_Rij,inv_Rik, &
          INTER1j,INTER1k,INTER2exp,INTER2,INTER3j,INTER3k
 
-    real (double), dimension(26*natperc) :: &
+    real (double), dimension(26*celcf%natperc) :: &
          rtc,xtc, ytc, ztc, indic
 
-
+    logical::linter
 
     real(double) &
          w1,w1c,w2,w2c,w3,w3c, &
@@ -66,59 +51,28 @@ contains
     integer :: Fin,ncelvois
 
 
-    real(double) :: xpnp(3,imm)
     REAL(double), dimension(1:3) :: dxp
 
 
     Deb=1
-    Fin=im
+    Fin=atcf%im
     potcp=0
-
-
-
-
-    !C-----------------------------------------------------
-    !C                 Triplets j-i-k
-    !C-----------------------------------------------------
-    !C --- ouverture de la boucle sur i
-
-    if (noxyz==1) then
-       call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
-
-    else
-       if (lperiod) then
-          xpnp(:,:)=xp(:,:)
-       else 
-          call notperiod(imm,xp,xpnp,at,bg)
-       end if
-
-    end if
-
-
 
 
     DO  I=Deb,Fin
        !write(6,*)'debut',i
-       ITI=ityp(i)
+       ITI=atcf%ityp(i)
        I3=0
 
-       if (noxyz==1)then
-          do j=1,im
+       if (celcf%noxyz==1)then
+          do j=1,atcf%im
              if (j==i) cycle
 
-             dxp(1:3) = xp(1:3,i) - xp(1:3,j)
-
-             WHERE ( (dxp.GT.0.5d0).OR.(dxp.LT.-0.5d0) )
-                dxp(1:3) = dxp(1:3) - Dble(Nint(dxp(1:3)))
-             END WHERE
-
-             dxp = MatMul(at,dxp)
-
-             r2 = Sum( dxp(1:3)**2 )
-
-
-             if(r2.le.r3cm2) then
+             call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp, lperiod=boxcf%lperiod,rum=sqrt(r3cm2),linter=linter,dist=r)
+             
+             if(linter) then
                 I3=I3+1
+                r2=r*r
                 RTC(I3)=R2            !distance rij**2
                 XTC(I3)=dxp(1)          !Xi-Xj
                 YTC(I3)=dxp(2)            !Yi-Yj
@@ -129,68 +83,29 @@ contains
 
           end do
        else
-          X1=XPnp(1,I)
-          X2=XPnp(2,I)
-          X3=XPnp(3,I)
           !C --- calcul du # de cellule KOO de l'atome i
-          KOO=ielat(i)
-
-          !C --- calcul du tableau MERKEN des voisins du i considere
-          ncelvois = min(noxyz,27)-1
+          KOO=atcf%ielat(i)
+         !C --- calcul du tableau MERKEN des voisins du i considere
+          ncelvois = min(celcf%noxyz,27)-1
           ! pour chaque cel. voisine
           do i1 = 0, ncelvois
 
              !     DO  I1=0,26
-             KO1=NCEL(KOO,I1)
-             DO  I2=1,NATO(KO1)
-                j=atincel(i2,ko1)
+             KO1=celcf%NCEL(KOO,I1)
+             DO  I2=1,celcf%NATO(KO1)
+                j=celcf%atincel(i2,ko1)
 
                 if(i.eq.j) cycle
-                !C --- calcul de la distance (=>rij)
-                C1=X1-XPnp(1,J)
-                C2=X2-XPnp(2,J)
-                C3=X3-XPnp(3,J)
-                !           !c--- conditions aux limites
+                call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp, lperiod=boxcf%lperiod,rum=sqrt(r3cm2),linter=linter,dist=r)
 
-                do ic=1,3
-                   c1=c1+at(1,ic)*deltadist(ic,i1,koo)
-                   c2=c2+at(2,ic)*deltadist(ic,i1,koo)
-                   c3=c3+at(3,ic)*deltadist(ic,i1,koo)
-                end do
-
-                if (noxyz.ne.1) then
-                   if (abs(c1)>r3cm2) cycle
-                   if (abs(c2)>r3cm2) cycle
-                   if (abs(c3)>r3cm2) cycle 
-                else
-                   cv(1,1) = c1
-                   cv(1,2) = c2
-                   cv(1,3) = c3
-                   call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
-                   WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-                      cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-                   END WHERE
-                   call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-                   c1=cv(1,1)
-                   c2=cv(1,2)
-                   c3=cv(1,3)
-                end if
-
-                !              if (abs(C1).gt.r3cm) cycle
-                !              if (abs(C2).gt.r3cm) cycle
-                !              if (abs(C3).gt.r3cm) cycle
-
-
-
-
-                R2=C1*C1+C2*C2+C3*C3
                 !C --- stockage des valeurs de distance pour l'atome # j
-                if(r2.le.r3cm2) then
+                if(linter) then
+                   r2=r*r
                    I3=I3+1
                    RTC(I3)=R2            !distance rij**2
-                   XTC(I3)=C1            !Xi-Xj
-                   YTC(I3)=C2            !Yi-Yj
-                   ZTC(I3)=C3            !Zi-Zj
+                   XTC(I3)=dxp(1)           !Xi-Xj
+                   YTC(I3)=dxp(2)        !Yi-Yj
+                   ZTC(I3)=dxp(3)         !Zi-Zj
                    INDIC(I3)=J           !# de l'atome j
                 endif
              end DO
@@ -213,8 +128,8 @@ contains
              K=INDIC(I2)
              !write(6,*)i1,i2,i3,j,k
 
-             ITJ=ITYP(J)
-             ITK=ITYP(K)
+             ITJ=atcf%ITYP(J)
+             ITK=atcf%ITYP(K)
              ITRIP=IPO3C(ITI,ITJ,ITK)
              LJ=IPO(ITI,ITJ)
              LK=IPO(ITI,ITK)
@@ -289,26 +204,26 @@ contains
 
              !C             Force sur i
 
-             FP(1,I)=FP(1,I)+TCPX1+TCPX2-TCP1* &
+             ATCF%FP(1,I)=ATCF%FP(1,I)+TCPX1+TCPX2-TCP1* &
                   (XTC(I1)*TCP5+XTC(I2)*TCP4)
-             FP(2,I)=FP(2,I)+TCPY1+TCPY2-TCP1* &
+             ATCF%FP(2,I)=ATCF%FP(2,I)+TCPY1+TCPY2-TCP1* &
                   (YTC(I1)*TCP5+YTC(I2)*TCP4)
-             FP(3,I)=FP(3,I)+TCPZ1+TCPZ2-TCP1* &
+             ATCF%FP(3,I)=ATCF%FP(3,I)+TCPZ1+TCPZ2-TCP1* &
                   (ZTC(I1)*TCP5+ZTC(I2)*TCP4)
 
              !C             Force sur j et k
 
-             FP(1,J)=FP(1,J)-TCPX1+TCP1* &
+             ATCF%FP(1,J)=ATCF%FP(1,J)-TCPX1+TCP1* &
                   (-XTC(I1)*TCP32+XTC(I2)*PROR)
-             FP(2,J)=FP(2,J)-TCPY1+TCP1* &
+             ATCF%FP(2,J)=ATCF%FP(2,J)-TCPY1+TCP1* &
                   (-YTC(I1)*TCP32+YTC(I2)*PROR)
-             FP(3,J)=FP(3,J)-TCPZ1+TCP1* &
+             ATCF%FP(3,J)=ATCF%FP(3,J)-TCPZ1+TCP1* &
                   (-ZTC(I1)*TCP32+ZTC(I2)*PROR)
-             FP(1,K)=FP(1,K)-TCPX2+TCP1* &
+             ATCF%FP(1,K)=ATCF%FP(1,K)-TCPX2+TCP1* &
                   (XTC(I1)*PROR-XTC(I2)*TCP31)
-             FP(2,K)=FP(2,K)-TCPY2+TCP1* &
+             ATCF%FP(2,K)=ATCF%FP(2,K)-TCPY2+TCP1* &
                   (YTC(I1)*PROR-YTC(I2)*TCP31)
-             FP(3,K)=FP(3,K)-TCPZ2+TCP1* &
+             ATCF%FP(3,K)=ATCF%FP(3,K)-TCPZ2+TCP1* &
                   (ZTC(I1)*PROR-ZTC(I2)*TCP31)
 
              !c-------------Calculate 3body contribution to stress tensor, sig
@@ -325,12 +240,12 @@ contains
                 rik2=RTC(I2)
                 rik=SQRT(rik2)
                 riki=1.0/rik
-                w1=(-TCP2*rij2*COSI2-TCP1*tetjik)/volu
-                w2=TCP1/volu
-                w3=(-TCP3*rik2*COSI2-TCP1*tetjik)/volu
-                w1c=(-TCP2*rij2*COSI2-TCP1*tetjik)*noxyz/volu
-                w2c=TCP1*noxyz/volu
-                w3c=(-TCP3*rik2*COSI2-TCP1*tetjik)*noxyz/volu
+                w1=(-TCP2*rij2*COSI2-TCP1*tetjik)/boxcf%volu
+                w2=TCP1/boxcf%volu
+                w3=(-TCP3*rik2*COSI2-TCP1*tetjik)/boxcf%volu
+                w1c=(-TCP2*rij2*COSI2-TCP1*tetjik)*celcf%noxyz/boxcf%volu
+                w2c=TCP1*celcf%noxyz/boxcf%volu
+                w3c=(-TCP3*rik2*COSI2-TCP1*tetjik)*celcf%noxyz/boxcf%volu
 
                 rrijk(1,1)=uxij*riji*uxij*riji
                 rrijk(1,2)=2.e0*uxij*riji*uxik*riki
@@ -370,7 +285,7 @@ contains
                 sig(3,3)=sig(3,3)-rrijk(3,1)*w1-rrijk(3,2)*w2 &
                      &                         -rrijk(3,3)*w3
 
-                ko3=ielat(i)
+                ko3=atcf%ielat(i)
                 if (lTPcel.EQV..true.) then
                    sigc(1,1,ko3)=sigc(1,1,ko3)-rrijk(1,1)*w1c-rrijk(1,2)*w2c &
                         &                           -rrijk(1,3)*w3c
@@ -400,7 +315,6 @@ contains
 
     end DO
 
-    if(noxyz==1)  call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
 
 
 

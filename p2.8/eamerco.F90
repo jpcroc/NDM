@@ -2,6 +2,7 @@ module eamerco
   USE T_kind_param_m
   USE gen_com_m, ONLY: ev2erg,A2cm
   USE alloc_typ_mod,only: alloc_typ
+  use var_pot,only:rhomax,rhomin
   implicit none
 
 
@@ -83,6 +84,7 @@ contains
     roff2=roff2*1.0d-8
 
     cm(:ntyp) = cm(:ntyp)*umass
+    rhomin(:)=1d30;rhomax(:)=0
 
 
     close(lupotin)

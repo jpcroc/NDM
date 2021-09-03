@@ -16,13 +16,13 @@ module calfo_mod
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:parallele,potis0,potis2,potisp&
-       &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang
+       &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang,lperiod
 
   USE force_tersoff_mod,only:force_tersoff
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE calfocommon ! stocke des variables LOCALES sig et potist eat sigat etc.
   USE cellconfig, only : cell_config
-  use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
+  use boxconfig,only: box_config
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only: calcforce_lammps2 !, init_lammps
   use vars_lammps
@@ -42,29 +42,16 @@ contains
     !-----------------------------------------------
     class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(in),target::celcf
-    type(box_config),intent(in)::boxcf
+    !AAAAAAAAAAAAAATTTTTTTTTTTTTTTTTEEEEEEEEEEEEEEEEEEENNNNNTTTTTIIIIOOOONNN (intent(in) a rammettre)
+!    type(box_config),intent(in)::boxcf
+    type(box_config)::boxcf
     type(para_space_config)::psc
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
-
-!    integer::im
-!    integer, intent(in) ::imm
     real(double),intent(out)::potistcf,sigcf(3,3)
     real(double),dimension(:,:),allocatable:: xp,fp,xpp
-!    integer,dimension(:),allocatable::ityp,ielat
-!    logical::ltabvois
-!    integer,allocatable ::iwmax(:)
-!    integer,allocatable:: indi(:)
     
     integer :: i,ilocal,ipot,ic
-    !  real(double)::vn,v1,f1,ekin
-    !  integer::nv1,koo
     logical,optional, intent(in)  ::t_sigma
-
+    boxcf%lperiod=lperiod
     ltpcel=.false.
     test_sigma=.false.
     if (present(t_sigma))test_sigma=t_sigma
@@ -131,19 +118,16 @@ contains
                 select case (ipotentiel)
                 case(0,1,3,4,5,6,7)
                    if (atcf%ltabvois) then
-                      call calfo2ctabvois (atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
-                           &boxcf%at,boxcf%bg,boxcf%volu)
+                      call calfo2ctabvois(atcf,celcf,boxcf) !im,imm,xp,   fp,  iwmax, ityp,indi,at,bg,volu )
+!!$                      call calfo2ctabvois (atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
+!!$                           &boxcf%at,boxcf%bg,boxcf%volu)
                    else
-                      call calfo2ccel (atcf%im,atcf%imm,atcf%xp,  atcf%fp, atcf%ityp,atcf%ielat,atcf%num_at_glob,&
-                           &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
-                           &boxcf%at,boxcf%bg,boxcf%volu)
+                      call calfo2ccel(atcf,celcf,boxcf)
 
                    endif
 
 
-                   if (iewald.ge.1) call calfoew(atcf%im,atcf%imm,atcf%xp,atcf%fp,atcf%ityp,celcf%noxyz,boxcf%at,&
-                        &boxcf%bg,boxcf%volu)
-
+                   if (iewald.ge.1) call calfoew(atcf,celcf,boxcf)
                    ! Potentiel total
                    potisP = potis0+potis1+potis2+potis3
                    potist=potist+potisP
@@ -151,17 +135,13 @@ contains
                 case(2)
                    ! !!! le cas parallele n'est pas pris en compte !!!
 
-                   if (.not.parallele) call calfow(atcf%im,atcf%imm,atcf%xp,  atcf%fp, atcf%ielat, atcf%ityp,&
-                        &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
-                           &boxcf%at,boxcf%bg,boxcf%volu)
+                   if (.not.parallele) call calfow(atcf,celcf,boxcf)
 
                 case default
                 end select
 
                 ! !!! le cas parallele n'est pas pris en compte !!!
-                if (.not.parallele.and.l3c) call calfo3c (atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%ielat, atcf%ityp,&
-                        &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
-                           &boxcf%at,boxcf%bg,boxcf%volu,celcf%sigc)
+                if (.not.parallele.and.l3c) call calfo3c(atcf,celcf,boxcf)
 
                 ! !!! le cas parallele n'est pas pris en compte !!!
                 !potentiels EAM
@@ -170,44 +150,33 @@ contains
                 case(12)
                    ! !!! le cas parallele n'est pas pris en compte !!!
                    if (atcf%ltabvois) then 
-                      call calfojuli(atcf%im,atcf%imm,atcf%xp,  atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
-                           &boxcf%at,boxcf%bg,boxcf%volu)
+                      call calfojuli(atcf,celcf,boxcf)
+
                    else
-                      call calfojulicel(atcf%im,atcf%imm,atcf%xp,  atcf%fp, atcf%ielat, atcf%ityp,&
-                      &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
-                           &boxcf%at,boxcf%bg,boxcf%volu)
+                      call calfojulicel(atcf,celcf,boxcf)
 
                    end if
                 case(13,14,15)
                    if (atcf%ltabvois) then
                       ! !!! le cas parallele n'est pas pris en compte !!!
-                      if (.not.parallele) call force_tersoff (atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%iwmax, &
-                           &atcf%ityp,atcf%indi,boxcf%at,boxcf%bg,boxcf%volu,boxcf%zl)
-
+                      if (.not.parallele) call force_tersoff(atcf,celcf,boxcf)
                    else
-                      call force_tersoff_cel(atcf%im,atcf%imm,atcf%xp,   atcf%fp, &
-                           &atcf%ielat, atcf%ityp,celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,&
-                           &celcf%deltadist,boxcf%at,boxcf%bg,boxcf%volu,psc)
-
+                      call force_tersoff_cel(atcf,celcf,boxcf,psc)
                    endif
                    potist=potist+potisTersoff+potiszbl
                 case (10,11,16)
                    if (atcf%ltabvois) then
                       ! !!! le cas parallele n'est pas pris en compte !!!
                       if (.not.parallele) then
-                         call calfoeamtabvois(atcf%im,atcf%imm,atcf%xp,    atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&
-                              &boxcf%at,boxcf%bg,boxcf%volu)
+                         call calfoeamtabvois(atcf,celcf,boxcf)
                       end if
                    else
-                      call calfoeamcel(atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%ielat, atcf%ityp,atcf%num_at_glob,&
-                           &celcf%noxyz,celcf%natperc,celcf%atincel,celcf%nato,celcf%ncel,celcf%deltadist,&
-                           &celcf%nox,celcf%noy,celcf%noz,boxcf%at,boxcf%bg,boxcf%volu,psc)
-     
+                      call calfoeamcel(atcf,celcf,boxcf,psc)
                    endif
                    potist=potist+potiseam
                    if (iewald.ge.1)then
-                      call calfoew(atcf%im,atcf%imm,atcf%xp,atcf%fp,atcf%ityp,celcf%noxyz,boxcf%at,&
-                           &boxcf%bg,boxcf%volu)
+                      call  calfoew(atcf,celcf,boxcf)
+
                       potist=potist+potis3
                    end if
                                       

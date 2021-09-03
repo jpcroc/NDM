@@ -2,11 +2,15 @@ module calfoew_mod
   USE epme_mod,only: epme
   USE gen_com_m, ONLY:pi,potis3,zero
   USE calfocommon
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+  USE cellconfig, only : cell_config
+  use boxconfig,only: box_config
   implicit none
 contains
 
   ! ***************************************************************
-  subroutine calfoew(im,imm,xp,fp,ityp,noxyz,at,bg,volu)
+!  subroutine calfoew(im,imm,xp,fp,ityp,noxyz,at,bg,volu)
+  subroutine calfoew(atcf,celcf,boxcf)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -14,36 +18,19 @@ contains
 
     USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q,nb1v,nb2v,nb3v,tabv3,tabf3
 #ifdef PARA
-  USE Tpara,only:COMM_space,nprocspace
+    USE Tpara,only:COMM_space,nprocspace
 #else
-  USE Tpara,only:nprocspace
+    USE Tpara,only:nprocspace
 #endif
     ! ewald reciproque
     ! **************************************************************
 
     implicit none
-    !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    integer,intent(in)::im,noxyz,imm
-    real(double),intent(inout),allocatable::fp(:,:),xp(:,:)
-    integer,intent(in),allocatable::ityp(:)
-    real(double),intent(in),dimension(3,3)::bg,at
-    real(double),intent(in)::volu 
-
-    
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
-
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
+    class(atom_config),intent(inout)::atcf
+    type(cell_config),intent(in)::celcf
+    type(box_config),intent(in)::boxcf
     integer :: Deb, Fin
-    real(double), dimension(im) :: scalar
+    real(double), dimension(atcf%im) :: scalar
     integer nb1,nb2,nb3,i,i1,iti
     real(double) :: potisewg, hbn2, &
          hbv(3),phu
@@ -78,20 +65,20 @@ contains
                 if (nb2==0.and.nb3==0.and.nb1==0) cycle
 
                 do ii=1,size(hbv)
-                   hbv(ii) = 2.d0*pi*(bg(1,ii)*nb1+bg(2,ii)*nb2+bg(3,ii)*nb3)
+                   hbv(ii) = 2.d0*pi*(boxcf%bg(1,ii)*nb1+boxcf%bg(2,ii)*nb2+boxcf%bg(3,ii)*nb3)
                 enddo
 
-                do ii=1,im
-                   scalar(ii)=xp(1,ii)*hbv(1)+xp(2,ii)*hbv(2)+xp(3,ii)*hbv(3)
+                do ii=1,atcf%im
+                   scalar(ii)=atcf%xp(1,ii)*hbv(1)+atcf%xp(2,ii)*hbv(2)+atcf%xp(3,ii)*hbv(3)
                 enddo
 
                 ! Modification CCRT pour le compilo 6.0-4
 
                 scacos = 0
                 scasin = 0
-                do ii=1,im
-                   scacos = scacos + cos(scalar(ii))*q(ityp(ii))
-                   scasin = scasin + sin(scalar(ii))*q(ityp(ii))
+                do ii=1,atcf%im
+                   scacos = scacos + cos(scalar(ii))*q(atcf%ityp(ii))
+                   scasin = scasin + sin(scalar(ii))*q(atcf%ityp(ii))
                 enddo
 
 #ifdef PARA
@@ -103,13 +90,13 @@ contains
                 end if
 #endif
 
-                do i = 1, im
-                   iti = ityp(i)
+                do i = 1, atcf%im
+                   iti = atcf%ityp(i)
                    phu = tabf3(iti,nb1,nb2,nb3)*(sin(scalar(i))*scacos-&
                         cos(scalar(i))*scasin)
-                   fp(1,i) = fp(1,i)+phu*hbv(1)/(2.D0*pi)
-                   fp(2,i) = fp(2,i)+phu*hbv(2)/(2.D0*pi)
-                   fp(3,i) = fp(3,i)+phu*hbv(3)/(2.D0*pi)
+                   atcf%fp(1,i) = atcf%fp(1,i)+phu*hbv(1)/(2.D0*pi)
+                   atcf%fp(2,i) = atcf%fp(2,i)+phu*hbv(2)/(2.D0*pi)
+                   atcf%fp(3,i) = atcf%fp(3,i)+phu*hbv(3)/(2.D0*pi)
                 end do
 
 
@@ -118,11 +105,11 @@ contains
                 hbn2 = hbv(1)**2+hbv(2)**2+hbv(3)**2
                 if (test_sigma) then
                    sige(1,1) = sige(1,1)+potisewg*hbv(1)*hbv(1)/hbn2*(hbn2/(4.0*&
-                        &         alpha**2)+1)/volu
+                        &         alpha**2)+1)/boxcf%volu
                    sige(2,2) = sige(2,2)+potisewg*hbv(2)*hbv(2)/hbn2*(hbn2/(4.0*&
-                        &         alpha**2)+1)/volu
+                        &         alpha**2)+1)/boxcf%volu
                    sige(3,3) = sige(3,3)+potisewg*hbv(3)*hbv(3)/hbn2*(hbn2/(4.0*&
-                        &        alpha**2)+1)/volu
+                        &        alpha**2)+1)/boxcf%volu
                 endif
 
                 potis3 = potis3+potisewg
@@ -133,12 +120,12 @@ contains
        ! --- Fin du calcul ---
 
        if (test_sigma) then
-             do i1 = 1, 3
-                sig(i1,i1) = sig(i1,i1)+sige(i1,i1)
-                if (lTPcel.EQV..true.) then
-                   sigc(i1,i1,:noxyz) = sigc(i1,i1,:noxyz)+sige(i1,i1)
-                end if
-             end do
+          do i1 = 1, 3
+             sig(i1,i1) = sig(i1,i1)+sige(i1,i1)
+             if (lTPcel.EQV..true.) then
+                sigc(i1,i1,:celcf%noxyz) = sigc(i1,i1,:celcf%noxyz)+sige(i1,i1)
+             end if
+          end do
        endif
 
 
@@ -153,18 +140,18 @@ contains
        ! Sequentiel
 
        Deb=1 !Test
-       Fin=im !Test
+       Fin=atcf%im !Test
 
-       call epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
+       call epme (Deb,Fin,sige,atcf%im,atcf%xp,atcf%fp,atcf%ityp,boxcf%volu,boxcf%bg)
 
        if (test_sigma) then
-             do i1 = 1, 3
-                sig(i1,i1) = sig(i1,i1)+sige(i1,i1)
-                if (lTPcel.EQV..true.) then
-                   sigc(i1,i1,:noxyz) = sigc(i1,i1,:noxyz)+sige(i1,i1)
-                end if
-             end do
-          endif
+          do i1 = 1, 3
+             sig(i1,i1) = sig(i1,i1)+sige(i1,i1)
+             if (lTPcel.EQV..true.) then
+                sigc(i1,i1,:celcf%noxyz) = sigc(i1,i1,:celcf%noxyz)+sige(i1,i1)
+             end if
+          end do
+       endif
 
     end select
 

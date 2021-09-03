@@ -249,6 +249,7 @@ contains
           end do
           minrho=min(minrho,minval(ysp))
           maxrho=max(maxrho,maxval(ysp))
+
           call cspline (ngrid,xsp,ysp,bsp,csp,dsp)
           eamrho(1,iti,1:ngrid)=ysp(1:ngrid)
           eamrho(2,iti,1:ngrid)=bsp(1:ngrid)
@@ -261,7 +262,7 @@ contains
              rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
           end if
        end do
-
+       write(6,*)'rhomm',rhomin,rhomax
     case(16)
        minrho=0
        do iti=1,ntyp

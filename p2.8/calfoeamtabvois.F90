@@ -3,12 +3,16 @@ module calfoeamtabvois_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:angst,fnemd,it,lcalcjq,ldemitab,&
        &lnemd,low_limit,lperiod,zero,potis2,pi
-        USE calfocommon
+  USE calfocommon
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+  USE cellconfig, only : cell_config
+  use boxconfig,only: box_config
+  use vect_dist_mod,only:vect_dist
 
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfoeamtabvois(im,imm,xp,   fp,  iwmax, ityp,indi,at,bg,volu)
+  SUBROUTINE calfoeamtabvois(atcf,celcf,boxcf)! 
     !tentative de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
     USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamglue_d,&
@@ -16,47 +20,34 @@ contains
 
     USE jqmod
     implicit none
+  class(atom_config),intent(inout)::atcf
+  type(cell_config),intent(in)::celcf
+  type(box_config),intent(in)::boxcf
 
-    !           version du 4 juin 2010, 15h20 - last chaged by MCM (xpnp sa mere)
-    ! *****************************************************************
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    ! eam variables
 
-    integer,intent(in)::im,imm
-    integer,allocatable  :: iwmax(:),indi(:)
-    integer  :: ityp(:)
-    real(double)  :: xp(:,:)
-    real(double)  :: fp(:,:)
-    real(double),intent(in),dimension(3,3)::at,bg
-    real(double),intent(in)::volu
-    !local variables
+
+  !local variables
     integer :: i,j !atomes
     integer ::iti,itj !types
     integer :: l !paires
     integer::  iw1,iw2, iw,k,izero,icccc,ic!vois
-
-
-
-
-    REAL(double), dimension(1:3) :: dxp, aCell, gradij
+  REAL(double), dimension(1:3) :: dxp, aCell, gradij
     real(double) :: r,r2 !distance i-j
     real(double) :: Erep,dErep ! potentiel et gradient de la repulsion de paire ij
     real(double) :: dEembi, Eembi ! potentiel et gradient de l'immersion
     real(double) :: rhoi,rhoj, drhoi, drhoj ! densite de i sur j et j sur i et leurs derivees radiales
     REAL(double) :: Femb, dFemb
-    real(double):: fpnemd(3,im),fpnemdmoy(3), XijdotF
+    real(double):: fpnemd(3,atcf%im),fpnemdmoy(3), XijdotF
     real(double) :: drk, ktor, inv_ktor
     real(double),dimension(:),allocatable::ktorho(:), inv_ktorho(:)
     real(double), dimension(3) :: fij
     real(double) :: inv_volu, inv_atomic_volu
-    real(double) :: densityi,tabdensity(imm)
-    real(double)::rue,rue2
+    real(double) :: densityi,tabdensity(atcf%imm)
+    real(double)::rue
 
     real(double)::aux,alp
-    
-    real(double), dimension(:,:), allocatable :: xpnp
+    logical::linter
+!    real(double), dimension(:,:), allocatable :: xpnp
     aux = 23.06134575D-20
     alp = alpha/sqrt(pi)*aux
     allocate(ktorho(ntyp))
@@ -77,33 +68,33 @@ contains
     !  potist = zero
     potisrep=0.
     potisglue=0.
-    rue2=rue**2
+!    rue2=rue**2
     jq=0.
     fpnemd(:,:)=0.
-    inv_volu = 1.d0/volu
-    inv_atomic_volu = dble(im)/volu
+    inv_volu = 1.d0/boxcf%volu
+    inv_atomic_volu = dble(atcf%im)/boxcf%volu
 
     iw2=0
-    ALLOCATE(xpnp(3,imm))
-    if (lperiod) then
-       xpnp(:,:)=xp(:,:)
-    else
-       call notperiod(imm,xp,xpnp,at,bg)
-    end if
+!!$    ALLOCATE(xpnp(3,imm))
+!!$    if (lperiod) then
+!!$       xpnp(:,:)=xp(:,:)
+!!$    else
+!!$       call notperiod(imm,xp,xpnp,at,bg)
+!!$    end if
 
-    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
+!    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
 
 
     ! ===============================
-    loop1at1: do i=1,im
+    loop1at1: do i=1,atcf%im
        !       densityi=tabdensity(i)
        !       nvi=0
        ! --- Calcul de la densite sur i ---    
        Eembi=0.0; dEembi=0.0
 
 
-       iti = ityp(i)
+       iti = atcf%ityp(i)
        if (ipotentiel==16) then
           l = ipo(iti,iti)
           ! --- Calcul du second potentiel de la somme d'Ewald ---
@@ -111,28 +102,33 @@ contains
        end if
              
        iw1 = iw2+1
-       iw2 = iwmax(i)
+       iw2 = atcf%iwmax(i)
        loopvois :do iw = iw1, iw2
-          j = indi(iw)
-          dxp(1:3) = xpnp(1:3,i) - xpnp(1:3,j)
-          WHERE ( (dxp.GT.0.5d0).OR.(dxp.LT.-0.5d0) )
-             dxp(1:3) = dxp(1:3) - Dble(Nint(dxp(1:3)))
-          END WHERE
-          ! Transformation des coordonnees reduites en cartesiennes
-          dxp = MatMul(at,dxp)
+          j = atcf%indi(iw)
+          itj=atcf%ityp(j)
+          
+!!$          dxp(1:3) = xpnp(1:3,i) - xpnp(1:3,j)
+!!$          WHERE ( (dxp.GT.0.5d0).OR.(dxp.LT.-0.5d0) )
+!!$             dxp(1:3) = dxp(1:3) - Dble(Nint(dxp(1:3)))
+!!$          END WHERE
+!!$          ! Transformation des coordonnees reduites en cartesiennes
+!!$          dxp = MatMul(at,dxp)
+!!$
+!!$          ! Calcul du carre de la distance
+!!$          do izero=1,3
+!!$             if (dabs(dxp(izero)).lt.low_limit) then
+!!$                dxp(izero) = zero
+!!$             end if
+!!$          end do
+!!$          r2 = Sum( dxp(1:3)**2 )
+!!$
+!!$          if (r2>rue2) cycle
+!!$          r=sqrt(r2)             
 
-          ! Calcul du carre de la distance
-          do izero=1,3
-             if (dabs(dxp(izero)).lt.low_limit) then
-                dxp(izero) = zero
-             end if
-          end do
-          r2 = Sum( dxp(1:3)**2 )
+          call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp, lperiod=boxcf%lperiod,rum=rue&
+               &,linter=linter,dist=r)
+          if (.not.linter) cycle
 
-          if (r2>rue2) cycle
-
-          itj=ityp(j)
-          r=sqrt(r2)             
           if (r.eq.zero) & 
                write(*,*) '1. WARNING IN calfoeamtabvois TWO ATOMS VERY CLOSE i ,j , dist(angst)', i ,j , r*angst
           k=Int(r*inv_ktor)
@@ -153,8 +149,8 @@ contains
     ! ===============================
     iw2=0
     ! calcul et stockage de Eembi et dEembi
-    loop2at1: do i=1,im
-       iti=ityp(i)
+    loop2at1: do i=1,atcf%im
+       iti=atcf%ityp(i)
        k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
        if(k.gt.ngrid) then
           write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
@@ -180,35 +176,36 @@ contains
 
     ! ===============================
     !boucle des forces
-    loop3at1: do i=1,im
-       iti = ityp(i)
+    loop3at1: do i=1,atcf%im
+       iti = atcf%ityp(i)
        iw1 = iw2+1
-       iw2 = iwmax(i)
+       iw2 = atcf%iwmax(i)
        loopvois2 :do iw = iw1, iw2
-          j = indi(iw)
+          j = atcf%indi(iw)
+          itj=atcf%ityp(j)
+!!$          dxp(1:3) = xpnp(1:3,i) - xpnp(1:3,j)
+!!$          WHERE ( (dxp(:).GT.0.5d0).OR.(dxp(:).LT.-0.5d0) )
+!!$             dxp(:) = dxp(:) - Dble(Nint(dxp(:)))
+!!$          END WHERE
+!!$
+!!$          ! Transformation des coordonnees reduites en cartesiennes
+!!$          dxp = MatMul(at,dxp)
+!!$
+!!$          do izero=1,3
+!!$             if (dxp(izero).eq.zero) cycle
+!!$             if (dabs(dxp(izero)).lt.low_limit) then
+!!$                write(*,*) 'WARNING low_limit'
+!!$                dxp(izero) = zero
+!!$             end if
+!!$          end do
+!!$          r2 = Sum( dxp(1:3)**2 )
+!!$
+!!$          if (r2>rue2) cycle
 
-          dxp(1:3) = xpnp(1:3,i) - xpnp(1:3,j)
-          WHERE ( (dxp(:).GT.0.5d0).OR.(dxp(:).LT.-0.5d0) )
-             dxp(:) = dxp(:) - Dble(Nint(dxp(:)))
-          END WHERE
-
-          ! Transformation des coordonnees reduites en cartesiennes
-          dxp = MatMul(at,dxp)
-
-          do izero=1,3
-             if (dxp(izero).eq.zero) cycle
-             if (dabs(dxp(izero)).lt.low_limit) then
-                write(*,*) 'WARNING low_limit'
-                dxp(izero) = zero
-             end if
-          end do
-          r2 = Sum( dxp(1:3)**2 )
-
-          if (r2>rue2) cycle
-
-          itj=ityp(j)
-          r=sqrt(r2)      
-
+          call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp, lperiod=boxcf%lperiod,rum=rue&
+               &,linter=linter,dist=r)
+          if (.not.linter) cycle
+!          r=sqrt(r2)      
           if (r.eq.zero) & 
                write(*,*) '2. WARNING IN calfoeamtabvois TWO ATOMS VERY CLOSE i ,j , dist(angst)', i ,j , r*angst
 
@@ -252,8 +249,8 @@ contains
 !          end if
 
           fij(:) = - (dFemb+dErep)*gradij(1:3)
-          fp(1:3,i) = fp(1:3,i) + fij(:)
-          if (ldemitab) fp(1:3,j) = fp(1:3,j) - fij(:)
+          atcf%fp(1:3,i) = atcf%fp(1:3,i) + fij(:)
+          if (ldemitab) atcf%fp(1:3,j) = atcf%fp(1:3,j) - fij(:)
 
           if (lnemd) then
              XijdotF=dxp(1)*Fnemd
@@ -306,24 +303,24 @@ contains
 
     if (lnemd) then
        fpnemdmoy=0
-       do i=1,im   
+       do i=1,atcf%im   
           do l=1,3
-             fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(im)
+             fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(atcf%im)
           enddo
        end do
 
-       do i=1,im
+       do i=1,atcf%im
           !        write(6,*)'A',i,fp(:,i)
           do l=1,3
-             fp(l,i)=fp(l,i)-fpnemdmoy(l)
-             fp(l,i)=fp(l,i)+fpnemd(l,i)
+             atcf%fp(l,i)=atcf%fp(l,i)-fpnemdmoy(l)
+             atcf%fp(l,i)=atcf%fp(l,i)+fpnemd(l,i)
           enddo
           !        write(6,*)'B',i,fp(:,i)
        end do
     end if
 
 
-    DEALLOCATE (xpnp)
+!    DEALLOCATE (xpnp)
     !  write(6,*)'eamtabvois'
     return
   end SUBROUTINE calfoeamtabvois

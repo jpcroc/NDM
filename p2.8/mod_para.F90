@@ -132,19 +132,21 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure pour la mise a jour des valeurs fp des atomes frontieres
   ! du processeur courant avec leurs contributions des processeurs voisins
  
-  subroutine maj_fp_frt(psc) !appelée SEULEMENT dans force_tersoff_cel !
+  subroutine maj_fp_frt(psc,atcf,celcf) !appelée SEULEMENT dans force_tersoff_cel !
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
     integer::ne
-     type(para_space_config)::psc
+    type(para_space_config)::psc
+     class(atom_config),intent(inout)::atcf
+    type(cell_config),intent(in)::celcf
 
     ! On envoit les atomes fantomes vers les processeurs voisins
-    call envoi_fp_fantomes(psc)
+    call envoi_fp_fantomes(psc,atcf,celcf)
 
     ! On receptionne les contributions des processeurs voisins
-    call reception_fp_frontieres(psc)
+    call reception_fp_frontieres(psc,atcf,celcf)
 
     ! Finalisation de l'envoi pour liberer les buffers d'envoi (identique a l'envoi des atomes)
     ne=3
@@ -989,11 +991,14 @@ end subroutine maj_atomes_frt_ftm
   ! atomes frontieres afin qu'elles soient sommees sur les processeurs
   ! possedant les atomes
 
-  subroutine envoi_fp_fantomes(psc)
+  subroutine envoi_fp_fantomes(psc,atcf,celcf)
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
+    class(atom_config),intent(inout)::atcf
+    type(cell_config),intent(in)::celcf
+    
     type(para_space_config)::psc
     integer :: nproc_voisin
     integer :: ncell_ftm
@@ -1009,7 +1014,7 @@ end subroutine maj_atomes_frt_ftm
        nb_at=0
        do ncell_ftm = 1, psc%nbr_cell_ftm
           if (proc_cell(psc%cell_ftm(ncell_ftm)).eq.psc%proc_voisin(nproc_voisin)) then
-             nb_at = nb_at + nato(psc%cell_ftm(ncell_ftm))
+             nb_at = nb_at + celcf%nato(psc%cell_ftm(ncell_ftm))
           endif
        enddo
        nb_at_max = max(nb_at_max, nb_at)
@@ -1054,15 +1059,14 @@ end subroutine maj_atomes_frt_ftm
           if (proc_cell(koo).eq.procv) then
 
              ! On copie le contenu de la cellule dans le buffer d'envoi
-             do n_at = 1, nato(koo)
-                i_at = atincel(n_at,koo)
+             do n_at = 1, celcf%nato(koo)
+                i_at = celcf%atincel(n_at,koo)
                 
                 ! On complete le buffer
                 send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1
                 
-                send_buff_int(1,send_nb_val(nproc_voisin),nproc_voisin) = num_at_glob(i_at)
-                
-                send_buff_dbl(1:3,send_nb_val(nproc_voisin),nproc_voisin) = fp(1:3,i_at)
+                send_buff_int(1,send_nb_val(nproc_voisin),nproc_voisin) = atcf%num_at_glob(i_at)
+                send_buff_dbl(1:3,send_nb_val(nproc_voisin),nproc_voisin) = atcf%fp(1:3,i_at)
                 
              enddo
           endif
@@ -1088,11 +1092,14 @@ end subroutine maj_atomes_frt_ftm
   ! Procedure en charge de la reception des fp des atomes fantomes en
   ! provenance des processeurs voisins pour etre sommees en local
 
-  subroutine reception_fp_frontieres(psc)
+  subroutine reception_fp_frontieres(psc,atcf,celcf)
 
     USE T_kind_param_m, ONLY:  double
     implicit none
+    class(atom_config),intent(inout)::atcf
+    type(cell_config),intent(in)::celcf
     type(para_space_config)::psc
+    
     integer :: nb_at_recv
     integer :: proc_source
     integer :: i_at
@@ -1120,7 +1127,7 @@ end subroutine maj_atomes_frt_ftm
           ! On boucle pour trouver l'indice local de l'atome fantome courant
           ind_loc=-1
           do i_at_loc=1,im
-             if (num_at_glob(i_at_loc)==ind_glob) then
+             if (atcf%num_at_glob(i_at_loc)==ind_glob) then
                 ind_loc=i_at_loc
                 exit
              endif
@@ -1135,7 +1142,7 @@ end subroutine maj_atomes_frt_ftm
 
           ! On ajoute a cet atome local la valeur de fp recue
  
-          fp(1:3,ind_loc) = fp(1:3,ind_loc) + recv_buff_dbl(1:3,i_at,ind_recv)
+          atcf%fp(1:3,ind_loc) = atcf%fp(1:3,ind_loc) + recv_buff_dbl(1:3,i_at,ind_recv)
  
        enddo
 

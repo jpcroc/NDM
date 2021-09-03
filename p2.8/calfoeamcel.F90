@@ -3,12 +3,18 @@ module calfoeamcel_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:angst,nvat,it,low_limit,lperiod,zero,potis2,pi
   USE calfocommon
+  use vect_dist_mod,only:vect_dist
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+  USE cellconfig, only : cell_config
+  use boxconfig,only: box_config
+
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfoeamcel(im,imm,xp,   fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,&
-       &nox,noy,noz,at,bg,volu,psc)
-
+  SUBROUTINE calfoeamcel(atcf,celcf,boxcf,psc)
+!    (im,imm,xp,   fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,&
+!       &nox,noy,noz,at,bg,volu,psc)
+!
     USE T_kind_param_m
 
     USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rue_pot,&
@@ -24,20 +30,22 @@ contains
     USE Tpara,only:nprocspace,para_space_config
 #endif
 
+    class(atom_config),intent(inout)::atcf
+    type(cell_config),intent(in)::celcf
+    type(box_config),intent(in)::boxcf
 
-
+    type(para_space_config)::psc
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     ! eam variables
-    integer,intent(in)::im,imm
-    real(double),intent(inout),allocatable,dimension(:,:)::xp,fp
-    integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
-    type(para_space_config)::psc
-    integer,intent(in)::noxyz,natperc,nox,noy,noz
-    integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
-    real(double),intent(in),dimension(3,3)::at,bg
-    real(double),intent(in)::volu
+!!$    integer,intent(in)::im,imm
+!!$    real(double),intent(inout),allocatable,dimension(:,:)::xp,fp
+!!$    integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
+!!$    integer,intent(in)::noxyz,natperc,nox,noy,noz
+!!$    integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
+!!$    real(double),intent(in),dimension(3,3)::at,bg
+!!$    real(double),intent(in)::volu
     !local variables
     integer :: i,j !atomes
     integer ::iti,itj !types
@@ -45,9 +53,9 @@ contains
     integer:: koo,ko1,ncelvois,i2,i1 !cel.
     integer :: k ! aux pour splines
 
-    real(double) :: rue2 !coupure**2
+!    real(double) :: rue2 !coupure**2
     REAL(double), dimension(1:3) :: cp, dxp, gradij
-    real(double) :: r,r2 !distance i-j
+    real(double) :: r!distance i-j
     real(double) :: Fij,cv(1,3)
     real(double) :: Eembi,dEembi ! potentiel et gradient de l'immersion
     real(double) :: rhoi,rhoj ! densite de i sur j et j sur i
@@ -57,59 +65,58 @@ contains
     real(double),dimension(:),allocatable::ktorho(:), inv_ktorho(:)
     real(double) :: densityi !densite totale sur i
     integer :: izero
-    real(double) :: tabdensity(imm)
-    real(double) :: xpnp(3,imm)
+    real(double) :: tabdensity(atcf%imm)
+!    real(double) :: xpnp(3,imm)
     real(double)::rue,alp,aux
-
+    logical ::linter
+    
     rue=rue_pot(ipotentiel)
     aux = 23.06134575D-20
     alp = alpha/sqrt(pi)*aux
     allocate(ktorho(ntyp))
     allocate(inv_ktorho(ntyp))
-
     ktor=rue/ngrid
     inv_ktor=1.d0/ktor
     ktorho(:)=(rhomax(:)-rhomin(:))/ngrid
     inv_ktorho(:) = 1.d0/ktorho(:)
-
     tabdensity(:)=0.
     potisrep=0.
     potisglue=0.
-    rue2=rue**2
+!    rue2=rue**2
 
-    if (lperiod) then
-       xpnp(:,:)=xp(:,:)
-    else 
-       call notperiod(imm,xp,xpnp,at,bg)
-    end if
+!!$    if (lperiod) then
+!!$       xpnp(:,:)=xp(:,:)
+!!$    else 
+!!$       call notperiod(imm,xp,xpnp,at,bg)
+!!$    end if
 
 
-    loop1at1: do i=1,im
-       if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
+    loop1at1: do i=1,atcf%im
+       if (typ_and_pot(atcf%ityp(i),ipotentiel).eqv..false.)cycle
 
        ! --- Calcul de la densite sur i ---    
 
        !     nvi=0
        densityi=0.0 ; dEembi=0.0
-       koo = ielat(i)                          ! Numero de la cellule
-       iti = ityp(i)
+       koo = atcf%ielat(i)                          ! Numero de la cellule
+       iti = atcf%ityp(i)
        if (ipotentiel==16) then
           l=ipo(iti,iti)
           potis2=potis2-zz(l)*alp
        end if
 
-       ncelvois = min(noxyz,27)-1
+       ncelvois = min(celcf%noxyz,27)-1
        ! pour chaque cel. voisine
        loop1cel:   do i1 = 0, ncelvois
 
-          ko1 = ncel(koo,i1)
-          cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
+          ko1 = celcf%ncel(koo,i1)
+!          cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
           ! pour chaque atome ds la cel. voisine
-          loop1at2: do i2 = 1, nato(ko1)
-             j = atincel(i2,ko1)
-             if (typ_pot_pair(ipo(ityp(i),ityp(j))).ne.ipotentiel) cycle
+          loop1at2: do i2 = 1, celcf%nato(ko1)
+             j = celcf%atincel(i2,ko1)
+             if (typ_pot_pair(ipo(atcf%ityp(i),atcf%ityp(j))).ne.ipotentiel) cycle
 
-
+             itj=atcf%ityp(j)
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -124,60 +131,63 @@ contains
              !   pris qu'une fois puisque i est local
              if (nprocspace.gt.1) then
 
-                if (j.le.im) then
+                if (j.le.atcf%im) then
 
                    ! les deux atomes sont locaux
-                   if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme deja calcule
+                   if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme deja calcule
                 else
                    ! j n'est pas local, on ne fait le calcul normal           
                 endif
              else
-                if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
+                if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
              end if
                 
 #else
-             if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
+             if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
 #endif
 
+           call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue,linter=linter,dist=r)
+           if(.not.linter) cycle
+!!$             
+!!$             if (noxyz.ne.1) then
+!!$                dxp(1) = cp(1)-xpnp(1,j)
+!!$                IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
+!!$                dxp(2) = cp(2)-xpnp(2,j)
+!!$                IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
+!!$                dxp(3) = cp(3)-xpnp(3,j)
+!!$                IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
+!!$             else
+!!$                dxp(1) = cp(1)-xpnp(1,j)
+!!$                dxp(2) = cp(2)-xpnp(2,j)
+!!$                dxp(3) = cp(3)-xpnp(3,j)
+!!$                cv(1,1) = dxp(1)
+!!$                cv(1,2) = dxp(2)
+!!$                cv(1,3) = dxp(3)
+!!$                call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
+!!$                WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
+!!$                   cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
+!!$                END WHERE
+!!$                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+!!$                dxp(1)=cv(1,1)
+!!$                dxp(2)=cv(1,2)
+!!$                dxp(3)=cv(1,3)
+!!$             end if
+!!$
+!!$             do izero=1,3
+!!$                if (dabs(dxp(izero)).lt.low_limit) then
+!!$                   dxp(izero) = zero
+!!$                end if
+!!$             end do
+!!$
+!!$             r2 = Sum(dxp(1:3)**2)
+!!$             if (r2.eq.zero*zero) & 
+!!$                  write(*,*) '1. WARNING IN calfoeamcell TWO ATOMS VERY CLOSE i ,j , dist(angst)', i ,j , sqrt(r2)*angst
+!!$
+!!$             if (r2>rue2) cycle
+!!$             r=sqrt(r2)
 
-             if (noxyz.ne.1) then
-                dxp(1) = cp(1)-xpnp(1,j)
-                IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
-                dxp(2) = cp(2)-xpnp(2,j)
-                IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
-                dxp(3) = cp(3)-xpnp(3,j)
-                IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
-             else
-                dxp(1) = cp(1)-xpnp(1,j)
-                dxp(2) = cp(2)-xpnp(2,j)
-                dxp(3) = cp(3)-xpnp(3,j)
-                cv(1,1) = dxp(1)
-                cv(1,2) = dxp(2)
-                cv(1,3) = dxp(3)
-                call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
-                WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-                   cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-                END WHERE
-                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-                dxp(1)=cv(1,1)
-                dxp(2)=cv(1,2)
-                dxp(3)=cv(1,3)
-             end if
 
-             do izero=1,3
-                if (dabs(dxp(izero)).lt.low_limit) then
-                   dxp(izero) = zero
-                end if
-             end do
 
-             r2 = Sum(dxp(1:3)**2)
-             if (r2.eq.zero*zero) & 
-                  write(*,*) '1. WARNING IN calfoeamcell TWO ATOMS VERY CLOSE i ,j , dist(angst)', i ,j , sqrt(r2)*angst
-
-             if (r2>rue2) cycle
-
-             itj=ityp(j)
-             r=sqrt(r2)
              k=Int(r*inv_ktor)
              gradij(1:3) = dxp(1:3)/r
              drk=r-k*ktor
@@ -210,7 +220,7 @@ contains
              end if
              dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
 
-             if (num_at_glob(i).lt.num_at_glob(j)) then
+             if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
                 !              if (allocated (free)) then              
                 !                 if( free(i).EQV..true.) potisrep = potisrep+Erep
                 !              else
@@ -218,21 +228,21 @@ contains
                 !              end if
              endif
 
-             fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
-             fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
+             atcf%fp(1:3,i)=atcf%fp(1:3,i)-dErep*gradij(1:3)
+             atcf%fp(1:3,j)=atcf%fp(1:3,j)+dErep*gradij(1:3)
 
              if (test_sigma) then        
-                if (num_at_glob(i).lt.num_at_glob(j)) then          
-                   sig(1:3,1) = sig(1:3,1)-dErep*gradij(1:3)*dxp(1)/volu
-                   sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)/volu
-                   sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)/volu
+                if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then          
+                   sig(1:3,1) = sig(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
+                   sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
+                   sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
                    if (lTPcel.EQV..true.) then
-                      sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*nox*noy*noz/volu
-                      sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*nox*noy*noz/volu
-                      sigc(1:3,3,koo) =sigc(1:3,3,koo) -0.5*dErep*gradij(1:3)*dxp(3)*nox*noy*noz/volu
-                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) -0.5*dErep*gradij(1:3)*dxp(1)*nox*noy*noz/volu
-                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) -0.5*dErep*gradij(1:3)*dxp(2)*nox*noy*noz/volu
-                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) -0.5*dErep*gradij(1:3)*dxp(3)*nox*noy*noz/volu
+                      sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,3,koo) =sigc(1:3,3,koo) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
                    end if
 
                 endif
@@ -246,10 +256,11 @@ contains
 
 
     ! calcul et stockage de Eembi et dEembi
-    loop2at1: do i=1,im
-       if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
-       iti=ityp(i)
+    loop2at1: do i=1,atcf%im
+       if (typ_and_pot(atcf%ityp(i),ipotentiel).eqv..false.)cycle
+       iti=atcf%ityp(i)
        k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
+!       write(6,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
 !       write(110,'(2I8,3G17.8)')i,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        if(k.gt.ngrid) then
           write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
@@ -277,7 +288,7 @@ contains
 #ifdef PARA
 
     if (nprocspace.gt.1) then
-       call maj_tabdensity_ftm(tabdensity,imm,nato,num_at_glob,psc)
+       call maj_tabdensity_ftm(tabdensity,atcf%imm,celcf%nato,atcf%num_at_glob,psc)
     end if
 
     !    write(3000+i,*)it
@@ -289,23 +300,23 @@ contains
 !    tabdensity=0
     !boucle des forces
 
-    loop3at1: do i=1,im
-       if (typ_and_pot(ityp(i),ipotentiel).eqv..false.)cycle
+    loop3at1: do i=1,atcf%im
+       if (typ_and_pot(atcf%ityp(i),ipotentiel).eqv..false.)cycle
 
        ! --- Calcul de la densite sur i ---    
 
-       koo = ielat(i)                          ! Numero de la cellule
-       iti = ityp(i)
-       ncelvois = min(noxyz,27)-1
+       koo = atcf%ielat(i)                          ! Numero de la cellule
+       iti = atcf%ityp(i)
+       ncelvois = min(celcf%noxyz,27)-1
        ! pour chaque cel. voisine
        loop2cel:   do i1 = 0, ncelvois
-          ko1 = ncel(koo,i1)
-          cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
+          ko1 = celcf%ncel(koo,i1)
+!          cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
           ! pour chaque atome ds la cel. voisine
-          loop2at2: do i2 = 1, nato(ko1)
-             j = atincel(i2,ko1)
-             if (typ_pot_pair(ipo(ityp(i),ityp(j))).ne.ipotentiel) cycle
-
+          loop2at2: do i2 = 1, celcf%nato(ko1)
+             j = celcf%atincel(i2,ko1)
+             if (typ_pot_pair(ipo(atcf%ityp(i),atcf%ityp(j))).ne.ipotentiel) cycle
+             itj=atcf%ityp(j)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !CRC             if(i.eq.j) cycle
 #ifdef PARA
@@ -318,57 +329,60 @@ contains
              !   pris qu'une fois puisque i est local
              if (nprocspace.gt.1) then
 
-                if (j.le.im) then
+                if (j.le.atcf%im) then
 
                    ! les deux atomes sont locaux
-                   if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme deja calcule
+                   if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme deja calcule
                 else
                    ! j n'est pas local, on ne fait le calcul normal           
                 endif
              else
-                if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
+                if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
              end if
                 
 #else
-             if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
+             if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
 #endif
 
-             if (noxyz.ne.1) then
-                dxp(1) = cp(1)-xpnp(1,j)
-                IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
-                dxp(2) = cp(2)-xpnp(2,j)
-                IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
-                dxp(3) = cp(3)-xpnp(3,j)
-                IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
-             else
-                dxp(1) = cp(1)-xpnp(1,j)
-                dxp(2) = cp(2)-xpnp(2,j)
-                dxp(3) = cp(3)-xpnp(3,j)
-                cv(1,1) = dxp(1)
-                cv(1,2) = dxp(2)
-                cv(1,3) = dxp(3)
-                call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
-                WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-                   cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-                END WHERE
-                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-                dxp(1)=cv(1,1)
-                dxp(2)=cv(1,2)
-                dxp(3)=cv(1,3)
-             end if
+           call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue,linter=linter,dist=r)
+           if(.not.linter) cycle
 
-             do izero=1,3
-                if (dabs(dxp(izero)).lt.low_limit) then
-                   dxp(izero) = zero
-                end if
-             end do
+!!$             if (noxyz.ne.1) then
+!!$                dxp(1) = cp(1)-xpnp(1,j)
+!!$                IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
+!!$                dxp(2) = cp(2)-xpnp(2,j)
+!!$                IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
+!!$                dxp(3) = cp(3)-xpnp(3,j)
+!!$                IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
+!!$             else
+!!$                dxp(1) = cp(1)-xpnp(1,j)
+!!$                dxp(2) = cp(2)-xpnp(2,j)
+!!$                dxp(3) = cp(3)-xpnp(3,j)
+!!$                cv(1,1) = dxp(1)
+!!$                cv(1,2) = dxp(2)
+!!$                cv(1,3) = dxp(3)
+!!$                call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
+!!$                WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
+!!$                   cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
+!!$                END WHERE
+!!$                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+!!$                dxp(1)=cv(1,1)
+!!$                dxp(2)=cv(1,2)
+!!$                dxp(3)=cv(1,3)
+!!$             end if
+!!$
+!!$             do izero=1,3
+!!$                if (dabs(dxp(izero)).lt.low_limit) then
+!!$                   dxp(izero) = zero
+!!$                end if
+!!$             end do
+!!$
+!!$
+!!$             r2 = Sum(dxp(1:3)**2)
+!!$             if (r2>rue2) cycle
+!!$
 
-
-             r2 = Sum(dxp(1:3)**2)
-             if (r2>rue2) cycle
-
-             itj=ityp(j)
-             r=sqrt(r2)
+!             r=sqrt(r2)
              if (r.eq.zero) & 
                   write(*,*) '2. WARNING IN calfoeamcell TWO ATOMS VERY CLOSE i ,j , dist(angst)', i ,j , r*angst
 
@@ -377,21 +391,21 @@ contains
              gradij(1:3) = dxp(1:3)/r
              Femb = ( eamrho(2,itj,k) + drk*( 2.0*eamrho(3,itj,k) + 3.0*drk*eamrho(4,itj,k) ) )*tabdensity(i) &
                   + ( eamrho(2,iti,k) + drk*( 2.0*eamrho(3,iti,k) + 3.0*drk*eamrho(4,iti,k) ) )*tabdensity(j)
-             fp(1:3,i) = fp(1:3,i) - Femb*gradij(1:3)
-             fp(1:3,j) = fp(1:3,j) + Femb*gradij(1:3)
+             atcf%fp(1:3,i) = atcf%fp(1:3,i) - Femb*gradij(1:3)
+             atcf%fp(1:3,j) = atcf%fp(1:3,j) + Femb*gradij(1:3)
 
              if (test_sigma) then                   
-                if (num_at_glob(i).lt.num_at_glob(j)) then
-                   sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)/volu
-                   sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)/volu
-                   sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)/volu
+                if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
+                   sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)/boxcf%volu
+                   sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
+                   sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
                    if (lTPcel.EQV..true.) then
-                      sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*nox*noy*noz/volu
-                      sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*nox*noy*noz/volu
-                      sigc(1:3,3,koo) =sigc(1:3,3,koo) - 0.5*Femb*gradij(1:3)*dxp(3)*nox*noy*noz/volu
-                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) - 0.5*Femb*gradij(1:3)*dxp(1)*nox*noy*noz/volu
-                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) - 0.5*Femb*gradij(1:3)*dxp(2)*nox*noy*noz/volu
-                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) - 0.5*Femb*gradij(1:3)*dxp(3)*nox*noy*noz/volu
+                      sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,3,koo) =sigc(1:3,3,koo) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
                    end if
 
                 endif

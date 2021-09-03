@@ -1,11 +1,16 @@
 module force_tersoff_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:fnemd,lcalcjq,lnemd,potistersoff,potiszbl
-        USE calfocommon
+  USE calfocommon
+  use vect_dist_mod,only:vect_dist
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+  USE cellconfig, only : cell_config
+  use boxconfig,only: box_config
+
   implicit none
 contains
   ! ***************************************************************
-  subroutine force_tersoff (im,imm,xp,    fp,  iwmax, ityp,indi,at,bg,volu,zl)
+  subroutine force_tersoff(atcf,celcf,boxcf)! (im,imm,xp,    fp,  iwmax, ityp,indi,at,bg,volu,zl)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -22,23 +27,9 @@ contains
     ! ***************************************************************
 
     implicit none
-    !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    integer,intent(in)::im,imm
-    integer , intent(in),allocatable :: iwmax(:),ityp(:),indi(:)
-    real(double),intent(inout),allocatable  :: xp(:,:)
-    real(double) , intent(inout),allocatable :: fp(:,:)
-    real(double),intent(in),dimension(3,3)::at,bg
-     real(double),intent(in)::volu,zl(3)
-     !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
+  class(atom_config),intent(inout)::atcf
+  type(cell_config),intent(in)::celcf
+  type(box_config),intent(in)::boxcf
     !-----------------------------------------------
     integer :: i,j,k,nk,n_voisin,l,ij,ik, ipv,idv,ivj,ivk, m, moi,nvij
     integer , dimension(32) :: indice   ! Recense le nombre de voisins
@@ -56,6 +47,8 @@ contains
     integer::kk
     !-----------------------------------------------
     !INIALISATION
+!    real(double)::dxp(3),dxpjl(3)
+    logical::linter,linterik
 
 
     select case (ipotentiel) 
@@ -65,11 +58,12 @@ contains
        coupR(:)=rter(:)+ster(:)
     end select
     !write(6,*)'coupR',coupR
-    if ((at(1,2).ne.0).or.(at(1,3).ne.0).or.(at(2,3).ne.0).or.(at(2,1).ne.0).or.(at(3,2).ne.0).or.(at(3,1).ne.0)) then
+    if ((boxcf%at(1,2).ne.0).or.(boxcf%at(1,3).ne.0).or.(boxcf%at(2,3).ne.0).or.&
+         &(boxcf%at(2,1).ne.0).or.(boxcf%at(3,2).ne.0).or.(boxcf%at(3,1).ne.0)) then
        write(6,*)'Tersoff seulement en tetragonal'
        stop
     end if
-       
+
     moi =0
     !  do i=1,im
     !     fp(1,i)=0; fp(2,i)=0; fp(3,i)=0
@@ -79,309 +73,299 @@ contains
     if (lnemd) fpnemdmoy(:)=0
 
     ER1=0. ;  ER2=0. ;  ER3=0.
-    call cryst_to_cart(imm,xp,bg,-1)
+    !    call cryst_to_cart(imm,xp,bg,-1)
 
     idv = 0
 
+    ! Sequentiel
+    Tloop1at1:  do i=1,atcf%im
        ! Sequentiel
-       Tloop1at1:  do i=1,im
-          ! Sequentiel
 
-          if (lnemd) fpnemd(:)=0.
-          v_ij = 0
+       if (lnemd) fpnemd(:)=0.
+       v_ij = 0
 
-          ipv = idv+1
-          idv = iwmax(i)
-          Tloop1at2 :do ivj=ipv, idv
-             j = indi (ivj)
-             !               write(6,*)i,j
-             if (j==i) then  !Cette condition n'est pas necessaire si JP. fais correctement sa table
-                cycle
-             else
-                ij=ipo(ityp(i),ityp(j))
-
-                do l=1,3
-                   Xij(l)= xp(l,i)-xp(l,j)
-                end do
-
-                do l=1,3
-
-                   if (Xij(l)>0.5) Xij(l)=Xij(l)-1.
-                   if (Xij(l)<(-0.5)) Xij(l)=Xij(l)+1.
-                   cvij(1,l) = Xij(l)
-                end do
-                call cryst_to_cart(1,cvij,at,1)
-                rij2=cvij(1,1)**2+cvij(1,2)**2+cvij(1,3)**2
-                !                  write(6,*)i,j,rij2
-                if (rij2>CoupR(ij)**2) then         !borne sup de Lisa Porter 89
-                   !if (rij2>(Rter(ij)+CoupR(ij))**2) then   !borne sup de Tersoff 88
-                   cycle
-                else
-                   !CRC ortho seulement
-                   if(lnemd) XijdotF=Xij(1)*Fnemd*zl(1)
-                   n=nter(ityp(i))
-                   rij=sqrt(rij2)
-                   sui_ij = 0
-                   n_voisin = 0
-                   Tloop1at3:    do ivk=ipv, idv
-                      k = indi (ivk)
-                      if (k==j .or. k==i) then
-                         cycle
-                      else
-                         ik=ipo(ityp(i),ityp(k))
-
-                         ! CONDITIONS PERIODIQUES
-                         do l=1,3
-                            Xik(l)= xp(l,i)-xp(l,k)
-                         end do
-                         !write(6,*)'XP i j k',i,j,k
-                         !write(6,*)xp(:,i)
-                         !write(6,*)xp(:,j)
-                         !write(6,*)xp(:,k)
-
-                         do l=1,3
-                            if (XiK(l)>0.5) Xik(l)=Xik(l)-1.
-                            if (XiK(l)<(-0.5)) Xik(l)=Xik(l)+1.
-                            cvik(1,l) = Xik(l)
-                         end do
-                         !                       write(6,*)'cvik'
-                         !                       write(6,*)cvik(1,:)
-                         call cryst_to_cart(1,cvik,at,1)
-                         rik2=cvik(1,1)**2+cvik(1,2)**2+cvik(1,3)**2
-                         if (rik2>CoupR(ik)**2) then               !borne sup de Lisa Porter 89
-                            !if (rik2>(Rter(ik)+CoupR(ik))**2) then     !borne sup de Tersoff 88
-                            cycle
-                         else
-                            ! ne prend en compte que les k voisin de la paire ij
-                            n_voisin = n_voisin + 1
-                            indice(n_voisin) = k
-                            rik = sqrt(rik2)
-                            tmp(n_voisin,1) = rik                                                   ! rik
-                            call facteur_amortissement (rik, ik, fc= tmp(n_voisin,2) )              ! fc(rik)
-                            tmp(n_voisin,3) = exp(lambda3(ik)**3*(rij-rik)**3)                      ! exponentiel
-                            tmp(n_voisin,4) = (cvij(1,1)*cvik(1,1)+cvij(1,2)*cvik(1,2)+cvij(1,3)*cvik(1,3))/(rij*rik)
-                            ! cos theta ijk
-                            call facteur_angulaire(tmp(n_voisin,4), ityp(i), g = tmp(n_voisin,5))   ! g(cos_theta)
-                            tmp1(n_voisin,1)=cvik(1,1) ; tmp1(n_voisin,2)=cvik(1,2) ; tmp1(n_voisin,3)=cvik(1,3)
-
-                            sui_ij = sui_ij + tmp(n_voisin,2)*tmp(n_voisin,5)*tmp(n_voisin,3)       ! sui ij
-
-                         end if
-                      end if
-                   end do Tloop1at3
-                   !
-                   !Tersoff OR                     bij = psi(ij)*(1.+beta(ityp(i))**n*sui_ij**n)**(-1./(2.*n)) 
-                   ! Brenner
-                   bij = psi(ij)*(1.+beta(ityp(i))**n*sui_ij**n)**(-deltater(ityp(i)))
-
-                   call facteur_amortissement (rij, ij, fc= fc_rij )
-                   call facteur_amortissement (rij, ij, dfc= dfc_rij)
-                   fr_rij = fr(rij,Ater(ij),lambda1(ij))
-                   fa_rij = fa(rij,Bter(ij),lambda2(ij))
-
-                   v_ij = v_ij + fc_rij*(fr_rij+bij*fa_rij)
-                   ! DEBUT CALCUL DE  FORCE $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  
-                   if(n_voisin==0) then
-                      Scal_FiVi=0. ; Scal_FjVj=0.
-                      do l=1,3
-                         paire_ij = -0.5*dfc_rij*(fr_rij+bij*fa_rij)/rij*cvij(1,l) & 
-                              +0.5*fc_rij*(lambda1(ij)*fr_rij+lambda2(ij)*bij*fa_rij)/rij*cvij(1,l)
-
-                         fp(l,i) = fp(l,i) + paire_ij
-                         fp(l,j) = fp(l,j) - paire_ij
-                         if(lnemd) fpnemd(l)=fpnemd(l)+paire_ij*XijdotF
-!!$                         if (lcalcjq) then
-!!$                            Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
-!!$                         end if
-
-                         !Contrainte
-                         if (test_sigma.EQV..true.) then 
-                            do m=1,3
-                               sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/volu
-                            end do
-                         end if
-                      end do
-                      if (lcalcjq) then
-                         do l=1,3
-                            jq(l) = jq(l) - Scal_FjVj*(cvij(1,l))
-                         end do
-                      end if
-
+       ipv = idv+1
+       idv = atcf%iwmax(i)
+       Tloop1at2 :do ivj=ipv, idv
+          j = atcf%indi (ivj)
+          !               write(6,*)i,j
+          if (j==i) then  !Cette condition n'est pas necessaire si JP. fais correctement sa table
+             cycle
+          else
+             ij=ipo(atcf%ityp(i),atcf%ityp(j))
+             call vect_dist(atcf,celcf,boxcf,i,j,VJI=cvij(1,:), lperiod=boxcf%lperiod,rum=CoupR(ij)&
+                  &,linter=linter,dist=rij)
+             if (.not.linter) cycle
+!!$
+!!$             do l=1,3
+!!$                Xij(l)= xp(l,i)-xp(l,j)
+!!$             end do
+!!$             do l=1,3
+!!$                if (Xij(l)>0.5) Xij(l)=Xij(l)-1.
+!!$                if (Xij(l)<(-0.5)) Xij(l)=Xij(l)+1.
+!!$                cvij(1,l) = Xij(l)
+!!$             end do
+!!$             call cryst_to_cart(1,cvij,at,1)
+!!$             rij2=cvij(1,1)**2+cvij(1,2)**2+cvij(1,3)**2
+!!$             !                  write(6,*)i,j,rij2
+!!$             if (rij2>CoupR(ij)**2) then         !borne sup de Lisa Porter 89
+!!$                !if (rij2>(Rter(ij)+CoupR(ij))**2) then   !borne sup de Tersoff 88
+!!$                cycle
+!!$             else
+                !CRC ortho seulement
+                if(lnemd) XijdotF=cvij(1,1)*Fnemd
+                n=nter(atcf%ityp(i))
+!                rij=sqrt(rij2)
+                sui_ij = 0
+                n_voisin = 0
+                Tloop1at3:    do ivk=ipv, idv
+                   k = atcf%indi (ivk)
+                   if (k==j .or. k==i) then
+                      cycle
                    else
-                      Scal_FiVi=0. ; Scal_FjVj=0.
-                      do l=1,3
-                         paire_ij = -0.5*dfc_rij*(fr_rij+bij*fa_rij)/rij*cvij(1,l) & 
-                              +0.5*fc_rij*(lambda1(ij)*fr_rij+lambda2(ij)*bij*fa_rij)/rij*cvij(1,l)
+                      ik=ipo(atcf%ityp(i),atcf%ityp(k))
+                      call vect_dist(atcf,celcf,boxcf,i,k,VJI=cvik(1,:), lperiod=boxcf%lperiod,rum=CoupR(ik)&
+                           &,linter=linterik,dist=rik)
 
-                         fp(l,i) = fp(l,i) + paire_ij
-                         fp(l,j) = fp(l,j) - paire_ij
-                         if(lnemd) fpnemd(l)=fpnemd(l)+paire_ij*XijdotF
+!!$                      ! CONDITIONS PERIODIQUES
+!!$                      do l=1,3
+!!$                         Xik(l)= xp(l,i)-xp(l,k)
+!!$                      end do
+!!$                      do l=1,3
+!!$                         if (XiK(l)>0.5) Xik(l)=Xik(l)-1.
+!!$                         if (XiK(l)<(-0.5)) Xik(l)=Xik(l)+1.
+!!$                         cvik(1,l) = Xik(l)
+!!$                      end do
+!!$                      !                       write(6,*)'cvik'
+!!$                      !                       write(6,*)cvik(1,:)
+!!$                      call cryst_to_cart(1,cvik,at,1)
+!!$                      rik2=cvik(1,1)**2+cvik(1,2)**2+cvik(1,3)**2
+!!$                      if (rik2>CoupR(ik)**2) then               !borne sup de Lisa Porter 89
+!!$                         !if (rik2>(Rter(ik)+CoupR(ik))**2) then     !borne sup de Tersoff 88
+!!$                         cycle
+!!$                      else
+                      ! ne prend en compte que les k voisin de la paire ij
+                      if (.not.linterik) cycle
+                      n_voisin = n_voisin + 1
+                      indice(n_voisin) = k
+!                      rik = sqrt(rik2)
+                      tmp(n_voisin,1) = rik                                                   ! rik
+                      call facteur_amortissement (rik, ik, fc= tmp(n_voisin,2) )              ! fc(rik)
+                      tmp(n_voisin,3) = exp(lambda3(ik)**3*(rij-rik)**3)                      ! exponentiel
+                      tmp(n_voisin,4) = (cvij(1,1)*cvik(1,1)+cvij(1,2)*cvik(1,2)+cvij(1,3)*cvik(1,3))/(rij*rik)
+                      ! cos theta ijk
+                      call facteur_angulaire(tmp(n_voisin,4), atcf%ityp(i), g = tmp(n_voisin,5))   ! g(cos_theta)
+                      tmp1(n_voisin,1)=cvik(1,1) ; tmp1(n_voisin,2)=cvik(1,2) ; tmp1(n_voisin,3)=cvik(1,3)
+                      
+                      sui_ij = sui_ij + tmp(n_voisin,2)*tmp(n_voisin,5)*tmp(n_voisin,3)       ! sui ij
+                      
+                      !                      end if
+                   end if
+                end do Tloop1at3
+                !
+                !Tersoff OR                     bij = psi(ij)*(1.+beta(atcf%ityp(i))**n*sui_ij**n)**(-1./(2.*n)) 
+                ! Brenner
+                bij = psi(ij)*(1.+beta(atcf%ityp(i))**n*sui_ij**n)**(-deltater(atcf%ityp(i)))
+
+                call facteur_amortissement (rij, ij, fc= fc_rij )
+                call facteur_amortissement (rij, ij, dfc= dfc_rij)
+                fr_rij = fr(rij,Ater(ij),lambda1(ij))
+                fa_rij = fa(rij,Bter(ij),lambda2(ij))
+
+                v_ij = v_ij + fc_rij*(fr_rij+bij*fa_rij)
+                ! DEBUT CALCUL DE  FORCE $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  
+                if(n_voisin==0) then
+                   Scal_FiVi=0. ; Scal_FjVj=0.
+                   do l=1,3
+                      paire_ij = -0.5*dfc_rij*(fr_rij+bij*fa_rij)/rij*cvij(1,l) & 
+                           +0.5*fc_rij*(lambda1(ij)*fr_rij+lambda2(ij)*bij*fa_rij)/rij*cvij(1,l)
+
+                      atcf%fp(l,i) = atcf%fp(l,i) + paire_ij
+                      atcf%fp(l,j) = atcf%fp(l,j) - paire_ij
+                      if(lnemd) fpnemd(l)=fpnemd(l)+paire_ij*XijdotF
 !!$                         if (lcalcjq) then
 !!$                            Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
 !!$                         end if
-                         !Contrainte
-                         if (test_sigma.EQV..true.) then  
-                            do m=1,3
-                               sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/volu
-                            end do
-                         end if
-                      end do
-                      !write(6,*)i,j,'P'
-                      !write(6,*)sig
-                      !write(6,*)
-                      if (lcalcjq) then
-                         do l=1,3
-                            jq(l) = jq(l) - Scal_FjVj*(cvij(1,l))
+
+                      !Contrainte
+                      if (test_sigma.EQV..true.) then 
+                         do m=1,3
+                            sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/boxcf%volu
                          end do
                       end if
-                      !*********************************************************************************************
-                      Tloop2at3:        do nk=1,n_voisin
-                         !write(6,*)'NV',n_voisin
-                         k=indice(nk) 
-                         !write(6,*)k,nk
-                         rik = tmp(nk,1)
-                         fc_rik = tmp(nk,2)
-                         ik=ipo(ityp(i),ityp(k))
-                         call facteur_amortissement (rik, ik, dfc= dfc_rik)
-                         exponentiel = tmp(nk,3)
-                         cos_theta = tmp(nk,4)
-                         g_cos = tmp(nk,5)
-                         call facteur_angulaire (cos_theta, ityp(i), dg= dg_cos)
-                         Scal_FijVi=0. ; Scal_FijVj=0. ; Scal_FikVi=0. ; Scal_FikVk=0.
-                         cvik(1,:)=tmp1(nk,:)
-                         if(lnemd) XikdotF=tmp1(nk,1)*Fnemd*zl(1)
-                         do l=1,3
-                            !                          cvik(1,l) = tmp1(nk,l)
-                            !                          write(6,*)'cvik l',cvik(1,l),l
+                   end do
+                   if (lcalcjq) then
+                      do l=1,3
+                         jq(l) = jq(l) - Scal_FjVj*(cvij(1,l))
+                      end do
+                   end if
 
-                            !                              triplet_ij = 0.5*fc_rij*fa_rij*0.5*psi(ij)*beta(ityp(i))**n*sui_ij**(n-1)*&
-                            !                                   (1.+beta(ityp(i))**n*sui_ij**n)**(-(1.+2.*n)/(2.*n)) * &   
-                            !                                   (3.*lambda3(ik)**3*fc_rik*(rij-rik)**2*g_cos*exponentiel/rij*cvij(1,l) &
-                            !                                   +fc_rik*dg_cos*exponentiel* &
-                            !                                   (cvik(1,l)/(rij*rik)-cos_theta*cvij(1,l)/rij**2))
-                            !                              
-                            !                              
-                            !                              triplet_ik = 0.5*fc_rij*fa_rij*0.5*psi(ij)*beta(ityp(i))**n*sui_ij**(n-1)*&
-                            !                                   (1.+beta(ityp(i))**n*sui_ij**n)**(-(1.+2.*n)/(2.*n)) * &
-                            !                                   (-3.*lambda3(ik)**3*fc_rik*(rij-rik)**2*g_cos*exponentiel/rik*cvik(1,l) &
-                            !                                   +dfc_rik*g_cos*exponentiel/rik*cvik(1,l) &
-                            !                                   +fc_rik*dg_cos*exponentiel* &
-                            !                                   (cvij(1,l)/(rij*rik)-cos_theta*cvik(1,l)/rik**2))
+                else
+                   Scal_FiVi=0. ; Scal_FjVj=0.
+                   do l=1,3
+                      paire_ij = -0.5*dfc_rij*(fr_rij+bij*fa_rij)/rij*cvij(1,l) & 
+                           +0.5*fc_rij*(lambda1(ij)*fr_rij+lambda2(ij)*bij*fa_rij)/rij*cvij(1,l)
 
-                            triplet_ij = 0.5*fc_rij*fa_rij*deltater(ityp(i))*n*psi(ij)*beta(ityp(i))**n*sui_ij**(n-1)*&
-                                 (1.+beta(ityp(i))**n*sui_ij**n)**(-deltater(ityp(i))-1.) * &   
-                                 (3.*lambda3(ik)**3*fc_rik*(rij-rik)**2*g_cos*exponentiel/rij*cvij(1,l) &
-                                 +fc_rik*dg_cos*exponentiel* &
-                                 (cvik(1,l)/(rij*rik)-cos_theta*cvij(1,l)/rij**2))
+                      atcf%fp(l,i) = atcf%fp(l,i) + paire_ij
+                      atcf%fp(l,j) = atcf%fp(l,j) - paire_ij
+                      if(lnemd) fpnemd(l)=fpnemd(l)+paire_ij*XijdotF
+!!$                         if (lcalcjq) then
+!!$                            Scal_FjVj=Scal_FjVj - paire_ij*vp(l,j)
+!!$                         end if
+                      !Contrainte
+                      if (test_sigma.EQV..true.) then  
+                         do m=1,3
+                            sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/boxcf%volu
+                         end do
+                      end if
+                   end do
+                   !write(6,*)i,j,'P'
+                   !write(6,*)sig
+                   !write(6,*)
+                   if (lcalcjq) then
+                      do l=1,3
+                         jq(l) = jq(l) - Scal_FjVj*(cvij(1,l))
+                      end do
+                   end if
+                   !*********************************************************************************************
+                   Tloop2at3:        do nk=1,n_voisin
+                      !write(6,*)'NV',n_voisin
+                      k=indice(nk) 
+                      !write(6,*)k,nk
+                      rik = tmp(nk,1)
+                      fc_rik = tmp(nk,2)
+                      ik=ipo(atcf%ityp(i),atcf%ityp(k))
+                      call facteur_amortissement (rik, ik, dfc= dfc_rik)
+                      exponentiel = tmp(nk,3)
+                      cos_theta = tmp(nk,4)
+                      g_cos = tmp(nk,5)
+                      call facteur_angulaire (cos_theta, atcf%ityp(i), dg= dg_cos)
+                      Scal_FijVi=0. ; Scal_FijVj=0. ; Scal_FikVi=0. ; Scal_FikVk=0.
+                      cvik(1,:)=tmp1(nk,:)
+                      if(lnemd) XikdotF=tmp1(nk,1)*Fnemd*boxcf%zl(1)
+                      do l=1,3
+                         !                          cvik(1,l) = tmp1(nk,l)
+                         !                          write(6,*)'cvik l',cvik(1,l),l
+
+                         !                              triplet_ij = 0.5*fc_rij*fa_rij*0.5*psi(ij)*beta(atcf%ityp(i))**n*sui_ij**(n-1)*&
+                         !                                   (1.+beta(atcf%ityp(i))**n*sui_ij**n)**(-(1.+2.*n)/(2.*n)) * &   
+                         !                                   (3.*lambda3(ik)**3*fc_rik*(rij-rik)**2*g_cos*exponentiel/rij*cvij(1,l) &
+                         !                                   +fc_rik*dg_cos*exponentiel* &
+                         !                                   (cvik(1,l)/(rij*rik)-cos_theta*cvij(1,l)/rij**2))
+                         !                              
+                         !                              
+                         !                              triplet_ik = 0.5*fc_rij*fa_rij*0.5*psi(ij)*beta(atcf%ityp(i))**n*sui_ij**(n-1)*&
+                         !                                   (1.+beta(ityp(i))**n*sui_ij**n)**(-(1.+2.*n)/(2.*n)) * &
+                         !                                   (-3.*lambda3(ik)**3*fc_rik*(rij-rik)**2*g_cos*exponentiel/rik*cvik(1,l) &
+                         !                                   +dfc_rik*g_cos*exponentiel/rik*cvik(1,l) &
+                         !                                   +fc_rik*dg_cos*exponentiel* &
+                         !                                   (cvij(1,l)/(rij*rik)-cos_theta*cvik(1,l)/rik**2))
+
+                         triplet_ij = 0.5*fc_rij*fa_rij*deltater(atcf%ityp(i))*n*psi(ij)*beta(atcf%ityp(i))**n*sui_ij**(n-1)*&
+                              (1.+beta(atcf%ityp(i))**n*sui_ij**n)**(-deltater(atcf%ityp(i))-1.) * &   
+                              (3.*lambda3(ik)**3*fc_rik*(rij-rik)**2*g_cos*exponentiel/rij*cvij(1,l) &
+                              +fc_rik*dg_cos*exponentiel* &
+                              (cvik(1,l)/(rij*rik)-cos_theta*cvij(1,l)/rij**2))
 
 
-                            triplet_ik = 0.5*fc_rij*fa_rij*deltater(ityp(i))*n*psi(ij)*beta(ityp(i))**n*sui_ij**(n-1)*&
-                                 (1.+beta(ityp(i))**n*sui_ij**n)**(-deltater(ityp(i))-1.)* &
-                                 (-3.*lambda3(ik)**3*fc_rik*(rij-rik)**2*g_cos*exponentiel/rik*cvik(1,l) &
-                                 +dfc_rik*g_cos*exponentiel/rik*cvik(1,l) &
-                                 +fc_rik*dg_cos*exponentiel* &
-                                 (cvij(1,l)/(rij*rik)-cos_theta*cvik(1,l)/rik**2))
+                         triplet_ik = 0.5*fc_rij*fa_rij*deltater(atcf%ityp(i))*n*psi(ij)*beta(atcf%ityp(i))**n*sui_ij**(n-1)*&
+                              (1.+beta(atcf%ityp(i))**n*sui_ij**n)**(-deltater(atcf%ityp(i))-1.)* &
+                              (-3.*lambda3(ik)**3*fc_rik*(rij-rik)**2*g_cos*exponentiel/rik*cvik(1,l) &
+                              +dfc_rik*g_cos*exponentiel/rik*cvik(1,l) &
+                              +fc_rik*dg_cos*exponentiel* &
+                              (cvij(1,l)/(rij*rik)-cos_theta*cvik(1,l)/rik**2))
 
-                            fp(l,i) = fp(l,i) + triplet_ij
-                            fp(l,j) = fp(l,j) - triplet_ij
-                            fp(l,i) = fp(l,i) + triplet_ik
-                            fp(l,k) = fp(l,k) - triplet_ik
-                            if(lnemd) fpnemd(l)=fpnemd(l)+triplet_ij*XijdotF
-                            if(lnemd) fpnemd(l)=fpnemd(l)+triplet_ik*XikdotF
+                         atcf%fp(l,i) = atcf%fp(l,i) + triplet_ij
+                         atcf%fp(l,j) = atcf%fp(l,j) - triplet_ij
+                         atcf%fp(l,i) = atcf%fp(l,i) + triplet_ik
+                         atcf%fp(l,k) = atcf%fp(l,k) - triplet_ik
+                         if(lnemd) fpnemd(l)=fpnemd(l)+triplet_ij*XijdotF
+                         if(lnemd) fpnemd(l)=fpnemd(l)+triplet_ik*XikdotF
 
-                            !Flux
+                         !Flux
 !!$                            if (lcalcjq) then
 !!$                               Scal_FijVj=Scal_FijVj - triplet_ij*vp(l,j)
 !!$                               Scal_FikVk=Scal_FikVk - triplet_ik*vp(l,k)
 !!$                            end if
-                            !Contrainte
-                            !write(6,*)'sig AV l',l
-                            !write(6,*)sig
-                            if (test_sigma.EQV..true.) then  
-                               do m=1,3
-                                  sig(l,m)=sig(l,m) + triplet_ij*cvij(1,m)/volu
-                                  sig(l,m)=sig(l,m) + triplet_ik*cvik(1,m)/volu
-                               end do
-                            end if
-                            !write(6,*)i,j,k,'T'
-                            !write(6,*)sig
-                            !write(6,*)'tik tik'
-                            !write(6,*)triplet_ij,triplet_ik
-                            !write(6,*)'cvij cvik'
-                            !                       do m=1,3
-                            !write(6,*)cvij(1,m),cvik(1,m)
-                            !                       end do
-
-                         end do
-                         if (lcalcjq) then
-                            do l=1,3
-                               jq(l) = jq(l) - Scal_FijVj*(cvij(1,l)) - Scal_FikVk*(cvik(1,l))
+                         !Contrainte
+                         !write(6,*)'sig AV l',l
+                         !write(6,*)sig
+                         if (test_sigma.EQV..true.) then  
+                            do m=1,3
+                               sig(l,m)=sig(l,m) + triplet_ij*cvij(1,m)/boxcf%volu
+                               sig(l,m)=sig(l,m) + triplet_ik*cvik(1,m)/boxcf%volu
                             end do
                          end if
-                      end do Tloop2at3
-                   end if
-                   !                 write(6,*)'rij roff',rij,roff2(ij)
-                   if (rij.le.roff2(ij)) then
-                      sk = rij/csive
-                      kk = sk
-                      ! spline
-                      dr = rij-float(kk)*csive
-                      !                       write(6,*)'rij roff',rij,roff2(ij),pot(1,l,kk)
-                      potiszbl = potiszbl+0.5*(pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk))))))
-                      phu = -1.0*(pot(2,ij,kk)+dr*(2.0*pot(3,ij,kk)+dr*(3.0*pot(4,ij,kk))))
-                      fp(:,i)=fp(:,i)+0.5*phu*cvij(1,:)/rij
-                      fp(:,j)=fp(:,j)-0.5*phu*cvij(1,:)/rij
-                      !
-                   end if
+                         !write(6,*)i,j,k,'T'
+                         !write(6,*)sig
+                         !write(6,*)'tik tik'
+                         !write(6,*)triplet_ij,triplet_ik
+                         !write(6,*)'cvij cvik'
+                         !                       do m=1,3
+                         !write(6,*)cvij(1,m),cvik(1,m)
+                         !                       end do
 
+                      end do
+                      if (lcalcjq) then
+                         do l=1,3
+                            jq(l) = jq(l) - Scal_FijVj*(cvij(1,l)) - Scal_FikVk*(cvik(1,l))
+                         end do
+                      end if
+                   end do Tloop2at3
                 end if
-             end if
+                !                 write(6,*)'rij roff',rij,roff2(ij)
+                if (rij.le.roff2(ij)) then
+                   sk = rij/csive
+                   kk = sk
+                   ! spline
+                   dr = rij-float(kk)*csive
+                   !                       write(6,*)'rij roff',rij,roff2(ij),pot(1,l,kk)
+                   potiszbl = potiszbl+0.5*(pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk))))))
+                   phu = -1.0*(pot(2,ij,kk)+dr*(2.0*pot(3,ij,kk)+dr*(3.0*pot(4,ij,kk))))
+                   atcf%fp(:,i)=atcf%fp(:,i)+0.5*phu*cvij(1,:)/rij
+                   atcf%fp(:,j)=atcf%fp(:,j)-0.5*phu*cvij(1,:)/rij
+                   !
+                end if
 
-          end do Tloop1at2
-!          if (allocated (free)) then
-!             if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
-!          else
-             potisTersoff = potisTersoff + 0.5*v_ij
-!          end if
-
-
-          !energie_i =  0.5*v_i
-!          if (allocated (free)) then
-!             if ((lprteat.or.lcalcjq.or.lnemd).and.(free(i).EQV..true.))eatom(i) = eatom(i)+0.5*v_ij
-!          else
-             if (lprteat.or.lcalcjq.or.lnemd)eat(i) = eat(i)+0.5*v_ij
-             !          end if
-
-
-          if (lnemd) then
-             do l=1,3
-                fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l)/float(im)
-                fp(l,i)=fp(l,i)+fpnemd(l)
-             enddo
+!             end if
           end if
 
-       end do Tloop1at1
+       end do Tloop1at2
+       !          if (allocated (free)) then
+       !             if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
+       !          else
+       potisTersoff = potisTersoff + 0.5*v_ij
+       !          end if
+
+
+       !energie_i =  0.5*v_i
+       !          if (allocated (free)) then
+       !             if ((lprteat.or.lcalcjq.or.lnemd).and.(free(i).EQV..true.))eatom(i) = eatom(i)+0.5*v_ij
+       !          else
+       if (lprteat.or.lcalcjq.or.lnemd)eat(i) = eat(i)+0.5*v_ij
+       !          end if
+
 
        if (lnemd) then
-          do i=1,im
-             do l=1,3
-                fp(l,i)=fp(l,i)-fpnemdmoy(l)
-             enddo
-          end do
+          do l=1,3
+             fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l)/float(atcf%im)
+             atcf%fp(l,i)=atcf%fp(l,i)+fpnemd(l)
+          enddo
        end if
 
+    end do Tloop1at1
 
+    if (lnemd) then
+       do i=1,atcf%im
+          do l=1,3
+             atcf%fp(l,i)=atcf%fp(l,i)-fpnemdmoy(l)
+          enddo
+       end do
+    end if
 
+    !    call cryst_to_cart(imm,xp,at,1)
+    return
 
-
-
-
-       call cryst_to_cart(imm,xp,at,1)
-
-
-
-       return
-
-     end subroutine force_tersoff
+  end subroutine force_tersoff
 
    end module

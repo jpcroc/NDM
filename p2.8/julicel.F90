@@ -4,25 +4,34 @@ module calfojulicel_mod
   USE gen_com_m, ONLY:nvat,fnemd,lcalcjq,lnemd,lperiod,zero
   USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot,ngrid,npair,&
        &eamrep,ipo,typ_pot_pair,eamglue,eamrho,ntyp
-        USE calfocommon
+  USE calfocommon
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+  USE cellconfig, only : cell_config
+  use boxconfig,only: box_config
+  use vect_dist_mod,only:vect_dist
+
   implicit none
 contains
   !----------------------------------------------------------------------
-  SUBROUTINE calfojulicel(im,imm,xp, fp, ielat, ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
+  SUBROUTINE calfojulicel(atcf,celcf,boxcf)
     !tentaive de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
 
     USE SMjuli
     USE jqmod
     implicit none
-  integer,intent(in)::im,imm
-  integer , intent(in),allocatable :: ielat(:),ityp(:)
-  real(double),intent(inout),allocatable  :: xp(:,:)
-  real(double) , intent(inout),allocatable :: fp(:,:)
-    real(double),intent(in),dimension(3,3)::at,bg
-    real(double),intent(in)::volu
-  integer,intent(in)::noxyz,natperc
-  integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)  
+      class(atom_config),intent(inout)::atcf
+  type(cell_config),intent(in)::celcf
+  type(box_config),intent(in)::boxcf
+
+!!$  integer,intent(in)::im,imm
+!!$  integer , intent(in),allocatable :: ielat(:),ityp(:)
+!!$  real(double),intent(inout),allocatable  :: xp(:,:)
+!!$  real(double) , intent(inout),allocatable :: fp(:,:)
+!!$    real(double),intent(in),dimension(3,3)::at,bg
+!!$    real(double),intent(in)::volu
+!!$  integer,intent(in)::noxyz,natperc
+!!$  integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)  
 
     !local variables
     integer :: i,j,l !atomes
@@ -64,27 +73,23 @@ contains
     real(double) :: gradij(3), gradil(3),gradjl(3) ! deltaX/r pour ij,il et lj
     integer::  iw1,iw2, iw,iw1j,iw2j, iwj, iwl1,iwl2,iwl ! indices des voisins j et l de i
 
-
-
-    !    real(double) ::  alphaPbeta,beta
-    real(double) :: rcut2 (npair)
+    real(double) :: rcut2 (npair),rcut(npair)
     real(double) :: rhoitot,fpi
     real(double) :: tdepcos
-
     real(double)::rue
-    real(double), dimension(:,:), allocatable :: xpnp
-
-
-    real(double):: fpnemd(3,im),fpnemdmoy(3), XijdotF,XildotF,XjldotF
+  real(double)::dxp(3),dxpjl(3)
+  logical::linter,linterjl
+    real(double):: fpnemd(3,atcf%im),fpnemdmoy(3), XijdotF,XildotF,XjldotF
 
     integer::koo,ncelvois,i1,i2,ko1,ko1j,koj
-    !  real(double)::
-    REAL(double), dimension(1:3) :: cp, dxp
+
+    REAL(double), dimension(1:3) :: cp
     rue=rue_pot(ipotentiel)
     fpnemd=0
 
     do l=1,npair
        rcut2(l)=(reppairjl(l)%rc*1.0d-8)**2
+       rcut2(l)=(reppairjl(l)%rc*1.0d-8)
        !       write(6,*)l,sqrt(rcut2(l))
     end do
 
@@ -102,102 +107,65 @@ contains
     rue2=rue**2
     !    iw2=0
 
-    ALLOCATE(xpnp(3,imm))
-    if (lperiod) then
-       xpnp(:,:)=xp(:,:)
-    else
-       call notperiod(imm,xp,xpnp,at,bg)
-    end if
+!!$    ALLOCATE(xpnp(3,imm))
+!!$    if (lperiod) then
+!!$       xpnp(:,:)=xp(:,:)
+!!$    else
+!!$       call notperiod(imm,xp,xpnp,at,bg)
+!!$    end if
+!!$
+!!$    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
-    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
-
-    loop1at1: do i=1,im
+    loop1at1: do i=1,atcf%im
        nvi=0.
        rhoitot=0.
-       iti = ityp(i)
+       iti = atcf%ityp(i)
        densityi=0.0 ;Eembi=0.0; dEembi=0.0
        !     write(6,*)'I',i
-       koo= ielat(i)      
-       ncelvois = min(noxyz,27)-1
+       koo= atcf%ielat(i)      
+       ncelvois = min(celcf%noxyz,27)-1
        ! pour chaque cel. voisine
        loop1cel:   do i1 = 0, ncelvois
-          ko1 = ncel(koo,i1)
+          ko1 = celcf%ncel(koo,i1)
           !        write(6,*)'celI',ko1
 
           !        cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
           ! pour chaque atome ds la cel. voisine
-          loop1at2: do i2 = 1, nato(ko1)
-             j = atincel(i2,ko1)
+          loop1at2: do i2 = 1, celcf%nato(ko1)
+             j = celcf%atincel(i2,ko1)
              if (i==j)cycle
-             !           write(6,*)'J',j
-             ! --- Calcul de la densite sur i ---    
-             !            write(6,*)'i iti = ',i,iti
-
-             !     if (i==1) then
-             !        iw1 = 1
-             !     else
-             !        iw1=iwmax(i-1)+1
-             !     end if
-             !     iw2 = iwmax(i)
-             !     loopvois :do iw = iw1, iw2
-             !        j = indi(iw)
-
-             itj=ityp(j)
-
-             !           if (noxyz.ne.1) then
-             !              dxp(1) = cp(1)-xpnp(1,j)
-             !              IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
-             !              dxp(2) = cp(2)-xpnp(2,j)
-             !              IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
-             !              dxp(3) = cp(3)-xpnp(3,j)
-             !              IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
-             !           else
-             !              dxp(1) = cp(1)-xpnp(1,j)
-             !              dxp(2) = cp(2)-xpnp(2,j)
-             !              dxp(3) = cp(3)-xpnp(3,j)
-             !              cv(1,1) = dxp(1)
-             !              cv(1,2) = dxp(2)
-             !              cv(1,3) = dxp(3)
-             !              call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
-             !              WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-             !                 cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-             !              END WHERE
-             !              call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-             !              dxp(1)=cv(1,1)
-             !              dxp(2)=cv(1,2)
-             !              dxp(3)=cv(1,3)
-             !           end if
-
-             c1ij = xpnp(1,i)-xpnp(1,j)
-             c2ij = xpnp(2,i)-xpnp(2,j)
-             c3ij = xpnp(3,i)-xpnp(3,j)
+             itj=atcf%ityp(j);ll=ipo(iti,itj)
 
 
+             call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,&
+                  &rum=rcut(ll),linter=linter,dist=rij)
+        if (.not.linter) cycle
 
-             if (c1ij>0.5) c1ij = c1ij-1.
-             if (c1ij<(-0.5)) c1ij = c1ij+1.
-             if (c2ij>0.5) c2ij = c2ij-1.
-             if (c2ij<(-0.5)) c2ij = c2ij+1.
-             if (c3ij>0.5) c3ij = c3ij-1.
-             if (c3ij<(-0.5)) c3ij = c3ij+1.
-             cv(1,1) = c1ij
-             cv(1,2) = c2ij
-             cv(1,3) = c3ij
-             call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-             r2ij = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-             c1ij= cv(1,1) 
-             c2ij =cv(1,2) 
-             c3ij =cv(1,3) 
-
-             itj=ityp(j)
-
-
-             if (r2ij>rcut2(ipo(iti,itj))) cycle
-
-             rij=sqrt(r2ij)
-             !           write(6,*)'i  j   r ',i,j,ipo(iti,itj),rij
-             k=Int(rij/ktor)
+             
+!!$             c1ij = xpnp(1,i)-xpnp(1,j)
+!!$             c2ij = xpnp(2,i)-xpnp(2,j)
+!!$             c3ij = xpnp(3,i)-xpnp(3,j)
+!!$             if (c1ij>0.5) c1ij = c1ij-1.
+!!$             if (c1ij<(-0.5)) c1ij = c1ij+1.
+!!$             if (c2ij>0.5) c2ij = c2ij-1.
+!!$             if (c2ij<(-0.5)) c2ij = c2ij+1.
+!!$             if (c3ij>0.5) c3ij = c3ij-1.
+!!$             if (c3ij<(-0.5)) c3ij = c3ij+1.
+!!$             cv(1,1) = c1ij
+!!$             cv(1,2) = c2ij
+!!$             cv(1,3) = c3ij
+!!$             call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+!!$             r2ij = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
+!!$             c1ij= cv(1,1) 
+!!$             c2ij =cv(1,2) 
+!!$             c3ij =cv(1,3) 
+!!$             itj=ityp(j)
+!!$            if (r2ij>rcut2(ipo(iti,itj))) cycle
+!!$             rij=sqrt(r2ij)
+!!$             !           write(6,*)'i  j   r ',i,j,ipo(iti,itj),rij
+        c1ij=dxp(1);c2ij=dxp(2);c3ij=dxp(3)
+        k=Int(rij/ktor)
              !       write(6,*)'k ',k
              drk=rij-k*ktor
              ll = ipo(iti,itj)
@@ -230,10 +198,10 @@ contains
        sij(:)=0.
        loopvj1 : do iw=1,nvi
           j=jvi(iw)
-          itj=ityp(j)
+          itj=atcf%ityp(j)
           !          if((itj==2).and.(iti==2))cycle
-          if(ityp(j).ne.iti) then
-             itj=ityp(j)
+          if(atcf%ityp(j).ne.iti) then
+             itj=atcf%ityp(j)
              !        write(6,*)'i j dis ',i,j,Vrij(iw)
              c1ij=Vc1ij(iw) ;c2ij= Vc2ij(iw); c3ij=Vc3ij(iw)
              rij=Vrij(iw)
@@ -243,7 +211,7 @@ contains
              !voisins l de i de type itj
              loopvli1 : do iwl=1,nvi
                 l=jvi(iwl)
-                itl=ityp(l)
+                itl=atcf%ityp(l)
                 !
                 IF (L==J)cycle
                 !
@@ -266,12 +234,12 @@ contains
              ! fin terme l debut terme "k"
 
              !initialisations pour voisins de j
-             koj= ielat(j)      
+             koj= atcf%ielat(j)      
              loop2cel:   do i1 = 0, ncelvois
-                ko1j = ncel(koj,i1)
+                ko1j = celcf%ncel(koj,i1)
                 ! pour chaque atome ds la cel. voisine
-                loop2at2: do i2 = 1, nato(ko1j)
-                   l = atincel(i2,ko1j)
+                loop2at2: do i2 = 1, celcf%nato(ko1j)
+                   l = celcf%atincel(i2,ko1j)
                    if (l==j)cycle
 
                    !           if (j==1) then
@@ -283,36 +251,39 @@ contains
                    !           loopvjk1 :do iwl = iw1j, iw2j          
                    !              l = indi(iwl)
                    !                write(6,*)'i j l',i,j,l
-                   itl=ityp(l)
-                   if(itl==itj) cycle 
-                   !
+                   itl=atcf%ityp(l)
+                   if(itl==itj) cycle
+                                      !
                    IF (L==I)cycle
-                   !
+                   call vect_dist(atcf,celcf,boxcf,j,l,VJI=dxpjl, indcv=i1,lperiod=boxcf%lperiod,&
+                        &rum=rcut(ipo(itj,itl)),linter=linterjl,dist=rjl)
+           if (.not.linterjl)cycle
+           c1jl=dxpjl(1);              c2jl=dxpjl(2);              c3jl=dxpjl(3);
 
-                   c1jl = xpnp(1,j)-xpnp(1,l)
-                   c2jl = xpnp(2,j)-xpnp(2,l)
-                   c3jl = xpnp(3,j)-xpnp(3,l)
-                   if (c1jl>0.5) c1jl = c1jl-1.
-                   if (c1jl<(-0.5)) c1jl = c1jl+1.
-                   if (c2jl>0.5) c2jl = c2jl-1.
-                   if (c2jl<(-0.5)) c2jl = c2jl+1.
-                   if (c3jl>0.5) c3jl = c3jl-1.
-                   if (c3jl<(-0.5)) c3jl = c3jl+1.
-                   cv(1,1) = c1jl
-                   cv(1,2) = c2jl
-                   cv(1,3) = c3jl
-                   call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-                   r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-                   c1jl=cv(1,1)
-                   c2jl=cv(1,2) 
-                   c3jl=cv(1,3)
-
-
-
-                   if (r2jl>rcut2(ipo(itj,itl))) cycle               
-                   !                write(6,*)'K i iti j itj l itl ',i,iti,j,itj,l,itl                
-                   !                if (r2jl>rue2) cycle
-                   rjl=sqrt(r2jl)
+!!$                   c1jl = xpnp(1,j)-xpnp(1,l)
+!!$                   c2jl = xpnp(2,j)-xpnp(2,l)
+!!$                   c3jl = xpnp(3,j)-xpnp(3,l)
+!!$                   if (c1jl>0.5) c1jl = c1jl-1.
+!!$                   if (c1jl<(-0.5)) c1jl = c1jl+1.
+!!$                   if (c2jl>0.5) c2jl = c2jl-1.
+!!$                   if (c2jl<(-0.5)) c2jl = c2jl+1.
+!!$                   if (c3jl>0.5) c3jl = c3jl-1.
+!!$                   if (c3jl<(-0.5)) c3jl = c3jl+1.
+!!$                   cv(1,1) = c1jl
+!!$                   cv(1,2) = c2jl
+!!$                   cv(1,3) = c3jl
+!!$                   call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+!!$                   r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
+!!$                   c1jl=cv(1,1)
+!!$                   c2jl=cv(1,2) 
+!!$                   c3jl=cv(1,3)
+!!$
+!!$
+!!$
+!!$                   if (r2jl>rcut2(ipo(itj,itl))) cycle               
+!!$                   !                write(6,*)'K i iti j itj l itl ',i,iti,j,itj,l,itl                
+!!$                   !                if (r2jl>rue2) cycle
+!!$                   rjl=sqrt(r2jl)
                    !       write(6,*)'k ',k
                    k=Int(rjl/ktor)
                    drk=rjl-k*ktor
@@ -376,7 +347,7 @@ contains
           c1ij=Vc1ij(iw) ;c2ij= Vc2ij(iw); c3ij=Vc3ij(iw)
           rij=Vrij(iw)
           gradij(1)=c1ij/rij ; gradij(2)=c2ij/rij ; gradij(3)=c3ij/rij
-          itj=ityp(j)
+          itj=atcf%ityp(j)
 
           k=Int(rij/ktor)
           drk=rij-k*ktor
@@ -402,8 +373,8 @@ contains
 
              potist=potist+Erep
              potisrep=potisrep+Erep
-             fp(1:3,i)=fp(1:3,i)-dErep*gradij(1:3)
-             fp(1:3,j)=fp(1:3,j)+dErep*gradij(1:3)
+             atcf%fp(1:3,i)=atcf%fp(1:3,i)-dErep*gradij(1:3)
+             atcf%fp(1:3,j)=atcf%fp(1:3,j)+dErep*gradij(1:3)
              !           if((i==1).or.(j==1))then
              !              write(6,'(A,4I5,3G15.7)')'FF1',i,j,ityp(i),ityp(j),dErep*gradij(1),dErep, gradij(1)
              !              write(6,'(A,3G15.7)')'FF1',dErep*gradij(1),dErep*gradij(2),dErep*gradij(3)
@@ -419,9 +390,9 @@ contains
                 end do
              end if
 
-             sig(1:3,1) = sig(1:3,1) -dErep*gradij(1:3)*c1ij/volu
-             sig(1:3,2) = sig(1:3,2) -dErep*gradij(1:3)*c2ij/volu
-             sig(1:3,3) = sig(1:3,3) -dErep*gradij(1:3)*c3ij/volu
+             sig(1:3,1) = sig(1:3,1) -dErep*gradij(1:3)*c1ij/boxcf%volu
+             sig(1:3,2) = sig(1:3,2) -dErep*gradij(1:3)*c2ij/boxcf%volu
+             sig(1:3,3) = sig(1:3,3) -dErep*gradij(1:3)*c3ij/boxcf%volu
 
 
 
@@ -448,8 +419,8 @@ contains
           drhoj=drhojsi(iw)
           if(itj==iti) then
              ! terme standard
-             fp(1:3,i)=fp(1:3,i)-dEembi*drhoj*gradij(1:3)
-             fp(1:3,j)=fp(1:3,j)+dEembi*drhoj*gradij(1:3)
+             atcf%fp(1:3,i)=atcf%fp(1:3,i)-dEembi*drhoj*gradij(1:3)
+             atcf%fp(1:3,j)=atcf%fp(1:3,j)+dEembi*drhoj*gradij(1:3)
              !           if((i==1).or.(j==1))then
              !              write(6,'(A,2I5,G15.7)')'FF2', i,j,dEembi*drhoj*gradij(1)
              !              write(6,'(A,3G15.7)')'FF2',dEembi*drhoj*gradij(1),dEembi*drhoj*gradij(2),dEembi*drhoj*gradij(3)
@@ -458,9 +429,9 @@ contains
              !              write(6,'(A)')'FF2'
              !           end if
 
-             sig(1:3,1) = sig(1:3,1) -dEembi*drhoj*gradij(1:3)*c1ij/volu
-             sig(1:3,2) = sig(1:3,2) -dEembi*drhoj*gradij(1:3)*c2ij/volu
-             sig(1:3,3) = sig(1:3,3) -dEembi*drhoj*gradij(1:3)*c3ij/volu
+             sig(1:3,1) = sig(1:3,1) -dEembi*drhoj*gradij(1:3)*c1ij/boxcf%volu
+             sig(1:3,2) = sig(1:3,2) -dEembi*drhoj*gradij(1:3)*c2ij/boxcf%volu
+             sig(1:3,3) = sig(1:3,3) -dEembi*drhoj*gradij(1:3)*c3ij/boxcf%volu
 
              if (lnemd) then
                 XijdotF=c1ij*Fnemd
@@ -488,8 +459,8 @@ contains
              !terme quasi-standard sans d(sij)
              if (ecrsij(iw).ne.0) then
                 aux1=ecrsij(iw)*(1.0+sqrt(sij(iw)/rhoj))
-                fp(1:3,i)=fp(1:3,i)-dEembi*aux1*drhoj*gradij(1:3)
-                fp(1:3,j)=fp(1:3,j)+dEembi*aux1*drhoj*gradij(1:3)
+                atcf%fp(1:3,i)=atcf%fp(1:3,i)-dEembi*aux1*drhoj*gradij(1:3)
+                atcf%fp(1:3,j)=atcf%fp(1:3,j)+dEembi*aux1*drhoj*gradij(1:3)
                 !              if((i==1).or.(j==1))then
                 !                 write(6,'(A,2I5,G15.7)')'FF3', i,j,dEembi*aux1*drhoj*gradij(1)
                 !              write(6,'(A,3G15.7)')'FF3',dEembi*aux1*drhoj*gradij(1),dEembi*aux1*drhoj*gradij(2),dEembi*aux1*drhoj*gradij(3)
@@ -498,9 +469,9 @@ contains
                 !             write(6,'(A)')'FF3'
                 !              end if
 
-                sig(1:3,1) = sig(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/volu
-                sig(1:3,2) = sig(1:3,2) -dEembi*aux1*drhoj*gradij(1:3)*c2ij/volu
-                sig(1:3,3) = sig(1:3,3) -dEembi*aux1*drhoj*gradij(1:3)*c3ij/volu
+                sig(1:3,1) = sig(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/boxcf%volu
+                sig(1:3,2) = sig(1:3,2) -dEembi*aux1*drhoj*gradij(1:3)*c2ij/boxcf%volu
+                sig(1:3,3) = sig(1:3,3) -dEembi*aux1*drhoj*gradij(1:3)*c3ij/boxcf%volu
 
                 if (lnemd) then
                    XijdotF=c1ij*Fnemd
@@ -536,7 +507,7 @@ contains
           !voisins l de i de type itj
           loopvli2 : do iwl=1,nvi
              l=jvi(iwl)
-             itl=ityp(l)
+             itl=atcf%ityp(l)
 
              if(itl.eq.iti) cycle 
              IF (L==J)cycle
@@ -553,10 +524,10 @@ contains
              aux3(1:3)=beta*((tdepcos)**(beta-1.))*rholsi*(gradij(1:3)-costetlij*gradil(1:3))
              aux4(1:3)=beta*((tdepcos)**(beta-1.))*rholsi*(gradil(1:3)-costetlij*gradij(1:3))
 
-             fp(1:3,i)=fp(1:3,i)-aux1*(aux2(1:3)+aux3(1:3))/ril
-             fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/ril
-             fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
-             fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
+             atcf%fp(1:3,i)=atcf%fp(1:3,i)-aux1*(aux2(1:3)+aux3(1:3))/ril
+             atcf%fp(1:3,l)=atcf%fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/ril
+             atcf%fp(1:3,i)=atcf%fp(1:3,i)-aux1*aux4(1:3)/rij
+             atcf%fp(1:3,j)=atcf%fp(1:3,j)+aux1*aux4(1:3)/rij
              !           if((i==1).or.(j==1).or.(l==1))then
              !              write(6,'(A,3I5,2G15.7)')'FF4', i,j,l,aux1*(aux2(1)+aux3(1))/ril,aux1*aux4(1)/rij
              !              write(6,'(A,3G15.7)')'FF4',aux1*(aux2(1)+aux3(1))/ril,aux1*(aux2(2)+aux3(2))/ril,aux1*(aux2(3)+aux3(3))/ril
@@ -584,13 +555,13 @@ contains
 
 
 
-             sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c1il/volu
-             sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c2il/volu
-             sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c3il/volu
+             sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c1il/boxcf%volu
+             sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c2il/boxcf%volu
+             sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c3il/boxcf%volu
 
-             sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/volu
-             sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
-             sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
+             sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/boxcf%volu
+             sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/boxcf%volu
+             sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/boxcf%volu
 
 !!$
 !!$             if(lcalcjq) then
@@ -617,47 +588,44 @@ contains
           !initialisations pour voisins de j
 
 
-          koj= ielat(j)      
+          koj= atcf%ielat(j)      
           loop3cel:   do i1 = 0, ncelvois
-             ko1j = ncel(koj,i1)
+             ko1j = celcf%ncel(koj,i1)
              ! pour chaque atome ds la cel. voisine
-             loop3at2: do i2 = 1, nato(ko1j)
-                l = atincel(i2,ko1j)
+             loop3at2: do i2 = 1, celcf%nato(ko1j)
+                l = celcf%atincel(i2,ko1j)
 
-                !        if (j==1) then
-                !           iw1j=1
-                !        else
-                !           iw1j=iwmax(j-1)+1
-                !        endif
-                !        iw2j=iwmax(j)             
-                !        loopvjk2 :do iwl = iw1j, iw2j          
-                !           l = indi(iwl)
-
-                itl=ityp(l)
+                itl=atcf%ityp(l)
                 IF (L==I)cycle
                 IF (L==j)cycle
-                if(itl==itj) cycle                 
-                c1jl = xpnp(1,j)-xpnp(1,l)
-                c2jl = xpnp(2,j)-xpnp(2,l)
-                c3jl = xpnp(3,j)-xpnp(3,l)
-                if (c1jl>0.5) c1jl = c1jl-1.
-                if (c1jl<(-0.5)) c1jl = c1jl+1.
-                if (c2jl>0.5) c2jl = c2jl-1.
-                if (c2jl<(-0.5)) c2jl = c2jl+1.
-                if (c3jl>0.5) c3jl = c3jl-1.
-                if (c3jl<(-0.5)) c3jl = c3jl+1.
-                cv(1,1) = c1jl
-                cv(1,2) = c2jl
-                cv(1,3) = c3jl
-                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-                r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-                c1jl=cv(1,1)
-                c2jl=cv(1,2) 
-                c3jl=cv(1,3)                   
+                if(itl==itj) cycle
+                call vect_dist(atcf,celcf,boxcf,j,l,VJI=dxpjl, indcv=i1,lperiod=boxcf%lperiod,&
+                     &rum=rcut(ipo(itj,itl)),linter=linterjl,dist=rjl)
+              if (.not.linterjl)cycle
+              c1jl=dxpjl(1);              c2jl=dxpjl(2);              c3jl=dxpjl(3);
 
-                if (r2jl>rcut2(ipo(itj,itl))) cycle               
-                !                if (r2jl>rue2) cycle
-                rjl=sqrt(r2jl)
+                
+!!$                c1jl = xpnp(1,j)-xpnp(1,l)
+!!$                c2jl = xpnp(2,j)-xpnp(2,l)
+!!$                c3jl = xpnp(3,j)-xpnp(3,l)
+!!$                if (c1jl>0.5) c1jl = c1jl-1.
+!!$                if (c1jl<(-0.5)) c1jl = c1jl+1.
+!!$                if (c2jl>0.5) c2jl = c2jl-1.
+!!$                if (c2jl<(-0.5)) c2jl = c2jl+1.
+!!$                if (c3jl>0.5) c3jl = c3jl-1.
+!!$                if (c3jl<(-0.5)) c3jl = c3jl+1.
+!!$                cv(1,1) = c1jl
+!!$                cv(1,2) = c2jl
+!!$                cv(1,3) = c3jl
+!!$                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+!!$                r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
+!!$                c1jl=cv(1,1)
+!!$                c2jl=cv(1,2) 
+!!$                c3jl=cv(1,3)                   
+!!$
+!!$                if (r2jl>rcut2(ipo(itj,itl))) cycle               
+!!$                !                if (r2jl>rue2) cycle
+!!$                rjl=sqrt(r2jl)
                 gradjl(1)=c1jl/rjl ; gradjl(2)=c2jl/rjl ; gradjl(3)=c3jl/rjl
                 !       write(6,*)'k ',k
                 k=Int(rjl/ktor)
@@ -676,10 +644,10 @@ contains
                 aux3(1:3)=beta*((tdepcos)**(beta-1.))*rholsj*(-1.*gradij(1:3)-costetijl*gradjl(1:3))
                 aux4(1:3)=-1.0*beta*((tdepcos)**(beta-1.))*rholsj*(gradjl(1:3)+costetijl*gradij(1:3))
 
-                fp(1:3,j)=fp(1:3,j)-aux1*(aux2(1:3)+aux3(1:3))/rjl
-                fp(1:3,l)=fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/rjl
-                fp(1:3,i)=fp(1:3,i)-aux1*aux4(1:3)/rij
-                fp(1:3,j)=fp(1:3,j)+aux1*aux4(1:3)/rij
+                atcf%fp(1:3,j)=atcf%fp(1:3,j)-aux1*(aux2(1:3)+aux3(1:3))/rjl
+                atcf%fp(1:3,l)=atcf%fp(1:3,l)+aux1*(aux2(1:3)+aux3(1:3))/rjl
+                atcf%fp(1:3,i)=atcf%fp(1:3,i)-aux1*aux4(1:3)/rij
+                atcf%fp(1:3,j)=atcf%fp(1:3,j)+aux1*aux4(1:3)/rij
                 !              if((i==1).or.(j==1).or.(l==1))then
                 !                 write(6,'(A,3I5,2G15.7)')'FF5', i,j,l,aux1*(aux2(1)+aux3(1))/rjl,aux1*aux4(1)/rij
                 !              write(6,'(A,3G15.7)')'FF5',aux1*(aux2(1)+aux3(1))/rjl,aux1*(aux2(2)+aux3(2))/rjl,aux1*(aux2(3)+aux3(3))/rjl
@@ -705,14 +673,14 @@ contains
 
 
 
-                sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/volu
-                sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/volu
-                sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/volu
+                sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/boxcf%volu
+                sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/boxcf%volu
+                sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/boxcf%volu
 
 
-                sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/volu
-                sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/volu
-                sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/volu
+                sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/boxcf%volu
+                sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/boxcf%volu
+                sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/boxcf%volu
 
 
 !!$                if(lcalcjq) then
@@ -749,28 +717,22 @@ contains
     end do loop1at1
     if (lnemd) then
        fpnemdmoy=0
-       do i=1,im   
+       do i=1,atcf%im   
           do l=1,3
-             fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(im)
+             fpnemdmoy(l)=fpnemdmoy(l)+fpnemd(l,i)/float(atcf%im)
           enddo
        end do
 
-       do i=1,im
+       do i=1,atcf%im
           !        write(6,*)'A',i,fp(:,i)
           do l=1,3
-             fp(l,i)=fp(l,i)-fpnemdmoy(l)
-             fp(l,i)=fp(l,i)+fpnemd(l,i)
+             atcf%fp(l,i)=atcf%fp(l,i)-fpnemdmoy(l)
+             atcf%fp(l,i)=atcf%fp(l,i)+fpnemd(l,i)
           enddo
           !        write(6,*)'B',i,fp(:,i)
        end do
     end if
 
-
-
-
-
-
-    deALLOCATE(xpnp)
 
     !  write(6,*)'f8 ',fp(1,1),fp(2,1),fp(3,1)
     !  stop

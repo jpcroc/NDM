@@ -321,7 +321,6 @@ contains
     integer :: maxvois ,nana,itj,i5,iwr
     integer,allocatable, save :: nvi(:),nvityp(:,:),ivois(:,:)
 
-    real(double),allocatable :: xpnp(:,:)
     real(double) :: dx(3,20)
     real(double)::cv(1,3)
     logical::lvoisOK,permut
@@ -338,7 +337,6 @@ contains
     character (len=80),allocatable::charaux(:)
     logical::linter
     CHARACTER(len=89) :: namedes,namedis
-    allocate(xpnp(3,atcf%imm))
     natd=0
     if (idistord.ge.3)allocate(iatd(atcf%im))
     lvoisOK=.true.
@@ -635,7 +633,7 @@ contains
 !!$
 !!$    USE tabcr
 !!$    implicit none
-!!$    !-----------------------------------------------
+!!$    !------------pnp-----------------------------------
 !!$    !   D u m m y   A r g u m e n t s
 !!$    !-----------------------------------------------
 !!$
@@ -872,7 +870,6 @@ contains
   subroutine ws(atc,celc,boxc,atr,celr,boxr,lws)
     USE T_kind_param_m
 
-    USE tabcr
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s

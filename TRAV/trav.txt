@@ -58,6 +58,7 @@ BOF : a part fp il n'y a rien à enlever   	7/définir un type atom_config_m (mi
 
 7.5/ version NEB  avec retour non systématique au proc master ? Est-ce possible ? Est-ce utile ?
 8/Programmer parallel replica
+8.5/ objetiser la parallélisation spatiale de NDM (automatiser les appels)
 9/documenter atomconfig et ajouter des routines intégrantes (par exemple appel calctemp)
 10/programmer le calcul des forces pour un ensemble d'atomes plongé dans un ensemble plus grand
 10.1/paralèllisme OPENMP like avec le point 10.

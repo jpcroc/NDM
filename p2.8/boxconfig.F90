@@ -8,7 +8,8 @@ module boxconfig
      real(double):: at(3,3)
      real(double):: bg(3,3)
      real(double):: zl(3),zls2(3),nzl(3),volu,normat(3),normbg(3)
-     integer(long)::icaltabt 
+     integer(long)::icaltabt
+     logical::lperiod
 
    contains
      procedure, pass::print=>boxprint
