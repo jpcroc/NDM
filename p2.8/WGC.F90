@@ -8,6 +8,7 @@ module WGC_mod
   USE sauvegardeT_mod,only: sauvegardeT
   USE endrunT_mod,only: endrunT
   USE arret_ndm_mod,only: arret_ndm
+ 
   USE initspeed_mod,only: bruit_xp
 #ifdef PARA
   use Tpara,only:COMM_space,myidsp,nprocspace,para_space_config
@@ -28,7 +29,7 @@ module WGC_mod
   USE rasmolT_mod,only: rasmolT
   
   implicit none
-
+  integer,parameter::unitgc=333
   type(box_config)::boxcgmin
   type(box_config),target::boxcg
   type(atom_config),target::atcgcomp
@@ -42,7 +43,7 @@ module WGC_mod
   type(para_config),target::gcpara
   real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h!,sigsym
   real(double),allocatable,dimension (:)::R,F,Rmin
-  integer::N,ndir,nstep,ityprel
+  integer::Nvar,ndir,nstep,ityprel
   real(double)::betaguess,V,betaV,betaP,beta
   integer::ncalls,nextsauv,nextmol
   logical::lvm
@@ -58,13 +59,13 @@ contains
 
     case(1)
        fpstop=fpstop0
-       N=atcgcomp%im*3
+       Nvar=atcgcomp%im*3
        if (allocated (R).or.allocated(F)) then
           deallocate(R,F,Rmin)
        end if
-       allocate(R(N))
-       allocate(Rmin(N))
-       allocate(F(N))
+       allocate(R(Nvar))
+       allocate(Rmin(Nvar))
+       allocate(F(Nvar))
        if (mdcg_noise /= 0 ) then
           call bruit_xp (atcgcomp%xp,bruitmd,atcgcomp%im)
           bruitmd=bruitmd*1d-8
@@ -91,19 +92,44 @@ contains
        fpstop=(sigstop/unitP)*(boxcg%volu**0.6666666)
 	fpstopsig=fpstop
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1) 
-       N=9
-       allocate(R(N))
-       allocate(Rmin(N))
-       allocate(F(N))
+       !       Nvar=9
+       if (any(ihbox0.ne.1)) then
+          Nvar=0
+          do i1=1,3
+             do i2=1,3
+                if (ihbox0(i1,i2)==1) then
+                   Nvar=Nvar+1
+                end if
+             end do
+          end do
+          write(unitgc,*)'Nb of cell variables',Nvar
+       else
+          Nvar=9
+       end if
+
+       allocate(R(Nvar))
+       allocate(Rmin(Nvar))
+       allocate(F(Nvar))
        R(:)=0;V=0;F(:)=0
        boxcgmin=boxcg
+!!$       ip=0
+!!$       do i1=1,3
+!!$          do i2=1,3
+!!$             ip=ip+1
+!!$             R(ip)=boxcg%at(i1,i2)
+!!$          end do
+!!$       end do
        ip=0
        do i1=1,3
           do i2=1,3
-             ip=ip+1
-             R(ip)=boxcg%at(i1,i2)
+!             hold(i1,i2)=boxcg%at(i1,i2)
+             if (ihbox0(i1,i2)==1) then
+                ip=ip+1
+                R(ip)=boxcg%at(i1,i2)
+             end if
           end do
        end do
+
        Rmin=R
     end select
   end subroutine initsteep
@@ -143,11 +169,13 @@ contains
              ip=0
              do i1=1,3
                 do i2=1,3
-                   ip=ip+1
-                   h(i1,i2)=Rt(ip)
+                   if (ihbox0(i1,i2)==1) then
+                      ip=ip+1
+                      boxcgmin%at(i1,i2)=Rt(ip)
+                   end if
                 end do
              end do
-             call initbox(boxcgmin,h)
+             call initbox(boxcgmin,boxcgmin%at)
           end select
        end if
     end if
@@ -162,17 +190,19 @@ contains
        enddo
        ft2 = ft2*erg2eV/angst
        fm2  = fm2*erg2eV/angst
-       do i=1,N
+       do i=1,Nvar
           formax = Max( formax,Abs(Ft(i)))
        end do
 
        Fsigmax=0;sigmax=0
-       do ip=1,9
+       do ip=1,Nvar
           Fsigmax=max(Fsigmax,abs(Ft(ip)))
        end do
        do i1=1,3
           do i2=1,3
-             sigmax=max(sigmax,abs(unitP*sig(i1,i2)))
+             if (ihbox0(i1,i2)==1) then
+                sigmax=max(sigmax,abs(unitP*sig(i1,i2)))
+             end if
           end do
        end do
        sigm2=sigmax
@@ -186,7 +216,7 @@ contains
        end do
        forctot=sqrt( SUM(Ft(:)**2))
        formax=0
-       do i=1,N
+       do i=1,Nvar
           formax = Max( formax,Abs(Ft(i)))
        end do
 
@@ -206,19 +236,23 @@ contains
           end if
        end if
     end select
-!    write(6,*)'MAX',ft2,fm2,sigm2
+!    write(unitgc,*)'MAX',ft2,fm2,sigm2
     if (present(Vt)) then
        select case(ityprel)
        case(1)
           if(lvm) then
+             write(unitgc,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2,' ****', deltaV*erg2eV
              write(6,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2,' ****', deltaV*erg2eV
           else
+             write(unitgc,'(I4,4E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2
              write(6,'(I4,4E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2
           end if
        case(2)
           if(lvm) then
+             write(unitgc,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax, sigmax, ' ****', deltaV*erg2eV
              write(6,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax, sigmax, ' ****', deltaV*erg2eV
           else
+             write(unitgc,'(I4,5E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax,sigmax
              write(6,'(I4,5E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax,sigmax
           end if
 
@@ -252,17 +286,19 @@ contains
     end do
     do i=1,3
        do i2=1,3
-          sigmax = Max( sigmax,Abs(unitp*sig(i,i2)))
+          if (ihbox0(i,i2)==1) then
+             sigmax = Max( sigmax,Abs(unitp*sig(i,i2)))
+          end if
        end do
     end do
 
     forctot = forctot*erg2eV/angst
     formax  = formax*erg2eV/angst
-    write(6,*)
-    write(6,*)'  FORCE MAX            FORCETOT            SIGMAX'
-    write(6,'(3E20.11)')formax,forctot,sigmax
-        write(6,'(A,3E20.11)')'thresholds',fpstop0,fsumstop,sigstop
-    write(6,*)
+    write(unitgc,*)
+    write(unitgc,*)'  FORCE MAX            FORCETOT            SIGMAX'
+    write(unitgc,'(3E20.11)')formax,forctot,sigmax
+        write(unitgc,'(A,3E20.11)')'thresholds',fpstop0,fsumstop,sigstop
+    write(unitgc,*)
     lover=.false.
     if (lprahman) then
        if (fpstop.gT.0) then
@@ -308,11 +344,13 @@ contains
           ip=0
           do i1=1,3
              do i2=1,3
-                ip=ip+1
-                h(i1,i2)=R(ip)
+                if (ihbox0(i1,i2)==1) then 
+                   ip=ip+1
+                   boxcg%at(i1,i2)=R(ip)
+                end if
              end do
           end do
-          call initbox(boxcg,h)
+          call initbox(boxcg,boxcg%at)
           call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
           potist=V
        else
@@ -358,11 +396,13 @@ contains
        ip=0
        do i1=1,3
           do i2=1,3
-             ip=ip+1
-             h(i1,i2)=R(ip)
+             if (ihbox0(i1,i2)==1) then
+                ip=ip+1
+                boxcg%at(i1,i2)=R(ip)
+             end if
           end do
        end do
-       call initbox(boxcg,h)
+       call initbox(boxcg,boxcg%at)
 
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
 
@@ -382,13 +422,11 @@ contains
        end do
     case(2)
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1)
-
-
-       h(:,:)=boxcg%at(:,:)
-       trh=Transpose(h)
-       call MatInv(h,invh)
+!       h(:,:)=boxcg%at(:,:)
+       trh=Transpose(boxcg%at(:,:))
+       call MatInv(boxcg%at(:,:),invh)
        invtrh = Transpose(invh)
-       volu = calcvol(h(1:3,1),h(1:3,2),h(1:3,3))
+       volu = calcvol(boxcg%at(1:3,1),boxcg%at(1:3,2),boxcg%at(1:3,3))
        invVolu = 1.d0/volu
 
        forcebox(:,:)=MatMul( sig(:,:) , invtrh(:,:) )*volu
@@ -396,8 +434,10 @@ contains
        ip=0
        do i1=1,3
           do i2=1,3
-             ip=ip+1
-             F(ip)=forcebox(i1,i2)
+             if (ihbox0(i1,i2)==1) then
+                ip=ip+1
+                F(ip)=forcebox(i1,i2)
+             end if
           end do
        end do
     end select
@@ -405,7 +445,7 @@ contains
     call test_conv(N,F,lover,V,R,lvm)    
 
     !       do i=1,N
-    !       write(6,*)'R_F',i,R(i),F(i)
+    !       write(unitgc,*)'R_F',i,R(i),F(i)
     !    end do
     return
   end subroutine SETV_F

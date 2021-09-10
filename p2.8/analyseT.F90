@@ -10,7 +10,7 @@ module analyseT_mod
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax
   use gen_com_m, only:bk,cunite,deltaespr,deltaf,ecellpr,espr,fnose,iteanapos,iteangle,itebdv,&
-       &itecoordo,itefcc,iterasmol,iterdf,itesigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
+       &itecoordo,itefcc,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &lambdades,leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
        &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
@@ -328,8 +328,8 @@ contains
                 end if
              end do
 
-             if (iteSigma>0) then
-                if (mod(it,iteSigma)==0) then
+             if (iteprtSigma>0) then
+                if (mod(it,iteprtsigma)==0) then
                    if (mod(it,itetemp2)==0) then
                       write (6, *)
                       write (6, *) '* stress en ', cunitP
@@ -372,7 +372,7 @@ contains
                    if(it<=1) then
                       pmean = pist
                    else
-                      pmean = (pmean*(it/itesigma-1)+pist)/(it/itesigma)
+                      pmean = (pmean*(it/iteprtsigma-1)+pist)/(it/iteprtsigma)
                    end if
                    if (mod(it,itetemp2)==0) then
                       write (6, *) 'pression totale  potentiel = cinetique ='
@@ -392,8 +392,8 @@ contains
                 write (6, '(A,F12.2)') '*temperature moyenne = ', tmean
                 !               write (6, '(A,G21.12,A)') '*energie cinetique moyenne = ', &
                 !                  kinemean*unitE, cunitE
-                if (itesigma>0) then
-                   if (mod(it,itesigma)==0) write (6, '(A,G14.5)') &
+                if (iteprtsigma>0) then
+                   if (mod(it,iteprtsigma)==0) write (6, '(A,G14.5)') &
                         '*pression moyenne = ', pmean*unitP
                 endif
                 write (6, *) '--------------------------------------'

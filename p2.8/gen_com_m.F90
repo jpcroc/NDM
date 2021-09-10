@@ -94,7 +94,7 @@ integer::idirectionmcgc
 
   real(double) :: oldtstep  
   real(double) :: tstep, usdh, timel  
-  integer :: itetemp, itesigma, itedepla, itecoordo, iterdf, nrdf, & 
+  integer :: itetemp, itesigma, iteprtsigma,itedepla, itecoordo, iterdf, nrdf, & 
        iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc
   integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codﾃｩ, ivisu=2=xred
   real(double)::rcangle,rcrdf
@@ -159,7 +159,7 @@ integer::idirectionmcgc
   real(double), dimension(3) :: vh ! vitesse de la boite
   real(double) :: pext, wboxf, tbox ! pext poids de la boite temps d'amortissment de la boite
   logical ::  lpcon2,lprtzlm ! pression constante sans et avec amortissement
-  logical ::  lpconxyz      ! pression constante - buy only the diagonal term of box matrix can  change. 
+
   logical :: lTcon, lTberendsen,lTandersen,lTNose,lTHoover,landerscou ! temp constante (3 algorithmes differents)
   real(double) :: Text ! T exterieure
   logical :: lLangevin ! Langevin MD
@@ -199,7 +199,8 @@ integer::idirectionmcgc
   logical :: lprahman,lprtrp ! l Parinello Rahman
   !      real(double) :: tomega, tbomega ! mass fictive du thermostat et du piston
   real(double), dimension(3,3) :: att, ati    !vitesse de la forme de la boite ; ati=(at^-1)
-  real(double), dimension(3,3) :: ihbox0      ! the degree of freebom of the box. If is 1 everywhere all the shape  can change.
+!  real(double), dimension(3,3) :: ihbox0      ! the degree of freebom of the box. If is 1 everywhere all the shape  can change.
+  integer, dimension(3,3) :: ihbox0 ! integer pour bétonner les tests      ! the degree of freebom of the box. If is 1 everywhere all the shape  can change.
                                               ! If you put on diagonal 1 and the rest is 0 you can chage only anlong x,y and z.  
 
   real(double), dimension(3,3) :: sigext, pext_hydro  !contraintes externes appliques; contraintes calculees

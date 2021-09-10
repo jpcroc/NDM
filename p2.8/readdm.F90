@@ -18,14 +18,14 @@ contains
          &ides,igen,ilangevin,imm_glob,iseed,itab,iteanaposneb,itederive,iteheat,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,ittherm,kappa,kspr,kspring,kthg,&
          &lalea,lanczos_step,landerscou,lastcool,lbulle,lcdp,lconstrtot,lcorrelvp,lderive,ldislo,lfire,&
-         &lgc,lhcyl,lheat,ljqbh,lpathfromgin,lpcon2,lpconxyz,lprtrp,lprtzlm,lrctest,lrestart,ltandersen,&
+         &lgc,lhcyl,lheat,ljqbh,lpathfromgin,lpcon2,lprtrp,lprtzlm,lrctest,lrestart,ltandersen,&
          &ltcon,lvpread,maxneb,mdcg_noise_scale,nbmoye,neb_noise,neb_noise_scale,nebrelaxation,&
          &nebtype,nhoover,niteration,nitmax,njqbh,npath,ntr,nuandersen,pext,rayonc,rheat,rsep,&
          &rskin,rulayer,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
          &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
          &zko,zz0,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
          &formatsauv,iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,itefcc,&
-         &iterasmol,iterdf,itesauv,itesauvinter,itesigma,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
+         &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
          &lcasca,lcontr,ldemitab,ldesinteg,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
@@ -57,10 +57,11 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: ludin, lufilm, lufilmpaf,  i,itean, ic, iThermo,itecompcr,ipotcont
+    integer :: ludin, lufilm, lufilmpaf,  i,itean, ic,ic2, iThermo,itecompcr,ipotcont
     character :: fnamdin*80
     logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr
     integer::itecfg
+    logical :: lpconx,lpcony,lpconz,lpconxyz
     !  integer :: imFree     ! nb d'atomes libres
     !-----------------------------------------------
     !
@@ -68,12 +69,12 @@ contains
     !
     !
 
-    namelist /input/itab, itetabvois, itetemp, itesigma, itefcc, itedepla, tdepla, lfilm, &
+    namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma, itefcc, itedepla, tdepla, lfilm, &
          tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
          tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
-          rulayer,iterasmol, lpcon, lprtzlm,pext, wboxf, wNose, lpcon2, lpconxyz, tbox, &
+          rulayer,iterasmol, lpcon, lprtzlm,pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder,  lalea, rsep, ipotentiel,lpotentiel,&
@@ -88,7 +89,7 @@ contains
          mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,ndir,nstep,betaguess,&
-         &nparapath,lparapath,Wsave
+         &nparapath,lparapath,Wsave,ihbox0
 
 
     !
@@ -173,6 +174,7 @@ contains
     ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
     lprahman=.false.                 ! parinnelo rahman �あ contrainte constante
     lpr=lprahman
+    ihbox0(:,:) = 1   ! all the dimension of the box can change
     sigext = 0.0                ! Symetric tensor related to the external stress
     !=== Modif Emmanuel Clouet ================
     h0(1:3,1:3) = 0.d0          ! Vecteurs de base de la bite de reference en A (Parrinello, Rahman)
@@ -184,6 +186,9 @@ contains
     lpcon = .FALSE.             !algorithm a pression constante a la hache
     lpcon2 = .FALSE.            !amortissement de la deformation de la boite
     lpconxyz = .FALSE.          !the relaxation are allowed only along the X, Y and Z axis
+    lpconx = .FALSE.          !the relaxation are allowed only along the X axis 
+    lpcony = .FALSE.          !the relaxation are allowed only along the  Y  axis
+    lpconz = .FALSE.          !the relaxation are allowed only along the  Z axis
 
 
     pext = 0.0                  !pression  par defaut
@@ -231,6 +236,7 @@ contains
 
     itetemp = 20                !period of temperature calculation
     itesigma = -1               !period of stress calculation
+    iteprtsigma = -1               !period of stress calculation
     itefcc=-1                   ! period of fcc structure analysis
     itedepla = -100              !period of displacement cal.
     tdepla = 1.0                !threshold for displacement
@@ -777,6 +783,8 @@ contains
 
 
     if (lprahman) then
+       itesigma=1
+       if (iteprtsigma==-1) iteprtsigma=itetemp
        select case(dmtype)
        case(21,22)
           lprtrp=.true.
@@ -786,7 +794,7 @@ contains
           lEev=.true.
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
        end select
-       itesigma=1
+
        if (pext.ne.0.) then
           if (rang==0) write(6,*)'SIGEXT', sigext
           if (rang==0) write(6,*)'Pext ',pext
@@ -803,14 +811,29 @@ contains
        Pext = (sigext(1,1)+sigext(2,2)+sigext(3,3))/3.d0
        !=== Fin des modifications ================
        h0(1:3,1:3) = 1e-8*h0(1:3,1:3)
-       ihbox0(:,:) = 1.d0   ! all the dimension of the box can change
        if (lpconxyz) then
-          ihbox0(:,:)=0.d0   ! ALL the dimension are blockef except ...
-          ihbox0(1,1)=1.d0   ! X ...
-          ihbox0(2,2)=1.d0   ! Y ...
-          ihbox0(3,3)=1.d0   ! and Z.
+          ihbox0(:,:)=0   ! ALL the dimension are blockef except ...
+          ihbox0(1,1)=1   ! X ...
+          ihbox0(2,2)=1   ! Y ...
+          ihbox0(3,3)=1   ! and Z.
        end if
-
+!       write(6,*)lpconx,lpcony,lpconz
+       if ((lpconx).or.(lpcony).or.(lpconz)) then
+          ihbox0(:,:)=0   ! ALL the dimension are blockef except ...
+          if (lpconx) ihbox0(1,1)=1   ! X ...
+          if (lpcony)ihbox0(2,2)=1   ! Y ...
+          if (lpconz)  ihbox0(3,3)=1   ! and Z.
+       end if
+       do ic=1,3
+          do ic2=1,3
+             if ((ihbox0(ic,ic2).ne.0).and.(ihbox0(ic,ic2).ne.1))then
+                if (rang==0) write(6,*)'non zero ihbox0(',ic,ic2,ihbox0(ic,ic2)
+                stop
+             end if
+          end do
+       end do
+    else
+       if (iteprtsigma==-1) iteprtsigma=itesigma
     end if
     ! read for cascade
     if (lcasca) then
@@ -1011,6 +1034,18 @@ contains
        stop
     end select
 
+       if (any(ihbox0==0))then
+          if (rang==0) then
+             write(6,*)'incomplete cell relaxation'
+             do ic=1,3
+                do ic2=1,3
+                   if (ihbox0(ic,ic2)==1)then
+                      write(6,*)' ihbox0(',ic,ic2,ihbox0(ic,ic2)
+                   end if
+                end do
+             end do
+          end if
+       end if
 
 
     if (lcontr)  write (6, '(a)') '******************* CONTRAINTE !!! *****'
@@ -1099,7 +1134,7 @@ contains
          &.or.(dmtype==10) ) then    
        if ( (fpstop<0).and.(fsumstop<0)) then
           if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
-          if (rang==0) write(6,*) 'STOP in readdm'
+          if (rang==0) write(6,*) 'STOP in readdm',fpstop,fsumstop
           stop
        end if
        if ( (fpstop < 0) .and. (dmtype==9) ) then
@@ -1159,7 +1194,7 @@ contains
     if (itetemp2==-1) itetemp2=itetemp
     if (rang==0) write(6,*)
     if (rang==0) write (6, *) '     ANALYSES '
-    if (rang==0) write (6, *) 'itetemp=', itetemp, ' itesigma=', itesigma
+    if (rang==0) write (6, *) 'itetemp=', itetemp, ' iteprtsigma=', iteprtsigma
     if (itecoordo>0)  write(6,*)  ' itecoordo=', itecoordo
     if (itedepla>0) then
        if (rang==0) write (6, '(A,I3,A,D9.3,A,D9.3,A,I3,A,I3)') ' itedepla=', itedepla, &

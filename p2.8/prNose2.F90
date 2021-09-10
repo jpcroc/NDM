@@ -34,7 +34,7 @@ module Parrinello_Rahman_Nose
   USE T_kind_param_m
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
        &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,im_glob,it,kcell,knose,leev,&
-       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0
+       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
@@ -351,6 +351,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        whpointpoint(:,:) = MatMul(sigtot,Area) - MatMul(h, grsig)&
             - 2.d0*wbox*fNose*fpoint*hpoint(:,:)
     end if
+    whpointpoint(:,:) = whpointpoint(:,:) *ihbox0(:,:)
     hnew(:,:) = 2.d0*h(:,:) - hold(:,:) + whpointpoint(:,:)*tstep**2/(fNose2*wbox)
 
     ! Résolution de l'équation (3.4) de la Réf. [3]

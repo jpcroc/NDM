@@ -3,11 +3,11 @@ module steepestdescent_mod
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:rang
 
-  use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin
+  use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin,unitgc
 
   !  real(double),allocatable,dimension (:,:)::X,R,G,H,F
 
-implicit none
+  implicit none
 
 contains
 
@@ -26,28 +26,33 @@ contains
     call setV_F (N,R,V,F,lover,lvm)
         if (lvm)Rmin=R
     if (lover) then
+       if (rang==0)write(unitgc,*)'NO NEED TO RELAX'
        if (rang==0)write(6,*)'NO NEED TO RELAX'
        return
     end if
 
     do idir=1,ndir
-       if (rang==0)       write(6,*)
+       if (rang==0)       write(unitgc,*)
        R0(1:N)=R(1:N)
        F0(1:N)=F(1:N)
        V0=V
        call mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK)
 
-       if (rang==0)       write(6,*)'>>> minimization idirection; lOVER;  beta ',idir,lover,beta
+       if (rang==0)       write(unitgc,*)'>>> minimization idirection; lOVER;  beta ',idir,lover,beta
+       if (rang==0)       write(6,*)'>>> minimization idirection; lOVER ',idir,lover
        if (lover) then
 !          write(6,*)
-          if (rang==0)           write(6,*)'*************************************'
+          if (rang==0)           write(unitgc,*)'*************************************'
 
           if (lok) then
-             if (rang==0)           write(6,*)
-             if (rang==0)             write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+             if (rang==0)           write(unitgc,*)
+             if (rang==0)             write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+             if (rang==0)   write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+             if (rang==0)   write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
              return
           else
-             if (rang==0)             write(6,*)'NOT RELAXED!!!!!!!'
+             if (rang==0)  write(unitgc,*)'NOT RELAXED!!!!!!!'
+             if (rang==0)  write(6,*)'NOT RELAXED!!!!!!!'
              call test_conv(N,F,lover,V,R,lvm)
              if (.not.lvm)R=Rmin
           end if
@@ -72,8 +77,9 @@ contains
 
     call setV_F (N,R,V,F,lover,lvm)
     if (lvm)Rmin=R
-!        write(6,*)'post sVF0',V
+!        write(unitgc,*)'post sVF0',V
     if (lover) then
+       if (rang==0)       write(unitgc,*)'NO NEED TO RELAX'
        if (rang==0)       write(6,*)'NO NEED TO RELAX'
        return
     end if
@@ -83,18 +89,22 @@ contains
     do idir=1,ndir
        R0(1:N)=R(1:N)
        V0=V
-              write(6,*)
-              write(6,*)'**************************'
-              write(6,*)'callmindir',idir,beta,V0
+              write(unitgc,*)
+              write(unitgc,*)'**************************'
+              write(unitgc,*)'callmindir idir beta E0',idir,beta,V0
+!              write(6,*)'callmindir idir  E0',idir,beta
        call mindir(lover,beta,N,R0,V0,H,R,V,F,lOK)
 
-       if (rang==0)       write(6,'(A,I3,L2,E20.10)')' >>> minimization idirection; lOVER;  beta ',idir,lover,beta
+       if (rang==0) write(unitgc,'(A,I3,L2,E20.10)')' >>> minimization idirection; lOVER;  beta ',idir,lover,beta
+       if (rang==0) write(6,'(A,I3,L2)')' >>> minimization idirection ',idir,lover
        if (lover) then
           if (lok) then
-             if (rang==0)             write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+             if (rang==0)  write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+             if (rang==0)  write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
              return
           else
-             if (rang==0)             write(6,*)'NOT RELAXED!!!!!!!'
+             if (rang==0)  write(unitgc,*)'NOT RELAXED!!!!!!!'
+             if (rang==0)  write(6,*)'NOT RELAXED!!!!!!!'
              call test_conv(N,F,lover,V,R,lvm)
              if (.not.lvm)R=Rmin
           end if
@@ -148,15 +158,16 @@ contains
        return
     end if
     if  (VBeta.LT.V0) then
-       write(6,*)
-       write(6,*)'VBeta < V0'
+       write(unitgc,*)
+       write(unitgc,*)'VBeta < V0',Vbeta,V0
        betai=beta;Vbetai=Vbeta
        loopG:          do i=1,nstep
 
           betaip1=betai*fhi
-          write(6,*)'beta',betaip1
+          write(unitgc,*)'betanew',betaip1
           Rbeta(:)=R0(:)+betaip1*F0(:)
           call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
+          write(unitgc,*)'betaold Vbeta',betaip1,Vbeta
           if (ldir) beta=beta/3
           if (lover.or.ldir) return
           Vbetaip1=Vbeta
@@ -170,12 +181,12 @@ contains
 
 
     else
-       write(6,*)
-       write(6,*)'VBeta > V0'
+       write(unitgc,*)
+       write(unitgc,*)'VBeta > V0'
        betai=beta; Vbetai=Vbeta
        loopL:          do i=1,nstep
           betaip1=betai*(fhi-1)
-          write(6,*)'beta',betaip1
+          write(unitgc,*)'beta',betaip1
           Rbeta(:)=R0(:)+betaip1*F0(:)
           call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
           Vbetaip1=Vbeta
@@ -192,9 +203,9 @@ contains
     end if
     a=0 ; Va=V0
 
-    write(6,*)
-    write(6,'(A, 3E21.12)')"a0   b0   c0 ",a,b,c
-    write(6,'(A, 3E21.12)')"Va Vb Vc ",Va,Vb,Vc
+    write(unitgc,*)
+    write(unitgc,'(A, 3E21.12)')"a0   b0   c0 ",a,b,c
+    write(unitgc,'(A, 3E21.12)')"Va Vb Vc ",Va,Vb,Vc
     !    stop
 
     ab=(a+b)/2
@@ -206,15 +217,15 @@ contains
        d= b+(c-b)*(fhi-1)
        id=-1
     end if
-    write(6,'(A,E21.12)')'d=d',d
+    write(unitgc,'(A,E21.12)')'d=d',d
 
     do i=1,nstep
        beta=d
-       !       write(6,*)'mindir2 beta',beta
+       !       write(unitgc,*)'mindir2 beta',beta
        Rbeta(:)=R0(:)+beta*F0(:)
 
        call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
-       !       write(6,*)'vbeta', vbeta
+       !       write(unitgc,*)'vbeta', vbeta
        Vd=Vbeta
        if (lover.or.ldir) then
           lok=.true.
@@ -248,11 +259,11 @@ contains
           end if
 
        end if
-       write(6,*)
-       write(6,'(A,E21.12)')mic2,Vd
-       write(6,'(A, 4E21.12)')"a   b   c ",a,b,c,d
-       write(6,'(A, 3E21.12)')"Va Vb Vc ",Va,Vb,Vc
-       write(6,*)
+       write(unitgc,*)
+       write(unitgc,'(A,E21.12)')mic2,Vd
+       write(unitgc,'(A, 4E21.12)')"a   b   c ",a,b,c,d
+       write(unitgc,'(A, 3E21.12)')"Va Vb Vc ",Va,Vb,Vc
+       write(unitgc,*)
 
     end do
 
@@ -275,19 +286,19 @@ contains
       if (lvm)Rmin=R
       call checkline(lover,ldir,F0,normF02,N,R,V,F,Rcalc,Vcalc,Fcalc)
       if (lover) then
-         write(6,*)'beta init relaxed'
+         write(unitgc,*)'beta init relaxed'
          if (Vcalc.GT.V0) then
             V=V0;F=F0;R=R0
-            write(6,*)'STOP BETA '
+            write(unitgc,*)'STOP BETA '
          end if
          return
       end if
       if (ldir) then
-         write(6,*)'line search over: beta init'
+         write(unitgc,*)'line search over: beta init'
          if (Vcalc.GT.V0) then
             V=V0;F=F0;R=R0
             lover=.true.
-            write(6,*)'STOP BETA init line'
+            write(unitgc,*)'STOP BETA init line'
          end if
          
          return
@@ -312,37 +323,37 @@ contains
 !!$    logical ::ldir
 !!$    lOK=.true.
 !!$    normF02=SUM(F0(:)**2)
-!!$!    write(6,*)
-!!$!    write(6,*)'normF02',normF02
-!!$!        write(6,*)
+!!$!    write(unitgc,*)
+!!$!    write(unitgc,*)'normF02',normF02
+!!$!        write(unitgc,*)
 !!$    beta=beta*10
 !!$    do i=1,nstep
-!!$!       write(6,*)
+!!$!       write(unitgc,*)
 !!$      beta=beta/10
-!!$       write(6,*)'mindir1 betaS2',beta*0.5
+!!$       write(unitgc,*)'mindir1 betaS2',beta*0.5
 !!$       Rbs2(:)=R0(:)+0.5*beta*F0(:)
 !!$       call setV_F (N,Rbs2,Vbs2,Fbs2,lover,lvm)
 !!$       if (lvm)Rmin=R
-!!$!       write(6,*)'mindir1 betaS2',lover,beta*0.5, Vbs2
-!!$!       write(6,*)'DIFF BS2',VBS2-V0
+!!$!       write(unitgc,*)'mindir1 betaS2',lover,beta*0.5, Vbs2
+!!$!       write(unitgc,*)'DIFF BS2',VBS2-V0
 !!$       call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbs2,Vbs2,Fbs2)
 !!$       if (lover) then
-!!$          write(6,*)'betaS2 relaxed'
+!!$          write(unitgc,*)'betaS2 relaxed'
 !!$          beta=beta/2
 !!$          if (VBS2.GT.V0) then
 !!$             V=V0;F=F0;R=R0
-!!$             write(6,*)'STOP BETAS2 '
+!!$             write(unitgc,*)'STOP BETAS2 '
 !!$             lok=.false.
 !!$          end if
 !!$          return
 !!$       end if
 !!$       if (ldir) then
-!!$          write(6,*)'line search over: betas2'
+!!$          write(unitgc,*)'line search over: betas2'
 !!$          beta=beta/3
 !!$          if (VBS2.GT.V0) then
 !!$             V=V0;F=F0;R=R0
 !!$             lover=.true.
-!!$             write(6,*)'STOP BETAS2 line'
+!!$             write(unitgc,*)'STOP BETAS2 line'
 !!$             lok=.false.
 !!$          end if
 !!$
@@ -350,23 +361,23 @@ contains
 !!$       end if
 !!$       if  (VBS2.LT.V0) exit
 !!$    end do
-!!$!    write(6,*)
-!!$    write(6,*)'BS2 OK-> BETA'
+!!$!    write(unitgc,*)
+!!$    write(unitgc,*)'BS2 OK-> BETA'
 !!$    Rbeta(:)=R0(:)+beta*F0(:)
 !!$
 !!$    do i=1,nstep
-!!$!       write(6,*)'mindir2 beta',beta
+!!$!       write(unitgc,*)'mindir2 beta',beta
 !!$       call setV_F (N,Rbeta,Vbeta,Fbeta,lover,lvm)
 !!$           if (lvm)Rmin=R
-!!$       write(6,*)'mindir2 beta',lover, beta,Vbeta
+!!$       write(unitgc,*)'mindir2 beta',lover, beta,Vbeta
 !!$       call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbeta,Vbeta,Fbeta)
 !!$       if (lover) then
-!!$          write(6,*)'beta relaxed'
+!!$          write(unitgc,*)'beta relaxed'
 !!$          if ((VBS2.lt.Vbeta).or.(V0.lt.Vbeta)) then
 !!$             if (V0.LT.VBS2) then
 !!$                V=V0;R=R0;F=F0
 !!$                lover=.true.
-!!$                write(6,*)'STOP BETA'
+!!$                write(unitgc,*)'STOP BETA'
 !!$                lok=.false.
 !!$             else
 !!$                V=Vbs2;R=Rbs2;F=fbs2
@@ -375,12 +386,12 @@ contains
 !!$          return
 !!$       end if
 !!$       if (ldir) then
-!!$          write(6,*)'line search over: beta'
+!!$          write(unitgc,*)'line search over: beta'
 !!$          if ((VBS2.lt.Vbeta).or.(V0.lt.Vbeta)) then
 !!$             if (V0.LT.VBS2) then
 !!$                V=V0;R=R0;F=F0
 !!$                lover=.true.
-!!$                write(6,*)'STOP BETALINE'
+!!$                write(unitgc,*)'STOP BETALINE'
 !!$                lok=.false.
 !!$             else
 !!$                V=Vbs2;R=Rbs2;F=fbs2
@@ -388,50 +399,50 @@ contains
 !!$          endif
 !!$          return
 !!$       end if
-!!$!       write(6,*)'DIFF BETA',VBeta-VBS2
+!!$!       write(unitgc,*)'DIFF BETA',VBeta-VBS2
 !!$       if (Vbeta.gt.Vbs2) exit
-!!$ !   write(6,*)
+!!$ !   write(unitgc,*)
 !!$       beta=beta*2
 !!$       Rbs2=Rbeta
 !!$       Vbs2=Vbeta
 !!$       Fbs2=Fbeta
 !!$       Rbeta(:)=R0(:)+beta*F0(:)
 !!$    end do
-!!$ !   write(6,*)
-!!$   write(6,*)'BETA OK->PARA'
+!!$ !   write(unitgc,*)
+!!$   write(unitgc,*)'BETA OK->PARA'
 !!$
 !!$    a=0 ; b=beta ; c=beta/2
 !!$    vb=vbeta ; Vmin=Vbs2
 !!$    Va=V0
 !!$    Vc=Vbs2
-!!$   write(6,*)'V',Va,Vb,Vc
+!!$   write(unitgc,*)'V',Va,Vb,Vc
 !!$    do istep=1,nstep
 !!$       AA=(vc-va)/((c-a)*(c-b))-(VB-VA)/((b-a)*(c-b))
 !!$       BB=(VB-VA)/(b-a) -AA*(b+a)
 !!$       betatest=-0.5*BB/AA     
 !!$!       betatest=b-0.5*( ((b-a)**2)*(Vb-Vc)-(((b-c)**2)*(Vb-Va)))/ ((b-a)*(vb-vc)-(b-c)*(vb-va))
 !!$       Rbetatest(:)=R0(:)+betatest*F0(:)
-!!$      write(6,*)'mindir3 beta IN',betatest
+!!$      write(unitgc,*)'mindir3 beta IN',betatest
 !!$       call setV_F(N,Rbetatest,Vbetatest,Fbetatest,lover,lvm)
 !!$           if (lvm)Rmin=R
-!!$      write(6,*)'mindir3 beta OUT',betatest,Vbetatest
+!!$      write(unitgc,*)'mindir3 beta OUT',betatest,Vbetatest
 !!$       If (Vbetatest.gt.Vmin) then
-!!$          write(6,*)'PARABOLIC SERACH FAILURE SWITHING TO BINARY'
+!!$          write(unitgc,*)'PARABOLIC SERACH FAILURE SWITHING TO BINARY'
 !!$          exit ! recherche parabolique en échec
 !!$       end If
 !!$       call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbetatest,Vbetatest,Fbetatest)
 !!$       if (lover) then
-!!$          write(6,*)'PARABOLIC relaxed'
+!!$          write(unitgc,*)'PARABOLIC relaxed'
 !!$          beta=betatest
 !!$          return
 !!$       end if
 !!$       if (ldir) then
-!!$          write(6,*)'PARABOLIC line search over'
+!!$          write(unitgc,*)'PARABOLIC line search over'
 !!$          beta=betatest
 !!$          if (Vbetatest.GT.V0) then
 !!$             V=V0;R=R0;F=F0
 !!$             lover=.true.
-!!$             write(6,*)'STOP PARABOLIC'
+!!$             write(unitgc,*)'STOP PARABOLIC'
 !!$             lok=.false.
 !!$          end if
 !!$          return
@@ -446,18 +457,18 @@ contains
 !!$       end if
 !!$    end do
 !!$    ! debut de la recherche binaire      
-!!$    !      write(6,*)
+!!$    !      write(unitgc,*)
 !!$!    return
-!!$!      write(6,*)'BINARY START'
+!!$!      write(unitgc,*)'BINARY START'
 !!$
 !!$    a=0 ; b=beta ; c=beta/2
 !!$    vb=vbeta ; Vmin=Vbs2
 !!$    Va=V0
 !!$    Vc=Vbs2
 !!$    Vmin=Vbs2
-!!$ !   write(6,*)
-!!$ !   write(6,*)'BBIN',a,b,c
-!!$!    write(6,*)'VBIN',Va,Vb,Vc
+!!$ !   write(unitgc,*)
+!!$ !   write(unitgc,*)'BBIN',a,b,c
+!!$!    write(unitgc,*)'VBIN',Va,Vb,Vc
 !!$
 !!$    do istep=1,nstep
 !!$    if (Va.gt.Vb) then
@@ -465,30 +476,30 @@ contains
 !!$       else
 !!$          b=c; Vb=Vc
 !!$       end if
-!!$ !      write(6,*)
-!!$ !      write(6,*)'BBIN',a,b
-!!$ !      write(6,*)'VBIN',Va,Vb
+!!$ !      write(unitgc,*)
+!!$ !      write(unitgc,*)'BBIN',a,b
+!!$ !      write(unitgc,*)'VBIN',Va,Vb
 !!$       beta=(a+b)/2
 !!$       c=beta
 !!$       Rbeta(:)=R0(:)+beta*F0(:)
-!!$       write(6,'(A,E15.5)')'mindir4 beta',beta
+!!$       write(unitgc,'(A,E15.5)')'mindir4 beta',beta
 !!$       call setV_F(N,Rbeta,Vbeta,Fbeta,lover,lvm)
 !!$           if (lvm)Rmin=R
-!!$      write(6,*)'mindir4 beta',beta,Vbeta
+!!$      write(unitgc,*)'mindir4 beta',beta,Vbeta
 !!$       call checkline(lover,ldir,F0,normF02,N,R,V,F,Rbeta,Vbeta,Fbeta)
 !!$
 !!$       Vc=Vbeta
 !!$       if (lover) then
-!!$          write(6,*)'BINARY relaxed'
+!!$          write(unitgc,*)'BINARY relaxed'
 !!$          return
 !!$       end if
 !!$       if (ldir) then
-!!$!          write(6,*)'BINARY line search over'
+!!$!          write(unitgc,*)'BINARY line search over'
 !!$       
 !!$          if (Vbeta.GT.V0) then
 !!$             V=V0;R=R0;F=F0
 !!$             lover=.true.
-!!$!             write(6,*)'STOP BINARY'
+!!$!             write(unitgc,*)'STOP BINARY'
 !!$             lok=.false.
 !!$          end if
 !!$
