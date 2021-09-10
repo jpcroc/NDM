@@ -145,12 +145,12 @@ contains
 
        if (nb_sol==0) then
        if ((rang==0).and.(lverb)) then
-             write(iudecoup,*),'!!! Pas de possibilite de decoupage pour la configuration demandee !!!'
-             write(iudecoup,*),'!!! nx / ny / nz / nb_cpu :',nox,noy,noz,nbr_cpu
+             write(iudecoup,*)'!!! Pas de possibilite de decoupage pour la configuration demandee !!!'
+             write(iudecoup,*)'!!! nx / ny / nz / nb_cpu :',nox,noy,noz,nbr_cpu
 
           endif
 #ifdef PARA
-          write(iudecoup,*),'!!! Arret du programme !!!'
+          write(iudecoup,*)'!!! Arret du programme !!!'
           call arret_ndm
 #else
           deallocate(decoup)
@@ -165,7 +165,7 @@ contains
 
        endif
 
-       if ((rang==0).and.(lverb))  write(iudecoup,*),'Nbre de solutions possibles : ',nb_sol
+       if ((rang==0).and.(lverb))  write(iudecoup,*)'Nbre de solutions possibles : ',nb_sol
 
        ! On scanne l'ensemble des solutions proposees pour en calculer 
        ! l'equilibrage de charge et le nombre de cellules fantomes

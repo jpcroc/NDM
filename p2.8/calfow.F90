@@ -81,7 +81,7 @@ contains
     POTCP=0.0 
     POTIST=ZERO
     ! F=0/
-    DO 3333 I=1,Atcf%Im
+    DO  I=1,Atcf%Im
        z(i)=ZERO
        spotr(i)=ZERO
        dzdx(i,1)=ZERO
@@ -89,7 +89,8 @@ contains
        dzdx(i,3)=ZERO
        atcf%FP(1,i)=ZERO
        ATCF%FP(2,i)=ZERO
-3333   ATCF%FP(3,i)=ZERO
+       ATCF%FP(3,i)=ZERO
+    end DO
 
        AUX=23.06134575D-20 
        ALP=ALPHA/SQRT(PI)*AUX

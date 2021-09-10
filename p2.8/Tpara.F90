@@ -709,7 +709,6 @@ end if
 
 end subroutine mpic_recv_cdp
 
-
 !=========================================================================
 subroutine mpic_recv_i(mpic,array,rgem,tag)
   implicit none
@@ -721,9 +720,7 @@ subroutine mpic_recv_i(mpic,array,rgem,tag)
   integer :: nsize
   integer :: ierror=0
   !=====
-
   if( mpic%nproc == 1 ) return
-
   nsize = SIZE(array)
 #if defined(PARA)
 if (present(tag)) then

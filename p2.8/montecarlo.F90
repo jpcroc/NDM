@@ -475,7 +475,7 @@ real(double), dimension(2,22) :: tab_cumul
        xprob_i(2) = 1.0 - xprob !proba d'accepter Wprec
        call random_number(xalea)
        ln_xalea  = log(xalea)
-       write(*,*), 'xalea', xalea
+       write(*,*) 'xalea', xalea
            
        if (lmegamaster) write(*,*) 'WeV', W*erg2eV, 'WpreceV', Wprece*erg2eV,'XPROB', xprob, 'XALEA', xalea
      

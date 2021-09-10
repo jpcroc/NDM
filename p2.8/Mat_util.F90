@@ -255,7 +255,7 @@ END FUNCTION matdet
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    real(double)  :: a(3,3)
+    real(double)  :: a(3,3),astock(3,3)
     real(double)  :: v(3,3), d(3)
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
@@ -266,9 +266,10 @@ END FUNCTION matdet
     !-----Find eigenvalues
     call jacobi(a,3,3,d,v,i)
     !-----Restore the original matrix
+    astock(:,:)=a(:,:)
     do i = 1,3
        do j = i+1,3
-          a(i,j) = a(j,i)
+          a(i,j) = astock(j,i)
        enddo
     enddo
     return
