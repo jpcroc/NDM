@@ -43,14 +43,14 @@ contains
        celsn%celsize(2) = boxsn%zl(2)/float(noy)
        celsn%celsize(3) = boxsn%zl(3)/float(noz)
 !       write(6,*)'setnoxsimple',rum, boxsn%zl(1),nox,noy,noz
-    call celsn%init(nox,noy,noz)
+    call celsn%init(boxsn,nox,noy,noz)
     
     natperc= INT(atsn%im/celsn%noxyz)
 !    write(6,*)'setnoxsimple',nox,noy,noz,natperc
     natperc=max(int(2*natperc),10)     ! MODIF Clouet
     celsn%natperc=natperc
     if (allocated(celsn%atincel))deallocate(celsn%atincel)
-    allocate(celsn%atincel(celsn%natperc,0:celsn%noxyz))
+    allocate(celsn%atincel(celsn%natperc,celsn%noxyz))
     celsn%atincel=0
     if (atsn%ltabvois) then
        izonr2 = int(zlmin/rvois)

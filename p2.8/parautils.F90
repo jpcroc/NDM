@@ -10,7 +10,7 @@
   USE decoupage_mod,only: decoupage
   use gen_com_m,only:lspacendm
   use atomconfig,only: atom_config,atom_config_d,atom_config_e
-  USE boxconfig,only:box_config,periodbox,initbox
+  USE boxconfig,only:box_config,periodbox,updatebox
   USE cellconfig,only:cell_config,caltabtC
   use calfo_mod,only:calfo
   use constrconf_mod,only:repartition
@@ -59,7 +59,7 @@
           call atcomp%send2all(0,div%mpi_image)
        endif
        if (lspaceNDM.eqv..true.) then
-          call cellcomp%copy_cell(celloc)
+          call cellcomp%copy_cell(celloc,box)
           call decoupage(div%mpi_image%nproc,0,celloc,atloc,lverbose=.false.,psc=psc)
           call repartition(atcomp,atloc,box,celloc) ! mettre les éléments de la répartition dans un type
           call setcellconf(celloc,atloc,box,atcomp%im,rum,lverbose=.false.)
@@ -148,7 +148,7 @@
 !    if (lchange) then  ! même sans changement il faut mettre à jour pour initialisze les tableaux NDM like de mod_para pour maj_tab_density
 
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
-       call maj_atomes_frt_ftm(atloc,celloc,psc)
+       call maj_atomes_frt_ftm(atloc,celloc,box,psc)
     end if
 
 !    end if
@@ -201,7 +201,7 @@
        if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
           !    if (div%mpi_image%nproc.gt.1) then
           if (lord) then
-             call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
+             call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
              select type (atcomp)
              type is (atom_config)
                 atb=atcomp
@@ -228,7 +228,7 @@
              end if
              
           else
-             call cellcomp%init(cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
+             call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
              call atlocin%vers_master(atcomp,div,carac)
              if (div%mpi_image%rank==0) then
                 call caltabtC(cellcomp,atcomp,lperiod,box)
@@ -301,7 +301,7 @@
     if (lchgbox)then
        atl=box_p%at(1:3,1:3)
        call div%mpi_image%bcast(0,atl)
-       call initbox(box_p,atl)
+       call updatebox(box_p,atl)
     end if
     call pointer_caltabt_calfo(sig_p,potist_p,atcomp_p,cellcomp_p,box_p,atloc_p,celloc_p,div_p,lperiod_p,&
          &ltabvois_p,it_p,itetabvois_p,lchg_p,psc_p,carac)
@@ -342,7 +342,7 @@ subroutine driver_caltabt_DM(sigcf,potistcf,atcf,celcf,boxcf,psc,lperiod)
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-       call maj_atomes_frt_ftm(atcf,celcf,psc)
+       call maj_atomes_frt_ftm(atcf,celcf,boxcf,psc)
     end if
 #endif
 

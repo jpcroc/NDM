@@ -10,7 +10,6 @@ module work_cgII
   USE arret_ndm_mod,only: arret_ndm
 #ifdef PARA
 use Tpara,only:COMM_space,myidsp,nprocspace,para_space_config
-use mod_para,only:maj_atomes_frt_ftm
 #else
 use Tpara,only:nprocspace,para_space_config
 #endif

@@ -47,6 +47,7 @@ soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
 A FAIRE
 3.2/ corriger PMEwald
 3.7/CODER sauvegarde xyz
+plotpart dans anapos
 4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien! (en cours)
 4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig piloté comme send2all etc.
 **>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC 

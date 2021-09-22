@@ -1,7 +1,5 @@
 module calccoordo_mod
   USE T_kind_param_m, ONLY:  double
-  USE notperiod_mod,only: notperiod
-  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY: rang,it,timel,lperiod
   use atomconfig,only: atom_config
   use boxconfig,only:box_config

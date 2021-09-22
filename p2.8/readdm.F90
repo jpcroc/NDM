@@ -89,7 +89,7 @@ contains
          mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,ndir,nstep,betaguess,&
-         &nparapath,lparapath,Wsave,ihbox0
+         &nparapath,lparapath,Wsave,ihbox0,ipbc
 
 
     !
@@ -273,7 +273,7 @@ contains
     itecompcr=-1  ! remplacee par iteanapos
     iteanapos=-1  ! frequence de comparaison avec cristal de reference
 
-    lperiod=.true.    ! conditions periodiques
+    lperiod=.true.    ! si conditions periodiques (ipbc=1) et lperiod: coordonnées réduites entre 0 et 1. Si ipbc=1 et .not.lperiod coordonées peuvent dépasser
     lprteat=.false.   ! if you want to print the energy on atom
     lprtsigat=.false. ! calul et affichage de la contrainte sur chaque atome
     lsigatcel=.false. ! calul et affichage de la contrainte atomique moyenne sur la cellule
@@ -363,6 +363,9 @@ contains
     pas_lambda_mc = -100 !valeur negative par defaut pour que l'utilisateur la change
     n_path = -100 !valeur negative par defaut pour que l'utilisateur la change
     distminat=-1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
+
+    ipbc(1:3)=1 ! 1=PBC; 2=wall... dimension 3 =plans bc; ac;ab
+
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -412,11 +415,29 @@ contains
        call arret_ndm
     end if
 
-    if(.not.lperiod) then
-       if (rang==0) write(6,*)
-       if (rang==0) write(6,*)'Pas de conditions periodiques'
+    if (any(ipbc.ne.1)) then
+       do ic=1,3
+          select case (ipbc(ic))
+          case(1)
+             if (rang==0) write(6,*)'direction', ic,' : regular PBC'
+          case(2)
+             if (rang==0) write(6,*)'direction', ic,' : WALL Boundary Conditions'
+          case default 
+             if (rang==0) write(6,*)'wrong bound ary conditions, stop'
+             stop
+          end select
+       end do
     end if
 
+    if(.not.lperiod) then
+       if (rang==0)then
+          write(6,*)
+          write(6,*)'coordinates can get out of  0-1'
+          if (ipbc(1)==1) write(6,*)'along  a'
+          if (ipbc(2)==1) write(6,*)'along  b'
+          if (ipbc(3)==1) write(6,*)'along  c'
+       end if
+    end if
 
     tstep = tstep*utemps
     tauTcon=tauTcon*utemps
@@ -832,6 +853,12 @@ contains
              end if
           end do
        end do
+       do ic=1,3
+          if ((ihbox0(ic,ic)==1).and.(ipbc(ic).ne.1))then
+             write(6,*)'direction ',ic,' lprahman and no pbc ipbc =',ipbc(ic)
+             stop
+          end if
+       end do
     else
        if (iteprtsigma==-1) iteprtsigma=itesigma
     end if
@@ -1054,10 +1081,17 @@ contains
     if (lTcon) then
        if (rang==0) write (6, *) 'TEMPERATURE CONSTANTE a la main Text= ',text
     endif
-    if (lTcon) then
+    if (lTberendsen) then
+       if (text.le.0) then
+          write(6,*)'text<0' ;stop
+       endif
        if (rang==0) write (6, *) 'TEMPERATURE CONSTANTE a la Berendsen Text= ',text
     endif
-
+    if (text.gt.0) then
+       if (.not.(ltberendsen.or.llangevin.or.lThoover.or.lTnose)) then
+          write(6,*)'text<0 mais pas dalgo' ;stop
+       end if
+    end if
     select case (igen)
     case (-1)
        if (rang==0) write (6, *) 'generation du crystal'

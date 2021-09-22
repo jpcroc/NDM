@@ -23,11 +23,6 @@ contains
 
     USE jqmod
     USE elec_cell,ONLY: dynelec,i2t
-#ifdef PARA
-    USE mod_para,only:nprocspace,maj_atomes_frt_ftm
-#else
-    USE Tpara,only:nprocspace
-#endif
     USE caltabi_mod,only:caltabi
     USE elec_cell, ONLY:TTlangevin
     !    USE Parrinello_Rahman

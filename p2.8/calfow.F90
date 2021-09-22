@@ -1,7 +1,4 @@
 module calfow_mod
-
-  USE notperiod_mod,only: notperiod
-  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY: lperiod,pi,potcp,potis1,zero
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
@@ -12,9 +9,7 @@ module calfow_mod
   implicit none
 contains
   ! ***************************************************************
-  SUBROUTINE CALFOw(atcf,celcf,boxcf)! W(im,imm,xp,fp,ielat,ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
-    !     calcule des forces a 2 corps dans le pot de Watanabe
-    !     version Avril 2001  
+  SUBROUTINE CALFOw(atcf,celcf,boxcf)
     ! ***************************************************************
 
     USE T_kind_param_m 
@@ -28,7 +23,6 @@ contains
     !-------------------------------------------
     integer iw2,iti,l,iw1,i,koo,i1,ko1,j, &
          & i2,itj,k,ic,kz,&
-         & ncelvois,	&	!nonbre de cellules =0 ou 26
          & itO,itSi         ! types du O et du Si
 
     parameter(itSi=1,itO=2)
@@ -109,8 +103,7 @@ contains
           if(iti.eq.itO) then
 
              koo=atcf%ielat(i)   ! Numero de la cellule
-             ncelvois=min(celcf%noxyz,27)-1
-             do  i1=0,ncelvois
+             do  i1=0,celcf%ncelvois(koo)
                 ko1=celcf%ncel(koo,i1)
                 !         write(6,*)'ko1',ko1
 
@@ -150,9 +143,8 @@ contains
           !         write(6,*)i
           KOO=atcf%IELAT(I)   ! Numero de la cellule
           ITI=atcf%ITYP(I)
-          ncelvois=min(celcf%noxyz,27)-1
 
-          DO 61 I1=0,ncelvois
+          DO 61 I1=0,celcf%ncelvois(koo)
              KO1=celcf%NCEL(KOO,I1)
 
 

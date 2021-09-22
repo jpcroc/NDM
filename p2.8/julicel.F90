@@ -1,6 +1,4 @@
 module calfojulicel_mod
-  USE notperiod_mod,only: notperiod
-  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:nvat,fnemd,lcalcjq,lnemd,lperiod,zero
   USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot,ngrid,npair,&
        &eamrep,ipo,typ_pot_pair,eamglue,eamrho,ntyp
@@ -23,16 +21,6 @@ contains
       class(atom_config),intent(inout)::atcf
   type(cell_config),intent(in)::celcf
   type(box_config),intent(in)::boxcf
-
-!!$  integer,intent(in)::im,imm
-!!$  integer , intent(in),allocatable :: ielat(:),ityp(:)
-!!$  real(double),intent(inout),allocatable  :: xp(:,:)
-!!$  real(double) , intent(inout),allocatable :: fp(:,:)
-!!$    real(double),intent(in),dimension(3,3)::at,bg
-!!$    real(double),intent(in)::volu
-!!$  integer,intent(in)::noxyz,natperc
-!!$  integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)  
-
     !local variables
     integer :: i,j,l !atomes
     integer ::iti,itj,itl,ic !types
@@ -81,7 +69,7 @@ contains
   logical::linter,linterjl
     real(double):: fpnemd(3,atcf%im),fpnemdmoy(3), XijdotF,XildotF,XjldotF
 
-    integer::koo,ncelvois,i1,i2,ko1,ko1j,koj
+    integer::koo,i1,i2,ko1,ko1j,koj
 
     REAL(double), dimension(1:3) :: cp
     rue=rue_pot(ipotentiel)
@@ -107,14 +95,6 @@ contains
     rue2=rue**2
     !    iw2=0
 
-!!$    ALLOCATE(xpnp(3,imm))
-!!$    if (lperiod) then
-!!$       xpnp(:,:)=xp(:,:)
-!!$    else
-!!$       call notperiod(imm,xp,xpnp,at,bg)
-!!$    end if
-!!$
-!!$    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
 
     loop1at1: do i=1,atcf%im
@@ -124,13 +104,11 @@ contains
        densityi=0.0 ;Eembi=0.0; dEembi=0.0
        !     write(6,*)'I',i
        koo= atcf%ielat(i)      
-       ncelvois = min(celcf%noxyz,27)-1
        ! pour chaque cel. voisine
-       loop1cel:   do i1 = 0, ncelvois
+       loop1cel:   do i1 = 0, celcf%ncelvois(koo)
           ko1 = celcf%ncel(koo,i1)
           !        write(6,*)'celI',ko1
 
-          !        cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
           ! pour chaque atome ds la cel. voisine
           loop1at2: do i2 = 1, celcf%nato(ko1)
              j = celcf%atincel(i2,ko1)
@@ -142,28 +120,6 @@ contains
                   &rum=rcut(ll),linter=linter,dist=rij)
         if (.not.linter) cycle
 
-             
-!!$             c1ij = xpnp(1,i)-xpnp(1,j)
-!!$             c2ij = xpnp(2,i)-xpnp(2,j)
-!!$             c3ij = xpnp(3,i)-xpnp(3,j)
-!!$             if (c1ij>0.5) c1ij = c1ij-1.
-!!$             if (c1ij<(-0.5)) c1ij = c1ij+1.
-!!$             if (c2ij>0.5) c2ij = c2ij-1.
-!!$             if (c2ij<(-0.5)) c2ij = c2ij+1.
-!!$             if (c3ij>0.5) c3ij = c3ij-1.
-!!$             if (c3ij<(-0.5)) c3ij = c3ij+1.
-!!$             cv(1,1) = c1ij
-!!$             cv(1,2) = c2ij
-!!$             cv(1,3) = c3ij
-!!$             call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-!!$             r2ij = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-!!$             c1ij= cv(1,1) 
-!!$             c2ij =cv(1,2) 
-!!$             c3ij =cv(1,3) 
-!!$             itj=ityp(j)
-!!$            if (r2ij>rcut2(ipo(iti,itj))) cycle
-!!$             rij=sqrt(r2ij)
-!!$             !           write(6,*)'i  j   r ',i,j,ipo(iti,itj),rij
         c1ij=dxp(1);c2ij=dxp(2);c3ij=dxp(3)
         k=Int(rij/ktor)
              !       write(6,*)'k ',k
@@ -235,7 +191,7 @@ contains
 
              !initialisations pour voisins de j
              koj= atcf%ielat(j)      
-             loop2cel:   do i1 = 0, ncelvois
+             loop2cel:   do i1 = 0, celcf%ncelvois(koj)
                 ko1j = celcf%ncel(koj,i1)
                 ! pour chaque atome ds la cel. voisine
                 loop2at2: do i2 = 1, celcf%nato(ko1j)
@@ -260,31 +216,6 @@ contains
            if (.not.linterjl)cycle
            c1jl=dxpjl(1);              c2jl=dxpjl(2);              c3jl=dxpjl(3);
 
-!!$                   c1jl = xpnp(1,j)-xpnp(1,l)
-!!$                   c2jl = xpnp(2,j)-xpnp(2,l)
-!!$                   c3jl = xpnp(3,j)-xpnp(3,l)
-!!$                   if (c1jl>0.5) c1jl = c1jl-1.
-!!$                   if (c1jl<(-0.5)) c1jl = c1jl+1.
-!!$                   if (c2jl>0.5) c2jl = c2jl-1.
-!!$                   if (c2jl<(-0.5)) c2jl = c2jl+1.
-!!$                   if (c3jl>0.5) c3jl = c3jl-1.
-!!$                   if (c3jl<(-0.5)) c3jl = c3jl+1.
-!!$                   cv(1,1) = c1jl
-!!$                   cv(1,2) = c2jl
-!!$                   cv(1,3) = c3jl
-!!$                   call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-!!$                   r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-!!$                   c1jl=cv(1,1)
-!!$                   c2jl=cv(1,2) 
-!!$                   c3jl=cv(1,3)
-!!$
-!!$
-!!$
-!!$                   if (r2jl>rcut2(ipo(itj,itl))) cycle               
-!!$                   !                write(6,*)'K i iti j itj l itl ',i,iti,j,itj,l,itl                
-!!$                   !                if (r2jl>rue2) cycle
-!!$                   rjl=sqrt(r2jl)
-                   !       write(6,*)'k ',k
                    k=Int(rjl/ktor)
                    drk=rjl-k*ktor
                    ll = ipo(itj,itl)
@@ -589,7 +520,7 @@ contains
 
 
           koj= atcf%ielat(j)      
-          loop3cel:   do i1 = 0, ncelvois
+          loop3cel:   do i1 = 0, celcf%ncelvois(koj)
              ko1j = celcf%ncel(koj,i1)
              ! pour chaque atome ds la cel. voisine
              loop3at2: do i2 = 1, celcf%nato(ko1j)
@@ -604,28 +535,6 @@ contains
               if (.not.linterjl)cycle
               c1jl=dxpjl(1);              c2jl=dxpjl(2);              c3jl=dxpjl(3);
 
-                
-!!$                c1jl = xpnp(1,j)-xpnp(1,l)
-!!$                c2jl = xpnp(2,j)-xpnp(2,l)
-!!$                c3jl = xpnp(3,j)-xpnp(3,l)
-!!$                if (c1jl>0.5) c1jl = c1jl-1.
-!!$                if (c1jl<(-0.5)) c1jl = c1jl+1.
-!!$                if (c2jl>0.5) c2jl = c2jl-1.
-!!$                if (c2jl<(-0.5)) c2jl = c2jl+1.
-!!$                if (c3jl>0.5) c3jl = c3jl-1.
-!!$                if (c3jl<(-0.5)) c3jl = c3jl+1.
-!!$                cv(1,1) = c1jl
-!!$                cv(1,2) = c2jl
-!!$                cv(1,3) = c3jl
-!!$                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-!!$                r2jl = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)             
-!!$                c1jl=cv(1,1)
-!!$                c2jl=cv(1,2) 
-!!$                c3jl=cv(1,3)                   
-!!$
-!!$                if (r2jl>rcut2(ipo(itj,itl))) cycle               
-!!$                !                if (r2jl>rue2) cycle
-!!$                rjl=sqrt(r2jl)
                 gradjl(1)=c1jl/rjl ; gradjl(2)=c2jl/rjl ; gradjl(3)=c3jl/rjl
                 !       write(6,*)'k ',k
                 k=Int(rjl/ktor)

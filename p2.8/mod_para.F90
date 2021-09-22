@@ -10,7 +10,7 @@ module mod_para
   use gen_com_m ,only:l2t,rang
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e,ndm2config,config2ndm
   USE cellconfig,only:cell_config,ndm2cellconfig,cellconfig2ndm
-
+  USE boxconfig, only:box_config
 
   implicit none
 
@@ -66,7 +66,7 @@ contains
   ! les processeurs. Elle prend en compte la nouvelle repartition dans 
   ! les cellules suite a l'appel a caltabt
 
-  subroutine maj_atomes_frt_ftm(atcf,cellcf,psc)
+  subroutine maj_atomes_frt_ftm(atcf,cellcf,boxcf,psc)
 
     USE T_kind_param_m, ONLY:  double
 
@@ -74,7 +74,8 @@ contains
     type(cell_config)::cellcf
     class(atom_config)::atcf
     type(para_space_config)::psc
-
+    type(box_config)::boxcf
+    
     integer::i,ne
      
     ltbv=atcf%ltabvois ;
@@ -96,7 +97,7 @@ contains
     call reception_atomes_fantomes (psc)    ! On receptionne les nouveaux atomes fantomes
     call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
     call ndm2config (atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,nvois,vp,xpp,ldeall=.true.,lgul=lgul)
-    call ndm2cellconfig(cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=proc_cell)
+    call ndm2cellconfig(cellcf,boxcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=proc_cell)
 
 end subroutine maj_atomes_frt_ftm
 

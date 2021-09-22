@@ -4,7 +4,6 @@ module initspeed_mod
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: MatInv
   USE tempinst_mod,only: tempinst
-!  USE calctemp_mod,only: calctemp
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
        &lvpread,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,mdcg_noise_scale,&
@@ -16,7 +15,6 @@ module initspeed_mod
     USE Tpara,only:nprocspace,myidsp
 #endif
 
-!  USE cellconfig,only:cell_config, ndm2cellconfig, cellconfig2ndm
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
   use boxconfig,only:box_config,periodbox
   implicit none

@@ -1,9 +1,7 @@
 module calfojuli_mod
-        USE notperiod_mod,only: notperiod
-        USE cryst_to_cart_mod,only: cryst_to_cart
-        USE calfocommon
-        USE gen_com_m, ONLY:nvat,fnemd,lcalcjq,lnemd,lperiod, zero
-        use vect_dist_mod,only:vect_dist
+  USE calfocommon
+  USE gen_com_m, ONLY:nvat,fnemd,lcalcjq,lnemd,lperiod, zero
+  use vect_dist_mod,only:vect_dist
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config

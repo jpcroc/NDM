@@ -96,7 +96,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
 
-       call maj_atomes_frt_ftm(atpr,celndm,psc)
+       call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
 
 
        if (iewald>0) then

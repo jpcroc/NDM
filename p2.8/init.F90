@@ -12,8 +12,8 @@ module init_mod
   USE deftimestep_mod,only: deftimestep
   USE rasmolT_mod,only: rasmolT
   USE neb_module,only: constrconfNEB,atneb,cellneb,boxneb
-  USE atomconfig,only:atom_config,atom_config_d,ndm2config,config2ndm,atom_config_e
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC,init_cel
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e
+  USE cellconfig, only:cell_config,caltabtC
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
   USE constrconf_mod, only :constrconf
  USE arret_ndm_mod,only: arret_ndm

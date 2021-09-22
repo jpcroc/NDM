@@ -23,18 +23,13 @@ contains
     integer::ic
     real(double)::distance
 
-    if (((present(rum)).and.(.not.(present(linter)))).or.((present(linter)).and.(.not.(present(linter))))) then
+    if (((present(rum)).and.(.not.(present(linter)))).or.((present(linter)).and.(.not.(present(rum))))) then
        write(6,*)'incohérence dans appel a vect_dist'
        stop
     end if
     xp(:,1)=atcf%xp(:,i)
     xp(:,2)=atcf%xp(:,j)
-    if (lperiod) then
-       xpnp(:,1)=atcf%xp(:,i)
-       xpnp(:,2)=atcf%xp(:,j)
-    else 
-       call notperiod(2,xp,xpnp,boxcf%at,boxcf%bg)
-    end if
+    call notperiod(2,xp,xpnp,boxcf%at,boxcf%bg,lperiod)
     XJI(:)= xpnp(:,1)-xpnp(:,2)
     !    if ((celcf%noxyz.ne.1).and.(i1.ge.1).and.(i1.le.27)) then
     if (present(indcv).and.(celcf%noxyz.ne.1)) then
@@ -47,9 +42,13 @@ contains
     else
        cv(1,:) = XJI(:)
        call cryst_to_cart (1, cv, boxcf%bg, -1) !cart vers cryst cryst vers cart sur cv
-       WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-          cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-       END WHERE
+       do ic=1,3
+          if (boxcf%ipbc(ic)==1) then
+             if ( (cv(1,ic).GT.0.5d0).OR.(cv(1,ic).LT.-0.5d0) )then
+                cv(1,ic) = cv(1,ic) - Dble(Nint(cv(1,ic)))
+             end if
+          end if
+       end do
        call cryst_to_cart (1, cv, boxcf%at, 1) !cryst vers cart sur cv
        XJI(:)=cv(1,:)
     end if

@@ -56,7 +56,7 @@ module Parrinello_Rahman
   USE Mat_utils_mod,only:  MatInv
   USE atomconfig,only : atom_config_d
   USE cellconfig, only:cell_config,caltabtc
-  USE boxconfig,only:box_config,periodbox
+  USE boxconfig,only:box_config,periodbox,updatebox
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t
   USE calfoberend_mod,only:calfoberend
@@ -370,9 +370,10 @@ end if
     atpr%xpp(:,1:atpr%im) = atpr%xp(:,1:atpr%im)
     atpr%xp(:,1:atpr%im) = MatMul( h, sp(:,1:atpr%im) )
 
-    boxndm%at(:,:) = h(:,:)                            ! Vecteur de périodicité
-    call recips (h(:,1),h(:,2),h(:,3), boxndm%bg(:,1),boxndm%bg(:,2),boxndm%bg(:,3)) ! Vecteurs réciproques
-   boxndm%volu = calcvol(h(1:3,1),h(1:3,2),h(1:3,3))  ! Volume
+    call updatebox(boxndm,h)
+!    boxndm%at(:,:) = h(:,:)                            ! Vecteur de périodicité
+!    call recips (h(:,1),h(:,2),h(:,3), boxndm%bg(:,1),boxndm%bg(:,2),boxndm%bg(:,3)) ! Vecteurs réciproques
+!   boxndm%volu = calcvol(h(1:3,1),h(1:3,2),h(1:3,3))  ! Volume
     invVolu = 1.d0/boxndm%volu
     trh=Transpose(h)                            ! Matrices associées à h
     Gmat = MatMul(trh,h)
@@ -385,13 +386,13 @@ end if
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
        if (lperiod)    call periodbox (boxndm,atpr)
-       boxndm%zl(1) = Sqrt( Sum(boxndm%at(1:3,1)**2 ) )
-       boxndm%zl(2) = Sqrt( Sum(boxndm%at(1:3,2)**2 ) )
-       boxndm%zl(3) = Sqrt( Sum(boxndm%at(1:3,3)**2 ) )
-       boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
-       boxndm%zls2(1:3) = 0.5d0*boxndm%zl(1:3)
+!       boxndm%zl(1) = Sqrt( Sum(boxndm%at(1:3,1)**2 ) )
+!       boxndm%zl(2) = Sqrt( Sum(boxndm%at(1:3,2)**2 ) )
+!       boxndm%zl(3) = Sqrt( Sum(boxndm%at(1:3,3)**2 ) )
+!       boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
+!       boxndm%zls2(1:3) = 0.5d0*boxndm%zl(1:3)
        call caltabtC(celndm,atpr,lperiod,boxndm)
-       call maj_atomes_frt_ftm(atpr,celndm,psc)
+       call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
        sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
 
 
@@ -399,7 +400,7 @@ end if
 
           ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
           pi2 = pi*pi
-          boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
+!          boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
           fact = pi2/alpha**2
           fact1 = auxe/2./pi/boxndm%volu
           fact2 = auxe*2./boxndm%volu

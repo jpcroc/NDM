@@ -77,9 +77,11 @@ contains
        ivisum=ivisu
     end if
 
-    if (present(naux).and.(naux.gt.0)) then
-       laux=.true.
-       nauxV=naux
+    if (present(naux)) then
+       if (naux.gt.0) then
+          laux=.true.
+          nauxV=naux
+       end if
     else
        laux=.false.
        nauxV=0

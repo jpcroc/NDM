@@ -13,10 +13,10 @@ module neb_module
   use var_pot,only:ntyp,ipotentiel,cm,rumax
   !-----------------------------------------------
   USE atomconfig,only:atom_config,atom_config_d
-  USE cellconfig, only:cell_config,init_cel
+  USE cellconfig, only:cell_config
 !  USE constrconf_mod,only : config2data
 !  USE read_conf, only:read_cin,read_gin
-  use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm,initbox
+  use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
   USE setcell,only:setcellconf,setnox
   USE sauvegardeT_mod,only:sauvegardeT
     USE init_pot_mod,only:init_pot  ,init_pot2

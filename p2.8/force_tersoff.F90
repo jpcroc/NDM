@@ -10,7 +10,7 @@ module force_tersoff_mod
   implicit none
 contains
   ! ***************************************************************
-  subroutine force_tersoff(atcf,celcf,boxcf)! (im,imm,xp,    fp,  iwmax, ityp,indi,at,bg,volu,zl)
+  subroutine force_tersoff(atcf,celcf,boxcf)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------

@@ -1,6 +1,4 @@
 module calfoeamtabvois_mod
-  USE notperiod_mod,only: notperiod
-  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:angst,fnemd,it,lcalcjq,ldemitab,&
        &lnemd,low_limit,lperiod,zero,potis2,pi
   USE calfocommon
@@ -47,7 +45,6 @@ contains
 
     real(double)::aux,alp
     logical::linter
-!    real(double), dimension(:,:), allocatable :: xpnp
     aux = 23.06134575D-20
     alp = alpha/sqrt(pi)*aux
     allocate(ktorho(ntyp))
@@ -75,14 +72,6 @@ contains
     inv_atomic_volu = dble(atcf%im)/boxcf%volu
 
     iw2=0
-!!$    ALLOCATE(xpnp(3,imm))
-!!$    if (lperiod) then
-!!$       xpnp(:,:)=xp(:,:)
-!!$    else
-!!$       call notperiod(imm,xp,xpnp,at,bg)
-!!$    end if
-
-!    call cryst_to_cart (imm, xpnp, bg, -1)    !cart vers cryst
 
 
 
@@ -107,23 +96,6 @@ contains
           j = atcf%indi(iw)
           itj=atcf%ityp(j)
           
-!!$          dxp(1:3) = xpnp(1:3,i) - xpnp(1:3,j)
-!!$          WHERE ( (dxp.GT.0.5d0).OR.(dxp.LT.-0.5d0) )
-!!$             dxp(1:3) = dxp(1:3) - Dble(Nint(dxp(1:3)))
-!!$          END WHERE
-!!$          ! Transformation des coordonnees reduites en cartesiennes
-!!$          dxp = MatMul(at,dxp)
-!!$
-!!$          ! Calcul du carre de la distance
-!!$          do izero=1,3
-!!$             if (dabs(dxp(izero)).lt.low_limit) then
-!!$                dxp(izero) = zero
-!!$             end if
-!!$          end do
-!!$          r2 = Sum( dxp(1:3)**2 )
-!!$
-!!$          if (r2>rue2) cycle
-!!$          r=sqrt(r2)             
 
           call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp, lperiod=boxcf%lperiod,rum=rue&
                &,linter=linter,dist=r)
@@ -183,25 +155,6 @@ contains
        loopvois2 :do iw = iw1, iw2
           j = atcf%indi(iw)
           itj=atcf%ityp(j)
-!!$          dxp(1:3) = xpnp(1:3,i) - xpnp(1:3,j)
-!!$          WHERE ( (dxp(:).GT.0.5d0).OR.(dxp(:).LT.-0.5d0) )
-!!$             dxp(:) = dxp(:) - Dble(Nint(dxp(:)))
-!!$          END WHERE
-!!$
-!!$          ! Transformation des coordonnees reduites en cartesiennes
-!!$          dxp = MatMul(at,dxp)
-!!$
-!!$          do izero=1,3
-!!$             if (dxp(izero).eq.zero) cycle
-!!$             if (dabs(dxp(izero)).lt.low_limit) then
-!!$                write(*,*) 'WARNING low_limit'
-!!$                dxp(izero) = zero
-!!$             end if
-!!$          end do
-!!$          r2 = Sum( dxp(1:3)**2 )
-!!$
-!!$          if (r2>rue2) cycle
-
           call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp, lperiod=boxcf%lperiod,rum=rue&
                &,linter=linter,dist=r)
           if (.not.linter) cycle
@@ -320,7 +273,6 @@ contains
     end if
 
 
-!    DEALLOCATE (xpnp)
     !  write(6,*)'eamtabvois'
     return
   end SUBROUTINE calfoeamtabvois

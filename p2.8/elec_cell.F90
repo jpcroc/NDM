@@ -21,7 +21,6 @@ module elec_cell
   end type ecelltype
 
   !type :: voisceltype
-  !  integer::ncelvois
   !  integer,allocatable::icelvois(:)
   !end type voisceltype
 

@@ -10,8 +10,7 @@ module force_tersoff_cel_mod
   implicit none
 contains
 ! ***************************************************************
-  subroutine force_tersoff_cel(atcf,celcf,boxcf,psc)!(im,imm,xp,   fp, ielat, ityp,celf%noxyz,natperc,atincel,nato,ncel,deltadist,&
-    !       &at,bg,volu,psc)
+  subroutine force_tersoff_cel(atcf,celcf,boxcf,psc)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -32,19 +31,10 @@ contains
     type(cell_config),intent(in)::celcf
     type(box_config),intent(in)::boxcf
     type(para_space_config)::psc
-
-!!$  integer,intent(in)::im,imm
-!!$  integer , intent(in),allocatable :: ielat(:),ityp(:)
-!!$  real(double) , intent(inout),allocatable :: fp(:,:),xp(:,:)
-!!$
-!!$  integer,intent(in)::celf%noxyz,natperc
-!!$  integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)  
-!!$     real(double),intent(in),dimension(3,3)::at,bg
-!!$    real(double),intent(in)::volu 
     !-----------------------------------------------
     integer :: i,j,k,nk,n_voisin,l,ij,ik, ipv,idv,ivj,ivk, m, moi
     integer , dimension(32) :: indice   ! Recense le nombre de voisins
-    integer :: icelnumber,ncelvois,jcelvois,jcelnumber,jnumber, kcelvois,kcelnumber,knumber
+    integer :: icelnumber,jcelvois,jcelnumber,jnumber, kcelvois,kcelnumber,knumber
     real(double) ::  rij,  rik, sui_ij, bij, n, v_ij, energie_i
     real(double) :: fc_rij, dfc_rij, fr_rij, fa_rij, fc_rik, dfc_rik, paire_ij, triplet_ij, triplet_ik 
     real(double) :: exponentiel, cos_theta, g_cos, dg_cos, flux, pression,ER1, ER2, ER3
@@ -53,13 +43,6 @@ contains
     real(double) , dimension(15,6) :: tmp
     real(double) , dimension(15,3) :: tmp1
     real(double) , dimension(1,3) :: cvij, cvik
-!!$#ifdef PARA
-!!$  real(double) :: potist_tot, ER1_tot, ER2_tot, ER3_tot 
-!!$  real(double), dimension(3)   :: jq_tot
-!!$  real(double), dimension(3,3) :: sig_tot
-!!$  real(double) :: potisTersoff_tot
-!!$  real(double), dimension(3,3,celf%noxyz) :: sigc_tot
-!!$#endif
     real(double):: coupR(npair)
 
     real(double) :: phu,sk,dr
@@ -92,9 +75,8 @@ contains
        v_ij = 0
 
        icelnumber = atcf%ielat(i)
-       ncelvois = min(celcf%noxyz,27)-1
 
-       do jcelvois=0, ncelvois
+       do jcelvois=0, celcf%ncelvois(icelnumber)
           jcelnumber = celcf%ncel(icelnumber,jcelvois)
           do jnumber =1, celcf%nato(jcelnumber)
              j = celcf%atincel(jnumber,jcelnumber)
@@ -130,7 +112,7 @@ contains
                 sui_ij = 0
                 n_voisin = 0
 
-                do kcelvois=0, ncelvois
+                do kcelvois=0, celcf%ncelvois(icelnumber)
                    kcelnumber = celcf%ncel(icelnumber,kcelvois)
                    do knumber =1, celcf%nato(kcelnumber)
                       k = celcf%atincel(knumber,kcelnumber)

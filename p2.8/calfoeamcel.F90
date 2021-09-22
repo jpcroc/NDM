@@ -1,6 +1,4 @@
 module calfoeamcel_mod
-  USE notperiod_mod,only: notperiod
-  USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:angst,nvat,it,low_limit,lperiod,zero,potis2,pi
   USE calfocommon
   use vect_dist_mod,only:vect_dist
@@ -12,9 +10,6 @@ module calfoeamcel_mod
 contains
   !----------------------------------------------------------------------
   SUBROUTINE calfoeamcel(atcf,celcf,boxcf,psc)
-!    (im,imm,xp,   fp, ielat, ityp,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,&
-!       &nox,noy,noz,at,bg,volu,psc)
-!
     USE T_kind_param_m
 
     USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rue_pot,&
@@ -39,18 +34,11 @@ contains
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     ! eam variables
-!!$    integer,intent(in)::im,imm
-!!$    real(double),intent(inout),allocatable,dimension(:,:)::xp,fp
-!!$    integer,intent(in),allocatable,dimension(:)::ityp,ielat,num_at_glob
-!!$    integer,intent(in)::noxyz,natperc,nox,noy,noz
-!!$    integer, intent(in), allocatable::nato(:),ncel(:,:),atincel(:,:),deltadist(:,:,:)
-!!$    real(double),intent(in),dimension(3,3)::at,bg
-!!$    real(double),intent(in)::volu
     !local variables
     integer :: i,j !atomes
     integer ::iti,itj !types
     integer :: l !paires
-    integer:: koo,ko1,ncelvois,i2,i1 !cel.
+    integer:: koo,ko1,i2,i1 !cel.
     integer :: k ! aux pour splines
 
 !    real(double) :: rue2 !coupure**2
@@ -66,7 +54,6 @@ contains
     real(double) :: densityi !densite totale sur i
     integer :: izero
     real(double) :: tabdensity(atcf%imm)
-!    real(double) :: xpnp(3,imm)
     real(double)::rue,alp,aux
     logical ::linter
     
@@ -84,11 +71,6 @@ contains
     potisglue=0.
 !    rue2=rue**2
 
-!!$    if (lperiod) then
-!!$       xpnp(:,:)=xp(:,:)
-!!$    else 
-!!$       call notperiod(imm,xp,xpnp,at,bg)
-!!$    end if
 
 
     loop1at1: do i=1,atcf%im
@@ -105,15 +87,13 @@ contains
           potis2=potis2-zz(l)*alp
        end if
 
-       ncelvois = min(celcf%noxyz,27)-1
        ! pour chaque cel. voisine
-       loop1cel:   do i1 = 0, ncelvois
-
+       loop1cel:   do i1 = 0, celcf%ncelvois(koo)
           ko1 = celcf%ncel(koo,i1)
-!          cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
           ! pour chaque atome ds la cel. voisine
           loop1at2: do i2 = 1, celcf%nato(ko1)
              j = celcf%atincel(i2,ko1)
+!             write(6,*)i,koo,i1, celcf%ncelvois(koo),i2,j
              if (typ_pot_pair(ipo(atcf%ityp(i),atcf%ityp(j))).ne.ipotentiel) cycle
 
              itj=atcf%ityp(j)
@@ -148,46 +128,6 @@ contains
 
            call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue,linter=linter,dist=r)
            if(.not.linter) cycle
-!!$             
-!!$             if (noxyz.ne.1) then
-!!$                dxp(1) = cp(1)-xpnp(1,j)
-!!$                IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
-!!$                dxp(2) = cp(2)-xpnp(2,j)
-!!$                IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
-!!$                dxp(3) = cp(3)-xpnp(3,j)
-!!$                IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
-!!$             else
-!!$                dxp(1) = cp(1)-xpnp(1,j)
-!!$                dxp(2) = cp(2)-xpnp(2,j)
-!!$                dxp(3) = cp(3)-xpnp(3,j)
-!!$                cv(1,1) = dxp(1)
-!!$                cv(1,2) = dxp(2)
-!!$                cv(1,3) = dxp(3)
-!!$                call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
-!!$                WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-!!$                   cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-!!$                END WHERE
-!!$                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-!!$                dxp(1)=cv(1,1)
-!!$                dxp(2)=cv(1,2)
-!!$                dxp(3)=cv(1,3)
-!!$             end if
-!!$
-!!$             do izero=1,3
-!!$                if (dabs(dxp(izero)).lt.low_limit) then
-!!$                   dxp(izero) = zero
-!!$                end if
-!!$             end do
-!!$
-!!$             r2 = Sum(dxp(1:3)**2)
-!!$             if (r2.eq.zero*zero) & 
-!!$                  write(*,*) '1. WARNING IN calfoeamcell TWO ATOMS VERY CLOSE i ,j , dist(angst)', i ,j , sqrt(r2)*angst
-!!$
-!!$             if (r2>rue2) cycle
-!!$             r=sqrt(r2)
-
-
-
              k=Int(r*inv_ktor)
              gradij(1:3) = dxp(1:3)/r
              drk=r-k*ktor
@@ -307,11 +247,9 @@ contains
 
        koo = atcf%ielat(i)                          ! Numero de la cellule
        iti = atcf%ityp(i)
-       ncelvois = min(celcf%noxyz,27)-1
        ! pour chaque cel. voisine
-       loop2cel:   do i1 = 0, ncelvois
+       loop2cel:   do i1 = 0, celcf%ncelvois(koo)
           ko1 = celcf%ncel(koo,i1)
-!          cp(1:3) = xpnp(1:3,i) + MatMul(at(1:3,:),deltadist(:,i1,koo))
           ! pour chaque atome ds la cel. voisine
           loop2at2: do i2 = 1, celcf%nato(ko1)
              j = celcf%atincel(i2,ko1)
@@ -347,42 +285,6 @@ contains
            call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue,linter=linter,dist=r)
            if(.not.linter) cycle
 
-!!$             if (noxyz.ne.1) then
-!!$                dxp(1) = cp(1)-xpnp(1,j)
-!!$                IF ( (dxp(1)>rue).OR.(dxp(1)<-rue) ) Cycle
-!!$                dxp(2) = cp(2)-xpnp(2,j)
-!!$                IF ( (dxp(2)>rue).OR.(dxp(2)<-rue) ) Cycle
-!!$                dxp(3) = cp(3)-xpnp(3,j)
-!!$                IF ( (dxp(3)>rue).OR.(dxp(3)<-rue) ) Cycle
-!!$             else
-!!$                dxp(1) = cp(1)-xpnp(1,j)
-!!$                dxp(2) = cp(2)-xpnp(2,j)
-!!$                dxp(3) = cp(3)-xpnp(3,j)
-!!$                cv(1,1) = dxp(1)
-!!$                cv(1,2) = dxp(2)
-!!$                cv(1,3) = dxp(3)
-!!$                call cryst_to_cart (1, cv, bg, -1) !cryst vers cart sur cv
-!!$                WHERE ( (cv.GT.0.5d0).OR.(cv.LT.-0.5d0) )
-!!$                   cv(:,1:3) = cv(:,1:3) - Dble(Nint(cv(:,1:3)))
-!!$                END WHERE
-!!$                call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-!!$                dxp(1)=cv(1,1)
-!!$                dxp(2)=cv(1,2)
-!!$                dxp(3)=cv(1,3)
-!!$             end if
-!!$
-!!$             do izero=1,3
-!!$                if (dabs(dxp(izero)).lt.low_limit) then
-!!$                   dxp(izero) = zero
-!!$                end if
-!!$             end do
-!!$
-!!$
-!!$             r2 = Sum(dxp(1:3)**2)
-!!$             if (r2>rue2) cycle
-!!$
-
-!             r=sqrt(r2)
              if (r.eq.zero) & 
                   write(*,*) '2. WARNING IN calfoeamcell TWO ATOMS VERY CLOSE i ,j , dist(angst)', i ,j , r*angst
 

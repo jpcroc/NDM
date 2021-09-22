@@ -12,7 +12,6 @@ module WGC_mod
   USE initspeed_mod,only: bruit_xp
 #ifdef PARA
   use Tpara,only:COMM_space,myidsp,nprocspace,para_space_config
-  use mod_para,only:maj_atomes_frt_ftm
 #else
   use Tpara,only:nprocspace,para_space_config
 #endif
@@ -23,7 +22,7 @@ module WGC_mod
   USE parautils,only:initcomp,depeche_mode
   USE Mat_utils_mod,only:  MatInv
   USE scalebox_mod,only: scalebox
-  USE boxconfig,only:box_config,periodbox,initbox
+  USE boxconfig,only:box_config,periodbox,updatebox
   USE recips_mod,only: recips ,calcvol
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE rasmolT_mod,only: rasmolT
@@ -175,7 +174,7 @@ contains
                    end if
                 end do
              end do
-             call initbox(boxcgmin,boxcgmin%at)
+             call updatebox(boxcgmin,boxcgmin%at)
           end select
        end if
     end if
@@ -350,7 +349,7 @@ contains
                 end if
              end do
           end do
-          call initbox(boxcg,boxcg%at)
+          call updatebox(boxcg,boxcg%at)
           call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
           potist=V
        else
@@ -402,7 +401,7 @@ contains
              end if
           end do
        end do
-       call initbox(boxcg,boxcg%at)
+       call updatebox(boxcg,boxcg%at)
 
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
 

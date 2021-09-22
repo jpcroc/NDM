@@ -3,9 +3,9 @@ module controleT_mod
   USE caltabi_mod,only: caltabi
   USE creadp_mod,only: creadp
   USE deftimestep_mod,only: deftimestep
-  USE atomconfig,only:atom_config,atom_config_d!,ndm2config,config2ndm
-  USE cellconfig, only:cell_config!,ndm2cellconfig,cellconfig2ndm,caltabtC
-  USE boxconfig,only:box_config,periodbox!,boxconfig2ndm,ndm2boxconfig
+  USE atomconfig,only:atom_config,atom_config_d
+  USE cellconfig, only:cell_config
+  USE boxconfig,only:box_config,periodbox
 #ifdef PARA
   USE Tpara,only:COMM_space,nprocspace,myidsp
 #else
@@ -28,8 +28,6 @@ contains
          &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang
 
     USE var_pot, ONLY:
-    USE cryst_to_cart_mod,only: cryst_to_cart
-    USE notperiod_mod,only: notperiod
     USE defcdp, ONLY :itecdp
     implicit none
 
@@ -43,7 +41,6 @@ contains
     real(double) :: ltc, ctime, tdev, tcool, epc1, epc2, epc3,masstot,massa,tclt
     real(double), dimension(1,3) :: xtr, cv
     real(double) :: fpmax,fpn,forctot,formax,fpsmax
-    !    real(double),allocatable :: xpnp(:,:)
     real(double) :: potistmean,potistdif
     real(double),save :: potist1000
     real, allocatable,save :: potiststock(:)

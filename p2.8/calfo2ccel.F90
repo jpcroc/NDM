@@ -1,6 +1,4 @@
 module calfo2ccel_mod
-  USE notperiod_mod,only: notperiod
-  USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:alpha,csive,ipotentiel,ipo,zz,ipo,rue_pair,pot,typ_and_pot,typ_pot_pair
   USE calfocommon
   use vect_dist_mod,only:vect_dist
@@ -12,7 +10,7 @@ module calfo2ccel_mod
   implicit none
 contains
   ! ***************************************************************
-  subroutine calfo2ccel(atcf,celcf,boxcf)!(im,imm,xp,   fp,  ityp,ielat,num_at_glob,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
+  subroutine calfo2ccel(atcf,celcf,boxcf)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -30,7 +28,7 @@ contains
     type(box_config),intent(in)::boxcf
 
     integer :: iti, l, i, koo, i1, ko1, j, i2, itj, k, &
-         ic, ncelvois,itimin,itimax
+         ic, itimin,itimax
     real(double) :: aux, alp, f1, f2, f3,  c1, c2&
          , c3, c1p,c2p,c3p, sk, r, phu, c1abs,c2abs,c3abs, ra(3),cv(1,3)
     real(double) :: dr,deltaepot,fcontr
@@ -55,10 +53,8 @@ contains
 
        potis2 = potis2-zz(l)*alp
 
-       ncelvois = min(celcf%noxyz,27)-1
-
        ! pour chaque cel. voisine
-       do i1 = 0, ncelvois
+       do i1 = 0, celcf%ncelvois(koo)
           ko1 = celcf%ncel(koo,i1)
           ! pour chaque atome ds la cel. voisine
           do i2 = 1, celcf%nato(ko1)

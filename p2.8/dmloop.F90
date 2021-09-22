@@ -17,11 +17,6 @@ module dmloop_mod
   USE gen_com_m,only: dmtype,it,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
        & itetabvois,lperiod,lspaceNDM
   use var_pot, only: cm
-#ifdef PARA
-  USE mod_para,only:maj_atomes_frt_ftm
-#else
-  
-#endif
    use Tpara,only:nprocspace,para_space_config,comm_space
 
   implicit none
@@ -143,23 +138,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        write (6, *) 'ne sait pas quoi faire stop'
        stop
     end select
-
-!!$    if (lperiod)       call periodbox(boxndm,atdml)
-!!$       if (itab/=0) then
-!!$          if (mod(it,itab)==0) then
-!!$             call caltabtC(celndm,atdml,lperiod,boxndm)
-!!$          endif
-!!$       endif
-!!$
-!!$    if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
-!!$       call caltabi(atdml%atom_config,celndm,boxndm)
-!!$    end if
-!!$#ifdef PARA
-!!$if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-!!$       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-!!$       call maj_atomes_frt_ftm(atdml,celndm,psc)
-!!$    end if
-!!$#endif
     call  driver_caltabt_DM(sig,potist,atdml,celndm,boxndm,psc,lperiod)
 
     call analyseT (atdml,celndm,boxndm)    

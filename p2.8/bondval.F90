@@ -21,7 +21,7 @@ contains
     ! variables locales
 
     integer :: i,k,i1,j,iti,itj,i2
-    integer :: ncelvois,koo,ko1,lenfn2
+    integer :: koo,ko1,lenfn2
     real(double)::c1p,c2p,c3p,cv(1,3),ra(3),c1,c2,c3
     real(double),allocatable::bdv(:)
     real(double) :: R,xx,dcut,dis
@@ -55,8 +55,7 @@ contains
     do i = 1, atbv%im
        koo = atbv%ielat(i)                          ! Numero de la cellule
        iti=atbv%ityp(i)
-       ncelvois = min(celbv%noxyz,27)-1
-       do i1 = 0, ncelvois
+       do i1 = 0, celbv%ncelvois(koo)
           ko1 = celbv%ncel(koo,i1)
           do i2 = 1, celbv%nato(ko1)
              j = celbv%atincel(i2,ko1)

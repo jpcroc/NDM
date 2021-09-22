@@ -15,6 +15,7 @@ module cellconfig
      integer,allocatable:: ncel (:,:) ! ncel(ko,i1)=numéro de la ième cellule voisine de la cellule ko
      integer,allocatable:: atincel (:,:) ! atincel(i,k)= indice du ième atome de la cellule k
      integer,allocatable:: deltadist(:,:,:) !gestion des conditions périodiques entre les cellules (voisinage de bords de boites)
+     integer,allocatable:: ncelvois(:) !nombre de cellules voisines de la cellule actuelle (26 pour PBC standard; dépend de la position dans la boite pour les PBC partielles
      logical :: ltpcel
      real(double),allocatable::sigc(:,:,:),tempc(:)
      real(double):: celsize(3)
@@ -70,11 +71,12 @@ contains
 
 
 
-  subroutine init_cel(cell,nox,noy,noz,natperc,ltpc)
+  subroutine init_cel(cell,box,nox,noy,noz,natperc,ltpc)
     class(cell_config)::cell
     integer,intent(in),optional::nox,noy,noz,natperc
     logical,optional,intent(in):: ltpc
     logical::ltpcel
+    type(box_config)::box
     ltpcel=.false.
     if (present (ltpc))ltpcel=ltpc
     if (present(nox)) then
@@ -90,7 +92,7 @@ contains
     cell%ltpcel=ltpcel
     call dealloc_cel(cell)
     call allocatecelN(cell)
-    call neigcelN(cell)
+    call neigcelN(cell,box)
 !    call cell%print
     return
 
@@ -103,12 +105,15 @@ contains
     cell%noxyz=cell%nox*cell%noy*cell%noz
     nsize=cell%noxyz
     if (nsize.ne.0) then
-       allocate(cell%ncel(0:nsize,0:26))
+       allocate(cell%ncel(nsize,0:26))
        cell%ncel=0
-       allocate(cell%nato(0:nsize))
+       allocate(cell%nato(nsize))
        cell%nato=0
+       allocate(cell%ncelvois(nsize))
        allocate(cell%deltadist(3,0:26,nsize))
        cell%deltadist=0
+            
+       
        if (cell%ltpcel) then
           allocate(cell%sigc(3,3,nsize))
           cell%sigc=0
@@ -116,7 +121,7 @@ contains
           cell%tempc=0
        end if
        if (cell%natperc.ne.0)   then
-          allocate(cell%atincel(cell%natperc,0:nsize))
+          allocate(cell%atincel(cell%natperc,nsize))
           cell%atincel=0
        end if
 #ifdef PARA
@@ -133,6 +138,7 @@ contains
     class(cell_config)::cell
 
     if (allocated(cell%ncel))       deallocate(cell%ncel)
+    if (allocated(cell%ncelvois))       deallocate(cell%ncelvois)
     if (allocated(cell%nato))       deallocate(cell%nato)
     if (allocated(cell%atincel))    deallocate(cell%atincel)
     if (allocated(cell%deltadist))  deallocate(cell%deltadist)
@@ -145,31 +151,74 @@ contains
 
   end subroutine dealloc_cel
 
-  subroutine neigcelN(cell)
+  subroutine neigcelN(cell,box)
     class(cell_config)::cell
-
-    integer :: kx, ky, kz, koo, l, lz, mz, ly, my, lx, mx, kxy
+    type(box_config),intent(in)::box
+    integer :: kx, ky, kz, koo, l, lz, mz, ly, my, lx, mx, kxy!,ldx,lfx,ldy,lfy,ldz,lfz
 
     if (cell%noxyz==1) then
        cell%ncel(1,0)=1
        cell%deltadist=0
+       cell%ncelvois(1)=0
     else
-
+       cell%deltadist(:,:,:) = 0 ! par défaut celldeltadist=0
        do kz = 1, cell%noz
           do ky = 1, cell%noy
              do kx = 1, cell%nox
                 koo = 1+(kx-1)+cell%nox*((ky-1)+cell%noy*(kz-1))
                 cell%ncel(koo,0) = koo
-                cell%deltadist(:,0,koo) = 0
+                !                cell%deltadist(:,0,koo) = 0
+!                cell%ncelvois(koo)= min(celcf%noxyz,27)-1
+                l = 0 
 
-                l = 1
                 do lz = -1, 1
                    do ly = -1, 1
-                      do lx = -1, 1
-                         cell%deltadist(:,l,koo) = 0
-
+                      loopin:  do lx = -1, 1
+                         if((lx==0).and.(ly==0).and.(lz==0)) cycle loopin !cellule en cours d'analyse (lignes au dessus)
                          mz = kz+lz
-                         if (mz<1) then
+                         mx = kx+lx
+                         my = ky+ly
+                         if(box%ipbc(1).ne.1) then
+                            if((mx<1).or.(mx>cell%nox)) then !débordement
+                               cycle loopin
+                            end if
+                         else
+                            select case(cell%nox)
+                            case(1)
+                               if ((lx==-1).or.(lx==1)) cycle loopin
+                            case(2)
+                               if (lx==-1) cycle loopin
+                            end select
+                         end if
+                         
+                         if(box%ipbc(2).ne.1) then
+                            if((my<1).or.(my>cell%noy)) then !débordement
+                               cycle loopin
+                            end if
+                         else
+                            select case(cell%noy)
+                            case(1)
+                               if ((ly==-1).or.(ly==1)) cycle loopin
+                            case(2)
+                               if (ly==-1) cycle loopin
+                            end select
+                         end if
+                         
+                         if(box%ipbc(3).ne.1) then
+                            if((mz<1).or.(mz>cell%noz)) then !débordement
+                               cycle loopin
+                            end if
+                         else
+                            select case(cell%noz)
+                            case(1)
+                               if ((lz==-1).or.(lz==1)) cycle loopin
+                            case(2)
+                               if (lz==-1) cycle loopin
+                            end select
+                         end if
+
+                         l=l+1 ! on est dans une vraie cellule voisine !
+                         if (mz<1) then ! on ne peut pas être ici si ipbc(3).ne.1
                             mz = mz+cell%noz
                             cell%deltadist(3,l,koo) = 1
                          endif
@@ -178,7 +227,6 @@ contains
                             cell%deltadist(3,l,koo) = -1
                          endif
 
-                         my = ky+ly
                          if (my<1) then
                             my = my+cell%noy
                             cell%deltadist(2,l,koo) = 1
@@ -188,7 +236,6 @@ contains
                             cell%deltadist(2,l,koo) = -1
                          endif
 
-                         mx = kx-lx
                          if (mx<1) then
                             mx = mx+cell%nox
                             cell%deltadist(1,l,koo) = 1
@@ -199,19 +246,24 @@ contains
                          endif
 
                          kxy = 1+(mx-1)+cell%nox*((my-1)+cell%noy*(mz-1))
-                         if (kxy==koo) cycle
+!                         if (kxy==koo) cycle
                          cell%ncel(koo,l) = kxy
                          !                        write(6,*)koo,lz,ly,lx,l,kxy
                          !                        if ((kz==cell%noz).and.(lz==1))write(6,*)koo,lz,l,kxy
                          !                        if ((kz==1).and.(lz==-1))write(6,*)koo,lz,l,kxy
-                         l = l+1
-                      end do
+                      end do loopin
                    end do
                 end do
+                cell%ncelvois(koo)=l
              end do
           end do
        end do
     end if
+!!$    do kx=1,cell%noxyz
+!!$       write(6,*)'ncelvois', cell%ncelvois(kx)
+!!$       write(6,*)cell%ncel(kx,:)
+!!$    end do
+          
     !      if (ltranche) then
     !         do kz = 1, noz
     !            do ky = 1, noy
@@ -269,8 +321,8 @@ contains
     icaltabt=icaltabt+1
 !       write(6,*)'caltabt',icaltabt
 
-    cell%nato(0:cell%noxyz) = 0
-    cell%atincel(1:cell%natperc,0:cell%noxyz) = 0
+    cell%nato(1:cell%noxyz) = 0
+    cell%atincel(1:cell%natperc,1:cell%noxyz) = 0
     
     !  -------- cas sans cellule  -----------
 
@@ -283,12 +335,7 @@ contains
     else
 
        ALLOCATE(xpnp(3,atcf%imm))
-    
-       if (lperiod) then            
-          xpnp(:,:)=atcf%xp(:,:)         
-       else                         
-          call notperiod(atcf%im,atcf%xp,xpnp,boxcf%at,boxcf%bg)   
-       end if
+       call notperiod(atcf%im,atcf%xp,xpnp,boxcf%at,boxcf%bg,lperiod)       
 
        !  -------- Initialisations  -----------
 
@@ -297,7 +344,14 @@ contains
        ! - - - - - - - - - - - - - - - - - - - - - -
 
        !debug       write (*,*) 'sub caltabt 1',it,xp(1,1)
-       call cryst_to_cart (atcf%im, xpnp, boxcf%bg, -1) !cart vers cryst
+       call cryst_to_cart (atcf%im, xpnp, boxcf%bg, -1) ! cart vers cryst
+       if (any(xpnp(:,1:atcf%im).gt.1).or.any(xpnp(:,1:atcf%im).lt.0)) then
+          do i=1,atcf%im
+             write(6,*) i,xpnp(:,i)
+          end do
+          write(6,*)'caltabtc xpnp <0 ou >1 stop'
+          stop
+       end if
        !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
 
        !     if (it.gt.1000) write(6,*)'CALTABT',it
@@ -329,7 +383,7 @@ contains
           END IF
           atcf%ielat(i) = koo
           cell%nato(koo) = cell%nato(koo)+1
-          !          write(6,*)'caltabt', koo,i,cell%nato(koo)        ! DEBUG
+!                    write(6,*)'caltabt', koo,i,cell%nato(koo)        ! DEBUG
           ! ==== MODIF Clouet =====================
           IF (cell%nato(koo).GT.cell%natperc) THEN
              WRITE(0,'(a)') 'caltabtC : You need to increase the maximal number of atoms per cell'
@@ -370,10 +424,11 @@ contains
   end subroutine caltabtC
 
 
-  subroutine ndm2cellconfig(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpc,sigc,tempc,proc_cell)
+  subroutine ndm2cellconfig(celndm,box,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpc,sigc,tempc,proc_cell)
     type(cell_config), intent(out):: celndm
+    type(box_config)::box
     integer, intent(in):: nox,noy,noz,natperc,noxyz
-    integer,intent(in)::ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
+    integer,intent(in)::ncel(noxyz,0:26),nato(noxyz),atincel(natperc,noxyz),deltadist(3,0:26,noxyz)
     real(double),intent(in)::celsize(3)
     logical,optional,intent(in)::ltpc
     real(double),intent(in),optional,allocatable::sigc(:,:,:),tempc(:)
@@ -381,7 +436,7 @@ contains
     integer,optional::proc_cell(:)
     if (present (ltpc))ltpcel=ltpc
     if (.not.allocated(celndm%ncel))then
-       call init_cel(celndm,nox,noy,noz,natperc,ltpcel)
+       call init_cel(celndm,box,nox,noy,noz,natperc,ltpcel)
     end if
     !    celndm%nox=nox
     !    celndm%noy=noy
@@ -393,9 +448,9 @@ contains
     !    end if
     !    call allocatecelN(celndm)
     celndm%icaltabt=0
-    celndm%ncel(0:noxyz,0:26)=ncel(0:noxyz,0:26)
-    celndm%nato(0:noxyz)=nato(0:noxyz)
-    celndm%atincel(1:natperc,0:noxyz)=atincel(1:natperc,0:noxyz)
+    celndm%ncel(1:noxyz,0:26)=ncel(1:noxyz,0:26)
+    celndm%nato(1:noxyz)=nato(1:noxyz)
+    celndm%atincel(1:natperc,1:noxyz)=atincel(1:natperc,1:noxyz)
     celndm%deltadist(1:3,0:26,1:noxyz)=deltadist(1:3,0:26,1:noxyz)
     celndm%celsize(1:3)=celsize(1:3)
     if (ltpcel)then
@@ -424,9 +479,9 @@ contains
        if(allocated(ncel)) deallocate(ncel)
        if(allocated(atincel)) deallocate(atincel)
        if(allocated(deltadist)) deallocate(deltadist)
-       allocate(ncel(0:noxyz,0:26));allocate(atincel(natperc,0:noxyz));allocate(deltadist(3,0:26,noxyz))
+       allocate(ncel(1:noxyz,0:26));allocate(atincel(natperc,1:noxyz));allocate(deltadist(3,0:26,1:noxyz))
        if (allocated(nato)) deallocate(nato)
-       allocate(nato(0:noxyz))
+       allocate(nato(noxyz))
 #ifdef PARA
        if (present(proc_cell))then
           if(allocated(proc_cell)) deallocate(proc_cell)
@@ -451,9 +506,9 @@ contains
        end if
     end if
 !    celndm%icaltabt=0
-    ncel(0:noxyz,0:26)=celndm%ncel(0:noxyz,0:26)
-    nato(0:noxyz)=celndm%nato(0:noxyz)
-    atincel(1:natperc,0:noxyz)=celndm%atincel(1:natperc,0:noxyz)
+    ncel(1:noxyz,0:26)=celndm%ncel(1:noxyz,0:26)
+    nato(1:noxyz)=celndm%nato(1:noxyz)
+    atincel(1:natperc,1:noxyz)=celndm%atincel(1:natperc,1:noxyz)
     deltadist(1:3,0:26,1:noxyz)=celndm%deltadist(1:3,0:26,1:noxyz)
     celsize(1:3)=celndm%celsize(1:3)
     if (celndm%ltpcel)then
@@ -468,12 +523,15 @@ contains
 
   ! copie d'une config entière vers config de base
 
-  subroutine copy_cell (cellsource,cellcible)
+  subroutine copy_cell (cellsource,cellcible,box)
     class(cell_config)::cellsource
     class(cell_config)::cellcible
+    type(box_config)::box
 
     call cellcible%dealloc
-    call cellcible%init(cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc)
+    cellcible%ltpcel=cellsource%ltpcel
+    !    cellcible=cellsource
+    call cellcible%init(box,cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc)
 
     cellcible%nox=cellsource%nox
     cellcible%noy=cellsource%noy

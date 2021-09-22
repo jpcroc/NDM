@@ -116,7 +116,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
 
     endif
-    call celsn%init(nox,noy,noz,ltpc=ltpcel)
+    call celsn%init(boxsn,nox,noy,noz,ltpc=ltpcel)
      if ((rang==0).and.(lverb)) write(6,'(A,3G15.7)') 'celsizes ',celsn%celsize(:)
     ! nox noy et noz sont determines
 
@@ -161,7 +161,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
          write(6,*) 'natperc im/noxyz', natperc, im_glob/celscf%noxyz
     celscf%natperc=natperc
     if (allocated(celscf%atincel))deallocate(celscf%atincel)
-    allocate(celscf%atincel(celscf%natperc,0:celscf%noxyz))
+    allocate(celscf%atincel(celscf%natperc,celscf%noxyz))
     celscf%atincel=0
   if ((rang==0).and.(lverb))  write(6,*)'ltabvois,lconstrtot',atcf%ltabvois,lconstrtot
 

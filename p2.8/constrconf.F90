@@ -2,7 +2,7 @@ module constrconf_mod
 #ifdef PARA
   USE decoupage_mod,only: decoupage
 #endif
-  USE read_val,only:imm,rvois
+  USE read_val,only:imm,rvois,ipbc
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,im_glob,imm_glob,ldecoup,lperiod,lrestart,rang,&
        &lvpread,zero,low_limit,lspacendm,rang
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
@@ -266,7 +266,7 @@ contains
     do ic=1,3
        atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
     end do
-    call initbox(box2b,atg)
+    call initbox(box2b,atg,ipbc)
     
     call setnox(box2b,cel2b,rum)
 
@@ -549,7 +549,7 @@ contains
        end do
     end if
 
-    call initbox(boxcin,at)
+    call initbox(boxcin,at,ipbc)
 
     select case(itread)
     case(0)
@@ -808,7 +808,7 @@ contains
     !                                                !c
     read (lugin, *) at(1,3), at(2,3), at(3,3)
     at=at*1d-8
-    call initbox(boxrg,at)
+    call initbox(boxrg,at,ipbc)
     read (lugin, *) imcell               !number of atoms in UC
     if (itr==0) return
     if (imcell>imm_glob) then
@@ -827,14 +827,15 @@ contains
        if (rang==0) write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
        atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)-1e-7
     end if
-    if (lperiod) then
-       do i=1,imcell
-          WHERE ( (atrg%xp(:,i).LT.0.d0).OR.(atrg%xp(:,i).GE.1.d0) )
-             atrg%xp(:,i)  = atrg%xp(:,i)  - Dble(Floor(atrg%xp(:,i)))
-          END WHERE
-       end do
-    end if
-
+    do ic=1,3
+       if ((lperiod).or.(ipbc(ic).ne.1)) then
+          do i=1,imcell
+             if ( (atrg%xp(ic,i).LT.0.d0).OR.(atrg%xp(ic,i).GE.1.d0) ) then
+                atrg%xp(ic,i)  = atrg%xp(ic,i)  - Dble(Floor(atrg%xp(ic,i)))
+             END if
+          end do
+       end if
+    end do
     close(lugin)
   end subroutine read_gin
   

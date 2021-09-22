@@ -1,6 +1,4 @@
 module calfo3c_mod
-  USE cryst_to_cart_mod,only: cryst_to_cart
-  USE notperiod_mod,only: notperiod
   USE calfocommon
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
@@ -11,7 +9,7 @@ module calfo3c_mod
   implicit none 
 contains
   ! *****************************************************************
-  subroutine calfo3c(atcf,celcf,boxcf)!(im,imm,xp, fp, ielat,  ityp,noxyz,natperc,atincel,nato,ncel,deltadist,at,bg,volu)
+  subroutine calfo3c(atcf,celcf,boxcf)
     !version du 20.11.2001
     !-----------------------------------------------
     !   M o d u l e s
@@ -48,7 +46,7 @@ contains
          rij,riji,rij2,rik,riki,rik2, &
          rrijk(6,3)
     integer :: Deb
-    integer :: Fin,ncelvois
+    integer :: Fin
 
 
     REAL(double), dimension(1:3) :: dxp
@@ -86,9 +84,9 @@ contains
           !C --- calcul du # de cellule KOO de l'atome i
           KOO=atcf%ielat(i)
          !C --- calcul du tableau MERKEN des voisins du i considere
-          ncelvois = min(celcf%noxyz,27)-1
+
           ! pour chaque cel. voisine
-          do i1 = 0, ncelvois
+          do i1 = 0, celcf%ncelvois(koo)
 
              !     DO  I1=0,26
              KO1=celcf%NCEL(KOO,I1)

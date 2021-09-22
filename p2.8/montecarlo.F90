@@ -17,7 +17,6 @@ module montecarlo_mod
 #ifdef PARA
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
        &NDM_MPI_REAL_DOUBLE,para_space_config,status,comm_space,mpi_world
-  use mod_para,only:maj_atomes_frt_ftm
   USE init_vois_mod,only: init_voisinage
 #else
   use Tpara,only:myidsp,nprocspace,para_space_config
@@ -1072,12 +1071,14 @@ subroutine calcul_dist(coord_atom, dist)
     end do
     !write(*,*) ref(j,1), coord_atom(j,1)
     distance(j,1) = ref(j,1) - coord_atom(j,1)
-    if (distance(j,1) .gt. 0.5) then
-       distance(j,1) = distance(j,1) -1
-    end if !CP si >0.5
-    if (distance(j,1) .lt. -0.5) then
-       distance(j,1) = distance(j,1) +1
-    end if !CP si <-0.5
+    if(boxmcgc%ipbc(j)==1) then
+       if (distance(j,1) .gt. 0.5) then
+          distance(j,1) = distance(j,1) -1
+       end if !CP si >0.5
+       if (distance(j,1) .lt. -0.5) then
+          distance(j,1) = distance(j,1) +1
+       end if !CP si <-0.5
+    end if
     dist = dist + (distance(j,1)*boxmcgc%at(j,j))**2
  END DO !boucle sur les coord
  dist = dsqrt(dist)*1E8
@@ -1788,13 +1789,18 @@ subroutine distat(xi,x0,box,dist)
  real(double)::dist
  real(double),dimension (3,2)::xat
  integer::ns=2
+ integer::ic
  xat(:,1)=xi(:)
  xat(:,2)=x0(:)
  call cryst_to_cart (ns,xat,box%bg,-1)
  dx(1:3)=xat(1:3,1)-xat(1:3,2)
- WHERE ( (dx.GT.0.5d0).OR.(dx.LT.-0.5d0) )
-    dx(1:3) = dx(1:3) - Dble(Nint(dx(1:3)))
- END WHERE
+ do ic=1,3
+    if (boxmcgc%ipbc(ic)==1) then
+       if ( (dx(ic).GT.0.5d0).OR.(dx(ic).LT.-0.5d0) )then
+          dx(ic) = dx(ic) - Dble(Nint(dx(ic)))
+       end if
+    end if
+ end do
  dx = MatMul(box%at,dx)
  dist = sqrt(Sum( dx(1:3)**2 ))
  return
@@ -1839,12 +1845,14 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
      !atconf_Nplus1%vp(1:3,atconf_Nplus1%im) = 0
      call init_vitesse(atconf_nplus1,param = 0)
      !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
-     call cells_nplus1%init(cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
-     call cells_n%copy_cell(cells_nplus1)
+     cells_nplus1=cells_n
+!!$     call cells_nplus1%init(cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+!!$     call cells_n%copy_cell(cells_nplus1)
   else
      call atconf_nplus1%init(atconf_n%im+1,atconf_n%imm,atconf_n%ltabvois)
-     call cells_nplus1%init(cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
-     call cells_n%copy_cell(cells_nplus1)
+     cells_nplus1=cells_n
+!!$     call cells_nplus1%init(cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+!!$     call cells_n%copy_cell(cells_nplus1)
   end if
 
 
@@ -1862,13 +1870,11 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
   if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
      if(paramcgc%image==0) then !procs N
         call init_voisinage(cells_n,pscgc)
-        !?          call maj_atomes_frt_ftm(atconf_n,cells_n)
 
      else !procs N+1
         call atconf_nplus1%send2all(0,paramcgc%mpi_image)
         call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc)
         call init_voisinage(cells_nplus1,pscgc)
-        !?          call maj_atomes_frt_ftm(atconf_nplus1,cells_nplus1)
      end if
 
   end if

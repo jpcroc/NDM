@@ -13,6 +13,7 @@ module posana
   use rasmolT_mod,only:rasmolT
   USE constrconf_mod,only:gin2ndm,read_cin
   use vect_dist_mod,only:vect_dist
+  use read_val,only:ipbc
   implicit none
 
   CHARACTER(len=89) :: fnamcr,namecr
@@ -313,7 +314,7 @@ contains
 
     !Variables locales
     integer :: koo,iti,i,ko1,i1,i2,lenfn2,lenfn,j
-    integer :: natvi(0:20),natvityp(0:20,20),iatvi,latvi,ncelvois
+    integer :: natvi(0:20),natvityp(0:20,20),iatvi,latvi
     real(double):: c1,c2,c3,r2,xp1,xp2,xp3
     character*9 :: extension
     character(len=2) :: extension2
@@ -360,7 +361,6 @@ contains
 
     !calcul en deux temps
     !calcul du nombre de voisins par atome
-    !    call ndm2config(atdml,im,imm,xp,fp,ityp,ielat,num_at_glob=num_at_glob,ltabvois=ltabvois,iwmax=iwmax,indi=indi,nvois=nvois,vp=vp,xpp=xpp)
 
     call caltabtC(celcf,atcf,lperiod,boxcf) 
     !    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
@@ -376,8 +376,7 @@ contains
        nvityp(i,:)=0
        koo = atcf%ielat(i)
        iti=atcf%ityp(i)
-       ncelvois = min(celcf%noxyz,27)-1
-       do i1 = 0, ncelvois
+       do i1 = 0, celcf%ncelvois(koo)
           ko1 = celcf%ncel(koo,i1)
           !       write(6,*)'koo,ko1',koo,ko1
           do i2 = 1, celcf%nato(ko1)
@@ -881,7 +880,7 @@ contains
 
 
     !Local variables
-    integer :: i,j,k,ic,nplt,idp,iplt,immax,immin,koo,ncelvois
+    integer :: i,j,k,ic,nplt,idp,iplt,immax,immin,koo
 
 
     real(double) :: a1,a2,a3,c1,c2,c3,r2
@@ -906,7 +905,6 @@ contains
           write(6,*)'comparison based on displacements', tdep
        end if
     end if
-    ncelvois = min(celc%noxyz,27)-1
 
     allocate(indplt(atc%imm))
     allocate(natsit(immax))
@@ -933,7 +931,7 @@ contains
           r2min =100.0
           koo = atc%ielat(i)                          ! Numero de la cellule
           ! pour chaque cel. voisine
-          do i1 = 0, ncelvois
+          do i1 = 0, celr%ncelvois(koo)
              ko1=celr%ncel(koo,i1)
 
              !              write(6,*)i,idp,koo,i1,ko1,natocr(ko1)
@@ -943,12 +941,18 @@ contains
                 c1 = atc%xp(1,i)-atr%xp(1,j)
                 c2 = atc%xp(2,i)-atr%xp(2,j)
                 c3 = atc%xp(3,i)-atr%xp(3,j)
-                if (c1>0.5) c1 = c1-1.
-                if (c1<(-0.5)) c1 = c1+1.
-                if (c2>0.5) c2 = c2-1.
-                if (c2<(-0.5)) c2 = c2+1.
-                if (c3>0.5) c3 = c3-1.
-                if (c3<(-0.5)) c3 = c3+1.
+                if (boxc%ipbc(1)==1) then
+                   if (c1>0.5) c1 = c1-1.
+                   if (c1<(-0.5)) c1 = c1+1.
+                end if
+                if (boxc%ipbc(2)==1) then
+                   if (c2>0.5) c2 = c2-1.
+                   if (c2<(-0.5)) c2 = c2+1.
+                end if
+                if (boxc%ipbc(3)==1) then
+                   if (c3>0.5) c3 = c3-1.
+                   if (c3<(-0.5)) c3 = c3+1.
+                end if
                 cv(1,1) = c1
                 cv(1,2) = c2
                 cv(1,3) = c3
@@ -990,12 +994,18 @@ contains
              c1 = atc%xp(1,i)-atr%xp(1,i)
              c2 = atc%xp(2,i)-atr%xp(2,i)
              c3 = atc%xp(3,i)-atr%xp(3,i)
-             if (c1>0.5) c1 = c1-1.
-             if (c1<(-0.5)) c1 = c1+1.
-             if (c2>0.5) c2 = c2-1.
-             if (c2<(-0.5)) c2 = c2+1.
-             if (c3>0.5) c3 = c3-1.
-             if (c3<(-0.5)) c3 = c3+1.
+             if (boxc%ipbc(1)==1) then
+                if (c1>0.5) c1 = c1-1.
+                if (c1<(-0.5)) c1 = c1+1.
+             end if
+             if (boxc%ipbc(2)==1) then
+                if (c2>0.5) c2 = c2-1.
+                if (c2<(-0.5)) c2 = c2+1.
+             end if
+             if (boxc%ipbc(3)==1) then
+                if (c3>0.5) c3 = c3-1.
+                if (c3<(-0.5)) c3 = c3+1.
+             end if
              cv(1,1) = c1
              cv(1,2) = c2
              cv(1,3) = c3
@@ -1055,7 +1065,7 @@ contains
              koo = atc%ielat(i)                          ! Numero de la cellule
              !          write(6,*)'i idp ',i,idp
              ! pour chaque cel. voisine
-             do i1 = 0, ncelvois
+             do i1 = 0, celr%ncelvois(koo)
                 ko1=celr%ncel(koo,i1)
                 !              write(6,*)i,idp,koo,i1,ko1,natocr(ko1)
                 do i2 = 1, celr%nato(ko1) !atomes dans la cel dans la conf. init.
@@ -1064,12 +1074,18 @@ contains
                    c1 = atc%xp(1,i)-atr%xp(1,j)
                    c2 = atc%xp(2,i)-atr%xp(2,j)
                    c3 = atc%xp(3,i)-atr%xp(3,j)
-                   if (c1>0.5) c1 = c1-1.
-                   if (c1<(-0.5)) c1 = c1+1.
-                   if (c2>0.5) c2 = c2-1.
-                   if (c2<(-0.5)) c2 = c2+1.
-                   if (c3>0.5) c3 = c3-1.
-                   if (c3<(-0.5)) c3 = c3+1.
+                   if (boxc%ipbc(1)==1) then
+                      if (c1>0.5) c1 = c1-1.
+                      if (c1<(-0.5)) c1 = c1+1.
+                   end if
+                   if (boxc%ipbc(2)==1) then
+                      if (c2>0.5) c2 = c2-1.
+                      if (c2<(-0.5)) c2 = c2+1.
+                   end if
+                   if (boxc%ipbc(3)==1) then                      
+                      if (c3>0.5) c3 = c3-1.
+                      if (c3<(-0.5)) c3 = c3+1.
+                   end if
                    cv(1,1) = c1
                    cv(1,2) = c2
                    cv(1,3) = c3
@@ -1516,7 +1532,7 @@ contains
     do ic=1,3
        at_plt(ic,ic)=plmax(ic)-plmin(ic)
     end do
-    call initbox(boxplt,at_plt)
+    call initbox(boxplt,at_plt,ipbc)
     !    namepltpart='partial'
 !    itapp=it
 !    call rasmolT(atplt,boxplt,namefr=namepltpart,latcomp=.true.,ivisumol=ivisuana)

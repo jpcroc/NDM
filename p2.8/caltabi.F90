@@ -1,6 +1,5 @@
 !****************************************************************
 module caltabi_mod
-  USE notperiod_mod,only: notperiod
   USE gen_com_m, ONLY:it,ivoismax,lconstrtot,ldemitab,lperiod,rang
   use atomconfig,only: atom_config
   USE cellconfig,only:cell_config
@@ -48,7 +47,7 @@ contains
     real(double),dimension(3,3)::at,bg
     integer :: iti, & !type de i
          koo, & !cel de i
-         ncelvois,ko1, & !cel voisine de i
+         ko1, & !cel voisine de i
          i1,i2,itemp
 
     logical::linter
@@ -130,9 +129,8 @@ contains
           koo = atvois%ielat(i)                          ! Numero de la cellule
           iti=atvois%ityp(i)
           !        write(6,*)'atome i',i,iti
-          ncelvois = min(celvois%noxyz,27)-1
           ! pour chaque cel. voisine
-          do i1 = 0, ncelvois
+          do i1 = 0, celvois%ncelvois(koo)
              ko1 = celvois%ncel(koo,i1)
              !           write(6,*)'i1 ko1 ',i1,ko1
              if (ko1==0) cycle

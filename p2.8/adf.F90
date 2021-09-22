@@ -1,7 +1,6 @@
 module adf_mod
   USE gen_com_m, ONLY:cont888,it,linstantfda,nfda,pi,rang,thetamax,thetamin,timel
   USE var_pot, ONLY:ntyp,ty,fda,ty
-  USE temp_com, ONLY:nas,nad
   implicit none
 contains
   subroutine adf
@@ -56,13 +55,10 @@ contains
 
     if(.not.linstantfda) then
        do i3=1,ntyp
-          if(nad(i3)==0) cycle
 
           do i1=1,ntyp
-             if(nad(i1)==0) cycle
 
              do i2=i3,ntyp
-                if(nad(i2)==0) cycle
                 triplet1= ty(i1)
                 triplet2= ty(i2)
                 triplet3= ty(i3)
@@ -146,11 +142,8 @@ contains
           write(6,*)
        end if
        do i3=1,ntyp
-          if(nad(i3)==0) cycle
           do i1=1,ntyp
-             if(nad(i1)==0) cycle
              do i2=1,ntyp
-                if(nad(i2)==0) cycle
 
                 triplet1= ty(i1)
                 triplet2= ty(i2)

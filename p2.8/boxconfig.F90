@@ -10,7 +10,7 @@ module boxconfig
      real(double):: zl(3),zls2(3),nzl(3),volu,normat(3),normbg(3)
      integer(long)::icaltabt
      logical::lperiod
-
+     integer::ipbc(3) ! conditions périodiques sur les plan b-c,a-c,a-b
    contains
      procedure, pass::print=>boxprint
      procedure, pass::master2slave=>boxmaster2slave
@@ -26,21 +26,39 @@ contains
     atl=box%at(:,:)
     call mpic%bcast(rgem,atl)
     if (mpic%rank.ne.rgem) then 
-       call initbox(box,atl)
+       call updatebox(box,atl)
     end if
     return
   end subroutine boxmaster2slave
-
-    
-
-    
-    
+   
   
-  subroutine initbox(boxnew,at,zl)
-    type(box_config),intent(out)::boxnew
+  subroutine initbox(boxnew,at,ipbc,zl)
+    type(box_config),intent(inout)::boxnew
     real(double),intent(in),optional::at(3,3)
     real(double),optional,intent(in)::zl(3)
+    integer,intent(in) ::ipbc(3)
     integer::i,ic
+
+    call updatebox(boxnew,at,zl,check=0)
+    boxnew%ipbc(1:3)=ipbc(1:3)
+    return
+  end subroutine initbox
+
+  subroutine updatebox(boxnew,at,zl,check)
+    type(box_config),intent(inout)::boxnew
+    real(double),intent(in),optional::at(3,3)
+    real(double),optional,intent(in)::zl(3)
+    integer,optional::check
+    real(double)::nbg
+    integer::i,ic,chk=0
+    if (present(check))chk=check
+    if (chk==1) then 
+       nbg=boxnew%bg(1,1)**2+boxnew%bg(1,2)**2+boxnew%bg(1,3)**2
+       if (nbg==0) then
+          write(6,*) 'this is not an update as bg=0 stop'
+          stop
+       end if
+    end if
     if((present(zl).eqv..false.).and.(present(at).eqv..false.)) then
        write(6,*)'box init at ET zl indéfinis : STOP'
        stop
@@ -71,7 +89,7 @@ contains
     boxnew%zls2 = boxnew%zl/2.0
     boxnew%volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
     return
-  end subroutine initbox
+  end subroutine updatebox
 
 
   subroutine ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxnew)
@@ -156,7 +174,7 @@ contains
      real(double):: cpp,xpici,cppzl,ctest
      !      integer,save  :: iperiod
      !  if (rang==0) write(6,*)'PARA-T entree period'
-     if(.not.lperiod) return
+
 
      !      iperiod=iperiod+1
 
@@ -173,26 +191,56 @@ contains
         call cryst_to_cart (atcf%imm, atcf%xpp, box%bg,  -1)
         if(atcf%lax)      call cryst_to_cart (atcf%imm, atcf%ax,  box%bg,  -1)
      end select
-     do i=1,atcf%imm
-        do ic=1,3
-           xpici=atcf%xp(ic,i)
-           if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
-              if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
-                 atcf%xp(ic,i)=zero
-              else
-                 cpp  = Dble(Floor(atcf%xp(ic,i)))
-                 select type (atcf)
-                 type is (atom_config_d)
-                    atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp
-                 type is (atom_config_e)
-                    atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp
-                    if(atcf%lax)   atcf%ax (ic,i) = atcf%ax(ic,i)  - cpp
-                 end select
-                 atcf%xp (ic,i) = xpici     - cpp
+     loopdir:do ic=1,3
+        select case(box%ipbc(ic))
+        case(1) ! periodic boundary conditions if lperiod otherwise positions can become <0 or >1
+           if(.not.lperiod) cycle loopdir
+           do i=1,atcf%imm
+              xpici=atcf%xp(ic,i)
+              if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
+                 if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
+                    atcf%xp(ic,i)=zero
+                 else
+                    cpp  = Dble(Floor(atcf%xp(ic,i)))
+                    select type (atcf)
+                    type is (atom_config_d)
+                       atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp
+                    type is (atom_config_e)
+                       atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp
+                       if(atcf%lax)   atcf%ax (ic,i) = atcf%ax(ic,i)  - cpp
+                    end select
+                    atcf%xp (ic,i) = xpici     - cpp
+                 end if
               end if
-           end if
-        end do
-     end do
+           end do
+        case(2) !wall conditions
+           select type (atcf)
+           class is (atom_config_d)
+              call cryst_to_cart (atcf%imm, atcf%vp,  box%bg,  -1) !cart vers cryst
+           end select
+           do i=1,atcf%imm
+              xpici=atcf%xp(ic,i)
+              if  (xpici < 0.d0 ) then
+                 atcf%xp(ic,i)=-xpici
+                 select type (atcf)
+                 class is (atom_config_d)
+                    atcf%vp(ic,i)=-atcf%vp(ic,i)
+                 end select
+              else if (xpici>1) then
+                 atcf%xp(ic,i)=2-xpici
+                 select type (atcf)
+                 class is (atom_config_d)
+                    atcf%vp(ic,i)=-atcf%vp(ic,i)
+                 end select
+              end if
+                 select type (atcf)
+                 class is (atom_config_d)
+                    call cryst_to_cart (atcf%imm, atcf%vp,  box%at,  1) !cryst vers cart
+                 end select
+           end do
+        end select
+           
+     end do loopdir
      call cryst_to_cart (atcf%imm, atcf%xp , box%at,  1)  !cryst vers cart
      select type (atcf)
      type is (atom_config_d)

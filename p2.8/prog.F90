@@ -16,7 +16,7 @@ module prog_mod
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE cellconfig, only:cell_config
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t&
        &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin,latcomp
   
@@ -25,8 +25,8 @@ module prog_mod
 #if defined ML || defined PARAML    
   USE ml_main_mod,only: ml_main
 #endif
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm
-  use one_calc_mod,only:one_calc
+
+!  use one_calc_mod,only:one_calc
   use d_at_at_mod
 
   implicit none
@@ -127,7 +127,7 @@ contains
 #ifdef PARA
        if ((dmtype.ne.30).and.(dmtype.ne.31).and.(dmtype.ne.32).and.(dmtype.ne.34).and.(dmtype.ne.33))then
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-             call maj_atomes_frt_ftm(atdml,celndm,psc0)
+             call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc0)
           end if
        end if
 #endif
@@ -171,8 +171,9 @@ contains
           case(112)
              call d_at_at(atdml,celndm,boxndm)
           case(111)
-             if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION V2 ****'
-             CALL one_calc(atdml,celndm,boxndm,psc=psc0) 
+             stop
+!             if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION V2 ****'
+!             CALL one_calc(atdml,celndm,boxndm,psc=psc0) 
           case(11)
              if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
              CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc0) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)

@@ -4,7 +4,7 @@ module scalebox_mod
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
   USE atomconfig,only : atom_config_d,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,ndm2cellconfig,cellconfig2ndm,caltabtC
+  USE cellconfig, only:cell_config,caltabtC
   USE boxconfig, only:box_config,ndm2boxconfig,periodbox
 
   implicit none
@@ -90,7 +90,6 @@ contains
 
     if ((celndm%nox.ne.noxn).or.(celndm%noy.ne.noyn).or.(celndm%noz.ne.nozn).or.((dmtype.eq.9).and.(it==1)))then
        write(6,*)'CHGT NOX'
-!       call Deallocatecel !fait dans %init
        celndm%nox=noxn; celndm%noy=noyn; celndm%noz=nozn
 
        if (dmtype.ne.9) then
@@ -117,7 +116,7 @@ contains
        end if
 !       write(6,*)'BOUFFON!'
 !       stop
-      call celndm%init(celndm%nox,celndm%noy,celndm%noz,celndm%natperc) !contient dealloc
+      call celndm%init(boxndm,celndm%nox,celndm%noy,celndm%noz,celndm%natperc) !contient dealloc
 
    end if
              call caltabtC(celndm,atpr,lperiod,boxndm)

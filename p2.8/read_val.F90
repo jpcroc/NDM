@@ -6,4 +6,5 @@ module read_val
   real(double)::rvois
   logical :: ltabvois
   integer :: nox, noy, noz
+  integer::ipbc(3)
 end module read_val

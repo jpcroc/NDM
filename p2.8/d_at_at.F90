@@ -4,9 +4,7 @@ module d_at_at_mod
   USE cellconfig, only:cell_config,caltabtC 
   USE boxconfig,only:box_config
   USE gen_com_m, ONLY: lperiod
-  USE cryst_to_cart_mod,only: cryst_to_cart
   use vect_dist_mod,only:vect_dist
- USE notperiod_mod,only: notperiod
   implicit none 
 contains
   ! boucle de DM pour velocity Verlet
@@ -23,12 +21,10 @@ contains
     REAL(double), dimension(1:3) :: cp, dxp
     REAL(double), dimension(1,1:3) :: cv
 
-    integer::i,j,imin,imax,jmin,jmax,ko1,koo,i2,i1,ncelvois
+    integer::i,j,imin,imax,jmin,jmax,ko1,koo,i2,i1
     real(double)::dmin,dmax,dist,c1,c2,c3,c1p,c2p,c3p
     call caltabtC(celndm,atdml,lperiod,boxndm)
     ! Vecteurs de la boîte et grandeurs associées à l'instant initial
-!    call cryst_to_cart (atdml%im, atdml%xp, boxndm%bg, -1)
-    ncelvois = min(celndm%noxyz,27)-1
 
     dmin=1e10
     dmax=-100
@@ -36,7 +32,7 @@ contains
     do i=1,atdml%im
        koo = atdml%ielat(i)                          ! Numero de la cellule
 
-       do i1 = 0, ncelvois
+       do i1 = 0, celndm%ncelvois(koo)
 
           ko1 = celndm%ncel(koo,i1)
 

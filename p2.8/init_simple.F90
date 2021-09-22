@@ -5,7 +5,7 @@ module init_simple_mod
   USE initspeed_mod,only: initspeed
   USE caltabi_mod,only: caltabi
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
-  USE cellconfig, only:cell_config,caltabtC,init_cel
+  USE cellconfig, only:cell_config,caltabtC
   use boxconfig,only: box_config
   USE constrconf_mod, only :constrconf
 
