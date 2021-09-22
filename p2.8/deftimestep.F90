@@ -193,7 +193,7 @@ endif
            do i = 1, atcf%im
               atcf%xp(:,i) = atcf%xpp(:,i)+tstep*atcf%vp(:,i)+tstep**2/cm(atcf%ityp(i))/two*atcf%fp(:,i)
            end do
-           if (lperiod) call periodbox (box,atcf)
+           call periodbox (box,atcf)
         endif
      else                                       ! cad si tstep >= 2.10-15s
         tstep = oldtstep
@@ -217,7 +217,7 @@ endif
            do i = 1,atcf%im
               atcf%xp(:,i) = atcf%xpp(:,i)+tstep*atcf%vp(:,i)+tstep**2/cm(atcf%ityp(i))/two*atcf%fp(:,i)
            end do
-           if (lperiod) call periodbox (box,atcf)
+           call periodbox (box,atcf)
            
         else                                       ! cad si tstep >= 2.10-15s
            tstep = oldtstep

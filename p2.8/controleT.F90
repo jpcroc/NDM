@@ -5,7 +5,7 @@ module controleT_mod
   USE deftimestep_mod,only: deftimestep
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config
-  USE boxconfig,only:box_config,periodbox
+  USE boxconfig,only:box_config
 #ifdef PARA
   USE Tpara,only:COMM_space,nprocspace,myidsp
 #else

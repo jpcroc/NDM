@@ -35,7 +35,7 @@ subroutine init_voisinage (cellv,psc)
   ! intialisations preliminaires
   if( allocated(psc%proc_voisin)) deallocate(psc%proc_voisin)
   allocate(psc%proc_voisin(min(nprocspace,26)))
-  
+!  call cellv%print
   psc%proc_voisin(:)=-1
   psc%nbr_proc_voisin = 0
   psc%nbr_cell_ftm  = 0
@@ -61,12 +61,14 @@ subroutine init_voisinage (cellv,psc)
   ! Calcul du nombre de cellules fantomes 
 
   ! boucle sur toutes les cellules
+
   do cell=1,cellv%noxyz
 
      if ( cellv%proc_cell(cell)==myidsp ) then
         ! si la cellule est locale
 
-        do icell=1,26
+!        do icell=1,26
+        do icell=1,cellv%ncelvois(cell)
            ! boucle sur les cellules voisines
 
            cell_vois = cellv%ncel(cell,icell)
@@ -110,8 +112,8 @@ subroutine init_voisinage (cellv,psc)
 
      else  ! la cellule est non locale
         ! On regarde si elle est fantome
-
-        do icell=1,26
+!        do icell=1,26
+        do icell=1,cellv%ncelvois(cell)
            ! boucle sur les cellules voisines
 
            cell_vois = cellv%ncel(cell,icell)
@@ -139,7 +141,7 @@ subroutine init_voisinage (cellv,psc)
      endif ! la cellule est locale
 
   enddo
-
+  write(6,*)'rangspace ',myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
 end subroutine init_voisinage
 end module init_vois_mod
 #endif

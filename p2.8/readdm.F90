@@ -427,6 +427,10 @@ contains
              stop
           end select
        end do
+       if (dmtype==1) then
+          dmtype=4
+          if (rang==0) write(6,*)'dmtype changed from 1 to 4 for energy conservation'
+       end if
     end if
 
     if(.not.lperiod) then

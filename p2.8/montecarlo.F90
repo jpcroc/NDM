@@ -1467,10 +1467,10 @@ subroutine langevin( direc, protocol) !LANGEVININ
 !!$          call atconf_nplus1%print(i1=767,unit=300+rang)
 
           !conditions periodiques 
-          if (lperiod)    then
+!          if (lperiod)    then
              call periodbox(boxmcgc,atconf_N)
              call periodbox(boxmcgc,atconf_Nplus1)
-          end if
+!          end if
 !!$          write(200+rang,*)'postperiod'
 !!$          write(300+rang,*)'postperiod'
 !!$          call atconf_n%print(i1=767,unit=200+rang)
@@ -1600,10 +1600,10 @@ subroutine langevin( direc, protocol) !LANGEVININ
           END DO
 
           !conditions periodiques 
-          if (lperiod)    then
+!          if (lperiod)    then
              call periodbox(boxmcgc,atconf_N)
              call periodbox(boxmcgc,atconf_Nplus1)
-          end if
+!          end if
        end if
 
 #ifdef PARA

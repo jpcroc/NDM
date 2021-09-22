@@ -563,6 +563,9 @@ contains
     write(un,*)'celsize',cellv%celsize
     write(un,*)'icaltabt',cellv%icaltabt
     do i=1,cellv%noxyz
+       write(un,*)'ncelvois',i,cellv%ncelvois(i)
+    end do
+    do i=1,cellv%noxyz
        write(un,*)'nato',i,cellv%nato(i)
     end do
     if (allocated(cellv%atincel))then 

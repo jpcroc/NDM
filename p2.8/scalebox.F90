@@ -53,7 +53,7 @@ contains
     ! -------------------------------------------------------------
     ! Rescaling des positions
     ! -------------------------------------------------------------
-    if (lperiod)    call periodbox (boxndm,atpr)
+    call periodbox (boxndm,atpr)
 
     !debug       write (*,*) 'sub scalebox',it,xp(1,1)
 

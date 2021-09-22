@@ -7,7 +7,7 @@ module dyn_vverlet_mod
        lspaceNDM
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
   USE cellconfig, only:cell_config,caltabtC
-  USE boxconfig,only:box_config,periodbox
+  USE boxconfig,only:box_config
   use var_pot,only : cm
   USE eloss, only:ibrake, calceloss
   use Tpara,only:para_space_config

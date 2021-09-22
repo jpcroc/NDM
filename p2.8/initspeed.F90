@@ -465,7 +465,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              !             decx(ityp(i))=decx(ityp(i))+(sd*grnd)**2
           end do
        end do
-       if (lperiod.EQV..true.) call periodbox (boxndm,atcf)
+       call periodbox (boxndm,atcf)
     end if
 66  continue
        atcf%xp=xp;atcf%xpp=xpp; atcf%vp=vp; atcf%ityp=ityp;

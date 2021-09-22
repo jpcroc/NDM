@@ -408,7 +408,7 @@ contains
        lchgbox=.true.
     end select
 
-    if (lperiod)  call periodbox (boxcg,atcgcomp)
+    call periodbox (boxcg,atcgcomp)
     call depeche_mode (gcpara,'xft',lchgbox)
     V=potist
     NCALLS=NCALLS+1

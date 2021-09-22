@@ -169,7 +169,7 @@ contains
      !-----------------------------------------------
      !   L o c a l   V a r i a b l e s
      !-----------------------------------------------
-     integer :: i, ic,icp
+     integer :: i, ic,icp!,nbing,ibing(100)
      real(double)::dz,trav,ecav,ecap
      real(double):: cpp,xpici,cppzl,ctest
      !      integer,save  :: iperiod
@@ -191,6 +191,7 @@ contains
         call cryst_to_cart (atcf%imm, atcf%xpp, box%bg,  -1)
         if(atcf%lax)      call cryst_to_cart (atcf%imm, atcf%ax,  box%bg,  -1)
      end select
+!     nbing=0
      loopdir:do ic=1,3
         select case(box%ipbc(ic))
         case(1) ! periodic boundary conditions if lperiod otherwise positions can become <0 or >1
@@ -218,7 +219,7 @@ contains
            class is (atom_config_d)
               call cryst_to_cart (atcf%imm, atcf%vp,  box%bg,  -1) !cart vers cryst
            end select
-           do i=1,atcf%imm
+           do i=1,atcf%im
               xpici=atcf%xp(ic,i)
               if  (xpici < 0.d0 ) then
                  atcf%xp(ic,i)=-xpici
@@ -233,11 +234,11 @@ contains
                     atcf%vp(ic,i)=-atcf%vp(ic,i)
                  end select
               end if
-                 select type (atcf)
-                 class is (atom_config_d)
-                    call cryst_to_cart (atcf%imm, atcf%vp,  box%at,  1) !cryst vers cart
-                 end select
            end do
+           select type (atcf)
+           class is (atom_config_d)
+              call cryst_to_cart (atcf%imm, atcf%vp,  box%at,  1) !cryst vers cart
+           end select
         end select
            
      end do loopdir

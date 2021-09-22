@@ -111,7 +111,7 @@ contains
     end if
     !????
     do ii=1,npath
-       if (lperiod)    call periodbox (boxneb,atneb(ii)%atom_config_d)
+    call periodbox (boxneb,atneb(ii)%atom_config_d)
 
     end do
     !AVANT
@@ -242,7 +242,7 @@ contains
              do while (dragtest==0)
                 it=it+1
 
-                if ((lperiod).and.(lmaster))    call periodbox (boxneb,atneb(ii)%atom_config_d)
+                if (lmaster)    call periodbox (boxneb,atneb(ii)%atom_config_d)
                 call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,&
                      &atnebloc,cellnebloc,paraneb,lperiod,&
                      &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,psc=pscneb)
@@ -340,7 +340,7 @@ contains
                    it_neb_inter=it_neb_inter+1
                    it=it_neb_inter
 
-                   if (lperiod)   call periodbox (boxneb,atneb(ii)%atom_config_d)
+                   call periodbox (boxneb,atneb(ii)%atom_config_d)
                    call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),&
                         &boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
                         &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,psc=pscneb)

@@ -160,7 +160,7 @@ contains
        call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,im_glob,rumax,lrepart,psc)
 
 
-       if (lperiod.EQV..true.) call periodbox (boxrcf,atrcf)
+       call periodbox (boxrcf,atrcf)
 
        select type(atrcf)
        type is (atom_config_d)

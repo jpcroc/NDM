@@ -136,7 +136,7 @@
     celloc=>cellcomp
 
 #endif
-    if (lperiod)   call periodbox (box,atloc)
+     call periodbox (box,atloc)
 
     call caltabtC(celloc,atloc,lperiod,box)
     if (present(ltabvois)) then
@@ -324,8 +324,7 @@ subroutine driver_caltabt_DM(sigcf,potistcf,atcf,celcf,boxcf,psc,lperiod)
     logical  ::test_sigma
     
     !conditions periodiques
-    if (lperiod)  call periodbox (boxcf,atcf)
-
+    call periodbox (boxcf,atcf)
     ! repartition des atomes dans la nouvelle boite
 !!$    if (.not.lprahman) then
 !!$       if (itab/=0) then

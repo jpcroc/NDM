@@ -385,7 +385,7 @@ end if
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
-       if (lperiod)    call periodbox (boxndm,atpr)
+       call periodbox (boxndm,atpr)
 !       boxndm%zl(1) = Sqrt( Sum(boxndm%at(1:3,1)**2 ) )
 !       boxndm%zl(2) = Sqrt( Sum(boxndm%at(1:3,2)**2 ) )
 !       boxndm%zl(3) = Sqrt( Sum(boxndm%at(1:3,3)**2 ) )

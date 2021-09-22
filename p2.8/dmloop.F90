@@ -7,7 +7,7 @@ module dmloop_mod
   USE gen_com_m, ONLY:itesauvforce,itesauvposition,lfire
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC
-  USE boxconfig,only:box_config,periodbox
+  USE boxconfig,only:box_config
   USE eloss, ONLY : calceloss,ibrake 
   USE elec_cell, ONLY :i2t       
   USE calfoberend_mod,only:calfoberend
@@ -138,6 +138,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        write (6, *) 'ne sait pas quoi faire stop'
        stop
     end select
+
     call  driver_caltabt_DM(sig,potist,atdml,celndm,boxndm,psc,lperiod)
 
     call analyseT (atdml,celndm,boxndm)    

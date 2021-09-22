@@ -145,7 +145,7 @@ contains
 
        call cryst_to_cart (atcfcasc%imm, atcfcasc%xp, boxndm%at, 1)     !cryst vers cart
        call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%at, 1)     !cryst vers cart
-       if (lperiod)       call periodbox  (boxndm,atcfcasc)
+       call periodbox  (boxndm,atcfcasc)
 
        !  write(6,*)xp(1,iko)
        !                                                !Conditions periodiques
