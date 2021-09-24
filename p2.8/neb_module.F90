@@ -609,7 +609,7 @@ end if
 
        if (rang==0)then
           formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout'
-          call sauvegardeT(atneb(1)%atom_config_d,cellneb(1),boxneb,formatsauv,fnamcout,latcomp=.true.,lw0=.true.)
+          call sauvegardeT(atneb(1)%atom_config_d,cellneb(1),boxneb,formatsauv,fnamcout,latcomp=.true.)
           call rasmolT(atneb(1)%atom_config_d,boxneb,1,latcomp=.true.)
        endif
 
@@ -634,7 +634,7 @@ end if
 
        if (rang==0)then
           formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
-          call sauvegardeT(atneb(npath)%atom_config_d,cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=.true.,lw0=.true.)
+          call sauvegardeT(atneb(npath)%atom_config_d,cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=.true.)
           call rasmolT(atneb(npath)%atom_config_d,boxneb,npath,latcomp=.true.)
        endif
 

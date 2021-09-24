@@ -768,6 +768,8 @@ contains
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        lspaceNDM=.false. ; latcomp=.true.
        if (rang==0) write(6,*)'POTENTIELS LAMMPS ; PARA_SPACE VERSION=LAMMPS NOT NDM !!'
+    else
+       latcomp=.false.
     end if
     
     if(lcalcjq) then

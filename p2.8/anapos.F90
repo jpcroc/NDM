@@ -253,10 +253,10 @@ contains
 !          if (lperiod)         call period (imm,xp,xpp,ax)
           
        end if
-       if (lperiod) then
+!       if (lperiod) then
           call periodbox (boxcf,atcf)
           call periodbox(boxcr,atcr)
-       end if
+!       end if
        call caltabtc(celcr,atcr,lperiod,boxcr)
        
        if(ldetdec) then
