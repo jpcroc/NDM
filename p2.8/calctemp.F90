@@ -2,7 +2,7 @@ module calctemp_mod
 
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:ntyp,cm
-  USE gen_com_m, ONLY:erg2ev,im_glob,tempEP,bk,l2t,lspaceNDM,rang
+  USE gen_com_m, ONLY:erg2ev,tempEP,bk,l2t,lspaceNDM,rang
   USE elec_cell, ONLY: ecell,i2T,nex,ney,nez,nox_2_nex
   USE eloss, ONLY : tcelec,ecelec
   USE atomconfig,only: atom_config_d
@@ -74,7 +74,6 @@ contains
           do i2 = 1, cellcf%nato(ko)
 
              i = cellcf%atincel(i2,ko)
-             if (atcf%num_at_glob(i).gt.im_glob) cycle
              vpn2 = atcf%vp(1,i)**2+atcf%vp(2,i)**2+atcf%vp(3,i)**2
              kine=kine+vpn2*0.5*cm(atcf%ityp(i))
              tat=vpn2*cm(atcf%ityp(i))/(3.0*bk)
@@ -165,7 +164,6 @@ contains
           do i2 = 1, cellcf%nato(ko)
              nat=nat+1
              i = cellcf%atincel(i2,ko)
-             if (atcf%num_at_glob(i).gt.im_glob) cycle
              vpn2 = atcf%vp(1,i)**2+atcf%vp(2,i)**2+atcf%vp(3,i)**2
              kine=kine+vpn2*0.5*cm(atcf%ityp(i))
              tat=vpn2*cm(atcf%ityp(i))/(3.0*bk)

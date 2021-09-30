@@ -76,7 +76,7 @@ contains
     type(para_space_config)::psc
     type(box_config)::boxcf
     
-    integer::i,ne
+    integer::i,ne,imglobstock
      
     ltbv=atcf%ltabvois ;
     lsigat=.false.; lprteat=.false. ; llangevin=.false.;lax=.false.
@@ -84,6 +84,7 @@ contains
     type is (atom_config_e)
        lsigat=atcf%lsigat;lprteat=atcf%lprteat; llangevin=atcf%llangevin;lax=atcf%lax
     end select
+    imglobstock=atcf%im_glob
     call config2ndm(atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall=.true.,lgul=lgul)
 
     call cellconfig2ndm (cellcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,proc_cell)
@@ -98,7 +99,7 @@ contains
     call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
     call ndm2config (atcf,im,imm,xp,fp,ityp,ielat,num_at_glob,ltbv,iwmax,indi,nvois,vp,xpp,ldeall=.true.,lgul=lgul)
     call ndm2cellconfig(cellcf,boxcf,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,proc_cell=proc_cell)
-
+atcf%im_glob=imglobstock
 end subroutine maj_atomes_frt_ftm
 
   !------------------------------------------------------------------------!

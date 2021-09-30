@@ -1,7 +1,7 @@
 ! ****************************************************************
 module rasmolT_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:rang,ivisu,ldesinteg,lpkbar,im_glob,lspaceNDM,&
+  USE gen_com_m, ONLY:rang,ivisu,ldesinteg,lpkbar,lspaceNDM,&
        &cunitP,it,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass,rang
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
@@ -22,7 +22,7 @@ contains
     !rty est un tableau     character*3,intent(in), dimension(1:atmol%im),optional  :: rty qui donne les symboles des atomes. utile pour utiliser d'autres symboles que les symboles chimiques associés aux types des atomes. En l'absence de rty, on utilise les symboles des types des atomes.
     !latcomp= en PARA latcomp=.true.=> atmol est une cofiguration complète/latcomp=false=>atmol est distributé sur comm_space
     !ivisu dans gen_com_m : 1 :.mol, 4=.cfg ; 2=.xred ; 5 =.gin
-!    naux=nb de carac auxiliaires,characaux string de description des carac ,vaux valeurs des auxiliaires
+    !    naux=nb de carac auxiliaires,characaux string de description des carac ,vaux valeurs des auxiliaires
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace,myidsp
@@ -43,24 +43,23 @@ contains
     character(len=*),optional::charaux(:)
     real(double),optional::vaux(:,:) !aux value (naux,im)
     logical::laux
-    integer::nauxV
+    integer::nauxV,nauxtot
     integer::ivisum
     character*80::namef,nameo,end_name
-    integer :: rgloc,im,imm,j,ic,e_c,e_c0
+    integer :: rgloc,j,ic,e_c,e_c0
 
     character*3, dimension(:), allocatable  :: tyw
-    real(double),allocatable::xp(:,:)
-    real(double),allocatable::sigat(:,:,:),eat(:)
-    integer,allocatable:: num_at_glob(:)
-    integer,allocatable::ityp(:)
+!!$    real(double),allocatable::xp(:,:)
+!!$    integer,allocatable:: num_at_glob(:)
+!!$    integer,allocatable::ityp(:)
 
 #ifdef PARA
     integer :: iproc
-    real(double), allocatable :: xp_loc(:,:)
-    integer, allocatable      :: ityp_loc(:)
-    integer, allocatable      :: num_at_glob_loc(:)
-    character*3, allocatable      :: tyw_loc(:)
-    real(double),allocatable::sigat_loc(:,:,:),eat_loc(:)
+!!$    real(double), allocatable :: xp_loc(:,:)
+!!$    integer, allocatable      :: ityp_loc(:)
+!!$    integer, allocatable      :: num_at_glob_loc(:)
+!!$    character*3, allocatable      :: tyw_loc(:)
+!!$    real(double),allocatable::sigat_loc(:,:,:),eat_loc(:)
     integer :: im_loc
     integer :: proc_source
     type(para_config)::div
@@ -71,6 +70,11 @@ contains
     real(double) :: xp1, xp2, xp3,at(3,3),bg(3,3),pat
     character :: extension*9
     integer::iax
+    if (atmol%im_glob==0) then
+       write(6,*)'rasmolT im_glob stop'
+       stop
+    end if
+
     if (present(ivisumol)) then
        ivisum=ivisumol
     else
@@ -86,6 +90,15 @@ contains
        laux=.false.
        nauxV=0
     end if
+    nauxtot=nauxv
+    select type (atmol)
+    class is (atom_config_e)
+       if (atmol%lsigat) then
+          nauxtot=nauxtot+1
+       end if
+       if (atmol%lprteat) nauxtot=nauxtot+1
+    end select
+
 
 #ifdef PARA
     !    latcompin=latcomp
@@ -104,13 +117,13 @@ contains
           stop
        end if
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call atcomp%init(im_glob)
+          call atcomp%init(atmol%im_glob,im_glob=atmol%im_glob)
           div%mpi_image%rank=myidsp
           div%mpi_image%nproc=nprocspace
           div%mpi_image%comm=COMM_space%comm
           call atmol%vers_master(atcomp,div,'ixnlusv')
-          im =atcomp%im
-          imm=atcomp%im
+          !im =atcomp%im
+          !imm=atcomp%im
           rgloc=myidsp
        else
           write(6,*)'latcomp=false et (nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) ??? stop'
@@ -121,8 +134,8 @@ contains
        if (rgloc==0) then
           call atcomp%init(atmol%im)
           call atmol%copy_config(atcomp,lrescl=.true.)
-          im=atmol%im
-          imm=atmol%imm
+          !im=atmol%im
+          !imm=atmol%imm
        end if
     end if
 #else
@@ -130,30 +143,30 @@ contains
     rgloc=0
     call atcomp%init(atmol%im,ltabvois=.false.,nvois=0)
     call atmol%copy_config(atcomp,lrescl=.true.)
-    im=atmol%im
-    imm=atmol%imm
+!    im=atmol%im
+    !imm=atmol%imm
 #endif  
 
     if(rgloc==0) then
 
        at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8
-       allocate(xp(3,im));allocate(ityp(im));allocate(num_at_glob(imm))
-       xp(1:3,1:atmol%im)=atcomp%xp(1:3,1:atmol%im)*1d8
-       num_at_glob(1:atmol%im)=atcomp%num_at_glob(1:atmol%im)
-       ityp(1:im)=atcomp%ityp(1:im)
+!       allocate(xp(3,im));allocate(ityp(im));allocate(num_at_glob(imm))
+       atcomp%xp(1:3,1:atmol%im)=atcomp%xp(1:3,1:atmol%im)*1d8
+!       num_at_glob(1:atmol%im)=atcomp%num_at_glob(1:atmol%im)
+!       ityp(1:im)=atcomp%ityp(1:im)
        !       call atcomp%print
-       allocate(tyw(imm))
+       allocate(tyw(atcomp%im))
        tyw='000'
        !    do i=1,im
        !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
        !    end do
        if (present (rty))then
-          tyw(1:im)=rty(1:im)
+          tyw(1:atcomp%im)=rty(1:atcomp%im)
        else
           !       do i=1,im
           !          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
           !       end do
-          tyw(1:im)=ty(ityp(1:im))
+          tyw(1:atcomp%im)=ty(atcomp%ityp(1:atcomp%im))
        end if
 
 
@@ -207,13 +220,13 @@ contains
        if (present(itapp))then
           select case(itapp)
           case(-1)
-               extension='iiiiiiiii' 
-               !          if (itapp < 0  )
-            case(999999999)
-               extension='fffffffff'
-            case default
-               write(extension,'(i9.9)') itapp
-            end select
+             extension='iiiiiiiii' 
+             !          if (itapp < 0  )
+          case(999999999)
+             extension='fffffffff'
+          case default
+             write(extension,'(i9.9)') itapp
+          end select
        else
           extension='ooooooooo'
        end if
@@ -259,27 +272,27 @@ contains
           write (luvisu,'(3F12.6)')at(1,2),at(2,2),at(3,2)
           write (luvisu,'(3F12.6)')at(1,3),at(2,3),at(3,3)
           write (luvisu,*) atcomp%im
-          call cryst_to_cart (im, xp,  bg,  -1) !cart vers cryst
-          do i = 1, im
-             xp1 = xp(1,i)
-             xp2 = xp(2,i)
-             xp3 = xp(3,i)
+          call cryst_to_cart (atcomp%im, atcomp%xp,  bg,  -1) !cart vers cryst
+          do i = 1, atcomp%im
+             xp1 = atcomp%xp(1,i)
+             xp2 = atcomp%xp(2,i)
+             xp3 = atcomp%xp(3,i)
              if (laux) then
-                write (luvisu,'(3es15.6,I3)',advance='no') xp1, xp2, xp3, ityp(i)
+                write (luvisu,'(3es15.6,I3)',advance='no') xp1, xp2, xp3, atcomp%ityp(i)
                 do iax=1,naux
                    write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
                 end do
                 write(luvisu,*)' '
              else
-                write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, ityp(i)
+                write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, atcomp%ityp(i)
              end if
           end do
        case (1)
 
           if (present(itapp))then
-             write (luvisu, '(I9,A,I7,A,F12.6)',advance='no') im, ' IT =', itapp, ' Time = ', timel
+             write (luvisu, '(I9,A,I7,A,F12.6)',advance='no') atcomp%im, ' IT =', itapp, ' Time = ', timel
           else
-             write (luvisu, '(I9,A,I7,A,F12.6)',advance='no') im
+             write (luvisu, '(I9,A,I7,A,F12.6)',advance='no') atcomp%im
           end if
           if (laux) then
              if (present(charaux)) then
@@ -292,27 +305,15 @@ contains
 
           write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
           !at=at/1.d8
-          do i = 1, im
-             xp1 = xp(1,i)
-             xp2 = xp(2,i)
-             xp3 = xp(3,i)
+          do i = 1, atcomp%im
+             xp1 = atcomp%xp(1,i)
+             xp2 = atcomp%xp(2,i)
+             xp3 = atcomp%xp(3,i)
              !                write (6,*) 't',tyw(i)
              !                write(6,*)'x', xp1,xp2, xp3
              write (luvisu, '(A,3f10.4)',advance='no') tyw(i),xp1, xp2, xp3
-!!$             select type (atmol)
-!!$             class is (atom_config_e)
-!!$                if (atmol%lsigat) then
-!!$                   if(it.eq.0)then
-!!$                      pat=0.0
-!!$                   else
-!!$                      pat=unitP*(sigat(1,1,i)+sigat(2,2,i)+sigat(3,3,i))/3.
-!!$                   end if
-!!$                   write (luvisu, '(D14.5)',advance='no') pat
-!!$                end if
-!!$                if (atmol%lprteat) write (luvisu, '(D14.5)',advance='no') eat(i)*erg2ev
-!!$             end select
 #ifdef PARA
-             write (luvisu, '(I9)',advance='no')  num_at_glob(i)
+             write (luvisu, '(I9)',advance='no')  atcomp%num_at_glob(i)
 #else
              write (luvisu, '(I9)',advance='no')  i
 #endif
@@ -321,24 +322,36 @@ contains
                    write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
                 end do
              end if
+             select type (atcomp)
+             class is (atom_config_e)
+                if (atcomp%lsigat) then
+                   if(it.eq.0)then
+                      pat=0.0
+                   else
+                      pat=unitP*(atcomp%sigat(1,1,i)+atcomp%sigat(2,2,i)+atcomp%sigat(3,3,i))/3.
+                   end if
+                   write (luvisu, '(D14.5)',advance='no') pat*1d-9
+                end if
+                if (atcomp%lprteat) write (luvisu, '(D14.5)',advance='no') atcomp%eat(i)*erg2ev
+             end select
              write(luvisu,*)' '
 
-             
+
           end do
-!       case (2)
+          !       case (2)
        case(3) 
           write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
-          call cryst_to_cart (imm, xp,  bg,  -1) !cart vers cryst
-          do i = 1, im
-             xp1 = xp(1,i)
-             xp2 = xp(2,i)
-             xp3 = xp(3,i)
+          call cryst_to_cart (atcomp%im, atcomp%xp,  bg,  -1) !cart vers cryst
+          do i = 1, atcomp%im
+             xp1 = atcomp%xp(1,i)
+             xp2 = atcomp%xp(2,i)
+             xp3 = atcomp%xp(3,i)
              write (luvisu,'(3es15.6,2x,2a)') xp1, xp2, xp3, ' ! ', tyw(i)
           end do
-          
+
        case(40,41,60,61) 
 
-          write(luvisu,'(a,i0)')'Number of particles = ', im
+          write(luvisu,'(a,i0)')'Number of particles = ',  atcomp%im
           write(luvisu,'(a)')'A = 1.000 Angstrom (basic length-scale)'
           do j=1,3
              write(luvisu,'(a,i0)') '# Unit cell vector #', j    
@@ -358,13 +371,26 @@ contains
                 end do
              end if
           end if
-          call cryst_to_cart (im, xp,  bg,  -1) !cart vers cryst
-          do i=1,im
+          write(6,*)'nuaxv nauxtot',nauxv,nauxtot
+          iax=nauxV
+          select type (atcomp)
+          class is (atom_config_e)
+             if (atcomp%lsigat) then
+                iax=iax+1
+                write(luvisu,'(A,I0,A)')'auxiliary[',iax,'] = at_pressure'
+             end if
+             if (atcomp%lprteat) then
+                iax=iax+1
+                write(luvisu,'(A,I0,A)')'auxiliary[',iax,'] = at_energy'
+             end if
+          end select
+          call cryst_to_cart (atcomp%im, atcomp%xp,  bg,  -1) !cart vers cryst
+          do i=1, atcomp%im
              select case(ivisum)
              case(40,41)
-                WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
+                WRITE(luvisu,'(f0.3)') cm(atcomp%ityp(i))/umass        ! Mass (g/mol)
                 WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
-                write(luvisu, '(3(g20.12,1x))',advance='no') xp(:,i)
+                write(luvisu, '(3(g20.12,1x))',advance='no') atcomp%xp(:,i)
                 if (ivisum==41) then
                    select type (atcomp)
                    class is (atom_config_d)
@@ -376,26 +402,52 @@ contains
                       write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
                    end do
                 end if
+                select type (atcomp)
+                class is (atom_config_e)
+                   if (atcomp%lsigat) then
+                      if(it.eq.0)then
+                         pat=0.0
+                      else
+                         pat=unitP*(atcomp%sigat(1,1,i)+atcomp%sigat(2,2,i)+atcomp%sigat(3,3,i))/3.
+                      end if
+                      write (luvisu, '(D14.5)',advance='no') pat*1d-9
+                   end if
+                   if (atcomp%lprteat) write (luvisu, '(D14.5)',advance='no') atcomp%eat(i)*erg2ev
+                end select
+
                 write(luvisu,*)' '
-                 
+
              case(60,61)
                 if (i==1) then
-                   WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
+                   WRITE(luvisu,'(f0.3)') cm(atcomp%ityp(i))/umass        ! Mass (g/mol)
                    WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
                 else
-                   if (ityp(i).ne.ityp(i-1)) then
-                      WRITE(luvisu,'(f0.3)') cm(ityp(i))/umass        ! Mass (g/mol)
+                   if (atcomp%ityp(i).ne.atcomp%ityp(i-1)) then
+                      WRITE(luvisu,'(f0.3)') cm(atcomp%ityp(i))/umass        ! Mass (g/mol)
                       WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
                    end if
                 end if
 
-                write(luvisu, '(3(g20.12,1x))',advance='no') xp(:,i)
+                write(luvisu, '(3(g20.12,1x))',advance='no') atcomp%xp(:,i)
                 if (ivisum==61) then
                    select type (atcomp)
                    class is (atom_config_d)
                       write (luvisu, '(3(g20.12,1x))',advance='no') atcomp%vp(:,i)*1d8*1d-12
                    end select
                 end if
+                select type (atcomp)
+                class is (atom_config_e)
+                   if (atcomp%lsigat) then
+                      if(it.eq.0)then
+                         pat=0.0
+                      else
+                         pat=unitP*(atcomp%sigat(1,1,i)+atcomp%sigat(2,2,i)+atcomp%sigat(3,3,i))/3.
+                      end if
+                      write (luvisu, '(D14.5)',advance='no') pat*1d-9
+                   end if
+                   if (atcomp%lprteat) write (luvisu, '(D14.5)',advance='no') atcomp%eat(i)*erg2ev
+                end select
+
                 if (laux) then
                    do iax=1,naux
                       write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
@@ -405,10 +457,10 @@ contains
              end select
           end do
        end select
-       
+
        close(luvisu)
     end if
-
+    write(6,*)'OUT Rasmol',rang
 
     !if(itapp==0) open (file='filmtot.mol',unit=47)
 
@@ -450,10 +502,10 @@ contains
     character(len=9),optional::ext
 
     character*80::namef
-!    write(6,*)'name o end_name ',nameo, ' ; ',end_name
+    !    write(6,*)'name o end_name ',nameo, ' ; ',end_name
     if (present(ext)) then
        namef=trim(nameo)//'.'//trim(ext)//trim(end_name)
-!              namef=nameo(1:len(nameo))//'.'//ext//'.'//end_name
+       !              namef=nameo(1:len(nameo))//'.'//ext//'.'//end_name
     else
        namef=trim(nameo)//trim(end_name)
     end if

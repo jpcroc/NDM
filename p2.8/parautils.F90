@@ -62,7 +62,7 @@
           call cellcomp%copy_cell(celloc,box)
           call decoupage(div%mpi_image%nproc,0,celloc,atloc,lverbose=.false.,psc=psc)
           call repartition(atcomp,atloc,box,celloc) ! mettre les éléments de la répartition dans un type
-          call setcellconf(celloc,atloc,box,atcomp%im,rum,lverbose=.false.)
+          call setcellconf(celloc,atloc,box,rum,lverbose=.false.)
        else
           atloc=>atcomp
           celloc=>cellcomp

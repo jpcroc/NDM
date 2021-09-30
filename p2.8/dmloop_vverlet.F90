@@ -52,7 +52,6 @@ contains
     !-----------------------------------------------
     logical :: test_sigma
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****'
-
     ! Appel de la routine generale des forces
     test_sigma=(mod(it,itesigma)==0)
 

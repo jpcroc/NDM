@@ -187,11 +187,12 @@ contains
              case(1)
              fnamcr=namecr(1:len(namecr))//'crcin'
              call read_cin(boxcr,1,atcr,atcf%imm,fnamcr)
+             atcf%im_glob=atcr%im
              call setnoxsimple (atcr,boxcr,celcr,rumax)
           case(0)
              fnamcr=trim(namecr)//'.crgin'
              write(6,*)'fnamcr ',len(fnamcr),fnamcr
-             call gin2ndm(atcr,celcr,boxcr,fnamcr,imdum,rdum,lrepartition=.false.)
+             call gin2ndm(atcr,celcr,boxcr,fnamcr,rdum,lrepartition=.false.)
           case default
              write(6,*)'set igencr to 1 or 0 for .crcin or .crgin file respectively'
              stop

@@ -17,7 +17,7 @@ module atomconfig
 #endif
 
   type atom_config ! type minimal des configurations atomiques. Tous les composants seront toujours alloué (im_glob seulement si PARA)
-     integer::im=0,imm=0
+     integer::im=0,imm=0,im_glob ! im nb d'atomes sur le proc, taille des tableaux sur le proc, im_glob nombre d'atomes en tout
     integer(long)::icaltabt 
      real(double),allocatable:: xp(:,:)
      real(double),allocatable::fp(:,:)
@@ -90,11 +90,11 @@ module atomconfig
 contains
   !initialisations
   
-  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate)
+  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
     logical,optional, intent(in)::ltabvois,lreallocate
-    integer, optional::nvois,immin
+    integer, optional::nvois,immin,im_glob
     real(double),optional::rvois
     integer::nv
     logical ::ltbv,lrealloc
@@ -104,7 +104,12 @@ contains
     lrealloc=.false.
     if (present(lreallocate))lrealloc=lreallocate
     ltbv=.false.
-    atconf%im=imin       
+    atconf%im=imin
+    if (present(im_glob))then
+       atconf%im_glob=im_glob
+    else
+       atconf%im_glob=0
+    end if
     if (present(immin))then
        atconf%imm=immin
     else
@@ -580,7 +585,7 @@ contains
     real(double)::rvois
     logical :: lstop
     call atsource%Eegal(atcible)
-
+    atcible%im_glob=atsource%im_glob
     if (lrescl) then
 !       if (atcible%imm.ne.atsource%imm) then
        call atcible%dealloc
@@ -591,7 +596,7 @@ contains
        end if
        call atcible%init(atsource%im,atsource%imm,atcible%ltabvois,nvois,rvois)
        atcible%icaltabt=atsource%icaltabt   
-
+       atcible%im_glob=atsource%im_glob
     else
        lstop=.false.
        if ((atcible%im.lt.atsource%im).or.(atcible%imm.lt.atsource%imm)) lstop=.true.
@@ -645,7 +650,7 @@ contains
 
   subroutine dealloc_atom_config(atconf)
     class(atom_config), intent(inout)::atconf
-    atconf%im=0 ; atconf%imm=0
+    atconf%im=0 ; atconf%imm=0 ; atconf%im_glob=0
     if(allocated(atconf%xp))then
        deallocate(atconf%xp);deallocate(atconf%fp);deallocate(atconf%ielat)
        deallocate(atconf%ityp); deallocate(atconf%lgul); deallocate(atconf%num_at_glob)
@@ -750,39 +755,13 @@ contains
     end if
 
     call at2pack%deftype(at)
-    call at%init(imn,immn,at2pack%ltabvois,nvois,rvois)
+    call at%init(imn,immn,at2pack%ltabvois,nvois,rvois,im_glob=at2pack%im_glob)
     do i=1,immn
        call at2pack%copy_atom(i,at,i)
     end do
     call at2pack%dealloc
     call at%copy_config(at2pack,lrescl=.true.)
     
-!!$    select type (at2pack)
-!!$    type is (atom_config)
-!!$       call at%init(imn,immn,at2pack%ltabvois,nvois,rvois)
-!!$       do i=1,immn
-!!$          call at2pack%copy_atom(i,at,i)
-!!$       end do
-!!$       call at2pack%dealloc
-!!$       call at%copy_config(at2pack,lrescl=.true.)
-!!$
-!!$    type is(atom_config_d)
-!!$       call atd%init(imn,immn,at2pack%ltabvois,nvois,rvois)
-!!$       do i=1,immn
-!!$          call at2pack%copy_atom(i,atd,i)
-!!$       end do
-!!$       call at2pack%dealloc
-!!$       call atd%copy_config(at2pack,lrescl=.true.)
-!!$
-!!$    type is(atom_config_e)
-!!$       call ate%init(imn,immn,at2pack%ltabvois,nvois,rvois,at2pack%lsigat,at2pack%lprteat,llangevin=at2pack%llangevin,&
-!!$            &lax=at2pack%lax)
-!!$       do i=1,immn
-!!$          call at2pack%copy_atom(i,ate,i)
-!!$       end do
-!!$       call at2pack%dealloc
-!!$       call ate%copy_config(at2pack,lrescl=.true.)
-!!$    end select
 
   end subroutine pack
 
@@ -809,21 +788,6 @@ contains
 
        call atsource%Eegal(atcible)
        call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
-       
-!!$       select type (atsource)
-!!$       type is (atom_config_e)
-!!$          select type (atcible)
-!!$          type is (atom_config_e)
-!!$             atcible%lprteat=atsource%lprteat
-!!$             atcible%lllangevin=atsource%llangevin
-!!$             atcible%lsigat=atsource%lsigat
-!!$             atcible%lax=atsource%lax
-!!$          end select
-!!$          call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois,lsigat=atsource%lsigat,&
-!!$               &llangevin=atsource%llangevin,lax=atsource%lax)
-!!$       class is (atom_config)
-!!$          call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
-!!$       end select
     end if
 
        call atcible%zero
@@ -872,7 +836,6 @@ contains
     ldal=.false.
     lext=.true.
 
-    !    call atcible%dealloc 
 
     !    imtrf=COUNT(atsource%lgul)
     if(present(ldealloc)) ldal=ldealloc

@@ -1,5 +1,5 @@
 module tempinstT_mod
-  USE gen_com_m, ONLY:bk,im_glob,lspaceNDM
+  USE gen_com_m, ONLY:bk,lspaceNDM
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
 
@@ -30,7 +30,7 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     real(double) ::  mv2,v2
-    integer :: i
+    integer :: i,imtot
 
     latc=.false.
     if (present(latcomp))latc=latcomp
@@ -45,8 +45,10 @@ contains
 #ifdef PARA
     if ((lspaceNDM).and.(nprocspace.gt.1).and.(latc.eqv..false.))then 
     call comm_space%sum(mv2)
-!    mv2 = mv2_glob
-    tempinstT=mv2/(3.d0*float(im_glob)*bk)
+    !    mv2 = mv2_glob
+    imtot=atcf%im
+    call comm_space%sum(imtot)
+    tempinstT=mv2/(3.d0*float(imtot)*bk)
        if(present(kine)) then
           call comm_space%sum(kine)
        end if

@@ -51,7 +51,7 @@ contains
     integer :: num_cpu
     integer :: kx,ky,kz,koo
     integer :: cellules_max
-    integer :: nbr_cpu,nox,noy,noz,noxyz,imm
+    integer :: nbr_cpu,nox,noy,noz,noxyz,imm,im_glob
     integer :: ii,jj,kk,nbr_cpumin,iudecoup !indice de boucle
     integer,save::icall=0
     nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
@@ -336,9 +336,10 @@ contains
        !     write(iudecoup,*)'test4' 
        im0=0 ; nvois0=0
 !       write(6,*)'IMMMDEC',rang,imm
-       if (present(atdec)) then 
+       if (present(atdec)) then
+          im_glob=atdec%im_glob
           call atdec%dealloc
-          call atdec%init(im0,imm,ltabvois,nvois0,rvois)
+          call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob)
        end if
        !     write(iudecoup,*)'test4' 
        ! Initialisation des donnees geometriques qui serviront pour le reste du code :

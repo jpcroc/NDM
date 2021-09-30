@@ -1832,7 +1832,7 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
      !    call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
 
      !copie du syst n dans n+1 
-     call atconf_nplus1%init(atconf_n%im+1,atconf_n%imm,atconf_n%ltabvois)
+     call atconf_nplus1%init(atconf_n%im+1,atconf_n%imm,atconf_n%ltabvois,im_glob=atconf_n%im_glob+1)
      atconf_nplus1%ltabvois=atconf_n%ltabvois
      !call atconf_n%copy_config(atconf_nplus1,lrescl=.false.)
      call boucle_copy_atom(atconf_n,atconf_nplus1, sens= .false.)
@@ -1846,13 +1846,9 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
      call init_vitesse(atconf_nplus1,param = 0)
      !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
      cells_nplus1=cells_n
-!!$     call cells_nplus1%init(cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
-!!$     call cells_n%copy_cell(cells_nplus1)
   else
-     call atconf_nplus1%init(atconf_n%im+1,atconf_n%imm,atconf_n%ltabvois)
+     call atconf_nplus1%init(atconf_n%im+1,atconf_n%imm,atconf_n%ltabvois,im_glob=atconf_n%im_glob+1)
      cells_nplus1=cells_n
-!!$     call cells_nplus1%init(cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
-!!$     call cells_n%copy_cell(cells_nplus1)
   end if
 
 
@@ -2022,12 +2018,12 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
 !write(6,*)'outcfmc',rang,ncalls
 end subroutine calfoMCGC
 
-subroutine init_atom_config_mc(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate)
+subroutine init_atom_config_mc(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob)
  class(atom_config_mc),intent(inout)::atconf
  !type(atom_config_mc),intent(inout)::atconf
  integer,intent(in):: imin
  logical,optional, intent(in)::ltabvois,lreallocate
- integer, optional::nvois,immin
+ integer, optional::nvois,immin,im_glob
  real(double),optional::rvois
  logical :: lrealloc
 
@@ -2036,7 +2032,7 @@ subroutine init_atom_config_mc(atconf,imin,immin,ltabvois,nvois,rvois,lreallocat
     lrealloc=lreallocate
  end if
  !initialisation de la partie atom_config_d
- call atconf%atom_config_d%init(imin,immin,ltabvois,nvois,rvois,lreallocate) 
+ call atconf%atom_config_d%init(imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob=im_glob) 
  !initialisation de la partie mc ajoutée
  if ((lrealloc).and.(allocated(atconf%proba)))then
     deallocate(atconf%proba)

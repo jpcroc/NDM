@@ -3,7 +3,7 @@ module calfoberend_mod
   USE T_kind_param_m, ONLY:  double
   use tempinstT_mod,only:tempinstT
   USE var_pot, ONLY:gamlt,cm
-  USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text,im_glob,lspaceNDM
+  USE gen_com_m, ONLY:bk,pi,text,tstep,tautcon,text,lspaceNDM
   implicit none
 contains
   subroutine calfoberend(atcf)
@@ -15,22 +15,6 @@ contains
     class(atom_config_d)::atcf
     integer :: i,ic
     real(double) :: gamb,fact,tempm1,mv2,v2,mv2_glob
-
-    do i = 1,atcf%im
-       v2= atcf%vp(1,i)**2+ atcf%vp(2,i)**2+ atcf%vp(3,i)**2
-       mv2= mv2 + cm(atcf%ityp(i))*v2
-    enddo
-
-#ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-   call comm_space%sum(mv2)
-       tempm1=mv2/(3.d0*float(im_glob)*bk)
-    else
-       tempm1=mv2/(3.d0*float(atcf%im)*bk)
-    end if
-#else
-    tempm1=mv2/(3.d0*float(atcf%im)*bk)
-#endif
 
 
     tempm1=tempinstT(atcf)

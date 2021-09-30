@@ -18,7 +18,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,&
-         &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp
+         &angst,erg2ev,potist,lperiod,lspacendm,latcomp
     USE var_pot, ONLY:ntyp
     USE work_cgII,only: funct
 #ifdef PARA
@@ -66,7 +66,7 @@ contains
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-    call atcgcomp%init(im_glob,imm_glob)
+    call atcgcomp%init(atcgin%im_glob,imm_glob,im_glob=atcgin%im_glob)
     call initparapuresp(gcpara,rang,comm_space)
     call initcomp(atcgcomp,cellcgcomp,atcgin,celcgin,boxcg,gcpara,lperiod)
  else
@@ -81,7 +81,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     cellcgcomp=celcgin
 #endif
     if (mdcg_noise /= 0 ) then
-       call bruit_xp (atcgcomp%xp,bruitmd,atcgcomp%im)
+       call bruit_xp (bruitmd,atcgcomp%im)
     end if
 
        NGC=3*atcgcomp%im

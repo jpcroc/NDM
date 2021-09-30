@@ -39,7 +39,7 @@ module Parrinello_Rahman
   USE T_kind_param_m
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
-       &potist,sig,sigkine,sigtot,text,tstep,im_glob,it,potist,rang,sig,text,tstep,sigkine,&
+       &potist,sig,sigkine,sigtot,text,tstep,it,potist,rang,sig,text,tstep,sigkine,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM,imm_glob,h0
 
 
@@ -200,7 +200,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        !ALLOCATE(UHoover(1:nHoover), UHoover_new(1:nHoover), UHoover_old(1:nHoover))
 
        ! Nombre de degrés de liberté pour le thermostat de Nosé-Hoover
-       gNose=dble(3*im_glob)
+       gNose=dble(3*atpr%im_glob)
 
        ! Masse de chaque thermostat
        IF (wNose.EQ.0) THEN

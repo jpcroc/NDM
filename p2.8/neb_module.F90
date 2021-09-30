@@ -2,7 +2,7 @@ module neb_module
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,kspring,lpathfromgin,&
-       &lrestart,nebtype, fnam,pi,rang,im_glob,lenfnam,rang,zero,lcontr,&
+       &lrestart,nebtype, fnam,pi,rang,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
        &posa, forca,latcomp,parallele
   use read_val,only:rvois,ltabvois
@@ -255,7 +255,7 @@ end if
           IF (ok ) THEN
              ! Load NEB image ip in file *.<ip>.gin
           if(rang==0)write(6,*)'FNAMneb  ',iph,ginfile
-          call gin2ndm(atneb(iph)%atom_config_d,cellneb(iph),boxneb,ginfile,im_glob,rumax,lrepartition=.false.,psc=pscneb)
+          call gin2ndm(atneb(iph)%atom_config_d,cellneb(iph),boxneb,ginfile,rumax,lrepartition=.false.,psc=pscneb)
             do i=1,im
                atneb(iph)%num_at_glob(i)=i
             end do
@@ -273,6 +273,7 @@ end if
        END IF
        atneb(iph)%xpp(:,:)= atneb(iph)%xp(:,:)
        atneb(iph)%vp=0
+       atneb(iph)%im_glob=atneb(1)%im_glob
        !if ((iph.ne.1).and.(iph.ne.npath))
 
     end do
@@ -545,9 +546,8 @@ end if
              call setnox(boxneb,cellneb(ip),rumax)
              !          CALL fin allocation CELL et FIN DIVID
              !             close(lucin)
-             call setcellconf(cellneb(1),atneb(1)%atom_config_d,boxneb,im_glob,rumax)
+             call setcellconf(cellneb(1),atneb(1)%atom_config_d,boxneb,rumax)
           end do
-          !          call setcellconf(cellneb(1),atneb(1),boxneb,im_glob,rumax)
        else ! pas restart
           fnamneb='deb_'//fnam(1:lenfnam)//'.cin'
           if(rang==0)write(6,*)'FNAMneb 1 ',fnamneb
@@ -563,7 +563,7 @@ end if
              atneb(1)%indi=0
           end if
           call setnox(boxneb,cellneb(1),rumax)
-          call setcellconf(cellneb(1),atneb(1)%atom_config_d,boxneb,im_glob,rumax)
+          call setcellconf(cellneb(1),atneb(1)%atom_config_d,boxneb,rumax)
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
              call sauvegardeT(atneb(1)%atom_config_d,cellneb(1),boxneb,formatsauv,fnamcout,latcomp=latcomp)
@@ -583,7 +583,7 @@ end if
              atneb(npath)%indi=0
           end if
           call setnox(boxneb,cellneb(npath),rumax)
-          call setcellconf(cellneb(npath),atneb(npath)%atom_config_d,boxneb,im_glob,rumax)
+          call setcellconf(cellneb(npath),atneb(npath)%atom_config_d,boxneb,rumax)
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
              call sauvegardeT(atneb(npath)%atom_config_d,cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=latcomp)
@@ -593,8 +593,8 @@ end if
        end if
     else
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
-       if (rang==0) write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,im_glob
-       call gin2ndm(atneb(1)%atom_config_d,cellneb(1),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.,psc=pscneb)
+       if (rang==0) write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,atneb(1)%im_glob
+       call gin2ndm(atneb(1)%atom_config_d,cellneb(1),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
 
 
        atneb(:)%im=atneb(1)%im
@@ -621,7 +621,7 @@ end if
 
        write(6,*)'FNAMneb npath ',fnamneb,rang,myidsp
 
-       call gin2ndm(atneb(npath)%atom_config_d,cellneb(npath),boxneb,fnamneb,im_glob,rumax,lrepartition=.false.,psc=pscneb)
+       call gin2ndm(atneb(npath)%atom_config_d,cellneb(npath),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
        atneb(:)%im=atneb(npath)%im
        atneb(npath)%xpp=atneb(npath)%xp
        atneb(npath)%ielat=0

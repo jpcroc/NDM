@@ -3,7 +3,7 @@ module initcasca_mod
 
   USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,lderive,lperiod,&
        &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T,&
-       lspacendm,im_glob,imm_glob
+       lspacendm,imm_glob
   use constrconf_mod,only:repartition
 
     USE T_kind_param_m, ONLY:  double
@@ -67,6 +67,10 @@ contains
     type(cell_config),pointer::celcasc
 #endif    
 
+    if (atcf%im_glob==0) then
+       write(6,*)'inicasca im_glob stop'
+       stop
+    end if
 
     select type (atcf)
        type is (atom_config_e) 
@@ -76,7 +80,7 @@ contains
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atcf%Eegal(atcfcasc)
-       call atcfcasc%init(im_glob,imm_glob)
+       call atcfcasc%init(atcf%im_glob,imm_glob)
        call initparapuresp(Cpara,rang,comm_space)
        call initcomp(atcfcasc,celcasc,atcf,celndm,boxndm,Cpara,lperiod)
     else
@@ -108,7 +112,7 @@ contains
        
        write (6, *) 'initialisation de la cascade'
        write(6,*)'ATOM ',iko, '  TYPE ',atcfcasc%ityp(iko), ' energy=',eko
-       if (iko>im_glob) then
+       if (iko>atcf%im_glob) then
           write (6, *) 'wrong input cascade iko eko ', iko, eko
           stop
        endif

@@ -1,7 +1,6 @@
 module init_simple_mod
 
   use init_pot_mod,only:init_pot,init_pot2
-  USE setcell,only:setcellconf
   USE initspeed_mod,only: initspeed
   USE caltabi_mod,only: caltabi
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
@@ -17,8 +16,8 @@ module init_simple_mod
   use vars_lammps
 #endif
 
-  USE gen_com_m, ONLY:fnam,lenfnam,igen,lperiod,lrestart,rang,im_glob,tstep,two,usdh,&
-       &lspacendm, posa, forca,latcomp
+  USE gen_com_m, ONLY:fnam,lenfnam,igen,lperiod,lrestart,rang,tstep,two,usdh,&
+       &lspacendm, posa, forca
   use read_val,only:ltabvois
   USE var_pot, ONLY:ipotentiel
   use Tpara,only:para_space_config
@@ -94,7 +93,7 @@ contains
        !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
        select type(atdml)
           class is (atom_config_d)
-          call initspeed(atdml,im_glob,boxndm)
+          call initspeed(atdml,boxndm)
        end select
     end if
     call caltabtC(celndm,atdml,lperiod,boxndm)

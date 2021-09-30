@@ -33,7 +33,7 @@ module Parrinello_Rahman_Nose
 
   USE T_kind_param_m
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
-       &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,im_glob,it,kcell,knose,leev,&
+       &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,it,kcell,knose,leev,&
        &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
@@ -111,7 +111,7 @@ end if
     if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la boîte pour Parrinello-Rahman: wbox=',wbox
 
     ! Nombre de degrés de liberté pour le thermostat de Nosé
-    gNose = dble(3*im_glob+1)
+    gNose = dble(3*atpr%im_glob+1)
 
     IF (wNose.EQ.0) THEN
        ! On suppose que la fréquence de vibration typique du solide est

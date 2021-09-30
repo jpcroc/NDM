@@ -1,7 +1,7 @@
 module elec_cell
   USE T_kind_param_m
   USE gen_com_m, ONLY: bk,tstep,erg2eV,pi,rang,lspacendm,&
-       &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter,im_glob
+       &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter
   USE var_pot, ONLY:cm
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
   use Tpara,only:para_space_config ,endmpi !
@@ -258,7 +258,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call GepT(Gep,ecell(ixyze(1),ixyze(2),ixyze(3))%temp)
        do i2 = 1, celndm%nato(ko)
           i = celndm%atincel(i2,ko)
-          if (atdml%num_at_glob(i).gt.im_glob) cycle
+          if (atdml%num_at_glob(i).gt.atdml%im_glob) cycle
           select case (i2t)
           case(1)
              !check for velcocity

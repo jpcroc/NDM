@@ -1,13 +1,47 @@
-INITSPEED ET TEMPINST
-
-
-gérer im_glob !
-
-!!!vérifier que la lecture écriture des .cin .cout fonctionne
-
-initloc et pointer_caltabt_calfo ne fonctionne que pour atom_config_d
 
 INTEGRER DECOUP dans la version sequentielle avec un ldecoup ET METTRE DECOUP3D en version para_config ET intégrer les variables associées dans un type (spacepara_config ?)
+
+
+***
+A FAIRE
+**>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC 
+3.2/ corriger PMEwald
+3.7/CODER sauvegarde xyz
+plotpart dans anapos
+4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien! (en cours)
+4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig piloté comme send2all etc.
+
+5.5/ coder le calcul des depla via anpos à la volée sans lecture de analyse.in et/ou crcin de même bondval !
+6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
+6.5/ sauvegarde binaire de atom_config et systeme entier
+BOF : a part fp il n'y a rien à enlever   	7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos
+6.6/gérer imm_glob !
+7.5/ version NEB  avec retour non systématique au proc master ? Est-ce possible ? Est-ce utile ?
+8/Programmer parallel replica
+8.5/ objetiser la parallélisation spatiale de NDM (automatiser les appels)
+9/documenter atomconfig et ajouter des routines intégrantes (par exemple appel calctemp)
+9.5/ initloc et pointer_caltabt_calfo ne fonctionne que pour atom_config_d
+10/programmer le calcul des forces pour un ensemble d'atomes plongé dans un ensemble plus grand
+10.1/paralèllisme OPENMP like avec le point 10.
+12/retravailler les potentiels en général
+13/ tests formels
+14/ Milady
+15/subroutinisieer les clculs de distances
+
+***
+
+
+****
+EN STANDBY, A FAIRE DANS UN DEUXIEME TEMPS :
+1.1/SYSTEME COMPLET Work in Porgress
+2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine : abandonné car algo dépendant, voir cependant calfoMCGC qui fait à peu près ça
+3.1/réécrire paraspace en version atomconfig y compris avec extend BOF
+et écrire des transferts simples de variables atom et varibales cellconfig et boxconfig
+soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
+(quelles données transférer gérées par un tableau de logicals l(i)=.true. on transfère la données i/ L(i)= false on l’initialise à 0)
+3.6/ suppriemr %xpp du type de base
+
+
 
 FAIT:
 0/finir Pr et Gc (gc faire avec ce qu’on a): FAIT
@@ -31,47 +65,8 @@ debuggage LPR+ LPR lammps
 4.7/MONTECARLO avec para en plus
 7.1/anapos... et Fossati coder vitesses en cfg
 4.05/ supprimer tab_imm_m et les USE temp_com qui vont avec (OK sauf analyses des positions et creationd e défauts)
-
-****
-EN STANDBY, A FAIRE DANS UN DEUXIEME TEMPS :
-1.1/SYSTEME COMPLET Work in Porgress
-2.2/ intéger pointer_caltabt_calfo et initloc dans une sur-routine : abandonné car algo dépendant, voir cependant calfoMCGC qui fait à peu près ça
-3.1/réécrire paraspace en version atomconfig y compris avec extend BOF
-et écrire des transferts simples de variables atom et varibales cellconfig et boxconfig
-soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
-(quelles données transférer gérées par un tableau de logicals l(i)=.true. on transfère la données i/ L(i)= false on l’initialise à 0)
-3.6/ suppriemr %xpp du type de base
-
-
-***
-A FAIRE
-3.2/ corriger PMEwald
-3.7/CODER sauvegarde xyz
-plotpart dans anapos
-4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien! (en cours)
-4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig piloté comme send2all etc.
-**>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC 
-5/version sans PBC/period 
-5.5/ coder le calcul des depla via anpos à la volée sans lecture de analyse.in et/ou crcin de même bondval !
-6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
-6.5/ sauvegarde binaire de atom_config et systeme entier
-BOF : a part fp il n'y a rien à enlever   	7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos
-
-7.5/ version NEB  avec retour non systématique au proc master ? Est-ce possible ? Est-ce utile ?
-8/Programmer parallel replica
-8.5/ objetiser la parallélisation spatiale de NDM (automatiser les appels)
-9/documenter atomconfig et ajouter des routines intégrantes (par exemple appel calctemp)
-10/programmer le calcul des forces pour un ensemble d'atomes plongé dans un ensemble plus grand
-10.1/paralèllisme OPENMP like avec le point 10.
 11/programmer potentiel Cooper
-12/retravailler les potentiels en général
-13/ tests formels
-14/ Milady
-15/subroutinisieer les clculs de distances
-
-***
-
-
+5/version sans PBC/period 
 
 
 ----HISTORIQUE:

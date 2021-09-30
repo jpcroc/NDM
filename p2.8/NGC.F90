@@ -12,7 +12,7 @@ module NGC_mod
        & unitgc
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,iterasmol,lenfnam,fnam,&
-         &angst,erg2ev,potist,im_glob,lperiod,lspacendm,latcomp,lprahman,dfpred,itesauv,unitP,fpstop
+         &angst,erg2ev,potist,lperiod,lspacendm,latcomp,lprahman,dfpred,itesauv,unitP,fpstop
     USE var_pot, ONLY:ntyp
     use steepestdescent_mod, only: steepestdescent,conjugategradient
 #ifdef PARA
@@ -72,7 +72,7 @@ contains
     it=0
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-       call atcgcomp%init(im_glob,imm_glob)
+       call atcgcomp%init(atcgin%im_glob,imm_glob,im_glob=atcgin%im_glob)
        call initparapuresp(gcpara,rang,comm_space)
        call initcomp(atcgcomp,cellcgcomp,atcgin,celcgin,boxcg,gcpara,lperiod)
     else

@@ -399,10 +399,6 @@ contains
 
        !        open(unit=809, file='cell.csv', form='formatted', &
        !             status='unknown')
-       !    do i=1,im_glob
-       !       write(809,'(A,3I6,3G22.13)')'Cel ', it,i,ielat(i),xp(:,i)
-       !       write(809,'(A,3I6,3G22.13)')'Cel ', it,i,ielat(i),xpnp(:,i)
-       !    end do
        !             do i=1,noxyz
        !                write(6,*) i, nato(i) 
        !             end do

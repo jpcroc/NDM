@@ -1,7 +1,7 @@
 module sauvegardeT_mod
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:rang,formatsauv,im_glob,it,itesauvinter,lspaceNDM,&
+  USE gen_com_m, ONLY:rang,formatsauv,it,itesauvinter,lspaceNDM,&
        &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
 
   USE elec_cell, ONLY : sauveelec
@@ -54,6 +54,13 @@ contains
 
     formatsauvmod = mod(formatsauv,2)
     im =atdml%im
+    if (atdml%im_glob==0) then
+       write(6,*)'sauvegarde imglob=0 stop'
+       stop
+    end if
+       
+
+
 #ifdef PARA
     if (.not.latcomp) then 
        if (myidsp==0) then
@@ -62,7 +69,7 @@ contains
           open(unit=lucout, file=fnamcout, form='unformatted', status='unknown')
           write (lucout) formatsauv
           write (lucout) boxndm%at
-          write (lucout) im_glob
+          write (lucout) atdml%im_glob
        end if
 
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -72,7 +79,6 @@ contains
           allocate (buffer(3,atdml%imm))
           allocate (ibuffer(atdml%imm))
        end if
-
        if (myidsp==0) then
           im_loc(0)=im
           ibuffer=0
@@ -102,7 +108,6 @@ contains
              enddo
           end if
           write (lucout) ibuffer   ! Ecriture num_at_glob
-
           if (formatsauvmod==1) then
              lwax=.false.
              select type(atdml)
@@ -179,9 +184,9 @@ contains
                 lwax=.false.
                 select type (atdml)
                 type is (atom_config_d)
+                type is (atom_config_e)
                    call comm_space%send(atdml%xpp(1:3,1:im),0,11005)
                    call comm_space%send(atdml%vp(1:3,1:im),0,11006)
-                type is (atom_config_e)
                    if (atdml%lax)then
                       lwax=.true.
                       call comm_space%send(atdml%ax(1:3,1:im),0,11007)

@@ -2,8 +2,8 @@ module setnoxsimple_mod
 #ifndef ML
 #endif
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:lconstrtot,ldemitab,lconstrtot,pi,rang,im_glob
-    USE var_pot, ONLY:lpotentiel,rue_pot !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
+  USE gen_com_m, ONLY:lconstrtot,ldemitab,lconstrtot,pi,rang
+  USE var_pot, ONLY:lpotentiel,rue_pot !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
   USE recips_mod,only:recips,calcvol,distmin
   USE atomconfig,only: atom_config
   USE boxconfig,only:box_config
@@ -56,12 +56,12 @@ contains
        izonr2 = int(zlmin/rvois)
 !       if(.not.lconstrtot)rumax=rvois
        !write(*,*) 'DEBUG IN DIVID volu, im', volu, im
-       voluperat=boxsn%volu/im_glob
+       voluperat=boxsn%volu/atsn%im_glob
        nvperat=4*Pi*(rvois+1.0d-8)**3/(3*voluperat)
        if (ldemitab) then
-          nvois=max(Int(0.8*nvperat*im_glob),100)
+          nvois=max(Int(0.8*nvperat*atsn%im_glob),100)
        else
-          nvois=max(Int(1.5*nvperat*im_glob),100)
+          nvois=max(Int(1.5*nvperat*atsn%im_glob),100)
        end if
 
        atsn%nvois=nvois

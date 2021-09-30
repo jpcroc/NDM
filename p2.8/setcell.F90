@@ -125,11 +125,10 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
   end subroutine setnox
 
 
-  subroutine setcellconf(celscf,atcf,boxcf,im_glob,rumax,lverbose)
+  subroutine setcellconf(celscf,atcf,boxcf,rumax,lverbose)
     type(cell_config)::celscf
     class(atom_config)::atcf
     type(box_config),intent(in)::boxcf
-    integer,intent(in)::im_glob
     real(double)::rumax
 
     integer::natperc,izonr2,nvois,nvperat
@@ -148,8 +147,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 !    IF (natperc.LE.0) THEN        ! MODIF Clouet
 !    write(6,*)'TTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUTTTTTTTTTTTTTTT'
 !    write(6,*)celscf%noxyz
-!    write(6,*)im_glob
-    natperc= INT(im_glob/celscf%noxyz)
+    natperc= INT(atcf%im_glob/celscf%noxyz)
        nvat=3*natperc
        natperc=max(int(2*natperc),10)     ! MODIF Clouet
 !    ELSE                          ! MODIF Clouet
@@ -158,7 +156,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
 
     if ((rang==0).and.(lverb)) &
-         write(6,*) 'natperc im/noxyz', natperc, im_glob/celscf%noxyz
+         write(6,*) 'natperc im/noxyz', natperc, atcf%im_glob/celscf%noxyz
     celscf%natperc=natperc
     if (allocated(celscf%atincel))deallocate(celscf%atincel)
     allocate(celscf%atincel(celscf%natperc,celscf%noxyz))
@@ -181,17 +179,17 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        endif
 !       if(.not.lconstrtot)rumax=rvois
        !write(*,*) 'DEBUG IN DIVID volu, im', volu, im
-       voluperat=boxcf%volu/im_glob
+       voluperat=boxcf%volu/atcf%im_glob
        nvperat=4*Pi*(rvois+1.0d-8)**3/(3*voluperat)
        if (ldemitab) then
-          nvois=max(Int(0.8*nvperat*im_glob),100)
+          nvois=max(Int(0.8*nvperat*atcf%im_glob),100)
           nvat=max(Int(nvperat*1.3),10)
        else
-          nvois=max(Int(1.5*nvperat*im_glob),100)
+          nvois=max(Int(1.5*nvperat*atcf%im_glob),100)
           nvat=max(Int(nvperat*1.3),10)
        end if
 
-       if(rang==0)         write (6, *) 'Nvois= ', nvois,im_glob,nvperat,rvois,boxcf%volu,voluperat
+       if(rang==0)         write (6, *) 'Nvois= ', nvois,atcf%im_glob,nvperat,rvois,boxcf%volu,voluperat
        atcf%nvois=nvois
        if(allocated(atcf%indi))deallocate(atcf%indi)
        allocate(atcf%indi(nvois))

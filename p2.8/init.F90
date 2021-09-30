@@ -1,7 +1,6 @@
 module init_mod
 
   use init_pot_mod,only:init_pot,init_pot2
-  USE setcell,only:setcellconf
   USE transf_mod,only: transf
   USE initspeed_mod,only: initspeed
   USE sauvegardeT_mod,only: sauvegardeT!,cin2gin
@@ -31,7 +30,7 @@ module init_mod
   use Tpara,only:para_space_config
 
   USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,formatsauv,igen,ilangevin,it,iteanapos,iterasmol,&
-       &itetimestep,kinemean,lcasca,lhcyl,lperiod,lrestart,pmean,rang,timel,two,im_glob,&
+       &itetimestep,kinemean,lcasca,lhcyl,lperiod,lrestart,pmean,rang,timel,two,&
        &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp,l2T
 use read_val,only:ltabvois
 USE var_pot, ONLY:ipotentiel
@@ -190,7 +189,7 @@ contains
        ! input and initialization of 2T
        select type(atdml)
           class is (atom_config_d)
-          call initspeed(atdml,im_glob,boxndm)
+          call initspeed(atdml,boxndm)
        end select
        if (iterasmol>=0) then
           itapp=0
@@ -235,7 +234,6 @@ contains
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     end if
     if (itmax==0) call arret_ndm
-
 
 
 

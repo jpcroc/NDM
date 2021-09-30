@@ -3,11 +3,11 @@ module initspeed_mod
 
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: MatInv
-  USE tempinst_mod,only: tempinst
+  USE tempinstT_mod,only: tempinstT
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
        &lvpread,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,mdcg_noise_scale,&
-       neb_noise_scale,bk,mdcg_noise,lspacendm,latcomp! enleve im, im_glog
+       neb_noise_scale,bk,mdcg_noise,lspacendm
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
   USE Tpara,only:COMM_space,nprocs,nprocspace,myidsp
@@ -20,15 +20,15 @@ module initspeed_mod
   implicit none
 contains
   ! *********************************************************************
-  subroutine bruit_xp (xp,bruitmd,im)
+  subroutine bruit_xp (bruitmd,im)
     USE T_kind_param_m, ONLY:  double
 
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     implicit none
-
-    real(double), allocatable::xp(:,:),bruitmd(:,:)
+!    class(atom_config)::atcf
+    real(double), allocatable::bruitmd(:,:)
     integer::im
     
     integer    :: ia, ip,seed_size
@@ -70,28 +70,21 @@ contains
 
 
   ! *********************************************************************
-  subroutine initspeed(atcf,im_glob,boxndm)
+  subroutine initspeed(atcf,boxndm,latcomp)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:
     USE var_pot, ONLY:
-
-    ! *********************************************************************
-
-
     implicit none
     !-----------------------------------------------
     class(atom_config_d)::atcf
     !    type(cell_config):: celndm
     type(box_config),intent(in)::boxndm
-    integer,intent(in)::im_glob
+    logical,optional,intent(in):: latcomp
 
-    real(double),allocatable::xp(:,:),xpp(:,:),vp(:,:)
-    integer,allocatable::ityp(:)
-    integer::im,imm
-    
+    logical::latc=.false.
     integer :: i, ic, ia, ib
     integer, dimension(:), allocatable :: iseedt
     real(double), dimension(ntyp) :: temptyp
@@ -107,37 +100,33 @@ contains
     real(double), dimension(3,ntyp) :: vav
     real(double),allocatable::bruitmd(:,:)
     integer  :: i_glob
-    integer  :: est_local
     integer :: seed_size
-    integer::iti
+    integer::iti,imtot
     real(double)::sd,grnd,theta,fhi ! ,decx(2)
 
     !-----------------------------------------------
     !  external fucntions
     !-----------------------------------------------
-    !real(double) :: tempinst ! in module tempinst_mod
 
     !    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
-
+    if(present(latcomp))latc=latcomp
     if (rang==0) write(6,*)
-    im=atcf%im ; imm=atcf%imm
-    allocate(xp(3,imm));  allocate(xpp(3,imm));  allocate(vp(3,imm));    allocate(ityp(im))
-    xp=atcf%xp;xpp=atcf%xpp; vp=atcf%vp; ityp=atcf%ityp;
+
     select case (dmtype)
     case(3,30,5,11,7)
-       vp = 0.0
+       atcf%vp = 0.0
        goto 66
     case(2)
        if (lvpread) then 
           goto 66
        else
           if (mdcg_noise==0) then 
-             vp=0.0;          xpp=xp
+             atcf%vp=0.0;          atcf%xpp=atcf%xp
              goto 66
           else
-             vp=0.0 
-             call bruit_xp(atcf%xp,bruitmd,atcf%im)
-             xp(1:3,1:im) = xp(1:3,1:im) + bruitmd(1:3,1:im)
+             atcf%vp=0.0 
+             call bruit_xp(bruitmd,atcf%im)
+             atcf%xp(1:3,1:atcf%im) = atcf%xp(1:3,1:atcf%im) + bruitmd(1:3,1:atcf%im)
              goto 66
           end if
        end if
@@ -146,10 +135,10 @@ contains
     !      write(6,*)'vp',vp(1,1)
     if (lvpread) then
        !       oldtstep=1.0d-15
-       tempsauv=tempinst(vp,ityp,im,imm)
+       tempsauv=tempinstT(atcf)
        if (myidsp==0) write(6,*)'tempsauv ',tempsauv
 
-       xpp(:,:im) = xp(:,:im)-(xp(:,:im)-xpp(:,:im))*tstep/oldtstep
+       atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*tstep/oldtstep
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep
 
        if (tinit<=0) then
@@ -160,14 +149,13 @@ contains
           ! velocities are read from file and rescaled
           if (rang==0) write (6, *) 'scaling read velocities at TINIT = ', &
                tinit, 'K'
-          !   tempsauv=tempinst(vp,ityp)
           !   if (rang==0) write(6,*)'tempsauv ',tempsauv
           if (tempsauv.le.1.) then
              lvpread=.false. ; goto 1
           end if
           vv = sqrt(tinit/tempsauv)
-          xpp(:,:im) = xp(:,:im)-(xp(:,:im)-xpp(:,:im))*vv
-          vp(:,:im) = vp(:,:im)*vv
+          atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
+          atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
        endif
 
     else
@@ -179,12 +167,12 @@ contains
 !!$             write (6, *) rang,'no way to initiate the velocities stop'
 !!$             call arret_ndm
 !!$          else                                 !quench run
-             vp(1,:im) = 0.0
-             vp(2,:im) = 0.0
-             vp(3,:im) = 0.0
-             xpp(1,:im) = xp(1,:im)
-             xpp(2,:im) = xp(2,:im)
-             xpp(3,:im) = xp(3,:im)
+             atcf%vp(1,:atcf%im) = 0.0
+             atcf%vp(2,:atcf%im) = 0.0
+             atcf%vp(3,:atcf%im) = 0.0
+             atcf%xpp(1,:atcf%im) = atcf%xp(1,:atcf%im)
+             atcf%xpp(2,:atcf%im) = atcf%xp(2,:atcf%im)
+             atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)
 !          endif
           if (rang==0) write (6, *) 'ZERO VELOCITY '
        else
@@ -209,9 +197,8 @@ contains
           deallocate(iseedt)
 
           v0 = sqrt(2.D0*bk*tinit)
-          !        do i_glob = 1, im_glob
           vt1(:)=0.0
-          do i = 1, im
+          do i = 1, atcf%im
              !******************************************
              call random_number(z1)
              call random_number(z2)
@@ -222,25 +209,10 @@ contains
              if(z3.eq.0.d0) z3=0.000000001d0
              if(z4.eq.0.d0) z4=0.000000001d0
 
-             !             est_local=0
-             !	   do i=1,im
-             !	     if (num_at_glob(i)==i_glob) then
-             !             est_local=1
-             !		exit
-             !             endif
-             !           enddo
-
-             !             if (est_local==1) then
-             !                if(z1.eq.0.d0) z1=0.000000001d0
-             !                if(z2.eq.0.d0) z2=0.000000001d0
-             !                if(z3.eq.0.d0) z3=0.000000001d0
-             !                if(z4.eq.0.d0) z4=0.000000001d0
-
-             !**************************************
-             v1 = one/sqrt(cm(ityp(i)))
-             vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
-             vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
-             vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
+             v1 = one/sqrt(cm(atcf%ityp(i)))
+             atcf%vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
+             atcf%vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
+             atcf%vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
              theta=acos(1-2*z3)
              fhi=2*pi*z4
              ! vp(1,i) = v1*v0*sqrt((-log(z1)))*sin(theta)*cos(fhi)
@@ -250,20 +222,23 @@ contains
 
              !             endif
           end do
-          tempsauv=tempinst(vp,ityp,im,imm)
+          tempsauv=tempinstT(atcf)
           if (rang==0) write(6,*)'temperature positions lues initspeed ',tempsauv
           kinx(:)=0.d0
           do ic=1,3
-             do i=1,im
-                kinx(ic)=kinx(ic)+0.5*vp(ic,i)*vp(ic,i)*cm(ityp(i))/dfloat(im_glob)
+             do i=1,atcf%im
+                kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))
                 !write(*,*) ic, i,kinx(ic),  cm(ityp(i)), vp(ic,i)
              end do
              ka=0.5*bk*tinit 
-#ifdef PARA
-             if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-                call comm_space%sum(kinx)
-             end if
-#endif          
+!!$             imtot=atcf%im
+!!$#ifdef PARA
+!!$             if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+!!$                call comm_space%sum(imtot)
+!!$                call comm_space%sum(kinx)
+!!$             end if
+!!$#endif
+!!$             kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))/imtot
              !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
           end do
           !***************************************************************
@@ -275,26 +250,31 @@ contains
           scom = 0.d0
           pav  = 0.d0
 
-          do i = 1, im
-             ic = ityp(i)
+          do i = 1, atcf%im
+             ic = atcf%ityp(i)
              totmass = totmass+cm(ic)
              do ia = 1, 3
-                scom(ia) = scom(ia)+xp(ia,i)*cm(ic)
-                pav (ia) = pav(ia) +vp(ia,i)*cm(ic)
+                scom(ia) = scom(ia)+atcf%xp(ia,i)*cm(ic)
+                pav (ia) = pav(ia) +atcf%vp(ia,i)*cm(ic)
              enddo
           enddo
-
+          imtot=atcf%im
+          
 #ifdef PARA
-          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-             call comm_space%sum(totmass)
-             call comm_space%sum(scom)
-             call comm_space%sum(pav)
-     end if
+          if (.not.latc) then 
+             if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+                call comm_space%sum(totmass)
+                call comm_space%sum(scom)
+                call comm_space%sum(pav)
+                call comm_space%sum(imtot)
+             end if
+          end if
 #endif          
 
+     
           do ia = 1, 3
              scom(ia) = scom(ia)/totmass
-             pav (ia) = pav (ia)/float(im_glob)
+             pav (ia) = pav (ia)/float(imtot)
           enddo
 
           if (rang==0) then
@@ -310,9 +290,9 @@ contains
              enddo
           enddo
 
-          do i = 1, im
+          do i = 1, atcf%im
              do ia = 1, 3
-                vp(ia,i) = vp(ia,i)-vav(ia,ityp(i))
+                atcf%vp(ia,i) = atcf%vp(ia,i)-vav(ia,atcf%ityp(i))
              enddo
           enddo
 
@@ -320,48 +300,35 @@ contains
              ka=0.5*bk*tinit
              kinx=0.
              do ic=1,3
-                do i=1,im
-                   kinx(ic)=kinx(ic)+0.5*vp(ic,i)*vp(ic,i)*cm(ityp(i))/dfloat(im_glob)
+                do i=1,atcf%im
+                   kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))
                 end do
-
+             imtot=atcf%im
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-           call comm_space%sum(kinx) 
-     end if
-#endif          
-
+             if (.not.latc) then 
+                if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+                   call comm_space%sum(imtot)
+                   call comm_space%sum(kinx)
+                end if
+             end if
+#endif
+             kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))/imtot
                 if (rang==0)write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
-                do i=1,im
-                   vp(ic,i)= vp(ic,i)*dsqrt(ka/kinx(ic))
+                do i=1,atcf%im
+                   atcf%vp(ic,i)= atcf%vp(ic,i)*dsqrt(ka/kinx(ic))
                 end do
              end do
-             !          kinx=0.
-             !          do ic=1,3
-             !             do i=1,im
-             !                kinx(ic)=kinx(ic)+0.5*vp(ic,i)*vp(ic,i)*cm(ityp(i))/dfloat(im)
-             !             end do
-
-             !            write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
-
-             !          end do
-
-
           else
-
-
-
-             !      Make the angular momentum zero
-             !         Calculate inertia tensor & angular momentum
              ainer = 0.d0
              prx = 0.d0
              pry = 0.d0
              prz = 0.d0
 
-             do i = 1, im
-                ic = ityp(i)
-                rx = xp(1,i)-scom(1)
-                ry = xp(2,i)-scom(2)
-                rz = xp(3,i)-scom(3)
+             do i = 1, atcf%im
+                ic = atcf%ityp(i)
+                rx = atcf%xp(1,i)-scom(1)
+                ry = atcf%xp(2,i)-scom(2)
+                rz = atcf%xp(3,i)-scom(3)
                 r2x = rx*rx
                 r2y = ry*ry
                 r2z = rz*rz
@@ -372,9 +339,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                 ainer(2,3) = ainer(2,3)-cm(ic)*ry*rz
                 ainer(3,1) = ainer(3,1)-cm(ic)*rz*rx
                 ainer(1,2) = ainer(1,2)-cm(ic)*rx*ry
-                px  = cm(ic)*vp(1,i)
-                py  = cm(ic)*vp(2,i)
-                pz  = cm(ic)*vp(3,i)
+                px  = cm(ic)*atcf%vp(1,i)
+                py  = cm(ic)*atcf%vp(2,i)
+                pz  = cm(ic)*atcf%vp(3,i)
                 prx = prx+ry*pz-rz*py
                 pry = pry+rz*px-rx*pz
                 prz = prz+rx*py-ry*px
@@ -385,12 +352,14 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              ainer(2,1) = ainer(1,2)
 
 #ifdef PARA
-             if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-                call comm_space%sum(ainer)
-                call comm_space%sum(prx)
-                call comm_space%sum(pry)
-                call comm_space%sum(prz)  
-          end if
+             if (.not.latc) then 
+                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+                   call comm_space%sum(ainer)
+                   call comm_space%sum(prx)
+                   call comm_space%sum(pry)
+                   call comm_space%sum(prz)  
+                end if
+             end if
 #endif          
 
 !             if (rang==0) then
@@ -407,20 +376,20 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              omegaz = aineri(3,1)*prx+aineri(3,2)*pry+aineri(3,3)*prz
 
              !         shift velocities to make the angular momentum zero
-             do i = 1, im
-                rx = xp(1,i)-scom(1)
-                ry = xp(2,i)-scom(2)
-                rz = xp(3,i)-scom(3)
+             do i = 1, atcf%im
+                rx = atcf%xp(1,i)-scom(1)
+                ry = atcf%xp(2,i)-scom(2)
+                rz = atcf%xp(3,i)-scom(3)
                 vrx = omegay*rz-omegaz*ry
                 vry = omegaz*rx-omegax*rz
                 vrz = omegax*ry-omegay*rx
-                vp(1,i) = vp(1,i)-vrx
-                vp(2,i) = vp(2,i)-vry
-                vp(3,i) = vp(3,i)-vrz
+                atcf%vp(1,i) = atcf%vp(1,i)-vrx
+                atcf%vp(2,i) = atcf%vp(2,i)-vry
+                atcf%vp(3,i) = atcf%vp(3,i)-vrz
              enddo
 
              !      Old velocities translation
-             !            vp(1,:im) = vp(1,:im)-vt1(1)/float(im)
+             !            atcf%vp(1,:im) = vp(1,:im)-vt1(1)/float(im)
              !            vp(2,:im) = vp(2,:im)-vt1(2)/float(im)
              !            vp(3,:im) = vp(3,:im)-vt1(3)/float(im)
 
@@ -428,16 +397,16 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
           end if
 
-          xpp(1,:im) = xp(1,:im)-vp(1,:im)*tstep
-          xpp(2,:im) = xp(2,:im)-vp(2,:im)*tstep
-          xpp(3,:im) = xp(3,:im)-vp(3,:im)*tstep
+          atcf%xpp(1,:atcf%im) = atcf%xp(1,:atcf%im)-atcf%vp(1,:atcf%im)*tstep
+          atcf%xpp(2,:atcf%im) = atcf%xp(2,:atcf%im)-atcf%vp(2,:atcf%im)*tstep
+          atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)-atcf%vp(3,:atcf%im)*tstep
 
        endif
 
     endif
     !     write(6,*)'sortie initspeed'
 
-    tempsauv=tempinst(vp,ityp,im,imm)
+    tempsauv=tempinstT(atcf)
     if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
 
 
@@ -454,29 +423,29 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           end do
        end if
        !       decx=0
-       do i=1,im
-          sd= sqrt((3*tempdeplainit*hbar**2)/(bk*cm(ityp(i))*debyetemp**2))
+       do i=1,atcf%im
+          sd= sqrt((3*tempdeplainit*hbar**2)/(bk*cm(atcf%ityp(i))*debyetemp**2))
 
           do ic=1,3
              call gaussianrand(grnd)
              !                        write(6,*)grnd
-             xp(ic,i)=xp(ic,i)+sd*grnd
-             xpp(ic,i)=xpp(ic,i)+sd*grnd
+             atcf%xp(ic,i)=atcf%xp(ic,i)+sd*grnd
+             atcf%xpp(ic,i)=atcf%xpp(ic,i)+sd*grnd
              !             decx(ityp(i))=decx(ityp(i))+(sd*grnd)**2
           end do
        end do
        call periodbox (boxndm,atcf)
     end if
 66  continue
-       atcf%xp=xp;atcf%xpp=xpp; atcf%vp=vp; atcf%ityp=ityp;
-       deallocate(ityp);deallocate(xp);deallocate(xpp);deallocate(vp)
 
-#ifdef PARA
-       if ((latcomp).and.(nprocspace.gt.1)) then ! les procs masters myidsp=0 ont toutes les positions., Il faut passer aux autres procs les nouvelles atcf
-          call atcf%send2all(0,comm_space)
-       end if
-#endif
-       if (rang==0) write(6,*)
+
+!! Les envois sont à faire dans l'éventuelle routine appellante
+!!$#ifdef PARA
+!!$       if ((latc).and.(nprocspace.gt.1)) then ! les procs masters myidsp=0 ont toutes les positions., Il faut passer aux autres procs les nouvelles atcf
+!!$          call atcf%send2all(0,comm_space)
+!!$       end if
+!!$#endif
+    if (rang==0) write(6,*)
 
     return
 
