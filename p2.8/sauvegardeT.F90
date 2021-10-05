@@ -2,7 +2,7 @@ module sauvegardeT_mod
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:rang,formatsauv,it,itesauvinter,lspaceNDM,&
-       &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,imm_glob,l2T
+       &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,l2T,imm_glob
 
   USE elec_cell, ONLY : sauveelec
   USE cryst_to_cart_mod,only: cryst_to_cart
@@ -58,7 +58,6 @@ contains
        write(6,*)'sauvegarde imglob=0 stop'
        stop
     end if
-       
 
 
 #ifdef PARA

@@ -255,9 +255,10 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
 
         k=Int(rij/ktor)
         drk=rij-k*ktor
+        ll = ipo(iti,itj)
         if (typ_pot_pair(ll).ne.12) cycle
         if (i.gt.j) then  !terme de repulsion deja calculé
-           ll = ipo(iti,itj)
+
 
            !             Erep=0. ; dErep=0.
            Erep=2.0*eamrep(1,ll,k)+eamrep(2,ll,k)*drk+eamrep(3,ll,k)*drk**2+eamrep(4,ll,k)*drk**3

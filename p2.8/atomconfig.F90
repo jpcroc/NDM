@@ -17,7 +17,7 @@ module atomconfig
 #endif
 
   type atom_config ! type minimal des configurations atomiques. Tous les composants seront toujours alloué (im_glob seulement si PARA)
-     integer::im=0,imm=0,im_glob ! im nb d'atomes sur le proc, taille des tableaux sur le proc, im_glob nombre d'atomes en tout
+     integer::im=0,imm=0,im_glob,imm_glob ! im nb d'atomes sur le proc, taille des tableaux sur le proc, im_glob nombre d'atomes en tout,imm_glob, taille des tableaux complets
     integer(long)::icaltabt 
      real(double),allocatable:: xp(:,:)
      real(double),allocatable::fp(:,:)
@@ -90,11 +90,11 @@ module atomconfig
 contains
   !initialisations
   
-  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob)
+  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
     logical,optional, intent(in)::ltabvois,lreallocate
-    integer, optional::nvois,immin,im_glob
+    integer, optional::nvois,immin,im_glob,imm_glob
     real(double),optional::rvois
     integer::nv
     logical ::ltbv,lrealloc
@@ -109,6 +109,11 @@ contains
        atconf%im_glob=im_glob
     else
        atconf%im_glob=0
+    end if
+    if (present(imm_glob))then
+       atconf%imm_glob=imm_glob
+    else
+!       atconf%imm_glob=0
     end if
     if (present(immin))then
        atconf%imm=immin
@@ -586,6 +591,7 @@ contains
     logical :: lstop
     call atsource%Eegal(atcible)
     atcible%im_glob=atsource%im_glob
+    atcible%imm_glob=atsource%imm_glob
     if (lrescl) then
 !       if (atcible%imm.ne.atsource%imm) then
        call atcible%dealloc
@@ -594,9 +600,9 @@ contains
        else
           nvois=0;rvois=0
        end if
-       call atcible%init(atsource%im,atsource%imm,atcible%ltabvois,nvois,rvois)
+       call atcible%init(atsource%im,atsource%imm,atcible%ltabvois,nvois,rvois,&
+            &im_glob=atsource%im_glob,imm_glob=atsource%imm_glob)
        atcible%icaltabt=atsource%icaltabt   
-       atcible%im_glob=atsource%im_glob
     else
        lstop=.false.
        if ((atcible%im.lt.atsource%im).or.(atcible%imm.lt.atsource%imm)) lstop=.true.
@@ -650,7 +656,7 @@ contains
 
   subroutine dealloc_atom_config(atconf)
     class(atom_config), intent(inout)::atconf
-    atconf%im=0 ; atconf%imm=0 ; atconf%im_glob=0
+    atconf%im=0 ; atconf%imm=0 ; atconf%im_glob=0; atconf%imm_glob=0
     if(allocated(atconf%xp))then
        deallocate(atconf%xp);deallocate(atconf%fp);deallocate(atconf%ielat)
        deallocate(atconf%ityp); deallocate(atconf%lgul); deallocate(atconf%num_at_glob)
@@ -681,7 +687,7 @@ contains
 
   end subroutine dealloc_atom_config_e
 
-  subroutine deftype(atsource,atcible)  ! initilizeacible to the type of atsource, inluding the values of lax, lpreeat, etc.
+  subroutine deftype(atsource,atcible)  ! initialize atcible to the type of atsource, inluding the values of lax, lpreeat, etc.
     class(atom_config),intent(in)::atsource
     class(atom_config),allocatable::atcible
        select type (atsource)
@@ -755,7 +761,7 @@ contains
     end if
 
     call at2pack%deftype(at)
-    call at%init(imn,immn,at2pack%ltabvois,nvois,rvois,im_glob=at2pack%im_glob)
+    call at%init(imn,immn,at2pack%ltabvois,nvois,rvois,im_glob=at2pack%im_glob,imm_glob=at2pack%imm_glob)
     do i=1,immn
        call at2pack%copy_atom(i,at,i)
     end do
@@ -1861,7 +1867,7 @@ contains
           ivi=ivi+1
           do ip=1,size1
              ib=Iposf(ivi-1)+ip
-             ibuffer(ib)=atcf%iwmax(iat)
+             ibuffer(ib)=atcf%iwmax(ip)
              csi=csi+1
           end do
       
@@ -1872,7 +1878,7 @@ contains
           ivi=ivi+1
           do ip=1,sizeV
              ib=Iposf(ivi-1)+ip
-             ibuffer(ib)=atcf%indi(iat)
+             ibuffer(ib)=atcf%indi(ip)
              csi=csi+1
           end do
 !          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)

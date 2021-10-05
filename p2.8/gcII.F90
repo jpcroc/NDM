@@ -17,7 +17,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,&
+    USE gen_com_m, ONLY:itetemp2,dmtype,rang,it,itmax,mdcg_noise,&
          &angst,erg2ev,potist,lperiod,lspacendm,latcomp
     USE var_pot, ONLY:ntyp
     USE work_cgII,only: funct
@@ -66,7 +66,7 @@ contains
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-    call atcgcomp%init(atcgin%im_glob,imm_glob,im_glob=atcgin%im_glob)
+    call atcgcomp%init(atcgin%im_glob,atcgin%imm_glob,im_glob=atcgin%im_glob,imm_glob=atcgin%imm_glob)
     call initparapuresp(gcpara,rang,comm_space)
     call initcomp(atcgcomp,cellcgcomp,atcgin,celcgin,boxcg,gcpara,lperiod)
  else

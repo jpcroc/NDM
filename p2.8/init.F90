@@ -5,8 +5,7 @@ module init_mod
   USE initspeed_mod,only: initspeed
   USE sauvegardeT_mod,only: sauvegardeT!,cin2gin
   USE caltabi_mod,only: caltabi
-  USE creadp_mod,only: creadp
-  USE initcdp_mod,only: initcdp
+  USE cdp_mod,only: initcdp
   USE initcasca_mod,only: initcasca
   USE deftimestep_mod,only: deftimestep
   USE rasmolT_mod,only: rasmolT
@@ -15,7 +14,7 @@ module init_mod
   USE cellconfig, only:cell_config,caltabtC
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
   USE constrconf_mod, only :constrconf
- USE arret_ndm_mod,only: arret_ndm
+  USE arret_ndm_mod,only: arret_ndm
 
 #ifdef PARA
   USE init_vois_mod,only: init_voisinage
@@ -31,7 +30,7 @@ module init_mod
 
   USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,formatsauv,igen,ilangevin,it,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lhcyl,lperiod,lrestart,pmean,rang,timel,two,&
-       &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp,l2T
+       &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp,l2T,lcdp
 use read_val,only:ltabvois
 USE var_pot, ONLY:ipotentiel
   implicit none
@@ -47,7 +46,6 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use posana,only:anapos
     USE posana,only:
-    USE defcdp, ONLY :itecdp
     USE elec_cell,ONLY: i2t,t_cpl, readelec
     USE eloss, ONLY : ibrake,ecelec,initeloss
 
@@ -235,7 +233,7 @@ contains
     end if
     if (itmax==0) call arret_ndm
 
-
+    if (lcdp) call initcdp
 
     return
   end subroutine init

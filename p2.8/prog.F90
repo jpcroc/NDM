@@ -3,10 +3,10 @@ module prog_mod
   USE calfo_mod,only: calfo
   USE endrunT_mod,only: endrunT
   USE neb_mod,only: neb
-  USE dmloop_lpr_mod,only: dmloop_lpr
+!  USE dmloop_lpr_mod,only: dmloop_lpr
   USE gcII_mod,only: gcII
-  USE dmloop_vverlet_mod,only: dmloop_vverlet
-  USE dmloop_mod,only: dmloop
+!  USE dmloop_vverlet_mod,only: dmloop_vverlet
+!  USE dmloop_mod,only: dmloop
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
@@ -15,20 +15,20 @@ module prog_mod
        &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
-  USE atomconfig,only : atom_config,atom_config_d,atom_config_e,ndm2config, config2ndm
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t&
-       &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin,latcomp
+       &,lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp
   
   use read_val,only:imm,ltabvois,rvois
   use NGC_mod,only:ngc
 #if defined ML || defined PARAML    
   USE ml_main_mod,only: ml_main
 #endif
-
+  use cdp_mod,only:creadp
 !  use one_calc_mod,only:one_calc
   use d_at_at_mod
-
+  USE dmloop_pilot_mod,only:dmloop_pilot
   implicit none
 contains
   subroutine prog
@@ -37,7 +37,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:parallele,potist,rang,sig,lspaceNDM&
-         &,lprteat,lsigat,imm_glob,dmtype,imm_glob,lax,llangevin,itetimestep
+         &,lprteat,lsigat,dmtype,lax,llangevin,itetimestep
 
     use read_val,only:imm,ltabvois,rvois
 
@@ -91,7 +91,18 @@ contains
        end if
     end if
     im=0 ; nvois=0
+    atdml%imm_glob=imm
     imm_glob=imm
+
+    select type (atdml)
+    type is (atom_config)
+       write(6,*)'atomfig'
+    type is (atom_config_d)
+       write(6,*)'atomfigD'
+    type is (atom_config_e)
+       write(6,*)'atomfigE'
+    end select
+       
     select case(dmtype)
     case default
        !if (dmtype.ne.9) then
@@ -115,7 +126,7 @@ contains
 
        call atdml%init(im,imm,ltabvois,nvois,rvois=rv)
 
-       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+
        call init(atdml,boxndm,celndm,psc0)
 
 #ifdef DECOUP
@@ -136,15 +147,16 @@ contains
        select type(atdml)
        type is (atom_config)
 
-
-
-          select case (dmtype) 
-          case(30,31)
-
-             call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
-          case(32,33,34)
-             call NGC(atdml,celndm,boxndm,psc0)
-          end select
+          if (lcdp) then
+             call creadp(atdml,celndm,boxndm,psc0)
+          else
+             select case (dmtype) 
+             case(30,31)
+                call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
+             case(32,33,34)
+                call NGC(atdml,celndm,boxndm,psc0)
+             end select
+          end if
        class is (atom_config_d)
 !!$          case default
 !!$             write(6,*)'incohérence entre type(atom_config) et dmtype'
@@ -155,16 +167,36 @@ contains
           select case (dmtype) 
           case(5)
              write(6,*)'loopforcetest pas NDM2020' ; stop
-          case(4,10)
-             call dmloop_vverlet (atdml,celndm,boxndm,psc0)
-          case(8)
-             call dmloop_lpr (atdml,celndm,boxndm,psc0)
-          case (1)
-             call dmloop (atdml,celndm,boxndm,psc0)
-          case (21)
-             call dmloop(atdml,celndm,boxndm,psc0)
-          case(22)
-             call dmloop_vverlet (atdml,celndm,boxndm,psc0)
+          case(4,10,8,1,21,22)
+             if (lcdp) then
+                call creadp(atdml,celndm,boxndm,psc0)
+             else
+                call dmloop_pilot(atdml,celndm,boxndm,psc0)
+             end if
+          case(30,31)
+             if (lcdp) then
+                write(6,*)'noc cdp with old GC'
+                stop
+             else
+                call gcII (atdml%atom_config,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
+             endif
+          case(32,33,34)
+             if (lcdp) then
+                call creadp(atdml,celndm,boxndm,psc0)
+             else
+                call NGC(atdml,celndm,boxndm,psc0)
+             end if
+
+!!$          case(4,10)
+!!$             call dmloop_vverlet (atdml,celndm,boxndm,psc0)
+!!$          case(8)
+!!$             call dmloop_lpr (atdml,celndm,boxndm,psc0)
+!!$          case (1)
+!!$             call dmloop (atdml,celndm,boxndm,psc0)
+!!$          case (21)
+!!$             call dmloop(atdml,celndm,boxndm,psc0)
+!!$          case(22)
+!!$             call dmloop_vverlet (atdml,celndm,boxndm,psc0)
 !!$          case (3,30)
 !!$             write(6,*)'incohérence entre type(atom_config_d) et dmtype=GC'
 !!$             stop
@@ -256,7 +288,7 @@ contains
           atconf_nplus1=>config_atom_nplus1(ipp)
           cells_nplus1=>config_cells_nplus1(ipp)
 
-          call atconf_n%init(im,imm_glob,ltabvois,nvois,rvois=rv)
+          call atconf_n%init(im,imm,ltabvois,nvois,rvois=rv,imm_glob=imm_glob)
           ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
           boxmcgc=boxndm
           if (ipp==1) then

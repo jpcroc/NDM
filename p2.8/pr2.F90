@@ -40,7 +40,7 @@ module Parrinello_Rahman
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigkine,sigtot,text,tstep,it,potist,rang,sig,text,tstep,sigkine,&
-       &pi,l2t,ltberendsen,lperiod,lspaceNDM,imm_glob,h0
+       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0
 
 
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3

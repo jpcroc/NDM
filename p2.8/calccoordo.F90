@@ -40,7 +40,7 @@ contains
 
   logical::linter
   real(double)::cx(3)
-  
+  allocate(rccoordo(ntyp))
   icall=icall+1
   if (icall==1) then
      rccoordo(1:ntyp)=rclu(1:ntyp)*1d-8

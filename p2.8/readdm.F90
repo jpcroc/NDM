@@ -1,10 +1,7 @@
 ! *****************************************************************
 module readdm_mod
-
-
-
   use read_val
-    implicit none
+  implicit none
 contains
 
 
@@ -15,7 +12,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:a2cm,debyetemp,deltaestop,deltarmax,deltax,depmaxts,dfpred,eheat,eko,&
          &epcou,epcoud,epcoudis,epsil,ev2erg,fdislo,fmt_cin,fpstop,fsumstop,gamlg,hessianorder,ibordcou,&
-         &ides,igen,ilangevin,imm_glob,iseed,itab,iteanaposneb,itederive,iteheat,&
+         &ides,igen,ilangevin,iseed,itab,iteanaposneb,itederive,iteheat,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,ittherm,kappa,kspr,kspring,kthg,&
          &lalea,lanczos_step,landerscou,lastcool,lbulle,lcdp,lconstrtot,lcorrelvp,lderive,ldislo,lfire,&
          &lgc,lhcyl,lheat,ljqbh,lpathfromgin,lpcon2,lprtrp,lprtzlm,lrctest,lrestart,ltandersen,&
@@ -118,7 +115,7 @@ contains
     !                              31 -> VIEUX gradient conjugue sur les coordonnes cartesiennes
     !                              32 -> steepest descent
     !                              33 -> gradient conjugue
-    !                              33 -> gradient conjugue modifié Fletcher-Reeves
+    !                              34 -> gradient conjugue modifié Fletcher-Reeves
     !                               4 -> Velocity Verlet 
     !                               5 -> test des forces 
     !                               6 -> analyse des positions en fin de cascade 
@@ -1465,6 +1462,14 @@ contains
        stop
     end if    
 
+    if (lcdp) then
+       select case(dmtype)
+       case(1,2,3,4,32,33,34,8)
+       case default
+          if (rang==0) write(6,*)'dmtype inconsistent with creaDP', dmtype
+          stop
+       end select
+     end if
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
   end subroutine readdm

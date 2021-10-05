@@ -3,7 +3,7 @@ module initcasca_mod
 
   USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,lderive,lperiod,&
        &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T,&
-       lspacendm,imm_glob
+       lspacendm
   use constrconf_mod,only:repartition
 
     USE T_kind_param_m, ONLY:  double
@@ -48,7 +48,7 @@ contains
 
     integer :: iti, expos, imax
     real(double) :: tifac1, tifac2, lts, tseuil, vmax2
-    real(double), dimension(imm_glob) :: vpmod2
+    real(double), dimension(:),allocatable :: vpmod2
     real(double) :: masstot, vpi(3)
 
     integer :: seed_size,isl
@@ -67,6 +67,7 @@ contains
     type(cell_config),pointer::celcasc
 #endif    
 
+    allocate (vpmod2(atcf%imm_glob))
     if (atcf%im_glob==0) then
        write(6,*)'inicasca im_glob stop'
        stop
@@ -80,7 +81,7 @@ contains
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atcf%Eegal(atcfcasc)
-       call atcfcasc%init(atcf%im_glob,imm_glob)
+       call atcfcasc%init(atcf%im_glob,atcf%imm_glob,imm_glob=atcf%imm_glob)
        call initparapuresp(Cpara,rang,comm_space)
        call initcomp(atcfcasc,celcasc,atcf,celndm,boxndm,Cpara,lperiod)
     else

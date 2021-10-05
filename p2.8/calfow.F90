@@ -112,7 +112,7 @@ contains
                    !         write(6,*)'j ', j
                    itj=atcf%ityp(j)
                    if(itj.eq.itSi)then
-
+                      l=ipo(iti,itj)
                       call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rawat(l),linter=linter,dist=r)
                       if (.not.linter) cycle
                       

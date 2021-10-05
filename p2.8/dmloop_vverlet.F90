@@ -12,9 +12,9 @@ module dmloop_vverlet_mod
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
-USE calfoberend_mod,only:calfoberend
-use Tpara,only:para_space_config
-use endrunT_mod,only:endrunT
+  USE calfoberend_mod,only:calfoberend
+  use Tpara,only:para_space_config
+  use endrunT_mod,only:endrunT
 
 
   implicit none 
@@ -34,7 +34,7 @@ contains
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
 #else
-  USE Tpara,only:nprocspace
+    USE Tpara,only:nprocspace
 #endif
     implicit none
     type(para_space_config)::psc
@@ -70,63 +70,63 @@ contains
 
     !  call analyse
     !    call calctemp (temptyp) 
-1   continue
-    it = it+1
+    do while (it.le.itmax)
+       it = it+1
 
 
-    if (ldesinteg)itdes=itdes+1
-    call dyn_vverlet(atdml,celndm,boxndm,psc)
-    ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
+       if (ldesinteg)itdes=itdes+1
+       call dyn_vverlet(atdml,celndm,boxndm,psc)
+       ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
 
-    if (test_sigma) then
+       if (test_sigma) then
 
-       sigkine=0.
-       do ilocal = 1, atdml%im
-          sigkine(1:3,1) = sigkine(1:3,1) + &
-               cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
-          sigkine(1:3,2) = sigkine(1:3,2) + &
-               cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
-          sigkine(1:3,3) = sigkine(1:3,3) + &
-               cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
-          select type (atdml)
-          type is (atom_config_e)
+          sigkine=0.
+          do ilocal = 1, atdml%im
+             sigkine(1:3,1) = sigkine(1:3,1) + &
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
+             sigkine(1:3,2) = sigkine(1:3,2) + &
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
+             sigkine(1:3,3) = sigkine(1:3,3) + &
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+             select type (atdml)
+             type is (atom_config_e)
 
-             if (atdml%lsigat) then 
-                atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &
-                     &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
-                atdml%sigat(1:3,2,ilocal) = atdml%sigat(1:3,2,ilocal) + &
-                     &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
-                atdml%sigat(1:3,3,ilocal) = atdml%sigat(1:3,3,ilocal) +  &
-                     &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+                if (atdml%lsigat) then 
+                   atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &
+                        &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
+                   atdml%sigat(1:3,2,ilocal) = atdml%sigat(1:3,2,ilocal) + &
+                        &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
+                   atdml%sigat(1:3,3,ilocal) = atdml%sigat(1:3,3,ilocal) +  &
+                        &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+                end if
+             end select
+             if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
+                celndm%sigc(1:3,1,atdml%ielat(ilocal)) = celndm%sigc(1:3,1,atdml%ielat(ilocal)) + &
+                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyz/boxndm%volu
+                celndm%sigc(1:3,2,atdml%ielat(ilocal)) = celndm%sigc(1:3,2,atdml%ielat(ilocal)) + &
+                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyz/boxndm%volu
+                celndm%sigc(1:3,3,atdml%ielat(ilocal)) = celndm%sigc(1:3,3,atdml%ielat(ilocal)) + &
+                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyz/boxndm%volu
              end if
-          end select
-          if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
-             celndm%sigc(1:3,1,atdml%ielat(ilocal)) = celndm%sigc(1:3,1,atdml%ielat(ilocal)) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyz/boxndm%volu
-             celndm%sigc(1:3,2,atdml%ielat(ilocal)) = celndm%sigc(1:3,2,atdml%ielat(ilocal)) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyz/boxndm%volu
-             celndm%sigc(1:3,3,atdml%ielat(ilocal)) = celndm%sigc(1:3,3,atdml%ielat(ilocal)) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyz/boxndm%volu
-          end if
-       end do
-       sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
+          end do
+          sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
 
 #ifdef PARA
 
-       
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-   call comm_space%sum(sigkine)
-       if (allocated(celndm%sigc)) then
-          call comm_space%sum(celndm%sigc)
-       end if
-    end if
-#endif
-       sigtot = sigkine+sig
-    end if
-    call analyseT (atdml,celndm,boxndm)
-    call controleT(atdml,celndm,boxndm)
 
-    go to 1
+          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+             call comm_space%sum(sigkine)
+             if (allocated(celndm%sigc)) then
+                call comm_space%sum(celndm%sigc)
+             end if
+          end if
+#endif
+          sigtot = sigkine+sig
+       end if
+       call analyseT (atdml,celndm,boxndm)
+       call controleT(atdml,celndm,boxndm)
+
+    end do
 
     return
   end subroutine dmloop_vverlet

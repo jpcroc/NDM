@@ -80,15 +80,13 @@ contains
     else
        ivisum=ivisu
     end if
-
+    laux=.false.
+    nauxv=0
     if (present(naux)) then
        if (naux.gt.0) then
           laux=.true.
           nauxV=naux
        end if
-    else
-       laux=.false.
-       nauxV=0
     end if
     nauxtot=nauxv
     select type (atmol)

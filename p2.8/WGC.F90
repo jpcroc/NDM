@@ -31,14 +31,14 @@ module WGC_mod
   integer,parameter::unitgc=333
   type(box_config)::boxcgmin
   type(box_config),target::boxcg
-  type(atom_config),target::atcgcomp
-  type(atom_config)::atcgmin
+  class(atom_config),allocatable,target::atcgcomp
+  class(atom_config),allocatable::atcgmin
   type(cell_config),target::cellcgcomp
   type(para_space_config),target::pscCG
   class(atom_config),pointer::atcgloc
   type(cell_config),pointer::cellcgloc
   type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
-  type(atom_config),target::atcible
+  class(atom_config),allocatable,target::atcible
   type(para_config),target::gcpara
   real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h!,sigsym
   real(double),allocatable,dimension (:)::R,F,Rmin
@@ -140,7 +140,7 @@ contains
     real(double),optional::Vt
     logical::lover
     logical,optional::lvm
-    real(double)::Vminabs=1d16
+    real(double),save::Vminabs=1d16
 
     real(double)::forctot,formax,deltaV,sigmax,fsigmax,FM2,FT2,sigm2
     integer::i,i1,i2,ip,ic

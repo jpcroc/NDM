@@ -9,7 +9,7 @@ module NGC_mod
 
   use WGC_mod,only:atcgcomp,atcgloc,boxcg,cellcgcomp,cellcgloc,F,ityprel,Nvar,R,pscCG,V,ncalls,betaguess,&
        &initsteep,back2ndm,final_tconv,nextsauv,nextmol,fpstop0,betaV,betaP,beta,gcpara,lchg,set_pointers_gc,&
-       & unitgc
+       & unitgc,atcgmin,atcible
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,iterasmol,lenfnam,fnam,&
          &angst,erg2ev,potist,lperiod,lspacendm,latcomp,lprahman,dfpred,itesauv,unitP,fpstop
@@ -35,7 +35,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
 
-    type(atom_config),target::atcgin
+    class(atom_config),target::atcgin
     type(cell_config),target::celcgin
     type(box_config)::boxndm
     type(para_space_config)::psc
@@ -70,6 +70,9 @@ contains
     betaV=betaguess
     betaP=betaguess/3
     it=0
+    call atcgin%deftype(atcgcomp)
+    call atcgin%deftype(atcgmin)
+    call atcgin%deftype(atcible)
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atcgcomp%init(atcgin%im_glob,imm_glob,im_glob=atcgin%im_glob)
@@ -121,7 +124,7 @@ contains
           beta=betaV
           ityprel=1
           call pilotcg(ityprel)
-              call final_tconv(lover)
+          call final_tconv(lover)
        end if
        if (lover) then
           if (rang==0) then
@@ -146,9 +149,13 @@ contains
     
     latcomp=.true.
     itesauv=0
-!    call atcgcomp%print(unit=100+rang)
-    call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
-
+    !    call atcgcomp%print(unit=100+rang)
+    if (lcdp) then
+       call repartition(atcomp,atcgin,boxcg,celcgin) ! mettre les éléments de la répartition dans un type
+       return
+    else
+       call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
+    end if
     return
 
   end subroutine NGC

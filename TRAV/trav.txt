@@ -5,6 +5,7 @@ INTEGRER DECOUP dans la version sequentielle avec un ldecoup ET METTRE DECOUP3D 
 ***
 A FAIRE
 **>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC 
+3.1/FREE
 3.2/ corriger PMEwald
 3.7/CODER sauvegarde xyz
 plotpart dans anapos
@@ -14,7 +15,9 @@ plotpart dans anapos
 5.5/ coder le calcul des depla via anpos à la volée sans lecture de analyse.in et/ou crcin de même bondval !
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
-BOF : a part fp il n'y a rien à enlever   	7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos
+
+7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos !! par exemple les lacunes dans cdp modifier les rasmo qui vont avec
+
 6.6/gérer imm_glob !
 7.5/ version NEB  avec retour non systématique au proc master ? Est-ce possible ? Est-ce utile ?
 8/Programmer parallel replica

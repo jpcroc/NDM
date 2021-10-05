@@ -37,7 +37,6 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use posana,only:anapos
     USE posana,only:
-    USE defcdp, ONLY :itecdp
     USE elec_cell,ONLY: i2t,t_cpl, readelec
     USE eloss, ONLY : ibrake,ecelec,initeloss
 

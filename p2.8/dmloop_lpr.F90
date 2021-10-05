@@ -1,7 +1,7 @@
 module dmloop_lpr_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
-  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod,lspacendm
+  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod,lspacendm,itmax
   USE calfo_mod,only: calfo
 
   USE atomconfig,only : atom_config_d
@@ -66,7 +66,8 @@ contains
 !    call analyseT(atpr,celndm,boxndm)
 
     ! MD loop -------------------------------------------------------------
-1   continue
+    do while (it.le.itmax)
+
     it = it+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
   CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
@@ -143,7 +144,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
      call controleT(atpr,celndm,boxndm)
 
-    go to 1
+  end do
 
     return
   end subroutine dmloop_lpr

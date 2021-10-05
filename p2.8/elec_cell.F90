@@ -973,7 +973,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     integer ::  luvisue,lenfn2,iex,iey,iez
     real(double)::exmM(3)
     character :: extension*9
-
+    lenfn2=9
     luvisue=91
     if(rang==0) then
        if (it < 0  )   extension='iiiiiiiii' 

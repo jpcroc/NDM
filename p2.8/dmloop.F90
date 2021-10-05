@@ -15,7 +15,7 @@ module dmloop_mod
   USE parautils,only:driver_caltabt_DM
 
   USE gen_com_m,only: dmtype,it,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
-       & itetabvois,lperiod,lspaceNDM
+       & itetabvois,lperiod,lspaceNDM,itmax
   use var_pot, only: cm
    use Tpara,only:nprocspace,para_space_config,comm_space
 
@@ -63,92 +63,89 @@ contains
     END IF
 
     !      write(6,*)'im',im
-1   continue
-    it = it+1
+    do while (it.le.itmax)
+
+       it = it+1
 
 
-    ! appel de la routine generale des forces
-    if (itesigma>0)      test_sigma=(mod(it,itesigma)==0)
-    if (test_sigma) then
-       sig(:,:)=0.d0 ; if (celndm%ltpcel.EQV..true.) celndm%sigc=0
-       select type(atdml)
-       type is (atom_config_e)
-          if(atdml%lSigat) atdml%sigat(:,:,:)=0. ;
-       end select
-    end if
-    CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
+       ! appel de la routine generale des forces
+       if (itesigma>0)      test_sigma=(mod(it,itesigma)==0)
+       if (test_sigma) then
+          sig(:,:)=0.d0 ; if (celndm%ltpcel.EQV..true.) celndm%sigc=0
+          select type(atdml)
+          type is (atom_config_e)
+             if(atdml%lSigat) atdml%sigat(:,:,:)=0. ;
+          end select
+       end if
+       CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
 !!$    if (l2t)then
 !!$       if (i2t==1)  call calceloss (atdml%im,atdml%fp,atdml%vp,atdml%ityp,atdml%ielat,atdml%num_at_glob)
 !!$    else
        if(ibrake.gt.0) call calceloss (celndm,atdml)
 !!$    end if
 
-    if (test_sigma) then                   
-       sigkine=0.
-       do ilocal = 1, atdml%im
-          sigkine(1:3,1) = sigkine(1:3,1) + &
-               cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
-          sigkine(1:3,2) = sigkine(1:3,2) + &
-               cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
-          sigkine(1:3,3) = sigkine(1:3,3) + &
-               cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
-          select type(atdml)
-          type is (atom_config_e)
-             if(atdml%lSigat) atdml%sigat(:,:,:)=0. ;
+       if (test_sigma) then                   
+          sigkine=0.
+          do ilocal = 1, atdml%im
+             sigkine(1:3,1) = sigkine(1:3,1) + &
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
+             sigkine(1:3,2) = sigkine(1:3,2) + &
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
+             sigkine(1:3,3) = sigkine(1:3,3) + &
+                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+             select type(atdml)
+             type is (atom_config_e)
+                if(atdml%lSigat) atdml%sigat(:,:,:)=0. ;
 
-             if (atdml%lsigat) then 
-                atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &
-                     &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
-                atdml%sigat(1:3,2,ilocal) = atdml%sigat(1:3,2,ilocal) + &
-                     &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
-                atdml%sigat(1:3,3,ilocal) = atdml%sigat(1:3,3,ilocal) +  &
-                     &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
-             end if
-          end select
-       end do
+                if (atdml%lsigat) then 
+                   atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &
+                        &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
+                   atdml%sigat(1:3,2,ilocal) = atdml%sigat(1:3,2,ilocal) + &
+                        &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
+                   atdml%sigat(1:3,3,ilocal) = atdml%sigat(1:3,3,ilocal) +  &
+                        &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
+                end if
+             end select
+          end do
 
-       sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
+          sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
 
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-   call comm_space%sum(sigkine)
-    end if
+          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+             call comm_space%sum(sigkine)
+          end if
 #endif
 
-       sigtot = sigkine+sig
-    end if
-    if (lTberendsen) call calfoberend(atdml)
+          sigtot = sigkine+sig
+       end if
+       if (lTberendsen) call calfoberend(atdml)
 
-    select case (dmtype)
+       select case (dmtype)
 
-    case(1)
-       call dyn  (atdml)
-
-      
-
-    case (21) 
-       IF (lFire) THEN
-          call trempe_fire (atdml,fire_dt, fire_nstep, fire_alph)
-
-       ELSE
-          call trempe (atdml)
-       END IF
-
-    case default
-       write (6, *) 'ne sait pas quoi faire stop'
-       stop
-    end select
-
-    call  driver_caltabt_DM(sig,potist,atdml,celndm,boxndm,psc,lperiod)
-
-    call analyseT (atdml,celndm,boxndm)    
-    call controleT(atdml,celndm,boxndm)
+       case(1)
+          call dyn  (atdml)
 
 
-    
 
+       case (21) 
+          IF (lFire) THEN
+             call trempe_fire (atdml,fire_dt, fire_nstep, fire_alph)
 
-    go to 1
+          ELSE
+             call trempe (atdml)
+          END IF
+
+       case default
+          write (6, *) 'ne sait pas quoi faire stop'
+          stop
+       end select
+
+       call  driver_caltabt_DM(sig,potist,atdml,celndm,boxndm,psc,lperiod)
+
+       call analyseT (atdml,celndm,boxndm)    
+       call controleT(atdml,celndm,boxndm)
+
+    end do
 
 
     return

@@ -1,7 +1,6 @@
 module controleT_mod
   USE endrunT_mod,only: endrunT
   USE caltabi_mod,only: caltabi
-  USE creadp_mod,only: creadp
   USE deftimestep_mod,only: deftimestep
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config
@@ -28,7 +27,6 @@ contains
          &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang
 
     USE var_pot, ONLY:
-    USE defcdp, ONLY :itecdp
     implicit none
 
     class(atom_config_d)::atdml
@@ -50,15 +48,17 @@ contains
     !
     !
 
-    if (it>=itmax) then
-       if (rang==0) write (6, *) '*******Derniere iteration **** '
-       call endrunT(atdml,celndm,boxndm,latcomp)
-       write (6, *) 'predeal '
-       !       call DeallocateAll
-
-       call arret_ndm
-
-    endif
+!!$    if (it>=itmax) then
+!!$       if (.not.lcdp) then 
+!!$          if (rang==0) write (6, *) '*******Derniere iteration **** '
+!!$          call endrunT(atdml,celndm,boxndm,latcomp)
+!!$          write (6, *) 'predeal '
+!!$          !       call DeallocateAll
+!!$          
+!!$          call arret_ndm
+!!$       end if
+!!$
+!!$    endif
 
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
