@@ -6,13 +6,13 @@ module NGC_mod
   use Tpara,only:para_space_config
   USE recips_mod,only: calcvol
   USE Mat_utils_mod,only:  MatInv
-
+  use constrconf_mod,only:repartition
   use WGC_mod,only:atcgcomp,atcgloc,boxcg,cellcgcomp,cellcgloc,F,ityprel,Nvar,R,pscCG,V,ncalls,betaguess,&
        &initsteep,back2ndm,final_tconv,nextsauv,nextmol,fpstop0,betaV,betaP,beta,gcpara,lchg,set_pointers_gc,&
        & unitgc,atcgmin,atcible
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,iterasmol,lenfnam,fnam,&
-         &angst,erg2ev,potist,lperiod,lspacendm,latcomp,lprahman,dfpred,itesauv,unitP,fpstop
+         &angst,erg2ev,potist,lperiod,lspacendm,latcomp,lprahman,dfpred,itesauv,unitP,fpstop,lcdp
     USE var_pot, ONLY:ntyp
     use steepestdescent_mod, only: steepestdescent,conjugategradient
 #ifdef PARA
@@ -151,7 +151,7 @@ contains
     itesauv=0
     !    call atcgcomp%print(unit=100+rang)
     if (lcdp) then
-       call repartition(atcomp,atcgin,boxcg,celcgin) ! mettre les éléments de la répartition dans un type
+       call repartition(atcgcomp,atcgin,boxcg,celcgin) ! mettre les éléments de la répartition dans un type
        return
     else
        call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
