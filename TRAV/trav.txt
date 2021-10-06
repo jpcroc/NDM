@@ -16,7 +16,7 @@ plotpart dans anapos
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
 
-7/définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos !! par exemple les lacunes dans cdp modifier les rasmo qui vont avec
+7/NON CA MARCHE PAS !!définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos !! par exemple les lacunes dans cdp modifier les rasmo qui vont avec
 
 6.6/gérer imm_glob !
 7.5/ version NEB  avec retour non systématique au proc master ? Est-ce possible ? Est-ce utile ?
