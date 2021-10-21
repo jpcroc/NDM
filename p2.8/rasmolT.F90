@@ -12,7 +12,7 @@ module rasmolT_mod
   integer, dimension(:), allocatable       :: ityp_buffer   ! temp/iorary store the types buffer when 
 contains
 
-  subroutine rasmolT(atmol,boxmol,itapp,namefr,rty,latcomp,ivisumol,naux,charaux,vaux)
+  subroutine rasmolT(atmol,boxmol,itapp,namefr,rty,latcomp,ivisumol,naux,charaux,vaux,lappend)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -38,6 +38,9 @@ contains
     character(len=*), optional ::namefr
     logical,intent(in)::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
     integer, optional:: ivisumol
+    logical,optional::lappend
+
+    logical::lappendF
 
     integer,optional::naux
     character(len=*),optional::charaux(:)
@@ -70,6 +73,22 @@ contains
     real(double) :: xp1, xp2, xp3,at(3,3),bg(3,3),pat
     character :: extension*9
     integer::iax
+
+    if (present(lappend)) then
+       lappendF=lappend
+    else
+       lappendF=.false.
+    end if
+  
+!!$    select type (atmol)
+!!$    type is (atom_config_d)
+!!$       write(6,*)'typeD'
+!!$    type is (atom_config)
+!!$       write(6,*)'type0'
+!!$    type is (atom_config_e)
+!!$       write(6,*)'typeE',atmol%lprteat
+!!$    end select
+!!$    call atmol%print(unit=500+rang)
     if (atmol%im_glob==0) then
        write(6,*)'rasmolT im_glob stop'
        stop
@@ -119,7 +138,8 @@ contains
           div%mpi_image%rank=myidsp
           div%mpi_image%nproc=nprocspace
           div%mpi_image%comm=COMM_space%comm
-          call atmol%vers_master(atcomp,div,'ixnlusv')
+!          call atmol%vers_master(atcomp,div,'ixnlusv')
+          call atmol%vers_master(atcomp,div)
           !im =atcomp%im
           !imm=atcomp%im
           rgloc=myidsp
@@ -152,7 +172,6 @@ contains
        atcomp%xp(1:3,1:atmol%im)=atcomp%xp(1:3,1:atmol%im)*1d8
 !       num_at_glob(1:atmol%im)=atcomp%num_at_glob(1:atmol%im)
 !       ityp(1:im)=atcomp%ityp(1:im)
-       !       call atcomp%print
        allocate(tyw(atcomp%im))
        tyw='000'
        !    do i=1,im
@@ -249,6 +268,7 @@ contains
           write(6,*)'wrong ivisu',ivisum,ivisu
           stop
        end select
+       
        if (present(itapp))then
           call openfilemol( luvisu,nameo,end_name,extension)
        else
@@ -369,7 +389,7 @@ contains
                 end do
              end if
           end if
-          write(6,*)'nuaxv nauxtot',nauxv,nauxtot
+!          write(6,*)'nuaxv nauxtot',nauxv,nauxtot
           iax=nauxV
           select type (atcomp)
           class is (atom_config_e)
@@ -455,10 +475,10 @@ contains
              end select
           end do
        end select
+       if (.not.lappendF) close(luvisu)
 
-       close(luvisu)
     end if
-    write(6,*)'OUT Rasmol',rang
+!    write(6,*)'OUT Rasmol',rang
 
     !if(itapp==0) open (file='filmtot.mol',unit=47)
 
@@ -498,7 +518,7 @@ contains
     integer::lenfn2
     character(len=*),intent(in)::nameo,end_name
     character(len=9),optional::ext
-
+    logical::lopen
     character*80::namef
     !    write(6,*)'name o end_name ',nameo, ' ; ',end_name
     if (present(ext)) then
@@ -507,8 +527,9 @@ contains
     else
        namef=trim(nameo)//trim(end_name)
     end if
-    write(6,*)'atomic output file name ',namef
-    open(luvisu, file=namef, form='formatted', &
-         status='unknown')
+    !    write(6,*)'atomic output file name ',namef
+    inquire(FILE=namef,opened=lopen)
+    if (.not.lopen)open(luvisu, file=namef, form='formatted', &
+         &         status='unknown')
   end subroutine openfilemol
 end module rasmolT_mod

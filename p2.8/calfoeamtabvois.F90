@@ -135,7 +135,13 @@ contains
 !          if( ( (lprteat.EQV..true.).or.(lcalcjq.EQV..true.) ).and.( free(i).EQV..true.)) eat(i)=eat(i)+Eembi
 !          if( free(i).EQV..true.)potisglue = potisglue+Eembi
 !       else
-          if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.)) eat(i)=eat(i)+Eembi
+       if(lprteat.EQV..true.) then
+          select type (atcf)
+          class is (atom_config_e)
+             atcf%eat(i)=atcf%eat(i)+Eembi
+          end select
+       end if
+
           potisglue = potisglue+Eembi
 !       end if
        if (lforcetabulate) then
@@ -182,14 +188,20 @@ contains
           dFemb = tabdensity(i)*drhoj + tabdensity(j)*drhoi  ! THIS is WRONG in my SENSE
 
           if((lprteat.EQV..true.).or.(lcalcjq.EQV..true.))then
+             select type (atcf)
+             class is (atom_config_e)
+                atcf%eat(i)=atcf%eat(i) + 0.5d0*Erep
+                if (ldemitab)  then
+                   atcf%eat(j)=atcf%eat(j) + 0.5d0*Erep
+!             end if
+                end if
+             end select
+          end if
+
 !             if (allocated (free)) then
 !                if( free(i).EQV..true.)                eat(i)=eat(i) + 0.5d0*Erep
 !                if ((free(j).EQV..true.).and.ldemitab) eat(j)=eat(j) + 0.5d0*Erep
 !             else
-                eat(i)=eat(i) + 0.5d0*Erep
-                if (ldemitab)  eat(j)=eat(j) + 0.5d0*Erep
-!             end if
-          end if
 !          if (allocated (free)) then
 !             if( free(i).EQV..true.)                potisrep = potisrep + 0.5*Erep
 !             if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep + 0.5*Erep
@@ -228,21 +240,27 @@ contains
                 sig(1:3,2) = sig(1:3,2) + inv_volu*fij(1:3)*dxp(2)
                 sig(1:3,3) = sig(1:3,3) + inv_volu*fij(1:3)*dxp(3)
                 IF (lSigat) THEN
-                   sigat(1:3,1,i) = sigat(1:3,1,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
-                   sigat(1:3,2,i) = sigat(1:3,2,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
-                   sigat(1:3,3,i) = sigat(1:3,3,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
-                   sigat(1:3,1,j) = sigat(1:3,1,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
-                   sigat(1:3,2,j) = sigat(1:3,2,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
-                   sigat(1:3,3,j) = sigat(1:3,3,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                   select type (atcf)
+                   class is (atom_config_e)
+                   atcf%sigat(1:3,1,i) = atcf%sigat(1:3,1,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
+                   atcf%sigat(1:3,2,i) = atcf%sigat(1:3,2,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
+                   atcf%sigat(1:3,3,i) = atcf%sigat(1:3,3,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                   atcf%sigat(1:3,1,j) = atcf%sigat(1:3,1,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
+                   atcf%sigat(1:3,2,j) = atcf%sigat(1:3,2,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
+                   atcf%sigat(1:3,3,j) = atcf%sigat(1:3,3,j) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                end select
                 END IF
              ELSE
                 sig(1:3,1) = sig(1:3,1) + 0.5d0*inv_volu*fij(1:3)*dxp(1)
                 sig(1:3,2) = sig(1:3,2) + 0.5d0*inv_volu*fij(1:3)*dxp(2)
                 sig(1:3,3) = sig(1:3,3) + 0.5d0*inv_volu*fij(1:3)*dxp(3)
                 IF (lSigat) THEN
-                   sigat(1:3,1,i) = sigat(1:3,1,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
-                   sigat(1:3,2,i) = sigat(1:3,2,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
-                   sigat(1:3,3,i) = sigat(1:3,3,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                   select type (atcf)
+                   class is (atom_config_e)
+                   atcf%sigat(1:3,1,i) = atcf%sigat(1:3,1,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(1)
+                   atcf%sigat(1:3,2,i) = atcf%sigat(1:3,2,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(2)
+                   atcf%sigat(1:3,3,i) = atcf%sigat(1:3,3,i) + 0.5d0*inv_atomic_volu*fij(1:3)*dxp(3)
+                end select
                 END IF
              END IF
           end if

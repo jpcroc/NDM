@@ -59,8 +59,9 @@ contains
        ltpcel=.true.
        sigc=>celcf%sigc
     end if
+!    write (6,*)'test icaltabt calfo',celcf%icaltabt,atcf%icaltabt
     if(celcf%icaltabt.ne.atcf%icaltabt) then
-       write (6,*)'incoherence dans icaltabt calfo'
+       write (6,*)'incoherence dans icaltabt calfo',celcf%icaltabt,atcf%icaltabt
        stop
     end if
     
@@ -79,13 +80,11 @@ contains
     type is (atom_config_e)
        if (atcf%lsigat)then
           lsigat=.true.
-          sigat=> atcf%sigat
-          sigat=0
+          atcf%sigat=0
        end if
        if (atcf%lprteat) then
           lprteat=.true.
-          eat=>atcf%eat(:)
-          eat=0
+          atcf%eat=0
        end if
        
     end select
@@ -193,8 +192,9 @@ contains
 #endif  
 
     sigcf=sig;potistcf=potist
-    nullify(eat);nullify(sigat)
-!    call atcf%print
+
+
+
     return
   end subroutine calfo
 

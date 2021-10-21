@@ -154,8 +154,11 @@ contains
                 !                 if( free(i).EQV..true.) eat(i)=eat(i)+Erep/2.d0
                 !                 if( free(j).EQV..true.) eat(j)=eat(j)+Erep/2.d0
                 !              else
-                eat(i)=eat(i)+Erep/2.d0
-                eat(j)=eat(j)+Erep/2.d0
+                select type (atcf)
+                class is (atom_config_e)
+                   atcf%eat(i)=atcf%eat(i)+Erep/2.d0
+                   if (j.le.atcf%im) atcf%eat(j)=atcf%eat(j)+Erep/2.d0
+                end select
                 !               end if
              end if
              dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
@@ -215,7 +218,12 @@ contains
        !        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eat(i)=eat(i)+Eembi
        !        if( free(i).EQV..true.)   potisglue = potisglue+Eembi
        !     else
-       if(lprteat.EQV..true.) eat(i)=eat(i)+Eembi
+       if(lprteat.EQV..true.)then
+          select type (atcf)
+          class is (atom_config_e)
+             atcf%eat(i)=atcf%eat(i)+Eembi
+          end select
+       end if
        potisglue = potisglue+Eembi
        !     end if
 
@@ -224,11 +232,10 @@ contains
     
 
 
-
 #ifdef PARA
 
     if (nprocspace.gt.1) then
-       call maj_tabdensity_ftm(tabdensity,atcf%imm,celcf%nato,atcf%num_at_glob,psc)
+       call maj_tabdensity_ftm(tabdensity,atcf%imm,celcf%nato,atcf%num_at_glob,psc,atcf%im)
     end if
 
     !    write(3000+i,*)it

@@ -114,15 +114,14 @@ contains
                 buffer(:,1:im) = atdml%xpp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                    do i_proc=1,nprocspace-1
-                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11005)
+                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11015)
                    enddo
                 end if
                 write (lucout) buffer   ! Ecriture xpp
-
                 buffer(:,1:im) = atdml%vp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                    do i_proc=1,nprocspace-1
-                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11006)
+                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11016)
                    enddo
                 end if
                 write (lucout) buffer   ! Ecriture vp
@@ -183,6 +182,8 @@ contains
                 lwax=.false.
                 select type (atdml)
                 type is (atom_config_d)
+                   call comm_space%send(atdml%xpp(1:3,1:im),0,11015)
+                   call comm_space%send(atdml%vp(1:3,1:im),0,11016)
                 type is (atom_config_e)
                    call comm_space%send(atdml%xpp(1:3,1:im),0,11005)
                    call comm_space%send(atdml%vp(1:3,1:im),0,11006)

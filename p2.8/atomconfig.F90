@@ -579,6 +579,7 @@ contains
           atcible%lsigat=atsource%lsigat
        end select
     end select
+    atcible%ltabvois=atsource%ltabvois
   end subroutine Eegal
   
   ! copie d'une config entière vers config de base
@@ -690,6 +691,7 @@ contains
   subroutine deftype(atsource,atcible)  ! initialize atcible to the type of atsource, inluding the values of lax, lpreeat, etc.
     class(atom_config),intent(in)::atsource
     class(atom_config),allocatable::atcible
+
        select type (atsource)
        class is (atom_config)
           allocate(atom_config::atcible)
@@ -902,25 +904,7 @@ contains
     end if
     if (present(unit))unitw=unit
 
-!!$   write(6,*)'IN PRINT'
-!!$    select type (atin)
-!!$    class is (atom_config)
-!!$       write(6,*)'ATCFIN',rang
-!!$    class is (atom_config_d)
-!!$       write(6,*)'ATCF_DIN',rang
-!!$    class is (atom_config_e)
-!!$       write(6,*)'ATCF_EIN',rang
-!!$    end select
-
     call atin%deftype(atprt)
-!!$    select type (atprt)
-!!$    class is (atom_config)
-!!$       write(6,*)'ATCF',rang
-!!$    class is (atom_config_d)
-!!$       write(6,*)'ATCF_D',rang
-!!$    class is (atom_config_e)
-!!$       write(6,*)'ATCF_E',rang
-!!$    end select
     if (present(natg1)) then
        if (present(natg2)) then
           natpr=natg2-natg1+1
@@ -1306,7 +1290,6 @@ contains
        carac=caracT//'np'
     end if
 
-    
     idmaster=0
     idloc=div%mpi_image%rank
     npim=div%mpi_image%nproc
@@ -1434,7 +1417,6 @@ contains
     end if
     call mpic%barrier
 #endif       
-
     return
   end subroutine vers_master_atom
 
@@ -2290,7 +2272,7 @@ contains
        !call MPI_SEND(atcf%lgul, size1, MPI_LOGICAL, rgcib,103,comm,ierr)
        ivl=ivl+1
        do ip=1,size1
-          ib=Lposf(ivi-1)+ip
+          ib=Lposf(ivl-1)+ip
           atcf%lgul(nag(ip))=Lbuffer(ib)
           csl=csl+1
        end do
@@ -2373,7 +2355,7 @@ contains
           if(scan('u',carac).ne.0) then
              ivR=ivR+1
              do ip=1,size1
-                ib=Lposf(ivR-1)+ip
+                ib=Rposf(ivR-1)+ip
                 atcf%eat(nag(ip))=Rbuffer(ib)
                 csR=csR+1
              end do

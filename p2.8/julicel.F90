@@ -617,7 +617,7 @@ contains
        !if (i==1)  write(6,*)'fb2 ',fp(1,1),fp(2,1),fp(3,1)
 
        potist=potist+Eembi
-       if (lcalcjq) eat(i)=eat(i)+Eembi
+!       if (lcalcjq) eat(i)=eat(i)+Eembi
        potisglue=potisglue+Eembi
 
        !    write(6,*)

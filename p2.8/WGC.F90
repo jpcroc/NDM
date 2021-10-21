@@ -16,7 +16,7 @@ module WGC_mod
   use Tpara,only:nprocspace,para_space_config
 #endif
   USE atomconfig,only : atom_config
-  USE cellconfig, only:cell_config
+  USE cellconfig, only:cell_config,caltabtc
   USE boxconfig,only:box_config
   use paraconfig,only:para_config
   USE parautils,only:initcomp,depeche_mode
@@ -43,7 +43,7 @@ module WGC_mod
   real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h!,sigsym
   real(double),allocatable,dimension (:)::R,F,Rmin
   integer::Nvar,ndir,nstep,ityprel
-  real(double)::betaguess,V,betaV,betaP,beta
+  real(double)::betaguess,V,betaV,betaP,beta,betaV0,betaP0
   integer::ncalls,nextsauv,nextmol
   logical::lvm
   real(double)::fpstop0,fpstopsig
@@ -57,7 +57,7 @@ contains
     select case(ityprel)
 
     case(1)
-       fpstop=fpstop0
+!       fpstop=fpstop0
        Nvar=atcgcomp%im*3
        if (allocated (R).or.allocated(F)) then
           deallocate(R,F,Rmin)
@@ -78,6 +78,7 @@ contains
           i1=atcgcomp%num_at_glob(i)
           ! Variables = cartesian coordinates (in cm)
           atcgcomp%xp(1:3,i)= atcgcomp%xp(1:3,i)+bruitmd(1:3,i)
+          call  caltabtC(cellcgcomp,atcgcomp,lperiod,boxcg)
           R(3*i1-2:3*i1) = atcgcomp%xp(1:3,i)
        end do
        Rmin=R
@@ -88,8 +89,9 @@ contains
 
 
 
-       fpstop=(sigstop/unitP)*(boxcg%volu**0.6666666)
-	fpstopsig=fpstop
+       fpstopsig=(sigstop/unitP)*(boxcg%volu**0.6666666)
+       write(unitgc,*)'FPSTOPSIG',fpstopsig
+!	fpstopsig=fpstop
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1) 
        !       Nvar=9
        if (any(ihbox0.ne.1)) then
@@ -149,7 +151,12 @@ contains
     formax=0
 
     lover=.false.
-
+    write(unitGC,*)
+    if (present(Vt)) then
+       write(unitGC,*)'TESTCOMPLET'
+    else
+       write(unitGC,*)'TESTDIR'
+    end if
     if (present(Vt)) then
        if (Vt.lt.Vminabs) then
           lvm=.true.
@@ -205,7 +212,8 @@ contains
           end do
        end do
        sigm2=sigmax
-       if (fsigmax.le.fpstop) lover=.true.
+       write(unitgc,*)'fsigmax fpstopsig',fsigmax, fpstopsig
+       if (fsigmax.le.fpstopsig) lover=.true.
     case(1)
        sigm2=0
        do i1=1,3
@@ -235,23 +243,23 @@ contains
           end if
        end if
     end select
-!    write(unitgc,*)'MAX',ft2,fm2,sigm2
+
     if (present(Vt)) then
        select case(ityprel)
        case(1)
           if(lvm) then
-             write(unitgc,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2,' ****', deltaV*erg2eV
+             write(unitgc,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt ,forctot,formax,sigm2,' ****', deltaV
              write(6,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2,' ****', deltaV*erg2eV
           else
-             write(unitgc,'(I4,4E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2
+             write(unitgc,'(I4,4E20.11)')ncalls, Vt ,forctot,formax,sigm2
              write(6,'(I4,4E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2
           end if
        case(2)
           if(lvm) then
-             write(unitgc,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax, sigmax, ' ****', deltaV*erg2eV
+             write(unitgc,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt ,ft2,fm2,Fsigmax, sigmax, ' ****', deltaV
              write(6,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax, sigmax, ' ****', deltaV*erg2eV
           else
-             write(unitgc,'(I4,5E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax,sigmax
+             write(unitgc,'(I4,5E20.11)')ncalls, Vt ,ft2,fm2,Fsigmax,sigmax
              write(6,'(I4,5E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax,sigmax
           end if
 
@@ -267,6 +275,13 @@ contains
              nextmol=NCALLS+iterasmol
           end if
        end if
+    else
+       select case(ityprel)
+       case(1)
+          write(unitgc,'(A,2E20.11)')'test direction',formax,forctot
+       case(2)
+          write(unitgc,'(A,4E20.11)')'test direction',fm2,ft2,Fsigmax,sigmax
+       end select
     end if
     return
   end subroutine test_conv
@@ -296,12 +311,12 @@ contains
     write(unitgc,*)
     write(unitgc,*)'  FORCE MAX            FORCETOT            SIGMAX'
     write(unitgc,'(3E20.11)')formax,forctot,sigmax
-        write(unitgc,'(A,3E20.11)')'thresholds',fpstop0,fsumstop,sigstop
+    write(unitgc,'(A,3E20.11)')'thresholds',fpstop,fsumstop,sigstop
     write(unitgc,*)
     lover=.false.
     if (lprahman) then
        if (fpstop.gT.0) then
-          if ((formax.le.fpstop0).and.(sigmax.le.sigstop))lover=.true.
+          if ((formax.le.fpstop).and.(sigmax.le.sigstop))lover=.true.
        end if
        if (fsumstop.gT.0) then
           if ((forctot.le.fsumstop).and.(sigmax.le.sigstop))lover=.true.

@@ -68,9 +68,11 @@ contains
           ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
           !ra(3)=Force de j sur i
           if (lprteat) then
-             !              else
-             eat(i) = eat(i)+deltaepot
-             eat(j) = eat(j)+deltaepot
+             select type (atcf)
+             class is (atom_config_e)
+                atcf%eat(i) = atcf%eat(i)+deltaepot
+                atcf%eat(j) = atcf%eat(j)+deltaepot
+             end select
              !              end if
           end if
 !!$          if (lcalcjq) then
@@ -99,29 +101,32 @@ contains
              sig(3,2) = sig(3,2)+partsig*dxp(3)*dxp(2)
              sig(3,3) = sig(3,3)+partsig*dxp(3)*dxp(3)
              if(lsigat)then
-                sigat(1,1,i) = sigat(1,1,i)+0.5*partsig*dxp(1)*dxp(1)
-                sigat(1,2,i) = sigat(1,2,i)+0.5*partsig*dxp(1)*dxp(2)
-                sigat(1,3,i) = sigat(1,3,i)+0.5*partsig*dxp(1)*dxp(3)
-                sigat(2,1,i) = sigat(2,1,i)+0.5*partsig*dxp(2)*dxp(1)
-                sigat(2,2,i) = sigat(2,2,i)+0.5*partsig*dxp(2)*dxp(2)
-                sigat(2,3,i) = sigat(2,3,i)+0.5*partsig*dxp(2)*dxp(3)
-                sigat(3,1,i) = sigat(3,1,i)+0.5*partsig*dxp(3)*dxp(1)
-                sigat(3,2,i) = sigat(3,2,i)+0.5*partsig*dxp(3)*dxp(2)
-                sigat(3,3,i) = sigat(3,3,i)+0.5*partsig*dxp(3)*dxp(3)
-                sigat(1,1,j) = sigat(1,1,j)+0.5*partsig*dxp(1)*dxp(1)
-                sigat(1,2,j) = sigat(1,2,j)+0.5*partsig*dxp(1)*dxp(2)
-                sigat(1,3,j) = sigat(1,3,j)+0.5*partsig*dxp(1)*dxp(3)
-                sigat(2,1,j) = sigat(2,1,j)+0.5*partsig*dxp(2)*dxp(1)
-                sigat(2,2,j) = sigat(2,2,j)+0.5*partsig*dxp(2)*dxp(2)
-                sigat(2,3,j) = sigat(2,3,j)+0.5*partsig*dxp(2)*dxp(3)
-                sigat(3,1,j) = sigat(3,1,j)+0.5*partsig*dxp(3)*dxp(1)
-                sigat(3,2,j) = sigat(3,2,j)+0.5*partsig*dxp(3)*dxp(2)
-                sigat(3,3,j) = sigat(3,3,j)+0.5*partsig*dxp(3)*dxp(3)
-             end if
+                select type (atcf)
+                class is (atom_config_e)
+                   atcf%sigat(1,1,i) = atcf%sigat(1,1,i)+0.5*partsig*dxp(1)*dxp(1)
+                atcf%sigat(1,2,i) = atcf%sigat(1,2,i)+0.5*partsig*dxp(1)*dxp(2)
+                atcf%sigat(1,3,i) = atcf%sigat(1,3,i)+0.5*partsig*dxp(1)*dxp(3)
+                atcf%sigat(2,1,i) = atcf%sigat(2,1,i)+0.5*partsig*dxp(2)*dxp(1)
+                atcf%sigat(2,2,i) = atcf%sigat(2,2,i)+0.5*partsig*dxp(2)*dxp(2)
+                atcf%sigat(2,3,i) = atcf%sigat(2,3,i)+0.5*partsig*dxp(2)*dxp(3)
+                atcf%sigat(3,1,i) = atcf%sigat(3,1,i)+0.5*partsig*dxp(3)*dxp(1)
+                atcf%sigat(3,2,i) = atcf%sigat(3,2,i)+0.5*partsig*dxp(3)*dxp(2)
+                atcf%sigat(3,3,i) = atcf%sigat(3,3,i)+0.5*partsig*dxp(3)*dxp(3)
+                atcf%sigat(1,1,j) = atcf%sigat(1,1,j)+0.5*partsig*dxp(1)*dxp(1)
+                atcf%sigat(1,2,j) = atcf%sigat(1,2,j)+0.5*partsig*dxp(1)*dxp(2)
+                atcf%sigat(1,3,j) = atcf%sigat(1,3,j)+0.5*partsig*dxp(1)*dxp(3)
+                atcf%sigat(2,1,j) = atcf%sigat(2,1,j)+0.5*partsig*dxp(2)*dxp(1)
+                atcf%sigat(2,2,j) = atcf%sigat(2,2,j)+0.5*partsig*dxp(2)*dxp(2)
+                atcf%sigat(2,3,j) = atcf%sigat(2,3,j)+0.5*partsig*dxp(2)*dxp(3)
+                atcf%sigat(3,1,j) = atcf%sigat(3,1,j)+0.5*partsig*dxp(3)*dxp(1)
+                atcf%sigat(3,2,j) = atcf%sigat(3,2,j)+0.5*partsig*dxp(3)*dxp(2)
+                atcf%sigat(3,3,j) = atcf%sigat(3,3,j)+0.5*partsig*dxp(3)*dxp(3)
+             end select
           end if
-       end do
-
+       end if
     end do
+
+ end do
 
     !        do i=1,im,100
     !           write(6,*)i,fp(1,i),fp(2,i),fp(3,i)

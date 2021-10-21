@@ -1,5 +1,5 @@
 module NGC_mod
-  USE atomconfig,only:atom_config
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig,only:cell_config
   USE boxconfig,only:box_config
   USE endrunT_mod,only:endrunT
@@ -9,10 +9,10 @@ module NGC_mod
   use constrconf_mod,only:repartition
   use WGC_mod,only:atcgcomp,atcgloc,boxcg,cellcgcomp,cellcgloc,F,ityprel,Nvar,R,pscCG,V,ncalls,betaguess,&
        &initsteep,back2ndm,final_tconv,nextsauv,nextmol,fpstop0,betaV,betaP,beta,gcpara,lchg,set_pointers_gc,&
-       & unitgc,atcgmin,atcible
+       & unitgc,atcgmin,atcible,fpstopsig,betaV0,betaP0
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,itmax,mdcg_noise,iterasmol,lenfnam,fnam,&
-         &angst,erg2ev,potist,lperiod,lspacendm,latcomp,lprahman,dfpred,itesauv,unitP,fpstop,lcdp
+         &angst,erg2ev,potist,lperiod,lspacendm,latcomp,lprahman,dfpred,itesauv,unitP,fpstop,lcdp,fsumstop
     USE var_pot, ONLY:ntyp
     use steepestdescent_mod, only: steepestdescent,conjugategradient
 #ifdef PARA
@@ -69,10 +69,14 @@ contains
     if (rang==0 )write(6,*)'IN NGC',betaguess
     betaV=betaguess
     betaP=betaguess/3
+    betaV0=betaguess
+    betaP0=betaguess/3
     it=0
+
     call atcgin%deftype(atcgcomp)
     call atcgin%deftype(atcgmin)
     call atcgin%deftype(atcible)
+
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atcgcomp%init(atcgin%im_glob,imm_glob,im_glob=atcgin%im_glob)
@@ -107,7 +111,7 @@ contains
              call pilotcg(ityprel)
              call final_tconv(lover)
              write(unitgc,*)'loverout1',lover,irel 
-          betaV=beta
+             betaV=beta
              if (lover) exit
              ityprel=2
              beta=betaP
@@ -149,13 +153,7 @@ contains
     
     latcomp=.true.
     itesauv=0
-    !    call atcgcomp%print(unit=100+rang)
-    if (lcdp) then
-       call repartition(atcgcomp,atcgin,boxcg,celcgin) ! mettre les éléments de la répartition dans un type
-       return
-    else
-       call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
-    end if
+           call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
     return
 
   end subroutine NGC
@@ -170,14 +168,14 @@ contains
        call initsteep
        select case (dmtype)
        case(32)
-          write(unitgc,'(A,E15.8)')'******STEEPEST DESCENT*** beta init', beta
+          write(unitgc,'(A,E15.8,A,2E15.8)')'******STEEPEST DESCENT*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
           write(unitgc,*)' NCALLS    ENERGY (eV)        FORCTOT      &
                &       FORMAX (eV/Ang)   SIGMAX (kbar)  [ *** energy gain  eV]'
           write(6,'(A,E15.8)')'******STEEPEST DESCENT*** beta init', beta
           write(6,*)' NCALLS    ENERGY (eV)        FORCTOT      &
                &      FORMAX (eV/Ang)   SIGMAX (kbar)  [ *** energy gain  eV]'
           !       call initsteep
-          call steepestdescent(Nvar,R,V,F,lover)
+          call steepestdescent(Nvar,R,V,F,lover,betaV0)
 
        case(33,34)
           if (dmtype==34) then
@@ -185,30 +183,30 @@ contains
           else
              lorig=.true.
           end if
-          write(unitgc,'(A,E15.8)')'******CONJUGATE GRADIENT*** beta init', beta
+          write(unitgc,'(A,E20.8,A,2E20.8)')'******CG*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
           write(unitgc,*)' NCALLS         ENERGY (eV)        FORCTOT     &
                & FORMAX (eV/Ang)    SIGMAX (kbar)    [*** energy gain  eV]'
-          write(6,'(A,E15.8)')'******CONJUGATE GRADIENT*** beta init', beta
+          write(6,'(A,E20.8,A,2E20.8)')'******CG*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
           write(6,*)' NCALLS         ENERGY (eV)        FORCTOT     &
                & FORMAX (eV/Ang)    SIGMAX (kbar)   [ *** energy gain  eV]'
-          call conjugategradient(Nvar,R,V,F,lover,lorig)
+          call conjugategradient(Nvar,R,V,F,lover,lorig,betaV0)
        end select
 
     case(2)
        call initsteep
-       select case (dmtype)
+             select case (dmtype)
        case(32)
           write(unitgc,'(A,E15.8,A,E12.6)')'******STEEPEST DESCENT  VARIABLE VOLUME  *** beta init', beta,&
-               &' SIGSTOP=>FPSTOP=',fpstop
+               &' SIGSTOP=>FPSTOP=',fpstopsig
           write(unitgc,*)' NCALLS       ENERGY (eV)      FORCTOT  FORMAX       &
                &    FORCESIGMA(eV/Ang)      SIGMA(kbar)      ***          [energy gain  eV]'
           write(6,'(A,E15.8,A,E12.6)')'******STEEPEST DESCENT  VARIABLE VOLUME  *** beta init', beta,&
-               &' SIGSTOP=>FPSTOP=',fpstop
+               &' SIGSTOP=>FPSTOP=',fpstopsig
           write(6,*)' NCALLS       ENERGY (eV)      FORCTOT            FORMAX       &
                &     FORCESIGMA(eV/Ang)       SIGMA(kbar)      ***          [energy gain  eV]'
           !       call initsteep
 !          write(unitgc,*)'SIGSTOP==FPSTOP=',fpstop
-          call steepestdescent(Nvar,R,V,F,lover)
+          call steepestdescent(Nvar,R,V,F,lover,betaP0)
 
        case(33,34)
           if (dmtype==34) then
@@ -217,15 +215,15 @@ contains
              lorig=.true.
           end if
           write(unitgc,'(A,E15.8,A,E12.6)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta
-          write(unitgc,*)' SIGSTOP=>FPSTOP=',fpstop
+          write(unitgc,*)' SIGSTOP=>FPSTOP=',fpstopsig
           write(unitgc,*)' NCALLS      ENERGY (eV)        FORCTOT             FORMAX      &
                &    FORCESIGMA(eV/Ang)      SIGMA(kbar)        ***         [ energy gain eV]'
           write(6,'(A,E15.8,A,E12.6)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta
-          write(6,*)' SIGSTOP=>FPSTOP=',fpstop
+          write(6,*)' SIGSTOP=>FPSTOP=',fpstopsig
           write(6,*)' NCALLS      ENERGY (eV)        FORCTOT               FORMAX      &
                &   FORCESIGMA(eV/Ang)       SIGMA(kbar)        ***         [ energy gain eV]'
 !                 write(unitgc,*)'SIGSTOP==FPSTOP=',fpstop
-          call conjugategradient(Nvar,R,V,F,lover,lorig)
+          call conjugategradient(Nvar,R,V,F,lover,lorig,betaP0)
 
        end select
      

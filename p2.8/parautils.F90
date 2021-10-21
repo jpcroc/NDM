@@ -217,7 +217,6 @@
 
              if (div%mpi_image%rank==0) then
                 
-!                call atcdes%print
                 do i=1,atcdes%im
                    j=atcdes%num_at_glob(i)
                    call atcdes%copy_atom(i,atcomp,j)
@@ -324,6 +323,7 @@ subroutine driver_caltabt_DM(sigcf,potistcf,atcf,celcf,boxcf,psc,lperiod)
     logical  ::test_sigma
     
     !conditions periodiques
+
     call periodbox (boxcf,atcf)
     ! repartition des atomes dans la nouvelle boite
 !!$    if (.not.lprahman) then

@@ -80,6 +80,7 @@ contains
        atdme%lax=lax
        atdme%lsigat=lsigat
        atdme%lprteat=lprteat
+       atdme%llangevin=.false.
        if ((llangevin).or.(l2t)) atdme%llangevin=.true.
     elseif(itetimestep.gt.0) then
        atdml=>atdmd
@@ -94,14 +95,15 @@ contains
     atdml%imm_glob=imm
     imm_glob=imm
 
-    select type (atdml)
-    type is (atom_config)
-       write(6,*)'atomfig'
-    type is (atom_config_d)
-       write(6,*)'atomfigD'
-    type is (atom_config_e)
-       write(6,*)'atomfigE'
-    end select
+!!$    select type (atdml)
+!!$    type is (atom_config)
+!!$       write(6,*)'atomfig'
+!!$    type is (atom_config_d)
+!!$       write(6,*)'atomfigD'
+!!$    type is (atom_config_e)
+!!$       write(6,*)'atomfigE'
+!!$!       write(6,*)'FLAGSFF', atdml%lprteat,atdml%lsigat,atdml%llangevin,atdml%lax
+!!$    end select
        
     select case(dmtype)
     case default
@@ -125,8 +127,6 @@ contains
        end if
 
        call atdml%init(im,imm,ltabvois,nvois,rvois=rv)
-
-
        call init(atdml,boxndm,celndm,psc0)
 
 #ifdef DECOUP
@@ -142,7 +142,15 @@ contains
           end if
        end if
 #endif
-
+!!$
+!!$       select type (atdml)
+!!$       type is (atom_config_d)
+!!$          write(6,*)'typeDPROG111'
+!!$          !    type is (atom_config)
+!!$          !       write(6,*)'type0'
+!!$       type is (atom_config_e)
+!!$          write(6,*)'typeEPROG111',atdml%lprteat
+!!$       end select
 
        select type(atdml)
        type is (atom_config)
@@ -171,6 +179,15 @@ contains
              if (lcdp) then
                 call creadp(atdml,celndm,boxndm,psc0)
              else
+!!$                select type (atdml)
+!!$                type is (atom_config_d)
+!!$                   write(6,*)'typeDPROG'
+!!$                   !    type is (atom_config)
+!!$                   !       write(6,*)'type0'
+!!$                type is (atom_config_e)
+!!$                   write(6,*)'typeEPROG',atdml%lprteat
+!!$                end select
+
                 call dmloop_pilot(atdml,celndm,boxndm,psc0)
              end if
           case(30,31)

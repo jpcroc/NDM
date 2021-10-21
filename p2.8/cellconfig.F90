@@ -443,7 +443,7 @@ contains
     !       celndm%ltpcel=.true.
     !    end if
     !    call allocatecelN(celndm)
-    celndm%icaltabt=0
+!    celndm%icaltabt=0
     celndm%ncel(1:noxyz,0:26)=ncel(1:noxyz,0:26)
     celndm%nato(1:noxyz)=nato(1:noxyz)
     celndm%atincel(1:natperc,1:noxyz)=atincel(1:natperc,1:noxyz)

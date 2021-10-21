@@ -182,7 +182,7 @@ contains
     endif
 
     if (.not.lrestart) then
-       !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
+       !    if (rang==0)  
 
        ! input and initialization of 2T
        select type(atdml)
@@ -192,7 +192,6 @@ contains
        if (iterasmol>=0) then
           itapp=0
           call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
-
        end if
     end if
     !  
@@ -223,7 +222,6 @@ contains
        call anapos (atdml,celndm,boxndm,it)
        call arret_ndm
     end if
-
     if (lcasca) then
        fnamcout = fnam(1:lenfnam)//'.0.cout'
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
@@ -234,7 +232,14 @@ contains
     if (itmax==0) call arret_ndm
 
     if (lcdp) call initcdp
-
+!!$       select type (atdml)
+!!$       type is (atom_config_d)
+!!$          write(6,*)'typeDinit'
+!!$          !    type is (atom_config)
+!!$          !       write(6,*)'type0'
+!!$       type is (atom_config_e)
+!!$          write(6,*)'typeEinit',atdml%lprteat
+!!$       end select
     return
   end subroutine init
 

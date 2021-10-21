@@ -115,8 +115,11 @@ contains
              atcf%fp(3,j) = atcf%fp(3,j)-f3
 !!
              if (lprteat) then
-                eat(i) = eat(i)+deltaepot
-                eat(j) = eat(j)+deltaepot
+                select type (atcf)
+                class is (atom_config_e)
+                   atcf%eat(i) = atcf%eat(i)+deltaepot
+                   atcf%eat(j) = atcf%eat(j)+deltaepot
+                end select
                 !              end if
              end if
 
