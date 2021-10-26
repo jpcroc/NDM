@@ -78,7 +78,7 @@ contains
           i1=atcgcomp%num_at_glob(i)
           ! Variables = cartesian coordinates (in cm)
           atcgcomp%xp(1:3,i)= atcgcomp%xp(1:3,i)+bruitmd(1:3,i)
-          call  caltabtC(cellcgcomp,atcgcomp,lperiod,boxcg)
+!          call  caltabtC(cellcgcomp,atcgcomp,lperiod,boxcg)
           R(3*i1-2:3*i1) = atcgcomp%xp(1:3,i)
        end do
        Rmin=R

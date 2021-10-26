@@ -15,7 +15,7 @@ contains
     integer::N
     real(double),dimension(:)::R,F
     real(double)::V
-    real(double),intent(in)::beta0
+    real(double)::beta0
     logical ::lover,ldirOK
 
     integer::idir
@@ -58,12 +58,14 @@ contains
              if (.not.lvm)R=Rmin
           end if
        end if
-!!$       if (.not.ldirOK) then
-!!$          beta=beta0
-!!$          write (unitgc,*)'RESET STEEP beta',beta
-!!$!          G=F
-!!$!          H=F
-!!$       endif
+       if (ldirOK) then
+          beta0=beta
+       else
+          beta=beta0
+          write (unitgc,*)'RESET STEEP beta',beta
+!          G=F
+!          H=F
+       endif
 
     end do
     return
@@ -71,7 +73,7 @@ contains
 
   subroutine conjugategradient(N,R,V,F,lover,lorig,beta0)
     integer::N
-    real(double),intent(in)::beta0
+    real(double)::beta0
     real(double),dimension(:)::R,F
     real(double)::V
     logical ::lover
@@ -118,7 +120,8 @@ contains
              if (.not.lvm)R=Rmin
           end if
        end if
-!!$       if (ldirOK) then       
+       if (ldirOK) then
+          beta0=beta
           xixi=0
           gigi=0
           if (lorig) then
@@ -135,12 +138,12 @@ contains
           gamma=xixi/gigi
           G(:)=F(:)
           H(:)=G(:)+gamma*H(:)
-!!$       else
-!!$          beta=beta0
-!!$          write (unitgc,*)'RESET GC beta',beta
-!!$          G=F
-!!$          H=F
-!!$       endif
+       else
+          beta=beta0
+          write (unitgc,*)'RESET GC beta',beta
+          G=F
+          H=F
+       endif
 
     end do
     return
@@ -157,20 +160,20 @@ contains
     real(double)::normF02,Vbeta,Vbs2,va,vb,vc,Vmin,Vbetatest,betatest,fhi
 
     integer::i,istep,id
-    real(double)::a,b,c,AA,BB,betai,betaip1,Vbetai,Vbetaip1,Vd,d,ab,beta0
+    real(double)::a,b,c,AA,BB,betai,betaip1,Vbetai,Vbetaip1,Vd,d,ab
     logical ::ldir
     logical::linit
     character*15::mic,mic2
     ldir=.false.
-    beta0=beta
     fhi=0.5*(1+sqrt(5.))
     lOK=.true.
     linit=.false.
     normF02=SUM(F0(:)**2)
     Rbeta(:)=R0(:)+beta*F0(:)
     write(6,*)'IN mindir betaIN',beta
+    write(unitgc,*)'IN mindir betaIN',beta
     call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
-    if (ldir) beta=beta/3
+!    if (ldir) beta=beta/3
     if (lover.or.ldir) then
        write(unitgc,*)'retout direct de mindir',lover,ldir
        lok=.true.
@@ -187,7 +190,7 @@ contains
           Rbeta(:)=R0(:)+betaip1*F0(:)
           call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
           write(unitgc,*)'betaold Vbeta',betaip1,Vbeta
-          if (ldir) beta=beta/3
+          if (ldir) beta=betaip1/3
           if (lover.or.ldir) then
              write(unitgc,*)'retout de mindir dans etape1.1',lover,ldir
              lok=.true.

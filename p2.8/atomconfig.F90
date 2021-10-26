@@ -1447,7 +1447,14 @@ contains
     integer:: cst(3)
     type(mpi_communicator)::mpic
 
+    idmaster=0
+    idloc=div%mpi_image%rank
+    npim=div%mpi_image%nproc
+    mpic=div%mpi_image
+    imcomp=atcfcomp%im
 
+!!$    call atcfcomp%print(unit=500+mpic%rank)
+!!$    call atcfloc%print(unit=600+mpic%rank)
 
     if (.not.present(caracT)) then
        carac='xfniewdlpvrugas'
@@ -1456,11 +1463,6 @@ contains
        
     end if
 
-    idmaster=0
-    idloc=div%mpi_image%rank
-    npim=div%mpi_image%nproc
-    mpic=div%mpi_image
-    imcomp=atcfcomp%im
 
 
     if (idloc==idmaster) then
@@ -2139,7 +2141,7 @@ contains
           if(scan('u',carac).ne.0) then
              ivR=ivR+1
              do ip=1,size1
-                ib=Lposf(ivR-1)+ip
+                ib=Rposf(ivR-1)+ip
                 atcf%eat(ip)=Rbuffer(ib)
                 csR=csR+1
              end do

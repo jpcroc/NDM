@@ -1,8 +1,14 @@
-#!/bin/tcsh
-foreach temp (`ls -1 *F90 *f Makefil* */*.F90`)
+#!/bin/bash
+for temp  in  *.F90 *.f Makefil* */*.F90
+do 
 	echo $temp
 	rm -f rd
-	diff   $temp /mnt/c/Users/jc148490/lin/DM/codesndm/ndm2021/$temp >>rd
-	if  ( -s  rd )    meld /mnt/c/Users/jc148490/lin/DM/codesndm/ndm2021/$temp  $temp
+	diff   $temp /mnt/c/Users/jc148490/lin/DM/codesndm/ndm2021/$temp >rd
+	diff   $temp /mnt/c/Users/jc148490/lin/DM/codesndm/ndm2021/$temp 
+	if  [ -s  rd ]
+	then
+	meld /mnt/c/Users/jc148490/lin/DM/codesndm/ndm2021/$temp  $temp
+	fi
+	
 
-end
+done
