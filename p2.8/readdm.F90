@@ -292,7 +292,7 @@ contains
     ! where "random" is a random number between 
     ! 0 and 1  
     neb_noise=0                 ! 0 without noise, 1 with noise
-    mdcg_noise=0                ! 0 without noise, 1 with noise
+    mdcg_noise=1                ! 0 without noise, 1 with noise
     !      	lperiod=.false.  ! pas de conditions periodiques
 
     !...inNEB
@@ -763,6 +763,7 @@ contains
     end if
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
+       npotentiel=1
        lspaceNDM=.false. ; latcomp=.true.
        if (rang==0) write(6,*)'POTENTIELS LAMMPS ; PARA_SPACE VERSION=LAMMPS NOT NDM !!'
     else
