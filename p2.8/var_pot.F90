@@ -49,6 +49,8 @@ module var_pot
   real(double), dimension(:,:), allocatable :: potw ! table des pot a spliner
   real(double), dimension(:), allocatable :: ray, shel, bm !parametres du pot
   real(double), dimension(:), allocatable :: Dmorse, amorse, remorse !parametres du pot Morse
+  real(double), dimension(:), allocatable :: Afd,Bfd,r0fd !parametres du pot Fermi-Dirac
+  real(double), dimension(:), allocatable :: Aig,big,r0ig !parametres du pot inverse gaussien
   real(double), dimension(:), allocatable :: zz ! qi*qj
   real(double) :: eta ! rayon de coupure et amortissement d'Ewald
   real(double) ::  rumax,csive ! rayonde coupure ; pas de la grille d'interpolation du potentiel

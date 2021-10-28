@@ -286,9 +286,9 @@ contains
              end if
           end if
           write(luvisu,*)' '
-          write (luvisu,'(3F12.6)')at(1,1),at(2,1),at(3,1)
-          write (luvisu,'(3F12.6)')at(1,2),at(2,2),at(3,2)
-          write (luvisu,'(3F12.6)')at(1,3),at(2,3),at(3,3)
+          write (luvisu,'(3F15.9)')at(1,1),at(2,1),at(3,1)
+          write (luvisu,'(3F15.9)')at(1,2),at(2,2),at(3,2)
+          write (luvisu,'(3F15.9)')at(1,3),at(2,3),at(3,3)
           write (luvisu,*) atcomp%im
           call cryst_to_cart (atcomp%im, atcomp%xp,  bg,  -1) !cart vers cryst
           do i = 1, atcomp%im

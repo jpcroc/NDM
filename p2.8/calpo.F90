@@ -12,7 +12,7 @@ module calpo_mod
        &npair,lprtpot,lu_roff_pair,ngr,ntyp,pot_d,roff1,roff2,rue_pair,sigmawat,ro,lue_paire,ipo,pot,rawat,qwat,&
        &ipo_2_pair_tab,zz,ipo,capdij,caphij,capwij,gm1,ietaij,lambda,rbp5,rp3c,rp5p3,xsi,poly5,poly3,r8p,pwat,&
        &typ_pot_pair,pot_pair_tab,ray,a_factor,fcr,potw,bspw,cspw,dspw,bspf,dspf,cspf,shel,pm,bwat,bm,awat,&
-       &alpha,auxe,iewald,q
+       &alpha,auxe,iewald,q,Afd,Bfd,r0fd, Aig,big,r0ig,dmorse,remorse,amorse
 
   
   implicit none
@@ -74,45 +74,6 @@ contains
     real(double):: drkp,skp
     integer::kp,lpt
 
-    !interface
-    !
-    !subroutine zieg2(pot, pot_d, csive,ngrid, ntyp,npair, catom, roff1, roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
-    !  !-----------------------------------------------
-    !  !   M o d u l e s
-    !  !-----------------------------------------------
-    !  USE T_kind_param_m, ONLY:  double
-    !
-    !  implicit none
-    !  !-----------------------------------------------
-    !  !   D u m m y   A r g u m e n t s
-    !  !-----------------------------------------------
-    !  integer, dimension(:,:), allocatable  :: ipo                      ! indice des paires d'atomes
-    !  integer, allocatable:: typ_pot_pair(:) ! donne le type d'interaction de la paire
-    !  integer , intent(in) :: ngrid,ipotentiel
-    !  integer  :: ntyp
-    !  integer  :: npair
-    !  real(double) , intent(in) :: csive
-    !  real(double)  :: auxe= 23.06134575D-20 
-    !  real(double) , intent(inout) :: pot(4,npair,0:ngrid+1),pot_d(4,npair,0:ngrid+1)
-    !  real(double)  :: catom(ntyp)
-    !  real(double)  :: roff1(npair)
-    !  real(double)  :: roff2(npair)
-    !  logical :: lu_roff_pair(npair)
-    !
-    !end subroutine zieg2
-    !end interface
-
-
-
-
-
-
-
-
-
-    ! Definitions de constantes (a trier)
-!    auxe = 23.06134575D-20                    ! en erg.cm (charge electron^2/4*pi*permitivite vide)
-    !      alpha = 1.D0/(eta*1.0D-08)
     factor = (2.0D0*alpha)/sqrt(pi)
 555 format(1x,'Q =',f5.1,3x,'RAY =',f6.2,3x,'BM =',f7.4,3x,'N=',f4.1)
 557 format(1x,4f10.3)                          ! utile ???
@@ -121,14 +82,15 @@ contains
     !    CALCUL DU POTENTIEL D'INTERACTION ENTRE 2 TYPES DE PAIRE
     !    CHOIX ENTRE : 0. Born-Mayer-Huggins et 1. Buckingham
     ! ****************************************************************
-    !      write(6,*)'ipotentiel ',ipotentiel
+    write(6,*)'ipotentiel ',ipotentiel
     select case (ipotentiel)
-    case(0,1,3,4,5)  ! FORMULES ANALYTIQUES
+    case(0,1,3,4,5,8)  ! FORMULES ANALYTIQUES
        sigp=0.0
        ! +++++++++ 0. POTENTIEL DE BORN-MAYER-HUGGINS +++++++++++++
        !         ip2: select case (ipotentiel)
        !         case(0)
-       if (ipotentiel==0) then 
+       select case (ipotentiel)
+       case(0)
           l = 0
           do i = 1, ntyp
              if (ntyp-i+1>0) then
@@ -163,7 +125,7 @@ contains
 
           ! +++++++++++ 1. POTENTIEL UO2 +++++++++++++
           !case(4)
-       elseif (ipotentiel==4) then
+       case(4)
           pau(:npair) = a_factor(:npair)          ! erg
           ! exponential term
           if (rang==0) then
@@ -206,12 +168,12 @@ contains
              !               write (6,*) k,r,pot(1,l,k) 
           end do
           ! ++++++++++++ Fin du potentiel UO2 +++++++++++++
-       else
-          !         case(1,3,5)
+       case default
+          !         case(1,3,5,8)
 
           ! +++++++++++ 1. POTENTIEL DE BUCKINGHAM +++++++++++++
 
-          pau(:npair) = a_factor(:npair)          ! erg
+          pau(:npair) = a_factor(:npair)          
           !       write(6,*)'L, Aij, ROij, Cij',l,pau(l),
           !    &            ro(l),dip(l)
 
@@ -239,6 +201,7 @@ contains
                 do l=1,npair
                    if((typ_pot_pair(l)==1).and.(lue_paire(l).eqv..true.)) then
                       pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6
+
                    end if
                 end do
 
@@ -252,13 +215,25 @@ contains
                    end if
                 end do
 
-                !              where (typ_pot_pair==5)& 
-                !                   &              pot(1,:,k)=pot(1,:,k)+dmorse(:)*((1.-exp(-1.*amorse(:)*(r-remorse(:))))**2 -1.)
+                              where (typ_pot_pair==5)& 
+                                   &              pot(1,:,k)=pot(1,:,k)+dmorse(:)*((1.-exp(-1.*amorse(:)*(r-remorse(:))))**2 -1.)
              end if
-
+!8888888888888             
+             if (ipotentiel==8) then 
+                do l=1,npair
+                   if((typ_pot_pair(l)==8).and.(lue_paire(l).eqv..true.)) then
+                      pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6
+                      pot(1,l,k) =  pot(1,l,k)+ dmorse(l)*((1.-exp(-1.*amorse(l)*(r-remorse(l))))**2 -1.)
+                      pot(1,l,k) =  pot(1,l,k) -afd(l)/(1+exp(bfd(l)*(r-r0fd(l))))
+                      pot(1,l,k) =  pot(1,l,k) -aig(l)*exp(-big(l)*((r-r0ig(l))**2))
+                   end if
+                end do
+             end if
+                
           end do
 
-       end if
+
+       end select
        !        end select ip2
 
 
@@ -343,10 +318,9 @@ contains
 
        case(2)  !(lpotrep)
 
-          ! ********************************Cas : Pot  de Ziegler ****************************
+          ! ********************************Cas : Pot  de Ziegler ****************************lprtpo
 
           ! **** terme de Ziegler *******
-
 
           call zieg2 (pot,pot_d, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
 

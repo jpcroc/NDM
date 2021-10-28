@@ -203,7 +203,7 @@ contains
     iteTconst =itetemp
     lalea = .FALSE.             ! structure initiale aleatoire
     rsep = 1.0               !Distance de separation pour le tirage aleatoire
-    ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW �πｴﾎｵ縺､� la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original) ; 11 Ercollesi ;; -10=LAMMPS atom style atomic; -11 LAMMPS atom style charge (changes only simple.potin)
+    ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW �πｴﾎｵ縺､� la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original) ; 11 Ercollesi ;; -10=LAMMPS atom style atomic; -11 LAMMPS atom style charge (changes only simple.potin) ! 8 bandura 2017= Bukingham +Morse+Fermi-Dirac+Inverse gaussian
     npotentiel = 1              ! nb de potentiels
     lpotentiel(:)=.false.
     ntyp=-1                    ! le nombre de type DOIT etre specifie si le nombre de potentiel est superieur �πｴﾎｵ縺､� 1

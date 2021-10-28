@@ -8,7 +8,7 @@ module input_pair_mod
        &ncoucx,ncoucy,ncoucz,ngr,ncouc3,l3c,lambda,kpmey,kpmex,kpmez,ipotrep,ipo_2_pair_tab,gm1,gm2,gm3,gm4,gm5,gR,gD,&
        &r8p,evA62ergcm6,epswat,alpha,c3c,l3cpair,coup3c2,l3ctyp,cangle,gam,lamb,capWij,ietaij,iewald,eta,coup3c,capDij,&
        &capHij,rue_pair,sigmawat,rawat,qwat,bwat,awat,rawat2,pwat,lu_roff_pair,roff2,roff1,ro,typ_pot_pair,amorse,remorse,&
-       &dmorse,dip,a_factor,pm
+       &dmorse,dip,a_factor,pm,Afd,Bfd,r0fd, Aig,big,r0ig
 
   use Tpara,only:nprocspace
   implicit none
@@ -53,7 +53,7 @@ contains
     !  logical, dimension (:),allocatable :: lue_trip
     integer  :: n3c,npg,npd
     real(double) :: lambr,gamgr,gamdr,agcr,adcr,cangler, dmr,amr,rmr,rumaxa
-
+    real(double):: afdr,bfdr,r0fdr,aigr,bigr,r0igr
     ! watanabe
     real(double)::Awatr,Bwatr,pwatr,qwatr,rawatr ! variable de lecture pour pot. watanabe
     integer :: num_3c
@@ -109,8 +109,10 @@ contains
        if (rang==0) write (6, *) '----------- POTENTIEL PAIRE TABULE -----------'
     case(5)
        if (rang==0) write (6, *) '----------- POTENTIEL BMH+Morse -----------'
+    case(8)
+       if (rang==0) write (6, *) '----------- POTENTIEL BMH+Morse+FermiDirac+Inverse Gaussian (Bandura 2017) -----------'
     case default
-       write (6, *) rang,'Bienvenue dans le cote obscur de la force : pas de potentiel ?'
+       write (6, *) rang,'Bienvenue dans le cote obscur de la force : pas de potentiel ?DDD'
        call arret_ndm
     end select
 
@@ -131,12 +133,14 @@ contains
        fnampotin = 'uo2.potin'
     case(5)
        fnampotin = 'buckmorse.potin'
+    case(8)
+       fnampotin = 'bandura.potin'
     case(6)
        fnampotin = 'SWV.potin'
     case(7)
        fnampotin = 'pair_tab.potin'
     case default
-       write (6, *) rang, 'Bienvenue dans le cote obscur de la force :pas de potentiel ?'
+       write (6, *) rang, 'Bienvenue dans le cote obscur de la force :pas de potentiel ?BBB'
        call arret_ndm
     end select
 
@@ -148,7 +152,7 @@ contains
 
     !   Lectures communes a tous buckingham et bmh .potin
     select case (ipotentiel)
-    case(0,1,3,4,5,7)
+    case(0,1,3,4,5,7,8)
 
        read (lupotin, *) iewald, l3c
 #ifdef PARA
@@ -183,7 +187,7 @@ contains
 
        ! initialisations de ipo3c
        select case(ipotentiel)
-       case(7,2,6)
+       case(7,2,6,8)
           ipotrep=0
        case(0,1,3,5,4)
           ipotrep=2
@@ -422,7 +426,7 @@ contains
           ! ++++++++ Fin de la lecture specifique du fichier bmh.potin ++++++++++
 
           ! ++++++++ Lecture specifique du fichier buckingham.potin ++++++++++++
-       case(1,3,5)
+       case(1,3,5,8)
           ! MPI
           if (npotentiel .gt.1)then
              read(lupotin,*) ntypr
@@ -477,9 +481,10 @@ contains
              end do
 
           end if
-
+          select case(ipotentiel)
+          case(5)
           ! initialisations
-          if(ipotentiel.ne.(5)) then
+!          if(ipotentiel.ne.(5)) then
              read(lupotin,*)nb_paire_a_lire
              if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
              do lect_paire=1,nb_paire_a_lire
@@ -515,7 +520,51 @@ contains
                    r8p(l)=r8m
                 endif
              end do
-          else
+!!!!!!!!!!!!!!!!!!!!!!!!88888888888888888!!!!!!!!!!!!!             
+          case(8)
+             read(lupotin,*)nb_paire_a_lire
+             if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
+             do lect_paire=1,nb_paire_a_lire
+                if (ipotrep==0) then
+                   read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, dmr,amr,rmr, afdr,bfdr,r0fdr,aigr,bigr,r0igr
+                   l=ipo(tt1,tt2)
+                   lu_roff_pair(l)=.false.
+                else
+                   read(lupotin,*) tt1,tt2, rof1m,rof2m, a_factorm, rom, dipm, dmr,amr,rmr, afdr,bfdr,r0fdr,aigr,bigr,r0igr
+                   l=ipo(tt1,tt2)
+                   lu_roff_pair(l)=.true.
+                   roff1(l) = rof1m*1d-8
+                   roff2(l) = rof2m*1d-8
+                end if
+                if(lue_paire(l)) then
+                   write(6,*) rang,'paire l lue deux fois ', l,tt1,tt2
+                   call arret_ndm
+                endif
+                lue_paire(l)=.TRUE. ; typ_pot_pair(l)=ipotentiel       
+                rue_pair(l)=rue*A2cm
+                if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
+
+                !        conversions d'unites
+                a_factorm = a_factorm*ecgs/96.485           ! conversion eV --> erg
+                rom = rom*A2cm                     ! conversion A --> cm
+                dipm = dipm*evA62ergcm6/96.485              ! conversion eV.A^6 --> erg.cm^6
+                a_factor(l) = a_factorm
+                ro(l) = rom
+                dip(l) = dipm
+                dmorse(l)=dmr*ecgs/96.485              
+                amorse(l)=amr/A2cm
+                remorse(l)=rmr*A2cm
+                afd(l)=afdr*ev2erg/96.485              
+                bfd(l)=bfdr/A2cm
+                r0fd(l)=r0fdr*A2cm
+                aig(l)=aigr*ev2erg/96.485              
+                big(l)=bigr/(A2cm**2)
+                r0ig(l)=r0igr*A2cm
+             end do
+
+             
+          case default
+             
              !        if (ipotentiel==5) then ! terme Morse
              Dmorse(:)=0. ; amorse(:)=0. ; remorse(:)=2.0d-8
              read(lupotin,*)nb_paire_a_lire
@@ -534,7 +583,8 @@ contains
                 remorse(l)=rmr*A2cm
                 if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
              end do
-          end if
+          end select
+
 
 
           ! ++++++++ Fin de la lecture specifique du fichier buckingham.potin ++++++++++
@@ -886,7 +936,7 @@ contains
        rumax=max(rumax,rue)     
 
     case default
-       write (6, *) rang, 'Bienvenue dans le cote obscur de la force :pas de potentiel ?'
+       write (6, *) rang, 'Bienvenue dans le cote obscur de la force :pas de potentiel ?CCC'
        call arret_ndm
     end select
     !if(allocated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 

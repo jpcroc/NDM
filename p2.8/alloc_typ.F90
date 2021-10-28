@@ -5,7 +5,7 @@ module alloc_typ_mod
        &ro,dip,pm,r8p,roff1,roff2,pot,a_factor,fda,gamlt,shel,&
        &Dmorse,amorse,Remorse,ietaij,capHij,capwij,capDij,Awat,Bwat,pwat,qwat,rawat,&
        &rawat2,potw,bspw,cspw,dspw,gz,fcr,bspg,contmax,ngrid,nkmax,npair,ntrip,&
-       &typ_pot_pair,ray,bm,coup3c,c3c,rhomin,rhomax
+       &typ_pot_pair,ray,bm,coup3c,c3c,rhomin,rhomax,Afd,Bfd,r0fd,Aig,big,r0ig
   implicit none 
 contains
 
@@ -88,6 +88,15 @@ contains
     if (lpotentiel(ipot_loc).eqv..true.) then
        allocate(Dmorse(npair)) ;allocate(amorse(npair)) ; allocate(Remorse(npair))
     endif
+    
+    ipot_loc=8
+    if (lpotentiel(ipot_loc).eqv..true.) then
+       allocate(Dmorse(npair)) ;allocate(amorse(npair)) ; allocate(Remorse(npair))
+       allocate (afd(npair)) ;allocate(bfd(npair)) ; allocate(r0fd(npair))
+       allocate (r0ig(npair)) ;allocate(big(npair)) ; allocate(aig(npair))
+       
+    endif
+    
 
     ipot_loc=6
     if (lpotentiel(ipot_loc).eqv..true.) then
