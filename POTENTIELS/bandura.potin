@@ -1,0 +1,13 @@
+1  .false.
+ &ewald
+   rue=20.0,ipotrep=2,
+   alpha=0.420560
+   ncouc3=6
+ &end
+ 2 !2 types d'atomes
+2.672 91.224 40 'Zr '    !  CM (masse);  numero atomique ; symbole
+-1.366 15.9994 8.0 'O '    !  CM (masse);  numero atomique ; symbole
+3
+1 1 0.1 0.2 0 1 1 28.7846 5.72709 3.303 0 1 1 0 1 1     ! typ1 typ2roff1 roff2  Abuck  rhobuck Cbuck DMorse aMorse r0Morse AFD BFD r0FD AIG bIG r0I
+1 2 0.05 2.5 491.154 0.247 492.075 -11.3156 0.89590 2.123 -34.2545 22.3859 2.554 0 1 1
+2 2 0.05 1.0 170.086 0.299 3087.53 6.30551 2.02893 2.824  0 1 1 0 1 1 
