@@ -1,0 +1,5 @@
+#define DATE "2021-11-23"
+#define REVISION "NotGitRepo"
+#define COMPILE_DATE "Tue Nov 23 10:16:38 CET 2021"
+#define LOCATION "/mnt/c/Users/jc148490/lin/DM/codesndm/ndm2021"
+#define COMPILE_TARGET "ndm_mpi_gfortran_debug"

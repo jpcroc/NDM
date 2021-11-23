@@ -605,11 +605,11 @@ contains
     ibuffer(5)=cell%natperc
     ibuffer(6)=int(cell%icaltabt)
     ibi=6
-    do ip=0,nsize
+    do ip=1,nsize
        ibi=ibi+1
        ibuffer(ibi)=cell%nato(ip)
     end do
-    do ip=0,nsize
+    do ip=1,nsize
        do ip2=0,26
           ibi=ibi+1
           ibuffer(ibi)=cell%ncel(ip,ip2)
@@ -623,7 +623,7 @@ contains
           end do
        end do
     end do
-    do ip=0,nsize
+    do ip=1,nsize
        do ip2=1,cell%natperc
           ibi=ibi+1
           ibuffer(ibi)=cell%atincel(ip2,ip)
@@ -698,11 +698,11 @@ contains
     cell%natperc=ibuffer(5)
     cell%icaltabt=ibuffer(6)
     ibi=6
-    do ip=0,nsize
+    do ip=1,nsize
        ibi=ibi+1
        cell%nato(ip)=ibuffer(ibi)
     end do
-    do ip=0,nsize
+    do ip=1,nsize
        do ip2=0,26
           ibi=ibi+1
           cell%ncel(ip,ip2)=ibuffer(ibi)
@@ -716,7 +716,7 @@ contains
           end do
        end do
     end do
-    do ip=0,nsize
+    do ip=1,nsize
        do ip2=1,cell%natperc
           ibi=ibi+1
           cell%atincel(ip2,ip)=ibuffer(ibi)
@@ -780,11 +780,11 @@ contains
     ibuffer(5)=cell%natperc
     ibuffer(6)=int(cell%icaltabt)
     ibi=6
-    do ip=0,nsize
+    do ip=1,nsize
        ibi=ibi+1
        ibuffer(ibi)=cell%nato(ip)
     end do
-    do ip=0,nsize
+    do ip=1,nsize
        do ip2=0,26
           ibi=ibi+1
           ibuffer(ibi)=cell%ncel(ip,ip2)
@@ -798,7 +798,7 @@ contains
           end do
        end do
     end do
-    do ip=0,nsize
+    do ip=1,nsize
        do ip2=1,cell%natperc
           ibi=ibi+1
           ibuffer(ibi)=cell%atincel(ip2,ip)
@@ -847,11 +847,11 @@ contains
     cell%natperc=ibuffer(5)
     cell%icaltabt=ibuffer(6)
     ibi=6
-    do ip=0,nsize
+    do ip=1,nsize
        ibi=ibi+1
        cell%nato(ip)=ibuffer(ibi)
     end do
-    do ip=0,nsize
+    do ip=1,nsize
        do ip2=0,26
           ibi=ibi+1
           cell%ncel(ip,ip2)=ibuffer(ibi)
@@ -865,7 +865,7 @@ contains
           end do
        end do
     end do
-    do ip=0,nsize
+    do ip=1,nsize
        do ip2=1,cell%natperc
           ibi=ibi+1
           cell%atincel(ip2,ip)=ibuffer(ibi)

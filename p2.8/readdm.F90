@@ -28,7 +28,7 @@ contains
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
          &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
          &,tpseuils,tstep,typspr,unite,unitp,xpspr,lenfnam,fnam,position_conversion_lammps&
-         &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat
+         &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess
     USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
@@ -36,8 +36,7 @@ contains
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
-    USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc,Wsave
-    use calccoordo_mod,only:rclu
+    USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, lbiais_retrait, fdmc_1, fdmc_2
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
 #endif
@@ -69,7 +68,7 @@ contains
     namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma, itefcc, itedepla, tdepla, lfilm, &
          tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
          tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
-         itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda,rclu, itesauv, formatsauv, &
+         itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv, formatsauv, &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
           rulayer,iterasmol, lpcon, lprtzlm,pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
@@ -86,8 +85,7 @@ contains
          mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,ndir,nstep,betaguess,&
-         &nparapath,lparapath,Wsave,ihbox0,ipbc
-
+         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2
 
 
     !
@@ -107,8 +105,10 @@ contains
     tempstop = -1.0             !temperature of run stop
     tempstopcel = -1.0             !temperature of run stop
     dmtype = 0  
-    idirectionmcgc=-2
-    Wsave=0
+    idirectionmcgc=-2           !direction pour le montecarlo 0 ou 1 a designer par l'utilisateur
+    lbiais_retrait = .false.    !biais ou non sur les retraits dans le montecarlo
+    fdmc_1 = -1000.0            !param de fermi dirac A DEF PAR UTILISATEUR pour la fct discriminante du biais dans MC
+    fdmc_2 = -1000.0            !valeur devant etre changee    
     !dmtype = type of calculation : 1 -> MD
     !                               2 -> quench (trempe) or fire quench
     !                               3 -> gradient conjugue générique pointe vers 31 par défaut 
@@ -253,7 +253,7 @@ contains
     lPkbar=.true.
     ! definition des rayons de coupure pour le calcul des coordinences autour de chaque type atomique
     deltax=0.0
-    rclu(:)=2.0
+!    rclu=2.0
 
 
     iterasmol = -1                             ! <0 --> genere aucun fichier positions pour logiciel rasmol
@@ -1006,23 +1006,22 @@ contains
     case (15)
        if (rang==0) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
+       if ((nparapath.gt.1).and.(.not.lparapath)) then
+          write(6,*)'nparapath >1, needs lparapath = TRUE'
+          stop
+       end if
+
        if (rang==0) write (6,*)
        if ((lparapath).and.(nparapath.le.1)) then
           write(6,*)'lparapath ET nparapath=1 stop'
           stop
        end if
-       if ((lrestart).and.(.not.((idirectionmcgc==0).or.(idirectionmcgc==1)))) then
+       if ((.not.lrestartmcgc) .and. (.not.((idirectionmcgc==0).or.(idirectionmcgc==1)))) then
           write(6,*)'set idirectionmcgc to 0 or 1 '
           stop
        end if
-       if ((lrestart).and.(Wsave==0))then
-          write(6,*)'give Wsave (eV) '
-          stop
-       end if
-       if (lrestart) then
-          if (rang==0) then
-             write(6,*)'MCGC restart Wsave, idirectionmcgc ', Wsave,idirectionmcgc
-          end if
+       if (rang==0) then
+          write(6,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc
        end if
 #ifdef PARA
 #else
@@ -1092,7 +1091,7 @@ contains
        endif
        if (rang==0) write (6, *) 'TEMPERATURE CONSTANTE a la Berendsen Text= ',text
     endif
-    if (text.gt.0) then
+    if ((text.gt.0).and.(dmtype.ne.15)) then
        if (.not.(ltberendsen.or.llangevin.or.lThoover.or.lTnose)) then
           write(6,*)'text<0 mais pas dalgo' ;stop
        end if
@@ -1463,6 +1462,11 @@ contains
        write(6,*)'Pour utiliser la methode MCGC, indiquer une valeur pour le pas lambda d integration'
        stop
     end if    
+!idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
+    if((dmtype == 15) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
+       write(6,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
+       stop
+    end if
 
     if (lcdp) then
        select case(dmtype)

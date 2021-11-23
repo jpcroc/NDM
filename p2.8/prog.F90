@@ -281,7 +281,7 @@ contains
        ! la concentration moyenne
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
-          if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
+          if (rang==0) write(6,*)'IMM PARA MCGC = ',imm,imm_glob
        endif
 #endif
 !!$ call MPI_FINALIZE(imm)
@@ -305,7 +305,7 @@ contains
           atconf_nplus1=>config_atom_nplus1(ipp)
           cells_nplus1=>config_cells_nplus1(ipp)
 
-          call atconf_n%init(im,imm,ltabvois,nvois,rvois=rv,imm_glob=imm_glob)
+          call atconf_n%init(im,imm,ltabvois,nvois,rvois=rv,im_glob=im,imm_glob=imm_glob)
           ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
           boxmcgc=boxndm
           if (ipp==1) then

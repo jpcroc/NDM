@@ -25,8 +25,6 @@ module gen_com_m
 
   integer :: ivoismax
 
-!  integer :: imm                 !imm taille des tableaux dependant du nombre d'atome mélange par proc et pas par proc, à remplacer par les deux suivants
-!  integer :: imm_glob ! taille complète des tableaux 
   integer:: imm_loc ! taille des conf atomique par proc 
   logical :: parallele
 
@@ -49,7 +47,6 @@ module gen_com_m
   real(double) :: A2cm =1.0d-8     !conversion A->cm
 
 
-!  integer :: im						! nb local d'atomes (=global en sequentiel)
   integer :: im_glob,imm_glob					! nb global d'atomes
 
 
@@ -127,6 +124,7 @@ integer::idirectionmcgc
   logical :: lposmoy ! ecrit a la fin la position moyenne des atomes
   real(double) :: tdepla, tdepla2 ! seuils de deplacement
   logical :: lfilm, linstantrdf,linstantfda, lrestart, ltpcel, lfilmext !film, RDF, restart, moyenne par cel
+  logical :: lrestartmcgc
   logical:: ldecoup !if T: cherche les nombres de procs optimums, voir decoup3D (ne marche su'en séquentiel (évidemment)) 
   real*8,dimension(4)::tpseuils ! 1:Tmin; 2:abs(T') ; ; 3:abs(P); 4:abs(P')
   !Correlations et Cie

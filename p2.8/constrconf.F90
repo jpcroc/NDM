@@ -131,6 +131,7 @@ contains
        else
           itread=1
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
+
           atrcf%im_glob=atrcf%im
           if (rang==0) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -198,15 +199,6 @@ contains
     end do
 
 
-    ! ----------------------------------------------------------
-    !  CONDITIONS PERIODIQUES : REMETTRE LES ATOMES DANS BOITE
-    ! ----------------------------------------------------------
-
-
-
-
-    ! SUMMARY
-    !#ifdef LAMMPS_VERSION
 
     if((ipotentiel==-10).or.(ipotentiel==-11)) then
        !       if(rang==0)then
@@ -753,6 +745,18 @@ contains
        endif
 
     end select
+    call cryst_to_cart (atcinr%im, atcinr%xp, boxcin%bg, -1) !cart vers cryst
+    do ic=1,3
+       if ((lperiod).or.(ipbc(ic).ne.1)) then
+          do i=1,atcinr%im
+             if ( (atcinr%xp(ic,i).LT.0.d0).OR.(atcinr%xp(ic,i).GE.1.d0) ) then
+                atcinr%xp(ic,i)  = atcinr%xp(ic,i)  - Dble(Floor(atcinr%xp(ic,i)))
+             END if
+          end do
+       end if
+    end do
+    call cryst_to_cart (atcinr%im, atcinr%xp, boxcin%at, 1) ! cryst vers cart
+    
     close (lucin)
     return
 456 print *,'Erreur dans la lecture du fichier .cin, verifier son format&

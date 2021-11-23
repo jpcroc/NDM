@@ -492,7 +492,8 @@ subroutine param_det(boxndm)
                  write(6,*) 'RUE=',rue,' ALPHA=',alpha
               endif
            endif   ! rang = 0
-           if (iewald/=0) then
+           if ((iewald/=0).and.(.not.allocated(tabv3))) then
+              
               allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
               allocate (tabf3(ntyp,-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
            end if

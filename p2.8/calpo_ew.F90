@@ -42,7 +42,9 @@ contains
     end do
 
     nv=0
-    allocate (nb1v(nvecttot));  allocate (nb2v(nvecttot));allocate (nb3v(nvecttot))
+    if (.not.(allocated(nb1v))) then 
+       allocate (nb1v(nvecttot));  allocate (nb2v(nvecttot));allocate (nb3v(nvecttot))
+    end if
        ! repartition des vecteurs du RRec.
        do nb1 = -ncoucx, ncoucx
           do nb2 = -ncoucy, ncoucy

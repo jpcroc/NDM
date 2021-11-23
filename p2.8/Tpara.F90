@@ -925,13 +925,13 @@ contains
     implicit none
     class(mpi_communicator) :: mpic
     integer,optional,intent(in)::torank
-    
+
     integer,allocatable :: arrayval(:)
     integer,intent(in)::val
     integer::valp,proc_source
 
     integer::iproc,ierror
-    
+
     arrayval(:)=0
 #ifdef PARA    
     if (present (torank)) then
@@ -958,13 +958,13 @@ contains
     arrayval(0)=val
 #endif
     return
-    
+
   end subroutine build_i
   subroutine build_dp(mpic,val,arrayval,torank)
     implicit none
     class(mpi_communicator) :: mpic
     integer,optional,intent(in)::torank
-    
+
     real(double),allocatable :: arrayval(:)
     real(double),intent(in)::val
     real(double)::valp
@@ -972,7 +972,7 @@ contains
     integer::iproc,proc_source
     arrayval(:)=0
 #ifdef PARA
-    
+
     if (present (torank)) then
        if (mpic%rank==torank) then
           do iproc=0,mpic%rank-1
@@ -995,14 +995,14 @@ contains
     arrayval(0)=val
 #endif
     return
-    
+
 
   end subroutine build_dp
   subroutine build_cdp(mpic,val,arrayval,torank)
     implicit none
     class(mpi_communicator) :: mpic
     integer,optional,intent(in)::torank
-    
+
     complex(double),allocatable :: arrayval(:)
     complex(double),intent(in)::val
     complex(double)::valp
@@ -1011,7 +1011,7 @@ contains
     integer::iproc,ierror
     arrayval(:)=0
 #ifdef PARA
-    
+
     if (present (torank)) then
        if (mpic%rank==torank) then
           do iproc=0,mpic%rank-1
@@ -1020,14 +1020,14 @@ contains
              else
                 call mpic%probe(999,sourceout=proc_source)
                 call MPI_RECV( valp, 1,MPI_DOUBLE_COMPLEX, proc_source, MPI_ANY_TAG,mpic%comm,status, ierror)
-               !call mpic%recv(valp,proc_source,999)
+                !call mpic%recv(valp,proc_source,999)
                 arrayval(proc_source)=valp
              end if
           end do
        else
           !call mpic%send(val,torank,999)
           call MPI_SEND( val, 1,  MPI_DOUBLE_COMPLEX, torank, MPI_ANY_TAG,mpic%comm, ierror)
-  end if
+       end if
     else
        arrayval(mpic%rank)=val
        call mpic%sum(arrayval)
@@ -1036,14 +1036,14 @@ contains
     arrayval(0)=val
 #endif
     return
-    
+
 
   end subroutine build_cdp
   subroutine build_l(mpic,val,arrayval,torank)
     implicit none
     class(mpi_communicator) :: mpic
     integer,optional,intent(in)::torank
-    
+
     logical,allocatable :: arrayval(:)
     logical,intent(in)::val
     logical::valp
@@ -1073,7 +1073,7 @@ contains
     arrayval(0)=val
 #endif
     return
-    
+
 
   end subroutine build_l
 end module Tpara
