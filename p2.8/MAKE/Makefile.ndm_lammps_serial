@@ -140,7 +140,7 @@ SHELL = /bin/sh
 
   MKL_INC  = #-I/opt/intel/mkl/include/intel64/lp64
   MKL_PATH = #-L/opt/intel/mkl/lib
-  MKL_LIB  = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 
+  MKL_LIB  = # -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 
 # ---------------------------------------------------------------------
 # build rules and dependencies
 # no need to edit this section
