@@ -71,7 +71,7 @@ EXE = $(ROOT)_$@    #_$(shell ./version.sh)
 # For dependencies here are some variables :
 MAKEDEPEND=fortdepend
 # dependence file name with arch extension
-DEP_FILE= .dependencies_$@ 
+DEP_FILE= dependencies_$@ 
 
 
 #EXE = $(ROOT)_$@_v$(shell ./version.sh) # if git and version.sh present
@@ -83,6 +83,10 @@ OBJ +=  $(OBJ_PARA)
 checkfiles +=  $(f90para) 
 INC += $(INC_PARA)
 FLAG += -DPARA
+endif
+
+ifdef DEBUG
+FLAG += -DDEBUG
 endif
 
 ifdef LAMMPS

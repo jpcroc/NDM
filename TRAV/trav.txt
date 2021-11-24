@@ -18,7 +18,6 @@ plotpart dans anapos
 
 7/NON CA MARCHE PAS !!définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos !! par exemple les lacunes dans cdp modifier les rasmo qui vont avec
 
-6.6/gérer imm_glob !
 7.5/ version NEB  avec retour non systématique au proc master ? Est-ce possible ? Est-ce utile ?
 8/Programmer parallel replica
 8.5/ objetiser la parallélisation spatiale de NDM (automatiser les appels)
@@ -29,7 +28,7 @@ plotpart dans anapos
 12/retravailler les potentiels en général
 13/ tests formels
 14/ Milady
-15/subroutinisieer les clculs de distances
+
 
 ***
 
@@ -70,6 +69,8 @@ debuggage LPR+ LPR lammps
 4.05/ supprimer tab_imm_m et les USE temp_com qui vont avec (OK sauf analyses des positions et creationd e défauts)
 11/programmer potentiel Cooper
 5/version sans PBC/period 
+6.6/gérer imm_glob !
+15/subroutinisieer les clculs de distances
 
 
 ----HISTORIQUE:

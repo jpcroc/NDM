@@ -71,7 +71,7 @@ EXE = $(ROOT)_$@    #_$(shell ./version.sh)
 # For dependencies here are some variables :
 MAKEDEPEND=fortdepend
 # dependence file name with arch extension
-DEP_FILE= .dependencies_$@ 
+DEP_FILE= dependencies_$@ 
 
 
 #EXE = $(ROOT)_$@_v$(shell ./version.sh) # if git and version.sh present
@@ -132,7 +132,6 @@ help:
 	@./version.sh
 	@cat version.h
 	@echo \#define COMPILE_TARGET \"$@\" >> version.h
-	@#fortdepend -w $(MPIFLAG) -i mpi -f  *.F90 mod/* para/*  *.f  -o .dependencies
 	$(MAKEDEPEND) -wvc $(FLAG) -i mpi ISO_C_binding -f  $(checkfiles)  -o $(DEP_FILE)
 	@chmod +x MAKE/Makefile.$@ 
 	@cp MAKE/Makefile.$@ Obj_$@/Makefile
