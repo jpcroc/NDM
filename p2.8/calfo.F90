@@ -115,7 +115,7 @@ contains
              ipotentiel=ipot
              if(ipotentiel.lt.10) then
                 select case (ipotentiel)
-                case(0,1,3,4,5,6,7,8)
+                case(0,1,3,4,5,6,7,8,9)
                    if (atcf%ltabvois) then
                       call calfo2ctabvois(atcf,celcf,boxcf) !im,imm,xp,   fp,  iwmax, ityp,indi,at,bg,volu )
 !!$                      call calfo2ctabvois (atcf%im,atcf%imm,atcf%xp,   atcf%fp, atcf%iwmax, atcf%ityp,atcf%indi,&

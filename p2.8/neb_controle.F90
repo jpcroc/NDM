@@ -1,6 +1,6 @@
 module neb_controle_mod
   USE recips_mod,only: recips
-  USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,nebtype,temp,rang,potist,leev,itmax,itetimestep,itetemp,&
+  USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,nebtype,temp,rang,potist,leev,itetimestep,itetemp,&
        &angst,erg2ev,it
   implicit none
 contains
@@ -49,13 +49,6 @@ contains
     !
 
 
-    ! last iteration ?
-!    if (it>=itmax) then
-!       if (rang==0) write (6, *) '*******Derniere iteration PAS CONVERGE !!**** '
-!       dragtest=1
-!       nebtest(ii)=1
-!       return
-!    endif
 
     select case (nebtype)
 

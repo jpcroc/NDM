@@ -2,7 +2,7 @@ module dmloop_pilot_mod
   USE atomconfig,only : atom_config_d, atom_config_e
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
-  USE gen_com_m, ONLY: itmax,dmtype,lcdp,rang
+  USE gen_com_m, ONLY: dmtype,lcdp,rang
 
   use Tpara,only:para_space_config
   use endrunT_mod,only:endrunT

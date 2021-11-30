@@ -12,7 +12,8 @@ module calpo_mod
        &npair,lprtpot,lu_roff_pair,ngr,ntyp,pot_d,roff1,roff2,rue_pair,sigmawat,ro,lue_paire,ipo,pot,rawat,qwat,&
        &ipo_2_pair_tab,zz,ipo,capdij,caphij,capwij,gm1,ietaij,lambda,rbp5,rp3c,rp5p3,xsi,poly5,poly3,r8p,pwat,&
        &typ_pot_pair,pot_pair_tab,ray,a_factor,fcr,potw,bspw,cspw,dspw,bspf,dspf,cspf,shel,pm,bwat,bm,awat,&
-       &alpha,auxe,iewald,q,Afd,Bfd,r0fd, Aig,big,r0ig,dmorse,remorse,amorse
+       &alpha,auxe,iewald,q,Afd,Bfd,r0fd, Aig,big,r0ig,dmorse,remorse,amorse,&
+       &dbasak,betabasak,rstarbasak,abasak,cbasak,rhobasak
 
   
   implicit none
@@ -37,9 +38,8 @@ contains
     !-----------------------------------------------
 
     integer :: i, l, k, j
-    real(double), dimension(npair) :: sigp
+
     real(double) :: bmh, r, r2, r3, r4, r5, r6, r8
-    real(double), dimension(npair) :: pau
     real(double) :: factor, ar, ar2, damp, ddam
 
     real(double), dimension(ngrid) ::  kxsp, &
@@ -64,7 +64,7 @@ contains
 
     integer, dimension(npair) :: irrep
     integer :: convrep
-    real(double), dimension(npair) :: r0rep, V0rep
+    real(double), dimension(npair) :: r0rep, V0rep,pau,sigp
     real(double) :: rrep, potV0
 
 
@@ -84,12 +84,30 @@ contains
     ! ****************************************************************
     write(6,*)'ipotentiel ',ipotentiel
     select case (ipotentiel)
-    case(0,1,3,4,5,8)  ! FORMULES ANALYTIQUES
+    case(0,1,3,4,5,8,9)  ! FORMULES ANALYTIQUES
        sigp=0.0
        ! +++++++++ 0. POTENTIEL DE BORN-MAYER-HUGGINS +++++++++++++
        !         ip2: select case (ipotentiel)
        !         case(0)
        select case (ipotentiel)
+
+       case(9)
+          do k = 1, ngrid
+             r = float(k)*csive
+             r2 = r*r                             ! utile ????
+             kxsp(k) = r
+             r3 = r2*r                            ! utile ????
+             r6 = r3*r3
+             r8 = r6*r2                           ! utile ????
+             do l = 1, npair
+                if (typ_pot_pair(l)==9 )then
+                   bmh = abasak(l)*exp(-r/rhobasak(l))
+                   pot(1,l,k) = bmh-Cbasak(l)/r6 &
+                        &+Dbasak(l)*(exp(-2*betabasak(l)*(r-rstarbasak(l)))-2*exp(-betabasak(l)*(r-rstarbasak(l))))
+                end if
+             end do
+          end do
+
        case(0)
           l = 0
           do i = 1, ntyp
@@ -280,7 +298,6 @@ contains
           pot(4,l,1:ngrid) = dsppart(:ngrid)
           !write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
        end do
-
 
        !*********************************cas : rpulsion par Pot polynomial******************************
        select case (ipotrep)
@@ -504,6 +521,18 @@ contains
        call arret_ndm
     end select
 
+    if (lprtpot.EQV..true.) then
+       do l=1,npair
+          if (typ_pot_pair(l)==ipotentiel)then
+             write(6,*)'l,k,r,pot(1,l,k)'
+             do k=1,ngrid
+                r=float(k)*csive*1.0D8
+                lw=360+l
+                write(lw,'(2I6,5D15.6)')l,k,r,pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
+             enddo
+          end if
+       enddo
+    end if
 
 
     ! spline

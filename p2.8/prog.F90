@@ -17,7 +17,7 @@ module prog_mod
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config
-  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t&
+  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax&
        &,lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp
   
   use read_val,only:imm,ltabvois,rvois
@@ -158,6 +158,7 @@ contains
           if (lcdp) then
              call creadp(atdml,celndm,boxndm,psc0)
           else
+             itloopmax=itmax
              select case (dmtype) 
              case(30,31)
                 call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
@@ -187,7 +188,7 @@ contains
 !!$                type is (atom_config_e)
 !!$                   write(6,*)'typeEPROG',atdml%lprteat
 !!$                end select
-
+                itloopmax=itmax
                 call dmloop_pilot(atdml,celndm,boxndm,psc0)
              end if
           case(30,31)

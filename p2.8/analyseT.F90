@@ -15,7 +15,7 @@ module analyseT_mod
        &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
        &natchk,tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
-       &ldesinteg,itmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,parallele,&
+       &ldesinteg,itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,parallele,&
        & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,it,l2T
 
   USE cellconfig,only:cell_config, caltabtC
@@ -83,7 +83,7 @@ contains
     logical,save::linitrdf=.false.,linitadf=.false.
 
 
-    if (itmax==0) itetemp=0
+    if (itloopmax==0) itetemp=0
     !    if (rang==0) then
        !          write(6,*)'analyse -> sauvegarde'
        if (itesauv.GT.0) then
@@ -446,7 +446,7 @@ contains
         endif
      endif
   else if (iterdf==0) then
-     if (itmax-it<nrdf) then
+     if (itloopmax-it<nrdf) then
         call calcdigr (atdml,celndm,boxndm,rdf0)
      endif
   endif
@@ -465,7 +465,7 @@ contains
         endif
      endif
   else if (iteangle==0) then
-     if (itmax-it<nfda) then
+     if (itloopmax-it<nfda) then
         call calcangle(atdml,celndm,boxndm,adf0)
      endif
   endif

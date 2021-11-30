@@ -15,7 +15,7 @@ module dmloop_mod
   USE parautils,only:driver_caltabt_DM
 
   USE gen_com_m,only: dmtype,it,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
-       & itetabvois,lperiod,lspaceNDM,itmax
+       & itetabvois,lperiod,lspaceNDM,itloopmax
   use var_pot, only: cm
    use Tpara,only:nprocspace,para_space_config,comm_space
 
@@ -63,7 +63,7 @@ contains
     END IF
 
     !      write(6,*)'im',im
-    do while (it.le.itmax)
+    do while (it.le.itloopmax)
 
        it = it+1
 

@@ -23,7 +23,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,itmax,it,&
+    USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,it,&
          &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang
 
     USE var_pot, ONLY:
@@ -48,17 +48,6 @@ contains
     !
     !
 
-!!$    if (it>=itmax) then
-!!$       if (.not.lcdp) then 
-!!$          if (rang==0) write (6, *) '*******Derniere iteration **** '
-!!$          call endrunT(atdml,celndm,boxndm,latcomp)
-!!$          write (6, *) 'predeal '
-!!$          !       call DeallocateAll
-!!$          
-!!$          call arret_ndm
-!!$       end if
-!!$
-!!$    endif
 
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax

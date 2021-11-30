@@ -17,21 +17,11 @@ subroutine arret_ndm()
 
   ! Routine d'arret du code NDM
 
-  !--------------------------------------------------
-  !Variables de la routine
-
-  !--------------------------------------------------
-  !Variables locales
-
-  !--------------------------------------------------
-  !Corps de la routine
 
 #ifdef PARA
   call endMPI
 #endif
-
   stop
-
 end subroutine arret_ndm
 
 end module

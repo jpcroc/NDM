@@ -52,17 +52,9 @@ contains
     integer :: rgloc,j,ic,e_c,e_c0
 
     character*3, dimension(:), allocatable  :: tyw
-!!$    real(double),allocatable::xp(:,:)
-!!$    integer,allocatable:: num_at_glob(:)
-!!$    integer,allocatable::ityp(:)
 
 #ifdef PARA
     integer :: iproc
-!!$    real(double), allocatable :: xp_loc(:,:)
-!!$    integer, allocatable      :: ityp_loc(:)
-!!$    integer, allocatable      :: num_at_glob_loc(:)
-!!$    character*3, allocatable      :: tyw_loc(:)
-!!$    real(double),allocatable::sigat_loc(:,:,:),eat_loc(:)
     integer :: im_loc
     integer :: proc_source
     type(para_config)::div
@@ -168,10 +160,7 @@ contains
     if(rgloc==0) then
 
        at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8
-!       allocate(xp(3,im));allocate(ityp(im));allocate(num_at_glob(imm))
        atcomp%xp(1:3,1:atmol%im)=atcomp%xp(1:3,1:atmol%im)*1d8
-!       num_at_glob(1:atmol%im)=atcomp%num_at_glob(1:atmol%im)
-!       ityp(1:im)=atcomp%ityp(1:im)
        allocate(tyw(atcomp%im))
        tyw='000'
        !    do i=1,im

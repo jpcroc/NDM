@@ -84,6 +84,7 @@ module var_pot
        rawat,  & ! tab. rayons de coupure des inter. a 2 corps
        rawat2    ! carrÃ£Â© des rayons de coupure
 
+  real(double),allocatable,dimension(:):: dbasak,rbasak,betabasak,rstarbasak,abasak,cbasak,rhobasak
 
 
   !3 corps a la sauce JDT

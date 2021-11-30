@@ -8,7 +8,7 @@ module dmloop_vverlet_mod
   USE boxconfig,only:box_config
   use var_pot,only:ntyp
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,ecyl,ev2erg,lgc,rang,rayonc,&
-       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lspaceNDM,itmax
+       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lspaceNDM,itloopmax
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
@@ -62,7 +62,7 @@ contains
        if(ibrake.gt.0) call calceloss(celndm,atdml)
     end if
     if (lTberendsen) call calfoberend(atdml)
-    if (itmax==0) then
+    if (itloopmax==0) then
        call analyseT (atdml,celndm,boxndm)
        call endrunT(atdml,celndm,boxndm,.true.)
     end if
@@ -70,7 +70,7 @@ contains
 
     !  call analyse
     !    call calctemp (temptyp) 
-    do while (it.le.itmax)
+    do while (it.le.itloopmax)
        it = it+1
 
 

@@ -39,20 +39,11 @@ contains
     real(double), dimension(1,3) :: cv
     real(double),dimension(:),allocatable:: edrat
 
-
     write(6,*)'creadp',it,ideftyp
-
-
     itapp=it-1
     select case (ideftyp)
-
     case(0)
-
-
-
-
        ntry=0
-
 1      continue
        ntry=ntry+1
        ! tirer une position d'insertion

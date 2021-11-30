@@ -69,8 +69,8 @@ module gen_com_m
   real(double):: kspr,xpspr(3),Espr,deltaEspr,xpspr0(3),tempdes
   integer:: typspr
 
-  integer,target :: it
-  integer:: itmax, nitmax,igen ! iteration courante, finale , type de generation
+  integer,target :: it ! iteration courante, finale , type de generation
+  integer:: itloopmax, itmax, nitmax,igen ! iteration fin de boucle DM, finale , type de generation
   real(double)::timemax ! temps max simul
   integer :: lenfnam
   integer :: fmt_cin

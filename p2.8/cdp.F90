@@ -1,13 +1,15 @@
 module cdp_mod
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,it,lperiod
+  USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,it,lperiod,itloopmax,ivisu
   !  use temp_com,only:im
   USE arret_ndm_mod,only: arret_ndm
   USE var_pot,only:ntyp
   USE atomconfig,only : atom_config,atom_config_d
   USE boxconfig,only:box_config
   USE cellconfig, only:cell_config,caltabtC
-
+  use rasmolT_mod,only:rasmolT
+  use vect_dist_mod,only:closest_at
+    USE cryst_to_cart_mod,only: cryst_to_cart
 #ifdef PARA  
   USE Tpara,only:COMM_space,myidsp,para_space_config
   USE mod_para,only:maj_atomes_frt_ftm
@@ -15,7 +17,7 @@ module cdp_mod
 #else
   USE Tpara,only:myidsp,para_space_config
 #endif
-!  use endrunT_mod,only:endrunT
+  !  use endrunT_mod,only:endrunT
   use NGC_mod,only:ngc
   use dmloop_pilot_mod,only:dmloop_pilot
 
@@ -26,13 +28,14 @@ module cdp_mod
        nposI,&        ! nombre de positions interstitielles
        iseed, &      ! racine des nombres aléatoires
        ideftyp, &      ! racine des nombres aléatoires
-       typint,&! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
-       ittot ! nombre total d'itérations (va remplacer itmax)
+       typint ! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
   integer,allocatable::nvac(:),nbint(:)
 
-  real(double), dimension(:,:), allocatable :: xposint ! positions des interstitiels
+  real(double), dimension(:,:), allocatable :: xposint ! positions des interstitiels POSSIBLES
+  real(double), dimension(:,:), allocatable :: xposI ! positions des interstitiels réalisés
+  real(double)::maxposint(3),minposint(3)
   real (double) :: dminins,rsphdef,centresphdef(3)
-  integer:: ioxdef
+  integer:: ioxdef,itprep
 
 
 contains
@@ -51,21 +54,23 @@ contains
     !-----------------------------------------------
     integer :: i,itapp,nfp
     !-----------------------------------------------
-    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp
+    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint
 
     allocate(nvac(ntyp));allocate(nbint(ntyp))
 
+    itprep=1
     itecdp=-1      ! introduction de DP tout les itecdp pas
     nvac(:)=-1 ! number of vacancies 
     nbint(:)=-1 ! number of interstitials 
     nposI=-1      ! nombre de positions interstitielles
     iseed=-1      ! graine pour la generation aleatoire si <0 tirage avec SECNDS
-    dminins=1.3   ! distance minimum entre nouvel interstitiel et atomes deja present
+    dminins=1.0   ! distance minimum entre nouvel interstitiel et atomes deja present
     typint=0     ! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
+    minposint(3) =0;maxposint(3)=1
 
     open(unit=73, file='creaDPin', status='unknown')
     read (73, nml=inputcdp)
-
+    dminins=dminins*1d-8
     if(all(nvac==-1).and.all(nbint==-1)) then
        if (rang==0)write(6,*)'what defects ?'
        call arret_ndm
@@ -79,8 +84,7 @@ contains
        call arret_ndm
     end if
 
-    ittot=itmax
-    
+
     if (typint==0) then
        allocate(xposint(3,nposI))
        do i=1,nposI
@@ -109,13 +113,17 @@ contains
 
     return
   end subroutine initcdp
-
+!**********************************************************
   subroutine creadp(atdml,celndm,boxndm,psc)
     USE var_pot, ONLY:ntyp,ty
     implicit none
     type atomvac_typ
        integer,allocatable,dimension(:)::iproc,natg,iloc
     end type atomvac_typ
+    type atomint_typ
+       integer,allocatable,dimension(:)::iproc,natg,iloc,iatpos,ityp
+       real(double),allocatable::xposI(:,:)
+    end type atomint_typ
 
     type(para_space_config)::psc
     type(box_config)::boxndm
@@ -123,67 +131,88 @@ contains
     type(cell_config):: celndm
 
     type(atomvac_typ),allocatable::atomvac
-    integer :: ic,j,ntry,iti,i,natyp,nvactot,iat,iproc,ivac,ivacloc,ivactot,jvac
+    type(atomint_typ),allocatable::atomint
+    integer :: ic,j,ntry,iti,i,natyp,nvactot,iat,iproc,ivac,ivacloc,ivactot,jvac,ninttot
     integer :: itapp,npp
-    integer :: idep
+    integer :: idep,itinser
     integer :: iposI,iint,natgm
     real(double) :: a1,a2,a3,c1,c2,c3,z1,r2,rd,z3,z2, edt
-    real(double),dimension(3):: xdec, xavant,xapres,xposinttest
+    real(double),dimension(3):: xdec, xavant,xapres,xpositest
     real(double), dimension(1,3) :: cv
     real(double),dimension(:),allocatable:: edrat
     integer,allocatable::nb_at_typ(:),last_at_typ(:),iatvac(:)
+    logical::lokdist
+    integer::numproc,iatint
+    integer::jint,iinttot,numcell
     
-    nvactot=sum(nvac(1:ntyp))
+    nvactot=sum(nvac(1:ntyp)); ninttot=sum(nbint(1:ntyp))
     allocate(atomvac%iproc(nvactot))
     allocate(atomvac%natg(nvactot))
     allocate(atomvac%iloc(nvactot))
     atomvac%natg=0
     atomvac%iproc=0
     atomvac%iloc=0
+    allocate(atomint%xposI(3,nposI))
+    allocate(atomint%iproc(nposI))
+    allocate(atomint%iloc(nposI))
+    allocate(atomint%iatpos(nposI))
+    allocate(atomint%ityp(nposI))
+
 #ifdef PARA
     npp=comm_space%nproc
 #else
     npp=1
 #endif
-    
+
     allocate(nb_at_typ(0:npp-1))
     allocate(last_at_typ(-1:npp-1))
 
-    do while (it.le.ittot)
-    
-       
-       itmax=it+itecdp
-
-       select type(atdml)
-       type is (atom_config)
-          select case (dmtype)
-          case(32,33,34)
-             call NGC (atdml,celndm,boxndm,psc)
-          case default
-             write(6,*)'WTFCDP'
-             stop
-          end select
-       class is (atom_config_d)
-          
-          select case (dmtype)
-          case(32,33,34)
-             call NGC (atdml,celndm,boxndm,psc)
-          case(4,10,8,1,21,22)
-             call dmloop_pilot(atdml,celndm,boxndm,psc)
-          case default
-             write(6,*)'WTFCDP'
-             stop
-          end select
+    itloopmax=itprep
+    itinser=0
+    select type(atdml)
+    type is (atom_config)
+       select case (dmtype)
+       case(32,33,34)
+          call NGC (atdml,celndm,boxndm,psc)
+       case default
+          write(6,*)'WTFCDP'
+          stop
        end select
-       
+    class is (atom_config_d)
+
+       select case (dmtype)
+       case(32,33,34)
+          call NGC (atdml,celndm,boxndm,psc)
+       case(4,10,8,1,21,22)
+          call dmloop_pilot(atdml,celndm,boxndm,psc)
+       case default
+          write(6,*)'WTFCDP'
+          stop
+       end select
+    end select
+
+
+    do while (it.le.itmax)
+       itinser=itinser+1
+       itloopmax=it+itecdp
+
        natgm=maxval(atdml%num_at_glob(1:atdml%im))
 #ifdef PARA
        call comm_space%max(natgm)
 #endif
-    
-       
+
+
        ivactot=0
-       ! insérer les défauts
+       atomvac%natg=0 ! on remet à 0 les indices
+       atomvac%iproc=0
+       atomvac%iloc=0
+       atomint%xposI=0
+       atomint%iproc=0
+       atomint%iloc=0
+       atomint%iatpos=0
+       atomint%ityp=0
+
+       ! insérer les lacunes
        do iti=1,ntyp
           allocate(iatvac(nvac(iti)))
           last_at_typ(:)=0
@@ -203,9 +232,9 @@ contains
              stop
           end if
           do ivac=1,nvac(iti)
-             ivactot=ivactot+1
+             ivactot=ivactot+1 ! indice l'ensemble des lacunes (inter-types)
              if (myidsp==0) then
-                1 continue
+1               continue
                 call random_number(z1)
                 iatvac(ivac)=1+int(z1*natyp)
                 do jvac=1,ivac-1
@@ -244,7 +273,7 @@ contains
 #ifdef PARA
              end if
 #endif
-             
+
           end do
 #ifdef PARA
           call comm_space%sum(atomvac%iproc) ! avant ça seul le proc iproc connaissait ces chiffres
@@ -253,7 +282,7 @@ contains
 #endif
           deallocate (iatvac)
        end do
-                
+
        do ivactot=1,nvactot
 #ifdef PARA          
           if (comm_space%rank==atomvac%iproc(ivactot)) then
@@ -264,138 +293,124 @@ contains
           end if
 #endif
        end do
-       atdml%im_glob=atdml%im_glob-nvactot
+       iinttot=0 
+       ! insérer les interstitiels
+
+       do iti=1,ntyp
+          do iint=1,nbint(iti)
+             do while (.not.lokdist)
+                if (myidsp==0) then
+                   iinttot=iinttot+1 ! indice l'ensemble des interstitiels (inter-types)
+                   select case(typint)
+                   case(0)
+2                     continue
+                      call random_number(z1)
+                      iatint=1+int(z1*nposI)
+                      do jint=1,iinttot-1
+                         if(atomint%iatpos(jint)==iatint) goto 2
+                      end do
+                      atomint%iatpos(iinttot)=iatint
+                      xpositest(:)=xposint(:,iatint)
+                   case(1)
+                      z1=-1.0
+                      do while ((z1.lt.minposint(1)).or.z1.gt.maxposint(1))
+                         call random_number(z1)
+                      end do
+                      xposItest(1)=z1
+
+                      z1=-1.0
+                      do while ((z1.lt.minposint(2)).or.z1.gt.maxposint(2))
+                         call random_number(z1)
+                      end do
+                      xpositest(2)=z1
+
+                      z1=-1.0
+                      do while ((z1.lt.minposint(3)).or.z1.gt.maxposint(3))
+                         call random_number(z1)
+                      end do
+                      xposItest(3)=z1
+                   end select
+                   call cryst_to_cart (1, xpositest, boxndm%at, 1) !cryst vers cart
+                end if
+
+
+                lokdist=.true.             
+#ifdef PARA
+                call comm_space%bcast(0,xpositest)
+                call coord_to_cell(xposItest,numcell,boxndm%bg,celndm%nox,celndm%noy,celndm%noz)
+                numproc=celndm%proc_cell(numcell)
+                if (numproc == myidsp) then
+#endif
+                   if (dminins.gT.0) then
+                      call closest_at(xpositest,atdml,celndm,boxndm,lperiod,rumin=dminins,lclose=lokdist)
+                   end if
+#ifdef PARA
+                end if
+                call comm_space%bcast(numproc,lokdist)
+#endif
+
+                if (lokdist) then
+                   atomint%iproc(iinttot)=numproc
+                   atomint%ityp(iinttot)=iti
+                   atomint%xposI(:,iinttot)=xpositest(:)
+                   natgM=maxval(atdml%num_at_glob(1:atdml%im))
+#ifdef PARA
+                   call comm_space%max(natgM)
+                   if (myidsp==numproc) then
+#endif                   
+                      atdml%im=atdml%im+1
+                      atdml%xp(:,atdml%im)=xpositest(:)
+                      atdml%ityp(atdml%im)=iti
+                      atdml%fp(:,atdml%im)=0
+                      atdml%num_at_glob(atdml%im)=natgM+1
+                      select type(atdml)
+                      class is (atom_config_d)
+                         atdml%vp(:,atdml%im)=0
+                         atdml%xpp(:,atdml%im)=atdml%xp(:,atdml%im)
+                      end select
+#ifdef PARA
+                   end if
+#endif
+                end if
+             end do
+          end do
+       end do
+       if (iinttot.ne.ninttot) then
+          write(6,*)'pb nombre de int'
+          call arret_ndm
+       end if
+
+       atdml%im_glob=atdml%im_glob-nvactot+ninttot
        call caltabtC(celndm,atdml,lperiod,boxndm)
 #ifdef PARA
        call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc)
 #endif
+       select type(atdml)
+       type is (atom_config)
+          select case (dmtype)
+          case(32,33,34)
+             call NGC (atdml,celndm,boxndm,psc)
+          case default
+             write(6,*)'WTFCDP1'
+             stop
+          end select
+       class is (atom_config_d)
 
+          select case (dmtype)
+          case(32,33,34)
+             call NGC (atdml,celndm,boxndm,psc)
+          case(4,10,8,1,21,22)
+             call dmloop_pilot(atdml,celndm,boxndm,psc)
+          case default
+             write(6,*)'WTFCDP2'
+             stop
+          end select
+       end select
+       call rasmolT(atdml,boxndm,itinser,'END_INSER',latcomp=.false.,ivisumol=ivisu)
     end do
 
   end subroutine creadp
 
-!!$    ntry=0
-!!$
-!!$1      continue
-!!$       ntry=ntry+1
-!!$       ! tirer une position d'insertion
-!!$
-!!$
-!!$
-!!$       select case (typint)
-!!$       case(0)
-!!$
-!!$          call random_number(z1)
-!!$          iposI=1+Int(z1*nposI)
-!!$          !        write(6,*)iposI
-!!$          if (iposI.gt.nposI) idep=nposI
-!!$          !iposI est l'indice de la position int.
-!!$          !xposinttest est la position effective de l'int.
-!!$
-!!$          xposinttest(:)=xposint(:,iposI)
-!!$          call cryst_to_cart (1, xposinttest(:), bg, -1) !cryst vers cart sur cv
-!!$
-!!$       case(1)
-!!$          call random_number(z1)
-!!$          call random_number(z2)
-!!$          call random_number(z3)
-!!$          xposinttest(1)=z1
-!!$          xposinttest(2)=z2
-!!$          xposinttest(3)=z3
-!!$       end select
-!!$
-!!$       ! verifier qu'elle est loin de tout atome
-!!$
-!!$       call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
-!!$
-!!$
-!!$
-!!$       do j=1,im
-!!$          c1 = xposinttest(1)-xp(1,j)
-!!$          c2 = xposinttest(2)-xp(2,j)
-!!$          c3 = xposinttest(3)-xp(3,j)
-!!$          if (c1>0.5) c1 = c1-1.
-!!$          if (c1<(-0.5)) c1 = c1+1.
-!!$          if (c2>0.5) c2 = c2-1.
-!!$          if (c2<(-0.5)) c2 = c2+1.
-!!$          if (c3>0.5) c3 = c3-1.
-!!$          if (c3<(-0.5)) c3 = c3+1.
-!!$
-!!$          cv(1,1) = c1
-!!$          cv(1,2) = c2
-!!$          cv(1,3) = c3
-!!$          call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
-!!$          r2 = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)
-!!$          !           write(6,*)'toto',sqrt(r2),j
-!!$
-!!$
-!!$          rd=sqrt(r2)
-!!$          if (rd<dminins) then 
-!!$             !           write(6,*)'rate', rd, dminins
-!!$             call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
-!!$             goto 1                ! position proche d'un atome
-!!$          end if
-!!$
-!!$       end do
-!!$       call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
-!!$       call cryst_to_cart (1, xposinttest(:), at, 1) !cryst vers cart sur cv
-!!$
-!!$
-!!$       ! deplacement acceptable
-!!$       ! tirer un atome
-!!$3      continue
-!!$       call random_number(z1)   
-!!$       idep=imin+Int(z1*(imax-imin-1))
-!!$       if (ioxdef.ne.0) then
-!!$          if (ioxdef.gt.0) then
-!!$             if (ityp(idep).ne.ioxdef) goto 3
-!!$          else
-!!$             if (ityp(idep).eq.ioxdef) goto 3
-!!$          end if
-!!$       end if
-!!$       !     select case (ioxdef)
-!!$       !     case(0)
-!!$       !     case(-2)
-!!$       !        if (ityp(idep)==2) goto 3
-!!$       !     case(2)
-!!$       !        if (ityp(idep).ne.2) goto 3
-!!$       !     case(-4)
-!!$       !        if (ityp(idep)==4) goto 3
-!!$       !     case(4)
-!!$       !        if (ityp(idep).ne.4) goto 3
-!!$       !     case(-5)
-!!$       !        if (ityp(idep)==5) goto 3
-!!$       !    case(5)
-!!$       !       if (ityp(idep).ne.5) goto 3
-!!$
-!!$
-!!$
-!!$
-!!$       xavant(:)=xp(:,idep)
-!!$       xdec(:)=xp(:,idep)-xpp(:,idep)
-!!$       xp(:,idep)=xposinttest(:)
-!!$       xapres(:)=xposinttest(:)
-!!$       xpp(:,idep)=xposinttest(:)-xdec(:)
-!!$
-!!$
-!!$       write(6,*)'INTRDUCTION PF de type ', ty(ityp(idep))
-!!$       write(6,*)'ntry',ntry
-!!$       !     write(6,*)
-!!$       write(6,*)'indice lac int', idep, iposI
-!!$       !     write(6,*)
-!!$       write(6,'(A,3F12.5)')'pos. lac.', xavant(1)*1.d8,xavant(2)*1.d8,xavant(3)*1.d8
-!!$       write(6,'(A,3F12.5)')'pos. int.', xapres(1)*1.d8,xapres(2)*1.d8,xapres(3)*1.d8
-!!$       write(6,*)
-!!$
-!!$
-!!$
-!!$
-!!$    itapp=it
-!!$    write(6,*)'outcdp'
-!!$    im_glob=im
-!!$
-!!$    return
-!!$  end subroutine creadp
-
-
 end module cdp_mod
+
+

@@ -75,4 +75,66 @@ contains
     end if
     return   
   end subroutine vect_dist
+
+  subroutine closest_at(xPtest,atcf,celcf,boxcf,lperiod,iclose,rumin,dist,lclose)
+    class(atom_config),intent(in)::atcf
+    class(cell_config),intent(in)::celcf
+    type(box_config)::boxcf
+    logical::lperiod
+    real(double),intent(in)::xptest(3)
+    logical,intent(out),optional::lclose ! true si distmin < rumin false sinon
+    real(double),optional,intent(in)::rumin !
+    real(double),optional,intent(out)::dist ! distance minimel effective
+    integer,intent(out),optional ::iclose !i= indice du plus proche
+
+    real(double)::xpnp(3,2),xp(3,2),cv(1,3),dx2(3),XJI(3)
+    integer::ic,i
+    real(double)::distance
+
+    if (((present(rumin)).and.(.not.(present(lclose)))).or.((present(lclose)).and.(.not.(present(rumin))))) then
+       write(6,*)'incohérence dans appel a closest_at'
+       stop
+    end if
+    lclose=.false.
+    distance0=1d10
+    do i=1,atcf%im
+       xp(:,1)=xptest(:)
+       xp(:,2)=atcf%xp(:,i)
+       call notperiod(2,xp,xpnp,boxcf%at,boxcf%bg,lperiod)
+       XJI(:)= xpnp(:,1)-xpnp(:,2)
+       !    if ((celcf%noxyz.ne.1).and.(i1.ge.1).and.(i1.le.27)) then
+!       cv(1,:) = XJI(:)
+       call cryst_to_cart (1, XJI, boxcf%bg, -1) !cart vers cryst 
+       do ic=1,3
+          if (boxcf%ipbc(ic)==1) then
+             if ( (XJI(ic).GT.0.5d0).OR.(XJI(ic).LT.-0.5d0) )then
+                XJI(ic) = XJI(ic) - Dble(Nint(XJI(ic)))
+             end if
+          end if
+       end do
+       call cryst_to_cart (1, cv, boxcf%at, 1) !cryst vers cart sur cv
+
+
+       dx2(:)=XJI(:)*XJI(:)
+       distance=sqrt(sum(dx2(:)))
+
+       if (present(rumin)) then   
+          if (distance.le.rumin) then
+             lclose=.true.
+             if (present(iclose)) iclose=i
+             if (present(dist)) dist=distance
+             return
+          end if
+       end if
+       if (distance.lt.distance0) then
+          distance0=distance
+          if (present(iclose)) iclose=i
+       end if
+    end do
+    if (present(dist)) dist=distance0
+             
+    
+    return
+    
+  end subroutine closest_at
 end module vect_dist_mod

@@ -8,7 +8,7 @@ module input_pair_mod
        &ncoucx,ncoucy,ncoucz,ngr,ncouc3,l3c,lambda,kpmey,kpmex,kpmez,ipotrep,ipo_2_pair_tab,gm1,gm2,gm3,gm4,gm5,gR,gD,&
        &r8p,evA62ergcm6,epswat,alpha,c3c,l3cpair,coup3c2,l3ctyp,cangle,gam,lamb,capWij,ietaij,iewald,eta,coup3c,capDij,&
        &capHij,rue_pair,sigmawat,rawat,qwat,bwat,awat,rawat2,pwat,lu_roff_pair,roff2,roff1,ro,typ_pot_pair,amorse,remorse,&
-       &dmorse,dip,a_factor,pm,Afd,Bfd,r0fd, Aig,big,r0ig
+       &dmorse,dip,a_factor,pm,Afd,Bfd,r0fd, Aig,big,r0ig,dbasak,betabasak,rstarbasak,abasak,cbasak,rhobasak
 
   use Tpara,only:nprocspace
   implicit none
@@ -57,7 +57,8 @@ contains
     ! watanabe
     real(double)::Awatr,Bwatr,pwatr,qwatr,rawatr ! variable de lecture pour pot. watanabe
     integer :: num_3c
-
+    real(double)::abasakr,cbasakr,Dr,betar,rstar,rhor
+    real(double),allocatable,dimension(:)::absk,bbsk,cbsk
 
     !Stillinger Weber Vashista
     real(double)::capHijlu,capDijlu,capWijlu,c3cr,precis
@@ -89,7 +90,7 @@ contains
     kpmey = 0
     kpmez = 0
     lopt=.FALSE.
-    
+
 
     if (rang==0) write (6, *)
     select case (ipotentiel)
@@ -109,6 +110,8 @@ contains
        if (rang==0) write (6, *) '----------- POTENTIEL PAIRE TABULE -----------'
     case(5)
        if (rang==0) write (6, *) '----------- POTENTIEL BMH+Morse -----------'
+    case(9)
+       if (rang==0) write (6, *) '----------- POTENTIEL Basak -----------'
     case(8)
        if (rang==0) write (6, *) '----------- POTENTIEL BMH+Morse+FermiDirac+Inverse Gaussian (Bandura 2017) -----------'
     case default
@@ -137,10 +140,12 @@ contains
        fnampotin = 'bandura.potin'
     case(6)
        fnampotin = 'SWV.potin'
+    case(9)
+       fnampotin = 'Basak.potin'
     case(7)
        fnampotin = 'pair_tab.potin'
     case default
-       write (6, *) rang, 'Bienvenue dans le cote obscur de la force :pas de potentiel ?BBB'
+       write (6, *) rang, '2-Bienvenue dans le cote obscur de la force :pas de potentiel ?BBB'
        call arret_ndm
     end select
 
@@ -152,17 +157,17 @@ contains
 
     !   Lectures communes a tous buckingham et bmh .potin
     select case (ipotentiel)
-    case(0,1,3,4,5,7,8)
+    case(0,1,3,4,5,7,8,9)
 
        read (lupotin, *) iewald, l3c
 #ifdef PARA
-!if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       !if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
-!              if (iewald==2) then
-!                 iewald=1
-!                 write(6,*)'IEWALD MIS A 1'
-!              endif
-!           end if
+       !              if (iewald==2) then
+       !                 iewald=1
+       !                 write(6,*)'IEWALD MIS A 1'
+       !              endif
+       !           end if
 #endif
 
        if (iewald==0) then
@@ -214,7 +219,7 @@ contains
              npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
              call  alloc_typ
           end if
-          
+
           !types
           if (npotentiel .gt.1)then
              if (iewald==0) then
@@ -295,7 +300,7 @@ contains
           read(lupotin,*)nb_paire_a_lire,ngr
           allocate (pot_pair_tab(0:ngr,0:4,nb_paire_a_lire))
           pot_pair_tab=0
-          
+
           allocate (ipo_2_pair_tab(npair))
           ipo_2_pair_tab=0
           if (rang==0) write(6,*)'nb de paires grille',  nb_paire_a_lire, ngr
@@ -356,6 +361,97 @@ contains
              !                   & ,pot_pair_tab(igr,2,lect_paire),pot_pair_tab(igr,3,lect_paire),pot_pair_tab(igr,4,lect_paire)
              !           end do
 
+
+          end do
+       case(9)
+          if (npotentiel .gt.1)then
+             read(lupotin,*) ntypr
+             allocate(ityplu(ntypr))
+          else
+             read(lupotin,*) ntyp
+             npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
+
+             call  alloc_typ
+             allocate (abasak(npair))
+             allocate (cbasak(npair))
+             allocate(dbasak(npair))
+             allocate(rstarbasak(npair))
+             allocate(betabasak(npair))
+             allocate(rhobasak(npair))
+          end if
+          if (npotentiel .gt.1)then
+             stop
+!!$             if (rang==0) write (6, *) ' charge, CM, masse,type, Abasak Bbasak Cbasak'
+!!$             do i = 1, ntypr
+!!$                read (lupotin,  *) qr,cmr,catomr, tyr, Abaskr,Bbasakr,Cbasakr
+!!$                ityplu(i)=iti
+!!$                if(lue_typ(iti).EQV..true.)then
+!!$                   if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
+!!$                   if (cmr*umass.ne.cm(iti))then
+!!$                      if (rang==0)write(6,*) 'pb avec cm'
+!!$                      call arret_ndm
+!!$                   end if
+!!$                   if (tyr.ne.ty(iti))then
+!!$                      if (rang==0)write(6,*) 'pb avec ty'
+!!$                      call arret_ndm
+!!$                   end if
+!!$                endif
+!!$                q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
+!!$                Abasak(iti)=abasakr;   Bbasak(iti)=bbasakr;     Abasak(iti)=Cbasakr
+!!$                lue_typ(iti)=.true.
+!!$                if (rang/=0) cycle
+!!$                !                write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
+!!$             end do
+!!$             do i=1,ntypr
+!!$                do j=1,ntypr
+!!$                   typ_pot_pair(ipo(ityplu(i),ityplu(j)))=ipotentiel
+!!$                end do
+!!$             end do
+
+
+          else
+             if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
+             do i = 1, ntyp
+                read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
+                if (rang/=0) cycle
+                !                write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
+                cm(i)=cm(i)*umass
+             end do
+             rue_pair(:)=rue*A2cm
+             do i=1,ntyp
+                do j=1,ntyp
+                   typ_pot_pair(ipo(i,j))=ipotentiel
+                end do
+             end do
+             
+          end if
+          Dbasak(:)=0
+          rstarbasak=0
+          betabasak(:)=0
+          abasak=0; cbasak=0
+          rhobasak=0
+          read(lupotin,*)nb_paire_a_lire
+          if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
+          do lect_paire=1,nb_paire_a_lire
+             if (ipotrep==0) then
+                read(lupotin,*) tt1,tt2, abasakr,rhor, cbasakr, Dr,betar,rstar
+                l=ipo(tt1,tt2)
+                write(6,*)'paire',l,tt1,tt2
+                lu_roff_pair(l)=.false.
+
+             else
+                read(lupotin,*) tt1,tt2, abasakr,rhor, cbasakr, Dr,betar,rstar, rof1m,rof2m
+                l=ipo(tt1,tt2)
+                lu_roff_pair(l)=.true.
+                roff1(l) = rof1m*1d-8
+                roff2(l) = rof2m*1d-8
+             end if
+             Abasak(l)=Abasakr*ev2erg
+             Cbasak(l)=cbasakr*ev2erg*1d-48
+             Dbasak(l)=Dr*ev2erg
+             betabasak(l)=betar*1d8
+             rstarbasak(l)=rstar*1d-8
+             rhobasak(l)=rhor*1d-8
 
           end do
 
@@ -482,9 +578,9 @@ contains
 
           end if
           select case(ipotentiel)
-          case(5)
-          ! initialisations
-!          if(ipotentiel.ne.(5)) then
+          case(5,3)
+             ! initialisations
+             !          if(ipotentiel.ne.(5)) then
              read(lupotin,*)nb_paire_a_lire
              if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
              do lect_paire=1,nb_paire_a_lire
@@ -562,9 +658,9 @@ contains
                 r0ig(l)=r0igr*A2cm
              end do
 
-             
-          case default
-             
+
+          case (1)
+
              !        if (ipotentiel==5) then ! terme Morse
              Dmorse(:)=0. ; amorse(:)=0. ; remorse(:)=2.0d-8
              read(lupotin,*)nb_paire_a_lire
@@ -936,7 +1032,7 @@ contains
        rumax=max(rumax,rue)     
 
     case default
-       write (6, *) rang, 'Bienvenue dans le cote obscur de la force :pas de potentiel ?CCC'
+       write (6, *) rang, '3-Bienvenue dans le cote obscur de la force :pas de potentiel ?CCC'
        call arret_ndm
     end select
     !if(allocated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 
