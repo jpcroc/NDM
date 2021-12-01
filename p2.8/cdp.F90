@@ -9,11 +9,11 @@ module cdp_mod
   USE cellconfig, only:cell_config,caltabtC
   use rasmolT_mod,only:rasmolT
   use vect_dist_mod,only:closest_at
-    USE cryst_to_cart_mod,only: cryst_to_cart
+  USE cryst_to_cart_mod,only: cryst_to_cart
 #ifdef PARA  
   USE Tpara,only:COMM_space,myidsp,para_space_config
   USE mod_para,only:maj_atomes_frt_ftm
-
+  use constrconf_mod,only:coord_to_cell
 #else
   USE Tpara,only:myidsp,para_space_config
 #endif
@@ -52,24 +52,30 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: i,itapp,nfp
+    integer :: i,itapp,nfp,iti
     !-----------------------------------------------
-    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint
+    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint,typint
 
     allocate(nvac(ntyp));allocate(nbint(ntyp))
 
     itprep=1
     itecdp=-1      ! introduction de DP tout les itecdp pas
-    nvac(:)=-1 ! number of vacancies 
-    nbint(:)=-1 ! number of interstitials 
+    nvac(:)=0 ! number of vacancies 
+    nbint(:)=0 ! number of interstitials 
     nposI=-1      ! nombre de positions interstitielles
     iseed=-1      ! graine pour la generation aleatoire si <0 tirage avec SECNDS
     dminins=1.0   ! distance minimum entre nouvel interstitiel et atomes deja present
-    typint=0     ! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
-    minposint(3) =0;maxposint(3)=1
+    typint=1     ! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
+    minposint(1:3) =0;maxposint(1:3)=1
+    nfp=-1
 
     open(unit=73, file='creaDPin', status='unknown')
     read (73, nml=inputcdp)
+    if (nfp.gt.0) then
+       if (rang==0) write(6,*)'NFP VAC INT for all types'
+       nvac=nfp
+       nbint=nvac
+    end if
     dminins=dminins*1d-8
     if(all(nvac==-1).and.all(nbint==-1)) then
        if (rang==0)write(6,*)'what defects ?'
@@ -90,18 +96,12 @@ contains
        do i=1,nposI
           read(73,*)xposint(1,i),xposint(2,i),xposint(3,i)
        end do
-
-
        where (xposint(:,:)<0.0)
           xposint(:,:)=xposint(:,:)+1.
        end where
        where (xposint(:,:)>1.0)
           xposint(:,:)=xposint(:,:)-1.
        end where
-
-       !         do i=1,nposI
-       !            xposint(:,i)=(xposint(:,i)-0.5)*zl(:)
-       !         end do
     end if
     if (iseed.le.0) then
        call system_clock (iseed) 
@@ -113,7 +113,7 @@ contains
 
     return
   end subroutine initcdp
-!**********************************************************
+  !**********************************************************
   subroutine creadp(atdml,celndm,boxndm,psc)
     USE var_pot, ONLY:ntyp,ty
     implicit none
@@ -121,7 +121,7 @@ contains
        integer,allocatable,dimension(:)::iproc,natg,iloc
     end type atomvac_typ
     type atomint_typ
-       integer,allocatable,dimension(:)::iproc,natg,iloc,iatpos,ityp
+       integer,allocatable,dimension(:)::natg,iatpos,ityp
        real(double),allocatable::xposI(:,:)
     end type atomint_typ
 
@@ -130,9 +130,9 @@ contains
     class(atom_config)::atdml
     type(cell_config):: celndm
 
-    type(atomvac_typ),allocatable::atomvac
-    type(atomint_typ),allocatable::atomint
-    integer :: ic,j,ntry,iti,i,natyp,nvactot,iat,iproc,ivac,ivacloc,ivactot,jvac,ninttot
+    type(atomvac_typ)::atomvac
+    type(atomint_typ)::atomint
+    integer :: ic,j,ntry,iti,i,natyp,nvactot,iat,ivac,ivacloc,ivactot,jvac,ninttot,iproc
     integer :: itapp,npp
     integer :: idep,itinser
     integer :: iposI,iint,natgm
@@ -141,10 +141,34 @@ contains
     real(double), dimension(1,3) :: cv
     real(double),dimension(:),allocatable:: edrat
     integer,allocatable::nb_at_typ(:),last_at_typ(:),iatvac(:)
-    logical::lokdist
+    logical::l2close
     integer::numproc,iatint
-    integer::jint,iinttot,numcell
-    
+    integer::jint,iinttot,numcell,imt,ntry2
+
+    if (itprep.gT.0) then 
+       itloopmax=itprep
+       itinser=0
+       select type(atdml)
+       type is (atom_config)
+          select case (dmtype)
+          case(32,33,34)
+             call NGC (atdml,celndm,boxndm,psc)
+          case default
+             stop
+          end select
+       class is (atom_config_d)
+
+          select case (dmtype)
+          case(32,33,34)
+             call NGC (atdml,celndm,boxndm,psc)
+          case(4,10,8,1,21,22)
+             call dmloop_pilot(atdml,celndm,boxndm,psc)
+          case default
+             stop
+          end select
+       end select
+    end if
+
     nvactot=sum(nvac(1:ntyp)); ninttot=sum(nbint(1:ntyp))
     allocate(atomvac%iproc(nvactot))
     allocate(atomvac%natg(nvactot))
@@ -152,11 +176,9 @@ contains
     atomvac%natg=0
     atomvac%iproc=0
     atomvac%iloc=0
-    allocate(atomint%xposI(3,nposI))
-    allocate(atomint%iproc(nposI))
-    allocate(atomint%iloc(nposI))
-    allocate(atomint%iatpos(nposI))
-    allocate(atomint%ityp(nposI))
+    allocate(atomint%xposI(3,ninttot))
+    allocate(atomint%iatpos(ninttot))
+    allocate(atomint%ityp(ninttot))
 
 #ifdef PARA
     npp=comm_space%nproc
@@ -167,33 +189,10 @@ contains
     allocate(nb_at_typ(0:npp-1))
     allocate(last_at_typ(-1:npp-1))
 
-    itloopmax=itprep
-    itinser=0
-    select type(atdml)
-    type is (atom_config)
-       select case (dmtype)
-       case(32,33,34)
-          call NGC (atdml,celndm,boxndm,psc)
-       case default
-          write(6,*)'WTFCDP'
-          stop
-       end select
-    class is (atom_config_d)
-
-       select case (dmtype)
-       case(32,33,34)
-          call NGC (atdml,celndm,boxndm,psc)
-       case(4,10,8,1,21,22)
-          call dmloop_pilot(atdml,celndm,boxndm,psc)
-       case default
-          write(6,*)'WTFCDP'
-          stop
-       end select
-    end select
-
-
     do while (it.le.itmax)
        itinser=itinser+1
+       call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
+
        itloopmax=it+itecdp
 
        natgm=maxval(atdml%num_at_glob(1:atdml%im))
@@ -206,185 +205,219 @@ contains
        atomvac%natg=0 ! on remet à 0 les indices
        atomvac%iproc=0
        atomvac%iloc=0
+
        atomint%xposI=0
-       atomint%iproc=0
-       atomint%iloc=0
        atomint%iatpos=0
        atomint%ityp=0
-
-       ! insérer les lacunes
-       do iti=1,ntyp
-          allocate(iatvac(nvac(iti)))
-          last_at_typ(:)=0
-          natyp=count(atdml%ityp(1:atdml%im)==iti)
+       if (nvactot.ne.0) then
+          ! insérer les lacunes
+          do iti=1,ntyp
+             allocate(iatvac(nvac(iti)))
+             iatvac=0
+             last_at_typ(:)=0
+             natyp=count(atdml%ityp(1:atdml%im)==iti)
 #ifdef PARA
-          if (lspacendm) then
-             call comm_space%build(natyp,nb_at_typ,torank=0)
-             call comm_space%sum(natyp,torank=0)
-          end if
+             if (lspacendm) then
+                call comm_space%build(natyp,nb_at_typ,torank=0)
+                call comm_space%sum(natyp,torank=0)
+             end if
 
-          do iproc=0,comm_space%nproc-1
-             last_at_typ(iproc)=last_at_typ(iproc-1)+nb_at_typ(iproc)
-          end do
-#endif
-          if (natyp.lt.nvac(iti)) then
-             write(6,*)'impossible to delete that many atoms of type ',iti
-             stop
-          end if
-          do ivac=1,nvac(iti)
-             ivactot=ivactot+1 ! indice l'ensemble des lacunes (inter-types)
-             if (myidsp==0) then
-1               continue
-                call random_number(z1)
-                iatvac(ivac)=1+int(z1*natyp)
-                do jvac=1,ivac-1
-                   if (iatvac(jvac)==iatvac(ivac)) goto 1
-                end do
-#ifdef PARA
-                if (lspacendm) then
-                   looppr:do iproc=0,comm_space%nproc-1
-                      if (last_at_typ(iproc).ge.iatvac(ivac)) then
-                         ivacloc=iatvac(ivac)-last_at_typ(iproc-1)
-                         exit looppr !iproc est l'indice du proc qui contient iatvac et ivacloc est le numéro de l'atome de cette lacune
-                      end if
-                   end do looppr
-                end if
+             do iproc=0,comm_space%nproc-1
+                last_at_typ(iproc)=last_at_typ(iproc-1)+nb_at_typ(iproc)
+             end do
 #else
-                iproc=0
+             last_at_typ(0)=natyp
 #endif
+             if (natyp.lt.nvac(iti)) then
+                write(6,*)'impossible to delete that many atoms of type ',iti,nvac(iti),natyp
+                call arret_ndm
              end if
+
+             do ivac=1,nvac(iti)
+                ivactot=ivactot+1 ! indice l'ensemble des lacunes (inter-types)
+                if (myidsp==0) then
+                   ntry=0
+1                  continue
+                   ntry=ntry+1
+                   if (ntry==100) then
+                      write(6,*)'VAC NTRY exceeded'
+                      call arret_ndm
+                   end if
+                   call random_number(z1)
+                   iatvac(ivac)=1+int(z1*natyp)
+                   do jvac=1,ivac-1
+                      if (iatvac(jvac)==iatvac(ivac)) goto 1
+                   end do
 #ifdef PARA
-             call comm_space%bcast(0,iproc)
-             call comm_space%bcast(0,ivacloc)
-             if (myidsp==iproc) then
+                   if (lspacendm) then
+                      looppr:do iproc=0,comm_space%nproc-1
+                         if (last_at_typ(iproc).ge.iatvac(ivac)) then
+                            ivacloc=iatvac(ivac)-last_at_typ(iproc-1)
+                            exit looppr !iproc est l'indice du proc qui contient iatvac et ivacloc est le rang  de l'atome de cette lacune dans les atomes de ce type
+                         end if
+                      end do looppr
+                   end if
+#else
+                   iproc=0
+                   ivacloc=iatvac(ivac)
 #endif
-                iat=0
-                do i=1,atdml%im
-                   if (atdml%ityp(i)==iti) then
-                      iat=iat+1
-                      if (iat==ivacloc) then
-                         atomvac%iproc(ivactot)=myidsp 
-                         atomvac%natg(ivactot)=atdml%num_at_glob(i)
-                         atomvac%iloc(ivactot)=i
-                         exit
+                end if
+
+#ifdef PARA
+                call comm_space%bcast(0,iproc)
+                call comm_space%bcast(0,ivacloc)
+                if (myidsp==iproc) then
+#endif
+                   iat=0
+                   loopi: do i=1,atdml%im
+                      if (atdml%ityp(i)==iti) then
+                         iat=iat+1
+                         if (iat==ivacloc) then
+                            atomvac%iproc(ivactot)=myidsp 
+                            atomvac%natg(ivactot)=atdml%num_at_glob(i)
+                            atomvac%iloc(ivactot)=i  ! %iloc est le numéro de l'atome de la alcune (tous types confondus) <> ivacloc
+                            exit loopi
+                         end if
                       end if
+                   end do loopi
+#ifdef PARA
+                end if
+#endif
+
+             end do
+#ifdef PARA
+             call comm_space%sum(atomvac%iproc) ! avant ça seul le proc iproc connaissait ces chiffres
+             call comm_space%sum(atomvac%natg)
+             call comm_space%sum(atomvac%iloc)
+#endif
+             deallocate (iatvac)
+          end do
+
+          do ivactot=1,nvactot
+#ifdef PARA          
+             if (comm_space%rank==atomvac%iproc(ivactot)) then
+#endif
+                call atdml%switch_atom(atomvac%iloc(ivactot),atdml%im)
+                atdml%im=atdml%im-1
+#ifdef PARA          
+             end if
+#endif
+          end do
+       end if
+       ! insérer les interstitiels       
+       if (ninttot.ne.0) then
+          iinttot=0 
+          do iti=1,ntyp
+             do iint=1,nbint(iti)
+                l2close=.true. ! le do while doit être fait au mins une fois
+                ntry=0; ntry2=0
+                do while (l2close)
+                   if (myidsp==0) then
+                      iinttot=iinttot+1 ! indice l'ensemble des interstitiels (inter-types)
+                      select case(typint)
+                      case(0)
+2                        continue
+                         ntry=ntry+1
+                         if (ntry==100) then
+                            write(6,*)' INT typ0 NTRY exceeded'
+                            call arret_ndm
+                         end if
+                         call random_number(z1)
+                         iatint=1+int(z1*nposI)
+                         do jint=1,iinttot-1
+                            if(atomint%iatpos(jint)==iatint) goto 2
+                         end do
+                         atomint%iatpos(iinttot)=iatint
+                         xpositest(:)=xposint(:,iatint)
+                      case(1)
+                         z1=-1.0
+                         do while ((z1.lt.minposint(1)).or.z1.gt.maxposint(1))
+                            call random_number(z1)
+                         end do
+                         xposItest(1)=z1
+
+                         z1=-1.0
+                         do while ((z1.lt.minposint(2)).or.z1.gt.maxposint(2))
+                            call random_number(z1)
+                         end do
+                         xpositest(2)=z1
+
+                         z1=-1.0
+                         do while ((z1.lt.minposint(3)).or.z1.gt.maxposint(3))
+                            call random_number(z1)
+                         end do
+                         xposItest(3)=z1
+                      end select
+                      call cryst_to_cart (1, xpositest, boxndm%at, 1) !cryst vers cart
+                   end if
+
+#ifdef PARA
+                   call comm_space%bcast(0,xpositest)
+                   call coord_to_cell(xposItest,numcell,boxndm%bg,celndm%nox,celndm%noy,celndm%noz)
+                   numproc=celndm%proc_cell(numcell)
+                   if (numproc == myidsp) then
+#endif
+                      ntry2=ntry2+1
+                      if (ntry2==100) then
+                         call arret_ndm
+                      end if
+
+                      l2close=.false.             
+                      if (dminins.gT.0) then
+                         call closest_at(xpositest,atdml,celndm,boxndm,lperiod,rumin=dminins,lclose=l2close)
+                      end if
+#ifdef PARA
+                   end if
+                   call comm_space%bcast(numproc,l2close)
+#endif
+
+                   if (.not.l2close) then ! not too close ==> intertsitiel+1
+                      atomint%ityp(iinttot)=iti
+                      atomint%xposI(:,iinttot)=xpositest(:)
+                      natgM=maxval(atdml%num_at_glob(1:atdml%im))
+#ifdef PARA
+                      call comm_space%max(natgM)
+                      if (myidsp==numproc) then
+#endif                   
+                         atdml%im=atdml%im+1
+                         atdml%xp(:,atdml%im)=xpositest(:)
+                         atdml%ityp(atdml%im)=iti
+                         atdml%fp(:,atdml%im)=0
+                         atdml%num_at_glob(atdml%im)=natgM+1
+                         select type(atdml)
+                         class is (atom_config_d)
+                            atdml%vp(:,atdml%im)=0
+                            atdml%xpp(:,atdml%im)=atdml%xp(:,atdml%im)
+                         end select
+#ifdef PARA
+                      end if
+#endif
                    end if
                 end do
-#ifdef PARA
-             end if
-#endif
-
-          end do
-#ifdef PARA
-          call comm_space%sum(atomvac%iproc) ! avant ça seul le proc iproc connaissait ces chiffres
-          call comm_space%sum(atomvac%natg)
-          call comm_space%sum(atomvac%iloc)
-#endif
-          deallocate (iatvac)
-       end do
-
-       do ivactot=1,nvactot
-#ifdef PARA          
-          if (comm_space%rank==atomvac%iproc(ivactot)) then
-#endif
-             call atdml%switch_atom(atomvac%iloc(ivactot),atdml%im)
-             atdml%im=atdml%im-1
-#ifdef PARA          
-          end if
-#endif
-       end do
-       iinttot=0 
-       ! insérer les interstitiels
-
-       do iti=1,ntyp
-          do iint=1,nbint(iti)
-             do while (.not.lokdist)
-                if (myidsp==0) then
-                   iinttot=iinttot+1 ! indice l'ensemble des interstitiels (inter-types)
-                   select case(typint)
-                   case(0)
-2                     continue
-                      call random_number(z1)
-                      iatint=1+int(z1*nposI)
-                      do jint=1,iinttot-1
-                         if(atomint%iatpos(jint)==iatint) goto 2
-                      end do
-                      atomint%iatpos(iinttot)=iatint
-                      xpositest(:)=xposint(:,iatint)
-                   case(1)
-                      z1=-1.0
-                      do while ((z1.lt.minposint(1)).or.z1.gt.maxposint(1))
-                         call random_number(z1)
-                      end do
-                      xposItest(1)=z1
-
-                      z1=-1.0
-                      do while ((z1.lt.minposint(2)).or.z1.gt.maxposint(2))
-                         call random_number(z1)
-                      end do
-                      xpositest(2)=z1
-
-                      z1=-1.0
-                      do while ((z1.lt.minposint(3)).or.z1.gt.maxposint(3))
-                         call random_number(z1)
-                      end do
-                      xposItest(3)=z1
-                   end select
-                   call cryst_to_cart (1, xpositest, boxndm%at, 1) !cryst vers cart
-                end if
-
-
-                lokdist=.true.             
-#ifdef PARA
-                call comm_space%bcast(0,xpositest)
-                call coord_to_cell(xposItest,numcell,boxndm%bg,celndm%nox,celndm%noy,celndm%noz)
-                numproc=celndm%proc_cell(numcell)
-                if (numproc == myidsp) then
-#endif
-                   if (dminins.gT.0) then
-                      call closest_at(xpositest,atdml,celndm,boxndm,lperiod,rumin=dminins,lclose=lokdist)
-                   end if
-#ifdef PARA
-                end if
-                call comm_space%bcast(numproc,lokdist)
-#endif
-
-                if (lokdist) then
-                   atomint%iproc(iinttot)=numproc
-                   atomint%ityp(iinttot)=iti
-                   atomint%xposI(:,iinttot)=xpositest(:)
-                   natgM=maxval(atdml%num_at_glob(1:atdml%im))
-#ifdef PARA
-                   call comm_space%max(natgM)
-                   if (myidsp==numproc) then
-#endif                   
-                      atdml%im=atdml%im+1
-                      atdml%xp(:,atdml%im)=xpositest(:)
-                      atdml%ityp(atdml%im)=iti
-                      atdml%fp(:,atdml%im)=0
-                      atdml%num_at_glob(atdml%im)=natgM+1
-                      select type(atdml)
-                      class is (atom_config_d)
-                         atdml%vp(:,atdml%im)=0
-                         atdml%xpp(:,atdml%im)=atdml%xp(:,atdml%im)
-                      end select
-#ifdef PARA
-                   end if
-#endif
-                end if
              end do
           end do
-       end do
-       if (iinttot.ne.ninttot) then
-          write(6,*)'pb nombre de int'
+
+          if (iinttot.ne.ninttot) then
+             write(6,*)'pb nombre de int',iinttot,ninttot
+             call arret_ndm
+          end if
+       end if
+       atdml%im_glob=atdml%im_glob-nvactot+ninttot
+#ifdef PARA
+
+       imt=atdml%im
+       call comm_space%sum(imt)
+       if(imt.ne.atdml%im_glob) then
+          write(6,*)'imt <> %im_glob'
           call arret_ndm
        end if
-
-       atdml%im_glob=atdml%im_glob-nvactot+ninttot
+#endif
        call caltabtC(celndm,atdml,lperiod,boxndm)
 #ifdef PARA
        call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc)
 #endif
+       call rasmolT(atdml,boxndm,itinser,'POST_INSER',latcomp=.false.,ivisumol=ivisu)
+
        select type(atdml)
        type is (atom_config)
           select case (dmtype)
@@ -392,7 +425,7 @@ contains
              call NGC (atdml,celndm,boxndm,psc)
           case default
              write(6,*)'WTFCDP1'
-             stop
+             call arret_ndm
           end select
        class is (atom_config_d)
 
@@ -403,10 +436,10 @@ contains
              call dmloop_pilot(atdml,celndm,boxndm,psc)
           case default
              write(6,*)'WTFCDP2'
-             stop
+             call arret_ndm
           end select
        end select
-       call rasmolT(atdml,boxndm,itinser,'END_INSER',latcomp=.false.,ivisumol=ivisu)
+
     end do
 
   end subroutine creadp

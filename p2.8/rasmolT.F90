@@ -44,7 +44,7 @@ contains
 
     integer,optional::naux
     character(len=*),optional::charaux(:)
-    real(double),optional::vaux(:,:) !aux value (naux,im)
+    real(double),optional::vaux(:,:) 
     logical::laux
     integer::nauxV,nauxtot
     integer::ivisum
