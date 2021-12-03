@@ -115,7 +115,6 @@ contains
 
     end do
     !AVANT
-
     if(lPkbar) then
        unitP=1.0d-9  ;     cunitP='kbar'
     else
@@ -221,6 +220,7 @@ contains
     case (1)
        if (rang==0) write(6,*) 'NEB: !!!!-------this is DRAG----------!!!!!!'
        iter=0
+       
        if (lmaster) then
           call build_s_path_drag(atneb(1)%im,atneb(1)%imm)
        endif

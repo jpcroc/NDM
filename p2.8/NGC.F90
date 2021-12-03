@@ -1,6 +1,6 @@
 module NGC_mod
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
-  USE cellconfig,only:cell_config
+  USE cellconfig,only:cell_config,caltabtc
   USE boxconfig,only:box_config
   USE endrunT_mod,only:endrunT
   use Tpara,only:para_space_config
@@ -12,7 +12,7 @@ module NGC_mod
        & unitgc,atcgmin,atcible,fpstopsig,betaV0,betaP0
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,mdcg_noise,iterasmol,lenfnam,fnam,&
-         &angst,erg2ev,potist,lperiod,lspacendm,latcomp,lprahman,dfpred,itesauv,unitP,fpstop,lcdp,fsumstop
+         &angst,erg2ev,potist,lperiod,lspacendm,lprahman,dfpred,itesauv,unitP,fpstop,lcdp,fsumstop
     USE var_pot, ONLY:ntyp
     use steepestdescent_mod, only: steepestdescent,conjugategradient
 #ifdef PARA
@@ -37,7 +37,7 @@ contains
 
     class(atom_config),target::atcgin
     type(cell_config),target::celcgin
-    type(box_config)::boxndm
+    type(box_config),target::boxndm
     type(para_space_config)::psc
     logical ::lover
 	integer::irel
@@ -151,9 +151,22 @@ contains
     end if
 #endif
     
-    latcomp=.true.
     itesauv=0
-           call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp) 
+    boxndm=boxcg
+!!$    call atcgloc%print
+!!$    call cellcgloc%print
+!!$    call boxndm%print
+!!$    if ((lspacendm).and.(nprocspace.gt.1))then
+!!$       boxndm=boxcg
+!!$       celcgin=cellcgcomp
+!!$       call repartition(atcgcomp,atcgin,boxcg,celcgin)
+!!$       call caltabtC(celcgin,atcgin,lperiod,boxndm)
+!!$    else
+!!$       boxndm=boxcg
+!!$       celcgin=cellcgcomp
+!!$       call atcgcomp%copy_config(atcgin,lrescl=.false.)
+!!$       call caltabtC(celcgin,atcgin,lperiod,boxndm)
+!!$    end if
     return
 
   end subroutine NGC

@@ -8,6 +8,7 @@ module prog_mod
 !  USE dmloop_vverlet_mod,only: dmloop_vverlet
 !  USE dmloop_mod,only: dmloop
   USE analyseT_mod,only: analyseT
+  USE arret_ndm_mod,only: arret_ndm
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
@@ -164,6 +165,7 @@ contains
                 call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
              case(32,33,34)
                 call NGC(atdml,celndm,boxndm,psc0)
+                call endrunT(atdml,celndm,boxndm,.false.)
              end select
           end if
        class is (atom_config_d)

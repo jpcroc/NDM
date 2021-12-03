@@ -263,6 +263,8 @@ contains
 #ifdef PARA
     ncore=0
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       at2b%imm_glob=imm_glob
+
        if (lrepart) then
           call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc)
        else
@@ -272,12 +274,15 @@ contains
     COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
     call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
+    compatrcf%imm_glob=imm_glob
+    at2b%im_glob=compatrcf%im
+    at2b%imm_glob=compatrcf%im
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
        call repartition(COMPatrcf,at2b,box2b,cel2b)
     else
        call compatrcf%copy_config(at2b, lrescl=.true.)
     end if
-    at2b%im_glob=compatrcf%im_glob
+
 #else
     if (ldecoup) then
        open(123, file='decoup.dat', status='old')
@@ -553,6 +558,7 @@ contains
        endif
        atcinr%im=im_gr
        atcinr%im_glob=im_gr
+
 
        !                    write(6,*)im
        read (lucin, err=456) ibuffer   !ityp

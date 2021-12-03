@@ -59,11 +59,14 @@ contains
     if (present(lverbose))lverb=lverbose
 #ifdef PARA
     nbr_cpumin=nbr_cpuin
-    if (imm_glob.ne.atdec%imm_glob) then
-       write(6,*)'OHLALA',imm_glob,atdec%imm_glob
-       call arret_ndm
-    end if
-
+    if (present(atdec))then
+!    write(6,*)'OHLALA1',imm_glob
+!    write(6,*)'OHLALA2',atdec%imm_glob
+!    if (imm_glob.ne.atdec%imm_glob) then
+!       write(6,*)'OHLALA',imm_glob,atdec%imm_glob
+!       call arret_ndm
+!    end if
+ end if
 #else
     if (ldecoup) then
        nbr_cpumin=2

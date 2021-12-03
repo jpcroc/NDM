@@ -4,7 +4,7 @@ module neb_module
   USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
-       &posa, forca,latcomp,parallele
+       &posa, forca,latcomp,parallele,imm_glob
   use read_val,only:rvois,ltabvois
   USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin
     use cryst_to_cart_mod,only:cryst_to_cart
@@ -530,6 +530,8 @@ end if
     !    type(atom_config)::atrgin
 !    write(6,*)'IMM NEB',imm
     call allocate_neb(0,imm)
+    imm_glob=imm
+    atneb(:)%imm_glob=imm
     if (igen==1) then 
        itread=1;fmt_cin=2
        if (lrestart) then
@@ -571,7 +573,6 @@ end if
           endif
 
           fnamneb='fin_'//fnam(1:lenfnam)//'.cin'
-          if(rang==0)write(6,*)'FNAMneb npath ',fnamneb
           call read_cin(boxneb,itread,atneb(npath)%atom_config_d,imm,fnamneb,lrestart,fmt_cin)
           atneb(npath)%xpp=atneb(npath)%xp
           atneb(npath)%ielat=0
@@ -593,7 +594,7 @@ end if
        end if
     else
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
-       if (rang==0) write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,atneb(1)%im_glob
+       if (rang==0) write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,atneb(1)%imm_glob
        call gin2ndm(atneb(1)%atom_config_d,cellneb(1),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
 
 
@@ -619,7 +620,6 @@ end if
 
 #endif
 
-       write(6,*)'FNAMneb npath ',fnamneb,rang,myidsp
 
        call gin2ndm(atneb(npath)%atom_config_d,cellneb(npath),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
        atneb(:)%im=atneb(npath)%im
@@ -640,6 +640,8 @@ end if
 
 
     end if
+    atneb(2:npath-1)%im_glob=atneb(1)%im_glob
+    atneb(2:npath-1)%imm_glob=atneb(1)%imm_glob
 #ifdef LAMMPS_VERSION
 
     if((ipotentiel==-10).or.(ipotentiel==-11)) then

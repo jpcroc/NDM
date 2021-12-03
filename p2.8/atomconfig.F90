@@ -593,8 +593,6 @@ contains
     real(double)::rvois
     logical :: lstop
     call atsource%Eegal(atcible)
-    atcible%im_glob=atsource%im_glob
-    atcible%imm_glob=atsource%imm_glob
     if (lrescl) then
 !       if (atcible%imm.ne.atsource%imm) then
        call atcible%dealloc
@@ -655,6 +653,9 @@ contains
           if((atcible%lax).and.(atsource%lax))atcible%ax(:,1:atsource%imm)=atsource%ax(:,1:atsource%imm)
        end select
     end select
+
+    atcible%im_glob=atsource%im_glob
+    atcible%imm_glob=atsource%imm_glob
   end subroutine copy_config
 
   subroutine dealloc_atom_config(atconf)

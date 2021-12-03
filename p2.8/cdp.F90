@@ -141,6 +141,7 @@ contains
     logical::l2close
     integer::numproc,iatint
     integer::jint,iinttot,numcell,imt,ntry2
+    logical::lsuiv
     if (myidsp==0) then
        if (iseed.le.0) then
           call system_clock (iseed) 
@@ -288,7 +289,16 @@ contains
 !#ifdef PARA
                 call comm_space%bcast(0,iproc)
                 call comm_space%bcast(0,ivacloc)
-                if (myidsp==iproc) then
+                if (lspacendm) then
+                   if (myidsp==iproc)then
+                      lsuiv=.true.
+                   else
+                      lsuiv=.false.
+                   end if
+                else
+                   lsuiv=.true.
+                end if
+                if (lsuiv) then
 !#endif
                    iat=0
                    loopi: do i=1,atdml%im
@@ -417,7 +427,18 @@ contains
                       natgM=maxval(atdml%num_at_glob(1:atdml%im))
 !#ifdef PARA
                       if (lspacendm) call comm_space%max(natgM)
-                      if (myidsp==numproc) then
+                      
+                      if (lspacendm) then
+                         if (myidsp==numproc)then
+                            lsuiv=.true.
+                         else
+                            lsuiv=.false.
+                         end if
+                      else
+                         lsuiv=.true.
+                      end if
+                      if (lsuiv) then
+
 !#endif                   
                          atdml%im=atdml%im+1
                          atdml%xp(:,atdml%im)=xpositest(:)
