@@ -3,6 +3,7 @@
 !           
 !  **********************************************************
 module zieg2_mod
+  USE arret_ndm_mod,only:arret_ndm
   use var_pot,only:auxe
   implicit none 
 contains
@@ -72,7 +73,7 @@ contains
 
 
     data rbohr/ 0.529D-8/
-    !      stop
+    !      call arret_ndm
 
     !      do l=1,npair
     !         roff1(l)=csive*Int(roff1(l)/csive)

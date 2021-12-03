@@ -277,7 +277,7 @@ end if
        !if ((iph.ne.1).and.(iph.ne.npath))
 
     end do
-!    stop
+!    call arret_ndm
     masstot=SUM(cm(atneb(1)%ityp(1:im)))
     if  (nebtype>=2) then
        if (rang==0) write(*,'(" NEB: The kspring is in the eV/A^2                          :", f12.5)')  kspring

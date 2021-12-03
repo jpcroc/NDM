@@ -1,5 +1,5 @@
 module work_cgII
-
+   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
        it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&

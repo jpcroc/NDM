@@ -1,4 +1,5 @@
 module constrconf_mod
+  USE arret_ndm_mod,only:arret_ndm
 #ifdef PARA
   USE decoupage_mod,only: decoupage
 #endif
@@ -127,7 +128,7 @@ contains
           read (123, *) nprocspace,ncore
           close(123)         
           call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
-          stop
+          call arret_ndm
        else
           itread=1
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
@@ -289,7 +290,7 @@ contains
        read (123, *) npr,ncore
        close(123)         
        call  decoupage(npr,ncore,cel2b,psc=psc)
-       stop
+       call arret_ndm
     end if
     call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
@@ -548,7 +549,7 @@ contains
     case(1)
        if (.not.present(atcinr))then
           write(6,*)'atcinr pas present et itread=1'
-          stop
+          call arret_ndm
        end if
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
@@ -641,7 +642,7 @@ contains
     case(2) ! at xp et num_at_glob
        if (.not.present(atcinr))then
           write(6,*)'atcinr pas present et itread=2'
-          stop
+          call arret_ndm
        end if
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
@@ -661,7 +662,7 @@ contains
     case(3)
        if (.not.present(atcinr))then
           write(6,*)'atcin pas present et itread=3'
-          stop
+          call arret_ndm
        end if
 
        read (lucin, err=456) im_gr                         !number of atoms in the box

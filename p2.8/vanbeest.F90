@@ -1,4 +1,5 @@
 module dervbeest_mod
+   USE arret_ndm_mod,only:arret_ndm
   USE calerf_mod,only: calerf 
   implicit none 
   contains  
@@ -144,7 +145,7 @@ subroutine maxVBEEST(rrep,csive,l,auxe,alpha,ngrid,ntyp, &
               write(6,*)'perdu max loc pour l=',l
               write(6,*)'problemes de convergence dans la routine max2VBEEST'
               write(6,*)'Verifiez les parametres'
-              stop
+              call arret_ndm
            endif
         endif
      endif

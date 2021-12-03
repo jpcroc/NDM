@@ -1,4 +1,5 @@
 module scalebox_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m, ONLY:dmtype,itetabvois,lprahman,nvat,pi,it,rang,lperiod
 
   USE recips_mod,only: recips ,calcvol
@@ -115,7 +116,7 @@ contains
           if (rang==0)       write(6,*) ' natperc ', celndm%natperc
        end if
 !       write(6,*)'BOUFFON!'
-!       stop
+!       call arret_ndm
       call celndm%init(boxndm,celndm%nox,celndm%noy,celndm%noz,celndm%natperc) !contient dealloc
 
    end if

@@ -1,4 +1,5 @@
 module gcII_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE initspeed_mod,only: initspeed,bruit_xp
   USE gcmodII_mod,only: ZXCGRII
   USE work_cgII,only: atcgcomp,cellcgcomp,atcgloc,cellcgloc,cellcible,atcible,boxcg,gcpara
@@ -60,7 +61,7 @@ contains
     atcgloc=>atcgin
     boxcg=boxndm
 
-    !    stop
+    !    call arret_ndm
 
 
 

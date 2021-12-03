@@ -1,4 +1,5 @@
 module inputtersoff_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE alloc_typ_mod,only: alloc_typ
   USE gen_com_m, ONLY:ldemitab,rang,umass
       USE var_pot!, ONLY:iewald,l3c,npotentiel,r3cm,typ_and_pot,npotmax
@@ -71,11 +72,11 @@ contains
           if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la coh�rence'
           if (cmr*umass.ne.cm(iti))then
              if (rang==0)write(6,*) 'pb avec cm'
-             stop
+             call arret_ndm
           end if
           if (tyr.ne.ty(iti))then
              if (rang==0)write(6,*) 'pb avec ty'
-             stop
+             call arret_ndm
           end if
        end if
        if (allocated(typ_and_pot))typ_and_pot(iti,ipotentiel)=.true.
@@ -101,7 +102,7 @@ contains
     !  end if
     !  if (npotentiel.gt.1) then
     do i=1,ntypzl
-       !     stop
+       !     call arret_ndm
        !il faut changer �a i n'est pas le type lu de l'atome qd npot>1
        read(lupotin,*)catomlu(i),iti
        catom(iti)=catomlu(i)
@@ -131,7 +132,7 @@ contains
           ipr=ipo(iti,itj)
           if (typ_pot_pair(ipr).ne.0)then
              write(6,*)'paire ',ipr,' deja lue de potentiel=',typ_pot_pair(ipr)
-             stop
+             call arret_ndm
           end if
           if (rang==0) write(6,*)'paire l active  ipotentiel: ',ipr, ipotentiel
 

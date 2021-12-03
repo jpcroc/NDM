@@ -1,4 +1,5 @@
 module eam
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   USE gen_com_m, ONLY: A2cm,rang,lopt,ev2erg
   USE var_pot, ONLY:rhomin,rhomax,lforcetabulate,q,alpha,precisew,ncouc3,ncoucx,ncoucy,ncoucz,&
@@ -167,7 +168,7 @@ contains
     !PAIR PART 
     if (npotentiel.gt.1) then
        write(6,*)'NON!'
-       stop
+       call arret_ndm
 !!$       read(lupotin,*)ntypr 
 !!$       allocate (typtyp(ntypr))
 !!$       npair_r=  ntypr*(ntypr+1)/2 
@@ -225,11 +226,11 @@ contains
 !!$             !if (cmr*umass.ne.cm(iti))then 
 !!$             if (abs(cmr*umass-cm(iti)) > 100.d0*spacing(cm(iti))) then
 !!$                if (rang==0)write(6,*) 'pb avec cm'
-!!$                stop
+!!$                call arret_ndm
 !!$             end if
 !!$             if (tyr.ne.ty(iti))then
 !!$                if (rang==0)write(6,*) 'pb avec ty'
-!!$                stop
+!!$                call arret_ndm
 !!$             end if
 !!$             if(iewald.ne.0) q(iti)=qr
 !!$          else
@@ -255,7 +256,7 @@ contains
 !!$             if (rang==0) write(6,*)'paire l active ipotentiel: ',ipr, ipotentiel
 !!$             if(lue_paire(ipr).eqv..true.) then
 !!$                if (rang==0) write(6,*) rang,'paire l lue deux fois ', ipr,iti,itj
-!!$                stop
+!!$                call arret_ndm
 !!$             end if
 !!$             if (ipotrep==1) then
 !!$                read (lupotin,*) roff1(ipr),roff2(ipr)

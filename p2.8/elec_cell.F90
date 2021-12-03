@@ -1,4 +1,5 @@
 module elec_cell
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   USE gen_com_m, ONLY: bk,tstep,erg2eV,pi,rang,lspacendm,&
        &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter
@@ -106,7 +107,7 @@ contains
     if(nezov==0)nez=celndm%noz
     if (ibc==-1) then
        if (rang.eq.0)       write(6,*)'ibc=-1, stop'
-       stop
+       call arret_ndm
     end if
     !    call recips (at(1,1), at(1,2), at(1,3), bg(1,1), bg(1,2), bg(1,3))
     !    do ic=1,3
@@ -285,7 +286,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 #endif
 
 
-                   stop
+                   call arret_ndm
                 end if
                 f1=elstopforce(atdml%ityp(i),2,nv1)&
                  &-(elstopforce(atdml%ityp(i),2,nv1)-elstopforce(atdml%ityp(i),2,nv1-1))*(nv1-vn/v1)
@@ -360,7 +361,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
           case default 
              if (rang.eq.0)             write(6,*)'check ilangevin'
-             stop
+             call arret_ndm
           end select
        end do
     end do
@@ -879,7 +880,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 !    write(6,*)'IN SVEL'
     if (rang.ne.0)then
        write(6,*) 'WTF sauvE rang <>0!'
-       stop
+       call arret_ndm
     end if
     if (itesauvinter>0) then
        if (mod(it,itesauvinter).eq.0) then

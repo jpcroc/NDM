@@ -1,4 +1,5 @@
 module decoupage_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE arret_ndm_mod,only: arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE cellconfig,only:cell_config
@@ -72,7 +73,7 @@ contains
        nbr_cpumin=2
     else
     write(6,*)'WTF decoup'
-    stop
+    call arret_ndm
  end if
 #endif
 #ifndef PARA

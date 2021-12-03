@@ -1,6 +1,7 @@
 #ifndef ML
 module param_det_mod
-        USE arret_ndm_mod,only: arret_ndm
+  USE arret_ndm_mod,only:arret_ndm
+  USE arret_ndm_mod,only: arret_ndm
         USE gen_com_m, ONLY:lopt,zero,rang,pi,itab
         USE var_pot, ONLY:kpme,kpmex,kpmey,kpmez,n2max,ncouc3,ncoucx,ncoucy,ncoucz,npair,&
              &npotentiel,nvecttot,precisew,rue_pair,typ_pot_pair,ipotentiel,alpha,iewald,csive,&
@@ -45,13 +46,13 @@ subroutine param_det(boxndm)
   if (npotentiel.ne.1)then
      if ((iewald.gt.0).and.(ncouc3==0)) then
         if (rang==0)  write(6,*)'npot>1 + ewald+ncouc3=0 : stop'
-        stop
+        call arret_ndm
      end if
      do l=1,npair
         if ((typ_pot_pair(l).lt.10).and.(typ_pot_pair(l).ne.2)) then
            if (rue_pair(l)==0) then
               if (rang==0)  write(6,*)'npot>1 + pot paire +ruepaire l =0 : stop',l
-              stop
+              call arret_ndm
            end if
         end if
      end do
@@ -478,7 +479,7 @@ subroutine param_det(boxndm)
 
            !          if (kpmex <= 2*ncouc3) then
            !           if (rang==0) write(6,*) 'PME : Taille de grille trop faible STOP!'
-           !          stop
+           !          call arret_ndm
 
 
            if (rang==0) then
@@ -510,7 +511,7 @@ subroutine param_det(boxndm)
 !!$           if (iewald /= 2) then
 !!$              if (rang==0) &
 !!$                   write(6,*) 'Demande d optimisation de Ewald et iewald/=2 INCOHERENT !!!'
-!!$              stop
+!!$              call arret_ndm
 !!$           endif
 !!$
 !!$           if (precisew == zero) then
@@ -575,7 +576,7 @@ subroutine param_det(boxndm)
     rumax = max(rumax,maxval(rue_pair))
     csive=rumax/float(ngrid)
 !    write(6,*)'RUMAX',rumax,csive,rue_pair
-!    stop
+!    call arret_ndm
 #endif
 
     !     if(l3c) then

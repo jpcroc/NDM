@@ -1,4 +1,5 @@
 module atomconfig
+   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m,only:double,long
   USE Mat_utils_mod,only: fillbuffer3D,fillbuffer1D,fillbuffer9D
 #ifdef PARA
@@ -233,7 +234,7 @@ contains
           call atcible%extend(imm_min)
        else
           write(6,*)'copy of an atom element is not possible , target size too small' 
-          stop
+          call arret_ndm
        end if
     end if
 
@@ -442,15 +443,15 @@ contains
     call mpic%recv (cst,rgem,112)
     if (cst(1).ne.sizeI) then
        write(6,*)'erreur CST1 ',sizeI,cst(1)
-       stop
+       call arret_ndm
     end if
     if (cst(2).ne.sizel) then
        write(6,*)'erreur CST2 ',sizel,cst(2)
-       stop
+       call arret_ndm
     end if
     if (cst(3).ne.sizeR) then
        write(6,*)'erreur CST3 ',sizer,cst(3)
-       stop
+       call arret_ndm
    end if
    
     if (cst(1).ne.0)call mpic%recv(ibuffer,rgem,114)
@@ -614,7 +615,7 @@ contains
        end if
        if (lstop)then
           write(6,*)'(atcible%im < atsource%im  ou size(atcible%indi)<size(atsource%indi) )et lrescl = false ; pas possible'
-          stop
+          call arret_ndm
        end if
     end if
     atcible%xp(1:3,1:atsource%imm)=atsource%xp(1:3,1:atsource%imm)
@@ -754,7 +755,7 @@ contains
           immn=imm_in
        else
           write(6,*)'imm_in< imn ; stop'
-          stop
+          call arret_ndm
        end if
     else
        immn=imn
@@ -812,7 +813,7 @@ contains
     end do
     if (i2.ne.imtrf) then
        write(6,*)'WTF ?'
-       stop
+       call arret_ndm
     end if
 
   end subroutine fab
@@ -874,7 +875,7 @@ contains
        else
           if (atcible%imm.lt.imnew)  then
              write(6,*)'addition de atsource a atcible pas possible'
-             stop
+             call arret_ndm
           end if
        end if
        atcible%im=imsrc+imcib
@@ -922,7 +923,7 @@ contains
                 iprt=iprt+1
                 if (iprt.gt.natpr) then
                    write(6,*)'num_at_glob multiples ?'
-                   stop
+                   call arret_ndm
                 end if
              end if
           end do
@@ -937,7 +938,7 @@ contains
                 iprt=iprt+1
                 if (iprt.gt.natpr) then
                    write(6,*)'num_at_glob multiples ?'
-                   stop
+                   call arret_ndm
                 end if
                 call atin%copy_atom(i,atprt,iprt)
              end if
@@ -951,7 +952,7 @@ contains
                 iprt=iprt+1
                 if (iprt.gt.natpr) then
                    write(6,*)'num_at_glob multiples ?'
-                   stop
+                   call arret_ndm
                 end if
                 call atin%copy_atom(i,atprt,iprt)
              end if
@@ -1337,7 +1338,7 @@ contains
        if (imtot.ne.atcfcomp%im) then
           write(6,*)'atomes perdus ?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
           call MPI_finalize(ierr)
-          stop
+          call arret_ndm
        end if
        itot=0
        do iag=1,natgM
@@ -1349,7 +1350,7 @@ contains
        if (itot.ne.imtot) then  
           write(6,*)'atomes perdus 2 ?',itot,imtot
           call MPI_finalize(ierr)
-          stop
+          call arret_ndm
        end if
 
 
@@ -1428,15 +1429,15 @@ contains
              call buffersizes (atcfloc,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,imrecv)
              if (cst(1).ne.sizeI) then
                 write(6,*)'erreur CST1B ',sizeI,cst(1)
-                stop
+                call arret_ndm
              end if
              if (cst(2).ne.sizel) then
                 write(6,*)'erreur CST2B ',sizel,cst(2)
-                stop
+                call arret_ndm
              end if
              if (cst(3).ne.sizeR) then
                 write(6,*)'erreur CST3B ',sizer,cst(3)
-                stop
+                call arret_ndm
              end if
              allocate(Rbuffer(sizeR));allocate(ibuffer(sizeI));allocate(lbuffer(sizeL))
              if (cst(1).ne.0)call mpic%recv(ibuffer,proc_source,314)
@@ -1457,7 +1458,7 @@ contains
        if (imtot.ne.atcfcomp%im) then
           write(6,*)'atomes perdus ?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
           call MPI_finalize(ierr)
-          stop
+          call arret_ndm
        end if
        do icomp=2,imtot
           if (atcfcomp%num_at_glob(icomp).lt.atcfcomp%num_at_glob(icomp-1)) then
@@ -1614,19 +1615,19 @@ contains
 !       write(6,*)'atcfloc',atcfloc%im,atcfloc%imm,sizeI,sizel,sizer
        if (atcfloc%im.ne.imrecv) then
           write(6,*)'ERREUR M2L', atcfloc%im,imrecv
-          stop
+          call arret_ndm
        end if
        if (cst(1).ne.sizeI) then
           write(6,*)'erreur CST1B ',sizeI,cst(1)
-          stop
+          call arret_ndm
        end if
        if (cst(2).ne.sizel) then
           write(6,*)'erreur CST2B ',sizel,cst(2)
-          stop
+          call arret_ndm
        end if
        if (cst(3).ne.sizeR) then
           write(6,*)'erreur CST3B ',sizer,cst(3)
-          stop
+          call arret_ndm
        end if
        
        allocate(Rbuffer(sizeR));allocate(ibuffer(sizeI));allocate(lbuffer(sizeL))
@@ -1916,7 +1917,7 @@ contains
        if(scan('w',carac).ne.0) then
           if (any(mask(1:atcf%im).eqv..false.))then
              write(6,*)'trf latbavois et conf incomplète stop'
-             stop
+             call arret_ndm
           end if
           ivi=ivi+1
           do ip=1,size1
@@ -2048,17 +2049,17 @@ contains
     if (csi.ne.sizeI) then
        write(6,*)'erreur CSI 2',sizeI,csi
 !       call endmpi
-       stop
+       call arret_ndm
     end if
     if (csr.ne.sizer) then
        write(6,*)'erreur CSR ',sizeR,csr
 !       call endmpi
-       stop
+       call arret_ndm
     end if
     if (csl.ne.sizel) then
        write(6,*)'erreur CSL ',sizel,csl
 !       call endmpi
-       stop
+       call arret_ndm
     end if
 
     return
@@ -2264,17 +2265,17 @@ contains
     if (csi.ne.sizeI) then
        write(6,*)'erreur CSI 1 ',sizeI,csi
 !       call endmpi
-       stop
+       call arret_ndm
     end if
     if (csr.ne.sizer) then
        write(6,*)'erreur CSR ',sizeR,csr
 !       call endmpi
-       stop
+       call arret_ndm
     end if
     if (csl.ne.sizel) then
        write(6,*)'erreur CSL ',sizel,csl
 !       call endmpi
-       stop
+       call arret_ndm
     end if
 
   end subroutine copybuff
@@ -2480,17 +2481,17 @@ contains
     if (csi.ne.sizeI) then
        write(6,*)'erreur CSIC 1 ',sizeI,csi
 !       call endmpi
-       stop
+       call arret_ndm
     end if
     if (csr.ne.sizer) then
        write(6,*)'erreur CSRC ',sizeR,csr
 !       call endmpi
-       stop
+       call arret_ndm
     end if
     if (csl.ne.sizel) then
        write(6,*)'erreur CSLC ',sizel,csl
 !       call endmpi
-       stop
+       call arret_ndm
     end if
 
   end subroutine distribnag

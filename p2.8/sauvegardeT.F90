@@ -1,5 +1,5 @@
 module sauvegardeT_mod
-
+   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:rang,formatsauv,it,itesauvinter,lspaceNDM,&
        &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,l2T,imm_glob
@@ -56,7 +56,7 @@ contains
     im =atdml%im
     if (atdml%im_glob==0) then
        write(6,*)'sauvegarde imglob=0 stop'
-       stop
+       call arret_ndm
     end if
 
 

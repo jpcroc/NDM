@@ -7,6 +7,7 @@ program ndm
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY: fnam,lenfnam,parallele,rang,low_limit
 

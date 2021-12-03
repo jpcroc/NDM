@@ -1,4 +1,5 @@
 module calcdigr_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:lperiod,rang,rcrdf,it,pi,timel,lspacendm
   use atomconfig,only: atom_config
@@ -90,7 +91,7 @@ contains
     else
        if (rdfc%im.ne.atrdf%im) then
           write(6,*)'IM atrdf incosistent with rdfc STOP'
-          stop
+          call arret_ndm
        end if
     end if
     if (rdfc%volu==0) then
@@ -98,13 +99,13 @@ contains
     else
        if (rdfc%volu.ne.boxrdf%volu) then
           write(6,*)'VOLU atrdf inconistent with rdfc STOP'
-          stop
+          call arret_ndm
        end if
     end if
     
     if (rmax.gt.minval(celrdf%celsize)) then
        write(6,*)'diminuer nox, noy, noz'
-       stop
+       call arret_ndm
     end if
     !      write(6,*)'rmax ',rmax
     rdfc%nrdf=rdfc%nrdf+1
@@ -290,7 +291,7 @@ contains
           if (it<=999999999.and.it>99999999) write(33, 900) it
           if  (it>999999999) then
              write (6, *) 'probleme de format dans calccoordo.f90'
-             stop
+             call arret_ndm
           endif
           rewind 33
 

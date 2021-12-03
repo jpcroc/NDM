@@ -1,6 +1,7 @@
 ! *****************************************************************
 module readdm_mod
   use read_val
+     USE arret_ndm_mod,only:arret_ndm
   implicit none
 contains
 
@@ -422,7 +423,7 @@ contains
              if (rang==0) write(6,*)'direction', ic,' : WALL Boundary Conditions'
           case default 
              if (rang==0) write(6,*)'wrong bound ary conditions, stop'
-             stop
+             call arret_ndm
           end select
        end do
        if (dmtype==1) then
@@ -530,7 +531,7 @@ contains
     end if
     if ((.not.lrestart).and.(nitmax.GT.0)) then
        write(6,*)'Nitmax>0 et pas restart ?'
-       stop
+       call arret_ndm
     end if
 
 
@@ -575,7 +576,7 @@ contains
 
     !      if (ttol==0.0 .and. tfroi<=0.0) then
     !         write (6, *) 'contradiction ttol <-> tfroi '
-    !         stop
+    !         call arret_ndm
     !      endif
 
     if (tstep<1D-20 .or. tstep>1D-13) then
@@ -606,7 +607,7 @@ contains
     end if
     if ((lprteattotm.EQV..true.).and.(parallele.EQV..true.))then
        write(6,*)'eattotm et PARA pas prog'
-       stop
+       call arret_ndm
     end if
 
 
@@ -619,7 +620,7 @@ contains
        if (.not.lEev) then
           write(6,*)  'PHONDY: lEev should be set on .true.'
           write(6,*)  'PHONDY: Change accordingly and try again!'
-          stop
+          call arret_ndm
        end if
        write(6,*) rang,'For dmtype 7 deltax must be deltax > 0'
        write(6,*) rang,'Change deltax!'
@@ -633,7 +634,7 @@ contains
           write (6,*) ' PHONDY: which corresponds to a Hessian on 2,3 or 5 points' 
           write (6,*) ' PHONDY: HessianOrder.........: ', HessianOrder  
           write (6,*) ' PHONDY: stop'
-          stop
+          call arret_ndm
        end if
     end if
 
@@ -655,7 +656,7 @@ contains
     IF ( iThermo .GE. 1) THEN
        if (text.le.0) then
           IF (RANG==0) WRITE(6,*) 'T Const et Text<=0 : stop '
-          stop
+          call arret_ndm
        end if
 
        if (rang==0)then
@@ -727,7 +728,7 @@ contains
        end do lpt
        if (.not.tpot) then
           if (rang==0) write(6,*)'probleme ipotentiel npotentiel',ipotentiel,lpotentiel
-       stop
+       call arret_ndm
        end if
     end if
     !  if ((all(lpotentiel)==.false.).and.(ipotentiel==-1)) then
@@ -740,12 +741,12 @@ contains
     end do
     if ((lpotentiel(0).EQV..true.).and.(npotentiel.gt.1)) then
        if (rang==0) write(6,*)'npotentiel>1 et lpotentiel(0)=T'
-       stop
+       call arret_ndm
     end if
 
     if ((ntyp==-1).and.(npotentiel.gt.1))then
        if (rang==0) write(6,*)'npotentiel>1 et ntyp=-1'
-       stop
+       call arret_ndm
     end if
     if ((npotentiel.gt.1).and.(lpotentiel(10).eqv..true.)) then
        if (rang==0)write(6,*)'**** npotentiel >1 ET EAM ==> EAM TAB only!'
@@ -784,13 +785,13 @@ contains
        else 
           if (rang==0) write(6,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
           if (rang==0) write(6,*) 'STOP in readdm'
-          stop
+          call arret_ndm
        end if
     end if
 
     if(lLangevin.and.(Text.le.0.0)) then
        if (rang==0) write(6,*)'Langevin avec Text pas defini : stop'
-       stop
+       call arret_ndm
     end if
     if(lLangevin) then
        dmtype=4
@@ -803,7 +804,7 @@ contains
              write(6,*) 'lpconxyz can be USEd ONLY is with PR dynamics or lpr=.true'
              write(6,*) 'stop in <readdm>'
           end if
-          stop
+          call arret_ndm
        end if
     end if
 
@@ -854,14 +855,14 @@ contains
           do ic2=1,3
              if ((ihbox0(ic,ic2).ne.0).and.(ihbox0(ic,ic2).ne.1))then
                 if (rang==0) write(6,*)'non zero ihbox0(',ic,ic2,ihbox0(ic,ic2)
-                stop
+                call arret_ndm
              end if
           end do
        end do
        do ic=1,3
           if ((ihbox0(ic,ic)==1).and.(ipbc(ic).ne.1))then
              write(6,*)'direction ',ic,' lprahman and no pbc ipbc =',ipbc(ic)
-             stop
+             call arret_ndm
           end if
        end do
     else
@@ -881,7 +882,7 @@ contains
     case(0)
        if ((tcelec.gt.0).or.(ecelec.gt.0)) then
           write(6,*) 'tcelec > 0 et pas de pertes electroniques : stop'
-          stop
+          call arret_ndm
        end if
     case(1)
        if(rang==0) then 
@@ -892,11 +893,11 @@ contains
     case(2)
        if (ecelec.le.0) then
           write(6,*) 'Ecelec <  0 et  perte electronique Langevin : stop'
-          stop
+          call arret_ndm
        end if
        if (Text.le.0) then
           write(6,*) 'Text <  0 et  perte electronique Langevin : stop'
-          stop
+          call arret_ndm
        end if
        if(rang==0) then 
           write(6,*)'electronic stopping according to elstop.in from SRIM ET CONNECTION A LANGEVIN pour EC >' , Ecelec,'!!!!!!!!!!'
@@ -952,7 +953,7 @@ contains
     if (itesauvinter.gt.0) then
        if (mod(itesauvinter,itesauv).ne.0) then
           write(6,*)'itesauvinter n est pas un multiple de intesauv : stop'
-          stop
+          call arret_ndm
        end if
     end if
     if (rang==0) write (6, *)
@@ -1008,17 +1009,17 @@ contains
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
        if ((nparapath.gt.1).and.(.not.lparapath)) then
           write(6,*)'nparapath >1, needs lparapath = TRUE'
-          stop
+          call arret_ndm
        end if
 
        if (rang==0) write (6,*)
        if ((lparapath).and.(nparapath.le.1)) then
           write(6,*)'lparapath ET nparapath=1 stop'
-          stop
+          call arret_ndm
        end if
        if ((.not.lrestartmcgc) .and. (.not.((idirectionmcgc==0).or.(idirectionmcgc==1)))) then
           write(6,*)'set idirectionmcgc to 0 or 1 '
-          stop
+          call arret_ndm
        end if
        if (rang==0) then
           write(6,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc
@@ -1062,7 +1063,7 @@ contains
 
     case default
        if (rang==0) write (6, '(a)') 'mauvais type de calcul dmtype=', dmtype
-       stop
+       call arret_ndm
     end select
 
        if (any(ihbox0==0))then
@@ -1109,13 +1110,13 @@ contains
        if (rang==0) write (6, *) 'modification du fichier .cin'
     case default
        if (rang==0) write (6, *) 'mauvais igen=', igen
-       stop
+       call arret_ndm
     end select
 
     if (ltabvois) then
        if (npotentiel.gt.1) then
           if (rang==0) write(6,*)'ltabvois avec plusieurs potentiels= pas programmee (demi table ou table complete = prise de tete'
-          stop
+          call arret_ndm
        end if
 
        !     if (tempstopcel.gt.0) ltpcel=.true.
@@ -1142,7 +1143,8 @@ contains
           if (lconstrtot) then
              if (rang==0)  write(6,*)  'MiLaDy potentials should have lconstrtot set to false'
              if (rang==0)  write(6,*)  'Nos is set to ... ',lconstrtot 
-             stop 'lconstrtot and MiLaDy 1'
+             write(6,*)'lconstrtot and MiLaDy 1'
+             call arret_ndm
           end if
 
        end select
@@ -1163,7 +1165,8 @@ contains
        if (lconstrtot) then
           if (rang==0)  write(6,*)  'MiLaDy potentials should have lconstrtot set to false'
           if (rang==0)  write(6,*)  'Now is set to ... ',lconstrtot 
-          stop 'lconstrtot and MiLaDy 2'
+          write(6,*)'lconstrtot and MiLaDy 2'
+          call arret_ndm 
        end if
     end if
 
@@ -1173,12 +1176,12 @@ contains
        if ( (fpstop<0).and.(fsumstop<0)) then
           if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
           if (rang==0) write(6,*) 'STOP in readdm',fpstop,fsumstop
-          stop
+          call arret_ndm
        end if
        if ( (fpstop < 0) .and. (dmtype==9) ) then
           if (rang==0) write(6,*) 'NEB and DRAG implementation only for positive fpstop'
           if (rang==0) write(6,*) 'STOP in readdm'
-          stop 
+          call arret_ndm 
        end if
        if  ( (fpstop>0).and.(fsumstop>0) ) then
           if (rang==0) write(6,*) 'DANGER - WARNING - ACHTUNG:  both fpstop and fsumstop are positive !!!'
@@ -1192,7 +1195,7 @@ contains
        if (lperiod) then
           if (rang==0)  write(6,*) 'There is no NEB and DRAG implementation for lperiod true'
           if (rang==0)  write(6,*) 'put your lperiod to false in din file and restart.'
-          stop
+          call arret_ndm
        end if
     end if
 
@@ -1205,13 +1208,13 @@ contains
        if (dmtype.ne.4) then
           if (rang==0) write(6,*) 'lsuivinonpbc is implemented only with velocity verlet'
           if (rang==0) write(6,*) 'Or dmtype=4. Change and restart until there I will stop for you.'
-          stop 
+          call arret_ndm 
        end if
 
        if (itesauvposition<=0) then
           if (rang==0) write(6,*) 'itesauvpostion MUST be positive if you want lsuivinonpbc TRUE'
           if (rang==0) write(6,*) 'STOP in readdm'
-          stop
+          call arret_ndm
        end if
     end if
     if (lforcetabulate) then
@@ -1219,13 +1222,13 @@ contains
           write(*,*) 'There is no implementation for lforcetabulate TRUE and ipotentiel ', ipotentiel
           write(*,*) 'Change lforcetabulate of FALSE or ipotential to EAM (10) '
           write(*,*) 'stop in readdm'
-          stop
+          call arret_ndm
        end if
        if (lcasca) then
           write(*,*) 'There is no implementation for lforcetabulate TRUE and lcasc TRUE'
           write(*,*) 'Change lforcetabulate of FALSE or lcasc on FALSE'
           write(*,*) 'stop in readdm'
-          stop
+          call arret_ndm
        end if
     end if
 
@@ -1349,14 +1352,14 @@ contains
           !        write(6,*)lpotentiel
        else
           write(6,*)'npotentiel buggué stop'
-          stop
+          call arret_ndm
           
           do ipotcont=1,npotmax
              if (lpotentiel(ipotcont).EQV..true.)write(6,*)'potentiel actif', ipotcont
           end do
           !        if (lcasca.eqv..true.) then
           !           if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
-          !           stop
+          !           call arret_ndm
           !        end if
        end if
     end if
@@ -1367,11 +1370,11 @@ contains
        itesauv=0.
        if (dmtype.ne.4) then
           write(6,*) 'dmtype <> 4 et linsert'
-          stop
+          call arret_ndm
        end if
        if (nstepdes.le.0) then
           write(6,*) 'desinteg et nstepdes<1'
-          stop
+          call arret_ndm
        end if
 
        if(tempdes==-1)tempdes=Text
@@ -1405,15 +1408,15 @@ contains
        dmtype=4
        if (rheat.le.0)then
           write(6,*)'heat et rheat<=0 stop'
-          stop
+          call arret_ndm
        end if
        if((Eheat==0).and.(Theat==0)) then
           write(6,*)'heat et Eheat=0 Theat=0 stop'
-          stop
+          call arret_ndm
        end if
        if((Eheat.ne.0).and.(Theat.ne.0)) then
           write(6,*)'heat et Eheat<>0 Theat<>0 stop'
-          stop
+          call arret_ndm
        end if
     end if
     if(lPkbar) then
@@ -1453,19 +1456,19 @@ contains
        pressure_conversion_lammps=10.
     else
        write(6,*)'error in units_lammps'
-       stop
+       call arret_ndm
     end if
 #endif     
 
 !condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
     if((dmtype == 15) .and. (pas_lambda_mc.lt.0)) then
        write(6,*)'Pour utiliser la methode MCGC, indiquer une valeur pour le pas lambda d integration'
-       stop
+       call arret_ndm
     end if    
 !idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
     if((dmtype == 15) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
        write(6,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
-       stop
+       call arret_ndm
     end if
 
     if (lcdp) then
@@ -1473,7 +1476,7 @@ contains
        case(1,2,3,4,32,33,34,8)
        case default
           if (rang==0) write(6,*)'dmtype inconsistent with creaDP', dmtype
-          stop
+          call arret_ndm
        end select
      end if
     return

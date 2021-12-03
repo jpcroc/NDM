@@ -1,4 +1,5 @@
 module cellconfig
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   use atomconfig,only : atom_config,atom_config_d,atom_config_e
   use boxconfig,only:box_config
@@ -350,7 +351,7 @@ contains
              write(6,*) i,xpnp(:,i)
           end do
           write(6,*)'caltabtc xpnp <0 ou >1 stop'
-          stop
+          call arret_ndm
        end if
        !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
 
@@ -491,7 +492,7 @@ contains
 !#ifdef PARA
 !          call MPI_finalize(ierr)
 !#endif         
-!          stop
+!          call arret_ndm
 !       end if
 !        end if
     if (celndm%ltpcel)then

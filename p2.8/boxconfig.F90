@@ -1,4 +1,5 @@
 module boxconfig
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   use recips_mod,only:recips,calcvol
   use atomconfig,only:atom_config,atom_config_d,atom_config_e
@@ -56,16 +57,16 @@ contains
        nbg=boxnew%bg(1,1)**2+boxnew%bg(1,2)**2+boxnew%bg(1,3)**2
        if (nbg==0) then
           write(6,*) 'this is not an update as bg=0 stop'
-          stop
+          call arret_ndm
        end if
     end if
     if((present(zl).eqv..false.).and.(present(at).eqv..false.)) then
        write(6,*)'box init at ET zl indéfinis : STOP'
-       stop
+       call arret_ndm
     end if
     if(present(zl).and.(present(at))) then
        write(6,*)'box init at ET zl définis : STOP'
-       stop
+       call arret_ndm
     end if
     if (present(at)) then
        boxnew%at=at

@@ -2,6 +2,7 @@ module calfo_mod
 #ifdef ML
   USE calfo_ml_mod, ONLY : md_calfo_ml
 #endif 
+   USE arret_ndm_mod,only:arret_ndm
   USE calfoew_mod,only:calfoew
   USE calfo2ctabvois_mod,only:calfo2ctabvois
   USE calfo2ccel_mod,only:calfo2ccel
@@ -62,7 +63,7 @@ contains
 !    write (6,*)'test icaltabt calfo',celcf%icaltabt,atcf%icaltabt
     if(celcf%icaltabt.ne.atcf%icaltabt) then
        write (6,*)'incoherence dans icaltabt calfo',celcf%icaltabt,atcf%icaltabt
-       stop
+       call arret_ndm
     end if
     
     potist=0.

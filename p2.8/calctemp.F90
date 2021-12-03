@@ -1,5 +1,5 @@
 module calctemp_mod
-
+   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:ntyp,cm
   USE gen_com_m, ONLY:erg2ev,tempEP,bk,l2t,lspaceNDM,rang
@@ -43,7 +43,7 @@ contains
        if(cellcf%icaltabt.ne.atcf%icaltabt) then
           write (6,*)'incoherence dans icaltabt calctemp'
           write(6,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
-          stop
+          call arret_ndm
        end if
 
        if ((cellcf%ltpcel).or.(tcelec.gt.0)) then
@@ -122,7 +122,7 @@ contains
 
        if (nat.ne.atcf%im) then
           write(6,*)'NAT NE atcf%im STOP'
-          stop
+          call arret_ndm
        end if
        temp = sumtat2/float(atcf%im)
 
@@ -132,7 +132,7 @@ contains
        if(cellcf%icaltabt.ne.atcf%icaltabt) then
           write (6,*)'incoherence dans icaltabt calctemp'
           write(6,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
-          stop
+          call arret_ndm
        end if
 
        if ((cellcf%ltpcel).or.(tcelec.gt.0)) then
@@ -236,7 +236,7 @@ contains
        else
           if (nat.ne.atcf%im) then
              write(6,*)'NAT NE atcf%im STOP'
-             stop
+             call arret_ndm
           end if
           temp = sumtat2/float(atcf%im)
        end if
@@ -245,7 +245,7 @@ contains
 #else
        if (nat.ne.atcf%im) then
           write(6,*)'NAT NE atcf%im STOP'
-          stop
+          call arret_ndm
        end if
        temp = sumtat2/float(atcf%im)
 #endif

@@ -1,5 +1,6 @@
 module tersoff_zbl_mod
-        USE zieg2_mod,only: zieg2
+  USE arret_ndm_mod,only:arret_ndm
+  USE zieg2_mod,only: zieg2
         USE spline_mod,only: cspline
         implicit none
         contains
@@ -54,7 +55,7 @@ subroutine tersoff_zbl
      pot=0.0
      write(6,*)csive,ngrid,ntyp,npair,catom,roff1,roff2
 !     write(6,*)'tersoff + ziegler = probablement plante voir force_tersiff_cel commente et initialisation de pot '
-!     stop
+!     call arret_ndm
 
      call zieg2(pot,pot_d,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
 !    write(6,*)pot

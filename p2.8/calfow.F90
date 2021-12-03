@@ -1,4 +1,5 @@
 module calfow_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m, ONLY: lperiod,pi,potcp,potis1,zero
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
@@ -48,7 +49,7 @@ contains
 
     !    if (any(free).NEQV..true.)then
     !       write(6,*)'free +SW =pas code'
-    !       stop
+    !       call arret_ndm
     !    end if
 
     if (test_sigma)  then

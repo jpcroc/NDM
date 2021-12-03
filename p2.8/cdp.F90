@@ -1,4 +1,5 @@
 module cdp_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,it,lperiod,itloopmax,ivisu
   !  use temp_com,only:im
@@ -162,7 +163,7 @@ contains
           case(32,33,34)
              call NGC (atdml,celndm,boxndm,psc)
           case default
-             stop
+             call arret_ndm
           end select
        class is (atom_config_d)
 
@@ -172,7 +173,7 @@ contains
           case(4,10,8,1,21,22)
              call dmloop_pilot(atdml,celndm,boxndm,psc)
           case default
-             stop
+             call arret_ndm
           end select
        end select
     end if

@@ -1,4 +1,5 @@
 module calpoeam_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE zieg2_mod,only: zieg2
   USE spline_mod,only: cspline
   USE arret_ndm_mod,only: arret_ndm
@@ -134,7 +135,7 @@ contains
           write(*,*) 'There is no implemantation for the Ziegler ON and ltforcetabulate TRUE '
           write(*,*) 'Switch OFF Ziegler or put lforcetabulate to FALSE'
           write(*,*) 'Hopefully you know what you are doing!'
-          stop
+          call arret_ndm
           ysp_d(1:ngrid)=eamrep_d(1,l,1:ngrid) 
           call cspline (ngrid,xsp,ysp_d,bsp_d,csp_d,dsp_d)
           eamrep_d(1,l,1:ngrid)=ysp_d(1:ngrid)

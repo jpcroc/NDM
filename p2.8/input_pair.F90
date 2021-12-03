@@ -1,4 +1,5 @@
 module input_pair_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE spline_mod,only: cspline
   USE alloc_typ_mod,only: alloc_typ
   USE arret_ndm_mod,only: arret_ndm
@@ -380,7 +381,7 @@ contains
              allocate(rhobasak(npair))
           end if
           if (npotentiel .gt.1)then
-             stop
+             call arret_ndm
 !!$             if (rang==0) write (6, *) ' charge, CM, masse,type, Abasak Bbasak Cbasak'
 !!$             do i = 1, ntypr
 !!$                read (lupotin,  *) qr,cmr,catomr, tyr, Abaskr,Bbasakr,Cbasakr
@@ -707,11 +708,11 @@ contains
                 end if
                 if (cmr.ne.cm(iti))then
                    if (rang==0)write(6,*) 'pb avec cm'
-                   stop
+                   call arret_ndm
                 end if
                 if (tyr.ne.ty(iti))then
                    if (rang==0)write(6,*) 'pb avec ty'
-                   stop
+                   call arret_ndm
                 end if
                 q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
                 lue_typ(iti)=.true.

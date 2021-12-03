@@ -1,4 +1,5 @@
 module calcangle_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:ntyp,ty
@@ -254,7 +255,7 @@ contains
           if (it<=999999999.and.it>99999999) write(32, 900) it
           if  (it>999999999) then
              write (6, *) 'probleme de format dans calcangle.f90'
-             stop
+             call arret_ndm
           endif
           rewind 32
 

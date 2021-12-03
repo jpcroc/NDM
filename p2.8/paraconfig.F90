@@ -1,6 +1,5 @@
-
 module paraconfig
-
+   USE arret_ndm_mod,only:arret_ndm
 
 #ifdef PARA
   use mpi
@@ -48,7 +47,7 @@ contains
     nimage=div%nimage
     if (div%nimage.gt.div%mpi_orig%nproc) then
        write(6,*)' division para impossible nimage > nprocs'
-       stop
+       call arret_ndm
        call MPI_FINALIZE(ierr)
     end if
     reste=mod(div%mpi_orig%nproc,div%nimage)
@@ -158,7 +157,7 @@ Cl=0;GL=0
        call MPI_COMM_SIZE( div%mpi_master%comm, npm, ierr )
        if (npm.ne.div%nimage) then
           write(6,*)'NPMPB',npm,div%nimage
-          stop
+          call arret_ndm
        end if
        div%mpi_master%nproc=npm
 !      write(6,*)'Ranks among masters',div%mpi_orig%rank, div%mpi_master%rank
@@ -172,7 +171,7 @@ Cl=0;GL=0
 #endif
 
 !!$        call mpi_finalize(ierr)
-!!$        stop
+!!$        call arret_ndm
     return
 
   end subroutine commconstr

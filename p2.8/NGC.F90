@@ -1,4 +1,5 @@
 module NGC_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig,only:cell_config,caltabtc
   USE boxconfig,only:box_config
@@ -61,7 +62,7 @@ contains
     boxcg=boxndm
     unitP=1d-9
     fpstop0=fpstop
-    !    stop
+    !    call arret_ndm
 
     lchg=.true.
 

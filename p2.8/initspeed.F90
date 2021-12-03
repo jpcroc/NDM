@@ -1,6 +1,6 @@
 module initspeed_mod
 
-
+   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: MatInv
   USE tempinstT_mod,only: tempinstT

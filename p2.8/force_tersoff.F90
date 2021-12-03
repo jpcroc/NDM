@@ -61,7 +61,7 @@ contains
     if ((boxcf%at(1,2).ne.0).or.(boxcf%at(1,3).ne.0).or.(boxcf%at(2,3).ne.0).or.&
          &(boxcf%at(2,1).ne.0).or.(boxcf%at(3,2).ne.0).or.(boxcf%at(3,1).ne.0)) then
        write(6,*)'Tersoff seulement en tetragonal'
-       stop
+       call arret_ndm
     end if
 
     moi =0

@@ -1,5 +1,5 @@
   module parautils
-
+   USE arret_ndm_mod,only:arret_ndm
   use paraconfig,only:para_config
 #ifdef PARA
   USE mod_para,only:maj_atomes_frt_ftm
@@ -271,7 +271,7 @@
           end if
        end select
        write(6,*)'you shoulndt be here', div%mpi_orig%rank
-       stop
+       call arret_ndm
     end do
        
   end subroutine tolstoi

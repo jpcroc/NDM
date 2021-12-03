@@ -1,6 +1,7 @@
 module Mat_utils_mod
    USE T_kind_param_m, ONLY:  double
-  implicit none
+   USE arret_ndm_mod,only:arret_ndm
+   implicit none
 
   interface fillbuffer3D
      module procedure fillbuffer3Dreal
@@ -573,7 +574,7 @@ END FUNCTION matdet
        if (.not.right) then
           write(*,*)"WARNING: your reper is not right handed."
           write(*,*)"WARNING: This is a critical issue. The LAMMPS results are wrong !!!!!"
-          stop
+          call arret_ndm
        end if
 
        new_mat(1,1) = norme(A)

@@ -1,4 +1,5 @@
 module montecarlo_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
        &lspaceNDM,rang,it,firsttime_lammps,posa,forca,erg2ev,parallele,fnam,fnamcout,&
@@ -443,7 +444,7 @@ contains
              end if !sur direction
           end if
 !!$          call mpi_finalize(ierr)
-!!$          stop
+!!$          call arret_ndm
        end do !boucle nparapath
        if ((lbigmaster).and.(lparapath)) then
           call parapath%mpi_master%sum(weff_npp)
@@ -1976,7 +1977,7 @@ if (lparapath) then
    if (mod(nprocs,2*nparapath).ne.0) then
       write(6,*)'nprocs/2*nparapath <>0 STOP'
       call MPI_FINALIZE(ierr)
-      stop
+      call arret_ndm
    end if
    parapath%mpi_orig%nproc=nprocs
    parapath%mpi_orig%rank=rang
@@ -2201,12 +2202,12 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
 #else
      write(6,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'
      call MPI_FINALIZE(ierr)
-     stop
+     call arret_ndm
 #endif
 
 #else
      write(6,*)'Ipotentiel<0 (lammps) et NON para en MCGC : stop'
-     stop
+     call arret_ndm
 #endif       
 
   end if
@@ -2346,12 +2347,12 @@ subroutine initN(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_n
 #else
      write(6,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'
      call MPI_FINALIZE(ierr)
-     stop
+     call arret_ndm
 #endif
 
 #else
      write(6,*)'Ipotentiel<0 (lammps) et NON para en MCGC : stop'
-     stop
+     call arret_ndm
 #endif       
 
   end if

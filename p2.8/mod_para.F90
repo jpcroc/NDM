@@ -1,4 +1,5 @@
 module mod_para
+   USE arret_ndm_mod,only:arret_ndm
 #ifdef PARA
   use Tpara,only: NDM_MPI_REAL_DOUBLE,MPI_COMM_space, myidsp,nprocspace,nprocs,ierr,status,para_space_config			! numero de process mis là pour être utilisé en sequentiel
   use mpi
@@ -1035,7 +1036,7 @@ contains
           if (ind_loc==-1) then
              print *,myidsp,'!!!Pb!!! Reception du proc',proc_source,'d''un atome fantome inexistant'
              call MPI_FINALIZE(ierr)
-             stop 
+             call arret_ndm 
              !call arret_ndm
           endif
 
@@ -1199,8 +1200,8 @@ contains
           if (ind_loc==-1) then
              print *,myidsp,'!!!Pb!!! Reception du proc',proc_source,'d''un atome non local'
              call MPI_FINALIZE(ierr)
-             stop 
-             stop
+             call arret_ndm 
+             call arret_ndm
              !call arret_ndm
           endif
 

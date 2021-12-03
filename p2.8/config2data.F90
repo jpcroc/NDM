@@ -1,6 +1,6 @@
 module config2data_mod
   
-  
+   USE arret_ndm_mod,only:arret_ndm  
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: Matinv,is_upper_triangular,convert_cell
   USE gen_com_m, ONLY : position_conversion_lammps,energy_conversion_lammps
@@ -90,8 +90,9 @@ contains
           write(63,"(I7,A)") IM,' atoms'        
        elseif((IM.lt.100000000).and.(IM.gt.10000000))then
           write(63,"(I8,A)") IM,' atoms'         
-       else 
-          stop 'ADD FORMAT'
+       else
+          write(6,*)'add format'
+          call arret_ndm 
        endif
        write(6,*)
        write(6,*) " a = (xhi-xlo,0,0); b = (xy,yhi-ylo,0); c = (xz,yz,zhi-zlo). "

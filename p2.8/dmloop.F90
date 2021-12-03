@@ -1,4 +1,5 @@
 module dmloop_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE calfo_mod,only: calfo
   USE dyn_mod,only: dyn
   USE analyseT_mod,only: analyseT
@@ -137,7 +138,7 @@ contains
 
        case default
           write (6, *) 'ne sait pas quoi faire stop'
-          stop
+          call arret_ndm
        end select
 
        call  driver_caltabt_DM(sig,potist,atdml,celndm,boxndm,psc,lperiod)

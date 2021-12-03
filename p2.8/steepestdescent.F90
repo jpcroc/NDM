@@ -1,5 +1,5 @@
 module steepestdescent_mod
-
+   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:rang
 
@@ -247,7 +247,7 @@ contains
     write(unitgc,*)
     write(unitgc,'(A, 3E21.12)')"a0   c0   b0 ",a,c,b
     write(unitgc,'(A, 3E21.12)')"Va Vc Vb ",Va,Vc,Vb
-    !    stop
+    !    call arret_ndm
 
     ab=(a+b)/2
 

@@ -1,5 +1,6 @@
 ! ****************************************************************
 module rasmolT_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:rang,ivisu,ldesinteg,lpkbar,lspaceNDM,&
        &cunitP,it,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass,rang
@@ -83,7 +84,7 @@ contains
 !!$    call atmol%print(unit=500+rang)
     if (atmol%im_glob==0) then
        write(6,*)'rasmolT im_glob stop'
-       stop
+       call arret_ndm
     end if
 
     if (present(ivisumol)) then
@@ -123,7 +124,7 @@ contains
     if (latcomp.eqv..false.) then
        if (laux) then
           write(6,*)'laux TRUE et latcomp FAUX  stop (FLEMME)'
-          stop
+          call arret_ndm
        end if
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 !          write(6,*)'IMRASMOL',atmol%im,atmol%imm,atmol%im_glob,atmol%imm_glob
@@ -139,7 +140,7 @@ contains
        else
           write(6,*)'latcomp=false et (nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) ??? stop'
           write(6,*)latcomp,nprocspace,lspaceNDM
-          stop
+          call arret_ndm
        end if
     else
        if (rgloc==0) then
@@ -256,7 +257,7 @@ contains
           end_name='.xfg'
        case default
           write(6,*)'wrong ivisu',ivisum,ivisu
-          stop
+          call arret_ndm
        end select
        
        if (present(itapp))then

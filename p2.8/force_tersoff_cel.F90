@@ -1,4 +1,5 @@
 module force_tersoff_cel_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:lcalcjq,potistersoff,potiszbl
   USE calfocommon
@@ -384,7 +385,7 @@ contains
 #ifdef PARA
     if (nprocspace.gt.1) then
        write(6,*)'tersoff para ne fonctionne pas (envoi de "fp" non définis)'
-!       stop
+!       call arret_ndm
        call maj_fp_frt(psc,atcf,celcf)
     end if
 #endif

@@ -1,4 +1,5 @@
 module SMjuli
+   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   USE gen_com_m, ONLY: ev2erg,A2cm
   USE var_pot, ONLY: lue_typ,npotentiel
@@ -74,7 +75,7 @@ ipotentiel,typ_pot_pair)
     if (npotentiel.gt.1) then
        if (ntyp.ne.2)then
           write(6,*)'JuLi ZrC seulement pour ntyp=2'
-          stop
+          call arret_ndm
        end if
     end if
     ntyp=2
@@ -141,13 +142,13 @@ ipotentiel,typ_pot_pair)
        if(lue_typ(1).EQV..true.)then
           if (ty(1).ne.'Zr')then 
              write(6,*)'JuLi ZrC seulement pour Zr=1'
-             stop
+             call arret_ndm
           end if
        end if
        if(lue_typ(2).EQV..true.)then
           if (ty(2).ne.'C')then 
              write(6,*)'JuLi ZrC seulement pour C=2'
-          stop
+          call arret_ndm
        end if
        end if
     end if
@@ -207,11 +208,11 @@ ipotentiel,typ_pot_pair)
     end IF
     IF (present(drho)) then
        write(6,*) 'pas programm�!'
-       stop
+       call arret_ndm
     end IF
     IF (present(ddrho))then
        write(6,*) 'pas programm�!'
-       stop
+       call arret_ndm
     end IF
 
     RETURN
@@ -270,11 +271,11 @@ ipotentiel,typ_pot_pair)
        end IF
     IF (present(dErep))  then
        write(6,*) 'pas programm�!'
-       stop
+       call arret_ndm
     end IF
     IF (present(ddErep)) then
        write(6,*) 'pas programm�!'
-       stop
+       call arret_ndm
     end IF
     RETURN
     !-----------------------------------

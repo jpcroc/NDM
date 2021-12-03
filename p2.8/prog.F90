@@ -1,4 +1,5 @@
 module prog_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE init_mod,only: init
   USE calfo_mod,only: calfo
   USE endrunT_mod,only: endrunT
@@ -171,7 +172,7 @@ contains
        class is (atom_config_d)
 !!$          case default
 !!$             write(6,*)'incohérence entre type(atom_config) et dmtype'
-!!$             stop
+!!$             call arret_ndm
 !!$          end select
 !!$          class is (atom_config_d)
 !!$          select case (dmtype) 
@@ -196,7 +197,7 @@ contains
           case(30,31)
              if (lcdp) then
                 write(6,*)'noc cdp with old GC'
-                stop
+                call arret_ndm
              else
                 call gcII (atdml%atom_config,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
              endif
@@ -219,11 +220,11 @@ contains
 !!$             call dmloop_vverlet (atdml,celndm,boxndm,psc0)
 !!$          case (3,30)
 !!$             write(6,*)'incohérence entre type(atom_config_d) et dmtype=GC'
-!!$             stop
+!!$             call arret_ndm
           case(112)
              call d_at_at(atdml,celndm,boxndm)
           case(111)
-             stop
+             call arret_ndm
 !             if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION V2 ****'
 !             CALL one_calc(atdml,celndm,boxndm,psc=psc0) 
           case(11)

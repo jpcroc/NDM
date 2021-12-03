@@ -1,4 +1,5 @@
 module vect_dist_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   USE notperiod_mod,only: notperiod
   USE cryst_to_cart_mod,only: cryst_to_cart
@@ -25,7 +26,7 @@ contains
 
     if (((present(rum)).and.(.not.(present(linter)))).or.((present(linter)).and.(.not.(present(rum))))) then
        write(6,*)'incohérence dans appel a vect_dist'
-       stop
+       call arret_ndm
     end if
     xp(:,1)=atcf%xp(:,i)
     xp(:,2)=atcf%xp(:,j)
@@ -93,7 +94,7 @@ contains
 
     if (((present(rumin)).and.(.not.(present(lclose)))).or.((present(lclose)).and.(.not.(present(rumin))))) then
        write(6,*)'incohérence dans appel a closest_at'
-       stop
+       call arret_ndm
     end if
     lclose=.false.
     distance0=1d10

@@ -1,4 +1,5 @@
 module force_tersoff_facteurs
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   USE var_pot, ONLY:  ipotentiel
   implicit none
@@ -25,7 +26,7 @@ contains
        if (ster(ptyp).lt.rter(ptyp))then
           write(6,*)'contradiction entre tersoff.potin et ipotentiel'
           write(6,*)'ipotentiel=',ipotentiel,'ster<rter'
-          stop
+          call arret_ndm
        end if
 
        IF (present(fc)) then
@@ -48,7 +49,7 @@ contains
        if (ster(ptyp).gt.rter(ptyp))then
           write(6,*)'contradiction entre tersoff.potin et ipotentiel'
           write(6,*)'ipotentiel=',ipotentiel,'ster>rter'
-          stop
+          call arret_ndm
        end if
 !       fact=50.
        fact=10.
@@ -95,7 +96,7 @@ contains
        END IF
     case default
        write(6,*)'quel tersoff ?',ipotentiel
-       stop
+       call arret_ndm
     end select
     
     RETURN

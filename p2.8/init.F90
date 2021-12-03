@@ -1,5 +1,5 @@
 module init_mod
-
+   USE arret_ndm_mod,only:arret_ndm
   use init_pot_mod,only:init_pot,init_pot2
   USE transf_mod,only: transf
   USE initspeed_mod,only: initspeed
@@ -170,15 +170,15 @@ contains
        ilangevin=1
        if((ecelec==0))then
           write(6,*) 'eccelec<>0  and l2T : STOP'
-          stop
+          call arret_ndm
        end if
        if ((i2T==0).and.(t_cpl.lt.0)) then
           write(6,*) 'i2T=0 t_cpl<0 and l2T : STOP'
-          stop
+          call arret_ndm
        end if
        if (celndm%nox.le.0 ) then
           write(6,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
-          stop
+          call arret_ndm
        end if
 
 
@@ -208,7 +208,7 @@ contains
              call initcasca(atdml,celndm,boxndm)
           class default
              write(6,*) 'lcasca and not atom_donfig_e ?'
-             stop
+             call arret_ndm
           end select
 
 114       format(a3,1x,3(f10.4,1x),i5)

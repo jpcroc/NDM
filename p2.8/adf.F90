@@ -1,4 +1,5 @@
 module adf_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m, ONLY:cont888,it,linstantfda,nfda,pi,rang,thetamax,thetamin,timel
   USE var_pot, ONLY:ntyp,ty,fda,ty
   implicit none
@@ -129,7 +130,7 @@ contains
           if (it<=999999999.and.it>99999999) write(32, 900) it
           if  (it>999999999) then
              write (6, *) 'probleme de format dans calcangle.f90'
-             stop
+             call arret_ndm
           endif
           rewind 32
 

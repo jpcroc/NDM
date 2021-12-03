@@ -1,4 +1,5 @@
 module transf_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE atomconfig,only:atom_config
   implicit none 
 contains
@@ -87,12 +88,12 @@ contains
        atcf%ityp(atcf%im)=itii
        if(atcf%im.gt.atcf%imm) then
           write(6,*)'im> imm' 
-          stop
+          call arret_ndm
        end if
 
     case default
        write (6, *) 'mauvais type de chnagement'
-       stop
+       call arret_ndm
     end select
 
     write(6,*)'AUTRE MODIFICATION ?'

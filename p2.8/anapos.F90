@@ -1,4 +1,5 @@
 module posana
+   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   use setnoxsimple_mod,only:setnoxsimple
   USE sic
@@ -156,15 +157,15 @@ contains
 
     if ((idistord.gt.0).and.(.not.lperiod)) then
        write(6,*) 'distord seulement avec lperiod =true.'
-       stop
+       call arret_ndm
     end if
     if ((idistord.gt.0).and.(.not.lperiod)) then
        write(6,*) 'distord ne fonctionne pas '
-       stop
+       call arret_ndm
     end if
     if ((idistord.ge.3).and.(maxval(pstmax)==0))then
        write(6,*) 'isdistrod=3 preciser pstmax'
-       stop
+       call arret_ndm
     end if
     if(namecr=='ZZ') then
        namecr=fnam(1:lenfnam)
@@ -195,7 +196,7 @@ contains
              call gin2ndm(atcr,celcr,boxcr,fnamcr,rdum,lrepartition=.false.)
           case default
              write(6,*)'set igencr to 1 or 0 for .crcin or .crgin file respectively'
-             stop
+             call arret_ndm
           end select
           call caltabtc(celcr,atcr,lperiod,boxcr)
        write(6,*)
@@ -227,14 +228,14 @@ contains
        write(6,*)'boxf <> boxcr'
        write(6,*)'atcf',boxcf%at
        write(6,*)'atcr',boxcr%at
-!       stop
+!       call arret_ndm
     end if
     
        if (ldecal) then
           if (idecal.gt.0) then
              if (idecal.gt.atcf%im) then
                 write(6,*)'idecal >atcf%im ; stop'
-                stop
+                call arret_ndm
              end if
              do ic=1,3
                 decal(ic)=atcr%xp(ic,idecal)-atcf%xp(ic,idecal)
@@ -263,7 +264,7 @@ contains
        if(ldetdec) then
           if (atcf%im.ne.atcr%im) then
              write(6,*)'detdec impossible'
-             stop
+             call arret_ndm
           end if
           do i=1,atcf%im
              write(490,'(I8,3E16.5)')i,atcr%xp(1,i)-atcf%xp(1,i),atcr%xp(2,i)-atcf%xp(2,i),atcr%xp(3,i)-atcf%xp(3,i)
@@ -275,7 +276,7 @@ contains
              deltz=deltz+(atcr%xp(3,i)-atcf%xp(3,i))/atcf%im
           end do
           write(6,*)deltx*1d8,delty*1d8,deltz*1d8
-          stop
+          call arret_ndm
        end if
 
 !comparaison avec cristal
@@ -291,7 +292,7 @@ contains
 
     close(175)     
 
-    !  if (dmtype==6)   stop
+    !  if (dmtype==6)   call arret_ndm
     !    write(6,*)'fin compcr'
 
     deallocate(na)

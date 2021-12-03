@@ -1,4 +1,5 @@
 module endrunT_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE analyseT_mod,only:analyseT
   use calcangle_mod,only:adft,adf0
   USE arret_ndm_mod,only:arret_ndm

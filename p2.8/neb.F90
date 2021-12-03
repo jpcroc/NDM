@@ -384,7 +384,7 @@ contains
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1) &
                          &call paraneb%mpi_master%recv(atneb(ii+1)%xp(1:3,1:atneb(ii)%im),paraneb%mpi_master%rank+1,10004)
                    enepathev(:)=enepath(:)*erg2ev
-                   !             stop
+                   !             call arret_ndm
 #endif             
 
                    if (itesauv.GT.0) then
@@ -436,7 +436,7 @@ contains
        if (rang==0) write(6,*) 'nebtype=1 for DRAG'
        if (rang==0) write(6,*) 'nebtype=2 for  NEB'
        if (rang==0) write(6,*) 'STOP in the neb.f90'
-       stop
+       call arret_ndm
 
     end select
 

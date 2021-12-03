@@ -1,4 +1,5 @@
 module calfoberend_mod
+  USE arret_ndm_mod,only:arret_ndm
   use atomconfig,only:atom_config_d
   USE T_kind_param_m, ONLY:  double
   use tempinstT_mod,only:tempinstT
@@ -71,7 +72,7 @@ contains
        end do
     case default 
        write(6,*)'check ilangevin'
-       stop
+       call arret_ndm
     end select
 
 

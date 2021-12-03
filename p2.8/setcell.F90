@@ -1,6 +1,7 @@
 module setcell
 #ifndef ML
 #endif
+   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE read_val,only:nox,noy,noz,rvois
   USE arret_ndm_mod,only: arret_ndm
@@ -49,7 +50,7 @@ contains
        !cosboite  stop
        if (lrctest) then
           write (6, *) 'STOP ; supprimer avec lrctest=.false. dans din'
-          stop
+          call arret_ndm
        endif
     end if
      if ((rang==0).and.(lverb)) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz

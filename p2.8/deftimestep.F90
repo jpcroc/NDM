@@ -1,4 +1,5 @@
 module deftimestep_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,it,itetimestep,lcasca,lperiod,oldtstep,&
        &rang,timel,tsmin,tstep,two,usdh,vmax,l2T,lspaceNDM
   use atomconfig, only : atom_config_d

@@ -1,4 +1,5 @@
 module initcasca_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
 
   USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,lderive,lperiod,&
@@ -70,7 +71,7 @@ contains
     allocate (vpmod2(atcf%imm_glob))
     if (atcf%im_glob==0) then
        write(6,*)'inicasca im_glob stop'
-       stop
+       call arret_ndm
     end if
 
     select type (atcf)
@@ -115,7 +116,7 @@ contains
        write(6,*)'ATOM ',iko, '  TYPE ',atcfcasc%ityp(iko), ' energy=',eko
        if (iko>atcf%im_glob) then
           write (6, *) 'wrong input cascade iko eko ', iko, eko
-          stop
+          call arret_ndm
        endif
 !    endif                                      ! rang=0
 
@@ -129,7 +130,7 @@ contains
        call cryst_to_cart (atcfcasc%imm, atcfcasc%xp, boxndm%bg, -1)    !cart vers cryst
        if (.not.atcf%lax) then
           write(6,*) 'no ax and casca stop'
-          stop
+          call arret_ndm
        end if
        call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%bg, -1)    !cart vers cryst
        !debug write(6,*)xp(1,ikoloc),xx0
@@ -162,7 +163,7 @@ contains
     if (znorm==0)then
        if (parallele) then
           write(6,*) 'tirage al�atoire projectile pas programm�'
-          stop
+          call arret_ndm
        endif
        write(6,*) 'tirage al�atoire xko '
        call random_seed(size=seed_size)
@@ -279,7 +280,7 @@ contains
 
     if (tifac1<1.0) then
        write (6, *) 'sthing wrong deftimestep 1.0'
-       stop
+       call arret_ndm
     else if (tifac1<2.0) then
        tifac2 = float(1)
     else if (tifac1<5.0) then
@@ -288,7 +289,7 @@ contains
        tifac2 = float(5)
     else
        write (6, *) 'sthing wrong deftimestep 1.0'
-       stop
+       call arret_ndm
     endif
     oldtstep = tstep
     tstep = tifac2

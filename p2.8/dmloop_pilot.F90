@@ -1,4 +1,5 @@
 module dmloop_pilot_mod
+  USE arret_ndm_mod,only:arret_ndm
   USE atomconfig,only : atom_config_d, atom_config_e
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config

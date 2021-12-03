@@ -1,6 +1,8 @@
 module Tersoff_mod 
-      implicit none
-      contains
+   USE arret_ndm_mod,only:arret_ndm
+  implicit none
+
+    contains
 !     nvar=3*nb d'atome
 !     ndim = dimension des tableaux d'atomes
 !     xvar(3*nbd'at)=positions
@@ -98,7 +100,7 @@ module Tersoff_mod
 
                                 !          IF (DR2IJ.GT.RPD2) then
                                 !             write(6,*)'ceci ne doit pas arriver !',dr2ij,rpd2
-                                !             stop
+                                !             call arret_ndm
                                 !          endif
 !     
 
@@ -147,7 +149,7 @@ module Tersoff_mod
                DR2IK = DXIK**2+DYIK**2+DZIK**2
                                 !            IF (DR2IK.GT.RPD2) then
                                 !               write(6,*)'ceci ne doit pas arriver K!',dr2ik,rpd2
-                                !               stop
+                                !               call arret_ndm
                                 !            endif
 
 !     
