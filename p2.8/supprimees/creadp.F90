@@ -10,6 +10,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
+    USE defcdp
     USE var_pot, ONLY:ntyp,ty
     implicit none
 
@@ -38,20 +39,11 @@ contains
     real(double), dimension(1,3) :: cv
     real(double),dimension(:),allocatable:: edrat
 
-
     write(6,*)'creadp',it,ideftyp
-
-
     itapp=it-1
     select case (ideftyp)
-
     case(0)
-
-
-
-
        ntry=0
-
 1      continue
        ntry=ntry+1
        ! tirer une position d'insertion
@@ -116,6 +108,35 @@ contains
        call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
        call cryst_to_cart (1, xposinttest(:), at, 1) !cryst vers cart sur cv
 
+       ! choix du type de  l'atome à tirer si il y a des Ed non nuls
+       edt=0.
+       do iti=1,ntyp
+          if (ed(iti).ne.0) Edt=edt+1./Ed(iti)
+       end do
+       !     write(6,*)
+       if (Edt.ne.0) then
+          if (allocated(edrat).EQV..false.) then
+             allocate(edrat(ntyp))
+             if (ed(1).ne.0) edrat(1)=1/(ed(1)*edt)
+             !           write(6,*)'edrat (1)', edrat(1)
+             do iti=2,ntyp
+                if (ed(iti).ne.0) then
+                   edrat(iti)=edrat(iti-1)+1/(ed(iti)*edt)
+                else
+                   edrat(iti)=edrat(iti-1)
+                end if
+                !              write(6,*)'edrat (iti)', edrat(iti)
+             end do
+          end if
+          call random_number(z1)
+          do iti=1,ntyp
+             if (z1.le.edrat(iti)) then
+                ioxdef=iti
+                exit
+             end if
+          end do
+          write(6,*)'Ed : INTRODUCTION PF de type ', ty(iti)
+       end if
 
        ! deplacement acceptable
        ! tirer un atome
@@ -272,4 +293,4 @@ contains
 
     return
   end subroutine creadp
-end module creadp_mod
+end module

@@ -1,0 +1,6 @@
+ &inputcdp
+ nfp=12
+  itprep=4
+  itecdp=4
+  typint=1
+ &end

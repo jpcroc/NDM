@@ -128,7 +128,7 @@ contains
 
        call atdml%init(im,imm,ltabvois,nvois,rvois=rv)
        call init(atdml,boxndm,celndm,psc0)
-
+!       call atdml%print
 #ifdef DECOUP
        ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
        return

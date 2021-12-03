@@ -157,12 +157,7 @@ contains
     integer :: ierror
 #if defined(PARA)
     integer,dimension(MPI_STATUS_SIZE):: statut
-
-    !=====
-
-    !=====
     ierror=0
-
     if (present(sourcein)) then
        call MPI_PROBE(sourcein, tag, mpic%comm,statut,ierror)
        sourceout=statut(MPI_SOURCE)
@@ -379,7 +374,7 @@ contains
 
 
   !=========================================================================
-  subroutine mpic_min_dp(mpic,array,torank)
+ subroutine mpic_min_dp(mpic,array,torank)
     implicit none
     class(mpi_communicator),intent(in) :: mpic
     real(double),intent(inout) :: array(..)
@@ -929,8 +924,7 @@ contains
     integer,allocatable :: arrayval(:)
     integer,intent(in)::val
     integer::valp,proc_source
-
-    integer::iproc,ierror
+    integer::iproc,ierror,sourceout,statut
 
     arrayval(:)=0
 #ifdef PARA    
@@ -940,15 +934,18 @@ contains
              if (iproc==torank)then 
                 arrayval(torank)=val
              else
-                call mpic%probe(999,sourceout=proc_source)
-                call mpic%recv(valp,proc_source,999)
+!                call MPI_PROBE(MPI_ANY_SOURCE, 114, mpic%comm,statut,ierror)
+                call mpic%probe(114,sourceout=proc_source)
+!                sourceout=statut(MPI_SOURCE)
+                !                call MPI_SEND( val, 1,  MPI_INTEGER, torank, 114,mpic%comm, ierror)
+                call MPI_RECV( valp, 1, MPI_INTEGER, sourceout, 114,mpic%comm, status,ierror)
+!                call mpic%recv(valp,proc_source,999)
                 arrayval(proc_source)=valp
              end if
           end do
        else
+          call MPI_SEND( val, 1,  MPI_INTEGER, torank, 114,mpic%comm, ierror)
           !call mpic%send(val,torank,999)
-          call MPI_SEND( val, 1,  MPI_INTEGER, torank, MPI_ANY_TAG,mpic%comm, ierror)
-
        end if
     else
        arrayval(mpic%rank)=val
@@ -969,7 +966,7 @@ contains
     real(double),intent(in)::val
     real(double)::valp
 
-    integer::iproc,proc_source
+    integer::iproc,proc_source,ierror,sourceout,statut
     arrayval(:)=0
 #ifdef PARA
 
@@ -980,12 +977,13 @@ contains
                 arrayval(torank)=val
              else
                 call mpic%probe(999,sourceout=proc_source)
-                call mpic%recv(valp,proc_source,999)
+                call MPI_RECV( valp, 1, NDM_MPI_REAL_DOUBLE, sourceout, 115,mpic%comm, status,ierror)
+!                call mpic%recv(valp,proc_source,999)
                 arrayval(proc_source)=valp
              end if
           end do
        else
-          call mpic%send(val,torank,999)
+          call MPI_SEND( val, 1,  NDM_MPI_REAL_DOUBLE, torank, 115,mpic%comm, ierror)
        end if
     else
        arrayval(mpic%rank)=val
@@ -1006,9 +1004,8 @@ contains
     complex(double),allocatable :: arrayval(:)
     complex(double),intent(in)::val
     complex(double)::valp
-    integer::proc_source
-
-    integer::iproc,ierror
+    integer::proc_source,ierror,sourceout,statut
+    integer::iproc
     arrayval(:)=0
 #ifdef PARA
 
@@ -1019,14 +1016,16 @@ contains
                 arrayval(torank)=val
              else
                 call mpic%probe(999,sourceout=proc_source)
-                call MPI_RECV( valp, 1,MPI_DOUBLE_COMPLEX, proc_source, MPI_ANY_TAG,mpic%comm,status, ierror)
+                call MPI_RECV( valp, 1, MPI_DOUBLE_COMPLEX, sourceout, 116,mpic%comm, status,ierror)
+!                call MPI_RECV( valp, 1,MPI_DOUBLE_COMPLEX, proc_source, MPI_ANY_TAG,mpic%comm,status, ierror)
                 !call mpic%recv(valp,proc_source,999)
                 arrayval(proc_source)=valp
              end if
           end do
        else
           !call mpic%send(val,torank,999)
-          call MPI_SEND( val, 1,  MPI_DOUBLE_COMPLEX, torank, MPI_ANY_TAG,mpic%comm, ierror)
+          call MPI_SEND( val, 1,  MPI_DOUBLE_COMPLEX, torank, 116,mpic%comm, ierror)
+!          call MPI_SEND( val, 1,  MPI_DOUBLE_COMPLEX, torank, MPI_ANY_TAG,mpic%comm, ierror)
        end if
     else
        arrayval(mpic%rank)=val
@@ -1048,7 +1047,7 @@ contains
     logical,intent(in)::val
     logical::valp
 
-    integer::iproc,proc_source
+    integer::iproc,proc_source,ierror,sourceout,statut
 
 #ifdef PARA    
     if (present (torank)) then
@@ -1058,7 +1057,8 @@ contains
                 arrayval(torank)=val
              else
                 call mpic%probe(999,sourceout=proc_source)
-                call mpic%recv(valp,proc_source,999)
+                !                call mpic%recv(valp,proc_source,999)
+                call MPI_RECV( valp, 1, MPI_LOGICAL, sourceout, 118,mpic%comm, status,ierror)
                 arrayval(proc_source)=valp
              end if
           end do
@@ -1067,7 +1067,8 @@ contains
        end if
     else
        arrayval(mpic%rank)=val
-       call mpic%bcast(mpic%rank,arrayval(mpic%rank))
+!       call mpic%bcast(mpic%rank,arrayval(mpic%rank))
+       call MPI_SEND( val, 1,  MPI_LOGICAL, torank, 118,mpic%comm, ierror)
     end if
 #else
     arrayval(0)=val

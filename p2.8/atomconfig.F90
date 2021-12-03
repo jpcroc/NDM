@@ -108,13 +108,13 @@ contains
     if (present(im_glob))then
  !      write(6,*)'PRESENT imglob',im_glob
        atconf%im_glob=im_glob
-    else
-       atconf%im_glob=0
+!    else
+!       atconf%im_glob=0
     end if
     if (present(imm_glob))then
 !       write(6,*)'PRESENT imMglob',imm_glob
        atconf%imm_glob=imm_glob
-    else
+!    else
 !       atconf%imm_glob=0
     end if
     if (present(immin))then
@@ -962,10 +962,13 @@ contains
        im=atin%im
     end if
           
-
+    atprt%im_glob=atin%im_glob
+    atprt%imm_glob=atin%imm_glob
     
     write(unitw,*)'im = ',atprt%im
     write(unitw,*)'imm = ',atprt%imm
+    write(unitw,*)'im_glob = ',atprt%im_glob
+    write(unitw,*)'imm_glob = ',atprt%imm_glob
     write(unitw,*)'icaltabt = ',atprt%icaltabt
     write(unitw,*)'ltabvois ', atprt%ltabvois
 !    write(6,*)
@@ -1272,7 +1275,7 @@ contains
 #ifdef PARA
     integer::idmaster,idloc,icomm ! proc master,proclocal ,communicateur
 
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip,iag,itot
     integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -1280,6 +1283,9 @@ contains
     integer:: cst(3)
     type(mpi_communicator)::mpic
 
+    logical,allocatable::lnag(:)
+    integer::natgM
+    integer,allocatable::inag(:)
 
     integer,allocatable::nag(:)
     integer::imloc,imloc3,iproc,imrecv,icomp,imrecv3,imrecv9,imloc9
@@ -1291,11 +1297,72 @@ contains
     else
        carac=caracT//'np'
     end if
-
     idmaster=0
     idloc=div%mpi_image%rank
     npim=div%mpi_image%nproc
     mpic=div%mpi_image
+
+    natgM=maxval(atcfloc%num_at_glob(1:atcfloc%im))
+    call mpic%max(natgM)
+    allocate(lnag(natgM))
+    allocate(inag(natgM))
+    inag=0
+    lnag=.false.
+
+    if (idloc==idmaster) then
+       imtot=0
+       do iproc=0,npim-1
+          if (iproc==idmaster) then
+             imrecv=atcfloc%im
+             imtot=imtot+imrecv
+             do iloc=1,imrecv
+                lnag(atcfloc%num_at_glob(iloc))=.true.
+             end do
+          else
+             if (allocated(ibuffer)) then
+                deallocate(rbuffer);deallocate(ibuffer);deallocate(lbuffer)
+             end if
+             call  mpic%probe(11011,sourceout=proc_source)
+             call mpic%RECV(imrecv,proc_source, 11011)
+             imtot=imtot+imrecv
+             allocate(nag(imrecv))
+             call mpic%RECV(nag(1:imrecv), proc_source,10014)
+             do iloc=1,imrecv
+                lnag(nag(iloc))=.true.
+             end do
+             deallocate(nag)
+          end if
+       end do
+       if (imtot.ne.atcfcomp%im) then
+          write(6,*)'atomes perdus ?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
+          call MPI_finalize(ierr)
+          stop
+       end if
+       itot=0
+       do iag=1,natgM
+          if (lnag(iag)) then
+             itot=itot+1
+             inag(iag)=itot
+          end if
+       end do
+       if (itot.ne.imtot) then  
+          write(6,*)'atomes perdus 2 ?',itot,imtot
+          call MPI_finalize(ierr)
+          stop
+       end if
+
+
+    else
+       imloc=atcfloc%im
+       allocate(nag(imloc))
+       call mpic%SEND(imloc,idmaster,11011)
+       nag(1:imloc)=atcfloc%num_at_glob(1:imloc)
+       call mpic%SEND(nag, idmaster, 10014)
+       deallocate(nag)
+    end if
+       
+
+    
     if (idloc==idmaster) then
        !       allocate(buffer(3,atloc%im));allocate(ibuffer(atloc%im));allocate(lbuffer(atloc%im))
        imtot=0
@@ -1311,18 +1378,18 @@ contains
              nag(1:imrecv)=atcfloc%num_at_glob(1:imrecv)
              do iloc=1,imrecv
 !                write(6,*)'L2M',iproc,iloc,nag(iloc)
-                atcfcomp%num_at_glob(nag(iloc))=nag(iloc)
-                atcfcomp%xp(1:3,nag(iloc))=atcfloc%xp(1:3,iloc)
-                atcfcomp%fp(1:3,nag(iloc))=atcfloc%fp(1:3,iloc)
-                atcfcomp%ityp(nag(iloc))=atcfloc%ityp(iloc)
-                if( allocated(atcfloc%lgul))  atcfcomp%lgul(nag(iloc))=atcfloc%lgul(iloc)
-                atcfcomp%proc_at(nag(iloc))=idmaster 
+                atcfcomp%num_at_glob(inag(nag(iloc)))=nag(iloc)
+                atcfcomp%xp(1:3,inag(nag(iloc)))=atcfloc%xp(1:3,iloc)
+                atcfcomp%fp(1:3,inag(nag(iloc)))=atcfloc%fp(1:3,iloc)
+                atcfcomp%ityp(inag(nag(iloc)))=atcfloc%ityp(iloc)
+                if( allocated(atcfloc%lgul))  atcfcomp%lgul(inag(nag(iloc)))=atcfloc%lgul(iloc)
+                atcfcomp%proc_at(inag(nag(iloc)))=idmaster 
                 select type(atcfloc)
                 class is (atom_config_d)
                    select type (atcfcomp)
                    class is (atom_config_d)
-                      atcfcomp%vp(1:3,nag(iloc))=atcfloc%vp(1:3,iloc)
-                      atcfcomp%xpp(1:3,nag(iloc))=atcfloc%xpp(1:3,iloc)
+                      atcfcomp%vp(1:3,inag(nag(iloc)))=atcfloc%vp(1:3,iloc)
+                      atcfcomp%xpp(1:3,inag(nag(iloc)))=atcfloc%xpp(1:3,iloc)
                    end select
                 end select
                 select type(atcfloc)
@@ -1330,13 +1397,13 @@ contains
                    select type (atcfcomp)
                    class is (atom_config_e)
                       if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
-                         atcfcomp%sigat(1:3,1:3,nag(iloc))=atcfloc%sigat(1:3,1:3,iloc)
+                         atcfcomp%sigat(1:3,1:3,inag(nag(iloc)))=atcfloc%sigat(1:3,1:3,iloc)
                       endif
                       if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
-                         atcfcomp%eat(nag(iloc))=atcfloc%eat(iloc)
+                         atcfcomp%eat(inag(nag(iloc)))=atcfloc%eat(iloc)
                       endif
                       if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
-                         atcfcomp%glangv(:,nag(iloc))=atcfloc%glangv(:,iloc)
+                         atcfcomp%glangv(:,inag(nag(iloc)))=atcfloc%glangv(:,iloc)
                       endif
                    end select
                 end select
@@ -1354,7 +1421,7 @@ contains
              allocate(nag(imrecv))
              call mpic%RECV(nag(1:imrecv), proc_source,10004)
              do iloc=1,imrecv
-                atcfcomp%num_at_glob(nag(iloc))=nag(iloc)
+                atcfcomp%num_at_glob(inag(nag(iloc)))=nag(iloc)
              end do
 
              call buffersizes (atcfloc,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,imrecv)
@@ -1374,9 +1441,9 @@ contains
              if (cst(1).ne.0)call mpic%recv(ibuffer,proc_source,314)
              if (cst(2).ne.0)call mpic%recv(lbuffer,proc_source,315)
              if (cst(3).ne.0)call mpic%recv(Rbuffer,proc_source,316)
-             call distribnag(nag,imrecv,atcfcomp,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf)
+             call distribnag(nag,inag,imrecv,atcfcomp,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf)
              do iloc=1,imrecv
-                atcfcomp%proc_at(nag(iloc))=proc_source !  ibuffer(1:imrecv)
+                atcfcomp%proc_at(inag(nag(iloc)))=proc_source !  ibuffer(1:imrecv)
              end do
 
              deallocate(nag)
@@ -1391,9 +1458,9 @@ contains
           call MPI_finalize(ierr)
           stop
        end if
-       do icomp=1,imtot
-          if (atcfcomp%num_at_glob(icomp).ne.icomp) then
-             write(6,*)'atomes mal rangés L2M ?',idloc, icomp,atcfcomp%num_at_glob(icomp)
+       do icomp=2,imtot
+          if (atcfcomp%num_at_glob(icomp).lt.atcfcomp%num_at_glob(icomp-1)) then
+             write(6,*)'atomes mal rangés L2M ?', icomp,atcfcomp%num_at_glob(icomp),atcfcomp%num_at_glob(icomp-1)
           end if
        end do
     else
@@ -1469,9 +1536,9 @@ contains
 
     if (idloc==idmaster) then
        allocate(mask(atcfcomp%imm))
-       do icomp=1,atcfcomp%im
-          if (atcfcomp%num_at_glob(icomp).ne.icomp) then
-             write(6,*)'atomes mal rangés M2L?',icomp,atcfcomp%num_at_glob(icomp)
+       do icomp=2,imtot
+          if (atcfcomp%num_at_glob(icomp).lt.atcfcomp%num_at_glob(icomp-1)) then
+             write(6,*)'atomes mal rangés M2L ?', icomp,atcfcomp%num_at_glob(icomp),atcfcomp%num_at_glob(icomp-1)
           end if
        end do
 
@@ -2212,8 +2279,8 @@ contains
   end subroutine copybuff
 
 
-  subroutine distribnag(nag,immax,atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf)
-    integer,intent(in),allocatable::nag(:)
+  subroutine distribnag(nag,inag,immax,atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf)
+    integer,intent(in),allocatable::nag(:),inag(:)
     integer, intent(in)::sizeI,sizel,sizer,immax
     integer, intent(in),dimension (0:26):: Iposf,Rposf,Lposf
     class(atom_config),intent(inout)::atcf
@@ -2237,7 +2304,7 @@ contains
        ivi=ivi+1
        do ip=1,size1
           ib=Iposf(ivi-1)+ip
-          atcf%num_at_glob(nag(ip))=ibuffer(ib)
+          atcf%num_at_glob(inag(nag(ip)))=ibuffer(ib)
           csi=csi+1
        end do
        !       call MPI_SEND(atcf%num_at_glob, size1, MPI_INTEGER, rgcib,104,comm,ierr)
@@ -2247,7 +2314,7 @@ contains
        ivi=ivi+1
        do ip=1,size1
           ib=Iposf(ivi-1)+ip
-          atcf%ityp(nag(ip))=ibuffer(ib)
+          atcf%ityp(inag(nag(ip)))=ibuffer(ib)
           csi=csi+1
        end do
     end if
@@ -2256,7 +2323,7 @@ contains
        ivi=ivi+1
        do ip=1,size1
           ib=Iposf(ivi-1)+ip
-          atcf%ielat(nag(ip))=ibuffer(ib)
+          atcf%ielat(inag(nag(ip)))=ibuffer(ib)
           csi=csi+1
        end do
     end if
@@ -2265,7 +2332,7 @@ contains
        ivi=ivi+1
        do ip=1,size1
           ib=Iposf(ivi-1)+ip
-          atcf%proc_at(nag(ip))=ibuffer(ib)
+          atcf%proc_at(inag(nag(ip)))=ibuffer(ib)
           csi=csi+1
        end do
        !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
@@ -2277,7 +2344,7 @@ contains
        ivl=ivl+1
        do ip=1,size1
           ib=Lposf(ivl-1)+ip
-          atcf%lgul(nag(ip))=Lbuffer(ib)
+          atcf%lgul(inag(nag(ip)))=Lbuffer(ib)
           csl=csl+1
        end do
     end if
@@ -2286,7 +2353,7 @@ contains
        do ip=1,size1
           do ic=1,3
              ib=Rposf(ivR-1)+3*(ip-1)+ic
-             atcf%xp(ic,nag(ip))=rbuffer(ib)
+             atcf%xp(ic,inag(nag(ip)))=rbuffer(ib)
              csR=csR+1
           end do
        end do
@@ -2297,7 +2364,7 @@ contains
        do ip=1,size1
           do ic=1,3
              ib=Rposf(ivR-1)+3*(ip-1)+ic
-             atcf%fp(ic,nag(ip))=rbuffer(ib)
+             atcf%fp(ic,inag(nag(ip)))=rbuffer(ib)
              csR=csR+1
           end do
        end do
@@ -2310,7 +2377,7 @@ contains
           ivi=ivi+1
           do ip=1,size1
              ib=Iposf(ivi-1)+ip
-             atcf%iwmax(nag(ip))=ibuffer(ib)
+             atcf%iwmax(inag(nag(ip)))=ibuffer(ib)
              csi=csi+1
           end do
 
@@ -2320,7 +2387,7 @@ contains
           ivi=ivi+1
           do ip=1,sizeV
              ib=Iposf(ivi-1)+ip
-             atcf%indi(nag(ip))=ibuffer(ib)
+             atcf%indi(inag(nag(ip)))=ibuffer(ib)
              csi=csi+1
           end do
           !          call MPI_SEND(atcf%indi, sizeV, MPI_INTEGER, rgcib,108,comm,ierr)
@@ -2334,7 +2401,7 @@ contains
           do ip=1,size1
              do ic=1,3
                 ib=Rposf(ivR-1)+3*(ip-1)+ic
-                atcf%vp(ic,nag(ip))=rbuffer(ib)
+                atcf%vp(ic,inag(nag(ip)))=rbuffer(ib)
                 csR=csR+1
              end do
           end do
@@ -2346,7 +2413,7 @@ contains
           do ip=1,size1
              do ic=1,3
                 ib=Rposf(ivR-1)+3*(ip-1)+ic
-                atcf%xpp(ic,nag(ip))= rbuffer(ib)
+                atcf%xpp(ic,inag(nag(ip)))= rbuffer(ib)
                 csR=csR+1
              end do
           end do
@@ -2360,7 +2427,7 @@ contains
              ivR=ivR+1
              do ip=1,size1
                 ib=Rposf(ivR-1)+ip
-                atcf%eat(nag(ip))=Rbuffer(ib)
+                atcf%eat(inag(nag(ip)))=Rbuffer(ib)
                 csR=csR+1
              end do
              !call MPI_SEND(atcf%eat, size1, NDM_MPI_REAL_DOUBLE, rgcib,111,comm,ierr)
@@ -2372,7 +2439,7 @@ contains
              do ip=1,size1
                 do ic=1,3
                    ib=Rposf(ivR-1)+3*(ip-1)+ic
-                   atcf%glangv(ic,nag(ip))=rbuffer(ib)
+                   atcf%glangv(ic,inag(nag(ip)))=rbuffer(ib)
                    csR=csR+1
                 end do
              end do
@@ -2385,7 +2452,7 @@ contains
              do ip=1,size1
                 do ic=1,3
                    ib=Rposf(ivR-1)+3*(ip-1)+ic
-                   atcf%ax(ic,nag(ip))= rbuffer(ib)
+                   atcf%ax(ic,inag(nag(ip)))= rbuffer(ib)
                    csR=csR+1
                 end do
              end do
@@ -2399,7 +2466,7 @@ contains
                 do ic=1,3
                    do ic2=1,3
                       ib=Rposf(ivR-1)+(ip-1)*9+(ic-1)*3+ic2
-                      atcf%sigat(ic,ic2,nag(ip))=rbuffer(ib)
+                      atcf%sigat(ic,ic2,inag(nag(ip)))=rbuffer(ib)
                       csR=csR+1
                    end do
                 end do

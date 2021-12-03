@@ -158,7 +158,6 @@ contains
        fnamgin = fnam(1:lenfnam)//'.gin'
 
        call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,rumax,lrepart,psc)
-
        call periodbox (boxrcf,atrcf)
 
        select type(atrcf)
@@ -244,7 +243,6 @@ contains
     integer::lat(3),ic,ncore,npr,ierr,iti,itread
     lrepart=.true.
     if(present(lrepartition))lrepart=lrepartition
-
     if (ldecoup) then
        itread=0
     else

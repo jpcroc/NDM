@@ -4,7 +4,10 @@ INTEGRER DECOUP dans la version sequentielle avec un ldecoup ET METTRE DECOUP3D 
 
 ***
 A FAIRE
-**>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC 
+**>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC
+SUPPRIMER LES STOPS LES RE%PLACER PAR UN ARRET PARA remaplcer arret_ndm par stop_ndm
+
+4.05/ supprimer tab_imm_m et les USE temp_com qui vont avec (OK sauf analyses des positions et creationd e défauts)
 3.1/FREE
 3.2/ corriger PMEwald
 3.7/CODER sauvegarde xyz
@@ -66,7 +69,6 @@ debuggage LPR+ LPR lammps
 5/version 2T
 4.7/MONTECARLO avec para en plus
 7.1/anapos... et Fossati coder vitesses en cfg
-4.05/ supprimer tab_imm_m et les USE temp_com qui vont avec (OK sauf analyses des positions et creationd e défauts)
 11/programmer potentiel Cooper
 5/version sans PBC/period 
 6.6/gérer imm_glob !

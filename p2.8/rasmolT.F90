@@ -126,7 +126,8 @@ contains
           stop
        end if
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call atcomp%init(atmol%im_glob,im_glob=atmol%im_glob)
+!          write(6,*)'IMRASMOL',atmol%im,atmol%imm,atmol%im_glob,atmol%imm_glob
+          call atcomp%init(atmol%im_glob,im_glob=atmol%im_glob,imm_glob=atmol%imm_glob)
           div%mpi_image%rank=myidsp
           div%mpi_image%nproc=nprocspace
           div%mpi_image%comm=COMM_space%comm
@@ -158,9 +159,9 @@ contains
 #endif  
 
     if(rgloc==0) then
-
+!*****************PPPPPPPPPAAAAAAAAASSSSSSSSAAAAAAAAAAAGGGGGGGGEEEEEEEEEE en AngSTROMS!!!!!!!!!!!!!!!!
        at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8
-       atcomp%xp(1:3,1:atmol%im)=atcomp%xp(1:3,1:atmol%im)*1d8
+       atcomp%xp(1:3,1:atcomp%im)=atcomp%xp(1:3,1:atcomp%im)*1d8
        allocate(tyw(atcomp%im))
        tyw='000'
        !    do i=1,im

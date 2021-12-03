@@ -13,9 +13,10 @@ program ndm
   USE prog_mod,only: prog
   USE readdm_mod,only: readdm
   USE arret_ndm_mod,only: arret_ndm
+  USE init_mpi_mod,only: init_mpi
 #ifdef PARA
   USE Tpara,only:MPI_COMM_space,myidsp,nprocspace,nprocs,mpi_comm_world
-  USE init_mpi_mod,only: init_mpi
+
   USE neb_module,only:init_mpi_neb
 #else
   USE Tpara,only:myidsp,nprocs,nprocspace
@@ -40,8 +41,9 @@ program ndm
   integer::ierr
   !
   !Initialisation MPI
-#ifdef PARA
   call init_MPI()
+#ifdef PARA
+
 
   write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
     call MPI_BARRIER(MPI_COMM_WORLD,ierr)
@@ -57,6 +59,7 @@ program ndm
   nprocs=1
   nprocspace=nprocs
   parallele = .false.
+  
 #endif
 
 #if defined PARAML || defined PARAPH || defined MAB

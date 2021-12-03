@@ -59,6 +59,11 @@ contains
     if (present(lverbose))lverb=lverbose
 #ifdef PARA
     nbr_cpumin=nbr_cpuin
+    if (imm_glob.ne.atdec%imm_glob) then
+       write(6,*)'OHLALA',imm_glob,atdec%imm_glob
+       call arret_ndm
+    end if
+
 #else
     if (ldecoup) then
        nbr_cpumin=2
@@ -339,7 +344,7 @@ contains
        if (present(atdec)) then
           im_glob=atdec%im_glob
           call atdec%dealloc
-          call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob)
+          call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
        end if
        !     write(iudecoup,*)'test4' 
        ! Initialisation des donnees geometriques qui serviront pour le reste du code :
