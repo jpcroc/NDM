@@ -1,0 +1,28 @@
+
+
+*/Vous devez avoir git sur votre machine 
+Commandes à taper :
+git config --global http.sslCAInfo ~/chain_digicert_cea.pem ! à faire une seule fois avec le fichier en home, le fichier est joint à ce mail
+git remote add NDM https://JC148490@codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM.git ! définit un alias. A faire une fois
+git pull NDM master ! pour obtenir la version à jour
+
+
+Je suppose que vous connaissez git mieux que moi. Voila quand même quelques commandes.
+Utilisation de base de git :
+Après un travail local
+!commit local de tous ses fichiers
+>git commit -a ! commit local de tout
+
+!commit local de certains fichier fichiers
+>git add fichiers 
+>git commit 
+
+!envoi du commit sur le git general 
+>git push NDM master
+
+!retourne à une version antérieure (id_version)
+>git checkout id_version
+
+Effaçage de tous ses dev. locaux
+>git reset --hard !efface ce que tu as fait en local
+

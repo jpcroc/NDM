@@ -4,8 +4,6 @@ INTEGRER DECOUP dans la version sequentielle avec un ldecoup ET METTRE DECOUP3D 
 
 ***
 A FAIRE
-**>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC
-SUPPRIMER LES STOPS LES RE%PLACER PAR UN ARRET PARA remaplcer arret_ndm par stop_ndm
 
 4.05/ supprimer tab_imm_m et les USE temp_com qui vont avec (OK sauf analyses des positions et creationd e défauts)
 3.1/FREE
@@ -73,6 +71,8 @@ debuggage LPR+ LPR lammps
 5/version sans PBC/period 
 6.6/gérer imm_glob !
 15/subroutinisieer les clculs de distances
+**>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC
+SUPPRIMER LES STOPS LES RE%PLACER PAR UN ARRET PARA remaplcer arret_ndm par stop_ndm
 
 
 ----HISTORIQUE:
