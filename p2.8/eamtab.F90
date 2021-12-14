@@ -588,7 +588,7 @@ contains
     end if
     rumax=max(rue,rumax)
 
-
+    alpha=alpha*1d8
     return
 
   end subroutine inputeam

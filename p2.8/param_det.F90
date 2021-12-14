@@ -69,7 +69,7 @@ subroutine param_det(boxndm)
 
 
         !  rue=rue*1.d-8
-        alpha=alpha*1.d8
+!        alpha=alpha*1.d8
 !        write(6,*)'ZL',zl
         zl=boxndm%normat
         zlm=max(zl(1),zl(2),zl(3))

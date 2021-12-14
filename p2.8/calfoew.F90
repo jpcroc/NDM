@@ -95,6 +95,7 @@ contains
                    phu = tabf3(iti,nb1,nb2,nb3)*(sin(scalar(i))*scacos-&
                         cos(scalar(i))*scasin)
                    atcf%fp(1,i) = atcf%fp(1,i)+phu*hbv(1)/(2.D0*pi)
+!                   if (((nb1==0).or.(nb2==0).or.(nb3==0)).and.(i.lt.10))write(6,*)i,nb1,nb2,nb3,phu*hbv(1)/(2.D0*pi),phu,hbv(1)
                    atcf%fp(2,i) = atcf%fp(2,i)+phu*hbv(2)/(2.D0*pi)
                    atcf%fp(3,i) = atcf%fp(3,i)+phu*hbv(3)/(2.D0*pi)
                 end do

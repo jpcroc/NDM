@@ -1046,6 +1046,8 @@ contains
 
     ! ********** Fin de lecture des donnees du fichier potentiel.potin ********
     close(lupotin)
+    alpha=alpha*1d8
+!    write(6,*)'ALPHA',alpha
     return
   end subroutine input_pair
 end module input_pair_mod

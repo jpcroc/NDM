@@ -2411,7 +2411,6 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
  call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
       &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=lchange,psc=pscgc)
 
-
 #endif
 
  if (lbigmaster) then

@@ -242,8 +242,13 @@ contains
                 do l=1,npair
                    if((typ_pot_pair(l)==8).and.(lue_paire(l).eqv..true.)) then
                       pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6
-                      pot(1,l,k) =  pot(1,l,k)+ dmorse(l)*((1.-exp(-1.*amorse(l)*(r-remorse(l))))**2 -1.)
+!                      write(6,*)'BMH',r,l,pau(l)*exp((-r)/ro(l))
+!                      write(6,*)'DIP',r,l, -dip(l)/r6
+                      pot(1,l,k) =  pot(1,l,k)- dmorse(l)*((1.-exp(-1.*amorse(l)*(r-remorse(l))))**2 -1.)
+!                      write(6,*)'MORSE',r,l,- dmorse(l)*((1.-exp(-1.*amorse(l)*(r-remorse(l))))**2 -1.)
                       pot(1,l,k) =  pot(1,l,k) -afd(l)/(1+exp(bfd(l)*(r-r0fd(l))))
+!                      write(6,*)'FD',r,l, -afd(l)/(1+exp(bfd(l)*(r-r0fd(l))))
+!                      write(6,*)
                       pot(1,l,k) =  pot(1,l,k) -aig(l)*exp(-big(l)*((r-r0ig(l))**2))
                    end if
                 end do
@@ -254,6 +259,18 @@ contains
 
        end select
        !        end select ip2
+    if (lprtpot.EQV..true.) then
+       do l=1,npair
+          if (typ_pot_pair(l)==ipotentiel)then
+!             write(6,*)'l,k,r,pot(1,l,k)'
+             do k=1,ngrid
+                r=float(k)*csive*1.0D8
+                lw=360+l
+                write(lw,'(2I6,5D15.6)')l,k,r,pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
+             enddo
+          end if
+       enddo
+    end if
 
 
        ! ++++++++++++++++++++ Fin de Buckingham ++++++++++++++++++++
@@ -285,10 +302,11 @@ contains
           ! calcul de derfc par sous routine exterieure
           damp = derfc(ar)
           ddam = factor*r*exp((-ar2))
-          !      write(6,*)'r k dampam ',r, k ,damp+ddam
-
+!                write(6,*)'r k damp auxe zz',r, k ,damp,auxe,zz
+!          write(6,*)r,pot(1,1,k),auxe*zz(1)*damp/r
           !    interaction de paire + interaction couenne
           pot(1,:npair,k) = pot(1,:npair,k)+auxe*zz(:npair)*damp/r
+          
 
        end do
        do l=1,npair
@@ -522,18 +540,6 @@ contains
        call arret_ndm
     end select
 
-    if (lprtpot.EQV..true.) then
-       do l=1,npair
-          if (typ_pot_pair(l)==ipotentiel)then
-             write(6,*)'l,k,r,pot(1,l,k)'
-             do k=1,ngrid
-                r=float(k)*csive*1.0D8
-                lw=360+l
-                write(lw,'(2I6,5D15.6)')l,k,r,pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
-             enddo
-          end if
-       enddo
-    end if
 
 
     ! spline
@@ -581,7 +587,7 @@ contains
     if (lprtpot.EQV..true.) then
        do l=1,npair
           if (typ_pot_pair(l)==ipotentiel)then
-             write(6,*)'l,k,r,pot(1,l,k)'
+!             write(6,*)'l,k,r,pot(1,l,k)'
              do k=1,ngrid
                 r=float(k)*csive*1.0D8
                 lw=320+l
