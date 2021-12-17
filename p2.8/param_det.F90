@@ -486,6 +486,8 @@ subroutine param_det(boxndm)
               if (iewald/=0) then
                  write(6,*) 'RUE=',rue,' ALPHA=',alpha,' NCOUC=',ncoucx,ncoucy,ncoucz,&
                       ' PRECISEW =',precisew
+                 write(6,*) 'RUE_ANG=',rue*1d8,' ALPHA_ANGm1=',alpha*1d-8,' NCOUC=',ncoucx,ncoucy,ncoucz,&
+                      ' PRECISEW =',precisew
                  write(6,*)'ncoucx_y_z',ncoucx,ncoucy,ncoucz
 
                  
