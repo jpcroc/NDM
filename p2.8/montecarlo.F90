@@ -283,10 +283,6 @@ contains
              cells_n=>config_cells_n(ipp)
              atconf_nplus1=>config_atom_nplus1(ipp)
              cells_nplus1=>config_cells_nplus1(ipp)
-!!$          write(200+rang,*)'CALC1',rang,ipp
-!!$          write(300+rang,*)'CALC1',rang,ipp
-!!$          call atconf_n%print(i1=767,unit=200+rang)
-!!$          call atconf_nplus1%print(i1=767,unit=300+rang)
 
 
              direction = idirectionmcgc ! direction = 0 on ajoute un atome, = 1 on retire un atome
@@ -1093,14 +1089,7 @@ subroutine ajout_retrait(direc)
 
     iloc=1;lchange=.false.;ldistrib=.true.
 
-!!$          write(200+rang,*)'AJOUTRETRAIT DIR0'   
-!!$          write(300+rang,*)'AJOUTRETRAIT DIR0'      
-          
     call calfoMCGC(iloc,lchange,ldistrib)
-!!$          write(200+rang,*)'AJOUTRETRAIT DIR0 POST CF'   
-!!$          write(300+rang,*)'AJOUTRETRAIT DIR0 POST CF'
-!!$          call atconf_n%print(i1=767,unit=200+rang)
-!!$          call atconf_nplus1%print(i1=767,unit=300+rang)
 
           
  end if
@@ -1139,11 +1128,6 @@ subroutine ajout_retrait(direc)
 #endif
     iloc=1;lchange=.false.;ldistrib=.true.
     
-!!$    call atconf_n%print(i1=767,unit=200+rang)
-!!$    call atconf_nplus1%print(i1=767,unit=300+rang)
-!!$          write(200+rang,*)'AJOUTRETRAIT DIR1'   
-!!$          write(300+rang,*)'AJOUTRETRAIT DIR1'      
-
     call calfoMCGC(iloc,lchange,ldistrib)      
 
 
@@ -1670,10 +1654,6 @@ subroutine langevin( direc, protocol) !LANGEVIN
  !########################################################################################################################
  !                               Ajout d'une particule N+1: système N vers N+1 - direction = 0
  !########################################################################################################################
-!!$          write(200+rang,*)'predirec'
-!!$          write(300+rang,*)'predirec'
-!!$          call atconf_n%print(i1=767,unit=200+rang)
-!!$          call atconf_nplus1%print(i1=767,unit=300+rang)
 
  if (direc == 0) then
     DO ip = 1, pas_lambda_mc
@@ -1712,7 +1692,6 @@ subroutine langevin( direc, protocol) !LANGEVIN
              atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
              atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
           END DO
-          !write(300+rang,*)'poststep2'   
 
           !recopier les nouvelles positions dans le syst N
           DO i=1, atconf_N%im
@@ -1720,21 +1699,11 @@ subroutine langevin( direc, protocol) !LANGEVIN
              atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
           END DO
-!!$          write(200+rang,*)'poststep2'
-!!$          write(300+rang,*)'poststep2'
-!!$          call atconf_n%print(i1=767,unit=200+rang)
-!!$          call atconf_nplus1%print(i1=767,unit=300+rang)
-
           !conditions periodiques 
           if (lperiod)    then
              call periodbox(boxmcgc,atconf_N)
              call periodbox(boxmcgc,atconf_Nplus1)
           end if
-!!$          write(200+rang,*)'postperiod'
-!!$          write(300+rang,*)'postperiod'
-!!$          call atconf_n%print(i1=767,unit=200+rang)
-!!$          call atconf_nplus1%print(i1=767,unit=300+rang)
-          
        end if !on sort du master général
        !En ce point on doit transférer le système N+1 du master 0 vers le master 1
 
@@ -1749,8 +1718,6 @@ subroutine langevin( direc, protocol) !LANGEVIN
        end if
 #endif        
        iloc=0;ldistrib=.false.;lchange=.true.
-!!$       write(200+rang,*)'LLANG dir 0'
-!!$       write(300+rang,*)'LLANG dir 0'
        call calfoMCGC(iloc,lchange,ldistrib)
        if (lbigmaster) then
           !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
@@ -1878,8 +1845,6 @@ subroutine langevin( direc, protocol) !LANGEVIN
        end if
 #endif        
        iloc=0;ldistrib=.false.;lchange=.true.
-!!$       write(200+rang,*)'LLANG dir 1'
-!!$       write(300+rang,*)'LLANG dir 1'   
        call calfoMCGC(iloc,lchange,ldistrib)
 
        if (lbigmaster) then
@@ -1985,12 +1950,9 @@ if (lparapath) then
    call MPI_COMM_DUP(MPI_COMM_WORLD,parapath%mpi_orig%comm,ierr)
    call MPI_COMM_GROUP(parapath%mpi_orig%comm,parapath%mpi_orig%group,ierr)
    call commconstr(parapath)
-!   call parapath%print(rang)
   
 else
-!   call mpi_world%print(unit=50+rang)
    call initparapuresp(parapath,rang,mpi_WORLD)
-!   call parapath%print(rang)
 end if
 
 
@@ -1999,17 +1961,9 @@ paramcgc%mpi_orig%nproc= parapath%mpi_image%nproc ! =parapath%mpi_orig%nproc/npa
  paramcgc%mpi_orig%rank=parapath%mpi_image%rank
  paramcgc%nimage=2
 
-!!$ paramcgc%mpi_orig%nproc=nprocs
-!!$ lbigmaster=rang
-!!$ !    paramcgc%mpi_orig%group=grp_world
-!!$ paramcgc%nimage=2
-!!$ !    paramcgc%mpi_orig%comm=MPI_COMM_WORLD
 
  call MPI_COMM_DUP(parapath%mpi_image%comm,paramcgc%mpi_orig%comm,ierr)
-! call MPI_COMM_DUP(MPI_COMM_WORLD,paramcgc%mpi_orig%comm,ierr)
  call MPI_COMM_GROUP(paramcgc%mpi_orig%comm,paramcgc%mpi_orig%group,ierr)
-!  call parapath%print(rang)
-  
  call commconstr(paramcgc)
 
  myidsp=paramcgc%mpi_image%rank
@@ -2022,7 +1976,7 @@ paramcgc%mpi_orig%nproc= parapath%mpi_image%nproc ! =parapath%mpi_orig%nproc/npa
  lmaster=paramcgc%lmaster
  lmegamaster=.false.
  if (parapath%mpi_orig%rank==0) lmegamaster=.true.
-!   call paramcgc%print(rang)
+ 
 #else
 
  parapath%mpi_orig%nproc=1
@@ -2369,23 +2323,23 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
 
  ncalls=ncalls+1
 
+
 #ifdef PARA
-!!$        call atconf_n%print(i1=767,unit=200+rang)
-!!$       call atconf_nplus1%print(i1=767,unit=300+rang)
 
  if(paramcgc%image==0) then !procs N
     if (iloc==1) call initloc(atconf_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod&
          &,psc=pscgc,ldistrib=ldistrib) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig,potist_n,atconf_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,atconf_n%ltabvois,it,itetabvois,lchg=lchange,psc=pscgc)
- else !procs N+1
 
+ else !procs N+1
     if (iloc==1)call initloc(atconf_nplus1,cells_nplus1,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,&
          &lperiod,psc=pscgc,ldistrib=ldistrib) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=lchange,psc=pscgc)
+
  end if
-! write(6,*)'BARRIERE',rang
+
  call MPI_BARRIER(paramcgc%mpi_orig%comm,ierr)
  !en ce point chacun des deux masters a les forces de son paquet datomes
  if (lmaster) then ! on est dans l'un des 2 masters7
@@ -2400,10 +2354,6 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
     end if
  end if
  !en ce point le master général (rang_orig=0) a les forces de N et N+1    
-
-!        call atconf_n%print(unit=250+rang)
- !       call atconf_nplus1%print(unit=350+rang)
-
 
 #else
  call pointer_caltabt_calfo(sig,potist_n,atconf_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&

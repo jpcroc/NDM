@@ -108,8 +108,8 @@ contains
 !!$    end select
        
     select case(dmtype)
-    case default
-       !if (dmtype.ne.9) then
+    case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC)
+
 
 #ifdef PARA
        ! En parallle, on initialise le nombre maximum d'atomes d'un
@@ -318,15 +318,15 @@ contains
              linitpot=.false.
           end if
           call init_simple(atconf_n,cells_n,boxmcgc,psc=pscgc,linitpot=linitpot) 
-
           call initNP1(ipp) ! initialise la configuration N+1
+          
        end do
        !END PARAPATH
        atconf_n=> config_atom_n(1)
        cells_n=>config_cells_n(1)
        atconf_nplus1=>config_atom_nplus1(1)
        cells_nplus1=>config_cells_nplus1(1)
-
+       
        call montecarlo
 
     end select

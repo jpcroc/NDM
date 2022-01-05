@@ -257,7 +257,6 @@ contains
                 cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
                 if(iewald.ne.0) q(iti)=qr
                 lue_typ(iti)=.true.
-                if (rang/=0) cycle
                 if (iewald==0)then
                    write (6, '(E12.3,F9.3,A5,I4)') cm(iti),catom(iti),ty(iti),iti
                 else
@@ -283,8 +282,7 @@ contains
                    read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
                 end if
                 cm(i)=cm(i)*umass
-                if (rang/=0) cycle
-                write (6, '(I4,2F9.3,A5)') i,cm(i),catom(i),ty(i)
+                if (rang==0) write (6, '(I4,2F9.3,A5)') i,cm(i),catom(i),ty(i)
 
              end do
              do i=1,ntyp
@@ -382,39 +380,12 @@ contains
           end if
           if (npotentiel .gt.1)then
              call arret_ndm
-!!$             if (rang==0) write (6, *) ' charge, CM, masse,type, Abasak Bbasak Cbasak'
-!!$             do i = 1, ntypr
-!!$                read (lupotin,  *) qr,cmr,catomr, tyr, Abaskr,Bbasakr,Cbasakr
-!!$                ityplu(i)=iti
-!!$                if(lue_typ(iti).EQV..true.)then
-!!$                   if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
-!!$                   if (cmr*umass.ne.cm(iti))then
-!!$                      if (rang==0)write(6,*) 'pb avec cm'
-!!$                      call arret_ndm
-!!$                   end if
-!!$                   if (tyr.ne.ty(iti))then
-!!$                      if (rang==0)write(6,*) 'pb avec ty'
-!!$                      call arret_ndm
-!!$                   end if
-!!$                endif
-!!$                q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
-!!$                Abasak(iti)=abasakr;   Bbasak(iti)=bbasakr;     Abasak(iti)=Cbasakr
-!!$                lue_typ(iti)=.true.
-!!$                if (rang/=0) cycle
-!!$                !                write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
-!!$             end do
-!!$             do i=1,ntypr
-!!$                do j=1,ntypr
-!!$                   typ_pot_pair(ipo(ityplu(i),ityplu(j)))=ipotentiel
-!!$                end do
-!!$             end do
 
 
           else
              if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
              do i = 1, ntyp
                 read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
-                if (rang/=0) cycle
                 !                write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
                 cm(i)=cm(i)*umass
              end do
@@ -477,8 +448,7 @@ contains
           do i = 1, ntyp
              read (lupotin, *) q(i), ray(i), bm(i), shel(i),ty(i)
 
-             if (rang/=0) cycle
-             write (6, '(I2,4F8.4,a4)') i, q(i), ray(i), bm(i), shel(i),ty(i)
+             if (rang==0) write (6, '(I2,4F8.4,a4)') i, q(i), ray(i), bm(i), shel(i),ty(i)
           end do
           do i=1,ntyp
              do j=1,ntyp
@@ -552,8 +522,7 @@ contains
                 endif
                 q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
                 lue_typ(iti)=.true.
-                if (rang/=0) cycle
-                write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
+                if (rang==0) write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
              end do
              do i=1,ntypr
                 do j=1,ntypr
@@ -566,8 +535,7 @@ contains
              if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
              do i = 1, ntyp
                 read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
-                if (rang/=0) cycle
-                write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
+                if (rang==0)  write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
                 cm(i)=cm(i)*umass
              end do
              rue_pair(:)=rue*A2cm
@@ -716,8 +684,7 @@ contains
                 end if
                 q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
                 lue_typ(iti)=.true.
-                if (rang/=0) cycle
-                write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
+                if (rang==0) write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
              end do
              do i=1,ntypr
                 do j=1,ntypr
@@ -730,8 +697,7 @@ contains
              do i = 1, ntyp
                 read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
                 cm(i)=cm(i)*umass
-                if (rang/=0) cycle
-                write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
+                if (rang==0)  write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
              end do
              do i=1,ntyp
                 do j=1,ntyp

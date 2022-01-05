@@ -103,7 +103,7 @@ contains
 
     select case (dmtype)
 
-    case(2,10,8)
+    case(21,10,8)
        if ((lprtrp.EQV..false.).and.((dmtype==10).or.(dmtype==8))) goto 123
        if ((fpstop>0.0).AND.(it.GE.1)) then
 

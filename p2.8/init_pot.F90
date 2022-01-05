@@ -4,9 +4,10 @@ module init_pot_mod
   USE calpoeam_mod,only: calpoeam
   USE calpo_mod,only: calpo
   USE tersoff_zbl_mod,only: tersoff_zbl
-  USE gen_com_m, ONLY:firsttime_lammps,parallele,rang,umass,A2cm
+  USE gen_com_m, ONLY:firsttime_lammps,parallele,rang,umass,A2cm,rang
   USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive,npotentiel,&
-       &typ_pot_pair,rue_pair,catom,cm,iewald,ipo,lu_roff_pair,lue_paire,lue_typ,ntyp,roff1,roff2,ty,typ_pot_pair,q,rue_lammps
+       &typ_pot_pair,rue_pair,catom,cm,iewald,ipo,lu_roff_pair,lue_paire,lue_typ,ntyp,roff1,roff2,ty,typ_pot_pair,&
+       &q,rue_lammps
   
   USE eam,only:inputeam
   USE eamerco,only:inputeamerco

@@ -992,35 +992,35 @@ contains
     end if
     if (allocated(atprt%xp)) then
     if(scan('x',carac).ne.0)then
-       do i=ideb,im
+       do i=ideb,ifin
           write(unitw,*)'%xp= ', i,atprt%num_at_glob(i),atprt%xp(:,i)
        end do
     end if
     if(scan('i',carac).ne.0)then
-       do i=ideb,im
+       do i=ideb,ifin
           write(unitw,*)'%ityp= ', i,atprt%num_at_glob(i),atprt%ityp(i)
        end do
     end if
     if(scan('n',carac).ne.0)then
-       do i=ideb,im
+       do i=ideb,ifin
           write(unitw,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
        end do
     end if
 #ifdef PARA
     if(scan('p',carac).ne.0)then
-       do i=ideb,im
+       do i=ideb,ifin
           write(unitw,*)'%proc_at= ', i,atprt%num_at_glob(i),atprt%proc_at(i)
        end do
     end if
 #endif    
        
        if(scan('f',carac).ne.0)then
-          do i=ideb,im
+          do i=ideb,ifin
              write(unitw,*)'%fp= ', i,atprt%num_at_glob(i),atprt%fp(:,i)
           end do
        end if
        if(scan('e',carac).ne.0)then
-          do i=ideb,im
+          do i=ideb,ifin
              write(unitw,*)'%ielat= ', i,atprt%num_at_glob(i),atprt%ielat(i)
           end do
        end if
@@ -1028,24 +1028,24 @@ contains
           class is (atom_config_d)
              write(unitw,*)'prt_d'
              if(scan('v',carac).ne.0)then
-                do i=ideb,im
+                do i=ideb,ifin
                    write(unitw,*)'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
                 end do
              end if
              if(scan('r',carac).ne.0)then
-                do i=ideb,im
+                do i=ideb,ifin
                    write(unitw,*)'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
                 end do
              end if
           class is (atom_config_e)
              write(unitw,*)'prt_e'
              if(scan('v',carac).ne.0)then
-                do i=ideb,im
+                do i=ideb,ifin
                    write(unitw,*)'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
                 end do
              end if
              if(scan('r',carac).ne.0)then
-                do i=ideb,im
+                do i=ideb,ifin
                    write(unitw,*)'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
                 end do
              end if
@@ -1053,14 +1053,14 @@ contains
 
              if (atprt%lsigat) then
                 if(scan('g',carac).ne.0)then
-                   do i=ideb,im
+                   do i=ideb,ifin
                       write(unitw,*)'%sigat= ',i,atprt%num_at_glob(i), atprt%sigat(:,:,i)
                    end do
                 end if
              end if
           if (atprt%lprteat) then
              if(scan('u',carac).ne.0)then
-             do i=ideb,im
+             do i=ideb,ifin
                 write(unitw,*)'%eat= ', i,atprt%num_at_glob(i),atprt%eat(i)
              end do
           end if

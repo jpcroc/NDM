@@ -92,7 +92,7 @@ contains
        !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
        select type(atdml)
           class is (atom_config_d)
-          call initspeed(atdml,boxndm)
+             call initspeed(atdml,boxndm)
        end select
     end if
     call caltabtC(celndm,atdml,lperiod,boxndm)

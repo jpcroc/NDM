@@ -352,7 +352,7 @@ Cl=0;GL=0
   subroutine print(paraprt,rang)
     class(para_config),intent(in)::paraprt
     integer,intent(in)::rang
-    write(6,*)'in print paraprt'
+!    write(6,*)'in print paraprt'
     write(rang+100,*)'rang rank comm group nproc'
     write(rang+100,*)'ORIG',rang,paraprt%mpi_orig%rank,paraprt%mpi_orig%comm,paraprt%mpi_orig%group,paraprt%mpi_orig%nproc
     write(rang+100,*)'NIMAGE',rang,paraprt%nimage
