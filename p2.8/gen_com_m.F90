@@ -150,7 +150,7 @@ integer::idirectionmcgc
   real(double) :: deltaestop ! decroissance de la temperature moyenne
   integer :: nbmoye
   integer :: ibordcou
-  integer :: itesauv, formatsauv, itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde format de sauvegarde periode 
+  integer :: itesauv,  itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde periode 
                                                                               ! de d'ecriture des positions et/ou forces en formatted ; 
   !itesauvinter=sauvegarde reguliere .cout.it qui n'efface pas les fichiers .cout precedent
   logical::lWgin ! ecriture finale de .newgin

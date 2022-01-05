@@ -28,7 +28,7 @@ module init_mod
 #endif
   use Tpara,only:para_space_config
 
-  USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,formatsauv,igen,ilangevin,it,iteanapos,iterasmol,&
+  USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,it,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lhcyl,lperiod,lrestart,pmean,rang,timel,two,&
        &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp,l2T,lcdp
 use read_val,only:ltabvois
@@ -64,7 +64,7 @@ contains
     type(box_config),intent(out)::boxndm
     type(para_space_config)::psc
 
-    integer :: i, lufilmpaf,itapp,j,lenfn2,ipath,ierr
+    integer :: i, lufilmpaf,itapp,j,lenfn2,ipath,ierr,formatsauv
     !-----------------------------------------------
     character*2::extension
     logical :: lrepart
@@ -227,9 +227,16 @@ contains
     end if
     if (lcasca) then
        fnamcout = fnam(1:lenfnam)//'.0.cout'
+       formatsauv=3
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     else
        fnamcout = fnam(1:lenfnam)//'.cout'
+       select type(atdml)
+       type is (atom_config)
+          formatsauv=2
+       class is (atom_config_d)
+          formatsauv=3
+       end select
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     end if
     if (itmax==0) call arret_ndm

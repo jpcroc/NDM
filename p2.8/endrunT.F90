@@ -10,7 +10,7 @@ module endrunT_mod
        &iteanapos,iteangle,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
        &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,&
        &lwgin,nstepdes, lposmoy,l2T,angst,dmtype,it,lenfnam,rang,timel,&
-       &formatsauv,fnamcout,fnam,lspaceNDM
+       &fnamcout,fnam,lspaceNDM
   use var_pot, only: eatref,eatref,eatref
   USE cellconfig,only:cell_config,caltabtC
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e!, ndm2config, config2ndm
@@ -38,7 +38,7 @@ contains
     logical,intent(in)::latcomp
 
 
-    integer :: i,j, n, nAux_real
+    integer :: i,j, n, nAux_real,formatsauv
     CHARACTER(len=100) :: out_file
     REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
     CHARACTER(len=20), dimension(:), allocatable :: aux_title
@@ -92,7 +92,14 @@ contains
     !    call boxndm%print
     !    call celndm%print
     !     call atdml%print
-    formatsauv=3;fnamcout= fnam(1:lenfnam)//'.cout'
+    fnamcout= fnam(1:lenfnam)//'.cout'
+    select type(atdml)
+    type is (atom_config)
+       formatsauv=2
+    class is (atom_config_d)
+           formatsauv=3
+    end select
+          
     call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)     ! Modif E. Clouet: sauvegarde seulement si voulu
     if (l2T.and.rang==0) call sauveelec
  end IF

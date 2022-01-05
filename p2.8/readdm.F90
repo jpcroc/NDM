@@ -22,7 +22,7 @@ contains
          &rskin,rulayer,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
          &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
          &zko,zz0,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
-         &formatsauv,iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,itefcc,&
+         &iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,itefcc,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
          &lcasca,lcontr,ldemitab,ldesinteg,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
@@ -69,7 +69,7 @@ contains
     namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma, itefcc, itedepla, tdepla, lfilm, &
          tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
          tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
-         itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv, formatsauv, &
+         itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
           rulayer,iterasmol, lpcon, lprtzlm,pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
@@ -164,7 +164,6 @@ contains
     itesauvposition = 0         !periode pour sauvegarde des positions en binaire
     itesauvforce = 0            !periode pour sauvegarde des forces en binaire
     itesauvinter=0
-    formatsauv = 3              !format of saving always triclin 3 copmplete ; 2 positions only
     fmt_cin=1                  !format des fichiers .cin 0 : initiale, 1 = para
     dfpred = 0.1            ! eguess for GC calculations and quenching
     nox = -1
@@ -674,10 +673,6 @@ contains
 
     if (linstantrdf .and. iterdf==0) then
        if (rang==0) write (6, *) rang,'linstantrdf et iterdf incompatibles'
-       call arret_ndm
-    endif
-    if (formatsauv>3 .or. formatsauv<0) then
-       if (rang==0) write (6, *) rang,'mauvais formatsauv = ', formatsauv
        call arret_ndm
     endif
 

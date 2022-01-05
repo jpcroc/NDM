@@ -4,7 +4,7 @@ module work_cgII
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
        it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
-       dmtype, potist,mdcg_noise,formatsauv,lspaceNDM,latcomp
+       dmtype, potist,mdcg_noise,lspaceNDM,latcomp
   USE sauvegardeT_mod,only: sauvegardeT
   USE endrunT_mod,only: endrunT
   USE arret_ndm_mod,only: arret_ndm
@@ -47,7 +47,7 @@ contains
     integer::iproc,proc_source,cellx,celly,cellz
     real(double)::aux,auy,auz
     character :: extension*2
-    integer::lenfn2,ko,i1
+    integer::lenfn2,ko,i1,formatsauv
     real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
     logical::lover
 
@@ -183,6 +183,7 @@ end if
           !       if (rang==0) then
           !           write(6,*)'work_cg_II analyse -> sauvegarde',it
           if (itesauv.GT.0) then
+             formatsauv=2
              if (mod(it,itesauv)==0) call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp)
           endif
        end if

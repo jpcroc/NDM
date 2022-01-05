@@ -1,7 +1,7 @@
 module sauvegardeT_mod
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:rang,formatsauv,it,itesauvinter,lspaceNDM,&
+  USE gen_com_m, ONLY:rang,it,itesauvinter,lspaceNDM,&
        &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,l2T,imm_glob
 
   USE elec_cell, ONLY : sauveelec

@@ -16,7 +16,7 @@ module analyseT_mod
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
        &natchk,tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
        &ldesinteg,itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,parallele,&
-       & itesauvforce,itesauv,formatsauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,it,l2T
+       & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,it,l2T
 
   USE cellconfig,only:cell_config, caltabtC
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
@@ -42,7 +42,7 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s        
     !-----------------------------------------------
-    integer :: i, iti, ic, ko,kx,ky,kz
+    integer :: i, iti, ic, ko,kx,ky,kz,formatsauv
     real(double), dimension(ntyp) :: temptyp
 
 
