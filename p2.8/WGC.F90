@@ -4,7 +4,7 @@ module WGC_mod
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,leev,sig, &
        it, itesauv, itesauvposition, itesauvforce, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, iterasmol,&
-       dmtype, potist,mdcg_noise,formatsauv,lspaceNDM,sigstop,sigext,ihbox0,unitP,lprahman
+       dmtype, potist,mdcg_noise,lspaceNDM,sigstop,sigext,ihbox0,unitP,lprahman
   USE sauvegardeT_mod,only: sauvegardeT
   USE endrunT_mod,only: endrunT
   USE arret_ndm_mod,only: arret_ndm
@@ -44,7 +44,7 @@ module WGC_mod
   real(double),allocatable,dimension (:)::R,F,Rmin
   integer::Nvar,ndir,nstep,ityprel
   real(double)::betaguess,V,betaV,betaP,beta,betaV0,betaP0
-  integer::ncalls,nextsauv,nextmol
+  integer::ncalls,nextsauv,nextmol,formatsauv
   logical::lvm
   real(double)::fpstop0,fpstopsig
   logical,target:: lchg
