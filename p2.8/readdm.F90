@@ -322,7 +322,7 @@ contains
     rheat=0.
     Theat=0.0
     Eheat=0.
-    ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG, ivisu=6 xfg
+    ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG, ivisu=6 xfg ; 7=xyz type à la Babel
     !4==> 40= pas de vitesses; 41 vitesses
     !6==> 60= pas de vitesses; 61 vitesses
     

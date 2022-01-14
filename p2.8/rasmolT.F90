@@ -255,6 +255,8 @@ contains
           end_name='.cfg'
        case(60,61)
           end_name='.xfg'
+       case(7)
+          end_name='.xyz'
        case default
           write(6,*)'wrong ivisu',ivisum,ivisu
           call arret_ndm
@@ -267,6 +269,36 @@ contains
        end if
 
        select case (ivisum)
+       case(7)
+          write (luvisu,*)atcomp%im 
+          write (luvisu,'(A)',advance='no')nameo
+          if (laux) then
+             if (present(charaux)) then
+                do iax=1,naux
+                   write(luvisu,'(A)',advance='no')trim(charaux(iax))
+                end do
+             end if
+          end if
+          write(luvisu,*)' '
+         do i = 1, atcomp%im
+             xp1 = atcomp%xp(1,i)
+             xp2 = atcomp%xp(2,i)
+             xp3 = atcomp%xp(3,i)
+             if (laux) then
+                write (luvisu,'(A,3es15.6)',advance='no')ty(atcomp%ityp(i)), xp1, xp2, xp3
+                do iax=1,naux
+                   write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
+                end do
+                write(luvisu,*)' '
+             else
+                write (luvisu,'(A,3es15.6)')ty(atcomp%ityp(i)), xp1, xp2, xp3
+             end if
+          end do
+          write(luvisu,*)
+          write (luvisu,'(3F15.9)')at(1,1),at(2,1),at(3,1)
+          write (luvisu,'(3F15.9)')at(1,2),at(2,2),at(3,2)
+          write (luvisu,'(3F15.9)')at(1,3),at(2,3),at(3,3)
+          write (luvisu,*) 
        case(5)
           write (luvisu,'(A)',advance='no')' 1 1 1 !'
           if (laux) then
