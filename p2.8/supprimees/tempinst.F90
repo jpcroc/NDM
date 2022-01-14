@@ -1,59 +1,56 @@
 module tempinst_mod
-  USE gen_com_m, ONLY:bk,lspacendm
-  USE atomconfig,only: atom_config_d
+  USE gen_com_m, ONLY:bk,im_glob,lspacendm
 #ifdef PARA
     USE mpi
     USE Tpara,only:COMM_space,nprocspace,myidsp
+
 #endif
 
   implicit none
 contains
   !c******************************************************************
-  function tempinst(atcf,latcomp)     !calcul de la T instant.
+  function tempinst(vp,ityp,im,imm)     !calcul de la T instant.
     !c******************************************************************
 
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m
+    
     USE var_pot, ONLY:cm
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    class(atom_config_d),intent(in)::atcf
+    real(double),dimension (3,imm) ::  vp
+    integer :: ityp(imm),im,imm
     real(double)::  tempinst
-    logical,optional::latcomp
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     real(double) ::  mv2,v2
-    integer :: i,imtot
-    logical ::latc=.false.
+    integer :: i
 
-    if(present(latcomp))latc=latcomp
-    
+
+
     mv2=0.0
-    do i = 1,atcf%im
-       v2= atcf%vp(1,i)**2+ atcf%vp(2,i)**2+ atcf%vp(3,i)**2
-       mv2= mv2 + cm(atcf%ityp(i))*v2
+    do i = 1,im
+       v2= vp(1,i)**2+ vp(2,i)**2+ vp(3,i)**2
+       mv2= mv2 + cm(ityp(i))*v2
     enddo
-    if (latc) then
-       tempinst=mv2/(3.d0*float(atcf%im)*bk)
-    else
 
 #ifdef PARA
-       if ((lspaceNDM).and.(nprocspace.gt.1))then 
-          imtot=atcf%im
-          call comm_space%sum(imtot)
-          call comm_space%sum(mv2)
-          tempinst=mv2/(3.d0*imtot*bk)
-       else
-          tempinst=mv2/(3.d0*atcf%im*bk)
-       end if
-#else
-       tempinst=mv2/(3.d0*float(atcf%im)*bk)
-#endif
+    if ((lspaceNDM).and.(nprocspace.gt.1))then 
+       call comm_space%sum(mv2)
+       tempinst=mv2/(3.d0*float(im_glob)*bk)
+    else
+       tempinst=mv2/(3.d0*float(im)*bk)
     end if
+#else
+    tempinst=mv2/(3.d0*float(im)*bk)
+
+
+#endif
+
 
 
 

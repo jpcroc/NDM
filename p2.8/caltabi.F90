@@ -1,7 +1,7 @@
 !****************************************************************
 module caltabi_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:it,ivoismax,lconstrtot,ldemitab,lperiod,rang
+  USE gen_com_m, ONLY:it,lconstrtot,ldemitab,lperiod,rang
   use atomconfig,only: atom_config
   USE cellconfig,only:cell_config
   use boxconfig,only:box_config
@@ -169,7 +169,6 @@ contains
 
     endif ! lconstrtot
 
-    !     write(*,*) 'maxvoi', maxvoi,ivoismax
     if ((rang==0).and.(it.le.100)) then
        !           write(6,*)'IT ',it,'  VOISINS ',maxvoi,' par atome ',float(maxvoi)/float(atvois%im)
     endif

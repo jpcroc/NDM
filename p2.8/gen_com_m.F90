@@ -3,29 +3,7 @@ module gen_com_m
   implicit none
 
 
-#ifdef PARA
-
-  ! Declarations MPI
-  ! option pour realiser une trace Vampir
-  !     include 'VT.inc'
-  !      integer rang,code,nb_procs
-  !      common/parampi/rang,code,nb_procs
-
-#else
-
-  !      integer :: rang, tranche
-#endif
-
-  integer::nvperat
-
-
   integer,target :: rang, rangph, rangml, rangmab, ja_phondy, ja_ml
-
-!  integer :: natperc                        ! nb d'atome par cel
-
-  integer :: ivoismax
-
-  integer:: imm_loc ! taille des conf atomique par proc 
   logical :: parallele
 
   real(double),parameter :: pi=3.141592654D0, bk= 1.380622D-16, &
@@ -47,27 +25,12 @@ module gen_com_m
   real(double) :: A2cm =1.0d-8     !conversion A->cm
 
 
-  integer :: im_glob,imm_glob					! nb global d'atomes
+  integer :: imm_glob 
 
-
-!
-!  real(double) :: volu      ! volume
-!  integer, dimension(3) :: lat      ! generation: nb de repetition de cel unite
-!  real(double), dimension(3,3) :: at, bg ! at : vecteurs de base de la boite (BOND en cm) bg: vecteur du reseau reciproque
   real(double), dimension(3,3) :: h0     ! Vecteurs de base de la boite de reference en A (Parrinello, Rahman)
   logical :: lUcell                 ! affiche l'energie potentielle de la boite
   ! (cela suppose que h0 corresponde a l'etat de reference pour lequelle la contrainte est nulle)     
-
-  logical :: lbulle    ! .true.: bulle
-  logical :: ldesinteg    ! .true.: insertion appelle init_insert
   logical :: lrctest    ! .true.: test sur rc ; false pas de test
-  integer:: nstepdes,ides, pm1des,itdes,imdesup,imdesdeb,imdesdn
-  real(double)::lambdades,deltaF
-  
-  real(double),allocatable:: xpchup(:,:),vpchup(:,:),xpchdn(:,:),vpchdn(:,:),xpchdeb(:,:),vpchdeb(:,:)
-  integer,allocatable :: itichup(:),itichdn(:),itichdeb(:),num_at_globdesup(:),num_at_globdesdn(:),num_at_globdesdeb(:)
-  real(double):: kspr,xpspr(3),Espr,deltaEspr,xpspr0(3),tempdes
-  integer:: typspr
 
   integer,target :: it ! iteration courante, finale , type de generation
   integer:: itloopmax, itmax, nitmax,igen ! iteration fin de boucle DM, finale , type de generation
@@ -78,10 +41,7 @@ module gen_com_m
   character :: fnam*80, fnamout*80, fnamcout*80, fnamcoutxp*80,fnamcoutfp*80, fnamcoutnonpbcxp*80
   real(double):: rulayer
 
-  integer :: imgs, imgi, itefrac !fracture IMD nombre d'atomes sur lesquels on fait la dynamique normale
-  real(double) :: cougel, zincr !fracture
-integer::idirectionmcgc
-
+  integer::idirectionmcgc
 
   real(double),target :: potist ! energie potentielle totale
   real(double):: potisP,potis1, potis2, potis3, potis0, potcp ! energie potentielle de paire
@@ -100,14 +60,12 @@ integer::idirectionmcgc
   real(double), dimension(3,3) :: sigtot
   real(double), dimension(3,3) :: sigkine
 
-!  real(double), dimension(:,:,:),allocatable :: sigc ! contrainte par cel
-!  real(double), dimension(:,:,:),allocatable :: sigat ! contrainte par atome
   logical :: lEparat  ! calcul et affichage dans rasmol de la contrainte atomique; affichage ﾂｩnergie par atome,calcul bond valence
   integer:: itebdv ! frequence de calcul des bond valence
   logical :: ljqbh ! calcul de la conductivitﾃδｩ thermique par la mﾃδｩthode directe
   logical :: lnemd  ! calcul de la conductivitﾃδｩ thermique par NEMD
-  integer ::njqbh,ittherm,ntr
-  real(double) :: epsil,epcoud,kthg
+  integer ::njqbh,ntr
+  real(double) :: epsil,epcoud
 
 
   logical :: lFire      ! If true (default), fire algorithm is USEd for quenching
@@ -115,8 +73,6 @@ integer::idirectionmcgc
   real(double):: fpstop ! critere de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
   real(double):: sigstop ! critere de conv. sur les composantes de contraintes  pour les trempes UNITE = kbar
   real(double):: fsumstop ! critere de conv. sur la force sqrt ( sum_f F_i^2 )  pour les trempes UNITE = EV/ANG
-!  real(double),allocatable::eatom(:) ! energie par atome
-!  real(double),allocatable::eatomtotm(:) ! energie par atome
   logical :: lPrtSigat, lprteat, lprtfat,lprteattotm  ! calcul et ecriture de la contrainte, l'energie et force par atome, de l'energie par atome totale (pot+cin) moyenne
   logical :: lsigatcel !ecriture de la contrainte atomique moyenne sur cellule
   logical :: lsigat ! la contrainte atomique est calcul馥 (rendu vrai par lprtsigat ou lsigatcel)
@@ -132,11 +88,6 @@ integer::idirectionmcgc
   logical :: lcalcjq
 
   logical :: lcdp ! algorithme d'accumulation de defauts ponctuels
-  logical :: lheat ! algorithme de chauffage local
-  real(double)::rheat,theat,Eheat
-  integer :: iteheat
-
-
   real(double) :: tinit !temp initiale
   real(double)::tempdeplainit,debyetemp
   logical :: lvpread  ! vitesse lue dans le fichier .cin
@@ -144,11 +95,9 @@ integer::idirectionmcgc
   integer :: dmtype, itab, itetimestep, itederive ! type dynamique, periode de repartition entre cel, periode de calc. tab des voisins, periode de chgt du pas en temps, poeriode de correction de la derive
   integer,target :: itetabvois
   real(double):: depmaxts,tsmin
-  real(double) :: tempstop, tempstopcel,ttol, tfroi, tcooling, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
+  real(double) :: tempstop, tempstopcel, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
        tsfact, vmax, tgc, dfpred ! gestion du pas en temps
   real(double)::maxtcel
-  real(double) :: deltaestop ! decroissance de la temperature moyenne
-  integer :: nbmoye
   integer :: ibordcou
   integer :: itesauv,  itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde periode 
                                                                               ! de d'ecriture des positions et/ou forces en formatted ; 
@@ -156,7 +105,7 @@ integer::idirectionmcgc
   logical::lWgin ! ecriture finale de .newgin
   real(double), dimension(3) :: vh ! vitesse de la boite
   real(double) :: pext, wboxf, tbox ! pext poids de la boite temps d'amortissment de la boite
-  logical ::  lpcon2,lprtzlm ! pression constante sans et avec amortissement
+  logical ::  lpcon2 ! pression constante sans et avec amortissement
 
   logical :: lTcon, lTberendsen,lTandersen,lTNose,lTHoover,landerscou ! temp constante (3 algorithmes differents)
   real(double) :: Text ! T exterieure
@@ -175,55 +124,26 @@ integer::idirectionmcgc
 
   real(double) :: pist, temp, pmean, tmean, kine, kinemean ! pression temp et moyennes associees
   real(double) :: tempEP ! temperature for slow moving atoms (EP=elec-phon)
-
-!  integer :: nvois   ! nb de voisins max dans toute la boite = nb d'atome * nb de voisins (/2)
-!  integer, allocatable,dimension(:) :: indi ! table des voisins
-!  integer, allocatable, dimension(:) :: indi2 ! table de voision pour les constantes de force
-!  real(double) :: rvois ! rayon de la table des voisins
-!  logical :: ltabvois      ! table des voisins ?
   logical :: lconstrtot ! construction par double boucle (T) ou par cel (F)
   logical :: ldemitab ! construction d'une demi-table (T) ou d'une table complete (F)
-  character :: nature*6 ! element chimique
   integer :: nvat
   !EWALD
 
 
-  logical :: lalea  ! preparation d'une configuration aleatoire
   logical :: lopt   ! optimisation de Ewald par PME si TRUE
-  real(double) :: rsep  !Distance de separation pour le tirage aleatoire
 
   ! NVT, NPT ensembles
-  !      logical :: lnose, lnosepar,lpr ! lnose =Tcst  la Nose ; lnosepar=T&P cst a la Nose Parinello Rahman
   logical :: lprahman,lprtrp ! l Parinello Rahman
-  !      real(double) :: tomega, tbomega ! mass fictive du thermostat et du piston
   real(double), dimension(3,3) :: att, ati    !vitesse de la forme de la boite ; ati=(at^-1)
-!  real(double), dimension(3,3) :: ihbox0      ! the degree of freebom of the box. If is 1 everywhere all the shape  can change.
   integer, dimension(3,3) :: ihbox0 ! integer pour bétonner les tests      ! the degree of freebom of the box. If is 1 everywhere all the shape  can change.
-                                              ! If you put on diagonal 1 and the rest is 0 you can chage only anlong x,y and z.  
 
   real(double), dimension(3,3) :: sigext, pext_hydro  !contraintes externes appliques; contraintes calculees
 
-  integer :: lurdfout
-  real(double) :: lastcool
-
-
-  real(double), parameter :: rmin = 0.5d-8
-
-  real(double), parameter :: qmax=12
-  real(double), parameter :: qmin=0.7
-  real(double), parameter :: increq=0.1d+8
-
-  real(double)::strucfact
-
-  integer, dimension(:,:), allocatable :: voisins
-  real(double), parameter :: rcut=12e-8    !cutoff pour le calcul de S(q)
-
+!ci-dessous choses à modulariser
   integer, parameter :: cont888 = 1000
-
-
   real(double), parameter :: thetamin = 1.0D-7
   real(double), parameter :: thetamax = 6.2
-
+  
   logical lEev,lPkbar   !unite
   real(double) :: unitE,unitP
   character*5 :: cunitE, cunitP
@@ -243,14 +163,6 @@ integer::idirectionmcgc
   real(double) :: deltax 
   real(double) :: dilat(3)
 
-
-
-
-  logical :: ldislo  ! calcul de dislocation
-  real(double) :: epcoudis,& !epaisseur de la couche avec ajout de force pour dislo
-       &fdislo ! force appliqu
-  integer, allocatable :: latdebord(:)
-
   logical :: lcontr    ! dynamique contrainte (routine contrainte)
   logical,target :: lperiod   ! conditions periodiques
   logical :: lsuivinonpbc
@@ -261,30 +173,11 @@ integer::idirectionmcgc
               neb_noise,mdcg_noise
   REAL(double) :: kspring,deltaRmax,neb_noise_scale,mdcg_noise_scale
   LOGICAL :: lPathFromGin      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
-  !...inNEB
-
-  !...inPHONDY
-  integer  :: HessianOrder
-  !...inPHONDY
-  ! chauffage cylindre
-  logical :: lHcyl ! variable de type logique representant le chauffage du cylindre
-  real(double) :: Ecyl ! energie totale des atomes dans le cylindre
-  real(double), dimension (3) :: pc ! position du centre du cylindre
-  real(double), dimension (3) :: vdc ! vecteur direction du cylindre
-  real(double) :: rayonc ! rayon du cylindre
-  real(double) :: lgc ! longueur du cylindre
-  integer :: ncyl ! nombre d'atomes dans le cylindre
-  logical, dimension(:), allocatable :: cyl ! tableau pour savoir si atome dans cylindre
 
   ! selection des atomes distordus
-  integer :: natdistordusvraiment
-
-  real(double)  :: kappa,text_teledyn,lanczos_step
-  integer       :: niteration,nchemin_teledyn
 
 !  real(double), dimension (:),allocatable ::tempc,tempcm,celpm1,tm1,celpp,tcp,pmc,patcel,patcelmax
   real(double), dimension (:,:,:),allocatable ::sigatcel
-  integer, dimension (:),allocatable ::natchk
   logical, dimension (:),allocatable ::lprtcel(:)
 
 

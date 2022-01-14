@@ -582,8 +582,9 @@ contains
 
        enddo
     end if
-!!$    else
 !!$
+!!$
+!!$    else
 !!$       do l = 1, npair
 !!$          if (typ_pot_pair(l)==ipotentiel)then
 !!$             potpart(1:ngrid) = pot(1,l,1:ngrid)
@@ -591,7 +592,7 @@ contains
 !!$             !           write(6,*)potpart
 !!$             do k=1,ngrid
 !!$                lw=600+l
-!!$                write(lw,*)pot(:,l,k)
+!!$                write(lw,*)kxsp(k),pot(:,l,k)
 !!$             end do
 !!$             call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
 !!$             pot(2,l,1:ngrid) = bsppart(1:ngrid)/kxsp(1:ngrid)
@@ -608,8 +609,7 @@ contains
 !!$                lw=700+l
 !!$                write(lw,*)pot(:,l,k)
 !!$             end do
-!!$          end if
-!!$
+!!$    end if
 !!$       enddo
 !!$    endif
 

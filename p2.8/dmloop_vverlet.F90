@@ -7,8 +7,8 @@ module dmloop_vverlet_mod
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY: itesauvforce,itesauvposition,ecyl,ev2erg,lgc,rang,rayonc,&
-       &tstep,vdc,pc,vdc,itdes,itesauv,itesigma,ldesinteg,lsigat,ltpcel,lspaceNDM,itloopmax
+  USE gen_com_m, ONLY: itesauvforce,itesauvposition,ev2erg,rang,&
+       &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
@@ -74,7 +74,6 @@ contains
        it = it+1
 
 
-       if (ldesinteg)itdes=itdes+1
        call dyn_vverlet(atdml,celndm,boxndm,psc)
        ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
 

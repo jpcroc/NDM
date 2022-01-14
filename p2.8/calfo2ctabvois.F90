@@ -55,7 +55,7 @@ contains
           
           if (.not.linter) cycle
           
-          
+          gradij(:)=dxp(:)/r
           sk = r/csive
           k = sk
           ! spline
@@ -63,8 +63,8 @@ contains
           deltaepot=0.5*(pot(1,l,k)+dr*(pot(2,l,k)+dr*(pot(3,l,k)+dr*pot(4,l,k))))
           phu = -1.0*(pot(2,l,k)+dr*(2.0*pot(3,l,k)+dr*(3.0*pot(4,l,k))))
           potis1 = potis1+2*deltaepot
-          atcf%fp(:,i)=atcf%fp(:,i)+phu*dxp(:)
-          atcf%fp(:,j)=atcf%fp(:,j)-phu*dxp(:)
+          atcf%fp(:,i)=atcf%fp(:,i)+phu*gradij(:)
+          atcf%fp(:,j)=atcf%fp(:,j)-phu*gradij(:)
           ! A commenter qd lcalcjq=false pour ne pas perdre de temps dans le test
           !ra(3)=Force de j sur i
           if (lprteat) then

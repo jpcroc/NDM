@@ -30,10 +30,10 @@ contains
     integer :: iti, l, i, koo, i1, ko1, j, i2, itj, k, &
          ic, itimin,itimax
     real(double) :: aux, alp, f1, f2, f3,  c1, c2&
-         , c3, c1p,c2p,c3p, sk, r, phu, c1abs,c2abs,c3abs, ra(3),cv(1,3)
+         , c3, c1p,c2p,c3p, sk, r, phu, c1abs,c2abs,c3abs,cv(1,3)
     real(double) :: dr,deltaepot,fcontr
     logical ::linter
-    real(double)::dxp(3)
+    real(double)::dxp(3),gradij(3)
 
 
     ! Declarations de constantes
@@ -88,16 +88,17 @@ contains
            call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue_pair(l),linter=linter,dist=r)
            if(.not.linter) cycle
            
-             sk = r/csive
-             k = sk
+           sk = r/csive
+           k = int(sk)
+           gradij(1:3) = dxp(1:3)/r
+
              ! spline
              dr = r-float(k)*csive
              phu = -1.0*(pot(2,l,k)+(2.0*pot(3,l,k)+3.0*pot(4,l,k)*dr)*dr)
              deltaepot=0.5*(pot(1,l,k)+pot(2,l,k)*dr+pot(3,l,k)*dr**2+pot(4,l,k)*dr**3)
-             f1 = phu*dxp(1)
-             f2 = phu*dxp(2)
-             f3 = phu*dxp(3)
-             ra(1)=f1 ; ra(2)=f2 ; ra(3)=f3
+             f1 = phu*gradij(1)
+             f2 = phu*gradij(2)
+             f3 = phu*gradij(3)
              fcontr=sqrt(f1**2+f2**2+f3**2)
              atcf%fp(1,i) = atcf%fp(1,i)+f1
              atcf%fp(2,i) = atcf%fp(2,i)+f2

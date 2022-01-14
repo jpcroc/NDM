@@ -126,8 +126,6 @@ module var_pot
 
   real(double),allocatable, dimension(:,:,:,:) :: fda
 
-  real(double), dimension(nkmax) :: strucfactot,strucfactneu ! gdertot,
-
   !PME
   integer :: kpmex, kpmey, kpmez   !taille de grille de PME
   integer :: kpme                  ! max des precedants

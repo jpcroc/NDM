@@ -29,7 +29,7 @@ module init_mod
   use Tpara,only:para_space_config
 
   USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,it,iteanapos,iterasmol,&
-       &itetimestep,kinemean,lcasca,lhcyl,lperiod,lrestart,pmean,rang,timel,two,&
+       &itetimestep,kinemean,lcasca,lperiod,lrestart,pmean,rang,timel,two,&
        &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp,l2T,lcdp
 use read_val,only:ltabvois
 USE var_pot, ONLY:ipotentiel

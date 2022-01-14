@@ -11,24 +11,24 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:a2cm,debyetemp,deltaestop,deltarmax,deltax,depmaxts,dfpred,eheat,eko,&
-         &epcou,epcoud,epcoudis,epsil,ev2erg,fdislo,fmt_cin,fpstop,fsumstop,gamlg,hessianorder,ibordcou,&
-         &ides,igen,ilangevin,iseed,itab,iteanaposneb,itederive,iteheat,&
-         &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,ittherm,kappa,kspr,kspring,kthg,&
-         &lalea,lanczos_step,landerscou,lastcool,lbulle,lcdp,lconstrtot,lcorrelvp,lderive,ldislo,lfire,&
-         &lgc,lhcyl,lheat,ljqbh,lpathfromgin,lpcon2,lprtrp,lprtzlm,lrctest,lrestart,ltandersen,&
-         &ltcon,lvpread,maxneb,mdcg_noise_scale,nbmoye,neb_noise,neb_noise_scale,nebrelaxation,&
-         &nebtype,nhoover,niteration,nitmax,njqbh,npath,ntr,nuandersen,pext,rayonc,rheat,rsep,&
-         &rskin,rulayer,sigext,sigstop,tbox,tcooling,tempdeplainit,tempstop,tempstopcel,tfroi,tgc,&
-         &theat,timemax,tinit,tsfact,tsmin,ttol,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
-         &zko,zz0,vdc,pc,ecyl,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
+    USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,&
+         &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,ibordcou,&
+         &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
+         &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
+         &landerscou,lcdp,lconstrtot,lcorrelvp,lderive,lfire,&
+         &ljqbh,lpathfromgin,lpcon2,lprtrp,lrctest,lrestart,ltandersen,&
+         &ltcon,lvpread,maxneb,mdcg_noise_scale,neb_noise,neb_noise_scale,nebrelaxation,&
+         &nebtype,nhoover,nitmax,njqbh,npath,ntr,nuandersen,pext,&
+         &rskin,rulayer,sigext,sigstop,tbox,tempdeplainit,tempstop,tempstopcel,tgc,&
+         &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
+         &zko,zz0,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
          &iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,itefcc,&
-         &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lambdades,lcalcjq,&
-         &lcasca,lcontr,ldemitab,ldesinteg,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
+         &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
+         &lcasca,lcontr,ldemitab,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
-         &nrdf,nstepdes,parallele,pm1des,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,tempdes,text,tfcou&
-         &,tpseuils,tstep,typspr,unite,unitp,xpspr,lenfnam,fnam,position_conversion_lammps&
+         &nrdf,parallele,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou&
+         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,position_conversion_lammps&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess
@@ -67,23 +67,22 @@ contains
     !
 
     namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma, itefcc, itedepla, tdepla, lfilm, &
-         tempstop, tempstopcel,dmtype, lFire, ttol, tfroi, itecoordo, tstep, itetimestep, tsfact, &
-         tinit, tcooling, tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
+         tempstop, tempstopcel,dmtype, lFire,  itecoordo, tstep, itetimestep, tsfact, &
+         tinit,  tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
-          rulayer,iterasmol, lpcon, lprtzlm,pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
+          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
-         maxorder,  lalea, rsep, ipotentiel,lpotentiel,&
+         maxorder, ipotentiel,lpotentiel,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
-         lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,ldislo,epcoudis,&
-         fdislo,lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,ngrid,lperiod,&
-         lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,kspring,deltaRmax,&
-         rcangle,rcrdf,deltaestop,nbmoye,lHcyl,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,&
-         lbulle,ldesinteg,nstepdes,ides, kspr,xpspr,typspr,tempdes,neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
-         eatref,lheat,rheat,iteheat,theat,Eheat,HessianOrder,kappa,niteration,lanczos_step,mdcg_noise_scale, &
-         mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,&
+         lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,&
+         lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,ngrid,lperiod,&
+         lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,deltaRmax,&
+         rcangle,rcrdf,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,&
+         neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
+         eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,ndir,nstep,betaguess,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2
@@ -133,13 +132,10 @@ contains
     !                              15 -> montecarlo_mcgc
     !                              112 -> histogramme des distances entre atomes
     lFire = .false.              ! Fire algorithm is USEd for quenching (cf tr_fire.F90)
-    ttol = 0.0                  !max tolerance for temperature in %
-    tfroi = -1.0                !imposed temperature
     tstep = 1.0                 !timestep in 10^-15 sec unit
     itetimestep = -1            !period of check in timestep
     tsfact = 10.0               !change in time step factor
     tinit = -1.0                !initial temperature
-    tcooling = -1.0             !cooling rate
     tfcou = -1.0                !temperature of the border of the box
     epcou = -1.0                !width of the border of the box
     lcasca = .FALSE.            !cascade Y/N
@@ -201,8 +197,6 @@ contains
     tauTcon=200.0               ! The rescales "time" for the Berendsen algorithm
     Text=-1.
     iteTconst =itetemp
-    lalea = .FALSE.             ! structure initiale aleatoire
-    rsep = 1.0               !Distance de separation pour le tirage aleatoire
     ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW �πｴﾎｵ縺､� la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original) ; 11 Ercollesi ;; -10=LAMMPS atom style atomic; -11 LAMMPS atom style charge (changes only simple.potin) ! 8 bandura 2017= Bukingham +Morse+Fermi-Dirac+Inverse gaussian
     npotentiel = 1              ! nb de potentiels
     lpotentiel(:)=.false.
@@ -220,9 +214,6 @@ contains
     ilangevin=1
     iko=-1
     lcdp=.false.             ! algorithme d'accumulation de defauts ponctuels
-    ldislo=.false. ! calcul de dislocation
-    epcoudis= 0.0 !epaisseur de la couche avec ajout de force pour dislo
-    fdislo=0.0     ! force appliquee aux atomes de bords 
     lnemd=.false.  ! Kth par la methode NEMD Evans, P7229
     fnemd=0
     fpstop =-0.05 ! critere de conv. sur la force par atome max  pour les trempes UNITE = EV/ANG
@@ -285,7 +276,6 @@ contains
     nebrelaxation=2  ! We relax all the atoms; if nebrelaxation==1 only the most "deplaced" atoms      
     npath = 15       ! 15 images of the neb is the default
     maxneb = 700     ! the MAX of NEB steps
-    kspring = 1.0    ! the default value for the spring
     deltaRmax=1.d-2
     neb_noise_scale=0.001      ! this will affect the 4th digit
     mdcg_noise_scale=0.001      ! this will affect the 4th digit
@@ -299,29 +289,14 @@ contains
     !...inNEB
     rcangle=3.0
     rcrdf=5.0
-    deltaestop=0.0
-    nbmoye=100
-    lHcyl=.false.
     ltriclin=.true.
     lprtfat=.false.
 
     iteanaposneb=0
-    lbulle=.false.
-    ldesinteg=.false.    ! calcul du delta F de la desintegration d'un atome
-    nstepdes=-1
-    ides=1
-    kspr=10.0
-    xpspr(:)=-1000.
-    typspr=0
-    tempdes=-1.0
     lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep. 
     lposmoy=.false.       ! writes the average position and energy of the atoms in a .mol file
     eatref(:)=0.
 
-    lheat=.false.
-    rheat=0.
-    Theat=0.0
-    Eheat=0.
     ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG, ivisu=6 xfg ; 7=xyz type à la Babel
     !4==> 40= pas de vitesses; 41 vitesses
     !6==> 60= pas de vitesses; 61 vitesses
@@ -329,11 +304,6 @@ contains
 
     !   ----------------------------------------------------------------------------------------    !*!
 
-    !.... in SUNDAE
-    kappa = 1e6
-    niteration=10000
-    lanczos_step=1.0d-3
-    !.... in SUNDAE 
 
     tempdeplainit=-1
     debyetemp=-1
@@ -446,7 +416,6 @@ contains
     epcou = epcou*1D-8
     tdepla = tdepla*1D-8
     tdepla2 = tdepla2*1D-8
-    rsep=rsep*1.0d-8
     if (itean .ne. 0) then
        itetemp = itean
        itesigma = itean
@@ -573,11 +542,6 @@ contains
        call arret_ndm
     endif
 
-    !      if (ttol==0.0 .and. tfroi<=0.0) then
-    !         write (6, *) 'contradiction ttol <-> tfroi '
-    !         call arret_ndm
-    !      endif
-
     if (tstep<1D-20 .or. tstep>1D-13) then
        if (rang==0) write (6, *) rang,'mauvais pas en temps = ', utemps
        call arret_ndm
@@ -627,14 +591,8 @@ contains
     endif
 
     if (dmtype==7) then
-       ldemitab=.false.
-       if (.not.((HessianOrder.eq.1).or.(HessianOrder.eq.2).or.(HessianOrder.eq.4))) then
-          write (6,*) ' PHONDY: HessianOrder can have only the values 1, 2 or 4  '
-          write (6,*) ' PHONDY: which corresponds to a Hessian on 2,3 or 5 points' 
-          write (6,*) ' PHONDY: HessianOrder.........: ', HessianOrder  
-          write (6,*) ' PHONDY: stop'
-          call arret_ndm
-       end if
+       write(6,*)'dmtype==7 is deprecated'
+       call arret_ndm
     end if
 
     if (dmtype==18) then
@@ -902,25 +860,9 @@ contains
     end select
 
 
-    if (lHcyl) then
-       read (ludin,*) Ecyl, pc(1), pc(2), pc(3), vdc(1), vdc(2), vdc(3), rayonc, lgc 
-       if (lrestart) then
-          lHcyl=.false.
-       end if
-       pc(:)=pc(:)*1.D-8
-       vdc(:)=vdc(:)*1.D-8
-       rayonc=rayonc*1.D-8
-       lgc=lgc*1.D-8
-    end if
-
-
-    ! Initialisation
 
     if (iterdf >= 0) then
 
-       !         lurdfout = 88
-       !         fnamrdfout = fnam(1:lenfnam)//'.rdfout'
-       !         open(unit=lurdfout, file=fnamrdfout, status='unknown')
        if (iterdf > 0) nrdf = 0
        if (iteangle > 0) nfda = 0
     endif
@@ -932,7 +874,6 @@ contains
           if(rang==0)         open(unit=lufilmpaf, file='filmpaf', status='unknown')
        end if
     endif
-    if (tcooling > 0) lastcool = 0.0
 
     if(dilat(1).ne.0.0) then
        if(igen.lt.1) then
@@ -1262,12 +1203,9 @@ contains
 
 
 
-    if (ttol>0.)  write(6,*) ' ttol=', ttol
-    if (tfroi>0.) write(6,*) ' tfroi=' ,tfroi
     if ((tempstop>0.).and.(rang==0)) write(6,*)' tempstop=', tempstop
     if ((tfcou>0.).and.(rang==0))         write (6, '(A,F10.1,A,F10.1,A,F10.1)') 'tfcou=', tfcou, ' epcou=', &
          epcou*1D+8
-    if (tcooling>0.) write(6,*)' tcooling=', tcooling
 
     if (lcasca) then
        if (rang==0) write (6, *) '----CASCADE-----'
@@ -1302,12 +1240,6 @@ contains
     !     open(unit=112, file=fnamdin, status='unknown')
     !  end if
 
-    if (ldislo.and.((epcoudis==0.0).or.(fdislo==0.0))) then
-       epcoudis=epcoudis*1.0d-8
-       write(6,*)rang,'ldislo vs epcoudis ou fdislo stop'
-       call arret_ndm
-    end if
-
 
     if ( ( (dmtype==3).OR.(dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==33).or.(dmtype==31) ) &
          .and.(fpstop.le.0.0).and.(fsumstop.le.0.0)) then
@@ -1334,12 +1266,7 @@ contains
 
 
     if ((iteanapos.eq.-1).and.(itecompcr.ne.-1)) iteanapos=itecompcr
-    if(deltaestop.ne.0)  write(6,*)'<<arret apres chnegement de Epot moyenne ', deltaestop, nbmoye
-
-
-
     usdh = 1/(two*tstep)
-
     if (rang==0)then 
        write(6,*)'nb de potentiels', npotentiel
        if (npotentiel==1) then
@@ -1360,60 +1287,6 @@ contains
     end if
     if (rang==0) write(6,*)'fmt_cin',fmt_cin
 
-    if (ldesinteg)then
-       !     itmax=nstepdes
-       itesauv=0.
-       if (dmtype.ne.4) then
-          write(6,*) 'dmtype <> 4 et linsert'
-          call arret_ndm
-       end if
-       if (nstepdes.le.0) then
-          write(6,*) 'desinteg et nstepdes<1'
-          call arret_ndm
-       end if
-
-       if(tempdes==-1)tempdes=Text
-
-       if (rang==0)write(6,*)
-       if (rang==0)write(6,*)'desintegration de l atome ',ides, 'mis �πｴ� 1'
-       if (rang==0)write(6,*) 'desinteg NE FONCTIONNE QUE AVEC DES POT DE PAIRES !!!'
-       if (rang==0)write(6,'(A,D12.5,A)')' kspr=',kspr,'eV/Ang**2'
-       kspr=kspr*1d16/erg2eV
-       if (rang==0)write(6,*)
-       if (rang==0)write(6,*)'ATTENTION EN PARA LES ATOMES NE DOIVENT PAS TROP VOYAGER PENDANT LES CHEMINS'
-       if (rang==0)write(6,*)'ATTENTION EN PARA un atome ne doit pas aller d-un proc. �πｴ� un proc non voisin'
-
-
-
-       if (xpspr(1)==-1000) then 
-          if (rang==0)  write(6,*) 'position du ressort sur la position de l_atome ides'
-       else
-          if (rang==0) write(6,*) 'position du ressort',xpspr,'Ang'
-          xpspr=xpspr*1d-8
-       end if
-
-       if (rang==0)write(6,*)        
-       lambdades=1.0 ; pm1des=-1
-
-    end if
-
-    rheat=rheat*1d-8
-    if (lheat.eqv..true.)then
-       Eheat=Eheat*ev2erg
-       dmtype=4
-       if (rheat.le.0)then
-          write(6,*)'heat et rheat<=0 stop'
-          call arret_ndm
-       end if
-       if((Eheat==0).and.(Theat==0)) then
-          write(6,*)'heat et Eheat=0 Theat=0 stop'
-          call arret_ndm
-       end if
-       if((Eheat.ne.0).and.(Theat.ne.0)) then
-          write(6,*)'heat et Eheat<>0 Theat<>0 stop'
-          call arret_ndm
-       end if
-    end if
     if(lPkbar) then
        unitP=1.0d-9
        cunitP='kbar'

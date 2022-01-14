@@ -2,7 +2,7 @@ module sauvegardeT_mod
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:rang,it,itesauvinter,lspaceNDM,&
-       &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,l2T,imm_glob
+       &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,l2T
 
   USE elec_cell, ONLY : sauveelec
   USE cryst_to_cart_mod,only: cryst_to_cart
@@ -72,8 +72,8 @@ contains
        end if
 
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          allocate (buffer(3,imm_glob))
-          allocate (ibuffer(imm_glob))
+          allocate (buffer(3,atdml%imm_glob))
+          allocate (ibuffer(atdml%imm_glob))
        else
           allocate (buffer(3,atdml%imm))
           allocate (ibuffer(atdml%imm))

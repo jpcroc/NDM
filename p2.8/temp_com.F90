@@ -6,7 +6,7 @@ module temp_com
   integer,allocatable::na(:),nas(:),nad(:)
   integer :: imm,im
 !  integer :: im_glob,imm_glob ! taille complète des tableaux 
-  integer:: imm_loc ! taille des conf atomique par proc 
+!  integer:: imm_loc ! taille des conf atomique par proc 
 
   real(double), dimension(3,3) :: at, bg ! at : vecteurs de base de la boite (BOND en cm) bg: vecteur du reseau reciproque
   real(double) :: volu      ! volume

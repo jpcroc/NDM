@@ -6,10 +6,10 @@ module endrunT_mod
   USE sauvegardeT_mod,only:sauvegardeT!,cin2gin
   USE calcdigr_mod,only: rdfT,rdf0
   USE rasmolT_mod,only:rasmolT
-  USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,itdes,&
-       &iteanapos,iteangle,iterasmol,itesigma,itetemp,ldesinteg,linstantfda,&
+  USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,&
+       &iteanapos,iteangle,iterasmol,itesigma,itetemp,linstantfda,&
        &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,&
-       &lwgin,nstepdes, lposmoy,l2T,angst,dmtype,it,lenfnam,rang,timel,&
+       &lwgin, lposmoy,l2T,angst,dmtype,it,lenfnam,rang,timel,&
        &fnamcout,fnam,lspaceNDM
   use var_pot, only: eatref,eatref,eatref
   USE cellconfig,only:cell_config,caltabtC
