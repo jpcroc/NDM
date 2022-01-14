@@ -581,38 +581,37 @@ contains
           dspw(l,ngrid+1) = 0.0
 
        enddo
-
-    else
-
-       do l = 1, npair
-          if (typ_pot_pair(l)==ipotentiel)then
-             potpart(1:ngrid) = pot(1,l,1:ngrid)
-             !           write(6,*)'uuuuuuu'
-             !           write(6,*)potpart
+    end if
+!!$    else
+!!$
+!!$       do l = 1, npair
+!!$          if (typ_pot_pair(l)==ipotentiel)then
+!!$             potpart(1:ngrid) = pot(1,l,1:ngrid)
+!!$             !           write(6,*)'uuuuuuu'
+!!$             !           write(6,*)potpart
 !!$             do k=1,ngrid
 !!$                lw=600+l
 !!$                write(lw,*)pot(:,l,k)
 !!$             end do
-             call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
-             pot(2,l,1:ngrid) = bsppart(1:ngrid)/kxsp(1:ngrid)
-             pot(3,l,1:ngrid) = csppart(1:ngrid)/kxsp(1:ngrid)
-             pot(4,l,1:ngrid) = dsppart(1:ngrid)/kxsp(1:ngrid)
-
-             pot(2,l,0) = 0.0
-             pot(3,l,0) = 0.0
-             pot(4,l,0) = 0.0
-             pot(2,l,ngrid+1) = 0.0
-             pot(3,l,ngrid+1) = 0.0
-             pot(4,l,ngrid+1) = 0.0
+!!$             call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
+!!$             pot(2,l,1:ngrid) = bsppart(1:ngrid)/kxsp(1:ngrid)
+!!$             pot(3,l,1:ngrid) = csppart(1:ngrid)/kxsp(1:ngrid)
+!!$             pot(4,l,1:ngrid) = dsppart(1:ngrid)/kxsp(1:ngrid)
+!!$
+!!$             pot(2,l,0) = 0.0
+!!$             pot(3,l,0) = 0.0
+!!$             pot(4,l,0) = 0.0
+!!$             pot(2,l,ngrid+1) = 0.0
+!!$             pot(3,l,ngrid+1) = 0.0
+!!$             pot(4,l,ngrid+1) = 0.0
 !!$             do k=1,ngrid
 !!$                lw=700+l
 !!$                write(lw,*)pot(:,l,k)
 !!$             end do
-
-          end if
-
-       enddo
-    endif
+!!$          end if
+!!$
+!!$       enddo
+!!$    endif
 
     if (lprtpot.EQV..true.) then
        do l=1,npair

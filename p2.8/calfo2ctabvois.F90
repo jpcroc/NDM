@@ -60,7 +60,7 @@ contains
           k = sk
           ! spline
           dr = r-float(k)*csive
-          deltaepot=0.5*(pot(1,l,k)+r*dr*(pot(2,l,k)+dr*(pot(3,l,k)+dr*pot(4,l,k))))
+          deltaepot=0.5*(pot(1,l,k)+dr*(pot(2,l,k)+dr*(pot(3,l,k)+dr*pot(4,l,k))))
           phu = -1.0*(pot(2,l,k)+dr*(2.0*pot(3,l,k)+dr*(3.0*pot(4,l,k))))
           potis1 = potis1+2*deltaepot
           atcf%fp(:,i)=atcf%fp(:,i)+phu*dxp(:)

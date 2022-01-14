@@ -93,7 +93,7 @@ contains
              ! spline
              dr = r-float(k)*csive
              phu = -1.0*(pot(2,l,k)+(2.0*pot(3,l,k)+3.0*pot(4,l,k)*dr)*dr)
-             deltaepot=0.5*(pot(1,l,k)+(pot(2,l,k)*dr+pot(3,l,k)*dr**2+pot(4,l,k)*dr**3)*r)
+             deltaepot=0.5*(pot(1,l,k)+pot(2,l,k)*dr+pot(3,l,k)*dr**2+pot(4,l,k)*dr**3)
              f1 = phu*dxp(1)
              f2 = phu*dxp(2)
              f3 = phu*dxp(3)
