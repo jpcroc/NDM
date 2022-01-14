@@ -529,6 +529,15 @@ END FUNCTION matdet
     end do
   end subroutine fillbuffer1Dreal
 
+  subroutine matmult3(A,b,c)
+    real(double),intent(in)::a(3,3),b(3)
+    real(double),intent(out)::c(3)
+    integer::in
+    c(1)=a(1,1)*b(1)+a(1,2)*b(2)+a(1,3)*b(3)
+    c(2)=a(2,1)*b(1)+a(2,2)*b(2)+a(2,3)*b(3)
+    c(3)=a(3,1)*b(1)+a(3,2)*b(2)+a(3,3)*b(3)
+  end subroutine matmult3
+  
   subroutine fillbuffer1Dlogical(lbuf,vect,masq)
     logical,allocatable,intent(in)::vect(:)
     logical,allocatable::lbuf(:)
@@ -605,5 +614,28 @@ END FUNCTION matdet
   end subroutine convert_cell
 
 
-
+  subroutine reslin33(x,b,a)
+    real(double),intent(out)::x(3)
+    real(double),intent(in)::b(3),a(3,3)
+    real(double)::deta,detab(3),ab1(3,3),ab2(3,3),ab3(3,3),am1(3,3)
+!!$    deta=matdet(a)
+!!$
+!!$    ab1=a
+!!$    ab1(:,1)=b(:)
+!!$    detab(1)=matdet(ab1)
+!!$
+!!$    ab2=a
+!!$    ab2(:,2)=b(:)
+!!$    detab(2)=matdet(ab2)
+!!$
+!!$    ab3=a
+!!$    ab3(:,3)=b(:)
+!!$    detab(3)=matdet(ab3)
+!!$    
+!!$    x(:)=detab(:)/deta
+!!$    write(6,*)'X1',x
+    call matinv(a,am1)
+    call matmult3(am1,b,x)
+!    write(6,*)'X2',x
+  end subroutine reslin33
 end module Mat_utils_mod

@@ -2,6 +2,7 @@ module calpo_mod
   USE arret_ndm_mod,only:arret_ndm
   USE spline_mod,only: cspline
   USE zieg2_mod,only: zieg2
+  USE zieg3_mod,only: zieg3
 
   USE dervbeest_mod,only: deriVBEEST,maxVBEEST,potvbeest
 
@@ -85,6 +86,7 @@ contains
     ! ****************************************************************
     write(6,*)'ipotentiel ',ipotentiel
     select case (ipotentiel)
+          
     case(0,1,3,4,5,8,9)  ! FORMULES ANALYTIQUES
        sigp=0.0
        ! +++++++++ 0. POTENTIEL DE BORN-MAYER-HUGGINS +++++++++++++
@@ -276,48 +278,6 @@ contains
        ! ++++++++++++++++++++ Fin de Buckingham ++++++++++++++++++++
 
        ! ********* FIN POTENTIEL INTERACTION DE TYPES DE PAIRES **********
-
-
-       ! ************************************************************
-       !               CALCUL DU POTENTIEL COULOMBIEN
-       ! ************************************************************
-       ! Produits des charges entre 2 types (pour terme coulombien)
-       l = 0
-       do i = 1, ntyp
-          if (ntyp-i+1>0) then
-             zz(l+1:ntyp-i+1+l) = q(i)*q(i:ntyp)
-             l = ntyp-i+1+l
-          endif
-       end do
-
-       ! - Tableau des potentiels et forces correspondant aux interactions coulombiennes
-       ! --- Le premier terme du potentiel et de la force est calcule ---
-       do k = 1, ngrid
-          r = k*csive
-          r2 = r*r
-          r3 = r2*r
-          ar = alpha*r
-          ar2 = ar*ar
-          damp = 0.0
-          ! calcul de derfc par sous routine exterieure
-          damp = derfc(ar)
-          ddam = factor*r*exp((-ar2))
-!                write(6,*)'r k damp auxe zz',r, k ,damp,ar,zz,alpha
-!                    write(6,*)r,pot(1,1,k),auxe*zz(1)*damp/r
-          !    interaction de paire + interaction couenne
-          pot(1,:npair,k) = pot(1,:npair,k)+auxe*zz(:npair)*damp/r
-
-
-       end do
-       do l=1,npair
-          potpart(:ngrid) = pot(1,l,1:ngrid)
-          call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
-          pot(2,l,1:ngrid) = bsppart(:ngrid)
-          pot(3,l,1:ngrid) = csppart(:ngrid)
-          pot(4,l,1:ngrid) = dsppart(:ngrid)
-          !write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
-       end do
-
        !*********************************cas : rpulsion par Pot polynomial******************************
        select case (ipotrep)
        case(1)
@@ -360,8 +320,70 @@ contains
 
           call zieg2 (pot,pot_d, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
 
+       case(3)  !(lpotrep)
+
+          ! ********************************Cas : Pot  de Ziegler ****************************lprtpo
+
+          ! **** terme de Ziegler *******
+
+          call zieg3 (pot, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
+
        case default    !(lpotrep)
        end select
+
+       if (lprtpot.EQV..true.) then
+          do l=1,npair
+             if (typ_pot_pair(l)==ipotentiel)then
+                !             write(6,*)'l,k,r,pot(1,l,k)'
+                do k=1,ngrid
+                   r=float(k)*csive*1.0D8
+                   lw=350+l
+                   write(lw,'(2I6,5D15.6)')l,k,r,pot(1,l,k),pot(1,l,k)*erg2ev
+                enddo
+             end if
+          enddo
+       end if
+       
+
+       ! ************************************************************
+       !               CALCUL DU POTENTIEL COULOMBIEN
+       ! ************************************************************
+       ! Produits des charges entre 2 types (pour terme coulombien)
+       l = 0
+       do i = 1, ntyp
+          if (ntyp-i+1>0) then
+             zz(l+1:ntyp-i+1+l) = q(i)*q(i:ntyp)
+             l = ntyp-i+1+l
+          endif
+       end do
+
+       ! - Tableau des potentiels et forces correspondant aux interactions coulombiennes
+       ! --- Le premier terme du potentiel et de la force est calcule ---
+       do k = 1, ngrid
+          r = k*csive
+          r2 = r*r
+          r3 = r2*r
+          ar = alpha*r
+          ar2 = ar*ar
+          damp = 0.0
+          ! calcul de derfc par sous routine exterieure
+          damp = derfc(ar)
+          ddam = factor*r*exp((-ar2))
+!                write(6,*)'r k damp auxe zz',r, k ,damp,ar,zz,alpha
+!                    write(6,*)r,pot(1,1,k),auxe*zz(1)*damp/r
+          !    interaction de paire + interaction couenne
+          pot(1,:npair,k) = pot(1,:npair,k)+auxe*zz(:npair)*damp/r
+
+
+       end do
+       do l=1,npair
+          potpart(:ngrid) = pot(1,l,1:ngrid)
+          call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
+          pot(2,l,1:ngrid) = bsppart(:ngrid)
+          pot(3,l,1:ngrid) = csppart(:ngrid)
+          pot(4,l,1:ngrid) = dsppart(:ngrid)
+!          write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
+       end do
 
 
        ! affichage potentiel de chaque paire
@@ -375,7 +397,7 @@ contains
        !             end if
        !          endd
 
-    case(2)  !test départ sur analytique de paires
+    case(2)  !test départ sur analytique de paires  ! SELECT FORMULES ANALYTIQUES LIgne 90
        if (rang==0) write (6, *) '----------- POTENTIEL WATANABE --------------'
 
        ! -----Terme a 2 corps de base
@@ -420,7 +442,7 @@ contains
        enddo
 
 
-    case(7) ! potentiel de paire tabulé
+    case(7) ! potentiel de paire tabulé! SELECT LIGNE 90
        ! calculer pot par le spline de  pot_pair_tab
        ! puis resplinner
        !      write(6,*)'csive',csive
@@ -495,11 +517,11 @@ contains
        end if
 
        if (ipotrep==2) then
-          call zieg2 (pot,pot_d, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
+          call zieg2 (pot, pot_d,csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
        end if
 
 
-    case(6)
+    case(6)! SELECT LIGNE 90
        allocate(potrc(npair));allocate(dpotrc(npair))
        do i=1,ntyp
           do j=i,ntyp
@@ -541,7 +563,6 @@ contains
     end select
 
 
-
     ! spline
     if(ipotentiel.eq.2)then
        do l = 1, npair
@@ -568,6 +589,10 @@ contains
              potpart(1:ngrid) = pot(1,l,1:ngrid)
              !           write(6,*)'uuuuuuu'
              !           write(6,*)potpart
+!!$             do k=1,ngrid
+!!$                lw=600+l
+!!$                write(lw,*)pot(:,l,k)
+!!$             end do
              call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
              pot(2,l,1:ngrid) = bsppart(1:ngrid)/kxsp(1:ngrid)
              pot(3,l,1:ngrid) = csppart(1:ngrid)/kxsp(1:ngrid)
@@ -579,6 +604,11 @@ contains
              pot(2,l,ngrid+1) = 0.0
              pot(3,l,ngrid+1) = 0.0
              pot(4,l,ngrid+1) = 0.0
+!!$             do k=1,ngrid
+!!$                lw=700+l
+!!$                write(lw,*)pot(:,l,k)
+!!$             end do
+
           end if
 
        enddo
