@@ -1,6 +1,6 @@
 module bondval_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:it,rang,fnam,lperiod,lenfnam,parallele
+  USE gen_com_m, ONLY:it,rang,fnam,lperiod,lenfnam
   USE var_pot, ONLY:ntyp,ty
   use atomconfig,only: atom_config
   use boxconfig,only:box_config

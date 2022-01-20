@@ -13,8 +13,10 @@ module prog_mod
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
+  USE ForceMatrix_mod, only: calcFM, init_MPI_FM, pscFM,paraFM
   USE montecarlo_mod, only: montecarlo,atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc,config_atom_n&
-       &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1
+       &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
+       &idirectionmcgc,initN
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -38,11 +40,10 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:parallele,potist,rang,sig,lspaceNDM&
+    USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM&
          &,lprteat,lsigat,dmtype,lax,llangevin,itetimestep
 
     use read_val,only:imm,ltabvois,rvois
-
 
 #ifdef PARA
     USE Tpara,only:nprocspace,para_space_config
@@ -87,11 +88,12 @@ contains
     elseif(itetimestep.gt.0) then
        atdml=>atdmd
     else
-       if ((dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==33).or.(dmtype==31)) then
-          atdml=>atdm
-       else
-          atdml=>atdmd
-       end if
+       select case(dmtype)
+          case(30,32,34,33,19)
+             atdml=>atdm
+        case default
+           atdml=>atdmd
+        end select
     end if
     im=0 ; nvois=0
     atdml%imm_glob=imm
@@ -108,7 +110,7 @@ contains
 !!$    end select
        
     select case(dmtype)
-    case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC)
+    case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix)
 
 
 #ifdef PARA
@@ -122,13 +124,7 @@ contains
           if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
        endif
 #endif
-       if (ltabvois) then
-          rv=rvois
-       else
-          rv=0
-       end if
 
-       call atdml%init(im,imm,ltabvois,nvois,rvois=rv)
        call init(atdml,boxndm,celndm,psc0)
 !       call atdml%print
 #ifdef DECOUP
@@ -266,6 +262,17 @@ contains
 
 
        end select
+    case(19) ! force matrix
+       call init_mpi_FM
+       if (ltabvois) then
+          rv=rvois
+       else
+          rv=0
+       end if
+       call atdml%init(im,imm,ltabvois,nvois,rvois=rv)
+       call init_simple(atdml,celndm,boxndm,psc=pscFM)
+       call calcFM(atdml,celndm,boxndm)
+       call arret_ndm
     case(9)
        !#ifdef PARA
        call init_mpi_neb
@@ -308,8 +315,12 @@ contains
           cells_n=>config_cells_n(ipp)
           atconf_nplus1=>config_atom_nplus1(ipp)
           cells_nplus1=>config_cells_nplus1(ipp)
-
-          call atconf_n%init(im,imm,ltabvois,nvois,rvois=rv,im_glob=im,imm_glob=imm_glob)
+!          write(6,*)'IM',im,rang
+          if (idirectionmcgc==0) then
+             call atconf_n%init(im,imm_glob,ltabvois,nvois,rvois=rv)
+          else
+             call atconf_nplus1%init(im,imm_glob,ltabvois,nvois,rvois=rv)
+          end if
           ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
           boxmcgc=boxndm
           if (ipp==1) then
@@ -317,9 +328,13 @@ contains
           else
              linitpot=.false.
           end if
-          call init_simple(atconf_n,cells_n,boxmcgc,psc=pscgc,linitpot=linitpot) 
-          call initNP1(ipp) ! initialise la configuration N+1
-          
+          if (idirectionmcgc==0) then
+             call init_simple(atconf_n,cells_n,boxmcgc,psc=pscgc,linitpot=linitpot) 
+             call initNP1(ipp) ! initialise la configuration N+1
+          else
+             call init_simple(atconf_nplus1,cells_nplus1,boxmcgc,psc=pscgc,linitpot=linitpot) 
+             call initN(ipp) ! initialise la configuration N+1
+          end if
        end do
        !END PARAPATH
        atconf_n=> config_atom_n(1)

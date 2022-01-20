@@ -331,25 +331,15 @@ contains
           end if
 
        end do Tloop1at2
-       !          if (allocated (free)) then
-       !             if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
-       !          else
        potisTersoff = potisTersoff + 0.5*v_ij
-       !          end if
 
 
-       !energie_i =  0.5*v_i
-       !          if (allocated (free)) then
-       !             if ((lprteat.or.lcalcjq.or.lnemd).and.(free(i).EQV..true.))eatom(i) = eatom(i)+0.5*v_ij
-       !          else
        if (lprteat.or.lcalcjq.or.lnemd)then
           select type (atcf)
           class is (atom_config_e)
              atcf%eat(i) = atcf%eat(i)+0.5*v_ij
           end select
        end if
-       !          end if
-
 
        if (lnemd) then
           do l=1,3

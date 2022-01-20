@@ -141,8 +141,7 @@ contains
           call arret_ndm
        end select
 
-       call  driver_caltabt_DM(sig,potist,atdml,celndm,boxndm,psc,lperiod)
-
+       call  driver_caltabt_DM(atdml,celndm,boxndm,psc,lperiod)
        call analyseT (atdml,celndm,boxndm)    
        call controleT(atdml,celndm,boxndm)
 

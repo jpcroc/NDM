@@ -43,7 +43,7 @@ SHELL = /bin/sh
 # NDM ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
   OPTIONS  =  -O3 -g -traceback
-  NDM_INC  =  -DLAMMPS_VERSION -DPARA # HERE ONLY mod IF NDM SERIAL WITH NO EXTERNAL LIBS 
+  NDM_INC  =   $(FLAG)  
 
 # MPI library, REQUIRED if -DPARA
 # INC = path for *.h, MPI compiler settings
@@ -136,17 +136,19 @@ SHELL = /bin/sh
   FFTW_PATH =
   FFTW_LIB  =
 
-
+ifdef MKL
 # MKL library, REQUIRED  
 # INC = path(s) for *.h required by MKL library 
 # PATH = path for MKL library
 # LIB = name of MKL library
-
-  MKL_INC  = #-I/opt/intel/mkl/include/intel64/lp64
+endif
+  MKL_INC  =  #-I/opt/intel/mkl/include/intel64/lp64
   MKL_PATH = #-L/opt/intel/mkl/lib
 
   #MKL_LIB  = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64
   MKL_LIB=${MKLROOT}/lib/intel64/libmkl_scalapack_lp64.a -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_intel_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_blacs_openmpi_lp64.a -Wl,--end-group -liomp5 -lpthread -lm -ldl
+
+
 # ---------------------------------------------------------------------
 # build rules and dependencies
 # no need to edit this section
@@ -191,7 +193,7 @@ vpath %.h   ${CODE_PATH}
 # Link target
 
 $(EXE):	$(OBJ)  
-	$(LINK) $(OBJ) $(LIBS) -o $(EXE)
+	$(LINK) ${EXTRA_INC} $(OBJ) $(LIBS) -o $(EXE)
 	$(SIZE) $(EXE)
 
 

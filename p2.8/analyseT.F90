@@ -15,7 +15,7 @@ module analyseT_mod
        &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
        &tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
-       &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,parallele,&
+       &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,&
        & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,it,l2T
 
   USE cellconfig,only:cell_config, caltabtC
@@ -470,7 +470,7 @@ contains
      endif
   endif
   if (itebdv>0) then
-     if (.not.parallele.and.mod(it,itebdv)==0) call bondval(atdml,celndm,boxndm)
+     if (mod(it,itebdv)==0) call bondval(atdml,celndm,boxndm)
   end if
     
     return

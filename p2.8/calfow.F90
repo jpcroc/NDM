@@ -47,10 +47,6 @@ contains
     ! sig=0
     !       write(6,*)'entree calfw'
 
-    !    if (any(free).NEQV..true.)then
-    !       write(6,*)'free +SW =pas code'
-    !       call arret_ndm
-    !    end if
 
     if (test_sigma)  then
        do i1=1,3

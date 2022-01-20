@@ -62,7 +62,8 @@ contains
 
     if (rang==0) then
        write(6,*)
-       write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-',imm,imm_glob,nprocspace
+       write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-'
+       write(6,*)'imm,imm_glob,nprocspace',imm,imm_glob,nprocspace
        write(6,*)
     endif
 
@@ -157,7 +158,6 @@ contains
 
        ! open fichier .gin
        fnamgin = fnam(1:lenfnam)//'.gin'
-
        call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,rumax,lrepart,psc)
        call periodbox (boxrcf,atrcf)
 
@@ -272,7 +272,7 @@ contains
           call  decoupage(nprocspace,ncore,cel2b,psc=psc)
        end if
     end if
-    COMPatrcf%ltabvois=.false.; compatrcf%nvois=0
+    COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
     call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
     compatrcf%imm_glob=imm_glob
@@ -283,7 +283,6 @@ contains
     else
        call compatrcf%copy_config(at2b, lrescl=.true.)
     end if
-
 #else
     if (ldecoup) then
        open(123, file='decoup.dat', status='old')
@@ -292,6 +291,7 @@ contains
        call  decoupage(npr,ncore,cel2b,psc=psc)
        call arret_ndm
     end if
+
     call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
     at2b%im_glob=at2b%im
@@ -520,7 +520,7 @@ contains
 
     read (lucin, err=456) icintype
 
-    !          if (rang==0) write (6, *) 'config type de fichier .cin : ', icintype
+    if (rang==0) write (6, *) 'config type de fichier .cin : ', icintype
     if (icintype>3.or.icintype<0) then
        write (6, *) rang, 'wrong icintype'
        call arret_ndm
@@ -528,10 +528,10 @@ contains
 
     icintypemod = mod(icintype,2)
 
-    if (lrestart.and.icintypemod==0) then
-       write (6, *) rang, 'not possible to restart from this file'
-       call arret_ndm
-    endif
+!!$    if (lrestart.and.icintypemod==0) then
+!!$       write (6, *) rang, 'not possible to restart from this file'
+!!$       call arret_ndm
+!!$    endif
     !at(vect123,xyz)
     !        if (icintype>=2) then
     read (lucin, err=456) at
@@ -586,8 +586,10 @@ contains
 
        select type(atcinr)
        type is (atom_config)
-          read (lucin, err=456) buffer                     !xpp
-          read (lucin, err=456) buffer                     !vp
+          if (icintypemod==1) then
+             read (lucin, err=456) buffer                     !xpp
+             read (lucin, err=456) buffer                     !vp
+          end if
           lvpread=.false.
        type is (atom_config_d)
           if (icintypemod==1) then
@@ -622,21 +624,21 @@ contains
              end if
           end if
        end select
-       read (lucin, err=456) oldtstep
-
-
-       if (lrestart) then
-          read (lucin, err=456) tmean, pmean, it, timel
-          if (nitmax.ge.0) itmax=it+nitmax
-          tstep = oldtstep
-
-          if (rang==0) then
-
-             write (6, *) 'restart parameters'
-             write (6, *) 'it =', it, ' time =', timel
-             write (6, *) 'pmean', pmean, ' tmean =', tmean
-             write (6, *) 'tstep', tstep
-          endif                                ! fin rang=0
+       if (icintypemod==1) then
+          read (lucin, err=456) oldtstep
+          if (lrestart) then
+             read (lucin, err=456) tmean, pmean, it, timel
+             if (nitmax.ge.0) itmax=it+nitmax
+             tstep = oldtstep
+             
+             if (rang==0) then
+                
+                write (6, *) 'restart parameters'
+                write (6, *) 'it =', it, ' time =', timel
+                write (6, *) 'pmean', pmean, ' tmean =', tmean
+                write (6, *) 'tstep', tstep
+             endif                                ! fin rang=0
+          end if
           usdh = 1.0/(two*tstep)
        endif
     case(2) ! at xp et num_at_glob

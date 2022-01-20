@@ -2,7 +2,7 @@ module montecarlo_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
-       &lspaceNDM,rang,it,firsttime_lammps,posa,forca,erg2ev,parallele,fnam,fnamcout,&
+       &lspaceNDM,rang,it,firsttime_lammps,posa,forca,erg2ev,fnam,fnamcout,&
        &lrestartmcgc,imm_glob
   USE atomconfig,only:atom_config,atom_config_d, config2ndm, switch_atom
   USE cellconfig, only:cell_config, cellconfig2ndm, caltabtC
@@ -1971,7 +1971,6 @@ paramcgc%mpi_orig%nproc= parapath%mpi_image%nproc ! =parapath%mpi_orig%nproc/npa
  MPI_COMM_space=paramcgc%mpi_image%comm
  call comm_space%init(MPI_COMM_SPACE)
  nprocspace=paramcgc%mpi_image%nproc
- if (nprocspace==1) parallele=.false.
  lbigmaster=parapath%lmaster
  lmaster=paramcgc%lmaster
  lmegamaster=.false.

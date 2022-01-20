@@ -16,7 +16,7 @@ module calfo_mod
   use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:parallele,potis0,potis2,potisp&
+  USE gen_com_m, ONLY:potis0,potis2,potisp&
        &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang,lperiod
 
   USE force_tersoff_mod,only:force_tersoff
@@ -28,7 +28,7 @@ module calfo_mod
   use lammps_util_mod,only: calcforce_lammps2 !, init_lammps
   use vars_lammps
 #endif
-  use Tpara,only:para_space_config
+  use Tpara,only:para_space_config,nprocspace
   implicit none
 contains
   ! ************************************************
@@ -123,7 +123,6 @@ contains
 !!$                           &boxcf%at,boxcf%bg,boxcf%volu)
                    else
                       call calfo2ccel(atcf,celcf,boxcf)
-
                    endif
 
 
@@ -135,13 +134,13 @@ contains
                 case(2)
                    ! !!! le cas parallele n'est pas pris en compte !!!
 
-                   if (.not.parallele) call calfow(atcf,celcf,boxcf)
+                   if (nprocspace==1) call calfow(atcf,celcf,boxcf)
 
                 case default
                 end select
 
                 ! !!! le cas parallele n'est pas pris en compte !!!
-                if (.not.parallele.and.l3c) call calfo3c(atcf,celcf,boxcf)
+                if ((nprocspace==1).and.l3c) call calfo3c(atcf,celcf,boxcf)
 
                 ! !!! le cas parallele n'est pas pris en compte !!!
                 !potentiels EAM
@@ -159,7 +158,7 @@ contains
                 case(13,14,15)
                    if (atcf%ltabvois) then
                       ! !!! le cas parallele n'est pas pris en compte !!!
-                      if (.not.parallele) call force_tersoff(atcf,celcf,boxcf)
+                      if (nprocspace==1) call force_tersoff(atcf,celcf,boxcf)
                    else
                       call force_tersoff_cel(atcf,celcf,boxcf,psc)
                    endif
@@ -167,7 +166,7 @@ contains
                 case (10,11,16)
                    if (atcf%ltabvois) then
                       ! !!! le cas parallele n'est pas pris en compte !!!
-                      if (.not.parallele) then
+                      if (nprocspace==1) then
                          call calfoeamtabvois(atcf,celcf,boxcf)
                       end if
                    else

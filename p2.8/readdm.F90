@@ -7,10 +7,11 @@ contains
 
 
   subroutine readdm
-   !-----------------------------------------------
+    !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
+    use Tpara,only:nprocs
     USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,&
          &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,ibordcou,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
@@ -27,7 +28,7 @@ contains
          &lcasca,lcontr,ldemitab,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
-         &nrdf,parallele,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou&
+         &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou&
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,position_conversion_lammps&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
     use read_val
@@ -38,6 +39,7 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, lbiais_retrait, fdmc_1, fdmc_2
+    use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
 #endif
@@ -57,9 +59,8 @@ contains
     integer :: ludin, lufilm, lufilmpaf,  i,itean, ic,ic2, iThermo,itecompcr,ipotcont
     character :: fnamdin*80
     logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr
-    integer::itecfg
+    integer::itecfg,np2
     logical :: lpconx,lpcony,lpconz,lpconxyz
-    !  integer :: imFree     ! nb d'atomes libres
     !-----------------------------------------------
     !
     !
@@ -71,7 +72,7 @@ contains
          tinit,  tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
-          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
+         rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder, ipotentiel,lpotentiel,&
@@ -85,7 +86,7 @@ contains
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,ndir,nstep,betaguess,&
-         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2
+         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq
 
 
     !
@@ -129,6 +130,7 @@ contains
     !                              16 -> SUNDAE
     !                              17 -> MAB
     !                              18 -> ML
+    !                              19 -> matrice de forces
     !                              15 -> montecarlo_mcgc
     !                              112 -> histogramme des distances entre atomes
     lFire = .false.              ! Fire algorithm is USEd for quenching (cf tr_fire.F90)
@@ -244,7 +246,7 @@ contains
     lPkbar=.true.
     ! definition des rayons de coupure pour le calcul des coordinences autour de chaque type atomique
     deltax=0.0
-!    rclu=2.0
+    !    rclu=2.0
 
 
     iterasmol = -1                             ! <0 --> genere aucun fichier positions pour logiciel rasmol
@@ -300,7 +302,7 @@ contains
     ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG, ivisu=6 xfg ; 7=xyz type à la Babel
     !4==> 40= pas de vitesses; 41 vitesses
     !6==> 60= pas de vitesses; 61 vitesses
-    
+
 
     !   ----------------------------------------------------------------------------------------    !*!
 
@@ -334,6 +336,11 @@ contains
 
     ipbc(1:3)=1 ! 1=PBC; 2=wall... dimension 3 =plans bc; ac;ab
 
+    ndecal=2 ! nombre de décalage dans le calcul de la matrice de force (dmtype=19)
+    decal=0.1 ! décalage dans le calcul de la matrice de force (dmtype=19) (Angstroms)
+    lparafm=.true.
+    nparafm=nprocs
+    lwritefreq=.true.
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -359,7 +366,7 @@ contains
     end if
     if (ivisu==4) ivisu=40
     if (ivisu==6) ivisu=60
-   if (rang == 0) then
+    if (rang == 0) then
        if (imm <= 0) then
           write (6, *) rang,'nombre d''atomes nul-> stop'
           call arret_ndm
@@ -465,21 +472,45 @@ contains
        if (rang==0) write (6, *) rang,'wrong itab < 1 '
        call arret_ndm
     endif
-
-    if (parallele) then
+#ifdef PARA
+    select case(dmtype)
+    case(21,22,4,3,1,30,31,32,33,34)
        if (ltabvois) then
           ltabvois=.false.
+          rvois=0
           if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
        end if
-       select case(dmtype)
-       case(21,22,4,3,9,15,1,30,31,32,33,34)
-       case default 
-          if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,3,4,9,1'
-          if (rang==0) write(*,*) 'Stop in readdm'
-          call arret_ndm
-       end select
-    end if
+    case (19)
+       if (nparafm.ne.nprocs) then
+          if (ltabvois) then
+             ltabvois=.false.
+             if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+          end if
+       end if
+        
+    case(9)
+       np2=npath-2
+       if (np2.ne.nprocs) then
+          if (ltabvois) then
+             ltabvois=.false.
+             if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+          end if
+       end if
+    case(15)
+       np2=nparapath*2
+       if (np2.ne.nprocs) then
+          if (ltabvois) then
+             ltabvois=.false.
+             if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+          end if
+       end if
 
+    case default 
+       if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,4,3,9,15,1,30,31,32,33,34,19'
+       if (rang==0) write(*,*) 'Stop in readdm'
+       call arret_ndm
+    end select
+#endif
 
 #ifdef DECOUP
     ltabvois=.false.;rvois=0.
@@ -567,10 +598,6 @@ contains
     if (lprteattotm.EQV..true.) then
        lprteat=.true.
        write(6,*)'LPRTEATTOTM calcule les energies moyenne de chaque atome et les ecrit en retranchant eatref en eV (=0 par defaut)'
-    end if
-    if ((lprteattotm.EQV..true.).and.(parallele.EQV..true.))then
-       write(6,*)'eattotm et PARA pas prog'
-       call arret_ndm
     end if
 
 
@@ -667,7 +694,7 @@ contains
 
 
     if((lTberendsen).and.( (dmtype.EQ.21).OR.(dmtype.EQ.22).OR.(dmtype.EQ.3).OR.(dmtype.EQ.30)&
-       &.OR.(dmtype.EQ.31).OR.(dmtype.EQ.32).OR.(dmtype.EQ.34).OR.(dmtype.EQ.33) )) then
+         &.OR.(dmtype.EQ.31).OR.(dmtype.EQ.32).OR.(dmtype.EQ.34).OR.(dmtype.EQ.33) )) then
        write(6,*) 'Berendsen pas possible';stop
     end if
 
@@ -681,12 +708,12 @@ contains
        end do lpt
        if (.not.tpot) then
           if (rang==0) write(6,*)'probleme ipotentiel npotentiel',ipotentiel,lpotentiel
-       call arret_ndm
+          call arret_ndm
        end if
     end if
     !  if ((all(lpotentiel)==.false.).and.(ipotentiel==-1)) then
     !  end if
-    
+
     if (ipotentiel.ge.0) lpotentiel(ipotentiel)=.true.
     npotentiel=0
     do ipotcont=0,npotmax
@@ -724,7 +751,7 @@ contains
     else
        latcomp=.false.
     end if
-    
+
     if(lcalcjq) then
        !     fnamjqbis = fnam(1:lenfnam)//'.E_xp'
        fnamjq = fnam(1:lenfnam)//'.jq'
@@ -769,7 +796,7 @@ contains
        case(21,22)
           lprtrp=.true.
        case default
-       dmtype=8
+          dmtype=8
        case (3,30,31,32,33,34)
           lEev=.true.
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
@@ -797,7 +824,7 @@ contains
           ihbox0(2,2)=1   ! Y ...
           ihbox0(3,3)=1   ! and Z.
        end if
-!       write(6,*)lpconx,lpcony,lpconz
+       !       write(6,*)lpconx,lpcony,lpconz
        if ((lpconx).or.(lpcony).or.(lpconz)) then
           ihbox0(:,:)=0   ! ALL the dimension are blockef except ...
           if (lpconx) ihbox0(1,1)=1   ! X ...
@@ -940,6 +967,25 @@ contains
     case (11)
        if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
        if (rang==0) write (6,*)
+    case (19)
+       if (rang==0) write (6,'(a)') '      FORCE Matrix calculation '
+#ifndef MKL
+       if (rang==0)then
+          write(6,*)"dmtype=19 works with lapack or MKL"
+          write(6,*)"these libraries are NOT linked by default"
+          write(6,*)"link them in Makefile.ndm_your_makefile"
+          write(6,*)"and recompile with make MKL=1 ndm_your_makefile"
+       end if
+       call arret_ndm
+#endif
+
+       decal=decal*1d-8
+       if((ndecal.le.0).or.(decal.le.0)) then 
+          if (rang==0) write (6,*)' problem decal, ndecal:',decal,ndecal
+          call arret_ndm
+       end if
+       if (rang==0) write (6,*)' decal, ndecal lparaFM, naparaFM:',decal,ndecal,lparafm,nparafm
+       if (rang==0) write (6,*)
     case (15)
        if (rang==0) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
@@ -967,7 +1013,7 @@ contains
           lparapath=.false.
        end if
 #endif
-       
+
 #ifdef ART    
     case (12)
        if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
@@ -1002,18 +1048,18 @@ contains
        call arret_ndm
     end select
 
-       if (any(ihbox0==0))then
-          if (rang==0) then
-             write(6,*)'incomplete cell relaxation'
-             do ic=1,3
-                do ic2=1,3
-                   if (ihbox0(ic,ic2)==1)then
-                      write(6,*)' ihbox0(',ic,ic2,ihbox0(ic,ic2)
-                   end if
-                end do
+    if (any(ihbox0==0))then
+       if (rang==0) then
+          write(6,*)'incomplete cell relaxation'
+          do ic=1,3
+             do ic2=1,3
+                if (ihbox0(ic,ic2)==1)then
+                   write(6,*)' ihbox0(',ic,ic2,ihbox0(ic,ic2)
+                end if
              end do
-          end if
+          end do
        end if
+    end if
 
 
     if (lcontr)  write (6, '(a)') '******************* CONTRAINTE !!! *****'
@@ -1275,7 +1321,7 @@ contains
        else
           write(6,*)'npotentiel buggué stop'
           call arret_ndm
-          
+
           do ipotcont=1,npotmax
              if (lpotentiel(ipotcont).EQV..true.)write(6,*)'potentiel actif', ipotcont
           end do
@@ -1328,12 +1374,12 @@ contains
     end if
 #endif     
 
-!condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
+    !condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
     if((dmtype == 15) .and. (pas_lambda_mc.lt.0)) then
        write(6,*)'Pour utiliser la methode MCGC, indiquer une valeur pour le pas lambda d integration'
        call arret_ndm
-    end if    
-!idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
+    end if
+    !idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
     if((dmtype == 15) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
        write(6,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
        call arret_ndm
@@ -1346,7 +1392,7 @@ contains
           if (rang==0) write(6,*)'dmtype inconsistent with creaDP', dmtype
           call arret_ndm
        end select
-     end if
+    end if
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
   end subroutine readdm

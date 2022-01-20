@@ -132,19 +132,13 @@ contains
        end if
        drk=tabdensity(i)-(rhomin(iti)+k*ktorho(iti))
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
-!       if( allocated (free)) then
-!          if( ( (lprteat.EQV..true.).or.(lcalcjq.EQV..true.) ).and.( free(i).EQV..true.)) eat(i)=eat(i)+Eembi
-!          if( free(i).EQV..true.)potisglue = potisglue+Eembi
-!       else
        if(lprteat.EQV..true.) then
           select type (atcf)
           class is (atom_config_e)
              atcf%eat(i)=atcf%eat(i)+Eembi
           end select
        end if
-
           potisglue = potisglue+Eembi
-!       end if
        if (lforcetabulate) then
           tabdensity(i)= eamglue_d(1,iti,k) + drk*( eamglue_d(2,iti,k) + drk*( eamglue_d(3,iti,k) + drk*eamglue_d(4,iti,k) ) )
        else 
@@ -199,20 +193,11 @@ contains
              end select
           end if
 
-!             if (allocated (free)) then
-!                if( free(i).EQV..true.)                eat(i)=eat(i) + 0.5d0*Erep
-!                if ((free(j).EQV..true.).and.ldemitab) eat(j)=eat(j) + 0.5d0*Erep
-!             else
-!          if (allocated (free)) then
-!             if( free(i).EQV..true.)                potisrep = potisrep + 0.5*Erep
-!             if(( free(j).EQV..true.).and.ldemitab) potisrep = potisrep + 0.5*Erep
-!          else
              IF (ldemitab) THEN
                 potisrep = potisrep + Erep
              ELSE
                 potisrep = potisrep + 0.5d0*Erep
              END IF
-!          end if
 
           fij(:) = - (dFemb+dErep)*gradij(1:3)
           atcf%fp(1:3,i) = atcf%fp(1:3,i) + fij(:)

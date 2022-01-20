@@ -4,7 +4,7 @@ module gen_com_m
 
 
   integer,target :: rang, rangph, rangml, rangmab, ja_phondy, ja_ml
-  logical :: parallele
+!  logical :: parallele
 
   real(double),parameter :: pi=3.141592654D0, bk= 1.380622D-16, &
        ecgs=1.6021764631580d-12, &  !debugCOS 1.6021892D-12, &

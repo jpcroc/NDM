@@ -8,7 +8,7 @@ module endrunT_mod
   USE rasmolT_mod,only:rasmolT
   USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,&
        &iteanapos,iteangle,iterasmol,itesigma,itetemp,linstantfda,&
-       &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,parallele,unitP,iterdf,&
+       &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,unitP,iterdf,&
        &lwgin, lposmoy,l2T,angst,dmtype,it,lenfnam,rang,timel,&
        &fnamcout,fnam,lspaceNDM
   use var_pot, only: eatref,eatref,eatref
@@ -16,7 +16,7 @@ module endrunT_mod
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e!, ndm2config, config2ndm
   use boxconfig,only: box_config!,ndm2boxconfig,boxconfig2ndm
   use posana,only:anapos
-  
+  USE Tpara,only:nprocspace
   implicit none
 contains
   ! ****************************************************************
@@ -123,7 +123,7 @@ contains
 
 
  if (iterasmol.GE.0) call rasmolT (atdml,boxndm,999999999,latcomp=latcomp)
- if (.not.parallele.and.iteanapos>=0) call anapos (atdml,celndm,boxndm,it)
+ if (nprocspace==1.and.iteanapos>=0) call anapos (atdml,celndm,boxndm,it)
 
  call arret_ndm
 

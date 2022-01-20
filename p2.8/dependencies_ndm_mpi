@@ -2,6 +2,7 @@
 
 ndm :  \
 	DynamicPME.o \
+	ForceMatrix.o \
 	Mat_util.o \
 	NGC.o \
 	SMjuli.o \
@@ -110,13 +111,35 @@ ndm :  \
 	var_pot.o \
 	vect_dist_mod.o \
 	work_cgII.o \
-	zieg2.o
+	zieg2.o \
+	zieg3.o
 
 DynamicPME.o :  \
 	var_pot.o
 
+ForceMatrix.o :  \
+	T_kind_param_m.o \
+	Tpara.o \
+	arret_ndm.o \
+	atomconfig.o \
+	boxconfig.o \
+	calfo.o \
+	caltabi.o \
+	cellconfig.o \
+	config2data.o \
+	constrconf.o \
+	cryst_to_car.o \
+	gen_com_m.o \
+	init_voisinage.o \
+	mod_para.o \
+	paraconfig.o \
+	parautils.o \
+	read_val.o \
+	var_pot.o
+
 Mat_util.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	gen_com_m.o
 
 NGC.o :  \
@@ -124,6 +147,7 @@ NGC.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
 	WGC.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -140,12 +164,14 @@ NGC.o :  \
 SMjuli.o :  \
 	T_kind_param_m.o \
 	alloc_typ.o \
+	arret_ndm.o \
 	gen_com_m.o \
 	var_pot.o
 
 T_kind_param_m.o : 
 
-Tersoff.o : 
+Tersoff.o :  \
+	arret_ndm.o
 
 Tpara.o :  \
 	T_kind_param_m.o
@@ -171,6 +197,7 @@ WGC.o :  \
 
 adf.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	gen_com_m.o \
 	var_pot.o
 
@@ -201,6 +228,7 @@ analyseT.o :  \
 anapos.o :  \
 	T_kind_param_m.o \
 	anasic.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -227,6 +255,7 @@ atomconfig.o :  \
 	Mat_util.o \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	gen_com_m.o \
 	paraconfig.o
 
@@ -243,6 +272,7 @@ bondval.o :  \
 boxconfig.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	cryst_to_car.o \
 	gen_com_m.o \
@@ -251,6 +281,7 @@ boxconfig.o :  \
 calcangle.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -290,6 +321,7 @@ calcdepla2.o :  \
 calcdigr.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -300,6 +332,7 @@ calcdigr.o :  \
 calctemp.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	cellconfig.o \
 	elec_cell.o \
@@ -310,6 +343,7 @@ calctemp.o :  \
 calfo.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	calfo2ccel.o \
@@ -365,6 +399,7 @@ calfo3c.o :  \
 calfoberend.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	gen_com_m.o \
 	tempinstT.o \
@@ -376,6 +411,7 @@ calfocommon.o :  \
 calfoeamcel.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	calfocommon.o \
@@ -387,6 +423,7 @@ calfoeamcel.o :  \
 
 calfoeamtabvois.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	calfocommon.o \
@@ -409,6 +446,7 @@ calfoew.o :  \
 
 calfow.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	calfocommon.o \
@@ -426,7 +464,8 @@ calpo.o :  \
 	spline.o \
 	vanbeest.o \
 	var_pot.o \
-	zieg2.o
+	zieg2.o \
+	zieg3.o
 
 calpo_ew.o :  \
 	DynamicPME.o \
@@ -449,6 +488,7 @@ calpoeam.o :  \
 
 caltabi.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -468,14 +508,19 @@ cdp.o :  \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
+	constrconf.o \
+	cryst_to_car.o \
 	dmloop_pilot.o \
 	gen_com_m.o \
 	mod_para.o \
-	var_pot.o
+	rasmolT.o \
+	var_pot.o \
+	vect_dist_mod.o
 
 cellconfig.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cryst_to_car.o \
@@ -492,6 +537,7 @@ cfg.o :  \
 config2data.o :  \
 	Mat_util.o \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	gen_com_m.o \
 	var_pot.o
 
@@ -523,14 +569,6 @@ controleT.o :  \
 	deftimestep.o \
 	endrunT.o \
 	gen_com_m.o \
-	var_pot.o
-
-creadp.o :  \
-	T_kind_param_m.o \
-	cryst_to_car.o \
-	defcdp.o \
-	gen_com_m.o \
-	temp_com.o \
 	var_pot.o
 
 cryst_to_car.o :  \
@@ -570,6 +608,7 @@ dmloop.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
 	analyseT.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	calfo.o \
@@ -676,6 +715,7 @@ eamtab.o :  \
 elec_cell.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -694,6 +734,7 @@ eloss.o :  \
 
 endrunT.o :  \
 	T_kind_param_m.o \
+	Tpara.o \
 	analyseT.o \
 	anapos.o \
 	arret_ndm.o \
@@ -745,6 +786,7 @@ force_tersoff.o :  \
 force_tersoff_cel.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	calfocommon.o \
@@ -759,11 +801,13 @@ force_tersoff_cel.o :  \
 
 force_tersoff_facteurs.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	var_pot.o
 
 gcII.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -867,6 +911,7 @@ init_voisinage.o :  \
 initcasca.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -877,13 +922,6 @@ initcasca.o :  \
 	paraconfig.o \
 	parautils.o \
 	var_pot.o
-
-initcdp.o :  \
-	T_kind_param_m.o \
-	arret_ndm.o \
-	defcdp.o \
-	gen_com_m.o \
-	temp_com.o
 
 initspeed.o :  \
 	Mat_util.o \
@@ -908,6 +946,7 @@ input_pair.o :  \
 inputtersoff.o :  \
 	T_kind_param_m.o \
 	alloc_typ.o \
+	arret_ndm.o \
 	force_tersoff_facteurs.o \
 	gen_com_m.o \
 	var_pot.o
@@ -953,6 +992,7 @@ main.o :  \
 mod_para.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -971,6 +1011,7 @@ moduli.o :  \
 montecarlo.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	calctemp.o \
@@ -1043,7 +1084,8 @@ notperiod.o :  \
 
 paraconfig.o :  \
 	T_kind_param_m.o \
-	Tpara.o
+	Tpara.o \
+	arret_ndm.o
 
 param_det.o :  \
 	T_kind_param_m.o \
@@ -1056,6 +1098,7 @@ param_det.o :  \
 parautils.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	calfo.o \
@@ -1067,12 +1110,6 @@ parautils.o :  \
 	mod_para.o \
 	paraconfig.o \
 	setcell.o
-
-period.o :  \
-	T_kind_param_m.o \
-	cryst_to_car.o \
-	gen_com_m.o \
-	temp_com.o
 
 potrep.o :  \
 	T_kind_param_m.o \
@@ -1110,10 +1147,12 @@ prNose2.o :  \
 	var_pot.o
 
 prog.o :  \
+	ForceMatrix.o \
 	NGC.o \
 	T_kind_param_m.o \
 	Tpara.o \
 	analyseT.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	calfo.o \
@@ -1137,6 +1176,7 @@ prog.o :  \
 rasmolT.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cryst_to_car.o \
@@ -1150,6 +1190,7 @@ read_val.o :  \
 	T_kind_param_m.o
 
 readdm.o :  \
+	ForceMatrix.o \
 	T_kind_param_m.o \
 	Tpara.o \
 	WGC.o \
@@ -1168,6 +1209,7 @@ recips.o :  \
 sauvegardeT.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -1177,6 +1219,7 @@ sauvegardeT.o :  \
 
 scalebox.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	caltabi.o \
@@ -1215,6 +1258,7 @@ spline.o :  \
 steepestdescent.o :  \
 	T_kind_param_m.o \
 	WGC.o \
+	arret_ndm.o \
 	gen_com_m.o
 
 tab_imm_m.o :  \
@@ -1223,12 +1267,6 @@ tab_imm_m.o :  \
 
 temp_com.o :  \
 	T_kind_param_m.o
-
-tempinst.o :  \
-	T_kind_param_m.o \
-	Tpara.o \
-	gen_com_m.o \
-	var_pot.o
 
 tempinstT.o :  \
 	T_kind_param_m.o \
@@ -1239,6 +1277,7 @@ tempinstT.o :  \
 
 tersoff_zbl.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	force_tersoff_facteurs.o \
 	gen_com_m.o \
 	spline.o \
@@ -1253,6 +1292,7 @@ tr_fire.o :  \
 
 transf.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	atomconfig.o
 
 trempe.o :  \
@@ -1263,6 +1303,7 @@ trempe.o :  \
 
 vanbeest.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	erf.o \
 	var_pot.o
 
@@ -1271,6 +1312,7 @@ var_pot.o :  \
 
 vect_dist_mod.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
 	cellconfig.o \
@@ -1292,4 +1334,12 @@ work_cgII.o :  \
 
 zieg2.o :  \
 	T_kind_param_m.o \
+	arret_ndm.o \
+	var_pot.o
+
+zieg3.o :  \
+	Mat_util.o \
+	T_kind_param_m.o \
+	arret_ndm.o \
+	gen_com_m.o \
 	var_pot.o

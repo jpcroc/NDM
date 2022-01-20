@@ -38,7 +38,7 @@
   contains
   subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib,psc)
     USE setcell,only:setcellconf
-    class(atom_config_d),intent(in),target::atcomp
+    class(atom_config),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
     type(box_config)::box
     type(para_space_config)::psc
@@ -309,15 +309,15 @@
   end subroutine depeche_mode
     
 
-subroutine driver_caltabt_DM(sigcf,potistcf,atcf,celcf,boxcf,psc,lperiod)
+subroutine driver_caltabt_DM(atcf,celcf,boxcf,psc,lperiod)
 
   use Tpara,only:nprocspace
   use gen_com_m,only:it,itetabvois,itesigma
-    class(atom_config_d),intent(inout),target::atcf
+    class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(inout),target::celcf
     type(box_config),intent(inout)::boxcf
     type(para_space_config)::psc
-    real(double),intent(out)::potistcf,sigcf(3,3)
+!    real(double),intent(in)::potistcf,sigcf(3,3)
     logical,intent(in)::lperiod
 
     logical  ::test_sigma
@@ -334,7 +334,7 @@ subroutine driver_caltabt_DM(sigcf,potistcf,atcf,celcf,boxcf,psc,lperiod)
 !!$       endif
 !!$    end if
     if (atcf%ltabvois.and.mod(it,itetabvois)==0) then
-       call caltabi(atcf%atom_config,celcf,boxcf)
+       call caltabi(atcf,celcf,boxcf)
     end if
 
 
@@ -345,11 +345,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     end if
 #endif
 
-
-!!$    ! Force calculation
-!!$!    jq=0.0
-!!$    if (itesigma>0) test_sigma=(mod(it,itesigma)==0)
-!!$    CALL CalFo(sigcf,potistcf,atcf,celcf,boxcf,t_sigma=test_sigma,psc=psc)
     return
   end subroutine driver_caltabt_DM
     

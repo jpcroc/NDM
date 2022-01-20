@@ -74,8 +74,8 @@ contains
        lrepart=.false. !TOUJOURS FALSE, repartition plus tard
 !    else
 !       lrepart=.true.
-!    end if
-    call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc)
+       !    end if
+       call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc)
     call init_pot2(boxndm,atdml%imm)
 
 #ifdef PARA

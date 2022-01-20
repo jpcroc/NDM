@@ -3,7 +3,7 @@ module initcasca_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
 
   USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,lderive,lperiod,&
-       &oldtstep,parallele,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T,&
+       &oldtstep,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T,&
        lspacendm
   use constrconf_mod,only:repartition
 
@@ -161,7 +161,7 @@ contains
     znorm = sqrt(xko**2+yko**2+zko**2)
 
     if (znorm==0)then
-       if (parallele) then
+       if (nprocspace.ne.1) then
           write(6,*) 'tirage al�atoire projectile pas programm�'
           call arret_ndm
        endif
@@ -227,23 +227,6 @@ contains
 
 
     if (lperiod)       call periodbox  (boxndm,atcfcasc)
-
-
-
-    
-    ! --- Modification de la vitesse de l'atome accelere ---
-
-
-
-    !if (parallele)  return
-
-
-
-
-
-
-    ! Choix du pas en temps initial selon le vmax
-    !goto 121
     vmax2 = 0.0
     imax = 0
     vpmod2(:atcfcasc%im) = atcfcasc%vp(1,:atcfcasc%im)**2+atcfcasc%vp(2,:atcfcasc%im)**2+atcfcasc%vp(3,:atcfcasc%im)**2
@@ -259,12 +242,6 @@ contains
            if (rang==0) then
               write (6, *) 'Vitesse maximale sur I=', imax, vmax
            endif
-           
-
-
-
-
-    ! -> tseuil a diminuer pour eviter les derives en energies et temperature
     tseuil = depmaxts/(1.0D0*vmax)
     lts = log10(tseuil)
     expos = 1-int(lts)

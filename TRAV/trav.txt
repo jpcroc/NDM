@@ -6,13 +6,9 @@ INTEGRER DECOUP dans la version sequentielle avec un ldecoup ET METTRE DECOUP3D 
 A FAIRE
 
 4.05/ supprimer tab_imm_m et les USE temp_com qui vont avec (OK sauf analyses des positions et creationd e défauts)
-3.1/FREE
 3.2/ corriger PMEwald
-3.7/CODER sauvegarde xyz
 plotpart dans anapos
-4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien! (en cours)
 4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig piloté comme send2all etc.
-
 5.5/ coder le calcul des depla via anpos à la volée sans lecture de analyse.in et/ou crcin de même bondval !
 6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
 6.5/ sauvegarde binaire de atom_config et systeme entier
@@ -23,7 +19,6 @@ plotpart dans anapos
 8/Programmer parallel replica
 8.5/ objetiser la parallélisation spatiale de NDM (automatiser les appels)
 9/documenter atomconfig et ajouter des routines intégrantes (par exemple appel calctemp)
-9.5/ initloc et pointer_caltabt_calfo ne fonctionne que pour atom_config_d
 10/programmer le calcul des forces pour un ensemble d'atomes plongé dans un ensemble plus grand
 10.1/paralèllisme OPENMP like avec le point 10.
 12/retravailler les potentiels en général
@@ -73,6 +68,10 @@ debuggage LPR+ LPR lammps
 15/subroutinisieer les clculs de distances
 **>>4.5/ création de PF avec DM NVT NPT ou trempe ,rapide ou GC
 SUPPRIMER LES STOPS LES RE%PLACER PAR UN ARRET PARA remaplcer arret_ndm par stop_ndm
+3.1/FREE
+3.7/CODER sauvegarde xyz
+4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien!
+X.X/ calcul de la matrice de constantes de force et thermo associée
 
 
 ----HISTORIQUE:
@@ -91,7 +90,7 @@ rè-introduire les fonctionalités pas à pas:
 3/continuer à étendre atomconfig 
 4/documenter atomconfig et ajouter des routines intégrantes (par exemple appel calctemp)
 5/ vérifier et modifier PRahman et l'indispendable des analyses. DEBRANCHER LE RESTE FAIT
-
+9.5/ initloc et pointer_caltabt_calfo ne fonctionne que pour atom_config_d
 
 
 

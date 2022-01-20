@@ -118,7 +118,7 @@ contains
 !!$
 !!$    ! Force calculation
 !!$
-    call  driver_caltabt_DM(sig,potist,atdml,celndm,boxndm,psc,lperiod)
+    call  driver_caltabt_DM(atdml,celndm,boxndm,psc,lperiod)
 
   ! a été déplacé après calfo . Etait situé juste avant calfo :
     if (l2T) then

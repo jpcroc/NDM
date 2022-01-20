@@ -39,7 +39,7 @@ SHELL = /bin/sh
 # NDM ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
   OPTIONS  =  -O3 -g -traceback
-  NDM_INC  =  -I/mod  # HERE ONLY mod IF NDM SERIAL WITH NO EXTERNAL LIBS 
+  NDM_INC  = $(FLAG)
   EXT      =  #_serial # HERE set the extention on the EXE files according to NDM_INC
 
 # MPI library, REQUIRED if -DPARA
@@ -129,15 +129,17 @@ SHELL = /bin/sh
   FFTW_PATH =
   FFTW_LIB  =
 
-
+ifdef MKL
 # MKL library, REQUIRED  
 # INC = path(s) for *.h required by MKL library 
 # PATH = path for MKL library
 # LIB = name of MKL library
 
-  MKL_INC  = -I/opt/intel/mkl/include/intel64/lp64
-  MKL_PATH = -L/opt/intel/mkl/lib
-  MKL_LIB  = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 
+  MKL_INC  = #-I/opt/intel/mkl/include/intel64/lp64
+  MKL_PATH = #-L/opt/intel/mkl/lib
+  MKL_LIB  =# -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64
+endif
+  
 # ---------------------------------------------------------------------
 # build rules and dependencies
 # no need to edit this section

@@ -151,25 +151,16 @@ contains
              l = ipo(iti,itj)
              Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
              if(lprteat.EQV..true.)then
-                !              if (allocated (free)) then              
-                !                 if( free(i).EQV..true.) eat(i)=eat(i)+Erep/2.d0
-                !                 if( free(j).EQV..true.) eat(j)=eat(j)+Erep/2.d0
-                !              else
                 select type (atcf)
                 class is (atom_config_e)
                    atcf%eat(i)=atcf%eat(i)+Erep/2.d0
                    if (j.le.atcf%im) atcf%eat(j)=atcf%eat(j)+Erep/2.d0
                 end select
-                !               end if
              end if
              dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
 
              if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
-                !              if (allocated (free)) then              
-                !                 if( free(i).EQV..true.) potisrep = potisrep+Erep
-                !              else
                 potisrep = potisrep+Erep
-                !              end if
              endif
 
              atcf%fp(1:3,i)=atcf%fp(1:3,i)-dErep*gradij(1:3)
@@ -215,10 +206,6 @@ contains
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
 !       write(120,'(2I8,4G17.8)')i,k, eamglue(1,iti,k) , eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
 
-       !     if (allocated (free)) then
-       !        if((lprteat.EQV..true.).and.( free(i).EQV..true.)) eat(i)=eat(i)+Eembi
-       !        if( free(i).EQV..true.)   potisglue = potisglue+Eembi
-       !     else
        if(lprteat.EQV..true.)then
           select type (atcf)
           class is (atom_config_e)
@@ -226,7 +213,6 @@ contains
           end select
        end if
        potisglue = potisglue+Eembi
-       !     end if
 
        tabdensity(i) = eamglue(2,iti,k) + drk*( 2.0*eamglue(3,iti,k) + 3.0*drk*eamglue(4,iti,k) )
     end do loop2at1

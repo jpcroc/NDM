@@ -9,7 +9,7 @@ program ndm
   !-----------------------------------------------
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: fnam,lenfnam,parallele,rang,low_limit
+  USE gen_com_m, ONLY: fnam,lenfnam,rang,low_limit
 
   USE prog_mod,only: prog
   USE readdm_mod,only: readdm
@@ -49,17 +49,11 @@ program ndm
   write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
     call MPI_BARRIER(MPI_COMM_WORLD,ierr)
   myidsp=rang
-  if (nprocspace==1) then
-     parallele=.false.
-  else
-     parallele = .true.
-  end if
 #else
   rang = 0
   myidsp=rang
   nprocs=1
   nprocspace=nprocs
-  parallele = .false.
   
 #endif
 

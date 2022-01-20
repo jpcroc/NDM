@@ -4,7 +4,7 @@ module neb_module
   USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,kspring,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
-       &posa, forca,latcomp,parallele,imm_glob
+       &posa, forca,latcomp,imm_glob
   use read_val,only:rvois,ltabvois
   USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin
     use cryst_to_cart_mod,only:cryst_to_cart
@@ -720,7 +720,6 @@ end if
     MPI_COMM_space=paraneb%mpi_image%comm
     nprocspace=paraneb%mpi_image%nproc
     call comm_space%init(MPI_COMM_SPACE)
-    if (nprocspace==1) parallele=.false.
 #else
     paraneb%mpi_orig%nproc=1
     paraneb%mpi_orig%rank=0

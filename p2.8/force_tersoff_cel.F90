@@ -351,25 +351,16 @@ contains
              end if
           end do
        end do
-       !     if (allocated (free)) then
-       !        if (free(i).EQV..true.)potisTersoff = potisTersoff + 0.5*v_ij
-       !     else
        potisTersoff = potisTersoff + 0.5*v_ij
-       !     end if
-       !     if (allocated (free)) then
-       !        if ((allocated(eat)).and.(free(i).EQV..true.)) eat(i) = eat(i)+eat(i)+0.5*v_ij
-       !     else
        if(lprteat.EQV..true.)then
           select type (atcf)
           class is (atom_config_e)
              atcf%eat(i) = atcf%eat(i)+atcf%eat(i)+0.5*v_ij
           end select
        end if
-       !     end if
 
 
     end do
-!    call cryst_to_cart(imm,xp,at,1)
 
 #ifdef PARA
     if (nprocspace.gt.1) then
