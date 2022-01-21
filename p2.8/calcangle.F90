@@ -6,7 +6,7 @@ module calcangle_mod
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
   USE cellconfig,only:cell_config, caltabtC
-  USE gen_com_m, ONLY:lperiod,rang,it,pi,timel,lspacendm
+  USE gen_com_m, ONLY:lperiod,rang,iteration,pi,timel,lspacendm
   use vect_dist_mod,only:vect_dist
 #ifdef PARA
     USE mpi
@@ -171,7 +171,7 @@ contains
        write (6, *) '------- Calcul des Distributions angulaires --------'
        write(6,*)
 
-       write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', it, '  time = ', timel
+       write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
     end if
 
     ! On calcule maintenant la distribution angulaire moyennee
@@ -244,16 +244,16 @@ contains
        if (rang==0) then
           open(unit=32,file='tampfda',form='formatted',status='unknown')
 
-          if (it<=9) write (32, '(I1)') it
-          if (it<=99.and.it>9) write (32, 200) it
-          if (it<=999.and.it>99) write (32, 300) it
-          if (it<=9999.and.it>999) write (32, 400) it
-          if (it<=99999.and.it>9999) write (32, 500) it
-          if (it<=999999.and.it>99999) write(32, 600) it
-          if (it<=9999999.and.it>999999) write(32, 700) it
-          if (it<=99999999.and.it>9999999) write(32, 800) it
-          if (it<=999999999.and.it>99999999) write(32, 900) it
-          if  (it>999999999) then
+          if (iteration<=9) write (32, '(I1)') iteration
+          if (iteration<=99.and.iteration>9) write (32, 200) iteration
+          if (iteration<=999.and.iteration>99) write (32, 300) iteration
+          if (iteration<=9999.and.iteration>999) write (32, 400) iteration
+          if (iteration<=99999.and.iteration>9999) write (32, 500) iteration
+          if (iteration<=999999.and.iteration>99999) write(32, 600) iteration
+          if (iteration<=9999999.and.iteration>999999) write(32, 700) iteration
+          if (iteration<=99999999.and.iteration>9999999) write(32, 800) iteration
+          if (iteration<=999999999.and.iteration>99999999) write(32, 900) iteration
+          if  (iteration>999999999) then
              write (6, *) 'probleme de format dans calcangle.f90'
              call arret_ndm
           endif
@@ -264,7 +264,7 @@ contains
           lusauvfda=31
        end if
        if (rang==0) then
-          write(6,*) ' sauvegarde fda it=',it
+          write(6,*) ' sauvegarde fda it=',iteration
           write(6,*)
        end if
        do i3=1,ntyp

@@ -1,7 +1,7 @@
 module calcdigr_mod
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:lperiod,rang,rcrdf,it,pi,timel,lspacendm
+  USE gen_com_m, ONLY:lperiod,rang,rcrdf,iteration,pi,timel,lspacendm
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
   USE cellconfig,only:cell_config, caltabtC
@@ -201,7 +201,7 @@ contains
        write(6,*)'--------Calcul des Fonctions de correlation---------'
        write(6,*)'nrdf ',rdfc%nrdf
 
-       write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', it, '  time = ', timel
+       write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
     end if
 
     if(.not.rdfc%linstantrdf) then
@@ -280,16 +280,16 @@ contains
        if(rang==0)then
           open(unit=33,file='tamprfdc',form='formatted',status='unknown')
 
-          if (it<=9) write (33, '(I1)') it
-          if (it<=99.and.it>9) write (33, 200) it
-          if (it<=999.and.it>99) write (33, 300) it
-          if (it<=9999.and.it>999) write (33, 400) it
-          if (it<=99999.and.it>9999) write (33, 500) it
-          if (it<=999999.and.it>99999) write(33, 600) it
-          if (it<=9999999.and.it>999999) write(33, 700) it
-          if (it<=99999999.and.it>9999999) write(33, 800) it
-          if (it<=999999999.and.it>99999999) write(33, 900) it
-          if  (it>999999999) then
+          if (iteration<=9) write (33, '(I1)') iteration
+          if (iteration<=99.and.iteration>9) write (33, 200) iteration
+          if (iteration<=999.and.iteration>99) write (33, 300) iteration
+          if (iteration<=9999.and.iteration>999) write (33, 400) iteration
+          if (iteration<=99999.and.iteration>9999) write (33, 500) iteration
+          if (iteration<=999999.and.iteration>99999) write(33, 600) iteration
+          if (iteration<=9999999.and.iteration>999999) write(33, 700) iteration
+          if (iteration<=99999999.and.iteration>9999999) write(33, 800) iteration
+          if (iteration<=999999999.and.iteration>99999999) write(33, 900) iteration
+          if  (iteration>999999999) then
              write (6, *) 'probleme de format dans calccoordo.f90'
              call arret_ndm
           endif
@@ -299,7 +299,7 @@ contains
 
           lusauvrdf=34
 
-          write(6,*) ' sauvegarde RDF partielle it=',it
+          write(6,*) ' sauvegarde RDF partielle iteration=',iteration
           write(6,*)
        end if
        do i1=1,ntyp
@@ -354,7 +354,7 @@ contains
        !------------------------------------------------
        ! RDF totale instantanee
        !------------------------------------------------
-       if(rang==0)            write(6,*) ' sauvegarde RDF totale it=',it
+       if(rang==0)            write(6,*) ' sauvegarde RDF totale it=',iteration
        if(rang==0)            write(6,*)
        if(rang==0)            open(35,file='rdftot.'//charsauvrfdc,status='unknown')
        do m1=1,rdfc%nkmax

@@ -1,5 +1,5 @@
 module dyn_mod
-  USE gen_com_m, ONLY:cunite,erg2ev,fnemd,it,itetconst,lcalcjq,leev,lnemd,lperiod,&
+  USE gen_com_m, ONLY:cunite,erg2ev,fnemd,iteration,itetconst,lcalcjq,leev,lnemd,lperiod,&
        &ltcon,text,timel,tstep,unite,usdh,bk
   use atomconfig,only:atom_config_d,atom_config_e
   implicit none
@@ -90,7 +90,7 @@ end select
 
 
 
-       write(65,'(I8,3D16.8)')it-1,jq(1),jq(2),jq(3)
+       write(65,'(I8,3D16.8)')iteration-1,jq(1),jq(2),jq(3)
        !         write(66,'(I8,3D15.6)')it-1,expvect(1),expvect(2),expvect(3)
     end if
  end if

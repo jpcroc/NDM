@@ -476,7 +476,7 @@ contains
     USE var_pot, ONLY:ntyp
 
 #endif
-    USE gen_com_m,only: it,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
+    USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
     implicit none
     character,intent(in) :: fnamcin*80
     integer,intent(in)::itread
@@ -627,14 +627,14 @@ contains
        if (icintypemod==1) then
           read (lucin, err=456) oldtstep
           if (lrestart) then
-             read (lucin, err=456) tmean, pmean, it, timel
-             if (nitmax.ge.0) itmax=it+nitmax
+             read (lucin, err=456) tmean, pmean, iteration, timel
+             if (nitmax.ge.0) itmax=iteration+nitmax
              tstep = oldtstep
              
              if (rang==0) then
                 
                 write (6, *) 'restart parameters'
-                write (6, *) 'it =', it, ' time =', timel
+                write (6, *) 'it =', iteration, ' time =', timel
                 write (6, *) 'pmean', pmean, ' tmean =', tmean
                 write (6, *) 'tstep', tstep
              endif                                ! fin rang=0
@@ -737,14 +737,14 @@ contains
        read (lucin, err=456) oldtstep
 
        if (lrestart) then
-          read (lucin, err=456) tmean, pmean, it, timel
-          if (nitmax.ge.0) itmax=it+nitmax
+          read (lucin, err=456) tmean, pmean, iteration, timel
+          if (nitmax.ge.0) itmax=iteration+nitmax
           tstep = oldtstep
 
           if (rang==0) then
 
              write (6, *) 'restart parameters'
-             write (6, *) 'it =', it, ' time =', timel
+             write (6, *) 'it =', iteration, ' time =', timel
              write (6, *) 'pmean', pmean, ' tmean =', tmean
              write (6, *) 'tstep', tstep
           endif                                ! fin rang=0

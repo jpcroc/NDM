@@ -1,7 +1,7 @@
 module neb_controle_mod
   USE recips_mod,only: recips
   USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,nebtype,temp,rang,potist,leev,itetimestep,itetemp,&
-       &angst,erg2ev,it
+       &angst,erg2ev
   implicit none
 contains
 

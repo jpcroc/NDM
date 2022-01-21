@@ -1,6 +1,6 @@
 module deftimestep_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,it,itetimestep,lcasca,lperiod,oldtstep,&
+  USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,iteration,itetimestep,lcasca,lperiod,oldtstep,&
        &rang,timel,tsmin,tstep,two,usdh,vmax,l2T,lspaceNDM
   use atomconfig, only : atom_config_d
   USE boxconfig,only:box_config,periodbox
@@ -85,9 +85,9 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
   if (itetimestep.ne.1) then
      if (rang==0) then
-        write (6, '(A,I5,A,D14.5)') '*****  ITERATION  = ', it, '  time = ', &
+        write (6, '(A,I5,A,D14.5)') '*****  ITERATION  = ', iteration, '  time = ', &
              timel
-        write (6, *) 'Vitesse maximale sur I=', it, imax, vmax, tmaxv
+        write (6, *) 'Vitesse maximale sur I=', iteration, imax, vmax, tmaxv
      endif                                      ! fin rang=0
   end if
   if (vmax==0)return
@@ -105,7 +105,7 @@ ikoloc=iko
   if (ikoloc.gt.0) then
      tmod = 1./3./bk*cm(atcf%ityp(ikoloc))*vpmod2(ikoloc)
      vpmod = sqrt(vpmod2(ikoloc))
-     if (rang==0) write (6, *) 'Vitesse du projectile =', it, iko, vpmod, &
+     if (rang==0) write (6, *) 'Vitesse du projectile =', iteration, iko, vpmod, &
           tmod
   endif
 endif	
@@ -159,7 +159,7 @@ endif
         if (tstep/=oldtstep) then
            if (rang==0) then
               write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
-              write (6, *) ' iteration ', it, 'ancien pas en temps', oldtstep
+              write (6, *) ' iteration ', iteration, 'ancien pas en temps', oldtstep
               write (6, *) 'nouveau tstep ', tstep
            endif 
 !           if(llangevin.eqv..true.) then 
@@ -184,11 +184,11 @@ endif
         if (tstep/=oldtstep) then
            if (rang==0) then
               write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
-              write (6, *) ' iteration ', it, 'ancien pas en temps', oldtstep
+              write (6, *) ' iteration ', iteration, 'ancien pas en temps', oldtstep
               write (6, *) 'nouveau tstep ', tstep
            endif                                ! rang=0
            usdh = 1/(two*tstep)
-           if (it==0) then
+           if (iteration==0) then
               atcf%fp(:,:atcf%im) = 0.D0
            endif
            do i = 1, atcf%im
@@ -208,11 +208,11 @@ endif
         if (tstep.ne.oldtstep) then
            if (rang==0) then
               write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
-              write (6, *) ' iteration ', it, 'ancien pas en temps', oldtstep
+              write (6, *) ' iteration ', iteration, 'ancien pas en temps', oldtstep
               write (6, *) 'nouveau tstep ', tstep
            endif                                ! rang=0
            usdh = 1/(two*tstep)
-           if (it==0) then
+           if (iteration==0) then
               atcf%fp(:,:atcf%im) = 0.D0
            endif
            do i = 1,atcf%im

@@ -3,7 +3,7 @@ module dyn_vverlet_mod
   USE calfoberend_mod,only: calfoberend, dynlangevin
   use var_pot,only:ntyp
   USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lprahman,&
-       &l2T,llangevin,itesigma,it,itetabvois,ltberendsen,potist,sig,timel,tstep,&
+       &l2T,llangevin,itesigma,iteration,itetabvois,ltberendsen,potist,sig,timel,tstep,&
        lspaceNDM
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
   USE cellconfig, only:cell_config,caltabtC
@@ -91,33 +91,6 @@ contains
        atdml%xp(1:3,i) = atdml%xp(1:3,i) + tstep*atdml%vp(1:3,i)
     END DO
 
-
-!!$    !conditions periodiques
-!!$    if (lperiod)  call periodbox (boxndm,atdml)
-!!$
-!!$    ! repartition des atomes dans la nouvelle boite
-!!$    if (.not.lprahman) then
-!!$       if (itab/=0) then
-!!$          if (mod(it,itab)==0) then
-!!$             call caltabtC(celndm,atdml,lperiod,boxndm)
-!!$          endif
-!!$       endif
-!!$    end if
-!!$    if (atdml%ltabvois.and.mod(it,itetabvois)==0) then
-!!$       call caltabi(atdml%atom_config,celndm,boxndm)
-!!$    end if
-!!$
-!!$
-!!$#ifdef PARA
-!!$if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-!!$       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-!!$       call maj_atomes_frt_ftm(atdml,celndm,psc)
-!!$    end if
-!!$#endif
-!!$
-!!$
-!!$    ! Force calculation
-!!$
     call  driver_caltabt_DM(atdml,celndm,boxndm,psc,lperiod)
 
   ! a été déplacé après calfo . Etait situé juste avant calfo :
@@ -126,7 +99,7 @@ contains
     end if
   ! Force calculation
     jq=0.0
-    if (itesigma>0) test_sigma=(mod(it,itesigma)==0)
+    if (itesigma>0) test_sigma=(mod(iteration,itesigma)==0)
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
 
     

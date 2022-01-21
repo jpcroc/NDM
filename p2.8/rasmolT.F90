@@ -3,7 +3,7 @@ module rasmolT_mod
   USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:rang,ivisu,lpkbar,lspaceNDM,&
-       &cunitP,it,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass,rang
+       &cunitP,iteration,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass,rang
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
   use atomconfig,only: atom_config,atom_config_d,atom_config_e
@@ -366,7 +366,7 @@ contains
              select type (atcomp)
              class is (atom_config_e)
                 if (atcomp%lsigat) then
-                   if(it.eq.0)then
+                   if(iteration.eq.0)then
                       pat=0.0
                    else
                       pat=unitP*(atcomp%sigat(1,1,i)+atcomp%sigat(2,2,i)+atcomp%sigat(3,3,i))/3.
@@ -446,7 +446,7 @@ contains
                 select type (atcomp)
                 class is (atom_config_e)
                    if (atcomp%lsigat) then
-                      if(it.eq.0)then
+                      if(iteration.eq.0)then
                          pat=0.0
                       else
                          pat=unitP*(atcomp%sigat(1,1,i)+atcomp%sigat(2,2,i)+atcomp%sigat(3,3,i))/3.
@@ -479,7 +479,7 @@ contains
                 select type (atcomp)
                 class is (atom_config_e)
                    if (atcomp%lsigat) then
-                      if(it.eq.0)then
+                      if(iteration.eq.0)then
                          pat=0.0
                       else
                          pat=unitP*(atcomp%sigat(1,1,i)+atcomp%sigat(2,2,i)+atcomp%sigat(3,3,i))/3.

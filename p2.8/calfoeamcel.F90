@@ -1,6 +1,6 @@
 module calfoeamcel_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:angst,nvat,it,low_limit,lperiod,zero,potis2,pi
+  USE gen_com_m, ONLY:angst,nvat,low_limit,lperiod,zero,potis2,pi
   USE calfocommon
   use vect_dist_mod,only:vect_dist
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e

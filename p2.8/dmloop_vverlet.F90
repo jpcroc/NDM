@@ -53,7 +53,7 @@ contains
     logical :: test_sigma
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****'
     ! Appel de la routine generale des forces
-    test_sigma=(mod(it,itesigma)==0)
+    test_sigma=(mod(iteration,itesigma)==0)
 
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
     if (l2t)then
@@ -70,8 +70,8 @@ contains
 
     !  call analyse
     !    call calctemp (temptyp) 
-    do while (it.le.itloopmax)
-       it = it+1
+    do while (iteration.le.itloopmax)
+       iteration = iteration+1
 
 
        call dyn_vverlet(atdml,celndm,boxndm,psc)
@@ -99,7 +99,7 @@ contains
                         &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
                 end if
              end select
-             if ((mod(it,itesigma)==0).and.(lTPcel.EQV..true.)) then
+             if ((mod(iteration,itesigma)==0).and.(lTPcel.EQV..true.)) then
                 celndm%sigc(1:3,1,atdml%ielat(ilocal)) = celndm%sigc(1:3,1,atdml%ielat(ilocal)) + &
                      cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyz/boxndm%volu
                 celndm%sigc(1:3,2,atdml%ielat(ilocal)) = celndm%sigc(1:3,2,atdml%ielat(ilocal)) + &

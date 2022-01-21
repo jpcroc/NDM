@@ -2,7 +2,7 @@ module elec_cell
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   USE gen_com_m, ONLY: bk,tstep,erg2eV,pi,rang,lspacendm,&
-       &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,it,timel,igen,lrestart,itesauvinter
+       &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,iteration,timel,igen,lrestart,itesauvinter
   USE var_pot, ONLY:cm
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
   use Tpara,only:para_space_config ,endmpi !
@@ -386,7 +386,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     do ite=1,necycle
        call Tevolv(ite)
     end do
-    if ((itetec.gt.0).and.(mod(it,itetec)==0))then
+    if ((itetec.gt.0).and.(mod(iteration,itetec)==0))then
        do iex=1,nex
           do iey=1,ney
              do iez=1,nez
@@ -883,8 +883,8 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call arret_ndm
     end if
     if (itesauvinter>0) then
-       if (mod(it,itesauvinter).eq.0) then
-          write(extension,'(i9.9)') it
+       if (mod(iteration,itesauvinter).eq.0) then
+          write(extension,'(i9.9)') iteration
           fnamecout = fnam(1:lenfnam)//'.ecout.'//extension
        else
           fnamecout = fnam(1:lenfnam)//'.ecout'
@@ -977,11 +977,11 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     lenfn2=9
     luvisue=91
     if(rang==0) then
-       if (it < 0  )   extension='iiiiiiiii' 
-       if (it >= 0 )   write(extension,'(i9.9)') it
+       if (iteration < 0  )   extension='iiiiiiiii' 
+       if (iteration >= 0 )   write(extension,'(i9.9)') iteration
        open(luvisue, file=fnam(1:lenfnam)//'.'//extension(1:lenfn2)//'.mol', form='formatted', &
             status='unknown')
-       write(luvisue,'(I9,A,I9,A, F12.6)')nex*ney*nez, ' IT =', it, ' Time = ', timel
+       write(luvisue,'(I9,A,I9,A, F12.6)')nex*ney*nez, ' IT =', iteration, ' Time = ', timel
 
        exmm(:)=ecell(nex,ney,nez)%ixb(:)+cellside(:)-ecell(1,1,1)%ixb(:)
        write (luvisue,'(9F12.6)')exmm(1),0,0,0,exmm(2),0,0,0,exmm(3)

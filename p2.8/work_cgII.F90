@@ -2,7 +2,7 @@ module work_cgII
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
-       it, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
+       iteration, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
        dmtype, potist,mdcg_noise,lspaceNDM,latcomp
   USE sauvegardeT_mod,only: sauvegardeT
@@ -56,7 +56,7 @@ contains
     latcomp=.true. ! GC ==> latcomp=.true.
     lover=.false.
 
-    it=NCALLS-1
+    iteration=NCALLS-1
 
     !    IF (3*ims.NE.N) THEN
     !       WRITE(0,'(a,i0)') "3*imm = ", 3*ims
@@ -80,9 +80,9 @@ contains
 
     lchg=.true.
     call pointer_caltabt_calfo(sig,potist,atcgcomp,cellcgcomp,boxcg,atcgloc,cellcgloc,gcpara,lperiod,&
-         &atcgcomp%ltabvois,it,itetabvois,lchg,psc,'xft') 
+         &atcgcomp%ltabvois,iteration,itetabvois,lchg,psc,'xft') 
 
-    if (it==1) then
+    if (iteration==1) then
        if (lEev.EQV..true.) then 
           if (rang==0) write(6,*)'Resultats en eV, Ang'
        else
@@ -98,7 +98,7 @@ if (nprocspace.gt.1) then
        call COMM_space%barrier
     end if
 #endif    
-    IF (it.GE.1) THEN
+    IF (iteration.GE.1) THEN
        forctot=sqrt( SUM(atcgcomp%fp(1:3,1:atcgcomp%im)**2) )
        formax = MaxVal( Abs(atcgcomp%fp(:,1:atcgcomp%im)) )
        lover=.false.
@@ -107,7 +107,7 @@ if (nprocspace.gt.1) then
           if (lEev.EQV..true.) then 
              forctot = forctot*erg2eV/angst
              formax  = formax*erg2eV/angst
-             if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
+             if (rang==0) write(*,'("GC: ",i6,3E20.10)') iteration,forctot, formax, potist*erg2eV
              !           if (rang==0) write(*,'("GC: ",3E20.10)') forctot, formax, potist*erg2eV
              if (fpstop>0) then   
                 if (formax.le.fpstop) then
@@ -128,7 +128,7 @@ if (nprocspace.gt.1) then
              end if
 
           else
-             if (rang==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
+             if (rang==0) write(*,'("GC: ",i6,3E20.10)') iteration,forctot, formax, potist
              if (fpstop>0) then   
                 if (formax.le.fpstop) then
                    if (rang==0) write(6,*)'force par atome  max cgs ',formax
@@ -159,7 +159,7 @@ if (nprocspace.gt.1) then
 end if
 #endif
 !    write(6,*)'LOVER',lover,rang,it
-       if (it>=itmax) then
+       if (iteration>=itmax) then
           if (rang==0) write (6, *) '*******Derniere iteration **** '
           lover=.true.
 
@@ -179,12 +179,12 @@ end if
 
        fnamcout = fnam(1:lenfnam)//'.cout'
 
-       if (it.ne.0) then
+       if (iteration.ne.0) then
           !       if (rang==0) then
           !           write(6,*)'work_cg_II analyse -> sauvegarde',it
           if (itesauv.GT.0) then
              formatsauv=2
-             if (mod(it,itesauv)==0) call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp)
+             if (mod(iteration,itesauv)==0) call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp)
           endif
        end if
        !go to into eV, ang and GC world............................................      

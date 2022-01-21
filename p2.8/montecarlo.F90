@@ -2,7 +2,7 @@ module montecarlo_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
-       &lspaceNDM,rang,it,firsttime_lammps,posa,forca,erg2ev,fnam,fnamcout,&
+       &lspaceNDM,rang,iteration,firsttime_lammps,posa,forca,erg2ev,fnam,fnamcout,&
        &lrestartmcgc,imm_glob
   USE atomconfig,only:atom_config,atom_config_d, config2ndm, switch_atom
   USE cellconfig, only:cell_config, cellconfig2ndm, caltabtC
@@ -484,7 +484,7 @@ contains
        !        &  W
 
        Wprecedent = Wprec
-       it = it + 1
+       iteration = iteration + 1
 
        if (direction == 0) then
           direction = 1
@@ -1459,13 +1459,13 @@ subroutine analyse_montecarlo(atdml,celndm,box,name_file)
  lperiod = .true.
  if (lbigmaster) then
     if (itetemp>0) then
-       if (mod(it,itetemp)==0) then
+       if (mod(iteration,itetemp)==0) then
           call caltabtC(celndm,atdml,lperiod,box)
           call calctemp (temp,kine,atdml,celndm,latcomp=.true.)
        end if
     end if
     if (iterasmol>0) then
-       if (mod(it,iterasmol)==0) then
+       if (mod(iteration,iterasmol)==0) then
           call rasmolT(atdml,box,namefr=name_file,latcomp=.true.,lappend=.true.)
        end if
     end if
@@ -1724,7 +1724,7 @@ subroutine langevin( direc, protocol) !LANGEVIN
           U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
           !write(*,*) potist_n, potist_nplus1
           !affichage temperature
-          it = it +1
+          iteration = iteration +1
 
           call noise(Gl)
           DO i=1, atconf_Nplus1%im
@@ -1853,7 +1853,7 @@ subroutine langevin( direc, protocol) !LANGEVIN
           U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
           !write(*,*) potist_n, potist_nplus1
           !affichage temperature
-          it = it +1
+          iteration = iteration +1
 
           ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
           call noise(Gl)
@@ -2329,13 +2329,13 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
     if (iloc==1) call initloc(atconf_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod&
          &,psc=pscgc,ldistrib=ldistrib) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig,potist_n,atconf_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-         &lperiod,atconf_n%ltabvois,it,itetabvois,lchg=lchange,psc=pscgc)
+         &lperiod,atconf_n%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscgc)
 
  else !procs N+1
     if (iloc==1)call initloc(atconf_nplus1,cells_nplus1,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,&
          &lperiod,psc=pscgc,ldistrib=ldistrib) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-         &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=lchange,psc=pscgc)
+         &lperiod,atconf_nplus1%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscgc)
 
  end if
 
@@ -2356,9 +2356,9 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
 
 #else
  call pointer_caltabt_calfo(sig,potist_n,atconf_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-      &lperiod,atconf_n%ltabvois,it,itetabvois,lchg=lchange,psc=pscgc)
+      &lperiod,atconf_n%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscgc)
  call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-      &lperiod,atconf_nplus1%ltabvois,it,itetabvois,lchg=lchange,psc=pscgc)
+      &lperiod,atconf_nplus1%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscgc)
 
 #endif
 

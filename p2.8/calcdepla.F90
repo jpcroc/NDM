@@ -2,7 +2,7 @@ module calcdepla_mod
   USE temp_com,only:zls2,at,bg,nad ! A EFFACER
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:ntyp,ty
-  USE gen_com_m, ONLY:tdepla,lfilmext,it,timel,iko,lcasca,lfilm,rang
+  USE gen_com_m, ONLY:tdepla,lfilmext,iteration,timel,iko,lcasca,lfilm,rang
         implicit none 
         contains
 ! *******************************************************************
@@ -160,7 +160,7 @@ subroutine calcdepla(im,xp,ielat,ityp,ax)
 
 
   if (rang==0) then
-     write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', it, '  time = ', timel
+     write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
         write (6, *) 'nombre total d-atomes deplaces = ', ndeplatot
 
      write (6, *)
@@ -179,7 +179,7 @@ subroutine calcdepla(im,xp,ielat,ityp,ax)
   if (lfilm) then
      ! Ecriture des types et coordonnees des atomes deplaces de plus de
      ! tdepla angstroems dans le fichier film
-     write (lufilm, '(I7,A,I7,A,2D10.3)')  ndeplatot+2, ' IT =', it, ' Time = ', timel
+     write (lufilm, '(I7,A,I7,A,2D10.3)')  ndeplatot+2, ' IT =', iteration, ' Time = ', timel
      at=at*1.d8
      write (lufilm,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
      at=at/1.d8 
@@ -230,7 +230,7 @@ end if
 #endif
         if(rang==0)then
            write (lufilmpaf, *) '   1'
-           write (lufilmpaf, *) ' IT', it, ' time ', timel
+           write (lufilmpaf, *) ' IT', iteration, ' time ', timel
            write (lufilmpaf, 113) ty(ityp_iko), xp_iko(1)*1D+8, xp_iko(2)*1D+8, &
                 xp_iko(3)*1D+8, iko,distdepl(iko)
         end if
@@ -250,7 +250,7 @@ end if
      lutampon = 17
      fnamtampon = 'tampon'
      if(rang==0)then
-        write(extension,'(i10.10)') it        
+        write(extension,'(i10.10)') iteration        
 
 
         !    ouverture d'un fichier filmext.(iteration) pour sauvegarde
@@ -262,7 +262,7 @@ end if
         ! Ecriture des types et coordonnees des atomes deplaces de plus de
         ! tdepla angstroems dans le fichier film.extension
         write (lufilmext, *) ndeplatot+2
-        write (lufilmext, *) ' IT', it, ' time ', timel
+        write (lufilmext, *) ' IT', iteration, ' time ', timel
         write (lufilmext, 114)  zls2(1)*1d8,zls2(2)*1d8,zls2(3)*1d8
         write (lufilmext, 114) -zls2(1)*1d8,-zls2(2)*1d8,-zls2(3)*1d8
 114     format('H ',1x,3(f10.4,1x))

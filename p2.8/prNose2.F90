@@ -33,7 +33,7 @@ module Parrinello_Rahman_Nose
 
   USE T_kind_param_m
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
-       &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,it,kcell,knose,leev,&
+       &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,iteration,kcell,knose,leev,&
        &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
@@ -180,7 +180,7 @@ end if
          0.d0, ' K'
     !if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé pour la température ', &
     !temp0, ' K'
-    if (rang==0) WRITE(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') it,timel,'*KNose = ',KNose*unitE,cunitE, &
+    if (rang==0) WRITE(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') iteration,timel,'*KNose = ',KNose*unitE,cunitE, &
          '  (', 2.d0*KNose/bk, ' K)'
     if (rang==0) WRITE(6,'(3(a,g22.12))') 'fNose = ', fNose, ' -  fold = ', fold, &
          ' -  fpoint * tstep = ', fpoint*tstep

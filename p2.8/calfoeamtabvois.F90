@@ -1,6 +1,6 @@
 module calfoeamtabvois_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:angst,fnemd,it,lcalcjq,ldemitab,&
+  USE gen_com_m, ONLY:angst,fnemd,lcalcjq,ldemitab,&
        &lnemd,low_limit,lperiod,zero,potis2,pi
   USE calfocommon
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e

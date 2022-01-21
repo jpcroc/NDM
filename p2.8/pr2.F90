@@ -39,7 +39,7 @@ module Parrinello_Rahman
   USE T_kind_param_m
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
-       &potist,sig,sigkine,sigtot,text,tstep,it,potist,rang,sig,text,tstep,sigkine,&
+       &potist,sig,sigkine,sigtot,text,tstep,iteration,potist,rang,sig,text,tstep,sigkine,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0
 
 
@@ -234,7 +234,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        IF(RANG==0) WRITE(6,'(a,i0)')    'Nombre de thermostats: nHoover=', nHoover
        IF(RANG==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé-Hoover pour la température ', &
             2.d0*KNose/(bk*dble(nHoover)), ' K'
-       IF(RANG==0) WRITE(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') it,timel,'*KNose = ',KNose*unitE,cunitE, &
+       IF(RANG==0) WRITE(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') iteration,timel,'*KNose = ',KNose*unitE,cunitE, &
             '  (', 2.d0*KNose/(bk*nHoover), ' K)'
        IF(RANG==0) WRITE(6,*)
     ELSE

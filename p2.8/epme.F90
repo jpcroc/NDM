@@ -1,6 +1,6 @@
 module epme_mod
   USE moduli_mod,only: moduli
-    USE gen_com_m, ONLY:it,itesigma,pi,potis3,zero,lspacendm,rang
+    USE gen_com_m, ONLY:iteration,itesigma,pi,potis3,zero,lspacendm,rang
         implicit none 
         contains
 !                   Version du 10/12/2001
@@ -179,7 +179,7 @@ qgridsize=kpmex*kpmey*kpmez
         qgrid(k1,k2,k3)=expterm*qgrid(k1,k2,k3)
 
         if (itesigma>0) then
-           if (mod(it,itesigma)==0) then
+           if (mod(iteration,itesigma)==0) then
               potisewg = tabv3(m1,m2,m3)*struc2/bsmod1(k1)/bsmod2(k2)/bsmod3(k3)
               hbn2 = (h1**2+h2**2+h3**2)*4*pi*pi
 

@@ -2,7 +2,7 @@ module calcdepla2_mod
   USE temp_com,only:zls2,at,bg ,nad ! A EFFACER
   USE var_pot, ONLY:ntyp,ty
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:tdepla2,it,timel,rang
+  USE gen_com_m, ONLY:tdepla2,iteration,timel,rang
   implicit none
 contains
   ! *******************************************************************
@@ -138,7 +138,7 @@ contains
 #endif
 
     if(rang==0)then
-       write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', it, '  time = ', timel
+       write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
 
        write (6, *)
        do iti = 1, ntyp
@@ -159,7 +159,7 @@ contains
     lutampon = 17
     fnamtampon = 'tampon'
     if (rang==0)then
-       write(extension,'(i10.10)') it
+       write(extension,'(i10.10)') iteration
 
        !    ouverture d'un fichier film2it.(iteration) pour sauvegarde
        !    des positions toutes les itedepla iterations.
@@ -169,7 +169,7 @@ contains
             )
        ! Ecriture des types et coordonnees des atomes deplaces de plus de
        ! tdepla2 angstroems dans le fichier film2it.extension
-       write (lufilm2it, '(I7,A,I7,A,D10.3)')  ndeplatot+2, ' IT =', it, ' Time = ', timel
+       write (lufilm2it, '(I7,A,I7,A,D10.3)')  ndeplatot+2, ' IT =', iteration, ' Time = ', timel
        at=at*1.d8
        write (lufilm2it,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
        at=at/1.d8

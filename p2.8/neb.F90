@@ -156,7 +156,7 @@ contains
        END DO
     END IF
 
-    it=1
+    iteration=1
 #ifdef PARA
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 #endif
@@ -185,7 +185,7 @@ contains
 #endif    
           
           call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
-               &lperiod,atneb(ii)%ltabvois,it,itetabvois,lchg=lchange,psc=pscneb)
+               &lperiod,atneb(ii)%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscneb)
 
           if (lmaster) then
 
@@ -237,15 +237,15 @@ contains
 !                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
 !             end if
 #endif
-             it=0; iter(ii)=0
+             iteration=0; iter(ii)=0
              dragtest=0
              do while (dragtest==0)
-                it=it+1
+                iteration=iteration+1
 
                 if (lmaster)    call periodbox (boxneb,atneb(ii)%atom_config_d)
                 call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,&
                      &atnebloc,cellnebloc,paraneb,lperiod,&
-                     &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,psc=pscneb)
+                     &atneb(ii)%ltabvois,iteration,itetabvois,lchg=.true.,psc=pscneb)
 
 #ifdef PARA
 
@@ -279,7 +279,7 @@ contains
                 enePATHev(ii)=potist*erg2ev
                 sigPATH(:,:,ii) = sig(:,:)      ! Contrainte
              end if
-             iter(ii)=it
+             iter(ii)=iteration
 #ifdef PARA
 
           end if
@@ -322,7 +322,7 @@ contains
                 atneb(ipath)%vp(:,:)=0
              end do
           end if
-          it=0
+          iteration=0
           !   
           call build_s_path_neb(atneb(1)%im,atneb(1)%imm)
           ! 
@@ -338,12 +338,12 @@ contains
                 do while (it_neb_inter<=5)   ! drag-ize me that 5 steps while we keep NEB "attraction"
                    !
                    it_neb_inter=it_neb_inter+1
-                   it=it_neb_inter
+                   iteration=it_neb_inter
 
                    call periodbox (boxneb,atneb(ii)%atom_config_d)
                    call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),&
                         &boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
-                        &atneb(ii)%ltabvois,it,itetabvois,lchg=.true.,psc=pscneb)
+                        &atneb(ii)%ltabvois,iteration,itetabvois,lchg=.true.,psc=pscneb)
                    if (lmaster) then
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
                            &atneb(ii)%imm,atneb(ii)%im)

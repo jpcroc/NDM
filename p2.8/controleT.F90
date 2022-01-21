@@ -24,7 +24,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,it,&
+    USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
          &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang
 
     USE var_pot, ONLY:
@@ -75,7 +75,7 @@ contains
 
     ! temperature is down enough ?
     if (itetemp>0) then
-       if (mod(it,itetemp)==0) then
+       if (mod(iteration,itetemp)==0) then
           if (temp<=tempstop) then
              if (rang==0)  write (6, *) 'temperature < tempstop '
              call endrunT(atdml,celndm,boxndm,latcomp)
@@ -97,7 +97,7 @@ contains
 
     ! change in time step ? itetimestep >0
     if (itetimestep>0) then
-       if (mod(it,itetimestep)==0) call deftimestep(atdml,boxndm)
+       if (mod(iteration,itetimestep)==0) call deftimestep(atdml,boxndm)
     endif
 
 
@@ -105,7 +105,7 @@ contains
 
     case(21,10,8)
        if ((lprtrp.EQV..false.).and.((dmtype==10).or.(dmtype==8))) goto 123
-       if ((fpstop>0.0).AND.(it.GE.1)) then
+       if ((fpstop>0.0).AND.(iteration.GE.1)) then
 
           fpmax=sqrt( MAXVAL( Sum(atdml%fp(1:3,1:atdml%im)**2,1) ) )
           fpSmax = MaxVal( Abs(atdml%fp(:,1:atdml%im)) )
@@ -117,12 +117,8 @@ contains
 #endif
 
           fpn=fpSmax*erg2eV/angst
-          !if (rang==0)     write(6,*)
-          if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E20.10)') it,fpn, potist*erg2eV
+          if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E20.10)') iteration,fpn, potist*erg2eV
           if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
-!                write(6,'("TR: force max, energy",i6,2E20.10,I3)') it,fpn, potist*erg2eV,myidsp
-!               write (6, *) 'energie ',potist*erg2eV,myidsp
-          !if (rang==0)     write(6,'(a,2g20.12)')'force max cgs  ev/Ang ',fpmax, fpn
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot))
           if (fpn.le.fpstop)then
              if (sigstop.ge.0) then
@@ -137,7 +133,7 @@ contains
           end if
        end if
 
-       if ((fsumstop>0.0).AND.(it.GE.1)) then
+       if ((fsumstop>0.0).AND.(iteration.GE.1)) then
           fpSmax=sqrt( SUM(atdml%fp(:,1:atdml%im)**2) )
 #ifdef PARA
           if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
@@ -169,7 +165,7 @@ contains
     case(3,30) ! Gradient conjugue sur coordonnee cartesiennes (3) ou reduites (30)
 
 
-       if (it==1) then
+       if (iteration==1) then
           if (lEev.EQV..true.) then
              if (myidsp==0) write(6,*)'Resultats en eV, Ang'
           else
@@ -183,7 +179,7 @@ contains
 
        !debug     write(*,*) 'DEBUG ALL IT IN CONTROLE',it
 
-       IF (it.GE.1) THEN
+       IF (iteration.GE.1) THEN
           forctot=sqrt( SUM(atdml%fp(1:3,1:atdml%im)**2) )
           formax = MaxVal( Abs(atdml%fp(:,1:atdml%im)) )
 #ifdef PARA
@@ -198,7 +194,7 @@ contains
           if (lEev.EQV..true.) then
              forctot = forctot*erg2eV/angst
              formax  = formax*erg2eV/angst
-             if (myidsp==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
+             if (myidsp==0) write(*,'("GC: ",i6,3E20.10)') iteration,forctot, formax, potist*erg2eV
              if (fpstop>0) then
                 if (formax.le.fpstop) then
                    if (myidsp==0) write(6,*)'force par atome  max  ev/Ang ', formax
@@ -215,7 +211,7 @@ contains
              end if
 
           else
-             if (myidsp==0) write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
+             if (myidsp==0) write(*,'("GC: ",i6,3E20.10)') iteration,forctot, formax, potist
              if (fpstop>0) then
                 if (formax.le.fpstop) then
                    if (myidsp==0) write(6,*)'force par atome  max cgs ',formax

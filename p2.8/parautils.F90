@@ -312,7 +312,7 @@
 subroutine driver_caltabt_DM(atcf,celcf,boxcf,psc,lperiod)
 
   use Tpara,only:nprocspace
-  use gen_com_m,only:it,itetabvois,itesigma
+  use gen_com_m,only:iteration,itetabvois,itesigma
     class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(inout),target::celcf
     type(box_config),intent(inout)::boxcf
@@ -333,7 +333,7 @@ subroutine driver_caltabt_DM(atcf,celcf,boxcf,psc,lperiod)
 !!$          endif
 !!$       endif
 !!$    end if
-    if (atcf%ltabvois.and.mod(it,itetabvois)==0) then
+    if (atcf%ltabvois.and.mod(iteration,itetabvois)==0) then
        call caltabi(atcf,celcf,boxcf)
     end if
 

@@ -12,7 +12,7 @@ module NGC_mod
        &initsteep,back2ndm,final_tconv,nextsauv,nextmol,fpstop0,betaV,betaP,beta,gcpara,lchg,set_pointers_gc,&
        & unitgc,atcgmin,atcible,fpstopsig,betaV0,betaP0
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,it,mdcg_noise,iterasmol,lenfnam,fnam,&
+    USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,iteration,mdcg_noise,iterasmol,lenfnam,fnam,&
          &angst,erg2ev,potist,lperiod,lspacendm,lprahman,dfpred,itesauv,unitP,fpstop,lcdp,fsumstop
     USE var_pot, ONLY:ntyp
     use steepestdescent_mod, only: steepestdescent,conjugategradient
@@ -72,7 +72,7 @@ contains
     betaP=betaguess/3
     betaV0=betaguess
     betaP0=betaguess/3
-    it=0
+    iteration=0
 
     call atcgin%deftype(atcgcomp)
     call atcgin%deftype(atcgmin)

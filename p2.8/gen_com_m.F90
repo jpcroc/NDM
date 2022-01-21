@@ -32,7 +32,7 @@ module gen_com_m
   ! (cela suppose que h0 corresponde a l'etat de reference pour lequelle la contrainte est nulle)     
   logical :: lrctest    ! .true.: test sur rc ; false pas de test
 
-  integer,target :: it ! iteration courante, finale , type de generation
+  integer,target :: iteration ! iteration courante, finale , type de generation
   integer:: itloopmax, itmax, nitmax,igen ! iteration fin de boucle DM, finale , type de generation
   real(double)::timemax ! temps max simul
   integer :: lenfnam

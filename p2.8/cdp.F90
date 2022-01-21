@@ -1,7 +1,7 @@
 module cdp_mod
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,it,lperiod,itloopmax,ivisu
+  USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,iteration,lperiod,itloopmax,ivisu
   !  use temp_com,only:im
   USE arret_ndm_mod,only: arret_ndm
   USE var_pot,only:ntyp
@@ -11,6 +11,7 @@ module cdp_mod
   use rasmolT_mod,only:rasmolT
   use vect_dist_mod,only:closest_at
   USE cryst_to_cart_mod,only: cryst_to_cart
+  USE caltabi_mod,only: caltabi
 
   USE Tpara,only:COMM_space,myidsp,para_space_config
 #ifdef PARA  
@@ -201,14 +202,14 @@ contains
     allocate(nb_at_typ(0:npp-1))
     allocate(last_at_typ(-1:npp-1))
     open (unit=121,file='vac_int')
-    do while (it.le.itmax)
+    do while (iteration.le.itmax)
        last_at_typ=0
        natyp=0
        nb_at_typ=0
        itinser=itinser+1
        call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
 
-       itloopmax=min(it+itecdp,itmax)
+       itloopmax=min(iteration+itecdp,itmax)
        if (myidsp==0) then
           write(6,*)'****************************************'
           write(6,*)'POINT DEFECT CREATION ',nvactot, ninttot
@@ -484,6 +485,7 @@ contains
        end if
 !#endif
        call caltabtC(celndm,atdml,lperiod,boxndm)
+       if (atdml%ltabvois) call caltabi(atdml,celndm,boxndm)
 #ifdef PARA
        if (lspacendm) call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc)
 #endif

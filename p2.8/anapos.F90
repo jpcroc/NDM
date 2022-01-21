@@ -7,7 +7,7 @@ module posana
 !  USE period_mod,only: period
   USE recips_mod,only: recips
   use cryst_to_cart_mod,only:cryst_to_cart
-  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,dmtype,lenfnam,it,timel,ivisu
+  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,dmtype,lenfnam,iteration,timel,ivisu
   USE atomconfig,only:atom_config
   use cellconfig,only: cell_config,caltabtC
   use boxconfig,only:box_config,initbox,periodbox
@@ -1162,12 +1162,12 @@ contains
           indint(nint)=i
        end do loopint
 
-       write(6,*)'IT = ',it,' nombres de lacunes ',nvac
-       write(6,*)'IT = ',it,'nombres d_interstitiels ',nint
-       write(6,*)'IT = ',it,'nombres d_antisites ',nanti
-       write(6,*)'IT = ',it,'nombres d_remplacments ',nremp
+       write(6,*)'IT = ',iteration,' nombres de lacunes ',nvac
+       write(6,*)'IT = ',iteration,'nombres d_interstitiels ',nint
+       write(6,*)'IT = ',iteration,'nombres d_antisites ',nanti
+       write(6,*)'IT = ',iteration,'nombres d_remplacments ',nremp
 
-       if(lpdep)     write(6,*)'IT = ',it,'nombres de remplacements ',nremp
+       if(lpdep)     write(6,*)'IT = ',iteration,'nombres de remplacements ',nremp
        if (lpdef) then
           call  plt_extr(nvac,indvac,'vacancies',atc,boxc)
           call  plt_extr(nint,indint,'interstitials',atc,boxc)

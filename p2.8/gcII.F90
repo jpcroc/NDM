@@ -18,7 +18,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:itetemp2,dmtype,rang,it,itmax,mdcg_noise,&
+    USE gen_com_m, ONLY:itetemp2,dmtype,rang,iteration,itmax,mdcg_noise,&
          &angst,erg2ev,potist,lperiod,lspacendm,latcomp
     USE var_pot, ONLY:ntyp
     USE work_cgII,only: funct
@@ -117,7 +117,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 !!$ACC=1.d-8
        ACC=0.d0
        
-       it = 0
+       iteration = 0
        efinal = 0.0
        CALL ZXCGRII(FUNCT,NGC,ACC,itmax,X,G,F,W,IER,criterion,NCALLS,psc)       
        

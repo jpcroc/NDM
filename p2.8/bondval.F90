@@ -1,6 +1,6 @@
 module bondval_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:it,rang,fnam,lperiod,lenfnam
+  USE gen_com_m, ONLY:iteration,rang,fnam,lperiod,lenfnam
   USE var_pot, ONLY:ntyp,ty
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
@@ -33,7 +33,7 @@ contains
     if(rang==0) then
 
        lenfn2 = 9
-       write(extension,'(i9.9)') it
+       write(extension,'(i9.9)') iteration
 
        ! -------------------------------------------------------------
        !     creation du  fichier positions pour Rasmol

@@ -66,9 +66,9 @@ contains
 !    call analyseT(atpr,celndm,boxndm)
 
     ! MD loop -------------------------------------------------------------
-    do while (it.le.itloopmax)
+    do while (iteration.le.itloopmax)
 
-    it = it+1
+    iteration = iteration+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
   CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
 

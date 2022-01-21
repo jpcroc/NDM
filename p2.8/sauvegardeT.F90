@@ -1,7 +1,7 @@
 module sauvegardeT_mod
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:rang,it,itesauvinter,lspaceNDM,&
+  USE gen_com_m, ONLY:rang,iteration,itesauvinter,lspaceNDM,&
        &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,l2T
 
   USE elec_cell, ONLY : sauveelec
@@ -164,7 +164,7 @@ contains
              end if
           end if
           write (lucout) tstep
-          write (lucout) tmean, pmean, it, timel
+          write (lucout) tmean, pmean, iteration, timel
 
 
 
@@ -221,7 +221,7 @@ contains
           end select
           if (.not.lwax)write (lucout) atdml%xp
           write (lucout) tstep
-          write (lucout) tmean, pmean, it, timel
+          write (lucout) tmean, pmean, iteration, timel
        endif
 
     endif
@@ -263,7 +263,7 @@ contains
        end select
        if (.not.lwax)write (lucout) atdml%xp
        write (lucout) tstep
-       write (lucout) tmean, pmean, it, timel
+       write (lucout) tmean, pmean, iteration, timel
     endif
 
 #endif

@@ -1,6 +1,6 @@
 module calccoordo_mod
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: rang,it,timel,lperiod
+  USE gen_com_m, ONLY: rang,iteration,timel,lperiod
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
   USE cellconfig,only:cell_config, caltabtC
@@ -91,7 +91,7 @@ contains
      where (na(:ntyp)/=0) dnco(i1,:ntyp) = dnco(i1,:ntyp)/na(i1)
   enddo
   if (rang==0) then
-     write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', it, '  time = ', timel
+     write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
      write (6, *) 'nombre de coor autour de :'
      do i1 = 1, ntyp
         if (na(i1)==0) cycle

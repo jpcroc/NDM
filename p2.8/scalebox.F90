@@ -1,6 +1,6 @@
 module scalebox_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:dmtype,itetabvois,lprahman,nvat,pi,it,rang,lperiod
+  USE gen_com_m, ONLY:dmtype,itetabvois,lprahman,nvat,pi,iteration,rang,lperiod
 
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
@@ -89,26 +89,20 @@ contains
        noxn=1 ;noyn=1; nozn=1
     end if
 
-    if ((celndm%nox.ne.noxn).or.(celndm%noy.ne.noyn).or.(celndm%noz.ne.nozn).or.((dmtype.eq.9).and.(it==1)))then
+    if ((celndm%nox.ne.noxn).or.(celndm%noy.ne.noyn).or.(celndm%noz.ne.nozn).or.((dmtype.eq.9).and.(iteration==1)))then
        write(6,*)'CHGT NOX'
        celndm%nox=noxn; celndm%noy=noyn; celndm%noz=nozn
 
        if (dmtype.ne.9) then
-          if (rang==0) write (6, *) 'IT =',IT,'chgt nox noy noz  = '&
+          if (rang==0) write (6, *) 'IT =',ITeration,'chgt nox noy noz  = '&
                , celndm%nox,celndm%noy, celndm%noz
        end if
 
        celndm%celsize(1) = boxndm%zl(1)/float(celndm%nox)
        celndm%celsize(2) = boxndm%zl(2)/float(celndm%noy)
        celndm%celsize(3) = boxndm%zl(3)/float(celndm%noz)
-
        celndm%noxyz = celndm%nox*celndm%noy*celndm%noz
-
-       !write(*,*) 'inside scalebox1', nox, noy, noz
-       !write(*,*) 'inside scalebox2', noxn, noyn, nozn
-       !write(*,*) 'inside scalebox3', noxyz, zl(1), rumax,  im
        celndm%natperc= INT(atpr%im/celndm%noxyz)
-
        celndm%natperc=max(3*celndm%natperc,10)
        nvat=3*celndm%natperc
 
@@ -121,7 +115,7 @@ contains
 
    end if
              call caltabtC(celndm,atpr,lperiod,boxndm)
-             if (atpr%ltabvois.and.(dmtype==9).and.((it==1).or.(mod(it,itetabvois)==0))) then
+             if (atpr%ltabvois.and.(dmtype==9).and.((iteration==1).or.(mod(iteration,itetabvois)==0))) then
                 call caltabi(atpr%atom_config,celndm,boxndm)
              end if
 

@@ -15,7 +15,7 @@ module dmloop_mod
   USE caltabi_mod,only: caltabi
   USE parautils,only:driver_caltabt_DM
 
-  USE gen_com_m,only: dmtype,it,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
+  USE gen_com_m,only: dmtype,iteration,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
        & itetabvois,lperiod,lspaceNDM,itloopmax
   use var_pot, only: cm
    use Tpara,only:nprocspace,para_space_config,comm_space
@@ -64,13 +64,10 @@ contains
     END IF
 
     !      write(6,*)'im',im
-    do while (it.le.itloopmax)
-
-       it = it+1
-
-
+    do while (iteration.le.itloopmax)
+       iteration = iteration+1
        ! appel de la routine generale des forces
-       if (itesigma>0)      test_sigma=(mod(it,itesigma)==0)
+       if (itesigma>0)      test_sigma=(mod(iteration,itesigma)==0)
        if (test_sigma) then
           sig(:,:)=0.d0 ; if (celndm%ltpcel.EQV..true.) celndm%sigc=0
           select type(atdml)

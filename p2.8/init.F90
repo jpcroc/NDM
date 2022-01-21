@@ -28,7 +28,7 @@ module init_mod
 #endif
   use Tpara,only:para_space_config
 
-  USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,it,iteanapos,iterasmol,&
+  USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,iteration,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lperiod,lrestart,pmean,rang,timel,two,&
        &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp,l2T,lcdp
 use read_val,only:ltabvois
@@ -86,7 +86,7 @@ contains
     if (ibrake.gt.0) then
        call initeloss
     end if
-    it=0
+    iteration=0
     !<---------setting the configuration by reading gin / cin file --------------
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
@@ -222,7 +222,7 @@ contains
     end if
 
     if (dmtype==6) then
-       call anapos (atdml,celndm,boxndm,it)
+       call anapos (atdml,celndm,boxndm,iteration)
        call arret_ndm
     end if
     if (lcasca) then
