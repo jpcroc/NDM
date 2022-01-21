@@ -24,7 +24,7 @@ module lammps_util_mod
 #else
   use Tpara, only: nprocspace
 #endif
-    use gen_com_m, ONLY : umass,firsttime_lammps,energy_conversion_lammps,position_conversion_lammps,it,itesigma,rskin&
+    use gen_com_m, ONLY : umass,firsttime_lammps,energy_conversion_lammps,position_conversion_lammps,iteration,itesigma,rskin&
          &,pressure_conversion_lammps
 
     USE Mat_utils_mod,only: Matinv,is_upper_triangular,convert_cell
@@ -201,7 +201,7 @@ end subroutine init_lammps
   ! Extract energy from LAMMPS
   call lammps_extract_compute (energy, lmp, 'thermo_pe',0,0)
   potislammps=energy*energy_conversion_lammps
-  if (mod(it,itesigma)==0) then
+  if (mod(iteration,itesigma)==0) then
      call lammps_extract_compute (p_tensor, lmp, 'thermo_press',0,1)
        
        sig_lammps(1,1)=p_tensor(1)

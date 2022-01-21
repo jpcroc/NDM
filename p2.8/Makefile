@@ -6,7 +6,6 @@
 # DEN/DMN/SRMP
 # CEA Saclay
 #
-# Copyright Mickaël Trochet
 #
 #########################################
 
@@ -66,7 +65,7 @@ ROOT = rundm90
 EXT = $@
 FLAG = # BECAREFUL THIS LINE IS IMPORTANT BECAUSE WE APPEND TO IT AFTER IF MACRO ARE DEFINED 
 EXE = $(ROOT)_$@    #_$(shell ./version.sh)
-
+MFLAGS = 
 
 # For dependencies here are some variables :
 MAKEDEPEND=fortdepend
@@ -83,6 +82,10 @@ OBJ +=  $(OBJ_PARA)
 checkfiles +=  $(f90para) 
 INC += $(INC_PARA)
 FLAG += -DPARA
+endif
+
+ifdef MKL
+FLAG += -DMKL
 endif
 
 ifdef DEBUG
@@ -139,7 +142,7 @@ help:
 	@echo "sinclude ../$(DEP_FILE)" >> Obj_$@/Makefile 
 	@#echo "sinclude ../ml/milady.depends" >> Obj_$@/Makefile 
 	cd Obj_$@; \
-        $(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)"  "EXE = ../$(EXE)" ../$(EXE)
+        $(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)" "FLAG = $(FLAG)"  "EXE = ../$(EXE)" ../$(EXE)
 
 
 

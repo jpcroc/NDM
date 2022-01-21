@@ -35,7 +35,7 @@ SHELL = /bin/sh
 
 # NDM ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
-  OPTIONS  = -O0 -g #-traceback
+  OPTIONS  = -Og #-traceback
   NDM_INC  = $(FLAG) # HERE DEFINE MACRO NEEDED IF NDM SERIAL WITH NO EXTERNAL LIBS 
 
 # MPI library, REQUIRED if -DPARA
