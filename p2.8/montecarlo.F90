@@ -593,7 +593,7 @@ real(double), dimension(2,22) :: tab_cumul
 !!!!!!!!!!!!!!!!!!!!!!!!!! ACCEPTATION   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !if (lmegamaster) write(*,*) 'ACCEPTATION, direction=', dir,'W', W*erg2eV, &
           !     &'Wprec', Wprece*erg2eV, '  LN_XPROB ', ln_xprob, '  XPROB ', xprob, '  XALEA ', xalea
-          if (lmegamaster) write(752,'(I3, I3, 4G25.16E3)'), 1 , dir,  W*erg2eV,Wprece*erg2eV, xprob, xalea
+          if (lmegamaster) write(752,'(I3, I3, 4G25.16E3)') 1 , dir,  W*erg2eV,Wprece*erg2eV, xprob, xalea
           if (lmegamaster) write(85,'(I3,G25.16E3)') dir, W
           premier_accept = 1
           Wprece = + W 
@@ -623,7 +623,7 @@ real(double), dimension(2,22) :: tab_cumul
 !!!!!!!!!!!!!!!!!!!!!!!!!! REFUS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !if (lmegamaster) write(*,*) ' REJECTION, direction=', dir, 'W', W*erg2eV, &
           !     &'Wprec', Wprece*erg2eV, '  LN_XPROB ', ln_xprob, '  XPROB ', xprob, '  XALEA ', xalea
-          if (lmegamaster) write(752,'(I3, I3, 4G25.16E3)'), 0 ,  dir,  W*erg2eV, Wprece*erg2eV, xprob, xalea
+          if (lmegamaster) write(752,'(I3, I3, 4G25.16E3)') 0 ,  dir,  W*erg2eV, Wprece*erg2eV, xprob, xalea
 
           !on accepte le sens opposé - changer des signes des vitesses 
           config_atom_old_0%vp(:,:)   = - config_atom_old_0%vp(:,:)
@@ -695,7 +695,7 @@ real(double), dimension(2,22) :: tab_cumul
 
        if (lmegamaster) write(*,'(A20, 1G25.16E3, A10, 1G25.16E3, A10, 1G25.16E3)') 'ACCEPTATION WeV',&
         & (travail_npp(ipchemin)*erg2eV), 'WpreceV', (Wprece*erg2eV),'XPROB', xprob_i(ipchemin)
-       if (lmegamaster) write(752,'(3I3, 50G25.16E3)'), 1 , &
+       if (lmegamaster) write(752,'(3I3, 50G25.16E3)') 1 , &
           &dir, ipchemin, (travail_npp*erg2eV), (Wprece*erg2eV), xprob_i
        if (lmegamaster) write(85,'(1I3,G25.16E3)') dir, travail_npp(ipchemin)
 #ifdef PARA
@@ -755,7 +755,7 @@ real(double), dimension(2,22) :: tab_cumul
 
        if (lmegamaster) write(*,'(A15, 1G25.16E3, A10, 1G25.16E3, A10, 1G25.16E3)') 'REFUS WeV', &
            &(Wprece*erg2eV), 'WpreceV', (Wprece*erg2eV),'XPROB', xprob_i(ipchemin)
-       if (lmegamaster) write(752,'(3I3, 50G25.16E3)') , 0 , &
+       if (lmegamaster) write(752,'(3I3, 50G25.16E3)')  0 , &
           &dir, ipchemin, travail_npp*erg2eV, (Wprece*erg2eV), xprob_i
        config_atom_old_0%vp(:,:)   = - config_atom_old_0%vp(:,:)
        config_atom_old_1%vp(:,:)   = - config_atom_old_1%vp(:,:)
@@ -2319,23 +2319,38 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
  integer,intent(in)::iloc
  logical, intent(in)::lchange,ldistrib
  integer::rgcib,rgem,i,ncalls=0
+ logical::lcalcvois
 
  ncalls=ncalls+1
-
-
+ lcalcvois=.false.
+ if (iloc==1) then
+    if (atmcgcloc%ltabvois)then
+       lcalcvois=.true.
+    else
+       lcalcvois=.false.
+    end if
+ else
+    if (lchange) then 
+       if ((mod(iteration,itetabvois)==0).and.(atmcgcloc%ltabvois))then
+          lcalcvois=.true.
+       else
+          lcalcvois=.false.
+       end if
+    end if
+ end if
 #ifdef PARA
 
  if(paramcgc%image==0) then !procs N
     if (iloc==1) call initloc(atconf_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod&
-         &,psc=pscgc,ldistrib=ldistrib) !initloc contient caltabtc sur atloc
+         &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig,potist_n,atconf_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-         &lperiod,atconf_n%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscgc)
+         &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
 
  else !procs N+1
     if (iloc==1)call initloc(atconf_nplus1,cells_nplus1,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,&
-         &lperiod,psc=pscgc,ldistrib=ldistrib) !initloc contient caltabtc sur atloc
+         &lperiod,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-         &lperiod,atconf_nplus1%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscgc)
+         &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
 
  end if
 
@@ -2356,9 +2371,9 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
 
 #else
  call pointer_caltabt_calfo(sig,potist_n,atconf_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-      &lperiod,atconf_n%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscgc)
+      &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
  call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-      &lperiod,atconf_nplus1%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscgc)
+      &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
 
 #endif
 

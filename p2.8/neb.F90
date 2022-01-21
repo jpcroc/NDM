@@ -10,7 +10,7 @@ module neb_mod
   use Tpara,only:para_space_config,ierr
 
   USE atomconfig,only:atom_config,atom_config_d
-  USE cellconfig, only:cell_config,caltabtC
+  USE cellconfig, only:cell_config
   USE boxconfig,only:box_config,periodbox
   use var_pot,only:rumax,ipotentiel
   use rasmolT_mod,only:rasmolT
@@ -26,7 +26,9 @@ module neb_mod
   use Tpara,only: comm_space
   USE init_vois_mod,only: init_voisinage
 #endif
+
   implicit none
+  
 contains
   subroutine neb 
     !-----------------------------------------------
@@ -47,6 +49,7 @@ contains
     !-----------------------------------------------
 
     logical::lmaster
+    logical::lcalcvois
     integer :: ineb,ii,it_neb_inter,ipath
     real(double)  :: a_local,forneb
     character::fnamcout*80,extension*9
@@ -171,7 +174,8 @@ contains
              ii=i1
           if (i1==npath)ii=npath-1
           if (i1==npath-1)ii=npath
-          call initloc(atneb(ii)%atom_config_d,cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,rumax,lperiod,psc=pscneb) !initloc contient caltabtc sur atloc
+          call initloc(atneb(ii)%atom_config_d,cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,&
+               &rumax,lperiod,psc=pscneb,lcalcvois=.true.) !initloc contient caltabtc sur atloc
           if (ipotentiel.lt.0) then
              lchange=.true.
           else
@@ -180,12 +184,12 @@ contains
 #else    
           lchange=.false.
           ii=i1
-!          call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb)
+!          call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb) ! fait dans initloc
 !          if (atneb(ii)%ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii),boxneb)
 #endif    
           
           call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
-               &lperiod,atneb(ii)%ltabvois,iteration,itetabvois,lchg=lchange,psc=pscneb)
+               &lperiod,lchg=lchange,psc=pscneb)
 
           if (lmaster) then
 
@@ -243,9 +247,13 @@ contains
                 iteration=iteration+1
 
                 if (lmaster)    call periodbox (boxneb,atneb(ii)%atom_config_d)
+                if ((mod(iteration,itetabvois)==0).and.(atneb(ii)%ltabvois))then
+                   lcalcvois=.true.
+                else
+                   lcalcvois=.false.
+                end if
                 call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,&
-                     &atnebloc,cellnebloc,paraneb,lperiod,&
-                     &atneb(ii)%ltabvois,iteration,itetabvois,lchg=.true.,psc=pscneb)
+                     &atnebloc,cellnebloc,paraneb,lperiod,lchg=.true.,psc=pscneb,lcalcvois=lcalcvois)
 
 #ifdef PARA
 
@@ -341,9 +349,14 @@ contains
                    iteration=it_neb_inter
 
                    call periodbox (boxneb,atneb(ii)%atom_config_d)
+                   if ((mod(iteration,itetabvois)==0).and.(atneb(ii)%ltabvois))then
+                      lcalcvois=.true.
+                   else
+                      lcalcvois=.false.
+                   end if
                    call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),&
                         &boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
-                        &atneb(ii)%ltabvois,iteration,itetabvois,lchg=.true.,psc=pscneb)
+                        &lchg=.true.,psc=pscneb,lcalcvois=lcalcvois)
                    if (lmaster) then
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
                            &atneb(ii)%imm,atneb(ii)%im)

@@ -968,7 +968,10 @@ contains
        if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
        if (rang==0) write (6,*)
     case (19)
-       if (rang==0) write (6,'(a)') '      FORCE Matrix calculation '
+       if (rang==0) then
+          write (6,'(a)') '      FORCE Matrix calculation '
+          if (ltabvois) write (6,'(a)') '  BE SURE THAT RVOIS>RUE+DECAL'
+       end if
 #ifndef MKL
        if (rang==0)then
           write(6,*)"dmtype=19 works with lapack or MKL"

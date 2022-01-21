@@ -49,7 +49,7 @@ contains
     character :: extension*2
     integer::lenfn2,ko,i1,formatsauv
     real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
-    logical::lover
+    logical::lover,lcalcvois
 
     logical:: lchg
 
@@ -79,8 +79,13 @@ contains
 
 
     lchg=.true.
+    if ((mod(iteration,itetabvois)==0).and.(atcgcomp%ltabvois))then
+       lcalcvois=.true.
+    else
+       lcalcvois=.false.
+    end if
     call pointer_caltabt_calfo(sig,potist,atcgcomp,cellcgcomp,boxcg,atcgloc,cellcgloc,gcpara,lperiod,&
-         &atcgcomp%ltabvois,iteration,itetabvois,lchg,psc,'xft') 
+         &lchg,psc,'xft',lcalcvois) 
 
     if (iteration==1) then
        if (lEev.EQV..true.) then 
@@ -159,21 +164,9 @@ if (nprocspace.gt.1) then
 end if
 #endif
 !    write(6,*)'LOVER',lover,rang,it
-       if (iteration>=itmax) then
-          if (rang==0) write (6, *) '*******Derniere iteration **** '
-          lover=.true.
-
-       endif
-
-
-
-
-       if (lover) then
-
-          call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp)
-
-          call arret_ndm
-       end if
+if (iteration>=itmax)then
+   call arret_ndm
+end if
        
        if (rang==0)then
 

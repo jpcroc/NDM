@@ -8,7 +8,7 @@
   use Tpara,only:para_space_config
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage
-  use gen_com_m,only:lspacendm
+  use gen_com_m,only:lspacendm,itetabvois,rang
   use atomconfig,only: atom_config,atom_config_d,atom_config_e
   USE boxconfig,only:box_config,periodbox,updatebox
   USE cellconfig,only:cell_config,caltabtC
@@ -25,10 +25,9 @@
     type(para_config),pointer::div_p
     class(atom_config),pointer::atloc_p
     type(cell_config),pointer::celloc_p
-    logical,pointer::ltabvois_p
-    integer,pointer::itetabvois_p,it_p
-    logical,pointer::lperiod_p
-    logical,pointer::lchg_p
+    integer,pointer::it_p
+    logical,pointer::lcv_p
+    logical,pointer::lchg_p,lperiod_p
 
 
     integer,parameter::STOP_TAG=0
@@ -36,7 +35,7 @@
     integer,parameter::WORKER_TAG=-1
 
   contains
-  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib,psc)
+  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib,psc,lcalcvois)
     USE setcell,only:setcellconf
     class(atom_config),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
@@ -46,11 +45,20 @@
     type(cell_config),pointer::celloc
     type(para_config),intent(in)::div
     real(double),intent(in)::rum
-    logical::lperiod
+    logical,intent(in),optional :: lcalcvois
+    logical,intent(in)::lperiod
     logical,optional,intent(in)::ldistrib
     logical::ldistr
     integer::ierr,iun
+    logical::lcalcv
     ldistr=.false.
+    if (present(lcalcvois)) then
+       lcalcv=lcalcvois
+    else
+       lcalcv=atloc%ltabvois
+    end if
+
+    
     if (present(ldistrib))ldistr=ldistrib
     
 !    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -73,12 +81,13 @@
     end if
 
     call caltabtC(celloc,atloc,lperiod,box)
+    if ((lcalcv).and.(atloc%ltabvois)) call caltabi(atloc,celloc,box)
 
   end subroutine initloc
 
-!*****
+!******************************************
   subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,&
-       &lperiod,ltabvois,it,itetabvois,lchg,psc,caracT)
+       &lperiod,lchg,psc,caracT,lcalcvois)
 #ifdef PARA
     use mpi
 #endif
@@ -92,17 +101,20 @@
     type(para_config)::div
     class(atom_config),pointer::atloc
     type(cell_config),pointer::celloc
-    logical,optional,intent(in)::ltabvois
-    integer,optional,intent(in)::itetabvois,it
     logical::lperiod
     logical,optional::lchg
     character(len=*),optional,intent(in)::caracT
+    logical,optional::lcalcvois
+    logical::lcalcv
     character(len=26)::caracm2l,caracvm
     integer::ierr,i,ierror
     logical::lchange=.true.
     real(double)::atl(3,3)
     integer::iun
-
+    integer,save::ncall=0
+    lcalcv=.false.
+    ncall=ncall+1
+    if (present(lcalcvois))lcalcv=lcalcvois
     if (.not.present(caracT)) then
        caracm2l='xfniewdlpvrugas'
        caracvm=caracm2l
@@ -139,9 +151,8 @@
      call periodbox (box,atloc)
 
     call caltabtC(celloc,atloc,lperiod,box)
-    if (present(ltabvois)) then
-       if (ltabvois.and.((it==1).or.(mod(it,itetabvois)==0)))&
-            &call caltabi(atloc,celloc,box)
+    if ((atloc%ltabvois).and.(lcalcv)) then
+       call caltabi(atloc,celloc,box)
     end if
 
 #ifdef PARA
@@ -285,10 +296,8 @@
     logical::lchgbox
     real(double)::atl(3,3),ex
     integer::ierror,i1,i2
-    integer,save::nc=0
     lchgbox=.false.
     ex=rang
-    nc=nc+1
     if (present(lchgboxT))lchgbox=lchgboxT
     
     
@@ -302,9 +311,12 @@
        call div%mpi_image%bcast(0,atl)
        call updatebox(box_p,atl)
     end if
-    call pointer_caltabt_calfo(sig_p,potist_p,atcomp_p,cellcomp_p,box_p,atloc_p,celloc_p,div_p,lperiod_p,&
-         &ltabvois_p,it_p,itetabvois_p,lchg_p,psc_p,carac)
+    lcv_p=.false.
     it_p=it_p+1
+    if ((atloc_p%ltabvois).and.(mod(it_p,itetabvois)==0)) lcv_p=.true.
+    call pointer_caltabt_calfo(sig_p,potist_p,atcomp_p,cellcomp_p,box_p,atloc_p,celloc_p,div_p,lperiod_p&
+         &,lchg_p,psc_p,carac,lcalcvois=lcv_p)
+
     return ! master returns to "main", servants return to tolstoi to wait for next call
   end subroutine depeche_mode
     
@@ -326,13 +338,7 @@ subroutine driver_caltabt_DM(atcf,celcf,boxcf,psc,lperiod)
 
     call periodbox (boxcf,atcf)
     ! repartition des atomes dans la nouvelle boite
-!!$    if (.not.lprahman) then
-!!$       if (itab/=0) then
-!!$          if (mod(it,itab)==0) then
-             call caltabtC(celcf,atcf,lperiod,boxcf)
-!!$          endif
-!!$       endif
-!!$    end if
+    call caltabtC(celcf,atcf,lperiod,boxcf)
     if (atcf%ltabvois.and.mod(iteration,itetabvois)==0) then
        call caltabi(atcf,celcf,boxcf)
     end if

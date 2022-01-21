@@ -47,7 +47,7 @@ module WGC_mod
   integer::ncalls,nextsauv,nextmol,formatsauv
   logical::lvm
   real(double)::fpstop0,fpstopsig
-  logical,target:: lchg
+  logical,target:: lchg,lcalcvois
 contains
 
   subroutine initsteep
@@ -466,8 +466,8 @@ contains
 
 
   subroutine set_pointers_GC
-    use parautils,only: psc_p,sig_p,potist_p,atcomp_p,cellcomp_p,box_p,div_p,atloc_p,celloc_p,ltabvois_p,&
-         &itetabvois_p,it_p,lperiod_p,lchg_p
+    use parautils,only: psc_p,sig_p,potist_p,atcomp_p,cellcomp_p,box_p,div_p,atloc_p,celloc_p,lcv_p,&
+         lperiod_p,lchg_p,lperiod_p,it_p
     character,target::carac(3)
     carac='xft'
     psc_p=>pscCG
@@ -479,8 +479,7 @@ contains
     div_p=>gcpara
     atloc_p=>atcgloc
     celloc_p=>cellcgloc
-    ltabvois_p=>atcgcomp%ltabvois
-    itetabvois_p=>itetabvois
+    lcv_p=>lcalcvois
     it_p=>iteration
     lperiod_p=>lperiod
     lchg_p=>lchg
