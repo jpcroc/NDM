@@ -2370,8 +2370,13 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
  !en ce point le master général (rang_orig=0) a les forces de N et N+1    
 
 #else
+ if (iloc==1) call initloc(atconf_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod&
+      &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
  call pointer_caltabt_calfo(sig,potist_n,atconf_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
       &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
+
+ if (iloc==1) call initloc(atconf_nplus1,cells_nplus1,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod&
+      &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
  call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
       &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
 

@@ -1,0 +1,90 @@
+ >>>>>>>>>>> entree readdm
+ nom fichier din=Febulk.din                                                                      
+
+ -------- caracteristiques du run DM--------19
+      FORCE Matrix calculation 
+  decal, ndecal lparaFM, naparaFM:   1.0000000149011612E-009           1 T           4
+
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  iteprtsigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=           6  itab=           1  itetimestep=          -1
+tinit=     600.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ nparafM,nprocspace, nprocs           1           1           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ Types d_atomes :
+   1   55.847   26.000  Fe 
+ROFF1_2   -0.100   -0.200
+ nptmax in the max number of points on grid        250000
+ EAM           1           1
+ EAM number of points in potin and the step      250000   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       250000   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace        2000        2000           1
+
+ **********construction du reseau************
+ repetition de mailles           6           6           6
+  .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6
+ izonr,zlmin,rut           2   34.263816000000006        12.000000000000002     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+Boite trop petite: le nombre de cellules est fixe a son minimum
+nox noy noz calcules a partir de ru
+  nox = Int(   0.1713E-06/  0.6000E-07) = 2
+  noy = Int(   0.1713E-06/  0.6000E-07) = 2
+  noz = Int(   0.1713E-06/  0.6000E-07) = 2
+nox noy noz apres correction = 1 1 1
+celsizes   0.1713191E-06  0.1713191E-06  0.1713191E-06
+Febulk.gin                                                                      volume= 0.50282539D-20 cm3  0.50282539D+04 Ang3
+ natperc im/noxyz         864         432
+ ltabvois,lconstrtot F F
+
+ -------- boite de simulation ------
+ nombre d atomes =         432
+vecteur  1      17.131908       0.000000       0.000000
+vecteur  2       0.000000      17.131908       0.000000
+vecteur  3       0.000000       0.000000      17.131908
+         432  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ paire            1
+ calpoeam RHO MIN:    0.0000000000000000     
+ calpoeam RHO MAX:    12.174708979468400     
+ calpoeam Rhomin Rhomax    0.0000000000000000        170.44524392885501     
+ calpoeam ktorho and the inverse:    8.5222621964427502E-003   117.33973643962830     
+
+ random velocities at TINIT =    600.00000000000000      K
+ seed_size           8
+ iseed pour tirage des vitesses           1
+ temperature positions lues initspeed    616.06011472431749     
+ temperature fin initspeed    614.19257690312634     
+
+ decal rang ideb ifin          -1           0           1         432
+ T           0           4          -1           1         432
+ decal rang ideb ifin           1           0           1         432
+ T           0         433           1           1         432
+ PRE MKL
+ 3 non positive frequencies OK 
+ NSKIP           3        1293

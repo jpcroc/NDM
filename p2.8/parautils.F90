@@ -124,59 +124,45 @@
     end if
 
     if(present(lchg))lchange=lchg
-#ifdef PARA
     if (lchange) then
+#ifdef PARA
        if (div%mpi_image%nproc.gt.1)then
-
+          
           if (lspaceNDM.eqv..true.) then
              call atcomp%master2loc(atloc,div)
-   
           else
              call atcomp%send2all(0,div%mpi_image)
              atloc=>atcomp
              celloc=>cellcomp
-             
-       
           end if
        else
           atloc=>atcomp
           celloc=>cellcomp                 
        end if
-    end if
 #else
-    atloc=>atcomp
-    celloc=>cellcomp
-
+       atloc=>atcomp
+       celloc=>cellcomp
 #endif
-     call periodbox (box,atloc)
-
-    call caltabtC(celloc,atloc,lperiod,box)
-    if ((atloc%ltabvois).and.(lcalcv)) then
-       call caltabi(atloc,celloc,box)
+       call periodbox (box,atloc)
+       call caltabtC(celloc,atloc,lperiod,box)
+       if ((atloc%ltabvois).and.(lcalcv)) then
+          call caltabi(atloc,celloc,box)
+       end if
     end if
 
 #ifdef PARA
-!    if (lchange) then  ! même sans changement il faut mettre à jour pour initialisze les tableaux NDM like de mod_para pour maj_tab_density
-
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        call maj_atomes_frt_ftm(atloc,celloc,box,psc)
     end if
 
-!    end if
 #endif
-!!$
+
 
     CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.,psc=psc)
 #ifdef PARA
-
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call atloc%vers_master(atcomp,div)
-          
-       end if
-             
-#else
-!    atcomp=atloc
-!    cellcomp=celloc
+       call atloc%vers_master(atcomp,div)
+    end if
 #endif
     return
   end subroutine pointer_caltabt_calfo

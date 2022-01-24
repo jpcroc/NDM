@@ -489,6 +489,7 @@ cdp.o :  \
 	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
+	caltabi.o \
 	cellconfig.o \
 	constrconf.o \
 	cryst_to_car.o \

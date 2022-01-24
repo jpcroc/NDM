@@ -1,5 +1,5 @@
 #!/bin/bash
-for temp  in  *.F90 *.f Makefil* */*.F90
+for temp  in  *.F90 *.f Makefil* */*.F90 MAKE/*
 do 
 	echo $temp
 	rm -f rd

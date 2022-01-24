@@ -1,5 +1,5 @@
 module neb_mod
- USE calfo_mod,only: calfo
+  USE calfo_mod,only: calfo
   USE trempe_mod,only: trempe
   USE neb_controle_mod,only:neb_controle
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
@@ -28,7 +28,7 @@ module neb_mod
 #endif
 
   implicit none
-  
+
 contains
   subroutine neb 
     !-----------------------------------------------
@@ -114,7 +114,7 @@ contains
     end if
     !????
     do ii=1,npath
-    call periodbox (boxneb,atneb(ii)%atom_config_d)
+       call periodbox (boxneb,atneb(ii)%atom_config_d)
 
     end do
     !AVANT
@@ -165,15 +165,18 @@ contains
 #endif
 
 
-    
+
     do i1=1,npath
 #ifdef PARA
 
-!       if (i1==paraneb%image+2) then
-          if ((i1==paraneb%image+2).or.((i1==1).and.(paraneb%image==0)).or.((i1==npath).and.(paraneb%image==paraneb%nimage-1))) then
-             ii=i1
+       !       if (i1==paraneb%image+2) then
+       if ((i1==paraneb%image+2).or.((i1==1).and.(paraneb%image==0)).or.((i1==npath).and.(paraneb%image==paraneb%nimage-1))) then
+          ii=i1
           if (i1==npath)ii=npath-1
           if (i1==npath-1)ii=npath
+#else    
+          ii=i1
+#endif    
           call initloc(atneb(ii)%atom_config_d,cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,&
                &rumax,lperiod,psc=pscneb,lcalcvois=.true.) !initloc contient caltabtc sur atloc
           if (ipotentiel.lt.0) then
@@ -181,16 +184,9 @@ contains
           else
              lchange=.false.
           end if
-#else    
-          lchange=.false.
-          ii=i1
-!          call caltabtC(cellneb(ii),atneb(ii),lperiod,boxneb) ! fait dans initloc
-!          if (atneb(ii)%ltabvois)call caltabi(atneb(ii)%atom_config,cellneb(ii),boxneb)
-#endif    
-          
+
           call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
                &lperiod,lchg=lchange,psc=pscneb)
-
           if (lmaster) then
 
              call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
@@ -213,10 +209,10 @@ contains
 #ifdef PARA
 
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
-    
+
     if (paraneb%lmaster) then
-          call paraneb%mpi_master%sum(enepath)
-          call paraneb%mpi_master%sum(enepathev)
+       call paraneb%mpi_master%sum(enepath)
+       call paraneb%mpi_master%sum(enepathev)
     end if
 #endif
 
@@ -224,7 +220,7 @@ contains
     case (1)
        if (rang==0) write(6,*) 'NEB: !!!!-------this is DRAG----------!!!!!!'
        iter=0
-       
+
        if (lmaster) then
           call build_s_path_drag(atneb(1)%im,atneb(1)%imm)
        endif
@@ -232,14 +228,14 @@ contains
        do ii=2,npath-1
 #ifdef PARA
           if (ii==paraneb%image+2) then
-             
+
              enepath(2:npath-1)=0; enepathev(2:npath-1)=0
-!             if (paraneb%image.ne.0) then
-!                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
-!             end if
-!             if ((paraneb%image.ne.0).and.(paraneb%image.ne.npath)) then
-!                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
-!             end if
+             !             if (paraneb%image.ne.0) then
+             !                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
+             !             end if
+             !             if ((paraneb%image.ne.0).and.(paraneb%image.ne.npath)) then
+             !                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
+             !             end if
 #endif
              iteration=0; iter(ii)=0
              dragtest=0
@@ -301,10 +297,10 @@ contains
 #ifdef PARA
        CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
        if(lmaster) then
-             call paraneb%mpi_master%sum(enepath)
-             call paraneb%mpi_master%sum(enepathev)
-             call paraneb%mpi_master%sum(sigpath)
-             call paraneb%mpi_master%sum(iter)
+          call paraneb%mpi_master%sum(enepath)
+          call paraneb%mpi_master%sum(enepathev)
+          call paraneb%mpi_master%sum(sigpath)
+          call paraneb%mpi_master%sum(iter)
        end if
 #endif
        if (rang==0) then
@@ -389,13 +385,13 @@ contains
                    if (paraneb%mpi_master%rank.gt.0)  &
                         &call paraneb%mpi_master%recv(atneb(ii-1)%xp(1:3,1:atneb(ii)%im),paraneb%mpi_master%rank-1,10002)
                    if (paraneb%mpi_master%rank.gt.0) &
-                     & call paraneb%mpi_master%send(enepath(ii),paraneb%mpi_master%rank-1,10003)
+                        & call paraneb%mpi_master%send(enepath(ii),paraneb%mpi_master%rank-1,10003)
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1)&
                         & call paraneb%mpi_master%recv(enepath(ii+1),paraneb%mpi_master%rank+1,10003)
                    if (paraneb%mpi_master%rank.gt.0)  &
                         &call paraneb%mpi_master%send(atneb(ii)%xp(1:3,1:atneb(ii)%im),paraneb%mpi_master%rank-1,10004)
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1) &
-                         &call paraneb%mpi_master%recv(atneb(ii+1)%xp(1:3,1:atneb(ii)%im),paraneb%mpi_master%rank+1,10004)
+                        &call paraneb%mpi_master%recv(atneb(ii+1)%xp(1:3,1:atneb(ii)%im),paraneb%mpi_master%rank+1,10004)
                    enepathev(:)=enepath(:)*erg2ev
                    !             call arret_ndm
 #endif             
@@ -428,7 +424,7 @@ contains
           !          write(6,*)'OUTloop',rang
 #ifdef PARA
           if (lmaster) then
-               call paraneb%mpi_master%sum(nebtest)
+             call paraneb%mpi_master%sum(nebtest)
 
           end if
 
