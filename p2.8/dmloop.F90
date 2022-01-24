@@ -1,3 +1,4 @@
+
 module dmloop_mod
   USE arret_ndm_mod,only:arret_ndm
   USE calfo_mod,only: calfo
@@ -12,7 +13,6 @@ module dmloop_mod
   USE eloss, ONLY : calceloss,ibrake 
   USE elec_cell, ONLY :i2t       
   USE calfoberend_mod,only:calfoberend
-  USE caltabi_mod,only: caltabi
   USE parautils,only:driver_caltabt_DM
 
   USE gen_com_m,only: dmtype,iteration,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &

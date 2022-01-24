@@ -16,7 +16,7 @@ module WGC_mod
   use Tpara,only:nprocspace,para_space_config
 #endif
   USE atomconfig,only : atom_config
-  USE cellconfig, only:cell_config,caltabtc
+  USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
   use paraconfig,only:para_config
   USE parautils,only:initcomp,depeche_mode
@@ -78,7 +78,6 @@ contains
           i1=atcgcomp%num_at_glob(i)
           ! Variables = cartesian coordinates (in cm)
           atcgcomp%xp(1:3,i)= atcgcomp%xp(1:3,i)+bruitmd(1:3,i)
-!          call  caltabtC(cellcgcomp,atcgcomp,lperiod,boxcg)
           R(3*i1-2:3*i1) = atcgcomp%xp(1:3,i)
        end do
        Rmin=R

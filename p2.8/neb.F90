@@ -18,7 +18,6 @@ module neb_mod
   use neb_module,only:cellneb,atneb,sigpath,boxneb,npath,enepath,nebtype,enepathev,reaction_coord,&
        &lvzeroneb,dragtest,nebtest,force_neb,formax,init_neb,find_relax,bruit_neb,build_s_path_drag,&
        &force_projection,build_s_path_neb,force_projection_neb,paraneb,pscneb
-  USE caltabi_mod,only: caltabi
   USE parautils,only:initloc,pointer_caltabt_calfo
 
 #ifdef PARA

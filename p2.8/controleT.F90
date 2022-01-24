@@ -1,7 +1,6 @@
 module controleT_mod
   USE arret_ndm_mod,only:arret_ndm
   USE endrunT_mod,only: endrunT
-  USE caltabi_mod,only: caltabi
   USE deftimestep_mod,only: deftimestep
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config

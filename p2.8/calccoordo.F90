@@ -3,7 +3,7 @@ module calccoordo_mod
   USE gen_com_m, ONLY: rang,iteration,timel,lperiod
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
-  USE cellconfig,only:cell_config, caltabtC
+  USE cellconfig,only:cell_config
   USE var_pot, ONLY:ntyp!,ty !nkmax,ntyp,digr,gdertot
   use vect_dist_mod,only:vect_dist
 

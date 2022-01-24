@@ -6,7 +6,7 @@ module dyn_vverlet_mod
        &l2T,llangevin,itesigma,iteration,itetabvois,ltberendsen,potist,sig,timel,tstep,&
        lspaceNDM
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
-  USE cellconfig, only:cell_config,caltabtC
+  USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
   use var_pot,only : cm
   USE eloss, only:ibrake, calceloss
@@ -23,9 +23,7 @@ contains
 
     USE jqmod
     USE elec_cell,ONLY: dynelec,i2t
-    USE caltabi_mod,only:caltabi
     USE elec_cell, ONLY:TTlangevin
-    !    USE Parrinello_Rahman
     implicit none
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s

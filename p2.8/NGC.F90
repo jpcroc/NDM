@@ -1,7 +1,7 @@
 module NGC_mod
   USE arret_ndm_mod,only:arret_ndm
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
-  USE cellconfig,only:cell_config,caltabtc
+  USE cellconfig,only:cell_config
   USE boxconfig,only:box_config
   USE endrunT_mod,only:endrunT
   use Tpara,only:para_space_config
@@ -154,20 +154,6 @@ contains
     
     itesauv=0
     boxndm=boxcg
-!!$    call atcgloc%print
-!!$    call cellcgloc%print
-!!$    call boxndm%print
-!!$    if ((lspacendm).and.(nprocspace.gt.1))then
-!!$       boxndm=boxcg
-!!$       celcgin=cellcgcomp
-!!$       call repartition(atcgcomp,atcgin,boxcg,celcgin)
-!!$       call caltabtC(celcgin,atcgin,lperiod,boxndm)
-!!$    else
-!!$       boxndm=boxcg
-!!$       celcgin=cellcgcomp
-!!$       call atcgcomp%copy_config(atcgin,lrescl=.false.)
-!!$       call caltabtC(celcgin,atcgin,lperiod,boxndm)
-!!$    end if
     return
 
   end subroutine NGC

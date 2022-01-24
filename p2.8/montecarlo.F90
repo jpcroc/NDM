@@ -10,7 +10,6 @@ module montecarlo_mod
   USE calfo_mod,only: calfo
   USE T_kind_param_m, ONLY:  double
   USE cryst_to_cart_mod, ONLY: cryst_to_cart
-  USE caltabi_mod,only: caltabi
   USE boxconfig,only:box_config,periodbox
   USE rasmolT_mod,only: rasmolT
   USE sauvegardeT_mod,only:sauvegardeT
@@ -18,7 +17,6 @@ module montecarlo_mod
 #ifdef PARA
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
        &NDM_MPI_REAL_DOUBLE,para_space_config,status,comm_space,mpi_world
-  use mod_para,only:maj_atomes_frt_ftm
   USE init_vois_mod,only: init_voisinage
 #else
   use Tpara,only:myidsp,nprocspace,para_space_config
@@ -2083,13 +2081,11 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
   if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
      if(paramcgc%image==0) then !procs N
         call init_voisinage(cells_n,pscgc)
-        !?          call maj_atomes_frt_ftm(atconf_n,cells_n)
 
      else !procs N+1
         call atconf_nplus1%send2all(0,paramcgc%mpi_image)
         call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc)
         call init_voisinage(cells_nplus1,pscgc)
-        !?          call maj_atomes_frt_ftm(atconf_nplus1,cells_nplus1)
      end if
 
   end if
@@ -2230,14 +2226,12 @@ subroutine initN(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_n
         call atconf_n%send2all(0,paramcgc%mpi_image)
         call caltabtC(cells_n,atconf_n,lperiod,boxmcgc)
         call init_voisinage(cells_n,pscgc)
-        !?          call maj_atomes_frt_ftm(atconf_n,cells_n)
 
      else !procs N+1
 !deja fait dans init_simple
 !        call atconf_nplus1%send2all(0,paramcgc%mpi_image)
 !        call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc)
         call init_voisinage(cells_nplus1,pscgc)
-        !?          call maj_atomes_frt_ftm(atconf_nplus1,cells_nplus1)
      end if
 
   end if

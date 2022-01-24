@@ -6,9 +6,9 @@ module dmloop_vverlet_mod
   USE atomconfig,only : atom_config_d, atom_config_e
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
-  use var_pot,only:ntyp
-  USE gen_com_m, ONLY: itesauvforce,itesauvposition,ev2erg,rang,&
-       &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax
+  use var_pot,only:ntyp,cm
+  USE gen_com_m, ONLY: itesauvforce,itesauvposition,ev2erg,rang,iteration,l2t,lTberendsen,potist,sig,sigtot,&
+       &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax,sigkine
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
@@ -27,9 +27,6 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-
-    USE Parrinello_Rahman
-
 
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace

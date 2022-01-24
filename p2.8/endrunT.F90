@@ -12,7 +12,7 @@ module endrunT_mod
        &lwgin, lposmoy,l2T,angst,dmtype,iteration,lenfnam,rang,timel,&
        &fnamcout,fnam,lspaceNDM
   use var_pot, only: eatref,eatref,eatref
-  USE cellconfig,only:cell_config,caltabtC
+  USE cellconfig,only:cell_config
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e!, ndm2config, config2ndm
   use boxconfig,only: box_config!,ndm2boxconfig,boxconfig2ndm
   use posana,only:anapos

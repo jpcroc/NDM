@@ -5,7 +5,7 @@ module calcangle_mod
   USE var_pot, ONLY:ntyp,ty
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
-  USE cellconfig,only:cell_config, caltabtC
+  USE cellconfig,only:cell_config
   USE gen_com_m, ONLY:lperiod,rang,iteration,pi,timel,lspacendm
   use vect_dist_mod,only:vect_dist
 #ifdef PARA

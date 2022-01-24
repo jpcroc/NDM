@@ -1,19 +1,20 @@
 module dmloop_lpr_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
-  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod,lspacendm,itloopmax
+  USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod,lspacendm,itloopmax,pi,l2t,&
+       &ltberendsen,potist,iteration,tstep,sig,rang,timel
   USE calfo_mod,only: calfo
 
   USE atomconfig,only : atom_config_d
   USE cellconfig, only:cell_config,caltabtc
   USE boxconfig,only:box_config
   use Tpara,only:para_space_config
-
+  use var_pot,only:tabv3,tabf3,ncoucx,ncoucy,ncoucz,q,alpha,auxe,iewald
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t
-USE calfoberend_mod,only:calfoberend
-
+  USE calfoberend_mod,only:calfoberend
+  USE recips_mod,only: calcvol
 #ifdef PARA
   USE recips_mod,only: recips
 #endif
@@ -27,8 +28,8 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE Parrinello_Rahman
-    USE Parrinello_Rahman_Nose
+    USE Parrinello_Rahman,only:pr
+    USE Parrinello_Rahman_Nose,only:prnose,fnose
 
 #ifdef PARA
   USE Tpara,only:nprocspace
@@ -93,7 +94,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        boxndm%zl(3) = Sqrt( Sum(boxndm%at(1:3,3)**2 ) )
        boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
        boxndm%zls2(1:3) = 0.5d0*boxndm%zl(1:3)
-             call caltabtC(celndm,atpr,lperiod,boxndm)
+       call caltabtC(celndm,atpr,lperiod,boxndm)
 
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
 
