@@ -1,13 +1,16 @@
 module calfoew_mod
   USE epme_mod,only: epme
-  USE gen_com_m, ONLY:pi,potis3,zero
+  USE gen_com_m, ONLY:pi,potis3,zero,pi
   USE calfocommon
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config
+  USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q,tabv3,tabf3,auxe
+  USE recips_mod,only: calcvol
   implicit none
 contains
 
+    
   ! ***************************************************************
 !  subroutine calfoew(im,imm,xp,fp,ityp,noxyz,at,bg,volu)
   subroutine calfoew(atcf,celcf,boxcf)
@@ -16,7 +19,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q,nb1v,nb2v,nb3v,tabv3,tabf3
+
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
 #else

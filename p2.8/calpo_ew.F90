@@ -2,9 +2,10 @@ module calpo_ew_mod
   USE moduli_mod,only: moduli
   USE gen_com_m, ONLY:pi,zero
   USE var_pot, ONLY:alpha,auxe,iewald,kpme,kpmex,kpmey,kpmez,ncoucx,ncoucy,ncoucz,nf1,&
-       &nf2,nf3,nff,nfft1,nfft2,nfft3,npoint,ntable,pterm,volterm,table,q,nb1v,nb2v,nb3v,&
+       &nf2,nf3,nff,nfft1,nfft2,nfft3,npoint,ntable,pterm,volterm,table,q,&
        &nvecttot,tabf3,tabv3
   use boxconfig,only:box_config
+    USE recips_mod,only: calcvol
   implicit none
 contains
   subroutine calpo_ew(boxndm,immT)
@@ -23,6 +24,7 @@ contains
     pi2 = pi*pi
     !         volu = zl(1)*zl(2)*zl(3)
     fact = pi2/alpha**2
+    boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
     fact1 = auxe/2./pi/boxndm%volu
     fact2 = auxe*2./boxndm%volu
 !    write(6,*)'KPME',kpme
@@ -42,22 +44,22 @@ contains
        end do
     end do
 
-    nv=0
-    if (.not.(allocated(nb1v))) then 
-       allocate (nb1v(nvecttot));  allocate (nb2v(nvecttot));allocate (nb3v(nvecttot))
-    end if
-       ! repartition des vecteurs du RRec.
-       do nb1 = -ncoucx, ncoucx
-          do nb2 = -ncoucy, ncoucy
-             do nb3 = -ncoucz, ncoucz
-                if (nb2==0.and.nb3==0.and.nb1==0) cycle
-                nv=nv+1
-                nb1v(nv)=nb1; nb2v(nv)=nb2; nb3v(nv)=nb3
-             enddo
-          enddo
-       enddo
-       if (nv.ne.nvecttot) stop
-
+!!$    nv=0
+!!$    if (.not.(allocated(nb1v))) then 
+!!$       allocate (nb1v(nvecttot));  allocate (nb2v(nvecttot));allocate (nb3v(nvecttot))
+!!$    end if
+!!$       ! repartition des vecteurs du RRec.
+!!$       do nb1 = -ncoucx, ncoucx
+!!$          do nb2 = -ncoucy, ncoucy
+!!$             do nb3 = -ncoucz, ncoucz
+!!$                if (nb2==0.and.nb3==0.and.nb1==0) cycle
+!!$                nv=nv+1
+!!$                nb1v(nv)=nb1; nb2v(nv)=nb2; nb3v(nv)=nb3
+!!$             enddo
+!!$          enddo
+!!$       enddo
+!!$       if (nv.ne.nvecttot) stop
+!!$
 
     ! Traitement du cas PME
 

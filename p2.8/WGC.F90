@@ -21,7 +21,6 @@ module WGC_mod
   use paraconfig,only:para_config
   USE parautils,only:initcomp,depeche_mode
   USE Mat_utils_mod,only:  MatInv
-  USE scalebox_mod,only: scalebox
   USE boxconfig,only:box_config,periodbox,updatebox
   USE recips_mod,only: recips ,calcvol
   USE cryst_to_cart_mod,only: cryst_to_cart

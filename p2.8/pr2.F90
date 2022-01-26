@@ -46,7 +46,6 @@ module Parrinello_Rahman
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
-  USE mod_para,only:maj_atomes_frt_ftm
   use Tpara, only:nprocspace,ierr,comm_space
 #else
   use Tpara, only:nprocspace
@@ -57,12 +56,13 @@ module Parrinello_Rahman
   USE atomconfig,only : atom_config_d
   USE cellconfig, only:cell_config,caltabtc
   USE boxconfig,only:box_config,periodbox,updatebox
-  USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
+  USE eloss, ONLY : calceloss,ibrake !, tcalfcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t
   USE calfoberend_mod,only:calfoberend
   use Tpara,only:para_space_config
   USE calpo_ew_mod,only: calpo_ew
   USE calctemp_mod,only: calctemp
+  USE calpo_ew_mod,only: calpo_ew
    implicit none
    ! Vecteurs de la boîte et leurs dérivées
   real(double), dimension(3,3), save , private :: h, hDot
@@ -285,11 +285,13 @@ end if
   !-----------------------------------------------
     !-----------------------------------------------
 
-  subroutine pr (atpr,celndm,boxndm,psc)
+  subroutine pr1 (atpr,celndm,boxndm,psc)
 
     implicit none
-    ! Variables utiles
-
+    type(atom_config_d),target::atpr
+    type(cell_config),target:: celndm
+    type(box_config)::boxndm
+    type(para_space_config)::psc
 
     real(double),dimension(3,3)::mf,mfi, grsig, hdot_new, hdot_last,forcebox
     REAL(double) :: diff, tdiff
@@ -298,15 +300,11 @@ end if
     ! Parameter for Parrinello-Rahman self consistency loop
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
-    type(atom_config_d),target::atpr
-    type(cell_config),target:: celndm
-    type(box_config)::boxndm
-    type(para_space_config)::psc
     real(double)::T1,kin1
 
 #ifdef PARA
     integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
-    real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1, fact2, hk2, ex, ex1, ex2
+    real(double) :: zlx, zly, zlz, ux, uy, uz
 
 
 #endif
@@ -371,9 +369,6 @@ end if
     atpr%xp(:,1:atpr%im) = MatMul( h, sp(:,1:atpr%im) )
 
     call updatebox(boxndm,h)
-!    boxndm%at(:,:) = h(:,:)                            ! Vecteur de périodicité
-!    call recips (h(:,1),h(:,2),h(:,3), boxndm%bg(:,1),boxndm%bg(:,2),boxndm%bg(:,3)) ! Vecteurs réciproques
-!   boxndm%volu = calcvol(h(1:3,1),h(1:3,2),h(1:3,3))  ! Volume
     invVolu = 1.d0/boxndm%volu
     trh=Transpose(h)                            ! Matrices associées à h
     Gmat = MatMul(trh,h)
@@ -381,58 +376,37 @@ end if
     call MatInv(h,invh)
     invtrh = Transpose(invh)
 
+#ifdef PARA
+    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
+!    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+#endif
+    
+    CALL ScaleBox(atpr,celndm,boxndm,psc)
+    
+!!$#ifdef PARA
+!!$    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!!$
+!!$       call periodbox (boxndm,atpr)
+!!$       call caltabtC(celndm,atpr,lperiod,boxndm)
+!!$       call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
+!!$
+!!$       if (iewald>0)  call calpo_ew(boxndm,atpr%imm)
+!!$
+!!$    else
+!!$      CALL ScaleBox(atpr,celndm,boxndm)
+!!$
+!!$    end if
+!!$
+!!$
+!!$#else
+!!$    ! On recalcule et réalloue les cellules, puis on applique les conditions aux
+!!$    ! limites périodiques sur les positions des atomes
+!!$    CALL ScaleBox(atpr,celndm,boxndm)
+!!$#endif
 
 #ifdef PARA
-    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-       atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
-       call periodbox (boxndm,atpr)
-!       boxndm%zl(1) = Sqrt( Sum(boxndm%at(1:3,1)**2 ) )
-!       boxndm%zl(2) = Sqrt( Sum(boxndm%at(1:3,2)**2 ) )
-!       boxndm%zl(3) = Sqrt( Sum(boxndm%at(1:3,3)**2 ) )
-!       boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
-!       boxndm%zls2(1:3) = 0.5d0*boxndm%zl(1:3)
-       call caltabtC(celndm,atpr,lperiod,boxndm)
-       call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
-       sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
-
-
-       if (iewald>0) then
-
-          ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
-          pi2 = pi*pi
-!          boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
-          fact = pi2/alpha**2
-          fact1 = auxe/2./pi/boxndm%volu
-          fact2 = auxe*2./boxndm%volu
-          do nb1 = -ncoucx, ncoucx
-             do nb2 = -ncoucy, ncoucy
-                do nb3 = -ncoucz, ncoucz
-                   if (nb1==0.and.nb2==0.and.nb3==0) cycle
-                   hk2 = nb1*nb1/boxndm%zl(1)**2+nb2*nb2/boxndm%zl(2)**2+nb3*nb3/boxndm%zl(3)**2
-                   ex = exp((-hk2*fact))/hk2
-                   ex1 = ex*fact1
-                   ex2 = ex*fact2
-                   tabv3(nb1,nb2,nb3) = ex1
-                   tabf3(:,nb1,nb2,nb3) = ex2*q(:)
-                end do
-             end do
-          end do
-
-       endif
-       if (iewald==1.or.iewald==2) then
-          call calpo_ew(boxndm,atpr%imm)
-       end if
-
-    else
-      CALL ScaleBox(atpr,celndm,boxndm)
-
-    end if
-
-
-#else
-    ! On recalcule et réalloue les cellules, puis on applique les conditions aux
-    ! limites périodiques sur les positions des atomes
-    CALL ScaleBox(atpr,celndm,boxndm)
+!    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
+    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
 #endif
 
 
@@ -596,7 +570,7 @@ end if
     call calctemp(T1,kin1,atpr,celndm)
     
 
-  end subroutine pr
+  end subroutine pr1
 
 end module !Parrinello_Rahman
 

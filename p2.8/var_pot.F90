@@ -57,7 +57,6 @@ module var_pot
   real(double),allocatable::rue_pair(:)
   real(double),allocatable::rue_pot(:)
   real(double)::rue_lammps
-  integer,dimension(:),allocatable :: nb1v,nb2v,nb3v ! tableaux des vecteurs du RRec
 
   integer :: ncouc3 ! nombre de couche dans la sommation d'Ewald
     real(double), dimension(:,:,:),allocatable :: tabv3

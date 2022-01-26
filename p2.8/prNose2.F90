@@ -39,16 +39,15 @@ module Parrinello_Rahman_Nose
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
   USE recips_mod,only: recips,calcvol
-  USE boxconfig,only:box_config
+  USE boxconfig,only:box_config,updatebox
   use atomconfig,only:atom_config_d
   use cellconfig,only:cell_config
 #ifdef PARA
-  USE Tpara,only:COMM_space,nprocspace
+  USE Tpara,only:COMM_space,nprocspace,para_space_config
 #else
-  use Tpara,only:nprocspace
-
+  use Tpara,only:nprocspace,para_space_config
 #endif
-
+  USE scalebox_mod,only: scalebox
   implicit none
 
   real(double), dimension(3,3), save , private ::h,trh,invh,invtrh,Gmat,invGmat,Area,hnew,hlast,hold,invhold
@@ -191,13 +190,14 @@ end if
 
   !-----------------------------------------------
 
-  subroutine prNose(atpr,celndm,boxndm)
+  subroutine prNose(atpr,celndm,boxndm,psc)
 
     implicit none
     type(box_config)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
-
+    type(para_space_config)::psc
+    
 
     real(double),dimension(3,3)::maux1,maux2,mf,mfi, grsig
     REAL(double), dimension(1:3,1:3) ::  Gpoint
@@ -392,9 +392,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     fNose = fnew
 
     ! Transform back to absolute coordinates
-    boxndm%at(:,:) =  h(:,:)
-    call recips (boxndm%at(1:3,1), boxndm%at(1:3,2), boxndm%at(1:3,3), boxndm%bg(1:3,1), boxndm%bg(1:3,2), boxndm%bg(1:3,3))
-    boxndm%volu = calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
+    call updatebox(boxndm,h)
+!!$    call recips (boxndm%at(1:3,1), boxndm%at(1:3,2), boxndm%at(1:3,3), boxndm%bg(1:3,1), boxndm%bg(1:3,2), boxndm%bg(1:3,3))
+!!$    boxndm%volu = calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
 
     atpr%xp(1:3,1:atpr%imm) = MatMul(h(1:3,1:3), sp(1:3,1:atpr%imm) )
     atpr%xpp(1:3,1:atpr%imm) = MatMul(hold(1:3,1:3), sold(1:3,1:atpr%imm) )
@@ -406,6 +406,40 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     KNose = 0.5d0*wNose*fpoint**2
     UNose = gNose*bk*Text*log(fNose)
     ENose = KNose + UNose
+#ifdef PARA
+    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
+!    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+#endif
+    CALL ScaleBox(atpr,celndm,boxndm,psc)
+    
+!!$#ifdef PARA
+!!$       if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+!!$          atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
+!!$          call periodbox (boxndm,atpr)
+!!$          call caltabtC(celndm,atpr,lperiod,boxndm)
+!!$       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+!!$          call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
+!!$          sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+!!$          if (iewald>0) call calpo_ew(boxndm,atpr%imm)
+!!$
+!!$          ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
+!!$    else
+!!$           CALL ScaleBox(atpr,celndm,boxndm)
+!!$
+!!$    end if
+!!$#else
+!!$
+!!$       CALL ScaleBox(atpr,celndm,boxndm)
+!!$
+!!$#endif
+
+#ifdef PARA
+!    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
+    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+#endif
+
+       
+       timel=timel+fNose*tstep
 
 
   end subroutine prNose
