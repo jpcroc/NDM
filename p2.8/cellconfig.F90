@@ -28,7 +28,7 @@ module cellconfig
    contains
      procedure, pass::init=>init_cel
      procedure, pass::dealloc=>dealloc_cel
-     procedure, pass::copy_cell
+     procedure, pass::copy
      procedure, pass::print=>cellprint
      procedure, pass::send2proc=>cells2p
      procedure, pass::send2all=>cells2a
@@ -302,23 +302,30 @@ contains
   end subroutine neigcelN
 
 
-  subroutine caltabtC (cell,atcf,lperiod,boxcf)
+  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
     type(box_config),intent(inout)::boxcf
     logical,intent(in)::lperiod
-
+    logical,intent(in),optional::lextr
+    logical::lextrait=.false.
 
     integer :: i, ic, icell, kx, ky, kz, koo
     real(double) :: aux, auy, auz
     real(double), dimension(:,:), allocatable :: xpnp !
     integer(long), save:: icaltabt=0
+    integer::iml
     !
     ! --------- Initialisation --------------
     !
-
+    if (present(lextr))lextrait=lextr
+    if (lextrait) then
+       iml=atcf%imm
+    else
+       iml=atcf%im
+    end if
     icaltabt=icaltabt+1
 !       write(6,*)'caltabt',icaltabt
 
@@ -328,15 +335,15 @@ contains
     !  -------- cas sans cellule  -----------
 
     if (cell%noxyz==1) then
-       cell%nato(1) = atcf%im
-       do i = 1, atcf%im
+       cell%nato(1) = iml
+       do i = 1, iml
           atcf%ielat(i) = 1
           cell%atincel(i,1) = i
        end do
     else
 
-       ALLOCATE(xpnp(3,atcf%imm))
-       call notperiod(atcf%im,atcf%xp,xpnp,boxcf%at,boxcf%bg,lperiod)       
+       ALLOCATE(xpnp(3,iml))
+       call notperiod(iml,atcf%xp,xpnp,boxcf%at,boxcf%bg,lperiod)       
 
        !  -------- Initialisations  -----------
 
@@ -345,9 +352,9 @@ contains
        ! - - - - - - - - - - - - - - - - - - - - - -
 
        !debug       write (*,*) 'sub caltabt 1',it,xp(1,1)
-       call cryst_to_cart (atcf%im, xpnp, boxcf%bg, -1) ! cart vers cryst
-       if (any(xpnp(:,1:atcf%im).gt.1).or.any(xpnp(:,1:atcf%im).lt.0)) then
-          do i=1,atcf%im
+       call cryst_to_cart (iml, xpnp, boxcf%bg, -1) ! cart vers cryst
+       if (any(xpnp(:,1:iml).gt.1).or.any(xpnp(:,1:iml).lt.0)) then
+          do i=1,iml
              write(6,*) i,xpnp(:,i)
           end do
           write(6,*)'caltabtc xpnp <0 ou >1 stop'
@@ -358,7 +365,7 @@ contains
        !     if (it.gt.1000) write(6,*)'CALTABT',it
        !       write(6,*)'caltabt icaltabt im',icaltabt,atcf%im
 
-       do i = 1, atcf%im
+       do i = 1, iml
           !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
           aux = xpnp(1,i)*cell%nox
           auy = xpnp(2,i)*cell%noy
@@ -520,10 +527,13 @@ contains
 
   ! copie d'une config entière vers config de base
 
-  subroutine copy_cell (cellsource,cellcible,box)
+  subroutine copy (cellsource,cellcible,box,lzeroinit)
     class(cell_config)::cellsource
     class(cell_config)::cellcible
     type(box_config)::box
+    logical,optional::lzeroinit
+    logical::lzi=.false.
+    if (present(lzeroinit))lzi=lzeroinit
 
     call cellcible%dealloc
     cellcible%ltpcel=cellsource%ltpcel
@@ -536,16 +546,21 @@ contains
     cellcible%noxyz=cellsource%noxyz
     cellcible%natperc=cellsource%natperc
     cellcible%icaltabt=cellsource%icaltabt
-    cellcible%nato(:)=cellsource%nato(:)
+    if (lzi) then
+       cellcible%nato(:)=0
+       cellcible%atincel(:,:)=0
+    else
+       cellcible%nato(:)=cellsource%nato(:)
+       cellcible%atincel(:,:)=cellsource%atincel(:,:)
+       if ((cellcible%ltpcel).and.(cellsource%ltpcel))then
+          cellcible%sigc=cellsource%sigc
+          cellcible%tempc=cellsource%tempc
+       end if
+    end if
     cellcible%ncel(:,:)=cellsource%ncel(:,:)
-    cellcible%atincel(:,:)=cellsource%atincel(:,:)
     cellcible%deltadist(:,:,:)=cellsource%deltadist(:,:,:)
     cellcible%celsize=cellsource%celsize
-    if ((cellcible%ltpcel).and.(cellsource%ltpcel))then
-       cellcible%sigc=cellsource%sigc
-       cellcible%tempc=cellsource%tempc
-    end if
-  end subroutine copy_cell
+  end subroutine copy
 
 
   subroutine cellprint(cellv,unit)

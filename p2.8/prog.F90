@@ -98,6 +98,7 @@ contains
     im=0 ; nvois=0
     atdml%imm_glob=imm
     imm_glob=imm
+    atdml%ltabvois=ltabvois
 
 !!$    select type (atdml)
 !!$    type is (atom_config)

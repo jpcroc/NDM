@@ -259,7 +259,7 @@ contains
           end do
 
 
-       end select
+       end select ! fin ds differents potentiels analytiques
        !        end select ip2
        if (lprtpot.EQV..true.) then
           do l=1,npair
@@ -515,10 +515,66 @@ contains
              end do
           end do
        end if
+       select case (ipotrep)
+       case(1)
+          ! Calcul du premier maximum local
 
-       if (ipotrep==2) then
-          call zieg2 (pot, pot_d,csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
-       end if
+          if (rang==0) write(6,*)'calcul du max loc du pot VBEEST'
+          irrep(:npair)=0
+          l=0
+          do i1=1,ntyp
+             do i2=1,ntyp
+                l=ipo(i1,i2)
+                if (lue_paire(l)) then
+                   if(irrep(l)==20) cycle
+                   !           write(6,*)'entre maxVBEEST'
+                   call maxVBEEST(rrep,csive,l,auxe,alpha,ngrid,ntyp, &
+                        npair,pau,dip,ro,zz,convrep)
+                   !           write(6,*)'sortie max VBEEST'
+                   irrep(l)=convrep
+                   r0rep(l)=rrep
+                   call potVBEEST(potV0,rrep,l,auxe,alpha,ngrid, &
+                        ntyp,npair,pau,dip,ro,zz)
+                   V0rep(l)=potV0
+                endif
+             enddo
+          enddo
+
+          ! Terme repulsif a courte distance
+          call potrep(csive,r0rep,V0rep,ngrid,ntyp,npair)
+
+
+
+          !***********************************************************************************
+
+
+       case(2)  !(lpotrep)
+
+          ! ********************************Cas : Pot  de Ziegler ****************************lprtpo
+
+          ! **** terme de Ziegler *******
+
+          call zieg2 (pot,pot_d, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
+
+       case(3)  !(lpotrep)
+
+          ! ********************************Cas : Pot  de Ziegler ****************************lprtpo
+
+          ! **** terme de Ziegler *******
+
+          call zieg3 (pot, csive,ngrid, ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
+
+       case default    !(lpotrep)
+       end select
+
+       do l=1,npair
+          potpart(:ngrid) = pot(1,l,1:ngrid)
+          call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
+          pot(2,l,1:ngrid) = bsppart(:ngrid)
+          pot(3,l,1:ngrid) = csppart(:ngrid)
+          pot(4,l,1:ngrid) = dsppart(:ngrid)
+!          write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
+       end do
 
 
     case(6)! SELECT LIGNE 90
@@ -555,6 +611,14 @@ contains
        !           write (l,*) k,r,pot(1,l,k) 
        !        end do
        !     end do
+       do l=1,npair
+          potpart(:ngrid) = pot(1,l,1:ngrid)
+          call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
+          pot(2,l,1:ngrid) = bsppart(:ngrid)
+          pot(3,l,1:ngrid) = csppart(:ngrid)
+          pot(4,l,1:ngrid) = dsppart(:ngrid)
+          !          write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
+       end do
 
 
     case default

@@ -325,19 +325,8 @@ contains
           if (lparapath) then 
              call config_atom_n(ipch)%send2all(ipch-1,parapath%mpi_master)
              call config_atom_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
-!!$#ifdef PARA
-!!$ call MPI_FINALIZE(ierr)
-!!$#endif
-!!$ stop
-
              call config_cells_n(ipch)%send2all(ipch-1,parapath%mpi_master)
              call config_cells_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
-!!$          do ipp=1,nparapath
-!!$             call  config_atom_n(ipch)%copy_config(config_atom_n(ipp),.false.)
-!!$             call  config_atom_nplus1(ipch)%copy_config(config_atom_nplus1(ipp),.false.)
-!!$             call config_cells_n(ipch)%copy_cell(config_cells_n(ipp))
-!!$             call config_cells_nplus1(ipch)%copy_cell(config_cells_n(ipp))
-!!$          end do
           end if
 
 
@@ -2058,12 +2047,12 @@ subroutine initNP1(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_
      call init_vitesse(atconf_nplus1,param = 0)
      !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
      call cells_nplus1%init(boxmcgc,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
-     call cells_n%copy_cell(cells_nplus1,boxmcgc)
+     call cells_n%copy(cells_nplus1,boxmcgc)
   else
      call atconf_nplus1%init(atconf_n%im+1,atconf_n%imm,atconf_n%ltabvois,&
                     &im_glob=atconf_n%im+1,imm_glob=imm_glob)
      call cells_nplus1%init(boxmcgc,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
-     call cells_n%copy_cell(cells_nplus1,boxmcgc)
+     call cells_n%copy(cells_nplus1,boxmcgc)
   end if
 
 
@@ -2207,7 +2196,7 @@ subroutine initN(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_n
     end if
 
     call cells_n%init(boxmcgc,cells_nplus1%nox,cells_nplus1%noy,cells_nplus1%noz, cells_nplus1%natperc)
-    call cells_nplus1%copy_cell(cells_n,boxmcgc)
+    call cells_nplus1%copy(cells_n,boxmcgc)
 
 
 #ifdef PARA
@@ -2338,13 +2327,13 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
     if (iloc==1) call initloc(atconf_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod&
          &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig,potist_n,atconf_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-         &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
+         &lperiod,lupdate=lchange,psc=pscgc,lcalcvois=lcalcvois)
 
  else !procs N+1
     if (iloc==1)call initloc(atconf_nplus1,cells_nplus1,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,&
          &lperiod,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-         &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
+         &lperiod,lupdate=lchange,psc=pscgc,lcalcvois=lcalcvois)
 
  end if
 
@@ -2367,12 +2356,12 @@ subroutine calfoMCGC(iloc,lchange,ldistrib)
  if (iloc==1) call initloc(atconf_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod&
       &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
  call pointer_caltabt_calfo(sig,potist_n,atconf_n,cells_n,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-      &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
+      &lperiod,lupdate=lchange,psc=pscgc,lcalcvois=lcalcvois)
 
  if (iloc==1) call initloc(atconf_nplus1,cells_nplus1,atmcgcloc,cellmcgcloc,boxmcgc,paramcgc,rumax,lperiod&
       &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
  call pointer_caltabt_calfo(sig,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc,atmcgcloc,cellmcgcloc,paramcgc,&
-      &lperiod,lchg=lchange,psc=pscgc,lcalcvois=lcalcvois)
+      &lperiod,lupdate=lchange,psc=pscgc,lcalcvois=lcalcvois)
 
 #endif
 

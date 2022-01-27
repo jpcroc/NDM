@@ -6,6 +6,7 @@ module analyseT_mod
   USE calcangle_mod,only: calcangle,adf0,initadf,adfT
   USE bondval_mod,only: bondval
   USE rasmolT_mod,only: rasmolT
+  use calcextr_mod,only:calfoextr
   USE sauvegardeT_mod,only:sauvegardeT
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax
@@ -35,7 +36,11 @@ contains
 
     use elec_cell, only : Eelec,Teavg,Tecmax,ietm,eleccellmol
     use eloss, only : ibrake, elosselectot1, elosselectot
+    use Tpara,only:para_space_config    
     implicit none
+
+
+    type(para_space_config)::psc    
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -142,7 +147,17 @@ contains
              call caltabtC(celtyp,attyp,lperiod,boxndm)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              call celtyp%dealloc ; call attyp%dealloc
+             ! ceci est un test du calcul des forces sur un sous-ensemble des atomes
+             !ne fonctionne que pour les pots de paires
+!!$             if (iti==2)then
+!!$                do i=1,atdml%im
+!!$                   if (atdml%ityp(i)==2) write(344,*)i,atdml%xp(:,i)
+!!$                   if (atdml%ityp(i)==2) write(344,*)i,atdml%fp(:,i)
+!!$                end do
+!!$                call calfoextr(atdml,celndm,boxndm,psc)
+!!$             end if
           end do
+
           ! MPI
           !remarque 1erg = 6.24d11 eV
           if (mod(iteration,itetemp2)==0) then

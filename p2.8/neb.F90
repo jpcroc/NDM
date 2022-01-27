@@ -185,7 +185,7 @@ contains
           end if
 
           call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
-               &lperiod,lchg=lchange,psc=pscneb)
+               &lperiod,lupdate=lchange,psc=pscneb)
           if (lmaster) then
 
              call neb_controle(ii,atneb(ii)%xp,atneb(ii)%fp,atneb(ii)%im)
@@ -248,7 +248,7 @@ contains
                    lcalcvois=.false.
                 end if
                 call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,&
-                     &atnebloc,cellnebloc,paraneb,lperiod,lchg=.true.,psc=pscneb,lcalcvois=lcalcvois)
+                     &atnebloc,cellnebloc,paraneb,lperiod,lupdate=.true.,psc=pscneb,lcalcvois=lcalcvois)
 
 #ifdef PARA
 
@@ -351,7 +351,7 @@ contains
                    end if
                    call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),&
                         &boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
-                        &lchg=.true.,psc=pscneb,lcalcvois=lcalcvois)
+                        &lupdate=.true.,psc=pscneb,lcalcvois=lcalcvois)
                    if (lmaster) then
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
                            &atneb(ii)%imm,atneb(ii)%im)

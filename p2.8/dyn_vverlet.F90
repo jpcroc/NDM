@@ -11,7 +11,7 @@ module dyn_vverlet_mod
   use var_pot,only : cm
   USE eloss, only:ibrake, calceloss
   use Tpara,only:para_space_config
-  USE parautils,only:driver_caltabt_DM
+  USE parautils,only:driver_caltabt_para
   implicit none
 contains
   ! *************************************************************
@@ -42,6 +42,7 @@ contains
 
 
     logical::test_sigma=.false.
+    logical::lcalcvois
 
     timel = timel+tstep
     
@@ -88,8 +89,13 @@ contains
        atdml%xpp(1:3,i)=atdml%xp(1:3,i)
        atdml%xp(1:3,i) = atdml%xp(1:3,i) + tstep*atdml%vp(1:3,i)
     END DO
+    if (atdml%ltabvois.and.mod(iteration,itetabvois)==0) then
+       lcalcvois=.true.
+    else
+       lcalcvois=.false.
+    end if
 
-    call  driver_caltabt_DM(atdml,celndm,boxndm,psc,lperiod)
+    call  driver_caltabt_para(atdml,celndm,boxndm,psc,lperiod,lcalcvois)
 
   ! a été déplacé après calfo . Etait situé juste avant calfo :
     if (l2T) then
@@ -99,7 +105,6 @@ contains
     jq=0.0
     if (itesigma>0) test_sigma=(mod(iteration,itesigma)==0)
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
-
     
     if (l2t)then
        if (i2t==1)  call calceloss(celndm,atdml)

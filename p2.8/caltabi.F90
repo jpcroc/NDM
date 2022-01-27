@@ -12,7 +12,7 @@ contains
 
 
   ! *****************************************************************
-  subroutine caltabi(atvois,celvois,boxndm)
+  subroutine caltabi(atvois,celvois,boxndm,lextr)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -32,6 +32,8 @@ contains
     class(atom_config), intent(inout)::atvois
     type(cell_config), intent(in)::celvois
     type(box_config),intent(in)::boxndm
+    logical,optional::lextr
+    logical::lextrait=.false.
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -51,7 +53,9 @@ contains
          i1,i2,itemp
 
     logical::linter
+    integer::iml !last atom (=%im for standard; =%imm for extrait)
     
+    if (present(lextr))lextrait=lextr
     at=boxndm%at ; bg=boxndm%bg
     !
     !-----------------------------------------------
@@ -85,7 +89,11 @@ contains
     !*************construction par double boucle ****************
     if(lconstrtot) then  !construction par double boucle
 
-
+       if (lextrait) then
+          iml=atvois%imm
+       else
+          iml=atvois%im
+       end if
        do i = 1, atvois%im
           iwo=iw
           iti=atvois%ityp(i)
@@ -95,8 +103,8 @@ contains
           else
              ip=1
           end if
-
-          do j = ip, atvois%im
+          
+          do j = ip, iml
              if(i.eq.j) cycle
              itj=atvois%ityp(j)
              ll=ipo(iti,itj)

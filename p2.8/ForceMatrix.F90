@@ -27,7 +27,7 @@ module ForceMatrix_mod
 #endif  
   use config2data_mod,only:config2data
   USE constrconf_mod,only:read_cin
-  USE parautils,only:driver_caltabt_DM
+  USE parautils,only:driver_caltabt_para
 
   
   implicit none
@@ -86,11 +86,11 @@ contains
    
     call initloc(atfm,celfm,atfmloc,celfmloc,boxfm,paraFM,rumax,lperiod,ldistrib=.false.,psc=pscfm) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig,potist,atfm,celfm,boxfm,atfmloc,celfmloc,parafm,&
-         &lperiod,lchg=.false.,psc=pscfm,lcalcvois=.false.)
+         &lperiod,lupdate=.false.,psc=pscfm,lcalcvois=.false.)
     if (lmaster) then 
        Fpzero(1:3,1:im)=atfm%fp(1:3,1:im)
     end if
-    iteration=1 !(empeche le recalcul de la table des voisins dans driver_caltabt_DM)
+    iteration=1 !(empeche le recalcul de la table des voisins dans driver_caltabt_para)
     do idecal=-ndecal,ndecal
        if (idecal==0) cycle ! pas de calcul pour décalage=0
        write(6,*)'decal rang ideb ifin',idecal,rang,ideb,ifin
@@ -98,9 +98,9 @@ contains
        do i=ideb,ifin
           do ic=1,3
              atfm%xp(ic,i)= atfm%xp(ic,i)+idecal*decal
-             call driver_caltabt_DM(atfm,celfm,boxfm,pscfm,lperiod)
+             call driver_caltabt_para(atfm,celfm,boxfm,pscfm,lperiod)
              call pointer_caltabt_calfo(sig,potist,atfm,celfm,boxfm,atfmloc,celfmloc,parafm,&
-                  &lperiod,lchg=.true.,psc=pscfm,lcalcvois=.false.)
+                  &lperiod,lupdate=.true.,psc=pscfm,lcalcvois=.false.)
              if (lmaster)then
                 Fpmat(idecal,ic,i,1:3,1:im)=atfm%fp(1:3,1:im)
              end if

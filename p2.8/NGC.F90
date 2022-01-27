@@ -97,7 +97,7 @@ contains
     call set_pointers_gc ! initilisations des pointers pour tolstoi et calfo
 #ifdef PARA
     if (gcpara%lmaster.neqv..true.) then
-       call tolstoi (WORKER_TAG,gcpara,'xft') 
+       call tolstoi (WORKER_TAG,gcpara) 
     else
 #endif       
 
@@ -148,7 +148,7 @@ contains
        end if
 
 #ifdef PARA
-       call tolstoi (STOP_TAG,gcpara,'xft') ! make servants return
+       call tolstoi (STOP_TAG,gcpara) ! make servants return
     end if
 #endif
     

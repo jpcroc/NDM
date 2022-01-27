@@ -85,7 +85,7 @@ contains
        lcalcvois=.false.
     end if
     call pointer_caltabt_calfo(sig,potist,atcgcomp,cellcgcomp,boxcg,atcgloc,cellcgloc,gcpara,lperiod,&
-         &lchg,psc,'xft',lcalcvois) 
+         &lchg,psc,lcalcvois) 
 
     if (iteration==1) then
        if (lEev.EQV..true.) then 

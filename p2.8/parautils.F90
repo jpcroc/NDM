@@ -67,7 +67,7 @@
           call atcomp%send2all(0,div%mpi_image)
        endif
        if (lspaceNDM.eqv..true.) then
-          call cellcomp%copy_cell(celloc,box)
+          call cellcomp%copy(celloc,box)
           call decoupage(div%mpi_image%nproc,0,celloc,atloc,lverbose=.false.,psc=psc)
           call repartition(atcomp,atloc,box,celloc) ! mettre les éléments de la répartition dans un type
           call setcellconf(celloc,atloc,box,rum,lverbose=.false.)
@@ -82,17 +82,35 @@
 
     call caltabtC(celloc,atloc,lperiod,box)
     if ((lcalcv).and.(atloc%ltabvois)) call caltabi(atloc,celloc,box)
+#ifdef PARA
+    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
+       call maj_atomes_frt_ftm(atloc,celloc,box,psc)
+    end if
+#endif
 
   end subroutine initloc
 
 !******************************************
   subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,&
-       &lperiod,lchg,psc,caracT,lcalcvois)
+       &lperiod,lupdate,psc,lcalcvois)
+    ! driver routine for caltabt calfo, period, caltabi, maj_atomes_frt_ftm
+    ! lupdate= true ==> positions have changed update is needed:
+    !   step1 :if atcomp is a complete set on master node update includes sending back to slaves (either all the configuration or only the (possibly ex-)local atoms)
+    !    atloc, celloc are then the atoms and cells for each proc, either distributed or shared
+    !   step2 : updates of atloc list of updates : PBC (period), cells (caltabtc), neighbours(if lcalcvois=true),
+    !    passing of atoms from cpu to neihbours (maj_atomes_frt_ftm)
+    !lupdate=false : no need to update atloc. That can occur when :
+    !   -atloc has just been initiated (by initloc (e.g. neb.F90, montecarlo)
+    !   -has not changed since last exit from this routine (strange but possible, no exemple yet at time of writing)
+    !   -the change is dealt with outside of this routine : regular MD calls to driver_caltabt_para in dmloop, dyn_vverlet
+    ! then
+    !  call to calfo
+    !  sending of the forces to the master if the atomic configurations are gathered on the master
+    
+
 #ifdef PARA
     use mpi
 #endif
-    
-
     type(para_space_config)::psc    
     real(double)::sig(3,3),potist
     class(atom_config),target::atcomp
@@ -102,63 +120,47 @@
     class(atom_config),pointer::atloc
     type(cell_config),pointer::celloc
     logical::lperiod
-    logical,optional::lchg
-    character(len=*),optional,intent(in)::caracT
+    logical::lupdate
+    class(atom_config),pointer::atcalc
+    type(cell_config),pointer::cellcalc
+!    character(len=*),optional,intent(in)::caracT
     logical,optional::lcalcvois
     logical::lcalcv
-    character(len=26)::caracm2l,caracvm
+!    character(len=26)::caracm2l,caracvm
     integer::ierr,i,ierror
-    logical::lchange=.true.
     real(double)::atl(3,3)
     integer::iun
     integer,save::ncall=0
     lcalcv=.false.
     ncall=ncall+1
     if (present(lcalcvois))lcalcv=lcalcvois
-    if (.not.present(caracT)) then
-       caracm2l='xfniewdlpvrugas'
-       caracvm=caracm2l
-    else
-       caracm2l=caracT//'npft'
-       caracvm=caracT//'npxt'       
-    end if
 
-    if(present(lchg))lchange=lchg
-    if (lchange) then
 #ifdef PARA
        if (div%mpi_image%nproc.gt.1)then
-          
           if (lspaceNDM.eqv..true.) then
-             call atcomp%master2loc(atloc,div)
+             if (lupdate) then
+                call atcomp%master2loc(atloc,div)
+             end if
+             atcalc=>atloc
+             cellcalc=>celloc
           else
-             call atcomp%send2all(0,div%mpi_image)
-             atloc=>atcomp
-             celloc=>cellcomp
+             if (lupdate) then
+                call atcomp%send2all(0,div%mpi_image)
+             end if
+             atcalc=>atcomp
+             cellcalc=>cellcomp
           end if
        else
-          atloc=>atcomp
-          celloc=>cellcomp                 
+          atcalc=>atcomp
+          cellcalc=>cellcomp                 
        end if
 #else
-       atloc=>atcomp
-       celloc=>cellcomp
+       atcalc=>atcomp
+       cellcalc=>cellcomp
 #endif
-       call periodbox (box,atloc)
-       call caltabtC(celloc,atloc,lperiod,box)
-       if ((atloc%ltabvois).and.(lcalcv)) then
-          call caltabi(atloc,celloc,box)
-       end if
-    end if
-
-#ifdef PARA
-    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
-       call maj_atomes_frt_ftm(atloc,celloc,box,psc)
-    end if
-
-#endif
-
-
-    CALL CalFo(sig,potist,atloc,celloc,box,t_sigma=.true.,psc=psc)
+       if (lupdate)   call driver_caltabt_para(atcalc,cellcalc,box,psc,lperiod,lcalcv)
+       
+    CALL CalFo(sig,potist,atcalc,cellcalc,box,t_sigma=.true.,psc=psc)
 #ifdef PARA
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atloc%vers_master(atcomp,div)
@@ -244,10 +246,10 @@
   
   
 
-  subroutine tolstoi (tag,div,carac)
+  subroutine tolstoi (tag,div)
     !https://www.youtube.com/watch?v=IsvfofcIE1Q
 
-    character,intent(in)::carac
+!    character,intent(in)::carac
     integer,intent(in)::tag
     type(para_config),intent(in)::div
     integer::newtag
@@ -263,7 +265,7 @@
           if (div%lmaster) then
              return !master is back to pointer_caltabt_calfo_driver
           else
-             call depeche_mode (div,carac)! Servants enter pointer_caltabt_calfo_driver ! 
+             call depeche_mode (div)! Servants enter pointer_caltabt_calfo_driver ! 
              cycle ! upon return cycle to wait next call
           end if
        end select
@@ -273,11 +275,11 @@
        
   end subroutine tolstoi
 
-  subroutine depeche_mode(div,carac,lchgboxT)
+  subroutine depeche_mode(div,lchgboxT)
 !    use mpi
     use gen_com_m,only:rang
     type(para_config)::div
-    character (len=*)::carac
+!    character (len=*)::carac
     logical, optional,intent(in)::lchgboxT
     logical::lchgbox
     real(double)::atl(3,3),ex
@@ -288,7 +290,7 @@
     
     
     if (div%lmaster) then  ! Go in tolstoi get the servants
-       call tolstoi(FORCE_TAG,div,carac)
+       call tolstoi(FORCE_TAG,div)
     end if
     call div%mpi_image%bcast(0,lchgbox)
     !    call div%mpi_image%bcast(0,box_p%at) CA MARCHE PAS AVEC LE POINTEUR !
@@ -301,44 +303,40 @@
     it_p=it_p+1
     if ((atloc_p%ltabvois).and.(mod(it_p,itetabvois)==0)) lcv_p=.true.
     call pointer_caltabt_calfo(sig_p,potist_p,atcomp_p,cellcomp_p,box_p,atloc_p,celloc_p,div_p,lperiod_p&
-         &,lchg_p,psc_p,carac,lcalcvois=lcv_p)
+         &,lchg_p,psc_p,lcalcvois=lcv_p)
 
     return ! master returns to "main", servants return to tolstoi to wait for next call
   end subroutine depeche_mode
     
 
-subroutine driver_caltabt_DM(atcf,celcf,boxcf,psc,lperiod)
+subroutine driver_caltabt_para(atcf,celcf,boxcf,psc,lperiod,lcalcvois)
 
   use Tpara,only:nprocspace
   use gen_com_m,only:iteration,itetabvois,itesigma
     class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(inout),target::celcf
     type(box_config),intent(inout)::boxcf
-    type(para_space_config)::psc
-!    real(double),intent(in)::potistcf,sigcf(3,3)
+    type(para_space_config)::psc!    real(double),intent(in)::potistcf,sigcf(3,3)
     logical,intent(in)::lperiod
-
+    logical,intent(in),optional::lcalcvois
+    logical::lcalcv=.false.
     logical  ::test_sigma
-    
     !conditions periodiques
-
+    if (present(lcalcvois))lcalcv=lcalcvois
     call periodbox (boxcf,atcf)
     ! repartition des atomes dans la nouvelle boite
     call caltabtC(celcf,atcf,lperiod,boxcf)
-    if (atcf%ltabvois.and.mod(iteration,itetabvois)==0) then
+    if (atcf%ltabvois.and.(lcalcv)) then
        call caltabi(atcf,celcf,boxcf)
     end if
-
-
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        call maj_atomes_frt_ftm(atcf,celcf,boxcf,psc)
     end if
 #endif
-
     return
-  end subroutine driver_caltabt_DM
+  end subroutine driver_caltabt_para
     
 end module parautils
 

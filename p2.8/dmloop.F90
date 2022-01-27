@@ -13,7 +13,7 @@ module dmloop_mod
   USE eloss, ONLY : calceloss,ibrake 
   USE elec_cell, ONLY :i2t       
   USE calfoberend_mod,only:calfoberend
-  USE parautils,only:driver_caltabt_DM
+  USE parautils,only:driver_caltabt_para
 
   USE gen_com_m,only: dmtype,iteration,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
        & itetabvois,lperiod,lspaceNDM,itloopmax
@@ -54,6 +54,7 @@ contains
     type(cell_config):: celndm
     type(box_config)::boxndm
     logical:: test_sigma=.false.
+    logical::lcalcvois
 
 
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VERLET STD ***'
@@ -137,8 +138,12 @@ contains
           write (6, *) 'ne sait pas quoi faire stop'
           call arret_ndm
        end select
-
-       call  driver_caltabt_DM(atdml,celndm,boxndm,psc,lperiod)
+       if (atdml%ltabvois.and.mod(iteration,itetabvois)==0) then
+          lcalcvois=.true.
+       else
+          lcalcvois=.false.
+       end if
+       call  driver_caltabt_para(atdml,celndm,boxndm,psc,lperiod,lcalcvois)
        call analyseT (atdml,celndm,boxndm)    
        call controleT(atdml,celndm,boxndm)
 

@@ -45,6 +45,7 @@ module atomconfig
      procedure, pass::print
      procedure, pass::pack
      procedure, pass::fab
+     procedure, pass::sort
      procedure, pass::backto
      procedure, pass::add2conf
      procedure, pass::extend
@@ -817,6 +818,48 @@ contains
     end if
 
   end subroutine fab
+  
+  subroutine sort (atsource,atcible) ! construit atsource à partir de lgul de atcible , ecrase atcible
+    class(atom_config),intent(in)::atsource
+    class(atom_config),intent(out)::atcible
+    integer::i2,imtrf,i,immtrf,i3
+    integer::nvois
+    real(double)::rvois
+    logical::lback=.true.
+    call atcible%dealloc 
+    if (atsource%ltabvois)then
+       nvois=atsource%nvois; rvois=atsource%rvois
+    else
+       nvois=0;rvois=0
+    end if
+    immtrf=atsource%im
+    imtrf=COUNT(atsource%lgul(1:atsource%im))
+    !    call atsource%Eegal(atcible)
+    write(6,*)'SORT',imtrf,immtrf
+    call atcible%init(imtrf,immtrf,atsource%ltabvois,nvois,rvois)
+    call atcible%zero
+    i2=0;i3=atcible%im
+    do i=1,atsource%im
+       if(atsource%lgul(i)) then
+          i2=i2+1
+          call atsource%copy_atom(i,atcible,i2,lextend=.false.)
+          if (lback) atcible%num_at_glob(i2)=i
+       else
+          i3=i3+1
+          call atsource%copy_atom(i,atcible,i3,lextend=.false.)
+          if (lback) atcible%num_at_glob(i3)=i
+       end if
+    end do
+    if (i2.ne.imtrf) then
+       write(6,*)'SORT WTF2 ?'
+       call arret_ndm
+    end if
+    if (i3.ne.immtrf) then
+       write(6,*)'SORT WTF3 ?'
+       call arret_ndm
+    end if
+
+  end subroutine sort
 
   subroutine backto(atfab,atback)
     class(atom_config),intent(in)::atfab

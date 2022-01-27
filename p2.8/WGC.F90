@@ -422,7 +422,7 @@ contains
     end select
 
     call periodbox (boxcg,atcgcomp)
-    call depeche_mode (gcpara,'xft',lchgbox)
+    call depeche_mode (gcpara,lchgbox)
     V=potist
     NCALLS=NCALLS+1
     select case (ityprel)

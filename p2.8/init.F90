@@ -94,7 +94,6 @@ contains
     else
        lrepart=.true.
     end if
-
     call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
 
     call caltabtC(celndm,atdml,lperiod,boxndm)
