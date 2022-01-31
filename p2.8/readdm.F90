@@ -38,7 +38,8 @@ contains
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
-    USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, lbiais_retrait, fdmc_1, fdmc_2
+    USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
+         &lbiais_retrait, fdmc_1, fdmc_2,nbatplus
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
@@ -83,9 +84,10 @@ contains
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,deltaRmax,&
          rcangle,rcrdf,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,&
          neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
-         eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,&
+         eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,ndir,nstep,betaguess,&
+         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
+         ndir,nstep,betaguess,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq
 
 
@@ -332,8 +334,8 @@ contains
     nparapath=1
     pas_lambda_mc = -100 !valeur negative par defaut pour que l'utilisateur la change
     n_path = -100 !valeur negative par defaut pour que l'utilisateur la change
-    distminat=-1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
-
+    distminat=1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
+    nbatplus=1
     ipbc(1:3)=1 ! 1=PBC; 2=wall... dimension 3 =plans bc; ac;ab
 
     ndecal=2 ! nombre de décalage dans le calcul de la matrice de force (dmtype=19)
@@ -344,8 +346,8 @@ contains
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
+    
     read (ludin, nml=input)
-
     rcangle=rcangle*1d-8
     rcrdf=rcrdf*1d-8
     lprahman=lpr
@@ -1387,6 +1389,10 @@ contains
        write(6,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
        call arret_ndm
     end if
+    if((dmtype == 15) .and. (lbiais_retrait).and. (nbatplus.lt.1))then 
+       write(6,*)' methode MCGC avec le biais sur les retraits: pas possible aev nbatplus>1'
+       call arret_ndm
+    end if
 
     if (lcdp) then
        select case(dmtype)
@@ -1396,6 +1402,7 @@ contains
           call arret_ndm
        end select
     end if
+    
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
   end subroutine readdm

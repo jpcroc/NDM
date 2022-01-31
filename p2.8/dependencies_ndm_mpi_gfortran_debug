@@ -20,6 +20,7 @@ ndm :  \
 	calcangle.o \
 	calccoordo.o \
 	calcdigr.o \
+	calcextr.o \
 	calctemp.o \
 	calfo.o \
 	calfo2ccel.o \
@@ -192,8 +193,7 @@ WGC.o :  \
 	parautils.o \
 	rasmolT.o \
 	recips.o \
-	sauvegardeT.o \
-	scalebox.o
+	sauvegardeT.o
 
 adf.o :  \
 	T_kind_param_m.o \
@@ -210,12 +210,14 @@ aluerco.o :
 analyseT.o :  \
 	Mat_util.o \
 	T_kind_param_m.o \
+	Tpara.o \
 	atomconfig.o \
 	bondval.o \
 	boxconfig.o \
 	calcangle.o \
 	calccoordo.o \
 	calcdigr.o \
+	calcextr.o \
 	calctemp.o \
 	cellconfig.o \
 	elec_cell.o \
@@ -328,6 +330,17 @@ calcdigr.o :  \
 	gen_com_m.o \
 	var_pot.o \
 	vect_dist_mod.o
+
+calcextr.o :  \
+	T_kind_param_m.o \
+	Tpara.o \
+	arret_ndm.o \
+	atomconfig.o \
+	boxconfig.o \
+	calfo.o \
+	caltabi.o \
+	cellconfig.o \
+	gen_com_m.o
 
 calctemp.o :  \
 	T_kind_param_m.o \
@@ -442,6 +455,7 @@ calfoew.o :  \
 	cellconfig.o \
 	epme.o \
 	gen_com_m.o \
+	recips.o \
 	var_pot.o
 
 calfow.o :  \
@@ -473,6 +487,7 @@ calpo_ew.o :  \
 	boxconfig.o \
 	gen_com_m.o \
 	moduli.o \
+	recips.o \
 	var_pot.o
 
 calpoeam.o :  \
@@ -507,6 +522,7 @@ cdp.o :  \
 	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
+	caltabi.o \
 	cellconfig.o \
 	constrconf.o \
 	cryst_to_car.o \
@@ -564,7 +580,6 @@ controleT.o :  \
 	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
-	caltabi.o \
 	cellconfig.o \
 	deftimestep.o \
 	endrunT.o \
@@ -613,7 +628,6 @@ dmloop.o :  \
 	boxconfig.o \
 	calfo.o \
 	calfoberend.o \
-	caltabi.o \
 	cellconfig.o \
 	controleT.o \
 	dyn.o \
@@ -641,7 +655,7 @@ dmloop_lpr.o :  \
 	mod_para.o \
 	pr2.o \
 	prNose2.o \
-	recips.o
+	var_pot.o
 
 dmloop_pilot.o :  \
 	T_kind_param_m.o \
@@ -671,7 +685,6 @@ dmloop_vverlet.o :  \
 	eloss.o \
 	endrunT.o \
 	gen_com_m.o \
-	pr2.o \
 	var_pot.o
 
 dyn.o :  \
@@ -688,7 +701,6 @@ dyn_vverlet.o :  \
 	boxconfig.o \
 	calfo.o \
 	calfoberend.o \
-	caltabi.o \
 	cellconfig.o \
 	elec_cell.o \
 	eloss.o \
@@ -1016,14 +1028,12 @@ montecarlo.o :  \
 	boxconfig.o \
 	calctemp.o \
 	calfo.o \
-	caltabi.o \
 	cellconfig.o \
 	config2data.o \
 	constrconf.o \
 	cryst_to_car.o \
 	gen_com_m.o \
 	init_voisinage.o \
-	mod_para.o \
 	paraconfig.o \
 	parautils.o \
 	rasmolT.o \
@@ -1039,7 +1049,6 @@ neb.o :  \
 	atomconfig.o \
 	boxconfig.o \
 	calfo.o \
-	caltabi.o \
 	cellconfig.o \
 	gen_com_m.o \
 	init_voisinage.o \
@@ -1129,7 +1138,6 @@ pr2.o :  \
 	elec_cell.o \
 	eloss.o \
 	gen_com_m.o \
-	mod_para.o \
 	recips.o \
 	scalebox.o \
 	var_pot.o
@@ -1143,6 +1151,7 @@ prNose2.o :  \
 	cellconfig.o \
 	gen_com_m.o \
 	recips.o \
+	scalebox.o \
 	tempinstT.o \
 	var_pot.o
 
@@ -1219,12 +1228,15 @@ sauvegardeT.o :  \
 
 scalebox.o :  \
 	T_kind_param_m.o \
+	Tpara.o \
 	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
+	calpo_ew.o \
 	caltabi.o \
 	cellconfig.o \
 	gen_com_m.o \
+	mod_para.o \
 	recips.o \
 	var_pot.o
 

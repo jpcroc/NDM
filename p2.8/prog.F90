@@ -255,8 +255,6 @@ contains
           case (18) 
              call ml
 #endif
-             !          case (15)
-             !             call montecarlo(atdml,celndm,boxndm)
           case default
              write(6,*)'WTF dmtype',dmtype
           end select
