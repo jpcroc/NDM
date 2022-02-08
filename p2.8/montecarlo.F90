@@ -1032,9 +1032,9 @@ contains
        if (lbigmaster) then
           !tirer des positions aleatoires pour les N+nbatplus eme atome
           call atom_supp(cart_vec_nplus1)
-!          do i=1,nbatplus
-!             write(*,'(A25, 3G25.16E3,A,I4)') 'atome supplementaire', cart_vec_nplus1(:,i), 'image',parapath%image+1
-!          end do
+          !          do i=1,nbatplus
+          !             write(*,'(A25, 3G25.16E3,A,I4)') 'atome supplementaire', cart_vec_nplus1(:,i), 'image',parapath%image+1
+          !          end do
           call boucle_copy_atom(atconf_N,atconf_Nplus1, sens= .false.)   
           !addition de la n+1eme particule
           do i=1,nbatplus
@@ -1096,15 +1096,15 @@ contains
              end do
           end do
           call calcul_proba
-!          do i=1,nbatplus
-!             iplus=atconf_N%im+i
-!             write(*,'(A25, 3G25.16E3, A10, G25.16E3, A10, I4 )') 'coord atome a retirer',  &
-!                  &atconf_Nplus1%xp(:,iplus),'proba', atconf_Nplus1%proba(iplus),' image ',parapath%image+1
+          !          do i=1,nbatplus
+          !             iplus=atconf_N%im+i
+          !             write(*,'(A25, 3G25.16E3, A10, G25.16E3, A10, I4 )') 'coord atome a retirer',  &
+          !                  &atconf_Nplus1%xp(:,iplus),'proba', atconf_Nplus1%proba(iplus),' image ',parapath%image+1
           !on copie les N nouveaux premiers atomes du syst N+1 dans le systeme N
-!          end do
-             call boucle_copy_atom(atconf_N,atconf_Nplus1, sens = .true.)  
+          !          end do
+          call boucle_copy_atom(atconf_N,atconf_Nplus1, sens = .true.)  
 
-          end if
+       end if
 #ifdef PARA
 
        rgcib=1;rgem=0
@@ -1276,14 +1276,14 @@ contains
        !calcul de la somme des expW
        DO i = 1, nparapath
           if ((exp(beta*(dir-the)*(travail(i)-Wp)) .lt. upper) .and. (exp(beta*(dir-the)*(travail(i)-Wp)) .gt. lower)) then
-             sum_expW = sum_expW + biais(i)*exp(beta*(dir-the)*(travail(i)-Wp))
+             sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)-Wp))/biais(i)
           end if
        END DO
 
        !attribution d'une proba pour chaque chemin
        DO i = 1, nparapath
           if ((exp(beta*(dir-the)*(travail(i)-Wp)) .lt. upper) .and. (exp(beta*(dir-the)*(travail(i)-Wp)) .gt. lower)) then
-             proba(i) = biais(i)*exp(beta*(dir-the)*(travail(i)-Wp)) / (1.0 + sum_expW)
+             proba(i) = ( exp(beta*(dir-the)*(travail(i)-Wp))/biais(i) ) / (1.0 + sum_expW)
           else
              proba(i) = 0.0
           end if
@@ -1298,14 +1298,31 @@ contains
        !calcul de la somme des expW
        DO i = 1, nparapath
           if ((exp(beta*(dir-the)*(travail(i))) .lt. upper) .and. (exp(beta*(dir-the)*(travail(i))) .gt. lower)) then
-             sum_expW = sum_expW + biais(i)*exp(beta*(dir-the)*(travail(i)))
+             if (lbias) then 
+                if (dir == 1) then !si bias vrai + retrait alors
+                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
+                else
+                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))
+                end if
+             else
+                sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))
+             end if
           end if
        END DO
 
        !attribution d'une proba pour chaque chemin
        DO i = 1, nparapath
           if ((exp(beta*(dir-the)*(travail(i))) .lt. upper) .and. (exp(beta*(dir-the)*(travail(i))) .gt. lower)) then
-             proba(i) = biais(i)*exp(beta*(dir-the)*(travail(i))) / ( sum_expW)
+             if (lbias) then
+                if (dir == 1) then
+                   proba(i) = ( exp(beta*(dir-the)*(travail(i))) / &
+                        &config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)  ) / ( sum_expW)
+                else
+                   proba(i) = ( exp(beta*(dir-the)*(travail(i))) ) / ( sum_expW)
+                end if
+             else
+                proba(i) = exp(beta*(dir-the)*(travail(i)))/ (sum_expW)
+             end if
           else
              proba(i) = 0.0
           end if
@@ -2077,9 +2094,9 @@ contains
        !cart_vec_nplus1(3,1) =  0.03125 +0.125 !3.367899633987469E-008
        !FAIT DANS atom_supp
        !call cryst_to_cart(1,cart_vec_nplus1,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
-!       do i=1,nbatplus
-!          write(*,'(A20, 3G25.16E3,A,I4)') 'cart_vec_nplus1', cart_vec_nplus1(:,i),' image ', parapath%image+1
-!       end do
+       !       do i=1,nbatplus
+       !          write(*,'(A20, 3G25.16E3,A,I4)') 'cart_vec_nplus1', cart_vec_nplus1(:,i),' image ', parapath%image+1
+       !       end do
        !copie du syst n dans n+1 
        call atconf_nplus1%init(atconf_n%im+nbatplus,atconf_n%imm,atconf_n%ltabvois,&
             &im_glob=atconf_n%im_glob+nbatplus,imm_glob=imm_glob)
