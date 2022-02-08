@@ -47,6 +47,9 @@ class Phase:
 		mubw=self.mu[1]
 		with open(f"{self.name}.{temp}.out", "a") as ph_out:
 			ph_out.write(f"   {var} {invstch} {asd} {muaw}  {mubw} ")
+		if hasattr(self,"dosf") :
+			with open(f"{self.name}.{temp}.out", "a") as ph_out:
+				ph_out.write(f" {self.ne}  {self.nh} ")
 		for defect in self.defect:
 			print("defwrt",defect.name)
 			with open(f"c_{defect.name}.{temp}.out", "a") as def_out:
@@ -129,7 +132,7 @@ class Defect:
 		for q in self.q:
 			iq=self.q.index(q)
 			Et=Et1+self.Er[iq]+q*efermi
-			# # print("CALC",self.name,self.q[iq],Et,Et1,q*efermi,self.Er[iq])
+			# print("CALC",self.name,self.q[iq],Et,Et1,q*efermi,self.Er[iq])
 			# # print("MULT",self.name,iq,self.q[iq],self.mult[iq],self.prefactor[iq])
 			# # print("EXPOS",self.name,q,Et)
 			try:
@@ -355,7 +358,7 @@ def mTS(Ph):
 		nbs=Ph.site[isit].nb
 		for q in defect.q :
 			iq=defect.q.index(q)
-			dmts=nbs*defect.c[iq]*math.log(defect.c[iq]/defect.mult[iq])/BETA
+			dmts=nbs*defect.c[iq]*np.log(defect.c[iq]/defect.mult[iq])/BETA
 			mts=mts+dmts
 			dcs0[isit]=dcs0[isit]+defect.c[iq]
 	for site in Ph.site:
@@ -363,7 +366,7 @@ def mTS(Ph):
 		if hasattr(site,'typ'):
 			CS0[isite]=CS0[isite]-dcs0[isite]
 			# print("CS0 dcs0",isite,CS0[isite],dcs0[isite])
-			dmts=site.nb*CS0[isite]*math.log(CS0[isite])/BETA
+			dmts=site.nb*CS0[isite]*np.log(CS0[isite])/BETA
 			mts=mts+dmts
 		else:
 			CS0[isite]=0.
@@ -373,6 +376,33 @@ def mTS(Ph):
 	
 def charge_totale(efermi,Ph):
 	"Calculate the total charge of material, with the equation \sum_{q, D}q[D_q]."""
+	# q_tot=0
+	# eft=0
+	# for defect in Ph.defect:
+		# defect.set_c(eft,Ph.mu)
+		# isit=defect.site
+		# nbs=Ph.site[isit].nb
+		# print("def",defect.name,defect.site,nbs,defect.q,defect.c)
+		# for ql,cl in zip(defect.q,defect.c):
+			# print("Q C",ql,cl)
+			# q_tot=q_tot+ql * cl*nbs
+	# print("zero",eft,q_tot)
+
+	# q_tot=0
+	# eft=Ph.EBC-Ph.EBV
+	# for defect in Ph.defect:
+		# defect.set_c(efermi,Ph.mu)
+		# isit=defect.site
+		# nbs=Ph.site[isit].nb
+		# print("def",defect.name,defect.site,nbs,defect.q,defect.c)
+		# for ql,cl in zip(defect.q,defect.c):
+			# print("Q C",ql,cl)
+			# q_tot=q_tot+ql * cl*nbs
+	# print("BC",eft,q_tot)
+	# exit()
+
+
+
 	q_tot=0
 	for defect in Ph.defect:
 		defect.set_c(efermi,Ph.mu)
@@ -386,12 +416,12 @@ def charge_totale(efermi,Ph):
 
 	if hasattr(Ph,"dosf"):
 		itemp=Ph.TEMP.index(temp)
-		print("BETA",efermi,BETA,itemp,Ph.Pv[itemp],Ph.Nc[itemp])
+		# print("BETA",efermi,BETA,itemp,Ph.Pv[itemp],Ph.Nc[itemp])
 
 		q_tot=q_tot+Ph.Pv[itemp]*np.exp(BETA*(-efermi))-Ph.Nc[itemp]*np.exp(BETA*(Ph.EBV+efermi-Ph.EBC))
 		Ph.nh=Ph.Pv[itemp]*np.exp(BETA*(-efermi))
 		Ph.ne=Ph.Nc[itemp]*np.exp(BETA*(Ph.EBV+efermi-Ph.EBC))
-		print("ELH",Ph.ne,Ph.nh)
+		# print("ELH",Ph.ne,Ph.nh)
 	# q_tot = sum([ql * cl for defect in Ph.defect for ql,cl in zip(defect.c,defect.q)])
 	# Calculation of electrons and holes concentrations
 	# q_tot += PV * math.exp(-efermi * BETA)
@@ -428,14 +458,15 @@ def	Fmintot_x(xmuB,*args):
 	# print("MUTEST",mu)
 	# x=xt
 	Ph=args[0]
-	
+	# print("xmuB",xmuB)
 	Ph.mu[1]=xmuB[1]
 	x=xmuB[0]
 	ef0=Ph.efermi
 	ef1=float(sp.optimize.fsolve(charge_totale, ef0, (Ph)))
 	fmu2=F_mu2(Ph.mu[0],Ph.mu[1],Ph)
-	sta=abs(stoichT(x,Ph))
+	sta=abs(stoichT(x,Ph))/BETA
 	fmt=fmu2+sta
+	# print("FX ",fmu2,sta,fmt)	
 	# try:
 		# rati=fmu2/sta
 		# # print("FMT",fmt,"FMU2",fmu2,"sta",sta,"ratio",rati)
@@ -483,7 +514,7 @@ def calcmu(Ph) :
 	# exit()
 	# bounds=[Ph.bounds[ispec] for ispec in range(len(Ph.species))]
 	# print(bounds)
-	delta=0.5
+	delta=0.01
 	muam=Ph.mu[0]-delta
 	muaM=Ph.mu[0]+delta
 	mubm=Ph.mu[1]-delta
@@ -557,7 +588,11 @@ def calcx(Ph,simple=False) :
 	mubm=Ph.mu[1]-delta
 	mubM=Ph.mu[1]+delta
 
+	# bounds=[(mubm,mubM)]
+	# bounds=[(-0.1,0.2)]
 	bounds=[(-0.05,0.1),(mubm,mubM)]
+
+
 	print("bounds calcX",bounds)
 	critere, securite = 1, 0
 	while critere > 1E-10 and securite < 20:
@@ -601,15 +636,37 @@ for itemp in range(len(PHT[0].TEMP)):
 		print("nelec",PHT[0].ne)
 		print("nholes",PHT[0].nh)
 
+
+	xmin=-0.0
+	xmax=1.5
+	XLOOP=np.arange(xmin,xmax, +0.01 )
+	for xt in XLOOP :
+		calcmu(PHT[0])
+		if hasattr(PHT[0],"dosf") :
+			print("nelec",PHT[0].ne)
+			print("nholes",PHT[0].nh)
+		muA=PHT[0].mu[0]
+		stch=PHT[0].stoich()
+		invstch1=1/stch
+		PHT[0].write_cdef(xt,temp)
+		Ftot=FreeE(PHT[0])
+		with open(f"muA.{temp}.out", "a") as muout :
+			muout.write(f"   {Ftot} {PHT[0].mu[0]} {PHT[0].mu[1]} {stch} {invstch1} \n")
+
+	exit()	
+	
+	
+	
 	print("mu1",PHT[0].mu[0],PHT[0].mu[1])
 	with open(f"muA.out", "w") as muout :
 		print("open MU")
 	muA0=PHT[0].mu[0]
 	muB0=PHT[0].mu[1]
-	mumin=PHT[0].mu[0]-0.
-	mumax=PHT[0].mu[0]+3.5
+	mumin=PHT[0].mu[0]-1.2
+	mumax=PHT[0].mu[0]+0.
 	
-	MULOOP=np.arange(mumin,mumax, 0.02 )
+	
+	MULOOP=np.arange(mumax,mumin, -0.02 )
 	for muA in MULOOP:
 		with open(f"muA.{temp}.out", "a") as muout :
 			muout.write(f"   {muA} ")
