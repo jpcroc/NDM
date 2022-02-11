@@ -35,7 +35,7 @@ module ForceMatrix_mod
   type(para_config),target::paraFM
   type(para_space_config)::pscFM
   logical::lbigmaster,lmaster,lparaFM
-  logical::lwritefreq
+  logical::lwritefreq,lwfm
   integer::nparaFM !nombre calculs de forces en parallele
   integer::ndecal
   real(double)::decal
@@ -60,7 +60,7 @@ contains
     real(double)::fmi,potist,sig(3,3)
     real(double),allocatable::eigval(:),work(:)
     integer::info,nwork,nskip
-    character*80::fnamfreqout
+    character*80::fnamfreqout,fnamfmout
 
 #ifdef PARA    
     celfmloc=>cellcible
@@ -140,7 +140,14 @@ contains
     end if
     call paraFM%mpi_orig%bcast(0,Fmat)
 
-        if (rang==0) then
+    if (rang==0) then
+
+       if (lwfm) then
+          fnamfmout = fnam(1:lenfnam)//'.thermo.dat'
+          open(unit=122,file= fnamfmout, form='unformatted', status='unknown')
+          write(122)Fmat
+       end if
+          
 #ifdef MKL
 
        nwork=3*im3-1

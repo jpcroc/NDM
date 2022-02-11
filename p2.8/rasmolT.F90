@@ -26,9 +26,9 @@ contains
     !    naux=nb de carac auxiliaires,characaux string de description des carac ,vaux valeurs des auxiliaires
     USE T_kind_param_m, ONLY:  double
 #ifdef PARA
-    USE Tpara,only:COMM_space,nprocspace,myidsp
+    USE Tpara,only:COMM_space,nprocspace,myidsp,nprocs
 #else
-    USE Tpara,only:myidsp
+    USE Tpara,only:myidsp,nprocs
 #endif
 
     implicit none
@@ -37,7 +37,7 @@ contains
     type(box_config),intent(in)::boxmol
     character*3,intent(in), dimension(1:atmol%im),optional  :: rty
     character(len=*), optional ::namefr
-    logical,intent(in)::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
+    logical::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
     integer, optional:: ivisumol
     logical,optional::lappend
 
@@ -66,7 +66,9 @@ contains
     real(double) :: xp1, xp2, xp3,at(3,3),bg(3,3),pat
     character :: extension*9
     integer::iax
-
+    logical::latc
+    latc=latcomp
+    if (nprocs==1) latc=.true.
     if (present(lappend)) then
        lappendF=lappend
     else
@@ -111,19 +113,19 @@ contains
 
 
 #ifdef PARA
-    !    latcompin=latcomp
-    !    if (latcompin) then 
+    !    latcin=latc
+    !    if (latcin) then 
     !       if (rang==0) then
-    !          latcompin=.true.
+    !          latcin=.true.
     !       else
-    !          latcompin=.false. !latcompin intègre lw0 et rang=0
+    !          latcin=.false. !latcin intègre lw0 et rang=0
     !       end if
     !    end if
     rgloc=myidsp
     call atmol%deftype(atcomp)
-    if (latcomp.eqv..false.) then
+    if (latc.eqv..false.) then
        if (laux) then
-          write(6,*)'laux TRUE et latcomp FAUX  stop (FLEMME)'
+          write(6,*)'laux TRUE et latc FAUX  stop (FLEMME)'
           call arret_ndm
        end if
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -138,8 +140,8 @@ contains
           !imm=atcomp%im
           rgloc=myidsp
        else
-          write(6,*)'latcomp=false et (nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) ??? stop'
-          write(6,*)latcomp,nprocspace,lspaceNDM
+          write(6,*)'latc=false et (nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) ??? stop'
+          write(6,*)latc,nprocspace,lspaceNDM
           call arret_ndm
        end if
     else
@@ -269,7 +271,7 @@ contains
        end if
 
        select case (ivisum)
-       case(7)
+       case(7) !xyz
           write (luvisu,*)atcomp%im 
           write (luvisu,'(A)',advance='no')nameo
           if (laux) then
@@ -299,7 +301,7 @@ contains
           write (luvisu,'(3F15.9)')at(1,2),at(2,2),at(3,2)
           write (luvisu,'(3F15.9)')at(1,3),at(2,3),at(3,3)
           write (luvisu,*) 
-       case(5)
+       case(5) !newgin
           write (luvisu,'(A)',advance='no')' 1 1 1 !'
           if (laux) then
              if (present(charaux)) then
@@ -328,10 +330,10 @@ contains
                 write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, atcomp%ityp(i)
              end if
           end do
-       case (1)
+       case (1) !mol
 
           if (present(itapp))then
-             write (luvisu, '(I9,A,I7,A,F12.6)',advance='no') atcomp%im, ' IT =', itapp, ' Time = ', timel
+             write (luvisu, '(I9,A,I12,A,F12.6)',advance='no') atcomp%im, ' IT =', itapp, ' Time = ', timel
           else
              write (luvisu, '(I9,A,I7,A,F12.6)',advance='no') atcomp%im
           end if
@@ -352,7 +354,7 @@ contains
              xp3 = atcomp%xp(3,i)
              !                write (6,*) 't',tyw(i)
              !                write(6,*)'x', xp1,xp2, xp3
-             write (luvisu, '(A,3f10.4)',advance='no') tyw(i),xp1, xp2, xp3
+             write (luvisu, '(A,3G18.4)',advance='no') tyw(i),xp1, xp2, xp3
 #ifdef PARA
              write (luvisu, '(I9)',advance='no')  atcomp%num_at_glob(i)
 #else

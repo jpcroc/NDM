@@ -40,7 +40,7 @@ contains
     use neb_module,only: lvzeroneb
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait, fdmc_1, fdmc_2,nbatplus
-    use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq
+    use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
 #endif
@@ -88,7 +88,7 @@ contains
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,&
-         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq
+         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 
 
     !
@@ -342,6 +342,7 @@ contains
     decal=0.1 ! décalage dans le calcul de la matrice de force (dmtype=19) (Angstroms)
     lparafm=.true.
     nparafm=nprocs
+    lwfm=.false.
     lwritefreq=.true.
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -538,10 +539,10 @@ contains
 
     if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.9)) itmax=1
 
-    if (itmax < 0) then
-       if (rang==0) write (6, *) rang,'wrong itmax < 0 '
-       call arret_ndm
-    endif
+!    if (itmax < 0) then
+!       if (rang==0) write (6, *) rang,'wrong itmax < 0 '
+!       call arret_ndm
+!    endif
 
     if (itedepla>=1 .and. tdepla<0.0) then
        if (rang==0) write (6, *) rang,'wrong tdepla < 0 '
@@ -978,10 +979,10 @@ contains
        if (rang==0)then
           write(6,*)"dmtype=19 works with lapack or MKL"
           write(6,*)"these libraries are NOT linked by default"
-          write(6,*)"link them in Makefile.ndm_your_makefile"
-          write(6,*)"and recompile with make MKL=1 ndm_your_makefile"
+          write(6,*)"the force matrix will be written to binary file"
        end if
-       call arret_ndm
+       lwfm=.true.
+!       call arret_ndm
 #endif
 
        decal=decal*1d-8

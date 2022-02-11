@@ -562,7 +562,7 @@ END FUNCTION matdet
 
     !internal
     real(kind(0.d0)), dimension(3,3) :: transit_cell,inv_mat_ini
-    real(kind(0.d0)), dimension(3) :: A,B,C, Ahat,AxBhat
+    real(kind(0.d0)), dimension(3) :: A,B,C, Ahat,AxBhat,Mtmp(3)
     real(kind(0.d0)) :: volume
     logical :: upper, right
     integer :: i
@@ -588,9 +588,11 @@ END FUNCTION matdet
 
        new_mat(1,1) = norme(A)
        Ahat = A / norme(A)
-       AxBhat = cross_product(A, B) / norme(cross_product(A, B))
+       Mtmp=cross_product(A, B)
+       AxBhat = cross_product(A, B) / norme(Mtmp)
        new_mat(1,2) = dot_product(B, Ahat)
-       new_mat(2,2) = norme(cross_product(Ahat, B))
+       Mtmp=cross_product(Ahat, B)
+       new_mat(2,2) = norme(Mtmp)
        new_mat(1,3) = dot_product(C,Ahat)
        new_mat(2,3) = dot_product(C,cross_product(AxBhat, Ahat))
        new_mat(3,3) = abs(dot_product(C, AxBhat))

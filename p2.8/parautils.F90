@@ -55,7 +55,7 @@
     if (present(lcalcvois)) then
        lcalcv=lcalcvois
     else
-       lcalcv=atloc%ltabvois
+       lcalcv=atcomp%ltabvois
     end if
 
     

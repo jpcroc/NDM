@@ -1581,7 +1581,7 @@ contains
 
     if (idloc==idmaster) then
        allocate(mask(atcfcomp%imm))
-       do icomp=2,imtot
+       do icomp=2,atcfcomp%im
           if (atcfcomp%num_at_glob(icomp).lt.atcfcomp%num_at_glob(icomp-1)) then
              write(6,*)'atomes mal rangés M2L ?', icomp,atcfcomp%num_at_glob(icomp),atcfcomp%num_at_glob(icomp-1)
           end if

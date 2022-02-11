@@ -22,13 +22,17 @@ module prog_mod
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax&
-       &,lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp
+       &,lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,posa,forca,firsttime_lammps
   
   use read_val,only:imm,ltabvois,rvois
   use NGC_mod,only:ngc
 #if defined ML || defined PARAML    
   USE ml_main_mod,only: ml_main
 #endif
+#ifdef LAMMPS_VERSION
+  use lammps_util_mod,only:init_lammps
+#endif
+
   use cdp_mod,only:creadp
 !  use one_calc_mod,only:one_calc
   use d_at_at_mod
@@ -163,7 +167,7 @@ contains
                 call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
              case(32,33,34)
                 call NGC(atdml,celndm,boxndm,psc0)
-                call endrunT(atdml,celndm,boxndm,.false.)
+                call endrunT(atdml,celndm,boxndm,latcomp)
              end select
           end if
        class is (atom_config_d)
@@ -270,6 +274,16 @@ contains
        end if
        call atdml%init(im,imm,ltabvois,nvois,rvois=rv)
        call init_simple(atdml,celndm,boxndm,psc=pscFM)
+#ifdef LAMMPS_VERSION
+
+    if ((ipotentiel==-10).or.(ipotentiel==-11))then
+       firsttime_lammps=.true.
+       allocate (posa(3*atdml%im),  forca(3*atdml%im))
+       call init_lammps()
+
+    end if
+#endif
+
        call calcFM(atdml,celndm,boxndm)
        call arret_ndm
     case(9)

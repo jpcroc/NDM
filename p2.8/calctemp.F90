@@ -8,8 +8,9 @@ module calctemp_mod
   USE atomconfig,only: atom_config_d
   USE cellconfig,only : cell_config
 #ifdef PARA
-  USE Tpara,only:myidsp,nprocspace,comm_space
+  USE Tpara,only:myidsp,nprocspace,comm_space,nprocs
 #else
+    USE Tpara,only:nprocs
 #endif
 
   ! *************************************************************
@@ -38,6 +39,7 @@ contains
     !  real(double), dimension (:),allocatable ::tempc,tempcm
 
     if (present(latcomp)) latc=latcomp
+    if (nprocs==1) latc=.true.
     nat=0
     if (latc) then
        if(cellcf%icaltabt.ne.atcf%icaltabt) then

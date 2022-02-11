@@ -263,6 +263,10 @@ contains
 
        end select
        if (lvm)then
+          select case(ityprel)
+          case(2)
+             call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
+          end select
           if (NCALLS.ge.nextsauv) then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout'
              call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp=.true.)
@@ -272,6 +276,10 @@ contains
              call rasmolT(atcgcomp,boxcg,iteration,latcomp=.true.)
              nextmol=NCALLS+iterasmol
           end if
+          select case(ityprel)
+          case(2)
+             call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1) 
+          end select
        end if
     else
        select case(ityprel)
@@ -352,6 +360,7 @@ contains
           atcgcomp=atcgmin
        end if
     case(2)
+!       call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%bg, -1) 
        if (lover) then
           ip=0
           do i1=1,3
@@ -417,7 +426,6 @@ contains
        call updatebox(boxcg,boxcg%at)
 
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
-
        lchgbox=.true.
     end select
 
@@ -453,7 +461,6 @@ contains
           end do
        end do
     end select
-
     call test_conv(N,F,lover,V,R,lvm)    
 
     !       do i=1,N

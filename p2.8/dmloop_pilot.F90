@@ -3,7 +3,7 @@ module dmloop_pilot_mod
   USE atomconfig,only : atom_config_d, atom_config_e
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
-  USE gen_com_m, ONLY: dmtype,lcdp,rang
+  USE gen_com_m, ONLY: dmtype,lcdp,rang,latcomp
 
   use Tpara,only:para_space_config
   use endrunT_mod,only:endrunT
@@ -46,7 +46,7 @@ contains
        return
     else
        if (rang==0) write (6, *) '*******Derniere iteration **** '
-       call endrunT(atdml,celndm,boxndm,latcomp=.false.)
+       call endrunT(atdml,celndm,boxndm,latcomp)
        write (6, *) 'predeal '
        !       call DeallocateAll
        call arret_ndm

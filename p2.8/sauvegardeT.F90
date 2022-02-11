@@ -59,12 +59,12 @@ contains
        call arret_ndm
     end if
 
-
+    lucout = 87
 #ifdef PARA
     if (.not.latcomp) then 
        if (myidsp==0) then
 
-          lucout = 87
+
           open(unit=lucout, file=fnamcout, form='unformatted', status='unknown')
           write (lucout) formatsauv
           write (lucout) boxndm%at
@@ -267,6 +267,7 @@ contains
     endif
 
 #endif
+    lucout=87
     close(unit=lucout)
     if (l2T)call sauveelec
 
