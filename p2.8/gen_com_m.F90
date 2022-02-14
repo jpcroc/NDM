@@ -34,7 +34,7 @@ module gen_com_m
 
   integer,target :: iteration ! iteration courante, finale , type de generation
   integer:: itloopmax, itmax, nitmax,igen ! iteration fin de boucle DM, finale , type de generation
-  real(double)::timemax ! temps max simul
+  real(double)::timemax,timeloopmax ! temps max simul
   integer :: lenfnam
   integer :: fmt_cin
 

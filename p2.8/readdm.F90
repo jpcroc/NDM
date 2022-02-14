@@ -315,7 +315,8 @@ contains
     ibrake =0   ! if =1 electronic slowing for cascades (acting on all atoms)
     ngrdel=500
 
-    timemax=1d20
+    timemax=1d25
+    
     tpseuils(:)=0 ! 1:Tmin; 2:abs(T') ; 3: abs(T'') ; 1:abs(P); 2:abs(P') ; 3: abs(P'')
 
     lrctest=.true.
@@ -1241,7 +1242,7 @@ contains
     if (rang==0) write(6,*)
     if (rang==0) write (6, *) '     CONTROLES '
     if (rang==0) write (6, '(A,D11.3)') 'tstep=', tstep
-    if (rang==0) write (6, *) 'itmax=', itmax, ' itab=', itab, ' itetimestep=', &
+    if (rang==0) write (6, *) 'itmax=', itmax, 'timemax= ',timemax,' itab=', itab, ' itetimestep=', &
          itetimestep
     if (itederive>0)  write(6,*) ' itederive=', itederive
     if (rang==0) write (6, '(A,F10.1,A,F10.1,A,F10.1,A,F10.1)') 'tinit=', tinit

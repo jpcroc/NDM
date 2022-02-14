@@ -21,7 +21,7 @@ module prog_mod
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config
-  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax&
+  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax&
        &,lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,posa,forca,firsttime_lammps
   
   use read_val,only:imm,ltabvois,rvois
@@ -162,6 +162,7 @@ contains
              call creadp(atdml,celndm,boxndm,psc0)
           else
              itloopmax=itmax
+             timeloopmax=timemax
              select case (dmtype) 
              case(30,31)
                 call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !

@@ -16,7 +16,7 @@ module dmloop_mod
   USE parautils,only:driver_caltabt_para
 
   USE gen_com_m,only: dmtype,iteration,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
-       & itetabvois,lperiod,lspaceNDM,itloopmax
+       & itetabvois,lperiod,lspaceNDM,itloopmax,timel,timeloopmax
   use var_pot, only: cm
    use Tpara,only:nprocspace,para_space_config,comm_space
 
@@ -65,7 +65,7 @@ contains
     END IF
 
     !      write(6,*)'im',im
-    do while (iteration.le.itloopmax)
+    do while ((iteration.le.itloopmax).and.(timel.lt.timeloopmax))
        iteration = iteration+1
        ! appel de la routine generale des forces
        if (itesigma>0)      test_sigma=(mod(iteration,itesigma)==0)

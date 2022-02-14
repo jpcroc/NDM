@@ -1,7 +1,8 @@
 module cdp_mod
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,iteration,lperiod,itloopmax,ivisu
+  USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,iteration,lperiod,itloopmax,ivisu,&
+       &timel,timeloopmax,timemax
   !  use temp_com,only:im
   USE arret_ndm_mod,only: arret_ndm
   USE var_pot,only:ntyp
@@ -37,7 +38,7 @@ module cdp_mod
   real(double), dimension(:,:), allocatable :: xposint ! positions des interstitiels POSSIBLES
   real(double), dimension(:,:), allocatable :: xposI ! positions des interstitiels réalisés
   real(double)::maxposint(3),minposint(3)
-  real (double) :: dminins,rsphdef,centresphdef(3)
+  real (double) :: dminins,rsphdef,centresphdef(3),timecdp
   integer:: ioxdef,itprep
 
 
@@ -57,7 +58,7 @@ contains
     !-----------------------------------------------
     integer :: i,itapp,nfp,iti
     !-----------------------------------------------
-    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint,typint
+    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint,typint,timecdp
 
     allocate(nvac(ntyp));allocate(nbint(ntyp))
 
@@ -71,9 +72,18 @@ contains
     typint=1     ! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
     minposint(1:3) =0;maxposint(1:3)=1
     nfp=-1
-
+    timecdp=-1.
+    
     open(unit=73, file='creaDPin', status='unknown')
     read (73, nml=inputcdp)
+    if ((timecdp.le.0).and.(itecdp.lt.0)) then
+       if (rang==0) write(6,*)'itecdp ET timecdp <0 stop'
+       call arret_ndm
+    end if
+    if ((timecdp.gt.0).and.(itecdp.gt.0)) then
+       if (rang==0) write(6,*)'itecdp ET timecdp >0 stop'
+       call arret_ndm
+    end if
     if (nfp.gt.0) then
        if (rang==0) write(6,*)'NFP VAC INT for all types'
        nvac=nfp
@@ -144,6 +154,7 @@ contains
     integer::numproc,iatint
     integer::jint,iinttot,numcell,imt,ntry2
     logical::lsuiv
+    real(double)::timeltot
     if (myidsp==0) then
        if (iseed.le.0) then
           call system_clock (iseed) 
@@ -198,18 +209,23 @@ contains
 !#else
 !    npp=1
 !#endif
-
+    timeltot=timel
     allocate(nb_at_typ(0:npp-1))
     allocate(last_at_typ(-1:npp-1))
     open (unit=121,file='vac_int')
-    do while (iteration.le.itmax)
+    do while ((iteration.le.itmax).or.(timeltot.le.timemax))
+       
        last_at_typ=0
        natyp=0
        nb_at_typ=0
        itinser=itinser+1
        call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
-
-       itloopmax=min(iteration+itecdp,itmax)
+       if (itecdp.gt.0)then
+          itloopmax=min(iteration+itecdp,itmax)
+       else
+          timel=0.0
+          timeloopmax=timecdp
+       end if
        if (myidsp==0) then
           write(6,*)'****************************************'
           write(6,*)'POINT DEFECT CREATION ',nvactot, ninttot
@@ -516,6 +532,7 @@ contains
              call arret_ndm
           end select
        end select
+       timeltot=timeltot+timel
 
     end do
 
