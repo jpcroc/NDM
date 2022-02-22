@@ -48,7 +48,6 @@ contains
     !
     !
 
-
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
        call endrunT(atdml,celndm,boxndm,latcomp)
@@ -233,7 +232,6 @@ contains
 
     case default
     end select
-
     !
     return
   end subroutine controleT

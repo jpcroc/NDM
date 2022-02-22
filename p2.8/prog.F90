@@ -163,6 +163,7 @@ contains
           else
              itloopmax=itmax
              timeloopmax=timemax
+!             write(6,*)'TIMELOOPMAX ITLOOPMAX',timeloopmax,itloopmax
              select case (dmtype) 
              case(30,31)
                 call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
@@ -194,6 +195,7 @@ contains
 !!$                   write(6,*)'typeEPROG',atdml%lprteat
 !!$                end select
                 itloopmax=itmax
+                timeloopmax=timemax
                 call dmloop_pilot(atdml,celndm,boxndm,psc0)
              end if
           case(30,31)

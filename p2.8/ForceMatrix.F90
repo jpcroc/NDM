@@ -38,7 +38,7 @@ module ForceMatrix_mod
   logical::lwritefreq,lwfm
   integer::nparaFM !nombre calculs de forces en parallele
   integer::ndecal
-  real(double)::decal
+  real(double)::decal,freqlim
   class(atom_config),pointer::atfmloc
   type(cell_config),pointer::celfmloc
   type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
@@ -57,11 +57,13 @@ contains
     real(double),allocatable::FMat(:,:)
     real(double),allocatable::Fpzero(:,:)
     real(double),allocatable::FpMat(:,:,:,:,:)
-    real(double)::fmi,potist,sig(3,3)
+    real(double)::fmi,potist,sig(3,3),two_pi
     real(double),allocatable::eigval(:),work(:)
     integer::info,nwork,nskip
     character*80::fnamfreqout,fnamfmout
 
+
+    write(6,*)'IN ForceMatrix',rang
 #ifdef PARA    
     celfmloc=>cellcible
     atfmloc=>atcible
@@ -90,6 +92,7 @@ contains
     if (lmaster) then 
        Fpzero(1:3,1:im)=atfm%fp(1:3,1:im)
     end if
+    write(6,*)'ForceMatrix2',rang    
     iteration=1 !(empeche le recalcul de la table des voisins dans driver_caltabt_para)
     do idecal=-ndecal,ndecal
        if (idecal==0) cycle ! pas de calcul pour décalage=0
@@ -143,7 +146,7 @@ contains
     if (rang==0) then
 
        if (lwfm) then
-          fnamfmout = fnam(1:lenfnam)//'.thermo.dat'
+          fnamfmout = fnam(1:lenfnam)//'.binfreq'
           open(unit=122,file= fnamfmout, form='unformatted', status='unknown')
           write(122)Fmat
        end if
@@ -155,18 +158,29 @@ contains
        allocate(eigval(im3))
        write (6,*)'PRE MKL'
        call DSYEV('N','L',im3,Fmat,im3,eigval,work,nwork,info)
-
+       two_pi=2.0d0*4.d0*datan(1.d0)
+       eigval(:)=eigval(:)/two_pi
        nskip=0
        do i=1,im3
           eig=eigval(i)
-          if ((dabs(eig) < 1.d10 ).or.(eig<0))           nskip=nskip+1
+          if ((dabs(eig) < freqlim ).or.(eig<0))           nskip=nskip+1
        end do
-       if (nskip==3) then
-          write(6,*)'3 non positive frequencies OK '
-       else
-          write(6,*)nskip, 'non positive frequencies: saddle point ? '
+       write(6,*)'zero frequency=', freqlim
+       select case(nskip)
+       case(1:2)
+          write(6,*)nskip, 'non positive frequencies: STRANGE '
           write(6,*)nskip, 'THERMO IS DUBIOUS'
-       end if
+       case(3)
+          write(6,*)'3 non positive frequencies OK for periodic bulk '
+       case(6)
+          write(6,*)'6 non positive frequencies OK for defect '
+       case(7:)
+          write(6,*)nskip, 'non positive frequencies: strange ? '
+          write(6,*)nskip, 'THERMO IS DUBIOUS'
+       case(4:5)
+          write(6,*)nskip, 'non positive frequencies: strange ? '
+          write(6,*)nskip, 'THERMO IS DUBIOUS'
+       end select
        if (lwritefreq) then
           fnamfreqout = fnam(1:lenfnam)//'.freq.dat'
           open(unit=122,file= fnamfreqout, form='formatted', status='unknown')
@@ -227,7 +241,7 @@ contains
     do jmat=1,nmat
        eig=eigval(jmat)
        lskip=.false.
-       if ( (eig < 0).or.(dabs(eig)<1.d10)) then
+       if ( (eig < 0).or.(dabs(eig)<freqlim)) then
           nskip=nskip+1
           cycle
        else
@@ -247,8 +261,9 @@ contains
           end do
        end if  !jmat
     end do
-    write(6,*)'NSKIP',nskip,nmat-nskip
     fnamthout = fnam(1:lenfnam)//'.thermo.dat'
+    write(6,*)' thermo sauved to name.thermo.dat'
+    write(6,*)' temperature, Fmin(nT), Fcla(nT), Smin(nT), Scla(nT)'
     open(unit=123,file= fnamthout, form='formatted', status='unknown')
     do nT=1,ntemp
       temperature=nT*dtemp

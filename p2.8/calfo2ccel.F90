@@ -128,35 +128,35 @@ contains
 
              if (test_sigma) then
                 if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
-                   sig(1,1) = sig(1,1)+phu*dxp(1)*dxp(1)/boxcf%volu
-                   sig(1,2) = sig(1,2)+phu*dxp(1)*dxp(2)/boxcf%volu
-                   sig(1,3) = sig(1,3)+phu*dxp(1)*dxp(3)/boxcf%volu
-                   sig(2,1) = sig(2,1)+phu*dxp(2)*dxp(1)/boxcf%volu
-                   sig(2,2) = sig(2,2)+phu*dxp(2)*dxp(2)/boxcf%volu
-                   sig(2,3) = sig(2,3)+phu*dxp(2)*dxp(3)/boxcf%volu
-                   sig(3,1) = sig(3,1)+phu*dxp(3)*dxp(1)/boxcf%volu
-                   sig(3,2) = sig(3,2)+phu*dxp(3)*dxp(2)/boxcf%volu
-                   sig(3,3) = sig(3,3)+phu*dxp(3)*dxp(3)/boxcf%volu
+                   sig(1,1) = sig(1,1)+phu*gradij(1)*dxp(1)/boxcf%volu
+                   sig(1,2) = sig(1,2)+phu*gradij(1)*dxp(2)/boxcf%volu
+                   sig(1,3) = sig(1,3)+phu*gradij(1)*dxp(3)/boxcf%volu
+                   sig(2,1) = sig(2,1)+phu*gradij(2)*dxp(1)/boxcf%volu
+                   sig(2,2) = sig(2,2)+phu*gradij(2)*dxp(2)/boxcf%volu
+                   sig(2,3) = sig(2,3)+phu*gradij(2)*dxp(3)/boxcf%volu
+                   sig(3,1) = sig(3,1)+phu*gradij(3)*dxp(1)/boxcf%volu
+                   sig(3,2) = sig(3,2)+phu*gradij(3)*dxp(2)/boxcf%volu
+                   sig(3,3) = sig(3,3)+phu*gradij(3)*dxp(3)/boxcf%volu
                 endif
                 if (lTPcel.EQV..true.) then
-                   sigc(1,1,koo) = sigc(1,1,koo)+0.5*phu*dxp(1)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(1,2,koo) = sigc(1,2,koo)+0.5*phu*dxp(1)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(1,3,koo) = sigc(1,3,koo)+0.5*phu*dxp(1)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(2,1,koo) = sigc(2,1,koo)+0.5*phu*dxp(2)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(2,2,koo) = sigc(2,2,koo)+0.5*phu*dxp(2)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(2,3,koo) = sigc(2,3,koo)+0.5*phu*dxp(2)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(3,1,koo) = sigc(3,1,koo)+0.5*phu*dxp(3)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(3,2,koo) = sigc(3,2,koo)+0.5*phu*dxp(3)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(3,3,koo) = sigc(3,3,koo)+0.5*phu*dxp(3)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(1,1,ko1) = sigc(1,1,ko1)+0.5*phu*dxp(1)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(1,2,ko1) = sigc(1,2,ko1)+0.5*phu*dxp(1)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(1,3,ko1) = sigc(1,3,ko1)+0.5*phu*dxp(1)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(2,1,ko1) = sigc(2,1,ko1)+0.5*phu*dxp(2)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(2,2,ko1) = sigc(2,2,ko1)+0.5*phu*dxp(2)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(2,3,ko1) = sigc(2,3,ko1)+0.5*phu*dxp(2)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(3,1,ko1) = sigc(3,1,ko1)+0.5*phu*dxp(3)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(3,2,ko1) = sigc(3,2,ko1)+0.5*phu*dxp(3)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(3,3,ko1) = sigc(3,3,ko1)+0.5*phu*dxp(3)*dxp(3)*celcf%noxyz/boxcf%volu
+                   sigc(1,1,koo) = sigc(1,1,koo)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyz/boxcf%volu
+                   sigc(1,2,koo) = sigc(1,2,koo)+0.5*phu*gradij(1)*dxp(2)*celcf%noxyz/boxcf%volu
+                   sigc(1,3,koo) = sigc(1,3,koo)+0.5*phu*gradij(1)*dxp(3)*celcf%noxyz/boxcf%volu
+                   sigc(2,1,koo) = sigc(2,1,koo)+0.5*phu*gradij(2)*dxp(1)*celcf%noxyz/boxcf%volu
+                   sigc(2,2,koo) = sigc(2,2,koo)+0.5*phu*gradij(2)*dxp(2)*celcf%noxyz/boxcf%volu
+                   sigc(2,3,koo) = sigc(2,3,koo)+0.5*phu*gradij(2)*dxp(3)*celcf%noxyz/boxcf%volu
+                   sigc(3,1,koo) = sigc(3,1,koo)+0.5*phu*gradij(3)*dxp(1)*celcf%noxyz/boxcf%volu
+                   sigc(3,2,koo) = sigc(3,2,koo)+0.5*phu*gradij(3)*dxp(2)*celcf%noxyz/boxcf%volu
+                   sigc(3,3,koo) = sigc(3,3,koo)+0.5*phu*gradij(3)*dxp(3)*celcf%noxyz/boxcf%volu
+                   sigc(1,1,ko1) = sigc(1,1,ko1)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyz/boxcf%volu
+                   sigc(1,2,ko1) = sigc(1,2,ko1)+0.5*phu*gradij(1)*dxp(2)*celcf%noxyz/boxcf%volu
+                   sigc(1,3,ko1) = sigc(1,3,ko1)+0.5*phu*gradij(1)*dxp(3)*celcf%noxyz/boxcf%volu
+                   sigc(2,1,ko1) = sigc(2,1,ko1)+0.5*phu*gradij(2)*dxp(1)*celcf%noxyz/boxcf%volu
+                   sigc(2,2,ko1) = sigc(2,2,ko1)+0.5*phu*gradij(2)*dxp(2)*celcf%noxyz/boxcf%volu
+                   sigc(2,3,ko1) = sigc(2,3,ko1)+0.5*phu*gradij(2)*dxp(3)*celcf%noxyz/boxcf%volu
+                   sigc(3,1,ko1) = sigc(3,1,ko1)+0.5*phu*gradij(3)*dxp(1)*celcf%noxyz/boxcf%volu
+                   sigc(3,2,ko1) = sigc(3,2,ko1)+0.5*phu*gradij(3)*dxp(2)*celcf%noxyz/boxcf%volu
+                   sigc(3,3,ko1) = sigc(3,3,ko1)+0.5*phu*gradij(3)*dxp(3)*celcf%noxyz/boxcf%volu
                 end if
              endif
 
