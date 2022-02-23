@@ -1,0 +1,14 @@
+#!/bin/bash
+for temp  in  *
+do 
+	echo $temp
+	rm -f rd
+	diff   $temp ~/DM/codesndm/ndm2021PCLOC/lammps/$temp >rd
+	diff   $temp ~/DM/codesndm/ndm2021PCLOC/lammps/$temp 
+	if  [ -s  rd ]
+	then
+	meld $temp ~/DM/codesndm/ndm2021PCLOC/lammps/$temp 
+	fi
+	
+
+done

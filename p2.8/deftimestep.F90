@@ -169,7 +169,7 @@ endif
 
      else                                       ! cad si tstep >= 2.10-15s
         tstep = oldtstep
-        if (rang==0) write (6, *) 'tstep maintenu',tstep
+        !if (rang==0) write (6, *) 'tstep maintenu',tstep
      endif
 
   end if
@@ -198,7 +198,7 @@ endif
         endif
      else                                       ! cad si tstep >= 2.10-15s
         tstep = oldtstep
-        if (rang==0) write (6, *) 'tstep maintenu',tstep
+!        if (rang==0) write (6, *) 'tstep maintenu',tstep
      endif
   end if
 
@@ -222,7 +222,7 @@ endif
            
         else                                       ! cad si tstep >= 2.10-15s
            tstep = oldtstep
-           if (rang==0) write (6, *) 'tstep maintenu',tstep
+!           if (rang==0) write (6, *) 'tstep maintenu',tstep
         endif
      end if
   end if

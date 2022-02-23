@@ -64,7 +64,6 @@ contains
        CALL init_trempe_fire(fire_dt, fire_nstep, fire_alph)
     END IF
 
-    !      write(6,*)'im',im
     do while ((iteration.le.itloopmax).and.(timel.lt.timeloopmax))
        iteration = iteration+1
        ! appel de la routine generale des forces

@@ -89,7 +89,7 @@ contains
           itread=1
           call atrcf%deftype(compatrcf)
           call compatrcf%init(immin=imm_glob,imin=0)
-          call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+           call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
           if (rang==0) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
@@ -103,6 +103,7 @@ contains
           !       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,atrcf%im) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
        else
           itread=1
+          call atrcf%init(immin=imm_glob,imin=0)
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
@@ -132,6 +133,8 @@ contains
           call arret_ndm
        else
           itread=1
+          call atrcf%init(immin=imm_glob,imin=0)
+          write(6,*)'ATRCF',atrcf%im,atrcf%imm,allocated(atrcf%xp)
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
 
           atrcf%im_glob=atrcf%im
@@ -561,8 +564,9 @@ contains
        atcinr%im_glob=im_gr
 
 
-       !                    write(6,*)im
+               write(6,*)'IMR',im_gr
        read (lucin, err=456) ibuffer   !ityp
+       write(6,*)'types',size(ibuffer),size( atcinr%ityp)
        atcinr%ityp(1:im_gr)=ibuffer(1:im_gr)
 
        if (rang==0) write (6, *) 'types'

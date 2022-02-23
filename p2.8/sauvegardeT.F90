@@ -51,7 +51,7 @@ contains
 
 
 #endif
-
+    if (rang==0) write(6,*)'insauvegarde',iteration
     formatsauvmod = mod(formatsauv,2)
     im =atdml%im
     if (atdml%im_glob==0) then
@@ -98,6 +98,7 @@ contains
              enddo
           end if
           write (lucout) ibuffer  ! Ecriture ityp
+
           write (lucout) buffer   ! Ecriture xp
 
           ibuffer(1:im) = atdml%num_at_glob(1:im)
@@ -243,7 +244,6 @@ contains
     write (lucout) formatsauv
     write (lucout) boxndm%at
     write (lucout) atdml%im
-
     write (lucout) atdml%ityp
     write (lucout) atdml%xp
     write (lucout) atdml%num_at_glob

@@ -536,7 +536,7 @@ contains
        write(6,*)'Nitmax>0 et pas restart ?'
        call arret_ndm
     end if
-
+    if ((timemax.gt.0).and.(itmax==-1)) itmax=1000000000
 
     if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.9)) itmax=1
 
@@ -806,9 +806,9 @@ contains
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
        end select
 
-       if (pext.ne.0.) then
-          if (rang==0) write(6,*)'SIGEXT', sigext
-          if (rang==0) write(6,*)'Pext ',pext
+       if ((pext.ne.0.).or.(any(sigext.ne.0))) then
+          if (rang==0) write(6,*)'SIGEXT en cgs', sigext
+          if (rang==0) write(6,*)'Pext en cgs',pext
           do ic=1,3
              sigext(ic,ic)=sigext(ic,ic)+pext
           end do
