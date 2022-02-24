@@ -1061,7 +1061,7 @@ contains
           do ic=1,3
              do ic2=1,3
                 if (ihbox0(ic,ic2)==1)then
-                   write(6,*)' ihbox0(',ic,ic2,ihbox0(ic,ic2)
+                   write(6,'(A,2I2,A,I2)')' ihbox0(',ic,ic2,')=',ihbox0(ic,ic2)
                 end if
              end do
           end do

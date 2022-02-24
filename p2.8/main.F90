@@ -46,7 +46,7 @@ program ndm
 #ifdef PARA
 
 
-  write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive',low_limit
+  write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive'
     call MPI_BARRIER(MPI_COMM_WORLD,ierr)
   myidsp=rang
 #else

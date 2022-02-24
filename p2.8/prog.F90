@@ -103,16 +103,6 @@ contains
     atdml%imm_glob=imm
     imm_glob=imm
     atdml%ltabvois=ltabvois
-
-!!$    select type (atdml)
-!!$    type is (atom_config)
-!!$       write(6,*)'atomfig'
-!!$    type is (atom_config_d)
-!!$       write(6,*)'atomfigD'
-!!$    type is (atom_config_e)
-!!$       write(6,*)'atomfigE'
-!!$!       write(6,*)'FLAGSFF', atdml%lprteat,atdml%lsigat,atdml%llangevin,atdml%lax
-!!$    end select
        
     select case(dmtype)
     case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix)
@@ -129,9 +119,8 @@ contains
           if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
        endif
 #endif
-
        call init(atdml,boxndm,celndm,psc0)
-!       call atdml%print
+
 #ifdef DECOUP
        ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
        return
@@ -145,15 +134,6 @@ contains
           end if
        end if
 #endif
-!!$
-!!$       select type (atdml)
-!!$       type is (atom_config_d)
-!!$          write(6,*)'typeDPROG111'
-!!$          !    type is (atom_config)
-!!$          !       write(6,*)'type0'
-!!$       type is (atom_config_e)
-!!$          write(6,*)'typeEPROG111',atdml%lprteat
-!!$       end select
 
        select type(atdml)
        type is (atom_config)

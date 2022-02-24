@@ -60,7 +60,7 @@
 
     
     if (present(ldistrib))ldistr=ldistrib
-    
+    atloc%im_glob=atcomp%im_glob
 !    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
     if (div%mpi_image%nproc.gt.1) then
        if (ldistr) then

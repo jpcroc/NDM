@@ -95,7 +95,6 @@ contains
        lrepart=.true.
     end if
     call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
-
     call caltabtC(celndm,atdml,lperiod,boxndm)
     call init_pot2(boxndm,atdml%imm)
 #ifdef DECOUP

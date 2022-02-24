@@ -51,7 +51,7 @@ contains
 
 
 #endif
-    if (rang==0) write(6,*)'insauvegarde',iteration
+    if (rang==0) write(6,*)'insauvegarde',iteration,timel
     formatsauvmod = mod(formatsauv,2)
     im =atdml%im
     if (atdml%im_glob==0) then
@@ -70,7 +70,6 @@ contains
           write (lucout) boxndm%at
           write (lucout) atdml%im_glob
        end if
-
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           allocate (buffer(3,atdml%imm_glob))
           allocate (ibuffer(atdml%imm_glob))
@@ -78,6 +77,7 @@ contains
           allocate (buffer(3,atdml%imm))
           allocate (ibuffer(atdml%imm))
        end if
+
        if (myidsp==0) then
           im_loc(0)=im
           ibuffer=0

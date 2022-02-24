@@ -89,14 +89,18 @@ contains
           itread=1
           call atrcf%deftype(compatrcf)
           call compatrcf%init(immin=imm_glob,imin=0)
+
+
+!          call atrcf%print
            call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
           if (rang==0) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
           call setnox(boxrcf,cellrcf,rumax)
           ncore=0
-
+          atrcf%im_glob=compatrcf%im
           call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc)
+          
           allocate(num_at_buff(imm_glob))
           call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
           !       itread=3
@@ -134,7 +138,6 @@ contains
        else
           itread=1
           call atrcf%init(immin=imm_glob,imin=0)
-          write(6,*)'ATRCF',atrcf%im,atrcf%imm,allocated(atrcf%xp)
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
 
           atrcf%im_glob=atrcf%im
@@ -268,8 +271,8 @@ contains
     ncore=0
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        at2b%imm_glob=imm_glob
-
        if (lrepart) then
+          at2b%im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
           call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc)
        else
           call  decoupage(nprocspace,ncore,cel2b,psc=psc)
@@ -279,8 +282,6 @@ contains
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
     call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
     compatrcf%imm_glob=imm_glob
-    at2b%im_glob=compatrcf%im
-    at2b%imm_glob=compatrcf%im
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
        call repartition(COMPatrcf,at2b,box2b,cel2b)
     else
@@ -299,7 +300,6 @@ contains
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
     at2b%im_glob=at2b%im
 #endif             
-
 
     call setcellconf(cel2b,at2b,box2b,rum)
     return
@@ -564,9 +564,7 @@ contains
        atcinr%im_glob=im_gr
 
 
-               write(6,*)'IMR',im_gr
        read (lucin, err=456) ibuffer   !ityp
-       write(6,*)'types',size(ibuffer),size( atcinr%ityp)
        atcinr%ityp(1:im_gr)=ibuffer(1:im_gr)
 
        if (rang==0) write (6, *) 'types'
@@ -676,9 +674,6 @@ contains
           if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
           call arret_ndm
        endif
-       !       write(6,*)'IM',rang,immr,im_gr,imic,atcinr%im,atcinr%imm
-       !       write(300+rang,*)icible
-       !       atcinr%im=imic
 
        read (lucin, err=456) ibuffer   !ityp
        do i_loc=1,imic

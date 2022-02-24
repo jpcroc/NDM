@@ -344,7 +344,7 @@ contains
 
        !     write(iudecoup,*)'test4' 
        im0=0 ; nvois0=0
-!       write(6,*)'IMMMDEC',rang,imm
+
        if (present(atdec)) then
           im_glob=atdec%im_glob
           call atdec%dealloc

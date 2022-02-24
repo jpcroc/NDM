@@ -55,6 +55,7 @@ module atomconfig
      procedure, pass::recv=>rcv_atom
      procedure, pass::zero=>zero_atom
      procedure, pass::switch_atom
+     procedure, pass::print_type
 
      !
   end type atom_config
@@ -91,7 +92,20 @@ module atomconfig
   private ::buffersizes
 contains
   !initialisations
-  
+  subroutine print_type(atcf)
+    class(atom_config),intent(in)::atcf
+    write(6,*)'atomfigPRINT'
+    write(6,*)'im imm im_glob imm_glob',atcf%im,atcf%imm,atcf%im_glob,atcf%imm_glob
+    select type (atcf)
+    type is (atom_config)
+       write(6,*)'atomfig'
+    type is (atom_config_d)
+       write(6,*)'atomfigD'
+    type is (atom_config_e)
+       write(6,*)'atomfigE'
+       write(6,*)'FLAGSFF', atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
+    end select
+  end subroutine print_type
   subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
@@ -351,10 +365,10 @@ contains
        class is (atom_config_e)
        select type (atsource)
        type is (atom_config_e)
-          if ((atcible%lprteat).and.(atsource%lprteat)) atcible%eat(j)=atcible%eat(i)
-          if ((atcible%lsigat).and.(atsource%lsigat)) atcible%sigat(:,:,j)=atcible%sigat(:,:,i)
-          if ((atcible%llangevin).and.(atsource%llangevin)) atcible%glangv(:,j)=atcible%glangv(:,i)
-          if ((atcible%lax).and.(atsource%lax)) atcible%ax(:,j)=atcible%ax(:,i)
+          if ((atcible%lprteat).and.(atsource%lprteat)) atcible%eat(j)=atsource%eat(i)
+          if ((atcible%lsigat).and.(atsource%lsigat)) atcible%sigat(:,:,j)=atsource%sigat(:,:,i)
+          if ((atcible%llangevin).and.(atsource%llangevin)) atcible%glangv(:,j)=atsource%glangv(:,i)
+          if ((atcible%lax).and.(atsource%lax)) atcible%ax(:,j)=atsource%ax(:,i)
        end select
     end select
   end subroutine copy_atom_e
