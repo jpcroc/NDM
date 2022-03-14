@@ -85,6 +85,10 @@ INC += $(INC_PARA)
 FLAG += -DPARA
 endif
 
+ifdef MKL
+FLAG += -DMKL
+endif
+
 ifdef DEBUG
 FLAG += -DDEBUG
 endif
@@ -140,7 +144,7 @@ help:
 	@echo "sinclude ../$(DEP_FILE)" >> Obj_$@/Makefile 
 	@#echo "sinclude ../ml/milady.depends" >> Obj_$@/Makefile 
 	cd Obj_$@; \
-        $(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)"  "EXE = ../$(EXE)" ../$(EXE)
+        $(MAKE) $(MFLAGS) "OBJ = $(OBJ)" "INC = $(INC)" "FLAG = $(FLAG)"  "EXE = ../$(EXE)" ../$(EXE)
 
 
 

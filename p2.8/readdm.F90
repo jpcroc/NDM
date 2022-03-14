@@ -23,7 +23,7 @@ contains
          &rskin,rulayer,sigext,sigstop,tbox,tempdeplainit,tempstop,tempstopcel,tgc,&
          &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
          &zko,zz0,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
-         &iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,itefcc,&
+         &iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
          &lcasca,lcontr,ldemitab,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
@@ -68,7 +68,7 @@ contains
     !
     !
 
-    namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma, itefcc, itedepla, tdepla, lfilm, &
+    namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma,  itedepla, tdepla, lfilm, &
          tempstop, tempstopcel,dmtype, lFire,  itecoordo, tstep, itetimestep, tsfact, &
          tinit,  tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
@@ -230,7 +230,6 @@ contains
     itetemp = 20                !period of temperature calculation
     itesigma = -1               !period of stress calculation
     iteprtsigma = -1               !period of stress calculation
-    itefcc=-1                   ! period of fcc structure analysis
     itedepla = -100              !period of displacement cal.
     tdepla = 1.0                !threshold for displacement
     tdepla2 = -1.0              !second seuil pour calcul des atomes deplaces

@@ -8,38 +8,16 @@ module caltabi_mod
   use vect_dist_mod,only:vect_dist
   implicit none
 contains
-
-
-
-  ! *****************************************************************
-  subroutine caltabi(atvois,celvois,boxndm,lextr)
-    !-----------------------------------------------
-    !   M o d u l e s
-    !-----------------------------------------------
+  subroutine caltabi(atvois,celvois,boxndm,lextr,lconstrtotR)
     USE T_kind_param_m, ONLY:  double
-
-
     USE var_pot, ONLY:ipotentiel,npair,ipo
-    ! *****************************************************************
-
     implicit none
-    !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !----------------------------------------------1-
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
     class(atom_config), intent(inout)::atvois
     type(cell_config), intent(in)::celvois
     type(box_config),intent(in)::boxndm
-    logical,optional::lextr
-    logical::lextrait=.false.
-    !-----------------------------------------------
-    !   L o c a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
+    logical,optional::lextr,lconstrtotR
+    logical::lextrait=.false.,lconstrtt
+
     integer :: iw, iwph, i, ip, j, maxvoi, nvij,iwo
     integer :: itj,ll
     REAL(double) :: r2
@@ -56,6 +34,13 @@ contains
     integer::iml !last atom (=%im for standard; =%imm for extrait)
     
     if (present(lextr))lextrait=lextr
+    if (present(lconstrtotR))then
+       lconstrtt=lconstrtotR
+    else
+       lconstrtt=lconstrtot
+    end if
+       
+    
     at=boxndm%at ; bg=boxndm%bg
     !
     !-----------------------------------------------
@@ -87,7 +72,7 @@ contains
 
     !write(*,*) 'caltabi_inside  ', rvois, rvois2
     !*************construction par double boucle ****************
-    if(lconstrtot) then  !construction par double boucle
+    if(lconstrtt) then  !construction par double boucle
 
        if (lextrait) then
           iml=atvois%imm
@@ -174,7 +159,7 @@ contains
        end do ! fin i
        maxvoi=iw
 
-    endif ! lconstrtot
+    endif ! lconstrtt
 
     return
   end subroutine caltabi

@@ -530,6 +530,7 @@ cdp.o :  \
 	gen_com_m.o \
 	mod_para.o \
 	rasmolT.o \
+	sauvegardeT.o \
 	var_pot.o \
 	vect_dist_mod.o
 

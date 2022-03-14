@@ -3,7 +3,6 @@ module cdp_mod
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,iteration,lperiod,itloopmax,ivisu,&
        &timel,timeloopmax,timemax,lrestart,fnam,lenfnam
-  !  use temp_com,only:im
   USE arret_ndm_mod,only: arret_ndm
   USE var_pot,only:ntyp
   USE atomconfig,only : atom_config,atom_config_d
@@ -263,13 +262,23 @@ contains
           lrestart=.false.
        endif
        if (lcrea0) then 
-          write(6,*)'itmax,timemax,itecdp,timecdp,iteration,timel'
-          write(6,*)itmax,timemax,itecdp,timecdp,iteration,timel
+!          write(6,*)'itmax,timemax,itecdp,timecdp,iteration,timel'
+!          write(6,*)itmax,timemax,itecdp,timecdp,iteration,timel
           last_at_typ=0
           natyp=0
           nb_at_typ=0
           itinser=itinser+1
-          call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
+          fnamcout = fnam(1:lenfnam)//'.PRECDP.cout'
+          if (lspacendm) then
+             call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)
+          else
+             call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.true.,ivisumol=ivisu)
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.true.)
+          end if
+          
+!          call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
+ !         call 
           if (ltimec) then
              timeloopmax=timel+timecdp
           else
@@ -277,7 +286,7 @@ contains
           end if
           if (myidsp==0) then
              write(6,*)'****************************************'
-             write(6,*)'POINT DEFECT CREATION ',iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
+             write(6,*)'POINT DEFECT CREATION '!,iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
              write(6,*)'iteration,timel, itloopmax,timeloopmax,nvactot, ninttot'
              write(6,*)iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
              write(6,*)'****************************************'

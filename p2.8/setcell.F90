@@ -5,7 +5,7 @@ module setcell
   USE T_kind_param_m, ONLY:  double
   USE read_val,only:nox,noy,noz,rvois
   USE arret_ndm_mod,only: arret_ndm
-  USE gen_com_m, ONLY:lconstrtot,ldemitab,lconstrtot,nvat,pi,rang,lrctest,ltpcel,lspacendm
+  USE gen_com_m, ONLY:ldemitab,nvat,pi,rang,lrctest,ltpcel,lspacendm
     USE var_pot, ONLY:lpotentiel,rue_pot !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
   USE recips_mod,only:recips,calcvol,distmin
   USE atomconfig,only: atom_config
@@ -87,16 +87,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        if ((rang==0).and.(lverb)) write (6,'(a,3(i0,1x))') 'nox noy noz apres correction = '&
             , nox, noy, noz
 
-!       IF ( (nox.LE.3).AND.(noy.LE.3).AND.(noz.LE.3) ) THEN
-!          nox=1 ; noy=1 ; noz=1
-!          !             ltabvois=.TRUE.
-          !             lconstrtot=.TRUE.
-!          if (rang==0) write(6,*)'!!!!!!!!!!Envisager ltabvois = true !!!!!!!!!!!!!!'
-!       END IF
        ! ==== FIN MODIF CLOUET 2 ================
-!       celsn%nox=nox
-!       celsn%noy=noy
-!       celsn%noz=noz
        celsn%celsize(1) = boxsn%zl(1)/float(nox)
        celsn%celsize(2) = boxsn%zl(2)/float(noy)
        celsn%celsize(3) = boxsn%zl(3)/float(noz)
@@ -162,7 +153,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     if (allocated(celscf%atincel))deallocate(celscf%atincel)
     allocate(celscf%atincel(celscf%natperc,celscf%noxyz))
     celscf%atincel=0
-  if ((rang==0).and.(lverb))  write(6,*)'ltabvois,lconstrtot',atcf%ltabvois,lconstrtot
+  if ((rang==0).and.(lverb))  write(6,*)'ltabvois',atcf%ltabvois
 
     if (atcf%ltabvois) then
        if (rumax>rvois) then
@@ -178,7 +169,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
           call arret_ndm
        endif
-!       if(.not.lconstrtot)rumax=rvois
        !write(*,*) 'DEBUG IN DIVID volu, im', volu, im
        voluperat=boxcf%volu/atcf%im_glob
        nvperat=4*Pi*(rvois+1.0d-8)**3/(3*voluperat)

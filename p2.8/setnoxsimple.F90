@@ -2,7 +2,7 @@ module setnoxsimple_mod
 #ifndef ML
 #endif
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:lconstrtot,ldemitab,lconstrtot,pi,rang
+  USE gen_com_m, ONLY:ldemitab,pi,rang
   USE var_pot, ONLY:lpotentiel,rue_pot !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
   USE recips_mod,only:recips,calcvol,distmin
   USE atomconfig,only: atom_config
@@ -54,7 +54,6 @@ contains
     celsn%atincel=0
     if (atsn%ltabvois) then
        izonr2 = int(zlmin/rvois)
-!       if(.not.lconstrtot)rumax=rvois
        !write(*,*) 'DEBUG IN DIVID volu, im', volu, im
        voluperat=boxsn%volu/atsn%im_glob
        nvperat=4*Pi*(rvois+1.0d-8)**3/(3*voluperat)

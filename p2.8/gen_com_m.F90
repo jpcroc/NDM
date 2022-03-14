@@ -52,7 +52,7 @@ module gen_com_m
   real(double) :: oldtstep  
   real(double) :: tstep, usdh, timel  
   integer :: itetemp, itesigma, iteprtsigma,itedepla, itecoordo, iterdf, nrdf, & 
-       iterasmol, iteangle,nfda,itetemp2,iteanapos, itefcc
+       iterasmol, iteangle,nfda,itetemp2,iteanapos
   integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codﾃｩ, ivisu=2=xred
   real(double)::rcangle,rcrdf
 

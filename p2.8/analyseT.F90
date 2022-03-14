@@ -11,7 +11,7 @@ module analyseT_mod
 
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax
   use gen_com_m, only:bk,cunite,fnose,iteanapos,iteangle,itebdv,ecellpr,&
-       &itecoordo,itefcc,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
+       &itecoordo,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
        &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
@@ -65,7 +65,6 @@ contains
     real(double), save :: volumean,amodmean,bmodmean,cmodmean,tcamean,tabmean,tbcmean
     real(double), dimension(3,3) :: transformation, strain, rotation, invh0
 
-    INTEGER, dimension(:), allocatable :: fcc_nVoisins, fcc_cluster
     INTEGER, dimension(:,:), allocatable :: aux_int
     REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
     CHARACTER(len=20), dimension(:), allocatable :: aux_title

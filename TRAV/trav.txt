@@ -1,11 +1,8 @@
 
-INTEGRER DECOUP dans la version sequentielle avec un ldecoup ET METTRE DECOUP3D en version para_config ET intégrer les variables associées dans un type (spacepara_config ?)
-
-
 ***
 A FAIRE
-supprimer lconstrtot de gen_com_m et l'attacher à atomconfig ?? ou le passer en argulent
-4.05/ supprimer tab_imm_m et les USE temp_com qui vont avec (OK sauf analyses des positions et creationd e défauts)
+lecture d'autres fichiers .cfg , .xfg, écriture de plusieurs types de fichiers de configurations ex: .cfg ET ..newgin
+calcdepla a été débranché, le rebrahcer ?
 3.2/ corriger PMEwald
 plotpart dans anapos
 4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig piloté comme send2all etc.
@@ -44,6 +41,9 @@ soit une liste complète, soit un seul FAIT AVEC DES CARACTERES à send2proc
 
 
 FAIT:
+
+INTEGRER DECOUP dans la version sequentielle avec un ldecoup ET METTRE DECOUP3D en version para_config ET intégrer les variables associées dans un type (spacepara_config ?)
+
 0/finir Pr et Gc (gc faire avec ce qu’on a): FAIT
 0.8/MCGC
 0.8/LAMMPS
@@ -74,7 +74,7 @@ SUPPRIMER LES STOPS LES RE%PLACER PAR UN ARRET PARA remaplcer arret_ndm par stop
 3.7/CODER sauvegarde xyz
 4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien!
 X.X/ calcul de la matrice de constantes de force et thermo associée
-
+lconstrtotR en argument et lconstrtot maintenu :supprimer lconstrtot de gen_com_m et l'attacher à atomconfig ?? ou le passer en argulent
 
 ----HISTORIQUE:
 rasmol a mettre en version paraconfig (FAIT ?)
