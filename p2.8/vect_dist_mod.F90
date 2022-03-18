@@ -113,7 +113,7 @@ contains
              end if
           end if
        end do
-       call cryst_to_cart (1, cv, boxcf%at, 1) !cryst vers cart sur cv
+       call cryst_to_cart (1, XJI, boxcf%at, 1) !cryst vers cart sur cv
 
 
        dx2(:)=XJI(:)*XJI(:)

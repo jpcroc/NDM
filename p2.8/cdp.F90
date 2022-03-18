@@ -166,7 +166,7 @@ contains
     integer :: itapp,npp
     integer :: idep,itinser
     integer :: iposI,iint,natgm
-    real(double) :: a1,a2,a3,c1,c2,c3,z1,r2,rd,z3,z2, edt
+    real(double) :: a1,a2,a3,c1,c2,c3,z1,r2,rd,z3,z2, edt,dimin
     real(double),dimension(3):: xdec, xavant,xapres,xpositest
     real(double), dimension(1,3) :: cv
     real(double),dimension(:),allocatable:: edrat
@@ -186,11 +186,11 @@ contains
        call random_seed (iseedt(1))
     end if
 
-
+!       itinser=0
     !    call atdml%print
     if (itprep.gT.0) then 
        itloopmax=itprep
-       itinser=0
+
        select type(atdml)
        type is (atom_config)
           select case (dmtype)
@@ -251,6 +251,7 @@ contains
     open (unit=121,file='vac_int')
     !*********************************************************************
     lcrea0=.true.
+    itinser=0
     do while ((iteration.lt.itmax).and.(timel.lt.timemax))
 
        if (lrestart) then
@@ -418,7 +419,7 @@ contains
                 !#endif
              end do
              if (myidsp==0) then
-                write(121,*)itinser, 'VAC'
+                write(121,*)itinser, iteration,timel,'VAC'
                 do i=1,nvactot
                    write(121,'(3G15.6,2I6)')atomvac%pos(:,i),atomvac%ityp(i),atomvac%natg(i)
                 end do
@@ -426,13 +427,13 @@ contains
              end if
 
           end if
-
+!          write(6,*)'POST VAC'
           ! insérer les interstitiels       
           if (ninttot.ne.0) then
              iinttot=0 
              do iti=1,ntyp
                 do iint=1,nbint(iti)
-                   l2close=.true. ! le do while doit être fait au mins une fois
+                   l2close=.true. ! le do while doit être fait au moins une fois
                    ntry=0; ntry2=0
                    iinttot=iinttot+1 ! indice l'ensemble des interstitiels (inter-types)
                    do while (l2close)
@@ -483,7 +484,11 @@ contains
                          numproc=0
                       end if
                       !                   if (myidsp==0)write(6,*)'PROCint',numcell,numproc,xpositest
+#else
+                      numproc=0
 #endif
+                      
+!                      write(6,*)'PROCint',numcell,numproc,myidsp,xpositest
                       if (numproc == myidsp) then
                          ntry2=ntry2+1
                          if (ntry2==100) then
@@ -492,7 +497,10 @@ contains
 
                          l2close=.false.             
                          if (dminins.gT.0) then
-                            call closest_at(xpositest,atdml,celndm,boxndm,lperiod,rumin=dminins,lclose=l2close)
+                            !                            call atdml%print
+!                            write(6,*)'posi',xpositest
+                            call closest_at(xpositest,atdml,celndm,boxndm,lperiod,rumin=dminins,lclose=l2close,dist=dimin)
+!                            write(6,*)dimin
                          end if
                          !#ifdef PARA
                       end if
@@ -543,7 +551,7 @@ contains
                 call arret_ndm
              end if
              if (myidsp==0) then
-                write(121,*)itinser, 'INT'
+                write(121,*)itinser, iteration,timel, 'INT'
                 do i=1,ninttot
                    write(121,'(3G15.6,I6)')atomint%pos(:,i),atomint%ityp(i)
                 end do
@@ -565,7 +573,7 @@ contains
 #ifdef PARA
           if (lspacendm) call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc)
 #endif
-
+!          write(6,*)'POST INT'
           if (lspacendm) then
              call rasmolT(atdml,boxndm,itinser,'POST_INSER',latcomp=.false.,ivisumol=ivisu)
           else
