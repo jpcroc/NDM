@@ -374,7 +374,8 @@ contains
     do i=1,N
        scal=scal+Ft(i)*F0(i)
     end do
-    write(unitGC,*)'SCAL',scal
+!!$    write(unitGC,*)
+!!$    write(unitGC,*)'SCAL',scal
     do i=1,N
        Fp(i)=scal*F0(i)/normF02
     end do

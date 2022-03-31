@@ -1,7 +1,7 @@
 module WGC_mod
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:  inv_angst, lperiod, rang,leev,sig, &
+  USE gen_com_m, ONLY:  inv_angst, lperiod, rang,leev,sig,cunitP, &
        iteration, itesauv, itesauvposition, itesauvforce, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, iterasmol,&
        dmtype, potist,mdcg_noise,lspaceNDM,sigstop,sigext,ihbox0,unitP,lprahman
@@ -142,7 +142,7 @@ contains
     logical,optional::lvm
     real(double),save::Vminabs=1d16
 
-    real(double)::forctot,formax,deltaV,sigmax,fsigmax,FM2,FT2,sigm2
+    real(double)::forctot,formax,deltaV,sigmax,fsigmax,FM2,FT2,sigm2,ppot
     integer::i,i1,i2,ip,ic
     if (present(lvm))lvm=.false.
 
@@ -182,6 +182,16 @@ contains
              call updatebox(boxcgmin,boxcgmin%at)
           end select
        end if
+    end if
+    if (present(Vt)) then
+       write (unitgc, *)
+       write (unitgc, *) '************ STRESS in ', cunitP
+       do ic = 1, 3
+          write (unitgc, '(I1,3(A,I1),A,3G18.10)') ic,' sigma potentiel (1,', ic, ') (2,', ic, &
+               ') (3,', ic, ') =',sig(1:3,ic)*unitP
+          ppot = ppot+1.0/3.0*sig(ic,ic)
+       end do
+       write(unitgc,*)'PRESSURE',ppot*unitP
     end if
     select case (ityprel)
     case(2)

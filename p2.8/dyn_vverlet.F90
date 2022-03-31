@@ -4,7 +4,7 @@ module dyn_vverlet_mod
   use var_pot,only:ntyp
   USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lprahman,&
        &l2T,llangevin,itesigma,iteration,itetabvois,ltberendsen,potist,sig,timel,tstep,&
-       lspaceNDM
+       lspaceNDM,rang
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
@@ -94,9 +94,7 @@ contains
     else
        lcalcvois=.false.
     end if
-
     call  driver_caltabt_para(atdml,celndm,boxndm,psc,lperiod,lcalcvois)
-
   ! a été déplacé après calfo . Etait situé juste avant calfo :
     if (l2T) then
        call dynelec(celndm)

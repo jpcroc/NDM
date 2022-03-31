@@ -28,7 +28,7 @@ contains
   !         Sous-programme analyse.f
   ! ************************************************
 
-  subroutine analyseT(atdml,celndm,boxndm)
+  subroutine analyseT(atdml,celndm,boxndm,psc)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -143,7 +143,7 @@ contains
              end where
              if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
              call atdml%fab(attyp,lback=.false.)
-             call caltabtC(celtyp,attyp,lperiod,boxndm)
+             call caltabtC(celtyp,attyp,lperiod,boxndm,psc=psc)
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              call celtyp%dealloc ; call attyp%dealloc
              ! ceci est un test du calcul des forces sur un sous-ensemble des atomes

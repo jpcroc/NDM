@@ -48,7 +48,7 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     logical :: test_sigma
-    if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****'
+    if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****',itloopmax
     ! Appel de la routine generale des forces
     test_sigma=(mod(iteration,itesigma)==0)
 
@@ -60,13 +60,10 @@ contains
     end if
     if (lTberendsen) call calfoberend(atdml)
     if (itloopmax==0) then
-       call analyseT (atdml,celndm,boxndm)
+       call analyseT (atdml,celndm,boxndm,psc)
        call endrunT(atdml,celndm,boxndm,.true.)
     end if
 
-
-    !  call analyse
-    !    call calctemp (temptyp)
      do while ((iteration.le.itloopmax).and.(timel.lt.timeloopmax))
        iteration = iteration+1
 
@@ -119,7 +116,7 @@ contains
 #endif
           sigtot = sigkine+sig
        end if
-       call analyseT (atdml,celndm,boxndm)
+       call analyseT (atdml,celndm,boxndm,psc)
        call controleT(atdml,celndm,boxndm)
 
     end do

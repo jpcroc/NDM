@@ -142,6 +142,16 @@ subroutine init_voisinage (cellv,psc)
 
   enddo
   write(6,*)'rangspace ',myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
+!!$  do ip=1,psc%nbr_proc_voisin
+!!$     write(10+myidsp,*)'procvoisin',ip,psc%proc_voisin(ip),'nbcell', psc%nbr_cell_frontiere(ip)     
+!!$     do i=1,psc%nbr_cell_frontiere(num_proc_vois)
+!!$        write(10+myidsp,*)'cell du procvoisin',i,psc%cell_frontiere(ip,i)
+!!$     end do
+!!$  end do
+!!$  write(10,*)'nb cell fantomes',psc%nbr_cell_ftm
+!!$  do i=1,psc%nbr_cell_ftm
+!!$     write(10+myidsp,*)'cell fantome',psc%cell_ftm(i)
+!!$  end do
 end subroutine init_voisinage
 end module init_vois_mod
 #endif

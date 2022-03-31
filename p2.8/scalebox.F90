@@ -72,7 +72,7 @@ contains
    end if
 #endif
    
-   call caltabtC(celndm,atpr,lperiod,boxndm)
+   call caltabtC(celndm,atpr,lperiod,boxndm,psc=psc)
 #ifdef PARA
    call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
 #else

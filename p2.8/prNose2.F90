@@ -412,26 +412,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 #endif
     CALL ScaleBox(atpr,celndm,boxndm,psc)
     
-!!$#ifdef PARA
-!!$       if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-!!$          atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
-!!$          call periodbox (boxndm,atpr)
-!!$          call caltabtC(celndm,atpr,lperiod,boxndm)
-!!$       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-!!$          call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
-!!$          sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
-!!$          if (iewald>0) call calpo_ew(boxndm,atpr%imm)
-!!$
-!!$          ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
-!!$    else
-!!$           CALL ScaleBox(atpr,celndm,boxndm)
-!!$
-!!$    end if
-!!$#else
-!!$
-!!$       CALL ScaleBox(atpr,celndm,boxndm)
-!!$
-!!$#endif
 
 #ifdef PARA
 !    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )

@@ -23,6 +23,7 @@ contains
 
     integer::i,j,imin,imax,jmin,jmax,ko1,koo,i2,i1
     real(double)::dmin,dmax,dist,c1,c2,c3,c1p,c2p,c3p
+    
     call caltabtC(celndm,atdml,lperiod,boxndm)
     ! Vecteurs de la boîte et grandeurs associées à l'instant initial
 

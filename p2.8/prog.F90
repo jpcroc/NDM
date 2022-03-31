@@ -214,7 +214,7 @@ contains
           case(11)
              if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
              CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc0) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
-             call analyseT(atdml,celndm,boxndm)
+             call analyseT(atdml,celndm,boxndm,psc0)
              call controleT(atdml,celndm,boxndm)
              call endrunT(atdml,celndm,boxndm,latcomp)
 

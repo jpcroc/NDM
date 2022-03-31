@@ -14,7 +14,7 @@ module ForceMatrix_mod
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
        &NDM_MPI_REAL_DOUBLE,para_space_config,status,comm_space,mpi_world
   use mod_para,only:maj_atomes_frt_ftm
-  USE init_vois_mod,only: init_voisinage
+!  USE init_vois_mod,only: init_voisinage
 #else
   use Tpara,only:myidsp,nprocspace,para_space_config,nprocs
 #endif
@@ -86,7 +86,7 @@ contains
        ifin=(1+paraFM%image)*nq
     end if
    
-    call initloc(atfm,celfm,atfmloc,celfmloc,boxfm,paraFM,rumax,lperiod,ldistrib=.false.,psc=pscfm) !initloc contient caltabtc sur atloc
+    call initloc(atfm,celfm,atfmloc,celfmloc,boxfm,paraFM,rumax,lperiod,ldistrib=.false.,psc=pscfm) !initloc contient caltabt(c) sur atloc
     call pointer_caltabt_calfo(sig,potist,atfm,celfm,boxfm,atfmloc,celfmloc,parafm,&
          &lperiod,lupdate=.false.,psc=pscfm,lcalcvois=.false.)
     if (lmaster) then 

@@ -55,7 +55,7 @@ module posana
     real(double) :: plmin(3),plmax(3) ! bords de la portion afichÃ©e de la boite
     real(double) :: tvac ,tint,deltx,delty,deltz ! distance pour les lacunes et les int
     real(double) :: tdep ! seuil de deplacement
-        real(double),allocatable::rc(:)
+    real(double),allocatable::rc(:)
 contains
 
   subroutine anapos(atana,celana,boxana,itapp)
@@ -364,7 +364,7 @@ contains
     !calcul en deux temps
     !calcul du nombre de voisins par atome
 
-    call caltabtC(celcf,atcf,lperiod,boxcf) 
+    call caltabtC(celcf,atcf,lperiod,boxcf)
     !    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
     
 

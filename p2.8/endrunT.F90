@@ -1,6 +1,5 @@
 module endrunT_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE analyseT_mod,only:analyseT
   use calcangle_mod,only:adft,adf0
   USE arret_ndm_mod,only:arret_ndm
   USE sauvegardeT_mod,only:sauvegardeT!,cin2gin
@@ -116,10 +115,6 @@ contains
     iteration=0
  end if
 
- !  select type(atdml)
- !  type is (atom_config_d)
- !     call analyseT(atdml,celndm,boxndm)
- !  end select
 
 
  if (iterasmol.GE.0) call rasmolT (atdml,boxndm,999999999,latcomp=latcomp)

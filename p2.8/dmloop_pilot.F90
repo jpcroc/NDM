@@ -17,7 +17,7 @@ contains
   ! boucle de DM pour velocity Verlet
   ! ************************************************
 
-  subroutine dmloop_pilot(atdml,celndm,boxndm,psc)
+  subroutine dmloop_pilot(atdml,celndm,boxndm,psc,linit)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -28,12 +28,15 @@ contains
     type(box_config)::boxndm
     class(atom_config_d)::atdml
     type(cell_config):: celndm
+    logical,optional::linit
+    logical::lini=.false.
+    if (present(linit))lini=linit
 
     select case (dmtype) 
     case(4,10)
        call dmloop_vverlet (atdml,celndm,boxndm,psc)
     case(8)
-       call dmloop_lpr (atdml,celndm,boxndm,psc)
+       call dmloop_lpr (atdml,celndm,boxndm,psc,linit=lini)
     case (1)
        call dmloop (atdml,celndm,boxndm,psc)
     case (21)
@@ -43,6 +46,7 @@ contains
     end select
 
     if (lcdp) then
+       if (rang==0) write (6, *) '*******return CDP**** '
        return
     else
        if (rang==0) write (6, *) '*******Derniere iteration **** '

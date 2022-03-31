@@ -95,7 +95,7 @@ contains
              call initspeed(atdml,boxndm)
        end select
     end if
-    call caltabtC(celndm,atdml,lperiod,boxndm)
+    call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if

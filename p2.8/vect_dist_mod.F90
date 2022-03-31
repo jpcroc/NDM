@@ -138,4 +138,26 @@ contains
     return
     
   end subroutine closest_at
+
+  subroutine distat(xi,x0,box,dist)
+    type(box_config),intent(in)::box
+    real(double), dimension(3),intent(in)::xi,x0
+    real(double),intent(out)::dist
+    
+    real(double),dimension(3)::dx
+    real(double),dimension (3,2)::xat
+    integer::ns=2
+    xat(:,1)=xi(:)
+    xat(:,2)=x0(:)
+    call cryst_to_cart (ns,xat,box%bg,-1)
+    dx(1:3)=xat(1:3,1)-xat(1:3,2)
+    WHERE ( (dx.GT.0.5d0).OR.(dx.LT.-0.5d0) )
+       dx(1:3) = dx(1:3) - Dble(Nint(dx(1:3)))
+    END WHERE
+    dx = MatMul(box%at,dx)
+    dist = sqrt(Sum( dx(1:3)**2 ))
+    return
+  end subroutine distat
+
+
 end module vect_dist_mod

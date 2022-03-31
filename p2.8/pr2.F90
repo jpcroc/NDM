@@ -383,27 +383,6 @@ end if
     
     CALL ScaleBox(atpr,celndm,boxndm,psc)
     
-!!$#ifdef PARA
-!!$    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-!!$
-!!$       call periodbox (boxndm,atpr)
-!!$       call caltabtC(celndm,atpr,lperiod,boxndm)
-!!$       call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
-!!$
-!!$       if (iewald>0)  call calpo_ew(boxndm,atpr%imm)
-!!$
-!!$    else
-!!$      CALL ScaleBox(atpr,celndm,boxndm)
-!!$
-!!$    end if
-!!$
-!!$
-!!$#else
-!!$    ! On recalcule et réalloue les cellules, puis on applique les conditions aux
-!!$    ! limites périodiques sur les positions des atomes
-!!$    CALL ScaleBox(atpr,celndm,boxndm)
-!!$#endif
-
 #ifdef PARA
 !    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
     sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )

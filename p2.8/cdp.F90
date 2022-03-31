@@ -9,7 +9,7 @@ module cdp_mod
   USE boxconfig,only:box_config
   USE cellconfig, only:cell_config,caltabtC
   use rasmolT_mod,only:rasmolT
-  use vect_dist_mod,only:closest_at
+  use vect_dist_mod,only:closest_at,distat
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE caltabi_mod,only: caltabi
   USE sauvegardeT_mod,only:sauvegardeT
@@ -169,14 +169,19 @@ contains
     real(double) :: a1,a2,a3,c1,c2,c3,z1,r2,rd,z3,z2, edt,dimin
     real(double),dimension(3):: xdec, xavant,xapres,xpositest
     real(double), dimension(1,3) :: cv
+    real(double),dimension(3)::x0,xi
     real(double),dimension(:),allocatable:: edrat
     integer,allocatable::nb_at_typ(:),last_at_typ(:),iatvac(:)
-    logical::l2close
+    integer :: iclose
+    logical::l2close,lcloseP
     integer::numproc,iatint
     integer::formatsauv=3
-    integer::jint,iinttot,numcell,imt,ntry2
+    integer::jint,iinttot,numcell,imt,iold
     logical::lsuiv,lcrea0
     character::fnamcout*80
+    
+    
+    
     if (myidsp==0) then
        if (iseed.le.0) then
           call system_clock (iseed) 
@@ -218,15 +223,16 @@ contains
     else
        timeloopmax= (1+int(timel/timecdp))*timecdp
        itloopmax=itecdp*(1+int(float(iteration)/float(itecdp)))
-
     end if
 
+    if (rang==0)write(6,*)'ITER',iteration,itecdp,itloopmax
+    
     if (ltimec) then
        itloopmax=100000000
     else
        timeloopmax=1d9
     end if
-    if (rang==0) write(6,*)'timeloopmax itloopmax restart',timeloopmax,itloopmax
+    if (rang==0) write(6,*)'timeloopmax itloopmax restart',timeloopmax,itloopmax,lrestart
     nvactot=sum(nvac(1:ntyp)); ninttot=sum(nbint(1:ntyp))
     allocate(atomvac%iproc(nvactot))
     allocate(atomvac%ityp(nvactot))
@@ -263,8 +269,6 @@ contains
           lrestart=.false.
        endif
        if (lcrea0) then 
-!          write(6,*)'itmax,timemax,itecdp,timecdp,iteration,timel'
-!          write(6,*)itmax,timemax,itecdp,timecdp,iteration,timel
           last_at_typ=0
           natyp=0
           nb_at_typ=0
@@ -283,20 +287,19 @@ contains
           if (ltimec) then
              timeloopmax=timel+timecdp
           else
-             itloopmax=min(iteration+itecdp-1,itmax)
+             itloopmax=min(iteration+itecdp,itmax)
           end if
           if (myidsp==0) then
              write(6,*)'****************************************'
              write(6,*)'POINT DEFECT CREATION '!,iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
              write(6,*)'iteration,timel, itloopmax,timeloopmax,nvactot, ninttot'
-             write(6,*)iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
+             write(6,'(I10,G18.8,I9,G18.8,2I7)')iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
              write(6,*)'****************************************'
           end if
           natgm=maxval(atdml%num_at_glob(1:atdml%im))
           !#ifdef PARA
           call comm_space%max(natgm)
           !#endif
-
 
           ivactot=0
           atomvac%natg=0 ! on remet à 0 les indices
@@ -433,17 +436,19 @@ contains
              iinttot=0 
              do iti=1,ntyp
                 do iint=1,nbint(iti)
-                   l2close=.true. ! le do while doit être fait au moins une fois
-                   ntry=0; ntry2=0
+                   l2close=.true.
+                   ntry=0
+
                    iinttot=iinttot+1 ! indice l'ensemble des interstitiels (inter-types)
-                   do while (l2close)
+                   do while (l2close==.true.)
+                      ntry=ntry+1
+                      iclose=0;lcloseP=.false.
                       if (myidsp==0) then
                          select case(typint)
                          case(0)
 2                           continue
-                            ntry=ntry+1
+
                             if (ntry==100) then
-                               write(6,*)' INT typ0 NTRY exceeded'
                                call arret_ndm
                             end if
                             call random_number(z1)
@@ -473,38 +478,59 @@ contains
                             xposItest(3)=z1
                          end select
                          call cryst_to_cart (1, xpositest, boxndm%at, 1) !cryst vers cart
-                      end if
 
+                      end if
+                      
+
+                    
 #ifdef PARA
                       call comm_space%bcast(0,xpositest)
+
                       if (lspacendm) then
                          call coord_to_cell(xposItest,numcell,boxndm%bg,celndm%nox,celndm%noy,celndm%noz)
                          numproc=celndm%proc_cell(numcell)
                       else
                          numproc=0
                       end if
-                      !                   if (myidsp==0)write(6,*)'PROCint',numcell,numproc,xpositest
 #else
                       numproc=0
 #endif
+
+                      if (dminins.gT.0) then
+                         l2close=.false.
+                         do iold=1,iinttot-1
+                            xi(:)=atomint%pos(:,iold)
+                            x0(:)=xpositest(:)
+                            call distat(xi,x0,boxndm,dimin)
+                            if (dimin.lt.dminins) then
+                               l2close=.true.
+                               exit
+                            end if
+                         end do
+                         if (.not.l2close)then
+                            call closest_at(xpositest,atdml,celndm,boxndm,lperiod,rumin=dminins,lclose=lcloseP,dist=dimin)
+                            if (lcloseP) then
+                               iclose=iclose+1
+                            end if
+#ifdef PARA
+                               call comm_space%sum(iclose)
+#endif
+
+
+                            if (iclose.ne.0)l2close=.true.
+                         end if
+                      else
+                         l2close=.false.
+                      end if
+
                       
 !                      write(6,*)'PROCint',numcell,numproc,myidsp,xpositest
-                      if (numproc == myidsp) then
-                         ntry2=ntry2+1
-                         if (ntry2==100) then
-                            call arret_ndm
-                         end if
+                      !if (numproc == myidsp) then
 
-                         l2close=.false.             
-                         if (dminins.gT.0) then
-                            !                            call atdml%print
-!                            write(6,*)'posi',xpositest
-                            call closest_at(xpositest,atdml,celndm,boxndm,lperiod,rumin=dminins,lclose=l2close,dist=dimin)
-!                            write(6,*)dimin
-                         end if
+                       !  l2close=.false.
                          !#ifdef PARA
-                      end if
-                      call comm_space%bcast(numproc,l2close)
+                      !end if
+!                      call comm_space%bcast(numproc,l2close)
                       !#endif
 
                       if (.not.l2close) then ! not too close ==> intertsitiel+1
@@ -532,7 +558,6 @@ contains
                             atdml%fp(:,atdml%im)=0
                             atdml%num_at_glob(atdml%im)=natgM+1
 
-
                             select type(atdml)
                             class is (atom_config_d)
                                atdml%vp(:,atdml%im)=0
@@ -542,7 +567,8 @@ contains
                          end if
                          !#endif
                       end if
-                   end do
+                      
+                   end do !boucle l2close
                 end do
              end do
 
@@ -555,6 +581,7 @@ contains
                 do i=1,ninttot
                    write(121,'(3G15.6,I6)')atomint%pos(:,i),atomint%ityp(i)
                 end do
+                flush(121)
              end if
 
           end if
@@ -568,12 +595,11 @@ contains
              call arret_ndm
           end if
           !#endif
-          call caltabtC(celndm,atdml,lperiod,boxndm)
+          call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
           if (atdml%ltabvois) call caltabi(atdml,celndm,boxndm)
 #ifdef PARA
-          if (lspacendm) call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc)
+          if (lspacendm) call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc=psc)
 #endif
-!          write(6,*)'POST INT'
           if (lspacendm) then
              call rasmolT(atdml,boxndm,itinser,'POST_INSER',latcomp=.false.,ivisumol=ivisu)
           else
@@ -596,14 +622,16 @@ contains
           case(32,33,34)
              call NGC (atdml,celndm,boxndm,psc)
           case(4,10,8,1,21,22)
-             call dmloop_pilot(atdml,celndm,boxndm,psc)
+             call dmloop_pilot(atdml,celndm,boxndm,psc,linit=.false.)
           case default
              write(6,*)'WTFCDP2'
              call arret_ndm
           end select
        end select
-       write(6,*)'POST itmax,timemax,itecdp,timecdp,iteration,timel'
-       write(6,*)itmax,timemax,itecdp,timecdp,iteration,timel
+       if (rang==0) then
+          write(6,*)'POST itmax,timemax,itecdp,timecdp,iteration,timel'
+          write(6,*)itmax,timemax,itecdp,timecdp,iteration,timel
+       end if
        lcrea0=.true.
     end do
     fnamcout = fnam(1:lenfnam)//'.F.cout'

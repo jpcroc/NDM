@@ -1393,7 +1393,7 @@ contains
           end if
        end do
        if (imtot.ne.atcfcomp%im) then
-          write(6,*)'atomes perdus ?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
+          write(6,*)'atomes perdus 1?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
           call MPI_finalize(ierr)
           call arret_ndm
        end if
@@ -1513,7 +1513,7 @@ contains
 
 
        if (imtot.ne.atcfcomp%im) then
-          write(6,*)'atomes perdus ?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
+          write(6,*)'atomes perdus 3?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
           call MPI_finalize(ierr)
           call arret_ndm
        end if

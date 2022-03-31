@@ -134,7 +134,7 @@ contains
           div%mpi_image%rank=myidsp
           div%mpi_image%nproc=nprocspace
           div%mpi_image%comm=COMM_space%comm
-!          call atmol%vers_master(atcomp,div,'ixnlusv')
+          !          call atmol%vers_master(atcomp,div,'ixnlusv')
           call atmol%vers_master(atcomp,div)
           !im =atcomp%im
           !imm=atcomp%im

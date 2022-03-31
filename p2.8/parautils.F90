@@ -80,7 +80,7 @@
        celloc=>cellcomp
     end if
 
-    call caltabtC(celloc,atloc,lperiod,box)
+    call caltabtC(celloc,atloc,lperiod,box,psc=psc)
     if ((lcalcv).and.(atloc%ltabvois)) call caltabi(atloc,celloc,box)
 #ifdef PARA
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -321,11 +321,12 @@ subroutine driver_caltabt_para(atcf,celcf,boxcf,psc,lperiod,lcalcvois)
     logical,intent(in),optional::lcalcvois
     logical::lcalcv=.false.
     logical  ::test_sigma
+    integer::i
     !conditions periodiques
     if (present(lcalcvois))lcalcv=lcalcvois
     call periodbox (boxcf,atcf)
     ! repartition des atomes dans la nouvelle boite
-    call caltabtC(celcf,atcf,lperiod,boxcf)
+    call caltabtC(celcf,atcf,lperiod,boxcf,psc=psc)
     if (atcf%ltabvois.and.(lcalcv)) then
        call caltabi(atcf,celcf,boxcf)
     end if
@@ -335,6 +336,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call maj_atomes_frt_ftm(atcf,celcf,boxcf,psc)
     end if
 #endif
+    
     return
   end subroutine driver_caltabt_para
     

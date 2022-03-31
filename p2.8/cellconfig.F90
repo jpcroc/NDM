@@ -4,7 +4,7 @@ module cellconfig
   use atomconfig,only : atom_config,atom_config_d,atom_config_e
   use boxconfig,only:box_config
   use paraconfig,only:para_config
-  use Tpara,only:para_space_config,mpi_communicator
+  use Tpara,only:para_space_config,mpi_communicator,myidsp
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
@@ -302,12 +302,13 @@ contains
   end subroutine neigcelN
 
 
-  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr)
+  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
     type(box_config),intent(inout)::boxcf
+    type(para_space_config),optional::psc    
     logical,intent(in)::lperiod
     logical,intent(in),optional::lextr
     logical::lextrait=.false.
@@ -400,6 +401,19 @@ contains
           END IF
           ! ==== Fin MODIF Clouet =================
           cell%atincel(cell%nato(koo),koo) = i
+!          write(6,*)i,koo
+#ifdef PARA
+          if (present(psc)) then 
+             if (cell%proc_cell(koo).ne.myidsp) then
+                if(.not.(any(psc%cell_ftm(:)==koo))) then
+                   write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frotier cell'
+                   call arret_ndm
+                end if
+             end if
+          end if
+
+#endif
+          
           
        end do
        !debug            call cryst_to_cart (imm, xpnp, at, 1)  !cryst vers cart

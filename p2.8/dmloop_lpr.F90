@@ -19,7 +19,7 @@ contains
   ! boucle de DM pour velocity Verlet
   ! ************************************************
 
-  subroutine dmloop_lpr(atpr,celndm,boxndm,psc)
+  subroutine dmloop_lpr(atpr,celndm,boxndm,psc,linit)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -48,18 +48,21 @@ contains
     !real(double), external :: calcvol
 
 #endif
+    logical,optional::linit
+    logical::lini=.false.
+    if (present(linit))lini=linit
+
 
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
 
-
-    ! Initialization -------------------------------------------------------
-    IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
-       call initlprNose(atpr,celndm,boxndm)
-    ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
-       call initlpr(atpr,celndm,boxndm,psc)
-    END IF
-
-!    call analyseT(atpr,celndm,boxndm)
+    if(lini) then 
+       ! Initialization -------------------------------------------------------
+       IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
+          call initlprNose(atpr,celndm,boxndm)
+       ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
+          call initlpr(atpr,celndm,boxndm,psc)
+       END IF
+    end if
 
     ! MD loop -------------------------------------------------------------
 
@@ -82,7 +85,7 @@ contains
        timel=timel+tstep
     END IF
 
-    call analyseT(atpr,celndm,boxndm)
+    call analyseT(atpr,celndm,boxndm,psc)
 
 
 

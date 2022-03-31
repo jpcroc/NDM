@@ -95,7 +95,7 @@ contains
        lrepart=.true.
     end if
     call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
-    call caltabtC(celndm,atdml,lperiod,boxndm)
+    call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
     call init_pot2(boxndm,atdml%imm)
 #ifdef DECOUP
     ! Pas la peine d'aller plus loin dans l'initialisation
@@ -141,7 +141,7 @@ contains
     end if
 #endif
     !<---------end setting the cell diviion ----------------------
-    call caltabtC(celndm,atdml,lperiod,boxndm)
+    call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if
@@ -214,7 +214,7 @@ contains
     end select
 
     if (itmax==0) stop
-    call caltabtC(celndm,atdml,lperiod,boxndm)
+    call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if
