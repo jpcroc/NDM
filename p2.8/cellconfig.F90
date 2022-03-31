@@ -406,7 +406,8 @@ contains
           if (present(psc)) then 
              if (cell%proc_cell(koo).ne.myidsp) then
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
-                   write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frotier cell'
+                   write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &
+                        &myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frotier cell'
                    call arret_ndm
                 end if
              end if
