@@ -53,7 +53,7 @@ contains
     if (present(linit))lini=linit
 
 
-    if (rang==0) write (6, *) '***** PREMIERE ITERATION  ****'
+    if (rang==0) write (6, *) '***** PREMIERE ITERATION LPR  ****', itloopmax,timeloopmax
 
     if(lini) then 
        ! Initialization -------------------------------------------------------

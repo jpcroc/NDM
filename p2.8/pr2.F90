@@ -388,7 +388,6 @@ end if
     sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
 #endif
 
-
     ! Calcul des forces et des contraintes à l'instant t+dt
   CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
       if (l2t)then
@@ -524,7 +523,6 @@ end if
     ! Énergie cinétique de la cellule (Eq. 2.14, Ref.2)
     Kcell = 0.5d0*wbox*Sum( hDot(1:3,1:3)**2 )
     EcellPR = Kcell + Ucell
-    
     IF (lTHoover) THEN
        ! Dérivée de la viscosité et énergie cinétique du thermostat
        zDot(1) = (2.d0*(kine + Kcell) - gNose*bk*Text)/wHoover(1) &
@@ -548,7 +546,6 @@ end if
     END IF
     call calctemp(T1,kin1,atpr,celndm)
     
-
   end subroutine pr1
 
 end module !Parrinello_Rahman

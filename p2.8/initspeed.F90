@@ -469,4 +469,31 @@ contains
 
 
   end subroutine  gaussianrand
+
+
+  subroutine init_speed_1at(vp, temp,xpp,xp,iti)
+    real(double),intent(in)::temp,xp(3)
+    integer,intent(in)::iti
+    real(double),intent(out)::vp(3),xpp(3)
+    
+    real(double) :: v0, v1, z1, z2, z3, z4
+
+    v0 = sqrt(2.D0*bk*temp)
+    call random_number(z1)
+    call random_number(z2)
+    call random_number(z3)
+    call random_number(z4)
+    if(z1.eq.0.d0) z1=0.000000001d0
+    if(z2.eq.0.d0) z2=0.000000001d0
+    if(z3.eq.0.d0) z3=0.000000001d0
+    if(z4.eq.0.d0) z4=0.000000001d0
+
+    v1 = one/sqrt(cm(iti))
+    vp(1) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
+    vp(2) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
+    vp(3) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
+    xpp(:) =xp(:)-vp(:)*tstep
+  end subroutine init_speed_1at
+
+    
 end module initspeed_mod

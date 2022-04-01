@@ -57,7 +57,7 @@ contains
     logical::lcalcvois
 
 
-    if (rang==0) write (6, *) '***** PREMIERE ITERATION  VERLET STD ***'
+    if (rang==0) write (6, *) '***** PREMIERE ITERATION  VERLET STD ***',itloopmax,timeloopmax
 
     ! Initialization
     IF ((dmtype.EQ.21).AND.lFire) THEN

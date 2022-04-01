@@ -48,7 +48,7 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     logical :: test_sigma
-    if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****',itloopmax
+    if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****',itloopmax,timeloopmax
     ! Appel de la routine generale des forces
     test_sigma=(mod(iteration,itesigma)==0)
 

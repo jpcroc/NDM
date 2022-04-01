@@ -2,7 +2,7 @@ module cdp_mod
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,iteration,lperiod,itloopmax,ivisu,&
-       &timel,timeloopmax,timemax,lrestart,fnam,lenfnam
+       &timel,timeloopmax,timemax,lrestart,fnam,lenfnam,text
   USE arret_ndm_mod,only: arret_ndm
   USE var_pot,only:ntyp
   USE atomconfig,only : atom_config,atom_config_d
@@ -17,6 +17,7 @@ module cdp_mod
 #ifdef PARA  
   USE mod_para,only:maj_atomes_frt_ftm
 #endif
+  use initspeed_mod,only:init_speed_1at
   use constrconf_mod,only:coord_to_cell
   !#else
   !  USE Tpara,only:myidsp,para_space_config
@@ -62,7 +63,7 @@ contains
 
     allocate(nvac(ntyp));allocate(nbint(ntyp))
 
-    itprep=0
+    itprep=1
     itecdp=-1      ! introduction de DP tout les itecdp pas
     nvac(:)=0 ! number of vacancies 
     nbint(:)=0 ! number of interstitials 
@@ -195,6 +196,7 @@ contains
     !    call atdml%print
     if (itprep.gT.0) then 
        itloopmax=itprep
+       timeloopmax=1d8
 
        select type(atdml)
        type is (atom_config)
@@ -210,7 +212,7 @@ contains
           case(32,33,34)
              call NGC (atdml,celndm,boxndm,psc)
           case(4,10,8,1,21,22)
-             call dmloop_pilot(atdml,celndm,boxndm,psc)
+             call dmloop_pilot(atdml,celndm,boxndm,psc,linit=.true.)
           case default
              call arret_ndm
           end select
@@ -430,7 +432,6 @@ contains
              end if
 
           end if
-!          write(6,*)'POST VAC'
           ! insérer les interstitiels       
           if (ninttot.ne.0) then
              iinttot=0 
@@ -440,7 +441,7 @@ contains
                    ntry=0
 
                    iinttot=iinttot+1 ! indice l'ensemble des interstitiels (inter-types)
-                   do while (l2close)
+                   do while (l2close==.true.)
                       ntry=ntry+1
                       iclose=0;lcloseP=.false.
                       if (myidsp==0) then
@@ -560,8 +561,13 @@ contains
 
                             select type(atdml)
                             class is (atom_config_d)
-                               atdml%vp(:,atdml%im)=0
-                               atdml%xpp(:,atdml%im)=atdml%xp(:,atdml%im)
+                               if (text.gt.0) then
+                                  call init_speed_1at(atdml%vp(:,atdml%im),text,atdml%xpp(:,atdml%im),&
+                                       &atdml%xp(:,atdml%im),atdml%ityp(atdml%im))
+                               else
+                                  atdml%vp(:,atdml%im)=0
+                                  atdml%xpp(:,atdml%im)=atdml%xp(:,atdml%im)
+                               end if
                             end select
                             !#ifdef PARA
                          end if
