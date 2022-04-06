@@ -1,9 +1,9 @@
 module steepestdescent_mod
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:rang
+  USE gen_com_m, ONLY:rang,fpstop,fsumstop
 
-  use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin,unitgc
+  use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin,unitgc,Fmin
 
   !  real(double),allocatable,dimension (:,:)::X,R,G,H,F
 
@@ -18,14 +18,17 @@ contains
     real(double)::beta0
     logical ::lover,ldirOK
 
-    integer::idir
+    integer::idir,idesc
     real(double)::forctot,formax
     real(double),dimension(N)::R0,F0,R1
     real(double)::V0,Vb,Vbs2
     logical ::lok,lvm
-
-    call setV_F (N,R,V,F,lover,lvm)
-        if (lvm)Rmin=R
+    idesc=0
+    call setV_F (N,R,V,F,lover,lvm,idesc)
+    if (lvm)then
+       Rmin=R
+       Fmin=F
+    end if
     if (lover) then
        if (rang==0)write(unitgc,*)'NO NEED TO RELAX'
        if (rang==0)write(6,*)'NO NEED TO RELAX'
@@ -34,10 +37,13 @@ contains
 
     do idir=1,ndir
        if (rang==0)       write(unitgc,*)
+
        R0(1:N)=R(1:N)
        F0(1:N)=F(1:N)
        V0=V
-       call mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK,ldirOK)
+       idesc=0
+
+       call mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK,ldirOK,idesc)
 
        if (rang==0)       write(unitgc,*)'>>> minimization idirection; lOVER;  beta ',idir,lover,beta
        if (rang==0)       write(6,*)'>>> minimization idirection; lOVER ',idir,lover
@@ -54,9 +60,21 @@ contains
           else
              if (rang==0)  write(unitgc,*)'NOT RELAXED!!!!!!!'
              if (rang==0)  write(6,*)'NOT RELAXED!!!!!!!'
-             call test_conv(N,F,lover,V,R,lvm)
-             if (.not.lvm)R=Rmin
           end if
+       end if
+       if (idesc==0) then
+          write(6,*) 'no decrease of energy along this line '
+          write(unitgc,*) 'no decrease of energy along this line '
+          if (.not.lvm) then
+             write(6,*) 'no force convergence along line ::STOP'
+             write(unitgc,*) 'no force convergence along line ::STOP'
+             call arret_ndm
+          end if
+       else
+          write(unitgc,*) 'position set at minimum energy found during line search'
+          write(6,*) 'position set at minimum energy found during line search'
+          R=Rmin
+          F=Fmin
        end if
        if (ldirOK) then
           beta0=beta
@@ -79,35 +97,42 @@ contains
     logical ::lover
     logical,intent(in)::lorig
 
-    integer::idir,i
+    integer::idir,i,idesc
     real(double)::forctot,formax,gamma
     real(double),dimension(N)::R0,F0,R1,G,H
     real(double)::V0,Vb,Vbs2,gigi,xixi
     logical ::lok,ldirOK
-
-    call setV_F (N,R,V,F,lover,lvm)
-    if (lvm)Rmin=R
-!        write(unitgc,*)'post sVF0',V
+    idesc=0
+    call setV_F (N,R,V,F,lover,lvm,idesc)
+    idir=-1
+    if (lvm)then
+       Rmin=R
+       Fmin=F
+    end if
+    !        write(unitgc,*)'post sVF0',V
     if (lover) then
        if (rang==0)       write(unitgc,*)'NO NEED TO RELAX'
        if (rang==0)       write(6,*)'NO NEED TO RELAX'
        return
     end if
-
+    R0=R
+    F0=F
     G=F
     H=F
     do idir=1,ndir
-       R0(1:N)=R(1:N)
+       !       R0(1:N)=R(1:N)
        V0=V
-              write(unitgc,*)
-              write(unitgc,*)'**************************'
-              write(unitgc,*)'callmindir idir beta E0',idir,beta,V0
-!              write(6,*)'callmindir idir  E0',idir,beta
-       call mindir(lover,beta,N,R0,V0,H,R,V,F,lOK,ldirOK)
+       idesc=0
+       write(unitgc,*)
+       write(unitgc,*)'**************************'
+       write(unitgc,*)'callmindir idir beta E0',idir,beta,V0
+       !              write(6,*)'callmindir idir  E0',idir,beta
+       call mindir(lover,beta,N,R0,V0,H,R,V,F,lOK,ldirOK,idesc)
+
 
        if (rang==0) write(unitgc,'(A,I3,2L2,E20.10)')' >>> minimization idirection; lOVER; LDIROK; beta ',idir,lover,ldirOK,beta
        if (rang==0) write(6,'(A,I3,2L2,E20.10)')' >>> minimization idirection; lOVER; LDIROK; beta ',idir,lover,ldirOK,beta
-!       if (rang==0) write(6,'(A,I3,L2)')' >>> minimization idirection lover ldirOK ',idir,lover,ldirOK
+       !       if (rang==0) write(6,'(A,I3,L2)')' >>> minimization idirection lover ldirOK ',idir,lover,ldirOK
        if (lover) then
           if (lok) then
              if (rang==0)  write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
@@ -117,42 +142,56 @@ contains
              if (rang==0)  write(unitgc,*)'NOT RELAXED!!!!!!!'
              if (rang==0)  write(6,*)'NOT RELAXED!!!!!!!'
              call test_conv(N,F,lover,V,R,lvm)
-             if (.not.lvm)R=Rmin
+             if (.not.lvm)then
+                R=Rmin
+                F=Fmin
+             end if
           end if
        end if
-       if (ldirOK) then
-          beta0=beta
-          xixi=0
-          gigi=0
-          if (lorig) then
-             do i=1,N
-                xixi=xixi+F(i)*F(i)
-                gigi=gigi+G(i)*G(i)
-             end do
+       if (idesc.gt.0) then 
+          if (ldirOK) then
+             beta0=beta
+             xixi=0
+             gigi=0
+             if (lorig) then
+                do i=1,N
+                   xixi=xixi+F(i)*F(i)
+                   gigi=gigi+G(i)*G(i)
+                end do
+             else
+                do i=1,N
+                   xixi=xixi+(F(i)+G(i))*F(i)
+                   gigi=gigi+G(i)*G(i)
+                end do
+             end if
+             gamma=xixi/gigi
+             G(:)=F(:)
+             H(:)=G(:)+gamma*H(:)
+             R0(1:N)=R(1:N)
           else
-             do i=1,N
-                xixi=xixi+(F(i)+G(i))*F(i)
-                gigi=gigi+G(i)*G(i)
-             end do
-          end if
-          gamma=xixi/gigi
-          G(:)=F(:)
-          H(:)=G(:)+gamma*H(:)
+             write(unitgc,*) 'position set at minimum energy found during line search'
+             write(6,*) 'position set at minimum energy found during line search'
+             R0=Rmin
+             G=Fmin
+             H=Fmin
+          endif
        else
-          beta=beta0
-          write (unitgc,*)'RESET GC beta',beta
-          G=F
-          H=F
-       endif
-
+          fpstop=fpstop/3
+          fsumstop=fsumstop/3
+          write(unitgc,*) 'fpstop and fsumstop divided by 3'
+          write(6,*) 'fpstop and fsumstop divided by 3'
+          
+       end if
     end do
     return
+
   end subroutine conjugategradient
 
-  subroutine mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK,ldir)
+  subroutine mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK,ldir,idesc)
     logical,intent(out)::lover,lok
     real(double)::beta
     integer,intent(in)::N
+    integer,intent(inout)::idesc
     real(double),intent(in)::R0(N),V0,F0(N)
     real(double),intent(out)::R(N),V,F(N)
 
@@ -172,7 +211,7 @@ contains
     Rbeta(:)=R0(:)+beta*F0(:)
     write(6,*)'IN mindir betaIN',beta
     write(unitgc,*)'IN mindir betaIN',beta
-    call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
+    call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir,idesc)
 !    if (ldir) beta=beta/3
     if (lover.or.ldir) then
        write(unitgc,*)'retout direct de mindir',lover,ldir
@@ -188,7 +227,7 @@ contains
           betaip1=betai*fhi
           write(unitgc,*)'betanew step',betaip1,i,nstep
           Rbeta(:)=R0(:)+betaip1*F0(:)
-          call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
+          call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir,idesc)
           write(unitgc,*)'betaold Vbeta',betaip1,Vbeta
           if (ldir) beta=betaip1/3
           if (lover.or.ldir) then
@@ -217,7 +256,7 @@ contains
 !          write(unitgc,*)'beta',betaip1
           write(unitgc,*)'betanew step',betaip1,i,nstep
           Rbeta(:)=R0(:)+betaip1*F0(:)
-          call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
+          call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir,idesc)
           Vbetaip1=Vbeta
           if (lover.or.ldir) then
              write(unitgc,*)'retout de mindir dans etape1.2',lover,ldir
@@ -266,7 +305,7 @@ contains
        !       write(unitgc,*)'mindir2 beta',beta
        Rbeta(:)=R0(:)+beta*F0(:)
        write(unitgc,*)'betanew step',beta,i,nstep
-       call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
+       call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir,idesc)
        !       write(unitgc,*)'vbeta', vbeta
        Vd=Vbeta
        if (lover.or.ldir) then
@@ -316,17 +355,18 @@ contains
   end subroutine mindir
 
 
-    subroutine calcETcheck (N,Rcalc,Vcalc,Fcalc,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir)
+    subroutine calcETcheck (N,Rcalc,Vcalc,Fcalc,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir,idesc)
       logical,intent(out)::lover,lvm,ldir
       integer,intent(in)::N
+      integer:: idesc
       real(double)::Rcalc(N),Vcalc,Fcalc(N),Rmin(N)
       real(double),intent(in)::R0(N),V0,F0(N)
       real(double),intent(out)::R(N),V,F(N)
       real(double)::normF02
       lover=.false.
       ldir=.false.
-!      write(6,*)'DBG in calcetcheck'
-      call setV_F (N,Rcalc,Vcalc,Fcalc,lover,lvm)
+!     write(6,*)'DBG in calcetcheck'
+      call setV_F (N,Rcalc,Vcalc,Fcalc,lover,lvm,idesc)
       if (lvm)Rmin=R
       call checkline(lover,ldir,F0,normF02,N,R,V,F,Rcalc,Vcalc,Fcalc)
       if (lover) then
@@ -374,8 +414,7 @@ contains
     do i=1,N
        scal=scal+Ft(i)*F0(i)
     end do
-!!$    write(unitGC,*)
-!!$    write(unitGC,*)'SCAL',scal
+    write(unitGC,*)'SCAL',scal
     do i=1,N
        Fp(i)=scal*F0(i)/normF02
     end do

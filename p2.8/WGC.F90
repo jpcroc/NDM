@@ -1,7 +1,7 @@
 module WGC_mod
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:  inv_angst, lperiod, rang,leev,sig,cunitP, &
+  USE gen_com_m, ONLY:  inv_angst, lperiod, rang,leev,sig,cunitp, &
        iteration, itesauv, itesauvposition, itesauvforce, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, iterasmol,&
        dmtype, potist,mdcg_noise,lspaceNDM,sigstop,sigext,ihbox0,unitP,lprahman
@@ -40,7 +40,7 @@ module WGC_mod
   class(atom_config),allocatable,target::atcible
   type(para_config),target::gcpara
   real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h!,sigsym
-  real(double),allocatable,dimension (:)::R,F,Rmin
+  real(double),allocatable,dimension (:)::R,F,Rmin,Fmin
   integer::Nvar,ndir,nstep,ityprel
   real(double)::betaguess,V,betaV,betaP,beta,betaV0,betaP0
   integer::ncalls,nextsauv,nextmol,formatsauv
@@ -59,11 +59,12 @@ contains
 !       fpstop=fpstop0
        Nvar=atcgcomp%im*3
        if (allocated (R).or.allocated(F)) then
-          deallocate(R,F,Rmin)
+          deallocate(R,F,Rmin,Fmin)
        end if
        allocate(R(Nvar))
        allocate(Rmin(Nvar))
        allocate(F(Nvar))
+       allocate(Fmin(Nvar))
        if (mdcg_noise /= 0 ) then
           call bruit_xp (bruitmd,atcgcomp%im)
           bruitmd=bruitmd*1d-8
@@ -80,9 +81,10 @@ contains
           R(3*i1-2:3*i1) = atcgcomp%xp(1:3,i)
        end do
        Rmin=R
+       Fmin=F
     case(2)
        if (allocated (R).or.allocated(F)) then
-          deallocate(R,F,Rmin)
+          deallocate(R,F,Rmin,Fmin)
        end if
 
 
@@ -109,6 +111,7 @@ contains
        allocate(R(Nvar))
        allocate(Rmin(Nvar))
        allocate(F(Nvar))
+       allocate(Fmin(Nvar))
        R(:)=0;V=0;F(:)=0
        boxcgmin=boxcg
 !!$       ip=0
@@ -130,6 +133,7 @@ contains
        end do
 
        Rmin=R
+       Fmin=F
     end select
   end subroutine initsteep
 
@@ -191,7 +195,7 @@ contains
                ') (3,', ic, ') =',sig(1:3,ic)*unitP
           ppot = ppot+1.0/3.0*sig(ic,ic)
        end do
-       write(unitgc,*)'PRESSURE',ppot*unitP
+       write(unitgc,'(A,G18.10)')'PRESSURE',ppot*unitP
     end if
     select case (ityprel)
     case(2)
@@ -256,7 +260,7 @@ contains
        select case(ityprel)
        case(1)
           if(lvm) then
-             write(unitgc,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt ,forctot,formax,sigm2,' ****', deltaV
+             write(unitgc,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2,' ****', deltaV
              write(6,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2,' ****', deltaV*erg2eV
           else
              write(unitgc,'(I4,4E20.11)')ncalls, Vt ,forctot,formax,sigm2
@@ -392,14 +396,14 @@ contains
     return
   end subroutine back2NDM
 
-  subroutine setV_F(N,R,V,F,lover,lvm)
+  subroutine setV_F(N,R,V,F,lover,lvm,idesc)
 
     real(double),intent(in):: R(N)
     real(double),intent(out)::V
     real(double),intent(out)::F(N)
     logical,intent(out)::lover,lvm
     integer,intent(in) ::N
-
+    integer,intent(inout)::idesc
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
@@ -438,7 +442,6 @@ contains
        call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
        lchgbox=.true.
     end select
-
     call periodbox (boxcg,atcgcomp)
     call depeche_mode (gcpara,lchgbox)
     V=potist
@@ -471,7 +474,8 @@ contains
           end do
        end do
     end select
-    call test_conv(N,F,lover,V,R,lvm)    
+    call test_conv(N,F,lover,V,R,lvm)
+    if (lvm) idesc=idesc+1
 
     !       do i=1,N
     !       write(unitgc,*)'R_F',i,R(i),F(i)

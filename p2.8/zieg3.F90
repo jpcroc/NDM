@@ -94,7 +94,7 @@ contains
           dd=f2p0/2
           ee=fp0
           ff=f0
-          write(6,*)'dd ee ff',dd,ee,ff
+!          write(6,*)'dd ee ff',dd,ee,ff
           AM(1,1)=x**5
           AM(1,2)=x**4
           AM(1,3)=x**3
@@ -110,7 +110,7 @@ contains
           BM(3)=g2px-2*dd
 
           call reslin33(ABC,BM,AM)
-          write(6,*)'ABC',ABC
+!          write(6,*)'ABC',ABC
 !          stop
           aa=ABC(1);bb=ABC(2);cc=ABC(3)
           

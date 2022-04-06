@@ -28,7 +28,7 @@ subroutine init_voisinage (cellv,psc)
   integer :: nb_frontieres
   integer :: nb_internes
   integer :: nb_fantomes_max
-  integer :: i
+  integer :: i,ip
   integer :: i_cell_ftm
   integer :: num_proc_vois
 
@@ -141,7 +141,7 @@ subroutine init_voisinage (cellv,psc)
      endif ! la cellule est locale
 
   enddo
-  write(6,*)'rangspace ',myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
+!!$  write(6,*)'rangspace ',myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
 !!$  do ip=1,psc%nbr_proc_voisin
 !!$     write(10+myidsp,*)'procvoisin',ip,psc%proc_voisin(ip),'nbcell', psc%nbr_cell_frontiere(ip)     
 !!$     do i=1,psc%nbr_cell_frontiere(num_proc_vois)

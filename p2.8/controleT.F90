@@ -109,8 +109,8 @@ contains
           fpSmax = MaxVal( Abs(atdml%fp(:,1:atdml%im)) )
 #ifdef PARA
           if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-             call comm_space%sum(fpmax)
-             call comm_space%sum(fpsmax)
+             call comm_space%max(fpmax)
+             call comm_space%max(fpsmax)
           end if
 #endif
 

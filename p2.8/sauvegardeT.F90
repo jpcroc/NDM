@@ -51,7 +51,7 @@ contains
 
 
 #endif
-    if (rang==0) write(6,*)'insauvegarde',iteration,timel
+!    if (rang==0) write(6,*)'insauvegarde',iteration,timel
     formatsauvmod = mod(formatsauv,2)
     im =atdml%im
     if (atdml%im_glob==0) then

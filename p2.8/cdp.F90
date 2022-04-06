@@ -441,7 +441,7 @@ contains
                    ntry=0
 
                    iinttot=iinttot+1 ! indice l'ensemble des interstitiels (inter-types)
-                   do while (l2close==.true.)
+                   do while (l2close.eqv..true.)
                       ntry=ntry+1
                       iclose=0;lcloseP=.false.
                       if (myidsp==0) then
