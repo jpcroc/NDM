@@ -3,7 +3,7 @@ module steepestdescent_mod
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:rang,fpstop,fsumstop
 
-  use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin,unitgc,Fmin
+  use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin,unitgc,Fmin,fpstopsig,ityprel
 
   !  real(double),allocatable,dimension (:,:)::X,R,G,H,F
 
@@ -34,6 +34,9 @@ contains
        if (rang==0)write(6,*)'NO NEED TO RELAX'
        return
     end if
+    R0(1:N)=R(1:N)
+    F0(1:N)=F(1:N)
+    V0=V
 
     do idir=1,ndir
        if (rang==0)       write(unitgc,*)
@@ -66,9 +69,18 @@ contains
           write(6,*) 'no decrease of energy along this line '
           write(unitgc,*) 'no decrease of energy along this line '
           if (.not.lvm) then
-             write(6,*) 'no force convergence along line ::STOP'
-             write(unitgc,*) 'no force convergence along line ::STOP'
-             call arret_ndm
+             write(6,*) 'no force convergence along line ::RETRY'
+             write(unitgc,*) 'no force convergence along line ::RETRY'
+             fpstop=fpstop/3
+             fsumstop=fsumstop/3
+             fpstopsig=fpstopsig/3
+             write(unitgc,'(A,2G18.8)') 'fpstop, fsumstop and fpstopsig divided by 3',fpstop,fsumstop,fpstopsig
+             write(6,'(A,2G18.8)') 'fpstop, fsumstop and fpstopsig divided by 3',fpstop,fsumstop,fpstopsig
+!             call arret_ndm
+          else
+             R0(1:N)=R(1:N)
+             F0(1:N)=F(1:N)
+             V0=V
           end if
        else
           write(unitgc,*) 'position set at minimum energy found during line search'
@@ -148,7 +160,41 @@ contains
              end if
           end if
        end if
-       if (idesc.gt.0) then 
+       if (ityprel==1) then 
+          if (idesc.gt.0) then 
+             if (ldirOK) then
+                beta0=beta
+                xixi=0
+                gigi=0
+                if (lorig) then
+                   do i=1,N
+                      xixi=xixi+F(i)*F(i)
+                      gigi=gigi+G(i)*G(i)
+                   end do
+                else
+                   do i=1,N
+                      xixi=xixi+(F(i)+G(i))*F(i)
+                      gigi=gigi+G(i)*G(i)
+                   end do
+                end if
+                gamma=xixi/gigi
+                G(:)=F(:)
+                H(:)=G(:)+gamma*H(:)
+                R0(1:N)=R(1:N)
+             else
+                write(unitgc,*) 'position set at minimum energy found during line search'
+                write(6,*) 'position set at minimum energy found during line search'
+                R0=Rmin
+                G=Fmin
+                H=Fmin
+             endif
+          else
+             fpstop=fpstop/3
+             fsumstop=fsumstop/3
+             write(unitgc,'(A,2G18.8)') 'fpstop, fsumstop divided by 3',fpstop,fsumstop
+             write(6,'(A,2G18.8)') 'fpstop, fsumstop divided by 3',fpstop,fsumstop
+          end if
+       else
           if (ldirOK) then
              beta0=beta
              xixi=0
@@ -175,13 +221,9 @@ contains
              G=Fmin
              H=Fmin
           endif
-       else
-          fpstop=fpstop/3
-          fsumstop=fsumstop/3
-          write(unitgc,*) 'fpstop and fsumstop divided by 3'
-          write(6,*) 'fpstop and fsumstop divided by 3'
-          
        end if
+          
+
     end do
     return
 

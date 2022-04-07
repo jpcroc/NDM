@@ -67,7 +67,7 @@ contains
     lchg=.true.
 
     if (rang==0 )write(unitgc,*)'IN NGC',betaguess
-    if (rang==0 )write(6,*)'IN NGC',betaguess
+!    if (rang==0 )write(6,*)'IN NGC',betaguess
     betaV=betaguess
     betaP=betaguess/3
     betaV0=betaguess
@@ -108,6 +108,7 @@ contains
        if (lprahman) then
           do irel=1,10
              ityprel=1
+             fpstop=fpstop0
              beta=betaV
              call pilotcg(ityprel)
              call final_tconv(lover)
@@ -133,16 +134,16 @@ contains
        end if
        if (lover) then
           if (rang==0) then
-             write(unitgc,*) 'MIMIMUM REACHED after ',ncalls,' force calculations'
+             write(unitgc,*) 'MINIMUM REACHED after ',ncalls,' force calculations'
              write(unitgc,*) '*****************ENERGY erg eV ',Potist,Potist*erg2eV
-             write(6,*) 'MIMIMUM REACHED after ',ncalls,' force calculations'
+             write(6,*) 'MINIMUM REACHED after ',ncalls,' force calculations'
              write(6,*) '*****************ENERGY erg eV ',Potist,Potist*erg2eV
           end if
        else
           if (rang==0) then
-             write(unitgc,*) 'MIMIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
+             write(unitgc,*) 'MINIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
              write(unitgc,*) 'ENERGY erg eV ***',Potist,Potist*erg2eV
-             write(6,*) 'MIMIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
+             write(6,*) 'MINIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
              write(6,*) 'ENERGY erg eV ***',Potist,Potist*erg2eV
           end if
        end if
@@ -184,11 +185,9 @@ contains
              lorig=.true.
           end if
           write(unitgc,'(A,E20.8,A,2E20.8)')'******CG*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
-          write(unitgc,*)' NCALLS         ENERGY (eV)        FORCTOT     &
-               & FORMAX (eV/Ang)    SIGMAX (kbar)    [*** energy gain  eV]'
+          write(unitgc,*)' NCALLS         ENERGY (eV)        FORCTOT   FORMAX (eV/Ang)    SIGMAX (kbar)    [*** energy gain  eV]'
           write(6,'(A,E20.8,A,2E20.8)')'******CG*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
-          write(6,*)' NCALLS         ENERGY (eV)        FORCTOT     &
-               & FORMAX (eV/Ang)    SIGMAX (kbar)   [ *** energy gain  eV]'
+          write(6,*)' NCALLS         ENERGY (eV)        FORCTOT   FORMAX (eV/Ang)    SIGMAX (kbar)   [ *** energy gain  eV]'
           call conjugategradient(Nvar,R,V,F,lover,lorig,betaV0)
        end select
 
