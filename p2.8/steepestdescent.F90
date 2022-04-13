@@ -1,9 +1,10 @@
 module steepestdescent_mod
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:rang,fpstop,fsumstop
+  USE gen_com_m, ONLY:rang,fpstop,fsumstop,dmtype
 
-  use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin,unitgc,Fmin,fpstopsig,ityprel
+  use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin,unitgc,Fmin,fpstopsig,ityprel,&
+       &lvarstop,fstpdecr,ft2,fm2,fs2
 
   !  real(double),allocatable,dimension (:,:)::X,R,G,H,F
 
@@ -11,95 +12,94 @@ module steepestdescent_mod
 
 contains
 
-  subroutine steepestdescent(N,R,V,F,lover,beta0)
-    integer::N
-    real(double),dimension(:)::R,F
-    real(double)::V
-    real(double)::beta0
-    logical ::lover,ldirOK
-
-    integer::idir,idesc
-    real(double)::forctot,formax
-    real(double),dimension(N)::R0,F0,R1
-    real(double)::V0,Vb,Vbs2
-    logical ::lok,lvm
-    idesc=0
-    call setV_F (N,R,V,F,lover,lvm,idesc)
-    if (lvm)then
-       Rmin=R
-       Fmin=F
-    end if
-    if (lover) then
-       if (rang==0)write(unitgc,*)'NO NEED TO RELAX'
-       if (rang==0)write(6,*)'NO NEED TO RELAX'
-       return
-    end if
-    R0(1:N)=R(1:N)
-    F0(1:N)=F(1:N)
-    V0=V
-
-    do idir=1,ndir
-       if (rang==0)       write(unitgc,*)
-
-       R0(1:N)=R(1:N)
-       F0(1:N)=F(1:N)
-       V0=V
-       idesc=0
-
-       call mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK,ldirOK,idesc)
-
-       if (rang==0)       write(unitgc,*)'>>> minimization idirection; lOVER;  beta ',idir,lover,beta
-       if (rang==0)       write(6,*)'>>> minimization idirection; lOVER ',idir,lover
-       if (lover) then
-!          write(6,*)
-          if (rang==0)           write(unitgc,*)'*************************************'
-
-          if (lok) then
-             if (rang==0)           write(unitgc,*)
-             if (rang==0)             write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
-             if (rang==0)   write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
-             if (rang==0)   write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
-             return
-          else
-             if (rang==0)  write(unitgc,*)'NOT RELAXED!!!!!!!'
-             if (rang==0)  write(6,*)'NOT RELAXED!!!!!!!'
-          end if
-       end if
-       if (idesc==0) then
-          write(6,*) 'no decrease of energy along this line '
-          write(unitgc,*) 'no decrease of energy along this line '
-          if (.not.lvm) then
-             write(6,*) 'no force convergence along line ::RETRY'
-             write(unitgc,*) 'no force convergence along line ::RETRY'
-             fpstop=fpstop/3
-             fsumstop=fsumstop/3
-             fpstopsig=fpstopsig/3
-             write(unitgc,'(A,2G18.8)') 'fpstop, fsumstop and fpstopsig divided by 3',fpstop,fsumstop,fpstopsig
-             write(6,'(A,2G18.8)') 'fpstop, fsumstop and fpstopsig divided by 3',fpstop,fsumstop,fpstopsig
-!             call arret_ndm
-          else
-             R0(1:N)=R(1:N)
-             F0(1:N)=F(1:N)
-             V0=V
-          end if
-       else
-          write(unitgc,*) 'position set at minimum energy found during line search'
-          write(6,*) 'position set at minimum energy found during line search'
-          R=Rmin
-          F=Fmin
-       end if
-       if (ldirOK) then
-          beta0=beta
-       else
-          beta=beta0
-          write (unitgc,*)'RESET STEEP beta',beta
-!          G=F
-!          H=F
-       endif
-
-    end do
-    return
-  end subroutine steepestdescent
+!!$  subroutine steepestdescent(N,R,V,F,lover,beta0)
+!!$    integer::N
+!!$    real(double),dimension(:)::R,F
+!!$    real(double)::V
+!!$    real(double)::beta0
+!!$    logical ::lover,ldirOK
+!!$
+!!$    integer::idir,idesc
+!!$    real(double),dimension(N)::R0,F0,R1
+!!$    real(double)::V0,Vb,Vbs2
+!!$    logical ::lok,lvm
+!!$    idesc=0
+!!$    call setV_F (N,R,V,F,lover,lvm,idesc)
+!!$    if (lvm)then
+!!$       Rmin=R
+!!$       Fmin=F
+!!$    end if
+!!$    if (lover) then
+!!$       if (rang==0)write(unitgc,*)'NO NEED TO RELAX'
+!!$       if (rang==0)write(6,*)'NO NEED TO RELAX'
+!!$       return
+!!$    end if
+!!$    R0(1:N)=R(1:N)
+!!$    F0(1:N)=F(1:N)
+!!$    V0=V
+!!$
+!!$    do idir=1,ndir
+!!$       if (rang==0)       write(unitgc,*)
+!!$
+!!$       R0(1:N)=R(1:N)
+!!$       F0(1:N)=F(1:N)
+!!$       V0=V
+!!$       idesc=0
+!!$
+!!$       call mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK,ldirOK,idesc)
+!!$
+!!$       if (rang==0)       write(unitgc,*)'>>> minimization idirection; lOVER;  beta ',idir,lover,beta
+!!$       if (rang==0)       write(6,*)'>>> minimization idirection; lOVER ',idir,lover
+!!$       if (lover) then
+!!$!          write(6,*)
+!!$          if (rang==0)           write(unitgc,*)'*************************************'
+!!$
+!!$          if (lok) then
+!!$             if (rang==0)           write(unitgc,*)
+!!$             if (rang==0)             write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+!!$             if (rang==0)   write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+!!$             if (rang==0)   write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+!!$             return
+!!$          else
+!!$             if (rang==0)  write(unitgc,*)'NOT RELAXED!!!!!!!'
+!!$             if (rang==0)  write(6,*)'NOT RELAXED!!!!!!!'
+!!$          end if
+!!$       end if
+!!$       if (idesc==0) then
+!!$          write(6,*) 'no decrease of energy along this line '
+!!$          write(unitgc,*) 'no decrease of energy along this line '
+!!$          if (.not.lvm) then
+!!$             write(6,*) 'no force convergence along line ::RETRY'
+!!$             write(unitgc,*) 'no force convergence along line ::RETRY'
+!!$             fpstop=fpstop/3
+!!$             fsumstop=fsumstop/3
+!!$             fpstopsig=fpstopsig/3
+!!$             write(unitgc,'(A,2G18.8)') 'fpstop, fsumstop and fpstopsig divided by 3',fpstop,fsumstop,fpstopsig
+!!$             write(6,'(A,2G18.8)') 'fpstop, fsumstop and fpstopsig divided by 3',fpstop,fsumstop,fpstopsig
+!!$!             call arret_ndm
+!!$          else
+!!$             R0(1:N)=R(1:N)
+!!$             F0(1:N)=F(1:N)
+!!$             V0=V
+!!$          end if
+!!$       else
+!!$          write(unitgc,*) 'position set at minimum energy found during line search'
+!!$          write(6,*) 'position set at minimum energy found during line search'
+!!$          R=Rmin
+!!$          F=Fmin
+!!$       end if
+!!$       if (ldirOK) then
+!!$          beta0=beta
+!!$       else
+!!$          beta=beta0
+!!$          write (unitgc,*)'RESET STEEP beta',beta
+!!$!          G=F
+!!$!          H=F
+!!$       endif
+!!$
+!!$    end do
+!!$    return
+!!$  end subroutine steepestdescent
 
   subroutine conjugategradient(N,R,V,F,lover,lorig,beta0)
     integer::N
@@ -108,15 +108,12 @@ contains
     real(double)::V
     logical ::lover
     logical,intent(in)::lorig
+    integer::i,idesc
 
-    integer::idir,i,idesc
-    real(double)::forctot,formax,gamma
-    real(double),dimension(N)::R0,F0,R1,G,H
-    real(double)::V0,Vb,Vbs2,gigi,xixi
-    logical ::lok,ldirOK
-    idesc=0
+    logical:: ldecr=.false.,lcritI
+    real(double)::fsumstopI,fpstopI,fpstopsigI,fmts,fsts,fsigts
+    
     call setV_F (N,R,V,F,lover,lvm,idesc)
-    idir=-1
     if (lvm)then
        Rmin=R
        Fmin=F
@@ -127,10 +124,90 @@ contains
        if (rang==0)       write(6,*)'NO NEED TO RELAX'
        return
     end if
+
+    if (lvarstop) then
+       write(6,*)'VARIABLE FPSTOP/SIGSTOP/SUMSTOP'
+       fpstopI=fpstop
+       fsumstopI=fsumstop
+       fpstopsigI=fpstopsig
+       lcritI=.false.
+       if (ityprel==1) then
+          write(6,*)'fpstop fsumstop at start',fpstop,fsumstop
+       else
+          write(6,*)'fsigstop at start',fpstopsig
+       end if
+       do while (.not.lcritI)
+!!$          if (ityprel==1) then
+!!$             write(6,*)'fpstop fsumstop at this poistart',fpstop,fsumstop
+!!$          else
+!!$             write(6,*)'fsigstop at start',fpstopsig
+!!$          end if
+
+          if (ityprel==1) then 
+             if (fpstop.gt.0) then
+                fmts=fm2/fstpdecr
+                if (fmts.gt.fpstopI) then
+                   ldecr=.true.
+                   fpstop=fmts
+                else
+                   fpstop=fpstopI
+                end if
+             end if
+             if (fsumstop.gt.0) then
+                fsts=ft2/fstpdecr
+                if (fsts.gt.fsumstopI) then
+                   ldecr=.true.
+                   fsumstop=fsts
+                else
+                   fsumstop=fsumstopI
+                end if
+             end if
+             write(6,*)'fpstop and/or fsumstop set to',fpstop,fsumstop
+          else
+             fsigts=fs2/fstpdecr
+             if (fsigts.gt.fpstopsig) then
+                ldecr=.true.
+                fpstopsig=fsigts
+             else
+                fpstopsig=fpstopsigI
+             end if
+             write(6,*)'fpstopsig set to',fpstopsig
+          end if
+          
+          call do_CG(N,R,V,F,lover,lorig,beta0)
+          ldecr=.false.
+          write(6,*)'--- end of intermediate minimization---'
+          if ((fpstop==fpstopI).and.(fsumstop==fsumstopI).and.(fpstopsig==fpstopsigI))lcritI=.true.
+       end do
+    else
+       call do_CG(N,R,V,F,lover,lorig,beta0)
+    end if
+    return
+    
+  end subroutine conjugategradient
+
+  subroutine do_CG(N,R,V,F,lover,lorig,beta0)
+    integer::N
+    real(double)::beta0
+    real(double),dimension(:)::R,F
+    real(double)::V
+    logical ::lover
+    logical,intent(in)::lorig
+
+    integer::idir,i,idesc
+    real(double)::gamma
+    real(double),dimension(N)::R0,F0,R1,G,H
+    real(double)::V0,Vb,Vbs2,gigi,xixi
+    logical ::lok,ldirOK
+
+    
     R0=R
     F0=F
     G=F
     H=F
+
+
+    
     do idir=1,ndir
        !       R0(1:N)=R(1:N)
        V0=V
@@ -189,10 +266,10 @@ contains
                 H=Fmin
              endif
           else
-             fpstop=fpstop/3
-             fsumstop=fsumstop/3
-             write(unitgc,'(A,2G18.8)') 'fpstop, fsumstop divided by 3',fpstop,fsumstop
-             write(6,'(A,2G18.8)') 'fpstop, fsumstop divided by 3',fpstop,fsumstop
+             fpstop=fpstop/1.5
+             fsumstop=fsumstop/1.5
+             write(unitgc,'(A,2G18.8)') 'fpstop, fsumstop divided by 1.5',fpstop,fsumstop
+             write(6,'(A,2G18.8)') 'fpstop, fsumstop divided by 1.5',fpstop,fsumstop
           end if
        else
           if (ldirOK) then
@@ -214,6 +291,11 @@ contains
              G(:)=F(:)
              H(:)=G(:)+gamma*H(:)
              R0(1:N)=R(1:N)
+             select case (dmtype)
+             case(32)
+                H=F  ! steepestdescent H is put back to the simple force direction
+             case (33,34)
+             end select
           else
              write(unitgc,*) 'position set at minimum energy found during line search'
              write(6,*) 'position set at minimum energy found during line search'
@@ -227,7 +309,7 @@ contains
     end do
     return
 
-  end subroutine conjugategradient
+  end subroutine do_CG
 
   subroutine mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK,ldir,idesc)
     logical,intent(out)::lover,lok
@@ -251,8 +333,8 @@ contains
     linit=.false.
     normF02=SUM(F0(:)**2)
     Rbeta(:)=R0(:)+beta*F0(:)
-    write(6,*)'IN mindir betaIN',beta
-    write(unitgc,*)'IN mindir betaIN',beta
+!!$    write(6,*)'IN mindir betaIN',beta
+!!$    write(unitgc,*)'IN mindir betaIN',beta
     call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir,idesc)
 !    if (ldir) beta=beta/3
     if (lover.or.ldir) then

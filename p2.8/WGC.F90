@@ -41,12 +41,13 @@ module WGC_mod
   type(para_config),target::gcpara
   real(double), dimension(3,3) :: trh, invh, invtrh, forcebox,h!,sigsym
   real(double),allocatable,dimension (:)::R,F,Rmin,Fmin
-  integer::Nvar,ndir,nstep,ityprel
+  integer::Nvar,ndir,nstep,ityprel,ncgtry
   real(double)::betaguess,V,betaV,betaP,beta,betaV0,betaP0
   integer::ncalls,nextsauv,nextmol,formatsauv
   logical::lvm
-  real(double)::fpstop0,fpstopsig
-  logical,target:: lchg,lcalcvois
+  real(double)::fpstop0,fpstopsig,fstpdecr
+  logical,target:: lchg,lcalcvois,lvarstop
+  real(double)::  ft2,fm2,fs2
 contains
 
   subroutine initsteep
@@ -56,6 +57,7 @@ contains
     select case(ityprel)
 
     case(1)
+       if (lprahman)        fpstopsig=(sigstop/unitP)*(boxcg%volu**0.6666666)
 !       fpstop=fpstop0
        Nvar=atcgcomp%im*3
        if (allocated (R).or.allocated(F)) then
@@ -71,7 +73,7 @@ contains
        else
           bruitmd=0
        end if
-
+       mdcg_noise=0
        R(:)=0;V=0;F(:)=0
        atcgmin=atcgcomp
        do i=1,atcgcomp%im
@@ -86,9 +88,6 @@ contains
        if (allocated (R).or.allocated(F)) then
           deallocate(R,F,Rmin,Fmin)
        end if
-
-
-
        fpstopsig=(sigstop/unitP)*(boxcg%volu**0.6666666)
        write(unitgc,*)'FPSTOPSIG',fpstopsig
 !	fpstopsig=fpstop
@@ -145,13 +144,12 @@ contains
     logical::lover
     logical,optional::lvm
     real(double),save::Vminabs=1d16
-
-    real(double)::forctot,formax,deltaV,sigmax,fsigmax,FM2,FT2,sigm2,ppot
+    real(double),dimension (3,3)::invh,invtrh,forcebx
+    real(double)::formax,forctot,fsigmax,deltaV,sigmax,sigm2,ppot,fsifm2
     integer::i,i1,i2,ip,ic
     if (present(lvm))lvm=.false.
 
-    formax=0
-
+    ft2=0;fm2=0;fs2=0
     lover=.false.
     write(unitGC,*)
     if (present(Vt)) then
@@ -199,18 +197,18 @@ contains
     end if
     select case (ityprel)
     case(2)
-       ft2=sqrt( SUM(atcgcomp%fp(:,:)**2))
-       fm2=0
+       forctot=sqrt( SUM(atcgcomp%fp(:,:)**2))
+       formax=0
        do i=1,atcgcomp%im
           do ic=1,3
-             fm2=max(fm2,abs(atcgcomp%fp(ic,i)))
+             formax=max(formax,abs(atcgcomp%fp(ic,i)))
           end do
        enddo
-       ft2 = ft2*erg2eV/angst
-       fm2  = fm2*erg2eV/angst
-       do i=1,Nvar
-          formax = Max( formax,Abs(Ft(i)))
-       end do
+       forctot = forctot*erg2eV/angst
+       formax  = formax*erg2eV/angst
+!!$       do i=1,Nvar
+!!$          formax = Max( formax,Abs(Ft(i)))
+!!$       end do
 
        Fsigmax=0;sigmax=0
        do ip=1,Nvar
@@ -226,7 +224,19 @@ contains
        sigm2=sigmax
        write(unitgc,*)'fsigmax fpstopsig',fsigmax, fpstopsig
        if (fsigmax.le.fpstopsig) lover=.true.
+
     case(1)
+
+       call MatInv(boxcg%at(:,:),invh)
+       invtrh = Transpose(invh)
+       forcebx(:,:)=MatMul( sig(:,:) , invtrh(:,:) )*boxcg%volu
+       fsigmax=0
+       do i1=1,3
+          do i2=1,3
+             fsigmax=max(fsigmax,abs(forcebx(i1,i2)))
+          end do
+       end do
+
        sigm2=0
        do i1=1,3
           do i2=1,3
@@ -241,9 +251,6 @@ contains
 
        forctot = forctot*erg2eV/angst
        formax  = formax*erg2eV/angst
-       ft2=forctot
-       fm2=formax
-
        if (fpstop>0) then   
           if (formax.le.fpstop) then
              lover=.true.
@@ -257,25 +264,15 @@ contains
     end select
 
     if (present(Vt)) then
-       select case(ityprel)
-       case(1)
+       ft2=forctot ; fm2=formax;fs2=fsigmax
           if(lvm) then
-             write(unitgc,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2,' ****', deltaV
-             write(6,'(I4,4E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2,' ****', deltaV*erg2eV
+             write(unitgc,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt ,ft2,fm2,Fs2, sigm2, ' ****', deltaV
+             write(6,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fs2, sigm2, ' ****', deltaV*erg2eV
           else
-             write(unitgc,'(I4,4E20.11)')ncalls, Vt ,forctot,formax,sigm2
-             write(6,'(I4,4E20.11)')ncalls, Vt*erg2eV ,forctot,formax,sigm2
-          end if
-       case(2)
-          if(lvm) then
-             write(unitgc,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt ,ft2,fm2,Fsigmax, sigmax, ' ****', deltaV
-             write(6,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax, sigmax, ' ****', deltaV*erg2eV
-          else
-             write(unitgc,'(I4,5E20.11)')ncalls, Vt ,ft2,fm2,Fsigmax,sigmax
-             write(6,'(I4,5E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fsigmax,sigmax
+             write(unitgc,'(I4,5E20.11)')ncalls, Vt ,ft2,fm2,Fs2,sigm2
+             write(6,'(I4,5E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fs2,sigm2
           end if
 
-       end select
        if (lvm)then
           select case(ityprel)
           case(2)
@@ -298,9 +295,9 @@ contains
     else
        select case(ityprel)
        case(1)
-          write(unitgc,'(A,2E20.11)')'test direction',formax,forctot
+          write(unitgc,'(A,2E20.11)')'test direction',fm2,ft2,Fs2,sigmax
        case(2)
-          write(unitgc,'(A,4E20.11)')'test direction',fm2,ft2,Fsigmax,sigmax
+          write(unitgc,'(A,4E20.11)')'test direction',fm2,ft2,Fs2,sigmax
        end select
     end if
     return
@@ -308,11 +305,14 @@ contains
 
   subroutine final_tconv(lover)
     logical,intent(out)::lover
-    real(double):: forctot,sigmax,formax
+    real(double):: forctot,sigmax,formax,fsigmax
     integer::i1,i2,i
+    real(double),dimension (3,3)::invh,invtrh,forcebx
+    
     forctot=sqrt( SUM(atcgcomp%fp(:,:)**2))
     formax=0
     sigmax=0
+    fsigmax=0
     do i=1,atcgcomp%im
        do i2=1,3
           formax = Max( formax,Abs(atcgcomp%fp(i2,i)))
@@ -325,21 +325,30 @@ contains
           end if
        end do
     end do
+       call MatInv(boxcg%at(:,:),invh)
+       invtrh = Transpose(invh)
+       forcebx(:,:)=MatMul( sig(:,:) , invtrh(:,:) )*boxcg%volu
+       fsigmax=0
+       do i1=1,3
+          do i2=1,3
+             fsigmax=max(fsigmax,abs(forcebx(i1,i2)))
+          end do
+       end do
 
     forctot = forctot*erg2eV/angst
     formax  = formax*erg2eV/angst
     write(unitgc,*)
-    write(unitgc,*)'  FORCE MAX            FORCETOT            SIGMAX'
-    write(unitgc,'(3E20.11)')formax,forctot,sigmax
-    write(unitgc,'(A,3E20.11)')'thresholds',fpstop,fsumstop,sigstop
+    write(unitgc,*)'  FORCE MAX            FORCETOT            FSIGMAX'
+    write(unitgc,'(3E20.11)')formax,forctot,Fsigmax
+    write(unitgc,'(A,3E20.11)')'thresholds',fpstop,fsumstop,fpstopsig
     write(unitgc,*)
     lover=.false.
     if (lprahman) then
        if (fpstop.gT.0) then
-          if ((formax.le.fpstop).and.(sigmax.le.sigstop))lover=.true.
+          if ((formax.le.fpstop).and.(fsigmax.le.fpstopsig))lover=.true.
        end if
        if (fsumstop.gT.0) then
-          if ((forctot.le.fsumstop).and.(sigmax.le.sigstop))lover=.true.
+          if ((forctot.le.fsumstop).and.(fsigmax.le.fpstopsig))lover=.true.
        end if
     else
        if (fpstop.gT.0) then
@@ -349,6 +358,7 @@ contains
           if (forctot.le.fsumstop)lover=.true.
        end if
     end if
+    ft2=forctot ; fm2=formax;fs2=fsigmax
     return
   end subroutine final_tconv
 
@@ -413,7 +423,6 @@ contains
     real(double)::aux,auy,auz
     character :: extension*2
     integer::lenfn2,ko,i1,i,i2,ip,ic
-    real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
     real(double)::volu,Press
 
     real(double) :: invVolu,pre,x,fmax
@@ -476,7 +485,6 @@ contains
     end select
     call test_conv(N,F,lover,V,R,lvm)
     if (lvm) idesc=idesc+1
-
     !       do i=1,N
     !       write(unitgc,*)'R_F',i,R(i),F(i)
     !    end do

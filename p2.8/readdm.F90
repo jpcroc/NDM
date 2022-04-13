@@ -32,7 +32,7 @@ contains
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,position_conversion_lammps&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
     use read_val
-    use WGC_mod,only:ndir,nstep,betaguess
+    use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr
     USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
@@ -87,7 +87,7 @@ contains
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
-         ndir,nstep,betaguess,&
+         ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 
 
@@ -96,11 +96,10 @@ contains
     !
     if (rang.eq.0) write(6,*) '>>>>>>>>>>> entree readdm'
 
-    ndir=50   !nombre de direction dans steepest descent
-    nstep=50  ! nombre de pas dans la minimisation sur une ligne en steepes descent
-    betaguess=1d-6
     fnamdin = fnam(1:lenfnam)//'.din'
     ! variables de dynamique
+
+
     lspaceNDM=.true.
     imm = 0                     !dimensionnement des tableaux atomiques
     itab = 10                   !period of cell repartition
@@ -327,7 +326,7 @@ contains
     depmaxts=0.02
     tsmin=2.0
 
-    units_lammps='metal'
+    units_lammps='TO_BE_SPECIFIED'
     lWgin=.false. ! =true écrit un fichier .newgin à la fin
     lvzeroneb=.false. ! si true , met vp à 0 ente chaque iteration neb (comportement pre ndm2020), defaut = false==> calcul plus rapide
     lparapath=.false.
@@ -344,6 +343,16 @@ contains
     nparafm=nprocs
     lwfm=.false.
     lwritefreq=.true.
+
+
+    ndir=50   !nombre de direction dans steepest descent
+    nstep=50  ! nombre de pas dans la minimisation sur une ligne en steepes descent
+    ncgtry=10
+    betaguess=1d-6
+    lvarstop=.false.
+    fstpdecr=10.
+
+
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -1375,7 +1384,7 @@ contains
        position_conversion_lammps=A2cm*0.529177249
        pressure_conversion_lammps=10.
     else
-       write(6,*)'error in units_lammps'
+       write(6,*)'error in units_lammps',units_lammps
        call arret_ndm
     end if
 #endif     
@@ -1404,6 +1413,11 @@ contains
           call arret_ndm
        end select
     end if
+
+    if (fstpdecr.le.1) then
+       write(6,*)'fstpdecr must be >1 ; stop'
+       stop
+    endif
     
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'

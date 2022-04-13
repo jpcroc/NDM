@@ -106,6 +106,7 @@ contains
        firsttime_lammps=.true.
        allocate (posa(3*atdml%im),  forca(3*atdml%im))
        call init_lammps()
+       if (rang==0) write(6,*)'postinitlammps'
     end if
 #endif  
     if (iterasmol>=0) then
