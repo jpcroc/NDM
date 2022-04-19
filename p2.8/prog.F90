@@ -93,7 +93,7 @@ contains
        atdml=>atdmd
     else
        select case(dmtype)
-          case(30,32,34,33,19)
+          case(30,32,34,33,19,35)
              atdml=>atdm
         case default
            atdml=>atdmd
@@ -128,7 +128,8 @@ contains
 !!$       select type (atdml)
 !!$       type is (atom_config)
 #ifdef PARA
-       if ((dmtype.ne.30).and.(dmtype.ne.31).and.(dmtype.ne.32).and.(dmtype.ne.34).and.(dmtype.ne.33))then
+       if ((dmtype.ne.35).and.(dmtype.ne.30).and.(dmtype.ne.31).and.(dmtype.ne.32)&
+            &.and.(dmtype.ne.34).and.(dmtype.ne.33))then
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc0)
           end if
@@ -147,7 +148,7 @@ contains
              select case (dmtype) 
              case(30,31)
                 call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
-             case(32,33,34)
+             case(32,33,34,35)
                 call NGC(atdml,celndm,boxndm,psc0)
                 call endrunT(atdml,celndm,boxndm,latcomp)
              end select
@@ -176,7 +177,7 @@ contains
 !!$                end select
                 itloopmax=itmax
                 timeloopmax=timemax
-                call dmloop_pilot(atdml,celndm,boxndm,psc0)
+                call dmloop_pilot(atdml,celndm,boxndm,psc0,linit=.true.)
              end if
           case(30,31)
              if (lcdp) then

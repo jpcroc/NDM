@@ -1,5 +1,5 @@
 module trempe_mod
-  USE gen_com_m, ONLY:lperiod,tstep,usdh
+  USE gen_com_m, ONLY:lperiod,tstep,usdh,rang
   use atomconfig,only:atom_config_d,atom_config_e
   implicit none
 contains
@@ -35,7 +35,7 @@ contains
     !
     im=atdml%im
     aux(:ntyp) = tstep**2/cm(:ntyp)
-    !  if (rang==0) write(6,*) 'entree trempe and the mass', cm(:ntyp), tstep
+    if (rang==0) write(6,*) 'entree trempe and the mass', cm(:ntyp), tstep,aux(:)
     do i = 1, im
        do ic = 1, 3
           if (atdml%vp(ic,i)*atdml%fp(ic,i)>0) then

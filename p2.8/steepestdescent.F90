@@ -1,10 +1,10 @@
 module steepestdescent_mod
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:rang,fpstop,fsumstop,dmtype
+  USE gen_com_m, ONLY:rang,fpstop,fsumstop,dmtype,itmax
 
   use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin,unitgc,Fmin,fpstopsig,ityprel,&
-       &lvarstop,fstpdecr,ft2,fm2,fs2
+       &lvarstop,fstpdecr,ft2,fm2,fs2,beta35,gammas,gammav
 
   !  real(double),allocatable,dimension (:,:)::X,R,G,H,F
 
@@ -12,95 +12,70 @@ module steepestdescent_mod
 
 contains
 
-!!$  subroutine steepestdescent(N,R,V,F,lover,beta0)
-!!$    integer::N
-!!$    real(double),dimension(:)::R,F
-!!$    real(double)::V
-!!$    real(double)::beta0
-!!$    logical ::lover,ldirOK
-!!$
-!!$    integer::idir,idesc
-!!$    real(double),dimension(N)::R0,F0,R1
-!!$    real(double)::V0,Vb,Vbs2
-!!$    logical ::lok,lvm
-!!$    idesc=0
-!!$    call setV_F (N,R,V,F,lover,lvm,idesc)
-!!$    if (lvm)then
-!!$       Rmin=R
-!!$       Fmin=F
-!!$    end if
-!!$    if (lover) then
-!!$       if (rang==0)write(unitgc,*)'NO NEED TO RELAX'
-!!$       if (rang==0)write(6,*)'NO NEED TO RELAX'
-!!$       return
-!!$    end if
-!!$    R0(1:N)=R(1:N)
-!!$    F0(1:N)=F(1:N)
-!!$    V0=V
-!!$
-!!$    do idir=1,ndir
-!!$       if (rang==0)       write(unitgc,*)
-!!$
-!!$       R0(1:N)=R(1:N)
-!!$       F0(1:N)=F(1:N)
-!!$       V0=V
-!!$       idesc=0
-!!$
-!!$       call mindir(lover,beta,N,R0,V0,F0,R,V,F,lOK,ldirOK,idesc)
-!!$
-!!$       if (rang==0)       write(unitgc,*)'>>> minimization idirection; lOVER;  beta ',idir,lover,beta
-!!$       if (rang==0)       write(6,*)'>>> minimization idirection; lOVER ',idir,lover
-!!$       if (lover) then
-!!$!          write(6,*)
-!!$          if (rang==0)           write(unitgc,*)'*************************************'
-!!$
-!!$          if (lok) then
-!!$             if (rang==0)           write(unitgc,*)
-!!$             if (rang==0)             write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
-!!$             if (rang==0)   write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
-!!$             if (rang==0)   write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
-!!$             return
-!!$          else
-!!$             if (rang==0)  write(unitgc,*)'NOT RELAXED!!!!!!!'
-!!$             if (rang==0)  write(6,*)'NOT RELAXED!!!!!!!'
-!!$          end if
-!!$       end if
-!!$       if (idesc==0) then
-!!$          write(6,*) 'no decrease of energy along this line '
-!!$          write(unitgc,*) 'no decrease of energy along this line '
-!!$          if (.not.lvm) then
-!!$             write(6,*) 'no force convergence along line ::RETRY'
-!!$             write(unitgc,*) 'no force convergence along line ::RETRY'
-!!$             fpstop=fpstop/3
-!!$             fsumstop=fsumstop/3
-!!$             fpstopsig=fpstopsig/3
-!!$             write(unitgc,'(A,2G18.8)') 'fpstop, fsumstop and fpstopsig divided by 3',fpstop,fsumstop,fpstopsig
-!!$             write(6,'(A,2G18.8)') 'fpstop, fsumstop and fpstopsig divided by 3',fpstop,fsumstop,fpstopsig
-!!$!             call arret_ndm
-!!$          else
-!!$             R0(1:N)=R(1:N)
-!!$             F0(1:N)=F(1:N)
-!!$             V0=V
-!!$          end if
-!!$       else
-!!$          write(unitgc,*) 'position set at minimum energy found during line search'
-!!$          write(6,*) 'position set at minimum energy found during line search'
-!!$          R=Rmin
-!!$          F=Fmin
-!!$       end if
-!!$       if (ldirOK) then
-!!$          beta0=beta
-!!$       else
-!!$          beta=beta0
-!!$          write (unitgc,*)'RESET STEEP beta',beta
-!!$!          G=F
-!!$!          H=F
-!!$       endif
-!!$
-!!$    end do
-!!$    return
-!!$  end subroutine steepestdescent
+  subroutine Adamrel(N,R,V,F,lover,beta0)
+    integer::N
+    real(double)::beta0
+    real(double),dimension(:)::R,F
+    real(double)::V
+    logical,intent(out) ::lover
 
+
+    integer::i,idesc,j,k
+
+    real(double),dimension(N)::R0,F0,vel
+    real(double)::V0,sk,skchap,Fsq,eps,beta35
+
+    beta35=1d-10
+
+    lover=.false.
+    
+    call setV_F (N,R,V,F,lover,lvm,idesc)
+    if (lvm)then
+       Rmin=R
+       Fmin=F
+    end if
+    !        write(unitgc,*)'post sVF0',V
+    if (lover) then
+       if (rang==0)       write(unitgc,*)'NO NEED TO RELAX'
+       if (rang==0)       write(6,*)'NO NEED TO RELAX'
+       return
+    end if
+
+    vel(1:N)=0
+    sk=0
+    Fsq=0
+    do j=1,N
+       Fsq=Fsq+F(j)*F(j)
+    end do
+    eps=sqrt(Fsq)/1d8
+    do k=1,itmax
+       vel(1:N)=gammav*vel(1:N)+(1-gammav)*F(1:N)*beta35
+       Fsq=0
+       do j=1,N
+          Fsq=Fsq+F(j)*F(j)
+       end do
+       sk=gammas*sk+(1-gammas)*(1-gammas)*fsq
+       vel(:)=vel(:)/(1-gammav**k)
+       sk=sk/(1-gammas**k)
+       write(6,*)'sk',sk,1/(eps+sqrt(sk))
+       R(:)=R(:)+vel(:)/(eps+sqrt(sk))
+       call setV_F (N,R,V,F,lover,lvm,idesc)
+       if (lvm)then
+          Rmin=R
+          Fmin=F
+       end if
+       !        write(unitgc,*)'post sVF0',V
+       if (lover) then
+          if (rang==0)       write(unitgc,*)'NO NEED TO RELAX'
+          if (rang==0)       write(6,*)'NO NEED TO RELAX'
+          return
+       end if
+
+    end do
+    return
+        
+  end subroutine Adamrel
+  
   subroutine conjugategradient(N,R,V,F,lover,lorig,beta0)
     integer::N
     real(double)::beta0

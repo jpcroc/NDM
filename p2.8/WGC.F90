@@ -47,7 +47,8 @@ module WGC_mod
   logical::lvm
   real(double)::fpstop0,fpstopsig,fstpdecr
   logical,target:: lchg,lcalcvois,lvarstop
-  real(double)::  ft2,fm2,fs2
+  real(double)::  ft2,fm2,fs2,beta35
+  real(double)::gammas,gammav
 contains
 
   subroutine initsteep

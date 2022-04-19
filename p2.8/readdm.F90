@@ -32,7 +32,7 @@ contains
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,position_conversion_lammps&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
     use read_val
-    use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr
+    use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,beta35,gammas,gammav
     USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
@@ -76,14 +76,14 @@ contains
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
-         maxorder, ipotentiel,lpotentiel,&
+         maxorder, ipotentiel,lpotentiel,beta35,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,&
          lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,deltaRmax,&
          rcangle,rcrdf,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,&
-         neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,&
+         neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,gammas,gammav,&
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
@@ -119,6 +119,7 @@ contains
     !                              32 -> steepest descent
     !                              33 -> gradient conjugue
     !                              34 -> gradient conjugue modifié Fletcher-Reeves
+    !                              35 -> relaxation ADAMD. :Kingma and J. Ba, “Adam: A Method for Stochastic Optimization,” in International Conference on Learning Representations (ICLR), 2015.
     !                               4 -> Velocity Verlet 
     !                               5 -> test des forces 
     !                               6 -> analyse des positions en fin de cascade 
@@ -347,10 +348,13 @@ contains
 
     ndir=50   !nombre de direction dans steepest descent
     nstep=50  ! nombre de pas dans la minimisation sur une ligne en steepes descent
-    ncgtry=10
+    ncgtry=10  ! nombre de relaxations positions/celulle/positions/celluel,etc.
     betaguess=1d-6
     lvarstop=.false.
     fstpdecr=10.
+    beta35=1d-10
+    gammas=0.999
+    gammav=0.9
 
 
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
@@ -486,7 +490,7 @@ contains
     endif
 #ifdef PARA
     select case(dmtype)
-    case(21,22,4,3,1,30,31,32,33,34)
+    case(21,22,4,3,1,30,31,32,33,34,35)
        if (ltabvois) then
           ltabvois=.false.
           rvois=0
@@ -518,7 +522,7 @@ contains
        end if
 
     case default 
-       if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,4,3,9,15,1,30,31,32,33,34,19'
+       if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,4,3,9,15,1,30,31,32,33,34,19,35'
        if (rang==0) write(*,*) 'Stop in readdm'
        call arret_ndm
     end select
@@ -706,7 +710,7 @@ contains
 
 
     if((lTberendsen).and.( (dmtype.EQ.21).OR.(dmtype.EQ.22).OR.(dmtype.EQ.3).OR.(dmtype.EQ.30)&
-         &.OR.(dmtype.EQ.31).OR.(dmtype.EQ.32).OR.(dmtype.EQ.34).OR.(dmtype.EQ.33) )) then
+         &.OR.(dmtype.EQ.31).OR.(dmtype.EQ.32).OR.(dmtype.EQ.34).OR.(dmtype.EQ.33).OR.(dmtype.EQ.35) )) then
        write(6,*) 'Berendsen pas possible';stop
     end if
 
@@ -809,7 +813,7 @@ contains
           lprtrp=.true.
        case default
           dmtype=8
-       case (3,30,31,32,33,34)
+       case (3,30,31,32,33,34,35)
           lEev=.true.
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
        end select
@@ -957,6 +961,9 @@ contains
        if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE STANDARD '
     case (34)
        if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE FLETCHER-REEVES'
+    case (35)
+       if (rang==0) write (6, '(a)') '     ADAM relaxation D. Kingma and J. Ba, 2015'
+       if(itmax==-1)itmax=300
     case (4)
        if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
     case (5)
@@ -1168,7 +1175,7 @@ contains
     end if
 
     if ( (dmtype==21).or.(dmtype==22).or.(dmtype==3).or.(dmtype==30).or.(dmtype==32)&
-         &.or.(dmtype==33).or.(dmtype==31).or.(dmtype==34).or.(dmtype==9)&
+         &.or.(dmtype==33).or.(dmtype==31).or.(dmtype==34).or.(dmtype==35).or.(dmtype==9)&
          &.or.(dmtype==10) ) then    
        if ( (fpstop<0).and.(fsumstop<0)) then
           if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
@@ -1302,7 +1309,8 @@ contains
     !  end if
 
 
-    if ( ( (dmtype==3).OR.(dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==33).or.(dmtype==31) ) &
+    if ( ( (dmtype==3).OR.(dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==35)&
+         &.or.(dmtype==33).or.(dmtype==31) ) &
          .and.(fpstop.le.0.0).and.(fsumstop.le.0.0)) then
        if (rang==0) write(6,*) rang,'critere de conv. sur la force par atome max negative' 
        if (rang==0) write(6,*) rang,'fpstop', fpstop
@@ -1406,7 +1414,7 @@ contains
 
     if (lcdp) then
        select case(dmtype)
-       case(1,2,3,4,32,33,34,8)
+       case(1,2,3,4,32,33,34,8,35)
           itetimestep=1
        case default
           if (rang==0) write(6,*)'dmtype inconsistent with creaDP', dmtype
