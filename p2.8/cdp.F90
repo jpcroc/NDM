@@ -180,7 +180,7 @@ contains
     integer::jint,iinttot,numcell,imt,iold
     logical::lsuiv,lcrea0
     character::fnamcout*80
-    
+    character :: extension*5
     
     
     if (myidsp==0) then
@@ -275,7 +275,8 @@ contains
           natyp=0
           nb_at_typ=0
           itinser=itinser+1
-          fnamcout = fnam(1:lenfnam)//'.PRECDP.cout'
+          write(extension,'(i5.5)')itinser
+          fnamcout = fnam(1:lenfnam)//'.'//trim(extension)//'.PRECDP.cout'
           if (lspacendm) then
              call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
              call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)

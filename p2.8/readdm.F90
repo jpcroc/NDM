@@ -82,7 +82,7 @@ contains
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,&
          lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,deltaRmax,&
-         rcangle,rcrdf,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,&
+         rcangle,rcrdf,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,ihbox0,&
          neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,gammas,gammav,&
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
