@@ -470,19 +470,19 @@ contains
       call checkline(lover,ldir,F0,normF02,N,R,V,F,Rcalc,Vcalc,Fcalc)
       if (lover) then
          write(unitgc,*)'beta init relaxed'
-         if (Vcalc.GT.V0) then
-            V=V0;F=F0;R=R0
+!         if (Vcalc.GT.V0) then
+!            V=V0;F=F0;R=R0
             write(unitgc,*)'STOP BETA '
-         end if
+!         end if
          return
       end if
       if (ldir) then
          write(unitgc,*)'line search over: beta init'
-         if (Vcalc.GT.V0) then
-            V=V0;F=F0;R=R0
+!         if (Vcalc.GT.V0) then
+!            V=V0;F=F0;R=R0
 !            lover=.true.
             write(unitgc,*)'STOP BETA init line'
-         end if
+!         end if
          
          return
       end if

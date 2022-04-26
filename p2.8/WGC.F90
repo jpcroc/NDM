@@ -223,7 +223,11 @@ contains
           end do
        end do
        sigm2=sigmax
-       write(unitgc,*)'fsigmax fpstopsig',fsigmax, fpstopsig
+       if (present(Vt)) then 
+          write(unitgc,*)'COMP fsigmax fpstopsig',fsigmax, fpstopsig
+       else
+          write(unitgc,*)'DIR fsigmax fpstopsig',fsigmax, fpstopsig
+       end if
        if (fsigmax.le.fpstopsig) lover=.true.
 
     case(1)
@@ -263,9 +267,9 @@ contains
           end if
        end if
     end select
-
-    if (present(Vt)) then
        ft2=forctot ; fm2=formax;fs2=fsigmax
+    if (present(Vt)) then
+!       ft2=forctot ; fm2=formax;fs2=fsigmax
           if(lvm) then
              write(unitgc,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt ,ft2,fm2,Fs2, sigm2, ' ****', deltaV
              write(6,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fs2, sigm2, ' ****', deltaV*erg2eV
@@ -296,9 +300,9 @@ contains
     else
        select case(ityprel)
        case(1)
-          write(unitgc,'(A,2E20.11)')'test direction',fm2,ft2,Fs2,sigmax
+          write(unitgc,'(A,2E20.11)')'test direction fm2 ft2 fs2 sigmax ',fm2,ft2,Fs2,sigmax
        case(2)
-          write(unitgc,'(A,4E20.11)')'test direction',fm2,ft2,Fs2,sigmax
+          write(unitgc,'(A,4E20.11)')'test direction fm2 ft2 fs2 sigmax ',fm2,ft2,Fs2,sigmax
        end select
     end if
     return
