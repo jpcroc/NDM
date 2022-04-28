@@ -204,14 +204,18 @@ contains
     integer :: nsize
     integer :: ierror=0
     !=====
-
+    if(present(torank))trk=torank
     if( mpic%nproc == 1 ) return
 
     nsize = SIZE(array)
 
 #if defined(PARA)
     if (present(torank))then
-       call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_SUM, torank,mpic%comm, ierror)
+       if (mpic%rank==torank) then
+          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_SUM, trk,mpic%comm, ierror)
+       else
+          call MPI_REDUCE(array, array, nsize, MPI_DOUBLE_PRECISION, MPI_SUM, trk,mpic%comm, ierror)
+       end if
     else
        call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_SUM, mpic%comm, ierror)
     end if
@@ -241,7 +245,11 @@ contains
 
 #if defined(PARA)
     if (present(torank))then
-       call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_COMPLEX, MPI_SUM, torank,mpic%comm, ierror)
+       if (mpic%rank==torank) then
+          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_COMPLEX, MPI_SUM, torank,mpic%comm, ierror)
+       else
+          call MPI_REDUCE( array, array, nsize, MPI_DOUBLE_COMPLEX, MPI_SUM, torank,mpic%comm, ierror)
+       end if
     else
        call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_COMPLEX, MPI_SUM, mpic%comm, ierror)
     end if
@@ -272,7 +280,11 @@ contains
 
 #if defined(PARA)
     if (present(torank))then
-       call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_SUM, torank,mpic%comm, ierror)
+       if (mpic%rank==torank) then
+          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_SUM, torank,mpic%comm, ierror)
+       else
+          call MPI_REDUCE( array, array, nsize, MPI_INTEGER, MPI_SUM, torank,mpic%comm, ierror)
+       end if
     else
        call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_SUM, mpic%comm, ierror)
     end if
@@ -336,7 +348,11 @@ contains
     nsize = SIZE(array)
 #if defined(PARA)
     if (present(torank))then
-       call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, torank,mpic%comm, ierror)
+       if (mpic%rank==torank) then
+          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, torank,mpic%comm, ierror)
+       else
+          call MPI_REDUCE( array, array, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, torank,mpic%comm, ierror)
+       end if
     else
        call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, mpic%comm, ierror)
     end if
@@ -363,7 +379,11 @@ contains
     nsize = SIZE(array)
 #if defined(PARA)
     if (present(torank))then
-       call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MAX, torank,mpic%comm, ierror)
+       if (mpic%rank==torank) then
+          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MAX, torank,mpic%comm, ierror)
+       else
+          call MPI_REDUCE( array, array, nsize, MPI_INTEGER, MPI_MAX, torank,mpic%comm, ierror)
+       end if
     else
        call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MAX, mpic%comm, ierror)
     end if
@@ -388,7 +408,12 @@ contains
     nsize = SIZE(array)
 #if defined(PARA)
     if (present(torank))then
-       call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_MIN,TORANK, mpic%comm, ierror)
+       if (mpic%rank==torank) then
+          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_MIN,TORANK, mpic%comm, ierror)
+       else
+          call MPI_REDUCE( array, array, nsize, MPI_DOUBLE_PRECISION, MPI_MIN,TORANK, mpic%comm, ierror)
+       end if
+      
     else
        call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_MIN, mpic%comm, ierror)
     end if
@@ -414,7 +439,11 @@ contains
     nsize = SIZE(array)
 #if defined(PARA)
     if (present(torank))then
-       call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MIN, torank,mpic%comm, ierror)
+       if (mpic%rank==torank) then
+          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MIN, torank,mpic%comm, ierror)
+       else
+          call MPI_REDUCE(array, array, nsize, MPI_INTEGER, MPI_MIN, torank,mpic%comm, ierror)
+       end if
     else
        call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MIN, mpic%comm, ierror)
     end if
@@ -440,7 +469,13 @@ contains
     nsize = SIZE(array)
 #if defined(PARA)
     if (present(torank))then
-       call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_LOGICAL, MPI_LAND, torank,mpic%comm, ierror)
+       if (mpic%rank==torank) then
+          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_LOGICAL, MPI_LAND, torank,mpic%comm, ierror)
+       else
+          call MPI_REDUCE(array, array, nsize, MPI_INTEGER, MPI_MIN, torank,mpic%comm, ierror)
+       end if
+       
+
     else
        call MPI_ALLREDUCE( MPI_IN_PLACE, array, nsize, MPI_LOGICAL, MPI_LAND, mpic%comm, ierror)
     end if
