@@ -85,7 +85,7 @@ module montecarlo_mod
   logical ::  lparapath
   logical :: lbiais_retrait
   real(double)::fdmc_1, fdmc_2 !paramtres pilotant la fct_alpha utilisee dans le biais des retraits:forme fermi dirac
-
+  integer::itypcalc
 contains 
 
   subroutine montecarlo
@@ -1042,7 +1042,7 @@ contains
              atconf_nplus1%xp(1:3,iplus) = cart_vec_nplus1(1:3,i)
              atconf_nplus1%fp(1:3,iplus) = 0
              atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
-             atconf_nplus1%ityp(iplus) = 1
+             atconf_nplus1%ityp(iplus) = itypcalc
              atconf_nplus1%ielat(iplus) = -1
              nag=maxval(atconf_Nplus1%num_at_glob(1:iplus-1))
              atconf_Nplus1%num_at_glob(iplus) = nag+1
@@ -1134,7 +1134,7 @@ contains
 
     sum_norm = 0.0
     DO i=1, atconf_Nplus1%im
-       if (atconf_Nplus1%ityp(i) == 1) then ! si l'atome est un oxygene
+       if (atconf_Nplus1%ityp(i) == itypcalc) then ! si l'atome est un oxygene
           dist_tot = 0.0
           alpha = 0.0
           coord(:,1) =  atconf_Nplus1%xp(:,i)
@@ -1156,7 +1156,7 @@ contains
     !verification que la somme est bien = à 1
 !!$ tot = 0.0
 !!$  DO i=1, atconf_Nplus1%im
-!!$     if (atconf_Nplus1%ityp(i) == 1) then
+!!$     if (atconf_Nplus1%ityp(i) == itypcalc) then
 !!$        tot = tot + proba(i)
 !!$        if (proba(i) .eq. 0.0) write(*,*) 'attention proba nulle',  proba(i)
 !!$        write(*,*) i, proba(i)
@@ -1421,7 +1421,7 @@ contains
 
     natyp=0
     do i=1,config%im
-       if (config%ityp(i)==1) then
+       if (config%ityp(i)==itypcalc) then
           natyp=natyp+1
        end if
     end do
@@ -1430,7 +1430,7 @@ contains
     lchosen(:)=.false.
     iatyp=0
     do i=1,config%im
-       if (config%ityp(i)==1) then
+       if (config%ityp(i)==itypcalc) then
           iatyp=iatyp+1
           indatyp(iatyp)=i
        end if
@@ -1463,7 +1463,7 @@ contains
     call random_number(rand)
     !write(*,*) 'rand',rand
     DO i=1, config%im
-       if (config%ityp(i) == 1) then
+       if (config%ityp(i) == itypcalc) then
           if (somme .lt. rand) then
              somme = somme + config%proba(i)
              !write(*,*) 'somme', somme, 'ind', i
@@ -2089,7 +2089,7 @@ contains
           atconf_nplus1%xp(1:3,iplus) = cart_vec_nplus1(1:3,i)
           atconf_nplus1%fp(1:3,iplus) = 0
           atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
-          atconf_nplus1%ityp(iplus) = 1
+          atconf_nplus1%ityp(iplus) = itypcalc
           atconf_nplus1%num_at_glob(iplus) = iplus
           !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
        end do

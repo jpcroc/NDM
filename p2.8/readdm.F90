@@ -39,7 +39,7 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
-         &lbiais_retrait, fdmc_1, fdmc_2,nbatplus
+         &lbiais_retrait, fdmc_1, fdmc_2,nbatplus,itypcalc
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
@@ -87,7 +87,7 @@ contains
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
-         ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,&
+         ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 
 
@@ -332,6 +332,7 @@ contains
     lvzeroneb=.false. ! si true , met vp à 0 ente chaque iteration neb (comportement pre ndm2020), defaut = false==> calcul plus rapide
     lparapath=.false.
     nparapath=1
+    itypcalc=1
     pas_lambda_mc = -100 !valeur negative par defaut pour que l'utilisateur la change
     n_path = -100 !valeur negative par defaut pour que l'utilisateur la change
     distminat=1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
@@ -513,6 +514,10 @@ contains
           end if
        end if
     case(15)
+       if (itypcalc.lt.0) then
+          write(6,*)'itypcalc<0'
+          call arret_ndm
+       end if
        np2=nparapath*2
        if (np2.ne.nprocs) then
           if (ltabvois) then

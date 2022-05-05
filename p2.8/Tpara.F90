@@ -201,7 +201,7 @@ contains
     real(double),intent(inout) :: array(..)
     integer,intent(in),optional::torank
     !=====
-    integer :: nsize
+    integer :: nsize,trk
     integer :: ierror=0
     !=====
     if(present(torank))trk=torank
