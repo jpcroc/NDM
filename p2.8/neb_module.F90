@@ -1,7 +1,7 @@
 module neb_module
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,kspring,lpathfromgin,&
+  USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
        &posa, forca,latcomp,imm_glob
@@ -42,7 +42,7 @@ module neb_module
   real(double), dimension(:),allocatable, save   :: enePATH,enePATHev,norms,reaction_coord
   real(double), dimension(:,:,:), allocatable, save :: sigPATH  ! Stress tensor
   real(double), dimension(:,:,:),allocatable,save:: s_path,force_neb,bruitneb 
-  real(double)                                   :: forctot,formax,formaxperp,formaxparl,masstot
+  real(double)                                   :: forctot,formax,formaxperp,formaxparl,masstot,kspring
   logical:: lvzeroneb
   type(atom_config_neb),allocatable,save,target::atneb(:)
   type(cell_config),allocatable,save,target:: cellneb(:)
@@ -92,7 +92,6 @@ contains
     if (rvois.gt.0) then
        rv=rvois
     end if
-    
     do ipath=1,npath
        call atneb(ipath)%atom_config_d%init(im,imm,ltabvois,nv,rv)
        allocate(atneb(ipath)%s_path(3,imm),atneb(ipath)%force_neb(3,imm))
@@ -355,7 +354,6 @@ end if
        !
        norms(ip)=SUM(atneb(ip)%s_path(:,:)**2)
        atneb(ip)%force_neb(:,:)=kspring*(dsqrt(temp_p)-dsqrt(temp_m))	
-       !
     end do    ! loop over ip
 
 

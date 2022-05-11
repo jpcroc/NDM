@@ -37,7 +37,7 @@ contains
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
-    use neb_module,only: lvzeroneb
+    use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait, fdmc_1, fdmc_2,nbatplus,itypcalc
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
@@ -70,7 +70,7 @@ contains
 
     namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma,  itedepla, tdepla, lfilm, &
          tempstop, tempstopcel,dmtype, lFire,  itecoordo, tstep, itetimestep, tsfact, &
-         tinit,  tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
+         tinit,  tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, kspring,  &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
@@ -98,7 +98,7 @@ contains
 
     fnamdin = fnam(1:lenfnam)//'.din'
     ! variables de dynamique
-
+    kspring=1
 
     lspaceNDM=.true.
     imm = 0                     !dimensionnement des tableaux atomiques
