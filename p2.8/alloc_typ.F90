@@ -2,10 +2,10 @@ module alloc_typ_mod
   USE var_pot, ONLY:ntyp,rumax,lpotentiel,ipo3c,l3cpair,l3ctyp,coup3c2,gam,lamb,&
        &cangle,eamglue,eamglue_d,eamrho,eamrho_d,eamrep,eamrep_d,dspf,bspf,cspf,dspg,cspg,&
        &cm,catom, ipo,ty,q,pot_d,zz,lue_paire,lu_roff_pair,rue_pair,lue_typ,lue_trip,&
-       &ro,dip,pm,r8p,roff1,roff2,pot,a_factor,fda,gamlt,shel,&
+       &ro,dip,pm,r8p,roff1,roff2,pot,a_factor,fda,gamlt,shel,ipo_2_pair_tab,&
        &Dmorse,amorse,Remorse,ietaij,capHij,capwij,capDij,Awat,Bwat,pwat,qwat,rawat,&
        &rawat2,potw,bspw,cspw,dspw,gz,fcr,bspg,contmax,ngrid,nkmax,npair,ntrip,&
-       &typ_pot_pair,ray,bm,coup3c,c3c,rhomin,rhomax,Afd,Bfd,r0fd,Aig,big,r0ig
+       &typ_pot_pair,ray,bm,coup3c,c3c,rhomin,rhomax,Afd,Bfd,r0fd,Aig,big,r0ig,npotentiel
   implicit none 
 contains
 
@@ -42,6 +42,8 @@ contains
 !!$       allocate(rc(ntyp))
 !!$       rc(1:ntyp)=rclu(1:ntyp)*1.d-8
        allocate(zz(npair))
+       allocate(ipo_2_pair_tab(npair))
+       ipo_2_pair_tab=0
        zz=0
        allocate(lue_paire(npair))
        allocate(lu_roff_pair(npair))
@@ -57,6 +59,10 @@ contains
        lue_trip(:)=.false.;lue_paire(:)=.false.; lue_typ(:)=.false.
        allocate(ro(npair)); allocate(dip(npair));allocate(pm(npair))
        allocate(roff1(npair));allocate(roff2(npair))
+       if (npotentiel.gt.1) then
+          roff1=-1;roff2=-2
+          typ_pot_pair(:)=0
+       end if
        allocate(a_factor(npair));allocate(r8p(npair))
 
        !     if(iterdf.ge.0) then

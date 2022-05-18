@@ -730,7 +730,9 @@ end if
   comm_space%rank  = 0
 
 #endif
-!    write(6,*)'PARANEB',paraneb%mpi_orig%comm,paraneb%mpi_master%comm,paraneb%mpi_image%comm
+
+  write(6,*)'PARANEB',paraneb%mpi_image%nproc
+!  write(6,*)'PARANEB',paraneb%mpi_orig%comm,paraneb%mpi_master%comm,paraneb%mpi_image%comm
   end subroutine init_mpi_neb
 
 end module neb_module

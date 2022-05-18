@@ -734,7 +734,11 @@ contains
     end if
     !  if ((all(lpotentiel)==.false.).and.(ipotentiel==-1)) then
     !  end if
-
+    if ((ipotentiel.gt.0).and.(any(lpotentiel))) then
+       write(6,*)'choose iptentiel or lpotentiel, not both'
+       call arret_ndm
+       stop
+    end if
     if (ipotentiel.ge.0) lpotentiel(ipotentiel)=.true.
     npotentiel=0
     do ipotcont=0,npotmax
@@ -749,9 +753,9 @@ contains
        if (rang==0) write(6,*)'npotentiel>1 et ntyp=-1'
        call arret_ndm
     end if
-    if ((npotentiel.gt.1).and.(lpotentiel(10).eqv..true.)) then
-       if (rang==0)write(6,*)'**** npotentiel >1 ET EAM ==> EAM TAB only!'
-    end if
+!    if ((npotentiel.gt.1).and.(lpotentiel(10).eqv..true.)) then
+       !if (rang==0)write(6,*)'**** npotentiel >1 ET EAM ==> EAM TAB only!'
+!    end if
 
 
     if ((lpotentiel(12).EQV..true.).and.(ltabvois.EQV..true.))ldemitab=.false.
@@ -1347,16 +1351,16 @@ contains
           write(6,*)'ipotentiel',ipotentiel
           !        write(6,*)lpotentiel
        else
-          write(6,*)'npotentiel buggué stop'
-          call arret_ndm
+!!$          write(6,*)'npotentiel buggué stop'
+!!$          call arret_ndm
 
           do ipotcont=1,npotmax
              if (lpotentiel(ipotcont).EQV..true.)write(6,*)'potentiel actif', ipotcont
           end do
-          !        if (lcasca.eqv..true.) then
-          !           if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
-          !           call arret_ndm
-          !        end if
+          if (lcasca.eqv..true.) then
+             if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
+             call arret_ndm
+          end if
        end if
     end if
     if (rang==0) write(6,*)'fmt_cin',fmt_cin

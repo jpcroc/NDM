@@ -38,7 +38,7 @@ contains
     call atcomp%sort(atextr)
 !    call celndm%copy(celextr,boxndm,lzeroinit=.true.)
     write(6,*)'CALCEXTR',atextr%ltabvois
-    call caltabtc(celextr,atextr,lperiod,boxextr,lextr=.true.,psc=psc)
+    call caltabtc(celextr,atextr,lperiod,boxextr,lextr=.true.)
 !    call celextr%print (unit=444)
     if (atextr%ltabvois) call caltabi(atextr,celextr,boxndm,lextr=.true.)
 

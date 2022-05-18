@@ -56,7 +56,12 @@ subroutine param_det(boxndm)
            end if
         end if
      end do
-
+     if (iewald.gt.0)then
+        if((alpha==0).or.(ncouc3==0)) then
+           write(6,*)'npotentiel>1 and Ewald : specify ncouc3 and alpha'
+           stop
+        end if
+     end if
   else
      rue=0
      if (((ipotentiel.lt.10).and.(ipotentiel.ne.2)).or.(ipotentiel==16)) then
