@@ -144,7 +144,7 @@ contains
        end if
        call  driver_caltabt_para(atdml,celndm,boxndm,psc,lperiod,lcalcvois)
        call analyseT (atdml,celndm,boxndm,psc)    
-       call controleT(atdml,celndm,boxndm)
+       call controleT(atdml,celndm,boxndm,psc)
 
     end do
 

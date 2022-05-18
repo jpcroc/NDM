@@ -816,10 +816,12 @@ contains
 
     if (lprahman) then
        itesigma=1
-       if (iteprtsigma==-1) iteprtsigma=itetemp
+       iteprtsigma=1
        select case(dmtype)
        case(21,22)
           lprtrp=.true.
+          dmtype=8
+          if (wboxf==1) wboxf=0.2
        case default
           dmtype=8
        case (3,30,31,32,33,34,35)
@@ -871,7 +873,8 @@ contains
           end if
        end do
     else
-       if (iteprtsigma==-1) iteprtsigma=itesigma
+       iteprtsigma=1
+       itesigma=1
     end if
     ! read for cascade
     if (lcasca) then

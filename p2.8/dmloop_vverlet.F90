@@ -117,7 +117,7 @@ contains
           sigtot = sigkine+sig
        end if
        call analyseT (atdml,celndm,boxndm,psc)
-       call controleT(atdml,celndm,boxndm)
+       call controleT(atdml,celndm,boxndm,psc)
 
     end do
 

@@ -89,7 +89,7 @@ contains
 
 
 
-     call controleT(atpr,celndm,boxndm)
+     call controleT(atpr,celndm,boxndm,psc)
 
   end do
 
