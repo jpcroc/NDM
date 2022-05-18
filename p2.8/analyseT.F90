@@ -22,6 +22,7 @@ module analyseT_mod
   USE cellconfig,only:cell_config, caltabtC
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   use boxconfig,only: box_config
+  use Tpara,only:nprocspace
   implicit none
 contains
   ! ************************************************
@@ -143,7 +144,9 @@ contains
              end where
              if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
              call atdml%fab(attyp,lback=.false.)
-             call caltabtC(celtyp,attyp,lperiod,boxndm,psc=psc)
+             call caltabtC(celtyp,attyp,lperiod,boxndm)
+             
+
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              call celtyp%dealloc ; call attyp%dealloc
              ! ceci est un test du calcul des forces sur un sous-ensemble des atomes

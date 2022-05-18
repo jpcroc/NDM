@@ -35,6 +35,8 @@ contains
        !          read(lupotin,*) npairlu ! nombre de paire sur lesquelles le potentiels de tersoff s'applique
        !          do lo=1,npairlu
        !             read(lupotin,*)ipairlu !indice des paires form�es par 
+       write(6,*)'npotentiel et tersoff a vérifier'
+       stop
 
        read(lupotin,*) ntypr,psilu
 

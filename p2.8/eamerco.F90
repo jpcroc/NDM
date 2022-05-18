@@ -3,6 +3,7 @@ module eamerco
   USE gen_com_m, ONLY: ev2erg,A2cm
   USE alloc_typ_mod,only: alloc_typ
   use var_pot,only:rhomax,rhomin
+  USE arret_ndm_mod,only:arret_ndm
   implicit none
 
 
@@ -59,7 +60,10 @@ contains
 !    allocate(embtyp(ntyp)) 
 !    allocate(reppair(npair)) 
 
-
+    if (npotentiel.gt.1) then
+       write(6,*)'eamerco and npotentiel>1 stop'
+       call arret_ndm
+    end if
     allocate (typ_and_pot(1,npotmax))
 
     typ_and_pot(1,ipotentiel)=.true.

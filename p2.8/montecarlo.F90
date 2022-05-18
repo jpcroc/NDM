@@ -184,8 +184,8 @@ contains
           !seul MEGAMASTER A LES POSITIONS OLD
           call config_atom_old_0%copy_config(config_atom_n(1), lrescl=.true.)          
           call config_atom_old_1%copy_config(config_atom_nplus1(1), lrescl=.true.) 
-          call caltabtC(config_cells_n(1),config_atom_n(1),lperiod,boxmcgc,psc=pscgc)
-          call caltabtC(config_cells_nplus1(1),config_atom_nplus1(1),lperiod,boxmcgc,psc=pscgc)
+          call caltabtC(config_cells_n(1),config_atom_n(1),lperiod,boxmcgc)
+          call caltabtC(config_cells_nplus1(1),config_atom_nplus1(1),lperiod,boxmcgc)
           !recalculer les probas du systeme
           atconf_nplus1=>config_atom_nplus1(1)
           call calcul_proba
@@ -610,10 +610,10 @@ contains
           accepta = 0
           if (dir == 0) then
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
-             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgc,psc=pscgc)
+             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgc)
           else
              call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
-             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgc,psc=pscgc)
+             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgc)
           end if
 
 !!!!! etape 2 pot chimique !!!!!!!!!
@@ -743,10 +743,10 @@ contains
           call parapath%mpi_master%bcast(0,ipchemin) !on envoie le nouveau ipchemin a tous les procs, là où chemin prec va etre mis
           if (dir == 0) then
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
-             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgc,psc=pscgc)
+             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgc)
           else
              call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
-             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgc,psc=pscgc)
+             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgc)
           end if
 
           !on envoie l'ancienne conf a tous les procs
@@ -1490,7 +1490,7 @@ contains
     if (lbigmaster) then
        if (itetemp>0) then
           if (mod(iteration,itetemp)==0) then
-             call caltabtC(celndm,atdml,lperiod,box,psc=pscgc)
+             call caltabtC(celndm,atdml,lperiod,box)
              call calctemp (temp,kine,atdml,celndm,latcomp=.true.)
           end if
        end if
@@ -2122,7 +2122,7 @@ contains
        else !procs N+1
           call atconf_nplus1%send2all(0,paramcgc%mpi_image)
           call init_voisinage(cells_nplus1,pscgc)
-          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc,psc=pscgc)
+          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc)
        end if
 
     end if
@@ -2279,7 +2279,7 @@ contains
        if(paramcgc%image==0) then !procs N
           call atconf_n%send2all(0,paramcgc%mpi_image)
           call init_voisinage(cells_n,pscgc)
-          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc,psc=pscgc)
+          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc)
        else !procs N+1
           !deja fait dans init_simple
           !        call atconf_nplus1%send2all(0,paramcgc%mpi_image)

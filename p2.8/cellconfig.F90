@@ -35,38 +35,6 @@ module cellconfig
      procedure, pass::recv=>cellrecv
   end type cell_config
 
-  type systeme
-     type(atom_config),pointer::atcf
-     type(cell_config),pointer::cellcf
-     type(box_config),pointer::box
-     type(para_config),pointer::paracf
-     type(para_space_config)::psc
-     real(double)::potist,sig(3,3),rum
-     integer::it,itetabvois
-     logical ::lperiod,ltabvois
-  end type systeme
-  type systeme_d
-     type(atom_config_d),pointer::atcf
-     type(cell_config),pointer::cellcf
-     type(box_config),pointer::box
-     type(para_config),pointer::paracf
-     type(para_space_config)::psc
-     real(double)::potist,sig(3,3),rum
-     integer::it,itetabvois
-     logical ::lperiod,ltabvois
-
-  end type systeme_d
-  type systeme_e
-     type(atom_config_e),pointer::atcf
-     type(cell_config),pointer::cellcf
-     type(box_config),pointer::box
-     type(para_config),pointer::paracf
-     type(para_space_config)::psc
-     real(double)::potist,sig(3,3),rum
-     integer::it,itetabvois
-     logical ::lperiod,ltabvois
-
-  end type systeme_e
 
 contains
 
@@ -403,7 +371,7 @@ contains
           cell%atincel(cell%nato(koo),koo) = i
 !          write(6,*)i,koo
 #ifdef PARA
-          if (present(psc)) then 
+          if (present(psc).and.allocated(cell%proc_cell)) then 
              if (cell%proc_cell(koo).ne.myidsp) then
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
                    write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &

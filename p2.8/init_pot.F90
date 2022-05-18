@@ -3,6 +3,7 @@ module init_pot_mod
   USE inputtersoff_mod,only: inputtersoff
   USE calpoeam_mod,only: calpoeam
   USE calpo_mod,only: calpo
+  USE arret_ndm_mod,only:arret_ndm
   USE tersoff_zbl_mod,only: tersoff_zbl
   USE gen_com_m, ONLY:firsttime_lammps,rang,umass,A2cm,rang
   USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive,npotentiel,&
@@ -19,7 +20,7 @@ module init_pot_mod
 contains
   ! **************************************************************
   subroutine init_pot
-    integer::i,ipotcont
+    integer::i,ipotcont,ipair,iti,l,iti2
     
     if (npotentiel.gt.1)then
        ipotentiel=-1
@@ -136,7 +137,38 @@ contains
 
           endif
        end do
+       do iti=1,ntyp
+          if (all(typ_and_pot(iti,:).eqv..false.)) then
+             write(6,*)'type ',iti,' has no potential'
+             call arret_ndm
+          end if
+       end do
+       do ipair=1,npair
+          if (typ_pot_pair(ipair)==0) then
+             write(6,*)'pair ',ipair,' has no potential'
+             call arret_ndm
+          end if
+       end do
 
+       if (npotentiel.GT.1) then
+          do iti=1,ntyp
+             do ipotcont=1,npotentiel 
+                if (typ_and_pot(iti,ipotcont)) then
+                   write(6,*)'type ',iti,' is in potential',ipotcont
+                end if
+             end do
+          end do
+          if (rang==0) then
+             do iti=1,ntyp
+                do iti2=iti,ntyp
+                   l=ipo(iti,iti2)
+                   write(6,*)'types', iti,TY(ITI),iti2,TY(iti2),'=pair ',l,' is of potential ',typ_pot_pair(l)
+                end do
+             end do
+          end if
+       end if
+
+       
        !#ifdef LAMMPS_VERSION
     endif
     !#endif
@@ -158,7 +190,7 @@ contains
     
     type(box_config)::boxndm
     integer,intent(in)::immT
-    integer::ipotcont
+    integer::ipotcont,i,j,l
 
     if (rang==0)then
           write(6,*)
@@ -193,24 +225,24 @@ contains
           if (maxval(roff1).gt.0) call tersoff_zbl
        end select
     end do
-    if (npotentiel.gt.1) then
-       !     write(6,*)
-       !     write(6,*)'BILAN DES POTENTIELS'
-       !     do i=1,ntyp
-       !        do j=1,ntyp
-       !           l=ipo(i,j)
-       !           write(6,*)
-       !           write(6,*)'paire i-j l',i,j,l
-       !           write(6,*)'lue paire typ_pot_pair coupure'
-       !           write(6,*)lue_paire(l),typ_pot_pair(l),rue_pair(l)*1d8
-       !        end do
-       !     end do
-       if (rang==0) then
+    if ((npotentiel.gt.1).and.(rang==0)) then
+!!$            write(6,*)
+!!$            write(6,*)'BILAN DES POTENTIELS'
+!!$            do i=1,ntyp
+!!$               do j=1,ntyp
+!!$                  l=ipo(i,j)
+!!$                  write(6,*)
+!!$                  write(6,*)'paire i-j l',i,j,l
+!!$                  write(6,*)'lue paire typ_pot_pair coupure'
+!!$                  write(6,*)lue_paire(l),typ_pot_pair(l),rue_pair(l)*1d8
+!!$               end do
+!!$            end do
+!       if (rang==0) then
           write(6,*)
           write(6,*)'decoupage en cellule suivant'
           write(6,*)'rumax',rumax*1d8
           write(6,*)
-       end if
+!       end if
     end if
 
 

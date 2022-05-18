@@ -296,7 +296,7 @@ contains
              write(6,*)'****************************************'
              write(6,*)'POINT DEFECT CREATION '!,iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
              write(6,*)'iteration,timel, itloopmax,timeloopmax,nvactot, ninttot'
-             write(6,'(I10,G18.8,I9,G18.8,2I7)')iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
+             write(6,'(I11,G20.8,I11,G20.8,2I7)')iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
              write(6,*)'****************************************'
           end if
           natgm=maxval(atdml%num_at_glob(1:atdml%im))
@@ -602,7 +602,7 @@ contains
              call arret_ndm
           end if
           !#endif
-          call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+          call caltabtC(celndm,atdml,lperiod,boxndm)
           if (atdml%ltabvois) call caltabi(atdml,celndm,boxndm)
 #ifdef PARA
           if (lspacendm) call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc=psc)

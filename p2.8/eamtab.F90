@@ -9,6 +9,7 @@ module eam
   USE arret_ndm_mod,only: arret_ndm
 
   USE calerf_mod
+  use input_pair_mod,only:checklu
   implicit none
 
   !Eamtype, Reptype et DensityType definissent les éléments dont sont censés dépendre 
@@ -84,7 +85,6 @@ contains
 
     integer::npair
     npair=ntyp*(ntyp+1)/2
-    
     allocate(crg%G(ntyp))
     allocate(crg%densmax(ntyp))
     allocate(crg%n(ntyp))
@@ -118,15 +118,16 @@ contains
     integer,allocatable:: typ_pot_pair(:)
     integer, dimension(:,:), allocatable  :: ipo			! indice des paires d'atomes
     logical,allocatable::lue_typ(:),lue_paire(:),lu_roff_pair(:)
-
+    real(double)::rf1,rf2
+    integer::l,lect_paire,nb_paire_a_lire,it1,it2
 
     !local variables
     integer:: i,iti,n,npt,ipr
     integer :: lupotin=95
     character ::  fnampotin*80
     real(double) :: xdum,cmr,catomr,drk,erep,precis,qr,maxrho
-    integer,allocatable :: typtyp(:),ind_pair(:)
-    integer::itir,npair_r,ipair,ntypr,j,itj,k
+    integer,allocatable :: typtyp(:)
+    integer::itir,ipair,ntypr,j,itj,k
     character :: tyr*3
     namelist /ewald/ rue, alpha, precis, ncouc3, ncoucx, ncoucy, ncoucz,&
          kpmex, kpmey, kpmez, lopt,iewald,ipotrep
@@ -167,149 +168,81 @@ contains
 
     !PAIR PART 
     if (npotentiel.gt.1) then
-       write(6,*)'NON!'
-       call arret_ndm
-!!$       read(lupotin,*)ntypr 
-!!$       allocate (typtyp(ntypr))
-!!$       npair_r=  ntypr*(ntypr+1)/2 
-!!$       allocate (ind_pair(npair_r))
-!!$       if (rang==0) write(6,*)'ntypr for this pot',ntypr
-!!$       select case(ipotentiel)
-!!$       case(16)
-!!$          read (lupotin, nml=ewald)            ! lecture de la namelist ewald
-!!$          if (iewald==0) then
-!!$             if (rang==0)then
-!!$                write (6, *) '-*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-'
-!!$                write (6, *) '-*-*-*-* IPOTENTIEL=16. STOP ! ipotentiel-> 10 ! *-*-*-*-'
-!!$             end if
-!!$             call arret_ndm
-!!$          elseif (iewald==1) then
-!!$             if (rang==0) then
-!!$                write (6, *) '-*-*-*-*-* SOMMATION D-EWALD CLASSIQUE *-*-*-*-*-'
-!!$                if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
-!!$             end if
-!!$          elseif (iewald==2) then
-!!$             if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'
-!!$             if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
-!!$          else
-!!$             write (6, *) rang, 'Valeur de iewald erronee : iewald=',iewald
-!!$             call arret_ndm
-!!$          endif
-!!$
-!!$          precisew=precis
-!!$          if (rue==0) then
-!!$             if (rang==0) write (6, *) '-*-*-*-*-* RUE must be NON ZERO *-*-*-*-*-'
-!!$             call arret_ndm
-!!$          end if
-!!$
-!!$       case(10)
-!!$          read(lupotin,*) rue
-!!$       end select
-!!$
-!!$       rue=rue*A2cm
-!!$       if (rang==0)    write(6,*) 'Types d_atomes pour ce potentiel:'
-!!$       if (iewald==0) then
-!!$          if (rang==0) write (6, *) 'CM, masse,type, NUMERO DU TYPE D ATOME'
-!!$       else
-!!$          if (rang==0) write (6, *) 'CHARGE,CM, masse,type, NUMERO DU TYPE D ATOME'
-!!$       end if
-!!$       do i = 1, ntypr
-!!$          select case(ipotentiel)
-!!$          case(10)
-!!$             read (lupotin,*) cmr,catomr,tyr,iti
-!!$          case(16)
-!!$             read (lupotin,*) qr,catomr,tyr,iti
-!!$          end select
-!!$          typtyp(i)=iti
-!!$          if (lue_typ(iti).eqv..true.) then 
-!!$             if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
-!!$             !if (cmr*umass.ne.cm(iti))then 
-!!$             if (abs(cmr*umass-cm(iti)) > 100.d0*spacing(cm(iti))) then
-!!$                if (rang==0)write(6,*) 'pb avec cm'
-!!$                call arret_ndm
-!!$             end if
-!!$             if (tyr.ne.ty(iti))then
-!!$                if (rang==0)write(6,*) 'pb avec ty'
-!!$                call arret_ndm
-!!$             end if
-!!$             if(iewald.ne.0) q(iti)=qr
-!!$          else
-!!$             cm(iti)=cmr*umass;ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.
-!!$             if(iewald.ne.0) q(iti)=qr
-!!$          endif
-!!$          typ_and_pot(iti,ipotentiel)=.true.
-!!$          if (rang/=0) cycle
-!!$          if (rang==0)write(6,*)'type        cm      catom    ty'
-!!$          if (rang==0) write (6, '(I4,E12.3,F9.3,A5)') iti,cm(iti),catom(iti),ty(iti)
-!!$          if((iewald.ne.0) .and.(rang==0)) write(6,*)'charge = ',q(iti)
-!!$       end do
-!!$       !lecture des roff des paires EAM
-!!$
-!!$       ipair=0
-!!$       do i=1,ntypr
-!!$          iti=typtyp(i)
-!!$          do j=i,ntypr       
-!!$             itj=typtyp(j)
-!!$             ipr=ipo(iti,itj)
-!!$             ipair=ipair+1
-!!$             ind_pair(ipair)=ipr
-!!$             if (rang==0) write(6,*)'paire l active ipotentiel: ',ipr, ipotentiel
-!!$             if(lue_paire(ipr).eqv..true.) then
-!!$                if (rang==0) write(6,*) rang,'paire l lue deux fois ', ipr,iti,itj
-!!$                call arret_ndm
-!!$             end if
-!!$             if (ipotrep==1) then
-!!$                read (lupotin,*) roff1(ipr),roff2(ipr)
-!!$             else
-!!$                roff1=-1 ; roff2=-2
-!!$             end if
-!!$             if (rang==0) write(6,*)'roff1 et 2 pour cette paire',ipair,ipr,roff1(ipr),roff2(ipr)
-!!$             lu_roff_pair(ipr)=.true.;typ_pot_pair(ipr)=ipotentiel
-!!$          end do
-!!$       end do
-
+       read(lupotin,*)ntypr 
+       allocate (typtyp(ntypr))
+       if (rang==0) write(6,*)'ntypr for this pot',ntypr
     else
        read(lupotin,*)ntyp
        ntypr=ntyp
        allocate (typtyp(ntypr))     
        npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
-       npair_r=npair
-       allocate (ind_pair(npair_r))
+       nb_paire_a_lire=npair
        call  alloc_typ
-       rhomin(:)=1d30;rhomax(:)=0
-       select case(ipotentiel)
-       case(10)
-          read(lupotin,*) rue
-       case(16)
-          call crg%alloc(ntyp)
-          read (lupotin, nml=ewald)            ! lecture de la namelist ewald
-          if (iewald==0) then
-             if (rang==0)then
-                write (6, *) '-*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-'
-                write (6, *) '-*-*-*-* IPOTENTIEL=16. STOP ! ipotentiel-> 10 ! *-*-*-*-'
-             end if
-!             call arret_ndm
-          elseif (iewald==1) then
-             if (rang==0) then
-                write (6, *) '-*-*-*-*-* SOMMATION D-EWALD CLASSIQUE *-*-*-*-*-'
-                if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
-             end if
-          elseif (iewald==2) then
-             if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'
-             if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
-          else
-             write (6, *) rang, 'Valeur de iewald erronee : iewald=',iewald
-             call arret_ndm
-          endif
+       typ_pot_pair(1:ntyp)=ipotentiel
 
-          precisew=precis
-          if (rue==0) then
-             if (rang==0) write (6, *) '-*-*-*-*-* RUE must be NON ZERO *-*-*-*-*-'
-             call arret_ndm
+    end if
+    
+    rhomin(:)=1d30;rhomax(:)=0
+    select case(ipotentiel)
+    case(16)
+       call crg%alloc(ntyp)
+       read (lupotin, nml=ewald)            ! lecture de la namelist ewald
+       if (iewald==0) then
+          if (rang==0)then
+             write (6, *) '-*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-'
+             write (6, *) '-*-*-*-* IPOTENTIEL=16. STOP ! ipotentiel-> 10 ! *-*-*-*-'
           end if
-       end select
-       rue=rue*A2cm
-       if (rang==0)    write(6,*) 'Types d_atomes :'
+          call arret_ndm
+       elseif (iewald==1) then
+          if (rang==0) then
+             write (6, *) '-*-*-*-*-* SOMMATION D-EWALD CLASSIQUE *-*-*-*-*-'
+             !                if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
+          end if
+       elseif (iewald==2) then
+          if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'
+          call arret_ndm
+       else
+          write (6, *) rang, 'Valeur de iewald erronee : iewald=',iewald
+          call arret_ndm
+       endif
+       
+       precisew=precis
+       if (rue==0) then
+          if (rang==0) write (6, *) '-*-*-*-*-* RUE must be NON ZERO *-*-*-*-*-'
+          call arret_ndm
+       end if
+       
+    case(10)
+       read(lupotin,*) rue
+    end select
+    
+    rue=rue*A2cm
+    if (rang==0)    write(6,*) 'Types d_atomes pour ce potentiel:'
+    if (iewald==0) then
+       if (rang==0) write (6, *) 'CM, masse,type, NUMERO DU TYPE D ATOME'
+    else
+       if (rang==0) write (6, *) 'CHARGE,CM, masse,type, NUMERO DU TYPE D ATOME'
+    end if
+    if (npotentiel.gt.1) then
+       do i = 1, ntypr
+          select case(ipotentiel)
+          case(10)
+             read (lupotin,*) cmr,catomr,tyr,iti
+             call checklu(iti,tyr,cmr,catomr)
+             cm(iti)=cmr*umass;ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.
+          case(16)
+             read (lupotin,*) qr,cmr,catomr,tyr,iti
+             call checklu(iti,tyr,cmr,catomr)
+             ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.;q(iti)=qr;cm(iti)=cmr*umass
+          end select
+          typtyp(i)=iti
+          typ_and_pot(iti,ipotentiel)=.true.
+          if (rang/=0) cycle
+          if (rang==0)write(6,*)'type        cm      catom    ty'
+          if (rang==0) write (6, '(I4,E12.3,F9.3,A5)') iti,cm(iti),catom(iti),ty(iti)
+          if((iewald.ne.0) .and.(rang==0)) write(6,*)'charge = ',q(iti)
+       end do
+    else
        do i = 1, ntyp
           typtyp(i)=i
           select case(ipotentiel)
@@ -322,28 +255,32 @@ contains
           write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
           if((ipotentiel==16) .and.(rang==0)) write(6,*)'charge = ',q(i)
        end do
-       do i = 1, npair
-          ind_pair(i)=i
-          if (ipotrep.gt.0) then
-             read (lupotin,*) roff1(i),roff2(i)
-             lu_roff_pair(1:npair)=.true.
-             if (rang==0) write (6, '(A,2F9.3)') 'ROFF1_2', roff1(i),roff2(i)
-          else
-             roff1=-1; roff2=-2
-             lu_roff_pair(1:npair)=.false.
-          end if
-       end do
-       roff1=roff1*A2cm
-       roff2=roff2*A2cm
-       typ_pot_pair(:)=ipotentiel
        cm(:ntyp) = cm(:ntyp)*umass
        allocate (typ_and_pot(ntyp,npotmax))
        typ_and_pot(:,:)=.false.
        typ_and_pot(1:ntyp,ipotentiel)=.true.
-
     end if
-
-
+    if (npotentiel.gt.1) then   
+       read(lupotin,*)nb_paire_a_lire
+    else
+       nb_paire_a_lire=npair
+    end if
+    if (rang==0) write(6,*)'nb de paires grille',  nb_paire_a_lire
+    if (ipotrep==1) then
+       do lect_paire=1,nb_paire_a_lire
+          if (npotentiel.gt.1) then
+             read (lupotin,*) rf1,rf2,l
+             roff1(l)=rf1;roff2(l)=rf2
+             roff1(l)=roff1(l)*A2cm
+             roff2(l)=roff2(l)*A2cm
+          else
+             read (lupotin,*) roff1(lect_paire),roff2(lect_paire)
+             l=lect_paire
+             roff1(l)=roff1(l)*A2cm
+             roff2(l)=roff2(l)*A2cm
+          end if
+       end do
+    end if
     read(lupotin,*)nptmax
 
     if (rang==0) write(6,*)'nptmax in the max number of points on grid  ',nptmax
@@ -418,8 +355,8 @@ contains
           !lecture de Glue
           read(lupotin,*)n
           if (rang==0) write(6,*)'EAM',n,iti
-          if(n.ne.itir)then
-             write(6,*) rang,' ordre de lecture de EAM stop'
+          if(n.ne.iti)then
+             write(6,*) rang,' incohérence eamtab iti'
              call arret_ndm
           end if
 
@@ -459,15 +396,11 @@ contains
              call cspline (nptmax,embtyp_d(iti)%xg,embtyp_d(iti)%feam,SPembtyp_d(iti)%beam,&
                   &SPembtyp_d(iti)%ceam,SPembtyp_d(iti)%deam)
           end if
-
-
-
-
           !DENS PART
           !lecture de dens
           read(lupotin,*)n
           if (rang==0) write(6,*)'dens',n,iti
-          if(n.ne.itir)then
+          if(n.ne.iti)then
              write(6,*) rang,' ordre de lecture de EAM densstop'
              call arret_ndm
           end if
@@ -506,13 +439,25 @@ contains
 
        !PAIR PART 
 
-       do ipair=1,npair_r
-          read(lupotin,*)n
-          if(n.ne.ipair)then
-             write(6,*) rang, ' ordre de lecture de EAM rep stop'
-             call arret_ndm
+       do ipair=1,nb_paire_a_lire
+          if (npotentiel.GT.1) then
+             read(lupotin,*)it1,it2
+             if (rang==0)write(6,*)'pair it1 it2',it1,it2
+             l=ipo(it1,it2)
+             if (typ_pot_pair(l).ne.0)then
+                write(6,*)'pair deja lue typ_pot_pair,ipotentiel',l,typ_pot_pair(l),ipotentiel
+             end if
+             typ_pot_pair(l)=ipotentiel
+             ipr=l
+          else
+             read(lupotin,*)n
+             if(n.ne.ipair)then
+                write(6,*) rang, ' ordre de lecture de EAM rep stop'
+                call arret_ndm
+             end if
+             ipr=n
           end if
-          ipr=ind_pair(ipair)
+
 
           if (rang==0) write(6,*)'paire eam ; paire complete',n,ipr
           if (rang==0) write(6,*)'rep'
@@ -556,22 +501,35 @@ contains
           iti=typtyp(itir)
           read(lupotin,*)n
           if (rang==0) write(6,*)'EAM',n,iti
-          if(n.ne.itir)then
-             write(6,*) rang,' ordre de lecture de EAM stop'
+          if(n.ne.iti)then
+             write(6,*) rang,' incohérence eamtab iti'
              call arret_ndm
           end if
           read(lupotin,*)crg%G(iti),crg%n(iti),crg%densmax(iti)
           rhomax(iti)=crg%densmax(iti)
           rhomin(iti)=0
        end do
-!       crg%G(:)=crg%G(:)*ev2erg
-       do ipair=1,npair_r
-          read(lupotin,*)n
-          if(n.ne.ipair)then
-             write(6,*) rang, ' ordre de lecture de EAM rep stop'
-             call arret_ndm
+       !       crg%G(:)=crg%G(:)*ev2erg
+       do ipair=1,nb_paire_a_lire
+
+          if (npotentiel.GT.1) then
+             read(lupotin,*)it1,it2
+             l=ipo(it1,it2)
+             if (typ_pot_pair(l).ne.0)then
+                write(6,*)'pair deja lue typ_pot_pair,ipotentiel',l,typ_pot_pair(l),ipotentiel
+             end if
+             typ_pot_pair(l)=ipotentiel
+             ipr=l
+          else
+             read(lupotin,*)n
+             if(n.ne.ipair)then
+                write(6,*) rang, ' ordre de lecture de EAM rep stop'
+                call arret_ndm
+             end if
+             ipr=ipair
+             typ_pot_pair(ipr)=ipotentiel
           end if
-          ipr=ind_pair(ipair)
+
           read(lupotin,*)crg%D(ipr),crg%gam(ipr),crg%A(ipr),crg%rho(ipr),crg%C(ipr),crg%R0(ipr)
        end do
 !       crg%D(:)=crg%D(:)*ev2erg

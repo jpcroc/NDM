@@ -73,7 +73,6 @@ contains
     do l=1,npair
 !            write(6,*)'pair pot', l,typ_pot_pair(l),lu_roff_pair(l)
        if (typ_pot_pair(l).ne.ipotentiel) cycle
-       if (rang==0) write(6,*)'paire ',l
        do k=1,ngrid            
           rk=(k*ktor) ; rk2=rk**2
           xsp(k)=rk

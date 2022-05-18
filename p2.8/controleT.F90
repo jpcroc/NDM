@@ -5,26 +5,28 @@ module controleT_mod
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
+  USE analyseT_mod,only: analyseT
 #ifdef PARA
   USE Tpara,only:COMM_space,nprocspace,myidsp
 #else
   USE Tpara,only:nprocspace,myidsp
 #endif
  USE arret_ndm_mod,only: arret_ndm
-
+ use Tpara,only:para_space_config    
   implicit none
 contains
   ! ***********************************************************
   !           sous-programme controle.f
   ! ***********************************************************
 
-  subroutine controleT(atdml,celndm,boxndm)
+  subroutine controleT(atdml,celndm,boxndm,psc)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
-         &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang
+         &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
+         &itetemp2
 
     USE var_pot, ONLY:
     implicit none
@@ -32,6 +34,7 @@ contains
     class(atom_config_d)::atdml
     type(cell_config):: celndm
     type(box_config)::boxndm
+    type(para_space_config)::psc    
 
     integer :: nacou, i, ic, iti
     real(double) :: vv, a1, a2, a3, c1, c2, c3
@@ -121,9 +124,12 @@ contains
           if (fpn.le.fpstop)then
              if (sigstop.ge.0) then
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) then
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
                    call endrunT(atdml,celndm,boxndm,latcomp)
                 endif
              else
+                itetemp=1;itesigma=1
                 call endrunT(atdml,celndm,boxndm,latcomp)
              end if
 
@@ -149,7 +155,9 @@ contains
           if (fpn.le.fsumstop) then
              if (sigstop.ge.0) then
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) then
-                   call endrunT(atdml,celndm,boxndm,latcomp)
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                    call endrunT(atdml,celndm,boxndm,latcomp)
                 end if
              else
                 call endrunT(atdml,celndm,boxndm,latcomp)

@@ -1,6 +1,6 @@
 module scalebox_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:dmtype,itetabvois,lprahman,nvat,pi,iteration,rang,lperiod
+  USE gen_com_m, ONLY:dmtype,itetabvois,lprahman,nvat,pi,iteration,rang,lperiod,lspacendm
   USE calpo_ew_mod,only: calpo_ew
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
@@ -10,7 +10,7 @@ module scalebox_mod
 #ifdef PARA
   USE mod_para,only:maj_atomes_frt_ftm
 #endif
-  use Tpara,only:para_space_config
+  use Tpara,only:para_space_config,nprocspace
 
   implicit none
 contains
@@ -71,8 +71,13 @@ contains
 
    end if
 #endif
-   
-   call caltabtC(celndm,atpr,lperiod,boxndm,psc=psc)
+   if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+      call caltabtC(celndm,atpr,lperiod,boxndm,psc=psc)
+    else
+      call caltabtC(celndm,atpr,lperiod,boxndm)
+    end if
+    
+
 #ifdef PARA
    call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
 #else

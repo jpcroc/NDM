@@ -60,6 +60,9 @@
 
     
     if (present(ldistrib))ldistr=ldistrib
+!!$    call atcomp%print
+!!$    write(6,*)'TOTO'
+!!$    call atloc%print
     atloc%im_glob=atcomp%im_glob
 !    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
     if (div%mpi_image%nproc.gt.1) then
@@ -79,8 +82,11 @@
        atloc=>atcomp
        celloc=>cellcomp
     end if
-
-    call caltabtC(celloc,atloc,lperiod,box,psc=psc)
+    if (lspacendm.and.div%mpi_image%nproc.gt.1) then
+       call caltabtC(celloc,atloc,lperiod,box,psc=psc)
+    else
+       call caltabtC(celloc,atloc,lperiod,box)
+    end if
     if ((lcalcv).and.(atloc%ltabvois)) call caltabi(atloc,celloc,box)
 #ifdef PARA
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -326,7 +332,11 @@ subroutine driver_caltabt_para(atcf,celcf,boxcf,psc,lperiod,lcalcvois)
     if (present(lcalcvois))lcalcv=lcalcvois
     call periodbox (boxcf,atcf)
     ! repartition des atomes dans la nouvelle boite
-    call caltabtC(celcf,atcf,lperiod,boxcf,psc=psc)
+    if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+       call caltabtC(celcf,atcf,lperiod,boxcf,psc=psc)
+    else
+       call caltabtC(celcf,atcf,lperiod,boxcf)
+    end if
     if (atcf%ltabvois.and.(lcalcv)) then
        call caltabi(atcf,celcf,boxcf)
     end if

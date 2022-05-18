@@ -37,7 +37,7 @@ contains
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
-    use neb_module,only: lvzeroneb
+    use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait, fdmc_1, fdmc_2,nbatplus,itypcalc
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
@@ -70,7 +70,7 @@ contains
 
     namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma,  itedepla, tdepla, lfilm, &
          tempstop, tempstopcel,dmtype, lFire,  itecoordo, tstep, itetimestep, tsfact, &
-         tinit,  tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean,   &
+         tinit,  tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, kspring,  &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
@@ -98,7 +98,7 @@ contains
 
     fnamdin = fnam(1:lenfnam)//'.din'
     ! variables de dynamique
-
+    kspring=1
 
     lspaceNDM=.true.
     imm = 0                     !dimensionnement des tableaux atomiques
@@ -734,7 +734,11 @@ contains
     end if
     !  if ((all(lpotentiel)==.false.).and.(ipotentiel==-1)) then
     !  end if
-
+    if ((ipotentiel.gt.0).and.(any(lpotentiel))) then
+       write(6,*)'choose iptentiel or lpotentiel, not both'
+       call arret_ndm
+       stop
+    end if
     if (ipotentiel.ge.0) lpotentiel(ipotentiel)=.true.
     npotentiel=0
     do ipotcont=0,npotmax
@@ -749,9 +753,9 @@ contains
        if (rang==0) write(6,*)'npotentiel>1 et ntyp=-1'
        call arret_ndm
     end if
-    if ((npotentiel.gt.1).and.(lpotentiel(10).eqv..true.)) then
-       if (rang==0)write(6,*)'**** npotentiel >1 ET EAM ==> EAM TAB only!'
-    end if
+!    if ((npotentiel.gt.1).and.(lpotentiel(10).eqv..true.)) then
+       !if (rang==0)write(6,*)'**** npotentiel >1 ET EAM ==> EAM TAB only!'
+!    end if
 
 
     if ((lpotentiel(12).EQV..true.).and.(ltabvois.EQV..true.))ldemitab=.false.
@@ -812,10 +816,12 @@ contains
 
     if (lprahman) then
        itesigma=1
-       if (iteprtsigma==-1) iteprtsigma=itetemp
+       iteprtsigma=1
        select case(dmtype)
        case(21,22)
           lprtrp=.true.
+          dmtype=8
+          if (wboxf==1) wboxf=0.2
        case default
           dmtype=8
        case (3,30,31,32,33,34,35)
@@ -867,7 +873,8 @@ contains
           end if
        end do
     else
-       if (iteprtsigma==-1) iteprtsigma=itesigma
+       iteprtsigma=1
+       itesigma=1
     end if
     ! read for cascade
     if (lcasca) then
@@ -1347,16 +1354,16 @@ contains
           write(6,*)'ipotentiel',ipotentiel
           !        write(6,*)lpotentiel
        else
-          write(6,*)'npotentiel buggué stop'
-          call arret_ndm
+!!$          write(6,*)'npotentiel buggué stop'
+!!$          call arret_ndm
 
           do ipotcont=1,npotmax
              if (lpotentiel(ipotcont).EQV..true.)write(6,*)'potentiel actif', ipotcont
           end do
-          !        if (lcasca.eqv..true.) then
-          !           if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
-          !           call arret_ndm
-          !        end if
+          if (lcasca.eqv..true.) then
+             if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
+             call arret_ndm
+          end if
        end if
     end if
     if (rang==0) write(6,*)'fmt_cin',fmt_cin

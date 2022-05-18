@@ -68,9 +68,9 @@ contains
     integer:: iproc,proc_source
 
     enepath(:)=0
+#endif    
     cellnebloc=>cellcible
     atnebloc=>atcible
-#endif    
 
     latcomp=.true.! NEB=> latcomp=.true.
     allocate (iter(npath))
