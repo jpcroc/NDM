@@ -162,7 +162,7 @@ contains
     select case (ipotentiel)
     case(0,1,3,4,5,7,8,9)
 
-       read (lupotin, *) iewald, l3c
+       read(lupotin, *) iewald, l3c
 #ifdef PARA
        !if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
@@ -200,7 +200,7 @@ contains
        case(0,1,3,5,4)
           ipotrep=2
        end select
-       read (lupotin, nml=ewald)            ! lecture de la namelist ewald
+       read(lupotin, nml=ewald)            ! lecture de la namelist ewald
        precisew=precis
        ! MPI
 
@@ -232,21 +232,22 @@ contains
              end if
              do i = 1, ntypr
                 if (iewald==0)then
-                   read (lupotin,  *) cmr,catomr,tyr,iti
+                   read(lupotin,  *) cmr,catomr,tyr,iti
                 else
-                   read (lupotin,  *) qr,cmr,catomr,tyr,iti
+                   read(lupotin,  *) qr,cmr,catomr,tyr,iti
                 end if
                 call checklu(iti,tyr,cmr,catomr,qr)
 !                ityplu(i)=iti
                 typ_and_pot(iti,ipotentiel)=.true.
-                write(6,*)cmr,umass
                 cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
                 if(iewald.ne.0) q(iti)=qr
                 lue_typ(iti)=.true.
-                if (iewald==0)then
-                   write (6, '(E12.3,F9.3,A5,I4)') cm(iti),catom(iti),ty(iti),iti
-                else
-                   write (6, '(2E12.3,F9.3,A5,I4)') q(iti),cm(iti),catom(iti),ty(iti),iti
+                if (rang==0) then 
+                   if (iewald==0)then
+                      write (6, '(E12.3,F9.3,A5,I4)') cm(iti),catom(iti),ty(iti),iti
+                   else
+                      write (6, '(2E12.3,F9.3,A5,I4)') q(iti),cm(iti),catom(iti),ty(iti),iti
+                   end if
                 end if
              end do
 !!$             do i=1,ntypr
@@ -264,9 +265,9 @@ contains
              end if
              do i = 1, ntyp
                 if (iewald==0)then
-                   read (lupotin,  *) cm(i),catom(i),ty(i)
+                   read(lupotin,  *) cm(i),catom(i),ty(i)
                 else
-                   read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
+                   read(lupotin,  *) q(i),cm(i),catom(i),ty(i)
                 end if
                 cm(i)=cm(i)*umass
                 if (rang==0) write (6, '(I4,2F9.3,A5)') i,cm(i),catom(i),ty(i)
@@ -363,7 +364,7 @@ contains
 
              if (rang==0) write (6, *) 'numero, charge, CM, masse,type BASAK'
              do i = 1, ntypr
-                read (lupotin,  *) qr,cmr,catomr,tyr,iti
+                read(lupotin,  *) qr,cmr,catomr,tyr,iti
                 call checklu(iti,tyr,cmr,catomr,qr)
                 lue_typ(iti)=.true.
                 !                write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
@@ -380,7 +381,7 @@ contains
           else
              if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
              do i = 1, ntyp
-                read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
+                read(lupotin,  *) q(i),cm(i),catom(i),ty(i)
                 !                write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
                 cm(i)=cm(i)*umass
              end do
@@ -445,8 +446,8 @@ contains
 
           call  alloc_typ
           rue_pair(:)=rue*A2cm
-          read (lupotin, *) (cm(i),i=1,ntyp)         ! masses
-          read (lupotin, *) (catom(i),i=1,ntyp)      ! numeros atomiques
+          read(lupotin, *) (cm(i),i=1,ntyp)         ! masses
+          read(lupotin, *) (catom(i),i=1,ntyp)      ! numeros atomiques
           cm(:ntyp) = cm(:ntyp)*umass
 
           ! initialisations
@@ -454,7 +455,7 @@ contains
 
           if (rang==0) write (6, *) 'type ;charge ; rayon ; bm ; shell ; type'
           do i = 1, ntyp
-             read (lupotin, *) q(i), ray(i), bm(i), shel(i),ty(i)
+             read(lupotin, *) q(i), ray(i), bm(i), shel(i),ty(i)
 
              if (rang==0) write (6, '(I2,4F8.4,a4)') i, q(i), ray(i), bm(i), shel(i),ty(i)
           end do
@@ -468,7 +469,7 @@ contains
           ! lecture des caracteristiques des paires
           ! 1. paires standards
 
-          read (lupotin, *) rom, dipm, pmm, rof1m, rof2m
+          read(lupotin, *) rom, dipm, pmm, rof1m, rof2m
           rom = rom*A2cm                        ! conversion A --> cm
           dipm = dipm*evA62ergcm6                 ! conversion eV.A^6 --> erg.cm^6
           rof1m = rof1m*A2cm                    ! conversion A --> cm
@@ -480,11 +481,11 @@ contains
           roff2(:npair) = rof2m
           lu_roff_pair(:)=.true.
           ! 2. paires non standards
-          read (lupotin, *) nprns
+          read(lupotin, *) nprns
           if (rang==0) write(6,*)'nprns ',nprns
           do i = 1, nprns
              !            if (rang==0) write(6,*) i
-             read (lupotin, *) l, ror, dipr, pmr, rof1m, rof2m
+             read(lupotin, *) l, ror, dipr, pmr, rof1m, rof2m
              ror = ror*A2cm                     ! conversion A --> cm
              dipr = dipr*evA62ergcm6              ! conversion eV.A^6 --> erg.cm^6
              rof1m = rof1m*A2cm                 ! conversion A --> cm
@@ -515,7 +516,7 @@ contains
           if (npotentiel .gt.1)then
              if (rang==0) write (6, *) 'numero, charge, CM, masse,type, NUMERO DU TYPE D ATOME'
              do i = 1, ntypr
-                read (lupotin,  *) qr,cmr,catomr,tyr,iti
+                read(lupotin,  *) qr,cmr,catomr,tyr,iti
                 call checklu(iti,tyr,cmr,catomr,qr)
 !                ityplu(i)=iti
                 q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
@@ -534,7 +535,7 @@ contains
           else
              if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
              do i = 1, ntyp
-                read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
+                read(lupotin,  *) q(i),cm(i),catom(i),ty(i)
                 if (rang==0)  write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
                 cm(i)=cm(i)*umass
              end do
@@ -668,7 +669,7 @@ contains
           if (npotentiel .gt.1)then
              if (rang==0) write (6, *) 'numero, charge, CM, masse,type, NUMERO DU TYPE D ATOME'
              do i = 1, ntypr
-                read (lupotin,  *) qr,cmr,catomr,tyr,iti
+                read(lupotin,  *) qr,cmr,catomr,tyr,iti
                 call checklu(iti,tyr,cmr,catomr,qr)
 !                ityplu(i)=iti
                 q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
@@ -685,7 +686,7 @@ contains
           else
              if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
              do i = 1, ntyp
-                read (lupotin,  *) q(i),cm(i),catom(i),ty(i)
+                read(lupotin,  *) q(i),cm(i),catom(i),ty(i)
                 cm(i)=cm(i)*umass
                 if (rang==0)  write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
              end do
@@ -830,8 +831,8 @@ contains
        eta= 1.0
        ty(1)='Si ' ; ty(2)='O  '
 
-       read (lupotin, *) (cm(i),i=1,ntyp)         ! masses
-       read (lupotin, *) (catom(i),i=1,ntyp)      ! numeros atomiques
+       read(lupotin, *) (cm(i),i=1,ntyp)         ! masses
+       read(lupotin, *) (catom(i),i=1,ntyp)      ! numeros atomiques
        cm(:ntyp) = cm(:ntyp)*umass
 
        ! initialisations
@@ -938,7 +939,7 @@ contains
 
        if (rang==0) write (6, *) 'numero, "charge", CM, masse,type'
        do i = 1, ntyp
-          read (lupotin,*)q(i), cm(i),catom(i),ty(i)
+          read(lupotin,*)q(i), cm(i),catom(i),ty(i)
           if (rang==0) write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
        end do
 

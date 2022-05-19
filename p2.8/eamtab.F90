@@ -85,7 +85,6 @@ contains
 
     integer::npair
     npair=ntyp*(ntyp+1)/2
-    
     allocate(crg%G(ntyp))
     allocate(crg%densmax(ntyp))
     allocate(crg%n(ntyp))
@@ -182,9 +181,12 @@ contains
        typ_pot_pair(1:ntyp)=ipotentiel
 
     end if
+    
     rhomin(:)=1d30;rhomax(:)=0
     select case(ipotentiel)
     case(16)
+       call crg%alloc(ntyp)
+
        read (lupotin, nml=ewald)            ! lecture de la namelist ewald
        if (iewald==0) then
           if (rang==0)then
@@ -231,7 +233,7 @@ contains
              cm(iti)=cmr*umass;ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.
           case(16)
              read (lupotin,*) qr,cmr,catomr,tyr,iti
-             call checklu(iti,tyr,cmr,catomr,qr)
+             call checklu(iti,tyr,cmr,catomr)
              ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.;q(iti)=qr;cm(iti)=cmr*umass
           end select
           typtyp(i)=iti
@@ -508,7 +510,6 @@ contains
           rhomax(iti)=crg%densmax(iti)
           rhomin(iti)=0
        end do
-!       crg%G(:)=crg%G(:)*ev2erg
        do ipair=1,nb_paire_a_lire
           if (npotentiel.GT.1) then
              read(lupotin,*)it1,it2
@@ -525,6 +526,7 @@ contains
                 call arret_ndm
              end if
              ipr=ipair
+             typ_pot_pair(ipr)=ipotentiel
           end if
 
           read(lupotin,*)crg%D(ipr),crg%gam(ipr),crg%A(ipr),crg%rho(ipr),crg%C(ipr),crg%R0(ipr)

@@ -84,7 +84,6 @@ contains
     !    CALCUL DU POTENTIEL D'INTERACTION ENTRE 2 TYPES DE PAIRE
     !    CHOIX ENTRE : 0. Born-Mayer-Huggins et 1. Buckingham
     ! ****************************************************************
-    write(6,*)'ipotentiel ',ipotentiel
     select case (ipotentiel)
           
     case(0,1,3,4,5,8,9)  ! FORMULES ANALYTIQUES

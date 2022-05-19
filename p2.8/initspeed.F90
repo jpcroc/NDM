@@ -222,8 +222,6 @@ contains
 
              !             endif
           end do
-          tempsauv=tempinstT(atcf)
-          if (rang==0) write(6,*)'temperature positions lues initspeed ',tempsauv
           kinx(:)=0.d0
           do ic=1,3
              do i=1,atcf%im

@@ -20,7 +20,7 @@ module init_pot_mod
 contains
   ! **************************************************************
   subroutine init_pot
-    integer::i,ipotcont,ipair,iti
+    integer::i,ipotcont,ipair,iti,l,iti2
     
     if (npotentiel.gt.1)then
        ipotentiel=-1
@@ -158,11 +158,15 @@ contains
                 end if
              end do
           end do
-          do ipair=1,npair
-             write(6,*)'pair ',ipair,' is of potential ',typ_pot_pair
-          end do
+          if (rang==0) then
+             do iti=1,ntyp
+                do iti2=iti,ntyp
+                   l=ipo(iti,iti2)
+                   write(6,*)'types', iti,TY(ITI),iti2,TY(iti2),'=pair ',l,' is of potential ',typ_pot_pair(l)
+                end do
+             end do
+          end if
        end if
-
        
        !#ifdef LAMMPS_VERSION
     endif
@@ -221,17 +225,6 @@ contains
        end select
     end do
     if ((npotentiel.gt.1).and.(rang==0)) then
-            write(6,*)
-            write(6,*)'BILAN DES POTENTIELS'
-            do i=1,ntyp
-               do j=1,ntyp
-                  l=ipo(i,j)
-                  write(6,*)
-                  write(6,*)'paire i-j l',i,j,l
-                  write(6,*)'lue paire typ_pot_pair coupure'
-                  write(6,*)lue_paire(l),typ_pot_pair(l),rue_pair(l)*1d8
-               end do
-            end do
 !       if (rang==0) then
           write(6,*)
           write(6,*)'decoupage en cellule suivant'
