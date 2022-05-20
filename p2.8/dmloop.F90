@@ -55,6 +55,7 @@ contains
     type(box_config)::boxndm
     logical:: test_sigma=.false.
     logical::lcalcvois
+    logical:: lreturn
 
 
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VERLET STD ***',itloopmax,timeloopmax
@@ -144,7 +145,8 @@ contains
        end if
        call  driver_caltabt_para(atdml,celndm,boxndm,psc,lperiod,lcalcvois)
        call analyseT (atdml,celndm,boxndm,psc)    
-       call controleT(atdml,celndm,boxndm,psc)
+       call controleT(atdml,celndm,boxndm,psc,lreturn)
+       if (lreturn) return
 
     end do
 

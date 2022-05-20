@@ -50,6 +50,7 @@ contains
 #endif
     logical,optional::linit
     logical::lini=.false.
+    logical:: lreturn
     if (present(linit))lini=linit
 
 
@@ -89,7 +90,8 @@ contains
 
 
 
-     call controleT(atpr,celndm,boxndm,psc)
+     call controleT(atpr,celndm,boxndm,psc,lreturn)
+     if (lreturn) return
 
   end do
 

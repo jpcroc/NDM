@@ -1426,7 +1426,7 @@ contains
 
     if (lcdp) then
        select case(dmtype)
-       case(1,2,3,4,32,33,34,8,35)
+       case(1,2,3,4,32,33,34,8,35,21,22)
           itetimestep=1
        case default
           if (rang==0) write(6,*)'dmtype inconsistent with creaDP', dmtype

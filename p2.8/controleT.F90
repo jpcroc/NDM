@@ -19,14 +19,14 @@ contains
   !           sous-programme controle.f
   ! ***********************************************************
 
-  subroutine controleT(atdml,celndm,boxndm,psc)
+  subroutine controleT(atdml,celndm,boxndm,psc,lreturn)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
          &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
-         &itetemp2
+         &itetemp2,lprtrp
 
     USE var_pot, ONLY:
     implicit none
@@ -34,7 +34,9 @@ contains
     class(atom_config_d)::atdml
     type(cell_config):: celndm
     type(box_config)::boxndm
-    type(para_space_config)::psc    
+    type(para_space_config)::psc
+    logical,optional::lreturn
+
 
     integer :: nacou, i, ic, iti
     real(double) :: vv, a1, a2, a3, c1, c2, c3
@@ -50,13 +52,17 @@ contains
     !
     !
     !
-
+    lreturn=.false.
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
-       call endrunT(atdml,celndm,boxndm,latcomp)
-       !       call DeallocateAll
-
-       call arret_ndm
+       if (present(lreturn)) then
+          lreturn=.true.
+          return
+          else
+             call endrunT(atdml,celndm,boxndm,latcomp)
+             !       call DeallocateAll
+             call arret_ndm
+          end if
 
     endif
     if(lEev) then
@@ -79,17 +85,26 @@ contains
        if (mod(iteration,itetemp)==0) then
           if (temp<=tempstop) then
              if (rang==0)  write (6, *) 'temperature < tempstop '
-             call endrunT(atdml,celndm,boxndm,latcomp)
-
-             call arret_ndm
-
+             if (present(lreturn)) then
+                lreturn=.true.
+                return
+             else
+                call endrunT(atdml,celndm,boxndm,latcomp)
+                !       call DeallocateAll
+                call arret_ndm
+             end if
           endif
           if (tempstopcel.gt.0) then
              if (maxtcel<=tempstopcel) then
                 write (6, *) 'temperature dans toutes les cels < tempstopcel '
-                call endrunT(atdml,celndm,boxndm,latcomp)
-
-                call arret_ndm
+                if (present(lreturn)) then
+                   lreturn=.true.
+                   return
+                else
+                   call endrunT(atdml,celndm,boxndm,latcomp)
+                   !       call DeallocateAll
+                   call arret_ndm
+                end if
              end if
           endif
        endif
@@ -119,21 +134,37 @@ contains
 
           fpn=fpSmax*erg2eV/angst
           if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E20.10)') iteration,fpn, potist*erg2eV
-          if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
+!          if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot))
           if (fpn.le.fpstop)then
-             if (sigstop.ge.0) then
+             if (lprtrp) then
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) then
                    itetemp=1;itesigma=1;itetemp2=1
                    call analyseT(atdml,celndm,boxndm,psc)
-                   call endrunT(atdml,celndm,boxndm,latcomp)
+                   if (present(lreturn)) then
+                      lreturn=.true.
+                      write(6,*)'RETURN CONTROLE'
+                      return
+                   else
+                      call endrunT(atdml,celndm,boxndm,latcomp)
+                      !       call DeallocateAll
+                      call arret_ndm
+                   end if
                 endif
              else
                 itetemp=1;itesigma=1
-                call endrunT(atdml,celndm,boxndm,latcomp)
+                   if (present(lreturn)) then
+                      lreturn=.true.
+                      write(6,*)'RETURN CONTROLE'
+                      return
+                   else
+                      call endrunT(atdml,celndm,boxndm,latcomp)
+                      !       call DeallocateAll
+                      call arret_ndm
+                   end if
+
              end if
 
-             if (rang==0)      write(6,*)
           end if
        end if
 
@@ -148,21 +179,34 @@ contains
 #endif
 
 
-          fpn=fpmax*erg2eV/angst
-          if (myidsp==0)      write(6,*)
-          if (myidsp==0)      write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ',fpmax, fpn
+          fpn=fpsmax*erg2eV/angst
+          !          if (myidsp==0)      write(6,*)
+          if (myidsp==0)      write(6,*)'TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ', iteration,fpn, potist*erg2eV
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot))
           if (fpn.le.fsumstop) then
-             if (sigstop.ge.0) then
+             if (lprtrp) then
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) then
                    itetemp=1;itesigma=1;itetemp2=1
                    call analyseT(atdml,celndm,boxndm,psc)
-                    call endrunT(atdml,celndm,boxndm,latcomp)
+                   if (present(lreturn)) then
+                      lreturn=.true.
+                      return
+                   else
+                      call endrunT(atdml,celndm,boxndm,latcomp)
+                      !       call DeallocateAll
+                      call arret_ndm
+                   end if
+
                 end if
              else
-                call endrunT(atdml,celndm,boxndm,latcomp)
+                   if (present(lreturn)) then
+                      lreturn=.true.
+                      return
+                   else
+                      call endrunT(atdml,celndm,boxndm,latcomp)
+                      call arret_ndm
+                   end if
              end if
-             if (myidsp==0)      write(6,*)
           end if
        end if
        !     if (rang==0) write (6, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
@@ -205,14 +249,27 @@ contains
                 if (formax.le.fpstop) then
                    if (myidsp==0) write(6,*)'force par atome  max  ev/Ang ', formax
                    if (myidsp==0) write (6, *) 'energie ', potist*erg2eV
-                   call endrunT(atdml,celndm,boxndm,latcomp)
+                   if (present(lreturn)) then
+                      lreturn=.true.
+                      return
+                   else
+                      call endrunT(atdml,celndm,boxndm,latcomp)
+                      call arret_ndm
+                   end if
                 end if
              end if
              if (fsumstop>0) then
                 if (forctot.le.fsumstop) then
                    if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
                    if (myidsp==0) write(6, *) 'energie ', potist*erg2eV
-                   call endrunT(atdml,celndm,boxndm,latcomp)
+                   if (present(lreturn)) then
+                      lreturn=.true.
+                      return
+                   else
+                      call endrunT(atdml,celndm,boxndm,latcomp)
+                      !       call DeallocateAll
+                      call arret_ndm
+                   end if
                 end if
              end if
 
@@ -222,7 +279,14 @@ contains
                 if (formax.le.fpstop) then
                    if (myidsp==0) write(6,*)'force par atome  max cgs ',formax
                    if (myidsp==0) write (6, *) 'energie ', potist
-                   call endrunT(atdml,celndm,boxndm,latcomp)
+                   if (present(lreturn)) then
+                      lreturn=.true.
+                      return
+                   else
+                      call endrunT(atdml,celndm,boxndm,latcomp)
+                      !       call DeallocateAll
+                      call arret_ndm
+                   end if
 
                 end if
              end if
@@ -231,7 +295,14 @@ contains
                 if (forctot.le.fsumstop) then
                    if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
                    if (myidsp==0) write (6, *) 'energie ', potist
-                   call endrunT(atdml,celndm,boxndm,latcomp)
+                   if (present(lreturn)) then
+                      lreturn=.true.
+                      return
+                   else
+                      call endrunT(atdml,celndm,boxndm,latcomp)
+                      !       call DeallocateAll
+                      call arret_ndm
+                   end if
                 end if
              end if
 

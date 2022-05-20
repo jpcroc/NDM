@@ -125,8 +125,6 @@ contains
        ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
        return
 #endif
-!!$       select type (atdml)
-!!$       type is (atom_config)
 #ifdef PARA
        if ((dmtype.ne.35).and.(dmtype.ne.30).and.(dmtype.ne.31).and.(dmtype.ne.32)&
             &.and.(dmtype.ne.34).and.(dmtype.ne.33))then
@@ -154,12 +152,6 @@ contains
              end select
           end if
        class is (atom_config_d)
-!!$          case default
-!!$             write(6,*)'incohérence entre type(atom_config) et dmtype'
-!!$             call arret_ndm
-!!$          end select
-!!$          class is (atom_config_d)
-!!$          select case (dmtype) 
           select case (dmtype) 
           case(5)
              write(6,*)'loopforcetest pas NDM2020' ; stop
@@ -167,14 +159,6 @@ contains
              if (lcdp) then
                 call creadp(atdml,celndm,boxndm,psc0)
              else
-!!$                select type (atdml)
-!!$                type is (atom_config_d)
-!!$                   write(6,*)'typeDPROG'
-!!$                   !    type is (atom_config)
-!!$                   !       write(6,*)'type0'
-!!$                type is (atom_config_e)
-!!$                   write(6,*)'typeEPROG',atdml%lprteat
-!!$                end select
                 itloopmax=itmax
                 timeloopmax=timemax
                 call dmloop_pilot(atdml,celndm,boxndm,psc0,linit=.true.)
@@ -192,26 +176,10 @@ contains
              else
                 call NGC(atdml,celndm,boxndm,psc0)
              end if
-
-!!$          case(4,10)
-!!$             call dmloop_vverlet (atdml,celndm,boxndm,psc0)
-!!$          case(8)
-!!$             call dmloop_lpr (atdml,celndm,boxndm,psc0)
-!!$          case (1)
-!!$             call dmloop (atdml,celndm,boxndm,psc0)
-!!$          case (21)
-!!$             call dmloop(atdml,celndm,boxndm,psc0)
-!!$          case(22)
-!!$             call dmloop_vverlet (atdml,celndm,boxndm,psc0)
-!!$          case (3,30)
-!!$             write(6,*)'incohérence entre type(atom_config_d) et dmtype=GC'
-!!$             call arret_ndm
           case(112)
              call d_at_at(atdml,celndm,boxndm)
           case(111)
              call arret_ndm
-!             if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION V2 ****'
-!             CALL one_calc(atdml,celndm,boxndm,psc=psc0) 
           case(11)
              if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
              CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc0) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)

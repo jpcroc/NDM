@@ -47,7 +47,7 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    logical :: test_sigma
+    logical :: test_sigma,lreturn
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****',itloopmax,timeloopmax
     ! Appel de la routine generale des forces
     test_sigma=(mod(iteration,itesigma)==0)
@@ -117,7 +117,8 @@ contains
           sigtot = sigkine+sig
        end if
        call analyseT (atdml,celndm,boxndm,psc)
-       call controleT(atdml,celndm,boxndm,psc)
+       call controleT(atdml,celndm,boxndm,psc,lreturn)
+       if (lreturn) return
 
     end do
 

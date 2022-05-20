@@ -34,13 +34,14 @@ module cdp_mod
        iseed, &      ! racine des nombres aléatoires
        ideftyp, &      ! racine des nombres aléatoires
        itprep, &      ! number of iterations for initial equilibration
+       ncreadp, &      ! number of DP INTRODUCTION (e.g. for quenches)
        typint ! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
   integer,allocatable::nvac(:),nbint(:)
   real(double), dimension(:,:), allocatable :: xposint ! positions des interstitiels POSSIBLES
   real(double), dimension(:,:), allocatable :: xposI ! positions des interstitiels réalisés
   real(double)::maxposint(3),minposint(3)
   real (double) :: dminins,rsphdef,centresphdef(3),timecdp
-  integer:: ioxdef
+  integer:: ioxdef,icreadp
   logical::ltimec,lcrearead
 
 contains
@@ -59,7 +60,7 @@ contains
     !-----------------------------------------------
     integer :: i,itapp,nfp,iti
     !-----------------------------------------------
-    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint,typint,timecdp,lcrearead
+    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint,typint,timecdp,lcrearead,ncreadp
 
     allocate(nvac(ntyp));allocate(nbint(ntyp))
 
@@ -75,6 +76,7 @@ contains
     nfp=-1
     timecdp=-1.
     lcrearead=.false.
+    ncreadp=-1
     open(unit=73, file='creaDPin', status='unknown')
     read (73, nml=inputcdp)
     timecdp=timecdp*1d-15
@@ -260,8 +262,10 @@ contains
     !*********************************************************************
     lcrea0=.true.
     itinser=0
+    icreadp=0
     do while ((iteration.lt.itmax).and.(timel.lt.timemax))
-
+       if (ncreadp.gt.0)icreadp=icreadp+1
+       if (icreadp==ncreadp+1) exit
        if (lrestart) then
           if (ltimec) then
              lcrea0=lcrearead
