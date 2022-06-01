@@ -48,6 +48,7 @@ subroutine param_det(boxndm)
         if (rang==0)  write(6,*)'npot>1 + ewald+ncouc3=0 : stop'
         call arret_ndm
      end if
+     rue=0
      do l=1,npair
         if ((typ_pot_pair(l).lt.10).and.(typ_pot_pair(l).ne.2)) then
            if (rue_pair(l)==0) then
@@ -55,13 +56,24 @@ subroutine param_det(boxndm)
               call arret_ndm
            end if
         end if
+        rue=max(rue,rue_pair(l))
      end do
      if (iewald.gt.0)then
         if((alpha==0).or.(ncouc3==0)) then
            write(6,*)'npotentiel>1 and Ewald : specify ncouc3 and alpha'
            stop
         end if
+        ncoucx=ncouc3
+        ncoucy=ncouc3
+        ncoucz=ncouc3
+        if (.not.allocated(tabv3)) then
+           
+           allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
+           allocate (tabf3(ntyp,-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))
+        end if
+        
      end if
+     
   else
      rue=0
      if (((ipotentiel.lt.10).and.(ipotentiel.ne.2)).or.(ipotentiel==16)) then
@@ -500,6 +512,7 @@ subroutine param_det(boxndm)
                  write(6,*) 'RUE=',rue,' ALPHA=',alpha
               endif
            endif   ! rang = 0
+           write(6,*)'NCOU',ncoucx,ncoucy,ncoucz
            if ((iewald/=0).and.(.not.allocated(tabv3))) then
               
               allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))

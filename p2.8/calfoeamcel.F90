@@ -1,6 +1,6 @@
 module calfoeamcel_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:angst,nvat,low_limit,lperiod,zero,potis2,pi
+  USE gen_com_m, ONLY:angst,nvat,low_limit,lperiod,zero,pi
   USE calfocommon
   use vect_dist_mod,only:vect_dist
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -83,10 +83,10 @@ contains
        densityi=0.0 ; dEembi=0.0
        koo = atcf%ielat(i)                          ! Numero de la cellule
        iti = atcf%ityp(i)
-       if (ipotentiel==16) then
-          l=ipo(iti,iti)
-          potis2=potis2-zz(l)*alp
-       end if
+!!$       if (ipotentiel==16) then
+!!$          l=ipo(iti,iti)
+!!$          potis2=potis2-zz(l)*alp
+!!$       end if
 
        ! pour chaque cel. voisine
        loop1cel:   do i1 = 0, celcf%ncelvois(koo)

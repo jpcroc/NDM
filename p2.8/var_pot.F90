@@ -39,7 +39,8 @@ module var_pot
 
 
   logical :: l3c ! somme d'Ewald terme a trois corps
-  integer :: iewald
+  integer :: iewald=0,iewaldS
+  logical::luewald=.false.
 
   integer:: ngrid  ! taille de la grille des pot de paire : lue dans .din
 

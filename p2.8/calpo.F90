@@ -348,13 +348,18 @@ contains
        !               CALCUL DU POTENTIEL COULOMBIEN
        ! ************************************************************
        ! Produits des charges entre 2 types (pour terme coulombien)
-       l = 0
-       do i = 1, ntyp
-          if (ntyp-i+1>0) then
-             zz(l+1:ntyp-i+1+l) = q(i)*q(i:ntyp)
-             l = ntyp-i+1+l
-          endif
+!       if (iewald.ne.0) then
+       do i=1,ntyp
+          do j=i,ntyp
+             l=ipo(i,j)
+             if (typ_pot_pair(l)==ipotentiel)then
+                zz(l)=q(i)*q(j)
+             end if
+          end do
        end do
+       
+
+
 
        ! - Tableau des potentiels et forces correspondant aux interactions coulombiennes
        ! --- Le premier terme du potentiel et de la force est calcule ---
@@ -371,8 +376,15 @@ contains
 !                write(6,*)'r k damp auxe zz',r, k ,damp,ar,zz,alpha
 !                    write(6,*)r,pot(1,1,k),auxe*zz(1)*damp/r
           !    interaction de paire + interaction couenne
-          pot(1,:npair,k) = pot(1,:npair,k)+auxe*zz(:npair)*damp/r
-
+          
+          do i=1,ntyp
+             do j=i,ntyp
+                l=ipo(i,j)
+                if (typ_pot_pair(l)==ipotentiel)then
+                   pot(1,l,k) = pot(1,l,k)+auxe*zz(l)*damp/r
+                end if
+             end do
+          end do
 
        end do
        do l=1,npair
@@ -396,7 +408,7 @@ contains
        !             end if
        !          endd
 
-    case(2)  !test départ sur analytique de paires  ! SELECT FORMULES ANALYTIQUES LIgne 90
+    case(2)  !test départ sur analytique de paires  ! SELECT FORMULES ANALYTIQUES LIgne 90 (pas 0 1 3 4 5 8 9)
        if (rang==0) write (6, *) '----------- POTENTIEL WATANABE --------------'
 
        ! -----Terme a 2 corps de base
@@ -470,11 +482,10 @@ contains
                      & +drkp*(pot_pair_tab(kp,4,lpt))))
                 !                           write(6,*)r,pot(1,l,k)              
 
-                if (iewald.ne.0) then
-                   pot(1,l,k) = pot_pair_tab(kp,1,lpt)+ drkp*(pot_pair_tab(kp,2,lpt)+drkp*(pot_pair_tab(kp,3,lpt) &
-                        & +drkp*(pot_pair_tab(kp,4,lpt))))
-
-                end if
+!                if (iewald.ne.0) then
+!                   pot(1,l,k) = pot_pair_tab(kp,1,lpt)+ drkp*(pot_pair_tab(kp,2,lpt)+drkp*(pot_pair_tab(kp,3,lpt) &
+!                        & +drkp*(pot_pair_tab(kp,4,lpt))))
+!                end if
              end if
           end do
        end do loopk
@@ -507,9 +518,9 @@ contains
              !    interaction de paire + interaction couenne
              do l=1,npair
                 if (typ_pot_pair(l)==ipotentiel)then
-                   if (zz(l).ne.0) then
+!                   if (zz(l).ne.0) then
                       pot(1,l,k) = pot(1,l,k)+auxe*zz(l)*damp/r
-                   end if
+!                   end if
                 end if
              end do
           end do
@@ -581,7 +592,9 @@ contains
        do i=1,ntyp
           do j=i,ntyp
              l=ipo(i,j)
-             zz(l)=q(i)*q(j)
+             if (typ_pot_pair(l)==ipotentiel)then
+                zz(l)=q(i)*q(j)
+             end if
           end do
        end do
        r=maxval(rue_pair)

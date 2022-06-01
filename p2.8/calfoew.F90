@@ -1,11 +1,11 @@
 module calfoew_mod
   USE epme_mod,only: epme
-  USE gen_com_m, ONLY:pi,potis3,zero,pi
+  USE gen_com_m, ONLY:pi,potis3,zero,pi,potis2
   USE calfocommon
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config
-  USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q,tabv3,tabf3,auxe
+  USE var_pot, ONLY:alpha,iewald,nvecttot,ncoucx,ncoucy,ncoucz,q,tabv3,tabf3,auxe,ipo,zz
   USE recips_mod,only: calcvol
   implicit none
 contains
@@ -42,17 +42,27 @@ contains
 
     !parallelisation de ewald classique
 
-    integer :: nv,debv,finv,ii
+    integer :: nv,debv,finv,ii,l
     real (double), dimension (3,3) :: sigep
     !  real(double), dimension (3,imm) :: fpewp
 
     ! EWALD RECIPROQUE METHODE CLASSIQUE (iewald=1)
-
     potisewg = zero
     sige = 0.0
     select case (iewald)
     case (1)
 
+       do i=1,atcf%im
+          iti = atcf%ityp(i)
+          ! --- Calcul du second potentiel de la somme d'Ewald ---
+          l = ipo(iti,iti)
+          potis2 = potis2-zz(l)*alpha/sqrt(pi)*23.06134575D-20
+       end do
+#ifdef PARA
+       if (nprocspace.gt.1) then
+          call comm_space%sum(potis2)
+       end if
+#endif       
        debv=1
        finv=nvecttot
 

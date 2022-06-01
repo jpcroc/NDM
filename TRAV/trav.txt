@@ -1,6 +1,12 @@
 
 ***
 A FAIRE
+
+MODE D'EMPLOI
+
+TREMPE FIRE Y COMPRIS LPR
+PIMD ?
+Artnouveau
 lecture d'autres fichiers .cfg , .xfg, écriture de plusieurs types de fichiers de configurations ex: .cfg ET ..newgin
 calcdepla a été débranché, le rebrahcer ?
 3.2/ corriger PMEwald

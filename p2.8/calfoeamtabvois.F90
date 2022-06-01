@@ -1,7 +1,7 @@
 module calfoeamtabvois_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m, ONLY:angst,fnemd,lcalcjq,ldemitab,&
-       &lnemd,low_limit,lperiod,zero,potis2,pi
+       &lnemd,low_limit,lperiod,zero,pi
   USE calfocommon
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
@@ -85,11 +85,11 @@ contains
 
 
        iti = atcf%ityp(i)
-       if (ipotentiel==16) then
-          l = ipo(iti,iti)
-          ! --- Calcul du second potentiel de la somme d'Ewald ---
-          potis2 = potis2-zz(l)*alp
-       end if
+!!$       if (ipotentiel==16) then
+!!$          l = ipo(iti,iti)
+!!$          ! --- Calcul du second potentiel de la somme d'Ewald ---
+!!$          potis2 = potis2-zz(l)*alp
+!!$       end if
              
        iw1 = iw2+1
        iw2 = atcf%iwmax(i)

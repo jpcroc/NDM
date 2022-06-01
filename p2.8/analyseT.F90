@@ -84,39 +84,37 @@ contains
     real(double),save::CminpP2,CmaxpP2,CmintP2,CmaxtP2
     real(double),save::timelm1=0
     integer::koo
-    
+
     logical,save::linitrdf=.false.,linitadf=.false.
 
 
     if (itloopmax==0) itetemp=0
-    !    if (rang==0) then
-       !          write(6,*)'analyse -> sauvegarde'
-       if (itesauv.GT.0) then
-          if (mod(iteration,itesauv)==0) then 
-             formatsauv = 3
-             if(itesauvinter.gt.0) then
-                if (mod(iteration,itesauvinter).eq.0) then
-                   write(extension,'(i9.9)') iteration
-                   fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-                else
-                   fnamcout = fnam(1:lenfnam)//'.cout'
-                endif
+    if (itesauv.GT.0) then
+       if (mod(iteration,itesauv)==0) then 
+          formatsauv = 3
+          if(itesauvinter.gt.0) then
+             if (mod(iteration,itesauvinter).eq.0) then
+                write(extension,'(i9.9)') iteration
+                fnamcout = fnam(1:lenfnam)//'.cout.'//extension
              else
                 fnamcout = fnam(1:lenfnam)//'.cout'
-             end if
-             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
+             endif
+          else
+             fnamcout = fnam(1:lenfnam)//'.cout'
           end if
-       endif
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
+       end if
+    endif
 
-              if (itesauvposition.GT.0) then
-          if (mod(iteration,itesauvposition)==0) then
-             formatsauv = 2
-             write(extension,'(i9.9)') iteration
-             fnamcout = fnam(1:lenfnam)//'.cout.'//extension
-             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
-          end if
-       endif
-       
+    if (itesauvposition.GT.0) then
+       if (mod(iteration,itesauvposition)==0) then
+          formatsauv = 2
+          write(extension,'(i9.9)') iteration
+          fnamcout = fnam(1:lenfnam)//'.cout.'//extension
+          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
+       end if
+    endif
+
     if(lEev) then
        unitE=erg2eV
        cunitE='  eV'
@@ -134,7 +132,7 @@ contains
 
     if (itetemp>0) then
        if (mod(iteration,itetemp)==0) then
-!          call atdml%print
+          !          call atdml%print
           call calctemp (temp,kine,atdml,celndm)
           do iti=1,ntyp
              atdml%lgul=.false.
@@ -145,7 +143,7 @@ contains
              if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
              call atdml%fab(attyp,lback=.false.)
              call caltabtC(celtyp,attyp,lperiod,boxndm)
-             
+
 
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              call celtyp%dealloc ; call attyp%dealloc
@@ -182,22 +180,23 @@ contains
                    if (lpotentiel(ipot).eqv..true.) then
                       select case (ipot)
                       case (1:9)
-                         write(6,'(A,G21.12,A)')'    *energie paire 2 corps = ',(potis1+potis2)*unitE, cunitE
+                         write(6,'(A,G21.12,A)')'    *energie paire 2 corps = ',(potis1)*unitE, cunitE
                          if(l3c) write(6,'(A,G21.12,A)')'    *energie pot 3 corps = ',potcp*unitE, cunitE
-                         if(iewald.gT.0) write (6, '(A,G21.12,A)') '    *energie pot coul recip = ', potis3*unitE, cunitE
+ !                        if(iewald.gT.0) write (6, '(A,G21.12,A)') '    *energie pot coul recip = ', potis3*unitE, cunitE
                       case(10:12)
                          write(6,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
                          write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
                       case(16)
                          write(6,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
                          write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
-                         write(6,'(A,G21.12,A)')'    *energie EWALD  = ',potis3*unitE, cunitE
+!                         write(6,'(A,G21.12,A)')'    *energie EWALD  = ',potis3*unitE, cunitE
                       case(13)
                          write(6,'(A,G21.12,A)')'    *energie Tersoff = ',potisTersoff*unitE, cunitE
                          If (potisZBL.ne.0)write(6,'(A,G21.12,A)')'    *energie ZBL = ',potisZBL*unitE, cunitE
                       end select
                    end if
                 end do
+                if(iewald.gT.0) write (6, '(A,G21.12,A)') '    *energie EWALD  = ', (potis2+potis3)*unitE, cunitE
                 write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Ec = ',kine*unitE, cunitE, &
                      '  (', temp, ' K)'
 
@@ -418,7 +417,7 @@ contains
 
 
 
-             
+
 136          format(A,3I4,3E15.5,4E15.7,I4)
 
 
@@ -441,7 +440,7 @@ contains
 
     if (iterasmol>0) then     
        if (mod(iteration,iterasmol)==0) then
-         call rasmolT(atdml,boxndm,iteration,latcomp=latcomp)
+          call rasmolT(atdml,boxndm,iteration,latcomp=latcomp)
           if (l2T) call  eleccellmol
 
        end if
@@ -449,47 +448,47 @@ contains
 
 
 
-  if (iterdf>0) then
-     if (linitrdf.eqv..false.) then
-        call initrdf(rdf0,nkmax,rcrdf,linstantrdf,'00')
-        linitrdf=.true.
-     end if
+    if (iterdf>0) then
+       if (linitrdf.eqv..false.) then
+          call initrdf(rdf0,nkmax,rcrdf,linstantrdf,'00')
+          linitrdf=.true.
+       end if
 
-     if (mod(iteration,iterdf)==0) then
-        call calcdigr (atdml,celndm,boxndm,rdf0)
-        if (rdf0%linstantrdf) then
-           call rdfT(rdf0)
-           rdf0%nrdf = 0
-        endif
-     endif
-  else if (iterdf==0) then
-     if (itloopmax-iteration<nrdf) then
-        call calcdigr (atdml,celndm,boxndm,rdf0)
-     endif
-  endif
+       if (mod(iteration,iterdf)==0) then
+          call calcdigr (atdml,celndm,boxndm,rdf0)
+          if (rdf0%linstantrdf) then
+             call rdfT(rdf0)
+             rdf0%nrdf = 0
+          endif
+       endif
+    else if (iterdf==0) then
+       if (itloopmax-iteration<nrdf) then
+          call calcdigr (atdml,celndm,boxndm,rdf0)
+       endif
+    endif
 
-  if (iteangle>0) then
-     if (linitadf.eqv..false.) then
-        call initadf(adf0,contmax,rcangle,linstantfda,'00',thetamax,thetamin)
-        linitadf=.true.
-     end if
+    if (iteangle>0) then
+       if (linitadf.eqv..false.) then
+          call initadf(adf0,contmax,rcangle,linstantfda,'00',thetamax,thetamin)
+          linitadf=.true.
+       end if
 
-     if (mod(iteration,iteangle)==0) then
-        call calcangle(atdml,celndm,boxndm,adf0)
-        if (adf0%linstantfda) then
-           call adfT(adf0)
-           adf0%nfda = 0
-        endif
-     endif
-  else if (iteangle==0) then
-     if (itloopmax-iteration<nfda) then
-        call calcangle(atdml,celndm,boxndm,adf0)
-     endif
-  endif
-  if (itebdv>0) then
-     if (mod(iteration,itebdv)==0) call bondval(atdml,celndm,boxndm)
-  end if
-    
+       if (mod(iteration,iteangle)==0) then
+          call calcangle(atdml,celndm,boxndm,adf0)
+          if (adf0%linstantfda) then
+             call adfT(adf0)
+             adf0%nfda = 0
+          endif
+       endif
+    else if (iteangle==0) then
+       if (itloopmax-iteration<nfda) then
+          call calcangle(atdml,celndm,boxndm,adf0)
+       endif
+    endif
+    if (itebdv>0) then
+       if (mod(iteration,itebdv)==0) call bondval(atdml,celndm,boxndm)
+    end if
+
     return
   end subroutine analyseT
 end module analyseT_mod

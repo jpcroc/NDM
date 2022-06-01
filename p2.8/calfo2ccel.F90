@@ -49,9 +49,8 @@ contains
        koo = atcf%ielat(i)                          ! Numero de la cellule
        iti = atcf%ityp(i)
        ! --- Calcul du second potentiel de la somme d'Ewald ---
-       l = ipo(iti,iti)
-
-       potis2 = potis2-zz(l)*alp
+!       l = ipo(iti,iti)
+!       potis2 = potis2-zz(l)*alp
 
        ! pour chaque cel. voisine
        do i1 = 0, celcf%ncelvois(koo)
@@ -170,7 +169,7 @@ contains
 
     if (nprocspace.gt.1) then
        call comm_space%sum(potis1)
-       call comm_space%sum(potis2)
+!       call comm_space%sum(potis2)
        call comm_space%sum(sig)
        if (associated(sigc)) then
           call comm_space%sum(sigc)

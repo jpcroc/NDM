@@ -38,7 +38,7 @@ contains
     logical,optional::lreturn
 
 
-    integer :: nacou, i, ic, iti
+    integer :: nacou, i, ic, iti,it1,it2,it3
     real(double) :: vv, a1, a2, a3, c1, c2, c3
     real(double), dimension(1,3) :: g1,aux
     real(double) :: ltc, ctime, tdev, tcool, epc1, epc2, epc3,masstot,massa,tclt
@@ -139,8 +139,10 @@ contains
           if (fpn.le.fpstop)then
              if (lprtrp) then
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) then
+                   it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
                    call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
                    if (present(lreturn)) then
                       lreturn=.true.
                       write(6,*)'RETURN CONTROLE'

@@ -9,7 +9,7 @@ contains
   ! **********************************************************
   subroutine calfo2ctabvois(atcf,celcf,boxcf)
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:lcalcjq,pi,potis1,potis2
+    USE gen_com_m, ONLY:lcalcjq,pi,potis1
     USE var_pot, ONLY:alpha,csive,ipo,zz,rue_pair,ipo,pot
     use vect_dist_mod,only:vect_dist
     USE jqmod
@@ -33,9 +33,9 @@ contains
     do i = 1, atcf%im
 
        iti = atcf%ityp(i)
-       l = ipo(iti,iti)
+!       l = ipo(iti,iti)
        ! --- Calcul du second potentiel de la somme d'Ewald ---
-       potis2 = potis2-zz(l)*alp
+!       potis2 = potis2-zz(l)*alp
     end do
 
     ! --------------------------

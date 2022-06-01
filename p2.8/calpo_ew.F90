@@ -40,6 +40,7 @@ contains
              tabv3(nb1,nb2,nb3) = ex1
              tabf3(:,nb1,nb2,nb3) = ex2*q(:)
 !             write(6,*)nb1,nb2,nb3,ex1,ex2,q
+!             write(6,*)'TABVtABF',tabv3(nb1,nb2,nb3)
           end do
        end do
     end do

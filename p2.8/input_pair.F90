@@ -10,7 +10,8 @@ module input_pair_mod
        &ncoucx,ncoucy,ncoucz,ngr,ncouc3,l3c,lambda,kpmey,kpmex,kpmez,ipotrep,ipo_2_pair_tab,gm1,gm2,gm3,gm4,gm5,gR,gD,&
        &r8p,evA62ergcm6,epswat,alpha,c3c,l3cpair,coup3c2,l3ctyp,cangle,gam,lamb,capWij,ietaij,iewald,eta,coup3c,capDij,&
        &capHij,rue_pair,sigmawat,rawat,qwat,bwat,awat,rawat2,pwat,lu_roff_pair,roff2,roff1,ro,typ_pot_pair,amorse,remorse,&
-       &dmorse,dip,a_factor,pm,Afd,Bfd,r0fd, Aig,big,r0ig,dbasak,betabasak,rstarbasak,abasak,cbasak,rhobasak
+       &dmorse,dip,a_factor,pm,Afd,Bfd,r0fd, Aig,big,r0ig,dbasak,betabasak,rstarbasak,abasak,cbasak,rhobasak,luewald,iewaldS,&
+       &rue_pot
 
   use Tpara,only:nprocspace
   implicit none
@@ -163,6 +164,7 @@ contains
     case(0,1,3,4,5,7,8,9)
 
        read(lupotin, *) iewald, l3c
+       call checkewald(iewald)
 #ifdef PARA
        !if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
@@ -202,6 +204,7 @@ contains
        end select
        read(lupotin, nml=ewald)            ! lecture de la namelist ewald
        precisew=precis
+       rue_pot(ipotentiel)=rue*A2cm
        ! MPI
 
 
@@ -804,6 +807,7 @@ contains
        ! ici lecture de watanabe .potin
        ! il y a un terme a 3 corps :
        iewald= 0
+       call checkewald(iewald)
        l3c= .TRUE.
        rumaxa=0
 
@@ -931,6 +935,7 @@ contains
           call arret_ndm
        end if
        iewald=0
+       call checkewald(iewald)
        l3c=.true.
 
        read(lupotin,*) ntyp
@@ -1037,7 +1042,18 @@ contains
     endif
   end subroutine checklu
     
-    
+  subroutine checkewald (iewt)
+    integer,intent(in)::iewt
+    if (luewald) then
+       if (iewt.ne.iewaldS) then
+          if (rang==0) write(6,*)'inconsistency iewald '
+          call arret_ndm
+       end if
+    else
+       luewald=.true.
+       iewaldS=iewt
+    end if
+  end subroutine checkewald
 
 
 end module input_pair_mod

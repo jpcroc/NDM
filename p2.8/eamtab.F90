@@ -9,7 +9,7 @@ module eam
   USE arret_ndm_mod,only: arret_ndm
 
   USE calerf_mod
-  use input_pair_mod,only:checklu
+  use input_pair_mod,only:checklu,checkewald
   implicit none
 
   !Eamtype, Reptype et DensityType definissent les éléments dont sont censés dépendre 
@@ -188,6 +188,7 @@ contains
        call crg%alloc(ntyp)
 
        read (lupotin, nml=ewald)            ! lecture de la namelist ewald
+       call checkewald(iewald)
        if (iewald==0) then
           if (rang==0)then
              write (6, *) '-*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-'
@@ -215,6 +216,7 @@ contains
        
     case(10)
        read(lupotin,*) rue
+       call checkewald(iewald)
     end select
     
     rue=rue*A2cm
@@ -228,12 +230,17 @@ contains
        do i = 1, ntypr
           select case(ipotentiel)
           case(10)
-             read (lupotin,*) cmr,catomr,tyr,iti
-             call checklu(iti,tyr,cmr,catomr)
-             cm(iti)=cmr*umass;ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.
+             if (iewald.gt.0) then
+                read (lupotin,*) qr,cmr,catomr,tyr,iti
+                call checklu(iti,tyr,cmr,catomr,qr)
+             else
+                read (lupotin,*) cmr,catomr,tyr,iti
+                call checklu(iti,tyr,cmr,catomr)
+                cm(iti)=cmr*umass;ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.
+             end if
           case(16)
              read (lupotin,*) qr,cmr,catomr,tyr,iti
-             call checklu(iti,tyr,cmr,catomr)
+             call checklu(iti,tyr,cmr,catomr,qr)
              ty(iti)=tyr; catom(iti)=catomr; lue_typ(iti)=.true.;q(iti)=qr;cm(iti)=cmr*umass
           end select
           typtyp(i)=iti

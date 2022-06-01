@@ -126,9 +126,9 @@ contains
                    endif
 
 
-                   if (iewald.ge.1) call calfoew(atcf,celcf,boxcf)
+!                   if (iewald.ge.1) call calfoew(atcf,celcf,boxcf)
                    ! Potentiel total
-                   potisP = potis0+potis1+potis2+potis3
+                   potisP = potis0+potis1    !  +potis2    !+potis3
                    potist=potist+potisP
 
                 case(2)
@@ -173,11 +173,6 @@ contains
                       call calfoeamcel(atcf,celcf,boxcf,psc)
                    endif
                    potist=potist+potiseam
-                   if (iewald.ge.1)then
-                      call  calfoew(atcf,celcf,boxcf)
-
-                      potist=potist+potis3
-                   end if
                                       
 #ifdef ML
                 case (20)
@@ -187,6 +182,12 @@ contains
              end if
           end if
        end do
+       if (iewald.ge.1)then
+          call  calfoew(atcf,celcf,boxcf)
+!          write(6,*)'POTIS3',potis3
+          potist=potist+potis3+potis2
+       end if
+
 #ifdef LAMMPS_VERSION
     endif
 #endif  
@@ -194,7 +195,7 @@ contains
     sigcf=sig;potistcf=potist
 
 
-
+write(6,*)'POTIS',potis1,potis2,potis3,potiseam
     return
   end subroutine calfo
 

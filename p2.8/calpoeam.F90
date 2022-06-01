@@ -149,7 +149,7 @@ contains
 !    if (iewald.gt.0) then
        factor = (2.0D0*alpha)/sqrt(pi)
 
-       if (rang==0) write(6,*)'EWALD EAM',csive,ktor
+!       if (rang==0) write(6,*)'EWALD EAM',csive,ktor
        do i=1,ntyp
           do j=i,ntyp
              l=ipo(i,j)
