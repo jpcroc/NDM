@@ -42,7 +42,7 @@ subroutine param_det(boxndm)
   real(double) :: alpha_ixia
 #endif
 
-
+  write(6,*)"EWALDDO",iewald
   if (npotentiel.ne.1)then
      if ((iewald.gt.0).and.(ncouc3==0)) then
         if (rang==0)  write(6,*)'npot>1 + ewald+ncouc3=0 : stop'
@@ -481,8 +481,8 @@ subroutine param_det(boxndm)
 
            n2max=ncouc3*ncouc3
 
-           if (rang==0) &
-                write(6,*) 'Paramtres utilises pour le traitement de EWALD :'
+!!$           if (rang==0) &
+!!$                write(6,*) 'Parametres utilises pour le traitement de EWALD :'
 
            !determination de kpme
            if (iewald == 2) then
@@ -509,10 +509,10 @@ subroutine param_det(boxndm)
 
                  
               else
-                 write(6,*) 'RUE=',rue,' ALPHA=',alpha
+                 write(6,*) 'RUE=',rue
               endif
            endif   ! rang = 0
-           write(6,*)'NCOU',ncoucx,ncoucy,ncoucz
+
            if ((iewald/=0).and.(.not.allocated(tabv3))) then
               
               allocate (tabv3(-ncoucx:ncoucx,-ncoucy:ncoucy,-ncoucz:ncoucz))

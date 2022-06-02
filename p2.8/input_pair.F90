@@ -218,7 +218,7 @@ contains
           !ntyp
           if (npotentiel .gt.1)then
              read(lupotin,*) ntypr
-             write(6,*)'ntypr pour ce pot',ntypr
+!             if (rang==0)write(6,*)'ntypr pour ce pot',ntypr
 !             allocate(ityplu(ntypr))
           else
              read(lupotin,*) ntyp

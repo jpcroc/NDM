@@ -456,7 +456,7 @@ contains
     case(7) ! potentiel de paire tabulé! SELECT LIGNE 90
        ! calculer pot par le spline de  pot_pair_tab
        ! puis resplinner
-       !      write(6,*)'csive',csive
+             write(6,*)'csive',csive
        loopk:     do k=1,ngrid
           r= float(k)*csive
           kxsp(k) = r
@@ -464,7 +464,7 @@ contains
 
              if (typ_pot_pair(l)==ipotentiel)then
                 lpt=ipo_2_pair_tab(l)
-                !                write(6,*)'l',l,k, r,pot_pair_tab(ngr,0,lpt)
+!                                write(6,*)'l',l,k, ngr,r,pot_pair_tab(ngr,0,lpt)
                 if (r.gt.pot_pair_tab(ngr,0,lpt)) then
                    if (rang==0) write(6,*)'pot tab pair trop court',r,k,pot_pair_tab(ngr,0,lpt),l,lpt
                    call arret_ndm

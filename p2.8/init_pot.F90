@@ -224,7 +224,6 @@ contains
           if (maxval(roff1).gt.0) call tersoff_zbl
        end select
     end do
-    write(6,*)'IP2 ',iewald
     if (iewald.gt.0) call calpo_ew(boxndm,immT)
     if ((npotentiel.gt.1).and.(rang==0)) then
 !       if (rang==0) then
