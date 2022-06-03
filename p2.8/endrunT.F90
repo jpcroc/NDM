@@ -111,9 +111,10 @@ contains
     if (iteangle>=0) call adfT(adf0)
 
  endif
- if ((dmtype==2).or.(dmtype==3).or.(dmtype==30)) then
+ select case (dmtype)
+ case(2,21,22,23,24,3,30,31,32,33,34)
     iteration=0
- end if
+ end select
 
 
 

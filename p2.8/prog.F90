@@ -105,7 +105,7 @@ contains
     atdml%ltabvois=ltabvois
        
     select case(dmtype)
-    case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix)
+    case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix)
 
 
 #ifdef PARA
@@ -155,7 +155,7 @@ contains
           select case (dmtype) 
           case(5)
              write(6,*)'loopforcetest pas NDM2020' ; stop
-          case(4,10,8,1,21,22)
+          case(4,8,1,21,22,23,24)
              if (lcdp) then
                 call creadp(atdml,celndm,boxndm,psc0)
              else
@@ -202,10 +202,6 @@ contains
              call mab
 #endif
 
-#if defined PHONDY || defined PARAPH    
-          case (7) 
-             call phondy
-#endif
 
 #if defined ML || defined PARAML    
           case (18) 

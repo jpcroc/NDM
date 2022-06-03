@@ -17,7 +17,7 @@ contains
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
          &landerscou,lcdp,lconstrtot,lcorrelvp,lderive,lfire,&
-         &ljqbh,lpathfromgin,lpcon2,lprtrp,lrctest,lrestart,ltandersen,&
+         &ljqbh,lpathfromgin,lpcon2,lrctest,lrestart,ltandersen,&
          &ltcon,lvpread,maxneb,mdcg_noise_scale,neb_noise,neb_noise_scale,nebrelaxation,&
          &nebtype,nhoover,nitmax,njqbh,npath,ntr,nuandersen,pext,&
          &rskin,rulayer,sigext,sigstop,tbox,tempdeplainit,tempstop,tempstopcel,tgc,&
@@ -112,7 +112,11 @@ contains
     fdmc_1 = -1000.0            !param de fermi dirac A DEF PAR UTILISATEUR pour la fct discriminante du biais dans MC
     fdmc_2 = -1000.0            !valeur devant etre changee    
     !dmtype = type of calculation : 1 -> MD
-    !                               2 -> quench (trempe) or fire quench
+    !                               2 -> quench (trempe) 
+    !                               21 -> quench (trempe)cst
+    !                               22 -> quench (trempe)PCst
+    !                               23 ->  fire quench Vcst
+    !                               24 ->  fire quench Pcst
     !                               3 -> gradient conjugue générique pointe vers 31 par défaut 
     !                              30 -> VIEUX gradient conjugue sur les coordonnes reduites
     !                              31 -> VIEUX gradient conjugue sur les coordonnes cartesiennes
@@ -200,7 +204,7 @@ contains
     nHoover=1
     tauTcon=200.0               ! The rescales "time" for the Berendsen algorithm
     Text=-1.
-    iteTconst =itetemp
+
     ipotentiel = -1              ! definit type potentiel : 0=Born-Mayer-Huggins, 1=Buckingham, 2=watanabe,3=buck8,4=UO2, 5 terme Morse, 6=SW �πｴﾎｵ縺､� la Vashista ; 7 pot paire tabule ; 10 EAM; 12 ZrC JuLi(+Tersoff Doan)  ; 13 Tersoff coupure COS; 14 Tersoff coupure FD ; 15 tersoff coupure SIN (original) ; 11 Ercollesi ;; -10=LAMMPS atom style atomic; -11 LAMMPS atom style charge (changes only simple.potin) ! 8 bandura 2017= Bukingham +Morse+Fermi-Dirac+Inverse gaussian
     npotentiel = 1              ! nb de potentiels
     lpotentiel(:)=.false.
@@ -227,7 +231,8 @@ contains
     iseed=0 ! si <>0 controle le tirage aleatoire des vitesses
     !variables d'analyse
 
-    itetemp = 20                !period of temperature calculation
+    itetemp = 100                !period of temperature calculation
+    iteTconst =itetemp
     itesigma = -1               !period of stress calculation
     iteprtsigma = -1               !period of stress calculation
     itedepla = -100              !period of displacement cal.
@@ -363,9 +368,12 @@ contains
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
     
     read (ludin, nml=input)
+
+
     rcangle=rcangle*1d-8
     rcrdf=rcrdf*1d-8
     lprahman=lpr
+
     distminat=distminat*1d-8
     tsmin=tsmin*1d-15
     depmaxts=depmaxts*1d-8
@@ -474,7 +482,49 @@ contains
        end if
     end if
 
-    if (dmtype==2) dmtype=21
+    if (lfire) then
+       if (dmtype==2)then
+          if (lprahman) then
+             dmtype=24
+          else
+             dmtype=23
+          end if
+       else if (dmtype==9) then
+          if (rang==0) then
+             write(6,*)'lfire NEB'
+          end if
+       else
+          if (rang==0) then
+             write(6,*)'lfire and not dmtype=2 ? remove lfire and choose dmtype'
+             write(6,*)'dmtype=23 fire Vcst'
+             write(6,*)'dmtype=24 fire LPRahman'
+             write(6,*)'dmtype=21 fast quenching Vcst'
+             write(6,*)'dmtype=22 fast quenching LPRahman'
+             write(6,*)'dmtype=9 Fire NEB Vcst'
+          end if
+          call arret_ndm
+       end if
+    else
+       select case (dmtype)
+       case(2)
+          if (lprahman) then
+             dmtype=22
+          else
+             dmtype=21
+          end if
+       case(4)
+          if (lprahman) then
+             dmtype=8
+          end if
+          
+       end select
+    end if
+
+       
+
+    
+
+
 
     if (lrestart) then
        igen = 1
@@ -491,7 +541,7 @@ contains
     endif
 #ifdef PARA
     select case(dmtype)
-    case(21,22,4,3,1,30,31,32,33,34,35)
+    case(21,22,4,3,1,30,31,32,33,34,35,23,24,8)
        if (ltabvois) then
           ltabvois=.false.
           rvois=0
@@ -527,7 +577,7 @@ contains
        end if
 
     case default 
-       if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,4,3,9,15,1,30,31,32,33,34,19,35'
+       if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,4,3,9,15,1,30,31,32,33,34,19,35,23,24'
        if (rang==0) write(*,*) 'Stop in readdm'
        call arret_ndm
     end select
@@ -818,12 +868,12 @@ contains
        itesigma=1
        iteprtsigma=1
        select case(dmtype)
-       case(21,22)
-          lprtrp=.true.
-          dmtype=8
+       case(21)
+          dmtype=22
+       case(22)
           if (wboxf==1) wboxf=0.2
-       case default
-          dmtype=8
+       case(24)
+          if (wboxf==1) wboxf=0.2
        case (3,30,31,32,33,34,35)
           lEev=.true.
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
@@ -957,9 +1007,15 @@ contains
     case (1)
        if (rang==0) write (6, '(a)') '     DYNAMIQUE MOLECULAIRE VERLET STANDARD'
     case (21)
-       if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Verlet std'
+       if (rang==0) write (6, '(a)') '     FAST Quenching Vcst'
     case (22)
-       if (rang==0) write (6, '(a)') '     TREMPE RAPIDE Velocity Verlet '
+       if (rang==0) write (6, '(a)') '     FAST Quenching Pcst'
+       lprahman=.true.
+    case (23)
+       if (rang==0) write (6, '(a)') '     FIRE Quenching Vcst'
+    case (24)
+       if (rang==0) write (6, '(a)') '     FIRE Quenching Pcst'
+       lprahman=.true.
     case (31)
        if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE par défaut = 31 sur les coordonnees cartésiennes '
     case (30)
@@ -980,10 +1036,9 @@ contains
        if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
     case (5)
        if (rang==0) write (6,'(a)') '      TEST DES FORCES '
-    case (7)
-       if (rang==0) write (6,'(a)') '      CALCUL DES PHONONS A PARTIR DE POSITIONS DE FORCES NULLES '
     case (8)
        if (rang==0) write (6,'(a)') '      PARRINELLO RAHMAN AUTOCOHERENT '
+       lprahman=.true.
     case (6)
        if (rang==0) write (6,'(a)') '      ANALYSE DES POSITIONS EN FIN DE CASCADE '
     case (9)
@@ -991,10 +1046,6 @@ contains
        itesauvposition=-1
        itesauvforce=-1
        itetemp=-1;itesigma=-1
-    case (10)
-       if (rang==0) write (6,'(a)') '      TREMPE FIRE '
-       if (rang==0) write (6,'(a)') '  !!!  Attention les masses atomiques sont toutes celle du type 1!!! '
-       if (rang==0) write (6,*)
     case (11)
        if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
        if (rang==0) write (6,*)
@@ -1078,7 +1129,7 @@ contains
        write(6,*)'simple test de distance entre atomes'
 
     case default
-       if (rang==0) write (6, '(a)') 'mauvais type de calcul dmtype=', dmtype
+       if (rang==0) write (6, *) 'mauvais type de calcul dmtype=TTT',dmtype
        call arret_ndm
     end select
 
@@ -1440,7 +1491,6 @@ contains
        write(6,*)'fstpdecr must be >1 ; stop'
        stop
     endif
-    
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
   end subroutine readdm

@@ -37,13 +37,13 @@ module Parrinello_Rahman
   !     A Molecular Dynamics Method for Simulations in the Canonical Ensemble
   !     Mol. Phys., 1984, 52, 255-268tabv
   USE T_kind_param_m
-  USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lprtrp,lthoover,nhoover,sigext,ucell,erg2ev,&
+  USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
-       &potist,sig,sigkine,sigtot,text,tstep,iteration,potist,rang,sig,text,tstep,sigkine,&
-       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0
+       &potist,sig,sigkine,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,&
+       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype
+  use FireModule
 
-
-  USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3
+  USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3,ntyp
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
   use Tpara, only:nprocspace,ierr,comm_space
@@ -63,14 +63,15 @@ module Parrinello_Rahman
   USE calpo_ew_mod,only: calpo_ew
   USE calctemp_mod,only: calctemp
   USE calpo_ew_mod,only: calpo_ew
-   implicit none
-   ! Vecteurs de la boîte et leurs dérivées
+
+  implicit none
+  ! Vecteurs de la boîte et leurs dérivées
   real(double), dimension(3,3), save , private :: h, hDot
   real(double), dimension(3,3), save , private :: trh, invh, invtrh, Gmat, invGmat, Gdot
   real(double), save, private :: invVolu
 
   ! Coordonnées réduites des atomes et leurs dérivées
-  real(double), allocatable, save, private :: sp(:,:), sdot(:,:), sdot_new(:,:)
+  real(double), allocatable, save, private :: sp(:,:), sdot(:,:), sdot_new(:,:),sfp(:,:),spp(:,:)
 
   ! Variable associée au thermostat de Nosé-Hoover
   !  (zHoover est défini dans gen_com_m.F90)
@@ -86,6 +87,8 @@ module Parrinello_Rahman
   ! boîte
   real(double), dimension(3,3), save , private ::trh0,invh0,invtrh0,epsi, tension
   real(double), save , private ::volu0, invVolu0
+  REAL(double) ::  fire_alph
+  INTEGER :: fire_nstep
 
 
 contains
@@ -105,6 +108,9 @@ contains
     character*5 :: cunitE
 
 
+    if (dmtype==24) then
+       CALL init_trempe_fire(tstep, fire_nstep, fire_alph)
+    END IF
 
     IF(RANG==0) WRITE(6,*)
     IF(RANG==0) WRITE(6,*) 'Algorithme de Parrinello-Rahman (V2)'
@@ -124,11 +130,11 @@ contains
     IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
     IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*boxndm%at(1:3,2)
     IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*boxndm%at(1:3,3)
-       wbox =wboxf*sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
+    wbox =wboxf*sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call comm_space%sum(wbox)
-       end if
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       call comm_space%sum(wbox)
+    end if
 #endif
 
 
@@ -183,7 +189,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     ! Nombre de thermostats de Hoover
     IF (nHoover.LT.0) nHoover=0
     IF (.NOT.lTHoover) nHoover=0
-        ALLOCATE(zHoover(1:nHoover+1))
+    ALLOCATE(zHoover(1:nHoover+1))
 
 
     IF (lTHoover) THEN
@@ -242,13 +248,14 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     END IF
 
     ALLOCATE(sp(1:3,1:atpr%imm), sdot(1:3,1:atpr%imm), sdot_new(1:3,1:atpr%imm))
+    if (dmtype==24)     ALLOCATE(sfp(1:3,1:atpr%imm),spp(1:3,1:atpr%imm))
     ! Coordonnées réduites des atomes et leurs dérivées à l'instant initial
     sp(:,1:atpr%im) = MatMul(invh(:,:), atpr%xp(:,1:atpr%im) )
     sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
 
     ! Forces à l'instant initial
-  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
-      if (l2t)then
+    CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
+    if (l2t)then
        if (i2t==1)  call calceloss (celndm,atpr)
     else
        if(ibrake.gt.0) call calceloss(celndm,atpr)
@@ -265,9 +272,9 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
 
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-   call comm_space%sum(sigkine)
-end if
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       call comm_space%sum(sigkine)
+    end if
 
 #endif
 
@@ -283,7 +290,7 @@ end if
 
   !-----------------------------------------------
   !-----------------------------------------------
-    !-----------------------------------------------
+  !-----------------------------------------------
 
   subroutine pr1 (atpr,celndm,boxndm,psc)
 
@@ -295,79 +302,194 @@ end if
 
     real(double),dimension(3,3)::mf,mfi, grsig, hdot_new, hdot_last,forcebox
     REAL(double) :: diff, tdiff
-    integer:: i,j,ia, iter,ic
+    integer:: i,j,ia, iter,ic,im
     !real(double) , external ::  calcvol
     ! Parameter for Parrinello-Rahman self consistency loop
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
-    real(double)::T1,kin1
-
+    real(double)::T1,kin1,tstepN
+    real(double), dimension(1:3) :: xprov
+    real(double):: norme_de_fp, norme_de_vp, pscal
+    real(double), dimension(ntyp) :: aux
+    integer,save::nstep=0
 #ifdef PARA
     integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
     real(double) :: zlx, zly, zlz, ux, uy, uz
 
 
 #endif
-    if (lprtrp) then
-       do i = 1, atpr%im
-          do ic = 1, 3
-             if (atpr%vp(ic,i)*atpr%fp(ic,i)<0) then
-                atpr%vp(ic,i)=0.
-             end if
+    select case(dmtype)
+    case(24)
+!       write(6,*)'IN',atpr%xp(1,1)
+       ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
+       sp(:,1:atpr%im) = MatMul(invh(:,:), atpr%xp(:,1:atpr%im) )
+
+       spp(:,1:atpr%im) = MatMul(invh(:,:), atpr%xpp(:,1:atpr%im) )
+       ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat
+       sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+!       write(6,*)'VEL',sdot(1,1),atpr%vp(1,1)
+       DO ia=1, atpr%im
+          sfp(:,ia)= MatMul( invh(:,:), atpr%fp(:,ia) )
+       END DO
+       im=atpr%im
+         ! 1/ Intégration de l'équation de mouvement
+         aux(:ntyp) = tstep**2/(2.d0*cm(:ntyp))
+         usdh = 1.d0/(2.d0*tstep)
+         DO i=1, im
+            xprov(:) = sp(:,i) + sdot(:,i)*tstep + sfp(:,i)*aux(atpr%iTyp(i))
+!            if (i==1) write(6,*)'VPROV',(xprov(1) - spp(1,i))*usdh
+            sdot(:,i) = (xprov(:) - spp(:,i))*usdh
+            spp(:,i) = sp(:,i)
+            sp(:,i) = xprov(:)
+         END DO
+         
+         ! 2/ Renormalisation des vitesses par l'algorithme fire
+         ! Puissance dissipée
+         pScal = Sum( sdot(:,1:im)*sfp(:,1:im) )
+#ifdef PARA
+         if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+            call comm_space%sum(pscal)
+         end if
+#endif
+!         write(6,*)'PSCAL',pscal,hdot(1,1)
+         ! Modification du vecteur vitesse
+         if (pScal.gt.0) then
+            ! Norme du vecteur force
+            norme_de_fp = Sqrt( Sum( sfp(:,1:im)**2 ) )
+            ! Norme du vecteur vitesse
+            norme_de_vp = Sqrt( Sum( sdot(:,1:im)**2 ) )
+            ! Nouveau vecteur vitesse
+            sdot(:,1:im) = (1.d0-fire_alph)*sdot(:,1:im) + fire_alph*norme_de_vp/norme_de_fp*sfp(:,1:im)
+            nStep = nStep + 1
+            if (nStep.gt.nStepMin) then
+               tstepN=min(tstep*finc,tstep_MM*tstep)
+               fire_alph=fire_alph*f_alph
+            else
+               tstepN=tstep
+            end if
+         else
+            sdot(:,:)=0.
+            tstepN=tstep*fdec
+            fire_alph=alph_start
+            nstep=0
+         end if
+          forcebox(:,:)=MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )*boxndm%volu
+          do i = 1, 3
+             do ic = 1, 3
+                if (hdot(ic,i)*forcebox(ic,i)<0) then
+                   hdot(ic,i)=0.
+                end if
+             end do
           end do
-       end do
-       !     do i = 1, im
-       !        do ic = 1, 3
-       !           if (vp(ic,i)*fp(ic,i)<0) then
-       !              vp(ic,i)=0.
-       !           end if
-       !        end do
-       !     end do
-       forcebox(:,:)=MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )
-       do i = 1, 3
-          do ic = 1, 3
-             if (hdot(ic,i)*forcebox(ic,i)<0) then
-                hdot(ic,i)=0.
-             end if
-          end do
-       end do
+
+!          write(6,*)'hdot',hdot(1,1),tstep/(1*wBox)*forcebox(1,1)*ihbox0(1,1),invtrh(1,1),sigtot(1,1),tstep,tstepN
+          hdot(:,:) = hdot(:,:)*ihbox0(:,:)+ tstep/(1*wBox)*forcebox(:,:)*ihbox0(:,:)
+
+          ! Tenseur h à l'instant t+dt
+       h(:,:) = h(:,:) + hdot(:,:)*tstep*ihbox0(:,:)
+!          write(6,*)'FHdot',hdot(1,1),tstep,(1*wBox),forcebox(1,1)*ihbox0(1,1),h(1,1)
+
+!       write(6,*)'MED',atpr%xp(1,1),sp(1,1),sfp(1,1)
+           ! Coordonnées réelles à l'instant t+dt
+    atpr%xpp(:,1:atpr%im) = MatMul( h, spp(:,1:atpr%im) )
+    atpr%xp(:,1:atpr%im) = MatMul( h, sp(:,1:atpr%im) )
+    call updatebox(boxndm,h)
+    invVolu = 1.d0/boxndm%volu
+    trh=Transpose(h)                            ! Matrices associées à h
+    Gmat = MatMul(trh,h)
+    CALL MatInv(Gmat,invGmat)
+    call MatInv(h,invh)
+    invtrh = Transpose(invh)
+
+!#ifdef PARA
+    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
+    !    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+!#endif
+
+    CALL ScaleBox(atpr,celndm,boxndm,psc)
+
+!#ifdef PARA
+    !    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
+    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+!#endif
+!    write(6,*)'MED2',atpr%xp(1,1),sp(1,1),sfp(1,1)
+    ! Calcul des forces et des contraintes à l'instant t+dt
+    CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
+    if (dmtype==24) tstep=tstepN
+
+
+       sigkine(:,:)=0.d0
+       do ia = 1, atpr%im
+          do j = 1,3
+             sigkine(1:3,j) = sigkine(1:3,j) + cm(atpr%ityp(ia))*atpr%vp(1:3,ia)*atpr%vp(j,ia)
+          enddo
+       enddo
+       sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
+#ifdef PARA
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       call comm_space%sum(sigkine)
     end if
 
-    ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
-    sp(:,1:atpr%im) = MatMul(invh(:,:), atpr%xp(:,1:atpr%im) )
-    ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat
+#endif
+       
+       sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
 
-    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+    
+    case(22,8)
+       if (dmtype==22) then
 
-    ! Dérivée des coordonnées réduites des atomes à l'instant t+dt/2
-    mf(:,:) = -0.5d0*tstep*MatMul(invGmat,Gdot)
-    DO i=1, 3
-       mf(i,i) = 1.d0 - 0.5d0*tstep*zHoover(1) + mf(i,i)
-    END DO
-    DO ia=1, atpr%im
-       sdot(:,ia) = MatMul( mf(:,:), sdot(:,ia) ) &
-            + tstep/(2.d0*cm(atpr%ityp(ia))) * MatMul( invh(:,:), atpr%fp(:,ia) )
-    END DO
+          do i = 1, atpr%im
+             do ic = 1, 3
+                if (atpr%vp(ic,i)*atpr%fp(ic,i)<0) then
+                   atpr%vp(ic,i)=0.
+                end if
+             end do
+          end do
+          forcebox(:,:)=MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )
+          do i = 1, 3
+             do ic = 1, 3
+                if (hdot(ic,i)*forcebox(ic,i)<0) then
+                   hdot(ic,i)=0.
+                end if
+             end do
+          end do
+       end if
+       !    case(8)
 
-    ! Dérivée du tenseur h à l'instant t+dt/2
-    IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
-       hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) - 0.5d0/tbox )* hdot(:,:)*ihbox0(:,:) &
-            + tstep/(2.d0*wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )*ihbox0(:,:)
-    ELSE        ! Équation sans force de friction supplémentaire
-       hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) )* hdot(:,:)*ihbox0(:,:) &
-            + tstep/(2.d0*wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )*ihbox0(:,:)
-    END IF
+       ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
+       sp(:,1:atpr%im) = MatMul(invh(:,:), atpr%xp(:,1:atpr%im) )
+       ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat
+       sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
 
-    ! Coordonnées réduites des atomes à l'instant t+dt
-    sp(:,1:atpr%im) = sp(:,1:atpr%im) + sdot(:,1:atpr%im)*tstep
+       ! Dérivée des coordonnées réduites des atomes à l'instant t+dt/2
+       mf(:,:) = -0.5d0*tstep*MatMul(invGmat,Gdot)
+       DO i=1, 3
+          mf(i,i) = 1.d0 - 0.5d0*tstep*zHoover(1) + mf(i,i)
+       END DO
+       DO ia=1, atpr%im
+          sdot(:,ia) = MatMul( mf(:,:), sdot(:,ia) ) &
+               + tstep/(2.d0*cm(atpr%ityp(ia))) * MatMul( invh(:,:), atpr%fp(:,ia) )
+       END DO
 
-    ! Tenseur h à l'instant t+dt
-    h(:,:) = h(:,:) + hdot(:,:)*tstep*ihbox0(:,:)
+       ! Dérivée du tenseur h à l'instant t+dt/2
+       IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
+          hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) - 0.5d0/tbox )* hdot(:,:)*ihbox0(:,:) &
+               + tstep/(2.d0*wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )*ihbox0(:,:)
+       ELSE        ! Équation sans force de friction supplémentaire
+          hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) )* hdot(:,:)*ihbox0(:,:) &
+               + tstep/(2.d0*wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:), invtrh(:,:) )*ihbox0(:,:)
+       END IF
 
+       ! Coordonnées réduites des atomes à l'instant t+dt
+       sp(:,1:atpr%im) = sp(:,1:atpr%im) + sdot(:,1:atpr%im)*tstep
+
+       ! Tenseur h à l'instant t+dt
+       h(:,:) = h(:,:) + hdot(:,:)*tstep*ihbox0(:,:)
+
+    
     ! Coordonnées réelles à l'instant t+dt
     atpr%xpp(:,1:atpr%im) = atpr%xp(:,1:atpr%im)
     atpr%xp(:,1:atpr%im) = MatMul( h, sp(:,1:atpr%im) )
-
     call updatebox(boxndm,h)
     invVolu = 1.d0/boxndm%volu
     trh=Transpose(h)                            ! Matrices associées à h
@@ -378,19 +500,19 @@ end if
 
 #ifdef PARA
     atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
-!    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
-#endif
-    
-    CALL ScaleBox(atpr,celndm,boxndm,psc)
-    
-#ifdef PARA
-!    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
-    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+    !    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
 #endif
 
+    CALL ScaleBox(atpr,celndm,boxndm,psc)
+
+#ifdef PARA
+    !    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
+    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+#endif
+!    write(6,*)'MED2',atpr%xp(1,1),sp(1,1),sfp(1,1)
     ! Calcul des forces et des contraintes à l'instant t+dt
-  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
-      if (l2t)then
+    CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
+    if (l2t)then
        if (i2t==1)  call calceloss(celndm,atpr)
     else
        if(ibrake.gt.0) call calceloss(celndm,atpr)
@@ -544,11 +666,14 @@ end if
        !UNose = Sum( UHoover(1:nHoover) )           ! t+dt
        !ENose = KNose + UNose                       ! t+dt
     END IF
+ end select
+!    write(6,*)'OUT',atpr%xp(1,1),tstep
+
     call calctemp(T1,kin1,atpr,celndm)
-    
+
   end subroutine pr1
 
-end module !Parrinello_Rahman
+end module Parrinello_Rahman !Parrinello_Rahman
 
 
 

@@ -6,15 +6,15 @@ MODULE FireModule
   !       Phys. Rev. Lett. 97, 170201 (2006).
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:tstep,usdh,tstep
+  USE gen_com_m, ONLY:usdh,tstep
   use atomconfig,only:atom_config_d
   ! --- Paramètres de l'algorithme fire -----------------------
-  real(double), parameter, private :: finc=1.1
-  real(double), parameter, private :: fdec=0.5
-  real(double), parameter, private :: alph_start=0.1
-  real(double), parameter, private :: f_alph=0.99
-  real(double), parameter, private :: tstep_MM=10
-  integer, parameter, private:: nStepMin=5
+  real(double), parameter :: finc=1.1
+  real(double), parameter :: fdec=0.5
+  real(double), parameter :: alph_start=0.1
+  real(double), parameter :: f_alph=0.99
+  real(double), parameter :: tstep_MM=10
+  integer, parameter:: nStepMin=5
 
 CONTAINS
 
@@ -39,7 +39,7 @@ subroutine trempe_fire(atdml, dt, nstep, alph)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
-  USE gen_com_m, ONLY:
+  USE gen_com_m, ONLY:usdh
   USE var_pot, ONLY:ntyp,cm
   implicit none
   class(atom_config_d)::atdml

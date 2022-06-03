@@ -63,7 +63,7 @@ contains
     if (myidsp==0)  write(6,*) 'ISEED for MD, NORM of the noise ',iseed, neb_noise_scale, totalbruit
 !    bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale * xp(1:3,1:im) / (sqrt(totalbruit))
     bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale  / (sqrt(totalbruit))
-
+    bruitmd=bruitmd*1d-8
   end subroutine bruit_xp
 
 
@@ -113,23 +113,16 @@ contains
     if (rang==0) write(6,*)
 
     select case (dmtype)
-    case(3,30,5,11,7)
+    case(3,30,5,11,31,32,33,21,22,23,24,2)
        atcf%vp = 0.0
-       goto 66
-    case(2)
-       if (lvpread) then 
-          goto 66
-       else
-          if (mdcg_noise==0) then 
-             atcf%vp=0.0;          atcf%xpp=atcf%xp
-             goto 66
-          else
-             atcf%vp=0.0 
-             call bruit_xp(bruitmd,atcf%im)
-             atcf%xp(1:3,1:atcf%im) = atcf%xp(1:3,1:atcf%im) + bruitmd(1:3,1:atcf%im)
-             goto 66
-          end if
+       if (mdcg_noise==0) then 
+          atcf%vp=0.0;          atcf%xpp=atcf%xp
+              else
+          atcf%vp=0.0 
+          call bruit_xp(bruitmd,atcf%im)
+          atcf%xp(1:3,1:atcf%im) = atcf%xp(1:3,1:atcf%im) + bruitmd(1:3,1:atcf%im)
        end if
+       goto 66
     end select
 1   continue
     !      write(6,*)'vp',vp(1,1)
@@ -163,17 +156,12 @@ contains
 
        if (tinit<=0) then
           ! velocities are not read and no starting temperature is given
-!!$          if (dmtype==1 .or. dmtype==4) then                  !DM run
-!!$             write (6, *) rang,'no way to initiate the velocities stop'
-!!$             call arret_ndm
-!!$          else                                 !quench run
              atcf%vp(1,:atcf%im) = 0.0
              atcf%vp(2,:atcf%im) = 0.0
              atcf%vp(3,:atcf%im) = 0.0
              atcf%xpp(1,:atcf%im) = atcf%xp(1,:atcf%im)
              atcf%xpp(2,:atcf%im) = atcf%xp(2,:atcf%im)
              atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)
-!          endif
           if (rang==0) write (6, *) 'ZERO VELOCITY '
        else
           !  a starting temperature is given
@@ -443,7 +431,6 @@ contains
 !!$          call atcf%send2all(0,comm_space)
 !!$       end if
 !!$#endif
-    if (rang==0) write(6,*)
 
     return
 

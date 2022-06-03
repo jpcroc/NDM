@@ -31,18 +31,16 @@ contains
     logical,optional::linit
     logical::lini=.false.
     if (present(linit))lini=linit
-
     select case (dmtype) 
-    case(4,10)
+    case(4)
        call dmloop_vverlet (atdml,celndm,boxndm,psc)
-    case(8)
+    case(8,22,24)
        call dmloop_lpr (atdml,celndm,boxndm,psc,linit=lini)
-    case (1)
+    case (1,21,23)
        call dmloop (atdml,celndm,boxndm,psc)
-    case (21)
-       call dmloop(atdml,celndm,boxndm,psc)
-    case(22)
-       call dmloop_vverlet (atdml,celndm,boxndm,psc)
+    case default
+       write(6,*)'DMTYPE ?? dmloop_pilot'
+       call arret_ndm
     end select
 
     if (lcdp) then

@@ -202,7 +202,9 @@ endif
      endif
   end if
 
-  if (dmtype==2) then
+  select case (dmtype)
+  case(2,21,22,23,24)
+!  if (dmtype==2) then
      if (tstep<=tsmin.and.(tv1.lt.depmaxts.OR.&
           tv1.gt.depmaxts2)) then
         if (tstep.ne.oldtstep) then
@@ -225,7 +227,7 @@ endif
 !           if (rang==0) write (6, *) 'tstep maintenu',tstep
         endif
      end if
-  end if
+  end select
     ! electronic timestep
   if (l2T)then
      etstep=tstep/necyclemin

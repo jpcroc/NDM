@@ -133,7 +133,7 @@ module gen_com_m
   logical :: lopt   ! optimisation de Ewald par PME si TRUE
 
   ! NVT, NPT ensembles
-  logical :: lprahman,lprtrp ! l Parinello Rahman
+  logical :: lprahman! l Parinello Rahman
   real(double), dimension(3,3) :: att, ati    !vitesse de la forme de la boite ; ati=(at^-1)
   integer, dimension(3,3) :: ihbox0 ! integer pour bétonner les tests      ! the degree of freebom of the box. If is 1 everywhere all the shape  can change.
 

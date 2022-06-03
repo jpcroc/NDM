@@ -46,7 +46,7 @@ contains
     !-----------------------------------------------
     type(para_space_config)::psc
     integer :: i, iti,ilocal
-    REAL(double) :: fire_dt, fire_alph
+    REAL(double) ::  fire_alph
     INTEGER :: fire_nstep
     !-----------------------------------------------
     !
@@ -61,8 +61,8 @@ contains
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VERLET STD ***',itloopmax,timeloopmax
 
     ! Initialization
-    IF ((dmtype.EQ.21).AND.lFire) THEN
-       CALL init_trempe_fire(fire_dt, fire_nstep, fire_alph)
+    IF (dmtype.EQ.23) THEN
+       CALL init_trempe_fire(tstep, fire_nstep, fire_alph)
     END IF
 
     do while ((iteration.le.itloopmax).and.(timel.lt.timeloopmax))
@@ -123,16 +123,11 @@ contains
 
        case(1)
           call dyn  (atdml)
+       case (21)
+          call trempe (atdml)
+       case(23)
+          call trempe_fire (atdml,tstep, fire_nstep, fire_alph)
 
-
-
-       case (21) 
-          IF (lFire) THEN
-             call trempe_fire (atdml,fire_dt, fire_nstep, fire_alph)
-
-          ELSE
-             call trempe (atdml)
-          END IF
 
        case default
           write (6, *) 'ne sait pas quoi faire stop'

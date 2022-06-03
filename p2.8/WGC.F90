@@ -70,7 +70,7 @@ contains
        allocate(Fmin(Nvar))
        if (mdcg_noise /= 0 ) then
           call bruit_xp (bruitmd,atcgcomp%im)
-          bruitmd=bruitmd*1d-8
+
        else
           bruitmd=0
        end if

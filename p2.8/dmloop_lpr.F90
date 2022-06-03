@@ -85,12 +85,9 @@ contains
        call pr1(atpr,celndm,boxndm,psc)
        timel=timel+tstep
     END IF
-
     call analyseT(atpr,celndm,boxndm,psc)
-
-
-
      call controleT(atpr,celndm,boxndm,psc,lreturn)
+
      if (lreturn) return
 
   end do

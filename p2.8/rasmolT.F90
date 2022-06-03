@@ -3,7 +3,7 @@ module rasmolT_mod
   USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE gen_com_m, ONLY:rang,ivisu,lpkbar,lspaceNDM,&
-       &cunitP,iteration,lcasca,timel,unitP,fnam,erg2ev,lenfnam,dmtype,umass,rang
+       &cunitP,iteration,lcasca,timel,unitP,fnam,erg2ev,lenfnam,umass,rang
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
   use atomconfig,only: atom_config,atom_config_d,atom_config_e

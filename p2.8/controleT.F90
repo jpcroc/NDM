@@ -25,8 +25,8 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
-         &itetemp,fsumstop,fpstop,itetimestep,lprtrp,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
-         &itetemp2,lprtrp
+         &itetemp,fsumstop,fpstop,itetimestep,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
+         &itetemp2
 
     USE var_pot, ONLY:
     implicit none
@@ -119,8 +119,7 @@ contains
 
     select case (dmtype)
 
-    case(21,10,8)
-       if ((lprtrp.EQV..false.).and.((dmtype==10).or.(dmtype==8))) goto 123
+    case(21,22,23,24)
        if ((fpstop>0.0).AND.(iteration.GE.1)) then
 
           fpmax=sqrt( MAXVAL( Sum(atdml%fp(1:3,1:atdml%im)**2,1) ) )
@@ -137,7 +136,8 @@ contains
 !          if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot))
           if (fpn.le.fpstop)then
-             if (lprtrp) then
+             select case(dmtype)
+             case(22,24)
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) then
                    it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
@@ -145,7 +145,7 @@ contains
                    itetemp=it1;itesigma=it2;itetemp2=it3
                    if (present(lreturn)) then
                       lreturn=.true.
-                      write(6,*)'RETURN CONTROLE'
+
                       return
                    else
                       call endrunT(atdml,celndm,boxndm,latcomp)
@@ -153,11 +153,11 @@ contains
                       call arret_ndm
                    end if
                 endif
-             else
+             case(21,23)
                 itetemp=1;itesigma=1
                    if (present(lreturn)) then
                       lreturn=.true.
-                      write(6,*)'RETURN CONTROLE'
+
                       return
                    else
                       call endrunT(atdml,celndm,boxndm,latcomp)
@@ -165,10 +165,10 @@ contains
                       call arret_ndm
                    end if
 
-             end if
+                end select
 
+             end if
           end if
-       end if
 
        if ((fsumstop>0.0).AND.(iteration.GE.1)) then
           fpSmax=sqrt( SUM(atdml%fp(:,1:atdml%im)**2) )
@@ -186,7 +186,8 @@ contains
           if (myidsp==0)      write(6,*)'TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ', iteration,fpn, potist*erg2eV
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot))
           if (fpn.le.fsumstop) then
-             if (lprtrp) then
+             select case(dmtype)
+             case(22,24)
                 if(maxval(abs(sigtot)).le.sigstop/1d-9) then
                    itetemp=1;itesigma=1;itetemp2=1
                    call analyseT(atdml,celndm,boxndm,psc)
@@ -200,15 +201,15 @@ contains
                    end if
 
                 end if
-             else
-                   if (present(lreturn)) then
-                      lreturn=.true.
-                      return
-                   else
-                      call endrunT(atdml,celndm,boxndm,latcomp)
-                      call arret_ndm
-                   end if
-             end if
+             case(21,23)
+                if (present(lreturn)) then
+                   lreturn=.true.
+                   return
+                else
+                   call endrunT(atdml,celndm,boxndm,latcomp)
+                   call arret_ndm
+                end if
+             end select
           end if
        end if
        !     if (rang==0) write (6, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
