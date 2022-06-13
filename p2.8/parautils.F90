@@ -60,10 +60,7 @@
 
     
     if (present(ldistrib))ldistr=ldistrib
-!!$    call atcomp%print
-!!$    write(6,*)'TOTO'
-!!$    call atloc%print
-    atloc%im_glob=atcomp%im_glob
+
 !    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
     if (div%mpi_image%nproc.gt.1) then
        if (ldistr) then
@@ -82,6 +79,10 @@
        atloc=>atcomp
        celloc=>cellcomp
     end if
+!!$    call atcomp%print
+!!$    write(6,*)'TOTO'
+!!$    call atloc%print
+    atloc%im_glob=atcomp%im_glob
     if (lspacendm.and.div%mpi_image%nproc.gt.1) then
        call caltabtC(celloc,atloc,lperiod,box,psc=psc)
     else

@@ -94,7 +94,6 @@ contains
     !
     !   set default values for variables in namelist
     !
-    if (rang.eq.0) write(6,*) '>>>>>>>>>>> entree readdm'
 
     fnamdin = fnam(1:lenfnam)//'.din'
     ! variables de dynamique

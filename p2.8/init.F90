@@ -115,10 +115,10 @@ contains
        if (rang==0) write(6,*)'postinitlammps'
     end if
 #endif  
-    if (iterasmol>=0) then
-       itapp=-1
-       call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
-    end if
+!!$    if (iterasmol>=0) then
+!!$       itapp=-1
+!!$       call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
+!!$    end if
     !<---------setting the configuration by generation gin / cin file --------------
     select case (igen)
     case (-1)

@@ -106,9 +106,9 @@ contains
     integer :: acceptation, test_acc
 
     real(double) :: W, Wprec, Wprecedent !sauvegarde Wprec pour posttraitement
-    real(double) :: mu_moy, mu_wrmc, mu_NC, mu_DC
+    real(double) :: mu_moy, mu_wrmc, mu_NC, mu_SC
 
-    real(double),allocatable:: Weff_npp(:)
+    real(double),allocatable:: Weff_npp(:), pot_npp(:)
 
     logical :: lchange,ldistrib,lcalc
     CHARACTER(len=89) :: fnamread
@@ -157,16 +157,18 @@ contains
     mu_moy = 0.0 
     mu_wrmc = 0.0
     mu_NC = 0.0
-    mu_DC = 0.0
+    mu_SC = 0.0
 
     test_acc = 0    
 
     pot_cumul(:,:) = 0.0
     if (nparapath.gt.0) then
        allocate (Weff_npp(nparapath))
+       allocate (pot_npp(nparapath))
        Weff_npp(:)=0
+       pot_npp(:)=0
     end if
-    if (rang==0) write(6,*)' IN MCGC nbatplus, idirection',nbatplus,idirectionmcgc
+  !  if (rang==0) write(6,*)' IN MCGC nbatplus, idirection',nbatplus,idirectionmcgc
     if (lrestartmcgc) then
        if (lmegamaster) then
           write(*,*) 'imm_n, imm_nplus1', config_atom_n(1)%imm, config_atom_nplus1(1)%imm
@@ -281,8 +283,10 @@ contains
              call langevin(direction, protocol = 'MCP')
              if (idirectionmcgc == 0) then 
                 weff_npp(ipp)= +Weff
+                pot_npp(ipp)= potist_nplus1
              else
                 weff_npp(ipp)= -Weff
+                pot_npp(ipp)= potist_nplus1
              end if
              if (lbigmaster)write(6,*)'Weff eV', weff_npp(ipp)*erg2eV
              !if (lbigmaster)write(6,*)'potist', ipp,potist_n,potist_nplus1
@@ -291,6 +295,7 @@ contains
 
        if ((lbigmaster).and.(lparapath)) then
           call parapath%mpi_master%sum(weff_npp)
+          call parapath%mpi_master%sum(pot_npp)
        end if
 
        if (lbigmaster) then 
@@ -354,6 +359,7 @@ contains
     if (lmegamaster) then
        open(UNIT= 752, FILE="analyse_file", STATUS = 'new')
        open(UNIT= 85, FILE="restart_file", STATUS = 'new')
+!      open(UNIT= 753, FILE="nrj_pot_systacc", STATUS = 'new')
        if (nparapath .gt. 1) then
           write(752,*) '#ACC/REF  direction  ipchemin  WeV(x nparapath)&
                & Wprec XPROB(x nparapath +1)'
@@ -369,6 +375,7 @@ contains
     DO i_path = 1, n_path ! boucle à faire pour tous les procs
        !if (lmegamaster) write(6,*)'PATH',i_path
        Weff_npp(:)=0
+       pot_npp(:)=0
 
        if (lbigmaster) then
           config_atom_nplus1(ipch)%vp(:,:)   = - config_atom_nplus1(ipch)%vp(:,:) !à chaque retour dans la boucle, on change de direction
@@ -413,8 +420,10 @@ contains
              !             write(6,*)'CALC4',rang,ipp,i_path
              if (direction == 0) then
                 Weff_npp(ipp)= +weff
+                pot_npp(ipp)= potist_nplus1
              else
                 Weff_npp(ipp)= -weff
+                pot_npp(ipp)= potist_nplus1
              end if !sur direction
           end if
 !!$          call mpi_finalize(ierr)
@@ -422,6 +431,7 @@ contains
        end do !boucle nparapath
        if ((lbigmaster).and.(lparapath)) then
           call parapath%mpi_master%sum(weff_npp)
+          call parapath%mpi_master%sum(pot_npp)
        end if
 
        n_gen = n_gen + 1
@@ -433,11 +443,11 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!! TEST D'ACCEPTATION !!!!!!!!!!!!!!!!!!!
        if (nparapath.gt.1) then 
-          call multiproposal(Weff_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
-               & lbiais_retrait, mu_moy, mu_wrmc, mu_NC, mu_DC, pot_cumul)
+          call multiproposal(Weff_npp, pot_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
+               & lbiais_retrait, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
        else
-          call monoproposal(Weff_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
-               & lbiais_retrait, mu_moy, mu_wrmc, mu_NC, mu_DC, pot_cumul)
+          call monoproposal(Weff_npp, pot_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
+               & lbiais_retrait, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
        end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
 
@@ -452,11 +462,11 @@ contains
 
        !    if (i_path == 1) then
        !      if (lmegamaster) write(*,'(A)') 'acceptation  num_chemin  direction &
-       !      &  WeV   WprecedenteV  mu_moy   mu_WRMC  mu_NC  mu_DC'  ! proba_acc proba_refus
+       !      &  WeV   WprecedenteV  mu_moy   mu_WRMC  mu_NC  mu_SC'  ! proba_acc proba_refus
        !    end if
 
        !    if (lmegamaster) write(*,'(3I5, 12G20.13)') acceptation, i_path, direction&
-       !    &, Weff_npp(ipch)*erg2eV, Wprecedent*erg2eV, mu_moy, mu_wrmc, mu_NC, mu_DC!, xprob, 1-xprob
+       !    &, Weff_npp(ipch)*erg2eV, Wprecedent*erg2eV, mu_moy, mu_wrmc, mu_NC, mu_SC!, xprob, 1-xprob
 
        !write(*,*) i_path, dir, W*erg2eV, Wprecedent*erg2eV, xprob, 1-xprob, acceptation, Wprecedent,&
        !        &  W
@@ -488,26 +498,27 @@ contains
        write(*,*) ' taux d acceptation alpha 1 : ', acceptance_rate_1,' %'
        !call analyse_montecarlo(atconf_nplus1,cells_nplus1,boxmcgc, 'syst_UO2nplus1_out')
        write(*,'(A10, G15.7,A10, G15.7, A10, G15.7, A10, G15.7)') &
-            &'mu_moy',mu_moy ,'mu_wrmc', mu_wrmc, 'mu_NC', mu_NC, 'mu_DC', mu_DC
+            &'mu_moy',mu_moy ,'mu_wrmc', mu_wrmc, 'mu_NC', mu_NC, 'mu_SC', mu_SC
        close(752)
        close(85)
+!      close(753)
     end if
     !stop
   end subroutine montecarlo
 
 
-  subroutine monoproposal(travail_npp, Wprece, Wpreced, ipchemin, dir, accepta, premier_accept, &
-       &ngen, lbiais, pot_moy, pot_wrmc, pot_NC, pot_DC,tab_cumul)
+  subroutine monoproposal(travail_npp, nrjpot_npp, Wprece, Wpreced, ipchemin, dir, accepta, premier_accept, &
+       &ngen, lbiais, pot_moy, pot_wrmc, pot_NC, pot_SC,tab_cumul)
 
     implicit none 
 
-    real(double), dimension(nparapath) :: travail_npp
+    real(double), dimension(nparapath) :: travail_npp, nrjpot_npp
     real(double) :: Wprece ! Wprec
     real(double) :: Wpreced !sauvegarde Wprec pour posttraitement
     integer :: ipchemin, dir, accepta, ngen
     logical :: lbiais
     integer ::  premier_accept
-    real(double) :: pot_moy, pot_wrmc, pot_NC, pot_DC
+    real(double) :: pot_moy, pot_wrmc, pot_NC, pot_SC
 
 
     real(double) :: biais
@@ -554,7 +565,7 @@ contains
 
        ln_Wprec  = (+beta*(dir-theta)*Wprece)
        ln_W      = (+beta*(dir-theta)*W)
-       ln_xprob  = - dlog(1 + (dexp(ln_Wprec-ln_W)/biais)) !avec biais
+       ln_xprob  = - dlog(1 + (dexp(ln_Wprec-ln_W)*biais)) !avec biais
        !ln_xprob  = - dlog(1 + dexp(ln_Wprec-ln_W))   !sans biais
        xprob     = dexp(ln_xprob)
        xprob_i(1) = xprob   !proba d'accpeter W
@@ -578,7 +589,7 @@ contains
           accepta = 1
 
 !!!!! etape 1 pot chimique !!!!!!!!!
-          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_SC, premier_accept, ngen, ipchemin,&
                & 1, travail_npp, xprob_i, Wpreced)
 
           call config_atom_new_0%copy_config(config_atom_old_0, lrescl=.true.)
@@ -596,6 +607,8 @@ contains
              else
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),config_cells_nplus1(ipchemin),boxmcgc,'SystNP1_accepte')
              end if
+             ! Ecriture de l'energie potentiel du chemin accepte
+!            write(753, '(2G25.16E3)') nrjpot_npp(ipchemin), kine
           end if
        else
 !!!!!!!!!!!!!!!!!!!!!!!!!! REFUS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -617,13 +630,13 @@ contains
           end if
 
 !!!!! etape 2 pot chimique !!!!!!!!!
-          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_SC, premier_accept, ngen, ipchemin,&
                & 2, travail_npp, xprob_i, Wpreced)
 
        end if !test sur xprob         
 
 !!!!! etape 3 pot chimique !!!!!!!!!
-       call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+       call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_SC, premier_accept, ngen, ipchemin,&
             & 3, travail_npp, xprob_i, Wpreced)
 
     end if !fin master general
@@ -633,17 +646,17 @@ contains
 
 
 
-  subroutine multiproposal(travail_npp, Wprece, Wpreced, ipchemin, dir, accepta, premier_accept, ngen,&
-       & lbiais, pot_moy, pot_wrmc, pot_NC, pot_DC, tab_cumul)
+  subroutine multiproposal(travail_npp, nrjpot_npp, Wprece, Wpreced, ipchemin, dir, accepta, premier_accept, ngen,&
+       & lbiais, pot_moy, pot_wrmc, pot_NC, pot_SC, tab_cumul)
 
     implicit none 
 
-    real(double), dimension(nparapath) :: travail_npp
+    real(double), dimension(nparapath) :: travail_npp, nrjpot_npp
     real(double) :: Wprece ! Wprec
     real(double) :: Wpreced !sauvegarde Wprec pour posttraitement
     integer :: ipchemin, dir, accepta, ngen,  premier_accept
     logical :: lbiais
-    real(double) :: pot_moy, pot_wrmc, pot_NC, pot_DC
+    real(double) :: pot_moy, pot_wrmc, pot_NC, pot_SC
 
 
     real(double) :: biais
@@ -706,7 +719,7 @@ contains
           premier_accept = 1
 
 !!!!! etape 1 pot chimique !!!!!!!!!
-          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_SC, premier_accept, ngen, ipchemin,&
                & 1, travail_npp, xprob_i, Wpreced)
 
 
@@ -725,6 +738,8 @@ contains
              else
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),config_cells_nplus1(ipchemin),boxmcgc,'SystNP1_accepte')
              end if
+             ! Ecriture de l'energie potentiel du chemin accepte
+!            write(753, '(2G25.16E3)') nrjpot_npp(ipchemin), kine 
           end if
 
 
@@ -768,13 +783,13 @@ contains
           end do
 
 !!!!! etape 2 pot chimique !!!!!!!!!
-          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+          call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_SC, premier_accept, ngen, ipchemin,&
                & 2, travail_npp, xprob_i, Wpreced)
 
        end if !test sur ipchemin. acceptation ou refus (W ou Wprec)
 
 !!!!! etape 3 pot chimique !!!!!!!!!
-       call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_DC, premier_accept, ngen, ipchemin,&
+       call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_SC, premier_accept, ngen, ipchemin,&
             & 3, travail_npp, xprob_i, Wpreced)
 
     end if !fin master general
@@ -782,14 +797,14 @@ contains
   end subroutine multiproposal
 
 
-  subroutine potentiel_chimique(cumul, moy, wrmc, NC, DC, prem_accept, nb_gen, chemin, etape,&
+  subroutine potentiel_chimique(cumul, moy, wrmc, NC, SC, prem_accept, nb_gen, chemin, etape,&
        & liste_travail, liste_proba, Wprecedent)
 
     implicit none
     real(double), dimension(nparapath) :: liste_travail
     real(double), dimension(nparapath+1) :: liste_proba
     real(double), dimension(2,22) :: cumul
-    real(double) :: moy, wrmc, NC, DC, Wprecedent
+    real(double) :: moy, wrmc, NC, SC, Wprecedent
     integer :: prem_accept, etape, nb_gen, chemin
     !etape correspond a l'etape du pot a laquelle on est:
     !etape == 1: on est dans l'acceptation
@@ -907,7 +922,7 @@ contains
        end if
 
        if (etape == 3) then
-!!!!! Calcul estimateur WR/DC !!!!!!!!!
+!!!!! Calcul estimateur WR/SC !!!!!!!!!
           f_wr(:) = 0.0
           f2_wr(:) = 0.0
           fminusf_wr(:) = 0.0
@@ -920,11 +935,14 @@ contains
                 f_wr(2) = f_wr(2) + liste_proba(ip)*dexp(-beta*liste_travaux(ip)*0.5) 
                 f2_wr(2) = f2_wr(2) + liste_proba(ip)*dexp(-beta*liste_travaux(ip))
                 !if (lmegamaster) write(*,*) 'proba' ,liste_proba(ip), 'WeV', liste_travaux(ip)*erg2eV, 'W', liste_travaux(ip)
+
+                fminusf_wr(1) = fminusf_wr(1) + liste_proba(ip)*(dexp(beta*liste_travaux(ip)*0.5)&
+                     &-dexp(beta*liste_travaux(nparapath+1)*0.5))**2
+                fminusf_wr(2) = fminusf_wr(2) + liste_proba(ip)*(dexp(-beta*liste_travaux(ip)*0.5)&
+                     &-dexp(-beta*liste_travaux(nparapath+1)*0.5))**2
              end if
           END DO
-          fminusf_wr(1) = f2_wr(1) -f_wr(1)**2
-          fminusf_wr(2) = f2_wr(2) -f_wr(2)**2
-          !if (lmegamaster) write(*,*) 'f_wr', f_wr, 'f2_wr', f2_wr, 'fminusf_wr', fminusf_wr
+                !if (lmegamaster) write(*,*) 'f_wr', f_wr, 'f2_wr', f2_wr, 'fminusf_wr', fminusf_wr
 
 !!!!! formation des sommes !!!!
           DO direc = 1,2
@@ -944,7 +962,7 @@ contains
 
              f_wr_cumul_inte(direc) = f_wr_cumul(direc) / real(nb_gen)
              f2_wr_cumul_inte(direc) = f2_wr_cumul(direc) / real(nb_gen)
-             fminusf_wr_cumul_inte(direc) = fminusf_wr_cumul(direc) / real(nb_gen)
+             fminusf_wr_cumul_inte(direc) = fminusf_wr_cumul(direc) / real(nb_gen*2.0)
 
 !!!!! calcul de la variable de contrôle !!!!
              if (prem_accept == 1) then
@@ -954,7 +972,7 @@ contains
                      & / fminusf_wr_cumul_inte(direc)
 
 
-!!!!! calcul de l'estimateur NC et DC !!!!!!
+!!!!! calcul de l'estimateur NC et SC !!!!!!
                 est_opt(direc) = b_opt(direc)*f_wr_cumul_inte(direc) &
                      & + (1.0-b_opt(direc))*f_cumul_inte(direc)
                 est_opt_bwr(direc) = b_wr_opt(direc)*f_wr_cumul_inte(direc) &
@@ -972,7 +990,7 @@ contains
              moy = -(1/beta_eV)*dlog(f_cumul_inte(2) / f_cumul_inte(1)) !estimateur simple Im(f)
              wrmc = -(1/beta_eV)*dlog(f_wr_cumul_inte(2) / f_wr_cumul_inte(1)) !estimateur WRMC (moyenne des Wgen pondérée par les proba)
              NC = -(1/beta_eV)*dlog(est_opt(2) / est_opt(1))  !estimateur NC Jnc,M(f)
-             DC = -(1/beta_eV)*dlog(est_opt_bwr(2) / est_opt_bwr(1)) !estimateur DC Jdc,M(f)
+             SC = -(1/beta_eV)*dlog(est_opt_bwr(2) / est_opt_bwr(1)) !estimateur SC Jsc,M(f)
           end if
 !!!!!!!!!! fin calcul mu !!!!!!!!!!!
           cumul(:,1) = contribut_accepte(1:2) 
@@ -1351,9 +1369,9 @@ contains
 
   end subroutine choix_chemin
 
-  subroutine init_vitesse(configNP1, param) !juste pour les "N+1eme" atomes
+  subroutine init_vitesse(config, param) !juste pour les "N+1eme" atomes
     implicit none
-    type(atom_config_mc)::configNP1
+    type(atom_config_mc)::config
     integer,intent(in)::param
     real(double) :: v0, v1, z1, z2, z3, z4
     integer :: i, ilast ! if param =1 alors v0 défini avec tinit (juste pour l'initialisation), sinon v0 défini avec Text  
@@ -1364,9 +1382,9 @@ contains
        v0 = sqrt(2.D0*bk*Text)
     end if
 
-    ilast=configNP1%im+1-nbatplus ! =configNP1%im pour +1 atome
-    do i=configNP1%im,ilast,-1
-       !    i = configNP1%im
+    ilast=config%im+1-nbatplus 
+    do i=config%im,ilast,-1
+       !    i = config%im
 
        call random_number(z1)
        call random_number(z2)
@@ -1377,10 +1395,10 @@ contains
        if(z3.eq.0.d0) z3=0.000000001d0
        if(z4.eq.0.d0) z4=0.000000001d0
 
-       v1 = one/sqrt(cm(configNP1%ityp(i)))
-       configNP1%vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
-       configNP1%vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
-       configNP1%vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
+       v1 = one/sqrt(cm(config%ityp(i)))
+       config%vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
+       config%vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
+       config%vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
     end do
   end subroutine init_vitesse
 
@@ -1458,19 +1476,51 @@ contains
     type(atom_config_mc)::config
     integer :: ind(:), i
     real(double) :: rand, somme
+    logical,allocatable::lchosen(:)
+    integer::natyp,iatyp,indT
+    integer,allocatable::indatyp(:)
 
-    somme = 0.0
-    call random_number(rand)
-    !write(*,*) 'rand',rand
-    DO i=1, config%im
-       if (config%ityp(i) == itypcalc) then
-          if (somme .lt. rand) then
-             somme = somme + config%proba(i)
-             !write(*,*) 'somme', somme, 'ind', i
-             ind = i
+    natyp=0
+    do i=1,config%im
+       if (config%ityp(i)==itypcalc) then
+          natyp=natyp+1
+       end if
+    end do
+    allocate(lchosen(natyp))
+    allocate(indatyp(natyp))
+    lchosen(:)=.false.
+    iatyp=0
+    do i=1,config%im
+       if (config%ityp(i)==itypcalc) then
+          iatyp=iatyp+1
+          indatyp(iatyp)=i
+       end if
+    end do
+    if (iatyp.ne.natyp) then
+       write(6,*)'WTF iatyp natyp',iatyp,natyp
+       call arret_ndm
+    end if
+
+
+
+    loopatplus:    do i=1,nbatplus
+33     continue
+       somme = 0.0
+       call random_number(rand)
+       DO iatyp=1,natyp
+          somme = somme + config%proba(indatyp(iatyp))
+          if (somme.gt.rand) then
+             if (lchosen(iatyp).eqv..true.) then
+                goto 33
+             else
+                lchosen(iatyp)=.true.
+                ind(i)=indatyp(iatyp)
+                cycle loopatplus
+             end if
           end if ! if sur les sommes
-       end if ! si sur les oxygene
-    END DO !boucle sur les atomes
+       END DO !boucle sur les atomes
+    end do loopatplus
+
 
   end subroutine atom_biais
 
@@ -1496,6 +1546,8 @@ contains
        end if
        if (iterasmol>0) then
           if (mod(iteration,iterasmol)==0) then
+             call caltabtC(celndm,atdml,lperiod,box)
+             call calctemp (temp,kine,atdml,celndm,latcomp=.true.)
              call rasmolT(atdml,box,namefr=name_file,latcomp=.true.,lappend=.true.)
           end if
        end if
@@ -2371,15 +2423,17 @@ contains
 
     ncalls=ncalls+1
     lcalcvois=.false.
+
+  
     if (iloc==1) then
-       if (atmcgcloc%ltabvois)then
+       if (atconf_n%ltabvois)then
           lcalcvois=.true.
        else
           lcalcvois=.false.
        end if
     else
        if (lchange) then 
-          if ((mod(iteration,itetabvois)==0).and.(atmcgcloc%ltabvois))then
+          if ((mod(iteration,itetabvois)==0).and.(atconf_n%ltabvois))then
              lcalcvois=.true.
           else
              lcalcvois=.false.

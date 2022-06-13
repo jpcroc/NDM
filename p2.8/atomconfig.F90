@@ -106,6 +106,7 @@ contains
        write(6,*)'FLAGSFF', atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
     end select
   end subroutine print_type
+  
   subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
@@ -122,16 +123,16 @@ contains
     ltbv=.false.
     atconf%im=imin
     if (present(im_glob))then
- !      write(6,*)'PRESENT imglob',im_glob
+!      write(6,*)'PRESENT imglob',im_glob
        atconf%im_glob=im_glob
-!    else
-!       atconf%im_glob=0
+    else
+       atconf%im_glob=0
     end if
     if (present(imm_glob))then
 !       write(6,*)'PRESENT imMglob',imm_glob
        atconf%imm_glob=imm_glob
-!    else
-!       atconf%imm_glob=0
+    else
+       atconf%imm_glob=0
     end if
     if (present(immin))then
        atconf%imm=immin
@@ -161,7 +162,10 @@ contains
 #endif    
     if(present(ltabvois)) then
        ltbv=ltabvois
-    endif
+    else
+       ltbv=.false.
+    end if
+       
     if(ltbv)then
        atconf%ltabvois=.true.
        atconf%rvois=rv
