@@ -23,7 +23,7 @@ contains
     character(*),optional :: filename
     character*80::file
 
-    logical lrotated,upper
+    logical upper
     real(double)::xhi,yhi,zhi,xy,xz,yz,xlo,ylo,zlo,QTOT
     integer::ic,i
     real(double), dimension(3) :: tmp_coord_i,new_tmp_coord_i

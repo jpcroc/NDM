@@ -3,7 +3,7 @@ module montecarlo_mod
   USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
        &lspaceNDM,rang,iteration,firsttime_lammps,posa,forca,erg2ev,fnam,fnamcout,&
-       &lrestartmcgc,imm_glob
+       &lrestartmcgc,imm_glob,iseed
   USE atomconfig,only:atom_config,atom_config_d, config2ndm, switch_atom
   USE cellconfig, only:cell_config, cellconfig2ndm, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
@@ -32,6 +32,7 @@ module montecarlo_mod
 #endif  
   use config2data_mod,only:config2data
   USE constrconf_mod,only:read_cin
+  use probMC,only:probMC1
   implicit none
 
   type, extends (atom_config_d):: atom_config_mc
@@ -80,10 +81,10 @@ module montecarlo_mod
   type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
   type(atom_config_d),target::atcible
   integer::rgcib,rgem !(cible et emeteur e confN+1)
-  integer, dimension(12) :: seed 
+  integer, dimension(33) :: seed 
   integer:: nparapath
   logical ::  lparapath
-  logical :: lbiais_retrait
+  logical :: lbiais(0:1),lbiais_retrait,lbiais_inser
   real(double)::fdmc_1, fdmc_2 !paramtres pilotant la fct_alpha utilisee dans le biais des retraits:forme fermi dirac
   integer::itypcalc
 contains 
@@ -124,9 +125,10 @@ contains
 
     !initialisation variables 
     !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
-
-    call random_seed!(PUT=seed(1:12))
-
+    seed(:)=iseed
+    call random_seed(PUT=seed(1:33))
+    lbiais(0)=lbiais_inser
+    lbiais(1)=lbiais_retrait
 #ifdef PARA
     cellmcgcloc=>cellcible
     atmcgcloc=>atcible
@@ -190,7 +192,7 @@ contains
           call caltabtC(config_cells_nplus1(1),config_atom_nplus1(1),lperiod,boxmcgc)
           !recalculer les probas du systeme
           atconf_nplus1=>config_atom_nplus1(1)
-          call calcul_proba
+          call calcul_proba_des
           !recopier les nouvelles configs dans old 1
           call config_atom_nplus1(1)%copy_config(config_atom_old_1,lrescl=.true.)
 
@@ -249,7 +251,7 @@ contains
              call config_atom_n(1)%copy_config(config_atom_old_0, lrescl=.true.)
           else
              atconf_nplus1=>config_atom_nplus1(1)
-             call calcul_proba
+             call calcul_proba_des
              call config_atom_nplus1(1)%copy_config(config_atom_old_1, lrescl=.true.)
           end if
        end if
@@ -324,16 +326,10 @@ contains
 
 
 #endif          
-          do ipp=1,nparapath
-             config_cells_n(ipp)= config_cells_n(ipch)
-             config_cells_nplus1(ipp)= config_cells_nplus1(ipch)
-             config_atom_n(ipp)=config_atom_n(ipch)
-             config_atom_nplus1(ipp)=config_atom_nplus1(ipch)
-          end do
 
           atconf_nplus1=>config_atom_nplus1(ipch)
           if (idirectionmcgc == 0) then
-             call calcul_proba
+             call calcul_proba_des
              do i=1,nbatplus
                 iplus=config_atom_n(ipch)%im+i
                 write(*,*)  'proba atom N+1', atconf_nplus1%proba(iplus),parapath%image+1
@@ -342,6 +338,12 @@ contains
           else
              call config_atom_n(ipch)%copy_config(config_atom_old_0, lrescl=.true.) 
           end if
+          do ipp=1,nparapath
+             config_cells_n(ipp)= config_cells_n(ipch)
+             config_cells_nplus1(ipp)= config_cells_nplus1(ipch)
+             config_atom_n(ipp)=config_atom_n(ipch)
+             config_atom_nplus1(ipp)=config_atom_nplus1(ipch)
+          end do
 
 
           W = WEff !avec le bon signe
@@ -373,7 +375,7 @@ contains
     !########################################################################################################################
 
     DO i_path = 1, n_path ! boucle à faire pour tous les procs
-       !if (lmegamaster) write(6,*)'PATH',i_path
+!       if (lmegamaster) write(6,*)'PATH',i_path,direction
        Weff_npp(:)=0
        pot_npp(:)=0
 
@@ -396,7 +398,7 @@ contains
           end if
 
           if (lcalc) then
-             !if (lbigmaster)write(6,*)'parapath',rang,ipp
+!             if (lbigmaster)write(6,*)'parapath',rang,i_path,ipp
              atconf_n=> config_atom_n(ipp)
              cells_n=>config_cells_n(ipp)
              atconf_nplus1=>config_atom_nplus1(ipp)
@@ -429,9 +431,15 @@ contains
 !!$          call mpi_finalize(ierr)
 !!$          call arret_ndm
        end do !boucle nparapath
+
        if ((lbigmaster).and.(lparapath)) then
           call parapath%mpi_master%sum(weff_npp)
           call parapath%mpi_master%sum(pot_npp)
+       end if
+       if (lmegamaster) then
+          do ipp=1,nparapath
+             write(6,*)'Weff eV', weff_npp(ipp)*erg2eV
+          end do
        end if
 
        n_gen = n_gen + 1
@@ -444,10 +452,10 @@ contains
 !!!!!!!!!!!!!!!!!!!!!! TEST D'ACCEPTATION !!!!!!!!!!!!!!!!!!!
        if (nparapath.gt.1) then 
           call multiproposal(Weff_npp, pot_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
-               & lbiais_retrait, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
+               & lbiais, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
        else
           call monoproposal(Weff_npp, pot_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
-               & lbiais_retrait, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
+               & lbiais, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
        end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
 
@@ -516,7 +524,7 @@ contains
     real(double) :: Wprece ! Wprec
     real(double) :: Wpreced !sauvegarde Wprec pour posttraitement
     integer :: ipchemin, dir, accepta, ngen
-    logical :: lbiais
+    logical :: lbiais(0:1)
     integer ::  premier_accept
     real(double) :: pot_moy, pot_wrmc, pot_NC, pot_SC
 
@@ -545,23 +553,29 @@ contains
        if (dir == 0) then
           !W = +Work
           atconf_nplus1=>config_atom_nplus1(ipchemin)
-          call calcul_proba
+          call calcul_proba_des
           call config_atom_nplus1(ipchemin)%copy_config(config_atom_new_1, lrescl=.true.)      
        else
           !W = - Work
           call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)      
        endif
 
-       if (lbiais) then
-          if (dir == 0) then
-             biais = 1.0
+
+       if (dir == 0) then
+          if (lbiais(0)) then
+             write(6,*)'A PROGRAMMER'
+             stop
           else
-             biais = config_atom_nplus1(ipchemin)%proba(config_atom_nplus1(ipchemin)%im)&
-                  &/config_atom_old_1%proba(config_atom_nplus1(ipchemin)%im)
+             biais = 1.0
           end if
        else
-          biais = 1.0 
-       end if ! sur biais
+          if (lbiais(1)) then
+             biais = config_atom_nplus1(ipchemin)%proba(config_atom_nplus1(ipchemin)%im)&
+                  &/config_atom_old_1%proba(config_atom_nplus1(ipchemin)%im)
+          else
+             biais=1
+          end if
+       end if
 
        ln_Wprec  = (+beta*(dir-theta)*Wprece)
        ln_W      = (+beta*(dir-theta)*W)
@@ -655,7 +669,7 @@ contains
     real(double) :: Wprece ! Wprec
     real(double) :: Wpreced !sauvegarde Wprec pour posttraitement
     integer :: ipchemin, dir, accepta, ngen,  premier_accept
-    logical :: lbiais
+    logical :: lbiais(0:1)
     real(double) :: pot_moy, pot_wrmc, pot_NC, pot_SC
 
 
@@ -698,20 +712,20 @@ contains
           end if
 #endif          
 
+
+          if (dir == 0) then
+             atconf_nplus1=>config_atom_nplus1(ipchemin)
+             call calcul_proba_des
+             call config_atom_nplus1(ipchemin)%copy_config(config_atom_new_1, lrescl=.true.)
+          else
+             call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)
+          end if
           do ipp=1,nparapath
              config_cells_n(ipp)= config_cells_n(ipchemin)
              config_cells_nplus1(ipp)= config_cells_nplus1(ipchemin)
              config_atom_n(ipp)=config_atom_n(ipchemin)
              config_atom_nplus1(ipp)=config_atom_nplus1(ipchemin)
           end do
-
-          if (dir == 0) then
-             atconf_nplus1=>config_atom_nplus1(ipchemin)
-             call calcul_proba
-             call config_atom_nplus1(ipchemin)%copy_config(config_atom_new_1, lrescl=.true.)
-          else
-             call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)
-          end if
 
           Weff=travail_npp(ipchemin) ! il y a deja eu le changement de signe
           Wprece = Weff
@@ -1092,7 +1106,7 @@ contains
     if (direc == 1) then ! retrait d'une particule alea, la placer en N+1eme position, copier le syst pour le syst à N
        if (lbigmaster) then
 
-          if (.not.lbiais_retrait) then
+          if (.not.lbiais(1)) then
              !SANS BIAIS
              call indice_alea(atconf_Nplus1,indice)
           else
@@ -1113,7 +1127,7 @@ contains
                 end if
              end do
           end do
-          call calcul_proba
+          call calcul_proba_des
           !          do i=1,nbatplus
           !             iplus=atconf_N%im+i
           !             write(*,'(A25, 3G25.16E3, A10, G25.16E3, A10, I4 )') 'coord atome a retirer',  &
@@ -1143,34 +1157,47 @@ contains
   end subroutine ajout_retrait
 
 
-  subroutine calcul_proba
+  subroutine calcul_proba_des
     implicit none
     real(double), dimension(atconf_Nplus1%imm) :: proba
     integer :: i,j
     real(double) :: dist_tot, alpha, sum_norm, tot
     real(double), dimension(3,1) :: coord
-
-    sum_norm = 0.0
-    DO i=1, atconf_Nplus1%im
-       if (atconf_Nplus1%ityp(i) == itypcalc) then ! si l'atome est un oxygene
-          dist_tot = 0.0
-          alpha = 0.0
-          coord(:,1) =  atconf_Nplus1%xp(:,i)
-          call calcul_dist(coord, dist_tot) !calcul des distances
-          !write(*,*) i, dist_tot
-          call fct_alpha(dist_tot, alpha) !passage dans la fct alpha
-          sum_norm = sum_norm + dist_tot * alpha
-          proba(i) = dist_tot * alpha
-          !write(*,*) i, dist_tot, alpha
-       else
-          proba(i) = 0.0
-       end if !si oxygene ou uranium
-
-    END DO ! boucle atomes
-
+!       DO i=1, atconf_Nplus1%im
+!          write(6,*)'AV',iteration,atconf_Nplus1%proba(1),atconf_Nplus1%proba(atconf_Nplus1%im)
+!       end DO
+    if (lbiais(1)) then
+       sum_norm = 0.0
+       DO i=1, atconf_Nplus1%im
+ !         write(6,*)'AV',iteration,atconf_Nplus1%proba(i)
+          if (atconf_Nplus1%ityp(i) == itypcalc) then ! si l'atome est un oxygene
+             call probMC1(atconf_Nplus1%xp(:,i),proba(i),boxmcgc%bg,boxmcgc%at,fdmc_1,fdmc_2)
+             sum_norm=sum_norm+proba(i)
+             !write(*,*) i, dist_tot, alpha
+          else
+             proba(i) = 0.0
+          end if !si oxygene ou uranium
+          
+       END DO ! boucle atomes
+       
+    else
+       sum_norm = 0.0
+       DO i=1, atconf_Nplus1%im
+          if (atconf_Nplus1%ityp(i) == itypcalc) then ! si l'atome est un oxygene
+             proba(i)=1.
+             sum_norm=sum_norm+1.
+          else
+             proba(i) = 0.0
+          end if !si oxygene ou uranium
+          
+       END DO ! boucle atomes
+    end if
     proba(:) = proba(:) / sum_norm
     atconf_Nplus1%proba(:) = proba(:)
-
+!    DO i=1, atconf_Nplus1%im
+!       write(6,*)'AP',iteration,atconf_Nplus1%proba(i)
+    !    end DO
+!    write(6,*)'AP',iteration,atconf_Nplus1%proba(1),atconf_Nplus1%proba(atconf_Nplus1%im)
     !verification que la somme est bien = à 1
 !!$ tot = 0.0
 !!$  DO i=1, atconf_Nplus1%im
@@ -1182,112 +1209,74 @@ contains
 !!$  end do
 !!$  !write(*,*) 'sum proba', tot
 
-  end subroutine calcul_proba
+  end subroutine calcul_proba_des
 
 
-  subroutine calcul_dist_UO215(coord_atom, dist)
-    implicit none
-    real(double) :: dist, m, n
-    real(double), dimension(3,1) :: coord_atom, ref, distance
-    integer :: j, k
-    !attention, routine exacte uniquement pour les boites 4x4x4 de UO2+0.15
+!!$  subroutine calcul_dist_UO215(coord_atom, dist)
+!!$    implicit none
+!!$    real(double) :: dist, m, n
+!!$    real(double), dimension(3,1) :: coord_atom, ref, distance
+!!$    integer :: j, k
+!!$    !attention, routine exacte uniquement pour les boites 4x4x4 de UO2+0.15
+!!$
+!!$    !write(*,*) 'coord atom avant', coord_atom(:,1)
+!!$    call cryst_to_cart(1,coord_atom,boxmcgc%bg,-1)
+!!$    write(*,*) 'coord atom apres', coord_atom(:,1)
+!!$    DO j=1,3 !calculer la distance au site interstitiel 'parfait' le plus proche
+!!$       m = 2
+!!$       do k=0, 7
+!!$          n = abs((2.0*k+1)*0.0625 - coord_atom(j,1))
+!!$          if (n .lt. m) then
+!!$             ref(j,1) = (2.0*k+1.0)*0.0625
+!!$             m = n
+!!$          end if
+!!$       end do
+!!$       write(*,*) ref(j,1), coord_atom(j,1)
+!!$       distance(j,1) = ref(j,1) - coord_atom(j,1)
+!!$       if (distance(j,1) .gt. 0.5) then
+!!$          distance(j,1) = distance(j,1) -1
+!!$       end if !CP si >0.5
+!!$       if (distance(j,1) .lt. -0.5) then
+!!$          distance(j,1) = distance(j,1) +1
+!!$       end if !CP si <-0.5
+!!$       dist = dist + (distance(j,1)*boxmcgc%at(j,j))**2
+!!$    END DO !boucle sur les coord
+!!$    dist = dsqrt(dist)*1E8
+!!$
+!!$  end subroutine calcul_dist_UO215
 
-    !write(*,*) 'coord atom avant', coord_atom(:,1)
-    call cryst_to_cart(1,coord_atom,boxmcgc%bg,-1)
-    write(*,*) 'coord atom apres', coord_atom(:,1)
-    DO j=1,3 !calculer la distance au site interstitiel 'parfait' le plus proche
-       m = 2
-       do k=0, 7
-          n = abs((2.0*k+1)*0.0625 - coord_atom(j,1))
-          if (n .lt. m) then
-             ref(j,1) = (2.0*k+1.0)*0.0625
-             m = n
-          end if
-       end do
-       write(*,*) ref(j,1), coord_atom(j,1)
-       distance(j,1) = ref(j,1) - coord_atom(j,1)
-       if (distance(j,1) .gt. 0.5) then
-          distance(j,1) = distance(j,1) -1
-       end if !CP si >0.5
-       if (distance(j,1) .lt. -0.5) then
-          distance(j,1) = distance(j,1) +1
-       end if !CP si <-0.5
-       dist = dist + (distance(j,1)*boxmcgc%at(j,j))**2
-    END DO !boucle sur les coord
-    dist = dsqrt(dist)*1E8
 
-  end subroutine calcul_dist_UO215
-
-  subroutine calcul_dist(coord_atom, dist)
-    implicit none
-    real(double) :: dist, m, n
-    real(double), dimension(3,1) :: coord_atom, ref, distance
-    integer :: j, k, l
-    integer, dimension(8) :: liste_entier
-    !attention, routine exacte uniquement pour les boites 4x4x4 de UO2
-
-    liste_entier = (/3,7,11,15,19,23,27,31/)
-    !write(*,*) 'liste_entier' , liste_entier(1)
-    !write(*,*) 'coord atom avant', coord_atom(:,1)
-    call cryst_to_cart(1,coord_atom,boxmcgc%bg,-1)
-    !write(*,*) 'coord atom apres', coord_atom(:,1)
-    DO j=1,3 !calculer la distance au site interstitiel 'parfait' le plus proche
-       m = 2
-       do k=1, 8
-          l = liste_entier(k) 
-          n = abs(l*0.03125 - coord_atom(j,1))
-          if (n .lt. m) then
-             ref(j,1) = l*0.03125
-             m = n
-          end if
-       end do
-       !write(*,*) ref(j,1), coord_atom(j,1)
-       distance(j,1) = ref(j,1) - coord_atom(j,1)
-       if (distance(j,1) .gt. 0.5) then
-          distance(j,1) = distance(j,1) -1
-       end if !CP si >0.5
-       if (distance(j,1) .lt. -0.5) then
-          distance(j,1) = distance(j,1) +1
-       end if !CP si <-0.5
-       dist = dist + (distance(j,1)*boxmcgc%at(j,j))**2
-    END DO !boucle sur les coord
-    dist = dsqrt(dist)*1E8
-
-  end subroutine calcul_dist
-
-  subroutine fct_alpha(dist, dist_alpha)
-    implicit none
-    real(double) :: dist, dist_alpha
-
-    dist_alpha = 1.0-(1.0/( (dexp( (dist-fdmc_1) / fdmc_2)) +1.0) )
-  end subroutine fct_alpha
-
-  subroutine calcul_chemin(travail, proba,Wp, dir, the, ind_chemin, lbias)
+  subroutine calcul_chemin(travail, proba,Wp, dir, the, ind_chemin, lbiais)
     real(double), dimension(nparapath+1) :: proba
     real(double), dimension(nparapath) :: travail, biais 
     real(double) :: Wp, sum_expW, beta, the, lower, upper
     integer :: i, dir, ind_chemin
-    logical :: lbias
+    logical :: lbiais(0:1)
 
     beta = 1.0/(bk*Text)
     sum_expW = 0.0
     lower = 1.0D-308
     upper = 1.0D308
 
-    if (lbias) then
-       DO i = 1, nparapath
-          if (dir == 0) then
-             biais(i) = 1.0
-          else
+    if (dir == 0) then
+       if (lbiais(0)) then
+          write(6,*)'A PROGRAMMER'
+          stop
+       else
+          biais(:) = 1.0
+       end if
+    else
+       if (lbiais(1)) then
+          DO i = 1, nparapath
              biais(i) = config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)&
                   &/config_atom_old_1%proba(config_atom_nplus1(ind_chemin)%im)
-          end if
-       END DO
-    else
-       DO i = 1, nparapath
-          biais(i) = 1.0
-       END DO
+          end DO
+       else
+          biais(:)=1
+       end if
     end if
+    
+    
 
 
     if ((exp(beta*(dir-the)*Wp) .lt. upper) .and. (exp(beta*(dir-the)*Wp) .gt. lower)) then
@@ -1316,14 +1305,18 @@ contains
        !calcul de la somme des expW
        DO i = 1, nparapath
           if ((exp(beta*(dir-the)*(travail(i))) .lt. upper) .and. (exp(beta*(dir-the)*(travail(i))) .gt. lower)) then
-             if (lbias) then 
-                if (dir == 1) then !si bias vrai + retrait alors
+             if (dir==1) then
+                if (lbiais(1)) then
                    sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
                 else
                    sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))
                 end if
              else
-                sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))
+                if (lbiais(0)) then
+                   stop !sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
+                else
+                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))
+                end if
              end if
           end if
        END DO
@@ -1331,15 +1324,20 @@ contains
        !attribution d'une proba pour chaque chemin
        DO i = 1, nparapath
           if ((exp(beta*(dir-the)*(travail(i))) .lt. upper) .and. (exp(beta*(dir-the)*(travail(i))) .gt. lower)) then
-             if (lbias) then
-                if (dir == 1) then
+
+             if (dir==1) then
+                if (lbiais(1)) then
                    proba(i) = ( exp(beta*(dir-the)*(travail(i))) / &
                         &config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)  ) / ( sum_expW)
                 else
                    proba(i) = ( exp(beta*(dir-the)*(travail(i))) ) / ( sum_expW)
                 end if
              else
-                proba(i) = exp(beta*(dir-the)*(travail(i)))/ (sum_expW)
+                if (lbiais(0)) then
+                   stop !sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
+                else
+                   proba(i) = ( exp(beta*(dir-the)*(travail(i))) ) / ( sum_expW)
+                end if
              end if
           else
              proba(i) = 0.0
@@ -1479,7 +1477,6 @@ contains
     logical,allocatable::lchosen(:)
     integer::natyp,iatyp,indT
     integer,allocatable::indatyp(:)
-
     natyp=0
     do i=1,config%im
        if (config%ityp(i)==itypcalc) then
@@ -1509,12 +1506,15 @@ contains
        call random_number(rand)
        DO iatyp=1,natyp
           somme = somme + config%proba(indatyp(iatyp))
+
           if (somme.gt.rand) then
+!             write(6,*)'CH',rand,somme,iatyp
              if (lchosen(iatyp).eqv..true.) then
                 goto 33
              else
                 lchosen(iatyp)=.true.
                 ind(i)=indatyp(iatyp)
+                
                 cycle loopatplus
              end if
           end if ! if sur les sommes
@@ -2275,7 +2275,7 @@ contains
 
     if (lbigmaster) then
        !call atconf_n%copy_config(atconf_nplus1,lrescl=.false.)
-       if (.not.lbiais_retrait) then
+       if (.not.lbiais(1)) then
           !SANS BIAIS
           call indice_alea(atconf_Nplus1,indice)
        else
@@ -2297,7 +2297,7 @@ contains
           end do
        end do
        !       call atconf_Nplus1%switch_atom(indice,atconf_Nplus1%im)
-       call calcul_proba
+       call calcul_proba_des
        do i=1,nbatplus
           iplus=atconf_N%im+i
           write(*,'(A25, 3G25.16E3,  A10, G15.6E3, A, I4 )') 'coord atome a retirer', &

@@ -39,7 +39,7 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
-         &lbiais_retrait, fdmc_1, fdmc_2,nbatplus,itypcalc
+         &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
@@ -88,7 +88,7 @@ contains
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,&
-         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
+         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 
 
     !
@@ -108,6 +108,7 @@ contains
     dmtype = 0  
     idirectionmcgc=-2           !direction pour le montecarlo 0 ou 1 a designer par l'utilisateur
     lbiais_retrait = .false.    !biais ou non sur les retraits dans le montecarlo
+    lbiais_inser = .false.    !biais ou non sur les retraits dans le montecarlo
     fdmc_1 = -1000.0            !param de fermi dirac A DEF PAR UTILISATEUR pour la fct discriminante du biais dans MC
     fdmc_2 = -1000.0            !valeur devant etre changee    
     !dmtype = type of calculation : 1 -> MD

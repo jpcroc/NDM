@@ -46,7 +46,6 @@ contains
     character ::  fnampotin*80
     real(double)::rue
     integer :: ntypr ! nb detype de ce potentiel
-    integer :: npairR ! nb de paires de ce potentiel
     ! lecture des paires
     integer::iti
     real(double)::qr,cmr,catomr,ecrue,rmd,rm2d,xd,fcd
@@ -62,7 +61,6 @@ contains
     real(double)::Awatr,Bwatr,pwatr,qwatr,rawatr ! variable de lecture pour pot. watanabe
     integer :: num_3c
     real(double)::abasakr,cbasakr,Dr,betar,rstar,rhor
-    real(double),allocatable,dimension(:)::absk,bbsk,cbsk
 
     !Stillinger Weber Vashista
     real(double)::capHijlu,capDijlu,capWijlu,c3cr,precis
