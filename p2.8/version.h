@@ -1,0 +1,5 @@
+#define DATE "2022-06-14"
+#define REVISION "5c898d6"
+#define COMPILE_DATE "Tue Jun 14 09:54:00 CEST 2022"
+#define LOCATION "/mnt/c/Users/jc148490/lin/DM/codesndm/GIT/NDM/p2.8"
+#define COMPILE_TARGET "ndm_serial_gfortran_debug"
