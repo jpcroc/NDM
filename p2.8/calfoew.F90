@@ -13,6 +13,24 @@ contains
     
   ! ***************************************************************
 !  subroutine calfoew(im,imm,xp,fp,ityp,noxyz,at,bg,volu)
+  subroutine calfozz(atcf)
+    class(atom_config),intent(in)::atcf
+
+    integer::iti,l,i
+    
+    do i=1,atcf%im
+       iti = atcf%ityp(i)
+       ! --- Calcul du second potentiel de la somme d'Ewald ---
+       l = ipo(iti,iti)
+       potis2 = potis2-zz(l)*alpha/sqrt(pi)*23.06134575D-20
+    end do
+#ifdef PARA
+    if (nprocspace.gt.1) then
+       call comm_space%sum(potis2)
+    end if
+#endif       
+  end subroutine calfozz
+    
   subroutine calfoew(atcf,celcf,boxcf)
     !-----------------------------------------------
     !   M o d u l e s
@@ -52,17 +70,6 @@ contains
     select case (iewald)
     case (1)
 
-       do i=1,atcf%im
-          iti = atcf%ityp(i)
-          ! --- Calcul du second potentiel de la somme d'Ewald ---
-          l = ipo(iti,iti)
-          potis2 = potis2-zz(l)*alpha/sqrt(pi)*23.06134575D-20
-       end do
-#ifdef PARA
-       if (nprocspace.gt.1) then
-          call comm_space%sum(potis2)
-       end if
-#endif       
        debv=1
        finv=nvecttot
 

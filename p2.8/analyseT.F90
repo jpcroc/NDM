@@ -9,7 +9,7 @@ module analyseT_mod
   use calcextr_mod,only:calfoextr
   USE sauvegardeT_mod,only:sauvegardeT
 
-  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax
+  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax,zz
   use gen_com_m, only:bk,cunite,fnose,iteanapos,iteangle,itebdv,ecellpr,&
        &itecoordo,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
@@ -196,7 +196,8 @@ contains
                       end select
                    end if
                 end do
-                if(iewald.gT.0) write (6, '(A,G21.12,A)') '    *energie EWALD  = ', (potis2+potis3)*unitE, cunitE
+                if( any(zz.ne.0)) write (6, '(A,G21.12,A)') '    *energie EWALD 2eme terme = ', (potis2)*unitE, cunitE
+                if(iewald.gT.0) write (6, '(A,G21.12,A)') '    *energie EWALD RECIP = ', (potis3)*unitE, cunitE
                 write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Ec = ',kine*unitE, cunitE, &
                      '  (', temp, ' K)'
 

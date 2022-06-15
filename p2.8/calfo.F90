@@ -3,7 +3,7 @@ module calfo_mod
   USE calfo_ml_mod, ONLY : md_calfo_ml
 #endif 
    USE arret_ndm_mod,only:arret_ndm
-  USE calfoew_mod,only:calfoew
+  USE calfoew_mod,only:calfoew,calfozz
   USE calfo2ctabvois_mod,only:calfo2ctabvois
   USE calfo2ccel_mod,only:calfo2ccel
   USE calfo3c_mod,only:calfo3c
@@ -13,7 +13,7 @@ module calfo_mod
   USE calfojuli_mod,only:calfojuli
   USE calfojulicel_mod,only:calfojulicel
   USE force_tersoff_cel_mod,only:force_tersoff_cel
-  use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam
+  use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam,zz
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:potis0,potis2,potisp&
@@ -182,10 +182,13 @@ contains
              end if
           end if
        end do
+       if (any(zz.ne.0)) then
+          call calfozz(atcf)
+          potist=potist+potis2
+       end if
        if (iewald.ge.1)then
           call  calfoew(atcf,celcf,boxcf)
-!          write(6,*)'POTIS3',potis3
-          potist=potist+potis3+potis2
+          potist=potist+potis3
        end if
 
 #ifdef LAMMPS_VERSION
@@ -193,7 +196,7 @@ contains
 #endif  
 
     sigcf=sig;potistcf=potist
-
+write(6,*)'POTIS',potis1,potis2,potis3,potiseam
 
     return
   end subroutine calfo
