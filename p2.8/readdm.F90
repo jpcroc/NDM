@@ -39,7 +39,7 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
-         &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc
+         &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
@@ -76,7 +76,7 @@ contains
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
-         maxorder, ipotentiel,lpotentiel,beta35,&
+         maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,fdfactmcgc,ins_typ,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,&
@@ -361,7 +361,10 @@ contains
     beta35=1d-10
     gammas=0.999
     gammav=0.9
-
+    fdfactmcgc=18.0
+    R0mcgc=-1.0
+    ins_typ=0
+    
 
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -1459,22 +1462,33 @@ contains
        call arret_ndm
     end if
 #endif     
-
+    if (dmtype==15) then
     !condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
-    if((dmtype == 15) .and. (pas_lambda_mc.lt.0)) then
-       write(6,*)'Pour utiliser la methode MCGC, indiquer une valeur pour le pas lambda d integration'
-       call arret_ndm
+       if((dmtype == 15) .and. (pas_lambda_mc.lt.0)) then
+          write(6,*)'Pour utiliser la methode MCGC, indiquer une valeur pour le pas lambda d integration'
+          call arret_ndm
+       end if
+       !idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
+       if((dmtype == 15) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
+          write(6,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
+          call arret_ndm
+       end if
+       if((dmtype == 15) .and. (lbiais_retrait).and. (nbatplus.lt.1))then 
+          write(6,*)' methode MCGC avec le biais sur les retraits: pas possible aev nbatplus>1'
+          call arret_ndm
+       end if
+       select case(ins_typ)
+       case(0)
+       case(1)
+          if (R0mcgc.lt.0) then
+             if (rang==0) write(6,*)' R0mcgc.lt.0'
+             call arret_ndm
+          end if
+       case default
+          if (rang==0) write(6,*)' ins_typ =0 or 1'
+          call arret_ndm
+       end select
     end if
-    !idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
-    if((dmtype == 15) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
-       write(6,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
-       call arret_ndm
-    end if
-    if((dmtype == 15) .and. (lbiais_retrait).and. (nbatplus.lt.1))then 
-       write(6,*)' methode MCGC avec le biais sur les retraits: pas possible aev nbatplus>1'
-       call arret_ndm
-    end if
-
     if (lcdp) then
        select case(dmtype)
        case(1,4,8)

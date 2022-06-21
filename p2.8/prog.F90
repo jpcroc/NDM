@@ -16,7 +16,7 @@ module prog_mod
   USE ForceMatrix_mod, only: calcFM, init_MPI_FM, pscFM,paraFM
   USE montecarlo_mod, only: montecarlo,atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc,config_atom_n&
        &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
-       &idirectionmcgc,initN
+       &idirectionmcgc,initN,ins_typ
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -269,7 +269,7 @@ contains
        allocate (config_cells_n(nparapath))
        allocate (config_cells_nplus1(nparapath))
 
-
+       if (ins_typ==1) call init_instyp
        !       if (nparapath==1) then
        do ipp=1,nparapath
           atconf_n=> config_atom_n(ipp)

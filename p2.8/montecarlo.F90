@@ -36,7 +36,8 @@ module montecarlo_mod
   implicit none
 
   type, extends (atom_config_d):: atom_config_mc
-     real(double), allocatable :: proba(:) !defini pr chaque atome mais utile que pour O dans notre cas
+     real(double), allocatable :: proba_des(:) !defini pr chaque atome mais utile que pour O dans notre cas
+     real(double) :: proba_ins !defini par POSITION, donc pas un tableau
    contains
      procedure, pass :: init => init_atom_config_mc
      procedure, pass :: copy_atom => copy_atom_mc
@@ -87,6 +88,11 @@ module montecarlo_mod
   logical :: lbiais(0:1),lbiais_retrait,lbiais_inser
   real(double)::fdmc_1, fdmc_2 !paramtres pilotant la fct_alpha utilisee dans le biais des retraits:forme fermi dirac
   integer::itypcalc
+
+  integer,parameter::nr=10000
+  real(double)::R0mcgc,fdfactmcgc,probaR(0:10000)
+  integer::ins_typ
+  
 contains 
 
   subroutine montecarlo
@@ -250,9 +256,11 @@ contains
           if (idirectionmcgc == 0) then 
              call config_atom_n(1)%copy_config(config_atom_old_0, lrescl=.true.)
           else
-             atconf_nplus1=>config_atom_nplus1(1)
-             call calcul_proba_des
-             call config_atom_nplus1(1)%copy_config(config_atom_old_1, lrescl=.true.)
+             do ipp=1,naptapath
+                atconf_nplus1=>config_atom_nplus1(ipp)
+                call calcul_proba_des ! on initialise une désintégration qui va être accepté (car c'est la première) : Il faut calculer les proba pour les mettre dans OLD etdans config_atom_nplus1
+                call config_atom_nplus1(ipp)%copy_config(config_atom_old_1, lrescl=.true.)
+             end do
           end if
        end if
        if (idirectionmcgc == 0) then
@@ -329,11 +337,7 @@ contains
 
           atconf_nplus1=>config_atom_nplus1(ipch)
           if (idirectionmcgc == 0) then
-             call calcul_proba_des
-             do i=1,nbatplus
-                iplus=config_atom_n(ipch)%im+i
-                write(*,*)  'proba atom N+1', atconf_nplus1%proba(iplus),parapath%image+1
-             end do
+             call calcul_proba_des ! on vient de choisir ipch qui est accepté. On calcule les proba pour : 1:choisir les atomes à désintégrer et mettre dans old_1 pour les calculs du biais
              call config_atom_nplus1(ipch)%copy_config(config_atom_old_1, lrescl=.true.)      
           else
              call config_atom_n(ipch)%copy_config(config_atom_old_0, lrescl=.true.) 
@@ -380,8 +384,10 @@ contains
        pot_npp(:)=0
 
        if (lbigmaster) then
-          config_atom_nplus1(ipch)%vp(:,:)   = - config_atom_nplus1(ipch)%vp(:,:) !à chaque retour dans la boucle, on change de direction
-          config_atom_n(ipch)%vp(:,:)   = - config_atom_n(ipch)%vp(:,:)
+          do ipp=1,nparapath
+             config_atom_nplus1(ipp)%vp(:,:)   = - config_atom_nplus1(ipp)%vp(:,:) !à chaque retour dans la boucle, on change de direction
+             config_atom_n(ipp)%vp(:,:)   = - config_atom_n(ipp)%vp(:,:)
+          end do
           if (direction == 0) then
              call config_atom_n(ipch)%copy_config(config_atom_new_0, lrescl=.true.)
           endif
@@ -461,6 +467,7 @@ contains
 
        if (acceptation == 1) then
           n_accepted = n_accepted + 1
+          !choupi
           if (direction == 0) then
              n_accepted_0 = n_accepted_0 + 1
           else 
@@ -553,7 +560,7 @@ contains
        if (dir == 0) then
           !W = +Work
           atconf_nplus1=>config_atom_nplus1(ipchemin)
-          call calcul_proba_des
+          call calcul_proba_des ! calcul_proba placé étrangement. Devrait etre après l'acceptation. Mais ça marche car si acceptation alors va devenir la nouvelle conf N+1 a tester et va devenir _old_1 (ici copié en _new_1. Après acceptation : _new_1 copié en _old_1). 
           call config_atom_nplus1(ipchemin)%copy_config(config_atom_new_1, lrescl=.true.)      
        else
           !W = - Work
@@ -563,6 +570,8 @@ contains
 
        if (dir == 0) then
           if (lbiais(0)) then
+             biais = config_atom_nplus1(ipchemin)%proba_ins&
+                  &/config_atom_old_1%proba_ins
              write(6,*)'A PROGRAMMER'
              stop
           else
@@ -570,8 +579,8 @@ contains
           end if
        else
           if (lbiais(1)) then
-             biais = config_atom_nplus1(ipchemin)%proba(config_atom_nplus1(ipchemin)%im)&
-                  &/config_atom_old_1%proba(config_atom_nplus1(ipchemin)%im)
+             biais = config_atom_nplus1(ipchemin)%proba_des(config_atom_nplus1(ipchemin)%im)&
+                  &/config_atom_old_1%proba_des(config_atom_nplus1(ipchemin)%im)
           else
              biais=1
           end if
@@ -658,7 +667,8 @@ contains
   end subroutine monoproposal
 
 
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   subroutine multiproposal(travail_npp, nrjpot_npp, Wprece, Wpreced, ipchemin, dir, accepta, premier_accept, ngen,&
        & lbiais, pot_moy, pot_wrmc, pot_NC, pot_SC, tab_cumul)
@@ -715,7 +725,7 @@ contains
 
           if (dir == 0) then
              atconf_nplus1=>config_atom_nplus1(ipchemin)
-             call calcul_proba_des
+             call calcul_proba_des ! on sait que ce atconf_nplu1 est le bon et accepté. Calcul de proba_des pour choix future quand désitégration et biais futurs copié en _new_1
              call config_atom_nplus1(ipchemin)%copy_config(config_atom_new_1, lrescl=.true.)
           else
              call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)
@@ -1053,6 +1063,7 @@ contains
     integer,allocatable :: indice(:)
     integer:: i,nag,rgcib,rgem,iloc,i1,i2,j,iplus
     logical ::ldistrib,lchange
+    real(double)::pins
     allocate (cart_vec_nplus1(3,nbatplus))
     allocate(indice(nbatplus))
 
@@ -1063,7 +1074,7 @@ contains
     if (direc == 0) then ! ajout d'une particule en N+1
        if (lbigmaster) then
           !tirer des positions aleatoires pour les N+nbatplus eme atome
-          call atom_supp(cart_vec_nplus1)
+          call atom_supp(cart_vec_nplus1,pins)
           !          do i=1,nbatplus
           !             write(*,'(A25, 3G25.16E3,A,I4)') 'atome supplementaire', cart_vec_nplus1(:,i), 'image',parapath%image+1
           !          end do
@@ -1078,6 +1089,7 @@ contains
              atconf_nplus1%ielat(iplus) = -1
              nag=maxval(atconf_Nplus1%num_at_glob(1:iplus-1))
              atconf_Nplus1%num_at_glob(iplus) = nag+1
+             atconf_Nplus1%proba_ins = pins
           end do
           call init_vitesse(atconf_nplus1,param = 0)
        end if
@@ -1193,7 +1205,7 @@ contains
        END DO ! boucle atomes
     end if
     proba(:) = proba(:) / sum_norm
-    atconf_Nplus1%proba(:) = proba(:)
+    atconf_Nplus1%proba_des(:) = proba(:)
 !    DO i=1, atconf_Nplus1%im
 !       write(6,*)'AP',iteration,atconf_Nplus1%proba(i)
     !    end DO
@@ -1260,6 +1272,10 @@ contains
 
     if (dir == 0) then
        if (lbiais(0)) then
+          DO i = 1, nparapath
+             biais(i) = config_atom_nplus1(ipchemin)%proba_ins&
+                  &/config_atom_old_1%proba_ins
+          end DO
           write(6,*)'A PROGRAMMER'
           stop
        else
@@ -1268,8 +1284,8 @@ contains
     else
        if (lbiais(1)) then
           DO i = 1, nparapath
-             biais(i) = config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)&
-                  &/config_atom_old_1%proba(config_atom_nplus1(ind_chemin)%im)
+             biais(i) = config_atom_nplus1(i)%proba_des(config_atom_nplus1(i)%im)&
+                  &/config_atom_old_1%proba_des(config_atom_nplus1(ind_chemin)%im)
           end DO
        else
           biais(:)=1
@@ -1307,13 +1323,13 @@ contains
           if ((exp(beta*(dir-the)*(travail(i))) .lt. upper) .and. (exp(beta*(dir-the)*(travail(i))) .gt. lower)) then
              if (dir==1) then
                 if (lbiais(1)) then
-                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
+                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba_des(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
                 else
                    sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))
                 end if
              else
                 if (lbiais(0)) then
-                   stop !sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
+                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba_ins
                 else
                    sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))
                 end if
@@ -1328,13 +1344,15 @@ contains
              if (dir==1) then
                 if (lbiais(1)) then
                    proba(i) = ( exp(beta*(dir-the)*(travail(i))) / &
-                        &config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)  ) / ( sum_expW)
+                        &config_atom_nplus1(i)%proba_des(config_atom_nplus1(i)%im)  ) / ( sum_expW)
                 else
                    proba(i) = ( exp(beta*(dir-the)*(travail(i))) ) / ( sum_expW)
                 end if
              else
                 if (lbiais(0)) then
-                   stop !sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
+                   proba(i) = ( exp(beta*(dir-the)*(travail(i))) / &
+                        &config_atom_nplus1(i)%proba_ins) / ( sum_expW)
+
                 else
                    proba(i) = ( exp(beta*(dir-the)*(travail(i))) ) / ( sum_expW)
                 end if
@@ -1505,7 +1523,7 @@ contains
        somme = 0.0
        call random_number(rand)
        DO iatyp=1,natyp
-          somme = somme + config%proba(indatyp(iatyp))
+          somme = somme + config%proba_des(indatyp(iatyp))
 
           if (somme.gt.rand) then
 !             write(6,*)'CH',rand,somme,iatyp
@@ -1587,20 +1605,27 @@ contains
   end subroutine restart_chemin
 
 
-  subroutine atom_supp(vecteur)
+  subroutine atom_supp(vecteur,pins)
 
     implicit none
 
     real(double), dimension(:,:) :: vecteur
+    real(double),intent(out)::pins
     real(double) :: x_nplus1, y_nplus1, z_nplus1,dist !position initiale aleatoire de la N+1eme particule
     integer::i,j,itry,iat,jat
     real(double)::vec(3,1)
     itry=0
     dist=0
-    if ((nparapath .gt. 1) .and. (lparapath)) then 
-       do iat=1,nbatplus
+    select case (ins_typ)
+    case(1)
+       call atom_supp_sph(vecteur,pins) ! routine à écrire qui tire une position et fixe proba_ins
+       
+    case(0)
+       pins=1
+       if ((nparapath .gt. 1) .and. (lparapath)) then 
+          do iat=1,nbatplus
 1         continue
-          itry=itry+1
+             itry=itry+1
           !if (itry.gt.1) write(6,*)'INSER',rang,itry,dist
           !write(*,*) 'rang', rang
           do i=1,rang+1
@@ -1664,7 +1689,7 @@ contains
        end do
 
     end if !lparapath = true
-
+ end select
     !  write(*,*) 'atome supplementaire', vecteur
   end subroutine atom_supp
 
@@ -2113,12 +2138,13 @@ contains
     logical ::lc2d
     character*80::namef
     logical::lwrite
+    real(double)::pins
     !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
 
     allocate (cart_vec_nplus1(3,nbatplus))
     if (lbigmaster) then
 
-       call atom_supp(cart_vec_nplus1)
+       call atom_supp(cart_vec_nplus1,pins)
        !write(*,*) 'cart_vec_nplus1', cart_vec_nplus1(:,1)
 
        !cart_vec_nplus1(1,1) =  0.03125 +0.125 !3.366712069766435E-008
@@ -2143,6 +2169,7 @@ contains
           atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
           atconf_nplus1%ityp(iplus) = itypcalc
           atconf_nplus1%num_at_glob(iplus) = iplus
+          atconf_Nplus1%proba_ins = pins
           !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
        end do
        call init_vitesse(atconf_nplus1,param = 0)
@@ -2302,7 +2329,7 @@ contains
           iplus=atconf_N%im+i
           write(*,'(A25, 3G25.16E3,  A10, G15.6E3, A, I4 )') 'coord atome a retirer', &
                &atconf_Nplus1%xp(:,iplus),&
-               &'proba', atconf_Nplus1%proba(iplus),' image ',parapath%image+1
+               &'proba', atconf_Nplus1%proba_des(iplus),' image ',parapath%image+1
           !write(*,*) 'coord atome a retirer',  atconf_Nplus1%xp(:,atconf_Nplus1%im)
           !on copie les N nouveaux premiers atomes du syst N+1 dans le systeme N
           call boucle_copy_atom(atconf_N,atconf_Nplus1, sens = .true.)
@@ -2517,13 +2544,13 @@ contains
 
     call atconf%atom_config_d%init(imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob) 
     !initialisation de la partie mc ajoutée
-    if ((lrealloc).and.(allocated(atconf%proba)))then
-       deallocate(atconf%proba)
+    if ((lrealloc).and.(allocated(atconf%proba_des)))then
+       deallocate(atconf%proba_des)
     end if
-    if (.not.allocated(atconf%proba))then
-       allocate(atconf%proba(atconf%imm))
+    if (.not.allocated(atconf%proba_des))then
+       allocate(atconf%proba_des(atconf%imm))
     end if
-    atconf%proba=0
+    atconf%proba_des=0
   end subroutine init_atom_config_mc
 
 
@@ -2541,7 +2568,8 @@ contains
     class is (atom_config_mc)
        select type (atsource)
        class is (atom_config_mc)
-          atcible%proba(1:atsource%imm)=atsource%proba(1:atsource%imm)
+          atcible%proba_des(1:atsource%imm)=atsource%proba_des(1:atsource%imm)
+          atcible%proba_ins=atsource%proba_ins
        end select
     end select
   end subroutine copy_config_mc
@@ -2567,7 +2595,7 @@ contains
     class is (atom_config_mc)
        select type (atsource)
        class is (atom_config_mc)
-          atcible%proba(j) = atsource%proba(i)
+          atcible%proba_des(j) = atsource%proba_des(i)
        end select
     end select
   end subroutine copy_atom_mc
@@ -2582,11 +2610,50 @@ contains
     real(double) :: intermediaire
 
     call atsource%atom_config_d%switch_atom(ind_switch_1, ind_switch_2)
-    intermediaire = atsource%proba(ind_switch_1)
-    atsource%proba(ind_switch_1) =  atsource%proba(ind_switch_2)
-    atsource%proba(ind_switch_2) = intermediaire
+    intermediaire = atsource%proba_des(ind_switch_1)
+    atsource%proba_des(ind_switch_1) =  atsource%proba_des(ind_switch_2)
+    atsource%proba_des(ind_switch_2) = intermediaire
 
   end subroutine switch_atom_mc
 
+  subroutine  atom_supp_sph(vecteur,pins) ! routine à écrire qui tire une position et fixe proba_ins
+    real(double),intent(out)::vecteur(3,3),pins
+    real(double)::zf,zt,zr,fhi,theta
+    !choose vecteur
+    call random_number(zf)
+    fhi=2*pi*zf
+    call random_number(zt)
+    theta=acos(2*zt-1)
 
+    call random_number(zr)
+    somP=0.
+    loopi:do i=1,nr
+       somP=somP+probaR(i)
+       if (zr.le.somP) then
+          iex=i-1
+          exit loopi
+       end if
+    end do loopi
+    
+    pins=1.
+  end subroutine atom_supp_sph
+
+  subroutine init_instyp
+    real(double):: r,zlmin,zlm2,somP
+    integer::i
+    zlmin = distmin(boxmcgc%at(1,1),boxmcgc%at(1,2))
+    zlm2 = distmin(boxmcgc%at(1,1),boxmcgc%at(1,3))
+    zlmin = min(zlmin,zlm2)
+    zlm2 = distmin(boxmcgc%at(1,2),boxmcgc%at(1,3))
+    zlmin = min(zlmin,zlm2)
+    R0mcgc=R0mcgc*1d-8
+    fdfactmcgc=fdfactmcgc*1d8
+    somP=0.
+    do i=0,nr
+       r=float(i)*zlmin/nr
+       probaR(i)=r*r/(1+exp(fdfactmcgc*(r-R0mcgc)))
+       somP=somP+probaR(i)    
+    end do
+    probaR(:)=probaR(:)/somP
+  end subroutine init_instyp
 end module montecarlo_mod
