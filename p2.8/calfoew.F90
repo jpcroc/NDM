@@ -14,6 +14,10 @@ contains
   ! ***************************************************************
 !  subroutine calfoew(im,imm,xp,fp,ityp,noxyz,at,bg,volu)
   subroutine calfozz(atcf)
+#ifdef PARA
+    use Tpara,only:nprocspace,comm_space
+#endif
+    
     class(atom_config),intent(in)::atcf
 
     integer::iti,l,i

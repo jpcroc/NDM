@@ -196,7 +196,7 @@ contains
 #endif  
 
     sigcf=sig;potistcf=potist
-write(6,*)'POTIS',potis1,potis2,potis3,potiseam
+!    write(6,*)'POTIS',potis1,potis2,potis3,potiseam
 
     return
   end subroutine calfo

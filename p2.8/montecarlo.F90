@@ -26,6 +26,7 @@ module montecarlo_mod
   USE parautils,only:initloc,pointer_caltabt_calfo
   USE calctemp_mod,only:calctemp
   use vect_dist_mod,only:distat
+  USE recips_mod,only:distmin
 #ifdef LAMMPS_VERSION
   use vars_lammps
   use lammps_util_mod,only:init_lammps
@@ -89,8 +90,8 @@ module montecarlo_mod
   real(double)::fdmc_1, fdmc_2 !paramtres pilotant la fct_alpha utilisee dans le biais des retraits:forme fermi dirac
   integer::itypcalc
 
-  integer,parameter::nr=10000
-  real(double)::R0mcgc,fdfactmcgc,probaR(0:10000)
+  integer,parameter::nrins=10000
+  real(double)::R0mcgc,fdfactmcgc,probaR(0:nrins),bublcenter(3),zlmin
   integer::ins_typ
   
 contains 
@@ -256,7 +257,7 @@ contains
           if (idirectionmcgc == 0) then 
              call config_atom_n(1)%copy_config(config_atom_old_0, lrescl=.true.)
           else
-             do ipp=1,naptapath
+             do ipp=1,nparapath
                 atconf_nplus1=>config_atom_nplus1(ipp)
                 call calcul_proba_des ! on initialise une désintégration qui va être accepté (car c'est la première) : Il faut calculer les proba pour les mettre dans OLD etdans config_atom_nplus1
                 call config_atom_nplus1(ipp)%copy_config(config_atom_old_1, lrescl=.true.)
@@ -1139,7 +1140,7 @@ contains
                 end if
              end do
           end do
-          call calcul_proba_des
+          call calcul_proba_des ! sans doute inutile
           !          do i=1,nbatplus
           !             iplus=atconf_N%im+i
           !             write(*,'(A25, 3G25.16E3, A10, G25.16E3, A10, I4 )') 'coord atome a retirer',  &
@@ -1206,56 +1207,9 @@ contains
     end if
     proba(:) = proba(:) / sum_norm
     atconf_Nplus1%proba_des(:) = proba(:)
-!    DO i=1, atconf_Nplus1%im
-!       write(6,*)'AP',iteration,atconf_Nplus1%proba(i)
-    !    end DO
-!    write(6,*)'AP',iteration,atconf_Nplus1%proba(1),atconf_Nplus1%proba(atconf_Nplus1%im)
-    !verification que la somme est bien = à 1
-!!$ tot = 0.0
-!!$  DO i=1, atconf_Nplus1%im
-!!$     if (atconf_Nplus1%ityp(i) == itypcalc) then
-!!$        tot = tot + proba(i)
-!!$        if (proba(i) .eq. 0.0) write(*,*) 'attention proba nulle',  proba(i)
-!!$        write(*,*) i, proba(i)
-!!$     end if
-!!$  end do
-!!$  !write(*,*) 'sum proba', tot
 
   end subroutine calcul_proba_des
 
-
-!!$  subroutine calcul_dist_UO215(coord_atom, dist)
-!!$    implicit none
-!!$    real(double) :: dist, m, n
-!!$    real(double), dimension(3,1) :: coord_atom, ref, distance
-!!$    integer :: j, k
-!!$    !attention, routine exacte uniquement pour les boites 4x4x4 de UO2+0.15
-!!$
-!!$    !write(*,*) 'coord atom avant', coord_atom(:,1)
-!!$    call cryst_to_cart(1,coord_atom,boxmcgc%bg,-1)
-!!$    write(*,*) 'coord atom apres', coord_atom(:,1)
-!!$    DO j=1,3 !calculer la distance au site interstitiel 'parfait' le plus proche
-!!$       m = 2
-!!$       do k=0, 7
-!!$          n = abs((2.0*k+1)*0.0625 - coord_atom(j,1))
-!!$          if (n .lt. m) then
-!!$             ref(j,1) = (2.0*k+1.0)*0.0625
-!!$             m = n
-!!$          end if
-!!$       end do
-!!$       write(*,*) ref(j,1), coord_atom(j,1)
-!!$       distance(j,1) = ref(j,1) - coord_atom(j,1)
-!!$       if (distance(j,1) .gt. 0.5) then
-!!$          distance(j,1) = distance(j,1) -1
-!!$       end if !CP si >0.5
-!!$       if (distance(j,1) .lt. -0.5) then
-!!$          distance(j,1) = distance(j,1) +1
-!!$       end if !CP si <-0.5
-!!$       dist = dist + (distance(j,1)*boxmcgc%at(j,j))**2
-!!$    END DO !boucle sur les coord
-!!$    dist = dsqrt(dist)*1E8
-!!$
-!!$  end subroutine calcul_dist_UO215
 
 
   subroutine calcul_chemin(travail, proba,Wp, dir, the, ind_chemin, lbiais)
@@ -1273,7 +1227,7 @@ contains
     if (dir == 0) then
        if (lbiais(0)) then
           DO i = 1, nparapath
-             biais(i) = config_atom_nplus1(ipchemin)%proba_ins&
+             biais(i) = config_atom_nplus1(i)%proba_ins&
                   &/config_atom_old_1%proba_ins
           end DO
           write(6,*)'A PROGRAMMER'
@@ -1323,13 +1277,14 @@ contains
           if ((exp(beta*(dir-the)*(travail(i))) .lt. upper) .and. (exp(beta*(dir-the)*(travail(i))) .gt. lower)) then
              if (dir==1) then
                 if (lbiais(1)) then
-                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba_des(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
+                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/&
+                        &(config_atom_nplus1(i)%proba_des(config_atom_nplus1(i)%im)) !1/alpha,new *exp(...)
                 else
                    sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))
                 end if
              else
                 if (lbiais(0)) then
-                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba_ins
+                   sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))/(config_atom_nplus1(i)%proba_ins)
                 else
                    sum_expW = sum_expW + exp(beta*(dir-the)*(travail(i)))
                 end if
@@ -2324,7 +2279,7 @@ contains
           end do
        end do
        !       call atconf_Nplus1%switch_atom(indice,atconf_Nplus1%im)
-       call calcul_proba_des
+       call calcul_proba_des ! on calcule els proba_des car on va accepter la désintégration (et donc on aura besoin des proba pour initialiser old)
        do i=1,nbatplus
           iplus=atconf_N%im+i
           write(*,'(A25, 3G25.16E3,  A10, G15.6E3, A, I4 )') 'coord atome a retirer', &
@@ -2616,10 +2571,16 @@ contains
 
   end subroutine switch_atom_mc
 
-  subroutine  atom_supp_sph(vecteur,pins) ! routine à écrire qui tire une position et fixe proba_ins
-    real(double),intent(out)::vecteur(3,3),pins
-    real(double)::zf,zt,zr,fhi,theta
+  subroutine  atom_supp_sph(vec,pins) ! routine à écrire qui tire une position et fixe proba_ins
+
+    real(double),intent(out)::vec(:,:),pins ! at this point vec should always be (3,1)
+    real(double)::poscenter(3,1),postest(3),xins(3)
+    real(double)::zf,zt,zr,fhi,theta,rex,somP,somPm1,dist
+    integer::itry=0,i,iex
     !choose vecteur
+
+22  continue
+    itry=itry+1
     call random_number(zf)
     fhi=2*pi*zf
     call random_number(zt)
@@ -2627,19 +2588,38 @@ contains
 
     call random_number(zr)
     somP=0.
-    loopi:do i=1,nr
+    somPm1=0
+    loopi:do i=1,nrins
+       somPm1=somP
        somP=somP+probaR(i)
+
        if (zr.le.somP) then
           iex=i-1
+          rex=(float(iex)+(zr-somPm1)/probaR(i))*zlmin/nrins
           exit loopi
        end if
     end do loopi
-    
-    pins=1.
+
+    xins(1)=rex*sin(theta)*cos(fhi)
+    xins(2)=rex*sin(theta)*sin(fhi)
+    xins(3)=rex*cos(theta)
+    poscenter(:,1)=bublcenter(:)
+    call cryst_to_cart(1,poscenter,boxmcgc%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+    postest(:)=poscenter(:,1)+xins(:)
+    do i=1,atconf_n%im
+       call distat(postest(:),atconf_n%xp(:,i),boxmcgc,dist)
+       if (dist.le.distminat) then
+          goto 22
+       end if
+    end do
+    vec(:,1)=postest(:)
+    pins=probaR(iex)
+    return
   end subroutine atom_supp_sph
+    
 
   subroutine init_instyp
-    real(double):: r,zlmin,zlm2,somP
+    real(double):: r,zlm2,somP
     integer::i
     zlmin = distmin(boxmcgc%at(1,1),boxmcgc%at(1,2))
     zlm2 = distmin(boxmcgc%at(1,1),boxmcgc%at(1,3))
@@ -2649,8 +2629,8 @@ contains
     R0mcgc=R0mcgc*1d-8
     fdfactmcgc=fdfactmcgc*1d8
     somP=0.
-    do i=0,nr
-       r=float(i)*zlmin/nr
+    do i=0,nrins
+       r=float(i)*zlmin/nrins
        probaR(i)=r*r/(1+exp(fdfactmcgc*(r-R0mcgc)))
        somP=somP+probaR(i)    
     end do

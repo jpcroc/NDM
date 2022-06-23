@@ -39,7 +39,7 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
-         &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ
+         &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
@@ -76,7 +76,7 @@ contains
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
          iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
-         maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,fdfactmcgc,ins_typ,&
+         maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,&
@@ -363,6 +363,7 @@ contains
     gammav=0.9
     fdfactmcgc=18.0
     R0mcgc=-1.0
+    bublcenter(:)=0.5
     ins_typ=0
     
 
