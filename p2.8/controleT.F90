@@ -51,8 +51,6 @@ contains
     !-----------------------------------------------
     !
     !
-    !
-    lreturn=.false.
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
        if (present(lreturn)) then

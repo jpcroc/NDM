@@ -130,7 +130,6 @@ contains
     !                               7 -> calcul des phonons
     !                               8 -> PR
     !                               9 -> NEB
-    !                              10 -> PARIN RAHMAN 
     !                              11 -> UN SEUL CALCUL DE FORCES
     !                              12 -> ART
     !                              16 -> SUNDAE
@@ -1243,7 +1242,7 @@ contains
 
     if ( (dmtype==21).or.(dmtype==22).or.(dmtype==3).or.(dmtype==30).or.(dmtype==32)&
          &.or.(dmtype==33).or.(dmtype==31).or.(dmtype==34).or.(dmtype==35).or.(dmtype==9)&
-         &.or.(dmtype==10) ) then    
+          ) then    
        if ( (fpstop<0).and.(fsumstop<0)) then
           if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
           if (rang==0) write(6,*) 'STOP in readdm',fpstop,fsumstop

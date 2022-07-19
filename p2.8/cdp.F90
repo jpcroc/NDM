@@ -213,7 +213,7 @@ contains
           select case (dmtype)
           case(32,33,34)
              call NGC (atdml,celndm,boxndm,psc)
-          case(4,10,8,1,21,22,23,24)
+          case(4,8,1,21,22,23,24)
              call dmloop_pilot(atdml,celndm,boxndm,psc,linit=.true.)
           case default
              call arret_ndm

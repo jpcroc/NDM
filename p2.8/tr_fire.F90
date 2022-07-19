@@ -1,12 +1,11 @@
 MODULE FireModule
-
+!PRL 97, 170201 (2006)
   ! Quench using FIRE algorithm
   ! Ref.: Bitzek, E., Koskinen, P., Gähler, F., Moseler, M., and Gumbsch, P.
   !       "Structural Relaxation Made Simple"
   !       Phys. Rev. Lett. 97, 170201 (2006).
-
+  use gen_com_m,only:iteration
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:usdh,tstep
   use atomconfig,only:atom_config_d
   ! --- Paramètres de l'algorithme fire -----------------------
   real(double), parameter :: finc=1.1
@@ -16,6 +15,8 @@ MODULE FireModule
   real(double), parameter :: tstep_MM=10
   integer, parameter:: nStepMin=5
 
+  real(double)::tstep0
+  
 CONTAINS
 
 SUBROUTINE init_trempe_fire(dt, nstep, alph)
@@ -27,10 +28,11 @@ SUBROUTINE init_trempe_fire(dt, nstep, alph)
   INTEGER, intent(out) :: nstep
   REAL(double), intent(out) :: alph
   
-
+  tstep0=dt
   alph = alph_start
   nstep = 0
-  dt = tstep
+
+  
 
 END SUBROUTINE init_trempe_fire
 
@@ -39,7 +41,7 @@ subroutine trempe_fire(atdml, dt, nstep, alph)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
-  USE gen_com_m, ONLY:usdh
+
   USE var_pot, ONLY:ntyp,cm
   implicit none
   class(atom_config_d)::atdml
@@ -49,7 +51,7 @@ subroutine trempe_fire(atdml, dt, nstep, alph)
   REAL(double), intent(inout) :: alph
 
 
-  real(double):: norme_de_fp, norme_de_vp, pscal
+  real(double):: norme_de_fp, norme_de_vp, pscal,usdh
   integer::i
 
   real(double), dimension(ntyp) :: aux
@@ -65,30 +67,22 @@ subroutine trempe_fire(atdml, dt, nstep, alph)
      atdml%xp(:,i) = xprov(:)
   END DO
 
-  
-
-
   ! 2/ Renormalisation des vitesses par l'algorithme fire
-
   ! Puissance dissipée
   pScal = Sum( atdml%vp(:,1:im)*atdml%fp(:,1:im) )
-
+!  write(6,*)'PSCAL',iteration,nstep,pscal,dt
   ! Modification du vecteur vitesse
   if (pScal.gt.0) then
-
           ! Norme du vecteur force
           norme_de_fp = Sqrt( Sum( atdml%fp(:,1:im)**2 ) )
-
           ! Norme du vecteur vitesse
           norme_de_vp = Sqrt( Sum( atdml%vp(:,1:im)**2 ) )
-
           ! Nouveau vecteur vitesse
           atdml%vp(:,1:im) = (1.d0-alph)*atdml%vp(:,1:im) + alph*norme_de_vp/norme_de_fp*atdml%fp(:,1:im)
-
           nStep = nStep + 1
           if (nStep.gt.nStepMin) then
-                  dt=min(dt*finc,tstep_MM*tstep)
-                  alph=alph*f_alph
+             dt=min(dt*finc,tstep_MM*tstep0)
+             alph=alph*f_alph
           end if
   else
           atdml%vp(:,:)=0.

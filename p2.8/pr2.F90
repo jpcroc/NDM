@@ -40,8 +40,8 @@ module Parrinello_Rahman
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigkine,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,&
-       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype
-  use FireModule
+       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh
+  use FireModule,only:alph_start,f_alph,fdec,finc,nstepmin,tstep_mm,tstep0,init_trempe_fire
 
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3,ntyp
   USE recips_mod,only: recips,calcvol
@@ -353,6 +353,7 @@ contains
 #endif
 !         write(6,*)'PSCAL',pscal,hdot(1,1)
          ! Modification du vecteur vitesse
+!         write(6,*)'PSCAL',iteration,nstep,pscal,tstep
          if (pScal.gt.0) then
             ! Norme du vecteur force
             norme_de_fp = Sqrt( Sum( sfp(:,1:im)**2 ) )
@@ -362,7 +363,7 @@ contains
             sdot(:,1:im) = (1.d0-fire_alph)*sdot(:,1:im) + fire_alph*norme_de_vp/norme_de_fp*sfp(:,1:im)
             nStep = nStep + 1
             if (nStep.gt.nStepMin) then
-               tstepN=min(tstep*finc,tstep_MM*tstep)
+               tstepN=min(tstep*finc,tstep_MM*tstep0)
                fire_alph=fire_alph*f_alph
             else
                tstepN=tstep

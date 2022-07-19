@@ -123,16 +123,16 @@ contains
     ltbv=.false.
     atconf%im=imin
     if (present(im_glob))then
-!      write(6,*)'PRESENT imglob',im_glob
+ !      write(6,*)'PRESENT imglob',im_glob
        atconf%im_glob=im_glob
-    else
-       atconf%im_glob=0
+!    else
+!       atconf%im_glob=0
     end if
     if (present(imm_glob))then
 !       write(6,*)'PRESENT imMglob',imm_glob
        atconf%imm_glob=imm_glob
-    else
-       atconf%imm_glob=0
+!    else
+!       atconf%imm_glob=0
     end if
     if (present(immin))then
        atconf%imm=immin
@@ -162,10 +162,7 @@ contains
 #endif    
     if(present(ltabvois)) then
        ltbv=ltabvois
-    else
-       ltbv=.false.
-    end if
-       
+    endif
     if(ltbv)then
        atconf%ltabvois=.true.
        atconf%rvois=rv
