@@ -1,6 +1,6 @@
 module calfo_mod
 #ifdef ML
-  USE calfo_ml_mod, ONLY : md_calfo_ml
+  USE NDM_ML, ONLY : calfo_ml
 #endif 
    USE arret_ndm_mod,only:arret_ndm
   USE calfoew_mod,only:calfoew,calfozz
@@ -25,7 +25,7 @@ module calfo_mod
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config
 #ifdef LAMMPS_VERSION
-  use lammps_util_mod,only: calcforce_lammps2 !, init_lammps
+  use lammps_util_mod,only: calcforce_lammps2 
   use vars_lammps
 #endif
   use Tpara,only:para_space_config,nprocspace
@@ -176,7 +176,7 @@ contains
                                       
 #ifdef ML
                 case (20)
-                   call md_calfo_ml
+                   call calfo_ml(atcf,celcf,boxcf)
 #endif          
                 end select
              end if
@@ -196,7 +196,7 @@ contains
 #endif  
 
     sigcf=sig;potistcf=potist
-!    write(6,*)'POTIS',potis1,potis2,potis3,potiseam
+
 
     return
   end subroutine calfo

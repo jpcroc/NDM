@@ -79,7 +79,7 @@ contains
     
 
 #ifdef PARA
-   call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.))   call maj_atomes_frt_ftm(atpr,celndm,boxndm,psc)
 #else
    if (atpr%ltabvois.and.(dmtype==9).and.((iteration==1).or.(mod(iteration,itetabvois)==0))) then
       call caltabi(atpr%atom_config,celndm,boxndm)

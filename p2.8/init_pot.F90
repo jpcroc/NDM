@@ -15,6 +15,10 @@ module init_pot_mod
   USE SMjuli,only:inputeamjl
   USE alloc_typ_mod,only: alloc_typ
   USE param_det_mod,only: param_det
+#ifdef ML
+ USE NDM_ML,only :rue_ml
+#endif
+
   implicit none
 
 contains
@@ -122,16 +126,26 @@ contains
                 
                 call inputtersoff
 
-#ifdef ML
                 ! MiLaDy
              case(20)
-                if (rang.eq.0) then
+#ifdef ML
+                !This comes with MiLaDy package
+                call init_potential_simple(rue_ml,rumax)
+                typ_and_pot(:,20)=.true.
+                typ_pot_pair(:)=20
+                rue_pot(20)=rue_ml
+               if (rang.eq.0) then
                    write(6,*)
-                   write(6,*)' ML ..... set-up MiLady potential'
+                   write(6,*)' MILADY ..... RUE = ',rue_ml*1d8
                    write(6,*)
                 end if
-                !This comes with MiLaDy package
-                call md_init_potential_ml
+#else
+                if (rang.eq.0) then
+                   write(6,*)
+                   write(6,*)'NOT COMPILED FOR MILADY '
+                   write(6,*)
+                end if
+                call arret_ndm
 #endif
              end select
 
@@ -183,9 +197,6 @@ contains
     use boxconfig,only:box_config
     USE calpo_ew_mod,only: calpo_ew
     implicit none
-#ifdef ML
-
-#else
     
     type(box_config)::boxndm
     integer,intent(in)::immT
@@ -194,11 +205,10 @@ contains
     if (rang==0)then
           write(6,*)
        write(6,*)' -------------------------------------------------------------------'
-       write(6,*)'             definition des rayons de coupure'
+       write(6,*)'             2nd step of potential initialization , dependancy on box size'
     end if
     call param_det(boxndm)
        ! rumax défini en ce point
-#endif 
 
     do ipotcont=0,npotmax
        if(lpotentiel(ipotcont).EQV..true.) then
@@ -253,12 +263,15 @@ contains
     open(unit=lupotin, file=fnampotin, status='old')
     read(lupotin,*)ntyp
     npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
+    allocate(typ_and_pot(ntyp,npotmax))
+       
+    npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
     call  alloc_typ
     read(lupotin,*) rue
     rue=rue*A2cm
     rue_pair(:)=rue
     select case (ipotentiel)
-    case(-10)
+    case(-10,20)
        do i = 1, ntyp
           read (lupotin,*) cm(i),catom(i),ty(i)
           if (rang/=0) cycle

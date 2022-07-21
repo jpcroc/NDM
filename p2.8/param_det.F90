@@ -1,4 +1,3 @@
-#ifndef ML
 module param_det_mod
   USE arret_ndm_mod,only:arret_ndm
   USE arret_ndm_mod,only: arret_ndm
@@ -42,7 +41,7 @@ subroutine param_det(boxndm)
   real(double) :: alpha_ixia
 #endif
 
-  write(6,*)"EWALDDO",iewald
+  
   if (npotentiel.ne.1)then
      if ((iewald.gt.0).and.(ncouc3==0)) then
         if (rang==0)  write(6,*)'npot>1 + ewald+ncouc3=0 : stop'
@@ -611,10 +610,8 @@ subroutine param_det(boxndm)
           if((rang==0)) write (6, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
           call arret_ndm
        else
-#ifndef ML
           if(rang==0) write (6,'(A,2F12.2)') ' rumax devient rvois&
                & pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
-#endif
           rumax=rvois
        end if
 
@@ -629,4 +626,3 @@ subroutine param_det(boxndm)
   return
 end subroutine param_det
 end module
-#endif 

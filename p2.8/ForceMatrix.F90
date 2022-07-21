@@ -1,6 +1,6 @@
 module ForceMatrix_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m,only:  lperiod,lenfnam,lspaceNDM,rang,firsttime_lammps,erg2ev,fnam,fnamcout,imm_glob,fnam,lenfnam,iteration
+  USE gen_com_m,only:  lperiod,lenfnam,lspaceNDM,rang,erg2ev,fnam,fnamcout,imm_glob,fnam,lenfnam,iteration
   USE atomconfig,only:atom_config
   USE cellconfig, only:cell_config, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
@@ -21,10 +21,6 @@ module ForceMatrix_mod
   use read_val,only:rvois,ltabvois
   use var_pot,only:ipotentiel,rumax
   USE parautils,only:initloc,pointer_caltabt_calfo
-#ifdef LAMMPS_VERSION
-  use vars_lammps
-  use lammps_util_mod,only:init_lammps
-#endif  
   use config2data_mod,only:config2data
   USE constrconf_mod,only:read_cin
   USE parautils,only:driver_caltabt_para

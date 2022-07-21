@@ -22,13 +22,14 @@ module prog_mod
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax&
-       &,lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,posa,forca,firsttime_lammps
+       &,lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps
   
   use read_val,only:imm,ltabvois,rvois
   use NGC_mod,only:ngc
-#if defined ML || defined PARAML    
-  USE ml_main_mod,only: ml_main
-#endif
+  use NDM_ML,only:init_config_ml
+!!$#if defined ML || defined PARAML    
+!!$  USE ml_main_mod,only: ml_main
+!!$#endif
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only:init_lammps
 #endif
@@ -203,10 +204,10 @@ contains
 #endif
 
 
-#if defined ML || defined PARAML    
-          case (18) 
-             call ml
-#endif
+!#if defined ML || defined PARAML    ML est considéré comme un potentiel pas un DMTYPE, A CHANGER ???
+!          case (18) 
+!             call ml
+!#endif
           case default
              write(6,*)'WTF dmtype',dmtype
           end select
@@ -226,10 +227,15 @@ contains
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
-       allocate (posa(3*atdml%im),  forca(3*atdml%im))
        call init_lammps()
 
     end if
+#endif
+#ifdef ML
+
+    if (ipotentiel==20)    call init_config_ml
+
+
 #endif
 
        call calcFM(atdml,celndm,boxndm)

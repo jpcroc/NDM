@@ -19,18 +19,21 @@ module init_mod
 #ifdef PARA
   USE init_vois_mod,only: init_voisinage
 #endif
-#ifdef ML
-  USE calfo_ml_mod,only: calfo_ml 
-#endif
 #ifdef LAMMPS_VERSION
   use lammps_util_mod
   use vars_lammps
 #endif
+#ifdef ML
+  use NDM_ML,only:init_config_ml
+#endif
+  
+
+  
   use Tpara,only:para_space_config
 
   USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,iteration,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lperiod,lrestart,pmean,rang,timel,two,&
-       &itmax,tmean,tstep,usdh,lspacendm, posa, forca,latcomp,l2T,lcdp
+       &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp
 use read_val,only:ltabvois
 USE var_pot, ONLY:ipotentiel
   implicit none
@@ -110,7 +113,6 @@ contains
 #ifdef LAMMPS_VERSION
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
-       allocate (posa(3*atdml%im),  forca(3*atdml%im))
        call init_lammps()
        if (rang==0) write(6,*)'postinitlammps'
     end if
@@ -167,7 +169,7 @@ contains
           write(6,*)
        end if
        !This comes with MiLaDy Package
-       call md_init_config_ml
+       call init_config_ml
     end if
 #endif
 

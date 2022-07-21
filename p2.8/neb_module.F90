@@ -4,7 +4,7 @@ module neb_module
   USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
-       &posa, forca,latcomp,imm_glob
+       &latcomp,imm_glob,lperiod
   use read_val,only:rvois,ltabvois
   USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin
     use cryst_to_cart_mod,only:cryst_to_cart
@@ -13,7 +13,7 @@ module neb_module
   use var_pot,only:ntyp,ipotentiel,cm,rumax
   !-----------------------------------------------
   USE atomconfig,only:atom_config,atom_config_d
-  USE cellconfig, only:cell_config
+  USE cellconfig, only:cell_config,caltabtc
 !  USE constrconf_mod,only : config2data
 !  USE read_conf, only:read_cin,read_gin
   use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
@@ -30,6 +30,10 @@ module neb_module
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only:init_lammps
 #endif
+#ifdef ML
+  use NDM_ML,only:init_config_ml
+#endif
+  
   use config2data_mod,only:config2data  
   implicit none
 
@@ -68,7 +72,6 @@ contains
 
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
-       allocate (posa(3*atneb(1)%im),  forca(3*atneb(1)%im))
 !       inplmp="in.lammps."//paraneb%image
 !       write(6,*)"inplmp",inplmp
 !       call read_lammps(inplammps=inplmp)
@@ -78,6 +81,12 @@ contains
 #endif
 
     call init_pot2(boxneb,atneb(1)%imm)
+#ifdef ML
+    call caltabtC(cellneb(1),atneb(1),lperiod,boxneb)
+    call init_config_ml
+#endif
+    
+    
   end subroutine init_neb0
   
   subroutine allocate_neb(im,imm)

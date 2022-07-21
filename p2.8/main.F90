@@ -30,11 +30,6 @@ program ndm
 #if defined PHONDY && defined PARAPH
  USE mod_mpi_phondy
 #endif
-#if defined ML && defined PARAML
- USE mod_mpi_ml
- USE init_mpi_ml_mod,only: init_mpi_ml
- USE gen_init_mpi_mod,only: gen_init_mpi
-#endif
 
  
   implicit none
@@ -55,29 +50,6 @@ program ndm
   nprocs=1
   nprocspace=nprocs
   
-#endif
-
-#if defined PARAML || defined PARAPH || defined MAB
-  call gen_init_mpi
-#endif
-
-#if defined ML || defined PARAML
-  rangml=0
-#endif
-
-#if defined ML && defined PARAML
-  call init_mpi_ml()
-  rang=rangml
-#endif
-
-
-#if defined PHONDY || defined PARAPH
-  rangph=0
-#endif
-
-#if defined PHONDY && defined PARAPH
-  call init_mpi_phondy()
-  rang=rangph
 #endif
 
 

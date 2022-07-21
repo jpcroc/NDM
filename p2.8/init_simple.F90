@@ -17,7 +17,7 @@ module init_simple_mod
 #endif
 
   USE gen_com_m, ONLY:fnam,lenfnam,igen,lperiod,lrestart,rang,tstep,two,usdh,&
-       &lspacendm, posa, forca
+       &lspacendm
   use read_val,only:ltabvois
   USE var_pot, ONLY:ipotentiel
   use Tpara,only:para_space_config

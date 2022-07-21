@@ -1,12 +1,10 @@
 module setcell
-#ifndef ML
-#endif
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE read_val,only:nox,noy,noz,rvois
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:ldemitab,nvat,pi,rang,lrctest,ltpcel,lspacendm
-    USE var_pot, ONLY:lpotentiel,rue_pot !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
+    USE var_pot, ONLY:lpotentiel,rue_pot,ipotentiel !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
   USE recips_mod,only:recips,calcvol,distmin
   USE atomconfig,only: atom_config
   USE boxconfig,only:box_config
@@ -45,7 +43,7 @@ contains
      izonr = int(zlmin/rut)
     ! MPI
     if ((rang==0).and.(lverb)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
-    if (izonr<2) then
+    if ((ipotentiel.ne.20).and.(izonr<2)) then
        write (6, *) 'trop petite boite !!!'
        !cosboite  stop
        if (lrctest) then

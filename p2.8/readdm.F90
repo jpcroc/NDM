@@ -113,7 +113,7 @@ contains
     fdmc_2 = -1000.0            !valeur devant etre changee    
     !dmtype = type of calculation : 1 -> MD
     !                               2 -> quench (trempe) 
-    !                               21 -> quench (trempe)cst
+    !                               21 -> quench (trempe)Vcst
     !                               22 -> quench (trempe)PCst
     !                               23 ->  fire quench Vcst
     !                               24 ->  fire quench Pcst
@@ -525,6 +525,22 @@ contains
 
        
 
+    select case(ipotentiel)
+    case(-10,-11)
+       npotentiel=1
+       lspaceNDM=.false. ; latcomp=.true.
+       if (rang==0) write(6,*)'POTENTIELS LAMMPS ; PARA_SPACE VERSION=LAMMPS NOT NDM !!'
+    case(20)
+       npotentiel=1
+       lspaceNDM=.false. ; latcomp=.true.
+       ltabvois=.true.
+       itetabvois=100000000
+       if (rang.eq.0) write (6, *) '    MILADY POTENTIALS',rvois
+       if (rang==0) write(6,*)' PARA_SPACE VERSION=MILADY NOT NDM !!'
+    case default
+       latcomp=.false.
+    end select
+
     
 
 
@@ -546,15 +562,23 @@ contains
     select case(dmtype)
     case(21,22,4,3,1,30,31,32,33,34,35,23,24,8)
        if (ltabvois) then
-          ltabvois=.false.
-          rvois=0
-          if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+          select case (ipotentiel)
+          case(20)
+          case default
+             ltabvois=.false.
+             rvois=0
+             if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+          end select
        end if
     case (19)
        if (nparafm.ne.nprocs) then
           if (ltabvois) then
-             ltabvois=.false.
-             if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+             select case (ipotentiel)
+             case(20)
+             case default
+                ltabvois=.false.
+                if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+             end select
           end if
        end if
         
@@ -562,8 +586,12 @@ contains
        np2=npath-2
        if (np2.ne.nprocs) then
           if (ltabvois) then
-             ltabvois=.false.
-             if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+             select case (ipotentiel)
+             case(20)
+             case default
+                ltabvois=.false.
+                if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+             end select
           end if
        end if
     case(15)
@@ -574,8 +602,12 @@ contains
        np2=nparapath*2
        if (np2.ne.nprocs) then
           if (ltabvois) then
-             ltabvois=.false.
-             if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+             select case (ipotentiel)
+             case(20)
+             case default
+                ltabvois=.false.
+                if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+             end select
           end if
        end if
 
@@ -696,9 +728,9 @@ contains
        call arret_ndm
     end if
 
-    if (dmtype==18) then
+    if (ipotentiel==20) then
        ldemitab=.FALSE.
-       write (6,*) ' ML: ldemitab is set to false. We compute all pairs   '
+
 
 
     end if
@@ -820,14 +852,6 @@ contains
     if(lrestart.and.lcorrelvp) then
        if (rang==0) write(6,*)rang,'pas de restart et de correlation'
        call arret_ndm
-    end if
-
-    if ((ipotentiel==-10).or.(ipotentiel==-11))then
-       npotentiel=1
-       lspaceNDM=.false. ; latcomp=.true.
-       if (rang==0) write(6,*)'POTENTIELS LAMMPS ; PARA_SPACE VERSION=LAMMPS NOT NDM !!'
-    else
-       latcomp=.false.
     end if
 
     if(lcalcjq) then
@@ -1121,12 +1145,6 @@ contains
        if (rang==0) write (6,'(a)') '|==================================================|'
 #endif
 
-#ifdef ML    
-    case (18)
-       if (rang==0) write (6,'(a)') '|=========       NDM + ML           ===============|'
-       if (rang==0) write (6,'(a)') '|---------..........................---------------|'
-       if (rang==0) write (6,'(a)') '|==================================================|'
-#endif
 
     case(112)
        write(6,*)'simple test de distance entre atomes'
@@ -1197,7 +1215,7 @@ contains
        case(:9)
           ldemitab=.TRUE.
           if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
-       case(11:18)
+       case(11:17)
           ldemitab=.false.
           if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
 
@@ -1210,12 +1228,9 @@ contains
              if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
           end if
        case(20)
-          if (lconstrtot) then
-             if (rang==0)  write(6,*)  'MiLaDy potentials should have lconstrtot set to false'
-             if (rang==0)  write(6,*)  'Nos is set to ... ',lconstrtot 
-             write(6,*)'lconstrtot and MiLaDy 1'
-             call arret_ndm
-          end if
+          ltabvois=.true.
+          ldemitab=.false.
+          itetabvois=0
 
        end select
 
@@ -1229,16 +1244,6 @@ contains
 
     endif
 
-    if(dmtype==18) then 
-       ldemitab=.FALSE.
-       if (rang.eq.0) write(6,*)' For MiLady TABLE DES VOISINS COMPLETE rvois ',rvois
-       if (lconstrtot) then
-          if (rang==0)  write(6,*)  'MiLaDy potentials should have lconstrtot set to false'
-          if (rang==0)  write(6,*)  'Now is set to ... ',lconstrtot 
-          write(6,*)'lconstrtot and MiLaDy 2'
-          call arret_ndm 
-       end if
-    end if
 
     if ( (dmtype==21).or.(dmtype==22).or.(dmtype==3).or.(dmtype==30).or.(dmtype==32)&
          &.or.(dmtype==33).or.(dmtype==31).or.(dmtype==34).or.(dmtype==35).or.(dmtype==9)&

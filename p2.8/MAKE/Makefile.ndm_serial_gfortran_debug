@@ -17,7 +17,7 @@ SHELL = /bin/sh
   C++ = g++ 
   CC  = gcc
   F77 = gfortran  -cpp # -warn all -check all
-  F90 = gfortran  -cpp -g -Wuninitialized -fbacktrace -fbounds-check  # -warn all -check all
+  F90 = gfortran  -cpp -g -Wuninitialized -fbacktrace -fbounds-check -Wunused # -warn all -check all
   LINK = ${F90}
 
   SIZE = size

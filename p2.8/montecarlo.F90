@@ -2,7 +2,7 @@ module montecarlo_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m,only:  lperiod, tstep, timel, tstep, sig, itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
-       &lspaceNDM,rang,iteration,firsttime_lammps,posa,forca,erg2ev,fnam,fnamcout,&
+       &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,&
        &lrestartmcgc,imm_glob,iseed
   USE atomconfig,only:atom_config,atom_config_d, config2ndm, switch_atom
   USE cellconfig, only:cell_config, cellconfig2ndm, caltabtC
@@ -21,6 +21,10 @@ module montecarlo_mod
 #else
   use Tpara,only:myidsp,nprocspace,para_space_config
 #endif
+#ifdef ML
+  use NDM_ML,only:init_config_ml
+#endif
+  
   use read_val,only:rvois,ltabvois
   use var_pot,only:ipotentiel,rumax
   USE parautils,only:initloc,pointer_caltabt_calfo

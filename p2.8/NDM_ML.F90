@@ -1,0 +1,282 @@
+module NDM_ML
+  USE T_kind_param_m, ONLY:  double
+  USE caltabi_mod,only: caltabi
+  USE atomconfig,only:atom_config
+  USE cellconfig, only:cell_config,caltabtC
+  use boxconfig,only: box_config
+  use derived_types,only:system_state
+  use gen_com_m,only:lperiod,ldemitab,lconstrtot,pi,rang
+  use var_pot,only:ntyp
+  USE notperiod_mod,only: notperiod
+  USE arret_ndm_mod,only:arret_ndm
+  USE cryst_to_cart_mod,only: cryst_to_cart
+  
+#ifdef PARA
+  use mpi
+  use Tpara, only: nprocspace,mpi_comm_space,ierr,mpi_comm_world
+#endif
+  
+  implicit none
+
+
+  real(double)::rue_ml
+  integer::nvperat
+
+  integer::MPI_COMM_ML
+  
+  type(system_state)::config_ndm
+  
+contains
+  ! **************************************************************
+
+  subroutine init_config_ml
+
+
+  integer::grp_space    
+#ifndef PARA ! not PARA
+    write(6,*)'ML only with mpi'
+    call arret_ndm
+#endif  ! PARA 
+#ifndef ML ! but not ML
+    if (rang==0) write(6,*)'MILADY calculations only with a ML=1 compilation '
+    call arret_ndm
+#else ! PARA and ML
+
+    call MPI_COMM_Group (MPI_COMM_SPACE,grp_space,ierr)
+    call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_ML,ierr)
+
+#endif    
+    
+    
+  end subroutine init_config_ml
+    
+  subroutine alloc_sst_ndm(cn2m)
+    type(system_state)::cn2m
+
+    if ((cn2m%imm==0).or.(nvperat==0)) then
+       write(6,*)'(cn2m%imm==0).or.(nvperat==0))'
+       stop
+    end if
+    
+    if (allocated(cn2m%n_neigh)) deallocate (cn2m%n_neigh); &
+         &allocate (cn2m%n_neigh(cn2m%imm)) !nombre de voisins par atome (<rcut)
+    if (allocated(cn2m%r_ij)) deallocate (cn2m%r_ij); &
+         &allocate (cn2m%r_ij(cn2m%imm, nvperat)) ! distance entre voisin
+    if (allocated(cn2m%u_per)) deallocate (cn2m%u_per);&
+         &allocate (cn2m%u_per(cn2m%imm, nvperat, 3)) ! vecteur des cellule i-j
+    if (allocated(cn2m%u_at)) deallocate (cn2m%u_at); &
+         &allocate (cn2m%u_at(cn2m%imm, nvperat, 3))  ! vecteur 
+    if (allocated(cn2m%type_neigh)) deallocate (cn2m%type_neigh); &
+         &allocate (cn2m%type_neigh(cn2m%imm, nvperat))
+    if (allocated(cn2m%kind_neigh)) deallocate (cn2m%kind_neigh); &
+         &allocate (cn2m%kind_neigh(cn2m%imm, nvperat))
+    if (allocated(cn2m%incell)) deallocate (cn2m%incell); &
+         &allocate (cn2m%incell(cn2m%imm, nvperat))
+    if (allocated(cn2m%u_ij)) deallocate (cn2m%u_ij); &
+         &allocate (cn2m%u_ij(cn2m%imm, nvperat, 3))
+
+        if (allocated(cn2m%force)) deallocate (cn2m%force); &
+         &allocate (cn2m%force(1:3,cn2m%imm))
+
+        if (allocated(cn2m%pos_cart)) deallocate (cn2m%pos_cart); &
+         &allocate (cn2m%pos_cart(1:3,cn2m%imm))
+
+        if (allocated(cn2m%pos_crst)) deallocate (cn2m%pos_crst); &
+         &allocate (cn2m%pos_crst(1:3,cn2m%imm))
+
+        if (allocated(cn2m%itype)) deallocate (cn2m%itype); &
+         &allocate (cn2m%itype(cn2m%imm))
+        cn2m%n_neigh=0
+        cn2m%r_ij=0
+        cn2m%type_neigh=0
+        cn2m%kind_neigh=0
+        cn2m%u_per=0
+        cn2m%u_at=0
+        cn2m%u_ij=0
+        cn2m%incell=.false.
+    
+  end subroutine alloc_sst_ndm
+  
+  subroutine calfo_ml(atcf,cellcf,boxcf)
+    class(atom_config),intent(inout):: atcf
+    class(cell_config),intent(in)::cellcf
+    type(box_config)::boxcf
+
+    real(double)::voluperat
+
+
+!QCM :  imm_neigh 
+    !QCM difference  im,imm nat
+    
+    config_ndm%imm=atcf%imm
+    config_ndm%im=atcf%im
+    config_ndm%nat=atcf%im
+
+    config_ndm%cell=boxcf%at
+    config_ndm%bg_cell=boxcf%bg
+    config_ndm%volume=boxcf%volu
+
+    config_ndm%ntypes=ntyp
+
+    voluperat=boxcf%volu/atcf%im_glob
+!QCM boites variables LPR ???
+    nvperat=4*Pi*(rue_ml+1.d-8)**3/(3*voluperat)
+
+    
+     call alloc_sst_ndm(config_ndm)
+
+     lconstrtot=.false.
+     ldemitab=.false.
+     
+    if (atcf%im.gt.config_ndm%imm) then
+       write(6,*)'atcf%im.gt.cn2m%imm'
+       stop
+    end if
+
+    config_ndm%pos_cart(:,1:atcf%im)=atcf%xp(:,1:atcf%im)
+
+    config_ndm%pos_crst(:,1:atcf%im)=atcf%xp(:,1:atcf%im)
+    call cryst_to_cart (atcf%im,config_ndm%pos_crst ,  boxcf%bg,  -1)
+
+    config_ndm%itype(1:atcf%im)=atcf%ityp(1:atcf%im)
+
+    call test_if_config_is_small(config_ndm)
+    call calcneighbours(atcf,cellcf,boxcf,config_ndm)
+    call dive_to_ML(config_ndm)
+    call conf_real2ndm(atcf,config_ndm)
+
+   end subroutine calfo_ml
+
+   subroutine dive_to_ml(cn2m)
+     class(system_state),intent(inout)::cn2m
+
+     ! THIS IS THE PLACE !
+   end subroutine dive_to_ml
+
+  subroutine calcneighbours(atcf,cellcf,boxcf,cn2m)
+    class(atom_config),intent(inout):: atcf
+    class(cell_config),intent(in)::cellcf
+    type(box_config)::boxcf
+    class(system_state),intent(inout)::cn2m
+
+
+    integer::im
+    if(cn2m%small) then
+       call caltabi_extend(cellcf,boxcf,cn2m)
+       
+    else
+       if (atcf%im.ne.cn2m%im) then
+          write(6,*)'actf%im.ne.cn2m%im'
+          call arret_ndm
+       else
+          im=atcf%im
+!       call caltabtC(cellcf,atcf,lperiod,boxcf)! ???????????????  UTILE ????????????
+       boxcf%lperiod=lperiod
+       call caltabi(atcf,cellcf,boxcf,cn2m=cn2m)
+       
+    end if
+
+
+    end if
+
+  end subroutine calcneighbours
+
+  subroutine caltabi_extend(cellcf,boxcf,cn2m)
+!    class(atom_config),intent(inout):: atcf
+    class(cell_config),intent(in)::cellcf
+    type(box_config),intent(in)::boxcf
+    class(system_state),intent(inout)::cn2m
+
+    real(double), dimension(:,:), allocatable :: xpnp 
+    integer::i,j,c,nsize1,nsize2,nsize3,k,n1,n2,n3
+    real(double)::r2,utemp(3),r_cut2
+
+    r_cut2=rue_ml**2
+
+    ALLOCATE(xpnp(3,cn2m%im))
+    call notperiod(cn2m%im,cn2m%pos_cart,xpnp,cn2m%cell,cn2m%bg_cell,boxcf%lperiod)
+    nsize1 = int(cn2m%nxCell/2) + 1
+    nsize2 = int(cn2m%nyCell/2) + 1
+    nsize3 = int(cn2m%nzCell/2) + 1
+
+    do i=1,cn2m%im
+       cn2m%incell(i, :) = .false.
+       c=0
+       do j=1,cn2m%im
+          do n1 = -nsize1, nsize1
+             do n2 = -nsize2, nsize2
+                do n3 = -nsize3, nsize3
+                   r2 = 0.d0
+                   do k = 1, 3
+                      utemp(k) = xpnp(k, i) - (xpnp(k, j) + cn2m%cell(k, 1)*dble(n1) &
+                           &+ cn2m%cell(k, 2)*dble(n2) + cn2m%cell(k, 3)*dble(n3))
+                      r2 = r2 + utemp(k)**2
+                   end do
+                   if (r2 .lt. 1d-15) cycle
+                   if (r2 .gt. r_cut2) cycle
+                   c = c + 1
+                   !          if (dabs(r2 - r2_ji) .lt. 1.d-15) then
+                   !            if (n1 == 0) .or. (n2 == 0)
+                   !            ibox = ibox + 1
+                   !            debug write (*,'("nnn", 4i5)') i, j, ibox, c
+                   !          end if
+                   cn2m%type_neigh(i, c) = cn2m%itype(j)
+                   cn2m%kind_neigh(i, c) = j
+                   cn2m%incell(i, c) = .true.  !QCM ???
+                   cn2m%r_ij(i, c) = dsqrt(r2)
+                   cn2m%u_per(i, c, :) = -utemp(:) - xpnp(:, j) + xpnp(:, i)
+                   cn2m%u_at(i, c, :) = -utemp(:) + xpnp(:, i)
+                   cn2m%u_ij(i, c, :) = -utemp(:)    ! /cn2m%r_ij(i,c)
+                end do
+             end do
+          end do
+       end do
+       cn2m%n_neigh(i) = c
+    end do
+    
+    deallocate (xpnp)
+    return
+  end subroutine caltabi_extend
+    
+  
+  subroutine conf_real2ndm(atcf,cn2m)
+    class(atom_config):: atcf
+    class(system_state),intent(in)::cn2m
+
+    if (atcf%im.ne.cn2m%im) then
+       write(6,*)'atcf%im.ne.cn2m%im'
+       stop
+    end if
+    atcf%fp(:,1:atcf%im)=cn2m%force(:,1:atcf%im)
+
+  end subroutine conf_real2ndm
+    
+subroutine test_if_config_is_small(cn2m)
+  ! test is a configuration is small comapred to r_cut.
+  ! Input:
+  !         r_cut, system_state(iconf)
+  ! Output:
+  !         system_state(iconf)%small
+  !                           T - box is small
+  !                           F - box is large
+
+
+  implicit none
+  class(system_state)::cn2m
+  
+  real(double)    :: bval(3)
+  integer  :: i
+  
+  do i = 1, 3
+    bval(i) = 1.d0/sqrt(sum(cn2m%bg_cell(:, i)**2))
+  end do
+  cn2m%nxCell = int(2.d0*rue_ml/bval(1)) + 1
+  cn2m%nyCell = int(2.d0*rue_ml/bval(2)) + 1
+  cn2m%nzCell = int(2.d0*rue_ml/bval(3)) + 1
+
+  if (max(cn2m%nxCell, cn2m%nyCell, cn2m%nzCell) .gt. 1) cn2m%small = .true.
+
+end subroutine test_if_config_is_small
+
+
+end module NDM_ML

@@ -7,6 +7,7 @@ module T_kind_param_m
   integer, parameter :: short = 2
   integer, parameter :: long = 8
   integer, parameter :: double = 8
+  integer, parameter :: kind_double = 8
 
   integer, parameter :: extended = 16
   integer, parameter :: double_ext = 32

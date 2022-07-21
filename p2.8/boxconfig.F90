@@ -11,6 +11,7 @@ module boxconfig
      real(double):: zl(3),zls2(3),nzl(3),volu,normat(3),normbg(3)
      integer(long)::icaltabt
      logical::lperiod
+     logical::islarge=.true.
      integer::ipbc(3) ! conditions périodiques sur les plan b-c,a-c,a-b
    contains
      procedure, pass::print=>boxprint
@@ -78,7 +79,7 @@ contains
        end do
     end if
 
-    call recips (at(1,1), at(1,2), at(1,3), boxnew%bg(1,1), boxnew%bg(1,2), boxnew%bg(1,3))
+    call recips (at(1:3,1), at(1:3,2), at(1:3,3), boxnew%bg(1:3,1), boxnew%bg(1:3,2), boxnew%bg(1:3,3))
     do ic = 1, 3
        boxnew%normat(ic) = 0
        boxnew%normat(ic) = boxnew%normat(ic)+sum(at(:,ic)**2)

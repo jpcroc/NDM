@@ -24,9 +24,6 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-#if defined ML && defined PARAML
-    USE time_measure
-#endif
     USE posana,only:
     USE elec_cell, ONLY:  sauveelec
     
@@ -72,13 +69,13 @@ contains
 
 
  if (rang==0) then
-#if defined ML && defined PARAML
-    write (6, *) 'ML: neighbours  time',  temps_neigh
-    write (6, *) 'ML: energy      time',  temps_energy
-    write (6, *) 'ML: force       time',  temps_force
-    write (6, *) 'ML: stress      time',  temps_stress
-    write (6, *) 'ML: descriptors time',  temps_descripteurs
-#endif
+!!$#if defined ML && defined PARAML
+!!$    write (6, *) 'ML: neighbours  time',  temps_neigh
+!!$    write (6, *) 'ML: energy      time',  temps_energy
+!!$    write (6, *) 'ML: force       time',  temps_force
+!!$    write (6, *) 'ML: stress      time',  temps_stress
+!!$    write (6, *) 'ML: descriptors time',  temps_descripteurs
+!!$#endif
 
     write (6, *)
     write (6, *)
