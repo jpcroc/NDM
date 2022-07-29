@@ -1,0 +1,5 @@
+
+git clone  https://JC148490@codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM.git
+git config --global http.sslCAInfo ~/chain_digicert_cea.pem ! à afire une fois avec le fichier en home
+git remote add NDM https://JC148490@codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM.git ! définit un alias
+git pull NDM ndm2021
