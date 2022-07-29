@@ -387,4 +387,4 @@ contains
 
   end subroutine force_tersoff_cel
 
-end module
+end module force_tersoff_cel_mod

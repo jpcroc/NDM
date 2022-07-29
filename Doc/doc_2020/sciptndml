@@ -1,0 +1,31 @@
+ export NEC_SRC_ROOT=${HOME}/NDML
+ mkdir -p ${NEC_SRC_ROOT}
+ export NEC_DATA=${HOME}/NDML/Data
+ mkdir -p ${NEC_DATA}
+
+ export NEC_INST_PREFIX=/soft/ndm-lammps-29Sep2021u2
+ mkdir -p ${NEC_INST_PREFIX}/bin
+
+ source /soft/intel/oneapi/compiler/2022.1.0/env/vars.sh
+ source /soft/intel/oneapi/mpi/2021.6.0/env/vars.sh
+ source /soft/intel/oneapi/mkl/2022.1.0/env/vars.sh
+
+ export LAMMPS_DIR=/soft/lammps-29Sep2021-u2/
+ cd ${NEC_DATA}
+ cp ~/NDML1/Data/NDMLNEC.tgz .
+
+ cp ~/NDML1/Data/NDMLNEC.patch .
+ cd ${NEC_SRC_ROOT}
+ tar xzf ${NEC_DATA}/NDMLNEC.tgz
+ cd ndm_lammps_nec
+ patch -p1 < ${NEC_DATA}/NDMLNEC.patch
+ cd ndm2021
+ sed -i "s@LAMMPS_USER_PATH=.*@LAMMPS_USER_PATH=${LAMMPS_DIR}@" MAKE/Makefile.ndm_lammps_mpi MAKE/Makefile.ndm_lammps_serial
+# make ndm_serial
+# make ndm_mpi PARA=1
+ make ndm_lammps_serial LAMMPS=1 MKL=1
+ make ndm_lammps_mpi PARA=1 LAMMPS=1 MKL=1
+ cp rundm90_ndm_lammps_mpi rundm90_ndm_lammps_serial rundm90_ndm_mpi rundm90_ndm_serial ${NEC_INST_PREFIX}/bin/.
+
+
+

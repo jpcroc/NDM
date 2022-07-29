@@ -13,7 +13,7 @@ module NDM_ML
   
 #ifdef PARA
   use mpi
-  use Tpara, only: nprocspace,mpi_comm_space,ierr,mpi_comm_world
+  use Tpara, only: nprocspace,mpi_comm_space,ierr
 #endif
   
   implicit none

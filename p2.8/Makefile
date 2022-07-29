@@ -97,6 +97,9 @@ OBJ +=  $(OBJ_LAMMPS)
 checkfiles += $(f90lammps) 
 INC += $(INC_LAMMPS)
 FLAG += -DLAMMPS_VERSION 
+ifdef PARA
+FLAG += -DLAMMPS_LIB_MPI
+endif
 endif
 
 

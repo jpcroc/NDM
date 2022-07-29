@@ -19,21 +19,21 @@ SHELL = /bin/sh
   CC  = icc
   F77 = ifort  -cpp # -warn all -check all
   F90 = ifort  -cpp # -warn all -check all
-  LINK = ${F90}
+  LINK = ${F90} -qopenmp
 
   SIZE = size
   ARCHIVE = ar
   ARFLAGS = -rc
 
 
-  LAMMPS_USER_PATH="/home/trochet/mylammps"
+  LAMMPS_USER_PATH=/soft/lammps-29Sep2021-u2/
   LAMMPS_LIBNAME= serial# exact same name as the argument to compile lammps as a library 
 
 # Compiler flags setting 
  
   #F90FLAGS = -g -traceback 
   #CFLAGS =
-  #C++FLAGS = 
+  C++FLAGS = -std=c++11
 
 # ---------------------------------------------------------------------
 # NDM-specific settings
@@ -42,7 +42,7 @@ SHELL = /bin/sh
 
 # NDM ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
-  OPTIONS  =  -O3 -g -traceback
+  OPTIONS  = -O3 -g -traceback
   NDM_INC  = $(FLAG)
 
 # MPI library, REQUIRED if -DPARA
@@ -50,9 +50,9 @@ SHELL = /bin/sh
 # PATH = path for MPI library
 # LIB = name of MPI library
 
-  MPI_INC  = -I${LAMMPS_USER_PATH}/src/STUBS
-  MPI_PATH = -L${LAMMPS_USER_PATH}/src/STUBS
-  MPI_LIB  = -lmpi_stubs
+  MPI_INC  =
+  MPI_PATH =
+  MPI_LIB  =
 
 # MAB library, REQUIRED if -DMAB
 # INC = path for *.h, MAB settings
@@ -74,13 +74,14 @@ SHELL = /bin/sh
 # INC = path for *.h, include folder LAMMPS
 # PATH = path for LAMMPS library
 # LIB = name of LAMMPS library
-  LAMMPS_INC  =-I${LAMMPS_USER_PATH}/src
-  LAMMPS_PATH =-L${LAMMPS_USER_PATH}/src
-  LAMMPS_LIB  = ${LAMMPS_USER_PATH}/src/liblammps_${LAMMPS_LIBNAME}.a
+  LAMMPS_INC  =-I${LAMMPS_USER_PATH}/include/lammps
+  LAMMPS_PATH =-L${LAMMPS_USER_PATH}/lib64
+  LAMMPS_LIB  = ${LAMMPS_USER_PATH}/lib64/liblammps_${LAMMPS_LIBNAME}.a
+
   #MEAM=${LAMMPS_USER_PATH}/lib/meam/libmeam.a
-  #VORONOI=${LAMMPS_USER_PATH}/lib/voronoi/lib/libvoro++.a
-  #ATC= ${LAMMPS_USER_PATH}/lib/atc/libatc.a
-  #QMMM= ${LAMMPS_USER_PATH}/lib/qmmm/libqmmm.a
+  VORONOI=${LAMMPS_USER_PATH}/lib64/libvoro++.a
+  ATC=${LAMMPS_USER_PATH}/lib64/liblammps_atc_serial.a
+  QMMM=${LAMMPS_USER_PATH}/lib64/liblammps_qmmm_serial.a
   #COLVARS=${LAMMPS_USER_PATH}/lib/colvars/libcolvars.a
   #REAX=${LAMMPS_USER_PATH}/lib/reax/libreax.a
   #POEMS=${LAMMPS_USER_PATH}/lib/poems/libpoems.a
@@ -88,8 +89,7 @@ SHELL = /bin/sh
   #PYTHON=-L/soft/Conda/miniconda2/lib/ -lpython2.7
   #QUIP_HOME=${HOME}/Flow/QUIPnew/
   #QUIP=${QUIP_HOME}/build/linux_x86_64_ifort_icc_mpi/libquip.a
-  #LAMMPS_OPTIONAL_LIB = ${PYTHON} ${MEAM} ${VORONOI} ${ATC} ${COLVARS} ${REAX} ${QMMM} ${POEMS} ${QUIP} ${AWPMD}
-  #LAMMPS_OPTIONAL_LIB = ${MEAM}  ${QUIP} 
+  LAMMPS_OPTIONAL_LIB = -ljpeg -lpng -lz -lpython3.6m -lpthread -ldl  -lutil -lm  -Xlinker -export-dynamic ${VORONOI} ${QMMM} ${ATC} ${LAMMPS_USER_PATH}/lib64/liblammps_mpi_stubs_${LAMMPS_LIBNAME}.a
 
 
 # ML library, REQUIRED if -DML
@@ -138,9 +138,9 @@ ifdef MKL
 # PATH = path for MKL library
 # LIB = name of MKL library
 
-  MKL_INC  = -mkl #-I/opt/intel/mkl/include/intel64/lp64
-  MKL_PATH = #-L/opt/intel/mkl/lib
-  MKL_LIB  =# -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64
+  MKL_INC  =
+  MKL_PATH =
+  MKL_LIB  = -qmkl
 endif
   
 # ---------------------------------------------------------------------
@@ -153,7 +153,7 @@ endif
   EXTRA_PATH  = ${MKL_PATH} ${MPI_PATH} ${FFTW_PATH} ${LAMMPS_PATH} \
   ${MAB_PATH} ${ART_PATH} ${ML_PATH} ${PARAML_PATH} \
   ${PHONDY_PATH} ${PARAPH_PATH} 
-  EXTRA_LIB   = ${MKL_LIB} ${MPI_LIB} ${FFTW_LIB} ${LAMMPS_LIB}  \
+  EXTRA_LIB   = ${MKL_LIB} ${MPI_LIB} ${FFTW_LIB} ${LAMMPS_LIB} ${LAMMPS_OPTIONAL_LIB} \
   ${MAB_LIB} ${ART_LIB} ${ML_LIB} ${PARAML_LIB}  \
   ${PHONDY_LIB} ${PARAPH_LIB}
 

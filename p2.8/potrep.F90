@@ -63,4 +63,4 @@ subroutine potrep(csive,r0rep,V0rep,ngrid,ntyp,npair)
   enddo
   return
 end subroutine potrep
-end module
+end module potrep_mod

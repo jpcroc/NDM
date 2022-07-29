@@ -14,26 +14,24 @@ SHELL = /bin/sh
 # generally no need to edit this section
 # unless additional compiler/linker flags or libraries needed for your machine
 
-  C++ = mpic++
-  CC  = mpicc
-  F77 = mpif77  -cpp # -warn all -check all
-  F90 = mpif90  -cpp # -warn all -check all
-  LINK = ${F90}
+  C++ = mpiicpc
+  CC  = mpiicc
+  F77 = mpiifort  -cpp # -warn all -check all
+  F90 = mpiifort  -cpp # -warn all -check all
+  LINK = ${F90} -qopenmp
   SIZE = size
   ARCHIVE = ar
   ARFLAGS = -rc
 
 
-  #LAMMPS_USER_PATH="/home/trochet/mylammps"
-  #LAMMPS_USER_PATH="/home/marinica/Flow/lammps_milady.git/"
-  LAMMPS_USER_PATH="/home/marinica/Flow/lammps.git/"
-  LAMMPS_LIBNAME= mpi
+  LAMMPS_USER_PATH=/soft/lammps-29Sep2021-u2/
+  LAMMPS_LIBNAME=mpi
 
 # Compiler flags setting 
  
   #F90FLAGS = -g -traceback 
   #CFLAGS =
-  C++FLAGS = 
+  C++FLAGS = -std=c++11
 
 # ---------------------------------------------------------------------
 # NDM-specific settings
@@ -42,8 +40,8 @@ SHELL = /bin/sh
 
 # NDM ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
-  OPTIONS  =  -O3 -g -traceback
-  NDM_INC  =   $(FLAG)  
+  OPTIONS  = -O3 -g -traceback
+  NDM_INC  = $(FLAG)
 
 # MPI library, REQUIRED if -DPARA
 # INC = path for *.h, MPI compiler settings
@@ -74,17 +72,16 @@ SHELL = /bin/sh
 # INC = path for *.h, include folder LAMMPS
 # PATH = path for LAMMPS library
 # LIB = name of LAMMPS library
-  LAMMPS_INC  =-I${LAMMPS_USER_PATH}/src
-  LAMMPS_PATH =-L${LAMMPS_USER_PATH}/src
-  #LAMMPS_LIB  = ${LAMMPS_USER_PATH}/src/liblammps_${LAMMPS_LIBNAME}.a
-  LAMMPS_LIB  = ${LAMMPS_USER_PATH}/src/liblammps_${LAMMPS_LIBNAME}.a
+  LAMMPS_INC  =-I${LAMMPS_USER_PATH}/include/lammps
+  LAMMPS_PATH =-L${LAMMPS_USER_PATH}/lib64
+  LAMMPS_LIB  = ${LAMMPS_USER_PATH}/lib64/liblammps_${LAMMPS_LIBNAME}.a
   #MEAM=${LAMMPS_USER_PATH}/lib/meam/libmeam.a
-  #VORONOI=${LAMMPS_USER_PATH}/lib/libvoro++.a
+  VORONOI=${LAMMPS_USER_PATH}/lib64/libvoro++.a
   #GSL=${LAMMPS_USER_PATH}/lib/libgsl.a
   #PLUMED=${LAMMPS_USER_PATH}/lib/libplumed.a
   #MILADY=${LAMMPS_USER_PATH}/lib/milady/libmilady.a
-  #ATC= ${LAMMPS_USER_PATH}/lib/atc/libatc.a
-  #QMMM= ${LAMMPS_USER_PATH}/lib/qmmm/libqmmm.a
+  ATC=${LAMMPS_USER_PATH}/lib64/liblammps_atc_mpi.a
+  QMMM=${LAMMPS_USER_PATH}/lib64/liblammps_qmmm_mpi.a
   #COLVARS=${LAMMPS_USER_PATH}/lib/colvars/libcolvars.a
   #REAX=${LAMMPS_USER_PATH}/lib/reax/libreax.a
   #POEMS=${LAMMPS_USER_PATH}/lib/poems/libpoems.a
@@ -92,8 +89,7 @@ SHELL = /bin/sh
   #PYTHON=-L/soft/Conda/miniconda2/lib/ -lpython2.7
   #QUIP_HOME=${HOME}/Flow/QUIPnew/
   #QUIP=${QUIP_HOME}/build/linux_x86_64_ifort_icc_mpi/libquip.a
-  #LAMMPS_OPTIONAL_LIB = ${PYTHON} ${MEAM} ${VORONOI} ${ATC} ${COLVARS} ${REAX} ${QMMM} ${POEMS} ${QUIP} ${AWPMD}
-  LAMMPS_OPTIONAL_LIB = ${MILADY}  #${MEAM}  ${QUIP} 
+  LAMMPS_OPTIONAL_LIB = -ljpeg -lpng -lz -lpython3.6m -lpthread -ldl  -lutil -lm  -Xlinker -export-dynamic ${VORONOI} ${QMMM} ${ATC}
 
 
 # ML library, REQUIRED if -DML
@@ -141,13 +137,11 @@ ifdef MKL
 # INC = path(s) for *.h required by MKL library 
 # PATH = path for MKL library
 # LIB = name of MKL library
+
+  MKL_INC  =
+  MKL_PATH =
+  MKL_LIB  = -qmkl
 endif
-  MKL_INC  =  #-I/opt/intel/mkl/include/intel64/lp64
-  MKL_PATH = #-L/opt/intel/mkl/lib
-
-  #MKL_LIB  = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64
-  MKL_LIB=${MKLROOT}/lib/intel64/libmkl_scalapack_lp64.a -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_intel_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_blacs_openmpi_lp64.a -Wl,--end-group -liomp5 -lpthread -lm -ldl
-
 
 # ---------------------------------------------------------------------
 # build rules and dependencies
@@ -159,12 +153,12 @@ endif
   EXTRA_PATH  = ${MKL_PATH} ${MPI_PATH} ${FFTW_PATH} ${LAMMPS_PATH} \
   ${MAB_PATH} ${ART_PATH} ${ML_PATH} ${PARAML_PATH} \
   ${PHONDY_PATH} ${PARAPH_PATH} 
-  EXTRA_LIB   = ${MKL_LIB} ${MPI_LIB} ${FFTW_LIB} ${LAMMPS_LIB}  \
+  EXTRA_LIB   = ${MKL_LIB} ${MPI_LIB} ${FFTW_LIB} ${LAMMPS_LIB} ${LAMMPS_OPTIONAL_LIB} \
   ${MAB_LIB} ${ART_LIB} ${ML_LIB} ${PARAML_LIB}  \
-  ${PHONDY_LIB} ${PARAPH_LIB}  ${LAMMPS_OPTIONAL_LIB}
+  ${PHONDY_LIB} ${PARAPH_LIB}
 
 
-  LIBS = ${EXTRA_PATH} ${EXTRA_LIB} -lstdc++ -lgfortran  
+  LIBS = ${EXTRA_PATH} ${EXTRA_LIB} -lstdc++
   CLIBS =
 
 # Path to src files
@@ -188,7 +182,7 @@ vpath %.h   ${CODE_PATH}
 %.o: %.F90
 	$(F90) -c ${EXTRA_INC} $(FFLAGS)   $< -o $@ 
 %.o: %.cpp
-	$(C++) -c ${LAMMPS_INC}  $(C++FLAGS) $< -o $@ 
+	$(C++) -c ${EXTRA_INC} $(C++FLAGS) $< -o $@ 
 
 # Link target
 

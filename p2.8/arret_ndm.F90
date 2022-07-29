@@ -24,4 +24,4 @@ subroutine arret_ndm()
   stop
 end subroutine arret_ndm
 
-end module
+end module arret_ndm_mod

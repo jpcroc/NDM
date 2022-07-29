@@ -14,10 +14,10 @@ SHELL = /bin/sh
 # unless additional compiler/linker flags or libraries needed for your machine
 
 
-  C++ = mpic++
-  CC  = mpicc
-  F77 = mpif77  -cpp # -warn all -check all
-  F90 = mpif90  -cpp # -warn all -check all
+  C++ = mpiicpc
+  CC  = mpiicc
+  F77 = mpiifort  -cpp # -warn all -check all
+  F90 = mpiifort  -cpp # -warn all -check all
   LINK = ${F90}
   SIZE = size
   ARCHIVE = ar

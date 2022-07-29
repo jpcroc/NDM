@@ -181,4 +181,4 @@ subroutine dftmod (bsmod,bsarray,nfft)
   end do
   return
 end subroutine dftmod
-end module
+end module moduli_mod

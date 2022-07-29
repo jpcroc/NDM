@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
     LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-    www.cs.sandia.gov/~sjplimp/lammps.html
+    https://www.lammps.org/
     Steve Plimpton, sjplimp@sandia.gov, Sandia National Laboratories
  
     Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -33,12 +33,20 @@
 #include <cstdlib>
 
 using namespace LAMMPS_NS;
+
+#ifdef PARA
 void lammps_open_fortran_wrapper (int argc, char **argv,
       MPI_Fint communicator, void **ptr)
 {
    MPI_Comm C_communicator = MPI_Comm_f2c (communicator);
    lammps_open (argc, argv, C_communicator, ptr);
 }
+#else
+void lammps_open_fortran_wrapper (int argc, char **argv,
+      MPI_Fint communicator, void **ptr)
+{
+}
+#endif
 
 int lammps_get_ntypes (void *ptr)
 {
@@ -57,20 +65,15 @@ int lammps_extract_compute_vectorsize (void *ptr, char *id, int style)
 {
    class LAMMPS *lmp = (class LAMMPS *) ptr;
    int icompute = lmp->modify->find_compute(id);
-   printf("Styl=%i %i %s \n",style,icompute,id);
-   if (id=="thermo_press") return 6 ;
    if ( icompute < 0 ) return 0;
    class Compute *compute = lmp->modify->compute[icompute];
-   printf("Styl=%i %i %s \n",style,icompute,id);
 
    if ( style == 0 )
    {
       if ( !compute->vector_flag )
          return 0;
       else
-	printf("Styl=%i %i\n",style,icompute);
-      return compute->size_vector;
-      printf("Styl=%i %i\n",style,icompute);
+         return compute->size_vector;
    }
    else if ( style == 1 )
    {

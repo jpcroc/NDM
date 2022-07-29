@@ -83,6 +83,7 @@ contains
 
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
     !probablement inutile pour dmtype=9 ou 15
+
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin).or.(l2t))then
        atdml=>atdme
        atdme%lax=lax

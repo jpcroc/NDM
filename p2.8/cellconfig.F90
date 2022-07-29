@@ -273,6 +273,7 @@ contains
   subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
+    use gen_com_m,only:lspacendm
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
     type(box_config),intent(inout)::boxcf
@@ -371,7 +372,7 @@ contains
           cell%atincel(cell%nato(koo),koo) = i
 !          write(6,*)i,koo
 #ifdef PARA
-          if (present(psc).and.allocated(cell%proc_cell)) then 
+          if ((present(psc)).and.(lspacendm)) then 
              if (cell%proc_cell(koo).ne.myidsp) then
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
                    write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &

@@ -52,22 +52,8 @@ contains
     ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
     
 
-!!$    select case (dmtype)
-!!$    case(21)
-!!$      
-!!$       do i = 1, atdml%im
-!!$          do ic = 1, 3
-!!$             if (atdml%vp(ic,i)*atdml%fp(ic,i)<0) then
-!!$                atdml%vp(ic,i)=0.
-!!$             end if
-!!$          end do
-!!$       end do
-!!$    case(23)
-!!$       call trempe_fire (atdml,tstep, fire_nstep, fire_alph)
-!!$    end select
 
 
-    
     select type (atdml)
     class is (atom_config_e)
        if (lLangevin) then

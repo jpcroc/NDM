@@ -309,4 +309,4 @@ end if
 #endif
 
 end subroutine calcdepla
-end module
+end module calcdepla_mod

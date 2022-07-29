@@ -321,4 +321,4 @@ contains
     return
   end subroutine calfo3c
 
-end module
+end module calfo3c_mod

@@ -26,9 +26,7 @@ extern "C" {
 #endif
 
 /* Prototypes for auxiliary functions */
-/* #ifdef MPI_VERSION */
 void lammps_open_fortran_wrapper (int, char**, MPI_Fint, void**);
-/* #endif */
 int lammps_get_ntypes (void*);
 int lammps_extract_compute_vectorsize (void*, char*, int);
 void lammps_extract_compute_arraysize (void*, char*, int, int*, int*);

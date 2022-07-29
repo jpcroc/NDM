@@ -86,4 +86,4 @@ subroutine tersoff_zbl
 end do
 
 end subroutine tersoff_zbl
-end module
+end module tersoff_zbl_mod

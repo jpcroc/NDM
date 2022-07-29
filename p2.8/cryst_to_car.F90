@@ -71,4 +71,4 @@ subroutine cryst_to_cart(nvec, vec, trmat, iflag)
   !
   return
 end subroutine cryst_to_cart
-end module
+end module cryst_to_cart_mod

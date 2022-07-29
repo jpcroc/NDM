@@ -228,5 +228,5 @@ subroutine potVBEEST(Vpot,r,l,auxe,alpha,ngrid, &
   return
 
 end subroutine potVBEEST
-end module
+end module dervbeest_mod
 

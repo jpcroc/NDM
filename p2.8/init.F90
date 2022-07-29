@@ -103,8 +103,6 @@ contains
     else
        call caltabtC(celndm,atdml,lperiod,boxndm)
     end if
-
-
     call init_pot2(boxndm,atdml%imm)
 #ifdef DECOUP
     ! Pas la peine d'aller plus loin dans l'initialisation
@@ -117,10 +115,6 @@ contains
        if (rang==0) write(6,*)'postinitlammps'
     end if
 #endif  
-!!$    if (iterasmol>=0) then
-!!$       itapp=-1
-!!$       call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
-!!$    end if
     !<---------setting the configuration by generation gin / cin file --------------
     select case (igen)
     case (-1)
@@ -155,7 +149,6 @@ contains
     else
        call caltabtC(celndm,atdml,lperiod,boxndm)
     end if
-
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if

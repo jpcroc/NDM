@@ -26,7 +26,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
          &itetemp,fsumstop,fpstop,itetimestep,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
-         &itetemp2
+         &itetemp2,ihbox0
 
     USE var_pot, ONLY:
     implicit none
@@ -43,7 +43,7 @@ contains
     real(double), dimension(1,3) :: g1,aux
     real(double) :: ltc, ctime, tdev, tcool, epc1, epc2, epc3,masstot,massa,tclt
     real(double), dimension(1,3) :: xtr, cv
-    real(double) :: fpmax,fpn,forctot,formax,fpsmax
+    real(double) :: fpmax,fpn,forctot,formax,fpsmax,sigtoth0(3,3)
     real(double) :: potistmean,potistdif
     real(double),save :: potist1000
     real, allocatable,save :: potiststock(:)
@@ -51,6 +51,7 @@ contains
     !-----------------------------------------------
     !
     !
+    sigtoth0(1:3,1:3)=sigtot(1:3,1:3)*ihbox0(1:3,1:3)    
     lreturn=.false.
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
@@ -133,14 +134,24 @@ contains
           fpn=fpSmax*erg2eV/angst
           if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E20.10)') iteration,fpn, potist*erg2eV
 !          if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
-          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot))
+          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot)), 1d-9*maxval(abs(sigtoth0))
+!!$                 write (unitgc, *)
+!!$       write (unitgc, *) '************ STRESS in ', cunitP
+!!$       do ic = 1, 3
+!!$          write (unitgc, '(I1,3(A,I1),A,3G18.10)') ic,' sigma potentiel (1,', ic, ') (2,', ic, &
+!!$               ') (3,', ic, ') =',sig(1:3,ic)*unitP
+!!$          ppot = ppot+1.0/3.0*sig(ic,ic)
+!!$       end do
+!!$       write(unitgc,'(A,G18.10)')'PRESSURE',ppot*unitP
+
           if (fpn.le.fpstop)then
              select case(dmtype)
              case(22,24)
-                if(maxval(abs(sigtot)).le.sigstop/1d-9) then
+                if(maxval(abs(sigtoth0)).le.sigstop/1d-9) then
                    it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
                    call analyseT(atdml,celndm,boxndm,psc)
+                   
                    itetemp=it1;itesigma=it2;itetemp2=it3
                    if (present(lreturn)) then
                       lreturn=.true.
@@ -183,11 +194,11 @@ contains
           fpn=fpsmax*erg2eV/angst
           !          if (myidsp==0)      write(6,*)
           if (myidsp==0)      write(6,*)'TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ', iteration,fpn, potist*erg2eV
-          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot))
+          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot)), 1d-9*maxval(abs(sigtoth0))
           if (fpn.le.fsumstop) then
              select case(dmtype)
              case(22,24)
-                if(maxval(abs(sigtot)).le.sigstop/1d-9) then
+                if(maxval(abs(sigtoth0)).le.sigstop/1d-9) then
                    itetemp=1;itesigma=1;itetemp2=1
                    call analyseT(atdml,celndm,boxndm,psc)
                    if (present(lreturn)) then

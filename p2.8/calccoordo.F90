@@ -108,4 +108,4 @@ contains
   return
 
 end subroutine calccoordo
-end module
+end module calccoordo_mod

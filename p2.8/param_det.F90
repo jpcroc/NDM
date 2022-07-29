@@ -625,4 +625,4 @@ subroutine param_det(boxndm)
   
   return
 end subroutine param_det
-end module
+end module param_det_mod

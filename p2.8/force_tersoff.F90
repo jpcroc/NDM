@@ -363,4 +363,4 @@ contains
 
   end subroutine force_tersoff
 
-   end module
+end module force_tersoff_mod

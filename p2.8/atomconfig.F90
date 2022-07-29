@@ -106,7 +106,6 @@ contains
        write(6,*)'FLAGSFF', atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
     end select
   end subroutine print_type
-  
   subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin

@@ -527,4 +527,4 @@ if (nprocspace.gt.1) then
 #endif
     endif
   end subroutine ZXCGRII
-   end module
+end module gcmodII_mod

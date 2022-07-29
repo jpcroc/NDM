@@ -78,7 +78,7 @@ subroutine init_lammps(inplammps,iopt)
 !!$  else
     !call define_communicators_lammps
     call MPI_COMM_Group (MPI_COMM_SPACE,grp_space,ierr)
-    call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_lammps)
+    call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_lammps,ierr)
     call MPI_COMM_SIZE( MPI_COMM_lammps, npl, ierr )
      call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
      write(*,*) "LAMMPS OPEN_MPI_",rang, INPUT_LAMMPS_FILE

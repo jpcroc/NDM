@@ -2193,7 +2193,6 @@ contains
              !          if(parapath%image+1=ipp) then ! assuré par lc2d
              if(paramcgc%image==0) then !procs N
                 firsttime_lammps=.true.
-                allocate (posa(3*atconf_n%im),  forca(3*atconf_n%im))
                 write(extension,'(i4.4)') ipp
                 namef='in.lammps.'//extension//'.N'
                 write(6,*)'callinit_lammps ',rang,namef
@@ -2201,7 +2200,6 @@ contains
                 !              call init_lammps('in.lammps.N')
              else !procs N+1
                 firsttime_lammps=.true.
-                allocate (posa(3*atconf_nplus1%im),  forca(3*atconf_nplus1%im))
                 write(extension,'(i4.4)') ipp
                 namef='in.lammps.'//extension//'.NP1'
                 write(6,*)'callinit_lammps ',rang,namef
@@ -2212,12 +2210,10 @@ contains
              !           write(6,*)'COUCOU',rang
              if(paramcgc%image==0) then !procs N
                 firsttime_lammps=.true.
-                allocate (posa(3*atconf_n%im),  forca(3*atconf_n%im))
 
                 call init_lammps(iopt=1)
              else !procs N+1
                 firsttime_lammps=.true.
-                allocate (posa(3*atconf_nplus1%im),  forca(3*atconf_nplus1%im))
                 call init_lammps(iopt=2)
              end if
           end if
@@ -2354,7 +2350,6 @@ contains
           if (lparapath) then
              if(paramcgc%image==0) then !procs N
                 firsttime_lammps=.true.
-                allocate (posa(3*atconf_n%im),  forca(3*atconf_n%im))
                 write(extension,'(i4.4)') ipp
                 namef='in.lammps.'//extension//'.N'
                 write(6,*)'callinit_lammps ',rang,namef
@@ -2362,7 +2357,6 @@ contains
                 !              call init_lammps('in.lammps.N')
              else !procs N+1
                 firsttime_lammps=.true.
-                allocate (posa(3*atconf_nplus1%im),  forca(3*atconf_nplus1%im))
                 write(extension,'(i4.4)') ipp
                 namef='in.lammps.'//extension//'.NP1'
                 write(6,*)'callinit_lammps ',rang,namef
@@ -2372,11 +2366,9 @@ contains
 
              if(paramcgc%image==0) then !procs N
                 firsttime_lammps=.true.
-                allocate (posa(3*atconf_n%im),  forca(3*atconf_n%im))
                 call init_lammps(iopt=1)
              else !procs N+1
                 firsttime_lammps=.true.
-                allocate (posa(3*atconf_nplus1%im),  forca(3*atconf_nplus1%im))
                 call init_lammps(iopt=2)
              end if
           end if

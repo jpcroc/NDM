@@ -484,9 +484,15 @@ contains
           call arret_ndm
        end if
     end if
-
+    select case (dmtype)
+    case (23)
+       lfire=.true.
+    case(24)
+       lfire=.true.
+       lprahman=.true.
+    end select
     if (lfire) then
-       if (dmtype==2)then
+       if ((dmtype==2).or.(dmtype==23).or.(dmtype==24))then
           if (lprahman) then
              dmtype=24
           else
@@ -928,12 +934,12 @@ contains
           ihbox0(2,2)=1   ! Y ...
           ihbox0(3,3)=1   ! and Z.
        end if
-       !       write(6,*)lpconx,lpcony,lpconz
        if ((lpconx).or.(lpcony).or.(lpconz)) then
           ihbox0(:,:)=0   ! ALL the dimension are blockef except ...
           if (lpconx) ihbox0(1,1)=1   ! X ...
           if (lpcony)ihbox0(2,2)=1   ! Y ...
           if (lpconz)  ihbox0(3,3)=1   ! and Z.
+
        end if
        do ic=1,3
           do ic2=1,3

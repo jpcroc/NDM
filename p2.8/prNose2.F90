@@ -424,7 +424,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
   end subroutine prNose
 
-end module ! Parrinello_Rahman_Nose
+end module Parrinello_Rahman_Nose ! Parrinello_Rahman_Nose
 
 
 
