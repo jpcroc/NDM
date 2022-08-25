@@ -26,7 +26,7 @@ contains
 
     implicit none
     type(para_space_config)::psc
-    type(atom_config_d)::atpr
+    class(atom_config_d)::atpr
     type(cell_config):: celndm
     type(box_config)::boxndm
 

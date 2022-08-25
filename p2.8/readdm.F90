@@ -882,7 +882,21 @@ contains
        call arret_ndm
     end if
     if(lLangevin) then
-       dmtype=4
+       if (lprahman) then
+          if ((dmtype.ne.4).and.(dmtype.ne.88).and.(dmtype.ne.8)) then
+             write(6,*)'LPR AND LLa,gevin dmtype should be set to 88 (or 4 or 8  transformed to 88)'
+             call arret_ndm
+          end if
+          dmtype=88
+          if (rang==0)write(6,*)'LPR+LLANGEVIN dmtype=88'
+       else
+          if (dmtype.ne.4) then
+             write(6,*)'LLangevin and (not lpr) dmtype should be set to 4'
+             call arret_ndm
+          end if
+          dmtype=4
+          if (rang==0)write(6,*)'LLANGEVIN dmtype=4'
+       end if
     end if
 
     ! end check
@@ -1072,6 +1086,9 @@ contains
     case (8)
        if (rang==0) write (6,'(a)') '      PARRINELLO RAHMAN AUTOCOHERENT '
        lprahman=.true.
+    case (88)
+       if (rang==0) write (6,'(a)') '      Pcst + Tcst Langevin'
+       lprahman=.true.; llangevin=.true.
     case (6)
        if (rang==0) write (6,'(a)') '      ANALYSE DES POSITIONS EN FIN DE CASCADE '
     case (9)

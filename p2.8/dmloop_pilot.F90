@@ -34,7 +34,7 @@ contains
     select case (dmtype) 
     case(4)
        call dmloop_vverlet (atdml,celndm,boxndm,psc)
-    case(8,22,24)
+    case(8,22,24,88)
        call dmloop_lpr (atdml,celndm,boxndm,psc,linit=lini)
     case (1,21,23)
        call dmloop (atdml,celndm,boxndm,psc)

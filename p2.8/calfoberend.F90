@@ -58,7 +58,6 @@ contains
              atdml%Glangv(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
              atdml%vp(ic,i) = atdml%vp(ic,i)*rga+ atdml%fp(ic,i)*tstep/(cm(atdml%ityp(i))*2)&
                   &+atdml%Glangv(ic,i)*sqrt(cm(atdml%ityp(i))*bk*text*(1-rga))/cm(atdml%ityp(i))
-
           end do
        end do
     case(2)

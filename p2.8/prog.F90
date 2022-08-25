@@ -157,7 +157,7 @@ contains
           select case (dmtype) 
           case(5)
              write(6,*)'loopforcetest pas NDM2020' ; stop
-          case(4,8,1,21,22,23,24)
+          case(4,8,1,21,22,23,24,88)
              if (lcdp) then
                 call creadp(atdml,celndm,boxndm,psc0)
              else
