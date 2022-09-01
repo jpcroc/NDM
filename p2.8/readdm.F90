@@ -136,7 +136,7 @@ contains
     !                              17 -> MAB
     !                              18 -> ML
     !                              19 -> matrice de forces
-    !                              15 -> montecarlo_mcgc
+    !                              15 -> montecarlo_mcgc ; lpr=F par défaut mais LPR=T possible
     !                              112 -> histogramme des distances entre atomes
     lFire = .false.              ! Fire algorithm is USEd for quenching (cf tr_fire.F90)
     tstep = 1.0                 !timestep in 10^-15 sec unit
@@ -884,14 +884,14 @@ contains
     if(lLangevin) then
        if (lprahman) then
           if ((dmtype.ne.4).and.(dmtype.ne.88).and.(dmtype.ne.8)) then
-             write(6,*)'LPR AND LLa,gevin dmtype should be set to 88 (or 4 or 8  transformed to 88)'
+             write(6,*)'LPRahman AND LLangevin dmtype should be set to 88 (or 4 or 8  transformed to 88)'
              call arret_ndm
           end if
           dmtype=88
-          if (rang==0)write(6,*)'LPR+LLANGEVIN dmtype=88'
+          if (rang==0)write(6,*)'LPRahman+LLANGEVIN dmtype=88'
        else
           if (dmtype.ne.4) then
-             write(6,*)'LLangevin and (not lpr) dmtype should be set to 4'
+             write(6,*)'LLangevin and (not lpRahman) dmtype should be set to 4'
              call arret_ndm
           end if
           dmtype=4
@@ -903,7 +903,7 @@ contains
     if (lpconxyz) then
        if (.NOT.lprahman) then
           if (rang==0) then
-             write(6,*) 'lpconxyz can be USEd ONLY is with PR dynamics or lpr=.true'
+             write(6,*) 'lpconxyz can be USEd ONLY is with PR dynamics or lpRahman=.true'
              write(6,*) 'stop in <readdm>'
           end if
           call arret_ndm
@@ -938,6 +938,10 @@ contains
        !=== Modif Emmanuel Clouet ================
        ! Verifie si un etat de reference a ete donne
        IF (Sum(h0(1:3,1:3)**2).GE.1.d-30) lUcell=.TRUE.
+       if ((lucell).and.(all(h0==0))) then
+          write(6,*)'LUCELL to have potential energy of the box. Needs h0 (shpae of the box at 0 stress). stop', lucell, h0
+          call arret_ndm
+       end if
        ! Transformation A => cm pour le repere de reference
        Pext = (sigext(1,1)+sigext(2,2)+sigext(3,3))/3.d0
        !=== Fin des modifications ================
@@ -1122,7 +1126,16 @@ contains
        if (rang==0) write (6,*)' decal, ndecal lparaFM, naparaFM:',decal,ndecal,lparafm,nparafm
        if (rang==0) write (6,*)
     case (15)
-       if (rang==0) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
+       if (rang==0) write (6,'(a)') '      GRAND CANONICAL  MONTE CARLO '
+       if (lpRahman) then
+          if (rang==0)write (6,*) '  CONSTANT PRESSURE     ',Pext
+          if (pext.ne.0) then
+             if (.not.lucell) then
+                if (rang==0)write (6,*) '  NON ZERO  PRESSURE  REQUIRES lucell=TRUE and the specification of h0 :STOP'
+                call arret_ndm
+             end if
+          end if
+       end if
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
        if ((nparapath.gt.1).and.(.not.lparapath)) then
           write(6,*)'nparapath >1, needs lparapath = TRUE'

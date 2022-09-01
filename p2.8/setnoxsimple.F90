@@ -22,10 +22,10 @@ contains
     integer::izonr,ic,izonr2,natperc,nox,noy,noz,nvois,nvperat
     real(double)::zlmin,zlm2,voluperat
     
-    zlmin = distmin(boxsn%at(1,1),boxsn%at(1,2))
-    zlm2 = distmin(boxsn%at(1,1),boxsn%at(1,3))
+    zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
+    zlm2 = distmin(boxsn%at(:,1),boxsn%at(:,3))
     zlmin = min(zlmin,zlm2)
-    zlm2 = distmin(boxsn%at(1,2),boxsn%at(1,3))
+    zlm2 = distmin(boxsn%at(:,2),boxsn%at(:,3))
     zlmin = min(zlmin,zlm2)
     zlmin=zlmin*2
 

@@ -113,14 +113,16 @@ contains
     END IF
 
     IF(RANG==0) WRITE(6,*)
-    if (llangevin) then 
-       IF(RANG==0) WRITE(6,*) 'Algorithme deP cst Langevin Parrinello-Rahman '
-    else
-       IF(RANG==0) WRITE(6,*) 'Algorithme de Parrinello-Rahman (V2)'
+    if (dmtype.ne.15) then
+       if (llangevin) then 
+          IF(RANG==0) WRITE(6,*) 'Algorithme deP cst Langevin Parrinello-Rahman '
+       else
+          IF(RANG==0) WRITE(6,*) 'Algorithme de Parrinello-Rahman (V2)'
+       end if
+       IF(RANG==0) WRITE(6,'(a)') '  -> la vitesse de la boîte ne prend pas en compte la dérivée du tenseur h à t=0'
+       IF(RANG==0) WRITE(6,*)
     end if
-    IF(RANG==0) WRITE(6,'(a)') '  -> la vitesse de la boîte ne prend pas en compte la dérivée du tenseur h'
-    IF(RANG==0) WRITE(6,*)
-
+    
     IF (lUcell) THEN
        IF(RANG==0) WRITE(6,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
        IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
@@ -254,39 +256,41 @@ contains
     ALLOCATE(sp(1:3,1:atpr%imm), sdot(1:3,1:atpr%imm), sdot_new(1:3,1:atpr%imm))
     if (dmtype==24)     ALLOCATE(sfp(1:3,1:atpr%imm),spp(1:3,1:atpr%imm))
     ! Coordonnées réduites des atomes et leurs dérivées à l'instant initial
-    sp(:,1:atpr%im) = MatMul(invh(:,:), atpr%xp(:,1:atpr%im) )
-    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
-
-    ! Forces à l'instant initial
-    CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
-    if (l2t)then
-       if (i2t==1)  call calceloss (celndm,atpr)
-    else
-       if(ibrake.gt.0) call calceloss(celndm,atpr)
-    end if
-
-
-    !  Contrainte thermique à l'instant initial
-    sigkine(:,:)=0.d0
-    do ia = 1, atpr%im
-       do j = 1,3
-          sigkine(1:3,j) = sigkine(1:3,j) + cm(atpr%ityp(ia))*atpr%vp(1:3,ia)*atpr%vp(j,ia)
+    if (dmtype.ne.15) then
+       sp(:,1:atpr%im) = MatMul(invh(:,:), atpr%xp(:,1:atpr%im) )
+       sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
+       
+       ! Forces à l'instant initial
+       CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
+       if (l2t)then
+          if (i2t==1)  call calceloss (celndm,atpr)
+       else
+          if(ibrake.gt.0) call calceloss(celndm,atpr)
+       end if
+       
+       
+       !  Contrainte thermique à l'instant initial
+       sigkine(:,:)=0.d0
+       do ia = 1, atpr%im
+          do j = 1,3
+             sigkine(1:3,j) = sigkine(1:3,j) + cm(atpr%ityp(ia))*atpr%vp(1:3,ia)*atpr%vp(j,ia)
+          enddo
        enddo
-    enddo
-    sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
-
+       sigkine(1:3,1:3) = invVolu*sigkine(1:3,1:3)
+       
 #ifdef PARA
-    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-       call comm_space%sum(sigkine)
-    end if
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call comm_space%sum(sigkine)
+       end if
 
 #endif
 
-    ! Énergie cinétique des atomes à l'instant initial
-    kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
-
-    ! Contrainte totale à l'instant initial
-    sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
+       ! Énergie cinétique des atomes à l'instant initial
+       kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
+       
+       ! Contrainte totale à l'instant initial
+       sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
+    end if
 
     RETURN
 

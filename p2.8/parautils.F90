@@ -35,7 +35,7 @@
     integer,parameter::WORKER_TAG=-1
 
   contains
-  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib,psc,lcalcvois)
+  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib,psc,lcalcvois,lboxchange)
     USE setcell,only:setcellconf
     class(atom_config),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
@@ -49,20 +49,26 @@
     logical,intent(in)::lperiod
     logical,optional,intent(in)::ldistrib
     logical::ldistr
+    logical,optional,intent(in)::lboxchange
+    logical::lboxch
     integer::ierr,iun
     logical::lcalcv
-    ldistr=.false.
+
+    lboxch=.false.
+    if(present(lboxchange))lboxch=lboxchange
+    
     if (present(lcalcvois)) then
        lcalcv=lcalcvois
     else
        lcalcv=atcomp%ltabvois
     end if
 
-    
+    ldistr=.false.    
     if (present(ldistrib))ldistr=ldistrib
 
 !    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
     if (div%mpi_image%nproc.gt.1) then
+       if (lboxch) call box%master2slave(0,div%mpi_image)
        if (ldistr) then
           call atcomp%send2all(0,div%mpi_image)
        endif
@@ -99,7 +105,7 @@
 
 !******************************************
   subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,&
-       &lperiod,lupdate,psc,lcalcvois)
+       &lperiod,lupdate,psc,lcalcvois,lboxchange)
     ! driver routine for caltabt calfo, period, caltabi, maj_atomes_frt_ftm
     ! lupdate= true ==> positions have changed update is needed:
     !   step1 :if atcomp is a complete set on master node update includes sending back to slaves (either all the configuration or only the (possibly ex-)local atoms)
@@ -138,12 +144,19 @@
     real(double)::atl(3,3)
     integer::iun
     integer,save::ncall=0
+    logical,optional,intent(in)::lboxchange
+    logical::lboxch
+
+    lboxch=.false.
+    if(present(lboxchange))lboxch=lboxchange
+    
     lcalcv=.false.
     ncall=ncall+1
     if (present(lcalcvois))lcalcv=lcalcvois
 
 #ifdef PARA
-       if (div%mpi_image%nproc.gt.1)then
+    if (div%mpi_image%nproc.gt.1)then
+       if (lboxch) call box%master2slave(0,div%mpi_image)
           if (lspaceNDM.eqv..true.) then
              if (lupdate) then
                 call atcomp%master2loc(atloc,div)

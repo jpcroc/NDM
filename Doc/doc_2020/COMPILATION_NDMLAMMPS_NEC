@@ -1,14 +1,7 @@
-les  fichiers MAKE/Makefile* et lammps/* ont été mis à jour dans ndm2021/*
-ca utilise /soft/ndm-lammps-29Sep2021u2
-DANS LE .BASHRC ON INCLUTE LA CONFIGURATION  :
+1019  make clean-ndm_lammps_mpi
+ 1020  source /soft/intel/oneapi/compiler/2022.1.0/env/vars.sh
+ 1021  source /soft/intel/oneapi/mpi/2021.6.0/env/vars.sh
+ 1022  source /soft/intel/oneapi/mkl/2022.1.0/env/vars.sh
+ 1023  make ndm_lammps_mpi PARA=1 LAMMPS=1 MKL=1
 
-
-source /soft/intel/oneapi/compiler/2022.1.0/env/vars.sh
-source /soft/intel/oneapi/mpi/2021.6.0/env/vars.sh
-source /soft/intel/oneapi/mkl/2022.1.0/env/vars.sh
-module load mkl/latest compiler/latest mpi/latest
-
-
-***
-la version NDM_LAMMPS compilée par NEC peut être reconstruite par sciptndl
-Elle utilise la version qui leur a été envoyée.
+NOTER LE MKL=1
