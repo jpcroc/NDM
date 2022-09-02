@@ -159,7 +159,7 @@ contains
 
     integer, dimension(2) :: iseedt
     type(para_space_config)::psc
-    type(box_config)::boxndm
+    class(box_config)::boxndm
     class(atom_config)::atdml
     type(cell_config):: celndm
 

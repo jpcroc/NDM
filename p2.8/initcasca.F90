@@ -39,7 +39,7 @@ contains
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     class(atom_config_d),target::atcf
-    type(box_config):: boxndm
+    class(box_config):: boxndm
     type(cell_config),target::celndm
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s

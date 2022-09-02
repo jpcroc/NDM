@@ -18,7 +18,7 @@ module prog_mod
        &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
        &idirectionmcgc,initN,init_instyp,ins_typ,boxmcgc_p,boxmcgcpath
   USE init_simple_mod,only:init_simple
-  USE boxconfig,only:box_config,boxconfig2ndm,ndm2boxconfig
+  USE boxconfig,only:box_config,box_config_lpr
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax&
@@ -69,7 +69,9 @@ contains
     type(atom_config_d),target:: atdmd
     type(atom_config_e),target:: atdme
     type(cell_config)::celndm
-    type(box_config)::boxndm
+    class(box_config),pointer::boxndm
+    type(box_config), target:: boxs
+    type(box_config_LPR), target:: boxlpr
     type(para_space_config)::psc0
     real(double)::rv
     integer::ipp
@@ -86,7 +88,13 @@ contains
 
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
     !probablement inutile pour dmtype=9 ou 15
-
+! choose actual data types for atmdl and boxndm depending on values read in readdm
+    if (lPRahman) then
+       boxndm=>boxlpr
+    else
+       boxndm=>boxs
+    end if
+    
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin).or.(l2t))then
        atdml=>atdme
        atdme%lax=lax
@@ -281,7 +289,10 @@ contains
        allocate(boxmcgcpath(nparapath))
        if (ins_typ==1) call init_instyp
        !       if (nparapath==1) then
-       boxmcgc=boxndm
+       select type (boxndm)
+       type is (box_config_lpr)
+          boxmcgc=boxndm
+       end select
        do ipp=1,nparapath
           boxmcgc_p=>boxmcgcpath(ipp)
           atconf_n=> config_atom_n(ipp)

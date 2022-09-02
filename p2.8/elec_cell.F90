@@ -62,7 +62,7 @@ contains
 
   subroutine readelec(celndm,boxndm)
     type (cell_config)::celndm
-    type (box_config)::boxndm
+    class (box_config)::boxndm
     integer:: luelec=654
     integer::ic
     integer::ix,iy,iz

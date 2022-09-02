@@ -17,7 +17,7 @@ contains
 
   subroutine setnox(boxsn,celsn,rum,lverbose)
 
-    type(box_config),intent(in)::boxsn
+    class(box_config),intent(in)::boxsn
     type(cell_config)::celsn
     real(double),intent(in)::rum
     integer::izonr,ic
@@ -118,7 +118,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
   subroutine setcellconf(celscf,atcf,boxcf,rumax,lverbose)
     type(cell_config)::celscf
     class(atom_config)::atcf
-    type(box_config),intent(in)::boxcf
+    class(box_config),intent(in)::boxcf
     real(double)::rumax
 
     integer::natperc,izonr2,nvois,nvperat

@@ -4,9 +4,9 @@ module scalebox_mod
   USE calpo_ew_mod,only: calpo_ew
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
-  USE atomconfig,only : atom_config_d,ndm2config, config2ndm
+  USE atomconfig,only : atom_config_d
   USE cellconfig, only:cell_config,caltabtC
-  USE boxconfig, only:box_config,ndm2boxconfig,periodbox
+  USE boxconfig, only:box_config,periodbox,box_config_lpr
 #ifdef PARA
   USE mod_para,only:maj_atomes_frt_ftm
 #endif
@@ -28,7 +28,7 @@ contains
     type(para_space_config)::psc
     class(atom_config_d)::atpr
     type(cell_config):: celndm
-    type(box_config)::boxndm
+    class(box_config)::boxndm
 
     integer :: i, nb1, nb2, nb3, i1, l,noxn,noyn,nozn
     real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1&
@@ -53,7 +53,7 @@ contains
           if (rang==0) write (6, *) 'IT =',ITeration,'chgt nox noy noz  = '&
                , celndm%nox,celndm%noy, celndm%noz
        end if
-
+       call boxndm%print
        celndm%celsize(1) = boxndm%zl(1)/float(celndm%nox)
        celndm%celsize(2) = boxndm%zl(2)/float(celndm%noy)
        celndm%celsize(3) = boxndm%zl(3)/float(celndm%noz)

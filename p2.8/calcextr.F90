@@ -18,7 +18,7 @@ contains
 
   subroutine calfoextr(atcomp,celndm,boxndm,psc,t_sigma)
     class(atom_config),intent(inout)::atcomp
-    type(box_config),intent(in)::boxndm
+    class(box_config),intent(in)::boxndm
     type(para_space_config),intent(in)::psc
     type(cell_config),intent(in)::celndm
     logical,optional::t_sigma

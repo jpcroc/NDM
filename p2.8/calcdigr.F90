@@ -64,7 +64,7 @@ contains
 
     implicit none
     class(atom_config),intent(in)::atrdf
-    type(box_config),intent(in)::boxrdf
+    class(box_config),intent(in)::boxrdf
     type(cell_config),intent(in):: celrdf
     type(rdf_typ)::rdfc
 

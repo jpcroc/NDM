@@ -45,7 +45,7 @@ contains
     integer,intent(in),optional::nox,noy,noz,natperc
     logical,optional,intent(in):: ltpc
     logical::ltpcel
-    type(box_config)::box
+    class(box_config)::box
     ltpcel=.false.
     if (present (ltpc))ltpcel=ltpc
     if (present(nox)) then
@@ -122,7 +122,7 @@ contains
 
   subroutine neigcelN(cell,box)
     class(cell_config)::cell
-    type(box_config),intent(in)::box
+    class(box_config),intent(in)::box
     integer :: kx, ky, kz, koo, l, lz, mz, ly, my, lx, mx, kxy!,ldx,lfx,ldy,lfy,ldz,lfz
 
     if (cell%noxyz==1) then
@@ -276,7 +276,7 @@ contains
     use gen_com_m,only:lspacendm
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
-    type(box_config),intent(inout)::boxcf
+    class(box_config),intent(inout)::boxcf
     type(para_space_config),optional::psc    
     logical,intent(in)::lperiod
     logical,intent(in),optional::lextr
@@ -412,109 +412,109 @@ contains
   end subroutine caltabtC
 
 
-  subroutine ndm2cellconfig(celndm,box,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpc,sigc,tempc,proc_cell)
-    type(cell_config), intent(out):: celndm
-    type(box_config)::box
-    integer, intent(in):: nox,noy,noz,natperc,noxyz
-    integer,intent(in)::ncel(noxyz,0:26),nato(noxyz),atincel(natperc,noxyz),deltadist(3,0:26,noxyz)
-    real(double),intent(in)::celsize(3)
-    logical,optional,intent(in)::ltpc
-    real(double),intent(in),optional,allocatable::sigc(:,:,:),tempc(:)
-    logical::ltpcel=.false.
-    integer,optional::proc_cell(:)
-    if (present (ltpc))ltpcel=ltpc
-    if (.not.allocated(celndm%ncel))then
-       call init_cel(celndm,box,nox,noy,noz,natperc,ltpcel)
-    end if
-    !    celndm%nox=nox
-    !    celndm%noy=noy
-    !    celndm%noz=noz
-    !    celndm%natperc=natperc
-    !    celndm%noxyz=nox*noy*noz
-    !    if (ltpcel)then
-    !       celndm%ltpcel=.true.
-    !    end if
-    !    call allocatecelN(celndm)
-!    celndm%icaltabt=0
-    celndm%ncel(1:noxyz,0:26)=ncel(1:noxyz,0:26)
-    celndm%nato(1:noxyz)=nato(1:noxyz)
-    celndm%atincel(1:natperc,1:noxyz)=atincel(1:natperc,1:noxyz)
-    celndm%deltadist(1:3,0:26,1:noxyz)=deltadist(1:3,0:26,1:noxyz)
-    celndm%celsize(1:3)=celsize(1:3)
-    if (ltpcel)then
-       celndm%sigc=sigc
-       celndm%tempc=tempc
-    end if
-#ifdef PARA
-    celndm%proc_cell=proc_cell
-#endif    
-
-  endsubroutine ndm2cellconfig
-
-  subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,proc_cell)
-    type(cell_config), intent(inout):: celndm
-    integer, intent(inout):: nox,noy,noz,natperc,noxyz
-    integer,intent(inout),allocatable::ncel(:,:),nato(:),atincel(:,:),deltadist(:,:,:)!ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
-    real(double),intent(out)::celsize(3)
-    logical,optional,intent(out)::ltpcel
-    real(double),intent(out),optional,allocatable::sigc(:,:,:),tempc(:)
-    integer,optional,allocatable::proc_cell(:)
-    integer::nsize
-!    if (.not.allocated(ncel))then
-       nox=celndm%nox ;noy=celndm%noy;noz=celndm%noz
-       noxyz=nox*noy*noz;nsize=noxyz
-       natperc=celndm%natperc
-       if(allocated(ncel)) deallocate(ncel)
-       if(allocated(atincel)) deallocate(atincel)
-       if(allocated(deltadist)) deallocate(deltadist)
-       allocate(ncel(1:noxyz,0:26));allocate(atincel(natperc,1:noxyz));allocate(deltadist(3,0:26,1:noxyz))
-       if (allocated(nato)) deallocate(nato)
-       allocate(nato(noxyz))
-#ifdef PARA
-       if (present(proc_cell))then
-          if(allocated(proc_cell)) deallocate(proc_cell)
-          allocate(proc_cell(nsize))
-       end if
-#endif       
-!    else
-!       if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
-!          write(6,*)'incohérence entre noxyz et celndm%noxyz'
-!          write(6,*)nox,celndm%nox,natperc,celndm%natperc
-!#ifdef PARA
-!          call MPI_finalize(ierr)
-!#endif         
-!          call arret_ndm
-!       end if
-!        end if
-    if (celndm%ltpcel)then
-       ltpcel=celndm%ltpcel
-       if (ltpcel) then
-          if (.not.allocated(sigc))allocate (sigc(3,3,celndm%noxyz))
-          if (.not.allocated(tempc))allocate (tempc(celndm%noxyz))
-       end if
-    end if
-!    celndm%icaltabt=0
-    ncel(1:noxyz,0:26)=celndm%ncel(1:noxyz,0:26)
-    nato(1:noxyz)=celndm%nato(1:noxyz)
-    atincel(1:natperc,1:noxyz)=celndm%atincel(1:natperc,1:noxyz)
-    deltadist(1:3,0:26,1:noxyz)=celndm%deltadist(1:3,0:26,1:noxyz)
-    celsize(1:3)=celndm%celsize(1:3)
-    if (celndm%ltpcel)then
-       sigc(:,:,:)=celndm%sigc(:,:,:)
-       tempc(:)=celndm%tempc(:)
-    end if
-!    call celndm%dealloc
-#ifdef PARA
-    if (present(proc_cell))proc_cell=celndm%proc_cell
-#endif    
-  end subroutine cellconfig2ndm
+!!$  subroutine ndm2cellconfig(celndm,box,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpc,sigc,tempc,proc_cell)
+!!$    type(cell_config), intent(out):: celndm
+!!$    type(box_config)::box
+!!$    integer, intent(in):: nox,noy,noz,natperc,noxyz
+!!$    integer,intent(in)::ncel(noxyz,0:26),nato(noxyz),atincel(natperc,noxyz),deltadist(3,0:26,noxyz)
+!!$    real(double),intent(in)::celsize(3)
+!!$    logical,optional,intent(in)::ltpc
+!!$    real(double),intent(in),optional,allocatable::sigc(:,:,:),tempc(:)
+!!$    logical::ltpcel=.false.
+!!$    integer,optional::proc_cell(:)
+!!$    if (present (ltpc))ltpcel=ltpc
+!!$    if (.not.allocated(celndm%ncel))then
+!!$       call init_cel(celndm,box,nox,noy,noz,natperc,ltpcel)
+!!$    end if
+!!$    !    celndm%nox=nox
+!!$    !    celndm%noy=noy
+!!$    !    celndm%noz=noz
+!!$    !    celndm%natperc=natperc
+!!$    !    celndm%noxyz=nox*noy*noz
+!!$    !    if (ltpcel)then
+!!$    !       celndm%ltpcel=.true.
+!!$    !    end if
+!!$    !    call allocatecelN(celndm)
+!!$!    celndm%icaltabt=0
+!!$    celndm%ncel(1:noxyz,0:26)=ncel(1:noxyz,0:26)
+!!$    celndm%nato(1:noxyz)=nato(1:noxyz)
+!!$    celndm%atincel(1:natperc,1:noxyz)=atincel(1:natperc,1:noxyz)
+!!$    celndm%deltadist(1:3,0:26,1:noxyz)=deltadist(1:3,0:26,1:noxyz)
+!!$    celndm%celsize(1:3)=celsize(1:3)
+!!$    if (ltpcel)then
+!!$       celndm%sigc=sigc
+!!$       celndm%tempc=tempc
+!!$    end if
+!!$#ifdef PARA
+!!$    celndm%proc_cell=proc_cell
+!!$#endif    
+!!$
+!!$  endsubroutine ndm2cellconfig
+!!$
+!!$  subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,proc_cell)
+!!$    type(cell_config), intent(inout):: celndm
+!!$    integer, intent(inout):: nox,noy,noz,natperc,noxyz
+!!$    integer,intent(inout),allocatable::ncel(:,:),nato(:),atincel(:,:),deltadist(:,:,:)!ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
+!!$    real(double),intent(out)::celsize(3)
+!!$    logical,optional,intent(out)::ltpcel
+!!$    real(double),intent(out),optional,allocatable::sigc(:,:,:),tempc(:)
+!!$    integer,optional,allocatable::proc_cell(:)
+!!$    integer::nsize
+!!$!    if (.not.allocated(ncel))then
+!!$       nox=celndm%nox ;noy=celndm%noy;noz=celndm%noz
+!!$       noxyz=nox*noy*noz;nsize=noxyz
+!!$       natperc=celndm%natperc
+!!$       if(allocated(ncel)) deallocate(ncel)
+!!$       if(allocated(atincel)) deallocate(atincel)
+!!$       if(allocated(deltadist)) deallocate(deltadist)
+!!$       allocate(ncel(1:noxyz,0:26));allocate(atincel(natperc,1:noxyz));allocate(deltadist(3,0:26,1:noxyz))
+!!$       if (allocated(nato)) deallocate(nato)
+!!$       allocate(nato(noxyz))
+!!$#ifdef PARA
+!!$       if (present(proc_cell))then
+!!$          if(allocated(proc_cell)) deallocate(proc_cell)
+!!$          allocate(proc_cell(nsize))
+!!$       end if
+!!$#endif       
+!!$!    else
+!!$!       if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
+!!$!          write(6,*)'incohérence entre noxyz et celndm%noxyz'
+!!$!          write(6,*)nox,celndm%nox,natperc,celndm%natperc
+!!$!#ifdef PARA
+!!$!          call MPI_finalize(ierr)
+!!$!#endif         
+!!$!          call arret_ndm
+!!$!       end if
+!!$!        end if
+!!$    if (celndm%ltpcel)then
+!!$       ltpcel=celndm%ltpcel
+!!$       if (ltpcel) then
+!!$          if (.not.allocated(sigc))allocate (sigc(3,3,celndm%noxyz))
+!!$          if (.not.allocated(tempc))allocate (tempc(celndm%noxyz))
+!!$       end if
+!!$    end if
+!!$!    celndm%icaltabt=0
+!!$    ncel(1:noxyz,0:26)=celndm%ncel(1:noxyz,0:26)
+!!$    nato(1:noxyz)=celndm%nato(1:noxyz)
+!!$    atincel(1:natperc,1:noxyz)=celndm%atincel(1:natperc,1:noxyz)
+!!$    deltadist(1:3,0:26,1:noxyz)=celndm%deltadist(1:3,0:26,1:noxyz)
+!!$    celsize(1:3)=celndm%celsize(1:3)
+!!$    if (celndm%ltpcel)then
+!!$       sigc(:,:,:)=celndm%sigc(:,:,:)
+!!$       tempc(:)=celndm%tempc(:)
+!!$    end if
+!!$!    call celndm%dealloc
+!!$#ifdef PARA
+!!$    if (present(proc_cell))proc_cell=celndm%proc_cell
+!!$#endif    
+!!$  end subroutine cellconfig2ndm
 
   ! copie d'une config entière vers config de base
 
   subroutine copy (cellsource,cellcible,box,lzeroinit)
     class(cell_config)::cellsource
     class(cell_config)::cellcible
-    type(box_config)::box
+    class(box_config)::box
     logical,optional::lzeroinit
     logical::lzi=.false.
     if (present(lzeroinit))lzi=lzeroinit

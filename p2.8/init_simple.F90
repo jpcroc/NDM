@@ -52,9 +52,9 @@ contains
 
     implicit none
      type(para_space_config)::psc
-   class(atom_config)::atdml
-    type(cell_config),intent(out)::celndm
-    type(box_config),intent(out)::boxndm
+     class(atom_config)::atdml
+     type(cell_config),intent(out)::celndm
+     class(box_config),intent(out)::boxndm
     character(*),optional::filename
     logical, optional::linitpot
     

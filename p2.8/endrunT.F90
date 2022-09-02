@@ -12,8 +12,8 @@ module endrunT_mod
        &fnamcout,fnam,lspaceNDM
   use var_pot, only: eatref,eatref,eatref
   USE cellconfig,only:cell_config
-  USE atomconfig,only:atom_config,atom_config_d,atom_config_e!, ndm2config, config2ndm
-  use boxconfig,only: box_config!,ndm2boxconfig,boxconfig2ndm
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e
+  use boxconfig,only: box_config
   use posana,only:anapos
   USE Tpara,only:nprocspace
   implicit none

@@ -9,7 +9,7 @@ module mod_para
   use T_kind_param_m, ONLY:  double 
   use gen_com_m ,only:l2t,rang
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
-  USE cellconfig,only:cell_config,ndm2cellconfig,cellconfig2ndm
+  USE cellconfig,only:cell_config
   USE boxconfig, only:box_config
   implicit none
   class(atom_config),pointer:: atmp

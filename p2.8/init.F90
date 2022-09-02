@@ -12,7 +12,7 @@ module init_mod
   USE neb_module,only: constrconfNEB,atneb,cellneb,boxneb
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC
-  use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
+  use boxconfig,only: box_config
   USE constrconf_mod, only :constrconf
   USE arret_ndm_mod,only: arret_ndm
 
@@ -64,7 +64,7 @@ contains
     implicit none
     class(atom_config)::atdml
     type(cell_config),intent(out)::celndm
-    type(box_config),intent(out)::boxndm
+    class(box_config),intent(out)::boxndm
     type(para_space_config)::psc
 
     integer :: i, lufilmpaf,itapp,j,lenfn2,ipath,ierr,formatsauv

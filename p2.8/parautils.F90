@@ -21,7 +21,7 @@
     real(double),pointer::sig_p(:,:),potist_p
     class(atom_config),pointer::atcomp_p
     type(cell_config),pointer::cellcomp_p
-    type(box_config),pointer::box_p
+    class(box_config),pointer::box_p
     type(para_config),pointer::div_p
     class(atom_config),pointer::atloc_p
     type(cell_config),pointer::celloc_p
@@ -39,7 +39,7 @@
     USE setcell,only:setcellconf
     class(atom_config),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
-    type(box_config)::box
+    class(box_config)::box
     type(para_space_config)::psc
     class(atom_config),pointer::atloc
     type(cell_config),pointer::celloc
@@ -128,7 +128,7 @@
     real(double)::sig(3,3),potist
     class(atom_config),target::atcomp
     type(cell_config),target::cellcomp
-    type(box_config)::box
+    class(box_config)::box
     type(para_config)::div
     class(atom_config),pointer::atloc
     type(cell_config),pointer::celloc
@@ -197,7 +197,7 @@
     type(cell_config),intent(in)::cellocin
     class(atom_config)::atcomp
     type(cell_config)::cellcomp
-    type(box_config)::box
+    class(box_config)::box
     type(para_config),intent(in)::div
     character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
@@ -335,7 +335,7 @@ subroutine driver_caltabt_para(atcf,celcf,boxcf,psc,lperiod,lcalcvois)
   use gen_com_m,only:iteration,itetabvois,itesigma
     class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(inout),target::celcf
-    type(box_config),intent(inout)::boxcf
+    class(box_config),intent(inout)::boxcf
     type(para_space_config)::psc!    real(double),intent(in)::potistcf,sigcf(3,3)
     logical,intent(in)::lperiod
     logical,intent(in),optional::lcalcvois

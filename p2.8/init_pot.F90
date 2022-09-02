@@ -198,7 +198,7 @@ contains
     USE calpo_ew_mod,only: calpo_ew
     implicit none
     
-    type(box_config)::boxndm
+    class(box_config)::boxndm
     integer,intent(in)::immT
     integer::ipotcont,i,j,l
 

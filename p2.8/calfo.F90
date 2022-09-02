@@ -45,7 +45,7 @@ contains
     type(cell_config),intent(in),target::celcf
     !AAAAAAAAAAAAAATTTTTTTTTTTTTTTTTEEEEEEEEEEEEEEEEEEENNNNNTTTTTIIIIOOOONNN (intent(in) a rammettre)
 !    type(box_config),intent(in)::boxcf
-    type(box_config)::boxcf
+    class(box_config)::boxcf
     type(para_space_config)::psc
     real(double),intent(out)::potistcf,sigcf(3,3)
     real(double),dimension(:,:),allocatable:: xp,fp,xpp

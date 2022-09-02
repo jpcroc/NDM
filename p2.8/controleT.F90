@@ -33,7 +33,7 @@ contains
 
     class(atom_config_d)::atdml
     type(cell_config):: celndm
-    type(box_config)::boxndm
+    class(box_config)::boxndm
     type(para_space_config)::psc
     logical,optional::lreturn
 

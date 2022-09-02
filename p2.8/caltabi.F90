@@ -16,7 +16,7 @@ contains
     implicit none
     class(atom_config), intent(inout)::atvois
     type(cell_config), intent(in)::celvois
-    type(box_config),intent(in)::boxndm
+    class(box_config),intent(in)::boxndm
     logical,optional::lextr,lconstrtotR
     logical::lextrait=.false.,lconstrtt
 

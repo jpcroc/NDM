@@ -17,6 +17,16 @@ module boxconfig
      procedure, pass::print=>boxprint
      procedure, pass::master2slave=>boxmaster2slave
   end type box_config
+
+  type, extends (box_config):: box_config_lpr ! type dynamique des configurations atomiques(+vp/+xpp). vp et xpp seront toujours allouées
+     real(double), dimension(3,3)  :: h, hDot
+     real(double), dimension(3,3)  :: trh, invh, invtrh, Gmat, invGmat, Gdot
+     real(double) :: invVolu,wbox
+     
+   contains
+  end type box_config_lpr
+
+  
 contains
 
   subroutine boxmaster2slave(box,rgem,mpic)
@@ -27,6 +37,10 @@ contains
     real(double)::atl(3,3)
     atl=box%at(:,:)
     call mpic%bcast(rgem,atl)
+    select type(box)
+    type is  (box_config_lpr)
+       call mpic%bcast(rgem,box%hdot)
+    end select
     if (mpic%rank.ne.rgem) then 
        call updatebox(box,atl)
     end if
@@ -35,24 +49,29 @@ contains
    
   
   subroutine initbox(boxnew,at,ipbc,zl)
-    type(box_config),intent(inout)::boxnew
+    class(box_config),intent(inout)::boxnew
     real(double),intent(in),optional::at(3,3)
     real(double),optional,intent(in)::zl(3)
     integer,intent(in) ::ipbc(3)
     integer::i,ic
-
+    select type (boxnew)
+    type is (box_config_lpr)
+       boxnew%hdot=0
+       boxnew%Gdot=0
+    end select
     call updatebox(boxnew,at,zl,check=0)
     boxnew%ipbc(1:3)=ipbc(1:3)
     return
   end subroutine initbox
 
   subroutine updatebox(boxnew,at,zl,check)
-    type(box_config),intent(inout)::boxnew
+    USE Mat_utils_mod,only:  MatInv
+    class(box_config),intent(inout)::boxnew
     real(double),intent(in),optional::at(3,3)
     real(double),optional,intent(in)::zl(3)
     integer,optional::check
     real(double)::nbg
-    integer::i,ic,chk=0
+    integer::i,ic,j,chk=0
     if (present(check))chk=check
     if (chk==1) then 
        nbg=boxnew%bg(1,1)**2+boxnew%bg(1,2)**2+boxnew%bg(1,3)**2
@@ -90,44 +109,62 @@ contains
     end do
     boxnew%zls2 = boxnew%zl/2.0
     boxnew%volu=calcvol(at(1:3,1),at(1:3,2),at(1:3,3))
+
+    select type (boxnew)
+    type is (box_config_lpr)
+       boxnew%h(:,:)=boxnew%at(:,:)
+       boxnew%trh=Transpose(boxnew%h)
+       boxnew%Gmat = MatMul(boxnew%trh,boxnew%h)
+       CALL MatInv(boxnew%Gmat,boxnew%invGmat)
+       call MatInv(boxnew%h,boxnew%invh)
+       boxnew%invtrh = Transpose(boxnew%invh)
+       boxnew%invVolu = 1.d0/boxnew%volu
+       DO i=1, 3
+          DO j=1, 3
+             boxnew%Gdot(i,j) = Sum( boxnew%h(1:3,i)*boxnew%hdot(1:3,j) + boxnew%hdot(1:3,i)*boxnew%h(1:3,j) )
+          END DO
+       END DO
+
+    end select
+    
     return
   end subroutine updatebox
 
 
-  subroutine ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxnew)
-    real(double):: at(3,3)
-    real(double):: bg(3,3)
-    real(double):: zl(3),zls2(3),nzl(3),volu,normat(3)
-    integer(long)::icaltabt 
-    type(box_config)::boxnew
-    boxnew%at=at
-    boxnew%bg=bg
-    boxnew%zl=zl
-    boxnew%zls2=zls2
-    boxnew%nzl=nzl
-    boxnew%volu=volu
-    boxnew%normat=normat
-    boxnew%icaltabt=0
-    return
-  end subroutine ndm2boxconfig
-  subroutine boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxnew)
-    real(double):: at(3,3)
-    real(double):: bg(3,3)
-    real(double):: zl(3),zls2(3),nzl(3),volu,normat(3)
-    integer(long)::icaltabt 
-    type(box_config)::boxnew
-    at=boxnew%at
-    bg=boxnew%bg
-    zl=boxnew%zl
-    zls2=boxnew%zls2
-    nzl=boxnew%nzl
-    volu=boxnew%volu
-    normat=boxnew%normat
-    return
-  end subroutine boxconfig2ndm
+!!$  subroutine ndm2boxconfig(at,bg,zl,zls2,nzl,volu,normat,boxnew)
+!!$    real(double):: at(3,3)
+!!$    real(double):: bg(3,3)
+!!$    real(double):: zl(3),zls2(3),nzl(3),volu,normat(3)
+!!$    integer(long)::icaltabt 
+!!$    type(box_config)::boxnew
+!!$    boxnew%at=at
+!!$    boxnew%bg=bg
+!!$    boxnew%zl=zl
+!!$    boxnew%zls2=zls2
+!!$    boxnew%nzl=nzl
+!!$    boxnew%volu=volu
+!!$    boxnew%normat=normat
+!!$    boxnew%icaltabt=0
+!!$    return
+!!$  end subroutine ndm2boxconfig
+!!$  subroutine boxconfig2ndm(at,bg,zl,zls2,nzl,volu,normat,boxnew)
+!!$    real(double):: at(3,3)
+!!$    real(double):: bg(3,3)
+!!$    real(double):: zl(3),zls2(3),nzl(3),volu,normat(3)
+!!$    integer(long)::icaltabt 
+!!$    type(box_config)::boxnew
+!!$    at=boxnew%at
+!!$    bg=boxnew%bg
+!!$    zl=boxnew%zl
+!!$    zls2=boxnew%zls2
+!!$    nzl=boxnew%nzl
+!!$    volu=boxnew%volu
+!!$    normat=boxnew%normat
+!!$    return
+!!$  end subroutine boxconfig2ndm
 
   subroutine boxprint(boxprt,unit)
-    class(box_config)::boxprt
+    class(box_config),intent(in)::boxprt
     integer,optional::unit
     integer::unitw
     unitw=6
@@ -162,7 +199,7 @@ contains
      !-----------------------------------------------
      !   D u m m y   A r g u m e n t s
      !-----------------------------------------------
-     type(box_config),intent(in)::box
+     class(box_config),intent(in)::box
      class(atom_config)::atcf
 
      !-----------------------------------------------

@@ -2,7 +2,7 @@ module dmloop_pilot_mod
   USE arret_ndm_mod,only:arret_ndm
   USE atomconfig,only : atom_config_d, atom_config_e
   USE cellconfig, only:cell_config
-  USE boxconfig,only:box_config
+  USE boxconfig,only:box_config,box_config_lpr
   USE gen_com_m, ONLY: dmtype,lcdp,rang,latcomp
 
   use Tpara,only:para_space_config
@@ -25,7 +25,7 @@ contains
 
     implicit none
     type(para_space_config)::psc
-    type(box_config)::boxndm
+    class(box_config)::boxndm
     class(atom_config_d)::atdml
     type(cell_config):: celndm
     logical,optional::linit
@@ -35,7 +35,14 @@ contains
     case(4)
        call dmloop_vverlet (atdml,celndm,boxndm,psc)
     case(8,22,24,88)
-       call dmloop_lpr (atdml,celndm,boxndm,psc,linit=lini)
+       select type (boxndm)
+       type is (box_config_lpr)
+          call dmloop_lpr (atdml,celndm,boxndm,psc,linit=lini)
+       type is (box_config)
+          write(6,*)'WTF dmloop_pilot call lpr'
+          call arret_ndm
+       end select
+                
     case (1,21,23)
        call dmloop (atdml,celndm,boxndm,psc)
     case default

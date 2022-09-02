@@ -23,7 +23,7 @@ contains
 
   implicit none
     class(atom_config),intent(in)::atcf
-    type(box_config),intent(in)::boxcf
+    class(box_config),intent(in)::boxcf
     type(cell_config),intent(in):: celcf
     integer,allocatable::na(:)
   integer :: i, iti, itj, i1, i2, koo, ko1, j, ic,nci,ip,ll

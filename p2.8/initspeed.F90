@@ -15,7 +15,7 @@ module initspeed_mod
     USE Tpara,only:nprocspace,myidsp
 #endif
 
-  USE atomconfig,only:atom_config,atom_config_d,atom_config_e, ndm2config, config2ndm
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   use boxconfig,only:box_config,periodbox
   implicit none
 contains
@@ -81,7 +81,7 @@ contains
     !-----------------------------------------------
     class(atom_config_d)::atcf
     !    type(cell_config):: celndm
-    type(box_config),intent(in)::boxndm
+    class(box_config),intent(in)::boxndm
     logical,optional,intent(in):: latcomp
 
     logical::latc=.false.

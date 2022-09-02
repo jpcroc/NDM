@@ -54,7 +54,7 @@ contains
 
     class(atom_config_d)::atdml
     type(cell_config):: celndm
-    type(box_config)::boxndm
+    class(box_config)::boxndm
 
     type(atom_config_d)::attyp
     type(cell_config):: celtyp

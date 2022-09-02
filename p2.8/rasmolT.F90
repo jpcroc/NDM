@@ -34,7 +34,7 @@ contains
     implicit none
     integer,intent(in),optional  :: itapp
     class(atom_config),intent(in)::atmol
-    type(box_config),intent(in)::boxmol
+    class(box_config),intent(in)::boxmol
     character*3,intent(in), dimension(1:atmol%im),optional  :: rty
     character(len=*), optional ::namefr
     logical::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters

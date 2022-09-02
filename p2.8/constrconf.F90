@@ -34,7 +34,7 @@ contains
     implicit none
     class(atom_config),intent(inout)::atrcf
     type(cell_config),intent(out)::cellrcf
-    type(box_config),intent(out)::boxrcf
+    class(box_config),intent(out)::boxrcf
     logical::lrepart
     character(len=*),optional::filename
     character*80::filenom
@@ -238,7 +238,7 @@ contains
     type(para_space_config),optional::psc
     class(atom_config)::at2b
     type(cell_config)::cel2b
-    type(box_config)::box2b
+    class(box_config)::box2b
     character,intent(in) :: fnamg*80
     real(double),intent(in)::rum
     logical,optional,intent(in)::lrepartition
@@ -368,7 +368,7 @@ contains
 
     class(atom_config),intent(inout)::atrcf
     type(cell_config),intent(in)::cellrcf
-    type(box_config),intent(in)::boxrcf    
+    class(box_config),intent(in)::boxrcf    
     type(box_config)::boxrgin
     type(atom_config)::atrgin
     integer,intent(in)::lat(3)
@@ -433,7 +433,7 @@ contains
     class(atom_config)::atrep
     class(atom_config)::atcomp
     type(cell_config)::cellrep
-    type(box_config)::boxrep
+    class(box_config)::boxrep
     integer,optional, dimension(:), allocatable   :: nab
     integer::i,icomp,k,iti,im,ic,numcell,numproc,iun
     real(double)::xt(3),xpici,cpp
@@ -483,7 +483,7 @@ contains
     implicit none
     character,intent(in) :: fnamcin*80
     integer,intent(in)::itread
-    type(box_config)::boxcin
+    class(box_config)::boxcin
     class(atom_config),optional::atcinr
     integer,intent(in),optional::immr,fmtcin
     logical,intent(in),optional::lres

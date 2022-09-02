@@ -10,7 +10,7 @@ contains
   subroutine vect_dist(atcf,celcf,boxcf,i,j,VJI,indcv,lperiod,rum,dist,linter)
     class(atom_config),intent(in)::atcf
     class(cell_config),intent(in)::celcf
-    type(box_config)::boxcf
+    class(box_config)::boxcf
     integer,intent(in)::i,j !i j indices des atomes,indcv= rang dans le voisinage de la cellule de i !! (de 1 à 27)
     integer,intent(in),optional ::indcv !indcv= rang dans le voisinage de la cellule de i !! (de 1 à 27)
     logical::lperiod
@@ -80,7 +80,7 @@ contains
   subroutine closest_at(xPtest,atcf,celcf,boxcf,lperiod,iclose,rumin,dist,lclose)
     class(atom_config),intent(in)::atcf
     class(cell_config),intent(in)::celcf
-    type(box_config)::boxcf
+    class(box_config)::boxcf
     logical::lperiod
     real(double),intent(in)::xptest(3)
     logical,intent(out),optional::lclose ! true si distmin < rumin false sinon
@@ -140,7 +140,7 @@ contains
   end subroutine closest_at
 
   subroutine distat(xi,x0,box,dist)
-    type(box_config),intent(in)::box
+    class(box_config),intent(in)::box
     real(double), dimension(3),intent(in)::xi,x0
     real(double),intent(out)::dist
     

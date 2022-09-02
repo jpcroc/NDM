@@ -16,7 +16,7 @@ module neb_module
   USE cellconfig, only:cell_config,caltabtc
 !  USE constrconf_mod,only : config2data
 !  USE read_conf, only:read_cin,read_gin
-  use boxconfig,only: box_config,ndm2boxconfig,boxconfig2ndm
+  use boxconfig,only: box_config
   USE setcell,only:setcellconf,setnox
   USE sauvegardeT_mod,only:sauvegardeT
     USE init_pot_mod,only:init_pot  ,init_pot2

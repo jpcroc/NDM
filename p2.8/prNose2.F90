@@ -39,7 +39,7 @@ module Parrinello_Rahman_Nose
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
   USE recips_mod,only: recips,calcvol
-  USE boxconfig,only:box_config,updatebox
+  USE boxconfig,only:box_config,updatebox!,box_config_lpr
   use atomconfig,only:atom_config_d
   use cellconfig,only:cell_config
 #ifdef PARA
@@ -70,7 +70,7 @@ module Parrinello_Rahman_Nose
 contains
 
   subroutine initlprNose(atpr,celndm,boxndm)
-    type(box_config)::boxndm
+    class(box_config)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
 
@@ -193,7 +193,7 @@ end if
   subroutine prNose(atpr,celndm,boxndm,psc)
 
     implicit none
-    type(box_config)::boxndm
+    class(box_config)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
     type(para_space_config)::psc

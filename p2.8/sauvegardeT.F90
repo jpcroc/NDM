@@ -29,7 +29,7 @@ contains
     !latcomp= en PARA latcomp=.true.=> atmol est une cofiguration complète/latcomp=false=>atmol est distributé sur comm_space
 
     implicit none
-    type(box_config)::boxndm
+    class(box_config)::boxndm
     class(atom_config)::atdml
     type(cell_config):: celndm
     character::fnamcout*80

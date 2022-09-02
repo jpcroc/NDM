@@ -16,7 +16,7 @@ contains
     implicit none
     class(atom_config),intent(inout)::atcf
     type(cell_config),intent(in)::celcf
-    type(box_config),intent(in)::boxcf
+    class(box_config),intent(in)::boxcf
     !-----------------------------------------------
     integer :: iw2, iti, l, iw1, i, j, itj, k, &
          iw,  ic

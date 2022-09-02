@@ -4,13 +4,13 @@ module montecarlo_mod
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
        &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,&
        &lrestartmcgc,imm_glob,iseed,sig,lprahman
-  USE atomconfig,only:atom_config,atom_config_d, config2ndm, switch_atom
-  USE cellconfig, only:cell_config, cellconfig2ndm, caltabtC
+  USE atomconfig,only:atom_config,atom_config_d, switch_atom
+  USE cellconfig, only:cell_config, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
   USE calfo_mod,only: calfo
   USE T_kind_param_m, ONLY:  double
   USE cryst_to_cart_mod, ONLY: cryst_to_cart
-  USE boxconfig,only:box_config,periodbox
+  USE boxconfig,only:box_config,periodbox,box_config_lpr
   USE rasmolT_mod,only: rasmolT
   USE sauvegardeT_mod,only:sauvegardeT
   use paraconfig,only:para_config,commconstr,initparapuresp
@@ -67,9 +67,9 @@ module montecarlo_mod
   type(atom_config_mc):: config_atom_old_0, config_atom_old_1, config_atom_new_0, config_atom_new_1 !config intermediaire pour suivre l'evolution des systemes: 0 -> syst N, 1 -> syst N+1.
   
 
-  type(box_config)::boxmcgc , box_new1, box_old1, box_new0, box_old0 !(les 2 dernurs définis uniquement pour bigmasters
-  type(box_config),allocatable,target::boxmcgcpath(:)
-  type(box_config),pointer::boxmcgc_p
+  type(box_config_lpr)::boxmcgc , box_new1, box_old1, box_new0, box_old0 !(les 2 dernurs définis uniquement pour bigmasters
+  type(box_config_lpr),allocatable,target::boxmcgcpath(:)
+  type(box_config_lpr),pointer::boxmcgc_p
   
 
   integer::nbatplus
@@ -1570,7 +1570,7 @@ contains
 
     type(atom_config_mc)::atdml
     type(cell_config)::celndm
-    type(box_config)::box
+    class(box_config)::box
 
     character(len=*) :: name_file
     logical :: lperiod
@@ -1601,7 +1601,7 @@ contains
 
     type(atom_config_mc)::atdml
     type(cell_config)::celndm
-    type(box_config)::box
+    class(box_config)::box
     real(double) :: U_ini, potist,Ti
 
     if (lbigmaster) then

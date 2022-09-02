@@ -1152,175 +1152,175 @@ contains
   end subroutine print
 !MANQUE SIG AU MINIMUM
 
-  subroutine ndm2config (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois,vp,xpp,&
-       &lprteatR,eat,lsigatR,sigat,llangevinR,glangv,laxR,ax,ldeall,lgul)
-    class(atom_config)::atndm
-    integer,intent(in)::im,imm
-    real(double),intent(inout),allocatable,dimension(:,:):: xp,fp
-    integer,intent(inout),dimension(:),allocatable::ityp,ielat
-    integer,optional,intent(inout),allocatable,dimension(:)::num_at_glob
-    logical, optional,intent(in)::ltabvois
-    integer,optional,intent(in)::nvois
-    integer, optional,intent(inout),allocatable ::iwmax(:)
-    integer,optional,intent(inout),allocatable:: indi(:)
-    real(double),optional,intent(inout),dimension(:,:),allocatable:: vp,xpp
-    real(double),optional,intent(inout),allocatable:: eat(:),sigat(:,:,:),glangv(:,:),ax(:,:)
-
-    logical,intent(in),optional ::lprteatR,lsigatR,llangevinR,laxR
-    logical,allocatable,optional::lgul(:)
-    logical ::lprteat,lsigat ,ltbv,llangevin,lax
-    logical,optional,intent(in)::ldeall
-
-    real(double)::rvois
-    
-    logical::ldealloc
-
-    ldealloc=.false.
-    if (present(ldeall))ldealloc=ldeall
-
-    lprteat=.false.;lsigat=.false.;ltbv=.false.;llangevin=.false.;lax=.false.
-    if (present(lprteatR))lprteat=lprteatR; if(present(lsigatR))lsigat=lsigatR;  if(present(ltabvois))ltbv=ltabvois
-    if (present(llangevinR))llangevin=llangevinR; if(present(laxR))lax=laxR
-
-    select type(atndm)
-       !    type is (atom_config)
-       class is (atom_config)
-       call atndm%init(im,imm,ltabvois,nvois,rvois=0.d0)
-    type is (atom_config_e)
-       atndm%llangevin=llangevin
-       atndm%lax=lax
-       atndm%lprteat=lprteat
-       atndm%lsigat=lsigat
-       call atndm%init(im,imm,ltabvois,nvois,rvois=0.d0)
-    end select
-
-    atndm%icaltabt=0
-    atndm%xp(:,1:imm)=xp(:,1:imm)
-    atndm%fp(:,1:imm)=fp(:,1:imm)
-    atndm%ityp(1:imm)=ityp(1:imm)
-    atndm%ielat(1:im)=ielat(1:im)
-    if (present(lgul))atndm%lgul(1:imm)=lgul(1:imm)
-    if (ldealloc) deallocate(xp,fp,ityp,ielat)
-    if (present(lgul))deallocate(lgul)
-    if (present(num_at_glob))then
-       atndm%num_at_glob(1:imm)=num_at_glob(1:imm)
-       if (ldealloc) deallocate(num_at_glob)
-    end if
-
-    if (ltbv) then
-       atndm%ltabvois=.true.
-       atndm%iwmax(1:imm)=iwmax(1:imm)
-       atndm%indi(1:nvois)=indi(1:nvois)
-       if (ldealloc) deallocate(iwmax,indi)
-    end if
-
-    select type(atndm)
-    type is (atom_config_d)
-       if (present(vp))then
-          atndm%vp(:,1:imm)=vp(:,1:imm)
-          if (ldealloc) deallocate(vp)
-       end if
-       if(present(xpp))then
-          atndm%xpp(:,1:imm)=xpp(:,1:imm)
-          if (ldealloc) deallocate(xpp)
-       end if
-    type is (atom_config_e)
-       if (present(sigat).and.(atndm%lsigat))then
-          !  allocate(sigat(3,3,imm))
-          atndm%sigat(:,:,1:atndm%imm)=sigat(:,:,1:atndm%imm)
-          if (ldealloc) deallocate(sigat)
-       end if
-       if (present(eat).and.(atndm%lprteat))then
-          !          allocate(eat(imm))
-          atndm%eat(1:atndm%imm)=eat(1:atndm%imm)
-          if (ldealloc) deallocate(eat)
-       end if
-       if (present(glangv).and.(atndm%llangevin))then
-          atndm%glangv(1:3,1:atndm%imm)=glangv(1:3,1:atndm%imm)
-          if (ldealloc) deallocate(glangv)
-       end if
-       if (present(ax).and.(atndm%lax))then
-          atndm%ax(1:3,1:atndm%imm)=ax(1:3,1:atndm%imm)
-          if (ldealloc) deallocate(ax)
-       end if
-    end select
-!    type is (atom_config_d)
-       if (present(vp))then
-!          atndm%vp(:,1:imm)=vp(:,1:imm)
-          if ((ldealloc).and.allocated(vp)) deallocate(vp)
-       end if
-       if(present(xpp))then
-!          atndm%xpp(:,1:imm)=xpp(:,1:imm)
-          if  ((ldealloc).and.allocated(xpp)) deallocate(xpp)
-       end if
-
-  end subroutine ndm2config
-
-  subroutine config2ndm (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall,lgul)
-    class(atom_config),intent(inout)::atndm
-    integer,intent(out)::im
-    integer,intent(out)::imm
-    real(double),intent(out),allocatable:: xp(:,:),fp(:,:)
-    logical,allocatable,optional::lgul(:)
-    integer,intent(out),dimension(:),allocatable::ityp,num_at_glob,ielat
-    logical, intent(out)::ltabvois
-    integer, optional,intent(out),allocatable ::iwmax(:)
-    integer,optional,intent(out),allocatable:: indi(:)
-
-    real(double),optional,intent(inout),allocatable:: vp(:,:),xpp(:,:)
-
-    real(double),optional,intent(inout),allocatable::eat(:),sigat(:,:,:),ax(:,:)
-    logical,optional,intent(in)::ldeall
-    
-    logical::ldealloc
-    integer::is
-    ldealloc=.false.
-    if (present(ldeall))ldealloc=ldeall
-    imm=atndm%imm
-    im=atndm%im
-    if (.not.(allocated(xp)))then
-       allocate(xp(3,imm));allocate(fp(3,imm));allocate(vp(3,imm));allocate(xpp(3,imm))
-       allocate(ityp(imm));allocate(ielat(imm));allocate(num_at_glob(imm))
-       if (present(lgul))allocate(lgul(imm))
-    end if
-    vp=0;xpp=0
-    xp(:,1:imm)=atndm%xp(:,1:imm)
-    fp(:,1:imm)=atndm%fp(:,1:imm)
-    ityp(1:imm)=atndm%ityp(1:imm)
-    if (present(lgul))lgul(1:imm)=atndm%lgul(1:imm)
-    num_at_glob(1:imm)=atndm%num_at_glob(1:imm)
-    ielat(1:imm)=atndm%ielat(1:imm)
-    ltabvois=atndm%ltabvois
-    if (atndm%ltabvois) then
-       if (.not.allocated(iwmax))allocate(iwmax(imm))
-       iwmax(1:imm)=atndm%iwmax(1:imm)
-       is =size(atndm%indi)
-       if (.not.allocated(indi))allocate(indi(is))
-       indi(1:is)=atndm%indi(1:is)
-    end if
-    select type(atndm)
-    type is (atom_config_d)
-       if(present(vp))vp(:,1:imm)=atndm%vp(:,1:imm)
-       if(present(xpp))xpp(:,1:imm)=atndm%xpp(:,1:imm)
-    type is (atom_config_e)
-       if (present(sigat).and.(atndm%lsigat))then
-          if (.not.(allocated(sigat)) )  allocate(sigat(3,3,imm))
-          sigat(:,:,1:atndm%imm)=atndm%sigat(:,:,1:atndm%imm)
-       end if
-       if (present(eat).and.(atndm%lprteat))then
-          if(.not.(allocated(eat)))   allocate(eat(imm))
-          eat=0
-          eat(1:atndm%im)=atndm%eat(1:atndm%im)
-       end if
-       if (present(ax).and.(atndm%lax))then
-          if(.not.(allocated(ax)))   allocate(ax(3,imm))
-          ax=0
-          ax(:,1:atndm%im)=atndm%ax(:,1:atndm%im)
-       end if
-       if (ldealloc)call atndm%dealloc
-
-    end select
-  end subroutine config2ndm
+!!$  subroutine ndm2config (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,nvois,vp,xpp,&
+!!$       &lprteatR,eat,lsigatR,sigat,llangevinR,glangv,laxR,ax,ldeall,lgul)
+!!$    class(atom_config)::atndm
+!!$    integer,intent(in)::im,imm
+!!$    real(double),intent(inout),allocatable,dimension(:,:):: xp,fp
+!!$    integer,intent(inout),dimension(:),allocatable::ityp,ielat
+!!$    integer,optional,intent(inout),allocatable,dimension(:)::num_at_glob
+!!$    logical, optional,intent(in)::ltabvois
+!!$    integer,optional,intent(in)::nvois
+!!$    integer, optional,intent(inout),allocatable ::iwmax(:)
+!!$    integer,optional,intent(inout),allocatable:: indi(:)
+!!$    real(double),optional,intent(inout),dimension(:,:),allocatable:: vp,xpp
+!!$    real(double),optional,intent(inout),allocatable:: eat(:),sigat(:,:,:),glangv(:,:),ax(:,:)
+!!$
+!!$    logical,intent(in),optional ::lprteatR,lsigatR,llangevinR,laxR
+!!$    logical,allocatable,optional::lgul(:)
+!!$    logical ::lprteat,lsigat ,ltbv,llangevin,lax
+!!$    logical,optional,intent(in)::ldeall
+!!$
+!!$    real(double)::rvois
+!!$    
+!!$    logical::ldealloc
+!!$
+!!$    ldealloc=.false.
+!!$    if (present(ldeall))ldealloc=ldeall
+!!$
+!!$    lprteat=.false.;lsigat=.false.;ltbv=.false.;llangevin=.false.;lax=.false.
+!!$    if (present(lprteatR))lprteat=lprteatR; if(present(lsigatR))lsigat=lsigatR;  if(present(ltabvois))ltbv=ltabvois
+!!$    if (present(llangevinR))llangevin=llangevinR; if(present(laxR))lax=laxR
+!!$
+!!$    select type(atndm)
+!!$       !    type is (atom_config)
+!!$       class is (atom_config)
+!!$       call atndm%init(im,imm,ltabvois,nvois,rvois=0.d0)
+!!$    type is (atom_config_e)
+!!$       atndm%llangevin=llangevin
+!!$       atndm%lax=lax
+!!$       atndm%lprteat=lprteat
+!!$       atndm%lsigat=lsigat
+!!$       call atndm%init(im,imm,ltabvois,nvois,rvois=0.d0)
+!!$    end select
+!!$
+!!$    atndm%icaltabt=0
+!!$    atndm%xp(:,1:imm)=xp(:,1:imm)
+!!$    atndm%fp(:,1:imm)=fp(:,1:imm)
+!!$    atndm%ityp(1:imm)=ityp(1:imm)
+!!$    atndm%ielat(1:im)=ielat(1:im)
+!!$    if (present(lgul))atndm%lgul(1:imm)=lgul(1:imm)
+!!$    if (ldealloc) deallocate(xp,fp,ityp,ielat)
+!!$    if (present(lgul))deallocate(lgul)
+!!$    if (present(num_at_glob))then
+!!$       atndm%num_at_glob(1:imm)=num_at_glob(1:imm)
+!!$       if (ldealloc) deallocate(num_at_glob)
+!!$    end if
+!!$
+!!$    if (ltbv) then
+!!$       atndm%ltabvois=.true.
+!!$       atndm%iwmax(1:imm)=iwmax(1:imm)
+!!$       atndm%indi(1:nvois)=indi(1:nvois)
+!!$       if (ldealloc) deallocate(iwmax,indi)
+!!$    end if
+!!$
+!!$    select type(atndm)
+!!$    type is (atom_config_d)
+!!$       if (present(vp))then
+!!$          atndm%vp(:,1:imm)=vp(:,1:imm)
+!!$          if (ldealloc) deallocate(vp)
+!!$       end if
+!!$       if(present(xpp))then
+!!$          atndm%xpp(:,1:imm)=xpp(:,1:imm)
+!!$          if (ldealloc) deallocate(xpp)
+!!$       end if
+!!$    type is (atom_config_e)
+!!$       if (present(sigat).and.(atndm%lsigat))then
+!!$          !  allocate(sigat(3,3,imm))
+!!$          atndm%sigat(:,:,1:atndm%imm)=sigat(:,:,1:atndm%imm)
+!!$          if (ldealloc) deallocate(sigat)
+!!$       end if
+!!$       if (present(eat).and.(atndm%lprteat))then
+!!$          !          allocate(eat(imm))
+!!$          atndm%eat(1:atndm%imm)=eat(1:atndm%imm)
+!!$          if (ldealloc) deallocate(eat)
+!!$       end if
+!!$       if (present(glangv).and.(atndm%llangevin))then
+!!$          atndm%glangv(1:3,1:atndm%imm)=glangv(1:3,1:atndm%imm)
+!!$          if (ldealloc) deallocate(glangv)
+!!$       end if
+!!$       if (present(ax).and.(atndm%lax))then
+!!$          atndm%ax(1:3,1:atndm%imm)=ax(1:3,1:atndm%imm)
+!!$          if (ldealloc) deallocate(ax)
+!!$       end if
+!!$    end select
+!!$!    type is (atom_config_d)
+!!$       if (present(vp))then
+!!$!          atndm%vp(:,1:imm)=vp(:,1:imm)
+!!$          if ((ldealloc).and.allocated(vp)) deallocate(vp)
+!!$       end if
+!!$       if(present(xpp))then
+!!$!          atndm%xpp(:,1:imm)=xpp(:,1:imm)
+!!$          if  ((ldealloc).and.allocated(xpp)) deallocate(xpp)
+!!$       end if
+!!$
+!!$  end subroutine ndm2config
+!!$
+!!$  subroutine config2ndm (atndm,im,imm,xp,fp,ityp,ielat,num_at_glob,ltabvois,iwmax,indi,vp,xpp,eat,sigat,ax,ldeall,lgul)
+!!$    class(atom_config),intent(inout)::atndm
+!!$    integer,intent(out)::im
+!!$    integer,intent(out)::imm
+!!$    real(double),intent(out),allocatable:: xp(:,:),fp(:,:)
+!!$    logical,allocatable,optional::lgul(:)
+!!$    integer,intent(out),dimension(:),allocatable::ityp,num_at_glob,ielat
+!!$    logical, intent(out)::ltabvois
+!!$    integer, optional,intent(out),allocatable ::iwmax(:)
+!!$    integer,optional,intent(out),allocatable:: indi(:)
+!!$
+!!$    real(double),optional,intent(inout),allocatable:: vp(:,:),xpp(:,:)
+!!$
+!!$    real(double),optional,intent(inout),allocatable::eat(:),sigat(:,:,:),ax(:,:)
+!!$    logical,optional,intent(in)::ldeall
+!!$    
+!!$    logical::ldealloc
+!!$    integer::is
+!!$    ldealloc=.false.
+!!$    if (present(ldeall))ldealloc=ldeall
+!!$    imm=atndm%imm
+!!$    im=atndm%im
+!!$    if (.not.(allocated(xp)))then
+!!$       allocate(xp(3,imm));allocate(fp(3,imm));allocate(vp(3,imm));allocate(xpp(3,imm))
+!!$       allocate(ityp(imm));allocate(ielat(imm));allocate(num_at_glob(imm))
+!!$       if (present(lgul))allocate(lgul(imm))
+!!$    end if
+!!$    vp=0;xpp=0
+!!$    xp(:,1:imm)=atndm%xp(:,1:imm)
+!!$    fp(:,1:imm)=atndm%fp(:,1:imm)
+!!$    ityp(1:imm)=atndm%ityp(1:imm)
+!!$    if (present(lgul))lgul(1:imm)=atndm%lgul(1:imm)
+!!$    num_at_glob(1:imm)=atndm%num_at_glob(1:imm)
+!!$    ielat(1:imm)=atndm%ielat(1:imm)
+!!$    ltabvois=atndm%ltabvois
+!!$    if (atndm%ltabvois) then
+!!$       if (.not.allocated(iwmax))allocate(iwmax(imm))
+!!$       iwmax(1:imm)=atndm%iwmax(1:imm)
+!!$       is =size(atndm%indi)
+!!$       if (.not.allocated(indi))allocate(indi(is))
+!!$       indi(1:is)=atndm%indi(1:is)
+!!$    end if
+!!$    select type(atndm)
+!!$    type is (atom_config_d)
+!!$       if(present(vp))vp(:,1:imm)=atndm%vp(:,1:imm)
+!!$       if(present(xpp))xpp(:,1:imm)=atndm%xpp(:,1:imm)
+!!$    type is (atom_config_e)
+!!$       if (present(sigat).and.(atndm%lsigat))then
+!!$          if (.not.(allocated(sigat)) )  allocate(sigat(3,3,imm))
+!!$          sigat(:,:,1:atndm%imm)=atndm%sigat(:,:,1:atndm%imm)
+!!$       end if
+!!$       if (present(eat).and.(atndm%lprteat))then
+!!$          if(.not.(allocated(eat)))   allocate(eat(imm))
+!!$          eat=0
+!!$          eat(1:atndm%im)=atndm%eat(1:atndm%im)
+!!$       end if
+!!$       if (present(ax).and.(atndm%lax))then
+!!$          if(.not.(allocated(ax)))   allocate(ax(3,imm))
+!!$          ax=0
+!!$          ax(:,1:atndm%im)=atndm%ax(:,1:atndm%im)
+!!$       end if
+!!$       if (ldealloc)call atndm%dealloc
+!!$
+!!$    end select
+!!$  end subroutine config2ndm
 
 
   

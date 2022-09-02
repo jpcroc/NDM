@@ -7,7 +7,7 @@ module dmloop_lpr_mod
 
   USE atomconfig,only : atom_config_d
   USE cellconfig, only:cell_config,caltabtc
-  USE boxconfig,only:box_config
+  USE boxconfig,only:box_config,box_config_lpr
   use Tpara,only:para_space_config
   use var_pot,only:tabv3,tabf3,ncoucx,ncoucy,ncoucz,q,alpha,auxe,iewald
 
@@ -37,7 +37,7 @@ contains
     implicit none
 
     type(para_space_config)::psc
-    type(box_config)::boxndm
+    type(box_config_lpr)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
 #ifdef PARA
@@ -52,25 +52,24 @@ contains
     logical::lini=.false.
     logical:: lreturn
     if (present(linit))lini=linit
-
+    
 
     if (rang==0) write (6, *) '***** PREMIERE ITERATION LPR  ****', itloopmax,timeloopmax
 
     if(lini) then 
        ! Initialization -------------------------------------------------------
        IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
-          call initlprNose(atpr,celndm,boxndm)
+          call initlprNose(atpr,celndm,boxndm%box_config)
        ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
           call initlpr(atpr,celndm,boxndm,psc)
        END IF
     end if
-
     ! MD loop -------------------------------------------------------------
 
     do while ((iteration.le.itloopmax).and.(timel.lt.timeloopmax))
     iteration = iteration+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
-  CALL CalFo(sig,potist,atpr,celndm,boxndm,t_sigma=.true.,psc=psc)
+  CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
 
 !  CALL CalFo(sig,potist,atpr,celndm)
   if (l2t)then
@@ -80,13 +79,13 @@ contains
     end if
     if (lTberendsen) call calfoberend(atpr)
 !  write(6,*)'dml potist ',potist,atpr%potist
-       call prNose(atpr,celndm,boxndm,psc)
+       call prNose(atpr,celndm,boxndm%box_config,psc)
     ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
        call pr1(atpr,celndm,boxndm,psc)
        timel=timel+tstep
     END IF
-    call analyseT(atpr,celndm,boxndm,psc)
-     call controleT(atpr,celndm,boxndm,psc,lreturn)
+    call analyseT(atpr,celndm,boxndm%box_config,psc)
+     call controleT(atpr,celndm,boxndm%box_config,psc,lreturn)
 
      if (lreturn) return
 

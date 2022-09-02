@@ -15,7 +15,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     class(atom_config),intent(in)::atbv
-    type(box_config),intent(in)::boxbv
+    class(box_config),intent(in)::boxbv
     type(cell_config),intent(in):: celbv
     
     ! variables locales

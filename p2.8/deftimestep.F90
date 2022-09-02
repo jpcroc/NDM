@@ -24,7 +24,7 @@ subroutine deftimestep(atcf,box)
 
   implicit none
   class (atom_config_d)::atcf
-  type(box_config)::box
+  class(box_config)::box
 
 
     integer :: i, iti, ic, expos, imax,ikoloc
