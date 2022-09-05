@@ -76,7 +76,7 @@ contains
     nfp=-1
     timecdp=-1.
     lcrearead=.false.
-    ncreadp=-1
+    ncreadp=100000
     open(unit=73, file='creaDPin', status='unknown')
     read (73, nml=inputcdp)
     timecdp=timecdp*1d-15
@@ -288,7 +288,6 @@ contains
              call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.true.,ivisumol=ivisu)
              call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.true.)
           end if
-          
 !          call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
  !         call 
           if (ltimec) then
