@@ -116,6 +116,7 @@ contains
     end if
 #endif  
     !<---------setting the configuration by generation gin / cin file --------------
+
     select case (igen)
     case (-1)
        formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'

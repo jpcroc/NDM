@@ -107,7 +107,7 @@ contains
     real(double):: unitE
     character*5 :: cunitE
 
-
+    write(6,*)'INNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN'
     if (dmtype==24) then
        CALL init_trempe_fire(tstep, fire_nstep, fire_alph)
     END IF
@@ -195,7 +195,7 @@ contains
     ! Nombre de thermostats de Hoover
     IF (nHoover.LT.0) nHoover=0
     IF (.NOT.lTHoover) nHoover=0
-    ALLOCATE(zHoover(1:nHoover+1))
+    if (.not.(allocated(zhoover)))ALLOCATE(zHoover(1:nHoover+1))
 
 
     IF (lTHoover) THEN
@@ -252,9 +252,11 @@ contains
     ELSE
        gNose=0.d0; zHoover(1)=0.d0
     END IF
+    if (.not.(allocated(sp)))then
+       ALLOCATE(sp(1:3,1:atpr%imm), sdot(1:3,1:atpr%imm), sdot_new(1:3,1:atpr%imm))
+       if (dmtype==24)     ALLOCATE(sfp(1:3,1:atpr%imm),spp(1:3,1:atpr%imm))
+    end if
 
-    ALLOCATE(sp(1:3,1:atpr%imm), sdot(1:3,1:atpr%imm), sdot_new(1:3,1:atpr%imm))
-    if (dmtype==24)     ALLOCATE(sfp(1:3,1:atpr%imm),spp(1:3,1:atpr%imm))
     ! Coordonnées réduites des atomes et leurs dérivées à l'instant initial
     if (dmtype.ne.15) then
        sp(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%xp(:,1:atpr%im) )

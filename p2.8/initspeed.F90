@@ -129,7 +129,7 @@ contains
     if (lvpread) then
        !       oldtstep=1.0d-15
        tempsauv=tempinstT(atcf)
-       if (myidsp==0) write(6,*)'tempsauv ',tempsauv
+      if (myidsp==0) write(6,*)'tempsauv ',tempsauv
 
        atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*tstep/oldtstep
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep

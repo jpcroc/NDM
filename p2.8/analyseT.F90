@@ -247,7 +247,7 @@ contains
                    write(6,*)'a',boxndm%at(1,1),boxndm%at(2,1),boxndm%at(3,1)
                    write(6,*)'b',boxndm%at(1,2),boxndm%at(2,2),boxndm%at(3,2)
                    write(6,*)'c',boxndm%at(1,3),boxndm%at(2,3),boxndm%at(3,3)
-
+                   write(6,*)'H0',h0
                    Call MatInv(h0, invh0)
                    Transformation=MatMul(boxndm%at,invh0)
                    ! Strain tensor (Lagrange definition)

@@ -524,12 +524,12 @@ contains
        case(4)
           if (lprahman) then
              dmtype=8
+             if (llangevin) dmtype=88
           end if
           
        end select
     end if
 
-       
 
     select case(ipotentiel)
     case(-10,-11)
@@ -881,8 +881,12 @@ contains
        if (rang==0) write(6,*)'Langevin avec Text pas defini : stop'
        call arret_ndm
     end if
-    if(lLangevin) then
-       dmtype=4
+    if(llangevin) then
+       if (lpr) then
+          dmtype=88
+       else
+          dmtype=4
+       end if
     end if
 
     ! end check
@@ -1032,7 +1036,7 @@ contains
     end if
     if (rang==0) write (6, *)
     if (rang==0) write (6, '(a,I2)') ' -------- caracteristiques du run DM--------', dmtype
-
+    write(6,*)'DDMMM',dmtype       
     select case (dmtype)
     case(111)
        if (rang==0) write (6,'(a)') '|=========       ONE STEP           ===============|'
@@ -1071,6 +1075,9 @@ contains
        if (rang==0) write (6,'(a)') '      TEST DES FORCES '
     case (8)
        if (rang==0) write (6,'(a)') '      PARRINELLO RAHMAN AUTOCOHERENT '
+       lprahman=.true.
+    case (88)
+       if (rang==0) write (6,'(a)') '      PCst en LANGEVIN'
        lprahman=.true.
     case (6)
        if (rang==0) write (6,'(a)') '      ANALYSE DES POSITIONS EN FIN DE CASCADE '

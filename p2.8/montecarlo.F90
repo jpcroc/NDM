@@ -2,7 +2,7 @@ module montecarlo_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m,only:  lperiod, tstep, timel, tstep,  itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
-       &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,&
+       &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,unitP,&
        &lrestartmcgc,imm_glob,iseed,sig,lprahman,sigext,h0,kcell,ucell,ihbox0,sigtot,sigkine
   USE atomconfig,only:atom_config,atom_config_d, switch_atom
   USE cellconfig, only:cell_config, caltabtC
@@ -202,10 +202,10 @@ contains
                &im_glob=config_atom_nplus1(1)%im_glob,imm_glob=imm_glob)
           fnamread= fnam(1:lenfnam)//'.N.cout'
           !  write(6,*)'R1',config_atom_n(1)%imm
-          call read_cin(box_old0,1,config_atom_old_0,config_atom_n(1)%imm,fnamread) ! 1=complet
+          call read_cin(box_old0,1,config_atom_old_0%atom_config_d,config_atom_n(1)%imm,fnamread) ! 1=complet
           fnamread= fnam(1:lenfnam)//'.NP1.cout'
           ! write(6,*)'R2',config_atom_n(1)%imm
-          call read_cin(box_old1,1,config_atom_old_1,config_atom_n(1)%imm,fnamread) ! 1=complet
+          call read_cin(box_old1,1,config_atom_old_1%atom_config_d,config_atom_n(1)%imm,fnamread) ! 1=complet
           !seul MEGAMASTER A LES POSITIONS OLD
           call config_atom_old_0%copy_config(config_atom_n(1), lrescl=.true.)          
           call config_atom_old_1%copy_config(config_atom_nplus1(1), lrescl=.true.) 
@@ -247,13 +247,14 @@ contains
 
           if (lparapath) then
              if (lprahman) call boxmcgcpath(1)%master2slave(0,parapath%mpi_master)
-             call config_atom_n(1)%send2all(0,parapath%mpi_master)
-             call config_atom_nplus1(1)%send2all(0,parapath%mpi_master)
+             call config_atom_n(1)%atom_config_d%send2all(0,parapath%mpi_master)
+             call config_atom_nplus1(1)%atom_config_d%send2all(0,parapath%mpi_master)
 
              call config_cells_n(1)%send2all(0,parapath%mpi_master)
              call config_cells_nplus1(1)%send2all(0,parapath%mpi_master)
           end if
 #endif
+
           do ipp=2,nparapath
              config_cells_n(ipp)= config_cells_n(1)
              config_cells_nplus1(ipp)= config_cells_nplus1(1)
@@ -277,7 +278,6 @@ contains
 
     else !cas où lrestart = .false. 
 
-
        !deplacé !
        if (lbigmaster) then
           ! sauvegarde du système
@@ -285,11 +285,13 @@ contains
              boxmcgc_p=>boxmcgcpath(1)
              call config_atom_n(1)%copy_config(config_atom_old_0, lrescl=.true.)
              box_old0=boxmcgc_p
+
           else
              box_old1=boxmcgc
              do ipp=1,nparapath
                 atconf_nplus1=>config_atom_nplus1(ipp)
                 boxmcgc_p=>boxmcgcpath(ipp)
+             
                 call calcul_proba_des ! on initialise une désintégration qui va être accepté (car c'est la première) : Il faut calculer les proba pour les mettre dans OLD etdans config_atom_nplus1
                 call atconf_nplus1%copy_config(config_atom_old_1, lrescl=.true.)
              end do
@@ -585,7 +587,7 @@ contains
     real(double) :: Wpreced !sauvegarde Wprec pour posttraitement
     integer :: ipchemin, dir, accepta, ngen
     logical :: lbiais(0:1)
-    integer ::  premier_accept
+    integer ::  premier_accept,ia,j
     real(double) :: pot_moy, pot_wrmc, pot_NC, pot_SC
 
 
@@ -1753,14 +1755,14 @@ contains
 
     character(len=3), intent(in) :: protocol
     integer :: direc 
-    integer :: i,ic, ip, tot
+    integer :: i,ic, ip, tot,ia,j
     real(double) :: Ek_n, Ek_n_plus1, Ek_n_1s4, Ek_n_3s4, dQeff, Qeff,&
          &dWeff, dWork
     real(double) :: U_0, U_1, U_l_n_m1, U_l_n, H_l_n, H_l_n_m1, H_l_ini
 
     real(double) :: beta
     real(double)  :: Gl(3,atconf_Nplus1%im)
-    real(double)::rga, rga_s4
+    real(double)::rga, rga_s4,tempN,tempNP1,kineN,kineNP1
 
     real(double), dimension(ntyp) :: aux  !pour les calculs d'acceleration
     integer::rgcib,rgem,iloc
@@ -1898,7 +1900,27 @@ contains
           DO i=1, atconf_N%im
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
           END DO
-
+!!$          !          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p)
+!!$                    sigkine(:,:)=0.d0
+!!$          do ia = 1, atconf_Nplus1%im
+!!$             do j = 1,3
+!!$                sigkine(1:3,j) = sigkine(1:3,j) + cm(atconf_Nplus1%ityp(ia))*atconf_Nplus1%vp(1:3,ia)*atconf_Nplus1%vp(j,ia)
+!!$             enddo
+!!$          enddo
+!!$          sigkine(1:3,1:3) = boxmcgc_p%invVolu*sigkine(1:3,1:3)
+!!$#ifdef PARA
+!!$
+!!$       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!!$          call comm_space%sum(sigkine)
+!!$       end if
+!!$#endif
+!!$       ! Contrainte totale à l'instant t+dt
+!!$       sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
+!!$
+!!$          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p)
+!!$!          call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
+!!$          call calctemp (tempNP1,kineNP1,atconf_Nplus1,cells_nplus1,latcomp=.true.)
+!!$          write(6,*)'TEMP',ip,tempNp1,0.333*(sigtot(1,1)+sigtot(2,2)+sigtot(3,3))*unitP
        end if !master general
 
        if (lbigmaster) then !master general
@@ -2700,12 +2722,12 @@ contains
     probaR(:)=probaR(:)/somP
   end subroutine init_instyp
 !!!!!!!!!!!!!!*******************!!!!!!!!!!!!!!!!!!!!!!!*****************!!!!!!!!!!!!!!!
-  subroutine initMCLPR(np1)
-    integer::np1
-
-    ALLOCATE(sp(1:3,1:np1), sdot(1:3,1:np1), sdot_new(1:3,1:np1))
-    return
-  end subroutine initMCLPR
+!!$  subroutine initMCLPR(np1)
+!!$    integer::np1
+!!$
+!!$    ALLOCATE(sp(1:3,1:np1), sdot(1:3,1:np1), sdot_new(1:3,1:np1))
+!!$    return
+!!$  end subroutine initMCLPR
   subroutine calcukcell
     integer::i
     Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
@@ -2720,6 +2742,7 @@ contains
     ! Énergie potentielle de la cellule (Eq. 2.25, Ref.2)
     Ucell = volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
   end subroutine calcukcell
+  
   subroutine langevinLPR( direc, protocol) !LANGEVIN
     !    use Parrinello_Rahman,only:h,hdo
     implicit none
@@ -2729,7 +2752,7 @@ contains
     integer :: direc 
     integer :: i,ic, ip, tot,ia,j
     real(double) :: Ek_n, Ek_n_plus1, Ek_n_1s4, Ek_n_3s4, dQeff, Qeff,&
-         &dWeff, dWork
+         &dWeff, dWork,tempN,tempNP1,kineN,kineNP1
     real(double) :: U_0, U_1, U_l_n_m1, U_l_n, H_l_n, H_l_n_m1, H_l_ini
     real(double)::EkP_n_1s4 ,EkP_n_3s4 ,EkP_n_p1 ,EkP_n 
 
@@ -2782,8 +2805,7 @@ contains
     end if ! Master général
 
     aux(:ntyp) = tstep/(cm(:ntyp)*2.d0)
-
-
+    
     !########################################################################################################################
     !                               Ajout/Retrait d'une particule N+1: système N vers N+1 - direction = 0
     !########################################################################################################################
@@ -2793,8 +2815,8 @@ contains
        !incrémentation de lambda
        call lambda(direc,ip, protocol)
        !lambda_mc = dble(ip)/dble(pas_lambda_mc)
-
        if (lbigmaster) then ! Master général
+    
           Ek_n = 0.0
           Ek_n_plus1 = 0.0  
           Ek_n_1s4 = 0.0
@@ -2855,24 +2877,26 @@ contains
 
        rgah=exp(-gamlg*tstep/2)
           call noise (glanh,3)
-
+!          write(6,*)'rgah',rgah,glanh,boxmcgc_p%wbox
+          
           boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
                !            + tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul( sigtot(:,:) - sigext(:,:),boxmcgc_p%invtrh(:,:) ) &
                + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
 
           call calcUKcell
+!          write(6,*)'boxmcgc_p%hdot(:,:)1',boxmcgc_p%hdot(:,:)
           EkP_n_1s4=kcell
 
           boxmcgc_p%hdot(:,:)= (boxmcgc_p%hdot&
                &+tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)) )*ihbox0(:,:)
-
+!          write(6,*)'boxmcgc_p%hdot(:,:)2',boxmcgc_p%hdot(:,:)
           !8888888888888888888888888
           ! Coordonnées réduites des atomes à l'instant t+dt
           sp(:,1:atconf_Nplus1%im) = sp(:,1:atconf_Nplus1%im) + sdot(:,1:atconf_Nplus1%im)*tstep
 
           ! Tenseur h à l'instant t+dt
           boxmcgc_p%h(:,:) = boxmcgc_p%h(:,:) + boxmcgc_p%hdot(:,:)*tstep*ihbox0(:,:)
-
+!          write(6,*)'boxmcgc_p%h',boxmcgc_p%h(:,:)
           !    write(6,*)'hdot',hdot
           ! Coordonnées réelles à l'instant t+dt
 
@@ -2893,11 +2917,35 @@ contains
              atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
           END DO
+          
           !conditions periodiques 
           if (lperiod)    then
              call periodbox(boxmcgc_p,atconf_N)
              call periodbox(boxmcgc_p,atconf_Nplus1)
           end if
+          !          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p)
+!!$                    sigkine(:,:)=0.d0
+!!$          do ia = 1, atconf_Nplus1%im
+!!$             do j = 1,3
+!!$                sigkine(1:3,j) = sigkine(1:3,j) + cm(atconf_Nplus1%ityp(ia))*atconf_Nplus1%vp(1:3,ia)*atconf_Nplus1%vp(j,ia)
+!!$             enddo
+!!$          enddo
+!!$          sigkine(1:3,1:3) = boxmcgc_p%invVolu*sigkine(1:3,1:3)
+!!$#ifdef PARA
+!!$
+!!$       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!!$          call comm_space%sum(sigkine)
+!!$       end if
+!!$#endif
+!!$       ! Contrainte totale à l'instant t+dt
+!!$       sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
+
+          
+!          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p)
+          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p)
+!          call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
+          call calctemp (tempNP1,kineNP1,atconf_Nplus1,cells_nplus1,latcomp=.true.)
+          write(6,*)'TEMP',ip,tempNP1,sigtot(1,1)*unitP,boxmcgc_p%h(1,1)*1d8
 
        end if !on sort du master général (bigmaster)
        !8888888888888888888888888

@@ -105,6 +105,8 @@ contains
        write(6,*)'atomfigE'
        write(6,*)'FLAGSFF', atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
     end select
+    write(6,*)'TYPE PRECISE ? SI NON extension'
+
   end subroutine print_type
   subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
     class(atom_config),intent(inout)::atconf
@@ -189,8 +191,9 @@ contains
           allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
        end if
        atconf%vp=0;atconf%xpp=0
+    end select
+    select type (atconf)
     class is (atom_config_e)
-       
        !       if ((lrealloc).and.(allocated(atconf%vp)))then
 !          deallocate(atconf%vp); deallocate(atconf%xpp)
 !       end if

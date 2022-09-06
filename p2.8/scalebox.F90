@@ -53,7 +53,6 @@ contains
           if (rang==0) write (6, *) 'IT =',ITeration,'chgt nox noy noz  = '&
                , celndm%nox,celndm%noy, celndm%noz
        end if
-       call boxndm%print
        celndm%celsize(1) = boxndm%zl(1)/float(celndm%nox)
        celndm%celsize(2) = boxndm%zl(2)/float(celndm%noy)
        celndm%celsize(3) = boxndm%zl(3)/float(celndm%noz)

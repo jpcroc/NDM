@@ -170,6 +170,8 @@ contains
        select type(atrcf)
        class is (atom_config_d)
           atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
+       end select
+       select type(atrcf)
        class is (atom_config_e)
 !          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           if (atrcf%lax) then
@@ -603,6 +605,8 @@ contains
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
 !             read (lucin, err=456) buffer                     !ax inutile
           end if
+       end select
+       select type(atcinr)
        class is (atom_config_e)
           if (icintypemod==1) then
 !!$             read (lucin, err=456) buffer                     !xpp
@@ -708,6 +712,8 @@ contains
              enddo
 !             read (lucin, err=456) buffer                     !ax inutile
           end if
+       end select
+       select type(atcinr)
        class is (atom_config_e)
           if (icintypemod==1) then
 !!$             read (lucin, err=456) buffer                     !xpp

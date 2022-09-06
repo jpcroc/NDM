@@ -15,6 +15,7 @@ module boxconfig
      integer::ipbc(3) ! conditions périodiques sur les plan b-c,a-c,a-b
    contains
      procedure, pass::print=>boxprint
+     procedure, pass::showtype=>boxshowtype
      procedure, pass::master2slave=>boxmaster2slave
   end type box_config
 
@@ -47,6 +48,20 @@ contains
     return
   end subroutine boxmaster2slave
    
+  subroutine boxshowtype(box)
+
+    class(box_config)::box
+    select type(box)
+    type is (box_config)
+       write(6,*)'TYPE IS BOXCONFIG'
+    type is  (box_config_lpr)
+       write(6,*)'TYPE IS BOXCONFIG_LPR'
+    end select
+    write(6,*)'TYPE PRECISE ? SI NON extension'
+  end subroutine boxshowtype
+          
+          
+    
   
   subroutine initbox(boxnew,at,ipbc,zl)
     class(box_config),intent(inout)::boxnew
@@ -173,6 +188,13 @@ contains
      write(unitw,*)'boxprt bg',boxprt%bg(:,:)
      write(unitw,*)'boxprt volu',boxprt%volu
      write(unitw,*)'boxprt icaltabt',boxprt%icaltabt
+
+     select type (boxprt)
+     class is (box_config_lpr)
+        write(unitw,*)'boxprt h',boxprt%h(:,:)
+        write(unitw,*)'boxprt hdot',boxprt%hdot(:,:)
+        write(unitw,*)'boxprt wbox',boxprt%wbox
+     end select
    end subroutine boxprint
 
    subroutine periodbox(box,atcf)
@@ -225,6 +247,8 @@ contains
      select type (atcf)
      class is (atom_config_d)
         call cryst_to_cart (atcf%imm, atcf%xpp, box%bg,  -1)
+     end select
+     select type (atcf)
      class is (atom_config_e)
 
 !        call cryst_to_cart (atcf%imm, atcf%xpp, box%bg,  -1)
@@ -245,6 +269,8 @@ contains
                     select type (atcf)
                     class is (atom_config_d)
                        atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp
+                    end select
+                    select type (atcf)
                     class is (atom_config_e)
 !                       atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp
                        if(atcf%lax)   atcf%ax (ic,i) = atcf%ax(ic,i)  - cpp
@@ -285,6 +311,8 @@ contains
      select type (atcf)
      class is (atom_config_d)
         call cryst_to_cart (atcf%imm, atcf%xpp , box%at,  1)  !cryst vers cart
+     end select
+     select type (atcf)
      class is (atom_config_e)
 !        call cryst_to_cart (atcf%imm, atcf%xpp , box%at,  1)  !cryst vers cart
         if(atcf%lax) call cryst_to_cart (atcf%imm, atcf%ax , box%at,  1)  !cryst vers cart

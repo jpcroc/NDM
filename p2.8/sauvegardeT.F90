@@ -186,6 +186,8 @@ contains
                 class is (atom_config_d)
                    call comm_space%send(atdml%xpp(1:3,1:im),0,11015)
                    call comm_space%send(atdml%vp(1:3,1:im),0,11016)
+                end select
+                select type (atdml)
                 class is (atom_config_e)
                    !call comm_space%send(atdml%xpp(1:3,1:im),0,11005)
                    !call comm_space%send(atdml%vp(1:3,1:im),0,11006)
@@ -213,6 +215,8 @@ contains
           class is (atom_config_d)
              write (lucout) atdml%xpp
              write (lucout) atdml%vp
+          end select
+          select type (atdml)
           class is (atom_config_e)
 !             write (lucout) atdml%xpp
 !             write (lucout) atdml%vp
@@ -254,6 +258,8 @@ contains
        class is (atom_config_d)
           write (lucout) atdml%xpp
           write (lucout) atdml%vp
+       end select
+       select type (atdml)
        class is (atom_config_e)
 !          write (lucout) atdml%xpp
 !          write (lucout) atdml%vp
