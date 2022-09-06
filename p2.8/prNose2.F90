@@ -385,7 +385,6 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     !on connait hdot et sdot
     sold(1:3,1:atpr%imm) = sp(1:3,1:atpr%imm)
     sp(1:3,1:atpr%imm) = snew(1:3,1:atpr%imm)
-
     hold = h
     h = hnew
     fold = fNose

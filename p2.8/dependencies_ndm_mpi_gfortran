@@ -4,6 +4,7 @@ ndm :  \
 	DynamicPME.o \
 	ForceMatrix.o \
 	Mat_util.o \
+	NDM_ML.o \
 	NGC.o \
 	SMjuli.o \
 	T_kind_param_m.o \
@@ -92,6 +93,7 @@ ndm :  \
 	potrep.o \
 	pr2.o \
 	prNose2.o \
+	probMC.o \
 	prog.o \
 	rasmolT.o \
 	read_val.o \
@@ -102,6 +104,7 @@ ndm :  \
 	setcell.o \
 	setnoxsimple.o \
 	spline.o \
+	src_mld_derived_types.o \
 	steepestdescent.o \
 	tempinstT.o \
 	tersoff_zbl.o \
@@ -131,7 +134,6 @@ ForceMatrix.o :  \
 	constrconf.o \
 	cryst_to_car.o \
 	gen_com_m.o \
-	init_voisinage.o \
 	mod_para.o \
 	paraconfig.o \
 	parautils.o \
@@ -142,6 +144,20 @@ Mat_util.o :  \
 	T_kind_param_m.o \
 	arret_ndm.o \
 	gen_com_m.o
+
+NDM_ML.o :  \
+	T_kind_param_m.o \
+	Tpara.o \
+	arret_ndm.o \
+	atomconfig.o \
+	boxconfig.o \
+	caltabi.o \
+	cellconfig.o \
+	cryst_to_car.o \
+	gen_com_m.o \
+	notperiod.o \
+	src_mld_derived_types.o \
+	var_pot.o
 
 NGC.o :  \
 	Mat_util.o \
@@ -508,6 +524,7 @@ caltabi.o :  \
 	boxconfig.o \
 	cellconfig.o \
 	gen_com_m.o \
+	src_mld_derived_types.o \
 	var_pot.o \
 	vect_dist_mod.o
 
@@ -528,6 +545,7 @@ cdp.o :  \
 	cryst_to_car.o \
 	dmloop_pilot.o \
 	gen_com_m.o \
+	initspeed.o \
 	mod_para.o \
 	rasmolT.o \
 	sauvegardeT.o \
@@ -541,6 +559,7 @@ cellconfig.o :  \
 	atomconfig.o \
 	boxconfig.o \
 	cryst_to_car.o \
+	gen_com_m.o \
 	notperiod.o \
 	paraconfig.o
 
@@ -571,6 +590,7 @@ constrconf.o :  \
 controleT.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
+	analyseT.o \
 	arret_ndm.o \
 	atomconfig.o \
 	boxconfig.o \
@@ -706,6 +726,7 @@ dyn_vverlet.o :  \
 eamerco.o :  \
 	T_kind_param_m.o \
 	alloc_typ.o \
+	arret_ndm.o \
 	gen_com_m.o \
 	var_pot.o
 
@@ -715,6 +736,7 @@ eamtab.o :  \
 	arret_ndm.o \
 	erf.o \
 	gen_com_m.o \
+	input_pair.o \
 	spline.o \
 	var_pot.o
 
@@ -741,7 +763,6 @@ eloss.o :  \
 endrunT.o :  \
 	T_kind_param_m.o \
 	Tpara.o \
-	analyseT.o \
 	anapos.o \
 	arret_ndm.o \
 	atomconfig.o \
@@ -872,6 +893,7 @@ init_pot.o :  \
 	SMjuli.o \
 	T_kind_param_m.o \
 	alloc_typ.o \
+	arret_ndm.o \
 	boxconfig.o \
 	calpo.o \
 	calpo_ew.o \
@@ -1025,11 +1047,14 @@ montecarlo.o :  \
 	init_voisinage.o \
 	paraconfig.o \
 	parautils.o \
+	probMC.o \
 	rasmolT.o \
 	read_val.o \
+	recips.o \
 	sauvegardeT.o \
 	tempinstT.o \
-	var_pot.o
+	var_pot.o \
+	vect_dist_mod.o
 
 neb.o :  \
 	T_kind_param_m.o \
@@ -1129,6 +1154,7 @@ pr2.o :  \
 	gen_com_m.o \
 	recips.o \
 	scalebox.o \
+	tr_fire.o \
 	var_pot.o
 
 prNose2.o :  \
@@ -1144,8 +1170,13 @@ prNose2.o :  \
 	tempinstT.o \
 	var_pot.o
 
+probMC.o :  \
+	T_kind_param_m.o \
+	cryst_to_car.o
+
 prog.o :  \
 	ForceMatrix.o \
+	NDM_ML.o \
 	NGC.o \
 	T_kind_param_m.o \
 	Tpara.o \
@@ -1168,6 +1199,7 @@ prog.o :  \
 	montecarlo.o \
 	neb.o \
 	neb_module.o \
+	pr2.o \
 	read_val.o \
 	var_pot.o
 
@@ -1253,6 +1285,9 @@ setnoxsimple.o :  \
 spline.o :  \
 	T_kind_param_m.o \
 	gen_com_m.o
+
+src_mld_derived_types.o :  \
+	T_kind_param_m.o
 
 steepestdescent.o :  \
 	T_kind_param_m.o \

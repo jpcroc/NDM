@@ -71,7 +71,7 @@ module Parrinello_Rahman
 !!$  real(double), save, private :: invVolu
 
   ! Coordonnées réduites des atomes et leurs dérivées
-  real(double), allocatable, save, private :: sp(:,:), sdot(:,:), sdot_new(:,:),sfp(:,:),spp(:,:)
+  real(double), allocatable :: sp(:,:), sdot(:,:), sdot_new(:,:),sfp(:,:),spp(:,:)
 
   ! Variable associée au thermostat de Nosé-Hoover
   !  (zHoover est défini dans gen_com_m.F90)
@@ -85,8 +85,8 @@ module Parrinello_Rahman
 !  real(double)::wbox
   ! Variables uniquement nécessaires au calcul de l'énergie potentielle de la
   ! boîte
-  real(double), dimension(3,3), save , private ::trh0,invh0,invtrh0,epsi, tension
-  real(double), save , private ::volu0, invVolu0
+  real(double), dimension(3,3) ::trh0,invh0,invtrh0,epsi, tension
+  real(double) ::volu0, invVolu0
   REAL(double) ::  fire_alph
   INTEGER :: fire_nstep
 

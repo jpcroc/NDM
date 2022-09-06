@@ -3,15 +3,16 @@ module montecarlo_mod
   USE gen_com_m,only:  lperiod, tstep, timel, tstep,  itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,one,pi,text,tinit,&
        &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,&
-       &lrestartmcgc,imm_glob,iseed,sig,lprahman
+       &lrestartmcgc,imm_glob,iseed,sig,lprahman,sigext,h0,kcell,ucell,ihbox0,sigtot,sigkine
   USE atomconfig,only:atom_config,atom_config_d, switch_atom
   USE cellconfig, only:cell_config, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
   USE calfo_mod,only: calfo
   USE T_kind_param_m, ONLY:  double
   USE cryst_to_cart_mod, ONLY: cryst_to_cart
-  USE boxconfig,only:box_config,periodbox,box_config_lpr
+  USE boxconfig,only:box_config,periodbox,box_config_lpr,updatebox
   USE rasmolT_mod,only: rasmolT
+  USE scalebox_mod,only: scalebox
   USE sauvegardeT_mod,only:sauvegardeT
   use paraconfig,only:para_config,commconstr,initparapuresp
 #ifdef PARA
@@ -24,7 +25,7 @@ module montecarlo_mod
 #ifdef ML
   use NDM_ML,only:init_config_ml
 #endif
-  
+
   use read_val,only:rvois,ltabvois
   use var_pot,only:ipotentiel,rumax
   USE parautils,only:initloc,pointer_caltabt_calfo
@@ -38,6 +39,7 @@ module montecarlo_mod
   use config2data_mod,only:config2data
   USE constrconf_mod,only:read_cin
   use probMC,only:probMC1
+  use Parrinello_Rahman,only:sp,sdot, sdot_new,trh0,invh0,invtrh0,epsi,tension,volu0,invvolu0
   implicit none
 
   type, extends (atom_config_d):: atom_config_mc
@@ -65,12 +67,16 @@ module montecarlo_mod
   type(cell_config),allocatable,target:: config_cells_nplus1(:) !type derive cell_config du systeme a n+1 atomes
 
   type(atom_config_mc):: config_atom_old_0, config_atom_old_1, config_atom_new_0, config_atom_new_1 !config intermediaire pour suivre l'evolution des systemes: 0 -> syst N, 1 -> syst N+1.
-  
+
 
   type(box_config_lpr)::boxmcgc , box_new1, box_old1, box_new0, box_old0 !(les 2 dernurs définis uniquement pour bigmasters
   type(box_config_lpr),allocatable,target::boxmcgcpath(:)
   type(box_config_lpr),pointer::boxmcgc_p
-  
+
+  !LPR  
+  !  real(double), allocatable :: sp(:,:), sdot(:,:), sdot_new(:,:),sfp(:,:),spp(:,:)
+  !  real(double), dimension(3,3) ::trh0,invh0,invtrh0,epsi
+  !  real(double),dimension(3,3)::grsig,tension
 
   integer::nbatplus
   integer::  pas_lambda_mc,idirectionmcgc
@@ -78,7 +84,7 @@ module montecarlo_mod
 
   integer :: n_path ! nb de chemin d'insertion, a definir dans .din, par defaut 10
 
-  real(double), dimension(3,3) :: sig_n, sig_nplus1
+  real(double), dimension(3,3) :: sig_n, sig_nplus1,grsig
   real(double) :: potist_n, potist_nplus1
   real(double) :: Weff, Work
   logical::lmaster !(true= master du système N ou du système N+1)
@@ -101,7 +107,7 @@ module montecarlo_mod
   integer,parameter::nrins=10000
   real(double)::R0mcgc,fdfactmcgc,probaR(0:nrins),bublcenter(3),zlmin
   integer::ins_typ
-  
+
 contains 
 
   subroutine montecarlo
@@ -185,7 +191,7 @@ contains
        Weff_npp(:)=0
        pot_npp(:)=0
     end if
-  !  if (rang==0) write(6,*)' IN MCGC nbatplus, idirection',nbatplus,idirectionmcgc
+    !  if (rang==0) write(6,*)' IN MCGC nbatplus, idirection',nbatplus,idirectionmcgc
     if (lrestartmcgc) then
        if (lmegamaster) then
           write(*,*) 'imm_n, imm_nplus1', config_atom_n(1)%imm, config_atom_nplus1(1)%imm
@@ -213,7 +219,7 @@ contains
           else
              boxmcgcpath(1)=box_old1
              boxmcgc=box_old1
-          end if 
+          end if
           boxmcgc_p=>boxmcgcpath(1)
           call calcul_proba_des
           !recopier les nouvelles configs dans old 1
@@ -227,10 +233,10 @@ contains
              call analyse_montecarlo(config_atom_nplus1(1),config_cells_nplus1(1),boxmcgcpath(1),'SystNP1_init')
           end if !analyse_montecarlo
        end if ! if megamaster
-!#ifdef PARA
-!       if (lprahman) call boxmcgc%master2slave(0,mpi_world)
-!#endif
-       
+       !#ifdef PARA
+       !       if (lprahman) call boxmcgc%master2slave(0,mpi_world)
+       !#endif
+
        !il s'agit d'envoyer a tous les procs la direction, le Wprec et les config old et new
        if (lbigmaster) then
 
@@ -240,7 +246,7 @@ contains
 #ifdef PARA
 
           if (lparapath) then
-             if (lprahman) call boxmcgcpath(1)%master2slave(0,para_path%mpi_master)
+             if (lprahman) call boxmcgcpath(1)%master2slave(0,parapath%mpi_master)
              call config_atom_n(1)%send2all(0,parapath%mpi_master)
              call config_atom_nplus1(1)%send2all(0,parapath%mpi_master)
 
@@ -403,7 +409,7 @@ contains
     if (lmegamaster) then
        open(UNIT= 752, FILE="analyse_file", STATUS = 'new')
        open(UNIT= 85, FILE="restart_file", STATUS = 'new')
-!      open(UNIT= 753, FILE="nrj_pot_systacc", STATUS = 'new')
+       !      open(UNIT= 753, FILE="nrj_pot_systacc", STATUS = 'new')
        if (nparapath .gt. 1) then
           write(752,*) '#ACC/REF  direction  ipchemin  WeV(x nparapath)&
                & Wprec XPROB(x nparapath +1)'
@@ -417,7 +423,7 @@ contains
     !########################################################################################################################
 
     DO i_path = 1, n_path ! boucle à faire pour tous les procs
-!       if (lmegamaster) write(6,*)'PATH',i_path,direction
+       !       if (lmegamaster) write(6,*)'PATH',i_path,direction
        Weff_npp(:)=0
        pot_npp(:)=0
 
@@ -426,7 +432,7 @@ contains
              config_atom_nplus1(ipp)%vp(:,:)   = - config_atom_nplus1(ipp)%vp(:,:) !à chaque retour dans la boucle, on change de direction
              config_atom_n(ipp)%vp(:,:)   = - config_atom_n(ipp)%vp(:,:)
              if (lprahman) then
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!hdotpath(ipp,:,:)=-hdotpath(ipp,:,:)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!hdotpath(ipp,:,:)=-hdotpath(ipp,:,:)
              endif
           end do
           if (direction == 0) then
@@ -448,7 +454,7 @@ contains
           end if
 
           if (lcalc) then
-!             if (lbigmaster)write(6,*)'parapath',rang,i_path,ipp
+             !             if (lbigmaster)write(6,*)'parapath',rang,i_path,ipp
              atconf_n=> config_atom_n(ipp)
              cells_n=>config_cells_n(ipp)
              atconf_nplus1=>config_atom_nplus1(ipp)
@@ -563,7 +569,7 @@ contains
             &'mu_moy',mu_moy ,'mu_wrmc', mu_wrmc, 'mu_NC', mu_NC, 'mu_SC', mu_SC
        close(752)
        close(85)
-!      close(753)
+       !      close(753)
     end if
     !stop
   end subroutine montecarlo
@@ -596,7 +602,7 @@ contains
     lextend = .true.
     lperiod = .true.
     xprob_i(:) = 0.0
-!CRC
+    !CRC
     if (lbigmaster) then !master general
        if (lmegamaster) then ! megamaster et bigmaster sont indetiques ici je pense. Ce if ne sert à rien
           ipchemin=1
@@ -683,7 +689,7 @@ contains
                      &config_cells_nplus1(ipchemin),boxmcgcpath(ipchemin),'SystNP1_accepte')
              end if
              ! Ecriture de l'energie potentiel du chemin accepte
-!            write(753, '(2G25.16E3)') nrjpot_npp(ipchemin), kine
+             !            write(753, '(2G25.16E3)') nrjpot_npp(ipchemin), kine
           end if
        else
 !!!!!!!!!!!!!!!!!!!!!!!!!! REFUS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -695,7 +701,7 @@ contains
           config_atom_old_0%vp(:,:)   = - config_atom_old_0%vp(:,:)
           config_atom_old_1%vp(:,:)   = - config_atom_old_1%vp(:,:)
 !!!!!!!!!!!!!!!!!!!!!!          hdotCHANGE
-          
+
           accepta = 0
           if (dir == 0) then
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
@@ -816,7 +822,7 @@ contains
              call sauvegardeT(config_atom_new_0,config_cells_n(ipchemin),box_new0,3,fnamcout,latcomp=.true.)
              fnamcout = fnam(1:lenfnam)//'.NP1.cout'
              call sauvegardeT(config_atom_new_1,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
-!CRC CHECK LES cells...
+             !CRC CHECK LES cells...
           end if
 
           if (lmegamaster) then
@@ -827,7 +833,7 @@ contains
                      &,boxmcgcpath(ipchemin),'SystNP1_accepte')
              end if
              ! Ecriture de l'energie potentiel du chemin accepte
-!            write(753, '(2G25.16E3)') nrjpot_npp(ipchemin), kine 
+             !            write(753, '(2G25.16E3)') nrjpot_npp(ipchemin), kine 
           end if
 
 
@@ -1035,7 +1041,7 @@ contains
                      &-dexp(-beta*liste_travaux(nparapath+1)*0.5))**2
              end if
           END DO
-                !if (lmegamaster) write(*,*) 'f_wr', f_wr, 'f2_wr', f2_wr, 'fminusf_wr', fminusf_wr
+          !if (lmegamaster) write(*,*) 'f_wr', f_wr, 'f2_wr', f2_wr, 'fminusf_wr', fminusf_wr
 
 !!!!! formation des sommes !!!!
           DO direc = 1,2
@@ -1235,20 +1241,20 @@ contains
   end subroutine ajout_retrait
 
 !!!!!!!!!!!!!!!!!!!!!!
-  
+
   subroutine calcul_proba_des
     implicit none
     real(double), dimension(atconf_Nplus1%imm) :: proba
     integer :: i,j
     real(double) :: dist_tot, alpha, sum_norm, tot
     real(double), dimension(3,1) :: coord
-!       DO i=1, atconf_Nplus1%im
-!          write(6,*)'AV',iteration,atconf_Nplus1%proba(1),atconf_Nplus1%proba(atconf_Nplus1%im)
-!       end DO
+    !       DO i=1, atconf_Nplus1%im
+    !          write(6,*)'AV',iteration,atconf_Nplus1%proba(1),atconf_Nplus1%proba(atconf_Nplus1%im)
+    !       end DO
     if (lbiais(1)) then
        sum_norm = 0.0
        DO i=1, atconf_Nplus1%im
- !         write(6,*)'AV',iteration,atconf_Nplus1%proba(i)
+          !         write(6,*)'AV',iteration,atconf_Nplus1%proba(i)
           if (atconf_Nplus1%ityp(i) == itypcalc) then ! si l'atome est un oxygene
              call probMC1(atconf_Nplus1%xp(:,i),proba(i),boxmcgc_p%bg,boxmcgc_p%at,fdmc_1,fdmc_2)
              sum_norm=sum_norm+proba(i)
@@ -1256,9 +1262,9 @@ contains
           else
              proba(i) = 0.0
           end if !si oxygene ou uranium
-          
+
        END DO ! boucle atomes
-       
+
     else
        sum_norm = 0.0
        DO i=1, atconf_Nplus1%im
@@ -1268,7 +1274,7 @@ contains
           else
              proba(i) = 0.0
           end if !si oxygene ou uranium
-          
+
        END DO ! boucle atomes
     end if
     proba(:) = proba(:) / sum_norm
@@ -1311,8 +1317,8 @@ contains
           biais(:)=1
        end if
     end if
-    
-    
+
+
 
 
     if ((exp(beta*(dir-the)*Wp) .lt. upper) .and. (exp(beta*(dir-the)*Wp) .gt. lower)) then
@@ -1547,13 +1553,13 @@ contains
           somme = somme + config%proba_des(indatyp(iatyp))
 
           if (somme.gt.rand) then
-!             write(6,*)'CH',rand,somme,iatyp
+             !             write(6,*)'CH',rand,somme,iatyp
              if (lchosen(iatyp).eqv..true.) then
                 goto 33
              else
                 lchosen(iatyp)=.true.
                 ind(i)=indatyp(iatyp)
-                
+
                 cycle loopatplus
              end if
           end if ! if sur les sommes
@@ -1640,91 +1646,92 @@ contains
     select case (ins_typ)
     case(1)
        call atom_supp_sph(vecteur,pins) ! routine à écrire qui tire une position et fixe proba_ins
-       
+
     case(0)
        pins=1
        if ((nparapath .gt. 1) .and. (lparapath)) then 
           do iat=1,nbatplus
-1         continue
+1            continue
              itry=itry+1
-          !if (itry.gt.1) write(6,*)'INSER',rang,itry,dist
-          !write(*,*) 'rang', rang
-          do i=1,rang+1
+             !if (itry.gt.1) write(6,*)'INSER',rang,itry,dist
+             !write(*,*) 'rang', rang
+             do i=1,rang+1
+                call random_number(x_nplus1)
+                call random_number(y_nplus1)
+                call random_number(z_nplus1)
+             end do
+             vec(1,1) = x_nplus1
+             vec(2,1) = y_nplus1
+             vec(3,1) = z_nplus1
+             !write(6,*)'PLUS1',rang,x_nplus1,y_nplus1,z_nplus1
+             call cryst_to_cart(1,vec,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+             vecteur(:,iat) = vec(:,1)
+             do i=1,atconf_n%im
+                call distat(vecteur(:,iat),atconf_n%xp(:,i),boxmcgc_p,dist)
+                if (dist.le.distminat) then
+                   goto 1
+                end if
+             end do
+             do jat=1,iat-1
+                call distat(vecteur(:,iat),vecteur(:,jat),boxmcgc_p,dist)
+                if (dist.le.distminat) then
+                   do j=1, nparapath*2 !ajout pour eviter de tirer le meme atome meme si rang differents.
+                      call random_number(x_nplus1)
+                      call random_number(y_nplus1)
+                      call random_number(z_nplus1)
+                   end do
+                   goto 1
+                end if
+             end do
+          end do
+       else ! cas monoproposal  ou multi en serie
+          !call random_seed
+          do iat=1,nbatplus
+11           continue
              call random_number(x_nplus1)
              call random_number(y_nplus1)
              call random_number(z_nplus1)
-          end do
-          vec(1,1) = x_nplus1
-          vec(2,1) = y_nplus1
-          vec(3,1) = z_nplus1
-          !write(6,*)'PLUS1',rang,x_nplus1,y_nplus1,z_nplus1
-          call cryst_to_cart(1,vec,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
-          vecteur(:,iat) = vec(:,1)
-          do i=1,atconf_n%im
-             call distat(vecteur(:,iat),atconf_n%xp(:,i),boxmcgc_p,dist)
-             if (dist.le.distminat) then
-                goto 1
-             end if
-          end do
-          do jat=1,iat-1
-             call distat(vecteur(:,iat),vecteur(:,jat),boxmcgc_p,dist)
-             if (dist.le.distminat) then
-                do j=1, nparapath*2 !ajout pour eviter de tirer le meme atome meme si rang differents.
-                   call random_number(x_nplus1)
-                   call random_number(y_nplus1)
-                   call random_number(z_nplus1)
-                end do
-                goto 1
-             end if
-          end do
-       end do
-    else ! cas monoproposal  ou multi en serie
-       !call random_seed
-       do iat=1,nbatplus
-11        continue
-          call random_number(x_nplus1)
-          call random_number(y_nplus1)
-          call random_number(z_nplus1)
 
-          vecteur(1,iat) = x_nplus1
-          vecteur(2,iat) = y_nplus1
-          vecteur(3,iat) = z_nplus1
-          call cryst_to_cart(1,vecteur(:,iat),boxmcgc_p%at,1)
-          do i=1,atconf_n%im
-             call distat(vecteur(:,iat),atconf_n%xp(:,i),boxmcgc_p,dist)
-             if (dist.le.distminat) then
-                goto 11
-             end if
+             vecteur(1,iat) = x_nplus1
+             vecteur(2,iat) = y_nplus1
+             vecteur(3,iat) = z_nplus1
+             call cryst_to_cart(1,vecteur(:,iat),boxmcgc_p%at,1)
+             do i=1,atconf_n%im
+                call distat(vecteur(:,iat),atconf_n%xp(:,i),boxmcgc_p,dist)
+                if (dist.le.distminat) then
+                   goto 11
+                end if
+             end do
+             do jat=1,iat-1
+                call distat(vecteur(:,iat),vecteur(:,jat),boxmcgc_p,dist)
+                if (dist.le.distminat) then
+                   do j=1, nparapath*2 !ajout pour eviter de tirer le meme atome meme si rang differents.
+                      call random_number(x_nplus1)
+                      call random_number(y_nplus1)
+                      call random_number(z_nplus1)
+                   end do
+                   goto 11
+                end if
+             end do
           end do
-          do jat=1,iat-1
-             call distat(vecteur(:,iat),vecteur(:,jat),boxmcgc_p,dist)
-             if (dist.le.distminat) then
-                do j=1, nparapath*2 !ajout pour eviter de tirer le meme atome meme si rang differents.
-                   call random_number(x_nplus1)
-                   call random_number(y_nplus1)
-                   call random_number(z_nplus1)
-                end do
-                goto 11
-             end if
-          end do
-       end do
 
-    end if !lparapath = true
- end select
+       end if !lparapath = true
+    end select
     !  write(*,*) 'atome supplementaire', vecteur
   end subroutine atom_supp
 
 
-  subroutine noise(var)
+  subroutine noise(var,NS)
 
     implicit none
+    integer,intent(in)::NS
+    real(double)  :: var(3,NS)
 
-    real(double)  :: var(3,atconf_nplus1%im)
     real(double)  :: u_1, u_2, v1, v2, r
     integer :: i, ic
 
 
-    DO i=1, atconf_nplus1%im
+    DO i=1, NS
        do ic=1,3
           r = 2.0
           do while (r >= 1.0)
@@ -1740,8 +1747,6 @@ contains
 
   end subroutine noise
 
-  !  subroutine langevinLPR ( direc, protocol) !LANGEVINPC
-  ! mix entre pr2 88 et langevin 
 
   subroutine langevin( direc, protocol) !LANGEVIN
     implicit none
@@ -1802,256 +1807,257 @@ contains
 
 
     !########################################################################################################################
-    !                               Ajout d'une particule N+1: système N vers N+1 - direction = 0
+    !                               Ajout/Retrait d'une particule N+1: système N vers N+1 - direction = 0
     !########################################################################################################################
 
-    if (direc == 0) then
-       DO ip = 1, pas_lambda_mc
-          !incrémentation de lambda
-          call lambda(direc,ip, protocol)
-          !lambda_mc = dble(ip)/dble(pas_lambda_mc)
+    !    if (direc == 0) then
+    DO ip = 1, pas_lambda_mc
+       !incrémentation de lambda
+       call lambda(direc,ip, protocol)
+       !lambda_mc = dble(ip)/dble(pas_lambda_mc)
 
-          if (lbigmaster) then ! Master général
-             Ek_n = 0.0
-             Ek_n_plus1 = 0.0  
-             Ek_n_1s4 = 0.0
-             Ek_n_3s4 = 0.0
-             !          write(6,*) 'lambda_mc ' ,lambda_mc,rang
-             ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
-
-             ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
-             timel = timel+tstep
-             rga=exp((-gamlg)*tstep/2)
-             rga_s4 = exp((-gamlg)*tstep/4)
-             call noise(Gl)
-             DO i=1, atconf_Nplus1%im
-                do ic=1,3
-                   Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
-                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
-                        &/cm(atconf_Nplus1%ityp(i))
-                   Ek_n_1s4 = Ek_n_1s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*&
-                        &cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
-                        &*atconf_Nplus1%fp(ic,i)
-                end do
-             END DO
-             ! step 2  Coordinate update, x(t)-> x(t+dt)
-             DO i=1, atconf_Nplus1%im
-                atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
-                atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
-             END DO
-
-             !recopier les nouvelles positions dans le syst N
-             DO i=1, atconf_N%im
-                atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
-                atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
-                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
-             END DO
-             !conditions periodiques 
-             if (lperiod)    then
-                call periodbox(boxmcgc_p,atconf_N)
-                call periodbox(boxmcgc_p,atconf_Nplus1)
-             end if
-          end if !on sort du master général
-          !En ce point on doit transférer le système N+1 du master 0 vers le master 1
-
-#ifdef PARA
-          if (lmaster) then ! on est dans l'un des 2 masters
-             rgcib=1;rgem=0
-             if(paramcgc%image==0) then !on est dans le master général
-                call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
-             else !on est dans le master de N+1
-                call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
-             end if
-          end if
-#endif        
-          iloc=0;ldistrib=.false.;lchange=.true.
-          call calfoMCGC(iloc,lchange,ldistrib)
-          if (lbigmaster) then
-             !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
-             U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
-             !write(*,*) potist_n, potist_nplus1
-             !affichage temperature
-             iteration = iteration +1
-
-             call noise(Gl)
-             DO i=1, atconf_Nplus1%im
-                do ic=1,3
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
-                        &*atconf_Nplus1%fp(ic,i)
-                   Ek_n_3s4 = Ek_n_3s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
-                        &*cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
-                        & + Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
-                        &/cm(atconf_Nplus1%ityp(i))
-                   Ek_n_plus1 = Ek_n_plus1 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
-                        &*cm(atconf_Nplus1%ityp(i))
-                end do
-             END DO
-             DO i=1, atconf_N%im
-                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
-             END DO
-
-          end if !master general
-
-          if (lbigmaster) then !master general
-             !calcul des energies et travail et chaleur efficaces
-             U_l_n_m1 = U_l_n
-             H_l_n_m1 = H_l_n
-             H_l_n    = Ek_n_plus1  + U_l_n
-             dWork = H_l_n - H_l_n_m1
-             Work = Work + dWork
-             dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
-             QEff   = QEff + dQEff
-             dWEff  = H_l_n - H_l_n_m1 - dQEff
-             WEff   = WEff + dWEff
-             if (protocol == 'MCP') then
-                !if (lmegamaster .and. lambda_mc == 1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
-                !         &'H_l_n', 'WEff',  'dWEff'
-                !if (lmegamaster) write(*,'(6G25.16E3)') lambda_mc, Ek_n_plus1,&
-                !          & U_l_n, H_l_n, WEff, dWEff
-                !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
-                !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
-             end if
-          end if
-
-       END DO
-
-    endif
-
-
-
-    !########################################################################################################################
-    !                            Déletion d'une particule N+1: système N+1 vers N - direction = 1
-    !########################################################################################################################
-
-    if (direc == 1) then
-       DO ip = 1, pas_lambda_mc
-
-          !incrémentation de lambda
-          call lambda(direc,ip, protocol)
-          !lambda_mc = 1.d0 - (dble(ip)/dble(pas_lambda_mc))
+       if (lbigmaster) then ! Master général
+          Ek_n = 0.0
+          Ek_n_plus1 = 0.0  
+          Ek_n_1s4 = 0.0
+          Ek_n_3s4 = 0.0
           !          write(6,*) 'lambda_mc ' ,lambda_mc,rang
-          if (lbigmaster) then
-             Ek_n = 0.0
-             Ek_n_plus1 = 0.0  
-             Ek_n_1s4 = 0.0
-             Ek_n_3s4 = 0.0
-             ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
-             ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
-             timel = timel+tstep
-             !write(*,*) 'lambda_mc ' ,lambda_mc
-             !write(6,*) 'avant langevin atconf_Nplus1%vp(:,23)=' ,atconf_Nplus1%vp(:,23)
-             rga=exp((-gamlg)*tstep/2)
-             rga_s4 = exp((-gamlg)*tstep/4)
-             call noise(Gl)
-             DO i=1, atconf_Nplus1%im
-                do ic=1,3
-                   Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
-                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
-                        &/cm(atconf_Nplus1%ityp(i))
-                   Ek_n_1s4 = Ek_n_1s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*&
-                        &cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
-                        &*atconf_Nplus1%fp(ic,i)
-                end do
-             END DO
+          ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
 
-             ! step 2  Coordinate update, x(t)-> x(t+dt)
-             DO i=1, atconf_Nplus1%im
-                atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
-                atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
+          ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
+          timel = timel+tstep
+          rga=exp((-gamlg)*tstep/2)
+          rga_s4 = exp((-gamlg)*tstep/4)
+          call noise(Gl, atconf_nplus1%im)
+          DO i=1, atconf_Nplus1%im
+             do ic=1,3
+                Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
 
-             END DO
+                atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
+                     &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
+                     &/cm(atconf_Nplus1%ityp(i))
+                Ek_n_1s4 = Ek_n_1s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*&
+                     &cm(atconf_Nplus1%ityp(i))
+                atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
+                     &*atconf_Nplus1%fp(ic,i)
+             end do
+          END DO
+          ! step 2  Coordinate update, x(t)-> x(t+dt)
+          DO i=1, atconf_Nplus1%im
+             atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
+             atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
+          END DO
 
-             !recopier les nouvelles positions dans le syst N
-             DO i=1, atconf_N%im
-                atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
-                atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
-                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
-             END DO
-
-             !conditions periodiques 
-             if (lperiod)    then
-                call periodbox(boxmcgc_p,atconf_N)
-                call periodbox(boxmcgc_p,atconf_Nplus1)
-             end if
+          !recopier les nouvelles positions dans le syst N
+          DO i=1, atconf_N%im
+             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
+             atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
+             atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
+          END DO
+          !conditions periodiques 
+          if (lperiod)    then
+             call periodbox(boxmcgc_p,atconf_N)
+             call periodbox(boxmcgc_p,atconf_Nplus1)
           end if
+       end if !on sort du master général
+       !En ce point on doit transférer le système N+1 du master 0 vers le master 1
 
 #ifdef PARA
-          if (lmaster) then ! on est dans l'un des 2 masters
-             rgcib=1;rgem=0
-             if(paramcgc%image==0) then !on est dans le master général
-                call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
-             else !on est dans le master de N+1
-                call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
-             end if
+       if (lmaster) then ! on est dans l'un des 2 masters
+          rgcib=1;rgem=0
+          if(paramcgc%image==0) then !on est dans le master général
+             call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
+          else !on est dans le master de N+1
+             call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
           end if
+       end if
 #endif        
-          iloc=0;ldistrib=.false.;lchange=.true.
-          call calfoMCGC(iloc,lchange,ldistrib)
+       iloc=0;ldistrib=.false.;lchange=.true.
+       call calfoMCGC(iloc,lchange,ldistrib)
+       if (lbigmaster) then
+          !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
+          U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
+          !write(*,*) potist_n, potist_nplus1
+          !affichage temperature
+          iteration = iteration +1
 
-          if (lbigmaster) then
+          call noise(Gl,atconf_nplus1%im)
+          DO i=1, atconf_Nplus1%im
+             do ic=1,3
+                atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
+                     &*atconf_Nplus1%fp(ic,i)
+                Ek_n_3s4 = Ek_n_3s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
+                     &*cm(atconf_Nplus1%ityp(i))
+                atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
+                     & + Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
+                     &/cm(atconf_Nplus1%ityp(i))
+                Ek_n_plus1 = Ek_n_plus1 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
+                     &*cm(atconf_Nplus1%ityp(i))
+             end do
+          END DO
+          DO i=1, atconf_N%im
+             atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
+          END DO
 
-             !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
-             U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
-             !write(*,*) potist_n, potist_nplus1
-             !affichage temperature
-             iteration = iteration +1
+       end if !master general
 
-             ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
-             call noise(Gl)
-             DO i=1, atconf_Nplus1%im
-                do ic=1,3
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
-                        &*atconf_Nplus1%fp(ic,i)
-                   Ek_n_3s4 = Ek_n_3s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
-                        &*cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
-                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
-                        &/cm(atconf_Nplus1%ityp(i))
-                   Ek_n_plus1 = Ek_n_plus1 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
-                        &*cm(atconf_Nplus1%ityp(i))
-
-                end do
-             END DO
-
-             !repartir les nouvelles positions et forces dans les syst N et N+1
-             !Systeme a N
-
-             DO i=1, atconf_N%im
-                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
-             END DO
-
+       if (lbigmaster) then !master general
+          !calcul des energies et travail et chaleur efficaces
+          U_l_n_m1 = U_l_n
+          H_l_n_m1 = H_l_n
+          H_l_n    = Ek_n_plus1  + U_l_n
+          dWork = H_l_n - H_l_n_m1
+          Work = Work + dWork
+          dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
+          QEff   = QEff + dQEff
+          dWEff  = H_l_n - H_l_n_m1 - dQEff
+          WEff   = WEff + dWEff
+          if (protocol == 'MCP') then
+             !if (lmegamaster .and. lambda_mc == 1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
+             !         &'H_l_n', 'WEff',  'dWEff'
+             !if (lmegamaster) write(*,'(6G25.16E3)') lambda_mc, Ek_n_plus1,&
+             !          & U_l_n, H_l_n, WEff, dWEff
+             !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
+             !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
           end if
+       end if
 
-          if (lbigmaster) then
-             !calcul des energies et travail et chaleur efficaces
-             U_l_n_m1 = U_l_n
-             H_l_n_m1 = H_l_n
-             H_l_n    = Ek_n_plus1  + U_l_n
-             dWork = H_l_n - H_l_n_m1
-             Work = Work + dWork           
-             dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
-             QEff   = QEff + dQEff
-             dWEff  = H_l_n - H_l_n_m1 - dQEff
-             WEff   = WEff + dWEff
-             if (protocol == 'MCP') then
-                !if (lmegamaster .and. lambda_mc == 1.0-1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
-                !         &'H_l_n', 'WEff',  'dWEff'
-                !if (lmegamaster) write(*,'(6G25.16E3)') lambda_mc, Ek_n_plus1,&
-                !          & U_l_n, H_l_n, WEff, dWEff
-                !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
-                !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
-             end if
+    END DO
 
-          end if
-       END DO
-
-
-    endif
+!!$    endif
+!!$
+!!$
+!!$
+!!$    !########################################################################################################################
+!!$    !                            Déletion d'une particule N+1: système N+1 vers N - direction = 1
+!!$    !########################################################################################################################
+!!$
+!!$    if (direc == 1) then
+!!$       DO ip = 1, pas_lambda_mc
+!!$
+!!$          !incrémentation de lambda
+!!$          call lambda(direc,ip, protocol)
+!!$          !lambda_mc = 1.d0 - (dble(ip)/dble(pas_lambda_mc))
+!!$          !          write(6,*) 'lambda_mc ' ,lambda_mc,rang
+!!$          if (lbigmaster) then
+!!$             Ek_n = 0.0
+!!$             Ek_n_plus1 = 0.0  
+!!$             Ek_n_1s4 = 0.0
+!!$             Ek_n_3s4 = 0.0
+!!$             ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
+!!$             ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
+!!$             timel = timel+tstep
+!!$             !write(*,*) 'lambda_mc ' ,lambda_mc
+!!$             !write(6,*) 'avant langevin atconf_Nplus1%vp(:,23)=' ,atconf_Nplus1%vp(:,23)
+!!$             rga=exp((-gamlg)*tstep/2)
+!!$             rga_s4 = exp((-gamlg)*tstep/4)
+!!$             call noise(Gl,atconf_nplus1%im)
+!!$             DO i=1, atconf_Nplus1%im
+!!$                do ic=1,3
+!!$                   Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
+!!$                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
+!!$                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
+!!$                        &/cm(atconf_Nplus1%ityp(i))
+!!$                   Ek_n_1s4 = Ek_n_1s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*&
+!!$                        &cm(atconf_Nplus1%ityp(i))
+!!$                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
+!!$                        &*atconf_Nplus1%fp(ic,i)
+!!$                end do
+!!$             END DO
+!!$
+!!$             ! step 2  Coordinate update, x(t)-> x(t+dt)
+!!$             DO i=1, atconf_Nplus1%im
+!!$                atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
+!!$                atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
+!!$
+!!$             END DO
+!!$
+!!$             !recopier les nouvelles positions dans le syst N
+!!$             DO i=1, atconf_N%im
+!!$                atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
+!!$                atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
+!!$                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
+!!$             END DO
+!!$
+!!$             !conditions periodiques 
+!!$             if (lperiod)    then
+!!$                call periodbox(boxmcgc_p,atconf_N)
+!!$                call periodbox(boxmcgc_p,atconf_Nplus1)
+!!$             end if
+!!$          end if
+!!$
+!!$#ifdef PARA
+!!$          if (lmaster) then ! on est dans l'un des 2 masters
+!!$             rgcib=1;rgem=0
+!!$             if(paramcgc%image==0) then !on est dans le master général
+!!$                call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
+!!$             else !on est dans le master de N+1
+!!$                call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
+!!$             end if
+!!$          end if
+!!$#endif        
+!!$          iloc=0;ldistrib=.false.;lchange=.true.
+!!$          call calfoMCGC(iloc,lchange,ldistrib)
+!!$
+!!$          if (lbigmaster) then
+!!$
+!!$             !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
+!!$             U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
+!!$             !write(*,*) potist_n, potist_nplus1
+!!$             !affichage temperature
+!!$             iteration = iteration +1
+!!$
+!!$             ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
+!!$             call noise(Gl,atconf_nplus1%im)
+!!$             DO i=1, atconf_Nplus1%im
+!!$                do ic=1,3
+!!$                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
+!!$                        &*atconf_Nplus1%fp(ic,i)
+!!$                   Ek_n_3s4 = Ek_n_3s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
+!!$                        &*cm(atconf_Nplus1%ityp(i))
+!!$                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
+!!$                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
+!!$                        &/cm(atconf_Nplus1%ityp(i))
+!!$                   Ek_n_plus1 = Ek_n_plus1 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
+!!$                        &*cm(atconf_Nplus1%ityp(i))
+!!$
+!!$                end do
+!!$             END DO
+!!$
+!!$             !repartir les nouvelles positions et forces dans les syst N et N+1
+!!$             !Systeme a N
+!!$
+!!$             DO i=1, atconf_N%im
+!!$                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
+!!$             END DO
+!!$
+!!$          end if
+!!$
+!!$          if (lbigmaster) then
+!!$             !calcul des energies et travail et chaleur efficaces
+!!$             U_l_n_m1 = U_l_n
+!!$             H_l_n_m1 = H_l_n
+!!$             H_l_n    = Ek_n_plus1  + U_l_n
+!!$             dWork = H_l_n - H_l_n_m1
+!!$             Work = Work + dWork           
+!!$             dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
+!!$             QEff   = QEff + dQEff
+!!$             dWEff  = H_l_n - H_l_n_m1 - dQEff
+!!$             WEff   = WEff + dWEff
+!!$             if (protocol == 'MCP') then
+!!$                !if (lmegamaster .and. lambda_mc == 1.0-1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
+!!$                !         &'H_l_n', 'WEff',  'dWEff'
+!!$                !if (lmegamaster) write(*,'(6G25.16E3)') lambda_mc, Ek_n_plus1,&
+!!$                !          & U_l_n, H_l_n, WEff, dWEff
+!!$                !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
+!!$                !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
+!!$             end if
+!!$
+!!$          end if
+!!$       END DO
+!!$
+!!$
+!!$    endif
 
 
   end subroutine langevin
@@ -2459,7 +2465,7 @@ contains
     ncalls=ncalls+1
     lcalcvois=.false.
 
-  
+
     if (iloc==1) then
        if (atconf_n%ltabvois)then
           lcalcvois=.true.
@@ -2475,7 +2481,7 @@ contains
           end if
        end if
     end if
-    
+
 #ifdef PARA
 
     if(paramcgc%image==0) then !procs N
@@ -2499,9 +2505,11 @@ contains
        if(paramcgc%image==1) then !on est dans le master de N+1
           call atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master,'f')
           call paramcgc%mpi_master%send(potist_nplus1,rgcib,1000)
+          call paramcgc%mpi_master%send(sig_nplus1,rgcib,1001)
        else !on est dans le master de N qui est le master général
           call atconf_nplus1%recv(rgem,paramcgc%mpi_master,'f')
           call paramcgc%mpi_master%recv(potist_nplus1,rgem,1000)
+          call paramcgc%mpi_master%recv(sig_nplus1,rgem,1001)
           !       write(6,*)'POTSIST',potist_n,potist_nplus1
        end if
     end if
@@ -2671,7 +2679,7 @@ contains
     pins=probaR(iex)
     return
   end subroutine atom_supp_sph
-    
+
 
   subroutine init_instyp
     real(double):: r,zlm2,somP
@@ -2691,22 +2699,45 @@ contains
     end do
     probaR(:)=probaR(:)/somP
   end subroutine init_instyp
+!!!!!!!!!!!!!!*******************!!!!!!!!!!!!!!!!!!!!!!!*****************!!!!!!!!!!!!!!!
+  subroutine initMCLPR(np1)
+    integer::np1
 
+    ALLOCATE(sp(1:3,1:np1), sdot(1:3,1:np1), sdot_new(1:3,1:np1))
+    return
+  end subroutine initMCLPR
+  subroutine calcukcell
+    integer::i
+    Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
+
+    epsi=0.5d0*MatMul( MatMul( invtrh0, boxmcgc_p%Gmat ), invh0 )
+    DO i=1, 3
+       epsi(i,i) = epsi(i,i) - 1.d0
+    END DO
+
+    grsig = boxmcgc_p%volu * MatMul(boxmcgc_p%invh, MatMul( sigext, boxmcgc_p%invtrh) )
+    tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
+    ! Énergie potentielle de la cellule (Eq. 2.25, Ref.2)
+    Ucell = volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
+  end subroutine calcukcell
   subroutine langevinLPR( direc, protocol) !LANGEVIN
-!    use Parrinello_Rahman,only:h,hdo
+    !    use Parrinello_Rahman,only:h,hdo
     implicit none
 
 
     character(len=3), intent(in) :: protocol
     integer :: direc 
-    integer :: i,ic, ip, tot
+    integer :: i,ic, ip, tot,ia,j
     real(double) :: Ek_n, Ek_n_plus1, Ek_n_1s4, Ek_n_3s4, dQeff, Qeff,&
          &dWeff, dWork
     real(double) :: U_0, U_1, U_l_n_m1, U_l_n, H_l_n, H_l_n_m1, H_l_ini
+    real(double)::EkP_n_1s4 ,EkP_n_3s4 ,EkP_n_p1 ,EkP_n 
+
 
     real(double) :: beta
+    real(double),dimension(3,3)::mf,glanh
     real(double)  :: Gl(3,atconf_Nplus1%im)
-    real(double)::rga, rga_s4
+    real(double)::rga, rga_s4,rgah
 
     real(double), dimension(ntyp) :: aux  !pour les calculs d'acceleration
     integer::rgcib,rgem,iloc
@@ -2738,11 +2769,12 @@ contains
              Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
           enddo
        ENDDO
+       call calcUKcell
 
        call lambda(direc, ip, protocol)
        U_l_n = (1.d0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
 
-       H_l_ini = Ek_n + U_l_n 
+       H_l_ini = Ek_n + U_l_n +kcell+ucell
        H_l_n   = H_l_ini
 
        !if (lmegamaster) write(*,'(A15, G25.16E3,A15, G25.16E3,A15, G25.16E3,A15, G25.16E3)') &
@@ -2753,256 +2785,362 @@ contains
 
 
     !########################################################################################################################
-    !                               Ajout d'une particule N+1: système N vers N+1 - direction = 0
+    !                               Ajout/Retrait d'une particule N+1: système N vers N+1 - direction = 0
     !########################################################################################################################
 
-    if (direc == 0) then
-       DO ip = 1, pas_lambda_mc
-          !incrémentation de lambda
-          call lambda(direc,ip, protocol)
-          !lambda_mc = dble(ip)/dble(pas_lambda_mc)
+    !    if (direc == 0) then
+    DO ip = 1, pas_lambda_mc
+       !incrémentation de lambda
+       call lambda(direc,ip, protocol)
+       !lambda_mc = dble(ip)/dble(pas_lambda_mc)
 
-          if (lbigmaster) then ! Master général
-             Ek_n = 0.0
-             Ek_n_plus1 = 0.0  
-             Ek_n_1s4 = 0.0
-             Ek_n_3s4 = 0.0
-             !          write(6,*) 'lambda_mc ' ,lambda_mc,rang
-             ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
-
-             ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
-             timel = timel+tstep
-             rga=exp((-gamlg)*tstep/2)
-             rga_s4 = exp((-gamlg)*tstep/4)
-             call noise(Gl)
-             DO i=1, atconf_Nplus1%im
-                do ic=1,3
-                   Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
-                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
-                        &/cm(atconf_Nplus1%ityp(i))
-                   Ek_n_1s4 = Ek_n_1s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*&
-                        &cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
-                        &*atconf_Nplus1%fp(ic,i)
-                end do
-             END DO
-             ! step 2  Coordinate update, x(t)-> x(t+dt)
-             DO i=1, atconf_Nplus1%im
-                atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
-                atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
-             END DO
-
-             !recopier les nouvelles positions dans le syst N
-             DO i=1, atconf_N%im
-                atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
-                atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
-                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
-             END DO
-             !conditions periodiques 
-             if (lperiod)    then
-                call periodbox(boxmcgc_p,atconf_N)
-                call periodbox(boxmcgc_p,atconf_Nplus1)
-             end if
-          end if !on sort du master général
-          !En ce point on doit transférer le système N+1 du master 0 vers le master 1
-
-#ifdef PARA
-          if (lmaster) then ! on est dans l'un des 2 masters
-             rgcib=1;rgem=0
-             if(paramcgc%image==0) then !on est dans le master général
-                call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
-             else !on est dans le master de N+1
-                call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
-             end if
-          end if
-#endif        
-          iloc=0;ldistrib=.false.;lchange=.true.
-          call calfoMCGC(iloc,lchange,ldistrib)
-          if (lbigmaster) then
-             !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
-             U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
-             !write(*,*) potist_n, potist_nplus1
-             !affichage temperature
-             iteration = iteration +1
-
-             call noise(Gl)
-             DO i=1, atconf_Nplus1%im
-                do ic=1,3
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
-                        &*atconf_Nplus1%fp(ic,i)
-                   Ek_n_3s4 = Ek_n_3s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
-                        &*cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
-                        & + Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
-                        &/cm(atconf_Nplus1%ityp(i))
-                   Ek_n_plus1 = Ek_n_plus1 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
-                        &*cm(atconf_Nplus1%ityp(i))
-                end do
-             END DO
-             DO i=1, atconf_N%im
-                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
-             END DO
-
-          end if !master general
-
-          if (lbigmaster) then !master general
-             !calcul des energies et travail et chaleur efficaces
-             U_l_n_m1 = U_l_n
-             H_l_n_m1 = H_l_n
-             H_l_n    = Ek_n_plus1  + U_l_n
-             dWork = H_l_n - H_l_n_m1
-             Work = Work + dWork
-             dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
-             QEff   = QEff + dQEff
-             dWEff  = H_l_n - H_l_n_m1 - dQEff
-             WEff   = WEff + dWEff
-             if (protocol == 'MCP') then
-                !if (lmegamaster .and. lambda_mc == 1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
-                !         &'H_l_n', 'WEff',  'dWEff'
-                !if (lmegamaster) write(*,'(6G25.16E3)') lambda_mc, Ek_n_plus1,&
-                !          & U_l_n, H_l_n, WEff, dWEff
-                !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
-                !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
-             end if
-          end if
-
-       END DO
-
-    endif
-
-
-
-    !########################################################################################################################
-    !                            Déletion d'une particule N+1: système N+1 vers N - direction = 1
-    !########################################################################################################################
-
-    if (direc == 1) then
-       DO ip = 1, pas_lambda_mc
-
-          !incrémentation de lambda
-          call lambda(direc,ip, protocol)
-          !lambda_mc = 1.d0 - (dble(ip)/dble(pas_lambda_mc))
+       if (lbigmaster) then ! Master général
+          Ek_n = 0.0
+          Ek_n_plus1 = 0.0  
+          Ek_n_1s4 = 0.0
+          Ek_n_3s4 = 0.0
           !          write(6,*) 'lambda_mc ' ,lambda_mc,rang
-          if (lbigmaster) then
-             Ek_n = 0.0
-             Ek_n_plus1 = 0.0  
-             Ek_n_1s4 = 0.0
-             Ek_n_3s4 = 0.0
-             ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
-             ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
-             timel = timel+tstep
-             !write(*,*) 'lambda_mc ' ,lambda_mc
-             !write(6,*) 'avant langevin atconf_Nplus1%vp(:,23)=' ,atconf_Nplus1%vp(:,23)
-             rga=exp((-gamlg)*tstep/2)
-             rga_s4 = exp((-gamlg)*tstep/4)
-             call noise(Gl)
-             DO i=1, atconf_Nplus1%im
-                do ic=1,3
-                   Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
-                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
-                        &/cm(atconf_Nplus1%ityp(i))
-                   Ek_n_1s4 = Ek_n_1s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*&
-                        &cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
-                        &*atconf_Nplus1%fp(ic,i)
-                end do
-             END DO
+          ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
 
-             ! step 2  Coordinate update, x(t)-> x(t+dt)
-             DO i=1, atconf_Nplus1%im
-                atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
-                atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
+          ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
 
-             END DO
 
-             !recopier les nouvelles positions dans le syst N
-             DO i=1, atconf_N%im
-                atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
-                atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
-                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
-             END DO
+          timel = timel+tstep
+          rga=exp((-gamlg)*tstep/2)
+          rga_s4 = exp((-gamlg)*tstep/4)
+          call noise(Gl,atconf_nplus1%im)
 
-             !conditions periodiques 
-             if (lperiod)    then
-                call periodbox(boxmcgc_p,atconf_N)
-                call periodbox(boxmcgc_p,atconf_Nplus1)
-             end if
+          ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
+          sp(:,1: atconf_Nplus1%im) = MatMul(boxmcgc_p%invh(:,:), atconf_Nplus1%xp(:,1: atconf_Nplus1%im) )
+          ! Dérivée des coordonnées réduites des atomes à l'instant t+dt/2
+          mf(:,:) = -0.5d0*tstep*MatMul(boxmcgc_p%invGmat,boxmcgc_p%Gdot)
+          DO i=1, 3
+             mf(i,i) = 1.d0 + mf(i,i)
+          END DO
+
+          DO i=1, atconf_Nplus1%im
+             do ic=1,3
+                Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
+
+                atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
+                     &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
+                     &/cm(atconf_Nplus1%ityp(i))
+
+                Ek_n_1s4 = Ek_n_1s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*&
+                     &cm(atconf_Nplus1%ityp(i))
+                atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
+                     &*atconf_Nplus1%fp(ic,i)
+             end do
+          END DO
+
+          ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat
+          sdot(:,1: atconf_Nplus1%im) = MatMul(boxmcgc_p%invh(:,:), atconf_Nplus1%vp(:,1: atconf_Nplus1%im) )
+
+          
+          sigkine(:,:)=0.d0
+          do ia = 1, atconf_Nplus1%im
+             do j = 1,3
+                sigkine(1:3,j) = sigkine(1:3,j) + cm(atconf_Nplus1%ityp(ia))*atconf_Nplus1%vp(1:3,ia)*atconf_Nplus1%vp(j,ia)
+             enddo
+          enddo
+          sigkine(1:3,1:3) = boxmcgc_p%invVolu*sigkine(1:3,1:3)
+#ifdef PARA
+
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call comm_space%sum(sigkine)
+       end if
+#endif
+       ! Contrainte totale à l'instant t+dt
+       sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
+
+       rgah=exp(-gamlg*tstep/2)
+          call noise (glanh,3)
+
+          boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
+               !            + tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul( sigtot(:,:) - sigext(:,:),boxmcgc_p%invtrh(:,:) ) &
+               + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
+
+          call calcUKcell
+          EkP_n_1s4=kcell
+
+          boxmcgc_p%hdot(:,:)= (boxmcgc_p%hdot&
+               &+tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)) )*ihbox0(:,:)
+
+          !8888888888888888888888888
+          ! Coordonnées réduites des atomes à l'instant t+dt
+          sp(:,1:atconf_Nplus1%im) = sp(:,1:atconf_Nplus1%im) + sdot(:,1:atconf_Nplus1%im)*tstep
+
+          ! Tenseur h à l'instant t+dt
+          boxmcgc_p%h(:,:) = boxmcgc_p%h(:,:) + boxmcgc_p%hdot(:,:)*tstep*ihbox0(:,:)
+
+          !    write(6,*)'hdot',hdot
+          ! Coordonnées réelles à l'instant t+dt
+
+          atconf_Nplus1%xpp(:,1:atconf_Nplus1%im) = atconf_Nplus1%xp(:,1:atconf_Nplus1%im)
+          atconf_Nplus1%xp(:,1:atconf_Nplus1%im) = MatMul( boxmcgc_p%h, sp(:,1:atconf_Nplus1%im) )
+
+          call updatebox(boxmcgc_p,boxmcgc_p%h)
+
+          atconf_Nplus1%vp(:,1:atconf_Nplus1%im) = MatMul( boxmcgc_p%h(:,:), sdot(:,1:atconf_Nplus1%im) ) ! retour à vp car transfert d'atomes  dans scalebox en PARA
+
+          CALL ScaleBox(atconf_Nplus1,cells_nplus1,boxmcgc_p,pscgc)
+
+          sdot(:,1: atconf_Nplus1%im) = MatMul(boxmcgc_p%invh(:,:),  atconf_Nplus1%vp(:,1: atconf_Nplus1%im) )
+
+          !recopier les nouvelles positions dans le syst N
+          DO i=1, atconf_N%im
+             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
+             atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
+             atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
+          END DO
+          !conditions periodiques 
+          if (lperiod)    then
+             call periodbox(boxmcgc_p,atconf_N)
+             call periodbox(boxmcgc_p,atconf_Nplus1)
           end if
+
+       end if !on sort du master général (bigmaster)
+       !8888888888888888888888888
+
+
+       !En ce point on doit transférer le système N+1 du master 0 vers le master 1
 
 #ifdef PARA
-          if (lmaster) then ! on est dans l'un des 2 masters
-             rgcib=1;rgem=0
-             if(paramcgc%image==0) then !on est dans le master général
-                call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
-             else !on est dans le master de N+1
-                call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
-             end if
+       if (lmaster) then ! on est dans l'un des 2 masters
+          call boxmcgc_p%master2slave(0,paramcgc%mpi_master) 
+          rgcib=1;rgem=0
+          if(paramcgc%image==0) then !on est dans le master général
+             call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
+          else !on est dans le master de N+1
+             call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
           end if
+       end if
 #endif        
-          iloc=0;ldistrib=.false.;lchange=.true.
-          call calfoMCGC(iloc,lchange,ldistrib)
+       iloc=0;ldistrib=.false.;lchange=.true.
+       call calfoMCGC(iloc,lchange,ldistrib)
 
-          if (lbigmaster) then
+       if (lbigmaster) then
+          !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
+          U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
+          !write(*,*) potist_n, potist_nplus1
+          !affichage temperature
+          iteration = iteration +1
 
-             !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
-             U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
-             !write(*,*) potist_n, potist_nplus1
-             !affichage temperature
-             iteration = iteration +1
+          call noise(Gl,atconf_nplus1%im)
+          ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
+          sp(:,1: atconf_Nplus1%im) = MatMul(boxmcgc_p%invh(:,:), atconf_Nplus1%xp(:,1: atconf_Nplus1%im) )
+          ! Dérivée des coordonnées réduites des atomes à l'instant t+dt/2
+          mf(:,:) = -0.5d0*tstep*MatMul(boxmcgc_p%invGmat,boxmcgc_p%Gdot)
+          DO i=1, 3
+             mf(i,i) = 1.d0 + mf(i,i)
+          END DO
+          Ek_n_plus1=0  ;      Ek_n_3s4 =0
+          DO i=1, atconf_Nplus1%im
+             do ic=1,3
+                atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
+                     &*atconf_Nplus1%fp(ic,i)
+                Ek_n_3s4 = Ek_n_3s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
+                     &*cm(atconf_Nplus1%ityp(i))
 
-             ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
-             call noise(Gl)
-             DO i=1, atconf_Nplus1%im
-                do ic=1,3
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
-                        &*atconf_Nplus1%fp(ic,i)
-                   Ek_n_3s4 = Ek_n_3s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
-                        &*cm(atconf_Nplus1%ityp(i))
-                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
-                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
-                        &/cm(atconf_Nplus1%ityp(i))
-                   Ek_n_plus1 = Ek_n_plus1 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
-                        &*cm(atconf_Nplus1%ityp(i))
+                atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
+                     &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
+                     &/cm(atconf_Nplus1%ityp(i))
 
-                end do
-             END DO
+                Ek_n_plus1 = Ek_n_plus1 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
+                     &*cm(atconf_Nplus1%ityp(i))
+             end do
+          END DO
 
-             !repartir les nouvelles positions et forces dans les syst N et N+1
-             !Systeme a N
+          DO i=1, atconf_N%im
+             atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
+          END DO
+          
+          sigkine(:,:)=0.d0
+          do ia = 1, atconf_Nplus1%im
+             do j = 1,3
+                sigkine(1:3,j) = sigkine(1:3,j) + cm(atconf_Nplus1%ityp(ia))*atconf_Nplus1%vp(1:3,ia)*atconf_Nplus1%vp(j,ia)
+             enddo
+          enddo
+          sigkine(1:3,1:3) = boxmcgc_p%invVolu*sigkine(1:3,1:3)
+#ifdef PARA
 
-             DO i=1, atconf_N%im
-                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
-             END DO
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call comm_space%sum(sigkine)
+       end if
+#endif
+       ! Contrainte totale à l'instant t+dt
+       sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
 
-          end if
+          ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat
+          sdot(:,1: atconf_Nplus1%im) = MatMul(boxmcgc_p%invh(:,:), atconf_Nplus1%vp(:,1: atconf_Nplus1%im) )
 
-          if (lbigmaster) then
-             !calcul des energies et travail et chaleur efficaces
-             U_l_n_m1 = U_l_n
-             H_l_n_m1 = H_l_n
-             H_l_n    = Ek_n_plus1  + U_l_n
-             dWork = H_l_n - H_l_n_m1
-             Work = Work + dWork           
-             dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
-             QEff   = QEff + dQEff
-             dWEff  = H_l_n - H_l_n_m1 - dQEff
-             WEff   = WEff + dWEff
-             if (protocol == 'MCP') then
-                !if (lmegamaster .and. lambda_mc == 1.0-1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
-                !         &'H_l_n', 'WEff',  'dWEff'
-                !if (lmegamaster) write(*,'(6G25.16E3)') lambda_mc, Ek_n_plus1,&
-                !          & U_l_n, H_l_n, WEff, dWEff
-                !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
-                !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
-             end if
+          rgah=exp(-gamlg*tstep/2)
+          call noise (glanh,3)
+          boxmcgc_p%hdot(:,:)= ( boxmcgc_p%hdot&
+               &+tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)) )*ihbox0(:,:)
 
-          end if
-       END DO
+          call calcUKcell
+          EkP_n_3s4=kcell
+
+          boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
+               !            + tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul( sigtot(:,:) - sigext(:,:),boxmcgc_p%invtrh(:,:) ) &
+               + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
+
+          call calcUKcell
+          EkP_n_p1=kcell
 
 
-    endif
+
+!!!!!!!!!!!!!!!!             
+
+          !calcul des energies et travail et chaleur efficaces
+          U_l_n_m1 = U_l_n
+          H_l_n_m1 = H_l_n
+          H_l_n    = Ek_n_plus1  + U_l_n+kcell+ucell
+          dWork = H_l_n - H_l_n_m1
+          Work = Work + dWork
+          dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4) + (EkP_n_1s4-EkP_n) + (EkP_n_p1-EkP_n_3s4)
+          QEff   = QEff + dQEff
+          dWEff  = H_l_n - H_l_n_m1 - dQEff
+          WEff   = WEff + dWEff
+       end if
+
+    END DO
+
+    !    endif
+
+
+!!$
+!!$    !########################################################################################################################
+!!$    !                            Déletion d'une particule N+1: système N+1 vers N - direction = 1
+!!$    !########################################################################################################################
+!!$
+!!$    if (direc == 1) then
+!!$       DO ip = 1, pas_lambda_mc
+!!$
+!!$          !incrémentation de lambda
+!!$          call lambda(direc,ip, protocol)
+!!$          !lambda_mc = 1.d0 - (dble(ip)/dble(pas_lambda_mc))
+!!$          !          write(6,*) 'lambda_mc ' ,lambda_mc,rang
+!!$          if (lbigmaster) then
+!!$             Ek_n = 0.0
+!!$             Ek_n_plus1 = 0.0  
+!!$             Ek_n_1s4 = 0.0
+!!$             Ek_n_3s4 = 0.0
+!!$             ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
+!!$             ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
+!!$             timel = timel+tstep
+!!$             !write(*,*) 'lambda_mc ' ,lambda_mc
+!!$             !write(6,*) 'avant langevin atconf_Nplus1%vp(:,23)=' ,atconf_Nplus1%vp(:,23)
+!!$             rga=exp((-gamlg)*tstep/2)
+!!$             rga_s4 = exp((-gamlg)*tstep/4)
+!!$             call noise(Gl,atconf_nplus1%im)
+!!$             DO i=1, atconf_Nplus1%im
+!!$                do ic=1,3
+!!$                   Ek_n = Ek_n + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*cm(atconf_Nplus1%ityp(i))
+!!$                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
+!!$                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
+!!$                        &/cm(atconf_Nplus1%ityp(i))
+!!$                   Ek_n_1s4 = Ek_n_1s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)*&
+!!$                        &cm(atconf_Nplus1%ityp(i))
+!!$                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
+!!$                        &*atconf_Nplus1%fp(ic,i)
+!!$                end do
+!!$             END DO
+!!$
+!!$             ! step 2  Coordinate update, x(t)-> x(t+dt)
+!!$             DO i=1, atconf_Nplus1%im
+!!$                atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
+!!$                atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
+!!$
+!!$             END DO
+!!$
+!!$             !recopier les nouvelles positions dans le syst N
+!!$             DO i=1, atconf_N%im
+!!$                atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
+!!$                atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
+!!$                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
+!!$             END DO
+!!$
+!!$             !conditions periodiques 
+!!$             if (lperiod)    then
+!!$                call periodbox(boxmcgc_p,atconf_N)
+!!$                call periodbox(boxmcgc_p,atconf_Nplus1)
+!!$             end if
+!!$          end if
+!!$
+!!$#ifdef PARA
+!!$          if (lmaster) then ! on est dans l'un des 2 masters
+!!$             rgcib=1;rgem=0
+!!$             if(paramcgc%image==0) then !on est dans le master général
+!!$                call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
+!!$             else !on est dans le master de N+1
+!!$                call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
+!!$             end if
+!!$          end if
+!!$#endif        
+!!$          iloc=0;ldistrib=.false.;lchange=.true.
+!!$          call calfoMCGC(iloc,lchange,ldistrib)
+!!$
+!!$          if (lbigmaster) then
+!!$
+!!$             !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
+!!$             U_l_n = (1-lambda_mc)*potist_n + lambda_mc*potist_nplus1
+!!$             !write(*,*) potist_n, potist_nplus1
+!!$             !affichage temperature
+!!$             iteration = iteration +1
+!!$
+!!$             ! Second half-step velocities update, v(t+1/2dt) -> v(t+dt)
+!!$             call noise(Gl,atconf_nplus1%im)
+!!$             DO i=1, atconf_Nplus1%im
+!!$                do ic=1,3
+!!$                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i) + aux(atconf_Nplus1%ityp(i))&
+!!$                        &*atconf_Nplus1%fp(ic,i)
+!!$                   Ek_n_3s4 = Ek_n_3s4 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
+!!$                        &*cm(atconf_Nplus1%ityp(i))
+!!$                   atconf_Nplus1%vp(ic,i) = atconf_Nplus1%vp(ic,i)*rga &
+!!$                        &+ Gl(ic,i)*sqrt(cm(atconf_Nplus1%ityp(i))*gamlg*rga_s4*tstep/beta)&
+!!$                        &/cm(atconf_Nplus1%ityp(i))
+!!$                   Ek_n_plus1 = Ek_n_plus1 + 0.5*atconf_Nplus1%vp(ic,i)*atconf_Nplus1%vp(ic,i)&
+!!$                        &*cm(atconf_Nplus1%ityp(i))
+!!$
+!!$                end do
+!!$             END DO
+!!$
+!!$             !repartir les nouvelles positions et forces dans les syst N et N+1
+!!$             !Systeme a N
+!!$
+!!$             DO i=1, atconf_N%im
+!!$                atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
+!!$             END DO
+!!$
+!!$          end if
+!!$
+!!$          if (lbigmaster) then
+!!$             !calcul des energies et travail et chaleur efficaces
+!!$             U_l_n_m1 = U_l_n
+!!$             H_l_n_m1 = H_l_n
+!!$             H_l_n    = Ek_n_plus1  + U_l_n
+!!$             dWork = H_l_n - H_l_n_m1
+!!$             Work = Work + dWork           
+!!$             dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
+!!$             QEff   = QEff + dQEff
+!!$             dWEff  = H_l_n - H_l_n_m1 - dQEff
+!!$             WEff   = WEff + dWEff
+!!$             if (protocol == 'MCP') then
+!!$                !if (lmegamaster .and. lambda_mc == 1.0-1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
+!!$                !         &'H_l_n', 'WEff',  'dWEff'
+!!$                !if (lmegamaster) write(*,'(6G25.16E3)') lambda_mc, Ek_n_plus1,&
+!!$                !          & U_l_n, H_l_n, WEff, dWEff
+!!$                !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
+!!$                !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
+!!$             end if
+!!$
+!!$          end if
+!!$       END DO
+!!$
+!!$
+!!$    endif
 
 
   end subroutine langevinLPR
