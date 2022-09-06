@@ -1107,10 +1107,10 @@ contains
     case (15)
        if (rang==0) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
-       if ((nparapath.gt.1).and.(.not.lparapath)) then
-          write(6,*)'nparapath >1, needs lparapath = TRUE'
-          call arret_ndm
-       end if
+!!$       if ((nparapath.gt.1).and.(.not.lparapath)) then
+!!$          write(6,*)'nparapath >1, needs lparapath = TRUE'
+!!$          call arret_ndm
+!!$       end if
 
        if (rang==0) write (6,*)
        if ((lparapath).and.(nparapath.le.1)) then

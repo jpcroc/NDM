@@ -181,7 +181,7 @@ contains
     end if
 
     select type (atconf)
-    type is (atom_config_d)
+    class is (atom_config_d)
        if ((lrealloc).and.(allocated(atconf%vp)))then
           deallocate(atconf%vp); deallocate(atconf%xpp)
        end if
@@ -189,14 +189,7 @@ contains
           allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
        end if
        atconf%vp=0;atconf%xpp=0
-    type is (atom_config_e)
-       if ((lrealloc).and.(allocated(atconf%vp)))then
-          deallocate(atconf%vp); deallocate(atconf%xpp)
-       end if
-       if (.not.allocated(atconf%vp))then
-          allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
-       end if
-       atconf%vp=0;atconf%xpp=0
+    class is (atom_config_e)
        
        !       if ((lrealloc).and.(allocated(atconf%vp)))then
 !          deallocate(atconf%vp); deallocate(atconf%xpp)
@@ -311,18 +304,6 @@ contains
     end if
     call atcf%deftype(attemp)
     call attemp%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
-!!$    select type(atcf)
-!!$    type is (atom_config)
-!!$       call attemp_b%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
-!!$       attemp=>attemp_b
-!!$    type is (atom_config_d)
-!!$       call attemp_d%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
-!!$       attemp=>attemp_d
-!!$    type is (atom_config_e)
-!!$       call atcf%Eegal(attemp_e)
-!!$       call attemp_e%init(imcn,immcn,atcf%ltabvois,nvois,rvois)
-!!$       attemp=>attemp_e
-!!$    end select
     call atcf%copy_config(attemp,lrescl=.false.)
     call attemp%copy_config(atcf,lrescl=.true.)
 
@@ -364,7 +345,7 @@ contains
     select type(atcible)
        class is (atom_config_e)
        select type (atsource)
-       type is (atom_config_e)
+       class is (atom_config_e)
           if ((atcible%lprteat).and.(atsource%lprteat)) atcible%eat(j)=atsource%eat(i)
           if ((atcible%lsigat).and.(atsource%lsigat)) atcible%sigat(:,:,j)=atsource%sigat(:,:,i)
           if ((atcible%llangevin).and.(atsource%llangevin)) atcible%glangv(:,j)=atsource%glangv(:,i)

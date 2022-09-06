@@ -251,14 +251,6 @@ contains
     if (itmax==0) call arret_ndm
 
     if (lcdp) call initcdp
-!!$       select type (atdml)
-!!$       type is (atom_config_d)
-!!$          write(6,*)'typeDinit'
-!!$          !    type is (atom_config)
-!!$          !       write(6,*)'type0'
-!!$       type is (atom_config_e)
-!!$          write(6,*)'typeEinit',atdml%lprteat
-!!$       end select
     return
   end subroutine init
 

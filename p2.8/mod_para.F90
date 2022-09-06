@@ -193,10 +193,10 @@ contains
 
     nb_var_dbl = 6  !  xp,fp
     select type (atmp)
-    type is (atom_config_d)
+    class is (atom_config_d)
        nb_var_dbl=nb_var_dbl+6 !vp xpp
-    type is (atom_config_e)
-       nb_var_dbl=nb_var_dbl+6 !vp xpp
+    class is (atom_config_e)
+!       nb_var_dbl=nb_var_dbl+6 !vp xpp
        if (atmp%lprteat)        nb_var_dbl=nb_var_dbl+1 !eat
        if (atmp%lsigat)        nb_var_dbl=nb_var_dbl+9 !eat
        if (atmp%llangevin)        nb_var_dbl=nb_var_dbl+3 !eat
@@ -264,20 +264,20 @@ contains
 !!$                send_buff_dbl(5,send_nb_val(nproc_voisin),nproc_voisin) = ax(2,i_at)
 !!$                send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = ax(3,i_at)
                 select type (atmp)
-                type is (atom_config_d)
+                class is (atom_config_d)
                    send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
                    send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
                    send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
                    send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
                    send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
                    send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
-                type is (atom_config_e)
-                   send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
-                   send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
-                   send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
-                   send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
-                   send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
-                   send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
+                class is (atom_config_e)
+!!$                   send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
+!!$                   send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
+!!$                   send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
+!!$                   send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
+!!$                   send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
+!!$                   send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
                    ival=12
                    if (atmp%lprteat)then
                       ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%eat(i_at)
@@ -383,20 +383,20 @@ contains
 
 
           select type (atmp)
-          type is (atom_config_d)
+          class is (atom_config_d)
              atmp%vp(1,atmp%im) = recv_buff_dbl(7,i_at,ind_recv) 
              atmp%vp(2,atmp%im) = recv_buff_dbl(8,i_at,ind_recv) 
              atmp%vp(3,atmp%im) = recv_buff_dbl(9,i_at,ind_recv)
              atmp%xpp(1,atmp%im) = recv_buff_dbl(10,i_at,ind_recv) 
              atmp%xpp(2,atmp%im) = recv_buff_dbl(11,i_at,ind_recv) 
              atmp%xpp(3,atmp%im) = recv_buff_dbl(12,i_at,ind_recv)
-          type is (atom_config_e)
-             atmp%vp(1,atmp%im) = recv_buff_dbl(7,i_at,ind_recv) 
-             atmp%vp(2,atmp%im) = recv_buff_dbl(8,i_at,ind_recv) 
-             atmp%vp(3,atmp%im) = recv_buff_dbl(9,i_at,ind_recv)
-             atmp%xpp(1,atmp%im) = recv_buff_dbl(10,i_at,ind_recv) 
-             atmp%xpp(2,atmp%im) = recv_buff_dbl(11,i_at,ind_recv) 
-             atmp%xpp(3,atmp%im) = recv_buff_dbl(12,i_at,ind_recv)
+          class is (atom_config_e)
+!!$             atmp%vp(1,atmp%im) = recv_buff_dbl(7,i_at,ind_recv) 
+!!$             atmp%vp(2,atmp%im) = recv_buff_dbl(8,i_at,ind_recv) 
+!!$             atmp%vp(3,atmp%im) = recv_buff_dbl(9,i_at,ind_recv)
+!!$             atmp%xpp(1,atmp%im) = recv_buff_dbl(10,i_at,ind_recv) 
+!!$             atmp%xpp(2,atmp%im) = recv_buff_dbl(11,i_at,ind_recv) 
+!!$             atmp%xpp(3,atmp%im) = recv_buff_dbl(12,i_at,ind_recv)
              ival=12
              if (atmp%lprteat)then
                 ival =ival+1
@@ -506,12 +506,12 @@ contains
              atmp%num_at_glob(i_new) = atmp%num_at_glob(i_at)
 
              select type (atmp)
-             type is (atom_config_d)
+             class is (atom_config_d)
                 atmp%xpp(:,i_new) = atmp%xpp(:,i_at)
                 atmp%vp(:,i_new)  = atmp%vp(:,i_at)
-             type is (atom_config_e)
-                atmp%xpp(:,i_new) = atmp%xpp(:,i_at)
-                atmp%vp(:,i_new)  = atmp%vp(:,i_at)
+             class is (atom_config_e)
+!                atmp%xpp(:,i_new) = atmp%xpp(:,i_at)
+!                atmp%vp(:,i_new)  = atmp%vp(:,i_at)
                 if (atmp%lprteat)    atmp%eat(i_new)  = atmp%eat(i_at)
                 if (atmp%lsigat)        atmp%sigat(:,:,i_new)  = atmp%sigat(:,:,i_at)
                 if (atmp%llangevin)        atmp%glangv(:,i_new)  = atmp%glangv(:,i_at)
@@ -603,10 +603,10 @@ contains
     
     nb_var_dbl = 6  !! xp,fp
     select type (atmp)
-    type is (atom_config_d)
+    class is (atom_config_d)
        nb_var_dbl=nb_var_dbl+6 !vp xpp
-    type is (atom_config_e)
-       nb_var_dbl=nb_var_dbl+6 !vp xpp
+    class is (atom_config_e)
+!       nb_var_dbl=nb_var_dbl+6 !vp xpp
        if (atmp%lprteat)        nb_var_dbl=nb_var_dbl+1 !eat
        if (atmp%lsigat)        nb_var_dbl=nb_var_dbl+9 !eat
        if (atmp%llangevin)        nb_var_dbl=nb_var_dbl+3 !eat
@@ -672,20 +672,20 @@ contains
              send_buff_dbl(6,send_nb_val(nproc_voisin),nproc_voisin) = atmp%fp(3,i_at)
 
              select type (atmp)
-             type is (atom_config_d)
+             class is (atom_config_d)
                 send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
                 send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
                 send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
                 send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
                 send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
                 send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
-             type is (atom_config_e)
-                send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
-                send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
-                send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
-                send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
-                send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
-                send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
+             class is (atom_config_e)
+!!$                send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
+!!$                send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
+!!$                send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
+!!$                send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
+!!$                send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
+!!$                send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
                 ival=12
                 if (atmp%lprteat)then
                    ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%eat(i_at)
@@ -839,20 +839,20 @@ contains
           atmp%fp(3,pt_at_ftm) = recv_buff_dbl(6,i_at,ind_recv)
 
           select type (atmp)
-          type is (atom_config_d)
+          class is (atom_config_d)
              atmp%vp(1,pt_at_ftm) = recv_buff_dbl(7,i_at,ind_recv) 
              atmp%vp(2,pt_at_ftm) = recv_buff_dbl(8,i_at,ind_recv) 
              atmp%vp(3,pt_at_ftm) = recv_buff_dbl(9,i_at,ind_recv)
              atmp%xpp(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv) 
              atmp%xpp(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv) 
              atmp%xpp(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
-          type is (atom_config_e)
-             atmp%vp(1,pt_at_ftm) = recv_buff_dbl(7,i_at,ind_recv) 
-             atmp%vp(2,pt_at_ftm) = recv_buff_dbl(8,i_at,ind_recv) 
-             atmp%vp(3,pt_at_ftm) = recv_buff_dbl(9,i_at,ind_recv)
-             atmp%xpp(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv) 
-             atmp%xpp(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv) 
-             atmp%xpp(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
+          class is (atom_config_e)
+!!$             atmp%vp(1,pt_at_ftm) = recv_buff_dbl(7,i_at,ind_recv) 
+!!$             atmp%vp(2,pt_at_ftm) = recv_buff_dbl(8,i_at,ind_recv) 
+!!$             atmp%vp(3,pt_at_ftm) = recv_buff_dbl(9,i_at,ind_recv)
+!!$             atmp%xpp(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv) 
+!!$             atmp%xpp(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv) 
+!!$             atmp%xpp(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
              ival=12
              if (atmp%lprteat)then
                 ival =ival+1

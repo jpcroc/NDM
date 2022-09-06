@@ -34,7 +34,7 @@ contains
     end if
 
     select type (atdml)
-    type is (atom_config_e)
+    class is (atom_config_e)
        if (atdml%lsigat) then
           atdml%eat(1:im)=atdml%eat(1:im)+&
                &0.5*cm(atdml%ityp(1:im))*(atdml%vp(1,1:im)**2+atdml%vp(2,1:im)**2+atdml%vp(3,1:im)**2)
@@ -72,7 +72,7 @@ end select
     end do
     !debug write(*,*) 'md_test2',  xp(1,1), xpp(1,1), vp(1,1)
     select type (atdml)
-    type is (atom_config_e)
+    class is (atom_config_e)
        if (atdml%lsigat) then
           if (lcalcjq) then
              eatommoy=0.

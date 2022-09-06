@@ -676,9 +676,9 @@ contains
           box_old1=box_new1
           if(lmegamaster) then
              fnamcout = fnam(1:lenfnam)//'.N.cout'
-             call sauvegardeT(config_atom_new_0,cells_n,box_new0,3,fnamcout,latcomp=.true.)
+             call sauvegardeT(config_atom_new_0%atom_config_d,cells_n,box_new0,3,fnamcout,latcomp=.true.)
              fnamcout = fnam(1:lenfnam)//'.NP1.cout'
-             call sauvegardeT(config_atom_new_1,cells_nplus1,box_new1,3,fnamcout,latcomp=.true.)
+             call sauvegardeT(config_atom_new_1%atom_config_d,cells_nplus1,box_new1,3,fnamcout,latcomp=.true.)
           end if
 
           if (lmegamaster) then
@@ -819,9 +819,9 @@ contains
           box_old1=box_new1
           if(lmegamaster) then
              fnamcout = fnam(1:lenfnam)//'.N.cout'
-             call sauvegardeT(config_atom_new_0,config_cells_n(ipchemin),box_new0,3,fnamcout,latcomp=.true.)
+             call sauvegardeT(config_atom_new_0%atom_config_d,config_cells_n(ipchemin),box_new0,3,fnamcout,latcomp=.true.)
              fnamcout = fnam(1:lenfnam)//'.NP1.cout'
-             call sauvegardeT(config_atom_new_1,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+             call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
              !CRC CHECK LES cells...
           end if
 

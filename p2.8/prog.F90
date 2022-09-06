@@ -314,10 +314,10 @@ contains
              linitpot=.false.
           end if
           if (idirectionmcgc==0) then
-             call init_simple(atconf_n,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot) 
+             call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot) 
              call initNP1(ipp) ! initialise la configuration N+1
           else
-             call init_simple(atconf_nplus1,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot) 
+             call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot) 
              call initN(ipp) ! initialise la configuration N+1
           end if
        end do

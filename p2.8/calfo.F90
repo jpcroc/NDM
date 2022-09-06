@@ -78,7 +78,7 @@ contains
        sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
     end if
     select type(atcf)
-    type is (atom_config_e)
+    class is (atom_config_e)
        if (atcf%lsigat)then
           lsigat=.true.
           atcf%sigat=0

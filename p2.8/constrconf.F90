@@ -168,10 +168,10 @@ contains
        call periodbox (boxrcf,atrcf)
 
        select type(atrcf)
-       type is (atom_config_d)
+       class is (atom_config_d)
           atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
-       type is (atom_config_e)
-          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
+       class is (atom_config_e)
+!          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           if (atrcf%lax) then
              atrcf%ax(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           end if
@@ -394,7 +394,7 @@ contains
 
     lprteattrf=.false.
     select type (atrcf)
-    type is (atom_config_e)
+    class is (atom_config_e)
        lprteattrf=atrcf%lprteat
     end select
     if (present(imm))then
@@ -593,7 +593,7 @@ contains
              read (lucin, err=456) buffer                     !vp
           end if
           lvpread=.false.
-       type is (atom_config_d)
+       class is (atom_config_d)
           if (icintypemod==1) then
              read (lucin, err=456) buffer                     !xpp
              atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
@@ -601,16 +601,16 @@ contains
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
-             read (lucin, err=456) buffer                     !ax inutile
+!             read (lucin, err=456) buffer                     !ax inutile
           end if
-       type is (atom_config_e)
+       class is (atom_config_e)
           if (icintypemod==1) then
-             read (lucin, err=456) buffer                     !xpp
-             atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
-             write(6,*)'xpp_e'
-             read (lucin, err=456) buffer                     !vp
-             atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
-             write(6,*)'vp_e'
+!!$             read (lucin, err=456) buffer                     !xpp
+!!$             atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
+!!$             write(6,*)'xpp_e'
+!!$             read (lucin, err=456) buffer                     !vp
+!!$             atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
+!!$             write(6,*)'vp_e'
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
              read (lucin, err=456) buffer                     !ax utile peut-être
@@ -696,7 +696,7 @@ contains
           read (lucin, err=456) buffer                     !xpp
           read (lucin, err=456) buffer                     !vp
           lvpread=.false.
-       type is (atom_config_d)
+       class is (atom_config_d)
           if (icintypemod==1) then
              read (lucin, err=456) buffer                     !xpp
              do i_loc=1,imic
@@ -706,18 +706,18 @@ contains
              do i_loc=1,imic
                 atcinr%vp(:,i_loc)=buffer(:,icible(i_loc))
              enddo
-             read (lucin, err=456) buffer                     !ax inutile
+!             read (lucin, err=456) buffer                     !ax inutile
           end if
-       type is (atom_config_e)
+       class is (atom_config_e)
           if (icintypemod==1) then
-             read (lucin, err=456) buffer                     !xpp
-             do i_loc=1,imic
-                atcinr%xpp(:,i_loc)=buffer(:,icible(i_loc))
-             enddo
-             read (lucin, err=456) buffer                     !vp
-             do i_loc=1,imic
-                atcinr%vp(:,i_loc)=buffer(:,icible(i_loc))
-             enddo
+!!$             read (lucin, err=456) buffer                     !xpp
+!!$             do i_loc=1,imic
+!!$                atcinr%xpp(:,i_loc)=buffer(:,icible(i_loc))
+!!$             enddo
+!!$             read (lucin, err=456) buffer                     !vp
+!!$             do i_loc=1,imic
+!!$                atcinr%vp(:,i_loc)=buffer(:,icible(i_loc))
+!!$             enddo
              read (lucin, err=456) buffer                     !ax utile peut-être
              if (lrestart) then 
                 if (atcinr%lax) then

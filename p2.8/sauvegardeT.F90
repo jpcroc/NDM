@@ -111,7 +111,8 @@ contains
           if (formatsauvmod==1) then
              lwax=.false.
              select type(atdml)
-             type is (atom_config_d)
+             class is (atom_config_d)
+                write(6,*)'TYPEEEEEEEEEDDDD'
                 buffer(:,1:im) = atdml%xpp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                    do i_proc=1,nprocspace-1
@@ -126,7 +127,7 @@ contains
                    enddo
                 end if
                 write (lucout) buffer   ! Ecriture vp
-             type is (atom_config_e)
+             class is (atom_config_e)
                 buffer(:,1:im) = atdml%xpp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                    do i_proc=1,nprocspace-1
@@ -182,12 +183,12 @@ contains
              if (formatsauvmod==1) then
                 lwax=.false.
                 select type (atdml)
-                type is (atom_config_d)
+                class is (atom_config_d)
                    call comm_space%send(atdml%xpp(1:3,1:im),0,11015)
                    call comm_space%send(atdml%vp(1:3,1:im),0,11016)
-                type is (atom_config_e)
-                   call comm_space%send(atdml%xpp(1:3,1:im),0,11005)
-                   call comm_space%send(atdml%vp(1:3,1:im),0,11006)
+                class is (atom_config_e)
+                   !call comm_space%send(atdml%xpp(1:3,1:im),0,11005)
+                   !call comm_space%send(atdml%vp(1:3,1:im),0,11006)
                    if (atdml%lax)then
                       lwax=.true.
                       call comm_space%send(atdml%ax(1:3,1:im),0,11007)
@@ -209,12 +210,12 @@ contains
        if (formatsauvmod==1) then
           lwax=.false.
           select type (atdml)
-          type is (atom_config_d)
+          class is (atom_config_d)
              write (lucout) atdml%xpp
              write (lucout) atdml%vp
-          type is (atom_config_e)
-             write (lucout) atdml%xpp
-             write (lucout) atdml%vp
+          class is (atom_config_e)
+!             write (lucout) atdml%xpp
+!             write (lucout) atdml%vp
              if (atdml%lax)then
                 write (lucout) atdml%ax
                 lwax=.true.
@@ -250,12 +251,12 @@ contains
     if (formatsauvmod==1) then
        lwax=.false.
        select type (atdml)
-       type is (atom_config_d)
+       class is (atom_config_d)
           write (lucout) atdml%xpp
           write (lucout) atdml%vp
-       type is (atom_config_e)
-          write (lucout) atdml%xpp
-          write (lucout) atdml%vp
+       class is (atom_config_e)
+!          write (lucout) atdml%xpp
+!          write (lucout) atdml%vp
           if (atdml%lax)then
              write (lucout) atdml%ax
              lwax=.true.

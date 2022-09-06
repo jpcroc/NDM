@@ -449,7 +449,7 @@ contains
        
     case(88)
        select type(atpr)
-       type is (atom_config_e)
+       class is (atom_config_e)
           ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
           sp(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%xp(:,1:atpr%im) )
           ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat

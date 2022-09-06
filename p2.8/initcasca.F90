@@ -75,7 +75,7 @@ contains
     end if
 
     select type (atcf)
-       type is (atom_config_e) 
+       class is (atom_config_e) 
 
     
 

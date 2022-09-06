@@ -72,7 +72,7 @@ contains
        if (test_sigma) then
           sig(:,:)=0.d0 ; if (celndm%ltpcel.EQV..true.) celndm%sigc=0
           select type(atdml)
-          type is (atom_config_e)
+          class is (atom_config_e)
              if(atdml%lSigat) atdml%sigat(:,:,:)=0. ;
           end select
        end if
@@ -93,7 +93,7 @@ contains
              sigkine(1:3,3) = sigkine(1:3,3) + &
                   cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
              select type(atdml)
-             type is (atom_config_e)
+             class is (atom_config_e)
                 if(atdml%lSigat) atdml%sigat(:,:,:)=0. ;
 
                 if (atdml%lsigat) then 
