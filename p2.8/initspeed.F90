@@ -129,7 +129,7 @@ contains
     if (lvpread) then
        !       oldtstep=1.0d-15
        tempsauv=tempinstT(atcf)
-      if (myidsp==0) write(6,*)'tempsauv ',tempsauv
+!      if (myidsp==0) write(6,*)'tempsauv ',tempsauv
 
        atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*tstep/oldtstep
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep
@@ -152,7 +152,7 @@ contains
        endif
 
     else
-
+       write(6,*)'TINIT',tinit
 
        if (tinit<=0) then
           ! velocities are not read and no starting temperature is given
@@ -198,7 +198,7 @@ contains
              if(z4.eq.0.d0) z4=0.000000001d0
 
              v1 = one/sqrt(cm(atcf%ityp(i)))
-             atcf%vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
+             atcf%vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z2)
              atcf%vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
              atcf%vp(3,i) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
              theta=acos(1-2*z3)

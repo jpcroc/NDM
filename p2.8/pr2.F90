@@ -40,7 +40,7 @@ module Parrinello_Rahman
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigkine,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,&
-       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg
+       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP
   use FireModule,only:alph_start,f_alph,fdec,finc,nstepmin,tstep_mm,tstep0,init_trempe_fire
 
   USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3,ntyp,gamlt
@@ -63,6 +63,8 @@ module Parrinello_Rahman
   USE calpo_ew_mod,only: calpo_ew
   USE calctemp_mod,only: calctemp
   USE calpo_ew_mod,only: calpo_ew
+  use sigkinetot_mod
+  USE tempinstT_mod,only: tempinstT
 
   implicit none
 !!$  ! Vecteurs de la boîte et leurs dérivées
@@ -73,6 +75,8 @@ module Parrinello_Rahman
   ! Coordonnées réduites des atomes et leurs dérivées
   real(double), allocatable :: sp(:,:), sdot(:,:), sdot_new(:,:),sfp(:,:),spp(:,:)
 
+  real(double)::kinx,tempx,pre
+  
   ! Variable associée au thermostat de Nosé-Hoover
   !  (zHoover est défini dans gen_com_m.F90)
   REAL(double), dimension(:), allocatable, save, private :: wHoover   ! Poids associé au thermostat de Hoover
@@ -90,7 +94,8 @@ module Parrinello_Rahman
   REAL(double) ::  fire_alph
   INTEGER :: fire_nstep
 
-
+  real(double)::TInitBox
+  
 contains
 
   subroutine initlpr (atpr,celndm,boxndm,psc)
@@ -104,10 +109,9 @@ contains
 
     INTEGER :: ia, i, j
     !real(double), external :: calcvol
-    real(double):: unitE
+    real(double):: unitE,v1,z1,z2,tempcell
     character*5 :: cunitE
 
-    write(6,*)'INNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN'
     if (dmtype==24) then
        CALL init_trempe_fire(tstep, fire_nstep, fire_alph)
     END IF
@@ -167,11 +171,27 @@ contains
 !!$    invVolu = 1.d0/boxndm%volu
 
     ! Initialisation de la vitesse de la boîte
-    IF(RANG==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', 0.d0, ' K'
+    IF(RANG==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', TinitBox, ' K'
     boxndm%hdot(:,:) = 0.d0
-    ! Time derivative of the metric tensor Gmat
     DO i=1, 3
        DO j=1, 3
+          call random_number(z1)
+          call random_number(z2)
+          if(z1.eq.0.d0) z1=0.000000001d0
+          if(z2.eq.0.d0) z2=0.000000001d0
+          
+          v1 =  sqrt(-2*log(z1))*cos(2*pi*z2)
+
+          boxndm%hdot(1:3,1:3)=sqrt(2*bk*Tinitbox/boxndm%Wbox)*v1
+       end DO
+    end DO
+    Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+    Tempcell=Kcell*2./(9.*bk)
+    if (Tinitbox.gt.0)     boxndm%hdot(1:3,1:3)=sqrt(tinitbox/Tempcell)*boxndm%hdot(1:3,1:3)
+    DO i=1, 3
+       DO j=1, 3
+
+    ! Time derivative of the metric tensor Gmat
           boxndm%hdot(1:3,1:3)=boxndm%hdot(1:3,1:3)*ihbox0(1:3,1:3)
           boxndm%Gdot(i,j) = Sum( boxndm%h(1:3,i)*boxndm%hdot(1:3,j) + boxndm%hdot(1:3,i)*boxndm%h(1:3,j) )
        END DO
@@ -288,7 +308,7 @@ contains
 #endif
 
        ! Énergie cinétique des atomes à l'instant initial
-       kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
+!       kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
 
        ! Contrainte totale à l'instant initial
        sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
@@ -319,7 +339,7 @@ contains
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
     real(double)::T1,kin1,tstepN,u1,u2,rga,rgah
     real(double), dimension(1:3) :: xprov
-    real(double):: norme_de_fp, norme_de_vp, pscal
+    real(double):: norme_de_fp, norme_de_vp, pscal,tempcell
     real(double), dimension(ntyp) :: aux
     integer,save::nstep=0
 #ifdef PARA
@@ -405,16 +425,9 @@ contains
     atpr%xpp(:,1:atpr%im) = MatMul( boxndm%h, spp(:,1:atpr%im) )
     atpr%xp(:,1:atpr%im) = MatMul( boxndm%h, sp(:,1:atpr%im) )
     call updatebox(boxndm,boxndm%h)
-!!$    invVolu = 1.d0/boxndm%volu
-!!$    trh=Transpose(h)                            ! Matrices associées à h
-!!$    Gmat = MatMul(trh,h)
-!!$    CALL MatInv(Gmat,invGmat)
-!!$    call MatInv(h,invh)
-!!$    invtrh = Transpose(invh)
 
 !#ifdef PARA
     atpr%vp(:,1:atpr%im) = MatMul( boxndm%h(:,:), sdot(:,1:atpr%im) )
-    !    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
 !#endif
 
     CALL ScaleBox(atpr,celndm,boxndm,psc)
@@ -446,39 +459,32 @@ contains
        sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-       
-    case(88)
+! LPR +LANGEVIN : evolution de VP en corrdonnées réelles pour éviter de se tromper dans les dimensions       
+    case(88) 
        select type(atpr)
        class is (atom_config_e)
+          Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+          Tempcell=Kcell*2./(sum(ihbox0)*bk)
+          DO i=1, atpr%im
+
+          rga=exp(-gamlt(atpr%ityp(i))*tstep/2)
+          do ic=1,3
+             call random_number(u1)
+             call random_number(u2)
+             atpr%Glangv(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
+             atpr%vp(ic,i) = atpr%vp(ic,i)*rga+ atpr%fp(ic,i)*tstep/(cm(atpr%ityp(i))*2)&
+                  &+atpr%Glangv(ic,i)*sqrt(cm(atpr%ityp(i))*bk*text*(1-rga))/cm(atpr%ityp(i))
+          end do
+
+
           ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
           sp(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%xp(:,1:atpr%im) )
           ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat
           sdot(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%vp(:,1:atpr%im) )
-          ! Dérivée des coordonnées réduites des atomes à l'instant t+dt/2
-          mf(:,:) = -0.5d0*tstep*MatMul(boxndm%invGmat,boxndm%Gdot)
-          DO i=1, 3
-             mf(i,i) = 1.d0 + mf(i,i)
+
+          call sigkinetot(atpr,boxndm,sig,sigkine,sigtot)
           END DO
-          DO ia=1, atpr%im
-             rga=exp(-gamlt(atpr%ityp(i))*tstep/2)
-             !        write(6,'(A,2G15.7)')'gamstd ',gamlt(ityp(i)),rga
-             do ic=1,3
-                !  write(6,*)'ct',cm(ityp(1)),tstep
-                call random_number(u1)
-                call random_number(u2)
-                atpr%Glangv(ic,ia)=sqrt(-2.*log(u1))*cos(2.*pi*u2)
-!                write(6,*)'gl',atpr%Glangv(ic,ia)
-             end do
-             !          write(6,*)'rga',rga
-             sdot(:,ia) = MatMul( mf(:,:), sdot(:,ia)*rga  &
-                  +   MatMul( boxndm%invh(:,:), atpr%fp(:,ia)*tstep/(2.d0*cm(atpr%ityp(ia))) &
-                  &+(atpr%Glangv(:,ia)/cm(atpr%ityp(ia)))*sqrt(cm(atpr%ityp(i))*bk*text*(1-rga))))
-!             write(6,*)'rdn',atpr%Glangv(1,ia)/cm(atpr%ityp(ia))*sqrt(cm(atpr%ityp(i))*bk*text*(1-rga))*h(1,1)*mf(1,1)
-!             write(6,*)'rdn',u1,u2,atpr%Glangv(:,ia),cm(atpr%ityp(i)),bk,text,(1-rga),h(1,1),mf(1,1)
-          END DO
-       rgah=exp(-gamlg*tstep/2)
+       rgah=exp(-gamlg*gamprfact*tstep/2)
        do ic=1,3
           do ic2=1,3
              call random_number(u1)
@@ -486,81 +492,57 @@ contains
              glanh(ic,ic2)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
           end do
        end do
+
        boxndm%hdot(:,:) = (  boxndm%hdot(:,:)*rgah  &
             + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:),boxndm%invtrh(:,:) ) &
             + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
-       
-       ! Coordonnées réduites des atomes à l'instant t+dt
+       tempx= tempinstT(atpr)
+       Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+       Tempcell=Kcell*2./(sum(ihbox0)*bk)
+          
        sp(:,1:atpr%im) = sp(:,1:atpr%im) + sdot(:,1:atpr%im)*tstep
 
        ! Tenseur h à l'instant t+dt
        boxndm%h(:,:) = boxndm%h(:,:) + boxndm%hdot(:,:)*tstep*ihbox0(:,:)
 
-!    write(6,*)'hdot',hdot
     ! Coordonnées réelles à l'instant t+dt
     atpr%xpp(:,1:atpr%im) = atpr%xp(:,1:atpr%im)
     atpr%xp(:,1:atpr%im) = MatMul( boxndm%h, sp(:,1:atpr%im) )
+    
     call updatebox(boxndm,boxndm%h)
-!!$    invVolu = 1.d0/boxndm%volu
-!!$    trh=Transpose(h)                            ! Matrices associées à h
-!!$    Gmat = MatMul(trh,h)
-!!$    CALL MatInv(Gmat,invGmat)
-!!$    call MatInv(h,invh)
-!!$    invtrh = Transpose(invh)
-
     atpr%vp(:,1:atpr%im) = MatMul( boxndm%h(:,:), sdot(:,1:atpr%im) ) ! retour à vp car transfert d'atomes  dans scalebox en PARA
+    Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+    Tempcell=Kcell*2./(sum(ihbox0)*bk)
+
+    tempx= tempinstT(atpr)
 
     CALL ScaleBox(atpr,celndm,boxndm,psc)
-
-    sdot(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%vp(:,1:atpr%im) )
+    call caltabtC(celndm,atpr,lperiod,boxndm)
 
     ! Calcul des forces et des contraintes à l'instant t+dt
     CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
+    call sigkinetot(atpr,boxndm,sig,sigkine,sigtot)
 
-    
-    ! Estimation de la contrainte totale à l'instant t+dt
-    ! (la contrainte cinétique est calculée à l'instant t
-    ! et la contrainte potentielle à l'instant t+dt)
-    sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
+       do i=1,atpr%im
+          rga=exp(-gamlt(atpr%ityp(i))*tstep/2)
+          do ic=1,3
+             atpr%vp(ic,i) = atpr%vp(ic,i)*rga+ atpr%fp(ic,i)*tstep/(cm(atpr%ityp(i))*2)&
+                  &+atpr%Glangv(ic,i)*sqrt(cm(atpr%ityp(i))*bk*text*(1-rga))/cm(atpr%ityp(i))
+          end do
+       end do
+!    sdot(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%vp(:,1:atpr%im) )
 
-    DO ia=1, atpr%im
-       rga=exp(-gamlt(atpr%ityp(i))*tstep/2)
-       !        write(6,'(A,2G15.7)')'gamstd ',gamlt(ityp(i)),rga
-       sdot(:,ia) = MatMul( mf(:,:), sdot(:,ia)*rga  &
-            +  MatMul( boxndm%invh(:,:), atpr%fp(:,ia)*tstep/(2.d0*cm(atpr%ityp(ia))) &
-            &+(atpr%Glangv(:,ia)/cm(atpr%ityp(ia)))*sqrt(cm(atpr%ityp(i))*bk*text*(1-rga))))
-    END DO
-
-    
+       call sigkinetot(atpr,boxndm,sig,sigkine,sigtot)
+       
     boxndm%hdot(:,:) = (boxndm%hdot(:,:)*rgah  &
          + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:), boxndm%invtrh(:,:) ) &
          + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
-   
-    
     ! Estimation de la dérivée du tenseur Gmat à l'instant t+dt
     DO i=1, 3
        DO j=1, 3
           boxndm%Gdot(i,j) = Sum( boxndm%h(1:3,i)*boxndm%hdot(1:3,j) + boxndm%hdot(1:3,i)*boxndm%h(1:3,j) )
        END DO
     END DO
-    atpr%vp(:,1:atpr%im) = MatMul( boxndm%h(:,:), sdot(:,1:atpr%im) ) ! retour à vp car transfert d'atomes  dans scalebox en PARA
-    ! Énergie cinétique des atomes à l'instant t+dt
-    sigkine(:,:)=0.d0
-    do ia = 1, atpr%im
-       do j = 1,3
-          sigkine(1:3,j) = sigkine(1:3,j) + cm(atpr%ityp(ia))*atpr%vp(1:3,ia)*atpr%vp(j,ia)
-       enddo
-    enddo
-    sigkine(1:3,1:3) = boxndm%invVolu*sigkine(1:3,1:3)
-    kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
-
-#ifdef PARA
-
-       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call comm_space%sum(sigkine)
-       end if
-#endif
-       sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
 
     grsig = boxndm%volu * MatMul(boxndm%invh, MatMul( sigext, boxndm%invtrh) )
     tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
@@ -570,8 +552,8 @@ contains
 
     ! Énergie cinétique de la cellule (Eq. 2.14, Ref.2)
     Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+    Tempcell=Kcell*2./(sum(ihbox0)*bk)
     EcellPR = Kcell + Ucell
-    
     
     
  end select

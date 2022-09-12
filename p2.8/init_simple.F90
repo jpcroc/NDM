@@ -93,8 +93,9 @@ contains
        select type(atdml)
           class is (atom_config_d)
              call initspeed(atdml,boxndm)
-       end select
+          end select
     end if
+
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
     else

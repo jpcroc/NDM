@@ -60,7 +60,8 @@ contains
        ltpcel=.true.
        sigc=>celcf%sigc
     end if
-!    write (6,*)'test icaltabt calfo',celcf%icaltabt,atcf%icaltabt
+    
+
     if(celcf%icaltabt.ne.atcf%icaltabt) then
        write (6,*)'incoherence dans icaltabt calfo',celcf%icaltabt,atcf%icaltabt
        call arret_ndm

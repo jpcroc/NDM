@@ -193,7 +193,7 @@ module gen_com_m
  logical :: firsttime_lammps
  integer:: iverbose ! verbosity (0 = pas de détails, défaut, 1 = détails)
 
-
+real(double)::gamprfact
  logical :: latcomp ! masters (myidsp=0) have the complete positions (for sauvegardeT), rasmolT
  
 end module gen_com_m

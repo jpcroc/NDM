@@ -12,7 +12,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:nprocs
-    USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,&
+    USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,gamprfact,&
          &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,ibordcou,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
@@ -41,6 +41,7 @@ contains
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
+    use Parrinello_Rahman,only:TinitBox
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
 #endif
@@ -87,7 +88,7 @@ contains
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
-         ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,&
+         ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 
 
@@ -143,6 +144,7 @@ contains
     itetimestep = -1            !period of check in timestep
     tsfact = 10.0               !change in time step factor
     tinit = -1.0                !initial temperature
+    tinitbox = -1.0                !initial temperature
     tfcou = -1.0                !temperature of the border of the box
     epcou = -1.0                !width of the border of the box
     lcasca = .FALSE.            !cascade Y/N
@@ -218,6 +220,7 @@ contains
     landerscou=.false.       ! Andersen seulement sur les bords
     lLangevin=.false.        ! Langevin MD
     gamlg =5d12            ! Gamma deLangevin (= 0.005/1d-15 fera vp*0.995 pour tstep=1d-15)
+    gamprfact=0.1
     ilangevin=1
     iko=-1
     lcdp=.false.             ! algorithme d'accumulation de defauts ponctuels
@@ -1036,7 +1039,6 @@ contains
     end if
     if (rang==0) write (6, *)
     if (rang==0) write (6, '(a,I2)') ' -------- caracteristiques du run DM--------', dmtype
-    write(6,*)'DDMMM',dmtype       
     select case (dmtype)
     case(111)
        if (rang==0) write (6,'(a)') '|=========       ONE STEP           ===============|'
@@ -1525,6 +1527,15 @@ contains
        write(6,*)'fstpdecr must be >1 ; stop'
        stop
     endif
+    If (Tinitbox==-1) then
+       if (Tinit.GT.0) then
+          Tinitbox=Tinit
+       else if (Text.GT.0) then
+          Tinitbox=Text
+       else
+          Tinitbox=0.
+       end if
+    end If
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
   end subroutine readdm

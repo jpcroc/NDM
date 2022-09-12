@@ -50,7 +50,6 @@ contains
        !     write(6,*)'rga',rga,Gl(ic,i)*sqrt(cm(ityp(1))*bk*text*(1-rga**2))/cm(ityp(1)),vp(1,1)
        do i=1,atdml%im
           rga=exp(-gamlt(atdml%ityp(i))*tstep/2)
-          !        write(6,'(A,2G15.7)')'gamstd ',gamlt(ityp(i)),rga
           do ic=1,3
              !  write(6,*)'ct',cm(ityp(1)),tstep
              call random_number(u1)
