@@ -1,10 +1,10 @@
 module setcell
-   USE arret_ndm_mod,only:arret_ndm
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE read_val,only:nox,noy,noz,rvois
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:ldemitab,nvat,pi,rang,lrctest,ltpcel,lspacendm
-    USE var_pot, ONLY:lpotentiel,rue_pot,ipotentiel !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
+  USE var_pot, ONLY:lpotentiel,rue_pot,ipotentiel !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
   USE recips_mod,only:recips,calcvol,distmin
   USE atomconfig,only: atom_config
   USE boxconfig,only:box_config
@@ -25,7 +25,7 @@ contains
     logical::lverb=.true.
     real(double)::rut,zlmin,zlm2
     if (present(lverbose)) lverb=lverbose
-    
+
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
     zlm2 = distmin(boxsn%at(:,1),boxsn%at(:,3))
     zlmin = min(zlmin,zlm2)
@@ -40,7 +40,7 @@ contains
     !  end if
     if (lpotentiel(11).eqv..true.) rut=max(rut,2*rue_pot(11))
     if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
-     izonr = int(zlmin/rut)
+    izonr = int(zlmin/rut)
     ! MPI
     if ((rang==0).and.(lverb)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
     if ((ipotentiel.ne.20).and.(izonr<2)) then
@@ -51,39 +51,39 @@ contains
           call arret_ndm
        endif
     end if
-     if ((rang==0).and.(lverb)) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz
-    
+    if ((rang==0).and.(lverb)) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz
+
     if (nox<=0.or.noy<=0.or.noz<=0) then
        ! détermination de nox noy noz qui ne sont pas donnes dans .din
        !
-        if ((rang==0).and.(lverb))write (6, *) 'calcul de nox noy noz !!!'
+       if ((rang==0).and.(lverb))write (6, *) 'calcul de nox noy noz !!!'
        ! ==== MODIF CLOUET 2 ====================
        if (izonr<3) then
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              write(6,*)'trop petite boite pour para'
              call arret_ndm
           end if
 #endif
-             
-           if ((rang==0).and.(lverb)) then
+
+          if ((rang==0).and.(lverb)) then
              WRITE(6,'(a)') "Boite trop petite: le nombre de cellules est fixe a son minimum"
           endif
        endif
        nox = int(boxsn%nzl(1)/rum)
        noy = int(boxsn%nzl(2)/rum)
        noz = int(boxsn%nzl(3)/rum)
-         if ((rang==0).and.(lverb)) THEN
+       if ((rang==0).and.(lverb)) THEN
           write (6,'(a)') 'nox noy noz calcules a partir de ru'
           WRITE(6,'(2(a,g12.4),a,i0)') '  nox = Int( ', boxsn%nzl(1),'/',rum,') = ', nox
           WRITE(6,'(2(a,g12.4),a,i0)') '  noy = Int( ', boxsn%nzl(2),'/',rum,') = ', noy
           WRITE(6,'(2(a,g12.4),a,i0)') '  noz = Int( ', boxsn%nzl(3),'/',rum,') = ', noz
        END IF
-       IF (nox.LT.3) nox=1
-       IF (noy.LT.3) noy=1
-       IF (noz.LT.3) noz=1
-       if ((rang==0).and.(lverb)) write (6,'(a,3(i0,1x))') 'nox noy noz apres correction = '&
-            , nox, noy, noz
+!!$       IF (nox.LT.3) nox=1
+!!$       IF (noy.LT.3) noy=1
+!!$       IF (noz.LT.3) noz=1
+!!$       if ((rang==0).and.(lverb)) write (6,'(a,3(i0,1x))') 'nox noy noz apres correction = '&
+!!$            , nox, noy, noz
 
        ! ==== FIN MODIF CLOUET 2 ================
        celsn%celsize(1) = boxsn%zl(1)/float(nox)
@@ -93,12 +93,12 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     else
 
        ! *** nox noy noz sont donnes dans.din ***
-
-       if (nox==2.or.noy==2.or.noz==2) then
-          write (6, *) rang,'wrong noxyz stop'
-          call arret_ndm
-       endif
-!       celsn%nox=nox;celsn%noy=noy;celsn%noz=noz
+!!$
+!!$       if (nox==2.or.noy==2.or.noz==2) then
+!!$          write (6, *) rang,'wrong noxyz stop'
+!!$          call arret_ndm
+!!$       endif
+!!$       !       celsn%nox=nox;celsn%noy=noy;celsn%noz=noz
 
        celsn%celsize(1) = boxsn%zl(1)/float(nox)
        celsn%celsize(2) = boxsn%zl(2)/float(noy)
@@ -107,11 +107,11 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
     endif
     call celsn%init(boxsn,nox,noy,noz,ltpc=ltpcel)
-     if ((rang==0).and.(lverb)) write(6,'(A,3G15.7)') 'celsizes ',celsn%celsize(:)
+    if ((rang==0).and.(lverb)) write(6,'(A,3G15.7)') 'celsizes ',celsn%celsize(:)
     ! nox noy et noz sont determines
 
-!    celsn%noxyz = nox*noy*noz
-    
+    !    celsn%noxyz = nox*noy*noz
+
   end subroutine setnox
 
 
@@ -133,16 +133,16 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     zlmin = min(zlmin,zlm2)
     zlmin=zlmin*2
 
-    
-!    IF (natperc.LE.0) THEN        ! MODIF Clouet
-!    write(6,*)'TTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUTTTTTTTTTTTTTTT'
-!    write(6,*)celscf%noxyz
+
+    !    IF (natperc.LE.0) THEN        ! MODIF Clouet
+    !    write(6,*)'TTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUTTTTTTTTTTTTTTT'
+    !    write(6,*)celscf%noxyz
     natperc= INT(atcf%im_glob/celscf%noxyz)
-       nvat=3*natperc
-       natperc=max(int(2*natperc),10)     ! MODIF Clouet
-!    ELSE                          ! MODIF Clouet
-!       nvat=10*natperc       ! MODIF Clouet
-!    END IF                        ! MODIF Clouet
+    nvat=3*natperc
+    natperc=max(int(2*natperc),10)     ! MODIF Clouet
+    !    ELSE                          ! MODIF Clouet
+    !       nvat=10*natperc       ! MODIF Clouet
+    !    END IF                        ! MODIF Clouet
 
 
     if ((rang==0).and.(lverb)) &
@@ -151,7 +151,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     if (allocated(celscf%atincel))deallocate(celscf%atincel)
     allocate(celscf%atincel(celscf%natperc,celscf%noxyz))
     celscf%atincel=0
-  if ((rang==0).and.(lverb))  write(6,*)'ltabvois',atcf%ltabvois
+    if ((rang==0).and.(lverb))  write(6,*)'ltabvois',atcf%ltabvois
 
     if (atcf%ltabvois) then
        if (rumax>rvois) then
@@ -182,7 +182,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        atcf%nvois=nvois
        if(allocated(atcf%indi))deallocate(atcf%indi)
        allocate(atcf%indi(nvois))
-!       allocate(indi2(nvois))
+       !       allocate(indi2(nvois))
        if (.not.allocated(atcf%iwmax))allocate(atcf%iwmax(atcf%imm))
     end if
   end subroutine setcellconf

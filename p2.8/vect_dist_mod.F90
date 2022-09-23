@@ -33,12 +33,9 @@ contains
     call notperiod(2,xp,xpnp,boxcf%at,boxcf%bg,lperiod)
     XJI(:)= xpnp(:,1)-xpnp(:,2)
     !    if ((celcf%noxyz.ne.1).and.(i1.ge.1).and.(i1.le.27)) then
-    if (present(indcv).and.(celcf%noxyz.ne.1)) then
+    if (present(indcv).and.(celcf%nox.ge.3).and.(celcf%noy.ge.3).and.(celcf%noz.ge.3)) then
        do ic=1,3
           XJI(ic)=XJI(ic)+sum(boxcf%at(ic,:)*celcf%deltadist(:,indcv,atcf%ielat(i)))
-          !       c1 = c1+sum(boxcf%at(1,:)*celcf%deltadist(:,i1,koo))
-          !       c2 = c2+sum(boxcf%at(2,:)*celcf%deltadist(:,i1,koo))
-          !       c3 = c3+sum(boxcf%at(3,:)*celcf%deltadist(:,i1,koo))
        end do
     else
        cv(1,:) = XJI(:)

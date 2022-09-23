@@ -1,6 +1,6 @@
 module calfoeamcel_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:angst,nvat,low_limit,lperiod,zero,pi
+  USE gen_com_m, ONLY:angst,nvat,low_limit,lperiod,zero,pi,rang
   USE calfocommon
   use vect_dist_mod,only:vect_dist
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -57,7 +57,8 @@ contains
     real(double) :: tabdensity(atcf%imm)
     real(double)::rue,alp,aux
     logical ::linter
-    
+    real(double)::sig2p(3,3),sigem(3,3)
+    sig2p=0;sigem=0
     rue=rue_pot(ipotentiel)
     aux = 23.06134575D-20
     alp = alpha/sqrt(pi)*aux
@@ -168,9 +169,12 @@ contains
 
              if (test_sigma) then        
                 if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then          
-                   sig(1:3,1) = sig(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
-                   sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
-                   sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
+!!$                   sig(1:3,1) = sig(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
+!!$                   sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
+!!$                   sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
+                   sig2p(1:3,1) = sig2p(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
+                   sig2p(1:3,2) = sig2p(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
+                   sig2p(1:3,3) = sig2p(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
                    if (lTPcel.EQV..true.) then
                       sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
                       sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
@@ -292,9 +296,12 @@ contains
 
              if (test_sigma) then                   
                 if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
-                   sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)/boxcf%volu
-                   sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
-                   sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
+!!$                   sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)/boxcf%volu
+!!$                   sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
+!!$                   sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
+                   sigem(1:3,1) = sigem(1:3,1) - Femb*gradij(1:3)*dxp(1)/boxcf%volu
+                   sigem(1:3,2) = sigem(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
+                   sigem(1:3,3) = sigem(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
                    if (lTPcel.EQV..true.) then
                       sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
                       sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
@@ -319,14 +326,21 @@ contains
        call comm_space%sum(potisrep)
        call comm_space%sum(potisglue)
        if (test_sigma) then 
-       call comm_space%sum(sig)
+!          call comm_space%sum(sig)
+          call comm_space%sum(sig2p)
+          call comm_space%sum(sigem)
+
           if (associated(sigc)) then
              call comm_space%sum(sigc)
           endif
        endif
     end if
 #endif
-
+    if (test_sigma)sig=sig+sig2p+sigem
+!!$    if (rang==0)    write(6,*)
+!!$    if (rang==0)    write(6,*)sig2p
+!!$    if (rang==0)    write(6,*)
+!!$    if (rang==0)    write(6,*)sigem
     potiseam=potisglue+potisrep
 
     return

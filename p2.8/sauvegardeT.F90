@@ -112,7 +112,7 @@ contains
              lwax=.false.
              select type(atdml)
              class is (atom_config_d)
-                write(6,*)'TYPEEEEEEEEEDDDD'
+!                write(6,*)'TYPEEEEEEEEEDDDD'
                 buffer(:,1:im) = atdml%xpp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                    do i_proc=1,nprocspace-1

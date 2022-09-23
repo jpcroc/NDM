@@ -15,7 +15,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m , ONLY:lcalcjq,lperiod,pi,potis1,potis2
+    USE gen_com_m , ONLY:lcalcjq,lperiod,pi,potis1,potis2,rang
     USE jqmod
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
@@ -33,9 +33,9 @@ contains
          , c3, c1p,c2p,c3p, sk, r, phu, c1abs,c2abs,c3abs,cv(1,3)
     real(double) :: dr,deltaepot,fcontr
     logical ::linter
-    real(double)::dxp(3),gradij(3)
+    real(double)::dxp(3),gradij(3),sig2p(3,3)
 
-
+    sig2p=0
     ! Declarations de constantes
     aux = 23.06134575D-20
     alp = alpha/sqrt(pi)*aux
@@ -127,15 +127,15 @@ contains
 
              if (test_sigma) then
                 if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
-                   sig(1,1) = sig(1,1)+phu*gradij(1)*dxp(1)/boxcf%volu
-                   sig(1,2) = sig(1,2)+phu*gradij(1)*dxp(2)/boxcf%volu
-                   sig(1,3) = sig(1,3)+phu*gradij(1)*dxp(3)/boxcf%volu
-                   sig(2,1) = sig(2,1)+phu*gradij(2)*dxp(1)/boxcf%volu
-                   sig(2,2) = sig(2,2)+phu*gradij(2)*dxp(2)/boxcf%volu
-                   sig(2,3) = sig(2,3)+phu*gradij(2)*dxp(3)/boxcf%volu
-                   sig(3,1) = sig(3,1)+phu*gradij(3)*dxp(1)/boxcf%volu
-                   sig(3,2) = sig(3,2)+phu*gradij(3)*dxp(2)/boxcf%volu
-                   sig(3,3) = sig(3,3)+phu*gradij(3)*dxp(3)/boxcf%volu
+                   sig2p(1,1) = sig2p(1,1)+phu*gradij(1)*dxp(1)/boxcf%volu
+                   sig2p(1,2) = sig2p(1,2)+phu*gradij(1)*dxp(2)/boxcf%volu
+                   sig2p(1,3) = sig2p(1,3)+phu*gradij(1)*dxp(3)/boxcf%volu
+                   sig2p(2,1) = sig2p(2,1)+phu*gradij(2)*dxp(1)/boxcf%volu
+                   sig2p(2,2) = sig2p(2,2)+phu*gradij(2)*dxp(2)/boxcf%volu
+                   sig2p(2,3) = sig2p(2,3)+phu*gradij(2)*dxp(3)/boxcf%volu
+                   sig2p(3,1) = sig2p(3,1)+phu*gradij(3)*dxp(1)/boxcf%volu
+                   sig2p(3,2) = sig2p(3,2)+phu*gradij(3)*dxp(2)/boxcf%volu
+                   sig2p(3,3) = sig2p(3,3)+phu*gradij(3)*dxp(3)/boxcf%volu
                 endif
                 if (lTPcel.EQV..true.) then
                    sigc(1,1,koo) = sigc(1,1,koo)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyz/boxcf%volu
@@ -166,20 +166,20 @@ contains
     end do ! fin i
 
 #ifdef PARA
-
+    if (test_sigma)then
     if (nprocspace.gt.1) then
        call comm_space%sum(potis1)
 !       call comm_space%sum(potis2)
-       call comm_space%sum(sig)
+       call comm_space%sum(sig2p)
        if (associated(sigc)) then
           call comm_space%sum(sigc)
 
        endif
     end if
-
+ end if
 #endif
-
-
+    if (test_sigma)sig=sig+sig2p
+!    if (rang==0)    write(6,*)'SIG2P',sig
     ! fin du calcul du terme de paire dans l'espace direct
     return
   end subroutine calfo2ccel

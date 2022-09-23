@@ -395,7 +395,13 @@ contains
     tempsauv=tempinstT(atcf)
     if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
 
-
+    if (mdcg_noise==1) then
+       call bruit_xp (bruitmd,atcf%im)
+       do i=1,atcf%im
+          ! Variables = cartesian coordinates (in cm)
+          atcf%xp(1:3,i)= atcf%xp(1:3,i)+bruitmd(1:3,i)
+       end do
+    end if
     if (tempdeplainit.gt.0)then
 
        if (rang==0) then

@@ -44,7 +44,7 @@ contains
     real(double) , dimension(15,6) :: tmp
     real(double) , dimension(15,3) :: tmp1
     real(double) , dimension(1,3) :: cvij, cvik
-    real(double):: coupR(npair)
+    real(double):: coupR(npair),sigT(3,3)
 
     real(double) :: phu,sk,dr
     integer::kk
@@ -193,7 +193,7 @@ contains
                       !Contrainte
                       if (test_sigma) then 
                          do m=1,3
-                            sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/boxcf%volu
+                            sigT(l,m)=sigT(l,m) + paire_ij*cvij(1,m)/boxcf%volu
                             if (lTPcel.EQV..true.) then
                                sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + 0.5*paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                                sigc(l,m,jcelnumber) = sigc(l,m,jcelnumber) + 0.5*paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
@@ -225,7 +225,7 @@ contains
                       !Contrainte
                       if (test_sigma) then 
                          do m=1,3
-                            sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/boxcf%volu
+                            sigT(l,m)=sigT(l,m) + paire_ij*cvij(1,m)/boxcf%volu
                             if (lTPcel.EQV..true.) then
                                sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                                sigc(l,m,jcelnumber) = sigc(l,m,jcelnumber) + paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
@@ -305,8 +305,8 @@ contains
                          !write(6,*)sig
                          if (test_sigma) then 
                             do m=1,3
-                               sig(l,m)=sig(l,m) + triplet_ij*cvij(1,m)/boxcf%volu
-                               sig(l,m)=sig(l,m) + triplet_ik*cvik(1,m)/boxcf%volu
+                               sigT(l,m)=sigT(l,m) + triplet_ij*cvij(1,m)/boxcf%volu
+                               sigT(l,m)=sigT(l,m) + triplet_ik*cvik(1,m)/boxcf%volu
                                if (lTPcel.EQV..true.) then
                                   sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + celcf%noxyz*0.5*(triplet_ij*cvij(1,m)/boxcf%volu  &
                                        + triplet_ik*cvik(1,m)/boxcf%volu)
@@ -365,13 +365,13 @@ contains
 #ifdef PARA
     if (nprocspace.gt.1) then
        call comm_space%sum(potisTersoff)
-       call comm_space%sum(sig)
+       call comm_space%sum(sigT)
        if (associated(sigc)) then
           call comm_space%sum(sigc)
        endif
     end if
 #endif
-
+    sig=sig+sigT
 
 #ifdef PARA
     if (nprocspace.gt.1) then

@@ -126,7 +126,6 @@ contains
                       call calfo2ccel(atcf,celcf,boxcf)
                    endif
 
-
 !                   if (iewald.ge.1) call calfoew(atcf,celcf,boxcf)
                    ! Potentiel total
                    potisP = potis0+potis1    !  +potis2    !+potis3

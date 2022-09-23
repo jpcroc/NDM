@@ -1,6 +1,6 @@
 module calfoew_mod
   USE epme_mod,only: epme
-  USE gen_com_m, ONLY:pi,potis3,zero,pi,potis2
+  USE gen_com_m, ONLY:pi,potis3,zero,pi,potis2,rang
   USE calfocommon
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
@@ -141,7 +141,6 @@ contains
              end do
           end do
        end do
-
        ! --- Fin du calcul ---
 
        if (test_sigma) then

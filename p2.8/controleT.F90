@@ -132,7 +132,7 @@ contains
 #endif
 
           fpn=fpSmax*erg2eV/angst
-          if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E20.10)') iteration,fpn, potist*erg2eV
+          if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E25.15)') iteration,fpn, potist*erg2eV
 !          if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot)), 1d-9*maxval(abs(sigtoth0))
 !!$                 write (unitgc, *)
