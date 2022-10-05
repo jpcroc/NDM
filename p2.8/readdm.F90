@@ -608,6 +608,10 @@ contains
           write(6,*)'itypcalc<0'
           call arret_ndm
        end if
+       if (n_path.lt.0) then
+          write(6,*)'n_path<0'
+          call arret_ndm
+       end if
        np2=nparapath*2
        if (np2.ne.nprocs) then
           if (ltabvois) then

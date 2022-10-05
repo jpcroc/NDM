@@ -2552,14 +2552,12 @@ contains
     loopi:do i=1,nrins
        somPm1=somP
        somP=somP+probaR(i)
-
        if (zr.le.somP) then
           iex=i-1
           rex=(float(iex)+(zr-somPm1)/probaR(i))*zlmin/nrins
           exit loopi
        end if
     end do loopi
-
     xins(1)=rex*sin(theta)*cos(fhi)
     xins(2)=rex*sin(theta)*sin(fhi)
     xins(3)=rex*cos(theta)
@@ -2581,20 +2579,25 @@ contains
   subroutine init_instyp
     real(double):: r,zlm2,somP
     integer::i
+    call boxmcgc_p%print
     zlmin = distmin(boxmcgc_p%at(:,1),boxmcgc_p%at(:,2))
     zlm2 = distmin(boxmcgc_p%at(:,1),boxmcgc_p%at(:,3))
     zlmin = min(zlmin,zlm2)
     zlm2 = distmin(boxmcgc_p%at(:,2),boxmcgc_p%at(:,3))
     zlmin = min(zlmin,zlm2)
+!    write(6,*)'NRINS',nrins,zlmin
     R0mcgc=R0mcgc*1d-8
     fdfactmcgc=fdfactmcgc*1d8
     somP=0.
     do i=0,nrins
        r=float(i)*zlmin/nrins
+
        probaR(i)=r*r/(1+exp(fdfactmcgc*(r-R0mcgc)))
+!       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i)
        somP=somP+probaR(i)    
     end do
     probaR(:)=probaR(:)/somP
+    
   end subroutine init_instyp
 !!!!!!!!!!!!!!*******************!!!!!!!!!!!!!!!!!!!!!!!*****************!!!!!!!!!!!!!!!
 !!$  subroutine initMCLPR(np1)

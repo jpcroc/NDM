@@ -89,7 +89,7 @@ contains
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
     !probablement inutile pour dmtype=9 ou 15
 ! choose actual data types for atmdl and boxndm depending on values read in readdm
-    if (lPRahman) then
+    if ((lPRahman).or.(dmtype==15)) then
        boxndm=>boxlpr
     else
        boxndm=>boxs
@@ -287,7 +287,6 @@ contains
        allocate (config_cells_n(nparapath))
        allocate (config_cells_nplus1(nparapath))
        allocate(boxmcgcpath(nparapath))
-       if (ins_typ==1) call init_instyp
        !       if (nparapath==1) then
        select type (boxndm)
        type is (box_config_lpr)
@@ -300,7 +299,6 @@ contains
           atconf_nplus1=>config_atom_nplus1(ipp)
           cells_nplus1=>config_cells_nplus1(ipp)
           boxmcgc_p=boxmcgc
-!          write(6,*)'IM',im,rang
           if (idirectionmcgc==0) then
              call atconf_n%init(im,imm_glob,ltabvois,nvois,rvois=rv)
           else
@@ -315,9 +313,11 @@ contains
           end if
           if (idirectionmcgc==0) then
              call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot) 
+             if (ins_typ==1) call init_instyp
              call initNP1(ipp) ! initialise la configuration N+1
           else
-             call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot) 
+             call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot)
+             if (ins_typ==1) call init_instyp
              call initN(ipp) ! initialise la configuration N+1
           end if
                  if (lprahman) then

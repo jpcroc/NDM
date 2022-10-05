@@ -4,7 +4,6 @@ A FAIRE
 
 MODE D'EMPLOI
 
-TREMPE FIRE Y COMPRIS LPR
 PIMD ?
 Artnouveau
 lecture d'autres fichiers .cfg , .xfg, écriture de plusieurs types de fichiers de configurations ex: .cfg ET ..newgin
@@ -13,7 +12,7 @@ calcdepla a été débranché, le rebrahcer ?
 plotpart dans anapos
 4.2/ regarder itesauvinter, sauveposition, saueforce, etc. en relation avec sauvegarde atomconfig piloté comme send2all etc.
 5.5/ coder le calcul des depla via anpos à la volée sans lecture de analyse.in et/ou crcin de même bondval !
-6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul.
+6/Changer les write 6 en write vers une unité dédiée à chaque portion de calcul. ET newunit 
 6.5/ sauvegarde binaire de atom_config et systeme entier
 
 7/NON CA MARCHE PAS !!définir un type atom_config_m (minimal) avec seulement xp,ityp et num_at_glob pour travailler les anapos !! par exemple les lacunes dans cdp modifier les rasmo qui vont avec
@@ -81,6 +80,7 @@ SUPPRIMER LES STOPS LES RE%PLACER PAR UN ARRET PARA remaplcer arret_ndm par stop
 4.1/ relire tout gen_comm_m et enlever tout ce qui ne sert à rien!
 X.X/ calcul de la matrice de constantes de force et thermo associée
 lconstrtotR en argument et lconstrtot maintenu :supprimer lconstrtot de gen_com_m et l'attacher à atomconfig ?? ou le passer en argulent
+TREMPE FIRE Y COMPRIS LPR
 
 ----HISTORIQUE:
 rasmol a mettre en version paraconfig (FAIT ?)
