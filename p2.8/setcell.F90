@@ -58,7 +58,7 @@ contains
        !
        if ((rang==0).and.(lverb))write (6, *) 'calcul de nox noy noz !!!'
        ! ==== MODIF CLOUET 2 ====================
-       if (izonr<3) then
+       if (izonr<2) then
 #ifdef PARA
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              write(6,*)'trop petite boite pour para'
