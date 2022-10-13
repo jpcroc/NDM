@@ -2041,7 +2041,7 @@ contains
                    do ic=1,3
                       ip=ip+1
                       ib=Rposf(ivR-1)+ip
-                      rbuffer(ib)=atcf%glangv(ic,ip)
+                      rbuffer(ib)=atcf%glangv(ic,iat)
                       csR=csR+1
                    end do
                 end if
@@ -2059,7 +2059,7 @@ contains
                    do ic=1,3
                       ip=ip+1
                       ib=Rposf(ivR-1)+ip
-                      rbuffer(ib)=atcf%ax(ic,ip)
+                      rbuffer(ib)=atcf%ax(ic,iat)
                       csR=csR+1
                    end do
                 end if

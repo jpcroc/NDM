@@ -124,7 +124,7 @@ contains
     real(double) :: acceptance_rate, acceptance_rate_0, acceptance_rate_1
 
     integer :: i_path,ipp,ipch,iplus
-    real(double)::zr1
+    real(double)::zr1,xp_np1(3)
 
     integer :: n,iloc
     integer :: acceptation, test_acc
@@ -224,6 +224,9 @@ contains
           end if
           boxmcgc_p=>boxmcgcpath(1)
           call calcul_proba_des
+          xp_np1(:)=atconf_nplus1%xp(:,atconf_nplus1%im)
+          atconf_nplus1%proba_ins= calcul_proba_ins (xp_np1)
+
           !recopier les nouvelles configs dans old 1
           call config_atom_nplus1(1)%copy_config(config_atom_old_1,lrescl=.true.)
           call restart_chemin(travail_prec, dir_prec)
@@ -395,6 +398,9 @@ contains
              call config_atom_nplus1(ipch)%copy_config(config_atom_old_1, lrescl=.true.)
              box_old1=boxmcgcpath(ipch)
           else
+             xp_np1(:)=atconf_nplus1%xp(:,atconf_nplus1%im)
+             atconf_nplus1%proba_ins= calcul_proba_ins (xp_np1)
+
              call config_atom_n(ipch)%copy_config(config_atom_old_0, lrescl=.true.)
              box_old0=boxmcgcpath(ipch)
           end if
@@ -411,7 +417,7 @@ contains
           !W = Work
           Wprec = + W
           Wprecedent = Wprec
-          if (lmegamaster) write(*,*) 'W0', W,W*erg2eV
+          if (lmegamaster) write(*,*) 'W0',W*erg2eV
 
 
 
@@ -439,6 +445,10 @@ contains
        !       if (lmegamaster) write(6,*)'PATH',i_path,direction
        Weff_npp(:)=0
        pot_npp(:)=0
+       if (lmegamaster)then
+          write(6,*)
+          write(6,*)'path in direction', direction, ' to ',1-direction
+       end if
 
        if (lbigmaster) then
           do ipp=1,nparapath
@@ -615,7 +625,7 @@ contains
     real(double) :: biais
     real(double) :: W, xprob, xalea
     real(double) :: ln_xalea, ln_Wprec, ln_W, ln_xprob
-    real(double) :: theta, beta
+    real(double) :: theta, beta,xp_np1(3)
     real(double), dimension(nparapath+1) :: xprob_i ! naparapath = 1 dans le cas du monoproposal
     logical :: lextend, lperiod 
     real(double), dimension(2,22) :: tab_cumul
@@ -642,7 +652,12 @@ contains
           box_new1=boxmcgcpath(ipchemin)
        else
           !W = - Work
+          
+          xp_np1(:)=config_atom_old_1%xp(:,config_atom_old_1%im)
+          config_atom_old_1%proba_ins= calcul_proba_ins (xp_np1)
+
           call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)
+          
           box_new0=boxmcgcpath(ipchemin)
        endif
 
@@ -651,8 +666,6 @@ contains
           if (lbiais(0)) then
              biais = config_atom_nplus1(ipchemin)%proba_ins&
                   &/config_atom_old_1%proba_ins
-             write(6,*)'BIAIS A PROGRAMMER POUR LA SPHERE D_INSERTION PAR EXEMPLE'
-             call arret_ndm
           else
              biais = 1.0
           end if
@@ -770,7 +783,7 @@ contains
 
     real(double) :: biais
     real(double) :: W, xprob, xalea
-    real(double) :: theta, beta
+    real(double) :: theta, beta,xp_np1(3)
     integer :: ipp
     real(double), dimension(nparapath+1) :: xprob_i
     logical :: lextend, lperiod
@@ -817,6 +830,8 @@ contains
              call config_atom_nplus1(ipchemin)%copy_config(config_atom_new_1, lrescl=.true.)
              box_new1=boxmcgcpath(ipchemin)
           else
+             xp_np1(:)=config_atom_nplus1(ipchemin)%xp(:,config_atom_nplus1(ipchemin)%im)
+             config_atom_new_1%proba_ins= calcul_proba_ins (xp_np1)
              call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)
              box_new0=boxmcgcpath(ipchemin)
           end if
@@ -1187,6 +1202,7 @@ contains
              nag=maxval(atconf_Nplus1%num_at_glob(1:iplus-1))
              atconf_Nplus1%num_at_glob(iplus) = nag+1
              atconf_Nplus1%proba_ins = pins
+             write(6,*)'pinsN',i,pins
           end do
           call init_vitesse(atconf_nplus1,param = 0)
        end if
@@ -1265,6 +1281,22 @@ contains
 
   end subroutine ajout_retrait
 
+  function  calcul_proba_ins(xpt) result (pinser)
+    implicit none
+    
+    real(double), dimension(3)::xpt
+    real (double)::pinser
+
+    real(double)::poscenter(3,1),postest(3),rd
+
+
+    poscenter(:,1)=bublcenter(:)
+    call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+    postest(:)=-1*(poscenter(:,1)-xpt(:))
+    rd=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)
+    pinser= 1/(1+exp(fdfactmcgc*(rd-R0mcgc)))
+    write(6,*)'probainser',pinser
+  end function calcul_proba_ins
 !!!!!!!!!!!!!!!!!!!!!!
 
   subroutine calcul_proba_des
@@ -1327,8 +1359,6 @@ contains
              biais(i) = config_atom_nplus1(i)%proba_ins&
                   &/config_atom_old_1%proba_ins
           end DO
-          write(6,*)'A PROGRAMMER'
-          stop
        else
           biais(:) = 1.0
        end if
@@ -1670,7 +1700,7 @@ contains
     dist=0
     select case (ins_typ)
     case(1)
-       call atom_supp_sph(vecteur,pins) ! routine à écrire qui tire une position et fixe proba_ins
+       call atom_supp_sph(vecteur,pins) 
 
     case(0)
        pins=1
@@ -1943,6 +1973,7 @@ contains
           QEff   = QEff + dQEff
           dWEff  = H_l_n - H_l_n_m1 - dQEff
           WEff   = WEff + dWEff
+!          write(6,*)'WEFF dW dH dQ',Weff*erg2ev,dweff*erg2ev,( H_l_n - H_l_n_m1)*erg2ev,dqeff*erg2ev
           if (protocol == 'MCP') then
              !if (lmegamaster .and. lambda_mc == 1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
              !         &'H_l_n', 'WEff',  'dWEff'
@@ -2089,6 +2120,7 @@ contains
           atconf_nplus1%ityp(iplus) = itypcalc
           atconf_nplus1%num_at_glob(iplus) = iplus
           atconf_Nplus1%proba_ins = pins
+          write(6,*)'iex pins',i,pins
           !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
        end do
        call init_vitesse(atconf_nplus1,param = 0)
@@ -2202,7 +2234,7 @@ contains
 
     integer,intent(in)::ipp
     real(double), dimension(3,1) :: cart_vec_nplus1
-    real(double)::distati
+    real(double)::distati,xp_np1(3)
     integer::i,i1,i2,j,iplus
     integer,allocatable::indice(:)
     character :: extension*4
@@ -2215,6 +2247,10 @@ contains
          &im_glob=atconf_nplus1%im_glob-nbatplus,imm_glob=imm_glob)
     atconf_n%ltabvois=atconf_nplus1%ltabvois
 
+    xp_np1(:)=atconf_nplus1%xp(:,atconf_nplus1%im)
+    atconf_nplus1%proba_ins= calcul_proba_ins (xp_np1)
+
+    
     if (lbigmaster) then
        !call atconf_n%copy_config(atconf_nplus1,lrescl=.false.)
        if (.not.lbiais(1)) then
@@ -2239,7 +2275,7 @@ contains
           end do
        end do
        !       call atconf_Nplus1%switch_atom(indice,atconf_Nplus1%im)
-       call calcul_proba_des ! on calcule els proba_des car on va accepter la désintégration (et donc on aura besoin des proba pour initialiser old)
+       call calcul_proba_des ! on calcule les proba_des car on va accepter la désintégration (et donc on aura besoin des proba pour initialiser old)
        do i=1,nbatplus
           iplus=atconf_N%im+i
           write(*,'(A25, 3G25.16E3,  A10, G15.6E3, A, I4 )') 'coord atome a retirer', &
@@ -2422,7 +2458,7 @@ contains
          &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig_nplus1,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc_p,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,lupdate=lchange,psc=pscgc,lcalcvois=lcalcvois)
-
+!    write(6,*)'POTSIST N NP1',potist_n*erg2ev,potist_nplus1*erg2ev, (potist_nplus1-potist_n)*erg2ev
 #endif
 
     if (lbigmaster) then
@@ -2535,7 +2571,7 @@ contains
 
     real(double),intent(out)::vec(:,:),pins ! at this point vec should always be (3,1)
     real(double)::poscenter(3,1),postest(3),xins(3)
-    real(double)::zf,zt,zr,fhi,theta,rex,somP,somPm1,dist
+    real(double)::zf,zt,zr,fhi,theta,rex,somP,somPm1,dist,r
     integer::itry=0,i,iex
     !choose vecteur
 
@@ -2552,12 +2588,14 @@ contains
     loopi:do i=1,nrins
        somPm1=somP
        somP=somP+probaR(i)
+!       write(6,*)i,probaR(i),somP
        if (zr.le.somP) then
           iex=i-1
           rex=(float(iex)+(zr-somPm1)/probaR(i))*zlmin/nrins
           exit loopi
        end if
     end do loopi
+ !   write(6,*)'IEX',iex,rex
     xins(1)=rex*sin(theta)*cos(fhi)
     xins(2)=rex*sin(theta)*sin(fhi)
     xins(3)=rex*cos(theta)
@@ -2567,11 +2605,12 @@ contains
     do i=1,atconf_n%im
        call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
        if (dist.le.distminat) then
+          write(6,*)'iex TOO close'
           goto 22
        end if
     end do
     vec(:,1)=postest(:)
-    pins=probaR(iex)
+    pins=1/(1+exp(fdfactmcgc*(rex-R0mcgc)))
     return
   end subroutine atom_supp_sph
 
@@ -2579,25 +2618,28 @@ contains
   subroutine init_instyp
     real(double):: r,zlm2,somP
     integer::i
-    call boxmcgc_p%print
     zlmin = distmin(boxmcgc_p%at(:,1),boxmcgc_p%at(:,2))
     zlm2 = distmin(boxmcgc_p%at(:,1),boxmcgc_p%at(:,3))
     zlmin = min(zlmin,zlm2)
     zlm2 = distmin(boxmcgc_p%at(:,2),boxmcgc_p%at(:,3))
     zlmin = min(zlmin,zlm2)
-!    write(6,*)'NRINS',nrins,zlmin
-    R0mcgc=R0mcgc*1d-8
+    write(6,*)'NRINS',nrins,zlmin
+
     fdfactmcgc=fdfactmcgc*1d8
     somP=0.
     do i=0,nrins
        r=float(i)*zlmin/nrins
 
        probaR(i)=r*r/(1+exp(fdfactmcgc*(r-R0mcgc)))
-!       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i)
+!       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
        somP=somP+probaR(i)    
     end do
     probaR(:)=probaR(:)/somP
-    
+!!$    do i=0,nrins
+!!$       r=float(i)*zlmin/nrins
+!!$       write(6,*)i,r,probaR(i)
+!!$    end do
+!    call arret_ndm    
   end subroutine init_instyp
 !!!!!!!!!!!!!!*******************!!!!!!!!!!!!!!!!!!!!!!!*****************!!!!!!!!!!!!!!!
 !!$  subroutine initMCLPR(np1)
@@ -2839,12 +2881,14 @@ contains
           H_l_n    = Ek_n_plus1  + U_l_n+kcell+ucell
 !          write(6,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev,kcell*erg2ev,ucell*erg2ev
           dWork = H_l_n - H_l_n_m1
+          
           Work = Work + dWork
           dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4) + (EkP_n_1s4-EkP_n) + (EkP_n_p1-EkP_n_3s4)
 !          write(6,*)'compqeff', ((Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4))*erg2ev, ((EkP_n_1s4-EkP_n) + (EkP_n_p1-EkP_n_3s4))*erg2ev
           QEff   = QEff + dQEff
           dWEff  = H_l_n - H_l_n_m1 - dQEff
           WEff   = WEff + dWEff
+
        end if
 
     END DO

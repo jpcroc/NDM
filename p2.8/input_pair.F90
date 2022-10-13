@@ -178,7 +178,7 @@ contains
        elseif (iewald==1) then
           if (rang==0) then
              write (6, *) '-*-*-*-*-* SOMMATION D-EWALD CLASSIQUE *-*-*-*-*-'
-             if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
+!             if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
           end if
        elseif (iewald==2) then
           if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'

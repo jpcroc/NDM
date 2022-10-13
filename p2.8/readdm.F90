@@ -1510,6 +1510,7 @@ contains
              if (rang==0) write(6,*)' R0mcgc.lt.0'
              call arret_ndm
           end if
+          R0mcgc=R0mcgc*1d-8
        case default
           if (rang==0) write(6,*)' ins_typ =0 or 1'
           call arret_ndm

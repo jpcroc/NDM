@@ -203,7 +203,7 @@ contains
           call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
        end if
     end if
-    !  
+    !
     !end init the speed using Maxwell proba density-----------------
     select type(atdml)
        class is (atom_config_d)
@@ -230,7 +230,6 @@ contains
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if
-
     if (dmtype==6) then
        call anapos (atdml,celndm,boxndm,iteration)
        call arret_ndm
@@ -249,6 +248,7 @@ contains
        end select
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     end if
+    
     if (itmax==0) call arret_ndm
 
     if (lcdp) call initcdp

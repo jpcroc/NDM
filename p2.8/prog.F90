@@ -174,6 +174,7 @@ contains
              else
                 itloopmax=itmax
                 timeloopmax=timemax
+
                 call dmloop_pilot(atdml,celndm,boxndm,psc0,linit=.true.)
              end if
           case(30,31)

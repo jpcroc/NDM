@@ -136,6 +136,7 @@ contains
 
        if (tinit<=0) then
           ! velocities are read from file and not modified
+          write(6,*)'RABG',rang
           if (rang==0) write (6, *) 'pas de chgt des vitesses= '
           !        return
        else
@@ -152,7 +153,7 @@ contains
        endif
 
     else
-       write(6,*)'TINIT',tinit
+!       write(6,*)'TINIT',tinit
 
        if (tinit<=0) then
           ! velocities are not read and no starting temperature is given

@@ -77,7 +77,6 @@ contains
           allocate (buffer(3,atdml%imm))
           allocate (ibuffer(atdml%imm))
        end if
-
        if (myidsp==0) then
           im_loc(0)=im
           ibuffer=0
@@ -98,9 +97,7 @@ contains
              enddo
           end if
           write (lucout) ibuffer  ! Ecriture ityp
-
           write (lucout) buffer   ! Ecriture xp
-
           ibuffer(1:im) = atdml%num_at_glob(1:im)
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              do i_proc=1,nprocspace-1
@@ -112,13 +109,13 @@ contains
              lwax=.false.
              select type(atdml)
              class is (atom_config_d)
-!                write(6,*)'TYPEEEEEEEEEDDDD'
                 buffer(:,1:im) = atdml%xpp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                    do i_proc=1,nprocspace-1
                       call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11015)
                    enddo
                 end if
+
                 write (lucout) buffer   ! Ecriture xpp
                 buffer(:,1:im) = atdml%vp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -173,24 +170,20 @@ contains
           if (l2T)call sauveelec
 
        else ! myidsp different de 0 :
-
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              call comm_space%send(im,0,11001)
              call comm_space%send(atdml%ityp(1:im),0,11002)
              call comm_space%send(atdml%xp(1:3,1:im),0,11003)
              call comm_space%send(atdml%num_at_glob(1:im),0,11004)
-
              if (formatsauvmod==1) then
                 lwax=.false.
                 select type (atdml)
                 class is (atom_config_d)
                    call comm_space%send(atdml%xpp(1:3,1:im),0,11015)
                    call comm_space%send(atdml%vp(1:3,1:im),0,11016)
-                end select
-                select type (atdml)
                 class is (atom_config_e)
-                   !call comm_space%send(atdml%xpp(1:3,1:im),0,11005)
-                   !call comm_space%send(atdml%vp(1:3,1:im),0,11006)
+                   call comm_space%send(atdml%xpp(1:3,1:im),0,11005)
+                   call comm_space%send(atdml%vp(1:3,1:im),0,11006)
                    if (atdml%lax)then
                       lwax=.true.
                       call comm_space%send(atdml%ax(1:3,1:im),0,11007)
