@@ -83,7 +83,6 @@ contains
        !    meilleur equilibrage/decoupage
        !  - la deuxieme pour lire uniquement les positions propres au
        !    processeur
-
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart.eqv..true.)) then
 
           itread=1
@@ -109,16 +108,19 @@ contains
           itread=1
           call atrcf%init(immin=imm_glob,imin=0)
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
-          if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-             call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
-          end if
-
+!          if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!             call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
+!          end if
+!          call atrcf%print
           atrcf%im_glob=atrcf%im
           if (rang==0) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
           call setnox(boxrcf,cellrcf,rumax)
+          ncore=0
+          call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
           !          CALL fin allocation CELL et FIN DIVID
+
        end if
 #else
 
@@ -559,7 +561,7 @@ contains
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
        if (im_gr>immr) then
-          if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
+          if(rang==0)                    write (6, *) 'P1 im > imM', im_gr, immr
           call arret_ndm
        endif
        atcinr%im=im_gr
@@ -655,7 +657,7 @@ contains
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
        if (im_gr>immr) then
-          if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
+          if(rang==0)                    write (6, *) 'P2 im > imM', im_gr, immr
           call arret_ndm
        endif
        call atcinr%init(im_gr,immr,im_glob=im_gr)
@@ -675,7 +677,7 @@ contains
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
        if (im_gr>immr) then
-          if(rang==0)                    write (6, *) 'im > imM', im_gr, immr
+          if(rang==0)                    write (6, *) 'P3 im > imM', im_gr, immr
           call arret_ndm
        endif
 

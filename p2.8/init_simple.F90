@@ -63,7 +63,7 @@ contains
     integer :: i, lufilmpaf,itapp,j,lenfn2,ipath,ierr
     !-----------------------------------------------
     character*2::extension
-    logical :: lrepart
+     logical :: lrepart
 
     filenomIS=fnam(1:lenfnam)
     if (present(filename))filenomIS=filename

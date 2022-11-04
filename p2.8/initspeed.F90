@@ -136,7 +136,6 @@ contains
 
        if (tinit<=0) then
           ! velocities are read from file and not modified
-          write(6,*)'RABG',rang
           if (rang==0) write (6, *) 'pas de chgt des vitesses= '
           !        return
        else

@@ -33,12 +33,12 @@ contains
        enddo
     enddo
     sigkine(1:3,1:3) =sigkine(1:3,1:3)/box%Volu
-#ifdef PARA
-
-    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-       call comm_space%sum(sigkine)
-    end if
-#endif
+!!$#ifdef PARA
+!!$
+!!$    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!!$       call comm_space%sum(sigkine)
+!!$    end if
+!!$#endif
     sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )       
   end subroutine sigkinetotMC
 

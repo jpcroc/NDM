@@ -1,40 +1,40 @@
-  module parautils
-   USE arret_ndm_mod,only:arret_ndm
+module parautils
+  USE arret_ndm_mod,only:arret_ndm
   use paraconfig,only:para_config
 #ifdef PARA
   USE mod_para,only:maj_atomes_frt_ftm
-    use Tpara,only:mpi_comm_world
+  use Tpara,only:mpi_comm_world
 #endif
   use Tpara,only:para_space_config
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage
-  use gen_com_m,only:lspacendm,itetabvois,rang
+  use gen_com_m,only:lspacendm,itetabvois,rang,erg2ev
   use atomconfig,only: atom_config,atom_config_d,atom_config_e
   USE boxconfig,only:box_config,periodbox,updatebox
   USE cellconfig,only:cell_config,caltabtC
   use calfo_mod,only:calfo
   use constrconf_mod,only:repartition
-   USE caltabi_mod,only: caltabi
+  USE caltabi_mod,only: caltabi
   implicit none
 
-    type(para_space_config),pointer::psc_p
-    real(double),pointer::sig_p(:,:),potist_p
-    class(atom_config),pointer::atcomp_p
-    type(cell_config),pointer::cellcomp_p
-    class(box_config),pointer::box_p
-    type(para_config),pointer::div_p
-    class(atom_config),pointer::atloc_p
-    type(cell_config),pointer::celloc_p
-    integer,pointer::it_p
-    logical,pointer::lcv_p
-    logical,pointer::lchg_p,lperiod_p
+  type(para_space_config),pointer::psc_p
+  real(double),pointer::sig_p(:,:),potist_p
+  class(atom_config),pointer::atcomp_p
+  type(cell_config),pointer::cellcomp_p
+  class(box_config),pointer::box_p
+  type(para_config),pointer::div_p
+  class(atom_config),pointer::atloc_p
+  type(cell_config),pointer::celloc_p
+  integer,pointer::it_p
+  logical,pointer::lcv_p
+  logical,pointer::lchg_p,lperiod_p
 
 
-    integer,parameter::STOP_TAG=0
-    integer,parameter::FORCE_TAG=1
-    integer,parameter::WORKER_TAG=-1
+  integer,parameter::STOP_TAG=0
+  integer,parameter::FORCE_TAG=1
+  integer,parameter::WORKER_TAG=-1
 
-  contains
+contains
   subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib,psc,lcalcvois,lboxchange)
     USE setcell,only:setcellconf
     class(atom_config),intent(in),target::atcomp
@@ -56,7 +56,7 @@
 
     lboxch=.false.
     if(present(lboxchange))lboxch=lboxchange
-    
+
     if (present(lcalcvois)) then
        lcalcv=lcalcvois
     else
@@ -66,7 +66,7 @@
     ldistr=.false.    
     if (present(ldistrib))ldistr=ldistrib
 
-!    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
+    !    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
     if (div%mpi_image%nproc.gt.1) then
        if (lboxch) call box%master2slave(0,div%mpi_image)
        if (ldistr) then
@@ -85,9 +85,6 @@
        atloc=>atcomp
        celloc=>cellcomp
     end if
-!!$    call atcomp%print
-!!$    write(6,*)'TOTO'
-!!$    call atloc%print
     atloc%im_glob=atcomp%im_glob
     if (lspacendm.and.div%mpi_image%nproc.gt.1) then
        call caltabtC(celloc,atloc,lperiod,box,psc=psc)
@@ -103,7 +100,7 @@
 
   end subroutine initloc
 
-!******************************************
+  !******************************************
   subroutine pointer_caltabt_calfo(sig,potist,atcomp,cellcomp,box,atloc,celloc,div,&
        &lperiod,lupdate,psc,lcalcvois,lboxchange)
     ! driver routine for caltabt calfo, period, caltabi, maj_atomes_frt_ftm
@@ -119,7 +116,7 @@
     ! then
     !  call to calfo
     !  sending of the forces to the master if the atomic configurations are gathered on the master
-    
+
 
 #ifdef PARA
     use mpi
@@ -136,10 +133,10 @@
     logical::lupdate
     class(atom_config),pointer::atcalc
     type(cell_config),pointer::cellcalc
-!    character(len=*),optional,intent(in)::caracT
+    !    character(len=*),optional,intent(in)::caracT
     logical,optional::lcalcvois
     logical::lcalcv
-!    character(len=26)::caracm2l,caracvm
+    !    character(len=26)::caracm2l,caracvm
     integer::ierr,i,ierror
     real(double)::atl(3,3)
     integer::iun
@@ -149,7 +146,7 @@
 
     lboxch=.false.
     if(present(lboxchange))lboxch=lboxchange
-    
+
     lcalcv=.false.
     ncall=ncall+1
     if (present(lcalcvois))lcalcv=lcalcvois
@@ -157,29 +154,29 @@
 #ifdef PARA
     if (div%mpi_image%nproc.gt.1)then
        if (lboxch) call box%master2slave(0,div%mpi_image)
-          if (lspaceNDM.eqv..true.) then
-             if (lupdate) then
-                call atcomp%master2loc(atloc,div)
-             end if
-             atcalc=>atloc
-             cellcalc=>celloc
-          else
-             if (lupdate) then
-                call atcomp%send2all(0,div%mpi_image)
-             end if
-             atcalc=>atcomp
-             cellcalc=>cellcomp
+       if (lspaceNDM.eqv..true.) then
+          if (lupdate) then
+             call atcomp%master2loc(atloc,div)
           end if
+          atcalc=>atloc
+          cellcalc=>celloc
        else
+          if (lupdate) then
+             call atcomp%send2all(0,div%mpi_image)
+          end if
           atcalc=>atcomp
-          cellcalc=>cellcomp                 
+          cellcalc=>cellcomp
        end if
-#else
+    else
        atcalc=>atcomp
-       cellcalc=>cellcomp
+       cellcalc=>cellcomp                 
+    end if
+#else
+    atcalc=>atcomp
+    cellcalc=>cellcomp
 #endif
-       if (lupdate)   call driver_caltabt_para(atcalc,cellcalc,box,psc,lperiod,lcalcv)
-       
+
+    if (lupdate)   call driver_caltabt_para(atcalc,cellcalc,box,psc,lperiod,lcalcv)
     CALL CalFo(sig,potist,atcalc,cellcalc,box,t_sigma=.true.,psc=psc)
 #ifdef PARA
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -190,9 +187,9 @@
   end subroutine pointer_caltabt_calfo
 
 
-  
+
   subroutine initcomp(atcomp,cellcomp,atlocin,cellocin,box,div,lperiod,caracT,lorder)
-    
+
     class(atom_config),intent(in)::atlocin
     type(cell_config),intent(in)::cellocin
     class(atom_config)::atcomp
@@ -217,42 +214,42 @@
        carac=caracT//'np'       
     end if
 
-       if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
-          !    if (div%mpi_image%nproc.gt.1) then
-          if (lord) then
-             call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
-             select type (atcomp)
-             type is (atom_config)
-                atb=atcomp
-                atcdes=>atb
-             type is (atom_config_d)
-                atd=atcomp
-                atcdes=>atd
-             type is (atom_config_e)
-                ate=atcomp
-                atcdes=> ate
-             end select
-             call atlocin%vers_master(atcdes,div,carac)
+    if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
+       !    if (div%mpi_image%nproc.gt.1) then
+       if (lord) then
+          call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
+          select type (atcomp)
+          type is (atom_config)
+             atb=atcomp
+             atcdes=>atb
+          type is (atom_config_d)
+             atd=atcomp
+             atcdes=>atd
+          type is (atom_config_e)
+             ate=atcomp
+             atcdes=> ate
+          end select
+          call atlocin%vers_master(atcdes,div,carac)
 
-             if (div%mpi_image%rank==0) then
-                
-                do i=1,atcdes%im
-                   j=atcdes%num_at_glob(i)
-                   call atcdes%copy_atom(i,atcomp,j)
-                end do
-                
-                
-                call caltabtC(cellcomp,atcomp,lperiod,box)
-             end if
-             
-          else
-             call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
-             call atlocin%vers_master(atcomp,div,carac)
-             if (div%mpi_image%rank==0) then
-                call caltabtC(cellcomp,atcomp,lperiod,box)
-             end if
-             
+          if (div%mpi_image%rank==0) then
+
+             do i=1,atcdes%im
+                j=atcdes%num_at_glob(i)
+                call atcdes%copy_atom(i,atcomp,j)
+             end do
+
+
+             call caltabtC(cellcomp,atcomp,lperiod,box)
           end if
+
+       else
+          call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
+          call atlocin%vers_master(atcomp,div,carac)
+          if (div%mpi_image%rank==0) then
+             call caltabtC(cellcomp,atcomp,lperiod,box)
+          end if
+
+       end if
     else
        call atlocin%copy_config(atcomp,lrescl=.false.)
        cellcomp=cellocin
@@ -260,16 +257,16 @@
        if (atlocin%ltabvois) then
           call caltabi(atcomp,cellcomp,box)
        end if
-    
+
     end if
   end subroutine initcomp
-  
-  
+
+
 
   subroutine tolstoi (tag,div)
     !https://www.youtube.com/watch?v=IsvfofcIE1Q
 
-!    character,intent(in)::carac
+    !    character,intent(in)::carac
     integer,intent(in)::tag
     type(para_config),intent(in)::div
     integer::newtag
@@ -292,14 +289,13 @@
        write(6,*)'you shoulndt be here', div%mpi_orig%rank
        call arret_ndm
     end do
-       
+
   end subroutine tolstoi
 
   subroutine depeche_mode(div,lchgboxT)
-!    use mpi
+    !    use mpi
     use gen_com_m,only:rang
     type(para_config)::div
-!    character (len=*)::carac
     logical, optional,intent(in)::lchgboxT
     logical::lchgbox
     real(double)::atl(3,3),ex
@@ -307,8 +303,8 @@
     lchgbox=.false.
     ex=rang
     if (present(lchgboxT))lchgbox=lchgboxT
-    
-    
+
+
     if (div%lmaster) then  ! Go in tolstoi get the servants
        call tolstoi(FORCE_TAG,div)
     end if
@@ -327,12 +323,12 @@
 
     return ! master returns to "main", servants return to tolstoi to wait for next call
   end subroutine depeche_mode
-    
 
-subroutine driver_caltabt_para(atcf,celcf,boxcf,psc,lperiod,lcalcvois)
 
-  use Tpara,only:nprocspace
-  use gen_com_m,only:iteration,itetabvois,itesigma
+  subroutine driver_caltabt_para(atcf,celcf,boxcf,psc,lperiod,lcalcvois)
+
+    use Tpara,only:nprocspace
+    use gen_com_m,only:iteration,itetabvois,itesigma
     class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(inout),target::celcf
     class(box_config),intent(inout)::boxcf
@@ -355,15 +351,15 @@ subroutine driver_caltabt_para(atcf,celcf,boxcf,psc,lperiod,lcalcvois)
        call caltabi(atcf,celcf,boxcf)
     end if
 #ifdef PARA
-if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+    if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        call maj_atomes_frt_ftm(atcf,celcf,boxcf,psc)
     end if
 #endif
-    
+
     return
   end subroutine driver_caltabt_para
-    
+
 end module parautils
 
 

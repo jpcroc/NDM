@@ -63,7 +63,7 @@ module Parrinello_Rahman
   USE calpo_ew_mod,only: calpo_ew
   USE calctemp_mod,only: calctemp
   USE calpo_ew_mod,only: calpo_ew
-  use sigkinetot_mod
+  use sigkinetot_mod,only:sigkinetot
   USE tempinstT_mod,only: tempinstT
 
   implicit none

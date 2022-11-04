@@ -16,7 +16,7 @@ module prog_mod
   USE ForceMatrix_mod, only: calcFM, init_MPI_FM, pscFM,paraFM
   USE montecarlo_mod, only: montecarlo,atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc,config_atom_n&
        &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
-       &idirectionmcgc,initN,init_instyp,ins_typ,boxmcgc_p,boxmcgcpath!,initmclpr
+       &idirectionmcgc,initN,init_instyp,ins_typ,boxmcgc_p,boxmcgcpath,paramcgc!,initmclpr
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,box_config_lpr
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -217,10 +217,6 @@ contains
 #endif
 
 
-!#if defined ML || defined PARAML    ML est considéré comme un potentiel pas un DMTYPE, A CHANGER ???
-!          case (18) 
-!             call ml
-!#endif
           case default
              write(6,*)'WTF dmtype',dmtype
           end select
@@ -264,19 +260,6 @@ contains
        !#ifdef PARA
        call init_mpi_MCGC ! PARAPATH
        !#endif
-#ifdef PARA
-       ! En parallle, on initialise le nombre maximum d'atomes d'un
-       ! processus au nombre d'atomes locaux. Plus tard ce nombre sera
-       ! complete par le nombre maximal d'atomes fantomes
-       ! On suppose que la concentration max ne depasse pas 20%  de 
-       ! la concentration moyenne
-       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
-          if (rang==0) write(6,*)'IMM PARA MCGC = ',imm,imm_glob
-       endif
-#endif
-!!$ call MPI_FINALIZE(imm)
-!!$ stop
        if (ltabvois) then
           rv=rvois
        else
@@ -313,7 +296,9 @@ contains
              linitpot=.false.
           end if
           if (idirectionmcgc==0) then
-             call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot) 
+             call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot)
+
+
              if (ins_typ==1) call init_instyp
              call initNP1(ipp) ! initialise la configuration N+1
           else
@@ -321,19 +306,16 @@ contains
              if (ins_typ==1) call init_instyp
              call initN(ipp) ! initialise la configuration N+1
           end if
-                 if (lprahman) then
-          call initlpr(atconf_nplus1,cells_nplus1,boxmcgc_p,pscgc)
-!          call initMClpr(atconf_nplus1%im)
-       end if
-
+          if (lprahman) then
+             call initlpr(atconf_nplus1,cells_nplus1,boxmcgc_p,pscgc)
+             !          call initMClpr(atconf_nplus1%im)
+          end if
        end do
-
        !END PARAPATH
        atconf_n=> config_atom_n(1)
        cells_n=>config_cells_n(1)
        atconf_nplus1=>config_atom_nplus1(1)
        cells_nplus1=>config_cells_nplus1(1)
-!       boxmcgc_p=> boxmcgc
 
        call montecarlo
 

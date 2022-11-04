@@ -164,8 +164,9 @@ contains
 
 #else
     lmaster=.true.
-#endif    
+#endif
 
+    
     lextend = .true.
     lperiod = .true.
 
@@ -185,6 +186,7 @@ contains
     mu_SC = 0.0
 
     test_acc = 0    
+
 
     pot_cumul(:,:) = 0.0
     if (nparapath.gt.0) then
@@ -1219,7 +1221,6 @@ contains
 
 
        iloc=1;lchange=.false.;ldistrib=.true.
-
        call calfoMCGC(iloc,lchange,ldistrib)
 
 
@@ -1272,7 +1273,6 @@ contains
        end if
 #endif
        iloc=1;lchange=.false.;ldistrib=.true.
-
        call calfoMCGC(iloc,lchange,ldistrib)      
 
 
@@ -1930,8 +1930,9 @@ contains
 #endif        
        iloc=0;ldistrib=.false.;lchange=.true.
        call calfoMCGC(iloc,lchange,ldistrib)
-       call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
+
        if (lbigmaster) then
+          call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
           !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
           U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
           !write(*,*) potist_n, potist_nplus1
@@ -1960,7 +1961,7 @@ contains
           call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
           call calctemp (tempNP1,kineNP1,atconf_Nplus1,cells_nplus1,latcomp=.true.)
        end if !master general
-
+          
        if (lbigmaster) then !master general
           !calcul des energies et travail et chaleur efficaces
           U_l_n_m1 = U_l_n
@@ -2389,6 +2390,7 @@ contains
 
 
   subroutine calfoMCGC(iloc,lchange,ldistrib)
+    use  tempinstT_mod
     integer,intent(in)::iloc
     logical, intent(in)::lchange,ldistrib
     integer::rgcib,rgem,i,iplus
@@ -2399,6 +2401,7 @@ contains
     lcalcvois=.false.
 
 
+    
     if (iloc==1) then
        if (atconf_n%ltabvois)then
           lcalcvois=.true.
@@ -2436,14 +2439,13 @@ contains
     if (lmaster) then ! on est dans l'un des 2 masters7
        rgcib=0;rgem=1
        if(paramcgc%image==1) then !on est dans le master de N+1
-          call atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master,'f')
+          call atconf_nplus1%send2proc(rgcib,paramcgc%mpi_master,'fp')
           call paramcgc%mpi_master%send(potist_nplus1,rgcib,1000)
           call paramcgc%mpi_master%send(sig_nplus1,rgcib,1001)
        else !on est dans le master de N qui est le master général
-          call atconf_nplus1%recv(rgem,paramcgc%mpi_master,'f')
+          call atconf_nplus1%recv(rgem,paramcgc%mpi_master,'fp')
           call paramcgc%mpi_master%recv(potist_nplus1,rgem,1000)
           call paramcgc%mpi_master%recv(sig_nplus1,rgem,1001)
-          !       write(6,*)'POTSIST',potist_n,potist_nplus1
        end if
     end if
     !en ce point le master général (rang_orig=0) a les forces de N et N+1    
@@ -2458,10 +2460,11 @@ contains
          &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois) !initloc contient caltabtc sur atloc
     call pointer_caltabt_calfo(sig_nplus1,potist_nplus1,atconf_nplus1,cells_nplus1,boxmcgc_p,atmcgcloc,cellmcgcloc,paramcgc,&
          &lperiod,lupdate=lchange,psc=pscgc,lcalcvois=lcalcvois)
-!    write(6,*)'POTSIST N NP1',potist_n*erg2ev,potist_nplus1*erg2ev, (potist_nplus1-potist_n)*erg2ev
+
 #endif
 
     if (lbigmaster) then
+
        DO i=1,atconf_n%im
           atconf_nplus1%fp(:,i) = (1-lambda_mc)*atconf_n%fp(:,i) + lambda_mc*atconf_nplus1%fp(:,i)
        END DO
@@ -2572,9 +2575,9 @@ contains
     real(double),intent(out)::vec(:,:),pins ! at this point vec should always be (3,1)
     real(double)::poscenter(3,1),postest(3),xins(3)
     real(double)::zf,zt,zr,fhi,theta,rex,somP,somPm1,dist,r
-    integer::itry=0,i,iex
+    integer::itry,i,iex
     !choose vecteur
-
+    itry=0
 22  continue
     itry=itry+1
     call random_number(zf)
@@ -2605,12 +2608,16 @@ contains
     do i=1,atconf_n%im
        call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
        if (dist.le.distminat) then
-          write(6,*)'iex TOO close'
+          
+!          write(6,*)'iex TOO close'
           goto 22
        end if
     end do
     vec(:,1)=postest(:)
     pins=1/(1+exp(fdfactmcgc*(rex-R0mcgc)))
+    if (rang==0)then
+       if (itry.gt.1) write(6,*)'NTRY',itry
+    end if
     return
   end subroutine atom_supp_sph
 
@@ -2623,7 +2630,6 @@ contains
     zlmin = min(zlmin,zlm2)
     zlm2 = distmin(boxmcgc_p%at(:,2),boxmcgc_p%at(:,3))
     zlmin = min(zlmin,zlm2)
-    write(6,*)'NRINS',nrins,zlmin
 
     fdfactmcgc=fdfactmcgc*1d8
     somP=0.
