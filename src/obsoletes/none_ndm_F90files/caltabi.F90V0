@@ -1,0 +1,211 @@
+!****************************************************************
+
+
+
+! *****************************************************************
+subroutine caltabi
+  !-----------------------------------------------
+  !   M o d u l e s
+  !-----------------------------------------------
+  USE T_kind_param_m, ONLY:  double
+  use gen_com_m
+  use tab_imm_m
+  !           version du 01 septembre 2000
+  ! *****************************************************************
+
+  implicit none
+  !-----------------------------------------------
+  !   G l o b a l   P a r a m e t e r s
+  !-----------------------------------------------
+  !----------------------------------------------1-
+  !   D u m m y   A r g u m e n t s
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !   L o c a l   P a r a m e t e r s
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !   L o c a l   V a r i a b l e s
+  !-----------------------------------------------
+  integer :: iw, i, ip, j, maxvoi, ic,nvij,iwo
+  integer :: itj,ll
+  real(double) :: a1, a2, a3, x1, x2, x3, c1, c2, c3, r2, ddsq
+  real(double), dimension(1,3) :: cv
+  real(double), dimension(1:npair) :: rvois2
+
+
+  integer :: iti, & !type de i
+       koo, & !cel de i
+       ncelvois,ko1, & !cel voisine de i
+       i1,i2
+
+  real(double)::c1p,c2p,c3p,c1abs,c2abs,c3abs,r,cpp(3) !distances
+  !      logical :: ldemitab=.TRUE.
+
+  real(double),pointer :: xpnp(:,:)
+
+  allocate(xpnp(3,imm))
+  !-----------------------------------------------
+  ! --------------------------
+  !   OUVERTURE BOUCLE SUR I
+  ! --------------------------
+  iw = 0
+  ! PROGRAMMATION DEGUEULASSE, A CORRIGER !!!!!!!
+  ! jE SUIS D'ACCORD !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  if (ipotentiel==12) then
+     rvois2(1)=(7.0d-8)**2
+     rvois2(2)=(3.5d-8)**2
+     rvois2(3)=(2.8d-8)**2
+  else
+     rvois2(:)=rvois**2 
+  end if
+
+  !*************construction par double boucle ****************
+  nvij=0
+  if(lconstrtot) then  !construction par double boucle
+
+     ! **** cas du reseau quelconque ****
+     call cryst_to_cart (imm, xp, bg, -1)    !cart vers cryst
+     do i = 1, im
+        iwo=iw
+        x1 = xp(1,i)
+        x2 = xp(2,i)
+        x3 = xp(3,i)
+
+
+
+        if(ldemitab)then
+           ip = i+1
+        else
+           ip=1
+        end if
+
+        do j = ip, im
+           if(i.eq.j) cycle
+           c1 = x1-xp(1,j)
+           c2 = x2-xp(2,j)
+           c3 = x3-xp(3,j)
+
+           if ((c1>0.5d0).or.(c1<-0.5d0))   c1 = c1-dble(Nint(c1))
+           if ((c2>0.5d0).or.(c2<-0.5d0))   c2 = c2-dble(Nint(c2))
+           if ((c3>0.5d0).or.(c3<-0.5d0))   c3 = c3-dble(Nint(c3))
+
+           cv(1,1) = c1
+           cv(1,2) = c2
+           cv(1,3) = c3
+
+           call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
+
+           iti=ityp(i) ; itj=ityp(j) 
+           ll=ipo(iti,itj)
+           r2 = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)
+
+
+           !		if (i==8) then
+           !		if (sqrt(r2)*angst<1.2) &
+           !		write(*,'("in caltabi: i j dist",2i6,d19.12)') i,j,sqrt(r2)*angst
+           !		if (sqrt(r2)*angst<1.2) &
+           !		write(*,'("in caltabi: i x1 x2 x3", i6,3d19.12)') i,x1,x2,x3
+           !		if (sqrt(r2)*angst<1.2) &
+           !		write(*,'("in caltabi: j x1 x2 x3"i6,3d19.12)') j,xp(1,j),xp(2,j),xp(3,j)
+           !		end if
+
+
+           if (r2>rvois2(ll)) cycle
+           !                  write(6,*) i,j,r2
+           iw = iw+1
+           IF (iw.GT.nVois) THEN
+                   WRITE(0,'(a,i0)') 'Indice iw du tableau de voisin plus grand&
+                        & que le max, nVois = ', nVois
+                   WRITE(0,'(a)') 'Augmentez le nombre moyen de voisins par&
+                        & atome dans le fichier *.din'
+                   WRITE(0,'(a,i0)') 'valeur actuelle: nvperat = ', nvperat
+                   STOP '< Caltabi >'
+           END IF
+
+           indi(iw) = j
+        end do
+        iwmax(i) = iw
+        nvij=iw-iwo
+        !         write(6,*)'NVIJ',i,nvij,iw       
+
+     end do
+     maxvoi = iw           
+     call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart
+
+     !*************construction par celulle ****************
+  else   
+
+     if (lperiod) then
+        xpnp(:,:)=xp(:,:)
+     else 
+        call notperiod(xp,xpnp)
+     end if
+
+
+
+     do i = 1, im
+        !            write(6,*)'i ',i
+        iwo=iw
+        koo = ielat(i)                          ! Numero de la cellule
+
+        ncelvois = min(noxyz,27)-1
+        ! pour chaque cel. voisine
+        do i1 = 0, ncelvois
+           ko1 = ncel(koo,i1)
+           !               write(6,*)'i1 ko1 ',i1,ko1
+           if (ko1==0) cycle
+           c1p = xpnp(1,i)+sum(at(1,:)*deltadist(:,i1,koo))
+           c2p = xpnp(2,i)+sum(at(2,:)*deltadist(:,i1,koo))
+           c3p = xpnp(3,i)+sum(at(3,:)*deltadist(:,i1,koo))
+           ! pour chaque atome ds la cel. voisine
+           loop_j: do i2 = 1, nato(ko1)
+              j = last(i2,ko1)
+              !                  write(6,*)'j ',j
+
+              if(ldemitab) then
+                 if(j.le.i) cycle !terme deja calculÃÂ£ÃÂ©
+              else
+                 if(j.eq.i) cycle
+              end if
+              iti=ityp(i) ; itj=ityp(j) ; ll=ipo(iti,itj)
+
+
+              c1 = c1p-xpnp(1,j)
+              c1abs=abs(c1)
+              if(c1abs>rvois) cycle
+
+              c2 = c2p-xpnp(2,j)
+              c2abs=abs(c2)
+              if(c2abs>rvois) cycle
+
+              c3 = c3p-xpnp(3,j)
+              c3abs=abs(c3)
+              if(c3abs>rvois) cycle
+
+              r = c1*c1+c2*c2+c3*c3
+              if (r>rvois2(ll)) cycle
+              iw = iw+1
+              !                  write(6,*)i,koo,ko1,j,iw
+              indi(iw) = j
+           end do loop_j !i2
+
+        end do !ncelvois
+        iwmax(i) = iw
+        nvij=iw-iwo
+        !         write(449,*)'NVIJ',i,nvij,iw       
+
+     end do ! fin i
+     maxvoi=iw
+
+
+  endif ! lconstrtot 
+
+  ! --------------------------
+  !   FIN DE LA BOUCLE SUR I
+  ! --------------------------
+  if ((rang==0).and.(it.le.100).and.(dmtype.ne.12)) then
+           write(6,*)'IT ',it,'  VOISINS ',maxvoi,' par atome ',float(maxvoi)/float(im)
+  endif
+  deallocate (xpnp)
+  return
+end subroutine caltabi

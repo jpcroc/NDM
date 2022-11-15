@@ -1,0 +1,130 @@
+# briareelammps = briaree cluster Linux arch, INTEL compiler v12.0.4.191,
+# OpenMPI v1.6.5, FFTW3.3, LAMMPS v13484  (last time tested 18 December 2015 by Mickael TROCHET)  
+ 
+
+SHELL = /bin/sh
+# ---------------------------------------------------------------------
+# compiler/linker settings
+# generally no need to edit this section
+# unless additional compiler/linker flags or libraries needed for your machine
+
+
+  C++ = mpic++
+  CC  = mpicc
+  F90 = mpif90  -cpp  #-warn all -check all
+  F77 = mpif77  -cpp  #-warn all -check all
+
+  LINK = ${F90}
+
+
+  # PATH for your lammps directory.
+  LAMMPS_USER_PATH = "/home/marinica/Flow/LAMMPS/libs/ "
+  # Name of your lammps library
+  LAMMPS_LIBNAME = mpi
+
+  FFLAGS =  -heap-arrays  
+  CFLAGS = 
+  C++FLAGS =# $(LAMMPS_PATH)
+  
+
+# ---------------------------------------------------------------------
+# KMC-specific settings
+# specify settings for KMC features you will use
+# if you change any -D setting, do full re-compile after "make clean"
+
+# KMC ifdef settings, OPTIONAL
+# see possible settings in doc/Section_start.html#2_2 (step 4)
+  OPTIONS_OPTI = -traceback -fast 
+  OPTION_DEBUG = -g -O0 -traceback 
+
+
+  OPTIONS  = ${OPTIONS_OPTI} 
+  #OPTIONS  = ${OPTION_DEBUG} 
+ 
+  KMC_INC =  -DMPI_VERSION_ART -DLAMMPS_VERSION 
+
+# LAMMPS library, REQUIRED if -DLAMMPS_VERSION
+# INC = path for mpi.h, MPI compiler settings
+# PATH = path for MPI library
+# LIB = name of MPI library
+  LAMMPS_INC  = -I../LAMMPS_HEADER 
+  LAMMPS_PATH = -L../LAMMPS_HEADER 
+  LAMMPS_LIB  = ${LAMMPS_USER_PATH}/src/liblammps_${LAMMPS_LIBNAME}.a 
+  LAMMPS_OPTIONAL_LIB = ${LAMMPS_USER_PATH}/lib/meam/libmeam.a ${LAMMPS_USER_PATH}/lib/reax/libreax.a 
+
+# MPI library, REQUIRED if -DMPI_VERSION_ART
+# INC = path for mpi.h, MPI compiler settings
+# PATH = path for MPI library
+# LIB = name of MPI library
+# If briaree cluster load modules intel-compiler, OPENMPI and FFTW  
+  MPI_INC  =  
+  MPI_PATH = 
+  MPI_LIB  = 
+
+# FFT library, REQUIRED if -DLAMMPS_VERSION 
+# INC = -DFFT setting, e.g. -DFFT_FFTW, FFT compiler settings
+# PATH = path for FFT library
+# LIB = name of FFT library
+
+  FFTW_INC  = 
+  FFTW_PATH = 
+  FFTW_LIB  = -lfftw3
+
+# JPEG and/or PNG library, REQUIRED if -DLAMMPS_VERSION
+# INC = path(s) for jpeglib.h and/or png.h
+# PATH = path(s) for JPEG library and/or PNG library
+# LIB = name(s) of JPEG library and/or PNG library
+
+  JPG_INC  =  
+  JPG_PATH =  
+  JPG_LIB  =   -ljpeg
+
+# MKL library, REQUIRED  
+# INC = path(s) for *.h required by MKL library 
+# PATH = path for MKL library
+# LIB = name of MKL library
+ MKLROOT = /home/apps/intel/composerxe-2011/mkl
+ MKLPATH = $(MKLROOT)/lib/intel64/
+
+
+  MKL_INC  = -I${MKLROOT}/include
+  MKL_PATH = -L${MKLROOT}/lib
+  MKL_LIB  = -lmkl_lapack95_lp64 -lmkl_core -lmkl_sequential -lmkl_intel_lp64
+
+# ---------------------------------------------------------------------
+# build rules and dependencies
+# no need to edit this section
+
+  EXTRA_INC   = ${MKL_INC}    $(MPI_INC)   ${FFTW_INC}   ${LAMMPS_INC}   ${JPG_IMC}  ${KMC_INC} ${OPTIONS}
+  EXTRA_PATH  = ${MKL_PATH}   ${MPI_PATH}  ${FFTW_PATH}  ${LAMMPS_PATH}  ${JPG_PATH}
+  EXTRA_LIB   = ${MKL_LIB}    ${MPI_LIB}   ${FFTW_LIB}   ${LAMMPS_LIB}   ${JPG_LIB}  
+
+  LIBS = ${EXTRA_PATH} ${EXTRA_LIB}  -lstdc++ -lpthread 
+  CLIBS = -lm  
+
+# Path to src files
+vpath %.f90 ..
+vpath %.f ..
+vpath %.c ..
+vpath %.cpp ..
+vpath %.h ..
+
+
+# Compilation rules
+%.o: %.c
+	$(CC)  -c  ${EXTRA_INC} $(CFLAGS)            $< -o $@  
+%.o: %.f
+	$(F77)  -c ${EXTRA_INC} $(FFLAGS)            $< -o $@ 
+%.o: %.f90
+	$(F90)  -c ${EXTRA_INC} $(F95PP) $(FFLAGS)   $< -o $@ 
+%.o: %.cpp
+	$(C++)  -c ${EXTRA_INC} $(C++FLAGS)          $< -o $@ 
+
+# Link target
+
+$(EXE):	$(OBJ)
+	$(LINK) $(OBJ) $(LIBS) -o $(EXE)
+
+otool: 
+	@echo "otool not necessary on briaree " 
+	@echo "nothing will be done " 
