@@ -1,5 +1,0 @@
-#define DATE "2020-03-26"
-#define REVISION "NotGitRepo"
-#define COMPILE_DATE "Thu Mar 26 14:04:11 CET 2020"
-#define LOCATION "/volatile/home/jcrocombette/DM/codesndm/gmtgatsby"
-#define COMPILE_TARGET "ndm_serial_gfortran"
