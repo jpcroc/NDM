@@ -10,12 +10,12 @@ module NDM_ML
   USE notperiod_mod,only: notperiod
   USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
-  
+
 #ifdef PARA
   use mpi
   use Tpara, only: nprocspace,mpi_comm_space,ierr
 #endif
-  
+
   implicit none
 
 
@@ -23,33 +23,34 @@ module NDM_ML
   integer::nvperat
 
   integer::MPI_COMM_ML
-  
+
   type(system_state)::config_ndm
-  
+
 contains
   ! **************************************************************
 
   subroutine init_config_ml
 
 
-  integer::grp_space    
-#ifndef PARA ! not PARA
+  integer::grp_space
+#ifndef PARA
+    ! not PARA
     write(6,*)'ML only with mpi'
     call arret_ndm
-#endif  ! PARA 
-#ifndef ML ! but not ML
+#endif
+#ifndef ML
+    ! but not ML
     if (rang==0) write(6,*)'MILADY calculations only with a ML=1 compilation '
     call arret_ndm
-#else ! PARA and ML
-
+#else
+    ! PARA and ML
     call MPI_COMM_Group (MPI_COMM_SPACE,grp_space,ierr)
     call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_ML,ierr)
+#endif
 
-#endif    
-    
-    
+
   end subroutine init_config_ml
-    
+
   subroutine alloc_sst_ndm(cn2m)
     type(system_state)::cn2m
 
@@ -57,7 +58,7 @@ contains
        write(6,*)'(cn2m%imm==0).or.(nvperat==0))'
        stop
     end if
-    
+
     if (allocated(cn2m%n_neigh)) deallocate (cn2m%n_neigh); &
          &allocate (cn2m%n_neigh(cn2m%imm)) !nombre de voisins par atome (<rcut)
     if (allocated(cn2m%r_ij)) deallocate (cn2m%r_ij); &
@@ -65,7 +66,7 @@ contains
     if (allocated(cn2m%u_per)) deallocate (cn2m%u_per);&
          &allocate (cn2m%u_per(cn2m%imm, nvperat, 3)) ! vecteur des cellule i-j
     if (allocated(cn2m%u_at)) deallocate (cn2m%u_at); &
-         &allocate (cn2m%u_at(cn2m%imm, nvperat, 3))  ! vecteur 
+         &allocate (cn2m%u_at(cn2m%imm, nvperat, 3))  ! vecteur
     if (allocated(cn2m%type_neigh)) deallocate (cn2m%type_neigh); &
          &allocate (cn2m%type_neigh(cn2m%imm, nvperat))
     if (allocated(cn2m%kind_neigh)) deallocate (cn2m%kind_neigh); &
@@ -94,9 +95,9 @@ contains
         cn2m%u_at=0
         cn2m%u_ij=0
         cn2m%incell=.false.
-    
+
   end subroutine alloc_sst_ndm
-  
+
   subroutine calfo_ml(atcf,cellcf,boxcf)
     class(atom_config),intent(inout):: atcf
     class(cell_config),intent(in)::cellcf
@@ -105,9 +106,9 @@ contains
     real(double)::voluperat
 
 
-!QCM :  imm_neigh 
+!QCM :  imm_neigh
     !QCM difference  im,imm nat
-    
+
     config_ndm%imm=atcf%imm
     config_ndm%im=atcf%im
     config_ndm%nat=atcf%im
@@ -122,12 +123,12 @@ contains
 !QCM boites variables LPR ???
     nvperat=4*Pi*(rue_ml+1.d-8)**3/(3*voluperat)
 
-    
+
      call alloc_sst_ndm(config_ndm)
 
      lconstrtot=.false.
      ldemitab=.false.
-     
+
     if (atcf%im.gt.config_ndm%imm) then
        write(6,*)'atcf%im.gt.cn2m%imm'
        stop
@@ -163,7 +164,7 @@ contains
     integer::im
     if(cn2m%small) then
        call caltabi_extend(cellcf,boxcf,cn2m)
-       
+
     else
        if (atcf%im.ne.cn2m%im) then
           write(6,*)'actf%im.ne.cn2m%im'
@@ -173,7 +174,7 @@ contains
 !       call caltabtC(cellcf,atcf,lperiod,boxcf)! ???????????????  UTILE ????????????
        boxcf%lperiod=lperiod
        call caltabi(atcf,cellcf,boxcf,cn2m=cn2m)
-       
+
     end if
 
 
@@ -187,7 +188,7 @@ contains
     type(box_config),intent(in)::boxcf
     class(system_state),intent(inout)::cn2m
 
-    real(double), dimension(:,:), allocatable :: xpnp 
+    real(double), dimension(:,:), allocatable :: xpnp
     integer::i,j,c,nsize1,nsize2,nsize3,k,n1,n2,n3
     real(double)::r2,utemp(3),r_cut2
 
@@ -233,12 +234,12 @@ contains
        end do
        cn2m%n_neigh(i) = c
     end do
-    
+
     deallocate (xpnp)
     return
   end subroutine caltabi_extend
-    
-  
+
+
   subroutine conf_real2ndm(atcf,cn2m)
     class(atom_config):: atcf
     class(system_state),intent(in)::cn2m
@@ -250,7 +251,7 @@ contains
     atcf%fp(:,1:atcf%im)=cn2m%force(:,1:atcf%im)
 
   end subroutine conf_real2ndm
-    
+
 subroutine test_if_config_is_small(cn2m)
   ! test is a configuration is small comapred to r_cut.
   ! Input:
@@ -263,10 +264,10 @@ subroutine test_if_config_is_small(cn2m)
 
   implicit none
   class(system_state)::cn2m
-  
+
   real(double)    :: bval(3)
   integer  :: i
-  
+
   do i = 1, 3
     bval(i) = 1.d0/sqrt(sum(cn2m%bg_cell(:, i)**2))
   end do

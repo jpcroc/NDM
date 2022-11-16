@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+
+# This script is a automatic milady setenv file
+# (generated from cmake command configure)
+# to set milady environment variables
+# and use milady in configuration/directory BUILD or INSTALL (TODO)
+#
+# WARNING: it could be overriden at any compile time
+#
+# usage:
+# >> cat @MLD_BUIDIR@/mld_setenv.bash
+# >> source @MLD_BUIDIR@/mld_setenv.bash build
+# ... or ...
+# >> source @MLD_INSDIR@/mld_setenv.bash install (TODO)
+
+
+function in_red () {
+  # Red bold
+  echo -e "\e[31m\e[1m"$@"\e[0m"
+}
+
+function in_red_pause () {
+  # Red bold
+  echo -e "\e[31m\e[1m"$@"\e[0m"
+  f_pause
+}
+
+function f_pause {
+  read -p 'Continue? (ctrl-c to stop)' rep
+}
+
+function in_green () {
+  # green bold
+  echo -e "\e[32m\e[1m"$@"\e[0m"
+}
+
+
+########################################### BUILD
+
+function f_set_milady_build {
+  export MLD_TYPE=@MLD_TYPE@
+  export MLD_ROODIR=@MLD_ROODIR@
+  export MLD_TESDIR=@MLD_TESDIR@
+  export MLD_SRCDIR=@MLD_SRCDIR@
+  export MLD_BUIDIR=@MLD_BUIDIR@
+  export MLD_INSDIR=@MLD_INSDIR@e
+  export MILADYPY_ROOT_DIR=${MLD_BUIDIR}
+
+  # prerequisites
+  export MLD_OAP_INSDIR=@MLD_OAP_INSDIR@
+  export MLD_MPI_INSDIR=@MPI_HOME@
+  export MKL_ROOT=@MKL_ROOT@
+
+  # cmake
+  export CMAKE_BUILD_TYPE=@CMAKE_BUILD_TYPE@
+  export Fortran_COMPILER_NAME=@Fortran_COMPILER_NAME@
+  export CMAKE_Fortran_FLAGS_RELEASE='@CMAKE_Fortran_FLAGS_RELEASE@'
+  export CMAKE_Fortran_FLAGS_DEBUG='@CMAKE_Fortran_FLAGS_DEBUG@'
+  export MLD_MKL_LIB='@MLD_MKL_LIB@'
+
+  export PATH=${MLD_MPI_INSDIR}/bin:${PATH}
+  export PATH=${MLD_BUIDIR}/bin:${PATH}
+  export PATH=${MLD_BUIDIR}/scripts:${PATH}
+
+  export LD_LIBRARY_PATH=@TMP_MPI@:${LD_LIBRARY_PATH}
+  export LD_LIBRARY_PATH=@TMP_MKL@:${LD_LIBRARY_PATH}
+  export LD_LIBRARY_PATH=@VT_ROOT@/bin/rtlib:${LD_LIBRARY_PATH}
+  export LD_LIBRARY_PATH=@CMPLR_ROOT@/linux/compiler/lib/intel64_lin:${LD_LIBRARY_PATH}
+
+  export MLD_SETENV_DONE=ON
+  in_red "f_set_milady_build done"
+  envs -p MLD_
+  envs -e LD_LIBRARY_PATH,PATH
+
+  cd ${MLD_BUIDIR}/scripts
+  source ./compile_milady.bash
+  in_green "now you could type 'f_+(tab completion)"
+}
+
+
+########################################### INSTALL
+
+function f_set_milady_install {
+  # TODO
+  in_red_pause "f_set_milady_install not implemented TODO"
+
+  export MLD_SETENV_DONE=ON
+  in_red "f_set_milady_install done"
+  envs -p MLD_
+  envs -e LD_LIBRARY_PATH,PATH
+
+  cd ${MLD_INSDIR}/scripts
+  source ./compile_milady.bash
+  in_green "now you could type 'f_'+(tab completion)"
+}
+
+
+########################################### MAIN
+
+if [ "${MLD_SETENV_DONE}" == "ON" ]; then
+  in_red_pause '${MLD_SETENV_DONE} set yet, fix as "source mld_setenv.bash" from new clean bash'
+  return
+fi
+
+if [ "${1}" == "" ]; then
+  f_set_milady_build
+  return
+fi
+
+if [ "${1}" == "build" ]; then
+  f_set_milady_build
+  return
+fi
+
+if [ "${1}" == "install" ]; then
+  f_set_milady_install
+  return
+fi
+
+in_red_pause "f_set_milady_install not implemented for arg '${1}'"
+
+
