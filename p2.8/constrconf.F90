@@ -519,7 +519,7 @@ contains
     if (rang==0) then
        write(6,*)
        write(6,*)' *-*-*-*-*-*LECTURE DE CIN*-*-*-*-*-*-'
-       write(6,*)' *-*-*-*-*- LRESTART =',lrestart
+       write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
     endif
 
     lucin = 93

@@ -17,6 +17,8 @@ module montecarlo_mod
   USE tempinstT_mod,only: tempinstT
   USE sauvegardeT_mod,only:sauvegardeT
   use paraconfig,only:para_config,commconstr,initparapuresp
+  USE Parrinello_Rahman,only:initlpr
+    USE init_simple_mod,only:init_simple
 #ifdef PARA
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
        &NDM_MPI_REAL_DOUBLE,para_space_config,status,comm_space,mpi_world
@@ -109,8 +111,89 @@ module montecarlo_mod
   integer,parameter::nrins=10000
   real(double)::R0mcgc,fdfactmcgc,probaR(0:nrins),bublcenter(3),zlmin
   integer::ins_typ
+  real(double),allocatable::rcpath(:)
 
 contains 
+
+  subroutine init_montecarlo(boxndm,nvois,rv)
+    class(box_config)::boxndm
+    integer,intent(in)::nvois
+    real(double),intent(in)::rv
+    
+    logical::linitpot,lcalc
+    integer::ipp,imdm=0
+    
+    allocate (config_atom_n(nparapath))
+    allocate (config_atom_nplus1(nparapath))
+    allocate (config_cells_n(nparapath))
+    allocate (config_cells_nplus1(nparapath))
+    allocate(boxmcgcpath(nparapath))
+    !       if (nparapath==1) then
+    select type (boxndm)
+    type is (box_config_lpr)
+       boxmcgc=boxndm
+    end select
+    if (ins_typ==1)then
+       allocate(rcpath(nparapath))
+       rcpath=0
+    endif
+    do ipp=1,nparapath
+
+       lcalc=.false.
+       if (lparapath) then
+          if (parapath%image+1==ipp) lcalc=.true.
+       else
+          lcalc=.true.
+       end if
+       lcalc=.true.
+       if (lcalc) then
+
+       boxmcgc_p=>boxmcgcpath(ipp)
+       atconf_n=> config_atom_n(ipp)
+       cells_n=>config_cells_n(ipp)
+       atconf_nplus1=>config_atom_nplus1(ipp)
+       cells_nplus1=>config_cells_nplus1(ipp)
+       boxmcgc_p=boxmcgc
+       if (idirectionmcgc==0) then
+          call atconf_n%init(imdm,imm_glob,ltabvois,nvois,rvois=rv)
+       else
+          call atconf_nplus1%init(imdm,imm_glob,ltabvois,nvois,rvois=rv)
+       end if
+       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+
+       if (ipp==1) then
+          linitpot=.true.
+       else
+          linitpot=.false.
+       end if
+       if (idirectionmcgc==0) then
+          call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot)
+
+          !             iseed =iseed +rang
+          seed(:)=iseed
+          call random_seed(PUT=seed(1:33))
+          if (ins_typ==1) call init_instyp
+          call initNP1(ipp) ! initialise la configuration N+1
+       else
+          call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot)
+          !             iseed =iseed +rang
+          seed(:)=iseed
+          call random_seed(PUT=seed(1:33))
+          if (ins_typ==1) call init_instyp
+          call initN(ipp) ! initialise la configuration N+1
+       end if
+       if (lprahman) then
+          call initlpr(atconf_nplus1,cells_nplus1,boxmcgc_p,pscgc)
+          !          call initMClpr(atconf_nplus1%im)
+       end if
+    end if
+ end do
+    !END PARAPATH
+    atconf_n=> config_atom_n(1)
+    cells_n=>config_cells_n(1)
+    atconf_nplus1=>config_atom_nplus1(1)
+    cells_nplus1=>config_cells_nplus1(1)
+  end subroutine init_montecarlo
 
   subroutine montecarlo
 
@@ -148,8 +231,7 @@ contains
 
     !initialisation variables 
     !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
-    seed(:)=iseed
-    call random_seed(PUT=seed(1:33))
+!    write(6,*)'RANG UISEED',rang,iseed
     lbiais(0)=lbiais_inser
     lbiais(1)=lbiais_retrait
 #ifdef PARA
@@ -348,17 +430,25 @@ contains
                 pot_npp(ipp)= potist_nplus1
              end if
              if (lbigmaster) then
+
                 if (idirectionmcgc==0) then
                    tempf=tempinstt(atconf_nplus1,kindum,latcomp=.true.)
                 else
                    tempf=tempinstt(atconf_n,kindum,latcomp=.true.)
                 end if
                 pressF= (sigtot(1,1)+sigtot(2,2)+sigtot(3,3))/3.0
-!                write(6,*)'Weff eV Tempf PressF', ipp,weff_npp(ipp)*erg2eV,tempf,pressf*unitP
+                if (ins_typ==1)then
+                   call parapath%mpi_master%sum(rcpath)
+                   write(6,*)'Weff eV ', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                   rcpath=0
+                else
+                   write(6,*)'Weff eV ', ipp,weff_npp(ipp)*erg2eV
+                end if
+                                     
              end if
              !if (lbigmaster)write(6,*)'potist', ipp,potist_n,potist_nplus1
-             end if
-       end do
+          end if
+          end do
 
        if ((lbigmaster).and.(lparapath)) then
           call parapath%mpi_master%sum(weff_npp)
@@ -444,6 +534,10 @@ contains
     !########################################################################################################################
 
     DO i_path = 1, n_path ! boucle à faire pour tous les procs
+#ifdef PARA
+       call mpi_world%barrier
+#endif
+       
        !       if (lmegamaster) write(6,*)'PATH',i_path,direction
        Weff_npp(:)=0
        pot_npp(:)=0
@@ -490,7 +584,7 @@ contains
              !write(*,*) 'couN', atconf_n%icaltabt, cells_n%icaltabt
              !write(*,*) 'couN+1', atconf_nplus1%icaltabt, cells_nplus1%icaltabt
 
-             call ajout_retrait(direction)
+             call ajout_retrait(direction,ipp)
              !             write(6,*)'CALC3',rang,ipp,i_path
 
              !write(*,*) 'coucouN', atconf_n%icaltabt, cells_n%icaltabt
@@ -527,16 +621,29 @@ contains
 !!$          call arret_ndm
        end do !boucle nparapath
 
+       if (lbigmaster.and.(ins_typ==1))then
+          call parapath%mpi_master%sum(rcpath)
+       end if
+          
        if ((lbigmaster).and.(lparapath)) then
           call parapath%mpi_master%sum(weff_npp)
           call parapath%mpi_master%sum(pot_npp)
+               
        end if
-       if (lmegamaster) then
-          do ipp=1,nparapath
-             write(6,*)'Weff eV', weff_npp(ipp)*erg2eV
-          end do
+       if (ins_typ==1)then
+          if (lmegamaster) then
+             do ipp=1,nparapath
+                write(6,*)'Weff eV', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+             end do
+          end if
+          rcpath=0
+       else
+          if (lmegamaster) then
+             do ipp=1,nparapath
+                write(6,*)'Weff eV', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+             end do
+          end if
        end if
-
        n_gen = n_gen + 1
        if (direction == 0) then
           n_gen_0 = n_gen_0 + 1
@@ -1162,14 +1269,14 @@ contains
   end subroutine potentiel_chimique
 
 
-  subroutine ajout_retrait(direc)
+  subroutine ajout_retrait(direc,ipp)
 
     implicit none
 
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e r s
     !-----------------------------------------------
-    integer :: direc 
+    integer,intent(in) :: direc ,ipp
     !-----------------------------------------------
     !   L o c a l   P a r a m e t e r s
     !-----------------------------------------------
@@ -1177,7 +1284,7 @@ contains
     integer,allocatable :: indice(:)
     integer:: i,nag,rgcib,rgem,iloc,i1,i2,j,iplus
     logical ::ldistrib,lchange
-    real(double)::pins
+    real(double)::pins,poscenter(3,1),postest(3)
     allocate (cart_vec_nplus1(3,nbatplus))
     allocate(indice(nbatplus))
 
@@ -1188,7 +1295,7 @@ contains
     if (direc == 0) then ! ajout d'une particule en N+1
        if (lbigmaster) then
           !tirer des positions aleatoires pour les N+nbatplus eme atome
-          call atom_supp(cart_vec_nplus1,pins)
+          call atom_supp(cart_vec_nplus1,pins,ipp)
           !          do i=1,nbatplus
           !             write(*,'(A25, 3G25.16E3,A,I4)') 'atome supplementaire', cart_vec_nplus1(:,i), 'image',parapath%image+1
           !          end do
@@ -1204,7 +1311,7 @@ contains
              nag=maxval(atconf_Nplus1%num_at_glob(1:iplus-1))
              atconf_Nplus1%num_at_glob(iplus) = nag+1
              atconf_Nplus1%proba_ins = pins
-             write(6,*)'pinsN',i,pins
+!             write(6,*)'pinsN',i,pins
           end do
           call init_vitesse(atconf_nplus1,param = 0)
        end if
@@ -1253,6 +1360,12 @@ contains
                 end if
              end do
           end do
+          if (ins_typ==1) then
+             poscenter(:,1)=bublcenter(:)
+             call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+             postest(:)=-1*(poscenter(:,1)-atconf_Nplus1%xp(:,atconf_Nplus1%im))
+             rcpath(ipp)=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)*1d8
+          end if
           call calcul_proba_des ! sans doute inutile
           !          do i=1,nbatplus
           !             iplus=atconf_N%im+i
@@ -1560,6 +1673,7 @@ contains
 3      continue
        call random_number(rand)
        indT = ( (natyp - 1) * rand ) + 1
+       write(6,*)'atom_del', rang,rand,indT
        if (lchosen(indT).eqv..true.) goto 3
        lchosen(indT)=.true.
        ind(i)=indatyp(indT)
@@ -1604,6 +1718,7 @@ contains
 33     continue
        somme = 0.0
        call random_number(rand)
+       
        DO iatyp=1,natyp
           somme = somme + config%proba_des(indatyp(iatyp))
 
@@ -1687,20 +1802,22 @@ contains
   end subroutine restart_chemin
 
 
-  subroutine atom_supp(vecteur,pins)
+  subroutine atom_supp(vecteur,pins,ipp)
 
     implicit none
-
+    integer,intent(in)::ipp
     real(double), dimension(:,:) :: vecteur
     real(double),intent(out)::pins
-    real(double) :: x_nplus1, y_nplus1, z_nplus1,dist !position initiale aleatoire de la N+1eme particule
+    real(double) :: x_nplus1, y_nplus1, z_nplus1,dist,rd !position initiale aleatoire de la N+1eme particule
     integer::i,j,itry,iat,jat
     real(double)::vec(3,1)
     itry=0
     dist=0
     select case (ins_typ)
+       
     case(1)
-       call atom_supp_sph(vecteur,pins) 
+       call atom_supp_sph(vecteur,pins,rd)
+       rcpath(ipp)=rd
 
     case(0)
        pins=1
@@ -2096,7 +2213,7 @@ contains
     allocate (cart_vec_nplus1(3,nbatplus))
     if (lbigmaster) then
 
-       call atom_supp(cart_vec_nplus1,pins)
+       call atom_supp(cart_vec_nplus1,pins,ipp)
        !write(*,*) 'cart_vec_nplus1', cart_vec_nplus1(:,1)
 
        !cart_vec_nplus1(1,1) =  0.03125 +0.125 !3.366712069766435E-008
@@ -2121,7 +2238,7 @@ contains
           atconf_nplus1%ityp(iplus) = itypcalc
           atconf_nplus1%num_at_glob(iplus) = iplus
           atconf_Nplus1%proba_ins = pins
-          write(6,*)'iex pins',i,pins
+!          write(6,*)'iex pins',i,pins
           !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
        end do
        call init_vitesse(atconf_nplus1,param = 0)
@@ -2570,9 +2687,9 @@ contains
 
   end subroutine switch_atom_mc
 
-  subroutine  atom_supp_sph(vec,pins) ! routine à écrire qui tire une position et fixe proba_ins
+  subroutine  atom_supp_sph(vec,pins,rd) ! routine à écrire qui tire une position et fixe proba_ins
 
-    real(double),intent(out)::vec(:,:),pins ! at this point vec should always be (3,1)
+    real(double),intent(out)::vec(:,:),pins ,rd! at this point vec should always be (3,1)
     real(double)::poscenter(3,1),postest(3),xins(3)
     real(double)::zf,zt,zr,fhi,theta,rex,somP,somPm1,dist,r
     integer::itry,i,iex
@@ -2586,6 +2703,7 @@ contains
     theta=acos(2*zt-1)
 
     call random_number(zr)
+!    write(6,*)'atom_supp_sph', rang,zf,zt,zr
     somP=0.
     somPm1=0
     loopi:do i=1,nrins
@@ -2618,6 +2736,8 @@ contains
     if (rang==0)then
        if (itry.gt.1) write(6,*)'NTRY',itry
     end if
+    write(6,'(A,I3,4G15.7)')'atom_supp_sph vec', rang,vec(:,1),rex*1d8
+    rd=rex*1d8
     return
   end subroutine atom_supp_sph
 

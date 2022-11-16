@@ -1,0 +1,5 @@
+#define DATE "2022-11-10"
+#define REVISION "NotGitRepo"
+#define COMPILE_DATE "Thu Nov 10 16:45:30 CET 2022"
+#define LOCATION "/home/croc/NDM/ndm2021"
+#define COMPILE_TARGET "ndm_mpi"

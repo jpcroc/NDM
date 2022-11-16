@@ -11,7 +11,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use Tpara,only:nprocs
+    use Tpara,only:nprocs,mpi_world
     USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,gamprfact,&
          &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,ibordcou,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
@@ -1541,8 +1541,22 @@ contains
           Tinitbox=0.
        end if
     end If
+
+!    if (rang==0) then
+       if (iseed.le.0) then
+          call system_clock (iseed)
+          iseed =iseed +10*rang
+       write(6,*)'rang  0 iseed ',rang,iseed
+       end if
+!    end if
+!#ifdef PARA
+!    call mpi_world%bcast(0,iseed)
+!#endif              
+    
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
+
+
   end subroutine readdm
 
 end module readdm_mod

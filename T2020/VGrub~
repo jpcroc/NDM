@@ -1,3 +1,0 @@
- mpirun --oversubscribe -np 6 valgrind --leak-check=full --track-origins=yes  /volatile/home/jcrocombette/DM/codesndm/v2021g/rundm90_ndm_mpi_gfortran_debug >& VGR2
-
-valgrind --leak-check=full --track-origins=yes  /volatile/home/jcrocombette/DM/codesndm/v2021g/rundm90_ndm_mpi_gfortran_debug >& VGR2

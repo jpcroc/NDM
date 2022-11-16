@@ -103,6 +103,7 @@ ndm :  \
 	scalebox.o \
 	setcell.o \
 	setnoxsimple.o \
+	sigkinetot.o \
 	spline.o \
 	src_mld_derived_types.o \
 	steepestdescent.o \
@@ -288,6 +289,7 @@ bondval.o :  \
 	vect_dist_mod.o
 
 boxconfig.o :  \
+	Mat_util.o \
 	T_kind_param_m.o \
 	Tpara.o \
 	arret_ndm.o \
@@ -1047,11 +1049,14 @@ montecarlo.o :  \
 	init_voisinage.o \
 	paraconfig.o \
 	parautils.o \
+	pr2.o \
 	probMC.o \
 	rasmolT.o \
 	read_val.o \
 	recips.o \
 	sauvegardeT.o \
+	scalebox.o \
+	sigkinetot.o \
 	tempinstT.o \
 	var_pot.o \
 	vect_dist_mod.o
@@ -1154,6 +1159,8 @@ pr2.o :  \
 	gen_com_m.o \
 	recips.o \
 	scalebox.o \
+	sigkinetot.o \
+	tempinstT.o \
 	tr_fire.o \
 	var_pot.o
 
@@ -1199,6 +1206,7 @@ prog.o :  \
 	montecarlo.o \
 	neb.o \
 	neb_module.o \
+	pr2.o \
 	read_val.o \
 	var_pot.o
 
@@ -1227,6 +1235,7 @@ readdm.o :  \
 	jqmod.o \
 	montecarlo.o \
 	neb_module.o \
+	pr2.o \
 	read_val.o \
 	var_pot.o
 
@@ -1279,6 +1288,15 @@ setnoxsimple.o :  \
 	gen_com_m.o \
 	read_val.o \
 	recips.o \
+	var_pot.o
+
+sigkinetot.o :  \
+	T_kind_param_m.o \
+	Tpara.o \
+	arret_ndm.o \
+	atomconfig.o \
+	boxconfig.o \
+	gen_com_m.o \
 	var_pot.o
 
 spline.o :  \
