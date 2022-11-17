@@ -17,6 +17,8 @@ module boxconfig
      procedure, pass::print=>boxprint
      procedure, pass::showtype=>boxshowtype
      procedure, pass::master2slave=>boxmaster2slave
+     procedure, pass::send2proc=>boxsend2proc
+     procedure, pass::recv=>boxrecv
   end type box_config
 
   type, extends (box_config):: box_config_lpr ! type dynamique des configurations atomiques(+vp/+xpp). vp et xpp seront toujours allouées
@@ -29,6 +31,39 @@ module boxconfig
 
   
 contains
+
+  subroutine boxrecv(box,rgem,mpic)
+
+    type(mpi_communicator),intent(in)::mpic
+    class(box_config)::box
+    integer,intent(in)::rgem
+    real(double)::atl(3,3)
+    integer::tag=677
+    atl=box%at(:,:)
+    call mpic%recv(atl,rgem,tag)
+    select type(box)
+    type is  (box_config_lpr)
+       call mpic%recv(box%hdot,rgem)
+    end select
+    call updatebox(box,atl)
+  end subroutine boxrecv
+  
+  subroutine boxsend2proc(box,rgcib,mpic)
+
+    type(mpi_communicator),intent(in)::mpic
+    class(box_config),intent(in)::box
+    integer,intent(in)::rgcib
+    real(double)::atl(3,3)
+    integer::tag=676
+    atl=box%at(:,:)
+    call mpic%send(atl,rgcib,tag)
+    select type(box)
+    type is  (box_config_lpr)
+       call mpic%send(box%hdot,rgcib)
+    end select
+    return
+  end subroutine boxsend2proc
+
 
   subroutine boxmaster2slave(box,rgem,mpic)
 

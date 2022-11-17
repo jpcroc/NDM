@@ -2939,6 +2939,13 @@ contains
 
 #ifdef PARA
        if (lmaster) then ! on est dans l'un des 2 masters
+!!$          rgcib=1;rgem=0
+!!$          if(paramcgc%image==0) then !on est dans le master général
+!!$             call boxmcgc_p%send2proc(rgcib,paramcgc%mpi_master)
+!!$          else !on est dans le master de N+1
+!!$             call boxmcgc_p%send2proc(rgem,paramcgc%mpi_master)
+!!$          end if
+         
           call boxmcgc_p%master2slave(0,paramcgc%mpi_master) 
           rgcib=1;rgem=0
           if(paramcgc%image==0) then !on est dans le master général
