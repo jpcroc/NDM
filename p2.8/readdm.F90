@@ -569,7 +569,7 @@ contains
     endif
 #ifdef PARA
     select case(dmtype)
-    case(21,22,4,3,1,30,31,32,33,34,35,23,24,8)
+    case(21,22,4,3,1,30,31,32,33,34,35,23,24,8,88)
        if (ltabvois) then
           select case (ipotentiel)
           case(20)
@@ -624,7 +624,8 @@ contains
           end if
        end if
 
-    case default 
+    case default
+       write(6,*)'DMTYPE',dmtype
        if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,4,3,9,15,1,30,31,32,33,34,19,35,23,24'
        if (rang==0) write(*,*) 'Stop in readdm'
        call arret_ndm
@@ -1542,13 +1543,13 @@ contains
        end if
     end If
 
-!    if (rang==0) then
+
        if (iseed.le.0) then
           call system_clock (iseed)
           iseed =iseed +10*rang
-       write(6,*)'rang  0 iseed ',rang,iseed
+          if (rang==0)      write(6,*)'rang iseed ',rang,iseed
        end if
-!    end if
+
 !#ifdef PARA
 !    call mpi_world%bcast(0,iseed)
 !#endif              

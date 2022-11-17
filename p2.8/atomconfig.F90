@@ -108,15 +108,20 @@ contains
     write(6,*)'TYPE PRECISE ? SI NON extension'
 
   end subroutine print_type
-  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
+  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob,linitnag)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
     logical,optional, intent(in)::ltabvois,lreallocate
     integer, optional::nvois,immin,im_glob,imm_glob
     real(double),optional::rvois
+    logical,optional,intent(in)::linitnag
+    logical::ling=.false.
     integer::nv
     logical ::ltbv,lrealloc
     real(double)::rv
+    integer::i
+    
+    if (present(linitnag))ling=linitnag
     nv=0 ;  if(present(nvois))nv=nvois
     rv=0;  if(present(rvois))rv=rvois
     lrealloc=.false.
@@ -157,7 +162,14 @@ contains
 #endif    
        
     end if
-    atconf%ityp=0;atconf%xp=0;atconf%fp=0;atconf%ielat=0; atconf%lgul=.false.;atconf%num_at_glob=0
+    atconf%ityp=0;atconf%xp=0;atconf%fp=0;atconf%ielat=0; atconf%lgul=.false.;
+    if (ling) then
+       do i=1,atconf%imm
+          atconf%num_at_glob(i)=i
+       end do
+    else
+       atconf%num_at_glob=0
+    end if
 #ifdef PARA
     atconf%proc_at=-1
 #endif    
@@ -1468,6 +1480,7 @@ contains
              if (cst(3).ne.0)call mpic%recv(Rbuffer,proc_source,316)
              do iloc=1,imrecv
                 icomp=inag(nag(iloc))
+!                write(6,*)iloc, nag(iloc),icomp
                 if (nag(iloc).ne.atcfcomp%num_at_glob(icomp))then
                    write(6,*)'erreur NATG2',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
                    call MPI_finalize(ierr)

@@ -6,7 +6,7 @@ module init_simple_mod
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC
   use boxconfig,only: box_config
-  USE constrconf_mod, only :constrconf
+  USE constrconf_mod, only :constrconf,lprt
 
 #ifdef PARA
   USE init_vois_mod,only: init_voisinage
@@ -81,7 +81,7 @@ contains
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        CALL comm_space%barrier
-       call init_voisinage(celndm,psc)
+       call init_voisinage(celndm,psc,lwrite=.false.)
 
        !if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
        !write(6,*) 'Le proc ',myidsp,' a ',psc%nbr_proc_voisin,' processeur voisin'
@@ -92,7 +92,7 @@ contains
        !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
        select type(atdml)
           class is (atom_config_d)
-             call initspeed(atdml,boxndm)
+          call initspeed(atdml,boxndm,lprt=lprt)
           end select
     end if
 

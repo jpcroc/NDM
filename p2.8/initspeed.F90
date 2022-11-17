@@ -70,7 +70,7 @@ contains
 
 
   ! *********************************************************************
-  subroutine initspeed(atcf,boxndm,latcomp)
+  subroutine initspeed(atcf,boxndm,latcomp,lprt)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -83,8 +83,8 @@ contains
     !    type(cell_config):: celndm
     class(box_config),intent(in)::boxndm
     logical,optional,intent(in):: latcomp
-
-    logical::latc=.false.
+    logical,optional::lprt
+    logical::latc=.false.,lprint=.true.
     integer :: i, ic, ia, ib
     integer, dimension(:), allocatable :: iseedt
     real(double), dimension(ntyp) :: temptyp
@@ -104,13 +104,10 @@ contains
     integer::iti,imtot
     real(double)::sd,grnd,theta,fhi ! ,decx(2)
 
-    !-----------------------------------------------
-    !  external fucntions
-    !-----------------------------------------------
-
+    if (present(lprt))lprint=lprt
     !    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
     if(present(latcomp))latc=latcomp
-    if (rang==0) write(6,*)
+!    if (rang==0) write(6,*)
 
     select case (dmtype)
     case(3,30,5,11,31,32,33,21,22,23,24,2)
@@ -136,11 +133,11 @@ contains
 
        if (tinit<=0) then
           ! velocities are read from file and not modified
-          if (rang==0) write (6, *) 'pas de chgt des vitesses= '
+       if ((rang==0).and.(lprint)) write (6,*) 'pas de chgt des vitesses= '
           !        return
        else
           ! velocities are read from file and rescaled
-          if (rang==0) write (6, *) 'scaling read velocities at TINIT = ', &
+                 if ((rang==0).and.(lprint)) write (6,*) 'scaling read velocities at TINIT = ', &
                tinit, 'K'
           !   if (rang==0) write(6,*)'tempsauv ',tempsauv
           if (tempsauv.le.1.) then
@@ -162,23 +159,23 @@ contains
              atcf%xpp(1,:atcf%im) = atcf%xp(1,:atcf%im)
              atcf%xpp(2,:atcf%im) = atcf%xp(2,:atcf%im)
              atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)
-          if (rang==0) write (6, *) 'ZERO VELOCITY '
+       if ((rang==0).and.(lprint))  write (6,*) 'ZERO VELOCITY '
        else
           !  a starting temperature is given
-          if (rang==0) write (6, *) 'random velocities at TINIT = ', tinit, &
+                 if ((rang==0).and.(lprint))  write (6,*) 'random velocities at TINIT = ', tinit, &
                'K'
           call random_seed(size=seed_size)
-          if (rang==0)write(6,*)'seed_size',seed_size
+!          if (rang==0)write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
-          if (iseed==0)  then
-             call system_clock (iseed)
-             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
-             iseedt(:)=iseed
-
-          else
-             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
-             iseedt(:)=iseed
-          end if
+!!$          if (iseed==0)  then
+!!$             call system_clock (iseed)
+!!$             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
+!!$             iseedt(:)=iseed
+!!$
+!!$          else
+!!$             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
+!!$             iseedt(:)=iseed
+!!$          end if
 
           !          iseedt(1)=iseed
           call    random_seed (put=iseedt)
@@ -404,7 +401,7 @@ contains
     end if
     if (tempdeplainit.gt.0)then
 
-       if (rang==0) then
+       if ((rang==0).and.(lprint)) then
           write(6,*)
           write(6,*)'-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'
           write(6,*)'depla init Tempdeplainit',tempdeplainit,'debyetemp= ',debyetemp

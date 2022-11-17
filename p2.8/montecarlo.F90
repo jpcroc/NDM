@@ -18,7 +18,7 @@ module montecarlo_mod
   USE sauvegardeT_mod,only:sauvegardeT
   use paraconfig,only:para_config,commconstr,initparapuresp
   USE Parrinello_Rahman,only:initlpr
-    USE init_simple_mod,only:init_simple
+  USE init_simple_mod,only:init_simple
 #ifdef PARA
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
        &NDM_MPI_REAL_DOUBLE,para_space_config,status,comm_space,mpi_world
@@ -41,7 +41,7 @@ module montecarlo_mod
   use lammps_util_mod,only:init_lammps
 #endif  
   use config2data_mod,only:config2data
-  USE constrconf_mod,only:read_cin
+  USE constrconf_mod,only:read_cin,lprt
   use probMC,only:probMC1
   use Parrinello_Rahman,only:sp,sdot, sdot_new,trh0,invh0,invtrh0,epsi,tension,volu0,invvolu0
   implicit none
@@ -119,10 +119,9 @@ contains
     class(box_config)::boxndm
     integer,intent(in)::nvois
     real(double),intent(in)::rv
-    
     logical::linitpot,lcalc
     integer::ipp,imdm=0
-    
+
     allocate (config_atom_n(nparapath))
     allocate (config_atom_nplus1(nparapath))
     allocate (config_cells_n(nparapath))
@@ -137,8 +136,9 @@ contains
        allocate(rcpath(nparapath))
        rcpath=0
     endif
+    lprt=.true.
     do ipp=1,nparapath
-
+       if (ipp.gt.1) lprt=.false.
        lcalc=.false.
        if (lparapath) then
           if (parapath%image+1==ipp) lcalc=.true.
@@ -148,46 +148,46 @@ contains
        lcalc=.true.
        if (lcalc) then
 
-       boxmcgc_p=>boxmcgcpath(ipp)
-       atconf_n=> config_atom_n(ipp)
-       cells_n=>config_cells_n(ipp)
-       atconf_nplus1=>config_atom_nplus1(ipp)
-       cells_nplus1=>config_cells_nplus1(ipp)
-       boxmcgc_p=boxmcgc
-       if (idirectionmcgc==0) then
-          call atconf_n%init(imdm,imm_glob,ltabvois,nvois,rvois=rv)
-       else
-          call atconf_nplus1%init(imdm,imm_glob,ltabvois,nvois,rvois=rv)
-       end if
-       ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
+          boxmcgc_p=>boxmcgcpath(ipp)
+          atconf_n=> config_atom_n(ipp)
+          cells_n=>config_cells_n(ipp)
+          atconf_nplus1=>config_atom_nplus1(ipp)
+          cells_nplus1=>config_cells_nplus1(ipp)
+          boxmcgc_p=boxmcgc
+          if (idirectionmcgc==0) then
+             call atconf_n%init(imdm,imm_glob,ltabvois,nvois,rvois=rv)
+          else
+             call atconf_nplus1%init(imdm,imm_glob,ltabvois,nvois,rvois=rv)
+          end if
+          ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
 
-       if (ipp==1) then
-          linitpot=.true.
-       else
-          linitpot=.false.
-       end if
-       if (idirectionmcgc==0) then
-          call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot)
+          if (ipp==1) then
+             linitpot=.true.
+          else
+             linitpot=.false.
+          end if
+          if (idirectionmcgc==0) then
+             call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot)
 
-          !             iseed =iseed +rang
-          seed(:)=iseed
-          call random_seed(PUT=seed(1:33))
-          if (ins_typ==1) call init_instyp
-          call initNP1(ipp) ! initialise la configuration N+1
-       else
-          call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot)
-          !             iseed =iseed +rang
-          seed(:)=iseed
-          call random_seed(PUT=seed(1:33))
-          if (ins_typ==1) call init_instyp
-          call initN(ipp) ! initialise la configuration N+1
+             !             iseed =iseed +rang
+             seed(:)=iseed
+             call random_seed(PUT=seed(1:33))
+             if (ins_typ==1) call init_instyp
+             call initNP1(ipp) ! initialise la configuration N+1
+          else
+             call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot)
+             !             iseed =iseed +rang
+             seed(:)=iseed
+             call random_seed(PUT=seed(1:33))
+             if (ins_typ==1) call init_instyp
+             call initN(ipp) ! initialise la configuration N+1
+          end if
+          if (lprahman) then
+             call initlpr(atconf_nplus1,cells_nplus1,boxmcgc_p,pscgc)
+             !          call initMClpr(atconf_nplus1%im)
+          end if
        end if
-       if (lprahman) then
-          call initlpr(atconf_nplus1,cells_nplus1,boxmcgc_p,pscgc)
-          !          call initMClpr(atconf_nplus1%im)
-       end if
-    end if
- end do
+    end do
     !END PARAPATH
     atconf_n=> config_atom_n(1)
     cells_n=>config_cells_n(1)
@@ -231,7 +231,7 @@ contains
 
     !initialisation variables 
     !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
-!    write(6,*)'RANG UISEED',rang,iseed
+    !    write(6,*)'RANG UISEED',rang,iseed
     lbiais(0)=lbiais_inser
     lbiais(1)=lbiais_retrait
 #ifdef PARA
@@ -248,7 +248,7 @@ contains
     lmaster=.true.
 #endif
 
-    
+
     lextend = .true.
     lperiod = .true.
 
@@ -380,7 +380,7 @@ contains
              do ipp=1,nparapath
                 atconf_nplus1=>config_atom_nplus1(ipp)
                 boxmcgc_p=>boxmcgcpath(ipp)
-             
+
                 call calcul_proba_des ! on initialise une désintégration qui va être accepté (car c'est la première) : Il faut calculer les proba pour les mettre dans OLD etdans config_atom_nplus1
                 call atconf_nplus1%copy_config(config_atom_old_1, lrescl=.true.)
              end do
@@ -415,7 +415,7 @@ contains
              call calfoMCGC(iloc,lchange,ldistrib)
 
              !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
-             
+
              if (lprahman) then
                 call langevinLPR(direction, protocol = 'MCP')
              else
@@ -439,16 +439,16 @@ contains
                 pressF= (sigtot(1,1)+sigtot(2,2)+sigtot(3,3))/3.0
                 if (ins_typ==1)then
                    call parapath%mpi_master%sum(rcpath)
-                   write(6,*)'Weff eV ', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                   write(6,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
                    rcpath=0
                 else
                    write(6,*)'Weff eV ', ipp,weff_npp(ipp)*erg2eV
                 end if
-                                     
+
              end if
              !if (lbigmaster)write(6,*)'potist', ipp,potist_n,potist_nplus1
           end if
-          end do
+       end do
 
        if ((lbigmaster).and.(lparapath)) then
           call parapath%mpi_master%sum(weff_npp)
@@ -537,7 +537,7 @@ contains
 #ifdef PARA
        call mpi_world%barrier
 #endif
-       
+
        !       if (lmegamaster) write(6,*)'PATH',i_path,direction
        Weff_npp(:)=0
        pot_npp(:)=0
@@ -613,9 +613,9 @@ contains
                    tempf=tempinstt(atconf_n,kindum,latcomp=.true.)
                 end if
                 pressF= (sigtot(1,1)+sigtot(2,2)+sigtot(3,3))/3.0
-!                write(6,*)'Weff eV Tempf PressF',ipp, weff_npp(ipp)*erg2eV,tempf,pressf*unitP
+                !                write(6,*)'Weff eV Tempf PressF',ipp, weff_npp(ipp)*erg2eV,tempf,pressf*unitP
              end if
-             
+
           end if
 !!$          call mpi_finalize(ierr)
 !!$          call arret_ndm
@@ -624,23 +624,23 @@ contains
        if (lbigmaster.and.(ins_typ==1))then
           call parapath%mpi_master%sum(rcpath)
        end if
-          
+
        if ((lbigmaster).and.(lparapath)) then
           call parapath%mpi_master%sum(weff_npp)
           call parapath%mpi_master%sum(pot_npp)
-               
+
        end if
        if (ins_typ==1)then
           if (lmegamaster) then
              do ipp=1,nparapath
-                write(6,*)'Weff eV', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                write(6,'(A,I2,I4,2G15.9)')'Weff eV dist ', direction,ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
              end do
           end if
           rcpath=0
        else
           if (lmegamaster) then
              do ipp=1,nparapath
-                write(6,*)'Weff eV', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                write(6,'(A,I2,I4,G15.9)')'Weff eV',direction, ipp,weff_npp(ipp)*erg2eV
              end do
           end if
        end if
@@ -761,16 +761,16 @@ contains
           box_new1=boxmcgcpath(ipchemin)
        else
           !W = - Work
-          
+
           xp_np1(:)=config_atom_old_1%xp(:,config_atom_old_1%im)
           config_atom_old_1%proba_ins= calcul_proba_ins (xp_np1)
 
           call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)
-          
+
           box_new0=boxmcgcpath(ipchemin)
        endif
 
-       
+
        if (dir == 0) then
           if (lbiais(0)) then
              biais = config_atom_nplus1(ipchemin)%proba_ins&
@@ -908,7 +908,7 @@ contains
        if (lmegamaster) then
           call calcul_chemin(travail_npp, xprob_i, Wprece, dir, theta, ipchemin, lbiais) 
           call choix_chemin(xprob_i, ipchemin)
-          
+
           write(6,*)'chemin choisi',ipchemin
        end if !megamaster
 
@@ -1311,7 +1311,7 @@ contains
              nag=maxval(atconf_Nplus1%num_at_glob(1:iplus-1))
              atconf_Nplus1%num_at_glob(iplus) = nag+1
              atconf_Nplus1%proba_ins = pins
-!             write(6,*)'pinsN',i,pins
+             !             write(6,*)'pinsN',i,pins
           end do
           call init_vitesse(atconf_nplus1,param = 0)
        end if
@@ -1396,7 +1396,7 @@ contains
 
   function  calcul_proba_ins(xpt) result (pinser)
     implicit none
-    
+
     real(double), dimension(3)::xpt
     real (double)::pinser
 
@@ -1408,7 +1408,7 @@ contains
     postest(:)=-1*(poscenter(:,1)-xpt(:))
     rd=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)
     pinser= 1/(1+exp(fdfactmcgc*(rd-R0mcgc)))
-    write(6,*)'probainser',pinser
+!    write(6,*)'probainser',pinser
   end function calcul_proba_ins
 !!!!!!!!!!!!!!!!!!!!!!
 
@@ -1673,7 +1673,7 @@ contains
 3      continue
        call random_number(rand)
        indT = ( (natyp - 1) * rand ) + 1
-       write(6,*)'atom_del', rang,rand,indT
+!       write(6,*)'atom_del', rang,rand,indT
        if (lchosen(indT).eqv..true.) goto 3
        lchosen(indT)=.true.
        ind(i)=indatyp(indT)
@@ -1718,7 +1718,7 @@ contains
 33     continue
        somme = 0.0
        call random_number(rand)
-       
+
        DO iatyp=1,natyp
           somme = somme + config%proba_des(indatyp(iatyp))
 
@@ -1814,7 +1814,7 @@ contains
     itry=0
     dist=0
     select case (ins_typ)
-       
+
     case(1)
        call atom_supp_sph(vecteur,pins,rd)
        rcpath(ipp)=rd
@@ -2078,20 +2078,20 @@ contains
           call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
           call calctemp (tempNP1,kineNP1,atconf_Nplus1,cells_nplus1,latcomp=.true.)
        end if !master general
-          
+
        if (lbigmaster) then !master general
           !calcul des energies et travail et chaleur efficaces
           U_l_n_m1 = U_l_n
           H_l_n_m1 = H_l_n
           H_l_n    = Ek_n_plus1  + U_l_n
           dWork = H_l_n - H_l_n_m1
-!          write(6,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev
+          !          write(6,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev
           dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
-!          write(6,*)'compqeff', ((Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4))*erg2ev
+          !          write(6,*)'compqeff', ((Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4))*erg2ev
           QEff   = QEff + dQEff
           dWEff  = H_l_n - H_l_n_m1 - dQEff
           WEff   = WEff + dWEff
-!          write(6,*)'WEFF dW dH dQ',Weff*erg2ev,dweff*erg2ev,( H_l_n - H_l_n_m1)*erg2ev,dqeff*erg2ev
+          !          write(6,*)'WEFF dW dH dQ',Weff*erg2ev,dweff*erg2ev,( H_l_n - H_l_n_m1)*erg2ev,dqeff*erg2ev
           if (protocol == 'MCP') then
              !if (lmegamaster .and. lambda_mc == 1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
              !         &'H_l_n', 'WEff',  'dWEff'
@@ -2238,7 +2238,7 @@ contains
           atconf_nplus1%ityp(iplus) = itypcalc
           atconf_nplus1%num_at_glob(iplus) = iplus
           atconf_Nplus1%proba_ins = pins
-!          write(6,*)'iex pins',i,pins
+          !          write(6,*)'iex pins',i,pins
           !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
        end do
        call init_vitesse(atconf_nplus1,param = 0)
@@ -2368,7 +2368,7 @@ contains
     xp_np1(:)=atconf_nplus1%xp(:,atconf_nplus1%im)
     atconf_nplus1%proba_ins= calcul_proba_ins (xp_np1)
 
-    
+
     if (lbigmaster) then
        !call atconf_n%copy_config(atconf_nplus1,lrescl=.false.)
        if (.not.lbiais(1)) then
@@ -2518,7 +2518,7 @@ contains
     lcalcvois=.false.
 
 
-    
+
     if (iloc==1) then
        if (atconf_n%ltabvois)then
           lcalcvois=.true.
@@ -2598,11 +2598,11 @@ contains
     !write(6,*)'outcfmc',rang,ncalls
   end subroutine calfoMCGC
 
-  subroutine init_atom_config_mc(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
+  subroutine init_atom_config_mc(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob,linitnag)
     class(atom_config_mc),intent(inout)::atconf
     !type(atom_config_mc),intent(inout)::atconf
     integer,intent(in):: imin
-    logical,optional, intent(in)::ltabvois,lreallocate
+    logical,optional, intent(in)::ltabvois,lreallocate,linitnag
     integer, optional::nvois,immin,im_glob,imm_glob
     real(double),optional::rvois
     logical :: lrealloc
@@ -2703,20 +2703,20 @@ contains
     theta=acos(2*zt-1)
 
     call random_number(zr)
-!    write(6,*)'atom_supp_sph', rang,zf,zt,zr
+    !    write(6,*)'atom_supp_sph', rang,zf,zt,zr
     somP=0.
     somPm1=0
     loopi:do i=1,nrins
        somPm1=somP
        somP=somP+probaR(i)
-!       write(6,*)i,probaR(i),somP
+       !       write(6,*)i,probaR(i),somP
        if (zr.le.somP) then
           iex=i-1
           rex=(float(iex)+(zr-somPm1)/probaR(i))*zlmin/nrins
           exit loopi
        end if
     end do loopi
- !   write(6,*)'IEX',iex,rex
+    !   write(6,*)'IEX',iex,rex
     xins(1)=rex*sin(theta)*cos(fhi)
     xins(2)=rex*sin(theta)*sin(fhi)
     xins(3)=rex*cos(theta)
@@ -2726,8 +2726,8 @@ contains
     do i=1,atconf_n%im
        call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
        if (dist.le.distminat) then
-          
-!          write(6,*)'iex TOO close'
+
+          !          write(6,*)'iex TOO close'
           goto 22
        end if
     end do
@@ -2736,7 +2736,7 @@ contains
     if (rang==0)then
        if (itry.gt.1) write(6,*)'NTRY',itry
     end if
-    write(6,'(A,I3,4G15.7)')'atom_supp_sph vec', rang,vec(:,1),rex*1d8
+!    write(6,'(A,I3,4G15.7)')'atom_supp_sph vec', rang,vec(:,1),rex*1d8
     rd=rex*1d8
     return
   end subroutine atom_supp_sph
@@ -2757,7 +2757,7 @@ contains
        r=float(i)*zlmin/nrins
 
        probaR(i)=r*r/(1+exp(fdfactmcgc*(r-R0mcgc)))
-!       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
+       !       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
        somP=somP+probaR(i)    
     end do
     probaR(:)=probaR(:)/somP
@@ -2765,7 +2765,7 @@ contains
 !!$       r=float(i)*zlmin/nrins
 !!$       write(6,*)i,r,probaR(i)
 !!$    end do
-!    call arret_ndm    
+    !    call arret_ndm    
   end subroutine init_instyp
 !!!!!!!!!!!!!!*******************!!!!!!!!!!!!!!!!!!!!!!!*****************!!!!!!!!!!!!!!!
 !!$  subroutine initMCLPR(np1)
@@ -2788,7 +2788,7 @@ contains
     ! Énergie potentielle de la cellule (Eq. 2.25, Ref.2)
     Ucell = volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
   end subroutine calcukcell
-  
+
   subroutine langevinLPR( direc, protocol) !LANGEVIN
     !    use Parrinello_Rahman,only:h,hdo
     implicit none
@@ -2851,7 +2851,7 @@ contains
     end if ! Master général
 
     aux(:ntyp) = tstep/(cm(:ntyp)*2.d0)
-    
+
     !########################################################################################################################
     !                               Ajout/Retrait d'une particule N+1: système N vers N+1 - direction = 0
     !########################################################################################################################
@@ -2893,23 +2893,23 @@ contains
           sp(:,1: atconf_Nplus1%im) = MatMul(boxmcgc_p%invh(:,:), atconf_Nplus1%xp(:,1: atconf_Nplus1%im) )
 
 
-       rgah=exp(-gamlg*gamprfact*tstep/2)
-       do ic=1,3
-          do ic2=1,3
-             call random_number(u1)
-             call random_number(u2)
-             glanh(ic,ic2)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
+          rgah=exp(-gamlg*gamprfact*tstep/2)
+          do ic=1,3
+             do ic2=1,3
+                call random_number(u1)
+                call random_number(u2)
+                glanh(ic,ic2)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
+             end do
           end do
-       end do
-       call calcUKcell
-       EkP_n=kcell
-       
-       boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
-            + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
-       call calcUKcell
-       EkP_n_1s4=kcell
-       boxmcgc_p%hdot(:,:) =(boxmcgc_p%hdot(:,:) +&
-            &tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)))*ihbox0(:,:)
+          call calcUKcell
+          EkP_n=kcell
+
+          boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
+               + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
+          call calcUKcell
+          EkP_n_1s4=kcell
+          boxmcgc_p%hdot(:,:) =(boxmcgc_p%hdot(:,:) +&
+               &tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)))*ihbox0(:,:)
           sp(:,1:atconf_Nplus1%im) = sp(:,1:atconf_Nplus1%im) + sdot(:,1:atconf_Nplus1%im)*tstep
 
           ! Tenseur h à l'instant t+dt
@@ -2955,9 +2955,9 @@ contains
           tempx= tempinstT(atconf_n)
           Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
           Tempcell=Kcell*2./(sum(ihbox0)*bk)
-!          write(6,*)'PR35',boxmcgc_p%hdot(1,1),boxmcgc_p%h(1,1)*1d8,sigtot(1,1)*unitP,tempx,tempcell
+          !          write(6,*)'PR35',boxmcgc_p%hdot(1,1),boxmcgc_p%h(1,1)*1d8,sigtot(1,1)*unitP,tempx,tempcell
 
-          
+
           !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
           U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
           !write(*,*) potist_n, potist_nplus1
@@ -2989,14 +2989,14 @@ contains
           sdot(:,1: atconf_Nplus1%im) = MatMul(boxmcgc_p%invh(:,:), atconf_Nplus1%vp(:,1: atconf_Nplus1%im) )
 
 
-       boxmcgc_p%hdot(:,:) =(boxmcgc_p%hdot(:,:) +&
-            &tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)))*ihbox0(:,:)
+          boxmcgc_p%hdot(:,:) =(boxmcgc_p%hdot(:,:) +&
+               &tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)))*ihbox0(:,:)
 
-       call calcUKcell
-       EkP_n_3s4=kcell
+          call calcUKcell
+          EkP_n_3s4=kcell
 
-       boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
-            + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
+          boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
+               + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
 
 
           call calcUKcell
@@ -3005,12 +3005,12 @@ contains
           U_l_n_m1 = U_l_n
           H_l_n_m1 = H_l_n
           H_l_n    = Ek_n_plus1  + U_l_n+kcell+ucell
-!          write(6,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev,kcell*erg2ev,ucell*erg2ev
+          !          write(6,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev,kcell*erg2ev,ucell*erg2ev
           dWork = H_l_n - H_l_n_m1
-          
+
           Work = Work + dWork
           dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4) + (EkP_n_1s4-EkP_n) + (EkP_n_p1-EkP_n_3s4)
-!          write(6,*)'compqeff', ((Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4))*erg2ev, ((EkP_n_1s4-EkP_n) + (EkP_n_p1-EkP_n_3s4))*erg2ev
+          !          write(6,*)'compqeff', ((Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4))*erg2ev, ((EkP_n_1s4-EkP_n) + (EkP_n_p1-EkP_n_3s4))*erg2ev
           QEff   = QEff + dQEff
           dWEff  = H_l_n - H_l_n_m1 - dQEff
           WEff   = WEff + dWEff

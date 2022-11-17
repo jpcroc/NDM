@@ -26,6 +26,7 @@ module constrconf_mod
 
 
   implicit none
+  logical::lprt=.true.
 contains
   subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart,filename,psc)
     !********************************************************************
@@ -59,8 +60,7 @@ contains
     !---------------------------------------------------
     filenom=fnam(1:lenfnam)
     if (present(filename))filenom=filename
-
-    if (rang==0) then
+    if ((rang==0).and.(lprt)) then
        write(6,*)
        write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-'
        write(6,*)'imm,imm_glob,nprocspace',imm,imm_glob,nprocspace
@@ -70,7 +70,7 @@ contains
     if (igen.ge.1) then
        allocate (ibuffer(imm_glob))
        allocate (buffer(3,imm_glob))
-       if(rang==0)               write(6,*)'********** reading configuration from file********'
+    if ((rang==0).and.(lprt))  write(6,*)'********** reading configuration from file********'
        if (lrestart) then
           fnamcin = fnam(1:lenfnam)//'.cout'
        else
@@ -92,13 +92,13 @@ contains
 
 !          call atrcf%print
            call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
-          if (rang==0) then
+           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax)
+          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt)
           ncore=0
           atrcf%im_glob=compatrcf%im
-          call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc)
+          call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc,lverbose=lprt)
           
           allocate(num_at_buff(imm_glob))
           call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
@@ -113,12 +113,12 @@ contains
 !          end if
 !          call atrcf%print
           atrcf%im_glob=atrcf%im
-          if (rang==0) then
+    if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax)
+          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt)
           ncore=0
-          call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
+          call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
           !          CALL fin allocation CELL et FIN DIVID
 
        end if
@@ -128,14 +128,14 @@ contains
        if (ldecoup) then 
           itread=0
           call read_cin(boxrcf,itread,fnamcin=fnamcin)
-          if (rang==0) then
+    if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax)
+          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt)
           open(123, file='decoup.dat', status='old')
           read (123, *) nprocspace,ncore
           close(123)         
-          call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
+          call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
           call arret_ndm
        else
           itread=1
@@ -143,10 +143,10 @@ contains
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
 
           atrcf%im_glob=atrcf%im
-          if (rang==0) then
+    if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax)
+          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt)
           !          CALL fin allocation CELL et FIN DIVID
        end if
 
@@ -184,8 +184,7 @@ contains
     end if
 
 
-
-    if (rang==0) then
+    if ((rang==0).and.(lprt)) then
 
        write(6,*)
        write (6, *) '-------- boite de simulation ------'
@@ -202,7 +201,7 @@ contains
           call comm_space%sum(nati)
        end if
 #endif
-       if(rang==0) then
+    if ((rang==0).and.(lprt)) then
           if (nati.ne.0) write (6, *) nati, ' atomes de type', iti
        end if
 
@@ -266,9 +265,9 @@ contains
     end do
     call initbox(box2b,atg,ipbc)
 
-    call setnox(box2b,cel2b,rum)
+    call setnox(box2b,cel2b,rum,lverbose=lprt)
 
-    if (rang==0) then
+    if ((rang==0).and.(lprt)) then
        write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
     end if
 #ifdef PARA
@@ -277,9 +276,9 @@ contains
        at2b%imm_glob=imm_glob
        if (lrepart) then
           at2b%im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
-          call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc)
+          call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc,lverbose=lprt)
        else
-          call  decoupage(nprocspace,ncore,cel2b,psc=psc)
+          call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
        end if
     end if
     COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
@@ -296,7 +295,7 @@ contains
        open(123, file='decoup.dat', status='old')
        read (123, *) npr,ncore
        close(123)         
-       call  decoupage(npr,ncore,cel2b,psc=psc)
+       call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
        call arret_ndm
     end if
 
@@ -516,7 +515,7 @@ contains
     endif
     if (present(lres))lrestart=lres
     if (present(fmtcin))fmt_cin=fmtcin
-    if (rang==0) then
+    if ((rang==0).and.(lprt)) then
        write(6,*)
        write(6,*)' *-*-*-*-*-*LECTURE DE CIN*-*-*-*-*-*-'
        write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
@@ -527,7 +526,7 @@ contains
 
     read (lucin, err=456) icintype
 
-    if (rang==0) write (6, *) 'config type de fichier .cin : ', icintype
+    if ((rang==0).and.(lprt))  write (6, *) 'config type de fichier .cin : ', icintype
     if (icintype>3.or.icintype<0) then
        write (6, *) rang, 'wrong icintype'
        call arret_ndm
@@ -571,10 +570,10 @@ contains
        read (lucin, err=456) ibuffer   !ityp
        atcinr%ityp(1:im_gr)=ibuffer(1:im_gr)
 
-       if (rang==0) write (6, *) 'types'
+       if ((rang==0).and.(lprt))  write (6, *) 'types'
        read (lucin, err=456) buffer    ! xp
        atcinr%xp(1:3,1:im_gr)=buffer(1:3,1:im_gr)
-       if (rang==0) write (6, *) 'xp'
+           if ((rang==0).and.(lprt))  write (6, *) 'xp'
        formcin:select case (fmt_cin)
        case (0) formcin
           do i=1,im_gr
@@ -583,7 +582,7 @@ contains
        case(1) formcin
           read (lucin, err=456) ibuffer
           atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
-          if (rang==0) write (6, *) 'num_at_glob'
+    if ((rang==0).and.(lprt))  write (6, *) 'num_at_glob'
        case default  formcin
           if (rang.eq.0) write(6,*) 'precisez le format fmt_cin'
           call arret_ndm
@@ -639,7 +638,7 @@ contains
              if (nitmax.ge.0) itmax=iteration+nitmax
              tstep = oldtstep
              
-             if (rang==0) then
+                 if ((rang==0).and.(lprt)) then
                 
                 write (6, *) 'restart parameters'
                 write (6, *) 'it =', iteration, ' time =', timel
@@ -687,7 +686,7 @@ contains
        enddo
 
 
-       if (rang==0) write (6, *) 'types'
+    if ((rang==0).and.(lprt))  write (6, *) 'types'
        read (lucin, err=456) buffer    ! xp muet
 
        select case (fmt_cin) !num_at_glob muet
@@ -748,7 +747,7 @@ contains
           if (nitmax.ge.0) itmax=iteration+nitmax
           tstep = oldtstep
 
-          if (rang==0) then
+    if ((rang==0).and.(lprt)) then
 
              write (6, *) 'restart parameters'
              write (6, *) 'it =', iteration, ' time =', timel
@@ -806,12 +805,12 @@ contains
     if(present(itread))itr=itread
     !  si coordonnees reduites
 
-    if (rang==0) write (6, *) '**********construction du reseau************'
+    if ((rang==0).and.(lprt))  write (6, *) '**********construction du reseau************'
     lugin=92
     !                                                !number of cells in 3 directions
     open(unit=lugin, file=fnamgin, status='unknown')
     read (lugin, *) latr(1), latr(2), latr(3)
-    if (rang==0) write (6, *) 'repetition de mailles', latr
+    if ((rang==0).and.(lprt))  write (6, *) 'repetition de mailles', latr
 
 
     !     **** coordonnes des vecteurs de maille en A dans une base orthonormee ****
@@ -826,7 +825,7 @@ contains
     read (lugin, *) imcell               !number of atoms in UC
     if (itr==0) return
     if (imcell>imm_glob) then
-       if(rang==0)               write (6, *) 'trop d_atomes dans la cel. unite',imm_glob,imcell
+           if ((rang==0).and.(lprt)) write (6, *) 'trop d_atomes dans la cel. unite',imm_glob,imcell
        call arret_ndm
     endif
     call atrg%init(imcell)
@@ -834,11 +833,11 @@ contains
        read (lugin, *) atrg%xp(1,i), atrg%xp(2,i), atrg%xp(3,i),atrg%ityp(i)
     end do
     if (any(atrg%xp (1:3,1:imcell)==0)) then
-       if (rang==0) write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6'
+     if ((rang==0).and.(lprt))  write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6'
        atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)+1e-6
     end if
     if (any(atrg%xp (1:3,1:imcell)==1)) then
-       if (rang==0) write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
+    if ((rang==0).and.(lprt))  write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
        atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)-1e-7
     end if
     do ic=1,3

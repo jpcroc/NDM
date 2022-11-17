@@ -6,6 +6,7 @@ module decoupage_mod
   USE atomconfig,only: atom_config
   USE read_val,only:rvois
   implicit none
+  logical::lverb=.true.
 contains
   subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose,psc)
 
@@ -25,7 +26,6 @@ contains
     type(cell_config)::celdec
     class(atom_config),optional:: atdec
     logical,optional::lverbose
-    logical::lverb=.true.
     integer, allocatable :: coord_min(:,:),coord_max(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z
     integer:: nnoeuds,imm_loc
     integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2

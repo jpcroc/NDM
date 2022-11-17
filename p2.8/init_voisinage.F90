@@ -6,17 +6,19 @@ module init_vois_mod
 
   
         contains
-subroutine init_voisinage (cellv,psc)
+subroutine init_voisinage (cellv,psc,lwrite)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
-  use gen_com_m,only:
+  use gen_com_m,only:rang
   use Tpara,only:MPI_COMM_space, nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 !  use mod_para,only:nbr_cell_ftm,NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
 
   implicit none
   type(cell_config),intent(in)::cellv
-  type(para_space_config)::psc ! para_space_config 
+  type(para_space_config)::psc ! para_space_config
+  logical,optional::lwrite
+  logical::lwrt=.false.
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
@@ -31,7 +33,7 @@ subroutine init_voisinage (cellv,psc)
   integer :: i
   integer :: i_cell_ftm
   integer :: num_proc_vois
-
+  if (present(lwrite))lwrt=lwrite
   ! intialisations preliminaires
   if( allocated(psc%proc_voisin)) deallocate(psc%proc_voisin)
   allocate(psc%proc_voisin(min(nprocspace,26)))
@@ -141,7 +143,7 @@ subroutine init_voisinage (cellv,psc)
      endif ! la cellule est locale
 
   enddo
-  write(6,*)'rangspace ',myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
+  if (lwrt) write(6,*)'rang rangspace ',rang, myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
 !!$  do ip=1,psc%nbr_proc_voisin
 !!$     write(10+myidsp,*)'procvoisin',ip,psc%proc_voisin(ip),'nbcell', psc%nbr_cell_frontiere(ip)     
 !!$     do i=1,psc%nbr_cell_frontiere(num_proc_vois)

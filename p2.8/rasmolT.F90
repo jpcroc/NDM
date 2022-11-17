@@ -130,7 +130,8 @@ contains
        end if
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 !          write(6,*)'IMRASMOL',atmol%im,atmol%imm,atmol%im_glob,atmol%imm_glob
-          call atcomp%init(atmol%im_glob,im_glob=atmol%im_glob,imm_glob=atmol%imm_glob)
+          call atcomp%init(atmol%im_glob,im_glob=atmol%im_glob,imm_glob=atmol%imm_glob,linitnag=.true.)
+!          call atcomp%print
           div%mpi_image%rank=myidsp
           div%mpi_image%nproc=nprocspace
           div%mpi_image%comm=COMM_space%comm
