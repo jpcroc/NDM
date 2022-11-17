@@ -190,13 +190,14 @@ contains
        end DO
        !#ifdef PARA
     endif
+ !   boxndm%hdot=0
     call comm_space%bcast(0,boxndm%hdot)
 
     !#endif
 
     Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
     Tempcell=Kcell*2./(9.*bk)
-    if (Tinitbox.gt.0)     boxndm%hdot(1:3,1:3)=sqrt(tinitbox/Tempcell)*boxndm%hdot(1:3,1:3)
+!    if (Tinitbox.gt.0)     boxndm%hdot(1:3,1:3)=sqrt(tinitbox/Tempcell)*boxndm%hdot(1:3,1:3)
     DO i=1, 3
        DO j=1, 3
 
@@ -469,7 +470,8 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ! LPR +LANGEVIN : evolution de VP en corrdonnées réelles pour éviter de se tromper dans les dimensions       
-    case(88) 
+    case(88)
+       call comm_space%barrier
        select type(atpr)
        class is (atom_config_e)
           Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
@@ -491,21 +493,25 @@ contains
              ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat
              sdot(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%vp(:,1:atpr%im) )
 
-             call sigkinetot(atpr,boxndm,sig,sigkine,sigtot)
           END DO
+          call sigkinetot(atpr,boxndm,sig,sigkine,sigtot)
           rgah=exp(-gamlg*gamprfact*tstep/2)
-          do ic=1,3
-             do ic2=1,3
-                call random_number(u1)
-                call random_number(u2)
-                glanh(ic,ic2)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
+          if (myidsp==0) then
+             do ic=1,3
+                do ic2=1,3
+                   call random_number(u1)
+                   call random_number(u2)
+                   glanh(ic,ic2)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
+                end do
              end do
-          end do
-
-          boxndm%hdot(:,:) = (  boxndm%hdot(:,:)*rgah  &
-               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:),boxndm%invtrh(:,:) ) &
-               + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
-          tempx= tempinstT(atpr)
+             
+             boxndm%hdot(:,:) = (  boxndm%hdot(:,:)*rgah  &
+                  + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:),boxndm%invtrh(:,:) ) &
+                  + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
+          end if
+          call comm_space%bcast(0,boxndm%hdot)
+          call comm_space%bcast(0,glanh)
+         tempx= tempinstT(atpr)
           Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
           Tempcell=Kcell*2./(sum(ihbox0)*bk)
 
@@ -563,7 +569,6 @@ contains
           Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
           Tempcell=Kcell*2./(sum(ihbox0)*bk)
           EcellPR = Kcell + Ucell
-
 
        end select
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

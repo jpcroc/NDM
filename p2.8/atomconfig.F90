@@ -108,20 +108,17 @@ contains
     write(6,*)'TYPE PRECISE ? SI NON extension'
 
   end subroutine print_type
-  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob,linitnag)
+  subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
     logical,optional, intent(in)::ltabvois,lreallocate
     integer, optional::nvois,immin,im_glob,imm_glob
     real(double),optional::rvois
-    logical,optional,intent(in)::linitnag
-    logical::ling=.false.
     integer::nv
     logical ::ltbv,lrealloc
     real(double)::rv
     integer::i
     
-    if (present(linitnag))ling=linitnag
     nv=0 ;  if(present(nvois))nv=nvois
     rv=0;  if(present(rvois))rv=rvois
     lrealloc=.false.
@@ -163,13 +160,7 @@ contains
        
     end if
     atconf%ityp=0;atconf%xp=0;atconf%fp=0;atconf%ielat=0; atconf%lgul=.false.;
-    if (ling) then
-       do i=1,atconf%imm
-          atconf%num_at_glob(i)=i
-       end do
-    else
-       atconf%num_at_glob=0
-    end if
+    atconf%num_at_glob=0
 #ifdef PARA
     atconf%proc_at=-1
 #endif    
@@ -1345,7 +1336,6 @@ contains
     integer::imloc,imloc3,iproc,imrecv,icomp,imrecv3,imrecv9,imloc9
     integer::imcomp,imtot,proc_source,npim,iloc
     logical,allocatable::mask(:)
-
     if (.not.present(caracT)) then
        carac='xfniewdlpvrugas'
     else
@@ -1360,7 +1350,6 @@ contains
     call mpic%max(natgM)
     allocate(inag(natgM))
     inag=0
-    
     if (idloc==idmaster) then
        imtot=0
        do iproc=0,npim-1
@@ -1382,10 +1371,17 @@ contains
           call arret_ndm
        end if
 
-       do icomp=1,atcfcomp%im
-          inag(atcfcomp%num_at_glob(icomp))=icomp
-       end do
-
+       if (all(atcfcomp%num_at_glob(1:atcfcomp%im)==0)) then  ! This is anew atcfcomp with undefined atcfcomp :inag points to -1 to show that
+          inag(1:natgM)=-1
+       else if (any(atcfcomp%num_at_glob(1:atcfcomp%im)==0)) then !This is bulsshit (neither new nor pre-existing) smells like inconsistency
+          write(6,*)'VERS MASTER au moins un NAG nul'
+          call arret_ndm
+       else ! This a return to an existing atcfcomp which has its own num_at_glob numbering
+          do icomp=1,atcfcomp%im
+             !          write(6,*)'atcfcomp',icomp,atcfcomp%num_at_glob(icomp)
+             inag(atcfcomp%num_at_glob(icomp))=icomp
+          end do
+       end if
     else
        imloc=atcfloc%im
        call mpic%SEND(imloc,idmaster,11011)
@@ -1394,7 +1390,7 @@ contains
 
     
     if (idloc==idmaster) then
-
+       icomp=0
        imtot=0
        do iproc=0,npim-1
 
@@ -1406,7 +1402,13 @@ contains
              allocate(nag(imrecv))
              nag(1:imrecv)=atcfloc%num_at_glob(1:imrecv)
              do iloc=1,imrecv
-                icomp=inag(nag(iloc))
+                if (inag(nag(iloc))==-1) then ! num_at_glob pas defini pour atcfcomp
+                   icomp=icomp+1
+                   inag(nag(iloc))=icomp
+                   atcfcomp%num_at_glob(icomp)=nag(iloc)
+                else
+                   icomp=inag(nag(iloc))
+                end if
 !                write(6,*)'L2M',iproc,iloc,nag(iloc)
                 if (nag(iloc).ne.atcfcomp%num_at_glob(icomp))then
                    write(6,*)'erreur NATG',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
@@ -1479,8 +1481,13 @@ contains
              if (cst(2).ne.0)call mpic%recv(lbuffer,proc_source,315)
              if (cst(3).ne.0)call mpic%recv(Rbuffer,proc_source,316)
              do iloc=1,imrecv
-                icomp=inag(nag(iloc))
-!                write(6,*)iloc, nag(iloc),icomp
+                if (inag(nag(iloc))==-1) then ! num_at_glob pas defini pour atcfcomp
+                   icomp=icomp+1
+                   inag(nag(iloc))=icomp
+                   atcfcomp%num_at_glob(icomp)=nag(iloc)
+                else
+                   icomp=inag(nag(iloc))
+                end if
                 if (nag(iloc).ne.atcfcomp%num_at_glob(icomp))then
                    write(6,*)'erreur NATG2',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
                    call MPI_finalize(ierr)

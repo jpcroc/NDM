@@ -2598,11 +2598,11 @@ contains
     !write(6,*)'outcfmc',rang,ncalls
   end subroutine calfoMCGC
 
-  subroutine init_atom_config_mc(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob,linitnag)
+  subroutine init_atom_config_mc(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
     class(atom_config_mc),intent(inout)::atconf
     !type(atom_config_mc),intent(inout)::atconf
     integer,intent(in):: imin
-    logical,optional, intent(in)::ltabvois,lreallocate,linitnag
+    logical,optional, intent(in)::ltabvois,lreallocate
     integer, optional::nvois,immin,im_glob,imm_glob
     real(double),optional::rvois
     logical :: lrealloc
