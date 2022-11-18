@@ -29,15 +29,21 @@ NDM can be compiled and run on any Unix-like system (and TODO windows).
 
 ### Installation
 
-Installation instructions are provided in the documentation included in the
-distribution repository
-- markdown file [README_ndm_installation.md](READMES/README_ndm_installation.md)
+```
+git clone --branch ndm2021_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/ndm/NDM.git NDM
+```
 
-Also see
+### Compilation
+
+Compilation instructions are provided in the documentation included in the
+distribution repository
+- markdown file [README_ndm_compilation.md](READMES/README_ndm_compilation.md)
+
+Also see TODO
 - github documentation [ndm-docs TODO](https://jpc.github.io/ndm-docs/contents/installation.html).
 
 
-### Integration Tests
+### Integration Tests TODO
 
 Are big, located in a separate git repository TODO.
 

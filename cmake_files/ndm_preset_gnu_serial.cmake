@@ -4,7 +4,7 @@
 # preset that turns on just gnu serial
 # this will be compiled quickly and handle a lot of common inputs.
 
-message("PRESET:   use ndm_gnu_serial.cmake")
+message("PRESET:   use ndm_preset_gnu_serial.cmake")
 
 # CMAKE usual preset variables
 # https://cmake.org/cmake/help/latest/envvar/FC.html
