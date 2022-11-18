@@ -24,7 +24,7 @@ NDM is built around
 All the input data are prescribed non-interactively,
 using command lines and/or ASCII files.
 
-NDM can be compiled and run on any Unix-like system and windows.
+NDM can be compiled and run on any Unix-like system (and TODO windows).
 
 
 ### Installation
@@ -39,6 +39,6 @@ Also see
 
 ### Integration Tests
 
-Are located in a separate git repository TODO.
+Are big, located in a separate git repository TODO.
 
 - https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM_TESTS.git

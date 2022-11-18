@@ -32,9 +32,10 @@ list( APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_files" )
 
 include( TraceNewMacros )
 include( CTest )
-
 setcolors()
+
 log_info( "CMAKE_MODULE_PATH : ${CMAKE_MODULE_PATH}" )
+
 
 ################################################
 # user options
@@ -60,14 +61,26 @@ set( NDM_MPI_INSDIR $ENV{NDM_MPI_INSDIR} ) # ...openmpi
 #set( CMPLR_ROOT $ENV{CMPLR_ROOT} ) # ...oneapi/compiler/
 
 
+################################################
 # CMAKE usual variables
-set( CMAKE_BUILD_TYPE ${NDM_BUILD_TYPE} ) # Release or Debug
-set( CMAKE_COMPILE_MODE ${NDM_BUILD_TYPE}$ )
-set( FC ${NDM_FC_USER} )
-set( Fortran_COMPILER_NAME ${FC} )
+################################################
 
-set( MPI_HOME ${NDM_MPI_INSDIR} )
-set( CMAKE_INSTALL_PREFIX ${NDM_INSDIR} )
+# 3.17+
+set( CMAKE_MESSAGE_LOG_LEVEL STATUS CACHE STRING "cmake verbosity  'ERROR|WARNING|NOTICE|STATUS|VERBOSE|DEBUG|TRACE'" FORCE)
+set( CMAKE_VERBOSE_MAKEFILE off CACHE STRING "build verbosity  'off|on'" FORCE)
+log_info ( "CMAKE_VERBOSE_MAKEFILE : ${CMAKE_VERBOSE_MAKEFILE}" )
+
+
+set( CMAKE_BUILD_TYPE ${NDM_BUILD_TYPE} ) # Release or Debug
+# may be debug to fix something
+# set( CMAKE_BUILD_TYPE Debug )
+# set( CMAKE_BUILD_TYPE Release )
+
+
+set( CMAKE_COMPILE_MODE ${NDM_BUILD_TYPE} )
+set( CMAKE_INSTALL_PREFIX ${NDM_INSDIR} CACHE STRING
+     "Choose the installation directory; by default it installs in the NDM_INSTALL_DIR."
+     FORCE )
 
 # check
 if ( NOT ${CMAKE_BINARY_DIR} STREQUAL ${NDM_BUIDIR} )
@@ -81,9 +94,13 @@ endif()
 
 if ( NDM_WITH_MPI )
   log_info( "NDM parallel as NDM_WITH_MPI ${NDM_WITH_MPI}" )
+  # set( NDM_MPI_ROODIR $ENV{NDM_MPI_ROODIR} )  # obsolete
+  set( MPI_HOME ${NDM_MPI_INSDIR} )   # CMAKE usual variable
   find_package(MPI REQUIRED)
+  set( NDM_MPI_RESUME "PARALLEL")
 else()
   log_info( "NDM serial as NDM_WITH_MPI ${NDM_WITH_MPI}" )
+  set( NDM_MPI_RESUME "SERIAL")
 endif()
 
 # find_package(MKL REQUIRED) # because not found on irene...
@@ -103,10 +120,10 @@ if( NDM_OPT_COMPILE_DOC )
   find_package( Doxygen )  # TODO Sphinx instead
   if (Doxygen_FOUND)
     # TODO to make doc ?
-    log_warning( "add_subdirectory docs" )
+    log_info( "add_subdirectory docs" )
     add_subdirectory( docs )
   else()
-    log_info( "Doxygen not found, not building docs" )
+    log_warning( "Doxygen not found, not building docs" )
   endif()
 endif()
 
@@ -126,18 +143,12 @@ set( NDM_DEFAULT_PREFIX ${default_prefix} )
 log_info( "cmake with trace : ${NDM_OPT_TRACE}" )
 log_info( "compile ONLY ctests NDM : ${NDM_OPT_COMPILE_ONLY_CTESTS}" )
 
-# may be debug to fix it
-# set( CMAKE_BUILD_TYPE Debug )
-# set( CMAKE_BUILD_TYPE Release )
-
 # TODO verify if not defined if(DEFINED ENV{<name>})
 # set( MKLROOT $ENV{MKLROOT} ) # MKLROOT and MKL_ROOT are equals in fine
 set( MKL_ROOT $ENV{MKL_ROOT} )
 log_info( "CMAKE MKL_ROOT : ${MKL_ROOT}" )
 
 if ( NDM_WITH_MPI )
-  set( NDM_MPI_ROODIR $ENV{NDM_MPI_ROODIR} )
-  log_info( "NDM_MPI_ROODIR : ${NDM_MPI_ROODIR}" )
   log_info( "MPI_HOME :${MPI_HOME}" )
   log_info( "MPI_DETERMINE_Fortran_CAPABILITIES : ${MPI_DETERMINE_Fortran_CAPABILITIES}" )
   log_info( "MPI_Fortran_MODULE_DIR : ${MPI_Fortran_MODULE_DIR}" )
@@ -146,22 +157,20 @@ if ( NDM_WITH_MPI )
   log_info( "MPI_Fortran_VERSION : ${MPI_Fortran_VERSION}" )
 endif()
 
+
 ################################################
 # Other options
 # as CMAKE usage needs
 ################################################
 
-# make sure that the default is a RELEASE
+# make sure that the default is a Release
 if (NOT CMAKE_BUILD_TYPE)
   log_warning( "CMAKE_BUILD_TYPE set Release BY DEFAULT" )
   set( CMAKE_BUILD_TYPE Release CACHE STRING
-      "Choose the type of build, options are: None Debug Release."
-      FORCE )
+       "Choose the type of build, options are None Debug Release."
+       FORCE )
 endif()
 
-set( CMAKE_INSTALL_PREFIX ${NDM_INSDIR} CACHE STRING
-     "Choose the installation directory; by default it installs in the NDM_INSTALL_DIR."
-     FORCE )
 
 # FFLAGS depend on the compiler
 get_filename_component( Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME )
@@ -186,7 +195,7 @@ else()
   if ( NDM_TYPE STREQUAL "INTEL")
     list( APPEND NDM_MKL_LIB  mkl_scalapack_lp64;mkl_intel_lp64;mkl_sequential;mkl_core;mkl_blacs_intelmpi_lp64;pthread;m;dl)
   endif()
-  if ( NDM_TYPE STREQUAL "GNU")
+  if ( NDM_TYPE STREQUAL "GNU")  # TODO GNU
     list( APPEND NDM_MKL_LIB mkl_scalapack_lp64;mkl_gf_lp64;mkl_sequential;mkl_core;mkl_blacs_openmpi_lp64;pthread;m;dl)
   endif()
   log_warning( "NDM_MKL_LIB as DEFAULT :\n         ${NDM_MKL_LIB}")
@@ -195,8 +204,10 @@ endif()
 set( NDM_MKL_LIB "" )
 log_warning( "TODO NDM_MKL_LIB reset as debug")
 
-set(NDM_RESUME "(${NDM_TYPE}) NDM_WITH_MPI ${NDM_WITH_MPI} compilation ${CMAKE_BUILD_TYPE}")
+
+set(NDM_RESUME "(${NDM_TYPE}) NDM ${NDM_MPI_RESUME}, compilation ${CMAKE_BUILD_TYPE}")
 log_title( ${NDM_RESUME} )
+
 
 if (NDM_TYPE STREQUAL "INTEL")
   if (NOT (Fortran_COMPILER_NAME STREQUAL "mpiifort" OR Fortran_COMPILER_NAME STREQUAL "ifort"))
@@ -266,6 +277,7 @@ elseif (NDM_TYPE STREQUAL "GNU")
 
   # set (CMAKE_Fortran_FLAGS_RELEASE " -funroll-all-loops -fno-f2c -O3 -ffree-form -ffree-line-length-512 -L${TMP_MKL} -L${TMP_MPI}")
 
+  # TODO ${TMP_MPI}
   set (CMAKE_Fortran_FLAGS_RELEASE " -funroll-all-loops -O3 -ffree-line-length-512 ")
   set (CMAKE_Fortran_FLAGS_DEBUG   " - fno-f2c -O0 -g -ffree-form  -ffree-line-length-512 ")
 
@@ -296,10 +308,16 @@ log_info( "NDM_MKL_LIB : ${NDM_MKL_LIB}")
 # add_compile_definitions(PARA=1)
 # add_compile_definitions(PARAM=1)
 
-# TODO if NDM_WITH_MPI
-#add_compile_definitions(ML=1)
-#add_compile_definitions(PARAML=0)
-#add_compile_definitions(PARA=)
+if ( NDM_WITH_MPI STREQUAL "on")
+  add_compile_definitions(ML=0)
+  add_compile_definitions(PARAML=1)
+  add_compile_definitions(PARA=1)
+  log_warning( "add_compile_definitions : PARALLEL" )
+else()
+  #add_compile_definitions(ML=1)
+  log_warning( "add_compile_definitions : SERIAL" )
+endif()
+
 
 log_info( "CMAKE_Fortran_FLAGS_RELEASE :\n       ${CMAKE_Fortran_FLAGS_RELEASE}" )
 log_info( "CMAKE_Fortran_FLAGS_DEBUG :\n       ${CMAKE_Fortran_FLAGS_DEBUG}" )

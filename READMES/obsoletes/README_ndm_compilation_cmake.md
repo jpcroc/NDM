@@ -1,5 +1,5 @@
 
-## NDM GNU compilation on on local user host linux
+## NDM compilation serial (no mpi) on on local user host linux
 
 ```
 hostname  # is246206.intra.cea.fr
@@ -12,35 +12,19 @@ export NDM_SRCDIR=${NDM_ROODIR}/NDM
 export NDM_BUIDIR=${NDM_ROODIR}/ndm_build_gnu
 export NDM_INSDIR=${NDM_ROODIR}/ndm_install_gnu
 
-bash   # useful to rewind clean environment with exit
 
+bash
 export PATH=${NDM_SRCDIR}/scripts:${PATH}  # to get NMD/scripts
 envs -p NDM_
 
-# preset.cmakes files makes this important fortran compiler choice useless
-unset FC
+cd ${NDM_ROODIR} ; rm -rf ${NDM_BUIDIR} ; rm -rf ${NDM_INSDIR} ; mkdir ${NDM_BUIDIR} ; cd ${NDM_BUIDIR}
 
-cd ${NDM_ROODIR}
-rm -rf ${NDM_BUIDIR}
-rm -rf ${NDM_INSDIR}
-mkdir ${NDM_BUIDIR}
+cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake ${NDM_SRCDIR}
 
-cd ${NDM_BUIDIR}   # important
+cmake-gui ../cmake
 
-# serial
-cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR}
-
-# parallel need openmpi, do that one time only
-if [ -z "${MPI_BIN}" ] ; then
-  module avail
-  module load mpi/openmpi-x86_64
-fi
-
-cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_parallel.cmake -S ${NDM_SRCDIR}
-
-ccmake .  # use it only for display
-
-# nproc     # --> 20 is246206
+# --parallel 4
+# nproc --> 20
 # mate-system-monitor &
 
 cmake --build . --target all --parallel 15
@@ -49,7 +33,7 @@ cmake --build . --target test
 
 tree -d ${NDM_BUIDIR} # ../ndm_build_gnu/
 tree -d ${NDM_INSDIR} # ../ndm_install_gnu/
-# tree -d ../ndm_*gnu
+tree -d ../ndm_*gnu
 ldd ${NDM_INSDIR}/bin/*
 
 # make an integration example...
@@ -91,6 +75,7 @@ cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_parallel.cmake ${NDM_SRCDIR}
 
 cmake --build . --target all --parallel 15
 cmake --build . --target install
+cmake --build . --target test
 
 
 ```

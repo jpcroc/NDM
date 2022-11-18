@@ -8,6 +8,7 @@
 
 list( APPEND simpletests # as *.f90
   test_010_hello_world
+  test_010_hello_world_openmpi
 )
 
 list( APPEND preprosimpletests # as *.F90
@@ -22,18 +23,24 @@ list( APPEND preprosimpletests # as *.F90
 
 list( SORT simpletests )
 
+if ( NOT NDM_WITH_MPI )
+  list( FILTER simpletests EXCLUDE REGEX "_openmpi$" )
+  list( FILTER simpletests EXCLUDE REGEX "_mpi_" )
+endif()
+
 foreach( atest IN LISTS simpletests )
   log_info( "test ${atest}")
   add_executable( ${atest}.exe ./${atest}.f90 )
 
   # cmake regex see https://cmake.org/cmake/help/latest/command/string.html
-  if (${atest} MATCHES "_openmpi$")   # ending "_openmpi" -> mpirun 4
+  if ( ${atest} MATCHES "_openmpi$" )   # ending "_openmpi" -> mpirun 4
     add_test( NAME ${atest} COMMAND mpirun -np 4 ../bin/${atest}.exe )
-  elseif (${atest} MATCHES "_mpi_")   # with "_mpi_" -> mpirun 2
+  elseif ( ${atest} MATCHES "_mpi_" )   # with "_mpi_" -> mpirun 2
     add_test( NAME ${atest} COMMAND mpirun -np 2 ../bin/${atest}.exe )
   else()
     add_test( NAME ${atest} COMMAND ${atest}.exe )
   endif()
+
   set_tests_properties(${atest} PROPERTIES TIMEOUT 30)
 
   target_link_libraries( ${atest}.exe PRIVATE libndm ${NDM_MKL_LIB} )

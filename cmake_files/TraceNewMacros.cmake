@@ -4,10 +4,10 @@
 
 # function to print all current variables contents
 function(printCmakeTrace)
-  unset(_variableNames  PARENT_SCOPE)
+  unset(_variableNames PARENT_SCOPE)
   get_cmake_property(_variableNames VARIABLES)
   list(REMOVE_DUPLICATES _variableNames)
-  message( STATUS "${ColBlue}BEGIN TRACE" )
+  message( "${ColBlue}BEGIN TRACE all" )
   foreach(_variableName ${_variableNames})
     # avoid multi-lines codes as too much
     if ( "${${_variableName}}" MATCHES ".#?define ." ) # too long anyway
@@ -27,21 +27,21 @@ function(printCmakeTrace)
     endif()
     message("TRACE:   ${_variableName}=${${_variableName}}")
   endforeach()
-  message( STATUS "END TRACE${ColReset}" )
+  message( "END TRACE${ColReset}" )
 endfunction()
 
 
 function(printCmakeTraceVariable regExp)
-  unset(_variableNames  PARENT_SCOPE)
+  unset(_variableNames PARENT_SCOPE)
   get_cmake_property(_variableNames VARIABLES)
   list(REMOVE_DUPLICATES _variableNames)
-  message( STATUS "${ColBlue}" )
+  message( "${ColBlue}TRACE:   on '${regExp}'" )
   foreach(_variableName ${_variableNames})
     if ( _variableName MATCHES "${regExp}" )
       message("TRACE:   ${_variableName}=${${_variableName}}")
     endif()
   endforeach()
-  message( STATUS "${ColReset}" )
+  message( "${ColReset}" )
 endfunction()
 
 
