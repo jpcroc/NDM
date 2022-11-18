@@ -16,6 +16,7 @@ module avail
 bash
 module load mpi/openmpi-x86_64
 ```
+.
 
 ### example compile GNU
 
@@ -85,12 +86,11 @@ mpirun -n 4 ${NDM_INSDIR}/bin/ndm_main.exe
 ---> ok
 
 ```
-
-
-
+.
 
 ## NDM mpi intel oneApi parallel compilation on on local user host linux
 
+.
 
 ### example set oneApi
 
@@ -146,7 +146,7 @@ else
 
 fi
 ```
-
+.
 
 OS suze, for example have not `module` command, this intel documented way is obsolete:
 
@@ -156,6 +156,7 @@ module avail
 module load compiler/latest
 module load mkl/latest
 ```
+.
 
 If done yet you get:
 
@@ -164,7 +165,7 @@ WARNING: setvars.sh has already been run. Skipping re-execution.
 To force a re-execution of setvars.sh, use the '--force' option.
 Using '--force' can result in excessive use of your environment variables.
 ```
-
+.
 
 ### example compile INTEL
 
@@ -181,7 +182,7 @@ mkdir ${NDM_BUIDIR}
 cd ${NDM_BUIDIR}   # important
 
 ###### intel parallel
-cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_parallel.cmake -S ${NDM_SRCDIR}
+cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_parallel.cmake -S ${NDM_SRCDIR}
 
 ccmake .  # use it only for display
 
@@ -209,3 +210,4 @@ mpirun -n 4 ${NDM_INSDIR}/bin/ndm_main.exe
 ---> ok
 
 ```
+.
