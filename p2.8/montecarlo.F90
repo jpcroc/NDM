@@ -174,6 +174,7 @@ contains
              call random_seed(PUT=seed(1:33))
              if (ins_typ==1) call init_instyp
              call initNP1(ipp) ! initialise la configuration N+1
+             
           else
              call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot)
              !             iseed =iseed +rang
@@ -188,6 +189,7 @@ contains
           end if
        end if
     end do
+!    if (lbigmaster) write(10+rang,*)rcpath
     !END PARAPATH
     atconf_n=> config_atom_n(1)
     cells_n=>config_cells_n(1)
@@ -395,7 +397,9 @@ contains
        do ipp=1,nparapath
           lcalc=.false.
           if (lparapath) then
-             if (parapath%image+1==ipp) lcalc=.true.
+             if (parapath%image+1==ipp) then
+                lcalc=.true.
+             end if
           else
              lcalc=.true.
           end if
@@ -438,9 +442,9 @@ contains
                 end if
                 pressF= (sigtot(1,1)+sigtot(2,2)+sigtot(3,3))/3.0
                 if (ins_typ==1)then
-                   call parapath%mpi_master%sum(rcpath)
+                   
+!                   call parapath%mpi_master%sum(rcpath)
                    write(6,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
-                   rcpath=0
                 else
                    write(6,*)'Weff eV ', ipp,weff_npp(ipp)*erg2eV
                 end if
@@ -448,6 +452,7 @@ contains
              end if
              !if (lbigmaster)write(6,*)'potist', ipp,potist_n,potist_nplus1
           end if
+
        end do
 
        if ((lbigmaster).and.(lparapath)) then
@@ -633,14 +638,14 @@ contains
        if (ins_typ==1)then
           if (lmegamaster) then
              do ipp=1,nparapath
-                write(6,'(A,I2,I4,2G15.9)')'Weff eV dist ', direction,ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                write(6,'(A,I2,I4,2F20.10)')'Weff eV dist ', direction,ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
              end do
           end if
           rcpath=0
        else
           if (lmegamaster) then
              do ipp=1,nparapath
-                write(6,'(A,I2,I4,G15.9)')'Weff eV',direction, ipp,weff_npp(ipp)*erg2eV
+                write(6,'(A,I2,I4,F20.10)')'Weff eV',direction, ipp,weff_npp(ipp)*erg2eV
              end do
           end if
        end if
@@ -2697,6 +2702,10 @@ contains
     itry=0
 22  continue
     itry=itry+1
+    if (itry.gt.1000) then
+       write(6,*)'ITRY 1000'
+       call arret_ndm
+    end if
     call random_number(zf)
     fhi=2*pi*zf
     call random_number(zt)
@@ -2733,9 +2742,9 @@ contains
     end do
     vec(:,1)=postest(:)
     pins=1/(1+exp(fdfactmcgc*(rex-R0mcgc)))
-    if (rang==0)then
-       if (itry.gt.1) write(6,*)'NTRY',itry
-    end if
+!    if (rang==0)then
+!       if (itry.gt.1) write(6,*)'image',parapath%image,'NTRY',itry
+!    end if
 !    write(6,'(A,I3,4G15.7)')'atom_supp_sph vec', rang,vec(:,1),rex*1d8
     rd=rex*1d8
     return
