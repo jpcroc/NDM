@@ -1,5 +1,5 @@
 
-## NDM GNU serial or parallel compilation on on local user host linux
+## NDM GNU serial or parallel compilation on local user host linux
 
 
 ### example set opempi
@@ -18,7 +18,7 @@ module load mpi/openmpi-x86_64
 ```
 .
 
-### example compile GNU
+### example compile GNU serial or parallel
 
 ```
 hostname  # is246206.intra.cea.fr
@@ -88,11 +88,11 @@ mpirun -n 4 ${NDM_INSDIR}/bin/ndm_main.exe
 ```
 .
 
-## NDM mpi intel oneApi parallel compilation on on local user host linux
+## NDM mpi intel oneApi serial or parallel compilation on local user host linux
 
 .
 
-### example set oneApi
+### example set oneApi serial or parallel
 
 Do it Before
 
@@ -122,11 +122,20 @@ if [ -z ${SETVARS_COMPLETED} ]; then    # do it only one time
 
   export CONFIG_SETVARS=${NDM_ROODIR}/config_setvars_oneapi.tmp
 
+  ###### INTEL parallel need openmpi, do that one time only
   cat <<EOT > ${CONFIG_SETVARS}
 default=exclude
 compiler=latest
 mkl=latest
 mpi=latest
+itac=latest
+EOT
+
+  ###### INTEL serial do not need openmpi, do that one time only
+  cat <<EOT > ${CONFIG_SETVARS}
+default=exclude
+compiler=latest
+mkl=latest
 itac=latest
 EOT
 
@@ -140,7 +149,7 @@ EOT
 else
 
   echo 'setvars.sh and ${SETVARS_COMPLETED}' ${SETVARS_COMPLETED}
-  echo 'launched setvars.sh oneAPI done yet, hope it is OK (without intel mpi)'
+  echo 'launched setvars.sh oneAPI done yet, hope it is OK (with or without intel mpi, mkl...)'
   # hope there is intel mpi
   envs -g mpi
 
@@ -181,6 +190,9 @@ mkdir ${NDM_BUIDIR}
 
 cd ${NDM_BUIDIR}   # important
 
+###### intel serial
+cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_serial.cmake -S ${NDM_SRCDIR}
+
 ###### intel parallel
 cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_parallel.cmake -S ${NDM_SRCDIR}
 
@@ -204,6 +216,10 @@ ldd ${NDM_BUIDIR}/bin/*
 rm -rf  ./tmp
 cp -rf ${NDM_SRCDIR}/examples/ndm_lammps_serial ./tmp
 cd ./tmp
+
+# serial
+${NDM_INSDIR}/bin/ndm_main.exe
+---> ok
 
 # parallel
 mpirun -n 4 ${NDM_INSDIR}/bin/ndm_main.exe
