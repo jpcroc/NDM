@@ -1,0 +1,57 @@
+# Book settings
+# Learn more at https://jupyterbook.org/customize/config.html
+# https://jupyterbook.org/en/stable/customize/config.html
+
+title: NDM
+author: Jean-Paul Crocombette - CEA/ISAS/DMN/SRMP
+
+email: :jean-paul.crocombette@cea.fr
+logo: images/logo_ndm.png
+
+# Force re-execution of notebooks on each build.
+# See https://jupyterbook.org/content/execute.html
+execute:
+  execute_notebooks: force
+
+# Define the name of the latex output file for PDF builds
+latex:
+  # use_jupyterbook_latex: true
+  latex_documents:
+    targetname: NDM.tex
+
+# Add a bibtex file so that we can create citations
+bibtex_bibfiles:
+  - references.bib
+
+# Information about where the book exists on the web
+repository:
+  url: https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM.git # Online location of your book
+  path_to_book: ./docs/doc2023/NDM.pdf  # Optional path to your book, relative to the repository root
+  branch: cv_M30_2022  # Which branch of the repository should be used when creating links (optional)
+
+# Add GitHub buttons to your book
+# See https://jupyterbook.org/customize/config.html#add-a-link-to-your-repository
+#html:
+  #use_issues_button: true
+  #use_repository_button: true
+
+parse:
+  myst_substitutions:
+    salome: '[SALOME](http://www.salome-platform.org)'
+    jupyterbook: '[JUPYTER-BOOK](https://jupyterbook.org)'
+    pythonpackaging: '[package python](https://packaging.python.org)'
+    sphinx: '[SPHINX](http://sphinx-doc.org)'
+    castem: '[CAST3M](http://www-cast3m.cea.fr)'
+    root: '[ROOT](https://root.cern.ch)'
+    Cpp: '[C++](http://www.cplusplus.com)'
+    cmake: '[CMake](https://cmake.org)'
+    python: '[Python](https://docs.python.org)'
+    paraview: '[ParaView](http://www.paraview.org)'
+    anaconda: '[Anaconda](https://docs.continuum.io/anaconda/pkg-docs#)'
+    miniconda: '[Miniconda](http://conda.pydata.org/miniconda.html)'
+    doe: '[plan d''expériences](https://fr.wikipedia.org/wiki/Plan_d%27exp%C3%A9riences)'
+    Doe: '[DOE](https://en.wikipedia.org/wiki/Design_of_experiments)'
+    uranie: '[URANIE](https://sourceforge.net/projects/uranie)'
+    pyqt5: '[PyQt5](https://pypi.org/project/PyQt5)'
+    pandas: '[PANDAS](http://pandas.pydata.org/docs/getting_started/index.html)'
+    matplotlib: '[MATPLOTLIB](http://matplotlib.org)'

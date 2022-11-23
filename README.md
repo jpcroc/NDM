@@ -9,10 +9,10 @@
 
 ### Overview
 
-``NDM`` is TODO with levels:
-* TODO
+``NDM`` is fortran code computing empirical potential molecular dynamics (dynamique moléculaire en potentiels empiriques)
+* etc TODO
 
-See [TODO get rapport ndm jpc](https://hal.archives-ouvertes.fr/hal-02869549/document)
+See [NDM TODO better introduction](https://inis.iaea.org/collection/NCLCollectionStore/_Public/37/064/37064766.pdf)
 
 
 NDM is built around
@@ -37,7 +37,7 @@ git clone --branch ndm2021_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/
 
 Compilation instructions are provided in the documentation included in the
 distribution repository
-- markdown file [README_ndm_compilation.md](READMES/README_ndm_compilation.md)
+- file [README_ndm_compilation.md](READMES/README_ndm_compilation.md)
 
 Also see TODO
 - github documentation [ndm-docs TODO](https://jpc.github.io/ndm-docs/contents/installation.html).
@@ -45,6 +45,8 @@ Also see TODO
 
 ### Integration Tests TODO
 
-Are big, located in a separate git repository TODO.
+- Data are small,
+  located at [NDM/examples directories](https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM) branch `ndm2021_cv`.
 
-- https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM_TESTS.git
+- Data are big,
+  located in a [NDM_TESTS separate git repository](https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM_TESTS.git) TODO.

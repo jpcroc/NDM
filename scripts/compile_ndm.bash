@@ -6,7 +6,8 @@
 source utils_ndm.bash
 # set -x for script debug
 
-function f_setenv_ndm_wambeke {
+function f_setenv_ndm_wambeke
+{
   # as van wambeke example of ndm compilation directories: all under $NDM_ROODIR
   # export NDM_ROODIR="/volatile2/${USER}/MLD"  # something like that
   in_green "f_setenv_ndm_wambeke"

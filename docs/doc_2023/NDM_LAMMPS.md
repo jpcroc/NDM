@@ -1,3 +1,9 @@
+
+## NDM and LAMMPS
+
+TODO traduction and formattage
+
+```
 NDM peut utiliser lammps comme subroutine de forces et contraintes.
 
 utilise liblammps_serial.a
@@ -12,7 +18,7 @@ OU
 ipotentiel =-11 potentiel lammps à charge variable
 Ce choix joue sur les fichiers data et sur les fichiers potentiels
 
-Préciser units_lammps (e.g. units_lammps='metal') définit les changements d'unités entre lammps et NDM 
+Préciser units_lammps (e.g. units_lammps='metal') définit les changements d'unités entre lammps et NDM
 2/potentiel dans NDM : simple.potin
 exemple ipotentiel =-10
 1 ! nb de types
@@ -22,19 +28,19 @@ exemple ipotentiel =-11 (avec la charge initiale en plus)
  2 ! nb de types
 11.0 rue
 15.9994 8.0 'O ' -1.613626              ! CM, numero atomique(O), ty, Q
-238.03  92.0 'U'  3.227252 
+238.03  92.0 'U'  3.227252
 
 3/NDM va créer un fichier conf.lmp avec la configuration de départ à partir de .gin ou .cin
 
 4/ IL faut avoirun fichier in.lammps avec la description minimale de la configuration de lammps. Exemple:
 units		metal
-atom_style      atomic	
+atom_style      atomic
 atom_modify     map array
 box tilt large
 read_data        conf.lmp
 mass       1  55.84500
 pair_style	eam/alloy
-pair_coeff      * *        M07_eam.fs Fe 
+pair_coeff      * *        M07_eam.fs Fe
 
 5/ in .lammps contient le nom du fichier de potentiel (ici M07_eam.fs ) qui doit être présent.
 
@@ -49,3 +55,5 @@ N.B. Pour les contraintes , on a été obligé de coder en dur la dimension du t
        return
     endif
     Ca n'est pas glorieux mais ça marche...
+
+```
