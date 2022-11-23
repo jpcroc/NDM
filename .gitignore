@@ -4,6 +4,7 @@
 *.res
 *.exe
 *.mod
+*.tmp
 *.o
 *~
 #*#
@@ -22,5 +23,3 @@ __pycache__
 */CTestTestfile.cmake
 */DartConfiguration.tcl
 */nmd_tests
-
-

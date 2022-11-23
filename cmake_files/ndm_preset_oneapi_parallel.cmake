@@ -11,13 +11,13 @@ message("PRESET:   use ndm_preset_oneapi_parallel.cmake")
 set(CMAKE_Fortran_COMPILER "mpiifort" CACHE STRING "$FC user choice fortran compiler f95 gfortran ifort ... mpifort ..." FORCE)
 
 # NDM usual preset variables
-set(NDM_TYPE "INTEL" CACHE STRING "GNU or MIX or INTEL" FORCE)
+set(NDM_TYPE "INTEL" CACHE STRING "GNU or INTEL" FORCE)
 set(NDM_BUILD_TYPE "Release" CACHE STRING "NDM for $CMAKE_BUILD_TYPE Release or Debug" FORCE)
 set(NDM_WITH_MPI "on" CACHE BOOL "Compilation serial as 'off', parallel as 'on'" FORCE)
 
 # set by user configuration before
 if( NOT DEFINED ENV{I_MPI_ROOT} )
-  message(FATAL_ERROR "\nEnv var oneapi I_MPI_ROOT unknown.\nUse 'TODO module load mpi/openmpi-x86_64' (to get for example /usr/lib64/openmpi)" )
+  message(FATAL_ERROR "\nEnv var oneapi I_MPI_ROOT unknown.\n Try 'source oneapi/setvars.sh --config=NDM/READMES/config_setvars_oneapi.default'" )
 endif()
 set(NDM_MPI_INSDIR $ENV{I_MPI_ROOT} CACHE STRING "NDM with MPI" FORCE)
 

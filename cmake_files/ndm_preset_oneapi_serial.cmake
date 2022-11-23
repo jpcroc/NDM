@@ -11,7 +11,7 @@ message("PRESET:   use ndm_preset_oneapi_serial.cmake")
 set(CMAKE_Fortran_COMPILER "ifort" CACHE STRING "$FC user choice fortran compiler f95 gfortran ifort ... mpifort ..." FORCE)
 
 # NDM usual preset variables
-set(NDM_TYPE "INTEL" CACHE STRING "GNU or MIX or INTEL" FORCE)
+set(NDM_TYPE "INTEL" CACHE STRING "GNU or INTEL" FORCE)
 set(NDM_BUILD_TYPE "Release" CACHE STRING "NDM for $CMAKE_BUILD_TYPE Release or Debug" FORCE)
 set(NDM_WITH_MPI "off" CACHE BOOL "Compilation serial as 'off', parallel as 'on'" FORCE)
 

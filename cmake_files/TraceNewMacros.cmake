@@ -1,6 +1,9 @@
 
 # utilities trace and color and log
-
+# https://cmake.org/cmake/help/v3.0/command/message.html
+# The CMake command-line tool displays STATUS to TRACE messages on stdout
+# with the message preceded by two hyphens and a space.
+# All other message types are sent to stderr and are not prefixed with hyphens.
 
 # function to print all current variables contents
 function(printCmakeTrace)

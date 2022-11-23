@@ -3,7 +3,7 @@
 # milady compilation etc, as bash functions
 # cd .../MILADY/scripts && source ./compilation_milady.bash
 
-source utils_milady.bash
+source utils_ndm.bash
 # set -x for script debug
 
 function f_setenv_milady_wambeke {
@@ -258,16 +258,9 @@ function f_make {
   make -j${MLD_NPROC}  # 10
 }
 
-function f_test_gnu_is221713 {
-  # cd /volatile2/wambeke/ttmp/Tests/NDM_2020/md_cg_ml
-  cd /volatile2/wambeke/ttmp/Tests/train_tests/fit08
-  which mpirun
-  mpirun -np 2 /volatile2/MILADY/MILADY_SANDBOX/wambeke/build/bin/milady_main.exe
-  cd /volatile2/MILADY/MILADY_SANDBOX/wambeke/build
-}
 
 function f_only_one_test {
-  in_red 'only launch one test (for example)'
+  in_red 'only launch one test (for example) TO'
   in_green 'cd ${MLD_TESDIR}/NDM_2020/md_cg_ml'
   in_green 'mpirun -np 2 ${MLD_BUIDIR}//bin/milady_main.exe'
   in_green 'cd ${MLD_BUIDIR  # as you want'
@@ -483,5 +476,5 @@ function f_help_end_compile {
   in_green '  f_ctest_milady and f_python_tests_milady\n'
 }
 
-source utils_milady.bash
+source utils_ndm.bash
 # f_help_end_compile

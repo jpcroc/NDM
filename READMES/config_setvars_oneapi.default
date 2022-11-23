@@ -1,0 +1,4 @@
+default=exclude
+compiler=latest
+mkl=latest
+itac=latest

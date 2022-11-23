@@ -39,12 +39,10 @@ envs -p NDM_
 # preset.cmakes files makes this important fortran compiler choice useless
 unset FC
 
-cd ${NDM_ROODIR}
-rm -rf ${NDM_BUIDIR}
-rm -rf ${NDM_INSDIR}
-mkdir ${NDM_BUIDIR}
-
+cd ${NDM_ROODIR} ; rm -rf ${NDM_BUIDIR} ; rm -rf ${NDM_INSDIR} ; mkdir ${NDM_BUIDIR}
 cd ${NDM_BUIDIR}   # important
+
+# you could append 'cmake -DCMAKE_VERBOSE_MAKEFILE=on ...''
 
 ###### GNU serial
 cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR}
@@ -183,12 +181,10 @@ Using '--force' can result in excessive use of your environment variables.
 # preset.cmakes files makes this important fortran compiler choice useless
 unset FC
 
-cd ${NDM_ROODIR}
-rm -rf ${NDM_BUIDIR}
-rm -rf ${NDM_INSDIR}
-mkdir ${NDM_BUIDIR}
-
+cd ${NDM_ROODIR} ; rm -rf ${NDM_BUIDIR} ; rm -rf ${NDM_INSDIR} ; mkdir ${NDM_BUIDIR}
 cd ${NDM_BUIDIR}   # important
+
+# you could append 'cmake -DCMAKE_VERBOSE_MAKEFILE=on ...''
 
 ###### intel serial
 cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_serial.cmake -S ${NDM_SRCDIR}
