@@ -38,9 +38,9 @@ contains
     class(box_config)::box
     integer,intent(in)::rgem
     real(double)::atl(3,3)
-    integer::tag=677
+!    integer::tag=677
     atl=box%at(:,:)
-    call mpic%recv(atl,rgem,tag)
+    call mpic%recv(atl,rgem)
     select type(box)
     type is  (box_config_lpr)
        call mpic%recv(box%hdot,rgem)
@@ -54,9 +54,9 @@ contains
     class(box_config),intent(in)::box
     integer,intent(in)::rgcib
     real(double)::atl(3,3)
-    integer::tag=676
+!    integer::tag=676
     atl=box%at(:,:)
-    call mpic%send(atl,rgcib,tag)
+    call mpic%send(atl,rgcib)   
     select type(box)
     type is  (box_config_lpr)
        call mpic%send(box%hdot,rgcib)
@@ -213,13 +213,15 @@ contains
 !!$    return
 !!$  end subroutine boxconfig2ndm
 
-  subroutine boxprint(boxprt,unit)
+  subroutine boxprint(boxprt,unit,mess)
     class(box_config),intent(in)::boxprt
     integer,optional::unit
+    character(len=*),optional::mess
     integer::unitw
     unitw=6
     if (present(unit))unitw=unit
-     write(unitw,*)'boxprt at',boxprt%at(:,:)
+    write(unitw,*)'in boxprint ',mess
+    write(unitw,*)'boxprt at',boxprt%at(:,:)
      write(unitw,*)'boxprt bg',boxprt%bg(:,:)
      write(unitw,*)'boxprt volu',boxprt%volu
      write(unitw,*)'boxprt icaltabt',boxprt%icaltabt

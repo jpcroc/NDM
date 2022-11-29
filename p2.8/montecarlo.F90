@@ -222,7 +222,7 @@ contains
     logical :: lchange,ldistrib,lcalc
     CHARACTER(len=89) :: fnamread
     real(double), dimension(2,22):: pot_cumul ! pour le calcul du pot chimique
-    type(box_config)::boxdum
+
 
     real(double) :: travail_prec
     integer :: dir_prec
@@ -362,7 +362,6 @@ contains
        call lambda(direction, nstep = 0, protocol_name = 'MCP') !initialisation dulambda a 0 pour le premier melange des forces
        iloc=1;lchange=.false.;ldistrib=.true.
        call calfoMCGC(iloc,lchange,ldistrib)
-
        ! a la fin de lrestart, tous les procs ont N et N+1 courants pareil + old0 et old1 sont connus + Wprec + direction 
        ! de meme que les proba ont ete calculees
 
@@ -416,6 +415,9 @@ contains
 
              call lambda(direction, nstep = 0, protocol_name = 'MCP') !initialisation du lambda a 0 pour le premier melange des forces
              iloc=1;lchange=.false.;ldistrib=.true.
+!!$             write(300+rang,*)'call calfo init'
+!!$             call boxmcgc_p%print(unit=300+rang)
+
              call calfoMCGC(iloc,lchange,ldistrib)
 
              !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
@@ -509,16 +511,28 @@ contains
              boxmcgcpath(ipp)=boxmcgcpath(ipch)
           end do
 
-
           W = WEff !avec le bon signe
           !W = Work
           Wprec = + W
           Wprecedent = Wprec
           if (lmegamaster) write(*,*) 'W0',W*erg2eV
 
-
-
        end if! sur bigmaster
+
+       if (lmaster) then ! on est dans l'un des 2 masters
+
+          call boxmcgcpath(1)%master2slave(0,paramcgc%mpi_master)
+          boxmcgcpath(:)=boxmcgcpath(1)
+          rgcib=1;rgem=0
+          if(paramcgc%image==0) then !on est dans le master général
+             call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
+          else !on est dans le master de N+1
+             call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
+          end if
+
+       end if
+
+       
        direction = 1 - idirectionmcgc !=0 si le premier pas était un retrait, =1 si le premier pas 
     end if !if sur lrestart
 
@@ -543,7 +557,6 @@ contains
        call mpi_world%barrier
 #endif
 
-       !       if (lmegamaster) write(6,*)'PATH',i_path,direction
        Weff_npp(:)=0
        pot_npp(:)=0
        if (lmegamaster)then
@@ -562,14 +575,24 @@ contains
           if (direction == 0) then
              call config_atom_n(ipch)%copy_config(config_atom_new_0, lrescl=.true.)
              box_new0=boxmcgcpath(ipch)
+             boxmcgcpath(:)=boxmcgcpath(ipch)
           endif
           if (direction == 1) then
              call config_atom_nplus1(ipch)%copy_config(config_atom_new_1, lrescl=.true.)
-             box_new1=boxmcgcpath(ipch)             
+             box_new1=boxmcgcpath(ipch)
+             boxmcgcpath(:)=boxmcgcpath(ipch)
           endif
 
        end if !if lbigmaster
+!!$       write(300+RANG,*)'I_PATH',i_path
        do ipp=1,nparapath
+          !write(200+rang,*)'IPPP2',ipp
+          !call boxmcgcpath(ipp)%print(unit=200+rang)
+#ifdef PARA
+          if (lparapath) then
+             call boxmcgc_p%master2slave(0,paramcgc%mpi_master)
+          end if
+#endif
           lcalc=.false.
           if (lparapath) then
              if (parapath%image+1==ipp) lcalc=.true.
@@ -586,15 +609,7 @@ contains
              boxmcgc_p=>boxmcgcpath(ipp)
 
              !choisir l'at a retirer ou ajouter + preparation des syst N et N+1 pour etre prets pour le langevin (cad decoupage cellules + calcul forces + melange des forces - se fait dans cette sous routine)
-             !write(*,*) 'couN', atconf_n%icaltabt, cells_n%icaltabt
-             !write(*,*) 'couN+1', atconf_nplus1%icaltabt, cells_nplus1%icaltabt
-
              call ajout_retrait(direction,ipp)
-             !             write(6,*)'CALC3',rang,ipp,i_path
-
-             !write(*,*) 'coucouN', atconf_n%icaltabt, cells_n%icaltabt
-             !write(*,*) 'coucouN+1', atconf_nplus1%icaltabt, cells_nplus1%icaltabt
-
              ! pas de langevin
              if (lprahman) then
                 call langevinLPR(direction, protocol = 'MCP')
@@ -1310,7 +1325,7 @@ contains
              iplus=i+atconf_n%im
              atconf_nplus1%xp(1:3,iplus) = cart_vec_nplus1(1:3,i)
              atconf_nplus1%fp(1:3,iplus) = 0
-             atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
+!             atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
              atconf_nplus1%ityp(iplus) = itypcalc
              atconf_nplus1%ielat(iplus) = -1
              nag=maxval(atconf_Nplus1%num_at_glob(1:iplus-1))
@@ -1331,10 +1346,11 @@ contains
        end if
 #endif
 
-
        iloc=1;lchange=.false.;ldistrib=.true.
+!!$       write(300+rang,*)'call calfo ajout'
+!!$       call boxmcgc_p%print(unit=300+rang)
+       
        call calfoMCGC(iloc,lchange,ldistrib)
-
 
     end if
 
@@ -1391,6 +1407,8 @@ contains
        end if
 #endif
        iloc=1;lchange=.false.;ldistrib=.true.
+!!$       write(300+rang,*)'call calfo retrait'
+!!$       call boxmcgc_p%print(unit=300+rang)
        call calfoMCGC(iloc,lchange,ldistrib)      
 
 
@@ -2022,13 +2040,13 @@ contains
           END DO
           ! step 2  Coordinate update, x(t)-> x(t+dt)
           DO i=1, atconf_Nplus1%im
-             atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
+!             atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
              atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
           END DO
 
           !recopier les nouvelles positions dans le syst N
           DO i=1, atconf_N%im
-             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
+!             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
              atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
           END DO
@@ -2239,7 +2257,7 @@ contains
           iplus=i+atconf_n%im
           atconf_nplus1%xp(1:3,iplus) = cart_vec_nplus1(1:3,i)
           atconf_nplus1%fp(1:3,iplus) = 0
-          atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
+!          atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
           atconf_nplus1%ityp(iplus) = itypcalc
           atconf_nplus1%num_at_glob(iplus) = iplus
           atconf_Nplus1%proba_ins = pins
@@ -2541,13 +2559,14 @@ contains
     end if
 
 #ifdef PARA
-
+    
+!    write(300+rang,*)'calfo',iloc
+!    call boxmcgc_p%print(unit=300+rang)
     if(paramcgc%image==0) then !procs N
        if (iloc==1) call initloc(atconf_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc_p,paramcgc,rumax,lperiod&
             &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois,lboxchange=lprahman) !initloc contient caltabtc sur atloc
        call pointer_caltabt_calfo(sig_n,potist_n,atconf_n,cells_n,boxmcgc_p,atmcgcloc,cellmcgcloc,paramcgc,&
             &lperiod,lupdate=lchange,psc=pscgc,lcalcvois=lcalcvois,lboxchange=lprahman)
-
     else !procs N+1
        if (iloc==1)call initloc(atconf_nplus1,cells_nplus1,atmcgcloc,cellmcgcloc,boxmcgc_p,paramcgc,rumax,&
             &lperiod,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois,lboxchange=lprahman) !initloc contient caltabtc sur atloc
@@ -2924,15 +2943,15 @@ contains
           ! Tenseur h à l'instant t+dt
           boxmcgc_p%h(:,:) = boxmcgc_p%h(:,:) + boxmcgc_p%hdot(:,:)*tstep*ihbox0(:,:)
           ! Coordonnées réelles à l'instant t+dt
-          atconf_Nplus1%xpp(:,1:atconf_Nplus1%im) = atconf_Nplus1%xp(:,1:atconf_Nplus1%im)
+!          atconf_Nplus1%xpp(:,1:atconf_Nplus1%im) = atconf_Nplus1%xp(:,1:atconf_Nplus1%im)
           atconf_Nplus1%xp(:,1:atconf_Nplus1%im) = MatMul( boxmcgc_p%h, sp(:,1:atconf_Nplus1%im) )
           call updatebox(boxmcgc_p,boxmcgc_p%h)
           atconf_Nplus1%vp(:,1:atconf_Nplus1%im) = MatMul( boxmcgc_p%h(:,:), sdot(:,1:atconf_Nplus1%im) ) ! retour à vp car transfert d'atomes  dans scalebox en PARA
-
           CALL ScaleBox(atconf_Nplus1,cells_nplus1,boxmcgc_p,pscgc)
+
           !recopier les nouvelles positions dans le syst N
           DO i=1, atconf_N%im
-             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
+!             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
              atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
           END DO
@@ -2965,6 +2984,9 @@ contains
        end if
 #endif        
        iloc=0;ldistrib=.false.;lchange=.true.
+!!$       write(300+rang,*)'call langevinLPR'
+!!$       call boxmcgc_p%print(unit=300+rang)
+    
        call calfoMCGC(iloc,lchange,ldistrib)
        call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
        if (lbigmaster) then

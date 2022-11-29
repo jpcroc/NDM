@@ -325,7 +325,7 @@ contains
        call cryst_to_cart (iml, xpnp, boxcf%bg, -1) ! cart vers cryst
        if (any(xpnp(:,1:iml).gt.1).or.any(xpnp(:,1:iml).lt.0)) then
           do i=1,iml
-             write(6,*) i,xpnp(:,i)
+             if (any(xpnp(:,i).gt.1).or.any(xpnp(:,i).lt.0))  write(6,*) i,xpnp(:,i)
           end do
           write(6,*)'caltabtc xpnp <0 ou >1 stop'
           call arret_ndm
@@ -547,13 +547,14 @@ contains
   end subroutine copy
 
 
-  subroutine cellprint(cellv,unit)
+  subroutine cellprint(cellv,unit,mess)
     class(cell_config)::cellv
     integer,intent(in),optional::unit
     integer::i,ic,un
+    character(len=*),optional::mess
     un=6
     if (present(unit))un=unit
-    write(un,*)'in cellprint'
+    write(un,*)'in cellprint ',mess
     write(un,*)'nox noy noz noxyz',cellv%nox,cellv%noy,cellv%noz,cellv%noxyz
     write(un,*)'natperc',cellv%natperc
     write(un,*)'celsize',cellv%celsize
