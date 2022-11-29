@@ -12,6 +12,7 @@ nohup.out
 a.out
 
 build
+_build
 install
 Testing
 __pycache__

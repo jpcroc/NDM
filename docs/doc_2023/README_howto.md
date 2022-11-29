@@ -35,6 +35,10 @@ envs -e PATH
 
 ```
 
+Create your customized python environment from scratch.
+
+- See [conda getting started](http://conda.io/projects/conda/en/stable/user-guide/getting-started.html)
+
 
 ### Execute an howto example
 

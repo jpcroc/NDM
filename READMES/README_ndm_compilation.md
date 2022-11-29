@@ -21,8 +21,11 @@ module load mpi/openmpi-x86_64
 ### example compile GNU serial or parallel
 
 ```
+bash   # useful to rewind clean environment with exit
+
 hostname  # is246206.intra.cea.fr
 whoami    # wambeke
+
 export NDM_ROODIR=/export/home/catA/wambeke/NDM_ROODIR
 cd ${NDM_ROODIR}
 # git clone --branch ndm2021_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/ndm/NDM.git NDM
@@ -31,16 +34,29 @@ export NDM_SRCDIR=${NDM_ROODIR}/NDM
 export NDM_BUIDIR=${NDM_ROODIR}/ndm_build_gnu
 export NDM_INSDIR=${NDM_ROODIR}/ndm_install_gnu
 
-bash   # useful to rewind clean environment with exit
-
 export PATH=${NDM_SRCDIR}/scripts:${PATH}  # to get NMD/scripts
 envs -p NDM_
+
+function f_cmake_clean_doc {
+  rm -rf ${NDM_SRCDIR}/docs/doc_2023/_build
+  rm -rf ${NDM_SRCDIR}/docs/doc_2023/_tmp
+  rm -rf ${NDM_SRCDIR}/docs/doc_2023/__pycache__
+  tree -d ${NDM_SRCDIR}/docs
+}
+
+function f_cmake_clean {
+  f_cmake_clean_doc
+  cd ${NDM_ROODIR}
+  rm -rf ${NDM_BUIDIR}
+  rm -rf ${NDM_INSDIR}
+  mkdir ${NDM_BUIDIR}
+  cd ${NDM_BUIDIR}   # important
+}
 
 # preset.cmakes files makes this important fortran compiler choice useless
 unset FC
 
-cd ${NDM_ROODIR} ; rm -rf ${NDM_BUIDIR} ; rm -rf ${NDM_INSDIR} ; mkdir ${NDM_BUIDIR}
-cd ${NDM_BUIDIR}   # important
+f_cmake_clean   # important
 
 # you could append 'cmake -DCMAKE_VERBOSE_MAKEFILE=on ...''
 
@@ -53,6 +69,9 @@ if [ -z "${MPI_BIN}" ] ; then
   module load mpi/openmpi-x86_64
 fi
 
+# compile docc
+# f_cmake_clean ; cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR} 2>&1 | grep jupy
+# compile ndm
 cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_parallel.cmake -S ${NDM_SRCDIR}
 
 ccmake .  # use it only for display
@@ -100,6 +119,8 @@ Do it Before
 
 
 ```
+bash   # useful to rewind clean environment with exit
+
 # oneapi installation dir for is246206
 export NDM_OAP_ROODIR=/export/home/catA/intel
 export NDM_OAP_INSDIR=${NDM_OAP_ROODIR}/oneapi
@@ -110,8 +131,6 @@ export NDM_BUIDIR=${NDM_ROODIR}/ndm_build_intel
 export NDM_INSDIR=${NDM_ROODIR}/ndm_install_intel
 
 cd ${NDM_ROODIR}
-
-bash   # useful to rewind clean environment with exit
 
 export PATH=${NDM_SRCDIR}/scripts:${PATH}  # to get NMD/scripts
 envs -p NDM_

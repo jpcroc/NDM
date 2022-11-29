@@ -1,24 +1,3 @@
-################################################################################################
-# thanks to
-# https://stackoverflow.com/questions/52712416/cmake-fortran-module-directory-to-be-used-with-add-library
-# https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/languages/fortran/ForFortranExample
-# https://gitlab.com/CLIUtils/modern-cmake/-/blob/master/examples/extended-project/CMakeLists.txt
-# https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-link-line-advisor.html
-#
-# all NDM_xxx vars are for EZ cmake resume debug with something as
-# cmake3 -S${NDM_SRCDIR} -DCMAKE_BUILD_TYPE=Release -DNDM_OPT_TRACE=ON 2>&1 | grep "TRACE:" | grep "NDM_"
-#
-# cd ${NDM_BUIDIR}
-# cmake3 -S<path-to-source> -B<path-to-build>
-# cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR}
-# cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_parallel.cmake -S ${NDM_SRCDIR}
-# cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_serial.cmake -S ${NDM_SRCDIR}
-# cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_parallel.cmake -S ${NDM_SRCDIR}
-#
-# cmake --build . --target all --parallel 15
-# cmake --build . --target install
-# cmake --build . --target test
-################################################################################################
 
 CMAKE_minimum_required( VERSION 3.17 )
 
@@ -42,6 +21,8 @@ include( TraceNewMacros )
 include( CTest )
 setcolors()
 
+
+log_info( "cmake in ${PROJECT_SOURCE_DIR}" )
 log_info( "CMAKE_MODULE_PATH : ${CMAKE_MODULE_PATH}" )
 
 
@@ -115,30 +96,6 @@ else()
   set( NDM_MPI_RESUME "SERIAL")
 endif()
 
-# find_package(MKL REQUIRED) # because not found on irene...
-# find_package(MKL)
-# include_directories( SYSTEM ${MKL_INCLUDE} )
-
-
-# If you want yo use Intel MPI with Intel Fortran compiler, the wrapper is mpiifort.
-# If you want to use an other MPI (such as Open MPI) with use mpi
-# then you likely need to rebuild the MPI library because Fortran modules
-# are not interoperable between vendors,
-# and sometimes not even different compiler versions of the same vendor.
-# I strongly discourage you to use ifort and manually set the include and library path.
-
-
-if( NDM_OPT_COMPILE_DOC )
-  find_package( Doxygen )  # TODO Sphinx instead
-  if (Doxygen_FOUND)
-    # TODO to make doc ?
-    log_info( "add_subdirectory docs" )
-    add_subdirectory( docs )
-  else()
-    log_warning( "Doxygen not found, not building docs" )
-  endif()
-endif()
-
 # before all cmake default installation
 # get_filename_component( default_prefix ".." ABSOLUTE )
 set( default_prefix ${NDM_ROODIR} )
@@ -179,8 +136,6 @@ if (NOT CMAKE_BUILD_TYPE)
        FORCE )
 endif()
 
-
-# FFLAGS depend on the compiler
 get_filename_component( Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME )
 log_info( "CMAKE_Fortran_FLAGS_RELEASE default : ${CMAKE_Fortran_FLAGS_RELEASE}" )
 log_info( "CMAKE_Fortran_FLAGS_DEBUG   default : ${CMAKE_Fortran_FLAGS_DEBUG}" )
@@ -210,7 +165,7 @@ log_title( ${NDM_RESUME} )
 # add_compile_definitions(PARA=1)
 # add_compile_definitions(PARAM=1)
 
-# may be #ifdef/#ifndef or #if, TODO have to be homogenous with LAMMPS or MILADY
+# may be #ifdef or #ifndef or #if  TODO have to be homogenous with LAMMPS or MILADY
 if ( NDM_WITH_MPI STREQUAL "on")
   #add_compile_definitions(ML=0)
   add_compile_definitions(PARAML=1)
@@ -220,14 +175,11 @@ else()
   #add_compile_definitions(ML=1)
   log_warning( "add_compile_definitions : SERIAL" )
 endif()
-
-
 log_info( "CMAKE_Fortran_FLAGS_RELEASE current : ${CMAKE_Fortran_FLAGS_RELEASE}" )
 log_info( "CMAKE_Fortran_FLAGS_DEBUG   current : ${CMAKE_Fortran_FLAGS_DEBUG}" )
 
 # setenv.bash to set environ to use code ouside cmake/make
 configure_file(ndm_setenv.bash.in ndm_setenv.bash @ONLY NEWLINE_STYLE UNIX )
-# TODO if windows is a .bat
 
 
 ################################################
@@ -236,7 +188,6 @@ configure_file(ndm_setenv.bash.in ndm_setenv.bash @ONLY NEWLINE_STYLE UNIX )
 set( CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod )
 set( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin )
 
-
 if( NOT NDM_OPT_COMPILE_ONLY_CTESTS )
   log_warning( "add_subdirectory src" )
   add_subdirectory( src )
@@ -244,6 +195,18 @@ endif()
 
 log_warning( "add_subdirectory tests" )
 add_subdirectory( tests )
+
+if( NDM_OPT_COMPILE_DOC )
+  find_program( NDM_JUPYTER_BOOK NAMES jupyter-book DOC "jupyter-book build executable")
+  if ( NDM_JUPYTER_BOOK )
+    log_warning( "add_subdirectory docs" )
+    add_subdirectory( docs )
+  else()
+    log_warning( "prerequisite jupyter-book not found, not building docs" )
+  endif()
+else()
+  log_info( "cmake option NDM_OPT_COMPILE_DOC ${NDM_OPT_COMPILE_DOC}, not building docs" )
+endif()
 
 add_custom_target(copy_all ALL)
 
@@ -259,7 +222,6 @@ foreach( adir ${NDM_COPY_DIRS} )
   # to install dir
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${adir} DESTINATION ${CMAKE_INSTALL_PREFIX}/${adir})
 endforeach()
-
 
 
 # resume TRACE log
