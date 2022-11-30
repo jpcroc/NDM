@@ -106,7 +106,6 @@ contains
 
 #ifdef PARA
 
-
           if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              call comm_space%sum(sigkine)
              if (allocated(celndm%sigc)) then
@@ -118,6 +117,7 @@ contains
        end if
        call analyseT (atdml,celndm,boxndm,psc)
        call controleT(atdml,celndm,boxndm,psc,lreturn)
+       call comm_space%barrier
        if (lreturn) return
 
     end do

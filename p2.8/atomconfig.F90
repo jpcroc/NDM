@@ -779,13 +779,13 @@ contains
 
   end subroutine pack
 
-  subroutine fab (atsource,atcible,lback,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
+  subroutine fab(atsource,atcible,lback,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
     class(atom_config),intent(in)::atsource
     class(atom_config),intent(out)::atcible
     logical::lback
     logical, optional::lrescl
     logical::lrescale=.true.
-    integer::i2,imtrf,i
+    integer::i2,imtrf,i,immtrf
     integer::nvois
     real(double)::rvois
 
@@ -799,12 +799,16 @@ contains
           nvois=0;rvois=0
        end if
        imtrf=COUNT(atsource%lgul(1:atsource%im))
-
+       if (imtrf==0) then
+          immtrf=1
+       else
+          immtrf=imtrf
+       end if
        call atsource%Eegal(atcible)
        call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
     end if
 
-       call atcible%zero
+    call atcible%zero
     i2=0
     do i=1,atsource%im
        if(atsource%lgul(i)) then

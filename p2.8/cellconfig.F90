@@ -303,7 +303,10 @@ contains
     cell%atincel(1:cell%natperc,1:cell%noxyz) = 0
     
     !  -------- cas sans cellule  -----------
-
+    if (atcf%im==0) then
+       cell%nato(:)=0
+       goto 101
+    end if
     if (cell%noxyz==1) then
        cell%nato(1) = iml
        do i = 1, iml
@@ -403,6 +406,7 @@ contains
 !!$write(6,*)'sortie caltabt'     ! DEBUG
 
     !      write(6,*)'maxnato', maxval(cell%nato)
+101 continue
     cell%icaltabt=icaltabt
     atcf%icaltabt=icaltabt
     boxcf%icaltabt=icaltabt

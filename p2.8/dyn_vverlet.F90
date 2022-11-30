@@ -94,7 +94,6 @@ contains
     jq=0.0
     if (itesigma>0) test_sigma=(mod(iteration,itesigma)==0)
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
-    
     if (l2t)then
        if (i2t==1)  call calceloss(celndm,atdml)
     else

@@ -142,6 +142,7 @@ contains
           !     allocate (tempcm(noxyz))
           cellcf%tempc(:)=0.
        endif
+       nat=0
        temp = 0.0
        kine = 0.0
        sumtat2 = 0.0
