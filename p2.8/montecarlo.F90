@@ -1989,7 +1989,7 @@ contains
        ENDDO
 
        call lambda(direc, ip, protocol)
-       lambda_mc = 0
+!       lambda_mc = 0
        U_l_n = (1.d0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
 
        H_l_ini = Ek_n + U_l_n 
@@ -2888,7 +2888,7 @@ contains
     DO ip = 1, pas_lambda_mc
        !incrémentation de lambda
        call lambda(direc,ip, protocol)
-       lambda_mc = 0
+!       lambda_mc = 0
        call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
        if (lbigmaster) then ! Master général
           Ek_n = 0.0
