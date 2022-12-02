@@ -44,7 +44,7 @@ contains
     !-----------------------------------------------
 
 
-    integer::i,j,j1,j2,j0,npr,k,nv1,iti
+    integer::i,j,j1,j2,j0,npr,k,nv1
     real(double)::vel,vel2,sp,vnlt,v1,f1
     !  real(double),parameter::clum=29979245800
     real(double), allocatable, dimension(:):: veloc, stoppow

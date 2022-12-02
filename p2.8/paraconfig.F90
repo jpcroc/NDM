@@ -41,9 +41,9 @@ contains
     integer, allocatable::rgmasters(:)
     integer::ierr,ip
 
-    integer::imt,imp,ipi,ipt,npi,npim,imasters,npm,reste,npr
+    integer::ipi,ipt,npi,npim,imasters,npm,reste,npr
     integer::clef, couleur,nimage,img,image
-    integer,allocatable::npimg(:),GL(:),CL(:),procim(:),ipimg(:,:)
+    integer,allocatable::npimg(:),GL(:),CL(:),ipimg(:,:)
     nimage=div%nimage
     if (div%nimage.gt.div%mpi_orig%nproc) then
        write(6,*)' division para impossible nimage > nprocs'

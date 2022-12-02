@@ -49,20 +49,17 @@ contains
     logical::laux
     integer::nauxV,nauxtot
     integer::ivisum
-    character*80::namef,nameo,end_name
-    integer :: rgloc,j,ic,e_c,e_c0
+    character*80::nameo,end_name
+    integer :: rgloc,j,ic
 
     character*3, dimension(:), allocatable  :: tyw
 
 #ifdef PARA
-    integer :: iproc
-    integer :: im_loc
-    integer :: proc_source
     type(para_config)::div
 
 #endif
     class(atom_config),allocatable::atcomp
-    integer :: i, luvisu, luvisu2, iti,lenfn2
+    integer :: i, luvisu, luvisu2,lenfn2
     real(double) :: xp1, xp2, xp3,at(3,3),bg(3,3),pat
     character :: extension*9
     integer::iax
@@ -540,7 +537,6 @@ contains
 
   subroutine openfilemol(luvisu,nameo,end_name,ext)
     integer,intent(in)::luvisu
-    integer::lenfn2
     character(len=*),intent(in)::nameo,end_name
     character(len=9),optional::ext
     logical::lopen

@@ -203,7 +203,6 @@ contains
   subroutine montecarlo
 
     implicit none
-    integer :: i,ic
     logical :: lextend
 
     integer :: direction
@@ -211,10 +210,10 @@ contains
     integer :: n_gen, n_gen_0, n_gen_1
     real(double) :: acceptance_rate, acceptance_rate_0, acceptance_rate_1
 
-    integer :: i_path,ipp,ipch,iplus
+    integer :: i_path,ipp,ipch
     real(double)::zr1,xp_np1(3)
 
-    integer :: n,iloc
+    integer :: iloc
     integer :: acceptation, test_acc
 
     real(double) :: W, Wprec, Wprecedent !sauvegarde Wprec pour posttraitement
@@ -229,7 +228,6 @@ contains
 
     real(double) :: travail_prec
     integer :: dir_prec
-    character(len=9) :: n_file
     !########################################################################################################################
     !                                             Initialisation
     !########################################################################################################################
@@ -970,7 +968,7 @@ contains
 
 
     real(double) :: biais
-    real(double) :: W, xprob, xalea
+    real(double) ::  xprob, xalea
     real(double) :: theta, beta,xp_np1(3)
     integer :: ipp
     real(double), dimension(nparapath+1) :: xprob_i

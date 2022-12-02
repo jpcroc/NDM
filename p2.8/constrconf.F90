@@ -39,9 +39,7 @@ contains
     logical::lrepart
     character(len=*),optional::filename
     character*80::filenom
-    integer :: i, icell, iti
-    type(box_config)::boxrgin
-    type(atom_config)::atrgin
+    integer :: i, iti
     type(para_space_config)::psc
     integer,      dimension(:), allocatable   :: num_at_buff
     integer, dimension(:),allocatable     :: ibuffer
@@ -250,7 +248,7 @@ contains
     type(atom_config)::atrgin
     type(box_config)::boxrgin
     real(double)::atg(3,3)
-    integer::lat(3),ic,ncore,npr,ierr,iti,itread
+    integer::lat(3),ic,ncore,itread,npr
     lrepart=.true.
     if(present(lrepartition))lrepart=lrepartition
     if (ldecoup) then
@@ -377,7 +375,7 @@ contains
     integer,intent(in)::lat(3)
     integer,intent(in),optional::imm
 
-    integer::i,ia,ib,ic,icell,imloc,ncore
+    integer::i,ia,ib,ic,icell,imloc
 
     real(double)::rvN
     logical :: lprteattrf
@@ -438,8 +436,8 @@ contains
     type(cell_config)::cellrep
     class(box_config)::boxrep
     integer,optional, dimension(:), allocatable   :: nab
-    integer::i,icomp,k,iti,im,ic,numcell,numproc,iun
-    real(double)::xt(3),xpici,cpp
+    integer::i,icomp,iti,im,numcell,numproc
+    real(double)::xt(3)
 
 #ifdef PARA  
 
@@ -498,14 +496,6 @@ contains
     integer, dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable    :: buffer
     real(double)::at(3,3)
-#ifdef PARA
-    integer,      dimension(ntyp)         :: na_loc
-
-    integer  :: pointeur_loc
-    integer  :: numcell, numproc
-    integer  :: i_glob
-    integer  :: cellx,celly,cellz
-#endif
     !      integer , dimension(imm,ntyp) :: fv
     !         integer , dimension(6000,10) :: fv    !Truc_bizarre_jmd
     integer::im_gr,i_loc
@@ -795,12 +785,9 @@ contains
 
     integer::itr=1
     !    real(double)::rumax_init,alpha_init
-    integer ,     dimension(:),   allocatable :: itypc
-    real(double), dimension(:,:), allocatable :: xc
-    real(double),dimension(:,:),allocatable :: tmpxc
     real(double)::at(3,3)
 
-    integer ::  lugin, imcell, la, lb, lc, icell,ic,i,ia,ib
+    integer ::  lugin, imcell, ic,i
 
     if(present(itread))itr=itread
     !  si coordonnees reduites

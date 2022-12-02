@@ -117,7 +117,6 @@ contains
     integer::nv
     logical ::ltbv,lrealloc
     real(double)::rv
-    integer::i
     
     nv=0 ;  if(present(nvois))nv=nvois
     rv=0;  if(present(rvois))rv=rvois
@@ -364,10 +363,10 @@ contains
     class(atom_config):: atcf
     type(mpi_communicator),intent(in)::mpic
     integer,intent(in)::rgcib
-    integer:: size1,size3,sizeV,size9
+    integer:: size1,size3,size9
     character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,csi,csr,csl
     integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -412,10 +411,10 @@ contains
     class(atom_config):: atcf
     type(mpi_communicator),intent(in)::mpic
     integer,intent(in)::rgem
-    integer:: size1,size3,sizeV,size9
+    integer:: size1,size3,size9
     character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,csi,csr,csl
     integer, dimension (0:26):: Ipos1,Iposf,Rpos1,Rposf,Lpos1,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -473,13 +472,13 @@ contains
     type(mpi_communicator),intent(in)::mpic
     class(atom_config)::atcf
     integer,intent(in)::rgemet
-    integer:: size1,size3,sizeV,size9
+    integer:: size1,size3,size9
     character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
     ! v=vp,r=xpp
     ! u=eat,g=glangv;a=ax;s=sigat    
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,csi,csr,csl
     integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -714,7 +713,6 @@ contains
     class(atom_config)::atsource
     class(atom_config),allocatable:: intermediaire
     integer :: ind_switch_1, ind_switch_2,nag1,nag2
-    logical :: lex = .true.
     call atsource%deftype(intermediaire)
     call intermediaire%init(imin=2)
     nag1=atsource%num_at_glob(ind_switch_1)
@@ -890,7 +888,6 @@ contains
     logical :: lext ! par defaut on etend atcible si besoin
 
     integer::i2,i,imcib,imnew,immcib,imsrc,immsrc,immnew
-    class(atom_config),allocatable:: atcor
     integer::nvois
     real(double)::rvois
     ldal=.false.
@@ -1323,9 +1320,9 @@ contains
     character(len=26)::carac
 
 #ifdef PARA
-    integer::idmaster,idloc,icomm ! proc master,proclocal ,communicateur
+    integer::idmaster,idloc ! proc master,proclocal 
 
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip,iag,itot
+    integer::sizeI,sizeR,sizel,csi,csr,csl
     integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -1337,8 +1334,8 @@ contains
     integer,allocatable::inag(:)
 
     integer,allocatable::nag(:)
-    integer::imloc,imloc3,iproc,imrecv,icomp,imrecv3,imrecv9,imloc9
-    integer::imcomp,imtot,proc_source,npim,iloc
+    integer::imloc,imloc3,iproc,imrecv,icomp,imloc9
+    integer::imtot,proc_source,npim,iloc
     logical,allocatable::mask(:)
     if (.not.present(caracT)) then
        carac='xfniewdlpvrugas'
@@ -1555,12 +1552,12 @@ contains
     ! v=vp,r=xpp
     ! u=eat,g=glangv;a=ax;s=sigat
 #ifdef PARA
-    integer::idmaster,idloc,icomm,npim ! proc master,proclocal ,communicateur
-    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3,imrecv9,icomp
-    integer::imcomp,imtot,proc_source,ns,iloc,i,iu
+    integer::idmaster,idloc,npim ! proc master,proclocal ,communicateur
+    integer::iproc,imrecv
+    integer::imcomp,imtot,ns,iloc,i
     logical,allocatable::mask(:)
 
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer::sizeI,sizeR,sizel,csi,csr,csl
     integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -1691,8 +1688,8 @@ contains
      character(len=26),intent(in)::carac
     integer,intent(in),optional::nmask
     integer::nmaskV
-    integer:: size1,size3,sizeV,size9,iat
-    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer:: size1,size3,sizeV,size9
+    integer::nvi,nvr,nvl
     !    integer, dimension (0:26):: Iposf,Rposf,Lposf
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
 
@@ -1827,7 +1824,7 @@ contains
 
    logical,allocatable :: mask(:)
     integer:: size1,size3,sizeV,size9,iat
-    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
+    integer::ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
     integer,intent(in),optional::nmask
     integer::nmaskV
 
@@ -2117,7 +2114,7 @@ contains
     real(double),allocatable,intent(in)::rbuffer(:)
 
     integer:: size1,size3,sizeV,size9
-    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
+    integer::ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
 
 
     size1=immax;size3=3*size1; size9=3*size3
@@ -2333,7 +2330,7 @@ contains
     real(double),allocatable,intent(in)::rbuffer(:)
 
     integer:: size1,size3,sizeV,size9
-    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip,icomp
+    integer::ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip,icomp
 
 
     size1=immax;size3=3*size1; size9=3*size3

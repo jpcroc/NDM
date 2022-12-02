@@ -103,7 +103,6 @@ contains
     real(double),intent(in),optional::at(3,3)
     real(double),optional,intent(in)::zl(3)
     integer,intent(in) ::ipbc(3)
-    integer::i,ic
     select type (boxnew)
     type is (box_config_lpr)
        boxnew%hdot=0
@@ -267,9 +266,8 @@ contains
      !-----------------------------------------------
      !   L o c a l   V a r i a b l e s
      !-----------------------------------------------
-     integer :: i, ic,icp!,nbing,ibing(100)
-     real(double)::dz,trav,ecav,ecap
-     real(double):: cpp,xpici,cppzl,ctest
+     integer :: i, ic
+     real(double):: cpp,xpici
      !      integer,save  :: iperiod
      !  if (rang==0) write(6,*)'PARA-T entree period'
 

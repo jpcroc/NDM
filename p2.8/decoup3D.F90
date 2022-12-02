@@ -12,11 +12,11 @@ contains
 
 #ifdef PARA
     USE mpi
-    USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config!,coord_max,coord_min
+    USE Tpara,only:MPI_COMM_space,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config!,coord_max,coord_min
 !    USE mod_para,only:res_cpu,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,nb_cell_x,nb_cell_y,nb_cell_z
 #endif
     USE Tpara,only:myidsp,nprocspace,para_space_config
-    USE gen_com_m, ONLY:imm_glob,rang,ldecoup,lsigat,lprteat,llangevin,lax
+    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
 
     use read_val,only:ltabvois
         type(para_space_config)::psc
@@ -30,7 +30,7 @@ contains
     integer:: nnoeuds,imm_loc
     integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
     integer :: num_sol !iteration du decoupage possible
-    integer :: test,ko
+    integer :: test
 
     integer::im0,nvois0
     integer, allocatable :: decoup(:,:) !tableau comprenant l'ensemble des decoupages 

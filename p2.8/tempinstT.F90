@@ -25,7 +25,6 @@ contains
     real(double),optional::kine
     logical,optional:: latcomp
     logical latc
-    real(double)::kinetot
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------

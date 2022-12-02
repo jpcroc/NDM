@@ -64,7 +64,7 @@ contains
 
     !parallelisation de ewald classique
 
-    integer :: nv,debv,finv,ii,l
+    integer :: debv,finv,ii
     real (double), dimension (3,3) :: sigep
     !  real(double), dimension (3,imm) :: fpewp
 

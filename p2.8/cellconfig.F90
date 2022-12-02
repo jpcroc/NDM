@@ -283,7 +283,7 @@ contains
     logical,intent(in),optional::lextr
     logical::lextrait=.false.
 
-    integer :: i, ic, icell, kx, ky, kz, koo
+    integer :: i,  kx, ky, kz, koo
     real(double) :: aux, auy, auz
     real(double), dimension(:,:), allocatable :: xpnp !
     integer(long), save:: icaltabt=0
@@ -557,7 +557,7 @@ contains
   subroutine cellprint(cellv,unit,mess)
     class(cell_config)::cellv
     integer,intent(in),optional::unit
-    integer::i,ic,un
+    integer::i,un
     character(len=*),optional::mess
     un=6
     if (present(unit))un=unit
@@ -595,7 +595,7 @@ contains
     class(cell_config)::cell
     type(mpi_communicator),intent(in)::mpic
     integer,intent(in)::rgcib
-    integer::nvi,nvr,sizeI,sizeR,ibi,ibr,nsize,ip,ip2,ip3
+    integer::sizeI,sizeR,ibi,ibr,nsize,ip,ip2,ip3
     integer,allocatable:: ibuffer(:)
     real(double),allocatable::rbuffer(:)
 

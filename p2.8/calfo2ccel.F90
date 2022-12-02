@@ -15,7 +15,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m , ONLY:lcalcjq,lperiod,pi,potis1,potis2,rang
+    USE gen_com_m , ONLY:pi,potis1,rang
     USE jqmod
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
@@ -27,10 +27,8 @@ contains
     type(cell_config),intent(in)::celcf
     type(box_config),intent(in)::boxcf
 
-    integer :: iti, l, i, koo, i1, ko1, j, i2, itj, k, &
-         ic, itimin,itimax
-    real(double) :: aux, alp, f1, f2, f3,  c1, c2&
-         , c3, c1p,c2p,c3p, sk, r, phu, c1abs,c2abs,c3abs,cv(1,3)
+    integer :: iti, l, i, koo, i1, ko1, j, i2, itj, k
+    real(double) :: aux, alp, f1, f2, f3, sk, r, phu
     real(double) :: dr,deltaepot,fcontr
     logical ::linter
     real(double)::dxp(3),gradij(3),sig2p(3,3)

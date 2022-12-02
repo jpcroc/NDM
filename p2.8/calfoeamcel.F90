@@ -15,10 +15,10 @@ contains
 
     USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rue_pot,&
          &typ_and_pot,typ_pot_pair,ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,&
-         &eamglue,alpha,zz,ntyp
+         &eamglue,alpha,ntyp
 
 #ifdef PARA
-    use Tpara,only:nprocspace,para_space_config,ierr,comm_space
+    use Tpara,only:nprocspace,para_space_config,comm_space
     USE mod_para,only:maj_tabdensity_ftm
 
 
@@ -43,17 +43,15 @@ contains
     integer :: k ! aux pour splines
 
 !    real(double) :: rue2 !coupure**2
-    REAL(double), dimension(1:3) :: cp, dxp, gradij
+    REAL(double), dimension(1:3) :: dxp, gradij
     real(double) :: r!distance i-j
-    real(double) :: Fij,cv(1,3)
     real(double) :: Eembi,dEembi ! potentiel et gradient de l'immersion
     real(double) :: rhoi,rhoj ! densite de i sur j et j sur i
     real(double) :: Erep,dErep ! potentiel et gradient de la repulsion de paire ij
     REAL(double) :: Femb
-    real(double) :: rk, drk,ktor, inv_ktor
+    real(double) ::  drk,ktor, inv_ktor
     real(double),dimension(:),allocatable::ktorho(:), inv_ktorho(:)
     real(double) :: densityi !densite totale sur i
-    integer :: izero
     real(double) :: tabdensity(atcf%imm)
     real(double)::rue,alp,aux
     logical ::linter

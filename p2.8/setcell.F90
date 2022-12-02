@@ -20,7 +20,7 @@ contains
     class(box_config),intent(in)::boxsn
     type(cell_config)::celsn
     real(double),intent(in)::rum
-    integer::izonr,ic
+    integer::izonr
     logical,intent(in),optional::lverbose
     logical::lverb=.true.
     real(double)::rut,zlmin,zlm2

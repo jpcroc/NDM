@@ -19,7 +19,7 @@ contains
     type(cell_config)::celsn
     class(atom_config)::atsn
     real(double),intent(in)::rum
-    integer::izonr,ic,izonr2,natperc,nox,noy,noz,nvois,nvperat
+    integer::izonr2,natperc,nox,noy,noz,nvois,nvperat
     real(double)::zlmin,zlm2,voluperat
     
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))

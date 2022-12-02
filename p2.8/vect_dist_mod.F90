@@ -6,6 +6,7 @@ module vect_dist_mod
   USE atomconfig,only:atom_config
   use cellconfig,only: cell_config
   use boxconfig,only:box_config
+  implicit none
 contains
   subroutine vect_dist(atcf,celcf,boxcf,i,j,VJI,indcv,lperiod,rum,dist,linter)
     class(atom_config),intent(in)::atcf
@@ -85,9 +86,9 @@ contains
     real(double),optional,intent(out)::dist ! distance minimel effective
     integer,intent(out),optional ::iclose !i= indice du plus proche
 
-    real(double)::xpnp(3,2),xp(3,2),cv(1,3),dx2(3),XJI(3)
+    real(double)::xpnp(3,2),xp(3,2),dx2(3),XJI(3)
     integer::ic,i
-    real(double)::distance
+    real(double)::distance,distance0
 
     if (((present(rumin)).and.(.not.(present(lclose)))).or.((present(lclose)).and.(.not.(present(rumin))))) then
        write(6,*)'incohérence dans appel a closest_at'

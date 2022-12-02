@@ -15,7 +15,7 @@ contains
     !tentative de calfoeam avec une seule grande boucle sur i
     USE T_kind_param_m
     USE var_pot, ONLY:ipotentiel,lforcetabulate,ngrid,potisglue,potisrep,rhomax,rhomin,eamrho,eamglue_d,&
-         &eamglue,ipo,eamrep,eamrep_d,eamrho_d,rue_pot,alpha,zz,ntyp
+         &eamglue,ipo,eamrep,eamrep_d,eamrho_d,rue_pot,alpha,ntyp
 
     USE jqmod
     implicit none
@@ -29,13 +29,13 @@ contains
     integer :: i,j !atomes
     integer ::iti,itj !types
     integer :: l !paires
-    integer::  iw1,iw2, iw,k,izero,icccc,ic!vois
-  REAL(double), dimension(1:3) :: dxp, aCell, gradij
-    real(double) :: r,r2 !distance i-j
+    integer::  iw1,iw2, iw,k,ic!vois
+  REAL(double), dimension(1:3) :: dxp, gradij
+    real(double) :: r !distance i-j
     real(double) :: Erep,dErep ! potentiel et gradient de la repulsion de paire ij
     real(double) :: dEembi, Eembi ! potentiel et gradient de l'immersion
     real(double) :: rhoi,rhoj, drhoi, drhoj ! densite de i sur j et j sur i et leurs derivees radiales
-    REAL(double) :: Femb, dFemb
+    REAL(double) ::  dFemb
     real(double):: fpnemd(3,atcf%im),fpnemdmoy(3), XijdotF
     real(double) :: drk, ktor, inv_ktor
     real(double),dimension(:),allocatable::ktorho(:), inv_ktorho(:)

@@ -305,7 +305,6 @@ contains
     integer,intent(in),optional::torank
 
     !=====
-    integer :: nsize
     integer :: ierror=0
     !=====
 
@@ -687,7 +686,7 @@ contains
     integer,intent(in)::rgcib
     integer,optional,intent(in)::tag
     !=====
-    integer :: nsize,tagv
+    integer :: nsize
     integer :: ierror=0
     !=====
 
@@ -715,7 +714,7 @@ contains
     integer,intent(in)::rgcib
     integer,optional,intent(in)::tag
     !=====
-    integer :: nsize,tagv
+    integer :: nsize
     integer :: ierror=0
     !=====
 
@@ -745,7 +744,7 @@ contains
     integer,intent(in)::rgcib
     integer,optional,intent(in)::tag
     !=====
-    integer :: nsize,tagv
+    integer :: nsize
     integer :: ierror=0
     !=====
 
@@ -775,7 +774,7 @@ contains
     integer,intent(in)::rgcib
     integer,optional,intent(in)::tag
     !=====
-    integer :: nsize,tagv
+    integer :: nsize
     integer :: ierror=0
     !=====
 
@@ -960,7 +959,7 @@ contains
     integer,allocatable :: arrayval(:)
     integer,intent(in)::val
     integer::valp,proc_source
-    integer::iproc,ierror,sourceout,statut
+    integer::iproc,ierror,sourceout
 
     arrayval(:)=0
 #ifdef PARA    
@@ -1002,7 +1001,7 @@ contains
     real(double),intent(in)::val
     real(double)::valp
 
-    integer::iproc,proc_source,ierror,sourceout,statut
+    integer::iproc,proc_source,ierror,sourceout
     arrayval(:)=0
 #ifdef PARA
 
@@ -1040,7 +1039,7 @@ contains
     complex(double),allocatable :: arrayval(:)
     complex(double),intent(in)::val
     complex(double)::valp
-    integer::proc_source,ierror,sourceout,statut
+    integer::proc_source,ierror,sourceout
     integer::iproc
     arrayval(:)=0
 #ifdef PARA
@@ -1083,7 +1082,7 @@ contains
     logical,intent(in)::val
     logical::valp
 
-    integer::iproc,proc_source,ierror,sourceout,statut
+    integer::iproc,proc_source,ierror,sourceout
 
 #ifdef PARA    
     if (present (torank)) then

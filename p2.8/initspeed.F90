@@ -31,7 +31,7 @@ contains
     real(double), allocatable::bruitmd(:,:)
     integer::im
     
-    integer    :: ia, ip,seed_size
+    integer    :: ia,seed_size
     integer, dimension(:),allocatable :: iseedt
     real(double)  :: zr1,zr2,zr3,zr4,totalbruit
 
@@ -85,9 +85,8 @@ contains
     logical,optional,intent(in):: latcomp
     logical,optional::lprt
     logical::latc=.false.,lprint=.true.
-    integer :: i, ic, ia, ib
+    integer :: i, ic, ia
     integer, dimension(:), allocatable :: iseedt
-    real(double), dimension(ntyp) :: temptyp
     ! ym      real(double), dimension(nce) :: tempc
     !  real(double), dimension(noxyz) :: tempc
     real(double) :: vv, v0, v1, z1, z2, z3, z4
@@ -99,7 +98,6 @@ contains
     real(double), dimension(3,3) :: ainer, aineri
     real(double), dimension(3,ntyp) :: vav
     real(double),allocatable::bruitmd(:,:)
-    integer  :: i_glob
     integer :: seed_size
     integer::iti,imtot
     real(double)::sd,grnd,theta,fhi ! ,decx(2)
@@ -448,7 +446,7 @@ contains
     implicit none
     real(double),intent(out)::gr
 
-    real(double):: v1,v2,r,fac,z1,z2
+    real(double):: z1,z2
 
 1   continue
     call random_number(z1)  

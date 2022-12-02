@@ -14,7 +14,7 @@ contains
     use Tpara,only:myidsp,comm_space
 #ifdef PARA
     use mpi
-    use Tpara,only:ierr,nprocs,MPI_COMM_space,grp_world,nprocspace,myidsp,comm_space,NDM_MPI_REAL_DOUBLE,mpi_world
+    use Tpara,only:ierr,nprocs,MPI_COMM_space,grp_world,nprocspace,comm_space,NDM_MPI_REAL_DOUBLE,mpi_world
 
 
     implicit none
