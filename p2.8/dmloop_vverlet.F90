@@ -117,7 +117,6 @@ contains
        end if
        call analyseT (atdml,celndm,boxndm,psc)
        call controleT(atdml,celndm,boxndm,psc,lreturn)
-       call comm_space%barrier
        if (lreturn) return
 
     end do
