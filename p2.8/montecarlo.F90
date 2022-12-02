@@ -1022,11 +1022,11 @@ contains
           call parapath%mpi_master%bcast(0,ipchemin) !on envoie le nouveau ipchemin a tous les procs, là où chemin prec va etre mis
           if (dir == 0) then
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
-             boxmcgcpath(ipchemin)=box_old0
+             boxmcgcpath(ipchemin)=box_old1
              call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgcpath(ipchemin))
           else
              call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
-             boxmcgcpath(ipchemin)=box_old1
+             boxmcgcpath(ipchemin)=box_old0
              call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgcpath(ipchemin))
           end if
 
