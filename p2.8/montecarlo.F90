@@ -2,7 +2,7 @@ module montecarlo_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m,only:  lperiod, tstep, timel, tstep,  itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,gamprfact,one,pi,text,tinit,&
-       &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,unitP,&
+       &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,unitP,dmtype,&
        &lrestartmcgc,imm_glob,iseed,sig,lprahman,sigext,h0,kcell,ucell,ihbox0,sigtot,sigkine
   USE atomconfig,only:atom_config,atom_config_d, switch_atom
   USE cellconfig, only:cell_config, caltabtC
@@ -69,6 +69,7 @@ module montecarlo_mod
   type(atom_config_mc),allocatable,target::config_atom_nplus1(:) !type derive atom_config du systeme a n+1 atomes
   type(cell_config),allocatable,target:: config_cells_n(:) !type derive cell_config du systeme a n atomes
   type(cell_config),allocatable,target:: config_cells_nplus1(:) !type derive cell_config du systeme a n+1 atomes
+  type(cell_config):: config_cells_old !type derive cell_config du systeme a n+1 atomes
 
   type(atom_config_mc):: config_atom_old_0, config_atom_old_1, config_atom_new_0, config_atom_new_1 !config intermediaire pour suivre l'evolution des systemes: 0 -> syst N, 1 -> syst N+1.
 
@@ -83,6 +84,7 @@ module montecarlo_mod
   !  real(double),dimension(3,3)::grsig,tension
 
   integer::nbatplus
+  integer::typswitch1,typswitch2
   integer::  pas_lambda_mc,idirectionmcgc
   real(double) :: lambda_mc !lambda compris entre 0 et 1
 
@@ -101,7 +103,8 @@ module montecarlo_mod
   type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
   type(atom_config_d),target::atcible
   integer::rgcib,rgem !(cible et emeteur e confN+1)
-  integer, dimension(33) :: seed 
+  integer, dimension(:), allocatable :: iseedt
+  integer::seed_size
   integer:: nparapath
   logical ::  lparapath
   logical :: lbiais(0:1),lbiais_retrait,lbiais_inser
@@ -121,6 +124,13 @@ contains
     real(double),intent(in)::rv
     logical::linitpot,lcalc
     integer::ipp,imdm=0
+
+
+    call random_seed(size=seed_size)
+    allocate(iseedt(seed_size))
+    iseedt(:)=iseed
+    call    random_seed (put=iseedt)
+
 
     allocate (config_atom_n(nparapath))
     allocate (config_atom_nplus1(nparapath))
@@ -168,18 +178,11 @@ contains
           end if
           if (idirectionmcgc==0) then
              call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot)
-
-             !             iseed =iseed +rang
-             seed(:)=iseed
-             call random_seed(PUT=seed(1:33))
              if (ins_typ==1) call init_instyp
              call initNP1(ipp) ! initialise la configuration N+1
-             
+
           else
              call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot)
-             !             iseed =iseed +rang
-             seed(:)=iseed
-             call random_seed(PUT=seed(1:33))
              if (ins_typ==1) call init_instyp
              call initN(ipp) ! initialise la configuration N+1
           end if
@@ -189,7 +192,7 @@ contains
           end if
        end if
     end do
-!    if (lbigmaster) write(10+rang,*)rcpath
+    !    if (lbigmaster) write(10+rang,*)rcpath
     !END PARAPATH
     atconf_n=> config_atom_n(1)
     cells_n=>config_cells_n(1)
@@ -236,6 +239,7 @@ contains
     !    write(6,*)'RANG UISEED',rang,iseed
     lbiais(0)=lbiais_inser
     lbiais(1)=lbiais_retrait
+    direction=idirectionmcgc
 #ifdef PARA
     cellmcgcloc=>cellcible
     atmcgcloc=>atcible
@@ -279,6 +283,9 @@ contains
        Weff_npp(:)=0
        pot_npp(:)=0
     end if
+    if (lmegamaster) then
+       if (dmtype==151)open(UNIT= 754, FILE="analyse_file.151")!, STATUS = 'new')
+    end if
     !  if (rang==0) write(6,*)' IN MCGC nbatplus, idirection',nbatplus,idirectionmcgc
     if (lrestartmcgc) then
        if (lmegamaster) then
@@ -299,6 +306,13 @@ contains
           call config_atom_old_1%copy_config(config_atom_nplus1(1), lrescl=.true.) 
           call caltabtC(config_cells_n(1),config_atom_n(1),lperiod,box_old0)
           call caltabtC(config_cells_nplus1(1),config_atom_nplus1(1),lperiod,box_old1)
+          if(dmtype==151) then
+             if(direction==0) then
+                config_cells_old=config_cells_n(1)
+             else
+                config_cells_old=config_cells_nplus1(1)
+             end if
+          end if
           !recalculer les probas du systeme
           atconf_nplus1=>config_atom_nplus1(1)
           if (direction == 0) then
@@ -365,7 +379,9 @@ contains
        ! a la fin de lrestart, tous les procs ont N et N+1 courants pareil + old0 et old1 sont connus + Wprec + direction 
        ! de meme que les proba ont ete calculees
 
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!***********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!***********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!***********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     else !cas où lrestart = .false. 
 
        !deplacé !
@@ -374,10 +390,10 @@ contains
           if (idirectionmcgc == 0) then
              boxmcgc_p=>boxmcgcpath(1)
              call config_atom_n(1)%copy_config(config_atom_old_0, lrescl=.true.)
-             box_old0=boxmcgc_p
+             box_old0=boxmcgcpath(1)
 
           else
-             box_old1=boxmcgc
+             box_old1=boxmcgcpath(1)
              do ipp=1,nparapath
                 atconf_nplus1=>config_atom_nplus1(ipp)
                 boxmcgc_p=>boxmcgcpath(ipp)
@@ -393,6 +409,16 @@ contains
        else
           call analyse_montecarlo(config_atom_nplus1(1),config_cells_nplus1(1),boxmcgcpath(1),'SystNP1_init')
        end if
+       if(dmtype==151) then
+          if(direction==0) then
+             config_cells_old=config_cells_n(1)
+          else
+             config_cells_old=config_cells_nplus1(1)
+          end if
+
+
+       end if
+
        do ipp=1,nparapath
           lcalc=.false.
           if (lparapath) then
@@ -415,9 +441,6 @@ contains
 
              call lambda(direction, nstep = 0, protocol_name = 'MCP') !initialisation du lambda a 0 pour le premier melange des forces
              iloc=1;lchange=.false.;ldistrib=.true.
-!!$             write(300+rang,*)'call calfo init'
-!!$             call boxmcgc_p%print(unit=300+rang)
-
              call calfoMCGC(iloc,lchange,ldistrib)
 
              !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
@@ -444,10 +467,14 @@ contains
                 end if
                 pressF= (sigtot(1,1)+sigtot(2,2)+sigtot(3,3))/3.0
                 if (ins_typ==1)then
-                   
-!                   call parapath%mpi_master%sum(rcpath)
+
+                   !                   call parapath%mpi_master%sum(rcpath)
                    write(6,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                   if (dmtype==151) write(754,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                   !                   write(6,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+
                 else
+                   if (dmtype==151) write(754,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV
                    write(6,*)'Weff eV ', ipp,weff_npp(ipp)*erg2eV
                 end if
 
@@ -456,25 +483,25 @@ contains
           end if
 
        end do
-
-       if ((lbigmaster).and.(lparapath)) then
-          call parapath%mpi_master%sum(weff_npp)
-          call parapath%mpi_master%sum(pot_npp)
-       end if
-
-       if (lbigmaster) then 
-          if (lmegamaster) then
-             if (nparapath.gt.1) then
-                call random_number(zr1)
-
-                ipch=1+int(nparapath*zr1) ! choix aléatoire débile
-                write(6,*)'chemin choisi aléatoirement',ipch
-             else
-                ipch=1
-             end if
+       if (dmtype==15) then
+          if ((lbigmaster).and.(lparapath)) then
+             call parapath%mpi_master%sum(weff_npp)
+             call parapath%mpi_master%sum(pot_npp)
           end if
 
-          call parapath%mpi_master%bcast(0,ipch)
+          if (lbigmaster) then 
+             if (lmegamaster) then
+                if (nparapath.gt.1) then
+                   call random_number(zr1)
+
+                   ipch=1+int(nparapath*zr1) ! choix aléatoire débile
+                   write(6,*)'chemin choisi aléatoirement',ipch
+                else
+                   ipch=1
+                end if
+             end if
+
+             call parapath%mpi_master%bcast(0,ipch)
 
           Weff=weff_npp(ipch) !on a effectué le chnment de signe si retrait
 
@@ -532,20 +559,43 @@ contains
 
        end if
 
-       
-       direction = 1 - idirectionmcgc !=0 si le premier pas était un retrait, =1 si le premier pas 
+
+       direction = 1 - idirectionmcgc !=0 si le premier pas était un retrait, =1 si le premier pas
+              else if (dmtype==151) then
+
+          if (lbigmaster) then
+             do ipp=1,nparapath
+                if (direction==0) then 
+                   config_cells_n(ipp)= config_cells_old
+                   config_atom_n(ipp)=config_atom_old_0
+                   boxmcgcpath(ipp)=box_old0
+                else
+                   config_cells_nplus1(ipp)= config_cells_old
+                   config_atom_nplus1(ipp)=config_atom_old_1
+                   boxmcgcpath(ipp)=box_old1
+                   !             config_atom_nplus1(ipp)=config_atom_nplus1(ipch)
+                end if
+             end do
+          end if
+       end if
+
     end if !if sur lrestart
 
     if (lmegamaster) then
-       open(UNIT= 752, FILE="analyse_file", STATUS = 'new')
-       open(UNIT= 85, FILE="restart_file", STATUS = 'new')
-       !      open(UNIT= 753, FILE="nrj_pot_systacc", STATUS = 'new')
-       if (nparapath .gt. 1) then
-          write(752,*) '#ACC/REF  direction  ipchemin  WeV(x nparapath)&
-               & Wprec XPROB(x nparapath +1)'
-       else
-          write(752,*) '#ACC/REF  direction  WeV  Wprec  XPROB   XALEA'
-       end if! sur nparapath
+       if (dmtype==15) then
+          open(UNIT= 752, FILE="analyse_file", STATUS = 'new')
+
+          open(UNIT= 85, FILE="restart_file", STATUS = 'new')
+          !      open(UNIT= 753, FILE="nrj_pot_systacc", STATUS = 'new')
+          if (nparapath .gt. 1) then
+             write(752,*) '#ACC/REF  direction  ipchemin  WeV(x nparapath)&
+                  & Wprec XPROB(x nparapath +1)'
+          else
+             write(752,*) '#ACC/REF  direction  WeV  Wprec  XPROB   XALEA'
+          end if! sur nparapath
+       else if (dmtype==151) then 
+          open(UNIT= 754, FILE="analyse_file.151")!, STATUS = 'new')
+       end if
     end if!sur megamaster
 
     !########################################################################################################################
@@ -556,15 +606,14 @@ contains
 #ifdef PARA
        call mpi_world%barrier
 #endif
-
        Weff_npp(:)=0
        pot_npp(:)=0
        if (lmegamaster)then
           write(6,*)
-          write(6,*)'path in direction', direction, ' to ',1-direction
+          write(6,*)'path ',i_path,' in direction', direction, ' to ',1-direction
        end if
 
-       if (lbigmaster) then
+       if ((lbigmaster).and.(dmtype==15)) then
           do ipp=1,nparapath
              config_atom_nplus1(ipp)%vp(:,:)   = - config_atom_nplus1(ipp)%vp(:,:) !à chaque retour dans la boucle, on change de direction
              config_atom_n(ipp)%vp(:,:)   = - config_atom_n(ipp)%vp(:,:)
@@ -584,7 +633,6 @@ contains
           endif
 
        end if !if lbigmaster
-!!$       write(300+RANG,*)'I_PATH',i_path
        do ipp=1,nparapath
           !write(200+rang,*)'IPPP2',ipp
           !call boxmcgcpath(ipp)%print(unit=200+rang)
@@ -601,6 +649,7 @@ contains
           end if
 
           if (lcalc) then
+
              !             if (lbigmaster)write(6,*)'parapath',rang,i_path,ipp
              atconf_n=> config_atom_n(ipp)
              cells_n=>config_cells_n(ipp)
@@ -609,7 +658,13 @@ contains
              boxmcgc_p=>boxmcgcpath(ipp)
 
              !choisir l'at a retirer ou ajouter + preparation des syst N et N+1 pour etre prets pour le langevin (cad decoupage cellules + calcul forces + melange des forces - se fait dans cette sous routine)
-             call ajout_retrait(direction,ipp)
+             select case (ins_typ)
+             case(0,1)
+                call ajout_retrait(direction,ipp)
+             case(2)
+                call type_switch(direction)
+             end select
+
              ! pas de langevin
              if (lprahman) then
                 call langevinLPR(direction, protocol = 'MCP')
@@ -618,7 +673,6 @@ contains
              end if
              ! if LPR call langevinPc
              !             if (lbigmaster) write(6,*)'potist', ipp,potist_n,potist_nplus1
-             !             write(6,*)'CALC4',rang,ipp,i_path
              if (direction == 0) then
                 Weff_npp(ipp)= +weff
                 pot_npp(ipp)= potist_nplus1
@@ -640,7 +694,6 @@ contains
 !!$          call mpi_finalize(ierr)
 !!$          call arret_ndm
        end do !boucle nparapath
-
        if (lbigmaster.and.(ins_typ==1))then
           call parapath%mpi_master%sum(rcpath)
        end if
@@ -654,6 +707,7 @@ contains
           if (lmegamaster) then
              do ipp=1,nparapath
                 write(6,'(A,I2,I4,2F20.10)')'Weff eV dist ', direction,ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                if (dmtype==151) write(754,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
              end do
           end if
           rcpath=0
@@ -661,6 +715,7 @@ contains
           if (lmegamaster) then
              do ipp=1,nparapath
                 write(6,'(A,I2,I4,F20.10)')'Weff eV',direction, ipp,weff_npp(ipp)*erg2eV
+                if (dmtype==151) write(754,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV
              end do
           end if
        end if
@@ -670,52 +725,56 @@ contains
        else
           n_gen_1 = n_gen_1 + 1
        end if
-
+       if (dmtype==15) then
 !!!!!!!!!!!!!!!!!!!!!! TEST D'ACCEPTATION !!!!!!!!!!!!!!!!!!!
-       if (nparapath.gt.1) then 
-          call multiproposal(Weff_npp, pot_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
-               & lbiais, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
-       else
-          call monoproposal(Weff_npp, pot_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
-               & lbiais, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
-       end if
+          if (nparapath.gt.1) then 
+             call multiproposal(Weff_npp, pot_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
+                  & lbiais, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
+          else
+             call monoproposal(Weff_npp, pot_npp, Wprec, Wprecedent, ipch, direction, acceptation, test_acc, n_gen, &
+                  & lbiais, mu_moy, mu_wrmc, mu_NC, mu_SC, pot_cumul)
+          end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
 
-       if (acceptation == 1) then
-          n_accepted = n_accepted + 1
-          !choupi
-          if (direction == 0) then
-             n_accepted_0 = n_accepted_0 + 1
-          else 
-             n_accepted_1 = n_accepted_1 + 1
+          if (acceptation == 1) then
+             n_accepted = n_accepted + 1
+             !choupi
+             if (direction == 0) then
+                n_accepted_0 = n_accepted_0 + 1
+             else 
+                n_accepted_1 = n_accepted_1 + 1
+             end if
           end if
+
+          Wprecedent = Wprec
+          iteration = iteration + 1
+
+          if (direction == 0) then
+             direction = 1
+          else
+             direction = 0
+          end if
+
+          acceptance_rate   = (real(n_accepted)/real(n_gen))*1.0d2
+          acceptance_rate_0 = (real(n_accepted_0)/real(n_gen_0))*1.0d2
+          acceptance_rate_1 = (real(n_accepted_1)/real(n_gen_1))*1.0d2
+       else if (dmtype==151) then
+          if (lbigmaster) then 
+             do ipp=1,nparapath
+                if (direction==0) then 
+                   config_cells_n(ipp)= config_cells_old
+                   config_atom_n(ipp)=config_atom_old_0
+                   boxmcgcpath(ipp)=box_old0
+                else
+                   config_cells_nplus1(ipp)= config_cells_old
+                   config_atom_nplus1(ipp)=config_atom_old_1
+                   boxmcgcpath(ipp)=box_old1
+                   !             config_atom_nplus1(ipp)=config_atom_nplus1(ipch)
+                end if
+             end do
+          end if
+
        end if
-
-       !    if (i_path == 1) then
-       !      if (lmegamaster) write(*,'(A)') 'acceptation  num_chemin  direction &
-       !      &  WeV   WprecedenteV  mu_moy   mu_WRMC  mu_NC  mu_SC'  ! proba_acc proba_refus
-       !    end if
-
-       !    if (lmegamaster) write(*,'(3I5, 12G20.13)') acceptation, i_path, direction&
-       !    &, Weff_npp(ipch)*erg2eV, Wprecedent*erg2eV, mu_moy, mu_wrmc, mu_NC, mu_SC!, xprob, 1-xprob
-
-       !write(*,*) i_path, dir, W*erg2eV, Wprecedent*erg2eV, xprob, 1-xprob, acceptation, Wprecedent,&
-       !        &  W
-
-       Wprecedent = Wprec
-       iteration = iteration + 1
-
-       if (direction == 0) then
-          direction = 1
-       else
-          direction = 0
-       end if
-
-       acceptance_rate   = (real(n_accepted)/real(n_gen))*1.0d2
-       acceptance_rate_0 = (real(n_accepted_0)/real(n_gen_0))*1.0d2
-       acceptance_rate_1 = (real(n_accepted_1)/real(n_gen_1))*1.0d2
-
-
     END DO !end do sur la boucle des chemins
 
     ! write(6,*)'BARRIERE FINALE ',rang
@@ -1029,7 +1088,6 @@ contains
              boxmcgcpath(ipchemin)=box_old0
              call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgcpath(ipchemin))
           end if
-
           !on envoie l'ancienne conf a tous les procs
 #ifdef PARA
           if (lparapath) then 
@@ -1325,7 +1383,7 @@ contains
              iplus=i+atconf_n%im
              atconf_nplus1%xp(1:3,iplus) = cart_vec_nplus1(1:3,i)
              atconf_nplus1%fp(1:3,iplus) = 0
-!             atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
+             !             atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
              atconf_nplus1%ityp(iplus) = itypcalc
              atconf_nplus1%ielat(iplus) = -1
              nag=maxval(atconf_Nplus1%num_at_glob(1:iplus-1))
@@ -1347,9 +1405,6 @@ contains
 #endif
 
        iloc=1;lchange=.false.;ldistrib=.true.
-!!$       write(300+rang,*)'call calfo ajout'
-!!$       call boxmcgc_p%print(unit=300+rang)
-       
        call calfoMCGC(iloc,lchange,ldistrib)
 
     end if
@@ -1362,7 +1417,7 @@ contains
 
           if (.not.lbiais(1)) then
              !SANS BIAIS
-             call indice_alea(atconf_Nplus1,indice)
+             call indice_alea(atconf_Nplus1,indice,itypcalc,nbatplus)
           else
              !AVEC BIAIS
              call atom_biais(atconf_Nplus1,indice)
@@ -1407,8 +1462,6 @@ contains
        end if
 #endif
        iloc=1;lchange=.false.;ldistrib=.true.
-!!$       write(300+rang,*)'call calfo retrait'
-!!$       call boxmcgc_p%print(unit=300+rang)
        call calfoMCGC(iloc,lchange,ldistrib)      
 
 
@@ -1431,7 +1484,7 @@ contains
     postest(:)=-1*(poscenter(:,1)-xpt(:))
     rd=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)
     pinser= 1/(1+exp(fdfactmcgc*(rd-R0mcgc)))
-!    write(6,*)'probainser',pinser
+    !    write(6,*)'probainser',pinser
   end function calcul_proba_ins
 !!!!!!!!!!!!!!!!!!!!!!
 
@@ -1660,11 +1713,12 @@ contains
 
   end subroutine boucle_copy_atom
 
-  subroutine indice_alea(config, ind)
+  subroutine indice_alea(config, ind,itc,nbp)
 
     implicit none
 
-    type(atom_config_mc)::config
+    type(atom_config_mc),intent(in)::config
+    integer,intent(in)::itc,nbp
     integer :: ind(:)
     logical,allocatable::lchosen(:)
     real(double) :: rand
@@ -1673,7 +1727,7 @@ contains
 
     natyp=0
     do i=1,config%im
-       if (config%ityp(i)==itypcalc) then
+       if (config%ityp(i)==itc) then
           natyp=natyp+1
        end if
     end do
@@ -1682,7 +1736,7 @@ contains
     lchosen(:)=.false.
     iatyp=0
     do i=1,config%im
-       if (config%ityp(i)==itypcalc) then
+       if (config%ityp(i)==itc) then
           iatyp=iatyp+1
           indatyp(iatyp)=i
        end if
@@ -1692,11 +1746,11 @@ contains
        call arret_ndm
     end if
 
-    do i=1,nbatplus
+    do i=1,nbp
 3      continue
        call random_number(rand)
        indT = ( (natyp - 1) * rand ) + 1
-!       write(6,*)'atom_del', rang,rand,indT
+       !       write(6,*)'atom_del', rang,rand,indT
        if (lchosen(indT).eqv..true.) goto 3
        lchosen(indT)=.true.
        ind(i)=indatyp(indT)
@@ -1951,7 +2005,7 @@ contains
     integer :: i,ic, ip, tot,ia,j
     real(double) :: Ek_n, Ek_n_plus1, Ek_n_1s4, Ek_n_3s4, dQeff, Qeff,&
          &dWeff, dWork
-    real(double) :: U_0, U_1, U_l_n_m1, U_l_n, H_l_n, H_l_n_m1, H_l_ini
+    real(double) :: U_0, U_1, U_l_n_m1, U_l_n, H_l_n, H_l_n_m1, H_l_ini,work
 
     real(double) :: beta
     real(double)  :: Gl(3,atconf_Nplus1%im)
@@ -1971,6 +2025,7 @@ contains
        QEff   = 0.0
        dWEff  = 0.0
        WEff   = 0.0
+       Work=0
        Ek_n = 0.0
        H_l_ini = 0.0
        H_l_n = 0.0
@@ -1989,14 +2044,21 @@ contains
        ENDDO
 
        call lambda(direc, ip, protocol)
-!       lambda_mc = 0
+       !       lambda_mc = 0
        U_l_n = (1.d0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
 
        H_l_ini = Ek_n + U_l_n 
        H_l_n   = H_l_ini
+       !write(15,*)
+       !       write(15,'(A15, G25.16E3,A15, G25.16E3,A15, G25.16E3,A15, G25.16E3)') &
+       !            &'lambda_mc ' ,lambda_mc,'Ek_n' , Ek_n, 'U_l_n', U_l_n, 'H_l_ini', H_l_ini
+       !             write(6,'(A)') 'lambda_mc,             Ek_n_plus1*erg2ev,        &
+       ! &        U_l_n*erg2ev,             H_l_n*erg2ev,            WEff*erg2ev,           dWEff*erg2ev,&
+       !&         dWORK*erg2eV,        dQeff*erg2ev'
 
-       !if (lmegamaster) write(*,'(A15, G25.16E3,A15, G25.16E3,A15, G25.16E3,A15, G25.16E3)') &
-       !      &'lambda_mc ' ,lambda_mc,'Ek_n' , Ek_n, 'U_l_n', U_l_n, 'H_l_ini', H_l_ini
+       !             write(6,'(8G25.16E3)') lambda_mc, Ek_n_plus1*erg2ev,&
+       !                       & U_l_n*erg2ev, H_l_n*erg2ev, WEff*erg2ev, dWEff*erg2ev,dWORK*erg2eV, dQeff*erg2ev
+
     end if ! Master général
 
     aux(:ntyp) = tstep/(cm(:ntyp)*2.d0)
@@ -2040,13 +2102,13 @@ contains
           END DO
           ! step 2  Coordinate update, x(t)-> x(t+dt)
           DO i=1, atconf_Nplus1%im
-!             atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
+             !             atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
              atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
           END DO
 
           !recopier les nouvelles positions dans le syst N
           DO i=1, atconf_N%im
-!             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
+             !             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
              atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
           END DO
@@ -2114,12 +2176,13 @@ contains
           QEff   = QEff + dQEff
           dWEff  = H_l_n - H_l_n_m1 - dQEff
           WEff   = WEff + dWEff
+          work=work+dwork
           !          write(6,*)'WEFF dW dH dQ',Weff*erg2ev,dweff*erg2ev,( H_l_n - H_l_n_m1)*erg2ev,dqeff*erg2ev
           if (protocol == 'MCP') then
-             !if (lmegamaster .and. lambda_mc == 1.0/pas_lambda_mc) write(*,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
+             !write(15,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
              !         &'H_l_n', 'WEff',  'dWEff'
-             !if (lmegamaster) write(*,'(6G25.16E3)') lambda_mc, Ek_n_plus1,&
-             !          & U_l_n, H_l_n, WEff, dWEff
+             !             write(6,'(9G25.16E3)') lambda_mc, Ek_n_plus1*erg2ev,&
+             !                       & U_l_n*erg2ev, H_l_n*erg2ev, WEff*erg2ev, work*erg2ev, dWEff*erg2ev,dWORK*erg2eV, dQeff*erg2ev
              !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
              !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
           end if
@@ -2234,47 +2297,51 @@ contains
     !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
 
     allocate (cart_vec_nplus1(3,nbatplus))
-    if (lbigmaster) then
+    if (ins_typ==2) then
+       if (lbigmaster) then
+          call atconf_nplus1%init(atconf_n%im,atconf_n%imm,atconf_n%ltabvois,&
+               &im_glob=atconf_n%im_glob,imm_glob=imm_glob)
+          call type_switch(idirectionmcgc)
+          call cells_nplus1%init(boxmcgc_P,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+          call cells_n%copy(cells_nplus1,boxmcgc_p)
+       else
+          call atconf_nplus1%init(atconf_n%im,atconf_n%imm,atconf_n%ltabvois,&
+               &im_glob=atconf_n%im_glob,imm_glob=imm_glob)
+          call cells_nplus1%init(boxmcgc_p,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+          call cells_n%copy(cells_nplus1,boxmcgc_p)
+       end if
 
-       call atom_supp(cart_vec_nplus1,pins,ipp)
-       !write(*,*) 'cart_vec_nplus1', cart_vec_nplus1(:,1)
-
-       !cart_vec_nplus1(1,1) =  0.03125 +0.125 !3.366712069766435E-008
-       !cart_vec_nplus1(2,1) =  0.03125 +0.125 !3.424870131643824E-008
-       !cart_vec_nplus1(3,1) =  0.03125 +0.125 !3.367899633987469E-008
-       !FAIT DANS atom_supp
-       !       do i=1,nbatplus
-       !          write(*,'(A20, 3G25.16E3,A,I4)') 'cart_vec_nplus1', cart_vec_nplus1(:,i),' image ', parapath%image+1
-       !       end do
-       !copie du syst n dans n+1 
-       call atconf_nplus1%init(atconf_n%im+nbatplus,atconf_n%imm,atconf_n%ltabvois,&
-            &im_glob=atconf_n%im_glob+nbatplus,imm_glob=imm_glob)
-       atconf_nplus1%ltabvois=atconf_n%ltabvois
-       !call atconf_n%copy_config(atconf_nplus1,lrescl=.false.)
-       call boucle_copy_atom(atconf_n,atconf_nplus1, sens= .false.)
-       !addition de la n+1eme particule
-       do i=1,nbatplus
-          iplus=i+atconf_n%im
-          atconf_nplus1%xp(1:3,iplus) = cart_vec_nplus1(1:3,i)
-          atconf_nplus1%fp(1:3,iplus) = 0
-!          atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
-          atconf_nplus1%ityp(iplus) = itypcalc
-          atconf_nplus1%num_at_glob(iplus) = iplus
-          atconf_Nplus1%proba_ins = pins
-          !          write(6,*)'iex pins',i,pins
-          !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
-       end do
-       call init_vitesse(atconf_nplus1,param = 0)
-       call cells_nplus1%init(boxmcgc_P,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
-       call cells_n%copy(cells_nplus1,boxmcgc_p)
     else
-       call atconf_nplus1%init(atconf_n%im+nbatplus,atconf_n%imm,atconf_n%ltabvois,&
-            &im_glob=atconf_n%im_glob+nbatplus,imm_glob=imm_glob)
-       call cells_nplus1%init(boxmcgc_p,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
-       call cells_n%copy(cells_nplus1,boxmcgc_p)
+       if (lbigmaster) then
+          call atom_supp(cart_vec_nplus1,pins,ipp)
+          call atconf_nplus1%init(atconf_n%im+nbatplus,atconf_n%imm,atconf_n%ltabvois,&
+               &im_glob=atconf_n%im_glob+nbatplus,imm_glob=imm_glob)
+          atconf_nplus1%ltabvois=atconf_n%ltabvois
+          !call atconf_n%copy_config(atconf_nplus1,lrescl=.false.)
+          call boucle_copy_atom(atconf_n,atconf_nplus1, sens= .false.)
+          !addition de la n+1eme particule
+          do i=1,nbatplus
+             iplus=i+atconf_n%im
+             atconf_nplus1%xp(1:3,iplus) = cart_vec_nplus1(1:3,i)
+             atconf_nplus1%fp(1:3,iplus) = 0
+             atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
+             atconf_nplus1%ityp(iplus) = itypcalc
+             atconf_nplus1%num_at_glob(iplus) = iplus
+             atconf_Nplus1%proba_ins = pins
+             !          write(6,*)'iex pins',i,pins
+             !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
+          end do
+          call init_vitesse(atconf_nplus1,param = 0)
+          call cells_nplus1%init(boxmcgc_P,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+          call cells_n%copy(cells_nplus1,boxmcgc_p)
+       else
+          call atconf_nplus1%init(atconf_n%im+nbatplus,atconf_n%imm,atconf_n%ltabvois,&
+               &im_glob=atconf_n%im_glob+nbatplus,imm_glob=imm_glob)
+          call cells_nplus1%init(boxmcgc_p,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+          call cells_n%copy(cells_nplus1,boxmcgc_p)
+       end if
+
     end if
-
-
 #ifdef PARA
 
     rgcib=1;rgem=0
@@ -2382,6 +2449,8 @@ contains
     logical ::lc2d
     character*80::namef
     logical::lwrite
+    real(double)::poscenter(3,1),postest(3)
+
     !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
     allocate(indice(nbatplus))
     call atconf_n%init(atconf_nplus1%im-nbatplus,atconf_nplus1%imm,atconf_nplus1%ltabvois,&
@@ -2396,7 +2465,7 @@ contains
        !call atconf_n%copy_config(atconf_nplus1,lrescl=.false.)
        if (.not.lbiais(1)) then
           !SANS BIAIS
-          call indice_alea(atconf_Nplus1,indice)
+          call indice_alea(atconf_Nplus1,indice,itypcalc,nbatplus)
        else
           !AVEC BIAIS
           call atom_biais(atconf_Nplus1,indice)
@@ -2419,13 +2488,21 @@ contains
        call calcul_proba_des ! on calcule les proba_des car on va accepter la désintégration (et donc on aura besoin des proba pour initialiser old)
        do i=1,nbatplus
           iplus=atconf_N%im+i
-          write(*,'(A25, 3G25.16E3,  A10, G15.6E3, A, I4 )') 'coord atome a retirer', &
-               &atconf_Nplus1%xp(:,iplus),&
-               &'proba', atconf_Nplus1%proba_des(iplus),' image ',parapath%image+1
+          !          write(*,'(A25, 3G25.16E3,  A10, G15.6E3, A, I4 )') 'coord atome a retirer', &
+          !               &atconf_Nplus1%xp(:,iplus),&
+          !               &'proba', atconf_Nplus1%proba_des(iplus),' image ',parapath%image+1
           !write(*,*) 'coord atome a retirer',  atconf_Nplus1%xp(:,atconf_Nplus1%im)
           !on copie les N nouveaux premiers atomes du syst N+1 dans le systeme N
           call boucle_copy_atom(atconf_N,atconf_Nplus1, sens = .true.)
        end do
+       if (ins_typ==1) then
+          poscenter(:,1)=bublcenter(:)
+          call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+          postest(:)=-1*(poscenter(:,1)-atconf_Nplus1%xp(:,atconf_Nplus1%im))
+          rcpath(ipp)=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)*1d8
+       end if
+
+
     else
        call atconf_n%init(atconf_nplus1%im-nbatplus,atconf_nplus1%imm,atconf_nplus1%ltabvois,&
             &im_glob=atconf_nplus1%im_glob-nbatplus,imm_glob=imm_glob)
@@ -2559,9 +2636,6 @@ contains
     end if
 
 #ifdef PARA
-    
-!    write(300+rang,*)'calfo',iloc
-!    call boxmcgc_p%print(unit=300+rang)
     if(paramcgc%image==0) then !procs N
        if (iloc==1) call initloc(atconf_n,cells_n,atmcgcloc,cellmcgcloc,boxmcgc_p,paramcgc,rumax,lperiod&
             &,psc=pscgc,ldistrib=ldistrib,lcalcvois=lcalcvois,lboxchange=lprahman) !initloc contient caltabtc sur atloc
@@ -2609,10 +2683,12 @@ contains
        DO i=1,atconf_n%im
           atconf_nplus1%fp(:,i) = (1-lambda_mc)*atconf_n%fp(:,i) + lambda_mc*atconf_nplus1%fp(:,i)
        END DO
-       do i=0,nbatplus-1
-          iplus=atconf_nplus1%im+i
-          atconf_nplus1%fp(:,iplus) = lambda_mc*atconf_nplus1%fp(:,iplus)
-       end do
+       if (ins_typ.ne.2) then
+          do i=0,nbatplus-1
+             iplus=atconf_nplus1%im+i
+             atconf_nplus1%fp(:,iplus) = lambda_mc*atconf_nplus1%fp(:,iplus)
+          end do
+       end if
        !Egalisation des forces pour les deux systemes
        DO i=1,atconf_n%im
           atconf_n%fp(:,i) = atconf_nplus1%fp(:,i)
@@ -2761,10 +2837,10 @@ contains
     end do
     vec(:,1)=postest(:)
     pins=1/(1+exp(fdfactmcgc*(rex-R0mcgc)))
-!    if (rang==0)then
-!       if (itry.gt.1) write(6,*)'image',parapath%image,'NTRY',itry
-!    end if
-!    write(6,'(A,I3,4G15.7)')'atom_supp_sph vec', rang,vec(:,1),rex*1d8
+    !    if (rang==0)then
+    !       if (itry.gt.1) write(6,*)'image',parapath%image,'NTRY',itry
+    !    end if
+    !    write(6,'(A,I3,4G15.7)')'atom_supp_sph vec', rang,vec(:,1),rex*1d8
     rd=rex*1d8
     return
   end subroutine atom_supp_sph
@@ -2888,7 +2964,7 @@ contains
     DO ip = 1, pas_lambda_mc
        !incrémentation de lambda
        call lambda(direc,ip, protocol)
-!       lambda_mc = 0
+       !       lambda_mc = 0
        call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
        if (lbigmaster) then ! Master général
           Ek_n = 0.0
@@ -2943,7 +3019,7 @@ contains
           ! Tenseur h à l'instant t+dt
           boxmcgc_p%h(:,:) = boxmcgc_p%h(:,:) + boxmcgc_p%hdot(:,:)*tstep*ihbox0(:,:)
           ! Coordonnées réelles à l'instant t+dt
-!          atconf_Nplus1%xpp(:,1:atconf_Nplus1%im) = atconf_Nplus1%xp(:,1:atconf_Nplus1%im)
+          !          atconf_Nplus1%xpp(:,1:atconf_Nplus1%im) = atconf_Nplus1%xp(:,1:atconf_Nplus1%im)
           atconf_Nplus1%xp(:,1:atconf_Nplus1%im) = MatMul( boxmcgc_p%h, sp(:,1:atconf_Nplus1%im) )
           call updatebox(boxmcgc_p,boxmcgc_p%h)
           atconf_Nplus1%vp(:,1:atconf_Nplus1%im) = MatMul( boxmcgc_p%h(:,:), sdot(:,1:atconf_Nplus1%im) ) ! retour à vp car transfert d'atomes  dans scalebox en PARA
@@ -2951,7 +3027,7 @@ contains
 
           !recopier les nouvelles positions dans le syst N
           DO i=1, atconf_N%im
-!             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
+             !             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
              atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
           END DO
@@ -2973,7 +3049,7 @@ contains
 !!$          else !on est dans le master de N+1
 !!$             call boxmcgc_p%send2proc(rgem,paramcgc%mpi_master)
 !!$          end if
-         
+
           call boxmcgc_p%master2slave(0,paramcgc%mpi_master) 
           rgcib=1;rgem=0
           if(paramcgc%image==0) then !on est dans le master général
@@ -2984,9 +3060,7 @@ contains
        end if
 #endif        
        iloc=0;ldistrib=.false.;lchange=.true.
-!!$       write(300+rang,*)'call langevinLPR'
-!!$       call boxmcgc_p%print(unit=300+rang)
-    
+
        call calfoMCGC(iloc,lchange,ldistrib)
        call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
        if (lbigmaster) then
@@ -3066,6 +3140,47 @@ contains
 
   end subroutine langevinLPR
 
+  subroutine type_switch(direction)
+    integer,intent(in)::direction
+    integer,allocatable::indice(:)
+    integer::i,i1,i2,j
 
+    allocate(indice(nbatplus))
+
+    if (direction==0) then 
+       call indice_alea (atconf_N, indice,typswitch1,nbatplus)
+       do i=1,nbatplus
+          if (atconf_N%ityp(indice(i)).ne.typswitch1) then
+             write(6,*)'WTF type_switch'
+             call arret_ndm
+          end if
+          atconf_Nplus1%ityp(indice(i))=typswitch2
+       end do
+    else
+       call indice_alea (atconf_Nplus1, indice,typswitch2,nbatplus)
+       do i=1,nbatplus
+          if (atconf_Nplus1%ityp(indice(i)).ne.typswitch2) then
+             write(6,*)'WTF type_switch2'
+             call arret_ndm
+          end if
+          atconf_N%ityp(indice(i))=typswitch1
+       end do
+    end if
+    do i=1,nbatplus
+       if (indice(i).gt.atconf_N%im-nbatplus) cycle
+       do j=atconf_Nplus1%im,atconf_N%im-nbatplus+1,-1
+          if (any(indice(1:nbatplus)==j)) then
+             cycle
+          else
+             i1=indice(i)
+             i2=j
+             indice(i)=i2
+             call atconf_Nplus1%switch_atom(i1,i2)
+             exit
+          end if
+       end do
+    end do
+
+  end subroutine type_switch
 
 end module montecarlo_mod

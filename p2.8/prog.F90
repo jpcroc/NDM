@@ -82,7 +82,7 @@ contains
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
     !probablement inutile pour dmtype=9 ou 15
 ! choose actual data types for atmdl and boxndm depending on values read in readdm
-    if ((lPRahman).or.(dmtype==15)) then
+    if ((lPRahman).or.((dmtype == 15).or.(dmtype==151))) then
        boxndm=>boxlpr
     else
        boxndm=>boxs
@@ -249,7 +249,7 @@ contains
        call init_neb0 
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
-    case(15)
+    case(15,151)
        !#ifdef PARA
 
        call init_mpi_MCGC ! PARAPATH

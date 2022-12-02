@@ -5,6 +5,7 @@ module cellconfig
   use boxconfig,only:box_config
   use paraconfig,only:para_config
   use Tpara,only:para_space_config,mpi_communicator,myidsp
+  use gen_com_m,only:rang
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
@@ -327,6 +328,8 @@ contains
        !debug       write (*,*) 'sub caltabt 1',it,xp(1,1)
        call cryst_to_cart (iml, xpnp, boxcf%bg, -1) ! cart vers cryst
        if (any(xpnp(:,1:iml).gt.1).or.any(xpnp(:,1:iml).lt.0)) then
+          write(6,*)'PLANTE',rang
+          write(300+RANG,*)'PLANTE'
           do i=1,iml
              if (any(xpnp(:,i).gt.1).or.any(xpnp(:,i).lt.0))  write(6,*) i,xpnp(:,i)
           end do

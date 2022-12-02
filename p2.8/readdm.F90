@@ -39,7 +39,8 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
-         &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter
+         &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
+         &typswitch1,typswitch2
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
     use Parrinello_Rahman,only:TinitBox
 #ifdef PARA
@@ -137,7 +138,8 @@ contains
     !                              17 -> MAB
     !                              18 -> ML
     !                              19 -> matrice de forces
-    !                              15 -> montecarlo_mcgc
+    !                              15 -> montecarlo_mCC
+    !                              151 -> montecarlo_mcGC
     !                              112 -> histogramme des distances entre atomes
     lFire = .false.              ! Fire algorithm is USEd for quenching (cf tr_fire.F90)
     tstep = 1.0                 !timestep in 10^-15 sec unit
@@ -367,7 +369,8 @@ contains
     R0mcgc=-1.0
     bublcenter(:)=0.5
     ins_typ=0
-    
+    typswitch1=0
+    typswitch2=0
 
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -603,7 +606,7 @@ contains
              end select
           end if
        end if
-    case(15)
+    case(15,151)
        if (itypcalc.lt.0) then
           write(6,*)'itypcalc<0'
           call arret_ndm
@@ -626,7 +629,8 @@ contains
 
     case default
        write(6,*)'DMTYPE',dmtype
-       if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,4,3,9,15,1,30,31,32,33,34,19,35,23,24'
+       if (rang==0) write(6,*) 'FATAL: VERSION PARALLELE seulement avec ',&
+& 'dmtype=21,22,4,3,9,15,151,1,30,31,32,33,34,19,35,23,24'
        if (rang==0) write(*,*) 'Stop in readdm'
        call arret_ndm
     end select
@@ -654,7 +658,7 @@ contains
     end if
     if ((timemax.gt.0).and.(itmax==-1)) itmax=1000000000
 
-    if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.9)) itmax=1
+    if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.151).or.(dmtype.eq.9)) itmax=1
 
 !    if (itmax < 0) then
 !       if (rang==0) write (6, *) rang,'wrong itmax < 0 '
@@ -1118,8 +1122,9 @@ contains
        end if
        if (rang==0) write (6,*)' decal, ndecal lparaFM, naparaFM:',decal,ndecal,lparafm,nparafm
        if (rang==0) write (6,*)
-    case (15)
-       if (rang==0) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
+    case (15,151)
+       if ((rang==0).and.(dmtype==151)) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
+       if ((rang==0).and.(dmtype==15)) write (6,'(a)') '      CALCUL MONTE CARLO DES CHEMINS '
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
 !!$       if ((nparapath.gt.1).and.(.not.lparapath)) then
 !!$          write(6,*)'nparapath >1, needs lparapath = TRUE'
@@ -1200,9 +1205,9 @@ contains
        endif
        if (rang==0) write (6, *) 'TEMPERATURE CONSTANTE a la Berendsen Text= ',text
     endif
-    if ((text.gt.0).and.(dmtype.ne.15)) then
-       if (.not.(ltberendsen.or.llangevin.or.lThoover.or.lTnose)) then
-          write(6,*)'text<0 mais pas dalgo' ;stop
+    if ((text.gt.0).and.(.not.((dmtype==15).or.(dmtype==151)))) then
+              if (.not.(ltberendsen.or.llangevin.or.lThoover.or.lTnose)) then
+          write(6,*)'text<0 mais pas dalgo',dmtype ;stop
        end if
     end if
     select case (igen)
@@ -1489,31 +1494,42 @@ contains
     end if
  end if
 #endif     
-    if (dmtype==15) then
+
     !condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
-       if((dmtype == 15) .and. (pas_lambda_mc.lt.0)) then
-          write(6,*)'Pour utiliser la methode MCGC, indiquer une valeur pour le pas lambda d integration'
+    if((dmtype == 15).or.(dmtype==151))then
+       if (pas_lambda_mc.lt.0) then
+          write(6,*)'Pour utiliser la methode MONTE-CARLO, indiquer une valeur pour le pas lambda d integration'
           call arret_ndm
        end if
        !idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
-       if((dmtype == 15) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
+       if(((dmtype == 15).or.(dmtype==151)) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
           write(6,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
           call arret_ndm
        end if
-       if((dmtype == 15) .and. (lbiais_retrait).and. (nbatplus.lt.1))then 
-          write(6,*)' methode MCGC avec le biais sur les retraits: pas possible aev nbatplus>1'
+       if(((dmtype == 15).or.(dmtype==151)) .and. (lbiais_retrait).and. (nbatplus.lt.1))then 
+          write(6,*)' methode MCGC avec  le biais sur les retraits: pas possible aev nbatplus>1'
           call arret_ndm
        end if
        select case(ins_typ)
        case(0)
+          if (rang==0) write(6,*)' MCC N-> N+1 dans toute la boite'
        case(1)
+          
+          if (rang==0) write(6,*)'MCC N-> N+1 dans une sphère'
           if (R0mcgc.lt.0) then
              if (rang==0) write(6,*)' R0mcgc.lt.0'
              call arret_ndm
           end if
           R0mcgc=R0mcgc*1d-8
+       case(2)
+          idirectionmcgc=0
+          if (rang==0) write(6,*)' MCC semi grand canonique'
+          if ((typswitch1==0).or.(typswitch2==0).or.(typswitch1==typswitch2))then
+             if (rang==0) write(6,*)'problem with typswitch'
+             call arret_ndm
+          end if
        case default
-          if (rang==0) write(6,*)' ins_typ =0 or 1'
+          if (rang==0) write(6,*)' ins_typ =0 or 1, 2'
           call arret_ndm
        end select
     end if
