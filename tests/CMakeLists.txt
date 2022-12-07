@@ -4,7 +4,7 @@
 # list and foreach ...
 
 # set( CMAKE_LIBRARY_PATH ${MKLROOT}/lib/intel64)
-# include_directories( ${MLD_MPI}/include )
+# include_directories( ${NDM_MPI}/include )
 
 list( APPEND simpletests # as *.f90
   test_010_hello_world
@@ -52,7 +52,7 @@ foreach( atest IN LISTS preprosimpletests )
   add_test( NAME ${atest} COMMAND ${atest}.exe )
   set_tests_properties(${atest} PROPERTIES TIMEOUT 30)
 
-  target_link_libraries( ${atest}.exe PRIVATE libndm ${MLD_MKL_LIB} )
+  target_link_libraries( ${atest}.exe PRIVATE libndm ${NDM_MKL_LIB} )
 endforeach()
 
 

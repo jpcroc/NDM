@@ -2,7 +2,7 @@
 CMAKE_minimum_required( VERSION 3.17 )
 
 project( NDM
-         VERSION 2.0.0
+         VERSION 3.0.0
          DESCRIPTION "NDM project with CMake"
          HOMEPAGE_URL "https://codev-tuleap.intra.cea.fr/plugins/git/ndm"
          LANGUAGES Fortran C )

@@ -9,7 +9,7 @@ log_warning( "NDM get fortran sources in ${CMAKE_CURRENT_SOURCE_DIR}" )
 
 file( GLOB NDM_LIB_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/[^.]*.F90 )
 file( GLOB NDM_MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/main.F90 )
-list(REMOVE_ITEM NDM_LIB_SOURCES ${MAIN_SOURCES})
+list(REMOVE_ITEM NDM_LIB_SOURCES ${NDM_MAIN_SOURCES})
 
 list( SORT NDM_LIB_SOURCES )
 list( SORT NDM_MAIN_SOURCES )
@@ -35,7 +35,7 @@ add_executable( ndm_main.exe ${NDM_MAIN_SOURCES} )
 #endforeach()
 
 add_dependencies(ndm_main.exe libndm)
-target_link_libraries( ndm_main.exe PRIVATE libndm ${MLD_MKL_LIB} )
+target_link_libraries( ndm_main.exe PRIVATE libndm ${NDM_MKL_LIB} )
 
 
 install( TARGETS libndm DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )

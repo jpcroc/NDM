@@ -60,6 +60,14 @@ f_cmake_clean   # important
 
 # you could append 'cmake -DCMAKE_VERBOSE_MAKEFILE=on ...''
 
+# example compile with trace, only 'jupy'
+# cmake -D NDM_OPT_TRACE=ON -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR} 2>&1 | grep jupy
+
+# example compile doc_2023
+# cmake -D NDM_OPT_COMPILE_DOC=ON -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR} ${NDM_SRCDIR}
+
+# compile standart (without doc and trace)
+
 ###### GNU serial
 cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR}
 
@@ -68,10 +76,6 @@ if [ -z "${MPI_BIN}" ] ; then
   module avail
   module load mpi/openmpi-x86_64
 fi
-
-# compile docc
-# f_cmake_clean ; cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR} 2>&1 | grep jupy
-# compile ndm
 cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_parallel.cmake -S ${NDM_SRCDIR}
 
 ccmake .  # use it only for display
