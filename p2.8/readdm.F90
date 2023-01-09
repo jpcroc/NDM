@@ -607,6 +607,12 @@ contains
           end if
        end if
     case(15,151)
+!!$       if ((lpr).and.((nox==-1).or.(noy==-1).or.(noz==-1))) then
+!!$          if (rang==0) then
+!!$             write(6,*)'MONTECARLO constant pressure : nox/noy/noz must be set in the din file STOP'
+!!$          end if
+!!$          call arret_ndm
+!!$       end if
        if (itypcalc.lt.0) then
           write(6,*)'itypcalc<0'
           call arret_ndm

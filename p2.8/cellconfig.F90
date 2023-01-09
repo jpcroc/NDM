@@ -533,7 +533,7 @@ contains
 
     cellcible%nox=cellsource%nox
     cellcible%noy=cellsource%noy
-    cellcible%noy=cellsource%noz
+    cellcible%noz=cellsource%noz
     cellcible%noxyz=cellsource%noxyz
     cellcible%natperc=cellsource%natperc
     cellcible%icaltabt=cellsource%icaltabt
