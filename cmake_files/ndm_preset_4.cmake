@@ -8,7 +8,7 @@ message("PRESET:   use ndm_preset_gnu_parallel.cmake")
 
 # CMAKE usual preset variables
 # https://cmake.org/cmake/help/latest/envvar/FC.html
-set(CMAKE_Fortran_COMPILER "mpiifort" CACHE STRING "$FC user choice fortran compiler f95 gfortran ifort ... mpifort mpiifort ..." FORCE)
+set(CMAKE_Fortran_COMPILER "mpifort" CACHE STRING "$FC user choice fortran compiler f95 gfortran ifort ... mpifort mpiifort ..." FORCE)
 
 # NDM usual preset variables
 set(NDM_TYPE "INTEL" CACHE STRING "GNU or INTEL" FORCE)

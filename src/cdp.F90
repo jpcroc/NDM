@@ -17,6 +17,7 @@ module cdp_mod
 #ifdef PARA  
   USE mod_para,only:maj_atomes_frt_ftm
 #endif
+
   use initspeed_mod,only:init_speed_1at
   use constrconf_mod,only:coord_to_cell
   !#else

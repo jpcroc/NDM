@@ -1,5 +1,5 @@
 
-CMAKE_minimum_required( VERSION 3.17 )
+CMAKE_minimum_required( VERSION 3.16 )
 
 project( NDM
          VERSION 3.0.0
