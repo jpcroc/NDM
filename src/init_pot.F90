@@ -176,7 +176,8 @@ contains
              do iti=1,ntyp
                 do iti2=iti,ntyp
                    l=ipo(iti,iti2)
-                   write(6,*)'types', iti,TY(ITI),iti2,TY(iti2),'=pair ',l,' is of potential ',typ_pot_pair(l)
+                   write(6,'(A,I3,A,I3,A,A,I3,A,I3)')'types', iti,TY(ITI),iti2,TY(iti2),&
+                        &'=pair ',l,' is of potential ',typ_pot_pair(l)
                 end do
              end do
           end if
@@ -201,8 +202,8 @@ contains
     class(box_config)::boxndm
     integer,intent(in)::immT
     integer::ipotcont,i,j,l
-
-    if (rang==0)then
+    integer,save::iwrt=0
+    if ((rang==0).and.(iwrt==0))then
           write(6,*)
        write(6,*)' -------------------------------------------------------------------'
        write(6,*)'             2nd step of potential initialization , dependancy on box size'
@@ -236,14 +237,15 @@ contains
     end do
     if (iewald.gt.0) call calpo_ew(boxndm,immT)
     if ((npotentiel.gt.1).and.(rang==0)) then
-!       if (rang==0) then
+       if ((rang==0).and.(iwrt==0)) then
           write(6,*)
           write(6,*)'decoupage en cellule suivant'
           write(6,*)'rumax',rumax*1d8
           write(6,*)
-!       end if
-    end if
+       end if
 
+    end if
+       iwrt=iwrt+1
 
     !<---------end setting the potential---------------
 

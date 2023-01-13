@@ -4,33 +4,26 @@ module prog_mod
   USE calfo_mod,only: calfo
   USE endrunT_mod,only: endrunT
   USE neb_mod,only: neb
-!  USE dmloop_lpr_mod,only: dmloop_lpr
   USE gcII_mod,only: gcII
-!  USE dmloop_vverlet_mod,only: dmloop_vverlet
-!  USE dmloop_mod,only: dmloop
   USE analyseT_mod,only: analyseT
   USE arret_ndm_mod,only: arret_ndm
   USE controleT_mod,only: controleT
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
   USE ForceMatrix_mod, only: calcFM, init_MPI_FM, pscFM,paraFM
-  USE montecarlo_mod, only: montecarlo,atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc,config_atom_n&
-       &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
-       &idirectionmcgc,initN,init_instyp,ins_typ,boxmcgc_p,boxmcgcpath,paramcgc!,initmclpr
+  USE montecarlo_mod, only: montecarlo,init_montecarlo,init_mpi_mcgc!!atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc,config_atom_n&
+!       &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
+!       &idirectionmcgc,initN,init_instyp,ins_typ,boxmcgc_p,boxmcgcpath,paramcgc,seed!,initmclpr
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,box_config_lpr
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config
-  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax&
-       &,lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman
+  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax,iseed,&
+       &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman
   
   use read_val,only:imm,ltabvois,rvois
   use NGC_mod,only:ngc
   use NDM_ML,only:init_config_ml
-!!$#if defined ML || defined PARAML    
-!!$  USE ml_main_mod,only: ml_main
-!!$#endif
-  USE Parrinello_Rahman,only:initlpr
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only:init_lammps
 
@@ -75,7 +68,7 @@ contains
     type(para_space_config)::psc0
     real(double)::rv
     integer::ipp
-    logical::linitpot
+
     !-----------------------------------------------
     !   G l o b a l   P a r a m e t e rs
     !-----------------------------------------------
@@ -89,7 +82,7 @@ contains
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
     !probablement inutile pour dmtype=9 ou 15
 ! choose actual data types for atmdl and boxndm depending on values read in readdm
-    if ((lPRahman).or.(dmtype==15)) then
+    if ((lPRahman).or.((dmtype == 15).or.(dmtype==151))) then
        boxndm=>boxlpr
     else
        boxndm=>boxs
@@ -256,8 +249,9 @@ contains
        call init_neb0 
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
-    case(15)
+    case(15,151)
        !#ifdef PARA
+
        call init_mpi_MCGC ! PARAPATH
        !#endif
        if (ltabvois) then
@@ -265,57 +259,7 @@ contains
        else
           rv=0
        end if ! PARAPATH
-
-       allocate (config_atom_n(nparapath))
-       allocate (config_atom_nplus1(nparapath))
-       allocate (config_cells_n(nparapath))
-       allocate (config_cells_nplus1(nparapath))
-       allocate(boxmcgcpath(nparapath))
-       !       if (nparapath==1) then
-       select type (boxndm)
-       type is (box_config_lpr)
-          boxmcgc=boxndm
-       end select
-       do ipp=1,nparapath
-          boxmcgc_p=>boxmcgcpath(ipp)
-          atconf_n=> config_atom_n(ipp)
-          cells_n=>config_cells_n(ipp)
-          atconf_nplus1=>config_atom_nplus1(ipp)
-          cells_nplus1=>config_cells_nplus1(ipp)
-          boxmcgc_p=boxmcgc
-          if (idirectionmcgc==0) then
-             call atconf_n%init(im,imm_glob,ltabvois,nvois,rvois=rv)
-          else
-             call atconf_nplus1%init(im,imm_glob,ltabvois,nvois,rvois=rv)
-          end if
-          ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
-
-          if (ipp==1) then
-             linitpot=.true.
-          else
-             linitpot=.false.
-          end if
-          if (idirectionmcgc==0) then
-             call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot)
-
-
-             if (ins_typ==1) call init_instyp
-             call initNP1(ipp) ! initialise la configuration N+1
-          else
-             call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot)
-             if (ins_typ==1) call init_instyp
-             call initN(ipp) ! initialise la configuration N+1
-          end if
-          if (lprahman) then
-             call initlpr(atconf_nplus1,cells_nplus1,boxmcgc_p,pscgc)
-             !          call initMClpr(atconf_nplus1%im)
-          end if
-       end do
-       !END PARAPATH
-       atconf_n=> config_atom_n(1)
-       cells_n=>config_cells_n(1)
-       atconf_nplus1=>config_atom_nplus1(1)
-       cells_nplus1=>config_cells_nplus1(1)
+       call init_montecarlo(boxndm,nvois,rv)
 
        call montecarlo
 

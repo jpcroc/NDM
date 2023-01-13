@@ -11,7 +11,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use Tpara,only:nprocs
+    use Tpara,only:nprocs,mpi_world
     USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,gamprfact,&
          &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,ibordcou,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
@@ -33,13 +33,14 @@ contains
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,beta35,gammas,gammav
-    USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,eatref,ipotentiel,npotmax,ntyp,lpotentiel
+    USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
     use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
-         &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter
+         &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
+         &typswitch1,typswitch2
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
     use Parrinello_Rahman,only:TinitBox
 #ifdef PARA
@@ -106,28 +107,28 @@ contains
     itetabvois = 10             !periode de calcul de la table des voisins
     tempstop = -1.0             !temperature of run stop
     tempstopcel = -1.0             !temperature of run stop
-    dmtype = 0
+    dmtype = 0  
     idirectionmcgc=-2           !direction pour le montecarlo 0 ou 1 a designer par l'utilisateur
     lbiais_retrait = .false.    !biais ou non sur les retraits dans le montecarlo
     lbiais_inser = .false.    !biais ou non sur les retraits dans le montecarlo
     fdmc_1 = -1000.0            !param de fermi dirac A DEF PAR UTILISATEUR pour la fct discriminante du biais dans MC
-    fdmc_2 = -1000.0            !valeur devant etre changee
+    fdmc_2 = -1000.0            !valeur devant etre changee    
     !dmtype = type of calculation : 1 -> MD
-    !                               2 -> quench (trempe)
+    !                               2 -> quench (trempe) 
     !                               21 -> quench (trempe)Vcst
     !                               22 -> quench (trempe)PCst
     !                               23 ->  fire quench Vcst
     !                               24 ->  fire quench Pcst
-    !                               3 -> gradient conjugue générique pointe vers 31 par défaut
+    !                               3 -> gradient conjugue générique pointe vers 31 par défaut 
     !                              30 -> VIEUX gradient conjugue sur les coordonnes reduites
     !                              31 -> VIEUX gradient conjugue sur les coordonnes cartesiennes
     !                              32 -> steepest descent
     !                              33 -> gradient conjugue
     !                              34 -> gradient conjugue modifié Fletcher-Reeves
     !                              35 -> relaxation ADAMD. :Kingma and J. Ba, “Adam: A Method for Stochastic Optimization,” in International Conference on Learning Representations (ICLR), 2015.
-    !                               4 -> Velocity Verlet
-    !                               5 -> test des forces
-    !                               6 -> analyse des positions en fin de cascade
+    !                               4 -> Velocity Verlet 
+    !                               5 -> test des forces 
+    !                               6 -> analyse des positions en fin de cascade 
     !                               7 -> calcul des phonons
     !                               8 -> PR
     !                               9 -> NEB
@@ -137,7 +138,8 @@ contains
     !                              17 -> MAB
     !                              18 -> ML
     !                              19 -> matrice de forces
-    !                              15 -> montecarlo_mcgc
+    !                              15 -> montecarlo_mCC
+    !                              151 -> montecarlo_mcGC
     !                              112 -> histogramme des distances entre atomes
     lFire = .false.              ! Fire algorithm is USEd for quenching (cf tr_fire.F90)
     tstep = 1.0                 !timestep in 10^-15 sec unit
@@ -154,7 +156,7 @@ contains
     itederive = -1              !"derive" correction
     igen = -2                 !type de generation :0 a partir de.gin, +1 a partir de .cin; -1 de gin vers cin puis stop +2 cintogin ; +3 modification de cin puis stop
     lrestart = .FALSE.          !if T : restarting from an interrupt job
-    ldecoup = .FALSE.          !if T: cherche les nombres de procs optimums, voir decoup3D (ne marche su'en séquentiel (évidemment))
+    ldecoup = .FALSE.          !if T: cherche les nombres de procs optimums, voir decoup3D (ne marche su'en séquentiel (évidemment)) 
     lPathFromGin = .FALSE.      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
     tgc = 0.0                   ! threshold for CG calculation
     ltabvois = .FALSE.          ! methode de la table des voisins
@@ -189,7 +191,7 @@ contains
     lpcon = .FALSE.             !algorithm a pression constante a la hache
     lpcon2 = .FALSE.            !amortissement de la deformation de la boite
     lpconxyz = .FALSE.          !the relaxation are allowed only along the X, Y and Z axis
-    lpconx = .FALSE.          !the relaxation are allowed only along the X axis
+    lpconx = .FALSE.          !the relaxation are allowed only along the X axis 
     lpcony = .FALSE.          !the relaxation are allowed only along the  Y  axis
     lpconz = .FALSE.          !the relaxation are allowed only along the  Z axis
 
@@ -283,15 +285,15 @@ contains
 
     !---inNEB
     nebtype=2        ! NEB is the default
-    nebrelaxation=2  ! We relax all the atoms; if nebrelaxation==1 only the most "deplaced" atoms
+    nebrelaxation=2  ! We relax all the atoms; if nebrelaxation==1 only the most "deplaced" atoms      
     npath = 15       ! 15 images of the neb is the default
     maxneb = 700     ! the MAX of NEB steps
     deltaRmax=1.d-2
     neb_noise_scale=0.001      ! this will affect the 4th digit
     mdcg_noise_scale=0.001      ! this will affect the 4th digit
     ! x + x*neb_noise_scale*random,
-    ! where "random" is a random number between
-    ! 0 and 1
+    ! where "random" is a random number between 
+    ! 0 and 1  
     neb_noise=0                 ! 0 without noise, 1 with noise
     mdcg_noise=0                ! 0 without noise, 1 with noise
     !      	lperiod=.false.  ! pas de conditions periodiques
@@ -303,7 +305,7 @@ contains
     lprtfat=.false.
 
     iteanaposneb=0
-    lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep.
+    lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep. 
     lposmoy=.false.       ! writes the average position and energy of the atoms in a .mol file
     eatref(:)=0.
 
@@ -322,7 +324,7 @@ contains
     ngrdel=500
 
     timemax=1d25
-
+    
     tpseuils(:)=0 ! 1:Tmin; 2:abs(T') ; 3: abs(T'') ; 1:abs(P); 2:abs(P') ; 3: abs(P'')
 
     lrctest=.true.
@@ -367,12 +369,13 @@ contains
     R0mcgc=-1.0
     bublcenter(:)=0.5
     ins_typ=0
+    typswitch1=0
+    typswitch2=0
 
-
-    if (rang == 0) write (6, "(a,a)") 'nom fichier din=', fnamdin
+    if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
-
+    
     read (ludin, nml=input)
 
 
@@ -428,7 +431,7 @@ contains
              if (rang==0) write(6,*)'direction', ic,' : regular PBC'
           case(2)
              if (rang==0) write(6,*)'direction', ic,' : WALL Boundary Conditions'
-          case default
+          case default 
              if (rang==0) write(6,*)'wrong bound ary conditions, stop'
              call arret_ndm
           end select
@@ -529,7 +532,7 @@ contains
              dmtype=8
              if (llangevin) dmtype=88
           end if
-
+          
        end select
     end if
 
@@ -550,7 +553,7 @@ contains
        latcomp=.false.
     end select
 
-
+    
 
 
 
@@ -569,7 +572,7 @@ contains
     endif
 #ifdef PARA
     select case(dmtype)
-    case(21,22,4,3,1,30,31,32,33,34,35,23,24,8)
+    case(21,22,4,3,1,30,31,32,33,34,35,23,24,8,88)
        if (ltabvois) then
           select case (ipotentiel)
           case(20)
@@ -590,7 +593,7 @@ contains
              end select
           end if
        end if
-
+        
     case(9)
        np2=npath-2
        if (np2.ne.nprocs) then
@@ -603,7 +606,13 @@ contains
              end select
           end if
        end if
-    case(15)
+    case(15,151)
+!!$       if ((lpr).and.((nox==-1).or.(noy==-1).or.(noz==-1))) then
+!!$          if (rang==0) then
+!!$             write(6,*)'MONTECARLO constant pressure : nox/noy/noz must be set in the din file STOP'
+!!$          end if
+!!$          call arret_ndm
+!!$       end if
        if (itypcalc.lt.0) then
           write(6,*)'itypcalc<0'
           call arret_ndm
@@ -625,7 +634,9 @@ contains
        end if
 
     case default
-       if (rang==0) write(*,*) 'FATAL: VERSION PARALLELE seulement avec dmtype=21,22,4,3,9,15,1,30,31,32,33,34,19,35,23,24'
+       write(6,*)'DMTYPE',dmtype
+       if (rang==0) write(6,*) 'FATAL: VERSION PARALLELE seulement avec ',&
+& 'dmtype=21,22,4,3,9,15,151,1,30,31,32,33,34,19,35,23,24'
        if (rang==0) write(*,*) 'Stop in readdm'
        call arret_ndm
     end select
@@ -653,7 +664,7 @@ contains
     end if
     if ((timemax.gt.0).and.(itmax==-1)) itmax=1000000000
 
-    if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.9)) itmax=1
+    if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.151).or.(dmtype.eq.9)) itmax=1
 
 !    if (itmax < 0) then
 !       if (rang==0) write (6, *) rang,'wrong itmax < 0 '
@@ -710,7 +721,7 @@ contains
     if(dmtype==9) lprteat=.true.
     if(dmtype==12) lprteat=.true.
     if(dmtype==16) lprteat=.true.
-    if (lposmoy.EQV..true.) then
+    if (lposmoy.EQV..true.) then 
        lprteattotm=.true.
        write(6,*)'LPOSMOY, stocke les positions moyennes dans posmoyx et les ecrit a la fin avec les energies moyennes'
     end if
@@ -877,7 +888,7 @@ contains
     if (itetimestep>0)  then
        if ((dmtype.eq.1).or.(dmtype.eq.21).or.(dmtype.eq.22).or.(dmtype.eq.4)) then
           if (rang==0) write(6,*) 'The time step changed each', itetimestep,' steps'
-       else
+       else 
           if (rang==0) write(6,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
           if (rang==0) write(6,*) 'STOP in readdm'
           call arret_ndm
@@ -987,7 +998,7 @@ contains
           call arret_ndm
        end if
     case(1)
-       if(rang==0) then
+       if(rang==0) then 
           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC >' , Ecelec,'!!!!!!!!!!'
           write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES Tempcel  >' , tcelec,'!!!!!!!!!!'
 
@@ -1001,7 +1012,7 @@ contains
           write(6,*) 'Text <  0 et  perte electronique Langevin : stop'
           call arret_ndm
        end if
-       if(rang==0) then
+       if(rang==0) then 
           write(6,*)'electronic stopping according to elstop.in from SRIM ET CONNECTION A LANGEVIN pour EC >' , Ecelec,'!!!!!!!!!!'
        endif
        llangevin=.true.
@@ -1088,7 +1099,7 @@ contains
     case (6)
        if (rang==0) write (6,'(a)') '      ANALYSE DES POSITIONS EN FIN DE CASCADE '
     case (9)
-       if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS '
+       if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS ' 
        itesauvposition=-1
        itesauvforce=-1
        itetemp=-1;itesigma=-1
@@ -1111,14 +1122,15 @@ contains
 #endif
 
        decal=decal*1d-8
-       if((ndecal.le.0).or.(decal.le.0)) then
+       if((ndecal.le.0).or.(decal.le.0)) then 
           if (rang==0) write (6,*)' problem decal, ndecal:',decal,ndecal
           call arret_ndm
        end if
        if (rang==0) write (6,*)' decal, ndecal lparaFM, naparaFM:',decal,ndecal,lparafm,nparafm
        if (rang==0) write (6,*)
-    case (15)
-       if (rang==0) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
+    case (15,151)
+       if ((rang==0).and.(dmtype==151)) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
+       if ((rang==0).and.(dmtype==15)) write (6,'(a)') '      CALCUL MONTE CARLO DES CHEMINS '
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
 !!$       if ((nparapath.gt.1).and.(.not.lparapath)) then
 !!$          write(6,*)'nparapath >1, needs lparapath = TRUE'
@@ -1145,19 +1157,19 @@ contains
        end if
 #endif
 
-#ifdef ART
+#ifdef ART    
     case (12)
        if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
        if (rang==0) write (6,'(a)') '|---------ART nouveau by N MOUSSEAU.---------------|'
        if (rang==0) write (6,'(a)') '|======== colored by Cosmin Marinica!==============|'
 #endif
-#ifdef SUNDAE
+#ifdef SUNDAE    
     case (16)
        if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
        if (rang==0) write (6,'(a)') '|---------..........................---------------|'
        if (rang==0) write (6,'(a)') '|==================================================|'
 #endif
-#ifdef MAB
+#ifdef MAB    
     case (17)
        if (rang==0) write (6,'(a)') '|=========       NDM + MAB          ===============|'
        if (rang==0) write (6,'(a)') '|---------..........................---------------|'
@@ -1199,9 +1211,9 @@ contains
        endif
        if (rang==0) write (6, *) 'TEMPERATURE CONSTANTE a la Berendsen Text= ',text
     endif
-    if ((text.gt.0).and.(dmtype.ne.15)) then
-       if (.not.(ltberendsen.or.llangevin.or.lThoover.or.lTnose)) then
-          write(6,*)'text<0 mais pas dalgo' ;stop
+    if ((text.gt.0).and.(.not.((dmtype==15).or.(dmtype==151)))) then
+              if (.not.(ltberendsen.or.llangevin.or.lThoover.or.lTnose)) then
+          write(6,*)'text<0 mais pas dalgo',dmtype ;stop
        end if
     end if
     select case (igen)
@@ -1239,7 +1251,7 @@ contains
           if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
 
        case(10)  ! Potentiel EAM
-          if(dmtype==7) then
+          if(dmtype==7) then 
              ldemitab=.FALSE.
              if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
           else
@@ -1253,7 +1265,7 @@ contains
 
        end select
 
-       !     if(ipotentiel.le.10) then
+       !     if(ipotentiel.le.10) then 
        !        ldemitab=.TRUE.
        !        if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
        !     else
@@ -1266,7 +1278,7 @@ contains
 
     if ( (dmtype==21).or.(dmtype==22).or.(dmtype==3).or.(dmtype==30).or.(dmtype==32)&
          &.or.(dmtype==33).or.(dmtype==31).or.(dmtype==34).or.(dmtype==35).or.(dmtype==9)&
-          ) then
+          ) then    
        if ( (fpstop<0).and.(fsumstop<0)) then
           if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
           if (rang==0) write(6,*) 'STOP in readdm',fpstop,fsumstop
@@ -1275,7 +1287,7 @@ contains
        if ( (fpstop < 0) .and. (dmtype==9) ) then
           if (rang==0) write(6,*) 'NEB and DRAG implementation only for positive fpstop'
           if (rang==0) write(6,*) 'STOP in readdm'
-          call arret_ndm
+          call arret_ndm 
        end if
        if  ( (fpstop>0).and.(fsumstop>0) ) then
           if (rang==0) write(6,*) 'DANGER - WARNING - ACHTUNG:  both fpstop and fsumstop are positive !!!'
@@ -1293,7 +1305,7 @@ contains
        end if
     end if
 
-    if ( (.not.lperiod).and.(itesauvposition>0).and.lsuivinonpbc) then
+    if ( (.not.lperiod).and.(itesauvposition>0).and.lsuivinonpbc) then  
        if (rang==0) write(6,*)' lsuivinonpbc will be turn to FALSE'
        lsuivinonpbc=.false.
     end if
@@ -1302,7 +1314,7 @@ contains
        if (dmtype.ne.4) then
           if (rang==0) write(6,*) 'lsuivinonpbc is implemented only with velocity verlet'
           if (rang==0) write(6,*) 'Or dmtype=4. Change and restart until there I will stop for you.'
-          call arret_ndm
+          call arret_ndm 
        end if
 
        if (itesauvposition<=0) then
@@ -1353,7 +1365,7 @@ contains
     if (rang==0) write (6, '(A,F10.1,A,F10.1,A,F10.1,A,F10.1)') 'tinit=', tinit
     if (tempdeplainit.GT.0) then
        if (debyetemp==-1) then
-          write (6,*)"debyetemp  non definie mais tempdeplainit> 0" ; stop
+          write (6,*)"debyetemp  non definie mais tempdeplainit> 0" ; stop 
        end if
     end if
     if (rang==0) write (6, '(A,F10.1)') 'tempdeplainit=', tempdeplainit
@@ -1380,7 +1392,7 @@ contains
 
     if(lTandersen.and.rang==0) write(6,*)'Tandersen nuandersen = ',nuandersen
 
-    if ((lprtsigat.eqv..true.).or.(lsigatcel.eqv..true.))then
+    if ((lprtsigat.eqv..true.).or.(lsigatcel.eqv..true.))then 
        lsigat=.true.
     else
        lsigat=.false.
@@ -1402,12 +1414,12 @@ contains
     if ( ( (dmtype==3).OR.(dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==35)&
          &.or.(dmtype==33).or.(dmtype==31) ) &
          .and.(fpstop.le.0.0).and.(fsumstop.le.0.0)) then
-       if (rang==0) write(6,*) rang,'critere de conv. sur la force par atome max negative'
+       if (rang==0) write(6,*) rang,'critere de conv. sur la force par atome max negative' 
        if (rang==0) write(6,*) rang,'fpstop', fpstop
-       if (rang==0) write(6,*) rang,'critere de conv. sur la force sqrt ( sum_f F_i^2 ) negative'
+       if (rang==0) write(6,*) rang,'critere de conv. sur la force sqrt ( sum_f F_i^2 ) negative' 
        if (rang==0) write(6,*) rang,'fsumstop', fsumstop
        if (rang==0) write(6,*) rang,'un de deux doit etre > 0. Exemple:'
-       if (rang==0) write(6,*) rang,'fpstop = 0.05, fsumstop=0.1 les unites sont eV/A'
+       if (rang==0) write(6,*) rang,'fpstop = 0.05, fsumstop=0.1 les unites sont eV/A'      
        call arret_ndm
     end if
 
@@ -1426,7 +1438,7 @@ contains
 
     if ((iteanapos.eq.-1).and.(itecompcr.ne.-1)) iteanapos=itecompcr
     usdh = 1/(two*tstep)
-    if (rang==0)then
+    if (rang==0)then 
        write(6,*)'nb de potentiels', npotentiel
        if (npotentiel==1) then
           write(6,*)'ipotentiel',ipotentiel
@@ -1461,7 +1473,7 @@ contains
        cunitE=' erg'
     end if
 #ifdef LAMMPS_VERSION
-    if (ipotentiel.lt.0) then
+    if (ipotentiel.lt.0) then 
     if(trim(units_lammps)=='metal') then
        energy_conversion_lammps=1/erg2ev
        position_conversion_lammps=A2cm
@@ -1487,32 +1499,43 @@ contains
        call arret_ndm
     end if
  end if
-#endif
-    if (dmtype==15) then
-    !condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule
-       if((dmtype == 15) .and. (pas_lambda_mc.lt.0)) then
-          write(6,*)'Pour utiliser la methode MCGC, indiquer une valeur pour le pas lambda d integration'
+#endif     
+
+    !condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
+    if((dmtype == 15).or.(dmtype==151))then
+       if (pas_lambda_mc.lt.0) then
+          write(6,*)'Pour utiliser la methode MONTE-CARLO, indiquer une valeur pour le pas lambda d integration'
           call arret_ndm
        end if
        !idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
-       if((dmtype == 15) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
+       if(((dmtype == 15).or.(dmtype==151)) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
           write(6,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
           call arret_ndm
        end if
-       if((dmtype == 15) .and. (lbiais_retrait).and. (nbatplus.lt.1))then
-          write(6,*)' methode MCGC avec le biais sur les retraits: pas possible aev nbatplus>1'
+       if(((dmtype == 15).or.(dmtype==151)) .and. (lbiais_retrait).and. (nbatplus.lt.1))then 
+          write(6,*)' methode MCGC avec  le biais sur les retraits: pas possible aev nbatplus>1'
           call arret_ndm
        end if
        select case(ins_typ)
        case(0)
+          if (rang==0) write(6,*)' MCC N-> N+1 dans toute la boite'
        case(1)
+          
+          if (rang==0) write(6,*)'MCC N-> N+1 dans une sphère'
           if (R0mcgc.lt.0) then
              if (rang==0) write(6,*)' R0mcgc.lt.0'
              call arret_ndm
           end if
           R0mcgc=R0mcgc*1d-8
+       case(2)
+          idirectionmcgc=0
+          if (rang==0) write(6,*)' MCC semi grand canonique'
+          if ((typswitch1==0).or.(typswitch2==0).or.(typswitch1==typswitch2))then
+             if (rang==0) write(6,*)'problem with typswitch'
+             call arret_ndm
+          end if
        case default
-          if (rang==0) write(6,*)' ins_typ =0 or 1'
+          if (rang==0) write(6,*)' ins_typ =0 or 1, 2'
           call arret_ndm
        end select
     end if
@@ -1541,8 +1564,22 @@ contains
           Tinitbox=0.
        end if
     end If
+
+
+       if (iseed.le.0) then
+          call system_clock (iseed)
+          iseed =iseed +10*rang
+          if (rang==0)      write(6,*)'rang iseed ',rang,iseed
+       end if
+
+!#ifdef PARA
+!    call mpi_world%bcast(0,iseed)
+!#endif              
+    
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
+
+
   end subroutine readdm
 
 end module readdm_mod

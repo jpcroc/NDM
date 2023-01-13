@@ -6,16 +6,17 @@ module decoupage_mod
   USE atomconfig,only: atom_config
   USE read_val,only:rvois
   implicit none
+  logical::lverb=.true.
 contains
   subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose,psc)
 
 #ifdef PARA
     USE mpi
-    USE Tpara,only:MPI_COMM_space,status,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config!,coord_max,coord_min
+    USE Tpara,only:MPI_COMM_space,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config!,coord_max,coord_min
 !    USE mod_para,only:res_cpu,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,nb_cell_x,nb_cell_y,nb_cell_z
 #endif
     USE Tpara,only:myidsp,nprocspace,para_space_config
-    USE gen_com_m, ONLY:imm_glob,rang,ldecoup,lsigat,lprteat,llangevin,lax
+    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
 
     use read_val,only:ltabvois
         type(para_space_config)::psc
@@ -25,12 +26,11 @@ contains
     type(cell_config)::celdec
     class(atom_config),optional:: atdec
     logical,optional::lverbose
-    logical::lverb=.true.
     integer, allocatable :: coord_min(:,:),coord_max(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z
     integer:: nnoeuds,imm_loc
     integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
     integer :: num_sol !iteration du decoupage possible
-    integer :: test,ko
+    integer :: test
 
     integer::im0,nvois0
     integer, allocatable :: decoup(:,:) !tableau comprenant l'ensemble des decoupages 

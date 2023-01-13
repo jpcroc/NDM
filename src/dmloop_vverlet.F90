@@ -106,7 +106,6 @@ contains
 
 #ifdef PARA
 
-
           if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              call comm_space%sum(sigkine)
              if (allocated(celndm%sigc)) then

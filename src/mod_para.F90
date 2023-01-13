@@ -67,7 +67,7 @@ contains
     type(para_space_config)::psc
     type(box_config)::boxcf
 
-    integer::i,ne,imglobstock
+    integer::ne
 
     atmp=> atcf
     celmp=>cellcf
@@ -336,7 +336,6 @@ contains
 
     implicit none
     type(para_space_config)::psc
-    integer :: nb_at_recv
     integer :: proc_source
     integer :: i_at
     integer :: nproc_voisin
@@ -799,14 +798,13 @@ contains
 
     implicit none
     type(para_space_config)::psc
-    integer :: nb_at_recv
     integer :: proc_source
     integer :: i_at
     integer :: nproc_voisin
     integer :: pt_at_ftm
     integer :: ind_recv
 
-    integer :: nb_at_max,nb_at,koo
+    integer :: nb_at_max,nb_at
 
     ! On place le pointeur de stockage des atomes fantomes a la suite des 
     ! atomes locaux
@@ -916,7 +914,7 @@ contains
     integer :: ncell_front
     integer :: procv
     integer :: koo
-    integer :: nb_at,nb_at_max,nb_at_max_tot
+    integer :: nb_at_max_tot,nb_at_max,nb_at
     integer :: n_at
     integer :: i_at
     real(double) :: tabdensity(imm)
@@ -1013,13 +1011,11 @@ contains
     type(para_space_config)::psc
     integer::imm,im
     integer,intent(in)::num_at_glob(imm)
-    integer :: nb_at_recv
     integer :: proc_source
     integer :: i_at
     integer :: nproc_voisin
     integer :: pt_at_ftm
     integer :: ind_recv
-    integer :: nb_at_max,nb_at,koo
     integer :: ind_loc,ftm_at
 
     real(double) :: tabdensity(imm)
@@ -1085,8 +1081,8 @@ contains
     integer :: ncell_ftm
     integer :: procv
     integer :: koo
-    integer :: nb_at,nb_at_max,nb_at_max_tot
-    integer :: n_at
+    integer :: nb_at,nb_at_max_tot
+    integer :: n_at,nb_at_max
     integer :: i_at
 
     ! Boucle a vide pour determiner au mieux la taille du buffer d'envoi 
@@ -1181,12 +1177,11 @@ contains
     type(cell_config),intent(in)::celcf
     type(para_space_config)::psc
 
-    integer :: nb_at_recv
     integer :: proc_source
     integer :: i_at
     integer :: nproc_voisin
     integer :: ind_recv
-    integer :: nb_at_max,nb_at,koo
+    integer :: nb_at_max,koo
     integer :: ind_loc,i_at_loc,ind_glob
 
 

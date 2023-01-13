@@ -10,7 +10,7 @@ contains
   subroutine calfo2ctabvois(atcf,celcf,boxcf)
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:lcalcjq,pi,potis1
-    USE var_pot, ONLY:alpha,csive,ipo,zz,rue_pair,ipo,pot
+    USE var_pot, ONLY:alpha,csive,ipo,rue_pair,ipo,pot
     use vect_dist_mod,only:vect_dist
     USE jqmod
     implicit none
@@ -18,14 +18,11 @@ contains
     type(cell_config),intent(in)::celcf
     class(box_config),intent(in)::boxcf
     !-----------------------------------------------
-    integer :: iw2, iti, l, iw1, i, j, itj, k, &
-         iw,  ic
+    integer :: iw2, iti, l, iw1, i, j, itj, k, iw
     logical::linter
-    real(double) :: aux, alp, a1, a2, a3, f1, f2, f3,  &
-         c1, c2, c3, ddsq,  sk, phu, ra(3),eatcomp
-    real(double) ::  dr, r,r2,partsig,deltaepot
-    real(double), dimension(1,3) :: cv
-    REAL(double), dimension(1:3) :: dxp, aCell, gradij
+    real(double) :: aux, alp,  sk, phu
+    real(double) ::  dr, r,partsig,deltaepot
+    REAL(double), dimension(1:3) :: dxp,  gradij
 
     aux = 23.06134575D-20
     alp = alpha/sqrt(pi)*aux
@@ -34,8 +31,6 @@ contains
 
        iti = atcf%ityp(i)
 !       l = ipo(iti,iti)
-       ! --- Calcul du second potentiel de la somme d'Ewald ---
-!       potis2 = potis2-zz(l)*alp
     end do
 
     ! --------------------------

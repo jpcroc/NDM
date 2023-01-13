@@ -34,7 +34,6 @@ subroutine epme (Deb,Fin,sige,im,xp,fp,ityp,volu,bg)
   !   L o c a l   V a r i a b l e s
   !----------------------------------------------
   integer,intent(in)::im
-  real(double), dimension(im) :: scalar
   integer :: deb, fin
   real(double),intent(inout),allocatable::fp(:,:)
   real(double),intent(in)::xp(:,:),volu

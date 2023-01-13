@@ -19,7 +19,7 @@ contains
     type(box_config)::boxndm
     integer,intent(in)::immT
     real(double) :: pi2, fact, fact1, fact2, hk2, ex, ex1, ex2 ,hbv(3)
-    integer ::nb1,nb2,nb3,nv
+    integer ::nb1,nb2,nb3
     ! --- Tableaux des troisiemes termes de la sommation d'Ewald ---
     pi2 = pi*pi
     !         volu = zl(1)*zl(2)*zl(3)

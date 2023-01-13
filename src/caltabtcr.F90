@@ -30,7 +30,7 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: i, ic, icell, kx, ky, kz, koo,noxyz
+  integer :: i,  kx, ky, kz, koo,noxyz
   real(double) :: aux, auy, auz
   !  real(double)::xpnp(3,imm)
   !-----------------------------------------------

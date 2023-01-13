@@ -49,20 +49,17 @@ contains
     logical::laux
     integer::nauxV,nauxtot
     integer::ivisum
-    character*80::namef,nameo,end_name
-    integer :: rgloc,j,ic,e_c,e_c0
+    character*80::nameo,end_name
+    integer :: rgloc,j,ic
 
     character*3, dimension(:), allocatable  :: tyw
 
 #ifdef PARA
-    integer :: iproc
-    integer :: im_loc
-    integer :: proc_source
     type(para_config)::div
 
 #endif
     class(atom_config),allocatable::atcomp
-    integer :: i, luvisu, luvisu2, iti,lenfn2
+    integer :: i, luvisu, luvisu2,lenfn2
     real(double) :: xp1, xp2, xp3,at(3,3),bg(3,3),pat
     character :: extension*9
     integer::iax
@@ -129,8 +126,8 @@ contains
           call arret_ndm
        end if
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-!          write(6,*)'IMRASMOL',atmol%im,atmol%imm,atmol%im_glob,atmol%imm_glob
           call atcomp%init(atmol%im_glob,im_glob=atmol%im_glob,imm_glob=atmol%imm_glob)
+!          call atcomp%print
           div%mpi_image%rank=myidsp
           div%mpi_image%nproc=nprocspace
           div%mpi_image%comm=COMM_space%comm
@@ -540,7 +537,6 @@ contains
 
   subroutine openfilemol(luvisu,nameo,end_name,ext)
     integer,intent(in)::luvisu
-    integer::lenfn2
     character(len=*),intent(in)::nameo,end_name
     character(len=9),optional::ext
     logical::lopen

@@ -17,6 +17,8 @@ module boxconfig
      procedure, pass::print=>boxprint
      procedure, pass::showtype=>boxshowtype
      procedure, pass::master2slave=>boxmaster2slave
+     procedure, pass::send2proc=>boxsend2proc
+     procedure, pass::recv=>boxrecv
   end type box_config
 
   type, extends (box_config):: box_config_lpr ! type dynamique des configurations atomiques(+vp/+xpp). vp et xpp seront toujours allouées
@@ -29,6 +31,39 @@ module boxconfig
 
   
 contains
+
+  subroutine boxrecv(box,rgem,mpic)
+
+    type(mpi_communicator),intent(in)::mpic
+    class(box_config)::box
+    integer,intent(in)::rgem
+    real(double)::atl(3,3)
+!    integer::tag=677
+    atl=box%at(:,:)
+    call mpic%recv(atl,rgem)
+    select type(box)
+    type is  (box_config_lpr)
+       call mpic%recv(box%hdot,rgem)
+    end select
+    call updatebox(box,atl)
+  end subroutine boxrecv
+  
+  subroutine boxsend2proc(box,rgcib,mpic)
+
+    type(mpi_communicator),intent(in)::mpic
+    class(box_config),intent(in)::box
+    integer,intent(in)::rgcib
+    real(double)::atl(3,3)
+!    integer::tag=676
+    atl=box%at(:,:)
+    call mpic%send(atl,rgcib)   
+    select type(box)
+    type is  (box_config_lpr)
+       call mpic%send(box%hdot,rgcib)
+    end select
+    return
+  end subroutine boxsend2proc
+
 
   subroutine boxmaster2slave(box,rgem,mpic)
 
@@ -68,7 +103,6 @@ contains
     real(double),intent(in),optional::at(3,3)
     real(double),optional,intent(in)::zl(3)
     integer,intent(in) ::ipbc(3)
-    integer::i,ic
     select type (boxnew)
     type is (box_config_lpr)
        boxnew%hdot=0
@@ -178,13 +212,15 @@ contains
 !!$    return
 !!$  end subroutine boxconfig2ndm
 
-  subroutine boxprint(boxprt,unit)
+  subroutine boxprint(boxprt,unit,mess)
     class(box_config),intent(in)::boxprt
     integer,optional::unit
+    character(len=*),optional::mess
     integer::unitw
     unitw=6
     if (present(unit))unitw=unit
-     write(unitw,*)'boxprt at',boxprt%at(:,:)
+    write(unitw,*)'in boxprint ',mess
+    write(unitw,*)'boxprt at',boxprt%at(:,:)
      write(unitw,*)'boxprt bg',boxprt%bg(:,:)
      write(unitw,*)'boxprt volu',boxprt%volu
      write(unitw,*)'boxprt icaltabt',boxprt%icaltabt
@@ -230,9 +266,8 @@ contains
      !-----------------------------------------------
      !   L o c a l   V a r i a b l e s
      !-----------------------------------------------
-     integer :: i, ic,icp!,nbing,ibing(100)
-     real(double)::dz,trav,ecav,ecap
-     real(double):: cpp,xpici,cppzl,ctest
+     integer :: i, ic
+     real(double):: cpp,xpici
      !      integer,save  :: iperiod
      !  if (rang==0) write(6,*)'PARA-T entree period'
 

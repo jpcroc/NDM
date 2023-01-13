@@ -117,6 +117,7 @@ contains
     integer::nv
     logical ::ltbv,lrealloc
     real(double)::rv
+    
     nv=0 ;  if(present(nvois))nv=nvois
     rv=0;  if(present(rvois))rv=rvois
     lrealloc=.false.
@@ -157,7 +158,8 @@ contains
 #endif    
        
     end if
-    atconf%ityp=0;atconf%xp=0;atconf%fp=0;atconf%ielat=0; atconf%lgul=.false.;atconf%num_at_glob=0
+    atconf%ityp=0;atconf%xp=0;atconf%fp=0;atconf%ielat=0; atconf%lgul=.false.;
+    atconf%num_at_glob=0
 #ifdef PARA
     atconf%proc_at=-1
 #endif    
@@ -361,10 +363,10 @@ contains
     class(atom_config):: atcf
     type(mpi_communicator),intent(in)::mpic
     integer,intent(in)::rgcib
-    integer:: size1,size3,sizeV,size9
+    integer:: size1,size3,size9
     character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,csi,csr,csl
     integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -409,10 +411,10 @@ contains
     class(atom_config):: atcf
     type(mpi_communicator),intent(in)::mpic
     integer,intent(in)::rgem
-    integer:: size1,size3,sizeV,size9
+    integer:: size1,size3,size9
     character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,csi,csr,csl
     integer, dimension (0:26):: Ipos1,Iposf,Rpos1,Rposf,Lpos1,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -470,13 +472,13 @@ contains
     type(mpi_communicator),intent(in)::mpic
     class(atom_config)::atcf
     integer,intent(in)::rgemet
-    integer:: size1,size3,sizeV,size9
+    integer:: size1,size3,size9
     character(len=*),optional,intent(in)::caracT
     character(len=26)::carac
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at
     ! v=vp,r=xpp
     ! u=eat,g=glangv;a=ax;s=sigat    
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,csi,csr,csl
     integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -711,7 +713,6 @@ contains
     class(atom_config)::atsource
     class(atom_config),allocatable:: intermediaire
     integer :: ind_switch_1, ind_switch_2,nag1,nag2
-    logical :: lex = .true.
     call atsource%deftype(intermediaire)
     call intermediaire%init(imin=2)
     nag1=atsource%num_at_glob(ind_switch_1)
@@ -776,13 +777,13 @@ contains
 
   end subroutine pack
 
-  subroutine fab (atsource,atcible,lback,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
+  subroutine fab(atsource,atcible,lback,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
     class(atom_config),intent(in)::atsource
     class(atom_config),intent(out)::atcible
     logical::lback
     logical, optional::lrescl
     logical::lrescale=.true.
-    integer::i2,imtrf,i
+    integer::i2,imtrf,i,immtrf
     integer::nvois
     real(double)::rvois
 
@@ -796,12 +797,16 @@ contains
           nvois=0;rvois=0
        end if
        imtrf=COUNT(atsource%lgul(1:atsource%im))
-
+       if (imtrf==0) then
+          immtrf=1
+       else
+          immtrf=imtrf
+       end if
        call atsource%Eegal(atcible)
        call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
     end if
 
-       call atcible%zero
+    call atcible%zero
     i2=0
     do i=1,atsource%im
        if(atsource%lgul(i)) then
@@ -883,7 +888,6 @@ contains
     logical :: lext ! par defaut on etend atcible si besoin
 
     integer::i2,i,imcib,imnew,immcib,imsrc,immsrc,immnew
-    class(atom_config),allocatable:: atcor
     integer::nvois
     real(double)::rvois
     ldal=.false.
@@ -1316,9 +1320,9 @@ contains
     character(len=26)::carac
 
 #ifdef PARA
-    integer::idmaster,idloc,icomm ! proc master,proclocal ,communicateur
+    integer::idmaster,idloc ! proc master,proclocal 
 
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip,iag,itot
+    integer::sizeI,sizeR,sizel,csi,csr,csl
     integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -1330,10 +1334,9 @@ contains
     integer,allocatable::inag(:)
 
     integer,allocatable::nag(:)
-    integer::imloc,imloc3,iproc,imrecv,icomp,imrecv3,imrecv9,imloc9
-    integer::imcomp,imtot,proc_source,npim,iloc
+    integer::imloc,imloc3,iproc,imrecv,icomp,imloc9
+    integer::imtot,proc_source,npim,iloc
     logical,allocatable::mask(:)
-
     if (.not.present(caracT)) then
        carac='xfniewdlpvrugas'
     else
@@ -1348,7 +1351,6 @@ contains
     call mpic%max(natgM)
     allocate(inag(natgM))
     inag=0
-    
     if (idloc==idmaster) then
        imtot=0
        do iproc=0,npim-1
@@ -1370,10 +1372,17 @@ contains
           call arret_ndm
        end if
 
-       do icomp=1,atcfcomp%im
-          inag(atcfcomp%num_at_glob(icomp))=icomp
-       end do
-
+       if (all(atcfcomp%num_at_glob(1:atcfcomp%im)==0)) then  ! This is anew atcfcomp with undefined atcfcomp :inag points to -1 to show that
+          inag(1:natgM)=-1
+       else if (any(atcfcomp%num_at_glob(1:atcfcomp%im)==0)) then !This is bulsshit (neither new nor pre-existing) smells like inconsistency
+          write(6,*)'VERS MASTER au moins un NAG nul'
+          call arret_ndm
+       else ! This a return to an existing atcfcomp which has its own num_at_glob numbering
+          do icomp=1,atcfcomp%im
+             !          write(6,*)'atcfcomp',icomp,atcfcomp%num_at_glob(icomp)
+             inag(atcfcomp%num_at_glob(icomp))=icomp
+          end do
+       end if
     else
        imloc=atcfloc%im
        call mpic%SEND(imloc,idmaster,11011)
@@ -1382,7 +1391,7 @@ contains
 
     
     if (idloc==idmaster) then
-
+       icomp=0
        imtot=0
        do iproc=0,npim-1
 
@@ -1394,7 +1403,13 @@ contains
              allocate(nag(imrecv))
              nag(1:imrecv)=atcfloc%num_at_glob(1:imrecv)
              do iloc=1,imrecv
-                icomp=inag(nag(iloc))
+                if (inag(nag(iloc))==-1) then ! num_at_glob pas defini pour atcfcomp
+                   icomp=icomp+1
+                   inag(nag(iloc))=icomp
+                   atcfcomp%num_at_glob(icomp)=nag(iloc)
+                else
+                   icomp=inag(nag(iloc))
+                end if
 !                write(6,*)'L2M',iproc,iloc,nag(iloc)
                 if (nag(iloc).ne.atcfcomp%num_at_glob(icomp))then
                    write(6,*)'erreur NATG',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
@@ -1467,7 +1482,13 @@ contains
              if (cst(2).ne.0)call mpic%recv(lbuffer,proc_source,315)
              if (cst(3).ne.0)call mpic%recv(Rbuffer,proc_source,316)
              do iloc=1,imrecv
-                icomp=inag(nag(iloc))
+                if (inag(nag(iloc))==-1) then ! num_at_glob pas defini pour atcfcomp
+                   icomp=icomp+1
+                   inag(nag(iloc))=icomp
+                   atcfcomp%num_at_glob(icomp)=nag(iloc)
+                else
+                   icomp=inag(nag(iloc))
+                end if
                 if (nag(iloc).ne.atcfcomp%num_at_glob(icomp))then
                    write(6,*)'erreur NATG2',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
                    call MPI_finalize(ierr)
@@ -1531,12 +1552,12 @@ contains
     ! v=vp,r=xpp
     ! u=eat,g=glangv;a=ax;s=sigat
 #ifdef PARA
-    integer::idmaster,idloc,icomm,npim ! proc master,proclocal ,communicateur
-    integer::imloc,imloc3,iproc,imrecv,ideb,ifin,imrecv3,imrecv9,icomp
-    integer::imcomp,imtot,proc_source,ns,iloc,i,iu
+    integer::idmaster,idloc,npim ! proc master,proclocal ,communicateur
+    integer::iproc,imrecv
+    integer::imcomp,imtot,ns,iloc,i
     logical,allocatable::mask(:)
 
-    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer::sizeI,sizeR,sizel,csi,csr,csl
     integer, dimension (0:26):: Iposf,Rposf,Lposf
     integer,allocatable:: ibuffer(:)
     logical,allocatable::lbuffer(:)
@@ -1667,8 +1688,8 @@ contains
      character(len=26),intent(in)::carac
     integer,intent(in),optional::nmask
     integer::nmaskV
-    integer:: size1,size3,sizeV,size9,iat
-    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,csi,csr,csl,ib,ip
+    integer:: size1,size3,sizeV,size9
+    integer::nvi,nvr,nvl
     !    integer, dimension (0:26):: Iposf,Rposf,Lposf
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
 
@@ -1803,7 +1824,7 @@ contains
 
    logical,allocatable :: mask(:)
     integer:: size1,size3,sizeV,size9,iat
-    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
+    integer::ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
     integer,intent(in),optional::nmask
     integer::nmaskV
 
@@ -2093,7 +2114,7 @@ contains
     real(double),allocatable,intent(in)::rbuffer(:)
 
     integer:: size1,size3,sizeV,size9
-    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
+    integer::ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip
 
 
     size1=immax;size3=3*size1; size9=3*size3
@@ -2309,7 +2330,7 @@ contains
     real(double),allocatable,intent(in)::rbuffer(:)
 
     integer:: size1,size3,sizeV,size9
-    integer::nvi,nvr,nvl,ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip,icomp
+    integer::ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip,icomp
 
 
     size1=immax;size3=3*size1; size9=3*size3

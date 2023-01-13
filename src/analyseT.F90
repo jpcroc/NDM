@@ -129,7 +129,6 @@ contains
        unitP=1.0
        cunitP='d/cm2'
     endif
-
     if (itetemp>0) then
        if (mod(iteration,itetemp)==0) then
           !          call atdml%print
@@ -140,11 +139,9 @@ contains
              where(atdml%ityp(1:atdml%im)==iti)
                 atdml%lgul(1:atdml%im)=.true.
              end where
-             if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
+!             if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
              call atdml%fab(attyp,lback=.false.)
              call caltabtC(celtyp,attyp,lperiod,boxndm)
-
-
              call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
              call celtyp%dealloc ; call attyp%dealloc
              ! ceci est un test du calcul des forces sur un sous-ensemble des atomes
@@ -157,7 +154,6 @@ contains
 !!$                call calfoextr(atdml,celndm,boxndm,psc)
 !!$             end if
           end do
-
           ! MPI
           !remarque 1erg = 6.24d11 eV
           if (mod(iteration,itetemp2)==0) then
@@ -491,7 +487,6 @@ contains
     if (itebdv>0) then
        if (mod(iteration,itebdv)==0) call bondval(atdml,celndm,boxndm)
     end if
-
     return
   end subroutine analyseT
 end module analyseT_mod

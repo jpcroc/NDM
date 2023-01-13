@@ -38,10 +38,8 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: i, ic,icp
-    real(double)::dz,trav,ecav,ecap
-    real(double):: cpp,xpici,ctest
-    integer,save  :: iperiod
+    integer :: i, ic
+    real(double):: xpici
 
 
     !      iperiod=iperiod+1

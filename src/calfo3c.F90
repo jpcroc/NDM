@@ -15,7 +15,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:lperiod,ltpcel,potcp,precexp
+    USE gen_com_m, ONLY:ltpcel,potcp,precexp
 
     USE var_pot, ONLY:r3cm2,ipo3c,ipo,coup3c2,ipo,coup3c2,coup3c,coup3c,gam,lamb,cangle,c3c
     implicit none
@@ -24,14 +24,14 @@ contains
     type(cell_config),intent(in)::celcf
     type(box_config),intent(in)::boxcf
     integer :: i,koo,i1,ko1,ko3,j,i2,k,i3, &
-         iti,itj,itk,itrip,lj,lk,ic
+         iti,itj,itk,itrip,lj,lk
 
     real(double) :: &
-         x1,x2,x3,r2,r,        &
+         r2,r,        &
          pscal,pscal2,pror2,pror,tetjik,cosi,cosi2,c2osi, &
          tcp31,tcp32, &
          tcp1,tcp2,tcp3,tcp4,tcp5,tcpx1,tcpx2,tcpy1, &
-         tcpy2,tcpz1,tcpz2,cv(1,3), &
+         tcpy2,tcpz1,tcpz2, &
          Rayij,Rayik,inv_Rij,inv_Rik, &
          INTER1j,INTER1k,INTER2exp,INTER2,INTER3j,INTER3k
 

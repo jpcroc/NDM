@@ -27,7 +27,7 @@ subroutine cryst_to_cart(nvec, vec, trmat, iflag)
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: nv, kpol
+  integer :: nv
   real(double), dimension(3) :: vau
   !-----------------------------------------------
   !

@@ -24,15 +24,15 @@ contains
 
     integer :: iw, iwph, i, ip, j, maxvoi, nvij,iwo,nvi
     integer :: itj,ll
-    REAL(double) :: r2,dij
+    REAL(double) :: dij
     real(double), dimension(1:npair) :: rvois2,rvois
 
-    real(double), dimension(3) :: xpi, dx, ds,VJI
+    real(double), dimension(3) :: xpi,VJI
     real(double),dimension(3,3)::at,bg
     integer :: iti, & !type de i
          koo, & !cel de i
          ko1, & !cel voisine de i
-         i1,i2,itemp
+         i1,i2
 
     logical::linter
     integer::iml !last atom (=%im for standard; =%imm for extrait)
@@ -179,7 +179,8 @@ contains
 
   subroutine buildvoisext(cn2m,itj,i,j,nvi,dij,VJI,koo,ko1)
     type(system_state)::cn2m
-    integer,intent(in)::i,j,nvi,koo,ko1,itj
+    integer::koo,ko1
+    integer,intent(in)::i,j,nvi,itj
     real(double),intent(in)::dij,VJI(3)
     cn2m%n_neigh(i)=nvi ! ne devrait être fait qu'une fois à la fin de la boucle sur i , mais mis là pour éviter de polluer caltabi
     cn2m%r_ij(i,nvi)=dij

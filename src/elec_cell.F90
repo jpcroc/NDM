@@ -64,7 +64,6 @@ contains
     type (cell_config)::celndm
     class (box_config)::boxndm
     integer:: luelec=654
-    integer::ic
     integer::ix,iy,iz
     character :: fnamedin*80
     namelist /inputelec/nexov,neyov,nezov,deltaxyz,Cec,KeC,ibc,T0,k0T,GepC,necyclemin,i2T&
@@ -380,7 +379,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
   subroutine dynelec(celndm)
     integer::ite,iex,iey,iez,iet
-    real(double)nexttemp (nex,ney,nez)
     type (cell_config)::celndm
     call calc_Qi2e(celndm)
     do ite=1,necycle
@@ -450,8 +448,8 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
   subroutine Tevolv(ite)
 
     real(double):: nexttemp(nex,ney,nez)
-    real(double)::Ce, Ke,tfact
-    integer:: iex,iey,iez,iet,ite,itn,itc
+    real(double)::Ce, Ke
+    integer:: ite,itn,itc,iex,iey,iez
     real(double)Txm1,Txp1,Tym1,Typ1,Tzm1,Tzp1,TC,Tm,deltaE,Ebase,EcN
 
 
@@ -875,7 +873,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     character :: fnamecout*80
   character :: extension*9
 
-    integer::iex,iey,iez,ic
     luecout=65
 !    write(6,*)'IN SVEL'
     if (rang.ne.0)then
@@ -903,7 +900,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
   subroutine restartelec
 
     character ::  fnamecin*80
-    integer:: luecin,iex,iey,iez,ic
+    integer:: luecin
     luecin=66
     write(6,*)'in Erestart',nez,nex,nez
     if (lrestart) then

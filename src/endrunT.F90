@@ -34,22 +34,7 @@ contains
     logical,intent(in)::latcomp
 
 
-    integer :: i,j, n, nAux_real,formatsauv
-    CHARACTER(len=100) :: out_file
-    REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
-    CHARACTER(len=20), dimension(:), allocatable :: aux_title
-!!$#ifdef PARA
-!!$    integer :: iproc
-!!$    real(double), allocatable :: xp_loc(:,:),eatom_loc(:)
-!!$    integer, allocatable      :: ityp_loc(:)
-!!$    integer, allocatable      :: num_at_glob_loc(:)
-!!$    integer :: im_loc
-!!$    integer :: proc_source
-!!$#endif
-    !-----------------------------------------------
-    !
-    !
-    !
+    integer :: formatsauv
     if (lPkbar) then
        unitP=1.0d-9
        cunitP='kbar'
@@ -57,13 +42,6 @@ contains
        unitP=1.0
        cunitP='d/cm2'
     endif
-
-    ! Un dernier calcul des forces pour la route
-    IF (iteTemp.GE.0) iteTemp=1
-    IF (iteSigma.GE.0) iteSigma=1
-
-    !flag_fin = .true. !*!
-
 
 
 

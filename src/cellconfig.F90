@@ -5,6 +5,7 @@ module cellconfig
   use boxconfig,only:box_config
   use paraconfig,only:para_config
   use Tpara,only:para_space_config,mpi_communicator,myidsp
+  use gen_com_m,only:rang
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
@@ -282,7 +283,7 @@ contains
     logical,intent(in),optional::lextr
     logical::lextrait=.false.
 
-    integer :: i, ic, icell, kx, ky, kz, koo
+    integer :: i,  kx, ky, kz, koo
     real(double) :: aux, auy, auz
     real(double), dimension(:,:), allocatable :: xpnp !
     integer(long), save:: icaltabt=0
@@ -303,7 +304,10 @@ contains
     cell%atincel(1:cell%natperc,1:cell%noxyz) = 0
     
     !  -------- cas sans cellule  -----------
-
+    if (atcf%im==0) then
+       cell%nato(:)=0
+       goto 101
+    end if
     if (cell%noxyz==1) then
        cell%nato(1) = iml
        do i = 1, iml
@@ -324,8 +328,10 @@ contains
        !debug       write (*,*) 'sub caltabt 1',it,xp(1,1)
        call cryst_to_cart (iml, xpnp, boxcf%bg, -1) ! cart vers cryst
        if (any(xpnp(:,1:iml).gt.1).or.any(xpnp(:,1:iml).lt.0)) then
+          write(6,*)'PLANTE',rang
+          write(300+RANG,*)'PLANTE'
           do i=1,iml
-             write(6,*) i,xpnp(:,i)
+             if (any(xpnp(:,i).gt.1).or.any(xpnp(:,i).lt.0))  write(6,*) i,xpnp(:,i)
           end do
           write(6,*)'caltabtc xpnp <0 ou >1 stop'
           call arret_ndm
@@ -403,6 +409,7 @@ contains
 !!$write(6,*)'sortie caltabt'     ! DEBUG
 
     !      write(6,*)'maxnato', maxval(cell%nato)
+101 continue
     cell%icaltabt=icaltabt
     atcf%icaltabt=icaltabt
     boxcf%icaltabt=icaltabt
@@ -526,7 +533,7 @@ contains
 
     cellcible%nox=cellsource%nox
     cellcible%noy=cellsource%noy
-    cellcible%noy=cellsource%noz
+    cellcible%noz=cellsource%noz
     cellcible%noxyz=cellsource%noxyz
     cellcible%natperc=cellsource%natperc
     cellcible%icaltabt=cellsource%icaltabt
@@ -547,13 +554,14 @@ contains
   end subroutine copy
 
 
-  subroutine cellprint(cellv,unit)
+  subroutine cellprint(cellv,unit,mess)
     class(cell_config)::cellv
     integer,intent(in),optional::unit
-    integer::i,ic,un
+    integer::i,un
+    character(len=*),optional::mess
     un=6
     if (present(unit))un=unit
-    write(un,*)'in cellprint'
+    write(un,*)'in cellprint ',mess
     write(un,*)'nox noy noz noxyz',cellv%nox,cellv%noy,cellv%noz,cellv%noxyz
     write(un,*)'natperc',cellv%natperc
     write(un,*)'celsize',cellv%celsize
@@ -587,7 +595,7 @@ contains
     class(cell_config)::cell
     type(mpi_communicator),intent(in)::mpic
     integer,intent(in)::rgcib
-    integer::nvi,nvr,sizeI,sizeR,ibi,ibr,nsize,ip,ip2,ip3
+    integer::sizeI,sizeR,ibi,ibr,nsize,ip,ip2,ip3
     integer,allocatable:: ibuffer(:)
     real(double),allocatable::rbuffer(:)
 

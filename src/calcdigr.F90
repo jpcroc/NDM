@@ -73,14 +73,11 @@ contains
 !!$    real(double),intent(in),allocatable::xp(:,:)
 !!$    integer,allocatable,intent(in)::ityp(:),ielat(:)
 
-    integer :: i, iti, itj, i1, i2, icell, kx, ky, kz, koo, ko1, j, &
-         ic, k, m,m1,n,iti1,iti2
-    real(double) :: rij,  x1, x2, x3, rmax2,rmax, incre
-    real(double) :: rspace2,invincre
-    real(double) :: aaa, bbb, ccc,cv(1,3)
+    integer :: i, i1, i2, koo, ko1, j, k, m,iti1,iti2
+    real(double) :: rij,rmax2,rmax, incre
+    real(double) :: invincre
     real(double),allocatable::digrtemp(:,:,:)
     logical::linter
-    real(double)::cx(3)
     
     allocate(digrtemp(ntyp,ntyp,rdfc%nkmax))
     digrtemp=0
@@ -168,18 +165,17 @@ contains
     implicit none
     type(rdf_typ)::rdfc
 
-    integer :: i, iti, itj, i1, i2, icell, kx, ky, kz, koo, ko1, j, &
-         ic, k, m,m1,lucoord,n
-    real(double) :: rij, c1, c2, c3, x1, x2, x3, rmax, incre
+    integer ::  i1, i2,  k, m,m1,lucoord
+    real(double) ::  rmax, incre
     real(double) :: rspace2,invincre
     real(double) :: aaa,bbb,ccc,ddd
     real(double),allocatable :: digrt(:),digrt2(:)
 
 
-    character :: paire1*20,paire2*20,paire3*20
-    character :: fpaire1*80, fpaire2*80,fpaire3*80
+    character :: paire1*20,paire2*20
+    character :: fpaire1*80, fpaire2*80
     character :: fpairecoord*80
-    integer :: lenfpaire1,lenfpaire2,lenfpaire3
+    integer :: lenfpaire1,lenfpaire2
     integer :: lusauvrdf
     character :: charsauvrfdc*8  
 

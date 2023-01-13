@@ -13,7 +13,7 @@ module init_mod
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC
   use boxconfig,only: box_config
-  USE constrconf_mod, only :constrconf
+  USE constrconf_mod, only :constrconf,lprt
   USE arret_ndm_mod,only: arret_ndm
 
 #ifdef PARA
@@ -138,7 +138,7 @@ contains
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        CALL comm_space%BARRIER
-       call init_voisinage(celndm,psc)
+       call init_voisinage(celndm,psc,lwrite=.true.)
 
 !       if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
 !       write(6,*) 'Le proc ',myidsp,' a ',psc%nbr_proc_voisin,' processeur voisin'
@@ -196,7 +196,7 @@ contains
        ! input and initialization of 2T
        select type(atdml)
           class is (atom_config_d)
-          call initspeed(atdml,boxndm)
+          call initspeed(atdml,boxndm,lprt=lprt)
        end select
        if (iterasmol>=0) then
           itapp=0

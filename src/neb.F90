@@ -84,7 +84,7 @@ contains
 #ifdef PARA
     lmaster=paraneb%lmaster
     if ((paraneb%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
-       call init_voisinage(cellneb(1),pscneb)
+       call init_voisinage(cellneb(1),pscneb,lwrite=.false.)
     end if
 
 
