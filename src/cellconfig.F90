@@ -358,7 +358,6 @@ contains
           !          if  ((it.ge.1000).and.(i.lt.20))  write(6,'(I5,3G15.7)')i, kx,ky,kz
           !==============================================================
           koo = 1+kx+cell%nox*(ky+cell%noy*kz)
-!          write(6,*)'koo',koo
           IF ( (koo.GT.cell%noxyz).OR.(koo.LT.0) ) THEN
              WRITE(0,'(a,i0,a,3g20.12)') &
                   'Problem with atom ', i, ', x,y,z = ', atcf%xp(1:3,i)

@@ -3,7 +3,7 @@ module eam
   USE T_kind_param_m
   USE gen_com_m, ONLY: A2cm,rang,lopt,ev2erg
   USE var_pot, ONLY:rhomin,rhomax,lforcetabulate,q,alpha,precisew,ncouc3,ncoucx,ncoucy,ncoucz,&
-       &  kpmex, kpmey, kpmez,ipotrep
+       &  kpmex, kpmey, kpmez,ipotrep,rcwolf
   USE spline_mod,only: cspline
   USE alloc_typ_mod,only: alloc_typ
   USE arret_ndm_mod,only: arret_ndm
@@ -203,6 +203,15 @@ contains
        elseif (iewald==2) then
           if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'
           call arret_ndm
+       elseif (iewald==3) then
+          if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION DE WOLF *-*-*-*-*-'
+          if ((rue==0).or.(alpha==0)) then
+             if (rang==0) write (6, *) 'RUE and alpha must be set'
+             call arret_ndm
+          else
+             if (rang==0)write(6,*)'RcWolf=',rcwolf,' alpha= ',alpha
+          end if
+          if (RcWolf==0) RcWolf=Rue
        else
           write (6, *) rang, 'Valeur de iewald erronee : iewald=',iewald
           call arret_ndm

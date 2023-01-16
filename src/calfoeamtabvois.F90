@@ -85,11 +85,6 @@ contains
 
 
        iti = atcf%ityp(i)
-!!$       if (ipotentiel==16) then
-!!$          l = ipo(iti,iti)
-!!$          ! --- Calcul du second potentiel de la somme d'Ewald ---
-!!$          potis2 = potis2-zz(l)*alp
-!!$       end if
              
        iw1 = iw2+1
        iw2 = atcf%iwmax(i)

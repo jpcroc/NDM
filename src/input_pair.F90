@@ -11,7 +11,7 @@ module input_pair_mod
        &r8p,evA62ergcm6,epswat,alpha,c3c,l3cpair,coup3c2,l3ctyp,cangle,gam,lamb,capWij,ietaij,iewald,eta,coup3c,capDij,&
        &capHij,rue_pair,sigmawat,rawat,qwat,bwat,awat,rawat2,pwat,lu_roff_pair,roff2,roff1,ro,typ_pot_pair,amorse,remorse,&
        &dmorse,dip,a_factor,pm,Afd,Bfd,r0fd, Aig,big,r0ig,dbasak,betabasak,rstarbasak,abasak,cbasak,rhobasak,luewald,iewaldS,&
-       &rue_pot
+       &rue_pot,RcWolf
 
   use Tpara,only:nprocspace
   implicit none
@@ -73,7 +73,7 @@ contains
 !    integer,allocatable :: ityplu(:)
 
     namelist /ewald/ rue, alpha, precis, ncouc3, ncoucx, ncoucy, ncoucz,&
-         kpmex, kpmey, kpmez, lopt,ecrue,ipotrep
+         kpmex, kpmey, kpmez, lopt,ecrue,ipotrep,RcWolf
 
 
     !EWALD
@@ -92,6 +92,7 @@ contains
     kpmey = 0
     kpmez = 0
     lopt=.FALSE.
+    RcWolf=0
 
 
     if (rang==0) write (6, *)
@@ -163,6 +164,7 @@ contains
 
        read(lupotin, *) iewald, l3c
        call checkewald(iewald)
+      
 #ifdef PARA
        !if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
@@ -172,7 +174,10 @@ contains
        !              endif
        !           end if
 #endif
-
+       read(lupotin, nml=ewald)            ! lecture de la namelist ewald
+       precisew=precis
+       rue_pot(ipotentiel)=rue*A2cm
+       alpha=alpha*1d8
        if (iewald==0) then
           if (rang==0) write (6, *) '-*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-'
        elseif (iewald==1) then
@@ -183,6 +188,17 @@ contains
        elseif (iewald==2) then
           if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'
           if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
+          if (rang==0) write (6, *) 'probablement buggué STOP'
+          call arret_ndm
+       elseif (iewald==3) then
+          if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION DE WOLF *-*-*-*-*-'
+          if (RcWolf==0) RcWolf=Rue*A2cm
+          if ((rue==0).or.(alpha==0)) then
+             if (rang==0) write (6, *) 'RUE and alpha must be set'
+             call arret_ndm
+          else
+             if (rang==0)write(6,*)'RcWolf=',rcwolf,' alpha= ',alpha
+          end if
        else
           write (6, *) rang, 'Valeur de iewald erronee : iewald=',iewald
           call arret_ndm
@@ -200,9 +216,6 @@ contains
        case(0,1,3,5,4)
           ipotrep=2
        end select
-       read(lupotin, nml=ewald)            ! lecture de la namelist ewald
-       precisew=precis
-       rue_pot(ipotentiel)=rue*A2cm
        ! MPI
 
 
@@ -1007,7 +1020,7 @@ contains
 
     ! ********** Fin de lecture des donnees du fichier potentiel.potin ********
     close(lupotin)
-    alpha=alpha*1d8
+
 !    write(6,*)'ALPHA',alpha
     return
   end subroutine input_pair

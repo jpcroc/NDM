@@ -66,7 +66,6 @@ contains
 
      do while ((iteration.le.itloopmax).and.(timel.lt.timeloopmax))
        iteration = iteration+1
-
        test_sigma=(mod(iteration,itesigma)==0)
        call dyn_vverlet(atdml,celndm,boxndm,psc)
        ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules

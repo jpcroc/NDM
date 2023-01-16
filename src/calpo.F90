@@ -3,7 +3,7 @@ module calpo_mod
   USE spline_mod,only: cspline
   USE zieg2_mod,only: zieg2
   USE zieg3_mod,only: zieg3
-
+    USE T_kind_param_m, ONLY:  double
   USE dervbeest_mod,only: deriVBEEST,maxVBEEST,potvbeest
 
   USE arret_ndm_mod,only: arret_ndm
@@ -15,7 +15,7 @@ module calpo_mod
        &ipo_2_pair_tab,zz,ipo,capdij,caphij,capwij,gm1,ietaij,lambda,rbp5,rp3c,rp5p3,xsi,poly5,poly3,r8p,pwat,&
        &typ_pot_pair,pot_pair_tab,ray,a_factor,fcr,potw,bspw,cspw,dspw,bspf,dspf,cspf,shel,pm,bwat,bm,awat,&
        &alpha,auxe,iewald,q,Afd,Bfd,r0fd, Aig,big,r0ig,dmorse,remorse,amorse,&
-       &dbasak,betabasak,rstarbasak,abasak,cbasak,rhobasak
+       &dbasak,betabasak,rstarbasak,abasak,cbasak,rhobasak,RcWolf
 
 
   implicit none
@@ -42,7 +42,7 @@ contains
     integer :: i, l, k, j
 
     real(double) :: bmh, r, r2, r3, r4, r5, r6, r8
-    real(double) :: factor, ar, ar2, damp, ddam
+    real(double) :: factor, ar, ar2
 
     real(double), dimension(ngrid) ::  kxsp, &
          potpart ,fcpart
@@ -74,7 +74,7 @@ contains
 
 
     real(double):: drkp,skp
-    integer::kp,lpt
+    integer::kp,lpt,ngrp1
 
     factor = (2.0D0*alpha)/sqrt(pi)
 555 format(1x,'Q =',f5.1,3x,'RAY =',f6.2,3x,'BM =',f7.4,3x,'N=',f4.1)
@@ -84,6 +84,7 @@ contains
     !    CALCUL DU POTENTIEL D'INTERACTION ENTRE 2 TYPES DE PAIRE
     !    CHOIX ENTRE : 0. Born-Mayer-Huggins et 1. Buckingham
     ! ****************************************************************
+    ngrp1=ngrid+1
     select case (ipotentiel)
           
     case(0,1,3,4,5,8,9)  ! FORMULES ANALYTIQUES
@@ -348,65 +349,29 @@ contains
        !               CALCUL DU POTENTIEL COULOMBIEN
        ! ************************************************************
        ! Produits des charges entre 2 types (pour terme coulombien)
-!       if (iewald.ne.0) then
-       do i=1,ntyp
-          do j=i,ntyp
-             l=ipo(i,j)
-             if (typ_pot_pair(l)==ipotentiel)then
-                zz(l)=q(i)*q(j)
-             end if
-          end do
-       end do
-       
 
 
+       call coulombbuild(pot,ipotentiel,iewald,ngrp1)
+!!$       do l=1,npair
+!!$          if (typ_pot_pair(l)==ipotentiel)then
+!!$             write(6,*)'l,k,r,pot(1,l,k)'
+!!$             do k=10,ngrid,10
+!!$                r=float(k)*csive*1.0D8
+!!$                write(6,'(2I6,3D17.6)')l,k,r,pot(1,l,k),pot(2,l,k)
+!!$             enddo
+!!$          end if
+!!$       end do
+!!$       stop
 
-       ! - Tableau des potentiels et forces correspondant aux interactions coulombiennes
-       ! --- Le premier terme du potentiel et de la force est calcule ---
-       do k = 1, ngrid
-          r = k*csive
-          r2 = r*r
-          r3 = r2*r
-          ar = alpha*r
-          ar2 = ar*ar
-          damp = 0.0
-          ! calcul de derfc par sous routine exterieure
-          damp = derfc(ar)
-          ddam = factor*r*exp((-ar2))
-!                write(6,*)'r k damp auxe zz',r, k ,damp,ar,zz,alpha
-!                    write(6,*)r,pot(1,1,k),auxe*zz(1)*damp/r
-          !    interaction de paire + interaction couenne
-          
-          do i=1,ntyp
-             do j=i,ntyp
-                l=ipo(i,j)
-                if (typ_pot_pair(l)==ipotentiel)then
-                   pot(1,l,k) = pot(1,l,k)+auxe*zz(l)*damp/r
-                end if
-             end do
-          end do
-
-       end do
-       do l=1,npair
-          potpart(:ngrid) = pot(1,l,1:ngrid)
-          call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
-          pot(2,l,1:ngrid) = bsppart(:ngrid)
-          pot(3,l,1:ngrid) = csppart(:ngrid)
-          pot(4,l,1:ngrid) = dsppart(:ngrid)
-!          write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
-       end do
-
-
-       ! affichage potentiel de chaque paire
-       !          do l=1,npair
-       !             if (typ_pot_pair(l)==ipotentiel)then
-       !                write(6,*)'l,k,r,pot(1,l,k)'
-       !                do k=10,ngrid,10
-       !                   r=float(k)*csive*1.0D8
-       !                   write(6,'(2I6,3D17.6)')l,k,r,pot(1,l,k),pot(2,l,k)
-       !                enddo
-       !             end if
-       !          endd
+!!$          do l=1,npair
+!!$             if (typ_pot_pair(l)==ipotentiel)then
+!!$                write(6,*)'l,k,r,pot(1,l,k)'
+!!$                do k=10,ngrid,10
+!!$                   r=float(k)*csive*1.0D8
+!!$                   write(6,'(2I6,3D17.6)')l,k,r,pot(1,l,k),pot(2,l,k)
+!!$                enddo
+!!$             end if
+!!$          enddo
 
     case(2)  !test départ sur analytique de paires  ! SELECT FORMULES ANALYTIQUES LIgne 90 (pas 0 1 3 4 5 8 9)
        if (rang==0) write (6, *) '----------- POTENTIEL WATANABE --------------'
@@ -482,10 +447,6 @@ contains
                      & +drkp*(pot_pair_tab(kp,4,lpt))))
                 !                           write(6,*)r,pot(1,l,k)              
 
-!                if (iewald.ne.0) then
-!                   pot(1,l,k) = pot_pair_tab(kp,1,lpt)+ drkp*(pot_pair_tab(kp,2,lpt)+drkp*(pot_pair_tab(kp,3,lpt) &
-!                        & +drkp*(pot_pair_tab(kp,4,lpt))))
-!                end if
              end if
           end do
        end do loopk
@@ -494,37 +455,10 @@ contains
        ! Si il existe des espèces chargées
        ! - Tableau des potentiels et forces correspondant aux interactions coulombiennes
        if (iewald.ne.0) then
-          do i=1,ntyp
-             do j=i,ntyp
-                l=ipo(i,j)
-                if (typ_pot_pair(l)==ipotentiel)then
-                   zz(l)=q(i)*q(j)
-                end if
-             end do
-          end do
-
-          do k = 1, ngrid
-             r = k*csive
-             r2 = r*r
-             r3 = r2*r
-             ar = alpha*r
-             ar2 = ar*ar
-             damp = 0.0
-             ! calcul de derfc par sous routine exterieure
-             damp = derfc(ar)
-             ddam = factor*r*exp((-ar2))
-             !      write(6,*)'r k dampam ',r, k ,damp+ddam
-
-             !    interaction de paire + interaction couenne
-             do l=1,npair
-                if (typ_pot_pair(l)==ipotentiel)then
-!                   if (zz(l).ne.0) then
-                      pot(1,l,k) = pot(1,l,k)+auxe*zz(l)*damp/r
-!                   end if
-                end if
-             end do
-          end do
+          call coulombbuild(pot,ipotentiel,iewald,ngrp1)
        end if
+
+       
        select case (ipotrep)
        case(1)
           ! Calcul du premier maximum local
@@ -735,7 +669,7 @@ contains
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
-    USE T_kind_param_m, ONLY:  double
+
     !******************************************************************
     implicit none
     !-----------------------------------------------
@@ -753,4 +687,73 @@ contains
     end do
     return
   end function fac
+
+
+  subroutine coulombbuild(pot,ipotentiel,iewald,ngrp1)
+    real(double)::pot(4,npair,0:ngrp1)
+    integer,intent(in)::ipotentiel,iewald,ngrp1
+    integer::i,j,l,k
+    real(double)::r,r2,r3,ar,ar2,damp,damprc,arc,term2,term3,term4
+    real(double), dimension(ngrid) ::  kxsp, &
+         potpart ,fcpart
+    real(double), dimension (ngrid) ::potpartw
+    real(double), dimension(ngrid) :: bsppart, csppart, dsppart
+
+
+    
+    do i=1,ntyp
+       do j=i,ntyp
+          l=ipo(i,j)
+          if (typ_pot_pair(l)==ipotentiel)then
+             zz(l)=q(i)*q(j)
+          end if
+       end do
+    end do
+
+    ! - Tableau des potentiels et forces correspondant aux interactions coulombiennes
+    ! --- Le premier terme du potentiel et de la force est calcule ---
+    do k = 1, ngrid
+
+       r = k*csive
+
+       r2 = r*r
+       kxsp(k)=r
+       r3 = r2*r
+       ar = alpha*r
+       ar2 = ar*ar
+       ! calcul de derfc par sous routine exterieure
+       damp = derfc(ar)
+
+       do i=1,ntyp
+          do j=i,ntyp
+             l=ipo(i,j)
+             if (typ_pot_pair(l)==ipotentiel)then
+                pot(1,l,k) = pot(1,l,k)+auxe*zz(l)*damp/r
+ !               write(6,*)pot(1,l,k)
+                if (iewald==3) then
+                   aRc=alpha*RcWolf
+                   dampRc=derfc(aRc)
+                   term2=dampRc/RcWolf
+                   term3=(dampRc/(RcWolf**2))*(r-RcWolf)
+                   term4=(2*alpha/sqrt(pi))*(exp(-(alpha*RcWolf)**2)/RcWolf)*(r-RcWolf)
+!                   write(6,*)term2*erg2ev,term3*erg2ev,term4*erg2ev
+!                   write(6,*)l,r,zz(l),pot(1,l,k),auxe*zz(l)*(term3+term4-term2),auxe*zz(l)*damp/r
+                   pot(1,l,k) = pot(1,l,k)+auxe*zz(l)*(term3+term4-term2)
+
+                end if
+             end if
+          end do
+       end do
+    end do
+
+    
+    do l=1,npair
+       potpart(:ngrid) = pot(1,l,1:ngrid)
+       call cspline (ngrid, kxsp, potpart, bsppart, csppart, dsppart)
+       pot(2,l,1:ngrid) = bsppart(:ngrid)
+       pot(3,l,1:ngrid) = csppart(:ngrid)
+       pot(4,l,1:ngrid) = dsppart(:ngrid)
+    end do
+  end subroutine coulombbuild
+
 end module calpo_mod

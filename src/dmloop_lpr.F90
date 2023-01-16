@@ -9,7 +9,6 @@ module dmloop_lpr_mod
   USE cellconfig, only:cell_config,caltabtc
   USE boxconfig,only:box_config,box_config_lpr
   use Tpara,only:para_space_config
-  use var_pot,only:tabv3,tabf3,ncoucx,ncoucy,ncoucz,q,alpha,auxe,iewald
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t
