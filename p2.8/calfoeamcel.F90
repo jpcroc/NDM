@@ -82,10 +82,6 @@ contains
        densityi=0.0 ; dEembi=0.0
        koo = atcf%ielat(i)                          ! Numero de la cellule
        iti = atcf%ityp(i)
-!!$       if (ipotentiel==16) then
-!!$          l=ipo(iti,iti)
-!!$          potis2=potis2-zz(l)*alp
-!!$       end if
 
        ! pour chaque cel. voisine
        loop1cel:   do i1 = 0, celcf%ncelvois(koo)

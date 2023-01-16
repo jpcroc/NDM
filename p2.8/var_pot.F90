@@ -107,7 +107,9 @@ module var_pot
   real(double), dimension(:,:), allocatable :: bspw, cspw, dspw ! spline
   real(double) :: alpha
 
-
+  ! Wolf
+  real(double)::RcWolf
+  
   !6 Stillinger Weber Vashista JAP 101, 103515 (07)
   real(double):: lambda,xsi
   real(double),allocatable::capHij(:),capDij(:),capWij(:)
@@ -144,6 +146,8 @@ module var_pot
   real(double), dimension(:),allocatable :: fr1,fr2,fr3  !calcul de qgrid
   real(double), dimension(:),allocatable :: de1,de2,de3  !calcul de fp
   !jm       real(double), dimension(:),allocatable :: w1pme,w2pme,w3pme
+
+  !Wolf
 
 
 

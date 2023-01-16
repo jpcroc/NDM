@@ -16,7 +16,7 @@ module calfo_mod
   use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam,zz
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:potis0,potis2,potisp&
+  USE gen_com_m, ONLY:potis0,potis2,potisp,erg2ev&
        &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang,lperiod
 
   USE force_tersoff_mod,only:force_tersoff
@@ -126,7 +126,6 @@ contains
                       call calfo2ccel(atcf,celcf,boxcf)
                    endif
 
-!                   if (iewald.ge.1) call calfoew(atcf,celcf,boxcf)
                    ! Potentiel total
                    potisP = potis0+potis1    !  +potis2    !+potis3
                    potist=potist+potisP
@@ -186,7 +185,7 @@ contains
           call calfozz(atcf)
           potist=potist+potis2
        end if
-       if (iewald.ge.1)then
+       if ((iewald.gt.0).and.(iewald.ne.3))then
           call  calfoew(atcf,celcf,boxcf)
           potist=potist+potis3
        end if

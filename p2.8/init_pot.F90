@@ -210,7 +210,6 @@ contains
     end if
     call param_det(boxndm)
        ! rumax défini en ce point
-
     do ipotcont=0,npotmax
        if(lpotentiel(ipotcont).EQV..true.) then
           ipotentiel=ipotcont
@@ -221,21 +220,15 @@ contains
        select case(ipotentiel)
        case(0:9)
           call calpo
-!          if (iewald==1.or.iewald==2) then
-!             call calpo_ew(boxndm,immT)
-!          end if
 
        case(10,11,12,16)
           call calpoeam
-!          if ((ipotentiel==16).and.(iewald.gt.0)) then
-!             call calpo_ew(boxndm,immT)
-!          end if
 
        case(13,14,15)
           if (maxval(roff1).gt.0) call tersoff_zbl
        end select
     end do
-    if (iewald.gt.0) call calpo_ew(boxndm,immT)
+    if ((iewald.gt.0).and.(iewald.ne.3)) call calpo_ew(boxndm,immT)
     if ((npotentiel.gt.1).and.(rang==0)) then
        if ((rang==0).and.(iwrt==0)) then
           write(6,*)

@@ -3,6 +3,7 @@ module calpoeam_mod
   USE zieg2_mod,only: zieg2
   USE spline_mod,only: cspline
   USE arret_ndm_mod,only: arret_ndm
+  use calpo_mod,only:coulombbuild
   implicit none
 contains
   subroutine calpoeam
@@ -19,12 +20,12 @@ contains
     USE SMjuli
     implicit none
 
-    integer :: k,l,iti,lw,i,j
+    integer :: k,l,iti,lw,i,j,ngrp1
     real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
     real(double) ::ysp_d(ngrid),bsp_d(ngrid),csp_d(ngrid),dsp_d(ngrid)
     real(double):: ktor,r,r2,r3
     real(double),dimension(:),allocatable::ktorho
-    real(double) :: rk,rhok,rk2,rue,minrho,maxrho,ar,ar2,damp,factor
+    real(double) :: rk,rhok,rk2,rue,minrho,maxrho,ar,ar2,damp
 
 
 
@@ -57,7 +58,7 @@ contains
     !end interface
 
     allocate(ktorho(ntyp))
-
+    ngrp1=ngrid+1
     eamrep(:,:,:)=0.0
     eamrho(:,:,:)=0.0
     eamglue(:,:,:)=0.0
@@ -146,47 +147,9 @@ contains
     end do
     !stop
     if (ipotentiel==16) then 
-!    if (iewald.gt.0) then
-       factor = (2.0D0*alpha)/sqrt(pi)
 
-!       if (rang==0) write(6,*)'EWALD EAM',csive,ktor
-       do i=1,ntyp
-          do j=i,ntyp
-             l=ipo(i,j)
-             if (typ_pot_pair(l)==ipotentiel)then
-                zz(l)=q(i)*q(j)
-             end if
-          end do
-       end do
+       call coulombbuild(eamrep,ipotentiel,iewald,ngrp1)
 
-       do k = 1, ngrid
-          r = k*csive
-!          write(6,*)
-          r2 = r*r
-          r3 = r2*r
-          ar = alpha*r
-          ar2 = ar*ar
-          damp = 0.0
-          ! calcul de derfc par sous routine exterieure
-          damp = derfc(ar)
-
-          !    interaction de paire + interaction couenne
-          do l=1,npair
-             if (typ_pot_pair(l)==ipotentiel)then
-                if (zz(l).ne.0) then
-                   eamrep(1,l,k)=eamrep(1,l,k)+auxe*zz(l)*damp/r
-                end if
-             end if
-          end do
-       end do
-       do l=1,npair
-          ysp(1:ngrid)=eamrep(1,l,1:ngrid)
-          call cspline (ngrid,xsp,ysp,bsp,csp,dsp)
-          eamrep(1,l,1:ngrid)=ysp(1:ngrid)
-          eamrep(2,l,1:ngrid)=bsp(1:ngrid)
-          eamrep(3,l,1:ngrid)=csp(1:ngrid)
-          eamrep(4,l,1:ngrid)=dsp(1:ngrid)
-       end do
     end if
 
 

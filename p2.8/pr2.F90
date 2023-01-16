@@ -43,7 +43,7 @@ module Parrinello_Rahman
        &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP
   use FireModule,only:alph_start,f_alph,fdec,finc,nstepmin,tstep_mm,tstep0,init_trempe_fire
 
-  USE var_pot, ONLY:cm,auxe,alpha,iewald,ncoucx,ncoucy,ncoucz,q,tabf3,tabv3,ntyp,gamlt
+  USE var_pot, ONLY:cm,ntyp,gamlt
   USE recips_mod,only: recips,calcvol
 #ifdef PARA
   use Tpara, only:nprocspace,ierr,comm_space,myidsp

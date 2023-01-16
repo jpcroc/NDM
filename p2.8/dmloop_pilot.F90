@@ -33,6 +33,7 @@ contains
     if (present(linit))lini=linit
     select case (dmtype) 
     case(4)
+
        call dmloop_vverlet (atdml,celndm,boxndm,psc)
     case(8,22,24,88)
        select type (boxndm)

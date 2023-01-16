@@ -178,22 +178,20 @@ contains
                       case (1:9)
                          write(6,'(A,G21.12,A)')'    *energie paire 2 corps = ',(potis1)*unitE, cunitE
                          if(l3c) write(6,'(A,G21.12,A)')'    *energie pot 3 corps = ',potcp*unitE, cunitE
- !                        if(iewald.gT.0) write (6, '(A,G21.12,A)') '    *energie pot coul recip = ', potis3*unitE, cunitE
                       case(10:12)
                          write(6,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
                          write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
                       case(16)
                          write(6,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
                          write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
-!                         write(6,'(A,G21.12,A)')'    *energie EWALD  = ',potis3*unitE, cunitE
                       case(13)
                          write(6,'(A,G21.12,A)')'    *energie Tersoff = ',potisTersoff*unitE, cunitE
                          If (potisZBL.ne.0)write(6,'(A,G21.12,A)')'    *energie ZBL = ',potisZBL*unitE, cunitE
                       end select
                    end if
                 end do
-                if( any(zz.ne.0)) write (6, '(A,G21.12,A)') '    *energie EWALD 2eme terme = ', (potis2)*unitE, cunitE
-                if(iewald.gT.0) write (6, '(A,G21.12,A)') '    *energie EWALD RECIP = ', (potis3)*unitE, cunitE
+                if( potis2.ne.0) write (6, '(A,G21.12,A)') '    *energie EWALD 2eme terme = ', (potis2)*unitE, cunitE
+                if ((iewald.gt.0).and.(iewald.ne.3)) write (6, '(A,G21.12,A)') '    *energie EWALD RECIP = ', (potis3)*unitE, cunitE
                 write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Ec = ',kine*unitE, cunitE, &
                      '  (', temp, ' K)'
 

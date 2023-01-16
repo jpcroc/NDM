@@ -84,7 +84,7 @@ contains
       call caltabi(atpr%atom_config,celndm,boxndm)
    end if
 #endif
-   if (iewald>0) call calpo_ew(boxndm,atpr%imm)
+       if ((iewald.gt.0).and.(iewald.ne.3)) call calpo_ew(boxndm,atpr%imm)
     
     return
   end subroutine scalebox
