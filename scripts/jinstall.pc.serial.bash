@@ -30,42 +30,10 @@ unset FC
 
 f_cmake_clean   # important
 
-# you could append 'cmake -DCMAKE_VERBOSE_MAKEFILE=on ...''
-
-# example compile with trace, only 'jupy'
-# cmake -D NDM_OPT_TRACE=ON -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR} 2>&1 | grep jupy
-
-# example compile doc_2023
-# cmake -D NDM_OPT_COMPILE_DOC=ON -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR} ${NDM_SRCDIR}
-
-# compile standart (without doc and trace)
 
 ###### GNU serial
 cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake -S ${NDM_SRCDIR}
 
-###### GNU parallel need openmpi, do that one time only
-#PROBLEME
-
-
-  # C++ = mpic++
-  # CC  = mpicc
-  # F77 = mpif77  -cpp # -warn all -check all
-  # F90 = mpif90  -cpp # -warn all -check all
-
-
-  # MPI_LIB  = -lmpi
-# MKL_LIB  = -L/mnt/c/Users/jc148490/lin/INFO/lapack/lapack-3.10.0 -llapack -lrefblas
-
-# if [ -z "${MPI_BIN}" ] ; then   C   MPI_BIN ???
-  # module avail
-  # module load mpi/openmpi-x86_64
-# fi
- #cmake -C ${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_parallel.cmake -S ${NDM_SRCDIR}
-
-# ccmake .  # use it only for display
-
-# nproc     # --> 20 is246206
-# mate-system-monitor &
 
 cmake --build . --target all --parallel 4
 cmake --build . --target install
@@ -77,7 +45,7 @@ ldd ${NDM_BUIDIR}/bin/*
 
 # # # make an integration example...
  rm -rf  ./tmp
- cp -rf ${NDM_SRCDIR}/examples/ndm_lammps_serial ./tmp
+ cp -rf ${NDM_SRCDIR}/examples/ndm_serial ./tmp
  cd ./tmp
 
 ${NDM_INSDIR}/bin/ndm_main.exe
