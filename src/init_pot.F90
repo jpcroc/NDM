@@ -15,6 +15,7 @@ module init_pot_mod
   USE SMjuli,only:inputeamjl
   USE alloc_typ_mod,only: alloc_typ
   USE param_det_mod,only: param_det
+  use read_val,only:rvois
 #ifdef ML
  USE NDM_ML,only :rue_ml
 #endif
@@ -184,6 +185,7 @@ contains
        end if
        
        !#ifdef LAMMPS_VERSION
+       if (rvois.gt.0) rumax=rvois
     endif
     !#endif
 

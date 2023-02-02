@@ -118,9 +118,8 @@ module montecarlo_mod
 
 contains 
 
-  subroutine init_montecarlo(boxndm,nvois,rv)
+  subroutine init_montecarlo(boxndm,rv)
     class(box_config)::boxndm
-    integer,intent(in)::nvois
     real(double),intent(in)::rv
     logical::linitpot,lcalc
     integer::ipp,imdm=0
@@ -165,9 +164,9 @@ contains
           cells_nplus1=>config_cells_nplus1(ipp)
           boxmcgc_p=boxmcgc
           if (idirectionmcgc==0) then
-             call atconf_n%init(imdm,imm_glob,ltabvois,nvois,rvois=rv)
+             call atconf_n%init(imdm,imm_glob,ltabvois,rvois=rv)
           else
-             call atconf_nplus1%init(imdm,imm_glob,ltabvois,nvois,rvois=rv)
+             call atconf_nplus1%init(imdm,imm_glob,ltabvois,rvois=rv)
           end if
           ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
 
@@ -2701,7 +2700,7 @@ contains
     !type(atom_config_mc),intent(inout)::atconf
     integer,intent(in):: imin
     logical,optional, intent(in)::ltabvois,lreallocate
-    integer, optional::nvois,immin,im_glob,imm_glob
+    integer, optional::immin,im_glob,imm_glob,nvois
     real(double),optional::rvois
     logical :: lrealloc
 
@@ -2711,7 +2710,7 @@ contains
     end if
     !initialisation de la partie atom_config_d
 
-    call atconf%atom_config_d%init(imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob) 
+    call atconf%atom_config_d%init(imin,immin,ltabvois,rvois=rvois,lreallocate=lreallocate,im_glob=im_glob,imm_glob=imm_glob) 
     !initialisation de la partie mc ajoutée
     if ((lrealloc).and.(allocated(atconf%proba_des)))then
        deallocate(atconf%proba_des)

@@ -109,7 +109,8 @@ contains
     atdml%imm_glob=imm
     imm_glob=imm
     atdml%ltabvois=ltabvois
-       
+    atdml%rvois=rvois
+    
     select case(dmtype)
     case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix)
 
@@ -259,7 +260,7 @@ contains
        else
           rv=0
        end if ! PARAPATH
-       call init_montecarlo(boxndm,nvois,rv)
+       call init_montecarlo(boxndm,rv)
 
        call montecarlo
 

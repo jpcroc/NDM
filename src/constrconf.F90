@@ -3,7 +3,7 @@ module constrconf_mod
 #ifdef PARA
   USE decoupage_mod,only: decoupage
 #endif
-  USE read_val,only:imm,rvois,ipbc
+  USE read_val,only:imm,ipbc
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,imm_glob,ldecoup,lperiod,lrestart,rang,&
        &lvpread,zero,low_limit,lspacendm,rang
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
@@ -301,7 +301,6 @@ contains
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
     at2b%im_glob=at2b%im
 #endif             
-
     call setcellconf(cel2b,at2b,box2b,rum)
     return
 
@@ -387,8 +386,8 @@ contains
        call arret_ndm
     endif
 
-    if (rvois.gT.0)then
-       rvn=rvois
+    if (atrcf%rvois.gT.0)then
+       rvn=atrcf%rvois
     else
        rvn=0
     end if
