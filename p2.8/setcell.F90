@@ -1,7 +1,7 @@
 module setcell
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE read_val,only:nox,noy,noz,rvois
+!  USE read_val,only:nox,noy,noz
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:ldemitab,nvat,pi,rang,lrctest,ltpcel,lspacendm
   USE var_pot, ONLY:lpotentiel,rue_pot,ipotentiel !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
@@ -15,17 +15,23 @@ module setcell
   implicit none
 contains
 
-  subroutine setnox(boxsn,celsn,rum,lverbose)
+  subroutine setnox(boxsn,celsn,rum,lverbose,noxr,noyr,nozr)
 
     class(box_config),intent(in)::boxsn
     type(cell_config)::celsn
     real(double),intent(in)::rum
+    integer,optional::noxr,noyr,nozr
+    integer::nox,noy,noz
     integer::izonr
     logical,intent(in),optional::lverbose
     logical::lverb=.true.
-    real(double)::rut,zlmin,zlm2
+    real(double)::zlmin,zlm2
     if (present(lverbose)) lverb=lverbose
-
+    nox=0;noy=0;noz=0
+    if (present(noxr))nox=noxr
+    if (present(noyr))nox=noyr
+    if (present(nozr))nox=nozr
+    
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
     zlm2 = distmin(boxsn%at(:,1),boxsn%at(:,3))
     zlmin = min(zlmin,zlm2)
@@ -33,16 +39,15 @@ contains
     zlmin = min(zlmin,zlm2)
     zlmin=zlmin*2
 
-    rut=rum
-    if (lpotentiel(10).eqv..true.)      rut=max(rut,2*rue_pot(10))
-    if (lpotentiel(20).eqv..true.)      rut=max(rut,2*rue_pot(20))
+!    if (lpotentiel(10).eqv..true.)      rut=max(rut,2*rue_pot(10))
+!    if (lpotentiel(20).eqv..true.)      rut=max(rut,2*rue_pot(20))
     !     write(6,*)'BIP',rumax,rut,rue_pot(10)
     !  end if
-    if (lpotentiel(11).eqv..true.) rut=max(rut,2*rue_pot(11))
-    if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
-    izonr = int(zlmin/rut)
+!    if (lpotentiel(11).eqv..true.) rut=max(rut,2*rue_pot(11))
+!    if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
+    izonr = int(zlmin/rum)
     ! MPI
-    if ((rang==0).and.(lverb)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
+!    if ((rang==0).and.(lverb)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
     if ((ipotentiel.ne.20).and.(izonr<2)) then
        write (6, *) 'trop petite boite !!!'
        !cosboite  stop
@@ -122,7 +127,7 @@ contains
     real(double)::rumax
 
     integer::natperc,izonr2,nvois,nvperat
-    real(double)::rm2,zlm2,zlmin,voluperat
+    real(double)::rm2,zlm2,zlmin,voluperat,rvois
     logical,intent(in),optional::lverbose
     logical::lverb=.true.
     if (present(lverbose)) lverb=lverbose
@@ -154,6 +159,7 @@ contains
     if ((rang==0).and.(lverb))  write(6,*)'ltabvois',atcf%ltabvois
 
     if (atcf%ltabvois) then
+       rvois=atcf%rvois
        if (rumax>rvois) then
           write (6, *) rang,' rvois trop petit rvois rumax ', rvois, rumax
           call arret_ndm

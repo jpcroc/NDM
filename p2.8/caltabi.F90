@@ -36,7 +36,14 @@ contains
 
     logical::linter
     integer::iml !last atom (=%im for standard; =%imm for extrait)
-    atvois%iwmax(:)=0; atvois%indi(:)=0
+
+
+
+    atvois%iwmax(:)=0
+
+
+
+    atvois%indi(:)=0
     
     if (present(lextr))lextrait=lextr
     if (present(lconstrtotR))then
@@ -108,7 +115,7 @@ contains
                 !                   WRITE(0,'(a)') 'Augmentez le nombre moyen de voisins par&
                 !                        & atome dans le fichier *.din'
                 WRITE(0,'(a,i0)') 'truc étrange dans setcellconf'
-                STOP '< Caltabi >'
+                call arret_ndm
              END IF
 
              atvois%indi(iw) = j
@@ -161,7 +168,7 @@ contains
                    call buildvoisext(cn2m,atvois%ityp(j),i,j,nvi,dij,VJI,koo,ko1)
                 end if
                    
-                
+!                write(6,*)rang,iw,size(atvois%indi)
                 atvois%indi(iw) = j
                 !              indi2(iwph) = j
              end do loop_j !i2

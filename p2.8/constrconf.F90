@@ -3,7 +3,7 @@ module constrconf_mod
 #ifdef PARA
   USE decoupage_mod,only: decoupage
 #endif
-  USE read_val,only:imm,rvois,ipbc
+  USE read_val,only:imm,ipbc,nox,noy,noz
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,imm_glob,ldecoup,lperiod,lrestart,rang,&
        &lvpread,zero,low_limit,lspacendm,rang
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
@@ -22,7 +22,6 @@ module constrconf_mod
   use Tpara,only:para_space_config,nprocspace
 
   use config2data_mod,only:config2data
-
 
 
   implicit none
@@ -93,7 +92,7 @@ contains
            if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt)
+          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
           ncore=0
           atrcf%im_glob=compatrcf%im
           call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc,lverbose=lprt)
@@ -114,7 +113,7 @@ contains
     if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt)
+          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
           ncore=0
           call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
           !          CALL fin allocation CELL et FIN DIVID
@@ -129,7 +128,7 @@ contains
     if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt)
+          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
           open(123, file='decoup.dat', status='old')
           read (123, *) nprocspace,ncore
           close(123)         
@@ -144,7 +143,7 @@ contains
     if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt)
+          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
           !          CALL fin allocation CELL et FIN DIVID
        end if
 
@@ -263,7 +262,7 @@ contains
     end do
     call initbox(box2b,atg,ipbc)
 
-    call setnox(box2b,cel2b,rum,lverbose=lprt)
+    call setnox(box2b,cel2b,rum,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
 
     if ((rang==0).and.(lprt)) then
        write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
@@ -301,7 +300,6 @@ contains
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
     at2b%im_glob=at2b%im
 #endif             
-
     call setcellconf(cel2b,at2b,box2b,rum)
     return
 
@@ -387,8 +385,8 @@ contains
        call arret_ndm
     endif
 
-    if (rvois.gT.0)then
-       rvn=rvois
+    if (atrcf%rvois.gT.0)then
+       rvn=atrcf%rvois
     else
        rvn=0
     end if

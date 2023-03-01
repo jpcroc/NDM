@@ -4,7 +4,7 @@ module neb_module
   USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,lpathfromgin,&
        &lrestart,nebtype, fnam,pi,rang,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
-       &latcomp,imm_glob,lperiod
+       &latcomp,imm_glob,lperiod,lspacendm
   use read_val,only:rvois,ltabvois
   USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin
     use cryst_to_cart_mod,only:cryst_to_cart
@@ -272,10 +272,11 @@ end if
             WRITE(0,'(3a)') 'File ', Trim(ginFile), ' does not exist'
             STOP '< Load_NEB_Image_Gin >'
          END IF
-       ELSE
+      ELSE
+         atneb(iph)=atneb(1)
           atneb(iph)%xp(:,:)=atneb(1)%xp(:,:)+dxx(:,:)*dble(iph -1) / dble(npath-1)
-          atneb(iph)%ityp(:)=atneb(1)%ityp(:)
-          atneb(iph)%num_at_glob(:)=atneb(1)%num_at_glob(:)
+!          atneb(iph)%ityp(:)=atneb(1)%ityp(:)
+!          atneb(iph)%num_at_glob(:)=atneb(1)%num_at_glob(:)
 !           call rasmolT(atneb(iph),boxneb,iph)
          
        END IF
@@ -727,6 +728,7 @@ end if
     MPI_COMM_space=paraneb%mpi_image%comm
     nprocspace=paraneb%mpi_image%nproc
     call comm_space%init(MPI_COMM_SPACE)
+    if (nprocspace==1) lspacendm=.false.
 #else
     paraneb%mpi_orig%nproc=1
     paraneb%mpi_orig%rank=0

@@ -1,3 +1,59 @@
+0/Extraire les pdf
+
+1/ Passer à la moulinette T1.py
+python T1.py> outT1
+
+2/ passer à js2 (voir ci-dessous)
+
+Quandil n'y a pas de nom :
+chercher la ligne qui pose probleme du type
+LTTextBoxHorizontal(13) 35.000 364.901 171.723 415.901 'SAC COSTE JEAN-CHRISTOPHE DAPS CADRE ADMINISTRATIF (DAPS) (DAPS) (DAPS) '
+La dupliquer en changeant le x dyu nom et celui de l'affectation et les textes :
+LTTextBoxHorizontal(13) 59.000 364.901 171.723 415.901 'COSTE JEAN-CHRISTOPHE ) '
+LTTextBoxHorizontal(13) 146.000 364.901 171.723 415.901 ' DAPS CADRE ADMINISTRATIF (DAPS) (DAPS) (DAPS) '
+
+
+
+AVEC OU SANS COMMENTAIRE utiliser carry8  NOMsortiedejs2 commenatires années précédentes. carry8 contien une formuile supplémentaire pour les affectations
+
+SANS COMMENTAIRES:
+3/python carry5.py  NOMsortiedejs2
+
+AVEC COMMENTAIRES:
+
+4/ Importer les commentaures des années précédentes depuis excel avec des lignes: badge; com1;com2;com3 (export csv séparateur ;)
+
+5/utiliser carry7 pour recoller les commentaires et enlever les lignes paires
+
+6/dans excel ajouter une colonne avec le rang 1, 2, 3, etc.) puis completer les affecations qui manquent (colonne I) et raccourcir les noms qui foirent :
+extraire la colonne qui foire puis cut -c5- extr2.txt > extr2.2
+
+
+T1.py:
+import pdfminer
+from pdfminer.high_level import extract_pages
+for page_layout in extract_pages("cat3A1.pdf"):
+    for element in page_layout:
+        print(element)
+
+
+js2:
+#!/bin/bash -f
+sed -e '/>/s/>//' <outT1 > tmp1
+sed -e '/</s/<//' <tmp1 > tmp2
+sed -e '/\,/s/\,/\ /g' <tmp2> tmp3
+sed -e '/\\n/s/\\n/ /g' <tmp3> NOMsortiedejs2
+rm -f tmp1 tmp2 tmp3
+
+T1.py:
+import pdfminer
+from pdfminer.high_level import extract_pages
+for page_layout in extract_pages("cat3A1.pdf"):
+    for element in page_layout:
+        print(element)
+
+
+carry5.py:
 #!/usr/bin/python3
 import numpy as np
 import sys
@@ -34,13 +90,8 @@ class Sal:
 							self.comp=True
 							self.lok=True
 				if not self.lok	:
-					print('BADGE ',self.badge)
 					exit()
 			if testA=='affect' :
-				self.affect=remp
-				self.comp=True
-				self.lok=True
-			if testA=='ech' :
 				self.affect=remp
 				self.comp=True
 				self.lok=True
@@ -52,13 +103,7 @@ class Sal:
 				self.clembauche='pas trouvé'
 				self.comp=True
 				self.lok=True
-		if testA=='ech' :
-			if int(self.ech)==1 or int(self.ech)==2 or int(self.ech)==3 :
-				self.cat=1
-			if int(self.ech)==4 or int(self.ech)==5 :
-				self.cat=2
-			if int(self.ech)==6 or int(self.ech)==7  :
-				self.cat=3
+				
 		if not self.lok :
 			print('problem page tranche',testA, self.page, self.tranche)
 			print(self.__dict__)
@@ -71,8 +116,8 @@ class textel:
 		self.x=x
 		if 'ADMINISTRATIF' in self.text :
 			self.text=text.replace("CADRE ADMINISTRATIF","")
-			if self.x!=59:
-				self.x=146
+			self.x=146.
+
 		self.y=y
 		self.xf=xf
 		self.yf=yf
@@ -113,7 +158,7 @@ class textel:
 		trcmin=[]
 		trcmax=[]
 		trcmin.append(30.)
-		trcmax.append(146.)
+		trcmax.append(147.)
 		trcmin.append(145.)
 		trcmax.append(182.)
 		trcmin.append(182.)
@@ -126,7 +171,6 @@ class textel:
 			for il in range(0,5,1) :
 				if x<trcmax[il] and x> trcmin[il] :
 					self.col=il
-					# print("text col", self.col,self.x,self.xf,self.text)
 					break
 			if self.col==-1:
 				if x> 30.0 and xf< 811. :
@@ -403,7 +447,7 @@ for ipg	in range(len(ldpg)):
 			# print(salcur.badge,salcur.genre)
 			# print(" ")
 			# print(salcur.ech)
-			fileo.write(f"{salcur.badge} ; {salcur.nom}; {salcur.genre}; {salcur.age}; {salcur.cat}; {salcur.ech}; {salcur.classement}; {salcur.affect}; {salcur.diplome}; {salcur.embauche};{salcur.clembauche} ; {salcur.av[0]}; {salcur.av[1]}; {salcur.av[2]}; {salcur.av[3]}; {salcur.av[4]}; {salcur.av[5]}; {salcur.av[6]}; {salcur.av[7]}; {salcur.av[8]}; {salcur.av[9]} \n")
+			fileo.write(f"{salcur.badge} ; {salcur.nom}; {salcur.genre}; {salcur.age}; {salcur.ech}; {salcur.classement}; {salcur.affect}; {salcur.diplome}; {salcur.embauche};{salcur.clembauche} ; {salcur.av[0]}; {salcur.av[1]}; {salcur.av[2]}; {salcur.av[3]}; {salcur.av[4]}; {salcur.av[5]}; {salcur.av[6]}; {salcur.av[7]}; {salcur.av[8]}; {salcur.av[9]} \n")
 			# for cl in salcur.av:
 				# fileo.write(f"{cl} ;")
 				# fileo.write(f" \n")
@@ -415,3 +459,4 @@ for ipg	in range(len(ldpg)):
 			# # print (text)
 			# if text.page==ipg and text.col ==3 and text.tranche==itr:
 				# print (text.page, text.tranche, text.x,text.y,text.xf,text.yf,text.text)
+		

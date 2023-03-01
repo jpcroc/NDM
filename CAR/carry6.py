@@ -6,6 +6,13 @@ class page :
 		self.ip=ip
 		self.text=[]
 		self.sals=[]
+class Ancien: 
+	def __init__(self,badge,com1,com2,com3,com4) :
+		self.badge=int(badge)
+		self.com1=com1
+		self.com2=com2
+		self.com3=com3
+		self.com4=com4
 class Sal: 
 	def __init__(self,isal,itranche,indpage) :
 		self.diplomes=[]
@@ -16,9 +23,13 @@ class Sal:
 		self.lok=True
 		self.av=[]
 		self.affect=''
+		self.com1=''
+		self.com2=''
+		self.com3=''
+		self.com4=''
 		for il in range(0,10,1) :		
 			self.av.append(" ")
-			
+		
 	def check(self,testA,remp):
 		self.lok=True
 		if not hasattr(self,testA):
@@ -142,7 +153,33 @@ with open(nf) as file:
 nfo=nf+".csv"
 fileo=open(nfo,'w')
 ipg=-1
-
+nf2=sys.argv[2]
+comments=[]
+comligne=[]
+anclist=[]
+with open(nf2,encoding = "ISO-8859-1") as comf:
+	comligne=comf.readlines()
+for iline in range(len(comligne)):
+	line=comligne[iline]
+	# print(iline,line)
+	comments.append(line.split(";"))
+	# print(line)
+	# print(elem22)
+	# if iline>0 :
+	# trf=commments[iline][0]
+	# anclist.append(ancien(
+	try :
+		badge=int(comments[iline][0])
+		com1=comments[iline][1]
+		com2=comments[iline][2]
+		com3=comments[iline][3]
+		com4=comments[iline][4]
+		# print(comments[iline][0],badge)
+		anclist.append(Ancien(badge,com1,com2,com3,com4))
+	except:
+		pass
+	# print(anclist[iline].badge,anclist[iline].com1,anclist[iline].com2,anclist[iline].com3)
+# exit()
 itextdec=0
 itxt=0
 Pages=[]
@@ -393,7 +430,20 @@ for ipg	in range(len(ldpg)):
 			salcur.check('clembauche','')			 
 		# print("pass2")
 		for salcur in pagecur.sals:
-			
+			badge=int(salcur.badge)
+			for ianc in range(len(anclist)):
+				anc=anclist[ianc]
+				# print(badge,anc.badge,type(badge),type(anc.badge))
+				if badge==anc.badge:
+					# print("binga",badge)
+					salcur.com1=anc.com1
+					salcur.com2=anc.com2
+					salcur.com3=anc.com3
+					salcur.com4=anc.com4
+					# print("binga",badge,salcur.com1)
+
+		for salcur in pagecur.sals:
+			# print("TOTO",salcur.badge,salcur.com1)
 			# salcur.check('affect')
 			if not salcur.comp :
 				print('PROBLEM')
@@ -403,7 +453,12 @@ for ipg	in range(len(ldpg)):
 			# print(salcur.badge,salcur.genre)
 			# print(" ")
 			# print(salcur.ech)
-			fileo.write(f"{salcur.badge} ; {salcur.nom}; {salcur.genre}; {salcur.age}; {salcur.cat}; {salcur.ech}; {salcur.classement}; {salcur.affect}; {salcur.diplome}; {salcur.embauche};{salcur.clembauche} ; {salcur.av[0]}; {salcur.av[1]}; {salcur.av[2]}; {salcur.av[3]}; {salcur.av[4]}; {salcur.av[5]}; {salcur.av[6]}; {salcur.av[7]}; {salcur.av[8]}; {salcur.av[9]} \n")
+			# if hasattr(salcur,com1):
+			fileo.write(f"{salcur.badge} ; {salcur.nom}; {salcur.genre}; {salcur.age}; {salcur.cat}; {salcur.ech}; {salcur.classement}; {salcur.affect}; {salcur.diplome}; {salcur.embauche};{salcur.clembauche} ; {salcur.av[0]}; {salcur.av[1]}; {salcur.av[2]}; {salcur.av[3]}; {salcur.av[4]}; {salcur.av[5]}; {salcur.av[6]}; {salcur.av[7]}; {salcur.av[8]}; {salcur.av[9]}; {salcur.com1}; {salcur.com2}; {salcur.com3}; {salcur.com4} \n")
+			# print("bingo")
+			# exit()
+			# else :
+				# fileo.write(f"{salcur.badge} ; {salcur.nom}; {salcur.genre}; {salcur.age}; {salcur.cat}; {salcur.ech}; {salcur.classement}; {salcur.affect}; {salcur.diplome}; {salcur.embauche};{salcur.clembauche} ; {salcur.av[0]}; {salcur.av[1]}; {salcur.av[2]}; {salcur.av[3]}; {salcur.av[4]}; {salcur.av[5]}; {salcur.av[6]}; {salcur.av[7]}; {salcur.av[8]}; {salcur.av[9]} \n")
 			# for cl in salcur.av:
 				# fileo.write(f"{cl} ;")
 				# fileo.write(f" \n")

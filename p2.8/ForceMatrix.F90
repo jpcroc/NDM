@@ -14,11 +14,9 @@ module ForceMatrix_mod
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
        &NDM_MPI_REAL_DOUBLE,para_space_config,status,comm_space,mpi_world
   use mod_para,only:maj_atomes_frt_ftm
-!  USE init_vois_mod,only: init_voisinage
 #else
   use Tpara,only:myidsp,nprocspace,para_space_config,nprocs
 #endif
-  use read_val,only:rvois,ltabvois
   use var_pot,only:ipotentiel,rumax
   USE parautils,only:initloc,pointer_caltabt_calfo
   use config2data_mod,only:config2data

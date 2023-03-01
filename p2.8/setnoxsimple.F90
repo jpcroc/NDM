@@ -9,7 +9,6 @@ module setnoxsimple_mod
 #ifdef PARA
   use Tpara,only:nprocspace
 #endif
- USE read_val,only:rvois
   implicit none
 contains
 
@@ -20,7 +19,7 @@ contains
     class(atom_config)::atsn
     real(double),intent(in)::rum
     integer::izonr2,natperc,nox,noy,noz,nvois,nvperat
-    real(double)::zlmin,zlm2,voluperat
+    real(double)::zlmin,zlm2,voluperat,rvois
     
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
     zlm2 = distmin(boxsn%at(:,1),boxsn%at(:,3))
@@ -51,6 +50,7 @@ contains
     allocate(celsn%atincel(celsn%natperc,celsn%noxyz))
     celsn%atincel=0
     if (atsn%ltabvois) then
+       rvois=atsn%rvois
        izonr2 = int(zlmin/rvois)
        !write(*,*) 'DEBUG IN DIVID volu, im', volu, im
        voluperat=boxsn%volu/atsn%im_glob
@@ -64,7 +64,6 @@ contains
        atsn%nvois=nvois
        if(allocated(atsn%indi))deallocate(atsn%indi)
        allocate(atsn%indi(nvois))
-!       allocate(indi2(nvois))
        if (.not.allocated(atsn%iwmax))allocate(atsn%iwmax(atsn%imm))
     end if
   end subroutine setnoxsimple
