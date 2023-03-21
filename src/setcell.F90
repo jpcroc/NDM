@@ -1,7 +1,7 @@
 module setcell
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE read_val,only:nox,noy,noz
+!  USE read_val,only:nox,noy,noz
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:ldemitab,nvat,pi,rang,lrctest,ltpcel,lspacendm
   USE var_pot, ONLY:lpotentiel,rue_pot,ipotentiel !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
@@ -15,17 +15,23 @@ module setcell
   implicit none
 contains
 
-  subroutine setnox(boxsn,celsn,rum,lverbose)
+  subroutine setnox(boxsn,celsn,rum,lverbose,noxr,noyr,nozr)
 
     class(box_config),intent(in)::boxsn
     type(cell_config)::celsn
     real(double),intent(in)::rum
+    integer,optional::noxr,noyr,nozr
+    integer::nox,noy,noz
     integer::izonr
     logical,intent(in),optional::lverbose
     logical::lverb=.true.
     real(double)::zlmin,zlm2
     if (present(lverbose)) lverb=lverbose
-
+    nox=0;noy=0;noz=0
+    if (present(noxr))nox=noxr
+    if (present(noyr))nox=noyr
+    if (present(nozr))nox=nozr
+    
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
     zlm2 = distmin(boxsn%at(:,1),boxsn%at(:,3))
     zlmin = min(zlmin,zlm2)

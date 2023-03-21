@@ -40,7 +40,7 @@ contains
     use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
-         &typswitch1,typswitch2
+         &typswitch1,typswitch2,muchem
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
     use Parrinello_Rahman,only:TinitBox
 #ifdef PARA
@@ -89,7 +89,7 @@ contains
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
-         ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
+         ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,muchem,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
 
 
@@ -346,6 +346,7 @@ contains
     n_path = -100 !valeur negative par defaut pour que l'utilisateur la change
     distminat=1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
     nbatplus=1
+    muchem=-10000.0
     ipbc(1:3)=1 ! 1=PBC; 2=wall... dimension 3 =plans bc; ac;ab
 
     ndecal=2 ! nombre de décalage dans le calcul de la matrice de force (dmtype=19)
@@ -632,7 +633,7 @@ contains
              end select
           end if
        end if
-
+          
     case default
        write(6,*)'DMTYPE',dmtype
        if (rang==0) write(6,*) 'FATAL: VERSION PARALLELE seulement avec ',&
@@ -1129,8 +1130,20 @@ contains
        if (rang==0) write (6,*)' decal, ndecal lparaFM, naparaFM:',decal,ndecal,lparafm,nparafm
        if (rang==0) write (6,*)
     case (15,151)
-       if ((rang==0).and.(dmtype==151)) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
-       if ((rang==0).and.(dmtype==15)) write (6,'(a)') '      CALCUL MONTE CARLO DES CHEMINS '
+       if (dmtype==151) then
+          if (nparapath.ne.1) then
+             write(6,*)'dmtype=151 Grand Canonical Monte-Carlo and nparapath.ne.1 : stop'
+             call arret_ndm
+          end if
+          if (muchem==-10000) then
+             write(6,*)'dmtype=151 Grand Canonical Monte-Carlo : specify muchem in din'
+             call arret_ndm
+          end if
+          if (rang==0) write(6,*)'GRAND CANONICAL MONTE-CARLO'
+       end if
+       
+       if ((rang==0).and.(dmtype==151)) write (6,'(a)') '      GRAND CANONICAL MONTE CARLO '
+       if ((rang==0).and.(dmtype==15)) write (6,'(a)') '      PATH CALCUL MONTE CARLO  '
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
 !!$       if ((nparapath.gt.1).and.(.not.lparapath)) then
 !!$          write(6,*)'nparapath >1, needs lparapath = TRUE'
