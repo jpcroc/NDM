@@ -1,13 +1,13 @@
 #!/bin/bash
-for temp  in  *.F90 *.f Makefil* */*.F90 MAKE/*
+for temp  in  *.F90 *.f Makefil* */*.F90 MAKE/* *.c *.cpp */*.c */*.cpp *.h */*.h
 do 
 	echo $temp
 	rm -f rd
-	diff   $temp /mnt/c/Users/jc148490/lin/DM/codesndm/ndm2021/$temp >rd
-	diff   $temp /mnt/c/Users/jc148490/lin/DM/codesndm/ndm2021/$temp 
+	diff   /mnt/c/Users/jc148490/lin/DM/codesndm/GIT/NDM/p2.8/$temp  $temp >rd
+	diff   /mnt/c/Users/jc148490/lin/DM/codesndm/GIT/NDM/p2.8/$temp  $temp
 	if  [ -s  rd ]
 	then
-	meld /mnt/c/Users/jc148490/lin/DM/codesndm/ndm2021/$temp  $temp
+	meld   $temp /mnt/c/Users/jc148490/lin/DM/codesndm/GIT/NDM/p2.8/$temp
 	fi
 	
 
