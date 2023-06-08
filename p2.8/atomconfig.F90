@@ -126,24 +126,28 @@ contains
     ltbv=.false.
     if(present(ltabvois)) then
        ltbv=ltabvois
-       if (ltbv) then
-          if(.not.(present(rvois)))then
-             write(6,*)'rvois must be set in initialization of atcf when ltabvois =True'
-             call arret_ndm
-          end if
-          if (rvois==0) then 
-             write(6,*)'rvois must be set to non zero in initialization of atcf when ltabvois =True'
-             call arret_ndm
-          end if
-       else
-          if((present(rvois)).and.(rvois.ne.0))then
+    end if
+    nv=0 ;  if(present(nvois))nv=nvois
+    rv=0;  if(present(rvois))rv=rvois
+
+    if (ltbv) then
+       if(.not.(present(rvois)))then
+          write(6,*)'rvois must be set in initialization of atcf when ltabvois =True'
+          call arret_ndm
+       end if
+       if (rv==0) then 
+          write(6,*)'rvois must be set to non zero in initialization of atcf when ltabvois =True'
+          call arret_ndm
+       end if
+    else
+       if(present(rvois)) then
+          if (rvois.ne.0)then
              write(6,*)'rvois must NOT be set in initialization of atcf when ltabvois =False'
              call arret_ndm
           end if
        end if
     end if
-    nv=0 ;  if(present(nvois))nv=nvois
-    rv=0;  if(present(rvois))rv=rvois
+ 
 
 
 
@@ -188,7 +192,7 @@ contains
     atconf%num_at_glob=0
 #ifdef PARA
     atconf%proc_at=-1
-#endif    
+#endif
     if(ltbv)then
        atconf%ltabvois=.true.
        atconf%rvois=rv
@@ -205,6 +209,7 @@ contains
        end if
     else
        atconf%ltabvois=.false.
+       atconf%rvois=rv ! Ajouté pour éviter des erreurs d'initilaisations
     end if
 
     select type (atconf)

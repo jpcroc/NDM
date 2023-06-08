@@ -65,7 +65,7 @@ contains
        call arret_ndm
     end if
     allocate (typ_and_pot(1,npotmax))
-
+    typ_and_pot=.false.
     typ_and_pot(1,ipotentiel)=.true.
     typ_pot_pair(1)=ipotentiel
 

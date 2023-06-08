@@ -273,9 +273,6 @@ contains
           if((ipotentiel==16) .and.(rang==0)) write(6,*)'charge = ',q(i)
        end do
        cm(:ntyp) = cm(:ntyp)*umass
-       allocate (typ_and_pot(ntyp,npotmax))
-       typ_and_pot(:,:)=.false.
-       typ_and_pot(1:ntyp,ipotentiel)=.true.
     end if
     if (npotentiel.gt.1) then   
        read(lupotin,*)nb_paire_a_lire

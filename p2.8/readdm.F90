@@ -606,6 +606,7 @@ contains
              end select
           end if
        end if
+      
     case(15,151)
 !!$       if ((lpr).and.((nox==-1).or.(noy==-1).or.(noz==-1))) then
 !!$          if (rang==0) then
@@ -632,7 +633,6 @@ contains
              end select
           end if
        end if
-
     case default
        write(6,*)'DMTYPE',dmtype
        if (rang==0) write(6,*) 'FATAL: VERSION PARALLELE seulement avec ',&
@@ -719,7 +719,10 @@ contains
     end if
 
     if(dmtype==9) lprteat=.true.
-    if(dmtype==12) lprteat=.true.
+    if(dmtype==12) then
+       lprteat=.true.
+       ltabvois=.false.
+    end if
     if(dmtype==16) lprteat=.true.
     if (lposmoy.EQV..true.) then 
        lprteattotm=.true.
@@ -1142,13 +1145,15 @@ contains
           write(6,*)'lparapath ET nparapath=1 stop'
           call arret_ndm
        end if
-       if ((.not.lrestartmcgc) .and. (.not.((idirectionmcgc==0).or.(idirectionmcgc==1)))) then
-          write(6,*)'set idirectionmcgc to 0 or 1 '
-          call arret_ndm
-       end if
-       if (rang==0) then
-          write(6,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc
-       end if
+!       if (dmtype.ne.12) then
+          if ((.not.lrestartmcgc) .and. (.not.((idirectionmcgc==0).or.(idirectionmcgc==1)))) then
+             write(6,*)'set idirectionmcgc to 0 or 1 '
+             call arret_ndm
+          end if
+          if (rang==0) then
+             write(6,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc
+          end if
+!       end if
 #ifdef PARA
 #else
        if (lparapath) then
@@ -1157,12 +1162,13 @@ contains
        end if
 #endif
 
-#ifdef ART    
+!#ifdef ART    
     case (12)
        if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
        if (rang==0) write (6,'(a)') '|---------ART nouveau by N MOUSSEAU.---------------|'
        if (rang==0) write (6,'(a)') '|======== colored by Cosmin Marinica!==============|'
-#endif
+       if (rang==0) write (6,'(a)') '|======== updated by J-P Crocombette!==============|'
+!#endif
 #ifdef SUNDAE    
     case (16)
        if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'

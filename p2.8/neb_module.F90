@@ -98,14 +98,14 @@ contains
     allocate(cellneb(npath))
     nv=0
     rv=0
-    if (rvois.gt.0) then
+!    if (rvois.gt.0) then
        rv=rvois
-    end if
+!    end if
     do ipath=1,npath
        call atneb(ipath)%atom_config_d%init(im,imm,ltabvois,nv,rv)
+!       atneb(ipath)%vp=0
        allocate(atneb(ipath)%s_path(3,imm),atneb(ipath)%force_neb(3,imm))
     end do
-
 
     allocate (icontrainte(imm),reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))

@@ -263,7 +263,6 @@ contains
     call initbox(box2b,atg,ipbc)
 
     call setnox(box2b,cel2b,rum,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
-
     if ((rang==0).and.(lprt)) then
        write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
     end if
@@ -295,11 +294,10 @@ contains
        call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
        call arret_ndm
     end if
-
     call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
     at2b%im_glob=at2b%im
-#endif             
+#endif
     call setcellconf(cel2b,at2b,box2b,rum)
     return
 
@@ -390,7 +388,6 @@ contains
     else
        rvn=0
     end if
-
     lprteattrf=.false.
     select type (atrcf)
     class is (atom_config_e)
