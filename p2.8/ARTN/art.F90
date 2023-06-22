@@ -43,11 +43,11 @@ contains
     character(20) :: fname
     logical       :: local_success
 
-    call init_mpi_art2(atdml,celndm,boxndm,psc,parapath) ! most is done in init_mpi_art
+    call init_mpi_art2(atdml,celndm,boxndm,psc,parapath) ! most is done in init_mpi_art BUT atcfart boxart etc are associated THERE
     NATOMS= atdml%im
     restart=.false.
-    call init_conf(atdml,celndm,boxndm)
-    
+    call init_conf
+
     !initialization of local and workers 
 
     ! _________

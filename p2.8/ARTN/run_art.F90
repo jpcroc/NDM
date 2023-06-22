@@ -53,19 +53,16 @@ contains
 
 
 
-  subroutine init_conf(atdml,celndm,boxndm)
+  subroutine init_conf
 
 !    character(len=*), intent(in), optional :: which
-    class(atom_config),intent(in)::atdml
-    type(cell_config),intent(in)::celndm
-    type(box_config),intent(in)::boxndm
     
     integer                                :: ierror, ierr
 
     ! Read the various parameters and options defining the run
     call read_parameters( )
 !    write(6,*)'JP out readp'
-    call  ndm2art(atdml,boxndm,celndm)  ! initializes the positions/types to pos,typat,cosntr=0,box,boxref
+    call  ndm2art
 !    write(6,*)'JP out ndm2art'
     ! If restartfile exists, then we restart from where we left.
 !    inquire ( file = restartfile, exist = restart )
@@ -122,6 +119,7 @@ contains
 !!$    else
 
 !!$       write(*,*) "(1) I am the proc :", iproc
+       
        call initialize( )         ! Initialize positions and potential
 
 !    write(6,*)'JP out initialiaze'

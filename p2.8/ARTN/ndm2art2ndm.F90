@@ -77,12 +77,12 @@ contains
     return
   end subroutine init_mpi_art
 
-  subroutine ndm2art(atcf,boxcf,celcf)
+  subroutine ndm2art
 
 !    type(para_space_config)::psc
-    class(box_config)::boxcf
-    class(atom_config)::atcf
-    type(cell_config):: celcf
+!!$    class(box_config)::boxcf
+!!$    class(atom_config)::atcf
+!!$    type(cell_config):: celcf
 
     character(len=20) :: dummy, fname
     logical ::flag
@@ -111,8 +111,41 @@ contains
     box=0 ; boxref=0 ! initilisation à 0 pour provoquer un plantage
     call update_invcell( )
 
-!CROCTODO    retour à NDM ; il faire un min_converge
+
   end subroutine ndm2art
+!!$  subroutine art2ndm(atcf,boxcf,celcf,linit)
+!!$
+!!$!    type(para_space_config)::psc
+!!$    class(box_config)::boxcf
+!!$    class(atom_config)::atcf
+!!$    type(cell_config):: celcf
+!!$    logical,optional ::linit
+!!$    logical ::lini=.false.
+!!$    character(len=20) :: dummy, fname
+!!$    logical ::flag
+!!$
+!!$    integer::ierror
+!!$    if(present(linit))lini=linit
+!!$
+!!$    if (lini) then
+!!$       call atcf%init(NATOMS,lreallocate=.true.)
+!!$    else
+!!$       if (atcf%im.ne.NATOMS) then
+!!$          write(6,*)'ART2NDM incosistency between NATOMS and atcf%im' stop
+!!$          call arret_ndm
+!!$       end if
+!!$    end if
+!!$    typat(1:NATOMS)=atcfart%ityp(1:NATOMS)
+!!$    pos(1:NATOMS)=angst*atcfart%xp(1,1:NATOMS)
+!!$    pos(1+NATOMS:2*NATOMS)=angst*atcfart%xp(2,1:NATOMS)
+!!$    pos(1+2*NATOMS:3*NATOMS)=angst*atcfart%xp(3,1:NATOMS)
+!!$    boundary='T'
+!!$    cell(:,:)=boxart%at(:,:)*angst
+!!$    box=0 ; boxref=0 ! initilisation à 0 pour provoquer un plantage
+!!$    call update_invcell( )
+!!$
+!!$
+!!$  end subroutine ndm2art
 
   subroutine calcforce_ndm(nat, posa,  forca, energy)
     use defs, only :  use_local_forces, local_ref_energy, global_ref_energy

@@ -72,6 +72,7 @@ subroutine initialize()
   ! Counter:     1000
 
 !!$  if (.not. restart) then
+
      inquire( file = COUNTER, exist = flag )
      if ( flag .and. iproc == 0 ) then
         open(unit=FCOUNTER,file=COUNTER,status='old',action='read',iostat=ierror)
