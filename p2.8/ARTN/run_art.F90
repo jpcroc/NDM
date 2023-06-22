@@ -64,8 +64,9 @@ contains
 
     ! Read the various parameters and options defining the run
     call read_parameters( )
-
+!    write(6,*)'JP out readp'
     call  ndm2art(atdml,boxndm,celndm)  ! initializes the positions/types to pos,typat,cosntr=0,box,boxref
+!    write(6,*)'JP out ndm2art'
     ! If restartfile exists, then we restart from where we left.
 !    inquire ( file = restartfile, exist = restart )
 !    if ( restart ) &
@@ -81,7 +82,9 @@ contains
     call mpi_world%barrier
 !call MPI_Barrier( MPI_COMM_WORLD, ierr )
 #else
+    
     call write_parameters( )            ! Write options in LOGFILE.
+!    write(6,*)'JP out writeparam'
 #endif
 
     ! Open the log file and get ready for the simulation
@@ -121,7 +124,7 @@ contains
 !!$       write(*,*) "(1) I am the proc :", iproc
        call initialize( )         ! Initialize positions and potential
 
-
+!    write(6,*)'JP out initialiaze'
 !!$       write(*,*) "(2) I am the proc :", iproc
        ! If the restart file exists, then we make sure that we do not overwrite the files
 !!$       if ( restart ) then
@@ -160,6 +163,9 @@ contains
     real(dp), dimension(:), allocatable     :: tmp_pos
     real(dp), dimension(:), allocatable     :: pos_saddle,force_saddle, projection_saddle,pos_min
     real(dp)                                :: energy_saddle,eigenvalue_saddle,energy_min
+  real(kind=8), dimension(:), allocatable :: del_pos
+  real(kind=8) :: difpos
+  real(kind=8)  :: a1, b1, c1, prod
 
 
 
@@ -179,6 +185,7 @@ contains
           end if
        end do
     end if
+
     ! If not a new event, then a convergence to
     ! the saddle point, We do not go further.
     if ( .not. NEW_EVENT .and. ( eventtype == 'REFINE_SADDLE' ) ) call end_art ()
@@ -212,96 +219,151 @@ contains
     ! If pushing could not be made without increasing energy, try finding an
     ! other saddle.
 
-
+    write(6,*)'JP501',success
     if (CHECK_CONNECTIVITY) then
-         allocate(pos_saddle(VECSIZE))
-         allocate(force_saddle(VECSIZE))
-         allocate(projection_saddle(VECSIZE))
-         pos_saddle = pos
-         energy_saddle = saddle_energy
-         force_saddle = force
-         projection_saddle = projection
-         eigenvalue_saddle = eigenvalue
+       !CRC
+       STOP
+!!$       allocate(pos_saddle(VECSIZE))
+!!$         allocate(force_saddle(VECSIZE))
+!!$         allocate(projection_saddle(VECSIZE))
+!!$         pos_saddle = pos
+!!$         energy_saddle = saddle_energy
+!!$         force_saddle = force
+!!$         projection_saddle = projection
+!!$         eigenvalue_saddle = eigenvalue
     endif 
 
-    allocate(tmp_pos(VECSIZE))
-    call push_at_saddle(tmp_pos, pos, posref, force, &
-                        projection, eigenvalue, saddle_energy)
-    pos = tmp_pos
-    deallocate(tmp_pos)
-    ierror = saddle_push_log()
+    !CRC version Mousseau emplacé par version MySrC
+    
+!!$    allocate(tmp_pos(VECSIZE))
+!!$    call push_at_saddle(tmp_pos, pos, posref, force, &
+!!$                        projection, eigenvalue, saddle_energy)
+!!$    pos = tmp_pos
+!!$    deallocate(tmp_pos)
+!!$    ierror = saddle_push_log()
+!!$
+!!$    ! If the push went well, converge to the new minimum.
+!!$    ! Write the configuration in a min.... file
+!!$    if (push_error == -1) then
+!!$       success = .false.
+!!$       delta_e = total_energy - ref_energy
+!!$       fname = FINAL // '_push_failed'
+!!$       conf_final = fname
+!!$    else
+!!$       call min_converge( success )     ! And we converge to the new minimum.
+!!$       delta_e = total_energy - ref_energy
+!!$       if ( iproc == 0 ) then
+!!$          ! We write the configuration in a min.... file.
+!!$          call convert_to_chain( mincounter, 4, scounter )
+!!$          write(*,*) 'BART: Mincounter is ', mincounter,', scounter is ', scounter
+!!$          fname = FINAL // scounter
+!!$          conf_final = fname
+!!$       end if
+!!$    end if
 
-    ! If the push went well, converge to the new minimum.
-    ! Write the configuration in a min.... file
-    if (push_error == -1) then
-       success = .false.
-       delta_e = total_energy - ref_energy
-       fname = FINAL // '_push_failed'
-       conf_final = fname
-    else
-       call min_converge( success )     ! And we converge to the new minimum.
-       delta_e = total_energy - ref_energy
-       if ( iproc == 0 ) then
-          ! We write the configuration in a min.... file.
-          call convert_to_chain( mincounter, 4, scounter )
-          write(*,*) 'BART: Mincounter is ', mincounter,', scounter is ', scounter
-          fname = FINAL // scounter
-          conf_final = fname
-       end if
-    end if
+   
+!    The next lines are for the displacement from the saddle away from the initial minimum 
+!    in order to place the configuration in a new basin. The displacement is made along the 
+!    direction of negative curvature away from the initial minimum.
+     
+     allocate(del_pos(VECSIZE))       ! We compute the displacement.
+     call boundary_cond( del_pos, pos, posref )   ! Applies the boundary conditions
+     difpos  = sqrt( dot_product(del_pos,del_pos) )
+     del_pos = del_pos/difpos 
+
+
+     a1 = dot_product(del_pos,projection) 
+     b1 = dot_product(force,projection)
+     c1 = dot_product(del_pos,force)
+     deallocate(del_pos)
+
+     if ( abs(a1) < 0.1d0 ) then      ! pushing in the direction of projection (assuming sign ok) 
+        prod = 1.0d0
+        if ( iproc == 0 ) then 
+         write(*,*) 'BART :WARNING'
+         write(*,*) 'BART :Projection and displacement vectors almost perpendicular'
+         write(*,*) 'BART :to each other. Assuming projection points in right direction'
+        end if
+     else                             ! just keep the sign of the dot product
+        if ( a1 > 0.0 ) then
+           prod =  1.0d0
+        else
+           prod = -1.0d0
+        end if 
+     end if 
+
+     ! We finally push over the saddle point
+     pos = pos + prod * PUSH_OVER * difpos * projection
+!     write(6,*)'JP502',
+     call min_converge( success )     ! And we converge to the new minimum.
+     delta_e = total_energy - ref_energy 
+     if ( iproc == 0 ) then
+                                      ! We write the configuration in a min.... file.
+        call convert_to_chain( mincounter, 4, scounter )
+        write(*,*) 'BART: Mincounter is ', mincounter,', scounter is ', scounter
+        fname = FINAL // scounter
+        conf_final = fname
+        call store( fname ) 
+     end if
+                                      ! Magnitude of the displacement (utils.f90).
+
+
+    
     call store( fname )
 
     if (CHECK_CONNECTIVITY) then
-        allocate(pos_min(VECSIZE))
-        pos_min = pos
-        energy_min = total_energy
-
-        pos = pos_saddle 
-        saddle_energy =  energy_saddle
-        force =  force_saddle 
-        projection =  projection_saddle
-        eigenvalue =  eigenvalue_saddle 
-
-        allocate(tmp_pos(VECSIZE))
-        call push_at_saddle(tmp_pos, pos, posref, force, &
-                        projection, eigenvalue, saddle_energy,-1)
-        pos = tmp_pos
-        deallocate(tmp_pos)
-        ierror = saddle_push_log()
-
-        ! If the push went well, converge to the new minimum.
-        if (push_error == -1) then
-           success = .false.
-           delta_e = total_energy - ref_energy
-        else
-           call min_converge( success )     ! And we converge to the new minimum.
-           delta_e = total_energy - ref_energy
-           call displacement( posref, pos, delr, npart)
-           if ( iproc == 0 ) then
-              write(*,*) 'BART: CHECK CONNECTIVITY :  Delta_E = ',delta_e, '  delr: ', delr
-              open( unit = FLOG, file = LOGFILE, status = 'unknown',&
-              & action = 'write', position = 'append', iostat = ierror )
-              write(FLOG,"(' ','CONNECTIVITY  |E(con-ini)= ', f9.4,&
-            & '  |npart= ', i4,' |delr= ', f8.3)")&
-            &  delta_e,npart, delr
-            close(FLOG)
-
-           end if
-         end if
-
-         fname = CHECK // scounter
-         call store( fname )
-
-
-         pos = pos_min 
-         total_energy = energy_min 
-         delta_e = total_energy - ref_energy
-
-         deallocate(pos_min)
-         deallocate(pos_saddle)
-         deallocate(force_saddle)
-         deallocate(projection_saddle)
-      endif
+       !CRC
+       STOP
+!!$       allocate(pos_min(VECSIZE))
+!!$        pos_min = pos
+!!$        energy_min = total_energy
+!!$
+!!$        pos = pos_saddle 
+!!$        saddle_energy =  energy_saddle
+!!$        force =  force_saddle 
+!!$        projection =  projection_saddle
+!!$        eigenvalue =  eigenvalue_saddle 
+!!$
+!!$        allocate(tmp_pos(VECSIZE))
+!!$        call push_at_saddle(tmp_pos, pos, posref, force, &
+!!$                        projection, eigenvalue, saddle_energy,-1)
+!!$        pos = tmp_pos
+!!$        deallocate(tmp_pos)
+!!$        ierror = saddle_push_log()
+!!$
+!!$        ! If the push went well, converge to the new minimum.
+!!$        if (push_error == -1) then
+!!$           success = .false.
+!!$           delta_e = total_energy - ref_energy
+!!$        else
+!!$           call min_converge( success )     ! And we converge to the new minimum.
+!!$           delta_e = total_energy - ref_energy
+!!$           call displacement( posref, pos, delr, npart)
+!!$           if ( iproc == 0 ) then
+!!$              write(*,*) 'BART: CHECK CONNECTIVITY :  Delta_E = ',delta_e, '  delr: ', delr
+!!$              open( unit = FLOG, file = LOGFILE, status = 'unknown',&
+!!$              & action = 'write', position = 'append', iostat = ierror )
+!!$              write(FLOG,"(' ','CONNECTIVITY  |E(con-ini)= ', f9.4,&
+!!$            & '  |npart= ', i4,' |delr= ', f8.3)")&
+!!$            &  delta_e,npart, delr
+!!$            close(FLOG)
+!!$
+!!$           end if
+!!$        end if
+!!$
+!!$         fname = CHECK // scounter
+!!$         call store( fname )
+!!$
+!!$
+!!$         pos = pos_min 
+!!$         total_energy = energy_min 
+!!$         delta_e = total_energy - ref_energy
+!!$
+!!$         deallocate(pos_min)
+!!$         deallocate(pos_saddle)
+!!$         deallocate(force_saddle)
+!!$         deallocate(projection_saddle)
+    endif
 
 
   end subroutine art_search

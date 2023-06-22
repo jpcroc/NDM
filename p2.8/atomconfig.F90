@@ -92,9 +92,14 @@ module atomconfig
   private ::buffersizes
 contains
   !initialisations
-  subroutine print_type(atcf)
+  subroutine print_type(atcf,mess)
     class(atom_config),intent(in)::atcf
-    write(6,*)'atomfigPRINT'
+    character(len=*),optional::mess
+    if (present(mess)) then
+       write(6,*)'atomfigPRINT ',mess
+    else
+       write(6,*)'atomfigPRINT'
+    end if
     write(6,*)'im imm im_glob imm_glob',atcf%im,atcf%imm,atcf%im_glob,atcf%imm_glob
     select type (atcf)
     type is (atom_config)

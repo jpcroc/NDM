@@ -134,9 +134,10 @@ contains
     call depeche_mode(parapath,.false.)
 
     energy=potist*erg2ev
-    forca(1:NATOMS)=(erg2ev*angst)*atcfart%fp(1,1:NATOMS)
-    forca(1+NATOMS:2*NATOMS)=(erg2ev*angst)*atcfart%fp(2,1:NATOMS)
-    forca(1+2*NATOMS:3*NATOMS)=(erg2ev*angst)*atcfart%fp(3,1:NATOMS)
+!    write(6,*)'JPenergy',energy
+    forca(1:NATOMS)=(erg2ev/angst)*atcfart%fp(1,1:NATOMS)
+    forca(1+NATOMS:2*NATOMS)=(erg2ev/angst)*atcfart%fp(2,1:NATOMS)
+    forca(1+2*NATOMS:3*NATOMS)=(erg2ev/angst)*atcfart%fp(3,1:NATOMS)
 
 
     iteration=iteration+1

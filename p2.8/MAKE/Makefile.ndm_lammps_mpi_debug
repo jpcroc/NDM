@@ -136,12 +136,12 @@ SHELL = /bin/sh
   FFTW_PATH =
   FFTW_LIB  =
 
-ifdef MKL
+#ifdef MKL
 # MKL library, REQUIRED  
 # INC = path(s) for *.h required by MKL library 
 # PATH = path for MKL library
 # LIB = name of MKL library
-endif
+#endif
   MKL_INC  = #-I/opt/intel/mkl/include/intel64/lp64
   MKL_PATH = #-L/opt/intel/mkl/lib
 
@@ -166,7 +166,7 @@ endif
   CLIBS =
 
 # Path to src files
-CODE_PATH = ../lammps:../para:../mod/:.. 
+CODE_PATH = ../lammps:../para:../mod/:..:../ARTN 
 
 vpath %.f90 ${CODE_PATH}
 vpath %.F90 ${CODE_PATH}

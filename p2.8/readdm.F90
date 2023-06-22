@@ -719,10 +719,10 @@ contains
     end if
 
     if(dmtype==9) lprteat=.true.
-    if(dmtype==12) then
-       lprteat=.true.
-       ltabvois=.false.
-    end if
+!!$    if(dmtype==12) then
+!!$       lprteat=.true.
+!!$       ltabvois=.false.
+!!$    end if
     if(dmtype==16) lprteat=.true.
     if (lposmoy.EQV..true.) then 
        lprteattotm=.true.

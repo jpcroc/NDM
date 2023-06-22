@@ -160,7 +160,7 @@ endif
   CLIBS =
 
 # Path to src files
-CODE_PATH = ../mod/:.. 
+CODE_PATH = ../mod/:..:../ARTN 
 
 vpath %.f90 ${CODE_PATH}
 vpath %.F90 ${CODE_PATH}

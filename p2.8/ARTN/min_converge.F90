@@ -309,16 +309,16 @@ contains
     fnrm=1.d10
     velcur=0.0d0
     poscur=pos
-
+!    write(6,*)'JP101 calcforce 1'
     call calcforce(natoms,pos,box,fpred,total_energy,evalf_number)
     initial_energy = total_energy
-
+!    write(6,*)'JP102 energy1', initial_energy
     fcur=force
     mass=1.0d0
     ecur=total_energy
     epred=total_energy
-
-
+    iat=1
+!    write(6,*)'JP102',poscur(iat),velcur(iat),fcur(iat),mass(iat),dt
     do it=1,max_iter
        miter = miter + 1
        pas = pas + 1
@@ -338,6 +338,7 @@ contains
        enddo
 
        pos = pospred
+!       write(6,*)'JP101 calcforce 2'
        call calcforce(natoms,pospred,box,fpred,total_energy,evalf_number)
        force=fpred
 

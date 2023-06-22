@@ -145,7 +145,7 @@ contains
           write(122)Fmat
        end if
           
-#ifdef MKL
+!!$#ifdef MKL
 
        nwork=3*im3-1
        allocate(work(nwork))
@@ -194,14 +194,14 @@ contains
        call thermocalc(eigval,im3)
 
        
-#else
-       write(6,*)"diagonalization works with lapack or MKL"
-       write(6,*)"these libraries are NOT linked by default"
-       write(6,*)"link them in Makefile.ndm_your_makefile"
-       write(6,*)"and recompile with make MKL=1 ndm_your_makefile"
-       call arret_ndm
-       
-#endif
+!!$#else
+!!$       write(6,*)"diagonalization works with lapack or MKL"
+!!$       write(6,*)"these libraries are NOT linked by default"
+!!$       write(6,*)"link them in Makefile.ndm_your_makefile"
+!!$       write(6,*)"and recompile with make MKL=1 ndm_your_makefile"
+!!$       call arret_ndm
+!!$       
+!!$#endif
     end if
   end subroutine calcFM
 

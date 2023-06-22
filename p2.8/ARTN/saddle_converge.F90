@@ -51,9 +51,8 @@ contains
    logical :: new_projection              ! For lanczos.
    ! Loop indeces :
    integer :: i, kter, kter_init, liter, diter, step_rejected
-   integer :: ierror, ierr, smooth_iter        ! File and MPI control.
+   integer :: ierror, ierr                ! File and MPI control.
 
-   real(8),  parameter :: PI_8  = 4 * atan (1.0_8)
    real(kind=8) :: step                        ! This is the step in the hyperplane.
    real(kind=8),dimension(3) :: boxl
    real(kind=8) :: a1
@@ -65,8 +64,6 @@ contains
    real(kind=8), dimension(VECSIZE) :: force_b      ! Total Force for evaluation.
    real(kind=8), dimension(VECSIZE) :: perp_force   ! Perpendicular force...
    real(kind=8), dimension(VECSIZE) :: perp_force_b ! ...& for evaluation.
-   real(kind=8), dimension(VECSIZE) :: push_direction ! for leaving basin
-
    ! __________________
    ! Write header in log.file.
    if ( iproc == 0 ) then
@@ -111,11 +108,10 @@ contains
       a1         = 0.0d0               ! Only for the report.
       step = 0.4*INCREMENT             ! The step in the hyperplane.
       new_projection = .true.          ! We do not use previously computed
-      smooth_iter = 0
       ! lowest direction.
       Do_kter: do kter = kter_init, MAXKTER
          ! Reference energy and force.
-
+!         write(6,*)'JP5',kter,kter_init, MAXKTER
          call calcforce( NATOMS, pos, boxl, force, current_energy, evalf_number )
          ! We now project out the direction of the initial displacement from the
          ! minimum from the force vector so that we can minimize the energy in
@@ -129,7 +125,7 @@ contains
 
          ! We relax perpendicularly using a simple variable-step steepest descent
          While_perpk: do
-
+!         write(6,*)'JP6'
             pos_b = pos + step * perp_force
 
             call calcforce( NATOMS, pos_b, boxl, force_b, total_energy, evalf_number )
@@ -164,15 +160,15 @@ contains
          delta_e = current_energy - ref_energy
          ! Magnitude of the displacement (utils.f90).
          call displacement( posref, pos, delr, npart )
-
+!         write(6,*)'JP7'
          if ( SAVE_CONF_INT ) call save_intermediate( 'K' )
 
          ! We start checking of negative eigenvalues only after a few steps.
-
+!         write(6,*)'JP8 ', kter,kter_min,setup_initial 
          if ( kter == KTER_MIN ) then
             ! First time, twice !!
             do i = 1, 1
-
+!               write(6,*)'JP91'
                call lanczos( NVECTOR_LANCZOS_H, new_projection, a1 )
 
                new_projection = .false.
@@ -192,13 +188,15 @@ contains
             ! we get eigen direction for the minimum of this hyperplane.
 
             call lanczos( NVECTOR_LANCZOS_H, new_projection, a1 )
-
+!            write(6,*)'JP92'
             ! Lanczos call, we start from the
             new_projection = .false.      ! previous direction each time.
          end if
 
          ! Write
-         call write_step ( 'K', kter, a1, current_energy )
+         call write_step ( 'K JP10', kter, a1, current_energy )
+
+!         write(6,*)'JP93',eigenvalue, EIGEN_THRESH ,setup_initial
          ! For restart ( restart.f90 )
          if ( write_restart_file ) then
             state_restart = 1
@@ -211,23 +209,7 @@ contains
          if ( eigenvalue < EIGEN_THRESH .and. (.not. setup_initial) ) exit Do_kter
          ! If not, we move the configuration along
          ! the initial direction.
-         
-         
-         if ( eigenvalue < 0.0d0 .and. (kter > KTER_MIN).and.(SMOOTH_DIR_CHANGE>0)) then
-           smooth_iter    =  smooth_iter + 1
-           fpar = dot_product(force, projection)
- 	         push_direction =  cos(0.5d0*PI_8*smooth_iter/smooth_dir_change)*initial_direction - &
- 	                          sin(0.5d0*PI_8*smooth_iter/smooth_dir_change)*sign(1.0d0,fpar)*projection
- 	         push_direction =  push_direction/ sqrt( dot_product(push_direction,push_direction) )
-          
-           ! Now compute the parallel  force as defined by the eigenvalue
-   	       pos  =  pos - sign(1.0d0,fpar)*push_direction* &
- 	                          min( BASIN_FACTOR*INCREMENT, abs(fpar)/ max( abs(eigenvalue) ,0.5d0 ) )
-         else
- 	         smooth_iter    = 0
-           pos = pos + BASIN_FACTOR*INCREMENT*initial_direction   !Vectorial operation
-         endif
-         
+         pos = pos + BASIN_FACTOR * INCREMENT * initial_direction
 
       end do Do_kter
 
@@ -239,7 +221,7 @@ contains
 
          return
       end if
-
+!      write(6,*)'JP200'
       ! The configuration is now out of the harmonic well, we can now bring
       ! it to the saddle point.
       ! First, we must now orient the direction of the eigenvector corresponding to the
@@ -333,14 +315,14 @@ contains
    end if If_restart
    ! _________
    !                ACTIVATION PART
-
+   write(6,*)'JP201 pre ACT'
    if ( .not. restart ) call allocate_activation ()
 
    ret = 0
    end_activation = .false.
 
    While_activation: do
-
+!      write(6,*)'JP202',switchDIIS
       if ( .not. switchDIIS ) then
          call apply_lanczos( liter, saddle_energy, ret )
       else
@@ -353,7 +335,7 @@ contains
    end do While_activation
 
    call deallocate_activation ()
-
+   write(6,*)'JP203endact',end_activation
  END SUBROUTINE saddle_converge
 
 

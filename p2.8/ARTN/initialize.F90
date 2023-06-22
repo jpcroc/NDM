@@ -180,7 +180,7 @@ subroutine initialize()
   If_ne: if ( new_event .and. (.not. restart) ) then  ! cas standard
      write(6,*)'OKARTINIT2'
      call min_converge( success )     ! Converge the configuration to a local minimum
-
+     write(6,*)'success',success
 
      posref = pos                     ! New reference configuration.
      ref_energy = total_energy

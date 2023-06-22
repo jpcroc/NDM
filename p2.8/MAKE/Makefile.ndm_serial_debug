@@ -128,7 +128,7 @@ SHELL = /bin/sh
   FFTW_PATH =
   FFTW_LIB  =
 
-ifdef MKL
+#ifdef MKL
 # MKL library, REQUIRED  
 # INC = path(s) for *.h required by MKL library 
 # PATH = path for MKL library
@@ -137,7 +137,7 @@ ifdef MKL
   MKL_INC  = #-I/opt/intel/mkl/include/intel64/lp64
   MKL_PATH = #-L/opt/intel/mkl/lib
   MKL_LIB  =# -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64
-endif
+#endif
   
 # ---------------------------------------------------------------------
 # build rules and dependencies
@@ -161,7 +161,7 @@ endif
 
 # Path to src files
 # THIS VARIABLE CODE_PATH IS VERY IMPORTANT TO SET PROPERLY TO SCAN THE CORRECT FOLDER DEPENDING OF MACRO USED
-CODE_PATH = ../mod/:.. 
+CODE_PATH = ../mod/:..:../ARTN  
 
 vpath %.f90 ${CODE_PATH}
 vpath %.F90 ${CODE_PATH}

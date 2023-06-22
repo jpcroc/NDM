@@ -106,23 +106,22 @@ contains
   !! This function returns the lowest available unit to open a file
   !! http://www.fortran90.org/src/best-practices.html#file-input-output
   !! http://fortranwiki.org/fortran/show/newunit
-  integer function newunit(unit)
-    integer, intent(out), optional :: unit
+  subroutine newunit(nunit)
+    integer, intent(out) :: nunit
     ! local
-    integer, parameter :: LUN_MIN=10, LUN_MAX=1000
+    integer, parameter :: LUN_MIN=500, LUN_MAX=1000
     logical :: opened
     integer :: lun
     ! begin
-    newunit=-1
+    nunit=-1
     do lun=LUN_MIN,LUN_MAX
        inquire(unit=lun,opened=opened)
        if (.not. opened) then
-          newunit=lun
+          nunit=lun
           exit
        end if
     end do
-    if (present(unit)) unit=newunit
-  end function newunit
+  end subroutine newunit
 
 end module storage
 

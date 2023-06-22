@@ -47,14 +47,14 @@ contains
     NATOMS= atdml%im
     restart=.false.
     call init_conf(atdml,celndm,boxndm)
-
+    
     !initialization of local and workers 
 
     ! _________
     !                MAIN LOOP OVER THE EVENTS.
 
     Do_ev: do ievent = ievent_restart, NUMBER_EVENTS
-
+!       write(6,*)'JP pre art_search'
        call art_search(fname)
 
        ! Now, we accept or reject this move based

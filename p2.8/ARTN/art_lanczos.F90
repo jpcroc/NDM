@@ -244,7 +244,7 @@ subroutine lanczos( maxvec, new_projection, produit )
   ! first call to get working dimensions
   lwork = -1
   allocate( work(maxvec) )
-#ifdef MKL  
+!#ifdef MKL  
   call dgeev( 'N', 'V', maxvec, Hmat, maxvec, e_real, e_imag, dummy_vl, 1, vector, maxvec, work, lwork, i_err)
 
   lwork = work(1)
@@ -254,7 +254,7 @@ subroutine lanczos( maxvec, new_projection, produit )
   ! second call to get eigen values
   call dgeev( 'N', 'V', maxvec, Hmat, maxvec, e_real, e_imag, dummy_vl, 1, vector, maxvec, work, lwork, i_err)
   deallocate( work )
-#endif
+!#endif
   ! look for the smallest eigen value
   e_min = e_real(1)
   i_min = 1

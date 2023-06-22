@@ -388,7 +388,6 @@ contains
     else
        rvn=0
     end if
-
     lprteattrf=.false.
     select type (atrcf)
     class is (atom_config_e)

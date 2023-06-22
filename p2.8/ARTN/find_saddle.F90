@@ -101,7 +101,7 @@ subroutine find_saddle( success, saddle_energy )
                                       ! If the activation did not converge, for
                                       ! whatever reason, we restart the routine
                                        ! and do not accept the new position.
-
+  write(6,*)'JP401',ret,saddle_energy,success
 
   ! If we call for a global convergence, we need to refine with the full forces
   if ( (ret .ge. 10000).and.ret.le.399999) then  ! The event is a success

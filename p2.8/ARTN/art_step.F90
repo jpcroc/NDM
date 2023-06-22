@@ -382,7 +382,7 @@ subroutine get_solution( maxter, error_vector, solution )
 
                    ! We find the best size for "work" array.
   allocate(work(100))
-#ifdef MKL
+!#ifdef MKL
   call dsysv('U',n, nrhs, matrice, n, interchanges, solution,n,work,-1,i_err)
   lwork=work(1)
   deallocate(work)
@@ -391,7 +391,7 @@ subroutine get_solution( maxter, error_vector, solution )
                    ! We call the routine for diagonalizing a tridiagonal  matrix
   call dsysv('U', n, nrhs, matrice, n, interchanges, solution, n, work, lwork, i_err )
   ! If something fails
-#endif
+!#endif
   
   if ( i_err /= 0 ) then
      if ( iproc == 0 ) write(*,*) 'BART WARNING DIIS: info calculation of solution', i_err
@@ -425,6 +425,7 @@ subroutine  apply_lanczos ( liter, saddle_energy, ret )
   real(kind=8) :: a1
   !_______________________
 
+!  write(6,*)'JP301',use_diis
   if ( .not. restart ) then
      ! To be consistent with the restart file, each time we call
      ! this subroutine we make this initialization.
@@ -448,7 +449,9 @@ subroutine  apply_lanczos ( liter, saddle_energy, ret )
   a1 = 0.0d0
 
   While_lanczos: do
-
+!     write(6,*)'JP302',ftot,exitthresh,pas,maxpas
+!     write(6,*)'JP302B',liter,MAX_LANCZOS_STEPS,eigenvalue
+!     write(6,*)'JP302C',delta_e,delta_thr,delr,delr_thr,maxkter+5
       ! Test of While_lanczos loop
       if ( (ftot < EXITTHRESH) .or. (pas > MAXPAS) .or. (liter > MAX_LANCZOS_STEPS) .or. &
          & (eigenvalue > 0.0)  .or. &
