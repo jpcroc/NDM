@@ -15,6 +15,7 @@ module boxconfig
      integer::ipbc(3) ! conditions périodiques sur les plan b-c,a-c,a-b
    contains
      procedure, pass::print=>boxprint
+     procedure, pass::init=>initbox
      procedure, pass::showtype=>boxshowtype
      procedure, pass::master2slave=>boxmaster2slave
      procedure, pass::send2proc=>boxsend2proc

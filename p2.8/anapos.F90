@@ -10,7 +10,7 @@ module posana
   USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,dmtype,lenfnam,iteration,timel,ivisu
   USE atomconfig,only:atom_config
   use cellconfig,only: cell_config,caltabtC
-  use boxconfig,only:box_config,initbox,periodbox
+  use boxconfig,only:box_config,periodbox
   use rasmolT_mod,only:rasmolT
   USE constrconf_mod,only:gin2ndm,read_cin
   use vect_dist_mod,only:vect_dist
@@ -1534,7 +1534,7 @@ contains
     do ic=1,3
        at_plt(ic,ic)=plmax(ic)-plmin(ic)
     end do
-    call initbox(boxplt,at_plt,ipbc)
+    call boxplt%init(at_plt,ipbc)
     !    namepltpart='partial'
 !    itapp=it
 !    call rasmolT(atplt,boxplt,namefr=namepltpart,latcomp=.true.,ivisumol=ivisuana)

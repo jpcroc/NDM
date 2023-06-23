@@ -606,7 +606,13 @@ contains
              end select
           end if
        end if
-      
+    case(12)
+       if (lparapath) then 
+          if (mod(nprocs,nparapath).ne.0) then
+             write(6,*)'nprocs/nparapath <>0 STOP'
+             call arret_ndm
+          end if
+       end if
     case(15,151)
 !!$       if ((lpr).and.((nox==-1).or.(noy==-1).or.(noz==-1))) then
 !!$          if (rang==0) then

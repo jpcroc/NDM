@@ -17,10 +17,13 @@ module art_mod
   use write_refconfig_mod,only:write_refconfig
   use storage,only:store
   use end_art_mod,only:end_art
+  USE parautils,only:WORKER_TAG,tolstoi
   USE atomconfig,only : atom_config
   USE cellconfig, only:cell_config
+
   USE boxconfig,only:box_config
   use Tpara,only:para_space_config
+  use gen_com_m,only:rang
   use defs, only : conf_final,conf_initial,conf_saddle,conf_final,eventslist,ievent,ievent_restart,iproc,nproc,&
        &flist,local_force,mincounter,natoms,number_events,pos,posref,ref_energy,refcounter,restart,scala,scalaref,&
        temperature,total_energy,use_local_forces,WRITE_REJECTED_EVENT
@@ -43,7 +46,15 @@ contains
     character(20) :: fname
     logical       :: local_success
 
+    write(6,*)'JPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP111111',rang
     call init_mpi_art2(atdml,celndm,boxndm,psc,parapath) ! most is done in init_mpi_art BUT atcfart boxart etc are associated THERE
+#ifdef PARA
+    write(6,*)'JPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2',rang
+    if (parapath%lmaster.neqv..true.) then
+       call tolstoi (WORKER_TAG,parapath) 
+    else
+#endif
+       write(6,*)'JPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP3',rang
     NATOMS= atdml%im
     restart=.false.
     call init_conf
@@ -107,6 +118,9 @@ contains
        call report_and_check(fname,accept)
 
     end do Do_ev
+#ifdef PARA
+ end if
+#endif
 
     call end_art
 

@@ -22,7 +22,6 @@ module run_art
   use git
   use ndm2art2ndm,only:parapath,ndm2art
   use random
-  USE parautils,only:WORKER_TAG,tolstoi
   use end_art_mod,only:end_art
   use find_saddle_mod,only:find_saddle
   use initialize_mod,only:initialize
@@ -71,18 +70,18 @@ contains
 
 
     
-    
-#ifdef PARA
-    call mpi_world%barrier
-    !call MPI_Barrier( MPI_COMM_WORLD, ierr )
-    call write_parameters( )            ! Write options in LOGFILE.
-    call mpi_world%barrier
-!call MPI_Barrier( MPI_COMM_WORLD, ierr )
-#else
+!!$    
+!!$#ifdef PARA
+!!$    call mpi_world%barrier
+!!$    !call MPI_Barrier( MPI_COMM_WORLD, ierr )
+!!$    call write_parameters( )            ! Write options in LOGFILE.
+!!$    call mpi_world%barrier
+!!$!call MPI_Barrier( MPI_COMM_WORLD, ierr )
+!!$#else
     
     call write_parameters( )            ! Write options in LOGFILE.
 !    write(6,*)'JP out writeparam'
-#endif
+!!$#endif
 
     ! Open the log file and get ready for the simulation
     if ( iproc == 0 ) then              ! Report
@@ -100,11 +99,6 @@ contains
     
 !   call initialize_potential()
 !ifdef LAMMPS_VERSION
-#ifdef PARA
-    if (parapath%lmaster.neqv..true.) then
-       call tolstoi (WORKER_TAG,parapath) 
-    else
-#endif
 !endif
 
 !!$    if (present(which)) then
@@ -140,9 +134,6 @@ contains
 !!$    end if
 
     return
-#ifdef PARA
- end if
-#endif
 
   end subroutine init_conf
 
@@ -292,22 +283,22 @@ contains
 
      ! We finally push over the saddle point
      pos = pos + prod * PUSH_OVER * difpos * projection
-!     write(6,*)'JP502',
+!     write(6,*)'JP502',iproc
      call min_converge( success )     ! And we converge to the new minimum.
      delta_e = total_energy - ref_energy 
-     if ( iproc == 0 ) then
+!     if ( iproc == 0 ) then
                                       ! We write the configuration in a min.... file.
         call convert_to_chain( mincounter, 4, scounter )
         write(*,*) 'BART: Mincounter is ', mincounter,', scounter is ', scounter
         fname = FINAL // scounter
         conf_final = fname
-        call store( fname ) 
-     end if
+        call store( fname )  !fname =minxxx
+!     end if
                                       ! Magnitude of the displacement (utils.f90).
 
 
-    
-    call store( fname )
+!    write(6,*)'JP503',fname
+!    call store( fname )
 
     if (CHECK_CONNECTIVITY) then
        !CRC

@@ -28,6 +28,9 @@ module defs
   real(kind=8), parameter :: VERSION_NUMBER  = 3.0    ! Version of the code
   character(len=20), parameter :: BIGREVNO ="1.6-dev.12-538" ! Bigdft version
 
+  integer::ivisuart
+  logical lwgin
+  
   real(kind=8) :: t1                 ! Initial Date (cputime)
 
   real(kind=8) :: my_gnrm            ! We use a higher convergence criterion for the

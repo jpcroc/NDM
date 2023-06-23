@@ -189,7 +189,7 @@ subroutine initialize()
      if ( iproc == 0 ) then
         ! THIS iS NOT NECESSARY IN BIGDFT
         call write_refconfig( )       ! Write reference in REFCONFIG.
-        call store( fname )           ! Store the configuration into fname.
+        call store( fname )           ! Store the configuration into fname. fname=minxxx
 
         open( unit = FLOG, file = LOGFILE, status = 'unknown',&
              & action = 'write', position = 'append', iostat = ierror )

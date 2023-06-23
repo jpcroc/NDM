@@ -3,10 +3,17 @@ contains
   !> ART store
   !!    This subroutine stores the configurations at minima
   !!    and activated points.
-  !!    By definition, it uses pos, box and scala
+  !!    By definition, it uses pos, box and scala (actually x, y , z -> pos
   subroutine store( fname )
 
     use defs
+    use atomconfig,only: atom_config
+    use cellconfig,only:cell_config
+    use boxconfig,only:box_config
+    use ndm2art2ndm,only:art2ndm,atcfart,boxart
+    USE rasmolT_mod,only: rasmolT
+
+  
     implicit none
 
     !Arguments
@@ -16,9 +23,14 @@ contains
     integer :: i, ierror
     real(kind=8),dimension(3) :: boxl
     character(len=*), parameter :: extension = ".xyz"
-    character(len=60) :: fnamexyz
+    character(len=60) :: fnamexyz,namemol
     character(len=4), dimension(natoms) :: frzchain
+    type(atom_config)::ataux
+    type(box_config)::boxaux
+    type(cell_config)::celaux
 
+
+    
     ! Update the box size
     boxl = box * scala
 
@@ -100,6 +112,23 @@ contains
 
     end if
 
+    if (ivisuart.gt.0) then
+       call art2ndm(ataux,boxaux,celaux,linit=.true.)
+       write(6,*)'TEST1 ', fname
+       write(6,*)'TEST11 ', fname(4:)
+       if (index(fname, 'min').ne.0) then
+          namemol='CONF'//trim(fname(4:))//'2'
+       end if
+       if (index(fname, 'sad').ne.0) then
+          namemol='CONF'//trim(fname(4:))//'1'
+       end if
+       write(6,*)'name MOL',namemol
+       call rasmolT(ataux,boxaux,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
+!!$       namemol=trim(fname)//trim(fname)
+!!$       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
+    end if
+       
+    
   END SUBROUTINE store
 
   !> ART newunit

@@ -6,13 +6,18 @@ module ndm2art2ndm
   USE boxconfig,only:box_config_lpr,box_config
   USE gen_com_m, ONLY: rang,latcomp,angst,inv_angst,lperiod,iteration,sig,potist,erg2ev
   use Tpara,only:para_space_config,nprocs,myidsp,nprocspace
+#ifdef PARA
+  use Tpara,only:para_space_config,nprocs,myidsp,nprocspace,comm_space ,mpi_comm_space,&
+       &mpi_world,mpi_comm_world
+#endif
+  
   use endrunT_mod,only:endrunT
   use montecarlo_mod,only:nparapath,lparapath
   use defs,only:NATOMS,VECSIZE,typat,force,posref,boxref,use_local_forces,FCOUNTER,mincounter,&
        &new_event,restart,boundary,pos,box,typat,cell,invcell,iproc,nproc,t1,constr,COUNTER
-  use paraconfig,only:para_config
   use var_pot,only:rumax
   use parautils,only:initloc,depeche_mode
+    use paraconfig,only:para_config,commconstr,initparapuresp
   use update_invcell_mod,only: update_invcell
 
   implicit none
@@ -28,17 +33,16 @@ module ndm2art2ndm
   logical,target:: lchg,lcalcvois
 
   logical :: lmaster,lbigmaster
-  
+  integer::ierr
 contains
 
   subroutine init_mpi_art
 
 #ifdef PARA
-    if (rang==0)write(6,*)'INITMPI_ART'
+    if (rang==0)write(6,*)'INITMPI_ART********************************************'
     if (lparapath) then 
        if (mod(nprocs,nparapath).ne.0) then
           write(6,*)'nprocs/nparapath <>0 STOP'
-          call MPI_FINALIZE(ierr)
           call arret_ndm
        end if
        parapath%mpi_orig%nproc=nprocs
@@ -113,39 +117,40 @@ contains
 
 
   end subroutine ndm2art
-!!$  subroutine art2ndm(atcf,boxcf,celcf,linit)
-!!$
-!!$!    type(para_space_config)::psc
-!!$    class(box_config)::boxcf
-!!$    class(atom_config)::atcf
-!!$    type(cell_config):: celcf
-!!$    logical,optional ::linit
-!!$    logical ::lini=.false.
-!!$    character(len=20) :: dummy, fname
-!!$    logical ::flag
-!!$
-!!$    integer::ierror
-!!$    if(present(linit))lini=linit
-!!$
-!!$    if (lini) then
-!!$       call atcf%init(NATOMS,lreallocate=.true.)
-!!$    else
-!!$       if (atcf%im.ne.NATOMS) then
-!!$          write(6,*)'ART2NDM incosistency between NATOMS and atcf%im' stop
-!!$          call arret_ndm
-!!$       end if
-!!$    end if
-!!$    typat(1:NATOMS)=atcfart%ityp(1:NATOMS)
-!!$    pos(1:NATOMS)=angst*atcfart%xp(1,1:NATOMS)
-!!$    pos(1+NATOMS:2*NATOMS)=angst*atcfart%xp(2,1:NATOMS)
-!!$    pos(1+2*NATOMS:3*NATOMS)=angst*atcfart%xp(3,1:NATOMS)
-!!$    boundary='T'
-!!$    cell(:,:)=boxart%at(:,:)*angst
-!!$    box=0 ; boxref=0 ! initilisation à 0 pour provoquer un plantage
-!!$    call update_invcell( )
-!!$
-!!$
-!!$  end subroutine ndm2art
+  subroutine art2ndm(atcf,boxcf,celcf,linit)
+
+!    type(para_space_config)::psc
+    class(box_config)::boxcf
+    class(atom_config)::atcf
+    type(cell_config):: celcf
+    logical,optional ::linit
+    logical ::lini=.false.
+    character(len=20) :: dummy, fname
+    logical ::flag
+
+    integer::ierror,ipbc(3)
+    ipbc=1
+    if(present(linit))lini=linit
+
+    if (lini) then
+       call atcf%init(NATOMS,lreallocate=.true.)
+    else
+       if (atcf%im.ne.NATOMS) then
+          write(6,*)'ART2NDM incosistency between NATOMS and atcf%im stop'
+          call arret_ndm
+       end if
+    end if
+    atcf%ityp(1:NATOMS)=typat(1:NATOMS)
+    atcf%xp(1,1:NATOMS)=pos(1:NATOMS)/angst
+    atcf%xp(2,1:NATOMS)=   pos(1+NATOMS:2*NATOMS)/angst
+    atcf%xp(3,1:NATOMS)=    pos(1+2*NATOMS:3*NATOMS)/angst
+    boxcf%at(:,:)=cell(:,:)/angst
+    call boxcf%init(boxcf%at,ipbc)
+    call celcf%init(boxcf,celart%nox,celart%noy,celart%noz)
+
+
+
+  end subroutine art2ndm
 
   subroutine calcforce_ndm(nat, posa,  forca, energy)
     use defs, only :  use_local_forces, local_ref_energy, global_ref_energy
@@ -219,7 +224,6 @@ contains
     atcfartloc=> atcible
     celartloc=>cellcible
     pscart= psc
-
     call initloc(atcfart,celart,atcfartloc,celartloc,boxart,parapath,rumax,lperiod,ldistrib=.true.,psc=pscart,&
          &lcalcvois=lcalcvois,lboxchange=.false.)
 

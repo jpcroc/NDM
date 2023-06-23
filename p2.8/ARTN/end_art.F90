@@ -17,7 +17,9 @@
 
 !> ART end_art
 module end_art_mod
-use read_parameters_mod,only:timestamp
+  use read_parameters_mod,only:timestamp
+  USE arret_ndm_mod,only:arret_ndm
+
 contains
 subroutine end_art( )
 
@@ -41,7 +43,7 @@ subroutine end_art( )
   end if
 
   write(*,*) "Master exiting from end_art"
-  stop
+  call arret_ndm
 
 END SUBROUTINE end_art
 end module end_art_mod

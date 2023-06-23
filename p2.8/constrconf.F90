@@ -11,7 +11,7 @@ module constrconf_mod
   USE arret_ndm_mod,only: arret_ndm
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig,only:cell_config
-  USE boxconfig,only:box_config,initbox,periodbox
+  USE boxconfig,only:box_config,periodbox
   USE setcell,only:setnox,setcellconf
   USE decoupage_mod,only: decoupage
   USE Mat_utils_mod,only: Matinv_gen,is_upper_triangular
@@ -260,7 +260,7 @@ contains
     do ic=1,3
        atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
     end do
-    call initbox(box2b,atg,ipbc)
+    call box2b%init(atg,ipbc)
 
     call setnox(box2b,cel2b,rum,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
     if ((rang==0).and.(lprt)) then
@@ -532,7 +532,7 @@ contains
        end do
     end if
 
-    call initbox(boxcin,at,ipbc)
+    call boxcin%init(at,ipbc)
 
     select case(itread)
     case(0)
@@ -803,7 +803,7 @@ contains
     !                                                !c
     read (lugin, *) at(1,3), at(2,3), at(3,3)
     at=at*1d-8
-    call initbox(boxrg,at,ipbc)
+    call boxrg%init(at,ipbc)
     read (lugin, *) imcell               !number of atoms in UC
     if (itr==0) return
     if (imcell>imm_glob) then

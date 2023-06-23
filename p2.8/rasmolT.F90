@@ -64,6 +64,8 @@ contains
     character :: extension*9
     integer::iax
     logical::latc
+
+    
     latc=latcomp
     if (nprocs==1) latc=.true.
     if (present(lappend)) then
@@ -81,7 +83,7 @@ contains
 !!$       write(6,*)'typeE',atmol%lprteat
 !!$    end select
 !!$    call atmol%print(unit=500+rang)
-    if (atmol%im_glob==0) then
+    if((.not.latc).and.(atmol%im_glob==0)) then
        write(6,*)'rasmolT im_glob stop'
        call arret_ndm
     end if
