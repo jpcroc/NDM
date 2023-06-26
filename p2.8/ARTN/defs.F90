@@ -30,6 +30,8 @@ module defs
 
   integer::ivisuart
   logical lwgin
+  integer::unit6P
+
   
   real(kind=8) :: t1                 ! Initial Date (cputime)
 

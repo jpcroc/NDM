@@ -12,9 +12,9 @@ module ndm2art2ndm
 #endif
   
   use endrunT_mod,only:endrunT
-  use montecarlo_mod,only:nparapath,lparapath
+  use montecarlo_mod,only:lparapath,nparapath
   use defs,only:NATOMS,VECSIZE,typat,force,posref,boxref,use_local_forces,FCOUNTER,mincounter,&
-       &new_event,restart,boundary,pos,box,typat,cell,invcell,iproc,nproc,t1,constr,COUNTER
+       &new_event,restart,boundary,pos,box,typat,cell,invcell,iproc,nproc,t1,constr,COUNTER,unit6P
   use var_pot,only:rumax
   use parautils,only:initloc,depeche_mode
     use paraconfig,only:para_config,commconstr,initparapuresp
@@ -39,10 +39,11 @@ contains
   subroutine init_mpi_art
 
 #ifdef PARA
-    if (rang==0)write(6,*)'INITMPI_ART********************************************'
-    if (lparapath) then 
+    if (rang==0)write(unit6P,*)'INITMPI_ART********************************************'
+       write(unit6P,*)'JPNPNPP',nprocs,nparapath
+    if (lparapath) then
        if (mod(nprocs,nparapath).ne.0) then
-          write(6,*)'nprocs/nparapath <>0 STOP'
+          write(unit6P,*)'nprocs/nparapath <>0 STOP'
           call arret_ndm
        end if
        parapath%mpi_orig%nproc=nprocs
@@ -136,7 +137,7 @@ contains
        call atcf%init(NATOMS,lreallocate=.true.)
     else
        if (atcf%im.ne.NATOMS) then
-          write(6,*)'ART2NDM incosistency between NATOMS and atcf%im stop'
+          write(unit6P,*)'ART2NDM incosistency between NATOMS and atcf%im stop'
           call arret_ndm
        end if
     end if
@@ -168,11 +169,11 @@ contains
     atcfart%xp(1,1:NATOMS)=posa(1:NATOMS)*inv_angst
     atcfart%xp(2,1:NATOMS)=posa(1+NATOMS:2*NATOMS)*inv_angst
     atcfart%xp(3,1:NATOMS)=posa(1+2*NATOMS:3*NATOMS)*inv_angst
-!    write(6,*)'JPp1',rang,iproc
+!    write(unit6P,*)'JPp1',rang,iproc
     call depeche_mode(parapath,.false.)
 
     energy=potist*erg2ev
-!    write(6,*)'JPenergy',energy
+!    write(unit6P,*)'JPenergy',energy
     forca(1:NATOMS)=(erg2ev/angst)*atcfart%fp(1,1:NATOMS)
     forca(1+NATOMS:2*NATOMS)=(erg2ev/angst)*atcfart%fp(2,1:NATOMS)
     forca(1+2*NATOMS:3*NATOMS)=(erg2ev/angst)*atcfart%fp(3,1:NATOMS)
@@ -228,16 +229,14 @@ contains
          &lcalcvois=lcalcvois,lboxchange=.false.)
 
     call set_pointers_art
-    call atcfart%print(unit=110+rang)
-    call atcfartloc%print(unit=210+rang)
 !!$
 !!$#ifdef MPI_VERSION_ART
 !!$    iproc=0
 !!$    nproc=1
 !!$    ! This subroutine is in def.f90 and creates all mpi instances needed.
 !!$    call mpi_group_creation()
-!!$    write(*,*) "Mpi_group_creation done check if the nproc and iproc are correct"
-!!$    write(*,*) iproc,nproc
+!!$    write(unit6P,*) "Mpi_group_creation done check if the nproc and iproc are correct"
+!!$    write(unit6P,*) iproc,nproc
 !!$    call MPI_Barrier( MPI_COMM_WORLD, ierr )
 !!$#else
 !!$    iproc=0

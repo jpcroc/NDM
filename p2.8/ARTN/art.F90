@@ -17,7 +17,7 @@ module art_mod
   use write_refconfig_mod,only:write_refconfig
   use storage,only:store
   use end_art_mod,only:end_art
-  USE parautils,only:WORKER_TAG,tolstoi
+  USE parautils,only:WORKER_TAG,tolstoi,stop_tag
   USE atomconfig,only : atom_config
   USE cellconfig, only:cell_config
 
@@ -26,7 +26,7 @@ module art_mod
   use gen_com_m,only:rang
   use defs, only : conf_final,conf_initial,conf_saddle,conf_final,eventslist,ievent,ievent_restart,iproc,nproc,&
        &flist,local_force,mincounter,natoms,number_events,pos,posref,ref_energy,refcounter,restart,scala,scalaref,&
-       temperature,total_energy,use_local_forces,WRITE_REJECTED_EVENT
+       temperature,total_energy,use_local_forces,WRITE_REJECTED_EVENT,unit6P
 contains
   subroutine art90(atdml,celndm,boxndm,psc)
 
@@ -56,14 +56,15 @@ contains
     NATOMS= atdml%im
     restart=.false.
     call init_conf
-
+    unit6p=6+parapath%image
+    write(unit6P,*)'unit6P',unit6P
     !initialization of local and workers 
 
     ! _________
     !                MAIN LOOP OVER THE EVENTS.
 
     Do_ev: do ievent = ievent_restart, NUMBER_EVENTS
-!       write(6,*)'JP pre art_search'
+!       write(unit6P,*)'JP pre art_search'
        call art_search(fname)
 
        ! Now, we accept or reject this move based
@@ -80,8 +81,8 @@ contains
           if (LOCAL_FORCE) then
              use_local_forces = .false.
              call min_converge( local_success ) 
-             write(*,*) "Global minimisation -  success: ", local_success, " - total_energy: ", total_energy
-             write(*,*) "Rewrite the minimisation file ", conf_final
+             write(unit6P,*) "Global minimisation -  success: ", local_success, " - total_energy: ", total_energy
+             write(unit6P,*) "Rewrite the minimisation file ", conf_final
              call store( conf_final )
           endif
           if ( iproc == 0 )&
@@ -116,10 +117,12 @@ contains
        call report_and_check(fname,accept)
 
     end do Do_ev
+    call parapath%mpi_master%barrier    
 #ifdef PARA
+    call tolstoi (STOP_TAG,parapath) ! make servants return
  end if
 #endif
-
+write(unit6P,*)'rang',rang
     call end_art
 
   END subroutine art90

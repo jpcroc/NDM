@@ -40,10 +40,11 @@ subroutine end_art( )
      write(FLOG,"(' CPU_TIME: ', f12.4, ' seg')") t2-t1
      call timestamp('End')
      close(FLOG)
+     write(unit6P,*) "Master exiting from end_art"
   end if
 
-  write(*,*) "Master exiting from end_art"
-  call arret_ndm
+
+  !  call arret_ndm
 
 END SUBROUTINE end_art
 end module end_art_mod

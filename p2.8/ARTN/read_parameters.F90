@@ -14,7 +14,8 @@
 ! $Date: 2015-12-14 11:01:46 -0500 (Lun, 14 déc 2015) $
 ! $Id: read_parameters.f90 1534 2015-12-14 15:59:38Z mickael $
 module read_parameters_mod
-
+use ndm2art2ndm,only:parapath
+use arret_ndm_mod,only:arret_ndm
 contains
 
 
@@ -32,7 +33,7 @@ contains
     implicit none
     character(len=20) :: TYPE_of_EVENTS
     !Local variables
-    integer::unitart
+    integer::unitart,ierr
     Character(len=40)  :: temporary
     integer :: Number_Lanczos_Vectors
     integer :: activation_maxiter,Max_Perp_Moves_Basin,Min_Number_KSteps,Max_Iter_Basin,Lanczos_SCLoop,&
@@ -151,7 +152,7 @@ delta_disp_Lanczos=0.01
 
 !!$  call getenv('NATOMS', temporary)
 !!$  if (temporary .eq. '') then
-!!$     write(*,*) 'Error: NATOMS is not defined'
+!!$     write(unit6P,*) 'Error: NATOMS is not defined'
 !!$     stop
 !!$  else
 !!$     read(temporary,*) natoms
@@ -161,7 +162,7 @@ delta_disp_Lanczos=0.01
     ! We now get the types - define up to 5
 !!$  call getenv('type1',temporary)
 !!$  if (temporary .eq. '') then
-!!$     write(*,*) 'Error, must at least define 1 type of atoms -  use "setenv type1 Si", for example'
+!!$     write(unit6P,*) 'Error, must at least define 1 type of atoms -  use "setenv type1 Si", for example'
 !!$     stop
 !!$  else
 !!$     read(temporary,*) type_name(1)
@@ -197,7 +198,7 @@ delta_disp_Lanczos=0.01
 !!$
 !!$  call getenv('type6',temporary)
 !!$  if (temporary .ne. '') then
-!!$     write(*,*) 'Error: The code can only handle 5 atomic types, change read_parameters.f90, to allow for more.'
+!!$     write(unit6P,*) 'Error: The code can only handle 5 atomic types, change read_parameters.f90, to allow for more.'
 !!$     stop
 !!$  end if
     !crc type_name is used only to define Atom(i) (in retart !) which is the character type of the atom, useless in NDM
@@ -217,7 +218,7 @@ delta_disp_Lanczos=0.01
 !!$  end if
 
     if (event_type.ne.'NEW') then
-       write(6,*)'event_type<>new not coded'
+       write(unit6P,*)'event_type<>new not coded'
        stop
     end if
 
@@ -236,8 +237,8 @@ delta_disp_Lanczos=0.01
 !!$          new_event = .false.
 !!$          eventtype = 'REFINE_AND_RELAX'
 !!$     case default
-!!$          write(*,*) 'Error: eventtypes permitted are:'
-!!$          write(*,*) 'NEW, REFINE_SADDLE, REFINE_AND_RELAX'
+!!$          write(unit6P,*) 'Error: eventtypes permitted are:'
+!!$          write(unit6P,*) 'NEW, REFINE_SADDLE, REFINE_AND_RELAX'
 !!$          stop
 !!$  end select
 
@@ -266,8 +267,8 @@ delta_disp_Lanczos=0.01
     ! type of energy and force calculation
 !!$  call getenv('ENERGY_CALC', temporary) !energy_type à supprimer
 !!$  if (temporary .eq. '') then
-!!$     write(*,*) "Error: energy calculation type is not defined: ENERGY_CALC "
-!!$     write(*,*) " choose: DFT, SWP (Stillinger-Weber Si 'dia'), SWA (Stillinger-Weber amorphous Si) or LAM (LAMMPS) "
+!!$     write(unit6P,*) "Error: energy calculation type is not defined: ENERGY_CALC "
+!!$     write(unit6P,*) " choose: DFT, SWP (Stillinger-Weber Si 'dia'), SWA (Stillinger-Weber amorphous Si) or LAM (LAMMPS) "
 !!$     stop
 !!$  else
 !!$     read(temporary,*) energy_type
@@ -306,9 +307,9 @@ delta_disp_Lanczos=0.01
 !!$     energy_conversion = 1.0d0/23.0609d0
 !!$     position_conversion = 1.0d0
 !!$  else
-!!$     write(*,*) "Error: UNITS_CONVERSION is only defined for none or metal or real or electron or si"
-!!$     write(*,*) "You must modify read_param.f90 for more choices"
-!!$     write(*,*) "or use none as argument"
+!!$     write(unit6P,*) "Error: UNITS_CONVERSION is only defined for none or metal or real or electron or si"
+!!$     write(unit6P,*) "You must modify read_param.f90 for more choices"
+!!$     write(unit6P,*) "or use none as argument"
 !!$     stop
 !!$  endif
 
@@ -343,8 +344,8 @@ delta_disp_Lanczos=0.01
 
     ! Use a local calculation for LANCZOS, useful for very large systems
     if (LOCAL_FORCE .and. .not. LOCAL_LANCZOS) then
-       write(*,*) 'Error: when LOCAL_FORCES is true, LOCAL_LANCZOS should be true also.'
-       write(*,*) 'Error: The code will automatically set LOCAL_LANCZOS to true.'
+       write(unit6P,*) 'Error: when LOCAL_FORCES is true, LOCAL_LANCZOS should be true also.'
+       write(unit6P,*) 'Error: The code will automatically set LOCAL_LANCZOS to true.'
        LOCAL_LANCZOS = .true.
     endif
 
@@ -435,8 +436,8 @@ delta_disp_Lanczos=0.01
 !!$  if (temporary .eq. '' .and. energy_type == 'LAM') then
 !!$     inquire(file = 'in.lammps', exist = exists_already)
 !!$     if (.not. exists_already) then
-!!$        write(*,*) "ERROR, INPUT_LAMMPS_FILE missing and default 'in.lammps' not present."
-!!$        write(*,*) "The program will stop"
+!!$        write(unit6P,*) "ERROR, INPUT_LAMMPS_FILE missing and default 'in.lammps' not present."
+!!$        write(unit6P,*) "The program will stop"
 !!$        stop
 !!$     end if
 !!$     INPUT_LAMMPS_FILE  = 'in.lammps'
@@ -444,8 +445,8 @@ delta_disp_Lanczos=0.01
 !!$     read(temporary,*) INPUT_LAMMPS_FILE
 !!$     inquire(file = INPUT_LAMMPS_FILE, exist = exists_already)
 !!$     if (.not. exists_already) then
-!!$        write(*,*) "ERROR, INPUT_LAMMPS_FILE with name ", temporary," is missing."
-!!$        write(*,*) "The program will stop"
+!!$        write(unit6P,*) "ERROR, INPUT_LAMMPS_FILE with name ", temporary," is missing."
+!!$        write(unit6P,*) "The program will stop"
 !!$        stop
 !!$     end if
 !!$  endif
@@ -454,7 +455,7 @@ delta_disp_Lanczos=0.01
     ! Fictive temperature, if negative always reject the event
     !  call getenv('Temperature', temporary)
     if (temperature.eq.-1.) then
-       write(*,*) 'Error: Metropolis temperature is not defined'
+       write(unit6P,*) 'Error: Metropolis temperature is not defined'
        stop
 !!$  else
 !!$     read(temporary,*) temperature
@@ -470,6 +471,9 @@ delta_disp_Lanczos=0.01
 !!$  end if
     !CROCTODO  if (number_events.lt.nb de taches para) the stop
     number_events=max_number_events
+
+
+    
     !!__________________
     ! Read type of events
     ! Activation: global, local, list_local, list, local_coord
@@ -478,14 +482,14 @@ delta_disp_Lanczos=0.01
     if ( (TYPE_EVENTS .ne. 'global') .and. (TYPE_EVENTS .ne. 'local') .and. &
          & (TYPE_EVENTS .ne. 'list')   .and. (TYPE_EVENTS .ne. 'list_local') .and. &
          & (TYPE_EVENTS .ne. 'local_coord') ) then
-       write(*,*) 'Error : only global, local, or list type of events are accepted - provided: ',&
+       write(unit6P,*) 'Error : only global, local, or list type of events are accepted - provided: ',&
             & TYPE_EVENTS
        stop
     end if
 
     if (TYPE_EVENTS .eq. 'global' .or. TYPE_EVENTS .eq. 'list' ) then
 !!$     if (LOCAL_FORCE) then
-!!$        write(*,*) 'Error: EVENTS MUST BE LOCAL or LIST_LOCAL WHEN USING LOCAL_FORCE'
+!!$        write(unit6P,*) 'Error: EVENTS MUST BE LOCAL or LIST_LOCAL WHEN USING LOCAL_FORCE'
 !!$        stop 
 !!$     endif
     endif
@@ -495,7 +499,7 @@ delta_disp_Lanczos=0.01
     if (TYPE_EVENTS .eq. 'local' .or. TYPE_EVENTS .eq. 'list_local' ) then
        !     call getenv('Radius_Initial_Deformation', temporary)
        if (local_cutoff==-1) then
-          write(*,*) 'Error: local_cutoffmust be defined when TYPE_EVENTS is local'
+          write(unit6P,*) 'Error: local_cutoffmust be defined when TYPE_EVENTS is local'
           stop
 !!$     else
 !!$        read(temporary,*) LOCAL_CUTOFF
@@ -570,8 +574,8 @@ delta_disp_Lanczos=0.01
        !     read(temporary,*) FTHRESHOLD
        if(FTHRESHOLD>EXITTHRESH) then
           FTHRESHOLD = EXITTHRESH
-          write(*,*) 'Warning: Force_Threshold_Perp_Rel should be smaller or equal to Exit_Force_Threshold'
-          write(*,*) 'The code has automatically set Force_Threshold_Perp_Rel=Exit_Force_Threshold'
+          write(unit6P,*) 'Warning: Force_Threshold_Perp_Rel should be smaller or equal to Exit_Force_Threshold'
+          write(unit6P,*) 'The code has automatically set Force_Threshold_Perp_Rel=Exit_Force_Threshold'
        endif
     end if
 
@@ -617,7 +621,7 @@ delta_disp_Lanczos=0.01
     !  call getenv('Eigenvalue_Threshold',temporary)
      eigen_thresh=Eigenvalue_Threshold
      if (EIGEN_THRESH==-1000.) then
-       write(*,*) 'Error : No eigenvalue threshold provided  (Eigenvalue_Threshold)'
+       write(unit6P,*) 'Error : No eigenvalue threshold provided  (Eigenvalue_Threshold)'
        stop
     end if
 !!$  else
@@ -993,7 +997,7 @@ delta_disp_Lanczos=0.01
 !!$     if (.not.( energy_type=="BSW" .or. energy_type=="OTF" .or. &
 !!$                energy_type=="BAY" .or. energy_type=="BIG" )     &
 !!$          .and. clean_wf ) then
-!!$        write(*,*) "Error : Clean_wavefunct option is only for bigdft"
+!!$        write(unit6P,*) "Error : Clean_wavefunct option is only for bigdft"
 !!$        stop
 !!$     end if
 !!$  end if
@@ -1016,8 +1020,8 @@ delta_disp_Lanczos=0.01
 !!$     nbr_quantum = natoms
 !!$  elseif ((energy_type == "BSW" .or. energy_type == "OTF" .or. energy_type == "BAY"&
 !!$           &) .and. temporary .eq. "" ) then
-!!$     write(*,*) "Error : you have not given the number of quantum atoms"
-!!$     write(*,*) "The program will stop"
+!!$     write(unit6P,*) "Error : you have not given the number of quantum atoms"
+!!$     write(unit6P,*) "The program will stop"
 !!$     stop
 !!$  elseif (temporary .ne. "") then
 !!$     read(temporary,*) nbr_quantum
@@ -1027,13 +1031,13 @@ delta_disp_Lanczos=0.01
 !!$  call getenv('NBR_QUNT_BUF', temporary)
 !!$  if (temporary .ne. '' .and. energy_type .ne. "BSW" .and. energy_type .ne. "OTF" &
 !!$            & .and. energy_type .ne. "BAY") then
-!!$     write(*,*) "Error: number of quantum atoms only usefull for BSW energy_calc "
-!!$     write(*,*) " we will stop  "
+!!$     write(unit6P,*) "Error: number of quantum atoms only usefull for BSW energy_calc "
+!!$     write(unit6P,*) " we will stop  "
 !!$     stop
 !!$  elseif ( (energy_type == "BSW" .or. energy_type == "OTF" .or. energy_type == "BAY" &
 !!$              &) .and. temporary .eq. "" ) then
-!!$     write(*,*) "Error : you have not given the number of quantum atoms"
-!!$     write(*,*) "The program will stop"
+!!$     write(unit6P,*) "Error : you have not given the number of quantum atoms"
+!!$     write(unit6P,*) "The program will stop"
 !!$     stop
 !!$  elseif (temporary .eq. '') then
 !!$     nbr_quantum_trash = 0
@@ -1044,9 +1048,9 @@ delta_disp_Lanczos=0.01
 !!$  call getenv('PASSIVATE', temporary)
 !!$  if ( (temporary .eq. ".true.") .and. energy_type .ne. "BSW" .and. energy_type .ne. "OTF" &
 !!$              & .and. energy_type .ne. "BAY") then
-!!$     write(*,*) "Error: should only passivate if BSW energy_calc "
-!!$     write(*,*) " we will stop  "
-!!$     write(*,*) temporary
+!!$     write(unit6P,*) "Error: should only passivate if BSW energy_calc "
+!!$     write(unit6P,*) " we will stop  "
+!!$     write(unit6P,*) temporary
 !!$     stop
 !!$  elseif (temporary .eq. "" .or. temporary .ne. ".true." ) then
 !!$     passivate = .false.
@@ -1059,7 +1063,7 @@ delta_disp_Lanczos=0.01
 
        !     call getenv('Radius_Initial_Deformation', temporary)
        if (local_cutoff==-1.) then
-          write(*,*) 'Error: Radius_Initial_Deformation must be defined when TYPE_EVENTS is local'
+          write(unit6P,*) 'Error: Radius_Initial_Deformation must be defined when TYPE_EVENTS is local'
           stop
 !!$     else
 !!$        read(temporary,*) LOCAL_CUTOFF
@@ -1068,19 +1072,19 @@ delta_disp_Lanczos=0.01
        !     call getenv('Coord_radius', temporary)
        !     if (temporary .eq. '') then
        if (coord_length==-1.)then
-          write(*,*) 'Error: Coord_length must be defined when TYPE_EVENTS is local_coord'
+          write(unit6P,*) 'Error: Coord_length must be defined when TYPE_EVENTS is local_coord'
           stop
 !!$     else
 !!$        read(temporary,*) coord_length
        end if
        if (coord_number==-1)then
-          write(*,*) 'Error: Coord_number must be defined when TYPE_EVENTS is local_coord'
+          write(unit6P,*) 'Error: Coord_number must be defined when TYPE_EVENTS is local_coord'
           stop
        end if
 
 !!$     call getenv('Coord_number',temporary)
 !!$     if (temporary .eq. '') then
-!!$        write(*,*) 'Error: Coord_number must be defined when TYPE_EVENTS is local_coord'
+!!$        write(unit6P,*) 'Error: Coord_number must be defined when TYPE_EVENTS is local_coord'
 !!$        stop
 !!$     else
 !!$        read(temporary,*) coord_number
@@ -1104,8 +1108,8 @@ delta_disp_Lanczos=0.01
     !     read(temporary,*) dual_search
     if ( .not. (TYPE_EVENTS=='local' .or. TYPE_EVENTS=='list_local') &
          .and.  dual_search ) then
-       write(*,*) 'Error: Dual_system is defined only for local or list_local'
-       write(*,*)  dual_search, TYPE_EVENTS
+       write(unit6P,*) 'Error: Dual_system is defined only for local or list_local'
+       write(unit6P,*)  dual_search, TYPE_EVENTS
        stop
     end if
 !!$  end if
@@ -1114,12 +1118,12 @@ delta_disp_Lanczos=0.01
        !     if (size_system==-1.)then
        !     call getenv('Size_system', temporary)
        !    if (temporary .eq. '') then
-       !        write(*,*) 'Error: size_system must be defined if dual_search'
+       !        write(unit6P,*) 'Error: size_system must be defined if dual_search'
        !        stop
        !     else
        !     read(temporary,*) size_system
        if ( size_system <= LOCAL_CUTOFF ) then
-          write(*,*) 'Error: Radius_Initial_Deformation > Size_system'
+          write(unit6P,*) 'Error: Radius_Initial_Deformation > Size_system'
           stop
        end if
        !     end if

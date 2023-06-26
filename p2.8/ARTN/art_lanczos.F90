@@ -286,7 +286,7 @@ subroutine lanczos( maxvec, new_projection, produit )
             & action = 'write', position = 'append', iostat = ierror )
         write( FLOG, * ) " WARNING: i_err= ", i_err, " ->failed dstev in lanczos"
         close( FLOG )
-        write( *, * ) "WARNING: i_err= ", i_err, " ->failed dstev in lanczos"
+        write( unit6P, * ) "WARNING: i_err= ", i_err, " ->failed dstev in lanczos"
      end if
   end if
 

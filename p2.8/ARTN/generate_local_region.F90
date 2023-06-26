@@ -75,7 +75,7 @@ contains
 
   ! Get the total number of atoms in the region
   nat_local = nat_inner + nat_outer
-  write(*,*) 'nat_inner :', nat_inner, ' nat_outer: ',nat_outer, 'nat_local: ', nat_local
+  write(unit6P,*) 'nat_inner :', nat_inner, ' nat_outer: ',nat_outer, 'nat_local: ', nat_local
   open(unit=FLOG,file=LOGFILE,status='unknown',action='write',position='append',iostat=ierror)
   write(FLOG,*) 'Size of local region:  nat_inner :', nat_inner, ' nat_outer: ',nat_outer, 'nat_local: ', nat_local
   close(FLOG)
@@ -97,21 +97,21 @@ subroutine initial_local_region()
   outer_diameter = dsqrt(r2_outer)*2
   if (outer_diameter.ge.box(1)) then
      mask_box(1) = 0.0d0
-     write(*,*) 'Box along x is smaller than local box, use real box'
+     write(unit6P,*) 'Box along x is smaller than local box, use real box'
   else
      mask_box(1) = 1.0d0
   endif
 
   if (outer_diameter.ge.box(2)) then
      mask_box(2) = 0.0d0
-     write(*,*) 'Box along y is smaller than local box, use real box'
+     write(unit6P,*) 'Box along y is smaller than local box, use real box'
   else
      mask_box(2) = 1.0d0
   endif
 
   if (outer_diameter.ge.box(3)) then
      mask_box(3) = 0.0d0
-     write(*,*) 'Box along z is smaller than local box, use real box'
+     write(unit6P,*) 'Box along z is smaller than local box, use real box'
   else
      mask_box(3) = 1.0d0
   endif

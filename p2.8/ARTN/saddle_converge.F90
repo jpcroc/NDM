@@ -91,9 +91,9 @@ contains
       restart = .false.
       ! Write
       if ( iproc == 0 ) then
-         write(*,*) 'BART: Restart  in harmonic well '
-         write(*,*) 'BART: kter : ', kter_init
-         write(*,*) 'BART: pos: ', pos(1), pos(2), pos(3)
+         write(unit6P,*) 'BART: Restart  in harmonic well '
+         write(unit6P,*) 'BART: kter : ', kter_init
+         write(unit6P,*) 'BART: pos: ', pos(1), pos(2), pos(3)
       end if
    else
       kter_init = 0                    ! init value of kter loop.
@@ -111,7 +111,7 @@ contains
       ! lowest direction.
       Do_kter: do kter = kter_init, MAXKTER
          ! Reference energy and force.
-!         write(6,*)'JP5',kter,kter_init, MAXKTER
+!         write(unit6P,*)'JP5',kter,kter_init, MAXKTER
          call calcforce( NATOMS, pos, boxl, force, current_energy, evalf_number )
          ! We now project out the direction of the initial displacement from the
          ! minimum from the force vector so that we can minimize the energy in
@@ -125,11 +125,11 @@ contains
 
          ! We relax perpendicularly using a simple variable-step steepest descent
          While_perpk: do
-!         write(6,*)'JP6'
+!         write(unit6P,*)'JP6'
             pos_b = pos + step * perp_force
 
             call calcforce( NATOMS, pos_b, boxl, force_b, total_energy, evalf_number )
-            ! New force's components.  write(*,*) 'Outside of calcforce_local_lammps'
+            ! New force's components.  write(unit6P,*) 'Outside of calcforce_local_lammps'
 
             call force_projection_art( fpar_b, perp_force_b, fperp_b, ftot_b, &
                &   force_b, initial_direction )
@@ -160,19 +160,19 @@ contains
          delta_e = current_energy - ref_energy
          ! Magnitude of the displacement (utils.f90).
          call displacement( posref, pos, delr, npart )
-!         write(6,*)'JP7'
+!         write(unit6P,*)'JP7'
          if ( SAVE_CONF_INT ) call save_intermediate( 'K' )
 
          ! We start checking of negative eigenvalues only after a few steps.
-!         write(6,*)'JP8 ', kter,kter_min,setup_initial 
+!         write(unit6P,*)'JP8 ', kter,kter_min,setup_initial 
          if ( kter == KTER_MIN ) then
             ! First time, twice !!
             do i = 1, 1
-!               write(6,*)'JP91'
+!               write(unit6P,*)'JP91'
                call lanczos( NVECTOR_LANCZOS_H, new_projection, a1 )
 
                new_projection = .false.
-               if ( iproc == 0 ) write(*,'(a,3I5,f12.6,f7.2)') &
+               if ( iproc == 0 ) write(unit6P,'(a,3I5,f12.6,f7.2)') &
                   &   'BART COLLINEAR:', pas, kter, i, eigenvalue, a1
             end do
 
@@ -188,7 +188,7 @@ contains
             ! we get eigen direction for the minimum of this hyperplane.
 
             call lanczos( NVECTOR_LANCZOS_H, new_projection, a1 )
-!            write(6,*)'JP92'
+!            write(unit6P,*)'JP92'
             ! Lanczos call, we start from the
             new_projection = .false.      ! previous direction each time.
          end if
@@ -196,7 +196,7 @@ contains
          ! Write
          call write_step ( 'K JP10', kter, a1, current_energy )
 
-!         write(6,*)'JP93',eigenvalue, EIGEN_THRESH ,setup_initial
+!         write(unit6P,*)'JP93',eigenvalue, EIGEN_THRESH ,setup_initial
          ! For restart ( restart.f90 )
          if ( write_restart_file ) then
             state_restart = 1
@@ -221,7 +221,7 @@ contains
 
          return
       end if
-!      write(6,*)'JP200'
+!      write(unit6P,*)'JP200'
       ! The configuration is now out of the harmonic well, we can now bring
       ! it to the saddle point.
       ! First, we must now orient the direction of the eigenvector corresponding to the
@@ -261,19 +261,19 @@ contains
          liter = iter_restart
          diter = 1
          switchDIIS= .False.           ! We go to apply_lanczos.
-         if ( iproc == 0 ) write(*,*) "BART: Restart = 2"
+         if ( iproc == 0 ) write(unit6P,*) "BART: Restart = 2"
       elseif ( state_restart == 4 ) then
          diter = iter_restart
          liter = 1
          switchDIIS= .True.            ! We go to apply_diis.
-         if ( iproc == 0 ) write(*,*) "BART: Restart = 4"
+         if ( iproc == 0 ) write(unit6P,*) "BART: Restart = 4"
       else                             !DEBUG
-         if ( iproc == 0 ) write(*,*) "BART: HOUSTON, we've got a problem"
+         if ( iproc == 0 ) write(unit6P,*) "BART: HOUSTON, we've got a problem"
          call end_art ()
       end if
 
       call displacement( posref, pos, delr, npart )
-      if (iproc==0) write(*,*) "BART: delr npart", delr, npart
+      if (iproc==0) write(unit6P,*) "BART: delr npart", delr, npart
       call force_projection_art( fpar, perp_force, fperp, ftot, force, projection )
       ! _________
    else if ( .not. new_event ) then    ! Else If_restart
@@ -288,7 +288,7 @@ contains
          call lanczos( NVECTOR_LANCZOS_H, new_projection, a1 )
 
          new_projection = .false.
-         if ( iproc == 0 ) write(*,'(a,2I5,f12.6,f7.2)') &
+         if ( iproc == 0 ) write(unit6P,'(a,2I5,f12.6,f7.2)') &
               &   'BART COLLINEAR:', pas, i, eigenvalue, a1
          if ( a1 > collinear_factor ) exit
       end do
@@ -309,20 +309,20 @@ contains
       switchDIIS= .False.
       ! _________
    else                                ! Else If_restart
-      write(*,*) 'BART: Problem with restart and state_restart : '
-      write(*,*) 'BART: restart = ', restart, ' state_restart = ', state_restart
+      write(unit6P,*) 'BART: Problem with restart and state_restart : '
+      write(unit6P,*) 'BART: restart = ', restart, ' state_restart = ', state_restart
       stop
    end if If_restart
    ! _________
    !                ACTIVATION PART
-   write(6,*)'JP201 pre ACT'
+   write(unit6P,*)'JP201 pre ACT'
    if ( .not. restart ) call allocate_activation ()
 
    ret = 0
    end_activation = .false.
 
    While_activation: do
-!      write(6,*)'JP202',switchDIIS
+!      write(unit6P,*)'JP202',switchDIIS
       if ( .not. switchDIIS ) then
          call apply_lanczos( liter, saddle_energy, ret )
       else
@@ -335,7 +335,7 @@ contains
    end do While_activation
 
    call deallocate_activation ()
-   write(6,*)'JP203endact',end_activation
+   write(unit6P,*)'JP203endact',end_activation
  END SUBROUTINE saddle_converge
 
 

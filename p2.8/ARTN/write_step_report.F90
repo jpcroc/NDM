@@ -36,7 +36,7 @@ contains
          &  eigenvalue, delr, npart, evalf_number, a1
       close( FLOG )
 
-      write(*,'(a,i4,2x,a2,i4,1x,(1p,e17.10,0p),1x,2i3,4f12.6,1x,1f10.4,i4,i6)') &
+      write(unit6P,'(a,i4,2x,a2,i4,1x,(1p,e17.10,0p),1x,2i3,4f12.6,1x,1f10.4,i4,i6)') &
          &   " BART:", pas, etape, it, delta_e,  m_perp, try, ftot, fpar, fperp,   &
          &   eigenvalue, delr, npart, evalf_number
    end if
@@ -165,7 +165,7 @@ subroutine end_report ( success, ret, saddle_energy )
          &       "i6, ' |')")                                          &
          & mincounter, adjustr(converg), ret, delta_e, ftot,  &
          & fpar, fperp, eigenvalue, npart, delr, evalf_number
-      write(*,"(/' ','BART: SADDLE',i5, a10,' |ret ',i6,' |delta energy= '," //  &
+      write(unit6P,"(/' ','BART: SADDLE',i5, a10,' |ret ',i6,' |delta energy= '," //  &
          &    "f9.4, ' |force_(tot,par,perp)= ', 3f10.4," //       &
          &    "' |eigenval=',f9.4,' |npart= ', i4,' |delr= ', f8.3,' |evalf='," // &
          &    "i6, ' |')")                                          &
@@ -174,7 +174,7 @@ subroutine end_report ( success, ret, saddle_energy )
 
       if ( success ) then
          ! Write
-         write(*,*) 'BART: Configuration stored in file ',fname
+         write(unit6P,*) 'BART: Configuration stored in file ',fname
          write(FLOG,'(1X,A34,A17)') ' - Configuration stored in file : ', trim(fname)
          write(FLOG,'(1X,A34,(1p,e17.10,0p))') &
             &   ' - Total energy Saddle (eV)     : ', saddle_energy

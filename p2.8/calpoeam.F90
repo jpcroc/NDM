@@ -225,7 +225,7 @@ contains
              rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
           end if
        end do
-       write(6,*)'rhomm',rhomin,rhomax
+       if (rang==0)write(6,*)'rhomm',rhomin,rhomax
     case(16)
        minrho=0
        do iti=1,ntyp

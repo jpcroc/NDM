@@ -91,9 +91,9 @@ subroutine find_saddle( success, saddle_energy )
   ! If we use local forces, first set-up reference energies
 !!$  if (use_local_forces) then
 !!$     global_ref_energy = ref_energy
-!!$     write(*,*) 'global_ref_energy :', global_ref_energy
+!!$     write(unit6P,*) 'global_ref_energy :', global_ref_energy
 !!$     call update_local_potential(natoms,pos,boxl,force,local_ref_energy)
-!!$     write(*,*) 'local_ref_energy:', local_ref_energy
+!!$     write(unit6P,*) 'local_ref_energy:', local_ref_energy
 !!$  endif
   
                                       ! Now, activate per se.
@@ -101,7 +101,7 @@ subroutine find_saddle( success, saddle_energy )
                                       ! If the activation did not converge, for
                                       ! whatever reason, we restart the routine
                                        ! and do not accept the new position.
-  write(6,*)'JP401',ret,saddle_energy,success
+  write(unit6P,*)'JP401',ret,saddle_energy,success
 
   ! If we call for a global convergence, we need to refine with the full forces
   if ( (ret .ge. 10000).and.ret.le.399999) then  ! The event is a success
@@ -120,9 +120,9 @@ subroutine find_saddle( success, saddle_energy )
 
 !!$  if (use_local_forces.and.GLOBAL_CONVERGENCE.and.success) then
 !!$     global_ref_energy = ref_energy
-!!$     write(*,*) 'global_ref_energy :', global_ref_energy
+!!$     write(unit6P,*) 'global_ref_energy :', global_ref_energy
 !!$     call update_local_potential(natoms,pos,boxl,force,local_ref_energy)
-!!$     write(*,*) 'local_ref_energy:', local_ref_energy
+!!$     write(unit6P,*) 'local_ref_energy:', local_ref_energy
 !!$  endif
   
 
@@ -211,7 +211,7 @@ subroutine local_move( )
   else
      that = preferred_atom
      if ( constr(that) .ne. 0 ) then  ! die !
-        write(*,*) ' ERROR: choosen atom is blocked in the geometry file '
+        write(unit6P,*) ' ERROR: choosen atom is blocked in the geometry file '
         call end_art()
      end if
   end if
@@ -229,7 +229,7 @@ subroutine local_move( )
    write(FLOG,*) ' '
    write(FLOG,'(1X,A34,I17)') ' - That atom                    : ', that
    close(FLOG)
-   write(*,*) 'BART: That atom = ', that
+   write(unit6P,*) 'BART: That atom = ', that
   end if
 
   boxl = box*scala                    ! without periodic boundary conditions box
@@ -324,7 +324,7 @@ subroutine list_of_atoms ( )
   ! Is there the file?
   inquire( file = filename, exist = found )
   if ( .not. found ) then
-     write(*,'(a)') 'ERROR: list_atoms.dat not found !! '
+     write(unit6P,'(a)') 'ERROR: list_atoms.dat not found !! '
      call end_art()
   end if
 
@@ -341,8 +341,8 @@ subroutine list_of_atoms ( )
      end if
      nlines = nlines + 1
      if ( nlines > 500 ) then
-        write(*,*) 'list_atoms.dat file too long (> 500 lines).'
-        write(*,*) 'change this parameter in the source!!'
+        write(unit6P,*) 'list_atoms.dat file too long (> 500 lines).'
+        write(unit6P,*) 'change this parameter in the source!!'
         call end_art()
      end if
   end do
@@ -350,7 +350,7 @@ subroutine list_of_atoms ( )
   close (99)
 
   if ( nlines < 2 ) then
-     write(*,*) 'ERROR: list_atoms, file has less than 2 lines.'
+     write(unit6P,*) 'ERROR: list_atoms, file has less than 2 lines.'
      call end_art()
   end if
 
@@ -449,7 +449,7 @@ subroutine list_and_local ()
   ! Is there the file?
   inquire( file = filename, exist = found )
   if ( .not. found ) then
-     write(*,'(a)') 'ERROR: list_atoms.dat not found !! '
+     write(unit6P,'(a)') 'ERROR: list_atoms.dat not found !! '
      call end_art()
   end if
 
@@ -466,8 +466,8 @@ subroutine list_and_local ()
      end if
      nlines = nlines + 1
      if ( nlines > 500 ) then
-        write(*,*) 'list_atoms.dat file too long (> 500 lines).'
-        write(*,*) 'change this parameter in the source!!'
+        write(unit6P,*) 'list_atoms.dat file too long (> 500 lines).'
+        write(unit6P,*) 'change this parameter in the source!!'
         call end_art()
      end if
   end do
@@ -475,7 +475,7 @@ subroutine list_and_local ()
   close (99)
 
   if ( nlines < 2 ) then
-     write(*,*) 'ERROR: list_atoms, file has less than 2 lines.'
+     write(unit6P,*) 'ERROR: list_atoms, file has less than 2 lines.'
      call end_art()
   end if
 
@@ -520,7 +520,7 @@ subroutine list_and_local ()
    write(FLOG,*) ' '
    write(FLOG,'(1X,A34,I17)') ' - That atom                    : ', that
    close(FLOG)
-   write(*,*) 'BART: That atom = ', that
+   write(unit6P,*) 'BART: That atom = ', that
   end if
 
   boxl = box*scala                    ! without periodic boundary conditions box
@@ -710,7 +710,7 @@ subroutine center_and_norm ( step )
   norm = 1.0d0 / sqrt(norm)
   initial_direction  = initial_direction * norm
 
-  if ( iproc == 0 ) write(*,*) 'BART: Number of displaced atoms initially: ',natom_displaced
+  if ( iproc == 0 ) write(unit6P,*) 'BART: Number of displaced atoms initially: ',natom_displaced
 
   deallocate(atom_displaced)
   deallocate(dr)
@@ -809,7 +809,7 @@ subroutine coord_based_move( )
      end do
 
      if ( that == 0 ) then
-        write(*,*)  'BART ERROR: There is no atom with lower coord than ', coord_number
+        write(unit6P,*)  'BART ERROR: There is no atom with lower coord than ', coord_number
         stop
      end if
   end if
@@ -826,7 +826,7 @@ subroutine coord_based_move( )
    write(FLOG,*) ' '
    write(FLOG,'(1X,A34,I17)') ' - That atom                    : ', that
    close(FLOG)
-   write(*,*) 'BART: That atom = ', that
+   write(unit6P,*) 'BART: That atom = ', that
   end if
                                       ! Square the cut-off
   lcutoff2 = LOCAL_CUTOFF * LOCAL_CUTOFF
@@ -987,7 +987,7 @@ subroutine guess_direction ( )
   deallocate(dr)
   deallocate(posa)
   deallocate(posb)
-  if ( iproc == 0 ) write(*,*) 'BART: Number of displaced atoms initially: ', natoms
+  if ( iproc == 0 ) write(unit6P,*) 'BART: Number of displaced atoms initially: ', natoms
 
 END SUBROUTINE guess_direction
 end module find_saddle_mod

@@ -151,7 +151,7 @@ contains
          action = 'write', position = 'append', iostat = ierror)
 
     if (push_log >= push_messages) then
-       write(*,*) 'BART : WARNING -- negative_eigenvec is almost &
+       write(unit6P,*) 'BART : WARNING -- negative_eigenvec is almost &
             perpendicular to pos_sad-pos_min, their dot product equals ', a1
        write(logunitid,*)     '# WARNING -- negative_eigenvec is almost &
             perpendicular to pos_sad-pos_min, their dot product equals ', a1
@@ -160,17 +160,17 @@ contains
     push_log = mod(push_log, push_messages)
     select case(push_log)
     case (1)
-       write(*,*)    'BART: PUSH -- failure, push increases energy, &
+       write(unit6P,*)    'BART: PUSH -- failure, push increases energy, &
             with push = ', push
        write(logunitid,*) '# PUSH -- failure, push increases energy, &
             with push = ', push
     case(2)
-       write(*,*)    'BART: PUSH -- half success, energy decreases without &
+       write(unit6P,*)    'BART: PUSH -- half success, energy decreases without &
             reaching second order approximation, with push = ', push
        write(logunitid,*) '# PUSH -- half success, energy decreases without &
             reaching second order approximation, with push = ', push
     case(3)
-       write(*,*)    'BART: PUSH -- success, with push = ', push
+       write(unit6P,*)    'BART: PUSH -- success, with push = ', push
        write(logunitid,*) '# PUSH -- success, with push = ', push
     end select
 

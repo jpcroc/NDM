@@ -55,11 +55,11 @@ contains
        end do
 
        fnamexyz = trim(fname) // extension
-       write(*,*) ' Writing to file : ', fnamexyz
+       write(unit6P,*) ' Writing to file : ', fnamexyz
        open(unit=XYZ, file=fnamexyz, status='unknown', &
             action='write', iostat=ierror)
        write(XYZ,*) NATOMS
-       write(*,*) 'boxl and scala are: ', (boxl(i),i=1,3), scalaref
+       write(unit6P,*) 'boxl and scala are: ', (boxl(i),i=1,3), scalaref
        if (boundary == 'P') then
           write(XYZ,'(a,3(1x,1p,e24.17,0p))')'Periodic',  (boxl(i),i=1,3)
           ! write(XYZ,'(A,9(1X,F8.4),1X,A,1X,A)') 'Lattice="',boxl(1),0.0,0.0 &
@@ -89,7 +89,7 @@ contains
 
     else
 
-       write(*,*) ' Writing to file : ', fname
+       write(unit6P,*) ' Writing to file : ', fname
 
        open(unit=FCONF, file=fname, status='unknown', &
             action='write', iostat=ierror)
@@ -120,7 +120,7 @@ contains
        if (index(fname, 'sad').ne.0) then
           namemol='CONF'//trim(fname(4:))//'1'
        end if
-!       write(6,*)'name MOL',namemol
+!       write(unit6P,*)'name MOL',namemol
        call rasmolT(ataux,boxaux,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
 !!$       namemol=trim(fname)//trim(fname)
 !!$       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)

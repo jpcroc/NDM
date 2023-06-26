@@ -65,7 +65,7 @@ subroutine calcforce(nat, posa, boxl, forca, energy, evalf_number)
 !!$     endif
 !!$#endif
 !!$
-!!$     write(*,*) "Your choice of potential is not set up for local force calculations, please change this choice and restart"
+!!$     write(unit6P,*) "Your choice of potential is not set up for local force calculations, please change this choice and restart"
 !!$     stop
 !!$
 !!$  else
@@ -131,13 +131,13 @@ end module calcforce_mod
 !!$  
 !!$#ifdef LAMMPS_VERSION
 !!$  if(energy_type == "LAM")  then
-!!$     write(*,*) 'Call update_local_lammps'
+!!$     write(unit6P,*) 'Call update_local_lammps'
 !!$     call update_local_LAMMPS(nat,posart,boxl,tmp_force,temp_energy)
 !!$     return
 !!$  endif
 !!$#endif
 !!$
-!!$  write(*,*) "Your choice of potential is not set up for local force calculations, please change this choice and restart"
+!!$  write(unit6P,*) "Your choice of potential is not set up for local force calculations, please change this choice and restart"
 !!$  stop
 !!$
 !!$end subroutine update_local_potential

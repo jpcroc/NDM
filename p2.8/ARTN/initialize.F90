@@ -32,6 +32,8 @@ module initialize_mod
   use storage,only:store
   use min_converge_mod,only:check_min
   use generate_local_region_mod, only: initial_local_region
+  use montecarlo_mod,only:lparapath,nparapath
+  use ndm2art2ndm,only:parapath
 contains
 subroutine initialize()
 
@@ -81,6 +83,12 @@ subroutine initialize()
      else
         mincounter = 1000
      end if
+#ifdef PARA
+     if (lparapath) then
+        mincounter=mincounter+parapath%image*number_events
+     end if
+#endif
+     
 !!$  end if
      refcounter = mincounter
   ! we read the initial/reference configuration
@@ -97,7 +105,7 @@ subroutine initialize()
 !!$     call init_all_atoms( nat_test, typ_a, pos_a, const_a, boxref_, boundary, nproc, iproc, trim(REFCONFIG) )
 !!$  else if ( eventtype == 'REFINE_AND_RELAX' .or. eventtype == 'REFINE_SADDLE' ) then
 !!$     ! Read reference atomic file
-!!$     write(6,*)'notcoded initialize 1  eventtype <> new'
+!!$     write(unit6P,*)'notcoded initialize 1  eventtype <> new'
 !!$     stop
 !!$     nat_test = NATOMS
 !!$     allocate(typ_a(NATOMS))
@@ -121,7 +129,7 @@ subroutine initialize()
 !!$
 !!$     ! We read the position for the presumed saddle point.
 !!$     if ( eventtype == "GUESS_DIRECTION" ) then
-!!$        write(6,*)'notcoded initialize 2  eventtype <> new'
+!!$        write(unit6P,*)'notcoded initialize 2  eventtype <> new'
 !!$        stop
 !!$
 !!$        nat_test = NATOMS
@@ -131,18 +139,18 @@ subroutine initialize()
 !!$        call init_all_atoms( nat_test, typ_b, pos_b, const_b, boxref_, boundary_b, nproc, iproc, trim(GUESSFILE) )
 !!$
 !!$        ! Let's check if it is in the same conditions as posinp.
-!!$        write(*,*) "eventtype: ", eventtype
+!!$        write(unit6P,*) "eventtype: ", eventtype
 !!$        if ( boundary /= boundary_b ) then
-!!$           if ( iproc == 0 ) write(*,*) "GUESS: Different type of boundary conditions"
+!!$           if ( iproc == 0 ) write(unit6P,*) "GUESS: Different type of boundary conditions"
 !!$           call end_art()
 !!$        end if
 !!$        do i = 1, NATOMS
 !!$           if ( typ_b(i) /= typat(i) ) then
-!!$              if ( iproc == 0 ) write(*,*) "GUESS: Different type of atoms"
+!!$              if ( iproc == 0 ) write(unit6P,*) "GUESS: Different type of atoms"
 !!$              call end_art()
 !!$           end if
 !!$           if ( const_b(i) /= constr(i) ) then
-!!$              if ( iproc == 0 ) write(*,*) "GUESS: Different type of constraints"
+!!$              if ( iproc == 0 ) write(unit6P,*) "GUESS: Different type of constraints"
 !!$              call end_art()
 !!$           end if
 !!$        end do
@@ -167,11 +175,10 @@ subroutine initialize()
   ! We rescale the coordinates. For what ??
   scalaref = 1.0d0
   scala = scalaref
-  write(*,*) 'before initialize_potential'
+  write(unit6P,*) 'before initialize_potential'
   !call initialize_potential()         ! Initialize Potential (CORE)
-  write(6,*)'OKARTINIT1'
   call calcforce( NATOMS, pos, boxref, force, total_energy, evalf_number )
-  write(*,*) 'after initialize_potential this is ok for this test'
+  write(unit6P,*) 'after initialize_potential this is ok for this test'
 
   ! for output files
   if ( iproc == 0 ) call convert_to_chain( refcounter, 4, scounter )
@@ -179,9 +186,8 @@ subroutine initialize()
   conf_initial = fname
   ! If this is a new event we relax
   If_ne: if ( new_event .and. (.not. restart) ) then  ! cas standard
-     write(6,*)'OKARTINIT2'
      call min_converge( success )     ! Converge the configuration to a local minimum
-     write(6,*)'success',success
+     write(unit6P,*)'success',success
 
      posref = pos                     ! New reference configuration.
      ref_energy = total_energy
@@ -193,11 +199,11 @@ subroutine initialize()
 
         open( unit = FLOG, file = LOGFILE, status = 'unknown',&
              & action = 'write', position = 'append', iostat = ierror )
-        write(*,*) 'BART: Configuration stored in file ',fname
+        write(unit6P,*) 'BART: Configuration stored in file ',fname
         write(FLOG,'(1X,A34,A17)') ' - Configuration stored in file : ', trim(fname)
         if ( .not. success ) then
            write(FLOG,'(1X,A)') "ERROR: Initial configurations is not a minimum"
-           !write(*,*) 'Just before end_art() (initialize line 171)'
+           !write(unit6P,*) 'Just before end_art() (initialize line 171)'
            call end_art()
         end if
         close(FLOG)
@@ -210,7 +216,7 @@ subroutine initialize()
      end if
 
   else if ( (.not. new_event) .and. (.not. restart) ) then
-     write(6,*)'pas_OKARTINIT2'
+     write(unit6P,*)'pas_OKARTINIT2'
      stop
 !!$     ! once we have the total energy we copy as reference values
 !!$     posref = pos
@@ -221,7 +227,7 @@ subroutine initialize()
 !!$
 !!$        open( unit = FLOG, file = LOGFILE, status = 'unknown',&
 !!$             & action = 'write', position = 'append', iostat = ierror )
-!!$        write(*,*) 'BART: Ref. Configuration stored in file ',fname
+!!$        write(unit6P,*) 'BART: Ref. Configuration stored in file ',fname
 !!$        write(FLOG,'(1X,A34,A17)') ' - Configuration stored in file : ', trim(fname)
 !!$        close(FLOG)
 !!$     end if
@@ -236,18 +242,18 @@ subroutine initialize()
 !!$
 !!$     ! Let's check if it is in the same conditions as the reference.
 !!$     if ( boundary /= boundary_b ) then
-!!$        if ( iproc == 0 ) write(*,*) "posinp: Different boundary condition"
+!!$        if ( iproc == 0 ) write(unit6P,*) "posinp: Different boundary condition"
 !!$        call end_art()
 !!$     end if
 !!$
 !!$     do i = 1, NATOMS
 !!$        if ( typ_b(i) /= typat(i) ) then
-!!$           if ( iproc == 0 ) write(*,*) "posinp: Different type of atoms"
+!!$           if ( iproc == 0 ) write(unit6P,*) "posinp: Different type of atoms"
 !!$           call end_art()
 !!$        end if
 !!$
 !!$        if ( const_b(i) /= constr(i) ) then
-!!$           if ( iproc == 0 ) write(*,*) "posinp: Different type of constraints"
+!!$           if ( iproc == 0 ) write(unit6P,*) "posinp: Different type of constraints"
 !!$           call end_art()
 !!$        end if
 !!$
@@ -257,12 +263,12 @@ subroutine initialize()
 !!$     box(:)  = boxref_(:)
 !!$
 !!$     if ( boundary == 'T' ) then
-!!$        write(*,'(3f14.6)') cell
+!!$        write(unit6P,'(3f14.6)') cell
 !!$     else
-!!$        write(*,*) 'box: ', box
+!!$        write(unit6P,*) 'box: ', box
 !!$     end if
 !!$
-!!$     write(*,*) 'positions: ', pos(1), pos(1+NATOMS), pos(1+2*NATOMS)
+!!$     write(unit6P,*) 'positions: ', pos(1), pos(1+NATOMS), pos(1+2*NATOMS)
 !!$
 !!$     deallocate(typ_b)
 !!$     deallocate(pos_b)

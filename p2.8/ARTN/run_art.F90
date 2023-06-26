@@ -19,8 +19,10 @@
 module run_art
   use Tpara,only:mpi_world
   use defs
+  use arret_ndm_mod,only:arret_ndm
+  use montecarlo_mod,only:lparapath,nparapath
   use git
-  use ndm2art2ndm,only:parapath,ndm2art
+  use ndm2art2ndm,only:ndm2art
   use random
   use end_art_mod,only:end_art
   use find_saddle_mod,only:find_saddle
@@ -60,9 +62,19 @@ contains
 
     ! Read the various parameters and options defining the run
     call read_parameters( )
-!    write(6,*)'JP out readp'
+#ifdef PARA
+    if (lparapath)then 
+       if (mod(number_events,nparapath).ne.0) then
+          write(unit6P,*)'nparapath/number_events <>0 STOP',nparapath,number_events
+          call arret_ndm
+       else
+          number_events=number_events/nparapath
+       end if
+    end if
+#endif
+!    write(unit6P,*)'JP out readp'
     call  ndm2art
-!    write(6,*)'JP out ndm2art'
+!    write(unit6P,*)'JP out ndm2art'
     ! If restartfile exists, then we restart from where we left.
 !    inquire ( file = restartfile, exist = restart )
 !    if ( restart ) &
@@ -80,7 +92,7 @@ contains
 !!$#else
     
     call write_parameters( )            ! Write options in LOGFILE.
-!    write(6,*)'JP out writeparam'
+!    write(unit6P,*)'JP out writeparam'
 !!$#endif
 
     ! Open the log file and get ready for the simulation
@@ -107,17 +119,17 @@ contains
 !!$          scalaref = 1.0d0
 !!$          scala    = scalaref
 !!$
-!!$          if (iproc == 0) write(*,*) "initialized up to potential setup"
+!!$          if (iproc == 0) write(unit6P,*) "initialized up to potential setup"
 !!$          return
 !!$       end if
 !!$    else
 
-!!$       write(*,*) "(1) I am the proc :", iproc
+!!$       write(unit6P,*) "(1) I am the proc :", iproc
        
        call initialize( )         ! Initialize positions and potential
 
-!    write(6,*)'JP out initialiaze'
-!!$       write(*,*) "(2) I am the proc :", iproc
+!    write(unit6P,*)'JP out initialiaze'
+!!$       write(unit6P,*) "(2) I am the proc :", iproc
        ! If the restart file exists, then we make sure that we do not overwrite the files
 !!$       if ( restart ) then
 !!$          if ( iproc == 0 ) call convert_to_chain( refcounter, 4, scounter )
@@ -129,7 +141,7 @@ contains
           evalf_number = 0
           ievent_restart = 1
 !!$       end if
-!!$       write(*,*) "(3) I am the proc :", iproc
+!!$       write(unit6P,*) "(3) I am the proc :", iproc
 
 !!$    end if
 
@@ -208,7 +220,7 @@ contains
     ! If pushing could not be made without increasing energy, try finding an
     ! other saddle.
 
-    write(6,*)'JP501',success
+    write(unit6P,*)'JP501',success
     if (CHECK_CONNECTIVITY) then
        !CRC
        STOP
@@ -244,7 +256,7 @@ contains
 !!$       if ( iproc == 0 ) then
 !!$          ! We write the configuration in a min.... file.
 !!$          call convert_to_chain( mincounter, 4, scounter )
-!!$          write(*,*) 'BART: Mincounter is ', mincounter,', scounter is ', scounter
+!!$          write(unit6P,*) 'BART: Mincounter is ', mincounter,', scounter is ', scounter
 !!$          fname = FINAL // scounter
 !!$          conf_final = fname
 !!$       end if
@@ -269,9 +281,9 @@ contains
      if ( abs(a1) < 0.1d0 ) then      ! pushing in the direction of projection (assuming sign ok) 
         prod = 1.0d0
         if ( iproc == 0 ) then 
-         write(*,*) 'BART :WARNING'
-         write(*,*) 'BART :Projection and displacement vectors almost perpendicular'
-         write(*,*) 'BART :to each other. Assuming projection points in right direction'
+         write(unit6P,*) 'BART :WARNING'
+         write(unit6P,*) 'BART :Projection and displacement vectors almost perpendicular'
+         write(unit6P,*) 'BART :to each other. Assuming projection points in right direction'
         end if
      else                             ! just keep the sign of the dot product
         if ( a1 > 0.0 ) then
@@ -283,13 +295,13 @@ contains
 
      ! We finally push over the saddle point
      pos = pos + prod * PUSH_OVER * difpos * projection
-!     write(6,*)'JP502',iproc
+!     write(unit6P,*)'JP502',iproc
      call min_converge( success )     ! And we converge to the new minimum.
      delta_e = total_energy - ref_energy 
 !     if ( iproc == 0 ) then
                                       ! We write the configuration in a min.... file.
         call convert_to_chain( mincounter, 4, scounter )
-        write(*,*) 'BART: Mincounter is ', mincounter,', scounter is ', scounter
+        write(unit6P,*) 'BART: Mincounter is ', mincounter,', scounter is ', scounter
         fname = FINAL // scounter
         conf_final = fname
         call store( fname )  !fname =minxxx
@@ -297,7 +309,7 @@ contains
                                       ! Magnitude of the displacement (utils.f90).
 
 
-!    write(6,*)'JP503',fname
+!    write(unit6P,*)'JP503',fname
 !    call store( fname )
 
     if (CHECK_CONNECTIVITY) then
@@ -329,7 +341,7 @@ contains
 !!$           delta_e = total_energy - ref_energy
 !!$           call displacement( posref, pos, delr, npart)
 !!$           if ( iproc == 0 ) then
-!!$              write(*,*) 'BART: CHECK CONNECTIVITY :  Delta_E = ',delta_e, '  delr: ', delr
+!!$              write(unit6P,*) 'BART: CHECK CONNECTIVITY :  Delta_E = ',delta_e, '  delr: ', delr
 !!$              open( unit = FLOG, file = LOGFILE, status = 'unknown',&
 !!$              & action = 'write', position = 'append', iostat = ierror )
 !!$              write(FLOG,"(' ','CONNECTIVITY  |E(con-ini)= ', f9.4,&
@@ -380,7 +392,7 @@ contains
        close(FLIST)
        open( unit = FLOG, file = LOGFILE, status = 'unknown',&
             & action = 'write', position = 'append', iostat = ierror )
-       write(*,*) 'BART: Configuration stored in file ',fname
+       write(unit6P,*) 'BART: Configuration stored in file ',fname
        write(FLOG,'(1X,A34,A17)') ' - Configuration stored in file : ', trim(fname)
        write(FLOG,'(1X,A34,(1p,e17.10,0p))')&
             &  ' - Total energy Minimum (eV)    : ', total_energy
@@ -388,7 +400,7 @@ contains
             & f9.4,' |npart= ', i4,' |delr= ', f8.3,' |evalf=', i6,' |')")&
             & mincounter, adjustr(accept), delta_e,                                 &
             & total_energy - saddle_energy, npart, delr, evalf_number
-       write(*,"(' ','BART: MINIMUM',i5, a9,' |E(fin-ini)= ', f9.4,' |E(fin-sad)= ',&
+       write(unit6P,"(' ','BART: MINIMUM',i5, a9,' |E(fin-ini)= ', f9.4,' |E(fin-sad)= ',&
             & f9.4,' |npart= ', i4,' |delr= ', f8.3,' |evalf=', i6,' |',f8.3,3f7.2)")       &
             & mincounter, adjustr(accept), delta_e,                              &
             & total_energy - saddle_energy, npart, delr, evalf_number, difpos,   &

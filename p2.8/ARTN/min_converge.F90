@@ -92,7 +92,7 @@ contains
        close(FLOG)
     end if
 
-    write(*,"('',' BART: Relaxed energy : ',(1p,e17.10,0p))") total_energy
+    write(unit6P,"('',' BART: Relaxed energy : ',(1p,e17.10,0p))") total_energy
 
     return
   END SUBROUTINE min_converge
@@ -133,7 +133,7 @@ contains
        repetition = 3
     end if
 
-    write(*,*) "BART: INIT LANCZOS"  !debug
+    write(unit6P,*) "BART: INIT LANCZOS"  !debug
     do i = 1, repetition
        call lanczos( NVECTOR_LANCZOS_H, new_projection , a1 )
        ! Report
@@ -146,7 +146,7 @@ contains
        end if
        write(FLOG,'(I6,3X,(1p,e10.2,0p),4X,F12.6,1X,F7.4)') i, proj_energy-min_energy, eigenvalue, a1
        close(FLOG)
-       write(*,*) 'BART: Iter ', i, ' : ', lanc_energy, proj_energy,  eigenvalue, a1
+       write(unit6P,*) 'BART: Iter ', i, ' : ', lanc_energy, proj_energy,  eigenvalue, a1
 
        ! Now we start from the previous direction.
        new_projection= .false.
@@ -157,7 +157,7 @@ contains
     !if (energy_type == "SWP") call reset_SW_potential()
 
     ! Report
-    write(*,*) "BART: END  LANCZOS"  !debug
+    write(unit6P,*) "BART: END  LANCZOS"  !debug
     open( unit = FLOG, file = LOGFILE, status = 'unknown',&
          & action = 'write', position = 'append', iostat = ierror )
     write(FLOG,*) ' Done Lanczos'
@@ -193,7 +193,7 @@ contains
     end do
     current_ftot2 = ftot2
     current_energy = total_energy ! if quantum, this energy is only quantum
-    write(*,*)  'initial energy : ',  total_energy
+    write(unit6P,*)  'initial energy : ',  total_energy
 
     step = STEPSIZE
     do iter = 1, MAX_ITER
@@ -235,11 +235,11 @@ contains
 
     ftot = sqrt(ftot2)
     if (ftot < FTHRESHOLD ) then
-       write(*,*) 'Minimization successful   ftot : ', ftot
-       write(*,*)  'final energy :', total_energy
+       write(unit6P,*) 'Minimization successful   ftot : ', ftot
+       write(unit6P,*)  'final energy :', total_energy
        minimized = .true.
     else
-       write(*,*) 'Minimization failed   ftot : ', ftot
+       write(unit6P,*) 'Minimization failed   ftot : ', ftot
        minimized = .false.
     endif
   END SUBROUTINE min_converge_sd
@@ -309,16 +309,16 @@ contains
     fnrm=1.d10
     velcur=0.0d0
     poscur=pos
-!    write(6,*)'JP101 calcforce 1'
+!    write(unit6P,*)'JP101 calcforce 1'
     call calcforce(natoms,pos,box,fpred,total_energy,evalf_number)
     initial_energy = total_energy
-!    write(6,*)'JP102 energy1', initial_energy
+!    write(unit6P,*)'JP102 energy1', initial_energy
     fcur=force
     mass=1.0d0
     ecur=total_energy
     epred=total_energy
     iat=1
-!    write(6,*)'JP102',poscur(iat),velcur(iat),fcur(iat),mass(iat),dt
+!    write(unit6P,*)'JP102',poscur(iat),velcur(iat),fcur(iat),mass(iat),dt
     do it=1,max_iter
        miter = miter + 1
        pas = pas + 1
@@ -330,7 +330,7 @@ contains
 
           call displacement(pospred, pos, delr, npart)
           if (delr .lt. 0.25d0) exit
-          write(*,*) "FIRE: problem with explosion, trying a smaller dt -delr:", delr,"  dt:",dt
+          write(unit6P,*) "FIRE: problem with explosion, trying a smaller dt -delr:", delr,"  dt:",dt
           dt = 0.5 * dt
           if (dt .lt. 0.005d0*dtmax) then
              return
@@ -338,7 +338,7 @@ contains
        enddo
 
        pos = pospred
-!       write(6,*)'JP101 calcforce 2'
+!       write(unit6P,*)'JP101 calcforce 2'
        call calcforce(natoms,pospred,box,fpred,total_energy,evalf_number)
        force=fpred
 
@@ -381,7 +381,7 @@ contains
              success = .true.
              exit
           else
-             write(*,*) "FIRE: final energy higher than initial energy, try steepest descent instead"
+             write(unit6P,*) "FIRE: final energy higher than initial energy, try steepest descent instead"
              pos = initial_pos
              call min_converge_sd(success)
              return
@@ -417,13 +417,13 @@ contains
     enddo
 
     if (success .eqv. .false.) then
-       write(*,*) "FIRE: failed to minimize forces, trying steepest descent"
+       write(unit6P,*) "FIRE: failed to minimize forces, trying steepest descent"
        pos = initial_pos
        call min_converge_sd(success)
     else
-       write(*,*) "FIRE: minimization successful"
-       write(*,*) "fnrm: ", fnrm, "  , fmax: ", fmax," , iter: ", it
-       write(*,*) "Final energy: ", total_energy
+       write(unit6P,*) "FIRE: minimization successful"
+       write(unit6P,*) "fnrm: ", fnrm, "  , fmax: ", fmax," , iter: ", it
+       write(unit6P,*) "Final energy: ", total_energy
     endif
 
     return
@@ -535,7 +535,7 @@ contains
           enddo
           call displacement(pospred, pos, delr, npart)
           if (delr .lt. 0.25d0) exit
-          write(*,*) "PERP_FIRE: problem with explosion, trying a smaller dt-delr: ", delr
+          write(unit6P,*) "PERP_FIRE: problem with explosion, trying a smaller dt-delr: ", delr
           dt = 0.5d0*dt
           if (dt .lt. 0.0050d0*dtmax) then
              return

@@ -3,7 +3,7 @@ module init_all_atoms_mod
 contains
   subroutine init_all_atoms( nat, typa, posa, const_, boxl, boxtype, nproc_, me_, inputfile )
 
-  use defs, only : FREFCONFIG, cell, invcell
+  use defs, only : FREFCONFIG, cell, invcell,unit6P
 
   implicit none
   character(len=20) :: dummy
@@ -36,11 +36,11 @@ contains
   ! Read the atomic positions
   inquire(file = inputfile, exist = flag )
   if (.not.flag) then
-     write(*,*) "you have not given an initial configuration"
-     write(*,*) "the program will stop"
+     write(unit6P,*) "you have not given an initial configuration"
+     write(unit6P,*) "the program will stop"
      stop
   else
-     write(*,*) "initializing atomic positions with: ", inputfile
+     write(unit6P,*) "initializing atomic positions with: ", inputfile
   endif
 
   xa => posa(1:nat)
@@ -57,10 +57,10 @@ contains
      read(FREFCONFIG,*) cell(:,2)
      read(FREFCONFIG,*) cell(:,3)
      call update_invcell( )
-     write(*,*)  "Triclinic box info " 
-     write(*,*)  cell(:,1)
-     write(*,*)  cell(:,2)
-     write(*,*)  cell(:,3)
+     write(unit6P,*)  "Triclinic box info " 
+     write(unit6P,*)  cell(:,1)
+     write(unit6P,*)  cell(:,2)
+     write(unit6P,*)  cell(:,3)
   end if
 
   do i = 1, nat

@@ -28,13 +28,14 @@ module art_step_mod
   use save_restart,only:save_state2
   use boundary_cond_mod,only:boundary_cond
   use force_projection_mod,only:force_projection_art
-  contains
+  use defs
+contains
   
 !> ART allocate_activation
 !! Allocation of ART-DIIS arrays
 subroutine allocate_activation ()
   use save_restart,only:save_state2
-  use defs
+
   use diis_defs
   use force_projection_mod,only:force_projection_art
   use write_step_report, only:write_step
@@ -189,7 +190,7 @@ subroutine apply_diis( diter, saddle_energy, ret )
          rejected_step = .false.
       end if
       if ( iproc == 0 ) then          ! REPORT DIIS
-        write (*,'(a,3I5,1x,2F11.4,2x,(1p,e14.5,0p),1x,L1)') 'BART DIIS:',  &
+        write (unit6P,'(a,3I5,1x,2F11.4,2x,(1p,e14.5,0p),1x,L1)') 'BART DIIS:',  &
         &  pas, diter, maxter, n_deltaGdiis, factor_diis*INCREMENT, solution(maxter+1), &
         &  rejected_step
       end if
@@ -217,7 +218,7 @@ subroutine apply_diis( diter, saddle_energy, ret )
                ! If not ITERATIVE, we can not continue with this event.
                end_activation = .true.
                ret = 700000 + pas - 1
-               if ( iproc == 0 ) write(*,*) 'BART: DIIS Failed, no memory'
+               if ( iproc == 0 ) write(unit6P,*) 'BART: DIIS Failed, no memory'
 
             else if ( diter > 1 ) then
 
@@ -394,7 +395,7 @@ subroutine get_solution( maxter, error_vector, solution )
 !#endif
   
   if ( i_err /= 0 ) then
-     if ( iproc == 0 ) write(*,*) 'BART WARNING DIIS: info calculation of solution', i_err
+     if ( iproc == 0 ) write(unit6P,*) 'BART WARNING DIIS: info calculation of solution', i_err
   end if
 
   deallocate(work)
@@ -425,7 +426,7 @@ subroutine  apply_lanczos ( liter, saddle_energy, ret )
   real(kind=8) :: a1
   !_______________________
 
-!  write(6,*)'JP301',use_diis
+!  write(unit6P,*)'JP301',use_diis
   if ( .not. restart ) then
      ! To be consistent with the restart file, each time we call
      ! this subroutine we make this initialization.
@@ -449,9 +450,9 @@ subroutine  apply_lanczos ( liter, saddle_energy, ret )
   a1 = 0.0d0
 
   While_lanczos: do
-!     write(6,*)'JP302',ftot,exitthresh,pas,maxpas
-!     write(6,*)'JP302B',liter,MAX_LANCZOS_STEPS,eigenvalue
-!     write(6,*)'JP302C',delta_e,delta_thr,delr,delr_thr,maxkter+5
+!     write(unit6P,*)'JP302',ftot,exitthresh,pas,maxpas
+!     write(unit6P,*)'JP302B',liter,MAX_LANCZOS_STEPS,eigenvalue
+!     write(unit6P,*)'JP302C',delta_e,delta_thr,delr,delr_thr,maxkter+5
       ! Test of While_lanczos loop
       if ( (ftot < EXITTHRESH) .or. (pas > MAXPAS) .or. (liter > MAX_LANCZOS_STEPS) .or. &
          & (eigenvalue > 0.0)  .or. &
@@ -666,7 +667,7 @@ subroutine lanczos_step ( current_energy, a1, liter, get_proj )
      do i = 1, LANCZOS_SCL            ! Lanczos call, we start from the
         new_projection = .false.      ! previous direction each time.
         call lanczos( NVECTOR_LANCZOS_C, new_projection, a1 )
-!        if ( iproc == 0 ) write(*,'(a,3I5,f12.6,f7.2)') &
+!        if ( iproc == 0 ) write(unit6P,'(a,3I5,f12.6,f7.2)') &
 !           & 'BART COLLINEAR:', pas, liter, i, eigenvalue, a1
         if ( a1 > collinear_factor ) exit
      end do

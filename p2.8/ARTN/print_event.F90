@@ -13,11 +13,11 @@ contains
   !Local variables
   integer :: ierror
 
-  write(*,*) 'BART: Simulation : ', ievent_current
-  write(*,*) 'BART: Attempt    : ', atp
-  write(*,*) 'BART: Starting from minconf : ', refcounter
-  write(*,*) 'BART: Reference Energy (eV) : ', ref_energy
-  write(*,*) 'BART: Temperature : ', temperat
+  write(unit6P,*) 'BART: Simulation : ', ievent_current
+  write(unit6P,*) 'BART: Attempt    : ', atp
+  write(unit6P,*) 'BART: Starting from minconf : ', refcounter
+  write(unit6P,*) 'BART: Reference Energy (eV) : ', ref_energy
+  write(unit6P,*) 'BART: Temperature : ', temperat
 
   open(unit=FLOG,file=LOGFILE,status='unknown',action='write',position='append',iostat=ierror)
   write(FLOG,*) ' __________________________________________________'
