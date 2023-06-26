@@ -183,7 +183,7 @@ contains
           else
              lchange=.false.
           end if
-
+          lchange=.true.
           call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
                &lperiod,lupdate=lchange,psc=pscneb)
           if (lmaster) then

@@ -46,15 +46,13 @@ contains
     character(20) :: fname
     logical       :: local_success
 
-    write(6,*)'JPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP111111',rang
     call init_mpi_art2(atdml,celndm,boxndm,psc,parapath) ! most is done in init_mpi_art BUT atcfart boxart etc are associated THERE
+    lchg=.true. ! indicates that positions change between successive force calculations (obvious but needs to be specified)
 #ifdef PARA
-    write(6,*)'JPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2',rang
     if (parapath%lmaster.neqv..true.) then
        call tolstoi (WORKER_TAG,parapath) 
     else
 #endif
-       write(6,*)'JPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP3',rang
     NATOMS= atdml%im
     restart=.false.
     call init_conf

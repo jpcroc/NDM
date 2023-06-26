@@ -446,6 +446,7 @@ contains
        iti = atcomp%ityp(icomp)
        call coord_to_cell(xt,numcell,boxrep%bg,cellrep%nox,cellrep%noy,cellrep%noz)
        numproc=cellrep%proc_cell(numcell)
+       atcomp%proc_at(icomp)=numproc
        if (numproc == myidsp) then
           i=i+1
           im=im+1
@@ -455,7 +456,7 @@ contains
           atrep%xp(:,i)=xt(:)
           !             atrep%ityp(i)=iti
           atrep%proc_at(i)=myidsp
-          atcomp%proc_at(i)=myidsp
+
        endif
     end do
     atrep%im=im

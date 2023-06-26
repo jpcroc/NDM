@@ -92,7 +92,7 @@ contains
     logical ::flag
 
     integer::ierror
-    lchg=.true.
+
     if (.not. restart) then
        inquire( file = COUNTER, exist = flag )
        if ( flag .and. iproc == 0 ) then
@@ -168,7 +168,7 @@ contains
     atcfart%xp(1,1:NATOMS)=posa(1:NATOMS)*inv_angst
     atcfart%xp(2,1:NATOMS)=posa(1+NATOMS:2*NATOMS)*inv_angst
     atcfart%xp(3,1:NATOMS)=posa(1+2*NATOMS:3*NATOMS)*inv_angst
-
+!    write(6,*)'JPp1',rang,iproc
     call depeche_mode(parapath,.false.)
 
     energy=potist*erg2ev
@@ -228,7 +228,8 @@ contains
          &lcalcvois=lcalcvois,lboxchange=.false.)
 
     call set_pointers_art
-
+    call atcfart%print(unit=110+rang)
+    call atcfartloc%print(unit=210+rang)
 !!$
 !!$#ifdef MPI_VERSION_ART
 !!$    iproc=0

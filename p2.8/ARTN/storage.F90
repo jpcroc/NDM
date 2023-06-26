@@ -114,15 +114,13 @@ contains
 
     if (ivisuart.gt.0) then
        call art2ndm(ataux,boxaux,celaux,linit=.true.)
-       write(6,*)'TEST1 ', fname
-       write(6,*)'TEST11 ', fname(4:)
        if (index(fname, 'min').ne.0) then
           namemol='CONF'//trim(fname(4:))//'2'
        end if
        if (index(fname, 'sad').ne.0) then
           namemol='CONF'//trim(fname(4:))//'1'
        end if
-       write(6,*)'name MOL',namemol
+!       write(6,*)'name MOL',namemol
        call rasmolT(ataux,boxaux,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
 !!$       namemol=trim(fname)//trim(fname)
 !!$       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
