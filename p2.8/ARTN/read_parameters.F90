@@ -55,7 +55,7 @@ contains
          &, Min_Number_KSteps,Eigenvalue_Threshold,Max_Iter_Basin ,calc_of_projection,Lanczos_of_minimum,Lanczos_SCLoop,&
          &Lanczos_collinear,Number_Lanczos_Vectors,Number_Lanczos_Vectors_H,Number_Lanczos_Vectors_C,&
          &delta_disp_Lanczos,Max_Perp_Moves_Activ, Prefactor_Push_Over_Saddle, Relative_To_Second_Order_Error,delta_threshold,&
-         &delr_threshold,USE_DIIS,ITERATIVE ,ivisuart,lwgin,&
+         &delr_threshold,USE_DIIS,ITERATIVE ,ivisuart,&
          &INFLECTION,DIIS_FORCE_THRESHOLD,DIIS_MEMORY, DIIS_Step_size,FACTOR_DIIS,max_diis,DIIS_Check_Eigenvector,&
          & fileCOUNTER, NPART_DR_THRESHOLD,LOGFILE,EVENTSLIST,SAVE_CONF_INT, write_restart_file,WRITE_REJECTED_EVENT,&
          &RESTART_FILE , write_xyz ,REFCONFIG,FINAL,SADDLE,CHECK,Coord_length,coord_number,&
@@ -65,7 +65,6 @@ contains
     Type_selected=0
     coord_number=-1
     coord_length=-1.
-    lwgin=.false.
     ivisuart=40
     maxnei = 1
     clean_wf = .false.
@@ -454,12 +453,12 @@ delta_disp_Lanczos=0.01
     !sts/__________________
     ! Fictive temperature, if negative always reject the event
     !  call getenv('Temperature', temporary)
-    if (temperature.eq.-1.) then
-       write(unit6P,*) 'Error: Metropolis temperature is not defined'
-       stop
+!!$    if (temperature.eq.-1.) then
+!!$       if (rang==0) write(unit6P,*) 'Error: Metropolis temperature is not defined'
+!!$       stop
 !!$  else
 !!$     read(temporary,*) temperature
-    end if
+!!$    end if
 
     !!__________________
     ! Maximum number of events

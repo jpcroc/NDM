@@ -29,7 +29,7 @@ module defs
   character(len=20), parameter :: BIGREVNO ="1.6-dev.12-538" ! Bigdft version
 
   integer::ivisuart
-  logical lwgin
+!  logical lwgin rather from gen_com_m
   integer::unit6P
 
   

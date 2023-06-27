@@ -11,6 +11,7 @@ contains
     use cellconfig,only:cell_config
     use boxconfig,only:box_config
     use ndm2art2ndm,only:art2ndm,atcfart,boxart
+    use gen_com_m,only:lwgin
     USE rasmolT_mod,only: rasmolT
 
   
@@ -114,16 +115,17 @@ contains
 
     if (ivisuart.gt.0) then
        call art2ndm(ataux,boxaux,celaux,linit=.true.)
-       if (index(fname, 'min').ne.0) then
-          namemol='CONF'//trim(fname(4:))//'2'
-       end if
-       if (index(fname, 'sad').ne.0) then
-          namemol='CONF'//trim(fname(4:))//'1'
-       end if
-!       write(unit6P,*)'name MOL',namemol
-       call rasmolT(ataux,boxaux,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
-!!$       namemol=trim(fname)//trim(fname)
-!!$       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
+!!$       if (index(fname, 'min').ne.0) then
+!!$          namemol='CONF'//trim(fname(4:))//'2'
+!!$       end if
+!!$       if (index(fname, 'sad').ne.0) then
+!!$          namemol='CONF'//trim(fname(4:))//'1'
+!!$       end if
+!!$       write(unit6P,*)'name MOL',namemol
+!!$       call rasmolT(ataux,boxaux,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
+       namemol=trim(fname)
+       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
+       if (lwgin)       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=5)
     end if
        
     
