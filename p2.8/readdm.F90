@@ -936,8 +936,11 @@ contains
           dmtype=22
        case(22)
           if (wboxf==1) wboxf=0.2
+          if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
+
        case(24)
           if (wboxf==1) wboxf=0.2
+          if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
        case (3,30,31,32,33,34,35)
           lEev=.true.
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
