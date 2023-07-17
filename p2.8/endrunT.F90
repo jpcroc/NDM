@@ -87,6 +87,7 @@ contains
 
 
  if (iterasmol.GE.0) call rasmolT (atdml,boxndm,999999999,latcomp=latcomp)
+ if (lwgin) call rasmolT (atdml,boxndm,999999999,latcomp=latcomp,ivisumol=5)
  if (nprocspace==1.and.iteanapos>=0) call anapos (atdml,celndm,boxndm,iteration)
 
  call arret_ndm

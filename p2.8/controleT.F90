@@ -51,8 +51,10 @@ contains
     !-----------------------------------------------
     !
     !
-    sigtoth0(1:3,1:3)=sigtot(1:3,1:3)*ihbox0(1:3,1:3)    
-    lreturn=.false.
+    sigtoth0(1:3,1:3)=sigtot(1:3,1:3)*ihbox0(1:3,1:3)
+    
+    if (present(lreturn))lreturn=.false.
+    
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
        if (present(lreturn)) then
