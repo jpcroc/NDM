@@ -273,6 +273,9 @@ contains
           if((ipotentiel==16) .and.(rang==0)) write(6,*)'charge = ',q(i)
        end do
        cm(:ntyp) = cm(:ntyp)*umass
+       allocate (typ_and_pot(ntyp,npotmax))
+       typ_and_pot(:,:)=.false.
+       typ_and_pot(1:ntyp,ipotentiel)=.true.
     end if
     if (npotentiel.gt.1) then   
        read(lupotin,*)nb_paire_a_lire
@@ -533,7 +536,10 @@ contains
              typ_pot_pair(l)=ipotentiel
              ipr=l
           else
-             read(lupotin,*)n
+             read(lupotin,*)it1,it2
+             n=ipo(it1,it2)
+             !             read(lupotin,*)n
+             if (rang==0) write(6,*)'paire ',n,ipair
              if(n.ne.ipair)then
                 write(6,*) rang, ' ordre de lecture de EAM rep stop'
                 call arret_ndm

@@ -115,9 +115,6 @@ contains
     imm_glob=imm
     atdml%ltabvois=ltabvois
     atdml%rvois=rvois
-    write(6,*)'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-!    call atdml%print_type('ROG')
-    write(6,*)'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
     select case(dmtype)
     case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
 
