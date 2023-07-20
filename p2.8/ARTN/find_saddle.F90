@@ -349,8 +349,8 @@ subroutine list_of_atoms ( )
   nlines = nlines - 1
   close (99)
 
-  if ( nlines < 2 ) then
-     write(unit6P,*) 'ERROR: list_atoms, file has less than 2 lines.'
+  if ( nlines < 1 ) then
+     write(unit6P,*) 'ERROR: list_atoms, file has less than 1 line'
      call end_art()
   end if
 
@@ -474,8 +474,8 @@ subroutine list_and_local ()
   nlines = nlines - 1
   close (99)
 
-  if ( nlines < 2 ) then
-     write(unit6P,*) 'ERROR: list_atoms, file has less than 2 lines.'
+  if ( nlines < 1 ) then
+     write(unit6P,*) 'ERROR: list_atoms, file has less than 1 line.'
      call end_art()
   end if
 
