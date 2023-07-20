@@ -25,6 +25,9 @@ contains
     real(kind=8) :: delx, dely, delz, dr, dr2, delr2, dr_
 
     ! We first set-up pointers for the x, y, z components for posa and posb
+
+    if (.not.allocated(atdisp))allocate(atdisp(natoms))
+    atdisp(:)=0
     xa => posa(1:NATOMS)
     ya => posa(NATOMS+1:2*NATOMS)
     za => posa(2*NATOMS+1:3*NATOMS)
@@ -67,6 +70,7 @@ contains
        dr2   = delx*delx + dely*dely + delz*delz
        delr2 = delr2 + dr2
        dr    = sqrt(dr2)
+       atdisp(i)=dr
        if (dr > dr_ .and. present(idmax)) then
           idmax = i
           dr_   = dr

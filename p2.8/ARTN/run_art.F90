@@ -213,7 +213,7 @@ contains
     end if
 
 
-    ! Saddle has been reached, try pushing the system towards a new basin.
+    ! Saddle has been reached, try pushingkthe system towards a new basin.
     ! The displacement is made along the direction of negative curvature,
     ! away from the initial minimum.
     ! Notify user about the outcome of the push.
@@ -386,6 +386,7 @@ contains
     integer       :: ierror
 
     ! Magnitude of the displacement (utils.f90).
+
     call displacement( posref, pos, delr, npart )
 
     if ( iproc == 0 ) then           ! Report

@@ -75,6 +75,7 @@ subroutine initialize()
 
 !!$  if (.not. restart) then
 
+
      inquire( file = COUNTER, exist = flag )
      if ( flag .and. iproc == 0 ) then
         open(unit=FCOUNTER,file=COUNTER,status='old',action='read',iostat=ierror)
@@ -175,10 +176,10 @@ subroutine initialize()
   ! We rescale the coordinates. For what ??
   scalaref = 1.0d0
   scala = scalaref
-  write(unit6P,*) 'before initialize_potential'
+!  write(unit6P,*) 'before initialize_potential'
   !call initialize_potential()         ! Initialize Potential (CORE)
   call calcforce( NATOMS, pos, boxref, force, total_energy, evalf_number )
-  write(unit6P,*) 'after initialize_potential this is ok for this test'
+!  write(unit6P,*) 'after initialize_potential this is ok for this test'
 
   ! for output files
   if ( iproc == 0 ) call convert_to_chain( refcounter, 4, scounter )
@@ -186,8 +187,9 @@ subroutine initialize()
   conf_initial = fname
   ! If this is a new event we relax
   If_ne: if ( new_event .and. (.not. restart) ) then  ! cas standard
+     posref = pos                     ! New reference configuration.
      call min_converge( success )     ! Converge the configuration to a local minimum
-     write(unit6P,*)'success',success
+     write(unit6P,*)'initial minimization success',success
 
      posref = pos                     ! New reference configuration.
      ref_energy = total_energy

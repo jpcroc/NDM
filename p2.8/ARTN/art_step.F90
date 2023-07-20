@@ -268,7 +268,6 @@ subroutine apply_diis( diter, saddle_energy, ret )
          previous_forces(maxter,:) = force(:)
          previous_pos(maxter,:)    = pos(:)
          previous_norm(maxter)     = ftot*DIIS_STEP
-
          call displacement( posref, pos, delr, npart )
          delta_e = total_energy - ref_energy
 
@@ -658,7 +657,7 @@ subroutine lanczos_step ( current_energy, a1, liter, get_proj )
      end do  While_perpi
   endif
   delta_e = current_energy - ref_energy
-                                      ! Magnitude of the displacement (utils.f90).
+  ! Magnitude of the displacement (utils.f90).
   call displacement( posref, pos, delr, npart )
   if ( SAVE_CONF_INT ) call save_intermediate( 'L' )
 
@@ -765,7 +764,7 @@ subroutine apply_glisse( giter, saddle_energy )
       new_projection = .false.        ! previous direction each time.
       call lanczos( NVECTOR_LANCZOS_C, new_projection, a1 )
        delta_e = current_energy - ref_energy
-                                      ! Magnitude of the displacement (utils.f90).
+       ! Magnitude of the displacement (utils.f90).
        call displacement( posref, pos, delr, npart )
                                       ! Write
        call write_step ( 'L', liter, a1, current_energy )
@@ -910,7 +909,7 @@ subroutine apply_glisse( giter, saddle_energy )
 
      a1 = 0.0d0
      delta_e = total_energy - ref_energy
-                             ! Magnitude of the displacement (utils.f90).
+     ! Magnitude of the displacement (utils.f90).
      call displacement( posref, pos, delr, npart )
                              ! Write
      call write_step ( 'G', giter, a1, current_energy )

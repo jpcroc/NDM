@@ -240,6 +240,8 @@ module defs
  integer,parameter :: STOP_WORKER_TAG = 2
  integer,parameter :: LAMMPS_WORKER_TAG = 10
  integer,parameter :: MASTER_TAG = 11
+
+ real(kind=8),allocatable:: atdisp(:)
   !-------------------------------------
 
 END MODULE defs

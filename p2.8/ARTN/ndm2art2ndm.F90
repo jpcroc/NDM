@@ -14,7 +14,8 @@ module ndm2art2ndm
   use endrunT_mod,only:endrunT
   use montecarlo_mod,only:lparapath,nparapath
   use defs,only:NATOMS,VECSIZE,typat,force,posref,boxref,use_local_forces,FCOUNTER,mincounter,&
-       &new_event,restart,boundary,pos,box,typat,cell,invcell,iproc,nproc,t1,constr,COUNTER,unit6P
+       &new_event,restart,boundary,pos,box,typat,cell,invcell,iproc,nproc,t1,constr,COUNTER,unit6P,&
+       &atdisp
   use var_pot,only:rumax
   use parautils,only:initloc,depeche_mode
     use paraconfig,only:para_config,commconstr,initparapuresp
@@ -114,6 +115,8 @@ contains
     boundary='T'
     cell(:,:)=boxart%at(:,:)*angst
     box=0 ; boxref=0 ! initilisation à 0 pour provoquer un plantage
+    allocate(atdisp(natoms))
+    atdisp=0
     call update_invcell( )
 
 

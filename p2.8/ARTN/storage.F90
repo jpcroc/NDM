@@ -18,9 +18,13 @@ contains
     implicit none
 
     !Arguments
+    
     character(len=*), intent(in)  :: fname
 
     !Local variables
+    integer::naux
+    real(kind=8),allocatable::vaux(:,:)
+    character (len=80),allocatable::charaux(:)
     integer :: i, ierror
     real(kind=8),dimension(3) :: boxl
     character(len=*), parameter :: extension = ".xyz"
@@ -124,7 +128,11 @@ contains
 !!$       write(unit6P,*)'name MOL',namemol
 !!$       call rasmolT(ataux,boxaux,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
        namemol=trim(fname)
-       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=ivisuart)
+       naux=1 ; allocate (vaux(naux,natoms)) ; allocate(charaux(naux))
+       vaux(1,:)=atdisp(:)
+       charaux(1)='displacement '
+       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=ivisuart,naux=naux,&
+            &charaux=charaux,vaux=vaux)
        if (lwgin)       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=5)
     end if
        

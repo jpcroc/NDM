@@ -327,7 +327,6 @@ contains
           do iat=1,3*natoms
              pospred(iat)=poscur(iat)+dt*velcur(iat)+dt*dt*0.5d0*fcur(iat)/mass(iat)
           end do
-
           call displacement(pospred, pos, delr, npart)
           if (delr .lt. 0.25d0) exit
           write(unit6P,*) "FIRE: problem with explosion, trying a smaller dt -delr:", delr,"  dt:",dt

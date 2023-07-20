@@ -44,11 +44,13 @@ contains
     real*8::initial_step_size,increment_size,Exit_Force_Threshold,Force_Threshold_Perp_Rel,Eigenvalue_Threshold,Lanczos_collinear,&
          &delta_disp_Lanczos,Prefactor_Push_Over_Saddle,Relative_To_Second_Order_Error,&
          &delta_threshold,delr_threshold,DIIS_Step_size
+    integer::MAX_REL_STEPS_PERP_FIRE,MAX_REL_STEPS_INCREMENT_FIRE,MAX_RELAXATION_STEP_FIRE
 
   character(len=11) :: FILECOUNTER,RESTART_FILE
 
     namelist /inputart/setup_initial,guess_noise,GUESSFILE,dim,check_connectivity,local_lanczos,INNER_REGION,&
-         & OUTER_REGION ,NORM_CRITERIUM_FIRE,FMAX_CRITERIUM_FIRE,dT_MAX_FIRE, MAX_ITER_FIRE,MAX_PERP_ITER_FIRE,MAX_PERP_INCR_FIRE,&
+         & OUTER_REGION ,NORM_CRITERIUM_FIRE,FMAX_CRITERIUM_FIRE,dT_MAX_FIRE, MAX_RELAXATION_STEP_FIRE,MAX_REL_STEPS_PERP_FIRE,&
+         &MAX_REL_STEPS_INCREMENT_FIRE,&
          & MAX_LANCZOS_STEPS,temperature,max_Number_Events, TYPE_of_EVENTS,Radius_Initial_Deformation,Central_Atom,sym_break_dist,&
          & initial_step_size,INCREMENT_size,Exit_Force_Threshold,Force_Threshold_Perp_Rel,&
          &BASIN_FACTOR,Max_Perp_Moves_Basin, SMOOTH_DIR_CHANGE&
@@ -123,9 +125,9 @@ delta_disp_Lanczos=0.01
     max_Number_Events=100
     temperature=-1.
     MAX_LANCZOS_STEPS = 280
-    MAX_PERP_ITER_FIRE = 25
-    MAX_PERP_INCR_FIRE = 3
-    MAX_ITER_FIRE = 500
+    MAX_REL_STEPS_PERP_FIRE = 25
+    MAX_REL_STEPS_INCREMENT_FIRE = 3
+    MAX_RELAXATION_STEP_FIRE = 500
     DT_MAX_FIRE = 0.15d0
     FMAX_CRITERIUM_FIRE = 0.020d0
     NORM_CRITERIUM_FIRE = 0.008d0
@@ -398,7 +400,7 @@ delta_disp_Lanczos=0.01
 !!$    ! Maximum number of relaxation step during global minimization
 !!$    call getenv('MAX_RELAXATION_STEP_FIRE', temporary)
 !!$    if (temporary .eq. '') then
-!!$       MAX_ITER_FIRE = 500
+       MAX_ITER_FIRE = MAX_RELAXATION_STEP_FIRE
 !!$    else
 !!$       read(temporary,*) MAX_ITER_FIRE
 !!$    endif
@@ -411,10 +413,11 @@ delta_disp_Lanczos=0.01
 !!$       read(temporary,*) MAX_PERP_ITER_FIRE
 !!$    endif
 !!$
+     MAX_PERP_ITER_FIRE =MAX_REL_STEPS_PERP_FIRE
 !!$    ! Increment in the number of relaxation step during activation
 !!$    call getenv('MAX_REL_STEPS_INCREMENT_FIRE', temporary)
 !!$    if (temporary .eq. '') then
-!!$       MAX_PERP_INCR_FIRE = 3
+       MAX_PERP_INCR_FIRE = MAX_REL_STEPS_INCREMENT_FIRE
 !!$    else
 !!$       read(temporary,*) MAX_PERP_INCR_FIRE
 !!$    endif

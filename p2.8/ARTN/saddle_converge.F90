@@ -125,7 +125,7 @@ contains
 
          ! We relax perpendicularly using a simple variable-step steepest descent
          While_perpk: do
-!         write(unit6P,*)'JP6'
+!         write(unit6P,*)'JP600'
             pos_b = pos + step * perp_force
 
             call calcforce( NATOMS, pos_b, boxl, force_b, total_energy, evalf_number )
@@ -221,7 +221,7 @@ contains
 
          return
       end if
-!      write(unit6P,*)'JP200'
+      write(unit6P,*)'JP200'
       ! The configuration is now out of the harmonic well, we can now bring
       ! it to the saddle point.
       ! First, we must now orient the direction of the eigenvector corresponding to the
@@ -271,7 +271,6 @@ contains
          if ( iproc == 0 ) write(unit6P,*) "BART: HOUSTON, we've got a problem"
          call end_art ()
       end if
-
       call displacement( posref, pos, delr, npart )
       if (iproc==0) write(unit6P,*) "BART: delr npart", delr, npart
       call force_projection_art( fpar, perp_force, fperp, ftot, force, projection )
@@ -322,7 +321,7 @@ contains
    end_activation = .false.
 
    While_activation: do
-!      write(unit6P,*)'JP202',switchDIIS
+      write(unit6P,*)'JP202',switchDIIS
       if ( .not. switchDIIS ) then
          call apply_lanczos( liter, saddle_energy, ret )
       else
