@@ -27,7 +27,9 @@ contains
     ! We first set-up pointers for the x, y, z components for posa and posb
 
     if (.not.allocated(atdisp))allocate(atdisp(natoms))
+    if (.not.allocated(ldisp))allocate(ldisp(natoms))
     atdisp(:)=0
+    ldisp=.false.
     xa => posa(1:NATOMS)
     ya => posa(NATOMS+1:2*NATOMS)
     za => posa(2*NATOMS+1:3*NATOMS)
@@ -80,6 +82,7 @@ contains
 
        if ( dr > NPART_DR_THRESHOLD ) then
           npart = npart + 1
+          ldisp(i)=.true.
        end if
     end do
 

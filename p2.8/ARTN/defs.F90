@@ -242,6 +242,7 @@ module defs
  integer,parameter :: MASTER_TAG = 11
 
  real(kind=8),allocatable:: atdisp(:)
+ logical,allocatable ::ldisp(:)
   !-------------------------------------
 
 END MODULE defs

@@ -133,7 +133,13 @@ contains
        charaux(1)='displacement '
        call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=ivisuart,naux=naux,&
             &charaux=charaux,vaux=vaux)
-       if (lwgin)       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=5)
+       if (lwgin)       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=5,naux=naux,&
+            &charaux=charaux,vaux=vaux)
+       do i=1,natoms
+          if (ldisp(i)) then
+             write(unit6P,*)'ATOM DISPLACED ', i,atcfart%ityp(i),atdisp(i)
+             endif
+             enddo
     end if
        
     

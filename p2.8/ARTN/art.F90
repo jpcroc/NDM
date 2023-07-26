@@ -58,6 +58,7 @@ contains
     call init_conf
     unit6p=6+parapath%image
     write(unit6P,*)'unit6P',unit6P
+    write(6,*)'unit6P',unit6P,rang
     !initialization of local and workers 
 
     ! _________
