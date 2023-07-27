@@ -29,7 +29,7 @@ contains
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou&
-         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,position_conversion_lammps&
+         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,position_conversion_lammps,lanaposart&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,beta35,gammas,gammav
@@ -85,7 +85,7 @@ contains
          lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,deltaRmax,&
          rcangle,rcrdf,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,ihbox0,&
-         neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,gammas,gammav,&
+         neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,gammas,gammav,lanaposart,&
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
@@ -308,7 +308,7 @@ contains
     lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep. 
     lposmoy=.false.       ! writes the average position and energy of the atoms in a .mol file
     eatref(:)=0.
-
+    lanaposart=.false.  ! anapos a la ART : decalage + defauts en WS, concu pour le cas des I dans UO2
     ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG, ivisu=6 xfg ; 7=xyz type à la Babel
     !4==> 40= pas de vitesses; 41 vitesses
     !6==> 60= pas de vitesses; 61 vitesses

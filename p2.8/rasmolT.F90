@@ -165,17 +165,19 @@ contains
        at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8
        atcomp%xp(1:3,1:atcomp%im)=atcomp%xp(1:3,1:atcomp%im)*1d8
        allocate(tyw(atcomp%im))
-       tyw='000'
-       !    do i=1,im
-       !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
-       !    end do
-       if (present (rty))then
-          tyw(1:atcomp%im)=rty(1:atcomp%im)
-       else
-          !       do i=1,im
-          !          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
-          !       end do
-          tyw(1:atcomp%im)=ty(atcomp%ityp(1:atcomp%im))
+       if (ivisum.ne.5) then
+          tyw='000'
+          !    do i=1,im
+          !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
+          !    end do
+          if (present (rty))then
+             tyw(1:atcomp%im)=rty(1:atcomp%im)
+          else
+             !       do i=1,im
+             !          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
+             !       end do
+             tyw(1:atcomp%im)=ty(atcomp%ityp(1:atcomp%im))
+          end if
        end if
 
 

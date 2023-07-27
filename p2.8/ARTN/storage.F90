@@ -1,9 +1,11 @@
 module storage
+  use posana,only:anaposart
 contains
   !> ART store
   !!    This subroutine stores the configurations at minima
   !!    and activated points.
   !!    By definition, it uses pos, box and scala (actually x, y , z -> pos
+
   subroutine store( fname )
 
     use defs
@@ -33,7 +35,7 @@ contains
     type(atom_config)::ataux
     type(box_config)::boxaux
     type(cell_config)::celaux
-
+    logical::lperfw
 
     
     ! Update the box size
@@ -133,8 +135,14 @@ contains
        charaux(1)='displacement '
        call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=ivisuart,naux=naux,&
             &charaux=charaux,vaux=vaux)
-       if (lwgin)       call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=5,naux=naux,&
+       if (lwgin)     call rasmolT(atcfart,boxart,namefr=namemol,latcomp=.true.,ivisumol=5,naux=naux,&
             &charaux=charaux,vaux=vaux)
+       if (index(fname,'min').gt.0) then
+          lperfw=.true.
+       else
+          lperfw=.false.
+       end if
+       call anaposart(atcfart,celaux,boxart,lperfw,namemol)
        do i=1,natoms
           if (ldisp(i)) then
              write(unit6P,*)'ATOM DISPLACED ', i,atcfart%ityp(i),atdisp(i)
@@ -149,22 +157,6 @@ contains
   !! This function returns the lowest available unit to open a file
   !! http://www.fortran90.org/src/best-practices.html#file-input-output
   !! http://fortranwiki.org/fortran/show/newunit
-  subroutine newunit(nunit)
-    integer, intent(out) :: nunit
-    ! local
-    integer, parameter :: LUN_MIN=500, LUN_MAX=1000
-    logical :: opened
-    integer :: lun
-    ! begin
-    nunit=-1
-    do lun=LUN_MIN,LUN_MAX
-       inquire(unit=lun,opened=opened)
-       if (.not. opened) then
-          nunit=lun
-          exit
-       end if
-    end do
-  end subroutine newunit
 
 end module storage
 

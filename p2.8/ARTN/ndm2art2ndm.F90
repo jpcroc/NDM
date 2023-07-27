@@ -19,7 +19,8 @@ module ndm2art2ndm
   use var_pot,only:rumax
   use parautils,only:initloc,depeche_mode
     use paraconfig,only:para_config,commconstr,initparapuresp
-  use update_invcell_mod,only: update_invcell
+    use update_invcell_mod,only: update_invcell
+
 
   implicit none
   type(para_config),target::parapath ! division de tous les procs en nparapath chemins calculés simultanément

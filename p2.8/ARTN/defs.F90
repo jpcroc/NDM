@@ -21,7 +21,7 @@ module defs
 #ifdef PARA
   use mpi
 #endif
-
+  use gen_com_m,only:unit6P
   implicit none
 
   integer, parameter :: dp = kind(0.d0) ! double precision
@@ -30,7 +30,7 @@ module defs
 
   integer::ivisuart
 !  logical lwgin rather from gen_com_m
-  integer::unit6P
+
 
   
   real(kind=8) :: t1                 ! Initial Date (cputime)

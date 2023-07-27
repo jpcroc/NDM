@@ -16,6 +16,7 @@
 module read_parameters_mod
 use ndm2art2ndm,only:parapath
 use arret_ndm_mod,only:arret_ndm
+use newunit_mod,only:newunit
 contains
 
 
@@ -24,7 +25,6 @@ contains
     use defs
     use lanczos_defs
     use saddles
-    use storage, only:newunit
     use generate_local_region_mod,only: 
     !nat_inner, nat_outer, nat_local
     !integer, dimension(:), allocatable :: inner_list, outer_list

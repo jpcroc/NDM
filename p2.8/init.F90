@@ -47,7 +47,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     USE arret_ndm_mod,only: arret_ndm
-    use posana,only:anapos
+    use posana,only:anapos,  initanapos
     USE posana,only:
     USE elec_cell,ONLY: i2t,t_cpl, readelec
     USE eloss, ONLY : ibrake,ecelec,initeloss
@@ -231,6 +231,7 @@ contains
        call caltabi(atdml,celndm,boxndm)
     end if
     if (dmtype==6) then
+       call initanapos(atdml,celndm,boxndm)
        call anapos (atdml,celndm,boxndm,iteration)
        call arret_ndm
     end if

@@ -192,8 +192,8 @@ module gen_com_m
   real(double)::rskin,position_conversion_lammps, energy_conversion_lammps, pressure_conversion_lammps ! epaisseur pour lammps (equivalent rvois-rue)
  logical :: firsttime_lammps
  integer:: iverbose ! verbosity (0 = pas de détails, défaut, 1 = détails)
-
-real(double)::gamprfact
+ integer::unit6P
+ real(double)::gamprfact
  logical :: latcomp ! masters (myidsp=0) have the complete positions (for sauvegardeT), rasmolT
- 
+ logical ::lanaposart ! anapos a la ART : decalage + defauts en WS, concu pour le cas des I dans UO2
 end module gen_com_m

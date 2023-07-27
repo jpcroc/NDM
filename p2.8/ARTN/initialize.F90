@@ -33,7 +33,8 @@ module initialize_mod
   use min_converge_mod,only:check_min
   use generate_local_region_mod, only: initial_local_region
   use montecarlo_mod,only:lparapath,nparapath
-  use ndm2art2ndm,only:parapath
+  use ndm2art2ndm,only:parapath,atcfart,celart,boxart
+!  use posana,only:anaposart
 contains
 subroutine initialize()
 
@@ -190,7 +191,7 @@ subroutine initialize()
      posref = pos                     ! New reference configuration.
      call min_converge( success )     ! Converge the configuration to a local minimum
      write(unit6P,*)'initial minimization success',success
-
+!     call anaposart(atcfart,celart,boxart)
      posref = pos                     ! New reference configuration.
      ref_energy = total_energy
 

@@ -19,9 +19,10 @@ module prog_mod
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax,iseed,&
-       &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman
+       &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman,lanaposart
   
   use read_val,only:imm,ltabvois,rvois
+  use posana,only:initanapos
   use NGC_mod,only:ngc
   use NDM_ML,only:init_config_ml
 #ifdef LAMMPS_VERSION
@@ -254,6 +255,7 @@ contains
        end if
        call atdml%init(im,imm,ltabvois,nvois,rvois=rv) ! initialization of the complete structure (no spatial repartition)
        call init_simple(atdml,celndm,boxndm,psc=psc0)  ! in init_simple no spatial repartition
+       if (lanaposart) call initanapos(atdml,celndm,boxndm)
        call art90(atdml,celndm,boxndm,psc0)
 
     case(9)

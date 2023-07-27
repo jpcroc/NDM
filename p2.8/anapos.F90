@@ -1,122 +1,105 @@
 module posana
-   USE arret_ndm_mod,only:arret_ndm
+  USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   use setnoxsimple_mod,only:setnoxsimple
   USE sic
   USE var_pot, ONLY:ty,ntyp,rumax
-!  USE period_mod,only: period
+  !  USE period_mod,only: period
   USE recips_mod,only: recips
   use cryst_to_cart_mod,only:cryst_to_cart
-  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,dmtype,lenfnam,iteration,timel,ivisu
+  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,dmtype,lenfnam,iteration,timel,ivisu,unit6P
   USE atomconfig,only:atom_config
   use cellconfig,only: cell_config,caltabtC
   use boxconfig,only:box_config,periodbox
   use rasmolT_mod,only:rasmolT
   USE constrconf_mod,only:gin2ndm,read_cin
   use vect_dist_mod,only:vect_dist
+  use newunit_mod,only:newunit
   use read_val,only:ipbc
   implicit none
 
   CHARACTER(len=89) :: fnamcr,namecr
-    logical :: lcomp, & ! comparaison ou non avec un cristal de dÃ©part
-         ldecal, & ! decalage en tre boite cr et boite ana
-         ldesord, &      ! vielle variable historique
-         lnbvois, &      ! analyse des nombres de voisins
-         lc15, &      ! lacunes et int ensembles
-         lvac, &           ! analyse en lacune
-         ldetdec,&          !determination du decalage
-         lrescale ,&          ! rescale des posistions de dÃ©part sur la boite d'arrivÃ©e
-         lpstruct ,&          
-         lallint ,&          ! dans ws : si true dumbbal=2 ints ; si false dumbbal =1 int
-         lpdep ,&          
-         ldeptest ,&          
-         lws ,&          ! Wigner-Seitz pour INT et VAC
-         lpdef, &
-         ldefcat, &        ! defauts sur les cations seulement
-         lsubc, &        ! analyse en sous cascade BLOB
-         distordflag    ! analyse des angles dans le cristal si flag==.true.
-    integer::         idistord,iprtnvi        ! analyse des diff angulaires
-!   integer :: imcr ! nb d'atomes dans le cristal de reference
-    integer::imdum,ivisuana
-    real(double)::rdum
-    integer::ivuana
-    real(double)::pstmax(20)
-!    real(double),allocatable:: xpcr(:,:)
-!    integer, allocatable :: itypcr(:)
-    integer:: ndvblob,ndvmin ! voisins blob pour SC
-    real(double)::rdv ! distance entre defauts pour SC
-    integer, allocatable:: indws(:),indatsit(:,:),natsit(:),indint(:),indvac(:),indas(:) ! indices des atomes deplaces et plottes
-    ! **************************************************************
-    type(atom_config)::atcr
-    type(cell_config)::celcr
-    type(box_config)::boxcr
-    integer::igencr
-    integer,allocatable::na(:)
-    real(double) :: plmin(3),plmax(3) ! bords de la portion afichÃ©e de la boite
-    real(double) :: tvac ,tint,deltx,delty,deltz ! distance pour les lacunes et les int
-    real(double) :: tdep ! seuil de deplacement
-    real(double),allocatable::rc(:)
+  logical :: lcomp, & ! comparaison ou non avec un cristal de dÃ©part
+       ldecal, & ! decalage en tre boite cr et boite ana
+       ldesord, &      ! vielle variable historique
+       lnbvois, &      ! analyse des nombres de voisins
+       lc15, &      ! lacunes et int ensembles
+       lvac, &           ! analyse en lacune
+       ldetdec,&          !determination du decalage
+       lrescale ,&          ! rescale des posistions de dÃ©part sur la boite d'arrivÃ©e
+       lpstruct ,&          
+       lallint ,&          ! dans ws : si true dumbbal=2 ints ; si false dumbbal =1 int
+       lpdep ,&          
+       ldeptest ,&          
+       lws ,&          ! Wigner-Seitz pour INT et VAC
+       lpdef, &
+       ldefcat, &        ! defauts sur les cations seulement
+       ldepla, &        ! nouvelle analyse des déplacements à partir de atana0
+       lsubc, &        ! analyse en sous cascade BLOB
+       distordflag    ! analyse des angles dans le cristal si flag==.true.
+  integer::         idistord,iprtnvi        ! analyse des diff angulaires
+  integer::immcr
+  !   integer :: imcr ! nb d'atomes dans le cristal de reference
+  integer::imdum,ivisuana
+  !    real(double)::rdum
+  integer::ivuana
+  real(double)::pstmax(20)
+  !    real(double),allocatable:: xpcr(:,:)
+  !    integer, allocatable :: itypcr(:)
+  integer:: ndvblob,ndvmin ! voisins blob pour SC
+  real(double)::rdv ! distance entre defauts pour SC
+  integer, allocatable:: indws(:),indatsit(:,:),natsit(:),indint(:),indvac(:),indas(:) ! indices des atomes deplaces et plottes
+  ! **************************************************************
+  type(atom_config)::atcr,atrefdep
+  type(cell_config)::celcr,celrefdep
+  type(box_config)::boxcr,boxrefdep
+  integer::igencr
+  integer,allocatable::na(:)
+  real(double) :: plmin(3),plmax(3) ! bords de la portion afichÃ©e de la boite
+  real(double) :: tvac ,tint,deltx,delty,deltz ! distance pour les lacunes et les int
+  real(double) :: tdep ! seuil de deplacement
+  real(double),allocatable::rc(:)
 contains
 
-  subroutine anapos(atana,celana,boxana,itapp)
-    !-----------------------------------------------
-    !   M o d u l e s
-    !-----------------------------------------------
+  subroutine initanapos(atana0,celana0,boxana0)
     USE T_kind_param_m
 
     ! **************************************************************
     implicit none
 
-    class(atom_config),intent(in)::atana
-    class(cell_config),intent(in)::celana
-    class(box_config),intent(in)::boxana
-    integer,optional::itapp
-    integer::itap
+    class(atom_config),intent(in)::atana0
+    class(cell_config),intent(in)::celana0
+    class(box_config),intent(in)::boxana0
     integer :: i, ic,j,k,l,m,n,nbvoisparf(20,20)
     real(double)  :: decal(3)
 
 
     integer :: idecal    ! alignement des posistions sur l'atome idecal
     integer, save:: icall=0
-    type(atom_config)::atcf
-    type(cell_config)::celcf
-    type(box_config)::boxcf
+    integer::unitana
     real(double)::rclu(20)
 
     real (double) :: plmin1,plmin2,plmin3, plmax1,plmax2,plmax3 ! bord de plot lu dans la namelist
     namelist /analyse/ldecal,ldesord,idistord,idecal,tdep,lvac,tvac,tint,lcomp,plmin1,igencr,fnamcr, &
          plmin2,plmin3, plmax1,plmax2,plmax3,ldetdec,lrescale,lpstruct,lpdef,lpdep,ldeptest,namecr, &
          ldefcat,rclu, lnbvois,nbvoisparf,pstmax,iprtnvi,lc15,lws,deltx,delty,deltz,lallint,ndvblob,ndvmin,rdv,&
-         &lsubc,ivisuana
+         &lsubc,ivisuana,ldepla,immcr
 
-    icall=icall+1
-    if (icall==1) then
-       allocate(rc(ntyp))
-    end if
-    atcf=atana
-    boxcf=boxana
-    celcf=celana
+    allocate(rc(ntyp))
     allocate (na(ntyp))
 
-    do i=1,atcf%im
-       na(atcf%ityp(i))= na(atcf%ityp(i))+1
-    end do
-    if (present(itapp)) then
-       itap=itap
-    else
-       itap=0
-    end if
     !
     !   set default values for variables in namelist
     !
     !-----------------------------------------------
     namecr='ZZ'
+    immcr=-1
     ivisuana=-1
     igencr=-1
     rclu(:)=2.8
     pstmax(:)=0.
     lcomp=.false.
-!   iprtnvi=.false.
+    !   iprtnvi=.false.
     iprtnvi=0      
     lws=.false.
     ldetdec=.false.
@@ -143,15 +126,36 @@ contains
     lsubc=.false.
     ndvblob=0
     ndvmin=0
+    ldepla=.false.
     write(6,*)'*** analyse du crystal'
-    open(175, file='analyse.in')
-    read(175,nml=analyse)
+    call newunit(unitana)
+    open(unitana, file='analyse.in')
+    read(unitana,nml=analyse)
+
+    if (ldepla) then
+       if (rang==0) write(6,*)'detection des deplacements par rapport a atana0'
+       !       if (.not.present(atana0)) then
+       !          if (rang==0) write(6,*)'atana0 pas definie STOP'
+       !          call arret_ndm
+       !       end if
+       atrefdep=atana0
+       celrefdep=celana0
+       boxrefdep=boxana0
+    end if
+
     if(.not.(lnbvois).and.(ldesord))lnbvois=.true.
     if(lws) then
        lcomp=.true.
-       lvac=.true.
+       !       lvac=.true.
+
     end if
-    if(ivisuana==-1) ivisuana=ivisu
+    if (lcomp) then
+       if (immcr==-1) then
+          if (rang==0) write(6,*)'IMMcr must ne specified'
+          call arret_ndm
+       end if
+       if(ivisuana==-1) ivisuana=ivisu
+    end if
     if (ivisuana==4) ivisuana=40
     if (ivisuana==6) ivisuana=60
 
@@ -173,7 +177,7 @@ contains
     ! write(6,*)'distordflag',distordflag
     rc(1:ntyp)=rclu(1:ntyp)*1.0d-8
 
-! pourquoi plotpart ici ?
+    ! pourquoi plotpart ici ?
     plmin(1)=plmin1; plmax(1)=plmax1
     plmin(2)=plmin2; plmax(2)=plmax2
     plmin(3)=plmin3; plmax(3)=plmax3
@@ -183,62 +187,58 @@ contains
 !!$    end if
 
     if (lcomp) then
-       if (icall==1) then
           select case (igencr)
-             case(1)
+          case(1)
              fnamcr=namecr(1:len(namecr))//'crcin'
-             call read_cin(boxcr,1,atcr,atcf%imm,fnamcr)
-             atcf%im_glob=atcr%im
+             call read_cin(boxcr,1,atcr,immcr,fnamcr)
+             !             atcf%im_glob=atcr%im
              call setnoxsimple (atcr,boxcr,celcr,rumax)
           case(0)
              fnamcr=trim(namecr)//'.crgin'
              write(6,*)'fnamcr ',len(fnamcr),fnamcr
-             call gin2ndm(atcr,celcr,boxcr,fnamcr,rdum,lrepartition=.false.)
+             call gin2ndm(atcr,celcr,boxcr,fnamcr,rumax,lrepartition=.false.,immread=immcr,lconstrsimple=.true.)
+             call setnoxsimple (atcr,boxcr,celcr,rumax)
           case default
              write(6,*)'set igencr to 1 or 0 for .crcin or .crgin file respectively'
              call arret_ndm
           end select
           call caltabtc(celcr,atcr,lperiod,boxcr)
-       write(6,*)
-       write(6,*)'COMPARAISON crystal it = ' ,itapp, 'with file ',fnamcr
-       write(6,*)
 
-       if (lws) then
-          write(6,*)'analyse de Wigner-Seitz'
-       else
-          if(ldeptest) then
-             write(6,'(A,F6.1)') 'seuil deplacement pour detection de defauts ',tdep
-             tvac=tdep
+          if (lws) then
+             write(6,*)'analyse de Wigner-Seitz'
+          else
+             if(ldeptest) then
+                write(6,'(A,F6.1)') 'seuil deplacement pour detection de defauts ',tdep
+                tvac=tdep
+             end if
+             if(lpdep) then
+                write(6,'(A,F6.1)') 'ecriture des deplacés ',tdep
+             end if
+             tint=tvac
+             write(6,'(A,F6.1)') 'seuil lacune ',tvac 
+             write(6,'(A,F6.1)') 'seuil interstitiel ',tint 
+             tdep=tdep*1.0d-8
+             tvac=(tvac*1.0d-8)
+             tint=(tint*1.0d-8)
           end if
-          if(lpdep) then
-             write(6,'(A,F6.1)') 'ecriture des deplacés ',tdep
-          end if
-          tint=tvac
-          write(6,'(A,F6.1)') 'seuil lacune ',tvac 
-          write(6,'(A,F6.1)') 'seuil interstitiel ',tint 
-          tdep=tdep*1.0d-8
-          tvac=(tvac*1.0d-8)
-          tint=(tint*1.0d-8)
-       end if
-
-    end if
 
 
-    if (any(boxcf%at.ne.boxcr%at) )then
-       write(6,*)'boxf <> boxcr'
-       write(6,*)'atcf',boxcf%at
-       write(6,*)'atcr',boxcr%at
-!       call arret_ndm
-    end if
-    
+
+!!$    if (any(boxcf%at.ne.boxcr%at) )then
+!!$       write(6,*)'boxf <> boxcr'
+!!$       write(6,*)'atcf',boxcf%at
+!!$       write(6,*)'atcr',boxcr%at
+!!$!       call arret_ndm
+!!$    end if
+
        if (ldecal) then
           if (idecal.gt.0) then
-             if (idecal.gt.atcf%im) then
+             if (idecal.gt.atana0%im) then
                 write(6,*)'idecal >atcf%im ; stop'
                 call arret_ndm
              end if
              do ic=1,3
-                decal(ic)=atcr%xp(ic,idecal)-atcf%xp(ic,idecal)
+                decal(ic)=atcr%xp(ic,idecal)-atana0%xp(ic,idecal)
              end do
              do i=1,atcr%im
                 do ic=1,3
@@ -252,15 +252,221 @@ contains
                 atcr%xp(3,i)=atcr%xp(3,i)-deltz*1d-8
              end do
           end if
-!          if (lperiod)         call period (imm,xp,xpp,ax)
-          
+          !          if (lperiod)         call period (imm,xp,xpp,ax)
+
        end if
-!       if (lperiod) then
-          call periodbox (boxcf,atcf)
-          call periodbox(boxcr,atcr)
-!       end if
+       !       if (lperiod) then
+       !          call periodbox (boxcf,atcf)
+       call periodbox(boxcr,atcr)
+       !       end if
        call caltabtc(celcr,atcr,lperiod,boxcr)
-       
+    end if
+    close (unitana)
+  end subroutine initanapos
+
+  subroutine anapos(atana,celana,boxana,itapp)
+    !-----------------------------------------------
+    !   M o d u l e s
+    !-----------------------------------------------
+    USE T_kind_param_m
+
+    ! **************************************************************
+    implicit none
+
+    class(atom_config),intent(in)::atana
+    class(cell_config),intent(in)::celana
+    class(box_config),intent(in)::boxana
+    integer,optional::itapp
+    integer::itap
+    integer :: i, ic,j,k,l,m,n,nbvoisparf(20,20)
+    real(double)  :: decal(3)
+
+
+    integer :: idecal    ! alignement des posistions sur l'atome idecal
+    integer, save:: icall=0
+    type(atom_config)::atcf
+    type(cell_config)::celcf
+    type(box_config)::boxcf
+    real(double)::rclu(20)
+    real(double),dimension(:,:),allocatable::vectdep
+    real(double),dimension(:),allocatable::valdepla
+    integer,dimension(:),allocatable::inddep
+
+    integer::ndep
+    real (double) :: plmin1,plmin2,plmin3, plmax1,plmax2,plmax3 ! bord de plot lu dans la namelist
+!!$    namelist /analyse/ldecal,ldesord,idistord,idecal,tdep,lvac,tvac,tint,lcomp,plmin1,igencr,fnamcr, &
+!!$         plmin2,plmin3, plmax1,plmax2,plmax3,ldetdec,lrescale,lpstruct,lpdef,lpdep,ldeptest,namecr, &
+!!$         ldefcat,rclu, lnbvois,nbvoisparf,pstmax,iprtnvi,lc15,lws,deltx,delty,deltz,lallint,ndvblob,ndvmin,rdv,&
+!!$         &lsubc,ivisuana
+
+    atcf=atana
+    boxcf=boxana
+    celcf=celana
+    allocate (na(ntyp))
+
+    do i=1,atcf%im
+       na(atcf%ityp(i))= na(atcf%ityp(i))+1
+    end do
+    if (present(itapp)) then
+       itap=itap
+    else
+       itap=0
+    end if
+    !
+    !   set default values for variables in namelist
+    !
+    !-----------------------------------------------
+!!$    namecr='ZZ'
+!!$    ivisuana=-1
+!!$    igencr=-1
+!!$    rclu(:)=2.8
+!!$    pstmax(:)=0.
+!!$    lcomp=.false.
+!!$!   iprtnvi=.false.
+!!$    iprtnvi=0      
+!!$    lws=.false.
+!!$    ldetdec=.false.
+!!$    idecal= -1
+!!$    ldesord=.false.
+!!$    lnbvois=.false.
+!!$    idistord=0
+!!$    ldeptest=.true.
+!!$    lpdep=.false.
+!!$    lpstruct=.true.
+!!$    lpdef=.true.
+!!$    lvac=.false.
+!!$    lc15=.false.
+!!$    tdep=2.0
+!!$    tvac=1.1
+!!$    tint=1.1
+!!$    plmin1=0;plmin2=0.;plmin3=0.
+!!$    plmax1=0.;plmax2=0.;plmax3=0.
+!!$    lrescale=.true.
+!!$    ldefcat=.false.
+!!$    deltx=0. ; delty=0.0; deltz=0.0
+!!$    lallint=.false.
+!!$    nbvoisparf(:,:)=0
+!!$    lsubc=.false.
+!!$    ndvblob=0
+!!$    ndvmin=0
+!!$    write(6,*)'*** analyse du crystal'
+!!$    open(175, file='analyse.in')
+!!$    read(175,nml=analyse)
+!!$    if(.not.(lnbvois).and.(ldesord))lnbvois=.true.
+!!$    if(lws) then
+!!$       lcomp=.true.
+!!$       lvac=.true.
+!!$    end if
+!!$    if(ivisuana==-1) ivisuana=ivisu
+!!$    if (ivisuana==4) ivisuana=40
+!!$    if (ivisuana==6) ivisuana=60
+!!$
+!!$    if ((idistord.gt.0).and.(.not.lperiod)) then
+!!$       write(6,*) 'distord seulement avec lperiod =true.'
+!!$       call arret_ndm
+!!$    end if
+!!$    if ((idistord.gt.0).and.(.not.lperiod)) then
+!!$       write(6,*) 'distord ne fonctionne pas '
+!!$       call arret_ndm
+!!$    end if
+!!$    if ((idistord.ge.3).and.(maxval(pstmax)==0))then
+!!$       write(6,*) 'isdistrod=3 preciser pstmax'
+!!$       call arret_ndm
+!!$    end if
+!!$    if(namecr=='ZZ') then
+!!$       namecr=fnam(1:lenfnam)
+!!$    end if
+!!$    ! write(6,*)'distordflag',distordflag
+!!$    rc(1:ntyp)=rclu(1:ntyp)*1.0d-8
+!!$
+!!$! pourquoi plotpart ici ?
+!!$    plmin(1)=plmin1; plmax(1)=plmax1
+!!$    plmin(2)=plmin2; plmax(2)=plmax2
+!!$    plmin(3)=plmin3; plmax(3)=plmax3
+!!$    plmin=plmin*1.0d-8 ; plmax=plmax*1.0d-8
+!!$    if (any(plmin.ne.0.).or.any(plmax.ne.0.)) then
+!!$       call plotpart(atcf,plmin)
+!!$    end if
+!!$
+!!$    if (lcomp) then
+!!$       if (icall==1) then
+!!$          select case (igencr)
+!!$             case(1)
+!!$             fnamcr=namecr(1:len(namecr))//'crcin'
+!!$             call read_cin(boxcr,1,atcr,atcf%imm,fnamcr)
+!!$             atcf%im_glob=atcr%im
+!!$             call setnoxsimple (atcr,boxcr,celcr,rumax)
+!!$          case(0)
+!!$             fnamcr=trim(namecr)//'.crgin'
+!!$             write(6,*)'fnamcr ',len(fnamcr),fnamcr
+!!$             call gin2ndm(atcr,celcr,boxcr,fnamcr,rdum,lrepartition=.false.)
+!!$          case default
+!!$             write(6,*)'set igencr to 1 or 0 for .crcin or .crgin file respectively'
+!!$             call arret_ndm
+!!$          end select
+!!$          call caltabtc(celcr,atcr,lperiod,boxcr)
+!!$       write(6,*)
+!!$       write(6,*)'COMPARAISON crystal it = ' ,itapp, 'with file ',fnamcr
+!!$       write(6,*)
+!!$
+!!$       if (lws) then
+!!$          write(6,*)'analyse de Wigner-Seitz'
+!!$       else
+!!$          if(ldeptest) then
+!!$             write(6,'(A,F6.1)') 'seuil deplacement pour detection de defauts ',tdep
+!!$             tvac=tdep
+!!$          end if
+!!$          if(lpdep) then
+!!$             write(6,'(A,F6.1)') 'ecriture des deplacés ',tdep
+!!$          end if
+!!$          tint=tvac
+!!$          write(6,'(A,F6.1)') 'seuil lacune ',tvac 
+!!$          write(6,'(A,F6.1)') 'seuil interstitiel ',tint 
+!!$          tdep=tdep*1.0d-8
+!!$          tvac=(tvac*1.0d-8)
+!!$          tint=(tint*1.0d-8)
+!!$       end if
+!!$
+!!$    end if
+!!$
+!!$
+!!$    if (any(boxcf%at.ne.boxcr%at) )then
+!!$       write(6,*)'boxf <> boxcr'
+!!$       write(6,*)'atcf',boxcf%at
+!!$       write(6,*)'atcr',boxcr%at
+!!$!       call arret_ndm
+!!$    end if
+!!$    
+!!$       if (ldecal) then
+!!$          if (idecal.gt.0) then
+!!$             if (idecal.gt.atcf%im) then
+!!$                write(6,*)'idecal >atcf%im ; stop'
+!!$                call arret_ndm
+!!$             end if
+!!$             do ic=1,3
+!!$                decal(ic)=atcr%xp(ic,idecal)-atcf%xp(ic,idecal)
+!!$             end do
+!!$             do i=1,atcr%im
+!!$                do ic=1,3
+!!$                   atcr%xp(ic,i)=atcr%xp(ic,i)-decal(ic)
+!!$                end do
+!!$             end do
+!!$          else
+!!$             do i=1,atcr%im
+!!$                atcr%xp(1,i)=atcr%xp(1,i)-deltx*1d-8
+!!$                atcr%xp(2,i)=atcr%xp(2,i)-delty*1d-8
+!!$                atcr%xp(3,i)=atcr%xp(3,i)-deltz*1d-8
+!!$             end do
+!!$          end if
+!!$!          if (lperiod)         call period (imm,xp,xpp,ax)
+!!$          
+!!$       end if
+!!$ !       if (lperiod) then
+!!$          call periodbox (boxcf,atcf)
+!!$          call periodbox(boxcr,atcr)
+!!$ !       end if
+!!$       call caltabtc(celcr,atcr,lperiod,boxcr)
+    if (lcomp)then
        if(ldetdec) then
           if (atcf%im.ne.atcr%im) then
              write(6,*)'detdec impossible'
@@ -279,18 +485,21 @@ contains
           call arret_ndm
        end if
 
-!comparaison avec cristal
-       call ws (atcf,celcf,boxcf,atcr,celcr,boxcr,lws)  
+       !comparaison avec cristal
+       call ws (atcf,celcf,boxcf,atcr,celcr,boxcr,lws)  ! WS and detcec !
 !!$       if (lws) then
 !!$
 !!$       else
 !!$          call depcr (atcf,celcf,boxcf,atcr,celcr,boxcr)  
 !!$       end if
     end if
-!analyse des voisins (sans comparaison avec le cristal de référence)
+    if (ldepla) then
+       call depladet(atcf,celcf,boxcf,atrefdep,celrefdep,boxrefdep,tdep,ndep,inddep,vectdep,valdepla)
+    end if
+    !analyse des voisins (sans comparaison avec le cristal de référence)
     if (lnbvois)  call nbvois(atcf,boxcf,celcf,icall,nbvoisparf,itapp)
 
-    close(175)     
+    !    close(175)     
 
     !  if (dmtype==6)   call arret_ndm
     !    write(6,*)'fin compcr'
@@ -300,6 +509,126 @@ contains
     return
   end subroutine anapos
   !**********************************************************
+
+  subroutine depladet(atc,celc,boxc,atr,celr,boxr,tdep,ndep,inddep,vectdepla,valdepla)
+    !cette routine ne fonctionne :
+    ! 1/ qu'en séquentiel
+    ! 2/ que pour des configurations atcf atrefdep directement comparables (mêmes atomes même ordre)
+    ! il faudra programmer une détection des déplacements à la caldepla avec ax pour les cascades en para
+    ! cette routine remplace depcr qui supposait que la même configuration servait pour les défauts et les dépalcements
+    USE T_kind_param_m
+
+    !------------pnp-----------------------------------
+    !   D u m m y   A r g u m e n t s
+    !-----------------------------------------------
+
+    class(atom_config)::atc,atr
+    type(cell_config)::celc,celr
+    type(box_config)::boxc,boxr
+    real(double),intent(in)::tdep
+    real(double),dimension(:,:),allocatable::vectdepla
+    real(double),dimension(:),allocatable::valdepla
+    integer, dimension(:), allocatable:: inddep(:)
+    integer::ndep
+    !Local variables
+    integer :: i,j,k,ic,idp,im
+
+
+    real(double) :: tdep2
+    real(double) :: a1,a2,a3,c1,c2,c3,r2
+    real(double), dimension(1,3) :: cv
+
+    real(double) :: r2min
+
+    real(double) :: c3p,c2p,c1p,c1abs,c2abs,c3abs,r,XJI(3)
+    integer:: koo,i2,i1,ncelvois,ko1,id
+
+
+    if(atc%im.ne.atr%im) then
+       write(6,*)'not depladet works for confs with equal number of atoms'
+       call arret_ndm
+    end if
+    im=min(atc%im,atr%im)
+
+    ncelvois = min(celc%noxyz,27)-1
+    !    atc%lgul=.false.
+    !    atr%lgul=.false.
+
+    tdep2=tdep*tdep
+    ndep=0
+    plmin=1000.0 ; plmax=-1000.0
+
+
+
+
+!    allocate(inddep(im))
+!    atc%lgul=.false. ! lgul = true pour les déplacés
+!    atr%lgul=.false.
+    call cryst_to_cart (atc%im, atc%xp, boxc%bg, -1)    !cart vers cryst
+    call cryst_to_cart (atr%im, atr%xp, boxr%bg, -1)    !cart vers cryst
+
+    do i=1,im
+       !     if(ityp(i)==2) cycle
+       c1 = atc%xp(1,i)-atr%xp(1,i)
+       c2 = atc%xp(2,i)-atr%xp(2,i)
+       c3 = atc%xp(3,i)-atr%xp(3,i)
+       if (c1>0.5) c1 = c1-1.
+       if (c1<(-0.5)) c1 = c1+1.
+       if (c2>0.5) c2 = c2-1.
+       if (c2<(-0.5)) c2 = c2+1.
+       if (c3>0.5) c3 = c3-1.
+       if (c3<(-0.5)) c3 = c3+1.
+       cv(1,1) = c1
+       cv(1,2) = c2
+       cv(1,3) = c3
+       call cryst_to_cart (1, cv, boxc%at, 1) !cryst vers cart sur cv
+       r2 = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)
+       if(r2.gt.tdep2) then
+          ndep=ndep+1
+          !          inddep(ndep)=i
+          !          atc%lgul(i)=.true.
+          !          atr%lgul(i)=.true.
+       end if
+
+    end do  !boucle i
+
+    if (allocated(vectdepla))deallocate(vectdepla)
+    if (allocated(inddep))deallocate(inddep)
+    if (allocated(valdepla))deallocate(valdepla)
+    allocate(inddep(ndep))
+    allocate(valdepla(ndep))
+    allocate(vectdepla(3,ndep))
+    id=0
+    
+    do i=1,im
+       c1 = atc%xp(1,i)-atr%xp(1,i)
+       c2 = atc%xp(2,i)-atr%xp(2,i)
+       c3 = atc%xp(3,i)-atr%xp(3,i)
+       if (c1>0.5) c1 = c1-1.
+       if (c1<(-0.5)) c1 = c1+1.
+       if (c2>0.5) c2 = c2-1.
+       if (c2<(-0.5)) c2 = c2+1.
+       if (c3>0.5) c3 = c3-1.
+       if (c3<(-0.5)) c3 = c3+1.
+       cv(1,1) = c1
+       cv(1,2) = c2
+       cv(1,3) = c3
+       call cryst_to_cart (1, cv, boxc%at, 1) !cryst vers cart sur cv
+       r2 = cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3)
+       if(r2.gt.tdep2) then
+          id=id+1
+          inddep(id)=i
+          vectdepla(:,id)=cv(1,:)
+          valdepla(id)=sqrt(r2)
+       end if
+
+    end do  !boucle i
+       
+    call cryst_to_cart (atc%im, atc%xp, boxc%at, 1)    !cart vers cryst
+    call cryst_to_cart (atr%im, atr%xp, boxr%at, 1)    !cart vers cryst
+    
+  end subroutine depladet
+
 
   subroutine nbvois(atcf,boxcf,celcf,icall,nbvoisparf,itapp)
 
@@ -347,7 +676,7 @@ contains
 
     allocate (rccar(ntyp))
     rccar(1:ntyp)=rc(1:ntyp)**2
-    
+
     rcm=maxval(rc(:))
     write(6,*)'rcm ', rcm
 
@@ -366,7 +695,7 @@ contains
 
     call caltabtC(celcf,atcf,lperiod,boxcf)
     !    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
-    
+
 
 
     natvityp(:,:)=0
@@ -404,7 +733,7 @@ contains
        end do
        natvi(nvi(i))=natvi(nvi(i))+1
        natvityp(nvi(i),iti)=natvityp(nvi(i),iti)+1
-       
+
        if (idistord.gt.0) then
           do itj=1,ntyp
              if (nvityp(i,itj).ne.nbvoisparf(iti,itj))then
@@ -601,7 +930,7 @@ contains
        naux=1 ; allocate (vaux(naux,atcf%im)) ; allocate(charaux(naux))
        vaux(1,:)=float(nvi(:))
        charaux(1)='neighbours '
-       
+
        if (any(plmin.ne.0.).or.any(plmax.ne.0.)) then
           call atcf%deftype(atplt)
           call plotpart(atcf,plmin,plmax,atplt,boxplt)
@@ -900,11 +1229,11 @@ contains
     immin=min(atc%im,atr%im)
     immax=max(atc%im,atr%im)
     if (lws) then
-       write(6,*)'comparison with reference structure WIGNER SEITZ', atc%im,atr%im,immin,immax
+       if (rang==0)write(6,*)'comparison with reference structure WIGNER SEITZ', atc%im,atr%im,immin,immax
     else
        write(6,*)'comparison with reference structure cut-off radius', atc%im,atr%im,immin,immax,tvac
        if (ldeptest) then
-          write(6,*)'comparison based on displacements', tdep
+          if (rang==0)write(6,*)'comparison based on displacements', tdep
        end if
     end if
 
@@ -925,62 +1254,12 @@ contains
 
     nvac=0;nanti=0;nint=0;nas=0; nremp=0
 
-    if (lws) then 
-       call cryst_to_cart (atc%im, atc%xp, boxc%bg, -1)    !cart vers cryst
-       call cryst_to_cart (atr%im, atr%xp, boxr%bg, -1)    !cart vers cryst
-    
-       iloop0:do i=1,atr%im
-          r2min =100.0
-          koo = atc%ielat(i)                          ! Numero de la cellule
-          ! pour chaque cel. voisine
-          do i1 = 0, celr%ncelvois(koo)
-             ko1=celr%ncel(koo,i1)
-
-             !              write(6,*)i,idp,koo,i1,ko1,natocr(ko1)
-             do i2 = 1, celr%nato(ko1) !atomes dans la cel dans la conf. init.
-                j = celr%atincel(i2,ko1)
-
-                c1 = atc%xp(1,i)-atr%xp(1,j)
-                c2 = atc%xp(2,i)-atr%xp(2,j)
-                c3 = atc%xp(3,i)-atr%xp(3,j)
-                if (boxc%ipbc(1)==1) then
-                   if (c1>0.5) c1 = c1-1.
-                   if (c1<(-0.5)) c1 = c1+1.
-                end if
-                if (boxc%ipbc(2)==1) then
-                   if (c2>0.5) c2 = c2-1.
-                   if (c2<(-0.5)) c2 = c2+1.
-                end if
-                if (boxc%ipbc(3)==1) then
-                   if (c3>0.5) c3 = c3-1.
-                   if (c3<(-0.5)) c3 = c3+1.
-                end if
-                cv(1,1) = c1
-                cv(1,2) = c2
-                cv(1,3) = c3
-                call cryst_to_cart (1, cv, boxc%at, 1) !cryst vers cart sur cv
-                r = sqrt(cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3))
-
-                if(r.lt.r2min) then ! j est pour l'instant le site le plus proche de i
-                   !                write(6,*)r,i,j
-                   r2min=r
-                   indws(i)=j
-                end if
-             end do
-          end do
-
-
-          j=indws(i)
-          natsit(j)=natsit(j)+1
-          indatsit(j,natsit(j))=i
-       end do iloop0
-       call cryst_to_cart (atc%im, atc%xp, boxc%at, 1)    !cryst vers cart
-       call cryst_to_cart (atr%im, atr%xp, boxr%at, 1)    !cryst vers cart
-
+    if (lws) then
+       call wsb(atc,celc,boxc,atr,celr,boxr,natsit,indatsit,indws)
 
 
     else ! test depcr
-           
+
        tdep2=tdep*tdep
        allocate(inddep(immax))
        atc%lgul=.false. ! lgul = true pour les déplacés
@@ -988,7 +1267,7 @@ contains
        if (ldeptest.EQV..true.) then
           call cryst_to_cart (atc%im, atc%xp, boxc%bg, -1)    !cart vers cryst
           call cryst_to_cart (atr%im, atr%xp, boxr%bg, -1)    !cart vers cryst
-       
+
           write(6,*)' displacement detection assumes that the atoms are identically sorted in currect and reference state'
 
           do i=1,immin
@@ -1104,7 +1383,7 @@ contains
           end do iloop00
           call cryst_to_cart (atc%im, atc%xp, boxc%at, 1)    !cryst vers cart
           call cryst_to_cart (atr%im, atr%xp, boxr%at, 1)    !cryst vers cart
-          
+
        end if
     end if
     if (lvac) then 
@@ -1115,7 +1394,7 @@ contains
        !    end do
        !    call atc%print
        iloop1: do j=1,atr%im
-!          write(6,*)j,natsit(j),indatsit(j,:natsit(j))
+          !          write(6,*)j,natsit(j),indatsit(j,:natsit(j))
           select case (natsit(j))
           case(0) 
              nvac=nvac+1
@@ -1452,70 +1731,70 @@ contains
 !!$    deallocate(rgsc);
 !!$  end subroutine subc
 
-    subroutine plt_extr(nprt,indprt,nameprt,atprt,boxprt,itapp,plmin,plmax)
-      integer,intent(in)::nprt,indprt(:)
-      integer,optional::itapp
-      character(len=*)::nameprt
-      class(atom_config)::atprt
-      type(box_config)::boxprt
-      real(double),optional :: plmin(3,3),plmax(3,3)
-      integer::iprt,iat
-      class(atom_config),allocatable::atplt,atpltpp
-      type(box_config)::boxplt
-      character*9 :: extension
-      character(len=89)::nameplt
-    
-      if (nprt.gt.0) then
-!         write(6,*)'nameprt',nameprt
-         call atprt%deftype(atplt)
-          atprt%lgul=.false.
-          do iat=1,nprt
-             atprt%lgul(indprt(iat))=.true.
-          end do
-          call atprt%fab(atplt,lback=.false.)
-          atprt%lgul=.false.
-          if (present(itapp)) then
-             write(extension,'(i9.9)') itapp
-             nameplt=trim(nameprt)//extension
-          else
-             nameplt=trim(nameprt)
-          end if
-!          write(6,*)'nameplt ',nameprt,' ',nameplt
-          if (present(plmin)) then
-             call atprt%deftype(atpltpp)
-             call plotpart(atplt,plmin,plmax,atpltpp,boxplt)
-             call rasmolT(atpltpp,boxplt,namefr=nameplt,latcomp=.true.,ivisumol=ivisuana)
-          else
-             boxplt=boxprt
-             call rasmolT(atplt,boxplt,namefr=nameplt,latcomp=.true.,ivisumol=ivisuana)
-          end if
+  subroutine plt_extr(nprt,indprt,nameprt,atprt,boxprt,itapp,plmin,plmax)
+    integer,intent(in)::nprt,indprt(:)
+    integer,optional::itapp
+    character(len=*)::nameprt
+    class(atom_config)::atprt
+    type(box_config)::boxprt
+    real(double),optional :: plmin(3,3),plmax(3,3)
+    integer::iprt,iat
+    class(atom_config),allocatable::atplt,atpltpp
+    type(box_config)::boxplt
+    character*9 :: extension
+    character(len=89)::nameplt
+
+    if (nprt.gt.0) then
+       !         write(6,*)'nameprt',nameprt
+       call atprt%deftype(atplt)
+       atprt%lgul=.false.
+       do iat=1,nprt
+          atprt%lgul(indprt(iat))=.true.
+       end do
+       call atprt%fab(atplt,lback=.false.)
+       atprt%lgul=.false.
+       if (present(itapp)) then
+          write(extension,'(i9.9)') itapp
+          nameplt=trim(nameprt)//extension
+       else
+          nameplt=trim(nameprt)
        end if
-     end subroutine plt_extr
+       !          write(6,*)'nameplt ',nameprt,' ',nameplt
+       if (present(plmin)) then
+          call atprt%deftype(atpltpp)
+          call plotpart(atplt,plmin,plmax,atpltpp,boxplt)
+          call rasmolT(atpltpp,boxplt,namefr=nameplt,latcomp=.true.,ivisumol=ivisuana)
+       else
+          boxplt=boxprt
+          call rasmolT(atplt,boxplt,namefr=nameplt,latcomp=.true.,ivisumol=ivisuana)
+       end if
+    end if
+  end subroutine plt_extr
 
 
   !**************** PLOT PART****
 
-    subroutine plotpart(atcf,plmin,plmax,atplt,boxplt)
-      USE T_kind_param_m
-      
+  subroutine plotpart(atcf,plmin,plmax,atplt,boxplt)
+    USE T_kind_param_m
+
     implicit none
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     class(atom_config)::atcf
-!    integer :: ityp(imm)
+    !    integer :: ityp(imm)
     class(atom_config)::atplt
     class(box_config)::boxplt
-    
+
     real(double) ::  plmin(3),plmax(3),at_plt(3,3)
     !local variables 
     integer :: i,nplt,iplt,ic
-
-!    integer, allocatable :: indplt(:) ! indices des atomes  plottes
-!    allocate(indplt(imm))
-!    plmin=plmin*1.0d-8 ; plmax=plmax*1.0d-8
+    real(double),dimension(:,:),allocatable::vectdepla
+    !    integer, allocatable :: indplt(:) ! indices des atomes  plottes
+    !    allocate(indplt(imm))
+    !    plmin=plmin*1.0d-8 ; plmax=plmax*1.0d-8
     write(6,'(A,3F7.2,A,3F7.2)')'portion affichee entre ', plmin*1.0d8 ,' et ',plmax*1.0d8  
-!    write(6,*)'portion affichee entre ', plmin*1.0d8 ,' et ',plmax*1.0d8  
+    !    write(6,*)'portion affichee entre ', plmin*1.0d8 ,' et ',plmax*1.0d8  
     nplt=0
     atcf%lgul=.false.
     do i=1,atcf%im     
@@ -1536,9 +1815,153 @@ contains
     end do
     call boxplt%init(at_plt,ipbc)
     !    namepltpart='partial'
-!    itapp=it
-!    call rasmolT(atplt,boxplt,namefr=namepltpart,latcomp=.true.,ivisumol=ivisuana)
-!    call rasmolT(atplt,boxplt,itap,namepltpart,latcomp=.true.,ivisumol=ivisuana)
+    !    itapp=it
+    !    call rasmolT(atplt,boxplt,namefr=namepltpart,latcomp=.true.,ivisumol=ivisuana)
+    !    call rasmolT(atplt,boxplt,itap,namepltpart,latcomp=.true.,ivisumol=ivisuana)
   end subroutine plotpart
 
-   end module posana
+
+  subroutine anaposart(atcf,celcf,boxcf,lperfw,namemol)
+
+    class(atom_config)::atcf
+    class(cell_config)::celcf
+    class(box_config)::boxcf
+
+    logical::lperfw
+    character(len=60) :: namemol
+    character(len=60) :: namemolperf
+
+    type(atom_config)::atperf
+    integer, allocatable:: indws(:),indatsit(:,:),natsit(:)
+    real(double),dimension(:,:),allocatable::vectdep
+    real(double),dimension(:),allocatable::valdepla
+    integer,dimension(:),allocatable::inddep
+
+    integer::i,j,ioc,ndep,id
+    allocate(indws(atcf%im))
+    allocate(natsit(atcr%im))
+    allocate(indatsit(atcr%im,4))
+    natsit=0
+    indatsit=0
+
+    call wsb(atcf,celcf,boxcf,atcr,celcr,boxcr,natsit,indatsit,indws)
+    write(unit6P,*)
+    do j=1,atcr%im
+       if ((atcr%ityp(j).ne.0).and.(natsit(j)==0)) then ! WS vacancy
+          write(unit6P,'(A,I7,3G15.7,I2)')'vacancy in site ',j,atcr%xp(1,j),atcr%xp(2,j),atcr%xp(3,j),atcr%ityp(j)
+       end if
+    end do
+    do j=1,atcr%im
+       if (natsit(j).gt.1) then ! WS multiple occupation
+          do ioc=1,natsit(j)
+             i=indatsit(j,ioc)
+             write(unit6P,'(A,I7,3G15.7,A,I2,A,I7,A,I2)')'multiple occupancy in site ',j,  1d8*atcr%xp(1,j)&
+                  &,1d8*atcr%xp(2,j),1d8*atcr%xp(3,j),&
+                  &'of ref type ',atcr%ityp(j),'with atom ',i, ' of type ',atcf%ityp(i)
+          end do
+       end if
+    end do
+    do i=1,atcf%im
+       j=indws(i)
+       if (atcr%ityp(j)==0) then
+          write(unit6P,'(A,I7,3G15.7,A,I7,A,I2)')'interstitial in site ',j,  1d8*atcr%xp(1,j),1d8*atcr%xp(2,j),1d8*atcr%xp(3,j)&
+               &, 'of index',i,' and type ', atcf%ityp(i)
+       end if
+    end do
+    !        write(unit6P,*)
+
+    if (lperfw) then
+       if (all(natsit.le.1)) then
+          write(unit6P,*)'output of perfect structure is possible'
+          call atperf%init(atcf%im)
+          do i=1,atcf%im
+             atperf%ityp(i)=atcf%ityp(i)
+             atperf%xp(:,i)=atcr%xp(:,indws(i))
+          end do
+          namemolperf=trim(namemol)//'perf'
+          call rasmolT(atperf,boxcr,namefr=namemolperf,latcomp=.true.,ivisumol=5)
+       end if
+    end if
+          
+    
+    call depladet(atcf,celcf,boxcf,atrefdep,celrefdep,boxrefdep,tdep,ndep,inddep,vectdep,valdepla)
+    write(unit6P,*)ndep, ' displaced atoms'
+    do id=1,ndep
+       write(unit6P,'(A,I7,4G15.7)')'DISPLACED ATOM',inddep(id),valdepla(id)*1d8,&
+            &vectdep(1,id)*1d8,vectdep(2,id)*1d8,vectdep(3,id)*1d8
+    end do
+       
+    return
+
+  end subroutine anaposart
+  
+  subroutine wsb(atc,celc,boxc,atr,celr,boxr,natsit,indatsit,indws)
+
+    class(atom_config)::atc,atr
+    type(cell_config)::celc,celr
+    type(box_config)::boxc,boxr
+
+    integer,dimension(:),intent(out)::natsit,indws
+    integer,dimension(:,:),intent(out)::indatsit
+
+    real(double), dimension(1,3) :: cv
+    integer::i,koo,j,i2,i1,ko1
+    real(double)::r2min,c1,c2,c3,r
+    natsit=0;indws=0;indatsit=0
+
+
+    call cryst_to_cart (atc%im, atc%xp, boxc%bg, -1)    !cart vers cryst
+    call cryst_to_cart (atr%im, atr%xp, boxr%bg, -1)    !cart vers cryst
+
+    iloop0:do i=1,atc%im
+       r2min =100.0
+       koo = atc%ielat(i)                          ! Numero de la cellule
+       ! pour chaque cel. voisine
+       do i1 = 0, celr%ncelvois(koo)
+          ko1=celr%ncel(koo,i1)
+
+          !              write(6,*)i,idp,koo,i1,ko1,natocr(ko1)
+          do i2 = 1, celr%nato(ko1) !atomes dans la cel dans la conf. init.
+             j = celr%atincel(i2,ko1)
+
+             c1 = atc%xp(1,i)-atr%xp(1,j)
+             c2 = atc%xp(2,i)-atr%xp(2,j)
+             c3 = atc%xp(3,i)-atr%xp(3,j)
+             if (boxc%ipbc(1)==1) then
+                if (c1>0.5) c1 = c1-1.
+                if (c1<(-0.5)) c1 = c1+1.
+             end if
+             if (boxc%ipbc(2)==1) then
+                if (c2>0.5) c2 = c2-1.
+                if (c2<(-0.5)) c2 = c2+1.
+             end if
+             if (boxc%ipbc(3)==1) then
+                if (c3>0.5) c3 = c3-1.
+                if (c3<(-0.5)) c3 = c3+1.
+             end if
+             cv(1,1) = c1
+             cv(1,2) = c2
+             cv(1,3) = c3
+             call cryst_to_cart (1, cv, boxc%at, 1) !cryst vers cart sur cv
+             r = sqrt(cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3))
+
+             if(r.lt.r2min) then ! j est pour l'instant le site le plus proche de i
+                !                write(6,*)r,i,j
+                r2min=r
+                indws(i)=j
+             end if
+          end do
+       end do
+
+
+       j=indws(i)
+       natsit(j)=natsit(j)+1
+       indatsit(j,natsit(j))=i
+    end do iloop0
+    call cryst_to_cart (atc%im, atc%xp, boxc%at, 1)    !cryst vers cart
+    call cryst_to_cart (atr%im, atr%xp, boxr%at, 1)    !cryst vers cart
+
+
+  end subroutine wsb
+
+end module posana
