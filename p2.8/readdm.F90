@@ -13,7 +13,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:nprocs,mpi_world
     USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,gamprfact,&
-         &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,ibordcou,&
+         &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
          &landerscou,lcdp,lconstrtot,lcorrelvp,lderive,lfire,&
@@ -25,7 +25,7 @@ contains
          &zko,zz0,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
          &iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
-         &lcasca,lcontr,ldemitab,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
+         &lcasca,lcontr,ldemitab,leev,leparat,lfilm,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou&
@@ -76,13 +76,13 @@ contains
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
-         iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
+         iteangle,  itesauvposition, itesauvforce,  tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,&
-         lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,ngrid,lperiod,&
+         lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,deltaRmax,&
          rcangle,rcrdf,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,ihbox0,&
          neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,gammas,gammav,lanaposart,&
@@ -176,7 +176,6 @@ contains
     nox = -1
     noy = -1
     noz = -1
-    ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
     lprahman=.false.                 ! parinnelo rahman �あ contrainte constante
     lpr=lprahman
     ihbox0(:,:) = 1   ! all the dimension of the box can change
@@ -243,7 +242,6 @@ contains
     tdepla = 1.0                !threshold for displacement
     tdepla2 = -1.0              !second seuil pour calcul des atomes deplaces
     lfilm = .FALSE.             !film making of displaced atoms
-    lfilmext = .FALSE.          !film par iteration des atomes deplaces
     itecoordo = -100             !period of coordination calculation
     itean = 0                  !general control for analysis
     iterdf = -1                 !period of RDF calc. : -1 never ; 0 : nrdf last iterations; +iterdf every iterdf iterations
@@ -687,27 +685,19 @@ contains
     !       call arret_ndm
     !     endif
 
-    if (tdepla2>0.0 .and. tdepla2<tdepla) then
-       if (rang==0) write (6, *) rang,'choisissez tdepla2 > tdepla '
-       call arret_ndm
-    endif
+!!$    if (tdepla2>0.0 .and. tdepla2<tdepla) then
+!!$       if (rang==0) write (6, *) rang,'choisissez tdepla2 > tdepla '
+!!$       call arret_ndm
+!!$    endif
 
-    if (lfilm .and. lfilmext) then
+    if (lfilm ) then
        if (itedepla < 1) then
-          if (rang==0) write (6, *) rang,'contradiction itedepla <-> lfilm et lfilmext'
+          if (rang==0) write (6, *) rang,'contradiction itedepla <-> lfilm'
           call arret_ndm
        endif
     endif
 
-    if (itedepla<1 .and. lfilm .and. (.not.lfilmext)) then
-       if (rang==0) write (6, *) rang,'contradiction itedepla <-> lfilm '
-       call arret_ndm
-    endif
 
-    if (itedepla<1 .and. lfilmext .and. (.not.lfilm)) then
-       if (rang==0) write (6, *) rang,'contradiction itedepla <-> lfilmext '
-       call arret_ndm
-    endif
 
     if (tstep<1D-20 .or. tstep>1D-13) then
        if (rang==0) write (6, *) rang,'mauvais pas en temps = ', utemps
@@ -1041,11 +1031,9 @@ contains
 
     !  if (itedepla.gt.0) lfilm=.true.
     if (lfilm) then
-       if(rang==0) then
-          if(rang==0)         open(unit=lufilm, file='film', status='unknown')
-          if(rang==0)         open(unit=lufilmpaf, file='filmpaf', status='unknown')
-       end if
-    endif
+       if((rang==0).and.(lcasca))         open(unit=lufilmpaf, file='filmpaf', status='unknown')
+    end if
+    
 
     if(dilat(1).ne.0.0) then
        if(igen.lt.1) then
@@ -1366,10 +1354,6 @@ contains
     if (lfilm) then
        if (rang==0) write (6, '(A,D11.3)') ' film; seuil=', tdepla*1D+8
        if (rang==0) write (6, '(A,D11.3)') ' film; seuil2=', tdepla2*1D+8
-    endif
-    if (lfilmext) then
-       if (rang==0) write (6, '(A,D11.3)') ' filmext; seuil=', tdepla*1D+8
-       if (rang==0) write (6, '(A,D11.3)') 'filmext; seuil2=', tdepla2*1D+8
     endif
     if (rang==0) write(6,*)
     if (rang==0) write (6, *) '     CONTROLES '
