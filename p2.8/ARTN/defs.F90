@@ -245,6 +245,7 @@ module defs
  real(kind=8),allocatable:: atdisp(:)
  logical,allocatable ::ldisp(:)
   !-------------------------------------
+ logical      :: FOR_LEAVING_BASIN_USE_FIRE
 
 END MODULE defs
 

@@ -47,6 +47,10 @@ contains
     logical       :: local_success
 
     call init_mpi_art2(atdml,celndm,boxndm,psc,parapath) ! most is done in init_mpi_art BUT atcfart boxart etc are associated THERE
+    unit6p=6+parapath%image
+    write(unit6P,*)'unit6P',unit6P
+    write(6,*)'unit6P',unit6P,rang
+
     lchg=.true. ! indicates that positions change between successive force calculations (obvious but needs to be specified)
 #ifdef PARA
     if (parapath%lmaster.neqv..true.) then
@@ -56,10 +60,6 @@ contains
     NATOMS= atdml%im
     restart=.false.
     call init_conf
-    unit6p=6+parapath%image
-    write(unit6P,*)'unit6P',unit6P
-    write(6,*)'unit6P',unit6P,rang
-    random_number = ran3(rang )
     !initialization of local and workers 
 
     ! _________

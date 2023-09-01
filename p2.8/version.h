@@ -1,5 +1,5 @@
 #define DATE "2023-09-01"
 #define REVISION "NotGitRepo"
-#define COMPILE_DATE "ven. 01 sept. 2023 13:44:58 CEST"
+#define COMPILE_DATE "ven. 01 sept. 2023 14:24:11 CEST"
 #define LOCATION "/volatile/home/jc148490/share/DM/codesndm/ndm2021UO2"
-#define COMPILE_TARGET "ndm_serial_gfortran_HP"
+#define COMPILE_TARGET "ndm_mpi_gfortran_HP"

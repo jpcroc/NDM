@@ -1,5 +1,3 @@
-
-
 !> ART find_saddle
 !!   This subroutine initiates the random displacement at the start
 !!   of the ART algorithm.
