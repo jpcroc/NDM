@@ -2,7 +2,7 @@
 module rasmolT_mod
   USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:rang,ivisu,lpkbar,lspaceNDM,timel,&
+  USE gen_com_m, ONLY:rang,ivisu,lpkbar,lspaceNDM,&
        &cunitP,iteration,lcasca,timel,unitP,fnam,erg2ev,lenfnam,umass,rang
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
@@ -321,18 +321,31 @@ contains
              xp1 = atcomp%xp(1,i)
              xp2 = atcomp%xp(2,i)
              xp3 = atcomp%xp(3,i)
+             write (luvisu,'(3es15.6,I3)',advance='no') xp1, xp2, xp3, atcomp%ityp(i)
              if (laux) then
-                write (luvisu,'(3es15.6,I3)',advance='no') xp1, xp2, xp3, atcomp%ityp(i)
                 do iax=1,naux
                    write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
                 end do
-                write(luvisu,*)' '
-             else
-                write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, atcomp%ityp(i)
              end if
+             select type (atcomp)
+             class is (atom_config_e)
+                if (atcomp%lsigat) then
+                   if(iteration.eq.0)then
+                      pat=0.0
+                   else
+                      pat=unitP*(atcomp%sigat(1,1,i)+atcomp%sigat(2,2,i)+atcomp%sigat(3,3,i))/3.
+                   end if
+                   write (luvisu, '(G20.12)',advance='no') pat*1d-9
+                end if
+                if (atcomp%lprteat) write (luvisu, '(G20.12)',advance='no') atcomp%eat(i)*erg2ev
+             end select
+             write(luvisu,*)' '
+!             else
+!                write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, atcomp%ityp(i)
+!             end if
           end do
        case (1) !mol
-
+          
           if (present(itapp))then
              write (luvisu, '(I9,A,I12,A,F12.6)',advance='no') atcomp%im, ' IT =', itapp, ' Time = ', timel
           else

@@ -98,6 +98,7 @@ module gen_com_m
   real(double) :: tempstop, tempstopcel, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
        tsfact, vmax, tgc, dfpred ! gestion du pas en temps
   real(double)::maxtcel
+  integer :: ibordcou
   integer :: itesauv,  itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde periode 
                                                                               ! de d'ecriture des positions et/ou forces en formatted ; 
   !itesauvinter=sauvegarde reguliere .cout.it qui n'efface pas les fichiers .cout precedent

@@ -17,6 +17,8 @@ module read_parameters_mod
 use ndm2art2ndm,only:parapath
 use arret_ndm_mod,only:arret_ndm
 use newunit_mod,only:newunit
+use gen_com_m,only:lprteat
+
 contains
 
 
@@ -481,10 +483,11 @@ delta_disp_Lanczos=0.01
     ! Activation: global, local, list_local, list, local_coord
     !  call getenv('Type_of_Events', TYPE_EVENTS)
     type_events=type_of_events
-    if ( (TYPE_EVENTS .ne. 'global') .and. (TYPE_EVENTS .ne. 'local') .and. &
+    if ( (TYPE_EVENTS .ne. 'energy') .and. (TYPE_EVENTS .ne. 'global') &
+         &.and. (TYPE_EVENTS .ne. 'local') .and. &
          & (TYPE_EVENTS .ne. 'list')   .and. (TYPE_EVENTS .ne. 'list_local') .and. &
          & (TYPE_EVENTS .ne. 'local_coord') ) then
-       write(unit6P,*) 'Error : only global, local, or list type of events are accepted - provided: ',&
+       write(unit6P,*) 'Error : wrong type of  events : ',&
             & TYPE_EVENTS
        stop
     end if
@@ -505,6 +508,12 @@ delta_disp_Lanczos=0.01
           stop
 !!$     else
 !!$        read(temporary,*) LOCAL_CUTOFF
+       end if
+    end if
+    if (TYPE_EVENTS .eq. 'energy' ) then
+       if (.not.lprteat) then
+          write(unit6P,*)'event type energy: set lprteat=.true. in *.din'
+          stop
        end if
     end if
 
@@ -1136,6 +1145,7 @@ delta_disp_Lanczos=0.01
     vecsize = 3*natoms
 
     ! And we allocate the vectors
+    !FUCKING ALLOCATION!
     allocate(typat(natoms))
     allocate(constr(natoms))
     allocate(force(vecsize))
@@ -1146,6 +1156,10 @@ delta_disp_Lanczos=0.01
     allocate(old_projection(VECSIZE))
     allocate(projection(VECSIZE))
 
+    if (type_events=='energy')then
+       allocate(eatom(natoms))
+    end if
+    
     force(:) = 0.0d0
     pos(:) = 0.0d0
     posref(:) = 0.0d0

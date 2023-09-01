@@ -1,10 +1,10 @@
 module ndm2art2ndm
 
   USE arret_ndm_mod,only:arret_ndm
-  USE atomconfig,only : atom_config
-  USE cellconfig, only:cell_config
+  USE atomconfig,only : atom_config,atom_config_e
+  USE cellconfig, only:cell_config,caltabtc
   USE boxconfig,only:box_config_lpr,box_config
-  USE gen_com_m, ONLY: rang,latcomp,angst,inv_angst,lperiod,iteration,sig,potist,erg2ev
+  USE gen_com_m, ONLY: rang,latcomp,angst,inv_angst,lperiod,iteration,sig,potist,erg2ev,lperiod
   use Tpara,only:para_space_config,nprocs,myidsp,nprocspace
 #ifdef PARA
   use Tpara,only:para_space_config,nprocs,myidsp,nprocspace,comm_space ,mpi_comm_space,&
@@ -25,7 +25,7 @@ module ndm2art2ndm
   implicit none
   type(para_config),target::parapath ! division de tous les procs en nparapath chemins calculés simultanément
   type(box_config),pointer::boxart
-  type(atom_config),pointer::atcfart
+  class(atom_config),pointer::atcfart
   type(cell_config),pointer:: celart
   type(para_space_config),target::pscart
   class(atom_config),pointer::atcfartloc
@@ -86,10 +86,6 @@ contains
 
   subroutine ndm2art
 
-!    type(para_space_config)::psc
-!!$    class(box_config)::boxcf
-!!$    class(atom_config)::atcf
-!!$    type(cell_config):: celcf
 
     character(len=20) :: dummy, fname
     logical ::flag
@@ -151,14 +147,14 @@ contains
     atcf%xp(3,1:NATOMS)=    pos(1+2*NATOMS:3*NATOMS)/angst
     boxcf%at(:,:)=cell(:,:)/angst
     call boxcf%init(boxcf%at,ipbc)
-    call celcf%init(boxcf,celart%nox,celart%noy,celart%noz)
-
+    call celcf%init(boxcf,celart%nox,celart%noy,celart%noz,celart%natperc)
+    call caltabtc(celcf,atcf,lperiod,boxcf)
 
 
   end subroutine art2ndm
 
   subroutine calcforce_ndm(nat, posa,  forca, energy)
-    use defs, only :  use_local_forces, local_ref_energy, global_ref_energy
+    use defs, only :  use_local_forces, local_ref_energy, global_ref_energy,eatom
     implicit none
 
     !Arguments
@@ -166,7 +162,7 @@ contains
     real(kind=8), intent(in),  dimension(3*nat)         :: posa
     real(kind=8), intent(out), dimension(3*nat)         :: forca
     real(kind=8), intent(out)                           :: energy
-
+    integer::i
     integer,save::iteration
 
 !    atcfart%ityp(1:NATOMS)=typ_a(1:NATOMS)
@@ -181,8 +177,15 @@ contains
     forca(1:NATOMS)=(erg2ev/angst)*atcfart%fp(1,1:NATOMS)
     forca(1+NATOMS:2*NATOMS)=(erg2ev/angst)*atcfart%fp(2,1:NATOMS)
     forca(1+2*NATOMS:3*NATOMS)=(erg2ev/angst)*atcfart%fp(3,1:NATOMS)
-
-
+    select type (atcfart)
+    class is (atom_config_e)
+       if (atcfart%lprteat) then
+          do i=1,natoms
+             eatom(i)=atcfart%eat(i)*erg2ev
+          end do
+       end if
+!       write(6,*)eatom
+    end select
     iteration=iteration+1
     return
   end subroutine calcforce_ndm
@@ -209,7 +212,7 @@ contains
 
   subroutine init_mpi_art2(atcf,celcf,boxcf,psc,parapath)
     type(para_config),intent(in)::parapath
-    type(atom_config),intent(in),target::atcf
+    class(atom_config),intent(in),target::atcf
     type(cell_config),target::celcf
     type(box_config),target::boxcf
     type(para_space_config)::psc

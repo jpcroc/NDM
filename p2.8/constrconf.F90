@@ -26,6 +26,7 @@ module constrconf_mod
 
   implicit none
   logical::lprt=.true.
+  logical :: ldecalcor
 contains
   subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart,filename,psc)
     !********************************************************************
@@ -839,13 +840,15 @@ contains
     do i = 1, imcell
        read (lugin, *) atrg%xp(1,i), atrg%xp(2,i), atrg%xp(3,i),atrg%ityp(i)
     end do
-    if (any(atrg%xp (1:3,1:imcell)==0)) then
-     if ((rang==0).and.(lprt))  write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6'
-       atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)+1e-6
-    end if
-    if (any(atrg%xp (1:3,1:imcell)==1)) then
-    if ((rang==0).and.(lprt))  write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
-       atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)-1e-7
+    if (ldecalcor) then
+       if (any(atrg%xp (1:3,1:imcell)==0)) then
+          if ((rang==0).and.(lprt))  write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6'
+          atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)+1e-6
+       end if
+       if (any(atrg%xp (1:3,1:imcell)==1)) then
+          if ((rang==0).and.(lprt))  write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
+          atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)-1e-7
+       end if
     end if
     do ic=1,3
        if ((lperiod).or.(ipbc(ic).ne.1)) then

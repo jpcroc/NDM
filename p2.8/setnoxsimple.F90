@@ -20,7 +20,6 @@ contains
     real(double),intent(in)::rum
     integer::izonr2,natperc,nox,noy,noz,nvois,nvperat
     real(double)::zlmin,zlm2,voluperat,rvois
-    
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
     zlm2 = distmin(boxsn%at(:,1),boxsn%at(:,3))
     zlmin = min(zlmin,zlm2)
@@ -33,9 +32,9 @@ contains
        nox = int(boxsn%nzl(1)/rum)
        noy = int(boxsn%nzl(2)/rum)
        noz = int(boxsn%nzl(3)/rum)
-       IF (nox.LT.3) nox=1
-       IF (noy.LT.3) noy=1
-       IF (noz.LT.3) noz=1
+!       IF (nox.LT.3) nox=1
+!       IF (noy.LT.3) noy=1
+!       IF (noz.LT.3) noz=1
        celsn%celsize(1) = boxsn%zl(1)/float(nox)
        celsn%celsize(2) = boxsn%zl(2)/float(noy)
        celsn%celsize(3) = boxsn%zl(3)/float(noz)

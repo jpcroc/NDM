@@ -100,6 +100,7 @@ module defs
   real(kind=8), dimension(:), allocatable, target  :: force    ! Working forces on the atoms
   real(kind=8), dimension(:), allocatable, target  :: pos      ! Working positions of the atoms
   real(kind=8), dimension(:), allocatable, target  :: posref   ! Reference position
+  real(kind=8), dimension(:), allocatable  :: eatom   ! per atom energy
 
   logical      :: write_xyz
   ! restart

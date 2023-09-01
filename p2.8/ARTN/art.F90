@@ -34,7 +34,7 @@ contains
 
     implicit None
 
-    type(atom_config)::atdml
+    class(atom_config)::atdml
     type(cell_config)::celndm
     type(box_config)::boxndm
     
@@ -59,6 +59,7 @@ contains
     unit6p=6+parapath%image
     write(unit6P,*)'unit6P',unit6P
     write(6,*)'unit6P',unit6P,rang
+    random_number = ran3(rang )
     !initialization of local and workers 
 
     ! _________
@@ -79,12 +80,12 @@ contains
        If_bol: if ( ( (total_energy - ref_energy) < -temperature * log( random_number ) )&
             & .and. ( temperature >= 0.0d0 ) .and. success ) then
           accept = "ACCEPTED"
+          call store( conf_final,lnewref=.true. )
           if (LOCAL_FORCE) then
              use_local_forces = .false.
              call min_converge( local_success ) 
              write(unit6P,*) "Global minimisation -  success: ", local_success, " - total_energy: ", total_energy
              write(unit6P,*) "Rewrite the minimisation file ", conf_final
-             call store( conf_final )
           endif
           if ( iproc == 0 )&
                &  write(FLIST,*) conf_initial, conf_saddle, conf_final,'    accepted'

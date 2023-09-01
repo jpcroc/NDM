@@ -30,15 +30,16 @@ contains
 
 
 !> ART Function ran3
-real(kind=8) function ran3()
+real(kind=8) function ran3(idec)
 
   implicit none
-
+  integer,optional::idec
+  integer::idc
   !Local variables
-  integer,      parameter :: mbig=1000000000
-  integer,      parameter :: mseed=161803398
-  integer,      parameter :: mz=0
-  real(kind=8), parameter :: fac=1./mbig
+  integer :: mbig=1000000000
+  integer :: mseed=161803398
+  integer :: mz=0
+  real(kind=8) :: fac
 
   integer :: i, mj, mk, ii, k
   !_______________________
@@ -46,7 +47,11 @@ real(kind=8) function ran3()
 
   ! Any large mbig, and any smaller (but still large) mseed can be
   !  substituted for the above values.
-
+  idc=0
+  if (present(idec))idc=idec
+  mbig=mbig+idc
+  mseed=mseed+idc
+  fac=1./mbig
   if ( idum < 0 .or. iff == 0 ) then
      iff = 1
      mj = mseed - iabs(idum)

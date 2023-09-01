@@ -8,7 +8,7 @@ module analyseT_mod
   USE rasmolT_mod,only: rasmolT
   use calcextr_mod,only:calfoextr
   USE sauvegardeT_mod,only:sauvegardeT
-  use notperiod_mod,only:notperiod
+
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax,zz
   use gen_com_m, only:bk,cunite,fnose,iteanapos,iteangle,itebdv,ecellpr,&
        &itecoordo,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
@@ -16,14 +16,13 @@ module analyseT_mod
        &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
        &tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
-       &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,itedepla,tdepla,tdepla2,&
+       &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,&
        & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,iteration,l2T
 
   USE cellconfig,only:cell_config, caltabtC
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   use boxconfig,only: box_config
   use Tpara,only:nprocspace
-  use calcdepla_mod,only:calcdepla
   implicit none
 contains
   ! ************************************************
@@ -106,20 +105,7 @@ contains
           call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
        end if
     endif
-    select type (atdml)
-    type is (atom_config_e)
-       if (itedepla.GT.0) then
-          if (mod(iteration,itedepla)==0) then 
-             call calcdepla(atdml,celndm,boxndm,tdepla,iteration)
-          end if
-       end if
-       if (itedepla.GT.0) then
-          if ((mod(iteration,itedepla)==0).and.(tdepla2.gt.0)) then 
-             call calcdepla(atdml,celndm,boxndm,tdepla2,iteration,'2')
-          end if
-       end if
-    end select
-    
+
     if (itesauvposition.GT.0) then
        if (mod(iteration,itesauvposition)==0) then
           formatsauv = 2
