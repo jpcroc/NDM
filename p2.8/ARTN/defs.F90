@@ -28,6 +28,7 @@ module defs
   real(kind=8), parameter :: VERSION_NUMBER  = 3.0    ! Version of the code
   character(len=20), parameter :: BIGREVNO ="1.6-dev.12-538" ! Bigdft version
 
+  integer::ndepener
   integer::ivisuart
 !  logical lwgin rather from gen_com_m
 

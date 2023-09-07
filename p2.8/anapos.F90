@@ -32,6 +32,7 @@ module posana
        lpdep ,&          
        ldeptest ,&          
        lws ,&          ! Wigner-Seitz pour INT et VAC
+       lperfdef ,&          ! defectr eference frame for perfect config : defectif !
        lpdef, &
        ldefcat, &        ! defauts sur les cations seulement
        ldepla, &        ! nouvelle analyse des déplacements à partir de atana0
@@ -83,7 +84,7 @@ contains
     namelist /analyse/ldecal,ldesord,idistord,idecal,tdep,lvac,tvac,tint,lcomp,plmin1,igencr,fnamcr, &
          plmin2,plmin3, plmax1,plmax2,plmax3,ldetdec,lrescale,lpstruct,lpdef,lpdep,ldeptest,namecr, &
          ldefcat,rclu, lnbvois,nbvoisparf,pstmax,iprtnvi,lc15,lws,deltx,delty,deltz,lallint,ndvblob,ndvmin,rdv,&
-         &lsubc,ivisuana,ldepla,immcr
+         &lsubc,ivisuana,ldepla,immcr,lperfdef
 
     allocate(rc(ntyp))
     allocate (na(ntyp))
@@ -93,6 +94,7 @@ contains
     !
     !-----------------------------------------------
     namecr='ZZ'
+    lperfdef=.false.
     immcr=-1
     ivisuana=-1
     igencr=-1
@@ -127,7 +129,7 @@ contains
     ndvblob=0
     ndvmin=0
     ldepla=.false.
-    write(6,*)'*** analyse du crystal'
+    if (rang==0)write(6,*)'*** analyse du crystal'
     call newunit(unitana)
     open(unitana, file='analyse.in')
     read(unitana,nml=analyse)
@@ -195,12 +197,12 @@ contains
           call setnoxsimple (atcr,boxcr,celcr,rumax)
        case(0)
           fnamcr=trim(namecr)//'.crgin'
-          write(6,*)'fnamcr ',len(fnamcr),fnamcr
+          if (rang==0)write(6,*)'fnamcr ',len(fnamcr),fnamcr
           call gin2ndm(atcr,celcr,boxcr,fnamcr,rumax,lrepartition=.false.,immread=immcr,lconstrsimple=.true.)
           call celana0%copy(celcr,boxana0)
           !            call setnoxsimple (atcr,boxcr,celcr,rumax)
           fnamperfdef=trim(fnam)//'.perfdef.gin'
-          write(6,*)'fnamperfdef ',len(fnamperfdef),fnamperfdef
+          if (rang==0)write(6,*)'fnamperfdef ',len(fnamperfdef),fnamperfdef
           call gin2ndm(atperfdef,celperfdef,boxperfdef,fnamperfdef,rumax,lrepartition=.false.,immread=immcr,lconstrsimple=.true.)
           !             call setnoxsimple (atperfdef,boxperfdef,celperfdef,rumax)
           call celana0%copy(celperfdef,boxana0)
@@ -212,23 +214,23 @@ contains
        call caltabtc(celcr,atcr,lperiod,boxcr)
        !       write(6,*)' celana0 celcr celperfdef ',celana0%nox,celcr%nox,celperfdef%nox
        if (lws) then
-          write(6,*)'analyse de Wigner-Seitz'
+          if (rang==0)write(6,*)'analyse de Wigner-Seitz'
        else
           if(ldeptest) then
-             write(6,'(A,F6.1)') 'seuil deplacement pour detection de defauts ',tdep
+             if (rang==0)write(6,'(A,F6.1)') 'seuil deplacement pour detection de defauts ',tdep
              tvac=tdep
           end if
           if(lpdep) then
-             write(6,'(A,F6.1)') 'ecriture des deplacés ',tdep
+             if (rang==0)write(6,'(A,F6.1)') 'ecriture des deplacés ',tdep
           end if
           tint=tvac
-          write(6,'(A,F6.1)') 'seuil lacune ',tvac 
-          write(6,'(A,F6.1)') 'seuil interstitiel ',tint 
+          if (rang==0)write(6,'(A,F6.1)') 'seuil lacune ',tvac 
+          if (rang==0)write(6,'(A,F6.1)') 'seuil interstitiel ',tint 
           tdep=tdep*1.0d-8
           tvac=(tvac*1.0d-8)
           tint=(tint*1.0d-8)
        end if
-
+       
 
 
 !!$    if (any(boxcf%at.ne.boxcr%at) )then
@@ -267,6 +269,11 @@ contains
        call periodbox(boxcr,atcr)
        !       end if
        call caltabtc(celcr,atcr,lperiod,boxcr)
+    else
+       if (ldepla) then
+          if (rang==0)write(6,'(A,F6.1)') 'test depla ',tdep
+          tdep=tdep*1d-8
+       end if
     end if
     close (unitana)
   end subroutine initanapos
@@ -1867,36 +1874,38 @@ contains
     indatsit=0
 
 
-    call wsb(atcf,celcf,boxcf,atcr,celcr,boxcr,natsit,indatsit,indws)
-
     if (.Not.lnrf) then
-       write(unit6P,*)
-       do j=1,atcr%im
-          if ((atcr%ityp(j).ne.0).and.(natsit(j)==0)) then ! WS vacancy
-             write(unit6P,'(A,I7,3G15.7,I2)')'vacancy in site ',j,atcr%xp(1,j),atcr%xp(2,j),atcr%xp(3,j),atcr%ityp(j)
-          end if
-       end do
-       do j=1,atcr%im
-          if (natsit(j).gt.1) then ! WS multiple occupation
-             do ioc=1,natsit(j)
-                i=indatsit(j,ioc)
-                write(unit6P,'(A,I7,3G15.7,A,I2,A,I7,A,I2)')'multiple occupancy in site ',j,  1d8*atcr%xp(1,j)&
-                     &,1d8*atcr%xp(2,j),1d8*atcr%xp(3,j),&
-                     &'of ref type ',atcr%ityp(j),'with atom ',i, ' of type ',atcf%ityp(i)
-             end do
-          end if
-       end do
-       do i=1,atcf%im
-          j=indws(i)
-          if (atcr%ityp(j)==0) then
-             write(unit6P,'(A,I7,3G15.7,A,I7,A,I2,3G15.7)')'interstitial in site ',j,&
-                  &1d8*atcr%xp(1,j),1d8*atcr%xp(2,j),1d8*atcr%xp(3,j)&
-                  &, 'of index',i,' and type ', atcf%ityp(i), 1d8*atcr%xp(1,j)/27.273,&
-                  &1d8*atcr%xp(2,j)/27.273,1d8*atcr%xp(3,j)/27.273
-          end if
-       end do
+       if (lcomp) then
+          call wsb(atcf,celcf,boxcf,atcr,celcr,boxcr,natsit,indatsit,indws)
+          write(unit6P,*)
+          do j=1,atcr%im
+             if ((atcr%ityp(j).ne.0).and.(natsit(j)==0)) then ! WS vacancy
+                write(unit6P,'(A,I7,3G15.7,I2)')'vacancy in site ',j,atcr%xp(1,j),atcr%xp(2,j),atcr%xp(3,j),atcr%ityp(j)
+             end if
+          end do
+          do j=1,atcr%im
+             if (natsit(j).gt.1) then ! WS multiple occupation
+                do ioc=1,natsit(j)
+                   i=indatsit(j,ioc)
+                   write(unit6P,'(A,I7,3G15.7,A,I2,A,I7,A,I2)')'multiple occupancy in site ',j,  1d8*atcr%xp(1,j)&
+                        &,1d8*atcr%xp(2,j),1d8*atcr%xp(3,j),&
+                        &'of ref type ',atcr%ityp(j),'with atom ',i, ' of type ',atcf%ityp(i)
+                end do
+             end if
+          end do
+          do i=1,atcf%im
+             j=indws(i)
+             if (atcr%ityp(j)==0) then
+                write(unit6P,'(A,I7,3G15.7,A,I7,A,I2,3G15.7)')'interstitial in site ',j,&
+                     &1d8*atcr%xp(1,j),1d8*atcr%xp(2,j),1d8*atcr%xp(3,j)&
+                     &, 'of index',i,' and type ', atcf%ityp(i), 1d8*atcr%xp(1,j)/27.273,&
+                     &1d8*atcr%xp(2,j)/27.273,1d8*atcr%xp(3,j)/27.273
+             end if
+          end do
+       end if
 
 
+       write(unit6P,*)'DEP0',tdep
        call depladet(atcf,celcf,boxcf,atrefdep,celrefdep,boxrefdep,tdep,ndep,inddep,vectdep,valdepla)
        write(unit6P,*)ndep, ' displaced atoms'
        do id=1,ndep
@@ -1904,26 +1913,28 @@ contains
                &vectdep(1,id)*1d8,vectdep(2,id)*1d8,vectdep(3,id)*1d8
        end do
     end if
-    write(unit6P,*)
+
+!    write(unit6P,*)
     if (lnrf) then
        atrefdep=atcf
        celrefdep=celcf
        boxrefdep=boxcf
 
-       if (all(natsit.le.1)) then
-          write(unit6P,*)'new perfect structure is possible'
-          lpsp=.true.
-          !          atperfdef=atcf
-          !          celperfdef=celcf
-          !          boxperfdef=boxcf
-          !          atperfdef%xp(:,1:atcf%im)=atcr%xp(:,1:atcf%im)
-       else
-          lpsp=.false.
-       end if
+!!$       if (lcomp.all(natsit.le.1)) then
+!!$          write(unit6P,*)'new perfect structure is possible'
+!!$          lpsp=.true.
+!!$          !          atperfdef=atcf
+!!$          !          celperfdef=celcf
+!!$          !          boxperfdef=boxcf
+!!$          !          atperfdef%xp(:,1:atcf%im)=atcr%xp(:,1:atcf%im)
+!!$       else
+!!$          lpsp=.false.
+!!$       end if
+       return
+    end if
 
-    else
 
-
+    if (lperfdef) then 
        if (all(natsit.le.1)) then
           write(unit6P,*)'output of perfect structure is possible'
           call atperf%init(atcf%im)
@@ -1956,8 +1967,6 @@ contains
           end if
        end if
     end if
-
-
 
 
     return

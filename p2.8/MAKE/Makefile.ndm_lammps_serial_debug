@@ -138,7 +138,7 @@ SHELL = /bin/sh
 # PATH = path for MKL library
 # LIB = name of MKL library
 
-  MKL_INC  = -mkl #-I/opt/intel/mkl/include/intel64/lp64
+  MKL_INC  = -qmkl #-I/opt/intel/mkl/include/intel64/lp64
   MKL_PATH = #-L/opt/intel/mkl/lib
   MKL_LIB  =# -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64
 #endif

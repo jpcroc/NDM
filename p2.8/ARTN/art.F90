@@ -45,11 +45,27 @@ contains
 !    real(kind=8)  :: ran3, random_number
     character(20) :: fname
     logical       :: local_success
-
+    character*80::namef
+    character :: extension*9
+    logical::lopen
     call init_mpi_art2(atdml,celndm,boxndm,psc,parapath) ! most is done in init_mpi_art BUT atcfart boxart etc are associated THERE
-    unit6p=6+parapath%image
+    unit6p=6+parapath%image*1000
     write(unit6P,*)'unit6P',unit6P
     write(6,*)'unit6P',unit6P,rang
+
+    if (unit6P.ne.6) then
+       write(extension,'(i9.9)')unit6P 
+       namef='ARTmultiproc'//trim(extension)
+       inquire(FILE=namef,opened=lopen)
+       if (.not.lopen)then
+          open(unit6P, file=namef, form='formatted', &
+               &         status='unknown')
+       else
+          write(6,*)namef, ' deja ouvert'
+          stop
+       end if
+    end if
+    
 
     lchg=.true. ! indicates that positions change between successive force calculations (obvious but needs to be specified)
 #ifdef PARA

@@ -3,7 +3,7 @@ contains
   subroutine newunit(nunit)
     integer, intent(out) :: nunit
     ! local
-    integer, parameter :: LUN_MIN=500, LUN_MAX=1000
+    integer, parameter :: LUN_MIN=500, LUN_MAX=999
     logical :: opened
     integer :: lun
     ! begin

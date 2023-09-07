@@ -258,7 +258,7 @@ contains
     if(present(lconstrsimple))lcs=lconstrsimple
     immr=imm_glob
     if (present(immread)) immr=immread
-    write(6,*)'IMMR',immr,lcs
+!    write(6,*)'IMMR',immr,lcs
     if (ldecoup) then
        itread=0
     else

@@ -358,7 +358,7 @@ contains
        call displacement( posref, pospred, delr, npart )
        ftot = dsqrt(fnrm)
 
-       if (modulo(miter,5) == 0 ) then
+       if (modulo(miter,20) == 0 ) then
           call write_step ( 'M', miter, 0.0d0, total_energy )
           pos = pospred
           if ( SAVE_CONF_INT ) call save_intermediate( 'M' )

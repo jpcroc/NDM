@@ -138,7 +138,7 @@ SHELL = /bin/sh
 # PATH = path for MKL library
 # LIB = name of MKL library
 
-  MKL_INC  =-mkl 
+  MKL_INC  =-qmkl 
   MKL_PATH =
   MKL_LIB  = #-qmkl
 #endif

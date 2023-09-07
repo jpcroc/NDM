@@ -429,12 +429,15 @@ contains
     integer :: i, j, i_stat, ntypeat,neat,itypeat
     integer,allocatable, dimension(:)::typeat
     real(kind=8), dimension(:), allocatable :: energy_atoms
+    integer,allocatable::atom_ener(:)
     character(len = 128)                            :: filename
     character(len = 150)                            :: line
     character(len = 150), dimension(:), allocatable :: lines
     !real(kind=8)                        :: ran3, dr2
     real(kind=8)                        :: dr2
     real(kind=8), dimension(:), pointer :: dx, dy, dz
+    integer::natener,ndepen2,p,index,n
+    integer,allocatable::choix(:),selection(:)
 
 
 
@@ -463,6 +466,8 @@ contains
 
     allocate(dr(3*natoms))
     allocate(atom_displaced(natoms))
+    allocate(atom_ener(natoms))
+    atom_ener=0
     ! We assign a few pointers
     dx => dr(1:NATOMS)
     dy => dr(NATOMS+1:2*NATOMS)
@@ -472,33 +477,84 @@ contains
     natom_displaced = 0
     atom_displaced  = 0
 
-
+    natener=0
     if ( iproc == 0 ) then              ! Work only on the master node.
        do j=1,natoms
           do itypeat=1,ntypeat
              if (typat(j)==typeat(itypeat)) then
                 if (eatom(j).gt.energy_atoms(itypeat))then
-                   natom_displaced = natom_displaced + 1
-                   atom_displaced(j) = 1
-                   do
-                      dx(j) = 0.5d0 - ran3()
-                      dy(j) = 0.5d0 - ran3()
-                      if (DIM == 3) dz(j) = 0.5d0 - ran3()
-                      ! Ensures that the random
-                      ! displacement is isotropic
-                      dr2 = dx(j)**2 + dy(j)**2 + dz(j)**2
-                      if ( dr2 < 0.25d0 ) exit
-                   end do
+                   natener=natener+1
+                   atom_ener(natener) = j
                 end if
              end if
           end do
        end do
+       write(unit6P,*)'nb of energetic atoms ',natener
+       
+
     end if
+    select case (ndepener)
+    case (-1)
+       ndepen2=1+int(natener*ran3(unit6p))
+    case(0)
+       ndepen2=natener
+    case default
+       ndepen2=min(natener,ndepener)
+    end select
+    allocate(selection(ndepen2))
+    if (natener==ndepen2) then
+       do j=1,ndepen2
+          selection(j)=j
+       end do
+    else
+       write(unit6P,*)'nb of energetic atoms ',natener
+       do i=1,natener
+          j=atom_ener(i)
+          write(unit6P,*)'atom type eat ', j,typat(j),eatom(j)
+       end do
+
+       allocate(choix(natener))
+       p=natener
+       n=ndepen2
+       do i = 1, p
+          choix(i) = i
+       end do
+       ! Sélectionnez n éléments aléatoires parmi les choix
+       do i = 1, n
+          ! Générez un index aléatoire entre 1 et p
+          index = int(ran3() * p) + 1
+          ! Ajoutez l'élément sélectionné au tableau de sélection
+          selection(i) = choix(index)
+          ! Supprimez l'élément sélectionné de la liste des choix
+          do j = index, p - 1
+             choix(j) = choix(j + 1)
+          end do
+          p = p - 1 ! Réduisez le nombre de choix disponibles
+       end do
+       
+    end if
+
+    do i=1,ndepen2
+       natom_displaced = natom_displaced + 1
+       j=atom_ener(selection(i))
+       atom_displaced(j) = 1
+       do
+          dx(j) = 0.5d0 - ran3()
+          dy(j) = 0.5d0 - ran3()
+          if (DIM == 3) dz(j) = 0.5d0 - ran3()
+          ! Ensures that the random
+          ! displacement is isotropic
+          dr2 = dx(j)**2 + dy(j)**2 + dz(j)**2
+          if ( dr2 < 0.25d0 ) exit
+       end do
+    end do
+    
     write(unit6P,*)'nb of displaced atoms ',natom_displaced
     do j=1,natoms
        if (atom_displaced(j)==1) write(unit6P,*)'atom type eat ', j,typat(j),eatom(j)
     end do
     call center_and_norm ( INITSTEPSIZE )
+
   END SUBROUTINE energy_of_atoms
 
 

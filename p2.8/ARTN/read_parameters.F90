@@ -62,9 +62,10 @@ contains
          &delr_threshold,USE_DIIS,ITERATIVE ,ivisuart,&
          &INFLECTION,DIIS_FORCE_THRESHOLD,DIIS_MEMORY, DIIS_Step_size,FACTOR_DIIS,max_diis,DIIS_Check_Eigenvector,&
          & fileCOUNTER, NPART_DR_THRESHOLD,LOGFILE,EVENTSLIST,SAVE_CONF_INT, write_restart_file,WRITE_REJECTED_EVENT,&
-         &RESTART_FILE , write_xyz ,REFCONFIG,FINAL,SADDLE,CHECK,Coord_length,coord_number,&
+         &RESTART_FILE , write_xyz ,REFCONFIG,FINAL,SADDLE,CHECK,Coord_length,coord_number,ndepener,&
          &Type_selected,Dual_system,size_system,event_type,activation_maxiter,FOR_LEAVING_BASIN_USE_FIRE
 
+    ndepener=0
     FOR_LEAVING_BASIN_USE_FIRE=.true.
     size_system=-1.
     Dual_system=.false.
