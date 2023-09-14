@@ -303,7 +303,6 @@ contains
        call caltabtC(celndm,atcf,lperiod,boxndm)
        ! renvoi vers les autres procs
     end select
-    write(6,*)'postcasca'
     return
   end subroutine initcasca
 end module initcasca_mod

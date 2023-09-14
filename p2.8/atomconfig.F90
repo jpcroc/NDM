@@ -1083,7 +1083,7 @@ contains
     if (allocated(atprt%xp)) then
     if(scan('x',carac).ne.0)then
        do i=ideb,ifin
-          write(unitw,'(A,2i9,3G15.7)')'%xp= ', i,atprt%num_at_glob(i),atprt%xp(:,i)
+          write(unitw,'(A,2i9,3F15.7)')'%xp= ', i,atprt%num_at_glob(i),atprt%xp(:,i)
        end do
     end if
     if(scan('i',carac).ne.0)then
@@ -1106,7 +1106,7 @@ contains
        
        if(scan('f',carac).ne.0)then
           do i=ideb,ifin
-             write(unitw,'(A,2i9,3G15.7)')'%fp= ', i,atprt%num_at_glob(i),atprt%fp(:,i)
+             write(unitw,'(A,2i9,3F15.7)')'%fp= ', i,atprt%num_at_glob(i),atprt%fp(:,i)
           end do
        end if
        if(scan('e',carac).ne.0)then
@@ -1119,24 +1119,24 @@ contains
              write(unitw,*)'prt_d'
              if(scan('v',carac).ne.0)then
                 do i=ideb,ifin
-                   write(unitw,'(A,2i9,3G15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
+                   write(unitw,'(A,2i9,3F15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
                 end do
              end if
              if(scan('r',carac).ne.0)then
                 do i=ideb,ifin
-                   write(unitw,'(A,2i9,3G15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
+                   write(unitw,'(A,2i9,3F15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
                 end do
              end if
           class is (atom_config_e)
              write(unitw,*)'prt_e'
              if(scan('v',carac).ne.0)then
                 do i=ideb,ifin
-                   write(unitw,'(A,2i9,3G15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
+                   write(unitw,'(A,2i9,3F15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
                 end do
              end if
              if(scan('r',carac).ne.0)then
                 do i=ideb,ifin
-                   write(unitw,'(A,2i9,3G15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
+                   write(unitw,'(A,2i9,3F15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
                 end do
              end if
 
@@ -1144,7 +1144,7 @@ contains
              if (atprt%lsigat) then
                 if(scan('g',carac).ne.0)then
                    do i=ideb,ifin
-                      write(unitw,'(A,2i9,9G15.7)')'%sigat= ',i,atprt%num_at_glob(i), atprt%sigat(:,:,i)
+                      write(unitw,'(A,2i9,9F15.7)')'%sigat= ',i,atprt%num_at_glob(i), atprt%sigat(:,:,i)
                    end do
                 end if
              end if
@@ -1158,7 +1158,7 @@ contains
           if (atprt%lax) then
              if(scan('a',carac).ne.0)then
                 do i=ideb,ifin
-                   write(unitw,'(A,2i9,3G15.7)')'%ax= ', i,atprt%num_at_glob(i),atprt%ax(:,i)
+                   write(unitw,'(A,2i9,3F15.7)')'%ax= ', i,atprt%num_at_glob(i),atprt%ax(:,i)
                 end do
              end if
           end if

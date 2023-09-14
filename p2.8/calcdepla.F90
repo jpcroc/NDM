@@ -41,7 +41,7 @@ contains
     integer::lufilmpaf
     real(double)::xp_iko(4),dispiko
     integer,save::icall=0
-    integer::source
+    integer::proc_source,ikloc
 !    integer::ityp_iko
     
 !!$  integer :: i, iti
@@ -67,6 +67,7 @@ contains
 !!$  integer :: proc_source
 !!$#endif
     icall=icall+1
+    ikloc=0
     lufilmpaf = 79                             ! index fichier film du paf pour toutes les iterations
     if((myidsp==0).and.(icall==1).and.(lcasca))    open(unit=lufilmpaf, file='filmpaf', status='unknown')
 
@@ -83,10 +84,18 @@ contains
 
     im=atcf%im
     atcf%lgul(:)=.false.
+    est_present=0
     do i=1,im
        call distat(atcf%xp(:,i),atcf%ax(:,i),boxcf,ddep)
        if (lcasca) then
-          if (atcf%num_at_glob(i)==iko) dispiko=ddep
+          if (atcf%num_at_glob(i)==iko) then
+             dispiko=ddep
+             ikloc=i
+             est_present=1
+!!$             xp_iko(1:3)=atcf%xp(:,i)
+!!$             xp_iko(4)=dispiko
+
+          end if
        end if
        if (ddep.ge.tdep) then
           ndeplatot=ndeplatot+1
@@ -164,16 +173,27 @@ contains
         
         ! Recherche du proc possedant iko
         if((lspacendm).and.(nprocspace.gt.1)) then
-        ! Emission/reception des infos vers le proc 0
-           if (est_present==1.and.myidsp==0) then
-              !rien xp_iko deja trouvé
-              !              xp_iko(:) = atcf%xp(:,i2iko)
-           else if (est_present==1) then
-              call comm_space%send(xp_iko,0,11001)
-           else if (myidsp==0) then
-              call comm_space%probe(11001,source)
-              call comm_space%recv(xp_iko,11001,source)
+           ! Emission/reception des infos vers le proc 0
+           if (myidsp==0) then
+              if (est_present==1) then
+              else
+                 call comm_space%probe(11001,sourceout=proc_source)
+                 call comm_space%recv(xp_iko,proc_source,11001)
+              end if
+           else
+              if (est_present==1) then
+                 call comm_space%send(xp_iko,0,11001)
+              end if
            end if
+!!$           if (est_present==1.and.myidsp==0) then
+!!$              !rien xp_iko deja trouvé
+!!$              !              xp_iko(:) = atcf%xp(:,i2iko)
+!!$           else if (est_present==1) then
+!!$              call comm_space%send(xp_iko,0,11001)
+!!$           else if (myidsp==0) then
+!!$              call comm_space%probe(11001,source)
+!!$              call comm_space%recv(xp_iko,11001,source)
+!!$           end if
         end if
 #endif
         if((myidsp==0).and.(lcasca))then
