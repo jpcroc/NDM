@@ -74,17 +74,8 @@ contains
        lappendF=.false.
     end if
   
-!!$    select type (atmol)
-!!$    type is (atom_config_d)
-!!$       write(6,*)'typeD'
-!!$    type is (atom_config)
-!!$       write(6,*)'type0'
-!!$    type is (atom_config_e)
-!!$       write(6,*)'typeE',atmol%lprteat
-!!$    end select
-!!$    call atmol%print(unit=500+rang)
     if((.not.latc).and.(atmol%im_glob==0)) then
-       write(6,*)'rasmolT im_glob stop'
+       write(6,*)'rasmolT im_glob stop',latc,atmol%im_glob
        call arret_ndm
     end if
 
@@ -129,7 +120,6 @@ contains
        end if
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call atcomp%init(atmol%im_glob,im_glob=atmol%im_glob,imm_glob=atmol%imm_glob)
-!          call atcomp%print
           div%mpi_image%rank=myidsp
           div%mpi_image%nproc=nprocspace
           div%mpi_image%comm=COMM_space%comm

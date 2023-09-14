@@ -401,12 +401,11 @@ contains
             & f9.4,' |npart= ', i4,' |delr= ', f8.3,' |evalf=', i6,' |')")&
             & mincounter, adjustr(accept), delta_e,                                 &
             & total_energy - saddle_energy, npart, delr, evalf_number
-       write(unit6P,"(' ','BART: MINIMUM',i5, a9,' |E(fin-ini)= ', f9.4,' |E(sad-ini)= ', f9.4,&
-            &' |E(fin-sad)= ', f9.4,&
-            &' |npart= ', i4,' |delr= ', f8.3,' |evalf=', i6,' |',f8.3,3f7.2)")       &
-            & mincounter, adjustr(accept), delta_e,saddle_energy-ref_energy,   &
-            & saddle_energy-total_energy, npart, delr, evalf_number, difpos,   &
-            & a1, b1, c1
+       write(unit6P,"(' ','BART: MINIMUM',i5, a9,' |E_min= ', f19.4,' |E(fin-ini)= ', f9.4&
+            &,' |E(sad-ini)= ', f9.4,&
+            &' |E(fin-sad)= ', f9.4)")       &
+            & mincounter, adjustr(accept), ref_energy,delta_e,saddle_energy-init_energy,   &
+            & saddle_energy-total_energy 
 
        close(FLOG)
     end if

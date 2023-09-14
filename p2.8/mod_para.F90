@@ -405,24 +405,24 @@ contains
              ival=12
              if (atmp%lprteat)then
                 ival =ival+1
-                atmp%eat(i_at)=recv_buff_dbl(ival,i_at,ind_recv)
+                atmp%eat(atmp%im)=recv_buff_dbl(ival,i_at,ind_recv)
              end if
              if (atmp%lsigat)then
                 do ic1=1,3
                    do ic2=1,3
                       ival =ival+1
-                      atmp%sigat(ic1,ic2,i_at)=recv_buff_dbl(ival,i_at,ind_recv)
+                      atmp%sigat(ic1,ic2,atmp%im)=recv_buff_dbl(ival,i_at,ind_recv)
                    end do
                 end do
              end if
              if (atmp%llangevin) then
                 do ic3=1,3
-                   ival =ival+1;atmp%glangv(ic3,i_at)= recv_buff_dbl(ival,i_at,ind_recv)
+                   ival =ival+1;atmp%glangv(ic3,atmp%im)= recv_buff_dbl(ival,i_at,ind_recv)
                 end do
              end if
              if (atmp%lax) then
                 do ic3=1,3
-                   ival =ival+1;atmp%ax(ic3,i_at)= recv_buff_dbl(ival,i_at,ind_recv)
+                   ival =ival+1;atmp%ax(ic3,atmp%im)= recv_buff_dbl(ival,i_at,ind_recv)
                 end do
              end if
           end select

@@ -1345,6 +1345,7 @@ contains
     if (rang==0) write (6, *) 'itetemp=', itetemp, ' iteprtsigma=', iteprtsigma
     if (itecoordo>0)  write(6,*)  ' itecoordo=', itecoordo
     if (itedepla>0) then
+       lax=.true.
        if (rang==0) write (6, '(A,I3,A,D9.3,A,D9.3,A,I3,A,I3)') ' itedepla=', itedepla, &
             ' tdepla=', tdepla*1D+8, ' tdepla2=', tdepla2*1D+8, ' itesauv=', &
             itesauv, ' itesauvposition=', itesauvposition

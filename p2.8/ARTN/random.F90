@@ -18,7 +18,7 @@
 ! $Id: random.f90 1534 2015-12-14 15:59:38Z mickael $
 
 module random
-
+  use gen_com_m,only:rang
   implicit none
 
   ! Shared variables
@@ -48,7 +48,11 @@ real(kind=8) function ran3(idec)
   ! Any large mbig, and any smaller (but still large) mseed can be
   !  substituted for the above values.
   idc=0
-  if (present(idec))idc=idec
+  if (present(idec))then
+     idc=idec
+  else
+     idc=rang*13
+  end if
   mbig=mbig+idc
   mseed=mseed+idc
   fac=1./mbig

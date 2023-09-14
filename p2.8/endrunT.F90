@@ -44,8 +44,6 @@ contains
     endif
 
 
-
-
  if (rang==0) then
 
     write (6, *)

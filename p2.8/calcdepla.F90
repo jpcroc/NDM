@@ -35,7 +35,7 @@ contains
     type(atom_config)::atdep
     integer :: ndeplatot,i,iatdep,im,iti,lufilm,est_present
     integer , dimension(ntyp) :: ndepla
-    integer,allocatable:: deplat(:)
+    real(double),allocatable:: deplat(:)
     real(double)::ddep,deptot
     character*80::namefilm
     integer::lufilmpaf
@@ -66,12 +66,10 @@ contains
 !!$  integer :: ndeplatot_tmp
 !!$  integer :: proc_source
 !!$#endif
-
     icall=icall+1
     lufilmpaf = 79                             ! index fichier film du paf pour toutes les iterations
-    if((myidsp==0).and.(icall==1))    open(unit=lufilmpaf, file='filmpaf', status='unknown')
+    if((myidsp==0).and.(icall==1).and.(lcasca))    open(unit=lufilmpaf, file='filmpaf', status='unknown')
 
-    !      write(6,*)'entree dans calcdepla'
     if (rang==0) then
        write (6, *)
        write (6, *) '----------- Displacements TDEPLA ----------------',TDEPLA*1d8
@@ -110,7 +108,8 @@ contains
        call arret_ndm
     end if
 
-    call atcf%fab(atdep,lback=.false.)
+
+    call atcf%fab(atdep,lback=.false.,commsp=comm_space)
     if (present(C1))then
        namefilm='FILM'//C1
     else
@@ -118,9 +117,11 @@ contains
     end if
     if (lfilm) then
        if (lspacendm.and.(nprocspace.gt.1)) then
-          call rasmolT(atdep,boxcf,iteration,namefilm,latcomp=.false.,ivisumol=ivisu)
+          if (atdep%im_glob.ne.0)&
+&          call rasmolT(atdep,boxcf,iteration,namefilm,latcomp=.false.,ivisumol=ivisu)
        else
-          call rasmolT(atdep,boxcf,iteration,namefilm,latcomp=.true.,ivisumol=ivisu)
+          if (atdep%im_glob.ne.0)&
+&          call rasmolT(atdep,boxcf,iteration,namefilm,latcomp=.true.,ivisumol=ivisu)
        end if
     end if
     
@@ -175,9 +176,9 @@ contains
            end if
         end if
 #endif
-        if(myidsp==0)then
+        if((myidsp==0).and.(lcasca))then
            write (lufilmpaf, *) ' IT', iteration, ' time ', timel
-           write (lufilmpaf, *)  xp_iko(1)*1D+8, xp_iko(2)*1D+8, &
+           write (lufilmpaf, '(4F18.7)')  xp_iko(1)*1D+8, xp_iko(2)*1D+8, &
                 xp_iko(3)*1D+8, xp_iko(4)*1d8
         end if
      endif

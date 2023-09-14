@@ -26,7 +26,7 @@ module art_mod
   use gen_com_m,only:rang
   use defs, only : conf_final,conf_initial,conf_saddle,conf_final,eventslist,ievent,ievent_restart,iproc,nproc,&
        &flist,local_force,mincounter,natoms,number_events,pos,posref,ref_energy,refcounter,restart,scala,scalaref,&
-       temperature,total_energy,use_local_forces,WRITE_REJECTED_EVENT,unit6P
+       temperature,total_energy,use_local_forces,WRITE_REJECTED_EVENT,unit6P,init_energy
 contains
   subroutine art90(atdml,celndm,boxndm,psc)
 
@@ -50,7 +50,6 @@ contains
     logical::lopen
     call init_mpi_art2(atdml,celndm,boxndm,psc,parapath) ! most is done in init_mpi_art BUT atcfart boxart etc are associated THERE
     unit6p=6+parapath%image*1000
-    write(unit6P,*)'unit6P',unit6P
     write(6,*)'unit6P',unit6P,rang
 
     if (unit6P.ne.6) then
@@ -65,7 +64,7 @@ contains
           stop
        end if
     end if
-    
+    write(unit6P,*)'unit6P',unit6P    
 
     lchg=.true. ! indicates that positions change between successive force calculations (obvious but needs to be specified)
 #ifdef PARA
@@ -82,7 +81,8 @@ contains
     !                MAIN LOOP OVER THE EVENTS.
 
     Do_ev: do ievent = ievent_restart, NUMBER_EVENTS
-!       write(unit6P,*)'JP pre art_search'
+       !       write(unit6P,*)'JP pre art_search'
+       init_energy=ref_energy
        call art_search(fname)
 
        ! Now, we accept or reject this move based
