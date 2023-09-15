@@ -17,8 +17,8 @@ SHELL = /bin/sh
 
   C++ = icpc
   CC  = icc
-  F77 = ifort  -cpp # -warn all -check all
-  F90 = ifort  -cpp # -warn all -check all
+  F77 = ifort -no-wrap-margin -cpp # -warn all -check all
+  F90 = ifort -no-wrap-margin -cpp # -warn all -check all
   LINK = ${F90}
 
   SIZE = size
