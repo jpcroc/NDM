@@ -6,7 +6,7 @@ module neb_module
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
        &latcomp,imm_glob,lperiod,lspacendm
   use read_val,only:rvois,ltabvois
-  USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin
+  USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin,lsecondpath
     use cryst_to_cart_mod,only:cryst_to_cart
   USE recips_mod,only: recips
   USE rasmolT_mod,only: rasmolT
@@ -603,6 +603,7 @@ end if
     else
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
        if (rang==0) write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,atneb(1)%imm_glob
+       lsecondpath=.false.
        call gin2ndm(atneb(1)%atom_config_d,cellneb(1),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
 
 
@@ -628,7 +629,7 @@ end if
 
 #endif
 
-
+       lsecondpath=.true.
        call gin2ndm(atneb(npath)%atom_config_d,cellneb(npath),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
        atneb(:)%im=atneb(npath)%im
        atneb(npath)%xpp=atneb(npath)%xp

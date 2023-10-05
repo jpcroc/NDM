@@ -1099,8 +1099,8 @@ contains
     case (9)
        if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS ' 
        itesauvposition=-1
-       itesauvforce=-1
-       itetemp=-1;itesigma=-1
+       itesauvforce=-1; lperiod=.false.
+       itetemp=-1;itesigma=-1!; ldecalcor=.false.
     case (11)
        if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
        if (rang==0) write (6,*)

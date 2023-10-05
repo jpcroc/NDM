@@ -5,7 +5,7 @@ module constrconf_mod
 #endif
   USE read_val,only:imm,ipbc,nox,noy,noz
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,imm_glob,ldecoup,lperiod,lrestart,rang,&
-       &lvpread,zero,low_limit,lspacendm,rang
+       &lvpread,zero,low_limit,lspacendm,rang,dmtype
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
   use cryst_to_cart_mod,only:cryst_to_cart
   USE arret_ndm_mod,only: arret_ndm
@@ -27,6 +27,8 @@ module constrconf_mod
   implicit none
   logical::lprt=.true.
   logical :: ldecalcor
+  logical :: lsecondpath
+  real(double),allocatable::xpd(:,:)
 contains
   subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart,filename,psc)
     !********************************************************************
@@ -801,7 +803,7 @@ contains
 
     integer::itr=1
     !    real(double)::rumax_init,alpha_init
-    real(double)::at(3,3)
+    real(double)::at(3,3),deltx
 
     integer ::  lugin, imcell, ic,i
 
@@ -842,14 +844,32 @@ contains
     end do
     if (ldecalcor) then
        if (any(atrg%xp (1:3,1:imcell)==0)) then
-          if ((rang==0).and.(lprt))  write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6'
-          atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)+1e-6
+          if ((rang==0).and.(lprt))  write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7'
+          atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)+2e-7
        end if
        if (any(atrg%xp (1:3,1:imcell)==1)) then
           if ((rang==0).and.(lprt))  write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
           atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)-1e-7
        end if
     end if
+
+    if (dmtype==9) then
+       if (lsecondpath) then
+          !write(6,*)xpd
+          do i=1,imcell
+             do ic=1,3
+                deltx=atrg%xp(ic,i)-xpd(ic,i)
+                if (deltx.gt.0.5) atrg%xp(ic,i)=atrg%xp(ic,i)-1.
+                if (deltx.lt.-0.5) atrg%xp(ic,i)=atrg%xp(ic,i)+1.
+             end do
+          end do
+       else
+          allocate (xpd(3,imcell))
+          xpd=atrg%xp
+       end if
+    end if
+          
+    
     do ic=1,3
        if ((lperiod).or.(ipbc(ic).ne.1)) then
           do i=1,imcell
