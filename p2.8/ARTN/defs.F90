@@ -72,7 +72,7 @@ module defs
   real(kind=8)  :: OUTER_REGION      ! maximum radius of outer region
   real(kind=8)  :: local_ref_energy  ! reference local energy to ensure total energy is computed properly
   real(kind=8)  :: global_ref_energy ! rererence global energy for the same goal
-  real(kind=8)  :: init_energy ! energy at the start of saddle calc 
+  real(kind=8)  :: init_energy,min2_energy ! energy at the start of saddle calc 
 
   ! Units for printing/reading
 
@@ -96,7 +96,7 @@ module defs
 
   ! Name of the files storing the path of steepest descent
   character(len=30) :: conf_sdp
-
+  integer::npartU,npartO
   integer,      dimension(:), allocatable          :: typat    ! Atomic type
   integer,      dimension(:), allocatable          :: constr   ! Constraint over atoms
   real(kind=8), dimension(:), allocatable, target  :: force    ! Working forces on the atoms

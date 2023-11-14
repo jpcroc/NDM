@@ -29,8 +29,8 @@ contains
     if (present(lverbose)) lverb=lverbose
     nox=0;noy=0;noz=0
     if (present(noxr))nox=noxr
-    if (present(noyr))nox=noyr
-    if (present(nozr))nox=nozr
+    if (present(noyr))noy=noyr
+    if (present(nozr))noz=nozr
     
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
     zlm2 = distmin(boxsn%at(:,1),boxsn%at(:,3))

@@ -81,7 +81,6 @@ contains
     if (tdep.le.0)then
        allocate(deplat(atcf%im))
     end if
-
     im=atcf%im
     atcf%lgul(:)=.false.
     est_present=0

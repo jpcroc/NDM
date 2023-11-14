@@ -40,6 +40,7 @@ contains
 
     delr2 = 0.0d0
     npart = 0
+    npartU=0;npartO=0
     dr_   = -1.0d0
     if (present(idmax)) idmax = -1d9
 
@@ -82,10 +83,14 @@ contains
 
        if ( dr > NPART_DR_THRESHOLD ) then
           npart = npart + 1
+          if (typat(i)==1) then
+             npartO=npartO+1
+          else
+             npartU=npartU+1
+          end if
           ldisp(i)=.true.
        end if
     end do
-
     delr = sqrt(delr2)
 
   END SUBROUTINE displacement

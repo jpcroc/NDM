@@ -403,9 +403,9 @@ contains
             & total_energy - saddle_energy, npart, delr, evalf_number
        write(unit6P,"(' ','BART: MINIMUM',i5, a9,' |E_min= ', f19.4,' |E(fin-ini)= ', f9.4&
             &,' |E(sad-ini)= ', f9.4,&
-            &' |E(fin-sad)= ', f9.4)")       &
-            & mincounter, adjustr(accept), ref_energy,delta_e,saddle_energy-init_energy,   &
-            & saddle_energy-total_energy 
+            &' |E(fin-sad)= ', f9.4, ' npartU O ',2I3)")       &
+            & mincounter, adjustr(accept), min2_energy,delta_e,saddle_energy-init_energy,   &
+            & saddle_energy-total_energy ,npartU,npartO
 
        close(FLOG)
     end if

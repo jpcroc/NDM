@@ -312,11 +312,11 @@ contains
              xp2 = atcomp%xp(2,i)
              xp3 = atcomp%xp(3,i)
              write (luvisu,'(3es15.6,I3)',advance='no') xp1, xp2, xp3, atcomp%ityp(i)
-             if (laux) then
-                do iax=1,naux
-                   write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
-                end do
-             end if
+!!$             if (laux) then
+!!$                do iax=1,naux
+!!$                   write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
+!!$                end do
+!!$             end if
              select type (atcomp)
              class is (atom_config_e)
                 if (atcomp%lsigat) then
@@ -329,6 +329,12 @@ contains
                 end if
                 if (atcomp%lprteat) write (luvisu, '(G20.12)',advance='no') atcomp%eat(i)*erg2ev
              end select
+             if (laux) then
+                do iax=1,naux
+                   write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
+                end do
+             end if
+
              write(luvisu,*)' '
 !             else
 !                write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, atcomp%ityp(i)

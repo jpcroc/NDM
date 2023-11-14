@@ -26,7 +26,7 @@ module art_mod
   use gen_com_m,only:rang
   use defs, only : conf_final,conf_initial,conf_saddle,conf_final,eventslist,ievent,ievent_restart,iproc,nproc,&
        &flist,local_force,mincounter,natoms,number_events,pos,posref,ref_energy,refcounter,restart,scala,scalaref,&
-       temperature,total_energy,use_local_forces,WRITE_REJECTED_EVENT,unit6P,init_energy
+       temperature,total_energy,use_local_forces,WRITE_REJECTED_EVENT,unit6P,init_energy,min2_energy
 contains
   subroutine art90(atdml,celndm,boxndm,psc)
 
@@ -109,6 +109,7 @@ contains
           scalaref     = scala
           posref       = pos
           conf_initial = conf_final
+          min2_energy=min(init_energy,total_energy)
           ref_energy   = total_energy
           refcounter   = mincounter
 
@@ -129,6 +130,7 @@ contains
              !    write(FLIST,*) conf_initial, conf_saddle, conf_final,'    exchanged'
              !end if
           end if
+          min2_energy=min(init_energy,total_energy)
 
        end if If_bol
 

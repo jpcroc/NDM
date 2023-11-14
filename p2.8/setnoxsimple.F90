@@ -12,12 +12,13 @@ module setnoxsimple_mod
   implicit none
 contains
 
-  subroutine setnoxsimple(atsn,boxsn,celsn,rum)
+  subroutine setnoxsimple(atsn,boxsn,celsn,rum,noxr,noyr,nozr)
 
     type(box_config),intent(in)::boxsn
     type(cell_config)::celsn
     class(atom_config)::atsn
     real(double),intent(in)::rum
+    integer,optional::noxr,noyr,nozr
     integer::izonr2,natperc,nox,noy,noz,nvois,nvperat
     real(double)::zlmin,zlm2,voluperat,rvois
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
@@ -26,12 +27,18 @@ contains
     zlm2 = distmin(boxsn%at(:,2),boxsn%at(:,3))
     zlmin = min(zlmin,zlm2)
     zlmin=zlmin*2
+    nox=0;noy=0;noz=0
+    if (present(noxr))nox=noxr
+    if (present(noyr))noy=noyr
+    if (present(nozr))noz=nozr
 
        ! détermination de nox noy noz qui ne sont pas donnes dans .din
        !
+    if (nox<=0.or.noy<=0.or.noz<=0) then
        nox = int(boxsn%nzl(1)/rum)
        noy = int(boxsn%nzl(2)/rum)
        noz = int(boxsn%nzl(3)/rum)
+    end if
 !       IF (nox.LT.3) nox=1
 !       IF (noy.LT.3) noy=1
 !       IF (noz.LT.3) noz=1
