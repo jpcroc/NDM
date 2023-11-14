@@ -16,7 +16,7 @@ module dmloop_mod
   USE parautils,only:driver_caltabt_para
 
   USE gen_com_m,only: dmtype,iteration,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
-       & itetabvois,lperiod,lspaceNDM,itloopmax,timel,timeloopmax
+       & itetabvois,lperiod,lspaceNDM,itloopmax,timel,timeloopmax,lpcube
   use var_pot, only: cm
    use Tpara,only:nprocspace,para_space_config,comm_space
 
@@ -45,8 +45,8 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     type(para_space_config)::psc
-    integer :: i, iti,ilocal
-    REAL(double) ::  fire_alph
+    integer :: i, iti,ilocal,ic
+    REAL(double) ::  fire_alph,pint
     INTEGER :: fire_nstep
     !-----------------------------------------------
     !
@@ -114,7 +114,14 @@ contains
              call comm_space%sum(sigkine)
           end if
 #endif
-
+          if (lpcube) then
+             pint=0.33333333333*(sig(1,1)+sig(2,2)+sig(3,3))
+             sigkine=0
+             do ic=1,3
+                sigkine(ic,ic)=pint
+             end do
+          end if
+    
           sigtot = sigkine+sig
        end if
        if (lTberendsen) call calfoberend(atdml)

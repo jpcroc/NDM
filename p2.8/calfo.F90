@@ -17,7 +17,7 @@ module calfo_mod
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:potis0,potis2,potisp,erg2ev&
-       &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang,lperiod
+       &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang,lperiod,lpcube
 
   USE force_tersoff_mod,only:force_tersoff
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -49,7 +49,8 @@ contains
     type(para_space_config)::psc
     real(double),intent(out)::potistcf,sigcf(3,3)
     real(double),dimension(:,:),allocatable:: xp,fp,xpp
-    
+
+    real(double)::pint
     integer :: i,ilocal,ipot,ic
     logical,optional, intent(in)  ::t_sigma
     boxcf%lperiod=lperiod
@@ -195,7 +196,13 @@ contains
 #endif  
 
     sigcf=sig;potistcf=potist
-
+    if (lpcube) then
+       pint=0.33333333333*(sig(1,1)+sig(2,2)+sig(3,3))
+       sigcf=0
+       do ic=1,3
+          sigcf(ic,ic)=pint
+       end do
+    end if
 
     return
   end subroutine calfo

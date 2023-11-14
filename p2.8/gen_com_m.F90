@@ -105,7 +105,7 @@ module gen_com_m
   real(double), dimension(3) :: vh ! vitesse de la boite
   real(double) :: pext, wboxf, tbox ! pext poids de la boite temps d'amortissment de la boite
   logical ::  lpcon2 ! pression constante sans et avec amortissement
-
+  logical ::lpcube ! pression constante avec forme de la boite constante seul le volume change
   logical :: lTcon, lTberendsen,lTandersen,lTNose,lTHoover,landerscou ! temp constante (3 algorithmes differents)
   real(double) :: Text ! T exterieure
   logical :: lLangevin ! Langevin MD
