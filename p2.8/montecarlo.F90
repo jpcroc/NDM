@@ -49,7 +49,7 @@ module montecarlo_mod
   type, extends (atom_config_d):: atom_config_mc
      real(double), allocatable :: proba_des(:) !defini pr chaque atome mais utile que pour O dans notre cas
      real(double) :: proba_ins !defini par POSITION, donc pas un tableau
-   contains
+  contains
      procedure, pass :: init => init_atom_config_mc
      procedure, pass :: copy_atom => copy_atom_mc
      procedure, pass :: copy_config => copy_config_mc
@@ -113,6 +113,7 @@ module montecarlo_mod
 
   integer,parameter::nrins=10000
   real(double)::R0mcgc,fdfactmcgc,probaR(0:nrins),bublcenter(3),zlmin
+  real(double)::epotnp1min=1d12
   integer::ins_typ
   real(double),allocatable::rcpath(:)
 
@@ -517,6 +518,12 @@ contains
           atconf_nplus1=>config_atom_nplus1(ipch)
           boxmcgc_p=>boxmcgcpath(ipch)
           if (idirectionmcgc == 0) then
+             if (lmegamaster) then
+                epotnp1min=pot_npp(ipch)
+                fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
+                write(6,*)'new epotnp1min ', epotnp1min*erg2ev
+                call sauvegardeT(config_atom_nplus1(ipch),config_cells_nplus1(ipch),boxmcgcpath(ipch),3,fnamcout,latcomp=.true.)
+             end if
              call calcul_proba_des ! on vient de choisir ipch qui est accepté. On calcule les proba pour : 1:choisir les atomes à désintégrer et mettre dans old_1 pour les calculs du biais
              call config_atom_nplus1(ipch)%copy_config(config_atom_old_1, lrescl=.true.)
              box_old1=boxmcgcpath(ipch)
@@ -907,6 +914,13 @@ contains
              if (idirectionmcgc == 1) then 
                 call analyse_montecarlo(config_atom_n(ipchemin),config_cells_n(ipchemin),boxmcgcpath(ipchemin),'SystN_accepte')
              else
+                if (epotnp1min.gt.nrjpot_npp(ipchemin)) then
+                   epotnp1min=nrjpot_npp(ipchemin)
+                   fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
+                   write(6,*)'new epotnp1min ', epotnp1min*erg2ev
+                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+                end if
+
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),&
                      &config_cells_nplus1(ipchemin),boxmcgcpath(ipchemin),'SystNP1_accepte')
              end if
@@ -1054,6 +1068,12 @@ contains
              if (idirectionmcgc == 1) then
                 call analyse_montecarlo(config_atom_n(ipchemin),config_cells_n(ipchemin),boxmcgcpath(ipchemin),'SystN_accepte')
              else
+                if (epotnp1min.gt.nrjpot_npp(ipchemin)) then
+                   epotnp1min=nrjpot_npp(ipchemin)
+                   fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
+                   write(6,*)'new epotnp1min ', epotnp1min*erg2ev
+                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+                end if
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),config_cells_nplus1(ipchemin)&
                      &,boxmcgcpath(ipchemin),'SystNP1_accepte')
              end if
@@ -1077,6 +1097,7 @@ contains
           ipchemin = 1 ! là où on recopie la configuration precedente, par defaut on ecrase le chemin 1
           call parapath%mpi_master%bcast(0,ipchemin) !on envoie le nouveau ipchemin a tous les procs, là où chemin prec va etre mis
           if (dir == 0) then
+              
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old1
              call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgcpath(ipchemin))
