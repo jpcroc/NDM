@@ -1,0 +1,22 @@
+random_art générateur de nb aléatoire : inutile
+write_refconfig : ne fait qu'écire la config
+locate_energy : appel à calfo et détecte les atomes à énergie > seuil, et en choisit un au hasard
+art_defects : appel à calcul de RDF et nb de défauts et en choisit 1 au hasard !!
+art_loop_min : squellette bizarre de routines NDM_lke, appelé nulle part
+min_converge : resdecente vers le minimum en trempe rapide : replaçable
+art01 : pilotage général
+cnvert to chain : ??
+
+
+IL y a pleinde façons de choisir ce qui bouge
+partout : global_move
+autour d'un défaut tiré au hasard local_move
+autour d'un atome à énergie élevé : lenergy : locate_energy+local_move
+seulement les atomes qui dépassent en énergie : 'energy', locate_energy et selected_move via  selectec_atoms_max
+autour d'un atome choisi prédéfini
+oranized selected_move ???
+
+
+find_saddle
+1/ choisit les atomes déplacés
+2/saddle_convrgence : va au col

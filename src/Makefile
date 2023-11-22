@@ -55,10 +55,11 @@ INC_LAMMPS  = $(wildcard lammps/*.h)
 OBJ_LAMMPS  = $(f90lammps:lammps/%.F90=%.o) $(cpplammps:lammps/%.cpp=%.o)
 #MOD_LAMMPS  = $(f90lammps:lammps/%.F90=%.mod) $(cpplammps:lammps/%.cpp=%.mod) 
 
+f90art   = $(wildcard ARTN/*.F90)
+OBJ_ART  = $(f90art:ARTN/%.F90=%.o) 
 
-
-checkfiles = $(f77files) $(f90files) $(f90mod)  
-OBJ = $(OBJ_SRC) $(OBJ_MOD)
+checkfiles = $(f77files) $(f90files) $(f90mod) $(f90art)
+OBJ = $(OBJ_SRC) $(OBJ_MOD) $(OBJ_ART)
 INC = $(INC_SRC) $(INC_MOD)
 #MOD = 
 ROOT = rundm90
@@ -84,13 +85,16 @@ INC += $(INC_PARA)
 FLAG += -DPARA
 endif
 
-ifdef MKL
+#ifdef MKL ! MKL is always used after ART integration
 FLAG += -DMKL
-endif
+#endif
 
 ifdef DEBUG
 FLAG += -DDEBUG
 endif
+
+checkfiles += $(f90art) 
+
 
 ifdef LAMMPS
 OBJ +=  $(OBJ_LAMMPS)
@@ -109,6 +113,13 @@ checkfiles +=  $(f90ml)
 INC += $(INC_ML) 
 FLAG += -DML -DPARAML #-DPARA 
 endif
+
+#ifdef ART # this is ML + PARAML, serial version of ML is not considered  
+#OBJ +=$(OBJ_ART) 
+#checkfiles +=  $(f90art) 
+#INC += $(INC_ML) 
+#FLAG += -DML -DPARAML #-DPARA 
+#endif
 
 # List of all targets
 

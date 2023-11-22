@@ -92,7 +92,9 @@ module Tpara
 contains
 
   subroutine endmpi
-#ifdef PARA    
+    integer::errcode,ierr
+#ifdef PARA
+!    call MPI_Abort(MPI_COMM_WORLD, errcode, ierr)
     call MPI_finalize(ierr)
     stop
 #endif

@@ -13,7 +13,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:nprocs,mpi_world
     USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,gamprfact,&
-         &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,ibordcou,&
+         &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
          &landerscou,lcdp,lconstrtot,lcorrelvp,lderive,lfire,&
@@ -25,11 +25,11 @@ contains
          &zko,zz0,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
          &iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
-         &lcasca,lcontr,ldemitab,leev,leparat,lfilm,lfilmext,linstantfda,linstantrdf,&
+         &lcasca,lcontr,ldemitab,leev,leparat,lfilm,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou&
-         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,position_conversion_lammps&
+         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,position_conversion_lammps,lanaposart&
          &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,beta35,gammas,gammav
@@ -40,9 +40,10 @@ contains
     use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
-         &typswitch1,typswitch2,muchem
+         &typswitch1,typswitch2
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
     use Parrinello_Rahman,only:TinitBox
+    use constrconf_mod,only: ldecalcor
 #ifdef PARA
     USE Tpara,only:MPI_COMM_space,NPROCSpace
 #endif
@@ -76,21 +77,22 @@ contains
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
-         iteangle,  itesauvposition, itesauvforce, lfilmext, tdepla2, &
+         iteangle,  itesauvposition, itesauvforce,  tdepla2, &
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,&
-         lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ibordcou,ngrid,lperiod,&
+         lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ngrid,lperiod,&
          lprteat,lprteattotm,lprtfat,lprtsigat,lsigatcel,itecfg,npath,nebtype,nebrelaxation,maxneb,deltaRmax,&
          rcangle,rcrdf,fmt_cin,lginread,ltriclin,iteanaposneb,ntyp,ihbox0,&
-         neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,gammas,gammav,&
+         neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,gammas,gammav,lanaposart,&
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
-         ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,muchem,&
-         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1, fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
+         ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
+         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
+         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor
 
 
     !
@@ -176,7 +178,6 @@ contains
     nox = -1
     noy = -1
     noz = -1
-    ibordcou=0                  !refroidissement sur 3 bords ou seuleument z
     lprahman=.false.                 ! parinnelo rahman �あ contrainte constante
     lpr=lprahman
     ihbox0(:,:) = 1   ! all the dimension of the box can change
@@ -243,7 +244,6 @@ contains
     tdepla = 1.0                !threshold for displacement
     tdepla2 = -1.0              !second seuil pour calcul des atomes deplaces
     lfilm = .FALSE.             !film making of displaced atoms
-    lfilmext = .FALSE.          !film par iteration des atomes deplaces
     itecoordo = -100             !period of coordination calculation
     itean = 0                  !general control for analysis
     iterdf = -1                 !period of RDF calc. : -1 never ; 0 : nrdf last iterations; +iterdf every iterdf iterations
@@ -308,7 +308,7 @@ contains
     lsuivinonpbc=.false.  ! enable or disable a copy of non folded positions (by the pbc conditions)  in binary form each itetimestep. 
     lposmoy=.false.       ! writes the average position and energy of the atoms in a .mol file
     eatref(:)=0.
-
+    lanaposart=.false.  ! anapos a la ART : decalage + defauts en WS, concu pour le cas des I dans UO2
     ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG, ivisu=6 xfg ; 7=xyz type à la Babel
     !4==> 40= pas de vitesses; 41 vitesses
     !6==> 60= pas de vitesses; 61 vitesses
@@ -346,7 +346,6 @@ contains
     n_path = -100 !valeur negative par defaut pour que l'utilisateur la change
     distminat=1 ! distance minimale en Angstrom de l'atome inséré aux autres atomes en Monte-Carlo (défaut = pas de distance min=n'importe où)
     nbatplus=1
-    muchem=-10000.0
     ipbc(1:3)=1 ! 1=PBC; 2=wall... dimension 3 =plans bc; ac;ab
 
     ndecal=2 ! nombre de décalage dans le calcul de la matrice de force (dmtype=19)
@@ -372,7 +371,7 @@ contains
     ins_typ=0
     typswitch1=0
     typswitch2=0
-
+    ldecalcor=.true.
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -607,6 +606,13 @@ contains
              end select
           end if
        end if
+    case(12)
+       if (lparapath) then 
+          if (mod(nprocs,nparapath).ne.0) then
+             write(6,*)'nprocs/nparapath <>0 STOP'
+             call arret_ndm
+          end if
+       end if
     case(15,151)
 !!$       if ((lpr).and.((nox==-1).or.(noy==-1).or.(noz==-1))) then
 !!$          if (rang==0) then
@@ -633,7 +639,6 @@ contains
              end select
           end if
        end if
-          
     case default
        write(6,*)'DMTYPE',dmtype
        if (rang==0) write(6,*) 'FATAL: VERSION PARALLELE seulement avec ',&
@@ -682,27 +687,15 @@ contains
     !       call arret_ndm
     !     endif
 
-    if (tdepla2>0.0 .and. tdepla2<tdepla) then
-       if (rang==0) write (6, *) rang,'choisissez tdepla2 > tdepla '
-       call arret_ndm
-    endif
 
-    if (lfilm .and. lfilmext) then
+    if (lfilm ) then
        if (itedepla < 1) then
-          if (rang==0) write (6, *) rang,'contradiction itedepla <-> lfilm et lfilmext'
+          if (rang==0) write (6, *) rang,'contradiction itedepla <-> lfilm'
           call arret_ndm
        endif
     endif
 
-    if (itedepla<1 .and. lfilm .and. (.not.lfilmext)) then
-       if (rang==0) write (6, *) rang,'contradiction itedepla <-> lfilm '
-       call arret_ndm
-    endif
 
-    if (itedepla<1 .and. lfilmext .and. (.not.lfilm)) then
-       if (rang==0) write (6, *) rang,'contradiction itedepla <-> lfilmext '
-       call arret_ndm
-    endif
 
     if (tstep<1D-20 .or. tstep>1D-13) then
        if (rang==0) write (6, *) rang,'mauvais pas en temps = ', utemps
@@ -720,7 +713,10 @@ contains
     end if
 
     if(dmtype==9) lprteat=.true.
-    if(dmtype==12) lprteat=.true.
+!!$    if(dmtype==12) then
+!!$       lprteat=.true.
+!!$       ltabvois=.false.
+!!$    end if
     if(dmtype==16) lprteat=.true.
     if (lposmoy.EQV..true.) then 
        lprteattotm=.true.
@@ -928,8 +924,11 @@ contains
           dmtype=22
        case(22)
           if (wboxf==1) wboxf=0.2
+          if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
+
        case(24)
           if (wboxf==1) wboxf=0.2
+          if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
        case (3,30,31,32,33,34,35)
           lEev=.true.
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
@@ -1030,11 +1029,9 @@ contains
 
     !  if (itedepla.gt.0) lfilm=.true.
     if (lfilm) then
-       if(rang==0) then
-          if(rang==0)         open(unit=lufilm, file='film', status='unknown')
-          if(rang==0)         open(unit=lufilmpaf, file='filmpaf', status='unknown')
-       end if
-    endif
+       if((rang==0).and.(lcasca))         open(unit=lufilmpaf, file='filmpaf', status='unknown')
+    end if
+    
 
     if(dilat(1).ne.0.0) then
        if(igen.lt.1) then
@@ -1102,8 +1099,8 @@ contains
     case (9)
        if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS ' 
        itesauvposition=-1
-       itesauvforce=-1
-       itetemp=-1;itesigma=-1
+       itesauvforce=-1; lperiod=.false.
+       itetemp=-1;itesigma=-1!; ldecalcor=.false.
     case (11)
        if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
        if (rang==0) write (6,*)
@@ -1130,20 +1127,8 @@ contains
        if (rang==0) write (6,*)' decal, ndecal lparaFM, naparaFM:',decal,ndecal,lparafm,nparafm
        if (rang==0) write (6,*)
     case (15,151)
-       if (dmtype==151) then
-          if (nparapath.ne.1) then
-             write(6,*)'dmtype=151 Grand Canonical Monte-Carlo and nparapath.ne.1 : stop'
-             call arret_ndm
-          end if
-          if (muchem==-10000) then
-             write(6,*)'dmtype=151 Grand Canonical Monte-Carlo : specify muchem in din'
-             call arret_ndm
-          end if
-          if (rang==0) write(6,*)'GRAND CANONICAL MONTE-CARLO'
-       end if
-       
-       if ((rang==0).and.(dmtype==151)) write (6,'(a)') '      GRAND CANONICAL MONTE CARLO '
-       if ((rang==0).and.(dmtype==15)) write (6,'(a)') '      PATH CALCUL MONTE CARLO  '
+       if ((rang==0).and.(dmtype==151)) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
+       if ((rang==0).and.(dmtype==15)) write (6,'(a)') '      CALCUL MONTE CARLO DES CHEMINS '
        if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
 !!$       if ((nparapath.gt.1).and.(.not.lparapath)) then
 !!$          write(6,*)'nparapath >1, needs lparapath = TRUE'
@@ -1155,13 +1140,15 @@ contains
           write(6,*)'lparapath ET nparapath=1 stop'
           call arret_ndm
        end if
-       if ((.not.lrestartmcgc) .and. (.not.((idirectionmcgc==0).or.(idirectionmcgc==1)))) then
-          write(6,*)'set idirectionmcgc to 0 or 1 '
-          call arret_ndm
-       end if
-       if (rang==0) then
-          write(6,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc
-       end if
+!       if (dmtype.ne.12) then
+          if ((.not.lrestartmcgc) .and. (.not.((idirectionmcgc==0).or.(idirectionmcgc==1)))) then
+             write(6,*)'set idirectionmcgc to 0 or 1 '
+             call arret_ndm
+          end if
+          if (rang==0) then
+             write(6,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc
+          end if
+!       end if
 #ifdef PARA
 #else
        if (lparapath) then
@@ -1170,12 +1157,13 @@ contains
        end if
 #endif
 
-#ifdef ART    
+!#ifdef ART    
     case (12)
        if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
        if (rang==0) write (6,'(a)') '|---------ART nouveau by N MOUSSEAU.---------------|'
        if (rang==0) write (6,'(a)') '|======== colored by Cosmin Marinica!==============|'
-#endif
+       if (rang==0) write (6,'(a)') '|======== updated by J-P Crocombette!==============|'
+!#endif
 #ifdef SUNDAE    
     case (16)
        if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
@@ -1357,6 +1345,7 @@ contains
     if (rang==0) write (6, *) 'itetemp=', itetemp, ' iteprtsigma=', iteprtsigma
     if (itecoordo>0)  write(6,*)  ' itecoordo=', itecoordo
     if (itedepla>0) then
+       lax=.true.
        if (rang==0) write (6, '(A,I3,A,D9.3,A,D9.3,A,I3,A,I3)') ' itedepla=', itedepla, &
             ' tdepla=', tdepla*1D+8, ' tdepla2=', tdepla2*1D+8, ' itesauv=', &
             itesauv, ' itesauvposition=', itesauvposition
@@ -1364,10 +1353,6 @@ contains
     if (lfilm) then
        if (rang==0) write (6, '(A,D11.3)') ' film; seuil=', tdepla*1D+8
        if (rang==0) write (6, '(A,D11.3)') ' film; seuil2=', tdepla2*1D+8
-    endif
-    if (lfilmext) then
-       if (rang==0) write (6, '(A,D11.3)') ' filmext; seuil=', tdepla*1D+8
-       if (rang==0) write (6, '(A,D11.3)') 'filmext; seuil2=', tdepla2*1D+8
     endif
     if (rang==0) write(6,*)
     if (rang==0) write (6, *) '     CONTROLES '

@@ -5,13 +5,13 @@ module constrconf_mod
 #endif
   USE read_val,only:imm,ipbc,nox,noy,noz
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,imm_glob,ldecoup,lperiod,lrestart,rang,&
-       &lvpread,zero,low_limit,lspacendm,rang
+       &lvpread,zero,low_limit,lspacendm,rang,dmtype
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
   use cryst_to_cart_mod,only:cryst_to_cart
   USE arret_ndm_mod,only: arret_ndm
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig,only:cell_config
-  USE boxconfig,only:box_config,initbox,periodbox
+  USE boxconfig,only:box_config,periodbox
   USE setcell,only:setnox,setcellconf
   USE decoupage_mod,only: decoupage
   USE Mat_utils_mod,only: Matinv_gen,is_upper_triangular
@@ -26,6 +26,9 @@ module constrconf_mod
 
   implicit none
   logical::lprt=.true.
+  logical :: ldecalcor
+  logical :: lsecondpath
+  real(double),allocatable::xpd(:,:)
 contains
   subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart,filename,psc)
     !********************************************************************
@@ -234,14 +237,17 @@ contains
   end subroutine constrconf
 
 
-  subroutine gin2ndm(at2b,cel2b,box2b,fnamg,rum,lrepartition,psc)
+  subroutine gin2ndm(at2b,cel2b,box2b,fnamg,rum,lrepartition,psc,lconstrsimple,immread)
     type(para_space_config),optional::psc
     class(atom_config)::at2b
     type(cell_config)::cel2b
     class(box_config)::box2b
     character,intent(in) :: fnamg*80
     real(double),intent(in)::rum
-    logical,optional,intent(in)::lrepartition
+    logical,optional,intent(in)::lrepartition,lconstrsimple
+    integer,optional::immread
+    integer::immr
+    logical::lcs
     logical::lrepart
     type (atom_config)::COMPatrcf
     type(atom_config)::atrgin
@@ -249,24 +255,37 @@ contains
     real(double)::atg(3,3)
     integer::lat(3),ic,ncore,itread,npr
     lrepart=.true.
+    lcs=.false.
     if(present(lrepartition))lrepart=lrepartition
+    if(present(lconstrsimple))lcs=lconstrsimple
+    immr=imm_glob
+    if (present(immread)) immr=immread
+!    write(6,*)'IMMR',immr,lcs
     if (ldecoup) then
        itread=0
     else
        itread=1
     end if
 
-    call read_gin(boxrgin,atrgin,fnamg,lat,itread=itread)
+    call read_gin(boxrgin,atrgin,fnamg,lat,itread=itread,immread=immr)
     do ic=1,3
        atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
     end do
-    call initbox(box2b,atg,ipbc)
+    call box2b%init(atg,ipbc)
 
     call setnox(box2b,cel2b,rum,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
-
     if ((rang==0).and.(lprt)) then
        write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
     end if
+
+    if (lcs) then ! construction simpple sans repartition en sequentiel
+       call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,immr)
+       call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
+       at2b%im_glob=at2b%im
+       call setcellconf(cel2b,at2b,box2b,rum)
+       return
+    end if
+    
 #ifdef PARA
     ncore=0
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -295,11 +314,10 @@ contains
        call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
        call arret_ndm
     end if
-
     call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
     at2b%im_glob=at2b%im
-#endif             
+#endif
     call setcellconf(cel2b,at2b,box2b,rum)
     return
 
@@ -363,7 +381,7 @@ contains
     return
   end subroutine coord_to_cell
 
-  subroutine constr_2gin(atrcf,boxrcf,cellrcf,atrgin,boxrgin,lat,imm)
+  subroutine constr_2gin(atrcf,boxrcf,cellrcf,atrgin,boxrgin,lat,immread)
 
     class(atom_config),intent(inout)::atrcf
     type(cell_config),intent(in)::cellrcf
@@ -371,17 +389,18 @@ contains
     type(box_config)::boxrgin
     type(atom_config)::atrgin
     integer,intent(in)::lat(3)
-    integer,intent(in),optional::imm
+    integer,intent(in),optional::immread
 
-    integer::i,ia,ib,ic,icell,imloc
+    integer::i,ia,ib,ic,icell,imloc,immr
 
     real(double)::rvN
     logical :: lprteattrf
     !imtot=lat(1)*lat(2)*lat(3)*atrgin%im
     imloc=lat(1)*lat(2)*lat(3)*atrgin%im
-
-    if (imloc>imm_glob) then
-       write (6, *) rang,'imm trop petit',imloc,imm_glob
+    immr=imm_glob
+    if (present(immread)) immr=immread
+    if (imloc>immread) then
+       write (6, *) rang,'imm trop petit',imloc,immr
        call arret_ndm
     endif
 
@@ -390,15 +409,14 @@ contains
     else
        rvn=0
     end if
-
     lprteattrf=.false.
     select type (atrcf)
     class is (atom_config_e)
        lprteattrf=atrcf%lprteat
     end select
-    if (present(imm))then
+    if (present(immread))then
 
-       call atrcf%init(imloc,immin=imm,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)
+       call atrcf%init(imloc,immin=immread,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)
 
     else
        call atrcf%init(imloc,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)
@@ -449,6 +467,7 @@ contains
        iti = atcomp%ityp(icomp)
        call coord_to_cell(xt,numcell,boxrep%bg,cellrep%nox,cellrep%noy,cellrep%noz)
        numproc=cellrep%proc_cell(numcell)
+       atcomp%proc_at(icomp)=numproc
        if (numproc == myidsp) then
           i=i+1
           im=im+1
@@ -458,7 +477,7 @@ contains
           atrep%xp(:,i)=xt(:)
           !             atrep%ityp(i)=iti
           atrep%proc_at(i)=myidsp
-          atcomp%proc_at(i)=myidsp
+
        endif
     end do
     atrep%im=im
@@ -535,7 +554,7 @@ contains
        end do
     end if
 
-    call initbox(boxcin,at,ipbc)
+    call boxcin%init(at,ipbc)
 
     select case(itread)
     case(0)
@@ -769,7 +788,7 @@ contains
   !******************************************************************************************************
   !******************************************************************************************************
 
-  subroutine read_gin (boxrg,atrg,fnamgin,latr,itread)
+  subroutine read_gin (boxrg,atrg,fnamgin,latr,itread,immread)
     USE T_kind_param_m, ONLY:  double
 
 
@@ -779,15 +798,21 @@ contains
     type(atom_config),intent(out)::atrg
     type(box_config),intent(out)::boxrg
     integer,intent(out)::latr(3)
-    integer,optional,intent(in)::itread
+    integer,optional,intent(in)::itread,immread
+    integer::immr
 
     integer::itr=1
     !    real(double)::rumax_init,alpha_init
-    real(double)::at(3,3)
+    real(double)::at(3,3),deltx
 
     integer ::  lugin, imcell, ic,i
 
     if(present(itread))itr=itread
+    if(present(immread))then
+       immr=immread
+    else
+       immr=imm_glob
+    end if
     !  si coordonnees reduites
 
     if ((rang==0).and.(lprt))  write (6, *) '**********construction du reseau************'
@@ -806,25 +831,45 @@ contains
     !                                                !c
     read (lugin, *) at(1,3), at(2,3), at(3,3)
     at=at*1d-8
-    call initbox(boxrg,at,ipbc)
+    call boxrg%init(at,ipbc)
     read (lugin, *) imcell               !number of atoms in UC
     if (itr==0) return
-    if (imcell>imm_glob) then
-           if ((rang==0).and.(lprt)) write (6, *) 'trop d_atomes dans la cel. unite',imm_glob,imcell
+    if (imcell>immr) then
+           if ((rang==0).and.(lprt)) write (6, *) 'trop d_atomes dans la cel. unite',immr,imcell
        call arret_ndm
     endif
     call atrg%init(imcell)
     do i = 1, imcell
        read (lugin, *) atrg%xp(1,i), atrg%xp(2,i), atrg%xp(3,i),atrg%ityp(i)
     end do
-    if (any(atrg%xp (1:3,1:imcell)==0)) then
-     if ((rang==0).and.(lprt))  write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6'
-       atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)+1e-6
+    if (ldecalcor) then
+       if (any(atrg%xp (1:3,1:imcell)==0)) then
+          if ((rang==0).and.(lprt))  write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7'
+          atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)+2e-7
+       end if
+       if (any(atrg%xp (1:3,1:imcell)==1)) then
+          if ((rang==0).and.(lprt))  write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
+          atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)-1e-7
+       end if
     end if
-    if (any(atrg%xp (1:3,1:imcell)==1)) then
-    if ((rang==0).and.(lprt))  write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
-       atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)-1e-7
+
+    if (dmtype==9) then
+       if (lsecondpath) then
+          !write(6,*)xpd
+          do i=1,imcell
+             do ic=1,3
+                deltx=atrg%xp(ic,i)-xpd(ic,i)
+                if (deltx.gt.0.5) atrg%xp(ic,i)=atrg%xp(ic,i)-1.
+                if (deltx.lt.-0.5) atrg%xp(ic,i)=atrg%xp(ic,i)+1.
+             end do
+          end do
+       else
+          allocate (xpd(3,imcell))
+          xpd=atrg%xp
+       end if
     end if
+          
+    
     do ic=1,3
        if ((lperiod).or.(ipbc(ic).ne.1)) then
           do i=1,imcell

@@ -1,0 +1,14 @@
+#!/bin/bash
+for temp  in  *.F90 *.f Makefil* */*.F90 MAKE/*
+do 
+	echo $temp
+	rm -f rd
+	diff   $temp ../../../ndm2021/$temp >rd
+	diff   $temp ../../../ndm2021/$temp 
+	if  [ -s  rd ]
+	then
+	meld ../../../ndm2021/$temp  $temp
+	fi
+	
+
+done

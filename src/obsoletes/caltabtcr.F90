@@ -30,8 +30,9 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
-  integer :: i, ic, icell, kx, ky, kz, koo,noxyz
+  integer :: i,  kx, ky, kz, koo,noxyz
   real(double) :: aux, auy, auz
+  !  real(double)::xpnp(3,imm)
   !-----------------------------------------------
   !
   ! --------- Initialisation --------------
@@ -41,6 +42,11 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   noxyz=nox*noy*noz
   !       write (*,*) 'entree caltabt >>>>>>>>>>>>>>>>>'
 
+  !  if (lperiod) then
+  !     xpnp(:,:)=xpcr(:,:)
+  !  else 
+  !     call notperiod(im,xp,xpnp,at,bg)
+  !  end if
 
   !      write(6,*)'entree caltabt noxyz',noxyz
   !  -------- cas sans cellule  -----------
@@ -100,6 +106,7 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
         !debug	       write(*,*) MAXVAL(nato(:)),koo,i
         lastcr(natocr(koo),koo) = i
      end do
+     !debug            call cryst_to_cart (imm, xpnp, at, 1)  !cryst vers cart
 
      call cryst_to_cart (imm, xpcr, at, 1)  !cryst vers cart
 

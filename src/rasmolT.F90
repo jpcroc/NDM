@@ -64,6 +64,8 @@ contains
     character :: extension*9
     integer::iax
     logical::latc
+
+    
     latc=latcomp
     if (nprocs==1) latc=.true.
     if (present(lappend)) then
@@ -72,17 +74,8 @@ contains
        lappendF=.false.
     end if
   
-!!$    select type (atmol)
-!!$    type is (atom_config_d)
-!!$       write(6,*)'typeD'
-!!$    type is (atom_config)
-!!$       write(6,*)'type0'
-!!$    type is (atom_config_e)
-!!$       write(6,*)'typeE',atmol%lprteat
-!!$    end select
-!!$    call atmol%print(unit=500+rang)
-    if (atmol%im_glob==0) then
-       write(6,*)'rasmolT im_glob stop'
+    if((.not.latc).and.(atmol%im_glob==0)) then
+       write(6,*)'rasmolT im_glob stop',latc,atmol%im_glob
        call arret_ndm
     end if
 
@@ -163,17 +156,19 @@ contains
        at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8
        atcomp%xp(1:3,1:atcomp%im)=atcomp%xp(1:3,1:atcomp%im)*1d8
        allocate(tyw(atcomp%im))
-       tyw='000'
-       !    do i=1,im
-       !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
-       !    end do
-       if (present (rty))then
-          tyw(1:atcomp%im)=rty(1:atcomp%im)
-       else
-          !       do i=1,im
-          !          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
-          !       end do
-          tyw(1:atcomp%im)=ty(atcomp%ityp(1:atcomp%im))
+       if (ivisum.ne.5) then
+          tyw='000'
+          !    do i=1,im
+          !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
+          !    end do
+          if (present (rty))then
+             tyw(1:atcomp%im)=rty(1:atcomp%im)
+          else
+             !       do i=1,im
+             !          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
+             !       end do
+             tyw(1:atcomp%im)=ty(atcomp%ityp(1:atcomp%im))
+          end if
        end if
 
 
@@ -317,18 +312,37 @@ contains
              xp1 = atcomp%xp(1,i)
              xp2 = atcomp%xp(2,i)
              xp3 = atcomp%xp(3,i)
+             write (luvisu,'(3es15.6,I3)',advance='no') xp1, xp2, xp3, atcomp%ityp(i)
+!!$             if (laux) then
+!!$                do iax=1,naux
+!!$                   write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
+!!$                end do
+!!$             end if
+             select type (atcomp)
+             class is (atom_config_e)
+                if (atcomp%lsigat) then
+                   if(iteration.eq.0)then
+                      pat=0.0
+                   else
+                      pat=unitP*(atcomp%sigat(1,1,i)+atcomp%sigat(2,2,i)+atcomp%sigat(3,3,i))/3.
+                   end if
+                   write (luvisu, '(G20.12)',advance='no') pat*1d-9
+                end if
+                if (atcomp%lprteat) write (luvisu, '(G20.12)',advance='no') atcomp%eat(i)*erg2ev
+             end select
              if (laux) then
-                write (luvisu,'(3es15.6,I3)',advance='no') xp1, xp2, xp3, atcomp%ityp(i)
                 do iax=1,naux
                    write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
                 end do
-                write(luvisu,*)' '
-             else
-                write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, atcomp%ityp(i)
              end if
+
+             write(luvisu,*)' '
+!             else
+!                write (luvisu,'(3es15.6,I3)') xp1, xp2, xp3, atcomp%ityp(i)
+!             end if
           end do
        case (1) !mol
-
+          
           if (present(itapp))then
              write (luvisu, '(I9,A,I12,A,F12.6)',advance='no') atcomp%im, ' IT =', itapp, ' Time = ', timel
           else

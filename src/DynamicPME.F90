@@ -19,4 +19,4 @@ subroutine DynamicalAllocationPME(immT)
   !  allocate(w1pme(immT),w2pme(immT),w3pme(immT))
 
 end subroutine DynamicalAllocationPME
-end module
+end module dynallocPME

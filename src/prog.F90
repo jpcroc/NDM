@@ -19,9 +19,10 @@ module prog_mod
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax,iseed,&
-       &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman
+       &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman,lanaposart
   
   use read_val,only:imm,ltabvois,rvois
+  use posana,only:initanapos
   use NGC_mod,only:ngc
   use NDM_ML,only:init_config_ml
 #ifdef LAMMPS_VERSION
@@ -34,6 +35,11 @@ module prog_mod
 !  use one_calc_mod,only:one_calc
   use d_at_at_mod
   USE dmloop_pilot_mod,only:dmloop_pilot
+  use art_mod,only:art90
+  use ndm2art2ndm,only:init_mpi_art
+  
+
+  
   implicit none
 contains
   subroutine prog
@@ -99,7 +105,7 @@ contains
        atdml=>atdmd
     else
        select case(dmtype)
-          case(30,32,34,33,19,35)
+          case(30,32,34,33,19,35,12)
              atdml=>atdm
         case default
            atdml=>atdmd
@@ -110,9 +116,8 @@ contains
     imm_glob=imm
     atdml%ltabvois=ltabvois
     atdml%rvois=rvois
-    
     select case(dmtype)
-    case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix)
+    case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
 
 
 #ifdef PARA
@@ -195,10 +200,8 @@ contains
              call controleT(atdml,celndm,boxndm,psc0)
              call endrunT(atdml,celndm,boxndm,latcomp)
 
-#ifdef ART    
-          case (12) 
-             call art90
-#endif
+!!$          case (12) 
+!!$             call art90
 
 #ifdef SUNDAE    
           case (16) 
@@ -243,11 +246,24 @@ contains
 
        call calcFM(atdml,celndm,boxndm)
        call arret_ndm
+    case(12)
+       call init_mpi_art
+       if (ltabvois) then
+          rv=rvois
+       else
+          rv=0
+       end if
+       call atdml%init(im,imm,ltabvois,nvois,rvois=rv) ! initialization of the complete structure (no spatial repartition)
+       call init_simple(atdml,celndm,boxndm,psc=psc0)  ! in init_simple no spatial repartition
+       if (lanaposart) call initanapos(atdml,celndm,boxndm)
+       call art90(atdml,celndm,boxndm,psc0)
+
     case(9)
        !#ifdef PARA
+       
        call init_mpi_neb
        !#endif
-       call init_neb0 
+       call init_neb0
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
     case(15,151)

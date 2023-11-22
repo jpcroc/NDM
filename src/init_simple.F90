@@ -96,11 +96,11 @@ contains
           end select
     end if
 
-    if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
-    else
+!    if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+!       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+!    else
        call caltabtC(celndm,atdml,lperiod,boxndm)
-    end if
+!    end if
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if

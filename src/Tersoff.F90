@@ -251,4 +251,4 @@ module Tersoff_mod
       end
 !
 !                                   ***** Fin routine TSPOTENTIEL *****
-end module
+end module Tersoff_mod

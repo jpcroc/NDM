@@ -49,7 +49,7 @@ module montecarlo_mod
   type, extends (atom_config_d):: atom_config_mc
      real(double), allocatable :: proba_des(:) !defini pr chaque atome mais utile que pour O dans notre cas
      real(double) :: proba_ins !defini par POSITION, donc pas un tableau
-   contains
+  contains
      procedure, pass :: init => init_atom_config_mc
      procedure, pass :: copy_atom => copy_atom_mc
      procedure, pass :: copy_config => copy_config_mc
@@ -87,7 +87,6 @@ module montecarlo_mod
   integer::typswitch1,typswitch2
   integer::  pas_lambda_mc,idirectionmcgc
   real(double) :: lambda_mc !lambda compris entre 0 et 1
-  real(double) :: muchem !chemical potential for MCGC dmtype=151
 
   integer :: n_path ! nb de chemin d'insertion, a definir dans .din, par defaut 10
 
@@ -114,6 +113,7 @@ module montecarlo_mod
 
   integer,parameter::nrins=10000
   real(double)::R0mcgc,fdfactmcgc,probaR(0:nrins),bublcenter(3),zlmin
+  real(double)::epotnp1min=1d12
   integer::ins_typ
   real(double),allocatable::rcpath(:)
 
@@ -501,65 +501,71 @@ contains
 
              call parapath%mpi_master%bcast(0,ipch)
 
-             Weff=weff_npp(ipch) !on a effectué le chnment de signe si retrait
+          Weff=weff_npp(ipch) !on a effectué le chnment de signe si retrait
 
 #ifdef PARA
-             if (lparapath) then 
-                call config_atom_n(ipch)%send2all(ipch-1,parapath%mpi_master)
-                call config_atom_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
-                call config_cells_n(ipch)%send2all(ipch-1,parapath%mpi_master)
-                call config_cells_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
-                call boxmcgcpath(ipch)%master2slave(ipch-1,parapath%mpi_master)
-             end if
+          if (lparapath) then 
+             call config_atom_n(ipch)%send2all(ipch-1,parapath%mpi_master)
+             call config_atom_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
+             call config_cells_n(ipch)%send2all(ipch-1,parapath%mpi_master)
+             call config_cells_nplus1(ipch)%send2all(ipch-1,parapath%mpi_master)
+             call boxmcgcpath(ipch)%master2slave(ipch-1,parapath%mpi_master)
+          end if
 
 
 #endif          
 
-             atconf_nplus1=>config_atom_nplus1(ipch)
-             boxmcgc_p=>boxmcgcpath(ipch)
-             if (idirectionmcgc == 0) then
-                call calcul_proba_des ! on vient de choisir ipch qui est accepté. On calcule les proba pour : 1:choisir les atomes à désintégrer et mettre dans old_1 pour les calculs du biais
-                call config_atom_nplus1(ipch)%copy_config(config_atom_old_1, lrescl=.true.)
-                box_old1=boxmcgcpath(ipch)
-             else
-                xp_np1(:)=atconf_nplus1%xp(:,atconf_nplus1%im)
-                atconf_nplus1%proba_ins= calcul_proba_ins (xp_np1)
-
-                call config_atom_n(ipch)%copy_config(config_atom_old_0, lrescl=.true.)
-                box_old0=boxmcgcpath(ipch)
+          atconf_nplus1=>config_atom_nplus1(ipch)
+          boxmcgc_p=>boxmcgcpath(ipch)
+          if (idirectionmcgc == 0) then
+             if (lmegamaster) then
+                epotnp1min=pot_npp(ipch)
+                fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
+                write(6,*)'new epotnp1min ', epotnp1min*erg2ev
+                call sauvegardeT(config_atom_nplus1(ipch),config_cells_nplus1(ipch),boxmcgcpath(ipch),3,fnamcout,latcomp=.true.)
              end if
-             do ipp=1,nparapath
-                config_cells_n(ipp)= config_cells_n(ipch)
-                config_cells_nplus1(ipp)= config_cells_nplus1(ipch)
-                config_atom_n(ipp)=config_atom_n(ipch)
-                config_atom_nplus1(ipp)=config_atom_nplus1(ipch)
-                boxmcgcpath(ipp)=boxmcgcpath(ipch)
-             end do
+             call calcul_proba_des ! on vient de choisir ipch qui est accepté. On calcule les proba pour : 1:choisir les atomes à désintégrer et mettre dans old_1 pour les calculs du biais
+             call config_atom_nplus1(ipch)%copy_config(config_atom_old_1, lrescl=.true.)
+             box_old1=boxmcgcpath(ipch)
+          else
+             xp_np1(:)=atconf_nplus1%xp(:,atconf_nplus1%im)
+             atconf_nplus1%proba_ins= calcul_proba_ins (xp_np1)
 
-             W = WEff !avec le bon signe
-             !W = Work
-             Wprec = + W
-             Wprecedent = Wprec
-             if (lmegamaster) write(*,*) 'W0',W*erg2eV
+             call config_atom_n(ipch)%copy_config(config_atom_old_0, lrescl=.true.)
+             box_old0=boxmcgcpath(ipch)
+          end if
+          do ipp=1,nparapath
+             config_cells_n(ipp)= config_cells_n(ipch)
+             config_cells_nplus1(ipp)= config_cells_nplus1(ipch)
+             config_atom_n(ipp)=config_atom_n(ipch)
+             config_atom_nplus1(ipp)=config_atom_nplus1(ipch)
+             boxmcgcpath(ipp)=boxmcgcpath(ipch)
+          end do
 
-          end if! sur bigmaster
+          W = WEff !avec le bon signe
+          !W = Work
+          Wprec = + W
+          Wprecedent = Wprec
+          if (lmegamaster) write(*,*) 'W0',W*erg2eV
 
-          if (lmaster) then ! on est dans l'un des 2 masters
+       end if! sur bigmaster
 
-             call boxmcgcpath(1)%master2slave(0,paramcgc%mpi_master)
-             boxmcgcpath(:)=boxmcgcpath(1)
-             rgcib=1;rgem=0
-             if(paramcgc%image==0) then !on est dans le master général
-                call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
-             else !on est dans le master de N+1
-                call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
-             end if
+       if (lmaster) then ! on est dans l'un des 2 masters
 
+          call boxmcgcpath(1)%master2slave(0,paramcgc%mpi_master)
+          boxmcgcpath(:)=boxmcgcpath(1)
+          rgcib=1;rgem=0
+          if(paramcgc%image==0) then !on est dans le master général
+             call atconf_Nplus1%send2proc(rgcib,paramcgc%mpi_master,'x')
+          else !on est dans le master de N+1
+             call atconf_Nplus1%recv(rgem,paramcgc%mpi_master,'x')
           end if
 
+       end if
 
-          direction = 1 - idirectionmcgc !=0 si le premier pas était un retrait, =1 si le premier pas
-       else if (dmtype==151) then
+
+       direction = 1 - idirectionmcgc !=0 si le premier pas était un retrait, =1 si le premier pas
+              else if (dmtype==151) then
 
           if (lbigmaster) then
              do ipp=1,nparapath
@@ -757,25 +763,21 @@ contains
           acceptance_rate_0 = (real(n_accepted_0)/real(n_gen_0))*1.0d2
           acceptance_rate_1 = (real(n_accepted_1)/real(n_gen_1))*1.0d2
        else if (dmtype==151) then
-          if (lbigmaster) then
-             iteration = iteration + 1
-             call MCGCtest(Weff_npp(1),acceptation)
-             if (direction==1) then
-                if (acceptation==1)then !N+1 reste N+1 et est copié dans N+1old
-
-                else ! Nold devient N+1 et est copié dans N+1old
-
+          if (lbigmaster) then 
+             do ipp=1,nparapath
+                if (direction==0) then 
+                   config_cells_n(ipp)= config_cells_old
+                   config_atom_n(ipp)=config_atom_old_0
+                   boxmcgcpath(ipp)=box_old0
+                else
+                   config_cells_nplus1(ipp)= config_cells_old
+                   config_atom_nplus1(ipp)=config_atom_old_1
+                   boxmcgcpath(ipp)=box_old1
+                   !             config_atom_nplus1(ipp)=config_atom_nplus1(ipch)
                 end if
-             else
-                if (acceptation==1)then !N reste N et est copié dans Nold
-
-                else ! N+1old devient N et est copié dans Nold
-
-                end if
-                
-                
-             end if
+             end do
           end if
+
        end if
     END DO !end do sur la boucle des chemins
 
@@ -797,26 +799,6 @@ contains
     !stop
   end subroutine montecarlo
 
-  subroutine MCGCtest(Wt,accept)
-    real(double),intent(in)::Wt
-    integer,intent(out)::accept
-
-    real(double)::rndgc,beta,xalea,deltaW,lnxalea
-
-
-    beta = 1.0/(bk*Text)    
-    deltaW=beta*(muchem-wt)
-        
-    call random_number(xalea)
-    lnxalea=log(xalea)
-
-    if(deltaW.gt.lnxalea) then
-       accept=1
-    else
-       accept=0
-    end if
-    return
-  end subroutine MCGCtest
 
   subroutine monoproposal(travail_npp, nrjpot_npp, Wprece, Wpreced, ipchemin, dir, accepta, premier_accept, &
        &ngen, lbiais, pot_moy, pot_wrmc, pot_NC, pot_SC,tab_cumul)
@@ -932,6 +914,13 @@ contains
              if (idirectionmcgc == 1) then 
                 call analyse_montecarlo(config_atom_n(ipchemin),config_cells_n(ipchemin),boxmcgcpath(ipchemin),'SystN_accepte')
              else
+                if (epotnp1min.gt.nrjpot_npp(ipchemin)) then
+                   epotnp1min=nrjpot_npp(ipchemin)
+                   fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
+                   write(6,*)'new epotnp1min ', epotnp1min*erg2ev
+                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+                end if
+
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),&
                      &config_cells_nplus1(ipchemin),boxmcgcpath(ipchemin),'SystNP1_accepte')
              end if
@@ -1079,6 +1068,12 @@ contains
              if (idirectionmcgc == 1) then
                 call analyse_montecarlo(config_atom_n(ipchemin),config_cells_n(ipchemin),boxmcgcpath(ipchemin),'SystN_accepte')
              else
+                if (epotnp1min.gt.nrjpot_npp(ipchemin)) then
+                   epotnp1min=nrjpot_npp(ipchemin)
+                   fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
+                   write(6,*)'new epotnp1min ', epotnp1min*erg2ev
+                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+                end if
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),config_cells_nplus1(ipchemin)&
                      &,boxmcgcpath(ipchemin),'SystNP1_accepte')
              end if
@@ -1102,6 +1097,7 @@ contains
           ipchemin = 1 ! là où on recopie la configuration precedente, par defaut on ecrase le chemin 1
           call parapath%mpi_master%bcast(0,ipchemin) !on envoie le nouveau ipchemin a tous les procs, là où chemin prec va etre mis
           if (dir == 0) then
+              
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old1
              call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgcpath(ipchemin))

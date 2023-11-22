@@ -12,7 +12,8 @@ module controleT_mod
   USE Tpara,only:nprocspace,myidsp
 #endif
  USE arret_ndm_mod,only: arret_ndm
- use Tpara,only:para_space_config    
+ use Tpara,only:para_space_config
+ use tccontr,only:contrTcou
   implicit none
 contains
   ! ***********************************************************
@@ -26,7 +27,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
          &itetemp,fsumstop,fpstop,itetimestep,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
-         &itetemp2,ihbox0
+         &itetemp2,ihbox0,epcou,tfcou
 
     USE var_pot, ONLY:
     implicit none
@@ -51,8 +52,10 @@ contains
     !-----------------------------------------------
     !
     !
-    sigtoth0(1:3,1:3)=sigtot(1:3,1:3)*ihbox0(1:3,1:3)    
-    lreturn=.false.
+    sigtoth0(1:3,1:3)=sigtot(1:3,1:3)*ihbox0(1:3,1:3)
+    
+    if (present(lreturn))lreturn=.false.
+    
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
        if (present(lreturn)) then
@@ -82,6 +85,9 @@ contains
 
     ! temperature is down enough ?
     if (itetemp>0) then
+
+       if (tfcou.gt.0 ) call contrTcou(atdml,celndm,boxndm,epcou)
+       
        if (mod(iteration,itetemp)==0) then
           if (temp<=tempstop) then
              if (rang==0)  write (6, *) 'temperature < tempstop '

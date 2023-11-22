@@ -8,7 +8,7 @@ module dmloop_vverlet_mod
   USE boxconfig,only:box_config
   use var_pot,only:ntyp,cm
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,ev2erg,rang,iteration,l2t,lTberendsen,potist,sig,sigtot,&
-       &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax,sigkine,timeloopmax,timel
+       &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax,sigkine,timeloopmax,timel,lpcube
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
@@ -39,9 +39,9 @@ contains
     class(atom_config_d)::atdml
     type(cell_config):: celndm
     character :: extension*2
-    integer::lenfn2,i
+    integer::lenfn2,i,ic
     integer::ilocal
-    real(double) sigkine_tot(3,3)
+    real(double) ::pint
     !    real(double) :: temptyp(ntyp)
 
     !-----------------------------------------------
@@ -112,6 +112,14 @@ contains
              end if
           end if
 #endif
+          if (lpcube) then
+             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+             sigkine=0
+             do ic=1,3
+                sigkine(ic,ic)=pint
+             end do
+          end if
+
           sigtot = sigkine+sig
        end if
        call analyseT (atdml,celndm,boxndm,psc)

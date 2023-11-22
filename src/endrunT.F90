@@ -44,8 +44,6 @@ contains
     endif
 
 
-
-
  if (rang==0) then
 
     write (6, *)
@@ -87,7 +85,8 @@ contains
 
 
  if (iterasmol.GE.0) call rasmolT (atdml,boxndm,999999999,latcomp=latcomp)
- if (nprocspace==1.and.iteanapos>=0) call anapos (atdml,celndm,boxndm,iteration)
+ if (lwgin) call rasmolT (atdml,boxndm,999999999,latcomp=latcomp,ivisumol=5)
+! a retravailler if (nprocspace==1.and.iteanapos>=0) call anapos (atdml,celndm,boxndm,iteration)
 
  call arret_ndm
 

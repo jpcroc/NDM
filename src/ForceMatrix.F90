@@ -79,14 +79,12 @@ contains
     else
        ifin=(1+paraFM%image)*nq
     end if
-   
     call initloc(atfm,celfm,atfmloc,celfmloc,boxfm,paraFM,rumax,lperiod,ldistrib=.false.,psc=pscfm) !initloc contient caltabt(c) sur atloc
     call pointer_caltabt_calfo(sig,potist,atfm,celfm,boxfm,atfmloc,celfmloc,parafm,&
          &lperiod,lupdate=.false.,psc=pscfm,lcalcvois=.false.)
     if (lmaster) then 
        Fpzero(1:3,1:im)=atfm%fp(1:3,1:im)
     end if
-    write(6,*)'ForceMatrix2',rang    
     iteration=1 !(empeche le recalcul de la table des voisins dans driver_caltabt_para)
     do idecal=-ndecal,ndecal
        if (idecal==0) cycle ! pas de calcul pour décalage=0
@@ -95,7 +93,6 @@ contains
        do i=ideb,ifin
           do ic=1,3
              atfm%xp(ic,i)= atfm%xp(ic,i)+idecal*decal
-             call driver_caltabt_para(atfm,celfm,boxfm,pscfm,lperiod)
              call pointer_caltabt_calfo(sig,potist,atfm,celfm,boxfm,atfmloc,celfmloc,parafm,&
                   &lperiod,lupdate=.true.,psc=pscfm,lcalcvois=.false.)
              if (lmaster)then
@@ -145,7 +142,7 @@ contains
           write(122)Fmat
        end if
           
-#ifdef MKL
+!!$#ifdef MKL
 
        nwork=3*im3-1
        allocate(work(nwork))
@@ -194,14 +191,14 @@ contains
        call thermocalc(eigval,im3)
 
        
-#else
-       write(6,*)"diagonalization works with lapack or MKL"
-       write(6,*)"these libraries are NOT linked by default"
-       write(6,*)"link them in Makefile.ndm_your_makefile"
-       write(6,*)"and recompile with make MKL=1 ndm_your_makefile"
-       call arret_ndm
-       
-#endif
+!!$#else
+!!$       write(6,*)"diagonalization works with lapack or MKL"
+!!$       write(6,*)"these libraries are NOT linked by default"
+!!$       write(6,*)"link them in Makefile.ndm_your_makefile"
+!!$       write(6,*)"and recompile with make MKL=1 ndm_your_makefile"
+!!$       call arret_ndm
+!!$       
+!!$#endif
     end if
   end subroutine calcFM
 

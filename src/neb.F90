@@ -183,7 +183,7 @@ contains
           else
              lchange=.false.
           end if
-
+          lchange=.true.
           call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
                &lperiod,lupdate=lchange,psc=pscneb)
           if (lmaster) then
@@ -474,7 +474,7 @@ contains
           fnamcout = fnam(1:lenfnam)//'.cout.'//extension
           call sauvegardet(atneb(ii)%atom_config_d, cellneb(ii),boxneb,formatsauv,fnamcout,latcomp)
           call rasmolT(atneb(ii)%atom_config_d,boxneb,ii,latcomp=latcomp)
-          if (iteanaposneb.gt.0) call anapos (atneb(ii),cellneb(ii),boxneb,ii)
+!          if (iteanaposneb.gt.0) call anapos (atneb(ii),cellneb(ii),boxneb,ii)
           !	 
           reaction_coord(ii) = SUM((atneb(ii)%xp(:,:)-atneb(1)%xp(:,:))*(atneb(npath)%xp(:,:)-atneb(1)%xp(:,:)))/a_local
           !          reaction_coord(ii) = SUM((xp_n(:,:,ii)-xp_n(:,:,1))*(xp_n(:,:,npath)-xp_n(:,:,1)))/a_local 

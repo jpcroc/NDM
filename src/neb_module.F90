@@ -6,7 +6,7 @@ module neb_module
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
        &latcomp,imm_glob,lperiod,lspacendm
   use read_val,only:rvois,ltabvois
-  USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin
+  USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin,lsecondpath
     use cryst_to_cart_mod,only:cryst_to_cart
   USE recips_mod,only: recips
   USE rasmolT_mod,only: rasmolT
@@ -98,14 +98,14 @@ contains
     allocate(cellneb(npath))
     nv=0
     rv=0
-    if (rvois.gt.0) then
+!    if (rvois.gt.0) then
        rv=rvois
-    end if
+!    end if
     do ipath=1,npath
        call atneb(ipath)%atom_config_d%init(im,imm,ltabvois,nv,rv)
+!       atneb(ipath)%vp=0
        allocate(atneb(ipath)%s_path(3,imm),atneb(ipath)%force_neb(3,imm))
     end do
-
 
     allocate (icontrainte(imm),reaction_coord(npath))
     allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
@@ -603,6 +603,7 @@ end if
     else
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
        if (rang==0) write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,atneb(1)%imm_glob
+       lsecondpath=.false.
        call gin2ndm(atneb(1)%atom_config_d,cellneb(1),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
 
 
@@ -628,7 +629,7 @@ end if
 
 #endif
 
-
+       lsecondpath=.true.
        call gin2ndm(atneb(npath)%atom_config_d,cellneb(npath),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
        atneb(:)%im=atneb(npath)%im
        atneb(npath)%xpp=atneb(npath)%xp

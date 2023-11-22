@@ -536,7 +536,10 @@ contains
              typ_pot_pair(l)=ipotentiel
              ipr=l
           else
-             read(lupotin,*)n
+             read(lupotin,*)it1,it2
+             n=ipo(it1,it2)
+             !             read(lupotin,*)n
+             if (rang==0) write(6,*)'paire ',n,ipair
              if(n.ne.ipair)then
                 write(6,*) rang, ' ordre de lecture de EAM rep stop'
                 call arret_ndm

@@ -39,7 +39,7 @@ module Parrinello_Rahman
   USE T_kind_param_m
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
-       &potist,sig,sigkine,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,&
+       &potist,sig,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,lpcube,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP
   use FireModule,only:alph_start,f_alph,fdec,finc,nstepmin,tstep_mm,tstep0,init_trempe_fire
 
@@ -75,7 +75,7 @@ module Parrinello_Rahman
   ! Coordonnées réduites des atomes et leurs dérivées
   real(double), allocatable :: sp(:,:), sdot(:,:), sdot_new(:,:),sfp(:,:),spp(:,:)
 
-  real(double)::kinx,tempx,pre
+  real(double)::kinx,tempx,pre,pint
 
   ! Variable associée au thermostat de Nosé-Hoover
   !  (zHoover est défini dans gen_com_m.F90)
@@ -92,7 +92,7 @@ module Parrinello_Rahman
   real(double), dimension(3,3) ::trh0,invh0,invtrh0,epsi, tension
   real(double) ::volu0, invVolu0
   REAL(double) ::  fire_alph
-  INTEGER :: fire_nstep
+  INTEGER :: fire_nstep,ic
 
   real(double)::TInitBox
 
@@ -316,6 +316,13 @@ contains
        end if
 
 #endif
+          if (lpcube) then
+             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+             sigkine=0
+             do ic=1,3
+                sigkine(ic,ic)=pint
+             end do
+          end if
 
        ! Énergie cinétique des atomes à l'instant initial
        !       kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
@@ -349,7 +356,7 @@ contains
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
     real(double)::T1,kin1,tstepN,u1,u2,rga,rgah
     real(double), dimension(1:3) :: xprov
-    real(double):: norme_de_fp, norme_de_vp, pscal,tempcell
+    real(double):: norme_de_fp, norme_de_vp, pscal,tempcell,pint
     real(double), dimension(ntyp) :: aux
     integer,save::nstep=0
 #ifdef PARA
@@ -465,6 +472,13 @@ contains
        end if
 
 #endif
+          if (lpcube) then
+             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+             sigkine=0
+             do ic=1,3
+                sigkine(ic,ic)=pint
+             end do
+          end if
 
        sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
 
@@ -717,6 +731,14 @@ contains
              call comm_space%sum(sigkine)
           end if
 #endif
+                    if (lpcube) then
+             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+             sigkine=0
+             do ic=1,3
+                sigkine(ic,ic)=pint
+             end do
+          end if
+
           ! Contrainte totale à l'instant t+dt
           sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
           ! Dérivée du tenseur h à l'instant t+dt

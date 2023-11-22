@@ -3,7 +3,7 @@ module sigkinetot_mod
   USE arret_ndm_mod,only:arret_ndm
 
   USE atomconfig,only : atom_config_d
-  USE gen_com_m, ONLY:lspaceNDM
+  USE gen_com_m, ONLY:lspaceNDM,lpcube
   USE boxconfig,only:box_config_lpr,box_config
   USE var_pot, ONLY:cm
     
@@ -18,7 +18,8 @@ contains
     class(atom_config_d),intent(in)::at_n,at_np1
     real(double),intent(in)::lambda
     real(double),dimension(3,3)::sig,sigkine,sigtot
-    integer::i,j
+    real(double)::pint
+    integer::i,j,ic
 !    call box%print
     
     sigkine(:,:)=0.d0
@@ -33,12 +34,21 @@ contains
        enddo
     enddo
     sigkine(1:3,1:3) =sigkine(1:3,1:3)/box%Volu
-!!$#ifdef PARA
-!!$
-!!$    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-!!$       call comm_space%sum(sigkine)
-!!$    end if
-!!$#endif
+    
+#ifdef PARA
+
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       call comm_space%sum(sigkine)
+    end if
+#endif
+          if (lpcube) then
+             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+             sigkine=0
+             do ic=1,3
+                sigkine(ic,ic)=pint
+             end do
+          end if
+
     sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )       
   end subroutine sigkinetotMC
 
@@ -47,7 +57,8 @@ contains
         
     class(atom_config_d),intent(in)::atpr
     real(double),dimension(3,3)::sig,sigkine,sigtot
-    integer::i,j
+    real(double)::pint
+    integer::i,j,ic
     
     sigkine(:,:)=0.d0
     do i = 1, atpr%im
@@ -63,6 +74,14 @@ contains
        call comm_space%sum(sigkine)
     end if
 #endif
+              if (lpcube) then
+             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+             sigkine=0
+             do ic=1,3
+                sigkine(ic,ic)=pint
+             end do
+          end if
+
     sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )       
   end subroutine sigkinetot
     

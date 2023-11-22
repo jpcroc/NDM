@@ -98,7 +98,6 @@ module gen_com_m
   real(double) :: tempstop, tempstopcel, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
        tsfact, vmax, tgc, dfpred ! gestion du pas en temps
   real(double)::maxtcel
-  integer :: ibordcou
   integer :: itesauv,  itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde periode 
                                                                               ! de d'ecriture des positions et/ou forces en formatted ; 
   !itesauvinter=sauvegarde reguliere .cout.it qui n'efface pas les fichiers .cout precedent
@@ -106,7 +105,7 @@ module gen_com_m
   real(double), dimension(3) :: vh ! vitesse de la boite
   real(double) :: pext, wboxf, tbox ! pext poids de la boite temps d'amortissment de la boite
   logical ::  lpcon2 ! pression constante sans et avec amortissement
-
+  logical ::lpcube ! pression constante avec forme de la boite constante seul le volume change
   logical :: lTcon, lTberendsen,lTandersen,lTNose,lTHoover,landerscou ! temp constante (3 algorithmes differents)
   real(double) :: Text ! T exterieure
   logical :: lLangevin ! Langevin MD
@@ -192,8 +191,8 @@ module gen_com_m
   real(double)::rskin,position_conversion_lammps, energy_conversion_lammps, pressure_conversion_lammps ! epaisseur pour lammps (equivalent rvois-rue)
  logical :: firsttime_lammps
  integer:: iverbose ! verbosity (0 = pas de détails, défaut, 1 = détails)
-
-real(double)::gamprfact
+ integer::unit6P
+ real(double)::gamprfact
  logical :: latcomp ! masters (myidsp=0) have the complete positions (for sauvegardeT), rasmolT
- 
+ logical ::lanaposart ! anapos a la ART : decalage + defauts en WS, concu pour le cas des I dans UO2
 end module gen_com_m

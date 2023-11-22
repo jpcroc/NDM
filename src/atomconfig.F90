@@ -92,9 +92,14 @@ module atomconfig
   private ::buffersizes
 contains
   !initialisations
-  subroutine print_type(atcf)
+  subroutine print_type(atcf,mess)
     class(atom_config),intent(in)::atcf
-    write(6,*)'atomfigPRINT'
+    character(len=*),optional::mess
+    if (present(mess)) then
+       write(6,*)'atomfigPRINT ',mess
+    else
+       write(6,*)'atomfigPRINT'
+    end if
     write(6,*)'im imm im_glob imm_glob',atcf%im,atcf%imm,atcf%im_glob,atcf%imm_glob
     select type (atcf)
     type is (atom_config)
@@ -126,24 +131,28 @@ contains
     ltbv=.false.
     if(present(ltabvois)) then
        ltbv=ltabvois
-       if (ltbv) then
-          if(.not.(present(rvois)))then
-             write(6,*)'rvois must be set in initialization of atcf when ltabvois =True'
-             call arret_ndm
-          end if
-          if (rvois==0) then 
-             write(6,*)'rvois must be set to non zero in initialization of atcf when ltabvois =True'
-             call arret_ndm
-          end if
-       else
-          if((present(rvois)).and.(rvois.ne.0))then
+    end if
+    nv=0 ;  if(present(nvois))nv=nvois
+    rv=0;  if(present(rvois))rv=rvois
+
+    if (ltbv) then
+       if(.not.(present(rvois)))then
+          write(6,*)'rvois must be set in initialization of atcf when ltabvois =True'
+          call arret_ndm
+       end if
+       if (rv==0) then 
+          write(6,*)'rvois must be set to non zero in initialization of atcf when ltabvois =True'
+          call arret_ndm
+       end if
+    else
+       if(present(rvois)) then
+          if (rvois.ne.0)then
              write(6,*)'rvois must NOT be set in initialization of atcf when ltabvois =False'
              call arret_ndm
           end if
        end if
     end if
-    nv=0 ;  if(present(nvois))nv=nvois
-    rv=0;  if(present(rvois))rv=rvois
+ 
 
 
 
@@ -188,7 +197,7 @@ contains
     atconf%num_at_glob=0
 #ifdef PARA
     atconf%proc_at=-1
-#endif    
+#endif
     if(ltbv)then
        atconf%ltabvois=.true.
        atconf%rvois=rv
@@ -205,6 +214,7 @@ contains
        end if
     else
        atconf%ltabvois=.false.
+       atconf%rvois=rv ! Ajouté pour éviter des erreurs d'initilaisations
     end if
 
     select type (atconf)
@@ -800,17 +810,19 @@ contains
 
   end subroutine pack
 
-  subroutine fab(atsource,atcible,lback,lrescl) ! construit atsource à partir de lgul de atcible , ecrase atcible
+  subroutine fab(atsource,atcible,lback,lrescl,commsp) ! construit atsource à partir de lgul de atcible , ecrase atcible
     class(atom_config),intent(in)::atsource
     class(atom_config),intent(out)::atcible
     logical::lback
     logical, optional::lrescl
+    type(mpi_communicator),optional::commsp
     logical::lrescale=.true.
     integer::i2,imtrf,i,immtrf
     integer::nvois
     real(double)::rvois
 
     if (present(lrescl))lrescale=lrescl
+!    write(6,*)'FAB lrescale',lrescale
     if (lrescale) then
        call atcible%dealloc 
        if (atsource%ltabvois)then
@@ -825,8 +837,9 @@ contains
        else
           immtrf=imtrf
        end if
+!       write(6,*)'FAB',imtrf
        call atsource%Eegal(atcible)
-       call atcible%init(imtrf,imtrf,atsource%ltabvois,nvois,rvois)
+       call atcible%init(imtrf,immtrf,atsource%ltabvois,nvois,rvois)
     end if
 
     call atcible%zero
@@ -842,6 +855,15 @@ contains
        write(6,*)'WTF ?'
        call arret_ndm
     end if
+#ifdef PARA
+    if (present(commsp)) then
+       atcible%im_glob=atcible%im
+!       atcible%imm_glob=atcible%imm
+       call commsp%sum(atcible%im_glob)
+
+    end if
+#endif
+    
 
   end subroutine fab
   
@@ -1061,12 +1083,12 @@ contains
     if (allocated(atprt%xp)) then
     if(scan('x',carac).ne.0)then
        do i=ideb,ifin
-          write(unitw,*)'%xp= ', i,atprt%num_at_glob(i),atprt%xp(:,i)
+          write(unitw,'(A,2i9,3F15.7)')'%xp= ', i,atprt%num_at_glob(i),atprt%xp(:,i)
        end do
     end if
     if(scan('i',carac).ne.0)then
        do i=ideb,ifin
-          write(unitw,*)'%ityp= ', i,atprt%num_at_glob(i),atprt%ityp(i)
+          write(unitw,'(A,2i9,I3)')'%ityp= ', i,atprt%num_at_glob(i),atprt%ityp(i)
        end do
     end if
     if(scan('n',carac).ne.0)then
@@ -1084,7 +1106,7 @@ contains
        
        if(scan('f',carac).ne.0)then
           do i=ideb,ifin
-             write(unitw,*)'%fp= ', i,atprt%num_at_glob(i),atprt%fp(:,i)
+             write(unitw,'(A,2i9,3F15.7)')'%fp= ', i,atprt%num_at_glob(i),atprt%fp(:,i)
           end do
        end if
        if(scan('e',carac).ne.0)then
@@ -1097,24 +1119,24 @@ contains
              write(unitw,*)'prt_d'
              if(scan('v',carac).ne.0)then
                 do i=ideb,ifin
-                   write(unitw,*)'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
+                   write(unitw,'(A,2i9,3F15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
                 end do
              end if
              if(scan('r',carac).ne.0)then
                 do i=ideb,ifin
-                   write(unitw,*)'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
+                   write(unitw,'(A,2i9,3F15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
                 end do
              end if
           class is (atom_config_e)
              write(unitw,*)'prt_e'
              if(scan('v',carac).ne.0)then
                 do i=ideb,ifin
-                   write(unitw,*)'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
+                   write(unitw,'(A,2i9,3F15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
                 end do
              end if
              if(scan('r',carac).ne.0)then
                 do i=ideb,ifin
-                   write(unitw,*)'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
+                   write(unitw,'(A,2i9,3F15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
                 end do
              end if
 
@@ -1122,16 +1144,23 @@ contains
              if (atprt%lsigat) then
                 if(scan('g',carac).ne.0)then
                    do i=ideb,ifin
-                      write(unitw,*)'%sigat= ',i,atprt%num_at_glob(i), atprt%sigat(:,:,i)
+                      write(unitw,'(A,2i9,9F15.7)')'%sigat= ',i,atprt%num_at_glob(i), atprt%sigat(:,:,i)
                    end do
                 end if
              end if
           if (atprt%lprteat) then
              if(scan('u',carac).ne.0)then
-             do i=ideb,ifin
-                write(unitw,*)'%eat= ', i,atprt%num_at_glob(i),atprt%eat(i)
-             end do
+                do i=ideb,ifin
+                   write(unitw,*)'%eat= ', i,atprt%num_at_glob(i),atprt%eat(i)
+                end do
+             end if
           end if
+          if (atprt%lax) then
+             if(scan('a',carac).ne.0)then
+                do i=ideb,ifin
+                   write(unitw,'(A,2i9,3F15.7)')'%ax= ', i,atprt%num_at_glob(i),atprt%ax(:,i)
+                end do
+             end if
           end if
        end select
 
@@ -1297,6 +1326,9 @@ contains
                       endif
                       if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
                          if(scan('u',carac).ne.0) atcfcomp%eat(icomp)=atcfloc%eat(iloc)
+                      endif
+                      if((atcfcomp%lax).and.(atcfloc%lax))then
+                         if(scan('a',carac).ne.0) atcfcomp%ax(:,icomp)=atcfloc%ax(:,iloc)
                       endif
                       if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
                          if(scan('g',carac).ne.0) atcfcomp%glangv(:,icomp)=atcfloc%glangv(:,iloc)
@@ -1470,6 +1502,9 @@ contains
                          endif
                          if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
                             atcfloc%eat(iloc)=atcfcomp%eat(i)
+                         endif
+                         if((atcfcomp%lax).and.(atcfloc%lax))then
+                            atcfloc%ax(:,iloc)=atcfcomp%ax(:,i)
                          endif
                          if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
                             atcfloc%glangv(:,iloc)=atcfcomp%glangv(:,i)

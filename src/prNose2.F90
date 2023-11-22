@@ -34,7 +34,7 @@ module Parrinello_Rahman_Nose
   USE T_kind_param_m
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
        &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,iteration,kcell,knose,leev,&
-       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0
+       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0,lpcube
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
@@ -201,8 +201,8 @@ end if
 
     real(double),dimension(3,3)::maux1,maux2,mf,mfi, grsig
     REAL(double), dimension(1:3,1:3) ::  Gpoint
-    real(double):: diff,tdiff, invVolu, fNose2, f2point
-    integer:: i,j,ia, iter
+    real(double):: diff,tdiff, invVolu, fNose2, f2point,pint
+    integer:: i,j,ia, iter,ic
     !real(double) , external ::  calcvol
 
     ! Parameter for Parrinello-Rahman self consistency loop
@@ -335,6 +335,13 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
  end if
 
 #endif
+          if (lpcube) then
+             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+             sigkine=0
+             do ic=1,3
+                sigkine(ic,ic)=pint
+             end do
+          end if
 
     ! ... et l'énergie cinétique
     kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
