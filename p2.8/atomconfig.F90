@@ -1083,7 +1083,7 @@ contains
     if (allocated(atprt%xp)) then
     if(scan('x',carac).ne.0)then
        do i=ideb,ifin
-          write(unitw,'(A,2i9,3F15.7)')'%xp= ', i,atprt%num_at_glob(i),atprt%xp(:,i)
+          write(unitw,'(A,2i9,3D19.11)')'%xp= ', i,atprt%num_at_glob(i),atprt%xp(:,i)
        end do
     end if
     if(scan('i',carac).ne.0)then

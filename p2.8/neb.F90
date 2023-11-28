@@ -5,10 +5,10 @@ module neb_mod
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
        &erg2ev,itesauv,lpkbar,nebtype,sig,unitp,potist,angst,itetabvois,rang,&
        &fnam,lenfnam,lfire,itesauv,itetabvois,iteanaposneb,maxneb,&
-       &nebrelaxation,lperiod,lspacendm,latcomp
+       &nebrelaxation,lperiod,lspacendm,latcomp,tstep,fpstop
 
   use Tpara,only:para_space_config,ierr
-
+  USE controleT_mod,only: controleT
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config,periodbox
@@ -17,7 +17,7 @@ module neb_mod
   use sauvegardeT_mod,only:sauvegardet
   use neb_module,only:cellneb,atneb,sigpath,boxneb,npath,enepath,nebtype,enepathev,reaction_coord,&
        &lvzeroneb,dragtest,nebtest,force_neb,formax,init_neb,find_relax,bruit_neb,build_s_path_drag,&
-       &force_projection,build_s_path_neb,force_projection_neb,paraneb,pscneb
+       &force_projection,build_s_path_neb,force_projection_neb,paraneb,pscneb,ltrpini
   USE parautils,only:initloc,pointer_caltabt_calfo
 
 #ifdef PARA
@@ -61,7 +61,7 @@ contains
     type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
     type(atom_config_d),target::atcible
     integer::iun,i,ic
-    logical::lchange
+    logical::lchange,lreturn
 
 #ifdef PARA    
     real(double)::enertrf,sigpathtrf(3,3),rc_trf
@@ -80,6 +80,54 @@ contains
        end if
     end do
     !APRES    
+    ALLOCATE(fire_dt(1:npath))
+    fire_dt(1:npath)=1d-15
+    ALLOCATE(fire_nstep(1:npath))
+    ALLOCATE(fire_alph(1:npath))
+    do ii=1,npath
+       CALL init_trempe_fire(fire_dt(ii), fire_nstep(ii), fire_alph(ii))
+       
+    END DO
+
+    if (ltrpini) then
+       do i1=1,npath,npath-1
+#ifdef PARA
+       if (((i1==1).and.(paraneb%image==0)).or.((i1==npath).and.(paraneb%image==paraneb%nimage-1))) then
+#endif
+          ii =i1
+          iteration=0
+          if(rang==0)write(6,*)'trempe initiale ',ii
+          call atneb(ii)%atom_config_d%print(unit=100+ii)
+          call initloc(atneb(ii)%atom_config_d,cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,&
+               &rumax,lperiod,psc=pscneb,lcalcvois=.true.) !initloc contient caltabtc sur atloc
+          do while (iteration.le.1000)
+             iteration = iteration+1             
+             lchange=.true.
+             call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
+                  &lperiod,lupdate=lchange,psc=pscneb)
+             ! appel de la routine generale des forces
+!             if (lmaster) then
+!                write(6,*)'rang',rang,ii, tstep,fire_nstep(ii),fire_alph(ii)
+                call trempe_fire (atneb(ii)%atom_config_d,tstep, fire_nstep(ii), fire_alph(ii))
+                
+                call controleT(atneb(ii)%atom_config_d,cellneb(ii),boxneb,pscneb,lreturn)
+!             end if
+             call paraneb%mpi_master%bcast(0,lreturn)
+             if (lreturn) exit
+          end do
+    
+
+!          enePATH(ii)=potist
+!          enePATHev(ii)=potist*erg2ev
+
+#ifdef PARA
+       endif
+#endif       
+
+    end do
+ endif
+ 
+
     call init_neb(atneb(1)%im,atneb(1)%imm)
 #ifdef PARA
     lmaster=paraneb%lmaster
@@ -149,22 +197,15 @@ contains
 
 
     ! Initialization of fire quench algorithm
-    IF (lFire) THEN
-       ALLOCATE(fire_dt(1:npath))
-       ALLOCATE(fire_nstep(1:npath))
-       ALLOCATE(fire_alph(1:npath))
-       do ii=1,npath
-          CALL init_trempe_fire(fire_dt(ii), fire_nstep(ii), fire_alph(ii))
-       END DO
-    END IF
+!    IF (lFire) THEN
+!    END IF
 
     iteration=1
 #ifdef PARA
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 #endif
 
-
-
+      
     do i1=1,npath
 #ifdef PARA
 
@@ -212,6 +253,12 @@ contains
     if (paraneb%lmaster) then
        call paraneb%mpi_master%sum(enepath)
        call paraneb%mpi_master%sum(enepathev)
+       if (rang==0) then
+          do i1=1,npath
+             write(6,*)'energie init i1 ',i1 ,enePATHev(i1)
+          end do
+       end if
+
     end if
 #endif
 

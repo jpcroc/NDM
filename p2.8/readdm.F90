@@ -37,7 +37,7 @@ contains
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
-    use neb_module,only: lvzeroneb,kspring
+    use neb_module,only: lvzeroneb,kspring,ltrpini
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
          &typswitch1,typswitch2
@@ -92,7 +92,7 @@ contains
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
-         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor
+         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,ltrpini
 
 
     !
@@ -262,7 +262,7 @@ contains
     iterasmol = -1                             ! <0 --> genere aucun fichier positions pour logiciel rasmol
     iteangle = -1                              ! pilote creation de fichier positions pour
     ! >=0 debut et fin d'execution
-
+    ltrpini=.false.
     lufilm = 89
     lufilmpaf = 79
     ludin = 94

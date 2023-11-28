@@ -53,7 +53,7 @@ module neb_module
   type(box_config)::boxneb
   type(para_config),target::paraneb
   type(para_space_config)::pscneb
-
+  logical::ltrpini
 contains
   
 

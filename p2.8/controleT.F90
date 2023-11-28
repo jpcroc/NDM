@@ -125,7 +125,7 @@ contains
 
     select case (dmtype)
 
-    case(21,22,23,24)
+    case(21,22,23,24,9)
        if ((fpstop>0.0).AND.(iteration.GE.1)) then
 
           fpmax=sqrt( MAXVAL( Sum(atdml%fp(1:3,1:atdml%im)**2,1) ) )
@@ -138,7 +138,7 @@ contains
 #endif
 
           fpn=fpSmax*erg2eV/angst
-          if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E25.15)') iteration,fpn, potist*erg2eV
+          if (myidsp==0)      write(6,'("TR: force max, energy",i6,3G25.15)') iteration,fpn, potist*erg2eV
 !          if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot)), 1d-9*maxval(abs(sigtoth0))
 !!$                 write (unitgc, *)
@@ -169,7 +169,7 @@ contains
                       call arret_ndm
                    end if
                 endif
-             case(21,23)
+             case(21,23,9)
                 itetemp=1;itesigma=1
                    if (present(lreturn)) then
                       lreturn=.true.
@@ -199,7 +199,7 @@ contains
 
           fpn=fpsmax*erg2eV/angst
           !          if (myidsp==0)      write(6,*)
-          if (myidsp==0)      write(6,*)'TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ', iteration,fpn, potist*erg2eV
+          if (myidsp==0)      write(6,'("TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ",i6,3G25.15)') iteration,fpn, potist*erg2eV
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot)), 1d-9*maxval(abs(sigtoth0))
           if (fpn.le.fsumstop) then
              select case(dmtype)
@@ -217,7 +217,7 @@ contains
                    end if
 
                 end if
-             case(21,23)
+             case(21,23,9)
                 if (present(lreturn)) then
                    lreturn=.true.
                    return
