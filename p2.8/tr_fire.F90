@@ -15,7 +15,7 @@ MODULE FireModule
   real(double), parameter :: tstep_MM=10
   integer, parameter:: nStepMin=5
 
-  real(double)::tstep0
+  real(double)::tstep0=1d-15
   
 CONTAINS
 
@@ -28,7 +28,7 @@ SUBROUTINE init_trempe_fire(dt, nstep, alph)
   INTEGER, intent(out) :: nstep
   REAL(double), intent(out) :: alph
   
-  tstep0=dt
+ dt=tstep0
   alph = alph_start
   nstep = 0
 
@@ -90,7 +90,7 @@ subroutine trempe_fire(atdml, dt, nstep, alph)
           alph=alph_start
           nstep=0
   end if
-  !write(6,'(A,4g14.5)')'FIRE p, dt, alpha, v: ', pscal,dt,alph,norme_de_vp
+!  write(6,'(A,4g14.5)')'FIRE p, dt, alpha, v: ', pscal,dt,alph,norme_de_vp
   return
 end subroutine trempe_fire
 
