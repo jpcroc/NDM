@@ -28,7 +28,7 @@ function(printCmakeTrace)
     if ( _variableName MATCHES "Col." )  # avoid setcolors below
       continue()
     endif()
-    message("TRACE:   ${_variableName}=${${_variableName}}")
+    message("${ColBlue}TRACE:   ${_variableName}=${${_variableName}}")
   endforeach()
   message( "END TRACE${ColReset}" )
 endfunction()
@@ -115,7 +115,7 @@ endfunction()
 
 
 function(log_warning msg)
-  message( "${ColRed}WARNING: ${msg}${ColReset}" )
+  message( "${ColYellow}WARNING: ${msg}${ColReset}" )
 endfunction()
 
 

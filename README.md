@@ -35,6 +35,32 @@ git clone --branch ndm2021_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/
 
 ### Compilation
 
+### Compiling NDM with Cmake
+
+Prerequisities
+It is recommended to use Intel's oneAPI suite including Intel's mpi implementation, the mpiifort wrapper and MKL.
+To use lammps it must be compiled as a shared library. The shared library Lammps compilation should create the required liblammps.so dynamic library. It is recommended to compile Lammps with the same compiler suite as NDM. see lammps doc
+
+Standard NDM compilation using cmake
+For convenience the following steps have been written in a bash script which you should edit according to your own settings.
+1. Choose the relevant preset file with your prefered NDM configuration (using MPI/LAMMPS).
+load the cache file:
+cmake -C cache_file
+
+2. then generate NDM cmake configuration (from any directory) :
+cmake -B BUI_DIR -S SRC_DIR
+with BUI_DIR the directory where you want NDM to be built and SRC_DIR the directory containing the main CMakeLists.txt file (usually NDM, parent from the src directory containing .F90 sources).
+
+3. from the BUI_DIR, build NDM :
+cmake --build .
+the compilation can be parallelized using the --parallel <n_proc> option.
+
+*. When Cmake fails to find the relevant dependencies it is often required to define additionnal variables to indiquate the libraries locations such as MPI_HOME, MPI_ROOT, etc... They are listed in the bash script.
+
+
+
+
+
 Compilation instructions are provided in the documentation included in the
 distribution repository
 - file [README_ndm_compilation.md](READMES/README_ndm_compilation.md)

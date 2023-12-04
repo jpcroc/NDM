@@ -31,6 +31,7 @@ endif()
 foreach( atest IN LISTS simpletests )
   log_info( "test ${atest}")
   add_executable( ${atest}.exe ./${atest}.f90 )
+  set_target_properties(${atest}.exe PROPERTIES LINKER_LANGUAGE Fortran) # Important when c++ is enabled for lammps, without this line c++ linker takes priority over Fortran
 
   # cmake regex see https://cmake.org/cmake/help/latest/command/string.html
   if ( ${atest} MATCHES "_openmpi$" )   # ending "_openmpi" -> mpirun 4
@@ -43,16 +44,17 @@ foreach( atest IN LISTS simpletests )
 
   set_tests_properties(${atest} PROPERTIES TIMEOUT 30)
 
-  target_link_libraries( ${atest}.exe PRIVATE libndm ${NDM_MKL_LIB} )
+  #target_link_libraries( ${atest}.exe PRIVATE libndm )
 endforeach()
 
 foreach( atest IN LISTS preprosimpletests )
   log_info( "test ${atest}")
   add_executable( ${atest}.exe ./${atest}.F90 )
+  set_target_properties(${atest}.exe PROPERTIES LINKER_LANGUAGE Fortran) # Important when c++ is enabled for lammps, without this line c++ linker takes priority over Fortran
   add_test( NAME ${atest} COMMAND ${atest}.exe )
   set_tests_properties(${atest} PROPERTIES TIMEOUT 30)
 
-  target_link_libraries( ${atest}.exe PRIVATE libndm ${NDM_MKL_LIB} )
+  #target_link_libraries( ${atest}.exe PRIVATE libndm )
 endforeach()
 
 
