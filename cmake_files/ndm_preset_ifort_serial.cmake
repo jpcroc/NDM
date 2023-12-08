@@ -1,10 +1,10 @@
 # launch cmake
 # https://cmake.org/cmake/help/latest/manual/cmake.1.html#generate-a-project-buildsystem
 
-# preset that turns on just gnu serial
+# preset that turns on just intel serial
 # this will be compiled quickly and handle a lot of common inputs.
 
-message("PRESET:   use ndm_preset_gnu_serial.cmake")
+message("PRESET:   use ndm_preset_ifort_serial.cmake")
 
 # CMAKE usual preset variables
 # https://cmake.org/cmake/help/latest/envvar/FC.html
