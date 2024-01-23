@@ -5,10 +5,10 @@ module neb_mod
   USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
        &erg2ev,itesauv,lpkbar,nebtype,sig,unitp,potist,angst,itetabvois,rang,&
        &fnam,lenfnam,lfire,itesauv,itetabvois,iteanaposneb,maxneb,&
-       &nebrelaxation,lperiod,lspacendm,latcomp,tstep,fpstop
+       &nebrelaxation,lperiod,lspacendm,latcomp
 
   use Tpara,only:para_space_config,ierr
-  USE controleT_mod,only: controleT
+
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config,periodbox
@@ -17,7 +17,7 @@ module neb_mod
   use sauvegardeT_mod,only:sauvegardet
   use neb_module,only:cellneb,atneb,sigpath,boxneb,npath,enepath,nebtype,enepathev,reaction_coord,&
        &lvzeroneb,dragtest,nebtest,force_neb,formax,init_neb,find_relax,bruit_neb,build_s_path_drag,&
-       &force_projection,build_s_path_neb,force_projection_neb,paraneb,pscneb,ltrpini
+       &force_projection,build_s_path_neb,force_projection_neb,paraneb,pscneb
   USE parautils,only:initloc,pointer_caltabt_calfo
 
 #ifdef PARA
@@ -25,7 +25,7 @@ module neb_mod
   use Tpara,only: comm_space
   USE init_vois_mod,only: init_voisinage
 #endif
-  use Tpara,only: myidsp
+
   implicit none
 
 contains
@@ -60,8 +60,8 @@ contains
     type(cell_config),pointer::cellnebloc
     type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
     type(atom_config_d),target::atcible
-    integer::iun,i,ic
-    logical::lchange,lreturn
+
+    logical::lchange
 
 #ifdef PARA    
     real(double)::enertrf,sigpathtrf(3,3),rc_trf
@@ -80,86 +80,9 @@ contains
        end if
     end do
     !APRES    
-    ALLOCATE(fire_dt(1:npath))
-    fire_dt(1:npath)=1d-15
-    ALLOCATE(fire_nstep(1:npath))
-    ALLOCATE(fire_alph(1:npath))
-    do ii=1,npath
-       CALL init_trempe_fire(fire_dt(ii), fire_nstep(ii), fire_alph(ii))
-       
-    END DO
-    lmaster=paraneb%lmaster
-    if (lmaster) myidsp=0
-    if (ltrpini) then
-       do i1=1,npath,npath-1
-#ifdef PARA
-
-          if (((i1==1).and.(paraneb%image==0)).or.((i1==npath).and.(paraneb%image==0))) then
-#endif
-             ii =i1
-     !        CALL init_trempe_fire(fire_dt(ii), fire_nstep(ii), fire_alph(ii))
-          iteration=0
-          if(lmaster)write(6,*)'trempe initiale ',ii,rang
-!          call atneb(ii)%atom_config_d%print(unit=100+ii)
-          call initloc(atneb(ii)%atom_config_d,cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,&
-               &rumax,lperiod,psc=pscneb,lcalcvois=.true.) !initloc contient caltabtc sur atloc
-!          write(6,*)'NEBT1',rang,iteration
-          do while (iteration.le.1000)
-             iteration = iteration+1             
-             lchange=.true.
-!             write(6,*)'NEBT2',rang,iteration
-             call pointer_caltabt_calfo(sig,potist,atneb(ii)%atom_config_d,cellneb(ii),boxneb,atnebloc,cellnebloc,paraneb,&
-                  &lperiod,lupdate=lchange,psc=pscneb)
- !            write(6,*)'NEBT3',rang,iteration
-             ! appel de la routine generale des forces
-!             if (lmaster) then
-!                write(6,*)'rang',rang,ii, tstep,fire_nstep(ii),fire_alph(ii)
-                call trempe_fire (atneb(ii)%atom_config_d,tstep, fire_nstep(ii), fire_alph(ii))
- !               write(6,*)'NEBT4',rang,iteration
-                call controleT(atneb(ii)%atom_config_d,cellneb(ii),boxneb,pscneb,lreturn)
- !               write(6,*)'NEBT5',rang,iteration
-!             end if
-!             call paraneb%mpi_master%bcast(0,lreturn)
-             if (lreturn) exit
-          end do
-    
-
-!          enePATH(ii)=potist
-!          enePATHev(ii)=potist*erg2ev
-
-#ifdef PARA
-       endif
-
-#endif
-    end do
-#ifdef PARA
-    !       if ((i1==1).or.(i1==npath))then
-    i1=1
-!    call atneb(i1)%print(unit=100+rang)
-    call atneb(i1)%send2all(0,paraneb%mpi_master)
-    call atneb(i1)%send2all(0,paraneb%mpi_image)
-!    call atneb(i1)%print(unit=120+rang)
-!    write(6,*)'RANGP1', rang
-    i1=npath
-!    call atneb(i1)%print(unit=200+rang)
-    call atneb(i1)%send2all(0,paraneb%mpi_master)
-    call atneb(i1)%send2all(0,paraneb%mpi_image)
-!    call atneb(i1)%print(unit=220+rang)
-!    write(6,*)'RANGP2', rang
-!       end if
-#endif
-
- !   if (rang==0)call atneb(1)%print(unit=50)
- !   if (rang==0)call atneb(npath)%print(unit=55)
- !   if (rang==10)call atneb(1)%print(unit=60)
- !   if (rang==10)call atneb(npath)%print(unit=65)
-    
- endif
- 
-
     call init_neb(atneb(1)%im,atneb(1)%imm)
 #ifdef PARA
-
+    lmaster=paraneb%lmaster
     if ((paraneb%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        call init_voisinage(cellneb(1),pscneb,lwrite=.false.)
     end if
@@ -226,15 +149,22 @@ contains
 
 
     ! Initialization of fire quench algorithm
-!    IF (lFire) THEN
-!    END IF
+    IF (lFire) THEN
+       ALLOCATE(fire_dt(1:npath))
+       ALLOCATE(fire_nstep(1:npath))
+       ALLOCATE(fire_alph(1:npath))
+       do ii=1,npath
+          CALL init_trempe_fire(fire_dt(ii), fire_nstep(ii), fire_alph(ii))
+       END DO
+    END IF
 
     iteration=1
 #ifdef PARA
     CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 #endif
 
-      
+
+
     do i1=1,npath
 #ifdef PARA
 
@@ -282,19 +212,8 @@ contains
     if (paraneb%lmaster) then
        call paraneb%mpi_master%sum(enepath)
        call paraneb%mpi_master%sum(enepathev)
-       if (rang==0) then
-          do i1=1,npath
-             write(6,*)'energie init i1 ',i1 ,enePATHev(i1)
-          end do
-       end if
-
     end if
 #endif
-    if (rang==0) then
-       do i1=1,npath
-          write(6,*)'energie init i1 ',i1 ,enePATHev(i1)
-       end do
-    end if
 
     select case (nebtype)
     case (1)

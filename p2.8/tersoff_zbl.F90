@@ -13,11 +13,10 @@ subroutine tersoff_zbl
   USE var_pot, ONLY:ngrid,catom,csive,ipo,lu_roff_pair,npair,ntyp,pot,pot_d,roff1,roff2,typ_pot_pair,typ_pot_pair
   USE force_tersoff_facteurs
 
-  integer :: i,j,k,l,m,n,iti
+  integer :: k,l
   real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
-  real(double):: ktor,ktorho
-  real(double) :: rk,rhok,rk2
-
+  real(double):: ktor
+  real(double) :: rk
 
 
 !interface

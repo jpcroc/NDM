@@ -6,6 +6,8 @@ module setnoxsimple_mod
   USE atomconfig,only: atom_config
   USE boxconfig,only:box_config
   USE cellconfig,only:cell_config
+  USE arret_ndm_mod,only:arret_ndm
+
 #ifdef PARA
   use Tpara,only:nprocspace
 #endif
@@ -73,4 +75,24 @@ contains
        if (.not.allocated(atsn%iwmax))allocate(atsn%iwmax(atsn%imm))
     end if
   end subroutine setnoxsimple
+
+  subroutine setcellsimple(atcf,box,celsp,nox,noy,noz)
+    class (atom_config)::atcf
+    class (box_config)::box
+    class (cell_config):: celsp
+    integer,intent(in)::nox,noy,noz
+    integer::natpc
+    if (nox<=0.or.noy<=0.or.noz<=0) then
+       write(6,*)'nox noy noz must be specified in the call of setcellsimple'
+       call arret_ndm
+    end if
+    celsp%celsize(1) = box%zl(1)/float(nox)
+    celsp%celsize(2) = box%zl(2)/float(noy)
+    celsp%celsize(3) = box%zl(3)/float(noz)
+    natpc=int(float(atcf%im_glob)/(nox*noy*noz))
+    natpc=max(int(2*natpc),10)
+    call celsp%init(box,nox,noy,noz,natpc)
+  end subroutine setcellsimple
+
+    
 end module setnoxsimple_mod

@@ -18,9 +18,9 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:itetemp2,dmtype,rang,iteration,itmax,mdcg_noise,&
-         &angst,erg2ev,potist,lperiod,lspacendm,latcomp
-    USE var_pot, ONLY:ntyp
+    USE gen_com_m, ONLY:dmtype,rang,iteration,itmax,mdcg_noise,&
+         &angst,erg2ev,lperiod,lspacendm,latcomp
+
     USE work_cgII,only: funct
 #ifdef PARA
     use paraconfig,only:para_config,initparapuresp
@@ -35,25 +35,25 @@ contains
     type(box_config)::boxndm
      type(para_space_config)::psc
 
-    integer :: n,  i, igc
+    integer ::   i
     real(double) :: efinal
     !GC settings
     integer  :: NGC,criterion,NCALLS,IER
     double precision, dimension(:), allocatable:: X,G,W
     double precision     :: ACC,F
-    character :: extension*2
-    integer::lenfn2,i1
+
+    integer::i1
     !-----------------------------------------------
     !
     !
     real(double), allocatable :: bruitmd(:,:)
-    integer, allocatable      :: ityp_all(:)
+
 
 #ifdef PARA
     integer :: iproc
-    integer, allocatable      :: num_at_glob_all(:)
+
     !  integer :: im_loc
-    integer :: proc_source
+
 
 
 #endif

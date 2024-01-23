@@ -15,17 +15,17 @@ contains
     USE eam
     USE eamerco
     USE var_pot, ONLY:csive,ipotentiel,lprtpot,rue_pot,typ_and_pot,ngrid,catom,eamrep_d,ipo,npair,ntyp,roff2,typ_pot_pair,&
-         &eamrep,roff1,lu_roff_pair,eamrho,eamglue,eamrho_d,eamglue_d,auxe,alpha,zz,iewald,rhomax,rhomin
+         &eamrep,roff1,lu_roff_pair,eamrho,eamglue,eamrho_d,eamglue_d,auxe,alpha,iewald,rhomax,rhomin
 
     USE SMjuli
     implicit none
 
-    integer :: k,l,iti,lw,i,j,ngrp1
+    integer :: k,l,iti,lw,ngrp1
     real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
     real(double) ::ysp_d(ngrid),bsp_d(ngrid),csp_d(ngrid),dsp_d(ngrid)
-    real(double):: ktor,r,r2,r3
+    real(double):: ktor
     real(double),dimension(:),allocatable::ktorho
-    real(double) :: rk,rhok,rk2,rue,minrho,maxrho,ar,ar2,damp
+    real(double) :: rk,rhok,rk2,rue,minrho,maxrho
 
 
 

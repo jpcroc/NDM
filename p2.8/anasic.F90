@@ -4,11 +4,11 @@ module sic
 
 contains
 
-  subroutine anasic(im,xp,ityp,nvi,ivois,at,bg,it,maxvois,eatom,itmax)
+  subroutine anasic(im,xp,ityp,nvi,ivois,at,it,maxvois,eatom,itmax)
     USE gen_com_m, ONLY : ev2erg,erg2ev
     implicit none
     integer::im,it,maxvois,itmax
-    real*8::xp(3,im),at(3,3),bg(3,3),eatom(im)
+    real*8::xp(3,im),at(3,3),eatom(im)
     integer::ivois(maxvois,im),nvi(im),ityp(im)
 
 

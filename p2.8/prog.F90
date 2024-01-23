@@ -1,4 +1,5 @@
 module prog_mod
+  use arps_mod,only:dmloop_arps,initarps
   USE arret_ndm_mod,only:arret_ndm
   USE init_mod,only: init
   USE calfo_mod,only: calfo
@@ -12,15 +13,15 @@ module prog_mod
   USE var_pot
   USE ForceMatrix_mod, only: calcFM, init_MPI_FM, pscFM,paraFM
   USE montecarlo_mod, only: montecarlo,init_montecarlo,init_mpi_mcgc!!atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc,config_atom_n&
-!       &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
-!       &idirectionmcgc,initN,init_instyp,ins_typ,boxmcgc_p,boxmcgcpath,paramcgc,seed!,initmclpr
+  !       &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
+  !       &idirectionmcgc,initN,init_instyp,ins_typ,boxmcgc_p,boxmcgcpath,paramcgc,seed!,initmclpr
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,box_config_lpr
-  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e,atom_config_arps
   USE cellconfig, only:cell_config
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax,iseed,&
        &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman,lanaposart
-  
+
   use read_val,only:imm,ltabvois,rvois
   use posana,only:initanapos
   use NGC_mod,only:ngc
@@ -32,14 +33,14 @@ module prog_mod
 #endif
 
   use cdp_mod,only:creadp
-!  use one_calc_mod,only:one_calc
+  !  use one_calc_mod,only:one_calc
   use d_at_at_mod
   USE dmloop_pilot_mod,only:dmloop_pilot
   use art_mod,only:art90
   use ndm2art2ndm,only:init_mpi_art
-  
 
-  
+
+
   implicit none
 contains
   subroutine prog
@@ -62,9 +63,10 @@ contains
     USE neb_module,only:init_mpi_neb
     implicit none
     character :: extension*2
-    integer::lenfn2,i,ko,im,nvois
+    integer::im,nvois
     class(atom_config),pointer::atdml
     type(atom_config),target:: atdm
+    type(atom_config_arps),target:: atdmarps
     type(atom_config_d),target:: atdmd
     type(atom_config_e),target:: atdme
     type(cell_config)::celndm
@@ -87,13 +89,13 @@ contains
 
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
     !probablement inutile pour dmtype=9 ou 15
-! choose actual data types for atmdl and boxndm depending on values read in readdm
+    ! choose actual data types for atmdl and boxndm depending on values read in readdm
     if ((lPRahman).or.((dmtype == 15).or.(dmtype==151))) then
        boxndm=>boxlpr
     else
        boxndm=>boxs
     end if
-    
+
     if ((lax).or.(lsigat).or.(lprteat).or.(llangevin).or.(l2t))then
        atdml=>atdme
        atdme%lax=lax
@@ -105,11 +107,13 @@ contains
        atdml=>atdmd
     else
        select case(dmtype)
-          case(30,32,34,33,19,35,12)
-             atdml=>atdm
-        case default
-           atdml=>atdmd
-        end select
+       case(30,32,34,33,19,35,12)
+          atdml=>atdm
+       case(41)
+          atdml=>atdmarps
+       case default
+          atdml=>atdmd
+       end select
     end if
     im=0 ; nvois=0
     atdml%imm_glob=imm
@@ -132,7 +136,10 @@ contains
        endif
 #endif
        call init(atdml,boxndm,celndm,psc0)
-
+       select type (atdml)
+       type is (atom_config_arps)
+          call initarps(atdml)
+       end select
 #ifdef DECOUP
        ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
        return
@@ -147,14 +154,14 @@ contains
 #endif
 
        select type(atdml)
-       type is (atom_config)
+       type is (atom_config) !no velocity
 
-          if (lcdp) then
+          if (lcdp) then ! special case defect creation
              call creadp(atdml,celndm,boxndm,psc0)
-          else
+          else ! no change in atom number MD
              itloopmax=itmax
              timeloopmax=timemax
-!             write(6,*)'TIMELOOPMAX ITLOOPMAX',timeloopmax,itloopmax
+             !             write(6,*)'TIMELOOPMAX ITLOOPMAX',timeloopmax,itloopmax
              select case (dmtype) 
              case(30,31)
                 call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
@@ -163,62 +170,66 @@ contains
                 call endrunT(atdml,celndm,boxndm,latcomp)
              end select
           end if
-       class is (atom_config_d)
-          select case (dmtype) 
+       class is (atom_config_d) !velocities
+          select case (dmtype) ! select from dmtype 
+          case(41)
+             itloopmax=itmax
+             timeloopmax=timemax
+             select type(atdml)
+             type is (atom_config_arps) !special case ARPS
+                call dmloop_arps(atdml,celndm,boxndm,psc0)
+             end select
           case(5)
              write(6,*)'loopforcetest pas NDM2020' ; stop
-          case(4,8,1,21,22,23,24,88)
-             if (lcdp) then
+          case(4,8,1,21,22,23,24,88) ! some form of MD, including quenchings
+             if (lcdp) then ! special case defect creation
                 call creadp(atdml,celndm,boxndm,psc0)
-             else
+             else ! no change in atom number MD
                 itloopmax=itmax
                 timeloopmax=timemax
 
                 call dmloop_pilot(atdml,celndm,boxndm,psc0,linit=.true.)
              end if
-          case(30,31)
+          case(30,31) ! old CG probably does not work anymore
              if (lcdp) then
-                write(6,*)'noc cdp with old GC'
+                write(6,*)'noc cdp with old CG'
                 call arret_ndm
              else
                 call gcII (atdml%atom_config,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
              endif
-          case(32,33,34)
+          case(32,33,34) 
              if (lcdp) then
-                call creadp(atdml,celndm,boxndm,psc0)
+                call creadp(atdml,celndm,boxndm,psc0)! special case defect creation
              else
-                call NGC(atdml,celndm,boxndm,psc0)
+                call NGC(atdml,celndm,boxndm,psc0) ! new CG
              end if
           case(112)
-             call d_at_at(atdml,celndm,boxndm)
+             call d_at_at(atdml,celndm,boxndm) ! simple calculations of intzeratomic distance...
           case(111)
              call arret_ndm
-          case(11)
+          case(11) ! one iteration
              if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
              CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc0) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              call analyseT(atdml,celndm,boxndm,psc0)
              call controleT(atdml,celndm,boxndm,psc0)
              call endrunT(atdml,celndm,boxndm,latcomp)
 
-!!$          case (12) 
-!!$             call art90
 
-#ifdef SUNDAE    
-          case (16) 
-             call sundae
-#endif
-
-#ifdef MAB    
-          case (17) 
-             call mab
-#endif
+!!$#ifdef SUNDAE    
+!!$             case (16) 
+!!$                call sundae
+!!$#endif
+!!$
+!!$#ifdef MAB    
+!!$             case (17) 
+!!$                call mab
+!!$#endif
 
 
           case default
              write(6,*)'WTF dmtype',dmtype
           end select
-
-
+          !          end select
        end select
     case(19) ! force matrix
        call init_mpi_FM
@@ -231,22 +242,22 @@ contains
        call init_simple(atdml,celndm,boxndm,psc=pscFM)
 #ifdef LAMMPS_VERSION
 
-    if ((ipotentiel==-10).or.(ipotentiel==-11))then
-       firsttime_lammps=.true.
-       call init_lammps()
+       if ((ipotentiel==-10).or.(ipotentiel==-11))then
+          firsttime_lammps=.true.
+          call init_lammps()
 
-    end if
+       end if
 #endif
 #ifdef ML
 
-    if (ipotentiel==20)    call init_config_ml
+       if (ipotentiel==20)    call init_config_ml
 
 
 #endif
 
        call calcFM(atdml,celndm,boxndm)
        call arret_ndm
-    case(12)
+    case(12) ! ART calculation
        call init_mpi_art
        if (ltabvois) then
           rv=rvois
@@ -258,15 +269,15 @@ contains
        if (lanaposart) call initanapos(atdml,celndm,boxndm)
        call art90(atdml,celndm,boxndm,psc0)
 
-    case(9)
+    case(9) !NEB calculation
        !#ifdef PARA
-       
+
        call init_mpi_neb
        !#endif
        call init_neb0
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
-    case(15,151)
+    case(15,151) ! Montecarlo (path or grand canonical)
        !#ifdef PARA
 
        call init_mpi_MCGC ! PARAPATH

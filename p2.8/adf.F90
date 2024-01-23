@@ -22,14 +22,13 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: i1, i2, i3, i4, koo, ko1, ko2, i, &
-         j, k, m,m1,lutriplet,ka,ma,m2
+    integer :: i1, i2, i3, i, &
+         m1,lutriplet,m2
 
-    real(double) :: thetaijk, c11, c21, c31, c12, c22, c32, &
-         incre
-    real(double) :: rspace2, invincre, &
-         costheta
-    real(double) :: aaa,bbb,ccc
+    real(double) ::  incre
+    real(double) :: rspace2, invincre
+
+    real(double) :: aaa
     real(double), dimension(ntyp,ntyp,ntyp) :: intfda,angle
     character :: triplet1*20,triplet2*20,triplet3*20
     integer :: lenftriplet1,lenftriplet2,lenftriplet3

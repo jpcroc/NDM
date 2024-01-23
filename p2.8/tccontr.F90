@@ -20,7 +20,7 @@ contains
     class(cell_config),intent(inout)::celcf
     class(box_config)::boxcf
     real(double)::epcou
-    integer :: i, ic,j,k,l,m,n,im,imm
+    integer :: i, im,imm
     type(atom_config_d)::atcou
     type(cell_config):: celcou
     real(double),allocatable::xpnp(:,:)

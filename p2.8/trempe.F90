@@ -19,7 +19,6 @@ contains
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
-    real(double), dimension(ntyp) :: temptyp
     class(atom_config_d)::atdml
     integer::im
     !-----------------------------------------------
@@ -28,7 +27,7 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: i, ic, iti
+    integer :: i, ic
     real(double), dimension(ntyp) :: aux
     real(double) :: forctot, xprov
     !-----------------------------------------------

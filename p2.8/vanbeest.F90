@@ -69,7 +69,7 @@ subroutine maxVBEEST(rrep,csive,l,auxe,alpha,ngrid,ntyp, &
   !   M o d u l e s
   !-----------------------------------------------------------
   USE T_kind_param_m, ONLY:  double, extended
-  USE var_pot, ONLY: ipo
+
   implicit none
   !-----------------------------------------------------------
   !   D u m m y   A r g u m e n t s
@@ -93,12 +93,12 @@ subroutine maxVBEEST(rrep,csive,l,auxe,alpha,ngrid,ntyp, &
   !-----------------------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------------------
-  integer :: j1,i1,i2,m,n,k
+  integer :: j1,m,k
   integer :: itdp
   integer :: err
   integer :: istop
   integer :: ierr
-  real(double) :: r1,t1,t2
+  real(double) :: t1,t2
 
   real(double), parameter :: delta=1.D-13
   integer, parameter :: maxconv=30000

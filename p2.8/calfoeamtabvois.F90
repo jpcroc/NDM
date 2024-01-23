@@ -217,9 +217,9 @@ contains
 !!$
           if (test_sigma) then                   
              IF (ldemitab) THEN
-                sig(1:3,1) = sig(1:3,1) + inv_volu*fij(1:3)*dxp(1)
-                sig(1:3,2) = sig(1:3,2) + inv_volu*fij(1:3)*dxp(2)
-                sig(1:3,3) = sig(1:3,3) + inv_volu*fij(1:3)*dxp(3)
+                sigcalfo(1:3,1) = sigcalfo(1:3,1) + inv_volu*fij(1:3)*dxp(1)
+                sigcalfo(1:3,2) = sigcalfo(1:3,2) + inv_volu*fij(1:3)*dxp(2)
+                sigcalfo(1:3,3) = sigcalfo(1:3,3) + inv_volu*fij(1:3)*dxp(3)
                 IF (lSigat) THEN
                    select type (atcf)
                    class is (atom_config_e)
@@ -232,9 +232,9 @@ contains
                 end select
                 END IF
              ELSE
-                sig(1:3,1) = sig(1:3,1) + 0.5d0*inv_volu*fij(1:3)*dxp(1)
-                sig(1:3,2) = sig(1:3,2) + 0.5d0*inv_volu*fij(1:3)*dxp(2)
-                sig(1:3,3) = sig(1:3,3) + 0.5d0*inv_volu*fij(1:3)*dxp(3)
+                sigcalfo(1:3,1) = sigcalfo(1:3,1) + 0.5d0*inv_volu*fij(1:3)*dxp(1)
+                sigcalfo(1:3,2) = sigcalfo(1:3,2) + 0.5d0*inv_volu*fij(1:3)*dxp(2)
+                sigcalfo(1:3,3) = sigcalfo(1:3,3) + 0.5d0*inv_volu*fij(1:3)*dxp(3)
                 IF (lSigat) THEN
                    select type (atcf)
                    class is (atom_config_e)
@@ -251,7 +251,7 @@ contains
     end do loop3at1
 
     ! Energie potentielle totale
-    potist = potisglue + potisrep
+    potistcalfo = potisglue + potisrep
 
     if (lnemd) then
        fpnemdmoy=0

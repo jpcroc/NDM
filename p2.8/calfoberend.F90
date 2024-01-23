@@ -8,14 +8,14 @@ module calfoberend_mod
   implicit none
 contains
   subroutine calfoberend(atcf)
-#ifdef PARA
-    USE Tpara,only:COMM_space,nprocspace
-#else
-    USE Tpara,only:nprocspace
-#endif
+!#ifdef PARA
+!    USE Tpara,only:COMM_space,nprocspace
+!#else
+!    USE Tpara,only:nprocspace
+!#endif
     class(atom_config_d)::atcf
     integer :: i,ic
-    real(double) :: gamb,fact,tempm1,mv2,v2,mv2_glob
+    real(double) :: gamb,fact,tempm1
 
 
     tempm1=tempinstT(atcf)

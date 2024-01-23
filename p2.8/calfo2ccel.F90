@@ -1,11 +1,10 @@
 module calfo2ccel_mod
-  USE var_pot, ONLY:alpha,csive,ipotentiel,ipo,zz,ipo,rue_pair,pot,typ_and_pot,typ_pot_pair
+  USE var_pot, ONLY:alpha,csive,ipotentiel,ipo,zz,ipo,rue_pair,pot,typ_and_pot,typ_pot_pair,potis1
   USE calfocommon
   use vect_dist_mod,only:vect_dist
-    USE atomconfig,only : atom_config,atom_config_d,atom_config_e
+    USE atomconfig,only : atom_config,atom_config_d,atom_config_e,atom_config_arps
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config
-
 
   implicit none
 contains
@@ -15,7 +14,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m , ONLY:pi,potis1,rang
+    USE gen_com_m , ONLY:pi,rang
     USE jqmod
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
@@ -31,7 +30,7 @@ contains
     real(double) :: aux, alp, f1, f2, f3, sk, r, phu
     real(double) :: dr,deltaepot,fcontr
     logical ::linter
-    real(double)::dxp(3),gradij(3),sig2p(3,3)
+    real(double)::dxp(3),gradij(3)
 
     sig2p=0
     ! Declarations de constantes
@@ -76,6 +75,11 @@ contains
              else
                 if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme déja calculé
              end if
+             
+             select type(atcf) ! ARPS dynamics see arps.F90
+             type is (atom_config_arps)
+                if((.not.atcf%lgul(i)).and.(.not.atcf%lgul(j)))cycle
+             end select
              
 !#else
 !             if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme déja calculé
@@ -162,19 +166,20 @@ contains
     end do ! fin i
 
 #ifdef PARA
-    if (test_sigma)then
+
     if (nprocspace.gt.1) then
        call comm_space%sum(potis1)
+       if (test_sigma)then
        call comm_space%sum(sig2p)
        if (associated(sigc)) then
           call comm_space%sum(sigc)
-
+          
        endif
     end if
  end if
 #endif
-    if (test_sigma)sig=sig+sig2p
-!    if (rang==0)    write(6,*)'SIG2P',sig
+
+
     ! fin du calcul du terme de paire dans l'espace direct
     return
   end subroutine calfo2ccel

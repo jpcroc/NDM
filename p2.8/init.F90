@@ -53,7 +53,7 @@ contains
     USE eloss, ONLY : ibrake,ecelec,initeloss
 
 #ifdef PARA
-    USE Tpara,only:COMM_space,myidsp,nprocspace
+    USE Tpara,only:COMM_space,nprocspace
 #else
     use Tpara,only:nprocspace
 
@@ -67,9 +67,9 @@ contains
     class(box_config),intent(out)::boxndm
     type(para_space_config)::psc
 
-    integer :: i, lufilmpaf,itapp,j,lenfn2,ipath,ierr,formatsauv
+    integer :: lufilmpaf,itapp,formatsauv
     !-----------------------------------------------
-    character*2::extension
+
     logical :: lrepart
 
     tmean = 0.0

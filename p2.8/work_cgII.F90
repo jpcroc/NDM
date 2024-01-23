@@ -44,11 +44,11 @@ contains
     !-----------------------------------------------
     !-----------------------------------------------
     !-----------------------------------------------
-    integer::iproc,proc_source,cellx,celly,cellz
-    real(double)::aux,auy,auz
-    character :: extension*2
-    integer::lenfn2,ko,i1,formatsauv
-    real(double) :: fpmax,fpn,forctot,formax,fpmax_glob
+
+
+
+    integer::i1,formatsauv
+    real(double) :: forctot,formax
     logical::lover,lcalcvois
 
     logical:: lchg

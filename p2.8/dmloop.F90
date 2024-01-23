@@ -45,7 +45,7 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     type(para_space_config)::psc
-    integer :: i, iti,ilocal,ic
+    integer :: ilocal,ic
     REAL(double) ::  fire_alph,pint
     INTEGER :: fire_nstep
     !-----------------------------------------------

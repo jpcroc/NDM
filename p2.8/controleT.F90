@@ -37,18 +37,10 @@ contains
     class(box_config)::boxndm
     type(para_space_config)::psc
     logical,optional::lreturn
-
-
-    integer :: nacou, i, ic, iti,it1,it2,it3
-    real(double) :: vv, a1, a2, a3, c1, c2, c3
-    real(double), dimension(1,3) :: g1,aux
-    real(double) :: ltc, ctime, tdev, tcool, epc1, epc2, epc3,masstot,massa,tclt
-    real(double), dimension(1,3) :: xtr, cv
+    integer ::  i,it1,it2,it3
     real(double) :: fpmax,fpn,forctot,formax,fpsmax,sigtoth0(3,3)
-    real(double) :: potistmean,potistdif
-    real(double),save :: potist1000
-    real, allocatable,save :: potiststock(:)
-    save ltc
+
+
     !-----------------------------------------------
     !
     !
@@ -125,7 +117,7 @@ contains
 
     select case (dmtype)
 
-    case(21,22,23,24,9)
+    case(21,22,23,24)
        if ((fpstop>0.0).AND.(iteration.GE.1)) then
 
           fpmax=sqrt( MAXVAL( Sum(atdml%fp(1:3,1:atdml%im)**2,1) ) )
@@ -138,7 +130,7 @@ contains
 #endif
 
           fpn=fpSmax*erg2eV/angst
-          if (myidsp==0)      write(6,'("TR: force max, energy",i6,3G25.15)') iteration,fpn, potist*erg2eV
+          if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E25.15)') iteration,fpn, potist*erg2eV
 !          if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot)), 1d-9*maxval(abs(sigtoth0))
 !!$                 write (unitgc, *)
@@ -169,7 +161,7 @@ contains
                       call arret_ndm
                    end if
                 endif
-             case(21,23,9)
+             case(21,23)
                 itetemp=1;itesigma=1
                    if (present(lreturn)) then
                       lreturn=.true.
@@ -199,7 +191,7 @@ contains
 
           fpn=fpsmax*erg2eV/angst
           !          if (myidsp==0)      write(6,*)
-          if (myidsp==0)      write(6,'("TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ",i6,3G25.15)') iteration,fpn, potist*erg2eV
+          if (myidsp==0)      write(6,*)'TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ', iteration,fpn, potist*erg2eV
           if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot)), 1d-9*maxval(abs(sigtoth0))
           if (fpn.le.fsumstop) then
              select case(dmtype)
@@ -217,7 +209,7 @@ contains
                    end if
 
                 end if
-             case(21,23,9)
+             case(21,23)
                 if (present(lreturn)) then
                    lreturn=.true.
                    return

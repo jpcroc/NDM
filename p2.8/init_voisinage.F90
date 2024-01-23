@@ -11,7 +11,7 @@ subroutine init_voisinage (cellv,psc,lwrite)
   !   M o d u l e s
   !-----------------------------------------------
   use gen_com_m,only:rang
-  use Tpara,only:MPI_COMM_space, nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
+  use Tpara,only: nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 !  use mod_para,only:nbr_cell_ftm,NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
 
   implicit none
@@ -26,7 +26,7 @@ subroutine init_voisinage (cellv,psc,lwrite)
   integer :: icell
   integer :: cell_vois
   integer :: est_present
-  integer :: nb_cell_frontieres
+
   integer :: nb_frontieres
   integer :: nb_internes
   integer :: nb_fantomes_max

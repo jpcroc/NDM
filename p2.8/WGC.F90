@@ -146,7 +146,7 @@ contains
     logical,optional::lvm
     real(double),save::Vminabs=1d16
     real(double),dimension (3,3)::invh,invtrh,forcebx
-    real(double)::formax,forctot,fsigmax,deltaV,sigmax,sigm2,ppot,fsifm2
+    real(double)::formax,forctot,fsigmax,deltaV,sigmax,sigm2,ppot
     integer::i,i1,i2,ip,ic
     if (present(lvm))lvm=.false.
 
@@ -424,13 +424,13 @@ contains
     !-----------------------------------------------
     !-----------------------------------------------
     !-----------------------------------------------
-    integer::iproc,proc_source,cellx,celly,cellz
-    real(double)::aux,auy,auz
-    character :: extension*2
-    integer::lenfn2,ko,i1,i,i2,ip,ic
+
+
+
+    integer::i1,i,i2,ip
     real(double)::volu,Press
 
-    real(double) :: invVolu,pre,x,fmax
+    real(double) :: invVolu
     logical :: lchgbox
 
     select case(ityprel)

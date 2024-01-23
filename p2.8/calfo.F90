@@ -13,11 +13,11 @@ module calfo_mod
   USE calfojuli_mod,only:calfojuli
   USE calfojulicel_mod,only:calfojulicel
   USE force_tersoff_cel_mod,only:force_tersoff_cel
-  use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam,zz
+  use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam,zz,potis1
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:potis0,potis2,potisp,erg2ev&
-       &,potistersoff,potiszbl,potcp,potis1,potis3,zero,rang,lperiod,lpcube
+  USE gen_com_m, ONLY:potis2,potisp,erg2ev&
+       &,potistersoff,potiszbl,potcp,potis3,zero,rang,lperiod
 
   USE force_tersoff_mod,only:force_tersoff
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -48,10 +48,9 @@ contains
     class(box_config)::boxcf
     type(para_space_config)::psc
     real(double),intent(out)::potistcf,sigcf(3,3)
-    real(double),dimension(:,:),allocatable:: xp,fp,xpp
 
-    real(double)::pint
-    integer :: i,ilocal,ipot,ic
+    
+    integer :: ipot
     logical,optional, intent(in)  ::t_sigma
     boxcf%lperiod=lperiod
     ltpcel=.false.
@@ -68,8 +67,8 @@ contains
        call arret_ndm
     end if
     
-    potist=0.
-    potis1=0. ; potis2=0.; potis3=0.; potis0=0. ; potcp=0.; potisP=0.
+    potistcalfo=0.
+    potis1=0. ; potis2=0.; potis3=0. ; potcp=0.; potisP=0.
     potisTersoff=0.; potiszbl=0
     potisrep=0.; potisglue=0.; potiseam=0.
 
@@ -77,7 +76,7 @@ contains
     lprteat=.false.
     lsigat=.false.
     if (test_sigma) then
-       sig(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
+       sigcalfo(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
     end if
     select type(atcf)
     class is (atom_config_e)
@@ -107,7 +106,7 @@ contains
        !     boxl(2)=at(2,2)/A2cm
        !     boxl(3)=at(3,3)/A2cm
 
-       call calcforce_lammps2(boxcf%at,atcf%im,atcf%imm,atcf%xp,atcf%ityp,atcf%fp,potist,sig)
+       call calcforce_lammps2(boxcf%at,atcf%im,atcf%imm,atcf%xp,atcf%ityp,atcf%fp,potistcalfo,sigcalfo)
 
     else
 #endif  
@@ -125,11 +124,12 @@ contains
 !!$                           &boxcf%at,boxcf%bg,boxcf%volu)
                    else
                       call calfo2ccel(atcf,celcf,boxcf)
+                      if (test_sigma)sigcalfo=sigcalfo+sig2p ! out of calfo2ccel to accomodate ARPS
                    endif
 
                    ! Potentiel total
-                   potisP = potis0+potis1    !  +potis2    !+potis3
-                   potist=potist+potisP
+                   potisP = potis1    !  +potis2    !+potis3
+                   potistcalfo=potistcalfo+potisP
 
                 case(2)
                    ! !!! le cas parallele n'est pas pris en compte !!!
@@ -162,7 +162,7 @@ contains
                    else
                       call force_tersoff_cel(atcf,celcf,boxcf,psc)
                    endif
-                   potist=potist+potisTersoff+potiszbl
+                   potistcalfo=potistcalfo+potisTersoff+potiszbl
                 case (10,11,16)
                    if (atcf%ltabvois) then
                       ! !!! le cas parallele n'est pas pris en compte !!!
@@ -172,7 +172,7 @@ contains
                    else
                       call calfoeamcel(atcf,celcf,boxcf,psc)
                    endif
-                   potist=potist+potiseam
+                   potistcalfo=potistcalfo+potiseam
                                       
 #ifdef ML
                 case (20)
@@ -182,27 +182,21 @@ contains
              end if
           end if
        end do
-       if (any(zz.ne.0)) then
-          call calfozz(atcf)
-          potist=potist+potis2
-       end if
        if ((iewald.gt.0).and.(iewald.ne.3))then
           call  calfoew(atcf,celcf,boxcf)
-          potist=potist+potis3
+          potistcalfo=potistcalfo+potis3
+          if (any(zz.ne.0)) then
+             call calfozz(atcf)
+             potistcalfo=potistcalfo+potis2
+          end if
        end if
 
 #ifdef LAMMPS_VERSION
     endif
 #endif  
 
-    sigcf=sig;potistcf=potist
-    if (lpcube) then
-       pint=0.33333333333*(sig(1,1)+sig(2,2)+sig(3,3))
-       sigcf=0
-       do ic=1,3
-          sigcf(ic,ic)=pint
-       end do
-    end if
+    sigcf=sigcalfo;potistcf=potistcalfo
+
 
     return
   end subroutine calfo

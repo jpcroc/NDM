@@ -6,7 +6,7 @@ module rasmolT_mod
        &cunitP,iteration,lcasca,timel,unitP,fnam,erg2ev,lenfnam,umass,rang
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
-  use atomconfig,only: atom_config,atom_config_d,atom_config_e
+  use atomconfig,only: atom_config,atom_config_d,atom_config_e,atom_config_arps
   use paraconfig,only:para_config
   use boxconfig,only:box_config
   implicit none
@@ -35,7 +35,7 @@ contains
     integer,intent(in),optional  :: itapp
     class(atom_config),intent(in)::atmol
     class(box_config),intent(in)::boxmol
-    character*3,intent(in), dimension(1:atmol%im),optional  :: rty
+    character*3,intent(in), dimension(1:atmol%im),optional,target  :: rty
     character(len=*), optional ::namefr
     logical::latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
     integer, optional:: ivisumol
@@ -52,7 +52,7 @@ contains
     character*80::nameo,end_name
     integer :: rgloc,j,ic
 
-    character*3, dimension(:), allocatable  :: tyw
+    character*3, dimension(:), pointer  :: tyw
 
 #ifdef PARA
     type(para_config)::div
@@ -118,6 +118,10 @@ contains
           write(6,*)'laux TRUE et latc FAUX  stop (FLEMME)'
           call arret_ndm
        end if
+       if (present(rty)) then
+          write(6,*)'RTY TRUE and latc FAUX  stop (FLEMME) use a type extension'
+          call arret_ndm
+       end if
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call atcomp%init(atmol%im_glob,im_glob=atmol%im_glob,imm_glob=atmol%imm_glob)
           div%mpi_image%rank=myidsp
@@ -154,21 +158,31 @@ contains
 !*****************PPPPPPPPPAAAAAAAAASSSSSSSSAAAAAAAAAAAGGGGGGGGEEEEEEEEEE en AngSTROMS!!!!!!!!!!!!!!!!
        at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8
        atcomp%xp(1:3,1:atcomp%im)=atcomp%xp(1:3,1:atcomp%im)*1d8
-       allocate(tyw(atcomp%im))
        if (ivisum.ne.5) then
-          tyw='000'
+!          tyw='000'
           !    do i=1,im
           !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
           !    end do
           if (present (rty))then
-             tyw(1:atcomp%im)=rty(1:atcomp%im)
+             tyw=>rty
           else
-             !       do i=1,im
-             !          write(6,*)i, atmol%ityp(i),ty(atmol%ityp(i))
-             !       end do
+             allocate(tyw(atcomp%im))
              tyw(1:atcomp%im)=ty(atcomp%ityp(1:atcomp%im))
           end if
        end if
+       select type (atcomp)
+       class is (atom_config_arps)
+          do i=1,atcomp%im
+             select case (atcomp%mov(i))
+             case(0)
+                tyw(i)=' Re'
+             case(1)
+                tyw(i)=' In'             
+             case(2)
+                tyw(i)=' Mo'
+             end select
+          end do
+       end select
 
 
 !!$       select type (atmol)

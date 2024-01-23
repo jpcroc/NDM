@@ -8,23 +8,20 @@ subroutine modecalc(im,xp,vp,ax)
 
     integer,intent(in)::im
     real(double),allocatable,intent(in),dimension(:,:)::xp,vp,ax
-  
-  
-  
-
-  integer :: i, iti, ic
-  real(double)::sq1,asd,xnu,sca,scaa
-  real(double),allocatable,save::dxp(:,:),eigval(:),xp_t(:,:)
-  integer::iu,ju,ir,il,iut,j,k1,k2,k3,l1,l2,l3
-  integer,save::icall=0
-
-  icall=icall+1
-  if (icall==1) then
-     allocate (dxp(3*im,3*im))
-     allocate(eigval(3*im))
-     allocate(xp_t(3,3*im))
-
-     open(50,file=&
+    
+    integer :: i
+    real(double)::sq1,asd,xnu,sca,scaa
+    real(double),allocatable,save::dxp(:,:),eigval(:),xp_t(:,:)
+    integer::iu,ju,ir,il,iut,j,k1,k2,k3,l1,l2,l3
+    integer,save::icall=0
+    
+    icall=icall+1
+    if (icall==1) then
+       allocate (dxp(3*im,3*im))
+       allocate(eigval(3*im))
+       allocate(xp_t(3,3*im))
+       
+       open(50,file=&
                & 'vecteurs.dat',status='unknown') ! Choix du mode a exciter
 
      write(*,*) 'Loading vecteurs.dat'

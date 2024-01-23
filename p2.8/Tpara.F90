@@ -92,7 +92,7 @@ module Tpara
 contains
 
   subroutine endmpi
-    integer::errcode,ierr
+    integer::ierr
 #ifdef PARA
 !    call MPI_Abort(MPI_COMM_WORLD, errcode, ierr)
     call MPI_finalize(ierr)
@@ -136,7 +136,6 @@ contains
 
     class(mpi_communicator),intent(inout) :: mpic
     !=====
-    integer :: ierror
     !=====
 
 #if defined(PARA)

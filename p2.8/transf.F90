@@ -19,7 +19,7 @@ contains
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     ! Variables locales
-    integer :: ichg,iv,itii,i,ic,icintype  ! nature du changement, numero et type de l'atome a enlever
+    integer :: ichg,iv,itii,i,ic
     real(double) :: xii(3)
     character*1 rep
 

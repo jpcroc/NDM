@@ -1,6 +1,6 @@
 module calfow_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY: lperiod,pi,potcp,potis1,zero
+  USE gen_com_m, ONLY: lperiod,pi,potcp,zero
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config
@@ -14,7 +14,7 @@ contains
     ! ***************************************************************
 
     USE T_kind_param_m 
-    USE var_pot, ONLY:alpha,csive,csive_g,ipo,dspf,ipo,rawat,dspw,dspf,dspg,cspg,cspf,bspf,bspg,fcr,cspw,gz,bspw,potw
+    USE var_pot, ONLY:alpha,csive,csive_g,ipo,dspf,ipo,rawat,dspw,dspf,dspg,cspg,cspf,bspf,bspg,fcr,cspw,gz,bspw,potw,potis1
     class(atom_config),intent(inout)::atcf
     type(cell_config),intent(in)::celcf
     type(box_config),intent(in)::boxcf
@@ -22,24 +22,23 @@ contains
     !--------------------------------------------
     !  L o c a l   v a r i a b l e s
     !-------------------------------------------
-    integer iw2,iti,l,iw1,i,koo,i1,ko1,j, &
-         & i2,itj,k,ic,kz,&
+    integer iw2,iti,l,koo,i1,ko1,j, &
+         & i2,itj,k,kz,i,&
          & itO,itSi         ! types du O et du Si
 
     parameter(itSi=1,itO=2)
 
 
-    real(double) SCALAR(atcf%imM),z(atcf%imM),dzdx(atcf%imM,3),spotr(atcf%imM),&
-         & virdzdx(atcf%imM,3,3),cv(1,3)
-    real(double) wclau,aux,alp,f1,f2,f3,&
-         x1,x2,x3,auy,auz,c1,c2,c3,ddsq,r2,sk,dk,r,&
-         phu,ra,sz,&
-         hbn2,&		!||g||**2
+    real(double) z(atcf%imM),dzdx(atcf%imM,3),spotr(atcf%imM),&
+         & virdzdx(atcf%imM,3,3)
+    real(double) aux,alp,f1,f2,f3,&
+         auy,sk,r,&
+         phu,sz,&
          dfp,fdp,&
          potr,foncgz,dpotr,dfoncgz,dzdxpart   ! intermediaires de calcul 
 
     ! spline
-    real(double) dr,potpart,dz     
+    real(double) dr,dz     
 
     logical::linter
     real(double)::dxp(3)
@@ -55,7 +54,7 @@ contains
                 virdzdx(i,i1,i2)=0.0
                 !               sigat(i,i1,i2)=0.0
              enddo
-             sig(i1,i2)=0.0
+             sigcalfo(i1,i2)=0.0
              if (lTPcel.EQV..true.) then
                 do koo=1,celcf%noxyz
                    sigc(i1,i2,koo)=0.0
@@ -70,7 +69,7 @@ contains
     ! Epot=0      
     potis1=zero
     POTCP=0.0 
-    POTIST=ZERO
+    POTISTcalfo=ZERO
     ! F=0/
     DO  I=1,Atcf%Im
        z(i)=ZERO
@@ -207,15 +206,15 @@ contains
                 ! calcul des contraintes
                 if (test_sigma) then
                    if(iti.ne.itj.and.iti.eq.itO) then ! O est l'atome considere
-                      sig(1,1)=sig(1,1)-0.5*(virdzdx(i,1,1)*dfp+fdp*dxp(1)*dxp(1))/boxcf%volu
-                      sig(1,2)=sig(1,2)-0.5*(virdzdx(i,1,2)*dfp+fdp*dxp(1)*dxp(2))/boxcf%volu
-                      sig(1,3)=sig(1,3)-0.5*(virdzdx(i,1,3)*dfp+fdp*dxp(1)*dxp(3))/boxcf%volu
-                      sig(2,1)=sig(2,1)-0.5*(virdzdx(i,2,1)*dfp+fdp*dxp(2)*dxp(1))/boxcf%volu
-                      sig(2,2)=sig(2,2)-0.5*(virdzdx(i,2,2)*dfp+fdp*dxp(2)*dxp(2))/boxcf%volu
-                      sig(2,3)=sig(2,3)-0.5*(virdzdx(i,2,3)*dfp+fdp*dxp(2)*dxp(3))/boxcf%volu
-                      sig(3,1)=sig(3,1)-0.5*(virdzdx(i,3,1)*dfp+fdp*dxp(3)*dxp(1))/boxcf%volu
-                      sig(3,2)=sig(3,2)-0.5*(virdzdx(i,3,2)*dfp+fdp*dxp(3)*dxp(2))/boxcf%volu
-                      sig(3,3)=sig(3,3)-0.5*(virdzdx(i,3,3)*dfp+fdp*dxp(3)*dxp(3))/boxcf%volu
+                      sigcalfo(1,1)=sigcalfo(1,1)-0.5*(virdzdx(i,1,1)*dfp+fdp*dxp(1)*dxp(1))/boxcf%volu
+                      sigcalfo(1,2)=sigcalfo(1,2)-0.5*(virdzdx(i,1,2)*dfp+fdp*dxp(1)*dxp(2))/boxcf%volu
+                      sigcalfo(1,3)=sigcalfo(1,3)-0.5*(virdzdx(i,1,3)*dfp+fdp*dxp(1)*dxp(3))/boxcf%volu
+                      sigcalfo(2,1)=sigcalfo(2,1)-0.5*(virdzdx(i,2,1)*dfp+fdp*dxp(2)*dxp(1))/boxcf%volu
+                      sigcalfo(2,2)=sigcalfo(2,2)-0.5*(virdzdx(i,2,2)*dfp+fdp*dxp(2)*dxp(2))/boxcf%volu
+                      sigcalfo(2,3)=sigcalfo(2,3)-0.5*(virdzdx(i,2,3)*dfp+fdp*dxp(2)*dxp(3))/boxcf%volu
+                      sigcalfo(3,1)=sigcalfo(3,1)-0.5*(virdzdx(i,3,1)*dfp+fdp*dxp(3)*dxp(1))/boxcf%volu
+                      sigcalfo(3,2)=sigcalfo(3,2)-0.5*(virdzdx(i,3,2)*dfp+fdp*dxp(3)*dxp(2))/boxcf%volu
+                      sigcalfo(3,3)=sigcalfo(3,3)-0.5*(virdzdx(i,3,3)*dfp+fdp*dxp(3)*dxp(3))/boxcf%volu
                       if (lTPcel.EQV..true.) then
                          sigc(1,1,koo)=sigc(1,1,koo)-&
                               0.5*(virdzdx(i,1,1)*dfp+fdp*dxp(1)*dxp(1))*celcf%noxyz/boxcf%volu
@@ -237,15 +236,15 @@ contains
                               0.5*(virdzdx(i,3,3)*dfp+fdp*dxp(3)*dxp(3))*celcf%noxyz/boxcf%volu
                       end if
                    else
-                      sig(1,1)=sig(1,1)+0.5*F1*dxp(1)/boxcf%volu
-                      sig(1,2)=sig(1,2)+0.5*F1*dxp(2)/boxcf%volu
-                      sig(1,3)=sig(1,3)+0.5*F1*dxp(3)/boxcf%volu
-                      sig(2,1)=sig(2,1)+0.5*F2*dxp(1)/boxcf%volu
-                      sig(2,2)=sig(2,2)+0.5*F2*dxp(2)/boxcf%volu
-                      sig(2,3)=sig(2,3)+0.5*F2*dxp(3)/boxcf%volu
-                      sig(3,1)=sig(3,1)+0.5*F3*dxp(1)/boxcf%volu
-                      sig(3,2)=sig(3,2)+0.5*F3*dxp(2)/boxcf%volu
-                      sig(3,3)=sig(3,3)+0.5*F3*dxp(3)/boxcf%volu
+                      sigcalfo(1,1)=sigcalfo(1,1)+0.5*F1*dxp(1)/boxcf%volu
+                      sigcalfo(1,2)=sigcalfo(1,2)+0.5*F1*dxp(2)/boxcf%volu
+                      sigcalfo(1,3)=sigcalfo(1,3)+0.5*F1*dxp(3)/boxcf%volu
+                      sigcalfo(2,1)=sigcalfo(2,1)+0.5*F2*dxp(1)/boxcf%volu
+                      sigcalfo(2,2)=sigcalfo(2,2)+0.5*F2*dxp(2)/boxcf%volu
+                      sigcalfo(2,3)=sigcalfo(2,3)+0.5*F2*dxp(3)/boxcf%volu
+                      sigcalfo(3,1)=sigcalfo(3,1)+0.5*F3*dxp(1)/boxcf%volu
+                      sigcalfo(3,2)=sigcalfo(3,2)+0.5*F3*dxp(2)/boxcf%volu
+                      sigcalfo(3,3)=sigcalfo(3,3)+0.5*F3*dxp(3)/boxcf%volu
                       if (lTPcel.EQV..true.) then
                          sigc(1,1,koo)=sigc(1,1,koo)+0.5*F1*dxp(1)*celcf%noxyz/boxcf%volu
                          sigc(1,2,koo)=sigc(1,2,koo)+0.5*F1*dxp(2)*celcf%noxyz/boxcf%volu
@@ -264,7 +263,7 @@ contains
 699             CONTINUE
 
 
-                POTIST=potis1
+                POTISTcalfo=potis1
 
 
 

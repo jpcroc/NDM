@@ -264,23 +264,23 @@ contains
                 rrijk(6,2)=uxij*riji*uyik*riki+uxik*riki*uyij*riji
                 rrijk(6,3)=uxik*riki*uyik*riki
 
-                sig(1,1)=sig(1,1)-rrijk(1,1)*w1-rrijk(1,2)*w2 &
+                sigcalfo(1,1)=sigcalfo(1,1)-rrijk(1,1)*w1-rrijk(1,2)*w2 &
                      &                         -rrijk(1,3)*w3
-                sig(1,2)=sig(1,2)-rrijk(6,1)*w1-rrijk(6,2)*w2 &
+                sigcalfo(1,2)=sigcalfo(1,2)-rrijk(6,1)*w1-rrijk(6,2)*w2 &
                      &                         -rrijk(6,3)*w3
-                sig(1,3)=sig(1,3)-rrijk(5,1)*w1-rrijk(5,2)*w2 &
+                sigcalfo(1,3)=sigcalfo(1,3)-rrijk(5,1)*w1-rrijk(5,2)*w2 &
                      &                         -rrijk(5,3)*w3
-                sig(2,1)=sig(2,1)-rrijk(6,1)*w1-rrijk(6,2)*w2 &
+                sigcalfo(2,1)=sigcalfo(2,1)-rrijk(6,1)*w1-rrijk(6,2)*w2 &
                      &                         -rrijk(6,3)*w3
-                sig(2,2)=sig(2,2)-rrijk(2,1)*w1-rrijk(2,2)*w2 &
+                sigcalfo(2,2)=sigcalfo(2,2)-rrijk(2,1)*w1-rrijk(2,2)*w2 &
                      &                         -rrijk(2,3)*w3
-                sig(2,3)=sig(2,3)-rrijk(4,1)*w1-rrijk(4,2)*w2 &
+                sigcalfo(2,3)=sigcalfo(2,3)-rrijk(4,1)*w1-rrijk(4,2)*w2 &
                      &                         -rrijk(4,3)*w3
-                sig(3,1)=sig(3,1)-rrijk(5,1)*w1-rrijk(5,2)*w2 &
+                sigcalfo(3,1)=sigcalfo(3,1)-rrijk(5,1)*w1-rrijk(5,2)*w2 &
                      &                         -rrijk(5,3)*w3
-                sig(3,2)=sig(3,2)-rrijk(4,1)*w1-rrijk(4,2)*w2 &
+                sigcalfo(3,2)=sigcalfo(3,2)-rrijk(4,1)*w1-rrijk(4,2)*w2 &
                      &                         -rrijk(4,3)*w3
-                sig(3,3)=sig(3,3)-rrijk(3,1)*w1-rrijk(3,2)*w2 &
+                sigcalfo(3,3)=sigcalfo(3,3)-rrijk(3,1)*w1-rrijk(3,2)*w2 &
                      &                         -rrijk(3,3)*w3
 
                 ko3=atcf%ielat(i)
@@ -316,7 +316,7 @@ contains
 
 
 
-    potist=potist+potcp
+    potistcalfo=potistcalfo+potcp
     !  write(6,*)'sortie 3c'
     return
   end subroutine calfo3c

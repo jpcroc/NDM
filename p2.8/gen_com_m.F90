@@ -44,7 +44,7 @@ module gen_com_m
   integer::idirectionmcgc
 
   real(double),target :: potist ! energie potentielle totale
-  real(double):: potisP,potis1, potis2, potis3, potis0, potcp ! energie potentielle de paire
+  real(double):: potisP, potis2, potis3, potcp ! energie potentielle de paire
   real(double) :: potisTersoff ! energie potentielle de tersoff
 
 !  INTEGER::imd ! HISTORIQUE A DEGAGER LE PLUS TOT POSSIBLE
@@ -52,7 +52,7 @@ module gen_com_m
   real(double) :: oldtstep  
   real(double) :: tstep, usdh, timel  
   integer :: itetemp, itesigma, iteprtsigma,itedepla, itecoordo, iterdf, nrdf, & 
-       iterasmol, iteangle,nfda,itetemp2,iteanapos
+       iterasmol, iteangle,nfda,itetemp2,iteanapos,iteprtkin
   integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codﾃｩ, ivisu=2=xred
   real(double)::rcangle,rcrdf
 

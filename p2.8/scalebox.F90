@@ -20,7 +20,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE var_pot, ONLY:alpha,auxe,rumax,tabv3,tabf3,ncoucx,ncoucy,ncoucz,iewald,q
+    USE var_pot, ONLY:auxe,iewald,rumax
 
     ! ******************************************************************
 
@@ -29,10 +29,10 @@ contains
     class(atom_config_d)::atpr
     type(cell_config):: celndm
     class(box_config)::boxndm
+    integer::noxn,noyn,nozn
 
-    integer :: i, nb1, nb2, nb3, i1, l,noxn,noyn,nozn
-    real(double) :: zlx, zly, zlz, ux, uy, uz,  pi2, fact, fact1&
-         , fact2, hk2, ex, ex1, ex2
+
+
     
     call periodbox (boxndm,atpr)
 

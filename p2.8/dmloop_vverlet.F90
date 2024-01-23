@@ -38,8 +38,7 @@ contains
     type(box_config)::boxndm
     class(atom_config_d)::atdml
     type(cell_config):: celndm
-    character :: extension*2
-    integer::lenfn2,i,ic
+    integer::ic
     integer::ilocal
     real(double) ::pint
     !    real(double) :: temptyp(ntyp)
@@ -63,7 +62,7 @@ contains
        call analyseT (atdml,celndm,boxndm,psc)
        call endrunT(atdml,celndm,boxndm,.true.)
     end if
-
+    call analyseT (atdml,celndm,boxndm,psc)
      do while ((iteration.le.itloopmax).and.(timel.lt.timeloopmax))
        iteration = iteration+1
        test_sigma=(mod(iteration,itesigma)==0)

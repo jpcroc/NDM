@@ -330,7 +330,7 @@ contains
        endif
     end if
 #endif
-    if (test_sigma)sig=sig+sig2p+sigem
+    if (test_sigma)sigcalfo=sigcalfo+sig2p+sigem
 !!$    if (rang==0)    write(6,*)
 !!$    if (rang==0)    write(6,*)sig2p
 !!$    if (rang==0)    write(6,*)

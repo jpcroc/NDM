@@ -116,6 +116,8 @@ module var_pot
   integer,allocatable :: ietaij(:)
 
 
+  real(double) :: potis1
+
   ! EAM
   logical :: lforcetabulate ! if the first derivative is tabulate.
   real(double) :: potisrep, potisglue,potiseam ! energie potentielle EAM

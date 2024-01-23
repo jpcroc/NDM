@@ -15,7 +15,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE var_pot, ONLY:npair,csive,ipo,roff2,pot,npair,csive,typ_and_pot,ipo,typ_pot_pair
+    USE var_pot, ONLY:npair,csive,ipo,roff2,pot,npair,csive,ipo
     USE jqmod
     USE force_tersoff_facteurs
     ! **************************************************************
@@ -31,14 +31,14 @@ contains
   type(cell_config),intent(in)::celcf
   type(box_config),intent(in)::boxcf
     !-----------------------------------------------
-    integer :: i,j,k,nk,n_voisin,l,ij,ik, ipv,idv,ivj,ivk, m, moi,nvij
+    integer :: i,j,k,nk,n_voisin,l,ij,ik, ipv,idv,ivj,ivk, m, moi
     integer , dimension(32) :: indice   ! Recense le nombre de voisins
-    real(double) :: rij2, rij, rik2, rik, sui_ij, bij, n, v_ij, energie_i
+    real(double) ::  rij, rik, sui_ij, bij, n, v_ij
     real(double) :: fc_rij, dfc_rij, fr_rij, fa_rij, fc_rik, dfc_rik, paire_ij, triplet_ij, triplet_ik 
-    real(double) :: exponentiel, cos_theta, g_cos, dg_cos, flux, pression,ER1, ER2, ER3
+    real(double) :: exponentiel, cos_theta, g_cos, dg_cos,ER1, ER2, ER3
     real(double) :: Scal_FiVi, Scal_FjVj, Scal_FijVi, Scal_FijVj, Scal_FikVi, Scal_FikVk
     real(double) :: XijdotF, XikdotF,fpnemd(3),fpnemdmoy(3)
-    real(double) , dimension(3) :: Xij, Xik, ai
+
     real(double) , dimension(15,6) :: tmp
     real(double) , dimension(15,3) :: tmp1
     real(double) , dimension(1,3) :: cvij, cvik
@@ -190,7 +190,7 @@ contains
                       !Contrainte
                       if (test_sigma.EQV..true.) then 
                          do m=1,3
-                            sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/boxcf%volu
+                            sigcalfo(l,m)=sigcalfo(l,m) + paire_ij*cvij(1,m)/boxcf%volu
                          end do
                       end if
                    end do
@@ -215,7 +215,7 @@ contains
                       !Contrainte
                       if (test_sigma.EQV..true.) then  
                          do m=1,3
-                            sig(l,m)=sig(l,m) + paire_ij*cvij(1,m)/boxcf%volu
+                            sigcalfo(l,m)=sigcalfo(l,m) + paire_ij*cvij(1,m)/boxcf%volu
                          end do
                       end if
                    end do
@@ -292,8 +292,8 @@ contains
                          !write(6,*)sig
                          if (test_sigma.EQV..true.) then  
                             do m=1,3
-                               sig(l,m)=sig(l,m) + triplet_ij*cvij(1,m)/boxcf%volu
-                               sig(l,m)=sig(l,m) + triplet_ik*cvik(1,m)/boxcf%volu
+                               sigcalfo(l,m)=sigcalfo(l,m) + triplet_ij*cvij(1,m)/boxcf%volu
+                               sigcalfo(l,m)=sigcalfo(l,m) + triplet_ik*cvik(1,m)/boxcf%volu
                             end do
                          end if
                          !write(6,*)i,j,k,'T'

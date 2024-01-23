@@ -17,7 +17,7 @@ contains
   USE T_kind_param_m, ONLY:  double
 #ifdef PARA
     USE mpi
-    USE Tpara,only:MPI_COMM_space,status,ierr,nprocs,myidsp,NDM_MPI_REAl_DOUBLE
+    USE Tpara,only:MPI_COMM_space,status,ierr,NDM_MPI_REAl_DOUBLE
 
 #endif
 
@@ -26,12 +26,12 @@ contains
     class(box_config),intent(in)::boxcf
     type(cell_config),intent(in):: celcf
     integer,allocatable::na(:)
-  integer :: i, iti, itj, i1, i2, koo, ko1, j, ic,nci,ip,ll
+  integer :: i, iti,  i1, i2, koo, ko1, j,nci,ll
   real(double), dimension(ntyp,ntyp) :: dnco
 
 #ifdef PARA
   real(double), dimension(ntyp,ntyp) :: dnco_glob
-  integer :: nci_glob
+
 #endif
 
   real(double),allocatable :: rccoordo(:)
@@ -39,7 +39,7 @@ contains
   integer,save::icall=0
 
   logical::linter
-  real(double)::cx(3)
+
   allocate(rccoordo(ntyp))
   icall=icall+1
   if (icall==1) then

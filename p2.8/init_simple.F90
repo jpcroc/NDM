@@ -37,11 +37,11 @@ contains
     USE arret_ndm_mod,only: arret_ndm
     use posana,only:anapos
     USE posana,only:
-    USE elec_cell,ONLY: i2t,t_cpl, readelec
-    USE eloss, ONLY : ibrake,ecelec,initeloss
+    USE elec_cell,ONLY:  readelec
+    USE eloss, ONLY : initeloss
 
 #ifdef PARA
-    USE Tpara,only:COMM_space,myidsp,nprocspace
+    USE Tpara,only:COMM_space,nprocspace
 
 #else
     use Tpara,only:nprocspace
@@ -60,9 +60,9 @@ contains
     
     logical::linitpotW=.true.
     character*80::filenomIS
-    integer :: i, lufilmpaf,itapp,j,lenfn2,ipath,ierr
+
     !-----------------------------------------------
-    character*2::extension
+
      logical :: lrepart
 
     filenomIS=fnam(1:lenfnam)

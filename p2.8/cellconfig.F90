@@ -36,7 +36,10 @@ module cellconfig
      procedure, pass::recv=>cellrecv
   end type cell_config
 
-
+  type, extends (cell_config):: cell_config_g !
+     integer,allocatable::natotot (:) ! nombre d'atomes dans la cellule ko
+  end type cell_config_g
+     
 contains
 
 
@@ -63,7 +66,8 @@ contains
     call dealloc_cel(cell)
     call allocatecelN(cell)
     call neigcelN(cell,box)
-!    call cell%print
+    !    call cell%print
+       
     return
 
   end subroutine init_cel
@@ -79,6 +83,11 @@ contains
        cell%ncel=0
        allocate(cell%nato(nsize))
        cell%nato=0
+       select type(cell)
+       class is (cell_config_g)
+          allocate(cell%natotot(nsize))
+          cell%natotot=0
+       end select
        allocate(cell%ncelvois(nsize))
        allocate(cell%deltadist(3,0:26,nsize))
        cell%deltadist=0
@@ -106,7 +115,7 @@ contains
 
   subroutine dealloc_cel(cell)
     class(cell_config)::cell
-
+    
     if (allocated(cell%ncel))       deallocate(cell%ncel)
     if (allocated(cell%ncelvois))       deallocate(cell%ncelvois)
     if (allocated(cell%nato))       deallocate(cell%nato)
@@ -114,9 +123,16 @@ contains
     if (allocated(cell%deltadist))  deallocate(cell%deltadist)
     if (allocated(cell%sigc))  deallocate(cell%sigc)
     if (allocated(cell%tempc))  deallocate(cell%tempc)
+    select type(cell)
+    class is (cell_config_g)
+       deallocate(cell%natotot)
+!       cell%natotot=0
+    end select
+       
 #ifdef PARA
     if (allocated(cell%proc_cell))  deallocate(cell%proc_cell)
 #endif
+
     return
 
   end subroutine dealloc_cel
@@ -271,17 +287,21 @@ contains
   end subroutine neigcelN
 
 
-  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc)
+  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc,lcheckfrontier)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
     use gen_com_m,only:lspacendm
+#ifdef PARA
+  USE Tpara,only:comm_space
+#endif
+    
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
     class(box_config),intent(inout)::boxcf
     type(para_space_config),optional::psc    
     logical,intent(in)::lperiod
-    logical,intent(in),optional::lextr
-    logical::lextrait=.false.
+    logical,intent(in),optional::lextr,lcheckfrontier
+    logical::lextrait=.false.,lchkftr=.true.
 
     integer :: i,  kx, ky, kz, koo
     real(double) :: aux, auy, auz
@@ -292,6 +312,7 @@ contains
     ! --------- Initialisation --------------
     !
     if (present(lextr))lextrait=lextr
+    if (present(lcheckfrontier))lchkftr=lcheckfrontier
     if (lextrait) then
        iml=atcf%imm
     else
@@ -377,11 +398,11 @@ contains
           cell%atincel(cell%nato(koo),koo) = i
 !          write(6,*)i,koo
 #ifdef PARA
-          if ((present(psc)).and.(lspacendm)) then 
+          if ((present(psc)).and.(lspacendm).and.(lchkftr)) then 
              if (cell%proc_cell(koo).ne.myidsp) then
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
                    write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &
-                        &myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frotier cell',&
+                        &myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frontier cell',&
                         &'RANG actuel = ',rang
                    call arret_ndm
                 end if
@@ -413,6 +434,15 @@ contains
     cell%icaltabt=icaltabt
     atcf%icaltabt=icaltabt
     boxcf%icaltabt=icaltabt
+
+    select type(cell)
+    class is (cell_config_g)
+       cell%natotot=cell%nato
+#ifdef PARA
+       if (lspacendm) call comm_space%sum(cell%natotot)
+#endif
+    end select
+
 !    call atcf%print
 !    call cell%print
     return

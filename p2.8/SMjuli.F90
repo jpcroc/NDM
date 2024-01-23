@@ -60,7 +60,7 @@ ipotentiel,typ_pot_pair)
     !local variables
     integer:: i
     integer :: lupotin=95
-    character ::  fnampotin*80
+
 
 
     !  fnampotin = 'SM.potin'
@@ -251,7 +251,7 @@ ipotentiel,typ_pot_pair)
     real(double), intent(in) :: r2
     real(double), intent(out), optional :: Erep, dErep, ddErep
 
-    REAL(double) :: r,aux1,aux2
+    REAL(double) :: r,aux1
     r=sqrt(r2)/A2cm
 
     IF (present(Erep)) then

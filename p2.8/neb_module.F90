@@ -53,7 +53,7 @@ module neb_module
   type(box_config)::boxneb
   type(para_config),target::paraneb
   type(para_space_config)::pscneb
-  logical::ltrpini
+
 contains
   
 
@@ -531,10 +531,10 @@ end if
     USE T_kind_param_m, ONLY:  double
     USE read_val, ONLY:imm,ltabvois
 
-    integer ::  ip,lucin,itread,fmt_cin,formatsauv,iti
+    integer ::  ip,itread,fmt_cin,formatsauv
     character :: extension*9
     character :: fnamneb*80
-    logical::lwrite
+
     !    type(atom_config)::atrgin
 !    write(6,*)'IMM NEB',imm
     call allocate_neb(0,imm)

@@ -35,21 +35,9 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: nacou, i,  iti
-    real(double) :: vv, a1, a2, a3, c1, c2, c3
-    real(double), dimension(1,3) :: g1,aux
-    real(double) :: ltc, ctime, tdev, tcool, epc1, epc2, epc3,massa,tclt
-    real(double), dimension(1,3) :: xtr, cv
-    real(double) :: fpmax,fpn
-
-    save ltc
-    !-----------------------------------------------
-    !
-    !
-    !
 
 
-
+    real(double), dimension(1,3) :: g1
     select case (nebtype)
 
     case(1)

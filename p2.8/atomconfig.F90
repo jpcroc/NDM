@@ -2,10 +2,11 @@ module atomconfig
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m,only:double,long
   USE Mat_utils_mod,only: fillbuffer3D,fillbuffer1D,fillbuffer9D
+  use gen_com_m,only:rang,lspacendm
 #ifdef PARA
   use mpi
-  USE Tpara,only:NDM_MPI_REAL_DOUBLE,ierr,mpi_communicator,endmpi
-  use gen_com_m,only:rang
+  USE Tpara,only:NDM_MPI_REAL_DOUBLE,ierr,mpi_communicator,endmpi,nprocspace
+
 
 
 #endif
@@ -33,6 +34,7 @@ module atomconfig
      integer,allocatable::num_at_glob(:)
 #ifdef PARA
      integer,allocatable::proc_at(:) ! tableau de taille im_glob total indiquant le numéro du proc qui gère l'atome
+     integer::imf=0 ! indice du dernier atome fantome (atomes fantomes entre im+1 et imf
 #endif     
    contains
      procedure, pass::init=>init_atom_config
@@ -88,6 +90,15 @@ module atomconfig
    
      !#endif     
   end type atom_config_e
+  type, extends (atom_config_e)::atom_config_arps
+     real(double),allocatable::rho(:),fpr(:,:),fpg(:,:)
+     integer, allocatable::mov(:)
+     contains
+       procedure, pass::copy_atom=>copy_atom_arps
+       procedure, pass::dealloc=>dealloc_atom_config_arps
+       !#ifdef PARA
+!       procedure, pass::zero=>zero_atom_arps
+  end type atom_config_arps
 
   private ::buffersizes
 contains
@@ -106,9 +117,11 @@ contains
        write(6,*)'atomfig'
     type is (atom_config_d)
        write(6,*)'atomfigD'
-    type is (atom_config_e)
+    class is (atom_config_e)
        write(6,*)'atomfigE'
        write(6,*)'FLAGSFF', atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
+    type is (atom_config_arps)
+       write(6,*)'atomfigARPS'
     end select
     write(6,*)'TYPE PRECISE ? SI NON extension'
 
@@ -153,9 +166,6 @@ contains
        end if
     end if
  
-
-
-
 
 
     atconf%im=imin
@@ -259,6 +269,30 @@ contains
 
 
     end select
+    select type (atconf)
+    class is (atom_config_arps)
+       if ((lrealloc).and.(allocated(atconf%mov)))then
+          deallocate(atconf%mov)
+       end if
+       if (.not.allocated(atconf%mov))then
+          allocate(atconf%mov(atconf%imm))
+       end if
+       atconf%mov=0
+       if ((lrealloc).and.(allocated(atconf%fpr)))then
+          deallocate(atconf%fpr)
+       end if
+       if (.not.allocated(atconf%fpr))then
+          allocate(atconf%fpr(3,atconf%imm))
+       end if
+       atconf%fpr=0
+       if ((lrealloc).and.(allocated(atconf%fpg)))then
+          deallocate(atconf%fpg)
+       end if
+!       if (.not.allocated(atconf%rho))then
+!          allocate(atconf%rho(atconf%imm))
+!       end if
+    end select
+
     atconf%icaltabt=0
   end subroutine init_atom_config
 
@@ -391,6 +425,27 @@ contains
        end select
     end select
   end subroutine copy_atom_e
+  subroutine copy_atom_arps(atsource,i,atcible,j,lextend)
+    class(atom_config_arps), intent(in)::atsource
+    integer,intent(in):: i
+    class(atom_config), intent(inout)::atcible
+    integer,intent(in):: j
+    logical, optional,intent(in):: lextend
+    logical:: let
+    let=.false.
+    if (present(lextend))let=lextend
+    call copy_atom_e(atsource,i,atcible,j,let)
+    select type(atcible)
+       class is (atom_config_arps)
+       select type (atsource)
+       class is (atom_config_arps)
+          if(allocated(atcible%rho))atcible%rho(j)=atsource%rho(i)
+          atcible%fpr(:,j)=atsource%fpr(:,i)
+          if (allocated(atcible%fpg))atcible%fpg(:,j)=atsource%fpg(:,i)
+          atcible%mov(j)=atsource%mov(i)
+       end select
+    end select
+  end subroutine copy_atom_arps
 
   subroutine s2p_atom (atcf, rgcib,mpic,caracT)
     class(atom_config):: atcf
@@ -406,10 +461,12 @@ contains
     real(double),allocatable::rbuffer(:)
     integer:: cst(3)
     !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat; m=mov(arps)   
     size1=atcf%imm;size3=3*size1; size9=3*size3
 #ifdef PARA
     if (.not.present(caracT)) then
-       carac='xfniewdlpvrugas'
+       carac='xfniewdlpvrugasm'
     else
        carac=caracT
     end if
@@ -459,7 +516,7 @@ contains
     size1=atcf%imm;size3=3*size1;size9=3*size3
 #ifdef PARA
     if (.not.present(caracT)) then
-       carac='xfniewdlpvrugas'
+       carac='xfniewdlpvrugasm'
     else
        carac=caracT
     end if
@@ -522,7 +579,7 @@ contains
     size1=atcf%imm;size3=3*size1; size9=3*size3
 #ifdef PARA
     if (.not.present(caracT)) then
-       carac='xfniewdlpvrugas'
+       carac='xfniewdlpvrugasm'
     else
        carac=caracT
     end if
@@ -688,6 +745,16 @@ contains
           if((atcible%lax).and.(atsource%lax))atcible%ax(:,1:atsource%imm)=atsource%ax(:,1:atsource%imm)
        end select
     end select
+    select type (atsource)
+       class is (atom_config_arps)
+       select type (atcible)
+          class is (atom_config_arps)
+             atcible%mov(1:atsource%imm)=atsource%mov(1:atsource%imm)
+            if(allocated(atcible%rho))atcible%rho(1:atsource%imm)=atsource%rho(1:atsource%imm)
+             atcible%fpr(:,1:atsource%imm)=atsource%fpr(:,1:atsource%imm)
+             if(allocated(atcible%fpg))             atcible%fpg(:,1:atsource%imm)=atsource%fpg(:,1:atsource%imm)
+       end select
+    end select
 
     atcible%im_glob=atsource%im_glob
     atcible%imm_glob=atsource%imm_glob
@@ -725,6 +792,15 @@ contains
     if(allocated(atconf%ax))deallocate(atconf%ax)
 
   end subroutine dealloc_atom_config_e
+  subroutine dealloc_atom_config_arps(atconf)
+    class(atom_config_arps), intent(inout)::atconf
+    call atconf%atom_config_e%dealloc
+    if(allocated(atconf%rho))deallocate(atconf%rho)
+    if(allocated(atconf%mov))deallocate(atconf%mov)
+    if(allocated(atconf%fpr))deallocate(atconf%fpr)
+    if(allocated(atconf%fpg))deallocate(atconf%fpg)
+
+  end subroutine dealloc_atom_config_arps
 
   subroutine deftype(atsource,atcible)  ! initialize atcible to the type of atsource, inluding the values of lax, lpreeat, etc.
     class(atom_config),intent(in)::atsource
@@ -737,6 +813,8 @@ contains
           allocate(atom_config_d::atcible)
        class is (atom_config_e)
           allocate(atom_config_e::atcible)
+       class is (atom_config_arps)
+          allocate(atom_config_arps::atcible)
        end select
        call atsource%Eegal(atcible)
      end subroutine deftype
@@ -983,215 +1061,398 @@ contains
 
 
 
-  subroutine print(atin,i1,i2,unit,natg1,natg2,caracT)
+  subroutine print(atin,i1,i2,unit,natg1,natg2,caracT,mess,iter)
     class(atom_config), intent(in)::atin
-    integer,optional::i1,i2,unit,natg1,natg2
+    integer,optional::i1,i2,unit,natg1,natg2,iter
+    integer::i1l,i2l,natg1l,natg2l
     character(len=*),optional,intent(in)::caracT
+    character(len=*),optional::mess
     character(len=26)::carac
-    integer::i,im,ifin,ideb,ist,ifn,natpr,ig,iprt,unitw
-    class (atom_config),allocatable::atprt
+    integer::i,ig,iprt,unitw,imp
     unitw=6
     if (.not.present(caracT)) then
-       carac='xfniewdlpvfrugas'
+       carac='xfniewdlpvfrugasm'
     else
        carac=caracT
     end if
     if (present(unit))unitw=unit
-
-    call atin%deftype(atprt)
-    if (present(natg1)) then
-       if (present(natg2)) then
-          natpr=natg2-natg1+1
-          if (natpr.lT.1) stop
-       else
-          natg2=natg1
-       end if
-       iprt=0
-       do ig=natg1,natg2
-          do i=1,atin%im
-             if(atin%num_at_glob(i)==ig) then
-                iprt=iprt+1
-                if (iprt.gt.natpr) then
-                   write(6,*)'num_at_glob multiples ?'
-                   call arret_ndm
-                end if
-             end if
-          end do
-       end do
-       natpr=iprt 
-       call atprt%init(natpr,rvois=0.d0)
-      im=atprt%im
-       iprt=0
-       do ig=natg1,natg2
-          do i=1,atin%im
-             if(atin%num_at_glob(i)==ig) then
-                iprt=iprt+1
-                if (iprt.gt.natpr) then
-                   write(6,*)'num_at_glob multiples ?'
-                   call arret_ndm
-                end if
-                call atin%copy_atom(i,atprt,iprt)
-             end if
-          end do
-       end do
-       im=atprt%im
-       iprt=0
-       do ig=natg1,natg2
-          do i=1,atin%im
-             if(atin%num_at_glob(i)==ig) then
-                iprt=iprt+1
-                if (iprt.gt.natpr) then
-                   write(6,*)'num_at_glob multiples ?'
-                   call arret_ndm
-                end if
-                call atin%copy_atom(i,atprt,iprt)
-             end if
-          end do
-       end do
-       im=atprt%im
-    else
-       call atin%copy_config(atprt,lrescl=.true.)
-       im=atin%im
-    end if
-          
-    atprt%im_glob=atin%im_glob
-    atprt%imm_glob=atin%imm_glob
     
-    write(unitw,*)'im = ',atprt%im
-    write(unitw,*)'imm = ',atprt%imm
-    write(unitw,*)'im_glob = ',atprt%im_glob
-    write(unitw,*)'imm_glob = ',atprt%imm_glob
-    write(unitw,*)'icaltabt = ',atprt%icaltabt
-    write(unitw,*)'ltabvois ', atprt%ltabvois
-!    write(6,*)
-    ideb=1
-    ifin=atprt%im
-    if (present(i1))then
-       ideb=i1
-    else
-       ideb=1
-    endif
-    if (present(i2)) then
-       ifin=i2
-    else
-       if (present(i1))then
-          ifin=i1
-       else
-          ifin=im
-       endif
+    if (present(mess)) then
+       write(unitw,*)'atomPRINT ',mess,rang
     end if
-    if (allocated(atprt%xp)) then
-    if(scan('x',carac).ne.0)then
-       do i=ideb,ifin
-          write(unitw,'(A,2i9,3D19.11)')'%xp= ', i,atprt%num_at_glob(i),atprt%xp(:,i)
-       end do
+    if (present(iter)) then
+       write(unitw,*)'ITERATION ',iter
     end if
-    if(scan('i',carac).ne.0)then
-       do i=ideb,ifin
-          write(unitw,'(A,2i9,I3)')'%ityp= ', i,atprt%num_at_glob(i),atprt%ityp(i)
-       end do
+
+    
+#ifdef PARA
+    if ((lspacendm).and.(nprocspace.gt.1)) then
+       imp=atin%imf
+    else
+       imp=atin%im
+    end if
+!    write(6,*)'AAAAA',rang,atin%im,atin%imf
+#else
+    imp=atin%im
+#endif
+
+    write(unitw,*)'im = ',atin%im
+    
+    write(unitw,*)'imm = ',atin%imm
+    write(unitw,*)'im_glob = ',atin%im_glob
+    write(unitw,*)'imm_glob = ',atin%imm_glob
+#ifdef PARA
+    write(unitw,*)'imf = ',atin%imf
+#endif
+    
+    write(unitw,*)'icaltabt = ',atin%icaltabt
+    write(unitw,*)'ltabvois ', atin%ltabvois
+
+    natg1l=1
+    natg2l=imp
+    if(present(natg1))natg1l=natg1
+    if(present(natg2))natg2l=natg2
+    i1l=1
+    i2l=imp
+    if(present(i1))i1l=i1
+    if(present(i2))i2l=i2
+
+    do i=1,imp
+       if((i.lt.i1l).or.(i.gt.i2l)) cycle
+       if((atin%num_at_glob(i).lt.natg1l).or.(atin%num_at_glob(i).gt.natg2l)) cycle
+       write(unitw,*)
+       if(scan('x',carac).ne.0)then
+          write(unitw,'(A,2i9,3E15.7)')'%xp= ', i,atin%num_at_glob(i),atin%xp(:,i)
+       end if
+       if(scan('i',carac).ne.0)then
+          write(unitw,'(A,2i9,I3)')'%ityp= ', i,atin%num_at_glob(i),atin%ityp(i)
     end if
     if(scan('n',carac).ne.0)then
-       do i=ideb,ifin
-          write(unitw,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
-       end do
+          write(unitw,*)'%num_at_glob= ', i,atin%num_at_glob(i)
     end if
 #ifdef PARA
     if(scan('p',carac).ne.0)then
-       do i=ideb,ifin
-          write(unitw,*)'%proc_at= ', i,atprt%num_at_glob(i),atprt%proc_at(i)
-       end do
+          write(unitw,*)'%proc_at= ', i,atin%num_at_glob(i),atin%proc_at(i)
     end if
 #endif    
        
        if(scan('f',carac).ne.0)then
-          do i=ideb,ifin
-             write(unitw,'(A,2i9,3F15.7)')'%fp= ', i,atprt%num_at_glob(i),atprt%fp(:,i)
-          end do
+             write(unitw,'(A,2i9,3E15.7)')'%fp= ', i,atin%num_at_glob(i),atin%fp(:,i)
        end if
        if(scan('e',carac).ne.0)then
-          do i=ideb,ifin
-             write(unitw,*)'%ielat= ', i,atprt%num_at_glob(i),atprt%ielat(i)
-          end do
+             write(unitw,*)'%ielat= ', i,atin%num_at_glob(i),atin%ielat(i)
        end if
-       select type (atprt)
+       if(scan('l',carac).ne.0)then
+             write(unitw,*)'%lgul= ', i,atin%num_at_glob(i),atin%lgul(i)
+       end if
+
+       select type (atin)
           class is (atom_config_d)
              write(unitw,*)'prt_d'
              if(scan('v',carac).ne.0)then
-                do i=ideb,ifin
-                   write(unitw,'(A,2i9,3F15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
-                end do
+                   write(unitw,'(A,2i9,3E15.7)')'%vp= ', i,atin%num_at_glob(i),atin%vp(:,i)
              end if
              if(scan('r',carac).ne.0)then
-                do i=ideb,ifin
-                   write(unitw,'(A,2i9,3F15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
-                end do
+                   write(unitw,'(A,2i9,3E15.7)')'%xpp= ', i,atin%num_at_glob(i),atin%xpp(:,i)
              end if
           class is (atom_config_e)
              write(unitw,*)'prt_e'
              if(scan('v',carac).ne.0)then
-                do i=ideb,ifin
-                   write(unitw,'(A,2i9,3F15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
-                end do
+                   write(unitw,'(A,2i9,3E15.7)')'%vp= ', i,atin%num_at_glob(i),atin%vp(:,i)
              end if
              if(scan('r',carac).ne.0)then
-                do i=ideb,ifin
-                   write(unitw,'(A,2i9,3F15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
-                end do
+                   write(unitw,'(A,2i9,3E15.7)')'%xpp= ', i,atin%num_at_glob(i),atin%xpp(:,i)
              end if
 
 
-             if (atprt%lsigat) then
+             if (atin%lsigat) then
                 if(scan('g',carac).ne.0)then
-                   do i=ideb,ifin
-                      write(unitw,'(A,2i9,9F15.7)')'%sigat= ',i,atprt%num_at_glob(i), atprt%sigat(:,:,i)
-                   end do
+                      write(unitw,'(A,2i9,9E15.7)')'%sigat= ',i,atin%num_at_glob(i), atin%sigat(:,:,i)
                 end if
              end if
-          if (atprt%lprteat) then
+          if (atin%lprteat) then
              if(scan('u',carac).ne.0)then
-                do i=ideb,ifin
-                   write(unitw,*)'%eat= ', i,atprt%num_at_glob(i),atprt%eat(i)
-                end do
+                   write(unitw,*)'%eat= ', i,atin%num_at_glob(i),atin%eat(i)
              end if
           end if
-          if (atprt%lax) then
+          if (atin%lax) then
              if(scan('a',carac).ne.0)then
-                do i=ideb,ifin
-                   write(unitw,'(A,2i9,3F15.7)')'%ax= ', i,atprt%num_at_glob(i),atprt%ax(:,i)
-                end do
+                   write(unitw,'(A,2i9,3E15.7)')'%ax= ', i,atin%num_at_glob(i),atin%ax(:,i)
              end if
           end if
        end select
 
-
-       if (atprt%ltabvois) then
-          do i=ideb,im
-             write(unitw,*)'%iwmax= ', i,atprt%num_at_glob(i),atprt%iwmax(i)
+       select type (atin)
+          class is (atom_config_arps)
+             write(unitw,*)'prt_arps'
+             if(scan('g',carac).ne.0)then
+                   write(unitw,'(A,2i9,I4)')'%mov= ', i,atin%num_at_glob(i),atin%mov(i)
+                   write(unitw,'(A,2i9,3E15.7)')'%fpr= ', i,atin%num_at_glob(i),atin%fpr(:,i)
+                   if (allocated(atin%fpg))write(unitw,'(A,2i9,3E15.7)')'%fpg= ', i,atin%num_at_glob(i),atin%fpg(:,i)
+                   if (allocated(atin%rho))write(unitw,'(A,2i9,1E15.7)')'%rho= ', i,atin%num_at_glob(i),atin%rho(i)
+             end if
+          end select
+       end do
+       if (atin%ltabvois) then
+          do i=1,atin%im
+             write(unitw,*)'%iwmax= ', i,atin%num_at_glob(i),atin%iwmax(i)
           end do
-
-          if (allocated(atprt%indi))then
-             if (ideb==1) then
-                ist=1
-             else
-                ist=atprt%iwmax(ideb-1)+1
-             end if
-             if (ifin==im) then
-                ifn=size(atprt%indi)
-             else
-                ifn=atprt%iwmax(ifin)
-             end if
-
-             do i=ist,ifn,100
-                write(unitw,*)'indi', i,atprt%indi(i)
-             end do
-          end if
        end if
-    end if
+       write(unitw,*)
     flush(unitw)
   end subroutine print
 !MANQUE SIG AU MINIMUM
-
+!!$
+!!$  subroutine print(atin,i1,i2,unit,natg1,natg2,caracT)
+!!$    class(atom_config), intent(in)::atin
+!!$    integer,optional::i1,i2,unit,natg1,natg2
+!!$    character(len=*),optional,intent(in)::caracT
+!!$    character(len=26)::carac
+!!$    integer::i,im,ifin,ideb,ist,ifn,natpr,ig,iprt,unitw,imp
+!!$    class (atom_config),allocatable::atprt
+!!$    unitw=6
+!!$    if (.not.present(caracT)) then
+!!$       carac='xfniewdlpvfrugasm'
+!!$    else
+!!$       carac=caracT
+!!$    end if
+!!$    if (present(unit))unitw=unit
+!!$#ifdef PARA
+!!$    if ((lspacendm).and.(nprocspace.gt.1)) then
+!!$       imp=atin%imf
+!!$    else
+!!$       imp=atin%im
+!!$    end if
+!!$    write(6,*)'AAAAA',rang,atin%im,atin%imf
+!!$#else
+!!$    imp=atin%im
+!!$#endif
+!!$    call atin%deftype(atprt)
+!!$    if (present(natg1)) then
+!!$       if (present(natg2)) then
+!!$          natpr=natg2-natg1+1
+!!$          if (natpr.lT.1) stop
+!!$       else
+!!$          natg2=natg1
+!!$       end if
+!!$       iprt=0
+!!$       do ig=natg1,natg2
+!!$          do i=1,imp
+!!$             if(atin%num_at_glob(i)==ig) then
+!!$                iprt=iprt+1
+!!$                if (iprt.gt.natpr) then
+!!$                   write(6,*)'num_at_glob multiples ?'
+!!$                   call arret_ndm
+!!$                end if
+!!$             end if
+!!$          end do
+!!$       end do
+!!$       natpr=iprt 
+!!$       call atprt%init(natpr,rvois=0.d0)
+!!$!      im=atprt%im
+!!$       iprt=0
+!!$       do ig=natg1,natg2
+!!$          do i=1,imp!atin%im
+!!$             if(atin%num_at_glob(i)==ig) then
+!!$                iprt=iprt+1
+!!$                if (iprt.gt.natpr) then
+!!$                   write(6,*)'num_at_glob multiples ?'
+!!$                   call arret_ndm
+!!$                end if
+!!$                call atin%copy_atom(i,atprt,iprt)
+!!$             end if
+!!$          end do
+!!$       end do
+!!$!       im=atprt%im
+!!$       iprt=0
+!!$       do ig=natg1,natg2
+!!$          do i=1,imp!atin%im
+!!$             if(atin%num_at_glob(i)==ig) then
+!!$                iprt=iprt+1
+!!$                if (iprt.gt.natpr) then
+!!$                   write(6,*)'num_at_glob multiples ?'
+!!$                   call arret_ndm
+!!$                end if
+!!$                call atin%copy_atom(i,atprt,iprt)
+!!$             end if
+!!$          end do
+!!$       end do
+!!$!       im=atprt%im
+!!$    else
+!!$
+!!$       natpr=atin%imf
+!!$       call atprt%init(natpr,rvois=0.d0)
+!!$       do i=1,atin%imf
+!!$          call atin%copy_atom(i,atprt,i)
+!!$       end do
+!!$
+!!$!       call atin%copy_config(atprt,lrescl=.true.)
+!!$!       im=atin%im
+!!$
+!!$
+!!$
+!!$    end if
+!!$          
+!!$    atprt%im_glob=atin%im_glob
+!!$    atprt%imm_glob=atin%imm_glob
+!!$    
+!!$    write(unitw,*)'im = ',atprt%im
+!!$    
+!!$    write(unitw,*)'imm = ',atin%imm
+!!$    write(unitw,*)'im_glob = ',atprt%im_glob
+!!$    write(unitw,*)'imm_glob = ',atprt%imm_glob
+!!$#ifdef PARA
+!!$    write(unitw,*)'imf = ',atin%imf
+!!$#endif
+!!$    
+!!$    write(unitw,*)'icaltabt = ',atprt%icaltabt
+!!$    write(unitw,*)'ltabvois ', atprt%ltabvois
+!!$!    write(6,*)
+!!$    ideb=1
+!!$    ifin=atprt%im
+!!$    if (present(i1))then
+!!$       ideb=i1
+!!$    else
+!!$       ideb=1
+!!$    endif
+!!$    if (present(i2)) then
+!!$       ifin=i2
+!!$    else
+!!$       if (present(i1))then
+!!$          ifin=i1
+!!$       else
+!!$          ifin=atprt%im
+!!$       endif
+!!$    end if
+!!$    if (allocated(atprt%xp)) then
+!!$    if(scan('x',carac).ne.0)then
+!!$       do i=ideb,ifin
+!!$          write(unitw,'(A,2i9,3E15.7)')'%xp= ', i,atprt%num_at_glob(i),atprt%xp(:,i)
+!!$       end do
+!!$    end if
+!!$    if(scan('i',carac).ne.0)then
+!!$       do i=ideb,ifin
+!!$          write(unitw,'(A,2i9,I3)')'%ityp= ', i,atprt%num_at_glob(i),atprt%ityp(i)
+!!$       end do
+!!$    end if
+!!$    if(scan('n',carac).ne.0)then
+!!$       do i=ideb,ifin
+!!$          write(unitw,*)'%num_at_glob= ', i,atprt%num_at_glob(i)
+!!$       end do
+!!$    end if
+!!$#ifdef PARA
+!!$    if(scan('p',carac).ne.0)then
+!!$       do i=ideb,ifin
+!!$          write(unitw,*)'%proc_at= ', i,atprt%num_at_glob(i),atprt%proc_at(i)
+!!$       end do
+!!$    end if
+!!$#endif    
+!!$       
+!!$       if(scan('f',carac).ne.0)then
+!!$          do i=ideb,ifin
+!!$             write(unitw,'(A,2i9,3E15.7)')'%fp= ', i,atprt%num_at_glob(i),atprt%fp(:,i)
+!!$          end do
+!!$       end if
+!!$       if(scan('e',carac).ne.0)then
+!!$          do i=ideb,ifin
+!!$             write(unitw,*)'%ielat= ', i,atprt%num_at_glob(i),atprt%ielat(i)
+!!$          end do
+!!$       end if
+!!$       select type (atprt)
+!!$          class is (atom_config_d)
+!!$             write(unitw,*)'prt_d'
+!!$             if(scan('v',carac).ne.0)then
+!!$                do i=ideb,ifin
+!!$                   write(unitw,'(A,2i9,3E15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
+!!$                end do
+!!$             end if
+!!$             if(scan('r',carac).ne.0)then
+!!$                do i=ideb,ifin
+!!$                   write(unitw,'(A,2i9,3E15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
+!!$                end do
+!!$             end if
+!!$          class is (atom_config_e)
+!!$             write(unitw,*)'prt_e'
+!!$             if(scan('v',carac).ne.0)then
+!!$                do i=ideb,ifin
+!!$                   write(unitw,'(A,2i9,3E15.7)')'%vp= ', i,atprt%num_at_glob(i),atprt%vp(:,i)
+!!$                end do
+!!$             end if
+!!$             if(scan('r',carac).ne.0)then
+!!$                do i=ideb,ifin
+!!$                   write(unitw,'(A,2i9,3E15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
+!!$                end do
+!!$             end if
+!!$
+!!$
+!!$             if (atprt%lsigat) then
+!!$                if(scan('g',carac).ne.0)then
+!!$                   do i=ideb,ifin
+!!$                      write(unitw,'(A,2i9,9E15.7)')'%sigat= ',i,atprt%num_at_glob(i), atprt%sigat(:,:,i)
+!!$                   end do
+!!$                end if
+!!$             end if
+!!$          if (atprt%lprteat) then
+!!$             if(scan('u',carac).ne.0)then
+!!$                do i=ideb,ifin
+!!$                   write(unitw,*)'%eat= ', i,atprt%num_at_glob(i),atprt%eat(i)
+!!$                end do
+!!$             end if
+!!$          end if
+!!$          if (atprt%lax) then
+!!$             if(scan('a',carac).ne.0)then
+!!$                do i=ideb,ifin
+!!$                   write(unitw,'(A,2i9,3E15.7)')'%ax= ', i,atprt%num_at_glob(i),atprt%ax(:,i)
+!!$                end do
+!!$             end if
+!!$          end if
+!!$       end select
+!!$
+!!$       select type (atprt)
+!!$          class is (atom_config_arps)
+!!$             write(unitw,*)'prt_arps'
+!!$             if(scan('g',carac).ne.0)then
+!!$                do i=ideb,ifin
+!!$                   write(unitw,'(A,2i9,I4)')'%mov= ', i,atprt%num_at_glob(i),atprt%mov(i)
+!!$                end do
+!!$                do i=ideb,ifin
+!!$                   write(unitw,'(A,2i9,3E15.7)')'%fpr= ', i,atprt%num_at_glob(i),atprt%fpr(:,i)
+!!$                end do
+!!$                if (allocated(atprt
+!!$             end if
+!!$             if(scan('r',carac).ne.0)then
+!!$                do i=ideb,ifin
+!!$                   write(unitw,'(A,2i9,3E15.7)')'%xpp= ', i,atprt%num_at_glob(i),atprt%xpp(:,i)
+!!$                end do
+!!$             end if
+!!$
+!!$       if (atprt%ltabvois) then
+!!$          do i=ideb,imp
+!!$             write(unitw,*)'%iwmax= ', i,atprt%num_at_glob(i),atprt%iwmax(i)
+!!$          end do
+!!$
+!!$          if (allocated(atprt%indi))then
+!!$             if (ideb==1) then
+!!$                ist=1
+!!$             else
+!!$                ist=atprt%iwmax(ideb-1)+1
+!!$             end if
+!!$             if (ifin==im) then
+!!$                ifn=size(atprt%indi)
+!!$             else
+!!$                ifn=atprt%iwmax(ifin)
+!!$             end if
+!!$
+!!$             do i=ist,ifn,100
+!!$                write(unitw,*)'indi', i,atprt%indi(i)
+!!$             end do
+!!$          end if
+!!$       end if
+!!$    end if
+!!$    flush(unitw)
+!!$  end subroutine print
+!!$!MANQUE SIG AU MINIMUM
+!!$
 
   
   subroutine vers_master_atom(atcfloc,atcfcomp,div,caracT)
@@ -1220,7 +1481,7 @@ contains
     integer::imtot,proc_source,npim,iloc
     logical,allocatable::mask(:)
     if (.not.present(caracT)) then
-       carac='xfniewdlpvrugas'
+       carac='xfniewdlpvrugasm'
     else
        carac=caracT//'np'
     end if
@@ -1310,31 +1571,31 @@ contains
                     if(scan('w',carac).ne.0)atcfcomp%iwmax(icomp)=atcfloc%iwmax(iloc)
                  end if
                  select type(atcfloc)
-                class is (atom_config_d)
-                   select type (atcfcomp)
-                   class is (atom_config_d)
-                      if(scan('v',carac).ne.0)  atcfcomp%vp(1:3,icomp)=atcfloc%vp(1:3,iloc)
-                      if(scan('r',carac).ne.0)  atcfcomp%xpp(1:3,icomp)=atcfloc%xpp(1:3,iloc)
-                   end select
-                end select
-                select type(atcfloc)
-                class is (atom_config_e)
-                   select type (atcfcomp)
-                   class is (atom_config_e)
-                      if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
+                 class is (atom_config_e)
+                    select type (atcfcomp)
+                    class is (atom_config_e)
+                       if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
                           if(scan('s',carac).ne.0) atcfcomp%sigat(1:3,1:3,icomp)=atcfloc%sigat(1:3,1:3,iloc)
-                      endif
-                      if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
-                         if(scan('u',carac).ne.0) atcfcomp%eat(icomp)=atcfloc%eat(iloc)
-                      endif
-                      if((atcfcomp%lax).and.(atcfloc%lax))then
-                         if(scan('a',carac).ne.0) atcfcomp%ax(:,icomp)=atcfloc%ax(:,iloc)
-                      endif
-                      if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
-                         if(scan('g',carac).ne.0) atcfcomp%glangv(:,icomp)=atcfloc%glangv(:,iloc)
-                      endif
-                   end select
-                end select
+                       endif
+                       if((atcfcomp%lprteat).and.(atcfloc%lprteat))then
+                          if(scan('u',carac).ne.0) atcfcomp%eat(icomp)=atcfloc%eat(iloc)
+                       endif
+                       if((atcfcomp%lax).and.(atcfloc%lax))then
+                          if(scan('a',carac).ne.0) atcfcomp%ax(:,icomp)=atcfloc%ax(:,iloc)
+                       endif
+                       if((atcfcomp%llangevin).and.(atcfloc%llangevin))then
+                          if(scan('g',carac).ne.0) atcfcomp%glangv(:,icomp)=atcfloc%glangv(:,iloc)
+                       endif
+                    end select
+                 end select
+                 select type(atcfloc)
+                 class is (atom_config_arps)
+                    select type (atcfcomp)
+                    class is (atom_config_arps)
+                       if(scan('m',carac).ne.0)  atcfcomp%mov(icomp)=atcfloc%mov(iloc)
+                    end select
+                 end select
+
              end do
              deallocate(nag)
 
@@ -1458,7 +1719,7 @@ contains
 
 
     if (.not.present(caracT)) then
-       carac='xfniewdlpvrugas'
+       carac='xfniewdlpvrugasm'
     else
        carac=caracT//'np'
        
@@ -1511,6 +1772,14 @@ contains
                          endif
                       end select
                    end select
+                   select type(atcfloc)
+                   class is (atom_config_arps)
+                      select type (atcfcomp)
+                      class is (atom_config_arps)
+                         atcfloc%mov(iloc)=atcfcomp%mov(i)
+                      end select
+                   end select
+                      
                 end if
              end do
              atcfloc%im=ns
@@ -1692,6 +1961,15 @@ contains
           end if
        end if
     end select
+    select type (atcf)
+    class is  (atom_config_arps)
+       if(scan('m',carac).ne.0) then
+          nvi=nvi+1
+          Iposf(nvi)=iposf(nvi-1)+size1
+          !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
+       end if
+    end select
+
 !****************************************************
     sizeI=Iposf(nvI);    sizeR=Rposf(nvR);    sizel=Lposf(nvl)
 
@@ -1971,6 +2249,22 @@ contains
        end if
        
     end select
+    select type (atcf)
+    class is  (atom_config_arps)
+       if(scan('m',carac).ne.0) then
+          ivi=ivi+1
+          ip=0
+          do iat=1,atcf%imm
+             if (mask(iat).eqv..true.) then
+                ip=ip+1
+                ib=Iposf(ivi-1)+ip
+                ibuffer(ib)=atcf%mov(iat)
+                csi=csi+1
+             end if
+          end do
+       end if
+    end select
+
     if (csi.ne.sizeI) then
        write(6,*)'erreur CSI 2',sizeI,csi
 !       call endmpi
@@ -2186,6 +2480,19 @@ contains
           end if
        end if
     end select
+    select type (atcf)
+       class is  (atom_config_arps)
+
+        if(scan('m',carac).ne.0) then
+           !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
+           ivi=ivi+1
+           do ip=1,size1
+              ib=Iposf(ivi-1)+ip
+              atcf%mov(ip)=ibuffer(ib)
+              csi=csi+1
+           end do
+        end if
+     end select
 
     if (csi.ne.sizeI) then
        write(6,*)'erreur CSI 1 ',sizeI,csi
@@ -2400,6 +2707,19 @@ contains
              end do
              !call MPI_SEND(atcf%sigat, 3*size3, NDM_MPI_REAL_DOUBLE, rgcib,114,comm,ierr)
           end if
+       end if
+    end select
+    select type (atcf)
+    class is  (atom_config_arps)
+
+       if(scan('m',carac).ne.0) then
+          !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
+          ivi=ivi+1
+          do ip=1,size1
+             ib=Iposf(ivi-1)+ip
+             atcf%mov(inag(nag(ip)))=ibuffer(ib)
+             csi=csi+1
+          end do
        end if
     end select
 

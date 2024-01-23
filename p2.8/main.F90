@@ -16,7 +16,7 @@ program ndm
   USE arret_ndm_mod,only: arret_ndm
   USE init_mpi_mod,only: init_mpi
 #ifdef PARA
-  USE Tpara,only:MPI_COMM_space,myidsp,nprocspace,nprocs,mpi_comm_world
+  USE Tpara,only:myidsp,nprocs,mpi_comm_world
 
   USE neb_module,only:init_mpi_neb
 #else

@@ -39,9 +39,9 @@ contains
 #ifdef PARA
     !  integer:: grp_world,grp_masters,comm_masters,npm,rgm,imasters
     integer, allocatable::rgmasters(:)
-    integer::ierr,ip
+    integer::ierr,ip,ipt
 
-    integer::ipi,ipt,npi,npim,imasters,npm,reste,npr
+    integer::ipi,npi,npim,imasters,npm,reste,npr
     integer::clef, couleur,nimage,img,image
     integer,allocatable::npimg(:),GL(:),CL(:),ipimg(:,:)
     nimage=div%nimage

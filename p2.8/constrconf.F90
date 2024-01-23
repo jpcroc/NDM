@@ -246,14 +246,14 @@ contains
     real(double),intent(in)::rum
     logical,optional,intent(in)::lrepartition,lconstrsimple
     integer,optional::immread
-    integer::immr
+    integer::immr,npr
     logical::lcs
     logical::lrepart
     type (atom_config)::COMPatrcf
     type(atom_config)::atrgin
     type(box_config)::boxrgin
     real(double)::atg(3,3)
-    integer::lat(3),ic,ncore,itread,npr
+    integer::lat(3),ic,ncore,itread
     lrepart=.true.
     lcs=.false.
     if(present(lrepartition))lrepart=lrepartition
@@ -493,10 +493,6 @@ contains
     !fmtcin=1 avec num_at_glob (optional)
     !icible tableau de taille imic qui donne les atomes à lire (utile pour para), optionel
     USE T_kind_param_m, ONLY:  double
-#ifdef PARA
-    USE var_pot, ONLY:ntyp
-
-#endif
     USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
     implicit none
     character,intent(in) :: fnamcin*80

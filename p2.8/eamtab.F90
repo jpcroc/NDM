@@ -125,9 +125,9 @@ contains
     integer:: i,iti,n,npt,ipr
     integer :: lupotin=95
     character ::  fnampotin*80
-    real(double) :: xdum,cmr,catomr,drk,erep,precis,qr,maxrho
+    real(double) :: cmr,catomr,precis,qr
     integer,allocatable :: typtyp(:)
-    integer::itir,ipair,ntypr,j,itj,k
+    integer::itir,ipair,ntypr
     character :: tyr*3
     namelist /ewald/ rue, alpha, precis, ncouc3, ncoucx, ncoucy, ncoucz,&
          kpmex, kpmey, kpmez, lopt,iewald,ipotrep

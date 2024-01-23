@@ -562,7 +562,6 @@ END FUNCTION matdet
     !internal
     real(kind(0.d0)), dimension(3,3) :: transit_cell,inv_mat_ini
     real(kind(0.d0)), dimension(3) :: A,B,C, Ahat,AxBhat,Mtmp(3)
-    real(kind(0.d0)) :: volume
     logical :: upper, right
     integer :: i
 

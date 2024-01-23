@@ -34,11 +34,8 @@ contains
     type(box_config)::boxndm
     class(atom_config_d)::atdml
     type(cell_config):: celndm
-    integer :: i, ia,ic,il
+    integer :: i,il
     real(double), dimension(ntyp) :: aux
-    real(double), save :: tmoyinst, imesureT
-    !-----------------------------------------------
-    real(double)::eatommoy
 
 
     logical::test_sigma=.false.
