@@ -12,12 +12,13 @@ module arps_mod
   USE calfoeamcel_mod,only:calfoeamcel
   USE calfoew_mod,only:calfozz
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,itmax,itloopmax,timemax,timeloopmax,latcomp,iteration,itesigma,timel,tstep,&
-       &lperiod,sigkine,ltpcel,sigtot,potis2,bk,erg2ev,itetemp,ltberendsen,tautcon,text,lspacendm
-  use calfocommon,only:sigcalfo,potistcalfo,test_sigma
+       &lperiod,sigkine,ltpcel,sigtot,potis2,bk,erg2ev,itetemp,ltberendsen,tautcon,text,lspacendm,dmtype,unitP
+  use calfocommon,only:sigcalfo,potistcalfo,test_sigma,sigcalfo
   use var_pot,only : cm,iewald
   use vect_dist_mod,only:vect_dist
   USE calfoberend_mod,only: calfoberend
   use tempinstT_mod,only:tempinstT
+  use calfoeamcel_mod,only:calfoeamcel
 
 #ifdef PARA
     use Tpara,only:nprocspace,para_space_config,comm_space
@@ -39,7 +40,7 @@ module arps_mod
   real(double),allocatable,dimension(:) :: tabdensity
   !  logical::lxyz
   
-  real(double)::sigem(3,3)
+  real(double)::sigem(3,3)  !sigép of calfo2ccel is ARTIFICIALLY used in the EAM case
   
 contains
   subroutine dmloop_arps(atdml,celndm,boxndm,psc)
@@ -52,14 +53,14 @@ contains
     integer::imm,i,ilocal,ic
 
     real(double), dimension(ntyp) :: aux
-
+    real(double)::potisrep0
     !    real(double)::tabtat(500,ntyp+1)
     if (rang==0) write (6, *) '***** FIRST ITERATION  ARPS****',itloopmax,timeloopmax,itesigma
     ! Appel de la routine generale des forces
     test_sigma=(mod(iteration,itesigma)==0)
     imm =atdml%imm
 
-!    call analyseT (atdml,celndm,boxndm,psc)
+
     atdml%lgul=.true.
     test_sigma=(mod(iteration,itesigma)==0)
     select case (ipotentiel)
@@ -84,18 +85,28 @@ contains
        end if
        tabdensity(:)=0
 !       atdml%fpr=atdml%fpr-atdml%fpg ! fpr reduced to rep only
-!       potist=potist-potisglue
-       call calfoglue_arps_1(atdml,celndm,boxndm)
-       atdml%fpr=atdml%fpr+atdml%fp ! fpr =all active rep
-       potist=potist+potisrep
-       atdml%rho(1:atdml%im)=atdml%rho(1:atdml%im)+tabdensity(1:atdml%im) ! %rho +new active rho
-       atdml%fp=0
-       call calfoglue_arps_2(atdml,celndm,boxndm,psc)
-       atdml%fpg=atdml%fp
-       atdml%fpr=atdml%fpr+atdml%fpg ! total force =rep+glue
-       potist=potist+potisglue
-       sig=sig2p+sigem
-
+       !       potist=potist-potisglue
+       sigcalfo=0
+       select case (dmtype)
+       case(41)
+          call calfoglue_arps_1(atdml,celndm,boxndm)
+          atdml%fpr=atdml%fpr+atdml%fp ! fpr =all active rep
+          potist=potist+potisrep
+          potisrep0=potisrep
+          atdml%rho(1:atdml%im)=atdml%rho(1:atdml%im)+tabdensity(1:atdml%im) ! %rho +new active rho
+          atdml%fp=0
+          call calfoglue_arps_2(atdml,celndm,boxndm,psc)
+          atdml%fpg=atdml%fp
+          atdml%fpr=atdml%fpr+atdml%fpg ! total force =rep+glue
+          potist=potist+potisglue
+          sig=sig2p+sigem
+       case(42)
+          atdml%fp=0
+          call calfoeamcel(atdml,celndm,boxndm,psc)
+          potist=potiseam
+          atdml%fpr=atdml%fp
+          sig=sigcalfo
+       end select
 !!$#endif
 
        
@@ -125,7 +136,7 @@ contains
 !       end select
     end if
 #endif
-
+    call analyseT (atdml,celndm,boxndm,psc)
 !!!!!!!!!!!!!!!LOOP START
      do while ((iteration.lt.itloopmax).and.(timel.lt.timeloopmax))
 
@@ -150,41 +161,51 @@ contains
     call setfree(atdml)
 ! TO CHECK    atdml%mov(:)=2 ;       atdml%lgul(:)=.true.
 
-!B.3
-       select case (ipotentiel)
-       case(0,1,3,4,5,6,7,8,9)
-          atdml%fp=0 ; potis1=0
-          call calfo2ccel(atdml,celndm,boxndm)
-          sig=sig-sig2P
-          atdml%fpr=atdml%fpr-atdml%fp
-          potist=potist-potis1
-       case(10,11)
-          atdml%fp=0 
-          potisrep=0
-          tabdensity(:)=0
-          atdml%fpr=atdml%fpr-atdml%fpg ! fpr reduced to rep only
-          potist=potist-potisglue
-          sig=sig-sigem
-          call calfoglue_arps_1(atdml,celndm,boxndm)
-          atdml%fpr=atdml%fpr-atdml%fp ! fpr (=rep) - old active rep
-          potist=potist-potisrep
-          sig=sig-sig2p
-          atdml%rho(1:atdml%im)=atdml%rho(1:atdml%im)-tabdensity(1:atdml%im) ! %rho -old active rho
-       end select
+    !B.3
+       select case (dmtype)
+       case(41)
+          select case (ipotentiel)
+          case(0,1,3,4,5,6,7,8,9)
+             atdml%fp=0 ; potis1=0
+             call calfo2ccel(atdml,celndm,boxndm)
+             sig=sig-sig2P
+             atdml%fpr=atdml%fpr-atdml%fp
+             potist=potist-potis1
+          case(10,11)
+             atdml%fp=0 
+             potisrep=0
+             tabdensity(:)=0
+             atdml%fpr=atdml%fpr-atdml%fpg ! fpr reduced to rep only
+             potist=potist-potisglue
+             sig=sig-sigem
+             call calfoglue_arps_1(atdml,celndm,boxndm)
+             atdml%fpr=atdml%fpr-atdml%fp ! fpr (=rep) - old active rep
+             potist=potist-potisrep
+             potisrep0=potisrep0-potisrep
+             sig=sig-sig2p
+             atdml%rho(1:atdml%im)=atdml%rho(1:atdml%im)-tabdensity(1:atdml%im) ! %rho -old active rho
+          end select
+       case(42)
+!!$          select case (ipotentiel)
+!!$          case(0,1,3,4,5,6,7,8,9)
+!!$             atdml%fp=0 ; potis1=0
+!!$             call calfo2ccel(atdml,celndm,boxndm)
+!!$             atdml%fpr=atdml%fp
+!!$             potist=potis1
+!!$          case(10,11)
+!!$             atdml%fp=0
+!!$             tabdensity=0
+!!$             call calfoeamcel(atdml,celndm,boxndm,psc)
+!!$             potist=potiseam
+!!$             atdml%fpr=atdml%fp
+!!$          end select
+    end select
+
 
 
 
        !A.1
        call xpupdate(atdml)
-!!$    DO i=1, atdml%im
-!!$       do ic=1,3
-!!$          if (atdml%mov(i)==2) then
-!!$             atdml%xp(ic,i) = atdml%xp(ic,i) + tstep*atdml%vp(ic,i)
-!!$          else if (atdml%mov(i)==1) then
-!!$             atdml%xp(ic,i) = atdml%xp(ic,i) + tstep*atdml%vp(ic,i)
-!!$          end if
-!!$       end do
-!!$    END DO
 
        
 
@@ -211,32 +232,53 @@ contains
 #endif
 
 !!A.3
-
-    select case (ipotentiel)
-    case(0,1,3,4,5,6,7,8,9)
-       atdml%fp=0; potis1=0
-       call calfo2ccel(atdml,celndm,boxndm)
-       sig=sig+sig2P
-       atdml%fpr=atdml%fpr+atdml%fp
-       potist=potist+potis1
-    case(10,11)
-       atdml%fp=0 
-       potisrep=0
-       tabdensity(:)=0
-       call calfoglue_arps_1(atdml,celndm,boxndm)
-       atdml%fpr=atdml%fpr+atdml%fp ! fpr (=rep) + new active rep
-       potist=potist+potisrep
-       sig=sig+sig2p
-       atdml%rho(1:atdml%im)=atdml%rho(1:atdml%im)+tabdensity(1:atdml%im) ! %rho +new active rho
+    select case(dmtype)
+    case(41)
+       select case (ipotentiel)
+       case(0,1,3,4,5,6,7,8,9)
+          atdml%fp=0; potis1=0
+          call calfo2ccel(atdml,celndm,boxndm)
+          sig=sig+sig2P
+          atdml%fpr=atdml%fpr+atdml%fp
+          potist=potist+potis1
+       case(10,11)
+          atdml%fp=0 
+          potisrep=0
+          tabdensity(:)=0
+          call calfoglue_arps_1(atdml,celndm,boxndm)
+          atdml%fpr=atdml%fpr+atdml%fp ! fpr (=rep) + new active rep
+          potist=potist+potisrep
+          potisrep0=potisrep0+potisrep
+          potisrep=potisrep0
+          sig=sig+sig2p
+          atdml%rho(1:atdml%im)=atdml%rho(1:atdml%im)+tabdensity(1:atdml%im) ! %rho +new active rho
 ! fpr contains the complete repulsion and %rho contains the complete density
 !A.4 calculation of glue force
-       atdml%fp=0
-       call calfoglue_arps_2(atdml,celndm,boxndm,psc)
-       atdml%fpg=atdml%fp
-       atdml%fpr=atdml%fpr+atdml%fpg ! total force =rep+glue
-       sig=sig+sigem
-       
-       potist=potist+potisglue
+          atdml%fp=0
+          call calfoglue_arps_2(atdml,celndm,boxndm,psc)
+          atdml%fpg=atdml%fp
+          atdml%fpr=atdml%fpr+atdml%fpg ! total force =rep+glue
+          sig=sig+sigem
+          
+          potist=potist+potisglue
+       end select
+    case(42)
+       select case (ipotentiel)
+       case(0,1,3,4,5,6,7,8,9)
+          atdml%fp=0 ; potis1=0
+          call calfo2ccel(atdml,celndm,boxndm)
+          atdml%fpr=atdml%fp
+          potist=potis1
+       case(10,11)
+          sigcalfo=0
+          atdml%fp=0
+          tabdensity=0
+          call calfoeamcel(atdml,celndm,boxndm,psc)
+          potist=potiseam
+          atdml%fpr=atdml%fp
+          sig=sigcalfo
+!!$          write(6,*)'SIG',test_sigma,Sig(1,1)*unitP,Sig2p(1,1)*unitP,Sigem(1,1)*unitP
+       end select
     end select
     if (lTberendsen) then
        block

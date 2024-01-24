@@ -128,7 +128,8 @@ contains
     !                              34 -> gradient conjugue modifié Fletcher-Reeves
     !                              35 -> relaxation ADAMD. :Kingma and J. Ba, “Adam: A Method for Stochastic Optimization,” in International Conference on Learning Representations (ICLR), 2015.
     !                               4 -> Velocity Verlet
-    !                               41 -> Velocity Verlet ARPS
+    !                               41 -> Velocity Verlet ARPS with partial forces
+    !                               42 -> Velocity Verlet ARPS with regular forces
     !                               5 -> test des forces 
     !                               6 -> analyse des positions en fin de cascade 
     !                               7 -> calcul des phonons
@@ -574,7 +575,7 @@ contains
        if (rang==0) write (6, *) rang,'wrong itab < 1 '
        call arret_ndm
     endif
-    if (dmtype==41) then
+    if ((dmtype==41).or.(dmtype==42)) then
        ltabvois=.false.
        kmin=kmin*ev2erg; kmax=ev2erg*kmax
        if ((kmin==0.).or.(kmax==0.)) then
@@ -584,7 +585,7 @@ contains
     end if
 #ifdef PARA
     select case(dmtype)
-    case(21,22,4,3,1,30,31,32,33,34,35,23,24,8,88,41)
+    case(21,22,4,3,1,30,31,32,33,34,35,23,24,8,88,41,42)
        if (ltabvois) then
           select case (ipotentiel)
           case(20)
@@ -895,7 +896,7 @@ contains
     end if
 
     if (itetimestep>0)  then
-       if ((dmtype.eq.1).or.(dmtype.eq.21).or.(dmtype.eq.22).or.(dmtype.eq.4).or.(dmtype.eq.41)) then
+       if ((dmtype.eq.1).or.(dmtype.eq.21).or.(dmtype.eq.22).or.(dmtype.eq.4).or.(dmtype.eq.41).or.(dmtype.eq.42)) then
           if (rang==0) write(6,*) 'The time step changed each', itetimestep,' steps'
        else 
           if (rang==0) write(6,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
@@ -1106,7 +1107,9 @@ contains
     case (4)
        if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
     case (41)
-       if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE ADAPTATIVE RESTRAINED PARTICLE SIMULATION'
+       if (rang==0) write (6,'(a)') '      MOLECULAR DYNAMICS ADAPTATIVE RESTRAINED PARTICLE SIMULATION with restrained forces'
+    case (42)
+       if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE ADAPTATIVE RESTRAINED PARTICLE SIMULATION with coplete forces'
     case (5)
        if (rang==0) write (6,'(a)') '      TEST DES FORCES '
     case (8)
@@ -1333,7 +1336,7 @@ contains
     end if
     if (lsuivinonpbc) then
 
-       if ((dmtype.ne.4).or.(dmtype.ne.41)) then
+       if ((dmtype.ne.4).and.(dmtype.ne.41).and.(dmtype.ne.42)) then
           if (rang==0) write(6,*) 'lsuivinonpbc is implemented only with velocity verlet'
           if (rang==0) write(6,*) 'Or dmtype=4. Change and restart until there I will stop for you.'
           call arret_ndm 

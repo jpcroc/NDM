@@ -109,7 +109,7 @@ contains
        select case(dmtype)
        case(30,32,34,33,19,35,12)
           atdml=>atdm
-       case(41)
+       case(41,42)
           atdml=>atdmarps
        case default
           atdml=>atdmd
@@ -172,7 +172,7 @@ contains
           end if
        class is (atom_config_d) !velocities
           select case (dmtype) ! select from dmtype 
-          case(41)
+          case(41,42)
              itloopmax=itmax
              timeloopmax=timemax
              select type(atdml)

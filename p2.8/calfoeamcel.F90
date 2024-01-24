@@ -13,7 +13,7 @@ contains
   SUBROUTINE calfoeamcel(atcf,celcf,boxcf,psc)
     USE T_kind_param_m
 
-    USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rue_pot,&
+    USE var_pot, ONLY:ipotentiel,ngrid,rue_pot,&
          &typ_and_pot,typ_pot_pair,ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,&
          &eamglue,alpha,ntyp
 
@@ -332,9 +332,9 @@ contains
 #endif
     if (test_sigma)sigcalfo=sigcalfo+sig2p+sigem
 !!$    if (rang==0)    write(6,*)
-!!$    if (rang==0)    write(6,*)sig2p
+!!$    if (rang==0)    write(6,*)'sig2p',sig2p
 !!$    if (rang==0)    write(6,*)
-!!$    if (rang==0)    write(6,*)sigem
+!!$    if (rang==0)    write(6,*)'sigem',sigem
     potiseam=potisglue+potisrep
 
     return

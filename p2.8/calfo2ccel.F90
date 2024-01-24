@@ -14,7 +14,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m , ONLY:pi,rang
+    USE gen_com_m , ONLY:pi,rang,dmtype
     USE jqmod
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
@@ -78,7 +78,9 @@ contains
              
              select type(atcf) ! ARPS dynamics see arps.F90
              type is (atom_config_arps)
-                if((.not.atcf%lgul(i)).and.(.not.atcf%lgul(j)))cycle
+                if (dmtype==41) then
+                   if((.not.atcf%lgul(i)).and.(.not.atcf%lgul(j)))cycle
+                end if
              end select
              
 !#else
