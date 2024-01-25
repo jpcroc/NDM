@@ -138,31 +138,31 @@ contains
                    sig2p(3,1) = sig2p(3,1)+phu*gradij(3)*dxp(1)/boxcf%volu
                    sig2p(3,2) = sig2p(3,2)+phu*gradij(3)*dxp(2)/boxcf%volu
                    sig2p(3,3) = sig2p(3,3)+phu*gradij(3)*dxp(3)/boxcf%volu
+                   if (lTPcel.EQV..true.) then
+                      sigc(1,1,koo) = sigc(1,1,koo)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(1,2,koo) = sigc(1,2,koo)+0.5*phu*gradij(1)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(1,3,koo) = sigc(1,3,koo)+0.5*phu*gradij(1)*dxp(3)*celcf%noxyz/boxcf%volu
+                      sigc(2,1,koo) = sigc(2,1,koo)+0.5*phu*gradij(2)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(2,2,koo) = sigc(2,2,koo)+0.5*phu*gradij(2)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(2,3,koo) = sigc(2,3,koo)+0.5*phu*gradij(2)*dxp(3)*celcf%noxyz/boxcf%volu
+                      sigc(3,1,koo) = sigc(3,1,koo)+0.5*phu*gradij(3)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(3,2,koo) = sigc(3,2,koo)+0.5*phu*gradij(3)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(3,3,koo) = sigc(3,3,koo)+0.5*phu*gradij(3)*dxp(3)*celcf%noxyz/boxcf%volu
+                      !                      if (j.le.atcf%im) then
+                      sigc(1,1,ko1) = sigc(1,1,ko1)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(1,2,ko1) = sigc(1,2,ko1)+0.5*phu*gradij(1)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(1,3,ko1) = sigc(1,3,ko1)+0.5*phu*gradij(1)*dxp(3)*celcf%noxyz/boxcf%volu
+                      sigc(2,1,ko1) = sigc(2,1,ko1)+0.5*phu*gradij(2)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(2,2,ko1) = sigc(2,2,ko1)+0.5*phu*gradij(2)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(2,3,ko1) = sigc(2,3,ko1)+0.5*phu*gradij(2)*dxp(3)*celcf%noxyz/boxcf%volu
+                      sigc(3,1,ko1) = sigc(3,1,ko1)+0.5*phu*gradij(3)*dxp(1)*celcf%noxyz/boxcf%volu
+                      sigc(3,2,ko1) = sigc(3,2,ko1)+0.5*phu*gradij(3)*dxp(2)*celcf%noxyz/boxcf%volu
+                      sigc(3,3,ko1) = sigc(3,3,ko1)+0.5*phu*gradij(3)*dxp(3)*celcf%noxyz/boxcf%volu
+                   end if
                 endif
-                if (lTPcel.EQV..true.) then
-                   sigc(1,1,koo) = sigc(1,1,koo)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(1,2,koo) = sigc(1,2,koo)+0.5*phu*gradij(1)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(1,3,koo) = sigc(1,3,koo)+0.5*phu*gradij(1)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(2,1,koo) = sigc(2,1,koo)+0.5*phu*gradij(2)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(2,2,koo) = sigc(2,2,koo)+0.5*phu*gradij(2)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(2,3,koo) = sigc(2,3,koo)+0.5*phu*gradij(2)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(3,1,koo) = sigc(3,1,koo)+0.5*phu*gradij(3)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(3,2,koo) = sigc(3,2,koo)+0.5*phu*gradij(3)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(3,3,koo) = sigc(3,3,koo)+0.5*phu*gradij(3)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(1,1,ko1) = sigc(1,1,ko1)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(1,2,ko1) = sigc(1,2,ko1)+0.5*phu*gradij(1)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(1,3,ko1) = sigc(1,3,ko1)+0.5*phu*gradij(1)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(2,1,ko1) = sigc(2,1,ko1)+0.5*phu*gradij(2)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(2,2,ko1) = sigc(2,2,ko1)+0.5*phu*gradij(2)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(2,3,ko1) = sigc(2,3,ko1)+0.5*phu*gradij(2)*dxp(3)*celcf%noxyz/boxcf%volu
-                   sigc(3,1,ko1) = sigc(3,1,ko1)+0.5*phu*gradij(3)*dxp(1)*celcf%noxyz/boxcf%volu
-                   sigc(3,2,ko1) = sigc(3,2,ko1)+0.5*phu*gradij(3)*dxp(2)*celcf%noxyz/boxcf%volu
-                   sigc(3,3,ko1) = sigc(3,3,ko1)+0.5*phu*gradij(3)*dxp(3)*celcf%noxyz/boxcf%volu
-                end if
-             endif
-
+             end if
           end do  ! fin i2=j
-       end do ! fin i1=koo
+    end do ! fin i1=koo
 
 
     end do ! fin i

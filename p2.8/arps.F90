@@ -5,7 +5,7 @@ module arps_mod
   USE controleT_mod,only: controleT
   USE boxconfig,only:box_config,periodbox
   USE atomconfig,only : atom_config_arps
-  USE cellconfig, only:cell_config,caltabtc
+  USE cellconfig, only:cell_config,caltabtc,cell_config_arps
   use Tpara,only:para_space_config
   USE var_pot, ONLY:ipotentiel,ntyp,potis1,potiseam,potisglue,potisrep,zz
   USE calfo2ccel_mod,only:calfo2ccel,sig2p
@@ -13,7 +13,7 @@ module arps_mod
   USE calfoew_mod,only:calfozz
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,itmax,itloopmax,timemax,timeloopmax,latcomp,iteration,itesigma,timel,tstep,&
        &lperiod,sigkine,ltpcel,sigtot,potis2,bk,erg2ev,itetemp,ltberendsen,tautcon,text,lspacendm,dmtype,unitP
-  use calfocommon,only:sigcalfo,potistcalfo,test_sigma,sigcalfo
+  use calfocommon,only:sigcalfo,potistcalfo,test_sigma,sigcalfo,sigc
   use var_pot,only : cm,iewald
   use vect_dist_mod,only:vect_dist
   USE calfoberend_mod,only: calfoberend
@@ -30,6 +30,8 @@ module arps_mod
 #endif
 
   implicit none  
+
+
 !!$  type, extends (atom_config_d)::atom_config_arps
 !!$     real(double),allocatable::rho(:),fpr(:,:)
 !!$     integer, allocatable::movxyz(:)
@@ -48,7 +50,7 @@ contains
     type(para_space_config)::psc
     class(box_config)::boxndm
     type(atom_config_arps)::atdml
-    type(cell_config):: celndm
+    type(cell_config_arps),target:: celndm
     logical :: lreturn
     integer::imm,i,ilocal,ic
 
@@ -57,7 +59,7 @@ contains
     !    real(double)::tabtat(500,ntyp+1)
     if (rang==0) write (6, *) '***** FIRST ITERATION  ARPS****',itloopmax,timeloopmax,itesigma
     ! Appel de la routine generale des forces
-    test_sigma=(mod(iteration,itesigma)==0)
+
     imm =atdml%imm
 
 
@@ -65,13 +67,18 @@ contains
     test_sigma=(mod(iteration,itesigma)==0)
     select case (ipotentiel)
     case(0,1,3,4,5,6,7,8,9)
+
        if ((iewald.gt.0).and.(iewald.ne.3))then
           write(6,*)'ewald not coded with arps stop'
           call arret_ndm
        end if
        atdml%fp=0
        potis1=0
-       call calfo2ccel(atdml,celndm,boxndm)
+       if(ltpcel)then
+          sigc=>celndm%sigc
+          sigc=0
+       end if
+       call calfo2ccel(atdml,celndm%cell_config,boxndm)
        sig=sig2P
        potist=potis1
        atdml%fpr=atdml%fp
@@ -102,7 +109,11 @@ contains
           sig=sig2p+sigem
        case(42)
           atdml%fp=0
-          call calfoeamcel(atdml,celndm,boxndm,psc)
+          if(ltpcel)then
+             sigc=>celndm%sigc
+             sigc=0
+          end if
+          call calfoeamcel(atdml,celndm%cell_config,boxndm,psc)
           potist=potiseam
           atdml%fpr=atdml%fp
           sig=sigcalfo
@@ -117,12 +128,12 @@ contains
 !A.2
 #ifdef PARA    
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+       call caltabtC(celndm%cell_config,atdml,lperiod,boxndm,psc=psc)
     else
-       call caltabtC(celndm,atdml,lperiod,boxndm)
+       call caltabtC(celndm%cell_config,atdml,lperiod,boxndm)
     end if
 #else
-    call caltabtC(celndm,atdml,lperiod,boxndm)
+    call caltabtC(celndm%cell_config,atdml,lperiod,boxndm)
 #endif
 
 #ifdef PARA
@@ -131,12 +142,12 @@ contains
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
 !       select case (ipotentiel)
 !       case(0,1,3,4,5,6,7,8,9)
-       call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc)
+       call maj_atomes_frt_ftm(atdml,celndm%cell_config,boxndm,psc)
 !       write(6,*)'rang nat ',rang, iteration, atdml%im,atdml%imf
 !       end select
     end if
 #endif
-    call analyseT (atdml,celndm,boxndm,psc)
+!    call analyseT (atdml,celndm,boxndm,psc)
 !!!!!!!!!!!!!!!LOOP START
      do while ((iteration.lt.itloopmax).and.(timel.lt.timeloopmax))
 
@@ -154,7 +165,7 @@ contains
        
 
        if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-          call maj_atomes_frt_part(atdml,celndm,boxndm,psc,'v')          
+          call maj_atomes_frt_part(atdml,celndm%cell_config,boxndm,psc,'v')          
     end if
 #endif
     !B.2
@@ -166,8 +177,11 @@ contains
        case(41)
           select case (ipotentiel)
           case(0,1,3,4,5,6,7,8,9)
-             atdml%fp=0 ; potis1=0
-             call calfo2ccel(atdml,celndm,boxndm)
+             if(ltpcel) then
+                write(6,*)'LTPCEL pas programme pour pressions dmtype=41 et pot pair faire a l image de sigcalfo'
+             end if
+             atdml%fp=0 ; potis1=0;
+             call calfo2ccel(atdml,celndm%cell_config,boxndm)
              sig=sig-sig2P
              atdml%fpr=atdml%fpr-atdml%fp
              potist=potist-potis1
@@ -230,14 +244,14 @@ contains
 !       end select
     end if
 #endif
-
+call caltabtarps( celndm,atdml,lperiod,boxndm,psc)
 !!A.3
     select case(dmtype)
     case(41)
        select case (ipotentiel)
        case(0,1,3,4,5,6,7,8,9)
           atdml%fp=0; potis1=0
-          call calfo2ccel(atdml,celndm,boxndm)
+          call calfo2ccel(atdml,celndm%cell_config,boxndm)
           sig=sig+sig2P
           atdml%fpr=atdml%fpr+atdml%fp
           potist=potist+potis1
@@ -266,14 +280,16 @@ contains
        select case (ipotentiel)
        case(0,1,3,4,5,6,7,8,9)
           atdml%fp=0 ; potis1=0
-          call calfo2ccel(atdml,celndm,boxndm)
+          if(ltpcel)sigc=0
+          call calfo2ccel(atdml,celndm%cell_config,boxndm)
           atdml%fpr=atdml%fp
           potist=potis1
        case(10,11)
           sigcalfo=0
           atdml%fp=0
           tabdensity=0
-          call calfoeamcel(atdml,celndm,boxndm,psc)
+          if(ltpcel)sigc=0
+          call calfoeamcel(atdml,celndm%cell_config,boxndm,psc)
           potist=potiseam
           atdml%fpr=atdml%fp
           sig=sigcalfo
@@ -325,7 +341,7 @@ contains
                   cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
              sigkine(1:3,3) = sigkine(1:3,3) + &
                   cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
-             if ((mod(iteration,itesigma)==0).and.(lTPcel.EQV..true.)) then
+             if (lTPcel.EQV..true.) then
                 celndm%sigc(1:3,1,atdml%ielat(ilocal)) = celndm%sigc(1:3,1,atdml%ielat(ilocal)) + &
                      cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyz/boxndm%volu
                 celndm%sigc(1:3,2,atdml%ielat(ilocal)) = celndm%sigc(1:3,2,atdml%ielat(ilocal)) + &
@@ -350,7 +366,7 @@ contains
 
        call analysearps (atdml,celndm,boxndm,psc,'P2')
 
-       call controleT(atdml,celndm,boxndm,psc,lreturn)
+       call controleT(atdml,celndm%cell_config,boxndm,psc,lreturn)
        if (lreturn) return
 
     end do
@@ -366,7 +382,7 @@ contains
     type(para_space_config)::psc
     class(box_config)::boxndm
     type(atom_config_arps)::atdml
-    type(cell_config):: celndm
+    type(cell_config_arps):: celndm
     character(len=*)::chr
 
  !   character*3,allocatable,target::tymov(:)
@@ -461,7 +477,7 @@ contains
 #endif
 
     type(atom_config_arps),intent(inout)::atcf
-    type(cell_config),intent(in)::celcf
+    type(cell_config_arps),intent(in)::celcf
     type(box_config),intent(in)::boxcf
 
     !-----------------------------------------------
@@ -655,7 +671,7 @@ contains
 
 
     type(atom_config_arps),intent(inout)::atcf
-    type(cell_config),intent(in)::celcf
+    type(cell_config_arps),intent(in)::celcf
     type(box_config),intent(in)::boxcf
 
     type(para_space_config)::psc
@@ -853,6 +869,8 @@ contains
 !    real(double)::m,vmini,vmaxi,par1,par2,d1,d2,apar,bpar,pmin,pmax&
 !         &,xs,vn
     integer::i,iti,mov,nmov(0:2),imc
+    real(double),save::nmovm(0:2)=0
+    integer,save::icall=0
     nmov=0
 #ifdef PARA
     if ((lspaceNDM.eqv..true.).and.(nprocspace.gt.1)) then
@@ -863,7 +881,8 @@ contains
 #else
        imc=atcf%im
 #endif
-    
+       icall=icall+1
+
     do i=1,imc
        vn=norm2(atcf%vp(:,i))
        iti=atcf%ityp(i)
@@ -889,10 +908,11 @@ contains
 #ifdef PARA
           call comm_space%sum(nmov)
 #endif
-
+    nmovm=(nmovm*(icall-1)+nmov)/icall
     if (itetemp>0) then
        if ((mod(iteration,itetemp)==0).and.(rang==0)) then
-          write(6,'(A,I6,F15.6, 3I9)')'NMOV ',iteration, timel, nmov
+          write(6,'(A,I6,E15.6, 3I9)')'NMOV ',iteration, timel, nmov
+          write(6,'(A,I6,E15.6, 3G15.5)')'NMOVM ',iteration, timel, nmovm
        end if
     end if
 
@@ -931,9 +951,10 @@ contains
     end if
   end function uf
 
-  subroutine initarps(atcf)
+  subroutine initarps(atcf,celcf)
     type(atom_config_arps)::atcf
-    integer::iti
+    type(cell_config_arps)::celcf
+    integer::iti,ko,koxyz(3)
     real(double)::m,pmin,pmax,par1,par2,d1,d2
 !    allocate (atcf%fpr(3,atcf%imm))
 !    allocate (atcf%mov(atcf%imm))
@@ -949,6 +970,8 @@ contains
        allocate (tabdensity(atcf%imm))
        allocate (atcf%fpg(3,atcf%imm))
     end if
+    allocate(celcf%nmov(0:2,celcf%noxyz))
+       
     do iti=1,ntyp
 
        m=cm(iti)
@@ -1006,4 +1029,34 @@ contains
        
     end do
   end subroutine xpupdate
+
+
+  subroutine caltabtarps( celcf,atcf,lperiod,boxcf,psc)
+    type(cell_config_arps)::celcf
+    type(atom_config_arps)::atcf
+    logical::lperiod
+    class(box_config)::boxcf
+    type(para_space_config)::psc
+
+    integer::ko,i,i1,imov
+    celcf%nmov=0
+    
+    do ko=1,celcf%noxyz
+#ifdef PARA
+       if ( cellv%proc_cell(cell).ne.myidsp ) cycle
+#endif
+       do i1=1,celcf%nato(ko)
+          i=celcf%atincel(i1,ko)
+          imov=atcf%mov(i)
+          celcf%nmov(imov,ko)=celcf%nmov(imov,ko)+1
+       end do
+    end do
+#ifdef PARA
+    call comm_space%sum(cellcf%mov))
+
+#endif
+
+    
+  end subroutine caltabtarps
+    
 end module arps_mod

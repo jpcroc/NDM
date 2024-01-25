@@ -18,7 +18,7 @@ module prog_mod
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,box_config_lpr
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,atom_config_arps
-  USE cellconfig, only:cell_config
+  USE cellconfig, only:cell_config,cell_config_arps
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax,iseed,&
        &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman,lanaposart
 
@@ -69,10 +69,12 @@ contains
     type(atom_config_arps),target:: atdmarps
     type(atom_config_d),target:: atdmd
     type(atom_config_e),target:: atdme
-    type(cell_config)::celndm
+    class(cell_config),pointer::celndm
     class(box_config),pointer::boxndm
     type(box_config), target:: boxs
     type(box_config_LPR), target:: boxlpr
+    type(cell_config),target::cellstd
+    type(cell_config_arps),target::cellarps
     type(para_space_config)::psc0
     real(double)::rv
     integer::ipp
@@ -90,6 +92,12 @@ contains
     ! Allocation des tableaux dimensionnes sur le nombre d'atomes
     !probablement inutile pour dmtype=9 ou 15
     ! choose actual data types for atmdl and boxndm depending on values read in readdm
+    select case(dmtype)
+    case(41,42)
+       celndm=>cellarps
+    case default
+       celndm=>cellstd
+    end select
     if ((lPRahman).or.((dmtype == 15).or.(dmtype==151))) then
        boxndm=>boxlpr
     else
@@ -138,7 +146,10 @@ contains
        call init(atdml,boxndm,celndm,psc0)
        select type (atdml)
        type is (atom_config_arps)
-          call initarps(atdml)
+          select type(celndm)
+          type is(cell_config_arps)
+             call initarps(atdml,celndm)
+          end select
        end select
 #ifdef DECOUP
        ! Dans ce cas, pas la peine d'aller plus loin on peut terminer le programme
@@ -177,7 +188,10 @@ contains
              timeloopmax=timemax
              select type(atdml)
              type is (atom_config_arps) !special case ARPS
-                call dmloop_arps(atdml,celndm,boxndm,psc0)
+                select type(celndm)
+                type is(cell_config_arps)
+                   call dmloop_arps(atdml,celndm,boxndm,psc0)
+                end select
              end select
           case(5)
              write(6,*)'loopforcetest pas NDM2020' ; stop

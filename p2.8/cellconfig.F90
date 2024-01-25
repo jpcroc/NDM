@@ -34,15 +34,41 @@ module cellconfig
      procedure, pass::send2proc=>cells2p
      procedure, pass::send2all=>cells2a
      procedure, pass::recv=>cellrecv
+     procedure, pass::koxyz=>kox
+     procedure, pass::edge=>edgek
   end type cell_config
 
   type, extends (cell_config):: cell_config_g !
      integer,allocatable::natotot (:) ! nombre d'atomes dans la cellule ko
   end type cell_config_g
+
+  type, extends (cell_config):: cell_config_arps !
+     integer,allocatable::nmov(:,:) ! nombre d'atomes dans la cellule ko
+  end type cell_config_arps
      
 contains
 
+  function kox(cell,ko)
+    class(cell_config)::cell
+    integer:: kox(3),ko
 
+    integer:: kx,ky,kz,kyz,km1,km2,nox,noy
+    !    do ko=1,cell%noxyz
+    nox=cell%nox;noy=cell%noy
+    km1=ko-1
+    kx=mod(km1,nox)
+    km2=(km1-kx)/nox
+    ky=mod(km2,noy)
+    kz=(km2-ky)/noy
+    kox(1)=kx;kox(2)=ky;kox(3)=kz
+
+ !   end do
+    
+  end function kox
+  function edgek(cell)
+    class(cell_config)::cell
+    integer:: edgek(3)
+  end function edgek
 
   subroutine init_cel(cell,box,nox,noy,noz,natperc,ltpc)
     class(cell_config)::cell
@@ -548,18 +574,22 @@ contains
 
   ! copie d'une config entière vers config de base
 
-  subroutine copy (cellsource,cellcible,box,lzeroinit)
+  subroutine copy (cellsource,cellcible,box,lzeroinit,ltpccible)
     class(cell_config)::cellsource
     class(cell_config)::cellcible
     class(box_config)::box
-    logical,optional::lzeroinit
-    logical::lzi=.false.
+    logical,optional::lzeroinit,ltpccible
+    logical::lzi=.false.,ltpcel
     if (present(lzeroinit))lzi=lzeroinit
 
     call cellcible%dealloc
-    cellcible%ltpcel=cellsource%ltpcel
     !    cellcible=cellsource
-    call cellcible%init(box,cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc)
+    if (present(ltpccible))then
+       ltpcel=ltpccible
+    else
+       ltpcel=cellsource%ltpcel
+    end if
+    call cellcible%init(box,cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc,ltpc=ltpcel)
 
     cellcible%nox=cellsource%nox
     cellcible%noy=cellsource%noy
