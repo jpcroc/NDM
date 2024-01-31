@@ -160,8 +160,8 @@ contains
 
     !-----------------------------------
     ! Debugging with Ercolessi potential
-    REAL(kind(0.d0)) :: r, func, dfunc, d2func
-    r=sqrt(r2)/A2cm
+    REAL(kind(0.d0)) :: func, dfunc, d2func,r
+    r=r2/A2cm
     CALL v2(r, func, dfunc, d2func)
      Erep=func*ev2erg
 !    IF (present(dErep)) dErep=dfunc*ev2erg/A2cm

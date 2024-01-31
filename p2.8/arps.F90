@@ -21,7 +21,7 @@ module arps_mod
   use calfoeamcel_mod,only:calfoeamcel
 
 #ifdef PARA
-    use Tpara,only:nprocspace,para_space_config,comm_space
+    use Tpara,only:nprocspace,para_space_config,comm_space,myidsp
     USE mod_para,only:maj_tabdensity_ftm,maj_atomes_frt_ftm,maj_atomes_frt_part
 
 
@@ -240,7 +240,7 @@ contains
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
 !       select case (ipotentiel)
 !       case(0,1,3,4,5,6,7,8,9)
-       call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc)
+       call maj_atomes_frt_ftm(atdml,celndm%cell_config,boxndm,psc)
 !       end select
     end if
 #endif
@@ -1043,7 +1043,7 @@ call caltabtarps( celndm,atdml,lperiod,boxndm,psc)
     
     do ko=1,celcf%noxyz
 #ifdef PARA
-       if ( cellv%proc_cell(cell).ne.myidsp ) cycle
+       if ( celcf%proc_cell(ko).ne.myidsp ) cycle
 #endif
        do i1=1,celcf%nato(ko)
           i=celcf%atincel(i1,ko)
@@ -1052,7 +1052,7 @@ call caltabtarps( celndm,atdml,lperiod,boxndm,psc)
        end do
     end do
 #ifdef PARA
-    call comm_space%sum(cellcf%mov))
+    call comm_space%sum(celcf%nmov)
 
 #endif
 

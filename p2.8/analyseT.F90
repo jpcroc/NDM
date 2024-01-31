@@ -26,6 +26,7 @@ module analyseT_mod
   use Tpara,only:nprocspace,myidsp
   use calcdepla_mod,only:calcdepla
   use newunit_mod,only:newunit
+  use plottpcel_mod,only:plottpcel
   implicit none
 
 contains
@@ -235,7 +236,7 @@ contains
                 if (tfcou>0.0) write (6, '(A,G15.4)') '*temperature externe = ', tcou
 
                 if (celndm%ltpcel) then
-                   call plottpcel(celndm)
+                   call plottpcel(celndm,boxndm)
                 end if
                 IF (lprahman) THEN
                    write(6,*) 'NPT With Parrinello-Rahman'
@@ -511,64 +512,4 @@ contains
     end if
     return
   end subroutine analyseT
-  subroutine plottpcel(celcf,itapp)
-    integer,optional::itapp
-    class(cell_config)::celcf
-    integer::itp,unitlt,i,koxyz(3),unitlp
-    character :: extension*9
-    character*80::namef
-    real(double)::Pcell
-    
-    if (.not.celcf%ltpcel) then
-       write(6,*)'coding error in plottpcel call, %ltpcel.ne.true'
-       call arret_ndm
-    end if
-    
-    if (present(itapp)) then
-       itp=itapp
-    else
-       itp=iteration
-    end if
-    if (myidsp==0) then
-       call newunit(unitlt)
-       write(extension,'(i9.9)')itp
-       namef='TEMPC.'//trim(extension)
-       open(unitlt,file=namef,form='formatted')
-
-
-       
-       do i=1,celcf%noxyz
-          koxyz=celcF%koxyz(i)
-          select type (celcf)
-          type is (cell_config)
-             write(unitlt,'(I12,3I5,G15.5,I5)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
-          type is (cell_config_arps)
-             write(unitlt,'(I12,3I5,G15.5,4I5)')i,koxyz(1:3),celcf%tempc(i),celcf%nato(i),celcf%nmov(0,i),celcf%nmov(1,i),celcf%nmov(2,i)
-          end select
-       end do
-       close(unitlt)
-
-       call newunit(unitlp)
-       write(extension,'(i9.9)')itp
-       namef='PRESSC.'//trim(extension)
-       open(unitlp,file=namef,form='formatted')
-     
-       do i=1,celcf%noxyz
-          koxyz=celcF%koxyz(i)
-          pcell=(celcf%sigc(1,1,i)+celcf%sigc(2,2,i)+celcf%sigc(3,3,i))*unitP
-          select type (celcf)
-          type is (cell_config)
-             write(unitlp,'(I12,3I5,G15.5,I5,9E15.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
-          type is (cell_config_arps)
-             write(unitlp,'(I12,3I5,G15.5,4I5,9E15.5)')i,koxyz(1:3),pcell,celcf%nato(i),celcf%nmov(0,i),&
-                  &celcf%nmov(1,i),celcf%nmov(2,i),celcf%sigc(:,:,i)*unitP
-          end select
-       end do
-       close(unitlt)
-
-
-
-       
-    end if
-  end subroutine plottpcel
 end module analyseT_mod

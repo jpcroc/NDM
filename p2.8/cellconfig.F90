@@ -35,7 +35,6 @@ module cellconfig
      procedure, pass::send2all=>cells2a
      procedure, pass::recv=>cellrecv
      procedure, pass::koxyz=>kox
-     procedure, pass::edge=>edgek
   end type cell_config
 
   type, extends (cell_config):: cell_config_g !
@@ -45,6 +44,7 @@ module cellconfig
   type, extends (cell_config):: cell_config_arps !
      integer,allocatable::nmov(:,:) ! nombre d'atomes dans la cellule ko
   end type cell_config_arps
+     
      
 contains
 
@@ -65,18 +65,18 @@ contains
  !   end do
     
   end function kox
-  function edgek(cell)
-    class(cell_config)::cell
-    integer:: edgek(3)
-  end function edgek
 
-  subroutine init_cel(cell,box,nox,noy,noz,natperc,ltpc)
+
+  subroutine init_cel(cell,box,nox,noy,noz,natperc,ltpc,latomalloc)
     class(cell_config)::cell
     integer,intent(in),optional::nox,noy,noz,natperc
     logical,optional,intent(in):: ltpc
     logical::ltpcel
+    logical,optional::latomalloc
+    logical::lata=.true.
     class(box_config)::box
     ltpcel=.false.
+    if (present(latomalloc))lata=latomalloc
     if (present (ltpc))ltpcel=ltpc
     if (present(nox)) then
        cell%nox=nox; cell%noy=noy; cell%noz=noz;cell%noxyz=nox*noy*noz
@@ -90,7 +90,7 @@ contains
     !write(6,*) 'nox', cell%nox
     cell%ltpcel=ltpcel
     call dealloc_cel(cell)
-    call allocatecelN(cell)
+    call allocatecelN(cell,lata)
     call neigcelN(cell,box)
     !    call cell%print
        
@@ -98,10 +98,13 @@ contains
 
   end subroutine init_cel
 
-  subroutine allocatecelN(cell)
+  subroutine allocatecelN(cell,latomalloc)
     class(cell_config)::cell
     !    integer,intent(in)::nox,noy,noz,natperc
     integer::nsize
+    logical,optional::latomalloc
+    logical::lata=.true.
+    if (present(latomalloc))lata=latomalloc
     cell%noxyz=cell%nox*cell%noy*cell%noz
     nsize=cell%noxyz
     if (nsize.ne.0) then
@@ -125,7 +128,7 @@ contains
           allocate(cell%tempc(nsize))
           cell%tempc=0
        end if
-       if (cell%natperc.ne.0)   then
+       if ((cell%natperc.ne.0).and.(lata))   then
           allocate(cell%atincel(cell%natperc,nsize))
           cell%atincel=0
        end if
@@ -626,6 +629,7 @@ contains
     write(un,*)'natperc',cellv%natperc
     write(un,*)'celsize',cellv%celsize
     write(un,*)'icaltabt',cellv%icaltabt
+    write(un,*)'LTPCEL',cellv%ltpcel
     do i=1,cellv%noxyz
        write(un,*)'ncelvois',i,cellv%ncelvois(i)
     end do
@@ -636,6 +640,18 @@ contains
        do i=1,cellv%noxyz
           write(un,*)'atincel',i,cellv%atincel(:,i)
        end do
+    end if
+    if (cellv%ltpcel) then
+       if (allocated(cellv%tempc) )then
+          do i=1,cellv%noxyz
+             write(un,*)'tempc',i,cellv%tempc(i)
+          end do
+       end if
+       if (allocated(cellv%sigc)) then
+          do i=1,cellv%noxyz
+             write(un,*)'tempc',i,cellv%sigc(1,1,i),cellv%sigc(1,2,i)
+          end do
+       end if
     end if
 !    write(6,*)'deltadist',cellv%deltadist
 #ifdef PARA

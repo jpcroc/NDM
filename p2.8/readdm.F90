@@ -45,6 +45,7 @@ contains
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
     use arps_mod,only:kmin,kmax!,lxyz
+    use plottpcel_mod,only:iplotcel
 
 
     ! *****************************************************************
@@ -90,7 +91,7 @@ contains
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
-         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
+         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,iplotcel,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin
 
 
@@ -373,10 +374,10 @@ contains
     typswitch1=0
     typswitch2=0
     ldecalcor=.true.
-    kmin=0.
-    kmax=0.
+    kmin=0. ! min kinetic energy for arps
+    kmax=0. ! max kinetic energy for arps
     iteprtkin=-1
-
+    iplotcel=0 ! triggers the detailled analysis of ltpcel (0or 2  =std; 1 or 2=specific)
     
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 

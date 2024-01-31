@@ -1,9 +1,9 @@
 module eam
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
-  USE gen_com_m, ONLY: A2cm,rang,lopt,ev2erg
+  USE gen_com_m, ONLY: A2cm,rang,lopt,ev2erg,low_limit
   USE var_pot, ONLY:rhomin,rhomax,lforcetabulate,q,alpha,precisew,ncouc3,ncoucx,ncoucy,ncoucz,&
-       &  kpmex, kpmey, kpmez,ipotrep,rcwolf
+       &  kpmex, kpmey, kpmez,ipotrep,rcwolf,ngrid
   USE spline_mod,only: cspline
   USE alloc_typ_mod,only: alloc_typ
   USE arret_ndm_mod,only: arret_ndm
@@ -301,6 +301,7 @@ contains
     read(lupotin,*)nptmax
 
     if (rang==0) write(6,*)'nptmax in the max number of points on grid  ',nptmax
+!    if(nptmax.gt.ngrid) ngrid=nptmax
     allocate(rhotyp(ntyp)) 
     allocate(embtyp(ntyp)) 
     allocate(reppair(npair)) 
@@ -480,6 +481,7 @@ contains
           if (rang==0) write(6,*)'rep'
 
           read(lupotin,*)npt,reppair(ipr)%deltaREP
+!          reppair(ipr)%deltaREP=reppair(ipr)%deltaREP*1.00000000000000000000001 !+low_limit ! *1.00000000000000000000000000000010.9999999
           if (lforcetabulate) reppair_d(ipr)%deltaREP=reppair(ipr)%deltaREP
 
           if(npt.gt.nptmax)then
@@ -634,8 +636,8 @@ contains
 
     type(DensityT), intent(in) :: density 
     type(DensityTsp), intent(in) :: SPdensity 
-    real(kind(0.d0)), intent(in) :: r2
-    real(kind(0.d0)), intent(out), optional :: rho
+    real(double), intent(in) :: r2
+    real(double), intent(out), optional :: rho
     !local
     integer:: kr 
     real(double) :: xmax,r,drk
@@ -647,8 +649,8 @@ contains
     if(r.gt.xmax) then
        Rho=0.0
     else
-       kr=Int(r/density%deltaRHO)+1
-       drk=r+(1-kr)*density%deltaRHO
+       kr=nInt(r/density%deltaRHO)
+       drk=r-kr*density%deltaRHO
        rho = density%rho(kr)+drk*(SPdensity%brho(kr)+drk*(SPdensity%crho(kr)+drk*SPdensity%drho(kr)))
 
     end if
@@ -687,9 +689,9 @@ contains
 
     else
 !       write(6,*)
-       k=Int((rho-eam%deltaEAM/1d10)/eam%deltaEAM)+1
+       k=nInt((rho-eam%deltaEAM/1d10)/eam%deltaEAM)
 !       write(6,*) k,rho,rho/eam%deltaEAM
-       drk=rho +(1 -k)*eam%deltaEAM
+       drk=rho +(0 -k)*eam%deltaEAM
        Embf = ev2erg*(eam%feam(k)+drk*(SPeam%beam(k)+drk*(SPeam%ceam(k)+drk*SPeam%deam(k))))
     end if
 
@@ -709,25 +711,26 @@ contains
 
     type(RepT), intent(in) :: rep
     type(RepTsp), intent(in) :: SPrep
-    real(kind(0.d0)), intent(in) :: r2
-    real(kind(0.d0)), intent(out), optional :: Erep
+    real(double), intent(in) :: r2
+    real(double), intent(out), optional :: Erep
 
 
     !-----------------------------------
 
     integer :: k
-    real(double) :: xmax,r,drk
+    real(double) :: xmax,drk,r
 
     xmax=rep%xr(nptmax)
 
-    r=sqrt(r2)/A2cm
+    r=r2/A2cm
 
     if(r.gt.xmax) then
        Erep=0.0
        return
     else
-       k=Int(r/rep%deltaREP)+1
-       drk=r+(1-k)*rep%deltaREP
+       k=nInt(r/rep%deltaREP)
+       drk=r+(0-k)*rep%deltaREP
+
        Erep = ev2erg*(rep%potr(k) +drk*(SPrep%bpotr(k) +drk*(SPrep%cpotr(k) +drk*SPrep%dpotr(k))))
 
     end if
