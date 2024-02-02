@@ -163,6 +163,11 @@ contains
             end do
           end block
           ! MPI
+          if (celndm%ltpcel) then
+           call plottpcel(celndm,boxndm,psc=psc)
+             
+          end if
+
           !remarque 1erg = 6.24d11 eV
           if (mod(iteration,itetemp2)==0) then
              if (rang==0) then
@@ -235,9 +240,6 @@ contains
 
                 if (tfcou>0.0) write (6, '(A,G15.4)') '*temperature externe = ', tcou
 
-                if (celndm%ltpcel) then
-                   call plottpcel(celndm,boxndm)
-                end if
                 IF (lprahman) THEN
                    write(6,*) 'NPT With Parrinello-Rahman'
                    write(6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Kcell = ',Kcell*unitE,cunitE, &

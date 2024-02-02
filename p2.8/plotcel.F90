@@ -4,7 +4,8 @@ module plottpcel_mod
   USE T_kind_param_m, ONLY:  double
   USE arret_ndm_mod,only: arret_ndm
   use gen_com_m,only:iteration,unitP
-    use newunit_mod,only:newunit
+  use newunit_mod,only:newunit
+  use Tpara,only:para_space_config    
 #ifdef PARA
   USE Tpara,only:myidsp,nprocs,mpi_comm_world,comm_space
 #else
@@ -91,8 +92,11 @@ module plottpcel_mod
        kos=1+ixs(1)+slice%nox*(ixs(2)+slice%noy*ixs(3))
        ncs(kos)=ncs(kos)+1
        slice%indc(ncs(kos),kos)=iko
-       slice%nato(kos)=slice%nato(kos)+celcf%nato(iko)
-    end do
+          slice%nato(kos)=slice%nato(kos)+celcf%nato(iko)
+       
+       end do
+    write(6,*)'RANG',slice%nato
+    
     do iko=1,slice%noxyz
        if (slice%ncs.ne.ncs(iko)) then
           write(6,*)'erreur constr slice'
@@ -121,7 +125,8 @@ module plottpcel_mod
 
 
 
-    subroutine plottpcel(celcf,boxcf,itapp)
+  subroutine plottpcel(celcf,boxcf,itapp,psc)
+    type(para_space_config)::psc    
     integer,optional::itapp
     class(cell_config)::celcf
     class(box_config)::boxcf
@@ -155,26 +160,31 @@ module plottpcel_mod
     end if
     
     if (iplotcel.ge.1) then
-!       if( icall==1) then
-          call newunit(iultp)
-          open(unit=iultp,name='ltpcel.in')
-          read(iultp,nml=ltpc)
-          close(iultp)
- !      end if
-       if (lppl) then
-          if (all(slxyz==0)) then
-             write(6,*)'inconsistent slxyz=0 and lppl'
-             call arret_ndm
-          else
-             call plotslice(celcf,boxcf,slxyz,itp)
-             
-          end if
-       end if
-       if (lpsph)  then
 
-
-       end if
-       
+       block
+         type(cell_config)::cellcomp
+         call celcf%constrcomp(cellcomp,boxcf,latomcp=.false.,psc=psc)
+         
+         
+         if (myidsp==0) then
+            call newunit(iultp)
+            open(unit=iultp,name='ltpcel.in')
+            read(iultp,nml=ltpc)
+            close(iultp)
+            if (lppl) then
+               if (all(slxyz==0)) then
+                  write(6,*)'inconsistent slxyz=0 and lppl'
+                  call arret_ndm
+               else
+                  call plotslice(cellcomp,boxcf,slxyz,itp)
+                  
+               end if
+            end if
+            if (lpsph)  then
+               
+            end if
+         end if
+       end block
     end if
   end subroutine plottpcel
 
@@ -231,7 +241,7 @@ module plottpcel_mod
     type(box_config)::box
     integer::slxyz(3),itp
     type(slice_config)::slice
-    
+   
     call slice%build(celcf,box,slxyz)
     call slice%merge(celcf)
 !    call slice%print(unit=100,mess='SLICE')

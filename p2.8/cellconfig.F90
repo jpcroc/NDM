@@ -4,7 +4,7 @@ module cellconfig
   use atomconfig,only : atom_config,atom_config_d,atom_config_e
   use boxconfig,only:box_config
   use paraconfig,only:para_config
-  use Tpara,only:para_space_config,mpi_communicator,myidsp
+  use Tpara,only:para_space_config,mpi_communicator,myidsp,comm_space
   use gen_com_m,only:rang
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
@@ -35,6 +35,7 @@ module cellconfig
      procedure, pass::send2all=>cells2a
      procedure, pass::recv=>cellrecv
      procedure, pass::koxyz=>kox
+     procedure, pass::constrcomp=>cococe
   end type cell_config
 
   type, extends (cell_config):: cell_config_g !
@@ -577,12 +578,13 @@ contains
 
   ! copie d'une config entière vers config de base
 
-  subroutine copy (cellsource,cellcible,box,lzeroinit,ltpccible)
+  subroutine copy (cellsource,cellcible,box,lzeroinit,ltpccible,latomcp)
     class(cell_config)::cellsource
     class(cell_config)::cellcible
     class(box_config)::box
-    logical,optional::lzeroinit,ltpccible
-    logical::lzi=.false.,ltpcel
+    logical,optional::lzeroinit,ltpccible,latomcp
+    logical::lzi=.false.,ltpcel,latcp=.true.
+    if (present(latomcp))latcp=latomcp
     if (present(lzeroinit))lzi=lzeroinit
 
     call cellcible%dealloc
@@ -592,7 +594,7 @@ contains
     else
        ltpcel=cellsource%ltpcel
     end if
-    call cellcible%init(box,cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc,ltpc=ltpcel)
+    call cellcible%init(box,cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc,ltpc=ltpcel,latomalloc=latcp)
 
     cellcible%nox=cellsource%nox
     cellcible%noy=cellsource%noy
@@ -602,10 +604,10 @@ contains
     cellcible%icaltabt=cellsource%icaltabt
     if (lzi) then
        cellcible%nato(:)=0
-       cellcible%atincel(:,:)=0
+       if (latcp) cellcible%atincel(:,:)=0
     else
        cellcible%nato(:)=cellsource%nato(:)
-       cellcible%atincel(:,:)=cellsource%atincel(:,:)
+       if (latcp)        cellcible%atincel(:,:)=cellsource%atincel(:,:)
        if ((cellcible%ltpcel).and.(cellsource%ltpcel))then
           cellcible%sigc=cellsource%sigc
           cellcible%tempc=cellsource%tempc
@@ -616,7 +618,43 @@ contains
     cellcible%celsize=cellsource%celsize
   end subroutine copy
 
+  subroutine cococe(celloc,celcomp,box,latomcp,psc)
+    class(cell_config)::celloc
+    class(cell_config)::celcomp
+    class(box_config)::box
+    logical::latomcp
+    type(para_space_config),optional::psc    
 
+    integer::iko
+    call celcomp%init(box,celloc%nox,celloc%noy,celloc%noz,celloc%natperc,ltpc=celloc%ltpcel,latomalloc=latomcp)
+
+#ifdef PARA
+    celcomp%celsize=celloc%celsize
+    celcomp%nato=0
+    if(latomcp)celcomp%atincel=0
+    if (allocated(celcomp%sigc))celcomp%sigc=0
+    if (allocated(celcomp%tempc))celcomp%tempc=0
+    do iko=1,celloc%noxyz
+       if (celloc%proc_cell(iko)==myidsp) then
+          celcomp%nato(iko)=celloc%nato(iko)
+          if (allocated(celcomp%tempc))celcomp%tempc(iko)=celloc%tempc(iko)
+          if (allocated(celcomp%sigc))celcomp%sigc(:,:,iko)=celloc%sigc(:,:,iko)
+          if(latomcp)celcomp%atincel(:,iko)=celloc%atincel(:,iko)
+       end if
+    end do
+    call comm_space%sum(celcomp%nato)
+    if (allocated(celcomp%tempc))call comm_space%sum(celcomp%tempc)
+    if (allocated(celcomp%sigc))call comm_space%sum(celcomp%sigc)
+    if(latomcp)call comm_space%sum(celcomp%atincel)
+       
+#else
+    call celloc%copy(celcomp)
+#endif
+
+  end subroutine cococe
+       
+       
+  
   subroutine cellprint(cellv,unit,mess)
     class(cell_config)::cellv
     integer,intent(in),optional::unit
