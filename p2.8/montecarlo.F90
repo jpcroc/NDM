@@ -918,7 +918,8 @@ contains
                    epotnp1min=nrjpot_npp(ipchemin)
                    fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
                    write(6,*)'new epotnp1min ', epotnp1min*erg2ev
-                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),&
+                        &box_new1,3,fnamcout,latcomp=.true.)
                 end if
 
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),&
@@ -1072,7 +1073,8 @@ contains
                    epotnp1min=nrjpot_npp(ipchemin)
                    fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
                    write(6,*)'new epotnp1min ', epotnp1min*erg2ev
-                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+                   call sauvegardeT(config_atom_new_1%atom_config_d&
+                        &,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
                 end if
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),config_cells_nplus1(ipchemin)&
                      &,boxmcgcpath(ipchemin),'SystNP1_accepte')

@@ -129,6 +129,7 @@ module plottpcel_mod
     allocate(sphere%vol(ndom))
     allocate(sphere%tempc(ndom))
     sphere%ncs=0
+    sphere%ndom=ndom
     
     do iko=1,celcf%noxyz
        edge(:)=celcf%edge(iko,box)
@@ -164,7 +165,7 @@ module plottpcel_mod
        dist=norm2(cv(1,:)) ! dist en cm
        idom=1+int(dist/sphere%rplt)
        sphere%ncs(idom)=sphere%ncs(idom)+1
-       write(6,*)'idom',idom,ndom,sphere%ncs(idom),sphere%maxncs
+!       write(6,*)'idom',idom,ndom,sphere%ncs(idom),sphere%maxncs
        sphere%indc(sphere%ncs(idom),idom)=iko
 
        sphere%nato(idom)=sphere%nato(idom)+celcf%nato(iko)
@@ -205,7 +206,7 @@ module plottpcel_mod
     call newunit(unitlt)
     write(extension,'(i9.9)')itp
     namef=trim(ctemp)//trim(extension)
-    open(unitlt,file=namef,form='formatted')
+    open(unit=unitlt,file=namef,form='formatted')
     
     do i=1,domain%ndom
        write(unitlt,'(I12,G15.5,I5)')i,domain%tempc(i),domain%nato(i)
@@ -322,7 +323,7 @@ module plottpcel_mod
     real(double)::Pcell
     real(double)::Rplt, posplt(3)
     integer,save::icall=0
-    namelist /ltpc/lppl,posplt,Rplt,slxyz ! lpsph est enlve de la namelist pour déacriver cette partien qui cree un bug (écrase cm pour une raison inconnue)
+    namelist /ltpc/lppl,posplt,Rplt,slxyz ,lpsph !est enlve de la namelist pour déacriver cette partien qui cree un bug (écrase cm pour une raison inconnue)
     lpsph=.false.
     lppl=.false.
     posplt(:)=0.5
@@ -355,7 +356,7 @@ module plottpcel_mod
          
          if (myidsp==0) then
             call newunit(iultp)
-            open(unit=iultp,name='ltpcel.in')
+            open(unit=iultp,file='ltpcel.in')
             read(iultp,nml=ltpc)
             close(iultp)
             if (lppl) then
@@ -415,7 +416,8 @@ module plottpcel_mod
        type is (slice_config)
           write(unitlt,'(I12,3I5,G15.5,I5)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
        type is (cell_config_arps)
-          write(unitlt,'(I12,3I5,G15.5,4I5)')i,koxyz(1:3),celcf%tempc(i),celcf%nato(i),celcf%nmov(0,i),celcf%nmov(1,i),celcf%nmov(2,i)
+          write(unitlt,'(I12,3I5,G15.5,4I5)')i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)&
+               &,celcf%nmov(0,i),celcf%nmov(1,i),celcf%nmov(2,i)
        end select
     end do
     close(unitlt)
