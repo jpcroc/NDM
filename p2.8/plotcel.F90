@@ -12,7 +12,7 @@ module plottpcel_mod
   USE Tpara,only:myidsp,nprocs,nprocspace
 #endif
 
-   
+  USE cryst_to_cart_mod,only: cryst_to_cart
      
 !  USE atomconfig,only:atom_config,atom_config_d,atom_config_e
 
@@ -25,19 +25,206 @@ module plottpcel_mod
 
   logical::  lpsph,lppl
   integer:: slxyz(3)
-  real(double)::Rplt, posplt(3)
+
   
   
   type,extends(cell_config)::slice_config
      integer,allocatable::indc(:,:)
-     integer,allocatable::ncs
+     integer::ncs
    contains
      procedure, pass::build=>build_slice
      procedure, pass::merge=>merge_slice
   end type slice_config
   
+!!$  type,abstract::domain_config
+!!$     integer,allocatable::indc(:,:),nato(:)
+!!$     integer,allocatable::ncs(:)
+!!$     integer::ndom,maxncs
+!!$     real(double),allocatable::tempc(:),Pr(:),vol(:)
+!!$   contains
+!!$     procedure(build_i), deferred,pass::build
+!!$     procedure, pass::merge=>merge_domain
+!!$     procedure,pass:: plotd=>plotdomain
+!!$  end type domain_config
+!!$
+!!$  abstract interface
+!!$     subroutine build_i(self,celcf,box)
+!!$       import domain_config
+!!$       import cell_config
+!!$       import box_config
+!!$       class(domain_config)::self
+!!$       class(cell_config)::celcf
+!!$       class(box_config)::box
+!!$     end subroutine build_i
+!!$  end interface
+!!$
+!!$  type,extends(domain_config)::sphere_config
+!!$     real(double)::posplt(3),rplt
+!!$   contains
+!!$     procedure, pass::build=>build_sphere
+!!$  end type sphere_config
+  
+
+  type::sphere_config
+
+     integer,allocatable::indc(:,:),nato(:)
+     integer,allocatable::ncs(:)
+     integer::ndom,maxncs
+     real(double),allocatable::tempc(:),Pr(:),vol(:)
+     real(double)::posplt(3),rplt
+   contains
+     procedure, pass::build=>build_sphere
+     procedure, pass::merge=>merge_domain
+     procedure,pass:: plotd=>plotdomain
+
+  end type sphere_config
+  
   contains
 
+  subroutine build_sphere(sphere,celcf,box)
+    class(sphere_config)::sphere
+    class(cell_config)::celcf
+    class(box_config)::box
+
+!!  end subroutine build_sphere
+  
+    integer::iko,kos,i1,i2,i3,ic,ndom,idom
+    real(double)::dist,posr(3),cv(1,3),distm,edge(3)
+    if ((any(sphere%posplt(:).gt.1)).or.(any(sphere%posplt(:).lt.0))) then
+       write(6,*)' check 0<=POSPLT <=1'
+       call arret_ndm
+    end if
+
+    cv(1,:)=sphere%posplt
+    call cryst_to_cart(1,cv,box%at,1)
+    posr=cv(1,:)
+    distm=0.    
+    do i1=0,1
+       do i2=0,1
+          do i3=0,1
+             do ic=1,3
+                edge(ic)=i1*box%at(ic,1)+i2*box%at(ic,2)+i3*box%at(ic,3)
+             end do
+             cv(1,:)=posr(:)-edge(:)
+             call cryst_to_cart (1, cv, box%bg, -1) !cart vers cryst cryst vers cart sur cv
+             do ic=1,3
+                if (box%ipbc(ic)==1) then
+                   if ( (cv(1,ic).GT.0.5d0).OR.(cv(1,ic).LT.-0.5d0) )then
+                      cv(1,ic) = cv(1,ic) - Dble(Nint(cv(1,ic)))
+                   end if
+                end if
+             end do
+             call cryst_to_cart (1, cv, box%at, 1) !cryst vers cart sur c
+             dist=norm2(cv(1,:)) ! dist en cm
+             distm=max(distm,dist)
+
+          end do
+       end do
+    end do
+    ndom=1+int(distm/sphere%rplt)
+    allocate(sphere%ncs(ndom))
+    allocate(sphere%nato(ndom))
+    sphere%nato=0
+    allocate(sphere%Pr(ndom))
+    allocate(sphere%vol(ndom))
+    allocate(sphere%tempc(ndom))
+    sphere%ncs=0
+    
+    do iko=1,celcf%noxyz
+       edge(:)=celcf%edge(iko,box)
+       cv(1,:)=edge(:)-posr(:)
+       call cryst_to_cart (1, cv, box%bg, -1) !cart vers cryst cryst vers cart sur cv
+       do ic=1,3
+          if (box%ipbc(ic)==1) then
+             if ( (cv(1,ic).GT.0.5d0).OR.(cv(1,ic).LT.-0.5d0) )then
+                cv(1,ic) = cv(1,ic) - Dble(Nint(cv(1,ic)))
+             end if
+          end if
+       end do
+       call cryst_to_cart (1, cv, box%at, 1) !cryst vers cart sur c
+       dist=norm2(cv(1,:)) ! dist en cm
+       idom=1+int(dist/sphere%rplt)
+       sphere%ncs(idom)=sphere%ncs(idom)+1
+    end do
+    sphere%maxncs=maxval(sphere%ncs(:))
+    allocate(sphere%indc(sphere%maxncs,sphere%ndom))
+    sphere%ncs=0    
+    do iko=1,celcf%noxyz
+       edge(:)=celcf%edge(iko,box)
+       cv(1,:)=edge(:)-posr(:)
+       call cryst_to_cart (1, cv, box%bg, -1) !cart vers cryst cryst vers cart sur cv
+       do ic=1,3
+          if (box%ipbc(ic)==1) then
+             if ( (cv(1,ic).GT.0.5d0).OR.(cv(1,ic).LT.-0.5d0) )then
+                cv(1,ic) = cv(1,ic) - Dble(Nint(cv(1,ic)))
+             end if
+          end if
+       end do
+       call cryst_to_cart (1, cv, box%at, 1) !cryst vers cart sur c
+       dist=norm2(cv(1,:)) ! dist en cm
+       idom=1+int(dist/sphere%rplt)
+       sphere%ncs(idom)=sphere%ncs(idom)+1
+       write(6,*)'idom',idom,ndom,sphere%ncs(idom),sphere%maxncs
+       sphere%indc(sphere%ncs(idom),idom)=iko
+
+       sphere%nato(idom)=sphere%nato(idom)+celcf%nato(iko)
+       sphere%vol(idom)=sphere%vol(idom)+box%volu/celcf%noxyz
+    end do
+
+  end subroutine build_sphere
+  
+  subroutine merge_domain(domain,celcf,box)
+    class(sphere_config)::domain
+    class(cell_config)::celcf
+    class(box_config)::box
+
+    integer::is,ik,isc
+    real(double)::pc
+    domain%tempc(:)=0
+    domain%Pr(:)=0
+    do is=1,domain%ndom
+       do isc=1,domain%ncs(is)
+          ik=domain%indc(isc,is)
+          domain%tempc(is)=domain%tempc(is)+ (celcf%tempc(ik)*celcf%nato(ik))/domain%nato(is)
+          Pc=((box%volu/celcf%noxyz)/domain%vol(is))*&
+               &(celcf%sigc(1,1,ik)+celcf%sigc(2,2,ik)+celcf%sigc(3,3,ik))/3.
+          domain%Pr(is)=domain%Pr(is)+ Pc
+       end do
+    end do
+  end subroutine merge_domain
+
+  subroutine plotdomain(domain,ctemp,cpress,itp)
+    class(sphere_config)::domain
+    character(len=*)::ctemp,cpress
+!    real(double)::,optional::r0
+    integer::itp
+
+    integer::i,unitlt,unitlp
+    character :: extension*9,namef*80
+
+    call newunit(unitlt)
+    write(extension,'(i9.9)')itp
+    namef=trim(ctemp)//trim(extension)
+    open(unitlt,file=namef,form='formatted')
+    
+    do i=1,domain%ndom
+       write(unitlt,'(I12,G15.5,I5)')i,domain%tempc(i),domain%nato(i)
+    end do
+    close(unitlt)
+    
+    call newunit(unitlp)
+    write(extension,'(i9.9)')itp
+    namef=trim(cpress)//trim(extension)
+    open(unitlp,file=namef,form='formatted')
+    
+    do i=1,domain%ndom
+       write(unitlp,'(I12,G15.5,I5)'),i,domain%pr(i)*unitP,domain%nato(i)
+    end do
+    close(unitlt)
+  end subroutine plotdomain
+
+
+    
   subroutine build_slice(slice,celcf,box,slxyz)
     class(slice_config)::slice
     class(cell_config)::celcf
@@ -110,7 +297,6 @@ module plottpcel_mod
   subroutine merge_slice(slice,celcf)
     class(slice_config)::slice
     class(cell_config)::celcf
-
     integer::is,ik,isc
     slice%tempc(:)=0
     slice%sigc(:,:,:)=0
@@ -134,8 +320,9 @@ module plottpcel_mod
     character :: extension*9
     character*80::namef
     real(double)::Pcell
+    real(double)::Rplt, posplt(3)
     integer,save::icall=0
-    namelist /ltpc/lpsph,lppl,posplt,Rplt,slxyz
+    namelist /ltpc/lppl,posplt,Rplt,slxyz ! lpsph est enlve de la namelist pour déacriver cette partien qui cree un bug (écrase cm pour une raison inconnue)
     lpsph=.false.
     lppl=.false.
     posplt(:)=0.5
@@ -181,18 +368,37 @@ module plottpcel_mod
                end if
             end if
             if (lpsph)  then
-               
+               call plotsph(cellcomp,boxcf,posplt,rplt,itp)
             end if
          end if
        end block
     end if
   end subroutine plottpcel
 
+  subroutine plotsph(celcf,box,posplt,rplt,itp)
+    type(cell_config)::celcf
+    type(box_config)::box
+    integer::itp
+    real(double)::posplt(3),rplt
+
+    type(sphere_config)::sphere
+    
+    rplt=rplt*1d-8
+    posplt=posplt
+    sphere%posplt=posplt
+    sphere%rplt=rplt
+    call sphere%build(celcf,box)
+        call sphere%merge(celcf,box)
+        call sphere%plotd('Tsph','Psph',itp)
+
+  end subroutine plotsph
   
   subroutine actualplot(celcf,ctemp,cpress,itp)
     class(cell_config)::celcf
     character(len=*)::ctemp,cpress
-    integer::i,unitlt,itp,koxyz(3),unitlp
+    integer::itp
+    
+    integer::i,unitlt,koxyz(3),unitlp
     character :: extension*9,namef*80
     real(double)::pcell
     
@@ -241,7 +447,6 @@ module plottpcel_mod
     type(box_config)::box
     integer::slxyz(3),itp
     type(slice_config)::slice
-   
     call slice%build(celcf,box,slxyz)
     call slice%merge(celcf)
 !    call slice%print(unit=100,mess='SLICE')

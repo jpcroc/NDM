@@ -35,6 +35,7 @@ module cellconfig
      procedure, pass::send2all=>cells2a
      procedure, pass::recv=>cellrecv
      procedure, pass::koxyz=>kox
+     procedure, pass::edge=>edgec
      procedure, pass::constrcomp=>cococe
   end type cell_config
 
@@ -48,6 +49,27 @@ module cellconfig
      
      
 contains
+
+  function edgec(cell,ko,box)
+    class(cell_config)::cell
+    class(box_config)::box
+    real(double):: edgec(3)
+    integer::ko
+    integer::kox(3)
+    
+    integer:: ic,ic2
+    real(double)::flx(3)
+    kox=cell%koxyz(ko)
+    flx(1)=float(kox(1))/cell%nox
+    flx(2)=float(kox(2))/cell%noy
+    flx(3)=float(kox(3))/cell%noz
+    edgec=0.
+    do ic=1,3
+       do ic2=1,3
+          edgec(ic2)=edgec(ic2)+flx(ic)*box%at(ic2,ic)
+       end do
+    end do
+  end function edgec
 
   function kox(cell,ko)
     class(cell_config)::cell
@@ -648,7 +670,7 @@ contains
     if(latomcp)call comm_space%sum(celcomp%atincel)
        
 #else
-    call celloc%copy(celcomp)
+    call celloc%copy(celcomp,box,latomcp=latomcp)
 #endif
 
   end subroutine cococe

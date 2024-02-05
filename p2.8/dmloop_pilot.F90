@@ -7,7 +7,6 @@ module dmloop_pilot_mod
 
   use Tpara,only:para_space_config
   use endrunT_mod,only:endrunT
-
   USE dmloop_vverlet_mod,only: dmloop_vverlet
   USE dmloop_mod,only: dmloop
   USE dmloop_lpr_mod,only: dmloop_lpr
@@ -33,7 +32,6 @@ contains
     if (present(linit))lini=linit
     select case (dmtype) 
     case(4)
-
        call dmloop_vverlet (atdml,celndm,boxndm,psc)
     case(8,22,24,88)
        select type (boxndm)
