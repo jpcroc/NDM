@@ -298,14 +298,26 @@ contains
 
   !copie d'un élément
   
-  subroutine copy_atom_b(atsource,i,atcible,j,lextend)
+  subroutine copy_atom_b(atsource,i,atcible,j,lextend,caracT)
     class(atom_config), intent(in)::atsource
     integer,intent(in):: i
     class(atom_config), intent(inout)::atcible
     integer,intent(in):: j
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
     logical , optional, intent(in) :: lextend
     logical ::let
     integer::iw,nvj,idwi,idwj,imm_min
+
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat; m=mov(arps)   
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugasm'
+    else
+       carac=caracT
+    end if
+    
     let=.false.
     if (present(lextend))let= lextend
     if (j.gt.atcible%imm) then
@@ -318,15 +330,15 @@ contains
        end if
     end if
 
-    atcible%xp(:,j)=atsource%xp(:,i)
-    atcible%fp(:,j)=atsource%fp(:,i)
-    atcible%ityp(j)=atsource%ityp(i)
-    atcible%num_at_glob(j)=atsource%num_at_glob(i)
+    if(scan('x',carac).ne.0)    atcible%xp(:,j)=atsource%xp(:,i)
+    if(scan('f',carac).ne.0)    atcible%fp(:,j)=atsource%fp(:,i)
+    if(scan('i',carac).ne.0)    atcible%ityp(j)=atsource%ityp(i)
+    if(scan('n',carac).ne.0)    atcible%num_at_glob(j)=atsource%num_at_glob(i)
 #ifdef PARA
-    atcible%proc_at(j)=atsource%proc_at(i)
+    if(scan('p',carac).ne.0)    atcible%proc_at(j)=atsource%proc_at(i)
 #endif    
-    atcible%ielat(j)=atsource%ielat(i)
-    atcible%lgul(j)=atsource%lgul(i)
+    if(scan('e',carac).ne.0)    atcible%ielat(j)=atsource%ielat(i)
+    if(scan('l',carac).ne.0)    atcible%lgul(j)=atsource%lgul(i)
     if ((atcible%ltabvois).and.(atsource%ltabvois))then
        if (i.gt.1) then
           nvj=atsource%iwmax(i)-atsource%iwmax(i-1)
@@ -384,33 +396,55 @@ contains
 
 
 
-  subroutine copy_atom_d(atsource,i,atcible,j,lextend)
+  subroutine copy_atom_d(atsource,i,atcible,j,lextend,caracT)
     class(atom_config_d), intent(in)::atsource
     integer,intent(in):: i
     class(atom_config), intent(inout)::atcible
     integer,intent(in):: j
     logical, optional,intent(in):: lextend
     logical::let
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat; m=mov(arps)   
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugasm'
+    else
+       carac=caracT
+    end if
+    
     let=.false.
     if (present(lextend))let=lextend
-    call copy_atom_b(atsource,i,atcible,j,let)
+    call copy_atom_b(atsource,i,atcible,j,let,carac)
     select type(atcible)
        class is (atom_config_d)
        select type (atsource)
           class is (atom_config_d)
-          atcible%vp(:,j)=atsource%vp(:,i)
-          atcible%xpp(:,j)=atsource%xpp(:,i)
+             if(scan('v',carac).ne.0)             atcible%vp(:,j)=atsource%vp(:,i)
+             if(scan('r',carac).ne.0)             atcible%xpp(:,j)=atsource%xpp(:,i)
        end select
     end select
   end subroutine copy_atom_d
 
-  subroutine copy_atom_e(atsource,i,atcible,j,lextend)
+  subroutine copy_atom_e(atsource,i,atcible,j,lextend,caracT)
     class(atom_config_e), intent(in)::atsource
     integer,intent(in):: i
     class(atom_config), intent(inout)::atcible
     integer,intent(in):: j
     logical, optional,intent(in):: lextend
     logical:: let
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat; m=mov(arps)   
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugasm'
+    else
+       carac=caracT
+    end if
+
     let=.false.
     if (present(lextend))let=lextend
     call copy_atom_d(atsource,i,atcible,j,let)
@@ -418,35 +452,48 @@ contains
        class is (atom_config_e)
        select type (atsource)
        class is (atom_config_e)
-          if ((atcible%lprteat).and.(atsource%lprteat)) atcible%eat(j)=atsource%eat(i)
-          if ((atcible%lsigat).and.(atsource%lsigat)) atcible%sigat(:,:,j)=atsource%sigat(:,:,i)
-          if ((atcible%llangevin).and.(atsource%llangevin)) atcible%glangv(:,j)=atsource%glangv(:,i)
-          if ((atcible%lax).and.(atsource%lax)) atcible%ax(:,j)=atsource%ax(:,i)
+          if ((atcible%lprteat).and.(atsource%lprteat).and.(scan('u',carac).ne.0)) atcible%eat(j)=atsource%eat(i)
+          if ((atcible%lsigat).and.(atsource%lsigat).and.(scan('s',carac).ne.0)) atcible%sigat(:,:,j)=atsource%sigat(:,:,i)
+          if ((atcible%llangevin).and.(atsource%llangevin).and.(scan('g',carac).ne.0)) atcible%glangv(:,j)=atsource%glangv(:,i)
+          if ((atcible%lax).and.(atsource%lax).and.(scan('a',carac).ne.0)) atcible%ax(:,j)=atsource%ax(:,i)
        end select
     end select
   end subroutine copy_atom_e
-  subroutine copy_atom_arps(atsource,i,atcible,j,lextend)
+  subroutine copy_atom_arps(atsource,i,atcible,j,lextend,caracT)
     class(atom_config_arps), intent(in)::atsource
     integer,intent(in):: i
     class(atom_config), intent(inout)::atcible
     integer,intent(in):: j
     logical, optional,intent(in):: lextend
     logical:: let
+        character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat; m=mov(arps)   
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugasm'
+    else
+       carac=caracT
+    end if
+
     let=.false.
     if (present(lextend))let=lextend
-    call copy_atom_e(atsource,i,atcible,j,let)
-    select type(atcible)
+    call copy_atom_e(atsource,i,atcible,j,let,carac)
+    if(scan('m',carac).ne.0) then 
+       select type(atcible)
        class is (atom_config_arps)
-       select type (atsource)
-       class is (atom_config_arps)
-          if(allocated(atcible%rho))atcible%rho(j)=atsource%rho(i)
-          atcible%fpr(:,j)=atsource%fpr(:,i)
-          if (allocated(atcible%fpg))atcible%fpg(:,j)=atsource%fpg(:,i)
-          atcible%mov(j)=atsource%mov(i)
+          select type (atsource)
+          class is (atom_config_arps)
+             if(allocated(atcible%rho))atcible%rho(j)=atsource%rho(i)
+             atcible%fpr(:,j)=atsource%fpr(:,i)
+             if (allocated(atcible%fpg))atcible%fpg(:,j)=atsource%fpg(:,i)
+             atcible%mov(j)=atsource%mov(i)
+          end select
        end select
-    end select
+    end if
   end subroutine copy_atom_arps
-
+  
   subroutine s2p_atom (atcf, rgcib,mpic,caracT)
     class(atom_config):: atcf
     type(mpi_communicator),intent(in)::mpic
@@ -933,9 +980,10 @@ contains
        write(6,*)'WTF ?'
        call arret_ndm
     end if
+       atcible%im_glob=atcible%im
 #ifdef PARA
     if (present(commsp)) then
-       atcible%im_glob=atcible%im
+
 !       atcible%imm_glob=atcible%imm
        call commsp%sum(atcible%im_glob)
 
@@ -944,6 +992,21 @@ contains
     
 
   end subroutine fab
+
+
+
+  subroutine backto(atfab,atback)
+    class(atom_config),intent(in)::atfab
+    class(atom_config)::atback
+    integer::i2,imtrf,i
+    do i2=1,atfab%im
+       i=atfab%num_at_glob(i2)
+       imtrf=atback%num_at_glob(i)
+       call atfab%copy_atom(i2,atback,i,lextend=.false.)
+       atback%num_at_glob(i)=imtrf
+    end do
+  end subroutine backto
+
   
   subroutine sort (atsource,atcible) ! construit atsource à partir de lgul de atcible , ecrase atcible
     class(atom_config),intent(in)::atsource
@@ -986,18 +1049,6 @@ contains
     end if
 
   end subroutine sort
-
-  subroutine backto(atfab,atback)
-    class(atom_config),intent(in)::atfab
-    class(atom_config)::atback
-    integer::i2,imtrf,i
-    do i=1,atfab%im
-       i2=atfab%num_at_glob(i)
-       imtrf=atback%num_at_glob(i2)
-       call atfab%copy_atom(i,atback,i2,lextend=.false.)
-       atback%num_at_glob(i2)=imtrf
-    end do
-  end subroutine backto
 
     
   subroutine add2conf (atsource,atcible,lextend,ldealloc)
@@ -1109,15 +1160,16 @@ contains
     write(unitw,*)'ltabvois ', atin%ltabvois
 
     natg1l=1
-    natg2l=imp
+    natg2l=maxval(atin%num_at_glob)
     if(present(natg1))natg1l=natg1
     if(present(natg2))natg2l=natg2
     i1l=1
     i2l=imp
     if(present(i1))i1l=i1
     if(present(i2))i2l=i2
-
+    write(6,*)'borders',i1l,i2l,natg1l,natg2l
     do i=1,imp
+       
        if((i.lt.i1l).or.(i.gt.i2l)) cycle
        if((atin%num_at_glob(i).lt.natg1l).or.(atin%num_at_glob(i).gt.natg2l)) cycle
        write(unitw,*)

@@ -144,6 +144,7 @@ contains
        endif
 #endif
        call init(atdml,boxndm,celndm,psc0)
+
        select type (atdml)
        type is (atom_config_arps)
           select type(celndm)
@@ -245,7 +246,7 @@ contains
           end select
           !          end select
        end select
-    case(19) ! force matrix
+    case(19) ! force matrix  special case of case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
        call init_mpi_FM
        if (ltabvois) then
           rv=rvois
@@ -271,7 +272,7 @@ contains
 
        call calcFM(atdml,celndm,boxndm)
        call arret_ndm
-    case(12) ! ART calculation
+    case(12) ! ART calculation special case of case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
        call init_mpi_art
        if (ltabvois) then
           rv=rvois
@@ -283,7 +284,7 @@ contains
        if (lanaposart) call initanapos(atdml,celndm,boxndm)
        call art90(atdml,celndm,boxndm,psc0)
 
-    case(9) !NEB calculation
+    case(9) !NEB calculation  special case of case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
        !#ifdef PARA
 
        call init_mpi_neb
@@ -291,7 +292,7 @@ contains
        call init_neb0
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
-    case(15,151) ! Montecarlo (path or grand canonical)
+    case(15,151) ! Montecarlo (path or grand canonical)  special case of case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
        !#ifdef PARA
 
        call init_mpi_MCGC ! PARAPATH

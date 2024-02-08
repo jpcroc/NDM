@@ -12,7 +12,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:nprocs
-    USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,gamprfact,&
+    USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,gamprfact,&
          &epcou,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
@@ -21,16 +21,16 @@ contains
          &ltcon,lvpread,maxneb,mdcg_noise_scale,neb_noise,neb_noise_scale,nebrelaxation,&
          &nebtype,nhoover,nitmax,npath,nuandersen,pext,&
          &rskin,rulayer,sigext,sigstop,tbox,tempdeplainit,tempstop,tempstopcel,tgc,&
-         &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
-         &zko,zz0,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
-         &iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,&
+         &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,wnose,&
+         &ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
+         &iteanapos,iteangle,itebdv,itecoordo,itedepla,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
          &lcasca,lcontr,ldemitab,leev,leparat,lfilm,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart&
-         &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
+         &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,beta35,gammas,gammav
     USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
@@ -92,7 +92,7 @@ contains
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,iplotcel,&
-         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin
+         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit
 
 
     !
@@ -227,7 +227,7 @@ contains
     gamlg =5d12            ! Gamma deLangevin (= 0.005/1d-15 fera vp*0.995 pour tstep=1d-15)
     gamprfact=0.1
     ilangevin=1
-    iko=-1
+
     lcdp=.false.             ! algorithme d'accumulation de defauts ponctuels
     lnemd=.false.  ! Kth par la methode NEMD Evans, P7229
     fnemd=0
@@ -378,6 +378,8 @@ contains
     kmax=0. ! max kinetic energy for arps
     iteprtkin=-1
     iplotcel=0 ! triggers the detailled analysis of ltpcel (0or 2  =std; 1 or 2=specific)
+    lspecialinit=.false. ! driver for specail initialization : cascade, press or heat burst etc.
+
     
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -1003,15 +1005,6 @@ contains
        itesigma=1
     end if
     ! read for cascade
-    if (lcasca) then
-       read (ludin, *) iko, eko, xko, yko, zko , xx0, yy0, zz0
-       if (lrestart) lcasca=.false.
-       lax=.true.
-       !     xx0=xx0*1.D-8
-       !     yy0=yy0*1.D-8
-       !     zz0=zz0*1.D-8
-
-    end if
     select case (ibrake)
     case(0)
        if ((tcelec.gt.0).or.(ecelec.gt.0)) then
@@ -1400,12 +1393,6 @@ contains
     if ((tfcou>0.).and.(rang==0))         write (6, '(A,F10.1,A,F10.1,A,F10.1)') 'tfcou=', tfcou, ' epcou=', &
          epcou*1D+8
 
-    if (lcasca) then
-       if (rang==0) write (6, *) '----CASCADE-----'
-       if (rang==0) write (6, *) 'projectile=', iko, ' energie=', eko
-       if (rang==0) write (6, *) 'direction=', xko, yko, zko
-       if (rang==0) write (6, *) 'position de depart : ', xx0, yy0, zz0
-    endif
 
     if (rang==0) write (6, *) ' ----------------------------------'
     if (rang==0) write (6, *)

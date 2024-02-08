@@ -159,7 +159,7 @@ MKL_LIB  = -L/mnt/c/Users/jc148490/lin/INFO/lapack/lapack-3.10.0 -llapack -lrefb
 
 # Path to src files
 # THIS VARIABLE CODE_PATH IS VERY IMPORTANT TO SET PROPERLY TO SCAN THE CORRECT FOLDER DEPENDING OF MACRO USED
-CODE_PATH = ../mod/:..:../ARTN 
+CODE_PATH = ../mod/:..:../ARTN/
 
 vpath %.f90 ${CODE_PATH}
 vpath %.F90 ${CODE_PATH}

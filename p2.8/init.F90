@@ -33,8 +33,9 @@ module init_mod
 
   USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,iteration,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lperiod,lrestart,pmean,rang,timel,two,&
-       &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp
-use read_val,only:ltabvois
+       &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp,lspecialinit
+  use read_val,only:ltabvois
+  use specialinit_mod,only:specialinit
 USE var_pot, ONLY:ipotentiel
   implicit none
 
@@ -208,18 +209,8 @@ contains
     select type(atdml)
        class is (atom_config_d)
        if ((itetimestep>0).and.(.not.lcasca)) call deftimestep(atdml,boxndm)
-       if (lcasca) then
-          select type(atdml)
-          type is (atom_config_e)
-             call initcasca(atdml,celndm,boxndm)
-          class default
-             write(6,*) 'lcasca and not atom_donfig_e ?'
-             call arret_ndm
-          end select
-
-114       format(a3,1x,3(f10.4,1x),i5)
-       end if
     end select
+    if (lspecialinit) call specialinit(atdml,boxndm,celndm)
 
     if (itmax==0) stop
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then

@@ -137,23 +137,63 @@ contains
     
   end subroutine closest_at
 
-  subroutine distat(xi,x0,box,dist)
+  subroutine distat(xi,x0,box,dist,x0red,rum,linter)
     class(box_config),intent(in)::box
-    real(double), dimension(3),intent(in)::xi,x0
-    real(double),intent(out)::dist
-    
+    real(double), dimension(3),intent(in)::xi
+    real(double),optional,intent(in)::x0red(3),x0(3)
+    real(double),optional,intent(in)::rum !
+    real(double),optional,intent(out)::dist ! distance minimel effective
+    logical,optional::linter
     real(double),dimension(3)::dx
     real(double),dimension (3,2)::xat
-    integer::ns=2
+    real(double)::distc
+    integer::ns=2,ic
+
+    if (((present(rum)).and.(.not.(present(linter)))).or.((present(linter)).and.(.not.(present(rum))))) then
+       write(6,*)'incohérence dans appel a vect_dist'
+       call arret_ndm
+    end if
+
+    if (present(x0).and.present(x0red)) then
+       write(6,*)'x0 and x0red in distat STOP'
+       call arret_ndm
+    end if
+    if ((.not.(present(x0))).and.(.not.(present(x0red)))) then
+       write(6,*)'no x0 nor  x0red in distat STOP'
+       call arret_ndm
+    end if
     xat(:,1)=xi(:)
-    xat(:,2)=x0(:)
-    call cryst_to_cart (ns,xat,box%bg,-1)
-    dx(1:3)=xat(1:3,1)-xat(1:3,2)
-    WHERE ( (dx.GT.0.5d0).OR.(dx.LT.-0.5d0) )
-       dx(1:3) = dx(1:3) - Dble(Nint(dx(1:3)))
-    END WHERE
+    if (present(x0)) then
+       xat(:,2)=x0(:)
+       call cryst_to_cart (ns,xat,box%bg,-1)
+       dx(1:3)=xat(1:3,1)-xat(1:3,2)
+    else
+       xat(:,2)=0
+       call cryst_to_cart (ns,xat,box%bg,-1)
+       dx(1:3)=xat(1:3,1)-x0red(1:3)
+    end if
+    do ic=1,3
+       if (box%ipbc(ic)==1) then
+          if ( (dx(ic).GT.0.5d0).OR.(dx(ic).LT.-0.5d0) )then
+             dx(ic) = dx(ic) - Dble(Nint(dx(ic)))
+          end if
+       end if
+    end do
+
+!!$    WHERE ( (dx.GT.0.5d0).OR.(dx.LT.-0.5d0) )
+!!$       dx(1:3) = dx(1:3) - Dble(Nint(dx(1:3)))
+!!$    END WHERE
     dx = MatMul(box%at,dx)
-    dist = sqrt(Sum( dx(1:3)**2 ))
+    distc = sqrt(Sum( dx(1:3)**2 ))
+    if (present(dist))dist=distc
+    if (distc.gt.rum) then
+       linter=.false.
+    else
+       linter=.true.
+    end if
+    
+
+       
     return
   end subroutine distat
 

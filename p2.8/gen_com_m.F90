@@ -118,7 +118,7 @@ module gen_com_m
   real(double) :: eko, xko, yko, zko ! energie et direction du PAF
   real(double) :: xx0, yy0, zz0 ! position initiale du projectile
   logical :: lcasca,lderive ! cascade,correction derive ?
-
+  logical::lspecialinit ! driver for specail initialization : cascade, press or heat burst etc.
 
 
   real(double) :: pist, temp, pmean, tmean, kine, kinemean ! pression temp et moyennes associees

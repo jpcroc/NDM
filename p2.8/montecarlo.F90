@@ -2767,7 +2767,7 @@ contains
 
 
 
-  subroutine copy_atom_mc(atsource,i,atcible,j,lextend)
+  subroutine copy_atom_mc(atsource,i,atcible,j,lextend,caracT)
     implicit none
     class(atom_config_mc), intent(in)::atsource
     !type(atom_config_mc),intent(in)::atsource
@@ -2776,12 +2776,13 @@ contains
     !type(atom_config_mc), intent(inout)::atcible
     integer,intent(in):: j
     logical , optional, intent(in) :: lextend
+    character(len=*),optional,intent(in)::caracT
     logical::let
     let=.false.
     if (present(lextend)) then
        let=lextend
     end if
-    call atsource%atom_config_d%copy_atom(i,atcible,j,let)
+    call atsource%atom_config_d%copy_atom(i,atcible,j,let,caracT='xfniewdlpvrugasm')
     select type(atcible)
     class is (atom_config_mc)
        select type (atsource)

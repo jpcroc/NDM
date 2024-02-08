@@ -36,52 +36,123 @@ module plottpcel_mod
      procedure, pass::merge=>merge_slice
   end type slice_config
   
-!!$  type,abstract::domain_config
-!!$     integer,allocatable::indc(:,:),nato(:)
-!!$     integer,allocatable::ncs(:)
-!!$     integer::ndom,maxncs
-!!$     real(double),allocatable::tempc(:),Pr(:),vol(:)
-!!$   contains
-!!$     procedure(build_i), deferred,pass::build
-!!$     procedure, pass::merge=>merge_domain
-!!$     procedure,pass:: plotd=>plotdomain
-!!$  end type domain_config
-!!$
-!!$  abstract interface
-!!$     subroutine build_i(self,celcf,box)
-!!$       import domain_config
-!!$       import cell_config
-!!$       import box_config
-!!$       class(domain_config)::self
-!!$       class(cell_config)::celcf
-!!$       class(box_config)::box
-!!$     end subroutine build_i
-!!$  end interface
-!!$
-!!$  type,extends(domain_config)::sphere_config
-!!$     real(double)::posplt(3),rplt
-!!$   contains
-!!$     procedure, pass::build=>build_sphere
-!!$  end type sphere_config
-  
-
-  type::sphere_config
-
+  type,abstract::domain_config
      integer,allocatable::indc(:,:),nato(:)
      integer,allocatable::ncs(:)
      integer::ndom,maxncs
      real(double),allocatable::tempc(:),Pr(:),vol(:)
+   contains
+     procedure(build_i), deferred,pass::build
+     procedure, pass::merge=>merge_domain
+     procedure,pass:: plotd=>plotdomain
+  end type domain_config
+
+  abstract interface
+     subroutine build_i(sphere,celcf,box)
+       import domain_config
+       import cell_config
+       import box_config
+       class(domain_config)::sphere
+       class(cell_config)::celcf
+       class(box_config)::box
+     end subroutine build_i
+  end interface
+
+  type,extends(domain_config)::sphere_config
      real(double)::posplt(3),rplt
    contains
      procedure, pass::build=>build_sphere
-     procedure, pass::merge=>merge_domain
-     procedure,pass:: plotd=>plotdomain
-
   end type sphere_config
+  
+
+!!$  type::sphere_config
+!!$
+!!$     integer,allocatable::indc(:,:),nato(:)
+!!$     integer,allocatable::ncs(:)
+!!$     integer::ndom,maxncs
+!!$     real(double),allocatable::tempc(:),Pr(:),vol(:)
+!!$     real(double)::posplt(3),rplt
+!!$   contains
+!!$     procedure, pass::build=>build_sphere
+!!$     procedure, pass::merge=>merge_domain
+!!$     procedure,pass:: plotd=>plotdomain
+!!$
+!!$  end type sphere_config
   
   contains
 
-  subroutine build_sphere(sphere,celcf,box)
+
+  subroutine plottpcel(celcf,boxcf,itapp,psc)
+    type(para_space_config)::psc    
+    integer,optional::itapp
+    class(cell_config)::celcf
+    class(box_config)::boxcf
+    integer::itp,unitlt,i,koxyz(3),unitlp,iultp
+    character :: extension*9
+    character*80::namef
+    real(double)::Pcell
+    real(double)::Rplt, posplt(3)
+    integer,save::icall=0
+    integer::iteplotcomp=0
+    namelist /ltpc/lppl,posplt,Rplt,slxyz ,lpsph,iteplotcomp !est enlve de la namelist pour déacriver cette partien qui cree un bug (écrase cm pour une raison inconnue)
+    lpsph=.false.
+    lppl=.false.
+    posplt(:)=0.5
+    Rplt=6.0
+    slxyz(:)=0 ! slx(1)=3 => average along 3 cells along x; slx(1)=0 (defalut = average along all X 
+    icall=icall+1
+    if (.not.celcf%ltpcel) then
+       write(6,*)'coding error in plottpcel call, %ltpcel.ne.true'
+       call arret_ndm
+    end if
+    
+    if (present(itapp)) then
+       itp=itapp
+    else
+       itp=iteration
+    end if
+
+    if (mod(iplotcel,2)==0) then
+       if (iteplotcomp.gt.0) then
+          if (mod(itp,iteplotcomp)==0)then
+             if (myidsp==0) then
+                call actualplot(celcf,'TEMPC','PRESSC',itp)
+             end if
+          end if
+       end if
+    end if
+    
+    if (iplotcel.ge.1) then
+
+       block
+         type(cell_config)::cellcomp
+         call celcf%constrcomp(cellcomp,boxcf,latomcp=.false.,psc=psc)
+         
+         
+         if (myidsp==0) then
+            call newunit(iultp)
+            open(unit=iultp,file='ltpcel.in')
+            read(iultp,nml=ltpc)
+            close(iultp)
+            if (lppl) then
+               if (all(slxyz==0)) then
+                  write(6,*)'inconsistent slxyz=0 and lppl'
+                  call arret_ndm
+               else
+                  call plotslice(cellcomp,boxcf,slxyz,itp)
+                  
+               end if
+            end if
+            if (lpsph)  then
+               call plotsph(cellcomp,boxcf,posplt,rplt,itp)
+            end if
+         end if
+       end block
+    end if
+  end subroutine plottpcel
+
+
+    subroutine build_sphere(sphere,celcf,box)
     class(sphere_config)::sphere
     class(cell_config)::celcf
     class(box_config)::box
@@ -130,6 +201,7 @@ module plottpcel_mod
     allocate(sphere%tempc(ndom))
     sphere%ncs=0
     sphere%ndom=ndom
+    sphere%vol=0.
     
     do iko=1,celcf%noxyz
        edge(:)=celcf%edge(iko,box)
@@ -171,11 +243,11 @@ module plottpcel_mod
        sphere%nato(idom)=sphere%nato(idom)+celcf%nato(iko)
        sphere%vol(idom)=sphere%vol(idom)+box%volu/celcf%noxyz
     end do
-
+    
   end subroutine build_sphere
   
   subroutine merge_domain(domain,celcf,box)
-    class(sphere_config)::domain
+    class(domain_config)::domain
     class(cell_config)::celcf
     class(box_config)::box
 
@@ -195,7 +267,7 @@ module plottpcel_mod
   end subroutine merge_domain
 
   subroutine plotdomain(domain,ctemp,cpress,itp)
-    class(sphere_config)::domain
+    class(domain_config)::domain
     character(len=*)::ctemp,cpress
 !    real(double)::,optional::r0
     integer::itp
@@ -283,7 +355,7 @@ module plottpcel_mod
           slice%nato(kos)=slice%nato(kos)+celcf%nato(iko)
        
        end do
-    write(6,*)'RANG',slice%nato
+!    write(6,*)'RANG',slice%nato
     
     do iko=1,slice%noxyz
        if (slice%ncs.ne.ncs(iko)) then
@@ -312,69 +384,6 @@ module plottpcel_mod
 
 
 
-  subroutine plottpcel(celcf,boxcf,itapp,psc)
-    type(para_space_config)::psc    
-    integer,optional::itapp
-    class(cell_config)::celcf
-    class(box_config)::boxcf
-    integer::itp,unitlt,i,koxyz(3),unitlp,iultp
-    character :: extension*9
-    character*80::namef
-    real(double)::Pcell
-    real(double)::Rplt, posplt(3)
-    integer,save::icall=0
-    namelist /ltpc/lppl,posplt,Rplt,slxyz ,lpsph !est enlve de la namelist pour déacriver cette partien qui cree un bug (écrase cm pour une raison inconnue)
-    lpsph=.false.
-    lppl=.false.
-    posplt(:)=0.5
-    Rplt=6.0
-    slxyz(:)=0 ! slx(1)=3 => average along 3 cells along x; slx(1)=0 (defalut = average along all X 
-    icall=icall+1
-    if (.not.celcf%ltpcel) then
-       write(6,*)'coding error in plottpcel call, %ltpcel.ne.true'
-       call arret_ndm
-    end if
-    
-    if (present(itapp)) then
-       itp=itapp
-    else
-       itp=iteration
-    end if
-
-    if (mod(iplotcel,2)==0) then
-       if (myidsp==0) then
-          call actualplot(celcf,'TEMPC','PRESSC',itp)
-       end if
-    end if
-    
-    if (iplotcel.ge.1) then
-
-       block
-         type(cell_config)::cellcomp
-         call celcf%constrcomp(cellcomp,boxcf,latomcp=.false.,psc=psc)
-         
-         
-         if (myidsp==0) then
-            call newunit(iultp)
-            open(unit=iultp,file='ltpcel.in')
-            read(iultp,nml=ltpc)
-            close(iultp)
-            if (lppl) then
-               if (all(slxyz==0)) then
-                  write(6,*)'inconsistent slxyz=0 and lppl'
-                  call arret_ndm
-               else
-                  call plotslice(cellcomp,boxcf,slxyz,itp)
-                  
-               end if
-            end if
-            if (lpsph)  then
-               call plotsph(cellcomp,boxcf,posplt,rplt,itp)
-            end if
-         end if
-       end block
-    end if
-  end subroutine plottpcel
 
   subroutine plotsph(celcf,box,posplt,rplt,itp)
     type(cell_config)::celcf
@@ -389,8 +398,8 @@ module plottpcel_mod
     sphere%posplt=posplt
     sphere%rplt=rplt
     call sphere%build(celcf,box)
-        call sphere%merge(celcf,box)
-        call sphere%plotd('Tsph','Psph',itp)
+    call sphere%merge(celcf,box)
+    call sphere%plotd('Tsph','Psph',itp)
 
   end subroutine plotsph
   
@@ -429,7 +438,7 @@ module plottpcel_mod
     
     do i=1,celcf%noxyz
        koxyz=celcF%koxyz(i)
-       pcell=(celcf%sigc(1,1,i)+celcf%sigc(2,2,i)+celcf%sigc(3,3,i))*unitP
+       pcell=0.33333333333333333*(celcf%sigc(1,1,i)+celcf%sigc(2,2,i)+celcf%sigc(3,3,i))*unitP
        select type (celcf)
        type is (cell_config)
           write(unitlp,'(I12,3I5,G15.5,I5,9E15.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
@@ -452,7 +461,7 @@ module plottpcel_mod
     call slice%build(celcf,box,slxyz)
     call slice%merge(celcf)
 !    call slice%print(unit=100,mess='SLICE')
-    call actualplot(slice,'TEMPS','PRESSS',itp)
+    call actualplot(slice,'TSlice','PSlice',itp)
     
   end subroutine plotslice
   

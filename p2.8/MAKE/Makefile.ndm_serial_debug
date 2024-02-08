@@ -17,9 +17,11 @@ SHELL = /bin/sh
 
   C++ = icpc
   CC  = icc
-  F77 = ifort  -cpp  -warn all -check all
-  F90 = ifort  -cpp  -warn all -check all
+  F77 = ifort  -cpp  -warn all -check all -C
+  F90 = ifort  -cpp  -warn all -check bounds,pointers,output_conversion -debug -C -O2  -stand f03    -assume realloc_lhs  -check all  -traceback  -warn all  -fstack-protector  -assume protect_parens  -implicitnone
   LINK = ${F90}
+
+
 
   SIZE = size
   ARCHIVE = ar
