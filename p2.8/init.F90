@@ -210,7 +210,7 @@ contains
        class is (atom_config_d)
        if ((itetimestep>0).and.(.not.lcasca)) call deftimestep(atdml,boxndm)
     end select
-    if (lspecialinit) call specialinit(atdml,boxndm,celndm)
+    if ((lspecialinit).and.(.not.(lrestart))) call specialinit(atdml,boxndm,celndm)
 
     if (itmax==0) stop
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then

@@ -291,7 +291,7 @@ module plottpcel_mod
     open(unitlp,file=namef,form='formatted')
     
     do i=1,domain%ndom
-       write(unitlp,'(I12,G15.5,I5)'),i,domain%pr(i)*unitP,domain%nato(i)
+       write(unitlp,'(I12,G18.5,I5)'),i,domain%pr(i)*unitP,domain%nato(i)
     end do
     close(unitlt)
   end subroutine plotdomain
@@ -421,11 +421,11 @@ module plottpcel_mod
        koxyz=celcF%koxyz(i)
        select type (celcf)
        type is (cell_config)
-          write(unitlt,'(I12,3I5,G15.5,I5)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
+          write(unitlt,'(I12,3I5,G18.5,I5)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
        type is (slice_config)
-          write(unitlt,'(I12,3I5,G15.5,I5)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
+          write(unitlt,'(I12,3I5,G18.5,I5)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
        type is (cell_config_arps)
-          write(unitlt,'(I12,3I5,G15.5,4I5)')i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)&
+          write(unitlt,'(I12,3I5,G18.5,4I5)')i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)&
                &,celcf%nmov(0,i),celcf%nmov(1,i),celcf%nmov(2,i)
        end select
     end do
@@ -441,11 +441,11 @@ module plottpcel_mod
        pcell=0.33333333333333333*(celcf%sigc(1,1,i)+celcf%sigc(2,2,i)+celcf%sigc(3,3,i))*unitP
        select type (celcf)
        type is (cell_config)
-          write(unitlp,'(I12,3I5,G15.5,I5,9E15.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
+          write(unitlp,'(I12,3I5,G18.5,I5,9E18.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
        type is (slice_config)
-          write(unitlp,'(I12,3I5,G15.5,I5,9E15.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
+          write(unitlp,'(I12,3I5,G18.5,I5,9E18.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
        type is (cell_config_arps)
-          write(unitlp,'(I12,3I5,G15.5,4I5,9E15.5)')i,koxyz(1:3),pcell,celcf%nato(i),celcf%nmov(0,i),&
+          write(unitlp,'(I12,3I5,G18.5,4I5,9E18.5)')i,koxyz(1:3),pcell,celcf%nato(i),celcf%nmov(0,i),&
                &celcf%nmov(1,i),celcf%nmov(2,i),celcf%sigc(:,:,i)*unitP
        end select
     end do

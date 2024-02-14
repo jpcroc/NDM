@@ -9,15 +9,8 @@ module specialinit_mod
   
   use Tpara,only:para_space_config
 
-  USE gen_com_m, ONLY:lcasca,xko,xx0,yko,yy0,zko,zz0,eko,iko,rang,bk,lperiod ! fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,iteration,iteanapos,iterasmol,&
-!       &itetimestep,kinemean,lcasca,lperiod,lrestart,pmean,rang,timel,two,&
-!       &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp
+  USE gen_com_m, ONLY:lcasca,xko,xx0,yko,yy0,zko,zz0,eko,iko,rang,bk,lperiod 
 
-  !  USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,iteration,iteanapos,iterasmol,&
-!       &itetimestep,kinemean,lcasca,lperiod,lrestart,pmean,rang,timel,two,&
-!       &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp
-!use read_val,only:ltabvois
-!USE var_pot, ONLY:ipotentiel
 
  use vect_dist_mod,only:distat
   USE calctemp_mod,only: calctemp
@@ -126,7 +119,6 @@ contains
        
        do i=1,atdml%im
           xproj=(dot_product(atdml%xp(:,i),boxndm%at(:,1))/norma)-norma/2.
-          write(6,*)i,xproj,rheatinit
           if(abs(xproj).le.rheatinit)atdml%lgul(i)=.true.
           
        end do
@@ -135,12 +127,12 @@ contains
 
     call atdml%fab(atsph,lback=.true.)
     imsph=atsph%im_glob
-    if (rang==0)    write(6,*)'atsph',atsph%im_glob
+!    if (rang==0)    write(6,*)'atsph',atsph%im_glob
 !    call atsph%print
 !    stop
     call caltabtC(celsph,atsph,lperiod,boxndm)
     call calctemp(tempsph,kinesph,atsph,celsph)
-    if (rang==0)write(6,*)'tempsph',tempsph
+!    if (rang==0)write(6,*)'tempsph',tempsph
     if(tempheatinit.ge.0) then
        tempfin=tempheatinit
     else
