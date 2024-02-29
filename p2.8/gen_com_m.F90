@@ -97,6 +97,7 @@ module gen_com_m
   real(double):: depmaxts,tsmin
   real(double) :: tempstop, tempstopcel, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
        tsfact, vmax, tgc, dfpred ! gestion du pas en temps
+  integer::couxyz(3)
   real(double)::maxtcel
   integer :: itesauv,  itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde periode 
                                                                               ! de d'ecriture des positions et/ou forces en formatted ; 

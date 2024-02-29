@@ -13,7 +13,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:nprocs
     USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,gamprfact,&
-         &epcou,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,&
+         &epcou,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,couxyz,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
          &landerscou,lcdp,lconstrtot,lcorrelvp,lderive,lfire,&
@@ -73,7 +73,7 @@ contains
 
     namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma,  itedepla, tdepla, lfilm, &
          tempstop, tempstopcel,dmtype, lFire,  itecoordo, tstep, itetimestep, tsfact, &
-         tinit,  tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, kspring,  &
+         tinit,  tfcou, epcou, couxyz,lcasca, lfissure, itmax,nitmax, itean, kspring,  &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
@@ -153,6 +153,7 @@ contains
     tinitbox = -1.0                !initial temperature
     tfcou = -1.0                !temperature of the border of the box
     epcou = -1.0                !width of the border of the box
+    couxyz(:)=1
     lcasca = .FALSE.            !cascade Y/N
     lfissure = .FALSE.          !crack Y/N
     itmax = -1                  !maximum number of iterations

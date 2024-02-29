@@ -138,8 +138,8 @@ contains
           call calctemp (temp,kine,atdml,celndm)
           block
             logical:: lgs(atdml%imm)
+            lgs=atdml%lgul
             do iti=1,ntyp
-               lgs=atdml%lgul
                atdml%lgul=.false.
                celtyp=celndm
                where(atdml%ityp(1:atdml%im)==iti)
@@ -150,7 +150,7 @@ contains
                call caltabtC(celtyp,attyp,lperiod,boxndm)
                call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
                call celtyp%dealloc ; call attyp%dealloc
-               atdml%lgul=lgs
+
              ! ceci est un test du calcul des forces sur un sous-ensemble des atomes
              !ne fonctionne que pour les pots de paires
 !!$             if (iti==2)then
@@ -161,6 +161,7 @@ contains
 !!$                call calfoextr(atdml,celndm,boxndm,psc)
 !!$             end if
             end do
+            atdml%lgul=lgs
           end block
           ! MPI
           if (celndm%ltpcel) then

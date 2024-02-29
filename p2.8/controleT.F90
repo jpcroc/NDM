@@ -27,7 +27,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
          &itetemp,fsumstop,fpstop,itetimestep,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
-         &itetemp2,ihbox0,epcou,tfcou
+         &itetemp2,ihbox0,tfcou
 
     USE var_pot, ONLY:
     implicit none
@@ -76,11 +76,12 @@ contains
     endif
 
     ! temperature is down enough ?
-    if (itetemp>0) then
 
-       if (tfcou.gt.0 ) call contrTcou(atdml,celndm,boxndm,epcou)
-       
-       if (mod(iteration,itetemp)==0) then
+
+    if (tfcou.gt.0 ) call contrTcou(atdml,celndm,boxndm)
+    
+    if (itetemp>0) then
+          if (mod(iteration,itetemp)==0) then
           if (temp<=tempstop) then
              if (rang==0)  write (6, *) 'temperature < tempstop '
              if (present(lreturn)) then
