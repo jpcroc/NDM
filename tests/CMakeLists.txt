@@ -23,14 +23,17 @@ list( APPEND preprosimpletests # as *.F90
 
 list( SORT simpletests )
 
-if ( NOT NDM_WITH_MPI )
+if (NOT "MPI" IN_LIST NDM_PACKAGE_LIST)
   list( FILTER simpletests EXCLUDE REGEX "_openmpi$" )
   list( FILTER simpletests EXCLUDE REGEX "_mpi_" )
 endif()
 
+add_custom_target(build_tests)
+
 foreach( atest IN LISTS simpletests )
   log_info( "test ${atest}")
-  add_executable( ${atest}.exe ./${atest}.f90 )
+  add_executable( ${atest}.exe EXCLUDE_FROM_ALL ./${atest}.f90 )
+  add_dependencies(build_tests ${atest}.exe)
   set_target_properties(${atest}.exe PROPERTIES LINKER_LANGUAGE Fortran) # Important when c++ is enabled for lammps, without this line c++ linker takes priority over Fortran
 
   # cmake regex see https://cmake.org/cmake/help/latest/command/string.html
@@ -42,20 +45,22 @@ foreach( atest IN LISTS simpletests )
     add_test( NAME ${atest} COMMAND ${atest}.exe )
   endif()
 
-  set_tests_properties(${atest} PROPERTIES TIMEOUT 30)
+  set_tests_properties(${atest} PROPERTIES TIMEOUT 60)  # 60s timeout
 
   #target_link_libraries( ${atest}.exe PRIVATE libndm )
 endforeach()
 
 foreach( atest IN LISTS preprosimpletests )
   log_info( "test ${atest}")
-  add_executable( ${atest}.exe ./${atest}.F90 )
+  add_executable( ${atest}.exe EXCLUDE_FROM_ALL ./${atest}.F90 )
+  add_dependencies(build_tests ${atest}.exe)
   set_target_properties(${atest}.exe PROPERTIES LINKER_LANGUAGE Fortran) # Important when c++ is enabled for lammps, without this line c++ linker takes priority over Fortran
   add_test( NAME ${atest} COMMAND ${atest}.exe )
   set_tests_properties(${atest} PROPERTIES TIMEOUT 30)
 
   #target_link_libraries( ${atest}.exe PRIVATE libndm )
 endforeach()
+
 
 
 

@@ -7,28 +7,28 @@
 
 # function to print all current variables contents
 function(printCmakeTrace)
-  unset(_variableNames PARENT_SCOPE)
+  #unset(_variableNames PARENT_SCOPE)
   get_cmake_property(_variableNames VARIABLES)
-  list(REMOVE_DUPLICATES _variableNames)
+  #list(REMOVE_DUPLICATES _variableNames)
   message( "${ColBlue}BEGIN TRACE all" )
   foreach(_variableName ${_variableNames})
     # avoid multi-lines codes as too much
-    if ( "${${_variableName}}" MATCHES ".#?define ." ) # too long anyway
-      continue()
-    endif()
-    if ( "${${_variableName}}" MATCHES ".#?include ." ) # too long anyway
-      continue()
-    endif()
-    if ( "${${_variableName}}" MATCHES ".DOXYFILE_ENCODING." ) # illisible anyway
-      continue()
-    endif()
-    if ( _variableName MATCHES ".?_REGEX$" )  # illisible anyway
-      continue()
-    endif()
-    if ( _variableName MATCHES "Col." )  # avoid setcolors below
-      continue()
-    endif()
-    message("${ColBlue}TRACE:   ${_variableName}=${${_variableName}}")
+    #if ( "${${_variableName}}" MATCHES ".#?define ." ) # too long anyway
+      #continue()
+    #endif()
+    #if ( "${${_variableName}}" MATCHES ".#?include ." ) # too long anyway
+    #  continue()
+    #endif()
+    #if ( "${${_variableName}}" MATCHES ".DOXYFILE_ENCODING." ) # illisible anyway
+    #  continue()
+    #endif()
+    #if ( _variableName MATCHES ".?_REGEX$" )  # illisible anyway
+    #  continue()
+    #endif()
+    #if ( _variableName MATCHES "Col." )  # avoid setcolors below
+    #  continue()
+    #endif()
+    message(STATUS ".. ${_variableName}=${${_variableName}}")
   endforeach()
   message( "END TRACE${ColReset}" )
 endfunction()

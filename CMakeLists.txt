@@ -1,158 +1,170 @@
-##############################################
-#   Project configuration
-##############################################
+CMAKE_minimum_required( VERSION 3.20 )
+################################################
+# Auto configuration
+# in case no configuration file is used
+################################################
+# Cache variables will not be reset if already defined with cmake .. -C <cache file>
 
-CMAKE_minimum_required( VERSION 3.28 )
+find_program(VAR_MPIIFORT mpiifort) # check if mpiifort is available for intel parallel
+find_program(VAR_IFORT ifort)       # else check if ifort is available for intel serial
+find_program(VAR_MPIFORT mpifort)   # else check if mpifort is available for GNU parallel
+find_program(VAR_GFORTRAN gfortran) # else check if gfortran is available for GNU serial
+set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "RELEASE or DEBUG")
 
+if (NOT ${VAR_MPIIFORT} STREQUAL "VAR_MPIIFORT-NOTFOUND") # if mpiifort not not found, then INTEL parallel
+    set(NDM_PRESET_TITLE "Compile NDM intel parallel : mpiifort" CACHE STRING "")
+    set(CMAKE_Fortran_COMPILER "${VAR_MPIIFORT}" CACHE STRING "")    
+    set(NDM_PARA ON)
+elseif (NOT ${VAR_IFORT} STREQUAL "VAR_IFORT-NOTFOUND") # if mpiifort not not found, then INTEL serial
+    set(NDM_PRESET_TITLE "Compile NDM intel serial : ifort" CACHE STRING "")
+    set(CMAKE_Fortran_COMPILER "${VAR_IFORT}" CACHE STRING "")
+elseif (NOT ${VAR_MPIFORT} STREQUAL "VAR_MPIFORT-NOTFOUND") # if mpifort not not found, then GNU parallel
+    set(NDM_PRESET_TITLE "Compile NDM GNU parallel : mpifort" CACHE STRING "")
+    set(CMAKE_Fortran_COMPILER "${VAR_MPIFORT}" CACHE STRING "")
+    set(NDM_GNU ON)
+    set(NDM_PARA ON)
+elseif (NOT ${VAR_GFORTRAN} STREQUAL "VAR_GFORTRAN-NOTFOUND") # if mpifort not not found, then GNU serial
+    set(NDM_PRESET_TITLE "Compile NDM GNU serial : gfortran" CACHE STRING "")
+    set(CMAKE_Fortran_COMPILER "${VAR_GFORTRAN}" CACHE STRING "")
+    set(NDM_GNU ON)
+endif()
+
+if (NDM_GNU)
+    set(CMAKE_Fortran_FLAGS_RELEASE " -O3 -ffree-line-length-512 -funroll-all-loops" CACHE STRING "")
+    set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -ffree-line-length-512" CACHE STRING "")
+    set(MKL_MPI "openmpi" CACHE STRING "MPI")
+endif()
+
+if (NDM_PARA)
+    list(APPEND TMP_PACKAGE_LIST "MPI")
+    list(APPEND TMP_COMPILE_DEFINITION "PARA")
+    list(APPEND TMP_COMPILE_DEFINITION "PARAML")
+endif()
+
+set(CMAKE_Fortran_FLAGS_RELEASE " -O3 " CACHE STRING "")
+set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0" CACHE STRING "")
+
+list(APPEND TMP_PACKAGE_LIST "MKL")
+set(NDM_PACKAGE_LIST ${TMP_PACKAGE_LIST} CACHE STRING "List of packages")
+
+set(MKL_MPI "intelmpi" CACHE STRING "MPI")
+set(ENABLE_SCALAPACK OFF CACHE STRING "Scalapack" )
+set(MKL_THREADING "sequential" CACHE STRING "Threading")
+set(MKL_INTERFACE "lp64" CACHE STRING "Interface")
+
+list(APPEND TMP_COMPILE_DEFINITION "MKL")
+set(NDM_COMPILE_DEFINITION ${TMP_COMPILE_DEFINITION} CACHE STRING "List of definitions for preprocessor")
+
+################################################
+# Project definition
+################################################
 project( NDM
          VERSION 3.0.0
          DESCRIPTION "NDM project with CMake"
          HOMEPAGE_URL "https://codev-tuleap.intra.cea.fr/plugins/git/ndm"
-         LANGUAGES Fortran CXX)
+         LANGUAGES Fortran ) #CXX)
 
 set( PROJECT_AUTHOR "Jean-Paul Crocombette" )
 
 ################################################
+# default user options
+################################################
+
+option( ${PROJECT_NAME}_OPT_TRACE "trace all variables for cmake debug" OFF )
+option( ${PROJECT_NAME}_OPT_COMPILE_DOC "Compile documentation" OFF )
+
+
+################################################
 # utilities
 ################################################
-# get NDM cmake macro etc
-get_property(${PROJECT_NAME}_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)   # Get the languages list for this project
 
+# Get the languages list for this project
+get_property(${PROJECT_NAME}_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)   
 
-list( APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_files" )
-include( TraceNewMacros )   # useful for colorful logs.
-include( import_lammps )    # macro for importing lammps
-setcolors()                 # defines log colors
+# cmake scripts location
+list( APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_files" )        
+message(STATUS "CMAKE_MODULE_PATH : ${CMAKE_MODULE_PATH}" )
 
-include( CTest )
-
-log_info( "cmake in ${PROJECT_SOURCE_DIR}" )                # log
-log_info( "CMAKE_MODULE_PATH : ${CMAKE_MODULE_PATH}" )      # log
-
-################################################
-# set user options and cache variables
-################################################
-
-option(${PROJECT_NAME}_WITH_MPI "Compile ${PROJECT_NAME} in Parallel using MPI" ON)
-option(${PROJECT_NAME}_WITH_LAMMPS "Compile ${PROJECT_NAME} using lammps as a library" ON)
-
-# MKL configuration
-set(ENABLE_SCALAPACK OFF CACHE BOOL "using scalapack")
-set(MKL_THREADING "" CACHE STRING "description threading")
-set(MKL_INTERFACE "" CACHE STRING "description interface")
-set(MKL_MPI "" CACHE STRING "description MKL MPI")
+# Import cmake scripts
+include(doxygen_doc)        # to compile documentation with Doxygen
+include( CTest )            # testing with CTest
+include( TraceNewMacros )   # colorful logs
+setcolors()                 # setting log colors
 
 
 ################################################
-# CMAKE usual variables
+# Packages, ex: MPI, MKL, etc...
 ################################################
+log_title(${${PROJECT_NAME}_PRESET_TITLE})
 
-# cmake verbosity
-set( CMAKE_MESSAGE_LOG_LEVEL STATUS CACHE STRING "cmake verbosity  'ERROR|WARNING|NOTICE|STATUS|VERBOSE|DEBUG|TRACE'")
-set( CMAKE_VERBOSE_MAKEFILE off CACHE STRING "build verbosity  'off|on'")
-log_info ( "CMAKE_VERBOSE_MAKEFILE : ${CMAKE_VERBOSE_MAKEFILE}" )
-
-###################################################
-#   Loading packages
-###################################################
-
-# MPI
-if ( ${PROJECT_NAME}_WITH_MPI )
-    log_info( "${PROJECT_NAME} parallel as ${PROJECT_NAME}_WITH_MPI ${${PROJECT_NAME}_WITH_MPI}" )
-    add_compile_definitions(PARA=1)         # Preprocessor definition
-    add_compile_definitions(PARAML=1)       # Preprocessor definition
-    find_package(MPI REQUIRED)
-    foreach (LANGUAGE IN ITEMS ${${PROJECT_NAME}_LANGUAGES})
-        link_libraries(${MPI_${LANGUAGE}_LIBRARIES}) # add MPI libraries to all later-defined targets
-    endforeach()
-    set( ${PROJECT_NAME}_MPI_RESUME "PARALLEL")
-else()
-    log_info( "${PROJECT_NAME} serial as ${PROJECT_NAME}_WITH_MPI ${${PROJECT_NAME}_WITH_MPI}" )
-    set( ${PROJECT_NAME}_MPI_RESUME "SERIAL")
-endif()
-
-if ( ${PROJECT_NAME}_WITH_MKL )
-    find_package(MKL CONFIG REQUIRED)
-    link_libraries($<LINK_ONLY:MKL::MKL>)                       # add MKL libraries to all later-defined targets
-endif()
-if (${PROJECT_NAME}_WITH_LAMMPS)
-    log_info( "Compile ${PROJECT_NAME} with Lammps as a library" )
-    import_lammps()
-    add_compile_definitions(LAMMPS_VERSION=1)   # Preprocessor definition
-endif()
-
-
-################################################
-# Other options
-# as CMAKE usage needs
-################################################
-
-# make sure that the default is a Release
-if (NOT CMAKE_BUILD_TYPE)
-  log_warning( "CMAKE_BUILD_TYPE set Release BY DEFAULT" )
-  set( CMAKE_BUILD_TYPE "RELEASE" CACHE STRING
-       "Choose the type of build, options are None Debug Release."
-       FORCE )
-endif()
-
-log_info("Build type : ${CMAKE_BUILD_TYPE}")
-foreach(LANGUAGE IN ITEMS ${${PROJECT_NAME}_LANGUAGES})
-    log_info("${LANGUAGE} compiler : ${CMAKE_${LANGUAGE}_COMPILER}")
-    log_info("${LANGUAGE} compiler flags : ${CMAKE_${LANGUAGE}_FLAGS} ${CMAKE_${LANGUAGE}_FLAGS_${CMAKE_BUILD_TYPE}}")
+foreach( PACKAGE IN ITEMS ${${PROJECT_NAME}_PACKAGE_LIST})
+    log_info("Compile ${PROJECT_NAME} with ${PACKAGE} ")
+    include(compile_with_${PACKAGE})
+    cmake_language(CALL compile_with_${PACKAGE})        #cmake 3.18
+    link_libraries(${${PROJECT_NAME}_${PACKAGE}_LIBRARIES})
+    include_directories( SYSTEM  ${${PROJECT_NAME}_${PACKAGE}_INCLUDE_DIR} )
 endforeach()
 
-set(${PROJECT_NAME}_RESUME "(${${PROJECT_NAME}_TYPE}) ${PROJECT_NAME} ${${PROJECT_NAME}_MPI_RESUME}, compilation ${CMAKE_BUILD_TYPE}")
-log_title( ${${PROJECT_NAME}_RESUME} )
+
+################################################
+# preprocessor definitions 
+# cf in code '#if(PHONDY || PARAPH || MAB || ML || PARAML)'
+# au cas ou, pour une cible specifique,
+# vous pouvez effectuer les operations suivantes :
+# target_compile_definitions(my_target PRIVATE FOO=1 BAR=1)
+################################################
+
+foreach( VARIABLE IN ITEMS ${${PROJECT_NAME}_COMPILE_DEFINITION})
+    add_compile_definitions(${VARIABLE}=1)
+endforeach()
 
 
 ################################################
 # set paths mod executables
 ################################################
-set( CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod )
-set( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin )
+set( CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod )
+set( EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin )
 
-if( NOT ${PROJECT_NAME}_OPT_COMPILE_ONLY_CTESTS )
-  log_warning( "add_subdirectory src" )
-  add_subdirectory( src )
-endif()
+add_subdirectory( src )
 
 log_warning( "add_subdirectory tests" )
 add_subdirectory( tests )
 
-#if( NDM_OPT_COMPILE_DOC )
-#  find_program( NDM_JUPYTER_BOOK NAMES jupyter-book DOC "jupyter-book build executable")
-#  if ( NDM_JUPYTER_BOOK )
-#    log_warning( "add_subdirectory docs" )
-#    add_subdirectory( docs )
-#  else()
-#    log_warning( "prerequisite jupyter-book not found, not building docs" )
-#  endif()
-#else()
-#  log_info( "cmake option NDM_OPT_COMPILE_DOC ${NDM_OPT_COMPILE_DOC}, not building docs" )
-#endif()
+################################################
+# DOXYGEN Documentation
+################################################
+# Must be after source files definition
 
-#add_custom_target(copy_all ALL)
+if( ${PROJECT_NAME}_OPT_COMPILE_DOC )
+  doxygen_doc()
+endif()
 
-#list( APPEND NDM_COPY_DIRS "scripts;READMES;images" )
-# TODO later list( APPEND NDM_COPY_DIRS "ndmpy" )
+################################################
+# Trace some logs
+################################################
 
-#foreach( adir ${NDM_COPY_DIRS} )
-#  # to build dir
-#  add_custom_command(TARGET copy_all POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory
-#                ${CMAKE_CURRENT_SOURCE_DIR}/${adir}
-#                ${CMAKE_CURRENT_BINARY_DIR}/${adir} )
-#  # to install dir
-#  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${adir} DESTINATION ${CMAKE_INSTALL_PREFIX}/${adir})
-#endforeach()
+# Display options
+get_cmake_property(${PROJECT_NAME}_VARIABLE_NAMES VARIABLES)                
+foreach( VARIABLE_NAME in ${${PROJECT_NAME}_VARIABLE_NAMES})
+    if(VARIABLE_NAME MATCHES "._OPT_.")
+        log_info("${VARIABLE_NAME} : ${${VARIABLE_NAME}}")
+    endif()
+endforeach()
 
-# resume TRACE log
-# "NDM_." is regExp
-#printCmakeTraceVariable( "NDM_." )
-# printCmakeTraceVariable( "CMAKE_INSTALL." )
-# optionally get trace of all cmake main variables in log
-#if( NDM_OPT_TRACE )
-#printCmakeTrace()
-#endif()
+# Display compilers and flags
+foreach (LANGUAGE IN ITEMS ${${PROJECT_NAME}_LANGUAGES})
+    log_info("CMAKE_${LANGUAGE}_COMPILER : ${CMAKE_${LANGUAGE}_COMPILER}")
+    log_info("CMAKE_${LANGUAGE}_FLAGS_${CMAKE_BUILD_TYPE} : ${CMAKE_${LANGUAGE}_FLAGS_${CMAKE_BUILD_TYPE}}")
+endforeach()
 
-# test_colormessage()
+# Display preprocessor definitions
+get_directory_property(COMPILE_DEFINITIONS_LIST COMPILE_DEFINITIONS)
+foreach (COMP_DEF IN ITEMS ${COMPILE_DEFINITIONS_LIST})
+    log_warning("Using preprocessor definition : ${COMP_DEF}")
+endforeach()
+
+# Display all variables in cmake, optionnal
+if( ${PROJECT_NAME}_OPT_TRACE )
+  printCmakeTrace()
+endif()
+

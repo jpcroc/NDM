@@ -1,28 +1,46 @@
-# launch cmake
-# https://cmake.org/cmake/help/latest/manual/cmake.1.html#generate-a-project-buildsystem
+###################################################
+#       CMake cache file for NDM
+#       preset to compute NDM with oneapi serial
+###################################################
+set(NDM_PRESET_TITLE "Compile NDM intel serial : ifort" CACHE STRING "" FORCE)
 
-# preset that turns on just gnu serial
-# this will be compiled quickly and handle a lot of common inputs.
+# ------------------- Define compilers ----------------------
+set(CMAKE_Fortran_COMPILER "ifort" CACHE STRING "$FC user choice fortran compiler f95 gfortran ifort ... mpifort mpiifort ..." FORCE)
+#set(CMAKE_CXX_COMPILER "mpicxx" CACHE STRING "TODO" FORCE) # required for LAMMPS
 
-message("PRESET:   use ndm_preset_oneapi_serial.cmake")
+# ---------------- preprocessor definitions ------------------
+list(APPEND TMP_COMPILE_DEFINITION "MKL")
+set(NDM_COMPILE_DEFINITION ${TMP_COMPILE_DEFINITION} CACHE INTERNAL "List of definitions for preprocessor" FORCE)
 
-# CMAKE usual preset variables
-# https://cmake.org/cmake/help/latest/envvar/FC.html
-set(CMAKE_Fortran_COMPILER "ifort" CACHE STRING "$FC user choice fortran compiler f95 gfortran ifort ... mpifort ..." FORCE)
+# ------ Choose compilation mode and corresponding flags ------
+set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "RELEASE or DEBUG" FORCE)
+set(CMAKE_Fortran_FLAGS_RELEASE " -O3 " CACHE STRING "" FORCE) 
+set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0" CACHE STRING "" FORCE)
 
-# NDM usual preset variables
-set(NDM_TYPE "INTEL" CACHE STRING "GNU or INTEL" FORCE)
-set(NDM_BUILD_TYPE "Release" CACHE STRING "NDM for $CMAKE_BUILD_TYPE Release or Debug" FORCE)
-set(NDM_WITH_MPI "off" CACHE BOOL "Compilation serial as 'off', parallel as 'on'" FORCE)
+# --------------------- cmake options ------------------------
+set( NDM_OPT_TRACE OFF CACHE BOOL "trace all variables for cmake debug" FORCE )
+set( NDM_OPT_COMPILE_DOC OFF CACHE BOOL "Compile documentation" FORCE )
 
-# set by user configuration before
-if( DEFINED ENV{I_MPI_ROOT} )
-  message(WARNING "\nEnv var oneapi I_MPI_ROOT=${I_MPI_ROOT} set.\nIt is useless" )
-endif()
+# ------------------- MKL configuration ----------------------
+set(ENABLE_SCALAPACK OFF CACHE STRING "Scalapack" FORCE)
+set(MKL_THREADING "sequential" CACHE STRING "Threading" FORCE)
+set(MKL_INTERFACE "lp64" CACHE STRING "Interface" FORCE)
 
+# ---------------- Choose packages to use -------------------
+list(APPEND TMP_PACKAGE_LIST "MKL")
+#list(APPEND TMP_PACKAGE_LIST "LAMMPS")
+set(NDM_PACKAGE_LIST ${TMP_PACKAGE_LIST} CACHE INTERNAL "List of packages" FORCE)
+
+
+# -------------- printing infos ----------------------
+
+message("PRESET:   CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 message("PRESET:   CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}")
+message("PRESET:   CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
+message("PRESET:   MKL_THREADING=${MKL_THREADING}")
+message("PRESET:   MKL_INTERFACE=${MKL_INTERFACE}")
 get_cmake_property(_variableNames VARIABLES)
-foreach(_variableName ${_variableNames})
+foreach( _variableName ${_variableNames} )
   if ( _variableName MATCHES "NDM_." )
     message("PRESET:   ${_variableName}=${${_variableName}}")
   endif()

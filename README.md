@@ -37,25 +37,30 @@ git clone --branch ndm2021_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/
 
 ### Compiling NDM with Cmake
 
-Prerequisities
+#### Prerequisities
 It is recommended to use Intel's oneAPI suite including Intel's mpi implementation, the mpiifort wrapper and MKL.
 To use lammps it must be compiled as a shared library. The shared library Lammps compilation should create the required liblammps.so dynamic library. It is recommended to compile Lammps with the same compiler suite as NDM. see lammps doc
 
-Standard NDM compilation using cmake
-For convenience the following steps have been written in a bash script which you should edit according to your own settings.
-1. Choose the relevant preset file with your prefered NDM configuration (using MPI/LAMMPS).
-load the cache file:
-cmake -C cache_file
+#### Basic build, in the NDM directory :
 
-2. then generate NDM cmake configuration (from any directory) :
-cmake -B BUI_DIR -S SRC_DIR
-with BUI_DIR the directory where you want NDM to be built and SRC_DIR the directory containing the main CMakeLists.txt file (usually NDM, parent from the src directory containing .F90 sources).
+Steps to build NDM with the new CMakeLists.txt (requires cmake 3.20) :
 
-3. from the BUI_DIR, build NDM :
-cmake --build .
-the compilation can be parallelized using the --parallel <n_proc> option.
+```
+mkdir build; cd build
+cmake ..
+cmake --build . --parallel 4
+```
 
-*. When Cmake fails to find the relevant dependencies it is often required to define additionnal variables to indiquate the libraries locations such as MPI_HOME, MPI_ROOT, etc... They are listed in the bash script.
+#### Advanced build :
+Configuration parameters should be set in a preset file, examples can be found in cmake_files/. It is possible to define preprocessor directives, set a specific compiler, define release/debug flags, etc...
+
+```
+cmake -C <absolute_path_to_preset_file> -B <absolute_path_to_build_directory> -S <absolute_path_to_CMakeLists.txt>
+cmake --build <absolute_path_to_build_directory> --parallel <n_proc>
+```
+
+the bash script compile_ndm.sh can be found in the scripts/ directory for convenience.
+When Cmake fails to find the relevant dependencies it is often required to define additionnal variables to indiquate the libraries locations such as MPI_HOME, MPI_ROOT, etc... They are listed in the bash script.
 
 
 

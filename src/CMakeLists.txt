@@ -8,37 +8,20 @@ file( GLOB NDM_LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/[^.]*.F90" )
 file( GLOB NDM_MAIN_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/main.F90" )
 log_warning( "NDM gets fortran sources in ${CMAKE_CURRENT_SOURCE_DIR}/ARTN" )
 file( GLOB NDM_LIB_SOURCES_ART "${CMAKE_CURRENT_SOURCE_DIR}/ARTN/[^.]*.F90" )
-log_warning( "NDM gets fortran and c++ sources in ${CMAKE_CURRENT_SOURCE_DIR}/lammps" )
-file( GLOB NDM_LIB_SOURCES_LAMMPS "${CMAKE_CURRENT_SOURCE_DIR}/lammps/[^.]*.F90" )
-
 list( REMOVE_ITEM NDM_LIB_SOURCES ${NDM_MAIN_SOURCES})  # remove main.F90 from the library set
 list( APPEND NDM_LIB_SOURCES ${NDM_LIB_SOURCES_ART} )
-list( APPEND NDM_LIB_SOURCES ${NDM_LIB_SOURCES_LAMMPS} )
 
-list( APPEND NDM_LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/lammps/LAMMPS-wrapper.cpp")
-include_directories("/home/catB/jd270899/.local/include/lammps")
+if (${PROJECT_NAME}_WITH_LAMMPS)
+  log_warning( "NDM gets fortran and c++ sources in ${CMAKE_CURRENT_SOURCE_DIR}/lammps" )
+  file( GLOB NDM_LIB_SOURCES_LAMMPS "${CMAKE_CURRENT_SOURCE_DIR}/lammps/[^.]*.F90" )
+  list( APPEND NDM_LIB_SOURCES ${NDM_LIB_SOURCES_LAMMPS} )
+  list( APPEND NDM_LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/lammps/LAMMPS-wrapper.cpp")
+  include_directories("/home/catB/jd270899/.local/include/lammps")
+endif()
 
-if ( NDM_CMAKE_VERBOSE STREQUAL "off")
-  log_info( "NDM_LIB_SOURCES" )
-  foreach( TMP ${NDM_LIB_SOURCES} )
-    get_filename_component(TMP1 ${TMP} NAME )
-    message(STATUS "${TMP1}" )
-  endforeach()
-  log_info( "NDM_LIB_SOURCES_ART" )
-  
-  foreach( TMP ${NDM_LIB_SOURCES_ART} )
-    get_filename_component(TMP1 ${TMP} NAME )
-    message(STATUS "${TMP1}" )
-  log_info( "NDM_LIB_SOURCES_LAMMPS" )
-  endforeach()
-  
-  foreach( TMP ${NDM_LIB_SOURCES_LAMMPS} )
-    get_filename_component(TMP1 ${TMP} NAME )
-    message(STATUS "${TMP1}" )
-  endforeach()
-
-  log_info( "NDM_MAIN_SOURCES" )
-  message(STATUS "${NDM_MAIN_SOURCES}" )
+if (NOT "MPI" IN_LIST NDM_PACKAGE_LIST)
+    file( GLOB NDM_REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/ARTN/gen_init_MPI.F90" ) # parallel source to remove
+    list( REMOVE_ITEM NDM_LIB_SOURCES ${NDM_REMOVE})  
 endif()
 
 add_library( libndm STATIC ${NDM_LIB_SOURCES} )

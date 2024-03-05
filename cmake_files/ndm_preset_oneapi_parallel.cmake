@@ -2,33 +2,38 @@
 #       CMake cache file for NDM
 #       preset to compute NDM with oneapi parallel
 ###################################################
+set(NDM_PRESET_TITLE "Compile NDM parallel oneapi : mpiifort" CACHE STRING "" FORCE)
 
-# preset that turns on just oneapi parallel
-# this will be compiled quickly and handle a lot of common inputs.
-message("PRESET:   use ndm_preset_oneapi_parallel.cmake")
-
-# Define compilers
+# ------------------- Define compilers ----------------------
 set(CMAKE_Fortran_COMPILER "mpiifort" CACHE STRING "$FC user choice fortran compiler f95 gfortran ifort ... mpifort mpiifort ..." FORCE)
-set(CMAKE_CXX_COMPILER "mpicxx" CACHE STRING "TODO" FORCE) # required for LAMMPS
+#set(CMAKE_CXX_COMPILER "mpicxx" CACHE STRING "TODO" FORCE) # required for LAMMPS
 
-# NDM compilation mode
-set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "NDM for $CMAKE_BUILD_TYPE RELEASE or D" FORCE)
-set(NDM_LIBRARY_TYPE "STATIC" CACHE STRING "create libndm as a static/shared library" FORCE)
+# ---------------- preprocessor definitions ------------------
+list(APPEND TMP_COMPILE_DEFINITION "PARA")
+list(APPEND TMP_COMPILE_DEFINITION "PARAML")
+list(APPEND TMP_COMPILE_DEFINITION "MKL")
+set(NDM_COMPILE_DEFINITION ${TMP_COMPILE_DEFINITION} CACHE INTERNAL "List of definitions for preprocessor" FORCE)
 
-# MPI
-set(NDM_WITH_MPI ON CACHE BOOL "Compilation serial as 'off', parallel as 'on'" FORCE)
+# ------ Choose compilation mode and corresponding flags ------
+set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "RELEASE or DEBUG" FORCE)
+set(CMAKE_Fortran_FLAGS_RELEASE " -O3 " CACHE STRING "" FORCE) 
+set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0" CACHE STRING "" FORCE)
 
-# Lammps
-set(NDM_WITH_LAMMPS ON CACHE BOOL "use lammps" FORCE)
+# --------------------- cmake options ------------------------
+set( NDM_OPT_TRACE OFF CACHE BOOL "trace all variables for cmake debug" FORCE )
+set( NDM_OPT_COMPILE_DOC OFF CACHE BOOL "Compile documentation" FORCE )
 
-# MKL configuration, see MKLConfig.cmake file for more info on available parameters
-set(NDM_WITH_MKL ON CACHE BOOL "use MKL" FORCE)
-
-#set(ENABLE_SCALAPACK ON CACHE STRING "Scalapack" FORCE)
+# ------------------- MKL configuration ----------------------
+set(ENABLE_SCALAPACK OFF CACHE STRING "Scalapack" FORCE)
 set(MKL_THREADING "sequential" CACHE STRING "Threading" FORCE)
 set(MKL_INTERFACE "lp64" CACHE STRING "Interface" FORCE)
-#set(MKL_MPI "openmpi" CACHE STRING "OpenMPI" FORCE)
+set(MKL_MPI "intelmpi" CACHE STRING "mpi" FORCE)
 
+# ---------------- Choose packages to use -------------------
+list(APPEND TMP_PACKAGE_LIST "MPI") # set MPIEXEC_EXECUTABLE or MPI_HOME to force location
+list(APPEND TMP_PACKAGE_LIST "MKL")
+#list(APPEND TMP_PACKAGE_LIST "LAMMPS")
+set(NDM_PACKAGE_LIST ${TMP_PACKAGE_LIST} CACHE INTERNAL "List of packages" FORCE)
 
 
 # -------------- printing infos ----------------------
@@ -44,5 +49,3 @@ foreach( _variableName ${_variableNames} )
     message("PRESET:   ${_variableName}=${${_variableName}}")
   endif()
 endforeach()
-
-
