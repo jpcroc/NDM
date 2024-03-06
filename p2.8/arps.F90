@@ -13,7 +13,7 @@ module arps_mod
   USE calfoew_mod,only:calfozz
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,itmax,itloopmax,timemax,timeloopmax,latcomp,iteration,itesigma,timel,tstep,&
        &lperiod,sigkine,ltpcel,sigtot,potis2,bk,erg2ev,itetemp,ltberendsen,tautcon,text,lspacendm,dmtype,unitP
-  use calfocommon,only:sigcalfo,potistcalfo,test_sigma,sigcalfo,sigc
+  use calfocommon,only:sigcalfo,potistcalfo,test_sigma,sigcalfo,sigc,lcalcsigc
   use var_pot,only : cm,iewald
   use vect_dist_mod,only:vect_dist
   USE calfoberend_mod,only: calfoberend
@@ -64,7 +64,12 @@ contains
 
 
     atdml%lgul=.true.
-    test_sigma=(mod(iteration,itesigma)==0)
+    test_sigma=.true.
+    if((test_sigma).and.(celndm%ltpcel))then
+       lcalcsigc=.true.
+       sigc=>celndm%sigc
+    end if
+
     select case (ipotentiel)
     case(0,1,3,4,5,6,7,8,9)
 
@@ -123,7 +128,7 @@ contains
        
     end select
     atdml%mov=2
-    
+    call analyseT (atdml,celndm,boxndm,psc)
     call periodbox (boxndm,atdml)
 !A.2
 #ifdef PARA    

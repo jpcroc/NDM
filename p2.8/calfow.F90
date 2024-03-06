@@ -55,7 +55,7 @@ contains
                 !               sigat(i,i1,i2)=0.0
              enddo
              sigcalfo(i1,i2)=0.0
-             if (lTPcel.EQV..true.) then
+             if (lcalcsigc.EQV..true.) then
                 do koo=1,celcf%noxyz
                    sigc(i1,i2,koo)=0.0
                    sigc(i1,i2,koo)=0.0
@@ -215,7 +215,7 @@ contains
                       sigcalfo(3,1)=sigcalfo(3,1)-0.5*(virdzdx(i,3,1)*dfp+fdp*dxp(3)*dxp(1))/boxcf%volu
                       sigcalfo(3,2)=sigcalfo(3,2)-0.5*(virdzdx(i,3,2)*dfp+fdp*dxp(3)*dxp(2))/boxcf%volu
                       sigcalfo(3,3)=sigcalfo(3,3)-0.5*(virdzdx(i,3,3)*dfp+fdp*dxp(3)*dxp(3))/boxcf%volu
-                      if (lTPcel.EQV..true.) then
+                      if (lcalcsigc.EQV..true.) then
                          sigc(1,1,koo)=sigc(1,1,koo)-&
                               0.5*(virdzdx(i,1,1)*dfp+fdp*dxp(1)*dxp(1))*celcf%noxyz/boxcf%volu
                          sigc(1,2,koo)=sigc(1,2,koo)-&
@@ -245,7 +245,7 @@ contains
                       sigcalfo(3,1)=sigcalfo(3,1)+0.5*F3*dxp(1)/boxcf%volu
                       sigcalfo(3,2)=sigcalfo(3,2)+0.5*F3*dxp(2)/boxcf%volu
                       sigcalfo(3,3)=sigcalfo(3,3)+0.5*F3*dxp(3)/boxcf%volu
-                      if (lTPcel.EQV..true.) then
+                      if (lcalcsigc.EQV..true.) then
                          sigc(1,1,koo)=sigc(1,1,koo)+0.5*F1*dxp(1)*celcf%noxyz/boxcf%volu
                          sigc(1,2,koo)=sigc(1,2,koo)+0.5*F1*dxp(2)*celcf%noxyz/boxcf%volu
                          sigc(1,3,koo)=sigc(1,3,koo)+0.5*F1*dxp(3)*celcf%noxyz/boxcf%volu

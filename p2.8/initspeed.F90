@@ -39,6 +39,7 @@ contains
     call random_seed(size=seed_size)
     allocate(iseedt(seed_size))
     call system_clock (iseed)
+
     iseedt(:)=iseed
 
     call random_seed(put=iseedt)
@@ -106,7 +107,8 @@ contains
     !    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
     if(present(latcomp))latc=latcomp
 !    if (rang==0) write(6,*)
-
+    write(6,*)'ISEED initspeed',iseed
+!    call atcf%print
     select case (dmtype)
     case(3,30,5,11,31,32,33,21,22,23,24,2)
        atcf%vp = 0.0
@@ -162,7 +164,8 @@ contains
           !  a starting temperature is given
                  if ((rang==0).and.(lprint))  write (6,*) 'random velocities at TINIT = ', tinit, &
                'K'
-          call random_seed(size=seed_size)
+
+                 call random_seed(size=seed_size)
 !          if (rang==0)write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
 !!$          if (iseed==0)  then
@@ -175,7 +178,7 @@ contains
 !!$             iseedt(:)=iseed
 !!$          end if
 
-          !          iseedt(1)=iseed
+          iseedt(:)=iseed
           call    random_seed (put=iseedt)
           deallocate(iseedt)
 

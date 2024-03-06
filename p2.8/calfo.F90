@@ -53,11 +53,11 @@ contains
     integer :: ipot
     logical,optional, intent(in)  ::t_sigma
     boxcf%lperiod=lperiod
-    ltpcel=.false.
+    lcalcsigc=.false.
     test_sigma=.false.
     if (present(t_sigma))test_sigma=t_sigma
     if((test_sigma).and.(celcf%ltpcel))then
-       ltpcel=.true.
+       lcalcsigc=.true.
        sigc=>celcf%sigc
     end if
     
@@ -76,7 +76,7 @@ contains
     lprteat=.false.
     lsigat=.false.
     if (test_sigma) then
-       sigcalfo(:,:)=0.d0 ; if (ltpcel.EQV..true.) sigc=0
+       sigcalfo(:,:)=0.d0 ; if (lcalcsigc.EQV..true.) sigc=0
     end if
     select type(atcf)
     class is (atom_config_e)

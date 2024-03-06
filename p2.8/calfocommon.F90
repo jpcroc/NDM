@@ -4,5 +4,5 @@ module calfocommon
   real(double)::potistcalfo,sigcalfo(3,3),sig2p(3,3)
   real(double),pointer:: sigc(:,:,:)
   logical ::lsigat,lprteat
-  logical::test_sigma,ltpcel
+  logical::test_sigma,lcalcsigc
 end module calfocommon

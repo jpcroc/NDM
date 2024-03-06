@@ -194,7 +194,7 @@ contains
                       if (test_sigma) then 
                          do m=1,3
                             sigT(l,m)=sigT(l,m) + paire_ij*cvij(1,m)/boxcf%volu
-                            if (lTPcel.EQV..true.) then
+                            if (lcalcsigc.EQV..true.) then
                                sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + 0.5*paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                                sigc(l,m,jcelnumber) = sigc(l,m,jcelnumber) + 0.5*paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                             end if
@@ -226,7 +226,7 @@ contains
                       if (test_sigma) then 
                          do m=1,3
                             sigT(l,m)=sigT(l,m) + paire_ij*cvij(1,m)/boxcf%volu
-                            if (lTPcel.EQV..true.) then
+                            if (lcalcsigc.EQV..true.) then
                                sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                                sigc(l,m,jcelnumber) = sigc(l,m,jcelnumber) + paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                             end if
@@ -307,7 +307,7 @@ contains
                             do m=1,3
                                sigT(l,m)=sigT(l,m) + triplet_ij*cvij(1,m)/boxcf%volu
                                sigT(l,m)=sigT(l,m) + triplet_ik*cvik(1,m)/boxcf%volu
-                               if (lTPcel.EQV..true.) then
+                               if (lcalcsigc.EQV..true.) then
                                   sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + celcf%noxyz*0.5*(triplet_ij*cvij(1,m)/boxcf%volu  &
                                        + triplet_ik*cvik(1,m)/boxcf%volu)
                                   sigc(l,m,jcelnumber) = sigc(l,m,jcelnumber) + celcf%noxyz*0.5*triplet_ij*cvij(1,m)/boxcf%volu 

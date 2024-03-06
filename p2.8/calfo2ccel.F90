@@ -2,7 +2,7 @@ module calfo2ccel_mod
   USE var_pot, ONLY:alpha,csive,ipotentiel,ipo,zz,ipo,rue_pair,pot,typ_and_pot,typ_pot_pair,potis1
   USE calfocommon
   use vect_dist_mod,only:vect_dist
-    USE atomconfig,only : atom_config,atom_config_d,atom_config_e,atom_config_arps
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e,atom_config_arps
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config
 
@@ -138,7 +138,7 @@ contains
                    sig2p(3,1) = sig2p(3,1)+phu*gradij(3)*dxp(1)/boxcf%volu
                    sig2p(3,2) = sig2p(3,2)+phu*gradij(3)*dxp(2)/boxcf%volu
                    sig2p(3,3) = sig2p(3,3)+phu*gradij(3)*dxp(3)/boxcf%volu
-                   if (lTPcel.EQV..true.) then
+                   if (lcalcsigc.EQV..true.) then
                       sigc(1,1,koo) = sigc(1,1,koo)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyz/boxcf%volu
                       sigc(1,2,koo) = sigc(1,2,koo)+0.5*phu*gradij(1)*dxp(2)*celcf%noxyz/boxcf%volu
                       sigc(1,3,koo) = sigc(1,3,koo)+0.5*phu*gradij(1)*dxp(3)*celcf%noxyz/boxcf%volu

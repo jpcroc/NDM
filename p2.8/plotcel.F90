@@ -111,7 +111,6 @@ module plottpcel_mod
     else
        itp=iteration
     end if
-
     if (mod(iplotcel,2)==0) then
        if (iteplotcomp.gt.0) then
           if (mod(itp,iteplotcomp)==0)then

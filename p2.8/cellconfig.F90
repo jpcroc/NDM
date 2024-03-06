@@ -709,7 +709,7 @@ contains
        end if
        if (allocated(cellv%sigc)) then
           do i=1,cellv%noxyz
-             write(un,*)'tempc',i,cellv%sigc(1,1,i),cellv%sigc(1,2,i)
+             write(un,*)'sigc',i,cellv%sigc(1,1,i),cellv%sigc(1,2,i)
           end do
        end if
     end if
