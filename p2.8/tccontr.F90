@@ -57,7 +57,7 @@ contains
     call atcf%fab(atcou,lback=.true.)
     call caltabtC(celcou,atcou,lperiod,boxcf)
     call calctemp(tempcou,kinecou,atcou,celcou)
-    write(6,*)'TCOU',tempcou,tfcou,atcou%im,atcf%im
+!    write(6,*)'TCOU',tempcou,tfcou,atcou%im,atcf%im
 !!$    do i=1,im
 !!$       if (atcf%lgul(i)) then
 !!$          atcf%xpp(:,i)=atcf%xp(:,i)-(atcf%xp(:,i)-atcf%xpp(:,i))*sqrt(tfcou/tempcou)
