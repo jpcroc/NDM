@@ -135,6 +135,7 @@ add_subdirectory( tests )
 ################################################
 # Must be after source files definition
 
+set(TARGET_NAME libndm)
 if( ${PROJECT_NAME}_OPT_COMPILE_DOC )
   doxygen_doc()
 endif()

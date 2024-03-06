@@ -3,7 +3,7 @@ function(doxygen_doc)
     set(DOC_LANGUAGE English)
     set(QUIET_DOXYGEN YES)
 
-    get_target_property(SOURCE_LIST MILADY SOURCES)
+    get_target_property(SOURCE_LIST ${TARGET_NAME} SOURCES)
     #get_target_property(SOURCE_MAIN milady_main.exe SOURCES)
     #list(APPEND SOURCE_LIST ${SOURCE_MAIN})
     string(REPLACE ";" " " SOURCE_LIST_2 "${SOURCE_LIST}")
