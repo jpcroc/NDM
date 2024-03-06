@@ -71,6 +71,7 @@ set( PROJECT_AUTHOR "Jean-Paul Crocombette" )
 ################################################
 
 option( ${PROJECT_NAME}_OPT_TRACE "trace all variables for cmake debug" OFF )
+option( ${PROJECT_NAME}_OPT_COMPILE_TESTS "Allows test compilation" OFF )
 option( ${PROJECT_NAME}_OPT_COMPILE_DOC "Compile documentation" OFF )
 
 
@@ -127,8 +128,10 @@ set( EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin )
 
 add_subdirectory( src )
 
-log_warning( "add_subdirectory tests" )
-add_subdirectory( tests )
+if (${PROJECT_NAME}_OPT_COMPILE_TESTS)
+    log_warning( "add_subdirectory tests" )
+    add_subdirectory( tests )
+endif()
 
 ################################################
 # DOXYGEN Documentation

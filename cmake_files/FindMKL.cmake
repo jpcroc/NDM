@@ -51,12 +51,27 @@ if (${PKG_CONFIG_FOUND})
     set(MKL_LIBRARY_DIRS ${PKGC_MKL_LIBRARY_DIRS})
     set(MKL_LDFLAGS ${PKGC_MKL_LDFLAGS})
     set(MKL_CFLAGS ${PKGC_MKL_CFLAGS})
-    set(MKL_INCLUDE /home/catB/jd270899/softwares/oneAPI/oneapi/mkl/2023.2.0/include)
+    set(MKL_INCLUDE ${PKGC_MKL_INCLUDE_DIRS})
+endif()
+
+if (NOT PKGC_MKL_FOUND) 
+# For Topaze :
+# In case mkl is not found or there is no pkg config
+# and no MKLConfig.cmake is provided by MKL_DIR
+# we try to guess the libraries name and hope LD_LIBRARY_PATH is correctly set.
+    message(STATUS "Trying common library names. Set the environment variable MKL_DIR with the path to MKLConfig.cmake for more reliability.")
+    list(APPEND MKL_LIBRARIES mkl_intel_${MKL_INTERFACE} mkl_${MKL_THREADING} mkl_core pthread m dl)
+    list(APPEND MKL_LDFLAGS  -lmkl_intel_${MKL_INTERFACE} -lmkl_${MKL_THREADING} -lmkl_core pthread -lm -ldl)
 endif()
 
 if (ENABLE_SCALAPACK)
     list(APPEND MKL_LIBRARIES mkl_scalapack_${MKL_INTERFACE} mkl_blacs_${MKL_MPI}_${MKL_INTERFACE})
     list(APPEND MKL_LDFLAGS -lmkl_scalapack_${MKL_INTERFACE} -lmkl_blacs_${MKL_MPI}_${MKL_INTERFACE})
+endif()
+
+if (ENABLE_BLAS95)
+    list(APPEND MKL_LIBRARIES mkl_blas95_${MKL_INTERFACE})
+    list(APPEND MKL_LDFLAGS -lmkl_blas95_${MKL_INTERFACE})
 endif()
 
 

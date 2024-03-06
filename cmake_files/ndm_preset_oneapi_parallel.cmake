@@ -22,6 +22,7 @@ set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0" CACHE STRING "" FORCE)
 # --------------------- cmake options ------------------------
 set( NDM_OPT_TRACE OFF CACHE BOOL "trace all variables for cmake debug" FORCE )
 set( NDM_OPT_COMPILE_DOC OFF CACHE BOOL "Compile documentation" FORCE )
+set( NDM_OPT_COMPILE_TESTS "Allows test compilation" OFF FORCE )
 
 # ------------------- MKL configuration ----------------------
 set(ENABLE_SCALAPACK OFF CACHE STRING "Scalapack" FORCE)

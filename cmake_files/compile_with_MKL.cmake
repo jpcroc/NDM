@@ -8,12 +8,8 @@
 function(compile_with_MKL)
     # Using custom FindMKL.cmake
     if (NOT DEFINED ENV{MKL_DIR})
-    find_package(MKL)
+        find_package(MKL)
     else()
-        set(MKL_CONFIG ON)
-        find_package(MKL CONFIG)
-    endif()
-    if(NOT MKL_FOUND)
         set(MKL_CONFIG ON)
         find_package(MKL CONFIG)
     endif()

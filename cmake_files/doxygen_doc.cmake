@@ -4,15 +4,13 @@ function(doxygen_doc)
     set(QUIET_DOXYGEN YES)
 
     get_target_property(SOURCE_LIST ${TARGET_NAME} SOURCES)
-    #get_target_property(SOURCE_MAIN milady_main.exe SOURCES)
-    #list(APPEND SOURCE_LIST ${SOURCE_MAIN})
     string(REPLACE ";" " " SOURCE_LIST_2 "${SOURCE_LIST}")
 
     find_package(Doxygen)
 
     if (DOXYGEN_FOUND)
         set(DOXYGEN_IN ${PROJECT_SOURCE_DIR}/cmake_files/Doxyfile.in)
-        set(DOXYGEN_OUT ${PROJECT_SOURCE_DIR}/Doxyfile)
+        set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
     
         configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
         message(STATUS "Doxygen build started")
