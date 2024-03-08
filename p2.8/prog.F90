@@ -104,25 +104,40 @@ contains
        boxndm=>boxs
     end if
 
-    if ((lax).or.(lsigat).or.(lprteat).or.(llangevin).or.(l2t))then
-       atdml=>atdme
-       atdme%lax=lax
-       atdme%lsigat=lsigat
-       atdme%lprteat=lprteat
-       atdme%llangevin=.false.
-       if ((llangevin).or.(l2t)) atdme%llangevin=.true.
-    elseif(itetimestep.gt.0) then
-       atdml=>atdmd
-    else
-       select case(dmtype)
-       case(30,32,34,33,19,35,12)
-          atdml=>atdm
-       case(41,42)
-          atdml=>atdmarps
-       case default
+    select case(dmtype)
+    case(41,42)
+       atdml=>atdmarps
+       if ((lax).or.(lsigat).or.(lprteat).or.(llangevin)) then
+          atdmarps%lax=lax
+          atdmarps%lsigat=lsigat
+          atdmarps%lprteat=lprteat
+          if (llangevin) then
+             atdmarps%llangevin=.true.
+          else
+             atdmarps%llangevin=.false.
+          end if
+       end if
+    case default
+       if ((lax).or.(lsigat).or.(lprteat).or.(llangevin).or.(l2t))then
+          atdml=>atdme
+          atdme%lax=lax
+          atdme%lsigat=lsigat
+          atdme%lprteat=lprteat
+          atdme%llangevin=.false.
+          if ((llangevin).or.(l2t)) atdme%llangevin=.true.
+       elseif(itetimestep.gt.0) then
           atdml=>atdmd
-       end select
-    end if
+       else
+          select case(dmtype)
+          case(30,32,34,33,19,35,12)
+             atdml=>atdm
+          case(41,42)
+             atdml=>atdmarps
+          case default
+             atdml=>atdmd
+          end select
+       end if
+    end select
     im=0 ; nvois=0
     atdml%imm_glob=imm
     imm_glob=imm

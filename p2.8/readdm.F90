@@ -44,7 +44,7 @@ contains
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
-    use arps_mod,only:kmin,kmax!,lxyz
+    use arps_mod,only:kmin,kmax,noxyzkmin,noxyzkmax,lpartarps!,lxyz
     use plottpcel_mod,only:iplotcel
 
 
@@ -64,7 +64,7 @@ contains
     character :: fnamdin*80
     logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr
     integer::itecfg,np2
-    logical :: lpconx,lpcony,lpconz,lpconxyz
+    logical :: lpconx,lpcony,lpconz,lpconxyz,ltest
     !-----------------------------------------------
     !
     !
@@ -92,7 +92,8 @@ contains
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,iplotcel,&
-         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit
+         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
+         &noxyzkmin,noxyzkmax,lpartarps
 
 
     !
@@ -377,6 +378,9 @@ contains
     ldecalcor=.true.
     kmin=0. ! min kinetic energy for arps
     kmax=0. ! max kinetic energy for arps
+    lpartarps=.false.
+    noxyzkmin(1:3)=-1
+    noxyzkmax(1:3)=1000000
     iteprtkin=-1
     iplotcel=0 ! triggers the detailled analysis of ltpcel (0or 2  =std; 1 or 2=specific)
     lspecialinit=.false. ! driver for specail initialization : cascade, press or heat burst etc.
@@ -917,7 +921,12 @@ contains
        if (lpr) then
           dmtype=88
        else
-          dmtype=4
+          ltest=.false.
+          if ((dmtype==4).or.(dmtype==41).or.(dmtype==42))ltest=.true.
+          if (.not.ltest)then
+             write(6,*)'llangevin only with dmtype =4,41, 42'
+             call arret_ndm
+          end if
        end if
     end if
 

@@ -335,11 +335,12 @@ module plottpcel_mod
     else
        nx(3)=1
     end if
-    ratiox(1)=celcf%nox/nx(1);    ratiox(2)=celcf%nox/nx(2);    ratiox(3)=celcf%nox/nx(3)
+
+    ratiox(1)=celcf%nox/nx(1);    ratiox(2)=celcf%noy/nx(2);    ratiox(3)=celcf%noz/nx(3)
     natperc=celcf%noxyz*celcf%natperc/nx(1)*nx(2)*nx(3)
-!    write(6,*)'POINT1'
+
     call slice%cell_config%init(box,nx(1),nx(2),nx(3),natperc,ltpc=.true.,latomalloc=.false.)
-!    write(6,*)'POINT2'
+
     slice%ncs=celcf%noxyz/slice%noxyz
     allocate(slice%indc(slice%ncs,slice%noxyz))
     allocate(ncs(slice%noxyz))
@@ -351,10 +352,10 @@ module plottpcel_mod
        kos=1+ixs(1)+slice%nox*(ixs(2)+slice%noy*ixs(3))
        ncs(kos)=ncs(kos)+1
        slice%indc(ncs(kos),kos)=iko
-          slice%nato(kos)=slice%nato(kos)+celcf%nato(iko)
+       slice%nato(kos)=slice%nato(kos)+celcf%nato(iko)
        
-       end do
-!    write(6,*)'RANG',slice%nato
+    end do
+    !    write(6,*)'RANG',slice%nato
     
     do iko=1,slice%noxyz
        if (slice%ncs.ne.ncs(iko)) then
@@ -362,7 +363,7 @@ module plottpcel_mod
        end if
     end do
 
-
+ 
     
   end subroutine build_slice
   
