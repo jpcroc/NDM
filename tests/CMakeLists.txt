@@ -47,7 +47,7 @@ foreach( atest IN LISTS simpletests )
 
   set_tests_properties(${atest} PROPERTIES TIMEOUT 60)  # 60s timeout
 
-  #target_link_libraries( ${atest}.exe PRIVATE libndm )
+  #target_link_libraries( ${atest}.exe PRIVATE ${MAIN_LIBRARY_NAME} )
 endforeach()
 
 foreach( atest IN LISTS preprosimpletests )
@@ -58,7 +58,7 @@ foreach( atest IN LISTS preprosimpletests )
   add_test( NAME ${atest} COMMAND ${atest}.exe )
   set_tests_properties(${atest} PROPERTIES TIMEOUT 30)
 
-  #target_link_libraries( ${atest}.exe PRIVATE libndm )
+  #target_link_libraries( ${atest}.exe PRIVATE ${MAIN_LIBRARY_NAME} )
 endforeach()
 
 

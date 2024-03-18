@@ -1,8 +1,5 @@
 # no subdirectory
 
-
-
-
 log_warning( "NDM gets fortran sources in ${CMAKE_CURRENT_SOURCE_DIR}" )
 file( GLOB NDM_LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/[^.]*.F90" )
 file( GLOB NDM_MAIN_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/main.F90" )
@@ -24,9 +21,8 @@ if (NOT "MPI" IN_LIST NDM_PACKAGE_LIST)
     list( REMOVE_ITEM NDM_LIB_SOURCES ${NDM_REMOVE})  
 endif()
 
-add_library( libndm STATIC ${NDM_LIB_SOURCES} )
-set_target_properties(libndm PROPERTIES LINKER_LANGUAGE Fortran)  # Important when c++ is enabled for lammps, without this line c++ linker takes priority over Fortran
-target_sources( libndm PRIVATE ${NDM_LIB_SOURCES} )
+set_target_properties(${MAIN_LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE Fortran)  # Important when c++ is enabled for lammps, without this line c++ linker takes priority over Fortran
+target_sources( ${MAIN_LIBRARY_NAME} PRIVATE ${NDM_LIB_SOURCES} )
 
 #foreach( TMP ${NDM_MAIN_SOURCES} )
 #  log_warning( "add_executable ${TMP} ndm_main.exe"}
@@ -36,9 +32,5 @@ set_target_properties(ndm_main.exe PROPERTIES LINKER_LANGUAGE Fortran)  # Import
 
 #endforeach()
 
-#add_dependencies(ndm_main.exe libndm)
-target_link_libraries( ndm_main.exe PRIVATE libndm )
-
-
-#install( TARGETS libndm DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
-install( TARGETS ndm_main.exe DESTINATION ${CMAKE_INSTALL_PREFIX}/bin )
+#add_dependencies(ndm_main.exe ${MAIN_LIBRARY_NAME})
+target_link_libraries( ndm_main.exe PRIVATE ${MAIN_LIBRARY_NAME} )

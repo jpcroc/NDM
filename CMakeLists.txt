@@ -19,8 +19,8 @@ elseif (NOT ${VAR_IFORT} STREQUAL "VAR_IFORT-NOTFOUND") # if mpiifort not not fo
     set(NDM_PRESET_TITLE "Compile NDM intel serial : ifort" CACHE STRING "")
     set(CMAKE_Fortran_COMPILER "${VAR_IFORT}" CACHE STRING "")
 elseif (NOT ${VAR_MPIFORT} STREQUAL "VAR_MPIFORT-NOTFOUND") # if mpifort not not found, then GNU parallel
-    set(NDM_PRESET_TITLE "Compile NDM GNU parallel : mpifort" CACHE STRING "")
-    set(CMAKE_Fortran_COMPILER "${VAR_MPIFORT}" CACHE STRING "")
+    set(NDM_PRESET_TITLE "Compile NDM GNU parallel : gfortran" CACHE STRING "")
+    set(CMAKE_Fortran_COMPILER "${VAR_GFORTRAN}" CACHE STRING "")
     set(NDM_GNU ON)
     set(NDM_PARA ON)
 elseif (NOT ${VAR_GFORTRAN} STREQUAL "VAR_GFORTRAN-NOTFOUND") # if mpifort not not found, then GNU serial
@@ -51,6 +51,7 @@ set(MKL_MPI "intelmpi" CACHE STRING "MPI")
 set(ENABLE_SCALAPACK OFF CACHE STRING "Scalapack" )
 set(MKL_THREADING "sequential" CACHE STRING "Threading")
 set(MKL_INTERFACE "lp64" CACHE STRING "Interface")
+set(MKL_ARCH "intel64" CACHE STRING "Architecture")
 
 list(APPEND TMP_COMPILE_DEFINITION "MKL")
 set(NDM_COMPILE_DEFINITION ${TMP_COMPILE_DEFINITION} CACHE STRING "List of definitions for preprocessor")
@@ -102,8 +103,6 @@ foreach( PACKAGE IN ITEMS ${${PROJECT_NAME}_PACKAGE_LIST})
     log_info("Compile ${PROJECT_NAME} with ${PACKAGE} ")
     include(compile_with_${PACKAGE})
     cmake_language(CALL compile_with_${PACKAGE})        #cmake 3.18
-    link_libraries(${${PROJECT_NAME}_${PACKAGE}_LIBRARIES})
-    include_directories( SYSTEM  ${${PROJECT_NAME}_${PACKAGE}_INCLUDE_DIR} )
 endforeach()
 
 
@@ -121,11 +120,31 @@ endforeach()
 
 
 ################################################
-# set paths mod executables
+# set paths to modules and executables
 ################################################
-set( CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod )
-set( EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin )
 
+# setting locations in the build directory
+set( CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
+
+################################################
+#   set targets and sources
+################################################
+
+# Define main library to add source files to in subdirectories
+set(MAIN_LIBRARY_NAME "ndm")
+add_library( ${MAIN_LIBRARY_NAME} STATIC )
+
+# adding required libraries to main library
+foreach( PACKAGE IN ITEMS ${${PROJECT_NAME}_PACKAGE_LIST})
+    target_link_libraries(${MAIN_LIBRARY_NAME} ${${PROJECT_NAME}_${PACKAGE}_LIBRARIES})
+    target_link_directories(${MAIN_LIBRARY_NAME} PUBLIC ${${PROJECT_NAME}_${PACKAGE}_LIBRARY_DIRS})
+    target_include_directories( ${MAIN_LIBRARY_NAME} PUBLIC ${${PROJECT_NAME}_${PACKAGE}_INCLUDE_DIR} )
+endforeach()
+
+# reading src/CMakeLists.txt
 add_subdirectory( src )
 
 if (${PROJECT_NAME}_OPT_COMPILE_TESTS)
@@ -133,12 +152,30 @@ if (${PROJECT_NAME}_OPT_COMPILE_TESTS)
     add_subdirectory( tests )
 endif()
 
+# Defines target to install
+install( TARGETS ${MAIN_LIBRARY_NAME} ndm_main.exe)
+
+################################################
+# PKG-Config
+# generates .pc file at installation
+################################################
+
+install(CODE "
+    set(PROJECT_NAME ${PROJECT_NAME})
+    set(MAIN_LIBRARY_NAME ${MAIN_LIBRARY_NAME})
+    set(PROJECT_HOMEPAGE_URL ${PROJECT_HOMEPAGE_URL})
+    set(PROJECT_VERSION ${PROJECT_VERSION})
+    set(PROJECT_DESCRIPTION ${PROJECT_DESCRIPTION})
+    set(PC_FILE_PATH \"\${CMAKE_INSTALL_PREFIX}/pkgconfig\")
+    configure_file(${CMAKE_SOURCE_DIR}/cmake_files/liblibrary.pc.in \${PC_FILE_PATH}/lib${MAIN_LIBRARY_NAME}.pc @ONLY)
+    message(STATUS \"pkg-config file: \${PC_FILE_PATH}/lib${MAIN_LIBRARY_NAME}.pc\" )
+")
+
 ################################################
 # DOXYGEN Documentation
 ################################################
 # Must be after source files definition
 
-set(TARGET_NAME libndm)
 if( ${PROJECT_NAME}_OPT_COMPILE_DOC )
   doxygen_doc()
 endif()
