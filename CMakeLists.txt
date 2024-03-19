@@ -135,7 +135,15 @@ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
 
 # Define main library to add source files to in subdirectories
 set(MAIN_LIBRARY_NAME "ndm")
+set(MAIN_EXECUTABLE_NAME "rundm90_ndm")
+if ("MPI" IN_LIST ${PROJECT_NAME}_PACKAGE_LIST)
+    string(APPEND MAIN_EXECUTABLE_NAME "_mpi")
+else()
+    string(APPEND MAIN_EXECUTABLE_NAME "_serial")
+endif()
+#include_directories("/home/catB/jd270899/.local/include/lammps")
 add_library( ${MAIN_LIBRARY_NAME} STATIC )
+target_include_directories( ${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/.local/include/lammps" )
 
 # adding required libraries to main library
 foreach( PACKAGE IN ITEMS ${${PROJECT_NAME}_PACKAGE_LIST})
@@ -153,7 +161,7 @@ if (${PROJECT_NAME}_OPT_COMPILE_TESTS)
 endif()
 
 # Defines target to install
-install( TARGETS ${MAIN_LIBRARY_NAME} ndm_main.exe)
+install( TARGETS ${MAIN_LIBRARY_NAME} ${MAIN_EXECUTABLE_NAME})
 
 ################################################
 # PKG-Config
