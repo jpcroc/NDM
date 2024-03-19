@@ -165,7 +165,7 @@ install(CODE "
     set(MAIN_LIBRARY_NAME ${MAIN_LIBRARY_NAME})
     set(PROJECT_HOMEPAGE_URL ${PROJECT_HOMEPAGE_URL})
     set(PROJECT_VERSION ${PROJECT_VERSION})
-    set(PROJECT_DESCRIPTION ${PROJECT_DESCRIPTION})
+    set(PROJECT_DESCRIPTION \"${PROJECT_DESCRIPTION}\")
     set(PC_FILE_PATH \"\${CMAKE_INSTALL_PREFIX}/pkgconfig\")
     configure_file(${CMAKE_SOURCE_DIR}/cmake_files/liblibrary.pc.in \${PC_FILE_PATH}/lib${MAIN_LIBRARY_NAME}.pc @ONLY)
     message(STATUS \"pkg-config file: \${PC_FILE_PATH}/lib${MAIN_LIBRARY_NAME}.pc\" )
