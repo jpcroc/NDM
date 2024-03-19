@@ -58,7 +58,7 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: i,itapp,nfp,iti
+    integer :: i,nfp
     !-----------------------------------------------
     namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint,typint,timecdp,lcrearead,ncreadp
 
@@ -146,7 +146,7 @@ contains
   end subroutine initcdp
   !**********************************************************
   subroutine creadp(atdml,celndm,boxndm,psc)
-    USE var_pot, ONLY:ntyp,ty
+    USE var_pot, ONLY:ntyp
     implicit none
     type atomvac_typ
        integer,allocatable,dimension(:)::iproc,natg,iloc,ityp
@@ -165,15 +165,15 @@ contains
 
     type(atomvac_typ)::atomvac
     type(atomint_typ)::atomint
-    integer :: ic,j,ntry,iti,i,natyp,nvactot,iat,ivac,ivacloc,ivactot,jvac,ninttot,iproc
-    integer :: itapp,npp
-    integer :: idep,itinser
-    integer :: iposI,iint,natgm
-    real(double) :: a1,a2,a3,c1,c2,c3,z1,r2,rd,z3,z2, edt,dimin
-    real(double),dimension(3):: xdec, xavant,xapres,xpositest
-    real(double), dimension(1,3) :: cv
+    integer :: ntry,iti,i,natyp,nvactot,iat,ivac,ivacloc,ivactot,jvac,ninttot,iproc
+    integer :: npp
+    integer :: itinser
+    integer :: iint,natgm
+    real(double) :: z1,dimin
+    real(double),dimension(3)::xpositest
+
     real(double),dimension(3)::x0,xi
-    real(double),dimension(:),allocatable:: edrat
+
     integer,allocatable::nb_at_typ(:),last_at_typ(:),iatvac(:)
     integer :: iclose
     logical::l2close,lcloseP

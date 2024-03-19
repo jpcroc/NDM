@@ -8,7 +8,7 @@ module mod_para
 #endif
   use T_kind_param_m, ONLY:  double 
   use gen_com_m ,only:l2t,rang
-  USE atomconfig,only:atom_config,atom_config_d,atom_config_e
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e,atom_config_arps
   USE cellconfig,only:cell_config
   USE boxconfig, only:box_config
   implicit none
@@ -88,6 +88,29 @@ contains
   !------------------------------------------------------------------------!
   ! Procedure pour la mise a jour des valeurs tabdensity des atomes 
   ! fantomes sur les processeurs.
+
+  subroutine maj_atomes_frt_part(atcf,cellcf,boxcf,psc,caracT)
+    implicit none
+    type(cell_config),target::cellcf
+    class(atom_config),target::atcf
+    type(para_space_config)::psc
+    type(box_config)::boxcf
+    character(len=*),intent(in)::caracT
+
+    integer::ne    ,nvi,nvl,nvr
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat; m=mov(arps)
+
+    atmp=> atcf
+    celmp=>cellcf
+    ne=0
+    call envoi_atomes_frontieres_part(psc,caracT,nvi,nvl,nvr)     ! On envoit les atomes frontieres aux processeurs voisins
+    call reception_atomes_fantomes_part (psc,caracT,nvi,nvl,nvr)    ! On receptionne les nouveaux atomes fantomes
+    call finalisation_envoi_atomes(ne,psc,nvi,nvl,nvr)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
+
+
+  end subroutine maj_atomes_frt_part
 
   subroutine maj_tabdensity_ftm(tabdensity,imm,natR,num_at_glob,psc,im) !appelée dans calfoeamcel
 
@@ -204,6 +227,13 @@ contains
        if (atmp%llangevin)        nb_var_dbl=nb_var_dbl+3 !eat
        if (atmp%lax)        nb_var_dbl=nb_var_dbl+3 !eat
     end select
+    select type (atmp)
+    class is (atom_config_arps)
+       nb_var_dbl=nb_var_dbl+3 !fpr
+       if (allocated(atmp%rho)) nb_var_dbl=nb_var_dbl+1  ! ,rho
+       nb_var_int = nb_var_int+1 !mov
+       if (allocated(atmp%fpg)) nb_var_dbl=nb_var_dbl+3
+    end select
 
 !!$  if ((llangevin.eqv..true.).or.(l2T.eqv..true.))then
 !!$     nb_var_dbl = nb_var_dbl+3
@@ -243,7 +273,7 @@ contains
           cellf = psc%cell_ftm(ncell_ftm)
           if (celmp%proc_cell(cellf)==procv) then
 
-             ! On boucle sur les atomes de cette cellule
+             ! On boucle sur les atomes de cette cellule (ce ne sont que des anciens atomes locaux car la liste est construite par caltabt sur les atomes de i à im).
              do n_at= 1, celmp%nato(cellf)
                 i_at = celmp%atincel(n_at,cellf)
                 ! On complete le buffer
@@ -255,6 +285,10 @@ contains
                 send_buff_int(2,send_nb_val(nproc_voisin),nproc_voisin) = atmp%ielat(i_at)
                 !                send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = iwmax(i_at)
                 send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = atmp%num_at_glob(i_at)
+                select type (atmp)
+                class is (atom_config_arps)
+                   send_buff_int(4,send_nb_val(nproc_voisin),nproc_voisin) = atmp%mov(i_at)
+                end select
 
                 send_buff_dbl(1,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xp(1,i_at)
                 send_buff_dbl(2,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xp(2,i_at)
@@ -274,6 +308,7 @@ contains
                    send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
                    send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
                 end select
+                ival=12
                 select type (atmp)
                 class is (atom_config_e)
 !!$                   send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
@@ -282,7 +317,6 @@ contains
 !!$                   send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
 !!$                   send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
 !!$                   send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
-                   ival=12
                    if (atmp%lprteat)then
                       ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%eat(i_at)
                    end if
@@ -304,6 +338,22 @@ contains
                       end do
                    end if
                 end select
+                select type (atmp)
+                class is (atom_config_arps)
+                   do ic3=1,3
+                      ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%fpr(ic3,i_at)
+                   end do
+                   if (allocated(atmp%rho)) then 
+                      ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%rho(i_at)
+                   end if
+                   if (allocated(atmp%fpg)) then
+                      do ic3=1,3
+                         ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%fpg(ic3,i_at)
+                      end do
+                   end if
+                end select
+
+                
              enddo  ! fin de boucle sur les atomes
           endif
        enddo    ! fin de boucle sur les cellules fantomes
@@ -371,7 +421,11 @@ contains
           atmp%ielat(atmp%im)       = recv_buff_int(2,i_at,ind_recv)
           !          iwmax(im)       = recv_buff_int(3,i_at,ind_recv)
           atmp%num_at_glob(atmp%im) = recv_buff_int(3,i_at,ind_recv)
-
+          select type (atmp)
+          class is (atom_config_arps)
+             atmp%mov(atmp%im) = recv_buff_int(4,i_at,ind_recv)
+          end select
+          atmp%proc_at(atmp%im)=rang
           ! mise a jour des donnees de la cellule correspondante
           celmp%nato(atmp%ielat(atmp%im)) = celmp%nato(atmp%ielat(atmp%im)) + 1
           celmp%atincel(celmp%nato(atmp%ielat(atmp%im)),atmp%ielat(atmp%im)) = atmp%im
@@ -394,6 +448,7 @@ contains
              atmp%xpp(2,atmp%im) = recv_buff_dbl(11,i_at,ind_recv) 
              atmp%xpp(3,atmp%im) = recv_buff_dbl(12,i_at,ind_recv)
           end select
+          ival=12
           select type (atmp)
           class is (atom_config_e)
 !!$             atmp%vp(1,atmp%im) = recv_buff_dbl(7,i_at,ind_recv) 
@@ -402,7 +457,6 @@ contains
 !!$             atmp%xpp(1,atmp%im) = recv_buff_dbl(10,i_at,ind_recv) 
 !!$             atmp%xpp(2,atmp%im) = recv_buff_dbl(11,i_at,ind_recv) 
 !!$             atmp%xpp(3,atmp%im) = recv_buff_dbl(12,i_at,ind_recv)
-             ival=12
              if (atmp%lprteat)then
                 ival =ival+1
                 atmp%eat(atmp%im)=recv_buff_dbl(ival,i_at,ind_recv)
@@ -426,9 +480,23 @@ contains
                 end do
              end if
           end select
+          select type (atmp)
+          class is (atom_config_arps)
+             do ic3=1,3
+                ival =ival+1; atmp%fpr(ic3,atmp%im)= recv_buff_dbl(ival,i_at,ind_recv)
+             end do
+             if (allocated(atmp%rho)) then
+                ival =ival+1; atmp%rho(atmp%im)= recv_buff_dbl(ival,i_at,ind_recv)
+             end if
+             if (allocated(atmp%fpg)) then
+                do ic3=1,3
+                   ival =ival+1; atmp%fpg(ic3,atmp%im)= recv_buff_dbl(ival,i_at,ind_recv)
+                end do
+             end if
+
+          end select
 
        enddo
-
     enddo   ! fin de boucle sur les processeurs voisins
 
   end subroutine reception_nouveaux_atomes
@@ -498,6 +566,7 @@ contains
           ! Si les deux pointeurs ne sont pas au meme point, on deplace l'atome courant
           if ( i_new.ne.i_at ) then
              atmp%xp(:,i_new)  = atmp%xp(:,i_at)
+             atmp%lgul(i_new)  = atmp%lgul(i_at)
              !LPARAFULLSEND
 
              !             ax(:,i_new)  = ax(:,i_at)
@@ -523,6 +592,13 @@ contains
                 if (atmp%lsigat)        atmp%sigat(:,:,i_new)  = atmp%sigat(:,:,i_at)
                 if (atmp%llangevin)        atmp%glangv(:,i_new)  = atmp%glangv(:,i_at)
                 if (atmp%lax)        atmp%ax(:,i_new)  = atmp%ax(:,i_at)
+             end select
+             select type (atmp)
+             class is (atom_config_arps)
+                atmp%fpr(:,i_new) = atmp%fpr(:,i_at)
+                atmp%mov(i_new) = atmp%mov(i_at)
+                if (allocated(atmp%rho)) atmp%rho(i_new)  = atmp%rho(i_at)
+                if (allocated(atmp%fpg))atmp%fpg(:,i_new)  = atmp%fpg(:,i_at)
              end select
     
 
@@ -623,6 +699,16 @@ contains
        if (atmp%lax)        nb_var_dbl=nb_var_dbl+3 !eat
 !       write(6,*)'FLAGS', atmp%lprteat,atmp%lsigat,atmp%llangevin,atmp%lax
     end select
+    select type (atmp)
+    class is (atom_config_arps)
+       nb_var_dbl=nb_var_dbl+3
+       if (allocated(atmp%rho))        nb_var_dbl=nb_var_dbl+1
+       if (allocated(atmp%fpg))        nb_var_dbl=nb_var_dbl+3
+       !fprrho!vp xpp
+       nb_var_int =     nb_var_int +1 !mov
+
+           
+    end select
 !    write(6,*)'nb_var_dbl2',nb_var_dbl
     allocate(send_nb_val(psc%nbr_proc_voisin))
     allocate(send_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
@@ -672,6 +758,10 @@ contains
              send_buff_int(2,send_nb_val(nproc_voisin),nproc_voisin) = atmp%ielat(i_at)
              !             send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = iwmax(i_at)
              send_buff_int(3,send_nb_val(nproc_voisin),nproc_voisin) = atmp%num_at_glob(i_at)
+             select type (atmp)
+             class is (atom_config_arps)
+                send_buff_int(4,send_nb_val(nproc_voisin),nproc_voisin) = atmp%mov(i_at)
+             end select
 
              send_buff_dbl(1,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xp(1,i_at)
              send_buff_dbl(2,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xp(2,i_at)
@@ -690,8 +780,8 @@ contains
                 send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
                 send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
              end select
+             ival=12
              select type (atmp)
-           
              class is (atom_config_e)
 !!$                send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
 !!$                send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
@@ -699,7 +789,6 @@ contains
 !!$                send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
 !!$                send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
 !!$                send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
-                ival=12
                 if (atmp%lprteat)then
                    ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%eat(i_at)
                 end if
@@ -720,6 +809,21 @@ contains
                       ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%ax(ic3,i_at)
                    end do
                 end if
+             end select
+             select type (atmp)
+             class is (atom_config_arps)
+                do ic3=1,3
+                   ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%fpr(ic3,i_at)
+                end do
+                if (allocated(atmp%rho)) then
+                   ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%rho(i_at)
+                end if
+                if (allocated(atmp%fpg)) then
+                   do ic3=1,3
+                      ival =ival+1;; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%fpg(ic3,i_at)
+                   end do
+                end if
+
              end select
           enddo
           
@@ -747,13 +851,14 @@ contains
   ! Procedure en charge d'attendre la fin des envois des atomes (frontieres
   ! ou fantomes) et la liberation des buffers d'envoi
 
-  subroutine finalisation_envoi_atomes(ne,psc)
+  subroutine finalisation_envoi_atomes(ne,psc,nb_var_int,nb_var_lgc,nb_var_dbl)
 
     USE T_kind_param_m, ONLY:  double
 
     implicit none
     type(para_space_config)::psc
     integer,intent(in)::ne
+    integer,optional::nb_var_int,nb_var_lgc,nb_var_dbl
     integer :: nproc_voisin
 
     !    integer, allocatable :: send_status(:,:,:)
@@ -762,29 +867,53 @@ contains
     !    allocate(send_status(MPI_STATUS_SIZE,psc%nbr_proc_voisin,4))
 
     ! Attente de finalisation des envois 
-
-    do nproc_voisin= 1, psc%nbr_proc_voisin
-       call MPI_Wait( send_rqst(nproc_voisin,1), status, ierr )
-       call MPI_Wait( send_rqst(nproc_voisin,2), status, ierr )
-       call MPI_Wait( send_rqst(nproc_voisin,3), status, ierr )
-       if (ne==4) call MPI_Wait( send_rqst(nproc_voisin,4), status, ierr )
-    enddo
-
+    if(present(nb_var_int)) then
+       do nproc_voisin= 1, psc%nbr_proc_voisin
+          call MPI_Wait( send_rqst(nproc_voisin,1), status, ierr )
+          call MPI_Wait( send_rqst(nproc_voisin,2), status, ierr )
+          if (nb_var_dbl.gT.0) call MPI_Wait( send_rqst(nproc_voisin,3), status, ierr )
+          if (nb_var_lgc.gT.0) call MPI_Wait( send_rqst(nproc_voisin,4), status, ierr )
+       end do
+    else
+       
+       do nproc_voisin= 1, psc%nbr_proc_voisin
+          call MPI_Wait( send_rqst(nproc_voisin,1), status, ierr )
+          call MPI_Wait( send_rqst(nproc_voisin,2), status, ierr )
+          call MPI_Wait( send_rqst(nproc_voisin,3), status, ierr )
+          if (ne==4) call MPI_Wait( send_rqst(nproc_voisin,4), status, ierr )
+       enddo
+    end if
     ! Liberation des buffers
 
     !    deallocate(send_status)
-    deallocate(send_rqst)
-    deallocate(send_nb_val)
-    deallocate(send_buff_int)
-    if (ne==4)deallocate(send_buff_lgc)
-    deallocate(send_buff_dbl)
-
-    deallocate(recv_rqst)
-    deallocate(recv_nb_val)
-    deallocate(recv_buff_int)
-    if (ne==4)    deallocate(recv_buff_lgc)
-    deallocate(recv_buff_dbl)
-
+    if(present(nb_var_int)) then
+       if (nb_var_dbl.gT.0) then
+          deallocate(send_buff_dbl)
+          deallocate(recv_buff_dbl)
+       end if
+       if (nb_var_lgc.gT.0)then
+          deallocate(send_buff_lgc)
+          deallocate(send_buff_lgc)
+       end if
+       deallocate(send_rqst)
+       deallocate(send_nb_val)
+       deallocate(send_buff_int)
+       deallocate(recv_rqst)
+       deallocate(recv_nb_val)
+       deallocate(recv_buff_int)
+    else
+       deallocate(send_rqst)
+       deallocate(send_nb_val)
+       deallocate(send_buff_int)
+       if (ne==4)deallocate(send_buff_lgc)
+       deallocate(send_buff_dbl)
+       
+       deallocate(recv_rqst)
+       deallocate(recv_nb_val)
+       deallocate(recv_buff_int)
+       if (ne==4)    deallocate(recv_buff_lgc)
+       deallocate(recv_buff_dbl)
+    end if
   end subroutine finalisation_envoi_atomes
 
 
@@ -834,6 +963,10 @@ contains
           atmp%ielat(pt_at_ftm) = recv_buff_int(2,i_at,ind_recv)
           !          iwmax(pt_at_ftm) = recv_buff_int(3,i_at,ind_recv)
           atmp%num_at_glob(pt_at_ftm) = recv_buff_int(3,i_at,ind_recv)
+          select type (atmp)
+          class is (atom_config_arps)
+             atmp%mov(pt_at_ftm) = recv_buff_int(4,i_at,ind_recv)
+          end select
 
           ! mise a jour des donnees de la cellule correspondante
           celmp%nato(atmp%ielat(pt_at_ftm)) = celmp%nato(atmp%ielat(pt_at_ftm)) + 1
@@ -859,6 +992,7 @@ contains
              atmp%xpp(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv) 
              atmp%xpp(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
           end select
+          ival=12
           select type (atmp)
           class is (atom_config_e)
 !!$             atmp%vp(1,pt_at_ftm) = recv_buff_dbl(7,i_at,ind_recv) 
@@ -867,7 +1001,7 @@ contains
 !!$             atmp%xpp(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv) 
 !!$             atmp%xpp(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv) 
 !!$             atmp%xpp(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
-             ival=12
+
              if (atmp%lprteat)then
                 ival =ival+1
                 atmp%eat(pt_at_ftm)=recv_buff_dbl(ival,i_at,ind_recv)
@@ -891,12 +1025,26 @@ contains
                 end do
              end if
           end select
+          select type (atmp)
+          class is (atom_config_arps)
+             do ic3=1,3
+                ival =ival+1;atmp%fpr(ic3,pt_at_ftm)= recv_buff_dbl(ival,i_at,ind_recv)
+             end do
+             if (allocated(atmp%rho)) then
+                ival =ival+1;atmp%rho(pt_at_ftm)= recv_buff_dbl(ival,i_at,ind_recv)
+             end if
+             if (allocated(atmp%fpg)) then
+                do ic3=1,3
+                   ival =ival+1;atmp%fpg(ic3,pt_at_ftm)= recv_buff_dbl(ival,i_at,ind_recv)
+                end do
+             end if
+          end select
 
 
        enddo
 
     enddo   ! fin de boucle sur les processeurs voisins
-
+    atmp%imf=pt_at_ftm
   end subroutine reception_atomes_fantomes
 
   !------------------------------------------------------------------------!
@@ -1225,6 +1373,528 @@ contains
     enddo   ! fin de boucle sur les processeurs voisins
 
   end subroutine reception_fp_frontieres
+
+
+  subroutine envoi_atomes_frontieres_part(psc,caracT,nb_var_int,nb_var_lgc,nb_var_dbl)
+
+    USE T_kind_param_m, ONLY:  double
+
+    implicit none
+    type(para_space_config)::psc
+    character(len=*),intent(in)::caracT
+    integer::nb_var_int,nb_var_lgc,nb_var_dbl
+    integer :: nproc_voisin
+    integer :: ncell_front
+    integer :: procv
+    integer :: koo
+    integer :: nb_at,nb_at_max,nb_at_max_tot
+    integer :: n_at
+    integer :: i_at
+    integer::nvi,nvl,nvr
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat; m=mov(arps)   
+
+    ! Boucle a vide pour determiner au mieux la taille du buffer d'envoi 
+    nb_at_max = 0
+    do nproc_voisin = 1, psc%nbr_proc_voisin
+       nb_at=0
+       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
+          nb_at = nb_at + celmp%nato(psc%cell_frontiere(nproc_voisin,ncell_front))
+       enddo
+       nb_at_max = max(nb_at_max, nb_at)
+    enddo
+    call MPI_ALLREDUCE(nb_at_max,nb_at_max_tot,1,MPI_INTEGER,MPI_MAX,MPI_COMM_space,ierr)
+    nb_at_max=nb_at_max_tot
+    ! petite manip pour eviter le cas nb_at_max=0
+    nb_at_max = max(nb_at_max,1)
+
+    ! Allocation des buffers
+    nb_var_int = 0
+    nb_var_lgc = 0
+    nb_var_dbl = 0  
+
+    !    if(scan('n',caract).ne.0)  then
+    nb_var_int=nb_var_int+1
+    !    end if
+    if(scan('i',caracT).ne.0) then
+       nb_var_int=nb_var_int+1
+    end if
+    if(scan('e',caracT).ne.0) then
+       nb_var_int=nb_var_int+1
+    end if
+    if(scan('p',caracT).ne.0) then
+       nb_var_int=nb_var_int+1
+    end if
+    if(scan('l',caracT).ne.0)  then
+       nb_var_lgc=nb_var_lgc+1
+    end if
+    if(scan('x',caracT).ne.0)   then
+       nb_var_dbl=nb_var_dbl+3
+    end if
+    if(scan('f',caracT).ne.0) then
+       nb_var_dbl=nb_var_dbl+3
+    end if
+
+
+    select type (atmp)
+    class is  (atom_config_d)
+       if(scan('v',caracT).ne.0) then
+          nb_var_dbl=nb_var_dbl+3
+       end if
+       if(scan('r',caracT).ne.0) then
+          nb_var_dbl=nb_var_dbl+3
+       end if
+    end select
+    select type (atmp)
+    class is  (atom_config_e)
+       if (atmp%lprteat)then
+          if(scan('u',caracT).ne.0) then
+             nb_var_dbl=nb_var_dbl+1
+          end if
+       end if
+       if (atmp%llangevin)then
+          if(scan('g',caracT).ne.0) then
+             nb_var_dbl=nb_var_dbl+3
+          end if
+       end if
+       if (atmp%lax)then
+          if(scan('a',caracT).ne.0) then
+             nb_var_dbl=nb_var_dbl+3
+          end if
+       end if
+       if (atmp%lsigat)then
+          if(scan('s',caracT).ne.0) then
+             nb_var_dbl=nb_var_dbl+9
+          end if
+       end if
+    end select
+    select type (atmp)
+    class is  (atom_config_arps)
+       if(scan('m',caracT).ne.0) then
+          nb_var_int=nb_var_int+1
+       end if
+    end select
+
+
+    !    write(6,*)'nb_var_dbl2',nb_var_dbl
+    allocate(send_nb_val(psc%nbr_proc_voisin))
+     allocate(send_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
+    if(nb_var_lgc.gt.0)    allocate(send_buff_lgc(nb_var_lgc,nb_at_max,psc%nbr_proc_voisin))
+    if(nb_var_dbl.gt.0)    allocate(send_buff_dbl(nb_var_dbl,nb_at_max,psc%nbr_proc_voisin))
+    allocate(send_rqst(psc%nbr_proc_voisin,4))
+    allocate(recv_nb_val(psc%nbr_proc_voisin))
+     allocate(recv_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
+    if(nb_var_lgc.gt.0)    allocate(recv_buff_lgc(nb_var_lgc,nb_at_max,psc%nbr_proc_voisin))
+    if(nb_var_dbl.gt.0)    allocate(recv_buff_dbl(nb_var_dbl,nb_at_max,psc%nbr_proc_voisin))
+    allocate(recv_rqst(psc%nbr_proc_voisin,4))
+
+    ! Preparation des receptions
+    do nproc_voisin = 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
+       call MPI_IRECV(recv_nb_val(nproc_voisin), 1, MPI_INTEGER, procv, 2001, MPI_COMM_space, recv_rqst(nproc_voisin,1), ierr)
+       call MPI_IRECV(recv_buff_int(1,1,nproc_voisin), nb_var_int*nb_at_max, MPI_INTEGER, procv, 2002, &
+            MPI_COMM_space, recv_rqst(nproc_voisin,2), ierr)
+       if(nb_var_dbl.gt.0) &
+            &call MPI_IRECV(recv_buff_dbl(1,1,nproc_voisin), nb_var_dbl*nb_at_max, NDM_MPI_REAL_DOUBLE, procv, 2003, &
+            MPI_COMM_space, recv_rqst(nproc_voisin,3), ierr)
+       if(nb_var_lgc.gt.0)&
+            &call MPI_IRECV(recv_buff_lgc(1,1,nproc_voisin), nb_var_lgc*nb_at_max, MPI_LOGICAL, procv, 2004, &
+            MPI_COMM_space, recv_rqst(nproc_voisin,4), ierr)
+
+    enddo
+
+
+    ! On boucle sur les processeurs voisins
+    do nproc_voisin = 1, psc%nbr_proc_voisin
+       procv = psc%proc_voisin(nproc_voisin)
+
+       send_nb_val(nproc_voisin) = 0
+
+       ! On boucle sur les cellules frontieres associees au processeur
+       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
+          koo = psc%cell_frontiere(nproc_voisin,ncell_front)
+
+          ! On copie le contenu de la cellule dans le buffer d'envoi
+          do n_at = 1, celmp%nato(koo)
+             i_at = celmp%atincel(n_at,koo)
+             send_nb_val(nproc_voisin) = send_nb_val(nproc_voisin) + 1
+
+             nvi=0;nvl=0;nvr=0
+
+             !             if(scan('n',caracT).ne.0)  then
+             nvi=nvi+1
+             send_buff_int(nvi,send_nb_val(nproc_voisin),nproc_voisin) = atmp%num_at_glob(i_at)
+             !             end if
+             if(scan('i',caracT).ne.0) then
+                nvi=nvi+1
+                send_buff_int(nvi,send_nb_val(nproc_voisin),nproc_voisin) = atmp%ityp(i_at)
+             end if
+             if(scan('e',caracT).ne.0) then
+                nvi=nvi+1
+                send_buff_int(nvi,send_nb_val(nproc_voisin),nproc_voisin) = atmp%ielat(i_at)
+             end if
+             if(scan('p',caracT).ne.0) then
+                nvi=nvi+1
+                send_buff_int(nvi,send_nb_val(nproc_voisin),nproc_voisin) = atmp%proc_at(i_at)
+             end if
+             if(scan('l',caracT).ne.0)  then
+                nvl=nvl+1
+                send_buff_lgc(nvl,send_nb_val(nproc_voisin),nproc_voisin) = atmp%lgul(i_at)
+             end if
+             if(scan('x',caracT).ne.0)   then
+                nvr=nvr+1
+                send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xp(1,i_at)
+                nvr=nvr+1
+                send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xp(2,i_at)
+                nvr=nvr+1
+                send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xp(3,i_at)
+             end if
+             if(scan('f',caracT).ne.0) then
+                nvr=nvr+1
+                send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%fp(1,i_at)
+                nvr=nvr+1
+                send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%fp(2,i_at)
+                nvr=nvr+1
+                send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%fp(3,i_at)
+             end if
+
+             select type (atmp)
+             class is  (atom_config_d)
+                if(scan('v',caracT).ne.0) then
+                   nvr=nvr+1
+                   send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
+                   nvr=nvr+1
+                   send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
+                   nvr=nvr+1
+                   send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
+                end if
+                if(scan('r',caracT).ne.0) then
+                   nvr=nvr+1
+                   send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
+                   nvr=nvr+1
+                   send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
+                   nvr=nvr+1
+                   send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
+
+                end if
+             end select
+
+
+             select type (atmp)
+             class is  (atom_config_e)
+                if (atmp%lprteat)then
+                   if(scan('u',caracT).ne.0) then
+                      nvr=nvr+1
+                      send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%eat(i_at)
+                   end if
+                end if
+                if (atmp%llangevin)then
+                   if(scan('g',caracT).ne.0) then
+                      do ic3=1,3
+                         nvr=nvr+1; send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%glangv(ic3,i_at)
+                      end do
+                   end if
+                end if
+                if (atmp%lax)then
+                   if(scan('a',caracT).ne.0) then
+                      do ic3=1,3
+                         nvr=nvr+1; send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%ax(ic3,i_at)
+                      end do
+                   end if
+                end if
+                if (atmp%lsigat)then
+                   if(scan('s',caracT).ne.0) then
+                      do ic1=1,3
+                         do ic2=1,3
+                            nvr=nvr+1; send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%sigat(ic1,ic2,i_at)
+                         end do
+                      end do
+
+                   end if
+                end if
+             end select
+             select type (atmp)
+             class is  (atom_config_arps)
+                if(scan('m',caracT).ne.0) then
+                   nvi=nvi+1
+                   send_buff_int(nvi,send_nb_val(nproc_voisin),nproc_voisin) = atmp%mov(i_at)
+                end if
+             end select
+
+             if (nvi.ne.nb_var_int) then
+                write(6,*)'pb val int part',rang,nvi,nb_var_int
+                call arret_ndm
+             end if
+             if (nvl.ne.nb_var_lgc) then
+                write(6,*)'pb val log part',rang,nvl,nb_var_lgc
+                call arret_ndm
+             end if
+             if (nvr.ne.nb_var_dbl) then
+                write(6,*)'pb val real part',rang,nvr,nb_var_dbl
+                call arret_ndm
+             end if
+
+          enddo
+
+       enddo   ! fin de boucle sur les cellules
+
+       ! On envoit les buffers vers le processeur
+       call MPI_ISEND(send_nb_val(nproc_voisin),      1,   MPI_INTEGER,        &
+            procv,2001,MPI_COMM_space,send_rqst(nproc_voisin,1),ierr)
+
+
+            call MPI_ISEND(send_buff_int(1,1,nproc_voisin),nb_var_int*nb_at_max,MPI_INTEGER,        &
+            procv,2002,MPI_COMM_space,send_rqst(nproc_voisin,2),ierr)
+
+       if (nb_var_dbl.ne.0)    &
+            &call MPI_ISEND(send_buff_dbl(1,1,nproc_voisin),nb_var_dbl*nb_at_max,NDM_MPI_REAL_DOUBLE,&
+            procv,2003,MPI_COMM_space,send_rqst(nproc_voisin,3),ierr)
+       if (nb_var_lgc.ne.0)   &
+            &call MPI_ISEND(send_buff_lgc(1,1,nproc_voisin),nb_var_lgc*nb_at_max,MPI_LOGICAL,        &
+            procv,2004,MPI_COMM_space,send_rqst(nproc_voisin,4),ierr)
+
+
+    enddo   ! fin de boucle sur les processeurs voisins
+
+
+  end subroutine envoi_atomes_frontieres_part
+
+  !------------------------------------------------------------------------!
+  ! Procedure en charge d'attendre la fin des envois des atomes (frontieres
+  ! ou fantomes) et la liberation des buffers d'envoi
+
+
+
+  !------------------------------------------------------------------------!
+  ! Procedure en charge de la reception des nouveaux atomes fantomes en 
+  ! provenance des processeurs voisins
+
+  subroutine reception_atomes_fantomes_part(psc,caracT,nb_var_int,nb_var_lgc,nb_var_dbl) !seulement MAJ
+
+    USE T_kind_param_m, ONLY:  double
+
+    implicit none
+    type(para_space_config)::psc
+    character(len=*),intent(in)::caracT
+    integer::nb_var_int,nb_var_lgc,nb_var_dbl
+    integer :: proc_source
+    integer :: i_at
+    integer :: nproc_voisin
+    integer :: pt_at_ftm
+    integer :: ind_recv,natgt
+
+    integer :: nb_at_max,nb_at,ic,ic1,ic2,iloc,nvi,nvl,nvr
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat; m=mov(arps)   
+
+    ! On place le pointeur de stockage des atomes fantomes a la suite des 
+    ! atomes locaux
+    pt_at_ftm = atmp%im
+
+!!$    nb_var_int = 0
+!!$    nb_var_lgc = 0
+!!$    nb_var_dbl = 0  
+!!$
+!!$    !    if(scan('n',carac).ne.0)  then 
+!!$    'n'
+!!$    nb_var_int=nb_var_int+1
+!!$    !    end if
+!!$    if(scan('i',carac).ne.0) then
+!!$       nb_var_int=nb_var_int+1
+!!$    end if
+!!$    if(scan('e',carac).ne.0) then
+!!$       nb_var_int=nb_var_int+1
+!!$    end if
+!!$    if(scan('p',carac).ne.0) then
+!!$       nb_var_int=nb_var_int+1
+!!$    end if
+!!$    if(scan('l',carac).ne.0)  then
+!!$       nvb_var_lgc=nb_var_lgc+1
+!!$    end if
+!!$    if(scan('x',carac).ne.0)   then
+!!$       nb_var_dbl=nb_var_dbl+3
+!!$    end if
+!!$    if(scan('f',carac).ne.0) then
+!!$       nb_var_dbl=nb_var_dbl+3
+!!$    end if
+!!$
+!!$
+!!$    select type (atmp)
+!!$    class is  (atom_config_d)
+!!$       if(scan('v',carac).ne.0) then
+!!$          nb_var_dbl=nb_var_dbl+3
+!!$       end if
+!!$       if(scan('r',carac).ne.0) then
+!!$          nb_var_dbl=nb_var_dbl+3
+!!$       end if
+!!$    end select
+!!$    select type (atmp)
+!!$    class is  (atom_config_e)
+!!$       if (atmp%lprteat)then
+!!$          if(scan('u',carac).ne.0) then
+!!$             nb_var_dbl=nb_var_dbl+1
+!!$          end if
+!!$       end if
+!!$       if (atmp%llangevin)then
+!!$          if(scan('g',carac).ne.0) then
+!!$             nb_var_dbl=nb_var_dbl+3
+!!$          end if
+!!$       end if
+!!$       if (atmp%lax)then
+!!$          if(scan('a',carac).ne.0) then
+!!$             nb_var_dbl=nb_var_dbl+3
+!!$          end if
+!!$       end if
+!!$       if (atmp%lsigat)then
+!!$          if(scan('s',carac).ne.0) then
+!!$             nb_var_dbl=nb_var_dbl+9
+!!$          end if
+!!$       end if
+!!$    end select
+!!$    select type (atmp)
+!!$    class is  (atom_config_arps)
+!!$       if(scan('m',carac).ne.0) then
+!!$          nb_var_int=nb_var_int+1
+!!$       end if
+!!$    end select
+!!$
+
+    ! On boucle sur les processeurs voisins
+    do nproc_voisin=1,psc%nbr_proc_voisin
+
+       call MPI_WAITANY(psc%nbr_proc_voisin,recv_rqst(:,1),ind_recv,status,ierr)
+       proc_source = psc%proc_voisin(ind_recv)
+
+       ! Reception des nouveaux atomes issus de ce processeur voisin
+       call MPI_WAIT(recv_rqst(ind_recv,2), status, ierr)
+       if(nb_var_dbl.gt.0)        call MPI_WAIT(recv_rqst(ind_recv,3), status, ierr)
+       if(nb_var_lgc.gt.0)        call MPI_WAIT(recv_rqst(ind_recv,4), status, ierr)
+       !       write(6,*)'indice nbv',ind_recv,recv_nb_val(ind_recv)
+       ! recopie des infos dans les tableaux locaux au niveau des atomes fantomes
+       loopfant:       do i_at = 1, recv_nb_val(ind_recv)
+
+
+          nvi=0;nvl=0;nvr=0
+
+          do iloc=atmp%im+1,atmp%imm
+             natgt=recv_buff_int(1,i_at,ind_recv)
+             if (atmp%num_at_glob(iloc)==recv_buff_int(1,i_at,ind_recv)) then
+!                if (natgt==1) write(6,*)'RANG iloc TROUVE', rang,natgt,iloc
+                nvi=1
+                if(scan('i',caracT).ne.0) then
+                   nvi=nvi+1
+                   atmp%ityp(iloc)  = recv_buff_int(nvi,i_at,ind_recv)
+                end if
+                if(scan('e',caracT).ne.0) then
+                   nvi=nvi+1
+                   atmp%ielat(iloc)  = recv_buff_int(nvi,i_at,ind_recv)
+                end if
+                if(scan('p',caracT).ne.0) then
+                   nvi=nvi+1
+                   atmp%proc_at(iloc)  = recv_buff_int(nvi,i_at,ind_recv)
+                end if
+                if(scan('l',caracT).ne.0)  then
+                   nvl=nvl+1
+                   atmp%lgul(iloc)  = recv_buff_lgc(nvl,i_at,ind_recv)
+
+                end if
+                if(scan('x',caracT).ne.0)   then
+                   nvr=nvr+1
+                   atmp%xp(1,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                   nvr=nvr+1
+                   atmp%xp(2,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                   nvr=nvr+1
+                   atmp%xp(3,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+
+
+                end if
+                if(scan('f',caracT).ne.0) then
+                   nvr=nvr+1
+                   atmp%fp(1,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                   nvr=nvr+1
+                   atmp%fp(2,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                   nvr=nvr+1
+                   atmp%fp(3,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                end if
+
+
+                select type (atmp)
+                class is  (atom_config_d)
+                   if(scan('v',caracT).ne.0) then
+                      nvr=nvr+1
+                      atmp%vp(1,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                      nvr=nvr+1
+                      atmp%vp(2,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                      nvr=nvr+1
+                      atmp%vp(3,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                   end if
+                   if(scan('r',caracT).ne.0) then
+                      nvr=nvr+1
+                      atmp%xpp(1,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                      nvr=nvr+1
+                      atmp%xpp(2,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                      nvr=nvr+1
+                      atmp%xpp(3,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                   end if
+                end select
+                select type (atmp)
+                class is  (atom_config_e)
+                   if (atmp%lprteat)then
+                      if(scan('u',caracT).ne.0) then
+                         nvr=nvr+1
+                         atmp%eat(iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                      end if
+                   end if
+                   if (atmp%llangevin)then
+                      if(scan('g',caracT).ne.0) then
+                         nvr=nvr+1
+                         atmp%glangv(1,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                         nvr=nvr+1
+                         atmp%glangv(2,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                         nvr=nvr+1
+                         atmp%glangv(3,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+
+                      end if
+                   end if
+                   if (atmp%lax)then
+                      if(scan('a',caracT).ne.0) then
+                         nvr=nvr+1
+                         atmp%ax(1,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                         nvr=nvr+1
+                         atmp%ax(2,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                         nvr=nvr+1
+                         atmp%ax(3,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+
+                      end if
+                   end if
+                   if (atmp%lsigat)then
+                      if(scan('s',caracT).ne.0) then
+                         do ic1=1,3
+                            do ic2=1,3
+                               nvr=nvr+1;  atmp%sigat(ic1,ic2,iloc)= recv_buff_dbl(nvr,i_at,ind_recv) 
+                            end do
+                         end do
+
+                      end if
+                   end if
+                end select
+                select type (atmp)
+                class is  (atom_config_arps)
+                   if(scan('m',caracT).ne.0) then
+                      nvi=nvi+1;atmp%mov(iloc)= recv_buff_dbl(nvr,i_at,ind_recv) 
+                   end if
+                end select
+                cycle loopfant
+
+             end if
+          end do
+          write(6,*)'RANG iloc non trouvé', natgt
+       end do loopfant
+
+    end do
+  end subroutine reception_atomes_fantomes_part
 
 #endif
   

@@ -34,8 +34,8 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: j1, l, i1, i2,k
-    real(double) :: aux1, aux2, aux3, r, r3, a0, b1, b2, b3, b4, som, r4, r5&
+    integer :: j1, l, i1, i2
+    real(double) :: aux2, r, r3, a0, b1, b2, b3, b4, som, r4, r5&
          , rbohr, r2, c1, c2, c3, c4, som1
     real(double), dimension(npair,0:5) :: zie
     real(double), dimension(npair) :: decal
@@ -166,14 +166,14 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: l, i1, i2, l1, l2, ll,k
+    integer :: l, i1, i2, k
     real(double) :: sk
     real(double) :: aux3, pi, rbohr, roff12, roff13, roff14, roff15, roff22, &
          roff23, roff25, rdif, rsom, rmid, roff24, eta,  c1, c2, c3, c4, &
-         alpi, a0, b1, b2, b3, b4, abmh, aux1, aux2, r, r2, r3, som, v1&
-         , vd1, vdd1, v1mid, vd1mid, damp, ar, v2, vd2, v2mid, x1, xd1, xdd1, &
+         alpi, a0, b1, b2, b3, b4, aux1, aux2, r, r2, r3, som, v1&
+         , vd1, vdd1, v1mid, vd1mid, v2, vd2, v2mid, x1, xd1, xdd1, &
          x2, xd2, xdd2, vala1, vala2, vala3, valc1, valc2, valc3, valc4, vdd2, &
-         r4,r5,r6, r7, r8,Nv2,Nvd2,Nvdd2,Nv2mid,drk
+         Nv2,Nvd2,Nvdd2,Nv2mid,drk
     !-----------------------------------------------
     !   E x t e r n a l   F u n c t i o n s
     !-----------------------------------------------

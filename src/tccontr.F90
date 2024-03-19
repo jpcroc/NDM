@@ -4,7 +4,7 @@ module tccontr
   USE atomconfig,only:atom_config_d
   use cellconfig,only: cell_config,caltabtC
   use boxconfig,only:box_config,periodbox
-  use gen_com_m,only:lperiod,tfcou
+  use gen_com_m,only:lperiod,tfcou,epcou,couxyz
   USE calctemp_mod,only: calctemp
   use notperiod_mod,only:notperiod
 
@@ -12,50 +12,69 @@ module tccontr
 
 contains
 
-  subroutine contrTcou(atcf,celcf,boxcf,epcou)
+  subroutine contrTcou(atcf,celcf,boxcf)
 
     ! **************************************************************
     implicit none
     class(atom_config_d),intent(inout)::atcf
     class(cell_config),intent(inout)::celcf
     class(box_config)::boxcf
-    real(double)::epcou
-    integer :: i, ic,j,k,l,m,n,im,imm
+!    real(double)::epcou
+    integer :: i, im,imm,ic
     type(atom_config_d)::atcou
     type(cell_config):: celcou
     real(double),allocatable::xpnp(:,:)
-    real(double)::epc1,epc2,epc3,kinecou,tempcou
+    real(double)::epc(3),kinecou,tempcou
+    logical:: lgs(atcf%imm)
+
+
     imm =atcf%imm; im=atcf%im
     ALLOCATE(xpnp(3,imm))
     call notperiod(im,atcf%xp,xpnp,boxcf%at,boxcf%bg,lperiod)       
 
     call cryst_to_cart (im, xpnp, boxcf%bg, -1) ! cart vers cryst
-    epc1 = epcou/boxcf%at(1,1)
-    epc2 = epcou/boxcf%at(2,2)
-    epc3 = epcou/boxcf%at(3,3)
+    do ic=1,3
+       epc(ic) = epcou/boxcf%at(ic,ic)
+    end do
     tempcou = 0.d0
 
-
+    lgs=atcf%lgul
+    
     atcf%lgul=.false.
     celcou=celcf
 
-    do i = 1, im
-       if (.not.(xpnp(1,i)<epc1.or.xpnp(1,i)>1.0-epc1.or.xpnp(2,i)<&
-            epc2.or.xpnp(2,i)>1.0-epc2.or.xpnp(3,i)<epc3.or.xpnp(3,i)>&
-            1.0-epc3)) cycle
-       atcf%lgul(i)=.true.
-    end do
-
-    call atcf%fab(atcou,lback=.false.)
+    loopi: do i = 1, im
+       do ic=1,3
+          if (couxyz(ic)==1) then 
+             if (xpnp(ic,i)<epc(ic).or.xpnp(ic,i)>1.0-epc(ic)) then
+                atcf%lgul(i)=.true.
+                cycle loopi
+             end if
+          end if
+       end do
+    end do loopi
+!    call atcf%print(unit=600)
+    call atcf%fab(atcou,lback=.true.)
     call caltabtC(celcou,atcou,lperiod,boxcf)
     call calctemp(tempcou,kinecou,atcou,celcou)
-    do i=1,im
-       if (atcf%lgul(i)) then
-          atcf%xpp(:,i)=atcf%xp(:,i)-(atcf%xp(:,i)-atcf%xpp(:,i))*sqrt(tfcou/tempcou)
-          atcf%vp(:,i)=atcf%vp(:,i)*sqrt(tfcou/tempcou)
-       end if
-    end do
+!    write(6,*)'TCOU',tempcou,tfcou,atcou%im,atcf%im
+!!$    do i=1,im
+!!$       if (atcf%lgul(i)) then
+!!$          atcf%xpp(:,i)=atcf%xp(:,i)-(atcf%xp(:,i)-atcf%xpp(:,i))*sqrt(tfcou/tempcou)
+!!$          atcf%vp(:,i)=atcf%vp(:,i)*sqrt(tfcou/tempcou)
+!!$       end if
+!!$    end do
 
+!    do i=1,atcou%im
+!       if (atcf%lgul(i)) then
+          atcou%xpp(:,:)=atcou%xp(:,:)-(atcou%xp(:,:)-atcou%xpp(:,:))*sqrt(tfcou/tempcou)
+          atcou%vp(:,:)=atcou%vp(:,:)*sqrt(tfcou/tempcou)
+!       end if
+!    end do
+    call atcou%backto(atcf)
+
+    atcf%lgul=lgs
+ !   call atcf%print(unit=601)
   end subroutine contrTcou
 
 end module tccontr

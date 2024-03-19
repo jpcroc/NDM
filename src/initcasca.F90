@@ -44,10 +44,10 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: i, ic, i1,ikoloc
+    integer :: i
     real(double) :: z1, z2, z3, t1, t2, t3, znorm, aux1
 
-    integer :: iti, expos, imax
+    integer ::  expos, imax
     real(double) :: tifac1, tifac2, lts, tseuil, vmax2
     real(double), dimension(:),allocatable :: vpmod2
     real(double) :: masstot, vpi(3)
@@ -57,8 +57,8 @@ contains
 
 
 #ifdef PARA
-    real(double), dimension(2) :: max_loc
-    integer :: ityp_max
+
+
     type(atom_config_e)::atcfcasc
     type(para_config),target::Cpara
     type(cell_config),target::celcasc

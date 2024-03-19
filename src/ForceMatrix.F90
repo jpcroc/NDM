@@ -46,7 +46,7 @@ contains
     type(box_config)::boxfm
     type(cell_config)::celfm
 
-    integer::ideb,ifin,natl,nq,i,i1,i2,ic2,ic1,im,it1,it2,im3,ic,idecal
+    integer::ideb,ifin,nq,i,i1,i2,ic2,ic1,im,it1,it2,im3,ic,idecal
     real(double)::eig
     real(double),allocatable::FMat(:,:)
     real(double),allocatable::Fpzero(:,:)

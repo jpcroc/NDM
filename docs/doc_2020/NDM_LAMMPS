@@ -1,0 +1,59 @@
+
+## NDM and LAMMPS
+
+TODO traduction and formattage
+
+```
+NDM peut utiliser lammps comme subroutine de forces et contraintes.
+
+utilise liblammps_serial.a
+
+compilation de NDM avec make LAMMPS_VERSION=1 (voir les ifdef correspondants)
+crée rundm90_lammps
+
+Utilisation de rundm90_lammps :
+1/dans .din :
+ipotentiel =-10 potentiel lammps sans charge variable
+OU
+ipotentiel =-11 potentiel lammps à charge variable
+Ce choix joue sur les fichiers data et sur les fichiers potentiels
+
+Préciser units_lammps (e.g. units_lammps='metal') définit les changements d'unités entre lammps et NDM
+2/potentiel dans NDM : simple.potin
+exemple ipotentiel =-10
+1 ! nb de types
+6.0 rue
+55.84700 26 'Fe'
+exemple ipotentiel =-11 (avec la charge initiale en plus)
+ 2 ! nb de types
+11.0 rue
+15.9994 8.0 'O ' -1.613626              ! CM, numero atomique(O), ty, Q
+238.03  92.0 'U'  3.227252
+
+3/NDM va créer un fichier conf.lmp avec la configuration de départ à partir de .gin ou .cin
+
+4/ IL faut avoirun fichier in.lammps avec la description minimale de la configuration de lammps. Exemple:
+units		metal
+atom_style      atomic
+atom_modify     map array
+box tilt large
+read_data        conf.lmp
+mass       1  55.84500
+pair_style	eam/alloy
+pair_coeff      * *        M07_eam.fs Fe
+
+5/ in .lammps contient le nom du fichier de potentiel (ici M07_eam.fs ) qui doit être présent.
+
+Le code a été testé pour des calculs NVE et NPH en eam et SMTBQ. Les changements de repères entre NDM et LAMMPS sont gérés automatiquement. Pas besoin que la boite NDM soit conforme au format lammps.
+
+Programmation :
+Ca repose sur des appels de lammps dans NDM, à coup de call lammps-open_..., call lammps_gather, etc. voir ndm_lammps.F90.
+N.B. Pour les contraintes , on a été obligé de coder en dur la dimension du tableau des contraintes dans LAMMPS.F90:
+    if (id=="thermo_press") then
+       Cvectorsize=6
+       vectorsize = int(Cvectorsize, kind(vectorsize))
+       return
+    endif
+    Ca n'est pas glorieux mais ça marche...
+
+```

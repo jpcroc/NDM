@@ -33,7 +33,7 @@ contains
 
 
     type(atom_config)::atdep
-    integer :: ndeplatot,i,iatdep,im,iti,lufilm,est_present
+    integer :: ndeplatot,i,iatdep,im,iti,est_present
     integer , dimension(ntyp) :: ndepla
     real(double),allocatable:: deplat(:)
     real(double)::ddep,deptot

@@ -64,10 +64,10 @@ contains
     !******************************************************************
     implicit none
     integer :: i1, i2, i3, i4, koo, ko1, ko2, i, iti1,&
-         j, k, m,m1,ka,ma,m2
+         j, k, m,ka
     real(double) :: thetaijk, &
-         incre,dik2,dik
-    real(double) :: costheta,invincre,rspace2,cv(1,3)
+         incre
+    real(double) :: costheta,invincre
     real(double),allocatable::rc2(:,:),rc22(:,:)
     !-----------------------------------------------
     class(atom_config),intent(in)::atadf
@@ -145,13 +145,12 @@ contains
   subroutine adfT(adfc)
     implicit none
     type(adf_typ)::adfc
-    integer :: i1, i2, i3, i4, koo, ko1, ko2, i, &
-         j, k, m,m1,lutriplet,ka,ma,m2
+    integer :: i1, i2, i3, lutriplet
 
-    real(double) :: thetaijk,incre
-    real(double) :: rspace2, invincre, &
-         costheta
-    real(double) :: aaa,bbb,ccc
+    real(double) :: incre
+    real(double) :: rspace2, invincre
+         
+    real(double) :: aaa
     real(double), dimension(ntyp,ntyp,ntyp) :: intfda,angle
     character :: triplet1*20,triplet2*20,triplet3*20
     integer :: lenftriplet1,lenftriplet2,lenftriplet3
@@ -159,6 +158,7 @@ contains
     character :: ftripletangle*80,ftrip*80
     integer :: lusauvfda
     character :: charsauvfda*8
+    integer::m1,m2
     !-----------------------------------------------
 
     incre = (adfc%thetamax-adfc%thetamin)/adfc%contmax

@@ -42,7 +42,7 @@ contains
     integer :: i, l, k, j
 
     real(double) :: bmh, r, r2, r3, r4, r5, r6, r8
-    real(double) :: factor, ar, ar2
+    real(double) :: factor
 
     real(double), dimension(ngrid) ::  kxsp, &
          potpart ,fcpart
@@ -695,8 +695,8 @@ contains
     integer::i,j,l,k
     real(double)::r,r2,r3,ar,ar2,damp,damprc,arc,term2,term3,term4
     real(double), dimension(ngrid) ::  kxsp, &
-         potpart ,fcpart
-    real(double), dimension (ngrid) ::potpartw
+         potpart 
+
     real(double), dimension(ngrid) :: bsppart, csppart, dsppart
 
 

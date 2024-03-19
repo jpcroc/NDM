@@ -17,12 +17,9 @@ contains
     implicit none
 
     class(atom_config_d)::atdml
-    integer :: i, iti, ic,im
+    integer :: i,  ic,im
     real(double), dimension(ntyp) :: aux
-    real(double) :: xprov ,vv
-    real(double), save :: tmoyinst, imesureT
-    real(double) :: tempavant,tmoy
-    real(double) :: deltaE
+    real(double) :: xprov
     real(double):: eatommoy
     im=atdml%im
     if(lEev) then

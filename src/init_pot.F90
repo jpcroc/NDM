@@ -203,7 +203,7 @@ contains
     
     class(box_config)::boxndm
     integer,intent(in)::immT
-    integer::ipotcont,i,j,l
+    integer::ipotcont
     integer,save::iwrt=0
     if ((rang==0).and.(iwrt==0))then
           write(6,*)
@@ -251,7 +251,7 @@ contains
 !    USE gen_com_m, ONLY: rang,A2cm,umass
 !    USE var_pot, ONLY: ntyp, npair, ntrip,cm,catom, ty,rue_pair,ipotentiel,q
     implicit none
-    integer :: i,error, beggin,  endding,lupotin
+    integer :: i,lupotin
     character ::  fnampotin*80
     real(double)::rue,rum
 

@@ -356,15 +356,9 @@ contains
     INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
     real(double)::T1,kin1,tstepN,u1,u2,rga,rgah
     real(double), dimension(1:3) :: xprov
-    real(double):: norme_de_fp, norme_de_vp, pscal,tempcell,pint
+    real(double):: norme_de_fp, norme_de_vp, pscal,tempcell,pint,gs3
     real(double), dimension(ntyp) :: aux
     integer,save::nstep=0
-#ifdef PARA
-    integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
-    real(double) :: zlx, zly, zlz, ux, uy, uz
-
-
-#endif
     select case(dmtype)
     case(24)
        !       write(6,*)'IN',atpr%xp(1,1)
@@ -518,7 +512,14 @@ contains
                    glanh(ic,ic2)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
                 end do
              end do
-             
+             if (lpcube) then
+                gs3=(glanh(1,1)+glanh(2,2)+glanh(3,3))/3.
+                glanh=0.
+                do ic=1,3
+                   glanh(ic,ic)=gs3
+                end do
+             end if
+                
              boxndm%hdot(:,:) = (  boxndm%hdot(:,:)*rgah  &
                   + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:),boxndm%invtrh(:,:) ) &
                   + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)

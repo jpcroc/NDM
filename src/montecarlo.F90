@@ -810,7 +810,7 @@ contains
     real(double) :: Wpreced !sauvegarde Wprec pour posttraitement
     integer :: ipchemin, dir, accepta, ngen
     logical :: lbiais(0:1)
-    integer ::  premier_accept,ia,j
+    integer ::  premier_accept
     real(double) :: pot_moy, pot_wrmc, pot_NC, pot_SC
 
 
@@ -918,7 +918,8 @@ contains
                    epotnp1min=nrjpot_npp(ipchemin)
                    fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
                    write(6,*)'new epotnp1min ', epotnp1min*erg2ev
-                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),&
+                        &box_new1,3,fnamcout,latcomp=.true.)
                 end if
 
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),&
@@ -980,8 +981,8 @@ contains
     real(double) :: pot_moy, pot_wrmc, pot_NC, pot_SC
 
 
-    real(double) :: biais
-    real(double) ::  xprob, xalea
+
+
     real(double) :: theta, beta,xp_np1(3)
     integer :: ipp
     real(double), dimension(nparapath+1) :: xprob_i
@@ -1072,7 +1073,8 @@ contains
                    epotnp1min=nrjpot_npp(ipchemin)
                    fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
                    write(6,*)'new epotnp1min ', epotnp1min*erg2ev
-                   call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+                   call sauvegardeT(config_atom_new_1%atom_config_d&
+                        &,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
                 end if
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),config_cells_nplus1(ipchemin)&
                      &,boxmcgcpath(ipchemin),'SystNP1_accepte')
@@ -1509,9 +1511,9 @@ contains
   subroutine calcul_proba_des
     implicit none
     real(double), dimension(atconf_Nplus1%imm) :: proba
-    integer :: i,j
-    real(double) :: dist_tot, alpha, sum_norm, tot
-    real(double), dimension(3,1) :: coord
+    integer :: i
+    real(double) ::   sum_norm
+
     !       DO i=1, atconf_Nplus1%im
     !          write(6,*)'AV',iteration,atconf_Nplus1%proba(1),atconf_Nplus1%proba(atconf_Nplus1%im)
     !       end DO
@@ -1784,7 +1786,7 @@ contains
     integer :: ind(:), i
     real(double) :: rand, somme
     logical,allocatable::lchosen(:)
-    integer::natyp,iatyp,indT
+    integer::natyp,iatyp
     integer,allocatable::indatyp(:)
     natyp=0
     do i=1,config%im
@@ -1845,7 +1847,7 @@ contains
 
     character(len=*) :: name_file
     logical :: lperiod
-    integer::itapp
+
     lperiod = .true.
     if (lbigmaster) then
        if (itetemp>0) then
@@ -2020,7 +2022,7 @@ contains
 
     character(len=3), intent(in) :: protocol
     integer :: direc 
-    integer :: i,ic, ip, tot,ia,j
+    integer :: i,ic, ip
     real(double) :: Ek_n, Ek_n_plus1, Ek_n_1s4, Ek_n_3s4, dQeff, Qeff,&
          &dWeff, dWork
     real(double) :: U_0, U_1, U_l_n_m1, U_l_n, H_l_n, H_l_n_m1, H_l_ini,work
@@ -2218,7 +2220,7 @@ contains
     implicit none
     integer :: nstep, dir
     character(len=3), intent(in) :: protocol_name
-    real(double) :: alpha
+
 
     !alpha = 1.0 !1.5 !doit etre superieur a 1 pou avoir insertion lente au debut et rapide vers lambda =1
 
@@ -2305,11 +2307,11 @@ contains
 
     integer,intent(in)::ipp
     real(double), allocatable, dimension(:,:) :: cart_vec_nplus1
-    real(double)::distati
+
     integer::i,iplus
     character :: extension*4
     logical ::lc2d
-    character*80::namef
+
     logical::lwrite
     real(double)::pins
     !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
@@ -2459,13 +2461,13 @@ contains
   subroutine initN(ipp) !PARAPATH DEFINIR LES POINTEURS atconf_nplus1 et atconf_n
 
     integer,intent(in)::ipp
-    real(double), dimension(3,1) :: cart_vec_nplus1
-    real(double)::distati,xp_np1(3)
+
+    real(double)::xp_np1(3)
     integer::i,i1,i2,j,iplus
     integer,allocatable::indice(:)
     character :: extension*4
     logical ::lc2d
-    character*80::namef
+
     logical::lwrite
     real(double)::poscenter(3,1),postest(3)
 
@@ -2765,7 +2767,7 @@ contains
 
 
 
-  subroutine copy_atom_mc(atsource,i,atcible,j,lextend)
+  subroutine copy_atom_mc(atsource,i,atcible,j,lextend,caracT)
     implicit none
     class(atom_config_mc), intent(in)::atsource
     !type(atom_config_mc),intent(in)::atsource
@@ -2774,12 +2776,13 @@ contains
     !type(atom_config_mc), intent(inout)::atcible
     integer,intent(in):: j
     logical , optional, intent(in) :: lextend
+    character(len=*),optional,intent(in)::caracT
     logical::let
     let=.false.
     if (present(lextend)) then
        let=lextend
     end if
-    call atsource%atom_config_d%copy_atom(i,atcible,j,let)
+    call atsource%atom_config_d%copy_atom(i,atcible,j,let,caracT='xfniewdlpvrugasm')
     select type(atcible)
     class is (atom_config_mc)
        select type (atsource)
@@ -2809,7 +2812,7 @@ contains
 
     real(double),intent(out)::vec(:,:),pins ,rd! at this point vec should always be (3,1)
     real(double)::poscenter(3,1),postest(3),xins(3)
-    real(double)::zf,zt,zr,fhi,theta,rex,somP,somPm1,dist,r
+    real(double)::zf,zt,zr,fhi,theta,rex,somP,somPm1,dist
     integer::itry,i,iex
     !choose vecteur
     itry=0
@@ -2918,7 +2921,7 @@ contains
 
     character(len=3), intent(in) :: protocol
     integer :: direc 
-    integer :: i,ic, ip, tot,ia,j
+    integer :: i,ic, ip
     real(double) :: Ek_n, Ek_n_plus1, Ek_n_1s4, Ek_n_3s4, dQeff, Qeff,&
          &dWeff, dWork,tempN,tempNP1,kineN,kineNP1,tempx
     real(double) :: U_0, U_1, U_l_n_m1, U_l_n, H_l_n, H_l_n_m1, H_l_ini
@@ -2928,7 +2931,7 @@ contains
     real(double) :: beta,u1,u2
     real(double),dimension(3,3)::glanh
     real(double)  :: Gl(3,atconf_Nplus1%im)
-    real(double)::rga, rga_s4,rgah,rgah_s4
+    real(double)::rga, rga_s4,rgah
 
     real(double), dimension(ntyp) :: aux  !pour les calculs d'acceleration
     integer::rgcib,rgem,iloc,ic2

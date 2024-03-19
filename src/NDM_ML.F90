@@ -58,42 +58,63 @@ contains
        stop
     end if
     
-    if (allocated(cn2m%n_neigh)) deallocate (cn2m%n_neigh); &
-         &allocate (cn2m%n_neigh(cn2m%imm)) !nombre de voisins par atome (<rcut)
-    if (allocated(cn2m%r_ij)) deallocate (cn2m%r_ij); &
-         &allocate (cn2m%r_ij(cn2m%imm, nvperat)) ! distance entre voisin
-    if (allocated(cn2m%u_per)) deallocate (cn2m%u_per);&
-         &allocate (cn2m%u_per(cn2m%imm, nvperat, 3)) ! vecteur des cellule i-j
-    if (allocated(cn2m%u_at)) deallocate (cn2m%u_at); &
-         &allocate (cn2m%u_at(cn2m%imm, nvperat, 3))  ! vecteur 
-    if (allocated(cn2m%type_neigh)) deallocate (cn2m%type_neigh); &
-         &allocate (cn2m%type_neigh(cn2m%imm, nvperat))
-    if (allocated(cn2m%kind_neigh)) deallocate (cn2m%kind_neigh); &
-         &allocate (cn2m%kind_neigh(cn2m%imm, nvperat))
-    if (allocated(cn2m%incell)) deallocate (cn2m%incell); &
-         &allocate (cn2m%incell(cn2m%imm, nvperat))
-    if (allocated(cn2m%u_ij)) deallocate (cn2m%u_ij); &
-         &allocate (cn2m%u_ij(cn2m%imm, nvperat, 3))
+    if (allocated(cn2m%n_neigh)) then
+       deallocate (cn2m%n_neigh)
+       allocate (cn2m%n_neigh(cn2m%imm)) !nombre de voisins par atome (<rcut)
+    end if
+    if (allocated(cn2m%r_ij)) then
+       deallocate (cn2m%r_ij)
+       allocate (cn2m%r_ij(cn2m%imm, nvperat)) ! distance entre voisin
+    end if
+    if (allocated(cn2m%u_per)) then
+       deallocate (cn2m%u_per)
+       allocate (cn2m%u_per(cn2m%imm, nvperat, 3)) ! vecteur des cellule i-j
+    end if
+    if (allocated(cn2m%u_at)) then
+       deallocate (cn2m%u_at)
+       allocate (cn2m%u_at(cn2m%imm, nvperat, 3))  ! vecteur
+    end if
+    if (allocated(cn2m%type_neigh))then
+       deallocate (cn2m%type_neigh)
+       allocate (cn2m%type_neigh(cn2m%imm, nvperat))
+    end if
+    if (allocated(cn2m%kind_neigh))then
+       deallocate (cn2m%kind_neigh)
+       allocate (cn2m%kind_neigh(cn2m%imm, nvperat))
+    end if
+    if (allocated(cn2m%incell)) then
+       deallocate (cn2m%incell)
+       allocate (cn2m%incell(cn2m%imm, nvperat))
+    end if
+    if (allocated(cn2m%u_ij)) then
+       deallocate (cn2m%u_ij)
+       allocate (cn2m%u_ij(cn2m%imm, nvperat, 3))
+    end if
+    if (allocated(cn2m%force))then
+       deallocate (cn2m%force)
+       allocate (cn2m%force(1:3,cn2m%imm))
+    end if
+    if (allocated(cn2m%pos_cart))then
+       deallocate (cn2m%pos_cart)
+       allocate (cn2m%pos_cart(1:3,cn2m%imm))
+    end if
 
-        if (allocated(cn2m%force)) deallocate (cn2m%force); &
-         &allocate (cn2m%force(1:3,cn2m%imm))
-
-        if (allocated(cn2m%pos_cart)) deallocate (cn2m%pos_cart); &
-         &allocate (cn2m%pos_cart(1:3,cn2m%imm))
-
-        if (allocated(cn2m%pos_crst)) deallocate (cn2m%pos_crst); &
-         &allocate (cn2m%pos_crst(1:3,cn2m%imm))
-
-        if (allocated(cn2m%itype)) deallocate (cn2m%itype); &
-         &allocate (cn2m%itype(cn2m%imm))
-        cn2m%n_neigh=0
-        cn2m%r_ij=0
-        cn2m%type_neigh=0
-        cn2m%kind_neigh=0
-        cn2m%u_per=0
-        cn2m%u_at=0
-        cn2m%u_ij=0
-        cn2m%incell=.false.
+    if (allocated(cn2m%pos_crst)) then
+       deallocate (cn2m%pos_crst)
+       allocate (cn2m%pos_crst(1:3,cn2m%imm))
+    end if
+    if (allocated(cn2m%itype)) then
+       deallocate (cn2m%itype)
+       allocate (cn2m%itype(cn2m%imm))
+    end if
+    cn2m%n_neigh=0
+    cn2m%r_ij=0
+    cn2m%type_neigh=0
+    cn2m%kind_neigh=0
+    cn2m%u_per=0
+    cn2m%u_at=0
+    cn2m%u_ij=0
+    cn2m%incell=.false.
     
   end subroutine alloc_sst_ndm
   

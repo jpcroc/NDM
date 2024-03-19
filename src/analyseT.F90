@@ -9,22 +9,26 @@ module analyseT_mod
   use calcextr_mod,only:calfoextr
   USE sauvegardeT_mod,only:sauvegardeT
   use notperiod_mod,only:notperiod
-  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax,zz
+  use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax,zz,potis1,&
+       &cm
   use gen_com_m, only:bk,cunite,fnose,iteanapos,iteangle,itebdv,ecellpr,&
        &itecoordo,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
-       &nfda,pist,pmean,potcp,potis1,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
+       &nfda,pist,pmean,potcp,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
        &tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
        &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,itedepla,tdepla,tdepla2,&
-       & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,iteration,l2T
+       & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,iteration,l2T,iteprtkin
 
-  USE cellconfig,only:cell_config, caltabtC
+  USE cellconfig,only:cell_config, caltabtC,cell_config_arps
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   use boxconfig,only: box_config
-  use Tpara,only:nprocspace
+  use Tpara,only:nprocspace,myidsp
   use calcdepla_mod,only:calcdepla
+  use newunit_mod,only:newunit
+  use plottpcel_mod,only:plottpcel
   implicit none
+
 contains
   ! ************************************************
   !         Sous-programme analyse.f
@@ -49,12 +53,12 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s        
     !-----------------------------------------------
-    integer :: i, iti, ic, ko,kx,ky,kz,formatsauv
+    integer :: i, iti, ic,formatsauv
     real(double), dimension(ntyp) :: temptyp
 
 
     class(atom_config_d)::atdml
-    type(cell_config):: celndm
+    class(cell_config):: celndm
     class(box_config)::boxndm
 
     type(atom_config_d)::attyp
@@ -63,30 +67,15 @@ contains
     real(double) :: ppot, pkin
     real(double) :: a1, a2, a3, b1, b2, b3, c1, c2, c3
     real(double) :: fteta, tbc, tca, tab, amod, bmod, cmod,kinetyp
-    real(double) ::  alat
+
     real(double), save :: volumean,amodmean,bmodmean,cmodmean,tcamean,tabmean,tbcmean
     real(double), dimension(3,3) :: transformation, strain, rotation, invh0
-
-    INTEGER, dimension(:,:), allocatable :: aux_int
-    REAL(kind(0.d0)), dimension(:,:), allocatable :: aux_real
-    CHARACTER(len=20), dimension(:), allocatable :: aux_title
-    CHARACTER(len=100) :: out_file
-    integer,save::ncalceattotm=0, nposmoy=0
-    integer::ipot, nAux_real, n
-
-    !  real(double)::celpP,celpp2,Tcp,Tcp2  
-    real(double)::ptest
-    integer::luvisuc=888,lenfn2,nprt
+    integer::ipot
     character :: extension*9
-    real(double)::xb(3),minp,maxp,mint,maxt
-    real(double)::minpP,maxpP,mintP,maxtP
-    real(double),save::Cminp,Cmaxp,Cmint,Cmaxt
-    real(double),save::CminpP,CmaxpP,CmintP,CmaxtP
-    real(double),save::CminpP2,CmaxpP2,CmintP2,CmaxtP2
-    real(double),save::timelm1=0
-    integer::koo
-
-    logical,save::linitrdf=.false.,linitadf=.false.
+    real(double)::xb(3)
+    integer,save::unitkin
+    real(double)::atkin
+    logical,save::linitrdf=.false.,linitadf=.false.,lopenkin=.false.
 
 
     if (itloopmax==0) itetemp=0
@@ -147,17 +136,21 @@ contains
        if (mod(iteration,itetemp)==0) then
           !          call atdml%print
           call calctemp (temp,kine,atdml,celndm)
-          do iti=1,ntyp
-             atdml%lgul=.false.
-             celtyp=celndm
-             where(atdml%ityp(1:atdml%im)==iti)
-                atdml%lgul(1:atdml%im)=.true.
-             end where
-!             if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
-             call atdml%fab(attyp,lback=.false.)
-             call caltabtC(celtyp,attyp,lperiod,boxndm)
-             call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
-             call celtyp%dealloc ; call attyp%dealloc
+          block
+            logical:: lgs(atdml%imm)
+            lgs=atdml%lgul
+            do iti=1,ntyp
+               atdml%lgul=.false.
+               celtyp=celndm
+               where(atdml%ityp(1:atdml%im)==iti)
+                  atdml%lgul(1:atdml%im)=.true.
+               end where
+               !             if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
+               call atdml%fab(attyp,lback=.false.)
+               call caltabtC(celtyp,attyp,lperiod,boxndm)
+               call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
+               call celtyp%dealloc ; call attyp%dealloc
+
              ! ceci est un test du calcul des forces sur un sous-ensemble des atomes
              !ne fonctionne que pour les pots de paires
 !!$             if (iti==2)then
@@ -167,8 +160,15 @@ contains
 !!$                end do
 !!$                call calfoextr(atdml,celndm,boxndm,psc)
 !!$             end if
-          end do
+            end do
+            atdml%lgul=lgs
+          end block
           ! MPI
+          if (celndm%ltpcel) then
+           call plottpcel(celndm,boxndm,psc=psc)
+             
+          end if
+
           !remarque 1erg = 6.24d11 eV
           if (mod(iteration,itetemp2)==0) then
              if (rang==0) then
@@ -498,6 +498,20 @@ contains
     endif
     if (itebdv>0) then
        if (mod(iteration,itebdv)==0) call bondval(atdml,celndm,boxndm)
+    end if
+
+    if (iteprtkin>0) then
+       if (mod(iteration,iteprtkin)==0) then
+          if (.not.lopenkin) then
+             call newunit(unitkin)
+             open(unitkin, file='prtkin')
+             lopenkin=.true.
+          end if
+          do i=1,atdml%im
+             atkin=erg2ev*(atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2)*0.5*cm(atdml%ityp(i))
+             write(unitkin,*)atkin
+          end do
+       end if
     end if
     return
   end subroutine analyseT

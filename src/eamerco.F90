@@ -20,10 +20,6 @@ contains
                 ipotentiel,typ_pot_pair,lue_typ,lue_paire,lu_roff_pair,&
                 npotentiel,ipo)
 
-
-
-    !
-
     integer, intent(out) :: ntyp                           !nb de type
     integer, intent(out) :: npair                  ! = ntyp*(ntyp+1)/2
     integer, intent(out) :: ntrip                  ! = ntyp*ntyp *(ntyp+1)/2
@@ -43,7 +39,7 @@ contains
 
 
     !local variables
-    integer:: i,l
+    integer:: i
     integer :: lupotin=95
     character ::  fnampotin*80
     fnampotin = 'alerco.potin'
@@ -164,8 +160,8 @@ contains
 
     !-----------------------------------
     ! Debugging with Ercolessi potential
-    REAL(kind(0.d0)) :: r, func, dfunc, d2func
-    r=sqrt(r2)/A2cm
+    REAL(kind(0.d0)) :: func, dfunc, d2func,r
+    r=r2/A2cm
     CALL v2(r, func, dfunc, d2func)
      Erep=func*ev2erg
 !    IF (present(dErep)) dErep=dfunc*ev2erg/A2cm

@@ -24,10 +24,10 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     USE Parrinello_Rahman,only:pr1,initlpr
-    USE Parrinello_Rahman_Nose,only:prnose,fnose,initlprnose
+    USE Parrinello_Rahman_Nose,only:prnose,initlprnose
 
 #ifdef PARA
-  USE Tpara,only:nprocspace
+
   USE mod_para,only:maj_atomes_frt_ftm
 
 #else
@@ -39,14 +39,6 @@ contains
     type(box_config_lpr)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
-#ifdef PARA
-    real(double)::wbox_tot
-    real(double) sigkine_tot(3,3)
-    integer :: nb1, nb2, nb3, i1, l,noxn,noyn,nozn
-    real(double) :: zlx, zly, zlz, ux, uy, uz
-    !real(double), external :: calcvol
-
-#endif
     logical,optional::linit
     logical::lini=.false.
     logical:: lreturn

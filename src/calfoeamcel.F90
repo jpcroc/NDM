@@ -13,7 +13,7 @@ contains
   SUBROUTINE calfoeamcel(atcf,celcf,boxcf,psc)
     USE T_kind_param_m
 
-    USE var_pot, ONLY:ipotentiel,ngrid,potiseam,potisglue,potisrep,rue_pot,&
+    USE var_pot, ONLY:ipotentiel,ngrid,rue_pot,&
          &typ_and_pot,typ_pot_pair,ipotentiel,ngrid,potiseam,potisglue,potisrep,rhomax,rhomin,eamrho,ipo,eamrep,&
          &eamglue,alpha,ntyp
 
@@ -169,7 +169,7 @@ contains
                    sig2p(1:3,1) = sig2p(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
                    sig2p(1:3,2) = sig2p(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
                    sig2p(1:3,3) = sig2p(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
-                   if (lTPcel.EQV..true.) then
+                   if (lcalcsigc.EQV..true.) then
                       sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
                       sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
                       sigc(1:3,3,koo) =sigc(1:3,3,koo) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
@@ -296,7 +296,7 @@ contains
                    sigem(1:3,1) = sigem(1:3,1) - Femb*gradij(1:3)*dxp(1)/boxcf%volu
                    sigem(1:3,2) = sigem(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
                    sigem(1:3,3) = sigem(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
-                   if (lTPcel.EQV..true.) then
+                   if (lcalcsigc.EQV..true.) then
                       sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
                       sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
                       sigc(1:3,3,koo) =sigc(1:3,3,koo) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
@@ -330,13 +330,12 @@ contains
        endif
     end if
 #endif
-    if (test_sigma)sig=sig+sig2p+sigem
+    if (test_sigma)sigcalfo=sigcalfo+sig2p+sigem
 !!$    if (rang==0)    write(6,*)
-!!$    if (rang==0)    write(6,*)sig2p
+!!$    if (rang==0)    write(6,*)'sig2p',sig2p
 !!$    if (rang==0)    write(6,*)
-!!$    if (rang==0)    write(6,*)sigem
+!!$    if (rang==0)    write(6,*)'sigem',sigem
     potiseam=potisglue+potisrep
-
     return
   end SUBROUTINE calfoeamcel
 end module calfoeamcel_mod

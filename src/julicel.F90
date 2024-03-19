@@ -26,16 +26,16 @@ contains
     integer ::iti,itj,itl,ic !types
     integer :: ll !paires
     integer :: k ! position dans les splines
-    real(double) :: rk, drk,ktor
+    real(double) ::  drk,ktor
     real(double),allocatable::ktorho(:) !pour splines
-    real(double) :: cv(1,3)
+
 
 
     real(double) :: rue2 !coupure**2
     real(double) :: Erep,dErep ! potentiel et gradient de la repulsion de paire ij
-    real(double) :: dDensityi,dDensityj,gradDensityi(3) ! gradient de la densité sur i et j
-    real(double) :: dEembi,dEembj,Eembi ! potentiel et gradient de l'immersion
-    real(double) :: rhoi,rhoj,drhoj,rho ! densite de i sur j et j sur i
+
+    real(double) :: dEembi,Eembi ! potentiel et gradient de l'immersion
+    real(double) :: rhoj,drhoj
     real(double) :: rholsi,drholsi,rholsj,drholsj! densite de i sur j et j sur i
     real(double) :: densityi !densite totale sur i
 
@@ -50,8 +50,6 @@ contains
          rhotildjsi        ! rho écrantée
 
 
-    real(double) :: a1i,a2i,a3i,a1j,a2j,a3j !delta x y z
-    real(double) :: r2ij,r2il,r2jl !distance carree  i-j i-l j-k
     real(double) :: rij,c1ij,c2ij,c3ij ! distance et delta X ij
     real(double) :: ril,c1il,c2il,c3il ! distance et delta X il
     real(double) :: rjl,c1jl,c2jl,c3jl ! distance et delta X jl
@@ -59,10 +57,10 @@ contains
     real(double) :: sijl
     real(double) :: aux1,aux2(3),aux3(3),aux4(3) ! aux. pour la force
     real(double) :: gradij(3), gradil(3),gradjl(3) ! deltaX/r pour ij,il et lj
-    integer::  iw1,iw2, iw,iw1j,iw2j, iwj, iwl1,iwl2,iwl ! indices des voisins j et l de i
+    integer::  iw,iwl ! indices des voisins j et l de i
 
     real(double) :: rcut2 (npair),rcut(npair)
-    real(double) :: rhoitot,fpi
+    real(double) :: rhoitot
     real(double) :: tdepcos
     real(double)::rue
   real(double)::dxp(3),dxpjl(3)
@@ -71,7 +69,7 @@ contains
 
     integer::koo,i1,i2,ko1,ko1j,koj
 
-    REAL(double), dimension(1:3) :: cp
+
     rue=rue_pot(ipotentiel)
     fpnemd=0
 
@@ -90,7 +88,7 @@ contains
     !  if (allocated(eat)) eat(:)=0.
 
 
-    potist = zero
+    potistcalfo = zero
     potisrep=0.;potisglue=0.
     rue2=rue**2
     !    iw2=0
@@ -302,7 +300,7 @@ contains
              !          write(6,*)'i jrij terp',i,j,rij,trh
 
 
-             potist=potist+Erep
+             potistcalfo=potistcalfo+Erep
              potisrep=potisrep+Erep
              atcf%fp(1:3,i)=atcf%fp(1:3,i)-dErep*gradij(1:3)
              atcf%fp(1:3,j)=atcf%fp(1:3,j)+dErep*gradij(1:3)
@@ -321,9 +319,9 @@ contains
                 end do
              end if
 
-             sig(1:3,1) = sig(1:3,1) -dErep*gradij(1:3)*c1ij/boxcf%volu
-             sig(1:3,2) = sig(1:3,2) -dErep*gradij(1:3)*c2ij/boxcf%volu
-             sig(1:3,3) = sig(1:3,3) -dErep*gradij(1:3)*c3ij/boxcf%volu
+             sigcalfo(1:3,1) = sigcalfo(1:3,1) -dErep*gradij(1:3)*c1ij/boxcf%volu
+             sigcalfo(1:3,2) = sigcalfo(1:3,2) -dErep*gradij(1:3)*c2ij/boxcf%volu
+             sigcalfo(1:3,3) = sigcalfo(1:3,3) -dErep*gradij(1:3)*c3ij/boxcf%volu
 
 
 
@@ -360,9 +358,9 @@ contains
              !              write(6,'(A)')'FF2'
              !           end if
 
-             sig(1:3,1) = sig(1:3,1) -dEembi*drhoj*gradij(1:3)*c1ij/boxcf%volu
-             sig(1:3,2) = sig(1:3,2) -dEembi*drhoj*gradij(1:3)*c2ij/boxcf%volu
-             sig(1:3,3) = sig(1:3,3) -dEembi*drhoj*gradij(1:3)*c3ij/boxcf%volu
+             sigcalfo(1:3,1) = sigcalfo(1:3,1) -dEembi*drhoj*gradij(1:3)*c1ij/boxcf%volu
+             sigcalfo(1:3,2) = sigcalfo(1:3,2) -dEembi*drhoj*gradij(1:3)*c2ij/boxcf%volu
+             sigcalfo(1:3,3) = sigcalfo(1:3,3) -dEembi*drhoj*gradij(1:3)*c3ij/boxcf%volu
 
              if (lnemd) then
                 XijdotF=c1ij*Fnemd
@@ -400,9 +398,9 @@ contains
                 !             write(6,'(A)')'FF3'
                 !              end if
 
-                sig(1:3,1) = sig(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/boxcf%volu
-                sig(1:3,2) = sig(1:3,2) -dEembi*aux1*drhoj*gradij(1:3)*c2ij/boxcf%volu
-                sig(1:3,3) = sig(1:3,3) -dEembi*aux1*drhoj*gradij(1:3)*c3ij/boxcf%volu
+                sigcalfo(1:3,1) = sigcalfo(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/boxcf%volu
+                sigcalfo(1:3,2) = sigcalfo(1:3,2) -dEembi*aux1*drhoj*gradij(1:3)*c2ij/boxcf%volu
+                sigcalfo(1:3,3) = sigcalfo(1:3,3) -dEembi*aux1*drhoj*gradij(1:3)*c3ij/boxcf%volu
 
                 if (lnemd) then
                    XijdotF=c1ij*Fnemd
@@ -486,13 +484,13 @@ contains
 
 
 
-             sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c1il/boxcf%volu
-             sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c2il/boxcf%volu
-             sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c3il/boxcf%volu
+             sigcalfo(1:3,1) = sigcalfo(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c1il/boxcf%volu
+             sigcalfo(1:3,2) = sigcalfo(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c2il/boxcf%volu
+             sigcalfo(1:3,3) = sigcalfo(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/ril)*c3il/boxcf%volu
 
-             sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/boxcf%volu
-             sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/boxcf%volu
-             sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/boxcf%volu
+             sigcalfo(1:3,1) = sigcalfo(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/boxcf%volu
+             sigcalfo(1:3,2) = sigcalfo(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/boxcf%volu
+             sigcalfo(1:3,3) = sigcalfo(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/boxcf%volu
 
 !!$
 !!$             if(lcalcjq) then
@@ -582,14 +580,14 @@ contains
 
 
 
-                sig(1:3,1) = sig(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/boxcf%volu
-                sig(1:3,2) = sig(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/boxcf%volu
-                sig(1:3,3) = sig(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/boxcf%volu
+                sigcalfo(1:3,1) = sigcalfo(1:3,1) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c1jl/boxcf%volu
+                sigcalfo(1:3,2) = sigcalfo(1:3,2) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c2jl/boxcf%volu
+                sigcalfo(1:3,3) = sigcalfo(1:3,3) -(aux1*(aux2(1:3)+aux3(1:3))/rjl)*c3jl/boxcf%volu
 
 
-                sig(1:3,1) = sig(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/boxcf%volu
-                sig(1:3,2) = sig(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/boxcf%volu
-                sig(1:3,3) = sig(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/boxcf%volu
+                sigcalfo(1:3,1) = sigcalfo(1:3,1) -(aux1*aux4(1:3)/rij )*c1ij/boxcf%volu
+                sigcalfo(1:3,2) = sigcalfo(1:3,2) -(aux1*aux4(1:3)/rij )*c2ij/boxcf%volu
+                sigcalfo(1:3,3) = sigcalfo(1:3,3) -(aux1*aux4(1:3)/rij )*c3ij/boxcf%volu
 
 
 !!$                if(lcalcjq) then
@@ -616,7 +614,7 @@ contains
        end do loopvj2
        !if (i==1)  write(6,*)'fb2 ',fp(1,1),fp(2,1),fp(3,1)
 
-       potist=potist+Eembi
+       potistcalfo=potistcalfo+Eembi
 !       if (lcalcjq) eat(i)=eat(i)+Eembi
        potisglue=potisglue+Eembi
 

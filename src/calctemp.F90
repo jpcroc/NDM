@@ -30,7 +30,7 @@ contains
 
     logical:: latc=.false.
 
-    integer :: ic, i, iti, ko, i2,kx,ky,kz,koo,ixe,iye,ize
+    integer ::  i, ko, i2,kx,ixe,iye,ize
     real(double) :: sumtat2
     real(double) :: vpn2,tat,ekin
     !  real(double), dimension(ntyp,3) :: vx2

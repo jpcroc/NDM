@@ -44,7 +44,7 @@ module gen_com_m
   integer::idirectionmcgc
 
   real(double),target :: potist ! energie potentielle totale
-  real(double):: potisP,potis1, potis2, potis3, potis0, potcp ! energie potentielle de paire
+  real(double):: potisP, potis2, potis3, potcp ! energie potentielle de paire
   real(double) :: potisTersoff ! energie potentielle de tersoff
 
 !  INTEGER::imd ! HISTORIQUE A DEGAGER LE PLUS TOT POSSIBLE
@@ -52,7 +52,7 @@ module gen_com_m
   real(double) :: oldtstep  
   real(double) :: tstep, usdh, timel  
   integer :: itetemp, itesigma, iteprtsigma,itedepla, itecoordo, iterdf, nrdf, & 
-       iterasmol, iteangle,nfda,itetemp2,iteanapos
+       iterasmol, iteangle,nfda,itetemp2,iteanapos,iteprtkin
   integer::ivisu     ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal codﾃｩ, ivisu=2=xred
   real(double)::rcangle,rcrdf
 
@@ -97,6 +97,7 @@ module gen_com_m
   real(double):: depmaxts,tsmin
   real(double) :: tempstop, tempstopcel, tcou, tfcou, epcou, &! temperature d'arret, max, visee si max, taux de refroidissement, temp de la couche externe et epaisseur
        tsfact, vmax, tgc, dfpred ! gestion du pas en temps
+  integer::couxyz(3)
   real(double)::maxtcel
   integer :: itesauv,  itesauvposition, itesauvforce,itesauvinter  ! periode de sauvegarde periode 
                                                                               ! de d'ecriture des positions et/ou forces en formatted ; 
@@ -118,7 +119,7 @@ module gen_com_m
   real(double) :: eko, xko, yko, zko ! energie et direction du PAF
   real(double) :: xx0, yy0, zz0 ! position initiale du projectile
   logical :: lcasca,lderive ! cascade,correction derive ?
-
+  logical::lspecialinit ! driver for specail initialization : cascade, press or heat burst etc.
 
 
   real(double) :: pist, temp, pmean, tmean, kine, kinemean ! pression temp et moyennes associees

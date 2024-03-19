@@ -20,10 +20,10 @@ contains
     logical,intent(out) ::lover
 
 
-    integer::i,idesc,j,k
+    integer::idesc,j,k
 
-    real(double),dimension(N)::R0,F0,vel
-    real(double)::V0,sk,skchap,Fsq,eps,beta35
+    real(double),dimension(N)::vel
+    real(double)::sk,Fsq,eps,beta35
 
     beta35=1d-10
 
@@ -83,7 +83,7 @@ contains
     real(double)::V
     logical ::lover
     logical,intent(in)::lorig
-    integer::i,idesc
+    integer::idesc
 
     logical:: ldecr=.false.,lcritI
     real(double)::fsumstopI,fpstopI,fpstopsigI,fmts,fsts,fsigts
@@ -171,8 +171,8 @@ contains
 
     integer::idir,i,idesc
     real(double)::gamma
-    real(double),dimension(N)::R0,F0,R1,G,H
-    real(double)::V0,Vb,Vbs2,gigi,xixi
+    real(double),dimension(N)::R0,F0,G,H
+    real(double)::V0,gigi,xixi
     logical ::lok,ldirOK
 
     
@@ -294,14 +294,14 @@ contains
     real(double),intent(in)::R0(N),V0,F0(N)
     real(double),intent(out)::R(N),V,F(N)
 
-    real(double),dimension(N)::Fp,RBs2,Rbeta,Fa,Fb,Fc,Fbeta,Fbs2,Fbetatest,Rbetatest
-    real(double)::normF02,Vbeta,Vbs2,va,vb,vc,Vmin,Vbetatest,betatest,fhi
+    real(double),dimension(N)::Rbeta,Fbeta
+    real(double)::normF02,Vbeta,va,vb,vc,fhi
 
-    integer::i,istep,id
-    real(double)::a,b,c,AA,BB,betai,betaip1,Vbetai,Vbetaip1,Vd,d,ab
+    integer::i,id
+    real(double)::a,b,c,betai,betaip1,Vbetai,Vbetaip1,Vd,d,ab
     logical ::ldir
     logical::linit
-    character*15::mic,mic2
+    character*15::mic2
     ldir=.false.
     fhi=0.5*(1+sqrt(5.))
     lOK=.true.

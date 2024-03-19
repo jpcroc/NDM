@@ -47,10 +47,10 @@ contains
     !
 
 #ifdef PARA
-    integer :: iproc
-    integer, allocatable      :: num_at_glob_all(:)
-    !  integer :: im_loc
-    integer :: proc_source
+
+
+ !  integer :: im_loc
+
 
 
 #endif

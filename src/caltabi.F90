@@ -27,7 +27,7 @@ contains
     REAL(double) :: dij
     real(double), dimension(1:npair) :: rvois2,rvois
 
-    real(double), dimension(3) :: xpi,VJI
+    real(double), dimension(3) :: VJI
     real(double),dimension(3,3)::at,bg
     integer :: iti, & !type de i
          koo, & !cel de i

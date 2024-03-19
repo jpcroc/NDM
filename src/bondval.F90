@@ -20,9 +20,9 @@ contains
     
     ! variables locales
 
-    integer :: i,k,i1,j,iti,itj,i2
+    integer :: i,i1,j,iti,itj,i2
     integer :: koo,ko1,lenfn2
-    real(double)::c1p,c2p,c3p,cv(1,3),ra(3),c1,c2,c3
+    real(double)::c1p,c3p,cv(1,3)
     real(double),allocatable::bdv(:)
     real(double) :: R,xx,dcut,dis
     character :: extension*9

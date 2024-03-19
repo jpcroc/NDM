@@ -17,7 +17,7 @@ subroutine deftimestep(atcf,box)
   USE arret_ndm_mod,only: arret_ndm
 
 #ifdef PARA
-  USE Tpara,only:myidsp,nprocspace,comm_space
+  USE Tpara,only:nprocspace,comm_space
 #else
   USE Tpara,only:nprocspace
 #endif
@@ -27,7 +27,7 @@ subroutine deftimestep(atcf,box)
   class(box_config)::box
 
 
-    integer :: i, iti, ic, expos, imax,ikoloc
+    integer :: i, expos, imax,ikoloc
   real(double) :: tifac1, tifac2, lts, tseuil, vmax2,depmaxts2
   real(double), dimension(:),allocatable :: vpmod2
   real(double) :: tmaxv, tmod, vpmod

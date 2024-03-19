@@ -11,26 +11,26 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use Tpara,only:nprocs,mpi_world
-    USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,eko,gamprfact,&
-         &epcou,epcoud,epsil,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,&
+    use Tpara,only:nprocs
+    USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,gamprfact,&
+         &epcou,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,couxyz,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
          &landerscou,lcdp,lconstrtot,lcorrelvp,lderive,lfire,&
-         &ljqbh,lpathfromgin,lpcon2,lrctest,lrestart,ltandersen,&
+         &ljqbh,lpathfromgin,lpcon2,lPcube,lrctest,lrestart,ltandersen,&
          &ltcon,lvpread,maxneb,mdcg_noise_scale,neb_noise,neb_noise_scale,nebrelaxation,&
-         &nebtype,nhoover,nitmax,njqbh,npath,ntr,nuandersen,pext,&
+         &nebtype,nhoover,nitmax,npath,nuandersen,pext,&
          &rskin,rulayer,sigext,sigstop,tbox,tempdeplainit,tempstop,tempstopcel,tgc,&
-         &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,wnose,xko,xx0,yko,yy0,&
-         &zko,zz0,ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
-         &iko,iteanapos,iteangle,itebdv,itecoordo,itedepla,&
+         &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,wnose,&
+         &ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
+         &iteanapos,iteangle,itebdv,itecoordo,itedepla,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
          &lcasca,lcontr,ldemitab,leev,leparat,lfilm,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
-         &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou&
-         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,position_conversion_lammps,lanaposart&
-         &, energy_conversion_lammps, pressure_conversion_lammps,lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc
+         &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
+         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart&
+         &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,beta35,gammas,gammav
     USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
@@ -44,9 +44,9 @@ contains
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
-#ifdef PARA
-    USE Tpara,only:MPI_COMM_space,NPROCSpace
-#endif
+    use arps_mod,only:kmin,kmax,noxyzkmin,noxyzkmax,lpartarps!,lxyz
+    use plottpcel_mod,only:iplotcel
+
 
     ! *****************************************************************
 
@@ -64,7 +64,7 @@ contains
     character :: fnamdin*80
     logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr
     integer::itecfg,np2
-    logical :: lpconx,lpcony,lpconz,lpconxyz
+    logical :: lpconx,lpcony,lpconz,lpconxyz,ltest
     !-----------------------------------------------
     !
     !
@@ -73,11 +73,11 @@ contains
 
     namelist /input/itab, itetabvois, itetemp, itesigma,iteprtsigma,  itedepla, tdepla, lfilm, &
          tempstop, tempstopcel,dmtype, lFire,  itecoordo, tstep, itetimestep, tsfact, &
-         tinit,  tfcou, epcou, lcasca, lfissure, itmax,nitmax, itean, kspring,  &
+         tinit,  tfcou, epcou, couxyz,lcasca, lfissure, itmax,nitmax, itean, kspring,  &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
-         iteangle,  itesauvposition, itesauvforce,  tdepla2, &
+         iteangle,  itesauvposition, itesauvforce,  tdepla2, lpcube,&
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
@@ -91,8 +91,9 @@ contains
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
-         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
-         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor
+         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,iplotcel,&
+         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
+         &noxyzkmin,noxyzkmax,lpartarps
 
 
     !
@@ -128,7 +129,9 @@ contains
     !                              33 -> gradient conjugue
     !                              34 -> gradient conjugue modifié Fletcher-Reeves
     !                              35 -> relaxation ADAMD. :Kingma and J. Ba, “Adam: A Method for Stochastic Optimization,” in International Conference on Learning Representations (ICLR), 2015.
-    !                               4 -> Velocity Verlet 
+    !                               4 -> Velocity Verlet
+    !                               41 -> Velocity Verlet ARPS with partial forces
+    !                               42 -> Velocity Verlet ARPS with regular forces
     !                               5 -> test des forces 
     !                               6 -> analyse des positions en fin de cascade 
     !                               7 -> calcul des phonons
@@ -151,6 +154,7 @@ contains
     tinitbox = -1.0                !initial temperature
     tfcou = -1.0                !temperature of the border of the box
     epcou = -1.0                !width of the border of the box
+    couxyz(:)=1
     lcasca = .FALSE.            !cascade Y/N
     lfissure = .FALSE.          !crack Y/N
     itmax = -1                  !maximum number of iterations
@@ -195,7 +199,7 @@ contains
     lpconx = .FALSE.          !the relaxation are allowed only along the X axis 
     lpcony = .FALSE.          !the relaxation are allowed only along the  Y  axis
     lpconz = .FALSE.          !the relaxation are allowed only along the  Z axis
-
+    lpcube=.false.
 
     pext = 0.0                  !pression  par defaut
     wboxf = 1.0                  ! facteur masse de la boite pour Parrinello-Rahman (par defaut egale a 0.5*masse totale
@@ -225,7 +229,7 @@ contains
     gamlg =5d12            ! Gamma deLangevin (= 0.005/1d-15 fera vp*0.995 pour tstep=1d-15)
     gamprfact=0.1
     ilangevin=1
-    iko=-1
+
     lcdp=.false.             ! algorithme d'accumulation de defauts ponctuels
     lnemd=.false.  ! Kth par la methode NEMD Evans, P7229
     fnemd=0
@@ -372,12 +376,21 @@ contains
     typswitch1=0
     typswitch2=0
     ldecalcor=.true.
+    kmin=0. ! min kinetic energy for arps
+    kmax=0. ! max kinetic energy for arps
+    lpartarps=.false.
+    noxyzkmin(1:3)=-1
+    noxyzkmax(1:3)=1000000
+    iteprtkin=-1
+    iplotcel=0 ! triggers the detailled analysis of ltpcel (0or 2  =std; 1 or 2=specific)
+    lspecialinit=.false. ! driver for specail initialization : cascade, press or heat burst etc.
+
+    
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
     
     read (ludin, nml=input)
-
 
     rcangle=rcangle*1d-8
     rcrdf=rcrdf*1d-8
@@ -570,9 +583,17 @@ contains
        if (rang==0) write (6, *) rang,'wrong itab < 1 '
        call arret_ndm
     endif
+    if ((dmtype==41).or.(dmtype==42)) then
+       ltabvois=.false.
+       kmin=kmin*ev2erg; kmax=ev2erg*kmax
+       if ((kmin==0.).or.(kmax==0.)) then
+          write(6,*)'kmin==0. or kmax==0 '
+          call arret_ndm
+       end if
+    end if
 #ifdef PARA
     select case(dmtype)
-    case(21,22,4,3,1,30,31,32,33,34,35,23,24,8,88)
+    case(21,22,4,3,1,30,31,32,33,34,35,23,24,8,88,41,42)
        if (ltabvois) then
           select case (ipotentiel)
           case(20)
@@ -642,7 +663,7 @@ contains
     case default
        write(6,*)'DMTYPE',dmtype
        if (rang==0) write(6,*) 'FATAL: VERSION PARALLELE seulement avec ',&
-& 'dmtype=21,22,4,3,9,15,151,1,30,31,32,33,34,19,35,23,24'
+& 'dmtype=21,22,4,3,9,15,151,1,30,31,32,33,34,19,35,23,24,41'
        if (rang==0) write(*,*) 'Stop in readdm'
        call arret_ndm
     end select
@@ -883,7 +904,7 @@ contains
     end if
 
     if (itetimestep>0)  then
-       if ((dmtype.eq.1).or.(dmtype.eq.21).or.(dmtype.eq.22).or.(dmtype.eq.4)) then
+       if ((dmtype.eq.1).or.(dmtype.eq.21).or.(dmtype.eq.22).or.(dmtype.eq.4).or.(dmtype.eq.41).or.(dmtype.eq.42)) then
           if (rang==0) write(6,*) 'The time step changed each', itetimestep,' steps'
        else 
           if (rang==0) write(6,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
@@ -900,7 +921,12 @@ contains
        if (lpr) then
           dmtype=88
        else
-          dmtype=4
+          ltest=.false.
+          if ((dmtype==4).or.(dmtype==41).or.(dmtype==42))ltest=.true.
+          if (.not.ltest)then
+             write(6,*)'llangevin only with dmtype =4,41, 42'
+             call arret_ndm
+          end if
        end if
     end if
 
@@ -963,6 +989,13 @@ contains
           if (lpconz)  ihbox0(3,3)=1   ! and Z.
 
        end if
+       if (lpcube) then
+          ihbox0(:,:)=0   ! ALL the dimension are blockef except ...
+          ihbox0(1,1)=1   ! X ...
+          ihbox0(2,2)=1   ! Y ...
+          ihbox0(3,3)=1   ! and Z.
+       end if
+       
        do ic=1,3
           do ic2=1,3
              if ((ihbox0(ic,ic2).ne.0).and.(ihbox0(ic,ic2).ne.1))then
@@ -982,15 +1015,6 @@ contains
        itesigma=1
     end if
     ! read for cascade
-    if (lcasca) then
-       read (ludin, *) iko, eko, xko, yko, zko , xx0, yy0, zz0
-       if (lrestart) lcasca=.false.
-       lax=.true.
-       !     xx0=xx0*1.D-8
-       !     yy0=yy0*1.D-8
-       !     zz0=zz0*1.D-8
-
-    end if
     select case (ibrake)
     case(0)
        if ((tcelec.gt.0).or.(ecelec.gt.0)) then
@@ -1086,6 +1110,10 @@ contains
        if(itmax==-1)itmax=300
     case (4)
        if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
+    case (41)
+       if (rang==0) write (6,'(a)') '      MOLECULAR DYNAMICS ADAPTATIVE RESTRAINED PARTICLE SIMULATION with restrained forces'
+    case (42)
+       if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE ADAPTATIVE RESTRAINED PARTICLE SIMULATION with coplete forces'
     case (5)
        if (rang==0) write (6,'(a)') '      TEST DES FORCES '
     case (8)
@@ -1099,8 +1127,8 @@ contains
     case (9)
        if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS ' 
        itesauvposition=-1
-       itesauvforce=-1; lperiod=.false.
-       itetemp=-1;itesigma=-1!; ldecalcor=.false.
+       itesauvforce=-1
+       itetemp=-1;itesigma=-1
     case (11)
        if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
        if (rang==0) write (6,*)
@@ -1312,7 +1340,7 @@ contains
     end if
     if (lsuivinonpbc) then
 
-       if (dmtype.ne.4) then
+       if ((dmtype.ne.4).and.(dmtype.ne.41).and.(dmtype.ne.42)) then
           if (rang==0) write(6,*) 'lsuivinonpbc is implemented only with velocity verlet'
           if (rang==0) write(6,*) 'Or dmtype=4. Change and restart until there I will stop for you.'
           call arret_ndm 
@@ -1375,12 +1403,6 @@ contains
     if ((tfcou>0.).and.(rang==0))         write (6, '(A,F10.1,A,F10.1,A,F10.1)') 'tfcou=', tfcou, ' epcou=', &
          epcou*1D+8
 
-    if (lcasca) then
-       if (rang==0) write (6, *) '----CASCADE-----'
-       if (rang==0) write (6, *) 'projectile=', iko, ' energie=', eko
-       if (rang==0) write (6, *) 'direction=', xko, yko, zko
-       if (rang==0) write (6, *) 'position de depart : ', xx0, yy0, zz0
-    endif
 
     if (rang==0) write (6, *) ' ----------------------------------'
     if (rang==0) write (6, *)
@@ -1567,8 +1589,8 @@ contains
        if (iseed.le.0) then
           call system_clock (iseed)
           iseed =iseed +10*rang
-          if (rang==0)      write(6,*)'rang iseed ',rang,iseed
        end if
+          if (rang==0)      write(6,*)'rang readdm iseed ',rang,iseed
 
 !#ifdef PARA
 !    call mpi_world%bcast(0,iseed)

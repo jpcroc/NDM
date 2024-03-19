@@ -60,7 +60,7 @@ contains
     type(cell_config),pointer::cellnebloc
     type(cell_config),target:: cellcible ! ne sert qu'à faire pointer cellnebloc sur quelquechose
     type(atom_config_d),target::atcible
-    integer::iun,i,ic
+
     logical::lchange
 
 #ifdef PARA    

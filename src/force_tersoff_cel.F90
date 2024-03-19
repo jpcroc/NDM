@@ -33,14 +33,14 @@ contains
     type(box_config),intent(in)::boxcf
     type(para_space_config)::psc
     !-----------------------------------------------
-    integer :: i,j,k,nk,n_voisin,l,ij,ik, ipv,idv,ivj,ivk, m, moi
+    integer :: i,j,k,nk,n_voisin,l,ij,ik, idv, m, moi
     integer , dimension(32) :: indice   ! Recense le nombre de voisins
     integer :: icelnumber,jcelvois,jcelnumber,jnumber, kcelvois,kcelnumber,knumber
-    real(double) ::  rij,  rik, sui_ij, bij, n, v_ij, energie_i
+    real(double) ::  rij,  rik, sui_ij, bij, n, v_ij
     real(double) :: fc_rij, dfc_rij, fr_rij, fa_rij, fc_rik, dfc_rik, paire_ij, triplet_ij, triplet_ik 
-    real(double) :: exponentiel, cos_theta, g_cos, dg_cos, flux, pression,ER1, ER2, ER3
+    real(double) :: exponentiel, cos_theta, g_cos, dg_cos, ER1, ER2, ER3
     real(double) :: Scal_FiVi, Scal_FjVj, Scal_FijVi, Scal_FijVj, Scal_FikVi, Scal_FikVk
-    real(double) , dimension(3) ::   ai, Eflow, Flux1
+
     real(double) , dimension(15,6) :: tmp
     real(double) , dimension(15,3) :: tmp1
     real(double) , dimension(1,3) :: cvij, cvik
@@ -63,13 +63,13 @@ contains
     !  do i=1,im
     !     fp(1,i)=0; fp(2,i)=0; fp(3,i)=0
     !  end do
-    !  jq(:)=0; sig(:,:)=0
+    !  jq(:)=0; sigcalfo(:,:)=0
 
     ER1=0. ;  ER2=0. ;  ER3=0.
     !         write(6,*)'boite quelc'
 !    call cryst_to_cart(imm,xp,bg,-1)
 
-    !  write(6,*)sig
+    !  write(6,*)sigcalfo
     !  write(6,*)
     do i=1,atcf%im
        if(typ_and_pot(atcf%ityp(i),ipotentiel).eqv..false.) cycle
@@ -194,7 +194,7 @@ contains
                       if (test_sigma) then 
                          do m=1,3
                             sigT(l,m)=sigT(l,m) + paire_ij*cvij(1,m)/boxcf%volu
-                            if (lTPcel.EQV..true.) then
+                            if (lcalcsigc.EQV..true.) then
                                sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + 0.5*paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                                sigc(l,m,jcelnumber) = sigc(l,m,jcelnumber) + 0.5*paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                             end if
@@ -226,7 +226,7 @@ contains
                       if (test_sigma) then 
                          do m=1,3
                             sigT(l,m)=sigT(l,m) + paire_ij*cvij(1,m)/boxcf%volu
-                            if (lTPcel.EQV..true.) then
+                            if (lcalcsigc.EQV..true.) then
                                sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                                sigc(l,m,jcelnumber) = sigc(l,m,jcelnumber) + paire_ij*cvij(1,m)*celcf%noxyz/boxcf%volu
                             end if
@@ -307,7 +307,7 @@ contains
                             do m=1,3
                                sigT(l,m)=sigT(l,m) + triplet_ij*cvij(1,m)/boxcf%volu
                                sigT(l,m)=sigT(l,m) + triplet_ik*cvik(1,m)/boxcf%volu
-                               if (lTPcel.EQV..true.) then
+                               if (lcalcsigc.EQV..true.) then
                                   sigc(l,m,icelnumber) = sigc(l,m,icelnumber) + celcf%noxyz*0.5*(triplet_ij*cvij(1,m)/boxcf%volu  &
                                        + triplet_ik*cvik(1,m)/boxcf%volu)
                                   sigc(l,m,jcelnumber) = sigc(l,m,jcelnumber) + celcf%noxyz*0.5*triplet_ij*cvij(1,m)/boxcf%volu 
@@ -371,7 +371,7 @@ contains
        endif
     end if
 #endif
-    sig=sig+sigT
+    sigcalfo=sigcalfo+sigT
 
 #ifdef PARA
     if (nprocspace.gt.1) then

@@ -4,7 +4,7 @@ module cellconfig
   use atomconfig,only : atom_config,atom_config_d,atom_config_e
   use boxconfig,only:box_config
   use paraconfig,only:para_config
-  use Tpara,only:para_space_config,mpi_communicator,myidsp
+  use Tpara,only:para_space_config,mpi_communicator,myidsp,comm_space
   use gen_com_m,only:rang
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
@@ -34,20 +34,72 @@ module cellconfig
      procedure, pass::send2proc=>cells2p
      procedure, pass::send2all=>cells2a
      procedure, pass::recv=>cellrecv
+     procedure, pass::koxyz=>kox
+     procedure, pass::edge=>edgec
+     procedure, pass::constrcomp=>cococe
   end type cell_config
 
+  type, extends (cell_config):: cell_config_g !
+     integer,allocatable::natotot (:) ! nombre d'atomes dans la cellule ko
+  end type cell_config_g
 
+  type, extends (cell_config):: cell_config_arps !
+     integer,allocatable::nmov(:,:) ! nombre d'atomes dans la cellule ko
+  end type cell_config_arps
+     
+     
 contains
 
+  function edgec(cell,ko,box)
+    class(cell_config)::cell
+    class(box_config)::box
+    real(double):: edgec(3)
+    integer::ko
+    integer::kox(3)
+    
+    integer:: ic,ic2
+    real(double)::flx(3)
+    kox=cell%koxyz(ko)
+    flx(1)=float(kox(1))/cell%nox
+    flx(2)=float(kox(2))/cell%noy
+    flx(3)=float(kox(3))/cell%noz
+    edgec=0.
+    do ic=1,3
+       do ic2=1,3
+          edgec(ic2)=edgec(ic2)+flx(ic)*box%at(ic2,ic)
+       end do
+    end do
+  end function edgec
+
+  function kox(cell,ko)
+    class(cell_config)::cell
+    integer:: kox(3),ko
+
+    integer:: kx,ky,kz,kyz,km1,km2,nox,noy
+    !    do ko=1,cell%noxyz
+    nox=cell%nox;noy=cell%noy
+    km1=ko-1
+    kx=mod(km1,nox)
+    km2=(km1-kx)/nox
+    ky=mod(km2,noy)
+    kz=(km2-ky)/noy
+    kox(1)=kx;kox(2)=ky;kox(3)=kz
+
+ !   end do
+    
+  end function kox
 
 
-  subroutine init_cel(cell,box,nox,noy,noz,natperc,ltpc)
+  subroutine init_cel(cell,box,nox,noy,noz,natperc,ltpc,latomalloc)
     class(cell_config)::cell
     integer,intent(in),optional::nox,noy,noz,natperc
     logical,optional,intent(in):: ltpc
     logical::ltpcel
+    logical,optional::latomalloc
+    logical::lata=.true.
     class(box_config)::box
     ltpcel=.false.
+    if (present(latomalloc))lata=latomalloc
     if (present (ltpc))ltpcel=ltpc
     if (present(nox)) then
        cell%nox=nox; cell%noy=noy; cell%noz=noz;cell%noxyz=nox*noy*noz
@@ -61,17 +113,21 @@ contains
     !write(6,*) 'nox', cell%nox
     cell%ltpcel=ltpcel
     call dealloc_cel(cell)
-    call allocatecelN(cell)
+    call allocatecelN(cell,lata)
     call neigcelN(cell,box)
-!    call cell%print
+    !    call cell%print
+       
     return
 
   end subroutine init_cel
 
-  subroutine allocatecelN(cell)
+  subroutine allocatecelN(cell,latomalloc)
     class(cell_config)::cell
     !    integer,intent(in)::nox,noy,noz,natperc
     integer::nsize
+    logical,optional::latomalloc
+    logical::lata=.true.
+    if (present(latomalloc))lata=latomalloc
     cell%noxyz=cell%nox*cell%noy*cell%noz
     nsize=cell%noxyz
     if (nsize.ne.0) then
@@ -79,6 +135,11 @@ contains
        cell%ncel=0
        allocate(cell%nato(nsize))
        cell%nato=0
+       select type(cell)
+       class is (cell_config_g)
+          allocate(cell%natotot(nsize))
+          cell%natotot=0
+       end select
        allocate(cell%ncelvois(nsize))
        allocate(cell%deltadist(3,0:26,nsize))
        cell%deltadist=0
@@ -90,7 +151,7 @@ contains
           allocate(cell%tempc(nsize))
           cell%tempc=0
        end if
-       if (cell%natperc.ne.0)   then
+       if ((cell%natperc.ne.0).and.(lata))   then
           allocate(cell%atincel(cell%natperc,nsize))
           cell%atincel=0
        end if
@@ -106,7 +167,7 @@ contains
 
   subroutine dealloc_cel(cell)
     class(cell_config)::cell
-
+    
     if (allocated(cell%ncel))       deallocate(cell%ncel)
     if (allocated(cell%ncelvois))       deallocate(cell%ncelvois)
     if (allocated(cell%nato))       deallocate(cell%nato)
@@ -114,9 +175,16 @@ contains
     if (allocated(cell%deltadist))  deallocate(cell%deltadist)
     if (allocated(cell%sigc))  deallocate(cell%sigc)
     if (allocated(cell%tempc))  deallocate(cell%tempc)
+    select type(cell)
+    class is (cell_config_g)
+       deallocate(cell%natotot)
+!       cell%natotot=0
+    end select
+       
 #ifdef PARA
     if (allocated(cell%proc_cell))  deallocate(cell%proc_cell)
 #endif
+
     return
 
   end subroutine dealloc_cel
@@ -271,17 +339,21 @@ contains
   end subroutine neigcelN
 
 
-  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc)
+  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc,lcheckfrontier)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
     use gen_com_m,only:lspacendm
+#ifdef PARA
+  USE Tpara,only:comm_space
+#endif
+    
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
     class(box_config),intent(inout)::boxcf
     type(para_space_config),optional::psc    
     logical,intent(in)::lperiod
-    logical,intent(in),optional::lextr
-    logical::lextrait=.false.
+    logical,intent(in),optional::lextr,lcheckfrontier
+    logical::lextrait=.false.,lchkftr=.true.
 
     integer :: i,  kx, ky, kz, koo
     real(double) :: aux, auy, auz
@@ -292,6 +364,7 @@ contains
     ! --------- Initialisation --------------
     !
     if (present(lextr))lextrait=lextr
+    if (present(lcheckfrontier))lchkftr=lcheckfrontier
     if (lextrait) then
        iml=atcf%imm
     else
@@ -377,11 +450,11 @@ contains
           cell%atincel(cell%nato(koo),koo) = i
 !          write(6,*)i,koo
 #ifdef PARA
-          if ((present(psc)).and.(lspacendm)) then 
+          if ((present(psc)).and.(lspacendm).and.(lchkftr)) then 
              if (cell%proc_cell(koo).ne.myidsp) then
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
                    write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &
-                        &myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frotier cell',&
+                        &myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frontier cell',&
                         &'RANG actuel = ',rang
                    call arret_ndm
                 end if
@@ -413,6 +486,15 @@ contains
     cell%icaltabt=icaltabt
     atcf%icaltabt=icaltabt
     boxcf%icaltabt=icaltabt
+
+    select type(cell)
+    class is (cell_config_g)
+       cell%natotot=cell%nato
+#ifdef PARA
+       if (lspacendm) call comm_space%sum(cell%natotot)
+#endif
+    end select
+
 !    call atcf%print
 !    call cell%print
     return
@@ -518,18 +600,23 @@ contains
 
   ! copie d'une config entière vers config de base
 
-  subroutine copy (cellsource,cellcible,box,lzeroinit)
+  subroutine copy (cellsource,cellcible,box,lzeroinit,ltpccible,latomcp)
     class(cell_config)::cellsource
     class(cell_config)::cellcible
     class(box_config)::box
-    logical,optional::lzeroinit
-    logical::lzi=.false.
+    logical,optional::lzeroinit,ltpccible,latomcp
+    logical::lzi=.false.,ltpcel,latcp=.true.
+    if (present(latomcp))latcp=latomcp
     if (present(lzeroinit))lzi=lzeroinit
 
     call cellcible%dealloc
-    cellcible%ltpcel=cellsource%ltpcel
     !    cellcible=cellsource
-    call cellcible%init(box,cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc)
+    if (present(ltpccible))then
+       ltpcel=ltpccible
+    else
+       ltpcel=cellsource%ltpcel
+    end if
+    call cellcible%init(box,cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc,ltpc=ltpcel,latomalloc=latcp)
 
     cellcible%nox=cellsource%nox
     cellcible%noy=cellsource%noy
@@ -539,10 +626,10 @@ contains
     cellcible%icaltabt=cellsource%icaltabt
     if (lzi) then
        cellcible%nato(:)=0
-       cellcible%atincel(:,:)=0
+       if (latcp) cellcible%atincel(:,:)=0
     else
        cellcible%nato(:)=cellsource%nato(:)
-       cellcible%atincel(:,:)=cellsource%atincel(:,:)
+       if (latcp)        cellcible%atincel(:,:)=cellsource%atincel(:,:)
        if ((cellcible%ltpcel).and.(cellsource%ltpcel))then
           cellcible%sigc=cellsource%sigc
           cellcible%tempc=cellsource%tempc
@@ -553,7 +640,43 @@ contains
     cellcible%celsize=cellsource%celsize
   end subroutine copy
 
+  subroutine cococe(celloc,celcomp,box,latomcp,psc)
+    class(cell_config)::celloc
+    class(cell_config)::celcomp
+    class(box_config)::box
+    logical::latomcp
+    type(para_space_config),optional::psc    
 
+    integer::iko
+    call celcomp%init(box,celloc%nox,celloc%noy,celloc%noz,celloc%natperc,ltpc=celloc%ltpcel,latomalloc=latomcp)
+
+#ifdef PARA
+    celcomp%celsize=celloc%celsize
+    celcomp%nato=0
+    if(latomcp)celcomp%atincel=0
+    if (allocated(celcomp%sigc))celcomp%sigc=0
+    if (allocated(celcomp%tempc))celcomp%tempc=0
+    do iko=1,celloc%noxyz
+       if (celloc%proc_cell(iko)==myidsp) then
+          celcomp%nato(iko)=celloc%nato(iko)
+          if (allocated(celcomp%tempc))celcomp%tempc(iko)=celloc%tempc(iko)
+          if (allocated(celcomp%sigc))celcomp%sigc(:,:,iko)=celloc%sigc(:,:,iko)
+          if(latomcp)celcomp%atincel(:,iko)=celloc%atincel(:,iko)
+       end if
+    end do
+    call comm_space%sum(celcomp%nato)
+    if (allocated(celcomp%tempc))call comm_space%sum(celcomp%tempc)
+    if (allocated(celcomp%sigc))call comm_space%sum(celcomp%sigc)
+    if(latomcp)call comm_space%sum(celcomp%atincel)
+       
+#else
+    call celloc%copy(celcomp,box,latomcp=latomcp)
+#endif
+
+  end subroutine cococe
+       
+       
+  
   subroutine cellprint(cellv,unit,mess)
     class(cell_config)::cellv
     integer,intent(in),optional::unit
@@ -566,6 +689,7 @@ contains
     write(un,*)'natperc',cellv%natperc
     write(un,*)'celsize',cellv%celsize
     write(un,*)'icaltabt',cellv%icaltabt
+    write(un,*)'LTPCEL',cellv%ltpcel
     do i=1,cellv%noxyz
        write(un,*)'ncelvois',i,cellv%ncelvois(i)
     end do
@@ -576,6 +700,18 @@ contains
        do i=1,cellv%noxyz
           write(un,*)'atincel',i,cellv%atincel(:,i)
        end do
+    end if
+    if (cellv%ltpcel) then
+       if (allocated(cellv%tempc) )then
+          do i=1,cellv%noxyz
+             write(un,*)'tempc',i,cellv%tempc(i)
+          end do
+       end if
+       if (allocated(cellv%sigc)) then
+          do i=1,cellv%noxyz
+             write(un,*)'sigc',i,cellv%sigc(1,1,i),cellv%sigc(1,2,i)
+          end do
+       end if
     end if
 !    write(6,*)'deltadist',cellv%deltadist
 #ifdef PARA

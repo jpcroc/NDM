@@ -27,7 +27,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
          &itetemp,fsumstop,fpstop,itetimestep,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
-         &itetemp2,ihbox0,epcou,tfcou
+         &itetemp2,ihbox0,tfcou
 
     USE var_pot, ONLY:
     implicit none
@@ -37,18 +37,10 @@ contains
     class(box_config)::boxndm
     type(para_space_config)::psc
     logical,optional::lreturn
-
-
-    integer :: nacou, i, ic, iti,it1,it2,it3
-    real(double) :: vv, a1, a2, a3, c1, c2, c3
-    real(double), dimension(1,3) :: g1,aux
-    real(double) :: ltc, ctime, tdev, tcool, epc1, epc2, epc3,masstot,massa,tclt
-    real(double), dimension(1,3) :: xtr, cv
+    integer ::  i,it1,it2,it3
     real(double) :: fpmax,fpn,forctot,formax,fpsmax,sigtoth0(3,3)
-    real(double) :: potistmean,potistdif
-    real(double),save :: potist1000
-    real, allocatable,save :: potiststock(:)
-    save ltc
+
+
     !-----------------------------------------------
     !
     !
@@ -84,11 +76,12 @@ contains
     endif
 
     ! temperature is down enough ?
-    if (itetemp>0) then
 
-       if (tfcou.gt.0 ) call contrTcou(atdml,celndm,boxndm,epcou)
-       
-       if (mod(iteration,itetemp)==0) then
+
+    if (tfcou.gt.0 ) call contrTcou(atdml,celndm,boxndm)
+    
+    if (itetemp>0) then
+          if (mod(iteration,itetemp)==0) then
           if (temp<=tempstop) then
              if (rang==0)  write (6, *) 'temperature < tempstop '
              if (present(lreturn)) then

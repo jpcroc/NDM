@@ -14,18 +14,19 @@ contains
     USE gen_com_m, ONLY:rang,pi
     USE eam
     USE eamerco
+    
     USE var_pot, ONLY:csive,ipotentiel,lprtpot,rue_pot,typ_and_pot,ngrid,catom,eamrep_d,ipo,npair,ntyp,roff2,typ_pot_pair,&
-         &eamrep,roff1,lu_roff_pair,eamrho,eamglue,eamrho_d,eamglue_d,auxe,alpha,zz,iewald,rhomax,rhomin
+         &eamrep,roff1,lu_roff_pair,eamrho,eamglue,eamrho_d,eamglue_d,auxe,alpha,iewald,rhomax,rhomin
 
     USE SMjuli
     implicit none
 
-    integer :: k,l,iti,lw,i,j,ngrp1
+    integer :: k,l,iti,lw,ngrp1
     real(double) ::xsp(ngrid),ysp(ngrid),bsp(ngrid),csp(ngrid),dsp(ngrid)
     real(double) ::ysp_d(ngrid),bsp_d(ngrid),csp_d(ngrid),dsp_d(ngrid)
-    real(double):: ktor,r,r2,r3
+    real(double):: ktor
     real(double),dimension(:),allocatable::ktorho
-    real(double) :: rk,rhok,rk2,rue,minrho,maxrho,ar,ar2,damp
+    real(double) :: rk,rhok,rk2,rue,minrho,maxrho
 
 
 
@@ -75,17 +76,17 @@ contains
 !            write(6,*)'pair pot', l,typ_pot_pair(l),lu_roff_pair(l)
        if (typ_pot_pair(l).ne.ipotentiel) cycle
        do k=1,ngrid            
-          rk=(k*ktor) ; rk2=rk**2
+          rk=(k*ktor) !; rk2=rk**2
           xsp(k)=rk
           !            write(6,*)k,rk
           select case(ipotentiel)
           case(10)
-             call extrapolateRep(reppair(l),SPreppair(l),rk2,Erep=ysp(k))
+             call extrapolateRep(reppair(l),SPreppair(l),rk,Erep=ysp(k))
              if (lforcetabulate) then
-                call extrapolateRep(reppair_d(l),SPreppair_d(l),rk2,Erep=ysp_d(k))
+                call extrapolateRep(reppair_d(l),SPreppair_d(l),rk,Erep=ysp_d(k))
              end if
           case(11)
-             call extrapolateReperco(rk2,ysp(k))
+             call extrapolateReperco(rk,ysp(k))
 
           case(12)
              call extrapolateRepjl(reppairjl(l),rk2,Erep=ysp(k))

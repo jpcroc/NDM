@@ -8,7 +8,7 @@ module parautils
   use Tpara,only:para_space_config
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage
-  use gen_com_m,only:lspacendm,itetabvois,rang,erg2ev
+  use gen_com_m,only:lspacendm,rang,erg2ev,itetabvois
   use atomconfig,only: atom_config,atom_config_d,atom_config_e
   USE boxconfig,only:box_config,periodbox,updatebox
   USE cellconfig,only:cell_config,caltabtC
@@ -51,7 +51,7 @@ contains
     logical::ldistr
     logical,optional,intent(in)::lboxchange
     logical::lboxch
-    integer::ierr,iun
+
     logical::lcalcv
 
     
@@ -138,9 +138,9 @@ contains
     logical,optional::lcalcvois
     logical::lcalcv
     !    character(len=26)::caracm2l,caracvm
-    integer::ierr,i,ierror
+    integer::ierror
     real(double)::atl(3,3)
-    integer::iun
+
     integer,save::ncall=0
     logical,optional,intent(in)::lboxchange
     logical::lboxch
@@ -205,7 +205,7 @@ contains
     type(atom_config_d),target::atd
     type(atom_config_e),target::ate
     logical::lord
-    integer::ierr,iun,i,j
+    integer::i,j
     logical::lperiod
     lord=.false.
     if (present(lorder))lord=lorder
@@ -300,7 +300,7 @@ contains
     logical, optional,intent(in)::lchgboxT
     logical::lchgbox
     real(double)::atl(3,3),ex
-    integer::ierror,i1,i2
+    integer::i1
     lchgbox=.false.
     ex=rang
     if (present(lchgboxT))lchgbox=lchgboxT
@@ -329,7 +329,7 @@ contains
   subroutine driver_caltabt_para(atcf,celcf,boxcf,psc,lperiod,lcalcvois)
 
     use Tpara,only:nprocspace
-    use gen_com_m,only:iteration,itetabvois,itesigma
+    use gen_com_m,only:iteration,itetabvois
     class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(inout),target::celcf
     class(box_config),intent(inout)::boxcf
@@ -337,7 +337,7 @@ contains
     logical,intent(in)::lperiod
     logical,intent(in),optional::lcalcvois
     logical::lcalcv=.false.
-    logical  ::test_sigma
+
     integer::i
     !conditions periodiques
     if (present(lcalcvois))lcalcv=lcalcvois

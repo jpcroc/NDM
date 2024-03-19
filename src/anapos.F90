@@ -71,7 +71,7 @@ contains
     class(atom_config),intent(in)::atana0
     class(cell_config),intent(in)::celana0
     class(box_config),intent(in)::boxana0
-    integer :: i, ic,j,k,l,m,n,nbvoisparf(20,20)
+    integer :: i, ic,nbvoisparf(20,20)
     real(double)  :: decal(3)
 
 
@@ -292,11 +292,11 @@ contains
     class(box_config),intent(in)::boxana
     integer,optional::itapp
     integer::itap
-    integer :: i, ic,j,k,l,m,n,nbvoisparf(20,20)
-    real(double)  :: decal(3)
+    integer :: i,nbvoisparf(20,20)
 
 
-    integer :: idecal    ! alignement des posistions sur l'atome idecal
+
+
     integer, save:: icall=0
     type(atom_config)::atcf
     type(cell_config)::celcf
@@ -545,7 +545,7 @@ contains
     integer, dimension(:), allocatable:: inddep(:)
     integer::ndep
     !Local variables
-    integer :: i,j,k,ic,idp,im
+    integer :: i,idp,im
 
 
     real(double) :: tdep2
@@ -1225,7 +1225,7 @@ contains
 
 
     !Local variables
-    integer :: i,j,k,ic,nplt,idp,iplt,immax,immin,koo
+    integer :: i,j,nplt,idp,iplt,immax,immin,koo
 
 
     real(double) :: a1,a2,a3,c1,c2,c3,r2

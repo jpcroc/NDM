@@ -145,8 +145,8 @@ contains
 
        if (test_sigma) then
           do i1 = 1, 3
-             sig(i1,i1) = sig(i1,i1)+sige(i1,i1)
-             if (lTPcel.EQV..true.) then
+             sigcalfo(i1,i1) = sigcalfo(i1,i1)+sige(i1,i1)
+             if (lcalcsigc.EQV..true.) then
                 sigc(i1,i1,:celcf%noxyz) = sigc(i1,i1,:celcf%noxyz)+sige(i1,i1)
              end if
           end do
@@ -170,8 +170,8 @@ contains
 
        if (test_sigma) then
           do i1 = 1, 3
-             sig(i1,i1) = sig(i1,i1)+sige(i1,i1)
-             if (lTPcel.EQV..true.) then
+             sigcalfo(i1,i1) = sigcalfo(i1,i1)+sige(i1,i1)
+             if (lcalcsigc.EQV..true.) then
                 sigc(i1,i1,:celcf%noxyz) = sigc(i1,i1,:celcf%noxyz)+sige(i1,i1)
              end if
           end do

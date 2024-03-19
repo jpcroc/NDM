@@ -3,11 +3,11 @@ for temp  in  *.F90 *.f Makefil* */*.F90 MAKE/*
 do 
 	echo $temp
 	rm -f rd
-	diff   $temp ../../../ndm2021/$temp >rd
-	diff   $temp ../../../ndm2021/$temp 
+	diff   $temp /home/croc/NDM/ndm2024/$temp >rd
+	diff   $temp /home/croc/NDM/ndm2024/$temp 
 	if  [ -s  rd ]
 	then
-	meld ../../../ndm2021/$temp  $temp
+	meld ../../../ndm2024/$temp  $temp
 	fi
 	
 

@@ -9,8 +9,8 @@ contains
   ! **********************************************************
   subroutine calfo2ctabvois(atcf,celcf,boxcf)
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:lcalcjq,pi,potis1
-    USE var_pot, ONLY:alpha,csive,ipo,rue_pair,ipo,pot
+    USE gen_com_m, ONLY:pi
+    USE var_pot, ONLY:alpha,csive,ipo,rue_pair,ipo,pot,potis1
     use vect_dist_mod,only:vect_dist
     USE jqmod
     implicit none
@@ -86,15 +86,15 @@ contains
           if (test_sigma) then
              partsig=phu/boxcf%volu
              ! calcul de sigma contrainte
-             sig(1,1) = sig(1,1)+partsig*gradij(1)*dxp(1)
-             sig(1,2) = sig(1,2)+partsig*gradij(1)*dxp(2)
-             sig(1,3) = sig(1,3)+partsig*gradij(1)*dxp(3)
-             sig(2,1) = sig(2,1)+partsig*gradij(2)*dxp(1)
-             sig(2,2) = sig(2,2)+partsig*gradij(2)*dxp(2)
-             sig(2,3) = sig(2,3)+partsig*gradij(2)*dxp(3)
-             sig(3,1) = sig(3,1)+partsig*gradij(3)*dxp(1)
-             sig(3,2) = sig(3,2)+partsig*gradij(3)*dxp(2)
-             sig(3,3) = sig(3,3)+partsig*gradij(3)*dxp(3)
+             sigcalfo(1,1) = sigcalfo(1,1)+partsig*gradij(1)*dxp(1)
+             sigcalfo(1,2) = sigcalfo(1,2)+partsig*gradij(1)*dxp(2)
+             sigcalfo(1,3) = sigcalfo(1,3)+partsig*gradij(1)*dxp(3)
+             sigcalfo(2,1) = sigcalfo(2,1)+partsig*gradij(2)*dxp(1)
+             sigcalfo(2,2) = sigcalfo(2,2)+partsig*gradij(2)*dxp(2)
+             sigcalfo(2,3) = sigcalfo(2,3)+partsig*gradij(2)*dxp(3)
+             sigcalfo(3,1) = sigcalfo(3,1)+partsig*gradij(3)*dxp(1)
+             sigcalfo(3,2) = sigcalfo(3,2)+partsig*gradij(3)*dxp(2)
+             sigcalfo(3,3) = sigcalfo(3,3)+partsig*gradij(3)*dxp(3)
              if(lsigat)then
                 select type (atcf)
                 class is (atom_config_e)
