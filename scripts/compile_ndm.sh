@@ -7,15 +7,15 @@
 
 
 # ---------------------------------------- more environment, only relevant for build ---------------------------------------
-export NDM_ROODIR=/volatile/catB/jd270899/git_rep
-export NDM_SRCDIR=${NDM_ROODIR}/NDM                             # sources directory
-export NDM_BUIDIR=${NDM_ROODIR}/ndm_build_ifort_para            # build directory
+export NDM_ROODIR=/home/croc/NDM
+export NDM_SRCDIR=${NDM_ROODIR}/ndm2024_cv/                             # sources directory
+export NDM_BUIDIR=${NDM_ROODIR}/ndm2024_cv/ndm_build_ifort_serial            # build directory
 
-preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_parallel.cmake  # defines cache file with preset options
-#preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_serial.cmake  # defines cache file with preset options
+#preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_parallel.cmake  # defines cache file with preset options
+preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_serial.cmake  # defines cache file with preset options
 #preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_parallel.cmake  # defines cache file with preset options
 #preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake  # defines cache file with preset options
-n_proc=4    # number of proc to use for compilation
+n_proc=8    # number of proc to use for compilation
 
 
 
@@ -40,7 +40,7 @@ n_proc=4    # number of proc to use for compilation
 
 
 
-# ---------------------------- additional options, in case cmake doesn't find packages automatically -----------------------
+# ---------------------------- additionals options, in case cmake doesn't find packages automatically -----------------------
 cmake_options=
 # Lammps path and flags
 #lammps_path=/home/catB/jd270899/.local/lib64/liblammps.so

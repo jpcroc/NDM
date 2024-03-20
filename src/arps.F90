@@ -12,7 +12,8 @@ module arps_mod
   USE calfoeamcel_mod,only:calfoeamcel
   USE calfoew_mod,only:calfozz
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,itmax,itloopmax,timemax,timeloopmax,latcomp,iteration,itesigma,timel,tstep,&
-       &lperiod,sigkine,ltpcel,sigtot,potis2,bk,erg2ev,itetemp,ltberendsen,tautcon,text,lspacendm,dmtype,unitP,llangevin,pi
+       &lperiod,sigkine,ltpcel,sigtot,potis2,bk,erg2ev,itetemp,ltberendsen,tautcon,text,lspacendm,dmtype,unitP,llangevin,pi,&
+       &iterasmol
   
   use calfocommon,only:sigcalfo,potistcalfo,test_sigma,sigcalfo,sigc,lcalcsigc
   use var_pot,only : cm,iewald,gamlt
@@ -21,6 +22,7 @@ module arps_mod
   use tempinstT_mod,only:tempinstT
   use calfoeamcel_mod,only:calfoeamcel
   USE arret_ndm_mod,only:arret_ndm
+  USE calcfvp_mod
 
 #ifdef PARA
   use Tpara,only:nprocspace,para_space_config,comm_space,myidsp
@@ -40,7 +42,7 @@ module arps_mod
 !!$  end type atom_config_arps
 
   real(double)::kmin,kmax
-  real(double),allocatable,dimension(:)::aspl,bspl,vmin,vmax,S0spl,xs
+!  real(double),allocatable,dimension(:)::aspl,bspl,vmin,vmax,S0spl,xs
   real(double),allocatable,dimension(:) :: tabdensity
   !  logical::lxyz
   logical::lpartarps
@@ -57,7 +59,7 @@ contains
     integer::imm,i,ilocal,ic,iti
 
     real(double), dimension(ntyp) :: aux
-    real(double)::potisrep0,fvp,m,vn,xpar,u1,u2,u3
+    real(double)::potisrep0,fvp,m,vn,xpar,u1,u2,u3,fvp2
     !    real(double)::tabtat(500,ntyp+1)
     if (rang==0) write (6, *) '***** FIRST ITERATION  ARPS****',itloopmax,timeloopmax,itesigma
     ! Appel de la routine generale des forces
@@ -172,26 +174,27 @@ contains
                 atdml%Glangv(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)
              end do
              !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!             atdml%mov=2
-             if (atdml%mov(i)==2) then
-                fvp=1
-             else
-                iti=atdml%ityp(i)
-                m=cm(iti)
-                vn=norm2(atdml%vp(:,i))
-                xpar=vn*m-vmin(iti)*m
-!                write(6,*)'xpar',xpar,xs(iti)
-                if (xpar.le.0)  then
-                   fvp=0
-                else if ((xpar.lt.xs(iti)).and.(xpar.gt.0)) then
-                   fvp=pol(xpar,aspl(iti),bspl(iti))/vn
-                else
-                   fvp=1
-!                   write(6,*)'POOOOO'
-!                   call arret_ndm
-                end if
-             end if
-!             write(6,*)'factg', i, fvp
+             !             atdml%mov=2
+             call calcfvp(fvp,atdml%ityp(i),atdml%vp(:,i),atdml%mov(i))
+!!$             if (atdml%mov(i)==2) then
+!!$                fvp=1
+!!$             else
+!!$                iti=atdml%ityp(i)
+!!$                m=cm(iti)
+!!$                vn=norm2(atdml%vp(:,i))
+!!$                xpar=vn*m-vmin(iti)*m
+!!$!                write(6,*)'xpar',xpar,xs(iti)
+!!$                if (xpar.le.0)  then
+!!$                   fvp=0
+!!$                else if ((xpar.lt.xs(iti)).and.(xpar.gt.0)) then
+!!$                   fvp=pol(xpar,aspl(iti),bspl(iti))/vn
+!!$                else
+!!$                   fvp=1
+!!$!                   write(6,*)'POOOOO'
+!!$!                   call arret_ndm
+!!$                end if
+!!$             end if
+!!$             write(6,*)'factg', i, fvp,fvp2
              do ic=1,3
                 !  write(6,*)'ct',cm(ityp(1)),tstep
 !!$                write(6,*)'1-rga', fvp*gamlt(atdml%ityp(i))*tstep/2
@@ -369,23 +372,7 @@ contains
 !             call random_number(u1)
 !             call random_number(u2)
 !             atdml%Glangv(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
-             if (atdml%mov(i)==2) then
-                fvp=1
-             else
-                iti=atdml%ityp(i)
-                m=cm(iti)
-                vn=norm2(atdml%vp(:,i))
-                xpar=vn*m-vmin(iti)*m
-                if (xpar.le.0)  then
-                   fvp=0
-                else if ((xpar.lt.xs(iti)).and.(xpar.gt.0)) then
-                   fvp=pol(xpar,aspl(iti),bspl(iti))/vn
-                else
-                   fvp=1
-!                   write(6,*)'POOOOO'
-!                   call arret_ndm
-                end if
-             end if
+             call calcfvp(fvp,atdml%ityp(i),atdml%vp(:,i),atdml%mov(i))
              do ic=1,3
                 !  write(6,*)'ct',cm(ityp(1)),tstep
 !!$                write(6,*)'II-rga', fvp*gamlt(atdml%ityp(i))*tstep/2
@@ -469,12 +456,13 @@ contains
     type(cell_config_arps):: celndm
     character(len=*)::chr
 
-    !   character*3,allocatable,target::tymov(:)
+    character*3,allocatable,target::tymov(:)
 
     real(double)::earps,kinps
 
-    !    CHARACTER(len=89) :: namemov
-    !    namemov='mov'
+    CHARACTER(len=89) :: namemov
+    integer::i
+    namemov='mov'
 
     if (itetemp>0) then
        if (mod(iteration,itetemp)==0) then
@@ -486,25 +474,25 @@ contains
 
     call analyseT (atdml,celndm,boxndm,psc)
 
-!!$    if (iterasmol>0) then     
-!!$       if (mod(iteration,iterasmol)==0) then
-!!$          allocate(tymov(atdml%im))
-!!$          do i=1,atdml%im
-!!$             select case (atdml%mov(i))
-!!$             case(0)
-!!$                tymov(i)=' Re'
-!!$             case(1)
-!!$                tymov(i)=' In'             
-!!$             case(2)
-!!$                tymov(i)=' Mo'
-!!$             end select
-!!$          end do
-!!$          
-!!$          call rasmolT(atdml,boxndm,iteration,latcomp=latcomp,rty=tymov,namefr='mov')
-!!$!          if (l2T) call  eleccellmol
-!!$
-!!$       end if
-!!$    endif
+    if (iterasmol>0) then     
+       if (mod(iteration,iterasmol)==0) then
+          allocate(tymov(atdml%im))
+          do i=1,atdml%im
+             select case (atdml%mov(i))
+             case(0)
+                tymov(i)=' Re'
+             case(1)
+                tymov(i)=' In'             
+             case(2)
+                tymov(i)=' Mo'
+             end select
+          end do
+          
+          call rasmolT(atdml,boxndm,iteration,latcomp=latcomp,rty=tymov,namefr='mov')
+!          if (l2T) call  eleccellmol
+
+       end if
+    endif
   end subroutine analysearps
   function kinarps(atdml)
     type(atom_config_arps)::atdml
@@ -1034,37 +1022,6 @@ contains
 
   end subroutine setfree
 
-  function ppol(x,a,b)
-    real*8::x,ppol,a,b
-    ppol=a*x**4/4+b*x**3/3
-
-  end function ppol
-
-  function pol(x,a,b)
-    real*8::x,pol,a,b
-    pol=a*x**3+b*x**2
-
-  end function pol
-
-  function dpol(x,a,b)
-    real*8::x,dpol,a,b
-    dpol=3*a*x**2+2*b*x
-  end function dpol
-
-  function uf(x,a,b,s0,xs,pmin,m)
-    real*8::uf,x,a,b,s0,xs,pmin,m
-    integer::mov
-    if (x.le.0)  then
-       uf =S0
-       mov=0
-    else if ((x.lt.xs).and.(x.gt.0)) then
-       uf=ppol(x,a,b)+S0
-       mov=1
-    else
-       uf=0.5*(x+pmin)**2/m
-       mov=2
-    end if
-  end function uf
 
   subroutine initarps(atcf,celcf)
     type(atom_config_arps)::atcf

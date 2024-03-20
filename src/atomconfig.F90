@@ -2793,6 +2793,8 @@ contains
 
   end subroutine distribnag
   
+
+  
 end module atomconfig
 
 

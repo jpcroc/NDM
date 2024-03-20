@@ -1110,6 +1110,7 @@ contains
        if(itmax==-1)itmax=300
     case (4)
        if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
+       if (llangevin.and.(rang==0)) write (6,'(a)') '      Tcst LANGEVIN'
     case (41)
        if (rang==0) write (6,'(a)') '      MOLECULAR DYNAMICS ADAPTATIVE RESTRAINED PARTICLE SIMULATION with restrained forces'
     case (42)
@@ -1598,8 +1599,12 @@ contains
     
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
-
-
+    if ((dmtype.ge.41).and.(dmtype.le.42)) then
+       if ((any(noxyzkmin(:).ge.1)).and.(.not.lpartarps)) then
+          write(6,*)'NOT lpartarps and noyzkmin >0 STOP'
+          call arret_ndm
+       end if
+    end if
   end subroutine readdm
 
 end module readdm_mod

@@ -7,6 +7,8 @@ module calctemp_mod
   USE eloss, ONLY : tcelec,ecelec
   USE atomconfig,only: atom_config_d
   USE cellconfig,only : cell_config
+  USE atomconfig,only : atom_config_arps
+  use calcfvp_mod,only:calcfvp
 #ifdef PARA
   USE Tpara,only:myidsp,nprocspace,comm_space,nprocs
 #else
@@ -32,7 +34,7 @@ contains
 
     integer ::  i, ko, i2,kx,ixe,iye,ize
     real(double) :: sumtat2
-    real(double) :: vpn2,tat,ekin
+    real(double) :: vpn2,tat,ekin,fvp
     !  real(double), dimension(ntyp,3) :: vx2
     integer::ixyze(3),nats,nat
     ! ym      real(double), dimension(ntyp,nce) :: v2c
@@ -77,6 +79,11 @@ contains
 
              i = cellcf%atincel(i2,ko)
              vpn2 = atcf%vp(1,i)**2+atcf%vp(2,i)**2+atcf%vp(3,i)**2
+             select type(atcf)
+             type is (atom_config_arps)
+                call calcfvp(fvp,atcf%ityp(i),atcf%vp(:,i),atcf%mov(i))
+                vpn2=vpn2*fvp
+             end select
              kine=kine+vpn2*0.5*cm(atcf%ityp(i))
              tat=vpn2*cm(atcf%ityp(i))/(3.0*bk)
              sumtat2 = sumtat2+tat
@@ -167,6 +174,12 @@ contains
              nat=nat+1
              i = cellcf%atincel(i2,ko)
              vpn2 = atcf%vp(1,i)**2+atcf%vp(2,i)**2+atcf%vp(3,i)**2
+             select type(atcf)
+             type is (atom_config_arps)
+                call calcfvp(fvp,atcf%ityp(i),atcf%vp(:,i),atcf%mov(i))
+                vpn2=vpn2*fvp
+             end select
+
              kine=kine+vpn2*0.5*cm(atcf%ityp(i))
              tat=vpn2*cm(atcf%ityp(i))/(3.0*bk)
              sumtat2 = sumtat2+tat
