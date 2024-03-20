@@ -1,6 +1,0 @@
-#!/bin/bash -f
-sed -e '/>/s/>//' <totA2.out > tmp1
-sed -e '/</s/<//' <tmp1 > tmp2
-sed -e '/\,/s/\,/\ /g' <tmp2> tmp3
-sed -e '/\\n/s/\\n/ /g' <tmp3> totA2S
-rm -f tmp1 tmp2 tmp3
