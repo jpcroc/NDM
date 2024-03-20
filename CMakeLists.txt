@@ -141,9 +141,7 @@ if ("MPI" IN_LIST ${PROJECT_NAME}_PACKAGE_LIST)
 else()
     string(APPEND MAIN_EXECUTABLE_NAME "_serial")
 endif()
-#include_directories("/home/catB/jd270899/.local/include/lammps")
 add_library( ${MAIN_LIBRARY_NAME} STATIC )
-target_include_directories( ${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/.local/include/lammps" )
 
 # adding required libraries to main library
 foreach( PACKAGE IN ITEMS ${${PROJECT_NAME}_PACKAGE_LIST})
