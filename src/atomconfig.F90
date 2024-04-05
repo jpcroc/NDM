@@ -123,6 +123,11 @@ contains
     type is (atom_config_arps)
        write(6,*)'atomfigARPS'
     end select
+    select type (atcf)
+    class is (atom_config_e)
+       write(6,*)'atomfigE'
+       write(6,*)'FLAGSFF', atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
+    end select
     write(6,*)'TYPE PRECISE ? SI NON extension'
 
   end subroutine print_type
@@ -711,9 +716,9 @@ contains
     class (atom_config),intent(in)::atsource
     class(atom_config)::atcible
     select type (atcible)
-    type is (atom_config_e)
+    class is (atom_config_e)
        select type (atsource)
-       type is (atom_config_e)
+       class is (atom_config_e)
           atcible%lax=atsource%lax
           atcible%lprteat=atsource%lprteat
           atcible%llangevin=atsource%llangevin
@@ -2578,7 +2583,6 @@ contains
 
     integer:: size1,size3,sizeV,size9
     integer::ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,ip,icomp
-
 
     size1=immax;size3=3*size1; size9=3*size3
     ibi=0;ibl=0;ibr=0

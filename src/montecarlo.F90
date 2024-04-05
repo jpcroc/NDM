@@ -198,6 +198,14 @@ contains
     cells_n=>config_cells_n(1)
     atconf_nplus1=>config_atom_nplus1(1)
     cells_nplus1=>config_cells_nplus1(1)
+
+    if (rang==0) then
+       write(6,*)'***************PATH MONTE-CARLO*****************'
+       write(6,*)'pas_lambda=',pas_lambda_mc,' npath=',n_path,' naparapath=',nparapath
+       write(6,*)'ins_typ=',ins_typ, '(0=random; 1=sph 2=switch type)'
+       write(6,*)'lbiais_retrait , lbiais_inser ',lbiais_retrait,lbiais_inser
+       if (lbiais_inser) write(6,*)'R0mcgc bublcenter ',R0mcgc,bublcenter
+    end if
   end subroutine init_montecarlo
 
   subroutine montecarlo

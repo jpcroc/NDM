@@ -186,10 +186,12 @@ contains
     dx = MatMul(box%at,dx)
     distc = sqrt(Sum( dx(1:3)**2 ))
     if (present(dist))dist=distc
-    if (distc.gt.rum) then
-       linter=.false.
-    else
-       linter=.true.
+    if (present(rum)) then
+       if (distc.gt.rum) then
+          linter=.false.
+       else
+          linter=.true.
+       end if
     end if
     
 

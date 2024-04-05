@@ -474,25 +474,25 @@ contains
 
     call analyseT (atdml,celndm,boxndm,psc)
 
-    if (iterasmol>0) then     
-       if (mod(iteration,iterasmol)==0) then
-          allocate(tymov(atdml%im))
-          do i=1,atdml%im
-             select case (atdml%mov(i))
-             case(0)
-                tymov(i)=' Re'
-             case(1)
-                tymov(i)=' In'             
-             case(2)
-                tymov(i)=' Mo'
-             end select
-          end do
-          
-          call rasmolT(atdml,boxndm,iteration,latcomp=latcomp,rty=tymov,namefr='mov')
-!          if (l2T) call  eleccellmol
-
-       end if
-    endif
+!!$    if (iterasmol>0) then     
+!!$       if (mod(iteration,iterasmol)==0) then
+!!$          allocate(tymov(atdml%im))
+!!$          do i=1,atdml%im
+!!$             select case (atdml%mov(i))
+!!$             case(0)
+!!$                tymov(i)=' Re'
+!!$             case(1)
+!!$                tymov(i)=' In'             
+!!$             case(2)
+!!$                tymov(i)=' Mo'
+!!$             end select
+!!$          end do
+!!$          
+!!$          call rasmolT(atdml,boxndm,iteration,latcomp=latcomp,rty=tymov,namefr='mov')
+!!$!          if (l2T) call  eleccellmol
+!!$
+!!$       end if
+!!$    endif
   end subroutine analysearps
   function kinarps(atdml)
     type(atom_config_arps)::atdml

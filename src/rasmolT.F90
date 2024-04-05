@@ -128,6 +128,7 @@ contains
           div%mpi_image%rank=myidsp
           div%mpi_image%nproc=nprocspace
           div%mpi_image%comm=COMM_space%comm
+         ! write(6,*)
           !          call atmol%vers_master(atcomp,div,'ixnlusv')
           call atmol%vers_master(atcomp,div)
           !im =atcomp%im
@@ -154,7 +155,6 @@ contains
 !    im=atmol%im
     !imm=atmol%imm
 #endif  
-
     if(rgloc==0) then
 !*****************PPPPPPPPPAAAAAAAAASSSSSSSSAAAAAAAAAAAGGGGGGGGEEEEEEEEEE en AngSTROMS!!!!!!!!!!!!!!!!
        at =boxmol%at*1d8 ; bg=boxmol%bg*1d-8

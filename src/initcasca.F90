@@ -116,6 +116,7 @@ contains
              end if
 
              call cryst_to_cart (atcfcasc%imm, atcfcasc%xp, boxndm%bg, -1)    !cart vers cryst
+!             call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%bg, -1)    !cart vers cryst
              call cryst_to_cart (atcfcasc%imm, atcfcasc%xpp, boxndm%bg, -1)    !cart vers cryst
              if (.not.atcf%lax) then
                 write(6,*) 'no ax and casca stop'
@@ -134,15 +135,15 @@ contains
              atcfcasc%xp(1,:atcfcasc%im) = atcfcasc%xp(1,:atcfcasc%im)-t1
              atcfcasc%xp(2,:atcfcasc%im) = atcfcasc%xp(2,:atcfcasc%im)-t2
              atcfcasc%xp(3,:atcfcasc%im) = atcfcasc%xp(3,:atcfcasc%im)-t3
-             atcfcasc%ax(1,:atcfcasc%im) = atcfcasc%ax(1,:atcfcasc%im)-t1
-             atcfcasc%ax(2,:atcfcasc%im) = atcfcasc%ax(2,:atcfcasc%im)-t2
-             atcfcasc%ax(3,:atcfcasc%im) = atcfcasc%ax(3,:atcfcasc%im)-t3
+!!$             atcfcasc%ax(1,:atcfcasc%im) = atcfcasc%ax(1,:atcfcasc%im)-t1
+!!$             atcfcasc%ax(2,:atcfcasc%im) = atcfcasc%ax(2,:atcfcasc%im)-t2
+!!$             atcfcasc%ax(3,:atcfcasc%im) = atcfcasc%ax(3,:atcfcasc%im)-t3
 
              call cryst_to_cart (atcfcasc%imm, atcfcasc%xp, boxndm%at, 1)     !cryst vers cart
              call cryst_to_cart (atcfcasc%imm, atcfcasc%xpp, boxndm%at, 1)     !cryst vers cart
-             call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%at, 1)     !cryst vers cart
+!!             call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%at, 1)     !cryst vers cart
              call periodbox  (boxndm,atcfcasc)
-
+             atcfcasc%ax=atcfcasc%xp
              !  write(6,*)xp(1,iko)
              !                                                !Conditions periodiques
 

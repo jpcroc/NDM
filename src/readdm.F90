@@ -313,7 +313,7 @@ contains
     lposmoy=.false.       ! writes the average position and energy of the atoms in a .mol file
     eatref(:)=0.
     lanaposart=.false.  ! anapos a la ART : decalage + defauts en WS, concu pour le cas des I dans UO2
-    ivisu=1    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG, ivisu=6 xfg ; 7=xyz type à la Babel
+    ivisu=4    ! format de sortie dans rasmol.f90 : ivisu=1=.mol, ivisu=2=vsim mal code supprime, ivisu=3=xred , ivisu=4 CFG, ivisu=6 xfg ; 7=xyz type à la Babel
     !4==> 40= pas de vitesses; 41 vitesses
     !6==> 60= pas de vitesses; 61 vitesses
 
@@ -641,6 +641,10 @@ contains
 !!$          end if
 !!$          call arret_ndm
 !!$       end if
+       if (igen.ne.0) then
+          write(6,*)'IGEN MUST BE ZERO (dont know why) stop'
+          call arret_ndm
+       end if
        if (itypcalc.lt.0) then
           write(6,*)'itypcalc<0'
           call arret_ndm
@@ -823,7 +827,11 @@ contains
 
 
 
-
+    if (lcasca) then
+       lspecialinit=.true.
+       lax=.true.
+       lfilm=.true.
+    end if
 
     if(lTcon.and.dmtype>1) then
        if (rang==0) write(6,*)rang,'lTcon dmtype>1'

@@ -49,7 +49,7 @@ contains
     ! MPI
 !    if ((rang==0).and.(lverb)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
     if ((ipotentiel.ne.20).and.(izonr<2)) then
-       write (6, *) 'trop petite boite !!!'
+       !write (6, *) 'trop petite boite !!!'
        !cosboite  stop
        if (lrctest) then
           write (6, *) 'STOP ; supprimer avec lrctest=.false. dans din'

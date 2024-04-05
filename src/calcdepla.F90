@@ -42,6 +42,7 @@ contains
     real(double)::xp_iko(4),dispiko
     integer,save::icall=0
     integer::proc_source,ikloc
+    logical,allocatable::lgul(:)
 !    integer::ityp_iko
     
 !!$  integer :: i, iti
@@ -66,6 +67,8 @@ contains
 !!$  integer :: ndeplatot_tmp
 !!$  integer :: proc_source
 !!$#endif
+    allocate(lgul(atcf%imm))
+    lgul=atcf%lgul
     icall=icall+1
     ikloc=0
     lufilmpaf = 79                             ! index fichier film du paf pour toutes les iterations
@@ -82,6 +85,7 @@ contains
        allocate(deplat(atcf%im))
     end if
     im=atcf%im
+    
     atcf%lgul(:)=.false.
     est_present=0
     do i=1,im
@@ -147,13 +151,13 @@ contains
 #endif
 
     if (myidsp==0) then
-       write(6,*)'TOTAL DISPLACED ATOMS',ndeplatot,iteration
+       write(6,*)'TOTAL DISPLACED ATOMS',timel, iteration ,ndeplatot
        do iti=1,ntyp
           if (ndepla(iti).gt.0) then
-             write(6,*)'TYPE DISPLACED ATOMS',iti, ndepla(iti)
+             write(6,*)'TYPE DISP ATOMS',iti, ndepla(iti)
           end if
        end do
-       write(6,*)'TOTAL DISPLACEMENT ',deptot*1d8,iteration
+       write(6,*)'TOTAL DISPLACEMENT ',timel, iteration,deptot*1d8
     end if
 
     est_present=0
@@ -202,7 +206,7 @@ contains
         end if
      endif
 
-
+     atcf%lgul=lgul
     
   end subroutine calcdepla
 end module calcdepla_mod

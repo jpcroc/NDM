@@ -43,7 +43,7 @@ contains
 
     
     namelist /spinit/lpressinit,Lheatinit,eko,xko,yko,zko,xx0,yy0,zz0,iheatinit,tempheatinit,Eheatinit,Rheatinit,&
-         &ipressinit,Rpressinit,deltapressinit
+         &ipressinit,Rpressinit,deltapressinit,iko
 
     iko=-1
     xko=1.;    yko=1.;    zko=1.
@@ -56,7 +56,7 @@ contains
     ipressinit =1
     Rpressinit=5.0
     deltapressinit=0.3
-    
+    eko=-1
     call newunit(iusp)
     open(unit=iusp,file='specialinit.in')
     read(iusp,nml=spinit)
