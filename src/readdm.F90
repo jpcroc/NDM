@@ -952,7 +952,7 @@ contains
 
     if (lprahman) then
        itesigma=1
-       iteprtsigma=1
+       iteprtsigma=itetemp
        select case(dmtype)
        case(21)
           dmtype=22

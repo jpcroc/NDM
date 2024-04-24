@@ -3,11 +3,11 @@ for temp  in  *.F90 *.f Makefil* */*.F90 MAKE/* *.c *.cpp */*.c */*.cpp *.h */*.
 do 
 	echo $temp
 	rm -f rd
-	diff   /mnt/c/Users/jc148490/lin/DM/codesndm/GIT/NDM/p2.8/$temp  $temp >rd
-	diff   /mnt/c/Users/jc148490/lin/DM/codesndm/GIT/NDM/p2.8/$temp  $temp
+	diff   /home/croc/NDM/ndm2024_cv/src/$temp  $temp >rd
+	diff   /home/croc/NDM/ndm2024_cv/src/$temp   $temp
 	if  [ -s  rd ]
 	then
-	meld   $temp /mnt/c/Users/jc148490/lin/DM/codesndm/GIT/NDM/p2.8/$temp
+	meld   $temp /home/croc/NDM/ndm2024_cv/src/$temp
 	fi
 	
 
