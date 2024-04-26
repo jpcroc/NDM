@@ -5,27 +5,44 @@ CMAKE_minimum_required( VERSION 3.20 )
 ################################################
 # Cache variables will not be reset if already defined with cmake .. -C <cache file>
 
-find_program(VAR_MPIIFORT mpiifort) # check if mpiifort is available for intel parallel
-find_program(VAR_IFORT ifort)       # else check if ifort is available for intel serial
-find_program(VAR_MPIFORT mpifort)   # else check if mpifort is available for GNU parallel
-find_program(VAR_GFORTRAN gfortran) # else check if gfortran is available for GNU serial
+# Listing fortran compilers to look for
+set(INTEL_PARA_COMPILERS mpiifx mpiifort)
+set(INTEL_SERIAL_COMPILERS ifx ifort)
+set(GNU_PARA_COMPILERS mpifort) # checking if there is a fortran mpi, wrapper wont be used
+set(GNU_SERIAL_COMPILERS gfortran f95 f77)
+
+# For each possible configuration, looking for compilers
+set(compile_configuration_list INTEL_PARA INTEL_SERIAL GNU_PARA GNU_SERIAL)
+foreach (config IN ITEMS ${compile_configuration_list}) 
+    set(VAR_${config} "VAR_${config}-NOTFOUND")
+    foreach (compiler IN ITEMS ${${config}_COMPILERS})
+        if (VAR_${config} STREQUAL "VAR_${config}-NOTFOUND")
+            find_program(VAR_${config} ${compiler})
+        endif()
+    endforeach()
+endforeach()
 set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "RELEASE or DEBUG")
 
-if (NOT ${VAR_MPIIFORT} STREQUAL "VAR_MPIIFORT-NOTFOUND") # if mpiifort not not found, then INTEL parallel
-    set(NDM_PRESET_TITLE "Compile NDM intel parallel : mpiifort" CACHE STRING "")
-    set(CMAKE_Fortran_COMPILER "${VAR_MPIIFORT}" CACHE STRING "")    
+# Depending on found compilers, choosing a configuration
+if (NOT ${VAR_INTEL_PARA} STREQUAL "VAR_INTEL_PARA-NOTFOUND") # INTEL parallel
+    cmake_path(GET VAR_INTEL_PARA FILENAME compiler_name) 
+    set(NDM_PRESET_TITLE "Compile NDM intel parallel : ${compiler_name}" CACHE STRING "")
+    set(CMAKE_Fortran_COMPILER "${VAR_INTEL_PARA}" CACHE STRING "")    
     set(NDM_PARA ON)
-elseif (NOT ${VAR_IFORT} STREQUAL "VAR_IFORT-NOTFOUND") # if mpiifort not not found, then INTEL serial
-    set(NDM_PRESET_TITLE "Compile NDM intel serial : ifort" CACHE STRING "")
-    set(CMAKE_Fortran_COMPILER "${VAR_IFORT}" CACHE STRING "")
-elseif (NOT ${VAR_MPIFORT} STREQUAL "VAR_MPIFORT-NOTFOUND") # if mpifort not not found, then GNU parallel
-    set(NDM_PRESET_TITLE "Compile NDM GNU parallel : gfortran" CACHE STRING "")
-    set(CMAKE_Fortran_COMPILER "${VAR_GFORTRAN}" CACHE STRING "")
+elseif (NOT ${VAR_INTEL_SERIAL} STREQUAL "VAR_INTEL_SERIAL-NOTFOUND") # then INTEL serial
+    cmake_path(GET VAR_INTEL_SERIAL FILENAME compiler_name) 
+    set(NDM_PRESET_TITLE "Compile NDM intel serial : ${compiler_name}" CACHE STRING "")
+    set(CMAKE_Fortran_COMPILER "${VAR_INTEL_SERIAL}" CACHE STRING "")
+elseif (NOT ${VAR_GNU_PARA} STREQUAL "VAR_GNU_PARA-NOTFOUND") # then GNU parallel
+    cmake_path(GET VAR_GNU_SERIAL FILENAME compiler_name) 
+    set(NDM_PRESET_TITLE "Compile NDM GNU parallel : ${compiler_name}" CACHE STRING "")
+    set(CMAKE_Fortran_COMPILER "${VAR_GNU_SERIAL}" CACHE STRING "")
     set(NDM_GNU ON)
     set(NDM_PARA ON)
-elseif (NOT ${VAR_GFORTRAN} STREQUAL "VAR_GFORTRAN-NOTFOUND") # if mpifort not not found, then GNU serial
-    set(NDM_PRESET_TITLE "Compile NDM GNU serial : gfortran" CACHE STRING "")
-    set(CMAKE_Fortran_COMPILER "${VAR_GFORTRAN}" CACHE STRING "")
+elseif (NOT ${VAR_GNU_SERIAL} STREQUAL "VAR_GNU_SERIAL-NOTFOUND") # then GNU serial
+    cmake_path(GET VAR_GNU_SERIAL FILENAME compiler_name) 
+    set(NDM_PRESET_TITLE "Compile NDM GNU serial : ${compiler_name}" CACHE STRING "")
+    set(CMAKE_Fortran_COMPILER "${VAR_GNU_SERIAL}" CACHE STRING "")
     set(NDM_GNU ON)
 endif()
 
