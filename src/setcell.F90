@@ -75,9 +75,9 @@ contains
              WRITE(6,'(a)') "Boite trop petite: le nombre de cellules est fixe a son minimum"
           endif
        endif
-       nox = int(boxsn%nzl(1)/rum)
-       noy = int(boxsn%nzl(2)/rum)
-       noz = int(boxsn%nzl(3)/rum)
+       nox = max(1,int(boxsn%nzl(1)/rum))
+       noy = max(1,int(boxsn%nzl(2)/rum))
+       noz = max(1,int(boxsn%nzl(3)/rum))
        if ((rang==0).and.(lverb)) THEN
           write (6,'(a)') 'nox noy noz calcules a partir de ru'
           WRITE(6,'(2(a,g12.4),a,i0)') '  nox = Int( ', boxsn%nzl(1),'/',rum,') = ', nox
