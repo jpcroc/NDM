@@ -182,7 +182,7 @@ contains
           if (idirectionmcgc==0) then
              call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot)
              select case(ins_typ)
-             case(1)
+             case(1,3)
                 call init_instyp
              end select
                 
@@ -191,7 +191,7 @@ contains
           else
              call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot)
              select case(ins_typ)
-             case(1)
+             case(1,3)
                 call init_instyp
              end select
              call initN(ipp) ! initialise la configuration N+1
@@ -211,11 +211,19 @@ contains
 
     if (rang==0) then
        write(6,*)'***************PATH MONTE-CARLO*****************'
-       write(6,*)'pas_lambda=',pas_lambda_mc,' npath=',n_path,' naparapath=',nparapath
-       write(6,*)'ins_typ=',ins_typ, '(0=random; 1=sph 2=switch type, 3=slice)'
+       write(6,'(A,I6,A,I6,A,I4)')'pas_lambda=',pas_lambda_mc,' npath=',n_path,' naparapath=',nparapath
+       write(6,'(A,I3,A)')'ins_typ=',ins_typ, '(0=random; 1=sph 2=switch type, 3=slice)'
        write(6,*)'lbiais_retrait , lbiais_inser ',lbiais_retrait,lbiais_inser
-       if (lbiais_inser) write(6,*)'R0mcgc bublcenter ',R0mcgc,bublcenter
+       if (lbiais_inser) then
+          select case(ins_typ)
+          case (1)
+             if (rang==0) write(6,*)'R0mcgc bublcenter ',R0mcgc,bublcenter
+          case(3)
+             if (rang==0) write(6,'(A,G15.7,I3,G15.7)')'R0mcgc, izlins(X,Y,Z), zlcenter ',R0mcgc,izlins, zlcenter
+          end select
+       end if
     end if
+
   end subroutine init_montecarlo
 
   subroutine montecarlo
@@ -2930,27 +2938,28 @@ contains
     loopi:do i=1,nrins
        somPm1=somP
        somP=somP+probaR(i)
-       !       write(6,*)i,probaR(i),somP
+!       write(6,*)i,probaR(i),somP,zt
        if (zt.le.somP) then
           iex=i-1
-          dex= -2*R0mcgc+  (float(iex)+(zt-somPm1)/probaR(i))*4*R0mcgc 
+          dex= -2*R0mcgc+  (float(iex)/nrins)*4*R0mcgc 
           exit loopi
        end if
     end do loopi
 
 
-    !   write(6,*)'IEX',iex,rex
+!    write(6,*)'IEX',iex,dex,zt,r0mcgc
     frac=zlcenter+dex/norm2(boxmcgc_p%as(:,izlins))
     poscenter=0
     do i=1,3
        if (i.ne.izlins) then
-          poscenter(:,i)=poscenter(:,i)+zx(i)*boxmcgc_p%at(:,i)
+          poscenter(:,1)=poscenter(:,1)+zx(i)*boxmcgc_p%at(:,i)
        else
-          poscenter(:,i)=poscenter(:,i)+frac*boxmcgc_p%at(:,i)
+          poscenter(:,1)=poscenter(:,1)+frac*boxmcgc_p%at(:,i)
        end if
     end do
-    call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+!    call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
     postest(:)=poscenter(:,1)
+!    write(6,*)'postest',poscenter(:,1)
     do i=1,atconf_n%im
        call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
        if (dist.le.distminat) then
@@ -2964,7 +2973,7 @@ contains
     !    if (rang==0)then
     !       if (itry.gt.1) write(6,*)'image',parapath%image,'NTRY',itry
     !    end if
-    !    write(6,'(A,I3,4G15.7)')'atom_supp_sph vec', rang,vec(:,1),rex*1d8
+        write(6,'(A,I3,A,3G15.7,A,G15.7)')'atom_supp_slice', rang,' pos=',vec(:,1),' distance= ',dex*1d8
     rd=abs(dex*1d8)
     return
   end subroutine atom_supp_sl
@@ -2997,6 +3006,7 @@ contains
        do i=1,nrins
           dist=abs(-2*R0mcgc+((float(i)-0.5)/nrins)*4*R0mcgc)
           probaR(i)=1/(1+exp(fdfactmcgc*(dist-R0mcgc)))
+!          write(6,'(A,i4,4G15.7)')'R0 ',i,r0mcgc,dist,fdfactmcgc,probar(i)
           somP=somP+probaR(i)    
        end do
        probaR(:)=probaR(:)/somP
