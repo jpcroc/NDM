@@ -40,7 +40,7 @@ contains
     use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
-         &typswitch1,typswitch2
+         &typswitch1,typswitch2,izlins,zlcenter
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
@@ -79,7 +79,7 @@ contains
          rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
          iteangle,  itesauvposition, itesauvforce,  tdepla2, lpcube,&
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
-         maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
+         maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,izlins,zlcenter,fdfactmcgc,ins_typ,bublcenter,&
          h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,&
@@ -372,6 +372,8 @@ contains
     fdfactmcgc=18.0
     R0mcgc=-1.0
     bublcenter(:)=0.5
+    izlins=-1
+    zlcenter=0.5
     ins_typ=0
     typswitch1=0
     typswitch2=0
@@ -952,7 +954,7 @@ contains
 
     if (lprahman) then
        itesigma=1
-       iteprtsigma=1
+       iteprtsigma=itetemp
        select case(dmtype)
        case(21)
           dmtype=22
@@ -1548,14 +1550,26 @@ contains
        select case(ins_typ)
        case(0)
           if (rang==0) write(6,*)' MCC N-> N+1 dans toute la boite'
-       case(1)
+       case(1,3)
           
-          if (rang==0) write(6,*)'MCC N-> N+1 dans une sphère'
+          if (rang==0)then
+             if (ins_typ==1) then
+                write(6,*)'MCC N-> N+1 dans une sphère',r0mcgc,bublcenter
+             else
+                write(6,*)'MCC N-> N+1 dans une tranche ',r0mcgc,izlins,zlcenter
+             end if
+          end if
           if (R0mcgc.lt.0) then
              if (rang==0) write(6,*)' R0mcgc.lt.0'
              call arret_ndm
           end if
           R0mcgc=R0mcgc*1d-8
+          if (ins_typ==3) then
+             if (izlins==-1) then
+                if (rang==0) write(6,*)' izlins 1,2 or 3 ?'
+                call arret_ndm
+             end if
+          end if
        case(2)
           idirectionmcgc=0
           if (rang==0) write(6,*)' MCC semi grand canonique'

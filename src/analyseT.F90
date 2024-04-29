@@ -11,7 +11,7 @@ module analyseT_mod
   use notperiod_mod,only:notperiod
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax,zz,potis1,&
        &cm
-  use gen_com_m, only:bk,cunite,fnose,iteanapos,iteangle,itebdv,ecellpr,&
+  use gen_com_m, only:bk,cunite,fnose,iteanapos,iteangle,itebdv,ecellpr,itesigma,&
        &itecoordo,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
        &leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
        &nfda,pist,pmean,potcp,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
