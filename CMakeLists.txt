@@ -5,14 +5,16 @@ CMAKE_minimum_required( VERSION 3.20 )
 ################################################
 # Cache variables will not be reset if already defined with cmake .. -C <cache file>
 
-# Listing fortran compilers to look for
+# List fortran compilers to look for
 set(INTEL_PARA_COMPILERS mpiifx mpiifort)
 set(INTEL_SERIAL_COMPILERS ifx ifort)
 set(GNU_PARA_COMPILERS mpifort) # checking if there is a fortran mpi, wrapper wont be used
 set(GNU_SERIAL_COMPILERS gfortran f95 f77)
 
-# For each possible configuration, looking for compilers
-set(compile_configuration_list INTEL_PARA INTEL_SERIAL GNU_PARA GNU_SERIAL)
+# define configuration priority
+set(compile_configuration_list GNU_PARA INTEL_PARA INTEL_SERIAL GNU_SERIAL)
+
+# For each possible configuration, look for compilers
 foreach (config IN ITEMS ${compile_configuration_list}) 
     set(VAR_${config} "VAR_${config}-NOTFOUND")
     foreach (compiler IN ITEMS ${${config}_COMPILERS})
@@ -23,28 +25,52 @@ foreach (config IN ITEMS ${compile_configuration_list})
 endforeach()
 set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "RELEASE or DEBUG")
 
-# Depending on found compilers, choosing a configuration
-if (NOT ${VAR_INTEL_PARA} STREQUAL "VAR_INTEL_PARA-NOTFOUND") # INTEL parallel
-    cmake_path(GET VAR_INTEL_PARA FILENAME compiler_name) 
-    set(NDM_PRESET_TITLE "Compile NDM intel parallel : ${compiler_name}" CACHE STRING "")
+# define configurations
+macro(CONFIG_INTEL_PARA)
     set(CMAKE_Fortran_COMPILER "${VAR_INTEL_PARA}" CACHE STRING "")    
+    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)     
+    set(NDM_PRESET_TITLE "Compile NDM INTEL parallel : ${compiler_name}" CACHE STRING "")
     set(NDM_PARA ON)
-elseif (NOT ${VAR_INTEL_SERIAL} STREQUAL "VAR_INTEL_SERIAL-NOTFOUND") # then INTEL serial
-    cmake_path(GET VAR_INTEL_SERIAL FILENAME compiler_name) 
-    set(NDM_PRESET_TITLE "Compile NDM intel serial : ${compiler_name}" CACHE STRING "")
+endmacro(CONFIG_INTEL_PARA)
+
+macro(CONFIG_INTEL_SERIAL)
     set(CMAKE_Fortran_COMPILER "${VAR_INTEL_SERIAL}" CACHE STRING "")
-elseif (NOT ${VAR_GNU_PARA} STREQUAL "VAR_GNU_PARA-NOTFOUND") # then GNU parallel
-    cmake_path(GET VAR_GNU_SERIAL FILENAME compiler_name) 
-    set(NDM_PRESET_TITLE "Compile NDM GNU parallel : ${compiler_name}" CACHE STRING "")
+    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)
+    set(NDM_PRESET_TITLE "Compile NDM INTEL serial : ${compiler_name}" CACHE STRING "")
+endmacro(CONFIG_INTEL_SERIAL)
+
+macro(CONFIG_GNU_PARA)
     set(CMAKE_Fortran_COMPILER "${VAR_GNU_SERIAL}" CACHE STRING "")
+    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)
+    set(NDM_PRESET_TITLE "Compile NDM GNU parallel : ${compiler_name}" CACHE STRING "")    
     set(NDM_GNU ON)
     set(NDM_PARA ON)
-elseif (NOT ${VAR_GNU_SERIAL} STREQUAL "VAR_GNU_SERIAL-NOTFOUND") # then GNU serial
-    cmake_path(GET VAR_GNU_SERIAL FILENAME compiler_name) 
+endmacro(CONFIG_GNU_PARA)
+
+macro(CONFIG_GNU_SERIAL)
+    set(CMAKE_Fortran_COMPILER "${VAR_GNU_SERIAL}" CACHE STRING "")
+    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name) 
     set(NDM_PRESET_TITLE "Compile NDM GNU serial : ${compiler_name}" CACHE STRING "")
     set(CMAKE_Fortran_COMPILER "${VAR_GNU_SERIAL}" CACHE STRING "")
     set(NDM_GNU ON)
-endif()
+endmacro(CONFIG_GNU_SERIAL)
+
+# Choose configuration
+set(config_set OFF)
+foreach (config IN ITEMS ${compile_configuration_list})
+    if(NOT DEFINED CMAKE_Fortran_COMPILER)
+        if (NOT ${VAR_${config}} STREQUAL "VAR_${config}-NOTFOUND" AND NOT ${config_set})
+            cmake_language(CALL CONFIG_${config})        #cmake 3.18
+            set(config_set ON)
+        endif()
+    else()
+        cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)
+        if (${compiler_name} IN_LIST ${config}_COMPILERS AND NOT ${config_set})
+            cmake_language(CALL CONFIG_${config})        #cmake 3.18
+            set(config_set ON)
+        endif()
+    endif()
+endforeach()
 
 if (NDM_GNU)
     set(CMAKE_Fortran_FLAGS_RELEASE " -O3 -ffree-line-length-512 -funroll-all-loops" CACHE STRING "")
