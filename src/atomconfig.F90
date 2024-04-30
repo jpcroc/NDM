@@ -1143,11 +1143,16 @@ contains
     
 #ifdef PARA
     if ((lspacendm).and.(nprocspace.gt.1)) then
-       imp=atin%imf
+       if (atin%imf.ne.0) then
+          imp=atin%imf
+       else
+          imp=atin%im
+       end if
+       
     else
        imp=atin%im
     end if
-!    write(6,*)'AAAAA',rang,atin%im,atin%imf
+    write(6,*)'AAAAA',rang,atin%im,atin%imf
 #else
     imp=atin%im
 #endif

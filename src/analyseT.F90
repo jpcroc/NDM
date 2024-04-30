@@ -163,7 +163,6 @@ contains
             end do
             atdml%lgul=lgs
           end block
-          ! MPI
           if (celndm%ltpcel) then
            call plottpcel(celndm,boxndm,psc=psc)
              

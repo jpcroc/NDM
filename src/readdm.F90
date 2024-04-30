@@ -45,7 +45,7 @@ contains
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
     use arps_mod,only:kmin,kmax,noxyzkmin,noxyzkmax,lpartarps!,lxyz
-    use plottpcel_mod,only:iplotcel
+
 
 
     ! *****************************************************************
@@ -91,7 +91,7 @@ contains
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
-         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,iplotcel,&
+         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
          &noxyzkmin,noxyzkmax,lpartarps
 
@@ -384,7 +384,7 @@ contains
     noxyzkmin(1:3)=-1
     noxyzkmax(1:3)=1000000
     iteprtkin=-1
-    iplotcel=0 ! triggers the detailled analysis of ltpcel (0or 2  =std; 1 or 2=specific)
+
     lspecialinit=.false. ! driver for specail initialization : cascade, press or heat burst etc.
 
     

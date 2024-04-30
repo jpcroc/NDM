@@ -13,20 +13,15 @@ module plottpcel_mod
 #endif
 
   USE cryst_to_cart_mod,only: cryst_to_cart
-     
-!  USE atomconfig,only:atom_config,atom_config_d,atom_config_e
 
-
-  implicit none
-  
-
-  
-  integer::iplotcel
+ implicit none
+ integer::iplotcel ! triggers the detailled analysis of ltpcel (0or 2  = std; 1 or 2 =specific)
 
   logical::  lpsph,lppl
   integer:: slxyz(3)
   integer::iplotformat=0
-  
+  real(double)::Rplt, posplt(3)
+  integer::iteplotcomp=0
   
   type,extends(cell_config)::slice_config
      integer,allocatable::indc(:,:)
@@ -91,20 +86,27 @@ module plottpcel_mod
     character :: extension*9
     character*80::namef
     real(double)::Pcell
-    real(double)::Rplt, posplt(3)
-    integer,save::icall=0
-    integer::iteplotcomp=0
 
-    namelist /ltpc/lppl,posplt,Rplt,slxyz ,lpsph,iteplotcomp,iplotformat !est enlve de la namelist pour déacriver cette partien qui cree un bug (écrase cm pour une raison inconnue)
+    integer,save::icall=0
+
+
+    namelist /ltpc/lppl,posplt,Rplt,slxyz ,lpsph,iteplotcomp,iplotformat,iplotcel !est enlve de la namelist pour déacriver cette partien qui cree un bug (écrase cm pour une raison inconnue)
     lpsph=.false.
     lppl=.false.
     posplt(:)=0.5
     Rplt=6.0
-    slxyz(:)=0 ! slx(1)=3 => average along 3 cells along x; slx(1)=0 (defalut = average along all X 
+    slxyz(:)=0 ! slx(1)=3 => average along 3 cells along x; slx(1)=0 (defalut = average along all X
+    iplotcel=0 
     icall=icall+1
     if (.not.celcf%ltpcel) then
        write(6,*)'coding error in plottpcel call, %ltpcel.ne.true'
        call arret_ndm
+    end if
+    if (icall==1) then 
+       call newunit(iultp)
+       open(unit=iultp,file='ltpcel.in')
+       read(iultp,nml=ltpc)
+       close(iultp)
     end if
     
     if (present(itapp)) then
@@ -112,6 +114,7 @@ module plottpcel_mod
     else
        itp=iteration
     end if
+    write(6,*)'PLOTCEL',itp,iplotcel,iteplotcomp
     if (mod(iplotcel,2)==0) then
        if (iteplotcomp.gt.0) then
           if (mod(itp,iteplotcomp)==0)then
@@ -130,10 +133,6 @@ module plottpcel_mod
          
          
          if (myidsp==0) then
-            call newunit(iultp)
-            open(unit=iultp,file='ltpcel.in')
-            read(iultp,nml=ltpc)
-            close(iultp)
             if (lppl) then
                if (all(slxyz==0)) then
                   write(6,*)'inconsistent slxyz=0 and lppl'
@@ -424,9 +423,9 @@ module plottpcel_mod
        write(unitlt,*)iteration,timel
        write(unitlt,*)'TEMP PER CELL'
        write(unitlt,*) '2 0.0 0.0 0.0'
-       write(unitlt,'(I6,3G17.9)')-celcf%nox,1d8*boxcf%at(1,1)/celcf%nox,1d8*boxcf%at(2,1)/celcf%nox,1d8*boxcf%at(3,1)/celcf%nox
-       write(unitlt,'(I6,3G17.9)')-celcf%noy,1d8*boxcf%at(1,2)/celcf%noy,1d8*boxcf%at(2,2)/celcf%noy,1d8*boxcf%at(3,2)/celcf%noy
-       write(unitlt,'(I6,3G17.9)')-celcf%noz,1d8*boxcf%at(1,3)/celcf%noz,1d8*boxcf%at(2,3)/celcf%noz,1d8*boxcf%at(3,3)/celcf%noz
+       write(unitlt,'(I6,3G17.9)')celcf%nox,1d8*boxcf%at(1,1)/celcf%nox,1d8*boxcf%at(2,1)/celcf%nox,1d8*boxcf%at(3,1)/celcf%nox
+       write(unitlt,'(I6,3G17.9)')celcf%noy,1d8*boxcf%at(1,2)/celcf%noy,1d8*boxcf%at(2,2)/celcf%noy,1d8*boxcf%at(3,2)/celcf%noy
+       write(unitlt,'(I6,3G17.9)')celcf%noz,1d8*boxcf%at(1,3)/celcf%noz,1d8*boxcf%at(2,3)/celcf%noz,1d8*boxcf%at(3,3)/celcf%noz
        write(unitlt,'(A)') '1 0.0 0.0 0.0'
        opedg(:)=boxcf%at(:,1)+boxcf%at(:,2)+boxcf%at(:,3)
        write(unitlt,'(A,3G17.9)') '1 ', 1d8*opedg(1:3)
@@ -453,9 +452,9 @@ module plottpcel_mod
        write(unitlt,*)iteration,timel
        write(unitlt,*)'PRESS PER CELL'
        write(unitlt,*) '2 0.0 0.0 0.0'
-       write(unitlt,'(I6,3G17.9)')-celcf%nox,1d8*boxcf%at(1,1)/celcf%nox,1d8*boxcf%at(2,1)/celcf%nox,1d8*boxcf%at(3,1)/celcf%nox
-       write(unitlt,'(I6,3G17.9)')-celcf%noy,1d8*boxcf%at(1,2)/celcf%noy,1d8*boxcf%at(2,2)/celcf%noy,1d8*boxcf%at(3,2)/celcf%noy
-       write(unitlt,'(I6,3G17.9)')-celcf%noz,1d8*boxcf%at(1,3)/celcf%noz,1d8*boxcf%at(2,3)/celcf%noz,1d8*boxcf%at(3,3)/celcf%noz
+       write(unitlt,'(I6,3G17.9)')celcf%nox,1d8*boxcf%at(1,1)/celcf%nox,1d8*boxcf%at(2,1)/celcf%nox,1d8*boxcf%at(3,1)/celcf%nox
+       write(unitlt,'(I6,3G17.9)')celcf%noy,1d8*boxcf%at(1,2)/celcf%noy,1d8*boxcf%at(2,2)/celcf%noy,1d8*boxcf%at(3,2)/celcf%noy
+       write(unitlt,'(I6,3G17.9)')celcf%noz,1d8*boxcf%at(1,3)/celcf%noz,1d8*boxcf%at(2,3)/celcf%noz,1d8*boxcf%at(3,3)/celcf%noz
        write(unitlt,*) '1 0.0 0.0 0.0'
        opedg(:)=boxcf%at(:,1)+boxcf%at(:,2)+boxcf%at(:,3)
        write(unitlt,'(A,3G17.9)') '1 ', opedg(1:3)

@@ -199,10 +199,6 @@ contains
           class is (atom_config_d)
           call initspeed(atdml,boxndm,lprt=lprt)
        end select
-       if (iterasmol>=0) then
-          itapp=0
-          call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
-       end if
     end if
     !
     !end init the speed using Maxwell proba density-----------------
@@ -211,6 +207,12 @@ contains
        if ((itetimestep>0).and.(.not.lcasca)) call deftimestep(atdml,boxndm)
     end select
     if ((lspecialinit).and.(.not.(lrestart))) call specialinit(atdml,boxndm,celndm)
+    if (.not.lrestart) then
+       if (iterasmol>=0) then
+          itapp=0
+          call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
+       end if
+    end if
 
     if (itmax==0) stop
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
