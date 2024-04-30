@@ -3,7 +3,7 @@ module plottpcel_mod
   USE cellconfig,only:cell_config, cell_config_arps
   USE T_kind_param_m, ONLY:  double
   USE arret_ndm_mod,only: arret_ndm
-  use gen_com_m,only:iteration,unitP
+  use gen_com_m,only:iteration,unitP,timel
   use newunit_mod,only:newunit
   use Tpara,only:para_space_config    
 #ifdef PARA
@@ -25,7 +25,7 @@ module plottpcel_mod
 
   logical::  lpsph,lppl
   integer:: slxyz(3)
-
+  integer::iplotformat=0
   
   
   type,extends(cell_config)::slice_config
@@ -94,7 +94,8 @@ module plottpcel_mod
     real(double)::Rplt, posplt(3)
     integer,save::icall=0
     integer::iteplotcomp=0
-    namelist /ltpc/lppl,posplt,Rplt,slxyz ,lpsph,iteplotcomp !est enlve de la namelist pour déacriver cette partien qui cree un bug (écrase cm pour une raison inconnue)
+
+    namelist /ltpc/lppl,posplt,Rplt,slxyz ,lpsph,iteplotcomp,iplotformat !est enlve de la namelist pour déacriver cette partien qui cree un bug (écrase cm pour une raison inconnue)
     lpsph=.false.
     lppl=.false.
     posplt(:)=0.5
@@ -115,7 +116,7 @@ module plottpcel_mod
        if (iteplotcomp.gt.0) then
           if (mod(itp,iteplotcomp)==0)then
              if (myidsp==0) then
-                call actualplot(celcf,'TEMPC','PRESSC',itp)
+                call actualplot(celcf,boxcf,'TEMPC','PRESSC',itp)
              end if
           end if
        end if
@@ -403,53 +404,145 @@ module plottpcel_mod
 
   end subroutine plotsph
   
-  subroutine actualplot(celcf,ctemp,cpress,itp)
+  subroutine actualplot(celcf,boxcf,ctemp,cpress,itp)
     class(cell_config)::celcf
+    class (box_config),intent(in)::boxcf
     character(len=*)::ctemp,cpress
     integer::itp
     
-    integer::i,unitlt,koxyz(3),unitlp
+    integer::i,unitlt,koxyz(3),unitlp,kx,ky,kz,koo,il
     character :: extension*9,namef*80
-    real(double)::pcell
+    real(double)::pcell,opedg(3)
+
     
-    call newunit(unitlt)
-    write(extension,'(i9.9)')itp
-    namef=trim(ctemp)//trim(extension)
-    open(unitlt,file=namef,form='formatted')
-    
-    do i=1,celcf%noxyz
-       koxyz=celcF%koxyz(i)
-       select type (celcf)
-       type is (cell_config)
-          write(unitlt,'(I12,3I5,G21.5,I8)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
-       type is (slice_config)
-          write(unitlt,'(I12,3I5,G21.5,I8)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
-       type is (cell_config_arps)
-          write(unitlt,'(I12,3I5,G21.5,4I8)')i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)&
-               &,celcf%nmov(0,i),celcf%nmov(1,i),celcf%nmov(2,i)
-       end select
-    end do
-    close(unitlt)
-    
-    call newunit(unitlp)
-    write(extension,'(i9.9)')itp
-    namef=trim(cpress)//trim(extension)
-    open(unitlp,file=namef,form='formatted')
-    
-    do i=1,celcf%noxyz
-       koxyz=celcF%koxyz(i)
-       pcell=0.33333333333333333*(celcf%sigc(1,1,i)+celcf%sigc(2,2,i)+celcf%sigc(3,3,i))*unitP
-       select type (celcf)
-       type is (cell_config)
-          write(unitlp,'(I12,3I5,G21.5,I8,9E18.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
-       type is (slice_config)
-          write(unitlp,'(I12,3I5,G21.5,I8,9E18.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
-       type is (cell_config_arps)
-          write(unitlp,'(I12,3I5,G21.5,4I8,9E18.5)')i,koxyz(1:3),pcell,celcf%nato(i),celcf%nmov(0,i),&
-               &celcf%nmov(1,i),celcf%nmov(2,i),celcf%sigc(:,:,i)*unitP
-       end select
-    end do
-    close(unitlt)
+    select case (iplotformat)
+    case(1)
+       call newunit(unitlt)
+       write(extension,'(i9.9)')itp
+       namef=trim(ctemp)//trim(extension)//'.cube'
+       open(unitlt,file=namef,form='formatted')
+       write(unitlt,*)iteration,timel
+       write(unitlt,*)'TEMP PER CELL'
+       write(unitlt,*) '2 0.0 0.0 0.0'
+       write(unitlt,'(I6,3G17.9)')-celcf%nox,1d8*boxcf%at(1,1)/celcf%nox,1d8*boxcf%at(2,1)/celcf%nox,1d8*boxcf%at(3,1)/celcf%nox
+       write(unitlt,'(I6,3G17.9)')-celcf%noy,1d8*boxcf%at(1,2)/celcf%noy,1d8*boxcf%at(2,2)/celcf%noy,1d8*boxcf%at(3,2)/celcf%noy
+       write(unitlt,'(I6,3G17.9)')-celcf%noz,1d8*boxcf%at(1,3)/celcf%noz,1d8*boxcf%at(2,3)/celcf%noz,1d8*boxcf%at(3,3)/celcf%noz
+       write(unitlt,'(A)') '1 0.0 0.0 0.0'
+       opedg(:)=boxcf%at(:,1)+boxcf%at(:,2)+boxcf%at(:,3)
+       write(unitlt,'(A,3G17.9)') '1 ', 1d8*opedg(1:3)
+
+       il =0
+       do kx=0,celcf%nox-1
+          do ky=0,celcf%noy-1
+             do kz=0,celcf%noz-1
+                koo = 1+kx+celcf%nox*(ky+celcf%noy*kz)
+                il=il+1
+                write(unitlt,'(G15.7)',advance='no')celcf%tempc(koo)
+                if (mod(il,6)==0 )write(unitlt,*)
+             end do
+          end do
+       end do
+       
+       close(unitlt)
+
+
+       call newunit(unitlp)
+       write(extension,'(i9.9)')itp
+       namef=trim(cpress)//trim(extension)//'.cube'
+       open(unitlp,file=namef,form='formatted')
+       write(unitlt,*)iteration,timel
+       write(unitlt,*)'PRESS PER CELL'
+       write(unitlt,*) '2 0.0 0.0 0.0'
+       write(unitlt,'(I6,3G17.9)')-celcf%nox,1d8*boxcf%at(1,1)/celcf%nox,1d8*boxcf%at(2,1)/celcf%nox,1d8*boxcf%at(3,1)/celcf%nox
+       write(unitlt,'(I6,3G17.9)')-celcf%noy,1d8*boxcf%at(1,2)/celcf%noy,1d8*boxcf%at(2,2)/celcf%noy,1d8*boxcf%at(3,2)/celcf%noy
+       write(unitlt,'(I6,3G17.9)')-celcf%noz,1d8*boxcf%at(1,3)/celcf%noz,1d8*boxcf%at(2,3)/celcf%noz,1d8*boxcf%at(3,3)/celcf%noz
+       write(unitlt,*) '1 0.0 0.0 0.0'
+       opedg(:)=boxcf%at(:,1)+boxcf%at(:,2)+boxcf%at(:,3)
+       write(unitlt,'(A,3G17.9)') '1 ', opedg(1:3)
+
+       il =0
+       do kx=0,celcf%nox-1
+          do ky=0,celcf%noy-1
+             do kz=0,celcf%noz-1
+                koo = 1+kx+celcf%nox*(ky+celcf%noy*kz)
+                il=il+1
+                pcell=0.33333333333333333*(celcf%sigc(1,1,koo)+celcf%sigc(2,2,koo)+celcf%sigc(3,3,koo))*unitP
+                write(unitlp,'(G15.7)',advance='no')pcell
+                if (mod(il,6)==0 )write(unitlp,*)
+             end do
+          end do
+       end do
+
+       
+       close(unitlp)
+
+    case(0)
+       
+       call newunit(unitlt)
+       write(extension,'(i9.9)')itp
+       namef=trim(ctemp)//trim(extension)
+       open(unitlt,file=namef,form='formatted')
+     
+       do i=1,celcf%noxyz
+          koxyz=celcF%koxyz(i)
+#ifdef PARA
+          select type (celcf)
+          type is (cell_config)
+             write(unitlt,'(I12,3I5,G21.5)'),i,koxyz(1:3),celcf%tempc(i)
+          type is (slice_config)
+             write(unitlt,'(I12,3I5,G21.5)'),i,koxyz(1:3),celcf%tempc(i)
+          type is (cell_config_arps)
+             write(unitlt,'(I12,3I5,G21.5)')i,koxyz(1:3),celcf%tempc(i)
+          end select
+#else
+          select type (celcf)
+          type is (cell_config)
+             write(unitlt,'(I12,3I5,G21.5,I8)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
+          type is (slice_config)
+             write(unitlt,'(I12,3I5,G21.5,I8)'),i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)
+          type is (cell_config_arps)
+             write(unitlt,'(I12,3I5,G21.5,4I8)')i,koxyz(1:3),celcf%tempc(i),celcf%nato(i)&
+                  &,celcf%nmov(0,i),celcf%nmov(1,i),celcf%nmov(2,i)
+          end select
+
+#endif
+          
+       end do
+       close(unitlt)
+       
+       call newunit(unitlp)
+       write(extension,'(i9.9)')itp
+       namef=trim(cpress)//trim(extension)
+       open(unitlp,file=namef,form='formatted')
+       
+       do i=1,celcf%noxyz
+          koxyz=celcF%koxyz(i)
+          pcell=0.33333333333333333*(celcf%sigc(1,1,i)+celcf%sigc(2,2,i)+celcf%sigc(3,3,i))*unitP
+#ifdef PARA
+          select type (celcf)
+          type is (cell_config)
+             write(unitlp,'(I12,3I5,G21.5,I8,9E18.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
+          type is (slice_config)
+             write(unitlp,'(I12,3I5,G21.5,I8,9E18.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
+          type is (cell_config_arps)
+             write(unitlp,'(I12,3I5,G21.5,4I8,9E18.5)')i,koxyz(1:3),pcell,celcf%nato(i),celcf%nmov(0,i),&
+                  &celcf%nmov(1,i),celcf%nmov(2,i),celcf%sigc(:,:,i)*unitP
+          end select
+#else
+          select type (celcf)
+          type is (cell_config)
+             write(unitlp,'(I12,3I5,G21.5,9E18.5)'),i,koxyz(1:3),pcell,celcf%sigc(:,:,i)*unitP
+          type is (slice_config)
+             write(unitlp,'(I12,3I5,G21.5,9E18.5)'),i,koxyz(1:3),pcell,celcf%sigc(:,:,i)*unitP
+          type is (cell_config_arps)
+             write(unitlp,'(I12,3I5,G21.5,9E18.5)')i,koxyz(1:3),pcell,celcf%sigc(:,:,i)*unitP
+          end select
+#endif
+          
+       end do
+       close(unitlt)
+    end select
+       
   end subroutine actualplot
 
     
@@ -461,7 +554,7 @@ module plottpcel_mod
     call slice%build(celcf,box,slxyz)
     call slice%merge(celcf)
 !    call slice%print(unit=100,mess='SLICE')
-    call actualplot(slice,'TSlice','PSlice',itp)
+    call actualplot(slice,box,'TSlice','PSlice',itp)
     
   end subroutine plotslice
   
