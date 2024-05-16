@@ -10,12 +10,13 @@ set(INTEL_PARA_COMPILERS mpiifx mpiifort)
 set(INTEL_SERIAL_COMPILERS ifx ifort)
 set(GNU_PARA_COMPILERS mpifort) # checking if there is a fortran mpi, wrapper wont be used
 set(GNU_SERIAL_COMPILERS gfortran f95 f77)
+set(CXX_LAMMPS_COMPILERS mpiicpc icpc) # Only for Lammps
 
 # define configuration priority
 set(compile_configuration_list GNU_PARA INTEL_PARA INTEL_SERIAL GNU_SERIAL)
 
 # For each possible configuration, look for compilers
-foreach (config IN ITEMS ${compile_configuration_list}) 
+foreach (config IN ITEMS ${compile_configuration_list} CXX_LAMMPS)
     set(VAR_${config} "VAR_${config}-NOTFOUND")
     foreach (compiler IN ITEMS ${${config}_COMPILERS})
         if (VAR_${config} STREQUAL "VAR_${config}-NOTFOUND")
@@ -79,25 +80,35 @@ if (NDM_GNU)
 endif()
 
 if (NDM_PARA)
-    list(APPEND TMP_PACKAGE_LIST "MPI")
-    list(APPEND TMP_COMPILE_DEFINITION "PARA")
-    list(APPEND TMP_COMPILE_DEFINITION "PARAML")
+    list(APPEND NDM_PACKAGE_LIST "MPI")
+    list(APPEND NDM_COMPILE_DEFINITION "PARA")
+    list(APPEND NDM_COMPILE_DEFINITION "PARAML")
 endif()
 
 set(CMAKE_Fortran_FLAGS_RELEASE " -O3 " CACHE STRING "")
 set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0" CACHE STRING "")
 
-list(APPEND TMP_PACKAGE_LIST "MKL")
-set(NDM_PACKAGE_LIST ${TMP_PACKAGE_LIST} CACHE STRING "List of packages")
+if(NOT NDM_WITHOUT_MKL)
+    list(APPEND NDM_PACKAGE_LIST "MKL")
+    list(APPEND NDM_COMPILE_DEFINITION "MKL")
+endif()
 
 set(MKL_MPI "intelmpi" CACHE STRING "MPI")
 set(ENABLE_SCALAPACK OFF CACHE STRING "Scalapack" )
+set(ENABLE_LAPACK95 ON CACHE STRING "lapack fortran 95 api" )
 set(MKL_THREADING "sequential" CACHE STRING "Threading")
 set(MKL_INTERFACE "lp64" CACHE STRING "Interface")
 set(MKL_ARCH "intel64" CACHE STRING "Architecture")
 
-list(APPEND TMP_COMPILE_DEFINITION "MKL")
-set(NDM_COMPILE_DEFINITION ${TMP_COMPILE_DEFINITION} CACHE STRING "List of definitions for preprocessor")
+if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
+    set(CMAKE_CXX_COMPILER "${VAR_CXX_LAMMPS}" CACHE STRING "cxx compiler")
+    set(CMAKE_CXX_FLAGS_RELEASE " -no-multibyte-chars " CACHE STRING "")
+endif()
+
+set(languages "Fortran")
+if(DEFINED CMAKE_CXX_COMPILER)
+    list(APPEND languages "CXX")
+endif()
 
 ################################################
 # Project definition
@@ -106,7 +117,7 @@ project( NDM
          VERSION 3.0.0
          DESCRIPTION "NDM project with CMake"
          HOMEPAGE_URL "https://codev-tuleap.intra.cea.fr/plugins/git/ndm"
-         LANGUAGES Fortran ) #CXX)
+         LANGUAGES ${languages})
 
 set( PROJECT_AUTHOR "Jean-Paul Crocombette" )
 
@@ -160,7 +171,7 @@ endforeach()
 foreach( VARIABLE IN ITEMS ${${PROJECT_NAME}_COMPILE_DEFINITION})
     add_compile_definitions(${VARIABLE}=1)
 endforeach()
-
+add_compile_options(-D$<INSTALL_INTERFACE:LAMMPS_LIB_NO_MPI>)
 
 ################################################
 # set paths to modules and executables

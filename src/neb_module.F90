@@ -534,7 +534,9 @@ end if
     integer ::  ip,itread,fmt_cin,formatsauv
     character :: extension*9
     character :: fnamneb*80
-
+#ifdef LAMMPS_VERSION
+    logical :: lwrite
+#endif
     !    type(atom_config)::atrgin
 !    write(6,*)'IMM NEB',imm
     call allocate_neb(0,imm)

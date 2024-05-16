@@ -39,32 +39,78 @@ git clone --branch ndm2021_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/
 
 #### Prerequisities
 It is recommended to use Intel's oneAPI suite including Intel's mpi implementation, the mpiifort wrapper and MKL.
-To use lammps it must be compiled as a shared library. The shared library Lammps compilation should create the required liblammps.so dynamic library. It is recommended to compile Lammps with the same compiler suite as NDM. see lammps doc
 
 #### Basic build, in the NDM directory :
 
-Steps to build NDM with the new CMakeLists.txt (requires cmake 3.20) :
+Steps to build NDM using the `CMakeLists.txt` file (requires cmake 3.20) :
 
 ```
 mkdir build; cd build
 cmake ..
-cmake --build . --parallel 4
+make -j
+```
+This should detect the required compilers and dependencies if they are available and find a suitable configuration.
+If not, make sure the prerequisities are met and consider defining advanced options manually.
+
+#### Advanced options :
+
+Options can be passed through the command line :
+```
+cmake .. -D variable=value
 ```
 
-#### Advanced build :
-Configuration parameters should be set in a preset file, examples can be found in cmake_files/. It is possible to define preprocessor directives, set a specific compiler, define release/debug flags, etc...
-
+Or using a cmake preset file :
 ```
-cmake -C <absolute_path_to_preset_file> -B <absolute_path_to_build_directory> -S <absolute_path_to_CMakeLists.txt>
-cmake --build <absolute_path_to_build_directory> --parallel <n_proc>
+cmake .. -C <preset_file.cmake>
 ```
 
-the bash script compile_ndm.sh can be found in the scripts/ directory for convenience.
-When Cmake fails to find the relevant dependencies it is often required to define additionnal variables to indiquate the libraries locations such as MPI_HOME, MPI_ROOT, etc... They are listed in the bash script.
+To set the environment and specify source or build directories you can use the `scripts/compile_ndm.sh` bash script.
+
+#### Available options
+
+- Compilers : CMAKE_Fortran_COMPILER, CMake_CXX_COMPILER
+- preprocessor definitions : NDM_COMPILE_DEFINITION
+- compilation mode : CMAKE_BUILD_TYPE (`RELEASE` or `DEBUG`)
+- compilation flags : CMAKE_<lang>_FLAGS_<mode>, for example CMAKE_Fortran_FLAGS_RELEASE
+- MPI : MPI_HOME
+- LAMMPS library directory : LAMMPS_HOME
+- LAMMPS library name : LAMMPS_LIBRARY_NAME (for example `lammps_serial`, `lammps_mpi` or `lammps`)
+- Additional dependencies for LAMMPS: LAMMPS_EXTRA_LIBRARIES (for example `gomp` to use open mpi LAMMPS)
+
+To specify multiple values, for example for preprocessor definitions or packages, use semicolon separator:
+```
+cmake .. -D NDM_PACKAGE_LIST="MPI;LAMMPS"
+```
+#### Compile NDM with LAMMPS
+
+To compile NDM with LAMMPS a version of LAMMPS must be compiled as a library with all the necessary header files.
+On Gatsby the following command can be used:
+```
+module load lammps/29Sep2021-u2
+```
+To compile a different version of LAMMPS from the sources, see the relevant README file in the NDM `READMES` directory.
+
+Once LAMMPS is installed it can be added to the compilation using the NDM_PACKAGE_LIST variable:
+```
+cmake .. -D NDM_PACKAGE_LIST="LAMMPS"
+```
+If CMake doesn't find LAMMPS, the following variables can be set :
+- LAMMPS_LIBRARY_NAME : LAMMPS is often compiled with a custom library name depending on the configuration using LAMMPS LAMMPS_MACHINE option. 
+For example `lammps/29Sep2021-u2` has both `lammps_serial` and `lammps_mpi` installed. Since LAMMPS 2021 the executable and library have a similar name (lmp_serial and lammps_serial for example) but not for older versions. To use a specific library or when CMake doesn't find any, the library name must be set explicitely.
+
+- LAMMPS_HOME : In case of a local installation it may be necessary to specify the directory where the library or .pc file is located.
+
+- LAMMPS_EXTRA_LIBRARIES : Depending on LAMMPS configuration and packages it may have further dependencies. 
+CMake will find some of these dependencies automatically but not all of them since they are not listed in the .pc file.
+When such dependencies are missing the linker will show `undefined references` at link stage which usually hint toward which library is missing and what LAMMPS package is causing the error.
+These libraries can be identified at the end of a successful LAMMPS compilation in the list of link libraries or in the executable dependencies.
+Then they can be added manually to the NDM compilation using the LAMMPS_EXTRA_LIBRARIES variable with either just the name or the full path to the library.
+This is for example necessary when compiling LAMMPS with Open MPI or with the PYTHON package.
 
 
 
 
+### Classic make compilation
 
 Compilation instructions are provided in the documentation included in the
 distribution repository

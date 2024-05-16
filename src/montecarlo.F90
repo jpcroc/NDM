@@ -2358,6 +2358,10 @@ contains
     character :: extension*4
     logical ::lc2d
 
+#ifdef LAMMPS_VERSION
+     character*80::namef
+#endif
+ 
     logical::lwrite
     real(double)::pins
     !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
@@ -2513,7 +2517,9 @@ contains
     integer,allocatable::indice(:)
     character :: extension*4
     logical ::lc2d
-
+#ifdef LAMMPS_VERSION
+    character*80::namef
+#endif
     logical::lwrite
     real(double)::poscenter(3,1),postest(3)
 

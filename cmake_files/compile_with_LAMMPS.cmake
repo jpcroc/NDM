@@ -6,18 +6,17 @@
 #
 ############
 
-
-function (compile_with_LAMMPS)
-
+macro(determine_library_name)
     # Determine library name
     find_program(VAR_LMP_MPI lmp_mpi)   # check if lmp_mpi executable is available
     find_program(VAR_LMP lmp)
+    find_program(VAR_LMP_SERIAL lmp_serial) # check if lmp_serial executable is available
     if (NOT ${VAR_LMP_MPI} STREQUAL "VAR_LMP_MPI-NOTFOUND") # lammps mpi is available
         set(lammps_mpi ON)
     else()
         set(lammps_mpi OFF)
     endif()
-    if (NOT ${VAR_LMP} STREQUAL "VAR_LMP-NOTFOUND") # lammps serial is available
+    if (NOT ${VAR_LMP} STREQUAL "VAR_LMP-NOTFOUND" OR NOT ${VAR_LMP_SERIAL} STREQUAL "VAR_LMP_SERIAL-NOTFOUND") # lammps serial is available
         set(lammps_serial ON)
     else()
         set(lammps_serial OFF)
@@ -32,18 +31,44 @@ function (compile_with_LAMMPS)
     elseif(${lammps_mpi} AND NOT ${lammps_serial}) # project doesn't use mpi but only lammps_mpi is available
         set(LAMMPS_LIBRARY_NAME "lammps_mpi" CACHE STRING "Name of the lammps library")
     else()  # lammps_mpi is not available
-        set(LAMMPS_LIBRARY_NAME "lammps" CACHE STRING "Name of the lammps library")
+        if (NOT ${VAR_LMP} STREQUAL "VAR_LMP-NOTFOUND")
+            set(LAMMPS_LIBRARY_NAME "lammps" CACHE STRING "Name of the lammps library")
+        elseif (NOT ${VAR_LMP_SERIAL} STREQUAL "VAR_LMP_SERIAL-NOTFOUND")
+            set(LAMMPS_LIBRARY_NAME "lammps_serial" CACHE STRING "Name of the lammps library")
+        endif()
+    endif()
+endmacro()
+
+function (compile_with_LAMMPS)
+    
+    # Determine lammps library name from available executables and MPI
+    determine_library_name()
+    
+    # Check environment variables
+    if (DEFINED ENV{LAMMPS_HOME})
+        set(LAMMPS_HOME $ENV{LAMMPS_HOME})
+    endif()
+    if (DEFINED ENV{LAMMPS_EXTRA_LIBRARIES})
+        set(LAMMPS_EXTRA_LIBRARIES $ENV{LAMMPS_EXTRA_LIBRARIES})
     endif()
 
     # Try to find lammps using FindLAMMPS.cmake file. Custom because not included in cmake 3.29
     find_package(LAMMPS)
     
+    # Add custom libraries if necessary
+    if (DEFINED LAMMPS_EXTRA_LIBRARIES)
+        foreach(EXTRA_LIB IN ITEMS ${LAMMPS_EXTRA_LIBRARIES})
+            list(APPEND LAMMPS_LIBRARIES ${EXTRA_LIB})
+        endforeach()
+    endif()
+    
+    # Send relevant variables to the parent scope
     set(${PROJECT_NAME}_LAMMPS_LIBRARIES ${LAMMPS_LIBRARIES} PARENT_SCOPE)
     set(${PROJECT_NAME}_LAMMPS_LIBRARY_DIRS ${LAMMPS_LIBRARY_DIRS} PARENT_SCOPE)
     set(${PROJECT_NAME}_LAMMPS_INCLUDE_DIR ${LAMMPS_INCLUDE_DIRS} PARENT_SCOPE)
-    
+
     list(APPEND LAMMPS_DEFINITIONS "LAMMPS_VERSION")
-    list(APPEND LAMMPS_DEFINITIONS "LAMMPS_LIB_MPI")
+#    list(APPEND LAMMPS_DEFINITIONS "LAMMPS_LIB_MPI")
     Foreach( DEFINITION IN ITEMS ${LAMMPS_DEFINITIONS})
         list(APPEND ${PROJECT_NAME}_COMPILE_DEFINITION ${DEFINITION})
     endforeach()
