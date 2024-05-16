@@ -20,6 +20,7 @@
 	lconstrtot=.false.
 	lperiod=.false.
 	itetabvois=10000
+	units_lammps="metal"
         
  &end
 	fpstop= 0.1
