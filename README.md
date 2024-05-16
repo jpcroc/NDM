@@ -30,7 +30,7 @@ NDM can be compiled and run on any Unix-like system (and TODO windows).
 ### Installation
 
 ```
-git clone --branch ndm2021_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/ndm/NDM.git NDM
+git clone --branch ndm2024_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/ndm/NDM.git NDM
 ```
 
 ### Compilation
@@ -96,9 +96,9 @@ cmake .. -D NDM_PACKAGE_LIST="LAMMPS"
 ```
 If CMake doesn't find LAMMPS, the following variables can be set :
 - LAMMPS_LIBRARY_NAME : LAMMPS is often compiled with a custom library name depending on the configuration using LAMMPS LAMMPS_MACHINE option. 
-For example `lammps/29Sep2021-u2` has both `lammps_serial` and `lammps_mpi` installed. Since LAMMPS 2021 the executable and library have a similar name (lmp_serial and lammps_serial for example) but not for older versions. To use a specific library or when CMake doesn't find any, the library name must be set explicitely.
+For example `lammps/29Sep2021-u2` has both `lammps_serial` and `lammps_mpi` installed. Since LAMMPS 2021 the executable and library have a similar name (lmp_serial and lammps_serial for example) but not for older versions. To use a specific library or when CMake doesn't find any, the library name must be set explicitly.
 
-- LAMMPS_HOME : In case of a local installation it may be necessary to specify the directory where the library or .pc file is located.
+- LAMMPS_HOME : In case of a local installation it may be necessary to specify the directory where the library (liblammps.a or liblammps.so) or .pc file is located.
 
 - LAMMPS_EXTRA_LIBRARIES : Depending on LAMMPS configuration and packages it may have further dependencies. 
 CMake will find some of these dependencies automatically but not all of them since they are not listed in the .pc file.
@@ -106,9 +106,6 @@ When such dependencies are missing the linker will show `undefined references` a
 These libraries can be identified at the end of a successful LAMMPS compilation in the list of link libraries or in the executable dependencies.
 Then they can be added manually to the NDM compilation using the LAMMPS_EXTRA_LIBRARIES variable with either just the name or the full path to the library.
 This is for example necessary when compiling LAMMPS with Open MPI or with the PYTHON package.
-
-
-
 
 ### Classic make compilation
 
