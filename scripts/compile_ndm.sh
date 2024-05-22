@@ -3,16 +3,23 @@
 #   Set environment
 # **************************************************************************************************************************
 # --------------------------------------- necessary environment to run or build ndm ----------------------------------------
-# source ~/.bashrc
 
+# On Gatsby installed lammps 2021
+module load lammps/29Sep2021-u2
+
+# On Gatsby locally installed LAMMPS
+#module load compiler
+#module load mpi
+#module load mkl
 
 # ---------------------------------------- more environment, only relevant for build ---------------------------------------
-export NDM_ROODIR=/home/croc/NDM
-export NDM_SRCDIR=${NDM_ROODIR}/ndm2024_cv/                             # sources directory
-export NDM_BUIDIR=${NDM_ROODIR}/ndm2024_cv/ndm_build_ifort_serial            # build directory
+export NDM_ROODIR=/volatile/catB/jd270899/git_rep
+export NDM_SRCDIR=${NDM_ROODIR}/NDM                             # sources directory
+export NDM_BUIDIR=${NDM_ROODIR}/ndm_build            # build directory
 
 #preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_parallel.cmake  # defines cache file with preset options
-preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_serial.cmake  # defines cache file with preset options
+#preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_oneapi_serial.cmake  # defines cache file with preset options
+preset_file=${NDM_SRCDIR}/cmake_files/ndm_lammps_oneapi.cmake  # defines cache file with preset options
 #preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_parallel.cmake  # defines cache file with preset options
 #preset_file=${NDM_SRCDIR}/cmake_files/ndm_preset_gnu_serial.cmake  # defines cache file with preset options
 n_proc=8    # number of proc to use for compilation

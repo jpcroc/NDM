@@ -11,13 +11,22 @@ The .pc file name depends on lammps library name, see below.
 
 LAMMPS_LIBRARY_NAME
 -------------------
-Variable to set in Cmake or as an environment variable. By default "lammps".
+Variable to set in CMake or as an environment variable. By default "lammps".
 Depends on <LAMMPS_MACHINE> custom parameter which may be set at lammps compilation and is related to the executable name:
 executable name : lmp_<LAMMPS_MACHINE>
 library name: lammps_<LAMMPS_MACHINE>
 For example "lammps_mpi" is popular for parallel lammps but there is no convention.
 
+pkg-config will be looking for lib<LAMMPS_LIBRARY_NAME>.pc file.
+
+LAMMPS_HOME
+-----------
+Variable to set in CMake or as an environment variable, undefined by default.
+Path to lammps library directory or to lammps .pc file directory.
+Typically this will be the path to LAMMPS build directory if LAMMPS has been compiled with CMake or the src/ directory if compiled with make in the sources.
+
 #]]
+cmake_minimum_required(VERSION 3.20)
 ################################################
 # Functions and Macros definitions
 ################################################
@@ -29,9 +38,14 @@ function (get_definition TMP_FLAGS)
     foreach(TMP_FLAG IN ITEMS ${TMP_FLAGS})
         if ( ${TMP_FLAG} MATCHES "^-D" ) # if flag starts with -D
             string(SUBSTRING ${TMP_FLAG} 2 -1 TMP_DEF) # ignore the two first characters
-            list(APPEND RESULT_GET_DEFINITION ${TMP_DEF})
+	    string(FIND ${TMP_DEF} "$" INCORRECT_DEFINITION) # Check for illegal character
+	    if (INCORRECT_DEFINITION EQUAL -1)
+		list(APPEND RESULT_GET_DEFINITION ${TMP_DEF})
+	    endif()
         endif()
     endforeach()
+    # return result
+    set(RESULT_GET_DEFINITION ${RESULT_GET_DEFINITION} PARENT_SCOPE)
 endfunction(get_definition)
 
 # Macro to try looking for lammps using pkg-config
@@ -39,8 +53,11 @@ macro(pkg_search)
     find_package(PkgConfig QUIET)
     if (${PKG_CONFIG_FOUND})
         pkg_check_modules(LAMMPS "lib${LAMMPS_LIBRARY_NAME}")
-        get_definition("${LAMMPS_CFLAGS}")
-        list(APPEND LAMMPS_DEFINITIONS ${RESULT_GET_DEFINITION})
+        if(LAMMPS_FOUND)
+            get_definition("${LAMMPS_CFLAGS}")
+            list(APPEND LAMMPS_DEFINITIONS ${RESULT_GET_DEFINITION})
+        endif()
+        
     endif()
 endmacro(pkg_search)
 
@@ -51,10 +68,38 @@ macro (ld_library_search)
     if (NOT TMP_PATH_TO_LIBRARY STREQUAL "TMP_PATH_TO_LIBRARY-NOTFOUND")
         set(LAMMPS_FOUND ON)
         cmake_path(REMOVE_FILENAME TMP_PATH_TO_LIBRARY)
-        list(APPEND LAMMPS_LIBRARY_DIRS ${TMP_PATH_TO_LIBRARY})
-        list(APPEND LAMMPS_INCLUDE "${TMP_PATH_TO_LIBRARY}/../include" )
+        append_if_new_library_dirs(${TMP_PATH_TO_LIBRARY})
+        foreach (TMP_DIR IN ITEMS ${POSSIBLE_INCLUDE_DIRECTORIES})
+            append_if_new_include_dirs("${TMP_PATH_TO_LIBRARY}${TMP_DIR}")
+        endforeach()
     endif()
 endmacro(ld_library_search)
+
+macro (append_if_exists DIRECTORY DIRECTORY_LIST)
+    if (EXISTS ${DIRECTORY})
+        set(NEW_DIRECTORY_LIST "")
+        set(TMP_DIRECTORY_LIST "")
+        list(APPEND TMP_DIRECTORY_LIST ${DIRECTORY_LIST} ${DIRECTORY})
+        foreach(TMP_DIRECTORY IN ITEMS ${TMP_DIRECTORY_LIST})
+            cmake_path(SET TMP_DIRECTORY NORMALIZE "${TMP_DIRECTORY}/")
+            if (NOT ${TMP_DIRECTORY} IN_LIST NEW_DIRECTORY_LIST)
+                list(APPEND NEW_DIRECTORY_LIST ${TMP_DIRECTORY})
+            endif()
+        endforeach()
+    else()
+        set(NEW_DIRECTORY_LIST ${DIRECTORY_LIST})
+    endif()
+endmacro()
+
+function (append_if_new_include_dirs DIRECTORY)
+    append_if_exists(${DIRECTORY} "${LAMMPS_INCLUDE_DIRS}")
+    set(LAMMPS_INCLUDE_DIRS ${NEW_DIRECTORY_LIST} PARENT_SCOPE)
+endfunction(append_if_new_include_dirs)
+
+function (append_if_new_library_dirs DIRECTORY)
+    append_if_exists(${DIRECTORY} "${LAMMPS_LIBRARY_DIRS}")
+    set(LAMMPS_LIBRARY_DIRS ${NEW_DIRECTORY_LIST} PARENT_SCOPE)
+endfunction(append_if_new_library_dirs)
 
 ################################################
 # Sequential script
@@ -69,10 +114,31 @@ if (DEFINED ENV{LAMMPS_LIBRARY_NAME})
     set(LAMMPS_LIBRARY_NAME $ENV{LAMMPS_LIBRARY_NAME})
 endif()
 set(LAMMPS_DEFINITIONS "")
+set(POSSIBLE_INCLUDE_DIRECTORIES 
+    "/../include" 
+    "/includes" 
+    "/../src")
 
 # Try to find Lammps with pkg-config
-pkg_search()
+if (DEFINED LAMMPS_HOME)
+    set(ENV{PKG_CONFIG_PATH} "${LAMMPS_HOME}:$ENV{PKG_CONFIG_PATH}")
+    list(PREPEND CMAKE_PREFIX_PATH "${LAMMPS_HOME}")
+    set(pc_file "${LAMMPS_HOME}/lib${LAMMPS_LIBRARY_NAME}.pc")
+    if(EXISTS ${pc_file})
+        pkg_search()
+        if (LAMMPS_FOUND)
+            list(APPEND LAMMPS_LIBRARY_DIRS "${LAMMPS_HOME}")
+            append_if_new_library_dirs(${LAMMPS_HOME})
+            foreach (TMP_DIR IN ITEMS ${POSSIBLE_INCLUDE_DIRECTORIES})
+                append_if_new_include_dirs("${LAMMPS_HOME}${TMP_DIR}")
+            endforeach()
+        endif()
+    endif()
+else()
+    pkg_search()
+endif()
 
+# if pkg-config didn't work, try with LD_LIBRARY_PATH
 if (NOT LAMMPS_FOUND)
     # look for lammps libraries in LD_LIBRARY_PATH
     ld_library_search()  
@@ -82,31 +148,49 @@ endif()
 
 # correct some include directories
 foreach (TMP_DIR IN ITEMS ${LAMMPS_INCLUDE_DIRS})
-    if (EXISTS "${TMP_DIR}/lammps")
-        list(APPEND LAMMPS_INCLUDE_DIRS "${TMP_DIR}/lammps")
-    endif()
+    append_if_new_include_dirs("${TMP_DIR}/lammps")
 endforeach()
 
 # search for extra libraries
 set(LAMMPS_MODULES_LIST     # List of possible extra libraries for lammps
-    meam
-    voro++
+    atc
+    awpmd
+    colvars
+    gomp
     gsl
-    plumed
-    milady
+    jpeg
     lammps_atc_mpi
     lammps_qmmm_mpi
-    colvars
-    reax
+    meam
+    milady
+    mpi_stubs
+    plumed
+    png
     poems
-    awpmd
+    qmmm
+    reax
+    voro++
+    z
 )
 
-if (NOT TMP_PATH_TO_LIBRARY STREQUAL "TMP_PATH_TO_LIBRARY-NOTFOUND")
+list(APPEND POSSIBLE_LIB_DIRS ${TMP_LD_PATH})
+list(PREPEND POSSIBLE_LIB_DIRS
+#	"/usr/lib64/"
+)
+list(PREPEND POSSIBLE_SUFFIX_DIRS 
+	"/STUBS"
+	"voro_build-prefix/src/voro_build/src/"
+)
+
+if (LAMMPS_FOUND)
     foreach (EXTRA_LIB IN ITEMS ${LAMMPS_MODULES_LIST})
-        find_library(TMP_PATH_TO_EXTRA_LIB ${EXTRA_LIB} HINTS ${TMP_PATH_TO_LIBRARY})
+        set(TMP_PATH_TO_EXTRA_LIB "TMP_PATH_TO_EXTRA_LIB-NOTFOUND")
+        find_library(TMP_PATH_TO_EXTRA_LIB ${EXTRA_LIB} HINTS ${POSSIBLE_LIB_DIRS} PATH_SUFFIXES ${POSSIBLE_SUFFIX_DIRS})
         if (NOT TMP_PATH_TO_EXTRA_LIB STREQUAL "TMP_PATH_TO_EXTRA_LIB-NOTFOUND")
             list(APPEND LAMMPS_LIBRARIES ${EXTRA_LIB})
+
+            cmake_path(REMOVE_FILENAME TMP_PATH_TO_EXTRA_LIB)
+            append_if_new_library_dirs(${TMP_PATH_TO_EXTRA_LIB})
         endif()
     endforeach()
 endif()
@@ -120,5 +204,6 @@ find_package_handle_standard_args( LAMMPS
 set(LAMMPS_LINK_LIBRARIES ${LAMMPS_LINK_LIBRARIES} PARENT_SCOPE)
 set(LAMMPS_CFLAGS ${LAMMPS_CFLAGS} PARENT_SCOPE)
 set(LAMMPS_LDFLAGS ${LAMMPS_LDFLAGS} PARENT_SCOPE)
+
 set(LAMMPS_INCLUDE_DIRS ${LAMMPS_INCLUDE_DIRS} PARENT_SCOPE)
 set(LAMMPS_DEFINITIONS ${LAMMPS_DEFINITIONS} PARENT_SCOPE)

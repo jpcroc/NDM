@@ -31,6 +31,9 @@ contains
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart&
          &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit
+ #ifdef LAMMPS_VERSION
+     USE gen_com_m, ONLY: energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
+ #endif
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,beta35,gammas,gammav
     USE var_pot, ONLY:lforcetabulate,lprtpot,maxorder,ngrid,npotentiel,eatref,ipotentiel,npotmax,ntyp,lpotentiel       
