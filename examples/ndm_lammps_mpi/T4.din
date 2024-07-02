@@ -1,0 +1,24 @@
+ &input
+
+        ipotentiel=-11
+	imm=900
+	igen=0
+	dmtype=3  ! relaxation LPR
+	fpstop=0.01,sigstop=1
+	iseed=1
+	itetemp=-20,lpr=.true.
+	lEev=.true.
+	itmax=20
+	lEparat=.true.,
+        lPkbar=.true. 	
+	lperiod=.true.
+	itetabvois=10000
+	ltabvois=.false.
+	iterasmol=0, ivisu=5
+	units_lammps='metal'        
+ &end
+
+	rvois=7.9
+, fpstop=0.2   ! 7 ph ; 3 CG
+	ndir=200
+	betaguess=1d-8
