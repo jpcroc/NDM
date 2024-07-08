@@ -9,6 +9,8 @@ module eloss
   
 #endif 
   use atomconfig,only:atom_config_d
+   use newunit_mod,only:newunit
+
   use cellconfig,only:cell_config
   ! **************************************************************
 
@@ -16,7 +18,7 @@ module eloss
 
   real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
   real(double):: elosselectot,elosselectot1 ! electronic losses for all atoms ; the PKA
-  real(double),allocatable::elstopforce(:,:,:)
+  real(double),allocatable::elstopforce(:,:,:),gams(:)
   real(double):: tcelec,Ecelec ! coupure pour les pertes 駘ectroniques
   integer::ibrake   ! electronic slowing in cascades : 0 none, 1 down to ecelec, tcelec , 2 connected to Langevin
   integer::ngrdel
@@ -49,19 +51,28 @@ contains
     !  real(double),parameter::clum=29979245800
     real(double), allocatable, dimension(:):: veloc, stoppow
     real(double),allocatable::vmaxel(:)
-
+    integer:: unit99
     allocate (elstopforce(ntyp,2,0:ngrdel))
     allocate(vmaxel(ntyp))
-    open (unit=99,file='elstop.in')
+    allocate (gams(ntyp))
+    call newunit(unit99)
+    open (unit=unit99,file='elstop.in')
     if(rang==0)  write(6,*)'electronic loss eV ; eV/Ang tstep',tstep
     do i=1,ntyp
-       if(rang==0)     write(6,*)'TYPE ',i
-       read(99,*)npr
+       select case(ibrake)
+       case(3)
+          if (rang==0) write (6,*)' ELSTOP READ : gams parameter in ps^-1'
+          read(unit99,*) gams(i)
+          gams(i)=gams(i)*1d12*cm(i)
+       case default
+          
+          if(rang==0)     write(6,*)'TYPE ',i
+       read(unit99,*)npr
        allocate(veloc(0:npr))
        allocate(stoppow(0:npr))
        veloc(0)=0; stoppow(0)=0
        do j=1,npr
-          read(99,*)vel,sp
+          read(unit99,*)vel,sp
           !        vel=clum*sqrt(1-1./((veloc(j)*ev2erg/(cm(i)*clum**2)+1)**2))
           vel2=dsqrt(2*vel*ev2erg/cm(i))
           !        write(6,'(2G15.5)')vel,vel2
@@ -105,7 +116,7 @@ contains
           v1=elstopforce(i,1,1)
           nv1=1+INT(vnlt/v1)
           if (nv1.gt.ngrdel) then
-             write(6,*)'elstop velocity > 49, rebuild elstop.in,nv1',nv1
+             write(6,*)'elstop velocity > ngrdel, rebuild elstop.in,nv1',nv1
 #ifdef PARA
              call endMPI
 #endif 
@@ -115,7 +126,9 @@ contains
           gamlt(i)=f1/(cm(i)*vnlt)
           if(rang==0) write(6,'(A,I3,2G15.7)')'typ gaml',i,gamlt(i),vnlt
        end if
-    end do
+    end select
+ end do
+ close (unit99)
 
     return
   end subroutine initeloss
@@ -152,9 +165,28 @@ contains
        ekin=0.5*erg2ev*vn*cm(atdml%ityp(i))
        if (ekin.gt.Ecelec) then
 
+          select case(ibrake)
+
+
+       case(3)
+          do ic=1,3
+             atdml%fp(ic,i)=atdml%fp(ic,i)-atdml%vp(ic,i)*gams(atdml%ityp(i))
+             !              Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)
+             Elosselec=Elosselec+(atdml%vp(ic,i)*gams(atdml%ityp(i)))*(atdml%vp(ic,i)*tstep)*erg2ev
+             if (L2T.eqv..true.) then
+                elosscel(atdml%ielat(i))=elosscel(atdml%ielat(i))+(atdml%vp(ic,i)*gams(atdml%ityp(i)))*(atdml%vp(ic,i)*tstep)
+             end if
+             if (atdml%num_at_glob(i)==iko)then 
+
+                !                write(6,*)'elfp',fp(ic,i)
+                Elosselec1=Elosselec1+(atdml%vp(ic,i)*gams(atdml%ityp(i)))*(atdml%vp(ic,i)*tstep)*erg2ev
+             end if
+          end do
+
+          case default
+             vn=sqrt(vn)
 
           !	write(6,*)'RG',rang,i,ekin
-          vn=sqrt(vn)
           v1=elstopforce(atdml%ityp(i),1,1)
           !           write(6,*)v1,vn
           nv1=1+INT(vn/v1)
@@ -201,8 +233,7 @@ contains
           end do
           !                 write (6,*)'felstop',f1,vn                
 
-
-
+       end select
        end if
 
     end do

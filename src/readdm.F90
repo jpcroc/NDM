@@ -1029,6 +1029,10 @@ contains
     end if
     ! read for cascade
     select case (ibrake)
+    case(3)
+       if(rang==0) then 
+          write(6,*)'electronic stopping with constant coeff read in  elstop.in for Ec> Ecelec  >' , Ecelec
+       end if
     case(0)
        if ((tcelec.gt.0).or.(ecelec.gt.0)) then
           write(6,*) 'tcelec > 0 et pas de pertes electroniques : stop'

@@ -173,7 +173,10 @@ contains
        call readelec(celndm,boxndm)
        if (rang==0) write(6,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
        dmtype=4
-       ibrake=1
+       if ((ibrake.ne.1).and.(ibrake.ne.3)) then
+          if(rang==0) write(6,*) 'ibrake1 or 3 for l2T'
+          call arret_ndm
+       end if
        ilangevin=1
        if((ecelec==0))then
           write(6,*) 'eccelec<>0  and l2T : STOP'
