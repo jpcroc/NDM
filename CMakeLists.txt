@@ -5,81 +5,132 @@ CMAKE_minimum_required( VERSION 3.20 )
 ################################################
 # Cache variables will not be reset if already defined with cmake .. -C <cache file>
 
-# List fortran compilers to look for
-set(INTEL_PARA_COMPILERS mpiifx mpiifort)
-set(INTEL_SERIAL_COMPILERS ifx ifort)
-set(GNU_PARA_COMPILERS mpifort) # checking if there is a fortran mpi, wrapper wont be used
-set(GNU_SERIAL_COMPILERS gfortran f95 f77)
-set(CXX_LAMMPS_COMPILERS mpiicpc icpc) # Only for Lammps
 
-# define configuration priority
-set(compile_configuration_list GNU_PARA INTEL_PARA INTEL_SERIAL GNU_SERIAL)
+set(languages "Fortran")
+if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
+    list(APPEND languages "CXX")
+endif()
 
-# For each possible configuration, look for compilers
-foreach (config IN ITEMS ${compile_configuration_list} CXX_LAMMPS)
-    set(VAR_${config} "VAR_${config}-NOTFOUND")
-    foreach (compiler IN ITEMS ${${config}_COMPILERS})
-        if (VAR_${config} STREQUAL "VAR_${config}-NOTFOUND")
-            find_program(VAR_${config} ${compiler})
-        endif()
-    endforeach()
-endforeach()
-set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "RELEASE or DEBUG")
+set(compile_configuration_list INTEL GNU)
+
+# List fortran mpi wrappers to look for
+set(INTEL_Fortran_WRAPPERS mpiifx mpiifort mpifort)
+set(INTEL_Fortran_COMPILERS ifx ifort)
+set(INTEL_CXX_WRAPPERS mpiicpc)
+set(INTEL_CXX_COMPILERS icpc)
+
+set(GNU_Fortran_WRAPPERS mpifort mpifc mpif90 mpif77)
+set(GNU_Fortran_COMPILERS gfortran f95 f77)
+set(GNU_CXX_WRAPPERS mpicxx mpiCC mpic++ mpigxx mpigcc mpicc )
+set(GNU_CXX_COMPILERS g++ gcc)
 
 # define configurations
-macro(CONFIG_INTEL_PARA)
-    set(CMAKE_Fortran_COMPILER "${VAR_INTEL_PARA}" CACHE STRING "")    
-    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)     
-    set(NDM_PRESET_TITLE "Compile NDM INTEL parallel : ${compiler_name}" CACHE STRING "")
-    set(NDM_PARA ON)
-endmacro(CONFIG_INTEL_PARA)
+macro(CONFIG_INTEL)
+    set(CMAKE_${lang}_COMPILER "${VAR_${config}_${lang}}" CACHE STRING "")
+    cmake_path(GET CMAKE_${lang}_COMPILER FILENAME compiler_name)     
+    set(NDM_PRESET_TITLE "Compile NDM INTEL: ${compiler_name}" CACHE STRING "")
+endmacro(CONFIG_INTEL)
 
-macro(CONFIG_INTEL_SERIAL)
-    set(CMAKE_Fortran_COMPILER "${VAR_INTEL_SERIAL}" CACHE STRING "")
-    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)
-    set(NDM_PRESET_TITLE "Compile NDM INTEL serial : ${compiler_name}" CACHE STRING "")
-endmacro(CONFIG_INTEL_SERIAL)
+macro(CONFIG_GNU)
+    set(CMAKE_${lang}_COMPILER "${VAR_${config}_${lang}}" CACHE STRING "")
+    cmake_path(GET CMAKE_${lang}_COMPILER FILENAME compiler_name)
+    set(NDM_PRESET_TITLE "Compile NDM GNU : ${compiler_name}" CACHE STRING "")
+    set(CMAKE_Fortran_FLAGS_RELEASE " -O3 -ffree-line-length-512 -funroll-all-loops" CACHE STRING "")
+    set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -ffree-line-length-512" CACHE STRING "")
+    set(MKL_MPI "openmpi" CACHE STRING "MPI")
+endmacro(CONFIG_GNU)
 
-macro(CONFIG_GNU_PARA)
-    set(CMAKE_Fortran_COMPILER "${VAR_GNU_SERIAL}" CACHE STRING "")
-    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)
-    set(NDM_PRESET_TITLE "Compile NDM GNU parallel : ${compiler_name}" CACHE STRING "")    
-    set(NDM_GNU ON)
-    set(NDM_PARA ON)
-endmacro(CONFIG_GNU_PARA)
+foreach(lang IN ITEMS ${languages})
 
-macro(CONFIG_GNU_SERIAL)
-    set(CMAKE_Fortran_COMPILER "${VAR_GNU_SERIAL}" CACHE STRING "")
-    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name) 
-    set(NDM_PRESET_TITLE "Compile NDM GNU serial : ${compiler_name}" CACHE STRING "")
-    set(CMAKE_Fortran_COMPILER "${VAR_GNU_SERIAL}" CACHE STRING "")
-    set(NDM_GNU ON)
-endmacro(CONFIG_GNU_SERIAL)
+# Find mpirun directory to look for wrapper
+set(list_MPIEXEC mpiexec mpirun)
+set(VAR_MPIEXEC "VAR_MPIEXEC-NOTFOUND" CACHE STRING "")
+foreach(mpi_prog IN ITEMS ${list_MPIEXEC})
+	if (VAR_MPIEXEC STREQUAL "VAR_MPIEXEC-NOTFOUND")
+	    if (DEFINED ENV{OMP_ROOT})
+	        find_program(VAR_MPIEXEC ${mpi_prog} PATHS $ENV{OMP_ROOT} NO_DEFAULT_PATH)
+	    elseif(DEFINED ENV{MPI_HOME})
+	        find_program(VAR_MPIEXEC ${mpi_prog} PATHS $ENV{MPI_HOME} NO_DEFAULT_PATH)
+	    else()
+	        find_program(VAR_MPIEXEC ${mpi_prog})	# search anywhere
+            endif()
+	endif()
+endforeach()
 
-# Choose configuration
-set(config_set OFF)
+if (VAR_MPIEXEC STREQUAL "VAR_MPIEXEC-NOTFOUND")
+	set(Project_PARA OFF)
+else()
+	cmake_path(GET VAR_MPIEXEC PARENT_PATH mpi_path)
+	set(Project_PARA ON)
+endif()
+
+# For each possible configuration, look for a wrapper in the mpirun directory
+set(WRAPPER_FOUND_${lang} False)
 foreach (config IN ITEMS ${compile_configuration_list})
-    if(NOT DEFINED CMAKE_Fortran_COMPILER)
-        if (NOT ${VAR_${config}} STREQUAL "VAR_${config}-NOTFOUND" AND NOT ${config_set})
-            cmake_language(CALL CONFIG_${config})        #cmake 3.18
-            set(config_set ON)
+    set(VAR_${config}_${lang} "VAR_${config}_${lang}-NOTFOUND" CACHE STRING "")
+    foreach (wrapper IN ITEMS ${${config}_${lang}_WRAPPERS})
+        if (VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND")
+            find_program(VAR_${config}_${lang} ${wrapper} PATHS ${mpi_path} NO_DEFAULT_PATH)
         endif()
-    else()
-        cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)
-        if (${compiler_name} IN_LIST ${config}_COMPILERS AND NOT ${config_set})
-            cmake_language(CALL CONFIG_${config})        #cmake 3.18
-            set(config_set ON)
+    endforeach()
+    if (NOT VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND") # if a wrapper is found, get the underlying compiler        
+	set(WRAPPER_FOUND_${lang} True)
+	execute_process(
+            COMMAND ${VAR_${config}_${lang}} -show
+            OUTPUT_VARIABLE SHOW_UNDERLYING)
+        if (SHOW_UNDERLYING)
+            string(REPLACE " " ";" SHOW_UNDERLYING2 ${SHOW_UNDERLYING})
+            list(GET SHOW_UNDERLYING2 0 ${config}_${lang}_underlying_compiler)
         endif()
     endif()
 endforeach()
 
-if (NDM_GNU)
-    set(CMAKE_Fortran_FLAGS_RELEASE " -O3 -ffree-line-length-512 -funroll-all-loops" CACHE STRING "")
-    set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -ffree-line-length-512" CACHE STRING "")
-    set(MKL_MPI "openmpi" CACHE STRING "MPI")
+# If no wrapper was found, look wider
+if (NOT ${WRAPPER_FOUND_${lang}})
+	foreach (config IN ITEMS ${compile_configuration_list})
+	    foreach (compiler IN ITEMS ${${config}_${lang}_COMPILERS})
+		if (VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND")
+		    find_program(VAR_${config}_${lang} ${compiler})
+		endif()
+	    endforeach()
+	    if (NOT VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND") # if a compiler is found, maybe it's a wrapper and we can get the underlying compiler
+		execute_process(
+		    COMMAND ${VAR_${config}_${lang}} -show
+		    OUTPUT_VARIABLE SHOW_UNDERLYING)
+		if (SHOW_UNDERLYING)
+		    string(REPLACE " " ";" SHOW_UNDERLYING2 ${SHOW_UNDERLYING})
+		    list(GET SHOW_UNDERLYING2 0 ${config}_${lang}_underlying_compiler)
+		endif()
+	    endif()
+	endforeach()
 endif()
 
-if (NDM_PARA)
+# Choose previously defined configuration
+set(config_${lang}_set OFF)
+foreach (config IN ITEMS ${compile_configuration_list})
+    if (NOT ${config_${lang}_set})
+	# if the underlying compiler is defined it means we have found a working wrapper		
+	if (DEFINED ${config}_${lang}_underlying_compiler)
+	    if (${${config}_${lang}_underlying_compiler} IN_LIST ${config}_${lang}_COMPILERS)
+                cmake_language(CALL CONFIG_${config})        #cmake 3.18
+                set(config_${lang}_set ON)
+            endif()
+	elseif(DEFINED CMAKE_${lang}_COMPILER)
+	    cmake_path(GET CMAKE_${lang}_COMPILER FILENAME compiler_name)
+            if (${compiler_name} IN_LIST ${config}_${lang}_COMPILERS)
+		cmake_language(CALL CONFIG_${config})        #cmake 3.18
+		set(config_${lang}_set ON)
+            endif()
+	elseif (NOT ${Project_PARA} AND NOT VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND")
+		cmake_language(CALL CONFIG_${config})        #cmake 3.18
+                set(config_${lang}_set ON)
+        endif()
+    endif()
+endforeach()
+
+endforeach()
+
+if (${Project_PARA})
     list(APPEND NDM_PACKAGE_LIST "MPI")
     list(APPEND NDM_COMPILE_DEFINITION "PARA")
     list(APPEND NDM_COMPILE_DEFINITION "PARAML")
@@ -101,13 +152,7 @@ set(MKL_INTERFACE "lp64" CACHE STRING "Interface")
 set(MKL_ARCH "intel64" CACHE STRING "Architecture")
 
 if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
-    set(CMAKE_CXX_COMPILER "${VAR_CXX_LAMMPS}" CACHE STRING "cxx compiler")
     set(CMAKE_CXX_FLAGS_RELEASE " -no-multibyte-chars " CACHE STRING "")
-endif()
-
-set(languages "Fortran")
-if(DEFINED CMAKE_CXX_COMPILER)
-    list(APPEND languages "CXX")
 endif()
 
 ################################################
@@ -171,7 +216,6 @@ endforeach()
 foreach( VARIABLE IN ITEMS ${${PROJECT_NAME}_COMPILE_DEFINITION})
     add_compile_definitions(${VARIABLE}=1)
 endforeach()
-add_compile_options(-D$<INSTALL_INTERFACE:LAMMPS_LIB_NO_MPI>)
 
 ################################################
 # set paths to modules and executables
