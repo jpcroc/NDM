@@ -1,7 +1,7 @@
 module deftimestep_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,iteration,itetimestep,lcasca,lperiod,oldtstep,&
-       &rang,timel,tsmin,tstep,two,usdh,vmax,l2T,lspaceNDM
+       &rang,timel,tsmin,tstep,two,usdh,vmax,l2T,lspaceNDM,erg2ev
   use atomconfig, only : atom_config_d
   USE boxconfig,only:box_config,periodbox
         implicit none
@@ -31,7 +31,7 @@ subroutine deftimestep(atcf,box)
   real(double) :: tifac1, tifac2, lts, tseuil, vmax2,depmaxts2
   real(double), dimension(:),allocatable :: vpmod2
   real(double) :: tmaxv, tmod, vpmod
-  real(double) :: tv1
+  real(double) :: tv1,ecmax,ecmod
 #ifdef PARA
   real(double), dimension(3) :: max_loc
   integer :: ityp_max
@@ -80,14 +80,14 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 #else
   tmaxv = 1./3./bk*cm(atcf%ityp(imax))*vmax2
 #endif
- 
+  ecmax=cm(atcf%ityp(imax))*vmax2*0.5*erg2ev
   vmax = sqrt(vmax2)
 
   if (itetimestep.ne.1) then
      if (rang==0) then
         write (6, '(A,I5,A,D14.5)') '*****  ITERATION  = ', iteration, '  time = ', &
              timel
-        write (6, *) 'Vitesse maximale sur I=', iteration, imax, vmax, tmaxv
+        write (6, '(A,I8,I10,3G15.9)') 'Vitesse maximale sur I=', iteration, imax, vmax, tmaxv,ecmax
      endif                                      ! fin rang=0
   end if
   if (vmax==0)return
@@ -105,8 +105,9 @@ ikoloc=iko
   if (ikoloc.gt.0) then
      tmod = 1./3./bk*cm(atcf%ityp(ikoloc))*vpmod2(ikoloc)
      vpmod = sqrt(vpmod2(ikoloc))
-     if (rang==0) write (6, *) 'Vitesse du projectile =', iteration, iko, vpmod, &
-          tmod
+     ecmod= cm(atcf%ityp(ikoloc))*vpmod2(ikoloc)*0.5*erg2ev
+     write (6,'(A,I8,I10,3G15.9)' ) 'Vitesse du projectile =', iteration, iko, vpmod, &
+          tmod,ecmod
   endif
 endif	
 
