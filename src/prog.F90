@@ -131,8 +131,6 @@ contains
           select case(dmtype)
           case(30,32,34,33,19,35,12)
              atdml=>atdm
-          case(41,42)
-             atdml=>atdmarps
           case default
              atdml=>atdmd
           end select
@@ -199,19 +197,9 @@ contains
           end if
        class is (atom_config_d) !velocities
           select case (dmtype) ! select from dmtype 
-          case(41,42)
-             itloopmax=itmax
-             timeloopmax=timemax
-             select type(atdml)
-             type is (atom_config_arps) !special case ARPS
-                select type(celndm)
-                type is(cell_config_arps)
-                   call dmloop_arps(atdml,celndm,boxndm,psc0)
-                end select
-             end select
           case(5)
              write(6,*)'loopforcetest pas NDM2020' ; stop
-          case(4,8,1,21,22,23,24,88) ! some form of MD, including quenchings
+          case(4,8,1,21,22,23,24,88,41,42) ! some form of MD, including quenchings
              if (lcdp) then ! special case defect creation
                 call creadp(atdml,celndm,boxndm,psc0)
              else ! no change in atom number MD

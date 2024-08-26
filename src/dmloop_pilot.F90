@@ -1,7 +1,8 @@
 module dmloop_pilot_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE atomconfig,only : atom_config_d, atom_config_e
-  USE cellconfig, only:cell_config
+  use arps_mod,only:dmloop_arps
+  USE atomconfig,only : atom_config_d, atom_config_e,atom_config_arps
+  USE cellconfig, only:cell_config,cell_config_arps
   USE boxconfig,only:box_config,box_config_lpr
   USE gen_com_m, ONLY: dmtype,lcdp,rang,latcomp
 
@@ -26,11 +27,20 @@ contains
     type(para_space_config)::psc
     class(box_config)::boxndm
     class(atom_config_d)::atdml
-    type(cell_config):: celndm
+    class(cell_config):: celndm
     logical,optional::linit
     logical::lini=.false.
     if (present(linit))lini=linit
-    select case (dmtype) 
+    select case (dmtype)
+    case(41,42)
+       select type(atdml)
+       type is (atom_config_arps) !special case ARPS
+          select type(celndm)
+          type is(cell_config_arps)
+             call dmloop_arps(atdml,celndm,boxndm,psc)
+          end select
+       end select
+
     case(4)
        call dmloop_vverlet (atdml,celndm,boxndm,psc)
     case(8,22,24,88)

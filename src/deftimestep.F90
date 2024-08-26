@@ -17,9 +17,9 @@ subroutine deftimestep(atcf,box)
   USE arret_ndm_mod,only: arret_ndm
 
 #ifdef PARA
-  USE Tpara,only:nprocspace,comm_space
+  USE Tpara,only:nprocspace,comm_space,myidsp
 #else
-  USE Tpara,only:nprocspace
+  USE Tpara,only:nprocspace,myidsp
 #endif
 
   implicit none
@@ -27,19 +27,21 @@ subroutine deftimestep(atcf,box)
   class(box_config)::box
 
 
-    integer :: i, expos, imax,ikoloc
-  real(double) :: tifac1, tifac2, lts, tseuil, vmax2,depmaxts2
+    integer :: i, expos, ikoloc,iprocm,natgmax,ityp_max,iproc
+  real(double) :: tifac1, tifac2, lts, tseuil, depmaxts2
   real(double), dimension(:),allocatable :: vpmod2
   real(double) :: tmaxv, tmod, vpmod
-  real(double) :: tv1,ecmax,ecmod
+  real(double) :: tv1,ecmax,ecmod,vmaxt,vmax2
+  real(double), allocatable:: vmax2T(:)
+  integer,allocatable::imaxT(:),natgmaxT(:), ityp_maxT(:)
+  
 #ifdef PARA
-  real(double), dimension(3) :: max_loc
-  integer :: ityp_max
+  
 #endif
 
 
   !-----------------------------------------------
-
+!  call atcf%print
   ! changement de pas en temps.
   ! le pas en temps optimal est le plus grand tel que
   ! le deplacement maximal entre deux iteration
@@ -48,46 +50,86 @@ subroutine deftimestep(atcf,box)
   ! pour ne pas tout melanger on ne prend que des pas en temps
   ! egaux a 2.0 ou 5.0 ou 10 * 10 **-qqch
   allocate (vpmod2(atcf%imm))
+  allocate(imaxT(0:nprocspace-1))
+  allocate(natgmaxT(0:nprocspace-1))
+  allocate(ityp_maxT(0:nprocspace-1))
+  allocate(vmax2T(0:nprocspace-1))
       depmaxts2=depmaxts*1.125
 !  if (it.le.2) return
-  vmax2 = 0.0
-  imax = 0
+  vmax2 = 0
+  natgmaxt=0
+  imaxt=0
+  ityp_maxt=0
+  vmax2t=0
   vpmod2(:atcf%im) = atcf%vp(1,:atcf%im)**2+atcf%vp(2,:atcf%im)**2+atcf%vp(3,:atcf%im)**2
-
   do i = 1, atcf%im
-     if (vpmod2(i)<=vmax2) cycle
-     vmax2 = vpmod2(i)
-     imax = i
+     if (vpmod2(i)>vmax2) then
+        vmax2T(myidsp) = vpmod2(i)
+        imaxT(myidsp) = i
+        natgmaxT(myidsp)=atcf%num_at_glob(i)
+        ityp_maxT(myidsp)=atcf%ityp(i)
+        vmax2=vpmod2(i)
+     end if
   end do
+!  write(6,*)'imax',myidsp,imaxT
+  call comm_space%barrier
+!  write(6,*)'VmaxT',myidsp,vmax2T
+    call comm_space%barrier
+!    write(6,*)'natgmaxT',myidsp,natgmaxt
+    call comm_space%barrier
+  
 
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-     max_loc(1)=vmax2
-     max_loc(2)=imax+0.5
-     !  max_loc(3)=0.5+ityp(imax)
-     call comm_space%maxloc(max_loc)
-     vmax2 = max_loc(1)
-     ityp_max=atcf%ityp(int(max_loc(2)))
+   vmaxt=-1
+   call comm_space%sum(vmax2t)
+   call comm_space%sum(imaxt)
+   call comm_space%sum(natgmaxt)
+   call comm_space%sum(ityp_maxt)
+   do iproc=0,nprocspace-1
+!      write(6,*)'IPROC',iproc,vmax2t(iproc),natgmaxt(iproc)
+      if (vmax2T(iproc).gt.vmaxt) then
+         vmax2=vmax2T(iproc)
+         iprocm=iproc
+         ityp_max=ityp_maxT(iproc)
+         natgmax=natgmaxT(iproc)
+         vmaxt=vmax2T(iproc)
+      end if
+   end do
      !  ityp_max=int(max_glob(3))
      
-     
+!   write(6,*)'vmax2',vmax2,iprocm,natgmax
      
      tmaxv = 1./3./bk*cm(ityp_max)*vmax2
      !tmaxv=0
   else
-     tmaxv = 1./3./bk*cm(atcf%ityp(imax))*vmax2
+
+     ityp_max=atcf%ityp(imaxT(0))
+     tmaxv = 1./3./bk*cm(ityp_max)*vmax2
+     vmax2=vmax2T(0)
+     iprocm=0
+     ityp_max=ityp_maxT(0)
+     natgmax=natgmaxT(0)
+
+     
   end if
 #else
-  tmaxv = 1./3./bk*cm(atcf%ityp(imax))*vmax2
+  tmaxv = 1./3./bk*cm(ityp_maxT(0))*vmax2
+  vmax2=vmax2T(0)
+  ityp_max=atcf%ityp(imaxT(0))
+  
+  iprocm=0
+  ityp_max=ityp_maxT(0)
+  natgmax=natgmaxT(0)
 #endif
-  ecmax=cm(atcf%ityp(imax))*vmax2*0.5*erg2ev
+  ecmax=cm(ityp_max)*vmax2*0.5*erg2ev
   vmax = sqrt(vmax2)
 
   if (itetimestep.ne.1) then
-     if (rang==0) then
+     if (rang==iprocm) then
         write (6, '(A,I5,A,D14.5)') '*****  ITERATION  = ', iteration, '  time = ', &
              timel
-        write (6, '(A,I8,I10,3G15.9)') 'Vitesse maximale sur I=', iteration, imax, vmax, tmaxv,ecmax
+        write (6, '(A,I8,I10,3G15.9)') 'Vitesse maximale sur I=', iteration, natgmax, vmax, tmaxv,ecmax
      endif                                      ! fin rang=0
   end if
   if (vmax==0)return

@@ -140,8 +140,8 @@ contains
     use mod_para,only : nprocspace
 #endif
 
-    type (cell_config),intent(in)::celndm
-    type(atom_config_d)::atdml
+    class (cell_config),intent(in)::celndm
+    class(atom_config_d)::atdml
 
     
     real(double)::ekin,vn,v1,f1,eta,etavc,f1vc,vc

@@ -3,7 +3,7 @@ module specialinit_mod
   USE cellconfig, only:cell_config,caltabtC
   use boxconfig,only: box_config
   USE arret_ndm_mod,only: arret_ndm
-  USE initcasca_mod,only: initcasca
+  USE initcasca_mod,only: initcasca,itko
   use newunit_mod,only:newunit
   USE T_kind_param_m, ONLY:  double
   
@@ -43,11 +43,12 @@ contains
 
     
     namelist /spinit/lpressinit,Lheatinit,eko,xko,yko,zko,xx0,yy0,zz0,iheatinit,tempheatinit,Eheatinit,Rheatinit,&
-         &ipressinit,Rpressinit,deltapressinit,iko
+         &ipressinit,Rpressinit,deltapressinit,iko,itko
 
     iko=-1
+    itko=-1
     xko=1.;    yko=1.;    zko=1.
-    xx0=-1;yy0=-1;zz0=-1
+    xx0=0.25;yy0=0.25;zz0=0.25
     iheatinit=1 ! 1 = from a sphere at 0.5 0.5 0.5 radius Rheatinit; 2 from a slice  at x=0.5 +:- Rheatinit
     Rheatinit=10.0 ! 
     tempheatinit=-1
@@ -67,7 +68,7 @@ contains
     if (rang==0) write(6,*)'lpressinit,lheatinit',lpressinit,lheatinit
     if (lcasca) then
        select type(atdml)
-       type is (atom_config_e)
+       class is (atom_config_e)
           if (rang==0) write (6, *) '----CASCADE-----'
           if (rang==0) write (6, *) 'projectile=', iko, ' energie=', eko
           if (rang==0) write (6, *) 'direction=', xko, yko, zko
