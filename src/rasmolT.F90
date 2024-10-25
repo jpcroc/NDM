@@ -299,7 +299,7 @@ contains
                 end do
                 write(luvisu,*)' '
              else
-                write (luvisu,'(A,3es15.6)')ty(atcomp%ityp(i)), xp1, xp2, xp3
+                write (luvisu,'(A,3es15.6,I9)')ty(atcomp%ityp(i)), xp1, xp2, xp3
              end if
           end do
           write(luvisu,*)
@@ -326,7 +326,7 @@ contains
              xp1 = atcomp%xp(1,i)
              xp2 = atcomp%xp(2,i)
              xp3 = atcomp%xp(3,i)
-             write (luvisu,'(3es15.6,I3)',advance='no') xp1, xp2, xp3, atcomp%ityp(i)
+             write (luvisu,'(3es15.6,I3, I9)',advance='no') xp1, xp2, xp3, atcomp%ityp(i),atcomp%num_at_glob(i)
 !!$             if (laux) then
 !!$                do iax=1,naux
 !!$                   write(luvisu,'(G20.12)',advance='no')vaux(iax,i)
@@ -457,7 +457,7 @@ contains
              select case(ivisum)
              case(40,41)
                 WRITE(luvisu,'(f0.3)') cm(atcomp%ityp(i))/umass        ! Mass (g/mol)
-                WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
+                WRITE(luvisu,'(a,A,I9)') tyw(i),' ! ',atcomp%num_at_glob(i)                 ! Atom type
                 write(luvisu, '(3(g20.12,1x))',advance='no') atcomp%xp(:,i)
                 if (ivisum==41) then
                    select type (atcomp)
@@ -488,11 +488,11 @@ contains
              case(60,61)
                 if (i==1) then
                    WRITE(luvisu,'(f0.3)') cm(atcomp%ityp(i))/umass        ! Mass (g/mol)
-                   WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
+                WRITE(luvisu,'(a,A,I9)') tyw(i),' ! ',atcomp%num_at_glob(i)
                 else
                    if (atcomp%ityp(i).ne.atcomp%ityp(i-1)) then
                       WRITE(luvisu,'(f0.3)') cm(atcomp%ityp(i))/umass        ! Mass (g/mol)
-                      WRITE(luvisu,'(a)') tyw(i)                 ! Atom type
+                      WRITE(luvisu,'(a,A,I9)') tyw(i),' ! ',atcomp%num_at_glob(i)
                    end if
                 end if
 
