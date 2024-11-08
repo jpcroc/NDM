@@ -24,7 +24,8 @@ module init_mod
   use vars_lammps
 #endif
 #ifdef ML
-  use NDM_ML,only:init_config_ml
+!   use init,only:init_config_ml
+  use mod_test, only: md_config_wrap
 #endif
   
 
@@ -116,6 +117,21 @@ contains
        if (rang==0) write(6,*)'postinitlammps'
     end if
 #endif  
+#ifdef MLD_NDM
+    ! MiLaDy
+    if(ipotentiel==20) then
+      if (rang.eq.0) then
+           write(6,*)
+           write(6,*)' ML  ..... configuration MiLady '
+           write(6,*)
+      end if
+      !  !This comes with MiLaDy Package
+
+       call md_config_wrap(atdml)
+       call md_init_config_ml
+    !call init ! mld init
+    end if
+#endif
     !<---------setting the configuration by generation gin / cin file --------------
 
     select case (igen)
@@ -155,18 +171,6 @@ contains
        call caltabi(atdml,celndm,boxndm)
     end if
 
-#ifdef ML
-    ! MiLaDy
-    if(ipotentiel==20) then
-       if (rang.eq.0) then
-          write(6,*)
-          write(6,*)' ML  ..... configuration MiLady '
-          write(6,*)
-       end if
-       !This comes with MiLaDy Package
-       call init_config_ml
-    end if
-#endif
 
 
     if (L2T.eqv..true.) then

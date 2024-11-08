@@ -25,7 +25,7 @@ module prog_mod
   use read_val,only:imm,ltabvois,rvois
   use posana,only:initanapos
   use NGC_mod,only:ngc
-  use NDM_ML,only:init_config_ml
+!  use NDM_ML,only:init_config_ml
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only:init_lammps
 

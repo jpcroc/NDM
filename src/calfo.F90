@@ -1,6 +1,7 @@
 module calfo_mod
 #ifdef ML
-  USE NDM_ML, ONLY : calfo_ml
+!  USE NDM_ML, ONLY : calfo_ml
+   use mod_test, only: md_calfo_ml
 #endif 
    USE arret_ndm_mod,only:arret_ndm
   USE calfoew_mod,only:calfoew,calfozz
@@ -176,7 +177,7 @@ contains
                                       
 #ifdef ML
                 case (20)
-                   call calfo_ml(atcf,celcf,boxcf)
+                   call md_calfo_ml(atcf,celcf,boxcf,potistcalfo,sigcalfo)
 #endif          
                 end select
              end if

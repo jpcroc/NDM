@@ -22,6 +22,11 @@ module constrconf_mod
   use Tpara,only:para_space_config,nprocspace
 
   use config2data_mod,only:config2data
+#ifdef ML
+  use gen_com_m_ml, only: at, im
+  use derived_types, only: config_real
+#endif
+
 
 
   implicit none
@@ -87,7 +92,7 @@ contains
 
           itread=1
           call atrcf%deftype(compatrcf)
-          call compatrcf%init(immin=imm_glob,imin=0)
+          call compatrcf%init(immin=imm_glob,imin=0,ltabvois=compatrcf%ltabvois,rvois=compatrcf%rvois)
 
 
 !          call atrcf%print
@@ -106,7 +111,7 @@ contains
           !       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,atrcf%im) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
        else
           itread=1
-          call atrcf%init(immin=imm_glob,imin=0)
+          call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
 !          if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 !             call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
@@ -139,7 +144,7 @@ contains
           call arret_ndm
        else
           itread=1
-          call atrcf%init(immin=imm_glob,imin=0)
+          call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
 
           atrcf%im_glob=atrcf%im

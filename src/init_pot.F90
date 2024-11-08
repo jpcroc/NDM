@@ -130,14 +130,15 @@ contains
                 ! MiLaDy
              case(20)
 #ifdef ML
-                !This comes with MiLaDy package
-                call init_potential_simple(rue_ml,rumax)
+!!$                !This comes with MiLaDy package
+
+                call md_init_potential_ml
                 typ_and_pot(:,20)=.true.
                 typ_pot_pair(:)=20
-                rue_pot(20)=rue_ml
+                !rue_pot(20)=rue_ml
                if (rang.eq.0) then
                    write(6,*)
-                   write(6,*)' MILADY ..... RUE = ',rue_ml*1d8
+                   write(6,*)' MILADY ..... rvois = ', rvois
                    write(6,*)
                 end if
 #else
@@ -149,7 +150,7 @@ contains
                 call arret_ndm
 #endif
              end select
-
+             
           endif
        end do
        do iti=1,ntyp

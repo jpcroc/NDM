@@ -144,7 +144,7 @@ contains
     !    write(6,*)celscf%noxyz
     natperc= INT(atcf%im_glob/celscf%noxyz)
     nvat=3*natperc
-    natperc=max(int(2*natperc),20)     ! MODIF Clouet
+    natperc=max(int(3*natperc),20)     ! MODIF Clouet
     !    ELSE                          ! MODIF Clouet
     !       nvat=10*natperc       ! MODIF Clouet
     !    END IF                        ! MODIF Clouet
