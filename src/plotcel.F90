@@ -102,12 +102,12 @@ module plottpcel_mod
        write(6,*)'coding error in plottpcel call, %ltpcel.ne.true'
        call arret_ndm
     end if
-    if (icall==1) then 
+!    if (icall==1) then 
        call newunit(iultp)
        open(unit=iultp,file='ltpcel.in')
        read(iultp,nml=ltpc)
        close(iultp)
-    end if
+!    end if
     
     if (present(itapp)) then
        itp=itapp
