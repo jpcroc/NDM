@@ -11,9 +11,11 @@
 
 ``NDM`` is fortran code computing empirical potential molecular dynamics (dynamique moléculaire en potentiels empiriques)
 
-[comment]: # * etc TODO
+{::comment}
+# * etc TODO
 
-[comment]: # See [NDM TODO better introduction](https://inis.iaea.org/collection/NCLCollectionStore/_Public/37/064/37064766.pdf)
+ # See [NDM TODO better introduction](https://inis.iaea.org/collection/NCLCollectionStore/_Public/37/064/37064766.pdf)
+{:/comment}
 
 
 NDM is built around
