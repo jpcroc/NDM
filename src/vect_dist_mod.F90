@@ -75,7 +75,7 @@ contains
     return   
   end subroutine vect_dist
 
-  subroutine closest_at(xPtest,atcf,celcf,boxcf,lperiod,iclose,rumin,dist,lclose)
+  subroutine closest_at(xPtest,atcf,celcf,boxcf,lperiod,iclose,rumin,dist,lclose,itypt)
     class(atom_config),intent(in)::atcf
     class(cell_config),intent(in)::celcf
     class(box_config)::boxcf
@@ -85,6 +85,7 @@ contains
     real(double),optional,intent(in)::rumin !
     real(double),optional,intent(out)::dist ! distance minimel effective
     integer,intent(out),optional ::iclose !i= indice du plus proche
+    integer,intent(in),optional ::itypt !type des atomes à tester
 
     real(double)::xpnp(3,2),xp(3,2),dx2(3),XJI(3)
     integer::ic,i
@@ -94,9 +95,12 @@ contains
        write(6,*)'incohérence dans appel a closest_at'
        call arret_ndm
     end if
-    lclose=.false.
+
+    if (present(lclose))lclose=.false.
     distance0=1d10
     do i=1,atcf%im
+       
+       if (present(itypt).and.(atcf%ityp(i).ne.itypt)) cycle
        xp(:,1)=xptest(:)
        xp(:,2)=atcf%xp(:,i)
        call notperiod(2,xp,xpnp,boxcf%at,boxcf%bg,lperiod)
@@ -119,7 +123,7 @@ contains
 
        if (present(rumin)) then   
           if (distance.le.rumin) then
-             lclose=.true.
+             if (present(lclose))             lclose=.true.
              if (present(iclose)) iclose=i
              if (present(dist)) dist=distance
              return

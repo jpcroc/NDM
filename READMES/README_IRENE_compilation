@@ -1,0 +1,20 @@
+# How to compile LAMMPS on irene without or with lammps
+
+SIMPLE COMPILATION without LAMMPS
+module purge may be a good idea then
+1104  module load mpi
+1094  mkdir build
+ 1095  cd build/
+ 1096  cmake ../
+ 1097  make -j
+
+COMPILATION WITH  LAMMPS
+1101  mkdir build_irene_lammps
+ 1103  module purge
+ 1104  module load mpi
+ 1105  module load lammps/2Aug2023
+ 1106  pwd
+ 1107  cd build_irene_lammps/
+ 1108  hg cm
+ 1109  cmake ../ -D NDM_PACKAGE_LIST=LAMMPS
+ 1110  make -j

@@ -1059,6 +1059,11 @@ contains
        llangevin=.true.
        gamlg=-1.
     end select
+    if ((ibrake.gt.0).and.(l2t.eqv..true.)) then
+       if (rang==0) write(6,*)'L2T AND ibrake = 0 STOP'
+       call arret_ndm
+    end if
+    
 
 
 

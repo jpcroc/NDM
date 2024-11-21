@@ -1,6 +1,8 @@
 module initcasca_mod
   USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
+  use vect_dist_mod,only:closest_at
+
 
   USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,lderive,lperiod,&
        &oldtstep,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T,&
@@ -13,6 +15,7 @@ module initcasca_mod
   use boxconfig,only:box_config,periodbox
   USE var_pot, ONLY:cm
   USE elec_cell, ONLY : necycle,etstep,necyclemin
+    USE deftimestep_mod,only: deftimestep
   ! *******************************************************************
 #ifdef PARA
   USE Tpara,only:nprocspace,comm_space,myidsp
@@ -26,6 +29,7 @@ module initcasca_mod
 
 
   implicit none
+  integer::itko
 contains
   ! *************** initialisation de la cascade **********************
   subroutine initcasca (atcf,celndm,boxndm)
@@ -50,15 +54,15 @@ contains
     integer ::  expos, imax
     real(double) :: tifac1, tifac2, lts, tseuil, vmax2
     real(double), dimension(:),allocatable :: vpmod2
-    real(double) :: masstot, vpi(3)
+    real(double) :: masstot, vpi(3),cv(1,3),dmin
 
-    integer :: seed_size,isl
+    integer :: seed_size,isl,iproc
     integer, dimension(:), allocatable :: iseedt
-
-
+    integer,allocatable::indclose(:)
+    real(double),allocatable::dclose(:)
+    integer::iproclose,ipka,iprc(1)
+    
 #ifdef PARA
-
-
     type(atom_config_e)::atcfcasc
     type(para_config),target::Cpara
     type(cell_config),target::celcasc
@@ -68,6 +72,7 @@ contains
     type(cell_config),pointer::celcasc
 #endif    
 
+ 
     allocate (vpmod2(atcf%imm_glob))
     if (atcf%im_glob==0) then
        write(6,*)'inicasca im_glob stop'
@@ -78,26 +83,148 @@ contains
     class is (atom_config_e) 
 
 
-#ifdef PARA
-       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call atcf%Eegal(atcfcasc)
-          call atcfcasc%init(atcf%im_glob,atcf%imm_glob,imm_glob=atcf%imm_glob,im_glob=atcf%im_glob)
-          call initparapuresp(Cpara,rang,comm_space)
-          call initcomp(atcfcasc,celcasc,atcf,celndm,boxndm,Cpara,lperiod,lorder=.true.)
-       else
-          call initparapuresp(cpara,rang,comm_space)
-          atcfcasc=atcf
-          celcasc=celndm
-       end if
-
-#else
-       atcfcasc=>atcf
-       celcasc=>celndm
-#endif    
 
        !-----------------------------------------------
        ! --- Translation de l'atome IKO au centre de la boite de simulation ---
        !    if (ikoloc.gt.0) then
+       iproclose=-1
+       if (itko.gt.0) then
+          allocate(dclose(0:nprocspace-1))
+          allocate(indclose(0:nprocspace-1))
+          indclose(:)=0;dclose(:)=0
+          cv(1,1)=xx0;       cv(1,2)=yy0;       cv(1,3)=zz0;
+          call cryst_to_cart (1, cv, boxndm%at, 1) !cryst vers cart sur cv
+          
+          call closest_at(cv(1,:),atcf,celndm,boxndm,lperiod,iclose=indclose(myidsp),dist=dclose(myidsp),itypt=itko)
+!          write(6,*)'closest',indclose(myidsp),dclose(myidsp)
+#ifdef PARA
+          call comm_space%sum(dclose)
+          call comm_space%sum(indclose)
+#endif
+          dmin=1d5
+          do iproc=0,nprocspace-1
+             if (dmin.gt.dclose(iproc)) then
+                iproclose=iproc
+                dmin=dclose(iproc)
+             end if
+          end do
+!          write(6,*)'cloproc',dmin,iproclose
+          if (myidsp==iproclose) then
+             ipka=indclose(iproclose)
+             iko=atcf%num_at_glob(ipka)
+             
+          else
+             iko=-1
+          end if
+#ifdef PARA
+          call comm_space%bcast(iproclose,iko)
+#endif
+!          write(6,*)'IPROCCLOSE',iproclose
+
+          if (myidsp==iproclose) then
+          
+          znorm = sqrt(xko**2+yko**2+zko**2)
+
+          if (znorm==0)then
+!             if (nprocspace.ne.1) then
+!                write(6,*) 'tirage al�atoire projectile pas programm�'
+!                call arret_ndm
+!             endif
+             write(6,*) 'tirage al�atoire xko '
+             call random_seed(size=seed_size)
+             allocate(iseedt(seed_size))
+             iseedt = 0
+             !        if (iseed==0) then
+             call system_clock (count=isl)
+             write(6,*)'ISLxko',isl
+             iseedt(1)=isl
+             !        else
+             !           iseedt(1)=iseed
+             !        end if
+
+             call    random_seed (put=iseedt)
+             deallocate(iseedt)
+             !        do i=1,100
+             call random_number(xko)
+             call random_number(yko)
+             call random_number(zko)
+             znorm = sqrt(xko**2+yko**2+zko**2)
+          end if
+
+          z1 = xko/znorm
+          z2 = yko/znorm
+          z3 = zko/znorm
+
+          if (rang==0) then
+             write (6, 576) z1, z2, z3
+          endif
+
+          write (6, *) 'POSITIONS CASCADE',iko,atcf%xp(1:3,ipka)*1.0d8     
+!          write(6,'("Positions initiales du projectile (CRYST)",I9,3(f8.4,1x))')&
+!               &ipka, atcf%xp(1,ipka),atcf%xp(2,ipka),atcf%xp(3,ipka)
+          aux1 = sqrt(eko*ecgs*2./cm(atcf%ityp(ipka)))    !Vitesse en cgs
+          atcf%vp(1,ipka) = atcf%vp(1,ipka)+z1*aux1
+          atcf%vp(2,ipka) = atcf%vp(2,ipka)+z2*aux1
+          atcf%vp(3,ipka) = atcf%vp(3,ipka)+z3*aux1
+          atcf%xpp(1,ipka) = atcf%xp(1,ipka)-atcf%vp(1,ipka)*tstep
+          atcf%xpp(2,ipka) = atcf%xp(2,ipka)-atcf%vp(2,ipka)*tstep
+          atcf%xpp(3,ipka) = atcf%xp(3,ipka)-atcf%vp(3,ipka)*tstep
+
+          !                                                !Conditions periodiques
+       end if
+       ! correction de la derive par ajout d'une impulsion inverse sur les autres atomes
+       if (lderive) then
+          masstot=0
+          do i=1,atcf%im
+             if(i==iko)cycle
+             masstot=masstot+cm(atcf%ityp(i))
+          end do
+          vpi=0
+#ifdef PARA
+          call comm_space%sum(masstot)
+#endif
+          
+          if (myidsp==iproclose) then
+             vpi(:)=-(atcf%vp(:,iko)*cm(atcf%ityp(ipka))/masstot)
+          end if
+#ifdef PARA
+          call comm_space%sum(vpi)
+#endif
+          do i=1,atcf%im
+             if(atcf%num_at_glob(i)==iko)cycle
+             atcf%vp(:,i)=atcf%vp(:,i)+vpi(:)
+             atcf%xpp(:,i)=atcf%xpp(:,i)-vpi(:)*tstep
+          end do
+       end if
+       if (lperiod)       call periodbox  (boxndm,atcf)
+
+       call deftimestep(atcf,boxndm)
+          
+
+       
+    else
+
+
+
+
+       
+#ifdef PARA
+          if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+             call atcf%Eegal(atcfcasc)
+             call atcfcasc%init(atcf%im_glob,atcf%imm_glob,imm_glob=atcf%imm_glob,im_glob=atcf%im_glob)
+             call initparapuresp(Cpara,rang,comm_space)
+             call initcomp(atcfcasc,celcasc,atcf,celndm,boxndm,Cpara,lperiod,lorder=.true.)
+          else
+             call initparapuresp(cpara,rang,comm_space)
+             atcfcasc=atcf
+             celcasc=celndm
+          end if
+          
+#else
+          atcfcasc=>atcf
+          celcasc=>celndm
+#endif    
+          
        if (myidsp==0) then
 
           write (6, *) 'initialisation de la cascade'
@@ -149,6 +276,7 @@ contains
 
              ! --- Fin de la translation ---
           end if 	! xx0>0
+
           znorm = sqrt(xko**2+yko**2+zko**2)
 
           if (znorm==0)then
@@ -186,14 +314,13 @@ contains
 576          format('Direction du projectile ',3(f8.4,1x))
           endif
 
-577       format('Positions initiales du projectile (A) ',3(f8.4,1x))
-          write (6, 577) atcfcasc%xp(1:3,iko)*1.0d8     
+577       format('Positions initiales du projectile (A) ',I9,3(f20.14,1x))
+          write (6, 577)iko, atcfcasc%xp(1:3,iko)*1.0d8     
           write(6,'("Positions initiales du projectile (CRYST)",3(f8.4,1x))') xx0,yy0,zz0
           aux1 = sqrt(eko*ecgs*2./cm(atcfcasc%ityp(iko)))    !Vitesse en cgs
           atcfcasc%vp(1,iko) = atcfcasc%vp(1,iko)+z1*aux1
           atcfcasc%vp(2,iko) = atcfcasc%vp(2,iko)+z2*aux1
           atcfcasc%vp(3,iko) = atcfcasc%vp(3,iko)+z3*aux1
-575       continue
           atcfcasc%xpp(1,iko) = atcfcasc%xp(1,iko)-atcfcasc%vp(1,iko)*tstep
           atcfcasc%xpp(2,iko) = atcfcasc%xp(2,iko)-atcfcasc%vp(2,iko)*tstep
           atcfcasc%xpp(3,iko) = atcfcasc%xp(3,iko)-atcfcasc%vp(3,iko)*tstep
@@ -295,7 +422,7 @@ contains
                 end do
              endif
           endif
-121       continue
+
        end if
 #ifdef PARA
        call atcfcasc%send2all(0,Cpara%mpi_image)
@@ -303,6 +430,9 @@ contains
 #endif
        call caltabtC(celndm,atcf,lperiod,boxndm)
        ! renvoi vers les autres procs
+
+
+    end if
     end select
     return
   end subroutine initcasca

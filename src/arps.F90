@@ -13,8 +13,8 @@ module arps_mod
   USE calfoew_mod,only:calfozz
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,itmax,itloopmax,timemax,timeloopmax,latcomp,iteration,itesigma,timel,tstep,&
        &lperiod,sigkine,ltpcel,sigtot,potis2,bk,erg2ev,itetemp,ltberendsen,tautcon,text,lspacendm,dmtype,unitP,llangevin,pi,&
-       &iterasmol
-  
+       &iterasmol,itetimestep
+  USE deftimestep_mod,only: deftimestep  
   use calfocommon,only:sigcalfo,potistcalfo,test_sigma,sigcalfo,sigc,lcalcsigc
   use var_pot,only : cm,iewald,gamlt
   use vect_dist_mod,only:vect_dist
@@ -23,6 +23,7 @@ module arps_mod
   use calfoeamcel_mod,only:calfoeamcel
   USE arret_ndm_mod,only:arret_ndm
   USE calcfvp_mod
+  USE eloss, ONLY : calceloss,ibrake 
 
 #ifdef PARA
   use Tpara,only:nprocspace,para_space_config,comm_space,myidsp
@@ -131,6 +132,7 @@ contains
 
 
     end select
+    if(ibrake.gt.0) call calceloss(celndm,atdml)
     atdml%mov=2
     call analyseT (atdml,celndm,boxndm,psc)
     call periodbox (boxndm,atdml)
@@ -264,7 +266,7 @@ contains
 !!$             atdml%fpr=atdml%fp
 !!$          end select
        end select
-
+       if(ibrake.gt.0) call calceloss(celndm,atdml)
 
 
 
@@ -473,6 +475,9 @@ contains
     end if
 
     call analyseT (atdml,celndm,boxndm,psc)
+    if (itetimestep>0) then
+       if (mod(iteration,itetimestep)==0) call deftimestep(atdml,boxndm)
+    endif
 
 !!$    if (iterasmol>0) then     
 !!$       if (mod(iteration,iterasmol)==0) then

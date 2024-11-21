@@ -3,7 +3,7 @@ module plottpcel_mod
   USE cellconfig,only:cell_config, cell_config_arps
   USE T_kind_param_m, ONLY:  double
   USE arret_ndm_mod,only: arret_ndm
-  use gen_com_m,only:iteration,unitP,timel
+  use gen_com_m,only:iteration,unitP,timel,rang
   use newunit_mod,only:newunit
   use Tpara,only:para_space_config    
 #ifdef PARA
@@ -102,19 +102,19 @@ module plottpcel_mod
        write(6,*)'coding error in plottpcel call, %ltpcel.ne.true'
        call arret_ndm
     end if
-    if (icall==1) then 
+!    if (icall==1) then 
        call newunit(iultp)
        open(unit=iultp,file='ltpcel.in')
        read(iultp,nml=ltpc)
        close(iultp)
-    end if
+!    end if
     
     if (present(itapp)) then
        itp=itapp
     else
        itp=iteration
     end if
-    write(6,*)'PLOTCEL',itp,iplotcel,iteplotcomp
+    if (rang==0)write(6,*)'PLOTCEL',itp,iplotcel,iteplotcomp
     if (mod(iplotcel,2)==0) then
        if (iteplotcomp.gt.0) then
           if (mod(itp,iteplotcomp)==0)then

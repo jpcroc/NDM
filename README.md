@@ -10,9 +10,6 @@
 ### Overview
 
 ``NDM`` is fortran code computing empirical potential molecular dynamics (dynamique moléculaire en potentiels empiriques)
-* etc TODO
-
-See [NDM TODO better introduction](https://inis.iaea.org/collection/NCLCollectionStore/_Public/37/064/37064766.pdf)
 
 
 NDM is built around
@@ -24,14 +21,8 @@ NDM is built around
 All the input data are prescribed non-interactively,
 using command lines and/or ASCII files.
 
-NDM can be compiled and run on any Unix-like system (and TODO windows).
+NDM can be compiled and run on any Unix-like system .
 
-
-### Installation
-
-```
-git clone --branch ndm2024_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/ndm/NDM.git NDM
-```
 
 ### Compilation
 
@@ -93,6 +84,7 @@ cmake .. -D NDM_PACKAGE_LIST="MPI;LAMMPS"
 ```
 #### Compile NDM with LAMMPS
 
+You should go to the READMES directory for detailled instrictions !
 To compile NDM with LAMMPS a version of LAMMPS must be compiled as a library with all the necessary header files.
 On Gatsby the following command can be used:
 ```
@@ -117,14 +109,6 @@ These libraries can be identified at the end of a successful LAMMPS compilation 
 Then they can be added manually to the NDM compilation using the LAMMPS_EXTRA_LIBRARIES variable with either just the name or the full path to the library.
 This is for example necessary when compiling LAMMPS with Open MPI or with the PYTHON package.
 
-### Classic make compilation
-
-Compilation instructions are provided in the documentation included in the
-distribution repository
-- file [README_ndm_compilation.md](READMES/README_ndm_compilation.md)
-
-Also see TODO
-- github documentation [ndm-docs TODO](https://jpc.github.io/ndm-docs/contents/installation.html).
 
 
 ### Integration Tests TODO

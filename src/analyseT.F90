@@ -41,7 +41,7 @@ contains
     USE T_kind_param_m, ONLY:  double
 
     use elec_cell, only : Eelec,Teavg,Tecmax,ietm,eleccellmol
-    use eloss, only : ibrake, elosselectot1, elosselectot
+    use eloss, only : ibrake, elosselec, elosselec1
     use Tpara,only:para_space_config    
     implicit none
 
@@ -172,7 +172,7 @@ contains
           if (mod(iteration,itetemp2)==0) then
              if (rang==0) then
 
-                if (ibrake.GT.0)  write(6,*)'electronic losses ', elosselectot, elosselectot1
+                if (ibrake.GT.0)  write(6,*)'electronic losses ', elosselec, elosselec1
 
                 write (6, *)
                 write (6, *)

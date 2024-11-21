@@ -17,11 +17,11 @@ module eloss
   implicit none
 
   real(double):: elosselec,elosselec1 ! electronic losses for all atoms ; the PKA
-  real(double):: elosselectot,elosselectot1 ! electronic losses for all atoms ; the PKA
+  real(double):: elosselecstep,elosselecstep1 ! electronic losses for all atoms ; the PKA
   real(double),allocatable::elstopforce(:,:,:),gams(:)
   real(double):: tcelec,Ecelec ! coupure pour les pertes 駘ectroniques
   integer::ibrake   ! electronic slowing in cascades : 0 none, 1 down to ecelec, tcelec , 2 connected to Langevin
-  integer::ngrdel
+  integer::ngrdel,ikoloc
 
 
 
@@ -124,7 +124,7 @@ contains
           end if
           f1=elstopforce(i,2,nv1)-(elstopforce(i,2,nv1)-elstopforce(i,2,nv1-1))*(nv1-vnlt/v1)
           gamlt(i)=f1/(cm(i)*vnlt)
-          if(rang==0) write(6,'(A,I3,2G15.7)')'typ gaml',i,gamlt(i),vnlt
+!          if(rang==0) write(6,'(A,I3,2G15.7)')'typ gaml',i,gamlt(i),vnlt
        end if
     end select
  end do
@@ -140,8 +140,8 @@ contains
     use mod_para,only : nprocspace
 #endif
 
-    type (cell_config),intent(in)::celndm
-    type(atom_config_d)::atdml
+    class (cell_config),intent(in)::celndm
+    class(atom_config_d)::atdml
 
     
     real(double)::ekin,vn,v1,f1,eta,etavc,f1vc,vc
@@ -149,12 +149,22 @@ contains
     integer, save:: icall=0
 
     icall=icall+1
-    if (icall==1) then
-        elosselec=0
-    	elosselec1=0
-     endif
+!    if (icall==1) then
+        elosselecstep=0
+    	elosselecstep1=0
+!     endif
+#if PARA
+  ikoloc=0
+  do i=1,atdml%im
+     if (atdml%num_at_glob(i)==iko) ikoloc=i
+  end do
+  
+#else
+ikoloc=iko
+#endif
 
-    if (L2T.eqv..true.)     elosscel(:)=0
+if (L2T.eqv..true.)     elosscel(:)=0
+!write(6,*)gams
     do i=1,atdml%im
        if(tcelec.gt.0) then
           koo = atdml%ielat(i)                          ! Numero de la cellule
@@ -163,6 +173,9 @@ contains
 
        vn= atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2
        ekin=0.5*erg2ev*vn*cm(atdml%ityp(i))
+!       if (ikoloc.gt.0)  then
+!          if (i==ikoloc) write(6,*)ekin,ecelec
+!       end if
        if (ekin.gt.Ecelec) then
 
           select case(ibrake)
@@ -171,15 +184,15 @@ contains
        case(3)
           do ic=1,3
              atdml%fp(ic,i)=atdml%fp(ic,i)-atdml%vp(ic,i)*gams(atdml%ityp(i))
-             !              Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)
-             Elosselec=Elosselec+(atdml%vp(ic,i)*gams(atdml%ityp(i)))*(atdml%vp(ic,i)*tstep)*erg2ev
+             Elosselecstep=Elosselecstep+(atdml%vp(ic,i)*gams(atdml%ityp(i)))*(atdml%vp(ic,i)*tstep)*erg2ev
+             
              if (L2T.eqv..true.) then
                 elosscel(atdml%ielat(i))=elosscel(atdml%ielat(i))+(atdml%vp(ic,i)*gams(atdml%ityp(i)))*(atdml%vp(ic,i)*tstep)
              end if
-             if (atdml%num_at_glob(i)==iko)then 
+             if (i==ikoloc)then 
 
                 !                write(6,*)'elfp',fp(ic,i)
-                Elosselec1=Elosselec1+(atdml%vp(ic,i)*gams(atdml%ityp(i)))*(atdml%vp(ic,i)*tstep)*erg2ev
+                Elosselecstep1=Elosselecstep1+(atdml%vp(ic,i)*gams(atdml%ityp(i)))*(atdml%vp(ic,i)*tstep)*erg2ev
              end if
           end do
 
@@ -220,15 +233,14 @@ contains
           end if
           do ic=1,3
              atdml%fp(ic,i)=atdml%fp(ic,i)-atdml%vp(ic,i)*f1/vn
-             !              Elosselec=Elosselec+(vp(ic,i)*f1/vn)*(vp(ic,i)*tstep)
-             Elosselec=Elosselec+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)*erg2ev
+             Elosselecstep=Elosselecstep+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)*erg2ev
              if (L2T.eqv..true.) then
                 elosscel(atdml%ielat(i))=elosscel(atdml%ielat(i))+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)
              end if
              if (atdml%num_at_glob(i)==iko)then 
 
                 !                write(6,*)'elfp',fp(ic,i)
-                Elosselec1=Elosselec1+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)*erg2ev
+                Elosselecstep1=Elosselecstep1+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)*erg2ev
              end if
           end do
           !                 write (6,*)'felstop',f1,vn                
@@ -237,11 +249,13 @@ contains
        end if
 
     end do
-    !	write(6,*)'RG el',rang,elosselec,elosselec1
+    !	write(6,*)'RG el',rang,elosselecstep,elosselecstep1
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-   call comm_space%sum(elosselec)
-   call comm_space%sum(elosselec1)
+   call comm_space%sum(elosselecstep)
+   call comm_space%sum(elosselecstep1)
+   elosselec=elosselec+elosselecstep
+   elosselec1=elosselec1+elosselecstep1
        !if l2T
        if (allocated(elosscel)) then
           call comm_space%sum(elosscel)
@@ -250,7 +264,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 #else
 
 #endif
-!  write(6,*)'TEST electronic losses ', elosselec, elosselec1
+!if (rang==0)   write(6,*)'TEST electronic losses ', elosselec, elosselec1
 
 
   end subroutine calceloss

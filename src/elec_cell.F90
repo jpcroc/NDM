@@ -24,6 +24,8 @@ module elec_cell
   !type :: voisceltype
   !  integer,allocatable::icelvois(:)
   !end type voisceltype
+  !A VERIFIER IL=3 ??? et ALGORITHME STD ET AVACNCE!!
+  ! sans doute a corriger gamlt !! ajouter freinage (algo 1) et debracher temperature cst dans freinage pour  algo 0
 
 
   !OR
@@ -94,6 +96,12 @@ contains
     open(unit=luelec, file=fnamedin, status='unknown')
     read (luelec, nml=inputelec)
     close(luelec)
+
+    if (i2t==1) then
+       if ((rang==0).and.(t_cpl.ge.0)) write(6,*)'t_cpl set to zero as i2t=1'
+       t_cpl=-1
+    end if
+
     if (lrestart) igenelec=1
     necycle=necyclemin
     GepC=GepC*joule2erg*1d-6
@@ -243,10 +251,10 @@ contains
 
   
 
-    if (i2t==0)then 
+!crc    if (i2t==0)then 
        elosscel(:)=0
 
-    end if
+!crc    end if
     do ko = 1, celndm%noxyz
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
@@ -260,17 +268,8 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           i = celndm%atincel(i2,ko)
           if (atdml%num_at_glob(i).gt.atdml%im_glob) cycle
           select case (i2t)
-          case(1)
+          case(1) ! new version Murphy/Rojano
              !check for velcocity
-             vpn2 = atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2
-             ekin=0.5*erg2ev*vpn2*cm(atdml%ityp(i))
-             if (ekin.gt.Ecelec) then
-                gamlat=0
-             else
-                gamlat=VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%NionS)
-                !if(i==1) write(6,*)'gamf',VeCell,Gep,bk,ecell(ixyze(1),ixyze(2),ixyze(3))%Nion
-             end if
-          case(0)
              vpn2 = atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2
              ekin=0.5*erg2ev*vpn2*cm(atdml%ityp(i))
              if (ekin.gt.Ecelec) then
@@ -291,20 +290,50 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
                  &-(elstopforce(atdml%ityp(i),2,nv1)-elstopforce(atdml%ityp(i),2,nv1-1))*(nv1-vn/v1)
                 do ic=1,3
                    elosscel(ko)=elosscel(ko)+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)
+                   atdml%fp(ic,i)=atdml%fp(ic,i)-atdml%vp(ic,i)*f1/vn
                 end do
 
-                gamlat=f1/(cm(atdml%ityp(i))*vn)
-                if (timel.gt.t_cpl) then
-                   gamlat=gamlat+VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion)
-                end if
              else
-                if (timel.gt.t_cpl) then
-                   gamlat=VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion)
-                else 
-                   gamlat=0.
-                end if
+                gamlat=VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%NionS)
                 !if(i==1) write(6,*)'gamf',VeCell,Gep,bk,ecell(ixyze(1),ixyze(2),ixyze(3))%Nion
              end if
+          case(0) ! DDuffy version
+             vpn2 = atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2
+             ekin=0.5*erg2ev*vpn2*cm(atdml%ityp(i))
+             if (ekin.gt.Ecelec) then
+                vn=sqrt(vpn2)
+                v1=elstopforce(atdml%ityp(i),1,1)
+                !           write(6,*)v1,vn
+                nv1=1+INT(vn/v1)
+                if (nv1.gt.ngrdel) then
+                   if (rang.eq.0)  write(6,*)'elstop velocity > 49, rebuild elstop.in'
+#ifdef PARA
+                      call endMPI
+#endif
+
+
+                   call arret_ndm
+                end if
+                f1=elstopforce(atdml%ityp(i),2,nv1)&
+                 &-(elstopforce(atdml%ityp(i),2,nv1)-elstopforce(atdml%ityp(i),2,nv1-1))*(nv1-vn/v1)
+                do ic=1,3
+                   elosscel(ko)=elosscel(ko)+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)
+                   atdml%fp(ic,i)=atdml%fp(ic,i)-atdml%vp(ic,i)*f1/vn
+                end do
+
+!crc                gamlat=f1/(cm(atdml%ityp(i))*vn)
+
+                   
+                   
+             end if
+
+             if (timel.gt.t_cpl) then
+                gamlat=VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion)
+                ! CRC gamlat=gamlat + VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%Nion) ????
+             else 
+                gamlat=0.
+             end if
+                !if(i==1) write(6,*)'gamf',VeCell,Gep,bk,ecell(ixyze(1),ixyze(2),ixyze(3))%Nion
 
           end select
 
