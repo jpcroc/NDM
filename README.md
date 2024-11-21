@@ -35,10 +35,11 @@ Following are environment setup examples for some known clusters:
 
 |   Computer         |        NDM           | NDM + LAMMPS   |
 |--------------------|----------------------|----------------|
-| Topaze/Irene GNU   | module load a <br> module load b| module load a <br> module load b <br> module load c |
-| Topaze/Irene INTEL | module load a <br> module load b| module load a <br> module load b <br> module load c |
-| Gatsby GNU   | module load a <br> module load b| module load a <br> module load b <br> module load c |
-| Gatsby INTEL   | module load a <br> module load b| module load a <br> module load b <br> module load c |
+| Topaze/Irene INTEL | module load fortran/inteloneapi/24.0.0 <br> module load mpi/intelmpi/24.0.0 | x |
+| Topaze/Irene MIX | module load fortran/inteloneapi/24.0.0 <br> module load mpi/openmpi/4.1.6.4 | module load fortran/inteloneapi/24.0.0 <br> module load mpi/openmpi/4.1.6.4 <br> module load lammps/2Aug2023 |
+| Topaze/Irene GNU   | module load fortran/gcc/13.2.0 <br> module load mpi/openmpi/4.1.4 | x |
+| Gatsby GNU   | module load openmpi/gcc/4.0.2 <br> module load gcc/11.2.0 <br> module load mkl| x |
+| Gatsby INTEL   | module load mpi <br> module load compiler <br> module load mkl | module load lammps/29Sep2021-u2 |
 
 
 #### Basic cmake build, in the NDM directory :

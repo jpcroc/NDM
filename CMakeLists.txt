@@ -134,7 +134,7 @@ if (${Project_PARA})
     list(APPEND NDM_PACKAGE_LIST "MPI")
     list(APPEND NDM_COMPILE_DEFINITION "PARA")
     list(APPEND NDM_COMPILE_DEFINITION "PARAML")
-    list(APPEND NDM_PACKAGE_LIST "MILADY")
+#    list(APPEND NDM_PACKAGE_LIST "MILADY")
 endif()
 
 
@@ -249,10 +249,10 @@ else()
 endif()
 add_library( ${MAIN_LIBRARY_NAME} STATIC )
 
-add_dependencies(${MAIN_LIBRARY_NAME} milady)
-target_link_libraries(${MAIN_LIBRARY_NAME} "MILADY")
-target_link_directories(${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/git_rep/NDM/build/ml/src/milady-build/lib")
-target_include_directories( ${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/git_rep/NDM/build/ml/src/milady-build/mod")
+#add_dependencies(${MAIN_LIBRARY_NAME} milady)
+#target_link_libraries(${MAIN_LIBRARY_NAME} "MILADY")
+#target_link_directories(${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/git_rep/NDM/build/ml/src/milady-build/lib")
+#target_include_directories( ${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/git_rep/NDM/build/ml/src/milady-build/mod")
 
 # adding required libraries to main library
 foreach( PACKAGE IN ITEMS ${${PROJECT_NAME}_PACKAGE_LIST})

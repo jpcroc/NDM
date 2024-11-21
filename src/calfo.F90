@@ -15,7 +15,7 @@ module calfo_mod
   USE calfojuli_mod,only:calfojuli
   USE calfojulicel_mod,only:calfojulicel
   USE force_tersoff_cel_mod,only:force_tersoff_cel
-  !use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam,zz,potis1, npotentiel
+  use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam,zz,potis1, npotentiel
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:potis2,potisp,erg2ev&
