@@ -33,13 +33,13 @@ It is recommended to use Intel's oneAPI suite including Intel's mpi implementati
 
 Following are environment setup examples for some known clusters:
 
-|   Computer         |        NDM           | NDM + LAMMPS   |
+|   Cluster         |        NDM           | NDM + LAMMPS   |
 |--------------------|----------------------|----------------|
-| Topaze/Irene INTEL | module load fortran/inteloneapi/24.0.0 <br> module load mpi/intelmpi/24.0.0 | x |
-| Topaze/Irene MIX | module load fortran/inteloneapi/24.0.0 <br> module load mpi/openmpi/4.1.6.4 | module load fortran/inteloneapi/24.0.0 <br> module load mpi/openmpi/4.1.6.4 <br> module load lammps/2Aug2023 |
-| Topaze/Irene GNU   | module load fortran/gcc/13.2.0 <br> module load mpi/openmpi/4.1.4 | x |
-| Gatsby GNU   | module load openmpi/gcc/4.0.2 <br> module load gcc/11.2.0 <br> module load mkl| x |
-| Gatsby INTEL   | module load mpi <br> module load compiler <br> module load mkl | module load lammps/29Sep2021-u2 |
+| Topaze/Irene INTEL | <pre>module load fortran/inteloneapi/24.0.0<br>module load mpi/intelmpi/24.0.0</pre> | x |
+| Topaze/Irene MIX | <pre>module load fortran/inteloneapi/24.0.0<br>module load mpi/openmpi/4.1.6.4</pre> | <pre>module load fortran/inteloneapi/24.0.0<br>module load mpi/openmpi/4.1.6.4<br>module load lammps/2Aug2023</pre> |
+| Topaze/Irene GNU   | <pre>module load fortran/gcc/13.2.0<br>module load mpi/openmpi/4.1.4</pre> | x |
+| Gatsby GNU   | <pre>module load openmpi/gcc/4.0.2<br>module load gcc/11.2.0<br>module load mkl</pre>| x |
+| Gatsby INTEL   | <pre>module load mpi<br>module load compiler<br>module load mkl</pre> | <pre>module load lammps/29Sep2021-u2</pre> |
 
 
 #### Basic cmake build, in the NDM directory :
@@ -86,12 +86,12 @@ To set the environment and specify source or build directories you can use the `
 
 - Compilers : `CMAKE_Fortran_COMPILER`, `CMAKE_CXX_COMPILER`
 - preprocessor definitions : `NDM_COMPILE_DEFINITION`
-- compilation configuration : CMAKE_BUILD_TYPE (`RELEASE` or `DEBUG`)
-- compilation flags : CMAKE_<lang>_FLAGS_<config>, for example CMAKE_Fortran_FLAGS_RELEASE
-- MPI : MPI_HOME
-- LAMMPS library directory : LAMMPS_HOME
-- LAMMPS library name : LAMMPS_LIBRARY_NAME (for example `lammps_serial`, `lammps_mpi` or `lammps`)
-- Additional dependencies for LAMMPS: LAMMPS_EXTRA_LIBRARIES (for example `gomp` to use open mpi LAMMPS)
+- compilation configuration : `CMAKE_BUILD_TYPE` (`RELEASE` or `DEBUG`)
+- compilation flags : `CMAKE_<lang>_FLAGS_<config>`, for example `CMAKE_Fortran_FLAGS_RELEASE`
+- MPI : `MPI_HOME`
+- LAMMPS library directory : `LAMMPS_HOME`
+- LAMMPS library name : `LAMMPS_LIBRARY_NAME` (for example `lammps_serial`, `lammps_mpi` or `lammps`)
+- Additional dependencies for LAMMPS: `LAMMPS_EXTRA_LIBRARIES` (for example `gomp` to use open mpi LAMMPS)
 
 To specify multiple values, for example for preprocessor definitions or packages, use semicolon separator:
 ```
@@ -130,9 +130,10 @@ This is for example necessary when compiling LAMMPS with Open MPI or with the PY
 
 ### Integration Tests
 
+<!---
 After compilation with tests, run ctest.
 
-<!---
+
 - Data are small,
   located at [NDM/examples directories](https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM) branch `ndm2021_cv`.
 

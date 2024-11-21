@@ -24,7 +24,7 @@ program ndm
 
 #ifdef ML
   use mld_mpi, only: mld_mpi_init
-  use mod_test, only: copy_fnam
+  use mld_interface_mod, only: mld_copy_fnam
 #endif
 
 #ifdef MAB
@@ -68,7 +68,7 @@ program ndm
   fnam = a1
   lenfnam = index(fnam,' ')-1
 #ifdef ML
-  call copy_fnam(fnam)
+  call mld_copy_fnam(fnam)
 #endif
   !     write(6,*) 'main -> readdm'
   call readdm

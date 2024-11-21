@@ -24,8 +24,7 @@ module init_mod
   use vars_lammps
 #endif
 #ifdef ML
-!   use init,only:init_config_ml
-  use mod_test, only: md_config_wrap
+  use mld_interface_mod, only: mld_init_config
 #endif
   
 
@@ -127,8 +126,8 @@ contains
       end if
       !  !This comes with MiLaDy Package
 
-       call md_config_wrap(atdml%im, atdml%imm)
-       call md_init_config_ml
+      call mld_init_config(atdml)
+
     !call init ! mld init
     end if
 #endif
