@@ -23,7 +23,7 @@ module constrconf_mod
 
   use config2data_mod,only:config2data
 #ifdef ML
-  use gen_com_m_ml, only: at, im
+  !use gen_com_m_ml, only: at, im
   use derived_types, only: config_real
 #endif
 

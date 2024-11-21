@@ -134,7 +134,11 @@ if (${Project_PARA})
     list(APPEND NDM_PACKAGE_LIST "MPI")
     list(APPEND NDM_COMPILE_DEFINITION "PARA")
     list(APPEND NDM_COMPILE_DEFINITION "PARAML")
+    list(APPEND NDM_PACKAGE_LIST "MILADY")
 endif()
+
+
+
 
 set(CMAKE_Fortran_FLAGS_RELEASE " -O3 " CACHE STRING "")
 set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0" CACHE STRING "")
@@ -153,6 +157,10 @@ set(MKL_ARCH "intel64" CACHE STRING "Architecture")
 
 if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
     set(CMAKE_CXX_FLAGS_RELEASE " -no-multibyte-chars " CACHE STRING "")
+endif()
+
+if ("MILADY" IN_LIST NDM_PACKAGE_LIST)
+    list(APPEND NDM_COMPILE_DEFINITION "ML")
 endif()
 
 ################################################
@@ -240,6 +248,11 @@ else()
     string(APPEND MAIN_EXECUTABLE_NAME "_serial")
 endif()
 add_library( ${MAIN_LIBRARY_NAME} STATIC )
+
+add_dependencies(${MAIN_LIBRARY_NAME} milady)
+target_link_libraries(${MAIN_LIBRARY_NAME} "MILADY")
+target_link_directories(${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/git_rep/NDM/build/ml/src/milady-build/lib")
+target_include_directories( ${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/git_rep/NDM/build/ml/src/milady-build/mod")
 
 # adding required libraries to main library
 foreach( PACKAGE IN ITEMS ${${PROJECT_NAME}_PACKAGE_LIST})

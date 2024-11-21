@@ -17,10 +17,14 @@ program ndm
   USE init_mpi_mod,only: init_mpi
 #ifdef PARA
   USE Tpara,only:myidsp,nprocs,mpi_comm_world
-
   USE neb_module,only:init_mpi_neb
 #else
   USE Tpara,only:myidsp,nprocs,nprocspace
+#endif
+
+#ifdef ML
+  use mld_mpi, only: mld_mpi_init
+  use mod_test, only: copy_fnam
 #endif
 
 #ifdef MAB
@@ -52,7 +56,9 @@ program ndm
   
 #endif
 
-
+#ifdef ML
+  call mld_mpi_init()
+#endif
 
 
 
@@ -61,10 +67,11 @@ program ndm
   read (29, *) a1
   fnam = a1
   lenfnam = index(fnam,' ')-1
+#ifdef ML
+  call copy_fnam(fnam)
+#endif
   !     write(6,*) 'main -> readdm'
   call readdm
-
-  
   call prog
 
 #if defined PARAPH || defined MAB

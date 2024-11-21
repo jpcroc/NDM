@@ -6,9 +6,9 @@ module init_pot_mod
   USE arret_ndm_mod,only:arret_ndm
   USE tersoff_zbl_mod,only: tersoff_zbl
   USE gen_com_m, ONLY:firsttime_lammps,rang,umass,A2cm,rang
-  USE var_pot, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive,npotentiel,&
-       &typ_pot_pair,rue_pair,catom,cm,iewald,ipo,lu_roff_pair,lue_paire,lue_typ,ntyp,roff1,roff2,ty,typ_pot_pair,&
-       &q,rue_lammps
+  USE var_pot !, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive,npotentiel,&
+       !&typ_pot_pair,rue_pair,catom,cm,iewald,ipo,lu_roff_pair,lue_paire,lue_typ,ntyp,roff1,roff2,ty,typ_pot_pair,&
+       !&q,rue_lammps
   
   USE eam,only:inputeam
   USE eamerco,only:inputeamerco
@@ -18,6 +18,8 @@ module init_pot_mod
   use read_val,only:rvois
 #ifdef ML
  USE NDM_ML,only :rue_ml
+ use gen_com_m, only:dmtype
+ use mod_test, only: ndm2mld_var_pot, ndm2mld_gen_comm, mld2ndm_var_pot
 #endif
 
   implicit none
@@ -131,8 +133,20 @@ contains
              case(20)
 #ifdef ML
 !!$                !This comes with MiLaDy package
-
+                call ndm2mld_var_pot(ipotentiel, rue_pot, typ_pot_pair, npair, &
+                        npotentiel, lprtpot, ntyp, &
+                        ntyp_buffer, ntrip, eatref, lpotentiel, ipotrep, ngr, &
+                        l3c, iewald,ngrid, eta, rumax, &
+                        csive, ncouc3, n2max, ncoucx, ncoucy, ncoucz, nvecttot, &
+                        precisew, epswat, sigmawat, gm1, gm2, gm3, gm4, gm5, &
+                        gR, gd, csive_g, r3cm, r3cm2, rbp5, rp5p3, rp3c, &
+                        alpha, lambda, xsi, potisrep, potisglue, potiseam, &
+                        kpmex, kpmey, kpmez, kpme, maxorder, iorder, npoint, nfft1, &
+                        nfft2, nfft3, nff, nf1, nf2, nf3, ntable, pterm, volterm)
+                call ndm2mld_gen_comm(dmtype, rvois,rang)
                 call md_init_potential_ml
+                call mld2ndm_var_pot(ipo,cm, typ_pot_pair, npair)
+
                 typ_and_pot(:,20)=.true.
                 typ_pot_pair(:)=20
                 !rue_pot(20)=rue_ml

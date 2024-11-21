@@ -1308,7 +1308,7 @@ contains
        case(20)
           ltabvois=.true.
           ldemitab=.false.
-          itetabvois=0
+          !itetabvois=0
 
        end select
 
@@ -1625,7 +1625,7 @@ contains
 !#ifdef PARA
 !    call mpi_world%bcast(0,iseed)
 !#endif              
-    
+
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
     if ((dmtype.ge.41).and.(dmtype.le.42)) then

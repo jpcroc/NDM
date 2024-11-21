@@ -38,9 +38,7 @@ contains
     integer::iml !last atom (=%im for standard; =%imm for extrait)
 
 
-
     atvois%iwmax(:)=0
-
 
 
     atvois%indi(:)=0
@@ -52,7 +50,6 @@ contains
        lconstrtt=lconstrtot
     end if
        
-    
     at=boxndm%at ; bg=boxndm%bg
     !
     !-----------------------------------------------
@@ -80,7 +77,7 @@ contains
     end if
 
     nvij=0
-
+    
 
     !write(*,*) 'caltabi_inside  ', rvois, rvois2
     !*************construction par double boucle ****************
@@ -100,7 +97,6 @@ contains
           else
              ip=1
           end if
-          
           do j = ip, iml
              if(i.eq.j) cycle
              itj=atvois%ityp(j)
@@ -128,6 +124,7 @@ contains
        maxvoi = iw
        !*************construction par celulle ****************
     else
+
        !     write(*,*) 'THE fist passage .........'
        do i = 1, atvois%im
           nvi=0
@@ -157,7 +154,6 @@ contains
                 itj=atvois%ityp(j)
                 ll=ipo(iti,itj)
                 call vect_dist(atvois,celvois,boxndm,i,j,indcv=i1,lperiod=lperiod,linter=linter,rum=rvois(ll),VJI=VJI,dist=dij)
-
                 if (.not.linter)cycle
 
                 nvi=nvi+1

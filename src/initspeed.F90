@@ -164,7 +164,6 @@ contains
           !  a starting temperature is given
                  if ((rang==0).and.(lprint))  write (6,*) 'random velocities at TINIT = ', tinit, &
                'K'
-
                  call random_seed(size=seed_size)
 !          if (rang==0)write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
@@ -194,7 +193,6 @@ contains
              if(z2.eq.0.d0) z2=0.000000001d0
              if(z3.eq.0.d0) z3=0.000000001d0
              if(z4.eq.0.d0) z4=0.000000001d0
-
              v1 = one/sqrt(cm(atcf%ityp(i)))
              atcf%vp(1,i) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z2)
              atcf%vp(2,i) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)

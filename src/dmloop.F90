@@ -59,12 +59,10 @@ contains
 
 
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VERLET STD ***',itloopmax,timeloopmax
-
     ! Initialization
     IF (dmtype.EQ.23) THEN
        CALL init_trempe_fire(tstep, fire_nstep, fire_alph)
     END IF
-
     do while ((iteration.le.itloopmax).and.(timel.lt.timeloopmax))
        iteration = iteration+1
        ! appel de la routine generale des forces
@@ -106,7 +104,6 @@ contains
                 end if
              end select
           end do
-
           sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
 
 #ifdef PARA
@@ -134,8 +131,6 @@ contains
           call trempe (atdml)
        case(23)
           call trempe_fire (atdml,tstep, fire_nstep, fire_alph)
-
-
        case default
           write (6, *) 'ne sait pas quoi faire stop'
           call arret_ndm
@@ -146,7 +141,7 @@ contains
           lcalcvois=.false.
        end if
        call  driver_caltabt_para(atdml,celndm,boxndm,psc,lperiod,lcalcvois)
-       call analyseT (atdml,celndm,boxndm,psc)    
+       call analyseT (atdml,celndm,boxndm,psc)
        call controleT(atdml,celndm,boxndm,psc,lreturn)
        if (lreturn) return
 

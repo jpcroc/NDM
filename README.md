@@ -40,7 +40,17 @@ git clone --branch ndm2024_cv ssh://gitolite@ssh-codev-tuleap.intra.cea.fr:2044/
 #### Prerequisities
 It is recommended to use Intel's oneAPI suite including Intel's mpi implementation, the mpiifort wrapper and MKL.
 
-#### Basic build, in the NDM directory :
+See module examples for some clusters:
+
+|   Computer         |        NDM           | NDM + LAMMPS   |
+|--------------------|----------------------|----------------|
+| Topaze/Irene GNU   | module load a <br> module load b| module load a <br> module load b <br> module load c |
+| Topaze/Irene INTEL | module load a <br> module load b| module load a <br> module load b <br> module load c |
+| Gatsby GNU   | module load a <br> module load b| module load a <br> module load b <br> module load c |
+| Gatsby INTEL   | module load a <br> module load b| module load a <br> module load b <br> module load c |
+
+
+#### Basic cmake build, in the NDM directory :
 
 Steps to build NDM using the `CMakeLists.txt` file (requires cmake 3.20) :
 
@@ -119,8 +129,14 @@ Also see TODO
 
 ### Integration Tests TODO
 
+After compilation with tests, run ctest.
+
 - Data are small,
   located at [NDM/examples directories](https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM) branch `ndm2021_cv`.
 
 - Data are big,
   located in a [NDM_TESTS separate git repository](https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM_TESTS.git) TODO.
+
+### code coverage
+
+Compilation with intel, assuming codecov and profmerge are available.

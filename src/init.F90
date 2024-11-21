@@ -117,7 +117,7 @@ contains
        if (rang==0) write(6,*)'postinitlammps'
     end if
 #endif  
-#ifdef MLD_NDM
+#ifdef ML
     ! MiLaDy
     if(ipotentiel==20) then
       if (rang.eq.0) then
@@ -127,7 +127,7 @@ contains
       end if
       !  !This comes with MiLaDy Package
 
-       call md_config_wrap(atdml)
+       call md_config_wrap(atdml%im, atdml%imm)
        call md_init_config_ml
     !call init ! mld init
     end if
@@ -153,6 +153,8 @@ contains
     case default
     end select
 #ifdef PARA
+
+
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        CALL comm_space%BARRIER
        call init_voisinage(celndm,psc,lwrite=.true.)
@@ -170,7 +172,6 @@ contains
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if
-
 
 
     if (L2T.eqv..true.) then

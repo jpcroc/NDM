@@ -1,7 +1,8 @@
 module calfo_mod
 #ifdef ML
 !  USE NDM_ML, ONLY : calfo_ml
-   use mod_test, only: md_calfo_ml
+   use mod_test, only: md_calfo_ml, ndm2mld_var_pot
+   use var_pot !, only: ipotentiel, rue_pot,typ_pot_pair,npair
 #endif 
    USE arret_ndm_mod,only:arret_ndm
   USE calfoew_mod,only:calfoew,calfozz
@@ -14,7 +15,7 @@ module calfo_mod
   USE calfojuli_mod,only:calfojuli
   USE calfojulicel_mod,only:calfojulicel
   USE force_tersoff_cel_mod,only:force_tersoff_cel
-  use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam,zz,potis1
+  !use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam,zz,potis1, npotentiel
 
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, ONLY:potis2,potisp,erg2ev&
@@ -177,7 +178,17 @@ contains
                                       
 #ifdef ML
                 case (20)
-                   call md_calfo_ml(atcf,celcf,boxcf,potistcalfo,sigcalfo)
+                   call ndm2mld_var_pot(ipotentiel, rue_pot, typ_pot_pair, npair, &
+                        npotentiel, lprtpot, ntyp, &
+                        ntyp_buffer, ntrip, eatref, lpotentiel, ipotrep, ngr, &
+                        l3c, iewald,ngrid, eta, rumax, &
+                        csive, ncouc3, n2max, ncoucx, ncoucy, ncoucz, nvecttot, &
+                        precisew, epswat, sigmawat, gm1, gm2, gm3, gm4, gm5, &
+                        gR, gd, csive_g, r3cm, r3cm2, rbp5, rp5p3, rp3c, &
+                        alpha, lambda, xsi, potisrep, potisglue, potiseam, &
+                        kpmex, kpmey, kpmez, kpme, maxorder, iorder, npoint, nfft1, &
+                        nfft2, nfft3, nff, nf1, nf2, nf3, ntable, pterm, volterm)
+                   call md_calfo_ml(atcf%im,atcf%imm,atcf%ityp,atcf%xp,atcf%fp,boxcf%volu,boxcf%at,boxcf%bg, potistcalfo,sigcalfo,celcf%ncel)
 #endif          
                 end select
              end if
