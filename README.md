@@ -5,6 +5,7 @@
 ## NDM
 
 ![image](images/cea_small.png)
+<!--- TODO: following is a dead link -->
 [DES/ISAS/DMN/SRMP](https://www.universite-paris-saclay.fr/laboratoires/service-de-recherches-de-metallurgie-physique-des/isas/dmn)
 
 ### Overview
@@ -23,15 +24,14 @@ using command lines and/or ASCII files.
 
 NDM can be compiled and run on any Unix-like system .
 
-
 ### Compilation
 
-### Compiling NDM with Cmake
+NDM can be compiled using cmake (version 3.20).
 
 #### Prerequisities
-It is recommended to use Intel's oneAPI suite including Intel's mpi implementation, the mpiifort wrapper and MKL.
+It is recommended to use Intel's oneAPI suite including Intel's mpi implementation, the mpiifort wrapper and MKL but GNU compilers are also available.
 
-See module examples for some clusters:
+Following are environment setup examples for some known clusters:
 
 |   Computer         |        NDM           | NDM + LAMMPS   |
 |--------------------|----------------------|----------------|
@@ -50,9 +50,22 @@ mkdir build; cd build
 cmake ..
 make -j
 ```
+
 This should detect the required compilers and dependencies if they are available and find a suitable configuration.
 If not, make sure the prerequisities are met and consider defining advanced options manually.
 
+#### NDM+LAMMPS build
+
+```
+cmake .. -D NDM_PACKAGE_LIST=LAMMPS
+```
+
+#### NDM+MILADY build
+
+```
+cmake .. -D NDM_PACKAGE_LIST=MILADY
+```
+<!---
 #### Advanced options :
 
 Options can be passed through the command line :
@@ -66,13 +79,14 @@ cmake .. -C <preset_file.cmake>
 ```
 
 To set the environment and specify source or build directories you can use the `scripts/compile_ndm.sh` bash script.
+-->
 
 #### Available options
 
-- Compilers : CMAKE_Fortran_COMPILER, CMake_CXX_COMPILER
-- preprocessor definitions : NDM_COMPILE_DEFINITION
-- compilation mode : CMAKE_BUILD_TYPE (`RELEASE` or `DEBUG`)
-- compilation flags : CMAKE_<lang>_FLAGS_<mode>, for example CMAKE_Fortran_FLAGS_RELEASE
+- Compilers : `CMAKE_Fortran_COMPILER`, `CMAKE_CXX_COMPILER`
+- preprocessor definitions : `NDM_COMPILE_DEFINITION`
+- compilation configuration : CMAKE_BUILD_TYPE (`RELEASE` or `DEBUG`)
+- compilation flags : CMAKE_<lang>_FLAGS_<config>, for example CMAKE_Fortran_FLAGS_RELEASE
 - MPI : MPI_HOME
 - LAMMPS library directory : LAMMPS_HOME
 - LAMMPS library name : LAMMPS_LIBRARY_NAME (for example `lammps_serial`, `lammps_mpi` or `lammps`)
@@ -82,6 +96,8 @@ To specify multiple values, for example for preprocessor definitions or packages
 ```
 cmake .. -D NDM_PACKAGE_LIST="MPI;LAMMPS"
 ```
+
+<!---
 #### Compile NDM with LAMMPS
 
 You should go to the READMES directory for detailled instrictions !
@@ -108,18 +124,20 @@ When such dependencies are missing the linker will show `undefined references` a
 These libraries can be identified at the end of a successful LAMMPS compilation in the list of link libraries or in the executable dependencies.
 Then they can be added manually to the NDM compilation using the LAMMPS_EXTRA_LIBRARIES variable with either just the name or the full path to the library.
 This is for example necessary when compiling LAMMPS with Open MPI or with the PYTHON package.
+-->
 
 
-
-### Integration Tests TODO
+### Integration Tests
 
 After compilation with tests, run ctest.
 
+<!---
 - Data are small,
   located at [NDM/examples directories](https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM) branch `ndm2021_cv`.
 
 - Data are big,
   located in a [NDM_TESTS separate git repository](https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM_TESTS.git) TODO.
+-->
 
 ### code coverage
 
