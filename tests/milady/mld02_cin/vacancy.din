@@ -1,0 +1,12 @@
+&input
+
+    ipotentiel=20
+	imm=572
+	igen=1 ! from cin
+	dmtype=1   ! 7 ph ; 3 CG
+    tinit=150.0
+	rvois=11
+	itmax=8
+	itetemp=1,itesigma=1
+
+&end

@@ -3,12 +3,24 @@ module mld_interface_mod
     USE atomconfig,only:atom_config
     USE cellconfig,only:cell_config
     USE boxconfig, only: box_config
-    use mod_test, only: md_calfo_ml, ndm2mld_var_pot, ndm2mld_gen_comm, mld2ndm_var_pot, copy_fnam, md_config_wrap
+    use ndm_interface_mod, only: md_calfo_ml, ndm2mld_var_pot, ndm2mld_gen_comm, mld2ndm_var_pot, copy_fnam, md_config_wrap
     USE NDM_ML,only :rue_ml
     use gen_com_m, only:dmtype
 
     contains
-    
+    subroutine mld_init_mpi()
+        use mld_mpi, only: mld_mpi_init, is_mpi_init_done, mpi_comm_space_mld
+        use Tpara, only: mpi_comm_space
+        implicit none
+        
+        mpi_comm_space_mld=mpi_comm_space
+        is_mpi_init_done=.true.
+        call mld_mpi_init
+
+    end subroutine mld_init_mpi
+
+
+
     subroutine mld_calfo(atcf,boxcf,potistcalfo,sigcalfo,celcf)
     
         implicit none

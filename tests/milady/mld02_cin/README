@@ -1,0 +1,16 @@
+# Testing molecular dynamics with MiLaDy and NDM
+
+From a MiLaDy-generated potential (bispectrum_so4) for tungsten, computes short molecular dynamics from .cin file with NDM.
+
+# Compilation
+Compile Milady with NDM : cmake .. -MLD_NDM=ON
+
+# Input files
+Inputs from fit_tests/train_tests/fit01:
+- name.in
+- g2b4_snap1_params.pot
+- vacancy.ml
+
+MD inputs:
+- vacancy.din
+- vacancy.cin

@@ -136,9 +136,6 @@ if (${Project_PARA})
     list(APPEND NDM_COMPILE_DEFINITION "PARAML")
 endif()
 
-
-
-
 set(CMAKE_Fortran_FLAGS_RELEASE " -O3 " CACHE STRING "")
 set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0" CACHE STRING "")
 
@@ -178,7 +175,7 @@ set( PROJECT_AUTHOR "Jean-Paul Crocombette" )
 ################################################
 
 option( ${PROJECT_NAME}_OPT_TRACE "trace all variables for cmake debug" OFF )
-option( ${PROJECT_NAME}_OPT_COMPILE_TESTS "Allows test compilation" OFF )
+option( ${PROJECT_NAME}_OPT_TEST "Prepare tests" ON )
 option( ${PROJECT_NAME}_OPT_COMPILE_DOC "Compile documentation" OFF )
 
 
@@ -250,9 +247,6 @@ add_library( ${MAIN_LIBRARY_NAME} STATIC )
 
 if ("MILADY" IN_LIST NDM_PACKAGE_LIST)
     add_dependencies(${MAIN_LIBRARY_NAME} milady)
-    target_link_libraries(${MAIN_LIBRARY_NAME} "MILADY")
-    target_link_directories(${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/git_rep/NDM/build/ml/src/milady-build/lib")
-    target_include_directories( ${MAIN_LIBRARY_NAME} PUBLIC "/home/catB/jd270899/git_rep/NDM/build/ml/src/milady-build/mod")
 endif()
 
 # adding required libraries to main library
@@ -272,6 +266,29 @@ endif()
 
 # Defines target to install
 install( TARGETS ${MAIN_LIBRARY_NAME} ${MAIN_EXECUTABLE_NAME})
+
+################################################
+# Tests and coverage
+################################################
+
+# Prepare tests
+if (${PROJECT_NAME}_OPT_TEST)
+    file(GLOB
+    test_list
+    ${PROJECT_SOURCE_DIR}/tests/*/*/name.in
+    )
+    foreach(test IN ITEMS ${test_list})
+        cmake_path(GET test PARENT_PATH test_path)
+        cmake_path(GET test_path FILENAME test_name)     
+        ADD_TEST(
+            NAME "${test_name}"
+            COMMAND mpirun "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${MAIN_EXECUTABLE_NAME}"
+            WORKING_DIRECTORY "${test_path}"
+        )
+        set_tests_properties("${test_name}" PROPERTIES TIMEOUT 120)
+    endforeach()
+
+endif()
 
 ################################################
 # PKG-Config

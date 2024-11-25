@@ -23,8 +23,7 @@ program ndm
 #endif
 
 #ifdef ML
-  use mld_mpi, only: mld_mpi_init
-  use mld_interface_mod, only: mld_copy_fnam
+  use mld_interface_mod, only: mld_copy_fnam, mld_init_mpi
 #endif
 
 #ifdef MAB
@@ -57,7 +56,8 @@ program ndm
 #endif
 
 #ifdef ML
-  call mld_mpi_init()
+
+  call mld_init_mpi()
 #endif
 
 

@@ -130,9 +130,21 @@ This is for example necessary when compiling LAMMPS with Open MPI or with the PY
 
 ### Integration Tests
 
-<!---
-After compilation with tests, run ctest.
+After compilation with tests (`NDM_OPT_TEST=ON`, by default) you can run tests from the build directory using the `ctest` command:
+```
+# Run all tests
+ctest
 
+# Run ndm-only tests:
+ctest -R ndm
+
+# Run milady tests:
+ctest -R mld
+```
+
+<!---
+TODO: introduce non-regression tests:
+For now, tests only check that NDM runs without failure.
 
 - Data are small,
   located at [NDM/examples directories](https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM) branch `ndm2021_cv`.
