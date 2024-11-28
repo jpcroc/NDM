@@ -11,12 +11,12 @@ macro(determine_library_name)
     find_program(VAR_LMP_MPI lmp_mpi)   # check if lmp_mpi executable is available
     find_program(VAR_LMP lmp)
     find_program(VAR_LMP_SERIAL lmp_serial) # check if lmp_serial executable is available
-    if (NOT ${VAR_LMP_MPI} STREQUAL "VAR_LMP_MPI-NOTFOUND") # lammps mpi is available
+    if (${VAR_LMP_MPI}) # lammps mpi is available
         set(lammps_mpi ON)
     else()
         set(lammps_mpi OFF)
     endif()
-    if (NOT ${VAR_LMP} STREQUAL "VAR_LMP-NOTFOUND" OR NOT ${VAR_LMP_SERIAL} STREQUAL "VAR_LMP_SERIAL-NOTFOUND") # lammps serial is available
+    if (${VAR_LMP} OR ${VAR_LMP_SERIAL}) # lammps serial is available
         set(lammps_serial ON)
     else()
         set(lammps_serial OFF)
@@ -27,22 +27,24 @@ macro(determine_library_name)
         set(project_mpi OFF)
     endif()
     if (${project_mpi} AND ${lammps_mpi}) # if project uses mpi and lammps_mpi is available
-        set(LAMMPS_LIBRARY_NAME "lammps_mpi" CACHE STRING "Name of the lammps library")
+        set(LAMMPS_LIBRARY_NAME "lammps_mpi")
     elseif(${lammps_mpi} AND NOT ${lammps_serial}) # project doesn't use mpi but only lammps_mpi is available
-        set(LAMMPS_LIBRARY_NAME "lammps_mpi" CACHE STRING "Name of the lammps library")
+        set(LAMMPS_LIBRARY_NAME "lammps_mpi")
     else()  # lammps_mpi is not available
-        if (NOT ${VAR_LMP} STREQUAL "VAR_LMP-NOTFOUND")
-            set(LAMMPS_LIBRARY_NAME "lammps" CACHE STRING "Name of the lammps library")
-        elseif (NOT ${VAR_LMP_SERIAL} STREQUAL "VAR_LMP_SERIAL-NOTFOUND")
-            set(LAMMPS_LIBRARY_NAME "lammps_serial" CACHE STRING "Name of the lammps library")
+        if (${VAR_LMP})
+            set(LAMMPS_LIBRARY_NAME "lammps")
+        elseif (${VAR_LMP_SERIAL})
+            set(LAMMPS_LIBRARY_NAME "lammps_serial")
         endif()
     endif()
 endmacro()
 
 function (compile_with_LAMMPS)
     
-    # Determine lammps library name from available executables and MPI
-    determine_library_name()
+    if (NOT DEFINED LAMMPS_LIBRARY_NAME)
+        # Determine lammps library name from available executables and MPI
+        determine_library_name()
+    endif()
     
     # Check environment variables
     if (DEFINED ENV{LAMMPS_HOME})
