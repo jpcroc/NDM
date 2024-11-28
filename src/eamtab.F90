@@ -128,11 +128,14 @@ contains
     real(double) :: cmr,catomr,precis,qr
     integer,allocatable :: typtyp(:)
     integer::itir,ipair,ntypr
+    logical::lok
     character :: tyr*3
     namelist /ewald/ rue, alpha, precis, ncouc3, ncoucx, ncoucy, ncoucz,&
          kpmex, kpmey, kpmez, lopt,iewald,ipotrep
     !EWALD
     !  rumax=0.0
+
+
     r3cm=0.0
     rue = 0.0
     alpha = 0.0
@@ -404,6 +407,12 @@ contains
              end if
 
           end do
+          call checkround(embtyp(iti)%xg(1),embtyp(iti)%deltaEAM,lok)
+            if (lok.eqv..false.) then
+               write(6,*) 'error in glue grid  EAM stop', embtyp(iti)%xg(1), embtyp(iti)%xg(2),embtyp(iti)%deltaEAM
+               write(6,*)'will not work for negative densities'
+               call arret_ndm
+            end if
           rhomin(iti)=min(rhomin(iti),embtyp(iti)%xg(1))
           rhomax(iti)=max(rhomax(iti),embtyp(iti)%xg(npt))
           !       write(6,*)'rhomin rhomax',rhomin,rhomax
@@ -448,6 +457,13 @@ contains
              end if
 
           end do
+          call checkround(rhotyp(iti)%xd(1),rhotyp(iti)%deltaRHO,lok)
+          if (lok.eqv..false.) then
+             write(6,*) 'error in dens grid  EAM stop', rhotyp(iti)%xd(1), rhotyp(iti)%xd(2),rhotyp(iti)%deltaRHO
+             write(6,*)'will not work for negative densities'
+             call arret_ndm
+          end if
+          
           call cspline (nptmax,rhotyp(iti)%xd,rhotyp(iti)%rho,  SPrhotyp(iti)%brho,  SPrhotyp(iti)%crho,  SPrhotyp(iti)%drho  )
           if (lforcetabulate) then
              rhotyp_d(iti)%xd=rhotyp(iti)%xd
@@ -505,6 +521,14 @@ contains
 
              end if
           end do
+
+          call checkround(reppair(iti)%xr(1),reppair(iti)%deltaREP,lok)
+          if (lok.eqv..false.) then
+             write(6,*) 'error in glue grid  EAM stop', reppair(iti)%xr(1),reppair(iti)%xr(2),reppair(iti)%deltaREP
+
+             call arret_ndm
+          end if
+
           call cspline (nptmax,reppair(ipr)%xr,reppair(ipr)%potr,SPreppair(ipr)%bpotr,& 
                SPreppair(ipr)%cpotr,SPreppair(ipr)%dpotr)
           if (lforcetabulate) then
@@ -649,7 +673,7 @@ contains
     if(r.gt.xmax) then
        Rho=0.0
     else
-       kr=nInt(r/density%deltaRHO)
+       kr=Int(r/density%deltaRHO)
        drk=r-kr*density%deltaRHO
        rho = density%rho(kr)+drk*(SPdensity%brho(kr)+drk*(SPdensity%crho(kr)+drk*SPdensity%drho(kr)))
 
@@ -689,9 +713,9 @@ contains
 
     else
 !       write(6,*)
-       k=nInt((rho-eam%deltaEAM/1d10)/eam%deltaEAM)
+       k=Int((rho-eam%deltaEAM/1d10)/eam%deltaEAM)
 !       write(6,*) k,rho,rho/eam%deltaEAM
-       drk=rho +(0 -k)*eam%deltaEAM
+       drk=rho -k*eam%deltaEAM
        Embf = ev2erg*(eam%feam(k)+drk*(SPeam%beam(k)+drk*(SPeam%ceam(k)+drk*SPeam%deam(k))))
     end if
 
@@ -728,8 +752,8 @@ contains
        Erep=0.0
        return
     else
-       k=nInt(r/rep%deltaREP)
-       drk=r+(0-k)*rep%deltaREP
+       k=Int(r/rep%deltaREP)
+       drk=r-k*rep%deltaREP
 
        Erep = ev2erg*(rep%potr(k) +drk*(SPrep%bpotr(k) +drk*(SPrep%cpotr(k) +drk*SPrep%dpotr(k))))
 
@@ -741,7 +765,18 @@ contains
     !-----------------------------------
   end subroutine extrapolateRep
 
-
-
+  subroutine checkround(x1,x2,lok)
+    real(double),intent(in)::x1,x2
+    logical,intent(out)::lok
+    real(double)::x1r,x2r
+    integer::n
+    x1r=nint(x1*1d6)/1d6
+    x2r=nint(x2*1d6)/1d6
+    if (x1r==x2r) then
+       lok=.true.
+    else
+       lok=.false.
+    end if
+  end subroutine checkround
 end module eam
      

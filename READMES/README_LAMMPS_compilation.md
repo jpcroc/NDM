@@ -2,7 +2,14 @@
 
 On Gatsby one version is installed already and accessible with:
 ```
+module purge
 module load lammps/29Sep2021-u2
+mkdir build_lammps ou rm -rf build_lammps/*
+cd build_lammps
+cmake ../ D NDM_PACKAGE_LIST="LAMMPS"
+make -j 
+
+
 ```
 It is also possible to compile LAMMPS from sources to use different versions or packages as explained below.
 
@@ -25,7 +32,7 @@ To compile LAMMPS with cmake, replace <preset.cmake> with the name of a preset f
 mkdir build; cd build
 cmake ../cmake/. -C <preset.cmake>
 make -j
-make install
+
 ```
 
 For more information see LAMMPS documentation to build with CMake: https://docs.lammps.org/Build_cmake.html

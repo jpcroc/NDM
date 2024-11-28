@@ -52,7 +52,7 @@ contains
           
           gradij(:)=dxp(:)/r
           sk = r/csive
-          k = sk
+          k = int(sk)
           ! spline
           dr = r-float(k)*csive
           deltaepot=0.5*(pot(1,l,k)+dr*(pot(2,l,k)+dr*(pot(3,l,k)+dr*pot(4,l,k))))

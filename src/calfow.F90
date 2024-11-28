@@ -113,7 +113,7 @@ contains
                       if (.not.linter) cycle
                       
                       sk=r/csive
-                      k=sk
+                      k=int(sk)
                       dr=r-float(k)*csive
                       !         write(6,*)'i j 2eme ',i,j
                       !         write(6,*)'r sk k dr ',r,sk,k,dr
@@ -154,7 +154,7 @@ contains
                 if (.not.linter) cycle
 
                 SK=R/csive
-                K=SK
+                K=int(SK)
 
                 ! spline
 
@@ -167,7 +167,7 @@ contains
                 if(iti.ne.itj)then                      ! liaison SiO
                    if(iti.eq.itO) then                  ! O est l'atome considere
                       sz=z(i)/csive_g                    ! on prend le z de O
-                      kz=sz                              ! voila un entier
+                      kz=int(sz)                              ! voila un entier)
                       dz=z(i)-float(kz)*csive_g 
                       foncgz=  gz(kz)+     &              ! g(z)
                            bspg(kz)*dz+cspg(kz)*dz**2+dspg(kz)*dz**3
